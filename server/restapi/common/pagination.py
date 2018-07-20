@@ -9,12 +9,16 @@ class StandardPagination(pagination.LimitOffsetPagination):
     default_limit = 100
 
     def get_paginated_response(self, data):
-        if 'data' in data:
-            data = data['data']
+        if "data" in data:
+            data = data["data"]
 
-        return Response(collections.OrderedDict([
-            ('count', self.count),
-            ('next', self.get_next_link()),
-            ('previous', self.get_previous_link()),
-            ('data', data)
-        ]))
+        return Response(
+            collections.OrderedDict(
+                [
+                    ("count", self.count),
+                    ("next", self.get_next_link()),
+                    ("previous", self.get_previous_link()),
+                    ("data", data),
+                ]
+            )
+        )

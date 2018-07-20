@@ -1,30 +1,32 @@
 import os
 import django
 
-os.environ['DJANGO_SETTINGS_MODULE'] = 'server.settings'
+os.environ["DJANGO_SETTINGS_MODULE"] = "server.settings"
 django.setup()
 
 # django has to be started before the models are imported
 from dash.models import Campaign, AdGroup, ContentAdSource, Account  # noqa
 
-'''
+"""
 This script check how many ContentAds doesn't have a tracker_urls set. ContentAds are filtered by specified exchange.
 It goes through all accounts, campaign, adgroups and contentads and filters all archived out. Then it prints the results
 per account per campaign per adgroup.
-'''
+"""
 
 
 def check_tracker_urls(exchange):
-    content_ad_sources = (ContentAdSource.objects
-                          .filter(source__tracking_slug=exchange, content_ad__archived=False)
-                          .select_related('content_ad',
-                                          'content_ad__ad_group',
-                                          'content_ad__ad_group__campaign',
-                                          'content_ad__ad_group__campaign__account'))
+    content_ad_sources = ContentAdSource.objects.filter(
+        source__tracking_slug=exchange, content_ad__archived=False
+    ).select_related(
+        "content_ad",
+        "content_ad__ad_group",
+        "content_ad__ad_group__campaign",
+        "content_ad__ad_group__campaign__account",
+    )
 
-    nonarchived_ad_groups = AdGroup.objects.all().exclude_archived().values_list('id', flat=True)
-    nonarchived_campaigns = Campaign.objects.all().exclude_archived().values_list('id', flat=True)
-    nonarchived_accounts = Account.objects.all().exclude_archived().values_list('id', flat=True)
+    nonarchived_ad_groups = AdGroup.objects.all().exclude_archived().values_list("id", flat=True)
+    nonarchived_campaigns = Campaign.objects.all().exclude_archived().values_list("id", flat=True)
+    nonarchived_accounts = Account.objects.all().exclude_archived().values_list("id", flat=True)
 
     result_dict = {}
     for content_ad_source in content_ad_sources:
@@ -79,4 +81,4 @@ def count_for_campaign(camp_dict):
     return tracked, free
 
 
-check_tracker_urls('yahoo')
+check_tracker_urls("yahoo")

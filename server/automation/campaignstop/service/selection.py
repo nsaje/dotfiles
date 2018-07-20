@@ -34,19 +34,15 @@ def _get_available_campaign_budgets(campaigns):
     for budget_line_item in budget_line_items:
         campaign = budget_line_item.campaign
         campaign_available_amount.setdefault(campaign, 0)
-        campaign_available_amount[campaign] += budget_line_item.get_available_etfm_amount(
-            date=date_to_digest
-        )
+        campaign_available_amount[campaign] += budget_line_item.get_available_etfm_amount(date=date_to_digest)
     return campaign_available_amount
 
 
 def _get_all_budget_line_items(campaigns):
     today = dates_helper.local_today()
     return core.bcm.BudgetLineItem.objects.filter(
-        campaign__in=campaigns,
-        start_date__lte=today,
-        end_date__gte=today,
-    ).select_related('campaign')
+        campaign__in=campaigns, start_date__lte=today, end_date__gte=today
+    ).select_related("campaign")
 
 
 def _get_date_to_digest():
@@ -57,7 +53,7 @@ def _get_date_to_digest():
 
 
 def _in_critical_hours():
-        return 0 <= dates_helper.local_now().hour < config.HOURS_DELAY
+    return 0 <= dates_helper.local_now().hour < config.HOURS_DELAY
 
 
 def _get_max_campaign_spends(campaigns):
@@ -75,15 +71,16 @@ def _calculate_max_campaign_spend(campaign):
 
 
 def _get_latest_real_time_data(campaign):
-    return RealTimeDataHistory.objects.filter(
-        ad_group__campaign=campaign,
-        date__gte=dates_helper.local_yesterday()
-    ).distinct('ad_group', 'source', 'date').order_by('ad_group_id', 'source_id', '-date', '-created_dt')
+    return (
+        RealTimeDataHistory.objects.filter(ad_group__campaign=campaign, date__gte=dates_helper.local_yesterday())
+        .distinct("ad_group", "source", "date")
+        .order_by("ad_group_id", "source_id", "-date", "-created_dt")
+    )
 
 
 def _get_adgroup_sources(campaign):
     return core.entity.AdGroupSource.objects.filter(ad_group__campaign=campaign).select_related(
-        'settings', 'ad_group__settings', 'source__source_type'
+        "settings", "ad_group__settings", "source__source_type"
     )
 
 
@@ -100,18 +97,19 @@ def _mark_campaign(campaign, max_spend_today, available_budget_amount):
 
     campaignstop_state, _ = CampaignStopState.objects.get_or_create(campaign=campaign)
     is_almost_depleted = (
-        campaignstop_state.state == constants.CampaignStopState.ACTIVE and
-        min_remaining_budget < THRESHOLD
+        campaignstop_state.state == constants.CampaignStopState.ACTIVE and min_remaining_budget < THRESHOLD
     )
     campaignstop_state.update_almost_depleted(is_almost_depleted)
 
     log = RealTimeCampaignStopLog(campaign=campaign, event=constants.CampaignStopEvent.SELECTION_CHECK)
-    log.add_context({
-        'min_remaining_budget': min_remaining_budget,
-        'campaign_daily_budget': max_spend_today,
-        'remaining_current_budget': available_budget_amount,
-        'is_almost_depleted': is_almost_depleted
-    })
+    log.add_context(
+        {
+            "min_remaining_budget": min_remaining_budget,
+            "campaign_daily_budget": max_spend_today,
+            "remaining_current_budget": available_budget_amount,
+            "is_almost_depleted": is_almost_depleted,
+        }
+    )
 
 
 def _get_max_spend(adg_sources, adg_source_spends):
@@ -125,7 +123,9 @@ def _get_max_spend(adg_sources, adg_source_spends):
 
         if _in_critical_hours():
             yesterday = dates_helper.local_yesterday()
-            yesterdays_realtime_spend = adg_source_spends.get((adg_source.ad_group_id, adg_source.source_id, yesterday), 0)
+            yesterdays_realtime_spend = adg_source_spends.get(
+                (adg_source.ad_group_id, adg_source.source_id, yesterday), 0
+            )
             spend += yesterdays_realtime_spend
 
         is_b1_source_type = adg_source.source.source_type.type == dash.constants.SourceType.B1
@@ -162,7 +162,9 @@ def _is_active_setting(ad_group_setting):
 def _b1_spends(b1_sources_group_spends):
     spend = 0
     for ad_group, b1_group_spend in b1_sources_group_spends.items():
-        is_group_state_inactive = ad_group.settings.b1_sources_group_state == dash.constants.AdGroupSettingsState.INACTIVE
+        is_group_state_inactive = (
+            ad_group.settings.b1_sources_group_state == dash.constants.AdGroupSettingsState.INACTIVE
+        )
         if not _is_active_setting(ad_group.settings) or is_group_state_inactive:
             spend += b1_group_spend
             continue

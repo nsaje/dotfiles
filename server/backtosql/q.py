@@ -3,17 +3,17 @@ from backtosql import temp_tables
 
 
 def dissect_constraint_key(constraint_key):
-    return constraint_key.split('__')
+    return constraint_key.split("__")
 
 
 class Q(object):
-    '''
+    """
     Used for constructing the WHERE filter of the query that supports AND, OR and NOT,
     similar to django Q (https://github.com/django/django/blob/master/django/db/models/query_utils.py)
-    '''
+    """
 
-    AND = ' AND '
-    OR = ' OR '
+    AND = " AND "
+    OR = " OR "
     MAX_RECURSION_DEPTH = 900
 
     def __init__(self, model, *args, **kwargs):
@@ -85,11 +85,11 @@ class Q(object):
             params.extend(child_params)
 
         if not parts and not params:
-            return '1=1', []
+            return "1=1", []
 
-        ret = '(' + self.join_operator.join(parts) + ')'
+        ret = "(" + self.join_operator.join(parts) + ")"
         if self.negate:
-            ret = 'NOT ' + ret
+            ret = "NOT " + ret
 
         return ret, params
 
@@ -104,7 +104,7 @@ class Q(object):
         else:
             operator = "eq"
 
-        if alias == '':
+        if alias == "":
             return None, operator, value
 
         column = self.model.get_column(alias)
@@ -113,42 +113,35 @@ class Q(object):
     def _generate_sql(self, constraint, prefix):
         column, operator, value = self._prepare_constraint(constraint)
 
-        operator_dict = {
-            "lte": '{}<=%s',
-            "lt": '{}<%s',
-            "gte": '{}>=%s',
-            "gt": '{}>%s',
-        }
+        operator_dict = {"lte": "{}<=%s", "lt": "{}<%s", "gte": "{}>=%s", "gt": "{}>%s"}
 
-        if operator == 'none':
+        if operator == "none":
             return "1=%s", [2]
 
         if operator in operator_dict:
             return operator_dict[operator].format(column.only_column(prefix)), [value]
         elif operator == "eq":
             if isinstance(value, temp_tables.ConstraintTempTable):
-                return '{} IN (SELECT {} FROM {})'.format(column.only_column(prefix),
-                                                          value.constraint,
-                                                          value.name), []
+                return "{} IN (SELECT {} FROM {})".format(column.only_column(prefix), value.constraint, value.name), []
             if helpers.is_collection(value):
                 if value:
-                    return '{}=ANY(%s)'.format(column.only_column(prefix)), [value]
-                return 'FALSE', []
+                    return "{}=ANY(%s)".format(column.only_column(prefix)), [value]
+                return "FALSE", []
 
             if value is None:
-                return '{} IS %s'.format(column.only_column(prefix)), [value]
-            return '{}=%s'.format(column.only_column(prefix)), [value]
+                return "{} IS %s".format(column.only_column(prefix)), [value]
+            return "{}=%s".format(column.only_column(prefix)), [value]
 
         elif operator == "neq":
             if helpers.is_collection(value):
                 if value:
-                    return '{}!=ANY(%s)'.format(column.only_column(prefix)), [value]
+                    return "{}!=ANY(%s)".format(column.only_column(prefix)), [value]
 
-                return 'TRUE', []
+                return "TRUE", []
 
             if value is None:
-                return '{} IS NOT %s'.format(column.only_column(prefix)), [value]
+                return "{} IS NOT %s".format(column.only_column(prefix)), [value]
 
-            return '{}!=%s'.format(column.only_column(prefix)), [value]
+            return "{}!=%s".format(column.only_column(prefix)), [value]
 
         raise helpers.BackToSQLException("Unknown constraint type: {}".format(operator))

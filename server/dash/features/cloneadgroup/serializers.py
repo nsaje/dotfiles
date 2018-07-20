@@ -6,14 +6,17 @@ from dash import constants
 
 class CloneAdGroupSerializer(serializers.Serializer):
     ad_group_id = restapi.serializers.fields.IdField(required=True)
-    destination_campaign_id = restapi.serializers.fields.IdField(required=True, error_messages={
-        'required': 'Please select destination campaign',
-        'null': 'Please select destination campaign',
-    })
-    destination_ad_group_name = restapi.serializers.fields.PlainCharField(required=True, error_messages={
-        'required': 'Please provide a name for destination ad group',
-        'blank': 'Please provide a name for destination ad group',
-    })
+    destination_campaign_id = restapi.serializers.fields.IdField(
+        required=True,
+        error_messages={"required": "Please select destination campaign", "null": "Please select destination campaign"},
+    )
+    destination_ad_group_name = restapi.serializers.fields.PlainCharField(
+        required=True,
+        error_messages={
+            "required": "Please provide a name for destination ad group",
+            "blank": "Please provide a name for destination ad group",
+        },
+    )
     clone_ads = serializers.BooleanField(required=False)
 
 

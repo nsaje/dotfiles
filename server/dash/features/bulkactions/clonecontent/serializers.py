@@ -16,21 +16,25 @@ class CloneContentAdsSerializer(serializers.Serializer):
     content_ad_ids = fields.ListField(child=restapi.serializers.fields.IdField(), required=False)
     deselected_content_ad_ids = fields.ListField(child=restapi.serializers.fields.IdField(), required=False)
 
-    destination_ad_group_id = restapi.serializers.fields.IdField(error_messages={
-        'required': 'Please select destination ad group',
-        'null': 'Please select destination ad group',
-    })
-    destination_batch_name = restapi.serializers.fields.PlainCharField(required=True, error_messages={
-        'required': 'Please provide a name for destination upload batch',
-        'blank': 'Please provide a name for destination upload batch'
-    })
-    state = restapi.serializers.fields.DashConstantField(constants.ContentAdSourceState, required=False, allow_null=True)
+    destination_ad_group_id = restapi.serializers.fields.IdField(
+        error_messages={"required": "Please select destination ad group", "null": "Please select destination ad group"}
+    )
+    destination_batch_name = restapi.serializers.fields.PlainCharField(
+        required=True,
+        error_messages={
+            "required": "Please provide a name for destination upload batch",
+            "blank": "Please provide a name for destination upload batch",
+        },
+    )
+    state = restapi.serializers.fields.DashConstantField(
+        constants.ContentAdSourceState, required=False, allow_null=True
+    )
 
 
 class AdGroupSerializer(serializers.ModelSerializer):
     class Meta:
         model = core.entity.UploadBatch
-        fields = ('id', 'name')
+        fields = ("id", "name")
 
     id = restapi.serializers.fields.IdField()
     name = restapi.serializers.fields.PlainCharField(max_length=1024)
@@ -39,7 +43,7 @@ class AdGroupSerializer(serializers.ModelSerializer):
 class UploadBatchSerializer(serializers.ModelSerializer):
     class Meta:
         model = core.entity.UploadBatch
-        fields = ('id', 'name', 'ad_group')
+        fields = ("id", "name", "ad_group")
 
     id = restapi.serializers.fields.IdField()
     name = restapi.serializers.fields.PlainCharField(max_length=1024)
@@ -47,11 +51,11 @@ class UploadBatchSerializer(serializers.ModelSerializer):
 
 
 def get_content_ads(objects, data):
-    if data.get('deselected_content_ad_ids'):
-        objects = objects.exclude(id__in=data['deselected_content_ad_ids'])
+    if data.get("deselected_content_ad_ids"):
+        objects = objects.exclude(id__in=data["deselected_content_ad_ids"])
 
-    batch_id = data.get('batch_id')
-    content_ad_ids = data.get('content_ad_ids')
+    batch_id = data.get("batch_id")
+    content_ad_ids = data.get("content_ad_ids")
 
     if batch_id and content_ad_ids:
         objects = objects.filter(Q(batch_id=batch_id) | Q(id__in=content_ad_ids))
@@ -61,6 +65,6 @@ def get_content_ads(objects, data):
         objects = objects.filter(id__in=content_ad_ids)
 
     if not objects.exists():
-        raise serializers.ValidationError('Please select at least one content ad to copy.')
+        raise serializers.ValidationError("Please select at least one content ad to copy.")
 
     return objects

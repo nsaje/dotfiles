@@ -30,7 +30,7 @@ import zemauth.models
 STATS_START_DELTA = 30
 STATS_END_DELTA = 1
 
-SPECIAL_COLUMNS = ['performance', 'styles']
+SPECIAL_COLUMNS = ["performance", "styles"]
 
 logger = logging.getLogger(__name__)
 
@@ -68,39 +68,39 @@ def get_stats_end_date(end_time):
 
 
 class ViewFilter(object):
-    '''Convenience class for extracting filters from requests'''
+    """Convenience class for extracting filters from requests"""
 
     def __init__(self, request=None):
         self.request = request
         self.data = None
-        if request.method == 'GET':
+        if request.method == "GET":
             self.data = request.GET
-        elif request.method == 'PUT':
+        elif request.method == "PUT":
             self.data = json.loads(request.body)
 
-        self.show_archived = self.data.get('show_archived') == 'true'
+        self.show_archived = self.data.get("show_archived") == "true"
 
     @cached_property
     def start_date(self):
-        return get_stats_start_date(self.data.get('start_date'))
+        return get_stats_start_date(self.data.get("start_date"))
 
     @cached_property
     def end_date(self):
-        return get_stats_end_date(self.data.get('end_date'))
+        return get_stats_end_date(self.data.get("end_date"))
 
     @cached_property
     def filtered_sources(self):
         if self.request.user is not None:
-            return get_filtered_sources(self.request.user, self.data.get('filtered_sources'))
+            return get_filtered_sources(self.request.user, self.data.get("filtered_sources"))
         return None
 
     @cached_property
     def filtered_agencies(self):
-        return get_filtered_agencies(self.data.get('filtered_agencies'))
+        return get_filtered_agencies(self.data.get("filtered_agencies"))
 
     @cached_property
     def filtered_account_types(self):
-        return get_filtered_account_types(self.data.get('filtered_account_types'))
+        return get_filtered_account_types(self.data.get("filtered_account_types"))
 
 
 def get_filtered_sources(user, sources_filter):
@@ -121,9 +121,7 @@ def get_filtered_agencies(agency_filter):
 
     filtered_ids = _split_to_ids(agency_filter)
     if filtered_ids:
-        filtered_agencies = models.Agency.objects.all().filter(
-            id__in=filtered_ids
-        )
+        filtered_agencies = models.Agency.objects.all().filter(id__in=filtered_ids)
     return filtered_agencies
 
 
@@ -139,7 +137,7 @@ def get_filtered_account_types(account_type_filter):
 def _split_to_ids(entity_filter):
     entity_ids = []
     if isinstance(entity_filter, str):
-        entity_filter = entity_filter.split(',')
+        entity_filter = entity_filter.split(",")
     for id in entity_filter:
         try:
             entity_ids.append(int(id))
@@ -150,17 +148,16 @@ def _split_to_ids(entity_filter):
 
 def get_additional_columns(additional_columns):
     if additional_columns:
-        return additional_columns.split(',')
+        return additional_columns.split(",")
     return []
 
 
 def get_publisher_group(user, account_id, publisher_group_id):
     try:
         account = get_account(user, account_id)
-        return models.PublisherGroup.objects.all().filter_by_account(account)\
-                                                  .get(pk=publisher_group_id)
+        return models.PublisherGroup.objects.all().filter_by_account(account).get(pk=publisher_group_id)
     except models.PublisherGroup.DoesNotExist:
-        raise exc.MissingDataError('Publisher group does not exist')
+        raise exc.MissingDataError("Publisher group does not exist")
 
 
 def get_user_agency(user):
@@ -190,30 +187,28 @@ def _get_adgroups_for(modelcls, modelobjects):
 def get_active_ad_group_sources(modelcls, modelobjects):
     adgroups = _get_adgroups_for(modelcls, modelobjects)
 
-    adgroup_settings = models.AdGroupSettings.objects.\
-        filter(ad_group__in=adgroups).\
-        group_current_settings()
+    adgroup_settings = models.AdGroupSettings.objects.filter(ad_group__in=adgroups).group_current_settings()
     archived_adgroup_ids = [setting.ad_group_id for setting in adgroup_settings if setting.archived]
 
-    active_ad_group_sources = models.AdGroupSource.objects \
-        .filter(ad_group__in=adgroups).\
-        exclude(ad_group__in=archived_adgroup_ids).\
-        select_related('source__source_type').\
-        select_related('ad_group')
+    active_ad_group_sources = (
+        models.AdGroupSource.objects.filter(ad_group__in=adgroups)
+        .exclude(ad_group__in=archived_adgroup_ids)
+        .select_related("source__source_type")
+        .select_related("ad_group")
+    )
 
     return active_ad_group_sources
 
 
 def get_source_initial_state(ad_group_source):
-    if ad_group_source.source.source_type.type in (constants.SourceType.FACEBOOK, ):
+    if ad_group_source.source.source_type.type in (constants.SourceType.FACEBOOK,):
         return check_facebook_source(ad_group_source)
     if ad_group_source.source.maintenance or ad_group_source.source.deprecated:
         return False
     return True
 
 
-def get_ad_group_sources_last_change_dt(
-        ad_group_sources, ad_group_sources_settings, last_change_dt=None):
+def get_ad_group_sources_last_change_dt(ad_group_sources, ad_group_sources_settings, last_change_dt=None):
 
     changed_ad_group_sources = []
     last_change_dts = []
@@ -237,8 +232,7 @@ def get_ad_group_sources_last_change_dt(
     return max(last_change_dts), changed_ad_group_sources
 
 
-def get_ad_group_sources_notifications(ad_group_sources, ad_group_settings,
-                                       ad_group_sources_settings):
+def get_ad_group_sources_notifications(ad_group_sources, ad_group_settings, ad_group_sources_settings):
     notifications = {}
 
     for ags in ad_group_sources:
@@ -252,20 +246,19 @@ def get_ad_group_sources_notifications(ad_group_sources, ad_group_settings,
 
         if not models.AdGroup.is_ad_group_active(ad_group_settings):
             if ad_group_source_settings and ad_group_source_settings.state == constants.AdGroupSettingsState.ACTIVE:
-                state_message = ('This media source is enabled but will not run until'
-                                 ' you enable ad group.')
+                state_message = "This media source is enabled but will not run until" " you enable ad group."
                 messages.append(state_message)
 
                 important = True
 
-        message = '<br />'.join([t for t in messages if t is not None])
+        message = "<br />".join([t for t in messages if t is not None])
 
         if not len(message):
             continue
 
-        notification['message'] = message
-        notification['in_progress'] = False
-        notification['important'] = important
+        notification["message"] = message
+        notification["in_progress"] = False
+        notification["important"] = important
 
         notifications[ags.source_id] = notification
 
@@ -273,10 +266,7 @@ def get_ad_group_sources_notifications(ad_group_sources, ad_group_settings,
 
 
 def _get_changed_content_ad_sources(ad_group, sources, last_change_dt):
-    content_ad_sources = models.ContentAdSource.objects.filter(
-        content_ad__ad_group=ad_group,
-        source__in=sources
-    )
+    content_ad_sources = models.ContentAdSource.objects.filter(content_ad__ad_group=ad_group, source__in=sources)
 
     if last_change_dt is not None:
         content_ad_sources = content_ad_sources.filter(modified_dt__gt=last_change_dt)
@@ -285,13 +275,13 @@ def _get_changed_content_ad_sources(ad_group, sources, last_change_dt):
 
 
 def get_changed_content_ads(ad_group, sources, last_change_dt=None):
-    content_ad_sources = _get_changed_content_ad_sources(ad_group, sources, last_change_dt).select_related('content_ad')
+    content_ad_sources = _get_changed_content_ad_sources(ad_group, sources, last_change_dt).select_related("content_ad")
     return set(s.content_ad for s in content_ad_sources)
 
 
 def get_content_ad_last_change_dt(ad_group, sources, last_change_dt=None):
     content_ad_sources = _get_changed_content_ad_sources(ad_group, sources, last_change_dt)
-    return content_ad_sources.aggregate(Max('modified_dt'))['modified_dt__max']
+    return content_ad_sources.aggregate(Max("modified_dt"))["modified_dt__max"]
 
 
 def get_content_ad_submission_status(user, ad_group_sources_states, content_ad_sources):
@@ -299,29 +289,28 @@ def get_content_ad_submission_status(user, ad_group_sources_states, content_ad_s
     for content_ad_source in content_ad_sources:
         cas_submission_status = content_ad_source.get_submission_status()
 
-        status = {
-            'name': content_ad_source.source.name,
-            'status': cas_submission_status,
-        }
+        status = {"name": content_ad_source.source.name, "status": cas_submission_status}
 
         cas_source = content_ad_source.source
 
-        ad_group_source_state_text = ''
-        if user.has_perm('zemauth.can_see_media_source_status_on_submission_popover'):
+        ad_group_source_state_text = ""
+        if user.has_perm("zemauth.can_see_media_source_status_on_submission_popover"):
             cas_ad_group_source_state = ad_group_sources_states.get(cas_source.id)
 
             if cas_ad_group_source_state is not None:
                 if cas_ad_group_source_state != constants.AdGroupSourceSettingsState.ACTIVE:
-                    ad_group_source_state_text = '(paused)'
+                    ad_group_source_state_text = "(paused)"
 
-        status['source_state'] = ad_group_source_state_text
+        status["source_state"] = ad_group_source_state_text
 
         text = constants.ContentAdSubmissionStatus.get_text(cas_submission_status)
-        if (cas_submission_status == constants.ContentAdSubmissionStatus.REJECTED and
-                content_ad_source.submission_errors is not None):
-            text = '{} ({})'.format(text, content_ad_source.submission_errors)
+        if (
+            cas_submission_status == constants.ContentAdSubmissionStatus.REJECTED
+            and content_ad_source.submission_errors is not None
+        ):
+            text = "{} ({})".format(text, content_ad_source.submission_errors)
 
-        status['text'] = text
+        status["text"] = text
         submission_status.append(status)
 
     return submission_status
@@ -332,41 +321,41 @@ def get_data_status(objects):
     for obj in objects:
         messages = []
 
-        if hasattr(obj, 'maintenance') and obj.maintenance:
-            messages.insert(0, 'This source is in maintenance mode.')
+        if hasattr(obj, "maintenance") and obj.maintenance:
+            messages.insert(0, "This source is in maintenance mode.")
 
-        if hasattr(obj, 'deprecated') and obj.deprecated:
-            messages.insert(0, 'This source is deprecated.')
+        if hasattr(obj, "deprecated") and obj.deprecated:
+            messages.insert(0, "This source is deprecated.")
 
-        data_status[obj.id] = {
-            'message': '<br />'.join(messages),
-            'ok': True,
-        }
+        data_status[obj.id] = {"message": "<br />".join(messages), "ok": True}
 
     return data_status
 
 
-def get_selected_entities(objects, select_all, selected_ids, not_selected_ids, include_archived, select_batch_id=None, **constraints):
+def get_selected_entities(
+    objects, select_all, selected_ids, not_selected_ids, include_archived, select_batch_id=None, **constraints
+):
     objects = objects.filter(Q(**constraints))
     if select_all:
         entities = objects.exclude(id__in=not_selected_ids)
     elif select_batch_id is not None:
-        entities = objects.filter(Q(batch__id=select_batch_id) | Q(
-            id__in=selected_ids)).exclude(id__in=not_selected_ids)
+        entities = objects.filter(Q(batch__id=select_batch_id) | Q(id__in=selected_ids)).exclude(
+            id__in=not_selected_ids
+        )
     else:
         entities = objects.filter(id__in=selected_ids)
 
     if not include_archived:
         entities = entities.exclude_archived()
 
-    return entities.order_by('created_dt', 'id')
+    return entities.order_by("created_dt", "id")
 
 
 def get_selected_adgroup_sources(objects, data, **constraints):
-    select_all = data.get('select_all', False)
+    select_all = data.get("select_all", False)
 
-    selected_ids = parse_post_request_ids(data, 'selected_ids')
-    not_selected_ids = parse_post_request_ids(data, 'not_selected_ids')
+    selected_ids = parse_post_request_ids(data, "selected_ids")
+    not_selected_ids = parse_post_request_ids(data, "not_selected_ids")
 
     entities = objects.filter(Q(**constraints))
     if select_all:
@@ -374,17 +363,19 @@ def get_selected_adgroup_sources(objects, data, **constraints):
     else:
         entities = entities.filter(source_id__in=selected_ids)
 
-    return entities.order_by('id')
+    return entities.order_by("id")
 
 
 def get_selected_entities_post_request(objects, data, include_archived=False, **constraints):
-    select_all = data.get('select_all', False)
-    select_batch_id = data.get('select_batch')
+    select_all = data.get("select_all", False)
+    select_batch_id = data.get("select_batch")
 
-    selected_ids = parse_post_request_ids(data, 'selected_ids')
-    not_selected_ids = parse_post_request_ids(data, 'not_selected_ids')
+    selected_ids = parse_post_request_ids(data, "selected_ids")
+    not_selected_ids = parse_post_request_ids(data, "not_selected_ids")
 
-    return get_selected_entities(objects, select_all, selected_ids, not_selected_ids, include_archived, select_batch_id, **constraints)
+    return get_selected_entities(
+        objects, select_all, selected_ids, not_selected_ids, include_archived, select_batch_id, **constraints
+    )
 
 
 def _get_ad_group_source_settings_from_filter_qs(ad_group_source, ad_group_sources_settings):
@@ -396,10 +387,11 @@ def _get_ad_group_source_settings_from_filter_qs(ad_group_source, ad_group_sourc
 
 
 def get_ad_group_sources_settings(ad_group_sources):
-    return models.AdGroupSourceSettings.objects\
-        .filter(ad_group_source__in=ad_group_sources)\
-        .group_current_settings()\
-        .select_related('ad_group_source')
+    return (
+        models.AdGroupSourceSettings.objects.filter(ad_group_source__in=ad_group_sources)
+        .group_current_settings()
+        .select_related("ad_group_source")
+    )
 
 
 def parse_get_request_content_ad_ids(request_data, param_name):
@@ -409,7 +401,7 @@ def parse_get_request_content_ad_ids(request_data, param_name):
         return []
 
     try:
-        return list(map(int, content_ad_ids.split(',')))
+        return list(map(int, content_ad_ids.split(",")))
     except ValueError:
         raise exc.ValidationError()
 
@@ -423,7 +415,7 @@ def parse_post_request_ids(request_data, param_name):
         raise exc.ValidationError()
 
 
-def get_user_full_name_or_email(user, default_value='/'):
+def get_user_full_name_or_email(user, default_value="/"):
     if user is None:
         return default_value
 
@@ -433,9 +425,9 @@ def get_user_full_name_or_email(user, default_value='/'):
 
 def get_target_regions_string(regions):
     if not regions:
-        return 'worldwide'
+        return "worldwide"
 
-    return ', '.join(constants.AdTargetLocation.get_text(x) for x in regions)
+    return ", ".join(constants.AdTargetLocation.get_text(x) for x in regions)
 
 
 def get_conversion_goals_wo_pixels(conversion_goals):
@@ -443,33 +435,57 @@ def get_conversion_goals_wo_pixels(conversion_goals):
     Returns conversions goals not of pixel type to be used by in client. Pixels
     are to be returned separately.
     """
-    return [{'id': k, 'name': v} for k, v in
-            sorted(columns.get_conversion_goals_column_names_mapping(conversion_goals).items())]
+    return [
+        {"id": k, "name": v}
+        for k, v in sorted(columns.get_conversion_goals_column_names_mapping(conversion_goals).items())
+    ]
 
 
 def get_pixels_list(pixels):
     pixels_list = []
     for pixel in sorted(pixels, key=lambda x: x.name.lower()):
-        pixels_list.append({
-            'prefix': pixel.get_prefix(),
-            'name': pixel.name,
-        })
+        pixels_list.append({"prefix": pixel.get_prefix(), "name": pixel.name})
     return pixels_list
 
 
 def copy_stats_to_row(stat, row):
-    for key in ['impressions', 'clicks', 'data_cost', 'cpc', 'ctr', 'cpm',
-                'visits', 'click_discrepancy', 'pageviews', 'media_cost',
-                'percent_new_users', 'bounce_rate', 'pv_per_visit', 'avg_tos',
-                'e_media_cost', 'e_data_cost', 'billing_cost',
-                'license_fee', 'margin', 'agency_cost', 'unique_users', 'returning_users', 'new_users',
-                'bounced_visits', 'total_seconds', 'avg_cost_per_minute', 'non_bounced_visits',
-                'avg_cost_per_non_bounced_visit', 'avg_cost_per_pageview', 'avg_cost_for_new_visitor',
-                'avg_cost_per_visit']:
+    for key in [
+        "impressions",
+        "clicks",
+        "data_cost",
+        "cpc",
+        "ctr",
+        "cpm",
+        "visits",
+        "click_discrepancy",
+        "pageviews",
+        "media_cost",
+        "percent_new_users",
+        "bounce_rate",
+        "pv_per_visit",
+        "avg_tos",
+        "e_media_cost",
+        "e_data_cost",
+        "billing_cost",
+        "license_fee",
+        "margin",
+        "agency_cost",
+        "unique_users",
+        "returning_users",
+        "new_users",
+        "bounced_visits",
+        "total_seconds",
+        "avg_cost_per_minute",
+        "non_bounced_visits",
+        "avg_cost_per_non_bounced_visit",
+        "avg_cost_per_pageview",
+        "avg_cost_for_new_visitor",
+        "avg_cost_per_visit",
+    ]:
         row[key] = stat.get(key)
 
     for key in list(stat.keys()):
-        if key.startswith('conversion_goal_') or key.startswith('pixel_') or key.startswith('avg_cost_per_pixel_'):
+        if key.startswith("conversion_goal_") or key.startswith("pixel_") or key.startswith("avg_cost_per_pixel_"):
             row[key] = stat.get(key)
 
     for key in SPECIAL_COLUMNS:
@@ -477,29 +493,20 @@ def copy_stats_to_row(stat, row):
             row[key] = stat[key]
 
 
-def get_editable_fields(ad_group, ad_group_source, ad_group_settings, ad_group_source_settings,
-                        campaign_settings, allowed_sources):
+def get_editable_fields(
+    ad_group, ad_group_source, ad_group_settings, ad_group_source_settings, campaign_settings, allowed_sources
+):
     editable_fields = {}
-    editable_fields['status_setting'] = _get_editable_fields_status_setting(
-        ad_group,
-        ad_group_source,
-        ad_group_settings,
-        ad_group_source_settings,
-        allowed_sources,
+    editable_fields["status_setting"] = _get_editable_fields_status_setting(
+        ad_group, ad_group_source, ad_group_settings, ad_group_source_settings, allowed_sources
     )
 
-    editable_fields['bid_cpc'] = _get_editable_fields_bid_cpc(
-        ad_group,
-        ad_group_source,
-        ad_group_settings,
-        campaign_settings
+    editable_fields["bid_cpc"] = _get_editable_fields_bid_cpc(
+        ad_group, ad_group_source, ad_group_settings, campaign_settings
     )
 
-    editable_fields['daily_budget'] = _get_editable_fields_daily_budget(
-        ad_group,
-        ad_group_source,
-        ad_group_settings,
-        campaign_settings
+    editable_fields["daily_budget"] = _get_editable_fields_daily_budget(
+        ad_group, ad_group_source, ad_group_settings, campaign_settings
     )
 
     return editable_fields
@@ -508,74 +515,80 @@ def get_editable_fields(ad_group, ad_group_source, ad_group_settings, ad_group_s
 def _get_editable_fields_bid_cpc(ad_group, ad_group_source, ad_group_settings, campaign_settings):
     message = None
 
-    if (not ad_group_source.source.can_update_cpc() or
-            ad_group_settings.autopilot_state != constants.AdGroupSettingsAutopilotState.INACTIVE or
-            campaign_settings.autopilot):
+    if (
+        not ad_group_source.source.can_update_cpc()
+        or ad_group_settings.autopilot_state != constants.AdGroupSettingsAutopilotState.INACTIVE
+        or campaign_settings.autopilot
+    ):
         message = _get_bid_cpc_daily_budget_disabled_message(
-            ad_group, ad_group_source, ad_group_settings, campaign_settings)
+            ad_group, ad_group_source, ad_group_settings, campaign_settings
+        )
 
-    return {
-        'enabled': message is None,
-        'message': message
-    }
+    return {"enabled": message is None, "message": message}
 
 
 def _get_editable_fields_daily_budget(ad_group, ad_group_source, ad_group_settings, campaign_settings):
     message = None
 
-    if (not ad_group_source.source.can_update_daily_budget_automatic() and
-            not ad_group_source.source.can_update_daily_budget_manual() or
-            ad_group_settings.autopilot_state == constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET or
-            campaign_settings.autopilot):
+    if (
+        not ad_group_source.source.can_update_daily_budget_automatic()
+        and not ad_group_source.source.can_update_daily_budget_manual()
+        or ad_group_settings.autopilot_state == constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET
+        or campaign_settings.autopilot
+    ):
         message = _get_bid_cpc_daily_budget_disabled_message(
-            ad_group, ad_group_source, ad_group_settings, campaign_settings)
+            ad_group, ad_group_source, ad_group_settings, campaign_settings
+        )
 
-    return {
-        'enabled': message is None,
-        'message': message
-    }
+    return {"enabled": message is None, "message": message}
 
 
-def _get_editable_fields_status_setting(ad_group, ad_group_source, ad_group_settings,
-                                        ad_group_source_settings, allowed_sources):
+def _get_editable_fields_status_setting(
+    ad_group, ad_group_source, ad_group_settings, ad_group_source_settings, allowed_sources
+):
     message = None
 
     if ad_group_source.source_id not in allowed_sources:
-        message = 'Please contact support to enable this source.'
-    elif not ad_group_source.source.can_update_state() or\
-            not ad_group_source.can_manage_content_ads:
+        message = "Please contact support to enable this source."
+    elif not ad_group_source.source.can_update_state() or not ad_group_source.can_manage_content_ads:
         message = _get_status_setting_disabled_message(ad_group_source)
-    elif ad_group_source_settings is not None and\
-            ad_group_source_settings.state == constants.AdGroupSourceSettingsState.INACTIVE:
+    elif (
+        ad_group_source_settings is not None
+        and ad_group_source_settings.state == constants.AdGroupSourceSettingsState.INACTIVE
+    ):
         message = _get_status_setting_disabled_message_for_target_regions(
-            ad_group_source, ad_group_settings, ad_group_source_settings)
+            ad_group_source, ad_group_settings, ad_group_source_settings
+        )
 
     # there are cases where a condition is entered(region targeting) but no
     # error message is output - this is why this is a separate loop
-    if message is None and (ad_group_settings.retargeting_ad_groups or
-                            ad_group_settings.exclusion_retargeting_ad_groups or
-                            ad_group_settings.audience_targeting or
-                            ad_group_settings.exclusion_audience_targeting) and \
-            not (ad_group_source.source.can_modify_retargeting_automatically() or
-                 ad_group_source.source.can_modify_retargeting_manually()):
-        message = 'This source can not be enabled because it does not support retargeting.'
+    if (
+        message is None
+        and (
+            ad_group_settings.retargeting_ad_groups
+            or ad_group_settings.exclusion_retargeting_ad_groups
+            or ad_group_settings.audience_targeting
+            or ad_group_settings.exclusion_audience_targeting
+        )
+        and not (
+            ad_group_source.source.can_modify_retargeting_automatically()
+            or ad_group_source.source.can_modify_retargeting_manually()
+        )
+    ):
+        message = "This source can not be enabled because it does not support retargeting."
     elif message is None and not check_facebook_source(ad_group_source):
-        message = 'Please connect your Facebook page to add Facebook as media source.'
+        message = "Please connect your Facebook page to add Facebook as media source."
     elif message is None and not check_yahoo_min_cpc(ad_group_settings, ad_group_source, ad_group_source_settings):
-        message = 'This source can not be enabled with the current settings - CPC too low for desktop targeting.'
+        message = "This source can not be enabled with the current settings - CPC too low for desktop targeting."
     elif message is None and not check_max_cpm(ad_group_source, ad_group_settings):
-        message = 'This source can not be enabled because it does not support max CPM restriction.'
+        message = "This source can not be enabled because it does not support max CPM restriction."
 
-    return {
-        'enabled': message is None,
-        'message': message
-    }
+    return {"enabled": message is None, "message": message}
 
 
 def get_source_supply_dash_disabled_message(ad_group_source, source):
     if not source.has_3rd_party_dashboard():
-        return "This media source doesn't have a dashboard of its own. " \
-            "All campaign management is done through Zemanta One dashboard."
+        return "This media source doesn't have a dashboard of its own. " "All campaign management is done through Zemanta One dashboard."
 
     return None
 
@@ -612,16 +625,17 @@ def check_max_cpm(ad_group_source, ad_group_settings):
 
 def _get_status_setting_disabled_message(ad_group_source):
     if ad_group_source.source.maintenance:
-        return 'This source is currently in maintenance mode.'
+        return "This source is currently in maintenance mode."
 
     if not ad_group_source.can_manage_content_ads:
-        return 'Please contact support to enable this source.'
+        return "Please contact support to enable this source."
 
-    return 'This source must be managed manually.'
+    return "This source must be managed manually."
 
 
 def _get_status_setting_disabled_message_for_target_regions(
-        ad_group_source, ad_group_settings, ad_group_source_settings):
+    ad_group_source, ad_group_settings, ad_group_source_settings
+):
     source = ad_group_source.source
     unsupported_targets = []
     manual_targets = []
@@ -634,31 +648,32 @@ def _get_status_setting_disabled_message_for_target_regions(
                 manual_targets.append(constants.RegionType.get_text(region_type))
 
     if unsupported_targets:
-        return 'This source can not be enabled because it does not support {} targeting.'.format(" and ".join(sorted(unsupported_targets)))
+        return "This source can not be enabled because it does not support {} targeting.".format(
+            " and ".join(sorted(unsupported_targets))
+        )
 
 
 def _get_bid_cpc_daily_budget_disabled_message(ad_group, ad_group_source, ad_group_settings, campaign_settings):
     if ad_group_source.source.maintenance:
-        return 'This value cannot be edited because the media source is currently in maintenance.'
+        return "This value cannot be edited because the media source is currently in maintenance."
 
     if campaign_settings.autopilot:
-        return 'This value cannot be edited because the campaign is on Autopilot.'
+        return "This value cannot be edited because the campaign is on Autopilot."
 
-    if ad_group_settings.autopilot_state in [constants.AdGroupSettingsAutopilotState.ACTIVE_CPC,
-                                             constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET]:
-        return 'This value cannot be edited because the ad group is on Autopilot.'
+    if ad_group_settings.autopilot_state in [
+        constants.AdGroupSettingsAutopilotState.ACTIVE_CPC,
+        constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET,
+    ]:
+        return "This value cannot be edited because the ad group is on Autopilot."
 
-    return 'This media source doesn\'t support setting this value through the dashboard.'
+    return "This media source doesn't support setting this value through the dashboard."
 
 
 def enabling_autopilot_sources_allowed(ad_group, ad_group_sources):
     if not ad_group.settings.b1_sources_group_enabled:
         num_sources = len(ad_group_sources)
     else:
-        num_sources = sum(
-            1 for ags in ad_group_sources
-            if ags.source.source_type.type != constants.SourceType.B1
-        )
+        num_sources = sum(1 for ags in ad_group_sources if ags.source.source_type.type != constants.SourceType.B1)
 
     return _enabling_autopilot_sources_allowed(ad_group, num_sources)
 
@@ -674,20 +689,31 @@ def _enabling_autopilot_sources_allowed(ad_group, number_of_sources_to_enable):
         return True
 
     required_budget = (
-        number_of_sources_to_enable *
-        automation.autopilot.settings.BUDGET_AUTOPILOT_MIN_DAILY_BUDGET_PER_SOURCE_CALC
+        number_of_sources_to_enable * automation.autopilot.settings.BUDGET_AUTOPILOT_MIN_DAILY_BUDGET_PER_SOURCE_CALC
     )
-    return ad_group.settings.autopilot_daily_budget - required_budget >=\
-        automation.autopilot.get_adgroup_minimum_daily_budget(ad_group, ad_group.settings)
+    return (
+        ad_group.settings.autopilot_daily_budget - required_budget
+        >= automation.autopilot.get_adgroup_minimum_daily_budget(ad_group, ad_group.settings)
+    )
 
 
 def get_adjusted_ad_group_sources_cpcs(ad_group, ad_group_settings):
     adjusted_cpcs = {}
-    for ad_group_source in ad_group.adgroupsource_set.all().select_related('source__source_type', 'settings', 'ad_group__settings', 'ad_group__campaign__settings', 'ad_group__campaign__account__agency'):
+    for ad_group_source in ad_group.adgroupsource_set.all().select_related(
+        "source__source_type",
+        "settings",
+        "ad_group__settings",
+        "ad_group__campaign__settings",
+        "ad_group__campaign__account__agency",
+    ):
         proposed_cpc = ad_group_source.get_current_settings().cpc_cc
-        adjusted_cpc = _get_adjusted_ad_group_source_cpc(proposed_cpc, ad_group_source, ad_group_settings, ad_group.campaign.settings)
-        if ad_group_source.source.source_type.type != constants.SourceType.B1\
-           and ad_group_source.get_current_settings().state == constants.AdGroupSourceSettingsState.INACTIVE:
+        adjusted_cpc = _get_adjusted_ad_group_source_cpc(
+            proposed_cpc, ad_group_source, ad_group_settings, ad_group.campaign.settings
+        )
+        if (
+            ad_group_source.source.source_type.type != constants.SourceType.B1
+            and ad_group_source.get_current_settings().state == constants.AdGroupSourceSettingsState.INACTIVE
+        ):
             continue
         adjusted_cpcs[ad_group_source] = adjusted_cpc
     return adjusted_cpcs
@@ -697,36 +723,31 @@ def validate_ad_group_sources_cpc_constraints(bcm_modifiers, ad_group_sources_cp
     rules_per_source = cpc_constraints.get_rules_per_source(ad_group, bcm_modifiers)
     for ad_group_source, proposed_cpc in list(ad_group_sources_cpcs.items()):
         if proposed_cpc:
-            cpc_constraints.validate_cpc(
-                proposed_cpc,
-                rules=rules_per_source[ad_group_source.source],
-            )
+            cpc_constraints.validate_cpc(proposed_cpc, rules=rules_per_source[ad_group_source.source])
 
 
 @transaction.atomic
 def set_ad_group_sources_cpcs(ad_group_sources_cpcs, ad_group, ad_group_settings, skip_validation=False):
     rules_per_source = cpc_constraints.get_rules_per_source(ad_group)
     for ad_group_source, proposed_cpc in list(ad_group_sources_cpcs.items()):
-        adjusted_cpc = _get_adjusted_ad_group_source_cpc(proposed_cpc, ad_group_source, ad_group_settings, ad_group.campaign.settings)
+        adjusted_cpc = _get_adjusted_ad_group_source_cpc(
+            proposed_cpc, ad_group_source, ad_group_settings, ad_group.campaign.settings
+        )
         if adjusted_cpc:
             adjusted_cpc = cpc_constraints.adjust_cpc(adjusted_cpc, rules=rules_per_source[ad_group_source.source])
 
         ad_group_source_settings = ad_group_source.get_current_settings()
         if ad_group_source_settings.cpc_cc == adjusted_cpc:
             continue
-        ad_group_source.settings.update(
-            cpc_cc=adjusted_cpc,
-            k1_sync=False,
-            skip_validation=skip_validation,
-        )
+        ad_group_source.settings.update(cpc_cc=adjusted_cpc, k1_sync=False, skip_validation=skip_validation)
 
 
 def _get_adjusted_ad_group_source_cpc(proposed_cpc, ad_group_source, ad_group_settings, campaign_settings):
     if (
-            ad_group_settings.b1_sources_group_enabled and
-            ad_group_source.source.source_type.type == constants.SourceType.B1 and
-            ad_group_settings.autopilot_state != constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET and
-            not campaign_settings.autopilot
+        ad_group_settings.b1_sources_group_enabled
+        and ad_group_source.source.source_type.type == constants.SourceType.B1
+        and ad_group_settings.autopilot_state != constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET
+        and not campaign_settings.autopilot
     ):
         proposed_cpc = ad_group_settings.b1_sources_group_cpc_cc
     return adjust_max_cpc(proposed_cpc, ad_group_settings)
@@ -743,15 +764,15 @@ def adjust_max_cpc(proposed_cpc, ad_group_settings):
 
 
 def format_decimal_to_percent(num):
-    return '{:.2f}'.format(num * 100).rstrip('0').rstrip('.')
+    return "{:.2f}".format(num * 100).rstrip("0").rstrip(".")
 
 
 def format_percent_to_decimal(num):
-    return Decimal(str(num).replace(',', '').strip('%')) / 100
+    return Decimal(str(num).replace(",", "").strip("%")) / 100
 
 
 def get_users_for_manager(user, account, current_manager=None):
-    if user.has_perm('zemauth.can_see_all_users_for_managers'):
+    if user.has_perm("zemauth.can_see_all_users_for_managers"):
         users = zemauth.models.User.objects.all()
     else:
         users = account.users.all()
@@ -770,20 +791,17 @@ def validate_ad_groups_state(ad_groups, campaign, campaign_settings, state):
 
     if state == constants.AdGroupSettingsState.ACTIVE:
         if not data_helper.campaign_has_available_budget(campaign):
-            raise exc.ValidationError('Cannot enable ad group without available budget.')
+            raise exc.ValidationError("Cannot enable ad group without available budget.")
 
         if models.CampaignGoal.objects.filter(campaign=campaign).count() == 0:
-            raise exc.ValidationError('Please add a goal to your campaign before enabling this ad group.')
+            raise exc.ValidationError("Please add a goal to your campaign before enabling this ad group.")
 
 
 def get_upload_batches_for_ad_group(ad_group):
-    batch_ids = models.ContentAd.objects.filter(ad_group_id=ad_group.id).distinct('batch_id').values_list('batch_id')
+    batch_ids = models.ContentAd.objects.filter(ad_group_id=ad_group.id).distinct("batch_id").values_list("batch_id")
     return models.UploadBatch.objects.filter(pk__in=batch_ids)
 
 
 def all_accounts_uses_bcm_v2(user):
-    accounts = models.Account.objects.all()\
-        .filter_by_user(user)\
-        .exclude_archived()\
-        .filter(uses_bcm_v2=False)
+    accounts = models.Account.objects.all().filter_by_user(user).exclude_archived().filter(uses_bcm_v2=False)
     return not accounts.exists()

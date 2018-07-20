@@ -11,9 +11,8 @@ from utils import dates_helper
 from dash.management.commands import auto_archive_inactive_entities
 
 
-@mock.patch('redshiftapi.api_breakdowns.query', return_value={})
+@mock.patch("redshiftapi.api_breakdowns.query", return_value={})
 class AutoArchiveTest(TestCase):
-
     def setUp(self):
         self.inactive_since = dates_helper.local_today() - datetime.timedelta(
             days=auto_archive_inactive_entities.DAYS_INACTIVE
@@ -22,11 +21,7 @@ class AutoArchiveTest(TestCase):
 
     def test_active(self, spend_mock):
         campaign = magic_mixer.blend(models.Campaign)
-        campaign.settings.update_unsafe(
-            None,
-            created_dt=self.inactive_since + self.time_delta,
-            archived=False,
-        )
+        campaign.settings.update_unsafe(None, created_dt=self.inactive_since + self.time_delta, archived=False)
         ad_group = magic_mixer.blend(models.AdGroup, campaign=campaign)
         ad_group.settings.update_unsafe(
             None,
@@ -34,8 +29,9 @@ class AutoArchiveTest(TestCase):
             archived=False,
             state=constants.AdGroupSettingsState.ACTIVE,
         )
-        adgroup_count, campaign_count = \
-            auto_archive_inactive_entities._auto_archive_inactive_entities(self.inactive_since)
+        adgroup_count, campaign_count = auto_archive_inactive_entities._auto_archive_inactive_entities(
+            self.inactive_since
+        )
         campaign.settings.refresh_from_db()
         ad_group.settings.refresh_from_db()
         self.assertFalse(campaign.settings.archived)
@@ -46,20 +42,14 @@ class AutoArchiveTest(TestCase):
 
     def test_inactive_adgroup(self, spend_mock):
         campaign = magic_mixer.blend(models.Campaign)
-        campaign.settings.update_unsafe(
-            None,
-            created_dt=self.inactive_since + self.time_delta,
-            archived=False,
-        )
+        campaign.settings.update_unsafe(None, created_dt=self.inactive_since + self.time_delta, archived=False)
         ad_group = magic_mixer.blend(models.AdGroup, campaign=campaign)
         ad_group.settings.update_unsafe(
-            None,
-            created_dt=self.inactive_since,
-            archived=False,
-            state=constants.AdGroupSettingsState.INACTIVE,
+            None, created_dt=self.inactive_since, archived=False, state=constants.AdGroupSettingsState.INACTIVE
         )
-        adgroup_count, campaign_count = \
-            auto_archive_inactive_entities._auto_archive_inactive_entities(self.inactive_since)
+        adgroup_count, campaign_count = auto_archive_inactive_entities._auto_archive_inactive_entities(
+            self.inactive_since
+        )
         campaign.settings.refresh_from_db()
         ad_group.settings.refresh_from_db()
         self.assertFalse(campaign.settings.archived)
@@ -70,11 +60,7 @@ class AutoArchiveTest(TestCase):
 
     def test_inactive_campaign(self, spend_mock):
         campaign = magic_mixer.blend(models.Campaign)
-        campaign.settings.update_unsafe(
-            None,
-            created_dt=self.inactive_since,
-            archived=False,
-        )
+        campaign.settings.update_unsafe(None, created_dt=self.inactive_since, archived=False)
         ad_group = magic_mixer.blend(models.AdGroup, campaign=campaign)
         ad_group.settings.update_unsafe(
             None,
@@ -83,8 +69,9 @@ class AutoArchiveTest(TestCase):
             state=constants.AdGroupSettingsState.ACTIVE,
             end_date=self.inactive_since,
         )
-        adgroup_count, campaign_count = \
-            auto_archive_inactive_entities._auto_archive_inactive_entities(self.inactive_since)
+        adgroup_count, campaign_count = auto_archive_inactive_entities._auto_archive_inactive_entities(
+            self.inactive_since
+        )
         campaign.settings.refresh_from_db()
         ad_group.settings.refresh_from_db()
         self.assertTrue(campaign.settings.archived)
@@ -95,11 +82,7 @@ class AutoArchiveTest(TestCase):
 
     def test_active_adgroup(self, spend_mock):
         campaign = magic_mixer.blend(models.Campaign)
-        campaign.settings.update_unsafe(
-            None,
-            created_dt=self.inactive_since,
-            archived=False,
-        )
+        campaign.settings.update_unsafe(None, created_dt=self.inactive_since, archived=False)
         ad_group = magic_mixer.blend(models.AdGroup, campaign=campaign)
         ad_group.settings.update_unsafe(
             None,
@@ -107,8 +90,9 @@ class AutoArchiveTest(TestCase):
             archived=False,
             state=constants.AdGroupSettingsState.ACTIVE,
         )
-        adgroup_count, campaign_count = \
-            auto_archive_inactive_entities._auto_archive_inactive_entities(self.inactive_since)
+        adgroup_count, campaign_count = auto_archive_inactive_entities._auto_archive_inactive_entities(
+            self.inactive_since
+        )
         campaign.settings.refresh_from_db()
         ad_group.settings.refresh_from_db()
         self.assertFalse(campaign.settings.archived)
@@ -119,11 +103,7 @@ class AutoArchiveTest(TestCase):
 
     def test_mixed_adgroups(self, spend_mock):
         campaign = magic_mixer.blend(models.Campaign)
-        campaign.settings.update_unsafe(
-            None,
-            created_dt=self.inactive_since,
-            archived=False,
-        )
+        campaign.settings.update_unsafe(None, created_dt=self.inactive_since, archived=False)
         ad_group_new = magic_mixer.blend(models.AdGroup, campaign=campaign)
         ad_group_new.settings.update_unsafe(
             None,
@@ -133,10 +113,7 @@ class AutoArchiveTest(TestCase):
         )
         ad_group_old = magic_mixer.blend(models.AdGroup, campaign=campaign)
         ad_group_old.settings.update_unsafe(
-            None,
-            created_dt=self.inactive_since,
-            archived=False,
-            state=constants.AdGroupSettingsState.INACTIVE,
+            None, created_dt=self.inactive_since, archived=False, state=constants.AdGroupSettingsState.INACTIVE
         )
         ad_group_active = magic_mixer.blend(models.AdGroup, campaign=campaign)
         ad_group_active.settings.update_unsafe(
@@ -154,8 +131,9 @@ class AutoArchiveTest(TestCase):
             state=constants.AdGroupSettingsState.ACTIVE,
             end_date=self.inactive_since,
         )
-        adgroup_count, campaign_count = \
-            auto_archive_inactive_entities._auto_archive_inactive_entities(self.inactive_since)
+        adgroup_count, campaign_count = auto_archive_inactive_entities._auto_archive_inactive_entities(
+            self.inactive_since
+        )
         campaign.settings.refresh_from_db()
         ad_group_new.settings.refresh_from_db()
         ad_group_old.settings.refresh_from_db()
@@ -176,11 +154,7 @@ class AutoArchiveTest(TestCase):
     def test_auto_archiving_disabled(self, spend_mock):
         account = magic_mixer.blend(models.Account, auto_archiving_enabled=False)
         campaign = magic_mixer.blend(models.Campaign, account=account)
-        campaign.settings.update_unsafe(
-            None,
-            created_dt=self.inactive_since,
-            archived=False,
-        )
+        campaign.settings.update_unsafe(None, created_dt=self.inactive_since, archived=False)
         ad_group = magic_mixer.blend(models.AdGroup, campaign=campaign)
         ad_group.settings.update_unsafe(
             None,
@@ -189,8 +163,9 @@ class AutoArchiveTest(TestCase):
             state=constants.AdGroupSettingsState.ACTIVE,
             end_date=self.inactive_since,
         )
-        adgroup_count, campaign_count = \
-            auto_archive_inactive_entities._auto_archive_inactive_entities(self.inactive_since)
+        adgroup_count, campaign_count = auto_archive_inactive_entities._auto_archive_inactive_entities(
+            self.inactive_since
+        )
         campaign.settings.refresh_from_db()
         ad_group.settings.refresh_from_db()
         self.assertFalse(campaign.settings.archived)

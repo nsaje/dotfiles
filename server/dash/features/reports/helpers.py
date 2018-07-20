@@ -15,9 +15,10 @@ def get_breakdown_from_fields(fields, level):
 
     def _dimension_identifier(column_name):
         return stats.constants.get_dimension_identifier(
-            utils.columns.get_field_name(column_name, raise_exception=False))
+            utils.columns.get_field_name(column_name, raise_exception=False)
+        )
 
-    dimension_identifiers = [_dimension_identifier(field['field']) for field in fields]
+    dimension_identifiers = [_dimension_identifier(field["field"]) for field in fields]
 
     breakdown = []
     for di in dimension_identifiers:
@@ -43,13 +44,10 @@ def _get_required_hierarchical_dimensions(dimension, level):
 
 
 def get_breakdown_names(query):
-    level = get_level_from_constraints(get_filter_constraints(query['filters']))
-    breakdowns = limit_breakdown_to_level(
-        get_breakdown_from_fields(query['fields'], level),
-        level,
-    )
+    level = get_level_from_constraints(get_filter_constraints(query["filters"]))
+    breakdowns = limit_breakdown_to_level(get_breakdown_from_fields(query["fields"], level), level)
 
-    breakdowns = [breakdown[:-3] if breakdown.endswith('_id') else breakdown for breakdown in breakdowns]
+    breakdowns = [breakdown[:-3] if breakdown.endswith("_id") else breakdown for breakdown in breakdowns]
     breakdowns = [utils.columns.get_column_name(field_name) for field_name in breakdowns]
 
     return breakdowns
@@ -57,7 +55,7 @@ def get_breakdown_names(query):
 
 def _parse_date(string):
     try:
-        return datetime.datetime.strptime(string, '%Y-%m-%d').date()
+        return datetime.datetime.strptime(string, "%Y-%m-%d").date()
     except ValueError:
         raise serializers.ValidationError("Invalid date format")
 
@@ -72,43 +70,43 @@ def _parse_id(string):
 def get_filter_constraints(filters):
     filter_constraints = {}
     for f in filters:
-        field_name = utils.columns.get_field_name(f['field'])
+        field_name = utils.columns.get_field_name(f["field"])
 
         if field_name in constants.STRUCTURE_CONSTRAINTS_FIELDS:
-            if f['operator'] == constants.EQUALS:
-                filter_constraints[field_name] = _parse_id(f['value'])
-            elif f['operator'] == constants.IN:
-                filter_constraints[field_name + '_list'] = [_parse_id(v) for v in f['values']]
-        if field_name == utils.columns.FieldNames.date and f['operator'] == constants.BETWEEN:
-            filter_constraints['start_date'] = _parse_date(f['from'])
-            filter_constraints['end_date'] = _parse_date(f['to'])
-        if field_name == utils.columns.FieldNames.date and f['operator'] == constants.EQUALS:
-            date = _parse_date(f['value'])
-            filter_constraints['start_date'] = date
-            filter_constraints['end_date'] = date
-        if field_name == utils.columns.FieldNames.source and f['operator'] == constants.EQUALS:
-            filter_constraints['sources'] = [f['value']]
-        if field_name == utils.columns.FieldNames.source and f['operator'] == constants.IN:
-            filter_constraints['sources'] = f['values']
-        if field_name == utils.columns.FieldNames.agency and f['operator'] == constants.IN:
-            filter_constraints['agencies'] = f['values']
-        if field_name == utils.columns.FieldNames.account_type and f['operator'] == constants.IN:
-            filter_constraints['account_types'] = f['values']
+            if f["operator"] == constants.EQUALS:
+                filter_constraints[field_name] = _parse_id(f["value"])
+            elif f["operator"] == constants.IN:
+                filter_constraints[field_name + "_list"] = [_parse_id(v) for v in f["values"]]
+        if field_name == utils.columns.FieldNames.date and f["operator"] == constants.BETWEEN:
+            filter_constraints["start_date"] = _parse_date(f["from"])
+            filter_constraints["end_date"] = _parse_date(f["to"])
+        if field_name == utils.columns.FieldNames.date and f["operator"] == constants.EQUALS:
+            date = _parse_date(f["value"])
+            filter_constraints["start_date"] = date
+            filter_constraints["end_date"] = date
+        if field_name == utils.columns.FieldNames.source and f["operator"] == constants.EQUALS:
+            filter_constraints["sources"] = [f["value"]]
+        if field_name == utils.columns.FieldNames.source and f["operator"] == constants.IN:
+            filter_constraints["sources"] = f["values"]
+        if field_name == utils.columns.FieldNames.agency and f["operator"] == constants.IN:
+            filter_constraints["agencies"] = f["values"]
+        if field_name == utils.columns.FieldNames.account_type and f["operator"] == constants.IN:
+            filter_constraints["account_types"] = f["values"]
     return filter_constraints
 
 
 def get_level_from_constraints(constraints):
     if stats.constants.AD_GROUP in constraints:
         return dash.constants.Level.AD_GROUPS
-    elif 'content_ad_id_list' in constraints:
+    elif "content_ad_id_list" in constraints:
         return dash.constants.Level.AD_GROUPS
     elif stats.constants.CAMPAIGN in constraints:
         return dash.constants.Level.CAMPAIGNS
-    elif 'ad_group_id_list' in constraints:
+    elif "ad_group_id_list" in constraints:
         return dash.constants.Level.CAMPAIGNS
     elif stats.constants.ACCOUNT in constraints:
         return dash.constants.Level.ACCOUNTS
-    elif 'campaign_id_list' in constraints:
+    elif "campaign_id_list" in constraints:
         return dash.constants.Level.ACCOUNTS
     else:
         return dash.constants.Level.ALL_ACCOUNTS
@@ -129,4 +127,4 @@ def limit_breakdown_to_level(breakdown, level):
 def get_row_currency(row, currency=None, account_currency_map=None):
     if account_currency_map is None:
         return currency
-    return account_currency_map.get(row['account_id'])
+    return account_currency_map.get(row["account_id"])

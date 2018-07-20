@@ -13,58 +13,58 @@ from django.core.management import call_command
 
 
 class SplitTestsRunner(django.test.runner.DiscoverRunner):
-
     @classmethod
     def add_arguments(cls, parser):
         super(SplitTestsRunner, cls).add_arguments(parser)
 
-        parser.set_defaults(pattern='*test*.py')
+        parser.set_defaults(pattern="*test*.py")
 
         parser.add_argument(
-            '--integration-tests',
-            action='store_true',
-            dest='integration_tests',
+            "--integration-tests",
+            action="store_true",
+            dest="integration_tests",
             default=False,
-            help='Run integration tests.'
+            help="Run integration tests.",
         )
 
         parser.add_argument(
-            '--redshift',
-            action='store_true',
-            dest='redshift_tests',
+            "--redshift",
+            action="store_true",
+            dest="redshift_tests",
             default=False,
-            help='Run tests for Amazon Redshift.'
+            help="Run tests for Amazon Redshift.",
         )
 
         parser.add_argument(
-            '-n', '--test-name',
-            dest='test_name',
-            default=None,
-            help='Filter out any tests not matching name.'
+            "-n", "--test-name", dest="test_name", default=None, help="Filter out any tests not matching name."
         )
 
         parser.add_argument(
-            '--skip-transaction-tests',
-            dest='skip_transaction_tests',
-            action='store_true',
+            "--skip-transaction-tests",
+            dest="skip_transaction_tests",
+            action="store_true",
             default=False,
-            help='Filter out tests that use TransactionTestCase.'
+            help="Filter out tests that use TransactionTestCase.",
         )
 
         parser.add_argument(
-            '--timing',
-            action='store_true',
-            dest='timing',
-            default=False,
-            help='Measure tests execution time',
+            "--timing", action="store_true", dest="timing", default=False, help="Measure tests execution time"
         )
 
-    def __init__(self, integration_tests=None, redshift_tests=None, test_name=None,
-                 skip_transaction_tests=False, timing=False, *args, **kwargs):
+    def __init__(
+        self,
+        integration_tests=None,
+        redshift_tests=None,
+        test_name=None,
+        skip_transaction_tests=False,
+        timing=False,
+        *args,
+        **kwargs
+    ):
         logging.disable(logging.CRITICAL)
 
         if integration_tests:
-            os.environ['INTEGRATION_TESTS'] = '1'
+            os.environ["INTEGRATION_TESTS"] = "1"
 
         self.redshift_tests = redshift_tests
         self.test_name = test_name
@@ -100,15 +100,12 @@ class SplitTestsRunner(django.test.runner.DiscoverRunner):
             connections.databases[settings.STATS_TEST_DB_NAME] = stats_meta_conn
 
         if self.redshift_tests:
-            print('Running tests including Redshift database')
-            db_name = settings.DATABASES[settings.STATS_DB_NAME]['NAME']
-            test_db_name = 'test_' + db_name
-            settings.DATABASES[settings.STATS_DB_NAME]['NAME'] = test_db_name
-            call_command('redshift_createdb',
-                         settings.STATS_DB_NAME,
-                         settings.STATS_TEST_DB_NAME,
-                         verbosity=0)
-            call_command('redshift_migrate', verbosity=0)
+            print("Running tests including Redshift database")
+            db_name = settings.DATABASES[settings.STATS_DB_NAME]["NAME"]
+            test_db_name = "test_" + db_name
+            settings.DATABASES[settings.STATS_DB_NAME]["NAME"] = test_db_name
+            call_command("redshift_createdb", settings.STATS_DB_NAME, settings.STATS_TEST_DB_NAME, verbosity=0)
+            call_command("redshift_migrate", verbosity=0)
             print('Using "{}" Redshift database'.format(test_db_name))
 
         return old_configs
@@ -118,10 +115,7 @@ class SplitTestsRunner(django.test.runner.DiscoverRunner):
 
         # drop redshift database
         if not self.keepdb and self.redshift_tests:
-            call_command('redshift_dropdb',
-                         settings.STATS_DB_NAME,
-                         settings.STATS_TEST_DB_NAME,
-                         verbosity=0)
+            call_command("redshift_dropdb", settings.STATS_DB_NAME, settings.STATS_TEST_DB_NAME, verbosity=0)
 
     def teardown_test_environment(self, **kwargs):
         super(SplitTestsRunner, self).teardown_test_environment(**kwargs)
@@ -132,7 +126,9 @@ class SplitTestsRunner(django.test.runner.DiscoverRunner):
     def build_suite(self, test_labels=None, extra_tests=None, **kwargs):
         return self._filter_by_prefix(
             self._filter_transaction_tests(
-                super(SplitTestsRunner, self).build_suite(test_labels=test_labels, extra_tests=extra_tests, **kwargs)))
+                super(SplitTestsRunner, self).build_suite(test_labels=test_labels, extra_tests=extra_tests, **kwargs)
+            )
+        )
 
     def _filter_transaction_tests(self, test_suite):
         if not self.skip_transaction_tests:
@@ -142,8 +138,9 @@ class SplitTestsRunner(django.test.runner.DiscoverRunner):
             # django.test.TestCase inherits from django.test.TransactionTestCase so
             # every test will be subclass of TransactionTestCase unless it uses
             # python unittest.TestCase base class
-            return issubclass(type(test), django.test.TestCase) or\
-                not issubclass(type(test), django.test.TransactionTestCase)
+            return issubclass(type(test), django.test.TestCase) or not issubclass(
+                type(test), django.test.TransactionTestCase
+            )
 
         return self._filter_suite(test_suite, _filter_non_transaction_tests)
 
@@ -193,11 +190,7 @@ def monkey_patch_test_case_for_timing(test_timings):
 
 
 def print_times(test_timings, nr_top_slow=10):
-    by_time = sorted(
-        iter(list(test_timings.items())),
-        key=operator.itemgetter(1),
-        reverse=True
-    )[:nr_top_slow]
+    by_time = sorted(iter(list(test_timings.items())), key=operator.itemgetter(1), reverse=True)[:nr_top_slow]
     print("\n{} slowest tests:".format(nr_top_slow))
     for func_name, timing in by_time:
         if timing < 1000.0:

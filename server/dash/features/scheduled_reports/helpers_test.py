@@ -8,8 +8,7 @@ from . import helpers
 
 
 class GetScheduledReportDateRangeTestCase(TestCase):
-
-    @patch('dash.features.scheduled_reports.helpers.datetime')
+    @patch("dash.features.scheduled_reports.helpers.datetime")
     def test_get_scheduled_report_date_range(self, datetime_mock):
         datetime_mock.datetime.utcnow.return_value = datetime.datetime(2016, 6, 8, 8, 8)
         datetime_mock.timedelta = datetime.timedelta
@@ -27,7 +26,7 @@ class GetScheduledReportDateRangeTestCase(TestCase):
             helpers.get_scheduled_report_date_range(constants.ScheduledReportTimePeriod.LAST_30_DAYS),
         )
 
-    @patch('dash.features.scheduled_reports.helpers.datetime')
+    @patch("dash.features.scheduled_reports.helpers.datetime")
     def test_get_scheduled_report_date_range_sunday(self, datetime_mock):
         datetime_mock.datetime.utcnow.return_value = datetime.datetime(2016, 8, 14, 8, 8)
         datetime_mock.timedelta = datetime.timedelta
@@ -40,7 +39,7 @@ class GetScheduledReportDateRangeTestCase(TestCase):
             helpers.get_scheduled_report_date_range(constants.ScheduledReportTimePeriod.LAST_WEEK),
         )
 
-    @patch('dash.features.scheduled_reports.helpers.datetime')
+    @patch("dash.features.scheduled_reports.helpers.datetime")
     def test_get_scheduled_report_date_range_saturday(self, datetime_mock):
         datetime_mock.datetime.utcnow.return_value = datetime.datetime(2016, 8, 13, 8, 8)
         datetime_mock.timedelta = datetime.timedelta
@@ -53,7 +52,7 @@ class GetScheduledReportDateRangeTestCase(TestCase):
             helpers.get_scheduled_report_date_range(constants.ScheduledReportTimePeriod.LAST_WEEK),
         )
 
-    @patch('dash.features.scheduled_reports.helpers.datetime')
+    @patch("dash.features.scheduled_reports.helpers.datetime")
     def test_get_scheduled_report_date_range_monday(self, datetime_mock):
         datetime_mock.datetime.utcnow.return_value = datetime.datetime(2016, 8, 15, 8, 8)
         datetime_mock.timedelta = datetime.timedelta
@@ -66,7 +65,7 @@ class GetScheduledReportDateRangeTestCase(TestCase):
             helpers.get_scheduled_report_date_range(constants.ScheduledReportTimePeriod.LAST_WEEK),
         )
 
-    @patch('dash.features.scheduled_reports.helpers.datetime')
+    @patch("dash.features.scheduled_reports.helpers.datetime")
     def test_get_scheduled_report_date_range_first(self, datetime_mock):
         datetime_mock.datetime.utcnow.return_value = datetime.datetime(2016, 8, 1, 8, 8)
         datetime_mock.timedelta = datetime.timedelta
@@ -79,7 +78,7 @@ class GetScheduledReportDateRangeTestCase(TestCase):
             helpers.get_scheduled_report_date_range(constants.ScheduledReportTimePeriod.LAST_MONTH),
         )
 
-    @patch('dash.features.scheduled_reports.helpers.datetime')
+    @patch("dash.features.scheduled_reports.helpers.datetime")
     def test_get_scheduled_report_date_range_last(self, datetime_mock):
         datetime_mock.datetime.utcnow.return_value = datetime.datetime(2016, 8, 31, 8, 8)
         datetime_mock.timedelta = datetime.timedelta

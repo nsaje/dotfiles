@@ -6,17 +6,15 @@ import dash.models
 
 
 def query_conversions(date_from, date_to, ad_group_ids=None):
-    constraints = {
-        'date__gte': date_from,
-        'date__lte': date_to,
-    }
+    constraints = {"date__gte": date_from, "date__lte": date_to}
     if ad_group_ids:
-        constraints['ad_group_id'] = ad_group_ids
+        constraints["ad_group_id"] = ad_group_ids
 
     sql, params, temp_tables = queries.prepare_query_all_touchpoints(
-        breakdown=['ad_group_id', 'content_ad_id', 'publisher_id', 'publisher', 'source_id', 'slug'],
+        breakdown=["ad_group_id", "content_ad_id", "publisher_id", "publisher", "source_id", "slug"],
         constraints=constraints,
-        parents=None)
+        parents=None,
+    )
 
     cursor = db.get_stats_cursor()
     with db.create_temp_tables(cursor, temp_tables):
@@ -26,8 +24,10 @@ def query_conversions(date_from, date_to, ad_group_ids=None):
 
 def _fetch_all_with_source_slug(cursor):
     desc = cursor.description
-    conversion = namedtuple('Conversion', [col[0] for col in desc])
-    conversion_out = namedtuple('ConversionOutput', ['source_slug', 'ad_group_id', 'content_ad_id', 'publisher', 'slug', 'count'])
+    conversion = namedtuple("Conversion", [col[0] for col in desc])
+    conversion_out = namedtuple(
+        "ConversionOutput", ["source_slug", "ad_group_id", "content_ad_id", "publisher", "slug", "count"]
+    )
 
     source_id_map = {s.id: s.bidder_slug for s in dash.models.Source.objects.all()}
 

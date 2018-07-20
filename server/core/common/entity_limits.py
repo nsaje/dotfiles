@@ -4,38 +4,32 @@ from django.core.exceptions import PermissionDenied
 
 
 DEFAULT_LIMITS = {
-    'Account': 500,
-    'Campaign': 500,
-    'AdGroup': 500,
-    'ContentAd': 500,
-    'CampaignGoal': 50,
-    'BudgetLineItem': 100,
-    'PublisherGroup': 500,
-    'PublisherGroupEntry': 100000,
+    "Account": 500,
+    "Campaign": 500,
+    "AdGroup": 500,
+    "ContentAd": 500,
+    "CampaignGoal": 50,
+    "BudgetLineItem": 100,
+    "PublisherGroup": 500,
+    "PublisherGroupEntry": 100000,
 }
 
-ACCOUNT_EXCEPTIONS = defaultdict(dict, {
-    'Campaign': {
-        305: 100000,  # OEN
+ACCOUNT_EXCEPTIONS = defaultdict(
+    dict,
+    {
+        "Campaign": {305: 100000},  # OEN
+        "AdGroup": {490: 1000, 512: 1000, 513: 1000, 293: 10000},  # inPowered  # inPowered  # inPowered  # Businesswire
+        "ContentAd": {
+            63: 10000,  # Allstate
+            80: 10000,  # Dusan Test Account
+            115: 10000,  # Luka's Test Account
+            293: 10000,  # Businesswire
+            305: 100000,  # OEN
+            950: 20000,  # MatchesFashion
+        },
+        "PublisherGroup": {305: 100000},  # OEN
     },
-    'AdGroup': {
-        490: 1000,   # inPowered
-        512: 1000,   # inPowered
-        513: 1000,   # inPowered
-        293: 10000,  # Businesswire
-    },
-    'ContentAd': {
-        63:  10000,   # Allstate
-        80:  10000,   # Dusan Test Account
-        115: 10000,   # Luka's Test Account
-        293: 10000,   # Businesswire
-        305: 100000,  # OEN
-        950: 20000,   # MatchesFashion
-    },
-    'PublisherGroup': {
-        305: 100000,  # OEN
-    },
-})
+)
 
 
 class EntityLimitExceeded(PermissionDenied):

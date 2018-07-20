@@ -7,7 +7,7 @@ logger = logging.getLogger(__name__)
 
 
 class Command(ExceptionCommand):
-    help = 'Refresh the mapping of which customer GA accounts are linked to which of our GA usernames'
+    help = "Refresh the mapping of which customer GA accounts are linked to which of our GA usernames"
 
     def handle(self, *args, **options):
         refresh_mappings()

@@ -16,20 +16,23 @@ from stats import fields
 
 logger = logging.getLogger(__name__)
 
-Goals = collections.namedtuple('Goals', 'campaign_goals, conversion_goals, campaign_goal_values, pixels, primary_goals')
+Goals = collections.namedtuple("Goals", "campaign_goals, conversion_goals, campaign_goal_values, pixels, primary_goals")
 
 
 def get_goals(constraints, breakdown):
-    campaign = constraints.get('campaign')
-    account = constraints.get('account')
+    campaign = constraints.get("campaign")
+    account = constraints.get("account")
 
     campaign_goals, conversion_goals, campaign_goal_values, pixels = [], [], [], []
     primary_goals = []
 
     if campaign:
-        conversion_goals = campaign.conversiongoal_set.all().select_related('pixel')
-        campaign_goals = campaign.campaigngoal_set.all().order_by('-primary', 'created_dt').select_related(
-            'conversion_goal', 'conversion_goal__pixel', 'campaign', 'campaign__account')
+        conversion_goals = campaign.conversiongoal_set.all().select_related("pixel")
+        campaign_goals = (
+            campaign.campaigngoal_set.all()
+            .order_by("-primary", "created_dt")
+            .select_related("conversion_goal", "conversion_goal__pixel", "campaign", "campaign__account")
+        )
 
         primary_goal = campaign_goals.first()
         if primary_goal:
@@ -37,16 +40,18 @@ def get_goals(constraints, breakdown):
 
         campaign_goal_values = dash.campaign_goals.get_campaign_goal_values(campaign)
 
-    elif 'allowed_campaigns' in constraints and 'account' in constraints and constants.CAMPAIGN in breakdown:
+    elif "allowed_campaigns" in constraints and "account" in constraints and constants.CAMPAIGN in breakdown:
         # only take for campaigns when constraints for 1 account, otherwise its too much
-        allowed_campaigns = constraints['allowed_campaigns']
-        conversion_goals = dash.models.ConversionGoal.objects.filter(campaign__in=allowed_campaigns)\
-                                                             .select_related('pixel')
+        allowed_campaigns = constraints["allowed_campaigns"]
+        conversion_goals = dash.models.ConversionGoal.objects.filter(campaign__in=allowed_campaigns).select_related(
+            "pixel"
+        )
 
-        campaign_goals = dash.models.CampaignGoal.objects.filter(campaign__in=allowed_campaigns)\
-                                                         .order_by('-primary', 'created_dt')\
-                                                         .select_related('conversion_goal', 'conversion_goal__pixel',
-                                                                         'campaign', 'campaign__account')
+        campaign_goals = (
+            dash.models.CampaignGoal.objects.filter(campaign__in=allowed_campaigns)
+            .order_by("-primary", "created_dt")
+            .select_related("conversion_goal", "conversion_goal__pixel", "campaign", "campaign__account")
+        )
 
         primary_goals_by_campaign = {}
         for cg in campaign_goals:
@@ -60,7 +65,9 @@ def get_goals(constraints, breakdown):
         pixels = account.conversionpixel_set.filter(archived=False)
 
     # force evaluation of querysets, otherwise we get "missing FROM-clause" error sporadically in threaded environments
-    return Goals(list(campaign_goals), list(conversion_goals), list(campaign_goal_values), list(pixels), list(primary_goals))
+    return Goals(
+        list(campaign_goals), list(conversion_goals), list(campaign_goal_values), list(pixels), list(primary_goals)
+    )
 
 
 def extract_stats_constraints(constraints, breakdown):
@@ -73,43 +80,54 @@ def extract_stats_constraints(constraints, breakdown):
     """
 
     new_constraints = {
-        'date__gte': constraints['date__gte'],
-        'date__lte': constraints['date__lte'],
-        'source_id': list(constraints['filtered_sources'].values_list('pk', flat=True).order_by('pk')),
-        'account_id': (constraints['account'].id if 'account' in constraints else
-                       list(constraints['allowed_accounts'].values_list('pk', flat=True).order_by('pk'))),
+        "date__gte": constraints["date__gte"],
+        "date__lte": constraints["date__lte"],
+        "source_id": list(constraints["filtered_sources"].values_list("pk", flat=True).order_by("pk")),
+        "account_id": (
+            constraints["account"].id
+            if "account" in constraints
+            else list(constraints["allowed_accounts"].values_list("pk", flat=True).order_by("pk"))
+        ),
     }
 
-    if 'ad_group' in constraints:
-        new_constraints['ad_group_id'] = constraints['ad_group'].id
-    elif 'ad_group_id' in breakdown:
-        new_constraints['ad_group_id'] = list(
-            constraints['allowed_ad_groups'].values_list('pk', flat=True).order_by('pk'))
+    if "ad_group" in constraints:
+        new_constraints["ad_group_id"] = constraints["ad_group"].id
+    elif "ad_group_id" in breakdown:
+        new_constraints["ad_group_id"] = list(
+            constraints["allowed_ad_groups"].values_list("pk", flat=True).order_by("pk")
+        )
 
-    if 'campaign' in constraints:
-        new_constraints['campaign_id'] = constraints['campaign'].id
-    elif 'campaign_id' in breakdown:
-        new_constraints['campaign_id'] = list(
-            constraints['allowed_campaigns'].values_list('pk', flat=True).order_by('pk'))
+    if "campaign" in constraints:
+        new_constraints["campaign_id"] = constraints["campaign"].id
+    elif "campaign_id" in breakdown:
+        new_constraints["campaign_id"] = list(
+            constraints["allowed_campaigns"].values_list("pk", flat=True).order_by("pk")
+        )
 
-    if 'account' in constraints:
-        new_constraints['account_id'] = constraints['account'].id
+    if "account" in constraints:
+        new_constraints["account_id"] = constraints["account"].id
 
-    if 'content_ad_id' in breakdown:
-        new_constraints['content_ad_id'] = list(
-            constraints['allowed_content_ads'].values_list('pk', flat=True).order_by('pk'))
+    if "content_ad_id" in breakdown:
+        new_constraints["content_ad_id"] = list(
+            constraints["allowed_content_ads"].values_list("pk", flat=True).order_by("pk")
+        )
 
-    if 'publisher_id' in breakdown and \
-       constraints['publisher_blacklist_filter'] != dash.constants.PublisherBlacklistFilter.SHOW_ALL:
-        if constraints['publisher_blacklist_filter'] == dash.constants.PublisherBlacklistFilter.SHOW_ACTIVE:
-            new_constraints['publisher_id__neq'] = list(
-                constraints['publisher_blacklist'].annotate_publisher_id().values_list('publisher_id', flat=True))
-        elif constraints['publisher_blacklist_filter'] == dash.constants.PublisherBlacklistFilter.SHOW_BLACKLISTED:
-            new_constraints['publisher_id'] = list(
-                constraints['publisher_blacklist'].annotate_publisher_id().values_list('publisher_id', flat=True))
-        elif constraints['publisher_blacklist_filter'] == dash.constants.PublisherBlacklistFilter.SHOW_WHITELISTED:
-            new_constraints['publisher_id'] = list(
-                constraints['publisher_whitelist'].annotate_publisher_id().values_list('publisher_id', flat=True))
+    if (
+        "publisher_id" in breakdown
+        and constraints["publisher_blacklist_filter"] != dash.constants.PublisherBlacklistFilter.SHOW_ALL
+    ):
+        if constraints["publisher_blacklist_filter"] == dash.constants.PublisherBlacklistFilter.SHOW_ACTIVE:
+            new_constraints["publisher_id__neq"] = list(
+                constraints["publisher_blacklist"].annotate_publisher_id().values_list("publisher_id", flat=True)
+            )
+        elif constraints["publisher_blacklist_filter"] == dash.constants.PublisherBlacklistFilter.SHOW_BLACKLISTED:
+            new_constraints["publisher_id"] = list(
+                constraints["publisher_blacklist"].annotate_publisher_id().values_list("publisher_id", flat=True)
+            )
+        elif constraints["publisher_blacklist_filter"] == dash.constants.PublisherBlacklistFilter.SHOW_WHITELISTED:
+            new_constraints["publisher_id"] = list(
+                constraints["publisher_whitelist"].annotate_publisher_id().values_list("publisher_id", flat=True)
+            )
 
     return new_constraints
 
@@ -138,9 +156,9 @@ def decode_breakdown_id(breakdown, breakdown_id_str):
 
     d = {}
     ids = breakdown_id_str.split("||")
-    for i, dimension in enumerate(breakdown[:len(ids)]):
+    for i, dimension in enumerate(breakdown[: len(ids)]):
         str_id = ids[i]
-        if str_id == '-None-':
+        if str_id == "-None-":
             str_id = None
         elif dimension in constants.IntegerDimensions:
             str_id = int(str_id)
@@ -166,7 +184,7 @@ def encode_breakdown_id(breakdown, row):
         value = row[dim]
 
         if value is None:
-            value = '-None-'
+            value = "-None-"
 
         values.append(str(value))
 
@@ -187,27 +205,40 @@ def check_constraints_are_supported(constraints):
     This way we check for programming mistakes.
     """
 
-    query_set_keys = ['filtered_sources', 'filtered_agencies', 'allowed_accounts',
-                      'allowed_campaigns', 'allowed_ad_groups', 'allowed_content_ads',
-                      'publisher_blacklist', 'publisher_whitelist']
+    query_set_keys = [
+        "filtered_sources",
+        "filtered_agencies",
+        "allowed_accounts",
+        "allowed_campaigns",
+        "allowed_ad_groups",
+        "allowed_content_ads",
+        "publisher_blacklist",
+        "publisher_whitelist",
+    ]
 
-    if 'filtered_sources' not in constraints:
+    if "filtered_sources" not in constraints:
         raise exc.UnknownFieldBreakdownError("Missing filtered sources")
 
     for key in query_set_keys:
         if key in constraints and not isinstance(constraints[key], QuerySet):
             raise exc.UnknownFieldBreakdownError("Value of '{}' should be a queryset".format(key))
 
-    if 'account' not in constraints and 'allowed_accounts' not in constraints:
+    if "account" not in constraints and "allowed_accounts" not in constraints:
         raise exc.UnknownFieldBreakdownError("Constraints should include either 'account' or 'allowed_accounts")
 
-    model_keys = ['account', 'campaign', 'ad_group']
+    model_keys = ["account", "campaign", "ad_group"]
     for key in model_keys:
         if key in constraints and not isinstance(constraints[key], Model):
             raise exc.UnknownFieldBreakdownError("Value of '{}' should be a django Model".format(key))
 
-    other_keys = ['show_archived', 'filtered_account_types', 'date__gte', 'date__lte',
-                  'publisher_blacklist_filter', 'publisher_group_targeting']
+    other_keys = [
+        "show_archived",
+        "filtered_account_types",
+        "date__gte",
+        "date__lte",
+        "publisher_blacklist_filter",
+        "publisher_group_targeting",
+    ]
     unknown_keys = set(constraints.keys()) - set(query_set_keys) - set(model_keys) - set(other_keys)
 
     if unknown_keys:
@@ -221,36 +252,36 @@ def extract_order_field(order, target_dimension, primary_goals=None):
     """
 
     # all time dimensions and age, age_gender, device_type are always sorted the same way
-    if target_dimension in constants.TimeDimension._ALL or target_dimension in ('age', 'age_gender', 'device_type'):
-        return 'name'
+    if target_dimension in constants.TimeDimension._ALL or target_dimension in ("age", "age_gender", "device_type"):
+        return "name"
 
     prefix, order_field = sort_helper.dissect_order(order)
 
-    if order_field == 'state':
-        order_field = 'status'
+    if order_field == "state":
+        order_field = "status"
 
-    if target_dimension != 'content_ad_id' and order_field in fields.CONTENT_ADS_FIELDS:
-        order_field = 'name'
+    if target_dimension != "content_ad_id" and order_field in fields.CONTENT_ADS_FIELDS:
+        order_field = "name"
 
-    if target_dimension != 'source_id' and order_field in fields.SOURCE_FIELDS:
-        order_field = 'clicks'
+    if target_dimension != "source_id" and order_field in fields.SOURCE_FIELDS:
+        order_field = "clicks"
 
-    if order_field == 'performance':
+    if order_field == "performance":
         if primary_goals:
-            order_field = 'performance_' + primary_goals[0].get_view_key()
+            order_field = "performance_" + primary_goals[0].get_view_key()
         else:
-            order_field = 'clicks'
-
-    if target_dimension == 'publisher_id':
-        if order_field == 'status':
             order_field = "clicks"
 
-        if order_field == 'exchange':
+    if target_dimension == "publisher_id":
+        if order_field == "status":
+            order_field = "clicks"
+
+        if order_field == "exchange":
             order_field = "source_id"
 
     # field was renamed
-    if order_field == 'agency_total':
-        order_field = 'agency_cost'
+    if order_field == "agency_total":
+        order_field = "agency_cost"
 
     return prefix + order_field
 
@@ -262,20 +293,20 @@ def extract_rs_order_field(order, target_dimension):
 
     prefix, order_field = sort_helper.dissect_order(order)
 
-    if target_dimension in constants.TimeDimension._ALL or target_dimension in ('age', 'age_gender', 'device_type'):
+    if target_dimension in constants.TimeDimension._ALL or target_dimension in ("age", "age_gender", "device_type"):
         return prefix + target_dimension
 
-    if target_dimension == 'publisher_id' and order_field == 'name':
-        order_field = 'publisher'
+    if target_dimension == "publisher_id" and order_field == "name":
+        order_field = "publisher"
 
     # all delivery dimensions are sorted by targeted dimension ids
     if target_dimension in constants.DeliveryDimension._ALL:
-        if order_field == 'name':
+        if order_field == "name":
             order_field = target_dimension
-        elif order_field in ('state', 'status', 'archived'):
+        elif order_field in ("state", "status", "archived"):
             # delivery does not have status/archived etc,
             # so mimick with clicks - more clicks, more active :)
-            order_field = 'clicks'
+            order_field = "clicks"
 
     return prefix + order_field
 
@@ -301,38 +332,38 @@ def update_rows_to_contain_values_in_currency(rows, currency):
 def update_rows_to_contain_local_values(rows):
     for row in rows:
         for key in list(row.keys()):
-            if key and key.startswith('local_'):
-                non_local_key = key.replace('local_', '', 1)
+            if key and key.startswith("local_"):
+                non_local_key = key.replace("local_", "", 1)
                 row[non_local_key] = row.pop(key, None)
 
 
 def _strip_local_values_from_rows(rows):
     for row in rows:
         for key in list(row.keys()):
-            if key and key.startswith('local_'):
+            if key and key.startswith("local_"):
                 row.pop(key, None)
 
 
 def should_query_dashapi_first(order, target_dimension):
 
-    if target_dimension == 'publisher_id':
+    if target_dimension == "publisher_id":
         return False
 
     _, order_field = sort_helper.dissect_order(order)
 
-    if order_field == 'name' and target_dimension in constants.StructureDimension._ALL:
+    if order_field == "name" and target_dimension in constants.StructureDimension._ALL:
         return True
 
-    if order_field == 'status' and target_dimension in constants.StructureDimension._ALL:
+    if order_field == "status" and target_dimension in constants.StructureDimension._ALL:
         return True
 
-    if order_field in fields.CONTENT_ADS_FIELDS and target_dimension == 'content_ad_id':
+    if order_field in fields.CONTENT_ADS_FIELDS and target_dimension == "content_ad_id":
         return True
 
-    if order_field in fields.SOURCE_FIELDS and target_dimension == 'source_id':
+    if order_field in fields.SOURCE_FIELDS and target_dimension == "source_id":
         return True
 
-    if order_field in fields.CONTENT_ADS_FIELDS and target_dimension == 'content_ad_id':
+    if order_field in fields.CONTENT_ADS_FIELDS and target_dimension == "content_ad_id":
         return True
 
     if order_field in fields.OTHER_DASH_FIELDS:
@@ -383,16 +414,18 @@ def merge_row(row_a, row_b):
 
 
 def log_user_query_request(user, breakdown, constraints, order, offset, limit):
-    logger.info('Stats query request: user_id {}, breakdown {}, order {}, offset {}, limit {}, date range {}/{}, age {}, account_id {}, campaign_id {}, ad_group_id {}'.format(
-        user.id,
-        '__'.join(breakdown),
-        order,
-        offset,
-        limit,
-        constraints['date__gte'].isoformat(),
-        constraints['date__lte'].isoformat(),
-        (datetime.date.today() - constraints['date__gte']).days,
-        constraints['account'].id if 'account' in constraints else 'NULL',
-        constraints['campaign'].id if 'campaign' in constraints else 'NULL',
-        constraints['ad_group'].id if 'ad_group' in constraints else 'NULL',
-    ))
+    logger.info(
+        "Stats query request: user_id {}, breakdown {}, order {}, offset {}, limit {}, date range {}/{}, age {}, account_id {}, campaign_id {}, ad_group_id {}".format(
+            user.id,
+            "__".join(breakdown),
+            order,
+            offset,
+            limit,
+            constraints["date__gte"].isoformat(),
+            constraints["date__lte"].isoformat(),
+            (datetime.date.today() - constraints["date__gte"]).days,
+            constraints["account"].id if "account" in constraints else "NULL",
+            constraints["campaign"].id if "campaign" in constraints else "NULL",
+            constraints["ad_group"].id if "ad_group" in constraints else "NULL",
+        )
+    )

@@ -5,17 +5,16 @@ import django.db.models
 import core.multicurrency
 
 
-MULTICURRENCY_FIELD_PREFIX = 'local_'
+MULTICURRENCY_FIELD_PREFIX = "local_"
 
 
 class MulticurrencySettingsMixin(object):
-
     def get_multicurrency_counterpart(self, field, value):
         to_usd_field = None
         to_local_field = None
 
         if field.startswith(MULTICURRENCY_FIELD_PREFIX):
-            to_usd_field = field[len(MULTICURRENCY_FIELD_PREFIX):]
+            to_usd_field = field[len(MULTICURRENCY_FIELD_PREFIX) :]
         else:
             to_local_field = MULTICURRENCY_FIELD_PREFIX + field
 
@@ -41,4 +40,4 @@ class MulticurrencySettingsMixin(object):
     def _round(self, field_name, number):
         field = self._meta.get_field(field_name)
         assert isinstance(field, django.db.models.DecimalField)
-        return number.quantize(decimal.Decimal('10') ** -field.decimal_places)
+        return number.quantize(decimal.Decimal("10") ** -field.decimal_places)

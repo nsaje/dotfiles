@@ -4,13 +4,11 @@ import core.entity
 
 
 class CampaignQuerySet(models.QuerySet):
-
     def filter_by_user(self, user):
-        if user.has_perm('zemauth.can_see_all_accounts'):
+        if user.has_perm("zemauth.can_see_all_accounts"):
             return self
         return self.filter(
-            models.Q(account__users__id=user.id) |
-            models.Q(account__agency__users__id=user.id)
+            models.Q(account__users__id=user.id) | models.Q(account__agency__users__id=user.id)
         ).distinct()
 
     def filter_by_sources(self, sources):
@@ -22,8 +20,7 @@ class CampaignQuerySet(models.QuerySet):
     def filter_by_agencies(self, agencies):
         if not agencies:
             return self
-        return self.filter(
-            account__agency__in=agencies)
+        return self.filter(account__agency__in=agencies)
 
     def filter_by_account_types(self, account_types):
         if not account_types:

@@ -22,7 +22,7 @@ class ReportsViewSet(RESTAPIBaseViewSet):
         return self.response_ok(reports_serializers.ReportJobSerializer(job).data)
 
     def create(self, request):
-        query = reports_serializers.ReportQuerySerializer(data=request.data, context={'request': request})
+        query = reports_serializers.ReportQuerySerializer(data=request.data, context={"request": request})
         try:
             query.is_valid(raise_exception=True)
         except serializers.ValidationError as e:

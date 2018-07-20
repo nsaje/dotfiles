@@ -18,4 +18,4 @@ class Command(ExceptionCommand):
             created_before=dates_helper.utc_now() - datetime.timedelta(minutes=IN_PROGRESS_MINUTES)
         )
 
-        logger.info('Moved %s batches to FAILED.', failed_count)
+        logger.info("Moved %s batches to FAILED.", failed_count)

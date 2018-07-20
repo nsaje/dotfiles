@@ -1,1 +1,1 @@
-default_app_config = 'automation.apps.AutomationAppConfig'
+default_app_config = "automation.apps.AutomationAppConfig"

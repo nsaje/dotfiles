@@ -9,24 +9,16 @@ from utils import json_helper
 
 class JsonHelperTestCase(unittest.TestCase):
     def setUp(self):
-        self.timezone = 'America/New_York'
+        self.timezone = "America/New_York"
 
     def _get_test_object(self, test_datetime):
-        return {
-            'id': 100,
-            'test': 'something',
-            'datetime': test_datetime
-        }
+        return {"id": 100, "test": "something", "datetime": test_datetime}
 
     def test_naive_datetime(self):
         test_datetime = datetime.datetime(2014, 11, 1, 18, 0, 0)
         test_obj = self._get_test_object(test_datetime)
 
-        result = json.dumps(
-            test_obj,
-            cls=json_helper.JSONEncoder,
-            convert_datetimes_tz=self.timezone
-        )
+        result = json.dumps(test_obj, cls=json_helper.JSONEncoder, convert_datetimes_tz=self.timezone)
 
         expected = '{"id": 100, "test": "something", "datetime": "2014-11-01T14:00:00"}'
 
@@ -36,10 +28,7 @@ class JsonHelperTestCase(unittest.TestCase):
         test_datetime = datetime.datetime(2014, 11, 1, 18, 0, 0)
         test_obj = self._get_test_object(test_datetime)
 
-        result = json.dumps(
-            test_obj,
-            cls=json_helper.JSONEncoder
-        )
+        result = json.dumps(test_obj, cls=json_helper.JSONEncoder)
 
         expected = '{"id": 100, "test": "something", "datetime": "2014-11-01T18:00:00"}'
 
@@ -49,11 +38,7 @@ class JsonHelperTestCase(unittest.TestCase):
         test_datetime = datetime.datetime(2014, 1, 1, 18, 0, 0)
         test_obj = self._get_test_object(test_datetime)
 
-        result = json.dumps(
-            test_obj,
-            cls=json_helper.JSONEncoder,
-            convert_datetimes_tz=self.timezone
-        )
+        result = json.dumps(test_obj, cls=json_helper.JSONEncoder, convert_datetimes_tz=self.timezone)
 
         expected = '{"id": 100, "test": "something", "datetime": "2014-01-01T13:00:00"}'
 
@@ -78,11 +63,7 @@ class JsonHelperTestCase(unittest.TestCase):
         test_datetime = test_datetime.replace(tzinfo=pytz.utc)
         test_obj = self._get_test_object(test_datetime)
 
-        result = json.dumps(
-            test_obj,
-            cls=json_helper.JSONEncoder,
-            convert_datetimes_tz=self.timezone
-        )
+        result = json.dumps(test_obj, cls=json_helper.JSONEncoder, convert_datetimes_tz=self.timezone)
 
         expected = '{"id": 100, "test": "something", "datetime": "2014-11-01T14:00:00"}'
 
@@ -90,14 +71,10 @@ class JsonHelperTestCase(unittest.TestCase):
 
     def test_aware_datetime_localized(self):
         test_datetime = datetime.datetime(2014, 12, 1, 18, 0, 0)
-        test_datetime = pytz.timezone('Europe/Ljubljana').localize(test_datetime)
+        test_datetime = pytz.timezone("Europe/Ljubljana").localize(test_datetime)
         test_obj = self._get_test_object(test_datetime)
 
-        result = json.dumps(
-            test_obj,
-            cls=json_helper.JSONEncoder,
-            convert_datetimes_tz=self.timezone
-        )
+        result = json.dumps(test_obj, cls=json_helper.JSONEncoder, convert_datetimes_tz=self.timezone)
 
         expected = '{"id": 100, "test": "something", "datetime": "2014-12-01T12:00:00"}'
 
@@ -121,7 +98,6 @@ class JsonHelperTestCase(unittest.TestCase):
 
 
 class Helpers(unittest.TestCase):
-
     class IdObj(object):
         def __init__(self, id):
             self.id = id
@@ -129,22 +105,10 @@ class Helpers(unittest.TestCase):
     def test_json_serializable_changes(self):
         self.assertIsNone(json_helper.json_serializable_changes({}))
 
-        res = json_helper.json_serializable_changes({
-            'test': 1,
-            'test2': 'random',
-        })
+        res = json_helper.json_serializable_changes({"test": 1, "test2": "random"})
 
-        self.assertEqual({
-            'test': 1,
-            'test2': 'random',
-        }, res)
+        self.assertEqual({"test": 1, "test2": "random"}, res)
 
         a = Helpers.IdObj(100)
-        res = json_helper.json_serializable_changes({
-            'test': 1,
-            'idobj': a,
-        })
-        self.assertEqual({
-            'test': 1,
-            'idobj': 100,
-        }, res)
+        res = json_helper.json_serializable_changes({"test": 1, "idobj": a})
+        self.assertEqual({"test": 1, "idobj": 100}, res)

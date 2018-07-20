@@ -4,19 +4,20 @@ import os
 
 import sys
 import cdecimal
+
 # Ensure any import of decimal gets cdecimal instead.
-sys.modules['decimal'] = cdecimal
+sys.modules["decimal"] = cdecimal
 
 from celery import Celery  # noqa
 
 from django.conf import settings  # noqa
 
 # set the default Django settings module for the 'celery' program.
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'server.settings')
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "server.settings")
 
-app = Celery('eins')
+app = Celery("eins")
 
 # Using a string here means the worker will not have to
 # pickle the object when using Windows.
-app.config_from_object('django.conf:settings')
+app.config_from_object("django.conf:settings")
 app.autodiscover_tasks(lambda: settings.INSTALLED_APPS)

@@ -6,8 +6,8 @@ import restapi.serializers.base
 
 class AccountCreditRefundSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
     id = restapi.serializers.fields.IdField(read_only=True)
-    account_id = restapi.serializers.fields.IdField(source='account.id', read_only=True)
-    credit_id = restapi.serializers.fields.IdField(source='credit.id', read_only=True)
+    account_id = restapi.serializers.fields.IdField(source="account.id", read_only=True)
+    credit_id = restapi.serializers.fields.IdField(source="credit.id", read_only=True)
     start_date = rest_framework.serializers.DateField()
     end_date = rest_framework.serializers.DateField(read_only=True)
     amount = rest_framework.serializers.IntegerField()

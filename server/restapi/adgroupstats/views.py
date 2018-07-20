@@ -24,6 +24,4 @@ class AdGroupRealtimeStatsViewSet(RESTAPIBaseViewSet):
             raise Http404()
 
         stats = dash.features.realtimestats.get_ad_group_stats(ad_group)
-        return self.response_ok(
-            serializers.AdGroupRealtimeStatsSerializer(stats).data
-        )
+        return self.response_ok(serializers.AdGroupRealtimeStatsSerializer(stats).data)

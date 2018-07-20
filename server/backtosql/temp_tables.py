@@ -16,9 +16,9 @@ class ConstraintTempTable(object):
     @staticmethod
     def _get_values_type(values):
         if isinstance(values[0], str):
-            return 'text'
+            return "text"
         elif isinstance(values[0], int):
-            return 'int'
+            return "int"
 
     def __hash__(self):
         return hash(self.name)

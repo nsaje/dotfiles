@@ -90,8 +90,8 @@ def date_range(start_date, end_date):
 
 
 def format_date_mmddyyyy(date):
-    return '%d/%d/%d' % (date.month, date.day, date.year)
+    return "%d/%d/%d" % (date.month, date.day, date.year)
 
 
 def datetime_to_iso_string(dt):
-    return dt.strftime('%Y-%m-%dT%H:%M:%S%z')
+    return dt.strftime("%Y-%m-%dT%H:%M:%S%z")

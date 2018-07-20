@@ -7,14 +7,14 @@ import utils.dates_helper
 import utils.exc
 
 
-AD_GROUP_NAME_TEMPLATE = '{campaign_name} - Ad Group #1'
+AD_GROUP_NAME_TEMPLATE = "{campaign_name} - Ad Group #1"
 
 
 def _extract_error_list(e):
     """ FIXME(nsaje) Hack until we unify validation errors from different services """
     error_list = []
-    error_dict = getattr(e, 'message_dict', None) or getattr(e, 'errors', None)
-    error_message = getattr(e, 'message', None)
+    error_dict = getattr(e, "message_dict", None) or getattr(e, "errors", None)
+    error_message = getattr(e, "message", None)
     if error_dict:
         for error in list(error_dict.values()):
             if isinstance(error, str):
@@ -30,16 +30,29 @@ def _extract_error_list(e):
     return error_list
 
 
-def launch(request, account, name, iab_category, language, budget_amount,
-           goal_type, goal_value, max_cpc, daily_budget, upload_batch,
-           target_regions=None, exclusion_target_regions=None, target_devices=None, target_os=None, target_placements=None,
-           conversion_goal_type=None, conversion_goal_goal_id=None, conversion_goal_window=None):
+def launch(
+    request,
+    account,
+    name,
+    iab_category,
+    language,
+    budget_amount,
+    goal_type,
+    goal_value,
+    max_cpc,
+    daily_budget,
+    upload_batch,
+    target_regions=None,
+    exclusion_target_regions=None,
+    target_devices=None,
+    target_os=None,
+    target_placements=None,
+    conversion_goal_type=None,
+    conversion_goal_goal_id=None,
+    conversion_goal_window=None,
+):
     campaign = models.Campaign.objects.create(
-        request=request,
-        account=account,
-        name=name,
-        iab_category=iab_category,
-        language=language,
+        request=request, account=account, name=name, iab_category=iab_category, language=language
     )
 
     credit_to_use = models.CreditLineItem.objects.get_any_for_budget_creation(account)
@@ -56,7 +69,7 @@ def launch(request, account, name, iab_category, language, budget_amount,
             start_date=start_date,
             end_date=end_date,
             amount=budget_amount,
-            comment='Created via campaign launcher.'
+            comment="Created via campaign launcher.",
         )
     except Exception as e:
         raise rest_framework.serializers.ValidationError({"budget_amount": _extract_error_list(e)})
@@ -64,7 +77,8 @@ def launch(request, account, name, iab_category, language, budget_amount,
     conversion_goal = None
     if conversion_goal_type is not None:
         conversion_goal = models.ConversionGoal.objects.create(
-            request, campaign, conversion_goal_type, conversion_goal_goal_id, conversion_goal_window)
+            request, campaign, conversion_goal_type, conversion_goal_goal_id, conversion_goal_window
+        )
     models.CampaignGoal.objects.create(request, campaign, goal_type, goal_value, conversion_goal, primary=True)
 
     try:
@@ -85,12 +99,9 @@ def launch(request, account, name, iab_category, language, budget_amount,
         # Change state separately because of a chicken-and-egg problem during settings validation.
         # Budget is validated against media sources' daily caps before the budget autopilot is run
         # to distribute and set daily caps appropriately.
-        ad_group.settings.update(
-            request,
-            state=dash.constants.AdGroupSettingsState.ACTIVE,
-        )
+        ad_group.settings.update(request, state=dash.constants.AdGroupSettingsState.ACTIVE)
     except utils.exc.ValidationError as e:
-        raise rest_framework.serializers.ValidationError(', '.join(_extract_error_list(e)))
+        raise rest_framework.serializers.ValidationError(", ".join(_extract_error_list(e)))
 
     upload_batch.set_ad_group(ad_group)
     contentupload.upload.persist_batch(upload_batch)

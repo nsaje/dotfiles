@@ -1,5 +1,3 @@
-
-
 class ColumnNameNotFound(Exception):
     pass
 

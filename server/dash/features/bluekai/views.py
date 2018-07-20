@@ -10,7 +10,7 @@ from . import serializers
 class TaxonomyTreeInternalView(restapi.common.views_base.RESTAPIBaseView):
     permission_classes = (
         permissions.IsAuthenticated,
-        restapi.access.gen_permission_class('zemauth.can_use_bluekai_targeting')
+        restapi.access.gen_permission_class("zemauth.can_use_bluekai_targeting"),
     )
 
     def get(self, request, *args, **kwargs):
@@ -21,7 +21,7 @@ class TaxonomyTreeInternalView(restapi.common.views_base.RESTAPIBaseView):
 class TaxonomyTreeView(restapi.common.views_base.RESTAPIBaseView):
     permission_classes = (
         permissions.IsAuthenticated,
-        restapi.access.gen_permission_class('zemauth.can_use_bluekai_targeting')
+        restapi.access.gen_permission_class("zemauth.can_use_bluekai_targeting"),
     )
 
     def get(self, request, *args, **kwargs):
@@ -32,7 +32,7 @@ class TaxonomyTreeView(restapi.common.views_base.RESTAPIBaseView):
 class SegmentReachView(restapi.common.views_base.RESTAPIBaseView):
     permission_classes = (
         permissions.IsAuthenticated,
-        restapi.access.gen_permission_class('zemauth.can_use_bluekai_targeting')
+        restapi.access.gen_permission_class("zemauth.can_use_bluekai_targeting"),
     )
 
     def post(self, request, *args, **kwargs):
@@ -40,7 +40,7 @@ class SegmentReachView(restapi.common.views_base.RESTAPIBaseView):
         try:
             serializer.is_valid(raise_exception=True)
         except Exception as e:
-            return self.response_ok({'errors': [str(e)]})
+            return self.response_ok({"errors": [str(e)]})
 
         reach = service.get_reach(serializer.validated_data)
         return self.response_ok(serializers.BlueKaiReachSerializer(reach).data)

@@ -11,24 +11,16 @@ from dash.features.scheduled_reports import models
 
 class ScheduledReportTestCase(TestCase):
     def test_get_recipients(self):
-        recipients = ['recipient1', 'recipient2']
-        query = {
-            'options': {
-                'recipients': recipients,
-            }
-        }
-        report = models.ScheduledReport(
-            query=query,
-        )
+        recipients = ["recipient1", "recipient2"]
+        query = {"options": {"recipients": recipients}}
+        report = models.ScheduledReport(query=query)
 
         self.assertEqual(recipients, report.get_recipients())
 
-    @patch('utils.dates_helper.utc_now')
+    @patch("utils.dates_helper.utc_now")
     def test_filter_due_status(self, now_mock):
         scheduled_reports = mixer.cycle(4).blend(
-            models.ScheduledReport,
-            sending_frequency=constants.ScheduledReportSendingFrequency.DAILY,
-            query={},
+            models.ScheduledReport, sending_frequency=constants.ScheduledReportSendingFrequency.DAILY, query={}
         )
         mixer.cycle(4).blend(
             reports.ReportJob,
@@ -36,9 +28,7 @@ class ScheduledReportTestCase(TestCase):
             status=(v for v in reports.constants.ReportJobStatus._VALUES),
             query={},
         )
-        reports.ReportJob.objects.all().update(
-            created_dt=datetime.datetime(2017, 3, 31, 15),
-        )
+        reports.ReportJob.objects.all().update(created_dt=datetime.datetime(2017, 3, 31, 15))
         self.assertEqual(4, models.ScheduledReport.objects.all().count())
 
         # already sent, retry only FAILED
@@ -64,7 +54,7 @@ class ScheduledReportTestCase(TestCase):
 
         self.assertEqual(1, models.ScheduledReport.objects.all().filter_due().count())
 
-    @patch('utils.dates_helper.utc_now')
+    @patch("utils.dates_helper.utc_now")
     def test_filter_due_frequency(self, now_mock):
         mixer.cycle(3).blend(
             models.ScheduledReport,
@@ -87,18 +77,9 @@ class ScheduledReportTestCase(TestCase):
 
     def test_set_date_filter(self):
         query = {
-            'filters': [
-                {
-                    'field': 'Ad Group Id',
-                    'operator': '=',
-                    'value': '2040'
-                },
-                {
-                    'field': 'Date',
-                    'operator': 'between',
-                    'from': '2016-10-01',
-                    'to': '2016-10-31'
-                },
+            "filters": [
+                {"field": "Ad Group Id", "operator": "=", "value": "2040"},
+                {"field": "Date", "operator": "between", "from": "2016-10-01", "to": "2016-10-31"},
             ]
         }
 
@@ -109,5 +90,5 @@ class ScheduledReportTestCase(TestCase):
 
         report.set_date_filter(start_date, end_date)
 
-        self.assertEqual(report.query['filters'][1]['from'], start_date)
-        self.assertEqual(report.query['filters'][1]['to'], end_date)
+        self.assertEqual(report.query["filters"][1]["from"], start_date)
+        self.assertEqual(report.query["filters"][1]["to"], end_date)

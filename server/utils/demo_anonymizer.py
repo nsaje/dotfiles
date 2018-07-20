@@ -6,7 +6,6 @@ _fake_factory = None
 
 
 class DemoNamePools(object):
-
     def __init__(self, account_names, campaign_names, ad_group_names):
         self.account_names = itertools.cycle(account_names)
         self.campaign_names = itertools.cycle(campaign_names)
@@ -56,11 +55,11 @@ def fake_url():
 
 
 def fake_content_ad_url():
-    return 'https://www.example.com/p/' + _fake_factory.uuid4()
+    return "https://www.example.com/p/" + _fake_factory.uuid4()
 
 
 def fake_display_url():
-    return _fake_factory.domain_name()[-25:].lstrip('-')
+    return _fake_factory.domain_name()[-25:].lstrip("-")
 
 
 def fake_brand():
@@ -72,4 +71,4 @@ def fake_sentence():
 
 
 def fake_io():
-    return 'https://s3.amazonaws.com/z1-static/demo/Zemanta+One+-+Acme.pdf'
+    return "https://s3.amazonaws.com/z1-static/demo/Zemanta+One+-+Acme.pdf"

@@ -16,40 +16,32 @@ from . import manager
 from . import queryset
 
 
-class Campaign(instance.CampaignInstanceMixin,
-               core.common.PermissionMixin,
-               bcm_mixin.CampaignBCMMixin,
-               models.Model):
-
+class Campaign(instance.CampaignInstanceMixin, core.common.PermissionMixin, bcm_mixin.CampaignBCMMixin, models.Model):
     class Meta:
-        app_label = 'dash'
+        app_label = "dash"
 
-    _demo_fields = {'name': utils.demo_anonymizer.campaign_name_from_pool}
+    _demo_fields = {"name": utils.demo_anonymizer.campaign_name_from_pool}
 
     id = models.AutoField(primary_key=True)
-    name = models.CharField(
-        max_length=127,
-        editable=True,
-        blank=False,
-        null=False
-    )
-    account = models.ForeignKey('Account', on_delete=models.PROTECT)
-    created_dt = models.DateTimeField(
-        auto_now_add=True, verbose_name='Created at')
-    modified_dt = models.DateTimeField(
-        auto_now=True, verbose_name='Modified at')
-    modified_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL, related_name='+', on_delete=models.PROTECT, null=True)
+    name = models.CharField(max_length=127, editable=True, blank=False, null=False)
+    account = models.ForeignKey("Account", on_delete=models.PROTECT)
+    created_dt = models.DateTimeField(auto_now_add=True, verbose_name="Created at")
+    modified_dt = models.DateTimeField(auto_now=True, verbose_name="Modified at")
+    modified_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name="+", on_delete=models.PROTECT, null=True)
 
-    default_whitelist = models.ForeignKey('PublisherGroup', related_name='whitelisted_campaigns',
-                                          on_delete=models.PROTECT, null=True, blank=True)
-    default_blacklist = models.ForeignKey('PublisherGroup', related_name='blacklisted_campaigns',
-                                          on_delete=models.PROTECT, null=True, blank=True)
+    default_whitelist = models.ForeignKey(
+        "PublisherGroup", related_name="whitelisted_campaigns", on_delete=models.PROTECT, null=True, blank=True
+    )
+    default_blacklist = models.ForeignKey(
+        "PublisherGroup", related_name="blacklisted_campaigns", on_delete=models.PROTECT, null=True, blank=True
+    )
     custom_flags = JSONField(null=True, blank=True)
     real_time_campaign_stop = models.BooleanField(default=False)
 
-    settings = models.OneToOneField('CampaignSettings', null=True, blank=True, on_delete=models.PROTECT, related_name='latest_for_entity')
+    settings = models.OneToOneField(
+        "CampaignSettings", null=True, blank=True, on_delete=models.PROTECT, related_name="latest_for_entity"
+    )
 
-    USERS_FIELD = 'users'
+    USERS_FIELD = "users"
 
     objects = manager.CampaignManager.from_queryset(queryset.CampaignQuerySet)()

@@ -7,6 +7,6 @@ import core.history
 
 class BudgetHistory(core.history.HistoryModel):
     class Meta:
-        app_label = 'dash'
+        app_label = "dash"
 
-    budget = models.ForeignKey('BudgetLineItem', related_name='history')
+    budget = models.ForeignKey("BudgetLineItem", related_name="history")

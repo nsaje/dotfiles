@@ -15,8 +15,8 @@ class RestFrameworkSerializer(forms.Field):
 
         try:
             if not serializer.is_valid():
-                if 'non_field_errors' in serializer.errors:
-                    raise forms.ValidationError(serializer.errors['non_field_errors'])
+                if "non_field_errors" in serializer.errors:
+                    raise forms.ValidationError(serializer.errors["non_field_errors"])
 
                 raise forms.ValidationError(json.dumps(serializer.errors))
             return serializer.validated_data

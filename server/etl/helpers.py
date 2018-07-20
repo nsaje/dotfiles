@@ -19,7 +19,9 @@ def get_local_date_query(date):
             (date = '{tzdate_to}' and hour < {tzhour_to})
         ))
     )
-    """.format(**context)
+    """.format(
+        **context
+    )
     return query
 
 
@@ -33,11 +35,11 @@ def get_local_date_context(date):
     hour_to = dates_helper.local_to_utc_time(datetime.datetime(date_next.year, date_next.month, date_next.day))
 
     return {
-        'date': date.isoformat(),
-        'tzdate_from': hour_from.date().isoformat(),
-        'tzhour_from': hour_from.hour,
-        'tzdate_to': hour_to.date().isoformat(),
-        'tzhour_to': hour_to.hour,
+        "date": date.isoformat(),
+        "tzdate_from": hour_from.date().isoformat(),
+        "tzhour_from": hour_from.hour,
+        "tzdate_to": hour_to.date().isoformat(),
+        "tzhour_to": hour_to.hour,
     }
 
 
@@ -55,13 +57,13 @@ def get_local_multiday_date_context(date_from, date_to):
         date_ranges.append(get_local_date_context(date.date()))
 
     return {
-        'date_from': from_context['date'],
-        'date_to': to_context['date'],
-        'tzdate_from': from_context['tzdate_from'],
-        'tzhour_from': from_context['tzhour_from'],
-        'tzdate_to': to_context['tzdate_to'],
-        'tzhour_to': to_context['tzhour_to'],
-        'date_ranges': date_ranges,
+        "date_from": from_context["date"],
+        "date_to": to_context["date"],
+        "tzdate_from": from_context["tzdate_from"],
+        "tzhour_from": from_context["tzhour_from"],
+        "tzdate_to": to_context["tzdate_to"],
+        "tzhour_to": to_context["tzhour_to"],
+        "date_ranges": date_ranges,
     }
 
 
@@ -87,23 +89,24 @@ def extract_source_slug(source_slug):
     if not source_slug:
         return None
 
-    if source_slug.startswith('b1_'):
+    if source_slug.startswith("b1_"):
         return source_slug[3:]
     return source_slug
 
 
 def get_highest_priority_postclick_source(rows_by_postclick_source):
     return rows_by_postclick_source.get(
-        'gaapi', rows_by_postclick_source.get(
-            'ga_mail', rows_by_postclick_source.get(
-                'omniture', rows_by_postclick_source.get(
-                    'other', []))))
+        "gaapi",
+        rows_by_postclick_source.get(
+            "ga_mail", rows_by_postclick_source.get("omniture", rows_by_postclick_source.get("other", []))
+        ),
+    )
 
 
 def extract_postclick_source(postclick_source):
-    if postclick_source in ('gaapi', 'ga_mail', 'omniture'):
+    if postclick_source in ("gaapi", "ga_mail", "omniture"):
         return postclick_source
-    return 'other'
+    return "other"
 
 
 def get_breakdown_key_for_postclickstats(source_id, content_ad_id):
@@ -113,8 +116,8 @@ def get_breakdown_key_for_postclickstats(source_id, content_ad_id):
 
 
 def get_conversion_prefix(postclick_source, k):
-    if postclick_source in ('gaapi', 'ga_mail'):
-        return dash.features.performance_tracking.constants.ReportType.GOOGLE_ANALYTICS + '__' + k
-    if postclick_source in ('omniture', ):
-        return dash.features.performance_tracking.constants.ReportType.OMNITURE + '__' + k
+    if postclick_source in ("gaapi", "ga_mail"):
+        return dash.features.performance_tracking.constants.ReportType.GOOGLE_ANALYTICS + "__" + k
+    if postclick_source in ("omniture",):
+        return dash.features.performance_tracking.constants.ReportType.OMNITURE + "__" + k
     return k

@@ -11,18 +11,17 @@ from utils import json_helper
 
 
 class AccountInstanceMixin:
-
     def __str__(self):
         return self.name
 
     def get_long_name(self):
-        agency = ''
+        agency = ""
         if self.agency:
-            agency = self.agency.get_long_name() + ', '
-        return '{}Account {}'.format(agency, self.name)
+            agency = self.agency.get_long_name() + ", "
+        return "{}Account {}".format(agency, self.name)
 
     def get_salesforce_id(self):
-        return 'b{}'.format(self.pk)
+        return "b{}".format(self.pk)
 
     def get_current_settings(self):
         return self.settings
@@ -47,9 +46,7 @@ class AccountInstanceMixin:
     @transaction.atomic
     def archive(self, request):
         if not self.can_archive():
-            raise exc.ForbiddenError(
-                'Account can\'t be archived.'
-            )
+            raise exc.ForbiddenError("Account can't be archived.")
 
         if not self.is_archived():
             current_settings = self.get_current_settings()
@@ -58,36 +55,30 @@ class AccountInstanceMixin:
 
             new_settings = current_settings.copy_settings()
             new_settings.archived = True
-            new_settings.save(
-                request, action_type=constants.HistoryActionType.ARCHIVE_RESTORE)
+            new_settings.save(request, action_type=constants.HistoryActionType.ARCHIVE_RESTORE)
 
     @transaction.atomic
     def restore(self, request):
         if not self.can_restore():
-            raise exc.ForbiddenError(
-                'Account can\'t be restored.'
-            )
+            raise exc.ForbiddenError("Account can't be restored.")
 
         if self.is_archived():
             current_settings = self.get_current_settings()
             new_settings = current_settings.copy_settings()
             new_settings.archived = False
-            new_settings.save(
-                request, action_type=constants.HistoryActionType.ARCHIVE_RESTORE)
+            new_settings.save(request, action_type=constants.HistoryActionType.ARCHIVE_RESTORE)
 
     def admin_link(self):
         if self.id:
             return '<a href="/admin/dash/account/%d/">Edit</a>' % self.id
         else:
-            return 'N/A'
+            return "N/A"
+
     admin_link.allow_tags = True
 
     def get_account_url(self, request):
-        account_settings_url = request.build_absolute_uri(
-            reverse('admin:dash_account_change', args=(self.pk,))
-        )
-        campaign_settings_url = account_settings_url.replace(
-            'http://', 'https://')
+        account_settings_url = request.build_absolute_uri(reverse("admin:dash_account_change", args=(self.pk,)))
+        campaign_settings_url = account_settings_url.replace("http://", "https://")
         return campaign_settings_url
 
     def get_default_blacklist_name(self):
@@ -102,8 +93,7 @@ class AccountInstanceMixin:
     def get_account(self):
         return self
 
-    def write_history(self, changes_text, changes=None,
-                      user=None, system_user=None, action_type=None):
+    def write_history(self, changes_text, changes=None, user=None, system_user=None, action_type=None):
         if not changes and not changes_text:
             return None
 
@@ -116,7 +106,7 @@ class AccountInstanceMixin:
             changes=json_helper.json_serializable_changes(changes),
             changes_text=changes_text or "",
             level=constants.HistoryLevel.ACCOUNT,
-            action_type=action_type
+            action_type=action_type,
         )
 
     def set_uses_bcm_v2(self, request, enabled):

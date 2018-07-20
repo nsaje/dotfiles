@@ -5,15 +5,11 @@ import core.bcm
 
 
 class CampaignBCMMixin(object):
-
     def get_bcm_modifiers(self):
         modifiers = None
         if self.account.uses_bcm_v2:
             fee, margin = self.get_todays_fee_and_margin()
-            modifiers = {
-                'fee': fee,
-                'margin': margin,
-            }
+            modifiers = {"fee": fee, "margin": margin}
         return modifiers
 
     def get_todays_fee_and_margin(self):
@@ -27,15 +23,14 @@ class CampaignBCMMixin(object):
         return None, None
 
     def _get_todays_budget(self):
-        return self.budgets.select_related('credit').filter_today().first()
+        return self.budgets.select_related("credit").filter_today().first()
 
     def _get_todays_credit(self):
-        credit = core.bcm.CreditLineItem.objects \
-            .filter(
-                Q(account_id=self.account_id) |
-                Q(agency_id=self.account.agency_id)) \
-            .filter_active() \
+        credit = (
+            core.bcm.CreditLineItem.objects.filter(Q(account_id=self.account_id) | Q(agency_id=self.account.agency_id))
+            .filter_active()
             .first()
+        )
         return credit
 
     @transaction.atomic

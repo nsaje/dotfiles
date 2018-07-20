@@ -9,8 +9,14 @@ from .. import constants
 logger = logging.getLogger(__name__)
 
 
-AD_GROUP_SETTINGS_FIELDS = ['state', 'b1_sources_group_state', 'b1_sources_group_daily_budget', 'start_date', 'end_date']
-AD_GROUP_SOURCE_SETTINGS_FIELDS = ['daily_budget_cc', 'state']
+AD_GROUP_SETTINGS_FIELDS = [
+    "state",
+    "b1_sources_group_state",
+    "b1_sources_group_daily_budget",
+    "start_date",
+    "end_date",
+]
+AD_GROUP_SOURCE_SETTINGS_FIELDS = ["daily_budget_cc", "state"]
 
 
 def notify_initialize(campaign):
@@ -40,8 +46,7 @@ def notify_budget_line_item_change(campaign):
 def _notify(campaign, type_):
     if not campaign.real_time_campaign_stop:
         return
-    logger.info('Notify campaign update: campaign_id=%s, type=%s', campaign.id, type_)
+    logger.info("Notify campaign update: campaign_id=%s, type=%s", campaign.id, type_)
     sqs_helper.write_message_json(
-        settings.CAMPAIGN_STOP_UPDATE_HANDLER_QUEUE,
-        {'campaign_id': campaign.id, 'type': type_}
+        settings.CAMPAIGN_STOP_UPDATE_HANDLER_QUEUE, {"campaign_id": campaign.id, "type": type_}
     )

@@ -6,7 +6,7 @@ from django.conf import settings
 import utils.request_context
 
 
-DEFAULT_DB_ALIAS = 'default'
+DEFAULT_DB_ALIAS = "default"
 DEFAULT_STATS_DB_ALIAS = settings.STATS_DB_NAME
 
 
@@ -20,15 +20,14 @@ def _get_read_replicas_generator(settings_key, default_db_alias):
         return itertools.repeat(default_db_alias)
 
 
-read_replicas = _get_read_replicas_generator('DATABASE_READ_REPLICAS', DEFAULT_DB_ALIAS)
-stats_read_replicas = _get_read_replicas_generator('STATS_DB_READ_REPLICAS', DEFAULT_STATS_DB_ALIAS)
-stats_read_replicas_postgres = _get_read_replicas_generator('STATS_DB_READ_REPLICAS_POSTGRES', DEFAULT_STATS_DB_ALIAS)
+read_replicas = _get_read_replicas_generator("DATABASE_READ_REPLICAS", DEFAULT_DB_ALIAS)
+stats_read_replicas = _get_read_replicas_generator("STATS_DB_READ_REPLICAS", DEFAULT_STATS_DB_ALIAS)
+stats_read_replicas_postgres = _get_read_replicas_generator("STATS_DB_READ_REPLICAS_POSTGRES", DEFAULT_STATS_DB_ALIAS)
 
 
 class UseReadReplicaRouter(object):
-
     def db_for_read(self, model, **hints):
-        use_read_replica = utils.request_context.get('USE_READ_REPLICA', False)
+        use_read_replica = utils.request_context.get("USE_READ_REPLICA", False)
         return next(read_replicas) if use_read_replica else DEFAULT_DB_ALIAS
 
     def db_for_write(self, model, **hints):
@@ -42,12 +41,11 @@ class UseReadReplicaRouter(object):
 
 
 class UseStatsReadReplicaRouter(object):
-
     def db_for_read(self, model, **hints):
-        use_read_replica_postgres = utils.request_context.get('USE_STATS_READ_REPLICA_POSTGRES', False)
+        use_read_replica_postgres = utils.request_context.get("USE_STATS_READ_REPLICA_POSTGRES", False)
         if use_read_replica_postgres:
             return next(stats_read_replicas_postgres)
-        use_read_replica = utils.request_context.get('USE_STATS_READ_REPLICA', False)
+        use_read_replica = utils.request_context.get("USE_STATS_READ_REPLICA", False)
         return next(stats_read_replicas) if use_read_replica else DEFAULT_STATS_DB_ALIAS
 
     def db_for_write(self, model, **hints):

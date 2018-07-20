@@ -25,16 +25,62 @@ from utils import request_signer, threads
 
 logger = logging.getLogger(__name__)
 
-CACHE_KEY_FMT = 'bizwire_promotion_export_{}'
+CACHE_KEY_FMT = "bizwire_promotion_export_{}"
 VALID_US_STATES = [
-    'US-AK', 'US-AL', 'US-AR', 'US-AZ', 'US-CA', 'US-CO', 'US-CT', 'US-DE', 'US-FL', 'US-GA', 'US-HI', 'US-IA', 'US-ID', 'US-IL', 'US-IN', 'US-KS', 'US-KY', 'US-LA', 'US-MA',
-    'US-MD', 'US-ME', 'US-MI', 'US-MN', 'US-MO', 'US-MS', 'US-MT', 'US-NC', 'US-ND', 'US-NE', 'US-NH', 'US-NJ', 'US-NM', 'US-NV', 'US-NY', 'US-OH', 'US-OK', 'US-OR', 'US-PA',
-    'US-RI', 'US-SC', 'US-SD', 'US-TN', 'US-TX', 'US-UT', 'US-VA', 'US-VT', 'US-WA', 'US-WI', 'US-WV', 'US-WY',
+    "US-AK",
+    "US-AL",
+    "US-AR",
+    "US-AZ",
+    "US-CA",
+    "US-CO",
+    "US-CT",
+    "US-DE",
+    "US-FL",
+    "US-GA",
+    "US-HI",
+    "US-IA",
+    "US-ID",
+    "US-IL",
+    "US-IN",
+    "US-KS",
+    "US-KY",
+    "US-LA",
+    "US-MA",
+    "US-MD",
+    "US-ME",
+    "US-MI",
+    "US-MN",
+    "US-MO",
+    "US-MS",
+    "US-MT",
+    "US-NC",
+    "US-ND",
+    "US-NE",
+    "US-NH",
+    "US-NJ",
+    "US-NM",
+    "US-NV",
+    "US-NY",
+    "US-OH",
+    "US-OK",
+    "US-OR",
+    "US-PA",
+    "US-RI",
+    "US-SC",
+    "US-SD",
+    "US-TN",
+    "US-TX",
+    "US-UT",
+    "US-VA",
+    "US-VT",
+    "US-WA",
+    "US-WI",
+    "US-WV",
+    "US-WY",
 ]
 
 
 class BizwireView(View):
-
     @method_decorator(csrf_exempt)
     def dispatch(self, request, *args, **kwargs):
         self._validate_signature(request)
@@ -45,57 +91,49 @@ class BizwireView(View):
         try:
             request_signer.verify_wsgi_request(request, settings.BIZWIRE_API_SIGN_KEY)
         except request_signer.SignatureError:
-            logger.exception('Invalid signature.')
+            logger.exception("Invalid signature.")
             raise Http404
 
     @staticmethod
     def response_ok(content):
-        return JsonResponse({
-            'error': None,
-            'response': content,
-        })
+        return JsonResponse({"error": None, "response": content})
 
     @staticmethod
     def response_error(msg, status=400):
-        return JsonResponse({
-            'error': msg,
-            'response': None,
-        }, status=status)
+        return JsonResponse({"error": msg, "response": None}, status=status)
 
 
 class PromotionExport(RatelimitMixin, BizwireView):
-    ratelimit_key = 'ip'
-    ratelimit_rate = '30/s'
+    ratelimit_key = "ip"
+    ratelimit_rate = "30/s"
     ratelimit_block = True
-    ratelimit_method = 'GET'
+    ratelimit_method = "GET"
 
     def _get_geo_stats(self, content_ads):
         return db.execute_query(
-            backtosql.generate_sql('bizwire_geo.sql', {
-                'content_ad_ids': [content_ad.id for content_ad in content_ads],
-            }),
+            backtosql.generate_sql(
+                "bizwire_geo.sql", {"content_ad_ids": [content_ad.id for content_ad in content_ads]}
+            ),
             [],
-            'bizwire_geo'
+            "bizwire_geo",
         )
 
     def _get_pubs_stats(self, ad_group_id):
-        return db.execute_query(
-            backtosql.generate_sql('bizwire_pubs.sql', {}),
-            [ad_group_id],
-            'bizwire_pubs'
-        )
+        return db.execute_query(backtosql.generate_sql("bizwire_pubs.sql", {}), [ad_group_id], "bizwire_pubs")
 
     def _get_ad_stats(self, content_ads):
         return db.execute_query(
-            backtosql.generate_sql('bizwire_ad_stats.sql', {
-                'ctr': backtosql.TemplateColumn(
-                    'part_sumdiv_perc.sql',
-                    {'expr': 'clicks', 'divisor': 'impressions'}
-                ),
-                'content_ad_ids': [content_ad.id for content_ad in content_ads],
-            }),
+            backtosql.generate_sql(
+                "bizwire_ad_stats.sql",
+                {
+                    "ctr": backtosql.TemplateColumn(
+                        "part_sumdiv_perc.sql", {"expr": "clicks", "divisor": "impressions"}
+                    ),
+                    "content_ad_ids": [content_ad.id for content_ad in content_ads],
+                },
+            ),
             [],
-            'bizwire_ad_stats'
+            "bizwire_ad_stats",
         )[0]
 
     # def _get_ag_stats(self, ad_group_id):
@@ -112,7 +150,7 @@ class PromotionExport(RatelimitMixin, BizwireView):
 
     def _get_state_key(self, state):
         if not state or state not in VALID_US_STATES:
-            return 'Unknown'
+            return "Unknown"
 
         return state
 
@@ -136,31 +174,31 @@ class PromotionExport(RatelimitMixin, BizwireView):
 
         geo_impressions = OrderedDict()
         for row in geo_stats:
-            key = self._get_state_key(row['state'])
+            key = self._get_state_key(row["state"])
             geo_impressions.setdefault(key, 0)
-            geo_impressions[key] += row['impressions']
+            geo_impressions[key] += row["impressions"]
 
-        pubs = [row['publisher'] for row in pubs_stats]
+        pubs = [row["publisher"] for row in pubs_stats]
 
         return {
-            'headline_impressions': ad_stats['impressions'] or 0,
-            'release_views': ad_stats['clicks'] or 0,
-            'ctr': ad_stats['ctr'] or None,
-            'industry_ctr': 0.17,  # ag_stats['industry_ctr'] or None,
-            'publishers': pubs,
-            'geo_headline_impressions': geo_impressions,
+            "headline_impressions": ad_stats["impressions"] or 0,
+            "release_views": ad_stats["clicks"] or 0,
+            "ctr": ad_stats["ctr"] or None,
+            "industry_ctr": 0.17,  # ag_stats['industry_ctr'] or None,
+            "publishers": pubs,
+            "geo_headline_impressions": geo_impressions,
         }
 
-    @influx.timer('integrations.bizwire.views.promotion_export')
+    @influx.timer("integrations.bizwire.views.promotion_export")
     def get(self, request):
-        article_id = request.GET.get('article_id')
-        article_url = request.GET.get('article_url')
+        article_id = request.GET.get("article_id")
+        article_url = request.GET.get("article_url")
         if article_url:
-            m = re.search('news/home/([^/]+)/', urllib.parse.unquote(article_url))
+            m = re.search("news/home/([^/]+)/", urllib.parse.unquote(article_url))
             if m:
                 article_id = m.groups()[0]
 
-        cache = caches['bizwire_cache']
+        cache = caches["bizwire_cache"]
         cache_key = CACHE_KEY_FMT.format(article_id)
         cached_response = cache.get(cache_key)
         if cached_response:
@@ -169,18 +207,14 @@ class PromotionExport(RatelimitMixin, BizwireView):
         # NOTE: it is possible in rare situations for a single article to get inserted multiple times and
         # this is handled here by using filter instead of get
         content_ads = dash.models.ContentAd.objects.filter(
-            label=article_id,
-            ad_group__campaign_id=config.AUTOMATION_CAMPAIGN,
+            label=article_id, ad_group__campaign_id=config.AUTOMATION_CAMPAIGN
         )
         if not content_ads:
-            return self.response_error('Article not found', status=404)
+            return self.response_error("Article not found", status=404)
 
         response = {
-            'article': {
-                'title': content_ads[0].title,
-                'description': content_ads[0].description,
-            },
-            'statistics': self._get_statistics(content_ads),
+            "article": {"title": content_ads[0].title, "description": content_ads[0].description},
+            "statistics": self._get_statistics(content_ads),
         }
 
         cache.set(cache_key, json.dumps(response))

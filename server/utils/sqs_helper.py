@@ -9,9 +9,7 @@ MAX_MESSAGES_PER_BATCH = 10
 
 
 def _get_connection():
-    return boto.sqs.connect_to_region(
-        settings.SQS_REGION,
-    )
+    return boto.sqs.connect_to_region(settings.SQS_REGION)
 
 
 def _get_queue(connection, queue_name):
@@ -54,5 +52,4 @@ def delete_messages(queue_name, messages):
     connection = _get_connection()
     queue = _get_queue(connection, queue_name)
     for i in range(0, len(messages), MAX_MESSAGES_PER_BATCH):
-        connection.delete_message_batch(
-            queue, messages[i:i + MAX_MESSAGES_PER_BATCH])
+        connection.delete_message_batch(queue, messages[i : i + MAX_MESSAGES_PER_BATCH])

@@ -6,7 +6,6 @@ from collections import OrderedDict
 
 
 class RESTAPIBaseSerializer(rest_framework.serializers.Serializer):
-
     def to_representation(self, instance):
         """
         Object instance -> Dict of primitive datatypes.

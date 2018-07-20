@@ -15,7 +15,7 @@ class ServiceAPIBaseView(APIView):
 
     @staticmethod
     def response_ok(data, errors=None, **kwargs):
-        data = {'data': data}
+        data = {"data": data}
         if errors:
-            data['errors'] = errors
+            data["errors"] = errors
         return Response(data, **kwargs)

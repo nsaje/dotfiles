@@ -11,18 +11,15 @@ from . import *
 class ScheduledExportReportLog(models.Model):
     scheduled_report = models.ForeignKey(ScheduledExportReport)
 
-    created_dt = models.DateTimeField(
-        auto_now_add=True, verbose_name='Created at')
+    created_dt = models.DateTimeField(auto_now_add=True, verbose_name="Created at")
 
     start_date = models.DateField(null=True)
     end_date = models.DateField(null=True)
     report_filename = models.CharField(max_length=1024, blank=False, null=True)
-    recipient_emails = models.CharField(
-        max_length=1024, blank=False, null=True)
+    recipient_emails = models.CharField(max_length=1024, blank=False, null=True)
 
     state = models.IntegerField(
-        default=constants.ScheduledReportSent.FAILED,
-        choices=constants.ScheduledReportSent.get_choices(),
+        default=constants.ScheduledReportSent.FAILED, choices=constants.ScheduledReportSent.get_choices()
     )
 
     errors = models.TextField(blank=False, null=True)
@@ -31,4 +28,4 @@ class ScheduledExportReportLog(models.Model):
         if self.errors is None:
             self.errors = error_msg
         else:
-            self.errors += '\n\n' + error_msg
+            self.errors += "\n\n" + error_msg

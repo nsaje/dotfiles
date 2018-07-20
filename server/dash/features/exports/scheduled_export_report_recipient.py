@@ -7,9 +7,8 @@ from . import *
 
 
 class ScheduledExportReportRecipient(models.Model):
-    scheduled_report = models.ForeignKey(
-        ScheduledExportReport, related_name='recipients')
+    scheduled_report = models.ForeignKey(ScheduledExportReport, related_name="recipients")
     email = models.EmailField()
 
     class Meta:
-        unique_together = ('scheduled_report', 'email')
+        unique_together = ("scheduled_report", "email")

@@ -1,3 +1,2 @@
-
 class ArticleReconciliationException(Exception):
     pass

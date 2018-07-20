@@ -16,17 +16,16 @@ NUM_RETRIES = 10
 
 
 class Command(ExceptionCommand):
-
     def handle(self, *args, **options):
         demo = self._start_demo()
         try:
             self._check_demo_url(demo)
         except Exception as err:
-            influx.incr('demo.monitor', 1, status='error')
-            raise(err)
+            influx.incr("demo.monitor", 1, status="error")
+            raise (err)
         finally:
-            self._stop_demo(demo['name'])
-        influx.incr('demo.monitor', 1, status='ok')
+            self._stop_demo(demo["name"])
+        influx.incr("demo.monitor", 1, status="ok")
 
     def _start_demo(self):
         request = urllib.request.Request(settings.DK_DEMO_UP_ENDPOINT)
@@ -34,52 +33,60 @@ class Command(ExceptionCommand):
 
         status_code = response.getcode()
         if status_code != 200:
-            raise Exception('Invalid response status code. status code: {}'.format(status_code))
+            raise Exception("Invalid response status code. status code: {}".format(status_code))
 
         ret = json.loads(response.read())
-        if ret['status'] != 'success':
-            raise Exception('Request not successful. status: {}'.format(ret['status']))
+        if ret["status"] != "success":
+            raise Exception("Request not successful. status: {}".format(ret["status"]))
 
         return {
-            'name': ret.get('instance_name'),
-            'url': ret.get('instance_url'),
-            'username': ret.get('instance_username'),
-            'password': ret.get('instance_password'),
+            "name": ret.get("instance_name"),
+            "url": ret.get("instance_url"),
+            "username": ret.get("instance_username"),
+            "password": ret.get("instance_password"),
         }
 
     def _find_string_in_login_page(self, session, demo_instance):
-        response = session.get(demo_instance['url'])
+        response = session.get(demo_instance["url"])
         body = response.text
-        if 'Zemanta One' not in body or 'Sign in' not in body:
-            raise Exception('Invalid response from demo({instance_name})'.format(instance_name=demo_instance['name']))
+        if "Zemanta One" not in body or "Sign in" not in body:
+            raise Exception("Invalid response from demo({instance_name})".format(instance_name=demo_instance["name"]))
 
     def _try_to_login(self, session, demo_instance):
         response = session.post(
-            url='%s/signin' % demo_instance['url'],
+            url="%s/signin" % demo_instance["url"],
             data={
-                'username': demo_instance['username'],
-                'password': demo_instance['password'],
-                'csrfmiddlewaretoken': session.cookies['csrftoken']
+                "username": demo_instance["username"],
+                "password": demo_instance["password"],
+                "csrfmiddlewaretoken": session.cookies["csrftoken"],
             },
-            headers={'Referer': '%s/signin?next=/' % demo_instance['url']}
+            headers={"Referer": "%s/signin?next=/" % demo_instance["url"]},
         )
         if response.status_code != 200:
-            raise Exception('Invalid response code from demo signin({instance_name})'.format(instance_name=demo_instance['name']))
+            raise Exception(
+                "Invalid response code from demo signin({instance_name})".format(instance_name=demo_instance["name"])
+            )
 
     def _fetch_all_accounts_nav(self, session, demo_instance):
         response = session.get(
-            url='%s/api/all_accounts/nav/' % demo_instance['url'], headers={'Accept': 'application/json', }
+            url="%s/api/all_accounts/nav/" % demo_instance["url"], headers={"Accept": "application/json"}
         )
         if response.status_code != 200:
-            raise Exception('Invalid response code from demo nav({instance_name})'.format(instance_name=demo_instance['name']))
+            raise Exception(
+                "Invalid response code from demo nav({instance_name})".format(instance_name=demo_instance["name"])
+            )
         data = json.loads(response.text)
-        if not data.get('success', False):
-            raise Exception('Could not get basic nav data({instance_name})'.format(instance_name=demo_instance['name']))
+        if not data.get("success", False):
+            raise Exception("Could not get basic nav data({instance_name})".format(instance_name=demo_instance["name"]))
 
         return session
 
     def _check_demo_url(self, demo_instance):
-        error = Exception("Automatic 'Request demoV3' check failed for unknown reason({instance_name}).".format(instance_name=demo_instance['name']))
+        error = Exception(
+            "Automatic 'Request demoV3' check failed for unknown reason({instance_name}).".format(
+                instance_name=demo_instance["name"]
+            )
+        )
         for _ in range(NUM_RETRIES):
             try:
                 session = requests.Session()
@@ -100,8 +107,10 @@ class Command(ExceptionCommand):
 
         status_code = response.getcode()
         if status_code != 200:
-            raise Exception('Invalid response status code. status code: {code} (name)'.format(code=status_code, name=name))
+            raise Exception(
+                "Invalid response status code. status code: {code} (name)".format(code=status_code, name=name)
+            )
 
         ret = json.loads(response.read())
-        if ret['status'] != 'pending':
-            raise Exception('Request not successful. status: {status} ({name})'.format(status=ret['status'], name=name))
+        if ret["status"] != "pending":
+            raise Exception("Request not successful. status: {status} ({name})".format(status=ret["status"], name=name))

@@ -8,7 +8,7 @@ def format_decimal(x, min_decimals, max_decimals):
         return str(int(x))
 
     x = int(x * (10 ** max_decimals)) / (10 ** max_decimals)
-    format_str = '%%.%df' % min_decimals
+    format_str = "%%.%df" % min_decimals
     min_decimals_format = format_str % x
     if len(min_decimals_format) > len(str(x)):
         return min_decimals_format

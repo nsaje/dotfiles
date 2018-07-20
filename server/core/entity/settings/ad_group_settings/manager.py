@@ -4,9 +4,9 @@ import core.common
 
 
 class AdGroupSettingsManager(core.common.QuerySetManager):
-
     def _create_default_obj(self, ad_group):
         from .model import AdGroupSettings
+
         currency = ad_group.campaign.account.currency
         new_settings = AdGroupSettings(ad_group=ad_group, **AdGroupSettings.get_defaults_dict(currency=currency))
         campaign_settings = ad_group.campaign.get_current_settings()
@@ -37,13 +37,15 @@ class AdGroupSettingsManager(core.common.QuerySetManager):
 
     def clone(self, request, ad_group, source_ad_group_settings, state=constants.AdGroupSettingsState.INACTIVE):
         new_settings = self._create_default_obj(ad_group)
-        for field in set(self.model._settings_fields) - {'ad_group_name'}:
+        for field in set(self.model._settings_fields) - {"ad_group_name"}:
             setattr(new_settings, field, getattr(source_ad_group_settings, field))
 
         new_settings.state = state
         new_settings.archived = False
-        if (source_ad_group_settings.end_date is not None and
-           source_ad_group_settings.end_date <= dates_helper.local_today()):
+        if (
+            source_ad_group_settings.end_date is not None
+            and source_ad_group_settings.end_date <= dates_helper.local_today()
+        ):
             new_settings.start_date = dates_helper.local_today()
             new_settings.end_date = None
 

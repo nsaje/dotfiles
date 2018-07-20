@@ -11,12 +11,12 @@ logger = logging.getLogger(__name__)
 
 
 class Command(ExceptionCommand):
-    @influx.timer('dash.scheduled_reports.send_scheduled_reports_job')
+    @influx.timer("dash.scheduled_reports.send_scheduled_reports_job")
     def handle(self, *args, **options):
-        logger.info('Sending Scheduled Reports')
+        logger.info("Sending Scheduled Reports")
 
         due_scheduled_reports = models.ScheduledReport.objects.all().filter_due()
         for sr in due_scheduled_reports:
             start_date, end_date = scheduled_reports.get_scheduled_report_date_range(sr.time_period)
-            sr.set_date_filter(start_date.strftime('%Y-%m-%d'), end_date.strftime('%Y-%m-%d'))
+            sr.set_date_filter(start_date.strftime("%Y-%m-%d"), end_date.strftime("%Y-%m-%d"))
             reports.create_job(sr.user, sr.query, scheduled_report=sr)

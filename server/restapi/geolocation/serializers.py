@@ -9,8 +9,7 @@ import restapi.serializers.serializers
 
 class GeolocationQueryParamsExpectations(restapi.serializers.serializers.QueryParamsExpectations):
     types = fields.ListField(
-        child=restapi.serializers.fields.DashConstantField(dash.constants.LocationType),
-        max_length=10,
+        child=restapi.serializers.fields.DashConstantField(dash.constants.LocationType), max_length=10
     )
     limit = fields.IntegerField(max_value=50, default=10)
     keys = fields.ListField(child=restapi.serializers.fields.PlainCharField(), max_length=50)
@@ -22,4 +21,4 @@ class GeolocationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = dash.features.geolocation.Geolocation
-        fields = ('key', 'type', 'name', 'outbrain_id', 'woeid', 'facebook_key')
+        fields = ("key", "type", "name", "outbrain_id", "woeid", "facebook_key")

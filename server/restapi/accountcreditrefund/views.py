@@ -16,11 +16,11 @@ from . import serializers
 
 class CanManageCreditRefundsPermission(permissions.BasePermission):
     def has_permission(self, request, view):
-        return bool(request.user and request.user.has_perm('zemauth.can_manage_credit_refunds'))
+        return bool(request.user and request.user.has_perm("zemauth.can_manage_credit_refunds"))
 
 
 class AccountCreditRefundViewSet(RESTAPIBaseViewSet):
-    permission_classes = (permissions.IsAuthenticated, CanManageCreditRefundsPermission,)
+    permission_classes = (permissions.IsAuthenticated, CanManageCreditRefundsPermission)
 
     def get(self, request, account_id, credit_id, refund_id):
         refund = self._get_refund_query(request, account_id, credit_id).get(id=refund_id)
@@ -50,16 +50,12 @@ class AccountCreditRefundViewSet(RESTAPIBaseViewSet):
             credit=credit.get(),
             **serializer.validated_data,
         )
-        return self.response_ok(
-            serializers.AccountCreditRefundSerializer(new_refund).data,
-            status=201,
-        )
+        return self.response_ok(serializers.AccountCreditRefundSerializer(new_refund).data, status=201)
 
     @staticmethod
     def _get_account_and_credit(request, account_id, credit_id):
         account = restapi.access.get_account(request.user, account_id)
-        credit = core.bcm.CreditLineItem.objects.filter_by_account(account)\
-                                                .prefetch_related('budgets')
+        credit = core.bcm.CreditLineItem.objects.filter_by_account(account).prefetch_related("budgets")
         if credit_id:
             credit = credit.filter(id=credit_id)
 
@@ -67,24 +63,20 @@ class AccountCreditRefundViewSet(RESTAPIBaseViewSet):
 
     @staticmethod
     def _get_refund_query(request, account_id, credit_id=None):
-        account, credit = AccountCreditRefundViewSet._get_account_and_credit(
-            request, account_id, credit_id,
-        )
-        return core.bcm.RefundLineItem.objects.filter(
-            credit__in=credit,
-        )
+        account, credit = AccountCreditRefundViewSet._get_account_and_credit(request, account_id, credit_id)
+        return core.bcm.RefundLineItem.objects.filter(credit__in=credit)
 
     def update_refund(self, fn, **kwargs):
         try:
             refund = fn(**kwargs)
 
         except exceptions.StartDateInvalid as err:
-            raise utils.exc.ValidationError(errors={'start_date': [str(err)]})
+            raise utils.exc.ValidationError(errors={"start_date": [str(err)]})
 
         except exceptions.RefundAmountExceededTotalSpend as err:
-            raise utils.exc.ValidationError(errors={'amount': [str(err)]})
+            raise utils.exc.ValidationError(errors={"amount": [str(err)]})
 
         except exceptions.CreditAvailableAmountNegative as err:
-            raise utils.exc.ValidationError(errors={'amount': [str(err)]})
+            raise utils.exc.ValidationError(errors={"amount": [str(err)]})
 
         return refund

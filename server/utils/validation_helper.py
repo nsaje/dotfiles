@@ -10,7 +10,7 @@ def validate_plain_text(value):
     if not isinstance(value, str):
         return
     if HTML_RE.match(value) is not None:
-        raise ValidationError('HTML tags are not allowed')
+        raise ValidationError("HTML tags are not allowed")
 
 
 def validate_multiple(*validators, changes=None):

@@ -21,22 +21,13 @@ logger.setLevel(logging.INFO)
 
 
 class AdGroupsTest(K1APIBaseTest):
-
-    @patch.object(api_quickstats, 'query_adgroup', autospec=True)
+    @patch.object(api_quickstats, "query_adgroup", autospec=True)
     def test_get_ad_group_stats(self, mock_quickstats):
         ad_group = dash.models.AdGroup.objects.get(pk=1)
-        mock_stats = {
-            'total_cost': '123.0',
-            'impressions': 123,
-            'clicks': 12,
-            'cpc': '0.15',
-        }
+        mock_stats = {"total_cost": "123.0", "impressions": 123, "clicks": 12, "cpc": "0.15"}
         mock_quickstats.return_value = mock_stats
 
-        response = self.client.get(
-            reverse('k1api.ad_groups.stats'),
-            {'ad_group_id': 1, 'source_slug': 'yahoo'}
-        )
+        response = self.client.get(reverse("k1api.ad_groups.stats"), {"ad_group_id": 1, "source_slug": "yahoo"})
 
         from_date = ad_group.created_dt.date()
         to_date = datetime.date.today() + datetime.timedelta(days=1)
@@ -44,14 +35,11 @@ class AdGroupsTest(K1APIBaseTest):
 
         data = json.loads(response.content)
         self.assert_response_ok(response, data)
-        data = data['response']
+        data = data["response"]
 
         self.assertEqual(data, mock_stats)
 
     def test_get_ad_group_stats_false_source(self):
-        response = self.client.get(
-            reverse('k1api.ad_groups.stats'),
-            {'ad_group_id': 1, 'source_slug': 'doesnotexist'}
-        )
+        response = self.client.get(reverse("k1api.ad_groups.stats"), {"ad_group_id": 1, "source_slug": "doesnotexist"})
 
         self.assertEqual(response.status_code, 400)

@@ -26,29 +26,27 @@ def generate_sql(template_name, context, clean=False):
 
 def clean_alias(alias):
     # remove order
-    return alias.strip().lstrip('+-') if alias else ''
+    return alias.strip().lstrip("+-") if alias else ""
 
 
 def get_order(alias, nulls=None):
-    properties = ''
-    if nulls and nulls.upper() == 'LAST':
-        properties = ' NULLS LAST'
-    elif nulls and nulls.upper() == 'FIRST':
-        properties = ' NULLS FIRST'
+    properties = ""
+    if nulls and nulls.upper() == "LAST":
+        properties = " NULLS LAST"
+    elif nulls and nulls.upper() == "FIRST":
+        properties = " NULLS FIRST"
 
-    if alias.startswith('-'):
-        return 'DESC' + properties
+    if alias.startswith("-"):
+        return "DESC" + properties
 
-    return 'ASC' + properties
+    return "ASC" + properties
 
 
 def clean_sql(dirty_sql, single_line=False):
     # removes comments and whitespaces
-    sql = sqlparse.format(dirty_sql,
-                          reindent=True,
-                          keyword_case='upper',
-                          identifier_case='lower',
-                          strip_comments=True).strip()
+    sql = sqlparse.format(
+        dirty_sql, reindent=True, keyword_case="upper", identifier_case="lower", strip_comments=True
+    ).strip()
 
     if single_line:
         sql = "".join([" {}".format(x.strip()) for x in sql.splitlines()])
@@ -58,11 +56,10 @@ def clean_sql(dirty_sql, single_line=False):
 
 
 def clean_prefix(prefix=None):
-    if prefix and not prefix.endswith('.'):
-        prefix = prefix + '.'
-    return prefix or ''
+    if prefix and not prefix.endswith("."):
+        prefix = prefix + "."
+    return prefix or ""
 
 
 def is_collection(value):
-    return (isinstance(value, collections.Iterable) or isinstance(value, QuerySet)) \
-        and type(value) not in (str, str)
+    return (isinstance(value, collections.Iterable) or isinstance(value, QuerySet)) and type(value) not in (str, str)

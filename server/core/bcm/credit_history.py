@@ -7,6 +7,6 @@ import core.history
 
 class CreditHistory(core.history.HistoryModel):
     class Meta:
-        app_label = 'dash'
+        app_label = "dash"
 
-    credit = models.ForeignKey('CreditLineItem', related_name='history')
+    credit = models.ForeignKey("CreditLineItem", related_name="history")

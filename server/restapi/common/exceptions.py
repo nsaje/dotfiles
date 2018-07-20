@@ -27,24 +27,24 @@ def custom_exception_handler(exception, context):
 
     # Django DoesNotExist
     if isinstance(exception, ObjectDoesNotExist):
-        error_data['errorCode'] = "DoesNotExist"
-        error_data['details'] = str(exception)
+        error_data["errorCode"] = "DoesNotExist"
+        error_data["details"] = str(exception)
         status_code = 400
         return Response(error_data, status=status_code)
 
     # Django ValidationError
     if isinstance(exception, ValidationError):
-        error_data['errorCode'] = "ValidationError"
-        error_data['details'] = exception.message_dict
+        error_data["errorCode"] = "ValidationError"
+        error_data["details"] = exception.message_dict
         status_code = 400
         return Response(error_data, status=status_code)
 
     # Server Error
-    logger.error('REST API exception', exc_info=True)
-    error_data['errorCode'] = "ServerError"
-    error_data['details'] = "An error occurred."
+    logger.error("REST API exception", exc_info=True)
+    error_data["errorCode"] = "ServerError"
+    error_data["details"] = "An error occurred."
     if settings.DEBUG or settings.TESTING:
-        error_data['stackTrace'] = traceback.format_exc()
+        error_data["stackTrace"] = traceback.format_exc()
     status_code = 500
     return Response(error_data, status=status_code)
 
@@ -58,9 +58,9 @@ def _handle_client_api_exceptions(exception, context):
 
         if isinstance(exception, exc.ValidationError):
             if exception.errors:
-                error_data['details'] = exception.errors
+                error_data["details"] = exception.errors
             if exception.data:
-                error_data['data'] = exception.data
+                error_data["data"] = exception.data
 
         status_code = exception.http_status_code
         return Response(error_data, status=status_code)
@@ -70,10 +70,10 @@ def _handle_django_rest_framework_exceptions(exception, context):
     error_data = {}
     response = rest_framework.views.exception_handler(exception, context)
     if response:
-        error_data['errorCode'] = exception.__class__.__name__
+        error_data["errorCode"] = exception.__class__.__name__
         if isinstance(exception, serializers.ValidationError):
-            error_data['details'] = response.data
+            error_data["details"] = response.data
         else:
-            error_data['details'] = response.data.get('detail') or response.data
+            error_data["details"] = response.data.get("detail") or response.data
         response.data = error_data
         return response

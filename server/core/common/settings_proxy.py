@@ -2,7 +2,6 @@ import django.utils.functional
 
 
 class SettingsLazyProxy(django.utils.functional.SimpleLazyObject):
-
     def update(self, *args, **kwargs):
         if self._wrapped is django.utils.functional.empty:
             self._setup()
@@ -18,6 +17,7 @@ class SettingsProxyMixin(object):
 
         Should become obsolete if/when we introduce FKs to latest settings.
     """
+
     _current_settings = None
 
     @property

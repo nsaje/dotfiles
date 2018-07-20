@@ -417,7 +417,7 @@ COUNTRY_BY_CODE = {
     "ID": "Indonesia",
     "UA": "Ukraine",
     "QA": "Qatar",
-    "MZ": "Mozambique"
+    "MZ": "Mozambique",
 }
 
 SUBDIVISION_BY_CODE = {
@@ -477,14 +477,7 @@ SUBDIVISION_BY_CODE = {
     "US-MP": "Northern Mariana Islands",
     "US-PR": "Puerto Rico",
     "US-UM": "United States Minor Outlying Islands",
-    "US-VI": "Virgin Islands"
+    "US-VI": "Virgin Islands",
 }
 
-SUBDIVISION_TO_COUNTRY = {
-    "US-AS": "AS",
-    "US-GU": "GU",
-    "US-MP": "MP",
-    "US-PR": "PR",
-    "US-UM": "UM",
-    "US-VI": "VI"
-}
+SUBDIVISION_TO_COUNTRY = {"US-AS": "AS", "US-GU": "GU", "US-MP": "MP", "US-PR": "PR", "US-UM": "UM", "US-VI": "VI"}

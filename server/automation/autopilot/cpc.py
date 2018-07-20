@@ -10,9 +10,7 @@ import dash.models
 logger = logging.getLogger(__name__)
 
 
-def get_autopilot_cpc_recommendations(
-        ad_group, data, bcm_modifiers,
-        budget_changes=None, adjust_rtb_sources=True):
+def get_autopilot_cpc_recommendations(ad_group, data, bcm_modifiers, budget_changes=None, adjust_rtb_sources=True):
     recommended_changes = {}
     ag_sources = list(data.keys())
     all_rtb_ad_group_source = _find_all_rtb_ad_group_source(ag_sources)
@@ -29,59 +27,62 @@ def get_autopilot_cpc_recommendations(
 
         recommended_changes[ag_source] = {}
         cpc_change_comments = []
-        old_cpc_cc = data[ag_source]['old_cpc_cc']
+        old_cpc_cc = data[ag_source]["old_cpc_cc"]
 
         if not adjust_automatic_mode_rtb_cpcs or source_type.type != dash.constants.SourceType.B1:
             proposed_cpc, calculation_comments = calculate_new_autopilot_cpc(
                 old_cpc_cc,
-                budget_changes[ag_source]['new_budget'] if budget_changes else data[ag_source]['old_budget'],
-                data[ag_source]['yesterdays_spend_cc'])
+                budget_changes[ag_source]["new_budget"] if budget_changes else data[ag_source]["old_budget"],
+                data[ag_source]["yesterdays_spend_cc"],
+            )
         else:
             proposed_cpc, calculation_comments = calculate_new_autopilot_cpc_automatic_mode_rtb(
                 old_cpc_cc,
-                budget_changes[all_rtb_ad_group_source]['new_budget'] if budget_changes else data[all_rtb_ad_group_source]['old_budget'],
-                data[all_rtb_ad_group_source]['yesterdays_spend_cc'],
-                data[ag_source]['yesterdays_spend_cc'],
-                data[ag_source]['goal_performance'])
+                budget_changes[all_rtb_ad_group_source]["new_budget"]
+                if budget_changes
+                else data[all_rtb_ad_group_source]["old_budget"],
+                data[all_rtb_ad_group_source]["yesterdays_spend_cc"],
+                data[ag_source]["yesterdays_spend_cc"],
+                data[ag_source]["goal_performance"],
+            )
 
         cpc_change_comments += calculation_comments
         max_decimal_places = _get_cpc_max_decimal_places(ag_source.source.source_type.cpc_decimal_places)
         proposed_cpc = _round_cpc(proposed_cpc, decimal_places=max_decimal_places)
-        proposed_cpc = _threshold_ad_group_constraints(proposed_cpc, ad_group, cpc_change_comments,
-                                                       max_decimal_places)
+        proposed_cpc = _threshold_ad_group_constraints(proposed_cpc, ad_group, cpc_change_comments, max_decimal_places)
         proposed_cpc = _threshold_cpc_constraints(
             ad_group,
             ag_source.source,
-            old_cpc_cc, proposed_cpc, cpc_change_comments,
+            old_cpc_cc,
+            proposed_cpc,
+            cpc_change_comments,
             [s.source for s in ag_sources],
-            bcm_modifiers)
+            bcm_modifiers,
+        )
         proposed_cpc = _threshold_source_constraints(
-            proposed_cpc, source_type, ad_group.settings, cpc_change_comments, bcm_modifiers)
+            proposed_cpc, source_type, ad_group.settings, cpc_change_comments, bcm_modifiers
+        )
 
         new_cpc_cc = proposed_cpc
-        cpc_change_not_allowed_comments = set(cpc_change_comments) -\
-            set(settings.CPC_CHANGE_ALLOWED_COMMENTS)
+        cpc_change_not_allowed_comments = set(cpc_change_comments) - set(settings.CPC_CHANGE_ALLOWED_COMMENTS)
         if cpc_change_not_allowed_comments:
             cpc_change_comments = cpc_change_not_allowed_comments
             new_cpc_cc = old_cpc_cc
 
         if isinstance(new_cpc_cc, float):
-            logger.warning('Autopilot: CPC value %s was float on ad group %s',
-                           str(new_cpc_cc), ad_group)
+            logger.warning("Autopilot: CPC value %s was float on ad group %s", str(new_cpc_cc), ad_group)
             new_cpc_cc = decimal.Decimal(new_cpc_cc)
 
         recommended_changes[ag_source] = {
-            'old_cpc_cc': old_cpc_cc,
-            'new_cpc_cc': new_cpc_cc,
-            'cpc_comments': cpc_change_comments
+            "old_cpc_cc": old_cpc_cc,
+            "new_cpc_cc": new_cpc_cc,
+            "cpc_comments": cpc_change_comments,
         }
     return recommended_changes
 
 
 def _round_cpc(num, decimal_places=settings.AUTOPILOT_CPC_MAX_DEC_PLACES, rounding=decimal.ROUND_HALF_UP):
-    return num.quantize(
-        pow(10, decimal.Decimal(-decimal_places)),
-        rounding=rounding)
+    return num.quantize(pow(10, decimal.Decimal(-decimal_places)), rounding=rounding)
 
 
 def calculate_new_autopilot_cpc(current_cpc, current_daily_budget, yesterdays_spend):
@@ -91,10 +92,10 @@ def calculate_new_autopilot_cpc(current_cpc, current_daily_budget, yesterdays_sp
         return (current_cpc, cpc_change_comments)
     new_cpc = current_cpc
     for change_interval in settings.AUTOPILOT_CPC_CHANGE_TABLE:
-        if change_interval['underspend_upper_limit'] <= underspend_perc <= change_interval['underspend_lower_limit']:
-            budget_fulfillment_factor = change_interval['bid_cpc_proc_increase']
+        if change_interval["underspend_upper_limit"] <= underspend_perc <= change_interval["underspend_lower_limit"]:
+            budget_fulfillment_factor = change_interval["bid_cpc_proc_increase"]
             new_cpc += current_cpc * budget_fulfillment_factor
-            if change_interval['bid_cpc_proc_increase'] == decimal.Decimal('0'):
+            if change_interval["bid_cpc_proc_increase"] == decimal.Decimal("0"):
                 return (current_cpc, [CpcChangeComment.OPTIMAL_SPEND])
             new_cpc = _round_cpc(_threshold_cpc_min_change(budget_fulfillment_factor < 0.0, current_cpc, new_cpc))
             break
@@ -102,26 +103,30 @@ def calculate_new_autopilot_cpc(current_cpc, current_daily_budget, yesterdays_sp
     return _threshold_autopilot_min_max_cpc(new_cpc, cpc_change_comments)
 
 
-def calculate_new_autopilot_cpc_automatic_mode_rtb(current_cpc, rtb_daily_budget, rtb_yesterdays_spend, source_yesterday_spend, performance):
+def calculate_new_autopilot_cpc_automatic_mode_rtb(
+    current_cpc, rtb_daily_budget, rtb_yesterdays_spend, source_yesterday_spend, performance
+):
     underspend_perc = rtb_yesterdays_spend / rtb_daily_budget - 1
     current_cpc, cpc_change_comments = _get_calculate_cpc_comments(current_cpc, rtb_daily_budget, rtb_yesterdays_spend)
     if cpc_change_comments:
         return (current_cpc, cpc_change_comments)
 
-    budget_fulfillment_factor = decimal.Decimal('0.0')
+    budget_fulfillment_factor = decimal.Decimal("0.0")
     for change_interval in settings.AUTOPILOT_CPC_CHANGE_TABLE:
-        if change_interval['underspend_upper_limit'] <= underspend_perc <= change_interval['underspend_lower_limit']:
-            budget_fulfillment_factor = change_interval['bid_cpc_proc_increase']
+        if change_interval["underspend_upper_limit"] <= underspend_perc <= change_interval["underspend_lower_limit"]:
+            budget_fulfillment_factor = change_interval["bid_cpc_proc_increase"]
             break
 
-    if (source_yesterday_spend < settings.AUTOPILOT_CPC_NO_SPEND_THRESHOLD and
-            budget_fulfillment_factor < settings.AUTOPILOT_CPC_NO_SPEND_CHANGE):
+    if (
+        source_yesterday_spend < settings.AUTOPILOT_CPC_NO_SPEND_THRESHOLD
+        and budget_fulfillment_factor < settings.AUTOPILOT_CPC_NO_SPEND_CHANGE
+    ):
         budget_fulfillment_factor = settings.AUTOPILOT_CPC_NO_SPEND_CHANGE
 
-    performance_factor = decimal.Decimal('1.0')
+    performance_factor = decimal.Decimal("1.0")
     for change_interval in settings.AUTOPILOT_CPC_CHANGE_PERFORMANCE_FACTOR_TABLE:
-        if change_interval['performance_upper_limit'] >= performance >= change_interval['performance_lower_limit']:
-            performance_factor = change_interval['performance_factor']
+        if change_interval["performance_upper_limit"] >= performance >= change_interval["performance_lower_limit"]:
+            performance_factor = change_interval["performance_factor"]
             break
     new_cpc = (current_cpc + current_cpc * budget_fulfillment_factor) * performance_factor
 
@@ -163,28 +168,18 @@ def _threshold_increasing_cpc(current_cpc, new_cpc):
     return new_cpc
 
 
-def _threshold_cpc_constraints(
-        ad_group, source, old_cpc, proposed_cpc,
-        cpc_change_comments, sources, bcm_modifiers):
+def _threshold_cpc_constraints(ad_group, source, old_cpc, proposed_cpc, cpc_change_comments, sources, bcm_modifiers):
     new_cpc = proposed_cpc
     if source == dash.models.AllRTBSource:
         constrained_cpcs = set()
         for s in sources:
             if s != dash.models.AllRTBSource and s.source_type.type == dash.constants.SourceType.B1:
                 constrained_cpcs.add(
-                    cpc_constraints.adjust_cpc(
-                        proposed_cpc,
-                        bcm_modifiers,
-                        ad_group=ad_group,
-                        source=s))
+                    cpc_constraints.adjust_cpc(proposed_cpc, bcm_modifiers, ad_group=ad_group, source=s)
+                )
         new_cpc = min(constrained_cpcs) if old_cpc < proposed_cpc else max(constrained_cpcs)
     else:
-        new_cpc = cpc_constraints.adjust_cpc(
-            proposed_cpc,
-            bcm_modifiers,
-            ad_group=ad_group,
-            source=source
-        )
+        new_cpc = cpc_constraints.adjust_cpc(proposed_cpc, bcm_modifiers, ad_group=ad_group, source=source)
 
     if new_cpc != proposed_cpc:
         cpc_change_comments += [CpcChangeComment.CPC_CONSTRAINT_APPLIED]
@@ -203,13 +198,15 @@ def _threshold_source_constraints(proposed_cpc, source_type, adgroup_settings, c
 
 
 def _get_cpc_max_decimal_places(source_dec_places):
-    return min(source_dec_places, settings.AUTOPILOT_CPC_MAX_DEC_PLACES) if source_dec_places else\
-        settings.AUTOPILOT_CPC_MAX_DEC_PLACES
+    return (
+        min(source_dec_places, settings.AUTOPILOT_CPC_MAX_DEC_PLACES)
+        if source_dec_places
+        else settings.AUTOPILOT_CPC_MAX_DEC_PLACES
+    )
 
 
 def _get_source_type_min_max_cpc(source_type, adgroup_settings, bcm_modifiers):
-    return source_type.get_min_cpc(adgroup_settings, bcm_modifiers),\
-        source_type.get_etfm_max_cpc(bcm_modifiers)
+    return source_type.get_min_cpc(adgroup_settings, bcm_modifiers), source_type.get_etfm_max_cpc(bcm_modifiers)
 
 
 def _threshold_ad_group_constraints(proposed_cpc, ad_group, cpc_change_comments, max_cpc_decimal_places):
@@ -228,11 +225,9 @@ def _threshold_cpc_min_change(reducing, current_cpc, new_cpc):
 
 def _threshold_autopilot_min_max_cpc(cpc, cpc_change_comments):
     if settings.AUTOPILOT_MIN_CPC > cpc:
-        return (settings.AUTOPILOT_MIN_CPC, cpc_change_comments +
-                [CpcChangeComment.UNDER_AUTOPILOT_MIN_CPC])
+        return (settings.AUTOPILOT_MIN_CPC, cpc_change_comments + [CpcChangeComment.UNDER_AUTOPILOT_MIN_CPC])
     if settings.AUTOPILOT_MAX_CPC < cpc:
-        return (settings.AUTOPILOT_MAX_CPC, cpc_change_comments +
-                [CpcChangeComment.OVER_AUTOPILOT_MAX_CPC])
+        return (settings.AUTOPILOT_MAX_CPC, cpc_change_comments + [CpcChangeComment.OVER_AUTOPILOT_MAX_CPC])
     return (cpc, cpc_change_comments)
 
 

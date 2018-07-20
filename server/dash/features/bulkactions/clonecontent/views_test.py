@@ -12,7 +12,7 @@ from . import service
 
 class CloneContentViewTest(restapi.common.views_base_test.RESTAPITest):
     def setUp(self):
-        self.user = magic_mixer.blend_user(permissions=['can_clone_contentads'])
+        self.user = magic_mixer.blend_user(permissions=["can_clone_contentads"])
         self.account = magic_mixer.blend(core.entity.Account, users=[self.user])
         self.campaign = magic_mixer.blend(core.entity.Campaign, account=self.account)
         self.ad_group = magic_mixer.blend(core.entity.AdGroup, campaign=self.campaign)
@@ -23,12 +23,14 @@ class CloneContentViewTest(restapi.common.views_base_test.RESTAPITest):
 
     @classmethod
     def clone_repr(cls, source_ad_group, destination_ad_group, selected_content_ads):
-        return cls.normalize({
-            'adGroupId': str(source_ad_group.pk),
-            'destinationAdGroupId': str(destination_ad_group.pk),
-            'destinationBatchName': "New batch name",
-            'contentAdIds': [x.pk for x in selected_content_ads],
-        })
+        return cls.normalize(
+            {
+                "adGroupId": str(source_ad_group.pk),
+                "destinationAdGroupId": str(destination_ad_group.pk),
+                "destinationBatchName": "New batch name",
+                "contentAdIds": [x.pk for x in selected_content_ads],
+            }
+        )
 
     def test_no_obj_access(self):
         ad_group = magic_mixer.blend(core.entity.AdGroup)
@@ -36,16 +38,16 @@ class CloneContentViewTest(restapi.common.views_base_test.RESTAPITest):
 
         data = self.clone_repr(ad_group, ad_group, content_ads)
 
-        r = self.client.post(reverse('content_ad_clone'), data=data, format='json')
-        self.assertResponseError(r, 'MissingDataError')
+        r = self.client.post(reverse("content_ad_clone"), data=data, format="json")
+        self.assertResponseError(r, "MissingDataError")
 
-    @mock.patch.object(service, 'clone', autospec=True)
+    @mock.patch.object(service, "clone", autospec=True)
     def test_post(self, mock_clone):
         batch_clone = magic_mixer.blend(core.entity.UploadBatch)
         mock_clone.return_value = batch_clone
 
         data = self.clone_repr(self.ad_group, self.ad_group, self.content_ads)
 
-        r = self.client.post(reverse('content_ad_clone'), data=data, format='json')
+        r = self.client.post(reverse("content_ad_clone"), data=data, format="json")
         r = self.assertResponseValid(r)
-        self.assertDictContainsSubset({'id': str(batch_clone.pk)}, r['data'])
+        self.assertDictContainsSubset({"id": str(batch_clone.pk)}, r["data"])

@@ -8,7 +8,6 @@ import core.source
 
 
 class CreateContentAdSource(TestCase):
-
     def test_create(self):
         content_ad = magic_mixer.blend(core.entity.ContentAd, state=constants.ContentAdSourceState.ACTIVE)
         source = magic_mixer.blend(core.source.Source)

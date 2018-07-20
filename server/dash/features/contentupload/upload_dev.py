@@ -9,7 +9,6 @@ from dash import constants
 
 
 class MockAsyncValidation(threading.Thread):
-
     def __init__(self, candidate, batch_callback, fail_probability=0.0, sleep_time=None, *args, **kwargs):
         assert settings.DEBUG or settings.TESTING
         super(MockAsyncValidation, self).__init__(*args, **kwargs)
@@ -31,8 +30,8 @@ class MockAsyncValidation(threading.Thread):
         rand = random.random()
         if self.candidate.image_status != constants.AsyncUploadJobStatus.PENDING_START:
             if rand > self.fail_probability:
-                self.candidate.image_id = 'p/srv/8678/13f72b5e37a64860a73ac95ff51b2a3e'
-                self.candidate.image_hash = '1234'
+                self.candidate.image_id = "p/srv/8678/13f72b5e37a64860a73ac95ff51b2a3e"
+                self.candidate.image_hash = "1234"
                 self.candidate.image_height = 500
                 self.candidate.image_width = 500
                 self.candidate.image_status = constants.AsyncUploadJobStatus.OK

@@ -22,26 +22,22 @@ def crossvalidation(request):
     try:
         request_signer.verify_wsgi_request(request, settings.BIDDER_API_SIGN_KEY)
     except request_signer.SignatureError as e:
-        logger.exception('Invalid crossvalidation signature.')
-        return _error_response('Invalid crossvalidation signature.', status=401)
+        logger.exception("Invalid crossvalidation signature.")
+        return _error_response("Invalid crossvalidation signature.", status=401)
 
     try:
-        start_date = datetime.datetime.strptime(request.GET['start_date'], '%Y-%m-%d').date()
-        end_date = datetime.datetime.strptime(request.GET['end_date'], '%Y-%m-%d').date()
+        start_date = datetime.datetime.strptime(request.GET["start_date"], "%Y-%m-%d").date()
+        end_date = datetime.datetime.strptime(request.GET["end_date"], "%Y-%m-%d").date()
     except Exception as e:
-        logger.exception('Invalid input parameters.')
+        logger.exception("Invalid input parameters.")
         return _error_response(str(e), status=400)
 
-    sources = dash.models.Source.objects.filter(source_type__type='b1')
+    sources = dash.models.Source.objects.filter(source_type__type="b1")
     bidder_slugs = {source.id: source.bidder_slug for source in sources}
 
     stats = redshiftapi.api_breakdowns.query(
-        ['content_ad_id', 'source_id', 'ad_group_id'],
-        {
-            'date__gte': start_date,
-            'date__lte': end_date,
-            'source_id': [source.id for source in sources],
-        },
+        ["content_ad_id", "source_id", "ad_group_id"],
+        {"date__gte": start_date, "date__lte": end_date, "source_id": [source.id for source in sources]},
         None,
         None,
         query_all=True,
@@ -49,8 +45,8 @@ def crossvalidation(request):
 
     # filter stats without impressions, so we don't have to use pointers in b1 for json decoding
     response_data = {
-        'status': 'OK',
-        'data': [_format_stat(stat, bidder_slugs) for stat in stats if stat['impressions'] is not None],
+        "status": "OK",
+        "data": [_format_stat(stat, bidder_slugs) for stat in stats if stat["impressions"] is not None],
     }
 
     return JsonResponse(response_data)
@@ -58,17 +54,14 @@ def crossvalidation(request):
 
 def _format_stat(stat, bidder_slugs):
     return {
-        'content_ad_id': stat['content_ad_id'],
-        'bidder_slug': bidder_slugs[stat['source_id']],
-        'ad_group_id': stat['ad_group_id'],
-        'impressions': stat['impressions'],
-        'clicks': stat['clicks'],
-        'cost': stat['media_cost'],
+        "content_ad_id": stat["content_ad_id"],
+        "bidder_slug": bidder_slugs[stat["source_id"]],
+        "ad_group_id": stat["ad_group_id"],
+        "impressions": stat["impressions"],
+        "clicks": stat["clicks"],
+        "cost": stat["media_cost"],
     }
 
 
 def _error_response(error_msg, status=500):
-    return JsonResponse({
-        'status': 'ERROR',
-        'error': error_msg,
-    }, status=status)
+    return JsonResponse({"status": "ERROR", "error": error_msg}, status=status)

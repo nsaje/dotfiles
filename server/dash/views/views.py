@@ -45,62 +45,68 @@ import analytics.projections
 
 logger = logging.getLogger(__name__)
 
-YAHOO_DASH_URL = 'https://gemini.yahoo.com/advertiser/{advertiser_id}/campaign/{campaign_id}'
-OUTBRAIN_DASH_URL = 'https://my.outbrain.com/amplify/site/marketers/{marketer_id}/reports/content?campaignId={campaign_id}'
-FACEBOOK_DASH_URL = 'https://business.facebook.com/ads/manager/campaign/?ids={campaign_id}&business_id={business_id}'
+YAHOO_DASH_URL = "https://gemini.yahoo.com/advertiser/{advertiser_id}/campaign/{campaign_id}"
+OUTBRAIN_DASH_URL = (
+    "https://my.outbrain.com/amplify/site/marketers/{marketer_id}/reports/content?campaignId={campaign_id}"
+)
+FACEBOOK_DASH_URL = "https://business.facebook.com/ads/manager/campaign/?ids={campaign_id}&business_id={business_id}"
 
 CAMPAIGN_NOT_CONFIGURED_SCENARIOS = {
-    'multiple_missing': {
-        'message': 'You are not able to add an ad group because campaign is missing some required configuration.',
-        'action_text': 'Configure the campaign',
-        'url_postfix': '',
+    "multiple_missing": {
+        "message": "You are not able to add an ad group because campaign is missing some required configuration.",
+        "action_text": "Configure the campaign",
+        "url_postfix": "",
     },
-    'goal_missing': {
-        'message': 'You are not able to add an ad group because campaign goal is not defined.',
-        'action_text': 'Configure the campaign goal',
-        'url_postfix': '&settingsScrollTo=zemCampaignGoalsSettings',
+    "goal_missing": {
+        "message": "You are not able to add an ad group because campaign goal is not defined.",
+        "action_text": "Configure the campaign goal",
+        "url_postfix": "&settingsScrollTo=zemCampaignGoalsSettings",
     },
-    'language_missing': {
-        'message': 'You are not able to add an ad group because campaign language is not defined.',
-        'action_text': 'Configure the campaign language',
-        'url_postfix': '&settingsScrollTo=zemCampaignGeneralSettings',
+    "language_missing": {
+        "message": "You are not able to add an ad group because campaign language is not defined.",
+        "action_text": "Configure the campaign language",
+        "url_postfix": "&settingsScrollTo=zemCampaignGeneralSettings",
     },
 }
 
 
 def index(request):
-    associated_agency = models.Agency.objects.all().filter(
-        Q(users__id=request.user.id) | Q(account__users__id=request.user.id)
-    ).first()
-    return render(request, 'index.html', {
-        'staticUrl': settings.CLIENT_STATIC_URL,
-        'debug': settings.DEBUG,
-        'whitelabel': associated_agency and associated_agency.whitelabel,
-        'custom_favicon_url': associated_agency and associated_agency.custom_favicon_url,
-        'custom_dashboard_title': associated_agency and associated_agency.custom_dashboard_title,
-    })
+    associated_agency = (
+        models.Agency.objects.all().filter(Q(users__id=request.user.id) | Q(account__users__id=request.user.id)).first()
+    )
+    return render(
+        request,
+        "index.html",
+        {
+            "staticUrl": settings.CLIENT_STATIC_URL,
+            "debug": settings.DEBUG,
+            "whitelabel": associated_agency and associated_agency.whitelabel,
+            "custom_favicon_url": associated_agency and associated_agency.custom_favicon_url,
+            "custom_dashboard_title": associated_agency and associated_agency.custom_dashboard_title,
+        },
+    )
 
 
 def supply_dash_redirect(request):
     # We do not authorization validation here since it only redirects to third-party
     # dashboards and if user can't access them, there is no harm done.
-    ad_group_id = request.GET.get('ad_group_id')
-    source_id = request.GET.get('source_id')
+    ad_group_id = request.GET.get("ad_group_id")
+    source_id = request.GET.get("source_id")
 
     validation_errors = {}
     if not ad_group_id:
-        validation_errors['ad_group_id'] = 'Missing param ad_group_id.'
+        validation_errors["ad_group_id"] = "Missing param ad_group_id."
 
     if not source_id:
-        validation_errors['source_id'] = 'Missing param source_id.'
+        validation_errors["source_id"] = "Missing param source_id."
 
     if validation_errors:
         raise exc.ValidationError(errors=validation_errors)
 
     try:
-        ad_group_source = models.AdGroupSource.objects\
-            .select_related('ad_group__campaign__account__yahoo_account')\
-            .get(ad_group__id=int(ad_group_id), source__id=int(source_id))
+        ad_group_source = models.AdGroupSource.objects.select_related("ad_group__campaign__account__yahoo_account").get(
+            ad_group__id=int(ad_group_id), source__id=int(source_id)
+        )
     except models.AdGroupSource.DoesNotExist:
         raise Http404()
 
@@ -108,34 +114,32 @@ def supply_dash_redirect(request):
     if ad_group_source.source.source_type.type == constants.SourceType.YAHOO:
         url = YAHOO_DASH_URL.format(
             advertiser_id=ad_group_source.ad_group.campaign.account.yahoo_account.advertiser_id,
-            campaign_id=ad_group_source.source_campaign_key
+            campaign_id=ad_group_source.source_campaign_key,
         )
     elif ad_group_source.source.source_type.type == constants.SourceType.OUTBRAIN:
-        if 'campaign_id' not in ad_group_source.source_campaign_key:
+        if "campaign_id" not in ad_group_source.source_campaign_key:
             raise Http404()
         url = OUTBRAIN_DASH_URL.format(
-            campaign_id=ad_group_source.source_campaign_key['campaign_id'],
-            marketer_id=str(ad_group_source.source_campaign_key['marketer_id'])
+            campaign_id=ad_group_source.source_campaign_key["campaign_id"],
+            marketer_id=str(ad_group_source.source_campaign_key["marketer_id"]),
         )
     elif ad_group_source.source.source_type.type == constants.SourceType.FACEBOOK:
         url = FACEBOOK_DASH_URL.format(
-            campaign_id=ad_group_source.source_campaign_key,
-            business_id=json.loads(credentials)['business_id'],
+            campaign_id=ad_group_source.source_campaign_key, business_id=json.loads(credentials)["business_id"]
         )
     else:
         raise exc.MissingDataError()
 
-    return render(request, 'redirect.html', {'url': url})
+    return render(request, "redirect.html", {"url": url})
 
 
 class User(api_common.BaseApiView):
-
-    @influx.timer('dash.api')
+    @influx.timer("dash.api")
     def get(self, request, user_id):
         response = {}
 
-        if user_id == 'current':
-            response['user'] = self.get_dict(request.user)
+        if user_id == "current":
+            response["user"] = self.get_dict(request.user)
 
         return self.create_api_response(response)
 
@@ -145,21 +149,21 @@ class User(api_common.BaseApiView):
 
         agency = helpers.get_user_agency(user)
         return {
-            'id': str(user.pk),
-            'email': user.email,
-            'name': user.get_full_name(),
-            'agency': agency.id if agency else None,
-            'permissions': user.get_all_permissions_with_access_levels(),
-            'timezone_offset': pytz.timezone(settings.DEFAULT_TIME_ZONE).utcoffset(
-                datetime.datetime.utcnow(), is_dst=True).total_seconds()
+            "id": str(user.pk),
+            "email": user.email,
+            "name": user.get_full_name(),
+            "agency": agency.id if agency else None,
+            "permissions": user.get_all_permissions_with_access_levels(),
+            "timezone_offset": pytz.timezone(settings.DEFAULT_TIME_ZONE)
+            .utcoffset(datetime.datetime.utcnow(), is_dst=True)
+            .total_seconds(),
         }
 
 
 class AccountArchive(api_common.BaseApiView):
-
-    @influx.timer('dash.api')
+    @influx.timer("dash.api")
     def post(self, request, account_id):
-        if not request.user.has_perm('zemauth.archive_restore_entity'):
+        if not request.user.has_perm("zemauth.archive_restore_entity"):
             raise exc.AuthorizationError()
         account = helpers.get_account(request.user, account_id)
         account.archive(request)
@@ -167,10 +171,9 @@ class AccountArchive(api_common.BaseApiView):
 
 
 class AccountRestore(api_common.BaseApiView):
-
-    @influx.timer('dash.api')
+    @influx.timer("dash.api")
     def post(self, request, account_id):
-        if not request.user.has_perm('zemauth.archive_restore_entity'):
+        if not request.user.has_perm("zemauth.archive_restore_entity"):
             raise exc.AuthorizationError()
 
         account = helpers.get_account(request.user, account_id)
@@ -179,10 +182,9 @@ class AccountRestore(api_common.BaseApiView):
 
 
 class CampaignArchive(api_common.BaseApiView):
-
-    @influx.timer('dash.api')
+    @influx.timer("dash.api")
     def post(self, request, campaign_id):
-        if not request.user.has_perm('zemauth.archive_restore_entity'):
+        if not request.user.has_perm("zemauth.archive_restore_entity"):
             raise exc.AuthorizationError()
 
         campaign = helpers.get_campaign(request.user, campaign_id)
@@ -191,10 +193,9 @@ class CampaignArchive(api_common.BaseApiView):
 
 
 class CampaignRestore(api_common.BaseApiView):
-
-    @influx.timer('dash.api')
+    @influx.timer("dash.api")
     def post(self, request, campaign_id):
-        if not request.user.has_perm('zemauth.archive_restore_entity'):
+        if not request.user.has_perm("zemauth.archive_restore_entity"):
             raise exc.AuthorizationError()
 
         campaign = helpers.get_campaign(request.user, campaign_id)
@@ -204,8 +205,7 @@ class CampaignRestore(api_common.BaseApiView):
 
 
 class AdGroupOverview(api_common.BaseApiView):
-
-    @influx.timer('dash.api')
+    @influx.timer("dash.api")
     @db_for_reads.use_stats_read_replica()
     def get(self, request, ad_group_id):
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
@@ -214,70 +214,58 @@ class AdGroupOverview(api_common.BaseApiView):
         start_date = view_filter.start_date
         end_date = view_filter.end_date
 
-        async_perf_query = threads.AsyncFunction(
-            partial(
-                infobox_helpers.get_yesterday_adgroup_spend,
-                ad_group
-            )
-        )
+        async_perf_query = threads.AsyncFunction(partial(infobox_helpers.get_yesterday_adgroup_spend, ad_group))
         async_perf_query.start()
 
         filtered_sources = view_filter.filtered_sources
         ad_group_settings = ad_group.get_current_settings()
 
-        ad_group_running_status = infobox_helpers.get_adgroup_running_status(
-            request.user, ad_group, filtered_sources)
+        ad_group_running_status = infobox_helpers.get_adgroup_running_status(request.user, ad_group, filtered_sources)
 
         header = {
-            'title': ad_group.name,
-            'active': ad_group_running_status,
-            'level': constants.InfoboxLevel.ADGROUP,
-            'level_verbose': '{}: '.format(constants.InfoboxLevel.get_text(constants.InfoboxLevel.ADGROUP)),
+            "title": ad_group.name,
+            "active": ad_group_running_status,
+            "level": constants.InfoboxLevel.ADGROUP,
+            "level_verbose": "{}: ".format(constants.InfoboxLevel.get_text(constants.InfoboxLevel.ADGROUP)),
         }
 
         delivery = {
-            'status': ad_group_running_status,
-            'text': infobox_helpers.get_entity_delivery_text(ad_group_running_status)
+            "status": ad_group_running_status,
+            "text": infobox_helpers.get_entity_delivery_text(ad_group_running_status),
         }
 
         basic_settings = self._basic_settings(request.user, ad_group, ad_group_settings)
         performance_settings = self._performance_settings(
-            ad_group, request.user, ad_group_settings, start_date, end_date,
-            async_perf_query, filtered_sources
+            ad_group, request.user, ad_group_settings, start_date, end_date, async_perf_query, filtered_sources
         )
         for setting in performance_settings[1:]:
-            setting['section_start'] = True
+            setting["section_start"] = True
 
         response = {
-            'header': header,
-            'delivery': delivery,
-            'basic_settings': basic_settings,
-            'performance_settings': performance_settings,
+            "header": header,
+            "delivery": delivery,
+            "basic_settings": basic_settings,
+            "performance_settings": performance_settings,
         }
         return self.create_api_response(response)
 
     def _basic_settings(self, user, ad_group, ad_group_settings):
         settings = []
 
-        flight_time, flight_time_left_days =\
-            infobox_helpers.format_flight_time(
-                ad_group_settings.start_date,
-                ad_group_settings.end_date
-            )
+        flight_time, flight_time_left_days = infobox_helpers.format_flight_time(
+            ad_group_settings.start_date, ad_group_settings.end_date
+        )
         days_left_description = None
         if flight_time_left_days is not None:
             days_left_description = "{} days left".format(flight_time_left_days)
-        flight_time_setting = infobox_helpers.OverviewSetting(
-            'Flight time:',
-            flight_time,
-            days_left_description
-        )
+        flight_time_setting = infobox_helpers.OverviewSetting("Flight time:", flight_time, days_left_description)
         settings.append(flight_time_setting.as_dict())
 
         return settings
 
-    def _performance_settings(self, ad_group, user, ad_group_settings, start_date, end_date,
-                              async_query, filtered_sources):
+    def _performance_settings(
+        self, ad_group, user, ad_group_settings, start_date, end_date, async_query, filtered_sources
+    ):
         settings = []
 
         currency = ad_group.campaign.account.currency
@@ -285,30 +273,24 @@ class AdGroupOverview(api_common.BaseApiView):
         yesterday_costs = async_query.join_and_get_result() or 0
         daily_cap = infobox_helpers.calculate_daily_ad_group_cap(ad_group)
 
-        settings.append(infobox_helpers.create_yesterday_spend_setting(
-            yesterday_costs,
-            daily_cap,
-            currency,
-            uses_bcm_v2=ad_group.campaign.account.uses_bcm_v2
-        ).as_dict())
+        settings.append(
+            infobox_helpers.create_yesterday_spend_setting(
+                yesterday_costs, daily_cap, currency, uses_bcm_v2=ad_group.campaign.account.uses_bcm_v2
+            ).as_dict()
+        )
 
-        if user.has_perm('zemauth.campaign_goal_performance'):
-            settings.extend(infobox_helpers.get_primary_campaign_goal_ad_group(
-                user,
-                ad_group,
-                start_date,
-                end_date,
-                currency
-            ))
+        if user.has_perm("zemauth.campaign_goal_performance"):
+            settings.extend(
+                infobox_helpers.get_primary_campaign_goal_ad_group(user, ad_group, start_date, end_date, currency)
+            )
 
         return settings
 
 
 class AdGroupArchive(api_common.BaseApiView):
-
-    @influx.timer('dash.api')
+    @influx.timer("dash.api")
     def post(self, request, ad_group_id):
-        if not request.user.has_perm('zemauth.archive_restore_entity'):
+        if not request.user.has_perm("zemauth.archive_restore_entity"):
             raise exc.AuthorizationError()
 
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
@@ -317,10 +299,9 @@ class AdGroupArchive(api_common.BaseApiView):
 
 
 class AdGroupRestore(api_common.BaseApiView):
-
-    @influx.timer('dash.api')
+    @influx.timer("dash.api")
     def post(self, request, ad_group_id):
-        if not request.user.has_perm('zemauth.archive_restore_entity'):
+        if not request.user.has_perm("zemauth.archive_restore_entity"):
             raise exc.AuthorizationError()
 
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
@@ -330,14 +311,13 @@ class AdGroupRestore(api_common.BaseApiView):
 
 
 class CampaignAdGroups(api_common.BaseApiView):
-
-    @influx.timer('dash.api')
+    @influx.timer("dash.api")
     def put(self, request, campaign_id):
         campaign = helpers.get_campaign(request.user, campaign_id)
         self._validate_campaign_ready(request, campaign)
         ad_group = core.entity.AdGroup.objects.create(request, campaign, is_restapi=self.rest_proxy)
         native_server.apply_ad_group_create_hacks(request, ad_group)
-        return self.create_api_response({'name': ad_group.name, 'id': ad_group.id})
+        return self.create_api_response({"name": ad_group.name, "id": ad_group.id})
 
     @staticmethod
     def _validate_campaign_ready(request, campaign):
@@ -345,32 +325,27 @@ class CampaignAdGroups(api_common.BaseApiView):
         scenario = None
 
         if not primary_goal and not campaign.settings.language:
-            scenario = 'multiple_missing'
+            scenario = "multiple_missing"
         elif not primary_goal:
-            scenario = 'goal_missing'
+            scenario = "goal_missing"
         elif not campaign.settings.language:
-            scenario = 'language_missing'
+            scenario = "language_missing"
 
         if scenario:
-            url = request.build_absolute_uri(
-                '/v2/analytics/campaign/{}?settings'.format(
-                    campaign.id,
-                )
-            ) + CAMPAIGN_NOT_CONFIGURED_SCENARIOS[scenario]['url_postfix']
+            url = (
+                request.build_absolute_uri("/v2/analytics/campaign/{}?settings".format(campaign.id))
+                + CAMPAIGN_NOT_CONFIGURED_SCENARIOS[scenario]["url_postfix"]
+            )
             raise exc.ValidationError(
                 data={
-                    'message': CAMPAIGN_NOT_CONFIGURED_SCENARIOS[scenario]['message'],
-                    'action': {
-                        'text': CAMPAIGN_NOT_CONFIGURED_SCENARIOS[scenario]['action_text'],
-                        'url': url,
-                    }
+                    "message": CAMPAIGN_NOT_CONFIGURED_SCENARIOS[scenario]["message"],
+                    "action": {"text": CAMPAIGN_NOT_CONFIGURED_SCENARIOS[scenario]["action_text"], "url": url},
                 }
             )
 
 
 class CampaignOverview(api_common.BaseApiView):
-
-    @influx.timer('dash.api')
+    @influx.timer("dash.api")
     @db_for_reads.use_stats_read_replica()
     def get(self, request, campaign_id):
         campaign = helpers.get_campaign(request.user, campaign_id)
@@ -383,67 +358,52 @@ class CampaignOverview(api_common.BaseApiView):
         campaign_running_status = infobox_helpers.get_campaign_running_status(campaign)
 
         header = {
-            'title': campaign.name,
-            'active': campaign_running_status,
-            'level': constants.InfoboxLevel.CAMPAIGN,
-            'level_verbose': '{}: '.format(constants.InfoboxLevel.get_text(constants.InfoboxLevel.CAMPAIGN)),
+            "title": campaign.name,
+            "active": campaign_running_status,
+            "level": constants.InfoboxLevel.CAMPAIGN,
+            "level_verbose": "{}: ".format(constants.InfoboxLevel.get_text(constants.InfoboxLevel.CAMPAIGN)),
         }
 
         delivery = {
-            'status': campaign_running_status,
-            'text': infobox_helpers.get_entity_delivery_text(campaign_running_status)
+            "status": campaign_running_status,
+            "text": infobox_helpers.get_entity_delivery_text(campaign_running_status),
         }
 
         basic_settings = self._basic_settings(request.user, campaign, campaign_settings)
 
         performance_settings = self._performance_settings(
-            campaign,
-            request.user,
-            campaign_settings,
-            start_date,
-            end_date,
+            campaign, request.user, campaign_settings, start_date, end_date
         )
 
         for setting in performance_settings[1:]:
-            setting['section_start'] = True
+            setting["section_start"] = True
 
         response = {
-            'header': header,
-            'delivery': delivery,
-            'basic_settings': basic_settings,
-            'performance_settings': performance_settings,
+            "header": header,
+            "delivery": delivery,
+            "basic_settings": basic_settings,
+            "performance_settings": performance_settings,
         }
         return self.create_api_response(response)
 
-    @influx.timer('dash.api')
+    @influx.timer("dash.api")
     def _basic_settings(self, user, campaign, campaign_settings):
         settings = []
 
         campaign_manager_setting = infobox_helpers.OverviewSetting(
-            'Campaign Manager:',
-            infobox_helpers.format_username(campaign_settings.campaign_manager)
+            "Campaign Manager:", infobox_helpers.format_username(campaign_settings.campaign_manager)
         )
         settings.append(campaign_manager_setting.as_dict())
 
-        start_date, end_date, never_finishes = self._calculate_flight_dates(
-            campaign
-        )
+        start_date, end_date, never_finishes = self._calculate_flight_dates(campaign)
         if never_finishes:
             end_date = None
 
-        flight_time, flight_time_left_days =\
-            infobox_helpers.format_flight_time(
-                start_date,
-                end_date
-            )
+        flight_time, flight_time_left_days = infobox_helpers.format_flight_time(start_date, end_date)
         flight_time_left_description = None
         if flight_time_left_days is not None:
             flight_time_left_description = "{} days left".format(flight_time_left_days)
-        flight_time_setting = infobox_helpers.OverviewSetting(
-            'Flight time:',
-            flight_time,
-            flight_time_left_description
-        )
+        flight_time_setting = infobox_helpers.OverviewSetting("Flight time:", flight_time, flight_time_left_description)
         settings.append(flight_time_setting.as_dict())
 
         currency = campaign.account.currency
@@ -452,56 +412,46 @@ class CampaignOverview(api_common.BaseApiView):
         total_spend = infobox_helpers.get_total_campaign_budgets_amount(user, campaign)
         total_spend_available = infobox_helpers.calculate_available_campaign_budget(campaign)
         campaign_budget_setting = infobox_helpers.OverviewSetting(
-            'Campaign budget:',
+            "Campaign budget:",
             lc_helper.format_currency(total_spend, curr=currency_symbol),
-            '{} remaining'.format(
-                lc_helper.format_currency(total_spend_available, curr=currency_symbol)
-            ),
-            tooltip="Campaign media budget"
+            "{} remaining".format(lc_helper.format_currency(total_spend_available, curr=currency_symbol)),
+            tooltip="Campaign media budget",
         )
         settings.append(campaign_budget_setting.as_dict())
         return settings
 
-    @influx.timer('dash.api')
+    @influx.timer("dash.api")
     def _performance_settings(self, campaign, user, campaign_settings, start_date, end_date):
         settings = []
 
-        monthly_proj = analytics.projections.CurrentMonthBudgetProjections(
-            'campaign',
-            campaign=campaign
-        )
+        monthly_proj = analytics.projections.CurrentMonthBudgetProjections("campaign", campaign=campaign)
 
-        pacing = monthly_proj.total('pacing') or decimal.Decimal('0')
+        pacing = monthly_proj.total("pacing") or decimal.Decimal("0")
 
         currency = campaign.account.currency
         currency_symbol = core.multicurrency.get_currency_symbol(currency)
 
         daily_cap = infobox_helpers.calculate_daily_campaign_cap(campaign)
         yesterday_costs = infobox_helpers.get_yesterday_campaign_spend(campaign) or 0
-        settings.append(infobox_helpers.create_yesterday_spend_setting(
-            yesterday_costs,
-            daily_cap,
-            currency,
-            uses_bcm_v2=campaign.account.uses_bcm_v2
-        ).as_dict())
+        settings.append(
+            infobox_helpers.create_yesterday_spend_setting(
+                yesterday_costs, daily_cap, currency, uses_bcm_v2=campaign.account.uses_bcm_v2
+            ).as_dict()
+        )
 
-        attributed_media_spend = monthly_proj.total('attributed_media_spend')
+        attributed_media_spend = monthly_proj.total("attributed_media_spend")
         if attributed_media_spend is not None:
-            settings.append(infobox_helpers.OverviewSetting(
-                'Campaign pacing:',
-                lc_helper.format_currency(attributed_media_spend, curr=currency_symbol),
-                description='{:.2f}% on plan'.format(pacing or 0),
-                tooltip='Campaign pacing for the current month'
-            ).as_dict())
+            settings.append(
+                infobox_helpers.OverviewSetting(
+                    "Campaign pacing:",
+                    lc_helper.format_currency(attributed_media_spend, curr=currency_symbol),
+                    description="{:.2f}% on plan".format(pacing or 0),
+                    tooltip="Campaign pacing for the current month",
+                ).as_dict()
+            )
 
-        if user.has_perm('zemauth.campaign_goal_performance'):
-            settings.extend(infobox_helpers.get_primary_campaign_goal(
-                user,
-                campaign,
-                start_date,
-                end_date,
-                currency
-            ))
+        if user.has_perm("zemauth.campaign_goal_performance"):
+            settings.extend(infobox_helpers.get_primary_campaign_goal(user, campaign, start_date, end_date, currency))
 
         return settings
 
@@ -510,9 +460,11 @@ class CampaignOverview(api_common.BaseApiView):
         end_date = None
         never_finishes = False
 
-        ad_groups_settings = models.AdGroupSettings.objects.filter(
-            ad_group__campaign=campaign
-        ).group_current_settings().values_list('start_date', 'end_date')
+        ad_groups_settings = (
+            models.AdGroupSettings.objects.filter(ad_group__campaign=campaign)
+            .group_current_settings()
+            .values_list("start_date", "end_date")
+        )
         for ad_group_settings in ad_groups_settings:
             adg_start_date = ad_group_settings[0]
             adg_end_date = ad_group_settings[1]
@@ -534,8 +486,7 @@ class CampaignOverview(api_common.BaseApiView):
 
 
 class AccountOverview(api_common.BaseApiView):
-
-    @influx.timer('dash.api')
+    @influx.timer("dash.api")
     @db_for_reads.use_stats_read_replica()
     def get(self, request, account_id):
         account = helpers.get_account(request.user, account_id, select_related_users=True)
@@ -543,28 +494,28 @@ class AccountOverview(api_common.BaseApiView):
         account_running_status = infobox_helpers.get_account_running_status(account)
 
         header = {
-            'title': account.name,
-            'active': account_running_status,
-            'level': constants.InfoboxLevel.ACCOUNT,
-            'level_verbose': '{}: '.format(constants.InfoboxLevel.get_text(constants.InfoboxLevel.ACCOUNT)),
+            "title": account.name,
+            "active": account_running_status,
+            "level": constants.InfoboxLevel.ACCOUNT,
+            "level_verbose": "{}: ".format(constants.InfoboxLevel.get_text(constants.InfoboxLevel.ACCOUNT)),
         }
 
         delivery = {
-            'status': account_running_status,
-            'text': infobox_helpers.get_entity_delivery_text(account_running_status)
+            "status": account_running_status,
+            "text": infobox_helpers.get_entity_delivery_text(account_running_status),
         }
 
         basic_settings = self._basic_settings(request.user, account)
 
         performance_settings = self._performance_settings(account, request.user)
         for setting in performance_settings[1:]:
-            setting['section_start'] = True
+            setting["section_start"] = True
 
         response = {
-            'header': header,
-            'delivery': delivery,
-            'basic_settings': basic_settings,
-            'performance_settings': performance_settings,
+            "header": header,
+            "delivery": delivery,
+            "basic_settings": basic_settings,
+            "performance_settings": performance_settings,
         }
 
         return self.create_api_response(response)
@@ -574,59 +525,46 @@ class AccountOverview(api_common.BaseApiView):
 
         account_settings = account.get_current_settings()
         account_manager_setting = infobox_helpers.OverviewSetting(
-            'Account Manager:',
-            infobox_helpers.format_username(account_settings.default_account_manager)
+            "Account Manager:", infobox_helpers.format_username(account_settings.default_account_manager)
         )
         settings.append(account_manager_setting.as_dict())
 
-        sales_manager_setting_label = 'Sales Representative:'
-        cs_manager_setting_label = 'CS Representative:'
+        sales_manager_setting_label = "Sales Representative:"
+        cs_manager_setting_label = "CS Representative:"
 
         sales_manager_setting = infobox_helpers.OverviewSetting(
             sales_manager_setting_label,
             infobox_helpers.format_username(account_settings.default_sales_representative),
-            tooltip='Sales Representative'
+            tooltip="Sales Representative",
         )
         settings.append(sales_manager_setting.as_dict())
 
         cs_manager_setting = infobox_helpers.OverviewSetting(
             cs_manager_setting_label,
             infobox_helpers.format_username(account_settings.default_cs_representative),
-            tooltip='Customer Success Representative'
+            tooltip="Customer Success Representative",
         )
         settings.append(cs_manager_setting.as_dict())
 
         allocated_credit, available_credit = infobox_helpers.calculate_allocated_and_available_credit(account)
 
         currency_symbol = core.multicurrency.get_currency_symbol(account.currency)
-        allocated_credit_text = lc_helper.format_currency(
-            allocated_credit,
-            curr=currency_symbol,
-        )
-        unallocated_credit_text = lc_helper.format_currency(
-            available_credit,
-            curr=currency_symbol,
-        )
+        allocated_credit_text = lc_helper.format_currency(allocated_credit, curr=currency_symbol)
+        unallocated_credit_text = lc_helper.format_currency(available_credit, curr=currency_symbol)
 
         allocated_credit_setting = infobox_helpers.OverviewSetting(
-            'Allocated credit:',
+            "Allocated credit:",
             allocated_credit_text,
-            description='{} unallocated'.format(unallocated_credit_text),
-            tooltip='Total allocated and unallocated credit',
+            description="{} unallocated".format(unallocated_credit_text),
+            tooltip="Total allocated and unallocated credit",
         )
         settings.append(allocated_credit_setting.as_dict())
 
         credit_refund = infobox_helpers.calculate_credit_refund(account)
         if credit_refund:
-            credit_refund_text = lc_helper.format_currency(
-                credit_refund,
-                curr=currency_symbol,
-            )
+            credit_refund_text = lc_helper.format_currency(credit_refund, curr=currency_symbol)
             credit_refund_setting = infobox_helpers.OverviewSetting(
-                'Refunded credit:',
-                credit_refund_text,
-                description='',
-                tooltip='Total refunded credit',
+                "Refunded credit:", credit_refund_text, description="", tooltip="Total refunded credit"
             )
             settings.append(credit_refund_setting.as_dict())
 
@@ -640,44 +578,35 @@ class AccountOverview(api_common.BaseApiView):
         yesterday_costs = infobox_helpers.get_yesterday_account_spend(account)
         settings.append(
             infobox_helpers.create_yesterday_spend_setting(
-                yesterday_costs,
-                daily_budget,
-                currency,
-                uses_bcm_v2=account.uses_bcm_v2
-            ).as_dict(),
+                yesterday_costs, daily_budget, currency, uses_bcm_v2=account.uses_bcm_v2
+            ).as_dict()
         )
 
         return settings
 
 
 class AvailableSources(api_common.BaseApiView):
-
-    @influx.timer('dash.api')
+    @influx.timer("dash.api")
     def get(self, request):
         user_accounts = models.Account.objects.all().filter_by_user(request.user)
-        user_sources = (models.Source.objects.filter(account__in=user_accounts)
-                        .filter(deprecated=False)
-                        .distinct()
-                        .only('id', 'name', 'deprecated'))
+        user_sources = (
+            models.Source.objects.filter(account__in=user_accounts)
+            .filter(deprecated=False)
+            .distinct()
+            .only("id", "name", "deprecated")
+        )
 
         sources = []
         for source in user_sources:
-            sources.append({
-                'id': str(source.id),
-                'name': source.name,
-                'deprecated': source.deprecated,
-            })
+            sources.append({"id": str(source.id), "name": source.name, "deprecated": source.deprecated})
 
-        return self.create_api_response({
-            'sources': sources
-        })
+        return self.create_api_response({"sources": sources})
 
 
 class AdGroupSources(api_common.BaseApiView):
-
-    @influx.timer('dash.api')
+    @influx.timer("dash.api")
     def get(self, request, ad_group_id):
-        if not request.user.has_perm('zemauth.ad_group_sources_add_source'):
+        if not request.user.has_perm("zemauth.ad_group_sources_add_source"):
             raise exc.MissingDataError()
 
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
@@ -685,37 +614,40 @@ class AdGroupSources(api_common.BaseApiView):
 
         allowed_sources = ad_group.campaign.account.allowed_sources.all()
         existing_ad_group_sources = ad_group.adgroupsource_set.exclude(ad_review_only=True)
-        filtered_sources = helpers.get_filtered_sources(request.user, request.GET.get('filtered_sources'))
-        sources_with_credentials = models.DefaultSourceSettings.objects.all().with_credentials().values('source')
-        available_sources = allowed_sources.\
-            exclude(pk__in=existing_ad_group_sources.values_list('source_id')).\
-            filter(pk__in=filtered_sources).\
-            filter(pk__in=sources_with_credentials).\
-            order_by('name')
+        filtered_sources = helpers.get_filtered_sources(request.user, request.GET.get("filtered_sources"))
+        sources_with_credentials = models.DefaultSourceSettings.objects.all().with_credentials().values("source")
+        available_sources = (
+            allowed_sources.exclude(pk__in=existing_ad_group_sources.values_list("source_id"))
+            .filter(pk__in=filtered_sources)
+            .filter(pk__in=sources_with_credentials)
+            .order_by("name")
+        )
 
         sources = []
         for source in available_sources:
-            sources.append({
-                'id': source.id,
-                'name': source.name,
-                'can_target_existing_regions': region_targeting_helper.can_target_existing_regions(
-                    source, ad_group_settings),
-                'can_retarget': retargeting_helper.can_add_source_with_retargeting(source, ad_group_settings)
-            })
+            sources.append(
+                {
+                    "id": source.id,
+                    "name": source.name,
+                    "can_target_existing_regions": region_targeting_helper.can_target_existing_regions(
+                        source, ad_group_settings
+                    ),
+                    "can_retarget": retargeting_helper.can_add_source_with_retargeting(source, ad_group_settings),
+                }
+            )
 
-        return self.create_api_response({
-            'sources': sorted(sources, key=lambda source: source['name']),
-            'sources_waiting': [],
-        })
+        return self.create_api_response(
+            {"sources": sorted(sources, key=lambda source: source["name"]), "sources_waiting": []}
+        )
 
-    @influx.timer('dash.api')
+    @influx.timer("dash.api")
     def put(self, request, ad_group_id):
-        if not request.user.has_perm('zemauth.ad_group_sources_add_source'):
+        if not request.user.has_perm("zemauth.ad_group_sources_add_source"):
             raise exc.MissingDataError()
 
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
 
-        source_id = json.loads(request.body)['source_id']
+        source_id = json.loads(request.body)["source_id"]
         source = models.Source.objects.get(id=source_id)
 
         core.entity.AdGroupSource.objects.create(request, ad_group, source, write_history=True, k1_sync=True)
@@ -724,56 +656,43 @@ class AdGroupSources(api_common.BaseApiView):
 
 
 class Account(api_common.BaseApiView):
-
-    @influx.timer('dash.api')
+    @influx.timer("dash.api")
     def put(self, request):
-        if not request.user.has_perm('zemauth.all_accounts_accounts_add_account'):
+        if not request.user.has_perm("zemauth.all_accounts_accounts_add_account"):
             raise exc.MissingDataError()
 
-        agency = models.Agency.objects.all().filter(
-            users=request.user
-        ).first()
+        agency = models.Agency.objects.all().filter(users=request.user).first()
 
         account = models.Account.objects.create(
-            request,
-            name=core.entity.helpers.create_default_name(models.Account.objects, 'New account'),
-            agency=agency,
+            request, name=core.entity.helpers.create_default_name(models.Account.objects, "New account"), agency=agency
         )
 
-        response = {
-            'name': account.name,
-            'id': account.id
-        }
+        response = {"name": account.name, "id": account.id}
 
         return self.create_api_response(response)
 
 
 class AccountCampaigns(api_common.BaseApiView):
-
-    @influx.timer('dash.api')
+    @influx.timer("dash.api")
     def put(self, request, account_id):
-        if not request.user.has_perm('zemauth.account_campaigns_view'):
+        if not request.user.has_perm("zemauth.account_campaigns_view"):
             raise exc.MissingDataError()
 
         account = helpers.get_account(request.user, account_id)
 
-        name = core.entity.helpers.create_default_name(models.Campaign.objects.filter(account=account), 'New campaign')
+        name = core.entity.helpers.create_default_name(models.Campaign.objects.filter(account=account), "New campaign")
 
         language = constants.Language.ENGLISH if self.rest_proxy else None
         campaign = models.Campaign.objects.create(request, account, name, language=language)
         native_server.apply_campaign_create_hacks(request, campaign)
 
-        response = {
-            'name': campaign.name,
-            'id': campaign.id
-        }
+        response = {"name": campaign.name, "id": campaign.id}
 
         return self.create_api_response(response)
 
 
 class AdGroupSourceSettings(api_common.BaseApiView):
-
-    @influx.timer('dash.api')
+    @influx.timer("dash.api")
     def put(self, request, ad_group_id, source_id):
         resource = json.loads(request.body)
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
@@ -781,14 +700,14 @@ class AdGroupSourceSettings(api_common.BaseApiView):
         try:
             ad_group_source = models.AdGroupSource.objects.get(ad_group=ad_group, source_id=source_id)
         except models.AdGroupSource.DoesNotExist:
-            raise exc.MissingDataError(message='Requested source not found')
+            raise exc.MissingDataError(message="Requested source not found")
 
         form = forms.AdGroupSourceSettingsForm(resource)
         if not form.is_valid():
             raise exc.ValidationError(errors=dict(form.errors))
 
         for field in ad_group_source.settings.multicurrency_fields:
-            form.cleaned_data['local_{}'.format(field)] = form.cleaned_data.pop(field, None)
+            form.cleaned_data["local_{}".format(field)] = form.cleaned_data.pop(field, None)
 
         data = {k: v for k, v in list(form.cleaned_data.items()) if v is not None}
         data = native_server.transform_ad_group_source_settings(ad_group, data)
@@ -799,103 +718,120 @@ class AdGroupSourceSettings(api_common.BaseApiView):
         campaign_settings = ad_group.campaign.get_current_settings()
         ad_group_settings = ad_group.get_current_settings()
 
-        return self.create_api_response({
-            'editable_fields': helpers.get_editable_fields(
-                ad_group,
-                ad_group_source,
-                ad_group_settings,
-                ad_group_source.get_current_settings(),
-                campaign_settings,
-                allowed_sources,
-            ),
-            'autopilot_changed_sources': response['autopilot_changed_sources_text'],
-            'enabling_autopilot_sources_allowed': helpers.enabling_autopilot_single_source_allowed(
-                ad_group,
-            )
-        })
+        return self.create_api_response(
+            {
+                "editable_fields": helpers.get_editable_fields(
+                    ad_group,
+                    ad_group_source,
+                    ad_group_settings,
+                    ad_group_source.get_current_settings(),
+                    campaign_settings,
+                    allowed_sources,
+                ),
+                "autopilot_changed_sources": response["autopilot_changed_sources_text"],
+                "enabling_autopilot_sources_allowed": helpers.enabling_autopilot_single_source_allowed(ad_group),
+            }
+        )
 
     def _update_ad_group_source(self, request, ad_group_source, data):
         try:
             return ad_group_source.settings.update(request, k1_sync=True, **data)
 
         except core.entity.settings.ad_group_source_settings.exceptions.DailyBudgetNegative as err:
-            raise exc.ValidationError(errors={'daily_budget_cc': [str(err)]})
+            raise exc.ValidationError(errors={"daily_budget_cc": [str(err)]})
 
         except core.entity.settings.ad_group_source_settings.exceptions.MinimalDailyBudgetTooLow as err:
-            raise exc.ValidationError(errors={
-                'daily_budget_cc': ['Please provide daily spend cap of at least {}.'.format(
-                    core.multicurrency.format_value_in_currency(
-                        err.data.get('value'), 0, decimal.ROUND_CEILING, ad_group_source.settings.get_currency(),
-                    ),
-                )]
-            })
+            raise exc.ValidationError(
+                errors={
+                    "daily_budget_cc": [
+                        "Please provide daily spend cap of at least {}.".format(
+                            core.multicurrency.format_value_in_currency(
+                                err.data.get("value"), 0, decimal.ROUND_CEILING, ad_group_source.settings.get_currency()
+                            )
+                        )
+                    ]
+                }
+            )
 
         except core.entity.settings.ad_group_source_settings.exceptions.MaximalDailyBudgetTooHigh as err:
-            raise exc.ValidationError(errors={
-                'daily_budget_cc': [
-                    'Maximum allowed daily spend cap is {}. '
-                    'If you want use a higher daily spend cap, please contact support.'.format(
-                        core.multicurrency.format_value_in_currency(
-                            err.data.get('value'), 0, decimal.ROUND_FLOOR, ad_group_source.settings.get_currency(),
-                        ),
-                    )
-                ]
-            })
+            raise exc.ValidationError(
+                errors={
+                    "daily_budget_cc": [
+                        "Maximum allowed daily spend cap is {}. "
+                        "If you want use a higher daily spend cap, please contact support.".format(
+                            core.multicurrency.format_value_in_currency(
+                                err.data.get("value"), 0, decimal.ROUND_FLOOR, ad_group_source.settings.get_currency()
+                            )
+                        )
+                    ]
+                }
+            )
 
         except core.entity.settings.ad_group_source_settings.exceptions.CPCNegative as err:
-            raise exc.ValidationError(errors={'cpc_cc': [str(err)]})
+            raise exc.ValidationError(errors={"cpc_cc": [str(err)]})
 
         except core.entity.settings.ad_group_source_settings.exceptions.CPCPrecisionExceeded as err:
-            raise exc.ValidationError(errors={
-                'cpc_cc': ['CPC on {} cannot exceed {} decimal place{}.'.format(
-                    err.data.get('source_name'),
-                    err.data.get('value'),
-                    's' if err.data.get('value') != 1 else '',
-                )]
-            })
+            raise exc.ValidationError(
+                errors={
+                    "cpc_cc": [
+                        "CPC on {} cannot exceed {} decimal place{}.".format(
+                            err.data.get("source_name"),
+                            err.data.get("value"),
+                            "s" if err.data.get("value") != 1 else "",
+                        )
+                    ]
+                }
+            )
 
         except core.entity.settings.ad_group_source_settings.exceptions.MinimalCPCTooLow as err:
-            raise exc.ValidationError(errors={
-                'cpc_cc': ['Minimum CPC on {} is {}.'.format(
-                    err.data.get('source_name'),
-                    core.multicurrency.format_value_in_currency(
-                        err.data.get('value'), 2, decimal.ROUND_CEILING, ad_group_source.settings.get_currency(),
-                    ),
-                )]
-            })
+            raise exc.ValidationError(
+                errors={
+                    "cpc_cc": [
+                        "Minimum CPC on {} is {}.".format(
+                            err.data.get("source_name"),
+                            core.multicurrency.format_value_in_currency(
+                                err.data.get("value"), 2, decimal.ROUND_CEILING, ad_group_source.settings.get_currency()
+                            ),
+                        )
+                    ]
+                }
+            )
 
         except core.entity.settings.ad_group_source_settings.exceptions.MaximalCPCTooHigh as err:
-            raise exc.ValidationError(errors={
-                'cpc_cc': ['Maximum CPC on {} is {}.'.format(
-                    err.data.get('source_name'),
-                    core.multicurrency.format_value_in_currency(
-                        err.data.get('value'), 2, decimal.ROUND_FLOOR, ad_group_source.settings.get_currency(),
-                    ),
-                )]
-            })
+            raise exc.ValidationError(
+                errors={
+                    "cpc_cc": [
+                        "Maximum CPC on {} is {}.".format(
+                            err.data.get("source_name"),
+                            core.multicurrency.format_value_in_currency(
+                                err.data.get("value"), 2, decimal.ROUND_FLOOR, ad_group_source.settings.get_currency()
+                            ),
+                        )
+                    ]
+                }
+            )
 
         except core.entity.settings.ad_group_source_settings.exceptions.RTBSourcesCPCNegative as err:
-            raise exc.ValidationError(errors={'cpc_cc': [str(err)]})
+            raise exc.ValidationError(errors={"cpc_cc": [str(err)]})
 
         except core.entity.settings.ad_group_source_settings.exceptions.CPCInvalid as err:
-            raise exc.ValidationError(errors={'cpc_cc': [str(err)]})
+            raise exc.ValidationError(errors={"cpc_cc": [str(err)]})
 
         except core.entity.settings.ad_group_source_settings.exceptions.RetargetingNotSupported as err:
-            raise exc.ValidationError(errors={'state': [str(err)]})
+            raise exc.ValidationError(errors={"state": [str(err)]})
 
         except core.entity.settings.ad_group_source_settings.exceptions.MediaSourceNotConnectedToFacebook as err:
-            raise exc.ValidationError(errors={'state': [str(err)]})
+            raise exc.ValidationError(errors={"state": [str(err)]})
 
         except core.entity.settings.ad_group_source_settings.exceptions.YahooCPCTooLow as err:
-            raise exc.ValidationError(errors={'state': [str(err)]})
+            raise exc.ValidationError(errors={"state": [str(err)]})
 
         except core.entity.settings.ad_group_source_settings.exceptions.AutopilotDailySpendCapTooLow as err:
-            raise exc.ValidationError(errors={'state': [str(err)]})
+            raise exc.ValidationError(errors={"state": [str(err)]})
 
 
 class AllAccountsOverview(api_common.BaseApiView):
-
-    @influx.timer('dash.api')
+    @influx.timer("dash.api")
     @db_for_reads.use_stats_read_replica()
     def get(self, request):
         # infobox only filters by agency and account type
@@ -904,29 +840,31 @@ class AllAccountsOverview(api_common.BaseApiView):
         end_date = view_filter.end_date
 
         header = {
-            'title': None,
-            'level': constants.InfoboxLevel.ALL_ACCOUNTS,
-            'level_verbose': constants.InfoboxLevel.get_text(constants.InfoboxLevel.ALL_ACCOUNTS),
+            "title": None,
+            "level": constants.InfoboxLevel.ALL_ACCOUNTS,
+            "level_verbose": constants.InfoboxLevel.get_text(constants.InfoboxLevel.ALL_ACCOUNTS),
         }
 
         performance_settings = []
-        if request.user.has_perm('zemauth.can_access_all_accounts_infobox'):
+        if request.user.has_perm("zemauth.can_access_all_accounts_infobox"):
             basic_settings = self._basic_all_accounts_settings(request.user, start_date, end_date, view_filter)
             performance_settings = self._append_performance_all_accounts_settings(
                 performance_settings, request.user, view_filter
             )
             performance_settings = [setting.as_dict() for setting in performance_settings]
-        elif request.user.has_perm('zemauth.can_access_agency_infobox'):
+        elif request.user.has_perm("zemauth.can_access_agency_infobox"):
             basic_settings = self._basic_agency_settings(request.user, start_date, end_date, view_filter)
-            performance_settings = self._append_performance_agency_settings(performance_settings, request.user, view_filter)
+            performance_settings = self._append_performance_agency_settings(
+                performance_settings, request.user, view_filter
+            )
             performance_settings = [setting.as_dict() for setting in performance_settings]
         else:
             raise exc.AuthorizationError()
 
         response = {
-            'header': header,
-            'basic_settings': basic_settings,
-            'performance_settings': performance_settings if len(performance_settings) > 0 else None
+            "header": header,
+            "basic_settings": basic_settings,
+            "performance_settings": performance_settings if len(performance_settings) > 0 else None,
         }
 
         return self.create_api_response(response)
@@ -934,12 +872,14 @@ class AllAccountsOverview(api_common.BaseApiView):
     def _basic_agency_settings(self, user, start_date, end_date, view_filter):
         settings = []
         count_active_accounts = infobox_helpers.count_active_agency_accounts(user)
-        settings.append(infobox_helpers.OverviewSetting(
-            'Active accounts:',
-            count_active_accounts,
-            section_start=True,
-            tooltip='Number of accounts with at least one campaign running'
-        ))
+        settings.append(
+            infobox_helpers.OverviewSetting(
+                "Active accounts:",
+                count_active_accounts,
+                section_start=True,
+                tooltip="Number of accounts with at least one campaign running",
+            )
+        )
 
         return [setting.as_dict() for setting in settings]
 
@@ -948,66 +888,62 @@ class AllAccountsOverview(api_common.BaseApiView):
 
         constraints = {}
         if view_filter.filtered_agencies:
-            constraints['campaign__account__agency__in']\
-                = view_filter.filtered_agencies
+            constraints["campaign__account__agency__in"] = view_filter.filtered_agencies
         if view_filter.filtered_account_types:
             latest_accset = models.AccountSettings.objects.all().group_current_settings()
-            latest_typed_accset = models.AccountSettings.objects.all().filter(
-                id__in=latest_accset
-            ).filter(
-                account_type__in=view_filter.filtered_account_types
-            ).values_list('account__id', flat=True)
-            constraints['campaign__account__id__in'] = latest_typed_accset
+            latest_typed_accset = (
+                models.AccountSettings.objects.all()
+                .filter(id__in=latest_accset)
+                .filter(account_type__in=view_filter.filtered_account_types)
+                .values_list("account__id", flat=True)
+            )
+            constraints["campaign__account__id__in"] = latest_typed_accset
 
         count_active_accounts = infobox_helpers.count_active_accounts(
-            view_filter.filtered_agencies,
-            view_filter.filtered_account_types
+            view_filter.filtered_agencies, view_filter.filtered_account_types
         )
-        settings.append(infobox_helpers.OverviewSetting(
-            'Active accounts:',
-            count_active_accounts,
-            section_start=True,
-            tooltip='Number of accounts with at least one campaign running'
-        ))
+        settings.append(
+            infobox_helpers.OverviewSetting(
+                "Active accounts:",
+                count_active_accounts,
+                section_start=True,
+                tooltip="Number of accounts with at least one campaign running",
+            )
+        )
 
         weekly_logged_users = infobox_helpers.count_weekly_logged_in_users(
-            view_filter.filtered_agencies,
-            view_filter.filtered_account_types
+            view_filter.filtered_agencies, view_filter.filtered_account_types
         )
-        settings.append(infobox_helpers.OverviewSetting(
-            'Logged-in users:',
-            weekly_logged_users,
-            tooltip="Number of users who logged-in in the past 7 days"
-        ))
+        settings.append(
+            infobox_helpers.OverviewSetting(
+                "Logged-in users:", weekly_logged_users, tooltip="Number of users who logged-in in the past 7 days"
+            )
+        )
 
         weekly_active_users = infobox_helpers.get_weekly_active_users(
-            view_filter.filtered_agencies,
-            view_filter.filtered_account_types
+            view_filter.filtered_agencies, view_filter.filtered_account_types
         )
         weekly_active_user_emails = [u.email for u in weekly_active_users]
         email_list_setting = infobox_helpers.OverviewSetting(
-            'Active users:',
-            '{}'.format(len(weekly_active_users)),
-            tooltip='Users who made self-managed actions in the past 7 days'
+            "Active users:",
+            "{}".format(len(weekly_active_users)),
+            tooltip="Users who made self-managed actions in the past 7 days",
         )
 
         if weekly_active_user_emails != []:
-            email_list_setting = email_list_setting.comment(
-                'Show more',
-                '<br />'.join(weekly_active_user_emails),
-            )
+            email_list_setting = email_list_setting.comment("Show more", "<br />".join(weekly_active_user_emails))
         settings.append(email_list_setting)
 
         weekly_sf_actions = infobox_helpers.count_weekly_selfmanaged_actions(
-            view_filter.filtered_agencies,
-            view_filter.filtered_account_types
+            view_filter.filtered_agencies, view_filter.filtered_account_types
         )
-        settings.append(infobox_helpers.OverviewSetting(
-            'Self-managed actions:',
-            weekly_sf_actions,
-            tooltip="Number of actions taken by self-managed users "
-                    "in the past 7 days"
-        ))
+        settings.append(
+            infobox_helpers.OverviewSetting(
+                "Self-managed actions:",
+                weekly_sf_actions,
+                tooltip="Number of actions taken by self-managed users " "in the past 7 days",
+            )
+        )
 
         return [setting.as_dict() for setting in settings]
 
@@ -1019,72 +955,79 @@ class AllAccountsOverview(api_common.BaseApiView):
 
         use_local_currency = currency != constants.Currency.USD
         yesterday_costs = infobox_helpers.get_yesterday_accounts_spend(accounts, use_local_currency)
-        yesterday_cost = yesterday_costs['yesterday_etfm_cost'] if uses_bcm_v2 else yesterday_costs['e_yesterday_cost']
+        yesterday_cost = yesterday_costs["yesterday_etfm_cost"] if uses_bcm_v2 else yesterday_costs["e_yesterday_cost"]
 
         currency_symbol = core.multicurrency.get_currency_symbol(currency)
-        overview_settings.append(infobox_helpers.OverviewSetting(
-            'Yesterday spend:',
-            lc_helper.format_currency(yesterday_cost, curr=currency_symbol),
-            tooltip='Yesterday spend' if uses_bcm_v2 else 'Yesterday media spend',
-            section_start=True
-        ))
+        overview_settings.append(
+            infobox_helpers.OverviewSetting(
+                "Yesterday spend:",
+                lc_helper.format_currency(yesterday_cost, curr=currency_symbol),
+                tooltip="Yesterday spend" if uses_bcm_v2 else "Yesterday media spend",
+                section_start=True,
+            )
+        )
 
         mtd_costs = infobox_helpers.get_mtd_accounts_spend(accounts, use_local_currency)
-        mtd_cost = mtd_costs['etfm_cost'] if uses_bcm_v2 else mtd_costs['e_media_cost']
-        overview_settings.append(infobox_helpers.OverviewSetting(
-            'Month-to-date spend:',
-            lc_helper.format_currency(mtd_cost, curr=currency_symbol),
-            tooltip='Month-to-date spend' if uses_bcm_v2 else 'Month-to-date media spend'))
+        mtd_cost = mtd_costs["etfm_cost"] if uses_bcm_v2 else mtd_costs["e_media_cost"]
+        overview_settings.append(
+            infobox_helpers.OverviewSetting(
+                "Month-to-date spend:",
+                lc_helper.format_currency(mtd_cost, curr=currency_symbol),
+                tooltip="Month-to-date spend" if uses_bcm_v2 else "Month-to-date media spend",
+            )
+        )
 
         return overview_settings
 
     def _append_performance_all_accounts_settings(self, overview_settings, user, view_filter):
-        accounts = models.Account.objects\
-                                 .filter_by_user(user)\
-                                 .filter_by_agencies(view_filter.filtered_agencies)\
-                                 .filter_by_account_types(view_filter.filtered_account_types)\
-                                 .exclude_archived(view_filter.show_archived)
+        accounts = (
+            models.Account.objects.filter_by_user(user)
+            .filter_by_agencies(view_filter.filtered_agencies)
+            .filter_by_account_types(view_filter.filtered_account_types)
+            .exclude_archived(view_filter.show_archived)
+        )
         currency = stats.helpers.get_report_currency(user, accounts)
 
         use_local_currency = currency != constants.Currency.USD
         yesterday_costs = infobox_helpers.get_yesterday_accounts_spend(accounts, use_local_currency)
 
         uses_bcm_v2 = settings.ALL_ACCOUNTS_USE_BCM_V2
-        yesterday_cost = yesterday_costs['yesterday_etfm_cost'] if uses_bcm_v2 else yesterday_costs['e_yesterday_cost']
+        yesterday_cost = yesterday_costs["yesterday_etfm_cost"] if uses_bcm_v2 else yesterday_costs["e_yesterday_cost"]
 
         currency_symbol = core.multicurrency.get_currency_symbol(currency)
-        overview_settings.append(infobox_helpers.OverviewSetting(
-            'Yesterday spend:',
-            lc_helper.format_currency(yesterday_cost, curr=currency_symbol),
-            tooltip='Yesterday spend' if uses_bcm_v2 else 'Yesterday media spend',
-            section_start=True
-        ))
+        overview_settings.append(
+            infobox_helpers.OverviewSetting(
+                "Yesterday spend:",
+                lc_helper.format_currency(yesterday_cost, curr=currency_symbol),
+                tooltip="Yesterday spend" if uses_bcm_v2 else "Yesterday media spend",
+                section_start=True,
+            )
+        )
 
         mtd_costs = infobox_helpers.get_mtd_accounts_spend(accounts, use_local_currency)
-        mtd_cost = mtd_costs['etfm_cost'] if uses_bcm_v2 else mtd_costs['e_media_cost']
-        overview_settings.append(infobox_helpers.OverviewSetting(
-            'Month-to-date spend:',
-            lc_helper.format_currency(mtd_cost, curr=currency_symbol),
-            tooltip='Month-to-date spend' if uses_bcm_v2 else 'Month-to-date media spend'))
+        mtd_cost = mtd_costs["etfm_cost"] if uses_bcm_v2 else mtd_costs["e_media_cost"]
+        overview_settings.append(
+            infobox_helpers.OverviewSetting(
+                "Month-to-date spend:",
+                lc_helper.format_currency(mtd_cost, curr=currency_symbol),
+                tooltip="Month-to-date spend" if uses_bcm_v2 else "Month-to-date media spend",
+            )
+        )
 
         return overview_settings
 
 
 class Demo(api_common.BaseApiView):
-
     def get(self, request):
-        if not request.user.has_perm('zemauth.can_request_demo_v3'):
-            raise Http404('Forbidden')
+        if not request.user.has_perm("zemauth.can_request_demo_v3"):
+            raise Http404("Forbidden")
 
         instance = self._start_instance()
 
         email_helper.send_official_email(
             agency_or_user=request.user,
             recipient_list=[request.user.email],
-            **email_helper.params_from_template(
-                constants.EmailTemplateType.DEMO_RUNNING,
-                **instance
-            )
+            **email_helper.params_from_template(constants.EmailTemplateType.DEMO_RUNNING, **instance)
         )
 
         return self.create_api_response(instance)
@@ -1095,51 +1038,46 @@ class Demo(api_common.BaseApiView):
 
         status_code = response.getcode()
         if status_code != 200:
-            raise Exception('Invalid response status code. status code: {}'.format(status_code))
+            raise Exception("Invalid response status code. status code: {}".format(status_code))
 
         ret = json.loads(response.read())
-        if ret['status'] != 'success':
-            raise Exception('Request not successful. status: {}'.format(ret['status']))
+        if ret["status"] != "success":
+            raise Exception("Request not successful. status: {}".format(ret["status"]))
 
-        return {
-            'url': ret.get('instance_url'),
-            'password': ret.get('instance_password'),
-        }
+        return {"url": ret.get("instance_url"), "password": ret.get("instance_password")}
 
 
 def healthcheck(request):
-    return HttpResponse('OK')
+    return HttpResponse("OK")
 
 
 def oauth_authorize(request, source_name):
-    credentials_id = request.GET.get('credentials_id')
+    credentials_id = request.GET.get("credentials_id")
 
     if not credentials_id:
-        logger.warning('Missing credentials id')
-        return redirect('index')
+        logger.warning("Missing credentials id")
+        return redirect("index")
 
     credentials = models.SourceCredentials.objects.get(id=credentials_id)
     decrypted = json.loads(credentials.decrypt())
 
-    if 'client_id' not in decrypted or 'client_secret' not in decrypted:
-        logger.error('client_id and/or client_secret not in credentials')
-        return redirect('index')
+    if "client_id" not in decrypted or "client_secret" not in decrypted:
+        logger.error("client_id and/or client_secret not in credentials")
+        return redirect("index")
 
-    state = {
-        'credentials_id': credentials_id,
-    }
+    state = {"credentials_id": credentials_id}
 
-    redirect_uri = request.build_absolute_uri(reverse('source.oauth.redirect', kwargs={'source_name': source_name}))
-    redirect_uri = redirect_uri.replace('http://', 'https://')
+    redirect_uri = request.build_absolute_uri(reverse("source.oauth.redirect", kwargs={"source_name": source_name}))
+    redirect_uri = redirect_uri.replace("http://", "https://")
 
     params = {
-        'client_id': decrypted['client_id'],
-        'redirect_uri': redirect_uri,
-        'response_type': 'code',
-        'state': base64.b64encode(json.dumps(state))
+        "client_id": decrypted["client_id"],
+        "redirect_uri": redirect_uri,
+        "response_type": "code",
+        "state": base64.b64encode(json.dumps(state)),
     }
 
-    url = settings.SOURCE_OAUTH_URIS[source_name]['auth_uri'] + '?' + urllib.parse.urlencode(params)
+    url = settings.SOURCE_OAUTH_URIS[source_name]["auth_uri"] + "?" + urllib.parse.urlencode(params)
     return redirect(url)
 
 
@@ -1148,54 +1086,47 @@ def oauth_redirect(request, source_name):
     # Authorization header while oauth2client sends it in reqeust body (for get_token calls, after that
     # it puts access token into header).
 
-    code = request.GET.get('code')
-    state = request.GET.get('state')
+    code = request.GET.get("code")
+    state = request.GET.get("state")
 
     if not state:
-        logger.error('Missing state in OAuth2 redirect')
-        return redirect('index')
+        logger.error("Missing state in OAuth2 redirect")
+        return redirect("index")
 
     try:
         state = json.loads(base64.b64decode(state))
     except (TypeError, ValueError):
-        logger.error('Invalid state in OAuth2 redirect')
-        return redirect('index')
+        logger.error("Invalid state in OAuth2 redirect")
+        return redirect("index")
 
-    credentials = models.SourceCredentials.objects.get(id=state['credentials_id'])
+    credentials = models.SourceCredentials.objects.get(id=state["credentials_id"])
     decrypted = json.loads(credentials.decrypt())
 
-    redirect_uri = request.build_absolute_uri(reverse('source.oauth.redirect', kwargs={'source_name': source_name}))
-    redirect_uri = redirect_uri.replace('http://', 'https://')
+    redirect_uri = request.build_absolute_uri(reverse("source.oauth.redirect", kwargs={"source_name": source_name}))
+    redirect_uri = redirect_uri.replace("http://", "https://")
 
     headers = {
-        'Authorization': 'Basic {}'.format(base64.b64encode(decrypted['client_id'] + ':' + decrypted['client_secret']))
+        "Authorization": "Basic {}".format(base64.b64encode(decrypted["client_id"] + ":" + decrypted["client_secret"]))
     }
 
-    data = {
-        'redirect_uri': redirect_uri,
-        'code': code,
-        'grant_type': 'authorization_code'
-    }
+    data = {"redirect_uri": redirect_uri, "code": code, "grant_type": "authorization_code"}
 
     req = urllib.request.Request(
-        settings.SOURCE_OAUTH_URIS[source_name]['token_uri'],
-        data=urllib.parse.urlencode(data),
-        headers=headers
+        settings.SOURCE_OAUTH_URIS[source_name]["token_uri"], data=urllib.parse.urlencode(data), headers=headers
     )
     r = urllib.request.urlopen(req)
 
     if r.getcode() == http.client.OK:
-        decrypted['oauth_tokens'] = json.loads(r.read())
-        decrypted['oauth_created_dt'] = datetime.datetime.utcnow().isoformat()
+        decrypted["oauth_tokens"] = json.loads(r.read())
+        decrypted["oauth_created_dt"] = datetime.datetime.utcnow().isoformat()
         credentials.credentials = json.dumps(decrypted)
         credentials.save()
 
-    return redirect(reverse('admin:dash_sourcecredentials_change', args=(credentials.id,)))
+    return redirect(reverse("admin:dash_sourcecredentials_change", args=(credentials.id,)))
 
 
 class LiveStreamAllow(api_common.BaseApiView):
-
     def post(self, request):
         data = json.loads(request.body)
-        email_helper.send_livestream_email(request.user, data['session_url'])
+        email_helper.send_livestream_email(request.user, data["session_url"])
         return self.create_api_response({})

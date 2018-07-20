@@ -12,17 +12,14 @@ CACHE_TIMEOUT = 3 * 24 * 60 * 60  # 3 days
 
 
 def _get_reach(expression):
-    cache = caches['dash_db_cache']
-    cache_key = cache_helper.get_cache_key('bluekai_reach', expression)
+    cache = caches["dash_db_cache"]
+    cache_key = cache_helper.get_cache_key("bluekai_reach", expression)
     cached = cache.get(cache_key)
     if cached:
         return cached
 
     reach = bluekaiapi.get_segment_reach(expression)
-    ret = {
-        'value': reach,
-        'relative': calculate_relative_reach(reach)
-    }
+    ret = {"value": reach, "relative": calculate_relative_reach(reach)}
 
     cache.set(cache_key, ret, timeout=CACHE_TIMEOUT)
     return ret
@@ -32,7 +29,7 @@ def get_reach(expression):
     try:
         return _get_reach(expression)
     except Exception:
-        logger.exception('Exception occured when fetching reach from BlueKai')
+        logger.exception("Exception occured when fetching reach from BlueKai")
         return None
 
 

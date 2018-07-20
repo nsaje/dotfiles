@@ -4,9 +4,9 @@ class ConstantBase(object):
         result = []
 
         for attr in vars(cls):
-            if attr[:1] != '_' and attr[:2] != '__' and attr[-2:] != '__':
+            if attr[:1] != "_" and attr[:2] != "__" and attr[-2:] != "__":
                 candidate = getattr(cls, attr)
-                if not hasattr(candidate, '__call__'):
+                if not hasattr(candidate, "__call__"):
                     result.append((attr, candidate))
 
         return result

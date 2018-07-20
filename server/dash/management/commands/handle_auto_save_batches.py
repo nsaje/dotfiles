@@ -12,7 +12,7 @@ AUTO_SAVE_HOURS = 2
 
 
 class Command(ExceptionCommand):
-    help = 'Handle auto_save batches in progress'
+    help = "Handle auto_save batches in progress"
 
     def handle(self, *args, **options):
         upload.handle_auto_save_batches(

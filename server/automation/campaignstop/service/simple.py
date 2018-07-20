@@ -18,10 +18,10 @@ import utils.k1_helper
 logger = logging.getLogger(__name__)
 
 DEPLETING_AVAILABLE_BUDGET_SCALAR = decimal.Decimal(1.5)
-DEPLETING_CAMPAIGN_BUDGET_EMAIL = 'help@zemanta.com'
+DEPLETING_CAMPAIGN_BUDGET_EMAIL = "help@zemanta.com"
 
 
-@influx.timer('automation.campaignstop.simple.budget_campaigns', operation='notify_depleting')
+@influx.timer("automation.campaignstop.simple.budget_campaigns", operation="notify_depleting")
 def notify_depleting_budget_campaigns():
     campaigns = _get_active_campaigns()
     available_budgets = _get_available_budgets(campaigns)
@@ -30,12 +30,12 @@ def notify_depleting_budget_campaigns():
     for camp in campaigns:
         budgets = available_budgets.get(camp.id)
         spends = yesterdays_spends.get(camp.id)
-        if not camp.real_time_campaign_stop and _budget_is_depleting(budgets, spends) and not _manager_has_been_notified(camp):
-            _notify_campaign_with_depleting_budget(
-                camp,
-                available_budgets.get(camp.id),
-                yesterdays_spends.get(camp.id)
-            )
+        if (
+            not camp.real_time_campaign_stop
+            and _budget_is_depleting(budgets, spends)
+            and not _manager_has_been_notified(camp)
+        ):
+            _notify_campaign_with_depleting_budget(camp, available_budgets.get(camp.id), yesterdays_spends.get(camp.id))
 
 
 def _budget_is_depleting(available_budget, yesterdays_spend):
@@ -51,36 +51,34 @@ def _notify_campaign_with_depleting_budget(campaign, available_budget, yesterday
 
     total_daily_budget = _get_total_daily_budget_amount(campaign)
     campaign_url = utils.url_helper.get_full_z1_url(
-        '/v2/analytics/campaign/{}?settings&settingsScrollTo=zemCampaignBudgetsSettings'.format(campaign.pk)
+        "/v2/analytics/campaign/{}?settings&settingsScrollTo=zemCampaignBudgetsSettings".format(campaign.pk)
     )
 
     _send_depleting_budget_notification_email(
-        campaign,
-        campaign_url,
-        emails,
-        available_budget,
-        yesterdays_spend,
-        total_daily_budget)
+        campaign, campaign_url, emails, available_budget, yesterdays_spend, total_daily_budget
+    )
     automation.models.CampaignBudgetDepletionNotification(
         campaign=campaign,
         available_budget=available_budget,
         yesterdays_spend=yesterdays_spend,
-        account_manager=campaign_manager).save()
+        account_manager=campaign_manager,
+    ).save()
 
 
 def _manager_has_been_notified(campaign):
     today_utc = pytz.UTC.localize(datetime.datetime.utcnow())
-    today = today_utc.astimezone(
-        pytz.timezone(settings.DEFAULT_TIME_ZONE)).replace(tzinfo=None)
+    today = today_utc.astimezone(pytz.timezone(settings.DEFAULT_TIME_ZONE)).replace(tzinfo=None)
     yesterday = today - datetime.timedelta(days=1, hours=-1)
     campaign_manager = campaign.get_current_settings().campaign_manager
-    return automation.models.CampaignBudgetDepletionNotification.objects.filter(
-        Q(campaign=campaign),
-        Q(account_manager=campaign_manager),
-        Q(created_dt__gte=yesterday)).count() > 0
+    return (
+        automation.models.CampaignBudgetDepletionNotification.objects.filter(
+            Q(campaign=campaign), Q(account_manager=campaign_manager), Q(created_dt__gte=yesterday)
+        ).count()
+        > 0
+    )
 
 
-@influx.timer('automation.campaignstop.simple.budget_campaigns', operation='stop_and_notify_depleted')
+@influx.timer("automation.campaignstop.simple.budget_campaigns", operation="stop_and_notify_depleted")
 def stop_and_notify_depleted_budget_campaigns():
     campaigns = _get_active_campaigns()
     available_budgets = _get_available_budgets(campaigns)
@@ -90,9 +88,7 @@ def stop_and_notify_depleted_budget_campaigns():
         if available_budgets.get(camp.id) <= 0:
             _stop_campaign(camp)
             _notify_depleted_budget_campaign_stopped(
-                camp,
-                available_budgets.get(camp.id),
-                yesterdays_spends.get(camp.id)
+                camp, available_budgets.get(camp.id), yesterdays_spends.get(camp.id)
             )
 
 
@@ -108,36 +104,28 @@ def _notify_depleted_budget_campaign_stopped(campaign, available_budget, yesterd
         emails.append(sales_rep.email)
 
     campaign_url = utils.url_helper.get_full_z1_url(
-        '/v2/analytics/campaign/{}?settings&settingsScrollTo=zemCampaignBudgetsSettings'.format(campaign.pk)
+        "/v2/analytics/campaign/{}?settings&settingsScrollTo=zemCampaignBudgetsSettings".format(campaign.pk)
     )
-    _send_campaign_stopped_notification_email(
-        campaign,
-        campaign_url,
-        emails
-    )
+    _send_campaign_stopped_notification_email(campaign, campaign_url, emails)
     automation.models.CampaignBudgetDepletionNotification(
         campaign=campaign,
         available_budget=available_budget,
         yesterdays_spend=yesterdays_spend,
         account_manager=campaign_manager,
-        stopped=True).save()
+        stopped=True,
+    ).save()
 
 
 def _send_depleting_budget_notification_email(
-        campaign,
-        campaign_url,
-        emails,
-        available_budget,
-        yesterdays_spend,
-        total_daily_budget
+    campaign, campaign_url, emails, available_budget, yesterdays_spend, total_daily_budget
 ):
     args = {
-        'campaign': campaign,
-        'account': campaign.account,
-        'link_url': campaign_url,
-        'available_budget': _round_budget(available_budget),
-        'cap': _round_budget(total_daily_budget),
-        'yesterday_spend': _round_budget(yesterdays_spend)
+        "campaign": campaign,
+        "account": campaign.account,
+        "link_url": campaign_url,
+        "available_budget": _round_budget(available_budget),
+        "cap": _round_budget(total_daily_budget),
+        "yesterday_spend": _round_budget(yesterdays_spend),
     }
 
     try:
@@ -145,62 +133,46 @@ def _send_depleting_budget_notification_email(
             agency_or_user=campaign.account.agency,
             recipient_list=emails,
             from_email=DEPLETING_CAMPAIGN_BUDGET_EMAIL,
-            **utils.email_helper.params_from_template(
-                dash.constants.EmailTemplateType.BUDGET_DEPLETING, **args
-            )
+            **utils.email_helper.params_from_template(dash.constants.EmailTemplateType.BUDGET_DEPLETING, **args)
         )
     except Exception:
-        logger.exception('Budget depletion e-mail for campaign %s to %s was not sent because an exception was raised:',
-                         campaign.name,
-                         ', '.join(emails))
+        logger.exception(
+            "Budget depletion e-mail for campaign %s to %s was not sent because an exception was raised:",
+            campaign.name,
+            ", ".join(emails),
+        )
 
 
 def _round_budget(budget):
-    return decimal.Decimal(budget).quantize(
-        decimal.Decimal('0.01'),
-        rounding=decimal.ROUND_HALF_UP)
+    return decimal.Decimal(budget).quantize(decimal.Decimal("0.01"), rounding=decimal.ROUND_HALF_UP)
 
 
-def _send_campaign_stopped_notification_email(
-        campaign,
-        campaign_url,
-        emails
-):
-    args = {
-        'campaign': campaign,
-        'account': campaign.account,
-        'link_url': campaign_url,
-    }
+def _send_campaign_stopped_notification_email(campaign, campaign_url, emails):
+    args = {"campaign": campaign, "account": campaign.account, "link_url": campaign_url}
     try:
         utils.email_helper.send_official_email(
             agency_or_user=campaign.account.agency,
             recipient_list=emails,
             from_email=DEPLETING_CAMPAIGN_BUDGET_EMAIL,
-            **utils.email_helper.params_from_template(
-                dash.constants.EmailTemplateType.CAMPAIGN_STOPPED, **args
-            )
+            **utils.email_helper.params_from_template(dash.constants.EmailTemplateType.CAMPAIGN_STOPPED, **args)
         )
     except Exception:
-        logger.exception('Campaign stop because of budget depletion e-mail for campaign %s to %s was not sent because an exception was raised:',
-                         campaign.name,
-                         ', '.join(emails))
+        logger.exception(
+            "Campaign stop because of budget depletion e-mail for campaign %s to %s was not sent because an exception was raised:",
+            campaign.name,
+            ", ".join(emails),
+        )
 
 
 def _get_yesterdays_spends(campaigns):
     yesterday = utils.dates_helper.local_today() - datetime.timedelta(1)
-    spends = {
-        campaign.id: _get_total_campaign_spend(campaign, yesterday)
-        for campaign in campaigns
-    }
+    spends = {campaign.id: _get_total_campaign_spend(campaign, yesterday) for campaign in campaigns}
 
     return spends
 
 
 def _get_available_budgets(campaigns):
-    available_budgets = {
-        campaign.id: decimal.Decimal(_get_total_available_budget(campaign))
-        for campaign in campaigns
-    }
+    available_budgets = {campaign.id: decimal.Decimal(_get_total_available_budget(campaign)) for campaign in campaigns}
 
     return available_budgets
 
@@ -209,12 +181,14 @@ def _get_total_available_budget(campaign, date=None):
     date = date or utils.dates_helper.local_today()
     if campaign.account.uses_bcm_v2:
         return sum(
-            budget.get_available_etfm_amount(date) for budget in campaign.budgets.all()
+            budget.get_available_etfm_amount(date)
+            for budget in campaign.budgets.all()
             if budget.state() == dash.constants.BudgetLineItemState.ACTIVE
         )
     else:
         return sum(
-            budget.get_available_amount(date) for budget in campaign.budgets.all()
+            budget.get_available_amount(date)
+            for budget in campaign.budgets.all()
             if budget.state() == dash.constants.BudgetLineItemState.ACTIVE
         )
 
@@ -222,7 +196,7 @@ def _get_total_available_budget(campaign, date=None):
 def _get_total_campaign_spend(campaign, date=None):
     date = date or utils.dates_helper.local_today()
     return sum(
-        decimal.Decimal(budget.get_daily_spend(date)['etf_total'])
+        decimal.Decimal(budget.get_daily_spend(date)["etf_total"])
         for budget in campaign.budgets.all()
         if budget.state() == dash.constants.BudgetLineItemState.ACTIVE
     )
@@ -247,16 +221,15 @@ def _get_active_ad_groups(campaign):
 
 def _get_active_campaigns_subset(campaigns):
     ad_groups = dash.models.AdGroup.objects.filter(campaign__in=campaigns)
-    return list(set(ad_group.campaign for ad_group
-                    in _filter_active_ad_groups(ad_groups).select_related('campaign')))
+    return list(set(ad_group.campaign for ad_group in _filter_active_ad_groups(ad_groups).select_related("campaign")))
 
 
 def _filter_active_ad_groups(ad_groups_qs):
     today = utils.dates_helper.local_today()
     return ad_groups_qs.filter(
-        Q(settings__state=dash.constants.AdGroupSettingsState.ACTIVE) &
-        Q(settings__archived=False) &
-        (Q(settings__end_date=None) | Q(settings__end_date__gt=today))
+        Q(settings__state=dash.constants.AdGroupSettingsState.ACTIVE)
+        & Q(settings__archived=False)
+        & (Q(settings__end_date=None) | Q(settings__end_date__gt=today))
     )
 
 
@@ -264,7 +237,7 @@ def _get_active_ad_group_sources_settings(adgroup):
     active_sources_settings = []
     all_ad_group_sources = dash.models.AdGroupSource.objects.filter(ad_group=adgroup)
     for current_source_settings in dash.views.helpers.get_ad_group_sources_settings(all_ad_group_sources):
-        if (current_source_settings.state == dash.constants.AdGroupSourceSettingsState.ACTIVE):
+        if current_source_settings.state == dash.constants.AdGroupSourceSettingsState.ACTIVE:
             active_sources_settings.append(current_source_settings)
     return active_sources_settings
 

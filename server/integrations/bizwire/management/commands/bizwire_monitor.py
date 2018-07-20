@@ -7,6 +7,5 @@ logger = logging.getLogger(__name__)
 
 
 class Command(ExceptionCommand):
-
     def handle(self, *args, **options):
         monitor.run_hourly_job()

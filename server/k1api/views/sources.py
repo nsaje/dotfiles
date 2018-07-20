@@ -14,29 +14,24 @@ logger = logging.getLogger(__name__)
 
 
 class SourcesView(K1APIView):
-
     @db_for_reads.use_read_replica()
     def get(self, request):
         source_slugs = request.GET.get("source_slugs")
-        sources = dash.models.Source.objects.all().select_related('defaultsourcesettings',
-                                                                  'defaultsourcesettings__credentials')
+        sources = dash.models.Source.objects.all().select_related(
+            "defaultsourcesettings", "defaultsourcesettings__credentials"
+        )
         if source_slugs:
-            sources = sources.filter(bidder_slug__in=source_slugs.split(','))
+            sources = sources.filter(bidder_slug__in=source_slugs.split(","))
 
         response = []
         for source in sources:
-            source_dict = {
-                'id': source.id,
-                'name': source.name,
-                'slug': source.tracking_slug,
-                'credentials': None
-            }
+            source_dict = {"id": source.id, "name": source.name, "slug": source.tracking_slug, "credentials": None}
             try:
                 default_credentials = source.defaultsourcesettings.credentials
                 if default_credentials:
-                    source_dict['credentials'] = {
-                        'id': default_credentials.id,
-                        'credentials': default_credentials.credentials
+                    source_dict["credentials"] = {
+                        "id": default_credentials.id,
+                        "credentials": default_credentials.credentials,
                     }
             except dash.models.DefaultSourceSettings.DoesNotExist:
                 pass
@@ -45,16 +40,15 @@ class SourcesView(K1APIView):
 
 
 class SourcePixelsView(K1APIView):
-
     @transaction.atomic
     def put(self, request):
         data = request.data
-        pixel_id = data['pixel_id']
-        source_type = data['source_type']
+        pixel_id = data["pixel_id"]
+        source_type = data["source_type"]
 
         conversion_pixel = dash.models.ConversionPixel.objects.get(id=pixel_id)
 
-        if source_type == 'outbrain':
+        if source_type == "outbrain":
             self._update_outbrain_pixel(conversion_pixel.account, data)
         else:
             self._create_source_pixel(conversion_pixel, source_type, data)
@@ -72,24 +66,20 @@ class SourcePixelsView(K1APIView):
         source_pixel, created = dash.models.SourceTypePixel.objects.get_or_create(
             pixel__id=conversion_pixel.id,
             source_type__type=source_type,
-            defaults={
-                'pixel': conversion_pixel,
-                'source_type': dash.models.SourceType.objects.get(type=source_type),
-            })
+            defaults={"pixel": conversion_pixel, "source_type": dash.models.SourceType.objects.get(type=source_type)},
+        )
 
-        source_pixel.url = data['url']
-        source_pixel.source_pixel_id = data['source_pixel_id']
+        source_pixel.url = data["url"]
+        source_pixel.source_pixel_id = data["source_pixel_id"]
         source_pixel.save()
 
     def _update_outbrain_pixel(self, account, data):
-        pixels = dash.models.ConversionPixel.objects.\
-            filter(account_id=account.id).\
-            filter(audience_enabled=True)
+        pixels = dash.models.ConversionPixel.objects.filter(account_id=account.id).filter(audience_enabled=True)
         if not pixels:
             return
 
         if len(pixels) > 1:
-            msg = 'More than 1 pixel enabled for audience building for account {}'.format(account.id)
+            msg = "More than 1 pixel enabled for audience building for account {}".format(account.id)
             return self.response_error(msg)
 
         conversion_pixel = pixels[0]
@@ -99,10 +89,10 @@ class SourcePixelsView(K1APIView):
             pixel__account=account, source_type__type=constants.SourceType.OUTBRAIN
         )
         if len(source_type_pixels) > 1:
-            return self.response_error('More than 1 outbrain source type pixel for account {}'.format(account.id))
+            return self.response_error("More than 1 outbrain source type pixel for account {}".format(account.id))
 
         if not source_type_pixels:
-            self._create_source_pixel(conversion_pixel, 'outbrain', data)
+            self._create_source_pixel(conversion_pixel, "outbrain", data)
             r1_pixels_to_sync.append(conversion_pixel.id)
         elif source_type_pixels[0].pixel != conversion_pixel:
             r1_pixels_to_sync.append(conversion_pixel.id)

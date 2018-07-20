@@ -12,11 +12,19 @@ import analytics.projections
 import analytics.constants
 import dash.infobox_helpers
 
-CAMPAIGN_REPORT_HEADER = ('Campaign', 'Campaign ID', 'URL', 'CS Rep', 'Yesterday spend', 'Daily Spend Cap', 'Delivery')
-AD_GROUP_REPORT_HEADER = ('Ad group', 'Ad group ID', 'URL', 'CS Rep', 'End date', 'Yesterday spend',
-                          'Daily Spend Cap', 'Delivery')
-CAMPAIGN_URL = 'https://one.zemanta.com/v2/analytics/campaign/{}'
-AD_GROUP_URL = 'https://one.zemanta.com/v2/analytics/adgroup/{}'
+CAMPAIGN_REPORT_HEADER = ("Campaign", "Campaign ID", "URL", "CS Rep", "Yesterday spend", "Daily Spend Cap", "Delivery")
+AD_GROUP_REPORT_HEADER = (
+    "Ad group",
+    "Ad group ID",
+    "URL",
+    "CS Rep",
+    "End date",
+    "Yesterday spend",
+    "Daily Spend Cap",
+    "Delivery",
+)
+CAMPAIGN_URL = "https://one.zemanta.com/v2/analytics/campaign/{}"
+AD_GROUP_URL = "https://one.zemanta.com/v2/analytics/adgroup/{}"
 
 ENGAGEMENT_GOALS = (
     dash.constants.CampaignGoalKPI.TIME_ON_SITE,
@@ -35,16 +43,12 @@ DEFAULT_ACCOUNT_TYPES = (
     dash.constants.AccountType.MANAGED,
 )
 
-UNBILLABLE_SEGMENT_PARTS = ('outbrain', 'lr-', 'lotame', 'obs', 'obi', 'obl', )
-HIGH_PACING_THRESHOLD = Decimal('200.0')
-LOW_PACING_THRESHOLD = Decimal('50.0')
+UNBILLABLE_SEGMENT_PARTS = ("outbrain", "lr-", "lotame", "obs", "obi", "obl")
+HIGH_PACING_THRESHOLD = Decimal("200.0")
+LOW_PACING_THRESHOLD = Decimal("50.0")
 MIN_B1_ACTIVE_SOURCES_FOR_INTEREST_TARGETING = 5
 
-IGNORED_VIDEO_COST_AD_GROUPS = (
-    9709, 26439, 21383, 26442,
-    21385, 33364, 33360, 26438,
-    26470, 13224,
-)
+IGNORED_VIDEO_COST_AD_GROUPS = (9709, 26439, 21383, 26442, 21385, 33364, 33360, 26438, 26470, 13224)
 
 
 def generate_delivery_reports(account_types=[], skip_ok=True, check_pacing=True, generate_csv=True):
@@ -52,65 +56,78 @@ def generate_delivery_reports(account_types=[], skip_ok=True, check_pacing=True,
     yesterday = today - datetime.timedelta(1)
 
     # Filter ad groups that are running today and were running tomorrow
-    valid_accounts = core.entity.account.Account.objects.all().filter_by_account_types(
-        account_types or DEFAULT_ACCOUNT_TYPES
-    ).values_list('pk', flat=True)
-    running_ad_groups = core.entity.adgroup.AdGroup.objects.filter(
-        campaign__account__id__in=valid_accounts
-    ).filter_running().filter_running(
-        yesterday).select_related('campaign', 'campaign__account', 'campaign__account__agency')
-    running_campaigns = core.entity.campaign.Campaign.objects.filter(
-        pk__in=set(running_ad_groups.values_list('campaign_id', flat=True))
-    ).select_related('account', 'account__agency')
-    running_accounts = core.entity.account.Account.objects.filter(
-        pk__in=set(c.account_id for c in running_campaigns)
+    valid_accounts = (
+        core.entity.account.Account.objects.all()
+        .filter_by_account_types(account_types or DEFAULT_ACCOUNT_TYPES)
+        .values_list("pk", flat=True)
     )
+    running_ad_groups = (
+        core.entity.adgroup.AdGroup.objects.filter(campaign__account__id__in=valid_accounts)
+        .filter_running()
+        .filter_running(yesterday)
+        .select_related("campaign", "campaign__account", "campaign__account__agency")
+    )
+    running_campaigns = core.entity.campaign.Campaign.objects.filter(
+        pk__in=set(running_ad_groups.values_list("campaign_id", flat=True))
+    ).select_related("account", "account__agency")
+    running_accounts = core.entity.account.Account.objects.filter(pk__in=set(c.account_id for c in running_campaigns))
 
     account_settings_map = {
-        sett.account_id: sett
-        for sett in core.entity.settings.AccountSettings.objects.all().group_current_settings()
+        sett.account_id: sett for sett in core.entity.settings.AccountSettings.objects.all().group_current_settings()
     }
     campaign_settings_map = {
-        sett.campaign_id: sett
-        for sett in core.entity.settings.CampaignSettings.objects.all().group_current_settings()
+        sett.campaign_id: sett for sett in core.entity.settings.CampaignSettings.objects.all().group_current_settings()
     }
     ad_group_settings_map = {
-        sett.ad_group_id: sett
-        for sett in core.entity.settings.AdGroupSettings.objects.all().group_current_settings()
+        sett.ad_group_id: sett for sett in core.entity.settings.AdGroupSettings.objects.all().group_current_settings()
     }
 
     campaign_stats = analytics.helpers.get_stats_multiple(yesterday, campaign=running_campaigns)
 
     prev_campaign_stats = analytics.helpers.get_stats_multiple(
-        yesterday - datetime.timedelta(1), campaign=running_campaigns)
+        yesterday - datetime.timedelta(1), campaign=running_campaigns
+    )
     ad_group_stats = analytics.helpers.get_stats_multiple(yesterday, ad_group=running_ad_groups)
 
     campaign_projections = analytics.projections.CurrentMonthBudgetProjections(
-        'campaign',
-        date=today,
-        accounts=running_accounts,
+        "campaign", date=today, accounts=running_accounts
     )
 
-    campaign_data = _prepare_campaign_data(running_campaigns, campaign_settings_map, account_settings_map,
-                                           campaign_stats, prev_campaign_stats, campaign_projections,
-                                           skip_ok=skip_ok, check_pacing=check_pacing)
+    campaign_data = _prepare_campaign_data(
+        running_campaigns,
+        campaign_settings_map,
+        account_settings_map,
+        campaign_stats,
+        prev_campaign_stats,
+        campaign_projections,
+        skip_ok=skip_ok,
+        check_pacing=check_pacing,
+    )
 
-    ad_group_data = _prepare_ad_group_data(running_ad_groups, ad_group_settings_map,
-                                           ad_group_stats, account_settings_map,
-                                           skip_ok=skip_ok)
+    ad_group_data = _prepare_ad_group_data(
+        running_ad_groups, ad_group_settings_map, ad_group_stats, account_settings_map, skip_ok=skip_ok
+    )
 
     return {
-        'campaign': analytics.statements.generate_csv('csr/{}-campaign.csv'.format(today), utils.csv_utils.tuplelist_to_csv(
-            [CAMPAIGN_REPORT_HEADER] + campaign_data)
-        ) if generate_csv else campaign_data,
-        'ad_group': analytics.statements.generate_csv('csr/{}-ad-group.csv'.format(today), utils.csv_utils.tuplelist_to_csv(
-            [AD_GROUP_REPORT_HEADER] + ad_group_data)
-        ) if generate_csv else ad_group_data,
+        "campaign": analytics.statements.generate_csv(
+            "csr/{}-campaign.csv".format(today),
+            utils.csv_utils.tuplelist_to_csv([CAMPAIGN_REPORT_HEADER] + campaign_data),
+        )
+        if generate_csv
+        else campaign_data,
+        "ad_group": analytics.statements.generate_csv(
+            "csr/{}-ad-group.csv".format(today),
+            utils.csv_utils.tuplelist_to_csv([AD_GROUP_REPORT_HEADER] + ad_group_data),
+        )
+        if generate_csv
+        else ad_group_data,
     }
 
 
-def check_campaign_delivery(campaign, campaign_settings, campaign_stats, prev_campaign_stats, projections, check_pacing=True):
-    visits = campaign_stats.get('visits') or prev_campaign_stats.get('visits') or 0
+def check_campaign_delivery(
+    campaign, campaign_settings, campaign_stats, prev_campaign_stats, projections, check_pacing=True
+):
+    visits = campaign_stats.get("visits") or prev_campaign_stats.get("visits") or 0
     budgets = core.bcm.budget_line_item.BudgetLineItem.objects.filter(campaign=campaign).filter_active()
     active_amount = sum(b.allocated_amount() for b in budgets)
     primary_goal = dash.campaign_goals.get_primary_campaign_goal(campaign)
@@ -126,33 +143,26 @@ def check_campaign_delivery(campaign, campaign_settings, campaign_stats, prev_ca
             return analytics.constants.CampaignDeliveryStatus.MISSING_POSTCLICK_SETUP
         if visits <= 0:
             return analytics.constants.CampaignDeliveryStatus.MISSING_POSTCLICK_STATS
-    if check_pacing and projections['pacing'] is not None:
-        if projections['pacing'] < LOW_PACING_THRESHOLD:
+    if check_pacing and projections["pacing"] is not None:
+        if projections["pacing"] < LOW_PACING_THRESHOLD:
             return analytics.constants.CampaignDeliveryStatus.LOW_PACING
-        if projections['pacing'] > HIGH_PACING_THRESHOLD:
+        if projections["pacing"] > HIGH_PACING_THRESHOLD:
             return analytics.constants.CampaignDeliveryStatus.HIGH_PACING
-    active_ad_groups = core.entity.adgroup.AdGroup.objects.filter(
-        campaign=campaign
-    ).filter_running()
+    active_ad_groups = core.entity.adgroup.AdGroup.objects.filter(campaign=campaign).filter_running()
     if not active_ad_groups.count() and active_amount:
         return analytics.constants.CampaignDeliveryStatus.NO_ACTIVE_AD_GROUPS
     return analytics.constants.CampaignDeliveryStatus.OK
 
 
 def check_ad_group_delivery(ad_group, ad_group_settings, ad_group_stats):
-    media = ad_group_stats.get('media')
-    data = ad_group_stats.get('data')
+    media = ad_group_stats.get("media")
+    data = ad_group_stats.get("data")
     content_ads = core.entity.contentad.ContentAd.objects.filter(ad_group=ad_group)
     active_sources = core.entity.adgroup.AdGroupSource.objects.filter(ad_group=ad_group).filter_active()
-    b1_active_sources = active_sources.filter(
-        source__source_type__type=dash.constants.SourceType.B1
-    )
-    api_active_sources = active_sources.exclude(
-        source__source_type__type=dash.constants.SourceType.B1
-    )
+    b1_active_sources = active_sources.filter(source__source_type__type=dash.constants.SourceType.B1)
+    api_active_sources = active_sources.exclude(source__source_type__type=dash.constants.SourceType.B1)
     approved_ad_sources = core.entity.contentad.ContentAdSource.objects.filter(
-        content_ad__ad_group_id=ad_group.pk,
-        submission_status=dash.constants.ContentAdSubmissionStatus.APPROVED,
+        content_ad__ad_group_id=ad_group.pk, submission_status=dash.constants.ContentAdSubmissionStatus.APPROVED
     )
     api_active_sources_count = api_active_sources.count()
     b1_active_sources_count = b1_active_sources.count()
@@ -170,10 +180,18 @@ def check_ad_group_delivery(ad_group, ad_group_settings, ad_group_stats):
             return analytics.constants.AdGroupDeliveryStatus.WHITELIST_AND_INTERESTS
         if ad_group_settings.bluekai_targeting:
             return analytics.constants.AdGroupDeliveryStatus.WHITELIST_AND_DATA
-    if not api_active_sources_count and ad_group_settings.interest_targeting \
-       and b1_active_sources_count <= MIN_B1_ACTIVE_SOURCES_FOR_INTEREST_TARGETING:
+    if (
+        not api_active_sources_count
+        and ad_group_settings.interest_targeting
+        and b1_active_sources_count <= MIN_B1_ACTIVE_SOURCES_FOR_INTEREST_TARGETING
+    ):
         return analytics.constants.AdGroupDeliveryStatus.TOO_LITTLE_B1_SOURCES_FOR_INTEREST_TARGETING
-    if _extract_unbillable_data_segments(ad_group_settings.bluekai_targeting) and b1_active_sources_count and media and not data:
+    if (
+        _extract_unbillable_data_segments(ad_group_settings.bluekai_targeting)
+        and b1_active_sources_count
+        and media
+        and not data
+    ):
         return analytics.constants.AdGroupDeliveryStatus.MISSING_DATA_COST
     is_video_spending = _has_video_assets(content_ads) and media
     if is_video_spending and not data and ad_group.pk not in IGNORED_VIDEO_COST_AD_GROUPS:
@@ -181,53 +199,72 @@ def check_ad_group_delivery(ad_group, ad_group_settings, ad_group_stats):
     return analytics.constants.AdGroupDeliveryStatus.OK
 
 
-def _prepare_campaign_data(running_campaigns, campaign_settings_map, account_settings_map, campaign_stats, prev_campaign_stats, campaign_projections, skip_ok=True, check_pacing=True):
+def _prepare_campaign_data(
+    running_campaigns,
+    campaign_settings_map,
+    account_settings_map,
+    campaign_stats,
+    prev_campaign_stats,
+    campaign_projections,
+    skip_ok=True,
+    check_pacing=True,
+):
     campaign_data = []
     for campaign in running_campaigns:
         campaign_settings = campaign_settings_map[campaign.pk]
         delivery = check_campaign_delivery(
-            campaign, campaign_settings,
-            campaign_stats.get(campaign.pk, {}), prev_campaign_stats.get(campaign.pk, {}),
+            campaign,
+            campaign_settings,
+            campaign_stats.get(campaign.pk, {}),
+            prev_campaign_stats.get(campaign.pk, {}),
             campaign_projections.row(campaign.pk),
             check_pacing=check_pacing,
         )
-        if skip_ok and delivery == 'ok':
+        if skip_ok and delivery == "ok":
             continue
         cap = Decimal(dash.infobox_helpers.calculate_daily_campaign_cap(campaign))
-        spend = campaign_stats.get(campaign.pk, {}).get('media', Decimal(0)) + \
-            campaign_stats.get(campaign.pk, {}).get('data', Decimal(0))
-        campaign_data.append((
-            campaign.get_long_name(),
-            campaign.pk,
-            CAMPAIGN_URL.format(campaign.pk),
-            account_settings_map[campaign.account_id].default_cs_representative,
-            spend,
-            cap,
-            delivery,
-        ))
+        spend = campaign_stats.get(campaign.pk, {}).get("media", Decimal(0)) + campaign_stats.get(campaign.pk, {}).get(
+            "data", Decimal(0)
+        )
+        campaign_data.append(
+            (
+                campaign.get_long_name(),
+                campaign.pk,
+                CAMPAIGN_URL.format(campaign.pk),
+                account_settings_map[campaign.account_id].default_cs_representative,
+                spend,
+                cap,
+                delivery,
+            )
+        )
     return campaign_data
 
 
-def _prepare_ad_group_data(running_ad_groups, ad_group_settings_map, ad_group_stats, account_settings_map, skip_ok=True):
+def _prepare_ad_group_data(
+    running_ad_groups, ad_group_settings_map, ad_group_stats, account_settings_map, skip_ok=True
+):
     ad_group_data = []
     for ad_group in running_ad_groups:
         ad_group_settings = ad_group_settings_map[ad_group.pk]
         delivery = check_ad_group_delivery(ad_group, ad_group_settings, ad_group_stats.get(ad_group.pk, {}))
-        if skip_ok and delivery == 'ok':
+        if skip_ok and delivery == "ok":
             continue
         cap = Decimal(dash.infobox_helpers.calculate_daily_ad_group_cap(ad_group))
-        spend = ad_group_stats.get(ad_group.pk, {}).get('media', Decimal(0)) + \
-            ad_group_stats.get(ad_group.pk, {}).get('data', Decimal(0))
-        ad_group_data.append((
-            '{}, {}'.format(ad_group.campaign.get_long_name(), ad_group.name),
-            ad_group.pk,
-            AD_GROUP_URL.format(ad_group.pk),
-            account_settings_map[ad_group.campaign.account_id].default_cs_representative,
-            ad_group_settings.end_date or 'none',
-            spend,
-            cap,
-            delivery,
-        ))
+        spend = ad_group_stats.get(ad_group.pk, {}).get("media", Decimal(0)) + ad_group_stats.get(ad_group.pk, {}).get(
+            "data", Decimal(0)
+        )
+        ad_group_data.append(
+            (
+                "{}, {}".format(ad_group.campaign.get_long_name(), ad_group.name),
+                ad_group.pk,
+                AD_GROUP_URL.format(ad_group.pk),
+                account_settings_map[ad_group.campaign.account_id].default_cs_representative,
+                ad_group_settings.end_date or "none",
+                spend,
+                cap,
+                delivery,
+            )
+        )
     return ad_group_data
 
 
@@ -241,9 +278,13 @@ def _extract_unbillable_data_segments(targeting_exp):
             if filtered_part:
                 segments |= filtered_part
             continue
-        if part.lower() in ('and', 'or', 'not', ):
+        if part.lower() in ("and", "or", "not"):
             continue
-        if not any(unbillable_segment_type for unbillable_segment_type in UNBILLABLE_SEGMENT_PARTS if unbillable_segment_type in part):
+        if not any(
+            unbillable_segment_type
+            for unbillable_segment_type in UNBILLABLE_SEGMENT_PARTS
+            if unbillable_segment_type in part
+        ):
             segments.add(part)
             continue
     return segments

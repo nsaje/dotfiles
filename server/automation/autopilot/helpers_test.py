@@ -11,188 +11,190 @@ from utils.magic_mixer import magic_mixer
 
 
 class AutopilotHelpersTestCase(test.TestCase):
-    fixtures = ['test_automation.yaml']
+    fixtures = ["test_automation.yaml"]
 
-    @patch('utils.email_helper.params_from_template')
-    @patch('utils.email_helper.send_official_email')
+    @patch("utils.email_helper.params_from_template")
+    @patch("utils.email_helper.send_official_email")
     def test_send_email_adgroup_change(self, mock_send, mock_template):
-        mock_template.return_value = {'test_key': 'test_value'}
+        mock_template.return_value = {"test_key": "test_value"}
         ad_group = models.AdGroup.objects.get(pk=4)
         data = {
             ad_group.campaign: {
                 ad_group: {
                     models.AdGroupSource.objects.get(pk=4): {
-                        'old_budget': Decimal('10.0'),
-                        'new_budget': Decimal('20.0'),
-                        'budget_comments': [],
-                        'old_cpc_cc': Decimal('0.1'),
-                        'new_cpc_cc': Decimal('0.2'),
-                        'cpc_comments': [],
+                        "old_budget": Decimal("10.0"),
+                        "new_budget": Decimal("20.0"),
+                        "budget_comments": [],
+                        "old_cpc_cc": Decimal("0.1"),
+                        "new_cpc_cc": Decimal("0.2"),
+                        "cpc_comments": [],
                     },
                     models.AllRTBAdGroupSource(models.AdGroup.objects.get(pk=4)): {
-                        'old_budget': Decimal('10.0'),
-                        'new_budget': Decimal('20.0'),
-                        'budget_comments': [],
+                        "old_budget": Decimal("10.0"),
+                        "new_budget": Decimal("20.0"),
+                        "budget_comments": [],
                     },
                 }
             }
         }
-        expected_changes = [{
-            'adgroup': ad_group,
-            'history_url': 'https://one.zemanta.com/v2/analytics/adgroup/4?history',
-            'media_sources': [],
-            'media_sources_url': 'https://one.zemanta.com/v2/analytics/adgroup/4/sources',
-        }]
+        expected_changes = [
+            {
+                "adgroup": ad_group,
+                "history_url": "https://one.zemanta.com/v2/analytics/adgroup/4?history",
+                "media_sources": [],
+                "media_sources_url": "https://one.zemanta.com/v2/analytics/adgroup/4/sources",
+            }
+        ]
         helpers.send_autopilot_changes_emails(data, {}, False)
         mock_template.assert_called_once_with(
             constants.EmailTemplateType.AUTOPILOT_AD_GROUP_CHANGE,
             account=ad_group.campaign.account,
             campaign=ad_group.campaign,
             changes=expected_changes,
-            link_url='https://one.zemanta.com/v2/analytics/campaign/4',
+            link_url="https://one.zemanta.com/v2/analytics/campaign/4",
         )
         mock_send.assert_called_once_with(
             agency_or_user=None,
-            from_email='help@zemanta.com',
-            recipient_list=['autopilot@zemanta.com'],
-            test_key='test_value',
+            from_email="help@zemanta.com",
+            recipient_list=["autopilot@zemanta.com"],
+            test_key="test_value",
         )
 
-    @patch('utils.email_helper.params_from_template')
-    @patch('utils.email_helper.send_official_email')
+    @patch("utils.email_helper.params_from_template")
+    @patch("utils.email_helper.send_official_email")
     def test_send_email_adgroup_init(self, mock_send, mock_template):
-        mock_template.return_value = {'test_key': 'test_value'}
+        mock_template.return_value = {"test_key": "test_value"}
         ad_group = models.AdGroup.objects.get(pk=4)
         data = {
             ad_group.campaign: {
                 ad_group: {
                     models.AdGroupSource.objects.get(pk=4): {
-                        'old_budget': Decimal('10.0'),
-                        'new_budget': Decimal('20.0'),
-                        'budget_comments': [],
-                        'old_cpc_cc': Decimal('0.1'),
-                        'new_cpc_cc': Decimal('0.2'),
-                        'cpc_comments': [],
+                        "old_budget": Decimal("10.0"),
+                        "new_budget": Decimal("20.0"),
+                        "budget_comments": [],
+                        "old_cpc_cc": Decimal("0.1"),
+                        "new_cpc_cc": Decimal("0.2"),
+                        "cpc_comments": [],
                     },
                     models.AllRTBAdGroupSource(models.AdGroup.objects.get(pk=4)): {
-                        'old_budget': Decimal('10.0'),
-                        'new_budget': Decimal('20.0'),
-                        'budget_comments': [],
+                        "old_budget": Decimal("10.0"),
+                        "new_budget": Decimal("20.0"),
+                        "budget_comments": [],
                     },
                 }
             }
         }
-        expected_changes = [{
-            'adgroup': ad_group,
-            'history_url': 'https://one.zemanta.com/v2/analytics/adgroup/4?history',
-        }]
+        expected_changes = [
+            {"adgroup": ad_group, "history_url": "https://one.zemanta.com/v2/analytics/adgroup/4?history"}
+        ]
         helpers.send_autopilot_changes_emails(data, {}, True)
         mock_template.assert_called_once_with(
             constants.EmailTemplateType.AUTOPILOT_AD_GROUP_BUDGET_INIT,
             account=ad_group.campaign.account,
             campaign=ad_group.campaign,
             changes=expected_changes,
-            link_url='https://one.zemanta.com/v2/analytics/campaign/4',
+            link_url="https://one.zemanta.com/v2/analytics/campaign/4",
         )
         mock_send.assert_called_once_with(
             agency_or_user=None,
-            from_email='help@zemanta.com',
-            recipient_list=['autopilot@zemanta.com'],
-            test_key='test_value',
+            from_email="help@zemanta.com",
+            recipient_list=["autopilot@zemanta.com"],
+            test_key="test_value",
         )
 
-    @patch('utils.email_helper.params_from_template')
-    @patch('utils.email_helper.send_official_email')
+    @patch("utils.email_helper.params_from_template")
+    @patch("utils.email_helper.send_official_email")
     def test_send_email_campaign_change(self, mock_send, mock_template):
-        mock_template.return_value = {'test_key': 'test_value'}
+        mock_template.return_value = {"test_key": "test_value"}
         ad_group = models.AdGroup.objects.get(pk=4)
         ad_group.campaign.settings.update_unsafe(None, autopilot=True)
         data = {
             ad_group.campaign: {
                 ad_group: {
                     models.AdGroupSource.objects.get(pk=4): {
-                        'old_budget': Decimal('10.0'),
-                        'new_budget': Decimal('20.0'),
-                        'budget_comments': [],
-                        'old_cpc_cc': Decimal('0.1'),
-                        'new_cpc_cc': Decimal('0.2'),
-                        'cpc_comments': [],
+                        "old_budget": Decimal("10.0"),
+                        "new_budget": Decimal("20.0"),
+                        "budget_comments": [],
+                        "old_cpc_cc": Decimal("0.1"),
+                        "new_cpc_cc": Decimal("0.2"),
+                        "cpc_comments": [],
                     },
                     models.AllRTBAdGroupSource(models.AdGroup.objects.get(pk=4)): {
-                        'old_budget': Decimal('10.0'),
-                        'new_budget': Decimal('20.0'),
-                        'budget_comments': [],
+                        "old_budget": Decimal("10.0"),
+                        "new_budget": Decimal("20.0"),
+                        "budget_comments": [],
                     },
                 }
             }
         }
-        expected_changes = [{
-            'adgroup': ad_group,
-            'history_url': 'https://one.zemanta.com/v2/analytics/adgroup/4?history',
-            'media_sources': [],
-            'media_sources_url': 'https://one.zemanta.com/v2/analytics/adgroup/4/sources',
-        }]
+        expected_changes = [
+            {
+                "adgroup": ad_group,
+                "history_url": "https://one.zemanta.com/v2/analytics/adgroup/4?history",
+                "media_sources": [],
+                "media_sources_url": "https://one.zemanta.com/v2/analytics/adgroup/4/sources",
+            }
+        ]
         helpers.send_autopilot_changes_emails(data, {}, False)
         mock_template.assert_called_once_with(
             constants.EmailTemplateType.AUTOPILOT_CAMPAIGN_CHANGE,
             account=ad_group.campaign.account,
             campaign=ad_group.campaign,
             changes=expected_changes,
-            link_url='https://one.zemanta.com/v2/analytics/campaign/4',
+            link_url="https://one.zemanta.com/v2/analytics/campaign/4",
         )
         mock_send.assert_called_once_with(
             agency_or_user=None,
-            from_email='help@zemanta.com',
-            recipient_list=['autopilot@zemanta.com'],
-            test_key='test_value',
+            from_email="help@zemanta.com",
+            recipient_list=["autopilot@zemanta.com"],
+            test_key="test_value",
         )
 
-    @patch('utils.email_helper.params_from_template')
-    @patch('utils.email_helper.send_official_email')
+    @patch("utils.email_helper.params_from_template")
+    @patch("utils.email_helper.send_official_email")
     def test_send_email_campaign_init(self, mock_send, mock_template):
-        mock_template.return_value = {'test_key': 'test_value'}
+        mock_template.return_value = {"test_key": "test_value"}
         ad_group = models.AdGroup.objects.get(pk=4)
         ad_group.campaign.settings.update_unsafe(None, autopilot=True)
         data = {
             ad_group.campaign: {
                 ad_group: {
                     models.AdGroupSource.objects.get(pk=4): {
-                        'old_budget': Decimal('10.0'),
-                        'new_budget': Decimal('20.0'),
-                        'budget_comments': [],
-                        'old_cpc_cc': Decimal('0.1'),
-                        'new_cpc_cc': Decimal('0.2'),
-                        'cpc_comments': [],
+                        "old_budget": Decimal("10.0"),
+                        "new_budget": Decimal("20.0"),
+                        "budget_comments": [],
+                        "old_cpc_cc": Decimal("0.1"),
+                        "new_cpc_cc": Decimal("0.2"),
+                        "cpc_comments": [],
                     },
                     models.AllRTBAdGroupSource(models.AdGroup.objects.get(pk=4)): {
-                        'old_budget': Decimal('10.0'),
-                        'new_budget': Decimal('20.0'),
-                        'budget_comments': [],
+                        "old_budget": Decimal("10.0"),
+                        "new_budget": Decimal("20.0"),
+                        "budget_comments": [],
                     },
                 }
             }
         }
-        expected_changes = [{
-            'adgroup': ad_group,
-            'history_url': 'https://one.zemanta.com/v2/analytics/adgroup/4?history',
-        }]
+        expected_changes = [
+            {"adgroup": ad_group, "history_url": "https://one.zemanta.com/v2/analytics/adgroup/4?history"}
+        ]
         helpers.send_autopilot_changes_emails(data, {}, True)
         mock_template.assert_called_once_with(
             constants.EmailTemplateType.AUTOPILOT_CAMPAIGN_BUDGET_INIT,
             account=ad_group.campaign.account,
             campaign=ad_group.campaign,
             changes=expected_changes,
-            link_url='https://one.zemanta.com/v2/analytics/campaign/4',
+            link_url="https://one.zemanta.com/v2/analytics/campaign/4",
         )
         mock_send.assert_called_once_with(
             agency_or_user=None,
-            from_email='help@zemanta.com',
-            recipient_list=['autopilot@zemanta.com'],
-            test_key='test_value',
+            from_email="help@zemanta.com",
+            recipient_list=["autopilot@zemanta.com"],
+            test_key="test_value",
         )
 
-    @patch('dash.models.AdGroup.get_running_status_by_sources_setting')
-    @patch('dash.models.AdGroup.get_running_status')
+    @patch("dash.models.AdGroup.get_running_status_by_sources_setting")
+    @patch("dash.models.AdGroup.get_running_status")
     def test_get_active_ad_groups_on_autopilot(self, mock_running_status, mock_running_status_by_sources):
         mock_running_status.return_value = constants.AdGroupRunningStatus.ACTIVE
         mock_running_status_by_sources.return_value = constants.AdGroupRunningStatus.ACTIVE
@@ -203,9 +205,13 @@ class AutopilotHelpersTestCase(test.TestCase):
         self.assertTrue(adg in all_ap_adgs for adg in cpc_ap_adgs + budget_ap_adgs)
         for adg_settings in all_ap_adgs_settings:
             self.assertEqual(adg_settings, adg_settings.ad_group.get_current_settings())
-            self.assertTrue(adg_settings.autopilot_state in [
-                constants.AdGroupSettingsAutopilotState.ACTIVE_CPC,
-                constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET])
+            self.assertTrue(
+                adg_settings.autopilot_state
+                in [
+                    constants.AdGroupSettingsAutopilotState.ACTIVE_CPC,
+                    constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET,
+                ]
+            )
         for adg_settings in cpc_ap_adgs_settings:
             self.assertEqual(adg_settings, adg_settings.ad_group.get_current_settings())
             self.assertTrue(adg_settings.autopilot_state == constants.AdGroupSettingsAutopilotState.ACTIVE_CPC)
@@ -220,13 +226,13 @@ class AutopilotHelpersTestCase(test.TestCase):
         old_daily_budget = ag_source_settings.daily_budget_cc
         old_cpc = ag_source_settings.cpc_cc
         old_count = models.AdGroupSourceSettings.objects.count()
-        helpers.update_ad_group_source_values(ag_source, {
-            'daily_budget_cc': old_daily_budget + Decimal('10'),
-            'cpc_cc': old_cpc + Decimal('0.5')})
+        helpers.update_ad_group_source_values(
+            ag_source, {"daily_budget_cc": old_daily_budget + Decimal("10"), "cpc_cc": old_cpc + Decimal("0.5")}
+        )
         new_count = models.AdGroupSourceSettings.objects.count()
         self.assertNotEqual(new_count, old_count)
-        self.assertEqual(ag_source_settings.daily_budget_cc, old_daily_budget + Decimal('10'))
-        self.assertEqual(ag_source_settings.cpc_cc, old_cpc + Decimal('0.5'))
+        self.assertEqual(ag_source_settings.daily_budget_cc, old_daily_budget + Decimal("10"))
+        self.assertEqual(ag_source_settings.cpc_cc, old_cpc + Decimal("0.5"))
 
     def test_get_autopilot_active_sources_settings(self):
         adgroups = models.AdGroup.objects.filter(id__in=[1, 2, 3])
@@ -240,19 +246,20 @@ class AutopilotHelpersTestCase(test.TestCase):
         self.assertTrue(source in [setting.ad_group_source for setting in active_enabled_sources])
         source.settings.update(k1_sync=False, skip_automation=True, state=constants.AdGroupSettingsState.INACTIVE)
         self.assertEqual(source.get_current_settings().state, constants.AdGroupSettingsState.INACTIVE)
-        self.assertFalse(source in [setting.ad_group_source for setting in
-                                    helpers.get_autopilot_active_sources_settings(ad_groups_and_settings)])
+        self.assertFalse(
+            source
+            in [
+                setting.ad_group_source
+                for setting in helpers.get_autopilot_active_sources_settings(ad_groups_and_settings)
+            ]
+        )
 
-    @patch('utils.k1_helper.update_ad_group')
-    @patch('dash.views.helpers.set_ad_group_sources_cpcs')
-    def test_update_ad_group_b1_sources_group_values(self, mock_set_ad_group_sources_cpcs,
-                                                     mock_k1_update_ad_group):
+    @patch("utils.k1_helper.update_ad_group")
+    @patch("dash.views.helpers.set_ad_group_sources_cpcs")
+    def test_update_ad_group_b1_sources_group_values(self, mock_set_ad_group_sources_cpcs, mock_k1_update_ad_group):
         ag = models.AdGroup.objects.get(id=1)
 
-        changes = {
-            'cpc_cc': Decimal('0.123'),
-            'daily_budget_cc': Decimal('123')
-        }
+        changes = {"cpc_cc": Decimal("0.123"), "daily_budget_cc": Decimal("123")}
         ap = constants.SystemUserType.AUTOPILOT
         helpers.update_ad_group_b1_sources_group_values(ag, changes, system_user=ap)
 
@@ -260,8 +267,8 @@ class AutopilotHelpersTestCase(test.TestCase):
 
         mock_k1_update_ad_group.assert_called()
 
-        self.assertEqual(ag.settings.b1_sources_group_cpc_cc, Decimal('0.123'))
-        self.assertEqual(ag.settings.b1_sources_group_daily_budget, Decimal('123'))
+        self.assertEqual(ag.settings.b1_sources_group_cpc_cc, Decimal("0.123"))
+        self.assertEqual(ag.settings.b1_sources_group_daily_budget, Decimal("123"))
         self.assertEqual(ag.settings.system_user, ap)
 
 
@@ -274,12 +281,12 @@ class AutopilotGetEntitiesTestCase(test.TestCase):
     @classmethod
     def _create_adgroupsource(cls, **kwargs):
         ad_group_source = magic_mixer.blend(models.AdGroupSource, **kwargs)
-        ad_group_source.settings.update_unsafe(
-            None, state=constants.AdGroupSourceSettingsState.ACTIVE)
+        ad_group_source.settings.update_unsafe(None, state=constants.AdGroupSourceSettingsState.ACTIVE)
         ad_group_source.ad_group.settings.update_unsafe(
             None,
             state=constants.AdGroupSettingsState.ACTIVE,
-            autopilot_state=constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET)
+            autopilot_state=constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET,
+        )
         return ad_group_source
 
     def setUp(self):
@@ -294,27 +301,22 @@ class AutopilotGetEntitiesTestCase(test.TestCase):
         if ad_group_source is None:
             ad_group_source = self.ad_group_source
         self.assertIn(
-            ad_group_source,
-            result.get(ad_group_source.ad_group.campaign, {}).get(ad_group_source.ad_group, []),
+            ad_group_source, result.get(ad_group_source.ad_group.campaign, {}).get(ad_group_source.ad_group, [])
         )
 
     def _find_in_result(self, result, ad_group_source):
-        return (
-            result
-            .get(ad_group_source.ad_group.campaign, {})
-            .get(ad_group_source.ad_group, [])
-        )
+        return result.get(ad_group_source.ad_group.campaign, {}).get(ad_group_source.ad_group, [])
 
     def test_adgroup_budget(self):
         result = helpers.get_autopilot_entities()
         self.assertIn(self.ad_group_source, self._find_in_result(result, self.ad_group_source))
         self.assertIn(self.b1_ad_group_source, self._find_in_result(result, self.b1_ad_group_source))
 
-    @patch('automation.campaignstop.get_campaignstop_states')
+    @patch("automation.campaignstop.get_campaignstop_states")
     def test_campaign_stopped(self, mock_get_campaignstop_states):
         mock_get_campaignstop_states.return_value = {
-            self.ad_group_source.ad_group.campaign_id: {'allowed_to_run': False},
-            self.b1_ad_group_source.ad_group.campaign_id: {'allowed_to_run': False},
+            self.ad_group_source.ad_group.campaign_id: {"allowed_to_run": False},
+            self.b1_ad_group_source.ad_group.campaign_id: {"allowed_to_run": False},
         }
 
         result = helpers.get_autopilot_entities()
@@ -323,7 +325,8 @@ class AutopilotGetEntitiesTestCase(test.TestCase):
 
     def test_adgroup_cpc(self):
         self.ad_group_source.ad_group.settings.update_unsafe(
-            None, autopilot_state=constants.AdGroupSettingsAutopilotState.ACTIVE_CPC)
+            None, autopilot_state=constants.AdGroupSettingsAutopilotState.ACTIVE_CPC
+        )
 
         result = helpers.get_autopilot_entities()
         self.assertIn(self.ad_group_source, self._find_in_result(result, self.ad_group_source))
@@ -331,7 +334,8 @@ class AutopilotGetEntitiesTestCase(test.TestCase):
 
     def test_campaign_autopilot(self):
         self.ad_group_source.ad_group.settings.update_unsafe(
-            None, autopilot_state=constants.AdGroupSettingsAutopilotState.INACTIVE)
+            None, autopilot_state=constants.AdGroupSettingsAutopilotState.INACTIVE
+        )
         self.ad_group_source.ad_group.campaign.settings.update_unsafe(None, autopilot=True)
 
         result = helpers.get_autopilot_entities()
@@ -344,8 +348,7 @@ class AutopilotGetEntitiesTestCase(test.TestCase):
         self.assertNotIn(self.b1_ad_group_source, self._find_in_result(result, self.b1_ad_group_source))
 
     def test_one_campaign_ad_group_paused(self):
-        self.ad_group_source.ad_group.settings.update_unsafe(
-            None, state=constants.AdGroupSettingsState.INACTIVE)
+        self.ad_group_source.ad_group.settings.update_unsafe(None, state=constants.AdGroupSettingsState.INACTIVE)
         self.ad_group_source.ad_group.campaign.settings.update_unsafe(None, autopilot=True)
 
         result = helpers.get_autopilot_entities(campaign=self.ad_group_source.ad_group.campaign)
@@ -358,8 +361,7 @@ class AutopilotGetEntitiesTestCase(test.TestCase):
         self.assertNotIn(self.b1_ad_group_source, self._find_in_result(result, self.b1_ad_group_source))
 
     def test_one_adgroup_paused(self):
-        self.ad_group_source.ad_group.settings.update_unsafe(
-            None, state=constants.AdGroupSettingsState.INACTIVE)
+        self.ad_group_source.ad_group.settings.update_unsafe(None, state=constants.AdGroupSettingsState.INACTIVE)
 
         result = helpers.get_autopilot_entities(ad_group=self.ad_group_source.ad_group)
         self.assertIn(self.ad_group_source, self._find_in_result(result, self.ad_group_source))
@@ -367,15 +369,15 @@ class AutopilotGetEntitiesTestCase(test.TestCase):
 
     def test_adgroup_inactive(self):
         self.ad_group_source.ad_group.settings.update_unsafe(
-            None, autopilot_state=constants.AdGroupSettingsAutopilotState.INACTIVE)
+            None, autopilot_state=constants.AdGroupSettingsAutopilotState.INACTIVE
+        )
 
         result = helpers.get_autopilot_entities()
         self.assertNotIn(self.ad_group_source, self._find_in_result(result, self.ad_group_source))
         self.assertIn(self.b1_ad_group_source, self._find_in_result(result, self.b1_ad_group_source))
 
     def test_adgroup_paused(self):
-        self.ad_group_source.ad_group.settings.update_unsafe(
-            None, state=constants.AdGroupSettingsState.INACTIVE)
+        self.ad_group_source.ad_group.settings.update_unsafe(None, state=constants.AdGroupSettingsState.INACTIVE)
 
         result = helpers.get_autopilot_entities()
         self.assertNotIn(self.ad_group_source, self._find_in_result(result, self.ad_group_source))
@@ -383,7 +385,8 @@ class AutopilotGetEntitiesTestCase(test.TestCase):
 
     def test_adgroup_past(self):
         self.ad_group_source.ad_group.settings.update_unsafe(
-            None, end_date=dates_helper.day_before(dates_helper.local_today()))
+            None, end_date=dates_helper.day_before(dates_helper.local_today())
+        )
 
         result = helpers.get_autopilot_entities()
         self.assertNotIn(self.ad_group_source, self._find_in_result(result, self.ad_group_source))
@@ -391,7 +394,8 @@ class AutopilotGetEntitiesTestCase(test.TestCase):
 
     def test_adgroup_future(self):
         self.ad_group_source.ad_group.settings.update_unsafe(
-            None, start_date=dates_helper.day_after(dates_helper.local_today()))
+            None, start_date=dates_helper.day_after(dates_helper.local_today())
+        )
 
         result = helpers.get_autopilot_entities()
         self.assertNotIn(self.ad_group_source, self._find_in_result(result, self.ad_group_source))
@@ -399,16 +403,15 @@ class AutopilotGetEntitiesTestCase(test.TestCase):
 
     def test_adgroup_paused_allrtb(self):
         self.b1_ad_group_source.ad_group.settings.update_unsafe(
-            None, b1_sources_group_enabled=True,
-            b1_sources_group_state=constants.AdGroupSourceSettingsState.INACTIVE)
+            None, b1_sources_group_enabled=True, b1_sources_group_state=constants.AdGroupSourceSettingsState.INACTIVE
+        )
 
         result = helpers.get_autopilot_entities()
         self.assertIn(self.ad_group_source, self._find_in_result(result, self.ad_group_source))
         self.assertNotIn(self.b1_ad_group_source, self._find_in_result(result, self.b1_ad_group_source))
 
     def test_adgroupsource_paused(self):
-        self.ad_group_source.settings.update_unsafe(
-            None, state=constants.AdGroupSourceSettingsState.INACTIVE)
+        self.ad_group_source.settings.update_unsafe(None, state=constants.AdGroupSourceSettingsState.INACTIVE)
 
         result = helpers.get_autopilot_entities()
         self.assertNotIn(self.ad_group_source, self._find_in_result(result, self.ad_group_source))

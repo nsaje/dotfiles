@@ -14,7 +14,6 @@ from . import exceptions
 
 
 class RefundLineItemInstanceMixinTest(TestCase):
-
     def test_save_history(self):
         request = magic_mixer.blend_request_user()
         account = magic_mixer.blend(core.entity.Account)
@@ -29,55 +28,50 @@ class RefundLineItemInstanceMixinTest(TestCase):
             end_date=end_date,
             status=constants.CreditLineItemStatus.SIGNED,
             amount=1000,
-            license_fee=Decimal('0.2'),
+            license_fee=Decimal("0.2"),
         )
 
         refund = model.RefundLineItem.objects.create(
-            request,
-            account=account,
-            credit=credit,
-            start_date=refund_start_date,
-            amount=0,
-            comment='test',
+            request, account=account, credit=credit, start_date=refund_start_date, amount=0, comment="test"
         )
         self.assertEqual(1, core.bcm.RefundHistory.objects.count())
 
         expected_history = {
-            'id': refund.id,
-            'account': account.id,
-            'credit': credit.id,
-            'start_date': str(refund_start_date),
-            'end_date': str(refund_end_date),
-            'amount': 0,
-            'comment': 'test',
-            'created_by': request.user.id,
+            "id": refund.id,
+            "account": account.id,
+            "credit": credit.id,
+            "start_date": str(refund_start_date),
+            "end_date": str(refund_end_date),
+            "amount": 0,
+            "comment": "test",
+            "created_by": request.user.id,
         }
-        self.assertEqual(expected_history, core.bcm.RefundHistory.objects.latest('created_dt').snapshot)
+        self.assertEqual(expected_history, core.bcm.RefundHistory.objects.latest("created_dt").snapshot)
         self.assertEqual(
             'Created refund. Refund: #{}. Start Date set to "2018-07-01", End Date set to "2018-07-31",'
             ' Amount set to "$0.00", Comment set to "test"'.format(refund.id),
-            account.history.latest('created_dt').changes_text,
+            account.history.latest("created_dt").changes_text,
         )
 
         refund = model.RefundLineItem.objects.get(id=refund.id)
-        refund.update(request, comment='foo')
+        refund.update(request, comment="foo")
 
         self.assertEqual(2, core.bcm.RefundHistory.objects.count())
 
         expected_history = {
-            'id': refund.id,
-            'account': account.id,
-            'credit': credit.id,
-            'start_date': str(refund_start_date),
-            'end_date': str(refund_end_date),
-            'amount': 0,
-            'comment': 'foo',
-            'created_by': request.user.id,
+            "id": refund.id,
+            "account": account.id,
+            "credit": credit.id,
+            "start_date": str(refund_start_date),
+            "end_date": str(refund_end_date),
+            "amount": 0,
+            "comment": "foo",
+            "created_by": request.user.id,
         }
-        self.assertEqual(expected_history, core.bcm.RefundHistory.objects.latest('created_dt').snapshot)
+        self.assertEqual(expected_history, core.bcm.RefundHistory.objects.latest("created_dt").snapshot)
         self.assertEqual(
             'Refund: #{}. Comment set from "test" to "foo"'.format(refund.id),
-            account.history.latest('created_dt').changes_text,
+            account.history.latest("created_dt").changes_text,
         )
 
         with self.assertRaises(exceptions.RefundAmountExceededTotalSpend):

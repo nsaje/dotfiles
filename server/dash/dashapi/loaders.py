@@ -35,25 +35,24 @@ Notes on implementation:
 
 
 def get_loader_for_dimension(target_dimension, level):
-    if target_dimension == 'account_id':
+    if target_dimension == "account_id":
         return AccountsLoader
-    elif target_dimension == 'campaign_id':
+    elif target_dimension == "campaign_id":
         return CampaignsLoader
-    elif target_dimension == 'ad_group_id':
+    elif target_dimension == "ad_group_id":
         return AdGroupsLoader
-    elif target_dimension == 'content_ad_id':
+    elif target_dimension == "content_ad_id":
         return ContentAdsLoader
-    elif target_dimension == 'source_id':
+    elif target_dimension == "source_id":
         if level == constants.Level.AD_GROUPS:
             return AdGroupSourcesLoader
         return SourcesLoader
-    elif target_dimension == 'publisher_id':
+    elif target_dimension == "publisher_id":
         return PublisherBlacklistLoader
     return None
 
 
 class Loader(object):
-
     def __init__(self, objs_qs, start_date=None, end_date=None):
         self.objs_qs = objs_qs
 
@@ -86,9 +85,8 @@ class Loader(object):
 
 
 class AccountsLoader(Loader):
-
     def __init__(self, accounts_qs, filtered_sources_qs, user, **kwargs):
-        accounts_qs = accounts_qs.select_related('agency')
+        accounts_qs = accounts_qs.select_related("agency")
 
         super(AccountsLoader, self).__init__(accounts_qs, **kwargs)
         self.filtered_sources_qs = filtered_sources_qs
@@ -97,17 +95,16 @@ class AccountsLoader(Loader):
     @classmethod
     def from_constraints(cls, user, constraints):
         return cls(
-            constraints['allowed_accounts'], constraints['filtered_sources'],
+            constraints["allowed_accounts"],
+            constraints["filtered_sources"],
             user,
-            start_date=constraints.get('date__gte'),
-            end_date=constraints.get('date__lte')
+            start_date=constraints.get("date__gte"),
+            end_date=constraints.get("date__lte"),
         )
 
     @cached_property
     def settings_map(self):
-        settings_qs = models.AccountSettings.objects\
-                                            .filter(account_id__in=self.objs_ids)\
-                                            .group_current_settings()
+        settings_qs = models.AccountSettings.objects.filter(account_id__in=self.objs_ids).group_current_settings()
 
         # workaround because select_related is currently malfunctioned on models that inherit histroymixin
         # - it doesn't do what its supposed to do
@@ -124,28 +121,33 @@ class AccountsLoader(Loader):
             settings = settings_obj_map.get(account_id)
 
             settings_dict = {
-                'status': status_map[account_id],
-                'archived': False,
-                'default_account_manager': None,
-                'default_sales_representative': None,
-                'default_cs_representative': None,
-                'account_type': constants.AccountType.get_text(constants.AccountType.UNKNOWN),
-                'settings_id': None,  # for debugging purposes, isn't used in production code
-                'salesforce_url': '',
+                "status": status_map[account_id],
+                "archived": False,
+                "default_account_manager": None,
+                "default_sales_representative": None,
+                "default_cs_representative": None,
+                "account_type": constants.AccountType.get_text(constants.AccountType.UNKNOWN),
+                "settings_id": None,  # for debugging purposes, isn't used in production code
+                "salesforce_url": "",
             }
             if settings is not None:
-                settings_dict.update({
-                    'archived': settings.archived,
-                    'account_type': constants.AccountType.get_text(settings.account_type),
-                    'settings_id': settings.id,
-                    'default_account_manager': view_helpers.get_user_full_name_or_email(
-                        user_map.get(settings.default_account_manager_id), default_value=None),
-                    'default_sales_representative': view_helpers.get_user_full_name_or_email(
-                        user_map.get(settings.default_sales_representative_id), default_value=None),
-                    'default_cs_representative': view_helpers.get_user_full_name_or_email(
-                        user_map.get(settings.default_cs_representative_id), default_value=None),
-                    'salesforce_url': settings.salesforce_url or ''
-                })
+                settings_dict.update(
+                    {
+                        "archived": settings.archived,
+                        "account_type": constants.AccountType.get_text(settings.account_type),
+                        "settings_id": settings.id,
+                        "default_account_manager": view_helpers.get_user_full_name_or_email(
+                            user_map.get(settings.default_account_manager_id), default_value=None
+                        ),
+                        "default_sales_representative": view_helpers.get_user_full_name_or_email(
+                            user_map.get(settings.default_sales_representative_id), default_value=None
+                        ),
+                        "default_cs_representative": view_helpers.get_user_full_name_or_email(
+                            user_map.get(settings.default_cs_representative_id), default_value=None
+                        ),
+                        "salesforce_url": settings.salesforce_url or "",
+                    }
+                )
             settings_map[account_id] = settings_dict
 
         return settings_map
@@ -155,31 +157,38 @@ class AccountsLoader(Loader):
         Returns dict with account_id as key and status as value
         """
 
-        account_ids_state = models.AdGroup.objects.filter(
-            campaign__account_id__in=self.objs_ids,
-            settings__state=constants.AdGroupRunningStatus.ACTIVE,
-        ).values_list(
-            'campaign_id', 'campaign__account_id'
-        ).distinct().order_by()  # removes default ordering to speed up the query
+        account_ids_state = (
+            models.AdGroup.objects.filter(
+                campaign__account_id__in=self.objs_ids, settings__state=constants.AdGroupRunningStatus.ACTIVE
+            )
+            .values_list("campaign_id", "campaign__account_id")
+            .distinct()
+            .order_by()
+        )  # removes default ordering to speed up the query
         campaignstop_states = automation.campaignstop.get_campaignstop_states(
-            models.Campaign.objects.filter(account_id__in=self.objs_ids))
+            models.Campaign.objects.filter(account_id__in=self.objs_ids)
+        )
 
         status_map = collections.defaultdict(lambda: constants.AdGroupRunningStatus.INACTIVE)
         for campaign_id, account_id in account_ids_state:
-            if campaignstop_states[campaign_id]['allowed_to_run']:
+            if campaignstop_states[campaign_id]["allowed_to_run"]:
                 status_map[account_id] = constants.AdGroupRunningStatus.ACTIVE
 
         return status_map
 
     @cached_property
     def _projections(self):
-        return BudgetProjections(self.start_date, self.end_date, 'account',
-                                 accounts=self.objs_qs,
-                                 campaign_id__in=models.Campaign.objects.filter(account_id__in=self.objs_ids))
+        return BudgetProjections(
+            self.start_date,
+            self.end_date,
+            "account",
+            accounts=self.objs_qs,
+            campaign_id__in=models.Campaign.objects.filter(account_id__in=self.objs_ids),
+        )
 
     @cached_property
     def projections_map(self):
-        if not self.user.has_perm('zemauth.can_see_projections'):
+        if not self.user.has_perm("zemauth.can_see_projections"):
             return {}
         projections_dict = {}
         for account_id in self.objs_ids:
@@ -188,7 +197,7 @@ class AccountsLoader(Loader):
 
     @cached_property
     def projections_totals(self):
-        if not self.user.has_perm('zemauth.can_see_projections'):
+        if not self.user.has_perm("zemauth.can_see_projections"):
             return None
         return self._projections.total()
 
@@ -196,17 +205,14 @@ class AccountsLoader(Loader):
     def refunds_map(self):
         refunds_map = {}
         for refund in self._refunds:
-            refunds_map.setdefault(refund.account_id, {
-                'billing_cost': 0,
-                'etfm_cost': 0,
-                'e_media_cost': 0,
-                'license_fee': 0,
-            })
+            refunds_map.setdefault(
+                refund.account_id, {"billing_cost": 0, "etfm_cost": 0, "e_media_cost": 0, "license_fee": 0}
+            )
             total_amount, media_amount, license_fee_amount = self._calculate_refund_splits(refund)
-            refunds_map[refund.account_id]['e_media_cost'] += media_amount
-            refunds_map[refund.account_id]['license_fee'] += license_fee_amount
-            refunds_map[refund.account_id]['billing_cost'] += total_amount
-            refunds_map[refund.account_id]['etfm_cost'] += total_amount
+            refunds_map[refund.account_id]["e_media_cost"] += media_amount
+            refunds_map[refund.account_id]["license_fee"] += license_fee_amount
+            refunds_map[refund.account_id]["billing_cost"] += total_amount
+            refunds_map[refund.account_id]["etfm_cost"] += total_amount
         return refunds_map
 
     @cached_property
@@ -214,18 +220,13 @@ class AccountsLoader(Loader):
         if not self._refunds:
             return {}
 
-        totals = {
-            'billing_cost': 0,
-            'etfm_cost': 0,
-            'e_media_cost': 0,
-            'license_fee': 0,
-        }
+        totals = {"billing_cost": 0, "etfm_cost": 0, "e_media_cost": 0, "license_fee": 0}
         for refund in self._refunds:
             total_amount, media_amount, license_fee_amount = self._calculate_refund_splits(refund)
-            totals['e_media_cost'] += media_amount
-            totals['license_fee'] += license_fee_amount
-            totals['billing_cost'] += total_amount
-            totals['etfm_cost'] += total_amount
+            totals["e_media_cost"] += media_amount
+            totals["license_fee"] += license_fee_amount
+            totals["billing_cost"] += total_amount
+            totals["etfm_cost"] += total_amount
         return totals
 
     @cached_property
@@ -234,32 +235,29 @@ class AccountsLoader(Loader):
             account_id__in=self.objs_ids,
             start_date__gte=self.start_date.replace(day=1),
             end_date__lte=self.end_date.replace(day=calendar.monthrange(self.end_date.year, self.end_date.month)[1]),
-        ).select_related('credit')
+        ).select_related("credit")
 
     def _calculate_refund_splits(self, refund):
         currency_exchange_rate = self._refund_exchange_rate(refund)
         total_amount = refund.amount * currency_exchange_rate
         media_amount = core.bcm.calculations.subtract_fee_and_margin(
-            total_amount,
-            license_fee=refund.credit.license_fee,
-            margin=0,  # doesn't apply on account level
+            total_amount, license_fee=refund.credit.license_fee, margin=0  # doesn't apply on account level
         )
-        license_fee_amount = core.bcm.calculations.calculate_fee(
-            media_amount, refund.credit.license_fee)
+        license_fee_amount = core.bcm.calculations.calculate_fee(media_amount, refund.credit.license_fee)
         return total_amount, media_amount, license_fee_amount
 
     def _refund_exchange_rate(self, refund):
         view_currency = stats.helpers.get_report_currency(self.user, [account for account in self.objs_map.values()])
         view_currency_exchange_rate = core.multicurrency.get_exchange_rate(refund.start_date, view_currency)
-        account_currency_exchange_rate = core.multicurrency.get_exchange_rate(refund.start_date, refund.account.currency)
+        account_currency_exchange_rate = core.multicurrency.get_exchange_rate(
+            refund.start_date, refund.account.currency
+        )
         return view_currency_exchange_rate / account_currency_exchange_rate
 
 
 class CampaignsLoader(Loader):
-
     def __init__(self, campaigns_qs, filtered_sources_qs, user, **kwargs):
-        super(CampaignsLoader, self).__init__(
-            campaigns_qs.select_related('account'), **kwargs)
+        super(CampaignsLoader, self).__init__(campaigns_qs.select_related("account"), **kwargs)
 
         self.filtered_sources_qs = filtered_sources_qs
         self.user = user
@@ -267,18 +265,20 @@ class CampaignsLoader(Loader):
     @classmethod
     def from_constraints(cls, user, constraints):
         return cls(
-            constraints['allowed_campaigns'], constraints['filtered_sources'],
+            constraints["allowed_campaigns"],
+            constraints["filtered_sources"],
             user,
-            start_date=constraints.get('date__gte'),
-            end_date=constraints.get('date__lte')
+            start_date=constraints.get("date__gte"),
+            end_date=constraints.get("date__lte"),
         )
 
     @cached_property
     def settings_map(self):
-        settings_qs = models.CampaignSettings.objects\
-                                             .filter(campaign_id__in=self.objs_ids)\
-                                             .group_current_settings()\
-                                             .select_related('campaign_manager')
+        settings_qs = (
+            models.CampaignSettings.objects.filter(campaign_id__in=self.objs_ids)
+            .group_current_settings()
+            .select_related("campaign_manager")
+        )
         settings_obj_map = {x.campaign_id: x for x in settings_qs}
         status_map = self._get_status_map()
         settings_map = {}
@@ -287,45 +287,49 @@ class CampaignsLoader(Loader):
             settings = settings_obj_map.get(campaign_id)
 
             settings_dict = {
-                'status': status_map[campaign_id],
-                'archived': False,
-                'campaign_manager': None,
-                'settings_id': None,  # for debugging purposes, get removed
+                "status": status_map[campaign_id],
+                "archived": False,
+                "campaign_manager": None,
+                "settings_id": None,  # for debugging purposes, get removed
             }
             if settings is not None:
-                settings_dict.update({
-                    'archived': settings.archived,
-                    'campaign_manager': view_helpers.get_user_full_name_or_email(
-                        settings.campaign_manager, default_value=None),
-                    'settings_id': settings.id,
-                })
+                settings_dict.update(
+                    {
+                        "archived": settings.archived,
+                        "campaign_manager": view_helpers.get_user_full_name_or_email(
+                            settings.campaign_manager, default_value=None
+                        ),
+                        "settings_id": settings.id,
+                    }
+                )
             settings_map[campaign_id] = settings_dict
 
         return settings_map
 
     def _get_status_map(self):
-        campaign_ids_state = models.AdGroup.objects.filter(campaign__in=self.objs_ids)\
-                                                   .values_list('campaign_id', 'settings__state')\
-                                                   .order_by()  # removes default ordering to speed up the query
+        campaign_ids_state = (
+            models.AdGroup.objects.filter(campaign__in=self.objs_ids)
+            .values_list("campaign_id", "settings__state")
+            .order_by()
+        )  # removes default ordering to speed up the query
         campaignstop_states = automation.campaignstop.get_campaignstop_states(
-            models.Campaign.objects.filter(id__in=self.objs_ids))
+            models.Campaign.objects.filter(id__in=self.objs_ids)
+        )
 
         status_map = collections.defaultdict(lambda: constants.AdGroupRunningStatus.INACTIVE)
         for campaign_id, state in campaign_ids_state:
-            if state == constants.AdGroupRunningStatus.ACTIVE and\
-               campaignstop_states[campaign_id]['allowed_to_run']:
+            if state == constants.AdGroupRunningStatus.ACTIVE and campaignstop_states[campaign_id]["allowed_to_run"]:
                 status_map[campaign_id] = state
 
         return status_map
 
     @cached_property
     def _projections(self):
-        return BudgetProjections(self.start_date, self.end_date, 'campaign',
-                                 campaign_id__in=self.objs_ids)
+        return BudgetProjections(self.start_date, self.end_date, "campaign", campaign_id__in=self.objs_ids)
 
     @cached_property
     def projections_map(self):
-        if not self.user.has_perm('zemauth.can_see_projections'):
+        if not self.user.has_perm("zemauth.can_see_projections"):
             return {}
         projections_dict = {}
         for campaign_id in self.objs_ids:
@@ -334,7 +338,7 @@ class CampaignsLoader(Loader):
 
     @cached_property
     def projections_totals(self):
-        if not self.user.has_perm('zemauth.can_see_projections'):
+        if not self.user.has_perm("zemauth.can_see_projections"):
             return None
         return self._projections.total()
 
@@ -343,55 +347,46 @@ class CampaignsLoader(Loader):
         if not self._refunds:
             return {}
 
-        totals = {
-            'billing_cost': 0,
-            'etfm_cost': 0,
-            'e_media_cost': 0,
-            'license_fee': 0,
-        }
+        totals = {"billing_cost": 0, "etfm_cost": 0, "e_media_cost": 0, "license_fee": 0}
 
         for refund in self._refunds:
             total_amount, media_amount, license_fee_amount = self._calculate_refund_splits(refund)
-            totals['e_media_cost'] += media_amount
-            totals['license_fee'] += license_fee_amount
-            totals['billing_cost'] += total_amount
-            totals['etfm_cost'] += total_amount
+            totals["e_media_cost"] += media_amount
+            totals["license_fee"] += license_fee_amount
+            totals["billing_cost"] += total_amount
+            totals["etfm_cost"] += total_amount
 
         return totals
 
     @cached_property
     def _refunds(self):
         return models.RefundLineItem.objects.filter(
-            account__in=models.Campaign.objects.filter(id__in=self.objs_ids).values_list('account_id', flat=True),
+            account__in=models.Campaign.objects.filter(id__in=self.objs_ids).values_list("account_id", flat=True),
             start_date__gte=self.start_date.replace(day=1),
             end_date__lte=self.end_date.replace(day=calendar.monthrange(self.end_date.year, self.end_date.month)[1]),
-        ).select_related('credit')
+        ).select_related("credit")
 
     def _calculate_refund_splits(self, refund):
         total_amount = refund.amount
         media_amount = core.bcm.calculations.subtract_fee_and_margin(
-            total_amount,
-            license_fee=refund.credit.license_fee,
-            margin=0,  # doesn't apply on account level
+            total_amount, license_fee=refund.credit.license_fee, margin=0  # doesn't apply on account level
         )
-        license_fee_amount = core.bcm.calculations.calculate_fee(
-            media_amount, refund.credit.license_fee)
+        license_fee_amount = core.bcm.calculations.calculate_fee(media_amount, refund.credit.license_fee)
         return total_amount, media_amount, license_fee_amount
 
 
 class AdGroupsLoader(Loader):
-
     def __init__(self, ad_groups_qs, filtered_sources_qs, **kwargs):
-        super(AdGroupsLoader, self).__init__(
-            ad_groups_qs.select_related('campaign__account', 'settings'), **kwargs)
+        super(AdGroupsLoader, self).__init__(ad_groups_qs.select_related("campaign__account", "settings"), **kwargs)
         self.filtered_sources_qs = filtered_sources_qs
 
     @classmethod
     def from_constraints(cls, user, constraints):
         return cls(
-            constraints['allowed_ad_groups'], constraints['filtered_sources'],
-            start_date=constraints.get('date__gte'),
-            end_date=constraints.get('date__lte')
+            constraints["allowed_ad_groups"],
+            constraints["filtered_sources"],
+            start_date=constraints.get("date__gte"),
+            end_date=constraints.get("date__lte"),
         )
 
     @cached_property
@@ -400,21 +395,22 @@ class AdGroupsLoader(Loader):
         status_map = self._get_status_map()
         for ad_group_id, ad_group in self.objs_map.items():
             settings_map[ad_group_id] = {
-                'archived': ad_group.settings.archived,
-                'status': status_map[ad_group_id],
-                'state': ad_group.settings.state,
-                'settings_id': ad_group.settings.id,
+                "archived": ad_group.settings.archived,
+                "status": status_map[ad_group_id],
+                "state": ad_group.settings.state,
+                "settings_id": ad_group.settings.id,
             }
 
         return settings_map
 
     def _get_status_map(self):
-        campaignstop_states = automation.campaignstop.get_campaignstop_states(
-            list(self._campaign_ad_groups_map.keys()))
+        campaignstop_states = automation.campaignstop.get_campaignstop_states(list(self._campaign_ad_groups_map.keys()))
         status_map = collections.defaultdict(lambda: constants.AdGroupRunningStatus.INACTIVE)
         for ad_group_id, ad_group in self.objs_map.items():
-            if ad_group.settings.state == constants.AdGroupRunningStatus.ACTIVE and\
-               campaignstop_states[ad_group.campaign_id]['allowed_to_run']:
+            if (
+                ad_group.settings.state == constants.AdGroupRunningStatus.ACTIVE
+                and campaignstop_states[ad_group.campaign_id]["allowed_to_run"]
+            ):
                 status_map[ad_group_id] = ad_group.settings.state
 
         return status_map
@@ -428,9 +424,7 @@ class AdGroupsLoader(Loader):
             campaign_has_available_budget = data_helper.campaign_has_available_budget(campaign)
 
             for ad_group in ad_groups:
-                settings_map[ad_group.id] = {
-                    'campaign_has_available_budget': campaign_has_available_budget,
-                }
+                settings_map[ad_group.id] = {"campaign_has_available_budget": campaign_has_available_budget}
 
         return settings_map
 
@@ -444,18 +438,19 @@ class AdGroupsLoader(Loader):
 
 
 class ContentAdsLoader(Loader):
-
     def __init__(self, content_ads_qs, filtered_sources_qs, **kwargs):
         super(ContentAdsLoader, self).__init__(
-            content_ads_qs.select_related('batch', 'ad_group__campaign__account'), **kwargs)
+            content_ads_qs.select_related("batch", "ad_group__campaign__account"), **kwargs
+        )
         self.filtered_sources_qs = filtered_sources_qs
 
     @classmethod
     def from_constraints(cls, user, constraints):
         return cls(
-            constraints['allowed_content_ads'], constraints['filtered_sources'],
-            start_date=constraints.get('date__gte'),
-            end_date=constraints.get('date__lte')
+            constraints["allowed_content_ads"],
+            constraints["filtered_sources"],
+            start_date=constraints.get("date__gte"),
+            end_date=constraints.get("date__lte"),
         )
 
     @cached_property
@@ -464,8 +459,7 @@ class ContentAdsLoader(Loader):
 
     @cached_property
     def ad_group_loader(self):
-        ad_groups_qs = models.AdGroup.objects.filter(
-            pk__in=set(x.ad_group_id for x in self.objs_qs))
+        ad_groups_qs = models.AdGroup.objects.filter(pk__in=set(x.ad_group_id for x in self.objs_qs))
 
         return AdGroupsLoader(ad_groups_qs, self.filtered_sources_qs)
 
@@ -481,9 +475,11 @@ class ContentAdsLoader(Loader):
         status_map = {}
         for content_ad_id, content_ad in self.objs_map.items():
             content_ad_sources = self.content_ads_sources_map[content_ad_id]
-            if (any([x.state == constants.ContentAdSourceState.ACTIVE for x in content_ad_sources]) and
-                self.ad_group_loader.settings_map[content_ad.ad_group_id]['status'] ==
-                    constants.AdGroupRunningStatus.ACTIVE):
+            if (
+                any([x.state == constants.ContentAdSourceState.ACTIVE for x in content_ad_sources])
+                and self.ad_group_loader.settings_map[content_ad.ad_group_id]["status"]
+                == constants.AdGroupRunningStatus.ACTIVE
+            ):
                 status_map[content_ad_id] = constants.ContentAdSourceState.ACTIVE
             else:
                 status_map[content_ad_id] = constants.ContentAdSourceState.INACTIVE
@@ -499,46 +495,62 @@ class ContentAdsLoader(Loader):
             for content_ad_source in self.content_ads_sources_map[content_ad_id]:
                 source_id = content_ad_source.source_id
 
-                source_status = source_map[content_ad.ad_group_id][source_id]['state']
+                source_status = source_map[content_ad.ad_group_id][source_id]["state"]
                 if source_status is None:
                     source_status = constants.AdGroupSourceSettingsState.INACTIVE
 
                 submission_status, submission_errors = self._get_submission_status(
-                    content_ad, content_ad_source, source_map[content_ad.ad_group_id][source_id]['content_ad_submission_policy'])
+                    content_ad,
+                    content_ad_source,
+                    source_map[content_ad.ad_group_id][source_id]["content_ad_submission_policy"],
+                )
                 per_source_map[content_ad_id][content_ad_source.source_id] = {
-                    'source_id': source_id,
-                    'source_name': sources.get(source_id),
-                    'source_status': source_status,
-                    'submission_status': submission_status,
-                    'submission_errors': submission_errors,
+                    "source_id": source_id,
+                    "source_name": sources.get(source_id),
+                    "source_status": source_status,
+                    "submission_status": submission_status,
+                    "submission_errors": submission_errors,
                 }
 
         return per_source_map
 
     def _get_per_ad_group_source_map(self):
-        ad_group_sources_settings = models.AdGroupSourceSettings.objects.filter(
-            ad_group_source__ad_group_id__in=set(x.ad_group_id for x in self.objs_qs)).group_current_settings().values_list(
-                'ad_group_source__ad_group_id', 'ad_group_source__source_id', 'state', 'ad_group_source__source__content_ad_submission_policy')
+        ad_group_sources_settings = (
+            models.AdGroupSourceSettings.objects.filter(
+                ad_group_source__ad_group_id__in=set(x.ad_group_id for x in self.objs_qs)
+            )
+            .group_current_settings()
+            .values_list(
+                "ad_group_source__ad_group_id",
+                "ad_group_source__source_id",
+                "state",
+                "ad_group_source__source__content_ad_submission_policy",
+            )
+        )
 
         settings_map = collections.defaultdict(dict)
         for ad_group_id, source_id, state, content_ad_submission_policy in ad_group_sources_settings:
             settings_map[ad_group_id][source_id] = {
-                'state': state,
-                'content_ad_submission_policy': content_ad_submission_policy,
+                "state": state,
+                "content_ad_submission_policy": content_ad_submission_policy,
             }
         return settings_map
 
     def _get_submission_status(self, content_ad, content_ad_source, content_ad_submission_policy):
-        if content_ad_submission_policy == constants.SourceSubmissionPolicy.AUTOMATIC_WITH_AMPLIFY_APPROVAL and\
-           content_ad.amplify_review and content_ad.id in self.amplify_reviews_map:
+        if (
+            content_ad_submission_policy == constants.SourceSubmissionPolicy.AUTOMATIC_WITH_AMPLIFY_APPROVAL
+            and content_ad.amplify_review
+            and content_ad.id in self.amplify_reviews_map
+        ):
             outbrain_content_ad_source = self.amplify_reviews_map[content_ad.id]
             return outbrain_content_ad_source.get_submission_status(), content_ad_source.submission_errors
         return content_ad_source.get_submission_status(), content_ad_source.submission_errors
 
     @cached_property
     def content_ads_sources_map(self):
-        qs = models.ContentAdSource.objects.filter(
-            content_ad_id__in=self.objs_ids).filter_by_sources(self.filtered_sources_qs)
+        qs = models.ContentAdSource.objects.filter(content_ad_id__in=self.objs_ids).filter_by_sources(
+            self.filtered_sources_qs
+        )
 
         content_ads_sources_map = collections.defaultdict(list)
         for content_ad_source in qs:
@@ -548,10 +560,7 @@ class ContentAdsLoader(Loader):
 
     @cached_property
     def amplify_reviews_map(self):
-        qs = models.ContentAdSource.objects.filter(
-            content_ad_id__in=self.objs_ids,
-            source__bidder_slug='outbrain'
-        )
+        qs = models.ContentAdSource.objects.filter(content_ad_id__in=self.objs_ids, source__bidder_slug="outbrain")
 
         amplify_reviews_map = {}
         for content_ad_source in qs:
@@ -560,10 +569,11 @@ class ContentAdsLoader(Loader):
 
 
 class PublisherBlacklistLoader(Loader):
-
-    def __init__(self, blacklist_qs, whitelist_qs, publisher_group_targeting, filtered_sources_qs, user, account=None, **kwargs):
+    def __init__(
+        self, blacklist_qs, whitelist_qs, publisher_group_targeting, filtered_sources_qs, user, account=None, **kwargs
+    ):
         super(PublisherBlacklistLoader, self).__init__(blacklist_qs | whitelist_qs, **kwargs)
-        self.filtered_sources_qs = filtered_sources_qs.select_related('source_type')
+        self.filtered_sources_qs = filtered_sources_qs.select_related("source_type")
         self.user = user
 
         self.publisher_group_targeting = publisher_group_targeting
@@ -571,9 +581,7 @@ class PublisherBlacklistLoader(Loader):
         self.blacklist_qs = blacklist_qs
         self.account = account
 
-        self.default = {
-            'status': constants.PublisherTargetingStatus.UNLISTED,
-        }
+        self.default = {"status": constants.PublisherTargetingStatus.UNLISTED}
 
     @classmethod
     def _get_obj_id(cls, obj):
@@ -582,13 +590,15 @@ class PublisherBlacklistLoader(Loader):
     @classmethod
     def from_constraints(cls, user, constraints):
         return cls(
-            constraints['publisher_blacklist'], constraints['publisher_whitelist'],
-            constraints['publisher_group_targeting'],
-            constraints['filtered_sources'],
+            constraints["publisher_blacklist"],
+            constraints["publisher_whitelist"],
+            constraints["publisher_group_targeting"],
+            constraints["filtered_sources"],
             user,
-            start_date=constraints.get('date__gte'),
-            end_date=constraints.get('date__lte'),
-            account=constraints.get('account'))
+            start_date=constraints.get("date__gte"),
+            end_date=constraints.get("date__lte"),
+            account=constraints.get("account"),
+        )
 
     @cached_property
     def publisher_group_entry_map(self):
@@ -596,48 +606,44 @@ class PublisherBlacklistLoader(Loader):
 
     def find_blacklisted_status_for_level(self, row, level, publisher_group_entry):
         targeting = self.publisher_group_targeting[level].get(
-            row.get(level + '_id'),  # for reports there can be multiple entities per level
+            row.get(level + "_id"),  # for reports there can be multiple entities per level
             self.publisher_group_targeting[level],  # default is used for grid
         )
 
-        if publisher_group_entry.publisher_group_id in targeting['included']:
-            return {
-                'status': constants.PublisherTargetingStatus.WHITELISTED,
-            }
+        if publisher_group_entry.publisher_group_id in targeting["included"]:
+            return {"status": constants.PublisherTargetingStatus.WHITELISTED}
 
-        if publisher_group_entry.publisher_group_id in targeting['excluded']:
-            return {
-                'status': constants.PublisherTargetingStatus.BLACKLISTED,
-            }
+        if publisher_group_entry.publisher_group_id in targeting["excluded"]:
+            return {"status": constants.PublisherTargetingStatus.BLACKLISTED}
 
         return None
 
     def find_blacklisted_status(self, row, publisher_group_entry):
-        status = self.find_blacklisted_status_for_level(row, 'ad_group', publisher_group_entry)
+        status = self.find_blacklisted_status_for_level(row, "ad_group", publisher_group_entry)
         if status is not None:
-            status['blacklisted_level'] = constants.PublisherBlacklistLevel.ADGROUP
+            status["blacklisted_level"] = constants.PublisherBlacklistLevel.ADGROUP
             return status
 
-        status = self.find_blacklisted_status_for_level(row, 'campaign', publisher_group_entry)
+        status = self.find_blacklisted_status_for_level(row, "campaign", publisher_group_entry)
         if status is not None:
-            status['blacklisted_level'] = constants.PublisherBlacklistLevel.CAMPAIGN
+            status["blacklisted_level"] = constants.PublisherBlacklistLevel.CAMPAIGN
             return status
 
-        status = self.find_blacklisted_status_for_level(row, 'account', publisher_group_entry)
+        status = self.find_blacklisted_status_for_level(row, "account", publisher_group_entry)
         if status is not None:
-            status['blacklisted_level'] = constants.PublisherBlacklistLevel.ACCOUNT
+            status["blacklisted_level"] = constants.PublisherBlacklistLevel.ACCOUNT
             return status
 
-        if publisher_group_entry.publisher_group_id in self.publisher_group_targeting['global']['excluded']:
+        if publisher_group_entry.publisher_group_id in self.publisher_group_targeting["global"]["excluded"]:
             return {
-                'status': constants.PublisherTargetingStatus.BLACKLISTED,
-                'blacklisted_level': constants.PublisherBlacklistLevel.GLOBAL,
+                "status": constants.PublisherTargetingStatus.BLACKLISTED,
+                "blacklisted_level": constants.PublisherBlacklistLevel.GLOBAL,
             }
 
         return self.default
 
     def find_blacklisted_status_by_subdomain(self, row):
-        publisher_group_entry = self.publisher_group_entry_map[row['publisher_id']]
+        publisher_group_entry = self.publisher_group_entry_map[row["publisher_id"]]
         if publisher_group_entry is not None:
             return self.find_blacklisted_status(row, publisher_group_entry)
 
@@ -653,24 +659,24 @@ class PublisherBlacklistLoader(Loader):
         d = collections.defaultdict(lambda: False)
 
         for source_id, source in list(self.source_map.items()):
-            can_blacklist_outbrain_publisher = source.source_type.type == constants.SourceType.OUTBRAIN and\
-                self.user.has_perm(
-                    'zemauth.can_modify_outbrain_account_publisher_blacklist_status')
+            can_blacklist_outbrain_publisher = (
+                source.source_type.type == constants.SourceType.OUTBRAIN
+                and self.user.has_perm("zemauth.can_modify_outbrain_account_publisher_blacklist_status")
+            )
 
-            d[source_id] = (source.can_modify_publisher_blacklist_automatically() and
-                            (source.source_type.type != constants.SourceType.OUTBRAIN or
-                             can_blacklist_outbrain_publisher))
+            d[source_id] = source.can_modify_publisher_blacklist_automatically() and (
+                source.source_type.type != constants.SourceType.OUTBRAIN or can_blacklist_outbrain_publisher
+            )
         return d
 
 
 class SourcesLoader(Loader):
-
     @classmethod
     def from_constraints(cls, user, constraints):
         return cls(
-            constraints['filtered_sources'],
-            start_date=constraints.get('date__gte'),
-            end_date=constraints.get('date__lte')
+            constraints["filtered_sources"],
+            start_date=constraints.get("date__gte"),
+            end_date=constraints.get("date__lte"),
         )
 
     @cached_property
@@ -684,9 +690,8 @@ class SourcesLoader(Loader):
 
 
 class AdGroupSourcesLoader(Loader):
-
     def __init__(self, sources_qs, ad_group, user, **kwargs):
-        super(AdGroupSourcesLoader, self).__init__(sources_qs.select_related('source_type'), **kwargs)
+        super(AdGroupSourcesLoader, self).__init__(sources_qs.select_related("source_type"), **kwargs)
 
         self.base_objects = [ad_group]
         self.ad_group = ad_group
@@ -696,9 +701,13 @@ class AdGroupSourcesLoader(Loader):
 
     @classmethod
     def from_constraints(cls, user, constraints):
-        return cls(constraints['filtered_sources'], constraints['ad_group'], user,
-                   start_date=constraints.get('date__gte'),
-                   end_date=constraints.get('date__lte'))
+        return cls(
+            constraints["filtered_sources"],
+            constraints["ad_group"],
+            user,
+            start_date=constraints.get("date__gte"),
+            end_date=constraints.get("date__lte"),
+        )
 
     @cached_property
     def settings_map(self):
@@ -710,60 +719,66 @@ class AdGroupSourcesLoader(Loader):
             source_settings = self._ad_group_source_settings_map[source_id]
 
             editable_fields = view_helpers.get_editable_fields(
-                ad_group_source.ad_group, ad_group_source, self.ad_group_settings, source_settings,
-                self.campaign_settings, self._allowed_sources,
+                ad_group_source.ad_group,
+                ad_group_source,
+                self.ad_group_settings,
+                source_settings,
+                self.campaign_settings,
+                self._allowed_sources,
             )
 
-            if editable_fields.get('status_setting'):
-                editable_fields['state'] = editable_fields.pop('status_setting')
+            if editable_fields.get("status_setting"):
+                editable_fields["state"] = editable_fields.pop("status_setting")
 
             state = source_settings.state if source_settings else constants.AdGroupSourceSettingsState.INACTIVE
             result[source_id] = {
-                'state': state,
-                'status': data_helper.get_source_status(ad_group_source, state, self.ad_group_settings.state),
-                'bid_cpc': source_settings.cpc_cc if source_settings else None,
-                'local_bid_cpc': source_settings.local_cpc_cc if source_settings else None,
-                'daily_budget': source_settings.daily_budget_cc if source_settings else None,
-                'local_daily_budget': source_settings.local_daily_budget_cc if source_settings else None,
-
-                'supply_dash_url': ad_group_source.get_supply_dash_url(),
-                'supply_dash_disabled_message': view_helpers.get_source_supply_dash_disabled_message(
-                    ad_group_source, source),
-
-                'editable_fields': editable_fields,
-                'notifications': data_helper.get_ad_group_source_notification(
-                    ad_group_source, self.ad_group_settings, source_settings),
+                "state": state,
+                "status": data_helper.get_source_status(ad_group_source, state, self.ad_group_settings.state),
+                "bid_cpc": source_settings.cpc_cc if source_settings else None,
+                "local_bid_cpc": source_settings.local_cpc_cc if source_settings else None,
+                "daily_budget": source_settings.daily_budget_cc if source_settings else None,
+                "local_daily_budget": source_settings.local_daily_budget_cc if source_settings else None,
+                "supply_dash_url": ad_group_source.get_supply_dash_url(),
+                "supply_dash_disabled_message": view_helpers.get_source_supply_dash_disabled_message(
+                    ad_group_source, source
+                ),
+                "editable_fields": editable_fields,
+                "notifications": data_helper.get_ad_group_source_notification(
+                    ad_group_source, self.ad_group_settings, source_settings
+                ),
             }
 
             # MVP for all-RTB-sources-as-one
             if self.ad_group_settings.b1_sources_group_enabled and source.source_type.type == constants.SourceType.B1:
-                can_edit_cpc = not self.user.has_perm('zemauth.can_set_rtb_sources_as_one_cpc')
+                can_edit_cpc = not self.user.has_perm("zemauth.can_set_rtb_sources_as_one_cpc")
                 cpc_message = None
                 if self.campaign_settings.autopilot:
-                    cpc_message = 'This value cannot be edited because the campaign is on Autopilot.'
+                    cpc_message = "This value cannot be edited because the campaign is on Autopilot."
                 elif self.ad_group_settings.autopilot_state != constants.AdGroupSettingsAutopilotState.INACTIVE:
-                    cpc_message = 'This value cannot be edited because the ad group is on Autopilot.'
+                    cpc_message = "This value cannot be edited because the ad group is on Autopilot."
                 elif not can_edit_cpc:
-                    cpc_message = 'Please edit RTB Sources\' Bid CPC.'
-                result[source_id]['daily_budget'] = None
-                result[source_id]['local_daily_budget'] = None
-                result[source_id]['editable_fields']['daily_budget']['enabled'] = False
-                result[source_id]['editable_fields']['daily_budget']['message'] = None
-                result[source_id]['editable_fields']['bid_cpc']['enabled'] = can_edit_cpc
-                result[source_id]['editable_fields']['bid_cpc']['message'] = cpc_message
-                if self.ad_group_settings.b1_sources_group_state == constants.AdGroupSourceSettingsState.INACTIVE and \
-                   result[source_id]['status'] == constants.AdGroupSourceSettingsState.ACTIVE:
-                    result[source_id]['status'] = constants.AdGroupSourceSettingsState.INACTIVE
-                    result[source_id]['notifications'] = {
-                        'message': 'This media source is enabled but will not run until you enable RTB Sources.',
-                        'important': True
+                    cpc_message = "Please edit RTB Sources' Bid CPC."
+                result[source_id]["daily_budget"] = None
+                result[source_id]["local_daily_budget"] = None
+                result[source_id]["editable_fields"]["daily_budget"]["enabled"] = False
+                result[source_id]["editable_fields"]["daily_budget"]["message"] = None
+                result[source_id]["editable_fields"]["bid_cpc"]["enabled"] = can_edit_cpc
+                result[source_id]["editable_fields"]["bid_cpc"]["message"] = cpc_message
+                if (
+                    self.ad_group_settings.b1_sources_group_state == constants.AdGroupSourceSettingsState.INACTIVE
+                    and result[source_id]["status"] == constants.AdGroupSourceSettingsState.ACTIVE
+                ):
+                    result[source_id]["status"] = constants.AdGroupSourceSettingsState.INACTIVE
+                    result[source_id]["notifications"] = {
+                        "message": "This media source is enabled but will not run until you enable RTB Sources.",
+                        "important": True,
                     }
 
         return result
 
     @cached_property
     def _allowed_sources(self):
-        return self.ad_group.campaign.account.allowed_sources.all().values_list('pk', flat=True)
+        return self.ad_group.campaign.account.allowed_sources.all().values_list("pk", flat=True)
 
     @cached_property
     def _active_ad_groups_sources_qs(self):
@@ -776,33 +791,46 @@ class AdGroupSourcesLoader(Loader):
 
     @cached_property
     def _ad_group_source_settings_map(self):
-        source_settings = models.AdGroupSourceSettings.objects.filter(
-            ad_group_source_id__in=[x.pk for x in self._active_ad_groups_sources_qs])\
-            .group_current_settings()\
-            .select_related('ad_group_source')
+        source_settings = (
+            models.AdGroupSourceSettings.objects.filter(
+                ad_group_source_id__in=[x.pk for x in self._active_ad_groups_sources_qs]
+            )
+            .group_current_settings()
+            .select_related("ad_group_source")
+        )
         return {x.ad_group_source.source_id: x for x in source_settings}
 
     @cached_property
     def totals(self):
-        daily_budget = sum([
-            v['daily_budget'] for v in list(self.settings_map.values())
-            if v['daily_budget'] and v['state'] == constants.AdGroupSourceSettingsState.ACTIVE])
+        daily_budget = sum(
+            [
+                v["daily_budget"]
+                for v in list(self.settings_map.values())
+                if v["daily_budget"] and v["state"] == constants.AdGroupSourceSettingsState.ACTIVE
+            ]
+        )
 
-        local_daily_budget = sum([
-            v['local_daily_budget'] for v in list(self.settings_map.values())
-            if v['local_daily_budget'] and v['state'] == constants.AdGroupSourceSettingsState.ACTIVE])
+        local_daily_budget = sum(
+            [
+                v["local_daily_budget"]
+                for v in list(self.settings_map.values())
+                if v["local_daily_budget"] and v["state"] == constants.AdGroupSourceSettingsState.ACTIVE
+            ]
+        )
 
         # MVP for all-RTB-sources-as-one
-        if self.ad_group_settings.b1_sources_group_enabled \
-           and self.ad_group_settings.b1_sources_group_state == constants.AdGroupSourceSettingsState.ACTIVE:
+        if (
+            self.ad_group_settings.b1_sources_group_enabled
+            and self.ad_group_settings.b1_sources_group_state == constants.AdGroupSourceSettingsState.ACTIVE
+        ):
             daily_budget += self.ad_group_settings.b1_sources_group_daily_budget
             local_daily_budget += self.ad_group_settings.local_b1_sources_group_daily_budget
 
         totals = {
-            'daily_budget': daily_budget,
-            'local_daily_budget': local_daily_budget,
-            'current_daily_budget': daily_budget,
-            'local_current_daily_budget': local_daily_budget,
+            "daily_budget": daily_budget,
+            "local_daily_budget": local_daily_budget,
+            "current_daily_budget": daily_budget,
+            "local_current_daily_budget": local_daily_budget,
         }
 
         return totals

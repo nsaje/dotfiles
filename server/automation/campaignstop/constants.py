@@ -5,10 +5,7 @@ class CampaignStopState(ConstantBase):
     ACTIVE = 1
     STOPPED = 2
 
-    _VALUES = {
-        ACTIVE: 'Enabled',
-        STOPPED: 'Stopped',
-    }
+    _VALUES = {ACTIVE: "Enabled", STOPPED: "Stopped"}
 
 
 class CampaignStopEvent(ConstantBase):
@@ -19,21 +16,21 @@ class CampaignStopEvent(ConstantBase):
     SIMPLE_CAMPAIGN_STOP = 5
 
     _VALUES = {
-        BUDGET_DEPLETION_CHECK: 'Budget depletion check',
-        SELECTION_CHECK: 'Selection check',
-        MAX_ALLOWED_END_DATE_UPDATE: 'Max allowed end date update',
-        BUDGET_AMOUNT_VALIDATION: 'Budget amount validation',
-        SIMPLE_CAMPAIGN_STOP: 'Simple campaign stop',
+        BUDGET_DEPLETION_CHECK: "Budget depletion check",
+        SELECTION_CHECK: "Selection check",
+        MAX_ALLOWED_END_DATE_UPDATE: "Max allowed end date update",
+        BUDGET_AMOUNT_VALIDATION: "Budget amount validation",
+        SIMPLE_CAMPAIGN_STOP: "Simple campaign stop",
     }
 
 
 class CampaignUpdateType(ConstantBase):
-    BUDGET = 'budget'
-    DAILY_CAP = 'daily_cap'
-    INITIALIZATION = 'initialization'
+    BUDGET = "budget"
+    DAILY_CAP = "daily_cap"
+    INITIALIZATION = "initialization"
 
     _VALUES = {
-        BUDGET: 'Campaign budget update',
-        DAILY_CAP: 'Campaign total daily cap update',
-        INITIALIZATION: 'Real time campaign stop initialization',
+        BUDGET: "Campaign budget update",
+        DAILY_CAP: "Campaign total daily cap update",
+        INITIALIZATION: "Real time campaign stop initialization",
     }

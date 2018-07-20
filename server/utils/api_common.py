@@ -22,71 +22,55 @@ class BaseApiView(View):
         super(BaseApiView, self).__init__(*args, **kwargs)
 
     def log_error(self, request):
-        logger.error('API exception', exc_info=True, extra={
-            'data': {
-                'path': request.path,
-                'GET': request.GET,
-                'POST': dict(request.POST),
-            }
-        })
+        logger.error(
+            "API exception",
+            exc_info=True,
+            extra={"data": {"path": request.path, "GET": request.GET, "POST": dict(request.POST)}},
+        )
 
     def _set_default_reponse_headers(self, response):
-        response['Cache-Control'] = 'no-cache, no-store, must-revalidate'
-        response['Pragma'] = 'no-cache'
-        response['Expires'] = '0'
+        response["Cache-Control"] = "no-cache, no-store, must-revalidate"
+        response["Pragma"] = "no-cache"
+        response["Expires"] = "0"
 
     def create_api_response(
-            self,
-            data=None,
-            success=True,
-            status_code=200,
-            convert_datetimes_tz=settings.DEFAULT_TIME_ZONE):
+        self, data=None, success=True, status_code=200, convert_datetimes_tz=settings.DEFAULT_TIME_ZONE
+    ):
 
-        body = {'success': success}
+        body = {"success": success}
 
         if data:
-            body['data'] = data
+            body["data"] = data
 
         if self.rest_proxy:
             return body, status_code
 
         response = HttpResponse(
-            content=json.dumps(
-                body,
-                cls=json_helper.JSONEncoder,
-                convert_datetimes_tz=convert_datetimes_tz
-            ),
-            content_type='application/json',
-            status=status_code
+            content=json.dumps(body, cls=json_helper.JSONEncoder, convert_datetimes_tz=convert_datetimes_tz),
+            content_type="application/json",
+            status=status_code,
         )
         self._set_default_reponse_headers(response)
         return response
 
-    def create_file_response(self, content_type, filename, status_code=200, content=''):
-        response = HttpResponse(
+    def create_file_response(self, content_type, filename, status_code=200, content=""):
+        response = HttpResponse(content, content_type=content_type, status=status_code)
+        self._set_default_reponse_headers(response)
+        response["Content-Disposition"] = 'attachment; filename="%s"' % filename
+
+        return response
+
+    def create_excel_response(self, filename, status_code=200, content=""):
+        return self.create_file_response(
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            "%s.xlsx" % filename,
+            status_code,
             content,
-            content_type=content_type,
-            status=status_code
-        )
-        self._set_default_reponse_headers(response)
-        response['Content-Disposition'] = 'attachment; filename="%s"' % filename
-
-        return response
-
-    def create_excel_response(self, filename, status_code=200, content=''):
-        return self.create_file_response(
-            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-            '%s.xlsx' % filename,
-            status_code,
-            content
         )
 
-    def create_csv_response(self, filename, status_code=200, content=''):
+    def create_csv_response(self, filename, status_code=200, content=""):
         return self.create_file_response(
-            'text/csv; name="%s.csv"' % filename,
-            '%s.csv' % filename,
-            status_code,
-            content
+            'text/csv; name="%s.csv"' % filename, "%s.csv" % filename, status_code, content
         )
 
     def get_exception_response(self, request, exception):
@@ -96,8 +80,8 @@ class BaseApiView(View):
             error_data["message"] = exception.pretty_message or exception.args[0]
 
             if isinstance(exception, exc.ValidationError):
-                error_data['errors'] = exception.errors
-                error_data['data'] = exception.data
+                error_data["errors"] = exception.errors
+                error_data["data"] = exception.data
 
             status_code = exception.http_status_code
         else:
@@ -115,7 +99,7 @@ class BaseApiView(View):
         try:
             response = super(BaseApiView, self).dispatch(request, *args, **kwargs)
             influx.timing(
-                'dash.request',
+                "dash.request",
                 (time.time() - start_time),
                 endpoint=self.__class__.__name__,
                 path=influx_helper.clean_path(request.path),

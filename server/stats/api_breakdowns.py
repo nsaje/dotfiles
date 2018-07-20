@@ -18,7 +18,7 @@ import dash.dashapi.api_breakdowns
 
 
 # define the API
-__all__ = ['query', 'totals', 'validate_breakdown_allowed', 'get_goals', 'Goals']
+__all__ = ["query", "totals", "validate_breakdown_allowed", "get_goals", "Goals"]
 
 
 def validate_breakdown_allowed(level, user, breakdown):
@@ -27,7 +27,7 @@ def validate_breakdown_allowed(level, user, breakdown):
 
 
 def should_use_publishers_view(breakdown):
-    return 'publisher_id' in breakdown and 'content_ad_id' not in breakdown
+    return "publisher_id" in breakdown and "content_ad_id" not in breakdown
 
 
 def query(level, user, breakdown, constraints, goals, parents, order, offset, limit):
@@ -55,17 +55,17 @@ def query(level, user, breakdown, constraints, goals, parents, order, offset, li
     if helpers.should_query_dashapi_first(order, target_dimension):
         dash_rows = dash.dashapi.api_breakdowns.query_async_get_results(queries, breakdown, order, offset, limit)
         stats_rows = redshiftapi.api_breakdowns.query_stats_for_rows(
-            dash_rows,
-            breakdown,
-            stats_constraints,
-            goals,
-            use_publishers_view=should_use_publishers_view(breakdown))
+            dash_rows, breakdown, stats_constraints, goals, use_publishers_view=should_use_publishers_view(breakdown)
+        )
         rows = helpers.merge_rows(breakdown, dash_rows, stats_rows)
     else:
         if should_query_dashapi and offset > 0:
             query_structure_fn = partial(
-                redshiftapi.api_breakdowns.query_structure_with_stats, breakdown, stats_constraints,
-                use_publishers_view=should_use_publishers_view(breakdown))
+                redshiftapi.api_breakdowns.query_structure_with_stats,
+                breakdown,
+                stats_constraints,
+                use_publishers_view=should_use_publishers_view(breakdown),
+            )
             structure_thread = threads.AsyncFunction(query_structure_fn)
             structure_thread.start()
 
@@ -77,7 +77,8 @@ def query(level, user, breakdown, constraints, goals, parents, order, offset, li
             helpers.extract_rs_order_field(order, target_dimension),
             offset,
             limit,
-            use_publishers_view=should_use_publishers_view(breakdown))
+            use_publishers_view=should_use_publishers_view(breakdown),
+        )
         if should_query_dashapi:
             if offset == 0:
                 str_w_stats = stats_rows
@@ -86,7 +87,8 @@ def query(level, user, breakdown, constraints, goals, parents, order, offset, li
                 str_w_stats = structure_thread.get_result()
 
             dash_rows = dash.dashapi.api_breakdowns.query_async_get_results_for_rows(
-                queries, stats_rows, breakdown, parents, order, offset, limit, str_w_stats)
+                queries, stats_rows, breakdown, parents, order, offset, limit, str_w_stats
+            )
             rows = helpers.merge_rows(breakdown, dash_rows, stats_rows)
         else:
             rows = stats_rows
@@ -103,8 +105,11 @@ def totals(user, level, breakdown, constraints, goals):
     helpers.check_constraints_are_supported(constraints)
 
     stats_rows = redshiftapi.api_breakdowns.query_totals(
-        breakdown, helpers.extract_stats_constraints(constraints, breakdown),
-        goals, use_publishers_view=should_use_publishers_view(breakdown))
+        breakdown,
+        helpers.extract_stats_constraints(constraints, breakdown),
+        goals,
+        use_publishers_view=should_use_publishers_view(breakdown),
+    )
 
     dash_total_row = dash.dashapi.api_breakdowns.get_totals(level, user, breakdown, constraints)
 

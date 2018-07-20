@@ -48,18 +48,17 @@ def monitor_num_ingested_articles():
     unique_labels = _get_unique_s3_labels(dates)
     content_ad_labels = set(
         dash.models.ContentAd.objects.filter(
-            ad_group__campaign_id=config.AUTOMATION_CAMPAIGN,
-            label__in=unique_labels,
-        ).values_list('label', flat=True)
+            ad_group__campaign_id=config.AUTOMATION_CAMPAIGN, label__in=unique_labels
+        ).values_list("label", flat=True)
     )
 
     s3_count = len(unique_labels)
     db_count = len(content_ad_labels)
     diff_count = len(unique_labels - content_ad_labels)
 
-    influx.gauge('integrations.bizwire.article_count', s3_count, source='s3')
-    influx.gauge('integrations.bizwire.article_count', db_count, source='db')
-    influx.gauge('integrations.bizwire.article_count', diff_count, source='diff')
+    influx.gauge("integrations.bizwire.article_count", s3_count, source="s3")
+    influx.gauge("integrations.bizwire.article_count", db_count, source="db")
+    influx.gauge("integrations.bizwire.article_count", diff_count, source="diff")
 
 
 def monitor_remaining_budget():
@@ -69,48 +68,54 @@ def monitor_remaining_budget():
 
     tomorrow = now.date() + datetime.timedelta(days=1)
     remaining_budget = 0
-    for bli in dash.models.BudgetLineItem.objects.filter(
-        campaign_id=config.AUTOMATION_CAMPAIGN,
-    ).select_related('credit').filter_active(tomorrow):
+    for bli in (
+        dash.models.BudgetLineItem.objects.filter(campaign_id=config.AUTOMATION_CAMPAIGN)
+        .select_related("credit")
+        .filter_active(tomorrow)
+    ):
         remaining_budget += bli.get_available_amount(tomorrow) * (1 - bli.credit.license_fee)
 
     if remaining_budget > 4000:
         return
 
     emails = config.NOTIFICATION_EMAILS
-    subject = '[BIZWIRE] Campaign is running out of budget'
-    body = '''Hi,
+    subject = "[BIZWIRE] Campaign is running out of budget"
+    body = """Hi,
 
-Businesswire campaign is running out of budget. Configure any additional budgets: https://one.zemanta.com/v2/analytics/campaign/{}?settings&settingsScrollTo=zemCampaignBudgetsSettings'''.format(config.AUTOMATION_CAMPAIGN)  # noqa
+Businesswire campaign is running out of budget. Configure any additional budgets: https://one.zemanta.com/v2/analytics/campaign/{}?settings&settingsScrollTo=zemCampaignBudgetsSettings""".format(
+        config.AUTOMATION_CAMPAIGN
+    )  # noqa
     email_helper.send_internal_email(recipient_list=emails, subject=subject, body=body)
 
 
 def _get_content_ad_ids_added_yesterday():
-    pacific_tz = pytz.timezone('US/Pacific')
+    pacific_tz = pytz.timezone("US/Pacific")
     pacific_today = helpers.get_pacific_now().date()
     pacific_midnight_today = pacific_tz.localize(
-        datetime.datetime(pacific_today.year, pacific_today.month, pacific_today.day),
+        datetime.datetime(pacific_today.year, pacific_today.month, pacific_today.day)
     )
 
     pacific_midnight_yesterday = pacific_midnight_today - datetime.timedelta(days=1)
-    return dash.models.ContentAd.objects.filter(
-        ad_group__campaign=config.AUTOMATION_CAMPAIGN,
-        created_dt__lt=pacific_midnight_today,
-        created_dt__gte=pacific_midnight_yesterday,
-    ).exclude_archived().values_list('id', flat=True)
+    return (
+        dash.models.ContentAd.objects.filter(
+            ad_group__campaign=config.AUTOMATION_CAMPAIGN,
+            created_dt__lt=pacific_midnight_today,
+            created_dt__gte=pacific_midnight_yesterday,
+        )
+        .exclude_archived()
+        .values_list("id", flat=True)
+    )
 
 
 def monitor_yesterday_clicks():
     content_ad_ids = _get_content_ad_ids_added_yesterday()
     result = db.execute_query(
-        backtosql.generate_sql('bizwire_ads_clicks_monitoring.sql', {
-            'content_ad_ids': content_ad_ids,
-        }),
+        backtosql.generate_sql("bizwire_ads_clicks_monitoring.sql", {"content_ad_ids": content_ad_ids}),
         [],
-        'bizwire_ads_clicks_monitoring',
+        "bizwire_ads_clicks_monitoring",
     )
 
-    content_ads_by_clicks = {row['content_ad_id']: row['clicks'] for row in result}
+    content_ads_by_clicks = {row["content_ad_id"]: row["clicks"] for row in result}
     missing_clicks = 0
 
     for content_ad_id in content_ad_ids:
@@ -120,7 +125,7 @@ def monitor_yesterday_clicks():
 
         missing_clicks += max(15 - content_ads_by_clicks[content_ad_id], 0)
 
-    influx.gauge('integrations.bizwire.yesterday_missing_clicks', missing_clicks)
+    influx.gauge("integrations.bizwire.yesterday_missing_clicks", missing_clicks)
     _send_missing_clicks_email_alert(missing_clicks)
 
 
@@ -128,39 +133,40 @@ def monitor_yesterday_spend():
     content_ad_ids = _get_content_ad_ids_added_yesterday()
     actual_spend = 0
     if content_ad_ids:
-        actual_spend = db.execute_query(
-            backtosql.generate_sql('bizwire_ads_stats_monitoring.sql', {
-                'cost': backtosql.TemplateColumn(
-                    'part_sum_nano.sql',
-                    {'column_name': 'cost_nano'}
+        actual_spend = (
+            db.execute_query(
+                backtosql.generate_sql(
+                    "bizwire_ads_stats_monitoring.sql",
+                    {
+                        "cost": backtosql.TemplateColumn("part_sum_nano.sql", {"column_name": "cost_nano"}),
+                        "content_ad_ids": content_ad_ids,
+                    },
                 ),
-                'content_ad_ids': content_ad_ids,
-            }),
-            [],
-            'bizwire_ads_stats_monitoring',
-        )[0]['cost'] or 0
+                [],
+                "bizwire_ads_stats_monitoring",
+            )[0]["cost"]
+            or 0
+        )
 
     expected_spend = len(content_ad_ids) * config.DAILY_BUDGET_PER_ARTICLE
 
-    influx.gauge('integrations.bizwire.yesterday_spend', actual_spend, type='actual')
-    influx.gauge('integrations.bizwire.yesterday_spend', expected_spend, type='expected')
+    influx.gauge("integrations.bizwire.yesterday_spend", actual_spend, type="actual")
+    influx.gauge("integrations.bizwire.yesterday_spend", expected_spend, type="expected")
     _send_unexpected_spend_email_alert(expected_spend, actual_spend)
 
 
 def monitor_duplicate_articles():
-    num_labels = dash.models.ContentAd.objects.filter(
-        ad_group__campaign=config.AUTOMATION_CAMPAIGN,
-    ).count()
+    num_labels = dash.models.ContentAd.objects.filter(ad_group__campaign=config.AUTOMATION_CAMPAIGN).count()
 
-    num_distinct = dash.models.ContentAd.objects.filter(
-        ad_group__campaign=config.AUTOMATION_CAMPAIGN,
-    ).distinct('label').count()
+    num_distinct = (
+        dash.models.ContentAd.objects.filter(ad_group__campaign=config.AUTOMATION_CAMPAIGN).distinct("label").count()
+    )
 
     num_duplicate = abs(num_labels - num_distinct)
 
-    influx.gauge('integrations.bizwire.labels', num_labels, type='all')
-    influx.gauge('integrations.bizwire.labels', num_distinct, type='distinct')
-    influx.gauge('integrations.bizwire.labels', num_duplicate, type='duplicate')
+    influx.gauge("integrations.bizwire.labels", num_labels, type="all")
+    influx.gauge("integrations.bizwire.labels", num_distinct, type="distinct")
+    influx.gauge("integrations.bizwire.labels", num_duplicate, type="duplicate")
 
     _monitor_duplicate_articles_30d()
 
@@ -168,17 +174,19 @@ def monitor_duplicate_articles():
 def _monitor_duplicate_articles_30d():
     one_month_ago = dates_helper.local_today() - datetime.timedelta(days=30)
     num_labels = dash.models.ContentAd.objects.filter(
-        ad_group__campaign=config.AUTOMATION_CAMPAIGN,
-        created_dt__gte=one_month_ago,
+        ad_group__campaign=config.AUTOMATION_CAMPAIGN, created_dt__gte=one_month_ago
     ).count()
 
-    num_distinct = dash.models.ContentAd.objects.filter(
-        ad_group__campaign=config.AUTOMATION_CAMPAIGN,
-        created_dt__gte=one_month_ago,
-    ).distinct('label').count()
+    num_distinct = (
+        dash.models.ContentAd.objects.filter(
+            ad_group__campaign=config.AUTOMATION_CAMPAIGN, created_dt__gte=one_month_ago
+        )
+        .distinct("label")
+        .count()
+    )
 
     num_duplicate = abs(num_labels - num_distinct)
-    influx.gauge('integrations.bizwire.labels', num_duplicate, type='duplicate_30d')
+    influx.gauge("integrations.bizwire.labels", num_duplicate, type="duplicate_30d")
 
 
 def _send_unexpected_spend_email_alert(expected_spend, actual_spend):
@@ -189,10 +197,12 @@ def _send_unexpected_spend_email_alert(expected_spend, actual_spend):
         return
 
     emails = config.NOTIFICATION_EMAILS
-    subject = '[BIZWIRE] Campaign unexpected yesterday spend'
-    body = '''Hi,
+    subject = "[BIZWIRE] Campaign unexpected yesterday spend"
+    body = """Hi,
 
-Yesterday's expected spend was {} and actual spend was {}.'''.format(expected_spend, actual_spend)
+Yesterday's expected spend was {} and actual spend was {}.""".format(
+        expected_spend, actual_spend
+    )
     email_helper.send_internal_email(recipient_list=emails, subject=subject, body=body)
 
 
@@ -204,8 +214,10 @@ def _send_missing_clicks_email_alert(missing_clicks):
         return
 
     emails = config.NOTIFICATION_EMAILS
-    subject = '[BIZWIRE] Missing yesterday clicks'
-    body = '''Hi,
+    subject = "[BIZWIRE] Missing yesterday clicks"
+    body = """Hi,
 
-Missing {} clicks on content ads yesterday.'''.format(missing_clicks)
+Missing {} clicks on content ads yesterday.""".format(
+        missing_clicks
+    )
     email_helper.send_internal_email(recipient_list=emails, subject=subject, body=body)

@@ -17,11 +17,11 @@ class CacheHelperTest(TestCase):
         magic_mixer.cycle(3).blend(models.CampaignGoal)
 
         self.assertEqual(
-            get_cache_key(models.CampaignGoal.objects.all()),
-            get_cache_key(models.CampaignGoal.objects.all()))
+            get_cache_key(models.CampaignGoal.objects.all()), get_cache_key(models.CampaignGoal.objects.all())
+        )
         self.assertNotEqual(
-            get_cache_key(models.CampaignGoal.objects.all()),
-            get_cache_key(models.CampaignGoal.objects.none()))
+            get_cache_key(models.CampaignGoal.objects.all()), get_cache_key(models.CampaignGoal.objects.none())
+        )
 
     def test_model(self):
         goal1 = magic_mixer.blend(models.CampaignGoal)
@@ -63,19 +63,7 @@ class CacheHelperTest(TestCase):
         self.assertNotEqual(get_cache_key(1, 2, a=3), get_cache_key(1, 2, a=4))
 
     def test_hierarchy(self):
-        a = [{
-            'a': 1,
-            'b': {
-                'c': 2,
-                'd': [1, 3],
-            },
-        }]
-        b = [{
-            'a': 1,
-            'b': {
-                'c': 2,
-                'd': [1, 4],
-            },
-        }]
+        a = [{"a": 1, "b": {"c": 2, "d": [1, 3]}}]
+        b = [{"a": 1, "b": {"c": 2, "d": [1, 4]}}]
         self.assertEqual(get_cache_key(a), get_cache_key(a))
         self.assertNotEqual(get_cache_key(a), get_cache_key(b))

@@ -39,33 +39,34 @@ class UserView(APIView):
         return Response(serializers.UserSerializer(request.user).data)
 
 
-@influx.timer('auth.signin_response_time')
-@ratelimit(key='ip', rate='20/m', method='POST')
+@influx.timer("auth.signin_response_time")
+@ratelimit(key="ip", rate="20/m", method="POST")
 def login(request, *args, **kwargs):
     """Wraps login view and injects certain query string values into
     extra_context and passes it to django.contrib.auth.views.login.
     """
 
-    if 'error' in request.GET:
+    if "error" in request.GET:
         return _fail_response()
 
-    if 'extra_context' not in kwargs:
-        kwargs['extra_context'] = {}
+    if "extra_context" not in kwargs:
+        kwargs["extra_context"] = {}
 
     if request.limited:
         form = forms.AuthenticationForm(request, data=request.POST)
-        return TemplateResponse(request, kwargs['template_name'], {
-            'form': form,
-            'ratelimited_error': 'Too many login attempts. Please try again in a few minutes.'
-        })
+        return TemplateResponse(
+            request,
+            kwargs["template_name"],
+            {"form": form, "ratelimited_error": "Too many login attempts. Please try again in a few minutes."},
+        )
 
-    kwargs['extra_context']['gauth_error'] = request.GET.get('gauth_error')
+    kwargs["extra_context"]["gauth_error"] = request.GET.get("gauth_error")
 
     if settings.GOOGLE_OAUTH_ENABLED:
-        kwargs['extra_context']['gauth_url'] = gauth.get_uri(request)
+        kwargs["extra_context"]["gauth_url"] = gauth.get_uri(request)
 
     response = auth_views.login(request, *args, **kwargs)
-    if request.method == 'POST':
+    if request.method == "POST":
         devices.handle_user_device(request, response)
 
     return response
@@ -82,27 +83,27 @@ def set_password(request, uidb64=None, token=None, template_name=None):
 
     if user is not None and auth_tokens.default_token_generator.check_token(user, token):
         validlink = True
-        if request.method == 'POST':
+        if request.method == "POST":
             form = forms.SetPasswordForm(user, request.POST)
             if form.is_valid():
                 form.save()
 
-                if not user.email.endswith('@zemanta.com'):
+                if not user.email.endswith("@zemanta.com"):
                     # login user
-                    user = auth.authenticate(username=user.email, password=request.POST['new_password'])
+                    user = auth.authenticate(username=user.email, password=request.POST["new_password"])
                     auth.login(request, user)
 
-                return HttpResponseRedirect(resolve_url('/'))
+                return HttpResponseRedirect(resolve_url("/"))
         else:
             form = forms.SetPasswordForm(user)
     else:
         validlink = False
         form = None
     context = {
-        'form': form,
-        'validlink': validlink,
-        'new_user': not user.has_usable_password(),
-        'user_email': user.email
+        "form": form,
+        "validlink": validlink,
+        "new_user": not user.has_usable_password(),
+        "user_email": user.email,
     }
 
     return TemplateResponse(request, template_name, context)
@@ -112,27 +113,24 @@ def password_reset(request, template_name=None):
     form = forms.PasswordResetForm()
     success = False
 
-    if request.method == 'POST':
+    if request.method == "POST":
         form = forms.PasswordResetForm(request.POST)
 
         if form.is_valid():
             success = True
 
             try:
-                user = User.objects.get(email__iexact=form.cleaned_data['username'])
+                user = User.objects.get(email__iexact=form.cleaned_data["username"])
                 email_helper.send_password_reset_email(user, request)
             except User.DoesNotExist:
                 pass
 
-    context = {
-        'form': form,
-        'success': success
-    }
+    context = {"form": form, "success": success}
     return TemplateResponse(request, template_name, context)
 
 
 def google_callback(request, *args, **kwargs):
-    if 'error' in request.GET or 'code' not in request.GET:
+    if "error" in request.GET or "code" not in request.GET:
         return _fail_response()
 
     user_data = gauth.authorize(request)
@@ -142,17 +140,17 @@ def google_callback(request, *args, **kwargs):
     user = auth.authenticate(oauth_data=user_data)
 
     if user and user.is_active:
-        response = HttpResponseRedirect(request.GET.get('state') or reverse('index'))
+        response = HttpResponseRedirect(request.GET.get("state") or reverse("index"))
         auth.login(request, user)
         devices.handle_user_device(request, response)
         return response
     else:
-        return _fail_response('Your Google account is not connected with Zemanta.')
+        return _fail_response("Your Google account is not connected with Zemanta.")
 
 
-def _fail_response(message='Google authentication failed.'):
-    url = reverse('signin')
+def _fail_response(message="Google authentication failed."):
+    url = reverse("signin")
     if message:
-        message = urllib.parse.urlencode({'gauth_error': message or ""})
+        message = urllib.parse.urlencode({"gauth_error": message or ""})
         url += "?" + message
     return redirect(url)

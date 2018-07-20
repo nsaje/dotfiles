@@ -1,5 +1,3 @@
-
-
 def dict_join(*dicts):
     """
     Joins dicts into 1 dict. Keys from later dicts override values of the

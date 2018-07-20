@@ -14,7 +14,6 @@ from utils.magic_mixer import magic_mixer
 
 
 class TestRefundLineItemManager(TestCase):
-
     def test_create(self):
         request = magic_mixer.blend_request_user()
         account = magic_mixer.blend(core.entity.Account)
@@ -30,16 +29,11 @@ class TestRefundLineItemManager(TestCase):
             end_date=end_date,
             status=constants.CreditLineItemStatus.SIGNED,
             amount=1000,
-            license_fee=Decimal('0.2'),
+            license_fee=Decimal("0.2"),
         )
 
         refund = model.RefundLineItem.objects.create(
-            request,
-            account=account,
-            credit=credit,
-            start_date=refund_start_date,
-            amount=0,
-            comment='test',
+            request, account=account, credit=credit, start_date=refund_start_date, amount=0, comment="test"
         )
 
         self.assertTrue(refund.id)

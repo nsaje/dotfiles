@@ -5,10 +5,8 @@ from . import constants
 
 
 class BlueKaiCategoryManager(models.Manager):
-
-    def create(self, category_id, parent_category_id, name, description,
-               reach, price, navigation_only):
-        bluekai_category = apps.get_model('dash', 'BlueKaiCategory')(
+    def create(self, category_id, parent_category_id, name, description, reach, price, navigation_only):
+        bluekai_category = apps.get_model("dash", "BlueKaiCategory")(
             category_id=category_id,
             parent_category_id=parent_category_id,
             name=name,
@@ -23,7 +21,6 @@ class BlueKaiCategoryManager(models.Manager):
 
 
 class BlueKaiCategoryMixin(object):
-
     def mark_active(self):
         self.status = constants.BlueKaiCategoryStatus.ACTIVE
         self.save()

@@ -17,9 +17,9 @@ logger = logging.getLogger(__name__)
 
 class K1APIView(APIView):
     authentication_classes = (
-        authentication.gen_service_authentication('b1', settings.BIDDER_API_SIGN_KEY),
-        authentication.gen_service_authentication('k1', settings.K1_API_SIGN_KEY),
-        authentication.gen_oauth_authentication('sspd'),
+        authentication.gen_service_authentication("b1", settings.BIDDER_API_SIGN_KEY),
+        authentication.gen_service_authentication("k1", settings.K1_API_SIGN_KEY),
+        authentication.gen_oauth_authentication("sspd"),
     )
     permission_classes = (permissions.IsAuthenticated,)
 
@@ -28,7 +28,7 @@ class K1APIView(APIView):
         start_time = time.time()
         response = super(K1APIView, self).dispatch(request, *args, **kwargs)
         influx.timing(
-            'k1api.request',
+            "k1api.request",
             (time.time() - start_time),
             endpoint=self.__class__.__name__,
             path=influx_helper.clean_path(request.path),
@@ -39,14 +39,8 @@ class K1APIView(APIView):
 
     @staticmethod
     def response_ok(content):
-        return JsonResponse({
-            "error": None,
-            "response": content,
-        })
+        return JsonResponse({"error": None, "response": content})
 
     @staticmethod
     def response_error(msg, status=400):
-        return JsonResponse({
-            "error": msg,
-            "response": None,
-        }, status=status)
+        return JsonResponse({"error": msg, "response": None}, status=status)

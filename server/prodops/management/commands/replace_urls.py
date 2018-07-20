@@ -26,31 +26,28 @@ class Command(ExceptionCommand):
     """
 
     def add_arguments(self, parser):
-        parser.add_argument('ad_group_id', nargs=1, type=int)
-        parser.add_argument('csv_file', nargs=1, type=argparse.FileType('r'))
+        parser.add_argument("ad_group_id", nargs=1, type=int)
+        parser.add_argument("csv_file", nargs=1, type=argparse.FileType("r"))
 
     def handle(self, *args, **options):
-        ad_group_id = options['ad_group_id'][0]
-        csv_file = options['csv_file'][0]
+        ad_group_id = options["ad_group_id"][0]
+        csv_file = options["csv_file"][0]
 
         mapping = self.parse_csv(csv_file)
 
         self.replace(ad_group_id, mapping)
 
-        self.stdout.write('Done.')
+        self.stdout.write("Done.")
 
     def parse_csv(self, csv_file):
         lines = unicodecsv.reader(csv_file)
         try:
             header = next(lines)
         except StopIteration:
-            raise CommandError('Chosen file is empty.')
+            raise CommandError("Chosen file is empty.")
 
-        if header[0].strip().lower() != 'old url' or header[1].strip().lower() != 'new url':
-            raise CommandError(
-                'Unrecognized column headers in chosen file '
-                '(should be "Old URL" and "New URL")'
-            )
+        if header[0].strip().lower() != "old url" or header[1].strip().lower() != "new url":
+            raise CommandError("Unrecognized column headers in chosen file " '(should be "Old URL" and "New URL")')
 
         mapping = {}
         for line in lines:
@@ -62,8 +59,7 @@ class Command(ExceptionCommand):
         content_ads = ContentAd.objects.filter(ad_group_id=ad_group_id)
 
         for i, content_ad in enumerate(content_ads):
-            self.stdout.write(
-                'Processing content ad {} of {}'.format(i + 1, len(content_ads)))
+            self.stdout.write("Processing content ad {} of {}".format(i + 1, len(content_ads)))
 
             if content_ad.url not in mapping:
                 continue

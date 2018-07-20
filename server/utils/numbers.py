@@ -20,5 +20,5 @@ def round_to_significant_figures(number, sig):
 
 
 def _round(number, places, rounding):
-    exp = decimal.Decimal('10') ** -places
+    exp = decimal.Decimal("10") ** -places
     return number.quantize(exp, rounding)

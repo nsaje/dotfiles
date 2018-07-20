@@ -12,24 +12,19 @@ from . import validator
 
 class ConversionGoal(validator.ConversionGoalValidator, models.Model):
     class Meta:
-        app_label = 'dash'
-        unique_together = (('campaign', 'name'),
-                           ('campaign', 'type', 'goal_id'))
-        ordering = ['pk']
+        app_label = "dash"
+        unique_together = (("campaign", "name"), ("campaign", "type", "goal_id"))
+        ordering = ["pk"]
 
-    campaign = models.ForeignKey('Campaign', on_delete=models.PROTECT)
-    type = models.PositiveSmallIntegerField(
-        choices=constants.ConversionGoalType.get_choices()
-    )
+    campaign = models.ForeignKey("Campaign", on_delete=models.PROTECT)
+    type = models.PositiveSmallIntegerField(choices=constants.ConversionGoalType.get_choices())
     name = models.CharField(max_length=100)
 
-    pixel = models.ForeignKey(
-        'ConversionPixel', null=True, on_delete=models.PROTECT, blank=True)
+    pixel = models.ForeignKey("ConversionPixel", null=True, on_delete=models.PROTECT, blank=True)
     conversion_window = models.PositiveSmallIntegerField(null=True, blank=True)
     goal_id = models.CharField(max_length=100, null=True, blank=True)
 
-    created_dt = models.DateTimeField(
-        auto_now_add=True, verbose_name='Created on')
+    created_dt = models.DateTimeField(auto_now_add=True, verbose_name="Created on")
 
     objects = manager.ConversionGoalManager()
 
@@ -41,9 +36,9 @@ class ConversionGoal(validator.ConversionGoalValidator, models.Model):
         elif self.type == constants.ConversionGoalType.OMNITURE:
             prefix = dash.features.performance_tracking.constants.ReportType.OMNITURE
         else:
-            raise Exception('Invalid conversion goal type')
+            raise Exception("Invalid conversion goal type")
 
-        return prefix + '__' + self.goal_id
+        return prefix + "__" + self.goal_id
 
     def get_view_key(self, conversion_goals):
         if self.type == constants.ConversionGoalType.PIXEL:
@@ -51,6 +46,6 @@ class ConversionGoal(validator.ConversionGoalValidator, models.Model):
 
         for i, cg in enumerate(sorted(conversion_goals, key=lambda x: x.id)):
             if cg.id == self.id:
-                return 'conversion_goal_' + str(i + 1)
+                return "conversion_goal_" + str(i + 1)
 
-        raise Exception('Conversion goal not found')
+        raise Exception("Conversion goal not found")

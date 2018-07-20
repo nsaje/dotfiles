@@ -6,6 +6,7 @@ class ModelMeta(type):
     """
     ModelMeta is a meta class of Model. It takes care for class columns initialization.
     """
+
     def __new__(cls, name, parents, dct):
         model_class = super(ModelMeta, cls).__new__(cls, name, parents, dct)
 
@@ -26,8 +27,7 @@ class Model(object, metaclass=ModelMeta):
         on TemplateColumn with those names.
         """
 
-        columns = [(name, getattr(cls, name)) for name in dir(cls)
-                   if isinstance(getattr(cls, name), TemplateColumn)]
+        columns = [(name, getattr(cls, name)) for name in dir(cls) if isinstance(getattr(cls, name), TemplateColumn)]
 
         for name, col in columns:
             if col.alias is None:
@@ -46,8 +46,7 @@ class Model(object, metaclass=ModelMeta):
     def get_column(self, alias):
         alias = helpers.clean_alias(alias)
         if alias not in self.columns_dict:
-            raise helpers.BackToSQLException(
-                "Column for alias '{}' does not exist".format(alias))
+            raise helpers.BackToSQLException("Column for alias '{}' does not exist".format(alias))
 
         return self.columns_dict[helpers.clean_alias(alias)]
 
@@ -67,7 +66,7 @@ class Model(object, metaclass=ModelMeta):
                     unknown.append(alias)
 
             if unknown:
-                raise helpers.BackToSQLException('Unknown columns in subset {}'.format(unknown))
+                raise helpers.BackToSQLException("Unknown columns in subset {}".format(unknown))
 
         else:
             columns = [x for x in self.get_columns()]

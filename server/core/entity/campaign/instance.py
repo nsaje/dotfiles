@@ -8,7 +8,6 @@ from utils import json_helper
 
 
 class CampaignInstanceMixin:
-
     def __str__(self):
         return self.name
 
@@ -16,18 +15,15 @@ class CampaignInstanceMixin:
         if self.id:
             return '<a href="/admin/dash/campaign/%d/">Edit</a>' % self.id
         else:
-            return 'N/A'
+            return "N/A"
 
     def get_campaign_url(self, request):
-        campaign_settings_url = request.build_absolute_uri(
-            reverse('admin:dash_campaign_change', args=(self.pk,))
-        )
-        campaign_settings_url = campaign_settings_url.replace(
-            'http://', 'https://')
+        campaign_settings_url = request.build_absolute_uri(reverse("admin:dash_campaign_change", args=(self.pk,)))
+        campaign_settings_url = campaign_settings_url.replace("http://", "https://")
         return campaign_settings_url
 
     def get_long_name(self):
-        return '{}, Campaign {}'.format(self.account.get_long_name(), self.name)
+        return "{}, Campaign {}".format(self.account.get_long_name(), self.name)
 
     admin_link.allow_tags = True
 
@@ -41,13 +37,12 @@ class CampaignInstanceMixin:
         return self.settings
 
     def can_archive(self):
-        for ad_group in self.adgroup_set.all().select_related('settings'):
+        for ad_group in self.adgroup_set.all().select_related("settings"):
             if not ad_group.can_archive():
                 return False
 
         for budget in self.budgets.all().annotate_spend_data():
-            if budget.state() in (constants.BudgetLineItemState.ACTIVE,
-                                  constants.BudgetLineItemState.PENDING):
+            if budget.state() in (constants.BudgetLineItemState.ACTIVE, constants.BudgetLineItemState.PENDING):
                 return False
 
         return True
@@ -70,8 +65,7 @@ class CampaignInstanceMixin:
     def restore(self, request):
         self.settings.update(request, archived=False)
 
-    def write_history(self, changes_text, changes=None,
-                      user=None, system_user=None, action_type=None):
+    def write_history(self, changes_text, changes=None, user=None, system_user=None, action_type=None):
         if not changes and not changes_text:
             return None
 
@@ -85,7 +79,7 @@ class CampaignInstanceMixin:
             changes=json_helper.json_serializable_changes(changes),
             changes_text=changes_text or "",
             level=constants.HistoryLevel.CAMPAIGN,
-            action_type=action_type
+            action_type=action_type,
         )
 
     def get_default_blacklist_name(self):

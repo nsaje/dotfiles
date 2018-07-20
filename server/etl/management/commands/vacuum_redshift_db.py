@@ -7,7 +7,7 @@ import influx
 
 
 class Command(ExceptionCommand):
-    @influx.timer('etl.vacuum_redshift_db')
+    @influx.timer("etl.vacuum_redshift_db")
     def handle(self, *args, **options):
         for table in refresh_k1.get_all_views_table_names():
             maintenance.vacuum(table)

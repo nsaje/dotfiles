@@ -5,13 +5,12 @@ import io as StringIO
 import csv
 
 
-FORMULA_SYMBOLS = ('@', '+', '-', '=')
+FORMULA_SYMBOLS = ("@", "+", "-", "=")
 
 
 def tuplelist_to_csv(data):
     out = StringIO.StringIO()
-    csv_file = csv.writer(
-        out, dialect='excel', quoting=csv.QUOTE_ALL)
+    csv_file = csv.writer(out, dialect="excel", quoting=csv.QUOTE_ALL)
     for row in data:
         csv_file.writerow(_sanitize_list_row(row))
     return out.getvalue()
@@ -19,8 +18,7 @@ def tuplelist_to_csv(data):
 
 def dictlist_to_csv(fields, rows, writeheader=True):
     out = StringIO.StringIO()
-    writer = csv.DictWriter(
-        out, fields, dialect='excel', quoting=csv.QUOTE_ALL)
+    writer = csv.DictWriter(out, fields, dialect="excel", quoting=csv.QUOTE_ALL)
 
     if writeheader:
         writer.writeheader()

@@ -8,7 +8,7 @@ from .. import RealTimeCampaignStopLog
 from ..constants import CampaignStopEvent
 
 
-RESERVED_PROPORTION = decimal.Decimal('0.1')
+RESERVED_PROPORTION = decimal.Decimal("0.1")
 
 
 class CampaignStopValidationException(Exception):
@@ -22,17 +22,13 @@ def validate_minimum_budget_amount(budget_line_item, amount):
     if not budget_line_item.campaign.real_time_campaign_stop:
         return
 
-    log = RealTimeCampaignStopLog(
-        campaign=budget_line_item.campaign, event=CampaignStopEvent.BUDGET_AMOUNT_VALIDATION)
+    log = RealTimeCampaignStopLog(campaign=budget_line_item.campaign, event=CampaignStopEvent.BUDGET_AMOUNT_VALIDATION)
 
     refresh.refresh_if_stale([budget_line_item.campaign])
     min_amount = _calculate_minimum_budget_amount(log, budget_line_item)
-    log.add_context({
-        'desired_amount': amount,
-        'min_amount': min_amount,
-    })
+    log.add_context({"desired_amount": amount, "min_amount": min_amount})
     if amount < min_amount:
-        raise CampaignStopValidationException('Budget amount has to be at least ${}'.format(min_amount), min_amount)
+        raise CampaignStopValidationException("Budget amount has to be at least ${}".format(min_amount), min_amount)
 
 
 def _calculate_minimum_budget_amount(log, budget_line_item):
@@ -40,10 +36,9 @@ def _calculate_minimum_budget_amount(log, budget_line_item):
     estimated_spend = spend_estimates.get(budget_line_item, 0)
     reserved_amount = estimated_spend * RESERVED_PROPORTION
     amount = estimated_spend + reserved_amount
-    log.add_context({
-        'spend_estimates': {budget.id: spend for budget, spend in spend_estimates.items()},
-        'min_amount_raw': amount,
-    })
+    log.add_context(
+        {"spend_estimates": {budget.id: spend for budget, spend in spend_estimates.items()}, "min_amount_raw": amount}
+    )
     return _round(amount)
 
 

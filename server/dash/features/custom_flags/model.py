@@ -7,8 +7,5 @@ class CustomFlag(models.Model):
     name = models.CharField(max_length=255)
     description = models.TextField(null=True, blank=True)
     advanced = models.BooleanField(default=False)
-    type = models.CharField(null=True,
-                            choices=constants.Customflags.get_choices(),
-                            max_length=120,
-                            )
-    created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
+    type = models.CharField(null=True, choices=constants.Customflags.get_choices(), max_length=120)
+    created_dt = models.DateTimeField(auto_now_add=True, verbose_name="Created at")

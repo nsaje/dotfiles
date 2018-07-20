@@ -20,29 +20,22 @@ def get_audience_sample_size(account_id, slug, ttl, rules, refresh_cache=False):
     if not any(rule.type == constants.AudienceRuleType.VISIT for rule in rules):
         for rule in rules:
             if rule.type not in valid_rule_types:
-                raise Exception('Unknown rule: %s'.format(rule.type))
+                raise Exception("Unknown rule: %s".format(rule.type))
 
-            values = rule.value.split(',')
+            values = rule.value.split(",")
             for val in values:
                 val = val.strip()
                 params.append(val)
 
-            query_rules.append({
-                'type': rule.type,
-                'values': values,
-            })
+            query_rules.append({"type": rule.type, "values": values})
 
     result = db.execute_query(
         backtosql.generate_sql(
-            'audience_sample_size.sql',
-            {
-                'rules': query_rules,
-                'rule_type': constants.AudienceRuleType,
-            }
+            "audience_sample_size.sql", {"rules": query_rules, "rule_type": constants.AudienceRuleType}
         ),
         params,
-        'audience_sample_size',
-        cache_name='audience_sample_size',
-        refresh_cache=refresh_cache
+        "audience_sample_size",
+        cache_name="audience_sample_size",
+        refresh_cache=refresh_cache,
     )
-    return result[0]['count']
+    return result[0]["count"]

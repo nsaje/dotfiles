@@ -2,15 +2,14 @@ from decimal import Decimal
 
 from utils import numbers
 
-ZERO = Decimal('0.0000')
+ZERO = Decimal("0.0000")
 
 
 def calculate_min_cpc(min_cpc, bcm_modifiers):
     if not bcm_modifiers or not min_cpc:
         return min_cpc
 
-    etfm_min_cpc = apply_fee_and_margin(
-        min_cpc, bcm_modifiers['fee'], bcm_modifiers['margin'])
+    etfm_min_cpc = apply_fee_and_margin(min_cpc, bcm_modifiers["fee"], bcm_modifiers["margin"])
     rounded = numbers.round_decimal_ceiling(etfm_min_cpc, places=3)
     return rounded
 
@@ -18,8 +17,7 @@ def calculate_min_cpc(min_cpc, bcm_modifiers):
 def calculate_max_cpc(max_cpc, bcm_modifiers):
     if not bcm_modifiers or not max_cpc:
         return max_cpc
-    etfm_max_cpc = apply_fee_and_margin(
-        max_cpc, bcm_modifiers['fee'], bcm_modifiers['margin'])
+    etfm_max_cpc = apply_fee_and_margin(max_cpc, bcm_modifiers["fee"], bcm_modifiers["margin"])
     rounded = numbers.round_decimal_floor(etfm_max_cpc, places=3)
     return rounded
 
@@ -28,8 +26,7 @@ def calculate_min_daily_budget(min_daily_budget, bcm_modifiers):
     if not bcm_modifiers:
         return min_daily_budget
 
-    etfm_min_daily_budget = apply_fee_and_margin(
-        min_daily_budget, bcm_modifiers['fee'], bcm_modifiers['margin'])
+    etfm_min_daily_budget = apply_fee_and_margin(min_daily_budget, bcm_modifiers["fee"], bcm_modifiers["margin"])
     rounded = numbers.round_decimal_ceiling(etfm_min_daily_budget, places=0)
     return rounded
 
@@ -38,8 +35,7 @@ def calculate_max_daily_budget(max_daily_budget, bcm_modifiers):
     if not bcm_modifiers:
         return max_daily_budget
 
-    etfm_max_daily_budget = apply_fee_and_margin(
-        max_daily_budget, bcm_modifiers['fee'], bcm_modifiers['margin'])
+    etfm_max_daily_budget = apply_fee_and_margin(max_daily_budget, bcm_modifiers["fee"], bcm_modifiers["margin"])
     rounded = numbers.round_decimal_floor(etfm_max_daily_budget, places=0)
     return rounded
 

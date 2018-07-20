@@ -11,19 +11,18 @@ EUR_AGENCIES = [196, 175, 179, 201]
 
 
 class AccountManager(core.common.BaseManager):
-
     @transaction.atomic()
     def create(self, request, name, agency=None, currency=None):
         if agency is not None:
-            core.common.entity_limits.enforce(
-                model.Account.objects.filter(agency=agency).exclude_archived(),
-            )
+            core.common.entity_limits.enforce(model.Account.objects.filter(agency=agency).exclude_archived())
         account = model.Account(name=name, agency=agency)
         if agency is not None:
             account.uses_bcm_v2 = agency.new_accounts_use_bcm_v2
             account.yahoo_account = agency.yahoo_account
         else:
-            account.uses_bcm_v2 = True  # TODO: when all agencies are migrated, this can be moved into a db field default
+            account.uses_bcm_v2 = (
+                True
+            )  # TODO: when all agencies are migrated, this can be moved into a db field default
 
         # FIXME(nsaje): remove when multicurrency finished
         if agency is not None and agency.id in EUR_AGENCIES:
@@ -32,18 +31,15 @@ class AccountManager(core.common.BaseManager):
             account.currency = currency
 
         account.save(request)
-        account.write_history(
-            'Created account',
-            user=request.user,
-            action_type=constants.HistoryActionType.CREATE)
+        account.write_history("Created account", user=request.user, action_type=constants.HistoryActionType.CREATE)
 
         settings_updates = {}
-        settings_updates['default_account_manager'] = request.user
+        settings_updates["default_account_manager"] = request.user
         if agency is not None:
-            settings_updates['default_sales_representative'] = agency.sales_representative
-            settings_updates['default_cs_representative'] = agency.cs_representative
-            settings_updates['ob_representative'] = agency.ob_representative
-            settings_updates['account_type'] = constants.AccountType.ACTIVATED
+            settings_updates["default_sales_representative"] = agency.sales_representative
+            settings_updates["default_cs_representative"] = agency.cs_representative
+            settings_updates["ob_representative"] = agency.ob_representative
+            settings_updates["account_type"] = constants.AccountType.ACTIVATED
 
         account.settings = core.entity.settings.AccountSettings(account=account)
         account.settings.update(request, **settings_updates)

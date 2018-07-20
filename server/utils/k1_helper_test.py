@@ -6,67 +6,52 @@ from utils import k1_helper
 
 
 @override_settings(
-    K1_CONSISTENCY_PING_ACCOUNT_QUEUE='ping_account_queue',
-    K1_CONSISTENCY_PING_AD_GROUP_QUEUE='ping_ad_group_queue',
-    K1_CONSISTENCY_PING_CONTENT_AD_QUEUE='ping_content_ad_queue',
-    K1_CONSISTENCY_PING_BLACKLIST_QUEUE='ping_blacklist_queue'
+    K1_CONSISTENCY_PING_ACCOUNT_QUEUE="ping_account_queue",
+    K1_CONSISTENCY_PING_AD_GROUP_QUEUE="ping_ad_group_queue",
+    K1_CONSISTENCY_PING_CONTENT_AD_QUEUE="ping_content_ad_queue",
+    K1_CONSISTENCY_PING_BLACKLIST_QUEUE="ping_blacklist_queue",
 )
-@patch('utils.k1_helper.app')
+@patch("utils.k1_helper.app")
 class K1HelperTest(TestCase):
     def setUp(self):
-        patcher = patch.object(k1_helper.time, 'time', return_value=1513594339.172575)
+        patcher = patch.object(k1_helper.time, "time", return_value=1513594339.172575)
         self.addCleanup(patcher.stop)
         patcher.start()
 
     def test_update_account(self, mock_app):
-        k1_helper.update_account(123, msg='test')
+        k1_helper.update_account(123, msg="test")
         mock_app.send_task.assert_called_once_with(
-            'consistency_ping_account',
-            queue='ping_account_queue',
-            kwargs={
-                'msg': 'test',
-                'account_id': 123,
-                'initiated_at': 1513594339.172575,
-                'priority': False,
-            }
+            "consistency_ping_account",
+            queue="ping_account_queue",
+            kwargs={"msg": "test", "account_id": 123, "initiated_at": 1513594339.172575, "priority": False},
         )
 
     def test_update_ad_group(self, mock_app):
-        k1_helper.update_ad_group(123, msg='test')
+        k1_helper.update_ad_group(123, msg="test")
         mock_app.send_task.assert_called_once_with(
-            'consistency_ping_ad_group',
-            queue='ping_ad_group_queue',
-            kwargs={
-                'msg': 'test',
-                'ad_group_id': 123,
-                'initiated_at': 1513594339.172575,
-                'priority': False,
-            }
+            "consistency_ping_ad_group",
+            queue="ping_ad_group_queue",
+            kwargs={"msg": "test", "ad_group_id": 123, "initiated_at": 1513594339.172575, "priority": False},
         )
 
     def test_update_content_ad(self, mock_app):
-        k1_helper.update_content_ad(123, 456, msg='test')
+        k1_helper.update_content_ad(123, 456, msg="test")
         mock_app.send_task.assert_called_once_with(
-            'consistency_ping_content_ad',
-            queue='ping_content_ad_queue',
+            "consistency_ping_content_ad",
+            queue="ping_content_ad_queue",
             kwargs={
-                'msg': 'test',
-                'ad_group_id': 123,
-                'content_ad_id': 456,
-                'initiated_at': 1513594339.172575,
-                'priority': False,
-            }
+                "msg": "test",
+                "ad_group_id": 123,
+                "content_ad_id": 456,
+                "initiated_at": 1513594339.172575,
+                "priority": False,
+            },
         )
 
     def test_update_blacklist(self, mock_app):
-        k1_helper.update_blacklist(123, msg='test')
+        k1_helper.update_blacklist(123, msg="test")
         mock_app.send_task.assert_called_once_with(
-            'consistency_ping_blacklist',
-            queue='ping_blacklist_queue',
-            kwargs={
-                'msg': 'test',
-                'ad_group_id': 123,
-                'initiated_at': 1513594339.172575,
-                'priority': False,
-            }
+            "consistency_ping_blacklist",
+            queue="ping_blacklist_queue",
+            kwargs={"msg": "test", "ad_group_id": 123, "initiated_at": 1513594339.172575, "priority": False},
         )

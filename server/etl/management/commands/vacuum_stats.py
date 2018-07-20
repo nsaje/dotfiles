@@ -6,21 +6,14 @@ import influx
 
 
 class Command(ExceptionCommand):
-    @influx.timer('etl.vacuum_other_tables')
+    @influx.timer("etl.vacuum_other_tables")
     def handle(self, *args, **options):
-        tables = [
-            'stats',
-            'conversions',
-            'postclickstats',
-            'outbrainpublisherstats',
-            'audience_report',
-            'pixie_sample',
-        ]
+        tables = ["stats", "conversions", "postclickstats", "outbrainpublisherstats", "audience_report", "pixie_sample"]
 
         for table in tables:
             maintenance.vacuum(table)
             maintenance.analyze(table)
 
-        table = 'supply_stats'
+        table = "supply_stats"
         maintenance.vacuum(table, delete_only=True)
         maintenance.analyze(table)

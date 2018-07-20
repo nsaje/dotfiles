@@ -14,8 +14,8 @@ import stats.helpers
 from stats import constants
 
 
-PIXEL_METRIC_REGEX = re.compile(r'avg_(et_|etfm_)?cost_per_pixel')
-CONVERSION_GOAL_REGEX = re.compile(r'avg_(et_|etfm_)?cost_per_conversion_goal')
+PIXEL_METRIC_REGEX = re.compile(r"avg_(et_|etfm_)?cost_per_pixel")
+CONVERSION_GOAL_REGEX = re.compile(r"avg_(et_|etfm_)?cost_per_conversion_goal")
 
 
 def create_parents(rows, breakdown):
@@ -41,17 +41,17 @@ def inflate_parent_constraints(parents):
     new_parents = []
 
     for parent in parents:
-        if 'publisher_id' in parent:
+        if "publisher_id" in parent:
             # publisher_id is an aggregate so not the most suitable for a constraint
             new_parent = copy.copy(parent)
 
-            publisher_id = new_parent.pop('publisher_id')
+            publisher_id = new_parent.pop("publisher_id")
             publisher, source_id = publisher_helpers.dissect_publisher_id(publisher_id)
 
-            new_parent['publisher'] = publisher
+            new_parent["publisher"] = publisher
 
             if source_id:
-                new_parent['source_id'] = source_id
+                new_parent["source_id"] = source_id
 
             new_parents.append(new_parent)
         else:
@@ -76,9 +76,9 @@ def optimize_parent_constraints(parents):
                 one_field_values[field_name].append(val)
 
         # special publisher optimization
-        elif len(parent) == 2 and 'source_id' in parent and 'publisher' in parent:
-            source_id = parent['source_id']
-            publisher = parent['publisher']
+        elif len(parent) == 2 and "source_id" in parent and "publisher" in parent:
+            source_id = parent["source_id"]
+            publisher = parent["publisher"]
             if backtosql.is_collection(publisher):
                 source_publishers[source_id].extend(publisher)
             else:
@@ -91,9 +91,7 @@ def optimize_parent_constraints(parents):
         parents.extend([{k: v[0] if len(v) == 1 else v} for k, v in list(one_field_values.items())])
 
     if source_publishers:
-        parents.extend([
-            {'source_id': k, 'publisher': v} for k, v in list(source_publishers.items())
-        ])
+        parents.extend([{"source_id": k, "publisher": v} for k, v in list(source_publishers.items())])
 
     return parents
 
@@ -122,7 +120,11 @@ def select_relevant_stats_rows(breakdown, rows, stats_rows):
 def get_all_dimensions(breakdown, constraints, parents):
     # TODO this should take dimensions from a model to be reliable, also base view_selecter on model fields
     constraints_dimensions = set(backtosql.dissect_constraint_key(x)[0] for x in list(constraints.keys()))
-    parents_dimensions = set(backtosql.dissect_constraint_key(x)[0] for parent in parents for x in list(parent.keys())) if parents else set([])
+    parents_dimensions = (
+        set(backtosql.dissect_constraint_key(x)[0] for parent in parents for x in list(parent.keys()))
+        if parents
+        else set([])
+    )
     breakdown_dimensions = set(breakdown)
 
     non_date_dimensions = set(constants.StructureDimension._ALL) | set(constants.DeliveryDimension._ALL)
@@ -132,9 +134,9 @@ def get_all_dimensions(breakdown, constraints, parents):
 
 def get_yesterday_constraints(constraints):
     constraints = copy.copy(constraints)
-    constraints.pop('date__gte', None)
-    constraints.pop('date__lte', None)
-    constraints['date'] = dates_helper.local_yesterday()
+    constraints.pop("date__gte", None)
+    constraints.pop("date__lte", None)
+    constraints["date"] = dates_helper.local_yesterday()
 
     return constraints
 
@@ -149,11 +151,11 @@ def get_time_dimension_constraints(time_dimension, constraints, offset, limit):
     if offset is None:
         offset = 0
     if limit is None:
-        limit = (constraints['date__lte'] - constraints['date__gte']).days
+        limit = (constraints["date__lte"] - constraints["date__gte"]).days
 
     constraints = copy.copy(constraints)
 
-    start_date = constraints['date__gte']
+    start_date = constraints["date__gte"]
 
     if time_dimension == constants.TimeDimension.DAY:
         start_date = start_date + datetime.timedelta(days=offset)
@@ -168,14 +170,14 @@ def get_time_dimension_constraints(time_dimension, constraints, offset, limit):
         start_date = start_date + dateutil.relativedelta.relativedelta(months=offset)
         end_date = _safe_date_add(start_date, dateutil.relativedelta.relativedelta(months=limit))
 
-    constraints['date__gte'] = max(start_date, constraints['date__gte'])
-    if min(end_date, constraints['date__lte']) == constraints['date__lte']:
+    constraints["date__gte"] = max(start_date, constraints["date__gte"])
+    if min(end_date, constraints["date__lte"]) == constraints["date__lte"]:
         # end of date range - fetch until the end
-        constraints['date__lte'] = constraints['date__lte']
+        constraints["date__lte"] = constraints["date__lte"]
     else:
         # else later ranges are possible
-        del constraints['date__lte']
-        constraints['date__lte'] = end_date - datetime.timedelta(days=1)
+        del constraints["date__lte"]
+        constraints["date__lte"] = end_date - datetime.timedelta(days=1)
     return constraints
 
 
@@ -186,22 +188,16 @@ def _safe_date_add(date, timedelta):
         return datetime.date.max
 
 
-def get_query_name(breakdown, extra_name=''):
+def get_query_name(breakdown, extra_name=""):
     if extra_name:
-        extra_name = '__' + extra_name
+        extra_name = "__" + extra_name
 
-    return '__'.join(breakdown) + extra_name
+    return "__".join(breakdown) + extra_name
 
 
 def is_pixel_metric(metric):
-    return (
-        metric.startswith('pixel_') or
-        PIXEL_METRIC_REGEX.match(metric)
-    )
+    return metric.startswith("pixel_") or PIXEL_METRIC_REGEX.match(metric)
 
 
 def is_conversion_goal_metric(metric):
-    return (
-        metric.startswith('conversion_goal_') or
-        CONVERSION_GOAL_REGEX.match(metric)
-    )
+    return metric.startswith("conversion_goal_") or CONVERSION_GOAL_REGEX.match(metric)

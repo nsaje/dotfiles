@@ -7,9 +7,8 @@ import core.multicurrency
 
 
 class BudgetDailyStatementManager(core.common.BaseManager):
-
     def create(self, *, date, budget, media_spend_nano, data_spend_nano, license_fee_nano, margin_nano, **kwargs):
-        assert not any(arg_name.startswith('local_') for arg_name in kwargs.keys()), 'Provide values in USD'
+        assert not any(arg_name.startswith("local_") for arg_name in kwargs.keys()), "Provide values in USD"
 
         currency_exchange_rate = core.multicurrency.get_exchange_rate(date, budget.credit.currency)
 
@@ -34,7 +33,7 @@ class BudgetDailyStatementManager(core.common.BaseManager):
 
 
 class BudgetDailyStatement(models.Model):
-    budget = models.ForeignKey('BudgetLineItem', related_name='statements')
+    budget = models.ForeignKey("BudgetLineItem", related_name="statements")
     date = models.DateField()
     media_spend_nano = models.BigIntegerField()
     data_spend_nano = models.BigIntegerField()
@@ -64,6 +63,6 @@ class BudgetDailyStatement(models.Model):
         self.save()
 
     class Meta:
-        get_latest_by = 'date'
-        unique_together = ('budget', 'date')
-        app_label = 'dash'
+        get_latest_by = "date"
+        unique_together = ("budget", "date")
+        app_label = "dash"

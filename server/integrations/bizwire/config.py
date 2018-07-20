@@ -5,18 +5,16 @@ from dash import constants
 START_DATE = datetime.date(2016, 12, 3)
 
 AUTOMATION_CAMPAIGN = 1096
-AUTOMATION_USER_EMAIL = 'businesswire-user@zemanta.com'
+AUTOMATION_USER_EMAIL = "businesswire-user@zemanta.com"
 
-DEFAULT_CPC = Decimal('0.1')
+DEFAULT_CPC = Decimal("0.1")
 DAILY_BUDGET_RTB_INITIAL = 30
 DAILY_BUDGET_OB_INITIAL = 10
 DAILY_BUDGET_PER_ARTICLE = 3.375
 
 OB_DAILY_BUDGET_PCT = 0.1
 
-CUSTOM_CPC_SETTINGS = {
-    3: Decimal('0.2'),
-}
+CUSTOM_CPC_SETTINGS = {3: Decimal("0.2")}
 
 INTEREST_TARGETING = [
     constants.InterestCategory.POLITICS_LAW,
@@ -45,8 +43,8 @@ INTEREST_TARGETING = [
 ]
 
 NOTIFICATION_EMAILS = [
-    'luka.silovinac@zemanta.com',
-    'tadej.pavlic@zemanta.com',
-    'nsaje@outbrain.com',
+    "luka.silovinac@zemanta.com",
+    "tadej.pavlic@zemanta.com",
+    "nsaje@outbrain.com",
     # 'bostjan@zemanta.com',
 ]

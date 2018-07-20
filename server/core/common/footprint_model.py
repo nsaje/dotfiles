@@ -4,7 +4,6 @@ from django.db import models
 
 
 class FootprintModel(models.Model):
-
     def __init__(self, *args, **kwargs):
         super(FootprintModel, self).__init__(*args, **kwargs)
         if not self.pk:
@@ -36,8 +35,7 @@ class FootprintModel(models.Model):
     def _footprint(self):
         self._orig = {}
         for f in self._meta.fields:
-            self._orig[f.name] = getattr(
-                self, self._get_value_fieldname(f.name))
+            self._orig[f.name] = getattr(self, self._get_value_fieldname(f.name))
 
     def save(self, *args, **kwargs):
         super(FootprintModel, self).save(*args, **kwargs)

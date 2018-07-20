@@ -5,28 +5,22 @@ from utils.constant_base import ConstantBase
 
 MAX_CONVERSION_GOALS_PER_CAMPAIGN = 15
 
-GA_PROPERTY_ID_REGEX = r'UA-([0-9]+)-([0-9]+)'
-DEFAULT_CALL_TO_ACTION = 'Read more'
+GA_PROPERTY_ID_REGEX = r"UA-([0-9]+)-([0-9]+)"
+DEFAULT_CALL_TO_ACTION = "Read more"
 
 
 class AdGroupSettingsState(ConstantBase):
     ACTIVE = 1
     INACTIVE = 2
 
-    _VALUES = {
-        ACTIVE: 'Enabled',
-        INACTIVE: 'Paused'
-    }
+    _VALUES = {ACTIVE: "Enabled", INACTIVE: "Paused"}
 
 
 class AdGroupRunningStatus(ConstantBase):
     ACTIVE = 1
     INACTIVE = 2
 
-    _VALUES = {
-        ACTIVE: 'Active',
-        INACTIVE: 'Paused'
-    }
+    _VALUES = {ACTIVE: "Active", INACTIVE: "Paused"}
 
 
 class AdGroupSettingsAutopilotState(ConstantBase):
@@ -35,9 +29,9 @@ class AdGroupSettingsAutopilotState(ConstantBase):
     ACTIVE_CPC = 3
 
     _VALUES = {
-        ACTIVE_CPC: 'Optimize Bids',
-        ACTIVE_CPC_BUDGET: 'Optimize Bids and Daily Spend Caps',
-        INACTIVE: 'Disabled'
+        ACTIVE_CPC: "Optimize Bids",
+        ACTIVE_CPC_BUDGET: "Optimize Bids and Daily Spend Caps",
+        INACTIVE: "Disabled",
     }
 
 
@@ -46,10 +40,7 @@ class AdGroupSourceSettingsState(ConstantBase):
     ACTIVE = 1
     INACTIVE = 2
 
-    _VALUES = {
-        ACTIVE: 'Enabled',
-        INACTIVE: 'Paused'
-    }
+    _VALUES = {ACTIVE: "Enabled", INACTIVE: "Paused"}
 
 
 class ExportStatus(ConstantBase):
@@ -58,27 +49,23 @@ class ExportStatus(ConstantBase):
     INACTIVE = 2
     ARCHIVED = 3
 
-    _VALUES = {
-        ACTIVE: 'Active',
-        INACTIVE: 'Inactive',
-        ARCHIVED: 'Archived'
-    }
+    _VALUES = {ACTIVE: "Active", INACTIVE: "Inactive", ARCHIVED: "Archived"}
 
 
 class AdTargetDevice(ConstantBase):
-    DESKTOP = 'desktop'
-    TABLET = 'tablet'
-    MOBILE = 'mobile'
+    DESKTOP = "desktop"
+    TABLET = "tablet"
+    MOBILE = "mobile"
 
-    _VALUES = {
-        DESKTOP: 'Desktop',
-        TABLET: 'Tablet',
-        MOBILE: 'Mobile'
-    }
+    _VALUES = {DESKTOP: "Desktop", TABLET: "Tablet", MOBILE: "Mobile"}
 
 
 class AdTargetLocation(ConstantBase):
-    _VALUES = dict(list(regions.COUNTRY_BY_CODE.items()) + list(regions.DMA_BY_CODE.items()) + list(regions.SUBDIVISION_BY_CODE.items()))
+    _VALUES = dict(
+        list(regions.COUNTRY_BY_CODE.items())
+        + list(regions.DMA_BY_CODE.items())
+        + list(regions.SUBDIVISION_BY_CODE.items())
+    )
 
     @classmethod
     def get_choices(cls):
@@ -93,11 +80,11 @@ class ContentAdSubmissionStatus(ConstantBase):
     LIMIT_REACHED = 4
 
     _VALUES = {
-        NOT_SUBMITTED: 'Not submitted',
-        PENDING: 'Pending',
-        APPROVED: 'Approved',
-        REJECTED: 'Rejected',
-        LIMIT_REACHED: 'Limit reached',
+        NOT_SUBMITTED: "Not submitted",
+        PENDING: "Pending",
+        APPROVED: "Approved",
+        REJECTED: "Rejected",
+        LIMIT_REACHED: "Limit reached",
     }
 
 
@@ -105,10 +92,7 @@ class ContentAdSourceState(ConstantBase):
     ACTIVE = 1
     INACTIVE = 2
 
-    _VALUES = {
-        ACTIVE: 'Enabled',
-        INACTIVE: 'Paused'
-    }
+    _VALUES = {ACTIVE: "Enabled", INACTIVE: "Paused"}
 
 
 class PublisherStatus(ConstantBase):
@@ -116,11 +100,7 @@ class PublisherStatus(ConstantBase):
     BLACKLISTED = 2
     PENDING = 3
 
-    _VALUES = {
-        ENABLED: 'Active',
-        BLACKLISTED: 'Blacklisted',
-        PENDING: 'Pending',
-    }
+    _VALUES = {ENABLED: "Active", BLACKLISTED: "Blacklisted", PENDING: "Pending"}
 
 
 class AccountType(ConstantBase):
@@ -133,148 +113,133 @@ class AccountType(ConstantBase):
     PAAS = 7
 
     _VALUES = {
-        UNKNOWN: 'Unknown',
-        TEST: 'Test',
-        SANDBOX: 'Sandbox',
-        PILOT: 'Pilot',
-        ACTIVATED: 'Activated',
-        MANAGED: 'Managed',
-        PAAS: 'PAAS',
+        UNKNOWN: "Unknown",
+        TEST: "Test",
+        SANDBOX: "Sandbox",
+        PILOT: "Pilot",
+        ACTIVATED: "Activated",
+        MANAGED: "Managed",
+        PAAS: "PAAS",
     }
 
 
 class Language(ConstantBase):
-    ENGLISH = 'en'
-    GERMAN = 'de'
-    GREEK = 'el'
-    ARABIC = 'ar'
-    SPANISH = 'es'
-    FRENCH = 'fr'
-    INDONESIAN = 'id'
-    ITALIAN = 'it'
-    JAPANESE = 'ja'
-    MALAY = 'ms'
-    DUTCH = 'nl'
-    PORTUGUESE = 'pt'
-    ROMANIAN = 'ro'
-    RUSSIAN = 'ru'
-    SWEDISH = 'sv'
-    TURKISH = 'tr'
-    VIETNAMESE = 'vi'
-    SIMPLIFIED_CHINESE = 'zh_CN'
-    TRADITIONAL_CHINESE = 'zh_TW'
-    OTHER = 'any'
+    ENGLISH = "en"
+    GERMAN = "de"
+    GREEK = "el"
+    ARABIC = "ar"
+    SPANISH = "es"
+    FRENCH = "fr"
+    INDONESIAN = "id"
+    ITALIAN = "it"
+    JAPANESE = "ja"
+    MALAY = "ms"
+    DUTCH = "nl"
+    PORTUGUESE = "pt"
+    ROMANIAN = "ro"
+    RUSSIAN = "ru"
+    SWEDISH = "sv"
+    TURKISH = "tr"
+    VIETNAMESE = "vi"
+    SIMPLIFIED_CHINESE = "zh_CN"
+    TRADITIONAL_CHINESE = "zh_TW"
+    OTHER = "any"
 
     _VALUES = {
-        ARABIC: 'Arabic',
-        GERMAN: 'German',
-        GREEK: 'Greek',
-        ENGLISH: 'English',
-        SPANISH: 'Spanish',
-        FRENCH: 'French',
-        INDONESIAN: 'Indonesian',
-        ITALIAN: 'Italian',
-        JAPANESE: 'Japanese',
-        MALAY: 'Malay',
-        DUTCH: 'Dutch',
-        PORTUGUESE: 'Portuguese',
-        ROMANIAN: 'Romanian',
-        RUSSIAN: 'Russian',
-        SWEDISH: 'Swedish',
-        TURKISH: 'Turkish',
-        VIETNAMESE: 'Vietnamese',
-        SIMPLIFIED_CHINESE: 'Simplified Chinese',
-        TRADITIONAL_CHINESE: 'Traditional Chinese',
-        OTHER: 'Other',
+        ARABIC: "Arabic",
+        GERMAN: "German",
+        GREEK: "Greek",
+        ENGLISH: "English",
+        SPANISH: "Spanish",
+        FRENCH: "French",
+        INDONESIAN: "Indonesian",
+        ITALIAN: "Italian",
+        JAPANESE: "Japanese",
+        MALAY: "Malay",
+        DUTCH: "Dutch",
+        PORTUGUESE: "Portuguese",
+        ROMANIAN: "Romanian",
+        RUSSIAN: "Russian",
+        SWEDISH: "Swedish",
+        TURKISH: "Turkish",
+        VIETNAMESE: "Vietnamese",
+        SIMPLIFIED_CHINESE: "Simplified Chinese",
+        TRADITIONAL_CHINESE: "Traditional Chinese",
+        OTHER: "Other",
     }
 
 
 class Currency(ConstantBase):
-    USD = 'USD'
-    EUR = 'EUR'
-    GBP = 'GBP'
-    AUD = 'AUD'
-    SGD = 'SGD'
-    BRL = 'BRL'
-    MYR = 'MYR'
-    CHF = 'CHF'
+    USD = "USD"
+    EUR = "EUR"
+    GBP = "GBP"
+    AUD = "AUD"
+    SGD = "SGD"
+    BRL = "BRL"
+    MYR = "MYR"
+    CHF = "CHF"
 
     _VALUES = {
-        USD: 'US Dollar',
-        EUR: 'Euro',
-        GBP: 'British Pound',
-        AUD: 'Australian Dollar',
-        SGD: 'Singapore Dollar',
-        BRL: 'Brazilian Real',
-        MYR: 'Malaysian Ringgit',
-        CHF: 'Swiss Franc',
+        USD: "US Dollar",
+        EUR: "Euro",
+        GBP: "British Pound",
+        AUD: "Australian Dollar",
+        SGD: "Singapore Dollar",
+        BRL: "Brazilian Real",
+        MYR: "Malaysian Ringgit",
+        CHF: "Swiss Franc",
     }
 
 
 class InfoboxLevel(ConstantBase):
-    ADGROUP = 'adgroup'
-    CAMPAIGN = 'campaign'
-    ACCOUNT = 'account'
-    ALL_ACCOUNTS = 'all-accounts'
+    ADGROUP = "adgroup"
+    CAMPAIGN = "campaign"
+    ACCOUNT = "account"
+    ALL_ACCOUNTS = "all-accounts"
 
-    _VALUES = {
-        ADGROUP: 'Ad Group',
-        CAMPAIGN: 'Campaign',
-        ACCOUNT: 'Account',
-        ALL_ACCOUNTS: 'All Accounts'
-    }
+    _VALUES = {ADGROUP: "Ad Group", CAMPAIGN: "Campaign", ACCOUNT: "Account", ALL_ACCOUNTS: "All Accounts"}
 
 
 class InfoboxStatus(ConstantBase):
-    ACTIVE = 'active'
-    ACTIVE_PRICE_DISCOVERY = 'active-price-discovery'
-    INACTIVE = 'inactive'
-    STOPPED = 'stopped'
-    AUTOPILOT = 'autopilot'
-    CAMPAIGNSTOP_STOPPED = 'campaignstop-stopped'
-    CAMPAIGNSTOP_LOW_BUDGET = 'campaignstop-low-budget'
-    CAMPAIGNSTOP_PENDING_BUDGET_AUTOPILOT = 'campaignstop-pending-budget-autopilot'
-    CAMPAIGNSTOP_PENDING_BUDGET_ACTIVE_PRICE_DISCOVERY = 'campaignstop-pending-budget-active-price-discovery'
-    CAMPAIGNSTOP_PENDING_BUDGET_ACTIVE = 'campaignstop-pending-budget-active'
+    ACTIVE = "active"
+    ACTIVE_PRICE_DISCOVERY = "active-price-discovery"
+    INACTIVE = "inactive"
+    STOPPED = "stopped"
+    AUTOPILOT = "autopilot"
+    CAMPAIGNSTOP_STOPPED = "campaignstop-stopped"
+    CAMPAIGNSTOP_LOW_BUDGET = "campaignstop-low-budget"
+    CAMPAIGNSTOP_PENDING_BUDGET_AUTOPILOT = "campaignstop-pending-budget-autopilot"
+    CAMPAIGNSTOP_PENDING_BUDGET_ACTIVE_PRICE_DISCOVERY = "campaignstop-pending-budget-active-price-discovery"
+    CAMPAIGNSTOP_PENDING_BUDGET_ACTIVE = "campaignstop-pending-budget-active"
 
     _VALUES = {
-        ACTIVE: 'Active',
-        ACTIVE_PRICE_DISCOVERY: 'Active - Price Discovery',
-        INACTIVE: 'Inactive',
-        STOPPED: 'Stopped',
-        AUTOPILOT: 'Autopilot',
-        CAMPAIGNSTOP_STOPPED: 'Stopped - Out of budget',
-        CAMPAIGNSTOP_LOW_BUDGET: 'Active - Running out of budget',
-        CAMPAIGNSTOP_PENDING_BUDGET_AUTOPILOT: 'Active - Pending budget allocations',
-        CAMPAIGNSTOP_PENDING_BUDGET_ACTIVE_PRICE_DISCOVERY: 'Active - Pending budget allocations',
-        CAMPAIGNSTOP_PENDING_BUDGET_ACTIVE: 'Active - Pending budget allocations',
+        ACTIVE: "Active",
+        ACTIVE_PRICE_DISCOVERY: "Active - Price Discovery",
+        INACTIVE: "Inactive",
+        STOPPED: "Stopped",
+        AUTOPILOT: "Autopilot",
+        CAMPAIGNSTOP_STOPPED: "Stopped - Out of budget",
+        CAMPAIGNSTOP_LOW_BUDGET: "Active - Running out of budget",
+        CAMPAIGNSTOP_PENDING_BUDGET_AUTOPILOT: "Active - Pending budget allocations",
+        CAMPAIGNSTOP_PENDING_BUDGET_ACTIVE_PRICE_DISCOVERY: "Active - Pending budget allocations",
+        CAMPAIGNSTOP_PENDING_BUDGET_ACTIVE: "Active - Pending budget allocations",
     }
 
 
 class PublisherBlacklistLevel(ConstantBase):
 
-    ADGROUP = 'adgroup'
-    CAMPAIGN = 'campaign'
-    ACCOUNT = 'account'
-    GLOBAL = 'global'
+    ADGROUP = "adgroup"
+    CAMPAIGN = "campaign"
+    ACCOUNT = "account"
+    GLOBAL = "global"
 
-    _INT_MAP = {
-        ADGROUP: 1,
-        CAMPAIGN: 2,
-        ACCOUNT: 3,
-        GLOBAL: 4
-    }
+    _INT_MAP = {ADGROUP: 1, CAMPAIGN: 2, ACCOUNT: 3, GLOBAL: 4}
 
-    _VALUES = {
-        ADGROUP: 'Ad group',
-        CAMPAIGN: 'Campaign',
-        ACCOUNT: 'Account',
-        GLOBAL: 'Global'
-    }
+    _VALUES = {ADGROUP: "Ad group", CAMPAIGN: "Campaign", ACCOUNT: "Account", GLOBAL: "Global"}
 
     @classmethod
     def verbose(cls, level, status):
-        level_verbose = ''
+        level_verbose = ""
         if status == PublisherTargetingStatus.BLACKLISTED:
             level_verbose = "Blacklisted in this ad group"
             if level == PublisherBlacklistLevel.CAMPAIGN:
@@ -298,17 +263,12 @@ class PublisherBlacklistLevel(ConstantBase):
 
 
 class PublisherBlacklistFilter(ConstantBase):
-    SHOW_ALL = 'all'
-    SHOW_ACTIVE = 'active'
-    SHOW_BLACKLISTED = 'blacklisted'
-    SHOW_WHITELISTED = 'whitelisted'
+    SHOW_ALL = "all"
+    SHOW_ACTIVE = "active"
+    SHOW_BLACKLISTED = "blacklisted"
+    SHOW_WHITELISTED = "whitelisted"
 
-    _VALUES = {
-        SHOW_ALL: 'All',
-        SHOW_ACTIVE: 'Active',
-        SHOW_BLACKLISTED: 'Blacklisted',
-        SHOW_WHITELISTED: 'Whitelisted',
-    }
+    _VALUES = {SHOW_ALL: "All", SHOW_ACTIVE: "Active", SHOW_BLACKLISTED: "Blacklisted", SHOW_WHITELISTED: "Whitelisted"}
 
 
 class IABCategory(ConstantBase):
@@ -1102,97 +1062,97 @@ class IABCategory(ConstantBase):
 
 
 class InterestCategory(ConstantBase):
-    ENTERTAINMENT = 'entertainment'
-    FUN_QUIZZES = 'fun_quizzes'
-    MUSIC = 'music'
-    CARS = 'cars'
-    FINANCE = 'finance'
-    EDUCATION = 'education'
-    FAMILY = 'family'
-    HEALTH = 'health'
-    FOOD = 'food'
-    HOBBIES = 'hobbies'
-    GAMES = 'games'
-    HOME = 'home'
-    POLITICS_LAW = 'politics_law'
-    MEDIA = 'media'
-    DATING = 'dating'
-    SCIENCE = 'science'
-    WEATHER = 'weather'
-    PETS = 'pets'
-    SPORTS = 'sports'
-    FASHION = 'fashion'
-    TECHNOLOGY = 'technology'
-    UTILITY = 'utility'
-    TRAVEL = 'travel'
-    SHOPPING_COUPONS = 'shopping_coupons'
-    RELIGION = 'religion'
-    COMMUNICATION = 'communication'
-    CAREER = 'career'
-    PREMIUM = 'premium'
-    WOMEN = 'women'
-    MEN = 'men'
+    ENTERTAINMENT = "entertainment"
+    FUN_QUIZZES = "fun_quizzes"
+    MUSIC = "music"
+    CARS = "cars"
+    FINANCE = "finance"
+    EDUCATION = "education"
+    FAMILY = "family"
+    HEALTH = "health"
+    FOOD = "food"
+    HOBBIES = "hobbies"
+    GAMES = "games"
+    HOME = "home"
+    POLITICS_LAW = "politics_law"
+    MEDIA = "media"
+    DATING = "dating"
+    SCIENCE = "science"
+    WEATHER = "weather"
+    PETS = "pets"
+    SPORTS = "sports"
+    FASHION = "fashion"
+    TECHNOLOGY = "technology"
+    UTILITY = "utility"
+    TRAVEL = "travel"
+    SHOPPING_COUPONS = "shopping_coupons"
+    RELIGION = "religion"
+    COMMUNICATION = "communication"
+    CAREER = "career"
+    PREMIUM = "premium"
+    WOMEN = "women"
+    MEN = "men"
 
     # internal from here on
-    FOREIGN = 'foreign'
-    FRENCH = 'french'
-    SPANISH = 'spanish'
-    OTHER = 'other'
-    UNKNOWN = '?'
-    OUTBRAIN = 'outbrain'
+    FOREIGN = "foreign"
+    FRENCH = "french"
+    SPANISH = "spanish"
+    OTHER = "other"
+    UNKNOWN = "?"
+    OUTBRAIN = "outbrain"
     # this is a cisco specific thing and is set on the bidder based on page url keywords
-    TECHNOLOGY_CONTEXTUAL = 'technology-contextual'
-    FUN = 'fun'
-    QUIZZES = 'quizzes'
-    POLITICS = 'politics'
-    LAW = 'law'
-    COUPONS = 'coupons'
-    SHOPPING = 'shopping'
+    TECHNOLOGY_CONTEXTUAL = "technology-contextual"
+    FUN = "fun"
+    QUIZZES = "quizzes"
+    POLITICS = "politics"
+    LAW = "law"
+    COUPONS = "coupons"
+    SHOPPING = "shopping"
 
     _VALUES = {
-        ENTERTAINMENT: 'Arts & Entertainment',
-        FUN_QUIZZES: 'Viral, lists & Quizzes',
-        MUSIC: 'Music',
-        CARS: 'Automotive',
-        FINANCE: 'Business & Finance',
-        EDUCATION: 'Education',
-        FAMILY: 'Family & Parenting',
-        HEALTH: 'Health & Fitness',
-        FOOD: 'Food & Drink',
-        HOBBIES: 'Hobbies & Interests',
-        GAMES: 'Games & Gaming',
-        HOME: 'Home & Garden',
-        POLITICS_LAW: 'Law, Gov’t & Politics',
-        MEDIA: 'News',
-        DATING: 'Dating & Relationships',
-        SCIENCE: 'Science',
-        WEATHER: 'Weather & Environment',
-        PETS: 'Pets',
-        SPORTS: 'Sports',
-        FASHION: 'Beauty & Fashion',
-        TECHNOLOGY: 'Technology',
-        UTILITY: 'Apps & Online services',
-        TRAVEL: 'Travel',
-        SHOPPING_COUPONS: 'Shopping',
-        RELIGION: 'Religion & Spirituality',
-        COMMUNICATION: 'Communication Tools',
-        CAREER: 'Careers',
-        PREMIUM: 'Premium',
-        WOMEN: 'Women’s Lifestyle',
-        MEN: 'Men’s Lifestyle',
-        FOREIGN: 'Foreign',
-        FRENCH: 'French',
-        SPANISH: 'Spanish',
-        OTHER: 'Other',
-        UNKNOWN: 'Unknown',
-        OUTBRAIN: 'Outbrain',
-        TECHNOLOGY_CONTEXTUAL: 'Technology - Contextual',
-        FUN: 'Fun & Entertaining Sites',
-        QUIZZES: 'Quizzes',
-        POLITICS: 'Gov’t & Politics',
-        LAW: 'Law',
-        COUPONS: 'Couponing',
-        SHOPPING: 'Shopping',
+        ENTERTAINMENT: "Arts & Entertainment",
+        FUN_QUIZZES: "Viral, lists & Quizzes",
+        MUSIC: "Music",
+        CARS: "Automotive",
+        FINANCE: "Business & Finance",
+        EDUCATION: "Education",
+        FAMILY: "Family & Parenting",
+        HEALTH: "Health & Fitness",
+        FOOD: "Food & Drink",
+        HOBBIES: "Hobbies & Interests",
+        GAMES: "Games & Gaming",
+        HOME: "Home & Garden",
+        POLITICS_LAW: "Law, Gov’t & Politics",
+        MEDIA: "News",
+        DATING: "Dating & Relationships",
+        SCIENCE: "Science",
+        WEATHER: "Weather & Environment",
+        PETS: "Pets",
+        SPORTS: "Sports",
+        FASHION: "Beauty & Fashion",
+        TECHNOLOGY: "Technology",
+        UTILITY: "Apps & Online services",
+        TRAVEL: "Travel",
+        SHOPPING_COUPONS: "Shopping",
+        RELIGION: "Religion & Spirituality",
+        COMMUNICATION: "Communication Tools",
+        CAREER: "Careers",
+        PREMIUM: "Premium",
+        WOMEN: "Women’s Lifestyle",
+        MEN: "Men’s Lifestyle",
+        FOREIGN: "Foreign",
+        FRENCH: "French",
+        SPANISH: "Spanish",
+        OTHER: "Other",
+        UNKNOWN: "Unknown",
+        OUTBRAIN: "Outbrain",
+        TECHNOLOGY_CONTEXTUAL: "Technology - Contextual",
+        FUN: "Fun & Entertaining Sites",
+        QUIZZES: "Quizzes",
+        POLITICS: "Gov’t & Politics",
+        LAW: "Law",
+        COUPONS: "Couponing",
+        SHOPPING: "Shopping",
     }
 
 
@@ -1201,11 +1161,7 @@ class PromotionGoal(ConstantBase):
     TRAFFIC_ACQUISITION = 2
     CONVERSIONS = 3
 
-    _VALUES = {
-        BRAND_BUILDING: 'Brand Building',
-        TRAFFIC_ACQUISITION: 'Traffic Acquisition',
-        CONVERSIONS: 'Conversions'
-    }
+    _VALUES = {BRAND_BUILDING: "Brand Building", TRAFFIC_ACQUISITION: "Traffic Acquisition", CONVERSIONS: "Conversions"}
 
 
 class CampaignGoal(ConstantBase):
@@ -1216,11 +1172,11 @@ class CampaignGoal(ConstantBase):
     PAGES_PER_SESSION = 5
 
     _VALUES = {
-        CPA: 'CPA',
-        PERCENT_BOUNCE_RATE: '% bounce rate',
-        NEW_UNIQUE_VISITORS: 'new unique visitors',
-        SECONDS_TIME_ON_SITE: 'seconds time on site',
-        PAGES_PER_SESSION: 'pages per session'
+        CPA: "CPA",
+        PERCENT_BOUNCE_RATE: "% bounce rate",
+        NEW_UNIQUE_VISITORS: "new unique visitors",
+        SECONDS_TIME_ON_SITE: "seconds time on site",
+        PAGES_PER_SESSION: "pages per session",
     }
 
 
@@ -1230,7 +1186,7 @@ class CampaignGoalKPI(ConstantBase):
     PAGES_PER_SESSION = 3
     CPA = 4
     CPC = 5
-#    CPM = 6
+    #    CPM = 6
     NEW_UNIQUE_VISITORS = 7
     CPV = 8
     CP_NON_BOUNCED_VISIT = 9
@@ -1239,18 +1195,18 @@ class CampaignGoalKPI(ConstantBase):
     CPCV = 12
 
     _VALUES = {
-        TIME_ON_SITE: 'Time on Site - Seconds',
-        MAX_BOUNCE_RATE: 'Max Bounce Rate',
-        PAGES_PER_SESSION: 'Pageviews per Visit',
-        CPA: '$CPA',
-        CPC: 'CPC',
+        TIME_ON_SITE: "Time on Site - Seconds",
+        MAX_BOUNCE_RATE: "Max Bounce Rate",
+        PAGES_PER_SESSION: "Pageviews per Visit",
+        CPA: "$CPA",
+        CPC: "CPC",
         #        CPM: '$CPM',
-        NEW_UNIQUE_VISITORS: 'New Unique Visitors',
-        CPV: 'Cost per Visit',
-        CP_NON_BOUNCED_VISIT: 'Cost per Non-Bounced Visit',
-        CP_NEW_VISITOR: 'Cost per New Visitor',
-        CP_PAGE_VIEW: 'Cost per Pageview',
-        CPCV: 'Cost per Completed Video View',
+        NEW_UNIQUE_VISITORS: "New Unique Visitors",
+        CPV: "Cost per Visit",
+        CP_NON_BOUNCED_VISIT: "Cost per Non-Bounced Visit",
+        CP_NEW_VISITOR: "Cost per New Visitor",
+        CP_PAGE_VIEW: "Cost per Pageview",
+        CPCV: "Cost per Completed Video View",
     }
 
 
@@ -1259,11 +1215,7 @@ class CampaignGoalPerformance(ConstantBase):
     AVERAGE = 2
     SUPERPERFORMING = 3
 
-    _VALUES = {
-        UNDERPERFORMING: 'Underperforming',
-        AVERAGE: 'Average performance',
-        SUPERPERFORMING: 'Superperforming',
-    }
+    _VALUES = {UNDERPERFORMING: "Underperforming", AVERAGE: "Average performance", SUPERPERFORMING: "Superperforming"}
 
 
 class Emoticon(ConstantBase):
@@ -1271,11 +1223,7 @@ class Emoticon(ConstantBase):
     NEUTRAL = 2
     SAD = 3
 
-    _VALUES = {
-        HAPPY: 'Happy',
-        SAD: 'Sad',
-        NEUTRAL: 'Neutral',
-    }
+    _VALUES = {HAPPY: "Happy", SAD: "Sad", NEUTRAL: "Neutral"}
 
 
 class SourceAction(ConstantBase):
@@ -1301,26 +1249,26 @@ class SourceAction(ConstantBase):
     CAN_SET_MAX_CPM = 20
 
     _VALUES = {
-        CAN_UPDATE_STATE: 'Can update state',
-        CAN_UPDATE_CPC: 'Can update CPC',
-        CAN_UPDATE_DAILY_BUDGET_AUTOMATIC: 'Can update daily budget automatically',
-        CAN_MANAGE_CONTENT_ADS: 'Can manage content ads',
-        HAS_3RD_PARTY_DASHBOARD: 'Has 3rd party dashboard',
-        CAN_MODIFY_START_DATE: 'Can modify start date',
-        CAN_MODIFY_END_DATE: 'Can modify end date',
-        CAN_MODIFY_DEVICE_TARGETING: 'Can modify device targeting',
-        CAN_MODIFY_DMA_AND_SUBDIVISION_TARGETING_AUTOMATIC: 'Can modify DMA and subdivision targeting automatically',
-        CAN_MODIFY_DMA_AND_SUBDIVISION_TARGETING_MANUAL: 'Can modify DMA and subdivision targeting manually',
-        CAN_MODIFY_COUNTRY_TARGETING: 'Can modify targeting by country',
+        CAN_UPDATE_STATE: "Can update state",
+        CAN_UPDATE_CPC: "Can update CPC",
+        CAN_UPDATE_DAILY_BUDGET_AUTOMATIC: "Can update daily budget automatically",
+        CAN_MANAGE_CONTENT_ADS: "Can manage content ads",
+        HAS_3RD_PARTY_DASHBOARD: "Has 3rd party dashboard",
+        CAN_MODIFY_START_DATE: "Can modify start date",
+        CAN_MODIFY_END_DATE: "Can modify end date",
+        CAN_MODIFY_DEVICE_TARGETING: "Can modify device targeting",
+        CAN_MODIFY_DMA_AND_SUBDIVISION_TARGETING_AUTOMATIC: "Can modify DMA and subdivision targeting automatically",
+        CAN_MODIFY_DMA_AND_SUBDIVISION_TARGETING_MANUAL: "Can modify DMA and subdivision targeting manually",
+        CAN_MODIFY_COUNTRY_TARGETING: "Can modify targeting by country",
         # CAN_MODIFY_TRACKING_CODES: 'Can modify tracking codes',
-        CAN_MODIFY_AD_GROUP_NAME: 'Can modify adgroup name',
-        CAN_MODIFY_AD_GROUP_IAB_CATEGORY_AUTOMATIC: 'Can modify ad group IAB category automatically',
-        UPDATE_TRACKING_CODES_ON_CONTENT_ADS: 'Update tracking codes on content ads',
-        CAN_UPDATE_DAILY_BUDGET_MANUAL: 'Can update daily budget manually',
-        CAN_MODIFY_AD_GROUP_IAB_CATEGORY_MANUAL: 'Can modify ad group IAB category manually',
-        CAN_FETCH_REPORT_BY_PUBLISHER: 'Can fetch report by publishers',
-        CAN_MODIFY_PUBLISHER_BLACKLIST_AUTOMATIC: 'Can modify publisher blacklist',
-        CAN_SET_MAX_CPM: 'Can set max CPM',
+        CAN_MODIFY_AD_GROUP_NAME: "Can modify adgroup name",
+        CAN_MODIFY_AD_GROUP_IAB_CATEGORY_AUTOMATIC: "Can modify ad group IAB category automatically",
+        UPDATE_TRACKING_CODES_ON_CONTENT_ADS: "Update tracking codes on content ads",
+        CAN_UPDATE_DAILY_BUDGET_MANUAL: "Can update daily budget manually",
+        CAN_MODIFY_AD_GROUP_IAB_CATEGORY_MANUAL: "Can modify ad group IAB category manually",
+        CAN_FETCH_REPORT_BY_PUBLISHER: "Can fetch report by publishers",
+        CAN_MODIFY_PUBLISHER_BLACKLIST_AUTOMATIC: "Can modify publisher blacklist",
+        CAN_SET_MAX_CPM: "Can set max CPM",
     }
 
 
@@ -1329,33 +1277,29 @@ class SourceSubmissionType(ConstantBase):
     AD_GROUP = 2
     BATCH = 3
 
-    _VALUES = {
-        DEFAULT: 'Default',
-        AD_GROUP: 'One submission per ad group',
-        BATCH: 'Submit whole batch at once'
-    }
+    _VALUES = {DEFAULT: "Default", AD_GROUP: "One submission per ad group", BATCH: "Submit whole batch at once"}
 
 
 class SourceType(ConstantBase):
-    ADBLADE = 'adblade'
-    GRAVITY = 'gravity'
-    NRELATE = 'nrelate'
-    OUTBRAIN = 'outbrain'
-    YAHOO = 'yahoo'
-    ZEMANTA = 'zemanta'
-    DISQUS = 'disqus'
-    B1 = 'b1'
-    FACEBOOK = 'facebook'
+    ADBLADE = "adblade"
+    GRAVITY = "gravity"
+    NRELATE = "nrelate"
+    OUTBRAIN = "outbrain"
+    YAHOO = "yahoo"
+    ZEMANTA = "zemanta"
+    DISQUS = "disqus"
+    B1 = "b1"
+    FACEBOOK = "facebook"
 
     _VALUES = {
-        ADBLADE: 'AdBlade',
-        GRAVITY: 'Gravity',
-        NRELATE: 'nRelate',
-        OUTBRAIN: 'Outbrain',
-        YAHOO: 'Yahoo',
-        ZEMANTA: 'Zemanta',
-        B1: 'B1',
-        FACEBOOK: 'Facebook',
+        ADBLADE: "AdBlade",
+        GRAVITY: "Gravity",
+        NRELATE: "nRelate",
+        OUTBRAIN: "Outbrain",
+        YAHOO: "Yahoo",
+        ZEMANTA: "Zemanta",
+        B1: "B1",
+        FACEBOOK: "Facebook",
     }
 
 
@@ -1364,11 +1308,7 @@ class ConversionGoalType(ConstantBase):
     GA = 2
     OMNITURE = 3
 
-    _VALUES = {
-        PIXEL: 'Conversion Pixel',
-        GA: 'Google Analytics',
-        OMNITURE: 'Adobe Analytics',
-    }
+    _VALUES = {PIXEL: "Conversion Pixel", GA: "Google Analytics", OMNITURE: "Adobe Analytics"}
 
 
 REPORT_GOAL_TYPES = [ConversionGoalType.GA, ConversionGoalType.OMNITURE]
@@ -1381,22 +1321,14 @@ class UploadBatchStatus(ConstantBase):
     IN_PROGRESS = 3
     CANCELLED = 4
 
-    _VALUES = {
-        DONE: 'Done',
-        FAILED: 'Failed',
-        IN_PROGRESS: 'In progress',
-        CANCELLED: 'Cancelled',
-    }
+    _VALUES = {DONE: "Done", FAILED: "Failed", IN_PROGRESS: "In progress", CANCELLED: "Cancelled"}
 
 
 class UploadBatchType(ConstantBase):
     INSERT = 1
     EDIT = 2
 
-    _VALUES = {
-        INSERT: 'Insert',
-        EDIT: 'Edit',
-    }
+    _VALUES = {INSERT: "Insert", EDIT: "Edit"}
 
 
 class RegionType(ConstantBase):
@@ -1405,9 +1337,9 @@ class RegionType(ConstantBase):
     DMA = 3
 
     _VALUES = {
-        COUNTRY: 'Country',
-        SUBDIVISION: 'U.S. state',  # NOTE update when subdivisions other than U.S. states are added
-        DMA: 'DMA',
+        COUNTRY: "Country",
+        SUBDIVISION: "U.S. state",  # NOTE update when subdivisions other than U.S. states are added
+        DMA: "DMA",
     }
 
 
@@ -1416,11 +1348,7 @@ class CreditLineItemStatus(ConstantBase):
     PENDING = 2  # Internal "waiting" status, fields are editable
     CANCELED = 3  # Adding BudgetLineItems is not permitted
 
-    _VALUES = {
-        SIGNED: 'Signed',
-        PENDING: 'Pending',
-        CANCELED: 'Canceled',
-    }
+    _VALUES = {SIGNED: "Signed", PENDING: "Pending", CANCELED: "Canceled"}
 
 
 class BudgetLineItemState(ConstantBase):
@@ -1429,12 +1357,7 @@ class BudgetLineItemState(ConstantBase):
     INACTIVE = 3
     DEPLETED = 4
 
-    _VALUES = {
-        ACTIVE: 'Active',
-        PENDING: 'Pending',
-        INACTIVE: 'Inactive',
-        DEPLETED: 'Depleted',
-    }
+    _VALUES = {ACTIVE: "Active", PENDING: "Pending", INACTIVE: "Inactive", DEPLETED: "Depleted"}
 
 
 class ScheduledReportSendingFrequency(ConstantBase):
@@ -1442,11 +1365,7 @@ class ScheduledReportSendingFrequency(ConstantBase):
     WEEKLY = 2
     MONTHLY = 3
 
-    _VALUES = {
-        DAILY: 'Daily',
-        WEEKLY: 'Weekly',
-        MONTHLY: 'Monthly'
-    }
+    _VALUES = {DAILY: "Daily", WEEKLY: "Weekly", MONTHLY: "Monthly"}
 
 
 class ScheduledReportDayOfWeek(ConstantBase):
@@ -1459,13 +1378,13 @@ class ScheduledReportDayOfWeek(ConstantBase):
     SUNDAY = 7
 
     _VALUES = {
-        MONDAY: 'Monday',
-        TUESDAY: 'Tuesday',
-        WEDNESDAY: 'Wednesday',
-        THURSDAY: 'Thursday',
-        FRIDAY: 'Friday',
-        SATURDAY: 'Saturday',
-        SUNDAY: 'Sunday',
+        MONDAY: "Monday",
+        TUESDAY: "Tuesday",
+        WEDNESDAY: "Wednesday",
+        THURSDAY: "Thursday",
+        FRIDAY: "Friday",
+        SATURDAY: "Saturday",
+        SUNDAY: "Sunday",
     }
 
 
@@ -1479,13 +1398,13 @@ class ScheduledReportTimePeriod(ConstantBase):
     LAST_MONTH = 7
 
     _VALUES = {
-        YESTERDAY: 'Yesterday',
-        LAST_7_DAYS: 'Last 7 Days',
-        LAST_30_DAYS: 'Last 30 Days',
-        THIS_WEEK: 'This Week',
-        LAST_WEEK: 'Last Week',
-        THIS_MONTH: 'This Month',
-        LAST_MONTH: 'Last Month',
+        YESTERDAY: "Yesterday",
+        LAST_7_DAYS: "Last 7 Days",
+        LAST_30_DAYS: "Last 30 Days",
+        THIS_WEEK: "This Week",
+        LAST_WEEK: "Last Week",
+        THIS_MONTH: "This Month",
+        LAST_MONTH: "Last Month",
     }
 
 
@@ -1494,11 +1413,7 @@ class ScheduledReportState(ConstantBase):
     INACTIVE = 2
     REMOVED = 3
 
-    _VALUES = {
-        ACTIVE: 'Enabled',
-        INACTIVE: 'Paused',
-        REMOVED: 'Removed'
-    }
+    _VALUES = {ACTIVE: "Enabled", INACTIVE: "Paused", REMOVED: "Removed"}
 
 
 class ScheduledReportGranularity(ConstantBase):
@@ -1509,11 +1424,11 @@ class ScheduledReportGranularity(ConstantBase):
     CONTENT_AD = 5
 
     _VALUES = {
-        ALL_ACCOUNTS: 'All Accounts',
-        ACCOUNT: 'Account',
-        CAMPAIGN: 'Campaign',
-        AD_GROUP: 'Ad Group',
-        CONTENT_AD: 'Content Ad',
+        ALL_ACCOUNTS: "All Accounts",
+        ACCOUNT: "Account",
+        CAMPAIGN: "Campaign",
+        AD_GROUP: "Ad Group",
+        CONTENT_AD: "Content Ad",
     }
 
 
@@ -1523,32 +1438,21 @@ class ScheduledReportLevel(ConstantBase):
     CAMPAIGN = 3
     AD_GROUP = 4
 
-    _VALUES = {
-        ALL_ACCOUNTS: 'All Accounts',
-        ACCOUNT: 'Account',
-        CAMPAIGN: 'Campaign',
-        AD_GROUP: 'Ad Group'
-    }
+    _VALUES = {ALL_ACCOUNTS: "All Accounts", ACCOUNT: "Account", CAMPAIGN: "Campaign", AD_GROUP: "Ad Group"}
 
 
 class ScheduledReportSent(ConstantBase):
     SUCCESS = 1
     FAILED = 2
 
-    _VALUES = {
-        SUCCESS: 'Success',
-        FAILED: 'Failed'
-    }
+    _VALUES = {SUCCESS: "Success", FAILED: "Failed"}
 
 
 class GATrackingType(ConstantBase):
     EMAIL = 1
     API = 2
 
-    _VALUES = {
-        EMAIL: 'Email',
-        API: 'API'
-    }
+    _VALUES = {EMAIL: "Email", API: "API"}
 
 
 class SystemUserType(ConstantBase):
@@ -1556,11 +1460,7 @@ class SystemUserType(ConstantBase):
     AUTOPILOT = 2
     K1_USER = 3
 
-    _VALUES = {
-        CAMPAIGN_STOP: 'Campaign Stop',
-        AUTOPILOT: 'Zemanta Autopilot',
-        K1_USER: 'System User '
-    }
+    _VALUES = {CAMPAIGN_STOP: "Campaign Stop", AUTOPILOT: "Zemanta Autopilot", K1_USER: "System User "}
 
 
 class FacebookPageRequestType(ConstantBase):
@@ -1570,13 +1470,7 @@ class FacebookPageRequestType(ConstantBase):
     INVALID = 4
     ERROR = 5
 
-    _VALUES = {
-        EMPTY: 'Empty',
-        CONNECTED: 'Connected',
-        PENDING: 'Pending',
-        INVALID: 'Invalid',
-        ERROR: 'Error'
-    }
+    _VALUES = {EMPTY: "Empty", CONNECTED: "Connected", PENDING: "Pending", INVALID: "Invalid", ERROR: "Error"}
 
 
 class AsyncUploadJobStatus(ConstantBase):
@@ -1585,12 +1479,7 @@ class AsyncUploadJobStatus(ConstantBase):
     OK = 3
     FAILED = 4
 
-    _VALUES = {
-        PENDING_START: 'Pending',
-        WAITING_RESPONSE: 'Waiting for response',
-        OK: 'OK',
-        FAILED: 'Failed',
-    }
+    _VALUES = {PENDING_START: "Pending", WAITING_RESPONSE: "Waiting for response", OK: "OK", FAILED: "Failed"}
 
 
 class DeviceType(ConstantBase):
@@ -1617,12 +1506,12 @@ class DeviceType(ConstantBase):
     # SET_TOP_BOX = 7  # joined with TV
 
     _VALUES = {
-        UNKNOWN: 'Not reported',
+        UNKNOWN: "Not reported",
         # MOBILE: 'Mobile',
-        DESKTOP: 'Desktop',
-        TV: 'TV & SetTop Box',
-        MOBILE: 'Mobile',
-        TABLET: 'Tablet',
+        DESKTOP: "Desktop",
+        TV: "TV & SetTop Box",
+        MOBILE: "Mobile",
+        TABLET: "Tablet",
         # CONNECTED: 'Connected',
         # SET_TOP_BOX: 'SetTop Box',
     }
@@ -1630,77 +1519,73 @@ class DeviceType(ConstantBase):
 
 class Age(ConstantBase):
     UNDEFINED = None
-    AGE_18_20 = '18-20'
-    AGE_21_29 = '21-29'
-    AGE_30_39 = '30-39'
-    AGE_40_49 = '40-49'
-    AGE_50_64 = '50-64'
-    AGE_65_MORE = '65+'
+    AGE_18_20 = "18-20"
+    AGE_21_29 = "21-29"
+    AGE_30_39 = "30-39"
+    AGE_40_49 = "40-49"
+    AGE_50_64 = "50-64"
+    AGE_65_MORE = "65+"
 
     _VALUES = {
-        UNDEFINED: 'Not reported',
-        AGE_18_20: '18-20',
-        AGE_21_29: '21-29',
-        AGE_30_39: '30-39',
-        AGE_40_49: '40-49',
-        AGE_50_64: '50-64',
-        AGE_65_MORE: '65 and older',
+        UNDEFINED: "Not reported",
+        AGE_18_20: "18-20",
+        AGE_21_29: "21-29",
+        AGE_30_39: "30-39",
+        AGE_40_49: "40-49",
+        AGE_50_64: "50-64",
+        AGE_65_MORE: "65 and older",
     }
 
 
 class Gender(ConstantBase):
     UNDEFINED = None
-    MEN = 'male'
-    WOMEN = 'female'
+    MEN = "male"
+    WOMEN = "female"
 
-    _VALUES = {
-        UNDEFINED: 'Not reported',
-        MEN: 'Men',
-        WOMEN: 'Women',
-    }
+    _VALUES = {UNDEFINED: "Not reported", MEN: "Men", WOMEN: "Women"}
 
 
 class AgeGender(ConstantBase):
     UNDEFINED = None
-    AGE_18_20_MEN = '18-20 male'
-    AGE_18_20_WOMEN = '18-20 female'
-    AGE_18_20_UNDEFINED = '18-20 '  # spaces are intentional
-    AGE_21_29_MEN = '21-29 male'
-    AGE_21_29_WOMEN = '21-29 female'
-    AGE_21_29_UNDEFINED = '21-29 '
-    AGE_30_39_MEN = '30-39 male'
-    AGE_30_39_WOMEN = '30-39 female'
-    AGE_30_39_UNDEFINED = '30-39 '
-    AGE_40_49_MEN = '40-49 male'
-    AGE_40_49_WOMEN = '40-49 female'
-    AGE_40_49_UNDEFINED = '40-49 '
-    AGE_50_64_MEN = '50-64 male'
-    AGE_50_64_WOMEN = '50-64 female'
-    AGE_50_64_UNDEFINED = '50-64 '
-    AGE_65_MORE_MEN = '65+ male'
-    AGE_65_MORE_WOMEN = '65+ female'
-    AGE_65_MORE_UNDEFINED = '65+ '
+    AGE_18_20_MEN = "18-20 male"
+    AGE_18_20_WOMEN = "18-20 female"
+    AGE_18_20_UNDEFINED = "18-20 "  # spaces are intentional
+    AGE_21_29_MEN = "21-29 male"
+    AGE_21_29_WOMEN = "21-29 female"
+    AGE_21_29_UNDEFINED = "21-29 "
+    AGE_30_39_MEN = "30-39 male"
+    AGE_30_39_WOMEN = "30-39 female"
+    AGE_30_39_UNDEFINED = "30-39 "
+    AGE_40_49_MEN = "40-49 male"
+    AGE_40_49_WOMEN = "40-49 female"
+    AGE_40_49_UNDEFINED = "40-49 "
+    AGE_50_64_MEN = "50-64 male"
+    AGE_50_64_WOMEN = "50-64 female"
+    AGE_50_64_UNDEFINED = "50-64 "
+    AGE_65_MORE_MEN = "65+ male"
+    AGE_65_MORE_WOMEN = "65+ female"
+    AGE_65_MORE_UNDEFINED = "65+ "
 
     _VALUES = {
-        UNDEFINED: 'Not reported',
-        AGE_18_20_MEN: '18-20 Men',
-        AGE_18_20_WOMEN: '18-20 Women',
-        AGE_18_20_UNDEFINED: '18-20 Undefined',
-        AGE_21_29_MEN: '21-29 Men',
-        AGE_21_29_WOMEN: '21-29 Women',
-        AGE_21_29_UNDEFINED: '21-29 Undefined',
-        AGE_30_39_MEN: '30-39 Men',
-        AGE_30_39_WOMEN: '30-39 Women',
-        AGE_30_39_UNDEFINED: '30-39 Undefined',
-        AGE_40_49_MEN: '40-49 Men',
-        AGE_40_49_WOMEN: '40-49 Women',
-        AGE_40_49_UNDEFINED: '40-49 Undefined',
-        AGE_50_64_MEN: '50-64 Men',
-        AGE_50_64_WOMEN: '50-64 Women',
-        AGE_50_64_UNDEFINED: '50-64 Undefined',
-        AGE_65_MORE_MEN: '65+ Men',
-        AGE_65_MORE_WOMEN: '65+ Women',
-        AGE_65_MORE_UNDEFINED: '65+ Undefined',
+        UNDEFINED: "Not reported",
+        AGE_18_20_MEN: "18-20 Men",
+        AGE_18_20_WOMEN: "18-20 Women",
+        AGE_18_20_UNDEFINED: "18-20 Undefined",
+        AGE_21_29_MEN: "21-29 Men",
+        AGE_21_29_WOMEN: "21-29 Women",
+        AGE_21_29_UNDEFINED: "21-29 Undefined",
+        AGE_30_39_MEN: "30-39 Men",
+        AGE_30_39_WOMEN: "30-39 Women",
+        AGE_30_39_UNDEFINED: "30-39 Undefined",
+        AGE_40_49_MEN: "40-49 Men",
+        AGE_40_49_WOMEN: "40-49 Women",
+        AGE_40_49_UNDEFINED: "40-49 Undefined",
+        AGE_50_64_MEN: "50-64 Men",
+        AGE_50_64_WOMEN: "50-64 Women",
+        AGE_50_64_UNDEFINED: "50-64 Undefined",
+        AGE_65_MORE_MEN: "65+ Men",
+        AGE_65_MORE_WOMEN: "65+ Women",
+        AGE_65_MORE_UNDEFINED: "65+ Undefined",
     }
 
 
@@ -1709,11 +1594,7 @@ class ConversionWindows(ConstantBase):
     LEQ_7_DAYS = 168
     LEQ_30_DAYS = 720
 
-    _VALUES = {
-        LEQ_1_DAY: '1 day',
-        LEQ_7_DAYS: '7 days',
-        LEQ_30_DAYS: '30 days',
-    }
+    _VALUES = {LEQ_1_DAY: "1 day", LEQ_7_DAYS: "7 days", LEQ_30_DAYS: "30 days"}
 
 
 class ConversionWindowsLegacy(ConversionWindows):
@@ -1723,7 +1604,7 @@ class ConversionWindowsLegacy(ConversionWindows):
     LEQ_90_DAYS = 2160
 
     _VALUES = dict(ConversionWindows._VALUES)
-    _VALUES.update({LEQ_90_DAYS: '90 days'})
+    _VALUES.update({LEQ_90_DAYS: "90 days"})
 
 
 class EmailTemplateType(ConstantBase):
@@ -1761,56 +1642,56 @@ class EmailTemplateType(ConstantBase):
     USER_ENABLE_RESTAPI = 33
 
     _VALUES = {
-        ADGROUP_CHANGE: 'Ad group settings change',
-        CAMPAIGN_CHANGE: 'Campaign settings change',
-        BUDGET_CHANGE: 'Budget change',
-        PIXEL_ADD: 'New conversion pixel',
-        PASSWORD_RESET: 'User password reset',
-        USER_NEW: 'New user introduction email',
-        SUPPLY_REPORT: 'Supply report',
-        SCHEDULED_EXPORT_REPORT: 'Scheduled report',
-        BUDGET_DEPLETING: 'Depleting budget notification',
-        CAMPAIGN_STOPPED: 'Campaign stopped notification',
-        AUTOPILOT_AD_GROUP_CHANGE: 'Autopilot changes notification',
-        AUTOPILOT_AD_GROUP_BUDGET_INIT: 'Autopilot initialisation notification',
-        DEMO_RUNNING: 'Demo is running',
-        LIVESTREAM_SESSION: 'Livestream sesion id',
-        DAILY_MANAGEMENT_REPORT: 'Daily management report',
-        OUTBRAIN_ACCOUNTS_RUNNING_OUT: 'Unused Outbrain accounts running out',
-        GA_SETUP_INSTRUCTIONS: 'Google Analytics Setup Instructions',
-        ASYNC_REPORT_RESULTS: 'Report results',
-        DEPLETING_CREDITS: 'Depleting credits',
-        WEEKLY_CLIENT_REPORT: 'Weekly client report',
-        PACING_NOTIFICATION: 'Pacing notification',
-        WEEKLY_INVENTORY_REPORT: 'Weekly inventory report',
-        NEW_DEVICE_LOGIN: 'New device login',
-        ASYNC_SCHEDULED_REPORT_RESULTS: 'Scheduled report results',
-        OEN_POSTCLICKKPI_CPA_FACTORS: 'Zemanta OEN CPA Optimization Factors',
-        ASYNC_REPORT_FAIL: 'Report fail',
-        AUTOPILOT_CAMPAIGN_CHANGE: 'Campaign Autopilot changes notification',
-        AUTOPILOT_CAMPAIGN_BUDGET_INIT: 'Campaign Autopilot initialisation notification',
-        CAMPAIGNSTOP_DEPLETING: 'Real-time campaign stop budget depleting',
-        USER_ENABLE_RESTAPI: 'User was granted REST API access',
+        ADGROUP_CHANGE: "Ad group settings change",
+        CAMPAIGN_CHANGE: "Campaign settings change",
+        BUDGET_CHANGE: "Budget change",
+        PIXEL_ADD: "New conversion pixel",
+        PASSWORD_RESET: "User password reset",
+        USER_NEW: "New user introduction email",
+        SUPPLY_REPORT: "Supply report",
+        SCHEDULED_EXPORT_REPORT: "Scheduled report",
+        BUDGET_DEPLETING: "Depleting budget notification",
+        CAMPAIGN_STOPPED: "Campaign stopped notification",
+        AUTOPILOT_AD_GROUP_CHANGE: "Autopilot changes notification",
+        AUTOPILOT_AD_GROUP_BUDGET_INIT: "Autopilot initialisation notification",
+        DEMO_RUNNING: "Demo is running",
+        LIVESTREAM_SESSION: "Livestream sesion id",
+        DAILY_MANAGEMENT_REPORT: "Daily management report",
+        OUTBRAIN_ACCOUNTS_RUNNING_OUT: "Unused Outbrain accounts running out",
+        GA_SETUP_INSTRUCTIONS: "Google Analytics Setup Instructions",
+        ASYNC_REPORT_RESULTS: "Report results",
+        DEPLETING_CREDITS: "Depleting credits",
+        WEEKLY_CLIENT_REPORT: "Weekly client report",
+        PACING_NOTIFICATION: "Pacing notification",
+        WEEKLY_INVENTORY_REPORT: "Weekly inventory report",
+        NEW_DEVICE_LOGIN: "New device login",
+        ASYNC_SCHEDULED_REPORT_RESULTS: "Scheduled report results",
+        OEN_POSTCLICKKPI_CPA_FACTORS: "Zemanta OEN CPA Optimization Factors",
+        ASYNC_REPORT_FAIL: "Report fail",
+        AUTOPILOT_CAMPAIGN_CHANGE: "Campaign Autopilot changes notification",
+        AUTOPILOT_CAMPAIGN_BUDGET_INIT: "Campaign Autopilot initialisation notification",
+        CAMPAIGNSTOP_DEPLETING: "Real-time campaign stop budget depleting",
+        USER_ENABLE_RESTAPI: "User was granted REST API access",
     }
 
 
 class ImageCrop(ConstantBase):
-    CENTER = 'center'
-    FACES = 'faces'
-    ENTROPY = 'entropy'
-    LEFT = 'left'
-    RIGHT = 'right'
-    TOP = 'top'
-    BOTTOM = 'bottom'
+    CENTER = "center"
+    FACES = "faces"
+    ENTROPY = "entropy"
+    LEFT = "left"
+    RIGHT = "right"
+    TOP = "top"
+    BOTTOM = "bottom"
 
     _VALUES = {
-        CENTER: 'Center',
-        FACES: 'Faces',
-        ENTROPY: 'Entropy',
-        LEFT: 'Left',
-        RIGHT: 'Right',
-        TOP: 'Top',
-        BOTTOM: 'Bottom',
+        CENTER: "Center",
+        FACES: "Faces",
+        ENTROPY: "Entropy",
+        LEFT: "Left",
+        RIGHT: "Right",
+        TOP: "Top",
+        BOTTOM: "Bottom",
     }
 
 
@@ -1819,6 +1700,7 @@ class HistoryLevel(ConstantBase):
     is the global level but involves only some accounts. Global spans the entire system.
     Examples are global blacklisting and report scheduling.
     """
+
     AD_GROUP = 1
     CAMPAIGN = 2
     ACCOUNT = 3
@@ -1826,11 +1708,11 @@ class HistoryLevel(ConstantBase):
     GLOBAL = 5
 
     _VALUES = {
-        AD_GROUP: 'Ad Group Level',
-        CAMPAIGN: 'Campaign Level',
-        ACCOUNT: 'Account Level',
-        AGENCY: 'Agency Level',
-        GLOBAL: 'All Accounts',
+        AD_GROUP: "Ad Group Level",
+        CAMPAIGN: "Campaign Level",
+        ACCOUNT: "Account Level",
+        AGENCY: "Agency Level",
+        GLOBAL: "All Accounts",
     }
 
 
@@ -1866,44 +1748,42 @@ class HistoryActionType(ConstantBase):
     CONVERSION_PIXEL_CREATE_AS_ADDITIONAL = 28
 
     _VALUES = {
-        GOAL_CHANGE: 'Change Campaign Goal',
-        BUDGET_CHANGE: 'Change Budget',
-        CREDIT_CHANGE: 'Change Credit',
-        PUBLISHER_BLACKLIST_CHANGE: 'Set Publisher Blacklist',
-        GLOBAL_PUBLISHER_BLACKLIST_CHANGE: 'Set Global Publisher Blacklist',
-        REPORTING_MANAGE: 'Manage Reporting',
-        CONTENT_AD_STATE_CHANGE: 'Set Content Ad(s) State',
-        SETTINGS_CHANGE: 'Change Settings',
-        CREATE: 'Create',
-        CONTENT_AD_CREATE: 'Create Content Ad',
-        CONTENT_AD_EDIT: 'Edit Content Ad',
-        CONVERSION_PIXEL_CREATE: 'Create Conversion Pixel',
-        CONVERSION_PIXEL_ARCHIVE_RESTORE: 'Archive/Restore Conversion Pixel',
-        ARCHIVE_RESTORE: 'Archive/Restore',
-        CONTENT_AD_ARCHIVE_RESTORE: 'Archive/Restore Content Ad(s)',
-        MEDIA_SOURCE_SETTINGS_CHANGE: 'Set Media Source Settings',
-        MEDIA_SOURCE_ADD: 'Add Media Source',
-        CONVERSION_PIXEL_RENAME: 'Rename conversion pixel',
-        AUDIENCE_CREATE: 'Create custom audience',
-        AUDIENCE_ARCHIVE: 'Archive custom audience',
-        AUDIENCE_RESTORE: 'Restore custom audience',
-        AUDIENCE_UPDATE: 'Update custom audience',
-        CONVERSION_PIXEL_AUDIENCE_ENABLED: 'Enable pixel for building audiences',
-        CONVERSION_PIXEL_SET_REDIRECT_URL: 'Set redirect url for pixel',
-        CONVERSION_PIXEL_REMOVE_REDIRECT_URL: 'Remove redirect url for pixel',
-        PUBLISHER_GROUP_CREATE: 'Create publisher group',
-        PUBLISHER_GROUP_UPDATE: 'Update publisher group',
-        CONVERSION_PIXEL_SET_ADDITIONAL_PIXEL: 'Pixel set as an additional audience pixel',
-        CONVERSION_PIXEL_CREATE_AS_ADDITIONAL: 'Create Conversion Pixel as additional audience pixel'
+        GOAL_CHANGE: "Change Campaign Goal",
+        BUDGET_CHANGE: "Change Budget",
+        CREDIT_CHANGE: "Change Credit",
+        PUBLISHER_BLACKLIST_CHANGE: "Set Publisher Blacklist",
+        GLOBAL_PUBLISHER_BLACKLIST_CHANGE: "Set Global Publisher Blacklist",
+        REPORTING_MANAGE: "Manage Reporting",
+        CONTENT_AD_STATE_CHANGE: "Set Content Ad(s) State",
+        SETTINGS_CHANGE: "Change Settings",
+        CREATE: "Create",
+        CONTENT_AD_CREATE: "Create Content Ad",
+        CONTENT_AD_EDIT: "Edit Content Ad",
+        CONVERSION_PIXEL_CREATE: "Create Conversion Pixel",
+        CONVERSION_PIXEL_ARCHIVE_RESTORE: "Archive/Restore Conversion Pixel",
+        ARCHIVE_RESTORE: "Archive/Restore",
+        CONTENT_AD_ARCHIVE_RESTORE: "Archive/Restore Content Ad(s)",
+        MEDIA_SOURCE_SETTINGS_CHANGE: "Set Media Source Settings",
+        MEDIA_SOURCE_ADD: "Add Media Source",
+        CONVERSION_PIXEL_RENAME: "Rename conversion pixel",
+        AUDIENCE_CREATE: "Create custom audience",
+        AUDIENCE_ARCHIVE: "Archive custom audience",
+        AUDIENCE_RESTORE: "Restore custom audience",
+        AUDIENCE_UPDATE: "Update custom audience",
+        CONVERSION_PIXEL_AUDIENCE_ENABLED: "Enable pixel for building audiences",
+        CONVERSION_PIXEL_SET_REDIRECT_URL: "Set redirect url for pixel",
+        CONVERSION_PIXEL_REMOVE_REDIRECT_URL: "Remove redirect url for pixel",
+        PUBLISHER_GROUP_CREATE: "Create publisher group",
+        PUBLISHER_GROUP_UPDATE: "Update publisher group",
+        CONVERSION_PIXEL_SET_ADDITIONAL_PIXEL: "Pixel set as an additional audience pixel",
+        CONVERSION_PIXEL_CREATE_AS_ADDITIONAL: "Create Conversion Pixel as additional audience pixel",
     }
 
 
 class SlugType(ConstantBase):
-    FACEBOOK = 'facebook'
+    FACEBOOK = "facebook"
 
-    _VALUES = {
-        FACEBOOK: 'Facebook'
-    }
+    _VALUES = {FACEBOOK: "Facebook"}
 
 
 class FacebookAccountStatus(ConstantBase):
@@ -1921,16 +1801,16 @@ class FacebookAccountStatus(ConstantBase):
     ANY_CLOSED = 202
 
     _VALUES = {
-        ACTIVE: 'active',
-        DISABLED: 'disabled',
-        UNSETTLED: 'unsettled',
-        PENDING_RISK_REVIEW: 'pending risk review',
-        IN_GRACE_PERIOD: 'in grace period',
-        PENDING_CLOSURE: 'pending closure',
-        CLOSED: 'closed',
-        PENDING_SETTLEMENT: 'pending settlement',
-        ANY_ACTIVE: 'any active',
-        ANY_CLOSED: 'any closed'
+        ACTIVE: "active",
+        DISABLED: "disabled",
+        UNSETTLED: "unsettled",
+        PENDING_RISK_REVIEW: "pending risk review",
+        IN_GRACE_PERIOD: "in grace period",
+        PENDING_CLOSURE: "pending closure",
+        CLOSED: "closed",
+        PENDING_SETTLEMENT: "pending settlement",
+        ANY_ACTIVE: "any active",
+        ANY_CLOSED: "any closed",
     }
 
 
@@ -1942,37 +1822,34 @@ class AudienceRuleType(ConstantBase):
     VISIT = 5
 
     _VALUES = {
-        STARTS_WITH: 'Starts with',
-        CONTAINS: 'Contains',
-        NOT_STARTS_WITH: 'Not starts with',
-        NOT_CONTAINS: 'Not contains',
-        VISIT: 'Visit',
+        STARTS_WITH: "Starts with",
+        CONTAINS: "Contains",
+        NOT_STARTS_WITH: "Not starts with",
+        NOT_CONTAINS: "Not contains",
+        VISIT: "Visit",
     }
 
 
 class Level(object):
-    ALL_ACCOUNTS = 'all_accounts'
-    ACCOUNTS = 'accounts'
-    CAMPAIGNS = 'campaigns'
-    AD_GROUPS = 'ad_groups'
-    CONTENT_ADS = 'content_ads'
+    ALL_ACCOUNTS = "all_accounts"
+    ACCOUNTS = "accounts"
+    CAMPAIGNS = "campaigns"
+    AD_GROUPS = "ad_groups"
+    CONTENT_ADS = "content_ads"
 
 
 class AlertType(object):
-    INFO = 'info'
-    SUCCESS = 'success'
-    WARNING = 'warning'
-    DANGER = 'danger'
+    INFO = "info"
+    SUCCESS = "success"
+    WARNING = "warning"
+    DANGER = "danger"
 
 
 class CpcConstraintType(ConstantBase):
     MANUAL = 1
     OUTBRAIN_BLACKLIST = 2
 
-    _VALUES = {
-        MANUAL: 'Manual',
-        OUTBRAIN_BLACKLIST: 'Outbrain blacklist',
-    }
+    _VALUES = {MANUAL: "Manual", OUTBRAIN_BLACKLIST: "Outbrain blacklist"}
 
 
 class PublisherTargetingStatus(ConstantBase):
@@ -1982,230 +1859,211 @@ class PublisherTargetingStatus(ConstantBase):
     BLACKLISTED = 2
     UNLISTED = 3
 
-    _VALUES = {
-        WHITELISTED: 'Whitelisted',
-        BLACKLISTED: 'Blacklisted',
-        UNLISTED: 'Active',
-    }
+    _VALUES = {WHITELISTED: "Whitelisted", BLACKLISTED: "Blacklisted", UNLISTED: "Active"}
 
 
 class Service(ConstantBase):
-    Z1 = 'z1'
-    K1 = 'k1'
-    R1 = 'r1'
-    B1 = 'b1'
+    Z1 = "z1"
+    K1 = "k1"
+    R1 = "r1"
+    B1 = "b1"
 
-    _VALUES = {
-        Z1: 'Zemanta One',
-        K1: 'Konsistency One',
-        R1: 'Redirector',
-        B1: 'Bidder',
-    }
+    _VALUES = {Z1: "Zemanta One", K1: "Konsistency One", R1: "Redirector", B1: "Bidder"}
 
 
 class Whitelabel(ConstantBase):
-    GREENPARK = 'greenpark'
-    ADTECHNACITY = 'adtechnacity'
-    NEWSCORP = 'newscorp'
-    BURDA = 'burda'
-    MEDIAMOND = 'mediamond'
+    GREENPARK = "greenpark"
+    ADTECHNACITY = "adtechnacity"
+    NEWSCORP = "newscorp"
+    BURDA = "burda"
+    MEDIAMOND = "mediamond"
 
     _VALUES = {
-        GREENPARK: 'Green Park Content',
-        ADTECHNACITY: 'Adtechnacity',
-        NEWSCORP: 'Newscorp',
-        BURDA: 'Burda',
-        MEDIAMOND: 'Mediamond',
+        GREENPARK: "Green Park Content",
+        ADTECHNACITY: "Adtechnacity",
+        NEWSCORP: "Newscorp",
+        BURDA: "Burda",
+        MEDIAMOND: "Mediamond",
     }
 
 
 class LocationType(ConstantBase):
-    COUNTRY = 'co'
-    REGION = 're'
-    CITY = 'ci'
-    DMA = 'dma'
-    ZIP = 'zip'
+    COUNTRY = "co"
+    REGION = "re"
+    CITY = "ci"
+    DMA = "dma"
+    ZIP = "zip"
 
-    _VALUES = {
-        COUNTRY: 'Country',
-        REGION: 'Region',
-        CITY: 'City',
-        DMA: 'DMA',
-        ZIP: 'Postal Code',
-    }
+    _VALUES = {COUNTRY: "Country", REGION: "Region", CITY: "City", DMA: "DMA", ZIP: "Postal Code"}
 
 
 class Placement(ConstantBase):
-    APP = 'app'
-    SITE = 'site'
+    APP = "app"
+    SITE = "site"
 
-    _VALUES = {
-        APP: 'In-app',
-        SITE: 'Website',
-    }
+    _VALUES = {APP: "In-app", SITE: "Website"}
 
 
 class OperatingSystem(ConstantBase):
     UNKNOWN = None
-    ANDROID = 'android'
-    IOS = 'ios'
-    WINPHONE = 'winphone'
-    WINDOWS = 'windows'
-    MACOSX = 'macosx'
-    LINUX = 'linux'
-    CHROMEOS = 'chromeos'
+    ANDROID = "android"
+    IOS = "ios"
+    WINPHONE = "winphone"
+    WINDOWS = "windows"
+    MACOSX = "macosx"
+    LINUX = "linux"
+    CHROMEOS = "chromeos"
 
     _VALUES = {
-        UNKNOWN: 'Not Reported',
-        ANDROID: 'Android',
-        IOS: 'iOS',
-        WINPHONE: 'Windows Phone',
-        WINDOWS: 'Windows',
-        MACOSX: 'macOS',
-        LINUX: 'Linux',
-        CHROMEOS: 'ChromeOS',
+        UNKNOWN: "Not Reported",
+        ANDROID: "Android",
+        IOS: "iOS",
+        WINPHONE: "Windows Phone",
+        WINDOWS: "Windows",
+        MACOSX: "macOS",
+        LINUX: "Linux",
+        CHROMEOS: "ChromeOS",
     }
 
 
 class OperatingSystemVersion(ConstantBase):
-    ANDROID_2_1 = 'android_2_1'
-    ANDROID_2_2 = 'android_2_2'
-    ANDROID_2_3 = 'android_2_3'
-    ANDROID_3_0 = 'android_3_0'
-    ANDROID_3_1 = 'android_3_1'
-    ANDROID_3_2 = 'android_3_2'
-    ANDROID_4_0 = 'android_4_0'
-    ANDROID_4_1 = 'android_4_1'
-    ANDROID_4_2 = 'android_4_2'
-    ANDROID_4_3 = 'android_4_3'
-    ANDROID_4_4 = 'android_4_4'
-    ANDROID_5_0 = 'android_5_0'
-    ANDROID_5_1 = 'android_5_1'
-    ANDROID_6_0 = 'android_6_0'
-    ANDROID_7_0 = 'android_7_0'
-    ANDROID_7_1 = 'android_7_1'
-    ANDROID_8_0 = 'android_8_0'
-    ANDROID_8_1 = 'android_8_1'
-    IOS_3_2 = 'ios_3_2'
-    IOS_4_0 = 'ios_4_0'
-    IOS_4_1 = 'ios_4_1'
-    IOS_4_2 = 'ios_4_2'
-    IOS_4_3 = 'ios_4_3'
-    IOS_5_0 = 'ios_5_0'
-    IOS_5_1 = 'ios_5_1'
-    IOS_6_0 = 'ios_6_0'
-    IOS_6_1 = 'ios_6_1'
-    IOS_7_0 = 'ios_7_0'
-    IOS_7_1 = 'ios_7_1'
-    IOS_8_0 = 'ios_8_0'
-    IOS_8_1 = 'ios_8_1'
-    IOS_8_2 = 'ios_8_2'
-    IOS_8_3 = 'ios_8_3'
-    IOS_8_4 = 'ios_8_4'
-    IOS_9_0 = 'ios_9_0'
-    IOS_9_1 = 'ios_9_1'
-    IOS_9_2 = 'ios_9_2'
-    IOS_9_3 = 'ios_9_3'
-    IOS_10_0 = 'ios_10_0'
-    IOS_10_1 = 'ios_10_1'
-    IOS_10_2 = 'ios_10_2'
-    IOS_10_3 = 'ios_10_3'
-    IOS_11_0 = 'ios_11_0'
-    WINPHONE_7 = 'winphone_7'
-    WINPHONE_8_0 = 'winphone_8_0'
-    WINPHONE_8_1 = 'winphone_8_1'
-    WINPHONE_10 = 'winphone_10'
-    WINDOWS_98 = 'windows_98'
-    WINDOWS_2000 = 'windows_2000'
-    WINDOWS_XP = 'windows_xp'
-    WINDOWS_VISTA = 'windows_vista'
-    WINDOWS_7 = 'windows_7'
-    WINDOWS_8 = 'windows_8'
-    WINDOWS_8_1 = 'windows_8_1'
-    WINDOWS_10 = 'windows_10'
-    MACOSX_10_4 = 'macosx_10_4'
-    MACOSX_10_5 = 'macosx_10_5'
-    MACOSX_10_6 = 'macosx_10_6'
-    MACOSX_10_7 = 'macosx_10_7'
-    MACOSX_10_8 = 'macosx_10_8'
-    MACOSX_10_9 = 'macosx_10_9'
-    MACOSX_10_10 = 'macosx_10_10'
-    MACOSX_10_11 = 'macosx_10_11'
-    MACOSX_10_12 = 'macosx_10_12'
-    MACOSX_10_13 = 'macosx_10_13'
+    ANDROID_2_1 = "android_2_1"
+    ANDROID_2_2 = "android_2_2"
+    ANDROID_2_3 = "android_2_3"
+    ANDROID_3_0 = "android_3_0"
+    ANDROID_3_1 = "android_3_1"
+    ANDROID_3_2 = "android_3_2"
+    ANDROID_4_0 = "android_4_0"
+    ANDROID_4_1 = "android_4_1"
+    ANDROID_4_2 = "android_4_2"
+    ANDROID_4_3 = "android_4_3"
+    ANDROID_4_4 = "android_4_4"
+    ANDROID_5_0 = "android_5_0"
+    ANDROID_5_1 = "android_5_1"
+    ANDROID_6_0 = "android_6_0"
+    ANDROID_7_0 = "android_7_0"
+    ANDROID_7_1 = "android_7_1"
+    ANDROID_8_0 = "android_8_0"
+    ANDROID_8_1 = "android_8_1"
+    IOS_3_2 = "ios_3_2"
+    IOS_4_0 = "ios_4_0"
+    IOS_4_1 = "ios_4_1"
+    IOS_4_2 = "ios_4_2"
+    IOS_4_3 = "ios_4_3"
+    IOS_5_0 = "ios_5_0"
+    IOS_5_1 = "ios_5_1"
+    IOS_6_0 = "ios_6_0"
+    IOS_6_1 = "ios_6_1"
+    IOS_7_0 = "ios_7_0"
+    IOS_7_1 = "ios_7_1"
+    IOS_8_0 = "ios_8_0"
+    IOS_8_1 = "ios_8_1"
+    IOS_8_2 = "ios_8_2"
+    IOS_8_3 = "ios_8_3"
+    IOS_8_4 = "ios_8_4"
+    IOS_9_0 = "ios_9_0"
+    IOS_9_1 = "ios_9_1"
+    IOS_9_2 = "ios_9_2"
+    IOS_9_3 = "ios_9_3"
+    IOS_10_0 = "ios_10_0"
+    IOS_10_1 = "ios_10_1"
+    IOS_10_2 = "ios_10_2"
+    IOS_10_3 = "ios_10_3"
+    IOS_11_0 = "ios_11_0"
+    WINPHONE_7 = "winphone_7"
+    WINPHONE_8_0 = "winphone_8_0"
+    WINPHONE_8_1 = "winphone_8_1"
+    WINPHONE_10 = "winphone_10"
+    WINDOWS_98 = "windows_98"
+    WINDOWS_2000 = "windows_2000"
+    WINDOWS_XP = "windows_xp"
+    WINDOWS_VISTA = "windows_vista"
+    WINDOWS_7 = "windows_7"
+    WINDOWS_8 = "windows_8"
+    WINDOWS_8_1 = "windows_8_1"
+    WINDOWS_10 = "windows_10"
+    MACOSX_10_4 = "macosx_10_4"
+    MACOSX_10_5 = "macosx_10_5"
+    MACOSX_10_6 = "macosx_10_6"
+    MACOSX_10_7 = "macosx_10_7"
+    MACOSX_10_8 = "macosx_10_8"
+    MACOSX_10_9 = "macosx_10_9"
+    MACOSX_10_10 = "macosx_10_10"
+    MACOSX_10_11 = "macosx_10_11"
+    MACOSX_10_12 = "macosx_10_12"
+    MACOSX_10_13 = "macosx_10_13"
 
     _VALUES = {
-        ANDROID_2_1: '2.1 Eclair',
-        ANDROID_2_2: '2.2 Froyo',
-        ANDROID_2_3: '2.3 Gingerbread',
-        ANDROID_3_0: '3.0 Honeycomb',
-        ANDROID_3_1: '3.1 Honeycomb',
-        ANDROID_3_2: '3.2 Honeycomb',
-        ANDROID_4_0: '4.0 Ice Cream Sandwich',
-        ANDROID_4_1: '4.1 Jelly Bean',
-        ANDROID_4_2: '4.2 Jelly Bean',
-        ANDROID_4_3: '4.3 Jelly Bean',
-        ANDROID_4_4: '4.4 KitKat',
-        ANDROID_5_0: '5.0 Lollipop',
-        ANDROID_5_1: '5.1 Lollipop',
-        ANDROID_6_0: '6.0 Marshmallow',
-        ANDROID_7_0: '7.0 Nougat',
-        ANDROID_7_1: '7.1 Nougat',
-        ANDROID_8_0: '8.0 Oreo',
-        ANDROID_8_1: '8.1 Oreo',
-        IOS_3_2: '3.2',
-        IOS_4_0: '4.0',
-        IOS_4_1: '4.1',
-        IOS_4_2: '4.2',
-        IOS_4_3: '4.3',
-        IOS_5_0: '5.0',
-        IOS_5_1: '5.1',
-        IOS_6_0: '6.0',
-        IOS_6_1: '6.1',
-        IOS_7_0: '7.0',
-        IOS_7_1: '7.1',
-        IOS_8_0: '8.0',
-        IOS_8_1: '8.1',
-        IOS_8_2: '8.2',
-        IOS_8_3: '8.3',
-        IOS_8_4: '8.4',
-        IOS_9_0: '9.0',
-        IOS_9_1: '9.1',
-        IOS_9_2: '9.2',
-        IOS_9_3: '9.3',
-        IOS_10_0: '10.0',
-        IOS_10_1: '10.1',
-        IOS_10_2: '10.2',
-        IOS_10_3: '10.3',
-        IOS_11_0: '11.0',
-        WINPHONE_7: '7',
-        WINPHONE_8_0: '8.0',
-        WINPHONE_8_1: '8.1',
-        WINPHONE_10: '10',
-        WINDOWS_98: '98',
-        WINDOWS_2000: '2000',
-        WINDOWS_XP: 'XP',
-        WINDOWS_VISTA: 'Vista',
-        WINDOWS_7: '7',
-        WINDOWS_8: '8',
-        WINDOWS_8_1: '8.1',
-        WINDOWS_10: '10',
-        MACOSX_10_4: '10.4 Tiger',
-        MACOSX_10_5: '10.5 Leopard',
-        MACOSX_10_6: '10.6 Snow Leopard',
-        MACOSX_10_7: '10.7 Lion',
-        MACOSX_10_8: '10.8 Mountain Lion',
-        MACOSX_10_9: '10.9 Mavericks',
-        MACOSX_10_10: '10.10 Yosemite',
-        MACOSX_10_11: '10.11 El Capitan',
-        MACOSX_10_12: '10.12 Sierra',
-        MACOSX_10_13: '10.13 High Sierra',
+        ANDROID_2_1: "2.1 Eclair",
+        ANDROID_2_2: "2.2 Froyo",
+        ANDROID_2_3: "2.3 Gingerbread",
+        ANDROID_3_0: "3.0 Honeycomb",
+        ANDROID_3_1: "3.1 Honeycomb",
+        ANDROID_3_2: "3.2 Honeycomb",
+        ANDROID_4_0: "4.0 Ice Cream Sandwich",
+        ANDROID_4_1: "4.1 Jelly Bean",
+        ANDROID_4_2: "4.2 Jelly Bean",
+        ANDROID_4_3: "4.3 Jelly Bean",
+        ANDROID_4_4: "4.4 KitKat",
+        ANDROID_5_0: "5.0 Lollipop",
+        ANDROID_5_1: "5.1 Lollipop",
+        ANDROID_6_0: "6.0 Marshmallow",
+        ANDROID_7_0: "7.0 Nougat",
+        ANDROID_7_1: "7.1 Nougat",
+        ANDROID_8_0: "8.0 Oreo",
+        ANDROID_8_1: "8.1 Oreo",
+        IOS_3_2: "3.2",
+        IOS_4_0: "4.0",
+        IOS_4_1: "4.1",
+        IOS_4_2: "4.2",
+        IOS_4_3: "4.3",
+        IOS_5_0: "5.0",
+        IOS_5_1: "5.1",
+        IOS_6_0: "6.0",
+        IOS_6_1: "6.1",
+        IOS_7_0: "7.0",
+        IOS_7_1: "7.1",
+        IOS_8_0: "8.0",
+        IOS_8_1: "8.1",
+        IOS_8_2: "8.2",
+        IOS_8_3: "8.3",
+        IOS_8_4: "8.4",
+        IOS_9_0: "9.0",
+        IOS_9_1: "9.1",
+        IOS_9_2: "9.2",
+        IOS_9_3: "9.3",
+        IOS_10_0: "10.0",
+        IOS_10_1: "10.1",
+        IOS_10_2: "10.2",
+        IOS_10_3: "10.3",
+        IOS_11_0: "11.0",
+        WINPHONE_7: "7",
+        WINPHONE_8_0: "8.0",
+        WINPHONE_8_1: "8.1",
+        WINPHONE_10: "10",
+        WINDOWS_98: "98",
+        WINDOWS_2000: "2000",
+        WINDOWS_XP: "XP",
+        WINDOWS_VISTA: "Vista",
+        WINDOWS_7: "7",
+        WINDOWS_8: "8",
+        WINDOWS_8_1: "8.1",
+        WINDOWS_10: "10",
+        MACOSX_10_4: "10.4 Tiger",
+        MACOSX_10_5: "10.5 Leopard",
+        MACOSX_10_6: "10.6 Snow Leopard",
+        MACOSX_10_7: "10.7 Lion",
+        MACOSX_10_8: "10.8 Mountain Lion",
+        MACOSX_10_9: "10.9 Mavericks",
+        MACOSX_10_10: "10.10 Yosemite",
+        MACOSX_10_11: "10.11 El Capitan",
+        MACOSX_10_12: "10.12 Sierra",
+        MACOSX_10_13: "10.13 High Sierra",
     }
 
 
 OSV_MAPPING = {
     # Versions mapped to OS and ordered based on the release date
-
     OperatingSystem.ANDROID: [
         OperatingSystemVersion.ANDROID_2_1,
         OperatingSystemVersion.ANDROID_2_2,
@@ -2285,38 +2143,34 @@ OSV_MAPPING = {
 
 class BrowserFamily(ConstantBase):
     OTHER = None
-    CHROME = 'CHROME'
-    FIREFOX = 'FIREFOX'
-    SAFARI = 'SAFARI'
-    IE = 'IE'
-    SAMSUNG = 'SAMSUNG'
-    OPERA = 'OPERA'
-    UC_BROWSER = 'UC_BROWSER'
-    IN_APP = 'IN_APP'
+    CHROME = "CHROME"
+    FIREFOX = "FIREFOX"
+    SAFARI = "SAFARI"
+    IE = "IE"
+    SAMSUNG = "SAMSUNG"
+    OPERA = "OPERA"
+    UC_BROWSER = "UC_BROWSER"
+    IN_APP = "IN_APP"
 
     _VALUES = {
-        OTHER: 'Other',
-        CHROME: 'Chrome',
-        FIREFOX: 'Firefox',
-        SAFARI: 'Safari',
-        IE: 'Internet Explorer',
-        SAMSUNG: 'Samsung',
-        OPERA: 'Opera',
-        UC_BROWSER: 'UC Browser',
-        IN_APP: 'In App',
+        OTHER: "Other",
+        CHROME: "Chrome",
+        FIREFOX: "Firefox",
+        SAFARI: "Safari",
+        IE: "Internet Explorer",
+        SAMSUNG: "Samsung",
+        OPERA: "Opera",
+        UC_BROWSER: "UC Browser",
+        IN_APP: "In App",
     }
 
 
 class PlacementMedium(ConstantBase):
     UNKNOWN = None
-    APP = 'app'
-    SITE = 'site'
+    APP = "app"
+    SITE = "site"
 
-    _VALUES = {
-        UNKNOWN: "Unknown",
-        APP: Placement.get_text(Placement.APP),
-        SITE: Placement.get_text(Placement.SITE),
-    }
+    _VALUES = {UNKNOWN: "Unknown", APP: Placement.get_text(Placement.APP), SITE: Placement.get_text(Placement.SITE)}
 
 
 class PlacementType(ConstantBase):
@@ -2365,10 +2219,7 @@ class AdGroupDeliveryType(ConstantBase):
     STANDARD = 1
     ACCELERATED = 2
 
-    _VALUES = {
-        STANDARD: 'Standard',
-        ACCELERATED: 'Accelerated',
-    }
+    _VALUES = {STANDARD: "Standard", ACCELERATED: "Accelerated"}
 
 
 class SourceSubmissionPolicy(ConstantBase):
@@ -2377,21 +2228,16 @@ class SourceSubmissionPolicy(ConstantBase):
     MANUAL = 2
 
     _VALUES = {
-        AUTOMATIC: 'Automatic',
-        MANUAL: 'Manual',
-        AUTOMATIC_WITH_AMPLIFY_APPROVAL: 'Automatic with Amplify approval',
+        AUTOMATIC: "Automatic",
+        MANUAL: "Manual",
+        AUTOMATIC_WITH_AMPLIFY_APPROVAL: "Automatic with Amplify approval",
     }
 
 
 class Customflags(ConstantBase):
-    INT = 'int'
-    FLOAT = 'float'
-    STRING = 'string'
-    BOOL = 'boolean'
+    INT = "int"
+    FLOAT = "float"
+    STRING = "string"
+    BOOL = "boolean"
 
-    _VALUES = {
-        INT: 'number',
-        FLOAT: 'decimal number',
-        STRING: 'text',
-        BOOL: 'boolean',
-    }
+    _VALUES = {INT: "number", FLOAT: "decimal number", STRING: "text", BOOL: "boolean"}

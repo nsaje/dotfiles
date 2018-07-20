@@ -12,7 +12,7 @@ class RealTimeCampaignStopLog(models.Model):
     campaign = models.ForeignKey(core.entity.Campaign)
     context = JSONField(encoder=json_helper.JSONEncoder)
 
-    created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at', db_index=True)
+    created_dt = models.DateTimeField(auto_now_add=True, verbose_name="Created at", db_index=True)
 
     def add_context(self, d):
         if not self.context:

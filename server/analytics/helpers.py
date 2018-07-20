@@ -16,24 +16,21 @@ def get_spend(date, **lookup):
     """
     if not lookup:
         return None
-    context = {
-        'date': str(date),
-        'operator': '=',
-    }
+    context = {"date": str(date), "operator": "="}
     for key, obj in lookup.items():
         if obj is None:
             continue
-        context['key'] = key
-        context['value'] = obj.pk
-        if key == 'agency':
+        context["key"] = key
+        context["value"] = obj.pk
+        if key == "agency":
             accounts = obj.account_set.all()
             if not accounts:
                 return None
-            context['key'] = 'account'
-            context['operator'] = 'IN'
-            context['value'] = '(' + ','.join(str(acc.pk) for acc in accounts) + ')'
+            context["key"] = "account"
+            context["operator"] = "IN"
+            context["value"] = "(" + ",".join(str(acc.pk) for acc in accounts) + ")"
         break
-    sql = backtosql.generate_sql('sql/helpers_get_spend.sql', context)
+    sql = backtosql.generate_sql("sql/helpers_get_spend.sql", context)
     with db.get_stats_cursor() as c:
         c.execute(sql)
         return db.dictfetchall(c)
@@ -53,18 +50,14 @@ def get_stats_multiple(date, **lookup):
     """
     if not lookup:
         return None
-    context = {
-        'date': str(date),
-    }
+    context = {"date": str(date)}
     for key, objects in lookup.items():
         if objects is None:
             continue
-        context['key'] = key
-        context['value'] = ','.join([str(obj.pk) for obj in objects])
+        context["key"] = key
+        context["value"] = ",".join([str(obj.pk) for obj in objects])
         break
-    sql = backtosql.generate_sql('sql/helpers_get_stats_multiple.sql', context)
+    sql = backtosql.generate_sql("sql/helpers_get_stats_multiple.sql", context)
     with db.get_stats_cursor() as c:
         c.execute(sql)
-        return {
-            row[key + '_id']: row for row in db.dictfetchall(c)
-        }
+        return {row[key + "_id"]: row for row in db.dictfetchall(c)}

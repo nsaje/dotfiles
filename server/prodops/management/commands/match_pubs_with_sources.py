@@ -15,33 +15,38 @@ WHERE date >= '{date}' AND publisher IN ({publist})"""
 
 def chunks(l, n):
     n = max(1, n)
-    return (l[i:i + n] for i in range(0, len(l), n))
+    return (l[i : i + n] for i in range(0, len(l), n))
 
 
 class Command(utils.command_helpers.ExceptionCommand):
     help = "Match publishers with media sources"
 
     def add_arguments(self, parser):
-        parser.add_argument('--days', '-d', dest='days', default=30,
-                            help='Days in the past to look (default: 30)')
-        parser.add_argument('--source-names', '-n', dest='use_source_names', default=False, action='store_true',
-                            help='Use source names instead of slugs')
-        parser.add_argument('publishers_csv', type=str)
+        parser.add_argument("--days", "-d", dest="days", default=30, help="Days in the past to look (default: 30)")
+        parser.add_argument(
+            "--source-names",
+            "-n",
+            dest="use_source_names",
+            default=False,
+            action="store_true",
+            help="Use source names instead of slugs",
+        )
+        parser.add_argument("publishers_csv", type=str)
 
     def _print(self, msg):
-        self.stdout.write('{}\n'.format(msg))
+        self.stdout.write("{}\n".format(msg))
 
     def handle(self, *args, **options):
-        self.from_date = datetime.date.today() - datetime.timedelta(options['days'])
-        self.use_source_names = options['use_source_names']
+        self.from_date = datetime.date.today() - datetime.timedelta(options["days"])
+        self.use_source_names = options["use_source_names"]
         self.sources = {s.pk: s for s in dash.models.Source.objects.all()}
 
         publishers = []
         pubs_source_match = set()
         verticals = {}
-        with open(options['publishers_csv']) as fd:
+        with open(options["publishers_csv"]) as fd:
             for row in csv.reader(fd):
-                if row[0].lower() in ('domains', 'publishers', 'domain', 'publisher'):
+                if row[0].lower() in ("domains", "publishers", "domain", "publisher"):
                     continue
                 pub = row[0]
                 publishers.append(pub)
@@ -54,41 +59,47 @@ class Command(utils.command_helpers.ExceptionCommand):
         data = []
         pubs_len = float(len(publishers))
         for i, pub_sublist in enumerate(chunks(publishers, PUBS_PER_CHUNK)):
-            self._print('Processing batch {}/{}'.format(i + 1, int(pubs_len / PUBS_PER_CHUNK) + 1))
+            self._print("Processing batch {}/{}".format(i + 1, int(pubs_len / PUBS_PER_CHUNK) + 1))
             data.extend(self._match_sources(pub_sublist, verticals))
 
-        self._print('Report generated.')
+        self._print("Report generated.")
 
-        self._print('Publisher matches: {}%'.format(round(float(len(data)) / len(publishers) * 100, 2)))
+        self._print("Publisher matches: {}%".format(round(float(len(data)) / len(publishers) * 100, 2)))
 
         count_source_matches = 0
         for row in data:
             pub = row[0]
             sources = row[1]
-            for source in sources.split(','):
+            for source in sources.split(","):
                 if (pub, source) in pubs_source_match:
                     count_source_matches += 1
-        self._print('Publisher/Source matches: {}%'.format(round(float(count_source_matches) / len(publishers) * 100, 2)))
+        self._print(
+            "Publisher/Source matches: {}%".format(round(float(count_source_matches) / len(publishers) * 100, 2))
+        )
 
-        self._print('Report URL: ' + hlp.generate_report(
-            'publisher-sources-map-' + uuid.uuid4().hex,
-            [('publisher', 'media source', 'interest') if verticals else ('publisher', 'media source', )] + data)
+        self._print(
+            "Report URL: "
+            + hlp.generate_report(
+                "publisher-sources-map-" + uuid.uuid4().hex,
+                [("publisher", "media source", "interest") if verticals else ("publisher", "media source")] + data,
+            )
         )
 
     def _match_sources(self, publishers, verticals={}):
         pub_source_map = {}
         with redshiftapi.db.get_stats_cursor() as c:
-            c.execute(QUERY.format(date=self.from_date, publist=', '.join(
-                ['\'{}\''.format(pub.encode('utf-8')) for pub in publishers]
-            )))
+            c.execute(
+                QUERY.format(
+                    date=self.from_date, publist=", ".join(["'{}'".format(pub.encode("utf-8")) for pub in publishers])
+                )
+            )
             for row in c.fetchall():
                 source = self.sources.get(row[1])
                 pub_source_map.setdefault(row[0], set()).add(
-                    source.name if self.use_source_names else source.bidder_slug)
+                    source.name if self.use_source_names else source.bidder_slug
+                )
         if verticals:
             return [
-                (pub, ', '.join(sources), ','.join(verticals.get(pub, [])), ) for pub, sources in pub_source_map.items()
+                (pub, ", ".join(sources), ",".join(verticals.get(pub, []))) for pub, sources in pub_source_map.items()
             ]
-        return [
-            (pub, ', '.join(sources), ) for pub, sources in pub_source_map.items()
-        ]
+        return [(pub, ", ".join(sources)) for pub, sources in pub_source_map.items()]

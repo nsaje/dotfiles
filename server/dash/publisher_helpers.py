@@ -7,7 +7,7 @@ def publisher_exchange(source):
     by something decent once we start using source id's in Redshift
     instead of exchange strings
     """
-    return source and source.tracking_slug.replace('b1_', '')
+    return source and source.tracking_slug.replace("b1_", "")
 
 
 def is_publisher_domain(raw_str):
@@ -25,12 +25,12 @@ def get_publisher_domain_link(raw_str):
 
 
 def create_publisher_id(publisher, source_id):
-    return '__'.join((publisher, str(source_id or '')))
+    return "__".join((publisher, str(source_id or "")))
 
 
 def dissect_publisher_id(publisher_id):
-    publisher, source_id = publisher_id.rsplit('__', 1)
-    if source_id == 'all':
+    publisher, source_id = publisher_id.rsplit("__", 1)
+    if source_id == "all":
         return publisher, source_id
     return publisher, int(source_id) if source_id else None
 
@@ -43,17 +43,17 @@ def inflate_publisher_id_source(publisher_id, source_ids):
     return [create_publisher_id(publisher, x) for x in source_ids]
 
 
-def strip_prefix(publisher, prefixes=('http://', 'https://')):
+def strip_prefix(publisher, prefixes=("http://", "https://")):
     for prefix in prefixes:
-        publisher = publisher.replace(prefix, '')
+        publisher = publisher.replace(prefix, "")
     return publisher
 
 
 def is_subdomain_match(listed_publisher, publisher):
-    listed_split = listed_publisher.split('.')
+    listed_split = listed_publisher.split(".")
     listed_split.reverse()
 
-    publisher_split = strip_prefix(publisher).split('.')
+    publisher_split = strip_prefix(publisher).split(".")
     publisher_split.reverse()
 
     for i, part in enumerate(listed_split):
@@ -67,8 +67,8 @@ def is_subdomain_match(listed_publisher, publisher):
 
 
 def all_subdomains(publisher):
-    parts = publisher.split('.')
-    return ['.'.join(parts[i:]) for i in range(1, len(parts))]
+    parts = publisher.split(".")
+    return [".".join(parts[i:]) for i in range(1, len(parts))]
 
 
 class PublisherIdLookupMap(object):
@@ -78,7 +78,7 @@ class PublisherIdLookupMap(object):
             if entry.source_id:
                 self._map[create_publisher_id(publisher_name, entry.source_id)] = entry
             else:
-                self._map[create_publisher_id(publisher_name, 'all')] = entry
+                self._map[create_publisher_id(publisher_name, "all")] = entry
 
     def __init__(self, dominant_entries_qs, secondary_entries_qs=None):
         self._map = {}
@@ -115,7 +115,7 @@ class PublisherIdLookupMap(object):
         if entry is not None:
             return entry
 
-        publisher_all = create_publisher_id(publisher, 'all')
+        publisher_all = create_publisher_id(publisher, "all")
         entry = self._find_publisher_group_entry_subdomains(publisher_all)
         if entry is not None:
             return entry

@@ -4,37 +4,34 @@ import requests
 
 from dash import models
 
-logging.getLogger('requests').setLevel(logging.CRITICAL)
+logging.getLogger("requests").setLevel(logging.CRITICAL)
 requests.packages.urllib3.disable_warnings()
 
 AD_GROUP_IDS = []
 
-API_TOKEN = ''
+API_TOKEN = ""
 
 DEFAULT_API_PAGE_LIMIT = 100
 
-LIST_MARKETERS_API = 'https://api.outbrain.com/amplify/v0.1/marketers'
-LIST_CAMPAIGNS_API = 'https://api.outbrain.com/amplify/v0.1/marketers/{marketer_id}/campaigns'
-LIST_PROMOTED_LINKS_API = 'https://api.outbrain.com/amplify/v0.1/campaigns/{campaign_id}/promotedLinks'
+LIST_MARKETERS_API = "https://api.outbrain.com/amplify/v0.1/marketers"
+LIST_CAMPAIGNS_API = "https://api.outbrain.com/amplify/v0.1/marketers/{marketer_id}/campaigns"
+LIST_PROMOTED_LINKS_API = "https://api.outbrain.com/amplify/v0.1/campaigns/{campaign_id}/promotedLinks"
 
 
 class SessionWithTimeout(requests.Session):
-
     def request(self, *args, **kwargs):
 
-        if not kwargs.get('timeout') and hasattr(self, 'timeout'):
-            kwargs['timeout'] = self.timeout
+        if not kwargs.get("timeout") and hasattr(self, "timeout"):
+            kwargs["timeout"] = self.timeout
 
-        if not kwargs.get('verify'):
-            kwargs['verify'] = False
+        if not kwargs.get("verify"):
+            kwargs["verify"] = False
 
         return super(SessionWithTimeout, self).request(*args, **kwargs)
 
 
 def get_requests_session():
-    headers = {
-        'User-Agent': 'Mozilla/5.0 (compatible; Zemanta/1.0; +http://www.zemanta.com)',
-    }
+    headers = {"User-Agent": "Mozilla/5.0 (compatible; Zemanta/1.0; +http://www.zemanta.com)"}
 
     session = SessionWithTimeout()
     session.headers = headers
@@ -43,22 +40,18 @@ def get_requests_session():
     return session
 
 
-def execute_api_call(url, method='GET', headers={}, params=None, data=None):
+def execute_api_call(url, method="GET", headers={}, params=None, data=None):
     api_token = API_TOKEN
 
     if data:
-        headers['Content-Type'] = 'application/json'
+        headers["Content-Type"] = "application/json"
         data = json.dumps(data)
 
-    headers.update({
-        'OB-TOKEN-V1': api_token
-    })
+    headers.update({"OB-TOKEN-V1": api_token})
     r = session.request(method=method, url=url, data=data, params=params, headers=headers)
 
     if r.status_code != 200:
-        raise Exception(
-            'Bad status code in API response. status_code: {}, message: {}'.format(r.status_code, r.text)
-        )
+        raise Exception("Bad status code in API response. status_code: {}, message: {}".format(r.status_code, r.text))
 
     if r.text:
         return json.loads(r.text)
@@ -70,30 +63,28 @@ def get_promoted_links(campaign_id):
     url = LIST_PROMOTED_LINKS_API.format(campaign_id=campaign_id)
     offset = 0
     while True:
-        params = {
-            'limit': DEFAULT_API_PAGE_LIMIT,
-            'offset': offset
-        }
+        params = {"limit": DEFAULT_API_PAGE_LIMIT, "offset": offset}
         response = execute_api_call(url, params=params)
-        for promoted_link in response['promotedLinks']:
+        for promoted_link in response["promotedLinks"]:
             result.append(promoted_link)
 
         offset += DEFAULT_API_PAGE_LIMIT
-        if response['totalCount'] <= offset:
+        if response["totalCount"] <= offset:
             break
 
     return result
 
 
 old_urls_outbrain = {}
-if __name__ == '__main__':
+if __name__ == "__main__":
     session = get_requests_session()
 
-    if 'AD_GROUP_IDS' in globals() and AD_GROUP_IDS:
+    if "AD_GROUP_IDS" in globals() and AD_GROUP_IDS:
         ad_group_ids = AD_GROUP_IDS
     else:
-        ad_group_ids = [ags.ad_group_id for ags in models.AdGroupSource.objects.filter(can_manage_content_ads=True,
-                                                                                       source_id=3)]
+        ad_group_ids = [
+            ags.ad_group_id for ags in models.AdGroupSource.objects.filter(can_manage_content_ads=True, source_id=3)
+        ]
 
     count = 0
     for ad_group_id in ad_group_ids:
@@ -104,21 +95,22 @@ if __name__ == '__main__':
             continue
 
         non_existing = set()
-        promoted_links = get_promoted_links(ad_group_source.source_campaign_key['campaign_id'])
+        promoted_links = get_promoted_links(ad_group_source.source_campaign_key["campaign_id"])
         for promoted_link in promoted_links:
             try:
-                content_ads = models.ContentAdSource.objects.filter(source_content_ad_id=promoted_link['id'],
-                                                                    source_id=3, content_ad__ad_group_id=ad_group_id)
+                content_ads = models.ContentAdSource.objects.filter(
+                    source_content_ad_id=promoted_link["id"], source_id=3, content_ad__ad_group_id=ad_group_id
+                )
             except models.ContentAdSource.DoesNotExist:
                 continue
 
             if len(content_ads) > 1:
-                print('DUPLICATE CONTENT AD! source_content_ad_id: %s' % (promoted_link['id']))
+                print("DUPLICATE CONTENT AD! source_content_ad_id: %s" % (promoted_link["id"]))
 
-            if promoted_link['text'] == 'The Rise of Content Ads':
+            if promoted_link["text"] == "The Rise of Content Ads":
                 continue
 
-            if 'r1.zemanta.com' in promoted_link['url']:
+            if "r1.zemanta.com" in promoted_link["url"]:
                 continue
 
             if ad_group_id not in old_urls_outbrain:
@@ -127,6 +119,10 @@ if __name__ == '__main__':
 
             count += 1
 
-        print('AD GROUP ID: {} NUM LINKS: {}, OLD URLS: {}'.format(ad_group_id, len(promoted_links), len(old_urls_outbrain.get(ad_group_id, []))))
+        print(
+            "AD GROUP ID: {} NUM LINKS: {}, OLD URLS: {}".format(
+                ad_group_id, len(promoted_links), len(old_urls_outbrain.get(ad_group_id, []))
+            )
+        )
 
-    print('COUNT:', count)
+    print("COUNT:", count)

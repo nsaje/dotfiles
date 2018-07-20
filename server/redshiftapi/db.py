@@ -21,14 +21,14 @@ stats_db_router = utils.db_for_reads.UseStatsReadReplicaRouter()
 def get_stats_cursor(db_alias=None):
     if not db_alias:
         db_alias = stats_db_router.db_for_read(None)
-    influx.incr('redshiftapi.cursor', 1, db_alias=db_alias, type='read')
+    influx.incr("redshiftapi.cursor", 1, db_alias=db_alias, type="read")
     return connections[db_alias].cursor()
 
 
 def get_write_stats_cursor(db_alias=None):
     if not db_alias:
         db_alias = stats_db_router.db_for_write(None)
-    influx.incr('redshiftapi.cursor', 1, db_alias=db_alias, type='write')
+    influx.incr("redshiftapi.cursor", 1, db_alias=db_alias, type="write")
     return connections[db_alias].cursor()
 
 
@@ -47,10 +47,7 @@ def dictfetchall(cursor):
     """
 
     columns = [col[0] for col in cursor.description]
-    return [
-        dict(list(zip(columns, row)))
-        for row in cursor.fetchall()
-    ]
+    return [dict(list(zip(columns, row))) for row in cursor.fetchall()]
 
 
 def namedtuplefetchall(cursor):
@@ -59,7 +56,7 @@ def namedtuplefetchall(cursor):
     """
 
     desc = cursor.description
-    nt_result = namedtuple('Result', [col[0] for col in desc])
+    nt_result = namedtuple("Result", [col[0] for col in desc])
     return [nt_result(*row) for row in cursor.fetchall()]
 
 
@@ -69,7 +66,7 @@ def xnamedtuplefetchall(cursor):
     """
 
     desc = cursor.description
-    nt_result = namedtuple('Result', [col[0] for col in desc])
+    nt_result = namedtuple("Result", [col[0] for col in desc])
     for row in cursor:
         yield nt_result(*row)
 
@@ -86,26 +83,26 @@ def create_temp_tables(cursor, temp_tables):
     cursor.execute(sql, params)
 
 
-def execute_query(sql, params, query_name, cache_name='breakdowns_rs', refresh_cache=False, temp_tables=None):
+def execute_query(sql, params, query_name, cache_name="breakdowns_rs", refresh_cache=False, temp_tables=None):
     cache_key = cache_helper.get_cache_key(sql, params)
     cache = caches[cache_name]
 
     results = cache.get(cache_key, CACHE_MISS_FLAG)
 
     if results is CACHE_MISS_FLAG or refresh_cache:
-        influx.incr('redshiftapi.cache', 1, outcome='miss')
-        logger.info('Cache miss %s (%s)', cache_key, query_name)
+        influx.incr("redshiftapi.cache", 1, outcome="miss")
+        logger.info("Cache miss %s (%s)", cache_key, query_name)
 
         with get_stats_cursor() as cursor:
-            with influx.block_timer('redshiftapi.api_breakdowns.query', breakdown=query_name, db_alias=cursor.db.alias):
+            with influx.block_timer("redshiftapi.api_breakdowns.query", breakdown=query_name, db_alias=cursor.db.alias):
                 with create_temp_tables(cursor, temp_tables):
                     cursor.execute(sql, params)
                     results = dictfetchall(cursor)
 
-        with influx.block_timer('redshiftapi.api_breakdowns.set_cache_value_overhead'):
+        with influx.block_timer("redshiftapi.api_breakdowns.set_cache_value_overhead"):
             cache.set(cache_key, results)
     else:
-        influx.incr('redshiftapi.cache', 1, outcome='hit')
-        logger.info('Cache hit %s (%s)', cache_key, query_name)
+        influx.incr("redshiftapi.cache", 1, outcome="hit")
+        logger.info("Cache hit %s (%s)", cache_key, query_name)
 
     return results

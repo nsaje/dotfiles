@@ -7,16 +7,10 @@ from dash import constants
 
 class CurrencyExchangeRate(models.Model):
     class Meta:
-        app_label = 'dash'
-        unique_together = ('date', 'currency')
+        app_label = "dash"
+        unique_together = ("date", "currency")
 
     date = models.DateField()
-    currency = models.CharField(
-        max_length=3,
-        choices=constants.Currency.get_choices()
-    )
-    exchange_rate = models.DecimalField(
-        max_digits=10,
-        decimal_places=4
-    )
+    currency = models.CharField(max_length=3, choices=constants.Currency.get_choices())
+    exchange_rate = models.DecimalField(max_digits=10, decimal_places=4)
     is_reference = models.BooleanField(default=False)

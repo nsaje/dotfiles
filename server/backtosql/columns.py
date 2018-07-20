@@ -2,7 +2,6 @@ from . import helpers
 
 
 class TemplateColumn(object):
-
     def __init__(self, template_name, context=None, group=None, alias=None):
         self.template_name = template_name
         self.context = context or {}
@@ -12,13 +11,10 @@ class TemplateColumn(object):
 
     @property
     def column_name(self):
-        return self.context.get('column_name')
+        return self.context.get("column_name")
 
     def _get_default_context(self, prefix):
-        return {
-            'p': helpers.clean_prefix(prefix),
-            'alias': '',
-        }
+        return {"p": helpers.clean_prefix(prefix), "alias": ""}
 
     def _get_alias(self):
         alias = helpers.clean_alias(self.alias)
@@ -39,7 +35,7 @@ class TemplateColumn(object):
 
     def column_as_alias(self, prefix=None):
         context = self._get_default_context(prefix)
-        context['alias'] = self._get_alias()
+        context["alias"] = self._get_alias()
 
         if self.context:
             context.update(self.context)
@@ -47,20 +43,16 @@ class TemplateColumn(object):
         return helpers.generate_sql(self.template_name, context)
 
     def column_equal_or_null(self, table1, table2):
-        context = {
-            'first_table_column': self.only_alias(table1),
-            'second_table_column': self.only_alias(table2),
-        }
-        return helpers.generate_sql('column_equal_or_null.sql', context)
+        context = {"first_table_column": self.only_alias(table1), "second_table_column": self.only_alias(table2)}
+        return helpers.generate_sql("column_equal_or_null.sql", context)
 
     def as_order(self, direction_hint, nulls=None):
         return OrderColumn(self, direction_hint, nulls)
 
 
 class Column(TemplateColumn):
-
     def __init__(self, column_name, group=None, alias=None):
-        super(Column, self).__init__('column.sql', {'column_name': column_name}, alias=alias, group=group)
+        super(Column, self).__init__("column.sql", {"column_name": column_name}, alias=alias, group=group)
 
 
 class OrderColumn(TemplateColumn):
@@ -69,20 +61,14 @@ class OrderColumn(TemplateColumn):
         self.nulls = nulls
 
         super(OrderColumn, self).__init__(
-            'order.sql',
-            self.order_context(direction_hint),
-            group=self.column.group,
-            alias=self.column.alias)
+            "order.sql", self.order_context(direction_hint), group=self.column.group, alias=self.column.alias
+        )
 
     def order_context(self, direction_hint):
-        return {
-            'direction': helpers.get_order(direction_hint, self.nulls)
-        }
+        return {"direction": helpers.get_order(direction_hint, self.nulls)}
 
     def only_column(self, prefix=None):
-        context = {
-            'column_render': self.column.only_column(prefix),
-        }
+        context = {"column_render": self.column.only_column(prefix)}
 
         if self.context:
             context.update(self.context)
@@ -90,9 +76,7 @@ class OrderColumn(TemplateColumn):
         return helpers.generate_sql(self.template_name, context)
 
     def only_alias(self, prefix=None):
-        context = {
-            'column_render': self.column.only_alias(prefix),
-        }
+        context = {"column_render": self.column.only_alias(prefix)}
 
         if self.context:
             context.update(self.context)
@@ -103,4 +87,4 @@ class OrderColumn(TemplateColumn):
         raise helpers.BackToSQLException('SQL syntax error, "column AS alias" does not make sense for order')
 
     def as_order(self, *args, **kwargs):
-        raise helpers.BackToSQLException('Already OrderColumn')
+        raise helpers.BackToSQLException("Already OrderColumn")

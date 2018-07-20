@@ -13,16 +13,18 @@ from utils import numbers
 
 def audit_stopped_campaigns(date):
     local_midnight = dates_helper.local_to_utc_time(datetime.datetime(date.year, date.month, date.day))
-    logs = RealTimeCampaignStopLog.objects.filter(
-        created_dt__gte=local_midnight,
-        created_dt__lt=dates_helper.day_after(local_midnight),
-        context__previous_state=constants.CampaignStopState.ACTIVE,
-        context__new_state=constants.CampaignStopState.STOPPED,
-    ).order_by('campaign_id', '-created_dt').distinct('campaign')
-    data = {
-        log.campaign: _get_available_campaign_budget(date, log) for log in logs
-    }
-    return OrderedDict(sorted(data.items(), key=lambda x: (x[1]['active_budgets'], x[1]['available']), reverse=True))
+    logs = (
+        RealTimeCampaignStopLog.objects.filter(
+            created_dt__gte=local_midnight,
+            created_dt__lt=dates_helper.day_after(local_midnight),
+            context__previous_state=constants.CampaignStopState.ACTIVE,
+            context__new_state=constants.CampaignStopState.STOPPED,
+        )
+        .order_by("campaign_id", "-created_dt")
+        .distinct("campaign")
+    )
+    data = {log.campaign: _get_available_campaign_budget(date, log) for log in logs}
+    return OrderedDict(sorted(data.items(), key=lambda x: (x[1]["active_budgets"], x[1]["available"]), reverse=True))
 
 
 def _get_available_campaign_budget(date, log):
@@ -34,30 +36,24 @@ def _get_available_campaign_budget(date, log):
         available = numbers.round_decimal_half_down(decimal.Decimal(available), places=2)
         active_budgets = True
 
-    return {
-        'available': available,
-        'active_budgets': active_budgets,
-        'overspend': _get_overspend(date, log),
-    }
+    return {"available": available, "active_budgets": active_budgets, "overspend": _get_overspend(date, log)}
 
 
 def _get_overspend(date, log):
     return db.execute_query(
-        'select ((sum(coalesce(cost_nano, 0)) + sum(coalesce(data_cost_nano, 0))) - (sum(coalesce(effective_cost_nano, 0)) + sum(coalesce(effective_data_cost_nano, 0)))) / 1000000000.0 as overspend from mv_campaign where campaign_id = %s and date = %s',
+        "select ((sum(coalesce(cost_nano, 0)) + sum(coalesce(data_cost_nano, 0))) - (sum(coalesce(effective_cost_nano, 0)) + sum(coalesce(effective_data_cost_nano, 0)))) / 1000000000.0 as overspend from mv_campaign where campaign_id = %s and date = %s",
         [log.campaign.id, date],
-        'campaignstop_monitor_overspend'
-    )[0]['overspend']
+        "campaignstop_monitor_overspend",
+    )[0]["overspend"]
 
 
 def _get_budgets_active_today(date, log):
     budgets = log.campaign.budgets.all()
-    if 'active_budget_line_items' not in log.context or not log.context['active_budget_line_items']:
+    if "active_budget_line_items" not in log.context or not log.context["active_budget_line_items"]:
         budgets = budgets.none()
     else:
-        active_items = log.context['active_budget_line_items']
+        active_items = log.context["active_budget_line_items"]
         if not isinstance(active_items, list):
             active_items = [active_items]
-        budgets = budgets.filter(
-            id__in=active_items,
-        )
-    return budgets.order_by('created_dt')
+        budgets = budgets.filter(id__in=active_items)
+    return budgets.order_by("created_dt")

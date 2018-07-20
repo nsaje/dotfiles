@@ -10,18 +10,18 @@ from utils import dates_helper
 
 
 class Command(ExceptionCommand):
-
     def add_arguments(self, parser):
-        parser.add_argument('--check-time', dest='check_time', action='store_true',
-                            help="Check if it's local midnight.")
+        parser.add_argument(
+            "--check-time", dest="check_time", action="store_true", help="Check if it's local midnight."
+        )
 
     def handle(self, *args, **options):
-        if options.get('check_time') and not dates_helper.local_now().hour == 0:
+        if options.get("check_time") and not dates_helper.local_now().hour == 0:
             return
 
         self._run_midnight_job()
 
-    @influx.timer('campaignstop.job_run', job='midnight')
+    @influx.timer("campaignstop.job_run", job="midnight")
     def _run_midnight_job(self):
         automation.campaignstop.update_campaigns_end_date()
         self._correct_states()
@@ -30,10 +30,11 @@ class Command(ExceptionCommand):
         campaigns_today = core.entity.Campaign.objects.filter(
             Q(
                 campaignstopstate__state=automation.campaignstop.constants.CampaignStopState.STOPPED,
-                campaignstopstate__max_allowed_end_date__gte=dates_helper.local_today()
-            ) | Q(
+                campaignstopstate__max_allowed_end_date__gte=dates_helper.local_today(),
+            )
+            | Q(
                 campaignstopstate__state=automation.campaignstop.constants.CampaignStopState.ACTIVE,
-                campaignstopstate__max_allowed_end_date__lt=dates_helper.local_today()
+                campaignstopstate__max_allowed_end_date__lt=dates_helper.local_today(),
             )
         )
         automation.campaignstop.update_campaigns_state(campaigns_today)

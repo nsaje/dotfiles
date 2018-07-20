@@ -7,7 +7,6 @@ import core.entity
 
 
 class AccountQuerySetTest(TestCase):
-
     def test_all_use_bcm_v2(self):
         magic_mixer.cycle(5).blend(core.entity.Account, uses_bcm_v2=True)
         self.assertTrue(core.entity.Account.objects.all().all_use_bcm_v2())
@@ -17,8 +16,7 @@ class AccountQuerySetTest(TestCase):
 
 
 class MigrateToBcmV2Test(TestCase):
-
-    @patch.object(core.entity.campaign.Campaign, 'migrate_to_bcm_v2')
+    @patch.object(core.entity.campaign.Campaign, "migrate_to_bcm_v2")
     def test_migrate_to_bcm_v2(self, mock_campaign_migrate):
         account = magic_mixer.blend(core.entity.Account, uses_bcm_v2=False)
         magic_mixer.blend(core.entity.Campaign, account=account)

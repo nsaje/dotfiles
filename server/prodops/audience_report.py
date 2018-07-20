@@ -134,33 +134,21 @@ GROUP BY category_name
 ORDER BY category_name;"""
 
 
-def create_report(breakdown, breakdown_id, gte, lt, path='.'):
+def create_report(breakdown, breakdown_id, gte, lt, path="."):
     data = {}
-    params = dict(
-        key=breakdown,
-        id=breakdown_id,
-        gte=str(gte),
-        lt=str(lt)
-    )
+    params = dict(key=breakdown, id=breakdown_id, gte=str(gte), lt=str(lt))
     with redshiftapi.db.get_stats_cursor() as c:
         c.execute(TIME_OF_DAY_UTC.format(**params))
-        data['time-of-day-utc'] = c.fetchall()
+        data["time-of-day-utc"] = c.fetchall()
         c.execute(GEOLOCATION.format(**params))
-        data['geolocation'] = c.fetchall()
+        data["geolocation"] = c.fetchall()
         c.execute(VERTICALS.format(**params))
-        data['verticals'] = [
-            (dash.constants.InterestCategory.get_text(k) or k, v) for k, v in c.fetchall()
-        ]
+        data["verticals"] = [(dash.constants.InterestCategory.get_text(k) or k, v) for k, v in c.fetchall()]
         c.execute(BLUEKAI_IDS.format(**params))
-        data['bluekai-ids'] = c.fetchall()
+        data["bluekai-ids"] = c.fetchall()
         c.execute(BLUEKAI_NAMES.format(**params))
-        data['bluekai-names'] = c.fetchall()
-    filepath = os.path.join(path, 'audience-report_{}-{}_{}_{}.xlsx'.format(
-        breakdown,
-        breakdown_id,
-        str(gte),
-        str(lt)
-    ))
+        data["bluekai-names"] = c.fetchall()
+    filepath = os.path.join(path, "audience-report_{}-{}_{}_{}.xlsx".format(breakdown, breakdown_id, str(gte), str(lt)))
     with xlsxwriter.Workbook(filepath) as workbook:
         for listname, rows in data.items():
             worksheet = workbook.add_worksheet(listname)

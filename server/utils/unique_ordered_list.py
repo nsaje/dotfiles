@@ -1,5 +1,4 @@
 class UniqueOrderedList(object):
-
     class Item(object):
         def __init__(self, value):
             self.value = value
@@ -8,8 +7,10 @@ class UniqueOrderedList(object):
 
         def __str__(self):
             return "{value: %s, previous: %s, next: %s}" % (
-                self.value, self.previous.value if self.previous else 'None',
-                self.next.value if self.next else 'None')
+                self.value,
+                self.previous.value if self.previous else "None",
+                self.next.value if self.next else "None",
+            )
 
         def __repr__(self):
             return self.__str__()

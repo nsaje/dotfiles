@@ -7,7 +7,6 @@ from .exceptions import CannotChangeLanguage
 
 
 class ValidationTestCase(TestCase):
-
     def setUp(self):
         self.campaign = magic_mixer.blend(core.entity.Campaign)
 

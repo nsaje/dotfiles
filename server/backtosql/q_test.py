@@ -6,16 +6,13 @@ from django.test import TestCase
 
 class QTestCase(TestCase, backtosql.TestSQLMixin):
     class ModelA(backtosql.Model):
-        py_foo = backtosql.Column('foo', group=1)
-        py_bar = backtosql.Column('bar', group=2)
-        py_cat = backtosql.TemplateColumn('test_col.sql', {'column_name': 'cat'}, group=1)
-        py_dog = backtosql.TemplateColumn('test_col.sql', {'column_name': 'dog'}, group=2)
+        py_foo = backtosql.Column("foo", group=1)
+        py_bar = backtosql.Column("bar", group=2)
+        py_cat = backtosql.TemplateColumn("test_col.sql", {"column_name": "cat"}, group=1)
+        py_dog = backtosql.TemplateColumn("test_col.sql", {"column_name": "dog"}, group=2)
 
     def test_generate_constraints(self):
-        constraints_dict = {
-            'py_foo__eq': [1, 2, 3],
-            'py_bar': datetime.date.today(),
-        }
+        constraints_dict = {"py_foo__eq": [1, 2, 3], "py_bar": datetime.date.today()}
 
         c = backtosql.Q(self.ModelA(), **constraints_dict)
         constraints = c.generate()
@@ -28,9 +25,7 @@ class QTestCase(TestCase, backtosql.TestSQLMixin):
         self.assertCountEqual(c.get_params(), [[1, 2, 3], datetime.date.today()])
 
     def test_generate_constraints_none(self):
-        constraints_dict = {
-            'py_foo__eq': 1,
-        }
+        constraints_dict = {"py_foo__eq": 1}
 
         m = self.ModelA()
         c = backtosql.Q(m, **constraints_dict) & backtosql.Q.none(m)
@@ -53,10 +48,7 @@ class QTestCase(TestCase, backtosql.TestSQLMixin):
         self.assertCountEqual(c.get_params(), [])
 
     def test_generate_nested_constraints(self):
-        constraints_dict = {
-            'py_foo__eq': [1, 2, 3],
-            'py_bar': datetime.date.today(),
-        }
+        constraints_dict = {"py_foo__eq": [1, 2, 3], "py_bar": datetime.date.today()}
 
         m = self.ModelA()
 
@@ -65,7 +57,7 @@ class QTestCase(TestCase, backtosql.TestSQLMixin):
             q |= backtosql.Q(m, **constraints_dict)
 
         constraints = q.generate(prefix="v")
-        expected = '''\
+        expected = """\
         (((((((((((v.bar=%s AND v.foo=ANY(%s)) OR \
         (v.bar=%s AND v.foo=ANY(%s))) OR \
         (v.bar=%s AND v.foo=ANY(%s))) OR \
@@ -77,16 +69,13 @@ class QTestCase(TestCase, backtosql.TestSQLMixin):
         (v.bar=%s AND v.foo=ANY(%s))) OR \
         (v.bar=%s AND v.foo=ANY(%s))) OR \
         (v.bar=%s AND v.foo=ANY(%s)))\
-        '''
+        """
 
-        self.assertSQLEquals(constraints, expected.replace('        ', ''))
+        self.assertSQLEquals(constraints, expected.replace("        ", ""))
         self.assertCountEqual(q.get_params(), [[1, 2, 3], datetime.date.today()] * 11)
 
     def test_generate_nested_constraints_too_deep(self):
-        constraints_dict = {
-            'py_foo__eq': [1, 2, 3],
-            'py_bar': datetime.date.today(),
-        }
+        constraints_dict = {"py_foo__eq": [1, 2, 3], "py_bar": datetime.date.today()}
 
         q = backtosql.Q(self.ModelA, **constraints_dict)
         q.MAX_RECURSION_DEPTH = 10
@@ -98,16 +87,13 @@ class QTestCase(TestCase, backtosql.TestSQLMixin):
             q.generate(prefix="v")
 
     def test_generate_from_a_list(self):
-        constraints_dict = {
-            'py_foo__eq': [1, 2, 3],
-            'py_bar': datetime.date.today(),
-        }
+        constraints_dict = {"py_foo__eq": [1, 2, 3], "py_bar": datetime.date.today()}
 
         q = backtosql.Q(self.ModelA(), *[backtosql.Q(self.ModelA(), **constraints_dict) for x in range(10)])
         q.join_operator = q.OR
 
         constraints = q.generate("TROL")
-        expected = '''\
+        expected = """\
         ((TROL.bar=%s AND TROL.foo=ANY(%s)) OR \
         (TROL.bar=%s AND TROL.foo=ANY(%s)) OR \
         (TROL.bar=%s AND TROL.foo=ANY(%s)) OR \
@@ -117,6 +103,6 @@ class QTestCase(TestCase, backtosql.TestSQLMixin):
         (TROL.bar=%s AND TROL.foo=ANY(%s)) OR \
         (TROL.bar=%s AND TROL.foo=ANY(%s)) OR \
         (TROL.bar=%s AND TROL.foo=ANY(%s)) OR \
-        (TROL.bar=%s AND TROL.foo=ANY(%s)))'''
-        self.assertSQLEquals(constraints, expected.replace('        ', ''))
+        (TROL.bar=%s AND TROL.foo=ANY(%s)))"""
+        self.assertSQLEquals(constraints, expected.replace("        ", ""))
         self.assertCountEqual(q.get_params(), [[1, 2, 3], datetime.date.today()] * 10)

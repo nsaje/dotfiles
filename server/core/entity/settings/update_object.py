@@ -2,9 +2,10 @@ class UpdateObject(object):
     """ An object returned by `SettingsBase.copy_settings()` that keeps track of proposed
         changes to the settings. Ensures backward compatibility with old settings style.
     """
+
     def __init__(self, settings):
-        self.__dict__['settings'] = settings
-        self.__dict__['_supports_multicurrency'] = hasattr(settings, 'get_multicurrency_counterpart')
+        self.__dict__["settings"] = settings
+        self.__dict__["_supports_multicurrency"] = hasattr(settings, "get_multicurrency_counterpart")
 
     def __getattr__(self, key):
         if key in self.__dict__:
@@ -47,8 +48,6 @@ class UpdateObject(object):
     def get_setting_changes(self, new_settings):
         if new_settings == self.settings:
             return self.settings.get_dict_changes(
-                self.get_settings_dict(),
-                self.settings.get_settings_dict(),
-                self.settings._settings_fields,
+                self.get_settings_dict(), self.settings.get_settings_dict(), self.settings._settings_fields
             )
         return self.settings.get_setting_changes(new_settings)

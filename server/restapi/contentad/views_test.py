@@ -15,43 +15,42 @@ from . import views
 
 
 class ContentAdsTest(RESTAPITest):
-
     @classmethod
     def contentad_repr(
         cls,
         id=1,
         ad_group_id=1,
         state=constants.ContentAdSourceState.ACTIVE,
-        url='https://www.example.com',
-        title='My title',
-        image_url='https://www.example.com/img',
-        display_url='https://www.example.com/landing',
-        brand_name='My brand',
-        description='My description',
-        call_to_action='Read more...',
-        label='My label',
-        image_crop='center',
+        url="https://www.example.com",
+        title="My title",
+        image_url="https://www.example.com/img",
+        display_url="https://www.example.com/landing",
+        brand_name="My brand",
+        description="My description",
+        call_to_action="Read more...",
+        label="My label",
+        image_crop="center",
         tracker_urls=[],
     ):
         representation = {
-            'id': str(id),
-            'adGroupId': str(ad_group_id),
-            'state': constants.ContentAdSourceState.get_name(state),
-            'url': url,
-            'title': title,
-            'imageUrl': image_url,
-            'displayUrl': display_url,
-            'brandName': brand_name,
-            'description': description,
-            'callToAction': call_to_action,
-            'label': label,
-            'imageCrop': image_crop,
-            'trackerUrls': tracker_urls,
+            "id": str(id),
+            "adGroupId": str(ad_group_id),
+            "state": constants.ContentAdSourceState.get_name(state),
+            "url": url,
+            "title": title,
+            "imageUrl": image_url,
+            "displayUrl": display_url,
+            "brandName": brand_name,
+            "description": description,
+            "callToAction": call_to_action,
+            "label": label,
+            "imageCrop": image_crop,
+            "trackerUrls": tracker_urls,
         }
         return cls.normalize(representation)
 
     def validate_against_db(self, cad):
-        cad_db = dash.models.ContentAd.objects.get(pk=cad['id'])
+        cad_db = dash.models.ContentAd.objects.get(pk=cad["id"])
         expected = self.contentad_repr(
             id=cad_db.pk,
             ad_group_id=cad_db.ad_group_id,
@@ -70,35 +69,39 @@ class ContentAdsTest(RESTAPITest):
         self.assertEqual(expected, cad)
 
     def test_contentads_list(self):
-        r = self.client.get(reverse('contentads_list') + '?adGroupId=2040')
+        r = self.client.get(reverse("contentads_list") + "?adGroupId=2040")
         resp_json = self.assertResponseValid(r, data_type=list)
-        for item in resp_json['data']:
+        for item in resp_json["data"]:
             self.validate_against_db(item)
 
     def test_contentads_get(self):
-        r = self.client.get(reverse('contentads_details', kwargs={'content_ad_id': 16805}))
+        r = self.client.get(reverse("contentads_details", kwargs={"content_ad_id": 16805}))
         resp_json = self.assertResponseValid(r)
-        self.validate_against_db(resp_json['data'])
+        self.validate_against_db(resp_json["data"])
 
     def test_contentads_get_permissioned(self):
-        utils.test_helper.add_permissions(self.user, ['can_use_ad_additional_data'])
-        r = self.client.get(reverse('contentads_details', kwargs={'content_ad_id': 16805}))
+        utils.test_helper.add_permissions(self.user, ["can_use_ad_additional_data"])
+        r = self.client.get(reverse("contentads_details", kwargs={"content_ad_id": 16805}))
         resp_json = self.assertResponseValid(r)
-        self.assertIn('additionalData', resp_json['data'])
+        self.assertIn("additionalData", resp_json["data"])
 
     def test_contentads_put(self):
         r = self.client.put(
-            reverse('contentads_details', kwargs={'content_ad_id': 16805}),
-            data={'state': 'INACTIVE', 'label': 'My new label'}, format='json')
+            reverse("contentads_details", kwargs={"content_ad_id": 16805}),
+            data={"state": "INACTIVE", "label": "My new label"},
+            format="json",
+        )
         resp_json = self.assertResponseValid(r)
-        self.validate_against_db(resp_json['data'])
-        self.assertEqual(resp_json['data']['state'], 'INACTIVE')
-        self.assertEqual(resp_json['data']['label'], 'My new label')
+        self.validate_against_db(resp_json["data"])
+        self.assertEqual(resp_json["data"]["state"], "INACTIVE")
+        self.assertEqual(resp_json["data"]["label"], "My new label")
 
     def test_contentads_put_permissioned(self):
         self.client.put(
-            reverse('contentads_details', kwargs={'content_ad_id': 16805}),
-            data={'additionalData': {'a': 1}}, format='json')
+            reverse("contentads_details", kwargs={"content_ad_id": 16805}),
+            data={"additionalData": {"a": 1}},
+            format="json",
+        )
         cad = dash.models.ContentAd.objects.get(pk=16805)
         self.assertEqual(cad.additional_data, None)
 
@@ -106,27 +109,31 @@ class ContentAdsTest(RESTAPITest):
         content_ad = dash.models.ContentAd.objects.get(pk=16805)
         views.ACCOUNTS_CAN_EDIT_URL.append(content_ad.ad_group.campaign.account_id)
         r = self.client.put(
-            reverse('contentads_details', kwargs={'content_ad_id': content_ad.pk}),
-            data={'state': 'INACTIVE', 'url': 'https://example.com'}, format='json')
+            reverse("contentads_details", kwargs={"content_ad_id": content_ad.pk}),
+            data={"state": "INACTIVE", "url": "https://example.com"},
+            format="json",
+        )
         resp_json = self.assertResponseValid(r)
-        self.validate_against_db(resp_json['data'])
-        self.assertEqual(resp_json['data']['state'], 'INACTIVE')
-        self.assertEqual(resp_json['data']['url'], 'https://example.com')
+        self.validate_against_db(resp_json["data"])
+        self.assertEqual(resp_json["data"]["state"], "INACTIVE")
+        self.assertEqual(resp_json["data"]["url"], "https://example.com")
 
     def test_contentads_put_updates(self):
         content_ad = dash.models.ContentAd.objects.get(pk=16805)
         r = self.client.put(
-            reverse('contentads_details', kwargs={'content_ad_id': content_ad.pk}),
-            data={'trackerUrls': ['test1', 'test2'], 'title': 'newtitle'}, format='json')
+            reverse("contentads_details", kwargs={"content_ad_id": content_ad.pk}),
+            data={"trackerUrls": ["test1", "test2"], "title": "newtitle"},
+            format="json",
+        )
         resp_json = self.assertResponseValid(r)
-        self.validate_against_db(resp_json['data'])
-        self.assertEqual(resp_json['data']['trackerUrls'], ['test1', 'test2'])
-        self.assertNotEqual(resp_json['data']['title'], 'newtitle')  # readonly
+        self.validate_against_db(resp_json["data"])
+        self.assertEqual(resp_json["data"]["trackerUrls"], ["test1", "test2"])
+        self.assertNotEqual(resp_json["data"]["title"], "newtitle")  # readonly
 
 
 @override_settings(R1_DEMO_MODE=True)
 class TestBatchUpload(TestCase):
-    fixtures = ['test_views.yaml']
+    fixtures = ["test_views.yaml"]
 
     def setUp(self):
         self.client = APIClient()
@@ -145,51 +152,60 @@ class TestBatchUpload(TestCase):
             "callToAction": "Watch More",
             "label": "",
             "imageCrop": "center",
-            "trackerUrls": ["https://www.example.com/a", "https://www.example.com/b"]
+            "trackerUrls": ["https://www.example.com/a", "https://www.example.com/b"],
         }
 
-    @mock.patch('dash.features.contentupload.upload._invoke_external_validation', mock.Mock())
+    @mock.patch("dash.features.contentupload.upload._invoke_external_validation", mock.Mock())
     def test_batch_upload_success(self):
-        to_upload = [self._mock_content_ad('test1'), self._mock_content_ad('test2')]
-        r = self.client.post(reverse('contentads_batch_list') + '?adGroupId=987', to_upload, format='json')
+        to_upload = [self._mock_content_ad("test1"), self._mock_content_ad("test2")]
+        r = self.client.post(reverse("contentads_batch_list") + "?adGroupId=987", to_upload, format="json")
         self.assertEqual(r.status_code, 201)
         resp_json = json.loads(r.content)
-        self.assertIsInstance(resp_json['data'], dict)
-        self.assertEqual(resp_json['data']['status'], 'IN_PROGRESS')
-        self.assertIn('id', resp_json['data'])
+        self.assertIsInstance(resp_json["data"], dict)
+        self.assertEqual(resp_json["data"]["status"], "IN_PROGRESS")
+        self.assertIn("id", resp_json["data"])
 
-        batch_id = int(resp_json['data']['id'])
+        batch_id = int(resp_json["data"]["id"])
         batch = dash.models.UploadBatch.objects.get(pk=batch_id)
 
-        r = self.client.get(reverse('contentads_batch_details', kwargs={'batch_id': batch_id}))
+        r = self.client.get(reverse("contentads_batch_details", kwargs={"batch_id": batch_id}))
         self.assertEqual(r.status_code, 200)
         resp_json = json.loads(r.content)
-        self.assertIsInstance(resp_json['data'], dict)
-        self.assertEqual(resp_json['data']['status'], 'IN_PROGRESS')
-        self.assertEqual(batch_id, int(resp_json['data']['id']))
+        self.assertIsInstance(resp_json["data"], dict)
+        self.assertEqual(resp_json["data"]["status"], "IN_PROGRESS")
+        self.assertEqual(batch_id, int(resp_json["data"]["id"]))
 
         self._approve_candidates(batch)
 
-        r = self.client.get(reverse('contentads_batch_details', kwargs={'batch_id': batch_id}))
+        r = self.client.get(reverse("contentads_batch_details", kwargs={"batch_id": batch_id}))
         self.assertEqual(r.status_code, 200)
         resp_json = json.loads(r.content)
-        self.assertIsInstance(resp_json['data'], dict)
-        self.assertEqual(resp_json['data']['status'], 'DONE')
-        self.assertEqual(batch_id, int(resp_json['data']['id']))
+        self.assertIsInstance(resp_json["data"], dict)
+        self.assertEqual(resp_json["data"]["status"], "DONE")
+        self.assertEqual(batch_id, int(resp_json["data"]["id"]))
 
-        saved_content_ads = batch.contentad_set.all().order_by('pk')
-        self.assertEqual(len(to_upload), len(resp_json['data']['approvedContentAds']))
+        saved_content_ads = batch.contentad_set.all().order_by("pk")
+        self.assertEqual(len(to_upload), len(resp_json["data"]["approvedContentAds"]))
         self.assertEqual(len(to_upload), len(saved_content_ads))
         for i in range(len(to_upload)):
-            for field in ('state', 'title', 'displayUrl', 'brandName', 'description', 'callToAction', 'label', 'trackerUrls'):
-                self.assertEqual(to_upload[i][field], resp_json['data']['approvedContentAds'][i][field])
-            self.assertEqual(saved_content_ads[i].id, int(resp_json['data']['approvedContentAds'][i]['id']))
+            for field in (
+                "state",
+                "title",
+                "displayUrl",
+                "brandName",
+                "description",
+                "callToAction",
+                "label",
+                "trackerUrls",
+            ):
+                self.assertEqual(to_upload[i][field], resp_json["data"]["approvedContentAds"][i][field])
+            self.assertEqual(saved_content_ads[i].id, int(resp_json["data"]["approvedContentAds"][i]["id"]))
 
     @staticmethod
     def _approve_candidates(batch):
         for candidate in batch.contentadcandidate_set.all():
-            candidate.image_id = 'p/srv/8678/13f72b5e37a64860a73ac95ff51b2a3e'
-            candidate.image_hash = '1234'
+            candidate.image_id = "p/srv/8678/13f72b5e37a64860a73ac95ff51b2a3e"
+            candidate.image_hash = "1234"
             candidate.image_height = 500
             candidate.image_width = 500
             candidate.image_status = constants.AsyncUploadJobStatus.OK
@@ -197,35 +213,35 @@ class TestBatchUpload(TestCase):
             candidate.save()
         contentupload.upload._handle_auto_save(batch)
 
-    @mock.patch('dash.features.contentupload.upload._invoke_external_validation', mock.Mock())
+    @mock.patch("dash.features.contentupload.upload._invoke_external_validation", mock.Mock())
     def test_batch_upload_failure(self):
-        to_upload = [self._mock_content_ad('test1'), self._mock_content_ad('test2')]
-        r = self.client.post(reverse('contentads_batch_list') + '?adGroupId=987', to_upload, format='json')
+        to_upload = [self._mock_content_ad("test1"), self._mock_content_ad("test2")]
+        r = self.client.post(reverse("contentads_batch_list") + "?adGroupId=987", to_upload, format="json")
         self.assertEqual(r.status_code, 201)
         resp_json = json.loads(r.content)
-        self.assertIsInstance(resp_json['data'], dict)
-        self.assertEqual(resp_json['data']['status'], 'IN_PROGRESS')
-        self.assertIn('id', resp_json['data'])
+        self.assertIsInstance(resp_json["data"], dict)
+        self.assertEqual(resp_json["data"]["status"], "IN_PROGRESS")
+        self.assertIn("id", resp_json["data"])
 
-        batch_id = int(resp_json['data']['id'])
+        batch_id = int(resp_json["data"]["id"])
         batch = dash.models.UploadBatch.objects.get(pk=batch_id)
 
-        r = self.client.get(reverse('contentads_batch_details', kwargs={'batch_id': batch_id}))
+        r = self.client.get(reverse("contentads_batch_details", kwargs={"batch_id": batch_id}))
         self.assertEqual(r.status_code, 200)
         resp_json = json.loads(r.content)
-        self.assertIsInstance(resp_json['data'], dict)
-        self.assertEqual(resp_json['data']['status'], 'IN_PROGRESS')
-        self.assertEqual(batch_id, int(resp_json['data']['id']))
+        self.assertIsInstance(resp_json["data"], dict)
+        self.assertEqual(resp_json["data"]["status"], "IN_PROGRESS")
+        self.assertEqual(batch_id, int(resp_json["data"]["id"]))
 
         self._reject_candidates(batch)
 
-        r = self.client.get(reverse('contentads_batch_details', kwargs={'batch_id': batch_id}))
+        r = self.client.get(reverse("contentads_batch_details", kwargs={"batch_id": batch_id}))
         self.assertEqual(r.status_code, 200)
         resp_json = json.loads(r.content)
-        self.assertIsInstance(resp_json['data'], dict)
-        self.assertEqual(resp_json['data']['status'], 'FAILED')
-        self.assertEqual(resp_json['data']['approvedContentAds'], [])
-        self.assertEqual(batch_id, int(resp_json['data']['id']))
+        self.assertIsInstance(resp_json["data"], dict)
+        self.assertEqual(resp_json["data"]["status"], "FAILED")
+        self.assertEqual(resp_json["data"]["approvedContentAds"], [])
+        self.assertEqual(batch_id, int(resp_json["data"]["id"]))
 
     @staticmethod
     def _reject_candidates(batch):

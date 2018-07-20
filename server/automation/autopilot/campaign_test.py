@@ -11,7 +11,6 @@ from utils.magic_mixer import magic_mixer
 
 
 class AutopilotCalculateCampaignDailyBudgetTestCase(TestCase):
-
     def setUp(self):
         self.today = datetime.date(2018, 2, 20)
         self.campaign = magic_mixer.blend(models.Campaign)
@@ -25,7 +24,7 @@ class AutopilotCalculateCampaignDailyBudgetTestCase(TestCase):
             amount=1000,
         )
 
-        utc_now_patcher = patch('utils.dates_helper.utc_now')
+        utc_now_patcher = patch("utils.dates_helper.utc_now")
         self.mock_utc_now = utc_now_patcher.start()
         self.mock_utc_now.return_value = datetime.datetime(2018, 2, 20, 12, 5)
         self.addCleanup(utc_now_patcher.stop)
@@ -42,14 +41,14 @@ class AutopilotCalculateCampaignDailyBudgetTestCase(TestCase):
         magic_mixer.blend(
             models.BudgetDailyStatement,
             budget=budget,
-            media_spend_nano=1.1*1e9,
-            data_spend_nano=2.2*1e9,
-            license_fee_nano=3.3*1e9,
-            margin_nano=4.4*1e9,
-            local_media_spend_nano=1.1*1e9,
-            local_data_spend_nano=2.2*1e9,
-            local_license_fee_nano=3.3*1e9,
-            local_margin_nano=4.4*1e9,
+            media_spend_nano=1.1 * 1e9,
+            data_spend_nano=2.2 * 1e9,
+            license_fee_nano=3.3 * 1e9,
+            margin_nano=4.4 * 1e9,
+            local_media_spend_nano=1.1 * 1e9,
+            local_data_spend_nano=2.2 * 1e9,
+            local_license_fee_nano=3.3 * 1e9,
+            local_margin_nano=4.4 * 1e9,
         )
 
         result = calculate_campaigns_daily_budget()

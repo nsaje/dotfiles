@@ -2,7 +2,6 @@ from django.db import models
 
 
 class BaseManager(models.Manager):
-
     def create_unsafe(self, *args, **kwargs):
         """ Provides access to Django's create() method.
 

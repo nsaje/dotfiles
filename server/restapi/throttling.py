@@ -9,18 +9,15 @@ class UserRateOverrideThrottle(rest_framework.throttling.UserRateThrottle):
 
     def __init__(self, *args, **kwargs):
         if not self.override_rates:
-            self.override_rates = settings.REST_FRAMEWORK.get('DEFAULT_OVERRIDE_THROTTLE_RATES')
+            self.override_rates = settings.REST_FRAMEWORK.get("DEFAULT_OVERRIDE_THROTTLE_RATES")
         return super().__init__(*args, **kwargs)
 
     def allow_request(self, request, view):
-        if request.user.email.endswith('@service.zemanta.com'):
+        if request.user.email.endswith("@service.zemanta.com"):
             return True
         override_rate = None
         if self.override_rates:
-            override_rate = self.override_rates.get(
-                request.user.email,
-                None,
-            )
+            override_rate = self.override_rates.get(request.user.email, None)
         if override_rate is not None:
             self.num_requests, self.duration = self.parse_rate(override_rate)
         return super().allow_request(request, view)

@@ -13,32 +13,32 @@ class SlackLoggerMixin(object):
         removed = set(orignal_flags.keys()) - set(updated_flags.keys())
         added = set(updated_flags.keys()) - set(orignal_flags.keys())
         entity_type = original_entity.__class__.__name__
-        removed_msg = ''
-        added_msg = ''
+        removed_msg = ""
+        added_msg = ""
 
         if removed:
-            removed_msg = '*{ids}* have been disabled on {entity_link} ({type}).'.format(
-                ids=', '.join(removed),
+            removed_msg = "*{ids}* have been disabled on {entity_link} ({type}).".format(
+                ids=", ".join(removed),
                 entity_link=self.entity_admin_url_builder(original_entity, anchor_tag=original_entity.name),
                 type=entity_type,
             )
         if added:
-            added_msg = '*{ids}* have been enabled on {entity_link} ({type}).'.format(
-                ids=', '.join(added),
+            added_msg = "*{ids}* have been enabled on {entity_link} ({type}).".format(
+                ids=", ".join(added),
                 entity_link=self.entity_admin_url_builder(original_entity, anchor_tag=updated_entity.name),
                 type=entity_type,
             )
 
-        txt = '\n'.join([removed_msg, added_msg])
+        txt = "\n".join([removed_msg, added_msg])
         if txt.strip():
             try:
-                slack.publish(txt, channel='z1-hacks-logs')
+                slack.publish(txt, channel="z1-hacks-logs")
             except Exception:
-                logger.exception('Connection Error with Slack')
+                logger.exception("Connection Error with Slack")
 
-    def entity_admin_url_builder(self, entity, domain='https://one.zemanta.com', anchor_tag='edit'):
+    def entity_admin_url_builder(self, entity, domain="https://one.zemanta.com", anchor_tag="edit"):
         entity_name = entity.__class__.__name__.lower()
-        url = '{domain}/admin/dash/{entity_name}/{id}/change'.format(domain=domain,
-                                                                     entity_name=entity_name,
-                                                                     id=entity.id)
+        url = "{domain}/admin/dash/{entity_name}/{id}/change".format(
+            domain=domain, entity_name=entity_name, id=entity.id
+        )
         return slack.link(url, anchor_tag)

@@ -3,13 +3,13 @@ from django.core.exceptions import ValidationError
 
 
 class Round(Func):
-    function = 'ROUND'
-    template = '%(function)s(%(expressions)s, 0)'
+    function = "ROUND"
+    template = "%(function)s(%(expressions)s, 0)"
 
 
 class Coalesce(Func):
-    function = 'COALESCE'
-    template = '%(function)s(%(expressions)s, 0)'
+    function = "COALESCE"
+    template = "%(function)s(%(expressions)s, 0)"
 
 
 def validate(*validators):
@@ -18,6 +18,6 @@ def validate(*validators):
         try:
             v()
         except ValidationError as e:
-            errors[v.__name__.replace('validate_', '')] = e.error_list
+            errors[v.__name__.replace("validate_", "")] = e.error_list
     if errors:
         raise ValidationError(errors)

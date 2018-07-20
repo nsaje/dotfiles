@@ -61,14 +61,9 @@ def query(user, breakdown, constraints, level):
                 augmenter_fn(dimension_rows, loader)
             rows = _extend_rows(rows, dimension_rows)
         elif dimension in constants.TimeDimension._ALL:
-            rows = _extend_rows(
-                rows,
-                [{
-                    dimension: date
-                } for date in _get_representative_dates(dimension, constraints)],
-            )
+            rows = _extend_rows(rows, [{dimension: date} for date in _get_representative_dates(dimension, constraints)])
         else:
-            raise Exception('Invalid dimension for report: ' + dimension)
+            raise Exception("Invalid dimension for report: " + dimension)
 
     for dimension in breakdown:
         loader = loader_map[dimension]

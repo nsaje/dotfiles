@@ -5,33 +5,22 @@ from redshiftapi import queries
 def query_campaign(campaign_id, date_from, date_to):
     sql, params, temp_tables = queries.prepare_query_all_base(
         breakdown=[],
-        constraints={
-            'campaign_id': campaign_id,
-            'date__gte': date_from,
-            'date__lte': date_to,
-        },
+        constraints={"campaign_id": campaign_id, "date__gte": date_from, "date__lte": date_to},
         parents=None,
-        use_publishers_view=False
+        use_publishers_view=False,
     )
 
-    rows = db.execute_query(sql, params, 'campaign_quick_stats', temp_tables=temp_tables)
+    rows = db.execute_query(sql, params, "campaign_quick_stats", temp_tables=temp_tables)
     return rows[0]
 
 
 def query_adgroup(ad_group_id, date_from, date_to, source_id=None):
-    constraints = {
-        'ad_group_id': ad_group_id,
-        'date__gte': date_from,
-        'date__lte': date_to,
-    }
+    constraints = {"ad_group_id": ad_group_id, "date__gte": date_from, "date__lte": date_to}
     if source_id:
-        constraints['source_id'] = source_id
+        constraints["source_id"] = source_id
     sql, params, temp_tables = queries.prepare_query_all_base(
-        breakdown=[],
-        constraints=constraints,
-        parents=None,
-        use_publishers_view=False
+        breakdown=[], constraints=constraints, parents=None, use_publishers_view=False
     )
 
-    rows = db.execute_query(sql, params, 'adgroup_quick_stats', temp_tables=temp_tables)
+    rows = db.execute_query(sql, params, "adgroup_quick_stats", temp_tables=temp_tables)
     return rows[0]

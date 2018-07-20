@@ -2,19 +2,12 @@ import decimal
 
 
 def default_currency(number, places=2):
-    return format_currency(number, places=places, curr='$')
+    return format_currency(number, places=places, curr="$")
 
 
-def format_currency(value,
-                    *,
-                    places=2,
-                    rounding=decimal.ROUND_HALF_DOWN,
-                    curr='',
-                    sep=',',
-                    dp='.',
-                    pos='',
-                    neg='-',
-                    trailneg=''):
+def format_currency(
+    value, *, places=2, rounding=decimal.ROUND_HALF_DOWN, curr="", sep=",", dp=".", pos="", neg="-", trailneg=""
+):
     """Convert Decimal to a money formatted string.
 
     places:  required number of places after the decimal point
@@ -28,7 +21,7 @@ def format_currency(value,
     trailneg:optional trailing minus indicator:  '-', ')', space or blank
     """
     value = decimal.Decimal(value)
-    q = decimal.Decimal(10) ** -places      # 2 places --> '0.01'
+    q = decimal.Decimal(10) ** -places  # 2 places --> '0.01'
     sign, digits, exp = value.quantize(q, rounding).as_tuple()
     result = []
     digits = list(map(str, digits))
@@ -36,11 +29,11 @@ def format_currency(value,
     if sign:
         build(trailneg)
     for i in range(places):
-        build(next() if digits else '0')
+        build(next() if digits else "0")
     if places != 0:
         build(dp)
     if not digits:
-        build('0')
+        build("0")
     i = 0
     while digits:
         build(next())
@@ -50,4 +43,4 @@ def format_currency(value,
             build(sep)
     build(curr)
     build(neg if sign else pos)
-    return ''.join(reversed(result))
+    return "".join(reversed(result))

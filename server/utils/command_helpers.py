@@ -27,9 +27,9 @@ class ExceptionCommand(BaseCommand):
 
 
 def last_n_days(n):
-    '''
+    """
     Returns last n days including today.
-    '''
+    """
     today = datetime.datetime.utcnow().date()
     return [today - datetime.timedelta(days=x) for x in range(n)]
 
@@ -57,10 +57,10 @@ def parse_id_list(options, field_name):
     if not options[field_name]:
         return
 
-    return [int(aid) for aid in options[field_name].split(',')]
+    return [int(aid) for aid in options[field_name].split(",")]
 
 
-def parse_date(options, field_name='date', default=None):
+def parse_date(options, field_name="date", default=None):
     if not options[field_name]:
         return default
 
@@ -68,7 +68,7 @@ def parse_date(options, field_name='date', default=None):
 
 
 def set_logger_verbosity(logger_, options):
-    verbosity = int(options['verbosity'])
+    verbosity = int(options["verbosity"])
     if verbosity == 0:
         logger_.setLevel(logging.CRITICAL)
     elif verbosity == 1:  # default

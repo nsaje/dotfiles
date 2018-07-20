@@ -2,8 +2,9 @@
 import os
 import sys
 import cdecimal
+
 # Ensure any import of decimal gets cdecimal instead.
-sys.modules['decimal'] = cdecimal
+sys.modules["decimal"] = cdecimal
 
 if __name__ == "__main__":
     os.environ.setdefault("DJANGO_SETTINGS_MODULE", "server.settings")

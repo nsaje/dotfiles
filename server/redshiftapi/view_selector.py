@@ -5,7 +5,7 @@ DEVICE = {sc.DEVICE, sc.DEVICE_OS}
 PLACEMENT = {sc.PLACEMENT_MEDIUM, sc.PLACEMENT_TYPE, sc.VIDEO_PLAYBACK_METHOD}
 GEO = {sc.COUNTRY, sc.STATE, sc.DMA}
 DEMO = {sc.AGE, sc.GENDER, sc.AGE_GENDER}
-OTHER = {'device_os_version'}
+OTHER = {"device_os_version"}
 
 ACCOUNT = {sc.ACCOUNT, sc.SOURCE}
 CAMPAIGN_N_ABOVE = {sc.CAMPAIGN} | ACCOUNT
@@ -14,44 +14,40 @@ CONTENT_AD_N_ABOVE = {sc.CONTENT_AD} | AD_GROUP_N_ABOVE
 PUBLISHER_N_ABOVE = {sc.PUBLISHER} | AD_GROUP_N_ABOVE
 
 BASE_VIEWS = [
-    ['mv_account', ACCOUNT],
-    ['mv_account_device', ACCOUNT | DEVICE],
-    ['mv_account_placement', ACCOUNT | PLACEMENT],
-    ['mv_account_geo', ACCOUNT | GEO],
-
-    ['mv_campaign', CAMPAIGN_N_ABOVE],
-    ['mv_campaign_device', CAMPAIGN_N_ABOVE | DEVICE],
-    ['mv_campaign_placement', CAMPAIGN_N_ABOVE | PLACEMENT],
-    ['mv_campaign_geo', CAMPAIGN_N_ABOVE | GEO],
-
-    ['mv_adgroup', AD_GROUP_N_ABOVE],
-    ['mv_adgroup_device', AD_GROUP_N_ABOVE | DEVICE],
-    ['mv_adgroup_placement', AD_GROUP_N_ABOVE | PLACEMENT],
-    ['mv_adgroup_geo', AD_GROUP_N_ABOVE | GEO],
-
-    ['mv_contentad', CONTENT_AD_N_ABOVE],
-    ['mv_contentad_device', CONTENT_AD_N_ABOVE | DEVICE],
-    ['mv_contentad_placement', CONTENT_AD_N_ABOVE | PLACEMENT],
-    ['mv_contentad_geo', CONTENT_AD_N_ABOVE | GEO],
-
-    ['mv_master', CONTENT_AD_N_ABOVE | {sc.PUBLISHER} | DEVICE | PLACEMENT | GEO | DEMO | OTHER],
+    ["mv_account", ACCOUNT],
+    ["mv_account_device", ACCOUNT | DEVICE],
+    ["mv_account_placement", ACCOUNT | PLACEMENT],
+    ["mv_account_geo", ACCOUNT | GEO],
+    ["mv_campaign", CAMPAIGN_N_ABOVE],
+    ["mv_campaign_device", CAMPAIGN_N_ABOVE | DEVICE],
+    ["mv_campaign_placement", CAMPAIGN_N_ABOVE | PLACEMENT],
+    ["mv_campaign_geo", CAMPAIGN_N_ABOVE | GEO],
+    ["mv_adgroup", AD_GROUP_N_ABOVE],
+    ["mv_adgroup_device", AD_GROUP_N_ABOVE | DEVICE],
+    ["mv_adgroup_placement", AD_GROUP_N_ABOVE | PLACEMENT],
+    ["mv_adgroup_geo", AD_GROUP_N_ABOVE | GEO],
+    ["mv_contentad", CONTENT_AD_N_ABOVE],
+    ["mv_contentad_device", CONTENT_AD_N_ABOVE | DEVICE],
+    ["mv_contentad_placement", CONTENT_AD_N_ABOVE | PLACEMENT],
+    ["mv_contentad_geo", CONTENT_AD_N_ABOVE | GEO],
+    ["mv_master", CONTENT_AD_N_ABOVE | {sc.PUBLISHER} | DEVICE | PLACEMENT | GEO | DEMO | OTHER],
 ]
 
 
 PUBLISHER_VIEWS = [
-    ['mv_account_pubs', ACCOUNT | {sc.PUBLISHER}],
-    ['mv_campaign_pubs', CAMPAIGN_N_ABOVE | {sc.PUBLISHER}],
-    ['mv_adgroup_pubs', AD_GROUP_N_ABOVE | {sc.PUBLISHER}],
-    ['mv_master_pubs', AD_GROUP_N_ABOVE | {sc.PUBLISHER} | DEVICE | PLACEMENT | GEO | DEMO | OTHER],
+    ["mv_account_pubs", ACCOUNT | {sc.PUBLISHER}],
+    ["mv_campaign_pubs", CAMPAIGN_N_ABOVE | {sc.PUBLISHER}],
+    ["mv_adgroup_pubs", AD_GROUP_N_ABOVE | {sc.PUBLISHER}],
+    ["mv_master_pubs", AD_GROUP_N_ABOVE | {sc.PUBLISHER} | DEVICE | PLACEMENT | GEO | DEMO | OTHER],
 ]
 
 
 CONVERSION_VIEWS = [
-    ['mv_account_conv', ACCOUNT],
-    ['mv_campaign_conv', CAMPAIGN_N_ABOVE],
-    ['mv_adgroup_conv', AD_GROUP_N_ABOVE],
-    ['mv_contentad_conv', CONTENT_AD_N_ABOVE],
-    ['mv_conversions', CONTENT_AD_N_ABOVE | {sc.PUBLISHER}],
+    ["mv_account_conv", ACCOUNT],
+    ["mv_campaign_conv", CAMPAIGN_N_ABOVE],
+    ["mv_adgroup_conv", AD_GROUP_N_ABOVE],
+    ["mv_contentad_conv", CONTENT_AD_N_ABOVE],
+    ["mv_conversions", CONTENT_AD_N_ABOVE | {sc.PUBLISHER}],
 ]
 
 
@@ -60,23 +56,23 @@ TOUCH_PLACEMENT = {sc.PLACEMENT_MEDIUM}
 TOUCH_GEO = {sc.COUNTRY, sc.STATE, sc.DMA}
 
 TOUCHPOINT_VIEWS = [
-    ['mv_account_touch', ACCOUNT],
-    ['mv_account_touch_device', ACCOUNT | TOUCH_DEVICE],
-    ['mv_account_touch_placement', ACCOUNT | TOUCH_PLACEMENT],
-    ['mv_account_touch_geo', ACCOUNT | TOUCH_GEO],
-    ['mv_campaign_touch', CAMPAIGN_N_ABOVE],
-    ['mv_campaign_touch_device', CAMPAIGN_N_ABOVE | TOUCH_DEVICE],
-    ['mv_campaign_touch_placement', CAMPAIGN_N_ABOVE | TOUCH_PLACEMENT],
-    ['mv_campaign_touch_geo', CAMPAIGN_N_ABOVE | TOUCH_GEO],
-    ['mv_adgroup_touch', AD_GROUP_N_ABOVE],
-    ['mv_adgroup_touch_device', AD_GROUP_N_ABOVE | TOUCH_DEVICE],
-    ['mv_adgroup_touch_placement', AD_GROUP_N_ABOVE | TOUCH_PLACEMENT],
-    ['mv_adgroup_touch_geo', AD_GROUP_N_ABOVE | TOUCH_GEO],
-    ['mv_contentad_touch', CONTENT_AD_N_ABOVE],
-    ['mv_contentad_touch_device', CONTENT_AD_N_ABOVE | TOUCH_DEVICE],
-    ['mv_contentad_touch_placement', CONTENT_AD_N_ABOVE | TOUCH_PLACEMENT],
-    ['mv_contentad_touch_geo', CONTENT_AD_N_ABOVE | TOUCH_GEO],
-    ['mv_touchpointconversions', CONTENT_AD_N_ABOVE | {sc.PUBLISHER} | DEVICE | {sc.PLACEMENT_MEDIUM} | GEO],
+    ["mv_account_touch", ACCOUNT],
+    ["mv_account_touch_device", ACCOUNT | TOUCH_DEVICE],
+    ["mv_account_touch_placement", ACCOUNT | TOUCH_PLACEMENT],
+    ["mv_account_touch_geo", ACCOUNT | TOUCH_GEO],
+    ["mv_campaign_touch", CAMPAIGN_N_ABOVE],
+    ["mv_campaign_touch_device", CAMPAIGN_N_ABOVE | TOUCH_DEVICE],
+    ["mv_campaign_touch_placement", CAMPAIGN_N_ABOVE | TOUCH_PLACEMENT],
+    ["mv_campaign_touch_geo", CAMPAIGN_N_ABOVE | TOUCH_GEO],
+    ["mv_adgroup_touch", AD_GROUP_N_ABOVE],
+    ["mv_adgroup_touch_device", AD_GROUP_N_ABOVE | TOUCH_DEVICE],
+    ["mv_adgroup_touch_placement", AD_GROUP_N_ABOVE | TOUCH_PLACEMENT],
+    ["mv_adgroup_touch_geo", AD_GROUP_N_ABOVE | TOUCH_GEO],
+    ["mv_contentad_touch", CONTENT_AD_N_ABOVE],
+    ["mv_contentad_touch_device", CONTENT_AD_N_ABOVE | TOUCH_DEVICE],
+    ["mv_contentad_touch_placement", CONTENT_AD_N_ABOVE | TOUCH_PLACEMENT],
+    ["mv_contentad_touch_geo", CONTENT_AD_N_ABOVE | TOUCH_GEO],
+    ["mv_touchpointconversions", CONTENT_AD_N_ABOVE | {sc.PUBLISHER} | DEVICE | {sc.PLACEMENT_MEDIUM} | GEO],
 ]
 
 
@@ -99,8 +95,7 @@ def get_fitting_view_dict(needed_dimensions, views):
 
 
 def get_best_view_base(needed_dimensions, use_publishers_view):
-    return get_fitting_view_dict(
-        needed_dimensions, PUBLISHER_VIEWS if use_publishers_view else BASE_VIEWS)
+    return get_fitting_view_dict(needed_dimensions, PUBLISHER_VIEWS if use_publishers_view else BASE_VIEWS)
 
 
 def get_best_view_conversions(needed_dimensions):

@@ -31,7 +31,7 @@ class HistoryMixinOld(object):
             return False
         if self.snapshotted_state:
             return False
-        if name.startswith('_'):
+        if name.startswith("_"):
             return False
         return True
 
@@ -40,7 +40,7 @@ class HistoryMixinOld(object):
             return
 
         # first, turn off the setattr snapshot trigger
-        self.__dict__['_snapshot_on_setattr'] = False
+        self.__dict__["_snapshot_on_setattr"] = False
         if previous:
             self.post_init_newly_created = previous.id is None
         else:
@@ -82,7 +82,7 @@ class HistoryMixinOld(object):
                 changes[field_name] = new_value
         return changes
 
-    def get_history_changes_text(self, changes, separator=', '):
+    def get_history_changes_text(self, changes, separator=", "):
         self._check_history_snapshot_allowed()
 
         change_strings = []
@@ -91,41 +91,36 @@ class HistoryMixinOld(object):
             if not prop:
                 continue
             val = self.get_human_value(key, value)
-            change_strings.append(
-                self._extract_value_diff_text(key, prop, val))
+            change_strings.append(self._extract_value_diff_text(key, prop, val))
         return separator.join(change_strings)
 
     def _extract_value_diff_text(self, key, prop, val):
         previous_value = None
-        previous_value_raw = self.snapshotted_state.get(
-            key) if self.snapshotted_state else None
+        previous_value_raw = self.snapshotted_state.get(key) if self.snapshotted_state else None
         if previous_value_raw:
             previous_value = self.get_human_value(key, previous_value_raw)
 
         if previous_value and previous_value != val:
-            return '{} set from "{}" to "{}"'.format(
-                prop, previous_value, val
-            )
+            return '{} set from "{}" to "{}"'.format(prop, previous_value, val)
         else:
             return '{} set to "{}"'.format(prop, val)
 
-    def get_changes_text_from_dict(self, changes, separator=', '):
+    def get_changes_text_from_dict(self, changes, separator=", "):
         self._check_history_snapshot_allowed()
 
         statements = []
         if not changes or self.post_init_newly_created and changes:
-            statements.append('Created settings')
-        changes_text = self.get_history_changes_text(
-            changes, separator=separator)
+            statements.append("Created settings")
+        changes_text = self.get_history_changes_text(changes, separator=separator)
         if changes_text:
             statements.append(changes_text)
-        return '. '.join(statements)
+        return ". ".join(statements)
 
     def construct_changes(self, created_text, created_text_id, changes):
-        '''
+        """
         Created text of form - (created_text) created_text_id (changes)
         Values in braces are situational.
-        '''
+        """
         self._check_history_snapshot_allowed()
 
         parts = []
@@ -137,5 +132,5 @@ class HistoryMixinOld(object):
         text = self.get_history_changes_text(changes)
         if text:
             parts.append(text)
-        changes_text = ' '.join(parts)
+        changes_text = " ".join(parts)
         return changes, changes_text

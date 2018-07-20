@@ -16,7 +16,7 @@ def sort_results(results, order_fields=None):
     for field in reversed(order_fields):
         reverse = False
 
-        if field.startswith('-'):
+        if field.startswith("-"):
             reverse = True
             field = field[1:]
 
@@ -37,7 +37,7 @@ def sort_results(results, order_fields=None):
     return rows
 
 
-def sort_rows_by_order_and_archived(rows, order_fields, archived_field='archived'):
+def sort_rows_by_order_and_archived(rows, order_fields, archived_field="archived"):
     if isinstance(order_fields, str):
         order_fields = [order_fields]
 
@@ -61,9 +61,9 @@ def map_by_breakdown(rows, breakdown, mapper):
 
 def dissect_order(order):
 
-    prefix = ''
+    prefix = ""
     field_name = order
-    if order.startswith('-'):
+    if order.startswith("-"):
         prefix = order[0]
         field_name = order[1:]
 
@@ -93,7 +93,7 @@ def group_rows_by_breakdown_key(breakdown, rows, max_1=False):
     if max_1:
         for breakdown_id, rows in groups.items():
             if len(rows) > 1:
-                raise Exception('Expected 1 row per breakdown got {}'.format(len(rows)))
+                raise Exception("Expected 1 row per breakdown got {}".format(len(rows)))
             groups[breakdown_id] = rows[0]
 
     return groups
@@ -101,7 +101,7 @@ def group_rows_by_breakdown_key(breakdown, rows, max_1=False):
 
 def apply_offset_limit(rows, offset, limit):
     if offset and limit:
-        return rows[offset:offset + limit]
+        return rows[offset : offset + limit]
 
     if offset:
         return rows[offset:]

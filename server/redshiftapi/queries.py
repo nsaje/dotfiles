@@ -7,13 +7,13 @@ from . import helpers
 
 
 def prepare_temp_table_create(temp_tables):
-    sql = backtosql.generate_sql('temp_tables_create.sql', {'temp_tables': temp_tables})
+    sql = backtosql.generate_sql("temp_tables_create.sql", {"temp_tables": temp_tables})
     params = [value for table in temp_tables for value in table.values]
     return sql, params
 
 
 def prepare_temp_table_drop(temp_tables):
-    sql = backtosql.generate_sql('temp_tables_drop.sql', {'temp_tables': temp_tables})
+    sql = backtosql.generate_sql("temp_tables_drop.sql", {"temp_tables": temp_tables})
     return sql, []
 
 
@@ -22,10 +22,7 @@ def prepare_query_all_base(breakdown, constraints, parents, use_publishers_view)
     view = view_selector.get_best_view_base(needed_dimensions, use_publishers_view)
     model = models.MVMaster()
 
-    context = model.get_query_all_context(
-        breakdown, constraints, parents,
-        ['-clicks'] + breakdown,
-        view)
+    context = model.get_query_all_context(breakdown, constraints, parents, ["-clicks"] + breakdown, view)
 
     return _prepare_query_all_for_model(model, context)
 
@@ -37,8 +34,8 @@ def prepare_query_all_yesterday(breakdown, constraints, parents, use_publishers_
     model = models.MVMaster()
 
     context = model.get_query_all_yesterday_context(
-        breakdown, constraints, parents,
-        ['-yesterday_cost'] + breakdown, view)
+        breakdown, constraints, parents, ["-yesterday_cost"] + breakdown, view
+    )
 
     return _prepare_query_all_for_model(model, context)
 
@@ -52,10 +49,7 @@ def prepare_query_all_conversions(breakdown, constraints, parents):
 
     model = models.MVConversions()
 
-    context = model.get_query_all_context(
-        breakdown, constraints, parents,
-        ['-count'] + breakdown,
-        view)
+    context = model.get_query_all_context(breakdown, constraints, parents, ["-count"] + breakdown, view)
 
     return _prepare_query_all_for_model(model, context)
 
@@ -69,69 +63,83 @@ def prepare_query_all_touchpoints(breakdown, constraints, parents):
 
     model = models.MVTouchpointConversions()
 
-    context = model.get_query_all_context(
-        breakdown, constraints, parents,
-        ['-count'] + breakdown,
-        view)
+    context = model.get_query_all_context(breakdown, constraints, parents, ["-count"] + breakdown, view)
 
     return _prepare_query_all_for_model(model, context)
 
 
-def _prepare_query_all_for_model(model, context, template_name='breakdown.sql'):
+def _prepare_query_all_for_model(model, context, template_name="breakdown.sql"):
     sql = backtosql.generate_sql(template_name, context)
-    return sql, context['constraints'].get_params(), context['temp_tables']
+    return sql, context["constraints"].get_params(), context["temp_tables"]
 
 
-def prepare_query_joint_base(breakdown, constraints, parents, orders, offset, limit, goals, use_publishers_view, skip_performance_columns=False):
+def prepare_query_joint_base(
+    breakdown, constraints, parents, orders, offset, limit, goals, use_publishers_view, skip_performance_columns=False
+):
     needed_dimensions = helpers.get_all_dimensions(breakdown, constraints, parents)
     views = {
-        'base': view_selector.get_best_view_base(needed_dimensions, use_publishers_view),
-        'yesterday': view_selector.get_best_view_base(needed_dimensions, use_publishers_view),
-        'conversions': view_selector.get_best_view_conversions(needed_dimensions),
-        'touchpoints': view_selector.get_best_view_touchpoints(needed_dimensions),
+        "base": view_selector.get_best_view_base(needed_dimensions, use_publishers_view),
+        "yesterday": view_selector.get_best_view_base(needed_dimensions, use_publishers_view),
+        "conversions": view_selector.get_best_view_conversions(needed_dimensions),
+        "touchpoints": view_selector.get_best_view_touchpoints(needed_dimensions),
     }
 
     context = models.MVJointMaster().get_query_joint_context(
-        breakdown, constraints, parents, orders, offset, limit,
-        goals, views,
+        breakdown,
+        constraints,
+        parents,
+        orders,
+        offset,
+        limit,
+        goals,
+        views,
         skip_performance_columns,
-        supports_conversions=view_selector.supports_conversions(views['base'], views['conversions']),
-        supports_touchpoints=view_selector.supports_conversions(views['base'], views['touchpoints']))
+        supports_conversions=view_selector.supports_conversions(views["base"], views["conversions"]),
+        supports_touchpoints=view_selector.supports_conversions(views["base"], views["touchpoints"]),
+    )
 
-    return _prepare_query_joint_for_model(context, 'breakdown_joint_base.sql')
+    return _prepare_query_joint_for_model(context, "breakdown_joint_base.sql")
 
 
 def prepare_query_joint_levels(breakdown, constraints, parents, orders, offset, limit, goals, use_publishers_view):
     needed_dimensions = helpers.get_all_dimensions(breakdown, constraints, parents)
     views = {
-        'base': view_selector.get_best_view_base(needed_dimensions, use_publishers_view),
-        'yesterday': view_selector.get_best_view_base(needed_dimensions, use_publishers_view),
-        'conversions': view_selector.get_best_view_conversions(needed_dimensions),
-        'touchpoints': view_selector.get_best_view_touchpoints(needed_dimensions),
+        "base": view_selector.get_best_view_base(needed_dimensions, use_publishers_view),
+        "yesterday": view_selector.get_best_view_base(needed_dimensions, use_publishers_view),
+        "conversions": view_selector.get_best_view_conversions(needed_dimensions),
+        "touchpoints": view_selector.get_best_view_touchpoints(needed_dimensions),
     }
 
     context = models.MVJointMaster().get_query_joint_context(
-        breakdown, constraints, parents, orders, offset, limit, goals, views,
-        supports_conversions=view_selector.supports_conversions(views['base'], views['conversions']),
-        supports_touchpoints=view_selector.supports_conversions(views['base'], views['touchpoints']))
+        breakdown,
+        constraints,
+        parents,
+        orders,
+        offset,
+        limit,
+        goals,
+        views,
+        supports_conversions=view_selector.supports_conversions(views["base"], views["conversions"]),
+        supports_touchpoints=view_selector.supports_conversions(views["base"], views["touchpoints"]),
+    )
 
-    return _prepare_query_joint_for_model(context, 'breakdown_joint_levels.sql')
+    return _prepare_query_joint_for_model(context, "breakdown_joint_levels.sql")
 
 
 def _prepare_query_joint_for_model(context, template_name):
     sql = backtosql.generate_sql(template_name, context)
 
     params = []
-    if 'conversions_constraints' in context and context['conversions_constraints'].was_generated():
-        params.extend(context['conversions_constraints'].get_params())
+    if "conversions_constraints" in context and context["conversions_constraints"].was_generated():
+        params.extend(context["conversions_constraints"].get_params())
 
-    if 'touchpoints_constraints' in context and context['touchpoints_constraints'].was_generated():
-        params.extend(context['touchpoints_constraints'].get_params())
+    if "touchpoints_constraints" in context and context["touchpoints_constraints"].was_generated():
+        params.extend(context["touchpoints_constraints"].get_params())
 
-    params.extend(context['yesterday_constraints'].get_params())
-    params.extend(context['constraints'].get_params())
+    params.extend(context["yesterday_constraints"].get_params())
+    params.extend(context["constraints"].get_params())
 
-    return sql, params, context['temp_tables']
+    return sql, params, context["temp_tables"]
 
 
 def prepare_query_structure_with_stats(breakdown, constraints, use_publishers_view):
@@ -140,8 +148,6 @@ def prepare_query_structure_with_stats(breakdown, constraints, use_publishers_vi
 
     model = models.MVMaster()
 
-    context = model.get_query_all_context(
-        breakdown, constraints, None, ['-media_cost'] + breakdown,
-        view)
+    context = model.get_query_all_context(breakdown, constraints, None, ["-media_cost"] + breakdown, view)
 
-    return _prepare_query_all_for_model(model, context, 'breakdown_no_aggregates.sql')
+    return _prepare_query_all_for_model(model, context, "breakdown_no_aggregates.sql")

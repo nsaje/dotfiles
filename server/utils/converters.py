@@ -1,13 +1,13 @@
 from decimal import Decimal
 
-CC_TO_MICRO = 10**2
-CC_TO_NANO = 10**5
-MICRO_TO_NANO = 10**3
-CURRENCY_TO_CC = 10**4
-CURRENCY_TO_MICRO = 10**6
-CURRENCY_TO_NANO = 10**9
+CC_TO_MICRO = 10 ** 2
+CC_TO_NANO = 10 ** 5
+MICRO_TO_NANO = 10 ** 3
+CURRENCY_TO_CC = 10 ** 4
+CURRENCY_TO_MICRO = 10 ** 6
+CURRENCY_TO_NANO = 10 ** 9
 
-CC_TO_DECIMAL_CURRENCY = Decimal('0.0001')
+CC_TO_DECIMAL_CURRENCY = Decimal("0.0001")
 
 
 def decimal_to_int(num):

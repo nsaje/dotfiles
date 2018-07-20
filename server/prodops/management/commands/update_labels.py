@@ -23,30 +23,29 @@ class Command(ExceptionCommand):
     """
 
     def add_arguments(self, parser):
-        parser.add_argument('account_id', nargs=1, type=int)
-        parser.add_argument('csv_file', nargs=1, type=argparse.FileType('r'))
+        parser.add_argument("account_id", nargs=1, type=int)
+        parser.add_argument("csv_file", nargs=1, type=argparse.FileType("r"))
 
     def handle(self, *args, **options):
-        account_id = options['account_id'][0]
-        csv_file = options['csv_file'][0]
+        account_id = options["account_id"][0]
+        csv_file = options["csv_file"][0]
 
         mapping = self.parse_csv(csv_file)
 
         self.replace(account_id, mapping)
 
-        self.stdout.write('Done.')
+        self.stdout.write("Done.")
 
     def parse_csv(self, csv_file):
         lines = unicodecsv.reader(csv_file)
         try:
             header = next(lines)
         except StopIteration:
-            raise CommandError('Chosen file is empty.')
+            raise CommandError("Chosen file is empty.")
 
-        if header[0].strip().lower() != 'content ad id' or header[1].strip().lower() != 'new label':
+        if header[0].strip().lower() != "content ad id" or header[1].strip().lower() != "new label":
             raise CommandError(
-                'Unrecognized column headers in chosen file '
-                '(should be "Content Ad ID" and "New Label")'
+                "Unrecognized column headers in chosen file " '(should be "Content Ad ID" and "New Label")'
             )
 
         mapping = {}
@@ -56,18 +55,12 @@ class Command(ExceptionCommand):
         return mapping
 
     def replace(self, account_id, mapping):
-        content_ads = ContentAd.objects.filter(
-            ad_group__campaign__account_id=account_id,
-            pk__in=set(mapping.keys())
-        )
+        content_ads = ContentAd.objects.filter(ad_group__campaign__account_id=account_id, pk__in=set(mapping.keys()))
 
         for i, content_ad in enumerate(content_ads):
             self.stdout.write(
                 'Processing content ad {} of {} (label "{}" to "{}")'.format(
-                    i + 1,
-                    len(content_ads),
-                    content_ad.label,
-                    mapping[content_ad.pk],
+                    i + 1, len(content_ads), content_ad.label, mapping[content_ad.pk]
                 )
             )
             content_ad.label = mapping[content_ad.pk]

@@ -12,29 +12,30 @@ import signal
 import sys
 
 import cdecimal
+
 # Ensure any import of decimal gets cdecimal instead.
-sys.modules['decimal'] = cdecimal  # noqa
+sys.modules["decimal"] = cdecimal  # noqa
 
 import django
 import django.db.backends.base.creation
 from django.db import connection
 from django.core.management import call_command
 
-os.environ['DJANGO_SETTINGS_MODULE'] = 'server.settings'
-django.db.backends.base.creation.TEST_DATABASE_PREFIX = 'acceptance_test_'
+os.environ["DJANGO_SETTINGS_MODULE"] = "server.settings"
+django.db.backends.base.creation.TEST_DATABASE_PREFIX = "acceptance_test_"
 
-parser = argparse.ArgumentParser(
-    description='Run a test server for acceptance testing the REST API.')
-parser.add_argument('addrport', nargs='?', default='0.0.0.0:8123')
-parser.add_argument('--keepdb', dest='keepdb', action='store_true')
-parser.add_argument('--autoreload', dest='autoreload', action='store_true')
+parser = argparse.ArgumentParser(description="Run a test server for acceptance testing the REST API.")
+parser.add_argument("addrport", nargs="?", default="0.0.0.0:8123")
+parser.add_argument("--keepdb", dest="keepdb", action="store_true")
+parser.add_argument("--autoreload", dest="autoreload", action="store_true")
 args = parser.parse_args()
 
 # OVERRIDE SETTINGS
 from django.conf import settings  # noqa
+
 settings.K1_DEMO_MODE = True
 settings.R1_DEMO_MODE = True
-settings.LAMBDA_CONTENT_UPLOAD_FUNCTION_NAME = 'mock'
+settings.LAMBDA_CONTENT_UPLOAD_FUNCTION_NAME = "mock"
 settings.DISABLE_SIGNALS = True
 
 print("Setting up django")
@@ -55,7 +56,6 @@ signal.signal(signal.SIGTERM, sigterm_handler)
 signal.signal(signal.SIGINT, sigterm_handler)
 
 print("Loading fixtures")
-call_command('loaddata', *['test_acceptance', 'test_geolocations'])
+call_command("loaddata", *["test_acceptance", "test_geolocations"])
 print("Running the server on %s" % args.addrport)
-call_command('runserver', addrport=args.addrport,
-             use_reloader=args.autoreload, use_threading=False)
+call_command("runserver", addrport=args.addrport, use_reloader=args.autoreload, use_threading=False)

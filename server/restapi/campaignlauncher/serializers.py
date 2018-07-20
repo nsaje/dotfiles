@@ -15,9 +15,7 @@ class ConversionGoalSerializer(serializers.Serializer):
     goal_id = restapi.serializers.fields.PlainCharField(
         required=True,
         max_length=100,
-        error_messages={
-            'max_length': 'Conversion goal id is too long (%(show_value)d/%(limit_value)d).',
-        }
+        error_messages={"max_length": "Conversion goal id is too long (%(show_value)d/%(limit_value)d)."},
     )
 
 
@@ -29,24 +27,16 @@ class CampaignGoalSerializer(serializers.Serializer):
 
 class CampaignLauncherSerializer(serializers.Serializer):
     campaign_name = restapi.serializers.fields.PlainCharField(
-        max_length=127,
-        error_messages={'required': 'Please specify campaign name.'}
+        max_length=127, error_messages={"required": "Please specify campaign name."}
     )
     iab_category = restapi.serializers.fields.DashConstantField(
-        dash.constants.IABCategory,
-        error_messages={'required': 'Please specify the IAB category.'}
+        dash.constants.IABCategory, error_messages={"required": "Please specify the IAB category."}
     )
     language = restapi.serializers.fields.DashConstantField(
-        dash.constants.Language,
-        error_messages={'required': 'Please specify the language of the campaign\'s ads.'}
+        dash.constants.Language, error_messages={"required": "Please specify the language of the campaign's ads."}
     )
     budget_amount = fields.IntegerField(min_value=0)
-    max_cpc = fields.DecimalField(
-        required=False,
-        allow_null=True,
-        max_digits=None,
-        decimal_places=4,
-    )
+    max_cpc = fields.DecimalField(required=False, allow_null=True, max_digits=None, decimal_places=4)
     daily_budget = fields.DecimalField(max_digits=10, decimal_places=4)
     upload_batch = restapi.serializers.fields.IdField()
     campaign_goal = CampaignGoalSerializer()
@@ -60,21 +50,23 @@ class CampaignLauncherSerializer(serializers.Serializer):
         if not value:
             return value
 
-        account = self.context['account']
+        account = self.context["account"]
         currency_symbol = core.multicurrency.get_currency_symbol(account.currency)
         exchange_rate = core.multicurrency.get_current_exchange_rate(account.currency)
-        min_cpc = round(decimal.Decimal('0.05') * exchange_rate, 3)
-        max_cpc = round(decimal.Decimal('10') * exchange_rate, 3)
+        min_cpc = round(decimal.Decimal("0.05") * exchange_rate, 3)
+        max_cpc = round(decimal.Decimal("10") * exchange_rate, 3)
 
         if value < min_cpc:
             raise serializers.ValidationError(
-                'Maximum CPC can\'t be lower than {}.'.format(
-                    utils.lc_helper.format_currency(min_cpc, places=3, curr=currency_symbol))
+                "Maximum CPC can't be lower than {}.".format(
+                    utils.lc_helper.format_currency(min_cpc, places=3, curr=currency_symbol)
+                )
             )
         if value > max_cpc:
             raise serializers.ValidationError(
-                'Maximum CPC can\'t be higher than {}.'.format(
-                    utils.lc_helper.format_currency(max_cpc, places=3, curr=currency_symbol))
+                "Maximum CPC can't be higher than {}.".format(
+                    utils.lc_helper.format_currency(max_cpc, places=3, curr=currency_symbol)
+                )
             )
 
         return value

@@ -42,26 +42,38 @@ class AdGroupSourceManager(core.common.QuerySetManager):
         return ad_group_source
 
     @transaction.atomic
-    def create(self, request, ad_group, source, write_history=True, k1_sync=True,
-               skip_validation=False, ad_review_only=False, **updates):
+    def create(
+        self,
+        request,
+        ad_group,
+        source,
+        write_history=True,
+        k1_sync=True,
+        skip_validation=False,
+        ad_review_only=False,
+        **updates
+    ):
         try:
             ad_group_source = AdGroupSource.objects.get(source=source, ad_group=ad_group)
         except AdGroupSource.DoesNotExist:
             ad_group_source = None
 
-        if not skip_validation and not ad_review_only \
-           and not ad_group.campaign.account.allowed_sources.filter(pk=source.id).exists():
-            raise utils.exc.ValidationError(
-                '{} media source can not be added to this account.'.format(source.name)
-            )
+        if (
+            not skip_validation
+            and not ad_review_only
+            and not ad_group.campaign.account.allowed_sources.filter(pk=source.id).exists()
+        ):
+            raise utils.exc.ValidationError("{} media source can not be added to this account.".format(source.name))
 
         if not skip_validation and ad_group_source and not ad_group_source.ad_review_only:
             raise utils.exc.ValidationError(
-                '{} media source for ad group {} already exists.'.format(source.name, ad_group.id))
+                "{} media source for ad group {} already exists.".format(source.name, ad_group.id)
+            )
 
         if not skip_validation and not retargeting_helper.can_add_source_with_retargeting(source, ad_group.settings):
             raise utils.exc.ValidationError(
-                '{} media source can not be added because it does not support retargeting.'.format(source.name))
+                "{} media source can not be added because it does not support retargeting.".format(source.name)
+            )
 
         if not ad_group_source:
             ad_group_source = self._create(ad_group, source, ad_review_only=ad_review_only)
@@ -69,7 +81,7 @@ class AdGroupSourceManager(core.common.QuerySetManager):
         elif ad_group_source.ad_review_only and not ad_review_only:
             self._handle_ad_review_only(ad_group_source)
         else:
-            raise Exception('Erroneous case - should not be reachable')
+            raise Exception("Erroneous case - should not be reachable")
 
         if write_history and not ad_review_only:
             ad_group.write_history_source_added(request, ad_group_source)
@@ -77,10 +89,11 @@ class AdGroupSourceManager(core.common.QuerySetManager):
         if settings.K1_CONSISTENCY_SYNC:
             # circular dependency
             from dash import api
+
             api.add_content_ad_sources(ad_group_source)
 
         if k1_sync:
-            utils.k1_helper.update_ad_group(ad_group.id, msg='AdGroupSources.put')
+            utils.k1_helper.update_ad_group(ad_group.id, msg="AdGroupSources.put")
 
         return ad_group_source
 
@@ -92,34 +105,39 @@ class AdGroupSourceManager(core.common.QuerySetManager):
 
     @transaction.atomic
     def bulk_create_on_allowed_sources(self, request, ad_group, write_history=True, k1_sync=True):
-        sources = ad_group.campaign.account.allowed_sources.all().select_related('source_type', 'defaultsourcesettings__credentials')
+        sources = ad_group.campaign.account.allowed_sources.all().select_related(
+            "source_type", "defaultsourcesettings__credentials"
+        )
         added_ad_group_sources = []
         if not retargeting_helper.can_add_source_with_retargeting(sources, ad_group.settings):
-            raise utils.exc.ValidationError('Media sources can not be added because some do not support retargeting.')
+            raise utils.exc.ValidationError("Media sources can not be added because some do not support retargeting.")
         for source in sources:
             if source.maintenance:
                 continue
 
             try:
-                ad_group_source = self.create(request, ad_group, source, write_history=False, k1_sync=False, skip_validation=True)
+                ad_group_source = self.create(
+                    request, ad_group, source, write_history=False, k1_sync=False, skip_validation=True
+                )
                 added_ad_group_sources.append(ad_group_source)
             except utils.exc.MissingDataError:
                 # skips ad group sources creation without default sources
-                logger.exception('Exception occurred on campaign with id %s', ad_group.campaign_id)
+                logger.exception("Exception occurred on campaign with id %s", ad_group.campaign_id)
                 continue
 
         if write_history:
             raise Exception("Can't write history at this stage")
 
         if k1_sync and added_ad_group_sources:
-            utils.k1_helper.update_ad_group(ad_group.id, msg='AdGroupSources.put')
+            utils.k1_helper.update_ad_group(ad_group.id, msg="AdGroupSources.put")
 
         return added_ad_group_sources
 
     @transaction.atomic
     def clone(self, request, ad_group, source_ad_group_source, write_history=True, k1_sync=True):
         ad_group_source = self._create(
-            ad_group, source_ad_group_source.source, ad_review_only=source_ad_group_source.ad_review_only)
+            ad_group, source_ad_group_source.source, ad_review_only=source_ad_group_source.ad_review_only
+        )
         if write_history and not ad_group_source.ad_review_only:
             ad_group.write_history_source_added(request, ad_group_source)
 
@@ -127,16 +145,17 @@ class AdGroupSourceManager(core.common.QuerySetManager):
 
         if settings.K1_CONSISTENCY_SYNC:
             from dash import api  # TODO circular dependency
+
             api.add_content_ad_sources(ad_group_source)
 
         if k1_sync:
-            utils.k1_helper.update_ad_group(ad_group.id, msg='AdGroupSources.put')
+            utils.k1_helper.update_ad_group(ad_group.id, msg="AdGroupSources.put")
 
         return ad_group_source
 
     @transaction.atomic
     def bulk_clone_on_allowed_sources(self, request, ad_group, source_ad_group, write_history=True, k1_sync=True):
-        ad_group_sources = source_ad_group.adgroupsource_set.all().select_related('source')
+        ad_group_sources = source_ad_group.adgroupsource_set.all().select_related("source")
         map_source_ad_group_sources = {x.source_id: x for x in ad_group_sources}
 
         added_ad_group_sources = []
@@ -147,56 +166,52 @@ class AdGroupSourceManager(core.common.QuerySetManager):
             try:
                 if source.id in map_source_ad_group_sources:
                     ad_group_source = self.clone(
-                        request, ad_group, map_source_ad_group_sources[source.id],
-                        write_history=False, k1_sync=False)
+                        request, ad_group, map_source_ad_group_sources[source.id], write_history=False, k1_sync=False
+                    )
                 else:
                     continue
 
                 added_ad_group_sources.append(ad_group_source)
             except utils.exc.MissingDataError:
                 # skips ad group sources creation without default sources
-                logger.exception('Exception occurred on campaign with id %s', ad_group.campaign_id)
+                logger.exception("Exception occurred on campaign with id %s", ad_group.campaign_id)
                 continue
 
         if write_history:
             raise Exception("Can't write history at this stage")
 
         if k1_sync and added_ad_group_sources:
-            utils.k1_helper.update_ad_group(ad_group.id, msg='AdGroupSources.put')
+            utils.k1_helper.update_ad_group(ad_group.id, msg="AdGroupSources.put")
 
         return added_ad_group_sources
 
 
 class AdGroupSource(models.Model):
     class Meta:
-        app_label = 'dash'
+        app_label = "dash"
 
-    source = models.ForeignKey('Source', on_delete=models.PROTECT)
-    ad_group = models.ForeignKey('AdGroup', on_delete=models.PROTECT)
+    source = models.ForeignKey("Source", on_delete=models.PROTECT)
+    ad_group = models.ForeignKey("AdGroup", on_delete=models.PROTECT)
 
-    source_credentials = models.ForeignKey(
-        'SourceCredentials', null=True, on_delete=models.PROTECT)
+    source_credentials = models.ForeignKey("SourceCredentials", null=True, on_delete=models.PROTECT)
     source_campaign_key = jsonfield.JSONField(blank=True, default={})
 
     last_successful_sync_dt = models.DateTimeField(blank=True, null=True)
-    last_successful_reports_sync_dt = models.DateTimeField(
-        blank=True, null=True)
-    last_successful_status_sync_dt = models.DateTimeField(
-        blank=True, null=True)
-    can_manage_content_ads = models.BooleanField(
-        null=False, blank=False, default=False)
+    last_successful_reports_sync_dt = models.DateTimeField(blank=True, null=True)
+    last_successful_status_sync_dt = models.DateTimeField(blank=True, null=True)
+    can_manage_content_ads = models.BooleanField(null=False, blank=False, default=False)
 
-    source_content_ad_id = models.CharField(
-        max_length=100, null=True, blank=True)
+    source_content_ad_id = models.CharField(max_length=100, null=True, blank=True)
     blockers = jsonfield.JSONField(blank=True, default={})
 
-    settings = models.OneToOneField('AdGroupSourceSettings', null=True, blank=True, on_delete=models.PROTECT, related_name='latest_for_entity')
+    settings = models.OneToOneField(
+        "AdGroupSourceSettings", null=True, blank=True, on_delete=models.PROTECT, related_name="latest_for_entity"
+    )
     ad_review_only = models.NullBooleanField(default=None)
 
     objects = AdGroupSourceManager()
 
     class QuerySet(models.QuerySet):
-
         def filter_by_sources(self, sources):
             if not core.entity.helpers.should_filter_by_sources(sources):
                 return self
@@ -212,44 +227,39 @@ class AdGroupSource(models.Model):
         def filter_can_manage_content_ads(self):
             return self.filter(
                 can_manage_content_ads=True,
-                source_id__in=core.source.Source.objects.all().filter_can_manage_content_ads().values_list(
-                    'id', flat=True))
+                source_id__in=core.source.Source.objects.all()
+                .filter_can_manage_content_ads()
+                .values_list("id", flat=True),
+            )
 
     def set_initial_settings(self, request, ad_group, **updates):
         from dash.views import helpers
 
-        if 'cpc_cc' not in updates:
-            updates['cpc_cc'] = self.source.default_cpc_cc
+        if "cpc_cc" not in updates:
+            updates["cpc_cc"] = self.source.default_cpc_cc
             if ad_group.settings.is_mobile_only():
-                updates['cpc_cc'] = self.source.default_mobile_cpc_cc
-            if (ad_group.settings.b1_sources_group_enabled and
-                    ad_group.settings.b1_sources_group_cpc_cc > 0.0 and
-                    self.source.source_type.type == constants.SourceType.B1):
-                updates['cpc_cc'] = ad_group.settings.b1_sources_group_cpc_cc
+                updates["cpc_cc"] = self.source.default_mobile_cpc_cc
+            if (
+                ad_group.settings.b1_sources_group_enabled
+                and ad_group.settings.b1_sources_group_cpc_cc > 0.0
+                and self.source.source_type.type == constants.SourceType.B1
+            ):
+                updates["cpc_cc"] = ad_group.settings.b1_sources_group_cpc_cc
             if ad_group.settings.cpc_cc:
-                updates['cpc_cc'] = min(ad_group.settings.cpc_cc, updates['cpc_cc'])
-        if 'state' not in updates:
+                updates["cpc_cc"] = min(ad_group.settings.cpc_cc, updates["cpc_cc"])
+        if "state" not in updates:
             if helpers.get_source_initial_state(self):
-                updates['state'] = constants.AdGroupSourceSettingsState.ACTIVE
+                updates["state"] = constants.AdGroupSourceSettingsState.ACTIVE
             else:
-                updates['state'] = constants.AdGroupSourceSettingsState.INACTIVE
-        if 'daily_budget_cc' not in updates:
-            updates['daily_budget_cc'] = self.source.default_daily_budget_cc
+                updates["state"] = constants.AdGroupSourceSettingsState.INACTIVE
+        if "daily_budget_cc" not in updates:
+            updates["daily_budget_cc"] = self.source.default_daily_budget_cc
 
-        enabling_autopilot_sources_allowed = helpers.enabling_autopilot_sources_allowed(
-            ad_group,
-            [self],
-        )
+        enabling_autopilot_sources_allowed = helpers.enabling_autopilot_sources_allowed(ad_group, [self])
         if not enabling_autopilot_sources_allowed:
-            updates['state'] = constants.AdGroupSourceSettingsState.INACTIVE
+            updates["state"] = constants.AdGroupSourceSettingsState.INACTIVE
 
-        self.settings.update(
-            request,
-            k1_sync=False,
-            skip_automation=True,
-            skip_validation=True,
-            **updates
-        )
+        self.settings.update(request, k1_sync=False, skip_automation=True, skip_validation=True, **updates)
 
     def set_cloned_settings(self, request, source_ad_group_source):
         source_ad_group_source_settings = source_ad_group_source.get_current_settings()
@@ -264,13 +274,15 @@ class AdGroupSource(models.Model):
         )
 
     def get_tracking_ids(self):
-        msid = self.source.tracking_slug or ''
-        if self.source.source_type and\
-           self.source.source_type.type in [
-                constants.SourceType.ZEMANTA, constants.SourceType.B1, constants.SourceType.OUTBRAIN]:
-            msid = '{sourceDomain}'
+        msid = self.source.tracking_slug or ""
+        if self.source.source_type and self.source.source_type.type in [
+            constants.SourceType.ZEMANTA,
+            constants.SourceType.B1,
+            constants.SourceType.OUTBRAIN,
+        ]:
+            msid = "{sourceDomain}"
 
-        return '_z1_adgid={}&_z1_msid={}'.format(self.ad_group_id, msid)
+        return "_z1_adgid={}&_z1_msid={}".format(self.ad_group_id, msid)
 
     def get_external_name(self, new_adgroup_name=None):
         account_name = self.ad_group.campaign.account.name
@@ -281,22 +293,20 @@ class AdGroupSource(models.Model):
             ad_group_name = new_adgroup_name
         ad_group_id = self.ad_group.id
         source_name = self.source.name
-        return 'ONE: {} / {} / {} / {} / {}'.format(
+        return "ONE: {} / {} / {} / {} / {}".format(
             core.entity.helpers.shorten_name(account_name),
             core.entity.helpers.shorten_name(campaign_name),
             core.entity.helpers.shorten_name(ad_group_name),
             ad_group_id,
-            source_name
+            source_name,
         )
 
     def get_supply_dash_url(self):
         if not self.source.has_3rd_party_dashboard():
             return None
 
-        return '{}?ad_group_id={}&source_id={}'.format(
-            reverse('supply_dash_redirect'),
-            self.ad_group.id,
-            self.source.id
+        return "{}?ad_group_id={}&source_id={}".format(
+            reverse("supply_dash_redirect"), self.ad_group.id, self.source.id
         )
 
     def get_current_settings(self):
@@ -305,8 +315,8 @@ class AdGroupSource(models.Model):
     def migrate_to_bcm_v2(self, request, fee, margin):
         current_settings = self.get_current_settings()
         changes = {
-            'daily_budget_cc': self._transform_daily_budget_cc(current_settings.daily_budget_cc, fee, margin),
-            'cpc_cc': self._transform_cpc_cc(current_settings.cpc_cc, fee, margin),
+            "daily_budget_cc": self._transform_daily_budget_cc(current_settings.daily_budget_cc, fee, margin),
+            "cpc_cc": self._transform_cpc_cc(current_settings.cpc_cc, fee, margin),
         }
 
         self.settings.update(
@@ -321,21 +331,17 @@ class AdGroupSource(models.Model):
     def _transform_daily_budget_cc(self, daily_budget_cc, fee, margin):
         if not daily_budget_cc:
             return daily_budget_cc
-        new_daily_budget_cc = core.bcm.calculations.apply_fee_and_margin(
-            daily_budget_cc, fee, margin
-        )
+        new_daily_budget_cc = core.bcm.calculations.apply_fee_and_margin(daily_budget_cc, fee, margin)
         return utils.numbers.round_decimal_ceiling(new_daily_budget_cc, places=0)
 
     def _transform_cpc_cc(self, cpc_cc, fee, margin):
         if not cpc_cc:
             return cpc_cc
-        new_cpc_cc = core.bcm.calculations.apply_fee_and_margin(
-            cpc_cc, fee, margin
-        )
+        new_cpc_cc = core.bcm.calculations.apply_fee_and_margin(cpc_cc, fee, margin)
         return utils.numbers.round_decimal_half_down(new_cpc_cc, places=3)
 
     def save(self, request=None, *args, **kwargs):
         super(AdGroupSource, self).save(*args, **kwargs)
 
     def __str__(self):
-        return '{} - {}'.format(self.ad_group, self.source)
+        return "{} - {}".format(self.ad_group, self.source)

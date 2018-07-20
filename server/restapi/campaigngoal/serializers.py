@@ -13,7 +13,6 @@ class CampaignGoalsDefaultsSerializer(restapi.serializers.base.RESTAPIBaseSerial
 
 
 class ConversionGoalSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
-
     def run_validation(self, data):
         if data is None:
             return {}
@@ -23,73 +22,50 @@ class ConversionGoalSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
         if goal.conversion_goal is None:
             return None
         if goal.conversion_goal.pixel_id:
-            self.fields['goal_id'] = restapi.serializers.fields.PlainCharField(
-                source='conversion_goal.pixel_id',
-                allow_blank=True,
-                allow_null=True,
+            self.fields["goal_id"] = restapi.serializers.fields.PlainCharField(
+                source="conversion_goal.pixel_id", allow_blank=True, allow_null=True
             )
-        self.fields['conversion_window'] = restapi.serializers.fields.OutNullDashConstantField(
-            constants.ConversionWindowsLegacy,
-            source='conversion_goal.conversion_window',
+        self.fields["conversion_window"] = restapi.serializers.fields.OutNullDashConstantField(
+            constants.ConversionWindowsLegacy, source="conversion_goal.conversion_window"
         )
         return super().to_representation(goal)
 
     goal_id = restapi.serializers.fields.PlainCharField(
-        source='conversion_goal.goal_id',
+        source="conversion_goal.goal_id",
         max_length=100,
         allow_blank=True,
         allow_null=True,
-        error_messages={'max_length': 'Conversion goal id is too long.'},
+        error_messages={"max_length": "Conversion goal id is too long."},
     )
     name = restapi.serializers.fields.PlainCharField(
-        source='conversion_goal.name',
-        max_length=100,
-        allow_blank=True,
-        allow_null=True,
-        required=False,
+        source="conversion_goal.name", max_length=100, allow_blank=True, allow_null=True, required=False
     )
-    type = restapi.serializers.fields.DashConstantField(
-        constants.ConversionGoalType,
-        source='conversion_goal.type',
-    )
+    type = restapi.serializers.fields.DashConstantField(constants.ConversionGoalType, source="conversion_goal.type")
     conversion_window = restapi.serializers.fields.OutNullDashConstantField(
-        constants.ConversionWindows,
-        source='conversion_goal.conversion_window',
+        constants.ConversionWindows, source="conversion_goal.conversion_window"
     )
     pixel_url = restapi.serializers.fields.OutNullURLField(
-        source='conversion_goal.pixel.get_url',
-        max_length=2048,
-        allow_blank=True,
-        allow_null=True,
-        read_only=True,
+        source="conversion_goal.pixel.get_url", max_length=2048, allow_blank=True, allow_null=True, read_only=True
     )
 
 
 class CampaignGoalSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
-
     @property
     def fields(self):
         fields = super().fields
         if self.instance:
-            fields['value'] = rest_framework.serializers.SerializerMethodField()
+            fields["value"] = rest_framework.serializers.SerializerMethodField()
         return fields
 
     id = restapi.serializers.fields.OutIntIdField(read_only=True)
     type = restapi.serializers.fields.DashConstantField(constants.CampaignGoalKPI)
     primary = rest_framework.serializers.BooleanField()
-    value = rest_framework.serializers.DecimalField(
-        max_digits=20,
-        decimal_places=5,
-    )
-    conversion_goal = ConversionGoalSerializer(
-        source='*',
-        allow_null=True,
-        required=False,
-    )
+    value = rest_framework.serializers.DecimalField(max_digits=20, decimal_places=5)
+    conversion_goal = ConversionGoalSerializer(source="*", allow_null=True, required=False)
 
     def get_value(self, goal):
         value = goal.get_current_value()
         if not value:
             return value
-        rounding_format = '1.000' if goal.type == constants.CampaignGoalKPI.CPC else '1.00'
+        rounding_format = "1.000" if goal.type == constants.CampaignGoalKPI.CPC else "1.00"
         return Decimal(value.local_value).quantize(Decimal(rounding_format))

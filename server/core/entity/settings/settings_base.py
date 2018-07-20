@@ -17,30 +17,31 @@ class SettingsBase(models.Model, core.history.HistoryMixin):
     class Meta:
         abstract = True
 
-    created_dt = models.DateTimeField(verbose_name='Created at')
-    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='+',
-                                   on_delete=models.PROTECT, null=True, blank=True)
+    created_dt = models.DateTimeField(verbose_name="Created at")
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, related_name="+", on_delete=models.PROTECT, null=True, blank=True
+    )
 
     def save(self, *args, **kwargs):
-        raise AssertionError('Direct update of settings object not allowed. Use .update()')
+        raise AssertionError("Direct update of settings object not allowed. Use .update()")
 
     def delete(self, *args, **kwargs):
-        raise AssertionError('Deleting settings object not allowed.')
+        raise AssertionError("Deleting settings object not allowed.")
 
     def __getattr__(self, key):
         model_to_field = {
-            'adgroupsource': 'ad_group_source',
-            'adgroup': 'ad_group',
-            'campaign': 'campaign',
-            'account': 'account',
-            'agency': 'agency',
+            "adgroupsource": "ad_group_source",
+            "adgroup": "ad_group",
+            "campaign": "campaign",
+            "account": "account",
+            "agency": "agency",
         }
-        model_name = self._meta.get_field('latest_for_entity').related_model._meta.model_name
+        model_name = self._meta.get_field("latest_for_entity").related_model._meta.model_name
         field_name = model_to_field[model_name]
         # latest_for_entity is auto populated when entity is loaded with select_related settings
         # this ensures settings.entity can use same optimization
         if key == self._meta.get_field(field_name).get_cache_name():
-            v = getattr(self, self._meta.get_field('latest_for_entity').get_cache_name())
+            v = getattr(self, self._meta.get_field("latest_for_entity").get_cache_name())
             setattr(self, key, v)
             return v
         raise AttributeError("%r object has no attribute %r" % (self.__class__, key))
@@ -67,7 +68,7 @@ class SettingsBase(models.Model, core.history.HistoryMixin):
     @transaction.atomic()
     def update_unsafe(self, request, system_user=None, **kwargs):
         user = request.user if request else None
-        history_changes_text = kwargs.pop('history_changes_text', None)
+        history_changes_text = kwargs.pop("history_changes_text", None)
         changes = self.get_changes(kwargs)
 
         update_fields = None
@@ -80,24 +81,24 @@ class SettingsBase(models.Model, core.history.HistoryMixin):
         self.created_by = user
         self.created_dt = datetime.datetime.utcnow()
         if update_fields is not None:
-            update_fields.extend(['created_by', 'created_dt'])
-        if self.has_field('system_user'):
+            update_fields.extend(["created_by", "created_dt"])
+        if self.has_field("system_user"):
             self.system_user = system_user
             if update_fields is not None:
-                update_fields.append('system_user')
+                update_fields.append("system_user")
 
         history_changes = self.get_model_state_changes(kwargs)
         if history_changes_text:
-            self.add_to_history(user, constants.HistoryActionType.SETTINGS_CHANGE, history_changes, history_changes_text)
+            self.add_to_history(
+                user, constants.HistoryActionType.SETTINGS_CHANGE, history_changes, history_changes_text
+            )
         else:
             self.add_to_history(user, constants.HistoryActionType.SETTINGS_CHANGE, history_changes)
 
         for k, v in changes.items():
             setattr(self, k, v)
         super(SettingsBase, self).save(update_fields=update_fields)
-        core.signals.settings_change.send_robust(
-            sender=self.__class__, request=request,
-            instance=self, changes=kwargs)
+        core.signals.settings_change.send_robust(sender=self.__class__, request=request, instance=self, changes=kwargs)
 
     def copy_settings(self):
         return UpdateObject(self)
@@ -114,11 +115,7 @@ class SettingsBase(models.Model, core.history.HistoryMixin):
             return new_settings.get_updates()
         current_settings_dict = self.get_settings_dict()
         new_settings_dict = new_settings.get_settings_dict()
-        return SettingsBase.get_dict_changes(
-            current_settings_dict,
-            new_settings_dict,
-            self._settings_fields
-        )
+        return SettingsBase.get_dict_changes(current_settings_dict, new_settings_dict, self._settings_fields)
 
     @classmethod
     def get_dict_changes(self, current_settings_dict, new_settings_dict, settings_fields):

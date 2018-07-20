@@ -8,24 +8,20 @@ def get_campaignstop_state(campaign):
 
 def get_campaignstop_states(campaigns):
     states_map = _get_states_map(campaigns)
-    return {
-        campaign.id: _get_campaign_stop_state(campaign, states_map) for campaign in campaigns
-    }
+    return {campaign.id: _get_campaign_stop_state(campaign, states_map) for campaign in campaigns}
 
 
 def _get_states_map(campaigns):
-    return {
-        st.campaign_id: st for st in CampaignStopState.objects.filter(campaign__in=campaigns)
-    }
+    return {st.campaign_id: st for st in CampaignStopState.objects.filter(campaign__in=campaigns)}
 
 
 def _get_campaign_stop_state(campaign, states_map):
     max_allowed_end_date = _get_max_allowed_end_date(campaign, states_map)
     return {
-        'allowed_to_run': _is_allowed_to_run(campaign, states_map, max_allowed_end_date),
-        'max_allowed_end_date': max_allowed_end_date,
-        'almost_depleted': _is_almost_depleted(campaign, states_map),
-        'pending_budget_updates': _is_pending_budget_updates(campaign, states_map),
+        "allowed_to_run": _is_allowed_to_run(campaign, states_map, max_allowed_end_date),
+        "max_allowed_end_date": max_allowed_end_date,
+        "almost_depleted": _is_almost_depleted(campaign, states_map),
+        "pending_budget_updates": _is_pending_budget_updates(campaign, states_map),
     }
 
 
@@ -71,5 +67,4 @@ def _is_pending_budget_updates(campaign, states_map):
     campaignstop_state = states_map.get(campaign.id)
     if not campaignstop_state:
         return False
-    return campaignstop_state.state == constants.CampaignStopState.STOPPED and\
-        campaignstop_state.pending_budget_updates
+    return campaignstop_state.state == constants.CampaignStopState.STOPPED and campaignstop_state.pending_budget_updates

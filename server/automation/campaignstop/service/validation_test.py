@@ -17,7 +17,6 @@ from utils import dates_helper
 
 
 class ValidateMinimumBudgetAmountTest(TestCase):
-
     def setUp(self):
         self.campaign = magic_mixer.blend(core.entity.Campaign, real_time_campaign_stop=True)
 
@@ -29,7 +28,7 @@ class ValidateMinimumBudgetAmountTest(TestCase):
             end_date=self.today,
             status=dash.constants.CreditLineItemStatus.SIGNED,
             amount=10000,
-            license_fee=decimal.Decimal('0.1'),
+            license_fee=decimal.Decimal("0.1"),
         )
         self.budget = magic_mixer.blend(
             core.bcm.BudgetLineItem,
@@ -41,10 +40,7 @@ class ValidateMinimumBudgetAmountTest(TestCase):
         )
 
         magic_mixer.blend(
-            RealTimeCampaignDataHistory,
-            campaign=self.campaign,
-            date=self.today,
-            etfm_spend=decimal.Decimal('100.0'),
+            RealTimeCampaignDataHistory, campaign=self.campaign, date=self.today, etfm_spend=decimal.Decimal("100.0")
         )
 
         yesterday = dates_helper.local_yesterday()
@@ -52,28 +48,25 @@ class ValidateMinimumBudgetAmountTest(TestCase):
             core.bcm.BudgetDailyStatement,
             budget=self.budget,
             date=yesterday,
-            media_spend_nano=200 * (10**9),
+            media_spend_nano=200 * (10 ** 9),
             data_spend_nano=0,
-            license_fee_nano=20 * (10**9),
+            license_fee_nano=20 * (10 ** 9),
             margin_nano=0,
-            local_media_spend_nano=200 * (10**9),
+            local_media_spend_nano=200 * (10 ** 9),
             local_data_spend_nano=0,
-            local_license_fee_nano=20 * (10**9),
+            local_license_fee_nano=20 * (10 ** 9),
             local_margin_nano=0,
         )
 
         magic_mixer.blend(
-            RealTimeCampaignDataHistory,
-            campaign=self.campaign,
-            date=yesterday,
-            etfm_spend=decimal.Decimal('220.0'),
+            RealTimeCampaignDataHistory, campaign=self.campaign, date=yesterday, etfm_spend=decimal.Decimal("220.0")
         )
 
     def test_validate_minimum_budget_amount(self):
         validation.validate_minimum_budget_amount(self.budget, 400)
 
-    @mock.patch('utils.dates_helper.utc_now')
-    @mock.patch('automation.campaignstop.service.refresh.refresh_if_stale', mock.MagicMock())
+    @mock.patch("utils.dates_helper.utc_now")
+    @mock.patch("automation.campaignstop.service.refresh.refresh_if_stale", mock.MagicMock())
     def test_validate_minimum_budget_amount_invalid_daily_statements(self, mock_utc_now):
         pm = datetime.datetime(self.today.year, self.today.month, self.today.day, 16)
         mock_utc_now.return_value = pm
@@ -100,9 +93,7 @@ class ValidateMinimumBudgetAmountTest(TestCase):
         self.credit.save()
 
         core.multicurrency.CurrencyExchangeRate.objects.create(
-            currency=self.credit.currency,
-            date=dates_helper.local_today(),
-            exchange_rate=decimal.Decimal('1.2'),
+            currency=self.credit.currency, date=dates_helper.local_today(), exchange_rate=decimal.Decimal("1.2")
         )
         with self.assertRaises(validation.CampaignStopValidationException) as e:
             validation.validate_minimum_budget_amount(self.budget, 100)

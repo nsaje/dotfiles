@@ -4,7 +4,6 @@ from . import unique_ordered_list
 
 
 class UniqueOrderedListTest(TestCase):
-
     def test_behaviour(self):
         uol = unique_ordered_list.UniqueOrderedList()
         uol.add_or_move_to_end(1)

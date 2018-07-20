@@ -22,17 +22,17 @@ logger.setLevel(logging.INFO)
 
 class K1APIBaseTest(TestCase):
 
-    fixtures = ['test_publishers.yaml', 'test_k1_api.yaml']
+    fixtures = ["test_publishers.yaml", "test_k1_api.yaml"]
 
     def setUp(self):
         self.test_signature = True
-        self.verify_patcher = patch('utils.request_signer.verify_wsgi_request')
+        self.verify_patcher = patch("utils.request_signer.verify_wsgi_request")
         self.mock_verify_wsgi_request = self.verify_patcher.start()
         self.mock_verify_wsgi_request.side_effect = cycle([Exception, Exception])
 
         oauth_result = Mock()
-        oauth_result.user.email = 'sspd@service.zemanta.com'
-        self.oauth_patcher = patch('utils.rest_common.authentication.get_oauthlib_core')
+        oauth_result.user.email = "sspd@service.zemanta.com"
+        self.oauth_patcher = patch("utils.rest_common.authentication.get_oauthlib_core")
         self.mock_verify_oauth = self.oauth_patcher.start()
         self.mock_verify_oauth.return_value.verify_request.return_value = (True, oauth_result)
 
@@ -50,10 +50,10 @@ class K1APIBaseTest(TestCase):
 
     def assert_response_ok(self, response, data):
         self.assertEqual(response.status_code, 200)
-        self.assertIn('error', data)
-        self.assertEqual(data['error'], None)
-        self.assertIn('response', data)
-        self.assertNotEqual(data['response'], None)
+        self.assertIn("error", data)
+        self.assertEqual(data["error"], None)
+        self.assertIn("response", data)
+        self.assertNotEqual(data["response"], None)
 
 
 class K1APITest(K1APIBaseTest):
@@ -65,13 +65,7 @@ class K1APITest(K1APIBaseTest):
             self._test_signature(path)
 
     def _test_signature(self, path):
-        response = self.client.get(
-            reverse(path),
-        )
+        response = self.client.get(reverse(path))
         self.assertEqual(response.status_code, 401)
-        response = self.client.get(
-            reverse(path),
-            TS_HEADER=str(int(time.time())),
-            SIGNATURE_HEADER='abc'
-        )
+        response = self.client.get(reverse(path), TS_HEADER=str(int(time.time())), SIGNATURE_HEADER="abc")
         self.assertEqual(response.status_code, 401)

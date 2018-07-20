@@ -18,31 +18,18 @@ class AccountManagerTestCase(TestCase):
         cls.source_unreleased = magic_mixer.blend(core.source.Source, released=False)
 
     def test_create_add_allowed_sources(self):
-        account = Account.objects.create(
-            self.request,
-            name='Test',
-            agency=None,
-        )
+        account = Account.objects.create(self.request, name="Test", agency=None)
 
         self.assertTrue(self.source_released in account.allowed_sources.all())
         self.assertFalse(self.source_unreleased in account.allowed_sources.all())
 
     def test_create_currency(self):
-        account = Account.objects.create(
-            self.request,
-            name='Test',
-            agency=None,
-            currency=dash.constants.Currency.USD,
-        )
+        account = Account.objects.create(self.request, name="Test", agency=None, currency=dash.constants.Currency.USD)
 
         self.assertEqual(dash.constants.Currency.USD, account.currency)
 
     def test_create_no_currency(self):
-        account = Account.objects.create(
-            self.request,
-            name='Test',
-            agency=None,
-        )
+        account = Account.objects.create(self.request, name="Test", agency=None)
 
         self.assertEqual(None, account.currency)
 
@@ -57,11 +44,7 @@ class AccountManagerTestCase(TestCase):
             cs_representative=cs_representative,
         )
 
-        account = Account.objects.create(
-            self.request,
-            name='Test',
-            agency=agency,
-        )
+        account = Account.objects.create(self.request, name="Test", agency=agency)
 
         self.assertEqual(sales_representative, account.settings.default_sales_representative)
         self.assertEqual(cs_representative, account.settings.default_cs_representative)

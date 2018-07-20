@@ -6,7 +6,7 @@ import core.source
 from . import constants
 
 
-ZERO_ROW = {'bids': 0, 'bid_reqs': 0, 'win_notices': 0, 'total_win_price': 0}
+ZERO_ROW = {"bids": 0, "bid_reqs": 0, "win_notices": 0, "total_win_price": 0}
 MIN_AUCTIONS = 1000
 
 MEDIAMOND_SOURCE_ID = 115
@@ -22,8 +22,9 @@ def _get_countries_map():
     if _countries_cache is None:
         _countries_cache = {
             geolocation.key: geolocation.name
-            for geolocation in
-            dash.features.geolocation.Geolocation.objects.filter(type=dash.constants.LocationType.COUNTRY)
+            for geolocation in dash.features.geolocation.Geolocation.objects.filter(
+                type=dash.constants.LocationType.COUNTRY
+            )
         }
     return _countries_cache
 
@@ -39,17 +40,22 @@ def _get_filtered_sources_map(request):
     sources_map = {
         source.id: source.name
         for source in _get_sources_cache()
-        if (source.released or
-            request.user.has_perm('zemauth.can_see_mediamond_publishers') and source.id == MEDIAMOND_SOURCE_ID or
-            request.user.has_perm('zemauth.can_see_rcs_publishers') and source.id == RCS_SOURCE_ID or
-            request.user.has_perm('zemauth.can_see_newscorp_publishers') and source.id == NEWSCORP_SOURCE_ID)
+        if (
+            source.released
+            or request.user.has_perm("zemauth.can_see_mediamond_publishers")
+            and source.id == MEDIAMOND_SOURCE_ID
+            or request.user.has_perm("zemauth.can_see_rcs_publishers")
+            and source.id == RCS_SOURCE_ID
+            or request.user.has_perm("zemauth.can_see_newscorp_publishers")
+            and source.id == NEWSCORP_SOURCE_ID
+        )
     }
     return sources_map
 
 
 def _update_filters(request, filters):
-    if 'source_id' not in filters:
-        filters['source_id'] = list(_get_filtered_sources_map(request).keys())
+    if "source_id" not in filters:
+        filters["source_id"] = list(_get_filtered_sources_map(request).keys())
     return filters
 
 
@@ -63,48 +69,48 @@ def get_summary(request, filters):
 
 def get_by_country(request, filters):
     filters = _update_filters(request, filters)
-    data = redshiftapi.api_inventory.query(breakdown='country', constraints=filters)
+    data = redshiftapi.api_inventory.query(breakdown="country", constraints=filters)
     data = list(filter(_min_auctions_filter, data))
     countries_map = _get_countries_map()
-    _add_zero_rows(data, 'country', sorted(countries_map.keys()))
+    _add_zero_rows(data, "country", sorted(countries_map.keys()))
     for item in data:
-        item['name'] = countries_map.get(item['country'], 'Not reported')
+        item["name"] = countries_map.get(item["country"], "Not reported")
     return data
 
 
 def get_by_publisher(request, filters):
     filters = _update_filters(request, filters)
-    data = redshiftapi.api_inventory.query(breakdown='publisher', constraints=filters)
+    data = redshiftapi.api_inventory.query(breakdown="publisher", constraints=filters)
     data = list(filter(_min_auctions_filter, data))
     ordered_top_publishers = redshiftapi.api_inventory.query_top_publishers()
-    _add_zero_rows(data, 'publisher', ordered_top_publishers)
+    _add_zero_rows(data, "publisher", ordered_top_publishers)
     return data
 
 
 def get_by_device_type(request, filters):
     filters = _update_filters(request, filters)
-    data = redshiftapi.api_inventory.query(breakdown='device_type', constraints=filters)
+    data = redshiftapi.api_inventory.query(breakdown="device_type", constraints=filters)
     data = list(filter(_min_auctions_filter, data))
     device_types_map = dict(constants.InventoryDeviceType.get_choices())
-    _add_zero_rows(data, 'device_type', sorted(device_types_map.keys()))
+    _add_zero_rows(data, "device_type", sorted(device_types_map.keys()))
     for item in data:
-        item['name'] = device_types_map.get(item['device_type'])
+        item["name"] = device_types_map.get(item["device_type"])
     return data
 
 
 def get_by_media_source(request, filters):
-    data = redshiftapi.api_inventory.query(breakdown='source_id', constraints=filters)
+    data = redshiftapi.api_inventory.query(breakdown="source_id", constraints=filters)
     data = list(filter(_min_auctions_filter, data))
     sources_map = _get_filtered_sources_map(request)
-    _add_zero_rows(data, 'source_id', sorted(sources_map.keys()))
-    data = list(filter(lambda item: item['source_id'] in sources_map, data))
+    _add_zero_rows(data, "source_id", sorted(sources_map.keys()))
+    data = list(filter(lambda item: item["source_id"] in sources_map, data))
     for item in data:
-        item['name'] = sources_map.get(item['source_id'])
+        item["name"] = sources_map.get(item["source_id"])
     return data
 
 
 def _min_auctions_filter(item):
-    return item['bid_reqs'] >= MIN_AUCTIONS
+    return item["bid_reqs"] >= MIN_AUCTIONS
 
 
 def _add_zero_rows(data, field_name, all_keys):

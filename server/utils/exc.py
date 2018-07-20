@@ -1,7 +1,7 @@
 class BaseError(Exception):
-    '''
+    """
     Base error. If implementing custom errors, subclass this error.
-    '''
+    """
 
     def __init__(self, message=None, pretty_message=None):
         super(BaseError, self).__init__(message)
@@ -11,9 +11,9 @@ class BaseError(Exception):
 
 
 class AuthError(BaseError):
-    '''
+    """
     Error thrown when user cannot be identified.
-    '''
+    """
 
     def __init__(self, message=None, pretty_message=None):
         super(AuthError, self).__init__(message, pretty_message)
@@ -21,9 +21,9 @@ class AuthError(BaseError):
 
 
 class AuthorizationError(BaseError):
-    '''
+    """
     Error thrown when user does not have appropriate rights.
-    '''
+    """
 
     def __init__(self, message=None, pretty_message=None):
         super(AuthorizationError, self).__init__(message, pretty_message)
@@ -31,9 +31,9 @@ class AuthorizationError(BaseError):
 
 
 class ValidationError(BaseError):
-    '''
+    """
     Error thrown by validation methods.
-    '''
+    """
 
     def __init__(self, message=None, pretty_message=None, errors=None, data=None):
         super(ValidationError, self).__init__(message, pretty_message)
@@ -43,9 +43,9 @@ class ValidationError(BaseError):
 
 
 class MissingDataError(BaseError):
-    '''
+    """
     Error thrown when the requested data is not available.
-    '''
+    """
 
     def __init__(self, message=None, pretty_message=None):
         super(MissingDataError, self).__init__(message, pretty_message)
@@ -53,9 +53,9 @@ class MissingDataError(BaseError):
 
 
 class ForbiddenError(BaseError):
-    '''
+    """
     Error thrown when the requested operation cannot be completed.
-    '''
+    """
 
     def __init__(self, message=None, pretty_message=None):
         super(ForbiddenError, self).__init__(message, pretty_message)
@@ -79,15 +79,9 @@ class MultipleValidationError(ValidationError):
 
 
 class MulticurrencyValidationError(ValidationError):
-    '''
+    """
     Holds default error message, and {'source_name': source_name, 'value': dollar_value} dict in data.
-    '''
+    """
 
 
-custom_errors = (
-    AuthError,
-    AuthorizationError,
-    ValidationError,
-    MissingDataError,
-    ForbiddenError
-)
+custom_errors = (AuthError, AuthorizationError, ValidationError, MissingDataError, ForbiddenError)

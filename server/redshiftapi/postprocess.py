@@ -19,10 +19,26 @@ but are easier to do in python than in sql.
 
 
 POSTCLICK_FIELDS = [
-    'visits', 'click_discrepancy', 'pageviews', 'new_visits', 'percent_new_users', 'bounce_rate',
-    'pv_per_visit', 'avg_tos', 'returning_users', 'unique_users', 'new_users', 'bounced_visits',
-    'total_seconds', 'avg_cost_per_minute', 'non_bounced_visits', 'avg_cost_per_non_bounced_visit',
-    'total_pageviews', 'avg_cost_per_pageview', 'avg_cost_for_new_visitor', 'avg_cost_per_visit',
+    "visits",
+    "click_discrepancy",
+    "pageviews",
+    "new_visits",
+    "percent_new_users",
+    "bounce_rate",
+    "pv_per_visit",
+    "avg_tos",
+    "returning_users",
+    "unique_users",
+    "new_users",
+    "bounced_visits",
+    "total_seconds",
+    "avg_cost_per_minute",
+    "non_bounced_visits",
+    "avg_cost_per_non_bounced_visit",
+    "total_pageviews",
+    "avg_cost_per_pageview",
+    "avg_cost_for_new_visitor",
+    "avg_cost_per_visit",
 ]
 
 
@@ -87,10 +103,10 @@ def _get_representative_dates(time_dimension, constraints):
     database.
     """
 
-    start_date = constraints['date__gte']
-    end_date = constraints.get('date__lte')
+    start_date = constraints["date__gte"]
+    end_date = constraints.get("date__lte")
     if end_date is None:
-        end_date = constraints['date__lt'] - datetime.timedelta(days=1)
+        end_date = constraints["date__lt"] - datetime.timedelta(days=1)
 
     if time_dimension == constants.TimeDimension.DAY:
         dates = rrule.rrule(rrule.DAILY, start_date, until=end_date)
@@ -99,14 +115,12 @@ def _get_representative_dates(time_dimension, constraints):
         dates = rrule.rrule(
             rrule.WEEKLY,
             start_date + relativedelta.relativedelta(weekday=relativedelta.MO(-1)),
-            until=end_date, byweekday=rrule.MO)
+            until=end_date,
+            byweekday=rrule.MO,
+        )
     else:
         # all months starting 1st
-        dates = rrule.rrule(
-            rrule.MONTHLY,
-            start_date + relativedelta.relativedelta(day=1),
-            until=end_date
-        )
+        dates = rrule.rrule(rrule.MONTHLY, start_date + relativedelta.relativedelta(day=1), until=end_date)
 
     return list(x.date() for x in dates)
 
@@ -122,10 +136,12 @@ def set_default_values(breakdown, rows):
     remove_postclicks = constants.get_delivery_dimension(breakdown) is not None
 
     for row in rows:
-        row.update({
-            'yesterday_cost': row.get('yesterday_cost') or 0,  # default to 0
-            'e_yesterday_cost': row.get('e_yesterday_cost') or 0,
-        })
+        row.update(
+            {
+                "yesterday_cost": row.get("yesterday_cost") or 0,  # default to 0
+                "e_yesterday_cost": row.get("e_yesterday_cost") or 0,
+            }
+        )
 
         if remove_postclicks:
             # HACK: Temporary hack that removes postclick data when we breakdown by delivery
@@ -142,7 +158,9 @@ def remove_empty_rows_delivery_dimension(breakdown, rows):
 
 def postprocess_joint_query_rows(rows):
     for row in rows:
-        for column in [x for x in list(row.keys()) if x.startswith('performance_') or x.startswith('etfm_performance_')]:
+        for column in [
+            x for x in list(row.keys()) if x.startswith("performance_") or x.startswith("etfm_performance_")
+        ]:
             # this is specific to joint queries - performance returned needs to be converted to category
             row[column] = dash.campaign_goals.get_goal_performance_category(row[column])
 
@@ -157,14 +175,14 @@ def merge_rows(breakdown, base_rows, yesterday_rows, touchpoint_rows, conversion
 
     # set others to 0
     for row in rows:
-        if row.get('yesterday_cost') is None:
-            row['yesterday_cost'] = 0
-        if row.get('local_yesterday_cost') is None:
-            row['local_yesterday_cost'] = 0
-        if row.get('e_yesterday_cost') is None:
-            row['e_yesterday_cost'] = 0
-        if row.get('local_e_yesterday_cost') is None:
-            row['local_e_yesterday_cost'] = 0
+        if row.get("yesterday_cost") is None:
+            row["yesterday_cost"] = 0
+        if row.get("local_yesterday_cost") is None:
+            row["local_yesterday_cost"] = 0
+        if row.get("e_yesterday_cost") is None:
+            row["e_yesterday_cost"] = 0
+        if row.get("local_e_yesterday_cost") is None:
+            row["local_e_yesterday_cost"] = 0
 
     if goals:
         if goals.conversion_goals:
@@ -172,8 +190,9 @@ def merge_rows(breakdown, base_rows, yesterday_rows, touchpoint_rows, conversion
         if goals.pixels:
             apply_pixel_columns(breakdown, rows, goals.pixels, touchpoint_rows)
         if goals.campaign_goals:
-            apply_performance_columns(breakdown, rows, goals.campaign_goals, goals.campaign_goal_values,
-                                      goals.conversion_goals, goals.pixels)
+            apply_performance_columns(
+                breakdown, rows, goals.campaign_goals, goals.campaign_goal_values, goals.conversion_goals, goals.pixels
+            )
     return rows
 
 
@@ -181,9 +200,8 @@ def apply_conversion_goal_columns(breakdown, rows, conversion_goals, conversion_
     if not conversion_goals:
         return
 
-    conversion_breakdown = breakdown + ['slug']
-    conversion_rows_map = sort_helper.group_rows_by_breakdown_key(
-        conversion_breakdown, conversion_rows, max_1=True)
+    conversion_breakdown = breakdown + ["slug"]
+    conversion_rows_map = sort_helper.group_rows_by_breakdown_key(conversion_breakdown, conversion_rows, max_1=True)
 
     for conversion_goal in conversion_goals:
         if conversion_goal.type not in dash_constants.REPORT_GOAL_TYPES:
@@ -197,14 +215,14 @@ def apply_conversion_goal_columns(breakdown, rows, conversion_goals, conversion_
             conversion_row = conversion_rows_map.get(conversion_breakdown_id)
 
             if conversion_row:
-                count = conversion_row['count'] if conversion_row else None
-                avg_cost = (float(row['e_media_cost'] or 0) / count) if count else None
-                local_avg_cost = (float(row['local_e_media_cost'] or 0) / count) if count else None
+                count = conversion_row["count"] if conversion_row else None
+                avg_cost = (float(row["e_media_cost"] or 0) / count) if count else None
+                local_avg_cost = (float(row["local_e_media_cost"] or 0) / count) if count else None
 
-                avg_et_cost = (float(row['et_cost'] or 0) / count) if count else None
-                local_avg_et_cost = (float(row['local_et_cost'] or 0) / count) if count else None
-                avg_etfm_cost = (float(row['etfm_cost'] or 0) / count) if count else None
-                local_avg_etfm_cost = (float(row['local_etfm_cost'] or 0) / count) if count else None
+                avg_et_cost = (float(row["et_cost"] or 0) / count) if count else None
+                local_avg_et_cost = (float(row["local_et_cost"] or 0) / count) if count else None
+                avg_etfm_cost = (float(row["etfm_cost"] or 0) / count) if count else None
+                local_avg_etfm_cost = (float(row["local_etfm_cost"] or 0) / count) if count else None
             else:
                 count = None
                 avg_cost = None
@@ -214,33 +232,35 @@ def apply_conversion_goal_columns(breakdown, rows, conversion_goals, conversion_
                 avg_etfm_cost = None
                 local_avg_etfm_cost = None
 
-            row.update({
-                conversion_key: count,
-                'avg_cost_per_' + conversion_key: avg_cost,
-                'local_avg_cost_per_' + conversion_key: local_avg_cost,
-                'avg_et_cost_per_' + conversion_key: avg_et_cost,
-                'local_avg_et_cost_per_' + conversion_key: local_avg_et_cost,
-                'avg_etfm_cost_per_' + conversion_key: avg_etfm_cost,
-                'local_avg_etfm_cost_per_' + conversion_key: local_avg_etfm_cost,
-            })
+            row.update(
+                {
+                    conversion_key: count,
+                    "avg_cost_per_" + conversion_key: avg_cost,
+                    "local_avg_cost_per_" + conversion_key: local_avg_cost,
+                    "avg_et_cost_per_" + conversion_key: avg_et_cost,
+                    "local_avg_et_cost_per_" + conversion_key: local_avg_et_cost,
+                    "avg_etfm_cost_per_" + conversion_key: avg_etfm_cost,
+                    "local_avg_etfm_cost_per_" + conversion_key: local_avg_etfm_cost,
+                }
+            )
 
 
 def apply_pixel_columns(breakdown, rows, pixels, touchpoint_rows):
     if not pixels:
         return
 
-    pixel_breakdown = breakdown + ['slug']
+    pixel_breakdown = breakdown + ["slug"]
     pixel_rows_map = sort_helper.group_rows_by_breakdown_key(pixel_breakdown, touchpoint_rows, max_1=False)
 
     conversion_windows = sorted(dash.constants.ConversionWindowsLegacy.get_all())
 
     for row in rows:
-        cost = row['e_media_cost'] or 0
-        local_cost = row['local_e_media_cost'] or 0
-        et_cost = row['et_cost'] or 0
-        local_et_cost = row['local_et_cost'] or 0
-        etfm_cost = row['etfm_cost'] or 0
-        local_etfm_cost = row['local_etfm_cost'] or 0
+        cost = row["e_media_cost"] or 0
+        local_cost = row["local_e_media_cost"] or 0
+        et_cost = row["et_cost"] or 0
+        local_et_cost = row["local_et_cost"] or 0
+        etfm_cost = row["etfm_cost"] or 0
+        local_etfm_cost = row["local_etfm_cost"] or 0
 
         breakdown_key = sort_helper.get_breakdown_key(row, breakdown)
 
@@ -250,7 +270,7 @@ def apply_pixel_columns(breakdown, rows, pixels, touchpoint_rows):
 
             for conversion_window in conversion_windows:
                 if pixel_rows:
-                    count = sum(x['count'] for x in pixel_rows if x['window'] <= conversion_window)
+                    count = sum(x["count"] for x in pixel_rows if x["window"] <= conversion_window)
 
                     avg_cost = float(cost) / count if count else None
                     local_avg_cost = float(local_cost) / count if count else None
@@ -259,7 +279,12 @@ def apply_pixel_columns(breakdown, rows, pixels, touchpoint_rows):
                     avg_etfm_cost = float(etfm_cost) / count if count else None
                     local_avg_etfm_cost = float(local_etfm_cost) / count if count else None
 
-                    value = sum(x['conversion_value'] for x in pixel_rows if x['window'] <= conversion_window if x['conversion_value'])
+                    value = sum(
+                        x["conversion_value"]
+                        for x in pixel_rows
+                        if x["window"] <= conversion_window
+                        if x["conversion_value"]
+                    )
                     roas = value - local_cost
                     etfm_roas = value - local_etfm_cost
                 else:
@@ -275,21 +300,22 @@ def apply_pixel_columns(breakdown, rows, pixels, touchpoint_rows):
 
                 pixel_key = pixel.get_view_key(conversion_window)
 
-                row.update({
-                    pixel_key: count,
-                    'avg_cost_per_' + pixel_key: avg_cost,
-                    'local_avg_cost_per_' + pixel_key: local_avg_cost,
-                    'avg_et_cost_per_' + pixel_key: avg_et_cost,
-                    'local_avg_et_cost_per_' + pixel_key: local_avg_et_cost,
-                    'avg_etfm_cost_per_' + pixel_key: avg_etfm_cost,
-                    'local_avg_etfm_cost_per_' + pixel_key: local_avg_etfm_cost,
-                    'roas_' + pixel_key: roas,
-                    'etfm_roas_' + pixel_key: etfm_roas,
-                })
+                row.update(
+                    {
+                        pixel_key: count,
+                        "avg_cost_per_" + pixel_key: avg_cost,
+                        "local_avg_cost_per_" + pixel_key: local_avg_cost,
+                        "avg_et_cost_per_" + pixel_key: avg_et_cost,
+                        "local_avg_et_cost_per_" + pixel_key: local_avg_et_cost,
+                        "avg_etfm_cost_per_" + pixel_key: avg_etfm_cost,
+                        "local_avg_etfm_cost_per_" + pixel_key: local_avg_etfm_cost,
+                        "roas_" + pixel_key: roas,
+                        "etfm_roas_" + pixel_key: etfm_roas,
+                    }
+                )
 
 
-def apply_performance_columns(breakdown, rows, campaign_goals, campaign_goal_values,
-                              conversion_goals, pixels):
+def apply_performance_columns(breakdown, rows, campaign_goals, campaign_goal_values, conversion_goals, pixels):
     if len(rows) < 1:
         return
 
@@ -302,8 +328,8 @@ def apply_performance_columns(breakdown, rows, campaign_goals, campaign_goal_val
         campaign_goals_by_campaign_id[campaign_goal.campaign_id].append(campaign_goal)
 
     for row in rows:
-        if 'campaign_id' in row:
-            campaign_goals = campaign_goals_by_campaign_id[row['campaign_id']]
+        if "campaign_id" in row:
+            campaign_goals = campaign_goals_by_campaign_id[row["campaign_id"]]
         for campaign_goal in campaign_goals:
             if campaign_goal.type == dash.constants.CampaignGoalKPI.CPA:
                 if campaign_goal.conversion_goal_id not in map_conversion_goals:
@@ -320,12 +346,15 @@ def apply_performance_columns(breakdown, rows, campaign_goals, campaign_goal_val
 
                 def metric_value_fn(row, cost_column):
                     return (float(row[cost_column] or 0) / row[conversion_key]) if row.get(conversion_key) else None
+
             else:
+
                 def metric_value_fn(row, cost_column):
                     # cost_column not used, but this fn should be compatible with the above metric_value_fn
                     # with_local_prefix=False because USD metric values should be used to calculate performance
                     primary_metric_map = dash.campaign_goals.get_goal_to_primary_metric_map(
-                        campaign_goal.campaign.account.uses_bcm_v2, with_local_prefix=False)
+                        campaign_goal.campaign.account.uses_bcm_v2, with_local_prefix=False
+                    )
                     metric = primary_metric_map[campaign_goal.type]
                     return row.get(metric)
 
@@ -338,13 +367,9 @@ def apply_performance_columns(breakdown, rows, campaign_goals, campaign_goal_val
 
             goal_key = campaign_goal.get_view_key()
 
-            row['performance_' + goal_key] = dash.campaign_goals.get_goal_performance_status(
-                campaign_goal.type,
-                metric_value_fn(row, 'e_media_cost'),
-                planned_value,
-                row['e_media_cost'])
-            row['etfm_performance_' + goal_key] = dash.campaign_goals.get_goal_performance_status(
-                campaign_goal.type,
-                metric_value_fn(row, 'etfm_cost'),
-                planned_value,
-                row['etfm_cost'])
+            row["performance_" + goal_key] = dash.campaign_goals.get_goal_performance_status(
+                campaign_goal.type, metric_value_fn(row, "e_media_cost"), planned_value, row["e_media_cost"]
+            )
+            row["etfm_performance_" + goal_key] = dash.campaign_goals.get_goal_performance_status(
+                campaign_goal.type, metric_value_fn(row, "etfm_cost"), planned_value, row["etfm_cost"]
+            )

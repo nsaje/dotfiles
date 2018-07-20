@@ -9,7 +9,7 @@ from utils import json_helper
 
 @override_settings(R1_DEMO_MODE=True)
 class RESTAPITest(TestCase):
-    fixtures = ['test_acceptance.yaml', 'test_geolocations']
+    fixtures = ["test_acceptance.yaml", "test_geolocations"]
     user_id = 1
 
     def setUp(self):
@@ -20,15 +20,15 @@ class RESTAPITest(TestCase):
 
     def assertResponseValid(self, r, status_code=200, data_type=dict):
         resp_json = json.loads(r.content)
-        self.assertNotIn('errorCode', resp_json)
+        self.assertNotIn("errorCode", resp_json)
         self.assertEqual(r.status_code, status_code)
-        self.assertIsInstance(resp_json['data'], data_type)
+        self.assertIsInstance(resp_json["data"], data_type)
         return resp_json
 
     def assertResponseError(self, r, error_code):
         resp_json = json.loads(r.content)
-        self.assertIn('errorCode', resp_json)
-        self.assertEqual(resp_json['errorCode'], error_code)
+        self.assertIn("errorCode", resp_json)
+        self.assertEqual(resp_json["errorCode"], error_code)
         return resp_json
 
     @staticmethod

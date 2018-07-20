@@ -14,15 +14,15 @@ from .throttling import UserRateOverrideThrottle
 
 
 class User3SecRateThrottle(UserRateOverrideThrottle):
-    rate = '3/sec'
-    scope = 'seconds'
+    rate = "3/sec"
+    scope = "seconds"
 
 
 class MockView(APIView):
     throttle_classes = (User3SecRateThrottle,)
 
     def get(self, request):
-        return Response('foo')
+        return Response("foo")
 
 
 class ThrottlingTests(TestCase):
@@ -40,19 +40,21 @@ class ThrottlingTests(TestCase):
     def test_is_throttled(self):
         self.ensure_is_throttled(MockView, 200)
 
-    @override_settings(REST_FRAMEWORK={
-        'DEFAULT_THROTTLE_RATES': {'user': '3/s'},
-        'DEFAULT_OVERRIDE_THROTTLE_RATES': {'b@x.com': '1/s'},
-    })
+    @override_settings(
+        REST_FRAMEWORK={
+            "DEFAULT_THROTTLE_RATES": {"user": "3/s"},
+            "DEFAULT_OVERRIDE_THROTTLE_RATES": {"b@x.com": "1/s"},
+        }
+    )
     def ensure_is_throttled(self, view, expect):
         user_a = magic_mixer.blend_user()
         user_b = magic_mixer.blend_user()
         user_service = magic_mixer.blend_user()
-        user_a.email = 'a@x.com'
-        user_b.email = 'b@x.com'
-        user_service.email = 'test-service@service.zemanta.com'
+        user_a.email = "a@x.com"
+        user_b.email = "b@x.com"
+        user_service.email = "test-service@service.zemanta.com"
 
-        request = self.factory.get('/')
+        request = self.factory.get("/")
         request.user = user_a
         for dummy in range(3):
             response = view.as_view()(request)
@@ -66,7 +68,7 @@ class ThrottlingTests(TestCase):
         response = view.as_view()(request)
         self.assertEqual(response.status_code, 429)
 
-        request = self.factory.get('/')
+        request = self.factory.get("/")
         request.user = user_service
         for dummy in range(10):
             response = view.as_view()(request)

@@ -29,7 +29,7 @@ class RESTAPIJSONRenderer(rest_framework.renderers.JSONRenderer):
 
 class CanUseRESTAPIPermission(permissions.BasePermission):
     def has_permission(self, request, view):
-        return bool(request.user and request.user.has_perm('zemauth.can_use_restapi'))
+        return bool(request.user and request.user.has_perm("zemauth.can_use_restapi"))
 
 
 class RESTAPIBaseView(APIView):
@@ -40,14 +40,10 @@ class RESTAPIBaseView(APIView):
 
     renderer_classes = [RESTAPIJSONRenderer]
     parser_classes = [CamelCaseJSONParser]
-    permission_classes = (permissions.IsAuthenticated, CanUseRESTAPIPermission,)
+    permission_classes = (permissions.IsAuthenticated, CanUseRESTAPIPermission)
 
     def get_serializer_context(self):
-        return {
-            'request': self.request,
-            'format': self.format_kwarg,
-            'view': self
-        }
+        return {"request": self.request, "format": self.format_kwarg, "view": self}
 
     def initialize_request(self, request, *args, **kwargs):
         drf_request = super(RESTAPIBaseView, self).initialize_request(request, *args, **kwargs)
@@ -57,30 +53,32 @@ class RESTAPIBaseView(APIView):
 
     def finalize_response(self, request, response, *args, **kwargs):
         drf_response = super(RESTAPIBaseView, self).finalize_response(request, response, *args, **kwargs)
-        user = getattr(request, 'user', None)
-        user_email = getattr(user, 'email', 'unknown')
+        user = getattr(request, "user", None)
+        user_email = getattr(user, "email", "unknown")
         influx.timing(
-            'restapi.request',
+            "restapi.request",
             (time.time() - request.start_time),
             endpoint=self.__class__.__name__,
             method=request.method,
             status=str(response.status_code),
-            user=user_email
-        )
-        logger.debug('REST API request/response: endpoint={endpoint}, method={method}, status={status}, user={user}, ip={ip}'.format(
-            endpoint=self.__class__.__name__,
-            method=request.method,
-            status=str(response.status_code),
             user=user_email,
-            ip=ipware.ip.get_ip(request)
-        ))
+        )
+        logger.debug(
+            "REST API request/response: endpoint={endpoint}, method={method}, status={status}, user={user}, ip={ip}".format(
+                endpoint=self.__class__.__name__,
+                method=request.method,
+                status=str(response.status_code),
+                user=user_email,
+                ip=ipware.ip.get_ip(request),
+            )
+        )
         return drf_response
 
     @staticmethod
     def response_ok(data, errors=None, **kwargs):
-        data = {'data': data}
+        data = {"data": data}
         if errors:
-            data['errors'] = errors
+            data["errors"] = errors
         return Response(data, **kwargs)
 
 

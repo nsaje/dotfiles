@@ -14,9 +14,14 @@ from . import view_selector
 
 
 POSTGRES_MAX_DAYS = 62
-POSTGRES_EXCLUDE_VIEWS = ('mv_master', 'mv_master_pubs',
-                          'mv_account_pubs', 'mv_campaign_pubs',
-                          'mv_adgroup_pubs', 'mv_contentad_pubs')
+POSTGRES_EXCLUDE_VIEWS = (
+    "mv_master",
+    "mv_master_pubs",
+    "mv_account_pubs",
+    "mv_campaign_pubs",
+    "mv_adgroup_pubs",
+    "mv_contentad_pubs",
+)
 
 
 def should_query_all(breakdown):
@@ -57,7 +62,7 @@ def query_with_background_cache(*args, **kwargs):
 def _should_use_postgres(breakdown, constraints, parents, use_publishers_view):
     needed_dimensions = helpers.get_all_dimensions(breakdown, constraints, parents)
     view = view_selector.get_best_view_base(needed_dimensions, use_publishers_view)
-    date_constraint = constraints.get('date__gte') or constraints.get('date__gt') or constraints.get('date')
+    date_constraint = constraints.get("date__gte") or constraints.get("date__gt") or constraints.get("date")
     date_in_postgres = dates_helper.days_before(dates_helper.local_today(), POSTGRES_MAX_DAYS)
 
     if date_constraint and date_constraint > date_in_postgres and view not in POSTGRES_EXCLUDE_VIEWS:
@@ -65,11 +70,25 @@ def _should_use_postgres(breakdown, constraints, parents, use_publishers_view):
     return False
 
 
-def query(breakdown, constraints, parents, goals, order=None, offset=None, limit=None, use_publishers_view=False, is_reports=False, query_all=False, breakdown_for_name=None, extra_name='', metrics=None):
+def query(
+    breakdown,
+    constraints,
+    parents,
+    goals,
+    order=None,
+    offset=None,
+    limit=None,
+    use_publishers_view=False,
+    is_reports=False,
+    query_all=False,
+    breakdown_for_name=None,
+    extra_name="",
+    metrics=None,
+):
     should_use_postgres = _should_use_postgres(breakdown, constraints, parents, use_publishers_view)
 
     with db_for_reads.use_stats_read_replica_postgres(should_use_postgres):
-        orders = ['-media_cost'] + breakdown
+        orders = ["-media_cost"] + breakdown
         if order is not None:
             orders = [order] + orders
 
@@ -83,8 +102,16 @@ def query(breakdown, constraints, parents, goals, order=None, offset=None, limit
             breakdown_for_name = breakdown
 
         if query_all or should_query_all(breakdown):
-            all_rows = _query_all(breakdown, constraints, parents, goals, use_publishers_view,
-                                  breakdown_for_name=breakdown_for_name, extra_name=extra_name, metrics=metrics)
+            all_rows = _query_all(
+                breakdown,
+                constraints,
+                parents,
+                goals,
+                use_publishers_view,
+                breakdown_for_name=breakdown_for_name,
+                extra_name=extra_name,
+                metrics=metrics,
+            )
 
             rows = sort_helper.sort_results(all_rows, orders)
             if not is_reports:
@@ -92,15 +119,25 @@ def query(breakdown, constraints, parents, goals, order=None, offset=None, limit
 
             # cut the resultset to size
             rows = sort_helper.apply_offset_limit_to_breakdown(
-                stats.constants.get_parent_breakdown(breakdown), rows, offset, limit)
+                stats.constants.get_parent_breakdown(breakdown), rows, offset, limit
+            )
         else:
             if len(breakdown) == 1 or is_reports:
                 sql, params, temp_tables = queries.prepare_query_joint_base(
-                    breakdown, constraints, parents, orders, offset, limit, goals, use_publishers_view,
-                    skip_performance_columns=is_reports)
+                    breakdown,
+                    constraints,
+                    parents,
+                    orders,
+                    offset,
+                    limit,
+                    goals,
+                    use_publishers_view,
+                    skip_performance_columns=is_reports,
+                )
             else:
                 sql, params, temp_tables = queries.prepare_query_joint_levels(
-                    breakdown, constraints, parents, orders, offset, limit, goals, use_publishers_view)
+                    breakdown, constraints, parents, orders, offset, limit, goals, use_publishers_view
+                )
 
             rows = db.execute_query(sql, params, helpers.get_query_name(breakdown_for_name), temp_tables=temp_tables)
 
@@ -116,14 +153,26 @@ def query(breakdown, constraints, parents, goals, order=None, offset=None, limit
 def query_stats_for_rows(rows, breakdown, constraints, goals, use_publishers_view=False):
     if should_query_all(breakdown):
         stats_rows = query_with_background_cache(
-            breakdown, constraints, None, goals,
-            use_publishers_view=use_publishers_view, query_all=True, extra_name='rows')
+            breakdown,
+            constraints,
+            None,
+            goals,
+            use_publishers_view=use_publishers_view,
+            query_all=True,
+            extra_name="rows",
+        )
         rows = helpers.select_relevant_stats_rows(breakdown, rows, stats_rows)
     else:
         parents = helpers.create_parents(rows, breakdown)  # this limits the query to rows we are looking for
         rows = query_with_background_cache(
-            breakdown, constraints, parents, goals,
-            use_publishers_view=use_publishers_view, query_all=True, extra_name='rows')
+            breakdown,
+            constraints,
+            parents,
+            goals,
+            use_publishers_view=use_publishers_view,
+            query_all=True,
+            extra_name="rows",
+        )
 
     postprocess.set_default_values(breakdown, rows)
     postprocess.remove_empty_rows_delivery_dimension(breakdown, rows)
@@ -132,18 +181,25 @@ def query_stats_for_rows(rows, breakdown, constraints, goals, use_publishers_vie
 
 def query_structure_with_stats(breakdown, constraints, use_publishers_view=False):
     sql, params, temp_tables = queries.prepare_query_structure_with_stats(breakdown, constraints, use_publishers_view)
-    return db.execute_query(sql, params, helpers.get_query_name(breakdown, 'str_w_stats'), temp_tables=temp_tables)
+    return db.execute_query(sql, params, helpers.get_query_name(breakdown, "str_w_stats"), temp_tables=temp_tables)
 
 
 def query_totals(breakdown, constraints, goals, use_publishers_view=False):
     rows = query_with_background_cache(
-        [], constraints, None, goals,
-        use_publishers_view=use_publishers_view, breakdown_for_name=breakdown, extra_name='totals')
+        [],
+        constraints,
+        None,
+        goals,
+        use_publishers_view=use_publishers_view,
+        breakdown_for_name=breakdown,
+        extra_name="totals",
+    )
     return rows
 
 
-def _query_all(breakdown, constraints, parents, goals, use_publishers_view,
-               breakdown_for_name=[], extra_name='', metrics=None):
+def _query_all(
+    breakdown, constraints, parents, goals, use_publishers_view, breakdown_for_name=[], extra_name="", metrics=None
+):
 
     t_base = None
     t_yesterday = None
@@ -152,26 +208,48 @@ def _query_all(breakdown, constraints, parents, goals, use_publishers_view,
 
     sql, params, temp_tables = queries.prepare_query_all_base(breakdown, constraints, parents, use_publishers_view)
     t_base = threads.AsyncFunction(
-        partial(db.execute_query, sql, params, helpers.get_query_name(
-            breakdown_for_name, '{}_base'.format(extra_name)), temp_tables=temp_tables))
+        partial(
+            db.execute_query,
+            sql,
+            params,
+            helpers.get_query_name(breakdown_for_name, "{}_base".format(extra_name)),
+            temp_tables=temp_tables,
+        )
+    )
     t_base.start()
 
-    if not metrics or set(metrics).intersection(set(['yesterday_cost', 'e_yesterday_cost'])):
-        sql, params, temp_tables = queries.prepare_query_all_yesterday(breakdown, constraints, parents, use_publishers_view)
+    if not metrics or set(metrics).intersection(set(["yesterday_cost", "e_yesterday_cost"])):
+        sql, params, temp_tables = queries.prepare_query_all_yesterday(
+            breakdown, constraints, parents, use_publishers_view
+        )
         t_yesterday = threads.AsyncFunction(
-            partial(db.execute_query, sql, params, helpers.get_query_name(
-                breakdown_for_name, '{}_yesterday'.format(extra_name)), temp_tables=temp_tables))
+            partial(
+                db.execute_query,
+                sql,
+                params,
+                helpers.get_query_name(breakdown_for_name, "{}_yesterday".format(extra_name)),
+                temp_tables=temp_tables,
+            )
+        )
         t_yesterday.start()
 
     if goals and goals.conversion_goals:
         if not metrics or any(helpers.is_conversion_goal_metric(metric) for metric in metrics):
 
             try:
-                sql, params, temp_tables = queries.prepare_query_all_conversions(breakdown + ['slug'], constraints, parents)
+                sql, params, temp_tables = queries.prepare_query_all_conversions(
+                    breakdown + ["slug"], constraints, parents
+                )
 
                 t_conversions = threads.AsyncFunction(
-                    partial(db.execute_query, sql, params, helpers.get_query_name(
-                        breakdown_for_name, '{}_conversions'.format(extra_name)), temp_tables=temp_tables))
+                    partial(
+                        db.execute_query,
+                        sql,
+                        params,
+                        helpers.get_query_name(breakdown_for_name, "{}_conversions".format(extra_name)),
+                        temp_tables=temp_tables,
+                    )
+                )
                 t_conversions.start()
             except exceptions.ViewNotAvailable:
                 pass
@@ -180,11 +258,18 @@ def _query_all(breakdown, constraints, parents, goals, use_publishers_view,
         if not metrics or any(helpers.is_pixel_metric(metric) for metric in metrics):
             try:
                 sql, params, temp_tables = queries.prepare_query_all_touchpoints(
-                    breakdown + ['slug', 'window'], constraints, parents)
+                    breakdown + ["slug", "window"], constraints, parents
+                )
 
                 t_touchpoints = threads.AsyncFunction(
-                    partial(db.execute_query, sql, params, helpers.get_query_name(
-                        breakdown_for_name, '{}_touchpoints'.format(extra_name)), temp_tables=temp_tables))
+                    partial(
+                        db.execute_query,
+                        sql,
+                        params,
+                        helpers.get_query_name(breakdown_for_name, "{}_touchpoints".format(extra_name)),
+                        temp_tables=temp_tables,
+                    )
+                )
                 t_touchpoints.start()
             except exceptions.ViewNotAvailable:
                 pass
@@ -205,7 +290,6 @@ def _query_all(breakdown, constraints, parents, goals, use_publishers_view,
     if t_touchpoints is not None:
         touchpoint_rows = t_touchpoints.join_and_get_result()
 
-    rows = postprocess.merge_rows(
-        breakdown, base_rows, yesterday_rows, touchpoint_rows, conversions_rows, goals)
+    rows = postprocess.merge_rows(breakdown, base_rows, yesterday_rows, touchpoint_rows, conversions_rows, goals)
 
     return rows

@@ -22,7 +22,7 @@ NOT_PROVIDED = NotProvided()
 
 class BlankToNoneFieldMixin:
     def run_validation(self, value):
-        if value == '':
+        if value == "":
             value = None
         return super().run_validation(value)
 
@@ -30,7 +30,7 @@ class BlankToNoneFieldMixin:
 class NoneToBlankFieldMixin:
     def run_validation(self, value):
         if value is None:
-            value = ''
+            value = ""
         return super().run_validation(value)
 
 
@@ -57,7 +57,6 @@ class IdField(serializers.Field):
 
 
 class DashConstantField(serializers.CharField):
-
     def __init__(self, const_cls, *args, **kwargs):
         self.const_cls = const_cls
         super(DashConstantField, self).__init__(*args, **kwargs)
@@ -69,7 +68,7 @@ class DashConstantField(serializers.CharField):
             return getattr(self.const_cls, data)
         except AttributeError:
             valid_choices = self.const_cls.get_all_names()
-            raise serializers.ValidationError('Invalid choice %s! Valid choices: %s' % (data, ', '.join(valid_choices)))
+            raise serializers.ValidationError("Invalid choice %s! Valid choices: %s" % (data, ", ".join(valid_choices)))
 
     def to_internal_value_many(self, data):
         if data == NOT_PROVIDED:
@@ -86,17 +85,16 @@ class DashConstantField(serializers.CharField):
 
 
 class SourceIdSlugField(serializers.Field):
-
     def to_internal_value(self, data):
         if isinstance(data, dash.models.Source):
             return data
         try:
-            if data.startswith('b1_'):
+            if data.startswith("b1_"):
                 data = data[3:]
             source = dash.models.Source.objects.get(bidder_slug=data)
             return source
         except AttributeError:
-            self.fail('invalid_choice', data)
+            self.fail("invalid_choice", data)
 
     def to_representation(self, source):
         return source.bidder_slug
@@ -138,7 +136,7 @@ class TwoWayBlankDecimalField(BlankToNoneFieldMixin, serializers.DecimalField):
     def get_initial(self):
         initial = super().get_initial()
         if initial is None:
-            return ''
+            return ""
         return initial
 
 

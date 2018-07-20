@@ -8,7 +8,6 @@ class SomeException(Exception):
 
 class AsyncFunctionTest(TestCase):
     def test_asycfunction(self):
-
         def fn():
             return list(range(5))
 

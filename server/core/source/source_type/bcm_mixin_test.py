@@ -7,64 +7,36 @@ from utils.magic_mixer import magic_mixer
 
 
 class GetEtfmLimitsTestCase(TestCase):
-
     def setUp(self):
         self.source_type = magic_mixer.blend(
             core.source.SourceType,
-            min_cpc=decimal.Decimal('0.03'),
-            max_cpc=decimal.Decimal('10.0'),
-            min_daily_budget=decimal.Decimal('10'),
-            max_daily_budget=decimal.Decimal('1000'),
+            min_cpc=decimal.Decimal("0.03"),
+            max_cpc=decimal.Decimal("10.0"),
+            min_daily_budget=decimal.Decimal("10"),
+            max_daily_budget=decimal.Decimal("1000"),
         )
-        self.bcm_modifiers = {
-            'fee': decimal.Decimal('0.15'),
-            'margin': decimal.Decimal('0.33'),
-        }
+        self.bcm_modifiers = {"fee": decimal.Decimal("0.15"), "margin": decimal.Decimal("0.33")}
 
     def test_get_etfm_min_cpc(self):
-        self.assertEqual(
-            decimal.Decimal('0.03'),
-            self.source_type.get_etfm_min_cpc()
-        )
+        self.assertEqual(decimal.Decimal("0.03"), self.source_type.get_etfm_min_cpc())
 
     def test_get_etfm_min_cpc_with_bcm_modifiers(self):
-        self.assertEqual(
-            decimal.Decimal('0.053'),
-            self.source_type.get_etfm_min_cpc(self.bcm_modifiers)
-        )
+        self.assertEqual(decimal.Decimal("0.053"), self.source_type.get_etfm_min_cpc(self.bcm_modifiers))
 
     def test_get_etfm_max_cpc(self):
-        self.assertEqual(
-            decimal.Decimal('10.0'),
-            self.source_type.get_etfm_max_cpc()
-        )
+        self.assertEqual(decimal.Decimal("10.0"), self.source_type.get_etfm_max_cpc())
 
     def test_get_etfm_max_cpc_with_bcm_modifiers(self):
-        self.assertEqual(
-            decimal.Decimal('17.559'),
-            self.source_type.get_etfm_max_cpc(self.bcm_modifiers)
-        )
+        self.assertEqual(decimal.Decimal("17.559"), self.source_type.get_etfm_max_cpc(self.bcm_modifiers))
 
     def test_get_etfm_min_daily_budget(self):
-        self.assertEqual(
-            decimal.Decimal('10.0'),
-            self.source_type.get_etfm_min_daily_budget()
-        )
+        self.assertEqual(decimal.Decimal("10.0"), self.source_type.get_etfm_min_daily_budget())
 
     def test_get_etfm_min_daily_budget_with_bcm_modifiers(self):
-        self.assertEqual(
-            decimal.Decimal('18'),
-            self.source_type.get_etfm_min_daily_budget(self.bcm_modifiers)
-        )
+        self.assertEqual(decimal.Decimal("18"), self.source_type.get_etfm_min_daily_budget(self.bcm_modifiers))
 
     def test_get_etfm_max_daily_budget(self):
-        self.assertEqual(
-            decimal.Decimal('1000.0'),
-            self.source_type.get_etfm_max_daily_budget()
-        )
+        self.assertEqual(decimal.Decimal("1000.0"), self.source_type.get_etfm_max_daily_budget())
 
     def test_get_etfm_max_daily_budget_with_bcm_modifiers(self):
-        self.assertEqual(
-            decimal.Decimal('1755'),
-            self.source_type.get_etfm_max_daily_budget(self.bcm_modifiers)
-        )
+        self.assertEqual(decimal.Decimal("1755"), self.source_type.get_etfm_max_daily_budget(self.bcm_modifiers))

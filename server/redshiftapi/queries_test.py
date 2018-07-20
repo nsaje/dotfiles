@@ -13,20 +13,18 @@ from . import models
 
 
 class PrepareQueryAllTest(TestCase, backtosql.TestSQLMixin):
-
-    @mock.patch.object(models.MVMaster, 'get_aggregates', return_value=[models.MVMaster.clicks])
+    @mock.patch.object(models.MVMaster, "get_aggregates", return_value=[models.MVMaster.clicks])
     def test_query_all_base(self, _):
         sql, params, _ = queries.prepare_query_all_base(
-            ['account_id', 'source_id', 'dma'],
-            {
-                'date__gte': datetime.date(2016, 1, 5),
-                'date__lte': datetime.date(2016, 1, 8),
-            },
-            [{'account_id': 1, 'source_id': 2}],
-            False
+            ["account_id", "source_id", "dma"],
+            {"date__gte": datetime.date(2016, 1, 5), "date__lte": datetime.date(2016, 1, 8)},
+            [{"account_id": 1, "source_id": 2}],
+            False,
         )
 
-        self.assertSQLEquals(sql, """
+        self.assertSQLEquals(
+            sql,
+            """
         SELECT
             base_table.account_id AS account_id,
             base_table.source_id AS source_id,
@@ -37,46 +35,46 @@ class PrepareQueryAllTest(TestCase, backtosql.TestSQLMixin):
             AND (( base_table.account_id =%s AND base_table.source_id =%s)))
         GROUP BY 1, 2, 3
         ORDER BY clicks DESC NULLS LAST, account_id ASC NULLS LAST, source_id ASC NULLS LAST, dma ASC NULLS LAST
-        """)
+        """,
+        )
 
         self.assertEqual(params, [datetime.date(2016, 1, 5), datetime.date(2016, 1, 8), 1, 2])
 
-    @mock.patch.object(models.MVMaster, 'get_aggregates', return_value=[models.MVMaster.clicks])
+    @mock.patch.object(models.MVMaster, "get_aggregates", return_value=[models.MVMaster.clicks])
     def test_query_all_base_totals(self, _):
         sql, params, _ = queries.prepare_query_all_base(
-            [],
-            {
-                'date__gte': datetime.date(2016, 1, 5),
-                'date__lte': datetime.date(2016, 1, 8),
-            },
-            None,
-            False
+            [], {"date__gte": datetime.date(2016, 1, 5), "date__lte": datetime.date(2016, 1, 8)}, None, False
         )
 
-        self.assertSQLEquals(sql, """
+        self.assertSQLEquals(
+            sql,
+            """
         SELECT
             SUM(base_table.clicks) clicks
         FROM mv_account base_table
         WHERE ( base_table.date >=%s AND base_table.date <=%s)
         ORDER BY clicks DESC NULLS LAST
-        """)
+        """,
+        )
 
         self.assertEqual(params, [datetime.date(2016, 1, 5), datetime.date(2016, 1, 8)])
 
-    @mock.patch.object(models.MVMaster, 'get_aggregates', return_value=[
-        models.MVMaster.clicks, models.MVMaster.external_id, models.MVMaster.publisher_id])
+    @mock.patch.object(
+        models.MVMaster,
+        "get_aggregates",
+        return_value=[models.MVMaster.clicks, models.MVMaster.external_id, models.MVMaster.publisher_id],
+    )
     def test_query_all_base_publishers(self, _):
         sql, params, _ = queries.prepare_query_all_base(
-            ['publisher_id', 'dma'],
-            {
-                'date__gte': datetime.date(2016, 1, 5),
-                'date__lte': datetime.date(2016, 1, 8),
-            },
+            ["publisher_id", "dma"],
+            {"date__gte": datetime.date(2016, 1, 5), "date__lte": datetime.date(2016, 1, 8)},
             None,
-            True
+            True,
         )
 
-        self.assertSQLEquals(sql, """
+        self.assertSQLEquals(
+            sql,
+            """
         SELECT
             base_table.publisher AS publisher,
             base_table.source_id AS source_id,
@@ -88,23 +86,23 @@ class PrepareQueryAllTest(TestCase, backtosql.TestSQLMixin):
         WHERE ( base_table.date >=%s AND base_table.date <=%s)
         GROUP BY 1, 2, 3
         ORDER BY clicks DESC NULLS LAST, publisher_id ASC NULLS LAST, dma ASC NULLS LAST
-        """)
+        """,
+        )
 
         self.assertEqual(params, [datetime.date(2016, 1, 5), datetime.date(2016, 1, 8)])
 
-    @mock.patch('utils.dates_helper.local_today', return_value=datetime.date(2016, 10, 3))
+    @mock.patch("utils.dates_helper.local_today", return_value=datetime.date(2016, 10, 3))
     def test_query_all_yesterday(self, _):
         sql, params, _ = queries.prepare_query_all_yesterday(
-            ['account_id', 'source_id', 'dma'],
-            {
-                'date__gte': datetime.date(2016, 1, 5),
-                'date__lte': datetime.date(2016, 1, 8),
-            },
-            [{'account_id': 1, 'source_id': 2}],
-            False
+            ["account_id", "source_id", "dma"],
+            {"date__gte": datetime.date(2016, 1, 5), "date__lte": datetime.date(2016, 1, 8)},
+            [{"account_id": 1, "source_id": 2}],
+            False,
         )
 
-        self.assertSQLEquals(sql, """
+        self.assertSQLEquals(
+            sql,
+            """
         SELECT
             base_table.account_id AS account_id,
             base_table.source_id AS source_id,
@@ -124,23 +122,23 @@ class PrepareQueryAllTest(TestCase, backtosql.TestSQLMixin):
                AND (( base_table.account_id =%s AND base_table.source_id =%s)))
         GROUP BY 1, 2, 3
         ORDER BY yesterday_cost DESC NULLS LAST, account_id ASC NULLS LAST, source_id ASC NULLS LAST, dma ASC NULLS LAST
-        """)
+        """,
+        )
 
         self.assertEqual(params, [datetime.date(2016, 10, 2), 1, 2])
 
-    @mock.patch('utils.dates_helper.local_today', return_value=datetime.date(2016, 10, 3))
+    @mock.patch("utils.dates_helper.local_today", return_value=datetime.date(2016, 10, 3))
     def test_query_all_yesterday_publishers(self, _):
         sql, params, _ = queries.prepare_query_all_yesterday(
-            ['publisher_id', 'day'],
-            {
-                'date__gte': datetime.date(2016, 1, 5),
-                'date__lte': datetime.date(2016, 1, 8),
-            },
-            [{'account_id': 1, 'source_id': 2}],
-            'mv_account_pubs'
+            ["publisher_id", "day"],
+            {"date__gte": datetime.date(2016, 1, 5), "date__lte": datetime.date(2016, 1, 8)},
+            [{"account_id": 1, "source_id": 2}],
+            "mv_account_pubs",
         )
 
-        self.assertSQLEquals(sql, """
+        self.assertSQLEquals(
+            sql,
+            """
         SELECT
             base_table.publisher AS publisher,
             base_table.source_id AS source_id,
@@ -161,21 +159,21 @@ class PrepareQueryAllTest(TestCase, backtosql.TestSQLMixin):
                AND (( base_table.account_id =%s AND base_table.source_id =%s)))
         GROUP BY 1, 2, 3
         ORDER BY yesterday_cost DESC NULLS LAST, publisher_id ASC NULLS LAST, day ASC NULLS LAST
-        """)
+        """,
+        )
 
         self.assertEqual(params, [datetime.date(2016, 10, 2), 1, 2])
 
     def test_query_all_conversions(self):
         sql, params, _ = queries.prepare_query_all_conversions(
-            ['account_id', 'source_id', 'slug'],
-            {
-                'date__gte': datetime.date(2016, 1, 5),
-                'date__lte': datetime.date(2016, 1, 8),
-            },
-            [{'account_id': 1, 'source_id': 2}]
+            ["account_id", "source_id", "slug"],
+            {"date__gte": datetime.date(2016, 1, 5), "date__lte": datetime.date(2016, 1, 8)},
+            [{"account_id": 1, "source_id": 2}],
         )
 
-        self.assertSQLEquals(sql, """
+        self.assertSQLEquals(
+            sql,
+            """
         SELECT
             base_table.account_id AS account_id,
             base_table.source_id AS source_id,
@@ -186,21 +184,21 @@ class PrepareQueryAllTest(TestCase, backtosql.TestSQLMixin):
                AND (( base_table.account_id =%s AND base_table.source_id =%s)))
         GROUP BY 1, 2, 3
         ORDER BY count DESC NULLS LAST, account_id ASC NULLS LAST, source_id ASC NULLS LAST, slug ASC NULLS LAST
-        """)
+        """,
+        )
 
         self.assertEqual(params, [datetime.date(2016, 1, 5), datetime.date(2016, 1, 8), 1, 2])
 
     def test_query_all_conversions_publishers(self):
         sql, params, _ = queries.prepare_query_all_conversions(
-            ['publisher_id', 'day'],
-            {
-                'date__gte': datetime.date(2016, 1, 5),
-                'date__lte': datetime.date(2016, 1, 8),
-            },
-            [{'account_id': 1, 'source_id': 2}]
+            ["publisher_id", "day"],
+            {"date__gte": datetime.date(2016, 1, 5), "date__lte": datetime.date(2016, 1, 8)},
+            [{"account_id": 1, "source_id": 2}],
         )
 
-        self.assertSQLEquals(sql, """
+        self.assertSQLEquals(
+            sql,
+            """
         SELECT
             base_table.publisher AS publisher,
             base_table.source_id AS source_id,
@@ -212,21 +210,21 @@ class PrepareQueryAllTest(TestCase, backtosql.TestSQLMixin):
                AND (( base_table.account_id =%s AND base_table.source_id =%s)))
         GROUP BY 1, 2, 3
         ORDER BY count DESC NULLS LAST, publisher_id ASC NULLS LAST, day ASC NULLS LAST
-        """)
+        """,
+        )
 
         self.assertEqual(params, [datetime.date(2016, 1, 5), datetime.date(2016, 1, 8), 1, 2])
 
     def test_query_all_touchpoints(self):
         sql, params, _ = queries.prepare_query_all_touchpoints(
-            ['account_id', 'source_id', 'slug', 'window'],
-            {
-                'date__gte': datetime.date(2016, 1, 5),
-                'date__lte': datetime.date(2016, 1, 8),
-            },
-            [{'account_id': 1, 'source_id': 2}]
+            ["account_id", "source_id", "slug", "window"],
+            {"date__gte": datetime.date(2016, 1, 5), "date__lte": datetime.date(2016, 1, 8)},
+            [{"account_id": 1, "source_id": 2}],
         )
 
-        self.assertSQLEquals(sql, """
+        self.assertSQLEquals(
+            sql,
+            """
         SELECT
             base_table.account_id AS account_id,
             base_table.source_id AS source_id,
@@ -239,21 +237,21 @@ class PrepareQueryAllTest(TestCase, backtosql.TestSQLMixin):
                AND (( base_table.account_id =%s AND base_table.source_id =%s)))
         GROUP BY 1, 2, 3, 4
         ORDER BY count DESC NULLS LAST, account_id ASC NULLS LAST, source_id ASC NULLS LAST, slug ASC NULLS LAST, "window" ASC NULLS LAST
-        """)
+        """,
+        )
 
         self.assertEqual(params, [datetime.date(2016, 1, 5), datetime.date(2016, 1, 8), 1, 2])
 
     def test_query_all_touchpoints_publishers(self):
         sql, params, _ = queries.prepare_query_all_touchpoints(
-            ['publisher_id', 'day', 'slug', 'window'],
-            {
-                'date__gte': datetime.date(2016, 1, 5),
-                'date__lte': datetime.date(2016, 1, 8),
-            },
-            [{'account_id': 1, 'source_id': 2}]
+            ["publisher_id", "day", "slug", "window"],
+            {"date__gte": datetime.date(2016, 1, 5), "date__lte": datetime.date(2016, 1, 8)},
+            [{"account_id": 1, "source_id": 2}],
         )
 
-        self.assertSQLEquals(sql, """
+        self.assertSQLEquals(
+            sql,
+            """
         SELECT
             base_table.publisher AS publisher,
             base_table.source_id AS source_id,
@@ -267,21 +265,21 @@ class PrepareQueryAllTest(TestCase, backtosql.TestSQLMixin):
         WHERE (( base_table.date >=%s AND base_table.date <=%s)
                AND (( base_table.account_id =%s AND base_table.source_id =%s)))
         GROUP BY 1, 2, 3, 4, 5
-        ORDER BY count DESC NULLS LAST, publisher_id ASC NULLS LAST, day ASC NULLS LAST, slug ASC NULLS LAST, "window" ASC NULLS LAST""")
+        ORDER BY count DESC NULLS LAST, publisher_id ASC NULLS LAST, day ASC NULLS LAST, slug ASC NULLS LAST, "window" ASC NULLS LAST""",
+        )
 
         self.assertEqual(params, [datetime.date(2016, 1, 5), datetime.date(2016, 1, 8), 1, 2])
 
     def test_query_structure_with_stats(self):
         sql, params, _ = queries.prepare_query_structure_with_stats(
-            ['account_id', 'source_id', 'dma'],
-            {
-                'date__gte': datetime.date(2016, 1, 5),
-                'date__lte': datetime.date(2016, 1, 8),
-            },
-            use_publishers_view=False
+            ["account_id", "source_id", "dma"],
+            {"date__gte": datetime.date(2016, 1, 5), "date__lte": datetime.date(2016, 1, 8)},
+            use_publishers_view=False,
         )
 
-        self.assertSQLEquals(sql, """
+        self.assertSQLEquals(
+            sql,
+            """
         SELECT
             base_table.account_id AS account_id,
             base_table.source_id AS source_id,
@@ -289,28 +287,31 @@ class PrepareQueryAllTest(TestCase, backtosql.TestSQLMixin):
         FROM mv_account_geo base_table
         WHERE ( base_table.date >=%s AND base_table.date <=%s)
         GROUP BY 1, 2, 3;
-        """)
+        """,
+        )
 
         self.assertEqual(params, [datetime.date(2016, 1, 5), datetime.date(2016, 1, 8)])
 
 
 class PrepareQueryJointTest(TestCase, backtosql.TestSQLMixin):
-
-    @mock.patch('utils.dates_helper.local_today', return_value=datetime.date(2016, 7, 2))
-    @mock.patch.object(models.MVJointMaster, 'get_aggregates',
-                       return_value=[models.MVJointMaster.clicks, models.MVJointMaster.total_seconds])
+    @mock.patch("utils.dates_helper.local_today", return_value=datetime.date(2016, 7, 2))
+    @mock.patch.object(
+        models.MVJointMaster,
+        "get_aggregates",
+        return_value=[models.MVJointMaster.clicks, models.MVJointMaster.total_seconds],
+    )
     def test_query_joint_base(self, _a, _b):
-        constraints = {
-            'date__gte': datetime.date(2016, 4, 1),
-            'date__lte': datetime.date(2016, 5, 1),
-        }
+        constraints = {"date__gte": datetime.date(2016, 4, 1), "date__lte": datetime.date(2016, 5, 1)}
 
         goals = Goals(None, None, None, None, None)
 
-        sql, params, _ = queries.prepare_query_joint_base(['account_id'], constraints, None,
-                                                          ['total_seconds'], 5, 10, goals, False)
+        sql, params, _ = queries.prepare_query_joint_base(
+            ["account_id"], constraints, None, ["total_seconds"], 5, 10, goals, False
+        )
 
-        self.assertSQLEquals(sql, """
+        self.assertSQLEquals(
+            sql,
+            """
         WITH
             temp_yesterday AS (
                 SELECT
@@ -357,29 +358,29 @@ class PrepareQueryJointTest(TestCase, backtosql.TestSQLMixin):
         ORDER BY total_seconds ASC NULLS LAST
         LIMIT 10
         OFFSET 5
-        """)
+        """,
+        )
 
-        self.assertEqual(params, [
-            datetime.date(2016, 7, 1),
-            datetime.date(2016, 4, 1),
-            datetime.date(2016, 5, 1),
-        ])
+        self.assertEqual(params, [datetime.date(2016, 7, 1), datetime.date(2016, 4, 1), datetime.date(2016, 5, 1)])
 
-    @mock.patch('utils.dates_helper.local_today', return_value=datetime.date(2016, 7, 2))
-    @mock.patch.object(models.MVJointMaster, 'get_aggregates',
-                       return_value=[models.MVJointMaster.clicks, models.MVJointMaster.total_seconds])
+    @mock.patch("utils.dates_helper.local_today", return_value=datetime.date(2016, 7, 2))
+    @mock.patch.object(
+        models.MVJointMaster,
+        "get_aggregates",
+        return_value=[models.MVJointMaster.clicks, models.MVJointMaster.total_seconds],
+    )
     def test_query_joint_base_publishers(self, _a, _b):
-        constraints = {
-            'date__gte': datetime.date(2016, 4, 1),
-            'date__lte': datetime.date(2016, 5, 1),
-        }
+        constraints = {"date__gte": datetime.date(2016, 4, 1), "date__lte": datetime.date(2016, 5, 1)}
 
         goals = Goals(None, None, None, None, None)
 
-        sql, params, _ = queries.prepare_query_joint_base(['publisher_id'], constraints, None,
-                                                          ['total_seconds'], 5, 10, goals, True)
+        sql, params, _ = queries.prepare_query_joint_base(
+            ["publisher_id"], constraints, None, ["total_seconds"], 5, 10, goals, True
+        )
 
-        self.assertSQLEquals(sql, """
+        self.assertSQLEquals(
+            sql,
+            """
         WITH
             temp_yesterday AS (
                 SELECT
@@ -430,29 +431,36 @@ class PrepareQueryJointTest(TestCase, backtosql.TestSQLMixin):
         ORDER BY total_seconds ASC NULLS LAST
         LIMIT 10
         OFFSET 5
-        """)
+        """,
+        )
 
-        self.assertEqual(params, [
-            datetime.date(2016, 7, 1),
-            datetime.date(2016, 4, 1),
-            datetime.date(2016, 5, 1),
-        ])
+        self.assertEqual(params, [datetime.date(2016, 7, 1), datetime.date(2016, 4, 1), datetime.date(2016, 5, 1)])
 
-    @mock.patch('utils.dates_helper.local_today', return_value=datetime.date(2016, 7, 2))
-    @mock.patch.object(models.MVJointMaster, 'get_aggregates',
-                       return_value=[models.MVJointMaster.clicks, models.MVJointMaster.total_seconds])
+    @mock.patch("utils.dates_helper.local_today", return_value=datetime.date(2016, 7, 2))
+    @mock.patch.object(
+        models.MVJointMaster,
+        "get_aggregates",
+        return_value=[models.MVJointMaster.clicks, models.MVJointMaster.total_seconds],
+    )
     def test_query_joint_levels(self, _a, _b):
-        constraints = {
-            'date__gte': datetime.date(2016, 4, 1),
-            'date__lte': datetime.date(2016, 5, 1),
-        }
+        constraints = {"date__gte": datetime.date(2016, 4, 1), "date__lte": datetime.date(2016, 5, 1)}
 
         goals = Goals(None, None, None, None, None)
 
         sql, params, _ = queries.prepare_query_joint_levels(
-            ['account_id', 'campaign_id'], constraints, None, ['total_seconds', 'account_id', 'campaign_id'], 5, 10, goals, False)
+            ["account_id", "campaign_id"],
+            constraints,
+            None,
+            ["total_seconds", "account_id", "campaign_id"],
+            5,
+            10,
+            goals,
+            False,
+        )
 
-        self.assertSQLEquals(sql, """
+        self.assertSQLEquals(
+            sql,
+            """
         WITH
             temp_yesterday AS (
                 SELECT
@@ -537,29 +545,29 @@ class PrepareQueryJointTest(TestCase, backtosql.TestSQLMixin):
                 ) a
             ) b
         WHERE r >= 5+1 AND r <= 10
-        """)
+        """,
+        )
 
-        self.assertEqual(params, [
-            datetime.date(2016, 7, 1),
-            datetime.date(2016, 4, 1),
-            datetime.date(2016, 5, 1),
-        ])
+        self.assertEqual(params, [datetime.date(2016, 7, 1), datetime.date(2016, 4, 1), datetime.date(2016, 5, 1)])
 
-    @mock.patch('utils.dates_helper.local_today', return_value=datetime.date(2016, 7, 2))
-    @mock.patch.object(models.MVJointMaster, 'get_aggregates',
-                       return_value=[models.MVJointMaster.clicks, models.MVJointMaster.total_seconds])
+    @mock.patch("utils.dates_helper.local_today", return_value=datetime.date(2016, 7, 2))
+    @mock.patch.object(
+        models.MVJointMaster,
+        "get_aggregates",
+        return_value=[models.MVJointMaster.clicks, models.MVJointMaster.total_seconds],
+    )
     def test_query_joint_levels_publishers(self, _a, _b):
-        constraints = {
-            'date__gte': datetime.date(2016, 4, 1),
-            'date__lte': datetime.date(2016, 5, 1),
-        }
+        constraints = {"date__gte": datetime.date(2016, 4, 1), "date__lte": datetime.date(2016, 5, 1)}
 
         goals = Goals(None, None, None, None, None)
 
         sql, params, _ = queries.prepare_query_joint_levels(
-            ['publisher_id', 'dma'], constraints, None, ['total_seconds'], 5, 10, goals, True)
+            ["publisher_id", "dma"], constraints, None, ["total_seconds"], 5, 10, goals, True
+        )
 
-        self.assertSQLEquals(sql, """
+        self.assertSQLEquals(
+            sql,
+            """
         WITH
             temp_yesterday AS (
                 SELECT
@@ -648,27 +656,24 @@ class PrepareQueryJointTest(TestCase, backtosql.TestSQLMixin):
                 ) a
             ) b
         WHERE r >= 5+1 AND r <= 10
-        """)
+        """,
+        )
 
-        self.assertEqual(params, [
-            datetime.date(2016, 7, 1),
-            datetime.date(2016, 4, 1),
-            datetime.date(2016, 5, 1),
-        ])
+        self.assertEqual(params, [datetime.date(2016, 7, 1), datetime.date(2016, 4, 1), datetime.date(2016, 5, 1)])
 
 
 class PrepareQueryJointConversionsTest(TestCase, backtosql.TestSQLMixin):
 
-    fixtures = ['test_augmenter.yaml']
+    fixtures = ["test_augmenter.yaml"]
 
-    @mock.patch('utils.dates_helper.local_today', return_value=datetime.date(2016, 7, 2))
-    @mock.patch.object(models.MVJointMaster, 'get_aggregates',
-                       return_value=[models.MVJointMaster.clicks, models.MVJointMaster.total_seconds])
+    @mock.patch("utils.dates_helper.local_today", return_value=datetime.date(2016, 7, 2))
+    @mock.patch.object(
+        models.MVJointMaster,
+        "get_aggregates",
+        return_value=[models.MVJointMaster.clicks, models.MVJointMaster.total_seconds],
+    )
     def test_query_joint_base(self, _a, _b):
-        constraints = {
-            'date__gte': datetime.date(2016, 4, 1),
-            'date__lte': datetime.date(2016, 5, 1),
-        }
+        constraints = {"date__gte": datetime.date(2016, 4, 1), "date__lte": datetime.date(2016, 5, 1)}
 
         campaign = dash.models.Campaign.objects.get(id=1)
         campaign_goals = dash.models.CampaignGoal.objects.filter(campaign_id=campaign.id)
@@ -678,27 +683,31 @@ class PrepareQueryJointConversionsTest(TestCase, backtosql.TestSQLMixin):
 
         goals = Goals(campaign_goals, conversion_goals, campaign_goal_values, pixels, None)
 
-        _, params, _ = queries.prepare_query_joint_base(['account_id'], constraints, None,
-                                                        ['total_seconds'], 5, 10, goals, False)
+        _, params, _ = queries.prepare_query_joint_base(
+            ["account_id"], constraints, None, ["total_seconds"], 5, 10, goals, False
+        )
 
-        self.assertEqual(params, [
-            datetime.date(2016, 4, 1),
-            datetime.date(2016, 5, 1),
-            datetime.date(2016, 4, 1),
-            datetime.date(2016, 5, 1),
-            datetime.date(2016, 7, 1),
-            datetime.date(2016, 4, 1),
-            datetime.date(2016, 5, 1),
-        ])
+        self.assertEqual(
+            params,
+            [
+                datetime.date(2016, 4, 1),
+                datetime.date(2016, 5, 1),
+                datetime.date(2016, 4, 1),
+                datetime.date(2016, 5, 1),
+                datetime.date(2016, 7, 1),
+                datetime.date(2016, 4, 1),
+                datetime.date(2016, 5, 1),
+            ],
+        )
 
-    @mock.patch('utils.dates_helper.local_today', return_value=datetime.date(2016, 7, 2))
-    @mock.patch.object(models.MVJointMaster, 'get_aggregates',
-                       return_value=[models.MVJointMaster.clicks, models.MVJointMaster.total_seconds])
+    @mock.patch("utils.dates_helper.local_today", return_value=datetime.date(2016, 7, 2))
+    @mock.patch.object(
+        models.MVJointMaster,
+        "get_aggregates",
+        return_value=[models.MVJointMaster.clicks, models.MVJointMaster.total_seconds],
+    )
     def test_query_joint_levels(self, _a, _b):
-        constraints = {
-            'date__gte': datetime.date(2016, 4, 1),
-            'date__lte': datetime.date(2016, 5, 1),
-        }
+        constraints = {"date__gte": datetime.date(2016, 4, 1), "date__lte": datetime.date(2016, 5, 1)}
 
         campaign = dash.models.Campaign.objects.get(id=1)
         campaign_goals = dash.models.CampaignGoal.objects.filter(campaign_id=campaign.id)
@@ -708,15 +717,19 @@ class PrepareQueryJointConversionsTest(TestCase, backtosql.TestSQLMixin):
 
         goals = Goals(campaign_goals, conversion_goals, campaign_goal_values, pixels, None)
 
-        _, params, _ = queries.prepare_query_joint_levels(['account_id', 'campaign_id'],
-                                                          constraints, None, ['total_seconds'], 5, 10, goals, False)
+        _, params, _ = queries.prepare_query_joint_levels(
+            ["account_id", "campaign_id"], constraints, None, ["total_seconds"], 5, 10, goals, False
+        )
 
-        self.assertEqual(params, [
-            datetime.date(2016, 4, 1),
-            datetime.date(2016, 5, 1),
-            datetime.date(2016, 4, 1),
-            datetime.date(2016, 5, 1),
-            datetime.date(2016, 7, 1),
-            datetime.date(2016, 4, 1),
-            datetime.date(2016, 5, 1),
-        ])
+        self.assertEqual(
+            params,
+            [
+                datetime.date(2016, 4, 1),
+                datetime.date(2016, 5, 1),
+                datetime.date(2016, 4, 1),
+                datetime.date(2016, 5, 1),
+                datetime.date(2016, 7, 1),
+                datetime.date(2016, 4, 1),
+                datetime.date(2016, 5, 1),
+            ],
+        )

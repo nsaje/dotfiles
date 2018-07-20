@@ -20,7 +20,7 @@ POSTGRES_KEEP_DAYS = 64
 
 
 class Command(ExceptionCommand):
-    @influx.timer('etl.clean_up_postgres_stats')
+    @influx.timer("etl.clean_up_postgres_stats")
     def handle(self, *args, **options):
         for db_name in settings.STATS_DB_WRITE_REPLICAS_POSTGRES:
             for table in refresh_k1.get_all_views_table_names():

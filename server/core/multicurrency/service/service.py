@@ -14,10 +14,8 @@ def get_current_exchange_rate(currency):
 
 def get_exchange_rate(date, currency):
     if currency == dash.constants.Currency.USD:
-        return Decimal('1.0000')
-    exchange_rate = CurrencyExchangeRate.objects.filter(
-        date__lte=date, currency=currency
-    ).latest('date')
+        return Decimal("1.0000")
+    exchange_rate = CurrencyExchangeRate.objects.filter(date__lte=date, currency=currency).latest("date")
     return exchange_rate.exchange_rate
 
 
@@ -30,5 +28,5 @@ def format_value_in_currency(value, places, rounding, currency):
         Decimal(value) * get_current_exchange_rate(currency),
         places=places,
         rounding=rounding,
-        curr=get_currency_symbol(currency)
+        curr=get_currency_symbol(currency),
     )

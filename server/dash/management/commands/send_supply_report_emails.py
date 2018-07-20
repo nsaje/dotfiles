@@ -19,16 +19,15 @@ logger = logging.getLogger(__name__)
 
 
 class Command(ExceptionCommand):
-
     def handle(self, *args, **options):
         today_utc = pytz.UTC.localize(datetime.datetime.utcnow())
         today = today_utc.astimezone(pytz.timezone(settings.DEFAULT_TIME_ZONE)).replace(tzinfo=None)
         today = datetime.datetime(today.year, today.month, today.day)
         yesterday = today - datetime.timedelta(days=1)
 
-        recipients = dash.models.SupplyReportRecipient.objects.all().prefetch_related('source')
+        recipients = dash.models.SupplyReportRecipient.objects.all().prefetch_related("source")
         if len(recipients) == 0:
-            logger.info('No recipients.')
+            logger.info("No recipients.")
             return
 
         source_stats = {}
@@ -42,23 +41,25 @@ class Command(ExceptionCommand):
             from stats
             where {date_query}
             group by media_source
-        """.format(date_query=helpers.get_local_date_query(yesterday.date()))
+        """.format(
+            date_query=helpers.get_local_date_query(yesterday.date())
+        )
 
         with connections[settings.STATS_DB_NAME].cursor() as c:
             c.execute(query)
 
             for media_source, impressions, spend in c:
                 source_stats[sources_by_slug[media_source].pk] = {
-                    'impressions': impressions,
-                    'cost': Decimal(spend) / converters.CURRENCY_TO_MICRO,
+                    "impressions": impressions,
+                    "cost": Decimal(spend) / converters.CURRENCY_TO_MICRO,
                 }
 
         for recipient in recipients:
             impressions = 0
             cost = 0
             if recipient.source.pk in source_stats:
-                impressions = source_stats[recipient.source.pk]['impressions']
-                cost = source_stats[recipient.source.pk]['cost']
+                impressions = source_stats[recipient.source.pk]["impressions"]
+                cost = source_stats[recipient.source.pk]["cost"]
 
             if recipient.publishers_report and recipient.source.pk not in publisher_stats:
                 publisher_stats[recipient.source.pk] = self.get_publisher_stats(recipient, yesterday)
@@ -66,8 +67,7 @@ class Command(ExceptionCommand):
             publisher_report = None
             if recipient.source.pk in publisher_stats and publisher_stats[recipient.source.pk]:
                 publisher_report = self.create_csv(
-                    ["Date", "Publisher", "Impressions", "Clicks", "Spend"],
-                    publisher_stats[recipient.source.pk]
+                    ["Date", "Publisher", "Impressions", "Clicks", "Spend"], publisher_stats[recipient.source.pk]
                 )
 
             utils.email_helper.send_supply_report_email(
@@ -76,7 +76,7 @@ class Command(ExceptionCommand):
                 impressions,
                 cost,
                 recipient.custom_subject,
-                publisher_report=publisher_report
+                publisher_report=publisher_report,
             )
 
     def get_publisher_stats(self, recipient, date):

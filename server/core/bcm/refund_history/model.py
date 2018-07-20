@@ -5,6 +5,6 @@ import core.history
 
 class RefundHistory(core.history.HistoryModel):
     class Meta:
-        app_label = 'dash'
+        app_label = "dash"
 
-    refund = models.ForeignKey('RefundLineItem', related_name='history')
+    refund = models.ForeignKey("RefundLineItem", related_name="history")

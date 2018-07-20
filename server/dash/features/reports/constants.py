@@ -3,15 +3,16 @@ import utils.columns
 from utils.constant_base import ConstantBase
 
 
-EQUALS = '='
-IN = 'IN'
-BETWEEN = 'between'
+EQUALS = "="
+IN = "IN"
+BETWEEN = "between"
 OPERATORS = [EQUALS, IN, BETWEEN]
 
 BREAKDOWN_FIELDS = set(
-    stats.constants.StructureDimension._ALL +
-    stats.constants.TimeDimension._ALL +
-    stats.constants.DeliveryDimension._ALL)
+    stats.constants.StructureDimension._ALL
+    + stats.constants.TimeDimension._ALL
+    + stats.constants.DeliveryDimension._ALL
+)
 
 HIERARCHY_BREAKDOWN_FIELDS = [
     stats.constants.ACCOUNT,
@@ -20,11 +21,11 @@ HIERARCHY_BREAKDOWN_FIELDS = [
     stats.constants.CONTENT_AD,
 ]
 
-STRUCTURE_CONSTRAINTS_FIELDS = ['account_id', 'campaign_id', 'ad_group_id', 'content_ad_id']
+STRUCTURE_CONSTRAINTS_FIELDS = ["account_id", "campaign_id", "ad_group_id", "content_ad_id"]
 
 MAX_ROWS = 999999
 
-DEFAULT_ORDER = '-e_media_cost'
+DEFAULT_ORDER = "-e_media_cost"
 
 DATED_COLUMNS = (
     utils.columns.FieldNames.status,
@@ -43,9 +44,4 @@ class ReportJobStatus(ConstantBase):
     IN_PROGRESS = 3
     CANCELLED = 4
 
-    _VALUES = {
-        DONE: 'Done',
-        FAILED: 'Failed',
-        IN_PROGRESS: 'In progress',
-        CANCELLED: 'Cancelled',
-    }
+    _VALUES = {DONE: "Done", FAILED: "Failed", IN_PROGRESS: "In progress", CANCELLED: "Cancelled"}

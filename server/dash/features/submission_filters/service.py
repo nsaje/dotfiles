@@ -4,11 +4,11 @@ from . import models, constants
 import dash.constants
 
 _FIELD_MAPPER = {
-    'content_ad': 'content_ad_id',
-    'ad_group': 'content_ad__ad_group_id',
-    'campaign': 'content_ad__ad_group__campaign_id',
-    'account': 'content_ad__ad_group__campaign__account_id',
-    'agency': 'content_ad__ad_group__campaign__account__agency_id',
+    "content_ad": "content_ad_id",
+    "ad_group": "content_ad__ad_group_id",
+    "campaign": "content_ad__ad_group__campaign_id",
+    "account": "content_ad__ad_group__campaign__account_id",
+    "agency": "content_ad__ad_group__campaign__account__agency_id",
 }
 
 AUTOMATIC_APPROVAL_POLICIES = {
@@ -23,12 +23,12 @@ def filter_valid_content_ad_sources(content_ad_sources):
     for cas in content_ad_sources:
         for entity_short, entity_long in _FIELD_MAPPER.items():
             if cas[entity_long]:
-                lookup.setdefault(entity_short + '_id__in', set()).add(cas[entity_long])
+                lookup.setdefault(entity_short + "_id__in", set()).add(cas[entity_long])
     applied_filters = _get_any_applied_filters(lookup)
     for cas in content_ad_sources:
-        is_valid = cas['source__content_ad_submission_policy'] in AUTOMATIC_APPROVAL_POLICIES
+        is_valid = cas["source__content_ad_submission_policy"] in AUTOMATIC_APPROVAL_POLICIES
         for entity_short, entity_long in _FIELD_MAPPER.items():
-            submission_filter = applied_filters.get((cas['source_id'], entity_short, cas[entity_long]))
+            submission_filter = applied_filters.get((cas["source_id"], entity_short, cas[entity_long]))
             if not submission_filter:
                 continue
             if is_valid and submission_filter.state == constants.SubmissionFilterState.BLOCK:

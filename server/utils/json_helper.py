@@ -20,8 +20,7 @@ class JSONEncoder(json.JSONEncoder):
                 # naive datetimes are treated as UTC
                 obj = pytz.utc.localize(obj)
 
-            return obj.astimezone(pytz.timezone(self.convert_datetimes_tz)).\
-                replace(tzinfo=None).isoformat()
+            return obj.astimezone(pytz.timezone(self.convert_datetimes_tz)).replace(tzinfo=None).isoformat()
 
         elif isinstance(obj, (datetime.date, datetime.time)):
             return obj.isoformat()
@@ -38,7 +37,7 @@ def json_serializable_changes(changes):
         return
     ret = {}
     for key, value in changes.items():
-        if hasattr(value, 'id'):
+        if hasattr(value, "id"):
             ret[key] = value.id
         else:
             ret[key] = value

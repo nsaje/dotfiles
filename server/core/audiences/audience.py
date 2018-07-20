@@ -24,21 +24,15 @@ class AudienceManager(core.common.BaseManager):
                 prefill_days=ttl,  # use ttl value for prefill until it gets its own UI component
             )
             audience.save(
-                request,
-                constants.HistoryActionType.AUDIENCE_CREATE,
-                'Created audience "{}".'.format(audience.name)
+                request, constants.HistoryActionType.AUDIENCE_CREATE, 'Created audience "{}".'.format(audience.name)
             )
 
             for rule in rules:
-                value = rule['value'] or ''
-                if rule['type'] in refererRules:
-                    value = ','.join([x.strip() for x in value.split(',') if x])
+                value = rule["value"] or ""
+                if rule["type"] in refererRules:
+                    value = ",".join([x.strip() for x in value.split(",") if x])
 
-                rule = audience_rule.AudienceRule(
-                    audience=audience,
-                    type=rule['type'],
-                    value=value,
-                )
+                rule = audience_rule.AudienceRule(audience=audience, type=rule["type"], value=value)
                 rule.save()
 
             redirector_helper.upsert_audience(audience)
@@ -50,43 +44,25 @@ class AudienceManager(core.common.BaseManager):
 
 class Audience(models.Model):
     id = models.AutoField(primary_key=True)
-    name = models.CharField(
-        max_length=127,
-        editable=True,
-        blank=False,
-        null=False
-    )
+    name = models.CharField(max_length=127, editable=True, blank=False, null=False)
     pixel = models.ForeignKey(core.pixels.ConversionPixel, on_delete=models.PROTECT)
     archived = models.BooleanField(default=False)
     ttl = models.PositiveSmallIntegerField()
     prefill_days = models.PositiveSmallIntegerField(default=0)
-    created_dt = models.DateTimeField(
-        auto_now_add=True, verbose_name='Created at')
-    modified_dt = models.DateTimeField(
-        auto_now=True, verbose_name='Modified at')
-    created_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL, related_name='+', on_delete=models.PROTECT)
+    created_dt = models.DateTimeField(auto_now_add=True, verbose_name="Created at")
+    modified_dt = models.DateTimeField(auto_now=True, verbose_name="Modified at")
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name="+", on_delete=models.PROTECT)
 
     objects = AudienceManager()
 
-    def save(self,
-             request,
-             action_type=None,
-             changes_text=None,
-             *args, **kwargs):
+    def save(self, request, action_type=None, changes_text=None, *args, **kwargs):
         if self.pk is None:
             self.created_by = request.user
         super(Audience, self).save(*args, **kwargs)
-        self.add_to_history(request and request.user,
-                            action_type, changes_text)
+        self.add_to_history(request and request.user, action_type, changes_text)
 
     def add_to_history(self, user, action_type, history_changes_text):
-        self.pixel.account.write_history(
-            history_changes_text,
-            changes=None,
-            action_type=action_type,
-            user=user,
-        )
+        self.pixel.account.write_history(history_changes_text, changes=None, action_type=action_type, user=user)
 
     class Meta:
-        app_label = 'dash'
+        app_label = "dash"

@@ -22,7 +22,7 @@ from utils import k1_helper
 
 from zemauth.models import User
 
-AD_GROUP_NAME_TEMPLATE = '{start_date} - DEFAULT TARGETING'
+AD_GROUP_NAME_TEMPLATE = "{start_date} - DEFAULT TARGETING"
 
 
 def _is_pacific_midnight():
@@ -60,8 +60,7 @@ def check_pacific_noon_and_stop_ads():
     todays_ad_groups = _get_todays_ad_groups()
 
     content_ads = dash.models.ContentAd.objects.filter(
-        ad_group__campaign_id=config.AUTOMATION_CAMPAIGN,
-        state=dash.constants.ContentAdSourceState.ACTIVE,
+        ad_group__campaign_id=config.AUTOMATION_CAMPAIGN, state=dash.constants.ContentAdSourceState.ACTIVE
     ).exclude(ad_group__in=todays_ad_groups)
     dash.api.update_content_ads_state(content_ads, dash.constants.ContentAdSourceState.INACTIVE, None)
 
@@ -72,9 +71,7 @@ def check_pacific_noon_and_stop_ads():
 def _get_todays_ad_groups():
     pacific_today = helpers.get_pacific_now().date()
     todays_rotation = models.AdGroupRotation.objects.filter(start_date=pacific_today)
-    todays_ad_groups = dash.models.AdGroup.objects.filter(
-        id__in=todays_rotation.values_list('ad_group_id', flat=True)
-    )
+    todays_ad_groups = dash.models.AdGroup.objects.filter(id__in=todays_rotation.values_list("ad_group_id", flat=True))
 
     return todays_ad_groups
 
@@ -94,14 +91,16 @@ def check_date_and_stop_old_ad_groups():
     pacific_today = helpers.get_pacific_now().date()
     five_days_ago = pacific_today - datetime.timedelta(days=5)
 
-    ad_group_ids = dash.models.AdGroup.objects.filter(
-        campaign_id=config.AUTOMATION_CAMPAIGN,
-        id__in=models.AdGroupRotation.objects.filter(
-            start_date__lte=five_days_ago
-        ).values_list('ad_group_id'),
-    ).filter_active().values_list('id', flat=True)
+    ad_group_ids = (
+        dash.models.AdGroup.objects.filter(
+            campaign_id=config.AUTOMATION_CAMPAIGN,
+            id__in=models.AdGroupRotation.objects.filter(start_date__lte=five_days_ago).values_list("ad_group_id"),
+        )
+        .filter_active()
+        .values_list("id", flat=True)
+    )
     for ad_group_id in ad_group_ids:
-        _set_ad_group(ad_group_id, 'INACTIVE')
+        _set_ad_group(ad_group_id, "INACTIVE")
 
 
 def check_local_midnight_and_recalculate_daily_budgets():
@@ -141,50 +140,36 @@ def recalculate_and_set_new_daily_budgets(ad_group_id):
     new_ob_daily_budget = config.DAILY_BUDGET_OB_INITIAL + num_content_ads * ob_cost_per_article
 
     _set_rtb_daily_budget(ad_group_id, math.ceil(new_rtb_daily_budget))
-    _set_source_daily_budget(ad_group_id, 'outbrain', math.ceil(new_ob_daily_budget))
+    _set_source_daily_budget(ad_group_id, "outbrain", math.ceil(new_ob_daily_budget))
 
 
 @transaction.atomic
 def _rotate_ad_groups(start_date):
-    ad_group_name = AD_GROUP_NAME_TEMPLATE.format(
-        start_date=start_date,
-    )
+    ad_group_name = AD_GROUP_NAME_TEMPLATE.format(start_date=start_date)
     ad_group_id = _create_ad_group(ad_group_name, start_date)
     _persist_ad_group_rotation(start_date, ad_group_id)
 
 
 def _create_ad_group(name, start_date):
     data = {
-        'campaignId': config.AUTOMATION_CAMPAIGN,
-        'name': name,
-        'state': 'INACTIVE',
-        'startDate': start_date.isoformat(),
-        'endDate': None,
-        'targeting': {
-            'devices': ['DESKTOP', 'TABLET', 'MOBILE'],
-            'geo': {
-                'included': {
-                    'countries': ['US'],
-                }
-            },
-            'interest': {
-                'included': [cat.upper() for cat in config.INTEREST_TARGETING]
-            },
+        "campaignId": config.AUTOMATION_CAMPAIGN,
+        "name": name,
+        "state": "INACTIVE",
+        "startDate": start_date.isoformat(),
+        "endDate": None,
+        "targeting": {
+            "devices": ["DESKTOP", "TABLET", "MOBILE"],
+            "geo": {"included": {"countries": ["US"]}},
+            "interest": {"included": [cat.upper() for cat in config.INTEREST_TARGETING]},
         },
-        'autopilot': {
-            'state': 'INACTIVE',
-        }
+        "autopilot": {"state": "INACTIVE"},
     }
-    url = 'rest/v1/adgroups/'
-    r = _make_restapi_fake_post_request(
-        restapi.adgroup.views.AdGroupViewSet,
-        url,
-        data,
-    )
-    ad_group_id = int(r['id'])
+    url = "rest/v1/adgroups/"
+    r = _make_restapi_fake_post_request(restapi.adgroup.views.AdGroupViewSet, url, data)
+    ad_group_id = int(r["id"])
     _set_initial_sources_settings(ad_group_id)
     _set_initial_rtb_settings(ad_group_id)
-    _set_ad_group(ad_group_id, 'ACTIVE')
+    _set_ad_group(ad_group_id, "ACTIVE")
     _set_custom_cpcs(ad_group_id)
     _set_all_rtb_default_cpc(ad_group_id)
 
@@ -193,23 +178,15 @@ def _create_ad_group(name, start_date):
 
 
 def _set_ad_group(ad_group_id, state):
-    data = {
-        'state': state,
-    }
-    url = 'rest/v1/adgroups/{}/'.format(ad_group_id)
-    return _make_restapi_fake_put_request(
-        restapi.adgroup.views.AdGroupViewSet,
-        url,
-        data,
-        view_args=[ad_group_id],
-    )
+    data = {"state": state}
+    url = "rest/v1/adgroups/{}/".format(ad_group_id)
+    return _make_restapi_fake_put_request(restapi.adgroup.views.AdGroupViewSet, url, data, view_args=[ad_group_id])
 
 
 def _set_custom_cpcs(ad_group_id):
     for source_id, custom_cpc in list(config.CUSTOM_CPC_SETTINGS.items()):
         current_settings = dash.models.AdGroupSource.objects.get(
-            ad_group_id=ad_group_id,
-            source_id=source_id
+            ad_group_id=ad_group_id, source_id=source_id
         ).get_current_settings()
 
         new_settings = current_settings.copy_settings()
@@ -229,8 +206,10 @@ def _set_all_rtb_default_cpc(ad_group_id):
 
 
 def _list_ad_group_sources(ad_group_id):
-    url = 'rest/v1/adgroups/{}/sources/'.format(ad_group_id)
-    return _make_restapi_fake_get_request(restapi.adgroupsource.views.AdGroupSourceViewSet, url, view_args=[ad_group_id])
+    url = "rest/v1/adgroups/{}/sources/".format(ad_group_id)
+    return _make_restapi_fake_get_request(
+        restapi.adgroupsource.views.AdGroupSourceViewSet, url, view_args=[ad_group_id]
+    )
 
 
 def _set_initial_rtb_settings(ad_group_id):
@@ -239,80 +218,62 @@ def _set_initial_rtb_settings(ad_group_id):
 
 def _set_initial_sources_settings(ad_group_id):
     sources = _list_ad_group_sources(ad_group_id)
-    data = [{
-        'source': source['source'],
-        'dailyBudget': config.DAILY_BUDGET_OB_INITIAL,
-        'cpc': config.DEFAULT_CPC,
-        'state': 'ACTIVE',
-    } for source in sources]
-    url = 'rest/v1/adgroups/{}/sources/'.format(ad_group_id)
+    data = [
+        {
+            "source": source["source"],
+            "dailyBudget": config.DAILY_BUDGET_OB_INITIAL,
+            "cpc": config.DEFAULT_CPC,
+            "state": "ACTIVE",
+        }
+        for source in sources
+    ]
+    url = "rest/v1/adgroups/{}/sources/".format(ad_group_id)
     return _make_restapi_fake_put_request(
-        restapi.adgroupsource.views.AdGroupSourceViewSet,
-        url,
-        data,
-        view_args=[ad_group_id],
+        restapi.adgroupsource.views.AdGroupSourceViewSet, url, data, view_args=[ad_group_id]
     )
 
 
 def _set_source_daily_budget(ad_group_id, source, daily_budget):
-    data = [{
-        'source': source,
-        'dailyBudget': daily_budget,
-        'state': 'ACTIVE',
-    }]
-    url = 'rest/v1/adgroups/{}/sources/'.format(ad_group_id)
+    data = [{"source": source, "dailyBudget": daily_budget, "state": "ACTIVE"}]
+    url = "rest/v1/adgroups/{}/sources/".format(ad_group_id)
     return _make_restapi_fake_put_request(
-        restapi.adgroupsource.views.AdGroupSourceViewSet,
-        url,
-        data,
-        view_args=[ad_group_id],
+        restapi.adgroupsource.views.AdGroupSourceViewSet, url, data, view_args=[ad_group_id]
     )
 
 
 def _set_rtb_daily_budget(ad_group_id, daily_budget):
-    data = {
-        'groupEnabled': True,
-        'dailyBudget': daily_budget,
-        'cpc': config.DEFAULT_CPC,
-        'state': 'ACTIVE',
-    }
-    url = 'rest/v1/adgroups/{}/sources/rtb/'.format(ad_group_id)
+    data = {"groupEnabled": True, "dailyBudget": daily_budget, "cpc": config.DEFAULT_CPC, "state": "ACTIVE"}
+    url = "rest/v1/adgroups/{}/sources/rtb/".format(ad_group_id)
     return _make_restapi_fake_put_request(
-        restapi.adgroupsourcesrtb.views.AdGroupSourcesRTBViewSet,
-        url,
-        data,
-        view_args=[ad_group_id],
+        restapi.adgroupsourcesrtb.views.AdGroupSourcesRTBViewSet, url, data, view_args=[ad_group_id]
     )
 
 
 def _persist_ad_group_rotation(start_date, ad_group_id):
     if models.AdGroupRotation.objects.filter(start_date__gte=start_date):
-        raise Exception('Ad group already exists')
+        raise Exception("Ad group already exists")
 
-    models.AdGroupRotation.objects.create(
-        ad_group_id=ad_group_id,
-        start_date=start_date,
-    )
+    models.AdGroupRotation.objects.create(ad_group_id=ad_group_id, start_date=start_date)
 
 
 def _make_restapi_fake_get_request(viewcls, url, view_args=[]):
     factory = APIRequestFactory()
     request = factory.get(url)
-    view_dict = {'get': 'list'}
+    view_dict = {"get": "list"}
     return _make_restapi_fake_request(viewcls, view_args, request, view_dict)
 
 
 def _make_restapi_fake_post_request(viewcls, url, data, view_args=[]):
     factory = APIRequestFactory()
-    request = factory.post(url, data, format='json')
-    view_dict = {'post': 'create'}
+    request = factory.post(url, data, format="json")
+    view_dict = {"post": "create"}
     return _make_restapi_fake_request(viewcls, view_args, request, view_dict)
 
 
 def _make_restapi_fake_put_request(viewcls, url, data, view_args=[]):
     factory = APIRequestFactory()
-    request = factory.put(url, data, format='json')
-    view_dict = {'put': 'put'}
+    request = factory.put(url, data, format="json")
+    view_dict = {"put": "put"}
     return _make_restapi_fake_request(viewcls, view_args, request, view_dict)
 
 
@@ -323,7 +284,8 @@ def _make_restapi_fake_request(viewcls, view_args, request, view_dict):
     response.render()
     if response.status_code >= 300:
         raise Exception(
-            'RestAPI returned unexpected response. status code: {}, status text: {}'.format(
-                response.status_code, response.status_text)
+            "RestAPI returned unexpected response. status code: {}, status text: {}".format(
+                response.status_code, response.status_text
+            )
         )
-    return json.loads(response.content)['data']
+    return json.loads(response.content)["data"]

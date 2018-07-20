@@ -14,7 +14,7 @@ class BlueKaiCategorySerializer(serializers.Serializer):
     price = serializers.DecimalField(max_digits=None, decimal_places=2)
 
     def get_reach(self, data):
-        return data['reach']['value']
+        return data["reach"]["value"]
 
 
 class BlueKaiReachSerializer(serializers.Serializer):

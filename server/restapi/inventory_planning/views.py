@@ -16,11 +16,11 @@ MEDIAMOND_SOURCE_CTR = 0.0012
 RCS_SOURCE_CTR = 0.00042
 NEWSCORP_SOURCE_CTR = 0.0015
 
-SUMMARY = 'summary'
-COUNTRIES = 'countries'
-PUBLISHERS = 'publishers'
-DEVICE_TYPES = 'device-types'
-MEDIA_SOURCES = 'media-sources'
+SUMMARY = "summary"
+COUNTRIES = "countries"
+PUBLISHERS = "publishers"
+DEVICE_TYPES = "device-types"
+MEDIA_SOURCES = "media-sources"
 VALID_BREAKDOWNS = (SUMMARY, COUNTRIES, PUBLISHERS, DEVICE_TYPES, MEDIA_SOURCES)
 
 
@@ -45,19 +45,19 @@ class InventoryPlanningView(RESTAPIBaseView):
 
         elif breakdown == COUNTRIES:
             data = dash.features.inventory_planning.get_by_country(request, filters)
-            data = self._remap_breakdown(data, value_field='country')
+            data = self._remap_breakdown(data, value_field="country")
 
         elif breakdown == DEVICE_TYPES:
             data = dash.features.inventory_planning.get_by_device_type(request, filters)
-            data = self._remap_breakdown(data, value_field='device_type')
+            data = self._remap_breakdown(data, value_field="device_type")
 
         elif breakdown == PUBLISHERS:
             data = dash.features.inventory_planning.get_by_publisher(request, filters)
-            data = self._remap_breakdown(data, value_field='publisher')
+            data = self._remap_breakdown(data, value_field="publisher")
 
         elif breakdown == MEDIA_SOURCES:
             data = dash.features.inventory_planning.get_by_media_source(request, filters)
-            data = self._remap_breakdown(data, value_field='source_id')
+            data = self._remap_breakdown(data, value_field="source_id")
 
         else:
             raise django.http.Http404
@@ -76,29 +76,29 @@ class InventoryPlanningView(RESTAPIBaseView):
         avg_ctr = InventoryPlanningView._get_source_ctr(request)
 
         return {
-            'auction_count': data['bid_reqs'],
-            'avg_cpm': (data['total_win_price'] / float(data['win_notices'])) if data['win_notices'] else None,
-            'avg_cpc': (data['total_win_price'] / float(data['win_notices']) / 1000 / avg_ctr) if data['win_notices'] else None,
-            'win_ratio': (data['win_notices'] / float(data['bids'])) if data['bids'] else None
+            "auction_count": data["bid_reqs"],
+            "avg_cpm": (data["total_win_price"] / float(data["win_notices"])) if data["win_notices"] else None,
+            "avg_cpc": (data["total_win_price"] / float(data["win_notices"]) / 1000 / avg_ctr)
+            if data["win_notices"]
+            else None,
+            "win_ratio": (data["win_notices"] / float(data["bids"])) if data["bids"] else None,
         }
 
     @staticmethod
     def _get_source_ctr(request):
-        if request.user.has_perm('zemauth.can_see_mediamond_publishers'):
+        if request.user.has_perm("zemauth.can_see_mediamond_publishers"):
             return MEDIAMOND_SOURCE_CTR
-        if request.user.has_perm('zemauth.can_see_rcs_publishers'):
+        if request.user.has_perm("zemauth.can_see_rcs_publishers"):
             return RCS_SOURCE_CTR
-        if request.user.has_perm('zemauth.can_see_newscorp_publishers'):
+        if request.user.has_perm("zemauth.can_see_newscorp_publishers"):
             return NEWSCORP_SOURCE_CTR
         return AVG_CTR
 
     @staticmethod
     def _remap_breakdown(data, value_field):
-        return [{
-            'name': item.get('name'),
-            'value': item[value_field],
-            'auction_count': item['bid_reqs'],
-        } for item in data]
+        return [
+            {"name": item.get("name"), "value": item[value_field], "auction_count": item["bid_reqs"]} for item in data
+        ]
 
     def _response_with_cache_headers(self, data):
         response = self.response_ok(data)

@@ -26,11 +26,11 @@ def update_exchange_rates(currencies=None):
         if currency == dash.constants.Currency.USD:
             continue
 
-        logger.info('Updating for currency: %s', currency)
+        logger.info("Updating for currency: %s", currency)
         try:
             rate = _get_exchange_rate(currency)
         except MissingExchangeRateMappingException:
-            logger.warning('Missing exchange rate mapping for currency: %s', currency)
+            logger.warning("Missing exchange rate mapping for currency: %s", currency)
 
         _update_exchange_rate(currency, rate)
         _update_accounts(currency)
@@ -56,17 +56,11 @@ def _get_exchange_rate(currency):
 
 
 def _update_exchange_rate(currency, rate):
-    CurrencyExchangeRate.objects.create(
-        date=dates_helper.local_today(),
-        currency=currency,
-        exchange_rate=rate,
-    )
+    CurrencyExchangeRate.objects.create(date=dates_helper.local_today(), currency=currency, exchange_rate=rate)
 
 
 def _update_accounts(currency):
-    currency_accounts = core.entity.Account.objects.filter(
-        currency=currency
-    )
+    currency_accounts = core.entity.Account.objects.filter(currency=currency)
     for account in currency_accounts:
         _update_account(account)
 
@@ -80,11 +74,7 @@ def _update_account(account):
 
 def _recalculate_goals(campaign):
     for goal in campaign.campaigngoal_set.all():
-        goal.add_local_value(
-            None,
-            goal.get_current_value().local_value,
-            skip_history=True
-        )
+        goal.add_local_value(None, goal.get_current_value().local_value, skip_history=True)
 
 
 def _recalculate_ad_group_amounts(campaign):
@@ -94,15 +84,9 @@ def _recalculate_ad_group_amounts(campaign):
 
 
 def _recalculate_ad_group_settings_amounts(ad_group):
-    fields = ['local_' + field for field in ad_group.settings.multicurrency_fields]
+    fields = ["local_" + field for field in ad_group.settings.multicurrency_fields]
     updates = {field: getattr(ad_group.settings, field) for field in fields}
-    ad_group.settings.update(
-        None,
-        skip_validation=True,
-        skip_automation=True,
-        skip_permission_check=True,
-        **updates,
-    )
+    ad_group.settings.update(None, skip_validation=True, skip_automation=True, skip_permission_check=True, **updates)
 
 
 def _recalculate_ad_group_sources_amounts(ad_group):
@@ -111,12 +95,6 @@ def _recalculate_ad_group_sources_amounts(ad_group):
 
 
 def _recalculate_ad_group_source_settings_amounts(ad_group_source):
-    fields = ['local_' + field for field in ad_group_source.settings.multicurrency_fields]
+    fields = ["local_" + field for field in ad_group_source.settings.multicurrency_fields]
     updates = {field: getattr(ad_group_source.settings, field) for field in fields}
-    ad_group_source.settings.update(
-        None,
-        skip_automation=True,
-        skip_validation=True,
-        skip_notification=True,
-        **updates,
-    )
+    ad_group_source.settings.update(None, skip_automation=True, skip_validation=True, skip_notification=True, **updates)

@@ -8,29 +8,14 @@ from dash import constants
 class CampaignBudgetSerializer(rest_framework.serializers.Serializer):
 
     id = restapi.serializers.fields.IdField(read_only=True)
-    credit_id = restapi.serializers.fields.IdField(
-        source='credit.id',
-    )
+    credit_id = restapi.serializers.fields.IdField(source="credit.id")
     start_date = rest_framework.serializers.DateField()
     end_date = rest_framework.serializers.DateField()
-    amount = restapi.serializers.fields.TwoWayBlankDecimalField(
-        max_digits=20,
-        decimal_places=4,
-        output_precision=0,
-    )
-    state = restapi.serializers.fields.DashConstantField(
-        constants.BudgetLineItemState,
-        read_only=True,
-    )
+    amount = restapi.serializers.fields.TwoWayBlankDecimalField(max_digits=20, decimal_places=4, output_precision=0)
+    state = restapi.serializers.fields.DashConstantField(constants.BudgetLineItemState, read_only=True)
     spend = rest_framework.serializers.DecimalField(
-        source='get_local_spend_data_bcm',
-        max_digits=20,
-        decimal_places=4,
-        read_only=True,
+        source="get_local_spend_data_bcm", max_digits=20, decimal_places=4, read_only=True
     )
     available = rest_framework.serializers.DecimalField(
-        source='get_local_available_data_bcm',
-        max_digits=20,
-        decimal_places=4,
-        read_only=True,
+        source="get_local_available_data_bcm", max_digits=20, decimal_places=4, read_only=True
     )

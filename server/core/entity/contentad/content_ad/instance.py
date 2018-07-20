@@ -6,29 +6,37 @@ import utils.redirector_helper
 import dash.constants
 
 
-VALID_UPDATE_FIELDS = set(['url', 'brand_name', 'display_url', 'description', 'image_crop', 'label',
-                           'tracker_urls', 'call_to_action', 'additional_data'])
+VALID_UPDATE_FIELDS = set(
+    [
+        "url",
+        "brand_name",
+        "display_url",
+        "description",
+        "image_crop",
+        "label",
+        "tracker_urls",
+        "call_to_action",
+        "additional_data",
+    ]
+)
 
 
 class ContentAdInstanceMixin(object):
-
     @transaction.atomic()
     def set_state(self, request, state):
         self.state = state
         self.save()
         self.contentadsource_set.all().update(state=state)
 
-        description = 'Content ad {id} set to {state}.'.format(id=self.pk, state=dash.constants.ContentAdSourceState.get_text(state))
+        description = "Content ad {id} set to {state}.".format(
+            id=self.pk, state=dash.constants.ContentAdSourceState.get_text(state)
+        )
         self.ad_group.write_history(
             description,
             user=request and request.user or None,
-            action_type=dash.constants.HistoryActionType.CONTENT_AD_STATE_CHANGE
+            action_type=dash.constants.HistoryActionType.CONTENT_AD_STATE_CHANGE,
         )
-        utils.k1_helper.update_content_ad(
-            self.ad_group_id,
-            self.id,
-            msg='ContentAd.set_state'
-        )
+        utils.k1_helper.update_content_ad(self.ad_group_id, self.id, msg="ContentAd.set_state")
         utils.email_helper.send_ad_group_notification_email(self.ad_group, request, description)
 
     @transaction.atomic()
@@ -36,11 +44,11 @@ class ContentAdInstanceMixin(object):
         self.url = url
         self.save()
 
-        description = 'Content ad {id} url set to {url}.'.format(id=self.pk, url=url)
+        description = "Content ad {id} url set to {url}.".format(id=self.pk, url=url)
         self.ad_group.write_history(
             description,
             user=request and request.user or None,
-            action_type=dash.constants.HistoryActionType.CONTENT_AD_EDIT
+            action_type=dash.constants.HistoryActionType.CONTENT_AD_EDIT,
         )
         utils.redirector_helper.update_redirect(url, self.redirect_id)
 
@@ -51,14 +59,10 @@ class ContentAdInstanceMixin(object):
                 setattr(self, field, value)
         self.save()
         if write_history:
-            description = 'Content ad {id} edited.'.format(id=self.pk)
+            description = "Content ad {id} edited.".format(id=self.pk)
             self.ad_group.write_history(
                 description,
                 user=request and request.user or None,
-                action_type=dash.constants.HistoryActionType.CONTENT_AD_EDIT
+                action_type=dash.constants.HistoryActionType.CONTENT_AD_EDIT,
             )
-        utils.k1_helper.update_content_ad(
-            self.ad_group_id,
-            self.id,
-            msg='ContentAd.update'
-        )
+        utils.k1_helper.update_content_ad(self.ad_group_id, self.id, msg="ContentAd.update")

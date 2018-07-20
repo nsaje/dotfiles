@@ -20,21 +20,21 @@ from utils.magic_mixer import magic_mixer
 
 
 class AdGroupSettingsTest(TestCase):
-    fixtures = ['test_models.yaml', 'test_geolocations']
+    fixtures = ["test_models.yaml", "test_geolocations"]
 
     def setUp(self):
         self.maxDiff = None
 
     def test_settings_fields(self):
         meta_fields = [
-            'id',
-            'ad_group',
-            'created_dt',
-            'created_by',
-            'changes_text',
-            'system_user',
-            'latest_for_entity',
-            'landing_mode',
+            "id",
+            "ad_group",
+            "created_dt",
+            "created_by",
+            "changes_text",
+            "system_user",
+            "latest_for_entity",
+            "landing_mode",
         ]
 
         all_fields = set(models.AdGroupSettings._settings_fields + meta_fields)
@@ -44,78 +44,67 @@ class AdGroupSettingsTest(TestCase):
 
     def test_get_settings_dict(self):
         settings_dict = {
-            'archived': False,
-            'state': 1,
-            'cpc_cc': Decimal('1.0000'),
-            'daily_budget_cc': Decimal('50.0000'),
-            'start_date': datetime.date(2014, 6, 4),
-            'end_date': datetime.date(2014, 6, 5),
-            'target_devices': ['mobile'],
-            'target_os': [{
-                'name': 'android',
-                'version': {
-                    'min': 'android_6_0',
-                    'max': 'android_6_0',
-                }
-            }],
-            'target_browsers': [{
-                'family': 'CHROME',
-            }],
-            'target_placements': ['app'],
-            'tracking_code': '',
-            'target_regions': ['US'],
-            'exclusion_target_regions': ['US-NY'],
-            'retargeting_ad_groups': [1, 2],
-            'exclusion_retargeting_ad_groups': [3, 4],
-            'notes': 'Some note',
-            'bluekai_targeting': ['or', 3, 4],
-            'interest_targeting': ['a', 'b'],
-            'exclusion_interest_targeting': ['c', 'd'],
-            'audience_targeting': [1, 2],
-            'exclusion_audience_targeting': [3, 4],
-            'redirect_pixel_urls': ['http://a.com/b.jpg', 'http://a.com/c.jpg'],
-            'redirect_javascript': 'alert(\'a\')',
-            'display_url': 'example.com',
-            'brand_name': 'Example',
-            'description': 'Example description',
-            'call_to_action': 'Call to action',
-            'ad_group_name': 'AdGroup name',
-            'name': 'AdGroup name',
-            'autopilot_daily_budget': Decimal('30.0000'),
-            'autopilot_state': 1,
-            'dayparting': {"monday": [1, 2, 5], "tuesday": [10, 12], "timezone": "CET"},
-            'max_cpm': Decimal('1.6000'),
-            'b1_sources_group_enabled': True,
-            'b1_sources_group_daily_budget': Decimal('500.0000'),
-            'b1_sources_group_state': constants.AdGroupSourceSettingsState.ACTIVE,
-            'b1_sources_group_cpc_cc': Decimal('0.1000'),
-            'whitelist_publisher_groups': [1],
-            'blacklist_publisher_groups': [2],
-            'delivery_type': 1,
-            'click_capping_daily_ad_group_max_clicks': 10,
-            'click_capping_daily_click_budget': Decimal('5.0000'),
-            'local_autopilot_daily_budget': Decimal('0.0000'),
-            'local_b1_sources_group_cpc_cc': Decimal('0.1'),
-            'local_b1_sources_group_daily_budget': Decimal('500'),
-            'local_cpc_cc': None,
-            'local_max_cpm': None,
+            "archived": False,
+            "state": 1,
+            "cpc_cc": Decimal("1.0000"),
+            "daily_budget_cc": Decimal("50.0000"),
+            "start_date": datetime.date(2014, 6, 4),
+            "end_date": datetime.date(2014, 6, 5),
+            "target_devices": ["mobile"],
+            "target_os": [{"name": "android", "version": {"min": "android_6_0", "max": "android_6_0"}}],
+            "target_browsers": [{"family": "CHROME"}],
+            "target_placements": ["app"],
+            "tracking_code": "",
+            "target_regions": ["US"],
+            "exclusion_target_regions": ["US-NY"],
+            "retargeting_ad_groups": [1, 2],
+            "exclusion_retargeting_ad_groups": [3, 4],
+            "notes": "Some note",
+            "bluekai_targeting": ["or", 3, 4],
+            "interest_targeting": ["a", "b"],
+            "exclusion_interest_targeting": ["c", "d"],
+            "audience_targeting": [1, 2],
+            "exclusion_audience_targeting": [3, 4],
+            "redirect_pixel_urls": ["http://a.com/b.jpg", "http://a.com/c.jpg"],
+            "redirect_javascript": "alert('a')",
+            "display_url": "example.com",
+            "brand_name": "Example",
+            "description": "Example description",
+            "call_to_action": "Call to action",
+            "ad_group_name": "AdGroup name",
+            "name": "AdGroup name",
+            "autopilot_daily_budget": Decimal("30.0000"),
+            "autopilot_state": 1,
+            "dayparting": {"monday": [1, 2, 5], "tuesday": [10, 12], "timezone": "CET"},
+            "max_cpm": Decimal("1.6000"),
+            "b1_sources_group_enabled": True,
+            "b1_sources_group_daily_budget": Decimal("500.0000"),
+            "b1_sources_group_state": constants.AdGroupSourceSettingsState.ACTIVE,
+            "b1_sources_group_cpc_cc": Decimal("0.1000"),
+            "whitelist_publisher_groups": [1],
+            "blacklist_publisher_groups": [2],
+            "delivery_type": 1,
+            "click_capping_daily_ad_group_max_clicks": 10,
+            "click_capping_daily_click_budget": Decimal("5.0000"),
+            "local_autopilot_daily_budget": Decimal("0.0000"),
+            "local_b1_sources_group_cpc_cc": Decimal("0.1"),
+            "local_b1_sources_group_daily_budget": Decimal("500"),
+            "local_cpc_cc": None,
+            "local_max_cpm": None,
         }
-        self.assertEqual(
-            models.AdGroupSettings.objects.get(id=1).get_settings_dict(),
-            settings_dict,
-        )
+        self.assertEqual(models.AdGroupSettings.objects.get(id=1).get_settings_dict(), settings_dict)
 
     def test_get_tracking_ids(self):
         ad_group_settings = models.AdGroupSettings.objects.get(id=1)
-        self.assertEqual(ad_group_settings.get_tracking_codes(), '')
+        self.assertEqual(ad_group_settings.get_tracking_codes(), "")
 
         request = HttpRequest()
-        request.user = User.objects.create_user('test@example.com')
+        request.user = User.objects.create_user("test@example.com")
 
         new_ad_group_settings = ad_group_settings.copy_settings()
-        new_ad_group_settings.tracking_code = '?param1=value1&param2=value2#hash?a=b&c=d'
+        new_ad_group_settings.tracking_code = "?param1=value1&param2=value2#hash?a=b&c=d"
         new_ad_group_settings.save(request)
-        self.assertEqual(new_ad_group_settings.get_tracking_codes(), 'param1=value1&param2=value2#hash?a=b&c=d')
+        self.assertEqual(new_ad_group_settings.get_tracking_codes(), "param1=value1&param2=value2#hash?a=b&c=d")
 
     def test_adgroup_settings_end_datetime(self):
         ad_group_settings = models.AdGroupSettings()
@@ -124,9 +113,11 @@ class AdGroupSettingsTest(TestCase):
         ad_group_settings = models.AdGroupSettings(end_date=datetime.date(2015, 4, 29))
         self.assertEqual(ad_group_settings.get_utc_end_datetime().tzinfo, None)
 
-        dt = datetime.datetime(2015, 4, 29, 1, tzinfo=pytz.timezone(settings.DEFAULT_TIME_ZONE)).\
-            astimezone(pytz.timezone('UTC')).\
-            replace(tzinfo=None)
+        dt = (
+            datetime.datetime(2015, 4, 29, 1, tzinfo=pytz.timezone(settings.DEFAULT_TIME_ZONE))
+            .astimezone(pytz.timezone("UTC"))
+            .replace(tzinfo=None)
+        )
         self.assertTrue(ad_group_settings.get_utc_end_datetime() > dt)
 
     def test_adgroup_settings_start_datetime(self):
@@ -136,22 +127,25 @@ class AdGroupSettingsTest(TestCase):
         ad_group_settings = models.AdGroupSettings(start_date=datetime.date(2015, 4, 29))
         self.assertEqual(ad_group_settings.get_utc_start_datetime().tzinfo, None)
 
-        dt = datetime.datetime(2015, 4, 29, 1, tzinfo=pytz.timezone(settings.DEFAULT_TIME_ZONE)).\
-            astimezone(pytz.timezone('UTC')).\
-            replace(tzinfo=None)
+        dt = (
+            datetime.datetime(2015, 4, 29, 1, tzinfo=pytz.timezone(settings.DEFAULT_TIME_ZONE))
+            .astimezone(pytz.timezone("UTC"))
+            .replace(tzinfo=None)
+        )
         self.assertTrue(ad_group_settings.get_utc_start_datetime() < dt)
 
     def test_get_changes_text_unicode(self):
         old_settings = models.AdGroupSettings.objects.get(id=1)
         new_settings = models.AdGroupSettings.objects.get(id=1)
         new_settings.changes_text = None
-        new_settings.ad_group_name = 'Ččšćžđ name'
+        new_settings.ad_group_name = "Ččšćžđ name"
 
         user = User.objects.get(pk=1)
 
         self.assertEqual(
             new_settings.get_changes_text(old_settings, new_settings, user),
-            'Ad group name set to "\u010c\u010d\u0161\u0107\u017e\u0111 name"')
+            'Ad group name set to "\u010c\u010d\u0161\u0107\u017e\u0111 name"',
+        )
 
     def test_get_changes_text(self):
         old_settings = models.AdGroupSettings(ad_group_id=1)
@@ -159,8 +153,8 @@ class AdGroupSettingsTest(TestCase):
         new_settings.changes_text = None
         user = User.objects.get(pk=1)
 
-        actual = new_settings.get_changes_text(old_settings, new_settings, user, separator='@@@')
-        actual = actual.split('@@@')
+        actual = new_settings.get_changes_text(old_settings, new_settings, user, separator="@@@")
+        actual = actual.split("@@@")
         expected = [
             'Daily spend cap set to "$50.00"',
             'Whitelist publisher groups set to "pg 1"',
@@ -192,7 +186,7 @@ class AdGroupSettingsTest(TestCase):
             'Device targeting set to "Mobile"',
             'Notes set to "Some note"',
             'Display URL set to "example.com"',
-            'Pixel retargeting JavaScript set to "alert(\'a\')"',
+            "Pixel retargeting JavaScript set to \"alert('a')\"",
             'Ad group name set to "AdGroup name"',
             'Call to action set to "Call to action"',
             'Group all RTB sources set to "True"',
@@ -205,7 +199,7 @@ class AdGroupSettingsTest(TestCase):
 
 
 class AdGroupRunningStatusTest(TestCase):
-    fixtures = ['test_models.yaml']
+    fixtures = ["test_models.yaml"]
 
     def test_running_by_flight_time(self):
 
@@ -215,8 +209,7 @@ class AdGroupRunningStatusTest(TestCase):
         ad_group_settings.state = constants.AdGroupSettingsState.ACTIVE
 
         self.assertEqual(
-            models.AdGroup.get_running_status_by_flight_time(ad_group_settings),
-            constants.AdGroupRunningStatus.ACTIVE
+            models.AdGroup.get_running_status_by_flight_time(ad_group_settings), constants.AdGroupRunningStatus.ACTIVE
         )
 
     def test_running_by_flight_time_end_today(self):
@@ -227,8 +220,7 @@ class AdGroupRunningStatusTest(TestCase):
         ad_group_settings.state = constants.AdGroupSettingsState.ACTIVE
 
         self.assertEqual(
-            models.AdGroup.get_running_status_by_flight_time(ad_group_settings),
-            constants.AdGroupRunningStatus.ACTIVE
+            models.AdGroup.get_running_status_by_flight_time(ad_group_settings), constants.AdGroupRunningStatus.ACTIVE
         )
 
     def test_running_by_flight_time_no_end(self):
@@ -239,8 +231,7 @@ class AdGroupRunningStatusTest(TestCase):
         ad_group_settings.state = constants.AdGroupSettingsState.ACTIVE
 
         self.assertEqual(
-            models.AdGroup.get_running_status_by_flight_time(ad_group_settings),
-            constants.AdGroupRunningStatus.ACTIVE
+            models.AdGroup.get_running_status_by_flight_time(ad_group_settings), constants.AdGroupRunningStatus.ACTIVE
         )
 
     def test_not_running_by_flight_time(self):
@@ -250,8 +241,7 @@ class AdGroupRunningStatusTest(TestCase):
         ad_group_settings.state = constants.AdGroupSettingsState.ACTIVE
 
         self.assertEqual(
-            models.AdGroup.get_running_status_by_flight_time(ad_group_settings),
-            constants.AdGroupRunningStatus.INACTIVE
+            models.AdGroup.get_running_status_by_flight_time(ad_group_settings), constants.AdGroupRunningStatus.INACTIVE
         )
 
     def test_not_running_by_flight_time_settings_state(self):
@@ -261,55 +251,56 @@ class AdGroupRunningStatusTest(TestCase):
         ad_group_settings.state = constants.AdGroupSettingsState.INACTIVE
 
         self.assertEqual(
-            models.AdGroup.get_running_status_by_flight_time(ad_group_settings),
-            constants.AdGroupRunningStatus.INACTIVE
+            models.AdGroup.get_running_status_by_flight_time(ad_group_settings), constants.AdGroupRunningStatus.INACTIVE
         )
 
     def test_not_running_by_sources_state(self):
         ad_group_settings = models.AdGroupSettings.objects.get(pk=1)
         ad_group_settings.state = constants.AdGroupSettingsState.ACTIVE
 
-        ad_group_sources_settings = models.AdGroupSourceSettings.objects\
-                                                                .filter(ad_group_source__source_id__in=[3])\
-                                                                .group_current_settings()
+        ad_group_sources_settings = models.AdGroupSourceSettings.objects.filter(
+            ad_group_source__source_id__in=[3]
+        ).group_current_settings()
 
         self.assertEqual(
             models.AdGroup.get_running_status_by_sources_setting(ad_group_settings, ad_group_sources_settings),
             constants.AdGroupRunningStatus.INACTIVE,
-            msg="All the sources are inactive, running status should be inactive"
+            msg="All the sources are inactive, running status should be inactive",
         )
 
     def test_running_by_sources_state(self):
         ad_group_settings = models.AdGroupSettings.objects.get(pk=1)
         ad_group_settings.state = constants.AdGroupSettingsState.ACTIVE
 
-        ad_group_sources_settings = models.AdGroupSourceSettings.objects\
-                                                                .filter(ad_group_source__source_id__in=[1, 2, 3])\
-                                                                .group_current_settings()
+        ad_group_sources_settings = models.AdGroupSourceSettings.objects.filter(
+            ad_group_source__source_id__in=[1, 2, 3]
+        ).group_current_settings()
         self.assertEqual(
             models.AdGroup.get_running_status_by_sources_setting(ad_group_settings, ad_group_sources_settings),
             constants.AdGroupRunningStatus.ACTIVE,
-            msg="Some sources are active, running status should be active")
+            msg="Some sources are active, running status should be active",
+        )
 
     def test_no_running_by_sources_state_ag_settings_inactive(self):
         ad_group_settings = models.AdGroupSettings.objects.get(pk=1)
         ad_group_settings.state = constants.AdGroupSettingsState.INACTIVE
 
-        ad_group_sources_settings = models.AdGroupSourceSettings.objects\
-                                                                .filter(ad_group_source__source_id__in=[1, 2, 3])\
-                                                                .group_current_settings()
+        ad_group_sources_settings = models.AdGroupSourceSettings.objects.filter(
+            ad_group_source__source_id__in=[1, 2, 3]
+        ).group_current_settings()
         self.assertEqual(
             models.AdGroup.get_running_status_by_sources_setting(ad_group_settings, ad_group_sources_settings),
             constants.AdGroupRunningStatus.INACTIVE,
-            msg="Ad group settings are inactive, ad group should not run")
+            msg="Ad group settings are inactive, ad group should not run",
+        )
 
     def test_not_running_by_sources_state_inactive(self):
         ad_group_settings = models.AdGroupSettings.objects.get(pk=1)
         ad_group_settings.state = constants.AdGroupSettingsState.ACTIVE
 
-        ad_group_sources_settings = models.AdGroupSourceSettings.objects\
-                                                                .filter(ad_group_source__source_id__in=[1, 2, 3])\
-                                                                .group_current_settings()
+        ad_group_sources_settings = models.AdGroupSourceSettings.objects.filter(
+            ad_group_source__source_id__in=[1, 2, 3]
+        ).group_current_settings()
         for agss in ad_group_sources_settings.iterator():
             new_agss = agss.copy_settings()
             new_agss.state = constants.AdGroupSourceSettingsState.INACTIVE
@@ -318,26 +309,27 @@ class AdGroupRunningStatusTest(TestCase):
         self.assertEqual(
             models.AdGroup.get_running_status_by_sources_setting(ad_group_settings, ad_group_sources_settings),
             constants.AdGroupRunningStatus.INACTIVE,
-            msg="No sources are active, ad group doesn't run")
+            msg="No sources are active, ad group doesn't run",
+        )
 
 
 class CampaignSettingsTest(TestCase):
-    fixtures = ['test_models.yaml', 'test_geolocations']
+    fixtures = ["test_models.yaml", "test_geolocations"]
 
     def test_settings_fields(self):
         meta_fields = [
-            'id',
-            'campaign',
-            'created_dt',
-            'created_by',
-            'changes_text',
-            'system_user',
-            'latest_for_entity',
-            'landing_mode',
-            'automatic_campaign_stop',
+            "id",
+            "campaign",
+            "created_dt",
+            "created_by",
+            "changes_text",
+            "system_user",
+            "latest_for_entity",
+            "landing_mode",
+            "automatic_campaign_stop",
         ]
 
-        deprecated_fields = ['goal_quantity']
+        deprecated_fields = ["goal_quantity"]
 
         all_fields = set(models.CampaignSettings._settings_fields + meta_fields)
         model_fields = set(f.name for f in models.CampaignSettings._meta.get_fields()).difference(deprecated_fields)
@@ -346,60 +338,60 @@ class CampaignSettingsTest(TestCase):
 
     def test_get_settings_dict(self):
         settings_dict = {
-            'archived': False,
-            'iab_category': '1',
-            'name': 'Test campaign 1',
-            'target_devices': ['mobile'],
-            'target_os': None,
-            'target_placements': None,
-            'campaign_manager': User.objects.get(pk=1),
-            'language': constants.Language.ENGLISH,
-            'promotion_goal': 1,
-            'target_regions': ['CA', '501'],
-            'exclusion_target_regions': ['US-NY'],
-            'campaign_goal': 2,
-            'autopilot': False,
-            'enable_ga_tracking': True,
-            'ga_property_id': '',
-            'ga_tracking_type': 1,
-            'enable_adobe_tracking': False,
-            'adobe_tracking_param': '',
-            'whitelist_publisher_groups': [1],
-            'blacklist_publisher_groups': [2],
+            "archived": False,
+            "iab_category": "1",
+            "name": "Test campaign 1",
+            "target_devices": ["mobile"],
+            "target_os": None,
+            "target_placements": None,
+            "campaign_manager": User.objects.get(pk=1),
+            "language": constants.Language.ENGLISH,
+            "promotion_goal": 1,
+            "target_regions": ["CA", "501"],
+            "exclusion_target_regions": ["US-NY"],
+            "campaign_goal": 2,
+            "autopilot": False,
+            "enable_ga_tracking": True,
+            "ga_property_id": "",
+            "ga_tracking_type": 1,
+            "enable_adobe_tracking": False,
+            "adobe_tracking_param": "",
+            "whitelist_publisher_groups": [1],
+            "blacklist_publisher_groups": [2],
         }
 
-        self.assertEqual(
-            models.CampaignSettings.objects.get(id=1).get_settings_dict(),
-            settings_dict,
-        )
+        self.assertEqual(models.CampaignSettings.objects.get(id=1).get_settings_dict(), settings_dict)
 
     def test_get_changes_text_unicode(self):
         settings = models.CampaignSettings.objects.get(id=1)
-        new_name = 'Ččšćžđ name'
+        new_name = "Ččšćžđ name"
 
-        user = User.objects.create_user('test@example.com')
-        user.first_name = 'Tadej'
-        user.last_name = 'Pavlič'
+        user = User.objects.create_user("test@example.com")
+        user.first_name = "Tadej"
+        user.last_name = "Pavlič"
         new_campaign_manager = user
 
         changes = settings.get_changes(dict(name=new_name, campaign_manager=new_campaign_manager))
 
         self.assertEqual(
-            settings.get_changes_text(changes), 'Campaign Manager set to "Tadej Pavli\u010d", Name set to "\u010c\u010d\u0161\u0107\u017e\u0111 name"')
+            settings.get_changes_text(changes),
+            'Campaign Manager set to "Tadej Pavli\u010d", Name set to "\u010c\u010d\u0161\u0107\u017e\u0111 name"',
+        )
 
     def test_get_changes_text_nonunicode(self):
         settings = models.CampaignSettings.objects.get(id=1)
-        new_name = 'name'
+        new_name = "name"
 
-        user = User.objects.create_user('test@example.com')
-        user.first_name = 'Tadej'
-        user.last_name = 'Pavlic'
+        user = User.objects.create_user("test@example.com")
+        user.first_name = "Tadej"
+        user.last_name = "Pavlic"
         new_campaign_manager = user
 
         changes = settings.get_changes(dict(name=new_name, campaign_manager=new_campaign_manager))
 
         self.assertEqual(
-            settings.get_changes_text(changes), 'Campaign Manager set to "Tadej Pavlic", Name set to "name"')
+            settings.get_changes_text(changes), 'Campaign Manager set to "Tadej Pavlic", Name set to "name"'
+        )
 
 
 class AdGroupSourceTest(TestCase):
@@ -414,56 +406,60 @@ class AdGroupSourceTest(TestCase):
 
         ad_group_source = magic_mixer.blend(models.AdGroupSource, source=source)
 
-        self.assertEqual(ad_group_source.get_tracking_ids(), '_z1_adgid=%s&_z1_msid=' % (ad_group_source.ad_group.id))
+        self.assertEqual(ad_group_source.get_tracking_ids(), "_z1_adgid=%s&_z1_msid=" % (ad_group_source.ad_group.id))
 
         source_type.type = constants.SourceType.ZEMANTA
         source_type.save()
-        self.assertEqual(ad_group_source.get_tracking_ids(), '_z1_adgid=%s&_z1_msid={sourceDomain}' % ad_group_source.ad_group.id)
+        self.assertEqual(
+            ad_group_source.get_tracking_ids(), "_z1_adgid=%s&_z1_msid={sourceDomain}" % ad_group_source.ad_group.id
+        )
 
         source_type.type = constants.SourceType.B1
         source_type.save()
-        self.assertEqual(ad_group_source.get_tracking_ids(), '_z1_adgid=%s&_z1_msid={sourceDomain}' % ad_group_source.ad_group.id)
+        self.assertEqual(
+            ad_group_source.get_tracking_ids(), "_z1_adgid=%s&_z1_msid={sourceDomain}" % ad_group_source.ad_group.id
+        )
 
-        source_type.type = 'not' + constants.SourceType.ZEMANTA + 'and not ' + constants.SourceType.B1
+        source_type.type = "not" + constants.SourceType.ZEMANTA + "and not " + constants.SourceType.B1
         source_type.save()
 
-        source.tracking_slug = 'not_b1_zemanta'
+        source.tracking_slug = "not_b1_zemanta"
         source.save()
 
         self.assertEqual(
             ad_group_source.get_tracking_ids(),
-            '_z1_adgid=%s&_z1_msid=%s' % (ad_group_source.ad_group.id, source.tracking_slug)
+            "_z1_adgid=%s&_z1_msid=%s" % (ad_group_source.ad_group.id, source.tracking_slug),
         )
 
 
-@override_settings(
-    IMAGE_THUMBNAIL_URL='http://test.com',
-)
+@override_settings(IMAGE_THUMBNAIL_URL="http://test.com")
 class ContentAdTest(TestCase):
-
     def test_url_with_tracking_codes(self):
-        content_ad = models.ContentAd(url='http://test.com/path')
-        self.assertEqual(content_ad.url_with_tracking_codes('a=b'), 'http://test.com/path?a=b')
+        content_ad = models.ContentAd(url="http://test.com/path")
+        self.assertEqual(content_ad.url_with_tracking_codes("a=b"), "http://test.com/path?a=b")
 
-        content_ad.url = 'http://test.com/path?c=d'
-        self.assertEqual(content_ad.url_with_tracking_codes('a=b'), 'http://test.com/path?c=d&a=b')
+        content_ad.url = "http://test.com/path?c=d"
+        self.assertEqual(content_ad.url_with_tracking_codes("a=b"), "http://test.com/path?c=d&a=b")
 
-        content_ad.url = 'http://test.com/path?c=d'
-        self.assertEqual(content_ad.url_with_tracking_codes(''), 'http://test.com/path?c=d')
+        content_ad.url = "http://test.com/path?c=d"
+        self.assertEqual(content_ad.url_with_tracking_codes(""), "http://test.com/path?c=d")
 
-        content_ad.url = 'http://test.com/path?c=d#fragment'
-        self.assertEqual(content_ad.url_with_tracking_codes('a=b'), 'http://test.com/path?c=d&a=b#fragment')
+        content_ad.url = "http://test.com/path?c=d#fragment"
+        self.assertEqual(content_ad.url_with_tracking_codes("a=b"), "http://test.com/path?c=d&a=b#fragment")
 
-        content_ad.url = 'http://ad.doubleclick.net/ddm/clk/289560433;116564310;c?http://d.agkn.com/pixel/2389/?che=%25n&col=%25ebuy!,1922531,%25epid!,%25eaid!,%25erid!&l0=http://analytics.bluekai.com/site/15823?phint=event%3Dclick&phint=aid%3D%25eadv!&phint=pid%3D%25epid!&phint=cid%3D%25ebuy!&phint=crid%3D%25ecid!&done=http%3A%2F%2Fiq.intel.com%2Fcrazy-for-march-madness-data%2F%3Fdfaid%3D1%26crtvid%3D%25ecid!%26dclid%3D1-%25eadv!-%25ebuy!-%25epid!-%25eaid!-%25erid!%26sr_source%3Dlift_zemanta%26ver%3D167_t1_i1%26_z1_msid%3D{sourceDomain}%26_z1_adgid%3D537'
-        self.assertEqual(content_ad.url_with_tracking_codes('a=b'), 'http://ad.doubleclick.net/ddm/clk/289560433;116564310;c?http://d.agkn.com/pixel/2389/?che=%25n&col=%25ebuy!,1922531,%25epid!,%25eaid!,%25erid!&l0=http://analytics.bluekai.com/site/15823?phint=event%3Dclick&phint=aid%3D%25eadv!&phint=pid%3D%25epid!&phint=cid%3D%25ebuy!&phint=crid%3D%25ecid!&done=http%3A%2F%2Fiq.intel.com%2Fcrazy-for-march-madness-data%2F%3Fdfaid%3D1%26crtvid%3D%25ecid!%26dclid%3D1-%25eadv!-%25ebuy!-%25epid!-%25eaid!-%25erid!%26sr_source%3Dlift_zemanta%26ver%3D167_t1_i1%26_z1_msid%3D{sourceDomain}%26_z1_adgid%3D537&a=b')
+        content_ad.url = "http://ad.doubleclick.net/ddm/clk/289560433;116564310;c?http://d.agkn.com/pixel/2389/?che=%25n&col=%25ebuy!,1922531,%25epid!,%25eaid!,%25erid!&l0=http://analytics.bluekai.com/site/15823?phint=event%3Dclick&phint=aid%3D%25eadv!&phint=pid%3D%25epid!&phint=cid%3D%25ebuy!&phint=crid%3D%25ecid!&done=http%3A%2F%2Fiq.intel.com%2Fcrazy-for-march-madness-data%2F%3Fdfaid%3D1%26crtvid%3D%25ecid!%26dclid%3D1-%25eadv!-%25ebuy!-%25epid!-%25eaid!-%25erid!%26sr_source%3Dlift_zemanta%26ver%3D167_t1_i1%26_z1_msid%3D{sourceDomain}%26_z1_adgid%3D537"
+        self.assertEqual(
+            content_ad.url_with_tracking_codes("a=b"),
+            "http://ad.doubleclick.net/ddm/clk/289560433;116564310;c?http://d.agkn.com/pixel/2389/?che=%25n&col=%25ebuy!,1922531,%25epid!,%25eaid!,%25erid!&l0=http://analytics.bluekai.com/site/15823?phint=event%3Dclick&phint=aid%3D%25eadv!&phint=pid%3D%25epid!&phint=cid%3D%25ebuy!&phint=crid%3D%25ecid!&done=http%3A%2F%2Fiq.intel.com%2Fcrazy-for-march-madness-data%2F%3Fdfaid%3D1%26crtvid%3D%25ecid!%26dclid%3D1-%25eadv!-%25ebuy!-%25epid!-%25eaid!-%25erid!%26sr_source%3Dlift_zemanta%26ver%3D167_t1_i1%26_z1_msid%3D{sourceDomain}%26_z1_adgid%3D537&a=b",
+        )
 
     def test_get_image_url(self):
         content_ad = models.ContentAd(image_id="foo", image_width=100, image_height=200)
         image_url = content_ad.get_image_url(500, 600)
-        self.assertEqual(image_url, 'http://test.com/foo.jpg?w=500&h=600&fit=crop&crop=center&fm=jpg')
+        self.assertEqual(image_url, "http://test.com/foo.jpg?w=500&h=600&fit=crop&crop=center&fm=jpg")
 
         image_url = content_ad.get_image_url()
-        self.assertEqual(image_url, 'http://test.com/foo.jpg?w=100&h=200&fit=crop&crop=center&fm=jpg')
+        self.assertEqual(image_url, "http://test.com/foo.jpg?w=100&h=200&fit=crop&crop=center&fm=jpg")
 
         content_ad = models.ContentAd(image_id=None, image_width=100, image_height=200)
         image_url = content_ad.get_image_url()
@@ -472,10 +468,10 @@ class ContentAdTest(TestCase):
     def test_original_image_url(self):
         content_ad = models.ContentAd(image_id="foo", image_width=100, image_height=200)
         image_url = content_ad.get_original_image_url()
-        self.assertEqual(image_url, 'http://test.com/foo.jpg')
+        self.assertEqual(image_url, "http://test.com/foo.jpg")
 
         image_url = content_ad.get_original_image_url()
-        self.assertEqual(image_url, 'http://test.com/foo.jpg')
+        self.assertEqual(image_url, "http://test.com/foo.jpg")
 
         content_ad = models.ContentAd(image_id=None, image_width=100, image_height=200)
         image_url = content_ad.get_original_image_url()
@@ -492,7 +488,7 @@ def created_by_patch(sender, instance, **kwargs):
 
 class ArchiveRestoreTestCase(TestCase):
 
-    fixtures = ['test_models.yaml']
+    fixtures = ["test_models.yaml"]
 
     def setUp(self):
         pre_save.connect(created_by_patch, sender=models.AdGroupSettings)
@@ -500,7 +496,7 @@ class ArchiveRestoreTestCase(TestCase):
         pre_save.connect(created_by_patch, sender=models.AccountSettings)
 
         self.request = HttpRequest()
-        self.request.user = User.objects.create_user('test@example.com')
+        self.request.user = User.objects.create_user("test@example.com")
 
     def tearDown(self):
         pre_save.disconnect(created_by_patch, sender=models.AdGroupSettings)
@@ -529,18 +525,10 @@ class ArchiveRestoreTestCase(TestCase):
         c3 = models.Campaign.objects.get(id=3)
 
         credit = models.CreditLineItem.objects.create_unsafe(
-            amount=10,
-            account=c3.account,
-            start_date=datetime.date.today(),
-            end_date=datetime.date.today(),
-            status=1,
+            amount=10, account=c3.account, start_date=datetime.date.today(), end_date=datetime.date.today(), status=1
         )
         models.BudgetLineItem.objects.create_unsafe(
-            amount=credit.amount,
-            start_date=credit.start_date,
-            end_date=credit.end_date,
-            credit=credit,
-            campaign=c3,
+            amount=credit.amount, start_date=credit.start_date, end_date=credit.end_date, credit=credit, campaign=c3
         )
 
         self.assertFalse(c1.get_current_settings().archived)
@@ -672,18 +660,16 @@ class ArchiveRestoreTestCase(TestCase):
         self.assertFalse(cs.archived)
         self.assertTrue(ag.can_archive())
 
-        with test_helper.disable_auto_now_add(models.AdGroupSettings, 'created_dt'):
+        with test_helper.disable_auto_now_add(models.AdGroupSettings, "created_dt"):
             # enable it before
             cs = cs.copy_settings()
             cs.state = constants.AdGroupSettingsState.ACTIVE
-            cs.created_dt = datetime.date.today() - datetime.timedelta(
-                days=models.NR_OF_DAYS_INACTIVE_FOR_ARCHIVAL + 1)
+            cs.created_dt = datetime.date.today() - datetime.timedelta(days=models.NR_OF_DAYS_INACTIVE_FOR_ARCHIVAL + 1)
             cs.save(self.request)
 
             cs = cs.copy_settings()
             cs.state = constants.AdGroupSettingsState.INACTIVE
-            cs.created_dt = datetime.date.today() - datetime.timedelta(
-                days=models.NR_OF_DAYS_INACTIVE_FOR_ARCHIVAL)
+            cs.created_dt = datetime.date.today() - datetime.timedelta(days=models.NR_OF_DAYS_INACTIVE_FOR_ARCHIVAL)
             cs.save(self.request)
 
         self.assertFalse(ag.can_archive())
@@ -695,19 +681,17 @@ class ArchiveRestoreTestCase(TestCase):
         self.assertFalse(cs.archived)
         self.assertTrue(ag.can_archive())
 
-        with test_helper.disable_auto_now_add(models.AdGroupSettings, 'created_dt'):
+        with test_helper.disable_auto_now_add(models.AdGroupSettings, "created_dt"):
             # enable it before
             cs = cs.copy_settings()
             cs.state = constants.AdGroupSettingsState.ACTIVE
-            cs.created_dt = datetime.date.today() - datetime.timedelta(
-                days=models.NR_OF_DAYS_INACTIVE_FOR_ARCHIVAL + 2)
+            cs.created_dt = datetime.date.today() - datetime.timedelta(days=models.NR_OF_DAYS_INACTIVE_FOR_ARCHIVAL + 2)
             cs.save(self.request)
 
             # then pause
             cs = cs.copy_settings()
             cs.state = constants.AdGroupSettingsState.INACTIVE
-            cs.created_dt = datetime.date.today() - datetime.timedelta(
-                days=models.NR_OF_DAYS_INACTIVE_FOR_ARCHIVAL + 1)
+            cs.created_dt = datetime.date.today() - datetime.timedelta(days=models.NR_OF_DAYS_INACTIVE_FOR_ARCHIVAL + 1)
             cs.save(self.request)
 
         self.assertTrue(ag.can_archive())
@@ -718,20 +702,21 @@ class ArchiveRestoreTestCase(TestCase):
         cs = ag.get_current_settings()
         self.assertFalse(cs.archived)
         self.assertTrue(ag.can_archive())
-        self.assertEqual([x for x in ag.adgroupsettings_set.all() if x.state == constants.AdGroupSettingsState.ACTIVE], [])
+        self.assertEqual(
+            [x for x in ag.adgroupsettings_set.all() if x.state == constants.AdGroupSettingsState.ACTIVE], []
+        )
 
-        with test_helper.disable_auto_now_add(models.AdGroupSettings, 'created_dt'):
+        with test_helper.disable_auto_now_add(models.AdGroupSettings, "created_dt"):
             cs = cs.copy_settings()
             cs.state = constants.AdGroupSettingsState.INACTIVE
-            cs.created_dt = datetime.date.today() - datetime.timedelta(
-                days=models.NR_OF_DAYS_INACTIVE_FOR_ARCHIVAL - 1)
+            cs.created_dt = datetime.date.today() - datetime.timedelta(days=models.NR_OF_DAYS_INACTIVE_FOR_ARCHIVAL - 1)
             cs.save(self.request)
 
         self.assertTrue(ag.can_archive())
 
 
 class AdGroupTestCase(TestCase):
-    fixtures = ['test_api.yaml', 'test_agency.yaml']
+    fixtures = ["test_api.yaml", "test_agency.yaml"]
 
     def setUp(self):
         self.user = User.objects.get(pk=2)
@@ -763,18 +748,10 @@ class AdGroupTestCase(TestCase):
     def test_filter_by_account_type(self):
         all_adgroups = models.AdGroup.objects.all()
         qs = all_adgroups.filter_by_account_types([constants.AccountType.UNKNOWN])
-        self.assertEqual(
-            models.AdGroup.objects.all().exclude(
-                campaign__account__id=1
-            ).count(),
-            qs.count())
+        self.assertEqual(models.AdGroup.objects.all().exclude(campaign__account__id=1).count(), qs.count())
 
         qs = all_adgroups.filter_by_account_types([constants.AccountType.ACTIVATED])
-        self.assertEqual(
-            models.AdGroup.objects.all().filter(
-                campaign__account__id=1
-            ).count(),
-            qs.count())
+        self.assertEqual(models.AdGroup.objects.all().filter(campaign__account__id=1).count(), qs.count())
 
     def test_queryset_exclude_archived(self):
         qs = models.AdGroup.objects.all().exclude_archived()
@@ -782,7 +759,7 @@ class AdGroupTestCase(TestCase):
 
 
 class CampaignTestCase(TestCase):
-    fixtures = ['test_api.yaml', 'test_agency.yaml']
+    fixtures = ["test_api.yaml", "test_agency.yaml"]
 
     def setUp(self):
         self.user = User.objects.get(pk=2)
@@ -806,23 +783,24 @@ class CampaignTestCase(TestCase):
 
         settings = campaign.get_current_settings()
 
-        self.assertEqual(settings.name, 'test campaign 2')
-        self.assertEqual(settings.iab_category, 'IAB24')
-        self.assertEqual(settings.target_devices, ['mobile'])
-        self.assertEqual(settings.target_regions, ['US'])
+        self.assertEqual(settings.name, "test campaign 2")
+        self.assertEqual(settings.iab_category, "IAB24")
+        self.assertEqual(settings.target_devices, ["mobile"])
+        self.assertEqual(settings.target_regions, ["US"])
 
     def test_get_current_settings_no_existing_settings(self):
         campaign = models.Campaign.objects.create(
-            test_helper.fake_request(self.user), models.Account.objects.get(pk=1), '')
+            test_helper.fake_request(self.user), models.Account.objects.get(pk=1), ""
+        )
 
         self.assertEqual(len(models.CampaignSettings.objects.filter(campaign_id=campaign.id)), 1)
 
         settings = campaign.get_current_settings()
 
-        self.assertEqual(settings.name, '')
-        self.assertEqual(settings.iab_category, 'IAB24')
-        self.assertEqual(set(settings.target_devices), set(['tablet', 'mobile', 'desktop']))
-        self.assertEqual(settings.target_regions, ['US'])
+        self.assertEqual(settings.name, "")
+        self.assertEqual(settings.iab_category, "IAB24")
+        self.assertEqual(set(settings.target_devices), set(["tablet", "mobile", "desktop"]))
+        self.assertEqual(settings.target_regions, ["US"])
 
     def test_filter_by_agencies(self):
         agencies = models.Agency.objects.filter(pk=1)
@@ -841,22 +819,14 @@ class CampaignTestCase(TestCase):
     def test_filter_by_account_type(self):
         all_campaigns = models.Campaign.objects.all()
         qs = all_campaigns.filter_by_account_types([constants.AccountType.UNKNOWN])
-        self.assertEqual(
-            models.Campaign.objects.all().exclude(
-                account__id=1
-            ).count(),
-            qs.count())
+        self.assertEqual(models.Campaign.objects.all().exclude(account__id=1).count(), qs.count())
 
         qs = all_campaigns.filter_by_account_types([constants.AccountType.ACTIVATED])
-        self.assertEqual(
-            models.Campaign.objects.all().filter(
-                account__id=1
-            ).count(),
-            qs.count())
+        self.assertEqual(models.Campaign.objects.all().filter(account__id=1).count(), qs.count())
 
 
 class AccountTestCase(TestCase):
-    fixtures = ['test_api.yaml', 'test_agency.yaml']
+    fixtures = ["test_api.yaml", "test_agency.yaml"]
 
     def setUp(self):
         self.user = User.objects.get(pk=2)
@@ -892,24 +862,17 @@ class AccountTestCase(TestCase):
     def test_filter_by_account_type(self):
         all_accounts = models.Account.objects.all()
         qs = all_accounts.filter_by_account_types([constants.AccountType.UNKNOWN])
-        self.assertEqual(
-            4,
-            qs.count())
+        self.assertEqual(4, qs.count())
 
         qs = all_accounts.filter_by_account_types([constants.AccountType.ACTIVATED])
-        self.assertEqual(
-            1,
-            qs.count())
+        self.assertEqual(1, qs.count())
 
-        qs = all_accounts.filter_by_account_types([
-            constants.AccountType.UNKNOWN,
-            constants.AccountType.ACTIVATED,
-        ])
+        qs = all_accounts.filter_by_account_types([constants.AccountType.UNKNOWN, constants.AccountType.ACTIVATED])
         self.assertEqual(5, qs.count())
 
 
 class CreditLineItemTestCase(TestCase):
-    fixtures = ['test_api', 'test_agency']
+    fixtures = ["test_api", "test_agency"]
 
     def test_create_acc_credit(self):
         acc = models.Account.objects.get(pk=1)
@@ -987,7 +950,7 @@ class CreditLineItemTestCase(TestCase):
 
 
 class HistoryTest(TestCase):
-    fixtures = ['test_api', 'test_geolocations']
+    fixtures = ["test_api", "test_geolocations"]
 
     def setUp(self):
         self.u = User.objects.get(pk=1)
@@ -996,80 +959,56 @@ class HistoryTest(TestCase):
         self.maxDiff = None
 
     def _latest_ad_group_history(self, ad_group=None):
-        return models.History.objects.all().filter(
-            ad_group=ad_group,
-            level=constants.HistoryLevel.AD_GROUP
-        ).order_by('-created_dt').first()
+        return (
+            models.History.objects.all()
+            .filter(ad_group=ad_group, level=constants.HistoryLevel.AD_GROUP)
+            .order_by("-created_dt")
+            .first()
+        )
 
     def _latest_campaign_history(self, campaign=None):
-        return models.History.objects.all().filter(
-            campaign=campaign,
-            level=constants.HistoryLevel.CAMPAIGN
-        ).order_by('-created_dt').first()
+        return (
+            models.History.objects.all()
+            .filter(campaign=campaign, level=constants.HistoryLevel.CAMPAIGN)
+            .order_by("-created_dt")
+            .first()
+        )
 
     def _latest_account_history(self, account=None):
-        return models.History.objects.all().filter(
-            account=account,
-            level=constants.HistoryLevel.ACCOUNT
-        ).order_by('-created_dt').first()
+        return (
+            models.History.objects.all()
+            .filter(account=account, level=constants.HistoryLevel.ACCOUNT)
+            .order_by("-created_dt")
+            .first()
+        )
 
     def test_save(self):
-        models.History.objects.create(
-            created_by=self.u,
-            account=self.acc,
-            level=constants.HistoryLevel.ACCOUNT,
-        )
+        models.History.objects.create(created_by=self.u, account=self.acc, level=constants.HistoryLevel.ACCOUNT)
         self.assertEqual(1, models.History.objects.all().count())
 
     def test_save_system(self):
-        models.History.objects.create(
-            system_user=self.su,
-            account=self.acc,
-            level=constants.HistoryLevel.ACCOUNT,
-        )
+        models.History.objects.create(system_user=self.su, account=self.acc, level=constants.HistoryLevel.ACCOUNT)
         self.assertEqual(1, models.History.objects.all().count())
 
     def test_save_no_creds(self):
-        models.History.objects.create(
-            account=self.acc,
-            level=constants.HistoryLevel.ACCOUNT,
-        )
+        models.History.objects.create(account=self.acc, level=constants.HistoryLevel.ACCOUNT)
         self.assertEqual(1, models.History.objects.all().count())
 
     def test_save_no_changes(self):
         adg = models.AdGroup.objects.get(pk=1)
         camp = models.Campaign.objects.get(pk=1)
-        self.assertIsNone(
-            adg.write_history(
-                '',
-                changes={},
-            )
-        )
+        self.assertIsNone(adg.write_history("", changes={}))
 
-        self.assertIsNone(
-            camp.write_history(
-                '',
-                changes=None,
-            )
-        )
+        self.assertIsNone(camp.write_history("", changes=None))
 
-        self.assertIsNone(
-            self.acc.write_history(
-                '',
-                changes={},
-            )
-        )
+        self.assertIsNone(self.acc.write_history("", changes={}))
 
         self.assertEqual(0, models.History.objects.all().count())
         self.assertEqual(0, models.History.objects.all().count())
         self.assertEqual(0, models.History.objects.all().count())
 
     def test_save_fail(self):
-        entry = models.History.objects.create(
-            created_by=self.u,
-            account=self.acc,
-            level=constants.HistoryLevel.ACCOUNT,
-        )
+        entry = models.History.objects.create(created_by=self.u, account=self.acc, level=constants.HistoryLevel.ACCOUNT)
         with self.assertRaises(AssertionError):
             entry.delete()
 
@@ -1077,13 +1016,9 @@ class HistoryTest(TestCase):
             models.History.objects.all().delete()
 
     def test_update_fail(self):
-        models.History.objects.create(
-            created_by=self.u,
-            account=self.acc,
-            level=constants.HistoryLevel.ACCOUNT,
-        )
+        models.History.objects.create(created_by=self.u, account=self.acc, level=constants.HistoryLevel.ACCOUNT)
         with self.assertRaises(AssertionError):
-            models.History.objects.update(changes_text='Something different')
+            models.History.objects.update(changes_text="Something different")
 
     def test_create_ad_group_history(self):
         ad_group = models.AdGroup.objects.get(pk=1)
@@ -1091,36 +1026,25 @@ class HistoryTest(TestCase):
         ad_group.settings.update_unsafe(None, local_cpc_cc=4.999)
         adgss = ad_group.settings
 
-        hist = ad_group.write_history(
-            '',
-            changes=model_to_dict(adgss))
+        hist = ad_group.write_history("", changes=model_to_dict(adgss))
 
         self.assertEqual(ad_group, hist.ad_group)
-        self.assertEqual(4.999, hist.changes['local_cpc_cc'])
+        self.assertEqual(4.999, hist.changes["local_cpc_cc"])
 
         adgss = adgss.copy_settings()
-        adgss.local_cpc_cc = Decimal('5.103')
+        adgss.local_cpc_cc = Decimal("5.103")
         adgss.save(None)
 
         adg_hist = self._latest_ad_group_history(ad_group=ad_group)
         self.maxDiff = None
         self.assertEqual(1, adg_hist.ad_group.id)
-        self.assertDictEqual(
-            {
-                'local_cpc_cc': '5.103',
-            }, adg_hist.changes
-        )
-        self.assertEqual(
-            'Max CPC bid set from "$4.999" to "$5.103"',
-            adg_hist.changes_text
-        )
+        self.assertDictEqual({"local_cpc_cc": "5.103"}, adg_hist.changes)
+        self.assertEqual('Max CPC bid set from "$4.999" to "$5.103"', adg_hist.changes_text)
 
-        hist = ad_group.write_history(
-            '',
-            changes={'local_cpc_cc': 5.101})
+        hist = ad_group.write_history("", changes={"local_cpc_cc": 5.101})
 
         self.assertEqual(ad_group, hist.ad_group)
-        self.assertEqual({'local_cpc_cc': 5.101}, hist.changes)
+        self.assertEqual({"local_cpc_cc": 5.101}, hist.changes)
 
     def test_create_ad_group_source_history(self):
         ad_group = models.AdGroup.objects.get(pk=2)
@@ -1130,92 +1054,69 @@ class HistoryTest(TestCase):
         adgs.settings.update(None, local_daily_budget_cc=Decimal(50000))
 
         adgs_hist = self._latest_ad_group_history(ad_group=ad_group)
-        self.assertDictEqual(
-            {
-                'local_daily_budget_cc': '50000',
-            },
-            adgs_hist.changes)
+        self.assertDictEqual({"local_daily_budget_cc": "50000"}, adgs_hist.changes)
         self.assertEqual(
-            textwrap.dedent("""
+            textwrap.dedent(
+                """
             Source: AdsNative. Daily Spend Cap set from "$10,000.00" to "$50,000.00"
-            """).replace('\n', ''), adgs_hist.changes_text)
+            """
+            ).replace("\n", ""),
+            adgs_hist.changes_text,
+        )
 
     def test_create_campaign_history(self):
         campaign = models.Campaign.objects.get(pk=1)
-        campaign.settings.update(None, name='Awesome')
+        campaign.settings.update(None, name="Awesome")
 
         hist = self._latest_campaign_history(campaign=campaign)
 
         self.assertEqual(campaign, hist.campaign)
-        self.assertEqual('Awesome', hist.changes['name'])
+        self.assertEqual("Awesome", hist.changes["name"])
 
-        campaign.settings.update(None, name='Awesomer')
+        campaign.settings.update(None, name="Awesomer")
 
         camp_hist = self._latest_campaign_history(campaign=campaign)
-        self.assertDictEqual(
-            {
-                'name': 'Awesomer'
-            },
-            camp_hist.changes
-        )
+        self.assertDictEqual({"name": "Awesomer"}, camp_hist.changes)
         self.assertEqual('Name set from "Awesome" to "Awesomer"', camp_hist.changes_text)
 
-        hist = campaign.write_history(
-            '',
-            changes={'name': 'Awesomer'})
+        hist = campaign.write_history("", changes={"name": "Awesomer"})
 
         self.assertEqual(campaign, hist.campaign)
-        self.assertEqual({'name': 'Awesomer'}, hist.changes)
+        self.assertEqual({"name": "Awesomer"}, hist.changes)
 
     def test_create_account_history(self):
         r = test_helper.fake_request(User.objects.get(pk=1))
 
         account = models.Account.objects.get(pk=1)
-        account.settings.update(None, name='')
+        account.settings.update(None, name="")
         adgss = account.settings
 
-        hist = account.write_history(
-            "",
-            changes=adgss.get_settings_dict(),
-        )
+        hist = account.write_history("", changes=adgss.get_settings_dict())
 
         self.assertEqual(account, hist.account)
-        self.assertFalse(hist.changes['archived'])
+        self.assertFalse(hist.changes["archived"])
 
-        hist = account.write_history(
-            '',
-            changes={'archived': True},
-        )
+        hist = account.write_history("", changes={"archived": True})
 
         self.assertEqual(account, hist.account)
-        self.assertEqual({'archived': True}, hist.changes)
+        self.assertEqual({"archived": True}, hist.changes)
 
         adgss = adgss.copy_settings()
-        adgss.name = 'Wacky account'
+        adgss.name = "Wacky account"
         adgss.save(r)
 
         acc_hist = self._latest_account_history(account=account)
-        self.assertDictEqual(
-            {
-                'name': 'Wacky account'
-            },
-            acc_hist.changes)
-        self.assertEqual(
-            'Name set to "Wacky account"',
-            acc_hist.changes_text
-        )
+        self.assertDictEqual({"name": "Wacky account"}, acc_hist.changes)
+        self.assertEqual('Name set to "Wacky account"', acc_hist.changes_text)
 
-    @patch('dash.models.BudgetLineItem.state')
+    @patch("dash.models.BudgetLineItem.state")
     def test_create_budget_history(self, mock_state):
         mock_state.return_value = constants.BudgetLineItemState.PENDING
         campaign = models.Campaign.objects.get(pk=1)
-        hist = campaign.write_history(
-            "",
-            changes={'amount': 200},
-        )
+        hist = campaign.write_history("", changes={"amount": 200})
 
         self.assertEqual(campaign, hist.campaign)
-        self.assertEqual({'amount': 200}, hist.changes)
+        self.assertEqual({"amount": 200}, hist.changes)
 
     def test_create_credit_history(self):
         r = test_helper.fake_request(User.objects.get(pk=1))
@@ -1237,13 +1138,10 @@ class HistoryTest(TestCase):
         credit.amount = 20000
         credit.save()
 
-        hist = account.write_history(
-            '',
-            changes={'amount': 20000},
-        )
+        hist = account.write_history("", changes={"amount": 20000})
 
         self.assertEqual(account, hist.account)
-        self.assertDictEqual({'amount': 20000}, hist.changes)
+        self.assertDictEqual({"amount": 20000}, hist.changes)
 
     def test_create_new_bcm_history(self):
         ad_group = models.AdGroup.objects.get(pk=1)
@@ -1260,8 +1158,9 @@ class HistoryTest(TestCase):
 
         history = models.History.objects.all().first()
         self.maxDiff = None
-        self.assertEqual(textwrap.dedent(
-            '''
+        self.assertEqual(
+            textwrap.dedent(
+                """
             Created credit
             . Credit: #{cid}. Start Date set to "{sd}"
             , End Date set to "{ed}"
@@ -1272,10 +1171,12 @@ class HistoryTest(TestCase):
             , Flat Fee End Date set to ""
             , Status set to "Signed"
             , Comment set to ""
-            '''.format(cid=credit.id,
-                       sd=start_date.isoformat(),
-                       ed=end_date.isoformat()))
-            .replace('\n', ''), history.changes_text)
+            """.format(
+                    cid=credit.id, sd=start_date.isoformat(), ed=end_date.isoformat()
+                )
+            ).replace("\n", ""),
+            history.changes_text,
+        )
 
         budget = models.BudgetLineItem.objects.create_unsafe(
             campaign=ad_group.campaign,
@@ -1287,8 +1188,9 @@ class HistoryTest(TestCase):
         )
 
         history = models.History.objects.all().last()
-        self.assertEqual(textwrap.dedent(
-            '''
+        self.assertEqual(
+            textwrap.dedent(
+                """
             Created budget
             . Budget: #{budid}. Start Date set to "{sd}"
             , End Date set to "{ed}"
@@ -1296,97 +1198,94 @@ class HistoryTest(TestCase):
             , Amount set to "$100.00"
             , Released amount set to "$0.00"
             , Comment set to ""
-            '''.format(budid=budget.id,
-                       sd=start_date.isoformat(),
-                       ed=end_date.isoformat())
-        ).replace('\n', ''), history.changes_text)
+            """.format(
+                    budid=budget.id, sd=start_date.isoformat(), ed=end_date.isoformat()
+                )
+            ).replace("\n", ""),
+            history.changes_text,
+        )
 
     def test_create_account(self):
         req = test_helper.fake_request(self.u)
-        models.Account.objects.create(req, '')
+        models.Account.objects.create(req, "")
 
-        hist = models.History.objects.all().order_by('-created_dt').first()
-        self.assertIn('Created settings', hist.changes_text)
+        hist = models.History.objects.all().order_by("-created_dt").first()
+        self.assertIn("Created settings", hist.changes_text)
 
     def test_create_campaign(self):
         req = test_helper.fake_request(self.u)
         account = models.Account.objects.all().get(pk=1)
-        models.Campaign.objects.create(req, account, 'test')
+        models.Campaign.objects.create(req, account, "test")
 
-        hist = models.History.objects.all().order_by('-created_dt').first()
-        self.assertEqual(textwrap.dedent('''
+        hist = models.History.objects.all().order_by("-created_dt").first()
+        self.assertEqual(
+            textwrap.dedent(
+                """
             Created settings
             . Name set to "test"
             , Campaign Manager set to "luka.silovinac@zemanta.com"
             , Device targeting set to "Desktop, Tablet, Mobile"
             , Locations set to "United States"
-            ''').replace('\n', ''), hist.changes_text)
+            """
+            ).replace("\n", ""),
+            hist.changes_text,
+        )
 
-    @patch('dash.models.AdGroup.objects._post_create', lambda ag: None)
+    @patch("dash.models.AdGroup.objects._post_create", lambda ag: None)
     def test_create_ad_group(self):
         req = test_helper.fake_request(self.u)
         campaign = models.Campaign.objects.all().get(pk=1)
 
-        ag = models.AdGroup.objects.create(req, campaign, name='test')
+        ag = models.AdGroup.objects.create(req, campaign, name="test")
 
-        hist = models.History.objects.all().filter(ad_group=ag).order_by('-created_dt').first()
-        self.assertIn('Created settings', hist.changes_text)
+        hist = models.History.objects.all().filter(ad_group=ag).order_by("-created_dt").first()
+        self.assertIn("Created settings", hist.changes_text)
 
     def test_create_ad_group_source(self):
         req = test_helper.fake_request(self.u)
-        s = magic_mixer.blend(
-            models.Source,
-            name='b1',
-            supports_retargeting=True,
-            maintenance=False,
-        )
+        s = magic_mixer.blend(models.Source, name="b1", supports_retargeting=True, maintenance=False)
         credentials = magic_mixer.blend(models.SourceCredentials)
         magic_mixer.blend(models.DefaultSourceSettings, source=s, credentials=credentials)
         ad_group = models.AdGroup.objects.get(pk=1)
         ad_group.campaign.account.allowed_sources.add(s)
-        models.AdGroupSource.objects.create(
-            req,
-            source=s,
-            ad_group=ad_group
-        )
+        models.AdGroupSource.objects.create(req, source=s, ad_group=ad_group)
 
-        hist = models.History.objects.all().order_by('-created_dt')[1]
-        self.assertIn('Created settings. Source: b1.', hist.changes_text)
+        hist = models.History.objects.all().order_by("-created_dt")[1]
+        self.assertIn("Created settings. Source: b1.", hist.changes_text)
 
 
-@override_settings(CONVERSION_PIXEL_PREFIX='test_prefix')
+@override_settings(CONVERSION_PIXEL_PREFIX="test_prefix")
 class ConversionPixelTestCase(TestCase):
-    fixtures = ['test_models.yaml']
+    fixtures = ["test_models.yaml"]
 
     def test_save(self):
-        pixel = models.ConversionPixel.objects.create(account_id=1, name='Pixel name', id=4)
-        self.assertEqual(pixel.slug, '4')
-        pixel = models.ConversionPixel.objects.create(account_id=1, name='Pixel name', id=5, slug='testslug')
-        self.assertEqual(pixel.slug, 'testslug')
+        pixel = models.ConversionPixel.objects.create(account_id=1, name="Pixel name", id=4)
+        self.assertEqual(pixel.slug, "4")
+        pixel = models.ConversionPixel.objects.create(account_id=1, name="Pixel name", id=5, slug="testslug")
+        self.assertEqual(pixel.slug, "testslug")
 
     def test_get_url(self):
         self.assertEqual(len(models.ConversionPixel.objects.all()), 3)
-        pixel = models.ConversionPixel.objects.create(account_id=1, name='Pixel name', id=4)
+        pixel = models.ConversionPixel.objects.create(account_id=1, name="Pixel name", id=4)
 
-        self.assertEqual(pixel.get_url(), 'test_prefix1/4/')
+        self.assertEqual(pixel.get_url(), "test_prefix1/4/")
 
-        pixel = models.ConversionPixel.objects.create(account_id=1, name='Pixel name', slug='test_slug', id=5)
+        pixel = models.ConversionPixel.objects.create(account_id=1, name="Pixel name", slug="test_slug", id=5)
 
-        self.assertEqual(pixel.get_url(), 'test_prefix1/test_slug/')
+        self.assertEqual(pixel.get_url(), "test_prefix1/test_slug/")
 
 
 class SourceTypeTestCase(TestCase):
-
     def test_yahoo_desktop_min_cpc(self):
-        source_type = models.SourceType(type=constants.SourceType.YAHOO, min_cpc=Decimal('0.05'))
+        source_type = models.SourceType(type=constants.SourceType.YAHOO, min_cpc=Decimal("0.05"))
         settings = models.AdGroupSettings(ad_group_id=1)
         settings_desktop = models.AdGroupSettings(ad_group_id=1, target_devices=[constants.AdTargetDevice.DESKTOP])
-        self.assertEqual(source_type.get_min_cpc(settings), Decimal('0.05'))
-        self.assertEqual(source_type.get_min_cpc(settings_desktop), Decimal('0.25'))
+        self.assertEqual(source_type.get_min_cpc(settings), Decimal("0.05"))
+        self.assertEqual(source_type.get_min_cpc(settings_desktop), Decimal("0.25"))
 
 
 class PublisherGroupTest(TestCase):
-    fixtures = ['test_publishers.yaml', 'test_models.yaml']
+    fixtures = ["test_publishers.yaml", "test_models.yaml"]
 
     def test_can_delete(self):
         pg = models.PublisherGroup.objects.get(pk=1)

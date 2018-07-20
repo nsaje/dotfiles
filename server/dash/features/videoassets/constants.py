@@ -20,8 +20,4 @@ class VideoAssetType(constant_base.ConstantBase):
     VAST_UPLOAD = 2
     VAST_URL = 3
 
-    _VALUES = {
-        DIRECT_UPLOAD: 'DIRECT_UPLOAD',
-        VAST_UPLOAD: 'VAST_UPLOAD',
-        VAST_URL: 'VAST_URL',
-    }
+    _VALUES = {DIRECT_UPLOAD: "DIRECT_UPLOAD", VAST_UPLOAD: "VAST_UPLOAD", VAST_URL: "VAST_URL"}

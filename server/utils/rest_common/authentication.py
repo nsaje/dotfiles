@@ -22,7 +22,8 @@ class OAuth2Authentication(BaseAuthentication):
     but the application itself is not technically a user, we need to modify L77 to authenticate as the application's user
     (added 'or r.client.user').
     """
-    www_authenticate_realm = 'api'
+
+    www_authenticate_realm = "api"
 
     def authenticate(self, request):
         """
@@ -61,13 +62,13 @@ def gen_service_authentication(service_name, keys):
 
 def gen_oauth_authentication(service_name):
     class GeneratedOAuth2Authentication(OAuth2Authentication):
-
         def authenticate(self, request):
             status = super(GeneratedOAuth2Authentication, self).authenticate(request)
             if not status:
                 return None
             user, token = status
-            if user.email != '{}@service.zemanta.com'.format(service_name):
+            if user.email != "{}@service.zemanta.com".format(service_name):
                 return None
             return user, token
+
     return GeneratedOAuth2Authentication

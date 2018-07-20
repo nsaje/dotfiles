@@ -19,9 +19,4 @@ class InventoryDeviceType(ConstantBase):
     PHONE = 4
     TABLET = 5
 
-    _VALUES = {
-        PC: 'Desktop',
-        TV: 'TV & SetTop Box',
-        PHONE: 'Mobile',
-        TABLET: 'Tablet',
-    }
+    _VALUES = {PC: "Desktop", TV: "TV & SetTop Box", PHONE: "Mobile", TABLET: "Tablet"}

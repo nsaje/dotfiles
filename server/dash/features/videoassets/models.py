@@ -8,31 +8,30 @@ from django.conf import settings
 from . import constants
 
 
-S3_DIRECT_UPLOAD_PATH_FORMAT = 'upload/{videoasset_id}'
-S3_VAST_UPLOAD_PATH_FORMAT = 'vast/{videoasset_id}'
+S3_DIRECT_UPLOAD_PATH_FORMAT = "upload/{videoasset_id}"
+S3_VAST_UPLOAD_PATH_FORMAT = "vast/{videoasset_id}"
 
 
 ERROR_CODE_MESSAGES = {
-    '4000': "File format not supported",
-    '4001': "Width and height too large",
-    '4002': "File size too large",
-    '4006': "File format not supported",
-    '4008': "Invalid file: Missing audio or video",
-    '4100': "Invalid file: Could not interpret embedded caption track",
-    '5000': "Invalid vast file",
+    "4000": "File format not supported",
+    "4001": "Width and height too large",
+    "4002": "File size too large",
+    "4006": "File format not supported",
+    "4008": "Invalid file: Missing audio or video",
+    "4100": "Invalid file: Could not interpret embedded caption track",
+    "5000": "Invalid vast file",
 }
 
 
 def validate_format(item):
-    assert isinstance(item.get('width'), int)
-    assert isinstance(item.get('height'), int)
-    assert isinstance(item.get('bitrate'), int)
-    assert isinstance(item.get('mime'), str)
-    assert isinstance(item.get('filename'), str)
+    assert isinstance(item.get("width"), int)
+    assert isinstance(item.get("height"), int)
+    assert isinstance(item.get("bitrate"), int)
+    assert isinstance(item.get("mime"), str)
+    assert isinstance(item.get("filename"), str)
 
 
 class VideoAssetManager(models.Manager):
-
     def create(self, type, account, **kwargs):
         video_asset = VideoAsset(type=type, account=account, **kwargs)
         video_asset.save()
@@ -43,13 +42,12 @@ class VideoAsset(models.Model):
     objects = VideoAssetManager()
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    account = models.ForeignKey('Account', on_delete=models.PROTECT)
+    account = models.ForeignKey("Account", on_delete=models.PROTECT)
 
-    created_dt = models.DateTimeField(auto_now_add=True, verbose_name='Created at')
-    modified_dt = models.DateTimeField(auto_now=True, verbose_name='Modified at')
+    created_dt = models.DateTimeField(auto_now_add=True, verbose_name="Created at")
+    modified_dt = models.DateTimeField(auto_now=True, verbose_name="Modified at")
     status = models.IntegerField(
-        default=constants.VideoAssetStatus.NOT_UPLOADED,
-        choices=constants.VideoAssetStatus.get_choices()
+        default=constants.VideoAssetStatus.NOT_UPLOADED, choices=constants.VideoAssetStatus.get_choices()
     )
     error_code = models.CharField(max_length=20, blank=True, null=True)
 
@@ -58,8 +56,7 @@ class VideoAsset(models.Model):
     formats = jsonfield.fields.JSONField(blank=True, null=True)
 
     type = models.IntegerField(
-        default=constants.VideoAssetType.DIRECT_UPLOAD,
-        choices=constants.VideoAssetType.get_choices()
+        default=constants.VideoAssetType.DIRECT_UPLOAD, choices=constants.VideoAssetType.get_choices()
     )
     vast_url = models.CharField(max_length=2048, blank=True, null=True)
 
@@ -69,26 +66,26 @@ class VideoAsset(models.Model):
 
         if self.type == constants.VideoAssetType.DIRECT_UPLOAD:
             key = S3_DIRECT_UPLOAD_PATH_FORMAT.format(videoasset_id=self.id)
-            content_type = 'application/octet-stream'
+            content_type = "application/octet-stream"
         elif self.type == constants.VideoAssetType.VAST_UPLOAD:
             key = S3_VAST_UPLOAD_PATH_FORMAT.format(videoasset_id=self.id)
-            content_type = 'text/xml'
+            content_type = "text/xml"
         else:
             raise ValueError("Cannot get an upload url for this type of video asset")
 
-        s3 = boto3.client('s3')
+        s3 = boto3.client("s3")
         url = s3.generate_presigned_url(
-            ClientMethod='put_object',
+            ClientMethod="put_object",
             Params={
-                'Bucket': settings.S3_BUCKET_VIDEO,
-                'Key': key,
-                'ContentType': content_type,
-                'Metadata': {
-                    'videoassetid': str(self.id),
-                    'callbackhost': settings.LAMBDA_CALLBACK_HOST,
-                    'environment': settings.LAMBDA_ENVIRONMENT,
+                "Bucket": settings.S3_BUCKET_VIDEO,
+                "Key": key,
+                "ContentType": content_type,
+                "Metadata": {
+                    "videoassetid": str(self.id),
+                    "callbackhost": settings.LAMBDA_CALLBACK_HOST,
+                    "environment": settings.LAMBDA_ENVIRONMENT,
                 },
-            }
+            },
         )
         return url
 
@@ -109,7 +106,7 @@ class VideoAsset(models.Model):
     def get_preview_url(self):
         if self.status == constants.VideoAssetStatus.READY_FOR_USE and self.formats and len(self.formats) > 0:
             format = self.formats[0]
-            return settings.VIDEO_PREVIEW_URL.format(filename=format['filename'])
+            return settings.VIDEO_PREVIEW_URL.format(filename=format["filename"])
 
     def update_progress(self, status, error_code=None, duration=None, formats=None):
         self.status = status

@@ -10,11 +10,10 @@ MODIFIER_MIN = 0.0
 
 
 def get(ad_group):
-    return [{
-        'publisher': item.publisher,
-        'source': item.source,
-        'modifier': item.modifier,
-    } for item in PublisherBidModifier.objects.filter(ad_group=ad_group).select_related('source').order_by('pk')]
+    return [
+        {"publisher": item.publisher, "source": item.source, "modifier": item.modifier}
+        for item in PublisherBidModifier.objects.filter(ad_group=ad_group).select_related("source").order_by("pk")
+    ]
 
 
 @transaction.atomic
@@ -30,17 +29,10 @@ def set(ad_group, publisher, source, modifier):
 
 
 def _delete(ad_group, source, publisher):
-    PublisherBidModifier.objects.filter(
-        ad_group=ad_group,
-        source=source,
-        publisher=publisher
-    ).delete()
+    PublisherBidModifier.objects.filter(ad_group=ad_group, source=source, publisher=publisher).delete()
 
 
 def _update_or_create(ad_group, source, publisher, modifier):
     PublisherBidModifier.objects.update_or_create(
-        defaults={'modifier': modifier},
-        ad_group=ad_group,
-        source=source,
-        publisher=publisher
+        defaults={"modifier": modifier}, ad_group=ad_group, source=source, publisher=publisher
     )

@@ -32,7 +32,7 @@ class S3Helper(object):
             return k.get_contents_as_string()
 
         if settings.FILE_STORAGE_DIR:
-            with open(os.path.join(settings.FILE_STORAGE_DIR, os.path.basename(key)), 'rb') as f:
+            with open(os.path.join(settings.FILE_STORAGE_DIR, os.path.basename(key)), "rb") as f:
                 return f.read()
 
     def open_keys_async(self, keys):
@@ -76,19 +76,19 @@ class S3Helper(object):
 
     def put(self, key, contents, human_readable_filename=None):
         try:
-            contents = contents.encode('utf-8')
+            contents = contents.encode("utf-8")
         except AttributeError:
             pass
         if self.use_s3:
             k = self.bucket.new_key(key)
 
             if human_readable_filename:
-                k.set_metadata('Content-Disposition', 'attachment; filename={}'.format(human_readable_filename))
+                k.set_metadata("Content-Disposition", "attachment; filename={}".format(human_readable_filename))
 
             k.set_contents_from_string(contents)
 
         elif settings.FILE_STORAGE_DIR:
-            with open(self._local_file_name(key), 'wb+') as f:
+            with open(self._local_file_name(key), "wb+") as f:
                 f.write(contents)
 
     def put_file(self, key, source, human_readable_filename=None):
@@ -96,25 +96,25 @@ class S3Helper(object):
             k = self.bucket.new_key(key)
 
             if human_readable_filename:
-                k.set_metadata('Content-Disposition', 'attachment; filename={}'.format(human_readable_filename))
+                k.set_metadata("Content-Disposition", "attachment; filename={}".format(human_readable_filename))
 
             k.set_contents_from_file(source)
 
         elif settings.FILE_STORAGE_DIR:
-            with open(self._local_file_name(key), 'wb+') as f:
+            with open(self._local_file_name(key), "wb+") as f:
                 _copy_file(source, f)
 
     def put_multipart(self, key, human_readable_filename=None):
         if self.use_s3:
             metadata = {}
             if human_readable_filename:
-                metadata['Content-Disposition'] = 'attachment; filename={}'.format(human_readable_filename)
+                metadata["Content-Disposition"] = "attachment; filename={}".format(human_readable_filename)
 
             return self.bucket.initiate_multipart_upload(key, metadata=metadata)
         else:
             return FakeMultiPartUpload(key)
 
-    def list(self, prefix, delimiter=''):
+    def list(self, prefix, delimiter=""):
         if self.use_s3:
             return self.bucket.list(prefix=prefix, delimiter=delimiter)
         elif settings.FILE_STORAGE_DIR:
@@ -127,8 +127,8 @@ class S3Helper(object):
     def list_manifest(self, manifest_path):
         if self.use_s3:
             manifest = json.loads(self.get(manifest_path))
-            for entry in manifest['entries']:
-                yield entry['url'].lstrip('s3://%s/' % self.bucket.name)
+            for entry in manifest["entries"]:
+                yield entry["url"].lstrip("s3://%s/" % self.bucket.name)
 
 
 class FakeMultiPartUpload(object):
@@ -136,7 +136,7 @@ class FakeMultiPartUpload(object):
         self.key = key
         self.last_num = 0
         if settings.FILE_STORAGE_DIR:
-            open(self._get_file(), 'wb').close()
+            open(self._get_file(), "wb").close()
 
     def _get_file(self):
         return os.path.join(settings.FILE_STORAGE_DIR, os.path.basename(self.key))
@@ -153,7 +153,7 @@ class FakeMultiPartUpload(object):
             raise Exception("Only sequential uploads supported, expected part_num: %d" % self.last_num + 1)
         self.last_num = part_num
         if settings.FILE_STORAGE_DIR:
-            with open(self._get_file(), 'ab+') as f:
+            with open(self._get_file(), "ab+") as f:
                 _copy_file(source, f)
 
 
@@ -166,27 +166,26 @@ def _copy_file(source, dest):
 
 
 def generate_safe_filename(filename, content):
-    filename = filename.lower().replace(' ', '_')
+    filename = filename.lower().replace(" ", "_")
     basefnm, extension = os.path.splitext(filename)
     digest = hashlib.md5(content).hexdigest() + str(len(content))
 
-    return basefnm + '_' + digest + extension
+    return basefnm + "_" + digest + extension
 
 
 def get_credentials_string():
     if settings.TESTING:
-        return 'aws_access_key_id=bar;aws_secret_access_key=foo'
+        return "aws_access_key_id=bar;aws_secret_access_key=foo"
     if not settings.USE_S3:
-        return ''
+        return ""
 
-    s3_client = boto.s3.connect_to_region('us-east-1')
+    s3_client = boto.s3.connect_to_region("us-east-1")
 
     access_key = s3_client.aws_access_key_id
     access_secret = s3_client.aws_secret_access_key
 
-    security_token_param = ''
+    security_token_param = ""
     if s3_client.provider.security_token:
-        security_token_param = ';token=%s' % s3_client.provider.security_token
+        security_token_param = ";token=%s" % s3_client.provider.security_token
 
-    return 'aws_access_key_id=%s;aws_secret_access_key=%s%s' % (
-        access_key, access_secret, security_token_param)
+    return "aws_access_key_id=%s;aws_secret_access_key=%s%s" % (access_key, access_secret, security_token_param)

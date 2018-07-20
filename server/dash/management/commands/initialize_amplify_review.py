@@ -9,22 +9,22 @@ logger = logging.getLogger(__name__)
 
 
 class Command(ExceptionCommand):
-    help = 'Initialize Amplify review on an ad group'
+    help = "Initialize Amplify review on an ad group"
 
     def add_arguments(self, parser):
-        parser.add_argument('ad_group_id', type=int)
+        parser.add_argument("ad_group_id", type=int)
 
     def handle(self, *args, **options):
-        ad_group = models.AdGroup.objects.get(id=options['ad_group_id'])
+        ad_group = models.AdGroup.objects.get(id=options["ad_group_id"])
         if ad_group.amplify_review:
-            self.stdout.write('Amplify review for ad group {} already enabled. Exiting ...\n'.format(ad_group.id))
+            self.stdout.write("Amplify review for ad group {} already enabled. Exiting ...\n".format(ad_group.id))
             return
 
-        self.stdout.write('Initializing Amplify review for ad group {}.\n'.format(ad_group.id))
+        self.stdout.write("Initializing Amplify review for ad group {}.\n".format(ad_group.id))
         with transaction.atomic():
             ad_group.amplify_review = True
             ad_group.save(None)
             ad_group.contentad_set.update(amplify_review=True)
             ad_group.ensure_amplify_review_source(None)
 
-        self.stdout.write('Done.')
+        self.stdout.write("Done.")

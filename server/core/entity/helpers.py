@@ -20,11 +20,11 @@ def should_filter_by_sources(sources):
     if sources is None:
         return False
 
-    cache = caches['local_memory_cache']
-    all_source_ids = cache.get('all_source_ids')
+    cache = caches["local_memory_cache"]
+    all_source_ids = cache.get("all_source_ids")
     if not all_source_ids:
-        all_source_ids = core.source.Source.objects.all().values_list('id', flat=True)
-        cache.set('all_source_ids', list(all_source_ids))
+        all_source_ids = core.source.Source.objects.all().values_list("id", flat=True)
+        cache.set("all_source_ids", list(all_source_ids))
 
     ids = set(s.id for s in sources)
     return len(set(all_source_ids) - ids) > 0
@@ -47,13 +47,13 @@ def create_default_name(objects, name):
     Returns a name suffixed with a number in case similar name already exists.
     """
 
-    names = objects.filter(name__regex=r'^{}( [0-9]+)?$'.format(name)).values_list('name', flat=True)
+    names = objects.filter(name__regex=r"^{}( [0-9]+)?$".format(name)).values_list("name", flat=True)
 
     if len(names):
         num = len(names) + 1
 
         # extract suffix number from names
-        nums = [int(x.replace(name, '').strip() or 1) for x in names]
+        nums = [int(x.replace(name, "").strip() or 1) for x in names]
         nums.sort()
 
         # find the first free number that is not yet used
@@ -64,6 +64,6 @@ def create_default_name(objects, name):
                 break
 
         if num > 1:
-            name += ' {}'.format(num)
+            name += " {}".format(num)
 
     return name

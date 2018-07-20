@@ -23,39 +23,37 @@ def _handle_budget_line_item_change(sender, instance, **kwargs):
 
 
 def _notify_budget_line_item_change(sender, instance, **kwargs):
-    if kwargs.get('raw'):
+    if kwargs.get("raw"):
         # prevents triggering when loading fixtures
         return
     update_notifier.notify_budget_line_item_change(instance.campaign)
 
 
 def connect_notify_ad_group_settings_change():
-    settings_change.connect(
-        _notify_ad_group_settings_change, sender=core.entity.settings.AdGroupSettings)
+    settings_change.connect(_notify_ad_group_settings_change, sender=core.entity.settings.AdGroupSettings)
 
 
 def disconnect_notify_ad_group_settings_change():
-    settings_change.disconnect(
-        _notify_ad_group_settings_change, sender=core.entity.settings.AdGroupSettings)
+    settings_change.disconnect(_notify_ad_group_settings_change, sender=core.entity.settings.AdGroupSettings)
 
 
 def _notify_ad_group_settings_change(sender, **kwargs):
-    ad_group_settings = kwargs['instance']
-    changes = kwargs['changes']
+    ad_group_settings = kwargs["instance"]
+    changes = kwargs["changes"]
     update_notifier.notify_ad_group_settings_change(ad_group_settings, changes)
 
 
 def connect_notify_ad_group_source_settings_change():
-    settings_change.connect(
-        _notify_ad_group_source_settings_change, sender=core.entity.settings.AdGroupSourceSettings)
+    settings_change.connect(_notify_ad_group_source_settings_change, sender=core.entity.settings.AdGroupSourceSettings)
 
 
 def disconnect_notify_ad_group_source_settings_change():
     settings_change.disconnect(
-        _notify_ad_group_source_settings_change, sender=core.entity.settings.AdGroupSourceSettings)
+        _notify_ad_group_source_settings_change, sender=core.entity.settings.AdGroupSourceSettings
+    )
 
 
 def _notify_ad_group_source_settings_change(sender, **kwargs):
-    ad_group_source_settings = kwargs['instance']
-    changes = kwargs['changes']
+    ad_group_source_settings = kwargs["instance"]
+    changes = kwargs["changes"]
     update_notifier.notify_ad_group_source_settings_change(ad_group_source_settings, changes)

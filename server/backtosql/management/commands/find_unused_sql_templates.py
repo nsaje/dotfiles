@@ -8,7 +8,7 @@ TEMPLATES_PREFIX = "templates/"
 
 
 class Command(BaseCommand):
-    help = 'Finds all unused templates'
+    help = "Finds all unused templates"
 
     def handle(self, *args, **options):
 
@@ -33,7 +33,9 @@ def get_template_name(path):
 
 
 def get_templates(extension=".sql"):
-    return [f[2:-1] for f in os.popen("find . -name '*{}' | sort".format(extension)).readlines() if TEMPLATES_PREFIX in f]
+    return [
+        f[2:-1] for f in os.popen("find . -name '*{}' | sort".format(extension)).readlines() if TEMPLATES_PREFIX in f
+    ]
 
 
 def get_py_files():

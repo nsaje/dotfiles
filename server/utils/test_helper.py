@@ -12,22 +12,18 @@ from functools import reduce
 
 
 def add_permissions(user, permissions):
-    ''' utility intended to be used in unit tests only '''
+    """ utility intended to be used in unit tests only """
     for permission in permissions:
-        user.user_permissions.add(
-            Permission.objects.get(codename=permission)
-        )
+        user.user_permissions.add(Permission.objects.get(codename=permission))
 
 
 def remove_permissions(user, permissions):
-    ''' utility intended to be used in unit tests only '''
+    """ utility intended to be used in unit tests only """
     for permission in permissions:
-        user.user_permissions.remove(
-            Permission.objects.get(codename=permission)
-        )
+        user.user_permissions.remove(Permission.objects.get(codename=permission))
 
 
-def fake_request(user, url=''):
+def fake_request(user, url=""):
     rf = RequestFactory()
     r = rf.get(url)
     r.user = user
@@ -42,12 +38,11 @@ def mock_file(name, content):
 
 
 class MockDateTime(datetime.datetime):
-
     def __new__(cls, *args, **kwargs):
         return datetime.datetime.__new__(cls, *args, **kwargs)
 
 
-class AlmostMatcher():
+class AlmostMatcher:
     def __init__(self, obj, ndigits=4):
         self.obj = obj
         self.ndigits = ndigits
@@ -59,7 +54,7 @@ class AlmostMatcher():
         return repr(self.obj)
 
 
-class QuerySetMatcher():
+class QuerySetMatcher:
     def __init__(self, obj):
         self.obj = obj
 
@@ -69,10 +64,10 @@ class QuerySetMatcher():
         return a == b
 
     def __repr__(self):
-        return '<QuerySet %s>' % list(self.obj)
+        return "<QuerySet %s>" % list(self.obj)
 
 
-class ListMatcher():
+class ListMatcher:
     """Checks if both lists (or list like objects) contain the same elements.
     For use with Mock.assert_called_with()."""
 
@@ -87,7 +82,7 @@ class ListMatcher():
             yield i
 
 
-class TypeMatcher():
+class TypeMatcher:
     def __init__(self, expected_type):
         self.expected_type = expected_type
 
@@ -111,10 +106,7 @@ def dicts_match_for_keys(dct1, dct2, keys):
 def sequence_of_dicts_match_for_keys(dicts1, dicts2, keys):
     if len(dicts1) != len(dicts2):
         return False
-    return reduce(
-        operator.iand,
-        (dicts_match_for_keys(dct1, dct2, keys) for dct1, dct2 in zip(dicts1, dicts2)),
-        True)
+    return reduce(operator.iand, (dicts_match_for_keys(dct1, dct2, keys) for dct1, dct2 in zip(dicts1, dicts2)), True)
 
 
 def prepare_mock_urlopen(mock_urlopen, exception=None):
@@ -130,15 +122,15 @@ def prepare_mock_urlopen(mock_urlopen, exception=None):
 def format_csv_content(content):
     # Expected content - All fields are double-quoted and
     lines_formatted = []
-    for line in content.split('\r\n'):
+    for line in content.split("\r\n"):
         if not line:
             continue
-        fields = line.split(',')
+        fields = line.split(",")
         fields_formatted = ['"' + f + '"' for f in fields]
-        line_formatted = ','.join(fields_formatted)
+        line_formatted = ",".join(fields_formatted)
         lines_formatted.append(line_formatted)
 
-    formatted_content = '\r\n'.join(lines_formatted) + '\r\n'
+    formatted_content = "\r\n".join(lines_formatted) + "\r\n"
     return formatted_content
 
 

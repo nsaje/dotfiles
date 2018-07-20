@@ -5,10 +5,10 @@ from utils import numbers
 
 
 class CampaignGoalBCMMixin(object):
-
     @transaction.atomic
     def migrate_to_bcm_v2(self, request, fee, margin):
         from dash import campaign_goals
+
         if self.type in campaign_goals.COST_DEPENDANT_GOALS:
             current_value = self.get_current_value()
             if current_value:

@@ -14,17 +14,14 @@ class MockTestView(base.ServiceAPIBaseView):
         pass
 
 
-urlpatterns = [
-    url(r'^test/$', MockTestView.as_view(), name="test.test"),
-]
+urlpatterns = [url(r"^test/$", MockTestView.as_view(), name="test.test")]
 
 
-@override_settings(ROOT_URLCONF='serviceapi.base_test')
+@override_settings(ROOT_URLCONF="serviceapi.base_test")
 class TestUnauthenticated(TestCase):
-
     def setUp(self):
         self.client = APIClient()
 
     def test_unauthenticated(self):
-        r = self.client.get(reverse('test.test'))
+        r = self.client.get(reverse("test.test"))
         self.assertEqual(r.status_code, 403)

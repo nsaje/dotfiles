@@ -16,7 +16,6 @@ def get_request_mock(user):
 
 
 class MagicMixer(mixer_base.__class__):
-
     def blend(self, model, **kwargs):
         for field in model._meta.fields:
             if isinstance(field, ArrayField) and field.name not in kwargs:
@@ -36,30 +35,33 @@ class MagicMixer(mixer_base.__class__):
         return get_request_mock(self.blend_user(permissions, is_superuser))
 
     def blend_source_w_defaults(self, **kwargs):
-        kw = 'default_source_settings'
+        kw = "default_source_settings"
         dss_kwargs = {k[25:]: v for k, v in list(kwargs.items()) if k.startswith(kw)}
 
         source = self.blend(core.source.Source, **{k: v for k, v in list(kwargs.items()) if not k.startswith(kw)})
-        self.blend(core.source.DefaultSourceSettings,
-                   source=source, credentials=self.RANDOM, **dss_kwargs)
+        self.blend(core.source.DefaultSourceSettings, source=source, credentials=self.RANDOM, **dss_kwargs)
         return source
 
     def postprocess(self, target):
-        if self.params.get('commit'):
+        if self.params.get("commit"):
+
             def _save():
                 try:
                     target.save()
                 except TypeError:
                     target.save(request=get_request_mock(self.blend_user()))
+
             _save()
 
             for field in target._meta.fields:
-                if field.name == 'settings':
+                if field.name == "settings":
                     back_field_name = None
                     for settings_field in field.remote_field.model._meta.get_fields():
-                        if (settings_field.remote_field is not None and
-                                hasattr(settings_field, 'attname') and
-                                settings_field.remote_field.model == target.__class__):
+                        if (
+                            settings_field.remote_field is not None
+                            and hasattr(settings_field, "attname")
+                            and settings_field.remote_field.model == target.__class__
+                        ):
                             back_field_name = settings_field.name
                     params = {back_field_name: target}
                     params.update(**field.remote_field.model.get_defaults_dict())
