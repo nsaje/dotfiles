@@ -8,7 +8,7 @@ import dash.constants
 from utils import dates_helper
 
 from ..currency_exchange_rate import CurrencyExchangeRate
-from . import eur, gbp, aud, sgd
+from . import eur, gbp, aud, sgd, brl, myr, chf
 
 
 logger = logging.getLogger(__name__)
@@ -45,6 +45,12 @@ def _get_exchange_rate(currency):
         return aud.get_exchange_rate()
     if currency == dash.constants.Currency.SGD:
         return sgd.get_exchange_rate()
+    if currency == dash.constants.Currency.BRL:
+        return brl.get_exchange_rate()
+    if currency == dash.constants.Currency.MYR:
+        return myr.get_exchange_rate()
+    if currency == dash.constants.Currency.CHF:
+        return chf.get_exchange_rate()
     else:
         raise MissingExchangeRateMappingException()
 

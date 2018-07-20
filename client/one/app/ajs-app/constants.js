@@ -52,6 +52,9 @@ var constants = {
         GBP: 'GBP',
         AUD: 'AUD',
         SGD: 'SGD',
+        BRL: 'BRL',
+        CHF: 'CHF',
+        MYR: 'MYR',
     },
     infoboxStatus: {
         ACTIVE: 'active',
@@ -1268,6 +1271,9 @@ constants.currencySymbol[constants.currency.EUR] = '€';
 constants.currencySymbol[constants.currency.GBP] = '£';
 constants.currencySymbol[constants.currency.AUD] = 'A$';
 constants.currencySymbol[constants.currency.SGD] = 'S$';
+constants.currencySymbol[constants.currency.BRL] = 'R$';
+constants.currencySymbol[constants.currency.MYR] = 'RM';
+constants.currencySymbol[constants.currency.CHF] = 'CHF';
 
 var options = {
     // used for converting options lists values into REST API flavoured constant values
@@ -2296,6 +2302,9 @@ var options = {
         {name: 'British Pound', value: constants.currency.GBP},
         {name: 'Australian Dollar', value: constants.currency.AUD},
         {name: 'Singapore Dollar', value: constants.currency.SGD},
+        {name: 'Brazilian Real', value: constants.currency.BRL},
+        {name: 'Malaysian Ringgit', value: constants.currency.MYR},
+        {name: 'Swiss Franc', value: constants.currency.CHF},
     ],
 };
 

@@ -195,6 +195,9 @@ class Currency(ConstantBase):
     GBP = 'GBP'
     AUD = 'AUD'
     SGD = 'SGD'
+    BRL = 'BRL'
+    MYR = 'MYR'
+    CHF = 'CHF'
 
     _VALUES = {
         USD: 'US Dollar',
@@ -202,6 +205,9 @@ class Currency(ConstantBase):
         GBP: 'British Pound',
         AUD: 'Australian Dollar',
         SGD: 'Singapore Dollar',
+        BRL: 'Brazilian Real',
+        MYR: 'Malaysian Ringgit',
+        CHF: 'Swiss Franc',
     }
 
 

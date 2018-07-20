@@ -6,4 +6,7 @@ CurrencySymbol = {
     dash.constants.Currency.GBP: '£',
     dash.constants.Currency.AUD: 'A$',
     dash.constants.Currency.SGD: 'S$',
+    dash.constants.Currency.BRL: 'R$',
+    dash.constants.Currency.MYR: 'RM',
+    dash.constants.Currency.CHF: 'CHF',
 }
