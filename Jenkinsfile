@@ -85,7 +85,7 @@ node('master') {
                 }
             },
             linter: {
-                sh 'bash ./scripts/jenkins_lint_check.sh'
+                sh 'make lint'
             },
             failFast: true  // if one of the parallel branches fails, fail the build right away
         )
@@ -106,9 +106,9 @@ node('master') {
         // restapi docs
         sh './server/restapi/docs/build-docker.sh "build-${BRANCH_NAME}.${BUILD_NUMBER}.html" && ./scripts/push_docs_to_s3.sh ./server/restapi/docs/build-${BRANCH_NAME}.${BUILD_NUMBER}.html'
         // files needed for deploy
-        sh './scripts/push_jenkins_artifact_to_s3.sh "docker-compose.prod.yml"'
-        sh './scripts/push_jenkins_artifact_to_s3.sh "docker-compose.demo.yml"'
-        sh './scripts/push_jenkins_artifact_to_s3.sh "docker/docker-manage-py.sh"'
+        sh './scripts/push_artifact_to_s3.sh "docker-compose.prod.yml"'
+        sh './scripts/push_artifact_to_s3.sh "docker-compose.demo.yml"'
+        sh './scripts/push_artifact_to_s3.sh "docker/docker-manage-py.sh"'
         // Server
         sh 'make push'
 //        step([$class: 'S3CopyArtifact', buildSelector: [$class: 'StatusBuildSelector', stable: false], excludeFilter: '', filter: 'client/dist/', flatten: false, optional: false, projectName: '', target: 'test-test/z1/'])

@@ -113,10 +113,15 @@ into the master panel.
 
 ## Linting
 
-We have [pep8](https://pypi.python.org/pypi/pep8) and [eslint](http://eslint.org/docs/rules/) set up on circle CI. Meaning, that the build will break, if you will commit unconventional code.
+We have [flake8](http://flake8.pycqa.org/en/latest/), [black](https://github.com/ambv/black) and [eslint](http://eslint.org/docs/rules/) checks set up on circle CI. The build will be unsuccessful if you will commit unconventional code.
 
-We suggest using a pep8 + eslint in your code editor alongside running `./lint_check.sh` on your code before commiting to this repository. Git pre-commit hooks are great too on your local machine dev setup.
+It's a good idea to set up flake8, black & eslint & tslint inside your editor. For convenience there's a pre-commit hook in the repo that automatically formats Python code with *black* and performs lint checks on changed code. You can install it by running
 
+```
+ln -s $PWD/scripts/pre-commit.sh .git/hooks/pre-commit
+```
+
+from the root of the repository.
 
 ## Documentation
 

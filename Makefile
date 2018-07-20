@@ -36,6 +36,9 @@ remove: ## removes all containers belonging to the stack
 test:	## runs tests inside container environment
 	docker-compose run --rm --entrypoint=/entrypoint_dev.sh eins bash -x ./run_tests.sh
 
+lint:
+	bash ./scripts/lint_check.sh
+
 jenkins_test:
 	mkdir -p server/.junit_xml/
 	docker-compose -f docker-compose.yml -f docker-compose.jenkins.yml run -e CI_TEST=true --entrypoint=/entrypoint_dev.sh eins bash -x ./run_tests.sh

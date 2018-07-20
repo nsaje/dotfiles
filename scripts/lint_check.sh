@@ -1,28 +1,7 @@
 #!/bin/bash -x
 
-function red {
-  echo -e "\e[31m$1\e[0m"
-}
-
-function blue {
-  echo -e "\e[34m$1\e[0m"
-}
-
-function green {
-  echo -e "\e[32m$1\e[0m"
-}
-
-function banner {
-  EXITCODE=$1
-  PROGRAM=$2
-  if [[ $EXITCODE != 0 ]]; then
-      red "+------------------------------------+"
-      red "|   ${PROGRAM} CHECK FAILED   |"
-      red "+------------------------------------+"
-      exit 1
-  fi
-  green "${PROGRAM} check successful"
-}
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
+source $DIR/helpers.sh
 
 DIFF=$(docker run --rm \
     -v $PWD:/src \
@@ -31,15 +10,22 @@ DIFF=$(docker run --rm \
     py3-tools -c "pip-compile server/requirements.in --no-annotate" | diff server/requirements.txt -)
 if [ "$DIFF" != "" ]; then
     echo "$DIFF"
-    banner 1 "requirements.in"
+    report_check_result 1 "requirements.in"
 fi
 
-# Flake8 ---------------------------------------------------------------------------
+# Black ------------------------------------------------------------------------
+blue "Black lint in progress ..."
+docker run --rm -v $PWD:/src --workdir=/src/ --entrypoint=black py3-tools -l 120 --exclude="build/|buck-out/|dist/|_build/|\.git/|\.hg/|\.mypy_cache/|\.tox/|\.venv/|.*\/migrations\/.*" --fast --check ./server/
+
+EXITCODE=$?
+report_check_result $EXITCODE "Black"
+
+# Flake8 ------------------------------------------------------------------------
 blue "Flake8 lint in progress ..."
 docker run --rm -v $PWD:/src --workdir=/src/ --entrypoint=flake8 py3-tools ./server/
 
 EXITCODE=$?
-banner $EXITCODE "Flake8"
+report_check_result $EXITCODE "Flake8"
 
 
 # Client Lint ----------------------------------------------------------------------
@@ -52,7 +38,7 @@ docker run --rm \
            client-lint -c "rm -f /package.json ; npm run lint"
 
 EXITCODE=$?
-banner $EXITCODE "ClientLint"
+report_check_result $EXITCODE "ClientLint"
 
 
 # Xenon ----------------------------------------------------------------------------
@@ -63,7 +49,7 @@ docker run --rm -v $PWD:/src --workdir=/src/ --entrypoint=xenon py3-tools  \
   ./server/
 
 EXITCODE=$?
-banner $EXITCODE "Xenon"
+report_check_result $EXITCODE "Xenon"
 
 
 # mypy -----------------------------------------------------------------------------
@@ -71,4 +57,5 @@ blue "mypy check in progress ..."
 docker run --rm -v $PWD:/src --workdir=/src/server/ --entrypoint=sh py3-tools \
            -c 'mypy $(find . -name "*.py" | xargs grep typing | cut -d ":" -f1 | sort | uniq)'
 EXITCODE=$?
-banner $EXITCODE "mypy"
+report_check_result $EXITCODE "mypy"
+
