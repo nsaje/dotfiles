@@ -3,6 +3,11 @@
 Nachfrageseite-Plattform (en: **Zemanta One** - A Demand Side Platform.)
 
 
+## Architecture Overview
+
+For the description of core concepts and architecture diagrams, please view [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
+
+
 ## Code Organization
 
 Code is organized in two main units:
@@ -11,11 +16,11 @@ Code is organized in two main units:
 
 ### Server
 
-For the description of how the server code is organized and written, please view `conventions/BACKEND.md`.
+For the description of how the server code is organized and written, please view [docs/conventions/BACKEND.md](docs/conventions/BACKEND.md).
 
 ### Client
 
-For the description of how the client code is organized and written, please view `conventions/FRONTEND.md`.
+For the description of how the client code is organized and written, please view [docs/conventions/FRONTEND.md](docs/conventions/FRONTEND.md).
 
 ## How To Setup
 
