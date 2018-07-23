@@ -1,20 +1,22 @@
-# The purpose of this document  #
+# Backend guidelines
 
-This document describes an agreed upon code arhitecture of the Z1 backend. It defines how should we structure our code and what is expected of it.
+## The purpose of this document
+
+This document describes an agreed upon code design of the Z1 backend. It defines how should we structure our code and what is expected of it.
 
 The goal we want to achieve is to make our programming experience better. With it we can reduce the risk of project delays, security and performance bugs. It also gives programmers more confidence and empoweres them to experiment more.
 
-# How to participate #
+## How to participate
 
 When you have an idea or think something should be thought about put it into the trello board [Z1 - core](https://trello.com/b/xR1QXkdg/eng-z1-core) or prepare a pull request to this document. Use the trello board also to specify tasks with which we will get to the desired organization.
 
-# Concepts #
+## Concepts
 
-## Apps ##
+### Apps
 
 An **app** encapsulates a larger independent system or a independent view of some dependent system. Apps consist of **features** and **common** modules.
  
-## Features ##
+### Features
 
 A feature has its own **contextual boundaries** and exposes a **public interface**. It should do 1 thing and do it well, so the number of publicly exposed functions should ideally be 1.
 
@@ -29,22 +31,24 @@ Features reside within `features` directory. `core/entities` is a special featur
 - **exceptions** - feature specific exceptions. `exceptions.py`
 - **`__init__.py`** - feature module that exposes public interface to the feature. It should expose managers through models, services and constants in a way that it can be accessed like `from dash.features import history` and used like `history.write('Something')` or `history.History.objects...`.
 
-### Feature's directory structure ###
+#### Feature's directory structure
 
 ```
 app/
-  feature/
+  features/
     __init__.py         # expose public interface to the feature, expose public models and functions
-    adgroupsettings.py  # model
-    adgroup.py          # model
+    models/
+      __init__.py
+      adgroupsettings.py  # model
+      adgroup.py          # model
     service.py
     exceptions.py
     constants.py
 ```
 
-## Models ##
+### Models 
 
-Models keep only data, no logics. Specifies fields, their types and relations to other models. We allow simple getters - eg. `get_name_with_id` - that do not fire additional querysets.
+Models keep only data, no business logic. Specifies fields, their types and relations to other models. We allow simple getters - eg. `get_name_with_id` - that do not fire additional querysets.
 They define how managers are applied to the model:
 
 ```
@@ -54,7 +58,9 @@ class SomeModel(django.db.models.Model, SomeModelInstanceManager):
     objects = AdGroupManager.from_queryset(AdGroupQuerySet)
 ```
 
-### Model directory structure ##
+#### Model directory structure
+
+Depending on the size of the model, there are two ways to structure a model, see comments.
 
 ```
 adgroupsettings.py  # small model with managers and related business logics, public only AdGroupSettings
@@ -68,24 +74,24 @@ adgroup/            # big model with managers, public only AdGroup
   exceptions.py     # custom exception classes for model validation
 ```
 
-## Managers ##
+### Managers
 
 Managers handle all state changing operations. State changing operations should be atomic (if possible) and should do everything to produce consistent model state. 
 They should do business logic validation of own properties, and properties of other models related.
 
 3 sorts of managers: **class**, **instance** and **queryset** managers.
   
-### Class manager ###
+#### Class manager
 
 Classic django model managers, expose methods that create new model instances. Classic methods:
 - `create`, 
 - `create_unsafe`: proxy for the classic django `Model.objects.create` method, that we do not control
 
-### Instance manager ###
+#### Instance manager
 
 Instance changing operations like `update`, `delete` and other operations that would result in changed instance properties, for example `launch` a campaign. We also define operations that create new instances based on other instances here, such as `copy`.
 
-### QuerySet manager ###
+#### QuerySet manager
 
 A non-state changing manager that provides an interface for database query operations to models. A QuerySet manager as it is defined by django.
 
@@ -94,13 +100,13 @@ They provide common ways of getting model instances, especially if the query is 
 Trivial query: `ContentAd.objects.filter(ad_group=adgroup)`
 Non-trivial query that needs a special method: `ContentAd.objects.filter_by_user(user)`
 
-### Business logic validation ###
+#### Business logic validation
 
 Business logic validation should happen whenever model state change needs to be persisted. It should raise a subclass of `utils.exc.ValidationError`. 
 
 It is then the upstream's responsibility to properly handle the error and return the correct error description to the client.
 
-## Views ##
+### Views
 
 A view represents an outside interface to our system. It can be public, when it is used by our partners, or internal when it is used by our internal systems. They are extracted into separate apps such as `restapi` and `k1api`.
 
@@ -115,11 +121,11 @@ Their responsibilities are the following:
 
 Defining and executing anything business logic related is not a responsibility of a view. Business logic should be executed via a single call to a service or manager.
 
-### K1 View ###
+#### K1 View
 
 K1 related views. Views that provide data that is needed to sync Z1 with external systems. These views are internal and can change if k1 calls are changed appropriately.
 
-### RESTAPI View ###
+#### RESTAPI View
 
 Represents a particular view to our app - RESTful API. It defines internal and public endpoints of our system. It follows RESTful API design principles, with - to a certain extent - exceptions for internal endpoints (discussed case by case).
 
@@ -132,28 +138,27 @@ We expect our external views to be frozen for longer periods of time. Having thi
 - they return an additional parameter
 - they accept additional parameters
 
-`restapi` app has the following building blocks:
+A `restapi` feature has the following building blocks:
 
 - **urls.py** - url paths
-- **views** - view definition, calling the right serializers, calling business, returning via serializers
-- **serializers** - deserialization of request inputs, converting to internal values and vice versa, they can be reused between various views. Idealy we would have 1 serializer per model and reuse it whenever we need the concept in some view. A serializer would know how to serialize a model only by passing in the model instance, without any additional parameters.
+- **views.py** - view definition, calling the right serializers, calling business, returning via serializers
+- **serializers.py** - deserialization of request inputs, converting to internal values and vice versa, they can be reused between various views. Idealy we would have 1 serializer per model and reuse it whenever we need the concept in some view. A serializer would know how to serialize a model only by passing in the model instance, without any additional parameters.
 
 ```
 restapi/
   urls.py
   exceptions.py
   authentication.py
-  serializers/
-    common/
-      fields/
-      base_serializer.py
-    adgroup.py  # ad group serializer
-  views/
-    adgroup.py  # CRUD ad group
-    budget.py   # assign budget, get allocated etc.
+  account/
+    __init__.py
+    urls.py
+    serializers.py
+    views.py
+    views_test.py
+  ...
 ```
 
-# Directory structure #
+## Directory structure
 
 The Z1 backend is composed of several apps.
 
@@ -163,10 +168,11 @@ The Z1 backend is composed of several apps.
 - `k1api` - consistency related view of our app.
 - `redshiftapi` - is a redshift querying engine.
 - `utils` - inter-app common code. For example string helpers, test helpers etc.
+...
 
 ```python
 core/
-  adgroup/            # ad group feature
+  models/         # core application models
     ad_group/         # ad group model
       __init__.py
       model.py
@@ -177,20 +183,24 @@ core/
       model.py
       manager.py
       instance.py
-    service.py
-    constants.py
-  history/        # history feature
-    __init__.py
-    history/
-      model.py
-      manager.py
-    constants.py
-    service.py
-  emails/
+  features/   # core features
+    history/        # history feature
+      __init__.py
+      models/
+        history.py
+      constants.py
+      service.py
+    multicurrency/
+      __init__.py
+      models/
+        currency_exchange_rate.py
+      constants.py
+      service.py
+    ...
 dash/
   geolocations/   # non-core feature (core does not depend on it)
     models.py
-    managers.py
+      geolocation.py
     service.py
   realtimestats/
     service.py
@@ -199,13 +209,13 @@ restapi/
 ...
 ```
 
-## Common code ##
+### Common code
 
 Code that is shared **within an app** is by general rule put into the top level directory of the app. Modules that could be put into such a module would be common exceptions, base view classes, base serializers, base models that are then derived by feature views, serializers or models within the app.
 
 Code shared **accross apps** should be put into separate apps (eg `redshiftapi`) if that is sufficiently large and independent, or into the `utils` common module if the scope of the concept is small.
 
-## Tests ##
+### Tests
 
 Tests should share the same namespace as the testee [[7]](#r7). This is why we will be putting tests besides the module we are testing in a way that it alphabetically follows the testee name:
 
@@ -224,47 +234,47 @@ adgroup/
   model_test.py
 ```
 
-# Best practices #
+## Best practices
 
-## Pass objects, not ids ##
+### Pass objects, not ids
 
 One way to prevent excesive database access functions should receive objects as inputs whenever they need to operate on it. In case only one parameter is really needed then it's enough to pass only that object property.
 
-## Update model parameters through managers ##
+### Update model parameters through managers
 
 Never write to a model field or call `save()` directly. Always use model methods and manager methods for state changing operations[2].
 
-## Required parameters should be named ##
+### Required parameters should be named
 
 When a method or a function receives `*args` or `**kwargs` make sure that the parameters that are required are named and not a part of the mentioned collections.
 
-## 1 model == 1 module ##
+### 1 model == 1 module
 
 A model is represented by 1 module that shares the name with the model. In case when model and its managers grow in size, consider making a module with several files and breaking up managers into [separate files](#model-directory-structure).
 
-## Feature can be deleted without consequences ##
+### Feature can be deleted without consequences
 
 If a feature can be deleted without changing others than its adequately separated.
 
-## Pass `request` ##
+### Pass `request`
 
 Pass `request` to functions that require the knowledge of the current request context.
 
-## Filter by user ##
+### Filter by user
 
 Whenever accessing or modifying objects, make sure the current user has object access to all of the entities you touch.
 
-# Using QuerySets effectively #
+## Using QuerySets effectively
 
-## Make efficient queries, prefetch related objects ##
+### Make efficient queries, prefetch related objects
 
 When fetching multiple objects, make sure that you use `select_related` or `prefetch_related` in case you will need access to related objects. This way we prevent making additional queries for every loop iteration.
 
-## Define commonly used methods ##
+### Define commonly used methods
 
 Whenever a particular filter expression could be separated create a QuerySet manager method.
 
-# Resources #
+## Resources
 
 - <a name="r1"></a>[1]: [Django Design Patterns and Best Practices](https://www.dropbox.com/s/030x7yn1wsyanjs/Django%20Design%20Patterns%20and%20Best%20Practices.pdf?dl=0)
 - <a name="r2"></a>[2]: [Django models, encapsulation and data integrity](https://www.dabapps.com/blog/django-models-and-encapsulation/)
