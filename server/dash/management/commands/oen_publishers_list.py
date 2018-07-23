@@ -6,7 +6,7 @@ from utils import s3helpers
 select_query = """
 SELECT publisher, exchange, sum(bid_reqs) AS num_bid_req
 FROM supply_stats
-WHERE date >= %s
+WHERE date >= %s AND blacklisted = false
 GROUP BY exchange, publisher
 ORDER BY num_bid_req DESC
 """
