@@ -13,6 +13,12 @@ class Command(utils.command_helpers.ExceptionCommand):
         self.stdout.write("{}\n".format(msg))
 
     def handle(self, *args, **options):
-        download_url = prodops.helpers.generate_report_from_query(options["name"], options["query"])
+        download_url = prodops.helpers.generate_report_from_query(
+            options["name"], options["query"]
+        )
         self._print("Download URL: " + download_url)
-        self._print("S3 command: aws s3 cp s3://z1-custom-reports/custom-csv/{}.csv .".format(options["name"]))
+        self._print(
+            "S3 command: aws s3 cp s3://z1-custom-reports/custom-csv/{}.csv .".format(
+                options["name"]
+            )
+        )

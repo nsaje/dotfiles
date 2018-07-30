@@ -8,7 +8,7 @@ import utils.command_helpers
 
 
 class Command(utils.command_helpers.ExceptionCommand):
-    help = "Create ad submission report"
+    help = "Create a custom deal"
 
     def add_arguments(self, parser):
         parser.add_argument("source", type=str)

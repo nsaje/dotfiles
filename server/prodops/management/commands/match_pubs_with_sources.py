@@ -22,7 +22,13 @@ class Command(utils.command_helpers.ExceptionCommand):
     help = "Match publishers with media sources"
 
     def add_arguments(self, parser):
-        parser.add_argument("--days", "-d", dest="days", default=30, help="Days in the past to look (default: 30)")
+        parser.add_argument(
+            "--days",
+            "-d",
+            dest="days",
+            default=30,
+            help="Days in the past to look (default: 30)",
+        )
         parser.add_argument(
             "--source-names",
             "-n",
@@ -59,12 +65,20 @@ class Command(utils.command_helpers.ExceptionCommand):
         data = []
         pubs_len = float(len(publishers))
         for i, pub_sublist in enumerate(chunks(publishers, PUBS_PER_CHUNK)):
-            self._print("Processing batch {}/{}".format(i + 1, int(pubs_len / PUBS_PER_CHUNK) + 1))
+            self._print(
+                "Processing batch {}/{}".format(
+                    i + 1, int(pubs_len / PUBS_PER_CHUNK) + 1
+                )
+            )
             data.extend(self._match_sources(pub_sublist, verticals))
 
         self._print("Report generated.")
 
-        self._print("Publisher matches: {}%".format(round(float(len(data)) / len(publishers) * 100, 2)))
+        self._print(
+            "Publisher matches: {}%".format(
+                round(float(len(data)) / len(publishers) * 100, 2)
+            )
+        )
 
         count_source_matches = 0
         for row in data:
@@ -74,14 +88,21 @@ class Command(utils.command_helpers.ExceptionCommand):
                 if (pub, source) in pubs_source_match:
                     count_source_matches += 1
         self._print(
-            "Publisher/Source matches: {}%".format(round(float(count_source_matches) / len(publishers) * 100, 2))
+            "Publisher/Source matches: {}%".format(
+                round(float(count_source_matches) / len(publishers) * 100, 2)
+            )
         )
 
         self._print(
             "Report URL: "
             + hlp.generate_report(
                 "publisher-sources-map-" + uuid.uuid4().hex,
-                [("publisher", "media source", "interest") if verticals else ("publisher", "media source")] + data,
+                [
+                    ("publisher", "media source", "interest")
+                    if verticals
+                    else ("publisher", "media source")
+                ]
+                + data,
             )
         )
 
@@ -90,7 +111,10 @@ class Command(utils.command_helpers.ExceptionCommand):
         with redshiftapi.db.get_stats_cursor() as c:
             c.execute(
                 QUERY.format(
-                    date=self.from_date, publist=", ".join(["'{}'".format(pub.encode("utf-8")) for pub in publishers])
+                    date=self.from_date,
+                    publist=", ".join(
+                        ["'{}'".format(pub.encode("utf-8")) for pub in publishers]
+                    ),
                 )
             )
             for row in c.fetchall():
@@ -100,6 +124,7 @@ class Command(utils.command_helpers.ExceptionCommand):
                 )
         if verticals:
             return [
-                (pub, ", ".join(sources), ",".join(verticals.get(pub, []))) for pub, sources in pub_source_map.items()
+                (pub, ", ".join(sources), ",".join(verticals.get(pub, [])))
+                for pub, sources in pub_source_map.items()
             ]
         return [(pub, ", ".join(sources)) for pub, sources in pub_source_map.items()]
