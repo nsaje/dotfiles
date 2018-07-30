@@ -143,20 +143,12 @@ def create_report(breakdown, breakdown_id, gte, lt, path="."):
         c.execute(GEOLOCATION.format(**params))
         data["geolocation"] = c.fetchall()
         c.execute(VERTICALS.format(**params))
-        data["verticals"] = [
-            (dash.constants.InterestCategory.get_text(k) or k, v)
-            for k, v in c.fetchall()
-        ]
+        data["verticals"] = [(dash.constants.InterestCategory.get_text(k) or k, v) for k, v in c.fetchall()]
         c.execute(BLUEKAI_IDS.format(**params))
         data["bluekai-ids"] = c.fetchall()
         c.execute(BLUEKAI_NAMES.format(**params))
         data["bluekai-names"] = c.fetchall()
-    filepath = os.path.join(
-        path,
-        "audience-report_{}-{}_{}_{}.xlsx".format(
-            breakdown, breakdown_id, str(gte), str(lt)
-        ),
-    )
+    filepath = os.path.join(path, "audience-report_{}-{}_{}_{}.xlsx".format(breakdown, breakdown_id, str(gte), str(lt)))
     with xlsxwriter.Workbook(filepath) as workbook:
         for listname, rows in data.items():
             worksheet = workbook.add_worksheet(listname)

@@ -46,14 +46,8 @@ class Command(ExceptionCommand):
         except StopIteration:
             raise CommandError("Chosen file is empty.")
 
-        if (
-            header[0].strip().lower() != "old url"
-            or header[1].strip().lower() != "new url"
-        ):
-            raise CommandError(
-                "Unrecognized column headers in chosen file "
-                '(should be "Old URL" and "New URL")'
-            )
+        if header[0].strip().lower() != "old url" or header[1].strip().lower() != "new url":
+            raise CommandError("Unrecognized column headers in chosen file " '(should be "Old URL" and "New URL")')
 
         mapping = {}
         for line in lines:
@@ -65,9 +59,7 @@ class Command(ExceptionCommand):
         content_ads = ContentAd.objects.filter(ad_group_id=ad_group_id)
 
         for i, content_ad in enumerate(content_ads):
-            self.stdout.write(
-                "Processing content ad {} of {}".format(i + 1, len(content_ads))
-            )
+            self.stdout.write("Processing content ad {} of {}".format(i + 1, len(content_ads)))
 
             if content_ad.url not in mapping:
                 continue

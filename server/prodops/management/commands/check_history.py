@@ -11,41 +11,22 @@ class Command(utils.command_helpers.ExceptionCommand):
 
     def add_arguments(self, parser):
         parser.add_argument("--agency", dest="agency", default=None, help="Agency ID")
+        parser.add_argument("--account", dest="account", default=None, help="Account ID")
+        parser.add_argument("--campaign", dest="campaign", default=None, help="Campaign ID")
+        parser.add_argument("--ad-group", dest="ad_group", default=None, help="Ad group ID")
         parser.add_argument(
-            "--account", dest="account", default=None, help="Account ID"
+            "--start-date", "-s", dest="start_date", default=None, help="Start date (default: start of current month)"
         )
         parser.add_argument(
-            "--campaign", dest="campaign", default=None, help="Campaign ID"
+            "--end-date", "-e", dest="end_date", default=None, help="End date (excluded, default: today)"
         )
-        parser.add_argument(
-            "--ad-group", dest="ad_group", default=None, help="Ad group ID"
-        )
-        parser.add_argument(
-            "--start-date",
-            "-s",
-            dest="start_date",
-            default=None,
-            help="Start date (default: start of current month)",
-        )
-        parser.add_argument(
-            "--end-date",
-            "-e",
-            dest="end_date",
-            default=None,
-            help="End date (excluded, default: today)",
-        )
-        parser.add_argument(
-            "--search", dest="search", default=None, help="Search string in history"
-        )
+        parser.add_argument("--search", dest="search", default=None, help="Search string in history")
         parser.add_argument(
             "--action-type",
             dest="action_type",
             default=None,
             help="Specific action type. Types: "
-            + ", ".join(
-                "{} - {}".format(k, v)
-                for k, v in dash.constants.HistoryActionType._get_all_kv_pairs()
-            ),
+            + ", ".join("{} - {}".format(k, v) for k, v in dash.constants.HistoryActionType._get_all_kv_pairs()),
         )
 
     def _print(self, msg):
@@ -58,11 +39,7 @@ class Command(utils.command_helpers.ExceptionCommand):
             and datetime.datetime.strptime(options["start_date"], "%Y-%m-%d").date()
             or datetime.date(today.year, today.month, 1)
         )
-        end_date = (
-            options["end_date"]
-            and datetime.datetime.strptime(options["end_date"], "%Y-%m-%d").date()
-            or today
-        )
+        end_date = options["end_date"] and datetime.datetime.strptime(options["end_date"], "%Y-%m-%d").date() or today
 
         history = dash.models.History.objects.filter(
             created_dt__range=(
@@ -90,11 +67,7 @@ class Command(utils.command_helpers.ExceptionCommand):
 
         self._print("Summary: ")
         for action_type, entires in grouped.items():
-            self._print(
-                " - {}: {}".format(
-                    dash.constants.HistoryActionType.get_text(action_type), len(entires)
-                )
-            )
+            self._print(" - {}: {}".format(dash.constants.HistoryActionType.get_text(action_type), len(entires)))
 
         self._print("History: ")
         prev_agency, prev_account, prev_campaign, prev_ad_group = None, None, None, None
@@ -106,12 +79,7 @@ class Command(utils.command_helpers.ExceptionCommand):
                 or prev_ad_group != entry.ad_group
             ):
                 self._print(
-                    " - {}, {}, {}, {},".format(
-                        entry.agency or "/",
-                        entry.account,
-                        entry.campaign,
-                        entry.ad_group,
-                    )
+                    " - {}, {}, {}, {},".format(entry.agency or "/", entry.account, entry.campaign, entry.ad_group)
                 )
             self._print(
                 "    - {} {} - {} ({}): {}".format(

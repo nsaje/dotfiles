@@ -36,13 +36,9 @@ class Command(utils.command_helpers.ExceptionCommand):
             self._print("Invalid source.")
             return
         if options.get("ad_groups"):
-            lookup["content_ad__ad_group_id__in"] = list(
-                map(int, options.get("ad_groups", "").split(","))
-            )
+            lookup["content_ad__ad_group_id__in"] = list(map(int, options.get("ad_groups", "").split(",")))
         elif options.get("campaigns"):
-            lookup["content_ad__ad_group__campaign_id__in"] = list(
-                map(int, options.get("campaigns", "").split(","))
-            )
+            lookup["content_ad__ad_group__campaign_id__in"] = list(map(int, options.get("campaigns", "").split(",")))
         else:
             self._print("No ad groups or campaigns.")
             return
@@ -55,10 +51,6 @@ class Command(utils.command_helpers.ExceptionCommand):
             ),
             **lookup
         ).select_related("source"):
-            print(
-                "Updating ad {} on source {} to PENDING".format(
-                    cas.content_ad_id, cas.source
-                )
-            )
+            print("Updating ad {} on source {} to PENDING".format(cas.content_ad_id, cas.source))
             cas.submission_status = dash.constants.ContentAdSubmissionStatus.PENDING
             cas.save()

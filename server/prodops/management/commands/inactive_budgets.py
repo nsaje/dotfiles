@@ -15,12 +15,8 @@ class Command(utils.command_helpers.ExceptionCommand):
 
     def add_arguments(self, parser):
         parser.add_argument("--agency", dest="agency", default=None, help="Agency ID")
-        parser.add_argument(
-            "--account", dest="account", default=None, help="Account ID"
-        )
-        parser.add_argument(
-            "--campaign", dest="campaign", default=None, help="Campaign ID"
-        )
+        parser.add_argument("--account", dest="account", default=None, help="Account ID")
+        parser.add_argument("--campaign", dest="campaign", default=None, help="Campaign ID")
 
     def _print(self, msg):
         self.stdout.write("{}\n".format(msg))
@@ -47,16 +43,10 @@ class Command(utils.command_helpers.ExceptionCommand):
         campaign_ids = campaigns.values_list("id", flat=True)
         impressions = {}
         with redshiftapi.db.get_stats_cursor() as cur:
-            cur.execute(
-                QUERY.format(
-                    today - datetime.timedelta(3), ", ".join(map(str, campaign_ids))
-                )
-            )
+            cur.execute(QUERY.format(today - datetime.timedelta(3), ", ".join(map(str, campaign_ids))))
             impressions = dict(cur.fetchall())
 
-        campaigns = campaigns.exclude(
-            pk__in=[cid for cid, impr in impressions.items() if impr > 0]
-        )
+        campaigns = campaigns.exclude(pk__in=[cid for cid, impr in impressions.items() if impr > 0])
 
         out = []
         for budget in dash.models.BudgetLineItem.objects.filter(

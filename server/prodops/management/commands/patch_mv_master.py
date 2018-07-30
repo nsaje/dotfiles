@@ -3,14 +3,7 @@ import csv
 import utils.command_helpers
 import redshiftapi.db
 
-MANDATORY_COLUMNS = {
-    "account_id",
-    "campaign_id",
-    "ad_group_id",
-    "content_ad_id",
-    "source_id",
-    "publisher",
-}
+MANDATORY_COLUMNS = {"account_id", "campaign_id", "ad_group_id", "content_ad_id", "source_id", "publisher"}
 
 
 class Command(utils.command_helpers.ExceptionCommand):
@@ -33,12 +26,7 @@ class Command(utils.command_helpers.ExceptionCommand):
             raise Exception("Missing columns: {}".format(", ".join(missing)))
         query = "INSERT INTO mv_master_diff ({columns}) VALUES {values};".format(
             columns=", ".join(header),
-            values=", ".join(
-                [
-                    "({})".format(", ".join("'{}'".format(cell) for cell in row))
-                    for row in data
-                ]
-            ),
+            values=", ".join(["({})".format(", ".join("'{}'".format(cell) for cell in row)) for row in data]),
         )
         with redshiftapi.db.get_write_stats_cursor() as cur:
             cur.execute(query)

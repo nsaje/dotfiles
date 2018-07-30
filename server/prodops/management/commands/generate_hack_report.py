@@ -28,9 +28,7 @@ class Command(utils.command_helpers.ExceptionCommand):
             help="Ignore specific hack summary (semicolon separated) for new/removed metrics",
         )
         parser.add_argument("-n", type=int, dest="n", default=7, help="Number of days")
-        parser.add_argument(
-            "-i", "--influx", action="store_true", dest="influx", help="Post to Influx"
-        )
+        parser.add_argument("-i", "--influx", action="store_true", dest="influx", help="Post to Influx")
 
     def handle(self, *args, **options):
         self.buff = ""
@@ -48,8 +46,7 @@ class Command(utils.command_helpers.ExceptionCommand):
 
         self.stats_by_implemented = (
             dash.models.CustomHack.objects.filter(
-                removed_dt__isnull=True,
-                created_dt__lt=self.today + datetime.timedelta(1),
+                removed_dt__isnull=True, created_dt__lt=self.today + datetime.timedelta(1)
             )
             .values("summary", "service")
             .annotate(Count("id"), Min("created_dt"))
@@ -97,11 +94,7 @@ class Command(utils.command_helpers.ExceptionCommand):
         for stats in self.stats_by_created:
             if stats["summary"] in self.ignore:
                 continue
-            self._print(
-                " - {} ({}): {}".format(
-                    stats["summary"], stats["service"], stats["id__count"]
-                )
-            )
+            self._print(" - {} ({}): {}".format(stats["summary"], stats["service"], stats["id__count"]))
         self._print("")
 
         self._print("New hack implementations in last {} days:".format(self.n))
@@ -110,22 +103,14 @@ class Command(utils.command_helpers.ExceptionCommand):
                 continue
             if stats["created_dt__min"].date() < self.n_days_before:
                 continue
-            self._print(
-                " - {} ({}): on {}".format(
-                    stats["summary"], stats["service"], stats["created_dt__min"].date()
-                )
-            )
+            self._print(" - {} ({}): on {}".format(stats["summary"], stats["service"], stats["created_dt__min"].date()))
         self._print("")
 
         self._print("Removed hacks in last {} days:".format(self.n))
         for stats in self.stats_by_removed:
             if stats["summary"] in self.ignore:
                 continue
-            self._print(
-                " - {} ({}): {}".format(
-                    stats["summary"], stats["service"], stats["id__count"]
-                )
-            )
+            self._print(" - {} ({}): {}".format(stats["summary"], stats["service"], stats["id__count"]))
         self._print("")
 
         self._print("Most hacked ad groups:")
@@ -148,11 +133,7 @@ class Command(utils.command_helpers.ExceptionCommand):
             media = self.spend_data["campaign"].get(campaign.pk, Decimal(0))
             self._print(
                 " - #{} {}: {} ({}, {})".format(
-                    campaign.pk,
-                    campaign.get_long_name(),
-                    cnt,
-                    self._sph(media, cnt),
-                    self._spd(media),
+                    campaign.pk, campaign.get_long_name(), cnt, self._sph(media, cnt), self._spd(media)
                 )
             )
         self._print("")
@@ -162,11 +143,7 @@ class Command(utils.command_helpers.ExceptionCommand):
             media = self.spend_data["account"].get(account.pk, Decimal(0))
             self._print(
                 " - #{} {}: {} ({}, {})".format(
-                    account.pk,
-                    account.get_long_name(),
-                    cnt,
-                    self._sph(media, cnt),
-                    self._spd(media),
+                    account.pk, account.get_long_name(), cnt, self._sph(media, cnt), self._spd(media)
                 )
             )
         self._print("")
@@ -175,9 +152,7 @@ class Command(utils.command_helpers.ExceptionCommand):
         for agency, cnt in self.stats_by_client["agency"].most_common(3):
             media = self.spend_data["agency"].get(agency.pk, Decimal(0))
             self._print(
-                " - #{} {}: {} ({}, {})".format(
-                    agency.pk, agency.name, cnt, self._sph(media, cnt), self._spd(media)
-                )
+                " - #{} {}: {} ({}, {})".format(agency.pk, agency.name, cnt, self._sph(media, cnt), self._spd(media))
             )
         self._print("")
 
@@ -208,16 +183,10 @@ class Command(utils.command_helpers.ExceptionCommand):
             "all hacks on agency, account, campaign, and ad group level."
         )
         self._print(
-            "Note 2: SpD = (Media) Spend per Day. Spend is calculated for the last {} days.".format(
-                self.n
-            )
+            "Note 2: SpD = (Media) Spend per Day. Spend is calculated for the last {} days.".format(self.n)
             + "SpD tells you how much data can you potentially loose each day"
         )
-        self._print(
-            "Note 3: SpH = SpD / # of hacks. SpH tells you how much a hack is worth per day".format(
-                self.n
-            )
-        )
+        self._print("Note 3: SpH = SpD / # of hacks. SpH tells you how much a hack is worth per day".format(self.n))
 
     def post_to_influx(self):
         for stats in self.stats_by_removed:
@@ -270,38 +239,16 @@ class Command(utils.command_helpers.ExceptionCommand):
 
         for account, cnt in self.stats_by_client["account"].most_common(10):
             media = self.spend_data["account"].get(account.pk, Decimal(0))
-            influx.gauge(
-                "backendhack_account_spd",
-                media,
-                client=account.name,
-                retentionPolicy="1week",
-            )
-            influx.gauge(
-                "backendhack_account_count",
-                cnt,
-                client=account.name,
-                retentionPolicy="1week",
-            )
+            influx.gauge("backendhack_account_spd", media, client=account.name, retentionPolicy="1week")
+            influx.gauge("backendhack_account_count", cnt, client=account.name, retentionPolicy="1week")
 
         for agency, cnt in self.stats_by_client["agency"].most_common(10):
             media = self.spend_data["agency"].get(agency.pk, Decimal(0))
-            influx.gauge(
-                "backendhack_agency_spd",
-                media,
-                client=agency.name,
-                retentionPolicy="1week",
-            )
-            influx.gauge(
-                "backendhack_agency_count",
-                cnt,
-                client=agency.name,
-                retentionPolicy="1week",
-            )
+            influx.gauge("backendhack_agency_spd", media, client=agency.name, retentionPolicy="1week")
+            influx.gauge("backendhack_agency_count", cnt, client=agency.name, retentionPolicy="1week")
 
         for source, cnt in self.stats_by_source.items():
-            influx.gauge(
-                "backendhack_source_count", cnt, source=source, retentionPolicy="1week"
-            )
+            influx.gauge("backendhack_source_count", cnt, source=source, retentionPolicy="1week")
 
     def _print(self, msg):
         line = "{}\n".format(msg)
@@ -343,13 +290,9 @@ class Command(utils.command_helpers.ExceptionCommand):
                     )
                 )
                 spend_data[entity] = {row[0]: row[1] for row in cur.fetchall()}
-        spend_data["agency"] = {
-            a.pk: Decimal(0) for a in dash.models.Agency.objects.all()
-        }
+        spend_data["agency"] = {a.pk: Decimal(0) for a in dash.models.Agency.objects.all()}
         for acc in dash.models.Account.objects.filter(agency_id__isnull=False):
-            spend_data["agency"][acc.agency_id] += spend_data["account"].get(
-                acc.pk, Decimal(0)
-            )
+            spend_data["agency"][acc.agency_id] += spend_data["account"].get(acc.pk, Decimal(0))
         return spend_data
 
     def _get_hacks_per_summary(self, today):
@@ -383,29 +326,20 @@ class Command(utils.command_helpers.ExceptionCommand):
         active_hacks = dash.models.CustomHack.objects.filter(
             removed_dt__isnull=True, created_dt__lt=self.today + datetime.timedelta(1)
         ).select_related(
-            "ad_group__campaign__account__agency",
-            "campaign__account__agency",
-            "account__agency",
-            "agency",
+            "ad_group__campaign__account__agency", "campaign__account__agency", "account__agency", "agency"
         )
         for hack in active_hacks:
             if hack.ad_group:
                 hacks_by_ad_group.setdefault(hack.ad_group, []).append(hack)
                 hacks_by_campaign.setdefault(hack.ad_group.campaign, []).append(hack)
-                hacks_by_account.setdefault(hack.ad_group.campaign.account, []).append(
-                    hack
-                )
+                hacks_by_account.setdefault(hack.ad_group.campaign.account, []).append(hack)
                 if hack.ad_group.campaign.account.agency:
-                    hacks_by_agency.setdefault(
-                        hack.ad_group.campaign.account.agency, []
-                    ).append(hack)
+                    hacks_by_agency.setdefault(hack.ad_group.campaign.account.agency, []).append(hack)
             if hack.campaign:
                 hacks_by_campaign.setdefault(hack.campaign, []).append(hack)
                 hacks_by_account.setdefault(hack.campaign.account, []).append(hack)
                 if hack.campaign.account.agency:
-                    hacks_by_agency.setdefault(hack.campaign.account.agency, []).append(
-                        hack
-                    )
+                    hacks_by_agency.setdefault(hack.campaign.account.agency, []).append(hack)
             if hack.account:
                 hacks_by_account.setdefault(hack.account, []).append(hack)
                 if hack.account.agency:
@@ -413,16 +347,8 @@ class Command(utils.command_helpers.ExceptionCommand):
             if hack.agency:
                 hacks_by_agency.setdefault(hack.agency, []).append(hack)
         return {
-            "ad_group": Counter(
-                {entity: len(hacks) for entity, hacks in hacks_by_ad_group.items()}
-            ),
-            "campaign": Counter(
-                {entity: len(hacks) for entity, hacks in hacks_by_campaign.items()}
-            ),
-            "account": Counter(
-                {entity: len(hacks) for entity, hacks in hacks_by_account.items()}
-            ),
-            "agency": Counter(
-                {entity: len(hacks) for entity, hacks in hacks_by_agency.items()}
-            ),
+            "ad_group": Counter({entity: len(hacks) for entity, hacks in hacks_by_ad_group.items()}),
+            "campaign": Counter({entity: len(hacks) for entity, hacks in hacks_by_campaign.items()}),
+            "account": Counter({entity: len(hacks) for entity, hacks in hacks_by_account.items()}),
+            "agency": Counter({entity: len(hacks) for entity, hacks in hacks_by_agency.items()}),
         }

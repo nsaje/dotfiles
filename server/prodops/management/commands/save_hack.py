@@ -59,9 +59,7 @@ class Command(utils.command_helpers.ExceptionCommand):
         lookup = {key: hack[key] for key in LOOKUP_KEYS if key in hack}
 
         if options["clear"] and self._confirm(
-            'Are you sure you want to delete related hacks with summary "{}"'.format(
-                hack["summary"]
-            )
+            'Are you sure you want to delete related hacks with summary "{}"'.format(hack["summary"])
         ):
             dash.models.CustomHack.objects.filter(**lookup).delete()
 
@@ -86,9 +84,7 @@ class Command(utils.command_helpers.ExceptionCommand):
             new_hacks += 1 if created else 0
             updated_hacks += 1 if not created else 0
         for agency in filter(bool, options.get("agencies", "").split(",")):
-            _, created = dash.models.CustomHack.objects.update_or_create(
-                defaults=hack, agency_id=int(agency), **lookup
-            )
+            _, created = dash.models.CustomHack.objects.update_or_create(defaults=hack, agency_id=int(agency), **lookup)
             new_hacks += 1 if created else 0
             updated_hacks += 1 if not created else 0
 
