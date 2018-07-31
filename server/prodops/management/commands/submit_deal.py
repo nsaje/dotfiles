@@ -29,7 +29,6 @@ class Command(utils.command_helpers.ExceptionCommand):
         campaign_ids = self._clean_ids(options["campaigns"])
         ad_group_ids = self._clean_ids(options["ad_groups"])
 
-        print(agency_ids, account_ids, campaign_ids, ad_group_ids)
         agencies = dash.models.Agency.objects.filter(pk__in=agency_ids)
         ad_groups = dash.models.AdGroup.objects.filter(
             Q(pk__in=ad_group_ids) | Q(campaign_id__in=campaign_ids) | Q(campaign__account_id__in=account_ids)
@@ -57,7 +56,7 @@ class Command(utils.command_helpers.ExceptionCommand):
                 ddc = dash.models.DirectDealConnection.objects.create(
                     source=source, exclusive=not options["not_exclusive"], agency=agency
                 )
-                ddc.add(deal)
+                ddc.deals.add(deal)
                 self._print(" - agency {}: {}".format(agency.pk, agency.name))
             for ad_group in ad_groups:
                 ddc = dash.models.DirectDealConnection.objects.create(
