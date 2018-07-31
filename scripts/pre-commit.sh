@@ -28,14 +28,14 @@ EXITCODE=$?
 report_check_result $EXITCODE "Flake8"
 
 # ESLint
-run_on_staged_files '*.js' 'docker run --rm -v $PWD/client/.eslintrc.yml:/root/.eslintrc.yml -v $PWD:/src --workdir=/src/ --entrypoint=eslint client-lint --format codeframe "%";'
+run_on_staged_files '*.js' 'docker run --rm -v "/src/client/node_modules" -v $PWD/client/.eslintrc.yml:/root/.eslintrc.yml -v $PWD:/src --workdir=/src/ --entrypoint=eslint client-lint --format codeframe "%";'
 
 EXITCODE=$?
 report_check_result $EXITCODE "ESLint"
 
 # TSLint
 # FIXME(nsaje&jurebajt)
-#run_on_staged_files '*.ts' 'docker run --rm -v $PWD/.eslintrc.yml:/root/.eslintrc.yml -v $PWD:/src --workdir=/src/ --entrypoint=tslint client-lint --format codeFrame "%";'
+run_on_staged_files '*.ts' 'docker run --rm -v "/src/client/node_modules" -v $PWD:/src --workdir=/src/ --entrypoint=tslint client-lint --project client/tsconfig.json --format codeFrame "%";'
 
 EXITCODE=$?
 report_check_result $EXITCODE "TSLint"

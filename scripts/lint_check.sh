@@ -32,8 +32,9 @@ report_check_result $EXITCODE "Flake8"
 blue "ClientLint in progress ..."
 
 docker run --rm \
+           -v "/src/client/node_modules" \
            -v $PWD/.eslintrc.yml:/root/.eslintrc.yml \
-           -v $PWD/client:/src:ro \
+           -v $PWD/client:/src \
            --entrypoint=sh \
            client-lint -c "rm -f /package.json ; npm run lint"
 
