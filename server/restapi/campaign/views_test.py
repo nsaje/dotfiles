@@ -1,3 +1,5 @@
+import mock
+
 from restapi.common.views_base_test import RESTAPITest
 from django.core.urlresolvers import reverse
 
@@ -139,7 +141,8 @@ class CampaignsTest(RESTAPITest):
         resp_json_paginated = self.assertResponseValid(r_paginated, data_type=list)
         self.assertEqual(resp_json["data"][5:7], resp_json_paginated["data"])
 
-    def test_campaigns_post(self):
+    @mock.patch("utils.email_helper.send_campaign_created_email")
+    def test_campaigns_post(self, mock_send):
         new_campaign = self.campaign_repr(
             account_id=186,
             name="All About Testing",
@@ -152,6 +155,7 @@ class CampaignsTest(RESTAPITest):
         self.validate_against_db(resp_json["data"])
         new_campaign["id"] = resp_json["data"]["id"]
         self.assertEqual(resp_json["data"], new_campaign)
+        mock_send.assert_not_called()
 
     def test_campaigns_post_no_account_id(self):
         new_campaign = self.campaign_repr(

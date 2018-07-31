@@ -12,12 +12,15 @@ from . import service
 
 
 class TestService(TestCase):
+    @mock.patch("utils.email_helper.send_campaign_created_email")
     @mock.patch("utils.dates_helper.local_today", return_value=datetime.date(2017, 1, 1))
     @mock.patch("dash.features.contentupload.upload.persist_batch", autospec=True)
     @mock.patch("automation.autopilot.recalculate_budgets_ad_group", autospec=True)
     @mock.patch("utils.redirector_helper.insert_adgroup", autospec=True)
     @mock.patch("utils.k1_helper.update_ad_group", autospec=True)
-    def test_launch(self, mock_k1_update, mock_redirector_insert, mock_autopilot, mock_persist_batch, mock_local_today):
+    def test_launch(
+        self, mock_k1_update, mock_redirector_insert, mock_autopilot, mock_persist_batch, mock_local_today, mock_send
+    ):
         request = magic_mixer.blend_request_user()
         account = magic_mixer.blend(dash.models.Account)
         credit = magic_mixer.blend(
@@ -81,3 +84,5 @@ class TestService(TestCase):
 
         self.assertEqual(upload_batch.ad_group, ad_group)
         mock_persist_batch.assert_called_with(upload_batch)
+
+        mock_send.assert_called_once_with(mock.ANY, campaign)

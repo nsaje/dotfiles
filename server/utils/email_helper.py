@@ -719,3 +719,48 @@ def send_restapi_access_enabled_notification(user):
         recipient_list=[user.email],
         **params_from_template(dash.constants.EmailTemplateType.USER_ENABLE_RESTAPI, user=user)
     )
+
+
+def send_campaign_created_email(request, campaign):
+    if not settings.SEND_NOTIFICATION_MAIL:
+        return
+    if not request:
+        return
+
+    agency_url = None
+    if campaign.account.agency_id:
+        agency_url = request.build_absolute_uri(
+            "/v2/analytics/accounts?filtered_agencies={}".format(campaign.account.agency_id)
+        )
+        agency_url = agency_url.replace("http://", "https://")
+    account_url = request.build_absolute_uri("/v2/analytics/account/{}".format(campaign.account_id))
+    account_url = account_url.replace("http://", "https://")
+    campaign_url = request.build_absolute_uri("/v2/analytics/campaign/{}".format(campaign.id))
+    campaign_url = campaign_url.replace("http://", "https://")
+
+    args = {
+        "account": campaign.account,
+        "campaign_url": campaign_url,
+        "account_url": account_url,
+        "agency_url": agency_url,
+    }
+
+    emails = []
+    if campaign.account.settings.default_sales_representative:
+        emails.append(campaign.account.settings.default_sales_representative.email)
+    if campaign.account.settings.default_cs_representative:
+        emails.append(campaign.account.settings.default_cs_representative.email)
+    if campaign.account.settings.ob_representative:
+        emails.append(campaign.account.settings.ob_representative.email)
+    try:
+        emails.remove(request.user.email)
+    except ValueError:
+        pass
+    if not emails:
+        return
+
+    send_official_email(
+        agency_or_user=campaign.account.agency,
+        recipient_list=emails,
+        **params_from_template(dash.constants.EmailTemplateType.CAMPAIGN_CREATED, **args)
+    )

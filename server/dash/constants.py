@@ -1640,6 +1640,7 @@ class EmailTemplateType(ConstantBase):
     AUTOPILOT_CAMPAIGN_BUDGET_INIT = 31
     CAMPAIGNSTOP_DEPLETING = 32
     USER_ENABLE_RESTAPI = 33
+    CAMPAIGN_CREATED = 34
 
     _VALUES = {
         ADGROUP_CHANGE: "Ad group settings change",
@@ -1672,6 +1673,7 @@ class EmailTemplateType(ConstantBase):
         AUTOPILOT_CAMPAIGN_BUDGET_INIT: "Campaign Autopilot initialisation notification",
         CAMPAIGNSTOP_DEPLETING: "Real-time campaign stop budget depleting",
         USER_ENABLE_RESTAPI: "User was granted REST API access",
+        CAMPAIGN_CREATED: "Campaign created",
     }
 
 

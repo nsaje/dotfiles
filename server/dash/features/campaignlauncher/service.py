@@ -52,7 +52,7 @@ def launch(
     conversion_goal_window=None,
 ):
     campaign = models.Campaign.objects.create(
-        request=request, account=account, name=name, iab_category=iab_category, language=language
+        request=request, account=account, name=name, iab_category=iab_category, language=language, send_mail=True
     )
 
     credit_to_use = models.CreditLineItem.objects.get_any_for_budget_creation(account)

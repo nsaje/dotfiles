@@ -683,7 +683,7 @@ class AccountCampaigns(api_common.BaseApiView):
         name = core.entity.helpers.create_default_name(models.Campaign.objects.filter(account=account), "New campaign")
 
         language = constants.Language.ENGLISH if self.rest_proxy else None
-        campaign = models.Campaign.objects.create(request, account, name, language=language)
+        campaign = models.Campaign.objects.create(request, account, name, language=language, send_mail=True)
         native_server.apply_campaign_create_hacks(request, campaign)
 
         response = {"name": campaign.name, "id": campaign.id}

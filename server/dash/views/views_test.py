@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import json
-from mock import patch
+from mock import patch, ANY
 import datetime
 import decimal
 
@@ -245,7 +245,8 @@ class AccountCampaignsTest(TestCase):
         self.client = Client()
         self.client.login(username=User.objects.get(pk=1).email, password="secret")
 
-    def test_put(self):
+    @patch("utils.email_helper.send_campaign_created_email")
+    def test_put(self, mock_send):
         campaign_name = "New campaign"
 
         response = self.client.put(reverse("account_campaigns", kwargs={"account_id": "1"}))
@@ -271,6 +272,8 @@ class AccountCampaignsTest(TestCase):
 
         hist = history_helpers.get_campaign_history(campaign).first()
         self.assertEqual(constants.HistoryActionType.SETTINGS_CHANGE, hist.action_type)
+
+        mock_send.assert_called_once_with(ANY, campaign)
 
 
 class AdGroupSourceSettingsTest(TestCase):

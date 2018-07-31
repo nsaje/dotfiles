@@ -4,6 +4,7 @@ import core.common
 
 from dash import constants
 import utils.exc
+from utils import email_helper
 
 from . import model
 
@@ -17,7 +18,13 @@ ACCOUNTS_WITHOUT_CAMPAIGN_STOP = {490, 512, 513}  # inPowered
 class CampaignManager(core.common.BaseManager):
     @transaction.atomic
     def create(
-        self, request, account, name, iab_category=constants.IABCategory.IAB24, language=constants.Language.ENGLISH
+        self,
+        request,
+        account,
+        name,
+        iab_category=constants.IABCategory.IAB24,
+        language=constants.Language.ENGLISH,
+        send_mail=False,
     ):
         core.common.entity_limits.enforce(model.Campaign.objects.filter(account=account).exclude_archived(), account.id)
         if not account.currency:
@@ -49,5 +56,8 @@ class CampaignManager(core.common.BaseManager):
 
         campaign.settings_id = campaign.settings.id
         campaign.save(request)
+
+        if send_mail:
+            email_helper.send_campaign_created_email(request, campaign)
 
         return campaign
