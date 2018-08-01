@@ -982,7 +982,8 @@ class AllAccountsInfoboxHelpersTest(TestCase):
         self.assertEqual(30, allocated_credit)
         self.assertEqual(70, available_credit)
 
-    def test_refunds(self):
+    @mock.patch("utils.dates_helper.local_today", return_value=datetime.date(2018, 7, 20))
+    def test_refunds(self, mock_local_today):
         account = dash.models.Account.objects.get(pk=1)
         user = zemauth.models.User.objects.get(pk=1)
         start_date = datetime.date(2018, 7, 7)
