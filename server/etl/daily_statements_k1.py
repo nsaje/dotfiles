@@ -29,7 +29,7 @@ FIXED_MARGIN_START_DATE = datetime.date(2017, 6, 21)
 
 
 def _generate_statements(date, campaign, campaign_spend):
-    logger.debug("Generate daily statements for %s, %s: %s", campaign.id, date, campaign_spend)
+    logger.info("Generate daily statements for %s, %s: %s", campaign.id, date, campaign_spend)
 
     budgets = dash.models.BudgetLineItem.objects.filter(
         campaign_id=campaign.id, start_date__lte=date, end_date__gte=date
@@ -392,6 +392,7 @@ def reprocess_daily_statements(date_since, account_id=None):
             all_dates.add(date)
             if date not in total_spend:
                 # do it for all campaigns at once for a single date
+                logger.info("Fetching spend for %s because of campaign %s" % (date, campaign.id))
                 total_spend[date] = _get_campaign_spend(date, campaigns, account_id)
 
         # generate daily statements for the date for the campaign
