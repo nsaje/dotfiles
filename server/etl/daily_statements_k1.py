@@ -170,7 +170,7 @@ def _handle_overspend(date, campaign, media_nano, data_nano):
     )
 
 
-def _get_first_unprocessed_dates(campaigns):
+def _get_first_unprocessed_dates(campaigns, date_since):
     campaign_ids = [campaign.id for campaign in campaigns]
     # for each budget associate daily statement for each date from start to end
     # return first date for which daily statement does not exist for each campaign
@@ -194,7 +194,9 @@ def _get_first_unprocessed_dates(campaigns):
         c.execute(query, [campaign_ids])
 
         for campaign_id, first_unprocessed_date in c:
-            data[campaign_id] = first_unprocessed_date.date()
+            data[campaign_id] = max(
+                first_unprocessed_date.date(), date_since
+            )  # HACK(nsaje): prevent materializations reprocessing large intervals temporarily
     return data
 
 
@@ -383,7 +385,7 @@ def reprocess_daily_statements(date_since, account_id=None):
         campaigns = campaigns.filter(account_id=account_id)
 
     campaigns = campaigns.annotate(max_budget_end_date=Max("budgets__end_date"))
-    first_unprocessed_dates = _get_first_unprocessed_dates(campaigns)
+    first_unprocessed_dates = _get_first_unprocessed_dates(campaigns, date_since)
 
     for campaign in campaigns:
         # extracts dates where we have budgets but are not linked to daily statements

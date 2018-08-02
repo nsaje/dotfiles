@@ -519,7 +519,7 @@ class DailyStatementsK1TestCase(TestCase):
         campaigns = dash.models.Campaign.objects.filter(pk=self.campaign1.id).annotate(
             max_budget_end_date=Max("budgets__end_date")
         )
-        first_unprocessed_dates = daily_statements._get_first_unprocessed_dates(campaigns)
+        first_unprocessed_dates = daily_statements._get_first_unprocessed_dates(campaigns, update_from)
         dates = daily_statements._get_dates(update_from, campaigns[0], first_unprocessed_dates.get(self.campaign1.id))
         self.assertCountEqual([update_from], dates)
 
@@ -548,7 +548,7 @@ class DailyStatementsK1TestCase(TestCase):
         update_from = datetime.date(2015, 11, 30)
 
         campaigns = campaigns.annotate(max_budget_end_date=Max("budgets__end_date"))
-        first_unprocessed_dates = daily_statements._get_first_unprocessed_dates(campaigns)
+        first_unprocessed_dates = daily_statements._get_first_unprocessed_dates(campaigns, update_from)
         for campaign in campaigns:
             dates = daily_statements._get_dates(update_from, campaign, first_unprocessed_dates.get(campaign.id))
             self.assertCountEqual([datetime.date(2015, 11, 30)], dates)
