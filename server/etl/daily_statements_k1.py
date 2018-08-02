@@ -313,7 +313,9 @@ def _get_campaign_spend(date, all_campaigns, account_id):
             campaign_id = ad_group_campaign.get(ad_group_id)
             if campaign_id is None:
                 if media_spend > 0 or data_spend > 0:
-                    logger.info("Got spend for invalid adgroup: %s", ad_group_id)
+                    logger.info("Got spend for adgroup in campaign that is not being reprocessed: %s", ad_group_id)
+                    campaign_id = dash.models.AdGroup.objects.get(pk=ad_group_id).campaign_id
+                    campaign_spend[campaign_id] = {"media_nano": 0, "data_nano": 0}
                 continue
 
             campaign_spend[campaign_id]["media_nano"] += media_spend * converters.MICRO_TO_NANO
