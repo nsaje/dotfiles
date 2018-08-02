@@ -18,7 +18,6 @@ class AccountManager(core.common.BaseManager):
         account = model.Account(name=name, agency=agency)
         if agency is not None:
             account.uses_bcm_v2 = agency.new_accounts_use_bcm_v2
-            account.yahoo_account = agency.yahoo_account
         else:
             account.uses_bcm_v2 = (
                 True
@@ -30,6 +29,7 @@ class AccountManager(core.common.BaseManager):
         else:
             account.currency = currency
 
+        account.yahoo_account = core.features.yahoo_accounts.get_default_account()
         account.save(request)
         account.write_history("Created account", user=request.user, action_type=constants.HistoryActionType.CREATE)
 
