@@ -4,8 +4,7 @@ import {
     Component, Input, Output, EventEmitter, OnInit, OnChanges, OnDestroy, ChangeDetectionStrategy, ElementRef,
     ChangeDetectorRef, SimpleChanges
 } from '@angular/core';
-import {Subscription} from 'rxjs/Subscription';
-import {Subject} from 'rxjs/Subject';
+import {Subscription, Subject} from 'rxjs';
 import {debounceTime, distinctUntilChanged} from 'rxjs/operators';
 
 import {Config} from './types/config';

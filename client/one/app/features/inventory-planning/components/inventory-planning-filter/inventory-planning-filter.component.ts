@@ -4,15 +4,17 @@ import {
     Component, Input, Output, EventEmitter, OnChanges, ChangeDetectionStrategy, ViewChild, SimpleChanges
 } from '@angular/core';
 
-import {Filters} from '../types/filters';
-import {FilterOption} from '../types/filter-option';
-import {DropdownDirective} from '../../../shared/dropdown/dropdown.directive';
-import {Category as CategorizedTagsListCategory} from '../../../shared/categorized-tags-list/types/category';
-import {Item as CategorizedTagsListItem} from '../../../shared/categorized-tags-list/types/item';
-import {Category as CategorizedSelectCategory} from '../../../shared/categorized-select/types/category';
-import {Item as CategorizedSelectItem} from '../../../shared/categorized-select/types/item';
-import {SelectionItem as CategorizedSelectSelectionItem} from '../../../shared/categorized-select/types/selection-item';
-import {BigNumberPipe} from '../../../shared/big-number/big-number.pipe';
+import {Filters} from '../../types/filters';
+import {FilterOption} from '../../types/filter-option';
+import {DropdownDirective} from '../../../../shared/dropdown/dropdown.directive';
+import {Category as CategorizedTagsListCategory} from '../../../../shared/categorized-tags-list/types/category';
+import {Item as CategorizedTagsListItem} from '../../../../shared/categorized-tags-list/types/item';
+import {Category as CategorizedSelectCategory} from '../../../../shared/categorized-select/types/category';
+import {Item as CategorizedSelectItem} from '../../../../shared/categorized-select/types/item';
+import {
+    SelectionItem as CategorizedSelectSelectionItem
+} from '../../../../shared/categorized-select/types/selection-item';
+import {BigNumberPipe} from '../../../../shared/big-number/big-number.pipe';
 
 @Component({
     selector: 'zem-inventory-planning-filter',

@@ -6,7 +6,7 @@ import {ErrorHandler, NgModule} from '@angular/core';
 import {APP_CONFIG} from './core/config/app.config';
 import {CoreModule} from './core/core.module';
 import {RavenErrorHandler} from './core/raven/raven-error-handler';
-import {ViewsModule} from './views/views.module';
+import {InventoryPlanningModule} from './features/inventory-planning/inventory-planning.module';
 
 // Raven (Sentry) configuration
 if (APP_CONFIG.env.prod) {
@@ -22,14 +22,19 @@ if (APP_CONFIG.env.prod) {
 
 @NgModule({
     imports: [
+        // Angular modules
         BrowserModule,
         HttpClientXsrfModule.withOptions({
             cookieName: 'csrftoken',
             headerName: 'X-CSRFToken',
         }),
         UpgradeModule,
+
+        // Core "singleton" modules (not feature modules)
         CoreModule,
-        ViewsModule,
+
+        // Feature modules
+        InventoryPlanningModule,
     ],
     providers: [
         {provide: ErrorHandler, useClass: RavenErrorHandler},

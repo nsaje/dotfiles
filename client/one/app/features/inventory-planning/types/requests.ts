@@ -1,9 +1,9 @@
-import {Request} from '../../../shared/types/request';
+import {RequestState} from '../../../shared/types/request-state';
 
 export interface Requests {
-    summary: Request;
-    countries: Request;
-    publishers: Request;
-    devices: Request;
-    sources: Request;
+    summary: RequestState;
+    countries: RequestState;
+    publishers: RequestState;
+    devices: RequestState;
+    sources: RequestState;
 }

@@ -1,6 +1,6 @@
-import {Requests} from './types/requests';
-import {Filters} from './types/filters';
-import {Inventory} from './types/inventory';
+import {Requests} from '../types/requests';
+import {Filters} from '../types/filters';
+import {Inventory} from '../types/inventory';
 
 export class InventoryPlanningState {
     requests: Requests = {

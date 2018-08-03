@@ -69,11 +69,7 @@
       "camelCase"
     ],
     "eofline": true,
-    "forin": true,
-    "import-blacklist": [
-      true,
-      "rxjs"
-    ],
+    "forin": true,    
     "import-spacing": true,
     "indent": [
       true,

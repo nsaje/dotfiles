@@ -1,7 +1,7 @@
 import {SimpleChanges, SimpleChange} from '@angular/core';
 import {TestBed, ComponentFixture, async} from '@angular/core/testing';
 
-import {SharedModule} from '../../../shared/shared.module';
+import {SharedModule} from '../../../../shared/shared.module';
 import {InventoryPlanningFilterComponent} from './inventory-planning-filter.component';
 
 describe('InventoryPlanningFilterComponent', () => {

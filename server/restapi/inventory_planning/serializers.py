@@ -13,10 +13,10 @@ VALID_FIELDS = (None, COUNTRY, DEVICE_TYPE, PUBLISHER, SOURCE_ID)
 
 
 class QueryFilter(serializers.Serializer):
-    c = fields.ListField(child=restapi.serializers.fields.PlainCharField(), required=False, source="country")
-    d = fields.ListField(child=fields.IntegerField(), required=False, source="device_type")
-    p = fields.ListField(child=restapi.serializers.fields.PlainCharField(), required=False, source="publisher")
-    s = fields.ListField(child=fields.IntegerField(), required=False, source="source_id")
+    countries = fields.ListField(child=restapi.serializers.fields.PlainCharField(), required=False, source="country")
+    devices = fields.ListField(child=fields.IntegerField(), required=False, source="device_type")
+    publishers = fields.ListField(child=restapi.serializers.fields.PlainCharField(), required=False, source="publisher")
+    sources = fields.ListField(child=fields.IntegerField(), required=False, source="source_id")
 
 
 class QueryFilterGET(restapi.serializers.serializers.QueryParamsExpectations, QueryFilter):

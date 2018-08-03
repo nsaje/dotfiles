@@ -4,11 +4,10 @@ import {
     Component, Input, Output, EventEmitter, OnInit, OnChanges, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef,
     SimpleChanges
 } from '@angular/core';
-import {Subscription} from 'rxjs/Subscription';
-import {Subject} from 'rxjs/Subject';
+import {Subscription, Subject} from 'rxjs';
 import {debounceTime, distinctUntilChanged} from 'rxjs/operators';
 
-import {FilterOption} from '../types/filter-option';
+import {FilterOption} from '../../types/filter-option';
 
 const SEARCH_DEBOUNCE_TIME = 500;
 const RENDERED_SEARCH_RESULTS_COUNT = 100;

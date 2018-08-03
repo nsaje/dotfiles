@@ -1,7 +1,4 @@
-import {Subscription} from 'rxjs/Subscription';
-
-export interface Request {
-    subscription?: Subscription;
+export interface RequestState {
     inProgress?: boolean;
     success?: boolean;
     error?: boolean;

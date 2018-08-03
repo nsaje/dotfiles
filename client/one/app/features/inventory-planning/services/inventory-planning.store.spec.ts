@@ -1,7 +1,6 @@
 import {TestBed, inject} from '@angular/core/testing';
 import {HttpClientModule} from '@angular/common/http';
-import {Observable} from 'rxjs/Observable';
-import 'rxjs/add/observable/of';
+import {of} from 'rxjs';
 import {delay} from 'rxjs/operators';
 
 import {InventoryPlanningStore} from './inventory-planning.store';
@@ -9,7 +8,6 @@ import {InventoryPlanningEndpoint} from './inventory-planning.endpoint';
 
 describe('InventoryPlanningStore', () => {
     let store: InventoryPlanningStore;
-    let endpoint: InventoryPlanningEndpoint;
 
     const availableCountries = [
         {
@@ -70,44 +68,48 @@ describe('InventoryPlanningStore', () => {
     });
 
     describe('with delayed mocked http requests', () => {
-        beforeEach(inject([InventoryPlanningEndpoint], (endpoint: InventoryPlanningEndpoint) => {
-            spyOn(endpoint, 'loadSummary').and.returnValue(
-                Observable.of({auctionCount: 100000, avgCpm: 2, avgCpc: 0.8, winRatio: 0.5}).pipe(delay(0))
-            );
-            spyOn(endpoint, 'loadCountries').and.returnValue(Observable.of(availableCountries).pipe(delay(0)));
-            spyOn(endpoint, 'loadPublishers').and.returnValue(Observable.of(availablePublishers).pipe(delay(0)));
-            spyOn(endpoint, 'loadDevices').and.returnValue(Observable.of(availableDevices).pipe(delay(0)));
-            spyOn(endpoint, 'loadSources').and.returnValue(Observable.of(availableSources).pipe(delay(0)));
+        let endpointSpy: any;
 
-            store = new InventoryPlanningStore(endpoint);
+        beforeEach(inject([InventoryPlanningEndpoint], (endpoint: InventoryPlanningEndpoint) => {
+            endpointSpy = jasmine.createSpyObj('InventoryPlanningEndpoint', [
+                'loadSummary',
+                'loadCountries',
+                'loadPublishers',
+                'loadDevices',
+                'loadSources']);
+
+            endpointSpy
+                .loadSummary
+                .and
+                .returnValue(of({auctionCount: 100000, avgCpm: 2, avgCpc: 0.8, winRatio: 0.5}).pipe(delay(0)));
+
+            endpointSpy
+                .loadCountries
+                .and
+                .returnValue(of(availableCountries).pipe(delay(0)));
+
+            endpointSpy
+                .loadPublishers
+                .and
+                .returnValue(of(availablePublishers).pipe(delay(0)));
+
+            endpointSpy
+                .loadDevices
+                .and
+                .returnValue(of(availableDevices).pipe(delay(0)));
+
+            endpointSpy
+                .loadSources
+                .and
+                .returnValue(of(availableSources).pipe(delay(0)));
+
+            store = new InventoryPlanningStore(endpointSpy);
         }));
 
         it('should correctly refresh data on init', done => {
             store.init();
             setTimeout(() => {
-                expect(store.state).toEqual({
-                    requests: {
-                        summary: {
-                            inProgress: false,
-                            subscription: null,
-                        },
-                        countries: {
-                            inProgress: false,
-                            subscription: null,
-                        },
-                        publishers: {
-                            inProgress: false,
-                            subscription: null,
-                        },
-                        devices: {
-                            inProgress: false,
-                            subscription: null,
-                        },
-                        sources: {
-                            inProgress: false,
-                            subscription: null,
-                        },
-                    },
+                expect(store.state).toEqual(jasmine.objectContaining({
                     inventory: {auctionCount: 100000, avgCpm: 2, avgCpc: 0.8, winRatio: 0.5},
                     availableFilters: {
                         countries: availableCountries,
@@ -121,24 +123,49 @@ describe('InventoryPlanningStore', () => {
                         devices: [],
                         sources: [],
                     },
-                });
+                }));
                 done();
             }, 0); // tslint:disable-line align
         });
     });
 
     describe('without delayed mocked http requests', () => {
-        beforeEach(inject([InventoryPlanningEndpoint], (_endpoint: InventoryPlanningEndpoint) => {
-            spyOn(_endpoint, 'loadSummary').and.returnValue(
-                Observable.of({auctionCount: 100000, avgCpm: 2, avgCpc: 0.8, winRatio: 0.5})
-            );
-            spyOn(_endpoint, 'loadCountries').and.returnValue(Observable.of(availableCountries));
-            spyOn(_endpoint, 'loadPublishers').and.returnValue(Observable.of(availablePublishers));
-            spyOn(_endpoint, 'loadDevices').and.returnValue(Observable.of(availableDevices));
-            spyOn(_endpoint, 'loadSources').and.returnValue(Observable.of(availableSources));
+        let endpointSpy: any;
 
-            endpoint = _endpoint;
-            store = new InventoryPlanningStore(_endpoint);
+        beforeEach(inject([InventoryPlanningEndpoint], (_endpoint: InventoryPlanningEndpoint) => {
+            endpointSpy = jasmine.createSpyObj('InventoryPlanningEndpoint', [
+                'loadSummary',
+                'loadCountries',
+                'loadPublishers',
+                'loadDevices',
+                'loadSources']);
+
+            endpointSpy
+                .loadSummary
+                .and
+                .returnValue(of({auctionCount: 100000, avgCpm: 2, avgCpc: 0.8, winRatio: 0.5}));
+
+            endpointSpy
+                .loadCountries
+                .and
+                .returnValue(of(availableCountries));
+
+            endpointSpy
+                .loadPublishers
+                .and
+                .returnValue(of(availablePublishers));
+
+            endpointSpy
+                .loadDevices
+                .and
+                .returnValue(of(availableDevices));
+
+            endpointSpy
+                .loadSources
+                .and
+                .returnValue(of(availableSources));
+
+            store = new InventoryPlanningStore(endpointSpy);
         }));
 
         it('should make correct requests when initialized with preselected filters', () => {
@@ -148,15 +175,19 @@ describe('InventoryPlanningStore', () => {
                 {key: 'devices', value: 'device 1'},
                 {key: 'sources', value: 'test source 1'},
             ]);
-            expect(endpoint.loadCountries).toHaveBeenCalledWith({
-                countries: [{name: '', value: 'country 1', auctionCount: -1}],
-                publishers: [{name: '', value: 'publisher 1', auctionCount: -1}],
-                devices: [{name: '', value: 'device 1', auctionCount: -1}],
-                sources: [{name: '', value: 'test source 1', auctionCount: -1}],
-            });
+            expect(endpointSpy.loadCountries).toHaveBeenCalledWith(
+                store,
+                {
+                    countries: [{name: '', value: 'country 1', auctionCount: -1}],
+                    publishers: [{name: '', value: 'publisher 1', auctionCount: -1}],
+                    devices: [{name: '', value: 'device 1', auctionCount: -1}],
+                    sources: [{name: '', value: 'test source 1', auctionCount: -1}],
+                }
+            );
         });
 
         it('should correctly toggle selected options', () => {
+            store.init();
             store.setState({
                 ...store.state,
                 selectedFilters: {
