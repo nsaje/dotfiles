@@ -329,10 +329,8 @@ def _get_campaign_spend(date, all_campaigns, account_id):
 def get_campaigns_with_spend(date_since):
 
     today = dates_helper.local_today()
-    past_date = today - datetime.timedelta(days=dash.models.NR_OF_DAYS_INACTIVE_FOR_ARCHIVAL)
-    past_date = max(past_date, date_since)
 
-    params = helpers.get_local_multiday_date_context(past_date, today)
+    params = helpers.get_local_multiday_date_context(date_since, today)
     del params["date_ranges"]  # unnecessary in this case
 
     ad_group_ids = _query_ad_groups_with_spend(params)
@@ -371,7 +369,7 @@ def reprocess_daily_statements(date_since, account_id=None):
 
     campaigns = dash.models.Campaign.objects.prefetch_related("adgroup_set").all().exclude_archived(bool(account_id))
 
-    # get campaigns that have spend in the last 3 days and might be archived
+    # get campaigns that have spend in the time frame we're reprocessing
     campaigns_w_spend = get_campaigns_with_spend(date_since)
 
     logger.info(

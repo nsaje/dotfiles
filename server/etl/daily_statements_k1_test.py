@@ -706,27 +706,11 @@ class GetCampaignsWithSpendTest(TestCase):
         self.assertEqual(campaigns, test_helper.QuerySetMatcher(dash.models.Campaign.objects.filter(pk__in=[1, 2])))
         mock_ad_groups.assert_called_with(
             {
-                "tzhour_from": 5,
+                "tzhour_from": 4,
                 "tzhour_to": 5,
-                "tzdate_from": "2016-11-12",
+                "tzdate_from": "2016-11-01",
                 "tzdate_to": "2016-11-16",
-                "date_from": "2016-11-12",
-                "date_to": "2016-11-15",
-            }
-        )
-
-    def test_get_campaigns_with_spend_close(self, mock_local_today, mock_ad_groups):
-        since = datetime.date(2016, 11, 13)
-        campaigns = daily_statements.get_campaigns_with_spend(since)
-
-        self.assertEqual(campaigns, test_helper.QuerySetMatcher(dash.models.Campaign.objects.filter(pk__in=[1, 2])))
-        mock_ad_groups.assert_called_with(
-            {
-                "tzhour_from": 5,
-                "tzhour_to": 5,
-                "tzdate_from": "2016-11-13",  # use date_since as its later
-                "tzdate_to": "2016-11-16",
-                "date_from": "2016-11-13",
+                "date_from": "2016-11-01",
                 "date_to": "2016-11-15",
             }
         )
