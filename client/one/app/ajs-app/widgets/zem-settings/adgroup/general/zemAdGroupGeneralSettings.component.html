@@ -13,7 +13,7 @@
                                      'calendar-is-open': $ctrl.startDatePicker.isOpen}">
             <label class="form__label" for="start-date-input">
                 Start date:
-                <zem-help-popover content="The date when content promotion commenced." placement="top"></zem-help-popover>
+                <zem-help-popover content="The start date of the ad group. If the date is set in the future, the ad group will not run until that date." placement="top"></zem-help-popover>
             </label>
             <div class="prefixed-field prefixed-field--narrow prefixed-field--with-icon calendar-icon">
                 <input class="input-text" id="start-date-input" type="text" uib-datepicker-popup="MM/dd/yyyy"
@@ -29,7 +29,7 @@
                                      'calendar-is-open': $ctrl.endDatePicker.isOpen}">
             <label class="form__label" for="end-date-input">
                 End date:
-                <zem-help-popover content="The date when content promotion paused." placement="top"></zem-help-popover>
+                <zem-help-popover content="The end date of the ad group. Ad group will run until the end of stop date." placement="top"></zem-help-popover>
             </label>
             <div class="prefixed-field prefixed-field--narrow prefixed-field--with-icon calendar-icon m-r">
                 <input class="input-text" id="end-date-input" ng-disabled="$ctrl.entity.warnings.endDate !== undefined"
