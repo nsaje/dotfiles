@@ -1,23 +1,30 @@
 from django import forms
-
-from . import model
 from . import fields
+from . import model
 
 
 class CustomFlagsFormMixin(forms.Form):
-    custom_flags = fields.CustomFlagsField(
-        label="Custom flags", required=False, widget=forms.widgets.CheckboxSelectMultiple
-    )
+    def __init__(self, data=None, files=None, auto_id="id_%s", prefix=None, initial=None, *args, **kwargs):
+        super(CustomFlagsFormMixin, self).__init__(data, files, auto_id, prefix, initial, *args, **kwargs)
+        self.fields["custom_flags"] = fields.CustomFlagsField(
+            require_all_fields=False,
+            required=False,
+            entity_flags=initial.get("custom_flags", {}),
+            all_custom_flags=list(model.CustomFlag.objects.all().order_by("advanced")),
+            help_text="Fields with a background color are advanced flags.",
+        )
 
-    def __init__(self, *args, **kwargs):
-        self._set_custom_flag_choices()
-        super(CustomFlagsFormMixin, self).__init__(*args, **kwargs)
+    def clean_custom_flags(self):
+        entity_flags = self.instance.custom_flags or dict()
+        updated_flags = entity_flags.items() - self.cleaned_data.get("custom_flags").items()
+        advanced_updated_flags = (
+            model.CustomFlag.objects.filter(id__in=[i[0] for i in updated_flags])
+            .filter(advanced=True)
+            .all()
+            .values_list("name", flat=True)
+        )
 
-    def _set_custom_flag_choices(self):
-        custom_flags_field = self.base_fields["custom_flags"]
-        if not custom_flags_field:
-            return
-        custom_flags_field.widget.choices = self._get_current_custom_flags_choices()
-
-    def _get_current_custom_flags_choices(self):
-        return model.CustomFlag.objects.all().order_by("name").values_list("id", "name")
+        if advanced_updated_flags and not self.request.user.has_perm("zemauth.can_edit_advanced_custom_flags"):
+            msg = "Advanced Flags ({}) can only be modified by admin.".format(", ".join([*advanced_updated_flags]))
+            raise forms.ValidationError(msg)
+        return self.cleaned_data.get("custom_flags")

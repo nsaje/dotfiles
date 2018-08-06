@@ -1,0 +1,14 @@
+<table>
+    {% for widget in widget.subwidgets %}
+        {% if widget.attrs.advanced %}
+            <tr style="background-color: moccasin" >
+        {% else %}
+            <tr>
+        {% endif %}
+                <td><label for={{ widget.attrs.id }}>{{ widget.attrs.name }}</label></td>
+            <td>{% include widget.template_name %}
+                <p><small>{{ widget.attrs.title }}</small></p>
+            </td>
+        </tr>
+    {% endfor %}
+</table>

@@ -735,6 +735,7 @@ class AccountAdminForm(forms.ModelForm, CustomFlagsFormMixin):
     class Meta:
         model = models.Account
         fields = "__all__"
+        exclude = ("custom_flags",)
 
 
 class AgencyAdminForm(PublisherGroupsFormMixin, forms.ModelForm, CustomFlagsFormMixin):

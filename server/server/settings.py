@@ -99,6 +99,7 @@ TEMPLATES = [
             os.path.join(BASE_DIR, "templates"),
             os.path.join(BASE_DIR, "utils/templates"),
             os.path.join(BASE_DIR, "analytics/templates"),
+            os.path.join(BASE_DIR, "dash/templates"),
         ],
         "OPTIONS": {
             "context_processors": [

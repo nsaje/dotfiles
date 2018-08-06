@@ -379,6 +379,11 @@ class AgencyAdmin(SlackLoggerMixin, ExportMixin, admin.ModelAdmin):
         super(AgencyAdmin, self).__init__(model, admin_site)
         self.form.admin_site = admin_site
 
+    def get_form(self, request, obj=None, **kwargs):
+        form = super(AgencyAdmin, self).get_form(request, obj=obj, **kwargs)
+        form.request = request
+        return form
+
     def get_queryset(self, request):
         qs = super(AgencyAdmin, self).get_queryset(request)
         return qs.select_related("sales_representative", "cs_representative").prefetch_related("users", "account_set")
@@ -472,6 +477,11 @@ class AccountAdmin(SlackLoggerMixin, SaveWithRequestMixin, admin.ModelAdmin):
     raw_id_fields = ("default_whitelist", "default_blacklist", "agency", "settings")
     inlines = (AccountUserInline, CampaignInline)
 
+    def get_form(self, request, obj=None, **kwargs):
+        form = super(AccountAdmin, self).get_form(request, obj=obj, **kwargs)
+        form.request = request
+        return form
+
     @transaction.atomic
     def migrate_to_bcm_v2(self, request, queryset):
         for account in queryset:
@@ -530,6 +540,11 @@ class CampaignAdmin(SlackLoggerMixin, admin.ModelAdmin):
     exclude = ("settings",)
     inlines = (AdGroupInline,)
     form = dash_forms.CampaignAdminForm
+
+    def get_form(self, request, obj=None, **kwargs):
+        form = super(CampaignAdmin, self).get_form(request, obj=obj, **kwargs)
+        form.request = request
+        return form
 
     def save_model(self, request, obj, form, change):
         old_obj = models.Campaign.objects.get(id=obj.id)
@@ -721,6 +736,11 @@ class AdGroupAdmin(SlackLoggerMixin, admin.ModelAdmin):
         (None, {"fields": ("name", "campaign", "created_dt", "modified_dt", "modified_by", "custom_flags")}),
         ("Additional targeting", {"classes": ("collapse",), "fields": dash_forms.AdGroupAdminForm.SETTINGS_FIELDS}),
     )
+
+    def get_form(self, request, obj=None, **kwargs):
+        form = super(AdGroupAdmin, self).get_form(request, obj=obj, **kwargs)
+        form.request = request
+        return form
 
     def get_queryset(self, request):
         qs = super(AdGroupAdmin, self).get_queryset(request)
@@ -1740,6 +1760,11 @@ class CustomFlagAdmin(admin.ModelAdmin):
     model = models.CustomFlag
 
     list_display = ("id", "name", "description")
+
+    def get_actions(self, request):
+        actions = super(CustomFlagAdmin, self).get_actions(request)
+        del actions["delete_selected"]
+        return actions
 
 
 class DirectDealConnectionForm(forms.ModelForm):

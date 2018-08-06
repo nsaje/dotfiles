@@ -1,25 +1,29 @@
-from django.contrib.postgres.forms import JSONField
-from django.core.exceptions import ValidationError
-
-from . import model
+from django.forms.fields import MultiValueField, CharField, IntegerField, FloatField, BooleanField
+from .widgets import CustomFlagsWidget
 
 
-class CustomFlagsField(JSONField):
-    def to_python(self, value):
-        return dict((el, True) for el in value)
+class CustomFlagsField(MultiValueField):
+    fields = {"string": CharField, "int": IntegerField, "float": FloatField, "boolean": BooleanField}
 
-    def prepare_value(self, value):
-        if not value:
-            return []
-        return list(value.keys())
+    def __init__(self, *args, **kwargs):
+        self.entity_flags = kwargs.pop("entity_flags") or {}
+        self.all_custom_flags = kwargs.pop("all_custom_flags") or []
+        self.widget = CustomFlagsWidget(self.all_custom_flags)
+        list_fields = self.get_fields()
+        super(CustomFlagsField, self).__init__(list_fields, *args, **kwargs)
 
-    def validate(self, value):
-        all_flags = set(model.CustomFlag.objects.all().values_list("id", flat=True))
+    def get_fields(self):
+        fields_type = []
+        for cf in self.all_custom_flags:
+            if cf.type in CustomFlagsField.fields.keys():
+                field_instance = CustomFlagsField.fields[cf.type](
+                    required=False, initial=self.entity_flags.get(cf.id, "")
+                )
+                fields_type.append(field_instance)
+        return fields_type
 
-        errors = []
-        for i, el in enumerate(value):
-            if el not in all_flags:
-                errors.append(ValidationError("Invalid custom flag", code="item_invalid", params={"nth": i}))
+    def compress(self, values):
+        return values
 
-        if errors:
-            raise ValidationError(errors)
+    def clean(self, value):
+        return self.compress(value)
