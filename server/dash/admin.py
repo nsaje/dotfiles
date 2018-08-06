@@ -1088,11 +1088,21 @@ class RefundLineItemResource(resources.ModelResource):
 
 
 class RefundLineItemAdmin(ExportMixin, SaveWithRequestMixin, admin.ModelAdmin):
-    list_display = ("account", "credit", "start_date", "end_date", "amount", "comment", "created_dt", "created_by")
+    list_display = (
+        "id",
+        "account",
+        "credit",
+        "start_date",
+        "end_date",
+        "amount",
+        "comment",
+        "created_dt",
+        "created_by",
+    )
     date_hierarchy = "start_date"
     list_filter = ("account", "created_by", "credit")
-    readonly_fields = ("end_date", "created_dt", "created_by")
-    search_fields = ("account__name", "amount", "comment")
+    readonly_fields = ("id", "end_date", "created_dt", "created_by")
+    search_fields = ("id", "account__name", "amount", "comment")
     actions = None
     form = dash_forms.RefundLineItemAdminForm
     resource_class = RefundLineItemResource
