@@ -130,6 +130,10 @@ angular.module('one.widgets').service('zemCustomAudiencesStateService', function
                 function () {
                     audience.archived = true;
                     return audience;
+                },
+                function (errors) {
+                    state.requests.archive.validationErrors = errors;
+                    return $q.reject(errors);
                 }
             ).finally(function () {
                 state.requests.archive[audience.id].inProgress = false;

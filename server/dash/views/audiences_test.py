@@ -10,6 +10,7 @@ import mock
 from dash import constants, history_helpers
 from dash import models
 from zemauth import models as zmodels
+from utils.magic_mixer import magic_mixer
 
 
 class AudiencesTest(TestCase):
@@ -359,7 +360,7 @@ class AudiencesTest(TestCase):
                 "pixel_id": "{}".format(conversion_pixel.id),
                 "ttl": 90,
                 "prefill_days": 90,
-                "rules": [{"id": "7", "type": 2, "value": "test"}],
+                "rules": [{"id": data["rules"][0]["id"], "type": 2, "value": "test"}],
             },
             data,
         )
@@ -382,6 +383,8 @@ class AudienceArchiveTest(TestCase):
         self.user = zmodels.User.objects.get(pk=1)
         self.assertTrue(self.user.is_superuser)
         self.client.login(username=self.user.email, password="secret")
+        magic_mixer.blend(models.Campaign, account_id=1, id=124, name="Campaign 0").save(None)
+        magic_mixer.blend(models.AdGroup, campaign_id=124, id=125, name="Adgroup 0 ").save(None)
 
     def test_permissions(self):
         self.user = zmodels.User.objects.get(pk=2)
@@ -414,9 +417,6 @@ class AudienceArchiveTest(TestCase):
         audiences = models.Audience.objects.filter(pk=1)
         self.assertEqual(audiences[0].archived, False)
 
-        history = models.History.objects.all()
-        self.assertEqual(len(history), 0)
-
         response = self.client.post(url, None, content_type="application/json")
         self.assertEqual(response.status_code, 200)
         response_dict = {"success": True}
@@ -426,19 +426,54 @@ class AudienceArchiveTest(TestCase):
         self.assertEqual(len(audiences), 1)
         self.assertEqual(audiences[0].archived, True)
 
-        history = models.History.objects.all()
-        self.assertEqual(len(history), 1)
-        self.assertEqual(history[0].agency, None)
-        self.assertEqual(history[0].account_id, 1)
-        self.assertEqual(history[0].campaign, None)
-        self.assertEqual(history[0].ad_group, None)
-        self.assertEqual(history[0].level, constants.HistoryLevel.ACCOUNT)
-        self.assertEqual(history[0].action_type, constants.HistoryActionType.AUDIENCE_ARCHIVE)
-        self.assertEqual(history[0].changes_text, 'Archived audience "test audience 1".')
-        self.assertEqual(history[0].changes, None)
-        self.assertEqual(history[0].created_by_id, 1)
+        history = models.History.objects.last()
+        self.assertTrue(history)
+        self.assertEqual(history.agency, None)
+        self.assertEqual(history.account_id, 1)
+        self.assertEqual(history.campaign, None)
+        self.assertEqual(history.ad_group, None)
+        self.assertEqual(history.level, constants.HistoryLevel.ACCOUNT)
+        self.assertEqual(history.action_type, constants.HistoryActionType.AUDIENCE_ARCHIVE)
+        self.assertEqual(history.changes_text, 'Archived audience "test audience 1".')
+        self.assertEqual(history.changes, None)
+        self.assertEqual(history.created_by_id, 1)
 
         redirector_upsert_audience_mock.assert_called_with(audiences[0])
+
+    @mock.patch("utils.redirector_helper.upsert_audience")
+    def test_archive_while_audience_used_on_adgroup(self, redirector_upsert_audience_mock):
+        audience = models.Audience.objects.get(id=1)
+        adgroup = models.AdGroup.objects.get(id=125)
+
+        #  Set the audience as audience targeting on the adgroup
+        adgroup.settings.update(None, audience_targeting=[audience.id])
+        self.assertFalse(audience.archived)
+        self.assertTrue(adgroup.settings.audience_targeting)
+
+        adgroups_used_on_audiences = audience.get_ad_groups_using_audience()
+        self.assertIn(adgroup.id, [audi.id for audi in adgroups_used_on_audiences])
+        self.assertFalse(audience.can_archive())
+
+        response = self.client.post(
+            reverse("accounts_audience_archive", kwargs={"account_id": 1, "audience_id": 1}),
+            None,
+            content_type="application/json",
+        )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(
+            json.loads(response.content)["data"],
+            {
+                "error_code": "ValidationError",
+                "message": None,
+                "errors": "Audience 'test audience 1' is currently targeted on ad groups Adgroup 0 .",
+                "data": None,
+            },
+        )
+
+        history_text = models.History.objects.all().first().changes_text
+        self.assertNotEqual('Archived audience "test audience 1".', history_text)
+        redirector_upsert_audience_mock.assert_not_called()
 
 
 class AudienceRestoreTest(TestCase):

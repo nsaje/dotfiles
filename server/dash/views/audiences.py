@@ -1,15 +1,10 @@
 import json
 
-from django.db import transaction
-
-from dash import constants
 from dash import forms
 from dash import models
 import redshiftapi.api_audiences
 from utils import api_common
 from utils import exc
-from utils import k1_helper
-from utils import redirector_helper
 from . import helpers
 
 
@@ -76,21 +71,7 @@ class AudiencesView(api_common.BaseApiView):
             raise exc.ValidationError(errors=dict(audience_form.errors))
 
         data = audience_form.cleaned_data
-
-        old_name = audience.name
-        if audience.name != data["name"]:
-            audience.name = data["name"]
-
-            with transaction.atomic():
-                audience.save(
-                    request,
-                    constants.HistoryActionType.AUDIENCE_UPDATE,
-                    'Changed audience name from "{}" to "{}".'.format(old_name, audience.name),
-                )
-                redirector_helper.upsert_audience(audience)
-
-            k1_helper.update_account(account_id, msg="audience.update")
-
+        audience.update(request, name=data.get("name"))
         rules = models.AudienceRule.objects.filter(audience=audience)
 
         return self.create_api_response(self._get_response_dict(audience, rules))
@@ -188,13 +169,7 @@ class AudienceArchive(api_common.BaseApiView):
         except models.Audience.DoesNotExist:
             raise exc.MissingDataError("Audience does not exist")
 
-        audience.archived = True
-        with transaction.atomic():
-            audience.save(
-                request, constants.HistoryActionType.AUDIENCE_ARCHIVE, 'Archived audience "{}".'.format(audience.name)
-            )
-            redirector_helper.upsert_audience(audience)
-
+        audience.update(request, archived=True)
         return self.create_api_response()
 
 
@@ -215,11 +190,5 @@ class AudienceRestore(api_common.BaseApiView):
         except models.Audience.DoesNotExist:
             raise exc.MissingDataError("Audience does not exist")
 
-        audience.archived = False
-        with transaction.atomic():
-            audience.save(
-                request, constants.HistoryActionType.AUDIENCE_RESTORE, 'Restored audience "{}".'.format(audience.name)
-            )
-            redirector_helper.upsert_audience(audience)
-
+        audience.update(request, archived=False)
         return self.create_api_response()
