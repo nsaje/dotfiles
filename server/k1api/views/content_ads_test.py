@@ -180,6 +180,7 @@ class ContentAdsTest(K1APIBaseTest):
 
         expected = [
             {
+                "id": 1,
                 "content_ad_id": 1,
                 "ad_group_id": 1,
                 "source_id": 1,
@@ -236,6 +237,7 @@ class ContentAdsTest(K1APIBaseTest):
 
         expected = [
             {
+                "id": content_ad_sources[0].id,
                 "ad_group_id": content_ads[0].ad_group_id,
                 "content_ad_id": content_ads[0].id,
                 "source_id": other_ad_group_source.source_id,
@@ -246,6 +248,7 @@ class ContentAdsTest(K1APIBaseTest):
                 "tracking_slug": content_ad_sources[0].source.tracking_slug,
             },
             {
+                "id": content_ad_sources[1].id,
                 "ad_group_id": content_ads[1].ad_group_id,
                 "content_ad_id": content_ads[1].id,
                 "source_id": other_ad_group_source.source_id,
@@ -256,6 +259,7 @@ class ContentAdsTest(K1APIBaseTest):
                 "tracking_slug": content_ad_sources[1].source.tracking_slug,
             },
             {
+                "id": content_ad_sources[2].id,
                 "ad_group_id": content_ads[2].ad_group_id,
                 "content_ad_id": content_ads[2].id,
                 "source_id": other_ad_group_source.source_id,
