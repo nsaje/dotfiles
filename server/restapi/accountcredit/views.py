@@ -14,7 +14,7 @@ class AccountCreditViewSet(RESTAPIBaseViewSet):
         credit = (
             core.bcm.CreditLineItem.objects.filter_by_account(account).prefetch_related("budgets").get(id=credit_id)
         )
-        return self.response_ok(serializers.AccountCreditSerializer(credit).data)
+        return self.response_ok(serializers.AccountCreditSerializer(credit, context={"request": request}).data)
 
     def list(self, request, account_id):
         account = restapi.access.get_account(request.user, account_id)
@@ -27,5 +27,5 @@ class AccountCreditViewSet(RESTAPIBaseViewSet):
         paginator = StandardPagination()
         credit_items_paginated = paginator.paginate_queryset(credit_items, request)
         return paginator.get_paginated_response(
-            serializers.AccountCreditSerializer(credit_items_paginated, many=True).data
+            serializers.AccountCreditSerializer(credit_items_paginated, many=True, context={"request": request}).data
         )

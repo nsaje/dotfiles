@@ -4,10 +4,15 @@ from restapi.common.views_base_test import RESTAPITest
 from django.core.urlresolvers import reverse
 
 import dash.models
+import utils.test_helper
 from utils.magic_mixer import magic_mixer
 
 
 class AccountCreditsTest(RESTAPITest):
+    def setUp(self):
+        super().setUp()
+        utils.test_helper.remove_permissions(self.user, ["can_view_platform_cost_breakdown"])
+
     @classmethod
     def credit_repr(
         cls,
@@ -18,21 +23,24 @@ class AccountCreditsTest(RESTAPITest):
         total="500",
         allocated="200.0",
         available="300.0",
+        license_fee=None,
     ):
-        return cls.normalize(
-            {
-                "id": id,
-                "createdOn": createdOn,
-                "startDate": startDate,
-                "endDate": endDate,
-                "total": total,
-                "allocated": allocated,
-                "available": available,
-            }
-        )
+        resp = {
+            "id": id,
+            "createdOn": createdOn,
+            "startDate": startDate,
+            "endDate": endDate,
+            "total": total,
+            "allocated": allocated,
+            "available": available,
+        }
+        if license_fee is not None:
+            resp["licenseFee"] = license_fee
+        return cls.normalize(resp)
 
-    def validate_against_db(self, credit):
+    def validate_against_db(self, credit, with_license_fee=False):
         credit_db = dash.models.CreditLineItem.objects.get(pk=credit["id"])
+        license_fee = credit_db.license_fee if with_license_fee else None
         expected = self.credit_repr(
             id=str(credit_db.id),
             createdOn=credit_db.created_dt.date(),
@@ -41,6 +49,7 @@ class AccountCreditsTest(RESTAPITest):
             total=credit_db.effective_amount(),
             allocated=credit_db.get_allocated_amount(),
             available=credit_db.effective_amount() - credit_db.get_allocated_amount(),
+            license_fee=license_fee,
         )
         self.assertEqual(expected, credit)
 
@@ -73,3 +82,9 @@ class AccountCreditsTest(RESTAPITest):
         resp_json = self.assertResponseValid(r, data_type=list)
         resp_json_paginated = self.assertResponseValid(r_paginated, data_type=list)
         self.assertEqual(resp_json["data"][5:7], resp_json_paginated["data"])
+
+    def test_license_fee_permissioned(self):
+        utils.test_helper.add_permissions(self.user, ["can_view_platform_cost_breakdown"])
+        r = self.client.get(reverse("accounts_credits_details", kwargs={"account_id": 186, "credit_id": 861}))
+        resp_json = self.assertResponseValid(r)
+        self.validate_against_db(resp_json["data"], with_license_fee=True)
