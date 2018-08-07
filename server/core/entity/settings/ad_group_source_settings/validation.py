@@ -15,7 +15,7 @@ class AdGroupSourceSettingsValidatorMixin(object):
         self._validate_ad_group_source_state(new_settings)
 
     def _validate_ad_group_source_cpc(self, new_settings, bcm_modifiers):
-        if not new_settings.cpc_cc:
+        if new_settings.cpc_cc is None:
             return
         assert isinstance(new_settings.cpc_cc, decimal.Decimal)
         validation_helpers.validate_ad_group_source_cpc_cc(new_settings.cpc_cc, self.ad_group_source, bcm_modifiers)
@@ -30,7 +30,7 @@ class AdGroupSourceSettingsValidatorMixin(object):
             raise exceptions.CPCInvalid(e.message)
 
     def _validate_ad_group_source_daily_budget(self, new_settings, bcm_modifiers):
-        if not new_settings.daily_budget_cc:
+        if new_settings.daily_budget_cc is None:
             return
         assert isinstance(new_settings.daily_budget_cc, decimal.Decimal)
         validation_helpers.validate_daily_budget_cc(

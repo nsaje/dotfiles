@@ -57,6 +57,11 @@ class ValidateAdGroupSourceUpdatesTestCase(TestCase):
         )
 
         updates = {}
+
+        updates["cpc_cc"] = decimal.Decimal("0.0")
+        with self.assertRaises(exceptions.MinimalCPCTooLow) as cm:
+            ad_group_source.settings.update(None, **updates)
+
         updates["cpc_cc"] = decimal.Decimal("0.05")
         with self.assertRaises(exceptions.MinimalCPCTooLow) as cm:
             ad_group_source.settings.update(None, **updates)
@@ -86,6 +91,11 @@ class ValidateAdGroupSourceUpdatesTestCase(TestCase):
         )
 
         updates = {}
+
+        updates["daily_budget_cc"] = decimal.Decimal("0.0")
+        with self.assertRaises(exceptions.MinimalDailyBudgetTooLow) as cm:
+            ad_group_source.settings.update(None, **updates)
+
         updates["daily_budget_cc"] = decimal.Decimal("0.5")
         with self.assertRaises(exceptions.MinimalDailyBudgetTooLow) as cm:
             ad_group_source.settings.update(None, **updates)
