@@ -287,7 +287,9 @@ class FilterTestCase(TestCase):
         rows = generate_rows(permission_filter._get_fields_to_keep(self.superuser, self.goals, uses_bcm_v2))
         user = magic_mixer.blend_user()
 
-        permission_filter.filter_columns_by_permission(user, rows, self.goals, self._mock_constraints(uses_bcm_v2))
+        permission_filter.filter_columns_by_permission(
+            user, rows, self.goals, self._mock_constraints(uses_bcm_v2), Level.ACCOUNTS
+        )
         self.assertCountEqual(list(rows[0].keys()), self.public_fields)
 
     def test_filter_columns_by_permission_no_perm_bcm_v2(self):
@@ -295,7 +297,9 @@ class FilterTestCase(TestCase):
         rows = generate_rows(permission_filter._get_fields_to_keep(self.superuser, self.goals, uses_bcm_v2))
         user = magic_mixer.blend_user()
 
-        permission_filter.filter_columns_by_permission(user, rows, self.goals, self._mock_constraints(uses_bcm_v2))
+        permission_filter.filter_columns_by_permission(
+            user, rows, self.goals, self._mock_constraints(uses_bcm_v2), Level.ACCOUNTS
+        )
 
         self.assertCountEqual(list(rows[0].keys()), self.public_fields_uses_bcm_v2)
 
@@ -304,7 +308,9 @@ class FilterTestCase(TestCase):
         rows = generate_rows(permission_filter._get_fields_to_keep(self.superuser, self.goals, uses_bcm_v2))
         user = magic_mixer.blend_user(["can_view_actual_costs"])
 
-        permission_filter.filter_columns_by_permission(user, rows, self.goals, self._mock_constraints(uses_bcm_v2))
+        permission_filter.filter_columns_by_permission(
+            user, rows, self.goals, self._mock_constraints(uses_bcm_v2), Level.ACCOUNTS
+        )
 
         self.assertCountEqual(
             set(rows[0].keys()) - self.public_fields,
@@ -327,7 +333,9 @@ class FilterTestCase(TestCase):
         rows = generate_rows(permission_filter._get_fields_to_keep(self.superuser, self.goals, uses_bcm_v2))
         user = magic_mixer.blend_user(["can_view_actual_costs"])
 
-        permission_filter.filter_columns_by_permission(user, rows, self.goals, self._mock_constraints(uses_bcm_v2))
+        permission_filter.filter_columns_by_permission(
+            user, rows, self.goals, self._mock_constraints(uses_bcm_v2), Level.ACCOUNTS
+        )
 
         self.assertCountEqual(
             set(rows[0].keys()) - self.public_fields_uses_bcm_v2,
@@ -348,7 +356,9 @@ class FilterTestCase(TestCase):
         rows = generate_rows(permission_filter._get_fields_to_keep(self.superuser, self.goals, uses_bcm_v2))
         user = magic_mixer.blend_user(["can_view_platform_cost_breakdown"])
 
-        permission_filter.filter_columns_by_permission(user, rows, self.goals, self._mock_constraints(uses_bcm_v2))
+        permission_filter.filter_columns_by_permission(
+            user, rows, self.goals, self._mock_constraints(uses_bcm_v2), Level.ACCOUNTS
+        )
 
         self.assertCountEqual(set(rows[0].keys()), self.public_fields)
 
@@ -357,7 +367,9 @@ class FilterTestCase(TestCase):
         rows = generate_rows(permission_filter._get_fields_to_keep(self.superuser, self.goals, uses_bcm_v2))
         user = magic_mixer.blend_user(["can_view_platform_cost_breakdown"])
 
-        permission_filter.filter_columns_by_permission(user, rows, self.goals, self._mock_constraints(uses_bcm_v2))
+        permission_filter.filter_columns_by_permission(
+            user, rows, self.goals, self._mock_constraints(uses_bcm_v2), Level.ACCOUNTS
+        )
 
         self.assertCountEqual(
             set(rows[0].keys()) - self.public_fields_uses_bcm_v2,
@@ -401,7 +413,9 @@ class FilterTestCase(TestCase):
         rows = generate_rows(permission_filter._get_fields_to_keep(self.superuser, self.goals, uses_bcm_v2))
         user = magic_mixer.blend_user(["can_view_platform_cost_breakdown_derived"])
 
-        permission_filter.filter_columns_by_permission(user, rows, self.goals, self._mock_constraints(uses_bcm_v2))
+        permission_filter.filter_columns_by_permission(
+            user, rows, self.goals, self._mock_constraints(uses_bcm_v2), Level.ACCOUNTS
+        )
 
         self.maxDiff = None
         self.assertCountEqual(
@@ -427,7 +441,9 @@ class FilterTestCase(TestCase):
         rows = generate_rows(permission_filter._get_fields_to_keep(self.superuser, self.goals, uses_bcm_v2))
         user = magic_mixer.blend_user(["can_view_agency_cost_breakdown", "can_view_agency_margin"])
 
-        permission_filter.filter_columns_by_permission(user, rows, self.goals, self._mock_constraints(uses_bcm_v2))
+        permission_filter.filter_columns_by_permission(
+            user, rows, self.goals, self._mock_constraints(uses_bcm_v2), Level.ACCOUNTS
+        )
 
         self.assertCountEqual(set(rows[0].keys()) - self.public_fields, ["etf_cost", "local_etf_cost"])
 
@@ -436,7 +452,9 @@ class FilterTestCase(TestCase):
         rows = generate_rows(permission_filter._get_fields_to_keep(self.superuser, self.goals, uses_bcm_v2))
         user = magic_mixer.blend_user(["can_view_agency_cost_breakdown", "can_view_agency_margin"])
 
-        permission_filter.filter_columns_by_permission(user, rows, self.goals, self._mock_constraints(uses_bcm_v2))
+        permission_filter.filter_columns_by_permission(
+            user, rows, self.goals, self._mock_constraints(uses_bcm_v2), Level.ACCOUNTS
+        )
 
         self.assertCountEqual(
             set(rows[0].keys()) - self.public_fields_uses_bcm_v2,
@@ -448,7 +466,9 @@ class FilterTestCase(TestCase):
         rows = generate_rows(permission_filter._get_fields_to_keep(self.superuser, self.goals, uses_bcm_v2))
         user = magic_mixer.blend_user(["campaign_goal_optimization"])
 
-        permission_filter.filter_columns_by_permission(user, rows, self.goals, self._mock_constraints(uses_bcm_v2))
+        permission_filter.filter_columns_by_permission(
+            user, rows, self.goals, self._mock_constraints(uses_bcm_v2), Level.ACCOUNTS
+        )
 
         self.assertCountEqual(
             set(rows[0].keys()) - self.public_fields,
@@ -477,7 +497,9 @@ class FilterTestCase(TestCase):
         rows = generate_rows(permission_filter._get_fields_to_keep(self.superuser, self.goals, uses_bcm_v2))
         user = magic_mixer.blend_user(["campaign_goal_performance"])
 
-        permission_filter.filter_columns_by_permission(user, rows, self.goals, self._mock_constraints(uses_bcm_v2))
+        permission_filter.filter_columns_by_permission(
+            user, rows, self.goals, self._mock_constraints(uses_bcm_v2), Level.ACCOUNTS
+        )
 
         self.assertCountEqual(
             set(rows[0].keys()) - self.public_fields,
@@ -489,7 +511,9 @@ class FilterTestCase(TestCase):
         rows = generate_rows(permission_filter._get_fields_to_keep(self.superuser, self.goals, uses_bcm_v2))
         user = magic_mixer.blend_user(["can_see_redshift_postclick_statistics"])
 
-        permission_filter.filter_columns_by_permission(user, rows, self.goals, self._mock_constraints(uses_bcm_v2))
+        permission_filter.filter_columns_by_permission(
+            user, rows, self.goals, self._mock_constraints(uses_bcm_v2), Level.ACCOUNTS
+        )
 
         self.assertCountEqual(
             set(rows[0].keys()) - self.public_fields,
@@ -501,7 +525,9 @@ class FilterTestCase(TestCase):
         rows = generate_rows(permission_filter._get_fields_to_keep(self.superuser, self.goals, uses_bcm_v2))
         user = magic_mixer.blend_user(["can_see_projections", "can_view_flat_fees"])
 
-        permission_filter.filter_columns_by_permission(user, rows, self.goals, self._mock_constraints(uses_bcm_v2))
+        permission_filter.filter_columns_by_permission(
+            user, rows, self.goals, self._mock_constraints(uses_bcm_v2), Level.ACCOUNTS
+        )
 
         self.assertCountEqual(set(rows[0].keys()) - self.public_fields, ["allocated_budgets"])
 
@@ -510,7 +536,9 @@ class FilterTestCase(TestCase):
         rows = generate_rows(permission_filter._get_fields_to_keep(self.superuser, self.goals, uses_bcm_v2))
         user = magic_mixer.blend_user(["can_view_account_agency_information"])
 
-        permission_filter.filter_columns_by_permission(user, rows, self.goals, self._mock_constraints(uses_bcm_v2))
+        permission_filter.filter_columns_by_permission(
+            user, rows, self.goals, self._mock_constraints(uses_bcm_v2), Level.ACCOUNTS
+        )
 
         self.assertCountEqual(set(rows[0].keys()) - self.public_fields, ["agency", "agency_id"])
 
@@ -519,7 +547,9 @@ class FilterTestCase(TestCase):
         rows = generate_rows(permission_filter._get_fields_to_keep(self.superuser, self.goals, uses_bcm_v2))
         user = magic_mixer.blend_user(["can_see_managers_in_accounts_table", "can_see_managers_in_campaigns_table"])
 
-        permission_filter.filter_columns_by_permission(user, rows, self.goals, self._mock_constraints(uses_bcm_v2))
+        permission_filter.filter_columns_by_permission(
+            user, rows, self.goals, self._mock_constraints(uses_bcm_v2), Level.ACCOUNTS
+        )
 
         self.assertCountEqual(
             set(rows[0].keys()) - self.public_fields,
@@ -537,7 +567,9 @@ class FilterTestCase(TestCase):
         rows = generate_rows(permission_filter._get_fields_to_keep(self.superuser, self.goals, uses_bcm_v2))
         user = magic_mixer.blend_user(["can_see_media_source_status_on_submission_popover"])
 
-        permission_filter.filter_columns_by_permission(user, rows, self.goals, self._mock_constraints(uses_bcm_v2))
+        permission_filter.filter_columns_by_permission(
+            user, rows, self.goals, self._mock_constraints(uses_bcm_v2), Level.ACCOUNTS
+        )
 
         self.assertEqual(rows[0]["status_per_source"], {1: {"source_id": 1, "source_status": 1}})
 

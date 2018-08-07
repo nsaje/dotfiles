@@ -197,7 +197,7 @@ class ReportJobExecutor(JobExecutor):
             goals.pixels,
             goals.conversion_goals,
             show_publishers_fields=stats.constants.PUBLISHER in breakdown,
-            uses_bcm_v2=stats.api_reports.get_uses_bcm_v2(user, constraints),
+            uses_bcm_v2=stats.api_reports.get_uses_bcm_v2(user, constraints, level),
         )
 
         order = cls._get_order(job, column_to_field_name_map)

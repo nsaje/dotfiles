@@ -53,7 +53,7 @@ def query(
 
     format_values(rows, columns)
 
-    permission_filter.filter_columns_by_permission(user, rows, goals, constraints)
+    permission_filter.filter_columns_by_permission(user, rows, goals, constraints, level)
 
     return rows
 
@@ -69,7 +69,7 @@ def totals(user, breakdown, constraints, goals, level, columns):
 
     format_values(rows, columns)
 
-    permission_filter.filter_columns_by_permission(user, rows, goals, constraints)
+    permission_filter.filter_columns_by_permission(user, rows, goals, constraints, level)
 
     return rows[0]
 

@@ -161,8 +161,8 @@ FIELD_PERMISSION_MAPPING = {
 }
 
 
-def filter_columns_by_permission(user, rows, goals, constraints):
-    fields_to_keep = _get_fields_to_keep(user, goals, get_uses_bcm_v2(user, constraints))
+def filter_columns_by_permission(user, rows, goals, constraints, level):
+    fields_to_keep = _get_fields_to_keep(user, goals, get_uses_bcm_v2(user, constraints, level))
     _remove_fields(rows, fields_to_keep)
     _custom_cleanup(user, rows)
 

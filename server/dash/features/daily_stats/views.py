@@ -69,6 +69,7 @@ class BaseDailyStatsView(api_common.BaseApiView):
 
         query_results = stats.api_dailystats.query(
             request.user,
+            self.level,
             breakdown,
             metrics,
             constraints,
@@ -92,6 +93,7 @@ class BaseDailyStatsView(api_common.BaseApiView):
         goals = stats.api_breakdowns.get_goals(constraints, breakdown)
         query_results = stats.api_dailystats.query(
             request.user,
+            self.level,
             breakdown,
             metrics,
             constraints,
@@ -156,6 +158,8 @@ class BaseDailyStatsView(api_common.BaseApiView):
 
 
 class AllAccountsDailyStatsView(BaseDailyStatsView):
+    level = constants.Level.ALL_ACCOUNTS
+
     def prepare_constraints(self, request, selected_only=False):
         params = self.extract_params(request, selected_only)
         return stats.constraints_helper.prepare_all_accounts_constraints(**params)
@@ -245,6 +249,8 @@ class AllAccountsPublishersDailyStats(AllAccountsDailyStatsView):
 
 
 class AccountDailyStatsView(BaseDailyStatsView):
+    level = constants.Level.ACCOUNTS
+
     def prepare_constraints(self, request, selected_only=False):
         params = self.extract_params(request, selected_only)
         return stats.constraints_helper.prepare_account_constraints(**params)
@@ -327,6 +333,8 @@ class AccountPublishersDailyStats(AccountDailyStatsView):
 
 
 class CampaignDailyStatsView(BaseDailyStatsView):
+    level = constants.Level.CAMPAIGNS
+
     def prepare_constraints(self, request, selected_only=False):
         params = self.extract_params(request, selected_only)
         return stats.constraints_helper.prepare_campaign_constraints(**params)
@@ -434,6 +442,8 @@ class CampaignPublishersDailyStats(CampaignDailyStatsView):
 
 
 class AdGroupDailyStatsView(BaseDailyStatsView):
+    level = constants.Level.AD_GROUPS
+
     def prepare_constraints(self, request, selected_only=False):
         params = self.extract_params(request, selected_only)
         return stats.constraints_helper.prepare_ad_group_constraints(**params)
