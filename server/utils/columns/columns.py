@@ -53,6 +53,7 @@ _FIELD_MAPPING = {
     "account_type": ("Account Type",),
     "default_sales_representative": ("Sales Representative",),
     "default_cs_representative": ("CS Representative",),
+    "ob_representative": ("OB Representative",),
     "default_account_manager": ("Account Manager",),
     "salesforce_url": ("SalesForce Link",),
     "age": ("Age",),

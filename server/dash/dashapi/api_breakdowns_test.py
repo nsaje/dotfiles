@@ -55,6 +55,7 @@ ACCOUNT_1 = {
     "default_sales_representative": "supertestuser@test.com",
     "salesforce_url": "",
     "default_cs_representative": "supercsuser@test.com",
+    "ob_representative": None,
     "agency": "",
     "account_type": "Activated",
     "pacing": None,

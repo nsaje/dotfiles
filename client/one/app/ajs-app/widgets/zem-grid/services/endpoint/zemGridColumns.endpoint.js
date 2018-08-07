@@ -210,6 +210,17 @@ angular.module('one.widgets').factory('zemGridEndpointColumns', function (zemPer
             internal: 'zemauth.can_see_managers_in_accounts_table',
             shown: 'zemauth.can_see_managers_in_accounts_table',
         },
+        obRepresentative: {
+            name: 'OB Representative',
+            field: 'ob_representative',
+            type: zemGridConstants.gridColumnTypes.TEXT,
+            totalRow: false,
+            help: 'Outbrain Manager responsible for the account and the communication with the client.',
+            order: true,
+            initialOrder: zemGridConstants.gridColumnOrder.DESC,
+            internal: 'zemauth.can_see_managers_in_accounts_table',
+            shown: 'zemauth.can_see_managers_in_accounts_table',
+        },
         campaignManager: {
             name: 'Campaign Manager',
             field: 'campaign_manager',
@@ -1615,6 +1626,7 @@ angular.module('one.widgets').factory('zemGridEndpointColumns', function (zemPer
         COLUMNS.accountType,
         COLUMNS.defaultSalesRepresentative,
         COLUMNS.defaultCsRepresentative,
+        COLUMNS.obRepresentative,
         COLUMNS.defaultAccountManager,
         COLUMNS.salesforceUrl,
     ];

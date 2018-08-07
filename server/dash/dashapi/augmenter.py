@@ -78,6 +78,7 @@ def augment_account(row, loader, is_base_level=False):
                 "default_account_manager",
                 "default_sales_representative",
                 "default_cs_representative",
+                "ob_representative",
                 "account_type",
                 "salesforce_url",
             ],
