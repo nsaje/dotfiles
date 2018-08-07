@@ -20,7 +20,7 @@ class CustomFlagsWidget(MultiWidget):
                         "id": item.id,
                         "name": item.name,
                         "placeholder": item.type,
-                        "title": item.description,
+                        "title": item.description or "",
                         "advanced": item.advanced,
                     }
                 )
@@ -37,5 +37,4 @@ class CustomFlagsWidget(MultiWidget):
 
     def value_from_datadict(self, data, files, name):
         output = [widget.value_from_datadict(data, files, name + "_%s" % i) for i, widget in enumerate(self.widgets)]
-        keys = [i.id for i in self.input_data]
-        return dict(zip(keys, output))
+        return output

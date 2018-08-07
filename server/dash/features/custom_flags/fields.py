@@ -10,7 +10,8 @@ class CustomFlagsField(MultiValueField):
         self.all_custom_flags = kwargs.pop("all_custom_flags") or []
         self.widget = CustomFlagsWidget(self.all_custom_flags)
         list_fields = self.get_fields()
-        super(CustomFlagsField, self).__init__(list_fields, *args, **kwargs)
+
+        super(CustomFlagsField, self).__init__(list_fields, required=False, require_all_fields=False, *args, **kwargs)
 
     def get_fields(self):
         fields_type = []
@@ -23,7 +24,4 @@ class CustomFlagsField(MultiValueField):
         return fields_type
 
     def compress(self, values):
-        return values
-
-    def clean(self, value):
-        return self.compress(value)
+        return dict(zip([i.id for i in self.all_custom_flags], values))
