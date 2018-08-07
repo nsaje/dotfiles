@@ -1050,23 +1050,27 @@
 -   fields:
         id: 'flag_1'
         name: 'dummy 1'
+        type: 'boolean'
         created_dt: '2014-06-04T09:58:21'
     model: dash.customflag
 
 -   fields:
         id: 'flag_2'
         name: 'dummy 2'
+        type: 'boolean'
         created_dt: '2014-06-04T09:58:21'
     model: dash.customflag
 
 -   fields:
         id: 'flag_3'
         name: 'dummy 3'
+        type: 'boolean'
         created_dt: '2014-06-04T09:58:21'
     model: dash.customflag
 
 -   fields:
         id: 'flag_4'
         name: 'dummy 4'
+        type: 'boolean'
         created_dt: '2014-06-04T09:58:21'
     model: dash.customflag

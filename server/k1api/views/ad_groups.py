@@ -51,7 +51,7 @@ class AdGroupsView(K1APIView):
         campaign_goals = self._get_campaign_goals(list(campaign_ids))
 
         all_custom_flags = {
-            flag: False for flag in dash.features.custom_flags.CustomFlag.objects.all().values_list("id", flat=True)
+            flag.id: flag.get_default_value() for flag in dash.features.custom_flags.CustomFlag.objects.all()
         }
 
         ad_group_dicts = []
