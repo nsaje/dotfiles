@@ -9,6 +9,9 @@ from dash import models
 from dash import constants
 from dash.dashapi import loaders
 
+from utils.magic_mixer import magic_mixer
+from core.publisher_bid_modifiers import PublisherBidModifier
+
 
 class GetLoaderTest(TestCase):
     def test_get_loader(self):
@@ -799,3 +802,24 @@ class PublisherBlacklistLoaderTest(TestCase):
         row = {"publisher_id": "pub7.com__2"}
         status = {"blacklisted_level": "adgroup", "status": constants.PublisherTargetingStatus.WHITELISTED}
         self._subdomain_id_test(row, status, "ad_group_id")
+
+
+class PublisherBidModifierLoaderTest(TestCase):
+    def setUp(self):
+        ad_group = magic_mixer.blend(models.AdGroup, id=1)
+        source = magic_mixer.blend(models.Source, id=1)
+        magic_mixer.blend(PublisherBidModifier, ad_group=ad_group, source=source, publisher="pub3.com", modifier=0.5)
+        user = magic_mixer.blend_user()
+
+        self.loader = loaders.PublisherBidModifierLoader(
+            models.AdGroup.objects.all().first(),
+            models.PublisherGroupEntry.objects.filter(publisher_group_id__in=[1, 2, 4, 6]),
+            models.PublisherGroupEntry.objects.filter(publisher_group_id__in=[3, 5, 7]),
+            {},
+            models.Source.objects.all(),
+            user,
+        )
+
+    def test_modifier_map(self):
+        modifier_map = self.loader.modifier_map
+        self.assertDictEqual(modifier_map, {(1, "pub3.com"): 0.5})

@@ -158,6 +158,7 @@ FIELD_PERMISSION_MAPPING = {
     "license_fee_refund": ("zemauth.can_see_credit_refunds",),
     "etfm_cost_refund": ("zemauth.can_see_credit_refunds",),
     "billing_cost_refund": ("zemauth.can_see_credit_refunds",),
+    "bid_modifier": ("zemauth.can_use_publisher_bid_modifiers_in_ui",),
 }
 
 

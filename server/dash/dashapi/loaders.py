@@ -19,6 +19,7 @@ from dash.dashapi import data_helper
 
 import stats.helpers
 
+from core.publisher_bid_modifiers import PublisherBidModifier
 
 """
 Objects that load necessary related objects. All try to execute queries as seldom as possible.
@@ -48,6 +49,8 @@ def get_loader_for_dimension(target_dimension, level):
             return AdGroupSourcesLoader
         return SourcesLoader
     elif target_dimension == "publisher_id":
+        if level == constants.Level.AD_GROUPS:
+            return PublisherBidModifierLoader
         return PublisherBlacklistLoader
     return None
 
@@ -588,6 +591,8 @@ class PublisherBlacklistLoader(Loader):
 
         self.default = {"status": constants.PublisherTargetingStatus.UNLISTED}
 
+        self.has_bid_modifiers = False
+
     @classmethod
     def _get_obj_id(cls, obj):
         return publisher_helpers.create_publisher_id(obj.publisher, obj.source_id)
@@ -839,3 +844,42 @@ class AdGroupSourcesLoader(Loader):
         }
 
         return totals
+
+
+class PublisherBidModifierLoader(PublisherBlacklistLoader):
+    def __init__(
+        self,
+        ad_group,
+        blacklist_qs,
+        whitelist_qs,
+        publisher_group_targeting,
+        filtered_sources_qs,
+        user,
+        account=None,
+        **kwargs
+    ):
+        super(PublisherBidModifierLoader, self).__init__(
+            blacklist_qs, whitelist_qs, publisher_group_targeting, filtered_sources_qs, user, account=None, **kwargs
+        )
+        self.ad_group = ad_group
+        self.has_bid_modifiers = True
+
+    @classmethod
+    def from_constraints(cls, user, constraints):
+        return cls(
+            constraints["ad_group"],
+            constraints["publisher_blacklist"],
+            constraints["publisher_whitelist"],
+            constraints["publisher_group_targeting"],
+            constraints["filtered_sources"],
+            user,
+            start_date=constraints.get("date__gte"),
+            end_date=constraints.get("date__lte"),
+            account=constraints.get("account"),
+        )
+
+    @cached_property
+    def modifier_map(self):
+        modifiers = PublisherBidModifier.objects.filter(ad_group=self.ad_group)
+        modifiers = modifiers.filter(source__in=self.filtered_sources_qs)
+        return {(x.source_id, x.publisher): x.modifier for x in modifiers}

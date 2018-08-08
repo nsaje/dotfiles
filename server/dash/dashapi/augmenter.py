@@ -380,6 +380,12 @@ def augment_publisher(row, loader, is_base_level=False):
             }
         )
 
+    if loader.has_bid_modifiers:
+        modifier_map = loader.modifier_map
+        modifier = modifier_map.get((source_id, domain))
+        if modifier is not None:
+            row.update({"bid_modifier": modifier})
+
 
 def augment_publisher_for_report(row, loader, is_base_level=False):
     domain, _ = publisher_helpers.dissect_publisher_id(row["publisher_id"])
