@@ -24,6 +24,9 @@ class CustomFlagsField(MultiValueField):
         return fields_type
 
     def compress(self, values):
+        if not values:
+            return dict()
+
         mapping = dict(zip([i.id for i in self.all_custom_flags], values))
         for item in self.all_custom_flags:
             if mapping[item.id] is None and item.type == "int":
