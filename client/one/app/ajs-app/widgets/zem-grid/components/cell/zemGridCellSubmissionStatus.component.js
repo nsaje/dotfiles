@@ -12,8 +12,11 @@ angular.module('one.widgets').directive('zemGridCellSubmissionStatus', function 
             grid: '=',
         },
         template: require('./zemGridCellSubmissionStatus.component.html'),
-        controller: function ($scope) {
+        controller: function ($scope, config, zemPermissions) {
             var vm = this;
+            vm.config = config;
+            vm.hasPermission = zemPermissions.hasPermission;
+            vm.isPermissionInternal = zemPermissions.isPermissionInternal;
 
             $scope.$watch('ctrl.row', update);
             $scope.$watch('ctrl.data', update);

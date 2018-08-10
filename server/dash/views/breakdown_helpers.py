@@ -121,14 +121,16 @@ def format_report_rows_content_ad_editable_fields(rows):
             if submission_status == constants.ContentAdSubmissionStatus.REJECTED and submission_errors is not None:
                 text = "{} ({})".format(text, submission_errors)
 
-            submission_states.append(
-                {
-                    "name": source_status["source_name"],
-                    "status": source_status["submission_status"],
-                    "source_state": source_status_text,
-                    "text": text,
-                }
-            )
+            state = {
+                "name": source_status["source_name"],
+                "status": source_status["submission_status"],
+                "source_state": source_status_text,
+                "text": text,
+            }
+            if "source_link" in source_status:
+                state["source_link"] = source_status["source_link"]
+
+            submission_states.append(state)
 
         row.update(
             {

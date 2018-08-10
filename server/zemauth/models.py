@@ -367,6 +367,7 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ("can_include_credit_refunds_in_report", "User can export credit refunds in all accounts report"),
             ("can_use_publisher_bid_modifiers_in_ui", "User can see and adjust publisher bid modifiers in the UI"),
             ("can_edit_advanced_custom_flags", "User can modify the advanced custom flags in admin"),
+            ("can_see_amplify_review_link", "User can see link to Amplify review campaign"),
         )
 
     def get_full_name(self):

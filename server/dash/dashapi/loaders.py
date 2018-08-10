@@ -1,5 +1,6 @@
 import calendar
 import collections
+from django.core.urlresolvers import reverse
 from django.utils.functional import cached_property
 from django.db.models.query import QuerySet
 
@@ -33,6 +34,8 @@ Notes on implementation:
   - settings_map properties should return a default dict that returns default field values
   - same for status_map - should return default value
 """
+
+OUTBRAIN_SOURCE_ID = 3
 
 
 def get_loader_for_dimension(target_dimension, level):
@@ -512,13 +515,19 @@ class ContentAdsLoader(Loader):
                     content_ad_source,
                     source_map[content_ad.ad_group_id][source_id]["content_ad_submission_policy"],
                 )
-                per_source_map[content_ad_id][content_ad_source.source_id] = {
+                source_link = self._get_source_link(
+                    content_ad, source_map[content_ad.ad_group_id][source_id]["content_ad_submission_policy"]
+                )
+                content_ad_source_dict = {
                     "source_id": source_id,
                     "source_name": sources.get(source_id),
                     "source_status": source_status,
                     "submission_status": submission_status,
                     "submission_errors": submission_errors,
                 }
+                if source_link:
+                    content_ad_source_dict["source_link"] = source_link
+                per_source_map[content_ad_id][content_ad_source.source_id] = content_ad_source_dict
 
         return per_source_map
 
@@ -545,14 +554,25 @@ class ContentAdsLoader(Loader):
         return settings_map
 
     def _get_submission_status(self, content_ad, content_ad_source, content_ad_submission_policy):
-        if (
+        if self._should_use_amplify_review(content_ad, content_ad_submission_policy):
+            outbrain_content_ad_source = self.amplify_reviews_map[content_ad.id]
+            return outbrain_content_ad_source.get_submission_status(), content_ad_source.submission_errors
+        else:
+            return content_ad_source.get_submission_status(), content_ad_source.submission_errors
+
+    def _get_source_link(self, content_ad, content_ad_submission_policy):
+        if self._should_use_amplify_review(content_ad, content_ad_submission_policy):
+            return "{}?ad_group_id={}&source_id={}".format(
+                reverse("supply_dash_redirect"), content_ad.ad_group.id, OUTBRAIN_SOURCE_ID
+            )
+        return None
+
+    def _should_use_amplify_review(self, content_ad, content_ad_submission_policy):
+        return (
             content_ad_submission_policy == constants.SourceSubmissionPolicy.AUTOMATIC_WITH_AMPLIFY_APPROVAL
             and content_ad.amplify_review
             and content_ad.id in self.amplify_reviews_map
-        ):
-            outbrain_content_ad_source = self.amplify_reviews_map[content_ad.id]
-            return outbrain_content_ad_source.get_submission_status(), content_ad_source.submission_errors
-        return content_ad_source.get_submission_status(), content_ad_source.submission_errors
+        )
 
     @cached_property
     def content_ads_sources_map(self):
@@ -568,7 +588,7 @@ class ContentAdsLoader(Loader):
 
     @cached_property
     def amplify_reviews_map(self):
-        qs = models.ContentAdSource.objects.filter(content_ad_id__in=self.objs_ids, source__bidder_slug="outbrain")
+        qs = models.ContentAdSource.objects.filter(content_ad_id__in=self.objs_ids, source_id=OUTBRAIN_SOURCE_ID)
 
         amplify_reviews_map = {}
         for content_ad_source in qs:
