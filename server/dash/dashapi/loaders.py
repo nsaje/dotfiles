@@ -449,19 +449,17 @@ class AdGroupsLoader(Loader):
 
 
 class ContentAdsLoader(Loader):
-    def __init__(self, content_ads_qs, filtered_sources_qs, user, **kwargs):
+    def __init__(self, content_ads_qs, filtered_sources_qs, **kwargs):
         super(ContentAdsLoader, self).__init__(
             content_ads_qs.select_related("batch", "ad_group__campaign__account"), **kwargs
         )
         self.filtered_sources_qs = filtered_sources_qs
-        self.user = user
 
     @classmethod
     def from_constraints(cls, user, constraints):
         return cls(
             constraints["allowed_content_ads"],
             constraints["filtered_sources"],
-            user,
             start_date=constraints.get("date__gte"),
             end_date=constraints.get("date__lte"),
         )
