@@ -32,12 +32,12 @@ angular.module('one').component('zemAccountCreditRefundItemModal', {
                 $ctrl.account
             );
             $ctrl.isDatePickerOpen = false;
-
+            var now =  moment(Date.now());
             $ctrl.datePickerOptions = {
                 datepickerMode: 'month',
                 minMode: 'month',
-                minDate: $ctrl.state.creditItem.startDate,
-                maxDate: $ctrl.state.creditItem.endDate,
+                minDate: now.subtract(1, 'month').toDate(),
+                maxDate: now.toDate()
             };
         }
 
