@@ -1,4 +1,4 @@
-eins:
+server:
   image: z1-bundle:current
   entrypoint: /bin/bash
   command: /start-server.sh

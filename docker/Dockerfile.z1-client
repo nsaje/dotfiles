@@ -1,10 +1,11 @@
-FROM library/node:8.4.0
+FROM node:8
 
 RUN apt-get update \
     && apt-get install  -y --no-install-recommends \
         nano \
         xvfb
 
+# Install Chrome
 RUN test ! -x /opt/google/chrome/chrome \
     && wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb \
     && (dpkg -i  google-chrome-stable_current_amd64.deb || true) \
@@ -13,11 +14,11 @@ RUN test ! -x /opt/google/chrome/chrome \
     && chmod +x /run-chrome.sh \
     && rm -f google-chrome-stable_current_amd64.deb
 
-# Hack to upgrade NPM:
-#  - install local version
-#  - replace old global verson with new one
-RUN cd /var/tmp/ && npm install npm@5.4 && \
-    rm -fr /usr/local/lib/node_modules/npm && \
-    mv node_modules/npm  /usr/local/lib/node_modules
+RUN mkdir /app
+WORKDIR /app
 
 RUN npm install -g bower
+
+ADD package.json /app/
+RUN npm cache clear --force && npm install
+

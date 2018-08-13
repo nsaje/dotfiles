@@ -36,7 +36,7 @@ Now you have a running local setup of Z1, accessible at [http://localhost:8000](
 You can log in with u/p `test@test.com` / `test123`.
 
 The code you have locally is mounted into the docker containers, so you can edit the files locally. For running tests (either server or client),
-first `exec` into the appropriate container (`docker-compose exec eins bash` for server, `docker-compose exec einsstatic bash` for client) and
+first `exec` into the appropriate container (`docker-compose exec server bash` for server, `docker-compose exec client bash` for client) and
 then run the appropriate test commands (`./manage.py test` for server, `npm run tests` for client).
 
 ### Server specifics
@@ -48,7 +48,7 @@ DB=pg01 make run
 ```
 
 #### Overriding docker's localsettings
-To override a setting when running eins via docker, use the file `server/server/localsettings_docker_override.py`. It is loaded at the end of `localsettings.docker.py` and will override the preset values with your settings.
+To override a setting when running server via docker, use the file `server/server/localsettings_docker_override.py`. It is loaded at the end of `localsettings.docker.py` and will override the preset values with your settings.
 
 
 #### Visualize models
@@ -64,7 +64,7 @@ When using the Docker setup, static files are watched and recompiled automatical
 CLIENT_SKIP_RUN=1 make run
 ```
 
-and after that, you can use `docker-compose exec einsstatic bash` to get a bash session inside the einsstatic container. There, you can run npm scripts yourself, e.g. `npm run dev`.
+and after that, you can use `docker-compose exec client bash` to get a bash session inside the client container. There, you can run npm scripts yourself, e.g. `npm run dev`.
 
 #### Manual setup (legacy)
 
@@ -212,17 +212,17 @@ export ACCEPTANCE_IMAGE="569683728510.dkr.ecr.us-east-1.amazonaws.com/zemanta/z1
 docker-compose -f docker-compose.yml -f docker-compose.acceptance.yml up --force-recreate -d
 ```
 
-then exec into eins container:
+then exec into server container:
 
-`docker exec -it zemantaeins_eins_1 bash`
+`docker exec -it server bash`
 
 and run inside:
 
-`python restapi-test-server.py eins:8124 --keepdb --autoreload`
+`python restapi-test-server.py server:8124 --keepdb --autoreload`
 
 Then you can run acceptance tests with
 
-`docker-compose -f docker-compose.yml -f docker-compose.acceptance.yml run --rm dredd ./restapi-acceptance-tests.sh eins:8124`
+`docker-compose -f docker-compose.yml -f docker-compose.acceptance.yml run --rm dredd ./restapi-acceptance-tests.sh server:8124`
 
 
 ### Test ride your pull request in production

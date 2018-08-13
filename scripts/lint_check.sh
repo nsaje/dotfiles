@@ -20,29 +20,14 @@ docker run --rm -v $PWD:/src --workdir=/src/ --entrypoint=black py3-tools -l 120
 EXITCODE=$?
 report_check_result $EXITCODE "Black"
 
-# Flake8 ------------------------------------------------------------------------
+# Flake8 -----------------------------------------------------------------------
 blue "Flake8 lint in progress ..."
 docker run --rm -v $PWD:/src --workdir=/src/ --entrypoint=flake8 py3-tools ./server/
 
 EXITCODE=$?
 report_check_result $EXITCODE "Flake8"
 
-
-# Client Lint ----------------------------------------------------------------------
-blue "ClientLint in progress ..."
-
-docker run --rm \
-           -v "/src/client/node_modules" \
-           -v $PWD/.eslintrc.yml:/root/.eslintrc.yml \
-           -v $PWD/client:/src \
-           --entrypoint=sh \
-           client-lint -c "rm -f /package.json ; npm run lint"
-
-EXITCODE=$?
-report_check_result $EXITCODE "ClientLint"
-
-
-# Xenon ----------------------------------------------------------------------------
+# Xenon -------------------------------------------------------------------------
 blue "Xenon (cyclomatic complexity) check in progress ..."
 docker run --rm -v $PWD:/src --workdir=/src/ --entrypoint=xenon py3-tools  \
   --max-absolute D \
@@ -52,8 +37,7 @@ docker run --rm -v $PWD:/src --workdir=/src/ --entrypoint=xenon py3-tools  \
 EXITCODE=$?
 report_check_result $EXITCODE "Xenon"
 
-
-# mypy -----------------------------------------------------------------------------
+# mypy --------------------------------------------------------------------------
 blue "mypy check in progress ..."
 docker run --rm -v $PWD:/src --workdir=/src/server/ --entrypoint=sh py3-tools \
            -c 'mypy $(find . -name "*.py" | xargs grep typing | cut -d ":" -f1 | sort | uniq)'

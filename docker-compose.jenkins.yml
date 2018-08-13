@@ -9,17 +9,16 @@ services:
           - POSTGRES_USER=eins
         command: "-c fsync=off -c full_page_writes=off -c synchronous_commit=off"
         volumes:
-          - "./fixtures/:/docker-entrypoint-initdb.d/"
+          - "./fixtures/:/docker-entrypoint-initdb.d/"      
 
-    einsstatic:
-        hostname: einsstatic
-        image: digitallyseamless/nodejs-bower-grunt:4
+    client:        
+        image: $Z1_CLIENT_IMAGE
         expose:
           - "9999"
         command: "sleep 1h"
 
-    eins:
-        image: z1:$BRANCH_NAME.$BUILD_NUMBER
+    server:
+        image: $Z1_SERVER_IMAGE
         volumes:
           - "./server/.junit_xml/:/app/z1/.junit_xml/"
           - "./server/static/:/app/z1/static/"
@@ -27,5 +26,5 @@ services:
           - "postgres:db"
           - "statspostgres:statsdb"
           - "memcached:memcached"
-          - "einsstatic"
+          - "client"          
           - "telegraf"
