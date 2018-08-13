@@ -2,6 +2,17 @@
   "name": "zemanta-eins",
   "version": "0.0.1",
   "private": true,
+  "scripts": {
+    "dev": "NODE_ENV=development webpack-dev-server --debug --history-api-fallback --inline --color --progress --port=9999 --host=0.0.0.0",
+    "prod": "NODE_ENV=production webpack",
+    "tests": "NODE_ENV=test karma start karma.conf.js",
+    "tests-watch": "NODE_ENV=test karma start karma.conf.js --no-single-run",
+    "lint:eslint": "eslint one --format codeframe",
+    "lint:tslint": "tslint --project tsconfig.json --format codeFrame",
+    "lint:prettier": "prettier --list-different 'one/**/*.{js,ts}'",
+    "lint": "npm run lint:eslint && npm run lint:tslint",
+    "prettier:format": "prettier --write 'one/**/*.{js,ts}'"
+  },
   "dependencies": {
     "@angular/common": "6.1.0",
     "@angular/compiler": "6.1.0",
@@ -53,6 +64,7 @@
     "null-loader": "0.1.1",
     "phantomjs-prebuilt": "2.1.16",
     "postcss-loader": "2.0.9",
+    "prettier": "1.14.0",
     "rxjs-tslint-rules": "4.3.0",
     "style-loader": "0.19.0",
     "tslint": "5.8.0",
@@ -65,13 +77,6 @@
     "webpack-copy-plugin": "0.0.4",
     "webpack-dev-server": "2.9.7",
     "webpack-merge": "4.1.1"
-  },
-  "scripts": {
-    "dev": "NODE_ENV=development webpack-dev-server --debug --history-api-fallback --inline --color --progress --port=9999 --host=0.0.0.0",
-    "prod": "NODE_ENV=production webpack",
-    "tests": "NODE_ENV=test karma start karma.conf.js",
-    "tests-watch": "NODE_ENV=test karma start karma.conf.js --no-single-run",
-    "lint": "eslint one --format codeframe && tslint --project tsconfig.json --format codeFrame"
   },
   "browserslist": [
     "> 1%",

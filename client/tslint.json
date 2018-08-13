@@ -7,35 +7,8 @@
     "tslint-eslint-rules",
     "rxjs-tslint-rules"
   ],
-  "rules": {
-    "align": [
-      true,
-      "arguments",
-      "elements",
-      "members",
-      "parameters",
-      "statements"
-    ],
-    "array-bracket-spacing":  [
-      true,
-      "never"
-    ],
-    "arrow-return-shorthand": true,
-    "arrow-parens": [
-      true,
-      "ban-single-arg-parens"
-    ],
-    "block-spacing":  [
-      true,
-      "always"
-    ],
-    "brace-style": [
-      true,
-      "1tbs",
-      {
-        "allowSingleLine": true
-      }
-    ],
+  "rules": {    
+    "arrow-return-shorthand": true,    
     "callable-types": true,
     "class-name": true,
     "comment-format": [
@@ -60,7 +33,8 @@
     ],
     "directive-class-suffix": [
       true,
-      "Directive"
+      "Directive",
+      "Component"
     ],
     "directive-selector": [
       true,
@@ -69,12 +43,7 @@
       "camelCase"
     ],
     "eofline": true,
-    "forin": true,    
-    "import-spacing": true,
-    "indent": [
-      true,
-      "spaces"
-    ],
+    "forin": true,        
     "interface-name": [
       true,
       "never-prefix"
@@ -89,10 +58,7 @@
       true,
       1
     ],
-    "max-line-length": [
-      true,
-      120
-    ],
+    "max-line-length": false,
     "member-access": [
       true,
       "no-public"
@@ -114,7 +80,6 @@
     "no-attribute-parameter-decorator": true,
     "no-bitwise": true,
     "no-conditional-assignment": true,
-    "no-consecutive-blank-lines": [true, 2],
     "no-console": true,
     "no-constant-condition": true,
     "no-construct": true,
@@ -152,7 +117,6 @@
     "no-string-throw": true,
     "no-switch-case-fall-through": true,
     "no-trailing-whitespace": true,
-    "no-unexpected-multiline": true,
     "no-unnecessary-initializer": true,
     "no-unused-expression": true,
     "no-unsafe-finally": true,
@@ -160,79 +124,23 @@
     "no-use-before-declare": true,
     "no-var-keyword": true,
     "no-var-requires": true,
-    "object-curly-spacing": [
-      true,
-      "never"
-    ],
-    "object-literal-sort-keys": false,
-    "one-line": [
-      true,
-      "check-open-brace",
-      "check-catch",
-      "check-else",
-      "check-whitespace"
-    ],
+    "object-literal-sort-keys": false,    
     "only-arrow-functions": [
       true,
       "allow-named-functions"
     ],
     "prefer-const": true,
     "prefer-for-of": true,
-    "prefer-object-spread": true,
-    "quotemark": [
-      true,
-      "single"
-    ],
+    "prefer-object-spread": true,    
     "radix": true,
     "restrict-plus-operands": true,
-    "rxjs-no-unsafe-takeuntil": true,
-    "semicolon": [
-      true,
-      "always"
-    ],
-    "space-before-function-paren": [
-      true,
-      "always"
-    ],
-    "space-in-parens": [
-      true,
-      "never"
-    ],
-    "ter-func-call-spacing":  [
-      true,
-      "never"
-    ],
-    "ter-indent": [
-      true,
-      4
-    ],
-    "trailing-comma": [
-      true,
-      {
-        "multiline": {
-          "objects": "always",
-          "arrays": "always",
-          "functions": "never",
-          "typeLiterals": "always"
-        }
-      }
-    ],
+    "rxjs-no-unsafe-takeuntil": true,    
     "triple-equals": [
       true,
       "allow-null-check",
       "allow-undefined-check"
     ],
     "typedef": true,
-    "typedef-whitespace": [
-      true,
-      {
-        "call-signature": "nospace",
-        "index-signature": "nospace",
-        "parameter": "nospace",
-        "property-declaration": "nospace",
-        "variable-declaration": "nospace"
-      }
-    ],
     "typeof-compare": true,
     "unified-signatures": true,
     "use-host-property-decorator": true,
@@ -246,16 +154,6 @@
       true,
         "check-format",
         "allow-leading-underscore"
-    ],
-    "whitespace": [
-      true,
-      "check-branch",
-      "check-decl",
-      "check-operator",
-      "check-separator",
-      "check-typecast",
-      "check-preblock",
-      "check-type"
     ]
   }
 }

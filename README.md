@@ -116,17 +116,16 @@ into the master panel.
 ![Image](docs/debug_toolbar.png)
 
 
-## Linting
+## Linting and formatting
 
-We have [flake8](http://flake8.pycqa.org/en/latest/), [black](https://github.com/ambv/black) and [eslint](http://eslint.org/docs/rules/) checks set up on circle CI. The build will be unsuccessful if you will commit unconventional code.
+We have [flake8](http://flake8.pycqa.org/en/latest/), [black](https://github.com/ambv/black), [eslint](http://eslint.org/docs/rules/) and [tslint](https://palantir.github.io/tslint/) checks set up on circle CI. Also we have [Prettier](https://prettier.io/) as an opinionated code formatter. The build will be unsuccessful if you will commit unconventional code.
 
-It's a good idea to set up flake8, black & eslint & tslint inside your editor. For convenience there's a pre-commit hook in the repo that automatically formats Python code with *black* and performs lint checks on changed code. You can install it by running
+It's a good idea to set up flake8, black, eslint, tslint and prettier inside your editor. For convenience there's a pre-commit hook in the repo that automatically formats Python code with *black*, performs lint checks on Javascript (*eslint*) and Typescript (*tslint*) files and formats client code-base with *Prettier*.
 
-```
-ln -s $PWD/scripts/pre-commit.sh .git/hooks/pre-commit
-```
+To setup the pre-commit hook you'll first need [pre-commit](https://pre-commit.com/) package manager installed. Run `pip install pre-commit`. 
 
-from the root of the repository.
+Then install the pre-commit hook by running `pre-commit install` in project's root.
+
 
 ## Documentation
 

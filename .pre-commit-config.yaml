@@ -1,0 +1,43 @@
+- repo: https://github.com/ambv/black
+  rev: "stable"
+  hooks:
+    - id: black
+      name: black      
+      entry: black
+      language: python      
+      types: [python]
+- repo: https://github.com/pre-commit/pre-commit-hooks
+  rev: "v1.4.0"
+  hooks:
+    - id: flake8
+      name: flake8
+      entry: flake8
+      language: python
+      language_version: python3.6
+      types: [python]
+- repo: https://github.com/prettier/prettier
+  rev: "1.14.0"
+  hooks:        
+    - id: prettier
+      name: prettier
+      entry: prettier --write
+      language: node
+      files: \.(js|ts)$     
+- repo: https://github.com/pre-commit/mirrors-eslint
+  sha: master
+  hooks:
+    - id: eslint
+      name: eslint
+      entry: eslint
+      language: node
+      files: \.(js)$
+      additional_dependencies: ["eslint", "eslint-plugin-jasmine"]
+- repo: git://github.com/awebdeveloper/pre-commit-tslint/
+  sha: master
+  hooks: 
+    - id: tslint
+      name: tslint
+      entry: tslint
+      language: node
+      files: \.(ts)$
+      additional_dependencies: ["tslint", "typescript"]

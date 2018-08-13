@@ -27,13 +27,7 @@ globals:
   require: false
   process: false
 
-rules:
-  indent:
-    - 2
-    - 4
-  quotes:
-    - 2
-    - single
+rules:      
   linebreak-style:
     - 2
     - unix
@@ -49,7 +43,7 @@ rules:
   dot-notation:
     - 2
   eqeqeq:
-    - 2
+    - 2    
   guard-for-in:
     - 2
   no-alert:
@@ -57,11 +51,7 @@ rules:
   no-else-return:
     - 2
   no-trailing-spaces:
-    - 2
-  max-len:
-    - 2
-    - 120
-    - 4
+    - 2  
   brace-style:
     - 2
     - 1tbs
@@ -88,9 +78,7 @@ rules:
   keyword-spacing:
     - 2
   space-before-blocks:
-    - 2
-  space-before-function-paren:
-    - 2
+    - 2  
   space-in-parens:
     - 2
   space-infix-ops:
