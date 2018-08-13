@@ -24,17 +24,13 @@ def get_predicted_remaining_budget(log, campaign):
     current_rt_spends, prev_rt_spends = _get_realtime_spends(
         log, campaign, dates_helper.day_after(budget_spends_until_date)
     )
-    available_amount = _get_available_campaign_budget(
-        log, campaign, budget_spends_until_date
-    )
+    available_amount = _get_available_campaign_budget(log, campaign, budget_spends_until_date)
 
     remaining = available_amount
     if current_rt_spends:
         remaining = available_amount - _sum_rt_spends(current_rt_spends)
 
-    spend_rate_per_minute = _calculate_spend_rate_per_minute(
-        current_rt_spends, prev_rt_spends
-    )
+    spend_rate_per_minute = _calculate_spend_rate_per_minute(current_rt_spends, prev_rt_spends)
     predicted_spend_increase = spend_rate_per_minute * CHECK_FREQUENCY_MINUTES * 60
     log.add_context(
         {
@@ -51,39 +47,26 @@ def get_predicted_remaining_budget(log, campaign):
 def get_budget_spend_estimates(log, campaign):
     budgets_active_today = _get_budgets_active_today(campaign)
     budget_spend_until_date = _get_until_date_for_budget_spends(campaign)
-    current_rt_spend = _get_current_realtime_spend(
-        log, campaign, dates_helper.day_after(budget_spend_until_date)
-    )
+    current_rt_spend = _get_current_realtime_spend(log, campaign, dates_helper.day_after(budget_spend_until_date))
 
     spend_estimates = {}
     remaining_rt_spend = current_rt_spend if current_rt_spend else 0
     local_remaining_rt_spend = _to_local_currency(campaign, remaining_rt_spend)
     spend_per_budget = {}
     for budget in budgets_active_today:
-        past_spend = budget.get_local_spend_data(end_date=budget_spend_until_date)[
-            "etfm_total"
-        ]
+        past_spend = budget.get_local_spend_data(end_date=budget_spend_until_date)["etfm_total"]
         spend_per_budget[budget.id] = past_spend
-        spend_estimates[budget] = min(
-            budget.amount, past_spend + local_remaining_rt_spend
-        )
+        spend_estimates[budget] = min(budget.amount, past_spend + local_remaining_rt_spend)
 
         rt_added = spend_estimates[budget] - past_spend
         local_remaining_rt_spend -= rt_added
 
-    log.add_context(
-        {
-            "budget_spends_until_date": budget_spend_until_date,
-            "local_spend_per_budget": spend_per_budget,
-        }
-    )
+    log.add_context({"budget_spends_until_date": budget_spend_until_date, "local_spend_per_budget": spend_per_budget})
     return spend_estimates
 
 
 def _to_local_currency(campaign, amount):
-    exchange_rate = core.multicurrency.get_current_exchange_rate(
-        campaign.account.currency
-    )
+    exchange_rate = core.multicurrency.get_current_exchange_rate(campaign.account.currency)
     return amount * exchange_rate
 
 
@@ -102,9 +85,7 @@ def _calculate_spend_rate_per_minute(current_rt_spends, prev_rt_spends):
 
     # NOTE: for simplicity only compare first element (today's data)
     # because yesterday's data is more likely to be accurate
-    seconds_since = (
-        (current_rt_spends[0].created_dt) - (prev_rt_spends[0].created_dt)
-    ).total_seconds()
+    seconds_since = ((current_rt_spends[0].created_dt) - (prev_rt_spends[0].created_dt)).total_seconds()
 
     current_rt_spend = _sum_rt_spends(current_rt_spends)
     prev_rt_spend = _sum_rt_spends(prev_rt_spends)
@@ -121,35 +102,24 @@ def _get_until_date_for_budget_spends(campaign):
 
 def _should_query_realtime_stats_for_yesterday(campaign):
     in_critical_hours = 0 <= dates_helper.local_now().hour < config.HOURS_DELAY
-    local_midnight = dates_helper.local_now().replace(
-        hour=0, minute=0, second=0, microsecond=0
-    )
+    local_midnight = dates_helper.local_now().replace(hour=0, minute=0, second=0, microsecond=0)
     local_recent = local_midnight - datetime.timedelta(hours=2)
     utc_recent = dates_helper.local_to_utc_time(local_recent)
     recent_rt_data_exists = RealTimeCampaignDataHistory.objects.filter(
-        campaign=campaign,
-        date=dates_helper.local_yesterday(),
-        created_dt__gte=utc_recent,
+        campaign=campaign, date=dates_helper.local_yesterday(), created_dt__gte=utc_recent
     ).exists()  # midnight job that corrects the state for stopped campaigns doesn't have recent yesterday data
     return in_critical_hours and recent_rt_data_exists
 
 
 def _get_available_campaign_budget(log, campaign, until):
     budgets_active_today = _get_budgets_active_today(campaign)
-    log.add_context(
-        {"active_budget_line_items": [bli.id for bli in budgets_active_today]}
-    )
-    return sum(
-        max(bli.get_available_etfm_amount(date=until), 0)
-        for bli in budgets_active_today
-    )
+    log.add_context({"active_budget_line_items": [bli.id for bli in budgets_active_today]})
+    return sum(max(bli.get_available_etfm_amount(date=until), 0) for bli in budgets_active_today)
 
 
 def _get_budgets_active_today(campaign):
     today = dates_helper.local_today()
-    return campaign.budgets.filter(start_date__lte=today, end_date__gte=today).order_by(
-        "created_dt"
-    )
+    return campaign.budgets.filter(start_date__lte=today, end_date__gte=today).order_by("created_dt")
 
 
 def _get_realtime_spends(log, campaign, start):
@@ -176,17 +146,13 @@ def _get_realtime_spends_for_date(campaign, date):
     current_spend = _get_current_spend(campaign, date)
     prev_spend = _get_prev_spend(campaign, date, current_spend)
     if current_spend and not _is_recent(current_spend):
-        logger.warning(
-            "Real time data is stale. campaign=%s, date=%s", campaign, date.isoformat()
-        )
+        logger.warning("Real time data is stale. campaign=%s, date=%s", campaign, date.isoformat())
     return current_spend, prev_spend
 
 
 def _get_current_spend(campaign, date):
     try:
-        return RealTimeCampaignDataHistory.objects.filter(
-            date=date, campaign=campaign
-        ).latest("created_dt")
+        return RealTimeCampaignDataHistory.objects.filter(date=date, campaign=campaign).latest("created_dt")
     except RealTimeCampaignDataHistory.DoesNotExist:
         return None
 
@@ -195,14 +161,10 @@ def _get_prev_spend(campaign, date, current_spend):
     if not current_spend:
         return None
 
-    max_created_dt = current_spend.created_dt - datetime.timedelta(
-        seconds=MIN_PREV_SPEND_SECONDS
-    )
+    max_created_dt = current_spend.created_dt - datetime.timedelta(seconds=MIN_PREV_SPEND_SECONDS)
     try:
         return (
-            RealTimeCampaignDataHistory.objects.filter(
-                date=date, campaign=campaign, created_dt__lte=max_created_dt
-            )
+            RealTimeCampaignDataHistory.objects.filter(date=date, campaign=campaign, created_dt__lte=max_created_dt)
             .exclude(id=current_spend.id)
             .latest("created_dt")
         )
