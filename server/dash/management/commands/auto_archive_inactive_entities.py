@@ -14,18 +14,29 @@ logger = logging.getLogger(__name__)
 
 DAYS_INACTIVE = 90
 
-WHITELISTED_ACCOUNTS = [305, 490, 512, 513, 293]  # OEN  # InPowered  # -  # -  # BusinessWire
+WHITELISTED_ACCOUNTS = [
+    305,
+    490,
+    512,
+    513,
+    293,
+]  # OEN  # InPowered  # -  # -  # BusinessWire
 
 
 class Command(ExceptionCommand):
-    help = "Auto-archive ad groups and campaigns that weren't active in the last 3 months."
+    help = (
+        "Auto-archive ad groups and campaigns that weren't active in the last 3 months."
+    )
 
     def handle(self, *args, **options):
         adgroups, campaigns = _auto_archive_inactive_entities(
-            inactive_since=dates_helper.local_today() - datetime.timedelta(days=DAYS_INACTIVE),
+            inactive_since=dates_helper.local_today()
+            - datetime.timedelta(days=DAYS_INACTIVE),
             whitelist=WHITELISTED_ACCOUNTS,
         )
-        logger.info("Archived {} ad groups and {} campaigns.".format(adgroups, campaigns))
+        logger.info(
+            "Archived {} ad groups and {} campaigns.".format(adgroups, campaigns)
+        )
 
 
 def _auto_archive_inactive_entities(inactive_since, whitelist=None):
@@ -79,7 +90,9 @@ def _auto_archive_inactive_entities(inactive_since, whitelist=None):
 
     campaigns = (
         models.Campaign.objects.filter(
-            settings__created_dt__lte=inactive_since, settings__archived=False, account__auto_archiving_enabled=True
+            settings__created_dt__lte=inactive_since,
+            settings__archived=False,
+            account__auto_archiving_enabled=True,
         )
         .exclude(adgroup__settings__archived=False)
         .select_related("settings")
@@ -95,10 +108,15 @@ def _auto_archive_inactive_entities(inactive_since, whitelist=None):
     for c in campaigns:
         try:
             for budget in c.budgets.all().annotate_spend_data():
-                if budget.state() in (constants.BudgetLineItemState.ACTIVE, constants.BudgetLineItemState.PENDING):
+                if budget.state() in (
+                    constants.BudgetLineItemState.ACTIVE,
+                    constants.BudgetLineItemState.PENDING,
+                ):
                     raise CampaignHasActiveBudgets()
 
-            c.settings.update_unsafe(None, archived=True, history_changes_text="Automated archiving.")
+            c.settings.update_unsafe(
+                None, archived=True, history_changes_text="Automated archiving."
+            )
             logger.info("Auto-archived campaign with id {}.".format(c.id))
             campaign_count += 1
 
