@@ -5,7 +5,7 @@ declare var constants: any;
 
 @Injectable()
 export class MulticurrencyService {
-    getValueInAppropriateCurrency (
+    getValueInAppropriateCurrency(
         value: any,
         account: any,
         fractionSize?: number
@@ -14,19 +14,23 @@ export class MulticurrencyService {
         return this.getValueInCurrency(value, currency, fractionSize);
     }
 
-    getAppropriateCurrencySymbol (account: any): string {
+    getAppropriateCurrencySymbol(account: any): string {
         const currency = this.getAppropriateCurrency(account);
         return constants.currencySymbol[currency];
     }
 
-    getAppropriateCurrency (account: any): string {
+    getAppropriateCurrency(account: any): string {
         if (account && account.data) {
             return account.data.currency;
         }
         return constants.currency.USD;
     }
 
-    private getValueInCurrency (value: any, currency: string, fractionSize: number = 2): string {
+    private getValueInCurrency(
+        value: any,
+        currency: string,
+        fractionSize: number = 2
+    ): string {
         const currencySymbol: string = constants.currencySymbol[currency];
 
         value = parseFloat(value);
@@ -38,7 +42,7 @@ export class MulticurrencyService {
         return `${currencySymbol}--`;
     }
 
-    private getValueWithCommas (value: number) {
+    private getValueWithCommas(value: number) {
         const parts = value.toString().split('.');
         parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
         return parts.join('.');
@@ -46,7 +50,9 @@ export class MulticurrencyService {
 }
 
 declare var angular: angular.IAngularStatic;
-angular.module('one.downgraded').factory(
-    'zemMulticurrencyService',
-    downgradeInjectable(MulticurrencyService)
-);
+angular
+    .module('one.downgraded')
+    .factory(
+        'zemMulticurrencyService',
+        downgradeInjectable(MulticurrencyService)
+    );

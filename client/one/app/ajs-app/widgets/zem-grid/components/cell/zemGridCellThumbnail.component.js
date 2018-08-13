@@ -1,5 +1,4 @@
-angular.module('one.widgets').directive('zemGridCellThumbnail', function () {
-
+angular.module('one.widgets').directive('zemGridCellThumbnail', function() {
     return {
         restrict: 'E',
         replace: true,
@@ -12,6 +11,6 @@ angular.module('one.widgets').directive('zemGridCellThumbnail', function () {
             grid: '=',
         },
         template: require('./zemGridCellThumbnail.component.html'),
-        controller: function () {},
+        controller: function() {},
     };
 });

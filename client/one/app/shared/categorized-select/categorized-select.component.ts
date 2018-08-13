@@ -1,8 +1,17 @@
 import './categorized-select.component.less';
 
 import {
-    Component, Input, Output, EventEmitter, OnInit, OnChanges, OnDestroy, ChangeDetectionStrategy, ElementRef,
-    ChangeDetectorRef, SimpleChanges
+    Component,
+    Input,
+    Output,
+    EventEmitter,
+    OnInit,
+    OnChanges,
+    OnDestroy,
+    ChangeDetectionStrategy,
+    ElementRef,
+    ChangeDetectorRef,
+    SimpleChanges,
 } from '@angular/core';
 import {Subscription, Subject} from 'rxjs';
 import {debounceTime, distinctUntilChanged} from 'rxjs/operators';
@@ -21,17 +30,28 @@ const KEY_LEFT_ARROW = 37;
 const KEY_UP_ARROW = 38;
 const KEY_RIGHT_ARROW = 39;
 const KEY_DOWN_ARROW = 40;
-const HANDLED_KEY_BINDINGS = [KEY_ENTER, KEY_SPACE, KEY_UP_ARROW, KEY_DOWN_ARROW, KEY_LEFT_ARROW, KEY_RIGHT_ARROW];
+const HANDLED_KEY_BINDINGS = [
+    KEY_ENTER,
+    KEY_SPACE,
+    KEY_UP_ARROW,
+    KEY_DOWN_ARROW,
+    KEY_LEFT_ARROW,
+    KEY_RIGHT_ARROW,
+];
 
 @Component({
     selector: 'zem-categorized-select',
     templateUrl: './categorized-select.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class CategorizedSelectComponent implements OnInit, OnChanges, OnDestroy {
-    @Input() categorizedItems: Category[];
-    @Input('config') configOverride?: Config;
-    @Output() onApply = new EventEmitter<SelectionItem[]>();
+export class CategorizedSelectComponent
+    implements OnInit, OnChanges, OnDestroy {
+    @Input()
+    categorizedItems: Category[];
+    @Input('config')
+    configOverride?: Config;
+    @Output()
+    onApply = new EventEmitter<SelectionItem[]>();
 
     config: Config;
     selectedCategory: Category = null;
@@ -45,31 +65,40 @@ export class CategorizedSelectComponent implements OnInit, OnChanges, OnDestroy 
     private searchSubscription: Subscription;
     private keyBindingsEventHandler: (event: KeyboardEvent) => void;
 
-    constructor (private elementRef: ElementRef, private changeDetectorRef: ChangeDetectorRef) {}
+    constructor(
+        private elementRef: ElementRef,
+        private changeDetectorRef: ChangeDetectorRef
+    ) {}
 
-    ngOnInit () {
+    ngOnInit() {
         this.searchSubscription = this.search$
-            .pipe(
-                debounceTime(SEARCH_DEBOUNCE_TIME),
-                distinctUntilChanged()
-            )
+            .pipe(debounceTime(SEARCH_DEBOUNCE_TIME), distinctUntilChanged())
             .subscribe(searchQuery => {
                 if (!this.selectedCategory) {
                     // User might have reset selected category before search executed. Ignore search in that case.
                     return;
                 }
                 this.searchQuery = searchQuery;
-                this.renderedItems = this.getRenderedItems(this.selectedCategory, this.searchQuery);
+                this.renderedItems = this.getRenderedItems(
+                    this.selectedCategory,
+                    this.searchQuery
+                );
                 this.changeDetectorRef.detectChanges();
             });
 
         this.updateConfig(this.configOverride);
     }
 
-    ngOnChanges (changes: SimpleChanges) {
+    ngOnChanges(changes: SimpleChanges) {
         if (changes.categorizedItems) {
-            this.categorizedItems = this.addCategoryKeyToItems(this.categorizedItems);
-            this.selectedItems = this.getSelectedItems(this.categorizedItems, this.selectedItems, this.unselectedItems);
+            this.categorizedItems = this.addCategoryKeyToItems(
+                this.categorizedItems
+            );
+            this.selectedItems = this.getSelectedItems(
+                this.categorizedItems,
+                this.selectedItems,
+                this.unselectedItems
+            );
             this.unselectedItems = [];
 
             if (this.selectedCategory) {
@@ -82,72 +111,95 @@ export class CategorizedSelectComponent implements OnInit, OnChanges, OnDestroy 
         }
     }
 
-    ngOnDestroy () {
+    ngOnDestroy() {
         this.searchSubscription.unsubscribe();
         this.disableKeyBindings();
     }
 
-    applySelection (): void {
+    applySelection(): void {
         this.onApply.emit(this.selectedItems);
     }
 
-    selectCategory (key: string): void {
-        const selectedCategory = (this.categorizedItems || []).filter((category: Category) => category.key === key)[0];
+    selectCategory(key: string): void {
+        const selectedCategory = (this.categorizedItems || []).filter(
+            (category: Category) => category.key === key
+        )[0];
         if (!selectedCategory) {
             return;
         }
 
-        this.renderedItems = this.getRenderedItems(selectedCategory, this.searchQuery);
+        this.renderedItems = this.getRenderedItems(
+            selectedCategory,
+            this.searchQuery
+        );
         this.selectedCategory = selectedCategory;
         this.highlightedEntity = null;
 
         setTimeout(() => {
-            const searchInput = this.elementRef.nativeElement.querySelector('input');
+            const searchInput = this.elementRef.nativeElement.querySelector(
+                'input'
+            );
             if (searchInput) {
                 searchInput.focus();
             }
         }, 0); // tslint:disable-line align
     }
 
-    resetSelectedCategory (): void {
+    resetSelectedCategory(): void {
         this.highlightedEntity = this.selectedCategory;
         this.selectedCategory = null;
         this.searchQuery = '';
         this.renderedItems = [];
     }
 
-    toggleItem (toggledItem: Item): void {
+    toggleItem(toggledItem: Item): void {
         if (this.isItemInList(toggledItem, this.selectedItems)) {
             this.selectedItems = this.selectedItems.filter(selectedItem => {
-                return selectedItem.categoryKey !== toggledItem.categoryKey ||
-                       selectedItem.itemValue !== toggledItem.value;
+                return (
+                    selectedItem.categoryKey !== toggledItem.categoryKey ||
+                    selectedItem.itemValue !== toggledItem.value
+                );
             });
             this.unselectedItems = [
                 ...this.unselectedItems,
-                {categoryKey: toggledItem.categoryKey, itemValue: toggledItem.value},
+                {
+                    categoryKey: toggledItem.categoryKey,
+                    itemValue: toggledItem.value,
+                },
             ];
         } else {
-            this.unselectedItems = this.unselectedItems.filter(unselectedItem => {
-                return unselectedItem.categoryKey !== toggledItem.categoryKey ||
-                       unselectedItem.itemValue !== toggledItem.value;
-            });
+            this.unselectedItems = this.unselectedItems.filter(
+                unselectedItem => {
+                    return (
+                        unselectedItem.categoryKey !==
+                            toggledItem.categoryKey ||
+                        unselectedItem.itemValue !== toggledItem.value
+                    );
+                }
+            );
             this.selectedItems = [
                 ...this.selectedItems,
-                {categoryKey: toggledItem.categoryKey, itemValue: toggledItem.value},
+                {
+                    categoryKey: toggledItem.categoryKey,
+                    itemValue: toggledItem.value,
+                },
             ];
         }
     }
 
-    isItemInList (item: Item, list: SelectionItem[]): boolean {
+    isItemInList(item: Item, list: SelectionItem[]): boolean {
         for (const listItem of list) {
-            if (listItem.categoryKey === item.categoryKey && listItem.itemValue === item.value) {
+            if (
+                listItem.categoryKey === item.categoryKey &&
+                listItem.itemValue === item.value
+            ) {
                 return true;
             }
         }
         return false;
     }
 
-    private addCategoryKeyToItems (categorizedItems: Category[]): Category[] {
+    private addCategoryKeyToItems(categorizedItems: Category[]): Category[] {
         return categorizedItems.map(category => {
             return {
                 ...category,
@@ -161,27 +213,41 @@ export class CategorizedSelectComponent implements OnInit, OnChanges, OnDestroy 
         });
     }
 
-    private getSelectedItems (
-        categorizedItems: Category[], selectedItems: SelectionItem[], unselectedItems: SelectionItem[]
+    private getSelectedItems(
+        categorizedItems: Category[],
+        selectedItems: SelectionItem[],
+        unselectedItems: SelectionItem[]
     ): SelectionItem[] {
         const mergedSelectedItems: SelectionItem[] = [];
         categorizedItems.forEach(category => {
             category.items.forEach(item => {
                 let isItemSelected = false;
-                if (item.selected && !this.isItemInList(item, this.unselectedItems)) {
+                if (
+                    item.selected &&
+                    !this.isItemInList(item, this.unselectedItems)
+                ) {
                     isItemSelected = true;
-                } else if (!item.selected && this.isItemInList(item, this.selectedItems)) {
+                } else if (
+                    !item.selected &&
+                    this.isItemInList(item, this.selectedItems)
+                ) {
                     isItemSelected = true;
                 }
                 if (isItemSelected) {
-                    mergedSelectedItems.push({categoryKey: category.key, itemValue: item.value});
+                    mergedSelectedItems.push({
+                        categoryKey: category.key,
+                        itemValue: item.value,
+                    });
                 }
             });
         });
         return mergedSelectedItems;
     }
 
-    private getRenderedItems (selectedCategory: Category, searchQuery: string): Item[] {
+    private getRenderedItems(
+        selectedCategory: Category,
+        searchQuery: string
+    ): Item[] {
         let searchResults: Item[] = [];
 
         if (!searchQuery || searchQuery === '') {
@@ -197,7 +263,7 @@ export class CategorizedSelectComponent implements OnInit, OnChanges, OnDestroy 
         return searchResults.slice(0, RENDERED_ITEMS_COUNT);
     }
 
-    private updateConfig (configOverride?: Config): void {
+    private updateConfig(configOverride?: Config): void {
         this.config = {
             ...DEFAULT_CONFIG,
             ...this.configOverride,
@@ -209,12 +275,15 @@ export class CategorizedSelectComponent implements OnInit, OnChanges, OnDestroy 
         }
     }
 
-    private handleKeyBindings (event: KeyboardEvent): void {
+    private handleKeyBindings(event: KeyboardEvent): void {
         if (HANDLED_KEY_BINDINGS.indexOf(event.keyCode) === -1) {
             return;
         }
 
-        if (event.keyCode === KEY_UP_ARROW || event.keyCode === KEY_DOWN_ARROW) {
+        if (
+            event.keyCode === KEY_UP_ARROW ||
+            event.keyCode === KEY_DOWN_ARROW
+        ) {
             this.handleUpAndDownKeys(event);
         } else if (event.keyCode === KEY_RIGHT_ARROW) {
             this.handleRightKey(event);
@@ -229,7 +298,7 @@ export class CategorizedSelectComponent implements OnInit, OnChanges, OnDestroy 
         this.changeDetectorRef.detectChanges();
     }
 
-    private handleUpAndDownKeys (event: KeyboardEvent): void {
+    private handleUpAndDownKeys(event: KeyboardEvent): void {
         event.preventDefault();
         event.stopPropagation();
 
@@ -246,25 +315,31 @@ export class CategorizedSelectComponent implements OnInit, OnChanges, OnDestroy 
         highlightedIndex = collection.indexOf(this.highlightedEntity);
 
         if (event.keyCode === KEY_UP_ARROW) {
-            highlightedIndex = (highlightedIndex <= 0 ? maxIndex : --highlightedIndex);
+            highlightedIndex =
+                highlightedIndex <= 0 ? maxIndex : --highlightedIndex;
         } else if (event.keyCode === KEY_DOWN_ARROW) {
-            highlightedIndex = (highlightedIndex >= maxIndex ? 0 : ++highlightedIndex);
+            highlightedIndex =
+                highlightedIndex >= maxIndex ? 0 : ++highlightedIndex;
         }
 
         this.highlightedEntity = collection[highlightedIndex];
         this.scrollToIndex(highlightedIndex);
     }
 
-    private handleRightKey (event: KeyboardEvent): void {
-        if (this.selectedCategory || this.categorizedItems.indexOf(<Category> this.highlightedEntity) === -1) {
+    private handleRightKey(event: KeyboardEvent): void {
+        if (
+            this.selectedCategory ||
+            this.categorizedItems.indexOf(<Category>this.highlightedEntity) ===
+                -1
+        ) {
             return;
         }
-        this.selectCategory((<Category> this.highlightedEntity).key);
+        this.selectCategory((<Category>this.highlightedEntity).key);
         event.preventDefault();
         event.stopPropagation();
     }
 
-    private handleLeftKey (event: KeyboardEvent): void {
+    private handleLeftKey(event: KeyboardEvent): void {
         if (!this.selectedCategory) {
             return;
         }
@@ -273,26 +348,31 @@ export class CategorizedSelectComponent implements OnInit, OnChanges, OnDestroy 
         event.stopPropagation();
     }
 
-    private handleSpaceKey (event: KeyboardEvent): void {
-        if (!this.selectedCategory || this.renderedItems.indexOf(<Item> this.highlightedEntity) === -1) {
+    private handleSpaceKey(event: KeyboardEvent): void {
+        if (
+            !this.selectedCategory ||
+            this.renderedItems.indexOf(<Item>this.highlightedEntity) === -1
+        ) {
             return;
         }
-        this.toggleItem(<Item> this.highlightedEntity);
+        this.toggleItem(<Item>this.highlightedEntity);
         event.preventDefault();
         event.stopPropagation();
     }
 
-    private handleEnterKey (event: KeyboardEvent): void {
+    private handleEnterKey(event: KeyboardEvent): void {
         this.applySelection();
         event.preventDefault();
         event.stopPropagation();
     }
 
-    private scrollToIndex (index: number): void {
-        const scrollContainer: HTMLElement =
-            this.elementRef.nativeElement.querySelector('.zem-categorized-select__lists-container');
-        const listItem: HTMLElement =
-            this.elementRef.nativeElement.querySelectorAll('.zem-categorized-select__list-item')[index];
+    private scrollToIndex(index: number): void {
+        const scrollContainer: HTMLElement = this.elementRef.nativeElement.querySelector(
+            '.zem-categorized-select__lists-container'
+        );
+        const listItem: HTMLElement = this.elementRef.nativeElement.querySelectorAll(
+            '.zem-categorized-select__list-item'
+        )[index];
 
         if (!scrollContainer || !listItem) {
             return;
@@ -300,10 +380,14 @@ export class CategorizedSelectComponent implements OnInit, OnChanges, OnDestroy 
 
         const scrollContainerStyle = getComputedStyle(scrollContainer);
         const scrollContainerPaddings =
-            parseInt(scrollContainerStyle.paddingTop, 10) +  parseInt(scrollContainerStyle.paddingBottom, 10); // tslint:disable-line no-magic-numbers max-line-length
-        const scrollContainerHeight = scrollContainer.offsetHeight - scrollContainerPaddings;
+            parseInt(scrollContainerStyle.paddingTop, 10) +
+            parseInt(scrollContainerStyle.paddingBottom, 10); // tslint:disable-line no-magic-numbers max-line-length
+        const scrollContainerHeight =
+            scrollContainer.offsetHeight - scrollContainerPaddings;
         const listItemStyle = getComputedStyle(listItem);
-        const listItemMargins = parseInt(listItemStyle.marginTop, 10) + parseInt(listItemStyle.marginBottom, 10); // tslint:disable-line no-magic-numbers max-line-length
+        const listItemMargins =
+            parseInt(listItemStyle.marginTop, 10) +
+            parseInt(listItemStyle.marginBottom, 10); // tslint:disable-line no-magic-numbers max-line-length
         const listItemHeight = listItem.offsetHeight + listItemMargins;
         const viewFrom = scrollContainer.scrollTop;
         const viewTo = viewFrom + scrollContainerHeight;
@@ -312,15 +396,24 @@ export class CategorizedSelectComponent implements OnInit, OnChanges, OnDestroy 
         if (selectedPosition < viewFrom) {
             scrollContainer.scrollTop = selectedPosition;
         } else if (selectedPosition + listItemHeight >= viewTo) {
-            scrollContainer.scrollTop = selectedPosition - scrollContainerHeight + listItemHeight;
+            scrollContainer.scrollTop =
+                selectedPosition - scrollContainerHeight + listItemHeight;
         }
     }
 
-    private enableKeyBindings (): void {
-        document.addEventListener('keydown', this.keyBindingsEventHandler = this.handleKeyBindings.bind(this), true);
+    private enableKeyBindings(): void {
+        document.addEventListener(
+            'keydown',
+            (this.keyBindingsEventHandler = this.handleKeyBindings.bind(this)),
+            true
+        );
     }
 
-    private disableKeyBindings (): void {
-        document.removeEventListener('keydown', this.keyBindingsEventHandler, true);
+    private disableKeyBindings(): void {
+        document.removeEventListener(
+            'keydown',
+            this.keyBindingsEventHandler,
+            true
+        );
     }
 }

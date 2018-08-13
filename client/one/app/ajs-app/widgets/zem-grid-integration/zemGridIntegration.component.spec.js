@@ -1,11 +1,11 @@
-describe('component: zemGridIntegration', function () {
+describe('component: zemGridIntegration', function() {
     var $componentController;
     var zemGridEndpointService, zemDataSourceService;
     var $ctrl;
 
     beforeEach(angular.mock.module('one'));
     beforeEach(angular.mock.module('one.mocks.zemInitializationService'));
-    beforeEach(inject(function ($injector) {
+    beforeEach(inject(function($injector) {
         $componentController = $injector.get('$componentController');
         zemGridEndpointService = $injector.get('zemGridEndpointService');
         zemDataSourceService = $injector.get('zemDataSourceService');
@@ -22,7 +22,7 @@ describe('component: zemGridIntegration', function () {
         $ctrl = $componentController('zemGridIntegration', locals, bindings);
     }));
 
-    it('should initialize using api', function () {
+    it('should initialize using api', function() {
         spyOn(zemGridEndpointService, 'createMetaData').and.callThrough();
         spyOn(zemGridEndpointService, 'createEndpoint').and.callThrough();
         spyOn(zemDataSourceService, 'createInstance').and.callThrough();
@@ -36,5 +36,4 @@ describe('component: zemGridIntegration', function () {
         expect($ctrl.grid.options).toBeDefined();
         expect($ctrl.grid.dataSource).toBeDefined();
     });
-
 });

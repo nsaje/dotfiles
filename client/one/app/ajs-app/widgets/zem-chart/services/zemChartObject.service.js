@@ -1,6 +1,5 @@
-angular.module('one.widgets').service('zemChartObject', function () {
-
-    function Chart () {
+angular.module('one.widgets').service('zemChartObject', function() {
+    function Chart() {
         this.hasData = true;
         this.metrics = {
             options: [],
@@ -12,37 +11,40 @@ angular.module('one.widgets').service('zemChartObject', function () {
         };
         this.config = createHighChartDefaults();
 
-        this.clearData = function () {
+        this.clearData = function() {
             this.hasData = false;
             this.legend.items = [];
             this.config.series = [];
         };
     }
 
-    function createHighChartDefaults () {
+    function createHighChartDefaults() {
         return {
             chart: {},
             title: {
-                text: null
+                text: null,
             },
             xAxis: {
                 type: 'datetime',
-                minTickInterval: 24 * 3600 * 1000
+                minTickInterval: 24 * 3600 * 1000,
             },
-            yAxis: [{
-                title: {
-                    text: null
+            yAxis: [
+                {
+                    title: {
+                        text: null,
+                    },
+                    min: 0,
+                    gridLineWidth: 1,
                 },
-                min: 0,
-                gridLineWidth: 1,
-            }, {
-                title: {
-                    text: null
+                {
+                    title: {
+                        text: null,
+                    },
+                    min: 0,
+                    gridLineWidth: 0,
+                    opposite: true,
                 },
-                min: 0,
-                gridLineWidth: 0,
-                opposite: true
-            }],
+            ],
             tooltip: {
                 shared: true,
                 useHTML: true,
@@ -57,26 +59,26 @@ angular.module('one.widgets').service('zemChartObject', function () {
                     marker: {
                         states: {
                             hover: {
-                                radius: 3
-                            }
-                        }
-                    }
-                }
+                                radius: 3,
+                            },
+                        },
+                    },
+                },
             },
             legend: {
-                enabled: false
+                enabled: false,
             },
             credits: {
-                enabled: false
-            }
+                enabled: false,
+            },
         };
     }
 
-    function createChart () {
+    function createChart() {
         return new Chart();
     }
 
     return {
-        createChart: createChart
+        createChart: createChart,
     };
 });

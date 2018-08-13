@@ -6,7 +6,12 @@ angular.module('one').component('zemCampaignLauncherReview', {
         account: '<',
     },
     template: require('./zemCampaignLauncherReview.component.html'),
-    controller: function (zemDeviceTargetingConstants, zemPermissions, zemMulticurrencyService, $filter) {
+    controller: function(
+        zemDeviceTargetingConstants,
+        zemPermissions,
+        zemMulticurrencyService,
+        $filter
+    ) {
         var $ctrl = this;
 
         $ctrl.hasPermission = zemPermissions.hasPermission;
@@ -17,18 +22,26 @@ angular.module('one').component('zemCampaignLauncherReview', {
         $ctrl.isGeoTargetingEnabled = isGeoTargetingEnabled;
         $ctrl.isDeviceTargetingEnabled = isDeviceTargetingEnabled;
 
-        $ctrl.$onInit = function () {
+        $ctrl.$onInit = function() {
             $ctrl.state = $ctrl.stateService.getState();
-            $ctrl.iabCategoryName = getIabCategoryName($ctrl.state.fields.iabCategory);
+            $ctrl.iabCategoryName = getIabCategoryName(
+                $ctrl.state.fields.iabCategory
+            );
             $ctrl.language = getLanguageName($ctrl.state.fields.language);
-            $ctrl.currencySymbol = zemMulticurrencyService.getAppropriateCurrencySymbol($ctrl.account);
-            $ctrl.campaignGoalText = $filter('campaignGoalText')($ctrl.state.fields.campaignGoal);
-            $ctrl.dummyCreatives = getDummyCreatives($ctrl.state.creatives.candidates || []);
+            $ctrl.currencySymbol = zemMulticurrencyService.getAppropriateCurrencySymbol(
+                $ctrl.account
+            );
+            $ctrl.campaignGoalText = $filter('campaignGoalText')(
+                $ctrl.state.fields.campaignGoal
+            );
+            $ctrl.dummyCreatives = getDummyCreatives(
+                $ctrl.state.creatives.candidates || []
+            );
 
             updateDeviceTargetingReview();
         };
 
-        function getIabCategoryName (iabCategory) {
+        function getIabCategoryName(iabCategory) {
             for (var i = 0; i < options.iabCategories.length; i++) {
                 if (options.iabCategories[i].value === iabCategory) {
                     return options.iabCategories[i].name;
@@ -36,7 +49,7 @@ angular.module('one').component('zemCampaignLauncherReview', {
             }
         }
 
-        function getLanguageName (language) {
+        function getLanguageName(language) {
             for (var i = 0; i < options.languages.length; i++) {
                 if (options.languages[i].value === language) {
                     return options.languages[i].name;
@@ -44,7 +57,7 @@ angular.module('one').component('zemCampaignLauncherReview', {
             }
         }
 
-        function getDummyCreatives (candidates) {
+        function getDummyCreatives(candidates) {
             // Return an array of length equal to number of dummy creatives needed (used by ng-repeat in template to
             // fill in dummy creatives).
             var m = candidates.length % PREVIEW_CREATIVES_PER_ROW;
@@ -54,10 +67,12 @@ angular.module('one').component('zemCampaignLauncherReview', {
             return [];
         }
 
-        function isGeoTargetingEnabled () {
+        function isGeoTargetingEnabled() {
             var enabled = false;
             if ($ctrl.state.fields.targetRegions) {
-                Object.keys($ctrl.state.fields.targetRegions).forEach(function (key) {
+                Object.keys($ctrl.state.fields.targetRegions).forEach(function(
+                    key
+                ) {
                     var section = $ctrl.state.fields.targetRegions[key] || [];
                     if (section.length > 0) {
                         enabled = true;
@@ -65,40 +80,60 @@ angular.module('one').component('zemCampaignLauncherReview', {
                 });
             }
             if ($ctrl.state.fields.exclusionTargetRegions) {
-                Object.keys($ctrl.state.fields.exclusionTargetRegions).forEach(function (key) {
-                    var section = $ctrl.state.fields.exclusionTargetRegions[key] || [];
-                    if (section.length > 0) {
-                        enabled = true;
+                Object.keys($ctrl.state.fields.exclusionTargetRegions).forEach(
+                    function(key) {
+                        var section =
+                            $ctrl.state.fields.exclusionTargetRegions[key] ||
+                            [];
+                        if (section.length > 0) {
+                            enabled = true;
+                        }
                     }
-                });
+                );
             }
             return enabled;
         }
 
-        function isDeviceTargetingEnabled () {
-            if ($ctrl.state.fields.targetDevices && $ctrl.state.fields.targetDevices.length) {
+        function isDeviceTargetingEnabled() {
+            if (
+                $ctrl.state.fields.targetDevices &&
+                $ctrl.state.fields.targetDevices.length
+            ) {
                 return true;
             }
-            if ($ctrl.state.fields.targetOs && $ctrl.state.fields.targetOs.length) {
+            if (
+                $ctrl.state.fields.targetOs &&
+                $ctrl.state.fields.targetOs.length
+            ) {
                 return true;
             }
-            if ($ctrl.state.fields.targetPlacements && $ctrl.state.fields.targetPlacements.length) {
+            if (
+                $ctrl.state.fields.targetPlacements &&
+                $ctrl.state.fields.targetPlacements.length
+            ) {
                 return true;
             }
             return false;
         }
 
-        function updateDeviceTargetingReview () {
+        function updateDeviceTargetingReview() {
             $ctrl.targetedDevices = null;
 
             if (!$ctrl.state || !$ctrl.state.fields) {
                 return;
             }
 
-            if ($ctrl.state.fields.targetDevices && $ctrl.state.fields.targetDevices.length) {
+            if (
+                $ctrl.state.fields.targetDevices &&
+                $ctrl.state.fields.targetDevices.length
+            ) {
                 var targetedDevices = [];
-                zemDeviceTargetingConstants.DEVICES.forEach(function (device) {
-                    if ($ctrl.state.fields.targetDevices.indexOf(device.value) !== -1) {
+                zemDeviceTargetingConstants.DEVICES.forEach(function(device) {
+                    if (
+                        $ctrl.state.fields.targetDevices.indexOf(
+                            device.value
+                        ) !== -1
+                    ) {
                         targetedDevices.push(device.name);
                     }
                 });

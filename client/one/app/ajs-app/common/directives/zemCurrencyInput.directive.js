@@ -1,4 +1,4 @@
-angular.module('one.common').directive('zemCurrencyInput', function ($filter) {
+angular.module('one.common').directive('zemCurrencyInput', function($filter) {
     return {
         require: 'ngModel',
         restrict: 'A',
@@ -6,9 +6,9 @@ angular.module('one.common').directive('zemCurrencyInput', function ($filter) {
             prefix: '@?',
             fractionSize: '@?',
             replaceTrailingZeros: '=?',
-            emptyText: '@?'
+            emptyText: '@?',
         },
-        compile: function compile (tElem, tAttrs) {
+        compile: function compile(tElem, tAttrs) {
             // add attributes if not present
             if (!tAttrs.prefix) {
                 tAttrs.prefix = '';
@@ -17,7 +17,7 @@ angular.module('one.common').directive('zemCurrencyInput', function ($filter) {
                 tAttrs.fractionSize = '';
             }
 
-            return function postLink (scope, element, attrs, controller) {
+            return function postLink(scope, element, attrs, controller) {
                 var decimalRegex;
 
                 // sets defaults
@@ -28,9 +28,11 @@ angular.module('one.common').directive('zemCurrencyInput', function ($filter) {
                     scope.fractionSize = '2';
                 }
 
-                decimalRegex = new RegExp('\\.[0-9]{0,' + scope.fractionSize + '}');
+                decimalRegex = new RegExp(
+                    '\\.[0-9]{0,' + scope.fractionSize + '}'
+                );
 
-                function setCaretPos (elem, caretPosStart, caretPosEnd) {
+                function setCaretPos(elem, caretPosStart, caretPosEnd) {
                     if (elem) {
                         if (elem.selectionStart !== undefined) {
                             elem.focus();
@@ -45,7 +47,7 @@ angular.module('one.common').directive('zemCurrencyInput', function ($filter) {
                     }
                 }
 
-                function fromDecimal (value) {
+                function fromDecimal(value) {
                     var integerPart;
                     var decimalPart;
                     var result;
@@ -61,7 +63,9 @@ angular.module('one.common').directive('zemCurrencyInput', function ($filter) {
                     decimalPart = decimalRegex.exec(value);
 
                     // format with commas
-                    result = scope.prefix + integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+                    result =
+                        scope.prefix +
+                        integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
                     if (decimalPart) {
                         result += decimalPart;
                     }
@@ -69,7 +73,7 @@ angular.module('one.common').directive('zemCurrencyInput', function ($filter) {
                     return result;
                 }
 
-                function toDecimal (value) {
+                function toDecimal(value) {
                     var integerPart;
                     var decimalPart;
 
@@ -88,7 +92,7 @@ angular.module('one.common').directive('zemCurrencyInput', function ($filter) {
                     return integerPart + (decimalPart || '');
                 }
 
-                function formatValue (value) {
+                function formatValue(value) {
                     if (!value || isNaN(value)) {
                         if (scope.emptyText) {
                             return scope.emptyText;
@@ -96,16 +100,21 @@ angular.module('one.common').directive('zemCurrencyInput', function ($filter) {
                         value = 0;
                     }
 
-                    value = $filter('decimalCurrency')(value, '', scope.fractionSize, scope.replaceTrailingZeros);
+                    value = $filter('decimalCurrency')(
+                        value,
+                        '',
+                        scope.fractionSize,
+                        scope.replaceTrailingZeros
+                    );
                     return fromDecimal(value);
                 }
 
-                function getCommaCount (value, caretPos) {
+                function getCommaCount(value, caretPos) {
                     var count = value.slice(0, caretPos).match(/,/g) || [];
                     return count.length;
                 }
 
-                element.bind('input', function () {
+                element.bind('input', function() {
                     var value = element.val();
                     var caretPos = element[0].selectionStart;
                     var decimalValue = toDecimal(value);
@@ -113,18 +122,23 @@ angular.module('one.common').directive('zemCurrencyInput', function ($filter) {
                     element.val(formattedValue);
 
                     // set caret position
-                    caretPos += getCommaCount(formattedValue, caretPos) - getCommaCount(value, caretPos);
+                    caretPos +=
+                        getCommaCount(formattedValue, caretPos) -
+                        getCommaCount(value, caretPos);
 
                     // adjust caret position if unallowed char was typed
-                    if ((value.replace(/,/g, '').length - scope.prefix.length) > decimalValue.length) {
+                    if (
+                        value.replace(/,/g, '').length - scope.prefix.length >
+                        decimalValue.length
+                    ) {
                         caretPos--;
                     }
 
                     setCaretPos(element[0], caretPos);
                 });
 
-                element.bind('keydown click focus', function (event) {
-                    setTimeout(function () {
+                element.bind('keydown click focus', function(event) {
+                    setTimeout(function() {
                         if (event.type === 'keydown') {
                             // don't break tab-cycling focus
                             var keyCode = event.keyCode || event.which;
@@ -140,12 +154,16 @@ angular.module('one.common').directive('zemCurrencyInput', function ($filter) {
                         }
 
                         if (el.selectionStart === 0) {
-                            setCaretPos(el, scope.prefix.length, el.selectionEnd);
+                            setCaretPos(
+                                el,
+                                scope.prefix.length,
+                                el.selectionEnd
+                            );
                         }
                     }, 0);
                 });
 
-                element.bind('blur', function () {
+                element.bind('blur', function() {
                     var value = element.val();
 
                     value = toDecimal(value);
@@ -158,6 +176,6 @@ angular.module('one.common').directive('zemCurrencyInput', function ($filter) {
 
                 controller.$parsers.push(toDecimal);
             };
-        }
+        },
     };
 });

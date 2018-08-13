@@ -6,28 +6,40 @@ angular.module('one').component('zemCampaignLauncherGeneralSettings', {
         account: '<',
     },
     template: require('./zemCampaignLauncherGeneralSettings.component.html'),
-    controller: function (zemPermissions, zemMulticurrencyService) {
+    controller: function(zemPermissions, zemMulticurrencyService) {
         var $ctrl = this;
 
         $ctrl.onFieldChange = onFieldChange;
         $ctrl.hasPermission = zemPermissions.hasPermission;
 
-        $ctrl.$onInit = function () {
+        $ctrl.$onInit = function() {
             $ctrl.state = $ctrl.stateService.getState();
             $ctrl.availableIabCategories = getAvailableIabCategories();
-            $ctrl.availableLanguages = options.convertToRestApiCompliantOptions(options.languages, constants.language);
-            if (!zemPermissions.hasPermission('zemauth.can_see_campaign_language_choices')) {
-                $ctrl.state.fields.language = constants.convertToName(constants.language.ENGLISH, constants.language);
+            $ctrl.availableLanguages = options.convertToRestApiCompliantOptions(
+                options.languages,
+                constants.language
+            );
+            if (
+                !zemPermissions.hasPermission(
+                    'zemauth.can_see_campaign_language_choices'
+                )
+            ) {
+                $ctrl.state.fields.language = constants.convertToName(
+                    constants.language.ENGLISH,
+                    constants.language
+                );
             }
-            $ctrl.currencySymbol = zemMulticurrencyService.getAppropriateCurrencySymbol($ctrl.account);
+            $ctrl.currencySymbol = zemMulticurrencyService.getAppropriateCurrencySymbol(
+                $ctrl.account
+            );
         };
 
-        function onFieldChange () {
+        function onFieldChange() {
             $ctrl.stateService.validateFields();
         }
 
-        function getAvailableIabCategories () {
-            function iabSort (obj1, obj2) {
+        function getAvailableIabCategories() {
+            function iabSort(obj1, obj2) {
                 if (obj1.value === constants.iabCategory.IAB24) {
                     return -1;
                 }

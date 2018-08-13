@@ -6,14 +6,17 @@ var constants = {
      * and vice versa. This comes in handy when dealing with the new REST api endpoints
      * that convert eg. 1 to "ACTIVE".
      */
-    convertToName: function (value, constantsObj) {
+    convertToName: function(value, constantsObj) {
         for (var prop in constantsObj) {
-            if (constantsObj.hasOwnProperty(prop) && constantsObj[prop] === value) {
+            if (
+                constantsObj.hasOwnProperty(prop) &&
+                constantsObj[prop] === value
+            ) {
                 return prop;
             }
         }
     },
-    convertFromName: function (value, constantsObj) {
+    convertFromName: function(value, constantsObj) {
         return constantsObj[value];
     },
     /**
@@ -64,9 +67,12 @@ var constants = {
         AUTOPILOT: 'autopilot',
         CAMPAIGNSTOP_STOPPED: 'campaignstop-stopped',
         CAMPAIGNSTOP_LOW_BUDGET: 'campaignstop-low-budget',
-        CAMPAIGNSTOP_PENDING_BUDGET_AUTOPILOT: 'campaignstop-pending-budget-autopilot',
-        CAMPAIGNSTOP_PENDING_BUDGET_ACTIVE_PRICE_DISCOVERY: 'campaignstop-pending-budget-active-price-discovery',
-        CAMPAIGNSTOP_PENDING_BUDGET_ACTIVE: 'campaignstop-pending-budget-active',
+        CAMPAIGNSTOP_PENDING_BUDGET_AUTOPILOT:
+            'campaignstop-pending-budget-autopilot',
+        CAMPAIGNSTOP_PENDING_BUDGET_ACTIVE_PRICE_DISCOVERY:
+            'campaignstop-pending-budget-active-price-discovery',
+        CAMPAIGNSTOP_PENDING_BUDGET_ACTIVE:
+            'campaignstop-pending-budget-active',
     },
     publisherStatus: {
         ENABLED: 1,
@@ -118,7 +124,8 @@ var constants = {
         PIXELS_PLACEHOLDER: 'pixels_placeholder',
         CONVERSION_GOALS_PLACEHOLDER: 'conversion_goals_placeholder',
         PIXELS_AVG_COST_PLACEHOLDER: 'pixels_avg_cost_placeholder',
-        CONVERSION_GOALS_AVG_COST_PLACEHOLDER: 'conversion_goals_avg_cost_placeholder',
+        CONVERSION_GOALS_AVG_COST_PLACEHOLDER:
+            'conversion_goals_avg_cost_placeholder',
     },
     creditLineItemStatus: {
         SIGNED: 1,
@@ -136,7 +143,7 @@ var constants = {
         CONTAINS: 2,
         NOT_STARTS_WITH: 3,
         NOT_CONTAINS: 4,
-        VISIT: 5
+        VISIT: 5,
     },
     iabCategory: {
         IAB1: 'IAB1',
@@ -1129,7 +1136,7 @@ var constants = {
         PENDING: 'Pending',
         EMPTY: 'Empty',
         ERROR: 'Error',
-        INVALID: 'Invalid'
+        INVALID: 'Invalid',
     },
     imageCrop: {
         CENTER: 'center',
@@ -1229,41 +1236,67 @@ var constants = {
         PUBLIC: 'public',
         PLATFORM: 'platform',
         ANY: 'any',
-    }
+    },
 };
 
 constants.levelStateParamToLevelMap = {};
-constants.levelStateParamToLevelMap[constants.levelStateParam.ACCOUNTS] = constants.level.ALL_ACCOUNTS;
-constants.levelStateParamToLevelMap[constants.levelStateParam.ACCOUNT] = constants.level.ACCOUNTS;
-constants.levelStateParamToLevelMap[constants.levelStateParam.CAMPAIGN] = constants.level.CAMPAIGNS;
-constants.levelStateParamToLevelMap[constants.levelStateParam.AD_GROUP] = constants.level.AD_GROUPS;
+constants.levelStateParamToLevelMap[constants.levelStateParam.ACCOUNTS] =
+    constants.level.ALL_ACCOUNTS;
+constants.levelStateParamToLevelMap[constants.levelStateParam.ACCOUNT] =
+    constants.level.ACCOUNTS;
+constants.levelStateParamToLevelMap[constants.levelStateParam.CAMPAIGN] =
+    constants.level.CAMPAIGNS;
+constants.levelStateParamToLevelMap[constants.levelStateParam.AD_GROUP] =
+    constants.level.AD_GROUPS;
 
 constants.levelToLevelStateParamMap = {};
-constants.levelToLevelStateParamMap[constants.level.ALL_ACCOUNTS] = constants.levelStateParam.ACCOUNTS;
-constants.levelToLevelStateParamMap[constants.level.ACCOUNTS] = constants.levelStateParam.ACCOUNT;
-constants.levelToLevelStateParamMap[constants.level.CAMPAIGNS] = constants.levelStateParam.CAMPAIGN;
-constants.levelToLevelStateParamMap[constants.level.AD_GROUPS] = constants.levelStateParam.AD_GROUP;
+constants.levelToLevelStateParamMap[constants.level.ALL_ACCOUNTS] =
+    constants.levelStateParam.ACCOUNTS;
+constants.levelToLevelStateParamMap[constants.level.ACCOUNTS] =
+    constants.levelStateParam.ACCOUNT;
+constants.levelToLevelStateParamMap[constants.level.CAMPAIGNS] =
+    constants.levelStateParam.CAMPAIGN;
+constants.levelToLevelStateParamMap[constants.level.AD_GROUPS] =
+    constants.levelStateParam.AD_GROUP;
 
 constants.breakdownStateParamToBreakdownMap = {};
-constants.breakdownStateParamToBreakdownMap[constants.breakdownStateParam.SOURCES] = constants.breakdown.MEDIA_SOURCE;
-constants.breakdownStateParamToBreakdownMap[constants.breakdownStateParam.PUBLISHERS] = constants.breakdown.PUBLISHER;
-constants.breakdownStateParamToBreakdownMap[constants.breakdownStateParam.INSIGHTS] = constants.breakdown.INSIGHTS;
+constants.breakdownStateParamToBreakdownMap[
+    constants.breakdownStateParam.SOURCES
+] =
+    constants.breakdown.MEDIA_SOURCE;
+constants.breakdownStateParamToBreakdownMap[
+    constants.breakdownStateParam.PUBLISHERS
+] =
+    constants.breakdown.PUBLISHER;
+constants.breakdownStateParamToBreakdownMap[
+    constants.breakdownStateParam.INSIGHTS
+] =
+    constants.breakdown.INSIGHTS;
 
 constants.breakdownToBreakdownStateParamMap = {};
-constants.breakdownToBreakdownStateParamMap[constants.breakdown.MEDIA_SOURCE] = constants.breakdownStateParam.SOURCES;
-constants.breakdownToBreakdownStateParamMap[constants.breakdown.PUBLISHER] = constants.breakdownStateParam.PUBLISHERS;
-constants.breakdownToBreakdownStateParamMap[constants.breakdown.INSIGHTS] = constants.breakdownStateParam.INSIGHTS;
+constants.breakdownToBreakdownStateParamMap[constants.breakdown.MEDIA_SOURCE] =
+    constants.breakdownStateParam.SOURCES;
+constants.breakdownToBreakdownStateParamMap[constants.breakdown.PUBLISHER] =
+    constants.breakdownStateParam.PUBLISHERS;
+constants.breakdownToBreakdownStateParamMap[constants.breakdown.INSIGHTS] =
+    constants.breakdownStateParam.INSIGHTS;
 
 constants.levelToEntityTypeMap = {};
 constants.levelToEntityTypeMap[constants.level.ALL_ACCOUNTS] = null;
-constants.levelToEntityTypeMap[constants.level.ACCOUNTS] = constants.entityType.ACCOUNT;
-constants.levelToEntityTypeMap[constants.level.CAMPAIGNS] = constants.entityType.CAMPAIGN;
-constants.levelToEntityTypeMap[constants.level.AD_GROUPS] = constants.entityType.AD_GROUP;
+constants.levelToEntityTypeMap[constants.level.ACCOUNTS] =
+    constants.entityType.ACCOUNT;
+constants.levelToEntityTypeMap[constants.level.CAMPAIGNS] =
+    constants.entityType.CAMPAIGN;
+constants.levelToEntityTypeMap[constants.level.AD_GROUPS] =
+    constants.entityType.AD_GROUP;
 
 constants.entityTypeToLevelMap = {};
-constants.entityTypeToLevelMap[constants.entityType.ACCOUNT] = constants.level.ACCOUNTS;
-constants.entityTypeToLevelMap[constants.entityType.CAMPAIGN] = constants.level.CAMPAIGNS;
-constants.entityTypeToLevelMap[constants.entityType.AD_GROUP] = constants.level.AD_GROUPS;
+constants.entityTypeToLevelMap[constants.entityType.ACCOUNT] =
+    constants.level.ACCOUNTS;
+constants.entityTypeToLevelMap[constants.entityType.CAMPAIGN] =
+    constants.level.CAMPAIGNS;
+constants.entityTypeToLevelMap[constants.entityType.AD_GROUP] =
+    constants.level.AD_GROUPS;
 
 constants.currencySymbol = {};
 constants.currencySymbol[constants.currency.USD] = '$';
@@ -1277,12 +1310,12 @@ constants.currencySymbol[constants.currency.CHF] = 'CHF';
 
 var options = {
     // used for converting options lists values into REST API flavoured constant values
-    convertToRestApiCompliantOptions: function (optionsList, constantsObj) {
+    convertToRestApiCompliantOptions: function(optionsList, constantsObj) {
         var reversedConstants = {};
-        Object.keys(constantsObj).forEach(function (prop) {
+        Object.keys(constantsObj).forEach(function(prop) {
             reversedConstants[constantsObj[prop]] = prop;
         });
-        var optionsListNames = optionsList.map(function (option) {
+        var optionsListNames = optionsList.map(function(option) {
             var newOption = angular.copy(option);
             newOption.value = reversedConstants[option.value];
             return newOption;
@@ -1302,20 +1335,25 @@ var options = {
         {name: 'Paused', value: constants.settingsState.INACTIVE},
         {name: 'Enabled', value: constants.settingsState.ACTIVE},
     ],
-    adGroupSettingsAutopilotStates: [{
-        name: 'Disabled',
-        help: 'Autopilot will not operate on this Ad Group.',
-        value: constants.adGroupSettingsAutopilotState.INACTIVE,
-    }, {
-        name: 'Optimize Bids',
-        help: 'Bids on active Media Sources in this Ad Group will be optimized. ' +
-              'Ad Group\'s Maximum CPC constraint will be enforced.',
-        value: constants.adGroupSettingsAutopilotState.ACTIVE_CPC,
-    }, {
-        name: 'Optimize Bids and Daily Spend Caps',
-        help: 'Both Bids and Daily Spend Caps will be optimized on active Media Sources in this Ad Group.',
-        value: constants.adGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET,
-    },
+    adGroupSettingsAutopilotStates: [
+        {
+            name: 'Disabled',
+            help: 'Autopilot will not operate on this Ad Group.',
+            value: constants.adGroupSettingsAutopilotState.INACTIVE,
+        },
+        {
+            name: 'Optimize Bids',
+            help:
+                'Bids on active Media Sources in this Ad Group will be optimized. ' +
+                "Ad Group's Maximum CPC constraint will be enforced.",
+            value: constants.adGroupSettingsAutopilotState.ACTIVE_CPC,
+        },
+        {
+            name: 'Optimize Bids and Daily Spend Caps',
+            help:
+                'Both Bids and Daily Spend Caps will be optimized on active Media Sources in this Ad Group.',
+            value: constants.adGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET,
+        },
     ],
     priceDiscoveryOptions: [
         {name: 'Automatic', value: constants.priceDiscovery.AUTOMATIC},
@@ -1329,7 +1367,10 @@ var options = {
         {name: 'Avg. CPM', value: constants.chartMetric.CPM},
     ],
     adGroupAcquisitionChartPostClickMetrics: [
-        {name: 'Click Discrepancy', value: constants.chartMetric.CLICK_DISCREPANCY},
+        {
+            name: 'Click Discrepancy',
+            value: constants.chartMetric.CLICK_DISCREPANCY,
+        },
     ],
     adGroupEngagementChartPostClickMetrics: [
         {name: 'Visits', value: constants.chartMetric.VISITS},
@@ -1339,9 +1380,15 @@ var options = {
         {name: 'Returning Users', value: constants.chartMetric.RETURNING_USERS},
         {name: '% New Users', value: constants.chartMetric.PERCENT_NEW_USERS},
         {name: 'Bounce Rate', value: constants.chartMetric.BOUNCE_RATE},
-        {name: 'Pageviews per Visit', value: constants.chartMetric.PV_PER_VISIT},
+        {
+            name: 'Pageviews per Visit',
+            value: constants.chartMetric.PV_PER_VISIT,
+        },
         {name: 'Bounced Visits', value: constants.chartMetric.BOUNCED_VISITS},
-        {name: 'Non-Bounced Visits', value: constants.chartMetric.NON_BOUNCED_VISITS},
+        {
+            name: 'Non-Bounced Visits',
+            value: constants.chartMetric.NON_BOUNCED_VISITS,
+        },
         {name: 'Total Seconds', value: constants.chartMetric.TOTAL_SECONDS},
         {name: 'Time on Site', value: constants.chartMetric.AVG_TOS},
     ],
@@ -1353,17 +1400,52 @@ var options = {
         {name: 'Avg. CPM', value: constants.chartMetric.CPM},
     ],
     conversionChartMetrics: [
-        {name: '', value: constants.chartMetric.CONVERSION_GOALS_PLACEHOLDER, shown: false, placeholder: true},
-        {name: '', value: constants.chartMetric.PIXELS_PLACEHOLDER, shown: false, placeholder: true},
+        {
+            name: '',
+            value: constants.chartMetric.CONVERSION_GOALS_PLACEHOLDER,
+            shown: false,
+            placeholder: true,
+        },
+        {
+            name: '',
+            value: constants.chartMetric.PIXELS_PLACEHOLDER,
+            shown: false,
+            placeholder: true,
+        },
     ],
     goalChartMetrics: [
-        {name: 'Avg. Cost per Minute', value: constants.chartMetric.COST_PER_MINUTE},
-        {name: 'Avg. Cost for Pageview', value: constants.chartMetric.COST_PER_PAGEVIEW},
-        {name: 'Avg. Cost per Visit', value: constants.chartMetric.COST_PER_VISIT},
-        {name: 'Avg. Cost per Non-Bounced Visit', value: constants.chartMetric.COST_PER_NON_BOUNCED_VISIT},
-        {name: 'Avg. Cost for New Visitor', value: constants.chartMetric.COST_PER_NEW_VISITOR},
-        {name: '', value: constants.chartMetric.CONVERSION_GOALS_AVG_COST_PLACEHOLDER, shown: false, placeholder: true},
-        {name: '', value: constants.chartMetric.PIXELS_AVG_COST_PLACEHOLDER, shown: false, placeholder: true},
+        {
+            name: 'Avg. Cost per Minute',
+            value: constants.chartMetric.COST_PER_MINUTE,
+        },
+        {
+            name: 'Avg. Cost for Pageview',
+            value: constants.chartMetric.COST_PER_PAGEVIEW,
+        },
+        {
+            name: 'Avg. Cost per Visit',
+            value: constants.chartMetric.COST_PER_VISIT,
+        },
+        {
+            name: 'Avg. Cost per Non-Bounced Visit',
+            value: constants.chartMetric.COST_PER_NON_BOUNCED_VISIT,
+        },
+        {
+            name: 'Avg. Cost for New Visitor',
+            value: constants.chartMetric.COST_PER_NEW_VISITOR,
+        },
+        {
+            name: '',
+            value: constants.chartMetric.CONVERSION_GOALS_AVG_COST_PLACEHOLDER,
+            shown: false,
+            placeholder: true,
+        },
+        {
+            name: '',
+            value: constants.chartMetric.PIXELS_AVG_COST_PLACEHOLDER,
+            shown: false,
+            placeholder: true,
+        },
     ],
     accountChartMetrics: [
         {name: 'Clicks', value: constants.chartMetric.CLICKS},
@@ -1381,7 +1463,10 @@ var options = {
     ],
     platformCostChartMetrics: [
         {name: 'Data Cost', value: constants.chartMetric.EFFECTIVE_DATA_COST},
-        {name: 'Media Spend', value: constants.chartMetric.EFFECTIVE_MEDIA_COST},
+        {
+            name: 'Media Spend',
+            value: constants.chartMetric.EFFECTIVE_MEDIA_COST,
+        },
     ],
     billingCostChartMetrics: [
         {name: 'Total Spend', value: constants.chartMetric.BILLING_COST},
@@ -1408,14 +1493,26 @@ var options = {
         {name: 'Swedish', value: constants.language.SWEDISH},
         {name: 'Turkish', value: constants.language.TURKISH},
         {name: 'Vietnamese', value: constants.language.VIETNAMESE},
-        {name: 'Simplified Chinese', value: constants.language.SIMPLIFIED_CHINESE},
-        {name: 'Traditional Chinese', value: constants.language.TRADITIONAL_CHINESE},
+        {
+            name: 'Simplified Chinese',
+            value: constants.language.SIMPLIFIED_CHINESE,
+        },
+        {
+            name: 'Traditional Chinese',
+            value: constants.language.TRADITIONAL_CHINESE,
+        },
         {name: 'Other', value: constants.language.OTHER},
     ],
     iabCategories: [
         {name: 'Uncategorized (IAB24)', value: constants.iabCategory.IAB24},
-        {name: 'Books & Literature (IAB1-1)', value: constants.iabCategory.IAB1_1},
-        {name: 'Celebrity Fan/Gossip (IAB1-2)', value: constants.iabCategory.IAB1_2},
+        {
+            name: 'Books & Literature (IAB1-1)',
+            value: constants.iabCategory.IAB1_1,
+        },
+        {
+            name: 'Celebrity Fan/Gossip (IAB1-2)',
+            value: constants.iabCategory.IAB1_2,
+        },
         {name: 'Fine Art (IAB1-3)', value: constants.iabCategory.IAB1_3},
         {name: 'Humor (IAB1-4)', value: constants.iabCategory.IAB1_4},
         {name: 'Movies (IAB1-5)', value: constants.iabCategory.IAB1_5},
@@ -1423,31 +1520,58 @@ var options = {
         {name: 'Television (IAB1-7)', value: constants.iabCategory.IAB1_7},
         {name: 'Auto Parts (IAB2-1)', value: constants.iabCategory.IAB2_1},
         {name: 'Auto Repair (IAB2-2)', value: constants.iabCategory.IAB2_2},
-        {name: 'Buying/Selling Cars (IAB2-3)', value: constants.iabCategory.IAB2_3},
+        {
+            name: 'Buying/Selling Cars (IAB2-3)',
+            value: constants.iabCategory.IAB2_3,
+        },
         {name: 'Car Culture (IAB2-4)', value: constants.iabCategory.IAB2_4},
-        {name: 'Certified Pre-Owned (IAB2-5)', value: constants.iabCategory.IAB2_5},
+        {
+            name: 'Certified Pre-Owned (IAB2-5)',
+            value: constants.iabCategory.IAB2_5,
+        },
         {name: 'Convertible (IAB2-6)', value: constants.iabCategory.IAB2_6},
         {name: 'Coupe (IAB2-7)', value: constants.iabCategory.IAB2_7},
         {name: 'Crossover (IAB2-8)', value: constants.iabCategory.IAB2_8},
         {name: 'Diesel (IAB2-9)', value: constants.iabCategory.IAB2_9},
-        {name: 'Electric Vehicle (IAB2-10)', value: constants.iabCategory.IAB2_10},
+        {
+            name: 'Electric Vehicle (IAB2-10)',
+            value: constants.iabCategory.IAB2_10,
+        },
         {name: 'Hatchback (IAB2-11)', value: constants.iabCategory.IAB2_11},
         {name: 'Hybrid (IAB2-12)', value: constants.iabCategory.IAB2_12},
         {name: 'Luxury (IAB2-13)', value: constants.iabCategory.IAB2_13},
         {name: 'MiniVan (IAB2-14)', value: constants.iabCategory.IAB2_14},
         {name: 'Mororcycles (IAB2-15)', value: constants.iabCategory.IAB2_15},
-        {name: 'Off-Road Vehicles (IAB2-16)', value: constants.iabCategory.IAB2_16},
-        {name: 'Performance Vehicles (IAB2-17)', value: constants.iabCategory.IAB2_17},
+        {
+            name: 'Off-Road Vehicles (IAB2-16)',
+            value: constants.iabCategory.IAB2_16,
+        },
+        {
+            name: 'Performance Vehicles (IAB2-17)',
+            value: constants.iabCategory.IAB2_17,
+        },
         {name: 'Pickup (IAB2-18)', value: constants.iabCategory.IAB2_18},
-        {name: 'Road-Side Assistance (IAB2-19)', value: constants.iabCategory.IAB2_19},
+        {
+            name: 'Road-Side Assistance (IAB2-19)',
+            value: constants.iabCategory.IAB2_19,
+        },
         {name: 'Sedan (IAB2-20)', value: constants.iabCategory.IAB2_20},
-        {name: 'Trucks & Accessories (IAB2-21)', value: constants.iabCategory.IAB2_21},
+        {
+            name: 'Trucks & Accessories (IAB2-21)',
+            value: constants.iabCategory.IAB2_21,
+        },
         {name: 'Vintage Cars (IAB2-22)', value: constants.iabCategory.IAB2_22},
         {name: 'Wagon (IAB2-23)', value: constants.iabCategory.IAB2_23},
         {name: 'Advertising (IAB3-1)', value: constants.iabCategory.IAB3_1},
         {name: 'Agriculture (IAB3-2)', value: constants.iabCategory.IAB3_2},
-        {name: 'Biotech/Biomedical (IAB3-3)', value: constants.iabCategory.IAB3_3},
-        {name: 'Business Software (IAB3-4)', value: constants.iabCategory.IAB3_4},
+        {
+            name: 'Biotech/Biomedical (IAB3-3)',
+            value: constants.iabCategory.IAB3_3,
+        },
+        {
+            name: 'Business Software (IAB3-4)',
+            value: constants.iabCategory.IAB3_4,
+        },
         {name: 'Construction (IAB3-5)', value: constants.iabCategory.IAB3_5},
         {name: 'Forestry (IAB3-6)', value: constants.iabCategory.IAB3_6},
         {name: 'Government (IAB3-7)', value: constants.iabCategory.IAB3_7},
@@ -1461,7 +1585,10 @@ var options = {
         {name: 'Financial Aid (IAB4-3)', value: constants.iabCategory.IAB4_3},
         {name: 'Job Fairs (IAB4-4)', value: constants.iabCategory.IAB4_4},
         {name: 'Job Search (IAB4-5)', value: constants.iabCategory.IAB4_5},
-        {name: 'Resume Writing/Advice (IAB4-6)', value: constants.iabCategory.IAB4_6},
+        {
+            name: 'Resume Writing/Advice (IAB4-6)',
+            value: constants.iabCategory.IAB4_6,
+        },
         {name: 'Nursing (IAB4-7)', value: constants.iabCategory.IAB4_7},
         {name: 'Scholarships (IAB4-8)', value: constants.iabCategory.IAB4_8},
         {name: 'Telecommuting (IAB4-9)', value: constants.iabCategory.IAB4_9},
@@ -1470,40 +1597,85 @@ var options = {
         {name: '7-12 Education (IAB5-1)', value: constants.iabCategory.IAB5_1},
         {name: 'Adult Education (IAB5-2)', value: constants.iabCategory.IAB5_2},
         {name: 'Art History (IAB5-3)', value: constants.iabCategory.IAB5_3},
-        {name: 'Colledge Administration (IAB5-4)', value: constants.iabCategory.IAB5_4},
+        {
+            name: 'Colledge Administration (IAB5-4)',
+            value: constants.iabCategory.IAB5_4,
+        },
         {name: 'College Life (IAB5-5)', value: constants.iabCategory.IAB5_5},
-        {name: 'Distance Learning (IAB5-6)', value: constants.iabCategory.IAB5_6},
-        {name: 'English as a 2nd Language (IAB5-7)', value: constants.iabCategory.IAB5_7},
-        {name: 'Language Learning (IAB5-8)', value: constants.iabCategory.IAB5_8},
+        {
+            name: 'Distance Learning (IAB5-6)',
+            value: constants.iabCategory.IAB5_6,
+        },
+        {
+            name: 'English as a 2nd Language (IAB5-7)',
+            value: constants.iabCategory.IAB5_7,
+        },
+        {
+            name: 'Language Learning (IAB5-8)',
+            value: constants.iabCategory.IAB5_8,
+        },
         {name: 'Graduate School (IAB5-9)', value: constants.iabCategory.IAB5_9},
         {name: 'Homeschooling (IAB5-10)', value: constants.iabCategory.IAB5_10},
-        {name: 'Homework/Study Tips (IAB5-11)', value: constants.iabCategory.IAB5_11},
+        {
+            name: 'Homework/Study Tips (IAB5-11)',
+            value: constants.iabCategory.IAB5_11,
+        },
         {name: 'K-6 Educators (IAB5-12)', value: constants.iabCategory.IAB5_12},
-        {name: 'Private School (IAB5-13)', value: constants.iabCategory.IAB5_13},
-        {name: 'Special Education (IAB5-14)', value: constants.iabCategory.IAB5_14},
-        {name: 'Studying Business (IAB5-15)', value: constants.iabCategory.IAB5_15},
+        {
+            name: 'Private School (IAB5-13)',
+            value: constants.iabCategory.IAB5_13,
+        },
+        {
+            name: 'Special Education (IAB5-14)',
+            value: constants.iabCategory.IAB5_14,
+        },
+        {
+            name: 'Studying Business (IAB5-15)',
+            value: constants.iabCategory.IAB5_15,
+        },
         {name: 'Adoption (IAB6-1)', value: constants.iabCategory.IAB6_1},
-        {name: 'Babies & Toddlers (IAB6-2)', value: constants.iabCategory.IAB6_2},
-        {name: 'Daycare/Pre School (IAB6-3)', value: constants.iabCategory.IAB6_3},
+        {
+            name: 'Babies & Toddlers (IAB6-2)',
+            value: constants.iabCategory.IAB6_2,
+        },
+        {
+            name: 'Daycare/Pre School (IAB6-3)',
+            value: constants.iabCategory.IAB6_3,
+        },
         {name: 'Family Internet (IAB6-4)', value: constants.iabCategory.IAB6_4},
-        {name: 'Parenting - K-6 Kids (IAB6-5)', value: constants.iabCategory.IAB6_5},
+        {
+            name: 'Parenting - K-6 Kids (IAB6-5)',
+            value: constants.iabCategory.IAB6_5,
+        },
         {name: 'Parenting teens (IAB6-6)', value: constants.iabCategory.IAB6_6},
         {name: 'Pregnancy (IAB6-7)', value: constants.iabCategory.IAB6_7},
-        {name: 'Special Needs Kids (IAB6-8)', value: constants.iabCategory.IAB6_8},
+        {
+            name: 'Special Needs Kids (IAB6-8)',
+            value: constants.iabCategory.IAB6_8,
+        },
         {name: 'Eldercare (IAB6-9)', value: constants.iabCategory.IAB6_9},
         {name: 'Exercise (IAB7-1)', value: constants.iabCategory.IAB7_1},
         {name: 'A.D.D. (IAB7-2)', value: constants.iabCategory.IAB7_2},
         {name: 'AIDS/HIV (IAB7-3)', value: constants.iabCategory.IAB7_3},
         {name: 'Allergies (IAB7-4)', value: constants.iabCategory.IAB7_4},
-        {name: 'Alternative Medicine (IAB7-5)', value: constants.iabCategory.IAB7_5},
+        {
+            name: 'Alternative Medicine (IAB7-5)',
+            value: constants.iabCategory.IAB7_5,
+        },
         {name: 'Arthritis (IAB7-6)', value: constants.iabCategory.IAB7_6},
         {name: 'Asthma (IAB7-7)', value: constants.iabCategory.IAB7_7},
         {name: 'Autism/PDD (IAB7-8)', value: constants.iabCategory.IAB7_8},
-        {name: 'Bipolar Disorder (IAB7-9)', value: constants.iabCategory.IAB7_9},
+        {
+            name: 'Bipolar Disorder (IAB7-9)',
+            value: constants.iabCategory.IAB7_9,
+        },
         {name: 'Brain Tumor (IAB7-10)', value: constants.iabCategory.IAB7_10},
         {name: 'Cancer (IAB7-11)', value: constants.iabCategory.IAB7_11},
         {name: 'Cholesterol (IAB7-12)', value: constants.iabCategory.IAB7_12},
-        {name: 'Chronic Fatigue Syndrome (IAB7-13)', value: constants.iabCategory.IAB7_13},
+        {
+            name: 'Chronic Fatigue Syndrome (IAB7-13)',
+            value: constants.iabCategory.IAB7_13,
+        },
         {name: 'Chronic Pain (IAB7-14)', value: constants.iabCategory.IAB7_14},
         {name: 'Cold & Flu (IAB7-15)', value: constants.iabCategory.IAB7_15},
         {name: 'Deafness (IAB7-16)', value: constants.iabCategory.IAB7_16},
@@ -1512,45 +1684,117 @@ var options = {
         {name: 'Dermatology (IAB7-19)', value: constants.iabCategory.IAB7_19},
         {name: 'Diabetes (IAB7-20)', value: constants.iabCategory.IAB7_20},
         {name: 'Epilepsy (IAB7-21)', value: constants.iabCategory.IAB7_21},
-        {name: 'GERD/Acid Reflux (IAB7-22)', value: constants.iabCategory.IAB7_22},
-        {name: 'Headaches/Migraines (IAB7-23)', value: constants.iabCategory.IAB7_23},
+        {
+            name: 'GERD/Acid Reflux (IAB7-22)',
+            value: constants.iabCategory.IAB7_22,
+        },
+        {
+            name: 'Headaches/Migraines (IAB7-23)',
+            value: constants.iabCategory.IAB7_23,
+        },
         {name: 'Heart Disease (IAB7-24)', value: constants.iabCategory.IAB7_24},
-        {name: 'Herbs for Health (IAB7-25)', value: constants.iabCategory.IAB7_25},
-        {name: 'Holistic Healing (IAB7-26)', value: constants.iabCategory.IAB7_26},
-        {name: 'IBS/Crohn\'s Disease (IAB7-27)', value: constants.iabCategory.IAB7_27},
-        {name: 'Incest/Abuse Support (IAB7-28)', value: constants.iabCategory.IAB7_28},
+        {
+            name: 'Herbs for Health (IAB7-25)',
+            value: constants.iabCategory.IAB7_25,
+        },
+        {
+            name: 'Holistic Healing (IAB7-26)',
+            value: constants.iabCategory.IAB7_26,
+        },
+        {
+            name: "IBS/Crohn's Disease (IAB7-27)",
+            value: constants.iabCategory.IAB7_27,
+        },
+        {
+            name: 'Incest/Abuse Support (IAB7-28)',
+            value: constants.iabCategory.IAB7_28,
+        },
         {name: 'Incontinence (IAB7-29)', value: constants.iabCategory.IAB7_29},
         {name: 'Infertility (IAB7-30)', value: constants.iabCategory.IAB7_30},
-        {name: 'Men\'s Health (IAB7-31)', value: constants.iabCategory.IAB7_31},
+        {name: "Men's Health (IAB7-31)", value: constants.iabCategory.IAB7_31},
         {name: 'Nutrition (IAB7-32)', value: constants.iabCategory.IAB7_32},
         {name: 'Orthopedics (IAB7-33)', value: constants.iabCategory.IAB7_33},
-        {name: 'Panic/Anxiety Disorders (IAB7-34)', value: constants.iabCategory.IAB7_34},
+        {
+            name: 'Panic/Anxiety Disorders (IAB7-34)',
+            value: constants.iabCategory.IAB7_34,
+        },
         {name: 'Pediatrics (IAB7-35)', value: constants.iabCategory.IAB7_35},
-        {name: 'Physical Therapy (IAB7-36)', value: constants.iabCategory.IAB7_36},
-        {name: 'Psychology/Psychiatry (IAB7-37)', value: constants.iabCategory.IAB7_37},
+        {
+            name: 'Physical Therapy (IAB7-36)',
+            value: constants.iabCategory.IAB7_36,
+        },
+        {
+            name: 'Psychology/Psychiatry (IAB7-37)',
+            value: constants.iabCategory.IAB7_37,
+        },
         {name: 'Senior Health (IAB7-38)', value: constants.iabCategory.IAB7_38},
         {name: 'Sexuality (IAB7-39)', value: constants.iabCategory.IAB7_39},
-        {name: 'Sleep Disorders (IAB7-40)', value: constants.iabCategory.IAB7_40},
-        {name: 'Smoking Cessation (IAB7-41)', value: constants.iabCategory.IAB7_41},
-        {name: 'Substance Abuse (IAB7-42)', value: constants.iabCategory.IAB7_42},
-        {name: 'Thyroid Disease (IAB7-43)', value: constants.iabCategory.IAB7_43},
+        {
+            name: 'Sleep Disorders (IAB7-40)',
+            value: constants.iabCategory.IAB7_40,
+        },
+        {
+            name: 'Smoking Cessation (IAB7-41)',
+            value: constants.iabCategory.IAB7_41,
+        },
+        {
+            name: 'Substance Abuse (IAB7-42)',
+            value: constants.iabCategory.IAB7_42,
+        },
+        {
+            name: 'Thyroid Disease (IAB7-43)',
+            value: constants.iabCategory.IAB7_43,
+        },
         {name: 'Weight Loss (IAB7-44)', value: constants.iabCategory.IAB7_44},
-        {name: 'Women\'s Health (IAB7-45)', value: constants.iabCategory.IAB7_45},
-        {name: 'American Cuisine (IAB8-1)', value: constants.iabCategory.IAB8_1},
-        {name: 'Barbecues & Grilling (IAB8-2)', value: constants.iabCategory.IAB8_2},
+        {
+            name: "Women's Health (IAB7-45)",
+            value: constants.iabCategory.IAB7_45,
+        },
+        {
+            name: 'American Cuisine (IAB8-1)',
+            value: constants.iabCategory.IAB8_1,
+        },
+        {
+            name: 'Barbecues & Grilling (IAB8-2)',
+            value: constants.iabCategory.IAB8_2,
+        },
         {name: 'Cajun/Creole (IAB8-3)', value: constants.iabCategory.IAB8_3},
         {name: 'Chinese Cuisine (IAB8-4)', value: constants.iabCategory.IAB8_4},
         {name: 'Cocktails/Beer (IAB8-5)', value: constants.iabCategory.IAB8_5},
         {name: 'Coffee/Tea (IAB8-6)', value: constants.iabCategory.IAB8_6},
-        {name: 'Cuisine-Specific (IAB8-7)', value: constants.iabCategory.IAB8_7},
-        {name: 'Desserts & Baking (IAB8-8)', value: constants.iabCategory.IAB8_8},
+        {
+            name: 'Cuisine-Specific (IAB8-7)',
+            value: constants.iabCategory.IAB8_7,
+        },
+        {
+            name: 'Desserts & Baking (IAB8-8)',
+            value: constants.iabCategory.IAB8_8,
+        },
         {name: 'Dining Out (IAB8-9)', value: constants.iabCategory.IAB8_9},
-        {name: 'Food Allergies (IAB8-10)', value: constants.iabCategory.IAB8_10},
-        {name: 'French Cuisine (IAB8-11)', value: constants.iabCategory.IAB8_11},
-        {name: 'Health/Lowfat Cooking (IAB8-12)', value: constants.iabCategory.IAB8_12},
-        {name: 'Italian Cuisine (IAB8-13)', value: constants.iabCategory.IAB8_13},
-        {name: 'Japanese Cuisine (IAB8-14)', value: constants.iabCategory.IAB8_14},
-        {name: 'Mexican Cuisine (IAB8-15)', value: constants.iabCategory.IAB8_15},
+        {
+            name: 'Food Allergies (IAB8-10)',
+            value: constants.iabCategory.IAB8_10,
+        },
+        {
+            name: 'French Cuisine (IAB8-11)',
+            value: constants.iabCategory.IAB8_11,
+        },
+        {
+            name: 'Health/Lowfat Cooking (IAB8-12)',
+            value: constants.iabCategory.IAB8_12,
+        },
+        {
+            name: 'Italian Cuisine (IAB8-13)',
+            value: constants.iabCategory.IAB8_13,
+        },
+        {
+            name: 'Japanese Cuisine (IAB8-14)',
+            value: constants.iabCategory.IAB8_14,
+        },
+        {
+            name: 'Mexican Cuisine (IAB8-15)',
+            value: constants.iabCategory.IAB8_15,
+        },
         {name: 'Vegan (IAB8-16)', value: constants.iabCategory.IAB8_16},
         {name: 'Vegetarian (IAB8-17)', value: constants.iabCategory.IAB8_17},
         {name: 'Wine (IAB8-18)', value: constants.iabCategory.IAB8_18},
@@ -1558,77 +1802,161 @@ var options = {
         {name: 'Arts & Crafts (IAB9-2)', value: constants.iabCategory.IAB9_2},
         {name: 'Beadwork (IAB9-3)', value: constants.iabCategory.IAB9_3},
         {name: 'Birdwatching (IAB9-4)', value: constants.iabCategory.IAB9_4},
-        {name: 'Board Games/Puzzles (IAB9-5)', value: constants.iabCategory.IAB9_5},
-        {name: 'Candle & Soap Making (IAB9-6)', value: constants.iabCategory.IAB9_6},
+        {
+            name: 'Board Games/Puzzles (IAB9-5)',
+            value: constants.iabCategory.IAB9_5,
+        },
+        {
+            name: 'Candle & Soap Making (IAB9-6)',
+            value: constants.iabCategory.IAB9_6,
+        },
         {name: 'Card Games (IAB9-7)', value: constants.iabCategory.IAB9_7},
         {name: 'Chess (IAB9-8)', value: constants.iabCategory.IAB9_8},
         {name: 'Cigars (IAB9-9)', value: constants.iabCategory.IAB9_9},
         {name: 'Collecting (IAB9-10)', value: constants.iabCategory.IAB9_10},
         {name: 'Comic Books (IAB9-11)', value: constants.iabCategory.IAB9_11},
-        {name: 'Drawing/Sketching (IAB9-12)', value: constants.iabCategory.IAB9_12},
-        {name: 'Freelance Writing (IAB9-13)', value: constants.iabCategory.IAB9_13},
+        {
+            name: 'Drawing/Sketching (IAB9-12)',
+            value: constants.iabCategory.IAB9_12,
+        },
+        {
+            name: 'Freelance Writing (IAB9-13)',
+            value: constants.iabCategory.IAB9_13,
+        },
         {name: 'Genealogy (IAB9-14)', value: constants.iabCategory.IAB9_14},
-        {name: 'Getting Published (IAB9-15)', value: constants.iabCategory.IAB9_15},
+        {
+            name: 'Getting Published (IAB9-15)',
+            value: constants.iabCategory.IAB9_15,
+        },
         {name: 'Guitar (IAB9-16)', value: constants.iabCategory.IAB9_16},
-        {name: 'Home Recording (IAB9-17)', value: constants.iabCategory.IAB9_17},
-        {name: 'Investors & Patents (IAB9-18)', value: constants.iabCategory.IAB9_18},
-        {name: 'Jewelry Making (IAB9-19)', value: constants.iabCategory.IAB9_19},
-        {name: 'Magic & Illusion (IAB9-20)', value: constants.iabCategory.IAB9_20},
+        {
+            name: 'Home Recording (IAB9-17)',
+            value: constants.iabCategory.IAB9_17,
+        },
+        {
+            name: 'Investors & Patents (IAB9-18)',
+            value: constants.iabCategory.IAB9_18,
+        },
+        {
+            name: 'Jewelry Making (IAB9-19)',
+            value: constants.iabCategory.IAB9_19,
+        },
+        {
+            name: 'Magic & Illusion (IAB9-20)',
+            value: constants.iabCategory.IAB9_20,
+        },
         {name: 'Needlework (IAB9-21)', value: constants.iabCategory.IAB9_21},
         {name: 'Painting (IAB9-22)', value: constants.iabCategory.IAB9_22},
         {name: 'Photography (IAB9-23)', value: constants.iabCategory.IAB9_23},
         {name: 'Radio (IAB9-24)', value: constants.iabCategory.IAB9_24},
-        {name: 'Roleplaying Games (IAB9-25)', value: constants.iabCategory.IAB9_25},
-        {name: 'Sci-Fi & Fantasy (IAB9-26)', value: constants.iabCategory.IAB9_26},
+        {
+            name: 'Roleplaying Games (IAB9-25)',
+            value: constants.iabCategory.IAB9_25,
+        },
+        {
+            name: 'Sci-Fi & Fantasy (IAB9-26)',
+            value: constants.iabCategory.IAB9_26,
+        },
         {name: 'Scrapbooking (IAB9-27)', value: constants.iabCategory.IAB9_27},
         {name: 'Screenwriting (IAB9-28)', value: constants.iabCategory.IAB9_28},
-        {name: 'Stamps & Coins (IAB9-29)', value: constants.iabCategory.IAB9_29},
-        {name: 'Video & Computer Games (IAB9-30)', value: constants.iabCategory.IAB9_30},
+        {
+            name: 'Stamps & Coins (IAB9-29)',
+            value: constants.iabCategory.IAB9_29,
+        },
+        {
+            name: 'Video & Computer Games (IAB9-30)',
+            value: constants.iabCategory.IAB9_30,
+        },
         {name: 'Woodworking (IAB9-31)', value: constants.iabCategory.IAB9_31},
         {name: 'Appliances (IAB10-1)', value: constants.iabCategory.IAB10_1},
         {name: 'Entertaining (IAB10-2)', value: constants.iabCategory.IAB10_2},
-        {name: 'Environmental Safety (IAB10-3)', value: constants.iabCategory.IAB10_3},
+        {
+            name: 'Environmental Safety (IAB10-3)',
+            value: constants.iabCategory.IAB10_3,
+        },
         {name: 'Gardening (IAB10-4)', value: constants.iabCategory.IAB10_4},
         {name: 'Home Repair (IAB10-5)', value: constants.iabCategory.IAB10_5},
         {name: 'Home Theater (IAB10-6)', value: constants.iabCategory.IAB10_6},
-        {name: 'Interior Decorating (IAB10-7)', value: constants.iabCategory.IAB10_7},
+        {
+            name: 'Interior Decorating (IAB10-7)',
+            value: constants.iabCategory.IAB10_7,
+        },
         {name: 'Landscaping (IAB10-8)', value: constants.iabCategory.IAB10_8},
-        {name: 'Remodeling & Construction (IAB10-9)', value: constants.iabCategory.IAB10_9},
+        {
+            name: 'Remodeling & Construction (IAB10-9)',
+            value: constants.iabCategory.IAB10_9,
+        },
         {name: 'Immigration (IAB11-1)', value: constants.iabCategory.IAB11_1},
         {name: 'Legal Issues (IAB11-2)', value: constants.iabCategory.IAB11_2},
-        {name: 'U.S. Government Resources (IAB11-3)', value: constants.iabCategory.IAB11_3},
+        {
+            name: 'U.S. Government Resources (IAB11-3)',
+            value: constants.iabCategory.IAB11_3,
+        },
         {name: 'Politics (IAB11-4)', value: constants.iabCategory.IAB11_4},
         {name: 'Commentary (IAB11-5)', value: constants.iabCategory.IAB11_5},
-        {name: 'International News (IAB12-1)', value: constants.iabCategory.IAB12_1},
+        {
+            name: 'International News (IAB12-1)',
+            value: constants.iabCategory.IAB12_1,
+        },
         {name: 'National News (IAB12-2)', value: constants.iabCategory.IAB12_2},
         {name: 'Local News (IAB12-3)', value: constants.iabCategory.IAB12_3},
-        {name: 'Beginning Investing (IAB13-1)', value: constants.iabCategory.IAB13_1},
-        {name: 'Credit/Debt & Loans (IAB13-2)', value: constants.iabCategory.IAB13_2},
-        {name: 'Financial News (IAB13-3)', value: constants.iabCategory.IAB13_3},
-        {name: 'Financial Planning (IAB13-4)', value: constants.iabCategory.IAB13_4},
+        {
+            name: 'Beginning Investing (IAB13-1)',
+            value: constants.iabCategory.IAB13_1,
+        },
+        {
+            name: 'Credit/Debt & Loans (IAB13-2)',
+            value: constants.iabCategory.IAB13_2,
+        },
+        {
+            name: 'Financial News (IAB13-3)',
+            value: constants.iabCategory.IAB13_3,
+        },
+        {
+            name: 'Financial Planning (IAB13-4)',
+            value: constants.iabCategory.IAB13_4,
+        },
         {name: 'Hedge Fund (IAB13-5)', value: constants.iabCategory.IAB13_5},
         {name: 'Insurance (IAB13-6)', value: constants.iabCategory.IAB13_6},
         {name: 'Investing (IAB13-7)', value: constants.iabCategory.IAB13_7},
         {name: 'Mutual Funds (IAB13-8)', value: constants.iabCategory.IAB13_8},
         {name: 'Options (IAB13-9)', value: constants.iabCategory.IAB13_9},
-        {name: 'Retirement Planning (IAB13-10)', value: constants.iabCategory.IAB13_10},
+        {
+            name: 'Retirement Planning (IAB13-10)',
+            value: constants.iabCategory.IAB13_10,
+        },
         {name: 'Stocks (IAB13-11)', value: constants.iabCategory.IAB13_11},
-        {name: 'Tax Planning (IAB13-12)', value: constants.iabCategory.IAB13_12},
+        {
+            name: 'Tax Planning (IAB13-12)',
+            value: constants.iabCategory.IAB13_12,
+        },
         {name: 'Dating (IAB14-1)', value: constants.iabCategory.IAB14_1},
-        {name: 'Divorce Support (IAB14-2)', value: constants.iabCategory.IAB14_2},
+        {
+            name: 'Divorce Support (IAB14-2)',
+            value: constants.iabCategory.IAB14_2,
+        },
         {name: 'Gay Life (IAB14-3)', value: constants.iabCategory.IAB14_3},
         {name: 'Marriage (IAB14-4)', value: constants.iabCategory.IAB14_4},
         {name: 'Senior Living (IAB14-5)', value: constants.iabCategory.IAB14_5},
         {name: 'Teens (IAB14-6)', value: constants.iabCategory.IAB14_6},
         {name: 'Weddings (IAB14-7)', value: constants.iabCategory.IAB14_7},
-        {name: 'Ethnic Specific (IAB14-8)', value: constants.iabCategory.IAB14_8},
+        {
+            name: 'Ethnic Specific (IAB14-8)',
+            value: constants.iabCategory.IAB14_8,
+        },
         {name: 'Astrology (IAB15-1)', value: constants.iabCategory.IAB15_1},
         {name: 'Biology (IAB15-2)', value: constants.iabCategory.IAB15_2},
         {name: 'Chemistry (IAB15-3)', value: constants.iabCategory.IAB15_3},
         {name: 'Geology (IAB15-4)', value: constants.iabCategory.IAB15_4},
-        {name: 'Paranormal Phenomena (IAB15-5)', value: constants.iabCategory.IAB15_5},
+        {
+            name: 'Paranormal Phenomena (IAB15-5)',
+            value: constants.iabCategory.IAB15_5,
+        },
         {name: 'Physics (IAB15-6)', value: constants.iabCategory.IAB15_6},
-        {name: 'Space/Astronomy (IAB15-7)', value: constants.iabCategory.IAB15_7},
+        {
+            name: 'Space/Astronomy (IAB15-7)',
+            value: constants.iabCategory.IAB15_7,
+        },
         {name: 'Geography (IAB15-8)', value: constants.iabCategory.IAB15_8},
         {name: 'Botany (IAB15-9)', value: constants.iabCategory.IAB15_9},
         {name: 'Weather (IAB15-10)', value: constants.iabCategory.IAB15_10},
@@ -1638,51 +1966,117 @@ var options = {
         {name: 'Dogs (IAB16-4)', value: constants.iabCategory.IAB16_4},
         {name: 'Large Animals (IAB16-5)', value: constants.iabCategory.IAB16_5},
         {name: 'Reptiles (IAB16-6)', value: constants.iabCategory.IAB16_6},
-        {name: 'Veterinary Medicine (IAB16-7)', value: constants.iabCategory.IAB16_7},
+        {
+            name: 'Veterinary Medicine (IAB16-7)',
+            value: constants.iabCategory.IAB16_7,
+        },
         {name: 'Auto Racing (IAB17-1)', value: constants.iabCategory.IAB17_1},
         {name: 'Baseball (IAB17-2)', value: constants.iabCategory.IAB17_2},
         {name: 'Bicycling (IAB17-3)', value: constants.iabCategory.IAB17_3},
         {name: 'Bodybuilding (IAB17-4)', value: constants.iabCategory.IAB17_4},
         {name: 'Boxing (IAB17-5)', value: constants.iabCategory.IAB17_5},
-        {name: 'Canoeing/Kayaking (IAB17-6)', value: constants.iabCategory.IAB17_6},
+        {
+            name: 'Canoeing/Kayaking (IAB17-6)',
+            value: constants.iabCategory.IAB17_6,
+        },
         {name: 'Cheerleading (IAB17-7)', value: constants.iabCategory.IAB17_7},
         {name: 'Climbing (IAB17-8)', value: constants.iabCategory.IAB17_8},
         {name: 'Cricket (IAB17-9)', value: constants.iabCategory.IAB17_9},
-        {name: 'Figure Skating (IAB17-10)', value: constants.iabCategory.IAB17_10},
+        {
+            name: 'Figure Skating (IAB17-10)',
+            value: constants.iabCategory.IAB17_10,
+        },
         {name: 'Fly Fishing (IAB17-11)', value: constants.iabCategory.IAB17_11},
         {name: 'Football (IAB17-12)', value: constants.iabCategory.IAB17_12},
-        {name: 'Freshwater Fishing (IAB17-13)', value: constants.iabCategory.IAB17_13},
+        {
+            name: 'Freshwater Fishing (IAB17-13)',
+            value: constants.iabCategory.IAB17_13,
+        },
         {name: 'Game & Fish (IAB17-14)', value: constants.iabCategory.IAB17_14},
         {name: 'Golf (IAB17-15)', value: constants.iabCategory.IAB17_15},
-        {name: 'Horse Racing (IAB17-16)', value: constants.iabCategory.IAB17_16},
+        {
+            name: 'Horse Racing (IAB17-16)',
+            value: constants.iabCategory.IAB17_16,
+        },
         {name: 'Horses (IAB17-17)', value: constants.iabCategory.IAB17_17},
-        {name: 'Hunting/Shooting (IAB17-18)', value: constants.iabCategory.IAB17_18},
-        {name: 'Inline Skating (IAB17-19)', value: constants.iabCategory.IAB17_19},
-        {name: 'Martial Arts (IAB17-20)', value: constants.iabCategory.IAB17_20},
-        {name: 'Mountain Biking (IAB17-21)', value: constants.iabCategory.IAB17_21},
-        {name: 'NASCAR Racing (IAB17-22)', value: constants.iabCategory.IAB17_22},
+        {
+            name: 'Hunting/Shooting (IAB17-18)',
+            value: constants.iabCategory.IAB17_18,
+        },
+        {
+            name: 'Inline Skating (IAB17-19)',
+            value: constants.iabCategory.IAB17_19,
+        },
+        {
+            name: 'Martial Arts (IAB17-20)',
+            value: constants.iabCategory.IAB17_20,
+        },
+        {
+            name: 'Mountain Biking (IAB17-21)',
+            value: constants.iabCategory.IAB17_21,
+        },
+        {
+            name: 'NASCAR Racing (IAB17-22)',
+            value: constants.iabCategory.IAB17_22,
+        },
         {name: 'Olympics (IAB17-23)', value: constants.iabCategory.IAB17_23},
         {name: 'Paintball (IAB17-24)', value: constants.iabCategory.IAB17_24},
-        {name: 'Power & Motorcycles (IAB17-25)', value: constants.iabCategory.IAB17_25},
-        {name: 'Pro Basketball (IAB17-26)', value: constants.iabCategory.IAB17_26},
-        {name: 'Pro Ice Hockey (IAB17-27)', value: constants.iabCategory.IAB17_27},
+        {
+            name: 'Power & Motorcycles (IAB17-25)',
+            value: constants.iabCategory.IAB17_25,
+        },
+        {
+            name: 'Pro Basketball (IAB17-26)',
+            value: constants.iabCategory.IAB17_26,
+        },
+        {
+            name: 'Pro Ice Hockey (IAB17-27)',
+            value: constants.iabCategory.IAB17_27,
+        },
         {name: 'Rodeo (IAB17-28)', value: constants.iabCategory.IAB17_28},
         {name: 'Rugby (IAB17-29)', value: constants.iabCategory.IAB17_29},
-        {name: 'Running/Jogging (IAB17-30)', value: constants.iabCategory.IAB17_30},
+        {
+            name: 'Running/Jogging (IAB17-30)',
+            value: constants.iabCategory.IAB17_30,
+        },
         {name: 'Sailing (IAB17-31)', value: constants.iabCategory.IAB17_31},
-        {name: 'Saltwater Fishing (IAB17-32)', value: constants.iabCategory.IAB17_32},
-        {name: 'Scuba Diving (IAB17-33)', value: constants.iabCategory.IAB17_33},
-        {name: 'Skateboarding (IAB17-34)', value: constants.iabCategory.IAB17_34},
+        {
+            name: 'Saltwater Fishing (IAB17-32)',
+            value: constants.iabCategory.IAB17_32,
+        },
+        {
+            name: 'Scuba Diving (IAB17-33)',
+            value: constants.iabCategory.IAB17_33,
+        },
+        {
+            name: 'Skateboarding (IAB17-34)',
+            value: constants.iabCategory.IAB17_34,
+        },
         {name: 'Skiing (IAB17-35)', value: constants.iabCategory.IAB17_35},
-        {name: 'Snowboarding (IAB17-36)', value: constants.iabCategory.IAB17_36},
-        {name: 'Surfing/Bodyboarding (IAB17-37)', value: constants.iabCategory.IAB17_37},
+        {
+            name: 'Snowboarding (IAB17-36)',
+            value: constants.iabCategory.IAB17_36,
+        },
+        {
+            name: 'Surfing/Bodyboarding (IAB17-37)',
+            value: constants.iabCategory.IAB17_37,
+        },
         {name: 'Swimming (IAB17-38)', value: constants.iabCategory.IAB17_38},
-        {name: 'Table Tennis/Ping-Pong (IAB17-39)', value: constants.iabCategory.IAB17_39},
+        {
+            name: 'Table Tennis/Ping-Pong (IAB17-39)',
+            value: constants.iabCategory.IAB17_39,
+        },
         {name: 'Tennis (IAB17-40)', value: constants.iabCategory.IAB17_40},
         {name: 'Volleyball (IAB17-41)', value: constants.iabCategory.IAB17_41},
         {name: 'Walking (IAB17-42)', value: constants.iabCategory.IAB17_42},
-        {name: 'Waterski/Wakeboard (IAB17-43)', value: constants.iabCategory.IAB17_43},
-        {name: 'World Soccer (IAB17-44)', value: constants.iabCategory.IAB17_44},
+        {
+            name: 'Waterski/Wakeboard (IAB17-43)',
+            value: constants.iabCategory.IAB17_43,
+        },
+        {
+            name: 'World Soccer (IAB17-44)',
+            value: constants.iabCategory.IAB17_44,
+        },
         {name: 'Beauty (IAB18-1)', value: constants.iabCategory.IAB18_1},
         {name: 'Body Art (IAB18-2)', value: constants.iabCategory.IAB18_2},
         {name: 'Fashion (IAB18-3)', value: constants.iabCategory.IAB18_3},
@@ -1691,502 +2085,1613 @@ var options = {
         {name: 'Accessories (IAB18-6)', value: constants.iabCategory.IAB18_6},
         {name: '3-D Graphics (IAB19-1)', value: constants.iabCategory.IAB19_1},
         {name: 'Animation (IAB19-2)', value: constants.iabCategory.IAB19_2},
-        {name: 'Antivirus Software (IAB19-3)', value: constants.iabCategory.IAB19_3},
+        {
+            name: 'Antivirus Software (IAB19-3)',
+            value: constants.iabCategory.IAB19_3,
+        },
         {name: 'C/C++ (IAB19-4)', value: constants.iabCategory.IAB19_4},
-        {name: 'Cameras & Camcorders (IAB19-5)', value: constants.iabCategory.IAB19_5},
+        {
+            name: 'Cameras & Camcorders (IAB19-5)',
+            value: constants.iabCategory.IAB19_5,
+        },
         {name: 'Cell Phones (IAB19-6)', value: constants.iabCategory.IAB19_6},
-        {name: 'Computer Certification (IAB19-7)', value: constants.iabCategory.IAB19_7},
-        {name: 'Computer Networking (IAB19-8)', value: constants.iabCategory.IAB19_8},
-        {name: 'Computer Peripherals (IAB19-9)', value: constants.iabCategory.IAB19_9},
-        {name: 'Computer Reviews (IAB19-10)', value: constants.iabCategory.IAB19_10},
-        {name: 'Data Centers (IAB19-11)', value: constants.iabCategory.IAB19_11},
+        {
+            name: 'Computer Certification (IAB19-7)',
+            value: constants.iabCategory.IAB19_7,
+        },
+        {
+            name: 'Computer Networking (IAB19-8)',
+            value: constants.iabCategory.IAB19_8,
+        },
+        {
+            name: 'Computer Peripherals (IAB19-9)',
+            value: constants.iabCategory.IAB19_9,
+        },
+        {
+            name: 'Computer Reviews (IAB19-10)',
+            value: constants.iabCategory.IAB19_10,
+        },
+        {
+            name: 'Data Centers (IAB19-11)',
+            value: constants.iabCategory.IAB19_11,
+        },
         {name: 'Databases (IAB19-12)', value: constants.iabCategory.IAB19_12},
-        {name: 'Desktop Publishing (IAB19-13)', value: constants.iabCategory.IAB19_13},
-        {name: 'Desktop Video (IAB19-14)', value: constants.iabCategory.IAB19_14},
+        {
+            name: 'Desktop Publishing (IAB19-13)',
+            value: constants.iabCategory.IAB19_13,
+        },
+        {
+            name: 'Desktop Video (IAB19-14)',
+            value: constants.iabCategory.IAB19_14,
+        },
         {name: 'Email (IAB19-15)', value: constants.iabCategory.IAB19_15},
-        {name: 'Graphics Software (IAB19-16)', value: constants.iabCategory.IAB19_16},
-        {name: 'Home Video/DVD (IAB19-17)', value: constants.iabCategory.IAB19_17},
-        {name: 'Internet Technology (IAB19-18)', value: constants.iabCategory.IAB19_18},
+        {
+            name: 'Graphics Software (IAB19-16)',
+            value: constants.iabCategory.IAB19_16,
+        },
+        {
+            name: 'Home Video/DVD (IAB19-17)',
+            value: constants.iabCategory.IAB19_17,
+        },
+        {
+            name: 'Internet Technology (IAB19-18)',
+            value: constants.iabCategory.IAB19_18,
+        },
         {name: 'Java (IAB19-19)', value: constants.iabCategory.IAB19_19},
         {name: 'JavaScript (IAB19-20)', value: constants.iabCategory.IAB19_20},
         {name: 'Mac Support (IAB19-21)', value: constants.iabCategory.IAB19_21},
         {name: 'MP3/MIDI (IAB19-22)', value: constants.iabCategory.IAB19_22},
-        {name: 'Net Conferencing (IAB19-23)', value: constants.iabCategory.IAB19_23},
-        {name: 'Net for Beginners (IAB19-24)', value: constants.iabCategory.IAB19_24},
-        {name: 'Network Security (IAB19-25)', value: constants.iabCategory.IAB19_25},
-        {name: 'Palmtops/PDAs (IAB19-26)', value: constants.iabCategory.IAB19_26},
+        {
+            name: 'Net Conferencing (IAB19-23)',
+            value: constants.iabCategory.IAB19_23,
+        },
+        {
+            name: 'Net for Beginners (IAB19-24)',
+            value: constants.iabCategory.IAB19_24,
+        },
+        {
+            name: 'Network Security (IAB19-25)',
+            value: constants.iabCategory.IAB19_25,
+        },
+        {
+            name: 'Palmtops/PDAs (IAB19-26)',
+            value: constants.iabCategory.IAB19_26,
+        },
         {name: 'PC Support (IAB19-27)', value: constants.iabCategory.IAB19_27},
         {name: 'Portable (IAB19-28)', value: constants.iabCategory.IAB19_28},
-        {name: 'Entertainment (IAB19-29)', value: constants.iabCategory.IAB19_29},
-        {name: 'Shareware/Freeware (IAB19-30)', value: constants.iabCategory.IAB19_30},
+        {
+            name: 'Entertainment (IAB19-29)',
+            value: constants.iabCategory.IAB19_29,
+        },
+        {
+            name: 'Shareware/Freeware (IAB19-30)',
+            value: constants.iabCategory.IAB19_30,
+        },
         {name: 'Unix (IAB19-31)', value: constants.iabCategory.IAB19_31},
-        {name: 'Visual Basic (IAB19-32)', value: constants.iabCategory.IAB19_32},
-        {name: 'Web Clip Art (IAB19-33)', value: constants.iabCategory.IAB19_33},
-        {name: 'Web Design/HTML (IAB19-34)', value: constants.iabCategory.IAB19_34},
+        {
+            name: 'Visual Basic (IAB19-32)',
+            value: constants.iabCategory.IAB19_32,
+        },
+        {
+            name: 'Web Clip Art (IAB19-33)',
+            value: constants.iabCategory.IAB19_33,
+        },
+        {
+            name: 'Web Design/HTML (IAB19-34)',
+            value: constants.iabCategory.IAB19_34,
+        },
         {name: 'Web Search (IAB19-35)', value: constants.iabCategory.IAB19_35},
         {name: 'Windows (IAB19-36)', value: constants.iabCategory.IAB19_36},
-        {name: 'Adventure Travel (IAB20-1)', value: constants.iabCategory.IAB20_1},
+        {
+            name: 'Adventure Travel (IAB20-1)',
+            value: constants.iabCategory.IAB20_1,
+        },
         {name: 'Africa (IAB20-2)', value: constants.iabCategory.IAB20_2},
         {name: 'Air Travel (IAB20-3)', value: constants.iabCategory.IAB20_3},
-        {name: 'Australia & New Zealand (IAB20-4)', value: constants.iabCategory.IAB20_4},
-        {name: 'Bed & Breakfasts (IAB20-5)', value: constants.iabCategory.IAB20_5},
+        {
+            name: 'Australia & New Zealand (IAB20-4)',
+            value: constants.iabCategory.IAB20_4,
+        },
+        {
+            name: 'Bed & Breakfasts (IAB20-5)',
+            value: constants.iabCategory.IAB20_5,
+        },
         {name: 'Budget Travel (IAB20-6)', value: constants.iabCategory.IAB20_6},
-        {name: 'Business Travel (IAB20-7)', value: constants.iabCategory.IAB20_7},
+        {
+            name: 'Business Travel (IAB20-7)',
+            value: constants.iabCategory.IAB20_7,
+        },
         {name: 'By US Locale (IAB20-8)', value: constants.iabCategory.IAB20_8},
         {name: 'Camping (IAB20-9)', value: constants.iabCategory.IAB20_9},
         {name: 'Canada (IAB20-10)', value: constants.iabCategory.IAB20_10},
         {name: 'Caribbean (IAB20-11)', value: constants.iabCategory.IAB20_11},
         {name: 'Cruises (IAB20-12)', value: constants.iabCategory.IAB20_12},
-        {name: 'Eastern Europe (IAB20-13)', value: constants.iabCategory.IAB20_13},
+        {
+            name: 'Eastern Europe (IAB20-13)',
+            value: constants.iabCategory.IAB20_13,
+        },
         {name: 'Europe (IAB20-14)', value: constants.iabCategory.IAB20_14},
         {name: 'France (IAB20-15)', value: constants.iabCategory.IAB20_15},
         {name: 'Greece (IAB20-16)', value: constants.iabCategory.IAB20_16},
-        {name: 'Honeymoons/Getaways (IAB20-17)', value: constants.iabCategory.IAB20_17},
+        {
+            name: 'Honeymoons/Getaways (IAB20-17)',
+            value: constants.iabCategory.IAB20_17,
+        },
         {name: 'Hotels (IAB20-18)', value: constants.iabCategory.IAB20_18},
         {name: 'Italy (IAB20-19)', value: constants.iabCategory.IAB20_19},
         {name: 'Japan (IAB20-20)', value: constants.iabCategory.IAB20_20},
-        {name: 'Mexico & Central America (IAB20-21)', value: constants.iabCategory.IAB20_21},
-        {name: 'National Parks (IAB20-22)', value: constants.iabCategory.IAB20_22},
-        {name: 'South America (IAB20-23)', value: constants.iabCategory.IAB20_23},
+        {
+            name: 'Mexico & Central America (IAB20-21)',
+            value: constants.iabCategory.IAB20_21,
+        },
+        {
+            name: 'National Parks (IAB20-22)',
+            value: constants.iabCategory.IAB20_22,
+        },
+        {
+            name: 'South America (IAB20-23)',
+            value: constants.iabCategory.IAB20_23,
+        },
         {name: 'Spas (IAB20-24)', value: constants.iabCategory.IAB20_24},
         {name: 'Theme Parks (IAB20-25)', value: constants.iabCategory.IAB20_25},
-        {name: 'Traveling with Kids (IAB20-26)', value: constants.iabCategory.IAB20_26},
-        {name: 'United Kingdom (IAB20-27)', value: constants.iabCategory.IAB20_27},
+        {
+            name: 'Traveling with Kids (IAB20-26)',
+            value: constants.iabCategory.IAB20_26,
+        },
+        {
+            name: 'United Kingdom (IAB20-27)',
+            value: constants.iabCategory.IAB20_27,
+        },
         {name: 'Apartments (IAB21-1)', value: constants.iabCategory.IAB21_1},
         {name: 'Architects (IAB21-2)', value: constants.iabCategory.IAB21_2},
-        {name: 'Buying/Selling Homes (IAB21-3)', value: constants.iabCategory.IAB21_3},
-        {name: 'Contests & Freebies (IAB22-1)', value: constants.iabCategory.IAB22_1},
+        {
+            name: 'Buying/Selling Homes (IAB21-3)',
+            value: constants.iabCategory.IAB21_3,
+        },
+        {
+            name: 'Contests & Freebies (IAB22-1)',
+            value: constants.iabCategory.IAB22_1,
+        },
         {name: 'Couponing (IAB22-2)', value: constants.iabCategory.IAB22_2},
         {name: 'Comparison (IAB22-3)', value: constants.iabCategory.IAB22_3},
         {name: 'Engines (IAB22-4)', value: constants.iabCategory.IAB22_4},
-        {name: 'Alternative Religions (IAB23-1)', value: constants.iabCategory.IAB23_1},
-        {name: 'Atheism/Agnosticism (IAB23-2)', value: constants.iabCategory.IAB23_2},
+        {
+            name: 'Alternative Religions (IAB23-1)',
+            value: constants.iabCategory.IAB23_1,
+        },
+        {
+            name: 'Atheism/Agnosticism (IAB23-2)',
+            value: constants.iabCategory.IAB23_2,
+        },
         {name: 'Buddhism (IAB23-3)', value: constants.iabCategory.IAB23_3},
         {name: 'Catholicism (IAB23-4)', value: constants.iabCategory.IAB23_4},
         {name: 'Christianity (IAB23-5)', value: constants.iabCategory.IAB23_5},
         {name: 'Hinduism (IAB23-6)', value: constants.iabCategory.IAB23_6},
         {name: 'Islam (IAB23-7)', value: constants.iabCategory.IAB23_7},
         {name: 'Judaism (IAB23-8)', value: constants.iabCategory.IAB23_8},
-        {name: 'Latter-Day Saints (IAB23-9)', value: constants.iabCategory.IAB23_9},
-        {name: 'Pagan/Wiccan (IAB23-10)', value: constants.iabCategory.IAB23_10},
-        {name: 'Unmoderated UGC (IAB25-1)', value: constants.iabCategory.IAB25_1},
-        {name: 'Extreme Graphic/Explicit Violence (IAB25-2)', value: constants.iabCategory.IAB25_2},
+        {
+            name: 'Latter-Day Saints (IAB23-9)',
+            value: constants.iabCategory.IAB23_9,
+        },
+        {
+            name: 'Pagan/Wiccan (IAB23-10)',
+            value: constants.iabCategory.IAB23_10,
+        },
+        {
+            name: 'Unmoderated UGC (IAB25-1)',
+            value: constants.iabCategory.IAB25_1,
+        },
+        {
+            name: 'Extreme Graphic/Explicit Violence (IAB25-2)',
+            value: constants.iabCategory.IAB25_2,
+        },
         {name: 'Pornography (IAB25-3)', value: constants.iabCategory.IAB25_3},
-        {name: 'Profane Content (IAB25-4)', value: constants.iabCategory.IAB25_4},
+        {
+            name: 'Profane Content (IAB25-4)',
+            value: constants.iabCategory.IAB25_4,
+        },
         {name: 'Hate Content (IAB25-5)', value: constants.iabCategory.IAB25_5},
-        {name: 'Under Construction (IAB25-6)', value: constants.iabCategory.IAB25_6},
+        {
+            name: 'Under Construction (IAB25-6)',
+            value: constants.iabCategory.IAB25_6,
+        },
         {name: 'Incentivized (IAB25-7)', value: constants.iabCategory.IAB25_7},
-        {name: 'Illegal Content (IAB26-1)', value: constants.iabCategory.IAB26_1},
+        {
+            name: 'Illegal Content (IAB26-1)',
+            value: constants.iabCategory.IAB26_1,
+        },
         {name: 'Warez (IAB26-2)', value: constants.iabCategory.IAB26_2},
-        {name: 'Spyware/Malware (IAB26-3)', value: constants.iabCategory.IAB26_3},
-        {name: 'CopyrightInfringement (IAB26-4)', value: constants.iabCategory.IAB26_4},
+        {
+            name: 'Spyware/Malware (IAB26-3)',
+            value: constants.iabCategory.IAB26_3,
+        },
+        {
+            name: 'CopyrightInfringement (IAB26-4)',
+            value: constants.iabCategory.IAB26_4,
+        },
     ],
     legacyIabCategories: [
-        {name: 'Uncategorized (IAB24)', value: constants.legacyIabCategory.IAB24},
-        {name: 'Books & Literature (IAB1-1)', value: constants.legacyIabCategory.IAB1_1},
-        {name: 'Celebrity Fan/Gossip (IAB1-2)', value: constants.legacyIabCategory.IAB1_2},
+        {
+            name: 'Uncategorized (IAB24)',
+            value: constants.legacyIabCategory.IAB24,
+        },
+        {
+            name: 'Books & Literature (IAB1-1)',
+            value: constants.legacyIabCategory.IAB1_1,
+        },
+        {
+            name: 'Celebrity Fan/Gossip (IAB1-2)',
+            value: constants.legacyIabCategory.IAB1_2,
+        },
         {name: 'Fine Art (IAB1-3)', value: constants.legacyIabCategory.IAB1_3},
         {name: 'Humor (IAB1-4)', value: constants.legacyIabCategory.IAB1_4},
         {name: 'Movies (IAB1-5)', value: constants.legacyIabCategory.IAB1_5},
         {name: 'Music (IAB1-6)', value: constants.legacyIabCategory.IAB1_6},
-        {name: 'Television (IAB1-7)', value: constants.legacyIabCategory.IAB1_7},
-        {name: 'Auto Parts (IAB2-1)', value: constants.legacyIabCategory.IAB2_1},
-        {name: 'Auto Repair (IAB2-2)', value: constants.legacyIabCategory.IAB2_2},
-        {name: 'Buying/Selling Cars (IAB2-3)', value: constants.legacyIabCategory.IAB2_3},
-        {name: 'Car Culture (IAB2-4)', value: constants.legacyIabCategory.IAB2_4},
-        {name: 'Certified Pre-Owned (IAB2-5)', value: constants.legacyIabCategory.IAB2_5},
-        {name: 'Convertible (IAB2-6)', value: constants.legacyIabCategory.IAB2_6},
+        {
+            name: 'Television (IAB1-7)',
+            value: constants.legacyIabCategory.IAB1_7,
+        },
+        {
+            name: 'Auto Parts (IAB2-1)',
+            value: constants.legacyIabCategory.IAB2_1,
+        },
+        {
+            name: 'Auto Repair (IAB2-2)',
+            value: constants.legacyIabCategory.IAB2_2,
+        },
+        {
+            name: 'Buying/Selling Cars (IAB2-3)',
+            value: constants.legacyIabCategory.IAB2_3,
+        },
+        {
+            name: 'Car Culture (IAB2-4)',
+            value: constants.legacyIabCategory.IAB2_4,
+        },
+        {
+            name: 'Certified Pre-Owned (IAB2-5)',
+            value: constants.legacyIabCategory.IAB2_5,
+        },
+        {
+            name: 'Convertible (IAB2-6)',
+            value: constants.legacyIabCategory.IAB2_6,
+        },
         {name: 'Coupe (IAB2-7)', value: constants.legacyIabCategory.IAB2_7},
         {name: 'Crossover (IAB2-8)', value: constants.legacyIabCategory.IAB2_8},
         {name: 'Diesel (IAB2-9)', value: constants.legacyIabCategory.IAB2_9},
-        {name: 'Electric Vehicle (IAB2-10)', value: constants.legacyIabCategory.IAB2_10},
-        {name: 'Hatchback (IAB2-11)', value: constants.legacyIabCategory.IAB2_11},
+        {
+            name: 'Electric Vehicle (IAB2-10)',
+            value: constants.legacyIabCategory.IAB2_10,
+        },
+        {
+            name: 'Hatchback (IAB2-11)',
+            value: constants.legacyIabCategory.IAB2_11,
+        },
         {name: 'Hybrid (IAB2-12)', value: constants.legacyIabCategory.IAB2_12},
         {name: 'Luxury (IAB2-13)', value: constants.legacyIabCategory.IAB2_13},
         {name: 'MiniVan (IAB2-14)', value: constants.legacyIabCategory.IAB2_14},
-        {name: 'Mororcycles (IAB2-15)', value: constants.legacyIabCategory.IAB2_15},
-        {name: 'Off-Road Vehicles (IAB2-16)', value: constants.legacyIabCategory.IAB2_16},
-        {name: 'Performance Vehicles (IAB2-17)', value: constants.legacyIabCategory.IAB2_17},
+        {
+            name: 'Mororcycles (IAB2-15)',
+            value: constants.legacyIabCategory.IAB2_15,
+        },
+        {
+            name: 'Off-Road Vehicles (IAB2-16)',
+            value: constants.legacyIabCategory.IAB2_16,
+        },
+        {
+            name: 'Performance Vehicles (IAB2-17)',
+            value: constants.legacyIabCategory.IAB2_17,
+        },
         {name: 'Pickup (IAB2-18)', value: constants.legacyIabCategory.IAB2_18},
-        {name: 'Road-Side Assistance (IAB2-19)', value: constants.legacyIabCategory.IAB2_19},
+        {
+            name: 'Road-Side Assistance (IAB2-19)',
+            value: constants.legacyIabCategory.IAB2_19,
+        },
         {name: 'Sedan (IAB2-20)', value: constants.legacyIabCategory.IAB2_20},
-        {name: 'Trucks & Accessories (IAB2-21)', value: constants.legacyIabCategory.IAB2_21},
-        {name: 'Vintage Cars (IAB2-22)', value: constants.legacyIabCategory.IAB2_22},
+        {
+            name: 'Trucks & Accessories (IAB2-21)',
+            value: constants.legacyIabCategory.IAB2_21,
+        },
+        {
+            name: 'Vintage Cars (IAB2-22)',
+            value: constants.legacyIabCategory.IAB2_22,
+        },
         {name: 'Wagon (IAB2-23)', value: constants.legacyIabCategory.IAB2_23},
-        {name: 'Advertising (IAB3-1)', value: constants.legacyIabCategory.IAB3_1},
-        {name: 'Agriculture (IAB3-2)', value: constants.legacyIabCategory.IAB3_2},
-        {name: 'Biotech/Biomedical (IAB3-3)', value: constants.legacyIabCategory.IAB3_3},
-        {name: 'Business Software (IAB3-4)', value: constants.legacyIabCategory.IAB3_4},
-        {name: 'Construction (IAB3-5)', value: constants.legacyIabCategory.IAB3_5},
+        {
+            name: 'Advertising (IAB3-1)',
+            value: constants.legacyIabCategory.IAB3_1,
+        },
+        {
+            name: 'Agriculture (IAB3-2)',
+            value: constants.legacyIabCategory.IAB3_2,
+        },
+        {
+            name: 'Biotech/Biomedical (IAB3-3)',
+            value: constants.legacyIabCategory.IAB3_3,
+        },
+        {
+            name: 'Business Software (IAB3-4)',
+            value: constants.legacyIabCategory.IAB3_4,
+        },
+        {
+            name: 'Construction (IAB3-5)',
+            value: constants.legacyIabCategory.IAB3_5,
+        },
         {name: 'Forestry (IAB3-6)', value: constants.legacyIabCategory.IAB3_6},
-        {name: 'Government (IAB3-7)', value: constants.legacyIabCategory.IAB3_7},
-        {name: 'Green Solutions (IAB3-8)', value: constants.legacyIabCategory.IAB3_8},
-        {name: 'Human Resources (IAB3-9)', value: constants.legacyIabCategory.IAB3_9},
-        {name: 'Logistics (IAB3-10)', value: constants.legacyIabCategory.IAB3_10},
-        {name: 'Marketing (IAB3-11)', value: constants.legacyIabCategory.IAB3_11},
+        {
+            name: 'Government (IAB3-7)',
+            value: constants.legacyIabCategory.IAB3_7,
+        },
+        {
+            name: 'Green Solutions (IAB3-8)',
+            value: constants.legacyIabCategory.IAB3_8,
+        },
+        {
+            name: 'Human Resources (IAB3-9)',
+            value: constants.legacyIabCategory.IAB3_9,
+        },
+        {
+            name: 'Logistics (IAB3-10)',
+            value: constants.legacyIabCategory.IAB3_10,
+        },
+        {
+            name: 'Marketing (IAB3-11)',
+            value: constants.legacyIabCategory.IAB3_11,
+        },
         {name: 'Metals (IAB3-12)', value: constants.legacyIabCategory.IAB3_12},
-        {name: 'Career Planning (IAB4-1)', value: constants.legacyIabCategory.IAB4_1},
+        {
+            name: 'Career Planning (IAB4-1)',
+            value: constants.legacyIabCategory.IAB4_1,
+        },
         {name: 'College (IAB4-2)', value: constants.legacyIabCategory.IAB4_2},
-        {name: 'Financial Aid (IAB4-3)', value: constants.legacyIabCategory.IAB4_3},
+        {
+            name: 'Financial Aid (IAB4-3)',
+            value: constants.legacyIabCategory.IAB4_3,
+        },
         {name: 'Job Fairs (IAB4-4)', value: constants.legacyIabCategory.IAB4_4},
-        {name: 'Job Search (IAB4-5)', value: constants.legacyIabCategory.IAB4_5},
-        {name: 'Resume Writing/Advice (IAB4-6)', value: constants.legacyIabCategory.IAB4_6},
+        {
+            name: 'Job Search (IAB4-5)',
+            value: constants.legacyIabCategory.IAB4_5,
+        },
+        {
+            name: 'Resume Writing/Advice (IAB4-6)',
+            value: constants.legacyIabCategory.IAB4_6,
+        },
         {name: 'Nursing (IAB4-7)', value: constants.legacyIabCategory.IAB4_7},
-        {name: 'Scholarships (IAB4-8)', value: constants.legacyIabCategory.IAB4_8},
-        {name: 'Telecommuting (IAB4-9)', value: constants.legacyIabCategory.IAB4_9},
-        {name: 'U.S. Military (IAB4-10)', value: constants.legacyIabCategory.IAB4_10},
-        {name: 'Career Advice (IAB4-11)', value: constants.legacyIabCategory.IAB4_11},
-        {name: '7-12 Education (IAB5-1)', value: constants.legacyIabCategory.IAB5_1},
-        {name: 'Adult Education (IAB5-2)', value: constants.legacyIabCategory.IAB5_2},
-        {name: 'Art History (IAB5-3)', value: constants.legacyIabCategory.IAB5_3},
-        {name: 'Colledge Administration (IAB5-4)', value: constants.legacyIabCategory.IAB5_4},
-        {name: 'College Life (IAB5-5)', value: constants.legacyIabCategory.IAB5_5},
-        {name: 'Distance Learning (IAB5-6)', value: constants.legacyIabCategory.IAB5_6},
-        {name: 'English as a 2nd Language (IAB5-7)', value: constants.legacyIabCategory.IAB5_7},
-        {name: 'Language Learning (IAB5-8)', value: constants.legacyIabCategory.IAB5_8},
-        {name: 'Graduate School (IAB5-9)', value: constants.legacyIabCategory.IAB5_9},
-        {name: 'Homeschooling (IAB5-10)', value: constants.legacyIabCategory.IAB5_10},
-        {name: 'Homework/Study Tips (IAB5-11)', value: constants.legacyIabCategory.IAB5_11},
-        {name: 'K-6 Educators (IAB5-12)', value: constants.legacyIabCategory.IAB5_12},
-        {name: 'Private School (IAB5-13)', value: constants.legacyIabCategory.IAB5_13},
-        {name: 'Special Education (IAB5-14)', value: constants.legacyIabCategory.IAB5_14},
-        {name: 'Studying Business (IAB5-15)', value: constants.legacyIabCategory.IAB5_15},
+        {
+            name: 'Scholarships (IAB4-8)',
+            value: constants.legacyIabCategory.IAB4_8,
+        },
+        {
+            name: 'Telecommuting (IAB4-9)',
+            value: constants.legacyIabCategory.IAB4_9,
+        },
+        {
+            name: 'U.S. Military (IAB4-10)',
+            value: constants.legacyIabCategory.IAB4_10,
+        },
+        {
+            name: 'Career Advice (IAB4-11)',
+            value: constants.legacyIabCategory.IAB4_11,
+        },
+        {
+            name: '7-12 Education (IAB5-1)',
+            value: constants.legacyIabCategory.IAB5_1,
+        },
+        {
+            name: 'Adult Education (IAB5-2)',
+            value: constants.legacyIabCategory.IAB5_2,
+        },
+        {
+            name: 'Art History (IAB5-3)',
+            value: constants.legacyIabCategory.IAB5_3,
+        },
+        {
+            name: 'Colledge Administration (IAB5-4)',
+            value: constants.legacyIabCategory.IAB5_4,
+        },
+        {
+            name: 'College Life (IAB5-5)',
+            value: constants.legacyIabCategory.IAB5_5,
+        },
+        {
+            name: 'Distance Learning (IAB5-6)',
+            value: constants.legacyIabCategory.IAB5_6,
+        },
+        {
+            name: 'English as a 2nd Language (IAB5-7)',
+            value: constants.legacyIabCategory.IAB5_7,
+        },
+        {
+            name: 'Language Learning (IAB5-8)',
+            value: constants.legacyIabCategory.IAB5_8,
+        },
+        {
+            name: 'Graduate School (IAB5-9)',
+            value: constants.legacyIabCategory.IAB5_9,
+        },
+        {
+            name: 'Homeschooling (IAB5-10)',
+            value: constants.legacyIabCategory.IAB5_10,
+        },
+        {
+            name: 'Homework/Study Tips (IAB5-11)',
+            value: constants.legacyIabCategory.IAB5_11,
+        },
+        {
+            name: 'K-6 Educators (IAB5-12)',
+            value: constants.legacyIabCategory.IAB5_12,
+        },
+        {
+            name: 'Private School (IAB5-13)',
+            value: constants.legacyIabCategory.IAB5_13,
+        },
+        {
+            name: 'Special Education (IAB5-14)',
+            value: constants.legacyIabCategory.IAB5_14,
+        },
+        {
+            name: 'Studying Business (IAB5-15)',
+            value: constants.legacyIabCategory.IAB5_15,
+        },
         {name: 'Adoption (IAB6-1)', value: constants.legacyIabCategory.IAB6_1},
-        {name: 'Babies & Toddlers (IAB6-2)', value: constants.legacyIabCategory.IAB6_2},
-        {name: 'Daycare/Pre School (IAB6-3)', value: constants.legacyIabCategory.IAB6_3},
-        {name: 'Family Internet (IAB6-4)', value: constants.legacyIabCategory.IAB6_4},
-        {name: 'Parenting - K-6 Kids (IAB6-5)', value: constants.legacyIabCategory.IAB6_5},
-        {name: 'Parenting teens (IAB6-6)', value: constants.legacyIabCategory.IAB6_6},
+        {
+            name: 'Babies & Toddlers (IAB6-2)',
+            value: constants.legacyIabCategory.IAB6_2,
+        },
+        {
+            name: 'Daycare/Pre School (IAB6-3)',
+            value: constants.legacyIabCategory.IAB6_3,
+        },
+        {
+            name: 'Family Internet (IAB6-4)',
+            value: constants.legacyIabCategory.IAB6_4,
+        },
+        {
+            name: 'Parenting - K-6 Kids (IAB6-5)',
+            value: constants.legacyIabCategory.IAB6_5,
+        },
+        {
+            name: 'Parenting teens (IAB6-6)',
+            value: constants.legacyIabCategory.IAB6_6,
+        },
         {name: 'Pregnancy (IAB6-7)', value: constants.legacyIabCategory.IAB6_7},
-        {name: 'Special Needs Kids (IAB6-8)', value: constants.legacyIabCategory.IAB6_8},
+        {
+            name: 'Special Needs Kids (IAB6-8)',
+            value: constants.legacyIabCategory.IAB6_8,
+        },
         {name: 'Eldercare (IAB6-9)', value: constants.legacyIabCategory.IAB6_9},
         {name: 'Exercise (IAB7-1)', value: constants.legacyIabCategory.IAB7_1},
         {name: 'A.D.D. (IAB7-2)', value: constants.legacyIabCategory.IAB7_2},
         {name: 'AIDS/HIV (IAB7-3)', value: constants.legacyIabCategory.IAB7_3},
         {name: 'Allergies (IAB7-4)', value: constants.legacyIabCategory.IAB7_4},
-        {name: 'Alternative Medicine (IAB7-5)', value: constants.legacyIabCategory.IAB7_5},
+        {
+            name: 'Alternative Medicine (IAB7-5)',
+            value: constants.legacyIabCategory.IAB7_5,
+        },
         {name: 'Arthritis (IAB7-6)', value: constants.legacyIabCategory.IAB7_6},
         {name: 'Asthma (IAB7-7)', value: constants.legacyIabCategory.IAB7_7},
-        {name: 'Autism/PDD (IAB7-8)', value: constants.legacyIabCategory.IAB7_8},
-        {name: 'Bipolar Disorder (IAB7-9)', value: constants.legacyIabCategory.IAB7_9},
-        {name: 'Brain Tumor (IAB7-10)', value: constants.legacyIabCategory.IAB7_10},
+        {
+            name: 'Autism/PDD (IAB7-8)',
+            value: constants.legacyIabCategory.IAB7_8,
+        },
+        {
+            name: 'Bipolar Disorder (IAB7-9)',
+            value: constants.legacyIabCategory.IAB7_9,
+        },
+        {
+            name: 'Brain Tumor (IAB7-10)',
+            value: constants.legacyIabCategory.IAB7_10,
+        },
         {name: 'Cancer (IAB7-11)', value: constants.legacyIabCategory.IAB7_11},
-        {name: 'Cholesterol (IAB7-12)', value: constants.legacyIabCategory.IAB7_12},
-        {name: 'Chronic Fatigue Syndrome (IAB7-13)', value: constants.legacyIabCategory.IAB7_13},
-        {name: 'Chronic Pain (IAB7-14)', value: constants.legacyIabCategory.IAB7_14},
-        {name: 'Cold & Flu (IAB7-15)', value: constants.legacyIabCategory.IAB7_15},
-        {name: 'Deafness (IAB7-16)', value: constants.legacyIabCategory.IAB7_16},
-        {name: 'Dental Care (IAB7-17)', value: constants.legacyIabCategory.IAB7_17},
-        {name: 'Depression (IAB7-18)', value: constants.legacyIabCategory.IAB7_18},
-        {name: 'Dermatology (IAB7-19)', value: constants.legacyIabCategory.IAB7_19},
-        {name: 'Diabetes (IAB7-20)', value: constants.legacyIabCategory.IAB7_20},
-        {name: 'Epilepsy (IAB7-21)', value: constants.legacyIabCategory.IAB7_21},
-        {name: 'GERD/Acid Reflux (IAB7-22)', value: constants.legacyIabCategory.IAB7_22},
-        {name: 'Headaches/Migraines (IAB7-23)', value: constants.legacyIabCategory.IAB7_23},
-        {name: 'Heart Disease (IAB7-24)', value: constants.legacyIabCategory.IAB7_24},
-        {name: 'Herbs for Health (IAB7-25)', value: constants.legacyIabCategory.IAB7_25},
-        {name: 'Holistic Healing (IAB7-26)', value: constants.legacyIabCategory.IAB7_26},
-        {name: 'IBS/Crohn\'s Disease (IAB7-27)', value: constants.legacyIabCategory.IAB7_27},
-        {name: 'Incest/Abuse Support (IAB7-28)', value: constants.legacyIabCategory.IAB7_28},
-        {name: 'Incontinence (IAB7-29)', value: constants.legacyIabCategory.IAB7_29},
-        {name: 'Infertility (IAB7-30)', value: constants.legacyIabCategory.IAB7_30},
-        {name: 'Men\'s Health (IAB7-31)', value: constants.legacyIabCategory.IAB7_31},
-        {name: 'Nutrition (IAB7-32)', value: constants.legacyIabCategory.IAB7_32},
-        {name: 'Orthopedics (IAB7-33)', value: constants.legacyIabCategory.IAB7_33},
-        {name: 'Panic/Anxiety Disorders (IAB7-34)', value: constants.legacyIabCategory.IAB7_34},
-        {name: 'Pediatrics (IAB7-35)', value: constants.legacyIabCategory.IAB7_35},
-        {name: 'Physical Therapy (IAB7-36)', value: constants.legacyIabCategory.IAB7_36},
-        {name: 'Psychology/Psychiatry (IAB7-37)', value: constants.legacyIabCategory.IAB7_37},
-        {name: 'Senior Health (IAB7-38)', value: constants.legacyIabCategory.IAB7_38},
-        {name: 'Sexuality (IAB7-39)', value: constants.legacyIabCategory.IAB7_39},
-        {name: 'Sleep Disorders (IAB7-40)', value: constants.legacyIabCategory.IAB7_40},
-        {name: 'Smoking Cessation (IAB7-41)', value: constants.legacyIabCategory.IAB7_41},
-        {name: 'Substance Abuse (IAB7-42)', value: constants.legacyIabCategory.IAB7_42},
-        {name: 'Thyroid Disease (IAB7-43)', value: constants.legacyIabCategory.IAB7_43},
-        {name: 'Weight Loss (IAB7-44)', value: constants.legacyIabCategory.IAB7_44},
-        {name: 'Women\'s Health (IAB7-45)', value: constants.legacyIabCategory.IAB7_45},
-        {name: 'American Cuisine (IAB8-1)', value: constants.legacyIabCategory.IAB8_1},
-        {name: 'Barbecues & Grilling (IAB8-2)', value: constants.legacyIabCategory.IAB8_2},
-        {name: 'Cajun/Creole (IAB8-3)', value: constants.legacyIabCategory.IAB8_3},
-        {name: 'Chinese Cuisine (IAB8-4)', value: constants.legacyIabCategory.IAB8_4},
-        {name: 'Cocktails/Beer (IAB8-5)', value: constants.legacyIabCategory.IAB8_5},
-        {name: 'Coffee/Tea (IAB8-6)', value: constants.legacyIabCategory.IAB8_6},
-        {name: 'Cuisine-Specific (IAB8-7)', value: constants.legacyIabCategory.IAB8_7},
-        {name: 'Desserts & Baking (IAB8-8)', value: constants.legacyIabCategory.IAB8_8},
-        {name: 'Dining Out (IAB8-9)', value: constants.legacyIabCategory.IAB8_9},
-        {name: 'Food Allergies (IAB8-10)', value: constants.legacyIabCategory.IAB8_10},
-        {name: 'French Cuisine (IAB8-11)', value: constants.legacyIabCategory.IAB8_11},
-        {name: 'Health/Lowfat Cooking (IAB8-12)', value: constants.legacyIabCategory.IAB8_12},
-        {name: 'Italian Cuisine (IAB8-13)', value: constants.legacyIabCategory.IAB8_13},
-        {name: 'Japanese Cuisine (IAB8-14)', value: constants.legacyIabCategory.IAB8_14},
-        {name: 'Mexican Cuisine (IAB8-15)', value: constants.legacyIabCategory.IAB8_15},
+        {
+            name: 'Cholesterol (IAB7-12)',
+            value: constants.legacyIabCategory.IAB7_12,
+        },
+        {
+            name: 'Chronic Fatigue Syndrome (IAB7-13)',
+            value: constants.legacyIabCategory.IAB7_13,
+        },
+        {
+            name: 'Chronic Pain (IAB7-14)',
+            value: constants.legacyIabCategory.IAB7_14,
+        },
+        {
+            name: 'Cold & Flu (IAB7-15)',
+            value: constants.legacyIabCategory.IAB7_15,
+        },
+        {
+            name: 'Deafness (IAB7-16)',
+            value: constants.legacyIabCategory.IAB7_16,
+        },
+        {
+            name: 'Dental Care (IAB7-17)',
+            value: constants.legacyIabCategory.IAB7_17,
+        },
+        {
+            name: 'Depression (IAB7-18)',
+            value: constants.legacyIabCategory.IAB7_18,
+        },
+        {
+            name: 'Dermatology (IAB7-19)',
+            value: constants.legacyIabCategory.IAB7_19,
+        },
+        {
+            name: 'Diabetes (IAB7-20)',
+            value: constants.legacyIabCategory.IAB7_20,
+        },
+        {
+            name: 'Epilepsy (IAB7-21)',
+            value: constants.legacyIabCategory.IAB7_21,
+        },
+        {
+            name: 'GERD/Acid Reflux (IAB7-22)',
+            value: constants.legacyIabCategory.IAB7_22,
+        },
+        {
+            name: 'Headaches/Migraines (IAB7-23)',
+            value: constants.legacyIabCategory.IAB7_23,
+        },
+        {
+            name: 'Heart Disease (IAB7-24)',
+            value: constants.legacyIabCategory.IAB7_24,
+        },
+        {
+            name: 'Herbs for Health (IAB7-25)',
+            value: constants.legacyIabCategory.IAB7_25,
+        },
+        {
+            name: 'Holistic Healing (IAB7-26)',
+            value: constants.legacyIabCategory.IAB7_26,
+        },
+        {
+            name: "IBS/Crohn's Disease (IAB7-27)",
+            value: constants.legacyIabCategory.IAB7_27,
+        },
+        {
+            name: 'Incest/Abuse Support (IAB7-28)',
+            value: constants.legacyIabCategory.IAB7_28,
+        },
+        {
+            name: 'Incontinence (IAB7-29)',
+            value: constants.legacyIabCategory.IAB7_29,
+        },
+        {
+            name: 'Infertility (IAB7-30)',
+            value: constants.legacyIabCategory.IAB7_30,
+        },
+        {
+            name: "Men's Health (IAB7-31)",
+            value: constants.legacyIabCategory.IAB7_31,
+        },
+        {
+            name: 'Nutrition (IAB7-32)',
+            value: constants.legacyIabCategory.IAB7_32,
+        },
+        {
+            name: 'Orthopedics (IAB7-33)',
+            value: constants.legacyIabCategory.IAB7_33,
+        },
+        {
+            name: 'Panic/Anxiety Disorders (IAB7-34)',
+            value: constants.legacyIabCategory.IAB7_34,
+        },
+        {
+            name: 'Pediatrics (IAB7-35)',
+            value: constants.legacyIabCategory.IAB7_35,
+        },
+        {
+            name: 'Physical Therapy (IAB7-36)',
+            value: constants.legacyIabCategory.IAB7_36,
+        },
+        {
+            name: 'Psychology/Psychiatry (IAB7-37)',
+            value: constants.legacyIabCategory.IAB7_37,
+        },
+        {
+            name: 'Senior Health (IAB7-38)',
+            value: constants.legacyIabCategory.IAB7_38,
+        },
+        {
+            name: 'Sexuality (IAB7-39)',
+            value: constants.legacyIabCategory.IAB7_39,
+        },
+        {
+            name: 'Sleep Disorders (IAB7-40)',
+            value: constants.legacyIabCategory.IAB7_40,
+        },
+        {
+            name: 'Smoking Cessation (IAB7-41)',
+            value: constants.legacyIabCategory.IAB7_41,
+        },
+        {
+            name: 'Substance Abuse (IAB7-42)',
+            value: constants.legacyIabCategory.IAB7_42,
+        },
+        {
+            name: 'Thyroid Disease (IAB7-43)',
+            value: constants.legacyIabCategory.IAB7_43,
+        },
+        {
+            name: 'Weight Loss (IAB7-44)',
+            value: constants.legacyIabCategory.IAB7_44,
+        },
+        {
+            name: "Women's Health (IAB7-45)",
+            value: constants.legacyIabCategory.IAB7_45,
+        },
+        {
+            name: 'American Cuisine (IAB8-1)',
+            value: constants.legacyIabCategory.IAB8_1,
+        },
+        {
+            name: 'Barbecues & Grilling (IAB8-2)',
+            value: constants.legacyIabCategory.IAB8_2,
+        },
+        {
+            name: 'Cajun/Creole (IAB8-3)',
+            value: constants.legacyIabCategory.IAB8_3,
+        },
+        {
+            name: 'Chinese Cuisine (IAB8-4)',
+            value: constants.legacyIabCategory.IAB8_4,
+        },
+        {
+            name: 'Cocktails/Beer (IAB8-5)',
+            value: constants.legacyIabCategory.IAB8_5,
+        },
+        {
+            name: 'Coffee/Tea (IAB8-6)',
+            value: constants.legacyIabCategory.IAB8_6,
+        },
+        {
+            name: 'Cuisine-Specific (IAB8-7)',
+            value: constants.legacyIabCategory.IAB8_7,
+        },
+        {
+            name: 'Desserts & Baking (IAB8-8)',
+            value: constants.legacyIabCategory.IAB8_8,
+        },
+        {
+            name: 'Dining Out (IAB8-9)',
+            value: constants.legacyIabCategory.IAB8_9,
+        },
+        {
+            name: 'Food Allergies (IAB8-10)',
+            value: constants.legacyIabCategory.IAB8_10,
+        },
+        {
+            name: 'French Cuisine (IAB8-11)',
+            value: constants.legacyIabCategory.IAB8_11,
+        },
+        {
+            name: 'Health/Lowfat Cooking (IAB8-12)',
+            value: constants.legacyIabCategory.IAB8_12,
+        },
+        {
+            name: 'Italian Cuisine (IAB8-13)',
+            value: constants.legacyIabCategory.IAB8_13,
+        },
+        {
+            name: 'Japanese Cuisine (IAB8-14)',
+            value: constants.legacyIabCategory.IAB8_14,
+        },
+        {
+            name: 'Mexican Cuisine (IAB8-15)',
+            value: constants.legacyIabCategory.IAB8_15,
+        },
         {name: 'Vegan (IAB8-16)', value: constants.legacyIabCategory.IAB8_16},
-        {name: 'Vegetarian (IAB8-17)', value: constants.legacyIabCategory.IAB8_17},
+        {
+            name: 'Vegetarian (IAB8-17)',
+            value: constants.legacyIabCategory.IAB8_17,
+        },
         {name: 'Wine (IAB8-18)', value: constants.legacyIabCategory.IAB8_18},
-        {name: 'Art/Technology (IAB9-1)', value: constants.legacyIabCategory.IAB9_1},
-        {name: 'Arts & Crafts (IAB9-2)', value: constants.legacyIabCategory.IAB9_2},
+        {
+            name: 'Art/Technology (IAB9-1)',
+            value: constants.legacyIabCategory.IAB9_1,
+        },
+        {
+            name: 'Arts & Crafts (IAB9-2)',
+            value: constants.legacyIabCategory.IAB9_2,
+        },
         {name: 'Beadwork (IAB9-3)', value: constants.legacyIabCategory.IAB9_3},
-        {name: 'Birdwatching (IAB9-4)', value: constants.legacyIabCategory.IAB9_4},
-        {name: 'Board Games/Puzzles (IAB9-5)', value: constants.legacyIabCategory.IAB9_5},
-        {name: 'Candle & Soap Making (IAB9-6)', value: constants.legacyIabCategory.IAB9_6},
-        {name: 'Card Games (IAB9-7)', value: constants.legacyIabCategory.IAB9_7},
+        {
+            name: 'Birdwatching (IAB9-4)',
+            value: constants.legacyIabCategory.IAB9_4,
+        },
+        {
+            name: 'Board Games/Puzzles (IAB9-5)',
+            value: constants.legacyIabCategory.IAB9_5,
+        },
+        {
+            name: 'Candle & Soap Making (IAB9-6)',
+            value: constants.legacyIabCategory.IAB9_6,
+        },
+        {
+            name: 'Card Games (IAB9-7)',
+            value: constants.legacyIabCategory.IAB9_7,
+        },
         {name: 'Chess (IAB9-8)', value: constants.legacyIabCategory.IAB9_8},
         {name: 'Cigars (IAB9-9)', value: constants.legacyIabCategory.IAB9_9},
-        {name: 'Collecting (IAB9-10)', value: constants.legacyIabCategory.IAB9_10},
-        {name: 'Comic Books (IAB9-11)', value: constants.legacyIabCategory.IAB9_11},
-        {name: 'Drawing/Sketching (IAB9-12)', value: constants.legacyIabCategory.IAB9_12},
-        {name: 'Freelance Writing (IAB9-13)', value: constants.legacyIabCategory.IAB9_13},
-        {name: 'Genealogy (IAB9-14)', value: constants.legacyIabCategory.IAB9_14},
-        {name: 'Getting Published (IAB9-15)', value: constants.legacyIabCategory.IAB9_15},
+        {
+            name: 'Collecting (IAB9-10)',
+            value: constants.legacyIabCategory.IAB9_10,
+        },
+        {
+            name: 'Comic Books (IAB9-11)',
+            value: constants.legacyIabCategory.IAB9_11,
+        },
+        {
+            name: 'Drawing/Sketching (IAB9-12)',
+            value: constants.legacyIabCategory.IAB9_12,
+        },
+        {
+            name: 'Freelance Writing (IAB9-13)',
+            value: constants.legacyIabCategory.IAB9_13,
+        },
+        {
+            name: 'Genealogy (IAB9-14)',
+            value: constants.legacyIabCategory.IAB9_14,
+        },
+        {
+            name: 'Getting Published (IAB9-15)',
+            value: constants.legacyIabCategory.IAB9_15,
+        },
         {name: 'Guitar (IAB9-16)', value: constants.legacyIabCategory.IAB9_16},
-        {name: 'Home Recording (IAB9-17)', value: constants.legacyIabCategory.IAB9_17},
-        {name: 'Investors & Patents (IAB9-18)', value: constants.legacyIabCategory.IAB9_18},
-        {name: 'Jewelry Making (IAB9-19)', value: constants.legacyIabCategory.IAB9_19},
-        {name: 'Magic & Illusion (IAB9-20)', value: constants.legacyIabCategory.IAB9_20},
-        {name: 'Needlework (IAB9-21)', value: constants.legacyIabCategory.IAB9_21},
-        {name: 'Painting (IAB9-22)', value: constants.legacyIabCategory.IAB9_22},
-        {name: 'Photography (IAB9-23)', value: constants.legacyIabCategory.IAB9_23},
+        {
+            name: 'Home Recording (IAB9-17)',
+            value: constants.legacyIabCategory.IAB9_17,
+        },
+        {
+            name: 'Investors & Patents (IAB9-18)',
+            value: constants.legacyIabCategory.IAB9_18,
+        },
+        {
+            name: 'Jewelry Making (IAB9-19)',
+            value: constants.legacyIabCategory.IAB9_19,
+        },
+        {
+            name: 'Magic & Illusion (IAB9-20)',
+            value: constants.legacyIabCategory.IAB9_20,
+        },
+        {
+            name: 'Needlework (IAB9-21)',
+            value: constants.legacyIabCategory.IAB9_21,
+        },
+        {
+            name: 'Painting (IAB9-22)',
+            value: constants.legacyIabCategory.IAB9_22,
+        },
+        {
+            name: 'Photography (IAB9-23)',
+            value: constants.legacyIabCategory.IAB9_23,
+        },
         {name: 'Radio (IAB9-24)', value: constants.legacyIabCategory.IAB9_24},
-        {name: 'Roleplaying Games (IAB9-25)', value: constants.legacyIabCategory.IAB9_25},
-        {name: 'Sci-Fi & Fantasy (IAB9-26)', value: constants.legacyIabCategory.IAB9_26},
-        {name: 'Scrapbooking (IAB9-27)', value: constants.legacyIabCategory.IAB9_27},
-        {name: 'Screenwriting (IAB9-28)', value: constants.legacyIabCategory.IAB9_28},
-        {name: 'Stamps & Coins (IAB9-29)', value: constants.legacyIabCategory.IAB9_29},
-        {name: 'Video & Computer Games (IAB9-30)', value: constants.legacyIabCategory.IAB9_30},
-        {name: 'Woodworking (IAB9-31)', value: constants.legacyIabCategory.IAB9_31},
-        {name: 'Appliances (IAB10-1)', value: constants.legacyIabCategory.IAB10_1},
-        {name: 'Entertaining (IAB10-2)', value: constants.legacyIabCategory.IAB10_2},
-        {name: 'Environmental Safety (IAB10-3)', value: constants.legacyIabCategory.IAB10_3},
-        {name: 'Gardening (IAB10-4)', value: constants.legacyIabCategory.IAB10_4},
-        {name: 'Home Repair (IAB10-5)', value: constants.legacyIabCategory.IAB10_5},
-        {name: 'Home Theater (IAB10-6)', value: constants.legacyIabCategory.IAB10_6},
-        {name: 'Interior Decorating (IAB10-7)', value: constants.legacyIabCategory.IAB10_7},
-        {name: 'Landscaping (IAB10-8)', value: constants.legacyIabCategory.IAB10_8},
-        {name: 'Remodeling & Construction (IAB10-9)', value: constants.legacyIabCategory.IAB10_9},
-        {name: 'Immigration (IAB11-1)', value: constants.legacyIabCategory.IAB11_1},
-        {name: 'Legal Issues (IAB11-2)', value: constants.legacyIabCategory.IAB11_2},
-        {name: 'U.S. Government Resources (IAB11-3)', value: constants.legacyIabCategory.IAB11_3},
-        {name: 'Politics (IAB11-4)', value: constants.legacyIabCategory.IAB11_4},
-        {name: 'Commentary (IAB11-5)', value: constants.legacyIabCategory.IAB11_5},
-        {name: 'International News (IAB12-1)', value: constants.legacyIabCategory.IAB12_1},
-        {name: 'National News (IAB12-2)', value: constants.legacyIabCategory.IAB12_2},
-        {name: 'Local News (IAB12-3)', value: constants.legacyIabCategory.IAB12_3},
-        {name: 'Beginning Investing (IAB13-1)', value: constants.legacyIabCategory.IAB13_1},
-        {name: 'Credit/Debt & Loans (IAB13-2)', value: constants.legacyIabCategory.IAB13_2},
-        {name: 'Financial News (IAB13-3)', value: constants.legacyIabCategory.IAB13_3},
-        {name: 'Financial Planning (IAB13-4)', value: constants.legacyIabCategory.IAB13_4},
-        {name: 'Hedge Fund (IAB13-5)', value: constants.legacyIabCategory.IAB13_5},
-        {name: 'Insurance (IAB13-6)', value: constants.legacyIabCategory.IAB13_6},
-        {name: 'Investing (IAB13-7)', value: constants.legacyIabCategory.IAB13_7},
-        {name: 'Mutual Funds (IAB13-8)', value: constants.legacyIabCategory.IAB13_8},
+        {
+            name: 'Roleplaying Games (IAB9-25)',
+            value: constants.legacyIabCategory.IAB9_25,
+        },
+        {
+            name: 'Sci-Fi & Fantasy (IAB9-26)',
+            value: constants.legacyIabCategory.IAB9_26,
+        },
+        {
+            name: 'Scrapbooking (IAB9-27)',
+            value: constants.legacyIabCategory.IAB9_27,
+        },
+        {
+            name: 'Screenwriting (IAB9-28)',
+            value: constants.legacyIabCategory.IAB9_28,
+        },
+        {
+            name: 'Stamps & Coins (IAB9-29)',
+            value: constants.legacyIabCategory.IAB9_29,
+        },
+        {
+            name: 'Video & Computer Games (IAB9-30)',
+            value: constants.legacyIabCategory.IAB9_30,
+        },
+        {
+            name: 'Woodworking (IAB9-31)',
+            value: constants.legacyIabCategory.IAB9_31,
+        },
+        {
+            name: 'Appliances (IAB10-1)',
+            value: constants.legacyIabCategory.IAB10_1,
+        },
+        {
+            name: 'Entertaining (IAB10-2)',
+            value: constants.legacyIabCategory.IAB10_2,
+        },
+        {
+            name: 'Environmental Safety (IAB10-3)',
+            value: constants.legacyIabCategory.IAB10_3,
+        },
+        {
+            name: 'Gardening (IAB10-4)',
+            value: constants.legacyIabCategory.IAB10_4,
+        },
+        {
+            name: 'Home Repair (IAB10-5)',
+            value: constants.legacyIabCategory.IAB10_5,
+        },
+        {
+            name: 'Home Theater (IAB10-6)',
+            value: constants.legacyIabCategory.IAB10_6,
+        },
+        {
+            name: 'Interior Decorating (IAB10-7)',
+            value: constants.legacyIabCategory.IAB10_7,
+        },
+        {
+            name: 'Landscaping (IAB10-8)',
+            value: constants.legacyIabCategory.IAB10_8,
+        },
+        {
+            name: 'Remodeling & Construction (IAB10-9)',
+            value: constants.legacyIabCategory.IAB10_9,
+        },
+        {
+            name: 'Immigration (IAB11-1)',
+            value: constants.legacyIabCategory.IAB11_1,
+        },
+        {
+            name: 'Legal Issues (IAB11-2)',
+            value: constants.legacyIabCategory.IAB11_2,
+        },
+        {
+            name: 'U.S. Government Resources (IAB11-3)',
+            value: constants.legacyIabCategory.IAB11_3,
+        },
+        {
+            name: 'Politics (IAB11-4)',
+            value: constants.legacyIabCategory.IAB11_4,
+        },
+        {
+            name: 'Commentary (IAB11-5)',
+            value: constants.legacyIabCategory.IAB11_5,
+        },
+        {
+            name: 'International News (IAB12-1)',
+            value: constants.legacyIabCategory.IAB12_1,
+        },
+        {
+            name: 'National News (IAB12-2)',
+            value: constants.legacyIabCategory.IAB12_2,
+        },
+        {
+            name: 'Local News (IAB12-3)',
+            value: constants.legacyIabCategory.IAB12_3,
+        },
+        {
+            name: 'Beginning Investing (IAB13-1)',
+            value: constants.legacyIabCategory.IAB13_1,
+        },
+        {
+            name: 'Credit/Debt & Loans (IAB13-2)',
+            value: constants.legacyIabCategory.IAB13_2,
+        },
+        {
+            name: 'Financial News (IAB13-3)',
+            value: constants.legacyIabCategory.IAB13_3,
+        },
+        {
+            name: 'Financial Planning (IAB13-4)',
+            value: constants.legacyIabCategory.IAB13_4,
+        },
+        {
+            name: 'Hedge Fund (IAB13-5)',
+            value: constants.legacyIabCategory.IAB13_5,
+        },
+        {
+            name: 'Insurance (IAB13-6)',
+            value: constants.legacyIabCategory.IAB13_6,
+        },
+        {
+            name: 'Investing (IAB13-7)',
+            value: constants.legacyIabCategory.IAB13_7,
+        },
+        {
+            name: 'Mutual Funds (IAB13-8)',
+            value: constants.legacyIabCategory.IAB13_8,
+        },
         {name: 'Options (IAB13-9)', value: constants.legacyIabCategory.IAB13_9},
-        {name: 'Retirement Planning (IAB13-10)', value: constants.legacyIabCategory.IAB13_10},
-        {name: 'Stocks (IAB13-11)', value: constants.legacyIabCategory.IAB13_11},
-        {name: 'Tax Planning (IAB13-12)', value: constants.legacyIabCategory.IAB13_12},
+        {
+            name: 'Retirement Planning (IAB13-10)',
+            value: constants.legacyIabCategory.IAB13_10,
+        },
+        {
+            name: 'Stocks (IAB13-11)',
+            value: constants.legacyIabCategory.IAB13_11,
+        },
+        {
+            name: 'Tax Planning (IAB13-12)',
+            value: constants.legacyIabCategory.IAB13_12,
+        },
         {name: 'Dating (IAB14-1)', value: constants.legacyIabCategory.IAB14_1},
-        {name: 'Divorce Support (IAB14-2)', value: constants.legacyIabCategory.IAB14_2},
-        {name: 'Gay Life (IAB14-3)', value: constants.legacyIabCategory.IAB14_3},
-        {name: 'Marriage (IAB14-4)', value: constants.legacyIabCategory.IAB14_4},
-        {name: 'Senior Living (IAB14-5)', value: constants.legacyIabCategory.IAB14_5},
+        {
+            name: 'Divorce Support (IAB14-2)',
+            value: constants.legacyIabCategory.IAB14_2,
+        },
+        {
+            name: 'Gay Life (IAB14-3)',
+            value: constants.legacyIabCategory.IAB14_3,
+        },
+        {
+            name: 'Marriage (IAB14-4)',
+            value: constants.legacyIabCategory.IAB14_4,
+        },
+        {
+            name: 'Senior Living (IAB14-5)',
+            value: constants.legacyIabCategory.IAB14_5,
+        },
         {name: 'Teens (IAB14-6)', value: constants.legacyIabCategory.IAB14_6},
-        {name: 'Weddings (IAB14-7)', value: constants.legacyIabCategory.IAB14_7},
-        {name: 'Ethnic Specific (IAB14-8)', value: constants.legacyIabCategory.IAB14_8},
-        {name: 'Astrology (IAB15-1)', value: constants.legacyIabCategory.IAB15_1},
+        {
+            name: 'Weddings (IAB14-7)',
+            value: constants.legacyIabCategory.IAB14_7,
+        },
+        {
+            name: 'Ethnic Specific (IAB14-8)',
+            value: constants.legacyIabCategory.IAB14_8,
+        },
+        {
+            name: 'Astrology (IAB15-1)',
+            value: constants.legacyIabCategory.IAB15_1,
+        },
         {name: 'Biology (IAB15-2)', value: constants.legacyIabCategory.IAB15_2},
-        {name: 'Chemistry (IAB15-3)', value: constants.legacyIabCategory.IAB15_3},
+        {
+            name: 'Chemistry (IAB15-3)',
+            value: constants.legacyIabCategory.IAB15_3,
+        },
         {name: 'Geology (IAB15-4)', value: constants.legacyIabCategory.IAB15_4},
-        {name: 'Paranormal Phenomena (IAB15-5)', value: constants.legacyIabCategory.IAB15_5},
+        {
+            name: 'Paranormal Phenomena (IAB15-5)',
+            value: constants.legacyIabCategory.IAB15_5,
+        },
         {name: 'Physics (IAB15-6)', value: constants.legacyIabCategory.IAB15_6},
-        {name: 'Space/Astronomy (IAB15-7)', value: constants.legacyIabCategory.IAB15_7},
-        {name: 'Geography (IAB15-8)', value: constants.legacyIabCategory.IAB15_8},
+        {
+            name: 'Space/Astronomy (IAB15-7)',
+            value: constants.legacyIabCategory.IAB15_7,
+        },
+        {
+            name: 'Geography (IAB15-8)',
+            value: constants.legacyIabCategory.IAB15_8,
+        },
         {name: 'Botany (IAB15-9)', value: constants.legacyIabCategory.IAB15_9},
-        {name: 'Weather (IAB15-10)', value: constants.legacyIabCategory.IAB15_10},
-        {name: 'Aquariums (IAB16-1)', value: constants.legacyIabCategory.IAB16_1},
+        {
+            name: 'Weather (IAB15-10)',
+            value: constants.legacyIabCategory.IAB15_10,
+        },
+        {
+            name: 'Aquariums (IAB16-1)',
+            value: constants.legacyIabCategory.IAB16_1,
+        },
         {name: 'Birds (IAB16-2)', value: constants.legacyIabCategory.IAB16_2},
         {name: 'Cats (IAB16-3)', value: constants.legacyIabCategory.IAB16_3},
         {name: 'Dogs (IAB16-4)', value: constants.legacyIabCategory.IAB16_4},
-        {name: 'Large Animals (IAB16-5)', value: constants.legacyIabCategory.IAB16_5},
-        {name: 'Reptiles (IAB16-6)', value: constants.legacyIabCategory.IAB16_6},
-        {name: 'Veterinary Medicine (IAB16-7)', value: constants.legacyIabCategory.IAB16_7},
-        {name: 'Auto Racing (IAB17-1)', value: constants.legacyIabCategory.IAB17_1},
-        {name: 'Baseball (IAB17-2)', value: constants.legacyIabCategory.IAB17_2},
-        {name: 'Bicycling (IAB17-3)', value: constants.legacyIabCategory.IAB17_3},
-        {name: 'Bodybuilding (IAB17-4)', value: constants.legacyIabCategory.IAB17_4},
+        {
+            name: 'Large Animals (IAB16-5)',
+            value: constants.legacyIabCategory.IAB16_5,
+        },
+        {
+            name: 'Reptiles (IAB16-6)',
+            value: constants.legacyIabCategory.IAB16_6,
+        },
+        {
+            name: 'Veterinary Medicine (IAB16-7)',
+            value: constants.legacyIabCategory.IAB16_7,
+        },
+        {
+            name: 'Auto Racing (IAB17-1)',
+            value: constants.legacyIabCategory.IAB17_1,
+        },
+        {
+            name: 'Baseball (IAB17-2)',
+            value: constants.legacyIabCategory.IAB17_2,
+        },
+        {
+            name: 'Bicycling (IAB17-3)',
+            value: constants.legacyIabCategory.IAB17_3,
+        },
+        {
+            name: 'Bodybuilding (IAB17-4)',
+            value: constants.legacyIabCategory.IAB17_4,
+        },
         {name: 'Boxing (IAB17-5)', value: constants.legacyIabCategory.IAB17_5},
-        {name: 'Canoeing/Kayaking (IAB17-6)', value: constants.legacyIabCategory.IAB17_6},
-        {name: 'Cheerleading (IAB17-7)', value: constants.legacyIabCategory.IAB17_7},
-        {name: 'Climbing (IAB17-8)', value: constants.legacyIabCategory.IAB17_8},
+        {
+            name: 'Canoeing/Kayaking (IAB17-6)',
+            value: constants.legacyIabCategory.IAB17_6,
+        },
+        {
+            name: 'Cheerleading (IAB17-7)',
+            value: constants.legacyIabCategory.IAB17_7,
+        },
+        {
+            name: 'Climbing (IAB17-8)',
+            value: constants.legacyIabCategory.IAB17_8,
+        },
         {name: 'Cricket (IAB17-9)', value: constants.legacyIabCategory.IAB17_9},
-        {name: 'Figure Skating (IAB17-10)', value: constants.legacyIabCategory.IAB17_10},
-        {name: 'Fly Fishing (IAB17-11)', value: constants.legacyIabCategory.IAB17_11},
-        {name: 'Football (IAB17-12)', value: constants.legacyIabCategory.IAB17_12},
-        {name: 'Freshwater Fishing (IAB17-13)', value: constants.legacyIabCategory.IAB17_13},
-        {name: 'Game & Fish (IAB17-14)', value: constants.legacyIabCategory.IAB17_14},
+        {
+            name: 'Figure Skating (IAB17-10)',
+            value: constants.legacyIabCategory.IAB17_10,
+        },
+        {
+            name: 'Fly Fishing (IAB17-11)',
+            value: constants.legacyIabCategory.IAB17_11,
+        },
+        {
+            name: 'Football (IAB17-12)',
+            value: constants.legacyIabCategory.IAB17_12,
+        },
+        {
+            name: 'Freshwater Fishing (IAB17-13)',
+            value: constants.legacyIabCategory.IAB17_13,
+        },
+        {
+            name: 'Game & Fish (IAB17-14)',
+            value: constants.legacyIabCategory.IAB17_14,
+        },
         {name: 'Golf (IAB17-15)', value: constants.legacyIabCategory.IAB17_15},
-        {name: 'Horse Racing (IAB17-16)', value: constants.legacyIabCategory.IAB17_16},
-        {name: 'Horses (IAB17-17)', value: constants.legacyIabCategory.IAB17_17},
-        {name: 'Hunting/Shooting (IAB17-18)', value: constants.legacyIabCategory.IAB17_18},
-        {name: 'Inline Skating (IAB17-19)', value: constants.legacyIabCategory.IAB17_19},
-        {name: 'Martial Arts (IAB17-20)', value: constants.legacyIabCategory.IAB17_20},
-        {name: 'Mountain Biking (IAB17-21)', value: constants.legacyIabCategory.IAB17_21},
-        {name: 'NASCAR Racing (IAB17-22)', value: constants.legacyIabCategory.IAB17_22},
-        {name: 'Olympics (IAB17-23)', value: constants.legacyIabCategory.IAB17_23},
-        {name: 'Paintball (IAB17-24)', value: constants.legacyIabCategory.IAB17_24},
-        {name: 'Power & Motorcycles (IAB17-25)', value: constants.legacyIabCategory.IAB17_25},
-        {name: 'Pro Basketball (IAB17-26)', value: constants.legacyIabCategory.IAB17_26},
-        {name: 'Pro Ice Hockey (IAB17-27)', value: constants.legacyIabCategory.IAB17_27},
+        {
+            name: 'Horse Racing (IAB17-16)',
+            value: constants.legacyIabCategory.IAB17_16,
+        },
+        {
+            name: 'Horses (IAB17-17)',
+            value: constants.legacyIabCategory.IAB17_17,
+        },
+        {
+            name: 'Hunting/Shooting (IAB17-18)',
+            value: constants.legacyIabCategory.IAB17_18,
+        },
+        {
+            name: 'Inline Skating (IAB17-19)',
+            value: constants.legacyIabCategory.IAB17_19,
+        },
+        {
+            name: 'Martial Arts (IAB17-20)',
+            value: constants.legacyIabCategory.IAB17_20,
+        },
+        {
+            name: 'Mountain Biking (IAB17-21)',
+            value: constants.legacyIabCategory.IAB17_21,
+        },
+        {
+            name: 'NASCAR Racing (IAB17-22)',
+            value: constants.legacyIabCategory.IAB17_22,
+        },
+        {
+            name: 'Olympics (IAB17-23)',
+            value: constants.legacyIabCategory.IAB17_23,
+        },
+        {
+            name: 'Paintball (IAB17-24)',
+            value: constants.legacyIabCategory.IAB17_24,
+        },
+        {
+            name: 'Power & Motorcycles (IAB17-25)',
+            value: constants.legacyIabCategory.IAB17_25,
+        },
+        {
+            name: 'Pro Basketball (IAB17-26)',
+            value: constants.legacyIabCategory.IAB17_26,
+        },
+        {
+            name: 'Pro Ice Hockey (IAB17-27)',
+            value: constants.legacyIabCategory.IAB17_27,
+        },
         {name: 'Rodeo (IAB17-28)', value: constants.legacyIabCategory.IAB17_28},
         {name: 'Rugby (IAB17-29)', value: constants.legacyIabCategory.IAB17_29},
-        {name: 'Running/Jogging (IAB17-30)', value: constants.legacyIabCategory.IAB17_30},
-        {name: 'Sailing (IAB17-31)', value: constants.legacyIabCategory.IAB17_31},
-        {name: 'Saltwater Fishing (IAB17-32)', value: constants.legacyIabCategory.IAB17_32},
-        {name: 'Scuba Diving (IAB17-33)', value: constants.legacyIabCategory.IAB17_33},
-        {name: 'Skateboarding (IAB17-34)', value: constants.legacyIabCategory.IAB17_34},
-        {name: 'Skiing (IAB17-35)', value: constants.legacyIabCategory.IAB17_35},
-        {name: 'Snowboarding (IAB17-36)', value: constants.legacyIabCategory.IAB17_36},
-        {name: 'Surfing/Bodyboarding (IAB17-37)', value: constants.legacyIabCategory.IAB17_37},
-        {name: 'Swimming (IAB17-38)', value: constants.legacyIabCategory.IAB17_38},
-        {name: 'Table Tennis/Ping-Pong (IAB17-39)', value: constants.legacyIabCategory.IAB17_39},
-        {name: 'Tennis (IAB17-40)', value: constants.legacyIabCategory.IAB17_40},
-        {name: 'Volleyball (IAB17-41)', value: constants.legacyIabCategory.IAB17_41},
-        {name: 'Walking (IAB17-42)', value: constants.legacyIabCategory.IAB17_42},
-        {name: 'Waterski/Wakeboard (IAB17-43)', value: constants.legacyIabCategory.IAB17_43},
-        {name: 'World Soccer (IAB17-44)', value: constants.legacyIabCategory.IAB17_44},
+        {
+            name: 'Running/Jogging (IAB17-30)',
+            value: constants.legacyIabCategory.IAB17_30,
+        },
+        {
+            name: 'Sailing (IAB17-31)',
+            value: constants.legacyIabCategory.IAB17_31,
+        },
+        {
+            name: 'Saltwater Fishing (IAB17-32)',
+            value: constants.legacyIabCategory.IAB17_32,
+        },
+        {
+            name: 'Scuba Diving (IAB17-33)',
+            value: constants.legacyIabCategory.IAB17_33,
+        },
+        {
+            name: 'Skateboarding (IAB17-34)',
+            value: constants.legacyIabCategory.IAB17_34,
+        },
+        {
+            name: 'Skiing (IAB17-35)',
+            value: constants.legacyIabCategory.IAB17_35,
+        },
+        {
+            name: 'Snowboarding (IAB17-36)',
+            value: constants.legacyIabCategory.IAB17_36,
+        },
+        {
+            name: 'Surfing/Bodyboarding (IAB17-37)',
+            value: constants.legacyIabCategory.IAB17_37,
+        },
+        {
+            name: 'Swimming (IAB17-38)',
+            value: constants.legacyIabCategory.IAB17_38,
+        },
+        {
+            name: 'Table Tennis/Ping-Pong (IAB17-39)',
+            value: constants.legacyIabCategory.IAB17_39,
+        },
+        {
+            name: 'Tennis (IAB17-40)',
+            value: constants.legacyIabCategory.IAB17_40,
+        },
+        {
+            name: 'Volleyball (IAB17-41)',
+            value: constants.legacyIabCategory.IAB17_41,
+        },
+        {
+            name: 'Walking (IAB17-42)',
+            value: constants.legacyIabCategory.IAB17_42,
+        },
+        {
+            name: 'Waterski/Wakeboard (IAB17-43)',
+            value: constants.legacyIabCategory.IAB17_43,
+        },
+        {
+            name: 'World Soccer (IAB17-44)',
+            value: constants.legacyIabCategory.IAB17_44,
+        },
         {name: 'Beauty (IAB18-1)', value: constants.legacyIabCategory.IAB18_1},
-        {name: 'Body Art (IAB18-2)', value: constants.legacyIabCategory.IAB18_2},
+        {
+            name: 'Body Art (IAB18-2)',
+            value: constants.legacyIabCategory.IAB18_2,
+        },
         {name: 'Fashion (IAB18-3)', value: constants.legacyIabCategory.IAB18_3},
         {name: 'Jewelry (IAB18-4)', value: constants.legacyIabCategory.IAB18_4},
-        {name: 'Clothing (IAB18-5)', value: constants.legacyIabCategory.IAB18_5},
-        {name: 'Accessories (IAB18-6)', value: constants.legacyIabCategory.IAB18_6},
-        {name: '3-D Graphics (IAB19-1)', value: constants.legacyIabCategory.IAB19_1},
-        {name: 'Animation (IAB19-2)', value: constants.legacyIabCategory.IAB19_2},
-        {name: 'Antivirus Software (IAB19-3)', value: constants.legacyIabCategory.IAB19_3},
+        {
+            name: 'Clothing (IAB18-5)',
+            value: constants.legacyIabCategory.IAB18_5,
+        },
+        {
+            name: 'Accessories (IAB18-6)',
+            value: constants.legacyIabCategory.IAB18_6,
+        },
+        {
+            name: '3-D Graphics (IAB19-1)',
+            value: constants.legacyIabCategory.IAB19_1,
+        },
+        {
+            name: 'Animation (IAB19-2)',
+            value: constants.legacyIabCategory.IAB19_2,
+        },
+        {
+            name: 'Antivirus Software (IAB19-3)',
+            value: constants.legacyIabCategory.IAB19_3,
+        },
         {name: 'C/C++ (IAB19-4)', value: constants.legacyIabCategory.IAB19_4},
-        {name: 'Cameras & Camcorders (IAB19-5)', value: constants.legacyIabCategory.IAB19_5},
-        {name: 'Cell Phones (IAB19-6)', value: constants.legacyIabCategory.IAB19_6},
-        {name: 'Computer Certification (IAB19-7)', value: constants.legacyIabCategory.IAB19_7},
-        {name: 'Computer Networking (IAB19-8)', value: constants.legacyIabCategory.IAB19_8},
-        {name: 'Computer Peripherals (IAB19-9)', value: constants.legacyIabCategory.IAB19_9},
-        {name: 'Computer Reviews (IAB19-10)', value: constants.legacyIabCategory.IAB19_10},
-        {name: 'Data Centers (IAB19-11)', value: constants.legacyIabCategory.IAB19_11},
-        {name: 'Databases (IAB19-12)', value: constants.legacyIabCategory.IAB19_12},
-        {name: 'Desktop Publishing (IAB19-13)', value: constants.legacyIabCategory.IAB19_13},
-        {name: 'Desktop Video (IAB19-14)', value: constants.legacyIabCategory.IAB19_14},
+        {
+            name: 'Cameras & Camcorders (IAB19-5)',
+            value: constants.legacyIabCategory.IAB19_5,
+        },
+        {
+            name: 'Cell Phones (IAB19-6)',
+            value: constants.legacyIabCategory.IAB19_6,
+        },
+        {
+            name: 'Computer Certification (IAB19-7)',
+            value: constants.legacyIabCategory.IAB19_7,
+        },
+        {
+            name: 'Computer Networking (IAB19-8)',
+            value: constants.legacyIabCategory.IAB19_8,
+        },
+        {
+            name: 'Computer Peripherals (IAB19-9)',
+            value: constants.legacyIabCategory.IAB19_9,
+        },
+        {
+            name: 'Computer Reviews (IAB19-10)',
+            value: constants.legacyIabCategory.IAB19_10,
+        },
+        {
+            name: 'Data Centers (IAB19-11)',
+            value: constants.legacyIabCategory.IAB19_11,
+        },
+        {
+            name: 'Databases (IAB19-12)',
+            value: constants.legacyIabCategory.IAB19_12,
+        },
+        {
+            name: 'Desktop Publishing (IAB19-13)',
+            value: constants.legacyIabCategory.IAB19_13,
+        },
+        {
+            name: 'Desktop Video (IAB19-14)',
+            value: constants.legacyIabCategory.IAB19_14,
+        },
         {name: 'Email (IAB19-15)', value: constants.legacyIabCategory.IAB19_15},
-        {name: 'Graphics Software (IAB19-16)', value: constants.legacyIabCategory.IAB19_16},
-        {name: 'Home Video/DVD (IAB19-17)', value: constants.legacyIabCategory.IAB19_17},
-        {name: 'Internet Technology (IAB19-18)', value: constants.legacyIabCategory.IAB19_18},
+        {
+            name: 'Graphics Software (IAB19-16)',
+            value: constants.legacyIabCategory.IAB19_16,
+        },
+        {
+            name: 'Home Video/DVD (IAB19-17)',
+            value: constants.legacyIabCategory.IAB19_17,
+        },
+        {
+            name: 'Internet Technology (IAB19-18)',
+            value: constants.legacyIabCategory.IAB19_18,
+        },
         {name: 'Java (IAB19-19)', value: constants.legacyIabCategory.IAB19_19},
-        {name: 'JavaScript (IAB19-20)', value: constants.legacyIabCategory.IAB19_20},
-        {name: 'Mac Support (IAB19-21)', value: constants.legacyIabCategory.IAB19_21},
-        {name: 'MP3/MIDI (IAB19-22)', value: constants.legacyIabCategory.IAB19_22},
-        {name: 'Net Conferencing (IAB19-23)', value: constants.legacyIabCategory.IAB19_23},
-        {name: 'Net for Beginners (IAB19-24)', value: constants.legacyIabCategory.IAB19_24},
-        {name: 'Network Security (IAB19-25)', value: constants.legacyIabCategory.IAB19_25},
-        {name: 'Palmtops/PDAs (IAB19-26)', value: constants.legacyIabCategory.IAB19_26},
-        {name: 'PC Support (IAB19-27)', value: constants.legacyIabCategory.IAB19_27},
-        {name: 'Portable (IAB19-28)', value: constants.legacyIabCategory.IAB19_28},
-        {name: 'Entertainment (IAB19-29)', value: constants.legacyIabCategory.IAB19_29},
-        {name: 'Shareware/Freeware (IAB19-30)', value: constants.legacyIabCategory.IAB19_30},
+        {
+            name: 'JavaScript (IAB19-20)',
+            value: constants.legacyIabCategory.IAB19_20,
+        },
+        {
+            name: 'Mac Support (IAB19-21)',
+            value: constants.legacyIabCategory.IAB19_21,
+        },
+        {
+            name: 'MP3/MIDI (IAB19-22)',
+            value: constants.legacyIabCategory.IAB19_22,
+        },
+        {
+            name: 'Net Conferencing (IAB19-23)',
+            value: constants.legacyIabCategory.IAB19_23,
+        },
+        {
+            name: 'Net for Beginners (IAB19-24)',
+            value: constants.legacyIabCategory.IAB19_24,
+        },
+        {
+            name: 'Network Security (IAB19-25)',
+            value: constants.legacyIabCategory.IAB19_25,
+        },
+        {
+            name: 'Palmtops/PDAs (IAB19-26)',
+            value: constants.legacyIabCategory.IAB19_26,
+        },
+        {
+            name: 'PC Support (IAB19-27)',
+            value: constants.legacyIabCategory.IAB19_27,
+        },
+        {
+            name: 'Portable (IAB19-28)',
+            value: constants.legacyIabCategory.IAB19_28,
+        },
+        {
+            name: 'Entertainment (IAB19-29)',
+            value: constants.legacyIabCategory.IAB19_29,
+        },
+        {
+            name: 'Shareware/Freeware (IAB19-30)',
+            value: constants.legacyIabCategory.IAB19_30,
+        },
         {name: 'Unix (IAB19-31)', value: constants.legacyIabCategory.IAB19_31},
-        {name: 'Visual Basic (IAB19-32)', value: constants.legacyIabCategory.IAB19_32},
-        {name: 'Web Clip Art (IAB19-33)', value: constants.legacyIabCategory.IAB19_33},
-        {name: 'Web Design/HTML (IAB19-34)', value: constants.legacyIabCategory.IAB19_34},
-        {name: 'Web Search (IAB19-35)', value: constants.legacyIabCategory.IAB19_35},
-        {name: 'Windows (IAB19-36)', value: constants.legacyIabCategory.IAB19_36},
-        {name: 'Adventure Travel (IAB20-1)', value: constants.legacyIabCategory.IAB20_1},
+        {
+            name: 'Visual Basic (IAB19-32)',
+            value: constants.legacyIabCategory.IAB19_32,
+        },
+        {
+            name: 'Web Clip Art (IAB19-33)',
+            value: constants.legacyIabCategory.IAB19_33,
+        },
+        {
+            name: 'Web Design/HTML (IAB19-34)',
+            value: constants.legacyIabCategory.IAB19_34,
+        },
+        {
+            name: 'Web Search (IAB19-35)',
+            value: constants.legacyIabCategory.IAB19_35,
+        },
+        {
+            name: 'Windows (IAB19-36)',
+            value: constants.legacyIabCategory.IAB19_36,
+        },
+        {
+            name: 'Adventure Travel (IAB20-1)',
+            value: constants.legacyIabCategory.IAB20_1,
+        },
         {name: 'Africa (IAB20-2)', value: constants.legacyIabCategory.IAB20_2},
-        {name: 'Air Travel (IAB20-3)', value: constants.legacyIabCategory.IAB20_3},
-        {name: 'Australia & New Zealand (IAB20-4)', value: constants.legacyIabCategory.IAB20_4},
-        {name: 'Bed & Breakfasts (IAB20-5)', value: constants.legacyIabCategory.IAB20_5},
-        {name: 'Budget Travel (IAB20-6)', value: constants.legacyIabCategory.IAB20_6},
-        {name: 'Business Travel (IAB20-7)', value: constants.legacyIabCategory.IAB20_7},
-        {name: 'By US Locale (IAB20-8)', value: constants.legacyIabCategory.IAB20_8},
+        {
+            name: 'Air Travel (IAB20-3)',
+            value: constants.legacyIabCategory.IAB20_3,
+        },
+        {
+            name: 'Australia & New Zealand (IAB20-4)',
+            value: constants.legacyIabCategory.IAB20_4,
+        },
+        {
+            name: 'Bed & Breakfasts (IAB20-5)',
+            value: constants.legacyIabCategory.IAB20_5,
+        },
+        {
+            name: 'Budget Travel (IAB20-6)',
+            value: constants.legacyIabCategory.IAB20_6,
+        },
+        {
+            name: 'Business Travel (IAB20-7)',
+            value: constants.legacyIabCategory.IAB20_7,
+        },
+        {
+            name: 'By US Locale (IAB20-8)',
+            value: constants.legacyIabCategory.IAB20_8,
+        },
         {name: 'Camping (IAB20-9)', value: constants.legacyIabCategory.IAB20_9},
-        {name: 'Canada (IAB20-10)', value: constants.legacyIabCategory.IAB20_10},
-        {name: 'Caribbean (IAB20-11)', value: constants.legacyIabCategory.IAB20_11},
-        {name: 'Cruises (IAB20-12)', value: constants.legacyIabCategory.IAB20_12},
-        {name: 'Eastern Europe (IAB20-13)', value: constants.legacyIabCategory.IAB20_13},
-        {name: 'Europe (IAB20-14)', value: constants.legacyIabCategory.IAB20_14},
-        {name: 'France (IAB20-15)', value: constants.legacyIabCategory.IAB20_15},
-        {name: 'Greece (IAB20-16)', value: constants.legacyIabCategory.IAB20_16},
-        {name: 'Honeymoons/Getaways (IAB20-17)', value: constants.legacyIabCategory.IAB20_17},
-        {name: 'Hotels (IAB20-18)', value: constants.legacyIabCategory.IAB20_18},
+        {
+            name: 'Canada (IAB20-10)',
+            value: constants.legacyIabCategory.IAB20_10,
+        },
+        {
+            name: 'Caribbean (IAB20-11)',
+            value: constants.legacyIabCategory.IAB20_11,
+        },
+        {
+            name: 'Cruises (IAB20-12)',
+            value: constants.legacyIabCategory.IAB20_12,
+        },
+        {
+            name: 'Eastern Europe (IAB20-13)',
+            value: constants.legacyIabCategory.IAB20_13,
+        },
+        {
+            name: 'Europe (IAB20-14)',
+            value: constants.legacyIabCategory.IAB20_14,
+        },
+        {
+            name: 'France (IAB20-15)',
+            value: constants.legacyIabCategory.IAB20_15,
+        },
+        {
+            name: 'Greece (IAB20-16)',
+            value: constants.legacyIabCategory.IAB20_16,
+        },
+        {
+            name: 'Honeymoons/Getaways (IAB20-17)',
+            value: constants.legacyIabCategory.IAB20_17,
+        },
+        {
+            name: 'Hotels (IAB20-18)',
+            value: constants.legacyIabCategory.IAB20_18,
+        },
         {name: 'Italy (IAB20-19)', value: constants.legacyIabCategory.IAB20_19},
         {name: 'Japan (IAB20-20)', value: constants.legacyIabCategory.IAB20_20},
-        {name: 'Mexico & Central America (IAB20-21)', value: constants.legacyIabCategory.IAB20_21},
-        {name: 'National Parks (IAB20-22)', value: constants.legacyIabCategory.IAB20_22},
-        {name: 'South America (IAB20-23)', value: constants.legacyIabCategory.IAB20_23},
+        {
+            name: 'Mexico & Central America (IAB20-21)',
+            value: constants.legacyIabCategory.IAB20_21,
+        },
+        {
+            name: 'National Parks (IAB20-22)',
+            value: constants.legacyIabCategory.IAB20_22,
+        },
+        {
+            name: 'South America (IAB20-23)',
+            value: constants.legacyIabCategory.IAB20_23,
+        },
         {name: 'Spas (IAB20-24)', value: constants.legacyIabCategory.IAB20_24},
-        {name: 'Theme Parks (IAB20-25)', value: constants.legacyIabCategory.IAB20_25},
-        {name: 'Traveling with Kids (IAB20-26)', value: constants.legacyIabCategory.IAB20_26},
-        {name: 'United Kingdom (IAB20-27)', value: constants.legacyIabCategory.IAB20_27},
-        {name: 'Apartments (IAB21-1)', value: constants.legacyIabCategory.IAB21_1},
-        {name: 'Architects (IAB21-2)', value: constants.legacyIabCategory.IAB21_2},
-        {name: 'Buying/Selling Homes (IAB21-3)', value: constants.legacyIabCategory.IAB21_3},
-        {name: 'Contests & Freebies (IAB22-1)', value: constants.legacyIabCategory.IAB22_1},
-        {name: 'Couponing (IAB22-2)', value: constants.legacyIabCategory.IAB22_2},
-        {name: 'Comparison (IAB22-3)', value: constants.legacyIabCategory.IAB22_3},
+        {
+            name: 'Theme Parks (IAB20-25)',
+            value: constants.legacyIabCategory.IAB20_25,
+        },
+        {
+            name: 'Traveling with Kids (IAB20-26)',
+            value: constants.legacyIabCategory.IAB20_26,
+        },
+        {
+            name: 'United Kingdom (IAB20-27)',
+            value: constants.legacyIabCategory.IAB20_27,
+        },
+        {
+            name: 'Apartments (IAB21-1)',
+            value: constants.legacyIabCategory.IAB21_1,
+        },
+        {
+            name: 'Architects (IAB21-2)',
+            value: constants.legacyIabCategory.IAB21_2,
+        },
+        {
+            name: 'Buying/Selling Homes (IAB21-3)',
+            value: constants.legacyIabCategory.IAB21_3,
+        },
+        {
+            name: 'Contests & Freebies (IAB22-1)',
+            value: constants.legacyIabCategory.IAB22_1,
+        },
+        {
+            name: 'Couponing (IAB22-2)',
+            value: constants.legacyIabCategory.IAB22_2,
+        },
+        {
+            name: 'Comparison (IAB22-3)',
+            value: constants.legacyIabCategory.IAB22_3,
+        },
         {name: 'Engines (IAB22-4)', value: constants.legacyIabCategory.IAB22_4},
-        {name: 'Alternative Religions (IAB23-1)', value: constants.legacyIabCategory.IAB23_1},
-        {name: 'Atheism/Agnosticism (IAB23-2)', value: constants.legacyIabCategory.IAB23_2},
-        {name: 'Buddhism (IAB23-3)', value: constants.legacyIabCategory.IAB23_3},
-        {name: 'Catholicism (IAB23-4)', value: constants.legacyIabCategory.IAB23_4},
-        {name: 'Christianity (IAB23-5)', value: constants.legacyIabCategory.IAB23_5},
-        {name: 'Hinduism (IAB23-6)', value: constants.legacyIabCategory.IAB23_6},
+        {
+            name: 'Alternative Religions (IAB23-1)',
+            value: constants.legacyIabCategory.IAB23_1,
+        },
+        {
+            name: 'Atheism/Agnosticism (IAB23-2)',
+            value: constants.legacyIabCategory.IAB23_2,
+        },
+        {
+            name: 'Buddhism (IAB23-3)',
+            value: constants.legacyIabCategory.IAB23_3,
+        },
+        {
+            name: 'Catholicism (IAB23-4)',
+            value: constants.legacyIabCategory.IAB23_4,
+        },
+        {
+            name: 'Christianity (IAB23-5)',
+            value: constants.legacyIabCategory.IAB23_5,
+        },
+        {
+            name: 'Hinduism (IAB23-6)',
+            value: constants.legacyIabCategory.IAB23_6,
+        },
         {name: 'Islam (IAB23-7)', value: constants.legacyIabCategory.IAB23_7},
         {name: 'Judaism (IAB23-8)', value: constants.legacyIabCategory.IAB23_8},
-        {name: 'Latter-Day Saints (IAB23-9)', value: constants.legacyIabCategory.IAB23_9},
-        {name: 'Pagan/Wiccan (IAB23-10)', value: constants.legacyIabCategory.IAB23_10},
-        {name: 'Unmoderated UGC (IAB25-1)', value: constants.legacyIabCategory.IAB25_1},
-        {name: 'Extreme Graphic/Explicit Violence (IAB25-2)', value: constants.legacyIabCategory.IAB25_2},
-        {name: 'Pornography (IAB25-3)', value: constants.legacyIabCategory.IAB25_3},
-        {name: 'Profane Content (IAB25-4)', value: constants.legacyIabCategory.IAB25_4},
-        {name: 'Hate Content (IAB25-5)', value: constants.legacyIabCategory.IAB25_5},
-        {name: 'Under Construction (IAB25-6)', value: constants.legacyIabCategory.IAB25_6},
-        {name: 'Incentivized (IAB25-7)', value: constants.legacyIabCategory.IAB25_7},
-        {name: 'Illegal Content (IAB26-1)', value: constants.legacyIabCategory.IAB26_1},
+        {
+            name: 'Latter-Day Saints (IAB23-9)',
+            value: constants.legacyIabCategory.IAB23_9,
+        },
+        {
+            name: 'Pagan/Wiccan (IAB23-10)',
+            value: constants.legacyIabCategory.IAB23_10,
+        },
+        {
+            name: 'Unmoderated UGC (IAB25-1)',
+            value: constants.legacyIabCategory.IAB25_1,
+        },
+        {
+            name: 'Extreme Graphic/Explicit Violence (IAB25-2)',
+            value: constants.legacyIabCategory.IAB25_2,
+        },
+        {
+            name: 'Pornography (IAB25-3)',
+            value: constants.legacyIabCategory.IAB25_3,
+        },
+        {
+            name: 'Profane Content (IAB25-4)',
+            value: constants.legacyIabCategory.IAB25_4,
+        },
+        {
+            name: 'Hate Content (IAB25-5)',
+            value: constants.legacyIabCategory.IAB25_5,
+        },
+        {
+            name: 'Under Construction (IAB25-6)',
+            value: constants.legacyIabCategory.IAB25_6,
+        },
+        {
+            name: 'Incentivized (IAB25-7)',
+            value: constants.legacyIabCategory.IAB25_7,
+        },
+        {
+            name: 'Illegal Content (IAB26-1)',
+            value: constants.legacyIabCategory.IAB26_1,
+        },
         {name: 'Warez (IAB26-2)', value: constants.legacyIabCategory.IAB26_2},
-        {name: 'Spyware/Malware (IAB26-3)', value: constants.legacyIabCategory.IAB26_3},
-        {name: 'CopyrightInfringement (IAB26-4)', value: constants.legacyIabCategory.IAB26_4},
+        {
+            name: 'Spyware/Malware (IAB26-3)',
+            value: constants.legacyIabCategory.IAB26_3,
+        },
+        {
+            name: 'CopyrightInfringement (IAB26-4)',
+            value: constants.legacyIabCategory.IAB26_4,
+        },
     ],
     promotionGoals: [
         {name: 'Brand Building', value: constants.promotionGoal.BRAND_BUILDING},
-        {name: 'Traffic Acquisition', value: constants.promotionGoal.TRAFFIC_ACQUISITION},
+        {
+            name: 'Traffic Acquisition',
+            value: constants.promotionGoal.TRAFFIC_ACQUISITION,
+        },
         {name: 'Conversions', value: constants.promotionGoal.CONVERSIONS},
     ],
     campaignGoals: [
         {name: 'CPA', value: constants.campaignGoal.CPA},
-        {name: '% bounce rate', value: constants.campaignGoal.PERCENT_BOUNCE_RATE},
+        {
+            name: '% bounce rate',
+            value: constants.campaignGoal.PERCENT_BOUNCE_RATE,
+        },
         {name: 'new users', value: constants.campaignGoal.NEW_UNIQUE_VISITORS},
-        {name: 'seconds time on site', value: constants.campaignGoal.SECONDS_TIME_ON_SITE},
-        {name: 'pages per session', value: constants.campaignGoal.PAGES_PER_SESSION},
+        {
+            name: 'seconds time on site',
+            value: constants.campaignGoal.SECONDS_TIME_ON_SITE,
+        },
+        {
+            name: 'pages per session',
+            value: constants.campaignGoal.PAGES_PER_SESSION,
+        },
     ],
     campaignGoalKPIs: [
-        {name: 'Time on Site - Seconds', value: constants.campaignGoalKPI.TIME_ON_SITE, unit: 's'},
-        {name: 'Max Bounce Rate', value: constants.campaignGoalKPI.MAX_BOUNCE_RATE, unit: '%'},
-        {name: 'Pageviews per Visit', value: constants.campaignGoalKPI.PAGES_PER_SESSION},
-        {name: 'Cost per Visit', value: constants.campaignGoalKPI.CPV, unit: '__CURRENCY__'},
-        {name: 'CPC', value: constants.campaignGoalKPI.CPC, unit: '__CURRENCY__'},
-        {name: 'New Users', value: constants.campaignGoalKPI.NEW_UNIQUE_VISITORS, unit: '%'},
-        {name: 'CPA - Setup Conversion Tracking', value: constants.campaignGoalKPI.CPA, unit: '__CURRENCY__'},
-        {name: 'Cost per Non-Bounced Visit', value: constants.campaignGoalKPI.CP_NON_BOUNCED_VISIT, unit: '__CURRENCY__'}, // eslint-disable-line max-len
-        {name: 'Cost per New Visitor', value: constants.campaignGoalKPI.CP_NEW_VISITOR, unit: '__CURRENCY__'},
-        {name: 'Cost per Pageview', value: constants.campaignGoalKPI.CP_PAGE_VIEW, unit: '__CURRENCY__'},
-        {name: 'Cost per Completed Video View', value: constants.campaignGoalKPI.CPCV, unit: '__CURRENCY__'},
+        {
+            name: 'Time on Site - Seconds',
+            value: constants.campaignGoalKPI.TIME_ON_SITE,
+            unit: 's',
+        },
+        {
+            name: 'Max Bounce Rate',
+            value: constants.campaignGoalKPI.MAX_BOUNCE_RATE,
+            unit: '%',
+        },
+        {
+            name: 'Pageviews per Visit',
+            value: constants.campaignGoalKPI.PAGES_PER_SESSION,
+        },
+        {
+            name: 'Cost per Visit',
+            value: constants.campaignGoalKPI.CPV,
+            unit: '__CURRENCY__',
+        },
+        {
+            name: 'CPC',
+            value: constants.campaignGoalKPI.CPC,
+            unit: '__CURRENCY__',
+        },
+        {
+            name: 'New Users',
+            value: constants.campaignGoalKPI.NEW_UNIQUE_VISITORS,
+            unit: '%',
+        },
+        {
+            name: 'CPA - Setup Conversion Tracking',
+            value: constants.campaignGoalKPI.CPA,
+            unit: '__CURRENCY__',
+        },
+        {
+            name: 'Cost per Non-Bounced Visit',
+            value: constants.campaignGoalKPI.CP_NON_BOUNCED_VISIT,
+            unit: '__CURRENCY__',
+        }, // eslint-disable-line max-len
+        {
+            name: 'Cost per New Visitor',
+            value: constants.campaignGoalKPI.CP_NEW_VISITOR,
+            unit: '__CURRENCY__',
+        },
+        {
+            name: 'Cost per Pageview',
+            value: constants.campaignGoalKPI.CP_PAGE_VIEW,
+            unit: '__CURRENCY__',
+        },
+        {
+            name: 'Cost per Completed Video View',
+            value: constants.campaignGoalKPI.CPCV,
+            unit: '__CURRENCY__',
+        },
     ],
     budgetAutomationGoals: [
         {name: 'time on site', value: constants.campaignGoalKPI.TIME_ON_SITE},
         {name: 'bounce rate', value: constants.campaignGoalKPI.MAX_BOUNCE_RATE},
-        {name: 'pages per session', value: constants.campaignGoalKPI.PAGES_PER_SESSION},
+        {
+            name: 'pages per session',
+            value: constants.campaignGoalKPI.PAGES_PER_SESSION,
+        },
         {name: 'cost per visit', value: constants.campaignGoalKPI.CPV},
         {name: 'average CPC', value: constants.campaignGoalKPI.CPC},
-        {name: 'new users', value: constants.campaignGoalKPI.NEW_UNIQUE_VISITORS},
+        {
+            name: 'new users',
+            value: constants.campaignGoalKPI.NEW_UNIQUE_VISITORS,
+        },
         {name: 'CPA', value: constants.campaignGoalKPI.CPA},
-        {name: 'cost per non-bounced visit', value: constants.campaignGoalKPI.CP_NON_BOUNCED_VISIT},
-        {name: 'cost per new visitor', value: constants.campaignGoalKPI.CP_NEW_VISITOR},
-        {name: 'cost per pageview', value: constants.campaignGoalKPI.CP_PAGE_VIEW},
-        {name: 'cost per completed video view', value: constants.campaignGoalKPI.CPCV},
+        {
+            name: 'cost per non-bounced visit',
+            value: constants.campaignGoalKPI.CP_NON_BOUNCED_VISIT,
+        },
+        {
+            name: 'cost per new visitor',
+            value: constants.campaignGoalKPI.CP_NEW_VISITOR,
+        },
+        {
+            name: 'cost per pageview',
+            value: constants.campaignGoalKPI.CP_PAGE_VIEW,
+        },
+        {
+            name: 'cost per completed video view',
+            value: constants.campaignGoalKPI.CPCV,
+        },
     ],
     conversionGoalTypes: [
         {name: 'Pixel', value: constants.conversionGoalType.PIXEL},
@@ -2246,8 +3751,14 @@ var options = {
         {name: 'API', value: constants.gaTrackingType.API},
     ],
     interests: [
-        {name: 'Arts & Entertainment', value: constants.interestCategory.ENTERTAINMENT},
-        {name: 'Viral, lists & Quizzes', value: constants.interestCategory.FUN_QUIZZES},
+        {
+            name: 'Arts & Entertainment',
+            value: constants.interestCategory.ENTERTAINMENT,
+        },
+        {
+            name: 'Viral, lists & Quizzes',
+            value: constants.interestCategory.FUN_QUIZZES,
+        },
         {name: 'Music', value: constants.interestCategory.MUSIC},
         {name: 'Automotive', value: constants.interestCategory.CARS},
         {name: 'Business & Finance', value: constants.interestCategory.FINANCE},
@@ -2255,42 +3766,111 @@ var options = {
         {name: 'Family & Parenting', value: constants.interestCategory.FAMILY},
         {name: 'Health & Fitness', value: constants.interestCategory.HEALTH},
         {name: 'Food & Drink', value: constants.interestCategory.FOOD},
-        {name: 'Hobbies & Interests', value: constants.interestCategory.HOBBIES},
+        {
+            name: 'Hobbies & Interests',
+            value: constants.interestCategory.HOBBIES,
+        },
         {name: 'Games & Gaming', value: constants.interestCategory.GAMES},
         {name: 'Home & Garden', value: constants.interestCategory.HOME},
-        {name: 'Law, Gov’t & Politics', value: constants.interestCategory.POLITICS_LAW},
+        {
+            name: 'Law, Gov’t & Politics',
+            value: constants.interestCategory.POLITICS_LAW,
+        },
         {name: 'News', value: constants.interestCategory.MEDIA},
-        {name: 'Dating & Relationships', value: constants.interestCategory.DATING},
+        {
+            name: 'Dating & Relationships',
+            value: constants.interestCategory.DATING,
+        },
         {name: 'Science', value: constants.interestCategory.SCIENCE},
-        {name: 'Weather & Environment', value: constants.interestCategory.WEATHER},
+        {
+            name: 'Weather & Environment',
+            value: constants.interestCategory.WEATHER,
+        },
         {name: 'Pets', value: constants.interestCategory.PETS},
         {name: 'Sports', value: constants.interestCategory.SPORTS},
         {name: 'Beauty & Fashion', value: constants.interestCategory.FASHION},
         {name: 'Technology', value: constants.interestCategory.TECHNOLOGY},
-        {name: 'Apps & Online services', value: constants.interestCategory.UTILITY},
+        {
+            name: 'Apps & Online services',
+            value: constants.interestCategory.UTILITY,
+        },
         {name: 'Travel', value: constants.interestCategory.TRAVEL},
         {name: 'Shopping', value: constants.interestCategory.SHOPPING_COUPONS},
-        {name: 'Religion & Spirituality', value: constants.interestCategory.RELIGION},
-        {name: 'Communication Tools', value: constants.interestCategory.COMMUNICATION},
+        {
+            name: 'Religion & Spirituality',
+            value: constants.interestCategory.RELIGION,
+        },
+        {
+            name: 'Communication Tools',
+            value: constants.interestCategory.COMMUNICATION,
+        },
         {name: 'Careers', value: constants.interestCategory.CAREER},
         {name: 'Premium', value: constants.interestCategory.PREMIUM},
         {name: 'Women’s Lifestyle', value: constants.interestCategory.WOMEN},
         {name: 'Men’s Lifestyle', value: constants.interestCategory.MEN},
-        {name: 'Foreign', value: constants.interestCategory.FOREIGN, internal: true},
-        {name: 'French', value: constants.interestCategory.FRENCH, internal: true},
-        {name: 'Spanish', value: constants.interestCategory.SPANISH, internal: true},
-        {name: 'Other', value: constants.interestCategory.OTHER, internal: true},
-        {name: 'Unknown', value: constants.interestCategory.UNKNOWN, internal: true},
-        {name: 'Outbrain', value: constants.interestCategory.OUTBRAIN, internal: true},
-        {name: 'Technology - Contextual', value: constants.interestCategory.TECHNOLOGY_CONTEXTUAL, internal: true},
+        {
+            name: 'Foreign',
+            value: constants.interestCategory.FOREIGN,
+            internal: true,
+        },
+        {
+            name: 'French',
+            value: constants.interestCategory.FRENCH,
+            internal: true,
+        },
+        {
+            name: 'Spanish',
+            value: constants.interestCategory.SPANISH,
+            internal: true,
+        },
+        {
+            name: 'Other',
+            value: constants.interestCategory.OTHER,
+            internal: true,
+        },
+        {
+            name: 'Unknown',
+            value: constants.interestCategory.UNKNOWN,
+            internal: true,
+        },
+        {
+            name: 'Outbrain',
+            value: constants.interestCategory.OUTBRAIN,
+            internal: true,
+        },
+        {
+            name: 'Technology - Contextual',
+            value: constants.interestCategory.TECHNOLOGY_CONTEXTUAL,
+            internal: true,
+        },
 
         // legacy, now in combination
-        {name: 'Fun & Entertaining Sites', value: constants.interestCategory.FUN, internal: true},
-        {name: 'Quizzes', value: constants.interestCategory.QUIZZES, internal: true},
-        {name: 'Gov’t & Politics', value: constants.interestCategory.POLITICS, internal: true},
+        {
+            name: 'Fun & Entertaining Sites',
+            value: constants.interestCategory.FUN,
+            internal: true,
+        },
+        {
+            name: 'Quizzes',
+            value: constants.interestCategory.QUIZZES,
+            internal: true,
+        },
+        {
+            name: 'Gov’t & Politics',
+            value: constants.interestCategory.POLITICS,
+            internal: true,
+        },
         {name: 'Law', value: constants.interestCategory.LAW, internal: true},
-        {name: 'Couponing', value: constants.interestCategory.COUPONS, internal: true},
-        {name: 'Shopping', value: constants.interestCategory.SHOPPING, internal: true},
+        {
+            name: 'Couponing',
+            value: constants.interestCategory.COUPONS,
+            internal: true,
+        },
+        {
+            name: 'Shopping',
+            value: constants.interestCategory.SHOPPING,
+            internal: true,
+        },
     ],
     zipTargetingTypes: [
         {name: 'Include', value: constants.zipTargetingType.INCLUDE},
@@ -2356,19 +3936,30 @@ constants.campaignGoalValueText = {};
 constants.campaignGoalValueText[constants.campaignGoalKPI.CPA] = 'CPA';
 constants.campaignGoalValueText[constants.campaignGoalKPI.CPC] = 'CPC';
 constants.campaignGoalValueText[constants.campaignGoalKPI.CPM] = 'CPM';
-constants.campaignGoalValueText[constants.campaignGoalKPI.MAX_BOUNCE_RATE] = 'Bounce Rate';
-constants.campaignGoalValueText[constants.campaignGoalKPI.NEW_UNIQUE_VISITORS] = '% New Users';
-constants.campaignGoalValueText[constants.campaignGoalKPI.TIME_ON_SITE] = 'seconds Time on Site';
-constants.campaignGoalValueText[constants.campaignGoalKPI.PAGES_PER_SESSION] = 'Pageviews per Visit';
-constants.campaignGoalValueText[constants.campaignGoalKPI.CPV] = 'Cost per Visit';
-constants.campaignGoalValueText[constants.campaignGoalKPI.CP_NON_BOUNCED_VISIT] = 'Cost per Non-Bounced Visit';
-constants.campaignGoalValueText[constants.campaignGoalKPI.CP_NEW_VISITOR] = 'Cost per New Visitor';
-constants.campaignGoalValueText[constants.campaignGoalKPI.CP_PAGE_VIEW] = 'Cost per Pageview';
-constants.campaignGoalValueText[constants.campaignGoalKPI.CPCV] = 'Cost per Completed Video View';
+constants.campaignGoalValueText[constants.campaignGoalKPI.MAX_BOUNCE_RATE] =
+    'Bounce Rate';
+constants.campaignGoalValueText[constants.campaignGoalKPI.NEW_UNIQUE_VISITORS] =
+    '% New Users';
+constants.campaignGoalValueText[constants.campaignGoalKPI.TIME_ON_SITE] =
+    'seconds Time on Site';
+constants.campaignGoalValueText[constants.campaignGoalKPI.PAGES_PER_SESSION] =
+    'Pageviews per Visit';
+constants.campaignGoalValueText[constants.campaignGoalKPI.CPV] =
+    'Cost per Visit';
+constants.campaignGoalValueText[
+    constants.campaignGoalKPI.CP_NON_BOUNCED_VISIT
+] =
+    'Cost per Non-Bounced Visit';
+constants.campaignGoalValueText[constants.campaignGoalKPI.CP_NEW_VISITOR] =
+    'Cost per New Visitor';
+constants.campaignGoalValueText[constants.campaignGoalKPI.CP_PAGE_VIEW] =
+    'Cost per Pageview';
+constants.campaignGoalValueText[constants.campaignGoalKPI.CPCV] =
+    'Cost per Completed Video View';
 
 // legacy mapping used in the old ad_group_settings
 constants.interestCategoryText = {};
-options.interests.forEach(function (interest) {
+options.interests.forEach(function(interest) {
     constants.interestCategoryText[interest.value] = interest.name;
 });
 
@@ -2383,7 +3974,6 @@ constants.automaticallyOptimizedKPIGoals = [
     constants.campaignGoalKPI.CP_PAGE_VIEW,
     constants.campaignGoalKPI.CPCV,
 ];
-
 
 constants.defaultAccountTypes = [
     {

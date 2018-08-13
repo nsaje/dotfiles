@@ -4,10 +4,15 @@ angular.module('one').component('zemAccountCreditRefundItemModal', {
         resolve: '<',
     },
     template: require('./zemAccountCreditRefundItemModal.component.html'),
-    controller: function (zemUserService, $filter, $timeout, zemMulticurrencyService) {
+    controller: function(
+        zemUserService,
+        $filter,
+        $timeout,
+        zemMulticurrencyService
+    ) {
         var $ctrl = this;
 
-        $ctrl.$onInit = function () {
+        $ctrl.$onInit = function() {
             $ctrl.stateService = $ctrl.resolve.stateService;
             $ctrl.state = $ctrl.stateService.getState();
             $ctrl.openDatePicker = openDatePicker;
@@ -17,13 +22,15 @@ angular.module('one').component('zemAccountCreditRefundItemModal', {
             updateView();
         };
 
-        $ctrl.$onDestroy = function () {
+        $ctrl.$onDestroy = function() {
             $ctrl.stateService.clearCreditRefundItem();
         };
 
-        function updateView () {
+        function updateView() {
             $ctrl.account = $ctrl.resolve.account;
-            $ctrl.newCreditRefundCurrencySymbol = zemMulticurrencyService.getAppropriateCurrencySymbol($ctrl.account);
+            $ctrl.newCreditRefundCurrencySymbol = zemMulticurrencyService.getAppropriateCurrencySymbol(
+                $ctrl.account
+            );
             $ctrl.isDatePickerOpen = false;
 
             $ctrl.datePickerOptions = {
@@ -34,28 +41,26 @@ angular.module('one').component('zemAccountCreditRefundItemModal', {
             };
         }
 
-        function openDatePicker () {
+        function openDatePicker() {
             $ctrl.isDatePickerOpen = true;
         }
 
-        function saveCreditRefundItem () {
-            if ($ctrl.state.requests.saveCreditRefundItem.inProgress)
-                return;
+        function saveCreditRefundItem() {
+            if ($ctrl.state.requests.saveCreditRefundItem.inProgress) return;
 
-            $ctrl.stateService.saveCreditRefundItem()
-                .then(function () {
-                    $ctrl.saved = true;
-                    closeModal();
-                });
+            $ctrl.stateService.saveCreditRefundItem().then(function() {
+                $ctrl.saved = true;
+                closeModal();
+            });
         }
 
-        function discardCreditRefundItem () {
+        function discardCreditRefundItem() {
             $ctrl.discarded = true;
             closeModal();
         }
 
-        function closeModal () {
-            $timeout(function () {
+        function closeModal() {
+            $timeout(function() {
                 $ctrl.close();
             }, 1000);
         }

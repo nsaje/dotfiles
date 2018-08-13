@@ -61,69 +61,81 @@ describe('InventoryPlanningStore', () => {
     beforeEach(() => {
         TestBed.configureTestingModule({
             imports: [HttpClientModule],
-            providers: [
-                InventoryPlanningEndpoint,
-            ],
+            providers: [InventoryPlanningEndpoint],
         });
     });
 
     describe('with delayed mocked http requests', () => {
         let endpointSpy: any;
 
-        beforeEach(inject([InventoryPlanningEndpoint], (endpoint: InventoryPlanningEndpoint) => {
-            endpointSpy = jasmine.createSpyObj('InventoryPlanningEndpoint', [
-                'loadSummary',
-                'loadCountries',
-                'loadPublishers',
-                'loadDevices',
-                'loadSources']);
+        beforeEach(inject(
+            [InventoryPlanningEndpoint],
+            (endpoint: InventoryPlanningEndpoint) => {
+                endpointSpy = jasmine.createSpyObj(
+                    'InventoryPlanningEndpoint',
+                    [
+                        'loadSummary',
+                        'loadCountries',
+                        'loadPublishers',
+                        'loadDevices',
+                        'loadSources',
+                    ]
+                );
 
-            endpointSpy
-                .loadSummary
-                .and
-                .returnValue(of({auctionCount: 100000, avgCpm: 2, avgCpc: 0.8, winRatio: 0.5}).pipe(delay(0)));
+                endpointSpy.loadSummary.and.returnValue(
+                    of({
+                        auctionCount: 100000,
+                        avgCpm: 2,
+                        avgCpc: 0.8,
+                        winRatio: 0.5,
+                    }).pipe(delay(0))
+                );
 
-            endpointSpy
-                .loadCountries
-                .and
-                .returnValue(of(availableCountries).pipe(delay(0)));
+                endpointSpy.loadCountries.and.returnValue(
+                    of(availableCountries).pipe(delay(0))
+                );
 
-            endpointSpy
-                .loadPublishers
-                .and
-                .returnValue(of(availablePublishers).pipe(delay(0)));
+                endpointSpy.loadPublishers.and.returnValue(
+                    of(availablePublishers).pipe(delay(0))
+                );
 
-            endpointSpy
-                .loadDevices
-                .and
-                .returnValue(of(availableDevices).pipe(delay(0)));
+                endpointSpy.loadDevices.and.returnValue(
+                    of(availableDevices).pipe(delay(0))
+                );
 
-            endpointSpy
-                .loadSources
-                .and
-                .returnValue(of(availableSources).pipe(delay(0)));
+                endpointSpy.loadSources.and.returnValue(
+                    of(availableSources).pipe(delay(0))
+                );
 
-            store = new InventoryPlanningStore(endpointSpy);
-        }));
+                store = new InventoryPlanningStore(endpointSpy);
+            }
+        ));
 
         it('should correctly refresh data on init', done => {
             store.init();
             setTimeout(() => {
-                expect(store.state).toEqual(jasmine.objectContaining({
-                    inventory: {auctionCount: 100000, avgCpm: 2, avgCpc: 0.8, winRatio: 0.5},
-                    availableFilters: {
-                        countries: availableCountries,
-                        publishers: availablePublishers,
-                        devices: availableDevices,
-                        sources: availableSources,
-                    },
-                    selectedFilters: {
-                        countries: [],
-                        publishers: [],
-                        devices: [],
-                        sources: [],
-                    },
-                }));
+                expect(store.state).toEqual(
+                    jasmine.objectContaining({
+                        inventory: {
+                            auctionCount: 100000,
+                            avgCpm: 2,
+                            avgCpc: 0.8,
+                            winRatio: 0.5,
+                        },
+                        availableFilters: {
+                            countries: availableCountries,
+                            publishers: availablePublishers,
+                            devices: availableDevices,
+                            sources: availableSources,
+                        },
+                        selectedFilters: {
+                            countries: [],
+                            publishers: [],
+                            devices: [],
+                            sources: [],
+                        },
+                    })
+                );
                 done();
             }, 0); // tslint:disable-line align
         });
@@ -132,41 +144,44 @@ describe('InventoryPlanningStore', () => {
     describe('without delayed mocked http requests', () => {
         let endpointSpy: any;
 
-        beforeEach(inject([InventoryPlanningEndpoint], (_endpoint: InventoryPlanningEndpoint) => {
-            endpointSpy = jasmine.createSpyObj('InventoryPlanningEndpoint', [
-                'loadSummary',
-                'loadCountries',
-                'loadPublishers',
-                'loadDevices',
-                'loadSources']);
+        beforeEach(inject(
+            [InventoryPlanningEndpoint],
+            (_endpoint: InventoryPlanningEndpoint) => {
+                endpointSpy = jasmine.createSpyObj(
+                    'InventoryPlanningEndpoint',
+                    [
+                        'loadSummary',
+                        'loadCountries',
+                        'loadPublishers',
+                        'loadDevices',
+                        'loadSources',
+                    ]
+                );
 
-            endpointSpy
-                .loadSummary
-                .and
-                .returnValue(of({auctionCount: 100000, avgCpm: 2, avgCpc: 0.8, winRatio: 0.5}));
+                endpointSpy.loadSummary.and.returnValue(
+                    of({
+                        auctionCount: 100000,
+                        avgCpm: 2,
+                        avgCpc: 0.8,
+                        winRatio: 0.5,
+                    })
+                );
 
-            endpointSpy
-                .loadCountries
-                .and
-                .returnValue(of(availableCountries));
+                endpointSpy.loadCountries.and.returnValue(
+                    of(availableCountries)
+                );
 
-            endpointSpy
-                .loadPublishers
-                .and
-                .returnValue(of(availablePublishers));
+                endpointSpy.loadPublishers.and.returnValue(
+                    of(availablePublishers)
+                );
 
-            endpointSpy
-                .loadDevices
-                .and
-                .returnValue(of(availableDevices));
+                endpointSpy.loadDevices.and.returnValue(of(availableDevices));
 
-            endpointSpy
-                .loadSources
-                .and
-                .returnValue(of(availableSources));
+                endpointSpy.loadSources.and.returnValue(of(availableSources));
 
-            store = new InventoryPlanningStore(endpointSpy);
-        }));
+                store = new InventoryPlanningStore(endpointSpy);
+            }
+        ));
 
         it('should make correct requests when initialized with preselected filters', () => {
             store.initWithPreselectedFilters([
@@ -175,15 +190,14 @@ describe('InventoryPlanningStore', () => {
                 {key: 'devices', value: 'device 1'},
                 {key: 'sources', value: 'test source 1'},
             ]);
-            expect(endpointSpy.loadCountries).toHaveBeenCalledWith(
-                store,
-                {
-                    countries: [{name: '', value: 'country 1', auctionCount: -1}],
-                    publishers: [{name: '', value: 'publisher 1', auctionCount: -1}],
-                    devices: [{name: '', value: 'device 1', auctionCount: -1}],
-                    sources: [{name: '', value: 'test source 1', auctionCount: -1}],
-                }
-            );
+            expect(endpointSpy.loadCountries).toHaveBeenCalledWith(store, {
+                countries: [{name: '', value: 'country 1', auctionCount: -1}],
+                publishers: [
+                    {name: '', value: 'publisher 1', auctionCount: -1},
+                ],
+                devices: [{name: '', value: 'device 1', auctionCount: -1}],
+                sources: [{name: '', value: 'test source 1', auctionCount: -1}],
+            });
         });
 
         it('should correctly toggle selected options', () => {
@@ -198,64 +212,144 @@ describe('InventoryPlanningStore', () => {
                 },
             });
             expect(store.state.selectedFilters.countries).toEqual([
-                {value: 'test country 1', name: 'Test country 1', auctionCount: 1000},
-                {value: 'test country 2', name: 'Test country 2', auctionCount: 2000},
+                {
+                    value: 'test country 1',
+                    name: 'Test country 1',
+                    auctionCount: 1000,
+                },
+                {
+                    value: 'test country 2',
+                    name: 'Test country 2',
+                    auctionCount: 2000,
+                },
             ]);
             expect(store.state.selectedFilters.publishers).toEqual([
-                {value: 'test publisher 1', name: 'Test publisher 1', auctionCount: 100},
-                {value: 'test publisher 2', name: 'Test publisher 2', auctionCount: 200},
+                {
+                    value: 'test publisher 1',
+                    name: 'Test publisher 1',
+                    auctionCount: 100,
+                },
+                {
+                    value: 'test publisher 2',
+                    name: 'Test publisher 2',
+                    auctionCount: 200,
+                },
             ]);
             expect(store.state.selectedFilters.devices).toEqual([
-                {value: 'test device 1', name: 'Test device 1', auctionCount: 10000},
-                {value: 'test device 2', name: 'Test device 2', auctionCount: 20000},
+                {
+                    value: 'test device 1',
+                    name: 'Test device 1',
+                    auctionCount: 10000,
+                },
+                {
+                    value: 'test device 2',
+                    name: 'Test device 2',
+                    auctionCount: 20000,
+                },
             ]);
             expect(store.state.selectedFilters.sources).toEqual([
-                {value: 'test source 1', name: 'Test source 1', auctionCount: 100000},
-                {value: 'test source 2', name: 'Test source 2', auctionCount: 200000},
+                {
+                    value: 'test source 1',
+                    name: 'Test source 1',
+                    auctionCount: 100000,
+                },
+                {
+                    value: 'test source 2',
+                    name: 'Test source 2',
+                    auctionCount: 200000,
+                },
             ]);
 
             store.toggleOption({key: 'countries', value: 'test country 1'});
             expect(store.state.selectedFilters.countries).toEqual([
-                {value: 'test country 2', name: 'Test country 2', auctionCount: 2000},
+                {
+                    value: 'test country 2',
+                    name: 'Test country 2',
+                    auctionCount: 2000,
+                },
             ]);
 
             store.toggleOption({key: 'publishers', value: 'test publisher 1'});
             expect(store.state.selectedFilters.publishers).toEqual([
-                {value: 'test publisher 2', name: 'Test publisher 2', auctionCount: 200},
+                {
+                    value: 'test publisher 2',
+                    name: 'Test publisher 2',
+                    auctionCount: 200,
+                },
             ]);
 
             store.toggleOption({key: 'devices', value: 'test device 1'});
             expect(store.state.selectedFilters.devices).toEqual([
-                {value: 'test device 2', name: 'Test device 2', auctionCount: 20000},
+                {
+                    value: 'test device 2',
+                    name: 'Test device 2',
+                    auctionCount: 20000,
+                },
             ]);
 
             store.toggleOption({key: 'sources', value: 'test source 1'});
             expect(store.state.selectedFilters.sources).toEqual([
-                {value: 'test source 2', name: 'Test source 2', auctionCount: 200000},
+                {
+                    value: 'test source 2',
+                    name: 'Test source 2',
+                    auctionCount: 200000,
+                },
             ]);
 
             store.toggleOption({key: 'countries', value: 'test country 1'});
             expect(store.state.selectedFilters.countries).toEqual([
-                {value: 'test country 2', name: 'Test country 2', auctionCount: 2000},
-                {value: 'test country 1', name: 'Test country 1', auctionCount: 1000},
+                {
+                    value: 'test country 2',
+                    name: 'Test country 2',
+                    auctionCount: 2000,
+                },
+                {
+                    value: 'test country 1',
+                    name: 'Test country 1',
+                    auctionCount: 1000,
+                },
             ]);
 
             store.toggleOption({key: 'publishers', value: 'test publisher 1'});
             expect(store.state.selectedFilters.publishers).toEqual([
-                {value: 'test publisher 2', name: 'Test publisher 2', auctionCount: 200},
-                {value: 'test publisher 1', name: 'Test publisher 1', auctionCount: 100},
+                {
+                    value: 'test publisher 2',
+                    name: 'Test publisher 2',
+                    auctionCount: 200,
+                },
+                {
+                    value: 'test publisher 1',
+                    name: 'Test publisher 1',
+                    auctionCount: 100,
+                },
             ]);
 
             store.toggleOption({key: 'devices', value: 'test device 1'});
             expect(store.state.selectedFilters.devices).toEqual([
-                {value: 'test device 2', name: 'Test device 2', auctionCount: 20000},
-                {value: 'test device 1', name: 'Test device 1', auctionCount: 10000},
+                {
+                    value: 'test device 2',
+                    name: 'Test device 2',
+                    auctionCount: 20000,
+                },
+                {
+                    value: 'test device 1',
+                    name: 'Test device 1',
+                    auctionCount: 10000,
+                },
             ]);
 
             store.toggleOption({key: 'sources', value: 'test source 1'});
             expect(store.state.selectedFilters.sources).toEqual([
-                {value: 'test source 2', name: 'Test source 2', auctionCount: 200000},
-                {value: 'test source 1', name: 'Test source 1', auctionCount: 100000},
+                {
+                    value: 'test source 2',
+                    name: 'Test source 2',
+                    auctionCount: 200000,
+                },
+                {
+                    value: 'test source 1',
+                    name: 'Test source 1',
+                    auctionCount: 100000,
+                },
             ]);
         });
 
@@ -278,11 +372,23 @@ describe('InventoryPlanningStore', () => {
             });
             expect(store.state.selectedFilters.countries).toEqual([]);
             expect(store.state.selectedFilters.publishers).toEqual([
-                {value: 'test publisher 1', name: 'Test publisher 1', auctionCount: 100},
+                {
+                    value: 'test publisher 1',
+                    name: 'Test publisher 1',
+                    auctionCount: 100,
+                },
             ]);
             expect(store.state.selectedFilters.devices).toEqual([
-                {value: 'test device 1', name: 'Test device 1', auctionCount: 10000},
-                {value: 'test device 2', name: 'Test device 2', auctionCount: 20000},
+                {
+                    value: 'test device 1',
+                    name: 'Test device 1',
+                    auctionCount: 10000,
+                },
+                {
+                    value: 'test device 2',
+                    name: 'Test device 2',
+                    auctionCount: 20000,
+                },
             ]);
 
             store.applyFilters([
@@ -292,19 +398,29 @@ describe('InventoryPlanningStore', () => {
             ]);
 
             expect(store.state.selectedFilters.countries).toEqual([
-                {value: 'test country 1', name: 'Test country 1', auctionCount: 1000},
-                {value: 'test country 2', name: 'Test country 2', auctionCount: 2000},
+                {
+                    value: 'test country 1',
+                    name: 'Test country 1',
+                    auctionCount: 1000,
+                },
+                {
+                    value: 'test country 2',
+                    name: 'Test country 2',
+                    auctionCount: 2000,
+                },
             ]);
             expect(store.state.selectedFilters.publishers).toEqual([
-                {value: 'test publisher 2', name: 'Test publisher 2', auctionCount: 200},
+                {
+                    value: 'test publisher 2',
+                    name: 'Test publisher 2',
+                    auctionCount: 200,
+                },
             ]);
             expect(store.state.selectedFilters.devices).toEqual([]);
         });
 
         it('should not apply filter with invalid key', () => {
-            store.applyFilters([
-                {key: 'invalid', value: 'test value'},
-            ]);
+            store.applyFilters([{key: 'invalid', value: 'test value'}]);
 
             expect(store.state.selectedFilters).toEqual({
                 countries: [],

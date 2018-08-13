@@ -2,7 +2,17 @@ require('./zemNavigation.component.less');
 
 angular.module('one.widgets').component('zemNavigation', {
     template: require('./zemNavigation.component.html'),
-    controller: function ($scope, $element, $timeout, hotkeys, zemPermissions, zemNavigationUtils, zemNavigationNewService, zemDataFilterService) { // eslint-disable-line max-len
+    controller: function(
+        $scope,
+        $element,
+        $timeout,
+        hotkeys,
+        zemPermissions,
+        zemNavigationUtils,
+        zemNavigationNewService,
+        zemDataFilterService
+    ) {
+        // eslint-disable-line max-len
         var KEY_UP_ARROW = 38;
         var KEY_DOWN_ARROW = 40;
         var KEY_ENTER = 13;
@@ -12,14 +22,18 @@ angular.module('one.widgets').component('zemNavigation', {
         var ITEM_HEIGHT_CAMPAIGN = 24; // NOTE: Change in CSS too!
         var ITEM_HEIGHT_AD_GROUP = 24; // NOTE: Change in CSS too!
 
-        var hierarchyUpdateHandler, activeEntityUpdateHandler, filteredStatusesUpdateHandler;
+        var hierarchyUpdateHandler,
+            activeEntityUpdateHandler,
+            filteredStatusesUpdateHandler;
 
         var $ctrl = this;
         $ctrl.selectedEntity = null;
         $ctrl.activeEntity = null;
         $ctrl.query = '';
         $ctrl.list = null;
-        $ctrl.showAgency = zemPermissions.hasPermission('zemauth.can_filter_by_agency');
+        $ctrl.showAgency = zemPermissions.hasPermission(
+            'zemauth.can_filter_by_agency'
+        );
 
         $ctrl.filter = filterList;
         $ctrl.navigateTo = navigateTo;
@@ -28,23 +42,29 @@ angular.module('one.widgets').component('zemNavigation', {
         $ctrl.getItemClasses = getItemClasses;
         $ctrl.getItemIconClass = getItemIconClass;
 
-        $ctrl.$onInit = function () {
+        $ctrl.$onInit = function() {
             initializeList();
 
-            hierarchyUpdateHandler = zemNavigationNewService.onHierarchyUpdate(initializeList);
-            activeEntityUpdateHandler = zemNavigationNewService.onActiveEntityChange(initializeActiveEntityList);
-            filteredStatusesUpdateHandler = zemDataFilterService.onFilteredStatusesUpdate(filterList);
+            hierarchyUpdateHandler = zemNavigationNewService.onHierarchyUpdate(
+                initializeList
+            );
+            activeEntityUpdateHandler = zemNavigationNewService.onActiveEntityChange(
+                initializeActiveEntityList
+            );
+            filteredStatusesUpdateHandler = zemDataFilterService.onFilteredStatusesUpdate(
+                filterList
+            );
             $element.keydown(handleKeyDown);
         };
 
-        $ctrl.$onDestroy = function () {
+        $ctrl.$onDestroy = function() {
             if (hierarchyUpdateHandler) hierarchyUpdateHandler();
             if (activeEntityUpdateHandler) activeEntityUpdateHandler();
             if (filteredStatusesUpdateHandler) filteredStatusesUpdateHandler();
             $element.unbind();
         };
 
-        function handleKeyDown (event) {
+        function handleKeyDown(event) {
             if (!$ctrl.list) return;
             if (event.keyCode === KEY_UP_ARROW) upSelection(event);
             if (event.keyCode === KEY_DOWN_ARROW) downSelection(event);
@@ -52,17 +72,18 @@ angular.module('one.widgets').component('zemNavigation', {
             $scope.$digest();
         }
 
-        function upSelection (event) {
+        function upSelection(event) {
             event.preventDefault();
             var idx = $ctrl.filteredList.indexOf($ctrl.selectedEntity);
             $ctrl.selectedEntity = $ctrl.filteredList[idx - 1];
             if (!$ctrl.selectedEntity) {
-                $ctrl.selectedEntity = $ctrl.filteredList[$ctrl.filteredList.length - 1];
+                $ctrl.selectedEntity =
+                    $ctrl.filteredList[$ctrl.filteredList.length - 1];
             }
             scrollToItem($ctrl.selectedEntity);
         }
 
-        function downSelection (event) {
+        function downSelection(event) {
             event.preventDefault();
             var idx = $ctrl.filteredList.indexOf($ctrl.selectedEntity);
             $ctrl.selectedEntity = $ctrl.filteredList[idx + 1];
@@ -72,7 +93,7 @@ angular.module('one.widgets').component('zemNavigation', {
             scrollToItem($ctrl.selectedEntity);
         }
 
-        function enterSelection () {
+        function enterSelection() {
             var entity = $ctrl.selectedEntity;
             if (!entity && $ctrl.query.length > 0) {
                 // If searching select first item if no selection has been made
@@ -81,46 +102,64 @@ angular.module('one.widgets').component('zemNavigation', {
             navigateTo(entity);
         }
 
-        function getItemHeight (item) {
+        function getItemHeight(item) {
             // Return item's height defined in CSS because vs-repeat only works with predefined element heights
-            if (item.type === constants.entityType.ACCOUNT) return ITEM_HEIGHT_ACCOUNT;
-            if (item.type === constants.entityType.CAMPAIGN) return ITEM_HEIGHT_CAMPAIGN;
-            if (item.type === constants.entityType.AD_GROUP) return ITEM_HEIGHT_AD_GROUP;
+            if (item.type === constants.entityType.ACCOUNT)
+                return ITEM_HEIGHT_ACCOUNT;
+            if (item.type === constants.entityType.CAMPAIGN)
+                return ITEM_HEIGHT_CAMPAIGN;
+            if (item.type === constants.entityType.AD_GROUP)
+                return ITEM_HEIGHT_AD_GROUP;
             return ITEM_HEIGHT_DEFAULT;
         }
 
-        function getItemClasses (item) {
+        function getItemClasses(item) {
             var classes = [];
-            if (item.data.archived) classes.push('zem-navigation__item--archived');
-            if (item === $ctrl.activeEntity) classes.push('zem-navigation__item--active');
-            if (item === $ctrl.selectedEntity) classes.push('zem-navigation__item--selected');
-            if (item.type === constants.entityType.ACCOUNT) classes.push('zem-navigation__item--account');
-            if (item.type === constants.entityType.CAMPAIGN) classes.push('zem-navigation__item--campaign');
-            if (item.type === constants.entityType.AD_GROUP) classes.push('zem-navigation__item--group');
+            if (item.data.archived)
+                classes.push('zem-navigation__item--archived');
+            if (item === $ctrl.activeEntity)
+                classes.push('zem-navigation__item--active');
+            if (item === $ctrl.selectedEntity)
+                classes.push('zem-navigation__item--selected');
+            if (item.type === constants.entityType.ACCOUNT)
+                classes.push('zem-navigation__item--account');
+            if (item.type === constants.entityType.CAMPAIGN)
+                classes.push('zem-navigation__item--campaign');
+            if (item.type === constants.entityType.AD_GROUP)
+                classes.push('zem-navigation__item--group');
             return classes;
         }
 
-        function getItemIconClass (item) {
+        function getItemIconClass(item) {
             if (item.type !== constants.entityType.AD_GROUP)
                 return 'zem-navigation__item-icon--none';
 
             var adGroup = item.data;
             if (adGroup.reloading)
                 return 'zem-navigation__item-icon--reloading';
-            if (adGroup.active === constants.infoboxStatus.STOPPED ||
-                adGroup.active === constants.infoboxStatus.CAMPAIGNSTOP_STOPPED)
+            if (
+                adGroup.active === constants.infoboxStatus.STOPPED ||
+                adGroup.active === constants.infoboxStatus.CAMPAIGNSTOP_STOPPED
+            )
                 return 'zem-navigation__item-icon--stopped';
             if (adGroup.active === constants.infoboxStatus.INACTIVE)
                 return 'zem-navigation__item-icon--inactive';
-            if (adGroup.active === constants.infoboxStatus.AUTOPILOT ||
-                adGroup.active === constants.infoboxStatus.CAMPAIGNSTOP_PENDING_BUDGET_AUTOPILOT)
+            if (
+                adGroup.active === constants.infoboxStatus.AUTOPILOT ||
+                adGroup.active ===
+                    constants.infoboxStatus
+                        .CAMPAIGNSTOP_PENDING_BUDGET_AUTOPILOT
+            )
                 return 'zem-navigation__item-icon--autopilot';
-            if (adGroup.active === constants.infoboxStatus.CAMPAIGNSTOP_LOW_BUDGET)
+            if (
+                adGroup.active ===
+                constants.infoboxStatus.CAMPAIGNSTOP_LOW_BUDGET
+            )
                 return 'zem-navigation__item-icon--active';
             return 'zem-navigation__item-icon--active';
         }
 
-        function initializeList () {
+        function initializeList() {
             var hierarchy = zemNavigationNewService.getNavigationHierarchy();
             if (hierarchy) {
                 $ctrl.list = zemNavigationUtils.convertToEntityList(hierarchy);
@@ -128,17 +167,19 @@ angular.module('one.widgets').component('zemNavigation', {
             }
         }
 
-        function initializeActiveEntityList () {
+        function initializeActiveEntityList() {
             if (!$ctrl.list) return;
 
             var account = zemNavigationNewService.getActiveAccount();
             $ctrl.activeEntity = zemNavigationNewService.getActiveEntity();
-            $ctrl.entityList = account ? zemNavigationUtils.convertToEntityList(account) : null;
+            $ctrl.entityList = account
+                ? zemNavigationUtils.convertToEntityList(account)
+                : null;
 
             filterList();
         }
 
-        function filterList () {
+        function filterList() {
             if (!$ctrl.list) return;
             var showArchived = zemDataFilterService.getShowArchived();
 
@@ -147,7 +188,12 @@ angular.module('one.widgets').component('zemNavigation', {
                 list = $ctrl.entityList;
             }
 
-            $ctrl.filteredList = zemNavigationUtils.filterEntityList(list, $ctrl.query, showArchived, $ctrl.showAgency);
+            $ctrl.filteredList = zemNavigationUtils.filterEntityList(
+                list,
+                $ctrl.query,
+                showArchived,
+                $ctrl.showAgency
+            );
 
             $ctrl.selectedEntity = null;
 
@@ -157,15 +203,17 @@ angular.module('one.widgets').component('zemNavigation', {
                 scrollToTop();
             } else {
                 scrollToItem($ctrl.activeEntity, true); // Remove flickering in some cases
-                $timeout(function () { scrollToItem($ctrl.activeEntity, true); }); // Wait for list to be rendered first
+                $timeout(function() {
+                    scrollToItem($ctrl.activeEntity, true);
+                }); // Wait for list to be rendered first
             }
         }
 
-        function scrollToTop () {
+        function scrollToTop() {
             $element.find('.zem-navigation__results').scrollTop(0);
         }
 
-        function scrollToItem (item, scrollToMiddleIfOutside) {
+        function scrollToItem(item, scrollToMiddleIfOutside) {
             if (!item) return;
 
             // Scroll to item in case that is currently not shown
@@ -195,18 +243,26 @@ angular.module('one.widgets').component('zemNavigation', {
             } else if (selectedPos < viewFrom) {
                 $scrollContainer.scrollTop(selectedPos);
             } else if (selectedPos >= viewTo) {
-                $scrollContainer.scrollTop(selectedPos - height + getItemHeight($ctrl.filteredList[idx]));
+                $scrollContainer.scrollTop(
+                    selectedPos -
+                        height +
+                        getItemHeight($ctrl.filteredList[idx])
+                );
             }
         }
 
-        function getItemHref (entity) {
+        function getItemHref(entity) {
             var includeQueryParams = true;
             var reuseNestedState = true;
-            return zemNavigationNewService.getEntityHref(entity, includeQueryParams, reuseNestedState);
+            return zemNavigationNewService.getEntityHref(
+                entity,
+                includeQueryParams,
+                reuseNestedState
+            );
         }
 
-        function navigateTo (entity) {
+        function navigateTo(entity) {
             zemNavigationNewService.navigateTo(entity);
         }
-    }
+    },
 });

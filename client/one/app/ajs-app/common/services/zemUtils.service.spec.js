@@ -1,12 +1,12 @@
-describe('zemUtils', function () {
+describe('zemUtils', function() {
     var zemUtils;
     beforeEach(angular.mock.module('one'));
     beforeEach(angular.mock.module('one.mocks.zemInitializationService'));
-    beforeEach(inject(function (_zemUtils_) {
+    beforeEach(inject(function(_zemUtils_) {
         zemUtils = _zemUtils_;
     }));
 
-    it('should correctly convert underscore properties to camelcase', function () {
+    it('should correctly convert underscore properties to camelcase', function() {
         var obj = {
             prop: {},
             prop_underscore: 'abcd',
@@ -17,11 +17,11 @@ describe('zemUtils', function () {
         expect(converted).toEqual({
             prop: {},
             propUnderscore: 'abcd',
-            propWithManyUnderscores: 123
+            propWithManyUnderscores: 123,
         });
     });
 
-    it('should correctly convert underscore properties to camelcase (recursively)', function () {
+    it('should correctly convert underscore properties to camelcase (recursively)', function() {
         var obj = {
             prop: 1,
             complex_prop: {
@@ -30,7 +30,7 @@ describe('zemUtils', function () {
                 another_complex_prop: {
                     prop: 1,
                     prop_underscore: 2,
-                }
+                },
             },
         };
 
@@ -43,12 +43,12 @@ describe('zemUtils', function () {
                 anotherComplexProp: {
                     prop: 1,
                     propUnderscore: 2,
-                }
+                },
             },
         });
     });
 
-    it('should correctly convert camelcase properties to underscore format', function () {
+    it('should correctly convert camelcase properties to underscore format', function() {
         var obj = {
             simple: {},
             camelCase: 'abcd',
@@ -59,11 +59,11 @@ describe('zemUtils', function () {
         expect(converted).toEqual({
             simple: {},
             camel_case: 'abcd',
-            camel_case_many_times: 123
+            camel_case_many_times: 123,
         });
     });
 
-    it('should correctly convert camelcase properties to underscore (recursively)', function () {
+    it('should correctly convert camelcase properties to underscore (recursively)', function() {
         var obj = {
             prop: 1,
             complexProp: {
@@ -72,7 +72,7 @@ describe('zemUtils', function () {
                 anotherComplexProp: {
                     prop: 1,
                     propCamelCase: 2,
-                }
+                },
             },
         };
 
@@ -85,11 +85,11 @@ describe('zemUtils', function () {
                 another_complex_prop: {
                     prop: 1,
                     prop_camel_case: 2,
-                }
+                },
             },
         });
     });
-    it('converter should correctly handle constants', function () {
+    it('converter should correctly handle constants', function() {
         var obj = {
             AND: 1,
             OR: 2,
@@ -108,6 +108,5 @@ describe('zemUtils', function () {
                 or: 4,
             },
         });
-
     });
 });

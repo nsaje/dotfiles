@@ -3,35 +3,40 @@ angular.module('one.widgets').component('zemGridBreakdownSelector', {
         api: '=',
     },
     template: require('./zemGridBreakdownSelector.component.html'),
-    controller: function () {
+    controller: function() {
         var $ctrl = this;
 
         $ctrl.onChecked = onChecked;
         $ctrl.applyBreakdown = applyBreakdown;
 
-        $ctrl.$onInit = function () {
+        $ctrl.$onInit = function() {
             initializeSelector();
             $ctrl.api.onMetaDataUpdated(null, initializeSelector);
         };
 
-        function initializeSelector () {
+        function initializeSelector() {
             // Skip base level breakdown selection
             $ctrl.breakdownGroups = [
                 $ctrl.api.getMetaData().breakdownGroups.structure,
                 $ctrl.api.getMetaData().breakdownGroups.delivery,
                 $ctrl.api.getMetaData().breakdownGroups.time,
-            ].filter(function (group) { return group.available !== false; });
+            ].filter(function(group) {
+                return group.available !== false;
+            });
 
-            setDefaultBreakdowns(constants.level.ACCOUNTS, constants.breakdown.CAMPAIGN,
-                [constants.breakdown.AD_GROUP]);
+            setDefaultBreakdowns(
+                constants.level.ACCOUNTS,
+                constants.breakdown.CAMPAIGN,
+                [constants.breakdown.AD_GROUP]
+            );
         }
 
-        function setDefaultBreakdowns (level, breakdown, defaultBreakdowns) {
+        function setDefaultBreakdowns(level, breakdown, defaultBreakdowns) {
             // Set which breakdowns to load by default for different level/breakdown combinations
             var metaData = $ctrl.api.getMetaData();
             if (metaData.level === level && metaData.breakdown === breakdown) {
-                $ctrl.breakdownGroups.forEach(function (group) {
-                    group.breakdowns.forEach(function (b) {
+                $ctrl.breakdownGroups.forEach(function(group) {
+                    group.breakdowns.forEach(function(b) {
                         if (defaultBreakdowns.indexOf(b.query) !== -1) {
                             b.checked = true;
                             onChecked(b, group);
@@ -42,22 +47,22 @@ angular.module('one.widgets').component('zemGridBreakdownSelector', {
             }
         }
 
-        function onChecked (breakdown, group) {
+        function onChecked(breakdown, group) {
             if (breakdown.checked) {
-                group.breakdowns.forEach(function (b) {
+                group.breakdowns.forEach(function(b) {
                     if (b !== breakdown) b.checked = false;
                 });
             }
         }
 
-        function applyBreakdown () {
+        function applyBreakdown() {
             // Add base level breakdown and all checked
             // breakdowns in successive levels
             var breakdown = [];
             var baseLevelGroup = $ctrl.api.getMetaData().breakdownGroups.base;
             breakdown.push(baseLevelGroup.breakdowns[0]);
-            $ctrl.breakdownGroups.forEach(function (group) {
-                group.breakdowns.forEach(function (b) {
+            $ctrl.breakdownGroups.forEach(function(group) {
+                group.breakdowns.forEach(function(b) {
                     if (b.checked) breakdown.push(b);
                 });
             });

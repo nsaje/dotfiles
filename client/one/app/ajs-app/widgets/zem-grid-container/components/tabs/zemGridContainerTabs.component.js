@@ -4,23 +4,25 @@ angular.module('one.widgets').component('zemGridContainerTabs', {
         tabs: '<',
         entity: '<',
     },
-    controller: function ($rootScope, $state, $location, $window, zemUtils) {
+    controller: function($rootScope, $state, $location, $window, zemUtils) {
         var $ctrl = this;
 
         $ctrl.navigateTo = navigateTo;
 
-        $ctrl.$onInit = function () {
-        };
+        $ctrl.$onInit = function() {};
 
-        function navigateTo (event, option) {
+        function navigateTo(event, option) {
             var id = $ctrl.entity ? $ctrl.entity.id : null;
-            var level = $ctrl.entity ? constants.entityTypeToLevelMap[$ctrl.entity.type] : constants.level.ALL_ACCOUNTS;
+            var level = $ctrl.entity
+                ? constants.entityTypeToLevelMap[$ctrl.entity.type]
+                : constants.level.ALL_ACCOUNTS;
             var levelStateParam = constants.levelToLevelStateParamMap[level];
-            var breakdownStateParam = constants.breakdownToBreakdownStateParamMap[option.breakdown];
+            var breakdownStateParam =
+                constants.breakdownToBreakdownStateParamMap[option.breakdown];
             var params = {
                 id: id,
                 level: levelStateParam,
-                breakdown: breakdownStateParam
+                breakdown: breakdownStateParam,
             };
 
             if (zemUtils.shouldOpenInNewTab(event)) {
@@ -29,13 +31,18 @@ angular.module('one.widgets').component('zemGridContainerTabs', {
                 // [WORKAROUND] Silently change state (notify: false) to avoid component reinitialization
                 // and notify directly with $zemStateChangeStart and $zemStateChangeSuccess
                 $rootScope.$broadcast('$zemStateChangeStart');
-                $state.go('v2.analytics', params, {notify: false, location: 'replace'}).then(function () {
-                    $rootScope.$broadcast('$zemStateChangeSuccess');
-                });
+                $state
+                    .go('v2.analytics', params, {
+                        notify: false,
+                        location: 'replace',
+                    })
+                    .then(function() {
+                        $rootScope.$broadcast('$zemStateChangeSuccess');
+                    });
             }
         }
 
-        function getStateHrefWithQueryParams (params) {
+        function getStateHrefWithQueryParams(params) {
             var href = $state.href('v2.analytics', params);
             var queryParamsIndex = $location.url().indexOf('?');
             if (queryParamsIndex !== -1) {
@@ -43,6 +50,5 @@ angular.module('one.widgets').component('zemGridContainerTabs', {
             }
             return href;
         }
-    }
+    },
 });
-

@@ -2,14 +2,14 @@ require('./zemHistory.component.less');
 
 angular.module('one.widgets').component('zemHistory', {
     template: require('./zemHistory.component.html'),
-    controller: function (hotkeys, zemHistoryService, zemNavigationNewService) {
+    controller: function(hotkeys, zemHistoryService, zemNavigationNewService) {
         var $ctrl = this;
         $ctrl.close = zemHistoryService.close;
         $ctrl.changeOrder = changeOrder;
 
         var openHistoryHandler, closeHistoryHandler;
 
-        $ctrl.$onInit = function () {
+        $ctrl.$onInit = function() {
             zemHistoryService.init();
 
             $ctrl.sidePanel = {};
@@ -19,43 +19,49 @@ angular.module('one.widgets').component('zemHistory', {
             openHistoryHandler = zemHistoryService.onOpen(open);
             closeHistoryHandler = zemHistoryService.onClose(close);
 
-            hotkeys.add({combo: 'h', callback: function () { zemHistoryService.open(); }});
+            hotkeys.add({
+                combo: 'h',
+                callback: function() {
+                    zemHistoryService.open();
+                },
+            });
         };
 
-        $ctrl.$onDestroy = function () {
+        $ctrl.$onDestroy = function() {
             if (openHistoryHandler) openHistoryHandler();
             if (closeHistoryHandler) closeHistoryHandler();
             hotkeys.del('h');
         };
 
-        function open () {
+        function open() {
             $ctrl.sidePanel.open();
             reloadHistory();
         }
 
-        function close () {
+        function close() {
             $ctrl.sidePanel.close();
             $ctrl.history = null;
             $ctrl.requestInProgress = false;
         }
 
-        function reloadHistory () {
+        function reloadHistory() {
             var entity = zemNavigationNewService.getActiveEntity();
-            var order = ($ctrl.orderReversed && '-' || '') + $ctrl.orderField;
+            var order = (($ctrl.orderReversed && '-') || '') + $ctrl.orderField;
 
             $ctrl.history = null;
             $ctrl.requestInProgress = true;
 
-            zemHistoryService.loadHistory(entity, order)
-                .then(function (history) {
+            zemHistoryService
+                .loadHistory(entity, order)
+                .then(function(history) {
                     $ctrl.history = history;
                 })
-                .finally(function () {
+                .finally(function() {
                     $ctrl.requestInProgress = false;
                 });
         }
 
-        function changeOrder (field) {
+        function changeOrder(field) {
             $ctrl.orderField = field;
             $ctrl.orderReversed = !$ctrl.orderReversed;
             reloadHistory();

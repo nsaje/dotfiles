@@ -5,7 +5,7 @@ angular.module('one.widgets').component('zemCampaignGeneralSettings', {
         api: '<',
     },
     template: require('./zemCampaignGeneralSettings.component.html'),
-    controller: function (zemPermissions) {
+    controller: function(zemPermissions) {
         var $ctrl = this,
             iabCategoriesSorted = options.legacyIabCategories.slice();
         iabCategoriesSorted.sort(sortIab);
@@ -15,21 +15,25 @@ angular.module('one.widgets').component('zemCampaignGeneralSettings', {
         $ctrl.hasPermission = zemPermissions.hasPermission;
         $ctrl.isPermissionInternal = zemPermissions.isPermissionInternal;
 
-        $ctrl.$onInit = function () {
+        $ctrl.$onInit = function() {
             $ctrl.api.register({
                 // Not needed (placeholder)
             });
         };
 
-        $ctrl.$onChanges = function () {
-            if ($ctrl.entity &&
-                    !zemPermissions.hasPermission('zemauth.can_see_campaign_language_choices') &&
-                    !$ctrl.entity.settings.language) {
+        $ctrl.$onChanges = function() {
+            if (
+                $ctrl.entity &&
+                !zemPermissions.hasPermission(
+                    'zemauth.can_see_campaign_language_choices'
+                ) &&
+                !$ctrl.entity.settings.language
+            ) {
                 $ctrl.entity.settings.language = constants.language.ENGLISH;
             }
         };
 
-        function sortIab (obj1, obj2) {
+        function sortIab(obj1, obj2) {
             if (obj1.value === constants.legacyIabCategory.IAB24) {
                 return -1;
             }

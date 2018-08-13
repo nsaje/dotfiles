@@ -14,7 +14,7 @@ angular.module('one.widgets').component('zemInclusionTargetingEditSection', {
         noChoiceText: '@',
     },
     template: require('./zemInclusionTargetingEditSection.component.html'), // eslint-disable-line max-len
-    controller: function () {
+    controller: function() {
         var $ctrl = this;
         var SECTION_LIMIT = 5;
         $ctrl.expandedSections = [];
@@ -22,12 +22,12 @@ angular.module('one.widgets').component('zemInclusionTargetingEditSection', {
         $ctrl.getSectionLimit = getSectionLimit;
         $ctrl.onItemSelected = onItemSelected;
 
-        $ctrl.$onChanges = function (changes) {
+        $ctrl.$onChanges = function(changes) {
             if (!changes.selectedItems) return;
 
             var sectionOrder = [];
             var selectedItemsBySection = {};
-            ($ctrl.selectedItems || []).forEach(function (targeting) {
+            ($ctrl.selectedItems || []).forEach(function(targeting) {
                 if (sectionOrder.indexOf(targeting.section) === -1) {
                     sectionOrder.push(targeting.section);
                 }
@@ -40,19 +40,19 @@ angular.module('one.widgets').component('zemInclusionTargetingEditSection', {
             $ctrl.selectedItemsBySection = selectedItemsBySection;
         };
 
-        function expandSection (section) {
+        function expandSection(section) {
             $ctrl.expandedSections.push(section);
         }
 
-        function getSectionLimit (section) {
+        function getSectionLimit(section) {
             if ($ctrl.expandedSections.indexOf(section) === -1) {
                 return SECTION_LIMIT;
             }
         }
 
-        function onItemSelected (item) {
+        function onItemSelected(item) {
             expandSection(item.section);
             $ctrl.onSelect(item);
         }
-    }
+    },
 });

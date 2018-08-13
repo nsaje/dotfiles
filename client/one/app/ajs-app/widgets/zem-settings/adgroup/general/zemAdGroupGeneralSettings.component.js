@@ -5,16 +5,23 @@ angular.module('one.widgets').component('zemAdGroupGeneralSettings', {
         api: '<',
     },
     template: require('./zemAdGroupGeneralSettings.component.html'),
-    controller: function ($scope, $state, zemPermissions, zemNavigationNewService, zemMulticurrencyService) {
+    controller: function(
+        $scope,
+        $state,
+        zemPermissions,
+        zemNavigationNewService,
+        zemMulticurrencyService
+    ) {
         var $ctrl = this;
         $ctrl.options = options;
         $ctrl.hasPermission = zemPermissions.hasPermission;
         $ctrl.isPermissionInternal = zemPermissions.isPermissionInternal;
 
         $ctrl.MESSAGES = {
-            WARNING_END_DATE: 'Your campaign has been switched to landing mode. ' +
-            'Please add the budget and continue to adjust settings by your needs. ',
-            WARNING_MAX_CPM: ''
+            WARNING_END_DATE:
+                'Your campaign has been switched to landing mode. ' +
+                'Please add the budget and continue to adjust settings by your needs. ',
+            WARNING_MAX_CPM: '',
         };
         $ctrl.deliveryType = {
             STANDARD: 1,
@@ -27,7 +34,7 @@ angular.module('one.widgets').component('zemAdGroupGeneralSettings', {
         $ctrl.openDatePicker = openDatePicker;
         $ctrl.goToBudgets = goToBudgets;
 
-        $ctrl.$onInit = function () {
+        $ctrl.$onInit = function() {
             initializeWatches();
             $ctrl.api.register({
                 // Not needed (placeholder)
@@ -38,36 +45,40 @@ angular.module('one.widgets').component('zemAdGroupGeneralSettings', {
             );
         };
 
-        $ctrl.$onChanges = function () {
+        $ctrl.$onChanges = function() {
             if ($ctrl.entity && $ctrl.entity.warnings.maxCpm) {
-                $ctrl.MESSAGES.WARNING_MAX_CPM = 'You have some active media sources ' +
-                'that don\'t support max CPM restriction. To start using it, please ' +
-                'disable/pause these media sources: ' +
-                $ctrl.entity.warnings.maxCpm.sources.join(', ') +
-                '.';
+                $ctrl.MESSAGES.WARNING_MAX_CPM =
+                    'You have some active media sources ' +
+                    "that don't support max CPM restriction. To start using it, please " +
+                    'disable/pause these media sources: ' +
+                    $ctrl.entity.warnings.maxCpm.sources.join(', ') +
+                    '.';
             }
         };
 
-        function goToBudgets () {
-            var campaignId = zemNavigationNewService.getActiveEntity().parent.id;
+        function goToBudgets() {
+            var campaignId = zemNavigationNewService.getActiveEntity().parent
+                .id;
             $state.go('v2.analytics', {
                 id: campaignId,
                 level: 'campaign',
                 settings: true,
-                settingsScrollTo: 'zemCampaignBudgetsSettings'
+                settingsScrollTo: 'zemCampaignBudgetsSettings',
             });
         }
 
-        function initializeWatches () {
+        function initializeWatches() {
             // TODO: Refactor - remove the need for watches
-            $scope.$watch('$ctrl.entity.settings.manualStop', function (newValue) {
+            $scope.$watch('$ctrl.entity.settings.manualStop', function(
+                newValue
+            ) {
                 if (!$ctrl.entity) return;
                 if (newValue) {
                     $ctrl.entity.settings.endDate = null;
                 }
             });
 
-            $scope.$watch('$ctrl.entity.settings.endDate', function (newValue) {
+            $scope.$watch('$ctrl.entity.settings.endDate', function(newValue) {
                 if (!$ctrl.entity) return;
                 if (newValue) {
                     $ctrl.entity.settings.manualStop = false;
@@ -77,7 +88,7 @@ angular.module('one.widgets').component('zemAdGroupGeneralSettings', {
             });
         }
 
-        function openDatePicker (type) {
+        function openDatePicker(type) {
             if (type === 'startDate') {
                 $ctrl.startDatePicker.isOpen = true;
             } else if (type === 'endDate') {

@@ -3,7 +3,8 @@ angular.module('one.widgets').component('zemGridBulkActions', {
         api: '=',
     },
     template: require('./zemGridBulkActions.component.html'),
-    controller: function ($scope, zemGridConstants, zemGridBulkActionsService) { // eslint-disable-line max-len
+    controller: function($scope, zemGridConstants, zemGridBulkActionsService) {
+        // eslint-disable-line max-len
         // TODO: alert, update daily stats
 
         var $ctrl = this;
@@ -13,34 +14,38 @@ angular.module('one.widgets').component('zemGridBulkActions', {
         $ctrl.isEnabled = isEnabled;
         $ctrl.execute = execute;
 
-
-        $ctrl.$onInit = function () {
+        $ctrl.$onInit = function() {
             service = zemGridBulkActionsService.createInstance($ctrl.api);
             initializeActions();
             $ctrl.api.onSelectionUpdated($scope, updateActionStates);
         };
 
-        function updateActionStates () {
+        function updateActionStates() {
             var allRTBSelected = false;
-            $ctrl.api.getSelection().selected.forEach(function (row) {
+            $ctrl.api.getSelection().selected.forEach(function(row) {
                 if (row.data && row.data.breakdownId === '0123456789') {
                     allRTBSelected = true;
                 }
             });
-            $ctrl.actions.forEach(function (action) {
+            $ctrl.actions.forEach(function(action) {
                 action.disabled = allRTBSelected;
             });
         }
 
-        function initializeActions () {
+        function initializeActions() {
             service.setSelectionConfig();
             $ctrl.actions = service.getActions();
         }
 
-        function isEnabled () {
+        function isEnabled() {
             var selection = $ctrl.api.getSelection();
-            if (selection.type === zemGridConstants.gridSelectionFilterType.NONE) {
-                if (selection.selected.length === 1 && selection.selected[0].level === 0) {
+            if (
+                selection.type === zemGridConstants.gridSelectionFilterType.NONE
+            ) {
+                if (
+                    selection.selected.length === 1 &&
+                    selection.selected[0].level === 0
+                ) {
                     return false;
                 }
                 return selection.selected.length > 0;
@@ -48,37 +53,44 @@ angular.module('one.widgets').component('zemGridBulkActions', {
             return true;
         }
 
-        function execute (actionValue) {
+        function execute(actionValue) {
             $ctrl.showLoader = true;
 
             var selection = $ctrl.api.getSelection();
             var action = getActionByValue(actionValue);
 
             var convertedSelection = {};
-            convertedSelection.selectedIds = selection.selected.filter(function (row) {
-                return row.level === 1;
-            }).map(function (row) {
-                return row.id;
-            });
-            convertedSelection.unselectedIds = selection.unselected.filter(function (row) {
-                return row.level === 1;
-            }).map(function (row) {
-                return row.id;
-            });
-            convertedSelection.filterAll = selection.type === zemGridConstants.gridSelectionFilterType.ALL;
-            convertedSelection.filterId = selection.type === zemGridConstants.gridSelectionFilterType.CUSTOM ?
-                selection.filter.batch.id : null;
-
-            action.execute(convertedSelection)
-                .finally(function () {
-                    $ctrl.showLoader = false;
+            convertedSelection.selectedIds = selection.selected
+                .filter(function(row) {
+                    return row.level === 1;
+                })
+                .map(function(row) {
+                    return row.id;
                 });
+            convertedSelection.unselectedIds = selection.unselected
+                .filter(function(row) {
+                    return row.level === 1;
+                })
+                .map(function(row) {
+                    return row.id;
+                });
+            convertedSelection.filterAll =
+                selection.type === zemGridConstants.gridSelectionFilterType.ALL;
+            convertedSelection.filterId =
+                selection.type ===
+                zemGridConstants.gridSelectionFilterType.CUSTOM
+                    ? selection.filter.batch.id
+                    : null;
+
+            action.execute(convertedSelection).finally(function() {
+                $ctrl.showLoader = false;
+            });
         }
 
-        function getActionByValue (value) {
-            return $ctrl.actions.filter(function (action) {
+        function getActionByValue(value) {
+            return $ctrl.actions.filter(function(action) {
                 return action.value === value;
             })[0];
         }
-    }
+    },
 });

@@ -1,4 +1,5 @@
-angular.module('one.widgets').factory('zemGridApi', function (zemGridUIService) { // eslint-disable-line max-len
+angular.module('one.widgets').factory('zemGridApi', function(zemGridUIService) {
+    // eslint-disable-line max-len
 
     //
     // GridApi provides interface for interaction with zem-grid
@@ -6,7 +7,7 @@ angular.module('one.widgets').factory('zemGridApi', function (zemGridUIService) 
     // or may be passed back to calling controller to enable interaction between them.
     //
 
-    function GridApi (grid) {
+    function GridApi(grid) {
         var pubsub = grid.meta.pubsub;
 
         // Grid Object API
@@ -43,7 +44,8 @@ angular.module('one.widgets').factory('zemGridApi', function (zemGridUIService) 
         this.getVisibleColumns = grid.meta.columnsService.getVisibleColumns;
         this.setVisibleColumns = grid.meta.columnsService.setVisibleColumns;
         this.getColumnsToToggle = grid.meta.columnsService.getColumnsToToggle;
-        this.findColumnInCategories = grid.meta.columnsService.findColumnInCategories;
+        this.findColumnInCategories =
+            grid.meta.columnsService.findColumnInCategories;
         this.getTogglableColumns = grid.meta.columnsService.getTogglableColumns;
 
         this.refreshUI = refreshUI;
@@ -54,15 +56,15 @@ angular.module('one.widgets').factory('zemGridApi', function (zemGridUIService) 
         this.onColumnsUpdated = onColumnsUpdated;
         this.onSelectionUpdated = onSelectionUpdated;
 
-        function isInitialized () {
+        function isInitialized() {
             return grid.meta.initialized;
         }
 
-        function getMetaData () {
+        function getMetaData() {
             return grid.meta.data;
         }
 
-        function getRows () {
+        function getRows() {
             var rows = grid.body.rows.slice();
             if (grid.footer.row) {
                 rows.push(grid.footer.row);
@@ -70,30 +72,43 @@ angular.module('one.widgets').factory('zemGridApi', function (zemGridUIService) 
             return rows;
         }
 
-        function getColumns () {
+        function getColumns() {
             return grid.header.columns;
         }
 
-        function getCategoryColumns (zemCostModeService, category, columns) {
+        function getCategoryColumns(zemCostModeService, category, columns) {
             var costMode = zemCostModeService.getCostMode();
 
-            return columns.filter(function (column) {
+            return columns.filter(function(column) {
                 var inCategory = category.fields.indexOf(column.field) !== -1;
-                if (!inCategory || !column.data.shown || column.data.permanent) return false;
-                if (zemCostModeService.isTogglableCostMode(column.data.costMode)) {
+                if (!inCategory || !column.data.shown || column.data.permanent)
+                    return false;
+                if (
+                    zemCostModeService.isTogglableCostMode(column.data.costMode)
+                ) {
                     return column.data.costMode === costMode;
                 }
                 return true;
             });
         }
 
-        function getCategory (zemCostModeService, category, columns) {
-            var categoryColumns = getCategoryColumns(zemCostModeService, category, columns),
+        function getCategory(zemCostModeService, category, columns) {
+            var categoryColumns = getCategoryColumns(
+                    zemCostModeService,
+                    category,
+                    columns
+                ),
                 subcategories = [];
 
             if (category.hasOwnProperty('subcategories')) {
-                subcategories = category.subcategories.map(function (subcategory) {
-                    return getCategory(zemCostModeService, subcategory, columns);
+                subcategories = category.subcategories.map(function(
+                    subcategory
+                ) {
+                    return getCategory(
+                        zemCostModeService,
+                        subcategory,
+                        columns
+                    );
                 });
             }
 
@@ -106,46 +121,64 @@ angular.module('one.widgets').factory('zemGridApi', function (zemGridUIService) 
             };
         }
 
-        function getCategorizedColumns (zemCostModeService, columns) {
+        function getCategorizedColumns(zemCostModeService, columns) {
             var categories = [];
-            getMetaData().categories.forEach(function (category) {
-                var newCategory = getCategory(zemCostModeService, category, columns);
-                if (newCategory.columns.length > 0 || newCategory.subcategories.length > 0) {
+            getMetaData().categories.forEach(function(category) {
+                var newCategory = getCategory(
+                    zemCostModeService,
+                    category,
+                    columns
+                );
+                if (
+                    newCategory.columns.length > 0 ||
+                    newCategory.subcategories.length > 0
+                ) {
                     categories.push(newCategory);
                 }
             });
             return categories;
         }
 
-        function refreshUI () {
+        function refreshUI() {
             zemGridUIService.resizeGridColumns(grid);
             zemGridUIService.updateStickyElements(grid);
-            zemGridUIService.updatePivotColumns(grid, grid.body.ui.scrolleft || 0);
+            zemGridUIService.updatePivotColumns(
+                grid,
+                grid.body.ui.scrolleft || 0
+            );
         }
 
-        function onMetaDataUpdated (scope, callback) {
+        function onMetaDataUpdated(scope, callback) {
             registerListener(pubsub.EVENTS.METADATA_UPDATED, scope, callback);
         }
 
-        function onDataUpdated (scope, callback) {
+        function onDataUpdated(scope, callback) {
             registerListener(pubsub.EVENTS.DATA_UPDATED, scope, callback);
         }
 
-        function onColumnsUpdated (scope, callback) {
-            registerListener(pubsub.EVENTS.EXT_COLUMNS_UPDATED, scope, callback);
+        function onColumnsUpdated(scope, callback) {
+            registerListener(
+                pubsub.EVENTS.EXT_COLUMNS_UPDATED,
+                scope,
+                callback
+            );
         }
 
-        function onSelectionUpdated (scope, callback) {
-            registerListener(pubsub.EVENTS.EXT_SELECTION_UPDATED, scope, callback);
+        function onSelectionUpdated(scope, callback) {
+            registerListener(
+                pubsub.EVENTS.EXT_SELECTION_UPDATED,
+                scope,
+                callback
+            );
         }
 
-        function registerListener (event, scope, callback) {
+        function registerListener(event, scope, callback) {
             pubsub.register(event, scope, callback);
         }
     }
 
     return {
-        createInstance: function (grid) {
+        createInstance: function(grid) {
             return new GridApi(grid);
         },
     };

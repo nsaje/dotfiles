@@ -2,7 +2,15 @@ require('./zemFilterSelector.component.less');
 
 angular.module('one.widgets').component('zemFilterSelector', {
     template: require('./zemFilterSelector.component.html'),
-    controller: function ($element, $timeout, zemDataFilterService, zemFilterSelectorService, zemFilterSelectorSharedService, zemPermissions) { // eslint-disable-line max-len
+    controller: function(
+        $element,
+        $timeout,
+        zemDataFilterService,
+        zemFilterSelectorService,
+        zemFilterSelectorSharedService,
+        zemPermissions
+    ) {
+        // eslint-disable-line max-len
         var $ctrl = this;
 
         $ctrl.isPermissionInternal = zemPermissions.isPermissionInternal;
@@ -21,17 +29,21 @@ angular.module('one.widgets').component('zemFilterSelector', {
         var selectionUpdateHandler;
         var dataFilterUpdateHandler;
 
-        $ctrl.$onInit = function () {
+        $ctrl.$onInit = function() {
             zemFilterSelectorService.init();
 
-            selectionUpdateHandler = zemFilterSelectorService.onSectionsUpdate(function () {
-                refresh();
-                updateListElementWidth();
-            });
-            dataFilterUpdateHandler = zemDataFilterService.onDataFilterUpdate(function () {
-                refresh();
-                updateListElementWidth();
-            });
+            selectionUpdateHandler = zemFilterSelectorService.onSectionsUpdate(
+                function() {
+                    refresh();
+                    updateListElementWidth();
+                }
+            );
+            dataFilterUpdateHandler = zemDataFilterService.onDataFilterUpdate(
+                function() {
+                    refresh();
+                    updateListElementWidth();
+                }
+            );
 
             $ctrl.appliedConditions = zemFilterSelectorService.getAppliedConditions();
             $ctrl.visibleSections = zemFilterSelectorService.getVisibleSections();
@@ -41,47 +53,52 @@ angular.module('one.widgets').component('zemFilterSelector', {
             updateListElementWidth();
         };
 
-        $ctrl.$onDestroy = function () {
+        $ctrl.$onDestroy = function() {
             if (selectionUpdateHandler) selectionUpdateHandler();
             if (dataFilterUpdateHandler) dataFilterUpdateHandler();
         };
 
-        $ctrl.$postLink = function () {
-            listContainerElement = $element.find('.applied-conditions__list-container');
+        $ctrl.$postLink = function() {
+            listContainerElement = $element.find(
+                '.applied-conditions__list-container'
+            );
             listElement = $element.find('.applied-conditions__list');
         };
 
-        function applyFilter () {
+        function applyFilter() {
             zemFilterSelectorService.applyFilter($ctrl.visibleSections);
             zemFilterSelectorSharedService.toggleSelector();
             setListElementTranslateX(0);
         }
 
-        function getVisibleSectionsClasses () {
+        function getVisibleSectionsClasses() {
             var classes = '';
-            $ctrl.visibleSections.forEach(function (section) {
+            $ctrl.visibleSections.forEach(function(section) {
                 classes += 'filter-sections--visible-' + section.cssClass + ' ';
             });
             return classes;
         }
 
         var STEP_WIDTH = 300;
-        function scrollAppliedConditionsList (direction) {
+        function scrollAppliedConditionsList(direction) {
             // Parse element's translateX property
-            var matrix = listElement.css('transform').replace(/[^0-9\-.,]/g, '').split(',');
+            var matrix = listElement
+                .css('transform')
+                .replace(/[^0-9\-.,]/g, '')
+                .split(',');
             var x = Math.floor(matrix[12]) || Math.floor(matrix[4]);
 
             if (direction === 'left') {
-                x = (x + STEP_WIDTH) < 0 ? (x + STEP_WIDTH) : 0;
+                x = x + STEP_WIDTH < 0 ? x + STEP_WIDTH : 0;
             } else if (direction === 'right') {
                 var minX = -(listElementWidth - listContainerElement.width());
-                x = (x - STEP_WIDTH) >= minX ? (x - STEP_WIDTH) : minX;
+                x = x - STEP_WIDTH >= minX ? x - STEP_WIDTH : minX;
             }
 
             setListElementTranslateX(x);
         }
 
-        function calculateListElementWidth (children) {
+        function calculateListElementWidth(children) {
             var width = 0;
             for (var i = 0; i < children.length; i++) {
                 width += $(children[i]).outerWidth(true);
@@ -89,24 +106,27 @@ angular.module('one.widgets').component('zemFilterSelector', {
             return width;
         }
 
-        function updateListElementWidth () {
-            $timeout(function () {
-                listElementWidth = calculateListElementWidth(listElement.find('.applied-conditions__condition'));
+        function updateListElementWidth() {
+            $timeout(function() {
+                listElementWidth = calculateListElementWidth(
+                    listElement.find('.applied-conditions__condition')
+                );
                 listElement.width(listElementWidth + 'px');
 
-                $ctrl.isListElementOverflowing = listElementWidth > listContainerElement.width();
+                $ctrl.isListElementOverflowing =
+                    listElementWidth > listContainerElement.width();
                 if (!$ctrl.isListElementOverflowing) {
                     setListElementTranslateX(0);
                 }
             }, 0);
         }
 
-        function setListElementTranslateX (x) {
+        function setListElementTranslateX(x) {
             var translateCssProperty = 'translateX(' + x + 'px)';
             listElement.css('transform', translateCssProperty);
         }
 
-        function refresh () {
+        function refresh() {
             $ctrl.appliedConditions = zemFilterSelectorService.getAppliedConditions();
             $ctrl.visibleSections = zemFilterSelectorService.getVisibleSections();
 

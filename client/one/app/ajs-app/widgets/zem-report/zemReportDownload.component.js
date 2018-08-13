@@ -4,7 +4,14 @@ angular.module('one.widgets').component('zemReportDownload', {
         resolve: '<',
     },
     template: require('./zemReportDownload.component.html'),
-    controller: function ($interval, zemReportService, zemPermissions, zemUserService, zemDataFilterService) {  // eslint-disable-line max-len
+    controller: function(
+        $interval,
+        zemReportService,
+        zemPermissions,
+        zemUserService,
+        zemDataFilterService
+    ) {
+        // eslint-disable-line max-len
         var $ctrl = this;
 
         // Public API
@@ -24,25 +31,25 @@ angular.module('one.widgets').component('zemReportDownload', {
         $ctrl.reportSent = false;
         $ctrl.pollInterval = null;
 
-        $ctrl.$onInit = function () {
+        $ctrl.$onInit = function() {
             $ctrl.user = zemUserService.current();
             $ctrl.dateRange = zemDataFilterService.getDateRange();
         };
 
-        function cancel () {
+        function cancel() {
             stopPolling();
             $ctrl.close();
         }
 
-        function startPolling (id) {
+        function startPolling(id) {
             if ($ctrl.pollInterval !== null) {
                 return;
             }
 
-            $ctrl.pollInterval = $interval(function () {
+            $ctrl.pollInterval = $interval(function() {
                 zemReportService
                     .getReport(id)
-                    .then(function (data) {
+                    .then(function(data) {
                         if (data.data.status === 'IN_PROGRESS') {
                             return;
                         }
@@ -57,7 +64,7 @@ angular.module('one.widgets').component('zemReportDownload', {
                         }
                         stopPolling();
                     })
-                    .catch(function (data) {
+                    .catch(function(data) {
                         $ctrl.jobDone = true;
                         $ctrl.hasError = true;
                         if (data) {
@@ -68,20 +75,24 @@ angular.module('one.widgets').component('zemReportDownload', {
             }, 2500);
         }
 
-        function stopPolling () {
+        function stopPolling() {
             if ($ctrl.pollInterval !== null) {
                 $interval.cancel($ctrl.pollInterval);
                 $ctrl.pollInterval = null;
             }
         }
 
-        function startReport () {
+        function startReport() {
             $ctrl.jobPosted = true;
             $ctrl.errors = undefined;
             $ctrl.errorMsg = undefined;
             zemReportService
-                .startReport($ctrl.resolve.api, $ctrl.queryConfig, getRecipientsList())
-                .then(function (data) {
+                .startReport(
+                    $ctrl.resolve.api,
+                    $ctrl.queryConfig,
+                    getRecipientsList()
+                )
+                .then(function(data) {
                     if ($ctrl.sendReport) {
                         $ctrl.jobDone = true;
                         $ctrl.reportSent = true;
@@ -89,7 +100,7 @@ angular.module('one.widgets').component('zemReportDownload', {
                         startPolling(data.data.id);
                     }
                 })
-                .catch(function (data) {
+                .catch(function(data) {
                     $ctrl.jobDone = true;
                     $ctrl.hasError = true;
                     $ctrl.errors = data.details;
@@ -100,7 +111,7 @@ angular.module('one.widgets').component('zemReportDownload', {
                 });
         }
 
-        function getRecipientsList () {
+        function getRecipientsList() {
             if (!$ctrl.sendReport) {
                 return [];
             }
@@ -113,5 +124,5 @@ angular.module('one.widgets').component('zemReportDownload', {
             }
             return recipients;
         }
-    }
+    },
 });

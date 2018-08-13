@@ -1,26 +1,29 @@
-describe('zemGridCellEditableBaseField', function () {
+describe('zemGridCellEditableBaseField', function() {
     var scope, element, $compileProvider, $compile, $q;
 
-    var template = '<zem-grid-cell-editable-base-field ' +
-                        'data="ctrl.data" column="ctrl.col" row="ctrl.row" grid="ctrl.grid">' +
-                   '</zem-grid-cell-editable-base-field>';
+    var template =
+        '<zem-grid-cell-editable-base-field ' +
+        'data="ctrl.data" column="ctrl.col" row="ctrl.row" grid="ctrl.grid">' +
+        '</zem-grid-cell-editable-base-field>';
 
-    function mockDirective (directive) {
-        $compileProvider.directive(directive, function () {
+    function mockDirective(directive) {
+        $compileProvider.directive(directive, function() {
             return {
                 priority: 100000,
                 terminal: true,
-                link: function () {},
+                link: function() {},
             };
         });
     }
 
-    beforeEach(angular.mock.module('one', function (_$compileProvider_) {
-        $compileProvider = _$compileProvider_;
-    }));
+    beforeEach(
+        angular.mock.module('one', function(_$compileProvider_) {
+            $compileProvider = _$compileProvider_;
+        })
+    );
     beforeEach(angular.mock.module('one.mocks.zemInitializationService'));
 
-    beforeEach(inject(function ($rootScope, _$compile_, _$q_) {
+    beforeEach(inject(function($rootScope, _$compile_, _$q_) {
         $compile = _$compile_;
         $q = _$q_;
 
@@ -36,13 +39,13 @@ describe('zemGridCellEditableBaseField', function () {
                 },
                 service: {},
                 dataService: {
-                    isSaveRequestInProgress: function () {},
+                    isSaveRequestInProgress: function() {},
                 },
             },
         };
     }));
 
-    it('should display N/A if field\'s value is not defined', function () {
+    it("should display N/A if field's value is not defined", function() {
         mockDirective('zemGridModal');
 
         scope.ctrl.data = undefined;
@@ -52,7 +55,7 @@ describe('zemGridCellEditableBaseField', function () {
         expect(element.text().trim()).toEqual('N/A');
     });
 
-    it('should hide the field if no data is available or field is disabled in footer', function () {
+    it('should hide the field if no data is available or field is disabled in footer', function() {
         mockDirective('zemGridModal');
 
         delete scope.ctrl.row;
@@ -77,7 +80,7 @@ describe('zemGridCellEditableBaseField', function () {
         expect(element.text().trim()).toEqual('');
     });
 
-    it('should not set uneditable fields to editable and add edit message instead', function () {
+    it('should not set uneditable fields to editable and add edit message instead', function() {
         mockDirective('zemGridModal');
 
         scope.ctrl.data = {
@@ -91,7 +94,7 @@ describe('zemGridCellEditableBaseField', function () {
         expect(element.isolateScope().ctrl.editMessage).toEqual('Disabled');
     });
 
-    it('should set editable fields to editable', function () {
+    it('should set editable fields to editable', function() {
         mockDirective('zemGridModal');
 
         scope.ctrl.data = {
@@ -103,7 +106,7 @@ describe('zemGridCellEditableBaseField', function () {
         expect(element.isolateScope().ctrl.isEditable).toBe(true);
     });
 
-    it('should display autopilot icon if autopilot is on and row is active', function () {
+    it('should display autopilot icon if autopilot is on and row is active', function() {
         mockDirective('zemGridModal');
 
         scope.ctrl.grid.meta.data = {
@@ -122,10 +125,12 @@ describe('zemGridCellEditableBaseField', function () {
         element = $compile(template)(scope);
         scope.$digest();
 
-        expect(element.find('.auto-pilot-icon').hasClass('ng-hide')).toBe(false);
+        expect(element.find('.auto-pilot-icon').hasClass('ng-hide')).toBe(
+            false
+        );
     });
 
-    it('should hide autopilot icon if autopilot is off', function () {
+    it('should hide autopilot icon if autopilot is off', function() {
         mockDirective('zemGridModal');
 
         scope.ctrl.grid.meta.data = {
@@ -147,7 +152,7 @@ describe('zemGridCellEditableBaseField', function () {
         expect(element.find('.auto-pilot-icon').hasClass('ng-hide')).toBe(true);
     });
 
-    it('should hide autopilot icon if row is archived', function () {
+    it('should hide autopilot icon if row is archived', function() {
         mockDirective('zemGridModal');
 
         scope.ctrl.grid.meta.data = {
@@ -170,7 +175,7 @@ describe('zemGridCellEditableBaseField', function () {
         expect(element.find('.auto-pilot-icon').hasClass('ng-hide')).toBe(true);
     });
 
-    it('should hide autopilot icon if row isn\'t active', function () {
+    it("should hide autopilot icon if row isn't active", function() {
         mockDirective('zemGridModal');
 
         scope.ctrl.grid.meta.data = {
@@ -192,15 +197,17 @@ describe('zemGridCellEditableBaseField', function () {
         expect(element.find('.auto-pilot-icon').hasClass('ng-hide')).toBe(true);
     });
 
-    it('should call save method if input is valid', function () {
+    it('should call save method if input is valid', function() {
         mockDirective('zemGridModal');
 
-        scope.ctrl.grid.meta.dataService.saveData = function () {};
-        spyOn(scope.ctrl.grid.meta.dataService, 'saveData').and.callFake(function () {
-            var deferred = $q.defer();
-            deferred.resolve();
-            return deferred.promise;
-        });
+        scope.ctrl.grid.meta.dataService.saveData = function() {};
+        spyOn(scope.ctrl.grid.meta.dataService, 'saveData').and.callFake(
+            function() {
+                var deferred = $q.defer();
+                deferred.resolve();
+                return deferred.promise;
+            }
+        );
 
         scope.ctrl.data = {
             value: 12.34,
@@ -220,20 +227,22 @@ describe('zemGridCellEditableBaseField', function () {
         element.isolateScope().ctrl.filterInput();
         element.isolateScope().ctrl.save();
 
-        expect(element.isolateScope().ctrl.grid.meta.dataService.saveData).toHaveBeenCalledWith(
-            '12.35', scope.ctrl.row, scope.ctrl.col
-        );
+        expect(
+            element.isolateScope().ctrl.grid.meta.dataService.saveData
+        ).toHaveBeenCalledWith('12.35', scope.ctrl.row, scope.ctrl.col);
     });
 
-    it('shouldn\'t call save method if input is invalid', function () {
+    it("shouldn't call save method if input is invalid", function() {
         mockDirective('zemGridModal');
 
-        scope.ctrl.grid.meta.dataService.saveData = function () {};
-        spyOn(scope.ctrl.grid.meta.dataService, 'saveData').and.callFake(function () {
-            var deferred = $q.defer();
-            deferred.resolve();
-            return deferred.promise;
-        });
+        scope.ctrl.grid.meta.dataService.saveData = function() {};
+        spyOn(scope.ctrl.grid.meta.dataService, 'saveData').and.callFake(
+            function() {
+                var deferred = $q.defer();
+                deferred.resolve();
+                return deferred.promise;
+            }
+        );
 
         scope.ctrl.data = {
             value: 12.34,
@@ -253,18 +262,22 @@ describe('zemGridCellEditableBaseField', function () {
         element.isolateScope().ctrl.filterInput();
         element.isolateScope().ctrl.save();
 
-        expect(element.isolateScope().ctrl.grid.meta.dataService.saveData).not.toHaveBeenCalled();
+        expect(
+            element.isolateScope().ctrl.grid.meta.dataService.saveData
+        ).not.toHaveBeenCalled();
     });
 
-    it('shouldn\'t call save method if input hasn\'t changed', function () {
+    it("shouldn't call save method if input hasn't changed", function() {
         mockDirective('zemGridModal');
 
-        scope.ctrl.grid.meta.dataService.saveData = function () {};
-        spyOn(scope.ctrl.grid.meta.dataService, 'saveData').and.callFake(function () {
-            var deferred = $q.defer();
-            deferred.resolve();
-            return deferred.promise;
-        });
+        scope.ctrl.grid.meta.dataService.saveData = function() {};
+        spyOn(scope.ctrl.grid.meta.dataService, 'saveData').and.callFake(
+            function() {
+                var deferred = $q.defer();
+                deferred.resolve();
+                return deferred.promise;
+            }
+        );
 
         scope.ctrl.data = {
             value: 12.34,
@@ -283,6 +296,8 @@ describe('zemGridCellEditableBaseField', function () {
         element.isolateScope().ctrl.filterInput();
         element.isolateScope().ctrl.save();
 
-        expect(element.isolateScope().ctrl.grid.meta.dataService.saveData).not.toHaveBeenCalled();
+        expect(
+            element.isolateScope().ctrl.grid.meta.dataService.saveData
+        ).not.toHaveBeenCalled();
     });
 });

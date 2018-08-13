@@ -5,7 +5,19 @@ angular.module('one.widgets').component('zemInfobox', {
         entity: '<',
     },
     template: require('./zemInfobox.component.html'),
-    controller: function (zemInfoboxService, zemNavigationNewService, zemDataFilterService, zemEntityService, zemHistoryService, zemPermissions, zemUtils, $state, $location, $window) { // eslint-disable-line max-len
+    controller: function(
+        zemInfoboxService,
+        zemNavigationNewService,
+        zemDataFilterService,
+        zemEntityService,
+        zemHistoryService,
+        zemPermissions,
+        zemUtils,
+        $state,
+        $location,
+        $window
+    ) {
+        // eslint-disable-line max-len
         var $ctrl = this;
         $ctrl.hasPermission = zemPermissions.hasPermission;
         $ctrl.openHistory = openHistory;
@@ -19,76 +31,88 @@ angular.module('one.widgets').component('zemInfobox', {
         var legacyEntityUpdateHandler;
         var legacyActionExecutedHandler;
 
-        $ctrl.$onInit = function () {
+        $ctrl.$onInit = function() {
             if (!$state.includes('v2.analytics')) {
                 $ctrl.entity = zemNavigationNewService.getActiveEntity();
                 updateHandler();
                 if ($ctrl.entity) {
-                    legacyEntityUpdateHandler = zemEntityService.getEntityService($ctrl.entity.type)
+                    legacyEntityUpdateHandler = zemEntityService
+                        .getEntityService($ctrl.entity.type)
                         .onEntityUpdated(updateHandler);
-                    legacyActionExecutedHandler = zemEntityService.getEntityService($ctrl.entity.type)
+                    legacyActionExecutedHandler = zemEntityService
+                        .getEntityService($ctrl.entity.type)
                         .onActionExecuted(updateHandler);
                 }
 
                 legacyActiveEntityUpdateHandler = zemNavigationNewService.onActiveEntityChange(
-                    function (event, activeEntity) {
-                        if (legacyEntityUpdateHandler) legacyEntityUpdateHandler();
-                        if (legacyActionExecutedHandler) legacyActionExecutedHandler();
+                    function(event, activeEntity) {
+                        if (legacyEntityUpdateHandler)
+                            legacyEntityUpdateHandler();
+                        if (legacyActionExecutedHandler)
+                            legacyActionExecutedHandler();
 
                         $ctrl.entity = activeEntity;
                         updateHandler();
                         if (activeEntity) {
-                            legacyEntityUpdateHandler = zemEntityService.getEntityService($ctrl.entity.type)
+                            legacyEntityUpdateHandler = zemEntityService
+                                .getEntityService($ctrl.entity.type)
                                 .onEntityUpdated(updateHandler);
-                            legacyActionExecutedHandler = zemEntityService.getEntityService($ctrl.entity.type)
+                            legacyActionExecutedHandler = zemEntityService
+                                .getEntityService($ctrl.entity.type)
                                 .onActionExecuted(updateHandler);
                         }
                     }
                 );
             }
 
-            dateRangeUpdateHandler = zemDataFilterService.onDateRangeUpdate(updateHandler);
-            dataFilterUpdateHandler = zemDataFilterService.onDataFilterUpdate(updateHandler);
+            dateRangeUpdateHandler = zemDataFilterService.onDateRangeUpdate(
+                updateHandler
+            );
+            dataFilterUpdateHandler = zemDataFilterService.onDataFilterUpdate(
+                updateHandler
+            );
         };
 
-        $ctrl.$onChanges = function (changes) {
+        $ctrl.$onChanges = function(changes) {
             if ($state.includes('v2.analytics')) {
                 $ctrl.entity = changes.entity.currentValue;
                 updateHandler();
                 if ($ctrl.entity) {
                     if (entityUpdateHandler) entityUpdateHandler();
-                    entityUpdateHandler = zemEntityService.getEntityService($ctrl.entity.type).onEntityUpdated(
-                        updateHandler
-                    );
+                    entityUpdateHandler = zemEntityService
+                        .getEntityService($ctrl.entity.type)
+                        .onEntityUpdated(updateHandler);
                     if (actionExecutedHandler) actionExecutedHandler();
-                    actionExecutedHandler = zemEntityService.getEntityService($ctrl.entity.type).onActionExecuted(
-                        updateHandler
-                    );
+                    actionExecutedHandler = zemEntityService
+                        .getEntityService($ctrl.entity.type)
+                        .onActionExecuted(updateHandler);
                 }
             }
         };
 
-        $ctrl.$onDestroy = function () {
+        $ctrl.$onDestroy = function() {
             if (entityUpdateHandler) entityUpdateHandler();
             if (actionExecutedHandler) actionExecutedHandler();
             if (dateRangeUpdateHandler) dateRangeUpdateHandler();
             if (dataFilterUpdateHandler) dataFilterUpdateHandler();
 
-            if (legacyActiveEntityUpdateHandler) legacyActiveEntityUpdateHandler();
+            if (legacyActiveEntityUpdateHandler)
+                legacyActiveEntityUpdateHandler();
             if (legacyEntityUpdateHandler) legacyEntityUpdateHandler();
             if (legacyActionExecutedHandler) legacyActionExecutedHandler();
         };
 
-        function updateHandler () {
+        function updateHandler() {
             $ctrl.loadRequestInProgress = true;
-            zemInfoboxService.reloadInfoboxData($ctrl.entity)
+            zemInfoboxService
+                .reloadInfoboxData($ctrl.entity)
                 .then(updateView)
-                .finally(function () {
+                .finally(function() {
                     $ctrl.loadRequestInProgress = false;
                 });
         }
 
-        function updateView (data) {
+        function updateView(data) {
             if (!data) {
                 delete $ctrl.entity;
                 delete $ctrl.isEntityAvailable;
@@ -105,7 +129,7 @@ angular.module('one.widgets').component('zemInfobox', {
             $ctrl.performanceSettings = data.performanceSettings;
         }
 
-        function openHistory (event) {
+        function openHistory(event) {
             if (zemUtils.shouldOpenInNewTab(event)) {
                 openInNewTabWithParam(zemHistoryService.QUERY_PARAM);
             } else {
@@ -113,7 +137,7 @@ angular.module('one.widgets').component('zemInfobox', {
             }
         }
 
-        function openInNewTabWithParam (param) {
+        function openInNewTabWithParam(param) {
             var tempLocation = angular.copy($location);
             tempLocation.search(param, true);
             $window.open(tempLocation.absUrl(), '_blank');

@@ -1,11 +1,15 @@
-describe('zemEntityService', function () {
-    var zemEntityService, zemAccountService, zemCampaignService, zemAdGroupService, zemContentAdService;
+describe('zemEntityService', function() {
+    var zemEntityService,
+        zemAccountService,
+        zemCampaignService,
+        zemAdGroupService,
+        zemContentAdService;
     var $httpBackend;
 
     beforeEach(angular.mock.module('one'));
     beforeEach(angular.mock.module('one.mocks.zemInitializationService'));
 
-    beforeEach(inject(function ($injector) {
+    beforeEach(inject(function($injector) {
         $httpBackend = $injector.get('$httpBackend');
         zemEntityService = $injector.get('zemEntityService');
         zemAccountService = $injector.get('zemAccountService');
@@ -14,16 +18,18 @@ describe('zemEntityService', function () {
         zemContentAdService = $injector.get('zemContentAdService');
 
         $httpBackend.whenGET(/.*/).respond(200, {});
-        $httpBackend.whenPUT(/.*/).respond(200, {data: {settings: {}, defaultSettings: {}}});
+        $httpBackend
+            .whenPUT(/.*/)
+            .respond(200, {data: {settings: {}, defaultSettings: {}}});
         $httpBackend.whenPOST(/.*/).respond(200, {});
     }));
 
-    afterEach(function () {
+    afterEach(function() {
         $httpBackend.verifyNoOutstandingExpectation();
         $httpBackend.verifyNoOutstandingRequest();
     });
 
-    it('should provide GET CRUD action for entities', function () {
+    it('should provide GET CRUD action for entities', function() {
         spyOn(zemAccountService, 'get').and.callThrough();
         spyOn(zemCampaignService, 'get').and.callThrough();
         spyOn(zemAdGroupService, 'get').and.callThrough();
@@ -42,7 +48,7 @@ describe('zemEntityService', function () {
         $httpBackend.flush();
     });
 
-    it('should provide CREATE CRUD action for entities', function () {
+    it('should provide CREATE CRUD action for entities', function() {
         spyOn(zemAccountService, 'create').and.callThrough();
         spyOn(zemCampaignService, 'create').and.callThrough();
         spyOn(zemAdGroupService, 'create').and.callThrough();
@@ -61,7 +67,7 @@ describe('zemEntityService', function () {
         $httpBackend.flush();
     });
 
-    it('should provide UPDATE CRUD action for entities', function () {
+    it('should provide UPDATE CRUD action for entities', function() {
         spyOn(zemAccountService, 'update').and.callThrough();
         spyOn(zemCampaignService, 'update').and.callThrough();
         spyOn(zemAdGroupService, 'update').and.callThrough();
@@ -81,17 +87,37 @@ describe('zemEntityService', function () {
         $httpBackend.flush();
     });
 
-    it('should provide helper to access entity services', function () {
-        expect(zemEntityService.getEntityService(constants.entityType.ACCOUNT)).toBe(zemAccountService);
-        expect(zemEntityService.getEntityService(constants.entityType.CAMPAIGN)).toBe(zemCampaignService);
-        expect(zemEntityService.getEntityService(constants.entityType.AD_GROUP)).toBe(zemAdGroupService);
-        expect(zemEntityService.getEntityService(constants.entityType.CONTENT_AD)).toBe(zemContentAdService);
+    it('should provide helper to access entity services', function() {
+        expect(
+            zemEntityService.getEntityService(constants.entityType.ACCOUNT)
+        ).toBe(zemAccountService);
+        expect(
+            zemEntityService.getEntityService(constants.entityType.CAMPAIGN)
+        ).toBe(zemCampaignService);
+        expect(
+            zemEntityService.getEntityService(constants.entityType.AD_GROUP)
+        ).toBe(zemAdGroupService);
+        expect(
+            zemEntityService.getEntityService(constants.entityType.CONTENT_AD)
+        ).toBe(zemContentAdService);
     });
 
-    it('should provide helper to execute entity actions', function () {
-        zemEntityService.executeAction(constants.entityAction.ARCHIVE, constants.entityType.ACCOUNT, 1);
-        zemEntityService.executeAction(constants.entityAction.RESTORE, constants.entityType.CAMPAIGN, 2);
-        zemEntityService.executeAction(constants.entityAction.ACTIVATE, constants.entityType.AD_GROUP, 3);
+    it('should provide helper to execute entity actions', function() {
+        zemEntityService.executeAction(
+            constants.entityAction.ARCHIVE,
+            constants.entityType.ACCOUNT,
+            1
+        );
+        zemEntityService.executeAction(
+            constants.entityAction.RESTORE,
+            constants.entityType.CAMPAIGN,
+            2
+        );
+        zemEntityService.executeAction(
+            constants.entityAction.ACTIVATE,
+            constants.entityType.AD_GROUP,
+            3
+        );
 
         $httpBackend.expect('POST', '/api/accounts/1/archive/');
         $httpBackend.expect('POST', '/api/campaigns/2/restore/');
@@ -99,13 +125,28 @@ describe('zemEntityService', function () {
         $httpBackend.flush();
     });
 
-    it('should provide helper to entity BULK actions', function () {
-        zemEntityService.executeBulkAction(constants.entityAction.ARCHIVE,
-            constants.level.ACCOUNTS, constants.breakdown.CAMPAIGN, 1, {});
-        zemEntityService.executeBulkAction(constants.entityAction.RESTORE,
-            constants.level.CAMPAIGNS, constants.breakdown.AD_GROUP, 2, {});
-        zemEntityService.executeBulkAction(constants.entityAction.ACTIVATE,
-            constants.level.AD_GROUPS, constants.breakdown.CONTENT_AD, 3, {});
+    it('should provide helper to entity BULK actions', function() {
+        zemEntityService.executeBulkAction(
+            constants.entityAction.ARCHIVE,
+            constants.level.ACCOUNTS,
+            constants.breakdown.CAMPAIGN,
+            1,
+            {}
+        );
+        zemEntityService.executeBulkAction(
+            constants.entityAction.RESTORE,
+            constants.level.CAMPAIGNS,
+            constants.breakdown.AD_GROUP,
+            2,
+            {}
+        );
+        zemEntityService.executeBulkAction(
+            constants.entityAction.ACTIVATE,
+            constants.level.AD_GROUPS,
+            constants.breakdown.CONTENT_AD,
+            3,
+            {}
+        );
 
         $httpBackend.expect('POST', '/api/accounts/1/campaigns/archive/');
         $httpBackend.expect('POST', '/api/campaigns/2/ad_groups/restore/');
@@ -113,13 +154,28 @@ describe('zemEntityService', function () {
         $httpBackend.flush();
     });
 
-    it('should provide helper to execute MEDIA_SOURCE BULK actions', function () {
-        zemEntityService.executeBulkAction(constants.entityAction.ACTIVATE,
-            constants.level.ACCOUNTS, constants.breakdown.MEDIA_SOURCE, 1, {});
-        zemEntityService.executeBulkAction(constants.entityAction.DEACTIVATE,
-            constants.level.CAMPAIGNS, constants.breakdown.MEDIA_SOURCE, 2, {});
-        zemEntityService.executeBulkAction(constants.entityAction.ACTIVATE,
-            constants.level.AD_GROUPS, constants.breakdown.MEDIA_SOURCE, 3, {});
+    it('should provide helper to execute MEDIA_SOURCE BULK actions', function() {
+        zemEntityService.executeBulkAction(
+            constants.entityAction.ACTIVATE,
+            constants.level.ACCOUNTS,
+            constants.breakdown.MEDIA_SOURCE,
+            1,
+            {}
+        );
+        zemEntityService.executeBulkAction(
+            constants.entityAction.DEACTIVATE,
+            constants.level.CAMPAIGNS,
+            constants.breakdown.MEDIA_SOURCE,
+            2,
+            {}
+        );
+        zemEntityService.executeBulkAction(
+            constants.entityAction.ACTIVATE,
+            constants.level.AD_GROUPS,
+            constants.breakdown.MEDIA_SOURCE,
+            3,
+            {}
+        );
 
         $httpBackend.expect('POST', '/api/accounts/1/sources/state/');
         $httpBackend.expect('POST', '/api/campaigns/2/sources/state/');
@@ -127,4 +183,3 @@ describe('zemEntityService', function () {
         $httpBackend.flush();
     });
 });
-

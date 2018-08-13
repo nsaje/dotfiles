@@ -10,7 +10,7 @@ angular.module('one.widgets').component('zemCampaignGoalEditForm', {
         onChange: '&?',
     },
     template: require('./zemCampaignGoalEditForm.component.html'),
-    controller: function (zemNavigationNewService, zemMulticurrencyService) {
+    controller: function(zemNavigationNewService, zemMulticurrencyService) {
         var $ctrl = this;
         var activeAccount;
 
@@ -24,7 +24,7 @@ angular.module('one.widgets').component('zemCampaignGoalEditForm', {
         $ctrl.isOmnitureFormVisible = isOmnitureFormVisible;
         $ctrl.setAvailableConversionWindowsForPixel = setAvailableConversionWindowsForPixel;
 
-        $ctrl.$onInit = function () {
+        $ctrl.$onInit = function() {
             activeAccount = zemNavigationNewService.getActiveAccount();
             $ctrl.campaignGoal = $ctrl.campaignGoal || {};
             $ctrl.goalUnit = getGoalUnit($ctrl.campaignGoal);
@@ -32,9 +32,10 @@ angular.module('one.widgets').component('zemCampaignGoalEditForm', {
             $ctrl.conversionWindows = options.conversionWindows;
         };
 
-        function updateTypeChange (goalUnit) {
+        function updateTypeChange(goalUnit) {
             if ($ctrl.campaignGoal.type === constants.campaignGoalKPI.CPA) {
-                $ctrl.campaignGoal.conversionGoal = $ctrl.campaignGoal.conversionGoal || {};
+                $ctrl.campaignGoal.conversionGoal =
+                    $ctrl.campaignGoal.conversionGoal || {};
                 delete $ctrl.campaignGoal.conversionGoal.goalId;
                 delete $ctrl.campaignGoal.conversionGoal.conversionWindow;
             } else {
@@ -44,13 +45,17 @@ angular.module('one.widgets').component('zemCampaignGoalEditForm', {
             $ctrl.clearErrors('type');
             $ctrl.clearErrors('conversionGoal');
 
-            if (goalUnit !== undefined || $ctrl.campaignGoal.type === constants.campaignGoalKPI.PAGES_PER_SESSION) {
+            if (
+                goalUnit !== undefined ||
+                $ctrl.campaignGoal.type ===
+                    constants.campaignGoalKPI.PAGES_PER_SESSION
+            ) {
                 setDefaultValue();
             }
             $ctrl.goalUnit = goalUnit || '';
         }
 
-        function propagateChange () {
+        function propagateChange() {
             if ($ctrl.onChange) {
                 var goal = null;
                 if (!areRequiredFieldsEmpty()) {
@@ -60,44 +65,56 @@ angular.module('one.widgets').component('zemCampaignGoalEditForm', {
             }
         }
 
-        function clearErrors (name) {
+        function clearErrors(name) {
             if (!$ctrl.errors) return;
             delete $ctrl.errors[name];
         }
 
-        function prepareName (option) {
-            if (!$ctrl.isEdit) return option && option.name || null;
+        function prepareName(option) {
+            if (!$ctrl.isEdit) return (option && option.name) || null;
 
-            if ($ctrl.campaignGoal.type !== constants.campaignGoalKPI.CPA || !$ctrl.campaignGoal.conversionGoal.name) {
+            if (
+                $ctrl.campaignGoal.type !== constants.campaignGoalKPI.CPA ||
+                !$ctrl.campaignGoal.conversionGoal.name
+            ) {
                 return option.name;
             }
             return 'CPA - ' + $ctrl.campaignGoal.conversionGoal.name;
         }
 
-        function isConversionGoalFormVisible () {
+        function isConversionGoalFormVisible() {
             return $ctrl.campaignGoal.type === constants.campaignGoalKPI.CPA;
         }
 
-        function isConversionPixelFormVisible () {
-            return $ctrl.campaignGoal.conversionGoal &&
-                $ctrl.campaignGoal.conversionGoal.type === constants.conversionGoalType.PIXEL;
+        function isConversionPixelFormVisible() {
+            return (
+                $ctrl.campaignGoal.conversionGoal &&
+                $ctrl.campaignGoal.conversionGoal.type ===
+                    constants.conversionGoalType.PIXEL
+            );
         }
 
-        function isGAFormVisible () {
-            return $ctrl.campaignGoal.conversionGoal &&
-                $ctrl.campaignGoal.conversionGoal.type === constants.conversionGoalType.GA;
+        function isGAFormVisible() {
+            return (
+                $ctrl.campaignGoal.conversionGoal &&
+                $ctrl.campaignGoal.conversionGoal.type ===
+                    constants.conversionGoalType.GA
+            );
         }
 
-        function isOmnitureFormVisible () {
-            return $ctrl.campaignGoal.conversionGoal &&
-                $ctrl.campaignGoal.conversionGoal.type === constants.conversionGoalType.OMNITURE;
+        function isOmnitureFormVisible() {
+            return (
+                $ctrl.campaignGoal.conversionGoal &&
+                $ctrl.campaignGoal.conversionGoal.type ===
+                    constants.conversionGoalType.OMNITURE
+            );
         }
 
-        function setAvailableConversionWindowsForPixel (pixel) {
+        function setAvailableConversionWindowsForPixel(pixel) {
             $ctrl.conversionWindows = pixel.conversionWindows;
         }
 
-        function getGoalUnit (goal) {
+        function getGoalUnit(goal) {
             for (var i = 0; i < options.campaignGoalKPIs.length; i++) {
                 var kpiDefault = options.campaignGoalKPIs[i];
                 if (kpiDefault.value === goal.type) {
@@ -105,20 +122,25 @@ angular.module('one.widgets').component('zemCampaignGoalEditForm', {
                         return kpiDefault.unit;
                     }
 
-                    return zemMulticurrencyService.getAppropriateCurrencySymbol(activeAccount);
+                    return zemMulticurrencyService.getAppropriateCurrencySymbol(
+                        activeAccount
+                    );
                 }
             }
             return '';
         }
 
-        function setDefaultValue () {
+        function setDefaultValue() {
             if ($ctrl.isEdit || !$ctrl.goalsDefaults) return;
 
-            var kpiName = constants.convertToName($ctrl.campaignGoal.type, constants.campaignGoalKPI);
+            var kpiName = constants.convertToName(
+                $ctrl.campaignGoal.type,
+                constants.campaignGoalKPI
+            );
             $ctrl.campaignGoal.value = $ctrl.goalsDefaults[kpiName] || null;
         }
 
-        function areRequiredFieldsEmpty () {
+        function areRequiredFieldsEmpty() {
             if (!$ctrl.campaignGoal.value || !$ctrl.campaignGoal.type) {
                 return true;
             }
@@ -126,16 +148,22 @@ angular.module('one.widgets').component('zemCampaignGoalEditForm', {
             return areRequiredConversionGoalFieldsEmpty();
         }
 
-        function areRequiredConversionGoalFieldsEmpty () {
+        function areRequiredConversionGoalFieldsEmpty() {
             if (!isConversionGoalFormVisible()) {
                 return false;
             }
 
-            if (!$ctrl.campaignGoal.conversionGoal.type || !$ctrl.campaignGoal.conversionGoal.goalId) {
+            if (
+                !$ctrl.campaignGoal.conversionGoal.type ||
+                !$ctrl.campaignGoal.conversionGoal.goalId
+            ) {
                 return true;
             }
 
-            if (isConversionPixelFormVisible() && !$ctrl.campaignGoal.conversionGoal.conversionWindow) {
+            if (
+                isConversionPixelFormVisible() &&
+                !$ctrl.campaignGoal.conversionGoal.conversionWindow
+            ) {
                 return true;
             }
 

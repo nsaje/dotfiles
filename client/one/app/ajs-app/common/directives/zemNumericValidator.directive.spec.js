@@ -1,17 +1,18 @@
-describe('zemNumericValidator', function () {
+describe('zemNumericValidator', function() {
     var $scope, httpBackend, element;
-    var template = '<input id="input" type="text" zem-numeric-validator ' +
+    var template =
+        '<input id="input" type="text" zem-numeric-validator ' +
         'ng-model="value" placeholder="0.00" maxlength="5" />';
 
     beforeEach(angular.mock.module('one'));
     beforeEach(angular.mock.module('one.mocks.zemInitializationService'));
-    beforeEach(inject(function ($compile, $rootScope, $httpBackend) {
+    beforeEach(inject(function($compile, $rootScope, $httpBackend) {
         $scope = $rootScope.$new();
         httpBackend = $httpBackend;
-        $scope.isPermissionInternal = function () {
+        $scope.isPermissionInternal = function() {
             return true;
         };
-        $scope.hasPermission = function () {
+        $scope.hasPermission = function() {
             return true;
         };
 
@@ -25,7 +26,7 @@ describe('zemNumericValidator', function () {
         $scope.$digest();
     }));
 
-    it('validates a number', function () {
+    it('validates a number', function() {
         element.val(0.001);
         element.trigger('input');
         $scope.$digest();
@@ -39,7 +40,7 @@ describe('zemNumericValidator', function () {
         expect($scope.value).toEqual('15000');
     });
 
-    it('doesn\'t validate non-numbers', function () {
+    it("doesn't validate non-numbers", function() {
         element.val(10);
         element.trigger('input');
         $scope.$digest();

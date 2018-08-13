@@ -7,12 +7,21 @@ angular.module('one.widgets').component('zemReportQueryConfig', {
         config: '=',
     },
     template: require('./zemReportQueryConfig.component.html'),
-    controller: function (zemFilterSelectorService, zemReportBreakdownService, zemReportFieldsService, zemPermissions) {
+    controller: function(
+        zemFilterSelectorService,
+        zemReportBreakdownService,
+        zemReportFieldsService,
+        zemPermissions
+    ) {
         var $ctrl = this;
 
         var NR_SHORTLIST_ITEMS = 9;
         var SHORTLIST_LIMIT = 15;
-        var refundColumns = ['Media Spend Refund', 'License Fee Refund', 'Total Spend Refund'];
+        var refundColumns = [
+            'Media Spend Refund',
+            'License Fee Refund',
+            'Total Spend Refund',
+        ];
 
         //
         // Public API
@@ -48,10 +57,13 @@ angular.module('one.widgets').component('zemReportQueryConfig', {
         $ctrl.selectedColumns = [];
         $ctrl.unselectedColumns = [];
 
-        $ctrl.$onInit = function () {
+        $ctrl.$onInit = function() {
             $ctrl.appliedFilterConditions = zemFilterSelectorService.getAppliedConditions();
             if ($ctrl.appliedFilterConditions.length > SHORTLIST_LIMIT) {
-                $ctrl.shownAppliedFilterConditions = $ctrl.appliedFilterConditions.slice(0, NR_SHORTLIST_ITEMS);
+                $ctrl.shownAppliedFilterConditions = $ctrl.appliedFilterConditions.slice(
+                    0,
+                    NR_SHORTLIST_ITEMS
+                );
             } else {
                 $ctrl.showAllAppliedFilters();
             }
@@ -63,35 +75,43 @@ angular.module('one.widgets').component('zemReportQueryConfig', {
                 $ctrl.showIncludeItemsWithNoSpend = false;
             }
 
-            if ($ctrl.view === 'Account' &&
-                zemPermissions.hasPermission('zemauth.can_request_accounts_report_in_local_currencies')) {
+            if (
+                $ctrl.view === 'Account' &&
+                zemPermissions.hasPermission(
+                    'zemauth.can_request_accounts_report_in_local_currencies'
+                )
+            ) {
                 $ctrl.showAllAccountsInLocalCurrencyCheckbox = true;
             }
 
-            if ($ctrl.view === 'Account' &&
-                zemPermissions.hasPermission('zemauth.can_include_credit_refunds_in_report')) {
+            if (
+                $ctrl.view === 'Account' &&
+                zemPermissions.hasPermission(
+                    'zemauth.can_include_credit_refunds_in_report'
+                )
+            ) {
                 $ctrl.showAllAccountsCreditRefunds = true;
             }
 
             update();
         };
 
-        function addBreakdown (breakdown) {
+        function addBreakdown(breakdown) {
             $ctrl.breakdown.push(breakdown);
             update();
         }
 
-        function removeBreakdown (breakdown) {
+        function removeBreakdown(breakdown) {
             $ctrl.breakdown.splice($ctrl.breakdown.indexOf(breakdown), 1);
             update();
         }
 
-        function onlyUnique (value, index, self) {
+        function onlyUnique(value, index, self) {
             return self.indexOf(value) === index;
         }
 
-        function toggleColumns (columnsToToggle, visible) {
-            columnsToToggle.forEach(function (column) {
+        function toggleColumns(columnsToToggle, visible) {
+            columnsToToggle.forEach(function(column) {
                 var index;
                 if (visible) {
                     index = $ctrl.selectedColumns.indexOf(column);
@@ -117,7 +137,7 @@ angular.module('one.widgets').component('zemReportQueryConfig', {
             $ctrl.update();
         }
 
-        function update () {
+        function update() {
             var defaultFields = zemReportFieldsService.getFields(
                 $ctrl.gridApi,
                 $ctrl.breakdown,
@@ -133,7 +153,7 @@ angular.module('one.widgets').component('zemReportQueryConfig', {
             }
 
             var mergedFields = defaultFields
-                .filter(function (field) {
+                .filter(function(field) {
                     return unSelectedFields.indexOf(field) === -1;
                 })
                 .concat(selectedFields)
@@ -142,14 +162,23 @@ angular.module('one.widgets').component('zemReportQueryConfig', {
             $ctrl.config.selectedFields = mergedFields;
             $ctrl.showAllSelectedFields();
 
-            if ($ctrl.shownSelectedFields.length > SHORTLIST_LIMIT && $ctrl.showTruncatedColsList) {
+            if (
+                $ctrl.shownSelectedFields.length > SHORTLIST_LIMIT &&
+                $ctrl.showTruncatedColsList
+            ) {
                 // user sees "..." only once. If the user interacts with column
                 // selection component we display all columns
                 $ctrl.showTruncatedColsList = false;
-                $ctrl.shownSelectedFields = $ctrl.config.selectedFields.slice(0, SHORTLIST_LIMIT);
+                $ctrl.shownSelectedFields = $ctrl.config.selectedFields.slice(
+                    0,
+                    SHORTLIST_LIMIT
+                );
             }
 
-            $ctrl.shownBreakdown = $ctrl.breakdown.slice(1, $ctrl.breakdown.length);
+            $ctrl.shownBreakdown = $ctrl.breakdown.slice(
+                1,
+                $ctrl.breakdown.length
+            );
 
             $ctrl.availableBreakdowns = zemReportBreakdownService.getAvailableBreakdowns(
                 $ctrl.breakdown,
@@ -157,8 +186,8 @@ angular.module('one.widgets').component('zemReportQueryConfig', {
             );
         }
 
-        function includeRefundColumns (selectedFields) {
-            refundColumns.forEach(function (col) {
+        function includeRefundColumns(selectedFields) {
+            refundColumns.forEach(function(col) {
                 var ix = selectedFields.indexOf(col);
                 if (ix === -1) {
                     selectedFields.push(col);
@@ -166,8 +195,8 @@ angular.module('one.widgets').component('zemReportQueryConfig', {
             });
         }
 
-        function removeRefundColumns (selectedFields) {
-            refundColumns.forEach(function (col) {
+        function removeRefundColumns(selectedFields) {
+            refundColumns.forEach(function(col) {
                 var ix = selectedFields.indexOf(col);
                 if (ix > -1) {
                     selectedFields.splice(ix, 1);
@@ -175,11 +204,11 @@ angular.module('one.widgets').component('zemReportQueryConfig', {
             });
         }
 
-        function showAllSelectedFields () {
+        function showAllSelectedFields() {
             $ctrl.shownSelectedFields = $ctrl.config.selectedFields;
         }
 
-        function showAllAppliedFilters () {
+        function showAllAppliedFilters() {
             $ctrl.shownAppliedFilterConditions = $ctrl.appliedFilterConditions;
         }
     },

@@ -1,27 +1,33 @@
-describe('zemEntityActionsService', function () {
-    var zemEntityActionsService, zemEntityActionsEndpoint, zemEntityBulkActionsEndpoint;
+describe('zemEntityActionsService', function() {
+    var zemEntityActionsService,
+        zemEntityActionsEndpoint,
+        zemEntityBulkActionsEndpoint;
     var $httpBackend;
 
     beforeEach(angular.mock.module('one'));
     beforeEach(angular.mock.module('one.mocks.zemInitializationService'));
 
-    beforeEach(inject(function ($injector) {
+    beforeEach(inject(function($injector) {
         $httpBackend = $injector.get('$httpBackend');
         zemEntityActionsService = $injector.get('zemEntityActionsService');
         zemEntityActionsEndpoint = $injector.get('zemEntityActionsEndpoint');
-        zemEntityBulkActionsEndpoint = $injector.get('zemEntityBulkActionsEndpoint');
+        zemEntityBulkActionsEndpoint = $injector.get(
+            'zemEntityBulkActionsEndpoint'
+        );
 
         $httpBackend.whenPOST(/.*/).respond(200, {});
     }));
 
-    afterEach(function () {
+    afterEach(function() {
         $httpBackend.verifyNoOutstandingExpectation();
         $httpBackend.verifyNoOutstandingRequest();
     });
 
-    it('should use zemEntityActions for entity action', function () {
+    it('should use zemEntityActions for entity action', function() {
         spyOn(zemEntityActionsEndpoint, 'activate').and.callThrough();
-        var service = zemEntityActionsService.createInstance(constants.entityType.AD_GROUP);
+        var service = zemEntityActionsService.createInstance(
+            constants.entityType.AD_GROUP
+        );
         var promise = service.activate(1);
         $httpBackend.flush();
 
@@ -29,9 +35,11 @@ describe('zemEntityActionsService', function () {
         expect(promise.$$state.status).toBe(1);
     });
 
-    it('should use zemEntityBulkActions for bulk action', function () {
+    it('should use zemEntityBulkActions for bulk action', function() {
         spyOn(zemEntityBulkActionsEndpoint, 'activate').and.callThrough();
-        var service = zemEntityActionsService.createInstance(constants.entityType.CAMPAIGN);
+        var service = zemEntityActionsService.createInstance(
+            constants.entityType.CAMPAIGN
+        );
         var promise = service.activateEntities(1, {});
         $httpBackend.flush();
 
@@ -39,8 +47,10 @@ describe('zemEntityActionsService', function () {
         expect(promise.$$state.status).toBe(1);
     });
 
-    it('should notify when entity action is executed ', function () {
-        var service = zemEntityActionsService.createInstance(constants.entityType.ACCOUNT);
+    it('should notify when entity action is executed ', function() {
+        var service = zemEntityActionsService.createInstance(
+            constants.entityType.ACCOUNT
+        );
         var spyOnActionExecuted = jasmine.createSpy();
         service.onActionExecuted(spyOnActionExecuted);
 
@@ -52,12 +62,14 @@ describe('zemEntityActionsService', function () {
             actionType: constants.entityActionType.SINGLE,
             entityType: constants.entityType.ACCOUNT,
             entityId: 1,
-            data: jasmine.any(Object)
+            data: jasmine.any(Object),
         });
     });
 
-    it('should notify when bulk action is executed ', function () {
-        var service = zemEntityActionsService.createInstance(constants.entityType.CAMPAIGN);
+    it('should notify when bulk action is executed ', function() {
+        var service = zemEntityActionsService.createInstance(
+            constants.entityType.CAMPAIGN
+        );
         var spyOnActionExecuted = jasmine.createSpy();
         service.onActionExecuted(spyOnActionExecuted);
 
@@ -72,17 +84,31 @@ describe('zemEntityActionsService', function () {
             entityType: constants.entityType.CAMPAIGN,
             entityId: 1,
             selection: {},
-            data: jasmine.any(Object)
+            data: jasmine.any(Object),
         });
     });
 
-    it('should provide getter for accessing supported actions', function () {
-        var service = zemEntityActionsService.createInstance(constants.entityType.AD_GROUP);
+    it('should provide getter for accessing supported actions', function() {
+        var service = zemEntityActionsService.createInstance(
+            constants.entityType.AD_GROUP
+        );
 
-        var activate = service.getAction(constants.entityActionType.SINGLE, constants.entityAction.ACTIVATE);
-        var deactivate = service.getAction(constants.entityActionType.SINGLE, constants.entityAction.DEACTIVATE);
-        var archive = service.getAction(constants.entityActionType.SINGLE, constants.entityAction.ARCHIVE);
-        var restore = service.getAction(constants.entityActionType.SINGLE, constants.entityAction.RESTORE);
+        var activate = service.getAction(
+            constants.entityActionType.SINGLE,
+            constants.entityAction.ACTIVATE
+        );
+        var deactivate = service.getAction(
+            constants.entityActionType.SINGLE,
+            constants.entityAction.DEACTIVATE
+        );
+        var archive = service.getAction(
+            constants.entityActionType.SINGLE,
+            constants.entityAction.ARCHIVE
+        );
+        var restore = service.getAction(
+            constants.entityActionType.SINGLE,
+            constants.entityAction.RESTORE
+        );
 
         expect(activate).toBe(service.activate);
         expect(deactivate).toBe(service.deactivate);
@@ -90,19 +116,42 @@ describe('zemEntityActionsService', function () {
         expect(restore).toBe(service.restore);
     });
 
-    it('should provide getter for accessing supported bulk actions', function () {
-        var service = zemEntityActionsService.createInstance(constants.entityType.AD_GROUP);
+    it('should provide getter for accessing supported bulk actions', function() {
+        var service = zemEntityActionsService.createInstance(
+            constants.entityType.AD_GROUP
+        );
 
-        var activate = service.getAction(constants.entityActionType.BULK, constants.entityAction.ACTIVATE);
-        var deactivate = service.getAction(constants.entityActionType.BULK, constants.entityAction.DEACTIVATE);
-        var archive = service.getAction(constants.entityActionType.BULK, constants.entityAction.ARCHIVE);
-        var restore = service.getAction(constants.entityActionType.BULK, constants.entityAction.RESTORE);
-        var edit = service.getAction(constants.entityActionType.BULK, constants.entityAction.EDIT);
+        var activate = service.getAction(
+            constants.entityActionType.BULK,
+            constants.entityAction.ACTIVATE
+        );
+        var deactivate = service.getAction(
+            constants.entityActionType.BULK,
+            constants.entityAction.DEACTIVATE
+        );
+        var archive = service.getAction(
+            constants.entityActionType.BULK,
+            constants.entityAction.ARCHIVE
+        );
+        var restore = service.getAction(
+            constants.entityActionType.BULK,
+            constants.entityAction.RESTORE
+        );
+        var edit = service.getAction(
+            constants.entityActionType.BULK,
+            constants.entityAction.EDIT
+        );
 
-        var activateSources = service.getAction(constants.entityActionType.BULK,
-            constants.entityAction.ACTIVATE, constants.breakdown.MEDIA_SOURCE);
-        var deactivateSources = service.getAction(constants.entityActionType.BULK,
-            constants.entityAction.DEACTIVATE, constants.breakdown.MEDIA_SOURCE);
+        var activateSources = service.getAction(
+            constants.entityActionType.BULK,
+            constants.entityAction.ACTIVATE,
+            constants.breakdown.MEDIA_SOURCE
+        );
+        var deactivateSources = service.getAction(
+            constants.entityActionType.BULK,
+            constants.entityAction.DEACTIVATE,
+            constants.breakdown.MEDIA_SOURCE
+        );
 
         expect(activate).toBe(service.activateEntities);
         expect(deactivate).toBe(service.deactivateEntities);

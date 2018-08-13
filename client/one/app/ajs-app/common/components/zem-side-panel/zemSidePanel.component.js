@@ -4,10 +4,10 @@ angular.module('one.common').component('zemSidePanel', {
     transclude: true,
     bindings: {
         api: '<',
-        onCloseRequest: '&'
+        onCloseRequest: '&',
     },
     template: require('./zemSidePanel.component.html'),
-    controller: function ($window, hotkeys) {
+    controller: function($window, hotkeys) {
         var $ctrl = this;
 
         $ctrl.requestClose = $ctrl.onCloseRequest;
@@ -15,34 +15,34 @@ angular.module('one.common').component('zemSidePanel', {
         $ctrl.api.close = close;
         $ctrl.api.isVisible = isVisible;
 
-        $ctrl.$onInit = function () {
-        };
+        $ctrl.$onInit = function() {};
 
-        function isVisible () {
+        function isVisible() {
             return $ctrl.visible;
         }
 
-        function isModalOpened () {
+        function isModalOpened() {
             // when uib modal opened, special class (.modal-open) is added to body
             return $('body').hasClass('modal-open');
         }
 
-        function open () {
+        function open() {
             $ctrl.visible = true;
             $window.scrollTo(0, 0);
             $('body').addClass('no-scroll');
 
             hotkeys.add({
-                combo: 'esc', callback: function () {
+                combo: 'esc',
+                callback: function() {
                     if (!isModalOpened()) $ctrl.requestClose();
-                }
+                },
             });
         }
 
-        function close () {
+        function close() {
             $ctrl.visible = false;
             $('body').removeClass('no-scroll');
             hotkeys.del('esc');
         }
-    }
+    },
 });

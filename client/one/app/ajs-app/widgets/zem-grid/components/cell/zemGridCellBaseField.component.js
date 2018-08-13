@@ -1,5 +1,4 @@
-angular.module('one.widgets').directive('zemGridCellBaseField', function () {
-
+angular.module('one.widgets').directive('zemGridCellBaseField', function() {
     return {
         restrict: 'E',
         replace: true,
@@ -12,14 +11,21 @@ angular.module('one.widgets').directive('zemGridCellBaseField', function () {
             grid: '=',
         },
         template: require('./zemGridCellBaseField.component.html'),
-        controller: function ($scope, zemGridConstants, zemGridDataFormatter, zemGridUIService, zemPermissions) { // eslint-disable-line max-len
+        controller: function(
+            $scope,
+            zemGridConstants,
+            zemGridDataFormatter,
+            zemGridUIService,
+            zemPermissions
+        ) {
+            // eslint-disable-line max-len
             var vm = this;
             vm.hasPermission = zemPermissions.hasPermission;
 
             $scope.$watch('ctrl.row', update);
             $scope.$watch('ctrl.data', update);
 
-            function update () {
+            function update() {
                 vm.formattedValue = '';
 
                 if (!isFieldVisible()) {
@@ -31,30 +37,42 @@ angular.module('one.widgets').directive('zemGridCellBaseField', function () {
                 if (vm.row.type === zemGridConstants.gridRowType.STATS) {
                     var formatterOptions = angular.copy(vm.column.data);
                     formatterOptions.currency = vm.grid.meta.data.ext.currency;
-                    vm.formattedValue = zemGridDataFormatter.formatValue(value, formatterOptions);
+                    vm.formattedValue = zemGridDataFormatter.formatValue(
+                        value,
+                        formatterOptions
+                    );
                 }
 
                 vm.class = vm.column.type + '-field';
                 if (vm.data) {
-                    vm.class += ' ' + zemGridUIService.getFieldGoalStatusClass(vm.data.goalStatus);
+                    vm.class +=
+                        ' ' +
+                        zemGridUIService.getFieldGoalStatusClass(
+                            vm.data.goalStatus
+                        );
                 }
 
                 vm.refundFormattedValue = getRefundValue();
             }
 
-            function isFieldVisible () {
+            function isFieldVisible() {
                 if (!vm.row || !vm.column) {
                     return false;
                 }
-                return !(vm.row.level === zemGridConstants.gridRowLevel.FOOTER && vm.column.data.totalRow === false);
+                return !(
+                    vm.row.level === zemGridConstants.gridRowLevel.FOOTER &&
+                    vm.column.data.totalRow === false
+                );
             }
 
-            function getRefundValue () {
+            function getRefundValue() {
                 var refundField = vm.column.field + '_refund';
-                if (!vm.row.data ||
+                if (
+                    !vm.row.data ||
                     !vm.row.data.stats ||
                     !vm.row.data.stats[refundField] ||
-                    !vm.row.data.stats[refundField].value) {
+                    !vm.row.data.stats[refundField].value
+                ) {
                     return '';
                 }
 

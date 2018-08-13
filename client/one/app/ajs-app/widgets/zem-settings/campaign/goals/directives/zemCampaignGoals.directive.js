@@ -1,4 +1,4 @@
-angular.module('one.widgets').directive('zemCampaignGoals', function ($filter) {
+angular.module('one.widgets').directive('zemCampaignGoals', function($filter) {
     return {
         restrict: 'E',
         scope: {
@@ -11,7 +11,7 @@ angular.module('one.widgets').directive('zemCampaignGoals', function ($filter) {
             goalsDefaults: '=',
         },
         template: require('./zemCampaignGoals.directive.html'),
-        controller: function ($uibModal, $scope) {
+        controller: function($uibModal, $scope) {
             $scope.campaignGoals = $scope.campaignGoals || [];
             $scope.i = 0;
 
@@ -21,15 +21,15 @@ angular.module('one.widgets').directive('zemCampaignGoals', function ($filter) {
             $scope.model.removed = [];
             $scope.model.primary = null;
 
-            $scope.formatGoalValue = function (goal) {
+            $scope.formatGoalValue = function(goal) {
                 return $filter('campaignGoalText')(goal);
             };
 
-            $scope.setPrimary = function (goal) {
+            $scope.setPrimary = function(goal) {
                 if (goal.removed) {
                     return;
                 }
-                $scope.campaignGoals.forEach(function (el) {
+                $scope.campaignGoals.forEach(function(el) {
                     el.primary = false;
                 });
 
@@ -37,7 +37,7 @@ angular.module('one.widgets').directive('zemCampaignGoals', function ($filter) {
                 $scope.model.primary = goal.id || null;
             };
 
-            $scope.deleteGoal = function (goal) {
+            $scope.deleteGoal = function(goal) {
                 var index = $scope.campaignGoals.indexOf(goal);
                 if (index === -1) {
                     return;
@@ -45,7 +45,8 @@ angular.module('one.widgets').directive('zemCampaignGoals', function ($filter) {
 
                 $scope.campaignGoals.splice(index, 1);
 
-                if (goal.id === undefined) { // new goal
+                if (goal.id === undefined) {
+                    // new goal
                     index = $scope.model.added.indexOf(goal);
                     if (index !== -1) {
                         $scope.model.added.splice(index, 1);
@@ -61,7 +62,7 @@ angular.module('one.widgets').directive('zemCampaignGoals', function ($filter) {
                 }
             };
 
-            $scope.choosePrimary = function () {
+            $scope.choosePrimary = function() {
                 if (!$scope.campaignGoals.length) {
                     return;
                 }
@@ -73,7 +74,7 @@ angular.module('one.widgets').directive('zemCampaignGoals', function ($filter) {
                 }
             };
 
-            function openModal (goal) {
+            function openModal(goal) {
                 var scope = $scope.$new(true);
 
                 scope.campaignGoals = $scope.campaignGoals;
@@ -94,10 +95,10 @@ angular.module('one.widgets').directive('zemCampaignGoals', function ($filter) {
                 });
             }
 
-            $scope.addGoal = function () {
+            $scope.addGoal = function() {
                 var modalInstance = openModal();
 
-                modalInstance.result.then(function (campaignGoal) {
+                modalInstance.result.then(function(campaignGoal) {
                     if (!$scope.campaignGoals.length) {
                         campaignGoal.primary = true;
                     }
@@ -108,9 +109,9 @@ angular.module('one.widgets').directive('zemCampaignGoals', function ($filter) {
                 return modalInstance;
             };
 
-            $scope.editGoal = function (goal) {
+            $scope.editGoal = function(goal) {
                 var modalInstance = openModal(goal);
-                modalInstance.result.then(function (campaignGoal) {
+                modalInstance.result.then(function(campaignGoal) {
                     if (goal.id !== undefined) {
                         $scope.model.modified[goal.id] = campaignGoal.value;
                     }
@@ -119,40 +120,54 @@ angular.module('one.widgets').directive('zemCampaignGoals', function ($filter) {
                 return modalInstance;
             };
 
-            $scope.getKPIOptimizationLabel = function () {
+            $scope.getKPIOptimizationLabel = function() {
                 var label = '';
                 for (var i = 0; i < $scope.campaignGoals.length; i++) {
                     var el = $scope.campaignGoals[i];
-                    if (el.primary && constants.automaticallyOptimizedKPIGoals.indexOf(el.type) > -1) {
-                        label = ('Goal ' + constants.campaignGoalValueText[el.type] +
-                        ' is automatically optimized when data from Google Analytics/Adobe Analytics ' +
-                        'is available and there are enough clicks for the data to be statistically significant.');
+                    if (
+                        el.primary &&
+                        constants.automaticallyOptimizedKPIGoals.indexOf(
+                            el.type
+                        ) > -1
+                    ) {
+                        label =
+                            'Goal ' +
+                            constants.campaignGoalValueText[el.type] +
+                            ' is automatically optimized when data from Google Analytics/Adobe Analytics ' +
+                            'is available and there are enough clicks for the data to be statistically significant.';
                         break;
                     }
                 }
                 return label;
             };
 
-            $scope.getConversionPixelTag = function (name, url) {
-                return '<!-- ' + name + '-->\n<img src="' + url + '" height="1" width="1" border="0" alt="" />';
+            $scope.getConversionPixelTag = function(name, url) {
+                return (
+                    '<!-- ' +
+                    name +
+                    '-->\n<img src="' +
+                    url +
+                    '" height="1" width="1" border="0" alt="" />'
+                );
             };
 
-            $scope.copyConversionPixelTag = function (conversionGoal, $event) {
+            $scope.copyConversionPixelTag = function(conversionGoal, $event) {
                 // when clicking on Copy pixel prevent select primary goal
                 var scope = $scope.$new(true);
                 scope.conversionPixelTag = $scope.getConversionPixelTag(
-                    conversionGoal.name, conversionGoal.pixelUrl);
+                    conversionGoal.name,
+                    conversionGoal.pixelUrl
+                );
 
                 var modalInstance = $uibModal.open({
                     template: require('./zemCopyConversionPixelModal.partial.html'), // eslint-disable-line max-len
                     scope: scope,
                 });
-                modalInstance.result.then(function () {});
+                modalInstance.result.then(function() {});
 
                 $event.stopPropagation();
                 return false;
             };
-
         },
     };
 });

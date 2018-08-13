@@ -5,13 +5,20 @@ angular.module('one').component('zemAccountCredit', {
         account: '<',
     },
     template: require('./zemAccountCredit.component.html'),
-    controller: function (zemAccountCreditStateService, zemPermissions, $window, $uibModal) {
+    controller: function(
+        zemAccountCreditStateService,
+        zemPermissions,
+        $window,
+        $uibModal
+    ) {
         var $ctrl = this;
 
         $ctrl.hasPermission = zemPermissions.hasPermission;
 
-        $ctrl.$onInit = function () {
-            $ctrl.stateService = zemAccountCreditStateService.createInstance($ctrl.account);
+        $ctrl.$onInit = function() {
+            $ctrl.stateService = zemAccountCreditStateService.createInstance(
+                $ctrl.account
+            );
             $ctrl.stateService.reloadCredit();
             $ctrl.state = $ctrl.stateService.getState();
 
@@ -20,14 +27,18 @@ angular.module('one').component('zemAccountCredit', {
             $ctrl.openCreditRefundItemModal = openCreditRefundItemModal;
         };
 
-        function cancelCreditItem (id) {
-            if (!$window.confirm('Are you sure you want to cancel the credit line item?')) {
+        function cancelCreditItem(id) {
+            if (
+                !$window.confirm(
+                    'Are you sure you want to cancel the credit line item?'
+                )
+            ) {
                 return;
             }
             $ctrl.stateService.cancelCreditItem(id);
         }
 
-        function openCreditItemModal (id) {
+        function openCreditItemModal(id) {
             $uibModal.open({
                 component: 'zemAccountCreditItemModal',
                 windowClass: 'zem-account-credit-item-modal',
@@ -39,7 +50,7 @@ angular.module('one').component('zemAccountCredit', {
             });
         }
 
-        function openCreditRefundItemModal (creditItem) {
+        function openCreditRefundItemModal(creditItem) {
             $ctrl.stateService.setCreditItem(creditItem);
             $uibModal.open({
                 component: 'zemAccountCreditRefundItemModal',

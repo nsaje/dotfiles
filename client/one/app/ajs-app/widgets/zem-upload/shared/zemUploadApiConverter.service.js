@@ -1,5 +1,4 @@
-angular.module('one.widgets').service('zemUploadApiConverter', function () {
-
+angular.module('one.widgets').service('zemUploadApiConverter', function() {
     this.convertCandidatesFromApi = convertCandidatesFromApi;
     this.convertValidationErrorsFromApi = convertValidationErrorsFromApi;
     this.convertBatchErrorsFromApi = convertBatchErrorsFromApi;
@@ -11,7 +10,7 @@ angular.module('one.widgets').service('zemUploadApiConverter', function () {
     this.convertCandidateFieldsFromApi = convertCandidateFieldsFromApi;
     this.convertCandidateFromApi = convertCandidateFromApi;
 
-    function convertDefaultFields (defaults) {
+    function convertDefaultFields(defaults) {
         if (!defaults || !defaults.length) return [];
 
         var ret = [];
@@ -37,7 +36,7 @@ angular.module('one.widgets').service('zemUploadApiConverter', function () {
         return ret;
     }
 
-    function convertPartialUpdateToApi (candidate) {
+    function convertPartialUpdateToApi(candidate) {
         return {
             id: candidate.id,
             label: candidate.label,
@@ -55,8 +54,8 @@ angular.module('one.widgets').service('zemUploadApiConverter', function () {
         };
     }
 
-    function removeUndefinedValues (obj) {
-        Object.keys(obj).forEach(function (key) {
+    function removeUndefinedValues(obj) {
+        Object.keys(obj).forEach(function(key) {
             if (obj[key] === undefined) {
                 delete obj[key];
             }
@@ -64,7 +63,7 @@ angular.module('one.widgets').service('zemUploadApiConverter', function () {
         return obj;
     }
 
-    function convertCandidateErrorsFromApi (errors) {
+    function convertCandidateErrorsFromApi(errors) {
         if (!errors) return {};
 
         return removeUndefinedValues({
@@ -85,7 +84,7 @@ angular.module('one.widgets').service('zemUploadApiConverter', function () {
         });
     }
 
-    function convertCandidateFieldsFromApi (candidate) {
+    function convertCandidateFieldsFromApi(candidate) {
         return removeUndefinedValues({
             id: candidate.id,
             label: candidate.label,
@@ -111,34 +110,36 @@ angular.module('one.widgets').service('zemUploadApiConverter', function () {
         });
     }
 
-    function convertCandidateFromApi (candidate) {
+    function convertCandidateFromApi(candidate) {
         var newCandidate = convertCandidateFieldsFromApi(candidate);
         newCandidate.errors = {};
 
         if (candidate.errors) {
-            newCandidate.errors = convertCandidateErrorsFromApi(candidate.errors);
+            newCandidate.errors = convertCandidateErrorsFromApi(
+                candidate.errors
+            );
         }
 
         return removeUndefinedValues(newCandidate);
     }
 
-    function convertCandidatesFromApi (candidates) {
+    function convertCandidatesFromApi(candidates) {
         var result = [];
-        angular.forEach(candidates, function (candidate) {
+        angular.forEach(candidates, function(candidate) {
             result.push(convertCandidateFromApi(candidate));
         });
         return result;
     }
 
-    function convertStatusFromApi (candidates) {
+    function convertStatusFromApi(candidates) {
         var result = [];
-        angular.forEach(candidates, function (candidate, candidateId) {
+        angular.forEach(candidates, function(candidate, candidateId) {
             result[candidateId] = convertCandidateFromApi(candidate);
         });
         return result;
     }
 
-    function convertValidationErrorsFromApi (errors) {
+    function convertValidationErrorsFromApi(errors) {
         var converted = {
             file: errors.candidates,
             batchName: errors.batch_name,
@@ -158,7 +159,7 @@ angular.module('one.widgets').service('zemUploadApiConverter', function () {
         return converted;
     }
 
-    function convertBatchErrorsFromApi (errors) {
+    function convertBatchErrorsFromApi(errors) {
         return {
             batchName: errors.batch_name,
         };

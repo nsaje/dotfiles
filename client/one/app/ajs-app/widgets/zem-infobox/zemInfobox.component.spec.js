@@ -1,4 +1,4 @@
-describe('zemInfobox', function () {
+describe('zemInfobox', function() {
     var $injector;
     var $componentController;
     var $rootScope;
@@ -7,7 +7,7 @@ describe('zemInfobox', function () {
 
     beforeEach(angular.mock.module('one'));
     beforeEach(angular.mock.module('one.mocks.zemInitializationService'));
-    beforeEach(inject(function (_$injector_) {
+    beforeEach(inject(function(_$injector_) {
         $injector = _$injector_;
         $componentController = $injector.get('$componentController');
         $rootScope = $injector.get('$rootScope');
@@ -17,15 +17,20 @@ describe('zemInfobox', function () {
         $httpBackend.whenGET(/^\/api\/.*/).respond(200, {data: {}});
     }));
 
-    it('should initialize with data from service', function () {
+    it('should initialize with data from service', function() {
         var $ctrl = $componentController('zemInfobox');
         var data = {
             delivery: 'delivery',
             basicSettings: 'basicSettings',
             performanceSettings: 'performanceSettings',
         };
-        var mockedAsyncFunction = zemSpecsHelper.getMockedAsyncFunction($injector, data);
-        spyOn(zemInfoboxService, 'reloadInfoboxData').and.callFake(mockedAsyncFunction);
+        var mockedAsyncFunction = zemSpecsHelper.getMockedAsyncFunction(
+            $injector,
+            data
+        );
+        spyOn(zemInfoboxService, 'reloadInfoboxData').and.callFake(
+            mockedAsyncFunction
+        );
 
         $ctrl.$onInit();
         $rootScope.$digest();

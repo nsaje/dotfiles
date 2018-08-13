@@ -1,6 +1,5 @@
-angular.module('one.widgets').directive('zemGridCellStatusField', function () {
-
-    function getStatusText (value, row, statusValuesAndTexts) {
+angular.module('one.widgets').directive('zemGridCellStatusField', function() {
+    function getStatusText(value, row, statusValuesAndTexts) {
         if (row.archived) {
             return 'Archived';
         }
@@ -23,7 +22,7 @@ angular.module('one.widgets').directive('zemGridCellStatusField', function () {
             grid: '=',
         },
         template: require('./zemGridCellStatusField.component.html'),
-        controller: function ($scope, zemGridStateAndStatusHelpers) {
+        controller: function($scope, zemGridStateAndStatusHelpers) {
             var vm = this;
             var pubsub = vm.grid.meta.pubsub;
 
@@ -31,7 +30,7 @@ angular.module('one.widgets').directive('zemGridCellStatusField', function () {
             $scope.$watch('ctrl.data', update);
             pubsub.register(pubsub.EVENTS.DATA_UPDATED, $scope, update);
 
-            function update () {
+            function update() {
                 vm.statusText = '';
 
                 if (vm.row && vm.data) {
@@ -39,7 +38,11 @@ angular.module('one.widgets').directive('zemGridCellStatusField', function () {
                         vm.grid.meta.data.level,
                         vm.grid.meta.data.breakdown
                     );
-                    vm.statusText = getStatusText(vm.data.value, vm.row, statusValuesAndTexts);
+                    vm.statusText = getStatusText(
+                        vm.data.value,
+                        vm.row,
+                        statusValuesAndTexts
+                    );
                 }
             }
         },

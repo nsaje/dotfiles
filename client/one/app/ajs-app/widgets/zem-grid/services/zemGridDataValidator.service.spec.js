@@ -1,16 +1,14 @@
-describe('zemGridDataValidator', function () {
-    var zemGridDataValidator,
-        tests,
-        options;
+describe('zemGridDataValidator', function() {
+    var zemGridDataValidator, tests, options;
 
     beforeEach(angular.mock.module('one'));
     beforeEach(angular.mock.module('one.mocks.zemInitializationService'));
 
-    beforeEach(inject(function (_zemGridDataValidator_) {
+    beforeEach(inject(function(_zemGridDataValidator_) {
         zemGridDataValidator = _zemGridDataValidator_;
     }));
 
-    it('should correctly validate currency values', function () {
+    it('should correctly validate currency values', function() {
         tests = [
             {value: '1234', fractionSize: 2, expectedResult: true},
             {value: '12.34', fractionSize: 2, expectedResult: true},
@@ -31,12 +29,14 @@ describe('zemGridDataValidator', function () {
             {value: '0.', fractionSize: 0, expectedResult: false},
         ];
 
-        tests.forEach(function (test) {
+        tests.forEach(function(test) {
             options = {
                 type: 'currency',
                 fractionSize: test.fractionSize,
             };
-            expect(zemGridDataValidator.validate(test.value, options)).toBe(test.expectedResult);
+            expect(zemGridDataValidator.validate(test.value, options)).toBe(
+                test.expectedResult
+            );
         });
     });
 });

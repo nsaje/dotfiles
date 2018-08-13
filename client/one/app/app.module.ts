@@ -10,14 +10,14 @@ import {InventoryPlanningModule} from './features/inventory-planning/inventory-p
 
 // Raven (Sentry) configuration
 if (APP_CONFIG.env.prod) {
-    (<any> window).Raven.config(
+    (<any>window).Raven.config(
         'https://5443376e0b054647b8c8759811ad4d5b@sentry.io/147373',
         {
             shouldSendCallback: () => APP_CONFIG.env.prod,
         }
     )
-    .addPlugin((<any> window).Raven.Plugins.Angular)
-    .install();
+        .addPlugin((<any>window).Raven.Plugins.Angular)
+        .install();
 }
 
 @NgModule({
@@ -43,14 +43,14 @@ if (APP_CONFIG.env.prod) {
     ],
 })
 export class AppModule {
-    constructor (private upgrade: UpgradeModule) {}
+    constructor(private upgrade: UpgradeModule) {}
 
-    ngDoBootstrap () {
+    ngDoBootstrap() {
         this.upgrade.bootstrap(document.body, ['one'], {strictDi: true});
     }
 }
 
-function upgradeProvider (ajsName: string, name?: string): any {
+function upgradeProvider(ajsName: string, name?: string): any {
     return {
         provide: name || ajsName,
         useFactory: (i: any) => i.get(ajsName),

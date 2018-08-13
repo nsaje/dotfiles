@@ -3,34 +3,37 @@ angular.module('one.widgets').component('zemChartMetricSelector', {
         chart: '<',
         metric: '<',
         nullable: '<',
-        onMetricChanged: '&'
+        onMetricChanged: '&',
     },
     template: require('./zemChartMetricSelector.component.html'),
-    controller: function (zemCostModeService, zemNavigationNewService) {
+    controller: function(zemCostModeService, zemNavigationNewService) {
         var $ctrl = this;
 
-        $ctrl.$onInit = function () {
+        $ctrl.$onInit = function() {
             initializeCategories();
             zemCostModeService.onCostModeUpdate(initializeCategories);
             zemNavigationNewService.onUsesBCMv2Update(initializeCategories);
             $ctrl.chart.metrics.metaData.onMetricsUpdated(initializeCategories);
         };
 
-        function getCategoryColumns (category) {
+        function getCategoryColumns(category) {
             var costMode = zemCostModeService.getCostMode();
 
-            return category.metrics.filter(function (metric) {
-                if (zemCostModeService.isTogglableCostMode(metric.costMode)) return metric.costMode === costMode;
+            return category.metrics.filter(function(metric) {
+                if (zemCostModeService.isTogglableCostMode(metric.costMode))
+                    return metric.costMode === costMode;
                 return true;
             });
         }
 
-        function getCategory (category) {
+        function getCategory(category) {
             var categoryColumns = getCategoryColumns(category),
                 subcategories = [];
 
             if (category.hasOwnProperty('subcategories')) {
-                subcategories = category.subcategories.map(function (subcategory) {
+                subcategories = category.subcategories.map(function(
+                    subcategory
+                ) {
                     return getCategory(subcategory);
                 });
             }
@@ -43,18 +46,21 @@ angular.module('one.widgets').component('zemChartMetricSelector', {
             };
         }
 
-        function initializeCategories () {
+        function initializeCategories() {
             $ctrl.categories = [];
-            $ctrl.chart.metrics.options.forEach(function (category) {
+            $ctrl.chart.metrics.options.forEach(function(category) {
                 var newCategory = getCategory(category);
-                if (newCategory.metrics.length > 0 || newCategory.subcategories.length > 0) {
+                if (
+                    newCategory.metrics.length > 0 ||
+                    newCategory.subcategories.length > 0
+                ) {
                     $ctrl.categories.push(newCategory);
                 }
             });
         }
 
-        $ctrl.onChanged = function (metric) {
+        $ctrl.onChanged = function(metric) {
             $ctrl.onMetricChanged({value: metric});
         };
-    }
+    },
 });

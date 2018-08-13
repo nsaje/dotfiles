@@ -1,6 +1,8 @@
-var mockedFunction = function () {};
+var mockedFunction = function() {};
 
-angular.module('one.mocks.downgradedProviders', []).service('zemMulticurrencyService', function () {
-    this.getValueInAppropriateCurrency = mockedFunction;
-    this.getAppropriateCurrencySymbol = mockedFunction;
-});
+angular
+    .module('one.mocks.downgradedProviders', [])
+    .service('zemMulticurrencyService', function() {
+        this.getValueInAppropriateCurrency = mockedFunction;
+        this.getAppropriateCurrencySymbol = mockedFunction;
+    });

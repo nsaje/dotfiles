@@ -4,8 +4,8 @@ angular.module('one.widgets').component('zemInterestTargeting', {
         errors: '<',
         api: '<',
     },
-    template: require('./zemInterestTargeting.component.html'),  // eslint-disable-line max-len
-    controller: function (zemPermissions) {
+    template: require('./zemInterestTargeting.component.html'), // eslint-disable-line max-len
+    controller: function(zemPermissions) {
         var $ctrl = this;
 
         $ctrl.hasPermission = zemPermissions.hasPermission;
@@ -23,15 +23,15 @@ angular.module('one.widgets').component('zemInterestTargeting', {
         $ctrl.addExcluded = addExcluded;
         $ctrl.removeTargeting = removeTargeting;
 
-        $ctrl.$onInit = function () {
+        $ctrl.$onInit = function() {
             $ctrl.api.register({});
         };
 
-        $ctrl.$onChanges = function () {
+        $ctrl.$onChanges = function() {
             $ctrl.targetings = getTargetings();
         };
 
-        function addIncluded (targeting) {
+        function addIncluded(targeting) {
             if (!$ctrl.entity.settings.interestTargeting) {
                 $ctrl.entity.settings.interestTargeting = [];
             }
@@ -39,7 +39,7 @@ angular.module('one.widgets').component('zemInterestTargeting', {
             $ctrl.targetings = getTargetings();
         }
 
-        function addExcluded (targeting) {
+        function addExcluded(targeting) {
             if (!$ctrl.entity.settings.exclusionInterestTargeting) {
                 $ctrl.entity.settings.exclusionInterestTargeting = [];
             }
@@ -47,24 +47,35 @@ angular.module('one.widgets').component('zemInterestTargeting', {
             $ctrl.targetings = getTargetings();
         }
 
-        function removeTargeting (targeting) {
-            var index = $ctrl.entity.settings.interestTargeting.indexOf(targeting.id);
+        function removeTargeting(targeting) {
+            var index = $ctrl.entity.settings.interestTargeting.indexOf(
+                targeting.id
+            );
             if (index !== -1) {
-                $ctrl.entity.settings.interestTargeting = $ctrl.entity.settings.interestTargeting.slice(0, index)
-                    .concat($ctrl.entity.settings.interestTargeting.slice(index + 1));
+                $ctrl.entity.settings.interestTargeting = $ctrl.entity.settings.interestTargeting
+                    .slice(0, index)
+                    .concat(
+                        $ctrl.entity.settings.interestTargeting.slice(index + 1)
+                    );
             }
 
-            index = $ctrl.entity.settings.exclusionInterestTargeting.indexOf(targeting.id);
+            index = $ctrl.entity.settings.exclusionInterestTargeting.indexOf(
+                targeting.id
+            );
             if (index !== -1) {
-                $ctrl.entity.settings.exclusionInterestTargeting =
-                    $ctrl.entity.settings.exclusionInterestTargeting.slice(0, index)
-                        .concat($ctrl.entity.settings.exclusionInterestTargeting.slice(index + 1));
+                $ctrl.entity.settings.exclusionInterestTargeting = $ctrl.entity.settings.exclusionInterestTargeting
+                    .slice(0, index)
+                    .concat(
+                        $ctrl.entity.settings.exclusionInterestTargeting.slice(
+                            index + 1
+                        )
+                    );
             }
 
             $ctrl.targetings = getTargetings();
         }
 
-        function getTargetings () {
+        function getTargetings() {
             var targetings = {
                 included: [],
                 excluded: [],
@@ -74,13 +85,21 @@ angular.module('one.widgets').component('zemInterestTargeting', {
             if (!$ctrl.entity) return targetings;
 
             var interests = options.interests.slice();
-            interests.sort(function (opt1, opt2) {
+            interests.sort(function(opt1, opt2) {
                 return opt1.name.localeCompare(opt2.name);
             });
-            interests.forEach(function (interest) {
-                if ($ctrl.entity.settings.interestTargeting.indexOf(interest.value) !== -1) {
+            interests.forEach(function(interest) {
+                if (
+                    $ctrl.entity.settings.interestTargeting.indexOf(
+                        interest.value
+                    ) !== -1
+                ) {
                     targetings.included.push(getTargetingEntity(interest));
-                } else if ($ctrl.entity.settings.exclusionInterestTargeting.indexOf(interest.value) !== -1) {
+                } else if (
+                    $ctrl.entity.settings.exclusionInterestTargeting.indexOf(
+                        interest.value
+                    ) !== -1
+                ) {
                     targetings.excluded.push(getTargetingEntity(interest));
                 } else if (!interest.internal) {
                     targetings.notSelected.push(getTargetingEntity(interest));
@@ -90,7 +109,7 @@ angular.module('one.widgets').component('zemInterestTargeting', {
             return targetings;
         }
 
-        function getTargetingEntity (interest) {
+        function getTargetingEntity(interest) {
             return {
                 section: 'Interests',
                 id: interest.value,
@@ -99,5 +118,5 @@ angular.module('one.widgets').component('zemInterestTargeting', {
                 title: interest.name,
             };
         }
-    }
+    },
 });

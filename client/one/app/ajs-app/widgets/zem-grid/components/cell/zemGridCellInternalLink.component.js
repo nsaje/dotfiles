@@ -1,5 +1,4 @@
-angular.module('one.widgets').directive('zemGridCellInternalLink', function () {
-
+angular.module('one.widgets').directive('zemGridCellInternalLink', function() {
     return {
         restrict: 'E',
         replace: true,
@@ -12,17 +11,20 @@ angular.module('one.widgets').directive('zemGridCellInternalLink', function () {
             grid: '=',
         },
         template: require('./zemGridCellInternalLink.component.html'),
-        controller: function ($scope, zemNavigationNewService) {
+        controller: function($scope, zemNavigationNewService) {
             var vm = this;
 
             $scope.$watch('ctrl.row', update);
             $scope.$watch('ctrl.data', update);
 
-            function update () {
+            function update() {
                 vm.href = null;
                 if (vm.data && vm.row.data && vm.row.entity) {
                     var includeQueryParams = true;
-                    vm.href = zemNavigationNewService.getEntityHref(vm.row.entity, includeQueryParams);
+                    vm.href = zemNavigationNewService.getEntityHref(
+                        vm.row.entity,
+                        includeQueryParams
+                    );
                 }
             }
         },

@@ -1,10 +1,10 @@
-describe('component: zemCampaignGoalsSettings', function () {
+describe('component: zemCampaignGoalsSettings', function() {
     var $ctrl;
 
     beforeEach(angular.mock.module('one'));
     beforeEach(angular.mock.module('one.mocks.zemInitializationService'));
 
-    beforeEach(inject(function ($rootScope, $componentController) {
+    beforeEach(inject(function($rootScope, $componentController) {
         var bindings = {
             entity: {settings: {}},
             errors: {},
@@ -13,7 +13,7 @@ describe('component: zemCampaignGoalsSettings', function () {
         $ctrl = $componentController('zemCampaignGoalsSettings', {}, bindings);
     }));
 
-    it('should initialize without errors', function () {
+    it('should initialize without errors', function() {
         $ctrl.$onInit();
     });
 });

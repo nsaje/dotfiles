@@ -1,4 +1,4 @@
-describe('zemFilterSelectorService', function () {
+describe('zemFilterSelectorService', function() {
     var $injector;
     var $rootScope;
     var $httpBackend;
@@ -11,16 +11,18 @@ describe('zemFilterSelectorService', function () {
     var zemAgenciesService;
     var mockedAsyncFunction;
 
-    function getVisibleConditions () {
-        return zemFilterSelectorService.getVisibleSections().map(function (section) {
-            return section.condition.name;
-        });
+    function getVisibleConditions() {
+        return zemFilterSelectorService
+            .getVisibleSections()
+            .map(function(section) {
+                return section.condition.name;
+            });
     }
 
     beforeEach(angular.mock.module('one'));
     beforeEach(angular.mock.module('one.mocks.zemInitializationService'));
     beforeEach(angular.mock.module('one.mocks.zemPermissions'));
-    beforeEach(inject(function (_$injector_) {
+    beforeEach(inject(function(_$injector_) {
         $injector = _$injector_;
         $rootScope = $injector.get('$rootScope');
         $httpBackend = $injector.get('$httpBackend');
@@ -51,87 +53,215 @@ describe('zemFilterSelectorService', function () {
         zemFilterSelectorService.init();
     }));
 
-    afterEach(function () {
+    afterEach(function() {
         $httpBackend.verifyNoOutstandingExpectation();
         $httpBackend.verifyNoOutstandingRequest();
     });
 
-    it('should exclude section from visible sections if user has no permission to see it', function () {
+    it('should exclude section from visible sections if user has no permission to see it', function() {
         zemPermissions.setMockedPermissions([]);
 
         var visibleConditions = getVisibleConditions();
-        expect(visibleConditions.indexOf(zemDataFilterService.CONDITIONS.sources.name) !== -1).toBe(false);
-        expect(visibleConditions.indexOf(zemDataFilterService.CONDITIONS.agencies.name) !== -1).toBe(false);
-        expect(visibleConditions.indexOf(zemDataFilterService.CONDITIONS.accountTypes.name) !== -1).toBe(false);
-        expect(visibleConditions.indexOf(zemDataFilterService.CONDITIONS.statuses.name) !== -1).toBe(true);
-        expect(visibleConditions.indexOf(zemDataFilterService.CONDITIONS.publisherStatus.name) !== -1).toBe(false);
-
+        expect(
+            visibleConditions.indexOf(
+                zemDataFilterService.CONDITIONS.sources.name
+            ) !== -1
+        ).toBe(false);
+        expect(
+            visibleConditions.indexOf(
+                zemDataFilterService.CONDITIONS.agencies.name
+            ) !== -1
+        ).toBe(false);
+        expect(
+            visibleConditions.indexOf(
+                zemDataFilterService.CONDITIONS.accountTypes.name
+            ) !== -1
+        ).toBe(false);
+        expect(
+            visibleConditions.indexOf(
+                zemDataFilterService.CONDITIONS.statuses.name
+            ) !== -1
+        ).toBe(true);
+        expect(
+            visibleConditions.indexOf(
+                zemDataFilterService.CONDITIONS.publisherStatus.name
+            ) !== -1
+        ).toBe(false);
     });
 
-    it('should include correct sections on all accounts level', function () {
+    it('should include correct sections on all accounts level', function() {
         $state.go('v2.analytics', {level: 'accounts'});
         $rootScope.$apply();
         var visibleConditions = getVisibleConditions();
-        expect(visibleConditions.indexOf(zemDataFilterService.CONDITIONS.sources.name) !== -1).toBe(true);
-        expect(visibleConditions.indexOf(zemDataFilterService.CONDITIONS.agencies.name) !== -1).toBe(true);
-        expect(visibleConditions.indexOf(zemDataFilterService.CONDITIONS.accountTypes.name) !== -1).toBe(true);
-        expect(visibleConditions.indexOf(zemDataFilterService.CONDITIONS.statuses.name) !== -1).toBe(true);
-        expect(visibleConditions.indexOf(zemDataFilterService.CONDITIONS.publisherStatus.name) !== -1).toBe(false);
+        expect(
+            visibleConditions.indexOf(
+                zemDataFilterService.CONDITIONS.sources.name
+            ) !== -1
+        ).toBe(true);
+        expect(
+            visibleConditions.indexOf(
+                zemDataFilterService.CONDITIONS.agencies.name
+            ) !== -1
+        ).toBe(true);
+        expect(
+            visibleConditions.indexOf(
+                zemDataFilterService.CONDITIONS.accountTypes.name
+            ) !== -1
+        ).toBe(true);
+        expect(
+            visibleConditions.indexOf(
+                zemDataFilterService.CONDITIONS.statuses.name
+            ) !== -1
+        ).toBe(true);
+        expect(
+            visibleConditions.indexOf(
+                zemDataFilterService.CONDITIONS.publisherStatus.name
+            ) !== -1
+        ).toBe(false);
     });
 
-    it('should include correct sections on publishers level', function () {
-        spyOn(zemNavigationService, 'getAdGroup').and.callFake(mockedAsyncFunction);
+    it('should include correct sections on publishers level', function() {
+        spyOn(zemNavigationService, 'getAdGroup').and.callFake(
+            mockedAsyncFunction
+        );
 
         $state.go('v2.analytics', {level: 'adgroup', breakdown: 'publishers'});
         $rootScope.$apply();
         var visibleConditions = getVisibleConditions();
-        expect(visibleConditions.indexOf(zemDataFilterService.CONDITIONS.sources.name) !== -1).toBe(true);
-        expect(visibleConditions.indexOf(zemDataFilterService.CONDITIONS.agencies.name) !== -1).toBe(false);
-        expect(visibleConditions.indexOf(zemDataFilterService.CONDITIONS.accountTypes.name) !== -1).toBe(false);
-        expect(visibleConditions.indexOf(zemDataFilterService.CONDITIONS.statuses.name) !== -1).toBe(true);
-        expect(visibleConditions.indexOf(zemDataFilterService.CONDITIONS.publisherStatus.name) !== -1).toBe(true);
+        expect(
+            visibleConditions.indexOf(
+                zemDataFilterService.CONDITIONS.sources.name
+            ) !== -1
+        ).toBe(true);
+        expect(
+            visibleConditions.indexOf(
+                zemDataFilterService.CONDITIONS.agencies.name
+            ) !== -1
+        ).toBe(false);
+        expect(
+            visibleConditions.indexOf(
+                zemDataFilterService.CONDITIONS.accountTypes.name
+            ) !== -1
+        ).toBe(false);
+        expect(
+            visibleConditions.indexOf(
+                zemDataFilterService.CONDITIONS.statuses.name
+            ) !== -1
+        ).toBe(true);
+        expect(
+            visibleConditions.indexOf(
+                zemDataFilterService.CONDITIONS.publisherStatus.name
+            ) !== -1
+        ).toBe(true);
     });
 
-    it('should include correct sections on other levels', function () {
+    it('should include correct sections on other levels', function() {
         var visibleConditions;
-        spyOn(zemNavigationService, 'getAccount').and.callFake(mockedAsyncFunction);
-        spyOn(zemNavigationService, 'getCampaign').and.callFake(mockedAsyncFunction);
-        spyOn(zemNavigationService, 'getAdGroup').and.callFake(mockedAsyncFunction);
+        spyOn(zemNavigationService, 'getAccount').and.callFake(
+            mockedAsyncFunction
+        );
+        spyOn(zemNavigationService, 'getCampaign').and.callFake(
+            mockedAsyncFunction
+        );
+        spyOn(zemNavigationService, 'getAdGroup').and.callFake(
+            mockedAsyncFunction
+        );
 
         $state.go('v2.analytics', {level: 'accounts'});
         $rootScope.$apply();
         visibleConditions = getVisibleConditions();
-        expect(visibleConditions.indexOf(zemDataFilterService.CONDITIONS.sources.name) !== -1).toBe(true);
-        expect(visibleConditions.indexOf(zemDataFilterService.CONDITIONS.agencies.name) !== -1).toBe(true);
-        expect(visibleConditions.indexOf(zemDataFilterService.CONDITIONS.accountTypes.name) !== -1).toBe(true);
-        expect(visibleConditions.indexOf(zemDataFilterService.CONDITIONS.statuses.name) !== -1).toBe(true);
-        expect(visibleConditions.indexOf(zemDataFilterService.CONDITIONS.publisherStatus.name) !== -1).toBe(false);
+        expect(
+            visibleConditions.indexOf(
+                zemDataFilterService.CONDITIONS.sources.name
+            ) !== -1
+        ).toBe(true);
+        expect(
+            visibleConditions.indexOf(
+                zemDataFilterService.CONDITIONS.agencies.name
+            ) !== -1
+        ).toBe(true);
+        expect(
+            visibleConditions.indexOf(
+                zemDataFilterService.CONDITIONS.accountTypes.name
+            ) !== -1
+        ).toBe(true);
+        expect(
+            visibleConditions.indexOf(
+                zemDataFilterService.CONDITIONS.statuses.name
+            ) !== -1
+        ).toBe(true);
+        expect(
+            visibleConditions.indexOf(
+                zemDataFilterService.CONDITIONS.publisherStatus.name
+            ) !== -1
+        ).toBe(false);
 
         $state.go('v2.analytics', {level: 'campaigns'});
         $rootScope.$apply();
         visibleConditions = getVisibleConditions();
-        expect(visibleConditions.indexOf(zemDataFilterService.CONDITIONS.sources.name) !== -1).toBe(true);
-        expect(visibleConditions.indexOf(zemDataFilterService.CONDITIONS.agencies.name) !== -1).toBe(false);
-        expect(visibleConditions.indexOf(zemDataFilterService.CONDITIONS.accountTypes.name) !== -1).toBe(false);
-        expect(visibleConditions.indexOf(zemDataFilterService.CONDITIONS.statuses.name) !== -1).toBe(true);
-        expect(visibleConditions.indexOf(zemDataFilterService.CONDITIONS.publisherStatus.name) !== -1).toBe(false);
+        expect(
+            visibleConditions.indexOf(
+                zemDataFilterService.CONDITIONS.sources.name
+            ) !== -1
+        ).toBe(true);
+        expect(
+            visibleConditions.indexOf(
+                zemDataFilterService.CONDITIONS.agencies.name
+            ) !== -1
+        ).toBe(false);
+        expect(
+            visibleConditions.indexOf(
+                zemDataFilterService.CONDITIONS.accountTypes.name
+            ) !== -1
+        ).toBe(false);
+        expect(
+            visibleConditions.indexOf(
+                zemDataFilterService.CONDITIONS.statuses.name
+            ) !== -1
+        ).toBe(true);
+        expect(
+            visibleConditions.indexOf(
+                zemDataFilterService.CONDITIONS.publisherStatus.name
+            ) !== -1
+        ).toBe(false);
 
         $state.go('v2.analytics', {level: 'adgroups'});
         $rootScope.$apply();
         visibleConditions = getVisibleConditions();
-        expect(visibleConditions.indexOf(zemDataFilterService.CONDITIONS.sources.name) !== -1).toBe(true);
-        expect(visibleConditions.indexOf(zemDataFilterService.CONDITIONS.agencies.name) !== -1).toBe(false);
-        expect(visibleConditions.indexOf(zemDataFilterService.CONDITIONS.accountTypes.name) !== -1).toBe(false);
-        expect(visibleConditions.indexOf(zemDataFilterService.CONDITIONS.statuses.name) !== -1).toBe(true);
-        expect(visibleConditions.indexOf(zemDataFilterService.CONDITIONS.publisherStatus.name) !== -1).toBe(false);
+        expect(
+            visibleConditions.indexOf(
+                zemDataFilterService.CONDITIONS.sources.name
+            ) !== -1
+        ).toBe(true);
+        expect(
+            visibleConditions.indexOf(
+                zemDataFilterService.CONDITIONS.agencies.name
+            ) !== -1
+        ).toBe(false);
+        expect(
+            visibleConditions.indexOf(
+                zemDataFilterService.CONDITIONS.accountTypes.name
+            ) !== -1
+        ).toBe(false);
+        expect(
+            visibleConditions.indexOf(
+                zemDataFilterService.CONDITIONS.statuses.name
+            ) !== -1
+        ).toBe(true);
+        expect(
+            visibleConditions.indexOf(
+                zemDataFilterService.CONDITIONS.publisherStatus.name
+            ) !== -1
+        ).toBe(false);
     });
 
-    it('should return correctly structured applied conditions list', function () {
+    it('should return correctly structured applied conditions list', function() {
         spyOn($state, 'includes').and.returnValue(true);
         spyOn(zemDataFilterService, 'getAppliedConditions').and.returnValue({
             accountTypes: ['2', '3'],
             statuses: [zemDataFilterService.STATUSES_CONDITION_VALUES.archived],
-            publisherStatus: zemDataFilterService.PUBLISHER_STATUS_CONDITION_VALUES.active,
+            publisherStatus:
+                zemDataFilterService.PUBLISHER_STATUS_CONDITION_VALUES.active,
         });
         $state.params.level = 'accounts';
         $state.params.breakdown = 'publishers';
@@ -163,7 +293,7 @@ describe('zemFilterSelectorService', function () {
         ]);
     });
 
-    it('should exclude unknown conditions from applied conditions list', function () {
+    it('should exclude unknown conditions from applied conditions list', function() {
         spyOn($state, 'includes').and.returnValue(true);
         spyOn(zemDataFilterService, 'getAppliedConditions').and.returnValue({
             unknown: 'unknown',
@@ -172,7 +302,7 @@ describe('zemFilterSelectorService', function () {
         expect(zemFilterSelectorService.getAppliedConditions()).toEqual([]);
     });
 
-    it('should exclude conditions with no options from applied conditions list', function () {
+    it('should exclude conditions with no options from applied conditions list', function() {
         spyOn($state, 'includes').and.returnValue(true);
         spyOn(zemDataFilterService, 'getAppliedConditions').and.returnValue({
             sources: ['1', '2', '3'],
@@ -181,7 +311,7 @@ describe('zemFilterSelectorService', function () {
         expect(zemFilterSelectorService.getAppliedConditions()).toEqual([]);
     });
 
-    it('should apply selected conditions', function () {
+    it('should apply selected conditions', function() {
         spyOn(zemDataFilterService, 'applyConditions').and.stub();
 
         zemFilterSelectorService.applyFilter([
@@ -220,41 +350,34 @@ describe('zemFilterSelectorService', function () {
         ]);
     });
 
-    it('should remove applied condition', function () {
+    it('should remove applied condition', function() {
         spyOn(zemDataFilterService, 'removeValueFromConditionList').and.stub();
         spyOn(zemDataFilterService, 'resetCondition').and.stub();
 
         zemFilterSelectorService.removeAppliedCondition({}, '1');
-        expect(zemDataFilterService.removeValueFromConditionList).toHaveBeenCalled();
+        expect(
+            zemDataFilterService.removeValueFromConditionList
+        ).toHaveBeenCalled();
 
         zemFilterSelectorService.removeAppliedCondition({});
         expect(zemDataFilterService.resetCondition).toHaveBeenCalled();
     });
 
-    it('should correctly select all/none section\'s options', function () {
+    it("should correctly select all/none section's options", function() {
         var mockedSection = {
-            options: [
-                {enabled: false},
-                {enabled: true},
-            ],
+            options: [{enabled: false}, {enabled: true}],
             allOptionsSelected: false,
         };
 
         zemFilterSelectorService.toggleSelectAll(mockedSection);
         expect(mockedSection).toEqual({
-            options: [
-                {enabled: true},
-                {enabled: true},
-            ],
+            options: [{enabled: true}, {enabled: true}],
             allOptionsSelected: true,
         });
 
         zemFilterSelectorService.toggleSelectAll(mockedSection);
         expect(mockedSection).toEqual({
-            options: [
-                {enabled: false},
-                {enabled: false},
-            ],
+            options: [{enabled: false}, {enabled: false}],
             allOptionsSelected: false,
         });
     });

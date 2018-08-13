@@ -1,4 +1,4 @@
-describe('zemUserService', function () {
+describe('zemUserService', function() {
     var $rootScope;
     var zemUserService;
     var mockedUser = {
@@ -8,22 +8,27 @@ describe('zemUserService', function () {
 
     beforeEach(angular.mock.module('one'));
     beforeEach(angular.mock.module('one.mocks.zemInitializationService'));
-    beforeEach(inject(function (_$rootScope_, $q, _zemUserService_, zemUserEndpoint) {
+    beforeEach(inject(function(
+        _$rootScope_,
+        $q,
+        _zemUserService_,
+        zemUserEndpoint
+    ) {
         $rootScope = _$rootScope_;
         zemUserService = _zemUserService_;
 
-        spyOn(zemUserEndpoint, 'get').and.callFake(function () {
+        spyOn(zemUserEndpoint, 'get').and.callFake(function() {
             var deferred = $q.defer();
             deferred.resolve(mockedUser);
             return deferred.promise;
         });
     }));
-    beforeEach(function (done) {
+    beforeEach(function(done) {
         zemUserService.init().then(done);
         $rootScope.$apply();
     });
 
-    it('should correctly initialize with user data fetched from user endpoint', function () {
+    it('should correctly initialize with user data fetched from user endpoint', function() {
         expect(zemUserService.current()).toEqual(mockedUser);
         expect(zemUserService.current().id).toEqual(123);
         expect(zemUserService.current().email).toEqual('test@zemanta.com');

@@ -1,16 +1,19 @@
-describe('component: zemGridExport', function () {
+describe('component: zemGridExport', function() {
     var $componentController;
     var zemGridExportOptions;
     var $ctrl, $scope, api;
 
     beforeEach(angular.mock.module('one'));
     beforeEach(angular.mock.module('one.mocks.zemInitializationService'));
-    beforeEach(inject(function ($injector) {
+    beforeEach(inject(function($injector) {
         $componentController = $injector.get('$componentController');
         zemGridExportOptions = $injector.get('zemGridExportOptions');
 
         var zemGridMocks = $injector.get('zemGridMocks');
-        api = zemGridMocks.createApi(constants.level.ACCOUNTS, constants.breakdown.MEDIA_SOURCE);
+        api = zemGridMocks.createApi(
+            constants.level.ACCOUNTS,
+            constants.breakdown.MEDIA_SOURCE
+        );
 
         $scope = {};
         var locals = {$scope: $scope};
@@ -18,7 +21,7 @@ describe('component: zemGridExport', function () {
         $ctrl = $componentController('zemGridExport', locals, bindings);
     }));
 
-    it('should initialize using api', function () {
+    it('should initialize using api', function() {
         var metaData = api.getMetaData();
         spyOn(zemGridExportOptions, 'getBaseUrl').and.callThrough();
         spyOn(zemGridExportOptions, 'getOptions').and.callThrough();
@@ -39,13 +42,13 @@ describe('component: zemGridExport', function () {
         expect($scope.exportSources).toBeDefined();
     });
 
-    it('should provide additional columns (visible, but not permanent)', function () {
+    it('should provide additional columns (visible, but not permanent)', function() {
         $ctrl.$onInit();
 
-        spyOn(api, 'getVisibleColumns').and.callFake(function () {
+        spyOn(api, 'getVisibleColumns').and.callFake(function() {
             return [
                 {data: {field: 'permanent'}, permanent: true},
-                {data: {field: 'additional'}, permanent: false}
+                {data: {field: 'additional'}, permanent: false},
             ];
         });
         var columns = $scope.getAdditionalColumns();

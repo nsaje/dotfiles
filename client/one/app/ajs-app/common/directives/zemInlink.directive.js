@@ -1,15 +1,17 @@
 // Heavily based on https://github.com/angular-ui/ui-router/blob/a7d25c6/src/stateDirectives.js
 // Lots of code lifted
 
-function parseStateRef (ref, current) {
-    var preparsed = ref.match(/^\s*({[^}]*})\s*$/), parsed;
+function parseStateRef(ref, current) {
+    var preparsed = ref.match(/^\s*({[^}]*})\s*$/),
+        parsed;
     if (preparsed) ref = current + '(' + preparsed[1] + ')';
     parsed = ref.replace(/\n/g, ' ').match(/^([^(]+?)\s*(\((.*)\))?$/);
-    if (!parsed || parsed.length !== 4) throw new Error('Invalid state ref \'' + ref + '\'');
+    if (!parsed || parsed.length !== 4)
+        throw new Error("Invalid state ref '" + ref + "'");
     return {state: parsed[1], paramExpr: parsed[3] || null};
 }
 
-function stateContext (el) {
+function stateContext(el) {
     var stateData = el.parent().inheritedData('$uiView');
 
     if (stateData && stateData.state && stateData.state.name) {
@@ -19,13 +21,20 @@ function stateContext (el) {
 
 // Create the part of the url that will come after the questionmark
 // Take only the selected parameters from the the dict
-function filterAndFormatParams (dict) {
+function filterAndFormatParams(dict) {
     var str = [];
-    var transferredParams = ['start_date', 'end_date', 'filtered_sources', 'show_archived'];
+    var transferredParams = [
+        'start_date',
+        'end_date',
+        'filtered_sources',
+        'show_archived',
+    ];
     for (var p in dict) {
         if (transferredParams.indexOf(p) > -1) {
             if (dict[p] !== true) {
-                str.push(encodeURIComponent(p) + '=' + encodeURIComponent(dict[p]));
+                str.push(
+                    encodeURIComponent(p) + '=' + encodeURIComponent(dict[p])
+                );
             } else {
                 str.push(encodeURIComponent(p));
             }
@@ -35,19 +44,19 @@ function filterAndFormatParams (dict) {
 }
 
 $StateRefDirective.$inject = ['$state', '$timeout', '$rootScope', '$location'];
-function $StateRefDirective ($state, $timeout, $rootScope, $location) {
+function $StateRefDirective($state, $timeout, $rootScope, $location) {
     return {
         restrict: 'A',
-        link: function (scope, element, attrs) {
+        link: function(scope, element, attrs) {
             var ref = null;
-            var params = null, base = stateContext(element) || $state.$current;
+            var params = null,
+                base = stateContext(element) || $state.$current;
             var isForm = element[0].nodeName === 'FORM';
             var attr = isForm ? 'action' : 'href';
 
             var options = {relative: base, inherit: true};
 
-            var update = function () {
-
+            var update = function() {
                 ref = parseStateRef(attrs.zemInLink, $state.current.name);
                 params = scope.$eval(ref.paramExpr);
 
@@ -66,28 +75,44 @@ function $StateRefDirective ($state, $timeout, $rootScope, $location) {
             };
             update();
 
-            scope.$watch(function () { return element.attr('zem-in-link'); }, function () { update(); });
-            scope.$on('$locationChangeSuccess', function () { update(); });
+            scope.$watch(
+                function() {
+                    return element.attr('zem-in-link');
+                },
+                function() {
+                    update();
+                }
+            );
+            scope.$on('$locationChangeSuccess', function() {
+                update();
+            });
 
             if (isForm) return;
 
-            element.bind('click', function (e) {
+            element.bind('click', function(e) {
                 var button = e.which || e.button;
-                if (!(button > 1 || e.ctrlKey || e.metaKey || e.shiftKey || element.attr('target'))) {
+                if (
+                    !(
+                        button > 1 ||
+                        e.ctrlKey ||
+                        e.metaKey ||
+                        e.shiftKey ||
+                        element.attr('target')
+                    )
+                ) {
                     // HACK: This is to allow ng-clicks to be processed before the transition is initiated:
-                    var transition = $timeout(function () {
+                    var transition = $timeout(function() {
                         $state.go(ref.state, params, options);
                     });
                     e.preventDefault();
 
-                    e.preventDefault = function () {
+                    e.preventDefault = function() {
                         $timeout.cancel(transition);
                     };
                 }
             });
-        }
+        },
     };
 }
 
-angular.module('one')
-    .directive('zemInLink', $StateRefDirective);
+angular.module('one').directive('zemInLink', $StateRefDirective);

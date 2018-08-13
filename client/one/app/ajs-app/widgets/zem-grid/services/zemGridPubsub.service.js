@@ -1,5 +1,4 @@
-angular.module('one.widgets').factory('zemGridPubSub', function (NgZone) {
-
+angular.module('one.widgets').factory('zemGridPubSub', function(NgZone) {
     //
     // Grid PubSub is an internal message chanel through which child directives and
     // services notifies each other about zem-grid specific events (e.g. scrolling, data updated, etc.)
@@ -20,28 +19,28 @@ angular.module('one.widgets').factory('zemGridPubSub', function (NgZone) {
         EXT_NOTIFICATIONS_UPDATED: 'zem-grid-ext-notifications-updated',
     };
 
-    function PubSub ($scope) {
+    function PubSub($scope) {
         this.EVENTS = EVENTS;
 
         this.register = register;
         this.notify = notify;
 
-        function register (event, scope, listener) {
+        function register(event, scope, listener) {
             var handler = $scope.$on(event, listener);
             scope = scope || $scope;
             scope.$on('$destroy', handler);
             return handler;
         }
 
-        function notify (event, data) {
-            NgZone.runOutsideAngular(function () {
+        function notify(event, data) {
+            NgZone.runOutsideAngular(function() {
                 $scope.$broadcast(event, data);
             });
         }
     }
 
     return {
-        createInstance: function (scope) {
+        createInstance: function(scope) {
             return new PubSub(scope);
         },
     };

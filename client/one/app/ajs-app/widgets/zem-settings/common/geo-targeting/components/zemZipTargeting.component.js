@@ -3,8 +3,8 @@ angular.module('one.widgets').component('zemZipTargeting', {
         entity: '<',
         api: '<',
     },
-    template: require('./zemZipTargeting.component.html'),  // eslint-disable-line max-len
-    controller: function ($scope, zemZipTargetingStateService) {
+    template: require('./zemZipTargeting.component.html'), // eslint-disable-line max-len
+    controller: function($scope, zemZipTargetingStateService) {
         var $ctrl = this;
         var zipTargetingEnabled = false;
 
@@ -14,36 +14,42 @@ angular.module('one.widgets').component('zemZipTargeting', {
         $ctrl.enableZipTargeting = enableZipTargeting;
         $ctrl.isZipTargetingVisible = isZipTargetingVisible;
 
-        $ctrl.$onInit = function () {
+        $ctrl.$onInit = function() {
             if ($ctrl.api) {
                 $ctrl.api.register({});
             }
         };
 
-        $ctrl.$onChanges = function (changes) {
+        $ctrl.$onChanges = function(changes) {
             if (changes.entity && $ctrl.entity) {
-                $ctrl.stateService = zemZipTargetingStateService.createInstance($ctrl.entity);
+                $ctrl.stateService = zemZipTargetingStateService.createInstance(
+                    $ctrl.entity
+                );
                 $ctrl.state = $ctrl.stateService.getState();
                 $ctrl.stateService.init();
                 initializeWatches();
             }
         };
 
-        function initializeWatches () {
-            $scope.$watch('$ctrl.entity.settings.targetRegions', function () {
+        function initializeWatches() {
+            $scope.$watch('$ctrl.entity.settings.targetRegions', function() {
                 $ctrl.stateService.checkConstraints();
             });
         }
 
-        function enableZipTargeting () {
+        function enableZipTargeting() {
             zipTargetingEnabled = true;
         }
 
-        function isZipTargetingVisible () {
+        function isZipTargetingVisible() {
             if (!$ctrl.state) {
                 return false;
             }
-            return zipTargetingEnabled || $ctrl.state.textareaContent.length || $ctrl.state.blockers.apiOnlySettings;
+            return (
+                zipTargetingEnabled ||
+                $ctrl.state.textareaContent.length ||
+                $ctrl.state.blockers.apiOnlySettings
+            );
         }
-    }
+    },
 });

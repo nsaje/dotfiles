@@ -1,14 +1,14 @@
-describe('component: zemAdGroupSettings', function () {
+describe('component: zemAdGroupSettings', function() {
     var $ctrl;
 
     beforeEach(angular.mock.module('one'));
     beforeEach(angular.mock.module('one.mocks.zemInitializationService'));
 
-    beforeEach(inject(function ($rootScope, $componentController) {
+    beforeEach(inject(function($rootScope, $componentController) {
         $ctrl = $componentController('zemAdGroupSettings', {}, {});
     }));
 
-    it('should initialize without errors', function () {
+    it('should initialize without errors', function() {
         $ctrl.$onInit();
     });
 });

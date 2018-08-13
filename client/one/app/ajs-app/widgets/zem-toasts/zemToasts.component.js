@@ -2,7 +2,7 @@ require('./zemToasts.component.less');
 
 angular.module('one.widgets').component('zemToasts', {
     template: require('./zemToasts.component.html'),
-    controller: function ($timeout, zemToastsService) {
+    controller: function($timeout, zemToastsService) {
         var $ctrl = this;
 
         var CLEAR_TOAST_TIMEOUT = 200;
@@ -11,20 +11,20 @@ angular.module('one.widgets').component('zemToasts', {
         $ctrl.getToastClasses = getToastClasses;
         $ctrl.clearToast = clearToast;
 
-        $ctrl.$onInit = function () {
+        $ctrl.$onInit = function() {
             zemToastsService.onToast(addToast);
         };
 
-        function addToast (event, toast) {
+        function addToast(event, toast) {
             $ctrl.toasts.push(toast);
             if (toast.options && toast.options.timeout) {
-                $timeout(function () {
+                $timeout(function() {
                     clearToast(toast);
                 }, toast.options.timeout);
             }
         }
 
-        function getToastClasses (toast) {
+        function getToastClasses(toast) {
             var classes = [];
             classes.push('toasts__item--' + toast.type);
             if (toast.clearing) {
@@ -33,15 +33,15 @@ angular.module('one.widgets').component('zemToasts', {
             return classes;
         }
 
-        function clearToast (toast) {
+        function clearToast(toast) {
             if (toast.clearing) return;
             toast.clearing = true;
-            $timeout(function () {
+            $timeout(function() {
                 removeToast(toast);
             }, CLEAR_TOAST_TIMEOUT);
         }
 
-        function removeToast (toast) {
+        function removeToast(toast) {
             var idx = $ctrl.toasts.indexOf(toast);
             if (idx >= 0) {
                 $ctrl.toasts.splice(idx, 1);

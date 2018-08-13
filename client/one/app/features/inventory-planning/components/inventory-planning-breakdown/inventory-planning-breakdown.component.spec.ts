@@ -1,5 +1,11 @@
 import {SimpleChanges, SimpleChange} from '@angular/core';
-import {TestBed, ComponentFixture, async, fakeAsync, tick} from '@angular/core/testing';
+import {
+    TestBed,
+    ComponentFixture,
+    async,
+    fakeAsync,
+    tick,
+} from '@angular/core/testing';
 
 import {SharedModule} from '../../../../shared/shared.module';
 import {InventoryPlanningBreakdownComponent} from './inventory-planning-breakdown.component';
@@ -33,34 +39,49 @@ describe('InventoryPlanningBreakdownComponent', () => {
         TestBed.configureTestingModule({
             imports: [SharedModule],
             declarations: [InventoryPlanningBreakdownComponent],
-        })
-        .compileComponents();
+        }).compileComponents();
 
-        fixture =  TestBed.createComponent(InventoryPlanningBreakdownComponent);
+        fixture = TestBed.createComponent(InventoryPlanningBreakdownComponent);
         component = fixture.componentInstance;
     }));
 
-    it('should correctly search through available filter options and exclude options with 0 auctions', fakeAsync(() => {
-        component.options = [testOption1, testOption2, testOption3, testOption4];
-        component.selected = [];
-        component.ngOnInit();
+    it(
+        'should correctly search through available filter options and exclude options with 0 auctions',
+        fakeAsync(() => {
+            component.options = [
+                testOption1,
+                testOption2,
+                testOption3,
+                testOption4,
+            ];
+            component.selected = [];
+            component.ngOnInit();
 
-        component.search$.next('');
-        tick(500); // tslint:disable-line
-        expect(component.searchResults).toEqual([testOption1, testOption2, testOption3]);
+            component.search$.next('');
+            tick(500); // tslint:disable-line
+            expect(component.searchResults).toEqual([
+                testOption1,
+                testOption2,
+                testOption3,
+            ]);
 
-        component.search$.next('option');
-        tick(500); // tslint:disable-line
-        expect(component.searchResults).toEqual([testOption1, testOption2, testOption3]);
+            component.search$.next('option');
+            tick(500); // tslint:disable-line
+            expect(component.searchResults).toEqual([
+                testOption1,
+                testOption2,
+                testOption3,
+            ]);
 
-        component.search$.next('option 2');
-        tick(500); // tslint:disable-line
-        expect(component.searchResults).toEqual([testOption2]);
+            component.search$.next('option 2');
+            tick(500); // tslint:disable-line
+            expect(component.searchResults).toEqual([testOption2]);
 
-        component.search$.next('none');
-        tick(500); // tslint:disable-line
-        expect(component.searchResults).toEqual([]);
-    }));
+            component.search$.next('none');
+            tick(500); // tslint:disable-line
+            expect(component.searchResults).toEqual([]);
+        })
+    );
 
     it('should execute search with current search query when options update', () => {
         let changes: SimpleChanges;
@@ -92,7 +113,6 @@ describe('InventoryPlanningBreakdownComponent', () => {
         expect(component.searchResults).toEqual([testOption2]);
     });
 
-
     it('should update selected indices when options update', () => {
         let changes: SimpleChanges;
         component.options = [testOption1, testOption2, testOption4];
@@ -121,7 +141,12 @@ describe('InventoryPlanningBreakdownComponent', () => {
         component.ngOnChanges(changes);
         expect(component.selectedIndices).toEqual([0]);
 
-        component.options = [testOption1, testOption2, testOption3, testOption4];
+        component.options = [
+            testOption1,
+            testOption2,
+            testOption3,
+            testOption4,
+        ];
         component.selected = [testOption2, testOption3];
         changes = {
             options: new SimpleChange(null, component.options, false),

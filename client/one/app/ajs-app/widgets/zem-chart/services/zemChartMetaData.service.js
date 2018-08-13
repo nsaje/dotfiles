@@ -1,38 +1,48 @@
-angular.module('one.widgets').factory('zemChartMetaDataService', function (zemChartMetricsService, zemPubSubService) { // eslint-disable-line max-len
+angular
+    .module('one.widgets')
+    .factory('zemChartMetaDataService', function(
+        zemChartMetricsService,
+        zemPubSubService
+    ) {
+        // eslint-disable-line max-len
 
-    function MetaData (level, id, breakdown, url) {
-        var METRICS_UPDATED = 'zem-chart-metrics-updated';
-        var pubsub = zemPubSubService.createInstance();
+        function MetaData(level, id, breakdown, url) {
+            var METRICS_UPDATED = 'zem-chart-metrics-updated';
+            var pubsub = zemPubSubService.createInstance();
 
-        this.id = id;
-        this.level = level;
-        this.breakdown = breakdown;
-        this.url = url;
-        this.metrics = zemChartMetricsService.getChartMetrics(level);
+            this.id = id;
+            this.level = level;
+            this.breakdown = breakdown;
+            this.url = url;
+            this.metrics = zemChartMetricsService.getChartMetrics(level);
 
-        this.insertDynamicMetrics = insertDynamicMetrics;
-        this.setCurrency = setCurrency;
+            this.insertDynamicMetrics = insertDynamicMetrics;
+            this.setCurrency = setCurrency;
 
-        // Listeners - pubsub rewiring
-        this.onMetricsUpdated = onMetricsUpdated;
+            // Listeners - pubsub rewiring
+            this.onMetricsUpdated = onMetricsUpdated;
 
-        function onMetricsUpdated (callback) {
-            pubsub.register(METRICS_UPDATED, callback);
+            function onMetricsUpdated(callback) {
+                pubsub.register(METRICS_UPDATED, callback);
+            }
+
+            function insertDynamicMetrics(categories, pixels, conversionGoals) {
+                zemChartMetricsService.insertDynamicMetrics(
+                    categories,
+                    pixels,
+                    conversionGoals
+                );
+                pubsub.notify(METRICS_UPDATED);
+            }
+
+            function setCurrency(currency) {
+                this.currency = currency;
+            }
         }
 
-        function insertDynamicMetrics (categories, pixels, conversionGoals) {
-            zemChartMetricsService.insertDynamicMetrics(categories, pixels, conversionGoals);
-            pubsub.notify(METRICS_UPDATED);
-        }
-
-        function setCurrency (currency) {
-            this.currency = currency;
-        }
-    }
-
-    return {
-        createInstance: function (level, id, breakdown, url) {
-            return new MetaData(level, id, breakdown, url);
-        },
-    };
-});
+        return {
+            createInstance: function(level, id, breakdown, url) {
+                return new MetaData(level, id, breakdown, url);
+            },
+        };
+    });

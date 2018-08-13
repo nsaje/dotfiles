@@ -3,13 +3,12 @@ angular.module('one.widgets').component('zemPlacementDeviceTargetingSettings', {
         stateService: '<',
     },
     template: require('./zemPlacementDeviceTargetingSettings.component.html'), // eslint-disable-line max-len
-    controller: function () {
+    controller: function() {
         var $ctrl = this;
 
-        $ctrl.$onInit = function () {
-        };
+        $ctrl.$onInit = function() {};
 
-        $ctrl.$onChanges = function (changes) {
+        $ctrl.$onChanges = function(changes) {
             if (changes.stateService && $ctrl.stateService) {
                 $ctrl.state = $ctrl.stateService.getState();
             }

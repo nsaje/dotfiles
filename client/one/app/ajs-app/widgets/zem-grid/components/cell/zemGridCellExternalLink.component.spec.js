@@ -1,12 +1,13 @@
-describe('zemGridCellExternalLink', function () {
+describe('zemGridCellExternalLink', function() {
     var scope, element, $compile;
 
-    var template = '<zem-grid-cell-external-link data="ctrl.data" row="ctrl.row" column="ctrl.column" grid="ctrl.grid"></zem-grid-cell-external-link>'; // eslint-disable-line max-len
+    var template =
+        '<zem-grid-cell-external-link data="ctrl.data" row="ctrl.row" column="ctrl.column" grid="ctrl.grid"></zem-grid-cell-external-link>'; // eslint-disable-line max-len
 
     beforeEach(angular.mock.module('one'));
     beforeEach(angular.mock.module('one.mocks.zemInitializationService'));
 
-    beforeEach(inject(function ($rootScope, _$compile_) {
+    beforeEach(inject(function($rootScope, _$compile_) {
         $compile = _$compile_;
 
         scope = $rootScope.$new();
@@ -17,7 +18,7 @@ describe('zemGridCellExternalLink', function () {
         scope.ctrl.grid = {};
     }));
 
-    it('should correctyl set field visibility', function () {
+    it('should correctyl set field visibility', function() {
         element = $compile(template)(scope);
         scope.$digest();
 
@@ -34,14 +35,14 @@ describe('zemGridCellExternalLink', function () {
         element.isolateScope().ctrl.column = {
             data: {
                 totalRow: false,
-            }
+            },
         };
         scope.$digest();
 
         expect(element.isolateScope().ctrl.fieldVisible).toBe(false);
     });
 
-    it('should show icon link correctly', function () {
+    it('should show icon link correctly', function() {
         scope.ctrl.data = {
             url: 'example.com',
         };
@@ -52,7 +53,9 @@ describe('zemGridCellExternalLink', function () {
         scope.$digest();
 
         expect(element.find('.icon-link a').hasClass('ng-hide')).toBe(false);
-        expect(element.find('.icon-link .link-img-disabled').hasClass('ng-hide')).toBe(true);
+        expect(
+            element.find('.icon-link .link-img-disabled').hasClass('ng-hide')
+        ).toBe(true);
 
         scope.ctrl.data = {
             url: '',
@@ -63,11 +66,17 @@ describe('zemGridCellExternalLink', function () {
         scope.$digest();
 
         expect(element.find('.icon-link a').hasClass('ng-hide')).toBe(true);
-        expect(element.find('.icon-link .link-img-disabled').hasClass('ng-hide')).toBe(false);
-        expect(element.find('.icon-link .link-img-disabled').attr('zem-lazy-popover-text')).toEqual('Disabled');
+        expect(
+            element.find('.icon-link .link-img-disabled').hasClass('ng-hide')
+        ).toBe(false);
+        expect(
+            element
+                .find('.icon-link .link-img-disabled')
+                .attr('zem-lazy-popover-text')
+        ).toEqual('Disabled');
     });
 
-    it('should show visible link correctly', function () {
+    it('should show visible link correctly', function() {
         scope.ctrl.data = {
             url: 'example.com',
         };
@@ -87,7 +96,7 @@ describe('zemGridCellExternalLink', function () {
         expect(element.find('.visible-link a').hasClass('ng-hide')).toBe(true);
     });
 
-    it('should show text link correctly', function () {
+    it('should show text link correctly', function() {
         scope.ctrl.data = {
             text: 'Example',
             url: 'example.com',
@@ -99,7 +108,9 @@ describe('zemGridCellExternalLink', function () {
         scope.$digest();
 
         expect(element.find('.text-link a').hasClass('ng-hide')).toBe(false);
-        expect(element.find('.text-link .text-link-disabled').hasClass('ng-hide')).toBe(true);
+        expect(
+            element.find('.text-link .text-link-disabled').hasClass('ng-hide')
+        ).toBe(true);
 
         scope.ctrl.data = {
             url: '',
@@ -107,6 +118,8 @@ describe('zemGridCellExternalLink', function () {
         scope.$digest();
 
         expect(element.find('.text-link a').hasClass('ng-hide')).toBe(true);
-        expect(element.find('.text-link .text-link-disabled').hasClass('ng-hide')).toBe(false);
+        expect(
+            element.find('.text-link .text-link-disabled').hasClass('ng-hide')
+        ).toBe(false);
     });
 });

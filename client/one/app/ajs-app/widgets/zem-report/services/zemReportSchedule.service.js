@@ -1,82 +1,82 @@
-angular.module('one.widgets').service('zemReportScheduleService', function () {  // eslint-disable-line max-len
+angular.module('one.widgets').service('zemReportScheduleService', function() {
+    // eslint-disable-line max-len
 
     var FREQUENCIES = [
         {
             name: 'Daily',
-            value: 'DAILY'
+            value: 'DAILY',
         },
         {
             name: 'Weekly',
-            value: 'WEEKLY'
+            value: 'WEEKLY',
         },
         {
             name: 'Monthly (1st)',
-            value: 'MONTHLY'
-        }
+            value: 'MONTHLY',
+        },
     ];
 
     var DAYS_OF_WEEK = [
         {
             name: 'Sunday',
-            value: 'SUNDAY'
+            value: 'SUNDAY',
         },
         {
             name: 'Monday',
-            value: 'MONDAY'
+            value: 'MONDAY',
         },
         {
             name: 'Tuesday',
-            value: 'TUESDAY'
+            value: 'TUESDAY',
         },
         {
             name: 'Wednesday',
-            value: 'WEDNESDAY'
+            value: 'WEDNESDAY',
         },
         {
             name: 'Thursday',
-            value: 'THURSDAY'
+            value: 'THURSDAY',
         },
         {
             name: 'Friday',
-            value: 'FRIDAY'
+            value: 'FRIDAY',
         },
         {
             name: 'Saturday',
-            value: 'SATURDAY'
-        }
+            value: 'SATURDAY',
+        },
     ];
 
     var TIME_PERIODS = [
         {
             name: 'Yesterday',
-            value: 'YESTERDAY'
+            value: 'YESTERDAY',
         },
         {
             name: 'Last 7 Days',
-            value: 'LAST_7_DAYS'
+            value: 'LAST_7_DAYS',
         },
         {
             name: 'Last 30 Days',
-            value: 'LAST_30_DAYS'
+            value: 'LAST_30_DAYS',
         },
         {
             name: 'This Week',
-            value: 'THIS_WEEK'
+            value: 'THIS_WEEK',
         },
         {
             name: 'Last Week',
-            value: 'LAST_WEEK'
+            value: 'LAST_WEEK',
         },
         {
             name: 'This Month',
-            value: 'THIS_MONTH'
+            value: 'THIS_MONTH',
         },
         {
             name: 'Last Month',
-            value: 'LAST_MONTH'
-        }
+            value: 'LAST_MONTH',
+        },
     ];
-
 
     // Public API
     this.FREQUENCIES = FREQUENCIES;
@@ -86,9 +86,9 @@ angular.module('one.widgets').service('zemReportScheduleService', function () { 
     this.MAPPING_DAYS_OF_WEEK = getMapping(DAYS_OF_WEEK);
     this.MAPPING_TIME_PERIODS = getMapping(TIME_PERIODS);
 
-    function getMapping (options) {
+    function getMapping(options) {
         var mapping = {};
-        options.forEach(function (option) {
+        options.forEach(function(option) {
             mapping[option.value] = option.name;
         });
         return mapping;

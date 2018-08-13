@@ -4,7 +4,7 @@ angular.module('one.widgets').component('zemPublisherGroupsUpload', {
         resolve: '<',
         modalInstance: '<',
     },
-    controller: function ($scope, zemPublisherGroupsEndpoint) {
+    controller: function($scope, zemPublisherGroupsEndpoint) {
         var $ctrl = this;
 
         $ctrl.isCreationMode = false;
@@ -18,13 +18,14 @@ angular.module('one.widgets').component('zemPublisherGroupsUpload', {
         $ctrl.errors = null;
         $ctrl.putRequestInProgress = false;
 
-        $ctrl.$onInit = function () {
+        $ctrl.$onInit = function() {
             $ctrl.formData = {};
             if ($ctrl.resolve.publisherGroup) {
                 $ctrl.formData = {
                     id: $ctrl.resolve.publisherGroup.id,
                     name: $ctrl.resolve.publisherGroup.name,
-                    include_subdomains: $ctrl.resolve.publisherGroup.include_subdomains,
+                    include_subdomains:
+                        $ctrl.resolve.publisherGroup.include_subdomains,
                 };
             }
             if (!$ctrl.formData.id) {
@@ -33,22 +34,22 @@ angular.module('one.widgets').component('zemPublisherGroupsUpload', {
             }
         };
 
-        function upsert () {
+        function upsert() {
             $ctrl.putRequestInProgress = true;
             zemPublisherGroupsEndpoint
                 .upsert($ctrl.resolve.account.id, $ctrl.formData)
-                .then(function () {
+                .then(function() {
                     $ctrl.modalInstance.close();
                 })
-                .catch(function (data) {
+                .catch(function(data) {
                     $ctrl.errors = data;
                 })
-                .finally(function () {
+                .finally(function() {
                     $ctrl.putRequestInProgress = false;
                 });
         }
 
-        function clearValidationError (field) {
+        function clearValidationError(field) {
             if (!$ctrl.errors) {
                 return;
             }
@@ -57,21 +58,27 @@ angular.module('one.widgets').component('zemPublisherGroupsUpload', {
                 delete $ctrl.errors[field];
             }
 
-            if (field === 'entries' && $ctrl.errors.hasOwnProperty('errors_csv_key')) {
+            if (
+                field === 'entries' &&
+                $ctrl.errors.hasOwnProperty('errors_csv_key')
+            ) {
                 delete $ctrl.errors.errors_csv_key;
             }
         }
 
-        function fileUploadCallback (file) {
+        function fileUploadCallback(file) {
             $ctrl.formData.file = file;
             $scope.$digest();
         }
 
-        function downloadErrors () {
-            zemPublisherGroupsEndpoint.downloadErrors($ctrl.resolve.account.id, $ctrl.errors.errors_csv_key);
+        function downloadErrors() {
+            zemPublisherGroupsEndpoint.downloadErrors(
+                $ctrl.resolve.account.id,
+                $ctrl.errors.errors_csv_key
+            );
         }
 
-        function downloadExample () {
+        function downloadExample() {
             zemPublisherGroupsEndpoint.downloadExample();
         }
     },

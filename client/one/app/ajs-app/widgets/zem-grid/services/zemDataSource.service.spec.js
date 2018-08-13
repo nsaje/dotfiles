@@ -1,4 +1,4 @@
-describe('zemDataSource', function () {
+describe('zemDataSource', function() {
     var $scope;
     var $q;
     var $timeout;
@@ -8,12 +8,19 @@ describe('zemDataSource', function () {
     beforeEach(angular.mock.module('one'));
     beforeEach(angular.mock.module('one.mocks.zemInitializationService'));
 
-    beforeEach(inject(function ($httpBackend) {
+    beforeEach(inject(function($httpBackend) {
         $httpBackend.when('GET', '/api/users/current/').respond({});
         $httpBackend.when('GET', '/api/all_accounts/nav/').respond({});
     }));
 
-    beforeEach(inject(function ($rootScope, _$q_, _$timeout_, zemDataSourceService, zemGridDebugEndpoint) { // eslint-disable-line max-len
+    beforeEach(inject(function(
+        $rootScope,
+        _$q_,
+        _$timeout_,
+        zemDataSourceService,
+        zemGridDebugEndpoint
+    ) {
+        // eslint-disable-line max-len
         $scope = $rootScope.$new();
         $q = _$q_;
         $timeout = _$timeout_;
@@ -21,7 +28,7 @@ describe('zemDataSource', function () {
         dataSource = zemDataSourceService.createInstance(endpoint);
     }));
 
-    it('should request meta data from endpoint if needed', function () {
+    it('should request meta data from endpoint if needed', function() {
         spyOn(endpoint, 'getMetaData').and.callThrough();
 
         dataSource.loadMetaData();
@@ -38,7 +45,7 @@ describe('zemDataSource', function () {
         expect(endpoint.getMetaData).toHaveBeenCalled();
     });
 
-    it('should request data from endpoint', function () {
+    it('should request data from endpoint', function() {
         spyOn(endpoint, 'getMetaData').and.callThrough();
         spyOn(endpoint, 'getData').and.callThrough();
         dataSource.loadData();
@@ -56,7 +63,7 @@ describe('zemDataSource', function () {
         expect(endpoint.getData).toHaveBeenCalled();
     });
 
-    it('should notify listeners before and after applying data', function () {
+    it('should notify listeners before and after applying data', function() {
         var onLoadListener = jasmine.createSpy();
         var onDataUpdatedListener = jasmine.createSpy();
         dataSource.onLoad($scope, onLoadListener);
@@ -70,7 +77,7 @@ describe('zemDataSource', function () {
         expect(onDataUpdatedListener).toHaveBeenCalled();
     });
 
-    it('should initialize root when requesting base level data', function () {
+    it('should initialize root when requesting base level data', function() {
         dataSource.loadData();
         $scope.$apply();
 
@@ -82,12 +89,15 @@ describe('zemDataSource', function () {
             breakdown: null,
             stats: null,
             level: 0,
-            meta: {}
+            meta: {},
         };
-        expect(onDataUpdatedListener).toHaveBeenCalledWith(jasmine.any(Object), emptyBreakdownRoot);
+        expect(onDataUpdatedListener).toHaveBeenCalledWith(
+            jasmine.any(Object),
+            emptyBreakdownRoot
+        );
     });
 
-    it('should build breakdown tree through sequential requests', function () {
+    it('should build breakdown tree through sequential requests', function() {
         // Level 1 (base level) breakdown
         var breakdownL1 = {
             breakdownId: 1,
@@ -97,7 +107,7 @@ describe('zemDataSource', function () {
                 limit: 2,
             },
             rows: [{breakdownId: 11}, {breakdownId: 12}],
-            totals: [1, 2, 3]
+            totals: [1, 2, 3],
         };
 
         // Level 2 breakdowns
@@ -108,7 +118,7 @@ describe('zemDataSource', function () {
                 offset: 0,
                 limit: 1,
             },
-            rows: [{}]
+            rows: [{}],
         };
         var breakdownL22 = {
             breakdownId: 12,
@@ -117,7 +127,7 @@ describe('zemDataSource', function () {
                 offset: 0,
                 limit: 1,
             },
-            rows: [{}]
+            rows: [{}],
         };
 
         // Resulting tree
@@ -139,7 +149,7 @@ describe('zemDataSource', function () {
                                 offset: 0,
                                 limit: 1,
                                 count: undefined,
-                                complete: undefined
+                                complete: undefined,
                             },
                             rows: [{}],
                             meta: {loading: false},
@@ -154,7 +164,7 @@ describe('zemDataSource', function () {
                                 offset: 0,
                                 limit: 1,
                                 count: undefined,
-                                complete: undefined
+                                complete: undefined,
                             },
                             rows: [{}],
                             meta: {loading: false},
@@ -188,13 +198,25 @@ describe('zemDataSource', function () {
         $scope.$apply();
 
         // Check if everything has been notified with correct structures
-        expect(onLoadListener).toHaveBeenCalledWith(jasmine.any(Object), breakdownL1);
-        expect(onLoadListener).toHaveBeenCalledWith(jasmine.any(Object), breakdownL21);
-        expect(onLoadListener).toHaveBeenCalledWith(jasmine.any(Object), breakdownL22);
-        expect(onDataUpdatedListener).toHaveBeenCalledWith(jasmine.any(Object), breakdownRoot);
+        expect(onLoadListener).toHaveBeenCalledWith(
+            jasmine.any(Object),
+            breakdownL1
+        );
+        expect(onLoadListener).toHaveBeenCalledWith(
+            jasmine.any(Object),
+            breakdownL21
+        );
+        expect(onLoadListener).toHaveBeenCalledWith(
+            jasmine.any(Object),
+            breakdownL22
+        );
+        expect(onDataUpdatedListener).toHaveBeenCalledWith(
+            jasmine.any(Object),
+            breakdownRoot
+        );
     });
 
-    it('should be able to request data by breakdown and size', function () {
+    it('should be able to request data by breakdown and size', function() {
         spyOn(endpoint, 'getData').and.returnValue($q.resolve([]));
         var breakdown = {
             breakdownId: 11,
@@ -204,7 +226,7 @@ describe('zemDataSource', function () {
                 limit: 1,
             },
             meta: {loading: false},
-            rows: [{}]
+            rows: [{}],
         };
 
         dataSource.loadData(breakdown, 10);
@@ -220,7 +242,7 @@ describe('zemDataSource', function () {
         });
     });
 
-    it('should save data using endpoint service and correctly apply updated data', function () {
+    it('should save data using endpoint service and correctly apply updated data', function() {
         var baseData = {
             breakdownId: 1,
             level: 1,
@@ -228,25 +250,31 @@ describe('zemDataSource', function () {
                 offset: 0,
                 limit: 2,
             },
-            rows: [{
-                breakdownId: 11,
-                stats: {field1: {value: 11}, field2: {value: 12}}
-            }, {
-                breakdownId: 12,
-                stats: {field1: {value: 21}, field2: {value: 22}}
-            }],
-            totals: {field1: {value: 1}, field2: {value: 2}}
+            rows: [
+                {
+                    breakdownId: 11,
+                    stats: {field1: {value: 11}, field2: {value: 12}},
+                },
+                {
+                    breakdownId: 12,
+                    stats: {field1: {value: 21}, field2: {value: 22}},
+                },
+            ],
+            totals: {field1: {value: 1}, field2: {value: 2}},
         };
 
         var updatedData = {
-            rows: [{
-                breakdownId: 11,
-                stats: {field1: {value: 110}, field2: {value: 120}}
-            }, {
-                breakdownId: 12,
-                stats: {field1: {value: 210}}
-            }],
-            totals: {field1: {value: 10}, field2: {value: 20}}
+            rows: [
+                {
+                    breakdownId: 11,
+                    stats: {field1: {value: 110}, field2: {value: 120}},
+                },
+                {
+                    breakdownId: 12,
+                    stats: {field1: {value: 210}},
+                },
+            ],
+            totals: {field1: {value: 10}, field2: {value: 20}},
         };
 
         var updatedStats = [
@@ -273,11 +301,19 @@ describe('zemDataSource', function () {
         dataSource.saveData(value, row, column);
         $scope.$apply();
 
-        expect(endpoint.saveData).toHaveBeenCalledWith(value, row, column, jasmine.any(Object));
-        expect(onStatsUpdated).toHaveBeenCalledWith(jasmine.any(Object), updatedStats);
+        expect(endpoint.saveData).toHaveBeenCalledWith(
+            value,
+            row,
+            column,
+            jasmine.any(Object)
+        );
+        expect(onStatsUpdated).toHaveBeenCalledWith(
+            jasmine.any(Object),
+            updatedStats
+        );
     });
 
-    it('should apply diff on data', function () {
+    it('should apply diff on data', function() {
         var baseData = {
             breakdownId: 1,
             level: 1,
@@ -285,25 +321,31 @@ describe('zemDataSource', function () {
                 offset: 0,
                 limit: 2,
             },
-            rows: [{
-                breakdownId: 11,
-                stats: {field1: {value: 11}, field2: {value: 12}}
-            }, {
-                breakdownId: 12,
-                stats: {field1: {value: 21}, field2: {value: 22}}
-            }],
-            totals: {field1: {value: 1}, field2: {value: 2}}
+            rows: [
+                {
+                    breakdownId: 11,
+                    stats: {field1: {value: 11}, field2: {value: 12}},
+                },
+                {
+                    breakdownId: 12,
+                    stats: {field1: {value: 21}, field2: {value: 22}},
+                },
+            ],
+            totals: {field1: {value: 1}, field2: {value: 2}},
         };
 
         var updatedData = {
-            rows: [{
-                breakdownId: 11,
-                stats: {field1: {value: 110}, field2: {value: 120}}
-            }, {
-                breakdownId: 12,
-                stats: {field1: {value: 210}}
-            }],
-            totals: {field1: {value: 10}, field2: {value: 20}}
+            rows: [
+                {
+                    breakdownId: 11,
+                    stats: {field1: {value: 110}, field2: {value: 120}},
+                },
+                {
+                    breakdownId: 12,
+                    stats: {field1: {value: 210}},
+                },
+            ],
+            totals: {field1: {value: 10}, field2: {value: 20}},
         };
 
         var updatedStats = [
@@ -325,14 +367,18 @@ describe('zemDataSource', function () {
         dataSource.updateData(updatedData);
         $scope.$apply();
 
-        expect(onStatsUpdated).toHaveBeenCalledWith(jasmine.any(Object), updatedStats);
+        expect(onStatsUpdated).toHaveBeenCalledWith(
+            jasmine.any(Object),
+            updatedStats
+        );
     });
 
-    it('should abort active requests when requesting data that changes structure', function () {
+    it('should abort active requests when requesting data that changes structure', function() {
         var deferred = $q.defer();
         deferred.promise.abort = jasmine.createSpy();
         spyOn(endpoint, 'getData').and.returnValues(
-            deferred.promise, $q.resolve([])
+            deferred.promise,
+            $q.resolve([])
         );
 
         dataSource.loadData();
@@ -343,7 +389,7 @@ describe('zemDataSource', function () {
         expect(deferred.promise.abort).toHaveBeenCalled();
     });
 
-    it('should keep active request when configuring breakdown with the same base', function () {
+    it('should keep active request when configuring breakdown with the same base', function() {
         dataSource.loadMetaData();
         $scope.$apply();
 
@@ -368,7 +414,7 @@ describe('zemDataSource', function () {
         expect(endpoint.getData.calls.count()).toEqual(3);
     });
 
-    it('should be able to configure different request properties', function () {
+    it('should be able to configure different request properties', function() {
         spyOn(endpoint, 'getData').and.callThrough();
         dataSource.loadMetaData();
         $scope.$apply();
@@ -379,8 +425,15 @@ describe('zemDataSource', function () {
             endDate: moment(new Date(2016, 1, 10)),
         };
         dataSource.setFilter(dataSource.FILTER.SHOW_ARCHIVED_SOURCES, true);
-        dataSource.setFilter(dataSource.FILTER.SHOW_BLACKLISTED_PUBLISHERS, true);
-        dataSource.setFilter(dataSource.FILTER.FILTERED_MEDIA_SOURCES, [1, 2, 3]);
+        dataSource.setFilter(
+            dataSource.FILTER.SHOW_BLACKLISTED_PUBLISHERS,
+            true
+        );
+        dataSource.setFilter(dataSource.FILTER.FILTERED_MEDIA_SOURCES, [
+            1,
+            2,
+            3,
+        ]);
         dataSource.setDateRange(dateRange);
         dataSource.setOrder(order);
 
@@ -401,6 +454,4 @@ describe('zemDataSource', function () {
             filteredSources: [1, 2, 3],
         });
     });
-
 });
-

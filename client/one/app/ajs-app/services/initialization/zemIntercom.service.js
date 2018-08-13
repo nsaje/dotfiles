@@ -1,7 +1,7 @@
-angular.module('one.services').factory('zemIntercomService', function ($window) {
+angular.module('one.services').factory('zemIntercomService', function($window) {
     var INTERCOM_APP_ID = 'anyekw96';
 
-    function boot (user) {
+    function boot(user) {
         var userDict, companyObject;
         if ($window.Intercom === undefined) {
             return;
@@ -10,7 +10,7 @@ angular.module('one.services').factory('zemIntercomService', function ($window) 
         userDict = {
             app_id: INTERCOM_APP_ID,
             name: user.name,
-            email: user.email
+            email: user.email,
         };
 
         companyObject = getCompanyObjectFromEmail(user.email);
@@ -21,19 +21,20 @@ angular.module('one.services').factory('zemIntercomService', function ($window) 
         $window.Intercom('boot', userDict);
     }
 
-    function getCompanyObjectFromEmail (email) {
-        var splitEmail = email.split('@'), companyName;
+    function getCompanyObjectFromEmail(email) {
+        var splitEmail = email.split('@'),
+            companyName;
         if (splitEmail.length !== 2) {
             return false;
         }
         companyName = splitEmail[1];
         return {
             id: companyName,
-            name: companyName
+            name: companyName,
         };
     }
 
-    function update () {
+    function update() {
         if ($window.Intercom !== undefined) {
             $window.Intercom('update');
         }
@@ -41,6 +42,6 @@ angular.module('one.services').factory('zemIntercomService', function ($window) 
 
     return {
         boot: boot,
-        update: update
+        update: update,
     };
 });

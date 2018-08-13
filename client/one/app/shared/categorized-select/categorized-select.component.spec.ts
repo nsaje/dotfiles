@@ -1,5 +1,11 @@
 import {SimpleChanges, SimpleChange} from '@angular/core';
-import {TestBed, ComponentFixture, async, fakeAsync, tick} from '@angular/core/testing';
+import {
+    TestBed,
+    ComponentFixture,
+    async,
+    fakeAsync,
+    tick,
+} from '@angular/core/testing';
 
 import {CategorizedSelectComponent} from './categorized-select.component';
 import {Category} from './types/category';
@@ -48,10 +54,9 @@ describe('CategorizedSelectComponent', () => {
     beforeEach(async(() => {
         TestBed.configureTestingModule({
             declarations: [CategorizedSelectComponent],
-        })
-        .compileComponents();
+        }).compileComponents();
 
-        fixture =  TestBed.createComponent(CategorizedSelectComponent);
+        fixture = TestBed.createComponent(CategorizedSelectComponent);
         component = fixture.componentInstance;
     }));
 
@@ -81,58 +86,65 @@ describe('CategorizedSelectComponent', () => {
 
         component.resetSelectedCategory();
         expect(component.selectedCategory).toEqual(null);
-        expect(<Item | Category> component.highlightedEntity).toEqual(<Item | Category> testCategory1);
+        expect(<Item | Category>component.highlightedEntity).toEqual(<
+            Item | Category
+        >testCategory1);
         expect(component.searchQuery).toEqual('');
         expect(component.renderedItems).toEqual([]);
     });
 
-    it('should correctly update rendered items on search if category is selected', fakeAsync(() => {
-        component.categorizedItems = [testCategory1, testCategory2];
-        component.ngOnInit();
+    it(
+        'should correctly update rendered items on search if category is selected',
+        fakeAsync(() => {
+            component.categorizedItems = [testCategory1, testCategory2];
+            component.ngOnInit();
 
-        component.selectCategory('category1');
+            component.selectCategory('category1');
 
-        component.search$.next('');
-        tick(500); // tslint:disable-line
-        expect(component.renderedItems).toEqual(testCategory1.items);
+            component.search$.next('');
+            tick(500); // tslint:disable-line
+            expect(component.renderedItems).toEqual(testCategory1.items);
 
-        component.search$.next();
-        tick(500); // tslint:disable-line
-        expect(component.renderedItems).toEqual(testCategory1.items);
+            component.search$.next();
+            tick(500); // tslint:disable-line
+            expect(component.renderedItems).toEqual(testCategory1.items);
 
-        component.search$.next('Item');
-        tick(500); // tslint:disable-line
-        expect(component.renderedItems).toEqual(testCategory1.items);
+            component.search$.next('Item');
+            tick(500); // tslint:disable-line
+            expect(component.renderedItems).toEqual(testCategory1.items);
 
-        component.search$.next('item 2');
-        tick(500); // tslint:disable-line
-        expect(component.renderedItems).toEqual([testItem2]);
+            component.search$.next('item 2');
+            tick(500); // tslint:disable-line
+            expect(component.renderedItems).toEqual([testItem2]);
 
-        component.search$.next('none');
-        tick(500); // tslint:disable-line
-        expect(component.renderedItems).toEqual([]);
+            component.search$.next('none');
+            tick(500); // tslint:disable-line
+            expect(component.renderedItems).toEqual([]);
 
-        component.selectCategory('category2');
+            component.selectCategory('category2');
 
-        component.search$.next('Item 1');
-        tick(500); // tslint:disable-line
-        expect(component.renderedItems).toEqual([]);
+            component.search$.next('Item 1');
+            tick(500); // tslint:disable-line
+            expect(component.renderedItems).toEqual([]);
 
-        component.search$.next('Item 3');
-        tick(500); // tslint:disable-line
-        expect(component.renderedItems).toEqual([testItem3]);
-    }));
+            component.search$.next('Item 3');
+            tick(500); // tslint:disable-line
+            expect(component.renderedItems).toEqual([testItem3]);
+        })
+    );
 
-    it('should not update rendered items on search if category is not selected', fakeAsync(() => {
-        component.categorizedItems = [testCategory1, testCategory2];
-        component.ngOnInit();
+    it(
+        'should not update rendered items on search if category is not selected',
+        fakeAsync(() => {
+            component.categorizedItems = [testCategory1, testCategory2];
+            component.ngOnInit();
 
-        expect(component.renderedItems).toEqual([]);
-        component.search$.next('Item');
-        tick(500); // tslint:disable-line
-        expect(component.renderedItems).toEqual([]);
-    }));
-
+            expect(component.renderedItems).toEqual([]);
+            component.search$.next('Item');
+            tick(500); // tslint:disable-line
+            expect(component.renderedItems).toEqual([]);
+        })
+    );
 
     it('should correctly set selected items when categorizedItems input changes', () => {
         let changes: SimpleChanges;
@@ -140,23 +152,39 @@ describe('CategorizedSelectComponent', () => {
 
         component.categorizedItems = [];
         changes = {
-            categorizedItems: new SimpleChange(null, component.categorizedItems, false),
+            categorizedItems: new SimpleChange(
+                null,
+                component.categorizedItems,
+                false
+            ),
         };
         component.ngOnChanges(changes);
         expect(component.selectedItems).toEqual([]);
 
         component.categorizedItems = [testCategory1];
         changes = {
-            categorizedItems: new SimpleChange(null, component.categorizedItems, false),
+            categorizedItems: new SimpleChange(
+                null,
+                component.categorizedItems,
+                false
+            ),
         };
         component.ngOnChanges(changes);
-        expect(component.selectedItems).toEqual([{categoryKey: 'category1', itemValue: '1'}]);
+        expect(component.selectedItems).toEqual([
+            {categoryKey: 'category1', itemValue: '1'},
+        ]);
 
         component.selectedItems = [{categoryKey: 'category1', itemValue: '2'}];
-        component.unselectedItems = [{categoryKey: 'category2', itemValue: '4'}];
+        component.unselectedItems = [
+            {categoryKey: 'category2', itemValue: '4'},
+        ];
         component.categorizedItems = [testCategory1, testCategory2];
         changes = {
-            categorizedItems: new SimpleChange(null, component.categorizedItems, false),
+            categorizedItems: new SimpleChange(
+                null,
+                component.categorizedItems,
+                false
+            ),
         };
         component.ngOnChanges(changes);
         expect(component.selectedItems).toEqual([
@@ -172,7 +200,11 @@ describe('CategorizedSelectComponent', () => {
 
         component.categorizedItems = [testCategory1];
         changes = {
-            categorizedItems: new SimpleChange(null, component.categorizedItems, false),
+            categorizedItems: new SimpleChange(
+                null,
+                component.categorizedItems,
+                false
+            ),
         };
         component.ngOnChanges(changes);
         expect(component.selectedCategory).toEqual(null);
@@ -182,7 +214,11 @@ describe('CategorizedSelectComponent', () => {
 
         component.categorizedItems = [testCategory1, testCategory2];
         changes = {
-            categorizedItems: new SimpleChange(null, component.categorizedItems, false),
+            categorizedItems: new SimpleChange(
+                null,
+                component.categorizedItems,
+                false
+            ),
         };
         component.ngOnChanges(changes);
         expect(component.selectedCategory.key).toEqual(testCategory1.key);
@@ -195,24 +231,40 @@ describe('CategorizedSelectComponent', () => {
 
         component.categorizedItems = [];
         changes = {
-            categorizedItems: new SimpleChange(null, component.categorizedItems, false),
+            categorizedItems: new SimpleChange(
+                null,
+                component.categorizedItems,
+                false
+            ),
         };
         component.ngOnChanges(changes);
         expect(component.renderedItems).toEqual([]);
 
         component.categorizedItems = [testCategory1];
         changes = {
-            categorizedItems: new SimpleChange(null, component.categorizedItems, false),
+            categorizedItems: new SimpleChange(
+                null,
+                component.categorizedItems,
+                false
+            ),
         };
         component.ngOnChanges(changes);
         expect(component.renderedItems.length).toBe(2); // tslint:disable-line no-magic-numbers
-        expect(component.renderedItems[0].value).toEqual(testCategory1.items[0].value);
-        expect(component.renderedItems[1].value).toEqual(testCategory1.items[1].value);
+        expect(component.renderedItems[0].value).toEqual(
+            testCategory1.items[0].value
+        );
+        expect(component.renderedItems[1].value).toEqual(
+            testCategory1.items[1].value
+        );
 
         component.searchQuery = 'Item 2';
         component.categorizedItems = [testCategory1, testCategory2];
         changes = {
-            categorizedItems: new SimpleChange(null, component.categorizedItems, false),
+            categorizedItems: new SimpleChange(
+                null,
+                component.categorizedItems,
+                false
+            ),
         };
         component.ngOnChanges(changes);
         expect(component.renderedItems.length).toBe(1);
@@ -223,12 +275,18 @@ describe('CategorizedSelectComponent', () => {
         component.ngOnInit();
         component.categorizedItems = [testCategory1, testCategory2];
         const changes: SimpleChanges = {
-            categorizedItems: new SimpleChange(null, component.categorizedItems, false),
+            categorizedItems: new SimpleChange(
+                null,
+                component.categorizedItems,
+                false
+            ),
         };
         component.ngOnChanges(changes);
 
         component.selectedItems = [{categoryKey: 'category1', itemValue: '1'}];
-        component.unselectedItems = [{categoryKey: 'category2', itemValue: '3'}];
+        component.unselectedItems = [
+            {categoryKey: 'category2', itemValue: '3'},
+        ];
 
         component.toggleItem(component.categorizedItems[0].items[0]);
         expect(component.selectedItems).toEqual([]);
@@ -265,7 +323,11 @@ describe('CategorizedSelectComponent', () => {
             enableKeyBindings: true,
         };
         changes = {
-            configOverride: new SimpleChange(null, component.configOverride, false),
+            configOverride: new SimpleChange(
+                null,
+                component.configOverride,
+                false
+            ),
         };
         component.ngOnChanges(changes);
         expect(component.config).toEqual({

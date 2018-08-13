@@ -7,8 +7,9 @@ angular.module('one.widgets').component('zemColumnSelector', {
         onToggleColumns: '&',
     },
     template: require('./zemColumnSelector.component.html'),
-    controller: function () {
-        var MSG_DISABLED_COLUMN = 'Column is available when corresponding breakdown is visible.';
+    controller: function() {
+        var MSG_DISABLED_COLUMN =
+            'Column is available when corresponding breakdown is visible.';
 
         var $ctrl = this;
 
@@ -16,55 +17,61 @@ angular.module('one.widgets').component('zemColumnSelector', {
         $ctrl.getTooltip = getTooltip;
         $ctrl.onSearch = onSearch;
 
-        $ctrl.$onChanges = function (changes) {
+        $ctrl.$onChanges = function(changes) {
             if (changes.categories) {
                 onSearch($ctrl.searchQuery);
             }
         };
 
-        function onSearch (q) {
+        function onSearch(q) {
             $ctrl.searchQuery = q.toLowerCase();
-            $ctrl.filteredCategories = getFilteredCategories($ctrl.categories, $ctrl.searchQuery);
+            $ctrl.filteredCategories = getFilteredCategories(
+                $ctrl.categories,
+                $ctrl.searchQuery
+            );
         }
 
-        function getFilteredCategories (categories, searchQuery) {
+        function getFilteredCategories(categories, searchQuery) {
             categories = angular.copy(categories);
-            categories.forEach(function (category) {
+            categories.forEach(function(category) {
                 category.columns = getFilteredColumns(category, searchQuery);
-                category.subcategories = getFilteredSubcategories(category.subcategories, searchQuery);
+                category.subcategories = getFilteredSubcategories(
+                    category.subcategories,
+                    searchQuery
+                );
             });
             return categories.filter(removeEmptyCategories);
         }
 
-        function getFilteredColumns (category, searchQuery) {
-            return category.columns.filter(function (column) {
+        function getFilteredColumns(category, searchQuery) {
+            return category.columns.filter(function(column) {
                 var field = column.data.name.toLowerCase();
                 return field.indexOf(searchQuery) !== -1;
             });
         }
 
-        function getFilteredSubcategories (subcategories, searchQuery) {
-            return (subcategories || []).filter(function (subcategory) {
+        function getFilteredSubcategories(subcategories, searchQuery) {
+            return (subcategories || []).filter(function(subcategory) {
                 var field = subcategory.name.toLowerCase();
                 return field.indexOf(searchQuery) !== -1;
             });
         }
 
-        function removeEmptyCategories (category) {
+        function removeEmptyCategories(category) {
             if (category.columns.length > 0) {
                 return true;
             }
 
-            return (category.subcategories || []).some(function (subCategory) {
+            return (category.subcategories || []).some(function(subCategory) {
                 return subCategory.columns.length > 0;
             });
         }
 
-        function getTooltip (column) {
+        function getTooltip(column) {
             if (column.disabled) {
                 return MSG_DISABLED_COLUMN;
             }
             return null;
         }
-    }
+    },
 });

@@ -1,4 +1,4 @@
-describe('zemInfoboxHeader', function () {
+describe('zemInfoboxHeader', function() {
     var $injector;
     var $componentController;
     var $rootScope;
@@ -9,7 +9,7 @@ describe('zemInfoboxHeader', function () {
 
     beforeEach(angular.mock.module('one'));
     beforeEach(angular.mock.module('one.mocks.zemInitializationService'));
-    beforeEach(inject(function (_$injector_) {
+    beforeEach(inject(function(_$injector_) {
         $injector = _$injector_;
         $componentController = $injector.get('$componentController');
         $rootScope = $injector.get('$rootScope');
@@ -21,7 +21,7 @@ describe('zemInfoboxHeader', function () {
         $httpBackend.whenGET(/^\/api\/.*/).respond(200, {data: {}});
     }));
 
-    it('should update view when entity updates', function () {
+    it('should update view when entity updates', function() {
         var $ctrl = $componentController('zemInfoboxHeader');
         var changes = {
             entity: {
@@ -41,7 +41,7 @@ describe('zemInfoboxHeader', function () {
         expect($ctrl.entityName).toEqual('Test entity');
     });
 
-    it('should set correct level text for entity type', function () {
+    it('should set correct level text for entity type', function() {
         var $ctrl = $componentController('zemInfoboxHeader');
         var changes = {
             entity: {
@@ -78,7 +78,7 @@ describe('zemInfoboxHeader', function () {
         expect($ctrl.level).toEqual('Ad Group');
     });
 
-    it('should only show state switch for ad groups', function () {
+    it('should only show state switch for ad groups', function() {
         var $ctrl = $componentController('zemInfoboxHeader');
         var changes = {
             entity: {
@@ -112,13 +112,15 @@ describe('zemInfoboxHeader', function () {
         expect($ctrl.isStateSwitchAvailable).toBe(true);
     });
 
-    it('should execute activate action when enabling entity', function () {
-        var mockedAsyncFunction = zemSpecsHelper.getMockedAsyncFunction($injector);
+    it('should execute activate action when enabling entity', function() {
+        var mockedAsyncFunction = zemSpecsHelper.getMockedAsyncFunction(
+            $injector
+        );
         var entity = {
             id: 1,
             type: constants.entityType.AD_GROUP,
             data: {
-                state: constants.settingsState.INACTIVE
+                state: constants.settingsState.INACTIVE,
             },
         };
         var bindings = {
@@ -126,7 +128,9 @@ describe('zemInfoboxHeader', function () {
         };
         var $ctrl = $componentController('zemInfoboxHeader', null, bindings);
 
-        spyOn(zemEntityService, 'executeAction').and.callFake(mockedAsyncFunction);
+        spyOn(zemEntityService, 'executeAction').and.callFake(
+            mockedAsyncFunction
+        );
 
         $ctrl.toggleEntityState();
         expect(zemEntityService.executeAction).toHaveBeenCalledWith(
@@ -136,13 +140,15 @@ describe('zemInfoboxHeader', function () {
         );
     });
 
-    it('should execute deactivate action when disabling entity', function () {
-        var mockedAsyncFunction = zemSpecsHelper.getMockedAsyncFunction($injector);
+    it('should execute deactivate action when disabling entity', function() {
+        var mockedAsyncFunction = zemSpecsHelper.getMockedAsyncFunction(
+            $injector
+        );
         var entity = {
             id: 1,
             type: constants.entityType.AD_GROUP,
             data: {
-                state: constants.settingsState.ACTIVE
+                state: constants.settingsState.ACTIVE,
             },
         };
         var bindings = {
@@ -150,7 +156,9 @@ describe('zemInfoboxHeader', function () {
         };
         var $ctrl = $componentController('zemInfoboxHeader', null, bindings);
 
-        spyOn(zemEntityService, 'executeAction').and.callFake(mockedAsyncFunction);
+        spyOn(zemEntityService, 'executeAction').and.callFake(
+            mockedAsyncFunction
+        );
 
         $ctrl.toggleEntityState();
         expect(zemEntityService.executeAction).toHaveBeenCalledWith(
@@ -160,13 +168,16 @@ describe('zemInfoboxHeader', function () {
         );
     });
 
-    it('should call zemNavigationService.reloadAdGroup if action executed successfully', function () {
-        var mockedAsyncFunction = zemSpecsHelper.getMockedAsyncFunction($injector, {data: {id: 1}});
+    it('should call zemNavigationService.reloadAdGroup if action executed successfully', function() {
+        var mockedAsyncFunction = zemSpecsHelper.getMockedAsyncFunction(
+            $injector,
+            {data: {id: 1}}
+        );
         var entity = {
             id: 1,
             type: constants.entityType.AD_GROUP,
             data: {
-                state: constants.settingsState.ACTIVE
+                state: constants.settingsState.ACTIVE,
             },
         };
         var bindings = {
@@ -174,7 +185,9 @@ describe('zemInfoboxHeader', function () {
         };
         var $ctrl = $componentController('zemInfoboxHeader', null, bindings);
 
-        spyOn(zemEntityService, 'executeAction').and.callFake(mockedAsyncFunction);
+        spyOn(zemEntityService, 'executeAction').and.callFake(
+            mockedAsyncFunction
+        );
         spyOn(zemNavigationService, 'reloadAdGroup').and.stub();
 
         $ctrl.toggleEntityState();
@@ -182,15 +195,17 @@ describe('zemInfoboxHeader', function () {
         expect(zemNavigationService.reloadAdGroup).toHaveBeenCalled();
     });
 
-    it('should display error toast if action executed unsuccessfully', function () {
+    it('should display error toast if action executed unsuccessfully', function() {
         var mockedAsyncFunction = zemSpecsHelper.getMockedAsyncFunction(
-            $injector, {data: {message: 'Error message'}}, true
+            $injector,
+            {data: {message: 'Error message'}},
+            true
         );
         var entity = {
             id: 1,
             type: constants.entityType.AD_GROUP,
             data: {
-                state: constants.settingsState.ACTIVE
+                state: constants.settingsState.ACTIVE,
             },
         };
         var bindings = {
@@ -198,7 +213,9 @@ describe('zemInfoboxHeader', function () {
         };
         var $ctrl = $componentController('zemInfoboxHeader', null, bindings);
 
-        spyOn(zemEntityService, 'executeAction').and.callFake(mockedAsyncFunction);
+        spyOn(zemEntityService, 'executeAction').and.callFake(
+            mockedAsyncFunction
+        );
         spyOn(zemToastsService, 'error').and.stub();
 
         $ctrl.toggleEntityState();

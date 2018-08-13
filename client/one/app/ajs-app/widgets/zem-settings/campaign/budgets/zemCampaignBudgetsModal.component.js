@@ -4,7 +4,15 @@ angular.module('one.widgets').component('zemCampaignBudgetsModal', {
         resolve: '<',
         modalInstance: '<',
     },
-    controller: function ($filter, $timeout, zemCampaignBudgetsEndpoint, zemNavigationService, zemNavigationNewService, zemPermissions) { // eslint-disable-line max-len
+    controller: function(
+        $filter,
+        $timeout,
+        zemCampaignBudgetsEndpoint,
+        zemNavigationService,
+        zemNavigationNewService,
+        zemPermissions
+    ) {
+        // eslint-disable-line max-len
         var $ctrl = this;
 
         $ctrl.campaign = $ctrl.resolve.campaign;
@@ -29,7 +37,7 @@ angular.module('one.widgets').component('zemCampaignBudgetsModal', {
         $ctrl.initStartDate = moment().toDate();
         $ctrl.endStartDate = null;
 
-        $ctrl.getLicenseFees = function (search) {
+        $ctrl.getLicenseFees = function(search) {
             // use fresh instance because we modify the collection on the fly
             var fees = ['15', '20', '25'];
 
@@ -41,17 +49,17 @@ angular.module('one.widgets').component('zemCampaignBudgetsModal', {
             return fees;
         };
 
-        $ctrl.openStartDatePicker = function () {
+        $ctrl.openStartDatePicker = function() {
             $ctrl.startDatePicker.isOpen = true;
         };
-        $ctrl.openEndDatePicker = function () {
+        $ctrl.openEndDatePicker = function() {
             $ctrl.endDatePicker.isOpen = true;
         };
 
-        $ctrl.checkCreditValues = function () {
-            $timeout(function () {
+        $ctrl.checkCreditValues = function() {
+            $timeout(function() {
                 var id = $ctrl.budgetItem.credit.id;
-                getAvailableCredit().forEach(function (obj) {
+                getAvailableCredit().forEach(function(obj) {
                     if (obj.id !== id) {
                         return;
                     }
@@ -59,31 +67,37 @@ angular.module('one.widgets').component('zemCampaignBudgetsModal', {
                     updateBudgetInitialValues(obj);
                 });
             }, 100); // to be sure that the selected id is correct
-
         };
 
-        $ctrl.upsertBudgetItem = function () {
+        $ctrl.upsertBudgetItem = function() {
             $ctrl.saveRequestInProgress = true;
             $ctrl.budgetItem.id = $ctrl.selectedBudgetId;
-            var endpoint = $ctrl.isNew ? zemCampaignBudgetsEndpoint.create : zemCampaignBudgetsEndpoint.save;
-            endpoint($ctrl.campaign.id, $ctrl.budgetItem).then(function (data) {
-                $ctrl.saved = true;
-                closeModal(data);
-                zemNavigationService.reload();
-            }, function (errors) {
-                $ctrl.errors = errors;
-                $ctrl.saved = false;
-            }).finally(function () {
-                $ctrl.saveRequestInProgress = false;
-            });
+            var endpoint = $ctrl.isNew
+                ? zemCampaignBudgetsEndpoint.create
+                : zemCampaignBudgetsEndpoint.save;
+            endpoint($ctrl.campaign.id, $ctrl.budgetItem)
+                .then(
+                    function(data) {
+                        $ctrl.saved = true;
+                        closeModal(data);
+                        zemNavigationService.reload();
+                    },
+                    function(errors) {
+                        $ctrl.errors = errors;
+                        $ctrl.saved = false;
+                    }
+                )
+                .finally(function() {
+                    $ctrl.saveRequestInProgress = false;
+                });
         };
 
-        $ctrl.discardBudgetItem = function () {
+        $ctrl.discardBudgetItem = function() {
             $ctrl.discarded = true;
             closeModal();
         };
 
-        $ctrl.$onInit = function () {
+        $ctrl.$onInit = function() {
             $ctrl.activeAccount = zemNavigationNewService.getActiveAccount();
             $ctrl.saveRequestInProgress = false;
             $ctrl.isNew = $ctrl.selectedBudgetId === null;
@@ -96,62 +110,84 @@ angular.module('one.widgets').component('zemCampaignBudgetsModal', {
                 $ctrl.budgetItem.isEditable = true;
                 $ctrl.budgetItem.credit = $ctrl.availableCredit[0];
             } else {
-                zemCampaignBudgetsEndpoint.get(
-                    $ctrl.campaign.id,
-                    $ctrl.selectedBudgetId
-                ).then(function (data) {
-                    var creditStartDate = moment(data.startDate, 'MM/DD/YYYY').toDate(),
-                        creditEndDate = moment(data.endDate, 'MM/DD/YYYY').toDate();
+                zemCampaignBudgetsEndpoint
+                    .get($ctrl.campaign.id, $ctrl.selectedBudgetId)
+                    .then(function(data) {
+                        var creditStartDate = moment(
+                                data.startDate,
+                                'MM/DD/YYYY'
+                            ).toDate(),
+                            creditEndDate = moment(
+                                data.endDate,
+                                'MM/DD/YYYY'
+                            ).toDate();
 
-                    $ctrl.budgetItem = data;
-                    $ctrl.budgetItem.startDate = creditStartDate;
-                    $ctrl.budgetItem.endDate = creditEndDate;
-                    $ctrl.budgetItem.margin = $filter('number')(
-                        $ctrl.budgetItem.margin.replace('%', ''),
-                        2
-                    );
+                        $ctrl.budgetItem = data;
+                        $ctrl.budgetItem.startDate = creditStartDate;
+                        $ctrl.budgetItem.endDate = creditEndDate;
+                        $ctrl.budgetItem.margin = $filter('number')(
+                            $ctrl.budgetItem.margin.replace('%', ''),
+                            2
+                        );
 
-                    $ctrl.initStartDate = $ctrl.minDate;
-                    $ctrl.initEndDate = $ctrl.maxDate;
+                        $ctrl.initStartDate = $ctrl.minDate;
+                        $ctrl.initEndDate = $ctrl.maxDate;
 
-                    $ctrl.canDelete = parseInt(data.state) === constants.budgetLineItemStatus.PENDING;
-                    $ctrl.availableCredit = getAvailableCredit(false, data.credit.id);
-                    $ctrl.minDate = creditStartDate;
-                    $ctrl.maxDate = moment($ctrl.availableCredit[0].endDate, 'MM/DD/YYYY').toDate();
-                });
+                        $ctrl.canDelete =
+                            parseInt(data.state) ===
+                            constants.budgetLineItemStatus.PENDING;
+                        $ctrl.availableCredit = getAvailableCredit(
+                            false,
+                            data.credit.id
+                        );
+                        $ctrl.minDate = creditStartDate;
+                        $ctrl.maxDate = moment(
+                            $ctrl.availableCredit[0].endDate,
+                            'MM/DD/YYYY'
+                        ).toDate();
+                    });
             }
         };
 
-        function closeModal (data) {
-            $timeout(function () {
+        function closeModal(data) {
+            $timeout(function() {
                 $ctrl.saveRequestInProgress = false;
                 $ctrl.modalInstance.close(data);
             }, 1000);
         }
 
-        function updateBudgetInitialValues (credit) {
-            var creditStartDate = moment(credit.startDate, 'MM/DD/YYYY').toDate(),
+        function updateBudgetInitialValues(credit) {
+            var creditStartDate = moment(
+                    credit.startDate,
+                    'MM/DD/YYYY'
+                ).toDate(),
                 creditEndDate = moment(credit.endDate, 'MM/DD/YYYY').toDate(),
                 today = moment().toDate();
 
             $ctrl.minDate = creditStartDate;
             $ctrl.maxDate = creditEndDate;
             $ctrl.initEndDate = null;
-            $ctrl.initStartDate = creditStartDate > today ? creditStartDate : today;
+            $ctrl.initStartDate =
+                creditStartDate > today ? creditStartDate : today;
 
             $ctrl.budgetItem.startDate = $ctrl.initStartDate;
             $ctrl.budgetItem.endDate = $ctrl.initEndDate;
             $ctrl.budgetItem.amount = null;
         }
 
-        function getAvailableCredit (all, include) {
-            return all ? $ctrl.budgets.credits : $ctrl.budgets.credits.filter(function (obj) {
-                return include && obj.id === include || !include && obj.isAvailable;
-            });
+        function getAvailableCredit(all, include) {
+            return all
+                ? $ctrl.budgets.credits
+                : $ctrl.budgets.credits.filter(function(obj) {
+                      return (
+                          (include && obj.id === include) ||
+                          (!include && obj.isAvailable)
+                      );
+                  });
         }
 
-        $ctrl.canAccessPlatformCosts = function () {
+        $ctrl.canAccessPlatformCosts = function() {
             return zemPermissions.canAccessPlatformCosts($ctrl.activeAccount);
         };
-    }
+    },
 });

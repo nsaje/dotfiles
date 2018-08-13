@@ -5,7 +5,7 @@ angular.module('one').component('zemCampaignLauncher', {
         account: '<',
     },
     template: require('./zemCampaignLauncher.component.html'),
-    controller: function (zemCampaignLauncherStateService) {
+    controller: function(zemCampaignLauncherStateService) {
         var $ctrl = this;
 
         $ctrl.isCurrentStep = isCurrentStep;
@@ -20,71 +20,90 @@ angular.module('one').component('zemCampaignLauncher', {
         $ctrl.goToReviewStep = goToReviewStep;
         $ctrl.launchCampaign = launchCampaign;
 
-        $ctrl.$onInit = function () {
-            $ctrl.stateService = zemCampaignLauncherStateService.createInstance($ctrl.account);
+        $ctrl.$onInit = function() {
+            $ctrl.stateService = zemCampaignLauncherStateService.createInstance(
+                $ctrl.account
+            );
             $ctrl.stateService.initialize();
             $ctrl.state = $ctrl.stateService.getState();
         };
 
-        function isCurrentStep (step) {
+        function isCurrentStep(step) {
             return $ctrl.state.currentStep === step;
         }
 
-        function isStepDone (step) {
+        function isStepDone(step) {
             var stepIndex = $ctrl.state.orderedSteps.indexOf(step);
-            var currentStepIndex = $ctrl.state.orderedSteps.indexOf($ctrl.state.currentStep);
+            var currentStepIndex = $ctrl.state.orderedSteps.indexOf(
+                $ctrl.state.currentStep
+            );
             return currentStepIndex > stepIndex;
         }
 
-        function isPreviousStepButtonVisible () {
-            return $ctrl.state.currentStep
-                   && $ctrl.state.currentStep.controls
-                   && $ctrl.state.currentStep.controls.previous
-                   && !$ctrl.state.requests.launchCampaign.inProgress
-                   && $ctrl.state.orderedSteps.indexOf($ctrl.state.currentStep) > 0;
+        function isPreviousStepButtonVisible() {
+            return (
+                $ctrl.state.currentStep &&
+                $ctrl.state.currentStep.controls &&
+                $ctrl.state.currentStep.controls.previous &&
+                !$ctrl.state.requests.launchCampaign.inProgress &&
+                $ctrl.state.orderedSteps.indexOf($ctrl.state.currentStep) > 0
+            );
         }
 
-        function isNextStepButtonVisible () {
-            return $ctrl.state.currentStep
-                   && $ctrl.state.currentStep.controls
-                   && $ctrl.state.currentStep.controls.next
-                   && !$ctrl.state.requests.launchCampaign.inProgress
-                   && $ctrl.state.orderedSteps.indexOf($ctrl.state.currentStep) < $ctrl.state.orderedSteps.length - 1;
+        function isNextStepButtonVisible() {
+            return (
+                $ctrl.state.currentStep &&
+                $ctrl.state.currentStep.controls &&
+                $ctrl.state.currentStep.controls.next &&
+                !$ctrl.state.requests.launchCampaign.inProgress &&
+                $ctrl.state.orderedSteps.indexOf($ctrl.state.currentStep) <
+                    $ctrl.state.orderedSteps.length - 1
+            );
         }
 
-        function isReviewButtonVisible () {
-            return $ctrl.state.currentStep
-                   && $ctrl.state.currentStep.controls
-                   && $ctrl.state.currentStep.controls.review
-                   && !$ctrl.state.requests.launchCampaign.inProgress
-                   && $ctrl.stateService.areAllStepsValid();
+        function isReviewButtonVisible() {
+            return (
+                $ctrl.state.currentStep &&
+                $ctrl.state.currentStep.controls &&
+                $ctrl.state.currentStep.controls.review &&
+                !$ctrl.state.requests.launchCampaign.inProgress &&
+                $ctrl.stateService.areAllStepsValid()
+            );
         }
 
-        function isLaunchButtonVisible () {
-            return $ctrl.state.currentStep
-                   && $ctrl.state.currentStep.controls
-                   && $ctrl.state.currentStep.controls.launch
-                   && !$ctrl.state.requests.launchCampaign.inProgress;
+        function isLaunchButtonVisible() {
+            return (
+                $ctrl.state.currentStep &&
+                $ctrl.state.currentStep.controls &&
+                $ctrl.state.currentStep.controls.launch &&
+                !$ctrl.state.requests.launchCampaign.inProgress
+            );
         }
 
-        function areCurrentStepFieldsValid () {
-            return $ctrl.stateService.areStepFieldsValid($ctrl.state.currentStep);
+        function areCurrentStepFieldsValid() {
+            return $ctrl.stateService.areStepFieldsValid(
+                $ctrl.state.currentStep
+            );
         }
 
-        function goToPreviousStep () {
-            $ctrl.stateService.goToStepWithIndex($ctrl.state.orderedSteps.indexOf($ctrl.state.currentStep) - 1);
+        function goToPreviousStep() {
+            $ctrl.stateService.goToStepWithIndex(
+                $ctrl.state.orderedSteps.indexOf($ctrl.state.currentStep) - 1
+            );
         }
 
-        function goToNextStep () {
+        function goToNextStep() {
             if (!areCurrentStepFieldsValid()) return;
-            $ctrl.stateService.goToStepWithIndex($ctrl.state.orderedSteps.indexOf($ctrl.state.currentStep) + 1);
+            $ctrl.stateService.goToStepWithIndex(
+                $ctrl.state.orderedSteps.indexOf($ctrl.state.currentStep) + 1
+            );
         }
 
-        function goToReviewStep () {
+        function goToReviewStep() {
             $ctrl.stateService.goToStep($ctrl.state.steps.review);
         }
 
-        function launchCampaign () {
+        function launchCampaign() {
             $ctrl.stateService.launchCampaign();
         }
     },

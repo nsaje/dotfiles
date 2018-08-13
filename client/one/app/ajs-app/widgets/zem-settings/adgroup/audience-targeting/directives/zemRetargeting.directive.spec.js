@@ -1,13 +1,13 @@
-describe('zemRetargeting', function () {
+describe('zemRetargeting', function() {
     var $scope, element, isolate;
 
-    var template = '<zem-retargeting zem-selected-adgroup-ids="selectedAdgroupIds" zem-retargetable-adgroups="retargetableAdgroups" zem-account="account"></zem-retargeting>'; // eslint-disable-line max-len
-
+    var template =
+        '<zem-retargeting zem-selected-adgroup-ids="selectedAdgroupIds" zem-retargetable-adgroups="retargetableAdgroups" zem-account="account"></zem-retargeting>'; // eslint-disable-line max-len
 
     beforeEach(angular.mock.module('one'));
     beforeEach(angular.mock.module('one.mocks.zemInitializationService'));
 
-    beforeEach(inject(function ($compile, $rootScope) {
+    beforeEach(inject(function($compile, $rootScope) {
         $scope = $rootScope.$new();
 
         $scope.selectedAdgroupIds = [];
@@ -33,7 +33,7 @@ describe('zemRetargeting', function () {
         isolate = element.isolateScope();
     }));
 
-    it('adds new ad groups', function () {
+    it('adds new ad groups', function() {
         isolate.addAdgroup({id: 1});
         $scope.$digest();
         expect($scope.selectedAdgroupIds).toEqual([1]);
@@ -46,7 +46,7 @@ describe('zemRetargeting', function () {
         expect(isolate.availableAdgroups().length).toBe(1);
     });
 
-    it('removes selected ad groups', function () {
+    it('removes selected ad groups', function() {
         $scope.selectedAdgroupIds = [1, 3];
         $scope.$digest();
 
@@ -62,7 +62,7 @@ describe('zemRetargeting', function () {
         expect(isolate.availableAdgroups().length).toBe(3);
     });
 
-    it('shows archived ad groups when enabled', function () {
+    it('shows archived ad groups when enabled', function() {
         expect(isolate.availableAdgroups().length).toBe(3);
     });
 });

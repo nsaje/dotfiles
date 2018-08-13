@@ -1,7 +1,12 @@
 import './inventory-planning.view.less';
 
 import {
-    Component, OnInit, Inject, OnDestroy, ChangeDetectionStrategy, HostBinding
+    Component,
+    OnInit,
+    Inject,
+    OnDestroy,
+    ChangeDetectionStrategy,
+    HostBinding,
 } from '@angular/core';
 import {downgradeComponent} from '@angular/upgrade/static';
 
@@ -22,16 +27,17 @@ const FILTER_URL_PARAMS = ['countries', 'publishers', 'devices', 'sources'];
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class InventoryPlanningView implements OnInit, OnDestroy {
-
-    @HostBinding('class') cssClass = 'zem-inventory-planning-view';
+    @HostBinding('class')
+    cssClass = 'zem-inventory-planning-view';
 
     private ngUnsubscribe$: Subject<undefined> = new Subject();
 
-    constructor (
+    constructor(
         @Inject('ajs$location') private ajs$location: any,
-        public store: InventoryPlanningStore) { }
+        public store: InventoryPlanningStore
+    ) {}
 
-    ngOnInit () {
+    ngOnInit() {
         const preselectedFilters = this.getPreselectedFiltersFromUrlParams();
         if (preselectedFilters) {
             this.store.initWithPreselectedFilters(preselectedFilters);
@@ -50,21 +56,26 @@ export class InventoryPlanningView implements OnInit, OnDestroy {
             });
     }
 
-    ngOnDestroy (): void {
+    ngOnDestroy(): void {
         this.store.destroy();
         this.ngUnsubscribe$.next();
         this.ngUnsubscribe$.complete();
     }
 
-    updateUrlParamsWithSelectedFilters (selectedFilters: Filters) {
+    updateUrlParamsWithSelectedFilters(selectedFilters: Filters) {
         FILTER_URL_PARAMS.forEach(paramName => {
-            const paramValue = selectedFilters[paramName].map((x: FilterOption) => x.value).join(',');
+            const paramValue = selectedFilters[paramName]
+                .map((x: FilterOption) => x.value)
+                .join(',');
             this.setUrlParam(paramName, paramValue);
         });
     }
 
-    private getPreselectedFiltersFromUrlParams (): {key: string, value: string}[] {
-        const preselectedFilters: {key: string, value: string}[] = [];
+    private getPreselectedFiltersFromUrlParams(): {
+        key: string;
+        value: string;
+    }[] {
+        const preselectedFilters: {key: string; value: string}[] = [];
         FILTER_URL_PARAMS.forEach(paramName => {
             const values: string = this.ajs$location.search()[paramName];
             if (values) {
@@ -76,7 +87,7 @@ export class InventoryPlanningView implements OnInit, OnDestroy {
         return preselectedFilters.length > 0 ? preselectedFilters : null;
     }
 
-    private setUrlParam (name: string, value: string) {
+    private setUrlParam(name: string, value: string) {
         if (!value) {
             value = null;
         }
@@ -85,7 +96,9 @@ export class InventoryPlanningView implements OnInit, OnDestroy {
 }
 
 declare var angular: angular.IAngularStatic;
-angular.module('one.downgraded').directive(
-    'zemInventoryPlanningView',
-    downgradeComponent({component: InventoryPlanningView})
-);
+angular
+    .module('one.downgraded')
+    .directive(
+        'zemInventoryPlanningView',
+        downgradeComponent({component: InventoryPlanningView})
+    );

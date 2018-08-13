@@ -10,7 +10,10 @@ import 'zone.js/dist/jasmine-patch';
 import 'zone.js/dist/async-test';
 import 'zone.js/dist/fake-async-test';
 import {getTestBed} from '@angular/core/testing';
-import {BrowserDynamicTestingModule, platformBrowserDynamicTesting} from '@angular/platform-browser-dynamic/testing';
+import {
+    BrowserDynamicTestingModule,
+    platformBrowserDynamicTesting,
+} from '@angular/platform-browser-dynamic/testing';
 
 declare var __karma__: any;
 // Prevent Karma from running prematurely

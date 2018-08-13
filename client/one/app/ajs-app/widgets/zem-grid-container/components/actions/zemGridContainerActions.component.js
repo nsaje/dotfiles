@@ -6,7 +6,7 @@ angular.module('one.widgets').component('zemGridContainerActions', {
         level: '<',
         gridApi: '<',
     },
-    controller: function (zemPermissions) {
+    controller: function(zemPermissions) {
         var $ctrl = this;
         $ctrl.constants = constants;
 
@@ -19,48 +19,69 @@ angular.module('one.widgets').component('zemGridContainerActions', {
         $ctrl.isReportDropdownVisible = isReportDropdownVisible;
         $ctrl.canCreateNewAccount = canCreateNewAccount;
 
-        function isEntityBreakdown () {
-            return $ctrl.breakdown !== constants.breakdown.MEDIA_SOURCE
-                && $ctrl.breakdown !== constants.breakdown.PUBLISHER;
+        function isEntityBreakdown() {
+            return (
+                $ctrl.breakdown !== constants.breakdown.MEDIA_SOURCE &&
+                $ctrl.breakdown !== constants.breakdown.PUBLISHER
+            );
         }
 
-        function canCreateNewAccount () {
-            return zemPermissions.hasPermission('zemauth.all_accounts_accounts_add_account')
-                || $ctrl.level !== constants.level.ALL_ACCOUNTS;
+        function canCreateNewAccount() {
+            return (
+                zemPermissions.hasPermission(
+                    'zemauth.all_accounts_accounts_add_account'
+                ) || $ctrl.level !== constants.level.ALL_ACCOUNTS
+            );
         }
 
-        function isGridBulkActionsVisible () {
-            return isEntityBreakdown()
-                || ($ctrl.breakdown === constants.breakdown.MEDIA_SOURCE
-                    && $ctrl.entity && $ctrl.entity.type === constants.entityType.AD_GROUP);
+        function isGridBulkActionsVisible() {
+            return (
+                isEntityBreakdown() ||
+                ($ctrl.breakdown === constants.breakdown.MEDIA_SOURCE &&
+                    $ctrl.entity &&
+                    $ctrl.entity.type === constants.entityType.AD_GROUP)
+            );
         }
 
-        function isGridBulkPublishersActionsVisible () {
+        function isGridBulkPublishersActionsVisible() {
             return $ctrl.breakdown === constants.breakdown.PUBLISHER;
         }
 
-        function isCreateEntityActionVisible () {
+        function isCreateEntityActionVisible() {
             return isEntityBreakdown();
         }
 
-        function isCreateAdGroupSourceActionVisible () {
+        function isCreateAdGroupSourceActionVisible() {
             if (zemPermissions.hasPermission('zemauth.disable_public_rcs')) {
                 return false;
             }
-            return $ctrl.breakdown === constants.breakdown.MEDIA_SOURCE
-                && $ctrl.entity && $ctrl.entity.type === constants.entityType.AD_GROUP;
+            return (
+                $ctrl.breakdown === constants.breakdown.MEDIA_SOURCE &&
+                $ctrl.entity &&
+                $ctrl.entity.type === constants.entityType.AD_GROUP
+            );
         }
 
-        function isGridExportVisible () {
-            return $ctrl.breakdown !== constants.breakdown.PUBLISHER &&
-                !zemPermissions.hasPermission('zemauth.can_see_new_report_schedule');
+        function isGridExportVisible() {
+            return (
+                $ctrl.breakdown !== constants.breakdown.PUBLISHER &&
+                !zemPermissions.hasPermission(
+                    'zemauth.can_see_new_report_schedule'
+                )
+            );
         }
 
-        function isReportDropdownVisible () {
-            return ($ctrl.breakdown === constants.breakdown.PUBLISHER &&
-                    zemPermissions.hasPermission('zemauth.can_access_publisher_reports'))
-                || ($ctrl.breakdown !== constants.breakdown.PUBLISHER &&
-                    zemPermissions.hasPermission('zemauth.can_see_new_report_schedule'));
+        function isReportDropdownVisible() {
+            return (
+                ($ctrl.breakdown === constants.breakdown.PUBLISHER &&
+                    zemPermissions.hasPermission(
+                        'zemauth.can_access_publisher_reports'
+                    )) ||
+                ($ctrl.breakdown !== constants.breakdown.PUBLISHER &&
+                    zemPermissions.hasPermission(
+                        'zemauth.can_see_new_report_schedule'
+                    ))
+            );
         }
     },
 });

@@ -1,12 +1,13 @@
-describe('zemGridCellSubmissionStatus', function () {
+describe('zemGridCellSubmissionStatus', function() {
     var scope, element, $compile;
 
-    var template = '<zem-grid-cell-submission-status data="ctrl.data" column="ctrl.col" row="ctrl.row" grid="ctrl.grid"></zem-grid-cell-submission-status>'; // eslint-disable-line max-len
+    var template =
+        '<zem-grid-cell-submission-status data="ctrl.data" column="ctrl.col" row="ctrl.row" grid="ctrl.grid"></zem-grid-cell-submission-status>'; // eslint-disable-line max-len
 
     beforeEach(angular.mock.module('one'));
     beforeEach(angular.mock.module('one.mocks.zemInitializationService'));
 
-    beforeEach(inject(function ($rootScope, _$compile_) {
+    beforeEach(inject(function($rootScope, _$compile_) {
         $compile = _$compile_;
 
         scope = $rootScope.$new();
@@ -19,7 +20,7 @@ describe('zemGridCellSubmissionStatus', function () {
         element = $compile(template)(scope);
     }));
 
-    it('should display 0 if no submissions are available', function () {
+    it('should display 0 if no submissions are available', function() {
         scope.ctrl.data = [];
         scope.$digest();
 
@@ -28,7 +29,7 @@ describe('zemGridCellSubmissionStatus', function () {
         expect(element.find('.no-submission').hasClass('ng-hide')).toBe(false);
     });
 
-    it('should display correct number of approved and non-approved submissions', function () {
+    it('should display correct number of approved and non-approved submissions', function() {
         scope.ctrl.data = [
             {
                 name: 'Test 1',
@@ -75,8 +76,18 @@ describe('zemGridCellSubmissionStatus', function () {
         ];
         scope.$digest();
 
-        expect(element.find('.approved').text().trim()).toEqual('3');
-        expect(element.find('.non-approved').text().trim()).toEqual('4');
+        expect(
+            element
+                .find('.approved')
+                .text()
+                .trim()
+        ).toEqual('3');
+        expect(
+            element
+                .find('.non-approved')
+                .text()
+                .trim()
+        ).toEqual('4');
         expect(element.find('.no-submission').hasClass('ng-hide')).toBe(true);
     });
 });

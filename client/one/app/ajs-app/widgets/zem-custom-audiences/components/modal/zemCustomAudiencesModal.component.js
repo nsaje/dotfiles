@@ -4,16 +4,16 @@ angular.module('one.widgets').component('zemCustomAudiencesModal', {
         resolve: '<',
         modalInstance: '<',
     },
-    controller: function () {
+    controller: function() {
         var $ctrl = this;
 
         $ctrl.rules = [
             {id: 'visit', name: 'Anyone who visited your website'},
-            {id: 'referer', name: 'People who visited specific web pages'}
+            {id: 'referer', name: 'People who visited specific web pages'},
         ];
         $ctrl.refererRules = [
             {id: 'contains', name: 'URL contains'},
-            {id: 'startsWith', name: 'URL equals'}
+            {id: 'startsWith', name: 'URL equals'},
         ];
         $ctrl.currentAudiencePixel = null;
         $ctrl.pixels = [];
@@ -33,7 +33,7 @@ angular.module('one.widgets').component('zemCustomAudiencesModal', {
         $ctrl.clearValidationError = clearValidationError;
         $ctrl.loadPixels = loadPixels;
 
-        $ctrl.$onInit = function () {
+        $ctrl.$onInit = function() {
             $ctrl.isCreationMode = !$ctrl.resolve.audience;
 
             $ctrl.audience = $ctrl.resolve.audience;
@@ -47,10 +47,9 @@ angular.module('one.widgets').component('zemCustomAudiencesModal', {
                 $ctrl.title = 'Edit Custom Audience';
                 loadAudience();
             }
-
         };
 
-        $ctrl.$onDestroy = function () {
+        $ctrl.$onDestroy = function() {
             // Clean-up request errors if any
             var request = getRequest();
             if (request && request.validationErrors) {
@@ -58,70 +57,74 @@ angular.module('one.widgets').component('zemCustomAudiencesModal', {
             }
         };
 
-        function loadAudience () {
-            $ctrl.stateService.get($ctrl.audience.id).then(function (audience) {
-                loadPixels().then(function () {
+        function loadAudience() {
+            $ctrl.stateService.get($ctrl.audience.id).then(function(audience) {
+                loadPixels().then(function() {
                     loadAudienceData(audience);
                 });
             });
         }
 
-        function createAudience () {
+        function createAudience() {
             var request = getRequest();
             if (request && request.inProgress) {
                 return;
             }
 
             var audienceData = createAudienceData();
-            $ctrl.stateService.create(audienceData).then(
-                function () {
-                    $ctrl.modalInstance.close();
-                }
-            );
+            $ctrl.stateService.create(audienceData).then(function() {
+                $ctrl.modalInstance.close();
+            });
         }
 
-        function updateAudience () {
+        function updateAudience() {
             var request = getRequest();
             if (request && request.inProgress) {
                 return;
             }
 
             var data = {name: $ctrl.selectedName};
-            data.pixel_id = $ctrl.selectedPixel ? $ctrl.selectedPixel.id : $ctrl.currentAudiencePixel.id;
-            $ctrl.stateService.update($ctrl.audience.id, data).then(
-                function () {
-                    $ctrl.modalInstance.close();
-                }
-            );
+            data.pixel_id = $ctrl.selectedPixel
+                ? $ctrl.selectedPixel.id
+                : $ctrl.currentAudiencePixel.id;
+            $ctrl.stateService.update($ctrl.audience.id, data).then(function() {
+                $ctrl.modalInstance.close();
+            });
         }
 
-        function loadAudienceData (audience) {
+        function loadAudienceData(audience) {
             $ctrl.selectedName = audience.name;
             $ctrl.selectedTtl = audience.ttl;
-            $ctrl.currentAudiencePixel = $ctrl.pixels.find(function (pi) {
+            $ctrl.currentAudiencePixel = $ctrl.pixels.find(function(pi) {
                 return pi.id === parseInt(audience.pixelId);
             });
             if (audience.rules) {
                 var rule = audience.rules[0];
                 if (rule.type === constants.audienceRuleType.VISIT) {
                     $ctrl.selectedTopRuleId = 'visit';
-                } else if (rule.type === constants.audienceRuleType.STARTS_WITH) {
+                } else if (
+                    rule.type === constants.audienceRuleType.STARTS_WITH
+                ) {
                     $ctrl.selectedTopRuleId = 'referer';
                     $ctrl.selectedRefererRuleId = 'startsWith';
                     if (rule.value && rule.value.length > 0) {
-                        $ctrl.selectedRefererRuleStartsWithValue = getTagsFromText(rule.value);
+                        $ctrl.selectedRefererRuleStartsWithValue = getTagsFromText(
+                            rule.value
+                        );
                     }
                 } else if (rule.type === constants.audienceRuleType.CONTAINS) {
                     $ctrl.selectedTopRuleId = 'referer';
                     $ctrl.selectedRefererRuleId = 'contains';
                     if (rule.value && rule.value.length > 0) {
-                        $ctrl.selectedRefererRuleContainsValue = getTagsFromText(rule.value);
+                        $ctrl.selectedRefererRuleContainsValue = getTagsFromText(
+                            rule.value
+                        );
                     }
                 }
             }
         }
 
-        function createAudienceData () {
+        function createAudienceData() {
             var audience = {
                 name: $ctrl.selectedName,
                 pixel_id: $ctrl.selectedPixel.id,
@@ -135,55 +138,70 @@ angular.module('one.widgets').component('zemCustomAudiencesModal', {
                     selectedRuleType = constants.audienceRuleType.VISIT;
                 } else if ($ctrl.selectedTopRuleId === 'referer') {
                     if ($ctrl.selectedRefererRuleId === 'startsWith') {
-                        selectedRuleType = constants.audienceRuleType.STARTS_WITH;
-                        if ($ctrl.selectedRefererRuleStartsWithValue
-                            && $ctrl.selectedRefererRuleStartsWithValue.length > 0) {
-                            selectedRuleValue = getTextFromTags($ctrl.selectedRefererRuleStartsWithValue);
+                        selectedRuleType =
+                            constants.audienceRuleType.STARTS_WITH;
+                        if (
+                            $ctrl.selectedRefererRuleStartsWithValue &&
+                            $ctrl.selectedRefererRuleStartsWithValue.length > 0
+                        ) {
+                            selectedRuleValue = getTextFromTags(
+                                $ctrl.selectedRefererRuleStartsWithValue
+                            );
                         }
                     } else if ($ctrl.selectedRefererRuleId === 'contains') {
                         selectedRuleType = constants.audienceRuleType.CONTAINS;
-                        if ($ctrl.selectedRefererRuleContainsValue
-                            && $ctrl.selectedRefererRuleContainsValue.length > 0) {
-                            selectedRuleValue = getTextFromTags($ctrl.selectedRefererRuleContainsValue);
+                        if (
+                            $ctrl.selectedRefererRuleContainsValue &&
+                            $ctrl.selectedRefererRuleContainsValue.length > 0
+                        ) {
+                            selectedRuleValue = getTextFromTags(
+                                $ctrl.selectedRefererRuleContainsValue
+                            );
                         }
                     }
                 }
             }
 
-            audience.rules = [{type: selectedRuleType, value: selectedRuleValue}];
+            audience.rules = [
+                {type: selectedRuleType, value: selectedRuleValue},
+            ];
             return audience;
         }
 
-        function loadPixels () {
-            return $ctrl.stateService.listAudiencePixels().then(function () {
-                $ctrl.pixels = $ctrl.state.audiencePixels.filter(function (pi) { return !pi.archived; });
+        function loadPixels() {
+            return $ctrl.stateService.listAudiencePixels().then(function() {
+                $ctrl.pixels = $ctrl.state.audiencePixels.filter(function(pi) {
+                    return !pi.archived;
+                });
             });
         }
 
-        function getRequest () {
+        function getRequest() {
             if ($ctrl.isCreationMode) {
                 return $ctrl.state.requests.create;
             }
             return $ctrl.state.requests.update[$ctrl.audience.id];
         }
 
-        function clearValidationError (field) {
+        function clearValidationError(field) {
             $ctrl.stateService.clearRequestError(getRequest(), field);
         }
 
-        function getTextFromTags (tags) {
-            return tags.map(function (elem) {
-                return elem.text;
-            }).join(',');
+        function getTextFromTags(tags) {
+            return tags
+                .map(function(elem) {
+                    return elem.text;
+                })
+                .join(',');
         }
 
-        function getTagsFromText (text) {
-            return text.split(',').map(function (elem) {
+        function getTagsFromText(text) {
+            return text.split(',').map(function(elem) {
                 return {text: elem};
             });
         }
 
-        function showRefererRules () {
+        function showRefererRules() {
             return $ctrl.selectedTopRuleId === 'referer';
         }
     },

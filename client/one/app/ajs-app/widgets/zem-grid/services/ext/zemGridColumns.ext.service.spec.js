@@ -1,4 +1,4 @@
-describe('zemGridColumnsService', function () {
+describe('zemGridColumnsService', function() {
     var $rootScope;
     var zemGridObject;
     var zemGridPubSub;
@@ -9,12 +9,26 @@ describe('zemGridColumnsService', function () {
     beforeEach(angular.mock.module('one.mocks.zemInitializationService'));
     beforeEach(angular.mock.module('one.mocks.NgZone'));
 
-    beforeEach(angular.mock.module(function ($provide) {
-        $provide.value('zemGridStorageService', {saveColumns: angular.noop, loadColumns: angular.noop});
-        $provide.value('zemGridUIService', {resizeGridColumns: angular.noop});
-    }));
+    beforeEach(
+        angular.mock.module(function($provide) {
+            $provide.value('zemGridStorageService', {
+                saveColumns: angular.noop,
+                loadColumns: angular.noop,
+            });
+            $provide.value('zemGridUIService', {
+                resizeGridColumns: angular.noop,
+            });
+        })
+    );
 
-    beforeEach(inject(function (_$rootScope_, _zemGridObject_, _zemGridPubSub_, _zemGridColumnsService_, _zemGridStorageService_) { // eslint-disable-line max-len
+    beforeEach(inject(function(
+        _$rootScope_,
+        _zemGridObject_,
+        _zemGridPubSub_,
+        _zemGridColumnsService_,
+        _zemGridStorageService_
+    ) {
+        // eslint-disable-line max-len
         $rootScope = _$rootScope_;
         zemGridObject = _zemGridObject_;
         zemGridPubSub = _zemGridPubSub_;
@@ -22,7 +36,7 @@ describe('zemGridColumnsService', function () {
         zemGridStorageService = _zemGridStorageService_;
     }));
 
-    function createGrid () {
+    function createGrid() {
         var grid = zemGridObject.createGrid();
         var scope = $rootScope.$new();
 
@@ -31,7 +45,9 @@ describe('zemGridColumnsService', function () {
         grid.meta.options = {};
         grid.meta.data = {level: 'level1'};
         grid.meta.dataService = {
-            getBreakdown: function () { return ['base_level', 'age']; }
+            getBreakdown: function() {
+                return ['base_level', 'age'];
+            },
         };
 
         grid.header.columns.push(zemGridObject.createColumn({exceptions: {}}));
@@ -41,7 +57,7 @@ describe('zemGridColumnsService', function () {
         return grid;
     }
 
-    it('should persist changes to storage service', function () {
+    it('should persist changes to storage service', function() {
         spyOn(zemGridStorageService, 'loadColumns');
         spyOn(zemGridStorageService, 'saveColumns');
 
@@ -56,7 +72,7 @@ describe('zemGridColumnsService', function () {
         expect(zemGridStorageService.saveColumns).toHaveBeenCalled();
     });
 
-    it('should allow setting column visibility', function () {
+    it('should allow setting column visibility', function() {
         var grid = createGrid();
         var columnsService = zemGridColumnsService.createInstance(grid);
         grid.meta.pubsub.notify(grid.meta.pubsub.EVENTS.METADATA_UPDATED);
@@ -78,46 +94,52 @@ describe('zemGridColumnsService', function () {
         expect(columnsService.getVisibleColumns().length).toBe(3);
     });
 
-    it('correctly wraps togglable column inside array', function () {
+    it('correctly wraps togglable column inside array', function() {
         var grid = createGrid();
         var columnsService = zemGridColumnsService.createInstance(grid);
         var output = columnsService.getColumnsToToggle({});
         expect(JSON.stringify(output)).toBe(JSON.stringify([{}]));
     });
 
-    it('returns empty array if there are no toggled columns', function () {
+    it('returns empty array if there are no toggled columns', function() {
         var grid = createGrid();
         var columnsService = zemGridColumnsService.createInstance(grid);
         var output = columnsService.getColumnsToToggle(undefined);
         expect(output.length).toBe(0);
     });
 
-    it('goes through allColumns (if) branch', function () {
+    it('goes through allColumns (if) branch', function() {
         var grid = createGrid();
         var columnsService = zemGridColumnsService.createInstance(grid);
         var output = columnsService.getColumnsToToggle({}, []);
         expect(output.length).toBe(1);
     });
 
-    it('selects columns with autoSelect property', function () {
+    it('selects columns with autoSelect property', function() {
         var grid = createGrid();
         var columnsService = zemGridColumnsService.createInstance(grid);
         var toggledColumns = generateToggledColumns();
         var allColumns = generateAllColumns();
-        var output = columnsService.getColumnsToToggle(toggledColumns, allColumns);
+        var output = columnsService.getColumnsToToggle(
+            toggledColumns,
+            allColumns
+        );
         expect(output.length).toBe(4);
     });
 
-    it('doesn\'t select columns with autoSelect value that differs to all fields value', function () {
+    it("doesn't select columns with autoSelect value that differs to all fields value", function() {
         var grid = createGrid();
         var columnsService = zemGridColumnsService.createInstance(grid);
         var toggledColumns = generateToggledColumns();
         var allColumns = generateAllColumns2();
-        var output = columnsService.getColumnsToToggle(toggledColumns, allColumns);
+        var output = columnsService.getColumnsToToggle(
+            toggledColumns,
+            allColumns
+        );
         expect(output.length).toBe(3);
     });
 
-    it('returns togglable columns', function () {
+    it('returns togglable columns', function() {
         var grid = createGrid();
         var columnsService = zemGridColumnsService.createInstance(grid);
         var allColumns = generateAllColumns();
@@ -125,7 +147,7 @@ describe('zemGridColumnsService', function () {
         expect(output.length).toBe(2);
     });
 
-    it('should disable columns that cannot be viewed using current breakdown configuration', function () {
+    it('should disable columns that cannot be viewed using current breakdown configuration', function() {
         var grid = createGrid();
         spyOn(grid.meta.dataService, 'getBreakdown');
 
@@ -140,7 +162,7 @@ describe('zemGridColumnsService', function () {
         grid.meta.dataService.getBreakdown.and.returnValue([
             {query: 'breakdown1'},
             {query: 'breakdown2'},
-            {query: 'breakdown5'}
+            {query: 'breakdown5'},
         ]);
 
         pubsub.notify(pubsub.EVENTS.DATA_UPDATED);
@@ -158,10 +180,9 @@ describe('zemGridColumnsService', function () {
         expect(columns[0].disabled).toBe(true);
         expect(columns[1].disabled).toBe(false);
         expect(columns[2].disabled).toBe(false);
-
     });
 
-    it('should disable columns based on custom exceptions that overwrites other ones', function () {
+    it('should disable columns based on custom exceptions that overwrites other ones', function() {
         var grid = createGrid();
         spyOn(grid.meta.dataService, 'getBreakdown');
 
@@ -177,18 +198,19 @@ describe('zemGridColumnsService', function () {
         pubsub.notify(pubsub.EVENTS.DATA_UPDATED);
         expect(columns[0].disabled).toBe(true);
 
-        columns[0].data.exceptions.custom = [{
-            level: 'level1',
-            breakdown: 'breakdown3',
-            shown: true,
-        }];
+        columns[0].data.exceptions.custom = [
+            {
+                level: 'level1',
+                breakdown: 'breakdown3',
+                shown: true,
+            },
+        ];
 
         pubsub.notify(pubsub.EVENTS.DATA_UPDATED);
         expect(columns[0].disabled).toBe(false);
-
     });
 
-    it('should hide disabled columns', function () {
+    it('should hide disabled columns', function() {
         var grid = createGrid();
         var columnsService = zemGridColumnsService.createInstance(grid);
 
@@ -203,47 +225,55 @@ describe('zemGridColumnsService', function () {
         expect(columnsService.getVisibleColumns().length).toBe(3);
     });
 
-    it('finds column in categories', function () {
+    it('finds column in categories', function() {
         var grid = createGrid();
         var columnsService = zemGridColumnsService.createInstance(grid);
         var categories = generateCategories();
 
-        var foundField = columnsService.findColumnInCategories(categories, 'field1');
+        var foundField = columnsService.findColumnInCategories(
+            categories,
+            'field1'
+        );
         expect(foundField).toEqual({field: 'field1'});
     });
 
-    it('find column in subcategories', function () {
+    it('find column in subcategories', function() {
         var grid = createGrid();
         var columnsService = zemGridColumnsService.createInstance(grid);
         var categories = generateCategoriesAndSubcategories();
 
-        var foundField = columnsService.findColumnInCategories(categories, 'subField1');
+        var foundField = columnsService.findColumnInCategories(
+            categories,
+            'subField1'
+        );
         expect(foundField).toEqual({field: 'subField1'});
     });
 
-    it('does not find column in categories nor in subcategories', function () {
+    it('does not find column in categories nor in subcategories', function() {
         var grid = createGrid();
         var columnsService = zemGridColumnsService.createInstance(grid);
         var categories = generateCategoriesAndSubcategories();
 
-        var foundField = columnsService.findColumnInCategories(categories, 'does not exist');
+        var foundField = columnsService.findColumnInCategories(
+            categories,
+            'does not exist'
+        );
         expect(foundField).toBe(undefined);
-
     });
 
-    function generateCategories () {
+    function generateCategories() {
         return [
             {
                 columns: [
                     {field: 'field1'},
                     {field: 'field2'},
-                    {field: 'field3'}
-                ]
-            }
+                    {field: 'field3'},
+                ],
+            },
         ];
     }
 
-    function generateCategoriesAndSubcategories () {
+    function generateCategoriesAndSubcategories() {
         return [
             {
                 subcategories: [
@@ -251,30 +281,30 @@ describe('zemGridColumnsService', function () {
                         columns: [
                             {field: 'subField1'},
                             {field: 'subField2'},
-                            {field: 'subField3'}
-                        ]
-                    }
+                            {field: 'subField3'},
+                        ],
+                    },
                 ],
                 columns: [
                     {field: 'field1'},
                     {field: 'field2'},
-                    {field: 'field3'}
-                ]
-            }
+                    {field: 'field3'},
+                ],
+            },
         ];
     }
 
-    function generateToggledColumns () {
+    function generateToggledColumns() {
         return [{field: 'field 1'}, {field: 'field 2'}, {field: 'field 3'}];
     }
 
-    function generateAllColumns () {
+    function generateAllColumns() {
         return [
             {
                 data: {
                     autoSelect: 'field 3',
                     shown: true,
-                    permanent: false
+                    permanent: false,
                 },
                 disabled: false,
             },
@@ -282,7 +312,7 @@ describe('zemGridColumnsService', function () {
                 data: {
                     autoSelect: 'other field',
                     shown: true,
-                    permanent: false
+                    permanent: false,
                 },
                 disabled: false,
             },
@@ -290,20 +320,20 @@ describe('zemGridColumnsService', function () {
                 data: {
                     autoSelect: 'another field',
                     shown: false,
-                    permanent: true
+                    permanent: true,
                 },
                 disabled: false,
-            }
+            },
         ];
     }
 
-    function generateAllColumns2 () {
+    function generateAllColumns2() {
         return [
             {
                 data: {
-                    autoSelect: 'not found'
-                }
-            }
+                    autoSelect: 'not found',
+                },
+            },
         ];
     }
 });

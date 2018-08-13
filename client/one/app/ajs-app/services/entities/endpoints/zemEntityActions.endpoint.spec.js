@@ -1,23 +1,23 @@
-describe('zemEntityActionsEndpoint', function () {
+describe('zemEntityActionsEndpoint', function() {
     var zemEntityActionsEndpoint;
     var $httpBackend;
 
     beforeEach(angular.mock.module('one'));
     beforeEach(angular.mock.module('one.mocks.zemInitializationService'));
 
-    beforeEach(inject(function ($injector) {
+    beforeEach(inject(function($injector) {
         $httpBackend = $injector.get('$httpBackend');
         zemEntityActionsEndpoint = $injector.get('zemEntityActionsEndpoint');
 
         $httpBackend.whenPOST(/.*/).respond(200, {});
     }));
 
-    afterEach(function () {
+    afterEach(function() {
         $httpBackend.verifyNoOutstandingExpectation();
         $httpBackend.verifyNoOutstandingRequest();
     });
 
-    it('should call correct ACTION URLs', function () {
+    it('should call correct ACTION URLs', function() {
         zemEntityActionsEndpoint.activate(constants.entityType.ACCOUNT, 1);
         zemEntityActionsEndpoint.deactivate(constants.entityType.CAMPAIGN, 2);
         zemEntityActionsEndpoint.archive(constants.entityType.AD_GROUP, 3);

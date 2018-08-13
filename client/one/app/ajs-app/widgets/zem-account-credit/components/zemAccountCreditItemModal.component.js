@@ -4,10 +4,15 @@ angular.module('one').component('zemAccountCreditItemModal', {
         resolve: '<',
     },
     template: require('./zemAccountCreditItemModal.component.html'),
-    controller: function (zemUserService, $filter, $timeout, zemMulticurrencyService) {
+    controller: function(
+        zemUserService,
+        $filter,
+        $timeout,
+        zemMulticurrencyService
+    ) {
         var $ctrl = this;
 
-        $ctrl.$onInit = function () {
+        $ctrl.$onInit = function() {
             $ctrl.stateService = $ctrl.resolve.stateService;
             $ctrl.state = $ctrl.stateService.getState();
 
@@ -20,15 +25,17 @@ angular.module('one').component('zemAccountCreditItemModal', {
             updateView();
         };
 
-        $ctrl.$onDestroy = function () {
+        $ctrl.$onDestroy = function() {
             $ctrl.stateService.clearCreditItem();
         };
 
-        function updateView () {
+        function updateView() {
             var currentMoment = moment();
             $ctrl.createMode = $ctrl.resolve.id ? false : true;
             $ctrl.account = $ctrl.resolve.account;
-            $ctrl.newCreditCurrencySymbol = zemMulticurrencyService.getAppropriateCurrencySymbol($ctrl.account);
+            $ctrl.newCreditCurrencySymbol = zemMulticurrencyService.getAppropriateCurrencySymbol(
+                $ctrl.account
+            );
             $ctrl.startDatePickerOptions = {minDate: currentMoment.toDate()};
             $ctrl.endDatePickerOptions = {minDate: currentMoment.toDate()};
             $ctrl.isStartDatePickerOpen = false;
@@ -37,23 +44,26 @@ angular.module('one').component('zemAccountCreditItemModal', {
             if ($ctrl.createMode) {
                 $ctrl.stateService.createNewCreditItem(currentMoment);
             } else {
-                $ctrl.stateService.reloadCreditItem($ctrl.resolve.id)
-                    .then(function () {
+                $ctrl.stateService
+                    .reloadCreditItem($ctrl.resolve.id)
+                    .then(function() {
                         $ctrl.wasSigned = $ctrl.state.creditItem.isSigned;
-                        $ctrl.endDatePickerOptions = {minDate: $ctrl.state.creditItem.endDate};
+                        $ctrl.endDatePickerOptions = {
+                            minDate: $ctrl.state.creditItem.endDate,
+                        };
                     });
             }
         }
 
-        function openStartDatePicker () {
+        function openStartDatePicker() {
             $ctrl.isStartDatePickerOpen = true;
         }
 
-        function openEndDatePicker () {
+        function openEndDatePicker() {
             $ctrl.isEndDatePickerOpen = true;
         }
 
-        function getLicenseFees (search, additional) {
+        function getLicenseFees(search, additional) {
             // Use fresh instance because we modify the collection on the fly
             var fees = ['15.00', '20.00', '25.00'];
             if (additional) {
@@ -70,23 +80,24 @@ angular.module('one').component('zemAccountCreditItemModal', {
             return fees;
         }
 
-        function saveCreditItem () {
+        function saveCreditItem() {
             if ($ctrl.state.requests.saveCreditItem.inProgress) return;
 
-            $ctrl.stateService.saveCreditItem($ctrl.createMode)
-                .then(function () {
+            $ctrl.stateService
+                .saveCreditItem($ctrl.createMode)
+                .then(function() {
                     $ctrl.saved = true;
                     closeModal();
                 });
         }
 
-        function discardCreditItem () {
+        function discardCreditItem() {
             $ctrl.discarded = true;
             closeModal();
         }
 
-        function closeModal () {
-            $timeout(function () {
+        function closeModal() {
+            $timeout(function() {
                 $ctrl.close();
             }, 1000);
         }

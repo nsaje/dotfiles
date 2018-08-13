@@ -1,15 +1,15 @@
-describe('zemSelectionService', function () {
+describe('zemSelectionService', function() {
     var $location;
     var zemSelectionService;
 
     beforeEach(angular.mock.module('one'));
     beforeEach(angular.mock.module('one.mocks.zemInitializationService'));
-    beforeEach(inject(function (_$location_, _zemSelectionService_) {
+    beforeEach(inject(function(_$location_, _zemSelectionService_) {
         $location = _$location_;
         zemSelectionService = _zemSelectionService_;
     }));
 
-    it('should init correctly without URL params', function () {
+    it('should init correctly without URL params', function() {
         zemSelectionService.init();
         expect(zemSelectionService.getSelection()).toEqual({
             selected: [],
@@ -20,13 +20,13 @@ describe('zemSelectionService', function () {
         });
     });
 
-    it('should init correctly with URL params', function () {
+    it('should init correctly with URL params', function() {
         spyOn($location, 'search').and.returnValue({
             selected_ids: '1,2,3,whatever,',
             unselected_ids: '4,5,6,:)',
             selected_totals: true,
             selected_all: true,
-            selected_batch_id: '999'
+            selected_batch_id: '999',
         });
         zemSelectionService.init();
         expect(zemSelectionService.getSelection()).toEqual({
@@ -38,7 +38,7 @@ describe('zemSelectionService', function () {
         });
     });
 
-    it('should correctly determine if an id is in selected list', function () {
+    it('should correctly determine if an id is in selected list', function() {
         spyOn($location, 'search').and.returnValue({
             selected_ids: '1',
         });
@@ -47,7 +47,7 @@ describe('zemSelectionService', function () {
         expect(zemSelectionService.isIdInSelected(2)).toBe(false);
     });
 
-    it('should correctly determine if an id is in unselected list', function () {
+    it('should correctly determine if an id is in unselected list', function() {
         spyOn($location, 'search').and.returnValue({
             unselected_ids: '1',
         });
@@ -56,11 +56,11 @@ describe('zemSelectionService', function () {
         expect(zemSelectionService.isIdInUnselected(2)).toBe(false);
     });
 
-    it('isTotalsSelected should return false if totals are not selected', function () {
+    it('isTotalsSelected should return false if totals are not selected', function() {
         expect(zemSelectionService.isTotalsSelected(2)).toBe(true);
     });
 
-    it('isTotalsSelected should return true if totals are selected', function () {
+    it('isTotalsSelected should return true if totals are selected', function() {
         spyOn($location, 'search').and.returnValue({
             totals_unselected: true,
         });
@@ -68,11 +68,11 @@ describe('zemSelectionService', function () {
         expect(zemSelectionService.isTotalsSelected(2)).toBe(false);
     });
 
-    it('isAllSelected should return false if all is not selected', function () {
+    it('isAllSelected should return false if all is not selected', function() {
         expect(zemSelectionService.isAllSelected()).toBe(false);
     });
 
-    it('isTotalsSelected should return true if all is selected', function () {
+    it('isTotalsSelected should return true if all is selected', function() {
         spyOn($location, 'search').and.returnValue({
             selected_all: true,
         });
@@ -80,7 +80,7 @@ describe('zemSelectionService', function () {
         expect(zemSelectionService.isAllSelected(2)).toBe(true);
     });
 
-    it('getSelectedBatch should return batch id if batch is selected', function () {
+    it('getSelectedBatch should return batch id if batch is selected', function() {
         spyOn($location, 'search').and.returnValue({
             selected_batch_id: 999,
         });
@@ -88,7 +88,7 @@ describe('zemSelectionService', function () {
         expect(zemSelectionService.getSelectedBatch(2)).toEqual(999);
     });
 
-    it('should correctly set selection', function () {
+    it('should correctly set selection', function() {
         zemSelectionService.setSelection({
             selected: [1, 3],
             unselected: [2],
@@ -107,7 +107,7 @@ describe('zemSelectionService', function () {
         });
     });
 
-    it('should correctly remove number id', function () {
+    it('should correctly remove number id', function() {
         var locationSpy = spyOn($location, 'search').and.returnValue({
             selected_ids: '1,2,3',
         });
@@ -120,7 +120,7 @@ describe('zemSelectionService', function () {
         });
     });
 
-    it('should correctly remove string id', function () {
+    it('should correctly remove string id', function() {
         var locationSpy = spyOn($location, 'search').and.returnValue({
             selected_ids: '1,2,3',
         });
@@ -133,7 +133,7 @@ describe('zemSelectionService', function () {
         });
     });
 
-    it('should correctly remove array of ids', function () {
+    it('should correctly remove array of ids', function() {
         var locationSpy = spyOn($location, 'search').and.returnValue({
             selected_ids: '1,2,3',
         });
@@ -146,7 +146,7 @@ describe('zemSelectionService', function () {
         });
     });
 
-    it('should add id to unselected when removing it and all is selected', function () {
+    it('should add id to unselected when removing it and all is selected', function() {
         var locationSpy = spyOn($location, 'search').and.returnValue({
             selected_ids: '1,2,3',
             selected_all: true,
@@ -163,7 +163,7 @@ describe('zemSelectionService', function () {
         });
     });
 
-    it('should add id to unselected when removing it and batch is selected', function () {
+    it('should add id to unselected when removing it and batch is selected', function() {
         var locationSpy = spyOn($location, 'search').and.returnValue({
             selected_ids: '1,2,3',
             selected_batch_id: 999,
@@ -180,7 +180,7 @@ describe('zemSelectionService', function () {
         });
     });
 
-    it('should correctly select totals', function () {
+    it('should correctly select totals', function() {
         var locationSpy = spyOn($location, 'search').and.returnValue({
             selected_ids: '1,2,3',
         });
@@ -190,13 +190,13 @@ describe('zemSelectionService', function () {
         expect(zemSelectionService.getSelection().selected).toEqual([1, 2, 3]);
         expect(zemSelectionService.isTotalsSelected()).toBe(true);
         expect($location.search()).toEqual({
-            selected_ids: '1,2,3'
+            selected_ids: '1,2,3',
         });
     });
 
-    it('should correctly unselect totals', function () {
+    it('should correctly unselect totals', function() {
         var locationSpy = spyOn($location, 'search').and.returnValue({
-            selected_ids: '1,2,3'
+            selected_ids: '1,2,3',
         });
         zemSelectionService.init();
         locationSpy.and.callThrough();
@@ -209,7 +209,7 @@ describe('zemSelectionService', function () {
         });
     });
 
-    it('should correctly select all', function () {
+    it('should correctly select all', function() {
         var locationSpy = spyOn($location, 'search').and.returnValue({
             selected_ids: '1,2,3',
         });
@@ -224,7 +224,7 @@ describe('zemSelectionService', function () {
         });
     });
 
-    it('should correctly unselect all', function () {
+    it('should correctly unselect all', function() {
         var locationSpy = spyOn($location, 'search').and.returnValue({
             selected_totals: true,
             selected_all: true,

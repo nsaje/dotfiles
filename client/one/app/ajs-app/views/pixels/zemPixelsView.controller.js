@@ -1,18 +1,22 @@
-angular.module('one.views').controller('zemPixelsView', function (zemNavigationNewService) {
-    var $ctrl = this;
+angular
+    .module('one.views')
+    .controller('zemPixelsView', function(zemNavigationNewService) {
+        var $ctrl = this;
 
-    initialize();
+        initialize();
 
-    function initialize () {
-        // WORKAROUND: Clear tab selection - not possible through uib API
-        $('.uib-tab.active').removeClass('active');
+        function initialize() {
+            // WORKAROUND: Clear tab selection - not possible through uib API
+            $('.uib-tab.active').removeClass('active');
 
-        $ctrl.account = zemNavigationNewService.getActiveAccount();
-        if (!$ctrl.account) {
-            var handler = zemNavigationNewService.onActiveEntityChange(function () {
-                $ctrl.account = zemNavigationNewService.getActiveAccount();
-                handler();
-            });
+            $ctrl.account = zemNavigationNewService.getActiveAccount();
+            if (!$ctrl.account) {
+                var handler = zemNavigationNewService.onActiveEntityChange(
+                    function() {
+                        $ctrl.account = zemNavigationNewService.getActiveAccount();
+                        handler();
+                    }
+                );
+            }
         }
-    }
-});
+    });

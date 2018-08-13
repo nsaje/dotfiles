@@ -1,15 +1,17 @@
-describe('zemCurrencyInput', function () {
+describe('zemCurrencyInput', function() {
     var $scope;
     var $compile;
 
-    var prepareElement = function () {
-        var element = $compile('<input type="text" ng-model="value" zem-currency-input>')($scope);
+    var prepareElement = function() {
+        var element = $compile(
+            '<input type="text" ng-model="value" zem-currency-input>'
+        )($scope);
         $scope.$digest();
 
         return element;
     };
 
-    var setVal = function (element, value, triggerBlur) {
+    var setVal = function(element, value, triggerBlur) {
         element.val(value).trigger('input');
         if (triggerBlur) {
             element.trigger('blur');
@@ -24,12 +26,12 @@ describe('zemCurrencyInput', function () {
     // https://github.com/angular-ui/ui-router/issues/212
     beforeEach(angular.mock.module('stateMock'));
 
-    beforeEach(inject(function ($rootScope, _$compile_) {
+    beforeEach(inject(function($rootScope, _$compile_) {
         $scope = $rootScope.$new();
         $compile = _$compile_;
     }));
 
-    it('formats input with commas on every change', function () {
+    it('formats input with commas on every change', function() {
         var element = prepareElement();
 
         setVal(element, '1234567');
@@ -37,7 +39,7 @@ describe('zemCurrencyInput', function () {
         expect($scope.value).toEqual('1234567');
     });
 
-    it('takes only first dot into account in case there are more', function () {
+    it('takes only first dot into account in case there are more', function() {
         var element = prepareElement();
 
         setVal(element, '12.34.56');
@@ -53,7 +55,7 @@ describe('zemCurrencyInput', function () {
         expect($scope.value).toEqual('12.');
     });
 
-    it('adds missing decimal places when it loses focus', function () {
+    it('adds missing decimal places when it loses focus', function() {
         var element = prepareElement();
 
         setVal(element, '1234', true);
@@ -73,7 +75,7 @@ describe('zemCurrencyInput', function () {
         expect($scope.value).toEqual('1234.12');
     });
 
-    it('allows leading zeros in integer part', function () {
+    it('allows leading zeros in integer part', function() {
         var element = prepareElement();
 
         setVal(element, '0012');
@@ -81,7 +83,7 @@ describe('zemCurrencyInput', function () {
         expect($scope.value).toEqual('0012');
     });
 
-    it('ignores all characters except numbers and dot', function () {
+    it('ignores all characters except numbers and dot', function() {
         var element = prepareElement();
 
         setVal(element, '100bb,21-2a.40');
@@ -89,13 +91,15 @@ describe('zemCurrencyInput', function () {
         expect($scope.value).toEqual('100212.40');
     });
 
-    it('displays 0.00 if no empty-text configured and value is not set', function () {
+    it('displays 0.00 if no empty-text configured and value is not set', function() {
         var element = prepareElement();
         expect(element.val()).toEqual('0.00');
     });
 
-    it('displays empty text if empty-text configured and value is not set', function () {
-        var element = $compile('<input type="text" ng-model="value" zem-currency-input empty-text="empty">')($scope);
+    it('displays empty text if empty-text configured and value is not set', function() {
+        var element = $compile(
+            '<input type="text" ng-model="value" zem-currency-input empty-text="empty">'
+        )($scope);
         $scope.$digest();
 
         expect(element.val()).toEqual('empty');
@@ -112,5 +116,4 @@ describe('zemCurrencyInput', function () {
         expect(element.val()).toEqual('1');
         expect($scope.value).toEqual('1');
     });
-
 });

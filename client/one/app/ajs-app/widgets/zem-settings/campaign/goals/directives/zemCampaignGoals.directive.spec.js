@@ -1,20 +1,21 @@
-describe('zemCampaignGoals', function () {
+describe('zemCampaignGoals', function() {
     var $scope, element, isolate;
 
     beforeEach(angular.mock.module('one'));
     beforeEach(angular.mock.module('one.mocks.zemInitializationService'));
 
-    beforeEach(inject(function ($compile, $rootScope) {
-        var template = '<zem-campaign-goals account="account" ' +
-                            'campaign="campaign" goals="campaignGoals"' +
-                            'model="campaignGoalsDiff">' +
-                        '</zem-campaign-goals>';
+    beforeEach(inject(function($compile, $rootScope) {
+        var template =
+            '<zem-campaign-goals account="account" ' +
+            'campaign="campaign" goals="campaignGoals"' +
+            'model="campaignGoalsDiff">' +
+            '</zem-campaign-goals>';
 
         $scope = $rootScope.$new();
-        $scope.isPermissionInternal = function () {
+        $scope.isPermissionInternal = function() {
             return true;
         };
-        $scope.hasPermission = function () {
+        $scope.hasPermission = function() {
             return true;
         };
         $scope.campaign = {id: 1};
@@ -28,8 +29,8 @@ describe('zemCampaignGoals', function () {
         isolate = element.isolateScope();
     }));
 
-    describe('choosePrimary', function () {
-        it('sets first goal to primary', function () {
+    describe('choosePrimary', function() {
+        it('sets first goal to primary', function() {
             isolate.campaignGoals = [{type: 1, id: 1}, {type: 2, id: 2}];
 
             isolate.choosePrimary();
@@ -39,7 +40,7 @@ describe('zemCampaignGoals', function () {
             expect(isolate.model.primary).toBe(1);
         });
 
-        it('sets first goal to primary even if it still has to be added', function () {
+        it('sets first goal to primary even if it still has to be added', function() {
             isolate.campaignGoals = [{type: 1}, {type: 2}];
             isolate.model.added = [{type: 1}, {type: 2}];
             isolate.choosePrimary();
@@ -49,28 +50,25 @@ describe('zemCampaignGoals', function () {
             expect(isolate.model.primary).toBeFalsy();
             expect(isolate.model.added[0].primary).toBe(true);
         });
-
     });
 
-    describe('addGoal', function () {
-        it('opens a modal window', function () {
-            isolate.addGoal().result
-                .catch(function (error) {
-                    expect(error).toBeUndefined();
-                });
+    describe('addGoal', function() {
+        it('opens a modal window', function() {
+            isolate.addGoal().result.catch(function(error) {
+                expect(error).toBeUndefined();
+            });
         });
     });
-    describe('editGoal', function () {
-        it('opens a modal window', function () {
-            isolate.editGoal().result
-                .catch(function (error) {
-                    expect(error).toBeUndefined();
-                });
+    describe('editGoal', function() {
+        it('opens a modal window', function() {
+            isolate.editGoal().result.catch(function(error) {
+                expect(error).toBeUndefined();
+            });
         });
     });
 
-    describe('setPrimary', function () {
-        it('sets a goal as primary', function () {
+    describe('setPrimary', function() {
+        it('sets a goal as primary', function() {
             isolate.campaignGoals = [
                 {type: 1, primary: true},
                 {type: 2, primary: false},
@@ -93,8 +91,8 @@ describe('zemCampaignGoals', function () {
         });
     });
 
-    describe('deleteGoal', function () {
-        it('removes goal only from model & ui if new', function () {
+    describe('deleteGoal', function() {
+        it('removes goal only from model & ui if new', function() {
             isolate.campaignGoals = [
                 {type: 1, primary: true},
                 {type: 2, primary: false, id: 10},
@@ -105,10 +103,9 @@ describe('zemCampaignGoals', function () {
             expect(isolate.model.added.length).toBe(0);
             expect(isolate.campaignGoals.length).toBe(1);
             expect(isolate.campaignGoals[0].id).toBe(10);
-
         });
 
-        it('removes goal only from model, ui and db if existing', function () {
+        it('removes goal only from model, ui and db if existing', function() {
             isolate.campaignGoals = [
                 {type: 1, primary: true},
                 {type: 2, primary: false, id: 10},

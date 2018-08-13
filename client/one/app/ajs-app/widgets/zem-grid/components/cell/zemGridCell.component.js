@@ -1,5 +1,4 @@
-angular.module('one.widgets').directive('zemGridCell', function () {
-
+angular.module('one.widgets').directive('zemGridCell', function() {
     return {
         restrict: 'E',
         replace: true,
@@ -12,30 +11,41 @@ angular.module('one.widgets').directive('zemGridCell', function () {
             grid: '=',
         },
         template: require('./zemGridCell.component.html'),
-        controller: function ($scope, zemGridConstants) {
+        controller: function($scope, zemGridConstants) {
             var ctrl = this;
             ctrl.gridColumnTypes = zemGridConstants.gridColumnTypes;
             ctrl.type = getFieldType();
 
-            $scope.$watch('ctrl.col', function () {
+            $scope.$watch('ctrl.col', function() {
                 ctrl.type = getFieldType();
             });
 
-            function getFieldType () {
+            function getFieldType() {
                 if (!ctrl.col) {
                     return zemGridConstants.gridColumnTypes.BASE_FIELD;
                 }
 
-                var columnType = ctrl.col.type || zemGridConstants.gridColumnTypes.BASE_FIELD;
+                var columnType =
+                    ctrl.col.type ||
+                    zemGridConstants.gridColumnTypes.BASE_FIELD;
 
-                if (zemGridConstants.gridColumnTypes.BASE_TYPES.indexOf(columnType) !== -1) {
+                if (
+                    zemGridConstants.gridColumnTypes.BASE_TYPES.indexOf(
+                        columnType
+                    ) !== -1
+                ) {
                     if (ctrl.col.data && ctrl.col.data.editable) {
-                        return zemGridConstants.gridColumnTypes.EDITABLE_BASE_FIELD;
+                        return zemGridConstants.gridColumnTypes
+                            .EDITABLE_BASE_FIELD;
                     }
                     return zemGridConstants.gridColumnTypes.BASE_FIELD;
                 }
 
-                if (zemGridConstants.gridColumnTypes.EXTERNAL_LINK_TYPES.indexOf(columnType) !== -1) {
+                if (
+                    zemGridConstants.gridColumnTypes.EXTERNAL_LINK_TYPES.indexOf(
+                        columnType
+                    ) !== -1
+                ) {
                     return zemGridConstants.gridColumnTypes.EXTERNAL_LINK;
                 }
 

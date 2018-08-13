@@ -1,4 +1,5 @@
-angular.module('one.widgets').directive('zemUploadStep1', function () { // eslint-disable-line max-len
+angular.module('one.widgets').directive('zemUploadStep1', function() {
+    // eslint-disable-line max-len
     return {
         restrict: 'E',
         replace: true,
@@ -15,46 +16,51 @@ angular.module('one.widgets').directive('zemUploadStep1', function () { // eslin
     };
 });
 
-angular.module('one.widgets').controller('ZemUploadStep1Ctrl', function (config, $scope) {
-    var vm = this;
-    vm.config = config;
+angular
+    .module('one.widgets')
+    .controller('ZemUploadStep1Ctrl', function(config, $scope) {
+        var vm = this;
+        vm.config = config;
 
-    vm.formData = {
-        batchName: vm.defaultBatchName,
-    };
-    vm.formErrors = null;
-    vm.requestFailed = false;
-    vm.requestInProgress = false;
-
-    vm.clearFormErrors = function (field) {
-        if (!vm.formErrors) {
-            return;
-        }
-        delete vm.formErrors[field];
-    };
-
-    vm.fileUploadCallback = function (file) {
-        vm.formData.file = file;
-        $scope.$digest();
-    };
-
-    vm.upload = function () {
+        vm.formData = {
+            batchName: vm.defaultBatchName,
+        };
+        vm.formErrors = null;
         vm.requestFailed = false;
-        vm.requestInProgress = true;
-        vm.endpoint.upload(vm.formData).then(
-            function (result) {
-                vm.callback({
-                    batchId: result.batchId,
-                    batchName: result.batchName,
-                    candidates: result.candidates,
-                });
-            },
-            function (data) {
-                vm.requestFailed = true;
-                vm.formErrors = data.errors;
+        vm.requestInProgress = false;
+
+        vm.clearFormErrors = function(field) {
+            if (!vm.formErrors) {
+                return;
             }
-        ).finally(function () {
-            vm.requestInProgress = false;
-        });
-    };
-});
+            delete vm.formErrors[field];
+        };
+
+        vm.fileUploadCallback = function(file) {
+            vm.formData.file = file;
+            $scope.$digest();
+        };
+
+        vm.upload = function() {
+            vm.requestFailed = false;
+            vm.requestInProgress = true;
+            vm.endpoint
+                .upload(vm.formData)
+                .then(
+                    function(result) {
+                        vm.callback({
+                            batchId: result.batchId,
+                            batchName: result.batchName,
+                            candidates: result.candidates,
+                        });
+                    },
+                    function(data) {
+                        vm.requestFailed = true;
+                        vm.formErrors = data.errors;
+                    }
+                )
+                .finally(function() {
+                    vm.requestInProgress = false;
+                });
+        };
+    });

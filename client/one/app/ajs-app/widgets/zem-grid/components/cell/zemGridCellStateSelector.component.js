@@ -1,5 +1,4 @@
-angular.module('one.widgets').directive('zemGridCellStateSelector', function () {
-
+angular.module('one.widgets').directive('zemGridCellStateSelector', function() {
     return {
         restrict: 'E',
         replace: true,
@@ -12,19 +11,27 @@ angular.module('one.widgets').directive('zemGridCellStateSelector', function () 
             grid: '=',
         },
         template: require('./zemGridCellStateSelector.component.html'),
-        controller: function ($scope, zemGridConstants, zemGridStateAndStatusHelpers) { // eslint-disable-line max-len
+        controller: function(
+            $scope,
+            zemGridConstants,
+            zemGridStateAndStatusHelpers
+        ) {
+            // eslint-disable-line max-len
             var vm = this;
 
-            vm.isSaveRequestInProgress = vm.grid.meta.dataService.isSaveRequestInProgress;
-            vm.stateValues = zemGridStateAndStatusHelpers
-                .getStateValues(vm.grid.meta.data.level, vm.grid.meta.data.breakdown);
+            vm.isSaveRequestInProgress =
+                vm.grid.meta.dataService.isSaveRequestInProgress;
+            vm.stateValues = zemGridStateAndStatusHelpers.getStateValues(
+                vm.grid.meta.data.level,
+                vm.grid.meta.data.breakdown
+            );
             vm.setState = setState;
 
             $scope.$watch('ctrl.row', update);
             $scope.$watch('ctrl.data', update, true);
             $scope.$watch('ctrl.row.data.archived', update);
 
-            function update () {
+            function update() {
                 // TODO: Save loader visibility to row object so that it is not reset for this row when DOM element is
                 // reused to display different row
                 vm.showLoader = false;
@@ -33,7 +40,8 @@ angular.module('one.widgets').directive('zemGridCellStateSelector', function () 
                 vm.enablingAutopilotSourcesAllowed = true;
 
                 if (vm.row) {
-                    vm.enablingAutopilotSourcesAllowed = vm.row.inGroup ||
+                    vm.enablingAutopilotSourcesAllowed =
+                        vm.row.inGroup ||
                         vm.grid.meta.data.ext.enablingAutopilotSourcesAllowed;
                     vm.isFieldVisible = isFieldVisible(vm.row.level);
                     vm.isRowArchived = vm.row.data.archived;
@@ -44,9 +52,12 @@ angular.module('one.widgets').directive('zemGridCellStateSelector', function () 
                 }
             }
 
-            function setState (state) {
+            function setState(state) {
                 // Prevent enabling source when editing is not allowed or when enabling not allowed by the autopilot
-                if (!vm.isEditable || !vm.active && !vm.enablingAutopilotSourcesAllowed) {
+                if (
+                    !vm.isEditable ||
+                    (!vm.active && !vm.enablingAutopilotSourcesAllowed)
+                ) {
                     closeStateSelectorModal();
                     return;
                 }
@@ -60,27 +71,28 @@ angular.module('one.widgets').directive('zemGridCellStateSelector', function () 
                 vm.showLoader = true;
                 closeStateSelectorModal();
 
-                vm.grid.meta.dataService.saveData(state, vm.row, vm.column)
-                    .then(function () {
+                vm.grid.meta.dataService
+                    .saveData(state, vm.row, vm.column)
+                    .then(function() {
                         update();
                         vm.showLoader = false;
                     })
-                    .catch(function () {
+                    .catch(function() {
                         vm.showLoader = false;
                     });
             }
 
-            function closeStateSelectorModal () {
+            function closeStateSelectorModal() {
                 if (vm.modal && vm.modal.close) {
                     vm.modal.close();
                 }
             }
 
-            function isActive (state, enabledState) {
+            function isActive(state, enabledState) {
                 return state === enabledState;
             }
 
-            function isFieldVisible (rowLevel) {
+            function isFieldVisible(rowLevel) {
                 return rowLevel === zemGridConstants.gridRowLevel.BASE;
             }
         },

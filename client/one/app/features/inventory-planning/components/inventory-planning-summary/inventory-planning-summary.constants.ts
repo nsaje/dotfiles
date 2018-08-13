@@ -3,7 +3,7 @@ export const MAX_PLOTTED_CPM = 30;
 
 export const CHART_CONFIG = {
     title: {
-        text: <string> null,
+        text: <string>null,
     },
     xAxis: {
         title: {
@@ -29,7 +29,7 @@ export const CHART_CONFIG = {
                 symbol: 'square',
                 lineWidth: 2,
                 fillColor: '#3f547f',
-                lineColor: <string> null,
+                lineColor: <string>null,
                 states: {
                     hover: {
                         radius: 3,
@@ -48,7 +48,8 @@ export const CHART_CONFIG = {
         useHTML: true,
         shadow: false,
         headerFormat: '',
-        pointFormat: 'CPM: <strong>${point.x}</strong><br>Auctions Won: <strong>{point.y}%</strong>', // tslint:disable-line no-invalid-template-strings max-line-length
+        pointFormat:
+            'CPM: <strong>${point.x}</strong><br>Auctions Won: <strong>{point.y}%</strong>', // tslint:disable-line no-invalid-template-strings max-line-length
         backgroundColor: '#fff',
         borderColor: '#d2d2d2',
     },

@@ -16,15 +16,19 @@ const MAX_QUERY_PARAMS_LENGTH = 1900;
 
 @Injectable()
 export class InventoryPlanningEndpoint extends StoreEndpoint {
-
-    constructor (private http: HttpClient) {
+    constructor(private http: HttpClient) {
         super();
     }
 
-    loadSummary (store: InventoryPlanningStore, selectedFilters: Filters): Observable<Inventory> {
+    loadSummary(
+        store: InventoryPlanningStore,
+        selectedFilters: Filters
+    ): Observable<Inventory> {
         const REQUEST_NAME = 'summary';
 
-        const {method, params, body} = this.buildRequestProperties(selectedFilters);
+        const {method, params, body} = this.buildRequestProperties(
+            selectedFilters
+        );
 
         this.setRequestState(store, REQUEST_NAME, {
             inProgress: true,
@@ -56,10 +60,15 @@ export class InventoryPlanningEndpoint extends StoreEndpoint {
             );
     }
 
-    loadCountries (store: InventoryPlanningStore, selectedFilters: Filters): Observable<FilterOption[]> {
+    loadCountries(
+        store: InventoryPlanningStore,
+        selectedFilters: Filters
+    ): Observable<FilterOption[]> {
         const REQUEST_NAME = 'countries';
 
-        const {method, params, body} = this.buildRequestProperties(selectedFilters);
+        const {method, params, body} = this.buildRequestProperties(
+            selectedFilters
+        );
 
         this.setRequestState(store, REQUEST_NAME, {
             inProgress: true,
@@ -92,10 +101,15 @@ export class InventoryPlanningEndpoint extends StoreEndpoint {
             );
     }
 
-    loadPublishers (store: InventoryPlanningStore, selectedFilters: Filters): Observable<FilterOption[]> {
+    loadPublishers(
+        store: InventoryPlanningStore,
+        selectedFilters: Filters
+    ): Observable<FilterOption[]> {
         const REQUEST_NAME = 'publishers';
 
-        const {method, params, body} = this.buildRequestProperties(selectedFilters);
+        const {method, params, body} = this.buildRequestProperties(
+            selectedFilters
+        );
 
         this.setRequestState(store, REQUEST_NAME, {
             inProgress: true,
@@ -128,10 +142,15 @@ export class InventoryPlanningEndpoint extends StoreEndpoint {
             );
     }
 
-    loadDevices (store: InventoryPlanningStore, selectedFilters: Filters): Observable<FilterOption[]> {
+    loadDevices(
+        store: InventoryPlanningStore,
+        selectedFilters: Filters
+    ): Observable<FilterOption[]> {
         const REQUEST_NAME = 'devices';
 
-        const {method, params, body} = this.buildRequestProperties(selectedFilters);
+        const {method, params, body} = this.buildRequestProperties(
+            selectedFilters
+        );
 
         this.setRequestState(store, REQUEST_NAME, {
             inProgress: true,
@@ -164,16 +183,22 @@ export class InventoryPlanningEndpoint extends StoreEndpoint {
             );
     }
 
-    loadSources (store: InventoryPlanningStore, selectedFilters: Filters): Observable<FilterOption[]> {
+    loadSources(
+        store: InventoryPlanningStore,
+        selectedFilters: Filters
+    ): Observable<FilterOption[]> {
         const REQUEST_NAME = 'sources';
 
-        const {method, params, body} = this.buildRequestProperties(selectedFilters);
+        const {method, params, body} = this.buildRequestProperties(
+            selectedFilters
+        );
 
         this.setRequestState(store, REQUEST_NAME, {
             inProgress: true,
         });
 
-        return this.http.request<ApiResponse>(
+        return this.http
+            .request<ApiResponse>(
                 method,
                 '/rest/internal/inventory-planning/media-sources',
                 {params: params, body: body}
@@ -199,7 +224,9 @@ export class InventoryPlanningEndpoint extends StoreEndpoint {
             );
     }
 
-    private buildRequestProperties (selectedFilters: Filters): RequestProperties {
+    private buildRequestProperties(
+        selectedFilters: Filters
+    ): RequestProperties {
         const filterPayload = this.buildFilterPayload(selectedFilters);
         let params = new HttpParams();
         for (const filter of Object.keys(filterPayload)) {
@@ -214,16 +241,22 @@ export class InventoryPlanningEndpoint extends StoreEndpoint {
         }
     }
 
-    private buildFilterPayload (selectedFilters: Filters): FilterPayload {
+    private buildFilterPayload(selectedFilters: Filters): FilterPayload {
         return {
-            countries: selectedFilters.countries.map((x: FilterOption) => x.value),
-            publishers: selectedFilters.publishers.map((x: FilterOption) => x.value),
+            countries: selectedFilters.countries.map(
+                (x: FilterOption) => x.value
+            ),
+            publishers: selectedFilters.publishers.map(
+                (x: FilterOption) => x.value
+            ),
             devices: selectedFilters.devices.map((x: FilterOption) => x.value),
             sources: selectedFilters.sources.map((x: FilterOption) => x.value),
         };
     }
 
-    private convertOptionsValueToString (options: FilterOption[]): FilterOption[] {
+    private convertOptionsValueToString(
+        options: FilterOption[]
+    ): FilterOption[] {
         return options.map(option => {
             return {
                 ...option,

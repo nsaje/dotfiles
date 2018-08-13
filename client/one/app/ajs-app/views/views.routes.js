@@ -1,18 +1,19 @@
-angular.module('one.views').config(function ($stateProvider) {
+angular.module('one.views').config(function($stateProvider) {
     $stateProvider.state('v2', {
         url: '/v2',
         template: require('./main/zemMainView.partial.html'),
         controller: 'zemMainView as $ctrl',
         resolve: {
             // Don't resolve until app is initialized
-            initSequence: function (zemInitializationService) {
+            initSequence: function(zemInitializationService) {
                 return zemInitializationService.initSequence();
             },
         },
     });
 
     $stateProvider.state('v2.analytics', {
-        url: '/analytics/{level:accounts|account|campaign|adgroup}/{id:int}/{breakdown}',
+        url:
+            '/analytics/{level:accounts|account|campaign|adgroup}/{id:int}/{breakdown}',
         template: require('./analytics/zemAnalyticsView.partial.html'),
         controller: 'zemAnalyticsView as $ctrl',
         params: {
@@ -107,6 +108,8 @@ angular.module('one.views').config(function ($stateProvider) {
     $stateProvider.state('error.forbidden', {
         url: '/forbidden',
         template: require('./common/403.partial.html'),
-        controller: function () { require('./common/403.partial.less'); },
+        controller: function() {
+            require('./common/403.partial.less');
+        },
     });
 });

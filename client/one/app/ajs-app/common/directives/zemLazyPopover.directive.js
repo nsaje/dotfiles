@@ -1,5 +1,21 @@
-$zemLazyPopoverDirective.$inject = ['$http', '$templateCache', '$compile', '$parse', '$timeout', '$uibPosition', '$document']; // eslint-disable-line max-len
-function $zemLazyPopoverDirective ($http, $templateCache, $compile, $parse, $timeout, $position, $document) {
+$zemLazyPopoverDirective.$inject = [
+    '$http',
+    '$templateCache',
+    '$compile',
+    '$parse',
+    '$timeout',
+    '$uibPosition',
+    '$document',
+]; // eslint-disable-line max-len
+function $zemLazyPopoverDirective(
+    $http,
+    $templateCache,
+    $compile,
+    $parse,
+    $timeout,
+    $position,
+    $document
+) {
     // zem-lazy-popover-template = path to template (evaluated)
     // zem-lazy-popover-text = text content (safe by default, evaulated)
     // zem-lazy-popover-html-unsafe = html (evaluated)
@@ -15,8 +31,8 @@ function $zemLazyPopoverDirective ($http, $templateCache, $compile, $parse, $tim
         '>': '&gt;',
     };
 
-    function sanitizeString (str) {
-        return String(str).replace(/[&<>]/g, function (s) {
+    function sanitizeString(str) {
+        return String(str).replace(/[&<>]/g, function(s) {
             return entityMap[s];
         });
     }
@@ -26,21 +42,29 @@ function $zemLazyPopoverDirective ($http, $templateCache, $compile, $parse, $tim
     var transitionTimeout = null;
     return {
         restrict: 'A',
-        link: function (scope, element, attrs) {
+        link: function(scope, element, attrs) {
             var ttScope = null;
             var tooltip = null;
             var event = attrs.zemLazyPopoverEvent || 'mouseleave';
             var stayOpenOnHover = attrs.zemLazyPopoverStayOpenOnHover || false;
 
-            var positionTooltip = function () {
+            var positionTooltip = function() {
                 if (!tooltip) {
                     return;
                 }
-                var ttPosition = $position.positionElements(element, tooltip, ttScope.placement, ttScope.appendToBody);
+                var ttPosition = $position.positionElements(
+                    element,
+                    tooltip,
+                    ttScope.placement,
+                    ttScope.appendToBody
+                );
 
                 if (ttPosition.left < 0) {
                     var arrow = tooltip.find('.arrow');
-                    arrow.css('transform', 'translateX(' + ttPosition.left + 'px)');
+                    arrow.css(
+                        'transform',
+                        'translateX(' + ttPosition.left + 'px)'
+                    );
                     ttPosition.left = 0;
                 }
 
@@ -51,7 +75,7 @@ function $zemLazyPopoverDirective ($http, $templateCache, $compile, $parse, $tim
                 tooltip.css(ttPosition);
             };
 
-            function removeTooltip () {
+            function removeTooltip() {
                 transitionTimeout = null;
                 if (tooltip) {
                     tooltip.remove();
@@ -63,7 +87,7 @@ function $zemLazyPopoverDirective ($http, $templateCache, $compile, $parse, $tim
                 }
             }
 
-            var hideIfPopoverNotOpenOnHover = function () {
+            var hideIfPopoverNotOpenOnHover = function() {
                 if (stayOpenOnHover && tooltip && tooltip.is(':hover')) {
                     // In case we want popovers to stay open when hovering over them, we will hide them when mouse
                     // leaves the popover
@@ -74,7 +98,7 @@ function $zemLazyPopoverDirective ($http, $templateCache, $compile, $parse, $tim
                 }
             };
 
-            var hide = function () {
+            var hide = function() {
                 // This function hides the tooltip
                 // it's implemented by removing the tooltip entirely from DOM and angular
 
@@ -105,7 +129,8 @@ function $zemLazyPopoverDirective ($http, $templateCache, $compile, $parse, $tim
 
             element.on('$destroy', hide);
 
-            element.on('mouseenter', function () {
+            // prettier-ignore
+            element.on('mouseenter', function() { // eslint-disable-line complexity
                 // If we have a timeout set, cancel it and add in classes
                 if (transitionTimeout) {
                     $timeout.cancel(transitionTimeout);
@@ -141,29 +166,42 @@ function $zemLazyPopoverDirective ($http, $templateCache, $compile, $parse, $tim
 
                 element.on(event, hideIfPopoverNotOpenOnHover);
 
-                function haveTemplateContent (templateContent) {
+                function haveTemplateContent(templateContent) {
                     if (!ttScope) {
                         // Mouseleave might have happened already
                         return;
                     }
-                    ttScope.placement = angular.isDefined(attrs.zemLazyPopoverPlacement)
-                        ? attrs.zemLazyPopoverPlacement : '';
-                    ttScope.appendToBody = angular.isDefined(attrs.zemLazyPopoverAppendToBody)
-                        ? scope.$parent.$eval(attrs.zemLazyPopoverAppendToBody) : false;
-                    ttScope.animationClass = angular.isDefined(attrs.zemLazyPopoverAnimationClass)
-                        ? attrs.zemLazyPopoverAnimationClass : false;
-                    ttScope.customClasses = angular.isDefined(attrs.zemLazyPopoverCustomClasses)
-                        ? attrs.zemLazyPopoverCustomClasses : false;
-                    var content = '<div class="popover {{ placement }} {{ animationClass }} {{ customClasses }}">' +
-                                  '<div class="arrow"></div>' +
-                                  '<div class="popover-inner">' +
-                                  '<div class="popover-content custom-scroller">' +
-                                  templateContent +
-                                  '</div>' +
-                                  '</div>' +
-                                  '</div>';
+                    ttScope.placement = angular.isDefined(
+                        attrs.zemLazyPopoverPlacement
+                    )
+                        ? attrs.zemLazyPopoverPlacement
+                        : '';
+                    ttScope.appendToBody = angular.isDefined(
+                        attrs.zemLazyPopoverAppendToBody
+                    )
+                        ? scope.$parent.$eval(attrs.zemLazyPopoverAppendToBody)
+                        : false;
+                    ttScope.animationClass = angular.isDefined(
+                        attrs.zemLazyPopoverAnimationClass
+                    )
+                        ? attrs.zemLazyPopoverAnimationClass
+                        : false;
+                    ttScope.customClasses = angular.isDefined(
+                        attrs.zemLazyPopoverCustomClasses
+                    )
+                        ? attrs.zemLazyPopoverCustomClasses
+                        : false;
+                    var content =
+                        '<div class="popover {{ placement }} {{ animationClass }} {{ customClasses }}">' +
+                        '<div class="arrow"></div>' +
+                        '<div class="popover-inner">' +
+                        '<div class="popover-content custom-scroller">' +
+                        templateContent +
+                        '</div>' +
+                        '</div>' +
+                        '</div>';
 
-                    tooltip = $compile(content)(ttScope, function (tooltipNew) {
+                    tooltip = $compile(content)(ttScope, function(tooltipNew) {
                         // Place it somewhere out of the view, so we can render & get the size first
                         tooltipNew.css({top: -5000, left: 0, display: 'block'});
                         if (ttScope.appendToBody) {
@@ -173,7 +211,7 @@ function $zemLazyPopoverDirective ($http, $templateCache, $compile, $parse, $tim
                         }
                     });
 
-                    $timeout(function () {
+                    $timeout(function() {
                         // By the time we reach this, we might have already moved the mouse away
                         if (tooltip) {
                             tooltip.addClass('in');
@@ -183,12 +221,12 @@ function $zemLazyPopoverDirective ($http, $templateCache, $compile, $parse, $tim
                         if (ttScope) {
                             ttScope.$watch(positionTooltip, 0, false);
                         }
-
                     });
                 }
 
                 if (templateUrl) {
-                    $http.get(templateUrl, {cache: $templateCache})
+                    $http
+                        .get(templateUrl, {cache: $templateCache})
                         .success(haveTemplateContent);
                 } else if (templateHtml) {
                     haveTemplateContent(templateHtml);
@@ -197,14 +235,13 @@ function $zemLazyPopoverDirective ($http, $templateCache, $compile, $parse, $tim
                 }
 
                 ttScope.$apply();
-
             });
         },
     };
 }
 
-angular.module('one')
+angular
+    .module('one')
     .directive('zemLazyPopoverTemplate', $zemLazyPopoverDirective)
     .directive('zemLazyPopoverText', $zemLazyPopoverDirective)
     .directive('zemLazyPopoverHtmlUnsafe', $zemLazyPopoverDirective);
-

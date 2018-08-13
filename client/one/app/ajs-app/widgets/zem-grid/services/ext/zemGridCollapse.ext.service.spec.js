@@ -1,4 +1,4 @@
-describe('zemGridCollapseService', function () {
+describe('zemGridCollapseService', function() {
     var $rootScope;
     var zemGridObject;
     var zemGridPubSub;
@@ -8,14 +8,19 @@ describe('zemGridCollapseService', function () {
     beforeEach(angular.mock.module('one.mocks.zemInitializationService'));
     beforeEach(angular.mock.module('one.mocks.NgZone'));
 
-    beforeEach(inject(function (_$rootScope_, _zemGridObject_, _zemGridPubSub_, _zemGridCollapseService_) {
+    beforeEach(inject(function(
+        _$rootScope_,
+        _zemGridObject_,
+        _zemGridPubSub_,
+        _zemGridCollapseService_
+    ) {
         $rootScope = _$rootScope_;
         zemGridObject = _zemGridObject_;
         zemGridPubSub = _zemGridPubSub_;
         zemGridCollapseService = _zemGridCollapseService_;
     }));
 
-    function createGrid () {
+    function createGrid() {
         var grid = zemGridObject.createGrid();
         var scope = $rootScope.$new();
 
@@ -23,9 +28,9 @@ describe('zemGridCollapseService', function () {
         grid.meta.pubsub = zemGridPubSub.createInstance(scope);
         grid.meta.data = {};
         grid.meta.dataService = {
-            getBreakdownLevel: function () {
+            getBreakdownLevel: function() {
                 return 2;
-            }
+            },
         };
 
         grid.header.columns.push(zemGridObject.createColumn({}));
@@ -47,15 +52,15 @@ describe('zemGridCollapseService', function () {
         return grid;
     }
 
-    function countVisibleRows (grid) {
-        var count = grid.body.rows.filter(function (row) {
+    function countVisibleRows(grid) {
+        var count = grid.body.rows.filter(function(row) {
             return row.visible;
         }).length;
         if (grid.footer.row && grid.footer.row.visible) count++;
         return count;
     }
 
-    it('should collapse only rows that are not on last level and not footer', function () {
+    it('should collapse only rows that are not on last level and not footer', function() {
         var grid = createGrid();
         var collapseService = zemGridCollapseService.createInstance(grid);
         var rows = grid.body.rows;
@@ -67,7 +72,7 @@ describe('zemGridCollapseService', function () {
         expect(collapseService.isRowCollapsable(grid.footer.row)).toBe(false);
     });
 
-    it('should allow collapsing desired row', function () {
+    it('should allow collapsing desired row', function() {
         var grid = createGrid();
         var collapseService = zemGridCollapseService.createInstance(grid);
         var rows = grid.body.rows;
@@ -82,7 +87,6 @@ describe('zemGridCollapseService', function () {
         expect(collapseService.isRowCollapsed(rows[3])).toBe(true);
         expect(countVisibleRows(grid)).toBe(3);
 
-
         // Un-Collapse one base level row
         // Expected visible rows - footer row + 2 base level rows + 2 2nd level rows
         collapseService.setRowCollapsed(rows[0], false);
@@ -90,7 +94,7 @@ describe('zemGridCollapseService', function () {
         expect(countVisibleRows(grid)).toBe(5);
     });
 
-    it('should allow collapsing all rows of desired level', function () {
+    it('should allow collapsing all rows of desired level', function() {
         var grid = createGrid();
         var collapseService = zemGridCollapseService.createInstance(grid);
         var rows = grid.body.rows;
@@ -106,15 +110,23 @@ describe('zemGridCollapseService', function () {
         expect(countVisibleRows(grid)).toBe(5);
     });
 
-    it('should notify listeners about the updates', function () {
+    it('should notify listeners about the updates', function() {
         var grid = createGrid();
         var collapseService = zemGridCollapseService.createInstance(grid);
 
         var dataUpdatedSpy = jasmine.createSpy();
         var collapseUpdatedSpy = jasmine.createSpy();
 
-        grid.meta.pubsub.register(grid.meta.pubsub.EVENTS.DATA_UPDATED, null, dataUpdatedSpy);
-        grid.meta.pubsub.register(grid.meta.pubsub.EVENTS.EXT_COLLAPSE_UPDATED, null, collapseUpdatedSpy);
+        grid.meta.pubsub.register(
+            grid.meta.pubsub.EVENTS.DATA_UPDATED,
+            null,
+            dataUpdatedSpy
+        );
+        grid.meta.pubsub.register(
+            grid.meta.pubsub.EVENTS.EXT_COLLAPSE_UPDATED,
+            null,
+            collapseUpdatedSpy
+        );
 
         collapseService.setRowCollapsed(grid.body.rows[0], true);
         expect(dataUpdatedSpy).toHaveBeenCalled();

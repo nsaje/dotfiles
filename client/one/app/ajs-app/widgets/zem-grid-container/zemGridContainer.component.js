@@ -7,13 +7,19 @@ angular.module('one.widgets').component('zemGridContainer', {
         breakdown: '<',
         level: '<',
     },
-    controller: function ($scope, $timeout, zemGridIntegrationService, zemGridContainerTabsService) { // eslint-disable-line max-len
+    controller: function(
+        $scope,
+        $timeout,
+        zemGridIntegrationService,
+        zemGridContainerTabsService
+    ) {
+        // eslint-disable-line max-len
         var $ctrl = this;
 
         $ctrl.constants = constants;
         $ctrl.onGridInitialized = onGridInitialized;
 
-        $ctrl.$onInit = function () {
+        $ctrl.$onInit = function() {
             initializeTabs();
             $ctrl.initialized = true;
 
@@ -23,7 +29,7 @@ angular.module('one.widgets').component('zemGridContainer', {
             activateTab(tab);
         };
 
-        $ctrl.$onChanges = function (changes) {
+        $ctrl.$onChanges = function(changes) {
             if (!$ctrl.initialized) return;
             if (changes.entity) {
                 initializeTabs();
@@ -33,13 +39,15 @@ angular.module('one.widgets').component('zemGridContainer', {
             activateTab(tab);
         };
 
-        function initializeTabs () {
-            $ctrl.tabs = zemGridContainerTabsService.createTabOptions($ctrl.entity);
+        function initializeTabs() {
+            $ctrl.tabs = zemGridContainerTabsService.createTabOptions(
+                $ctrl.entity
+            );
             var tab = getTab($ctrl.breakdown);
             selectTab(tab);
         }
 
-        function activateTab (tab) {
+        function activateTab(tab) {
             selectTab(tab);
 
             if (isGridTab(tab)) {
@@ -49,37 +57,48 @@ angular.module('one.widgets').component('zemGridContainer', {
             }
         }
 
-        function isGridTab (tab) {
+        function isGridTab(tab) {
             return tab.breakdown !== constants.breakdown.INSIGHTS;
         }
 
-        function activateGridTab (tab) {
+        function activateGridTab(tab) {
             if (!tab.activated) {
-                $timeout(function () {
+                $timeout(function() {
                     var $childScope = $scope.$new();
-                    tab.gridIntegrationService = zemGridIntegrationService.createInstance($childScope);
+                    tab.gridIntegrationService = zemGridIntegrationService.createInstance(
+                        $childScope
+                    );
                     tab.gridIntegrationService.initialize();
-                    tab.gridIntegrationService.configureDataSource($ctrl.entity, tab.breakdown);
+                    tab.gridIntegrationService.configureDataSource(
+                        $ctrl.entity,
+                        tab.breakdown
+                    );
                     tab.grid = tab.gridIntegrationService.getGrid();
                     tab.activated = true;
                 });
             } else {
                 // [UX] Refresh/resize Grid UI if already activated
                 //   -> column sizes, pivot columns, sticky header/footer
-                $timeout(function () { tab.grid.api.refreshUI(); }, 100);
+                $timeout(function() {
+                    tab.grid.api.refreshUI();
+                }, 100);
             }
         }
 
-        function selectTab (tab) {
-            $ctrl.tabs.forEach(function (tab) { tab.selected = false; });
+        function selectTab(tab) {
+            $ctrl.tabs.forEach(function(tab) {
+                tab.selected = false;
+            });
             tab.selected = true;
         }
 
-        function getTab (breakdown) {
-            return $ctrl.tabs.filter(function (tab) { return tab.breakdown === breakdown; })[0];
+        function getTab(breakdown) {
+            return $ctrl.tabs.filter(function(tab) {
+                return tab.breakdown === breakdown;
+            })[0];
         }
 
-        function onGridInitialized (tab, gridApi) {
+        function onGridInitialized(tab, gridApi) {
             tab.gridIntegrationService.setGridApi(gridApi);
         }
     },

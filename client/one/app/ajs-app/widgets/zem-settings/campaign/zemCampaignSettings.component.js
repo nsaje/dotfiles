@@ -3,12 +3,12 @@ angular.module('one.widgets').component('zemCampaignSettings', {
         api: '<',
     },
     template: require('./zemCampaignSettings.component.html'),
-    controller: function (zemPermissions) {
+    controller: function(zemPermissions) {
         var $ctrl = this;
         $ctrl.constants = constants;
         $ctrl.hasPermission = zemPermissions.hasPermission;
         $ctrl.isPermissionInternal = zemPermissions.isPermissionInternal;
 
-        $ctrl.$onInit = function () { };
+        $ctrl.$onInit = function() {};
     },
 });

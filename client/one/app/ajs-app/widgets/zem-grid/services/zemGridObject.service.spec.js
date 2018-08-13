@@ -1,14 +1,14 @@
-describe('zemGridObject', function () {
+describe('zemGridObject', function() {
     var zemGridObject;
 
     beforeEach(angular.mock.module('one'));
     beforeEach(angular.mock.module('one.mocks.zemInitializationService'));
 
-    beforeEach(inject(function (_zemGridObject_) {
+    beforeEach(inject(function(_zemGridObject_) {
         zemGridObject = _zemGridObject_;
     }));
 
-    it('should create default grid object', function () {
+    it('should create default grid object', function() {
         var grid = zemGridObject.createGrid();
 
         expect(grid).toBeDefined();
@@ -23,7 +23,7 @@ describe('zemGridObject', function () {
         expect(grid.footer.row).toEqual(null);
     });
 
-    it('should create default row object', function () {
+    it('should create default row object', function() {
         var type = 'stats';
         var data = {};
         var level = 1;
@@ -38,7 +38,7 @@ describe('zemGridObject', function () {
         expect(row.collapsed).toBe(false);
     });
 
-    it('should create default column object', function () {
+    it('should create default column object', function() {
         var data = {
             type: 'currency',
             field: 'cost',

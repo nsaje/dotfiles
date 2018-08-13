@@ -2,23 +2,26 @@ require('./zemHeader.component.less');
 
 angular.module('one.widgets').component('zemHeader', {
     template: require('./zemHeader.component.html'),
-    controller: function ($rootScope, $state, $window, config, NgZone) {
+    controller: function($rootScope, $state, $window, config, NgZone) {
         var $ctrl = this;
         var zemStateChangeHandler;
 
         $ctrl.config = config;
 
-        $ctrl.$onInit = function () {
+        $ctrl.$onInit = function() {
             updateComponentsVisibility();
 
-            NgZone.runOutsideAngular(function () {
+            NgZone.runOutsideAngular(function() {
                 angular.element($window).on('scroll', handleScroll);
             });
 
-            zemStateChangeHandler = $rootScope.$on('$zemStateChangeSuccess', updateComponentsVisibility);
+            zemStateChangeHandler = $rootScope.$on(
+                '$zemStateChangeSuccess',
+                updateComponentsVisibility
+            );
         };
 
-        $ctrl.$onDestroy = function () {
+        $ctrl.$onDestroy = function() {
             angular.element($window).off('scroll', handleScroll);
 
             if (zemStateChangeHandler) {
@@ -26,7 +29,7 @@ angular.module('one.widgets').component('zemHeader', {
             }
         };
 
-        function updateComponentsVisibility () {
+        function updateComponentsVisibility() {
             $ctrl.isDateRangePickerVisible = false;
             $ctrl.isFilterSelectorToggleVisible = false;
 
@@ -41,8 +44,8 @@ angular.module('one.widgets').component('zemHeader', {
         }
 
         var isHeaderFixed = false;
-        function handleScroll (event) {
-            NgZone.runOutsideAngular(function () {
+        function handleScroll(event) {
+            NgZone.runOutsideAngular(function() {
                 var st = $(event.target).scrollTop();
                 if (!isHeaderFixed && st > 50) {
                     isHeaderFixed = true;

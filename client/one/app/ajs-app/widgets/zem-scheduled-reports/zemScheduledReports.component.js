@@ -5,11 +5,13 @@ angular.module('one.widgets').component('zemScheduledReports', {
         account: '<',
     },
     template: require('./zemScheduledReports.component.html'),
-    controller: function (zemScheduledReportsStateService, zemPermissions) {
+    controller: function(zemScheduledReportsStateService, zemPermissions) {
         var $ctrl = this;
 
-        $ctrl.$onInit = function () {
-            var stateService = zemScheduledReportsStateService.createInstance($ctrl.account);
+        $ctrl.$onInit = function() {
+            var stateService = zemScheduledReportsStateService.createInstance(
+                $ctrl.account
+            );
             stateService.reloadReports();
 
             $ctrl.hasPermission = zemPermissions.hasPermission;

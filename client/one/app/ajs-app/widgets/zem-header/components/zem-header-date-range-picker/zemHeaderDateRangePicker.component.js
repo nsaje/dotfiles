@@ -1,13 +1,20 @@
 angular.module('one.widgets').component('zemHeaderDateRangePicker', {
     template: require('./zemHeaderDateRangePicker.component.html'), // eslint-disable-line max-len
-    controller: function ($state, $timeout, config, zemDataFilterService, zemHeaderDateRangePickerService) { // eslint-disable-line max-len
+    controller: function(
+        $state,
+        $timeout,
+        config,
+        zemDataFilterService,
+        zemHeaderDateRangePickerService
+    ) {
+        // eslint-disable-line max-len
         var $ctrl = this;
         $ctrl.config = config;
         $ctrl.isVisible = isVisible;
 
         var dateRangeUpdateHandler;
 
-        $ctrl.$onInit = function () {
+        $ctrl.$onInit = function() {
             var predefinedRanges = zemHeaderDateRangePickerService.getPredefinedRanges();
 
             $ctrl.dateRangePickerOptions = {
@@ -16,68 +23,79 @@ angular.module('one.widgets').component('zemHeaderDateRangePicker', {
                 maxDate: moment().endOf('month'),
                 ranges: predefinedRanges,
                 opens: 'left',
-                applyClass: 'button button--highlight button--with-icon check-icon',
+                applyClass:
+                    'button button--highlight button--with-icon check-icon',
                 cancelClass: 'button',
                 linkedCalendars: false,
                 locale: {
-                    format: 'MMM D, YYYY'
+                    format: 'MMM D, YYYY',
                 },
                 eventHandlers: {
                     'apply.daterangepicker': handleDateRangeUpdateFromPicker,
                     // Add/remove open class from date range picker dropdown menu in order to apply opening animation
-                    'show.daterangepicker': function () {
+                    'show.daterangepicker': function() {
                         angular.element('.date-range-picker-input').blur();
-                        angular.element('.date-range-picker-input').css('cursor', 'text');
-                        angular.element('.daterangepicker.dropdown-menu').addClass('open');
+                        angular
+                            .element('.date-range-picker-input')
+                            .css('cursor', 'text');
+                        angular
+                            .element('.daterangepicker.dropdown-menu')
+                            .addClass('open');
                     },
-                    'hide.daterangepicker': function () {
-                        angular.element('.date-range-picker-input').css('cursor', 'pointer');
-                        angular.element('.daterangepicker.dropdown-menu').removeClass('open');
+                    'hide.daterangepicker': function() {
+                        angular
+                            .element('.date-range-picker-input')
+                            .css('cursor', 'pointer');
+                        angular
+                            .element('.daterangepicker.dropdown-menu')
+                            .removeClass('open');
                     },
                 },
             };
 
-            $timeout(function () {
+            $timeout(function() {
                 // Workaround to add a class used for styling to date range picker dropdown after DOM was rendered
-                angular.element('.daterangepicker.dropdown-menu').addClass('zem-header-date-range-picker-dropdown');
+                angular
+                    .element('.daterangepicker.dropdown-menu')
+                    .addClass('zem-header-date-range-picker-dropdown');
             }, 0);
 
             $ctrl.dateRange = zemDataFilterService.getDateRange();
 
-            dateRangeUpdateHandler = zemDataFilterService.onDateRangeUpdate(onDateRangeDataFilterUpdate);
+            dateRangeUpdateHandler = zemDataFilterService.onDateRangeUpdate(
+                onDateRangeDataFilterUpdate
+            );
         };
 
-        $ctrl.$onDestroy = function () {
+        $ctrl.$onDestroy = function() {
             if (dateRangeUpdateHandler) dateRangeUpdateHandler();
         };
 
-        function isVisible () {
+        function isVisible() {
             return !(
-                $state.includes('*.*.agency')
-                || $state.includes('*.*.settings')
-                || $state.includes('*.*.budget')
-                || $state.includes('*.*.budget')
+                $state.includes('*.*.agency') ||
+                $state.includes('*.*.settings') ||
+                $state.includes('*.*.budget') ||
+                $state.includes('*.*.budget')
             );
         }
 
-        function handleDateRangeUpdateFromPicker () {
+        function handleDateRangeUpdateFromPicker() {
             zemDataFilterService.setDateRange($ctrl.dateRange);
         }
 
-        function onDateRangeDataFilterUpdate (event, updatedDateRange) {
+        function onDateRangeDataFilterUpdate(event, updatedDateRange) {
             $ctrl.dateRange = updatedDateRange;
         }
     },
 });
 
-
 //
 // [PATCH] Bootstrap DateRangePicker
 //         Enable independent date selection - start date on left calendar and end date on the right
 //
-angular.element(document).ready(function () {
-
-    window.daterangepicker.prototype.clickDate = function (e) {
+angular.element(document).ready(function() {
+    window.daterangepicker.prototype.clickDate = function(e) {
         if (!$(e.target).hasClass('available')) return;
 
         var title = $(e.target).attr('data-title');
@@ -86,7 +104,9 @@ angular.element(document).ready(function () {
         var cal = $(e.target).parents('.calendar');
 
         var isLeftCalendar = cal.hasClass('left');
-        var date = isLeftCalendar ? this.leftCalendar.calendar[row][col] : this.rightCalendar.calendar[row][col];
+        var date = isLeftCalendar
+            ? this.leftCalendar.calendar[row][col]
+            : this.rightCalendar.calendar[row][col];
 
         if (isLeftCalendar) {
             this.setStartDate(date);
@@ -104,7 +124,7 @@ angular.element(document).ready(function () {
         e.stopPropagation();
     };
 
-    window.daterangepicker.prototype.updateMonthsInView = function () {
+    window.daterangepicker.prototype.updateMonthsInView = function() {
         this.leftCalendar.month = this.startDate.clone().date(1);
         if (this.endDate) {
             this.rightCalendar.month = this.endDate.clone().date(1);

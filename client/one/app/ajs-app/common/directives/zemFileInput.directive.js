@@ -1,23 +1,24 @@
 angular.module('one.common').component('zemFileInput', {
-    template: '<ng-transclude></ng-transclude>' +
+    template:
+        '<ng-transclude></ng-transclude>' +
         '<input tabindex="-1" type="file" ' +
-            'style="width: 0; height: 0; overflow: hidden; position: absolute; padding: 0; margin: 0; opacity: 0" ' +
+        'style="width: 0; height: 0; overflow: hidden; position: absolute; padding: 0; margin: 0; opacity: 0" ' +
         '/>',
     bindings: {
         callback: '&zemFileInputChange',
         accept: '@zemFileInputAccept',
     },
     transclude: true,
-    controller: function ($element) {
+    controller: function($element) {
         var $ctrl = this;
-        $ctrl.$postLink = function () {
+        $ctrl.$postLink = function() {
             var inputElement = $element.find('input[type=file]'),
                 buttonElement = $element.find('[zem-file-input-trigger]');
             if ($ctrl.accept) inputElement.attr('accept', $ctrl.accept);
-            buttonElement.click(function () {
+            buttonElement.click(function() {
                 inputElement.click();
             });
-            inputElement.bind('change', function () {
+            inputElement.bind('change', function() {
                 if (inputElement[0].files[0] === undefined) return; // happens when user presses cancel
                 $ctrl.callback({file: inputElement[0].files[0]});
             });

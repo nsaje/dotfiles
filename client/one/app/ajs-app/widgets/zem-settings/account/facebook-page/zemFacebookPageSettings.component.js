@@ -5,7 +5,7 @@ angular.module('one.widgets').component('zemFacebookPageSettings', {
         api: '<',
     },
     template: require('./zemFacebookPageSettings.component.html'),
-    controller: function ($q, $uibModal, config, zemPermissions) {
+    controller: function($q, $uibModal, config, zemPermissions) {
         var $ctrl = this;
 
         $ctrl.config = config;
@@ -15,23 +15,24 @@ angular.module('one.widgets').component('zemFacebookPageSettings', {
 
         $ctrl.clearFacebookPage = clearFacebookPage;
 
-        $ctrl.$onInit = function () {
+        $ctrl.$onInit = function() {
             $ctrl.api.register({
                 validate: validate,
             });
         };
 
-        $ctrl.$onChanges = function () {
+        $ctrl.$onChanges = function() {
             if (!$ctrl.entity) return;
             $ctrl.origFacebookPage = $ctrl.entity.settings.facebookPage;
         };
 
-        function clearFacebookPage () {
+        function clearFacebookPage() {
             $ctrl.entity.settings.facebookPage = null;
-            $ctrl.entity.settings.facebookStatus = constants.facebookStatus.EMPTY;
+            $ctrl.entity.settings.facebookStatus =
+                constants.facebookStatus.EMPTY;
         }
 
-        function validate () {
+        function validate() {
             if ($ctrl.origFacebookPage !== $ctrl.entity.settings.facebookPage) {
                 return askIfSave();
             }
@@ -39,17 +40,17 @@ angular.module('one.widgets').component('zemFacebookPageSettings', {
             return $q.resolve();
         }
 
-        function askIfSave () {
+        function askIfSave() {
             var modal = $uibModal.open({
                 template: require('./partials/facebook_page_changed_modal.html'),
                 backdrop: 'static',
                 keyboard: false,
-                controller: function ($scope) {
-                    $scope.ok = function () {
+                controller: function($scope) {
+                    $scope.ok = function() {
                         $scope.$close();
                     };
 
-                    $scope.cancel = function () {
+                    $scope.cancel = function() {
                         $scope.$dismiss('cancel');
                     };
                 },
@@ -58,6 +59,5 @@ angular.module('one.widgets').component('zemFacebookPageSettings', {
 
             return modal.result;
         }
-
     },
 });

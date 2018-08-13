@@ -1,13 +1,13 @@
-describe('ZemNavigationUtils', function () {
+describe('ZemNavigationUtils', function() {
     var zemNavigationUtils;
 
     beforeEach(angular.mock.module('one'));
     beforeEach(angular.mock.module('one.mocks.zemInitializationService'));
-    beforeEach(inject(function (_zemNavigationUtils_) {
+    beforeEach(inject(function(_zemNavigationUtils_) {
         zemNavigationUtils = _zemNavigationUtils_;
     }));
 
-    function createEntityHierarchy () {
+    function createEntityHierarchy() {
         var size = [2, 2, 4];
 
         var hierarchy = {};
@@ -29,7 +29,7 @@ describe('ZemNavigationUtils', function () {
         return hierarchy;
     }
 
-    function createAccount (idx) {
+    function createAccount(idx) {
         return {
             type: constants.entityType.ACCOUNT,
             name: 'account ' + idx,
@@ -40,7 +40,7 @@ describe('ZemNavigationUtils', function () {
         };
     }
 
-    function createCampaign (idx) {
+    function createCampaign(idx) {
         return {
             type: constants.entityType.CAMPAIGN,
             name: 'campaign ' + idx,
@@ -49,7 +49,7 @@ describe('ZemNavigationUtils', function () {
         };
     }
 
-    function createAdGroup (idx) {
+    function createAdGroup(idx) {
         return {
             type: constants.entityType.AD_GROUP,
             name: 'adgroup ' + idx,
@@ -57,7 +57,7 @@ describe('ZemNavigationUtils', function () {
         };
     }
 
-    it('should convert entity hierarchy into flat list', function () {
+    it('should convert entity hierarchy into flat list', function() {
         var hierarchy = createEntityHierarchy();
         var list = zemNavigationUtils.convertToEntityList(hierarchy);
         expect(list.length).toBe(22);
@@ -72,7 +72,7 @@ describe('ZemNavigationUtils', function () {
         expect(list[13].type).toEqual(constants.entityType.AD_GROUP);
     });
 
-    it('should filter list while keeping parent entities', function () {
+    it('should filter list while keeping parent entities', function() {
         var hierarchy = createEntityHierarchy();
         var list = zemNavigationUtils.convertToEntityList(hierarchy);
 
@@ -95,7 +95,7 @@ describe('ZemNavigationUtils', function () {
         expect(filteredList[2].type).toEqual(constants.entityType.AD_GROUP);
     });
 
-    it('should filter archived ad groups', function () {
+    it('should filter archived ad groups', function() {
         var accounts = createEntityHierarchy();
         var list = zemNavigationUtils.convertToEntityList(accounts);
 
@@ -106,22 +106,39 @@ describe('ZemNavigationUtils', function () {
         filteredList = zemNavigationUtils.filterEntityList(list, '', false);
         expect(filteredList.length).toBe(21);
 
-        filteredList = zemNavigationUtils.filterEntityList(list, 'adgroup 1', false);
+        filteredList = zemNavigationUtils.filterEntityList(
+            list,
+            'adgroup 1',
+            false
+        );
         expect(filteredList.length).toBe(10);
     });
 
-    it('should filter by agency', function () {
+    it('should filter by agency', function() {
         var accounts = createEntityHierarchy();
         var list = zemNavigationUtils.convertToEntityList(accounts);
 
-        var filteredList = zemNavigationUtils.filterEntityList(list, 'agency', false);
+        var filteredList = zemNavigationUtils.filterEntityList(
+            list,
+            'agency',
+            false
+        );
         expect(filteredList.length).toBe(0);
 
-        filteredList = zemNavigationUtils.filterEntityList(list, 'agency', false, true);
+        filteredList = zemNavigationUtils.filterEntityList(
+            list,
+            'agency',
+            false,
+            true
+        );
         expect(filteredList.length).toBe(22);
 
-        filteredList = zemNavigationUtils.filterEntityList(list, 'agency 1', false, true);
+        filteredList = zemNavigationUtils.filterEntityList(
+            list,
+            'agency 1',
+            false,
+            true
+        );
         expect(filteredList.length).toBe(11);
     });
-
 });

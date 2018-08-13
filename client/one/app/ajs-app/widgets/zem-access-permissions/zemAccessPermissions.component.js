@@ -5,12 +5,20 @@ angular.module('one').component('zemAccessPermissions', {
         entity: '<',
     },
     template: require('./zemAccessPermissions.component.html'),
-    controller: function ($state, zemPermissions, zemUserService, zemAccessPermissionsStateService) { // eslint-disable-line max-len
+    controller: function(
+        $state,
+        zemPermissions,
+        zemUserService,
+        zemAccessPermissionsStateService
+    ) {
+        // eslint-disable-line max-len
         var $ctrl = this;
         $ctrl.hasPermission = zemPermissions.hasPermission;
 
         $ctrl.createUserData = {};
-        $ctrl.stateService = zemAccessPermissionsStateService.getInstance($ctrl.entity);
+        $ctrl.stateService = zemAccessPermissionsStateService.getInstance(
+            $ctrl.entity
+        );
         $ctrl.state = $ctrl.stateService.getState();
 
         $ctrl.create = create;
@@ -21,13 +29,13 @@ angular.module('one').component('zemAccessPermissions', {
         $ctrl.downgrade = $ctrl.stateService.downgrade;
         $ctrl.enableApi = $ctrl.stateService.enableApi;
 
-        $ctrl.$onInit = function () {
+        $ctrl.$onInit = function() {
             $ctrl.stateService.initialize();
             $ctrl.showCollapsed = false;
         };
 
-        function create () {
-            $ctrl.stateService.create($ctrl.createUserData).then(function () {
+        function create() {
+            $ctrl.stateService.create($ctrl.createUserData).then(function() {
                 $ctrl.createUserData = {};
             });
         }

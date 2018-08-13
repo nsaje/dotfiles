@@ -1,5 +1,4 @@
-angular.module('one.widgets').directive('zemGridCellExternalLink', function () {
-
+angular.module('one.widgets').directive('zemGridCellExternalLink', function() {
     return {
         restrict: 'E',
         replace: true,
@@ -12,7 +11,8 @@ angular.module('one.widgets').directive('zemGridCellExternalLink', function () {
             grid: '=',
         },
         template: require('./zemGridCellExternalLink.component.html'),
-        controller: function ($scope, $window, config, zemGridConstants) { // eslint-disable-line max-len
+        controller: function($scope, $window, config, zemGridConstants) {
+            // eslint-disable-line max-len
             var vm = this;
             vm.config = config;
             vm.openUrl = openUrl;
@@ -20,7 +20,7 @@ angular.module('one.widgets').directive('zemGridCellExternalLink', function () {
             $scope.$watch('ctrl.row', update);
             $scope.$watch('ctrl.data', update);
 
-            function update () {
+            function update() {
                 vm.fieldVisible = isFieldVisible();
                 vm.text = null;
                 vm.title = null;
@@ -45,14 +45,17 @@ angular.module('one.widgets').directive('zemGridCellExternalLink', function () {
                 }
             }
 
-            function isFieldVisible () {
+            function isFieldVisible() {
                 if (!vm.row || !vm.column) {
                     return false;
                 }
-                return !(vm.row.level === zemGridConstants.gridRowLevel.FOOTER && vm.column.data.totalRow === false);
+                return !(
+                    vm.row.level === zemGridConstants.gridRowLevel.FOOTER &&
+                    vm.column.data.totalRow === false
+                );
             }
 
-            function openUrl ($event) {
+            function openUrl($event) {
                 $event.stopPropagation();
                 $event.preventDefault();
                 $window.open(vm.redirectorUrl || vm.url, '_blank');

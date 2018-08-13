@@ -1,5 +1,4 @@
-angular.module('one.widgets').factory('zemGridConstants', function () {
-
+angular.module('one.widgets').factory('zemGridConstants', function() {
     var constants = {
         gridBodyRendering: {
             ROW_HEIGHT: 45,

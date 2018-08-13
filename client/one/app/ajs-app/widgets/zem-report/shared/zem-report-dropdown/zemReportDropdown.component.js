@@ -3,7 +3,7 @@ angular.module('one.widgets').component('zemReportDropdown', {
         api: '<',
     },
     template: require('./zemReportDropdown.component.html'),
-    controller: function ($uibModal, zemPermissions) {
+    controller: function($uibModal, zemPermissions) {
         var $ctrl = this;
 
         //
@@ -19,7 +19,9 @@ angular.module('one.widgets').component('zemReportDropdown', {
                 hasPermission: true,
             },
         ];
-        if (zemPermissions.hasPermission('zemauth.can_see_new_report_schedule')) {
+        if (
+            zemPermissions.hasPermission('zemauth.can_see_new_report_schedule')
+        ) {
             $ctrl.actions.push({
                 name: 'Schedule',
                 value: 'schedule',
@@ -28,7 +30,7 @@ angular.module('one.widgets').component('zemReportDropdown', {
             });
         }
 
-        function execute (selected) {
+        function execute(selected) {
             for (var i = 0; i < $ctrl.actions.length; i++) {
                 if ($ctrl.actions[i].value === selected) {
                     $ctrl.actions[i].execute();
@@ -37,24 +39,24 @@ angular.module('one.widgets').component('zemReportDropdown', {
             }
         }
 
-        function openReportModal () {
+        function openReportModal() {
             $uibModal.open({
                 component: 'zemReportDownload',
                 windowClass: 'zem-report-download',
                 backdrop: 'static',
                 resolve: {
                     api: $ctrl.api,
-                }
+                },
             });
         }
 
-        function openScheduleModal () {
+        function openScheduleModal() {
             $uibModal.open({
                 component: 'zemReportSchedule',
                 windowClass: 'zem-report-schedule',
                 resolve: {
                     api: $ctrl.api,
-                }
+                },
             });
         }
     },

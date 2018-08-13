@@ -6,10 +6,10 @@ import {DropdownDirective} from './dropdown.directive';
     selector: '[zemDropdownToggle]',
 })
 export class DropdownToggleDirective {
-    constructor (@Host() private dropdown: DropdownDirective) {}
+    constructor(@Host() private dropdown: DropdownDirective) {}
 
     @HostListener('click')
-    toggleDropdown (): void {
+    toggleDropdown(): void {
         if (this.dropdown.isOpen()) {
             this.dropdown.close();
         } else {

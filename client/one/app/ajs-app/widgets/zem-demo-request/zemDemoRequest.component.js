@@ -5,21 +5,22 @@ angular.module('one.widgets').component('zemDemoRequest', {
         modalInstance: '<',
     },
     template: require('./zemDemoRequest.component.html'),
-    controller: function (zemDemoRequestService) {
+    controller: function(zemDemoRequestService) {
         var $ctrl = this;
 
-        $ctrl.$onInit = function () {
+        $ctrl.$onInit = function() {
             $ctrl.requestInProgress = true;
-            zemDemoRequestService.requestDemo()
-                .then(function (data) {
+            zemDemoRequestService
+                .requestDemo()
+                .then(function(data) {
                     $ctrl.demoUrl = data.url;
                     $ctrl.demoPassword = data.password;
                 })
-                .catch(function (errorMessage) {
+                .catch(function(errorMessage) {
                     $ctrl.error = true;
                     $ctrl.errorMessage = errorMessage;
                 })
-                .finally(function () {
+                .finally(function() {
                     $ctrl.requestInProgress = false;
                 });
 

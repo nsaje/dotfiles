@@ -7,7 +7,7 @@ angular.module('one.common').component('zemTreeSelect', {
         onUpdate: '&',
     },
     template: require('./zemTreeSelect.component.html'),
-    controller: function ($scope, $element, $timeout, zemTreeSelectService) {
+    controller: function($scope, $element, $timeout, zemTreeSelectService) {
         //
         // Tree Node (input: $ctrl.rootNode)
         //  - name, id, value
@@ -24,7 +24,7 @@ angular.module('one.common').component('zemTreeSelect', {
         $ctrl.highlightItem = highlightItem;
         $ctrl.getParentsInfo = getParentsInfo;
 
-        $ctrl.$onInit = function () {
+        $ctrl.$onInit = function() {
             $ctrl.list = zemTreeSelectService.createList($ctrl.rootNode);
             $ctrl.filteredList = zemTreeSelectService.filterList($ctrl.list);
             highlightItem($ctrl.filteredList[0]);
@@ -32,19 +32,23 @@ angular.module('one.common').component('zemTreeSelect', {
             initializeDropdownHandler();
         };
 
-        function initializeSelection () {
+        function initializeSelection() {
             if (!$ctrl.initialSelection) return;
 
             var mapIds = {};
-            $ctrl.list.forEach(function (node) { mapIds[node.id.toString()] = node; });
-            $ctrl.initialSelection.forEach(function (id) {
+            $ctrl.list.forEach(function(node) {
+                mapIds[node.id.toString()] = node;
+            });
+            $ctrl.initialSelection.forEach(function(id) {
                 mapIds[id].selected = true;
             });
 
-            $ctrl.selectedItems = $ctrl.list.filter(function (item) { return item.selected; });
+            $ctrl.selectedItems = $ctrl.list.filter(function(item) {
+                return item.selected;
+            });
         }
 
-        function toggleDropdown () {
+        function toggleDropdown() {
             if ($ctrl.dropdownVisible) {
                 $ctrl.dropdownVisible = false;
                 $ctrl.searchQuery = '';
@@ -53,17 +57,20 @@ angular.module('one.common').component('zemTreeSelect', {
             }
         }
 
-        function onSearch (searchQuery) {
-            $ctrl.filteredList = zemTreeSelectService.filterList($ctrl.list, searchQuery);
+        function onSearch(searchQuery) {
+            $ctrl.filteredList = zemTreeSelectService.filterList(
+                $ctrl.list,
+                searchQuery
+            );
             highlightItem($ctrl.filteredList[0]);
         }
 
-        function toggleCollapse (category) {
+        function toggleCollapse(category) {
             category.isCollapsed = !category.isCollapsed;
             $ctrl.filteredList = zemTreeSelectService.filterList($ctrl.list);
         }
 
-        function toggleItemState (item) {
+        function toggleItemState(item) {
             if (item.isLeaf || $ctrl.searchQuery) {
                 toggleSelection(item);
             } else {
@@ -71,22 +78,28 @@ angular.module('one.common').component('zemTreeSelect', {
             }
         }
 
-        function toggleSelection (item) {
+        function toggleSelection(item) {
             if (!item.isSelectable) return;
             item.selected = !item.selected;
             updateSelection();
         }
 
-        function updateSelection () {
-            $ctrl.selectedItems = $ctrl.list.filter(function (item) { return item.selected; });
-            $ctrl.onUpdate({nodes: $ctrl.selectedItems.map(function (item) { return item.value.id; })});
+        function updateSelection() {
+            $ctrl.selectedItems = $ctrl.list.filter(function(item) {
+                return item.selected;
+            });
+            $ctrl.onUpdate({
+                nodes: $ctrl.selectedItems.map(function(item) {
+                    return item.value.id;
+                }),
+            });
         }
 
-        function highlightItem (item) {
+        function highlightItem(item) {
             $ctrl.highlightedItem = item;
         }
 
-        function getParentsInfo (item) {
+        function getParentsInfo(item) {
             if (!item.parentsInfo) {
                 var p = item.parent;
                 var parentNames = [];
@@ -105,16 +118,16 @@ angular.module('one.common').component('zemTreeSelect', {
             return item.parentsInfo;
         }
 
-        function initializeDropdownHandler () {
-            $element.find('.input-text').focusin(function () {
+        function initializeDropdownHandler() {
+            $element.find('.input-text').focusin(function() {
                 if (!$ctrl.dropdownVisible) {
                     toggleDropdown();
                     $scope.$digest();
                 }
             });
 
-            $element.focusout(function () {
-                $timeout(function () {
+            $element.focusout(function() {
+                $timeout(function() {
                     var elementLostFocus = $element.has(':focus').length === 0;
                     if (elementLostFocus && $ctrl.dropdownVisible) {
                         toggleDropdown();
@@ -135,15 +148,35 @@ angular.module('one.common').component('zemTreeSelect', {
         var KEY_UP_ARROW = 38;
         var KEY_RIGHT_ARROW = 39;
         var KEY_DOWN_ARROW = 40;
-        var HANDLED_KEYS = [KEY_UP_ARROW, KEY_DOWN_ARROW, KEY_LEFT_ARROW,
-            KEY_RIGHT_ARROW, KEY_ENTER, KEY_SPACE, KEY_ESC];
+        var HANDLED_KEYS = [
+            KEY_UP_ARROW,
+            KEY_DOWN_ARROW,
+            KEY_LEFT_ARROW,
+            KEY_RIGHT_ARROW,
+            KEY_ENTER,
+            KEY_SPACE,
+            KEY_ESC,
+        ];
 
-        function handleKeyDown (event) {
-            if (!$ctrl.dropdownVisible || HANDLED_KEYS.indexOf(event.keyCode) < 0) return;
+        function handleKeyDown(event) {
+            if (
+                !$ctrl.dropdownVisible ||
+                HANDLED_KEYS.indexOf(event.keyCode) < 0
+            )
+                return;
 
-            if (event.keyCode === KEY_UP_ARROW || event.keyCode === KEY_DOWN_ARROW) handleBasicMovement(event);
-            if (event.keyCode === KEY_LEFT_ARROW || event.keyCode === KEY_RIGHT_ARROW) handleCollapse(event);
-            if (event.keyCode === KEY_ENTER || event.keyCode === KEY_SPACE) toggleSelection($ctrl.highlightedItem);
+            if (
+                event.keyCode === KEY_UP_ARROW ||
+                event.keyCode === KEY_DOWN_ARROW
+            )
+                handleBasicMovement(event);
+            if (
+                event.keyCode === KEY_LEFT_ARROW ||
+                event.keyCode === KEY_RIGHT_ARROW
+            )
+                handleCollapse(event);
+            if (event.keyCode === KEY_ENTER || event.keyCode === KEY_SPACE)
+                toggleSelection($ctrl.highlightedItem);
             if (event.keyCode === KEY_ESC) toggleDropdown();
 
             event.preventDefault();
@@ -151,34 +184,43 @@ angular.module('one.common').component('zemTreeSelect', {
             $scope.$digest();
         }
 
-
-        function handleBasicMovement (event) {
+        function handleBasicMovement(event) {
             var lastIdx = $ctrl.filteredList.length - 1;
             var idx = $ctrl.filteredList.indexOf($ctrl.highlightedItem);
-            if (event.keyCode === KEY_UP_ARROW) idx = (idx <= 0 ? lastIdx : --idx);
-            if (event.keyCode === KEY_DOWN_ARROW) idx = (idx >= lastIdx ? 0 : ++idx);
+            if (event.keyCode === KEY_UP_ARROW)
+                idx = idx <= 0 ? lastIdx : --idx;
+            if (event.keyCode === KEY_DOWN_ARROW)
+                idx = idx >= lastIdx ? 0 : ++idx;
 
             $ctrl.highlightedItem = $ctrl.filteredList[idx];
             scrollToItem($ctrl.highlightedItem);
         }
 
-        function handleCollapse (event) {
+        function handleCollapse(event) {
             if ($ctrl.searchQuery) return;
 
             if (event.keyCode === KEY_LEFT_ARROW) {
-                if ($ctrl.highlightedItem.isCollapsed && $ctrl.highlightedItem.level === 1) return;
-                if ($ctrl.highlightedItem.isCollapsed) $ctrl.highlightedItem = $ctrl.highlightedItem.parent;
+                if (
+                    $ctrl.highlightedItem.isCollapsed &&
+                    $ctrl.highlightedItem.level === 1
+                )
+                    return;
+                if ($ctrl.highlightedItem.isCollapsed)
+                    $ctrl.highlightedItem = $ctrl.highlightedItem.parent;
                 toggleCollapse($ctrl.highlightedItem);
             }
 
-            if (event.keyCode === KEY_RIGHT_ARROW && !$ctrl.highlightedItem.isLeaf) {
+            if (
+                event.keyCode === KEY_RIGHT_ARROW &&
+                !$ctrl.highlightedItem.isLeaf
+            ) {
                 if ($ctrl.highlightedItem.isCollapsed) {
                     toggleCollapse($ctrl.highlightedItem);
                 }
             }
         }
 
-        function scrollToItem (item) {
+        function scrollToItem(item) {
             if (!item) return;
 
             // Scroll to item in case that is currently not shown
@@ -196,8 +238,10 @@ angular.module('one.common').component('zemTreeSelect', {
             if (selectedPos < viewFrom) {
                 $scrollContainer.scrollTop(selectedPos);
             } else if (selectedPos >= viewTo) {
-                $scrollContainer.scrollTop(selectedPos - height + $ctrl.ITEM_HEIGHT);
+                $scrollContainer.scrollTop(
+                    selectedPos - height + $ctrl.ITEM_HEIGHT
+                );
             }
         }
-    }
+    },
 });

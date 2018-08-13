@@ -1,3 +1,3 @@
 export class PermissionsServiceMock {
-    hasPermission (permission: string | string[]) {}
+    hasPermission(permission: string | string[]) {}
 }

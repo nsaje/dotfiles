@@ -1,43 +1,57 @@
 angular.module('one.widgets').component('zemHeaderNavigation', {
     template: require('./zemHeaderNavigation.component.html'),
-    controller: function ($scope, $element, $timeout, config, hotkeys, zemHeaderNavigationService) { // eslint-disable-line max-len
+    controller: function(
+        $scope,
+        $element,
+        $timeout,
+        config,
+        hotkeys,
+        zemHeaderNavigationService
+    ) {
+        // eslint-disable-line max-len
         var $ctrl = this;
         $ctrl.config = config;
         $ctrl.open = false;
         $ctrl.onToggle = onToggle;
 
-        $ctrl.$onInit = function () {
+        $ctrl.$onInit = function() {
             initializeShortcuts();
         };
 
-        function initializeShortcuts () {
+        function initializeShortcuts() {
             hotkeys.bindTo($scope).add({combo: 'f', callback: open});
-            hotkeys.bindTo($scope).add({combo: 'enter', allowIn: ['INPUT'], callback: close});
+            hotkeys
+                .bindTo($scope)
+                .add({combo: 'enter', allowIn: ['INPUT'], callback: close});
 
             var quickNavigateCombos = [
-                'ctrl+up', 'shift+up',
-                'ctrl+down', 'shift+down',
-                'ctrl+left', 'shift+left',
-                'ctrl+right', 'shift+right',
+                'ctrl+up',
+                'shift+up',
+                'ctrl+down',
+                'shift+down',
+                'ctrl+left',
+                'shift+left',
+                'ctrl+right',
+                'shift+right',
             ];
             hotkeys.bindTo($scope).add({
                 combo: quickNavigateCombos,
-                callback: zemHeaderNavigationService.quickNavigate
+                callback: zemHeaderNavigationService.quickNavigate,
             });
         }
 
-        function open () {
+        function open() {
             $ctrl.open = true;
         }
 
-        function close () {
+        function close() {
             $ctrl.open = false;
         }
 
-        function onToggle (open) {
+        function onToggle(open) {
             if (open) {
                 // Focus input on open (wait for animation to finish)
-                $timeout(function () {
+                $timeout(function() {
                     $element.find('zem-navigation input').focus();
                 }, 250);
             } else {
@@ -46,5 +60,5 @@ angular.module('one.widgets').component('zemHeaderNavigation', {
                 $element.find('zem-navigation input').triggerHandler('change');
             }
         }
-    }
+    },
 });

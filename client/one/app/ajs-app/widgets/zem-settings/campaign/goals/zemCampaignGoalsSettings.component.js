@@ -5,7 +5,8 @@ angular.module('one.widgets').component('zemCampaignGoalsSettings', {
         api: '<',
     },
     template: require('./zemCampaignGoalsSettings.component.html'),
-    controller: function ($q, zemPermissions, zemNavigationNewService) { // eslint-disable-line max-len
+    controller: function($q, zemPermissions, zemNavigationNewService) {
+        // eslint-disable-line max-len
         var $ctrl = this;
         $ctrl.options = options;
         $ctrl.hasPermission = zemPermissions.hasPermission;
@@ -14,7 +15,7 @@ angular.module('one.widgets').component('zemCampaignGoalsSettings', {
         $ctrl.entityGoalsDiff = {};
         $ctrl.validateGoals = validateGoals;
 
-        $ctrl.$onInit = function () {
+        $ctrl.$onInit = function() {
             $ctrl.account = zemNavigationNewService.getActiveAccount();
             $ctrl.api.register({
                 validate: validate,
@@ -22,7 +23,7 @@ angular.module('one.widgets').component('zemCampaignGoalsSettings', {
             });
         };
 
-        function validate (updateData) {
+        function validate(updateData) {
             if (validateGoals()) {
                 updateData.goals = $ctrl.entityGoalsDiff;
                 return $q.resolve();
@@ -31,20 +32,20 @@ angular.module('one.widgets').component('zemCampaignGoalsSettings', {
             return $q.reject();
         }
 
-        function clear () {
+        function clear() {
             $ctrl.entityGoalsDiff.added = [];
             $ctrl.entityGoalsDiff.removed = [];
             $ctrl.entityGoalsDiff.primary = null;
             $ctrl.entityGoalsDiff.modified = {};
         }
 
-        function validateGoals () {
+        function validateGoals() {
             var primary = false,
                 goals = $ctrl.entity.goals;
             if (!goals || !goals.length) {
                 return true;
             }
-            goals.forEach(function (goal) {
+            goals.forEach(function(goal) {
                 if (goal.primary) {
                     primary = true;
                 }

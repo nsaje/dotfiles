@@ -6,20 +6,20 @@ angular.module('one.widgets').component('zemAlerts', {
 
         // TODO: remove - legacy support
         level: '<',
-        entityId: '<'
+        entityId: '<',
     },
     template: require('./zemAlerts.component.html'),
-    controller: function (zemAlertsService, zemPermissions) {
+    controller: function(zemAlertsService, zemPermissions) {
         var $ctrl = this;
         $ctrl.hasPermission = zemPermissions.hasPermission;
         $ctrl.isPermissionInternal = zemPermissions.isPermissionInternal;
         $ctrl.alertTypes = constants.notificationType;
 
-        $ctrl.$onInit = function () {
+        $ctrl.$onInit = function() {
             if (!$ctrl.level) {
-                $ctrl.level = $ctrl.entity ?
-                    constants.entityTypeToLevelMap[$ctrl.entity.type] :
-                    constants.level.ALL_ACCOUNTS;
+                $ctrl.level = $ctrl.entity
+                    ? constants.entityTypeToLevelMap[$ctrl.entity.type]
+                    : constants.level.ALL_ACCOUNTS;
                 $ctrl.entityId = $ctrl.entity ? $ctrl.entity.id : null;
             }
 
@@ -28,8 +28,11 @@ angular.module('one.widgets').component('zemAlerts', {
             initializeAlerts();
         };
 
-        function initializeAlerts () {
-            $ctrl.alerts = zemAlertsService.getAlerts($ctrl.level, $ctrl.entityId);
+        function initializeAlerts() {
+            $ctrl.alerts = zemAlertsService.getAlerts(
+                $ctrl.level,
+                $ctrl.entityId
+            );
         }
     },
 });

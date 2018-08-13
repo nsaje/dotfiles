@@ -1,9 +1,9 @@
-describe('component: zemGeoTargeting', function () {
+describe('component: zemGeoTargeting', function() {
     var $ctrl;
 
     beforeEach(angular.mock.module('one'));
     beforeEach(angular.mock.module('one.mocks.zemInitializationService'));
-    beforeEach(inject(function ($componentController) {
+    beforeEach(inject(function($componentController) {
         var bindings = {
             entity: {settings: {}},
             errors: {},
@@ -12,7 +12,7 @@ describe('component: zemGeoTargeting', function () {
         $ctrl = $componentController('zemGeoTargeting', {}, bindings);
     }));
 
-    it('should initialize without errors', function () {
+    it('should initialize without errors', function() {
         $ctrl.$onInit();
     });
 });

@@ -8,7 +8,14 @@ angular.module('one.common').component('zemSelect', {
         texts: '<',
     },
     template: require('./zemSelect.component.html'),
-    controller: function ($scope, $element, $timeout, hotkeys, zemSelectList, zemUtils) {
+    controller: function(
+        $scope,
+        $element,
+        $timeout,
+        hotkeys,
+        zemSelectList,
+        zemUtils
+    ) {
         var KEY_UP_ARROW = 38;
         var KEY_DOWN_ARROW = 40;
         var KEY_ENTER = 13;
@@ -30,17 +37,17 @@ angular.module('one.common').component('zemSelect', {
         $ctrl.selected = null;
         $ctrl.highlighted = null;
 
-        $ctrl.$onInit = function () {
+        $ctrl.$onInit = function() {
             initializeSelection();
             initializeDropdownHandler();
         };
 
-        $ctrl.$onDestroy = function () {
+        $ctrl.$onDestroy = function() {
             $element.unbind();
         };
 
-        function initializeSelection () {
-            filterList('').then(function () {
+        function initializeSelection() {
+            filterList('').then(function() {
                 if ($ctrl.selectedId) {
                     for (var i = 0; i < $ctrl.list.items.length; i++) {
                         if ($ctrl.list.items[i].id === $ctrl.selectedId) {
@@ -52,8 +59,8 @@ angular.module('one.common').component('zemSelect', {
             });
         }
 
-        function initializeDropdownHandler () {
-            $element.keydown(function (event) {
+        function initializeDropdownHandler() {
+            $element.keydown(function(event) {
                 if (!$ctrl.list) return;
                 if (event.keyCode === KEY_UP_ARROW) upSelection(event);
                 if (event.keyCode === KEY_DOWN_ARROW) downSelection(event);
@@ -61,19 +68,19 @@ angular.module('one.common').component('zemSelect', {
                 $scope.$digest();
             });
 
-            $element.on('click', function () {
-                $timeout(function () {
+            $element.on('click', function() {
+                $timeout(function() {
                     if (!$ctrl.dropdownVisible) {
                         openDropdown(true);
                     }
                 });
             });
 
-            $element.focusout(function (event) {
+            $element.focusout(function(event) {
                 if (event.target === getSelectedLabelElement()) {
                     return;
                 }
-                $timeout(function () {
+                $timeout(function() {
                     var elementLostFocus = $element.has(':focus').length === 0;
                     if (elementLostFocus && $ctrl.dropdownVisible) {
                         closeDrowdown();
@@ -82,22 +89,22 @@ angular.module('one.common').component('zemSelect', {
             });
         }
 
-        function getItemHeight () {
+        function getItemHeight() {
             return ITEM_HEIGHT_DEFAULT;
         }
 
-        function closeDrowdown () {
+        function closeDrowdown() {
             $ctrl.dropdownVisible = false;
-            $timeout(function () {
+            $timeout(function() {
                 focusSelected();
             });
         }
 
-        function openDropdown (timeout) {
+        function openDropdown(timeout) {
             $ctrl.dropdownVisible = true;
 
             if (timeout) {
-                $timeout(function () {
+                $timeout(function() {
                     focusInput();
                     scrollToItem($ctrl.highlighted, true);
                 });
@@ -107,48 +114,48 @@ angular.module('one.common').component('zemSelect', {
             }
         }
 
-        function onItemClick (item) {
+        function onItemClick(item) {
             if (item.isHeader) return;
 
             selectItem(item);
             closeDrowdown();
         }
 
-        function toggleHighlighted (item) {
+        function toggleHighlighted(item) {
             if (item.isHeader) return;
             $ctrl.highlighted = item;
         }
 
-        function selectItem (item) {
+        function selectItem(item) {
             $ctrl.selected = item;
             $ctrl.highlighted = item;
-            $ctrl.onSelect({'item': $ctrl.selected});
+            $ctrl.onSelect({item: $ctrl.selected});
         }
 
-        function onSearch (searchQuery) {
+        function onSearch(searchQuery) {
             if (!$ctrl.dropdownVisible) openDropdown();
             filterList(searchQuery);
         }
 
-        function filterList (searchQuery) {
+        function filterList(searchQuery) {
             if ($ctrl.previousPromise) {
                 $ctrl.previousPromise.abort();
             }
 
             var deferred = zemUtils.createAbortableDefer();
 
-            $ctrl.store.search(searchQuery).then(function (items) {
+            $ctrl.store.search(searchQuery).then(function(items) {
                 deferred.resolve(items);
             });
 
             $ctrl.previousPromise = deferred.promise;
 
-            return deferred.promise.then(function (items) {
+            return deferred.promise.then(function(items) {
                 $ctrl.list = zemSelectList.createInstance(items);
             });
         }
 
-        function upSelection (event) {
+        function upSelection(event) {
             event.preventDefault();
 
             if ($ctrl.dropdownVisible) {
@@ -165,7 +172,7 @@ angular.module('one.common').component('zemSelect', {
             }
         }
 
-        function downSelection (event) {
+        function downSelection(event) {
             event.preventDefault();
 
             if ($ctrl.dropdownVisible) {
@@ -182,7 +189,7 @@ angular.module('one.common').component('zemSelect', {
             }
         }
 
-        function enterSelection () {
+        function enterSelection() {
             if (!$ctrl.dropdownVisible) {
                 openDropdown();
             } else {
@@ -198,7 +205,7 @@ angular.module('one.common').component('zemSelect', {
             }
         }
 
-        function scrollToItem (item, scrollToMiddleIfOutside) {
+        function scrollToItem(item, scrollToMiddleIfOutside) {
             if (!item) return;
 
             // Scroll to item in case that is currently not shown
@@ -228,35 +235,39 @@ angular.module('one.common').component('zemSelect', {
             } else if (selectedPos < viewFrom) {
                 $scrollContainer.scrollTop(selectedPos);
             } else if (selectedPos >= viewTo) {
-                $scrollContainer.scrollTop(selectedPos - height + getItemHeight($ctrl.list.getItem(idx)));
+                $scrollContainer.scrollTop(
+                    selectedPos -
+                        height +
+                        getItemHeight($ctrl.list.getItem(idx))
+                );
             }
         }
 
-        function focusInput () {
-            $timeout(function () {
+        function focusInput() {
+            $timeout(function() {
                 getInputElement().focus();
             });
         }
 
-        function focusSelected () {
-            $timeout(function () {
+        function focusSelected() {
+            $timeout(function() {
                 getSelectedLabelElement().focus();
             });
         }
 
-        function getInputElement () {
+        function getInputElement() {
             return $element.find('input')[0];
         }
 
-        function getSelectedLabelElement () {
+        function getSelectedLabelElement() {
             return $element.find('#selected-item-label')[0];
         }
 
-        function getItemClasses (item) {
+        function getItemClasses(item) {
             var classes = ['zem-select-dropdown-item__name'];
             if (item.isH1) classes.push('zem-select-dropdown-item__name--h1');
             if (item.isH2) classes.push('zem-select-dropdown-item__name--h2');
             return classes;
         }
-    }
+    },
 });

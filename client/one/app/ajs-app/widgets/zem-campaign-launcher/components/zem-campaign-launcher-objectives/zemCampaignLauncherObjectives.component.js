@@ -5,16 +5,16 @@ angular.module('one').component('zemCampaignLauncherObjectives', {
         stateService: '=',
     },
     template: require('./zemCampaignLauncherObjectives.component.html'), // eslint-disable-line max-len
-    controller: function () {
+    controller: function() {
         var $ctrl = this;
         $ctrl.selectObjective = selectObjective;
 
-        $ctrl.$onInit = function () {
+        $ctrl.$onInit = function() {
             $ctrl.state = $ctrl.stateService.getState();
             $ctrl.campaignObjective = constants.campaignObjective;
         };
 
-        function selectObjective (objective) {
+        function selectObjective(objective) {
             $ctrl.stateService.initLauncherWithObjective(objective);
         }
     },

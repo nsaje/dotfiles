@@ -1,17 +1,21 @@
-angular.module('one.views').controller('zemCampaignLauncherView', function (zemNavigationNewService) {
-    var $ctrl = this;
+angular
+    .module('one.views')
+    .controller('zemCampaignLauncherView', function(zemNavigationNewService) {
+        var $ctrl = this;
 
-    initialize();
+        initialize();
 
-    function initialize () {
-        var activeEntity = zemNavigationNewService.getActiveEntity();
-        if (activeEntity === undefined) {
-            var handler = zemNavigationNewService.onActiveEntityChange(function () {
+        function initialize() {
+            var activeEntity = zemNavigationNewService.getActiveEntity();
+            if (activeEntity === undefined) {
+                var handler = zemNavigationNewService.onActiveEntityChange(
+                    function() {
+                        $ctrl.account = zemNavigationNewService.getActiveAccount();
+                        handler();
+                    }
+                );
+            } else {
                 $ctrl.account = zemNavigationNewService.getActiveAccount();
-                handler();
-            });
-        } else {
-            $ctrl.account = zemNavigationNewService.getActiveAccount();
+            }
         }
-    }
-});
+    });

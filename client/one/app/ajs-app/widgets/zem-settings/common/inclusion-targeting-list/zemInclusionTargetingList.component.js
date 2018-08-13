@@ -9,7 +9,7 @@ angular.module('one.widgets').component('zemInclusionTargetingList', {
         refreshTargetings: '&?',
     },
     template: require('./zemInclusionTargetingList.component.html'),
-    controller: function () {
+    controller: function() {
         var $ctrl = this;
         var showTargetingEditSection;
 
@@ -23,36 +23,40 @@ angular.module('one.widgets').component('zemInclusionTargetingList', {
         $ctrl.groupBySection = groupBySection;
         $ctrl.onRefresh = onRefresh;
 
-        function enableTargetingEditSection () {
+        function enableTargetingEditSection() {
             showTargetingEditSection = true;
         }
 
-        function isTargetingEditSectionVisible () {
+        function isTargetingEditSectionVisible() {
             if (!$ctrl.targetings) return;
-            return showTargetingEditSection || $ctrl.targetings.included.length || $ctrl.targetings.excluded.length;
+            return (
+                showTargetingEditSection ||
+                $ctrl.targetings.included.length ||
+                $ctrl.targetings.excluded.length
+            );
         }
 
-        function groupBySection (targeting) {
+        function groupBySection(targeting) {
             return $ctrl.displaySections && targeting.section;
         }
 
-        function include (targeting) {
+        function include(targeting) {
             $ctrl.addIncluded({targeting: targeting});
         }
 
-        function exclude (targeting) {
+        function exclude(targeting) {
             $ctrl.addExcluded({targeting: targeting});
         }
 
-        function remove (targeting) {
+        function remove(targeting) {
             $ctrl.removeTargeting({targeting: targeting});
         }
 
-        function onRefresh (searchTerm) {
+        function onRefresh(searchTerm) {
             if (!$ctrl.refreshTargetings) {
                 return;
             }
             $ctrl.refreshTargetings({searchTerm: searchTerm});
         }
-    }
+    },
 });

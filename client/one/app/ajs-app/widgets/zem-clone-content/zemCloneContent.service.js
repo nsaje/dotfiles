@@ -1,38 +1,44 @@
-angular.module('one.widgets').service('zemCloneContentService', function ($uibModal, zemCloneContentEndpoint) { //eslint-disable-line max-len
+angular
+    .module('one.widgets')
+    .service('zemCloneContentService', function(
+        $uibModal,
+        zemCloneContentEndpoint
+    ) {
+        //eslint-disable-line max-len
 
-    this.openCloneModal = openCloneModal;
-    this.openResultsModal = openResultsModal;
-    this.clone = clone;
+        this.openCloneModal = openCloneModal;
+        this.openResultsModal = openResultsModal;
+        this.clone = clone;
 
-    function openCloneModal (adGroupId, selection) {
-        var modal = $uibModal.open({
-            component: 'zemCloneContentModal',
-            backdrop: 'static',
-            keyboard: false,
-            resolve: {
-                adGroupId: adGroupId,
-                selection: selection,
-            }
-        });
+        function openCloneModal(adGroupId, selection) {
+            var modal = $uibModal.open({
+                component: 'zemCloneContentModal',
+                backdrop: 'static',
+                keyboard: false,
+                resolve: {
+                    adGroupId: adGroupId,
+                    selection: selection,
+                },
+            });
 
-        return modal.result;
-    }
+            return modal.result;
+        }
 
-    function clone (config) {
-        return zemCloneContentEndpoint.clone(config);
-    }
+        function clone(config) {
+            return zemCloneContentEndpoint.clone(config);
+        }
 
-    function openResultsModal (adGroup, destinationBatch) {
-        var modal = $uibModal.open({
-            component: 'zemCloneContentSuccessfulModal',
-            backdrop: 'static',
-            keyboard: false,
-            resolve: {
-                adGroup: adGroup,
-                destinationBatch: destinationBatch,
-            }
-        });
+        function openResultsModal(adGroup, destinationBatch) {
+            var modal = $uibModal.open({
+                component: 'zemCloneContentSuccessfulModal',
+                backdrop: 'static',
+                keyboard: false,
+                resolve: {
+                    adGroup: adGroup,
+                    destinationBatch: destinationBatch,
+                },
+            });
 
-        return modal.result;
-    }
-});
+            return modal.result;
+        }
+    });

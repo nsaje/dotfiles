@@ -1,4 +1,5 @@
-angular.module('one.widgets').directive('zemUploadStep3', function () { // eslint-disable-line max-len
+angular.module('one.widgets').directive('zemUploadStep3', function() {
+    // eslint-disable-line max-len
     return {
         restrict: 'E',
         replace: true,
@@ -12,7 +13,7 @@ angular.module('one.widgets').directive('zemUploadStep3', function () { // eslin
         },
         controllerAs: 'ctrl',
         template: require('./zemUploadStep3.component.html'),
-        controller: function (config) {
+        controller: function(config) {
             var vm = this;
             vm.config = config;
 

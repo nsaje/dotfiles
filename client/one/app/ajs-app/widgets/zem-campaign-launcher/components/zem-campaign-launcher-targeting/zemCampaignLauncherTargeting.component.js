@@ -3,15 +3,15 @@ angular.module('one').component('zemCampaignLauncherTargeting', {
         stateService: '=',
     },
     template: require('./zemCampaignLauncherTargeting.component.html'),
-    controller: function () {
+    controller: function() {
         var $ctrl = this;
 
-        $ctrl.$onInit = function () {
+        $ctrl.$onInit = function() {
             $ctrl.state = $ctrl.stateService.getState();
             initTargetingWidgets();
         };
 
-        function initTargetingWidgets () {
+        function initTargetingWidgets() {
             $ctrl.entity = {
                 settings: $ctrl.state.fields,
             };

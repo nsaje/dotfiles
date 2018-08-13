@@ -6,10 +6,18 @@ angular.module('one.widgets').component('zemCloneAdGroupModal', {
         modalInstance: '<',
     },
     template: require('./zemCloneAdGroupModal.component.html'),
-    controller: function ($q, zemNavigationService, zemNavigationNewService, zemCloneAdGroupService, zemSelectDataStore, zemEntityService) { // eslint-disable-line max-len
+    controller: function(
+        $q,
+        zemNavigationService,
+        zemNavigationNewService,
+        zemCloneAdGroupService,
+        zemSelectDataStore,
+        zemEntityService
+    ) {
+        // eslint-disable-line max-len
         var $ctrl = this;
         $ctrl.texts = {
-            placeholder: 'Search campaign ...'
+            placeholder: 'Search campaign ...',
         };
 
         //
@@ -30,69 +38,97 @@ angular.module('one.widgets').component('zemCloneAdGroupModal', {
         $ctrl.errors = null;
         $ctrl.requestInProgress = false;
 
-        $ctrl.$onInit = function () {
-            var promise = zemNavigationNewService.getNavigationHierarchyPromise().then(function () {
-                $ctrl.campaign = zemNavigationNewService.getEntityById(
-                    constants.entityType.CAMPAIGN, $ctrl.resolve.campaignId);
-                $ctrl.adGroup = zemNavigationNewService.getEntityById(
-                    constants.entityType.AD_GROUP, $ctrl.resolve.adGroupId);
-                $ctrl.destinationAdGroupName = $ctrl.adGroup.name + ' (Copy)';
+        $ctrl.$onInit = function() {
+            var promise = zemNavigationNewService
+                .getNavigationHierarchyPromise()
+                .then(function() {
+                    $ctrl.campaign = zemNavigationNewService.getEntityById(
+                        constants.entityType.CAMPAIGN,
+                        $ctrl.resolve.campaignId
+                    );
+                    $ctrl.adGroup = zemNavigationNewService.getEntityById(
+                        constants.entityType.AD_GROUP,
+                        $ctrl.resolve.adGroupId
+                    );
+                    $ctrl.destinationAdGroupName =
+                        $ctrl.adGroup.name + ' (Copy)';
 
-                return getDataStoreItems();
-            });
+                    return getDataStoreItems();
+                });
             $ctrl.store = zemSelectDataStore.createInstance(promise);
         };
 
-        function submit () {
+        function submit() {
             $ctrl.requestInProgress = true;
 
-            zemEntityService.cloneEntity(constants.entityType.AD_GROUP, $ctrl.resolve.adGroupId, {
-                adGroupId: $ctrl.resolve.adGroupId,
-                destinationCampaignId: $ctrl.destinationCampaignId,
-                destinationAdGroupName: $ctrl.destinationAdGroupName,
-                cloneAds: $ctrl.cloneAds,
-            }).then(function (data) {
-                reloadCache($ctrl.destinationCampaignId, data);
+            zemEntityService
+                .cloneEntity(
+                    constants.entityType.AD_GROUP,
+                    $ctrl.resolve.adGroupId,
+                    {
+                        adGroupId: $ctrl.resolve.adGroupId,
+                        destinationCampaignId: $ctrl.destinationCampaignId,
+                        destinationAdGroupName: $ctrl.destinationAdGroupName,
+                        cloneAds: $ctrl.cloneAds,
+                    }
+                )
+                .then(
+                    function(data) {
+                        reloadCache($ctrl.destinationCampaignId, data);
 
-                var destinationCampaign = zemNavigationNewService.getEntityById(
-                    constants.entityType.CAMPAIGN, $ctrl.destinationCampaignId);
-                zemCloneAdGroupService.openResultsModal($ctrl.adGroup, destinationCampaign, data);
+                        var destinationCampaign = zemNavigationNewService.getEntityById(
+                            constants.entityType.CAMPAIGN,
+                            $ctrl.destinationCampaignId
+                        );
+                        zemCloneAdGroupService.openResultsModal(
+                            $ctrl.adGroup,
+                            destinationCampaign,
+                            data
+                        );
 
-                $ctrl.modalInstance.close();
-            }, function (errors) {
-                $ctrl.errors = errors;
-            }).finally(function () {
-                $ctrl.requestInProgress = false;
-            });
+                        $ctrl.modalInstance.close();
+                    },
+                    function(errors) {
+                        $ctrl.errors = errors;
+                    }
+                )
+                .finally(function() {
+                    $ctrl.requestInProgress = false;
+                });
         }
 
-        function getDataStoreItems () {
-            var item, campaigns = [], top = [];
-            angular.forEach(zemNavigationNewService.getNavigationHierarchy().ids.campaigns, function (value) {
-                if (value.data.archived) {
-                    return;
+        function getDataStoreItems() {
+            var item,
+                campaigns = [],
+                top = [];
+            angular.forEach(
+                zemNavigationNewService.getNavigationHierarchy().ids.campaigns,
+                function(value) {
+                    if (value.data.archived) {
+                        return;
+                    }
+                    item = {
+                        id: value.id,
+                        name: value.name,
+                        h1: value.parent.name,
+                        searchableName: value.parent.name + ' ' + value.name,
+                    };
+                    if (value.parent.id === $ctrl.campaign.parent.id) {
+                        // put current account campaigns to the top
+                        top.push(item);
+                    } else {
+                        campaigns.push(item);
+                    }
                 }
-                item = {
-                    id: value.id,
-                    name: value.name,
-                    h1: value.parent.name,
-                    searchableName: value.parent.name + ' ' + value.name,
-                };
-                if (value.parent.id === $ctrl.campaign.parent.id) {
-                    // put current account campaigns to the top
-                    top.push(item);
-                } else {
-                    campaigns.push(item);
-                }
-            });
+            );
             return top.concat(campaigns);
         }
 
-        function onCampaignSelected (item) {
+        function onCampaignSelected(item) {
             $ctrl.destinationCampaignId = item ? item.id : null;
         }
 
-        function reloadCache (destinationCampaignId, entity) {
+        function reloadCache(destinationCampaignId, entity) {
             // FIXME: Legacy workaround - When navigation service will be completely removed
             // this should be done automatically by listening entity services
             zemNavigationService.addAdGroupToCache(destinationCampaignId, {
@@ -103,5 +139,5 @@ angular.module('one.widgets').component('zemCloneAdGroupModal', {
                 active: entity.active,
             });
         }
-    }
+    },
 });

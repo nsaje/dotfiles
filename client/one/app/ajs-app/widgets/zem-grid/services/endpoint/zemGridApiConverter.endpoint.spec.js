@@ -1,6 +1,6 @@
 /* eslint-disable camelcase */
 
-describe('zemGridEndpointApiConverter', function () {
+describe('zemGridEndpointApiConverter', function() {
     var zemGridEndpointApiConverter,
         config,
         breakdown,
@@ -10,11 +10,11 @@ describe('zemGridEndpointApiConverter', function () {
     beforeEach(angular.mock.module('one'));
     beforeEach(angular.mock.module('one.mocks.zemInitializationService'));
 
-    beforeEach(inject(function (_zemGridEndpointApiConverter_) {
+    beforeEach(inject(function(_zemGridEndpointApiConverter_) {
         zemGridEndpointApiConverter = _zemGridEndpointApiConverter_;
     }));
 
-    it('should correctly convert grouped rows', function () {
+    it('should correctly convert grouped rows', function() {
         config = {
             level: 1,
             breakdown: [{query: 'ad_group'}],
@@ -24,7 +24,6 @@ describe('zemGridEndpointApiConverter', function () {
                 {
                     breakdown_id: '1',
                     breakdown_name: 'Test breakdown 1',
-
                 },
                 {
                     breakdown_id: '2',
@@ -34,7 +33,7 @@ describe('zemGridEndpointApiConverter', function () {
                     breakdown_id: '3',
                     breakdown_name: 'Test breakdown 1',
                     group: {
-                        ids: ['2', '4']
+                        ids: ['2', '4'],
                     },
                 },
                 {
@@ -63,14 +62,14 @@ describe('zemGridEndpointApiConverter', function () {
                             value: 'Test breakdown 1',
                             text: undefined,
                             url: undefined,
-                            redirectorUrl: undefined
-                        }
+                            redirectorUrl: undefined,
+                        },
                     },
                     group: undefined,
                     breakdownId: '1',
                     archived: undefined,
                     supplyDashDisabledMessage: undefined,
-                    entity: {type: 'adGroup', id: 1}
+                    entity: {type: 'adGroup', id: 1},
                 },
                 {
                     stats: {
@@ -78,8 +77,8 @@ describe('zemGridEndpointApiConverter', function () {
                             value: 'Test breakdown 1',
                             text: undefined,
                             url: undefined,
-                            redirectorUrl: undefined
-                        }
+                            redirectorUrl: undefined,
+                        },
                     },
                     group: {ids: ['2', '4']},
                     breakdownId: '3',
@@ -88,44 +87,55 @@ describe('zemGridEndpointApiConverter', function () {
                     entity: {type: 'adGroup', id: 3},
                     breakdown: {
                         breakdownId: '3',
-                        group: true, meta: {}, level: 1, rows: [{
-                            stats: {
-                                breakdown_name: {
-                                    value: 'Test breakdown 2',
-                                    text: undefined,
-                                    url: undefined,
-                                    redirectorUrl: undefined
-                                }
+                        group: true,
+                        meta: {},
+                        level: 1,
+                        rows: [
+                            {
+                                stats: {
+                                    breakdown_name: {
+                                        value: 'Test breakdown 2',
+                                        text: undefined,
+                                        url: undefined,
+                                        redirectorUrl: undefined,
+                                    },
+                                },
+                                group: undefined,
+                                breakdownId: '2',
+                                archived: undefined,
+                                supplyDashDisabledMessage: undefined,
+                                entity: {type: 'adGroup', id: 2},
                             },
-                            group: undefined,
-                            breakdownId: '2',
-                            archived: undefined,
-                            supplyDashDisabledMessage: undefined,
-                            entity: {type: 'adGroup', id: 2}
-                        }, {
-                            stats: {
-                                breakdown_name: {
-                                    value: 'Test breakdown 4',
-                                    text: undefined,
-                                    url: undefined,
-                                    redirectorUrl: undefined
-                                }
+                            {
+                                stats: {
+                                    breakdown_name: {
+                                        value: 'Test breakdown 4',
+                                        text: undefined,
+                                        url: undefined,
+                                        redirectorUrl: undefined,
+                                    },
+                                },
+                                group: undefined,
+                                breakdownId: '4',
+                                archived: undefined,
+                                supplyDashDisabledMessage: undefined,
+                                entity: {type: 'adGroup', id: 4},
                             },
-                            group: undefined,
-                            breakdownId: '4',
-                            archived: undefined,
-                            supplyDashDisabledMessage: undefined,
-                            entity: {type: 'adGroup', id: 4}
-                        }],
-                        pagination: {complete: true}
-                    }
-                }]
+                        ],
+                        pagination: {complete: true},
+                    },
+                },
+            ],
         };
 
-        var convertedBreakdown = zemGridEndpointApiConverter.convertBreakdownFromApi(config, breakdown, metaData);
+        var convertedBreakdown = zemGridEndpointApiConverter.convertBreakdownFromApi(
+            config,
+            breakdown,
+            metaData
+        );
         expect(convertedBreakdown).toEqual(expected);
     });
-    it('should correctly convert breakdown object', function () {
+    it('should correctly convert breakdown object', function() {
         config = {
             level: 2,
             breakdown: [{query: 'campaign'}, {query: 'ad_group'}],
@@ -226,8 +236,8 @@ describe('zemGridEndpointApiConverter', function () {
             categories: [
                 {
                     name: 'category 1',
-                    fields: ['clicks', 'state']
-                }
+                    fields: ['clicks', 'state'],
+                },
             ],
         };
 
@@ -367,11 +377,15 @@ describe('zemGridEndpointApiConverter', function () {
             pagination: {},
         };
 
-        var convertedBreakdown = zemGridEndpointApiConverter.convertBreakdownFromApi(config, breakdown, metaData);
+        var convertedBreakdown = zemGridEndpointApiConverter.convertBreakdownFromApi(
+            config,
+            breakdown,
+            metaData
+        );
         expect(convertedBreakdown).toEqual(expectedResult);
     });
 
-    it('should correctly convert config object to api', function () {
+    it('should correctly convert config object to api', function() {
         var startDate = moment('2016-05-17');
         var endDate = moment('2016-06-14');
 
@@ -406,7 +420,9 @@ describe('zemGridEndpointApiConverter', function () {
             order: 'field',
         };
 
-        var convertedConfig = zemGridEndpointApiConverter.convertConfigToApi(config);
+        var convertedConfig = zemGridEndpointApiConverter.convertConfigToApi(
+            config
+        );
         expect(convertedConfig).toEqual(expectedResult);
     });
 });

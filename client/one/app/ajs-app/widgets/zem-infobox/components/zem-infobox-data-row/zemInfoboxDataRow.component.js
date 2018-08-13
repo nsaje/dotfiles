@@ -3,7 +3,7 @@ angular.module('one.widgets').component('zemInfoboxDataRow', {
         row: '<',
     },
     template: require('./zemInfoboxDataRow.component.html'),
-    controller: function () {
+    controller: function() {
         var $ctrl = this;
 
         $ctrl.constants = constants;

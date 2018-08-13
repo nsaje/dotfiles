@@ -1,7 +1,13 @@
 import {Injectable} from '@angular/core';
 
 import {Subject, Observable, forkJoin} from 'rxjs';
-import {takeUntil, distinctUntilChanged, tap, switchMap, retry} from 'rxjs/operators';
+import {
+    takeUntil,
+    distinctUntilChanged,
+    tap,
+    switchMap,
+    retry,
+} from 'rxjs/operators';
 import {Store} from 'rxjs-observable-store';
 
 import {InventoryPlanningState} from './inventory-planning.state';
@@ -12,15 +18,14 @@ import {FilterOption} from '../types/filter-option';
 
 @Injectable()
 export class InventoryPlanningStore extends Store<InventoryPlanningState> {
-
     private ngUnsubscribe$: Subject<undefined> = new Subject();
     private filters$: Subject<Filters> = new Subject();
 
-    constructor (private endpoint: InventoryPlanningEndpoint) {
+    constructor(private endpoint: InventoryPlanningEndpoint) {
         super(new InventoryPlanningState());
     }
 
-    init (): void {
+    init(): void {
         const filters: Filters = {
             countries: [],
             publishers: [],
@@ -32,7 +37,9 @@ export class InventoryPlanningStore extends Store<InventoryPlanningState> {
         this.filters$.next(filters);
     }
 
-    initWithPreselectedFilters (preselectedOptions: {key: string, value: string}[]): void {
+    initWithPreselectedFilters(
+        preselectedOptions: {key: string; value: string}[]
+    ): void {
         const filters: Filters = {
             countries: [],
             publishers: [],
@@ -54,12 +61,12 @@ export class InventoryPlanningStore extends Store<InventoryPlanningState> {
         this.filters$.next(filters);
     }
 
-    destroy (): void {
+    destroy(): void {
         this.ngUnsubscribe$.next();
         this.ngUnsubscribe$.complete();
     }
 
-    applyFilters (options: {key: string, value: string}[]): void {
+    applyFilters(options: {key: string; value: string}[]): void {
         const filters: Filters = {
             countries: [],
             publishers: [],
@@ -74,17 +81,14 @@ export class InventoryPlanningStore extends Store<InventoryPlanningState> {
 
             const filterOption = this.getFilterOption(option.key, option.value);
             if (filterOption) {
-                filters[option.key] = [
-                    ...filters[option.key],
-                    filterOption,
-                ];
+                filters[option.key] = [...filters[option.key], filterOption];
             }
         });
 
         this.filters$.next(filters);
     }
 
-    toggleOption (option: {key: string, value: string}): void {
+    toggleOption(option: {key: string; value: string}): void {
         if (!this.state.selectedFilters.hasOwnProperty(option.key)) {
             return;
         }
@@ -101,7 +105,7 @@ export class InventoryPlanningStore extends Store<InventoryPlanningState> {
         this.filters$.next(filters);
     }
 
-    private subscribeToFiltersUpdates (): void {
+    private subscribeToFiltersUpdates(): void {
         this.filters$
             .pipe(
                 distinctUntilChanged(),
@@ -134,64 +138,57 @@ export class InventoryPlanningStore extends Store<InventoryPlanningState> {
             .subscribe();
     }
 
-    private reloadSummary (filters: Filters): Observable<Inventory> {
-        return this.endpoint
-            .loadSummary(this, filters)
-            .pipe(
-                tap((response: any) => {
-                    this.handleSummaryResponse(response);
-                })
-            );
+    private reloadSummary(filters: Filters): Observable<Inventory> {
+        return this.endpoint.loadSummary(this, filters).pipe(
+            tap((response: any) => {
+                this.handleSummaryResponse(response);
+            })
+        );
     }
 
-    private reloadCountries (filters: Filters): Observable<FilterOption[]> {
-        return this.endpoint
-            .loadCountries(this, filters)
-            .pipe(
-                tap((response: any) => {
-                    this.handleBreakdownResponse('countries', response);
-                })
-            );
+    private reloadCountries(filters: Filters): Observable<FilterOption[]> {
+        return this.endpoint.loadCountries(this, filters).pipe(
+            tap((response: any) => {
+                this.handleBreakdownResponse('countries', response);
+            })
+        );
     }
 
-    private reloadPublishers (filters: Filters): Observable<FilterOption[]> {
-        return this.endpoint
-            .loadPublishers(this, filters)
-            .pipe(
-                tap((response: any) => {
-                    this.handleBreakdownResponse('publishers', response);
-                })
-            );
+    private reloadPublishers(filters: Filters): Observable<FilterOption[]> {
+        return this.endpoint.loadPublishers(this, filters).pipe(
+            tap((response: any) => {
+                this.handleBreakdownResponse('publishers', response);
+            })
+        );
     }
 
-    private reloadDevices (filters: Filters): Observable<FilterOption[]> {
-        return this.endpoint
-            .loadDevices(this, filters)
-            .pipe(
-                tap((response: any) => {
-                    this.handleBreakdownResponse('devices', response);
-                })
-            );
+    private reloadDevices(filters: Filters): Observable<FilterOption[]> {
+        return this.endpoint.loadDevices(this, filters).pipe(
+            tap((response: any) => {
+                this.handleBreakdownResponse('devices', response);
+            })
+        );
     }
 
-    private reloadSources (filters: Filters): Observable<FilterOption[]> {
-        return this.endpoint
-            .loadSources(this, filters)
-            .pipe(
-                tap((response: any) => {
-                    this.handleBreakdownResponse('sources', response);
-                })
-            );
+    private reloadSources(filters: Filters): Observable<FilterOption[]> {
+        return this.endpoint.loadSources(this, filters).pipe(
+            tap((response: any) => {
+                this.handleBreakdownResponse('sources', response);
+            })
+        );
     }
 
-    private handleSummaryResponse (response: Inventory): void {
+    private handleSummaryResponse(response: Inventory): void {
         this.setState({
             ...this.state,
             inventory: response,
         });
     }
 
-    private handleBreakdownResponse (key: string, response: FilterOption[]): void {
+    private handleBreakdownResponse(
+        key: string,
+        response: FilterOption[]
+    ): void {
         this.setState({
             ...this.state,
             availableFilters: {
@@ -201,26 +198,25 @@ export class InventoryPlanningStore extends Store<InventoryPlanningState> {
         });
     }
 
-    private getSelectedWithToggledOption (
+    private getSelectedWithToggledOption(
         available: FilterOption[],
         selected: FilterOption[],
         value: string
     ): FilterOption[] {
-        const selectedWithNoToggledOption = selected.filter(i => i.value !== value);
+        const selectedWithNoToggledOption = selected.filter(
+            i => i.value !== value
+        );
         if (selectedWithNoToggledOption.length === selected.length) {
             for (const filter of available) {
                 if (filter.value === value) {
-                    return [
-                        ...selectedWithNoToggledOption,
-                        filter,
-                    ];
+                    return [...selectedWithNoToggledOption, filter];
                 }
             }
         }
         return selectedWithNoToggledOption;
     }
 
-    private getFilterOption (key: string, value: string): FilterOption {
+    private getFilterOption(key: string, value: string): FilterOption {
         if (!this.state.availableFilters.hasOwnProperty(key)) {
             return null;
         }

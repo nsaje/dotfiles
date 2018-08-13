@@ -1,13 +1,14 @@
-describe('zemGridCellStateSelector', function () {
+describe('zemGridCellStateSelector', function() {
     var scope, element, $compile, $q;
 
-    var template = '<zem-grid-cell-state-selector data="ctrl.data" row="ctrl.row" column="ctrl.col" grid="ctrl.grid">' +
+    var template =
+        '<zem-grid-cell-state-selector data="ctrl.data" row="ctrl.row" column="ctrl.col" grid="ctrl.grid">' +
         '</zem-grid-cell-state-selector>';
 
     beforeEach(angular.mock.module('one'));
     beforeEach(angular.mock.module('one.mocks.zemInitializationService'));
 
-    beforeEach(inject(function ($rootScope, _$compile_, _$q_) {
+    beforeEach(inject(function($rootScope, _$compile_, _$q_) {
         $compile = _$compile_;
         $q = _$q_;
 
@@ -21,7 +22,7 @@ describe('zemGridCellStateSelector', function () {
                     ext: {},
                 },
                 dataService: {
-                    isSaveRequestInProgress: function () {},
+                    isSaveRequestInProgress: function() {},
                 },
             },
         };
@@ -30,20 +31,27 @@ describe('zemGridCellStateSelector', function () {
         };
     }));
 
-    it('should set undefined available state values for invalid level or breakdown', function () {
+    it('should set undefined available state values for invalid level or breakdown', function() {
         element = $compile(template)(scope);
         scope.$digest();
 
-        expect(element.isolateScope().ctrl.stateValues).toEqual({enabled: undefined, paused: undefined});
+        expect(element.isolateScope().ctrl.stateValues).toEqual({
+            enabled: undefined,
+            paused: undefined,
+        });
     });
 
-    it('should correctly set available state values based on level and breakdown', function () {
+    it('should correctly set available state values based on level and breakdown', function() {
         var tests = [
             // TODO: Add tests for other level-breakdown combinations
-            {level: 'campaigns', breakdown: 'ad_group', expectedResult: {enabled: 1, paused: 2}},
+            {
+                level: 'campaigns',
+                breakdown: 'ad_group',
+                expectedResult: {enabled: 1, paused: 2},
+            },
         ];
 
-        tests.forEach(function (test) {
+        tests.forEach(function(test) {
             scope.ctrl.grid = {
                 meta: {
                     data: {
@@ -52,7 +60,7 @@ describe('zemGridCellStateSelector', function () {
                         ext: {},
                     },
                     dataService: {
-                        isSaveRequestInProgress: function () {},
+                        isSaveRequestInProgress: function() {},
                     },
                 },
             };
@@ -60,11 +68,13 @@ describe('zemGridCellStateSelector', function () {
             element = $compile(template)(scope);
             scope.$digest();
 
-            expect(element.isolateScope().ctrl.stateValues).toEqual(test.expectedResult);
+            expect(element.isolateScope().ctrl.stateValues).toEqual(
+                test.expectedResult
+            );
         });
     });
 
-    it('should display state selector field in rows on first level', function () {
+    it('should display state selector field in rows on first level', function() {
         scope.ctrl.row = {
             level: 1,
             data: {},
@@ -76,7 +86,7 @@ describe('zemGridCellStateSelector', function () {
         expect(element.isolateScope().ctrl.isFieldVisible).toBe(true);
     });
 
-    it('should hide state selector field in rows on levels > 1', function () {
+    it('should hide state selector field in rows on levels > 1', function() {
         scope.ctrl.row = {
             level: 2,
             data: {},
@@ -88,13 +98,13 @@ describe('zemGridCellStateSelector', function () {
         expect(element.isolateScope().ctrl.isFieldVisible).toBe(false);
     });
 
-    it('should correctly determine if current state is active', function () {
+    it('should correctly determine if current state is active', function() {
         var tests = [
             {value: 1, expectedResult: true},
             {value: 2, expectedResult: false},
         ];
 
-        tests.forEach(function (test) {
+        tests.forEach(function(test) {
             element = $compile(template)(scope);
             scope.$digest();
 
@@ -104,11 +114,13 @@ describe('zemGridCellStateSelector', function () {
             };
             scope.$digest();
 
-            expect(element.isolateScope().ctrl.active).toBe(test.expectedResult);
+            expect(element.isolateScope().ctrl.active).toBe(
+                test.expectedResult
+            );
         });
     });
 
-    it('should update state selector field on row or data change', function () {
+    it('should update state selector field on row or data change', function() {
         scope.ctrl.row = {
             level: 1,
             data: {},
@@ -143,13 +155,15 @@ describe('zemGridCellStateSelector', function () {
         expect(element.isolateScope().ctrl.active).toBe(false);
     });
 
-    it('should not make a save request if state is not active and enabling is disabled by autopilot', function () {
-        scope.ctrl.grid.meta.dataService.saveData = function () {};
-        spyOn(scope.ctrl.grid.meta.dataService, 'saveData').and.callFake(function () {
-            var deferred = $q.defer();
-            deferred.resolve(false);
-            return deferred.promise;
-        });
+    it('should not make a save request if state is not active and enabling is disabled by autopilot', function() {
+        scope.ctrl.grid.meta.dataService.saveData = function() {};
+        spyOn(scope.ctrl.grid.meta.dataService, 'saveData').and.callFake(
+            function() {
+                var deferred = $q.defer();
+                deferred.resolve(false);
+                return deferred.promise;
+            }
+        );
         scope.ctrl.data = {
             value: 1,
             isEditable: true,
@@ -163,16 +177,20 @@ describe('zemGridCellStateSelector', function () {
         element.isolateScope().ctrl.modal = null;
         element.isolateScope().ctrl.setState(2);
 
-        expect(element.isolateScope().ctrl.grid.meta.dataService.saveData).not.toHaveBeenCalled();
+        expect(
+            element.isolateScope().ctrl.grid.meta.dataService.saveData
+        ).not.toHaveBeenCalled();
     });
 
-    it('should make a save request if source is in group', function () {
-        scope.ctrl.grid.meta.dataService.saveData = function () {};
-        spyOn(scope.ctrl.grid.meta.dataService, 'saveData').and.callFake(function () {
-            var deferred = $q.defer();
-            deferred.resolve(false);
-            return deferred.promise;
-        });
+    it('should make a save request if source is in group', function() {
+        scope.ctrl.grid.meta.dataService.saveData = function() {};
+        spyOn(scope.ctrl.grid.meta.dataService, 'saveData').and.callFake(
+            function() {
+                var deferred = $q.defer();
+                deferred.resolve(false);
+                return deferred.promise;
+            }
+        );
         scope.ctrl.data = {
             value: 1,
             isEditable: true,
@@ -187,16 +205,20 @@ describe('zemGridCellStateSelector', function () {
         element.isolateScope().ctrl.modal = null;
         element.isolateScope().ctrl.setState(2);
 
-        expect(element.isolateScope().ctrl.grid.meta.dataService.saveData).toHaveBeenCalled();
+        expect(
+            element.isolateScope().ctrl.grid.meta.dataService.saveData
+        ).toHaveBeenCalled();
     });
 
-    it('should not make a save request if field is not editable', function () {
-        scope.ctrl.grid.meta.dataService.saveData = function () {};
-        spyOn(scope.ctrl.grid.meta.dataService, 'saveData').and.callFake(function () {
-            var deferred = $q.defer();
-            deferred.resolve(false);
-            return deferred.promise;
-        });
+    it('should not make a save request if field is not editable', function() {
+        scope.ctrl.grid.meta.dataService.saveData = function() {};
+        spyOn(scope.ctrl.grid.meta.dataService, 'saveData').and.callFake(
+            function() {
+                var deferred = $q.defer();
+                deferred.resolve(false);
+                return deferred.promise;
+            }
+        );
         scope.ctrl.data = {
             value: 1,
             isEditable: false,
@@ -209,16 +231,20 @@ describe('zemGridCellStateSelector', function () {
         element.isolateScope().ctrl.modal = null;
         element.isolateScope().ctrl.setState(2);
 
-        expect(element.isolateScope().ctrl.grid.meta.dataService.saveData).not.toHaveBeenCalled();
+        expect(
+            element.isolateScope().ctrl.grid.meta.dataService.saveData
+        ).not.toHaveBeenCalled();
     });
 
-    it('should make a save request if field is editable', function () {
-        scope.ctrl.grid.meta.dataService.saveData = function () {};
-        spyOn(scope.ctrl.grid.meta.dataService, 'saveData').and.callFake(function () {
-            var deferred = $q.defer();
-            deferred.resolve(false);
-            return deferred.promise;
-        });
+    it('should make a save request if field is editable', function() {
+        scope.ctrl.grid.meta.dataService.saveData = function() {};
+        spyOn(scope.ctrl.grid.meta.dataService, 'saveData').and.callFake(
+            function() {
+                var deferred = $q.defer();
+                deferred.resolve(false);
+                return deferred.promise;
+            }
+        );
         scope.ctrl.data = {
             value: 1,
             isEditable: true,
@@ -231,6 +257,8 @@ describe('zemGridCellStateSelector', function () {
         element.isolateScope().ctrl.modal = null;
         element.isolateScope().ctrl.setState(2);
 
-        expect(element.isolateScope().ctrl.grid.meta.dataService.saveData).toHaveBeenCalled();
+        expect(
+            element.isolateScope().ctrl.grid.meta.dataService.saveData
+        ).toHaveBeenCalled();
     });
 });

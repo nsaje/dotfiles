@@ -1,7 +1,7 @@
-angular.module('one.mocks.NgZone', []).service('NgZone', function () {
+angular.module('one.mocks.NgZone', []).service('NgZone', function() {
     this.runOutsideAngular = runOutsideAngular;
 
-    function runOutsideAngular (fn) {
+    function runOutsideAngular(fn) {
         fn();
     }
 });

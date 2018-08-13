@@ -5,7 +5,7 @@ angular.module('one.widgets').component('zemPublisherGroups', {
     bindings: {
         account: '<',
     },
-    controller: function ($filter, $uibModal, zemPublisherGroupsEndpoint) {
+    controller: function($filter, $uibModal, zemPublisherGroupsEndpoint) {
         var $ctrl = this;
 
         $ctrl.showCollapsed = false;
@@ -15,26 +15,31 @@ angular.module('one.widgets').component('zemPublisherGroups', {
         $ctrl.edit = edit;
         $ctrl.createNew = createNew;
 
-        $ctrl.$onInit = function () {
+        $ctrl.$onInit = function() {
             initPublisherGroups();
         };
 
-        function initPublisherGroups () {
-            zemPublisherGroupsEndpoint.list($ctrl.account.id).then(function (data) {
-                $ctrl.publisherGroups = data;
-                $ctrl.loading = false;
-            });
+        function initPublisherGroups() {
+            zemPublisherGroupsEndpoint
+                .list($ctrl.account.id)
+                .then(function(data) {
+                    $ctrl.publisherGroups = data;
+                    $ctrl.loading = false;
+                });
         }
 
-        function download (publisherGroupId) {
-            zemPublisherGroupsEndpoint.download($ctrl.account.id, publisherGroupId);
+        function download(publisherGroupId) {
+            zemPublisherGroupsEndpoint.download(
+                $ctrl.account.id,
+                publisherGroupId
+            );
         }
 
-        function createNew () {
+        function createNew() {
             openPublisherGroupModal(null);
         }
 
-        function edit (publisherGroupId) {
+        function edit(publisherGroupId) {
             var publisherGroup = getPublisherGroup(publisherGroupId);
 
             if (publisherGroup) {
@@ -42,7 +47,7 @@ angular.module('one.widgets').component('zemPublisherGroups', {
             }
         }
 
-        function openPublisherGroupModal (publisherGroup) {
+        function openPublisherGroupModal(publisherGroup) {
             var modal = $uibModal.open({
                 component: 'zemPublisherGroupsUpload',
                 backdrop: 'static',
@@ -51,13 +56,13 @@ angular.module('one.widgets').component('zemPublisherGroups', {
                 resolve: {
                     publisherGroup: publisherGroup,
                     account: $ctrl.account,
-                }
+                },
             });
 
             modal.result.then(initPublisherGroups);
         }
 
-        function getPublisherGroup (publisherGroupId) {
+        function getPublisherGroup(publisherGroupId) {
             var publisherGroup = null;
 
             for (var i = 0; i < $ctrl.publisherGroups.length; i++) {

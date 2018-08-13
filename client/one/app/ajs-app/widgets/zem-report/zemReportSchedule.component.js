@@ -4,7 +4,13 @@ angular.module('one.widgets').component('zemReportSchedule', {
         resolve: '<',
     },
     template: require('./zemReportSchedule.component.html'),
-    controller: function ($interval, zemReportService, zemUserService, zemReportScheduleService) {  // eslint-disable-line max-len
+    controller: function(
+        $interval,
+        zemReportService,
+        zemUserService,
+        zemReportScheduleService
+    ) {
+        // eslint-disable-line max-len
         var $ctrl = this;
 
         // Public API
@@ -28,15 +34,15 @@ angular.module('one.widgets').component('zemReportSchedule', {
 
         $ctrl.jobPosted = false;
 
-        $ctrl.$onInit = function () {
+        $ctrl.$onInit = function() {
             $ctrl.user = zemUserService.current();
         };
 
-        function dayOfWeekShown () {
+        function dayOfWeekShown() {
             return $ctrl.frequency.value === 'WEEKLY';
         }
 
-        function scheduleReport () {
+        function scheduleReport() {
             $ctrl.jobPosted = true;
             $ctrl.errors = undefined;
             zemReportService
@@ -50,14 +56,14 @@ angular.module('one.widgets').component('zemReportSchedule', {
                     $ctrl.dayOfWeek.value
                 )
                 .then($ctrl.close)
-                .catch(function (data) {
+                .catch(function(data) {
                     $ctrl.jobPosted = false;
                     $ctrl.hasError = true;
                     $ctrl.errors = data.data.errors;
                 });
         }
 
-        function getRecipientsList () {
+        function getRecipientsList() {
             var recipients = [];
             var list = $ctrl.recipients.split(',');
             for (var i = 0; i < list.length; i++) {
@@ -67,5 +73,5 @@ angular.module('one.widgets').component('zemReportSchedule', {
             }
             return recipients;
         }
-    }
+    },
 });

@@ -1,23 +1,25 @@
-angular.module('one.common').directive('zemSelect2ModelTransform', function () {
+angular.module('one.common').directive('zemSelect2ModelTransform', function() {
     return {
         restrict: 'A',
         require: 'ngModel',
-        link: function (scope, element, attr, ngModel) {
+        link: function(scope, element, attr, ngModel) {
             if (!ngModel) {
                 return;
             }
 
-            ngModel.$parsers.push(function (value) {
+            ngModel.$parsers.push(function(value) {
                 return value ? value.id : '';
             });
 
-            ngModel.$formatters.push(function (value) {
+            ngModel.$formatters.push(function(value) {
                 var text;
                 if (attr.zemSelect2ModelTransform === 'percentage') {
                     text = isNaN(value) ? '' : value + '%';
-                } else { text = value; }
+                } else {
+                    text = value;
+                }
                 return {id: value, text: text};
             });
-        }
+        },
     };
 });

@@ -1,11 +1,11 @@
-describe('component: zemAudienceTargeting', function () {
-    describe('initialization', function () {
+describe('component: zemAudienceTargeting', function() {
+    describe('initialization', function() {
         var $ctrl; // eslint-disable-line no-unused-vars
 
         beforeEach(angular.mock.module('one'));
         beforeEach(angular.mock.module('one.mocks.zemInitializationService'));
 
-        beforeEach(inject(function ($rootScope, $componentController) {
+        beforeEach(inject(function($rootScope, $componentController) {
             var bindings = {
                 entity: {settings: {}},
                 errors: {},
@@ -14,18 +14,18 @@ describe('component: zemAudienceTargeting', function () {
             $ctrl = $componentController('zemAudienceTargeting', {}, bindings);
         }));
 
-        it('should initialize without errors', function () {
+        it('should initialize without errors', function() {
             $ctrl.$onInit();
         });
     });
 
-    describe('component updates targeting attributes appropriately', function () {
+    describe('component updates targeting attributes appropriately', function() {
         var $ctrl, targetings; // eslint-disable-line no-unused-vars
 
         beforeEach(angular.mock.module('one'));
         beforeEach(angular.mock.module('one.mocks.zemInitializationService'));
 
-        beforeEach(inject(function ($rootScope, $componentController) {
+        beforeEach(inject(function($rootScope, $componentController) {
             targetings = {
                 included: [
                     {
@@ -110,11 +110,11 @@ describe('component: zemAudienceTargeting', function () {
             $ctrl.$onChanges();
         }));
 
-        it('should set targetings', function () {
+        it('should set targetings', function() {
             expect($ctrl.targetings).toEqual(targetings);
         });
 
-        it('should add inclusion audience targeting', function () {
+        it('should add inclusion audience targeting', function() {
             var targeting = {
                 type: 'audienceTargeting',
                 id: 33,
@@ -122,10 +122,12 @@ describe('component: zemAudienceTargeting', function () {
 
             $ctrl.addIncluded(targeting);
             expect($ctrl.entity.settings.audienceTargeting).toEqual([11, 33]);
-            expect($ctrl.entity.settings.exclusionAudienceTargeting).toEqual([22]);
+            expect($ctrl.entity.settings.exclusionAudienceTargeting).toEqual([
+                22,
+            ]);
         });
 
-        it('should add exclusion audience targeting', function () {
+        it('should add exclusion audience targeting', function() {
             var targeting = {
                 type: 'audienceTargeting',
                 id: 33,
@@ -133,10 +135,13 @@ describe('component: zemAudienceTargeting', function () {
 
             $ctrl.addExcluded(targeting);
             expect($ctrl.entity.settings.audienceTargeting).toEqual([11]);
-            expect($ctrl.entity.settings.exclusionAudienceTargeting).toEqual([22, 33]);
+            expect($ctrl.entity.settings.exclusionAudienceTargeting).toEqual([
+                22,
+                33,
+            ]);
         });
 
-        it('should remove inclusion audience targeting', function () {
+        it('should remove inclusion audience targeting', function() {
             var targeting = {
                 type: 'audienceTargeting',
                 id: 11,
@@ -144,10 +149,12 @@ describe('component: zemAudienceTargeting', function () {
 
             $ctrl.removeTargeting(targeting);
             expect($ctrl.entity.settings.audienceTargeting).toEqual([]);
-            expect($ctrl.entity.settings.exclusionAudienceTargeting).toEqual([22]);
+            expect($ctrl.entity.settings.exclusionAudienceTargeting).toEqual([
+                22,
+            ]);
         });
 
-        it('should remove exclusion audience targeting', function () {
+        it('should remove exclusion audience targeting', function() {
             var targeting = {
                 type: 'audienceTargeting',
                 id: 22,
@@ -155,11 +162,12 @@ describe('component: zemAudienceTargeting', function () {
 
             $ctrl.removeTargeting(targeting);
             expect($ctrl.entity.settings.audienceTargeting).toEqual([11]);
-            expect($ctrl.entity.settings.exclusionAudienceTargeting).toEqual([]);
+            expect($ctrl.entity.settings.exclusionAudienceTargeting).toEqual(
+                []
+            );
         });
 
-
-        it('should add inclusion ad group targeting', function () {
+        it('should add inclusion ad group targeting', function() {
             var targeting = {
                 type: 'adGroupTargeting',
                 id: 3,
@@ -167,10 +175,12 @@ describe('component: zemAudienceTargeting', function () {
 
             $ctrl.addIncluded(targeting);
             expect($ctrl.entity.settings.retargetingAdGroups).toEqual([1, 3]);
-            expect($ctrl.entity.settings.exclusionRetargetingAdGroups).toEqual([2]);
+            expect($ctrl.entity.settings.exclusionRetargetingAdGroups).toEqual([
+                2,
+            ]);
         });
 
-        it('should add exclusion ad group targeting', function () {
+        it('should add exclusion ad group targeting', function() {
             var targeting = {
                 type: 'adGroupTargeting',
                 id: 3,
@@ -178,10 +188,13 @@ describe('component: zemAudienceTargeting', function () {
 
             $ctrl.addExcluded(targeting);
             expect($ctrl.entity.settings.retargetingAdGroups).toEqual([1]);
-            expect($ctrl.entity.settings.exclusionRetargetingAdGroups).toEqual([2, 3]);
+            expect($ctrl.entity.settings.exclusionRetargetingAdGroups).toEqual([
+                2,
+                3,
+            ]);
         });
 
-        it('should remove inclusion ad group targeting', function () {
+        it('should remove inclusion ad group targeting', function() {
             var targeting = {
                 type: 'adGroupTargeting',
                 id: 1,
@@ -189,10 +202,12 @@ describe('component: zemAudienceTargeting', function () {
 
             $ctrl.removeTargeting(targeting);
             expect($ctrl.entity.settings.retargetingAdGroups).toEqual([]);
-            expect($ctrl.entity.settings.exclusionRetargetingAdGroups).toEqual([2]);
+            expect($ctrl.entity.settings.exclusionRetargetingAdGroups).toEqual([
+                2,
+            ]);
         });
 
-        it('should remove exclusion ad group targeting', function () {
+        it('should remove exclusion ad group targeting', function() {
             var targeting = {
                 type: 'adGroupTargeting',
                 id: 2,
@@ -200,7 +215,9 @@ describe('component: zemAudienceTargeting', function () {
 
             $ctrl.removeTargeting(targeting);
             expect($ctrl.entity.settings.retargetingAdGroups).toEqual([1]);
-            expect($ctrl.entity.settings.exclusionRetargetingAdGroups).toEqual([]);
+            expect($ctrl.entity.settings.exclusionRetargetingAdGroups).toEqual(
+                []
+            );
         });
     });
 });

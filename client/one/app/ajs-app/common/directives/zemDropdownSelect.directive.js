@@ -1,4 +1,4 @@
-angular.module('one.common').directive('zemDropdownSelect', function () {
+angular.module('one.common').directive('zemDropdownSelect', function() {
     return {
         restrict: 'E',
         scope: {
@@ -9,13 +9,14 @@ angular.module('one.common').directive('zemDropdownSelect', function () {
             dropdownOptions: '=zemDropdownSelectOptions',
             dropdownCssClass: '@zemDropdownSelectCssClass',
             cssClass: '@zemCssClass',
-            noMatchesPlaceholder: '@zemNoMatchesPlaceholder'
+            noMatchesPlaceholder: '@zemNoMatchesPlaceholder',
         },
         template: require('./zemDropdownSelect.directive.html'),
-        controller: function ($scope, $compile) {
-            var formatSelection = function (object) {
+        controller: function($scope, $compile) {
+            var formatSelection = function(object) {
                 var option;
-                $scope.dropdownOptions.forEach(function (item) {
+                $scope.dropdownOptions.forEach(function(item) {
+                    // prettier-ignore
                     if (item.value == object.id) { // eslint-disable-line eqeqeq
                         option = item;
                     }
@@ -36,7 +37,7 @@ angular.module('one.common').directive('zemDropdownSelect', function () {
                     // hide immediately without animation - solves a glitch when
                     // the element is selected
                     element.attr('zem-lazy-popover-animation', 'false');
-                    element.on('$destroy', function () {
+                    element.on('$destroy', function() {
                         element.trigger('mouseleave');
                     });
                 }
@@ -44,7 +45,11 @@ angular.module('one.common').directive('zemDropdownSelect', function () {
                 element.text(object.text);
 
                 if (option.internal) {
-                    var internal = $compile(angular.element(document.createElement('zem-internal-feature')))($scope);
+                    var internal = $compile(
+                        angular.element(
+                            document.createElement('zem-internal-feature')
+                        )
+                    )($scope);
                     element.append(internal);
                 }
 
@@ -55,19 +60,21 @@ angular.module('one.common').directive('zemDropdownSelect', function () {
                 minimumResultsForSearch: -1,
                 dropdownCssClass: $scope.dropdownCssClass,
                 formatNoMatches: $scope.noMatchesPlaceholder,
-                formatResult: formatSelection
+                formatResult: formatSelection,
             };
 
             $scope.selectedItem = null;
 
-            $scope.callOnSelect = function () {
+            $scope.callOnSelect = function() {
                 $scope.onSelect({selected: $scope.selectedItem});
                 $scope.selectedItem = null;
             };
 
-            $scope.$watch('checkDisabled()', function () {
-                $scope.disabledTitleOrUndefined = $scope.checkDisabled() ? $scope.disabledTitle : undefined;
+            $scope.$watch('checkDisabled()', function() {
+                $scope.disabledTitleOrUndefined = $scope.checkDisabled()
+                    ? $scope.disabledTitle
+                    : undefined;
             });
-        }
+        },
     };
 });
