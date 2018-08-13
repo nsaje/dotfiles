@@ -88,14 +88,21 @@ def _auto_archive_inactive_entities(inactive_since, whitelist=None):
     if whitelist:
         campaigns.filter(account__id__in=whitelist)
 
+    class CampaignHasActiveBudgets(Exception):
+        pass
+
     campaign_count = 0
     for c in campaigns:
-        for budget in c.budgets.all().annotate_spend_data():
-            if budget.state() in (constants.BudgetLineItemState.ACTIVE, constants.BudgetLineItemState.PENDING):
-                continue
+        try:
+            for budget in c.budgets.all().annotate_spend_data():
+                if budget.state() in (constants.BudgetLineItemState.ACTIVE, constants.BudgetLineItemState.PENDING):
+                    raise CampaignHasActiveBudgets()
 
-        c.settings.update_unsafe(None, archived=True, history_changes_text="Automated archiving.")
-        logger.info("Auto-archived campaign with id {}.".format(c.id))
-        campaign_count += 1
+            c.settings.update_unsafe(None, archived=True, history_changes_text="Automated archiving.")
+            logger.info("Auto-archived campaign with id {}.".format(c.id))
+            campaign_count += 1
+
+        except CampaignHasActiveBudgets:
+            continue
 
     return ad_group_count, campaign_count

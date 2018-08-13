@@ -173,3 +173,31 @@ class AutoArchiveTest(TestCase):
         self.assertEqual(ad_group.settings.state, constants.AdGroupSettingsState.ACTIVE)
         self.assertEqual(campaign_count, 0)
         self.assertEqual(adgroup_count, 0)
+
+    def test_auto_archiving_active_budget(self, spend_mock):
+        account = magic_mixer.blend(models.Account, auto_archiving_enabled=True)
+        campaign = magic_mixer.blend(models.Campaign, account=account)
+        campaign.settings.update_unsafe(None, created_dt=self.inactive_since, archived=False)
+        credit = magic_mixer.blend(
+            models.CreditLineItem,
+            account=account,
+            status=constants.CreditLineItemStatus.SIGNED,
+            start_date=self.inactive_since,
+            end_date=dates_helper.local_today,
+            amount=1000,
+        )
+        magic_mixer.blend(
+            models.BudgetLineItem,
+            campaign=campaign,
+            credit=credit,
+            start_date=self.inactive_since,
+            end_date=dates_helper.local_today,
+            amount=100,
+        )
+        adgroup_count, campaign_count = auto_archive_inactive_entities._auto_archive_inactive_entities(
+            self.inactive_since
+        )
+        campaign.settings.refresh_from_db()
+        self.assertFalse(campaign.settings.archived)
+        self.assertEqual(campaign_count, 0)
+        self.assertEqual(adgroup_count, 0)
