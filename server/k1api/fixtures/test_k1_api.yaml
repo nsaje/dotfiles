@@ -51,6 +51,7 @@
         account: 1
         whitelist_publisher_groups: [9, 10]
         blacklist_publisher_groups: [11, 12]
+        default_cs_representative: 1
     model: dash.accountsettings
     pk: 1
 

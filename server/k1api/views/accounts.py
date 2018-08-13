@@ -68,6 +68,11 @@ class AccountsView(K1APIView):
                 "custom_audiences": accounts_audiences[account.id],
                 "outbrain_marketer_id": account.outbrain_marketer_id,
                 "outbrain_amplify_review_only": self._is_amplify_review_only(account),
+                "default_cs_representative": (
+                    account.settings.default_cs_representative
+                    and account.settings.default_cs_representative.email
+                    or None
+                ),
             }
             account_dicts.append(account_dict)
 
