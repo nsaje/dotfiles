@@ -7,7 +7,7 @@ logger = logging.getLogger(__name__)
 
 
 class SlackLoggerMixin(object):
-    def log_custom_flags_event_to_slack(self, original_entity, updated_entity):
+    def log_custom_flags_event_to_slack(self, original_entity, updated_entity, user=None):
         all_flags_default = {cf.id: cf.get_default_value() for cf in CustomFlag.objects.all()}
         orignal_flags = original_entity.custom_flags or all_flags_default
         updated_flags = updated_entity.custom_flags or all_flags_default
@@ -16,16 +16,18 @@ class SlackLoggerMixin(object):
         for cf_id, cf_value in updated_flags.items():
             if cf_id in orignal_flags.keys() and orignal_flags[cf_id] != cf_value:
                 messages.append(
-                    "Custom flag *{cf}* value has been changed from '{old_value}' to '{new_value}' on {entity_link}"
-                    " ({type})".format(
+                    "Custom flag *{cf}* value has been changed from *{old_value}* to *{new_value}* on {entity_link}"
+                    " ({type}). -- {modified_by}".format(
                         cf=cf_id,
                         old_value=orignal_flags[cf_id],
                         new_value=cf_value,
                         entity_link=self.entity_admin_url_builder(updated_entity, anchor_tag=updated_entity.name),
                         type=original_entity.__class__.__name__,
+                        modified_by="Modified by: {}".format(user) if user else "",
                     )
                 )
         text = "\n".join(messages)
+
         if text.strip():
             try:
                 slack.publish(text, channel="z1-hacks-logs")

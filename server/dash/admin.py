@@ -430,7 +430,7 @@ class AgencyAdmin(SlackLoggerMixin, ExportMixin, admin.ModelAdmin):
             models.AdGroup.objects.filter(campaign__account__agency_id=obj.id).values_list("id", flat=True),
             "AgencyAdmin.save_model",
         )
-        self.log_custom_flags_event_to_slack(old_obj, obj)
+        self.log_custom_flags_event_to_slack(old_obj, obj, user=request.user.email)
 
 
 def render_change_form(self, request, context, *args, **kwargs):
@@ -514,7 +514,7 @@ class AccountAdmin(SlackLoggerMixin, SaveWithRequestMixin, admin.ModelAdmin):
             models.AdGroup.objects.filter(campaign__account_id=obj.id).values_list("id", flat=True),
             "AccountAdmin.save_model",
         )
-        self.log_custom_flags_event_to_slack(old_obj, obj)
+        self.log_custom_flags_event_to_slack(old_obj, obj, user=request.user.email)
 
 
 # Campaign
@@ -554,7 +554,7 @@ class CampaignAdmin(SlackLoggerMixin, admin.ModelAdmin):
         utils.k1_helper.update_ad_groups(
             models.AdGroup.objects.filter(campaign_id=obj.id).values_list("id", flat=True), "CampaignAdmin.save_model"
         )
-        self.log_custom_flags_event_to_slack(old_obj, obj)
+        self.log_custom_flags_event_to_slack(old_obj, obj, user=request.user.email)
 
     def save_formset(self, request, form, formset, change):
         if formset.model == models.AdGroup:
@@ -779,7 +779,7 @@ class AdGroupAdmin(SlackLoggerMixin, admin.ModelAdmin):
             utils.email_helper.send_ad_group_notification_email(ad_group, request, changes_text)
         ad_group.save(request)
         utils.k1_helper.update_ad_group(ad_group.pk, msg="AdGroupAdmin.save_model")
-        self.log_custom_flags_event_to_slack(old_obj, ad_group)
+        self.log_custom_flags_event_to_slack(old_obj, ad_group, user=request.user.email)
 
     def account_(self, obj):
         return '<a href="{account_url}">{account}</a>'.format(
