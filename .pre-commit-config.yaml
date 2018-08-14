@@ -3,7 +3,7 @@
   hooks:
     - id: black
       name: black      
-      entry: black
+      entry: black -l 120
       language: python      
       types: [python]
 - repo: https://github.com/pre-commit/pre-commit-hooks
