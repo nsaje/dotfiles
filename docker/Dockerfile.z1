@@ -8,7 +8,7 @@ ADD docker/*.sh /
 ADD docker/Dockerfile* /
 RUN chmod +x /*.sh
 
-ADD docker/bash_logout.sh /root/.bash_logout.sh
+ADD docker/bash_logout.sh /root/.bash_logout
 
 # Add project to docker image
 ADD server/ .
