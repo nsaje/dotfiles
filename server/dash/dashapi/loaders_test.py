@@ -334,7 +334,8 @@ class ContentAdLoaderTest(TestCase):
         content_ads = models.ContentAd.objects.all()
         sources = models.Source.objects.all()
 
-        self.loader = loaders.ContentAdsLoader(content_ads, sources)
+        self.user = magic_mixer.blend_user()
+        self.loader = loaders.ContentAdsLoader(content_ads, sources, self.user)
 
     def test_from_constraints(self):
         loader = loaders.ContentAdsLoader.from_constraints(
@@ -393,7 +394,7 @@ class ContentAdLoaderTest(TestCase):
         content_ads = models.ContentAd.objects.all()
         sources = models.Source.objects.filter(pk=1)
 
-        loader = loaders.ContentAdsLoader(content_ads, sources)
+        loader = loaders.ContentAdsLoader(content_ads, sources, self.user)
 
         self.assertDictEqual(
             loader.status_map,
@@ -416,7 +417,7 @@ class ContentAdLoaderTest(TestCase):
         content_ads = models.ContentAd.objects.all()
         sources = models.Source.objects.filter(pk=1)
 
-        loader = loaders.ContentAdsLoader(content_ads, sources)
+        loader = loaders.ContentAdsLoader(content_ads, sources, self.user)
 
         self.assertDictEqual(loader.content_ads_sources_map, {1: [models.ContentAdSource.objects.get(pk=1)]})
 
@@ -456,7 +457,7 @@ class ContentAdLoaderTest(TestCase):
         content_ads = models.ContentAd.objects.all()
         sources = models.Source.objects.filter(pk=1)
 
-        loader = loaders.ContentAdsLoader(content_ads, sources)
+        loader = loaders.ContentAdsLoader(content_ads, sources, self.user)
         self.assertDictEqual(
             loader.per_source_status_map,
             {
