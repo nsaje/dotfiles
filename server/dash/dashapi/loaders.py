@@ -561,7 +561,8 @@ class ContentAdsLoader(Loader):
             return content_ad_source.get_submission_status(), content_ad_source.submission_errors
 
     def _get_source_link(self, content_ad, content_ad_submission_policy):
-        if self._should_use_amplify_review(content_ad, content_ad_submission_policy):
+        if self.user.has_perm('zemauth.can_see_amplify_review_link') and\
+           self._should_use_amplify_review(content_ad, content_ad_submission_policy):
             return "{}?ad_group_id={}&source_id={}".format(
                 reverse("supply_dash_redirect"), content_ad.ad_group.id, OUTBRAIN_SOURCE_ID
             )
