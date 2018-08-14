@@ -1,6 +1,6 @@
 #!/bin/bash
 
-LIVE_SESSIONS_COUNT=$(w -h | wc -l)
+LIVE_SESSIONS_COUNT=$(w.procps -h | wc -l)
 if [[ $LIVE_SESSIONS_COUNT > 1 ]]; then
         echo "there are still live sessions [" $((LIVE_SESSIONS_COUNT - 1)) "] - postponing termination"
 else
