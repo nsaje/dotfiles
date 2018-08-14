@@ -10,7 +10,7 @@
     "lint:eslint": "eslint one --format codeframe",
     "lint:tslint": "tslint --project tsconfig.json --format codeFrame",
     "lint:prettier": "prettier --list-different 'one/**/*.{js,ts}'",
-    "lint": "npm run lint:eslint && npm run lint:tslint && npm run lint:prettier",
+    "lint": "npm run lint:eslint && npm run lint:tslint",
     "prettier:format": "prettier --write 'one/**/*.{js,ts}'"
   },
   "dependencies": {

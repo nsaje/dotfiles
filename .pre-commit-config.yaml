@@ -20,7 +20,7 @@
   hooks:        
     - id: prettier
       name: prettier
-      entry: prettier --write
+      entry: prettier --config ./client/.prettierrc.js --write
       language: node
       files: \.(js|ts)$     
 - repo: https://github.com/pre-commit/mirrors-eslint
