@@ -25,7 +25,7 @@ import core.source
 from . import bcm_mixin
 
 
-AMPLIFY_REVIEW_AGENCIES_DISABLED = {55, 33}  # Outbrain  # inPowered
+AMPLIFY_REVIEW_AGENCIES_DISABLED = {55}  # Outbrain
 
 
 class AdGroupManager(core.common.QuerySetManager):
