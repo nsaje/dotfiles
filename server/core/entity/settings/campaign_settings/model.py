@@ -66,9 +66,7 @@ class CampaignSettings(validation.CampaignSettingsValidatorMixin, instance.Campa
         settings.AUTH_USER_MODEL, null=True, related_name="+", on_delete=models.PROTECT
     )
     language = models.SlugField(default=constants.Language.ENGLISH, choices=constants.Language.get_choices(), null=True)
-    type = models.IntegerField(
-        default=constants.CampaignType.CONTENT, choices=constants.CampaignType.get_choices()
-    )
+    type = models.IntegerField(default=constants.CampaignType.CONTENT, choices=constants.CampaignType.get_choices())
     iab_category = models.SlugField(
         max_length=10, default=constants.IABCategory.IAB24, choices=constants.IABCategory.get_choices()
     )
