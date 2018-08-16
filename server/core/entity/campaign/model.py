@@ -10,6 +10,8 @@ import core.common
 import utils.demo_anonymizer
 import utils.string_helper
 
+import dash.constants
+
 from . import bcm_mixin
 from . import instance
 from . import manager
@@ -25,6 +27,9 @@ class Campaign(instance.CampaignInstanceMixin, core.common.PermissionMixin, bcm_
     id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=127, editable=True, blank=False, null=False)
     account = models.ForeignKey("Account", on_delete=models.PROTECT)
+    type = models.IntegerField(
+        default=dash.constants.CampaignType.CONTENT, choices=dash.constants.CampaignType.get_choices()
+    )
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name="Created at")
     modified_dt = models.DateTimeField(auto_now=True, verbose_name="Modified at")
     modified_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name="+", on_delete=models.PROTECT, null=True)

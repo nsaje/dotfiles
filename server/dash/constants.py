@@ -123,6 +123,13 @@ class AccountType(ConstantBase):
     }
 
 
+class CampaignType(ConstantBase):
+    CONTENT = 1
+    VIDEO = 2
+
+    _VALUES = {CONTENT: "Content", VIDEO: "Video"}
+
+
 class Language(ConstantBase):
     ENGLISH = "en"
     GERMAN = "de"
