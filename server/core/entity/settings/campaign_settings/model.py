@@ -35,6 +35,7 @@ class CampaignSettings(validation.CampaignSettingsValidatorMixin, instance.Campa
         "name",
         "campaign_manager",
         "language",
+        "type",
         "iab_category",
         "campaign_goal",
         "promotion_goal",
