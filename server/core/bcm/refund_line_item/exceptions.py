@@ -11,3 +11,7 @@ class RefundAmountExceededTotalSpend(ValidationError):
 
 class CreditAvailableAmountNegative(ValidationError):
     pass
+
+
+class EffectiveMarginAmountOutOfBounds(ValidationError):
+    pass

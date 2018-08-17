@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 from django.db import models
 from django.conf import settings
 
@@ -28,6 +30,7 @@ class RefundLineItem(
     start_date = models.DateField()
     end_date = models.DateField()
     amount = models.IntegerField()
+    effective_margin = models.DecimalField(decimal_places=4, max_digits=5, default=Decimal("0"))
     comment = models.TextField(default="Unchecked credit refund")
 
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name="Created at")

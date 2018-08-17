@@ -33,7 +33,13 @@ class TestRefundLineItemManager(TestCase):
         )
 
         refund = model.RefundLineItem.objects.create(
-            request, account=account, credit=credit, start_date=refund_start_date, amount=0, comment="test"
+            request,
+            account=account,
+            credit=credit,
+            start_date=refund_start_date,
+            amount=0,
+            comment="test",
+            effective_margin=Decimal("0.2"),
         )
 
         self.assertTrue(refund.id)

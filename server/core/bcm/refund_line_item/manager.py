@@ -3,6 +3,9 @@ import calendar
 
 from django.db import transaction
 
+import core.bcm
+import core.bcm.calculations
+
 from . import model
 
 

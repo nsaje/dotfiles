@@ -14,14 +14,30 @@
             </div>
             <div ng-repeat="error in $ctrl.state.requests.saveCreditRefundItem.errors.startDate" class="message message--error" for="date-input">{{ error }}</div>
         </div>
-        <div class="form__group" ng-class="{'form--error': !!$ctrl.state.requests.saveCreditRefundItem.errors.amount}">
-            <label class="form__label" for="amount-input">Credit refund</label>
+        <div class="form__group">
+            <label class="form__label" for="media-amount-input">Refunded Media Amount</label>
             <div class="prefixed-field postfixed-field prefixed-field--narrow postfixed-field--narrow">
                 <span class="prefixed-field__prefix">{{$ctrl.state.creditItem.currencySymbol}}</span>
-                <input class="input-text" id="amount-input" type="text" ng-model="$ctrl.state.creditRefundItem.amount" zem-currency-input fraction-size="0">
+                <input class="input-text" id="media-amount-input" type="text" ng-model="$ctrl.mediaAmount" fraction-size="0">
                 <span class="postfixed-field__postfix">.00</span>
             </div>
-            <div ng-repeat="error in $ctrl.state.requests.saveCreditRefundItem.errors.amount" class="message message--error" for="amount">{{ error }}</div>
+        </div>
+        <div class="form__group form__group--informative">
+            <label class="form__label">Credit License Fee</label>
+            <div class="form__information">{{ $ctrl.state.creditItem.licenseFee }}</div>
+        </div>
+        <div class="form__group" ng-class="{'form--error': !!$ctrl.state.requests.saveCreditRefundItem.errors.effectiveMargin}">
+            <label class="form__label" for="effective-margin-input">Refunded Margin</label>
+            <div class="postfixed-field postfixed-field--narrow">
+                <input id="effective-margin-select" class="input-text" ng-model="$ctrl.state.creditRefundItem.effectiveMargin" />
+                <span class="postfixed-field__postfix">%</span>
+            </div>
+            <div class="message message--error" ng-repeat="error in $ctrl.state.requests.saveCreditRefundItem.errors.effectiveMargin" for="effective-margin-input">{{ error }}</div>
+        </div>
+        <div class="form__group form__group--informative" ng-class="{'form--error': !!$ctrl.state.requests.saveCreditRefundItem.errors.amount}">
+            <label class="form__label">Total Refunded Amount</label>
+            <div class="form__information">{{ $ctrl.calculateTotalAmount() | decimalCurrency:$ctrl.state.creditItem.currencySymbol:0 }}</div>
+            <div ng-repeat="error in $ctrl.state.requests.saveCreditRefundItem.errors.amount" class="message message--error">{{ error }}</div>
         </div>
         <div class="form__group" ng-class="{'form--error': !!$ctrl.state.requests.saveCreditRefundItem.errors.comment}">
             <label class="form__label" for="comment-input">Custom Notes</label>

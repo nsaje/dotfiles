@@ -13,11 +13,13 @@ angular.module('one').component('zemAccountCreditRefundItemModal', {
         var $ctrl = this;
 
         $ctrl.$onInit = function() {
+            $ctrl.mediaAmount = 0;
             $ctrl.stateService = $ctrl.resolve.stateService;
             $ctrl.state = $ctrl.stateService.getState();
             $ctrl.openDatePicker = openDatePicker;
             $ctrl.saveCreditRefundItem = saveCreditRefundItem;
             $ctrl.discardCreditRefundItem = discardCreditRefundItem;
+            $ctrl.calculateTotalAmount = calculateTotalAmount;
 
             updateView();
         };
@@ -47,11 +49,18 @@ angular.module('one').component('zemAccountCreditRefundItemModal', {
 
         function saveCreditRefundItem() {
             if ($ctrl.state.requests.saveCreditRefundItem.inProgress) return;
-
+            $ctrl.state.creditRefundItem.amount = calculateTotalAmount();
             $ctrl.stateService.saveCreditRefundItem().then(function() {
                 $ctrl.saved = true;
                 closeModal();
             });
+        }
+
+        function calculateTotalAmount() {
+            var media = $ctrl.mediaAmount || 0,
+                fee = parseInt($ctrl.state.creditItem.licenseFee) / 100,
+                margin = ($ctrl.state.creditRefundItem.effectiveMargin || 0) / 100;
+            return Math.ceil((media / (1 - fee)) / (1 - margin));
         }
 
         function discardCreditRefundItem() {

@@ -5,6 +5,7 @@ class RefundLineItemValidatorMixin(object):
     def clean(self):
         self._validate_start_date()
         self._validate_amount()
+        self._validate_effective_margin()
 
     def _validate_start_date(self):
         is_valid = self.start_date >= self.credit.start_date.replace(day=1) and self.start_date <= self.credit.end_date
@@ -20,10 +21,14 @@ class RefundLineItemValidatorMixin(object):
             total_spend += budget.get_local_spend_data(start_date=self.start_date, end_date=self.end_date)["etfm_total"]
 
         if self.amount > total_spend:
-            raise exceptions.RefundAmountExceededTotalSpend("Refund amount exceeded total spend.")
+            raise exceptions.RefundAmountExceededTotalSpend("Total refunded amount exceeded total spend.")
 
         delta = self.amount - (self.previous_value("amount") or 0)
         if self.credit.get_available_amount() + delta < 0:
             raise exceptions.CreditAvailableAmountNegative(
-                "Refund amount change would cause the credit's available amount to be negative."
+                "Total refunded amount would cause the credit's available amount to be negative."
             )
+
+    def _validate_effective_margin(self):
+        if self.effective_margin and not (0 <= self.effective_margin < 1):
+            raise exceptions.EffectiveMarginAmountOutOfBounds("Effective margin must be between 0 and 100%.")

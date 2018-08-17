@@ -79,4 +79,7 @@ class AccountCreditRefundViewSet(RESTAPIBaseViewSet):
         except exceptions.CreditAvailableAmountNegative as err:
             raise utils.exc.ValidationError(errors={"amount": [str(err)]})
 
+        except exceptions.EffectiveMarginAmountOutOfBounds as err:
+            raise utils.exc.ValidationError(errors={"effective_margin": [str(err)]})
+
         return refund

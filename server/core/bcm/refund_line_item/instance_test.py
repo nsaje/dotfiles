@@ -32,7 +32,13 @@ class RefundLineItemInstanceMixinTest(TestCase):
         )
 
         refund = model.RefundLineItem.objects.create(
-            request, account=account, credit=credit, start_date=refund_start_date, amount=0, comment="test"
+            request,
+            account=account,
+            credit=credit,
+            start_date=refund_start_date,
+            amount=0,
+            comment="test",
+            effective_margin=Decimal("0.2"),
         )
         self.assertEqual(1, core.bcm.RefundHistory.objects.count())
 
@@ -42,6 +48,7 @@ class RefundLineItemInstanceMixinTest(TestCase):
             "credit": credit.id,
             "start_date": str(refund_start_date),
             "end_date": str(refund_end_date),
+            "effective_margin": "0.2",
             "amount": 0,
             "comment": "test",
             "created_by": request.user.id,
@@ -64,6 +71,7 @@ class RefundLineItemInstanceMixinTest(TestCase):
             "credit": credit.id,
             "start_date": str(refund_start_date),
             "end_date": str(refund_end_date),
+            "effective_margin": "0.2000",
             "amount": 0,
             "comment": "foo",
             "created_by": request.user.id,

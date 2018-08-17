@@ -3,6 +3,7 @@ import django.db.models
 from rest_framework import serializers
 
 import dash.models
+import dash.views.helpers
 from utils import validation_helper
 
 
@@ -161,3 +162,11 @@ class OutIntIdField(IdField):
         if isinstance(data, django.db.models.Model):
             return int(data.id)
         return int(data)
+
+
+class PercentToDecimalField(serializers.DecimalField):
+    def to_representation(self, value):
+        return dash.views.helpers.format_decimal_to_percent(value)
+
+    def to_internal_value(self, data):
+        return dash.views.helpers.format_percent_to_decimal(data)
