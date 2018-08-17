@@ -142,12 +142,27 @@ DEFAULT_STATS = set(
         "local_avg_cost_for_new_visitor",
         "avg_cost_per_visit",
         "local_avg_cost_per_visit",
-        "e_media_cost_refund",
-        "license_fee_refund",
-        "etfm_cost_refund",
-        "billing_cost_refund",
     ]
 )
+
+PLATFORM_SPEND_REFUND_FIELDS = ["e_media_cost_refund", "media_cost_refund", "et_cost_refund", "at_cost_refund"]
+
+LICENSE_FEE_REFUND_FIELDS = ["license_fee_refund"]
+
+MARGIN_REFUND_FIELDS = ["margin_refund"]
+
+AGENCY_SPEND_REFUND_FIELDS = ["etf_cost_refund", "billing_cost_refund"]
+
+TOTAL_SPEND_REFUND_FIELDS = ["etfm_cost_refund", "agency_cost_refund"]
+
+REFUND_FIELDS = set(
+    PLATFORM_SPEND_REFUND_FIELDS
+    + LICENSE_FEE_REFUND_FIELDS
+    + MARGIN_REFUND_FIELDS
+    + AGENCY_SPEND_REFUND_FIELDS
+    + TOTAL_SPEND_REFUND_FIELDS
+)
+
 
 HELPER_FIELDS = set(["campaign_has_available_budget", "status_per_source"])
 

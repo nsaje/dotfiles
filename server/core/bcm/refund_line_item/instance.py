@@ -34,6 +34,15 @@ class RefundLineItemInstanceMixin:
         )
         self._add_to_history(request.user if request else None)
 
+    def calculate_cost_splits(self, exchange_rate):
+        total_amount = self.amount * exchange_rate
+        media_amount = core.bcm.calculations.subtract_fee_and_margin(
+            total_amount, license_fee=self.credit.license_fee, margin=self.effective_margin
+        )
+        license_fee_amount = core.bcm.calculations.calculate_fee(media_amount, self.credit.license_fee)
+        margin_amount = core.bcm.calculations.calculate_margin(media_amount + license_fee_amount, self.effective_margin)
+        return media_amount, license_fee_amount, margin_amount
+
     def _add_to_history(self, user):
         changes = self.get_model_state_changes(model_to_dict(self))
 

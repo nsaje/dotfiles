@@ -216,14 +216,12 @@ class AccountsLoader(Loader):
     def refunds_map(self):
         refunds_map = {}
         for refund in self._refunds:
-            refunds_map.setdefault(
-                refund.account_id, {"billing_cost": 0, "etfm_cost": 0, "e_media_cost": 0, "license_fee": 0}
-            )
-            total_amount, media_amount, license_fee_amount = self._calculate_refund_splits(refund)
-            refunds_map[refund.account_id]["e_media_cost"] += media_amount
-            refunds_map[refund.account_id]["license_fee"] += license_fee_amount
-            refunds_map[refund.account_id]["billing_cost"] += total_amount
-            refunds_map[refund.account_id]["etfm_cost"] += total_amount
+            row = refunds_map.get(refund.account_id)
+            if not row:
+                row = collections.defaultdict(int)
+            refund_amounts = self._calculate_refund_splits(refund)
+            stats.helpers.update_with_refunds(row, refund_amounts)
+            refunds_map[refund.account_id] = dict(row)
         return refunds_map
 
     @cached_property
@@ -231,14 +229,11 @@ class AccountsLoader(Loader):
         if not self._refunds:
             return {}
 
-        totals = {"billing_cost": 0, "etfm_cost": 0, "e_media_cost": 0, "license_fee": 0}
+        totals = collections.defaultdict(int)
         for refund in self._refunds:
-            total_amount, media_amount, license_fee_amount = self._calculate_refund_splits(refund)
-            totals["e_media_cost"] += media_amount
-            totals["license_fee"] += license_fee_amount
-            totals["billing_cost"] += total_amount
-            totals["etfm_cost"] += total_amount
-        return totals
+            refund_amounts = self._calculate_refund_splits(refund)
+            stats.helpers.update_with_refunds(totals, refund_amounts)
+        return dict(totals)
 
     @cached_property
     def _refunds(self):
@@ -250,12 +245,7 @@ class AccountsLoader(Loader):
 
     def _calculate_refund_splits(self, refund):
         currency_exchange_rate = self._refund_exchange_rate(refund)
-        total_amount = refund.amount * currency_exchange_rate
-        media_amount = core.bcm.calculations.subtract_fee_and_margin(
-            total_amount, license_fee=refund.credit.license_fee, margin=0  # doesn't apply on account level
-        )
-        license_fee_amount = core.bcm.calculations.calculate_fee(media_amount, refund.credit.license_fee)
-        return total_amount, media_amount, license_fee_amount
+        return refund.calculate_cost_splits(currency_exchange_rate)
 
     def _refund_exchange_rate(self, refund):
         view_currency = stats.helpers.get_report_currency(self.user, [account for account in self.objs_map.values()])
@@ -358,16 +348,12 @@ class CampaignsLoader(Loader):
         if not self._refunds:
             return {}
 
-        totals = {"billing_cost": 0, "etfm_cost": 0, "e_media_cost": 0, "license_fee": 0}
-
+        totals = collections.defaultdict(int)
         for refund in self._refunds:
-            total_amount, media_amount, license_fee_amount = self._calculate_refund_splits(refund)
-            totals["e_media_cost"] += media_amount
-            totals["license_fee"] += license_fee_amount
-            totals["billing_cost"] += total_amount
-            totals["etfm_cost"] += total_amount
+            refund_amounts = self._calculate_refund_splits(refund)
+            stats.helpers.update_with_refunds(totals, refund_amounts)
 
-        return totals
+        return dict(totals)
 
     @cached_property
     def _refunds(self):
@@ -378,12 +364,8 @@ class CampaignsLoader(Loader):
         ).select_related("credit")
 
     def _calculate_refund_splits(self, refund):
-        total_amount = refund.amount
-        media_amount = core.bcm.calculations.subtract_fee_and_margin(
-            total_amount, license_fee=refund.credit.license_fee, margin=0  # doesn't apply on account level
-        )
-        license_fee_amount = core.bcm.calculations.calculate_fee(media_amount, refund.credit.license_fee)
-        return total_amount, media_amount, license_fee_amount
+        currency_exchange_rate = 1  # campaign view always displays local currency
+        return refund.calculate_cost_splits(currency_exchange_rate)
 
 
 class AdGroupsLoader(Loader):

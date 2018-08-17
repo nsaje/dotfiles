@@ -58,9 +58,10 @@ angular.module('one').component('zemAccountCreditRefundItemModal', {
 
         function calculateTotalAmount() {
             var media = $ctrl.mediaAmount || 0,
-                fee = parseInt($ctrl.state.creditItem.licenseFee) / 100,
-                margin = ($ctrl.state.creditRefundItem.effectiveMargin || 0) / 100;
-            return Math.ceil((media / (1 - fee)) / (1 - margin));
+                fee = parseFloat($ctrl.state.creditItem.licenseFee) / 100,
+                margin =
+                    ($ctrl.state.creditRefundItem.effectiveMargin || 0) / 100;
+            return Math.ceil(media / (1 - fee) / (1 - margin));
         }
 
         function discardCreditRefundItem() {

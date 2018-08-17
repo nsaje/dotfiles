@@ -106,14 +106,7 @@ def augment_account(row, loader, is_base_level=False):
         )
 
     if refunds:
-        row.update(
-            {
-                "e_media_cost_refund": refunds["e_media_cost"],
-                "license_fee_refund": refunds["license_fee"],
-                "billing_cost_refund": refunds["billing_cost"],
-                "etfm_cost_refund": refunds["etfm_cost"],
-            }
-        )
+        row.update(refunds)
 
 
 def augment_account_for_report(row, loader, is_base_level=False):
@@ -159,14 +152,7 @@ def augment_campaign(row, loader, is_base_level=False):
         )
 
     if refunds:
-        row.update(
-            {
-                "e_media_cost_refund": refunds["e_media_cost"],
-                "license_fee_refund": refunds["license_fee"],
-                "billing_cost_refund": refunds["billing_cost"],
-                "etfm_cost_refund": refunds["etfm_cost"],
-            }
-        )
+        row.update(refunds)
 
 
 def augment_campaign_for_report(row, loader, is_base_level=False):

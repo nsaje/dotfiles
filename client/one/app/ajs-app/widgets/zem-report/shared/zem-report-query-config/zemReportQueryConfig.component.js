@@ -17,11 +17,7 @@ angular.module('one.widgets').component('zemReportQueryConfig', {
 
         var NR_SHORTLIST_ITEMS = 9;
         var SHORTLIST_LIMIT = 15;
-        var refundColumns = [
-            'Media Spend Refund',
-            'License Fee Refund',
-            'Total Spend Refund',
-        ];
+        var refundColumns = [];
 
         //
         // Public API
@@ -93,8 +89,20 @@ angular.module('one.widgets').component('zemReportQueryConfig', {
                 $ctrl.showAllAccountsCreditRefunds = true;
             }
 
+            refundColumns = getRefundColumns();
             update();
         };
+
+        function getRefundColumns() {
+            return $ctrl.gridApi
+                .getColumns()
+                .filter(function(column) {
+                    return column.data.isRefund;
+                })
+                .map(function(column) {
+                    return column.data.name;
+                });
+        }
 
         function addBreakdown(breakdown) {
             $ctrl.breakdown.push(breakdown);
@@ -146,12 +154,6 @@ angular.module('one.widgets').component('zemReportQueryConfig', {
             var selectedFields = $ctrl.selectedColumns;
             var unSelectedFields = $ctrl.unselectedColumns;
 
-            if ($ctrl.config.allAccountsIncludeCreditRefunds) {
-                includeRefundColumns(selectedFields);
-            } else {
-                removeRefundColumns(selectedFields);
-            }
-
             var mergedFields = defaultFields
                 .filter(function(field) {
                     return unSelectedFields.indexOf(field) === -1;
@@ -159,7 +161,9 @@ angular.module('one.widgets').component('zemReportQueryConfig', {
                 .concat(selectedFields)
                 .filter(onlyUnique);
 
+            handleRefunds(mergedFields);
             $ctrl.config.selectedFields = mergedFields;
+
             $ctrl.showAllSelectedFields();
 
             if (
@@ -186,20 +190,35 @@ angular.module('one.widgets').component('zemReportQueryConfig', {
             );
         }
 
-        function includeRefundColumns(selectedFields) {
-            refundColumns.forEach(function(col) {
-                var ix = selectedFields.indexOf(col);
-                if (ix === -1) {
-                    selectedFields.push(col);
-                }
-            });
+        function handleRefunds(fields) {
+            if ($ctrl.config.allAccountsIncludeCreditRefunds) {
+                includeRefundColumns(fields);
+            } else {
+                removeRefundColumns(fields);
+            }
         }
 
-        function removeRefundColumns(selectedFields) {
+        function includeRefundColumns(fields) {
+            refundColumns
+                .filter(function(col) {
+                    var costCol = col.replace(/ Refund$/, '');
+                    return fields.indexOf(costCol) >= 0;
+                })
+                .forEach(function(col) {
+                    var colIndex = fields.indexOf(col);
+                    if (colIndex === -1) {
+                        var costCol = col.replace(/ Refund$/, '');
+                        var costColIndex = fields.indexOf(costCol);
+                        fields.splice(costColIndex + 1, 0, col);
+                    }
+                });
+        }
+
+        function removeRefundColumns(fields) {
             refundColumns.forEach(function(col) {
-                var ix = selectedFields.indexOf(col);
-                if (ix > -1) {
-                    selectedFields.splice(ix, 1);
+                var colIndex = fields.indexOf(col);
+                if (colIndex > -1) {
+                    fields.splice(colIndex, 1);
                 }
             });
         }

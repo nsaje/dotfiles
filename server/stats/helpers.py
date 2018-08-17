@@ -344,6 +344,20 @@ def _strip_local_values_from_rows(rows):
                 row.pop(key, None)
 
 
+def update_with_refunds(row, refunds):
+    media_amount, license_fee_amount, margin_amount = refunds
+    for field in fields.PLATFORM_SPEND_REFUND_FIELDS:
+        row[field] += media_amount
+    for field in fields.LICENSE_FEE_REFUND_FIELDS:
+        row[field] += license_fee_amount
+    for field in fields.MARGIN_REFUND_FIELDS:
+        row[field] += margin_amount
+    for field in fields.AGENCY_SPEND_REFUND_FIELDS:
+        row[field] += media_amount + license_fee_amount
+    for field in fields.TOTAL_SPEND_REFUND_FIELDS:
+        row[field] += media_amount + license_fee_amount + margin_amount
+
+
 def should_query_dashapi_first(order, target_dimension):
 
     if target_dimension == "publisher_id":

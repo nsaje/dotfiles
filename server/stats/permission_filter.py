@@ -154,10 +154,6 @@ FIELD_PERMISSION_MAPPING = {
     "performance": ("zemauth.campaign_goal_performance",),
     "etfm_performance": ("zemauth.campaign_goal_performance", "zemauth.can_view_end_user_cost_breakdown"),
     "styles": ("zemauth.campaign_goal_performance",),
-    "e_media_cost_refund": ("zemauth.can_see_credit_refunds",),
-    "license_fee_refund": ("zemauth.can_see_credit_refunds",),
-    "etfm_cost_refund": ("zemauth.can_see_credit_refunds",),
-    "billing_cost_refund": ("zemauth.can_see_credit_refunds",),
     "bid_modifier": ("zemauth.can_use_publisher_bid_modifiers_in_ui",),
 }
 
@@ -179,6 +175,9 @@ def _get_fields_to_keep(user, goals, uses_bcm_v2):
         "zemauth.aggregate_postclick_acquisition"
     ):
         fields_to_keep |= fields.POSTCLICK_ACQUISITION_FIELDS
+
+    if user.has_perm("zemauth.can_see_credit_refunds"):
+        fields_to_keep |= fields.REFUND_FIELDS
 
     if user.has_perm("zemauth.aggregate_postclick_engagement"):
         fields_to_keep |= fields.POSTCLICK_ENGAGEMENT_FIELDS
