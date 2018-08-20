@@ -2883,7 +2883,7 @@ Examples:
 
 - `categoryId`: `671901` (number)
 - `name`: `Parent category name` (string)
-- `desctiption`: `Parent category description` (string)
+- `description`: `Parent category description` (string)
 - `navigationOnly`: `false` (boolean)
 - `price`: `1.0` (string)
 - `reach`: 1000000000 (number)
@@ -2893,7 +2893,7 @@ Examples:
 
 - `categoryId`: `671902` (number)
 - `name`: `Child category name` (string)
-- `desctiption`: `Child category description` (string)
+- `description`: `Child category description` (string)
 - `navigationOnly`: `false` (boolean)
 - `price`: `1.20` (string)
 - `reach`: 1000000000 (number)
