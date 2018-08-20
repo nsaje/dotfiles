@@ -362,6 +362,7 @@ name      | string                | the name of the campaign                   |
 iabCategory | [IAB category](#iab-categories) | IAB category of the campaign   | optional | optional
 language  | [Language](#languages) | Language of the ads in the campaign       | optional | read only
 archived  | bool                  | Is the Campaign archived? Set to `true` to archive a Campaign and to `false` to restore it. | optional | optional
+autopilot | bool                  | Autopilot Budget optimization. [Read more](http://www.zemanta.com/blog/new-way-achieve-stronger-campaign-performance/). | optional | optional
 tracking  | [tracking](#tracking) | tracking settings                          | optional | optional
 targeting    | [targeting](#campaign-targeting)   | campaign targeting settings                                                                                                               | optional | optional
 

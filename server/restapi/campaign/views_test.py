@@ -4,6 +4,7 @@ from restapi.common.views_base_test import RESTAPITest
 from django.core.urlresolvers import reverse
 
 import restapi.serializers
+from automation import autopilot
 import dash.models
 from dash import constants
 from utils.magic_mixer import magic_mixer
@@ -16,6 +17,7 @@ class CampaignsTest(RESTAPITest):
         id=123,
         account_id=321,
         archived=False,
+        autopilot=False,
         iab_category=constants.IABCategory.IAB1_1,
         language=constants.Language.ENGLISH,
         name="My Campaign TEST",
@@ -34,6 +36,7 @@ class CampaignsTest(RESTAPITest):
             "id": str(id),
             "accountId": str(account_id),
             "archived": archived,
+            "autopilot": autopilot,
             "iabCategory": constants.IABCategory.get_name(iab_category),
             "language": constants.Language.get_name(language),
             "name": name,
@@ -61,6 +64,7 @@ class CampaignsTest(RESTAPITest):
             id=campaign_db.id,
             account_id=campaign_db.account_id,
             archived=settings_db.archived,
+            autopilot=settings_db.autopilot,
             iab_category=settings_db.iab_category,
             language=settings_db.language,
             name=settings_db.name,
@@ -98,6 +102,15 @@ class CampaignsTest(RESTAPITest):
         resp_json = self.assertResponseValid(r)
         self.validate_against_db(resp_json["data"])
         self.assertEqual(settings_count, dash.models.CampaignSettings.objects.filter(campaign_id=608).count())
+
+    @mock.patch.object(autopilot, "recalculate_budgets_campaign", autospec=True)
+    def test_campaigns_put_autopilot(self, mock_autopilot):
+        r = self.client.put(
+            reverse("campaigns_details", kwargs={"campaign_id": 608}), data={"autopilot": True}, format="json"
+        )
+        resp_json = self.assertResponseValid(r)
+        self.validate_against_db(resp_json["data"])
+        self.assertEqual(resp_json["data"]["autopilot"], True)
 
     def test_campaigns_put_archive_restore(self):
         r = self.client.put(
