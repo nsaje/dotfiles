@@ -505,24 +505,6 @@ class DailyStatementsK1TestCase(TestCase):
         self.assertEqual(0, statements[12].data_spend_nano)
         self.assertEqual(250000000000, statements[12].license_fee_nano)
 
-    def test_max_dates_till_today(self, mock_campaign_with_spend, mock_ad_group_stats, mock_datetime):
-        # check that there's no endless loop when update_from is less than all budget start dates
-        return_values = {}
-        _configure_ad_group_stats_mock(mock_ad_group_stats, return_values)
-        _configure_datetime_utcnow_mock(mock_datetime, datetime.datetime(2015, 10, 31, 12))
-
-        self.assertTrue(
-            datetime.date(2015, 11, 1), min(budget.start_date for budget in dash.models.BudgetLineItem.objects.all())
-        )
-
-        update_from = datetime.date(2015, 10, 31)
-        campaigns = dash.models.Campaign.objects.filter(pk=self.campaign1.id).annotate(
-            max_budget_end_date=Max("budgets__end_date")
-        )
-        first_unprocessed_dates = daily_statements._get_first_unprocessed_dates(campaigns, update_from)
-        dates = daily_statements._get_dates(update_from, campaigns[0], first_unprocessed_dates.get(self.campaign1.id))
-        self.assertCountEqual([update_from], dates)
-
     @patch("etl.daily_statements_k1._generate_statements")
     def test_daily_statements_already_exist(
         self, mock_generate_statements, mock_campaign_with_spend, mock_ad_group_stats, mock_datetime
@@ -548,9 +530,8 @@ class DailyStatementsK1TestCase(TestCase):
         update_from = datetime.date(2015, 11, 30)
 
         campaigns = campaigns.annotate(max_budget_end_date=Max("budgets__end_date"))
-        first_unprocessed_dates = daily_statements._get_first_unprocessed_dates(campaigns, update_from)
         for campaign in campaigns:
-            dates = daily_statements._get_dates(update_from, campaign, first_unprocessed_dates.get(campaign.id))
+            dates = daily_statements._get_dates(update_from, campaign)
             self.assertCountEqual([datetime.date(2015, 11, 30)], dates)
 
         daily_statements.reprocess_daily_statements(update_from, account_id=1)
@@ -713,4 +694,59 @@ class GetCampaignsWithSpendTest(TestCase):
                 "date_from": "2016-11-01",
                 "date_to": "2016-11-15",
             }
+        )
+
+
+class GetCampaignsWithBudgetsInTimeframe(TestCase):
+    def setUp(self):
+        self.date_since = datetime.date(2018, 2, 25)
+        self.mock_today = datetime.date(2018, 3, 1)
+        self.account = magic_mixer.blend(core.entity.Account)
+        self.credit = magic_mixer.blend(
+            core.bcm.CreditLineItem,
+            account=self.account,
+            start_date=self.date_since - datetime.timedelta(days=5),
+            end_date=self.mock_today + datetime.timedelta(days=5),
+            status=dash.constants.CreditLineItemStatus.SIGNED,
+            amount=500,
+        )
+
+    def _create_budget(self, start_date, end_date):
+        return magic_mixer.blend(
+            core.bcm.BudgetLineItem,
+            credit=self.credit,
+            campaign__account=self.account,
+            amount=10,
+            start_date=start_date,
+            end_date=end_date,
+        )
+
+    @patch("utils.dates_helper.local_today")
+    def test_get_campaigns_with_spend(self, mock_today):
+        mock_today.return_value = self.mock_today
+
+        budget_inside = self._create_budget(
+            start_date=self.date_since + datetime.timedelta(days=1),
+            end_date=self.mock_today - datetime.timedelta(days=1),
+        )
+        budget_end_inside = self._create_budget(
+            start_date=self.date_since - datetime.timedelta(days=1),
+            end_date=self.mock_today - datetime.timedelta(days=1),
+        )
+        budget_start_inside = self._create_budget(
+            start_date=self.date_since + datetime.timedelta(days=1),
+            end_date=self.mock_today + datetime.timedelta(days=1),
+        )
+        self._create_budget(  # budget outside before
+            start_date=self.date_since - datetime.timedelta(days=5),
+            end_date=self.date_since - datetime.timedelta(days=4),
+        )
+        self._create_budget(  # budget outside after
+            start_date=self.mock_today + datetime.timedelta(days=4),
+            end_date=self.mock_today + datetime.timedelta(days=5),
+        )
+
+        campaigns = daily_statements.get_campaigns_with_budgets_in_timeframe(self.date_since)
+        self.assertEqual(
+            set(campaigns), set([budget_inside.campaign, budget_end_inside.campaign, budget_start_inside.campaign])
         )

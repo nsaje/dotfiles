@@ -7,7 +7,7 @@ import logging
 from dateutil import rrule
 from django.db import transaction
 from django.db.models import Sum, Max
-from django.db import connection, connections
+from django.db import connections
 from django.conf import settings
 
 import dash.models
@@ -170,44 +170,11 @@ def _handle_overspend(date, campaign, media_nano, data_nano):
     )
 
 
-def _get_first_unprocessed_dates(campaigns, date_since):
-    campaign_ids = [campaign.id for campaign in campaigns]
-    # for each budget associate daily statement for each date from start to end
-    # return first date for which daily statement does not exist for each campaign
-    query = """
-        SELECT
-            campaign_id, MIN(b.date)
-        FROM (
-            SELECT
-                id, campaign_id,
-                generate_series(start_date, end_date, '1 day'::interval) date
-            FROM dash_budgetlineitem
-            WHERE campaign_id = ANY(%s)
-        ) b
-        LEFT OUTER JOIN dash_budgetdailystatement s
-        ON s.budget_id=b.id AND b.date=s.date
-        WHERE s.id IS NULL
-        GROUP BY campaign_id
-    """
-    data = {}
-    with connection.cursor() as c:
-        c.execute(query, [campaign_ids])
-
-        for campaign_id, first_unprocessed_date in c:
-            data[campaign_id] = max(
-                first_unprocessed_date.date(), date_since
-            )  # HACK(nsaje): prevent materializations reprocessing large intervals temporarily
-    return data
-
-
-def _get_dates(date_since, campaign, first_unprocessed_date):
+def _get_dates(from_date, campaign):
     if campaign.max_budget_end_date is None:
         return []
 
     today = dates_helper.local_today()
-    # start processing from requested date or sooner if unprocessed
-    from_date = min(date_since, first_unprocessed_date) if first_unprocessed_date else date_since
-    # finish processing when last campaign budget ends or today
     to_date = min(campaign.max_budget_end_date, today)
 
     return [dt.date() for dt in rrule.rrule(rrule.DAILY, dtstart=from_date, until=to_date)]
@@ -344,6 +311,11 @@ def get_campaigns_with_spend(date_since):
     return dash.models.Campaign.objects.filter(pk__in=campaign_ids)
 
 
+def get_campaigns_with_budgets_in_timeframe(date_since):
+    today = dates_helper.local_today()
+    return dash.models.Campaign.objects.filter(budgets__start_date__lte=today, budgets__end_date__gte=date_since)
+
+
 def _query_ad_groups_with_spend(params):
     sql = backtosql.generate_sql("etl_ad_groups_with_spend.sql", None)
 
@@ -369,7 +341,8 @@ def reprocess_daily_statements(date_since, account_id=None):
 
     campaigns = dash.models.Campaign.objects.prefetch_related("adgroup_set").all().exclude_archived(bool(account_id))
 
-    # get campaigns that have spend in the time frame we're reprocessing
+    # Get campaigns that have spend in the time frame we're reprocessing. This is necessary because some campaigns might
+    # already be archived.
     campaigns_w_spend = get_campaigns_with_spend(date_since)
 
     logger.info(
@@ -377,19 +350,30 @@ def reprocess_daily_statements(date_since, account_id=None):
         set(campaigns_w_spend.values_list("pk", flat=True)) - set(campaigns.values_list("pk", flat=True)),
     )
 
+    # Get campaigns that have budget start & end dates in the time frame we're reprocessing.
+    # This is done so that all budgets have daily statements for every day between start&end date, even if they're already
+    # depleted.
+    campaigns_w_budgets_in_timeframe = get_campaigns_with_budgets_in_timeframe(date_since)
+
+    logger.info(
+        "Additional campaigns with budgets in this timeframe %s",
+        set(campaigns_w_budgets_in_timeframe.values_list("pk", flat=True))
+        - set(campaigns.values_list("pk", flat=True)),
+    )
+
     campaigns |= campaigns_w_spend
+    campaigns |= campaigns_w_budgets_in_timeframe
 
     if account_id:
         campaigns = campaigns.filter(account_id=account_id)
 
     campaigns = campaigns.annotate(max_budget_end_date=Max("budgets__end_date"))
-    first_unprocessed_dates = _get_first_unprocessed_dates(campaigns, date_since)
 
     for campaign in campaigns:
         # extracts dates where we have budgets but are not linked to daily statements
 
         # get dates for a single campaign
-        dates = _get_dates(date_since, campaign, first_unprocessed_dates.get(campaign.id))
+        dates = _get_dates(date_since, campaign)
         for date in dates:
             all_dates.add(date)
             if date not in total_spend:
