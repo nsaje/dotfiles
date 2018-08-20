@@ -60,7 +60,7 @@ INSERT INTO mv_master_pubs(
         SUM(local_license_fee_nano) as local_license_fee_nano,
         SUM(local_margin_nano) as local_margin_nano
     FROM mv_master
-    WHERE date BETWEEN %(date_from)s AND %(date_to)s AND publisher IS NOT NULL AND publisher <> '' AND source_id <> 3
+    WHERE date BETWEEN %(date_from)s AND %(date_to)s AND publisher IS NOT NULL AND source_id <> 3
           {% if account_id %}
               AND account_id=%(account_id)s
           {% endif %}
