@@ -489,6 +489,7 @@ angular
                 initialOrder: zemGridConstants.gridColumnOrder.DESC,
                 internal: 'zemauth.can_view_actual_costs',
                 shown: 'zemauth.can_view_actual_costs',
+                supportsRefunds: true,
             },
             eMediaCost: {
                 name: 'Media Spend',
@@ -500,6 +501,7 @@ angular
                 initialOrder: zemGridConstants.gridColumnOrder.DESC,
                 internal: 'zemauth.can_view_platform_cost_breakdown',
                 shown: 'zemauth.can_view_platform_cost_breakdown',
+                supportsRefunds: true,
             },
             dataCost: {
                 name: 'Actual Data Cost',
@@ -534,6 +536,7 @@ angular
                 initialOrder: zemGridConstants.gridColumnOrder.DESC,
                 internal: 'zemauth.can_view_platform_cost_breakdown',
                 shown: 'zemauth.can_view_platform_cost_breakdown',
+                supportsRefunds: true,
             },
             flatFee: {
                 name: 'Recognized Flat Fee',
@@ -575,6 +578,7 @@ angular
                 initialOrder: zemGridConstants.gridColumnOrder.DESC,
                 internal: 'zemauth.can_view_agency_margin',
                 shown: 'zemauth.can_view_agency_margin',
+                supportsRefunds: true,
             },
             etfmCost: {
                 name: 'Total Spend',
@@ -587,6 +591,7 @@ angular
                 internal: 'zemauth.can_view_end_user_cost_breakdown',
                 shown: 'zemauth.can_view_end_user_cost_breakdown',
                 costMode: constants.costMode.ANY,
+                supportsRefunds: true,
             },
             etfCost: {
                 name: 'Agency Spend',
@@ -599,6 +604,7 @@ angular
                 internal: 'zemauth.can_view_agency_cost_breakdown',
                 shown: 'zemauth.can_view_agency_cost_breakdown',
                 costMode: constants.costMode.ANY,
+                supportsRefunds: true,
             },
             etCost: {
                 name: 'Platform Spend',
@@ -611,6 +617,7 @@ angular
                 internal: 'zemauth.can_view_platform_cost_breakdown_derived',
                 shown: 'zemauth.can_view_platform_cost_breakdown_derived',
                 costMode: constants.costMode.ANY,
+                supportsRefunds: true,
             },
             atCost: {
                 name: 'Actual Platform Spend',
@@ -626,6 +633,7 @@ angular
                     'zemauth.can_view_platform_cost_breakdown_derived',
                 ],
                 costMode: constants.costMode.ANY,
+                supportsRefunds: true,
             },
             billingCost: {
                 name: 'Total Spend',
@@ -638,6 +646,7 @@ angular
                 internal: false,
                 shown: true,
                 costMode: constants.costMode.LEGACY,
+                supportsRefunds: true,
             },
             agencyCost: {
                 name: 'Total Spend + Margin',
@@ -651,6 +660,7 @@ angular
                 internal: 'zemauth.can_view_agency_margin',
                 shown: 'zemauth.can_view_agency_margin',
                 costMode: constants.costMode.LEGACY,
+                supportsRefunds: true,
             },
             cpc: {
                 name: 'Avg. CPC',
@@ -749,54 +759,6 @@ angular
                 internal: 'zemauth.can_view_end_user_cost_breakdown',
                 costMode: constants.costMode.PUBLIC,
                 fieldGroup: 'cpm',
-            },
-
-            // Refunds
-            eMediaCostRefund: {
-                name: 'Media Spend Refund',
-                field: 'e_media_cost_refund',
-                type: zemGridConstants.gridColumnTypes.CURRENCY,
-                totalRow: true,
-                help: 'Refunded amount of media spend.',
-                order: true,
-                initialOrder: zemGridConstants.gridColumnOrder.DESC,
-                internal: 'zemauth.can_see_credit_refunds',
-                shown: false,
-            },
-            licenseFeeRefund: {
-                name: 'License Fee Refund',
-                field: 'license_fee_refund',
-                type: zemGridConstants.gridColumnTypes.CURRENCY,
-                totalRow: true,
-                help: 'Zemanta One platform usage cost.',
-                order: true,
-                initialOrder: zemGridConstants.gridColumnOrder.DESC,
-                internal: 'zemauth.can_see_credit_refunds',
-                shown: false,
-            },
-            billingCostRefund: {
-                name: 'Total Spend Refund',
-                field: 'billing_cost_refund',
-                type: zemGridConstants.gridColumnTypes.CURRENCY,
-                totalRow: true,
-                help: 'Refunded amount of total spend.',
-                order: true,
-                initialOrder: zemGridConstants.gridColumnOrder.DESC,
-                internal: 'zemauth.can_see_credit_refunds',
-                shown: false,
-                costMode: constants.costMode.LEGACY,
-            },
-            etfmCostRefund: {
-                name: 'Total Spend Refund',
-                field: 'etfm_cost_refund',
-                type: zemGridConstants.gridColumnTypes.CURRENCY,
-                totalRow: true,
-                help: 'Refunded amount of total spend.',
-                order: true,
-                initialOrder: zemGridConstants.gridColumnOrder.DESC,
-                internal: 'zemauth.can_see_credit_refunds',
-                shown: false,
-                costMode: constants.costMode.ANY,
             },
 
             // Yesterday cost metrics
@@ -1792,10 +1754,6 @@ angular
             COLUMNS.etCost,
             COLUMNS.etfCost,
             COLUMNS.etfmCost,
-            COLUMNS.eMediaCostRefund,
-            COLUMNS.licenseFeeRefund,
-            COLUMNS.etfmCostRefund,
-            COLUMNS.billingCostRefund,
         ];
 
         var PROJECTIONS_GROUP = [
@@ -2285,16 +2243,40 @@ angular
         function createColumns(level, breakdowns) {
             // Create columns definitions array based on base level and breakdown
             var columns = angular.copy(getColumns(level, breakdowns));
+            addRefundColumns(columns);
             adjustOrder(columns, breakdowns);
             checkPermissions(columns);
             brandColumns(columns, breakdowns[0]);
             return columns;
         }
 
+        function addRefundColumns(columns) {
+            for (var i = columns.length - 1; i >= 0; i--) {
+                var column = columns[i];
+                if (column.supportsRefunds) {
+                    var refundColumn = {
+                        name: column.name + ' Refund',
+                        field: column.field + '_refund',
+                        type: column.type,
+                        totalRow: column.totalRow,
+                        order: false,
+                        internal: 'zemauth.can_see_credit_refunds',
+                        shown: false,
+                        costMode: column.costMode,
+                        isRefund: true,
+                    };
+                    columns.splice(i + 1, 0, refundColumn);
+                }
+            }
+        }
+
         function createCategories() {
             return CATEGORIES.map(function(category) {
-                var fields = category.columns.map(function(column) {
-                    return column.field;
+                var fields = [];
+                category.columns.forEach(function(column) {
+                    fields.push(column.field);
+                    if (column.supportsRefunds)
+                        fields.push(column.field + '_refund');
                 });
                 var ret = {
                     name: category.name,
