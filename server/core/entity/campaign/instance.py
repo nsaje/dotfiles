@@ -96,7 +96,8 @@ class CampaignInstanceMixin:
 
     def get_all_custom_flags(self):
         custom_flags = self.account.get_all_custom_flags()
-        custom_flags.update(self.custom_flags or {})
+        if self.custom_flags:
+            custom_flags.update({k: v for k, v in self.custom_flags.items() if v})
         return custom_flags
 
     def set_real_time_campaign_stop(self, request=None, is_enabled=False):
