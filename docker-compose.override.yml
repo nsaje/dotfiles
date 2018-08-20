@@ -31,6 +31,10 @@ services:
     server:
         restart: always        
         image: $Z1_SERVER_IMAGE
+        networks:
+          default:
+            aliases:
+              - eins
         ports:
           - "8000:8000"
         links:
