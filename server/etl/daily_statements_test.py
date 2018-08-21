@@ -1,6 +1,6 @@
 import datetime
 from decimal import Decimal
-from mock import patch
+from mock import patch, ANY
 
 from django.test import TestCase
 from django.db.models import Max
@@ -10,7 +10,7 @@ import core.entity
 import core.multicurrency
 import dash.models
 import dash.constants
-from etl import daily_statements_k1 as daily_statements
+from etl import daily_statements
 from utils import converters
 from utils import test_helper
 from utils.magic_mixer import magic_mixer
@@ -64,8 +64,8 @@ class MultiCurrencyTestCase(TestCase):
         )
 
     @patch("utils.dates_helper.datetime")
-    @patch("etl.daily_statements_k1._get_campaign_spend")
-    @patch("etl.daily_statements_k1.get_campaigns_with_spend", return_value=dash.models.Campaign.objects.none())
+    @patch("etl.daily_statements._get_campaign_spend")
+    @patch("etl.daily_statements.get_campaigns_with_spend", return_value=dash.models.Campaign.objects.none())
     def test_non_usd_currency(self, mock_campaign_with_spend, mock_ad_group_stats, mock_datetime):
         return_values = {self.mock_today: {self.campaign.id: {"media_nano": 350 * 10 ** 9, "data_nano": 150 * 10 ** 9}}}
         _configure_ad_group_stats_mock(mock_ad_group_stats, return_values)
@@ -107,8 +107,8 @@ class MultiCurrencyTestCase(TestCase):
     # FIXME (multicurrency): Fix the following test so that error "Cannot allocate budget from a credit in currency
     # different from account's currency." is not raised.
     # @patch('utils.dates_helper.datetime')
-    # @patch('etl.daily_statements_k1._get_campaign_spend')
-    # @patch('etl.daily_statements_k1.get_campaigns_with_spend', return_value=dash.models.Campaign.objects.none())
+    # @patch('etl.daily_statements._get_campaign_spend')
+    # @patch('etl.daily_statements.get_campaigns_with_spend', return_value=dash.models.Campaign.objects.none())
     # def test_mixed_currencies(self, mock_campaign_with_spend, mock_ad_group_stats, mock_datetime):
     #     media_nano = 350
     #     data_nano = 150
@@ -181,8 +181,8 @@ class MultiCurrencyTestCase(TestCase):
 
 
 @patch("utils.dates_helper.datetime")
-@patch("etl.daily_statements_k1._get_campaign_spend")
-@patch("etl.daily_statements_k1.get_campaigns_with_spend", return_value=dash.models.Campaign.objects.none())
+@patch("etl.daily_statements._get_campaign_spend")
+@patch("etl.daily_statements.get_campaigns_with_spend", return_value=dash.models.Campaign.objects.none())
 class DailyStatementsK1TestCase(TestCase):
 
     fixtures = ["test_daily_statements.yaml"]
@@ -505,7 +505,7 @@ class DailyStatementsK1TestCase(TestCase):
         self.assertEqual(0, statements[12].data_spend_nano)
         self.assertEqual(250000000000, statements[12].license_fee_nano)
 
-    @patch("etl.daily_statements_k1._generate_statements")
+    @patch("etl.daily_statements._generate_statements")
     def test_daily_statements_already_exist(
         self, mock_generate_statements, mock_campaign_with_spend, mock_ad_group_stats, mock_datetime
     ):
@@ -542,10 +542,12 @@ class EffectiveSpendPctsK1TestCase(TestCase):
 
     fixtures = ["test_api_contentads.yaml"]
 
-    def test_spend(self):
+    @patch("utils.dates_helper.local_today")
+    def test_spend(self, mock_today):
         campaign = dash.models.Campaign.objects.get(id=1)
         budget = dash.models.BudgetLineItem.objects.get(id=1)
         date = datetime.date(2015, 2, 1)
+        mock_today.return_value = date
 
         campaign_spend = {"media_nano": 40 * converters.CURRENCY_TO_NANO, "data_nano": 40 * converters.CURRENCY_TO_NANO}
         total_spend = {date: {campaign.id: campaign_spend}}
@@ -558,27 +560,31 @@ class EffectiveSpendPctsK1TestCase(TestCase):
             margin_nano=24 * converters.CURRENCY_TO_NANO,
         )
 
-        effective_spend = daily_statements._get_effective_spend(None, [date], total_spend)
+        effective_spend = daily_statements.get_effective_spend(total_spend, date, None)
         pct_actual_spend, pct_license_fee, pct_margin = effective_spend[date][campaign]
 
         self.assertEqual(Decimal("1"), pct_actual_spend)
         self.assertEqual(Decimal("0.2"), pct_license_fee)
         self.assertEqual(Decimal("0.25"), pct_margin)
 
-    def test_campaign_spend_none(self):
+    @patch("utils.dates_helper.local_today")
+    def test_campaign_spend_none(self, mock_today):
         campaign = dash.models.Campaign.objects.get(id=1)
         date = datetime.date(2015, 2, 1)
+        mock_today.return_value = date
 
         campaign_spend = None
         total_spend = {date: {campaign.id: campaign_spend}}
-        effective_spend = daily_statements._get_effective_spend(None, [date], total_spend)
+        effective_spend = daily_statements.get_effective_spend(total_spend, date, None)
 
         self.assertEqual(effective_spend[date][campaign], (0, 0, 0))
 
-    def test_overspend_pcts(self):
+    @patch("utils.dates_helper.local_today")
+    def test_overspend_pcts(self, mock_today):
         campaign = dash.models.Campaign.objects.get(id=1)
         budget = dash.models.BudgetLineItem.objects.get(id=1)
         date = datetime.date(2015, 2, 1)
+        mock_today.return_value = date
 
         campaign_spend = {"media_nano": 40 * converters.CURRENCY_TO_NANO, "data_nano": 40 * converters.CURRENCY_TO_NANO}
         total_spend = {date: {campaign.id: campaign_spend}}
@@ -596,17 +602,19 @@ class EffectiveSpendPctsK1TestCase(TestCase):
             margin_nano=0,
         )
 
-        effective_spend = daily_statements._get_effective_spend(None, [date], total_spend)
+        effective_spend = daily_statements.get_effective_spend(total_spend, date, None)
         pct_actual_spend, pct_license_fee, pct_margin = effective_spend[date][campaign]
 
         self.assertEqual(Decimal("0.8"), pct_actual_spend)
         self.assertEqual(Decimal("0.2"), pct_license_fee)
 
-    def test_different_license_fees(self):
+    @patch("utils.dates_helper.local_today")
+    def test_different_license_fees(self, mock_today):
         campaign = dash.models.Campaign.objects.get(id=1)
         budget1 = dash.models.BudgetLineItem.objects.get(id=1)
         budget2 = dash.models.BudgetLineItem.objects.get(id=2)
         date = datetime.date(2015, 2, 1)
+        mock_today.return_value = date
 
         campaign_spend = {"media_nano": 40 * converters.CURRENCY_TO_NANO, "data_nano": 40 * converters.CURRENCY_TO_NANO}
         total_spend = {date: {campaign.id: campaign_spend}}
@@ -632,16 +640,18 @@ class EffectiveSpendPctsK1TestCase(TestCase):
             margin_nano=0,
         )
 
-        effective_spend = daily_statements._get_effective_spend(None, [date], total_spend)
+        effective_spend = daily_statements.get_effective_spend(total_spend, date, None)
         pct_actual_spend, pct_license_fee, pct_margin = effective_spend[date][campaign]
 
         self.assertEqual(Decimal("1"), pct_actual_spend)
         self.assertEqual(Decimal("0.6"), pct_license_fee)
 
-    def test_spend_missing(self):
+    @patch("utils.dates_helper.local_today")
+    def test_spend_missing(self, mock_today):
         campaign = dash.models.Campaign.objects.get(id=1)
         budget = dash.models.BudgetLineItem.objects.get(id=1)
         date = datetime.date(2015, 2, 1)
+        mock_today.return_value = date
 
         campaign_spend = {"media_nano": 0, "data_nano": 0}
         total_spend = {date: {campaign.id: campaign_spend}}
@@ -655,27 +665,60 @@ class EffectiveSpendPctsK1TestCase(TestCase):
             margin_nano=0,
         )
 
-        effective_spend = daily_statements._get_effective_spend(None, [date], total_spend)
+        effective_spend = daily_statements.get_effective_spend(total_spend, date, None)
         pct_actual_spend, pct_license_fee, pct_margin = effective_spend[date][campaign]
 
         self.assertEqual(Decimal("0"), pct_actual_spend)
         self.assertEqual(Decimal("0.2"), pct_license_fee)
 
-    def test_budgets_missing(self):
+    @patch("utils.dates_helper.local_today")
+    def test_budgets_missing(self, mock_today):
         campaign = dash.models.Campaign.objects.get(id=1)
         date = datetime.date(2015, 2, 1)
+        mock_today.return_value = date
 
         campaign_spend = {"media_nano": 0, "data_nano": 0}
         total_spend = {date: {campaign.id: campaign_spend}}
 
-        effective_spend = daily_statements._get_effective_spend(None, [date], total_spend)
+        effective_spend = daily_statements.get_effective_spend(total_spend, date, None)
         pct_actual_spend, pct_license_fee, pct_margin = effective_spend[date][campaign]
 
         self.assertEqual(Decimal("0"), pct_actual_spend)
         self.assertEqual(Decimal("0"), pct_license_fee)
 
+    @patch("etl.daily_statements._get_campaign_spend")
+    @patch("utils.dates_helper.local_today")
+    def test_total_spend_empty(self, mock_today, mock_get_spend):
+        mock_get_spend.return_value = {}
+        date = datetime.date(2015, 2, 1)
+        today = datetime.date(2015, 2, 2)
+        mock_today.return_value = today
 
-@patch("etl.daily_statements_k1._query_ad_groups_with_spend", return_value=[2, 3])
+        total_spend = {}
+
+        daily_statements.get_effective_spend(total_spend, date, None)
+
+        self.assertEqual(mock_get_spend.call_count, 2)
+        mock_get_spend.assert_any_call(date, ANY, ANY)
+        mock_get_spend.assert_any_call(today, ANY, ANY)
+
+    @patch("etl.daily_statements._get_campaign_spend")
+    @patch("utils.dates_helper.local_today")
+    def test_total_spend_hole(self, mock_today, mock_get_spend):
+        mock_get_spend.return_value = {}
+        date = datetime.date(2015, 2, 1)
+        today = datetime.date(2015, 2, 3)
+        mock_today.return_value = today
+
+        total_spend = {date: {}, today: {}}
+
+        daily_statements.get_effective_spend(total_spend, today, None)
+
+        self.assertEqual(mock_get_spend.call_count, 1)
+        mock_get_spend.assert_any_call(date + datetime.timedelta(days=1), ANY, ANY)
+
+
+@patch("etl.daily_statements._query_ad_groups_with_spend", return_value=[2, 3])
 @patch("utils.dates_helper.local_today", return_value=datetime.date(2016, 11, 15))
 class GetCampaignsWithSpendTest(TestCase):
     fixtures = ["test_api_breakdowns.yaml"]

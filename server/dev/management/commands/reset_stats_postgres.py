@@ -5,9 +5,10 @@ import os
 from django.conf import settings
 from django.db import connections
 
-from etl.refresh_k1 import MATERIALIZED_VIEWS
+from etl.materialize import MATERIALIZED_VIEWS
+from etl import redshift
 from etl import maintenance
-from etl import materialize_views
+from etl import materialize
 from utils.command_helpers import ExceptionCommand
 from utils import s3helpers
 
@@ -38,13 +39,9 @@ class Command(ExceptionCommand):
                 if mv_class.TABLE_NAME not in existing_tables:
                     self._create_table(db_name, mv_class)
 
-                s3_path = os.path.join(
-                    materialize_views.MATERIALIZED_VIEWS_REPLICATION_S3_PREFIX, job_id, mv_class.TABLE_NAME
-                )
+                s3_path = os.path.join(redshift.MATERIALIZED_VIEWS_REPLICATION_S3_PREFIX, job_id, mv_class.TABLE_NAME)
                 manifest = self._find_manifest(s3_path)
-                materialize_views.update_table_from_s3_postgres(
-                    db_name, manifest, mv_class.TABLE_NAME, date_from, date_to
-                )
+                redshift.update_table_from_s3_postgres(db_name, manifest, mv_class.TABLE_NAME, date_from, date_to)
                 maintenance.vacuum(mv_class.TABLE_NAME, db_name=db_name)
                 maintenance.analyze(mv_class.TABLE_NAME, db_name=db_name)
 
@@ -57,7 +54,7 @@ class Command(ExceptionCommand):
 
     def _get_latest_job_id(self):
         bucket = s3helpers.S3Helper(bucket_name=settings.S3_BUCKET_STATS)
-        prefix = materialize_views.MATERIALIZED_VIEWS_REPLICATION_S3_PREFIX + "/"
+        prefix = redshift.MATERIALIZED_VIEWS_REPLICATION_S3_PREFIX + "/"
         job_ids = self._list_folders(bucket, prefix)
         full_job_ids = [job_id for job_id in job_ids if job_id.count("_") == 1]
 
@@ -83,7 +80,7 @@ class Command(ExceptionCommand):
         for mv_class in MATERIALIZED_VIEWS:
             if mv_class.IS_TEMPORARY_TABLE:
                 continue
-            if mv_class in (materialize_views.MasterView, materialize_views.MasterPublishersView):
+            if mv_class in (materialize.MasterView, materialize.MasterPublishersView):
                 # do not copy mv_master and mv_master_pubs into postgres, too large
                 continue
             yield mv_class

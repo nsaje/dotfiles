@@ -121,3 +121,20 @@ def get_conversion_prefix(postclick_source, k):
     if postclick_source in ("omniture",):
         return dash.features.performance_tracking.constants.ReportType.OMNITURE + "__" + k
     return k
+
+
+def get_ad_group_ids_or_none(account_id):
+    """ Some tables only have ad group ids, returns ad group ids if account_id is passed """
+
+    if not account_id:
+        return None
+
+    return list(dash.models.AdGroup.objects.filter(campaign__account_id=account_id).values_list("pk", flat=True))
+
+
+def get_outbrain():
+    return dash.models.Source.objects.get(name__iexact="outbrain")
+
+
+def get_yahoo():
+    return dash.models.Source.objects.get(name__iexact="yahoo")

@@ -3,8 +3,8 @@ import datetime
 
 from utils.command_helpers import ExceptionCommand
 
-from etl import materialize_views
-from etl import refresh_k1
+import etl.redshift
+from etl import refresh
 
 from utils import dates_helper
 
@@ -28,8 +28,8 @@ class Command(ExceptionCommand):
         date_to = dates_helper.local_today()
         date_from = date_to - datetime.timedelta(days=num_days)
 
-        job_id = refresh_k1.generate_job_id(None)
+        job_id = refresh.generate_job_id(None)
         for table in tables:
             logger.info("Copying table %s into %s" % (table, to_db_alias))
-            s3_path = materialize_views.unload_table(job_id, table, date_from, date_to)
-            materialize_views.update_table_from_s3(to_db_alias, s3_path, table, date_from, date_to)
+            s3_path = etl.redshift.unload_table(job_id, table, date_from, date_to)
+            etl.redshift.update_table_from_s3(to_db_alias, s3_path, table, date_from, date_to)

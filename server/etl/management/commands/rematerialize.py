@@ -3,7 +3,7 @@ import logging
 
 from utils.command_helpers import ExceptionCommand
 
-from etl import refresh_k1
+from etl import refresh
 import redshiftapi.db
 from core.entity.account import Account
 
@@ -62,7 +62,7 @@ class Command(ExceptionCommand):
             )
             print("reprocessing", acc_id, "since", since)
             try:
-                refresh_k1.refresh_k1_reports(since, acc_id, skip_vacuum=True, skip_analyze=True)
+                refresh.refresh(since, acc_id, skip_vacuum=True, skip_analyze=True)
             except Exception as e:
                 print("Exception:", e)
             finally:

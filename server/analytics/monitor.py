@@ -8,7 +8,7 @@ import dash.models
 import dash.constants
 import automation.models
 import analytics.projections
-import etl.refresh_k1
+import etl.refresh
 from automation import autopilot
 from utils import converters
 import redshiftapi.db
@@ -73,7 +73,7 @@ def audit_spend_integrity(date, account_id=None, max_err=MAX_ERR):
         fee=Sum(F("license_fee_nano")),
     )[0]
     integrity_issues = []
-    for table_name in etl.refresh_k1.get_all_views_table_names():
+    for table_name in etl.refresh.get_all_views_table_names():
 
         if "pubs" in table_name or "conversions" in table_name or "touch" in table_name:
             # skip for the first version

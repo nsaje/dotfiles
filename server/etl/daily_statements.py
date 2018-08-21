@@ -20,7 +20,6 @@ from redshiftapi import db
 import core.bcm.calculations
 
 from etl import helpers
-from etl import materialize_views
 from etl import daily_statements_diff
 
 logger = logging.getLogger(__name__)
@@ -180,12 +179,14 @@ def _get_dates(from_date, campaign):
     return [dt.date() for dt in rrule.rrule(rrule.DAILY, dtstart=from_date, until=to_date)]
 
 
-def _get_effective_spend(account_id, all_dates, total_spend):
-    effective_spend = defaultdict(dict)
+def get_effective_spend(total_spend, date_since, account_id=None):
 
     campaigns = dash.models.Campaign.objects.all()
     if account_id:
         campaigns = campaigns.filter(account_id=account_id)
+
+    total_spend = _fetch_total_spend(total_spend, campaigns, date_since, account_id)
+    all_dates = list(total_spend.keys())
 
     all_attributed_spends = (
         dash.models.BudgetDailyStatement.objects.filter(budget__campaign__in=campaigns, date__in=all_dates)
@@ -202,6 +203,7 @@ def _get_effective_spend(account_id, all_dates, total_spend):
     for spend in all_attributed_spends:
         attributed_spends[spend["budget__campaign__id"]][spend["date"]] = spend
 
+    effective_spend = defaultdict(dict)
     for campaign in campaigns:
         for date in all_dates:
             spend = total_spend[date].get(campaign.id)
@@ -209,7 +211,7 @@ def _get_effective_spend(account_id, all_dates, total_spend):
                 date, campaign, spend, attributed_spends[campaign.id].get(date, {})
             )
 
-    return effective_spend
+    return dict(effective_spend)
 
 
 def _get_effective_spend_pcts(date, campaign, campaign_spend, attributed_spends):
@@ -249,7 +251,7 @@ def _get_campaign_spend(date, all_campaigns, account_id):
             ad_group_campaign[ad_group.id] = campaign.id
 
     if account_id:
-        ad_group_ids = materialize_views.get_ad_group_ids_or_none(account_id)
+        ad_group_ids = helpers.get_ad_group_ids_or_none(account_id)
         query = """
         select ad_group_id, sum(spend), sum(data_spend)
         from stats
@@ -384,16 +386,23 @@ def reprocess_daily_statements(date_since, account_id=None):
         # generate daily statements for the date for the campaign
         _reprocess_campaign_statements(campaign, dates, total_spend)
 
+    return total_spend
+
+
+def _fetch_total_spend(total_spend, campaigns, date_since, account_id):
+    campaigns = campaigns.prefetch_related("adgroup_set")
+
+    all_dates = list(total_spend.keys())
+    start_date = min(date_since, min(all_dates)) if len(all_dates) > 0 else date_since
+    end_date = dates_helper.local_today()
     # It can happen that not all of the dates in the range need to have their daily statements
     # reprocessed. When this happens total_spend and all_dates will have have some dates missing.
     # We need to assure that we provide campaign factors for all the dates within the range we
     # are processing. The following statements add campaign spend for the missing dates:
-    for dt in rrule.rrule(rrule.DAILY, dtstart=min(all_dates), until=max(all_dates)):
+    for dt in rrule.rrule(rrule.DAILY, dtstart=start_date, until=end_date):
         date = dt.date()
-        all_dates.add(date)
         if date not in total_spend:
             logger.info("Fetching spend for the date %s that wasn't reprocessed", date)
             total_spend[date] = _get_campaign_spend(date, campaigns, account_id)
 
-    effective_spend = _get_effective_spend(account_id, all_dates, total_spend)
-    return dict(effective_spend)
+    return total_spend

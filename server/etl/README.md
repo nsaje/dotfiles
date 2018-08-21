@@ -32,7 +32,7 @@ First we prepare helper materialized view, which we than join into mv_master.
 Helper materialized views tables are dropped and created for each refresh.
 Because of this table create scripts reside in `etl/templates` and are named `etl_create_table*`
 
-1. calculate effective cost factors in `daily_statements_k1` and
+1. calculate effective cost factors in `daily_statements` and
    execute `MVHelpersCampaignFactors` materialization that writes them to database (needed for step A).
    This produces table `mvh_campaign_factors`.
 2. write ad group structure `MVHelpersAdGroupStructure` to provide data for step D in database.
@@ -59,12 +59,11 @@ Currently first 3 materialized views are there to support legacy tables: `Conten
 
 Base folder: `etl`
 
-- `refresh_k1` :: entry point, runs the listed materialized views. Its run every hour at 25 minutes past (see `crontab.txt`)
-- `materialize_k1` :: legacy materialized views - `contentadstats`, `touchpointconversions`, `publishers_1`
-- `materialize_views` :: new materialized views
+- `refresh` :: entry point, runs the listed materialized views. Its run every hour at 25 minutes past (see `crontab.txt`)
+- `materialize` :: new materialized views
 - `helpers` :: clean and transform data helpers
 - `migrations/redshift/..` :: permanent redshift tables
-- `migrations/redshift/0006_udf_functions.sql` :: UDF python functions that are used to clean data in database. 
+- `migrations/redshift/0006_udf_functions.sql` :: UDF python functions that are used to clean data in database.
    Should be applied to redshift if changed.
 - `templates/` :: templates used in materialization, this is where `backtosql` is searching for them.
 
@@ -91,7 +90,7 @@ Ad group|clicks
 
 Example sql:
 
-insert into mv_imaginary_ad_group 
+insert into mv_imaginary_ad_group
 select ad_group_id, sum(clicks) from mv_imaginary_master;
 ```
 

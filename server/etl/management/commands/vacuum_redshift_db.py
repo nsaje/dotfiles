@@ -1,7 +1,7 @@
 from utils.command_helpers import ExceptionCommand
 
 from etl import maintenance
-from etl import refresh_k1
+from etl import refresh
 
 import influx
 
@@ -9,6 +9,6 @@ import influx
 class Command(ExceptionCommand):
     @influx.timer("etl.vacuum_redshift_db")
     def handle(self, *args, **options):
-        for table in refresh_k1.get_all_views_table_names():
+        for table in refresh.get_all_views_table_names():
             maintenance.vacuum(table)
             maintenance.analyze(table)

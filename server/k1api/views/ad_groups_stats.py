@@ -10,7 +10,7 @@ from utils import db_for_reads
 import redshiftapi.api_quickstats
 import redshiftapi.internal_stats.conversions
 import redshiftapi.internal_stats.content_ad_publishers
-import etl.materialize_views
+import etl.s3
 import dash.features.custom_flags
 
 from .base import K1APIView
@@ -61,7 +61,7 @@ class AdGroupConversionStatsView(K1APIView):
         if ad_group_ids:
             ad_group_ids = ad_group_ids.split(",")
 
-        path = etl.materialize_views.upload_csv(
+        path = etl.s3.upload_csv(
             "conversions",
             from_date,
             uuid.uuid4().hex,
@@ -91,7 +91,7 @@ class AdGroupContentAdPublisherStatsView(K1APIView):
         if min_media_cost:
             min_media_cost = float(min_media_cost)
 
-        _, path = etl.materialize_views.upload_csv_async(
+        _, path = etl.s3.upload_csv_async(
             "content_ad_publishers",
             from_date,
             uuid.uuid4().hex,

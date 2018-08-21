@@ -3,7 +3,8 @@ import datetime
 
 from utils.command_helpers import ExceptionCommand
 
-from etl import refresh_k1
+from etl import refresh
+from etl import materialize
 
 from utils import dates_helper
 
@@ -21,7 +22,7 @@ class Command(ExceptionCommand):
         date_to = dates_helper.local_today()
         date_from = date_to - datetime.timedelta(days=num_days)
 
-        job_id = refresh_k1.generate_job_id(None)
-        refresh_k1.unload_and_copy_into_replicas(
-            refresh_k1.MATERIALIZED_VIEWS, job_id, date_from, date_to, skip_vacuum=True, skip_analyze=True
+        job_id = refresh.generate_job_id(None)
+        refresh.unload_and_copy_into_replicas(
+            materialize.MATERIALIZED_VIEWS, job_id, date_from, date_to, skip_vacuum=True, skip_analyze=True
         )
