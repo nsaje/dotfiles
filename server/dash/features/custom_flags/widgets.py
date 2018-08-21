@@ -1,4 +1,4 @@
-from django.forms.widgets import MultiWidget, TextInput, NumberInput, NullBooleanSelect
+from django.forms.widgets import MultiWidget, TextInput, NumberInput, CheckboxInput
 
 
 class CustomFlagsWidget(MultiWidget):
@@ -10,7 +10,7 @@ class CustomFlagsWidget(MultiWidget):
         super(CustomFlagsWidget, self).__init__(widgets, attrs)
 
     def _set_widgets(self, data):
-        widgets_type = {"string": TextInput, "int": NumberInput, "float": NumberInput, "boolean": NullBooleanSelect}
+        widgets_type = {"string": TextInput, "int": NumberInput, "float": NumberInput, "boolean": CheckboxInput}
 
         widgets_list = []
         for item in data:
