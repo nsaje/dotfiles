@@ -49,7 +49,10 @@ export class InventoryPlanningBreakdownComponent
 
     ngOnInit() {
         this.searchSubscription = this.search$
-            .pipe(debounceTime(SEARCH_DEBOUNCE_TIME), distinctUntilChanged())
+            .pipe(
+                debounceTime(SEARCH_DEBOUNCE_TIME),
+                distinctUntilChanged()
+            )
             .subscribe(searchQuery => {
                 this.searchResults = this.search(searchQuery);
                 this.selectedIndices = this.getSelectedIndices(

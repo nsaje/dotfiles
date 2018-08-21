@@ -45,43 +45,40 @@ describe('InventoryPlanningBreakdownComponent', () => {
         component = fixture.componentInstance;
     }));
 
-    it(
-        'should correctly search through available filter options and exclude options with 0 auctions',
-        fakeAsync(() => {
-            component.options = [
-                testOption1,
-                testOption2,
-                testOption3,
-                testOption4,
-            ];
-            component.selected = [];
-            component.ngOnInit();
+    it('should correctly search through available filter options and exclude options with 0 auctions', fakeAsync(() => {
+        component.options = [
+            testOption1,
+            testOption2,
+            testOption3,
+            testOption4,
+        ];
+        component.selected = [];
+        component.ngOnInit();
 
-            component.search$.next('');
-            tick(500); // tslint:disable-line
-            expect(component.searchResults).toEqual([
-                testOption1,
-                testOption2,
-                testOption3,
-            ]);
+        component.search$.next('');
+        tick(500); // tslint:disable-line
+        expect(component.searchResults).toEqual([
+            testOption1,
+            testOption2,
+            testOption3,
+        ]);
 
-            component.search$.next('option');
-            tick(500); // tslint:disable-line
-            expect(component.searchResults).toEqual([
-                testOption1,
-                testOption2,
-                testOption3,
-            ]);
+        component.search$.next('option');
+        tick(500); // tslint:disable-line
+        expect(component.searchResults).toEqual([
+            testOption1,
+            testOption2,
+            testOption3,
+        ]);
 
-            component.search$.next('option 2');
-            tick(500); // tslint:disable-line
-            expect(component.searchResults).toEqual([testOption2]);
+        component.search$.next('option 2');
+        tick(500); // tslint:disable-line
+        expect(component.searchResults).toEqual([testOption2]);
 
-            component.search$.next('none');
-            tick(500); // tslint:disable-line
-            expect(component.searchResults).toEqual([]);
-        })
-    );
+        component.search$.next('none');
+        tick(500); // tslint:disable-line
+        expect(component.searchResults).toEqual([]);
+    }));
 
     it('should execute search with current search query when options update', () => {
         let changes: SimpleChanges;

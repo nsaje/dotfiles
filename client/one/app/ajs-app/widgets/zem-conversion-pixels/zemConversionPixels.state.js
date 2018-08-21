@@ -132,8 +132,7 @@ angular
                             if (data && data.errors) {
                                 state.requests.update[
                                     pixel.id
-                                ].validationErrors =
-                                    data.errors;
+                                ].validationErrors = data.errors;
                             } else {
                                 state.requests.update[pixel.id].error = true;
                             }

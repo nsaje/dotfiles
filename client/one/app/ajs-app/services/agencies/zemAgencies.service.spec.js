@@ -34,37 +34,52 @@ describe('zemAgenciesService', function() {
     }));
 
     it('should correctly return agencies fetched from backend', function(done) {
-        zemAgenciesService.getAgencies().then(function(agencies) {
-            expect(zemAgenciesEndpoint.getAgencies).toHaveBeenCalled();
-            expect(agencies.length).toEqual(2);
-            done();
-        });
+        zemAgenciesService
+            .getAgencies()
+            .then(function(agencies) {
+                expect(zemAgenciesEndpoint.getAgencies).toHaveBeenCalled();
+                expect(agencies.length).toEqual(2);
+                done();
+            })
+            .catch(done.fail);
         $rootScope.$apply();
     });
 
     it('should return cached agencies if agencies were already fetched from backend', function(done) {
-        zemAgenciesService.getAgencies().then(function() {
-            zemAgenciesService.getAgencies().then(function(agencies) {
-                expect(zemAgenciesEndpoint.getAgencies.calls.count()).toEqual(
-                    1
-                );
-                expect(agencies.length).toEqual(2);
-                done();
-            });
-        });
+        zemAgenciesService
+            .getAgencies()
+            .then(function() {
+                zemAgenciesService
+                    .getAgencies()
+                    .then(function(agencies) {
+                        expect(
+                            zemAgenciesEndpoint.getAgencies.calls.count()
+                        ).toEqual(1);
+                        expect(agencies.length).toEqual(2);
+                        done();
+                    })
+                    .catch(done.fail);
+            })
+            .catch(done.fail);
         $rootScope.$apply();
     });
 
     it('should corectly force refetch agencies', function(done) {
-        zemAgenciesService.getAgencies().then(function() {
-            zemAgenciesService.getAgencies(true).then(function(agencies) {
-                expect(zemAgenciesEndpoint.getAgencies.calls.count()).toEqual(
-                    2
-                );
-                expect(agencies.length).toEqual(2);
-                done();
-            });
-        });
+        zemAgenciesService
+            .getAgencies()
+            .then(function() {
+                zemAgenciesService
+                    .getAgencies(true)
+                    .then(function(agencies) {
+                        expect(
+                            zemAgenciesEndpoint.getAgencies.calls.count()
+                        ).toEqual(2);
+                        expect(agencies.length).toEqual(2);
+                        done();
+                    })
+                    .catch(done.fail);
+            })
+            .catch(done.fail);
         $rootScope.$apply();
     });
 });

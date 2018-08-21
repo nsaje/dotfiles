@@ -1262,16 +1262,13 @@ constants.levelToLevelStateParamMap[constants.level.AD_GROUPS] =
 constants.breakdownStateParamToBreakdownMap = {};
 constants.breakdownStateParamToBreakdownMap[
     constants.breakdownStateParam.SOURCES
-] =
-    constants.breakdown.MEDIA_SOURCE;
+] = constants.breakdown.MEDIA_SOURCE;
 constants.breakdownStateParamToBreakdownMap[
     constants.breakdownStateParam.PUBLISHERS
-] =
-    constants.breakdown.PUBLISHER;
+] = constants.breakdown.PUBLISHER;
 constants.breakdownStateParamToBreakdownMap[
     constants.breakdownStateParam.INSIGHTS
-] =
-    constants.breakdown.INSIGHTS;
+] = constants.breakdown.INSIGHTS;
 
 constants.breakdownToBreakdownStateParamMap = {};
 constants.breakdownToBreakdownStateParamMap[constants.breakdown.MEDIA_SOURCE] =
@@ -3948,8 +3945,7 @@ constants.campaignGoalValueText[constants.campaignGoalKPI.CPV] =
     'Cost per Visit';
 constants.campaignGoalValueText[
     constants.campaignGoalKPI.CP_NON_BOUNCED_VISIT
-] =
-    'Cost per Non-Bounced Visit';
+] = 'Cost per Non-Bounced Visit';
 constants.campaignGoalValueText[constants.campaignGoalKPI.CP_NEW_VISITOR] =
     'Cost per New Visitor';
 constants.campaignGoalValueText[constants.campaignGoalKPI.CP_PAGE_VIEW] =

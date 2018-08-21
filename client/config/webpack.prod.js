@@ -1,83 +1,121 @@
 var webpack = require('webpack');
-var CopyWebpackPlugin = require('copy-webpack-plugin');
-var merge = require('webpack-merge');
 var common = require('./webpack.common.js');
+var merge = require('webpack-merge');
+var CopyWebpackPlugin = require('copy-webpack-plugin');
+var OptimizeCSSAssetsPlugin = require('optimize-css-assets-webpack-plugin');
+var ParallelUglifyPlugin = require('webpack-parallel-uglify-plugin');
 
-var prodConfigs = [];
-var buildConfig = common.getBuildConfig();
+var appConfig = common.getAppConfig();
+var configs = [];
 
 // Main app config
-var mainProdConfig = generateMainProdConfig(common.generateMainConfig(buildConfig));
-prodConfigs.push(mainProdConfig);
+var mainConfig = generateMainConfig(appConfig);
+configs.push(mainConfig);
 
 // Themes configs
 var themes = common.getThemes();
-Object.keys(themes).forEach(function (key) {
-    prodConfigs.push(generateStyleProdConfig(common.generateMainConfig(buildConfig), themes[key]));
+Object.keys(themes).forEach(function(key) {
+    var styleConfig = generateStyleConfig(appConfig, themes[key]);
+    configs.push(styleConfig);
 });
 
-module.exports = prodConfigs;
+module.exports = configs;
 
-function generateMainProdConfig (mainConfig) {
-    var mainProdConfig = mainConfig;
+function generateMainConfig(appConfig) {
+    var config = common.generateMainConfig(appConfig);
 
-    mainProdConfig.entry = {
+    config.entry = {
         'zemanta-one.polyfills': common.root('./one/polyfills.ts'),
         'zemanta-one.lib': common.root('./one/vendor.ts'),
         'zemanta-one': common.root('./one/main.ts'),
     };
 
-    mainProdConfig.output = {
+    config.output = {
         path: common.root('./dist/one'),
         publicPath: 'one/',
         filename: '[name].js',
         sourceMapFilename: '[file].map',
     };
 
-    // Skip loading styles as they are extracted separately by ExtractTextPlugin defined in styleProdConfigs
-    mainProdConfig.module.rules.push({
+    config.optimization = {
+        minimize: true,
+        minimizer: [
+            // https://github.com/NMFR/optimize-css-assets-webpack-plugin
+            // A Webpack plugin to optimize \ minimize CSS assets.
+            new OptimizeCSSAssetsPlugin({}),
+        ],
+    };
+
+    // Skip loading styles as they are extracted separately
+    config.module.rules.push({
         test: /\.less$/,
         loader: 'null-loader',
     });
 
-    mainProdConfig.plugins = mainProdConfig.plugins.concat([
-        new webpack.optimize.CommonsChunkPlugin({
-            name: ['zemanta-one', 'zemanta-one.lib', 'zemanta-one.polyfills']
-        }),
+    config.plugins = config.plugins.concat([
+        // https://webpack.js.org/plugins/module-concatenation-plugin/
+        // Concatenates the scope of all modules into one closure.
         new webpack.optimize.ModuleConcatenationPlugin(),
-        new webpack.optimize.UglifyJsPlugin({
-            comments: false,
-            sourceMap: true
-        }),
+
+        // https://webpack.js.org/plugins/copy-webpack-plugin/
+        // Copies individual files or entire directories to the build directory
         new CopyWebpackPlugin([
             {
                 from: common.root('./one/images'),
-                to: 'images'
+                to: 'images',
             },
             {
                 from: common.root('./one/assets'),
-                to: 'assets'
-            }
-        ])
+                to: 'assets',
+            },
+        ]),
+
+        // https://github.com/gdborton/webpack-parallel-uglify-plugin
+        // A faster uglifyjs plugin.
+        new ParallelUglifyPlugin({
+            sourceMap: true,
+        }),
     ]);
 
-    mainProdConfig.devtool = 'source-map';
+    config.devtool = 'source-map';
+    config.mode = 'production';
 
-    return mainProdConfig;
+    return config;
 }
 
-function generateStyleProdConfig (mainConfig, theme) {
-    var styleConfig = common.generateStyleConfig(theme);
-    var styleProdConfig = merge.smart(mainConfig, styleConfig);
+function generateStyleConfig(appConfig, theme) {
+    var mainConfig = common.generateMainConfig(appConfig);
+    var styleConfig = common.generateStyleConfig(theme.name);
 
-    styleProdConfig.entry = [common.root('./one/app/styles/main.less'), common.root('./one/main.ts')];
+    var config = merge.smart(mainConfig, styleConfig);
 
-    // Ignore output, compiled styles are extracted by ExtractTextPlugin and saved as zemanta-one[-theme].css
-    styleProdConfig.output = {
+    var entryName = 'zemanta-one';
+    if (theme !== common.THEMES.one) {
+        entryName = entryName + '-' + theme.name;
+    }
+
+    config.entry = {};
+    config.entry[entryName] = [
+        common.root('./one/app/styles/main.less'),
+        common.root('./one/main.ts'),
+    ];
+
+    config.output = {
         path: common.root('./dist/one'),
-        filename: 'ignored',
+        publicPath: 'one/',
     };
 
-    return styleProdConfig;
-}
+    config.optimization = {
+        minimize: true,
+        minimizer: [
+            // https://github.com/NMFR/optimize-css-assets-webpack-plugin
+            // A Webpack plugin to optimize \ minimize CSS assets.
+            new OptimizeCSSAssetsPlugin({}),
+        ],
+    };
 
+    config.devtool = 'none';
+    config.mode = 'production';
+
+    return config;
+}

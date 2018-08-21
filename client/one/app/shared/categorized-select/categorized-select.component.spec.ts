@@ -93,58 +93,52 @@ describe('CategorizedSelectComponent', () => {
         expect(component.renderedItems).toEqual([]);
     });
 
-    it(
-        'should correctly update rendered items on search if category is selected',
-        fakeAsync(() => {
-            component.categorizedItems = [testCategory1, testCategory2];
-            component.ngOnInit();
+    it('should correctly update rendered items on search if category is selected', fakeAsync(() => {
+        component.categorizedItems = [testCategory1, testCategory2];
+        component.ngOnInit();
 
-            component.selectCategory('category1');
+        component.selectCategory('category1');
 
-            component.search$.next('');
-            tick(500); // tslint:disable-line
-            expect(component.renderedItems).toEqual(testCategory1.items);
+        component.search$.next('');
+        tick(500); // tslint:disable-line
+        expect(component.renderedItems).toEqual(testCategory1.items);
 
-            component.search$.next();
-            tick(500); // tslint:disable-line
-            expect(component.renderedItems).toEqual(testCategory1.items);
+        component.search$.next();
+        tick(500); // tslint:disable-line
+        expect(component.renderedItems).toEqual(testCategory1.items);
 
-            component.search$.next('Item');
-            tick(500); // tslint:disable-line
-            expect(component.renderedItems).toEqual(testCategory1.items);
+        component.search$.next('Item');
+        tick(500); // tslint:disable-line
+        expect(component.renderedItems).toEqual(testCategory1.items);
 
-            component.search$.next('item 2');
-            tick(500); // tslint:disable-line
-            expect(component.renderedItems).toEqual([testItem2]);
+        component.search$.next('item 2');
+        tick(500); // tslint:disable-line
+        expect(component.renderedItems).toEqual([testItem2]);
 
-            component.search$.next('none');
-            tick(500); // tslint:disable-line
-            expect(component.renderedItems).toEqual([]);
+        component.search$.next('none');
+        tick(500); // tslint:disable-line
+        expect(component.renderedItems).toEqual([]);
 
-            component.selectCategory('category2');
+        component.selectCategory('category2');
 
-            component.search$.next('Item 1');
-            tick(500); // tslint:disable-line
-            expect(component.renderedItems).toEqual([]);
+        component.search$.next('Item 1');
+        tick(500); // tslint:disable-line
+        expect(component.renderedItems).toEqual([]);
 
-            component.search$.next('Item 3');
-            tick(500); // tslint:disable-line
-            expect(component.renderedItems).toEqual([testItem3]);
-        })
-    );
+        component.search$.next('Item 3');
+        tick(500); // tslint:disable-line
+        expect(component.renderedItems).toEqual([testItem3]);
+    }));
 
-    it(
-        'should not update rendered items on search if category is not selected',
-        fakeAsync(() => {
-            component.categorizedItems = [testCategory1, testCategory2];
-            component.ngOnInit();
+    it('should not update rendered items on search if category is not selected', fakeAsync(() => {
+        component.categorizedItems = [testCategory1, testCategory2];
+        component.ngOnInit();
 
-            expect(component.renderedItems).toEqual([]);
-            component.search$.next('Item');
-            tick(500); // tslint:disable-line
-            expect(component.renderedItems).toEqual([]);
-        })
-    );
+        expect(component.renderedItems).toEqual([]);
+        component.search$.next('Item');
+        tick(500); // tslint:disable-line
+        expect(component.renderedItems).toEqual([]);
+    }));
 
     it('should correctly set selected items when categorizedItems input changes', () => {
         let changes: SimpleChanges;

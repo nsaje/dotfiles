@@ -1,8 +1,9 @@
-var path = require('path');
-var ExtractTextPlugin = require('extract-text-webpack-plugin');
 var webpack = require('webpack');
+var path = require('path');
+var MiniCssExtractPlugin = require('mini-css-extract-plugin');
+var FilterChunkWebpackPlugin = require('filter-chunk-webpack-plugin');
 
-var BUILD_CONFIG = null;
+var APP_CONFIG = null;
 var THEMES = {
     one: {name: 'one'},
     adtechnacity: {name: 'adtechnacity'},
@@ -12,41 +13,42 @@ var THEMES = {
     mediamond: {name: 'mediamond'},
 };
 
-module.exports.getBuildConfig = getBuildConfig;
+module.exports.THEMES = THEMES;
+module.exports.getAppConfig = getAppConfig;
 module.exports.getTheme = getTheme;
 module.exports.getThemes = getThemes;
 module.exports.generateMainConfig = generateMainConfig;
 module.exports.generateStyleConfig = generateStyleConfig;
 module.exports.root = root;
 
-function getBuildConfig () {
-    if (!BUILD_CONFIG) {
-        BUILD_CONFIG = generateBuildConfig(process.env);
+function getAppConfig() {
+    if (!APP_CONFIG) {
+        APP_CONFIG = generateAppConfig(process.env);
     }
-    return BUILD_CONFIG;
+    return APP_CONFIG;
 }
 
-function getTheme (name) {
+function getTheme(name) {
     return THEMES[name] || THEMES.one;
 }
 
-function getThemes () {
+function getThemes() {
     return THEMES;
 }
 
-function generateMainConfig (appConfig) {
+function generateMainConfig(appConfig) {
     var config = {
         module: {},
+        plugins: [],
     };
-    var vendorExtractTextPlugin = new ExtractTextPlugin('[name].css');
 
     config.resolve = {
         extensions: ['.ts', '.js'],
         modules: [root('./one'), 'node_modules'],
         alias: {
-            'angular': root('./lib/components/angular/angular.js'),
-            'jquery': root('./lib/components/jquery/dist/jquery.js'),
-            'moment': root('./lib/components/moment/moment.js'),
+            angular: root('./lib/components/angular/angular.js'),
+            jquery: root('./lib/components/jquery/dist/jquery.js'),
+            moment: root('./lib/components/moment/moment.js'),
         },
     };
 
@@ -56,32 +58,40 @@ function generateMainConfig (appConfig) {
             test: /\.js$/,
             include: [root('./one/app/ajs-app')],
             use: [{loader: 'ng-annotate-loader'}],
-        }, {
+        },
+        {
             // Angular TypeScript and template loaders
             test: /\.tsx?$/,
-            loaders: [
-                'awesome-typescript-loader',
-                'angular2-template-loader',
-            ],
-        }, {
+            loaders: ['awesome-typescript-loader', 'angular2-template-loader'],
+        },
+        {
+            // https://github.com/angular/universal-starter/pull/593/commits/644c5f6f28a760f94ef111f5a611e2c9ed679b6a
+            // Mark files inside `@angular/core` as using SystemJS style dynamic imports.
+            // Removing this will cause deprecation warnings to appear.
+            test: /(\\|\/)@angular(\\|\/)core(\\|\/).+\.js$/,
+            parser: {system: true},
+        },
+        {
             // Allow loading html through js
             test: /\.html$/,
             loader: 'html-loader',
-        }, {
+        },
+        {
             test: /\.css$/,
-            use: vendorExtractTextPlugin.extract({
-                fallback: 'style-loader',
-                use: [
-                    {loader: 'css-loader'}
-                ]
-            }),
-        }, {
+            use: [
+                {loader: MiniCssExtractPlugin.loader},
+                {loader: 'css-loader'},
+            ],
+        },
+        {
             test: /\.(png|jpg|jpeg|gif|svg|woff|woff2|ttf|eot)$/,
             loader: 'url-loader',
-        }, {
+        },
+        {
             // Workaround: Convert AngularJS to CommonJS module
-            test: /angular\.js$/, loader: 'exports-loader?angular',
-            include: [root('./lib/components/angular')]
+            test: /angular\.js$/,
+            loader: 'exports-loader?angular',
+            include: [root('./lib/components/angular')],
         },
     ];
 
@@ -94,15 +104,22 @@ function generateMainConfig (appConfig) {
             {} // a map of your routes
         ),
 
-        // Join all CSS output into one file; based on the entry name
-        vendorExtractTextPlugin,
+        // https://github.com/webpack-contrib/mini-css-extract-plugin
+        // This plugin extracts CSS into separate files.
+        new MiniCssExtractPlugin({
+            filename: '[name].css',
+        }),
 
-        // Define application configuration
+        // https://webpack.js.org/plugins/define-plugin/
+        // Allows you to create global constants which can be configured at compile time.
+        // Define application configuration.
         new webpack.DefinePlugin({APP_CONFIG: JSON.stringify(appConfig)}),
 
         // Fix issue with moment.js locales - by default all locales are added (~30k loc)
         new webpack.ContextReplacementPlugin(/moment[/\\]locale$/, /en/),
 
+        // https://webpack.js.org/plugins/provide-plugin/
+        // Automatically load modules instead of having to import or require them everywhere.
         new webpack.ProvidePlugin({
             $: 'jquery',
             jQuery: 'jquery',
@@ -114,57 +131,59 @@ function generateMainConfig (appConfig) {
     return config;
 }
 
-function generateStyleConfig (theme) {
+function generateStyleConfig(themeName) {
     var config = {
         module: {},
         plugins: [],
     };
 
-    var output = 'zemanta-one';
-    if (theme !== THEMES.one) {
-        output = output + '-' + theme.name;
-    }
-
-    var extractTextPlugin = new ExtractTextPlugin(output + '.css');
-    var rootpath = BUILD_CONFIG.staticUrl + '/one/';
     config.module.rules = [
         {
             test: /\.less$/,
-            use: extractTextPlugin.extract({
-                fallback: 'style-loader',
-                use: [
-                    {
-                        loader: 'css-loader', options: {
-                            url: false,
-                            minimize: BUILD_CONFIG.env.prod,
-                        }
+            use: [
+                {loader: MiniCssExtractPlugin.loader},
+                {
+                    loader: 'css-loader',
+                    options: {
+                        url: false,
                     },
-                    {
-                        loader: 'postcss-loader',
-                        options: {
-                            plugins: [
-                                require('autoprefixer')(),
-                            ]
-                        }
+                },
+                {
+                    loader: 'postcss-loader',
+                    options: {
+                        plugins: [require('autoprefixer')()],
                     },
-                    {
-                        loader: 'less-loader',
-                        options: {
-                            paths: [root('./one/app/themes/' + theme.name)],
-                            relativeUrls: false,
-                            rootpath: rootpath,
-                        }
-                    }
-                ]
-            })
+                },
+                {
+                    loader: 'less-loader',
+                    options: {
+                        paths: [root('./one/app/themes/' + themeName)],
+                        relativeUrls: false,
+                        rootpath: APP_CONFIG.staticUrl + '/one/',
+                    },
+                },
+            ],
         },
     ];
-    config.plugins.push(extractTextPlugin);
+
+    config.plugins = [
+        // https://github.com/webpack-contrib/mini-css-extract-plugin
+        // This plugin extracts CSS into separate files.
+        new MiniCssExtractPlugin({
+            filename: '[name].css',
+        }),
+
+        // https://www.npmjs.com/package/filter-chunk-webpack-plugin
+        // Include or exclude files / chunks from the final webpack output based on a list of patterns.
+        new FilterChunkWebpackPlugin({
+            patterns: ['*.js'],
+        }),
+    ];
 
     return config;
 }
 
-function generateBuildConfig (env) {
+function generateAppConfig(env) {
     var config = {
         env: {
             dev: env.NODE_ENV === 'development' || !env.NODE_ENV,
@@ -174,6 +193,7 @@ function generateBuildConfig (env) {
         buildNumber: env.npm_config_build_number,
         branchName: env.npm_config_branch_name,
         theme: env.npm_config_theme,
+        visualize: env.visualize === 'true' || false,
     };
 
     config.staticUrl = getStaticUrl(config);
@@ -181,7 +201,7 @@ function generateBuildConfig (env) {
     return config;
 }
 
-function getStaticUrl (config) {
+function getStaticUrl(config) {
     if (config.staticUrl) {
         return config.staticUrl;
     }
@@ -191,14 +211,19 @@ function getStaticUrl (config) {
         if (branchName === 'master') {
             branchName = '';
         }
-        return 'https://one-static.zemanta.com/build-' + branchName + config.buildNumber + '/client';
+        return (
+            'https://one-static.zemanta.com/build-' +
+            branchName +
+            config.buildNumber +
+            '/client'
+        );
     }
 
     return 'http://localhost:9999';
 }
 
 var _root = path.resolve(__dirname, '..'); // eslint-disable-line no-undef
-function root (args) {
+function root(args) {
     args = Array.prototype.slice.call(arguments, 0);
     return path.join.apply(path, [_root].concat(args));
 }

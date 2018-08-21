@@ -139,8 +139,7 @@
       "allow-null-check",
       "allow-undefined-check"
     ],
-    "typedef": true,
-    "typeof-compare": true,
+    "typedef": true,    
     "unified-signatures": true,
     "use-host-property-decorator": true,
     "use-input-property-decorator": true,

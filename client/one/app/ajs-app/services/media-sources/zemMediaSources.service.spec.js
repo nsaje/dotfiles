@@ -40,76 +40,102 @@ describe('zemMediaSourcesService', function() {
     }));
 
     it('should correctly return sources fetched from backend', function(done) {
-        zemMediaSourcesService.getSources().then(function(sources) {
-            expect(zemMediaSourcesEndpoint.getSources).toHaveBeenCalled();
-            expect(sources.length).toEqual(2);
-            done();
-        });
+        zemMediaSourcesService
+            .getSources()
+            .then(function(sources) {
+                expect(zemMediaSourcesEndpoint.getSources).toHaveBeenCalled();
+                expect(sources.length).toEqual(2);
+                done();
+            })
+            .catch(done.fail);
         $rootScope.$apply();
     });
 
     it('should return cached sources if sources were already fetched from backend', function(done) {
-        zemMediaSourcesService.getSources().then(function() {
-            zemMediaSourcesService.getSources().then(function(sources) {
-                expect(
-                    zemMediaSourcesEndpoint.getSources.calls.count()
-                ).toEqual(1);
-                expect(sources.length).toEqual(2);
-                done();
-            });
-        });
+        zemMediaSourcesService
+            .getSources()
+            .then(function() {
+                zemMediaSourcesService
+                    .getSources()
+                    .then(function(sources) {
+                        expect(
+                            zemMediaSourcesEndpoint.getSources.calls.count()
+                        ).toEqual(1);
+                        expect(sources.length).toEqual(2);
+                        done();
+                    })
+                    .catch(done.fail);
+            })
+            .catch(done.fail);
         $rootScope.$apply();
     });
 
     it('should corectly force refetch sources', function(done) {
-        zemMediaSourcesService.getSources().then(function() {
-            zemMediaSourcesService.getSources(true).then(function(sources) {
-                expect(
-                    zemMediaSourcesEndpoint.getSources.calls.count()
-                ).toEqual(2);
-                expect(sources.length).toEqual(2);
-                done();
-            });
-        });
+        zemMediaSourcesService
+            .getSources()
+            .then(function() {
+                zemMediaSourcesService
+                    .getSources(true)
+                    .then(function(sources) {
+                        expect(
+                            zemMediaSourcesEndpoint.getSources.calls.count()
+                        ).toEqual(2);
+                        expect(sources.length).toEqual(2);
+                        done();
+                    })
+                    .catch(done.fail);
+            })
+            .catch(done.fail);
         $rootScope.$apply();
     });
 
     it('should correctly return available sources fetched from backend', function(done) {
-        zemMediaSourcesService.getAvailableSources().then(function(sources) {
-            expect(zemMediaSourcesEndpoint.getSources).toHaveBeenCalled();
-            expect(sources.length).toEqual(1);
-            done();
-        });
+        zemMediaSourcesService
+            .getAvailableSources()
+            .then(function(sources) {
+                expect(zemMediaSourcesEndpoint.getSources).toHaveBeenCalled();
+                expect(sources.length).toEqual(1);
+                done();
+            })
+            .catch(done.fail);
         $rootScope.$apply();
     });
 
     it('should return cached available sources if sources were already fetched from backend', function(done) {
-        zemMediaSourcesService.getAvailableSources().then(function() {
-            zemMediaSourcesService
-                .getAvailableSources()
-                .then(function(sources) {
-                    expect(
-                        zemMediaSourcesEndpoint.getSources.calls.count()
-                    ).toEqual(1);
-                    expect(sources.length).toEqual(1);
-                    done();
-                });
-        });
+        zemMediaSourcesService
+            .getAvailableSources()
+            .then(function() {
+                zemMediaSourcesService
+                    .getAvailableSources()
+                    .then(function(sources) {
+                        expect(
+                            zemMediaSourcesEndpoint.getSources.calls.count()
+                        ).toEqual(1);
+                        expect(sources.length).toEqual(1);
+                        done();
+                    })
+                    .catch(done.fail);
+            })
+            .catch(done.fail);
         $rootScope.$apply();
     });
 
     it('should corectly force refetch sources and return available sources', function(done) {
-        zemMediaSourcesService.getAvailableSources().then(function() {
-            zemMediaSourcesService
-                .getAvailableSources(true)
-                .then(function(sources) {
-                    expect(
-                        zemMediaSourcesEndpoint.getSources.calls.count()
-                    ).toEqual(2);
-                    expect(sources.length).toEqual(1);
-                    done();
-                });
-        });
+        zemMediaSourcesService
+            .getAvailableSources()
+            .then(function() {
+                zemMediaSourcesService
+                    .getAvailableSources(true)
+                    .then(function(sources) {
+                        expect(
+                            zemMediaSourcesEndpoint.getSources.calls.count()
+                        ).toEqual(2);
+                        expect(sources.length).toEqual(1);
+                        done();
+                    })
+                    .catch(done.fail);
+            })
+            .catch(done.fail);
         $rootScope.$apply();
     });
 });

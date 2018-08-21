@@ -43,8 +43,7 @@ describe('zemDataFilterService', function() {
         var expectedConditions = {};
         expectedConditions[
             zemDataFilterService.CONDITIONS.publisherStatus.name
-        ] =
-            zemDataFilterService.PUBLISHER_STATUS_CONDITION_VALUES.all; // eslint-disable-line max-len
+        ] = zemDataFilterService.PUBLISHER_STATUS_CONDITION_VALUES.all; // eslint-disable-line max-len
         expect(zemDataFilterService.getAppliedConditions()).toEqual(
             expectedConditions
         );
@@ -91,8 +90,7 @@ describe('zemDataFilterService', function() {
         ]; // eslint-disable-line max-len
         expectedConditions[
             zemDataFilterService.CONDITIONS.publisherStatus.name
-        ] =
-            zemDataFilterService.PUBLISHER_STATUS_CONDITION_VALUES.active; // eslint-disable-line max-len
+        ] = zemDataFilterService.PUBLISHER_STATUS_CONDITION_VALUES.active; // eslint-disable-line max-len
         expect(zemDataFilterService.getAppliedConditions()).toEqual(
             expectedConditions
         );
@@ -110,8 +108,7 @@ describe('zemDataFilterService', function() {
         var expectedConditions = {};
         expectedConditions[
             zemDataFilterService.CONDITIONS.publisherStatus.name
-        ] =
-            zemDataFilterService.PUBLISHER_STATUS_CONDITION_VALUES.all; // eslint-disable-line max-len
+        ] = zemDataFilterService.PUBLISHER_STATUS_CONDITION_VALUES.all; // eslint-disable-line max-len
         expect(zemDataFilterService.getAppliedConditions()).toEqual(
             expectedConditions
         );
@@ -147,8 +144,7 @@ describe('zemDataFilterService', function() {
         var expectedConditions = {};
         expectedConditions[
             zemDataFilterService.CONDITIONS.publisherStatus.name
-        ] =
-            zemDataFilterService.PUBLISHER_STATUS_CONDITION_VALUES.all; // eslint-disable-line max-len
+        ] = zemDataFilterService.PUBLISHER_STATUS_CONDITION_VALUES.all; // eslint-disable-line max-len
         expect(zemDataFilterService.getAppliedConditions()).toEqual(
             expectedConditions
         );
@@ -200,8 +196,7 @@ describe('zemDataFilterService', function() {
         ]; // eslint-disable-line max-len
         expectedConditions[
             zemDataFilterService.CONDITIONS.publisherStatus.name
-        ] =
-            zemDataFilterService.PUBLISHER_STATUS_CONDITION_VALUES.blacklisted; // eslint-disable-line max-len
+        ] = zemDataFilterService.PUBLISHER_STATUS_CONDITION_VALUES.blacklisted; // eslint-disable-line max-len
         expect(zemDataFilterService.getAppliedConditions()).toEqual(
             expectedConditions
         );
@@ -238,8 +233,7 @@ describe('zemDataFilterService', function() {
         ];
         expectedConditions[
             zemDataFilterService.CONDITIONS.publisherStatus.name
-        ] =
-            zemDataFilterService.PUBLISHER_STATUS_CONDITION_VALUES.blacklisted; // eslint-disable-line max-len
+        ] = zemDataFilterService.PUBLISHER_STATUS_CONDITION_VALUES.blacklisted; // eslint-disable-line max-len
         expect(zemDataFilterService.getAppliedConditions()).toEqual(
             expectedConditions
         );
@@ -282,8 +276,7 @@ describe('zemDataFilterService', function() {
         ];
         expectedConditions[
             zemDataFilterService.CONDITIONS.publisherStatus.name
-        ] =
-            zemDataFilterService.PUBLISHER_STATUS_CONDITION_VALUES.blacklisted; // eslint-disable-line max-len
+        ] = zemDataFilterService.PUBLISHER_STATUS_CONDITION_VALUES.blacklisted; // eslint-disable-line max-len
         expect(zemDataFilterService.getAppliedConditions()).toEqual(
             expectedConditions
         );

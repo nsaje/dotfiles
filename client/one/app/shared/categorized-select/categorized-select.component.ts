@@ -72,7 +72,10 @@ export class CategorizedSelectComponent
 
     ngOnInit() {
         this.searchSubscription = this.search$
-            .pipe(debounceTime(SEARCH_DEBOUNCE_TIME), distinctUntilChanged())
+            .pipe(
+                debounceTime(SEARCH_DEBOUNCE_TIME),
+                distinctUntilChanged()
+            )
             .subscribe(searchQuery => {
                 if (!this.selectedCategory) {
                     // User might have reset selected category before search executed. Ignore search in that case.
