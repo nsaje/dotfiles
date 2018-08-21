@@ -38,8 +38,15 @@ angular.module('one').component('zemAccountCreditRefundItemModal', {
             $ctrl.datePickerOptions = {
                 datepickerMode: 'month',
                 minMode: 'month',
-                minDate: now.subtract(1, 'month').toDate(),
-                maxDate: now.toDate(),
+                minDate: now
+                    .clone()
+                    .subtract(1, 'month')
+                    .startOf('month')
+                    .toDate(),
+                maxDate: now
+                    .clone()
+                    .endOf('month')
+                    .toDate(),
             };
         }
 
