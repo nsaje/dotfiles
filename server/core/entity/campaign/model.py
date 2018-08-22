@@ -7,6 +7,8 @@ from django.db import models
 import core.entity
 import core.common
 
+import dash.constants
+
 import utils.demo_anonymizer
 import utils.string_helper
 
@@ -24,6 +26,12 @@ class Campaign(instance.CampaignInstanceMixin, core.common.PermissionMixin, bcm_
 
     id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=127, editable=True, blank=False, null=False)
+    type = models.IntegerField(
+        default=dash.constants.CampaignType.CONTENT,
+        choices=dash.constants.CampaignType.get_choices(),
+        blank=True,
+        null=True,
+    )
     account = models.ForeignKey("Account", on_delete=models.PROTECT)
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name="Created at")
     modified_dt = models.DateTimeField(auto_now=True, verbose_name="Modified at")
