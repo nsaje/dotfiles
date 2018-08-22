@@ -88,7 +88,7 @@ def set_password(request, uidb64=None, token=None, template_name=None):
             if form.is_valid():
                 form.save()
 
-                if not user.email.endswith("@zemanta.com"):
+                if not (user.email.endswith("@zemanta.com") or user.email.endswith("@outbrain.com")):
                     # login user
                     user = auth.authenticate(username=user.email, password=request.POST["new_password"])
                     auth.login(request, user)
