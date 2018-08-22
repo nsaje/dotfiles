@@ -6,6 +6,7 @@ import core.entity
 from . import mark_almost_depleted_campaigns
 from . import update_campaigns_state
 from . import update_campaigns_end_date
+from . import update_campaigns_start_date
 from .. import constants
 from .. import CampaignStopState
 
@@ -30,6 +31,12 @@ def handle_updates():
         if initalize_campaigns:
             _handle_initialize(initalize_campaigns)
 
+        campaignstopstate_campaigns = _extract_campaigns(
+            _filter_messages(constants.CampaignUpdateType.CAMPAIGNSTOP_STATE, messages)
+        )
+        if campaignstopstate_campaigns:
+            _handle_campaignstopstate_change(campaignstopstate_campaigns)
+
 
 def _filter_messages(type_, messages):
     return [message for message in messages if message["type"] == type_]
@@ -51,6 +58,11 @@ def _handle_budget_updates(campaigns):
     _unset_pending_updates(campaigns)
 
 
+def _handle_campaignstopstate_change(campaigns):
+    logger.info("Handle campaign stop state change: campaigns=%s", [campaign.id for campaign in campaigns])
+    update_campaigns_start_date(campaigns)
+
+
 def _unset_pending_updates(campaigns):
     for campaign in campaigns:
         campaignstop_state, _ = CampaignStopState.objects.get_or_create(campaign=campaign)
@@ -59,6 +71,7 @@ def _unset_pending_updates(campaigns):
 
 def _full_check(campaigns):
     update_campaigns_end_date(campaigns)
+    update_campaigns_start_date(campaigns)
 
     update_campaigns_state(campaigns)
     mark_almost_depleted_campaigns(campaigns)

@@ -9,15 +9,19 @@ from utils import dates_helper
 
 from .. import CampaignStopState, constants
 from . import main
+from . import config
 
 
 class UpdateCampaignStopStateTest(TestCase):
     def setUp(self):
         self.campaign = magic_mixer.blend(core.entity.Campaign, real_time_campaign_stop=True)
+        notify_patcher = mock.patch("automation.campaignstop.service.update_notifier.notify_campaignstopstate_change")
+        notify_patcher.start()
+        self.addCleanup(notify_patcher.stop)
 
     @mock.patch("automation.campaignstop.service.spends_helper.get_predicted_remaining_budget")
     def test_create_campaign_state(self, mock_get_prediction):
-        mock_get_prediction.return_value = main.THRESHOLD * 2
+        mock_get_prediction.return_value = config.THRESHOLD * 2
         self.assertFalse(CampaignStopState.objects.filter(campaign=self.campaign).exists())
 
         main.update_campaigns_state(campaigns=[self.campaign])
@@ -27,7 +31,7 @@ class UpdateCampaignStopStateTest(TestCase):
 
     @mock.patch("automation.campaignstop.service.spends_helper.get_predicted_remaining_budget")
     def test_dont_start_campaign_slightly_above_threshold(self, mock_get_prediction):
-        mock_get_prediction.return_value = main.THRESHOLD * decimal.Decimal("1.2")
+        mock_get_prediction.return_value = config.THRESHOLD * decimal.Decimal("1.2")
         main.update_campaigns_state(campaigns=[self.campaign])
 
         campaign_stop_state = CampaignStopState.objects.get(campaign=self.campaign)

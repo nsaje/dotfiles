@@ -35,6 +35,10 @@ def notify_ad_group_source_settings_change(ad_group_source_settings, changes):
         _notify(campaign, constants.CampaignUpdateType.DAILY_CAP)
 
 
+def notify_campaignstopstate_change(campaign):
+    _notify(campaign, constants.CampaignUpdateType.CAMPAIGNSTOP_STATE)
+
+
 def _has_changed(changes, relevant_fields):
     return any(field in relevant_fields for field in changes)
 

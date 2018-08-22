@@ -202,7 +202,7 @@ class BudgetLineItem(core.common.FootprintModel, core.history.HistoryMixinOld):
     def get_local_available_amount(self, date=None):
         if date is None:
             date = utils.dates_helper.local_today()
-        total_spend = self.get_local_spend_data(end_date=date)["etf_total"]
+        total_spend = self.get_local_spend_data(to_date=date)["etf_total"]
         return self.allocated_amount() - total_spend
 
     def get_available_etfm_amount(self, date=None):
@@ -215,7 +215,7 @@ class BudgetLineItem(core.common.FootprintModel, core.history.HistoryMixinOld):
     def get_local_available_etfm_amount(self, date=None):
         if date is None:
             date = utils.dates_helper.local_today()
-        total_spend = self.get_local_spend_data(end_date=date)["etfm_total"]
+        total_spend = self.get_local_spend_data(to_date=date)["etfm_total"]
         return self.allocated_amount() - total_spend
 
     def get_local_spend_data_bcm(self):
@@ -319,10 +319,10 @@ class BudgetLineItem(core.common.FootprintModel, core.history.HistoryMixinOld):
             statements = statements.filter(date__lte=date)
         return statements.calculate_spend_data()
 
-    def get_local_spend_data(self, start_date=None, end_date=None):
+    def get_local_spend_data(self, from_date=None, to_date=None):
         if (
-            start_date is None
-            and (end_date is None or end_date == utils.dates_helper.local_today())
+            from_date is None
+            and (to_date is None or to_date == utils.dates_helper.local_today())
             and hasattr(self, "spend_data_media")
         ):
             return {
@@ -335,10 +335,10 @@ class BudgetLineItem(core.common.FootprintModel, core.history.HistoryMixinOld):
                 "etfm_total": utils.converters.nano_to_decimal(self.spend_data_local_etfm_total or 0),
             }
         statements = self.statements
-        if start_date:
-            statements = statements.filter(date__gte=start_date)
-        if end_date:
-            statements = statements.filter(date__lte=end_date)
+        if from_date:
+            statements = statements.filter(date__gte=from_date)
+        if to_date:
+            statements = statements.filter(date__lte=to_date)
         return statements.calculate_local_spend_data()
 
     def get_daily_spend(self, date):

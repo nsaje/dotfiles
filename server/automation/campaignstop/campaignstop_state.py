@@ -3,8 +3,9 @@ import logging
 from django.db import models
 
 import core.entity
-from . import constants
 import dash.constants
+
+from . import constants
 
 from utils import k1_helper
 from utils import dates_helper
@@ -23,6 +24,7 @@ class CampaignStopState(models.Model):
         choices=constants.CampaignStopState.get_choices(), default=constants.CampaignStopState.STOPPED
     )
     max_allowed_end_date = models.DateField(null=True, blank=True, default=None)
+    min_allowed_start_date = models.DateField(null=True, blank=True, default=None)
     pending_budget_updates = models.BooleanField(default=False)
     almost_depleted_marked_dt = models.DateTimeField(null=True, blank=True)
 
@@ -38,8 +40,10 @@ class CampaignStopState(models.Model):
         self.save()
 
         if self.state != previous:
-            ad_group_ids = self.campaign.adgroup_set.all().exclude_archived().values_list("id", flat=True)
-            k1_helper.update_ad_groups(ad_group_ids, "campaignstop.status_change", priority=True)
+            from .service import update_notifier
+
+            update_notifier.notify_campaignstopstate_change(self.campaign)
+            self._ping_k1_for_ad_groups("campaignstop.status_change", priority=True)
 
     def update_max_allowed_end_date(self, max_allowed_end_date):
         previous = self.max_allowed_end_date
@@ -47,8 +51,19 @@ class CampaignStopState(models.Model):
         self.save()
 
         if self.max_allowed_end_date != previous:
-            ad_group_ids = self.campaign.adgroup_set.all().exclude_archived().values_list("id", flat=True)
-            k1_helper.update_ad_groups(ad_group_ids, "campaignstop.end_date_change")
+            self._ping_k1_for_ad_groups("campaignstop.end_date_change")
+
+    def update_min_allowed_start_date(self, min_allowed_start_date):
+        previous = self.min_allowed_start_date
+        self.min_allowed_start_date = min_allowed_start_date
+        self.save()
+
+        if self.min_allowed_start_date != previous:
+            self._ping_k1_for_ad_groups("campaignstop.start_date_change")
+
+    def _ping_k1_for_ad_groups(self, message, priority=False):
+        ad_group_ids = self.campaign.adgroup_set.all().exclude_archived().values_list("id", flat=True)
+        k1_helper.update_ad_groups(ad_group_ids, message, priority=priority)
 
     def update_almost_depleted(self, is_depleted):
         if is_depleted and not self.almost_depleted:
@@ -85,11 +100,12 @@ class CampaignStopState(models.Model):
         self.save()
 
     def __str__(self):
-        return "{} ({}) (state: {}, almost_depleted: {}, max_allowed_end_date: {}, pending_budget_updates: {})".format(
+        return "{} ({}) (state: {}, almost_depleted: {}, min_allowed_start_date: {}, max_allowed_end_date: {}, pending_budget_updates: {})".format(
             self.campaign.name,
             self.campaign.id,
             self.state,
             self.almost_depleted,
+            self.min_allowed_start_date,
             self.max_allowed_end_date,
             self.pending_budget_updates,
         )

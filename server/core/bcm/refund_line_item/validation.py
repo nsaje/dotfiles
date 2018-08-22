@@ -18,7 +18,7 @@ class RefundLineItemValidatorMixin(object):
     def _validate_amount(self):
         total_spend = 0
         for budget in self.credit.budgets.all():
-            total_spend += budget.get_local_spend_data(start_date=self.start_date, end_date=self.end_date)["etfm_total"]
+            total_spend += budget.get_local_spend_data(from_date=self.start_date, to_date=self.end_date)["etfm_total"]
 
         if self.amount > total_spend:
             raise exceptions.RefundAmountExceededTotalSpend("Total refunded amount exceeded total spend.")

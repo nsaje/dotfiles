@@ -44,8 +44,7 @@ def get_predicted_remaining_budget(log, campaign):
     return remaining - predicted_spend_increase
 
 
-def get_budget_spend_estimates(log, campaign):
-    budgets_active_today = _get_budgets_active_today(campaign)
+def get_budget_spend_estimates(log, campaign, budgets):
     budget_spend_until_date = _get_until_date_for_budget_spends(campaign)
     current_rt_spend = _get_current_realtime_spend(log, campaign, dates_helper.day_after(budget_spend_until_date))
 
@@ -53,8 +52,8 @@ def get_budget_spend_estimates(log, campaign):
     remaining_rt_spend = current_rt_spend if current_rt_spend else 0
     local_remaining_rt_spend = _to_local_currency(campaign, remaining_rt_spend)
     spend_per_budget = {}
-    for budget in budgets_active_today:
-        past_spend = budget.get_local_spend_data(end_date=budget_spend_until_date)["etfm_total"]
+    for budget in budgets:
+        past_spend = budget.get_local_spend_data(to_date=budget_spend_until_date)["etfm_total"]
         spend_per_budget[budget.id] = past_spend
         spend_estimates[budget] = min(budget.amount, past_spend + local_remaining_rt_spend)
 

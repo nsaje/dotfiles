@@ -11,8 +11,7 @@ from . import refresh_realtime_data
 from .. import CampaignStopState
 from .. import constants
 from .. import RealTimeCampaignStopLog
-
-THRESHOLD = decimal.Decimal("10")
+from . import config
 
 
 def update_campaigns_state(campaigns: Optional[List[core.entity.Campaign]] = None) -> None:
@@ -77,5 +76,5 @@ def _is_below_threshold(
 def _get_threshold(campaign_state: CampaignStopState) -> decimal.Decimal:
     if campaign_state.state == constants.CampaignStopState.STOPPED:
         # NOTE: avoid restarting when a stopped campaign only slightly above threshold is checked
-        return THRESHOLD * decimal.Decimal("1.5")
-    return THRESHOLD
+        return config.THRESHOLD * decimal.Decimal("1.5")
+    return decimal.Decimal(config.THRESHOLD)

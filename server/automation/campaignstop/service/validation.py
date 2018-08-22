@@ -7,6 +7,8 @@ from . import spends_helper
 from .. import RealTimeCampaignStopLog
 from ..constants import CampaignStopEvent
 
+from utils import dates_helper
+
 
 RESERVED_PROPORTION = decimal.Decimal("0.1")
 
@@ -32,7 +34,8 @@ def validate_minimum_budget_amount(budget_line_item, amount):
 
 
 def _calculate_minimum_budget_amount(log, budget_line_item):
-    spend_estimates = spends_helper.get_budget_spend_estimates(log, budget_line_item.campaign)
+    budgets_active_today = _get_budgets_active_today(budget_line_item.campaign)
+    spend_estimates = spends_helper.get_budget_spend_estimates(log, budget_line_item.campaign, budgets_active_today)
     estimated_spend = spend_estimates.get(budget_line_item, 0)
     reserved_amount = estimated_spend * RESERVED_PROPORTION
     amount = estimated_spend + reserved_amount
@@ -40,6 +43,11 @@ def _calculate_minimum_budget_amount(log, budget_line_item):
         {"spend_estimates": {budget.id: spend for budget, spend in spend_estimates.items()}, "min_amount_raw": amount}
     )
     return _round(amount)
+
+
+def _get_budgets_active_today(campaign):
+    today = dates_helper.local_today()
+    return campaign.budgets.filter(start_date__lte=today, end_date__gte=today).order_by("created_dt")
 
 
 def _round(number):

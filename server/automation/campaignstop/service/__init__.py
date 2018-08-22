@@ -1,6 +1,7 @@
 from .refresh import refresh_realtime_data
 from .main import update_campaigns_state
 from .end_date_check import update_campaigns_end_date
+from .start_date_check import update_campaigns_start_date
 from .api import get_campaignstop_state, get_campaignstop_states
 from .validation import validate_minimum_budget_amount, CampaignStopValidationException
 from .selection import mark_almost_depleted_campaigns
