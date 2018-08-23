@@ -129,8 +129,8 @@ class AdGroupSourceCreate(TestCase):
     def test_video_campaign_bulk_create_on_video_sources(self, mock_k1):
         self.default_source_settings.source.supports_video = True
         self.default_source_settings.source.save()
-        self.ad_group.campaign.settings.type = constants.CampaignType.VIDEO
-        self.ad_group.campaign.settings.update_unsafe(self.request)
+        self.ad_group.campaign.type = constants.CampaignType.VIDEO
+        self.ad_group.campaign.save()
         ad_group_sources = core.entity.AdGroupSource.objects.bulk_create_on_allowed_sources(
             self.request, self.ad_group, write_history=False
         )
@@ -138,8 +138,8 @@ class AdGroupSourceCreate(TestCase):
         self.assertTrue(mock_k1.called)
 
     def test_video_campaign_bulk_create_on_content_sources(self, mock_k1):
-        self.ad_group.campaign.settings.type = constants.CampaignType.VIDEO
-        self.ad_group.campaign.settings.update_unsafe(self.request)
+        self.ad_group.campaign.type = constants.CampaignType.VIDEO
+        self.ad_group.campaign.save()
         ad_group_sources = core.entity.AdGroupSource.objects.bulk_create_on_allowed_sources(
             self.request, self.ad_group, write_history=False
         )
