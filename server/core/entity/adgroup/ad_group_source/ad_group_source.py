@@ -109,10 +109,16 @@ class AdGroupSourceManager(core.common.QuerySetManager):
             "source_type", "defaultsourcesettings__credentials"
         )
         added_ad_group_sources = []
+
         if not retargeting_helper.can_add_source_with_retargeting(sources, ad_group.settings):
             raise utils.exc.ValidationError("Media sources can not be added because some do not support retargeting.")
+
         for source in sources:
-            if source.maintenance:
+            if (
+                source.maintenance
+                or ad_group.campaign.settings.type == constants.CampaignType.VIDEO
+                and not source.supports_video
+            ):
                 continue
 
             try:

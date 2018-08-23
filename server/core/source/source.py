@@ -27,13 +27,15 @@ class Source(models.Model):
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name="Created at")
     modified_dt = models.DateTimeField(auto_now=True, verbose_name="Modified at")
     released = models.BooleanField(default=True)
+
     supports_retargeting = models.BooleanField(
         default=False, help_text=_("Designates whether source supports retargeting automatically.")
     )
-
     supports_retargeting_manually = models.BooleanField(
         default=False, help_text=_("Designates whether source supports retargeting via manual action.")
     )
+
+    supports_video = models.BooleanField(default=False, help_text=_("Designates whether source supports video."))
 
     impression_trackers_count = models.PositiveSmallIntegerField(
         default=0, help_text=_("Number of impression trackers we know this source supports.")
@@ -42,7 +44,6 @@ class Source(models.Model):
     content_ad_submission_type = models.IntegerField(
         default=constants.SourceSubmissionType.DEFAULT, choices=constants.SourceSubmissionType.get_choices()
     )
-
     content_ad_submission_policy = models.IntegerField(
         default=constants.SourceSubmissionPolicy.AUTOMATIC,
         choices=constants.SourceSubmissionPolicy.get_choices(),
@@ -58,6 +59,7 @@ class Source(models.Model):
         default=Decimal("0.15"),
         verbose_name="Default CPC (if ad group is targeting mobile only)",
     )
+
     default_daily_budget_cc = models.DecimalField(
         max_digits=10, decimal_places=4, default=Decimal("10.00"), verbose_name="Default daily spend cap"
     )
