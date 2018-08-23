@@ -12,7 +12,8 @@ RUN apt-get update && \
         libmemcached-dev \
         libmagic-dev \
         nano \
-        vim-tiny \
+        vim \
+        screen \
         less \
         git \
         openssh-server \
@@ -22,7 +23,8 @@ RUN apt-get update && \
         libxml2 && \
     apt-get -y autoremove && \
     mkdir /var/run/sshd && \
-    ln -s /usr/bin/vim.tiny /usr/bin/vim
+    ln -s /usr/bin/vim.basic /usr/bin/vi && \
+    ln -s /usr/bin/vim.basic /usr/bin/vim
 
 RUN rm -fr /app ; mkdir -p /app/logs
 
