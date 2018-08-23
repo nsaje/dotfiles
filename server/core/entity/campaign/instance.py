@@ -111,3 +111,9 @@ class CampaignInstanceMixin:
         if user is not None:
             self.modified_by = user
         super().save(*args, **kwargs)
+
+    def update_type(self, type=None):
+        if type and self.type != type:
+            self._validate_type(type)
+            self.type = type
+            self.save()

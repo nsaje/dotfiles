@@ -126,8 +126,10 @@ class AccountType(ConstantBase):
 class CampaignType(ConstantBase):
     CONTENT = 1
     VIDEO = 2
+    CONVERSION = 3
+    MOBILE = 4
 
-    _VALUES = {CONTENT: "Content", VIDEO: "Video"}
+    _VALUES = {CONTENT: "Content", VIDEO: "Video", CONVERSION: "Conversion", MOBILE: "Mobile"}
 
 
 class Language(ConstantBase):

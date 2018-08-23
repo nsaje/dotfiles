@@ -799,6 +799,12 @@ class CampaignSettingsForm(PublisherGroupsFormMixin, forms.Form):
         error_messages={"required": "Please choose a language in which ads will be created."},
     )
 
+    type = forms.TypedChoiceField(
+        coerce=int,
+        choices=constants.CampaignType.get_choices(),
+        error_messages={"required": "Please choose the type of the campaign."},
+    )
+
     iab_category = forms.ChoiceField(choices=constants.IABCategory.get_choices(), required=False)
 
     enable_ga_tracking = forms.NullBooleanField(required=False)

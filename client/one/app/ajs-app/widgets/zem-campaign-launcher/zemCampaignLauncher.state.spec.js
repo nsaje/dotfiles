@@ -115,6 +115,7 @@ describe('zemCampaignLauncherStateService', function() {
             campaignName: 'default campaign name',
             iabCategory: null,
             language: null,
+            type: 'CONTENT',
             budgetAmount: null,
             maxCpc: null,
             dailyBudget: null,

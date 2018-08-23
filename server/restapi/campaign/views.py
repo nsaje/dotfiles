@@ -42,7 +42,9 @@ class CampaignViewSet(RESTAPIBaseViewSet):
         account = restapi.access.get_account(request.user, settings.get("campaign", {}).get("account_id"))
 
         with transaction.atomic():
-            new_campaign = core.entity.Campaign.objects.create(request, account=account, name=settings.get("name"))
+            new_campaign = core.entity.Campaign.objects.create(
+                request, account=account, name=settings.get("name"), type=settings.get("campaign", {}).get("type")
+            )
             self._update_campaign(request, new_campaign, settings)
 
         return self.response_ok(serializers.CampaignSerializer(new_campaign.settings).data, status=201)
@@ -50,9 +52,13 @@ class CampaignViewSet(RESTAPIBaseViewSet):
     def _update_campaign(self, request, campaign, data):
         try:
             campaign.settings.update(request, **data)
+            campaign.update_type(data.get("campaign", {}).get("type"))
 
         except core.entity.settings.campaign_settings.exceptions.CannotChangeLanguage as err:
-            raise utils.exc.ValidationError(errors={"language": str(err)})
+            raise utils.exc.ValidationError(errors={"language": [str(err)]})
+
+        except core.entity.campaign.exceptions.CannotChangeType as err:
+            raise utils.exc.ValidationError(errors={"type": [str(err)]})
 
         except core.entity.settings.campaign_settings.exceptions.PublisherWhitelistInvalid as err:
             raise utils.exc.ValidationError(errors={"targeting": {"publisherGroups": {"included": [str(err)]}}})

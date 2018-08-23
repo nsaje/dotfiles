@@ -35,6 +35,9 @@ class CampaignLauncherSerializer(serializers.Serializer):
     language = restapi.serializers.fields.DashConstantField(
         dash.constants.Language, error_messages={"required": "Please specify the language of the campaign's ads."}
     )
+    type = restapi.serializers.fields.DashConstantField(
+        dash.constants.CampaignType, error_messages={"required": "Please specify the type of the campaign."}
+    )
     budget_amount = fields.IntegerField(min_value=0)
     max_cpc = fields.DecimalField(required=False, allow_null=True, max_digits=None, decimal_places=4)
     daily_budget = fields.DecimalField(max_digits=10, decimal_places=4)

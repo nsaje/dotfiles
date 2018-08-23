@@ -12,6 +12,7 @@ angular.module('one.widgets').component('zemCampaignGeneralSettings', {
 
         $ctrl.iabCategoriesSorted = iabCategoriesSorted;
         $ctrl.languages = options.languages;
+        $ctrl.campaignTypes = options.campaignTypes;
         $ctrl.hasPermission = zemPermissions.hasPermission;
         $ctrl.isPermissionInternal = zemPermissions.isPermissionInternal;
 
@@ -30,6 +31,15 @@ angular.module('one.widgets').component('zemCampaignGeneralSettings', {
                 !$ctrl.entity.settings.language
             ) {
                 $ctrl.entity.settings.language = constants.language.ENGLISH;
+            }
+            if (
+                $ctrl.entity &&
+                !zemPermissions.hasPermission(
+                    'zemauth.fea_can_change_campaign_type'
+                ) &&
+                !$ctrl.entity.settings.type
+            ) {
+                $ctrl.entity.settings.type = constants.campaignType.CONTENT;
             }
         };
 

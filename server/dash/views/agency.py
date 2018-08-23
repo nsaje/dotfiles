@@ -549,9 +549,13 @@ class CampaignSettings(api_common.BaseApiView):
         with transaction.atomic():
             try:
                 campaign.settings.update(request, **form_data)
+                campaign.update_type(form_data.get("type"))
 
             except core.entity.settings.campaign_settings.exceptions.CannotChangeLanguage as err:
-                raise utils.exc.ValidationError(errors={"language": str(err)})
+                raise utils.exc.ValidationError(errors={"language": [str(err)]})
+
+            except core.entity.campaign.exceptions.CannotChangeType as err:
+                raise utils.exc.ValidationError(errors={"type": [str(err)]})
 
             except core.entity.settings.campaign_settings.exceptions.PublisherWhitelistInvalid as err:
                 raise utils.exc.ValidationError(errors={"whitelist_publisher_groups": [str(err)]})
@@ -699,6 +703,7 @@ class CampaignSettings(api_common.BaseApiView):
             "name": campaign.name,
             "campaign_goal": settings.campaign_goal,
             "language": settings.language,
+            "type": campaign.type,
             "enable_ga_tracking": settings.enable_ga_tracking,
             "ga_property_id": settings.ga_property_id,
             "ga_tracking_type": settings.ga_tracking_type,

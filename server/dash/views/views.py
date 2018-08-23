@@ -67,6 +67,11 @@ CAMPAIGN_NOT_CONFIGURED_SCENARIOS = {
         "action_text": "Configure the campaign language",
         "url_postfix": "&settingsScrollTo=zemCampaignGeneralSettings",
     },
+    "type_missing": {
+        "message": "You are not able to add an ad group because campaign type is not defined.",
+        "action_text": "Configure the campaign type",
+        "url_postfix": "&settingsScrollTo=zemCampaignGeneralSettings",
+    },
 }
 
 
@@ -324,12 +329,14 @@ class CampaignAdGroups(api_common.BaseApiView):
         primary_goal = campaign_goals.get_primary_campaign_goal(campaign)
         scenario = None
 
-        if not primary_goal and not campaign.settings.language:
+        if not primary_goal and not campaign.settings.language and not campaign.type:
             scenario = "multiple_missing"
         elif not primary_goal:
             scenario = "goal_missing"
         elif not campaign.settings.language:
             scenario = "language_missing"
+        elif not campaign.type:
+            scenario = "type_missing"
 
         if scenario:
             url = (
@@ -683,7 +690,8 @@ class AccountCampaigns(api_common.BaseApiView):
         name = core.entity.helpers.create_default_name(models.Campaign.objects.filter(account=account), "New campaign")
 
         language = constants.Language.ENGLISH if self.rest_proxy else None
-        campaign = models.Campaign.objects.create(request, account, name, language=language, send_mail=True)
+        type = constants.CampaignType.CONTENT if self.rest_proxy else None
+        campaign = models.Campaign.objects.create(request, account, name, language=language, type=type, send_mail=True)
         native_server.apply_campaign_create_hacks(request, campaign)
 
         response = {"name": campaign.name, "id": campaign.id}

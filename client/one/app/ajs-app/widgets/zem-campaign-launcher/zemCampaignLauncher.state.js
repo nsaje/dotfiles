@@ -23,6 +23,7 @@ angular
                     {name: 'maxCpc', required: false},
                     {name: 'dailyBudget', required: true},
                     {name: 'campaignGoal', required: true},
+                    {name: 'type', required: true},
                 ],
                 controls: {
                     previous: true,
@@ -138,6 +139,22 @@ angular
                     state.orderedSteps = getOrderedSteps(state.steps);
                     state.fields = getDefaultFields(state.orderedSteps);
                     state.fieldsErrors = angular.copy(state.fields);
+
+                    if (
+                        objective &&
+                        objective ===
+                            constants.campaignObjective.VIDEO_ADVERTISING
+                    ) {
+                        state.fields.type = constants.convertToName(
+                            constants.campaignType.VIDEO,
+                            constants.campaignType
+                        );
+                    } else {
+                        state.fields.type = constants.convertToName(
+                            constants.campaignType.CONTENT,
+                            constants.campaignType
+                        );
+                    }
                 }
 
                 var stepIndex = 0;

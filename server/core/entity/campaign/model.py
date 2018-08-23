@@ -17,8 +17,16 @@ from . import instance
 from . import manager
 from . import queryset
 
+from . import validation
 
-class Campaign(instance.CampaignInstanceMixin, core.common.PermissionMixin, bcm_mixin.CampaignBCMMixin, models.Model):
+
+class Campaign(
+    validation.CampaignValidatorMixin,
+    instance.CampaignInstanceMixin,
+    core.common.PermissionMixin,
+    bcm_mixin.CampaignBCMMixin,
+    models.Model,
+):
     class Meta:
         app_label = "dash"
 

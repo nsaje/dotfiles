@@ -955,6 +955,12 @@ var constants = {
         TRADITIONAL_CHINESE: 'zh_TW',
         OTHER: 'any',
     },
+    campaignType: {
+        CONTENT: 1,
+        VIDEO: 2,
+        CONVERSION: 3,
+        MOBILE: 4,
+    },
     campaignObjective: {
         CONTENT_DISTRIBUTION: 1,
         VIDEO_ADVERTISING: 2,
@@ -1499,6 +1505,12 @@ var options = {
             value: constants.language.TRADITIONAL_CHINESE,
         },
         {name: 'Other', value: constants.language.OTHER},
+    ],
+    campaignTypes: [
+        {name: 'Content', value: constants.campaignType.CONTENT},
+        {name: 'Video', value: constants.campaignType.VIDEO},
+        {name: 'Conversion', value: constants.campaignType.CONVERSION},
+        {name: 'Mobile', value: constants.campaignType.MOBILE},
     ],
     iabCategories: [
         {name: 'Uncategorized (IAB24)', value: constants.iabCategory.IAB24},

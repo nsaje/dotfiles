@@ -24,6 +24,7 @@ class CampaignManager(core.common.BaseManager):
         name,
         iab_category=constants.IABCategory.IAB24,
         language=constants.Language.ENGLISH,
+        type=constants.CampaignType.CONTENT,
         send_mail=False,
     ):
         core.common.entity_limits.enforce(model.Campaign.objects.filter(account=account).exclude_archived(), account.id)
@@ -35,7 +36,7 @@ class CampaignManager(core.common.BaseManager):
                     "action": {"text": "Configure the currency", "url": url},
                 }
             )
-        campaign = model.Campaign(name=name, account=account)
+        campaign = model.Campaign(name=name, account=account, type=type)
 
         campaign.real_time_campaign_stop = True
         if account.id in ACCOUNTS_WITHOUT_CAMPAIGN_STOP or account.agency_id in AGENCIES_WITHOUT_CAMPAIGN_STOP:

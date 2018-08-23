@@ -20,6 +20,7 @@ class CampaignsTest(RESTAPITest):
         autopilot=False,
         iab_category=constants.IABCategory.IAB1_1,
         language=constants.Language.ENGLISH,
+        type=constants.CampaignType.CONTENT,
         name="My Campaign TEST",
         enable_ga_tracking=True,
         ga_tracking_type=constants.GATrackingType.EMAIL,
@@ -39,6 +40,7 @@ class CampaignsTest(RESTAPITest):
             "autopilot": autopilot,
             "iabCategory": constants.IABCategory.get_name(iab_category),
             "language": constants.Language.get_name(language),
+            "type": constants.CampaignType.get_name(type),
             "name": name,
             "tracking": {
                 "ga": {
@@ -67,6 +69,7 @@ class CampaignsTest(RESTAPITest):
             autopilot=settings_db.autopilot,
             iab_category=settings_db.iab_category,
             language=settings_db.language,
+            type=campaign_db.type,
             name=settings_db.name,
             enable_ga_tracking=settings_db.enable_ga_tracking,
             ga_tracking_type=settings_db.ga_tracking_type,

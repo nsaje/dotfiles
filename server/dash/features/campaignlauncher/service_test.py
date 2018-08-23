@@ -40,6 +40,7 @@ class TestService(TestCase):
             name="xyz",
             iab_category=dash.constants.IABCategory.IAB1_1,
             language=dash.constants.Language.SPANISH,
+            type=dash.constants.CampaignType.CONTENT,
             budget_amount=234,
             upload_batch=upload_batch,
             goal_type=dash.constants.CampaignGoalKPI.CPA,
