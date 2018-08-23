@@ -78,13 +78,13 @@ lint_client:	## runs client linters
 		   $(Z1_CLIENT_IMAGE) \
 		   bash -c "npm run lint"
 
-build_client:	## builds client app for production
+build_client:	## builds client app for production	
 	docker run \
 		   --rm \
 		   -v $(PWD)/client:/app/ \
 		   -v /app/node_modules/ \
 		   $(Z1_CLIENT_IMAGE) \
-		   bash -c "npm run prod --build-number=$(BUILD_NUM) --branch-name=$(GIT_BRANCH)"
+		   bash -c "npm run prod --build-number=$(BUILD_NUM) --branch-name=$(GIT_BRANCH) --sentry-token=$(Z1_SENTRY_TOKEN)"
 
 collect_server_static:	## collects static files for production build
 	rm -rf server/static && mkdir server/static && chmod 777 server/static

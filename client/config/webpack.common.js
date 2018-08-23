@@ -190,10 +190,11 @@ function generateAppConfig(env) {
             test: env.NODE_ENV === 'test',
             prod: env.NODE_ENV === 'production',
         },
-        buildNumber: env.npm_config_build_number,
-        branchName: env.npm_config_branch_name,
-        theme: env.npm_config_theme,
-        visualize: env.visualize === 'true' || false,
+        buildNumber: env.npm_config_build_number || '',
+        branchName: env.npm_config_branch_name || '',
+        theme: env.npm_config_theme || '',
+        analyze: env.npm_config_analyze === 'true' || false,
+        sentryToken: env.npm_config_sentry_token || '',
     };
 
     config.staticUrl = getStaticUrl(config);

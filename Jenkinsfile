@@ -1,11 +1,11 @@
 #!groovy
 node('master') {
     stage('Setup') {
-        sh 'export' // for debug puropses
+        sh 'export' // for debug purposes
         env.CACHE_DIR = "${JENKINS_HOME}/workspace/_CACHE/${JOB_NAME}"
         sh 'mkdir -p ${CACHE_DIR}'
         env.PATH = "${JENKINS_HOME}/bin/:${env.PATH}"
-        env.AWS_DEFAULT_REGION="us-east-1"
+        env.AWS_DEFAULT_REGION="us-east-1"        
     }
 
     stage('Code checkout') {
@@ -23,46 +23,48 @@ node('master') {
         sh 'make build'        
     }
 
-    stage('Parallel tasks') {
-        // login to ECR
-        sh 'make login'        
+    withCredentials([string(credentialsId: 'z1_sentry_token', variable: 'Z1_SENTRY_TOKEN')]) {
+        stage('Parallel tasks') {
+            // login to ECR
+            sh 'make login'        
 
-        parallel(
-            'Server lint': {
-                sh 'make lint_server'
-            },
-            'Client lint': {
-                sh 'make lint_client'
-            },
-            'Acceptance': {
-                try {
-                    sh 'make test_acceptance'
-                } finally {
-                    junit 'server/.junit_acceptance.xml'
-                }
-            },
-            'Server test': {
-                try {
-                    sh 'make test_server | stdbuf -i0 -o0 -e0 tee /dev/stderr | tail -n 10 | grep "PASSED"'
-                } finally {
-                    junit 'server/.junit_xml/*.xml'
-                }
-            },
-            'Client test': {
-                try {
-                    sh 'make test_client'                     
-                } finally {
-                    junit 'client/test-results.xml'
-                }
-            },
-            'Client build': {
-                // Client artifacts
-                sh 'make build_client'
-                // webpack sometimes build empty z1 client
-                sh """[ "\$(wc -c <client/dist/one/zemanta-one.js)" -ge 800000 ]"""
-            },
-            failFast: true  // if one of the parallel branches fails, fail the build right away
-        )
+            parallel(
+                'Server lint': {
+                    sh 'make lint_server'
+                },
+                'Client lint': {
+                    sh 'make lint_client'
+                },
+                'Acceptance': {
+                    try {
+                        sh 'make test_acceptance'
+                    } finally {
+                        junit 'server/.junit_acceptance.xml'
+                    }
+                },
+                'Server test': {
+                    try {
+                        sh 'make test_server | stdbuf -i0 -o0 -e0 tee /dev/stderr | tail -n 10 | grep "PASSED"'
+                    } finally {
+                        junit 'server/.junit_xml/*.xml'
+                    }
+                },
+                'Client test': {
+                    try {
+                        sh 'make test_client'                     
+                    } finally {
+                        junit 'client/test-results.xml'
+                    }
+                },
+                'Client build': {
+                    // Client artifacts
+                    sh 'make build_client'
+                    // webpack sometimes build empty z1 client
+                    sh """[ "\$(wc -c <client/dist/one/zemanta-one.js)" -ge 800000 ]"""
+                },
+                failFast: true  // if one of the parallel branches fails, fail the build right away
+            )
+        }
     }
 
     stage('Collect artifacts') {        

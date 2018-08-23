@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "NODE_ENV=development webpack-dev-server --debug --history-api-fallback --inline --color --progress --port=9999 --host=0.0.0.0",
-    "dev-visualize": "NODE_ENV=development visualize=true webpack",
+    "dev-analyze": "NODE_ENV=development npm_config_analyze=true webpack",
     "prod": "NODE_ENV=production webpack",
     "tests": "NODE_ENV=test karma start karma.conf.js",
     "tests-watch": "NODE_ENV=test karma start karma.conf.js --no-single-run",
@@ -82,7 +82,8 @@
     "webpack-copy-plugin": "0.0.4",
     "webpack-dev-server": "3.1.5",
     "webpack-merge": "4.1.4",
-    "webpack-parallel-uglify-plugin": "1.1.0"
+    "webpack-parallel-uglify-plugin": "1.1.0",
+    "webpack-sentry-plugin": "1.16.0"
   },
   "browserslist": [
     "> 1%",

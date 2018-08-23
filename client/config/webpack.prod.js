@@ -4,6 +4,7 @@ var merge = require('webpack-merge');
 var CopyWebpackPlugin = require('copy-webpack-plugin');
 var OptimizeCSSAssetsPlugin = require('optimize-css-assets-webpack-plugin');
 var ParallelUglifyPlugin = require('webpack-parallel-uglify-plugin');
+var SentryPlugin = require('webpack-sentry-plugin');
 
 var appConfig = common.getAppConfig();
 var configs = [];
@@ -76,6 +77,21 @@ function generateMainConfig(appConfig) {
             sourceMap: true,
         }),
     ]);
+
+    if (appConfig.branchName === 'master') {
+        config.plugins = config.plugins.concat([
+            // https://github.com/40thieves/webpack-sentry-plugin
+            // Webpack plugin to upload source maps to Sentry
+            new SentryPlugin({
+                release: appConfig.buildNumber,
+                apiKey: appConfig.sentryToken,
+                organization: 'zemanta',
+                project: 'frontend',
+                deleteAfterCompile: true,
+                suppressErrors: true,
+            }),
+        ]);
+    }
 
     config.devtool = 'source-map';
     config.mode = 'production';

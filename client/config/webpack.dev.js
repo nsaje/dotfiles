@@ -37,7 +37,7 @@ function generateMainConfig(appConfig) {
         loader: 'null-loader',
     });
 
-    if (appConfig.visualize) {
+    if (appConfig.analyze) {
         config.plugins = config.plugins.concat([
             // https://www.npmjs.com/package/webpack-bundle-analyzer
             // Visualize size of webpack output files with an interactive zoomable treemap.
