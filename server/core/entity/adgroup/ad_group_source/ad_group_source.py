@@ -116,7 +116,7 @@ class AdGroupSourceManager(core.common.QuerySetManager):
         for source in sources:
             if (
                 source.maintenance
-                or ad_group.campaign.settings.type == constants.CampaignType.VIDEO
+                or ad_group.campaign.type == constants.CampaignType.VIDEO
                 and not source.supports_video
             ):
                 continue
