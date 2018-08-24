@@ -40,7 +40,7 @@ class MVConversions(Materialize):
                     s3_path = s3.upload_csv(self.TABLE_NAME, date, self.job_id, partial(self.generate_rows, c, date))
 
                     logger.info('Copying CSV to table "%s" for day %s, job %s', self.TABLE_NAME, date, self.job_id)
-                    sql, params = redshift.prepare_copy_csv_query(s3_path, self.TABLE_NAME)
+                    sql, params = redshift.prepare_copy_query(s3_path, self.TABLE_NAME)
                     c.execute(sql, params)
 
     def generate_rows(self, cursor, date):

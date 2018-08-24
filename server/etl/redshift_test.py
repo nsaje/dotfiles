@@ -79,7 +79,7 @@ class ReplicasTest(TestCase, backtosql.TestSQLMixin):
 
     @mock.patch("redshiftapi.db.get_write_stats_transaction", autospec=True)
     @mock.patch("redshiftapi.db.get_write_stats_cursor", autospec=True)
-    @mock.patch.object(redshift, "prepare_copy_csv_query", autospec=True)
+    @mock.patch.object(redshift, "prepare_copy_query", autospec=True)
     @mock.patch.object(redshift, "prepare_date_range_delete_query", autospec=True)
     def test_update_table_from_s3(self, mock_prepare_delete, mock_prepare_copy, mock_cursor, mock_transaction):
         mock_prepare_copy.return_value = "", {}

@@ -7,11 +7,12 @@ class Materialize(object):
     IS_TEMPORARY_TABLE = False
     IS_DERIVED_VIEW = False
 
-    def __init__(self, job_id, date_from, date_to, account_id):
+    def __init__(self, job_id, date_from, date_to, account_id, spark_session=None):
         self.job_id = job_id
         self.date_from = date_from
         self.date_to = date_to
         self.account_id = account_id
+        self.spark_session = spark_session
 
     def generate(self, **kwargs):
         raise NotImplementedError()

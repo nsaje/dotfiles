@@ -13,6 +13,7 @@ from etl import materialization_run
 from etl import materialize
 from etl import maintenance
 from etl import redshift
+from etl import spark
 
 import utils.slack
 
@@ -44,15 +45,17 @@ def refresh(
     do_post_to_slack = (datetime.datetime.today() - update_since).days > SLACK_MIN_DAYS_TO_PROCESS
     if do_post_to_slack or account_id:
         _post_to_slack("started", update_since, account_id)
-    _refresh(
-        update_since,
-        materialize.MATERIALIZED_VIEWS,
-        account_id,
-        skip_vacuum=skip_vacuum,
-        skip_analyze=skip_analyze,
-        skip_daily_statements=skip_daily_statements,
-        dump_and_abort=dump_and_abort,
-    )
+    with spark.get_session() as spark_session:
+        _refresh(
+            update_since,
+            materialize.MATERIALIZED_VIEWS,
+            spark_session,
+            account_id,
+            skip_vacuum=skip_vacuum,
+            skip_analyze=skip_analyze,
+            skip_daily_statements=skip_daily_statements,
+            dump_and_abort=dump_and_abort,
+        )
     if do_post_to_slack or account_id:
         _post_to_slack("finished", update_since, account_id)
     materialization_run.create_done()
@@ -61,6 +64,7 @@ def refresh(
 def _refresh(
     update_since,
     views,
+    spark_session,
     account_id=None,
     skip_vacuum=False,
     skip_analyze=False,
@@ -102,7 +106,7 @@ def _refresh(
         )
 
     for mv_class in views:
-        mv = mv_class(job_id, date_from, date_to, account_id=account_id)
+        mv = mv_class(job_id, date_from, date_to, account_id=account_id, spark_session=spark_session)
         with influx.block_timer("etl.refresh_k1.generate_table", table=mv_class.TABLE_NAME):
             mv.generate(campaign_factors=effective_spend_factors)
 

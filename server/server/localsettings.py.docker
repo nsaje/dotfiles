@@ -335,6 +335,8 @@ REST_FRAMEWORK = {
 DISABLE_FACEBOOK = False
 AMPLIFY_REVIEW = False
 
+SPARK_MASTER = ''
+
 try:
     from server.localsettings_docker_override import *  # noqa
 except ImportError:

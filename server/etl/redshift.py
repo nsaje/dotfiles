@@ -9,6 +9,7 @@ from redshiftapi import db
 from utils import s3helpers
 
 from . import constants
+from . import helpers
 
 MATERIALIZED_VIEWS_REPLICATION_S3_PREFIX = "materialized_views_replication"
 DUMP_S3_PREFIX = "debug_dumps"
@@ -34,6 +35,23 @@ def unload_table(
     return s3_path + "manifest"
 
 
+def unload_table_tz(
+    job_id, table_name, date_from, date_to, account_id=None, prefix=MATERIALIZED_VIEWS_REPLICATION_S3_PREFIX
+):
+    s3_path = os.path.join(
+        prefix,
+        job_id,
+        table_name,
+        "{}-{}-{}-{}".format(table_name, date_from.strftime("%Y-%m-%d"), date_to.strftime("%Y-%m-%d"), account_id or 0),
+    )
+    with db.get_write_stats_cursor() as c:
+        logger.info('Unloading table "%s" to S3 path "%s"', table_name, s3_path)
+        sql, params = prepare_unload_tz_query(s3_path, table_name, date_from, date_to, account_id)
+        c.execute(sql, params)
+        logger.info('Unloaded table "%s" to S3 path "%s"', table_name, s3_path)
+    return s3_path + "manifest"
+
+
 def update_table_from_s3(db_name, s3_manifest_path, table_name, date_from, date_to, account_id=None):
     with db.get_write_stats_transaction(db_name):
         with db.get_write_stats_cursor(db_name) as c:
@@ -42,10 +60,10 @@ def update_table_from_s3(db_name, s3_manifest_path, table_name, date_from, date_
             sql, params = prepare_date_range_delete_query(table_name, date_from, date_to, account_id)
             c.execute(sql, params)
 
-            sql, params = prepare_copy_csv_query(
+            sql, params = prepare_copy_query(
                 s3_manifest_path,
                 table_name,
-                format_csv=False,
+                format=None,
                 removequotes=False,
                 escape=True,
                 is_manifest=True,
@@ -95,15 +113,27 @@ def prepare_unload_csv_query(s3_path, table_name, date_from, date_to, account_id
     return sql, {"s3_url": s3_url, "credentials": credentials, "delimiter": constants.CSV_DELIMITER}
 
 
-def prepare_copy_csv_query(
-    s3_path, table_name, format_csv=True, removequotes=False, escape=False, is_manifest=False, null_as=None, gzip=False
+def prepare_unload_tz_query(s3_path, table_name, date_from, date_to, account_id=None):
+    params = helpers.get_local_multiday_date_context(date_from, date_to)
+    params["table"] = table_name
+    params["account_id_str"] = str(account_id) if account_id else None
+    if account_id:
+        params["ad_group_id"] = helpers.get_ad_group_ids_or_none(account_id)
+    sql = backtosql.generate_sql("etl_unload_tz.sql", params)
+    s3_url = S3_FILE_URI.format(bucket_name=settings.S3_BUCKET_STATS, key=s3_path)
+    credentials = _get_aws_credentials()
+    return sql, {"s3_url": s3_url, "credentials": credentials, "delimiter": constants.CSV_DELIMITER}
+
+
+def prepare_copy_query(
+    s3_path, table_name, format="csv", removequotes=False, escape=False, is_manifest=False, null_as=None, gzip=False
 ):
     sql = backtosql.generate_sql(
-        "etl_copy_csv.sql",
+        "etl_copy.sql",
         {
             "table": table_name,
             "is_manifest": is_manifest,
-            "format_csv": format_csv,
+            "format": format,
             "removequotes": removequotes,
             "escape": escape,
             "null_as": null_as,

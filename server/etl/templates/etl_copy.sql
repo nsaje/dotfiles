@@ -2,13 +2,21 @@
 
 COPY {{ table }}
 FROM %(s3_url)s
-{% if format_csv %}FORMAT CSV{% endif %}
+
+{% if format %}
+FORMAT {{ format|upper }} {% if format != "csv" %}'auto'{% endif %}
+{% endif %}
+
+{% if not format or format == "csv" %}
 DELIMITER AS %(delimiter)s
-CREDENTIALS %(credentials)s
-MAXERROR 0 BLANKSASNULL EMPTYASNULL
+BLANKSASNULL EMPTYASNULL
 {% if removequotes %}REMOVEQUOTES{% endif %}
 {% if escape %}ESCAPE{% endif %}
 {% if null_as %}NULL AS '{{ null_as }}'{% endif %}
+{% endif %}
+
+CREDENTIALS %(credentials)s
+MAXERROR 0
 {% if gzip %}GZIP{% endif %}
 {% if is_manifest %}MANIFEST{% endif %}
 ;

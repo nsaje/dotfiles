@@ -1,1 +1,2 @@
 CSV_DELIMITER = "\t"
+SPARK_S3_PREFIX = "spark"

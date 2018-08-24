@@ -27,7 +27,7 @@ class MVHelpersCurrencyExchangeRates(Materialize):
                 c.execute(sql)
 
                 logger.info('Copying CSV to table "%s", job %s', self.TABLE_NAME, self.job_id)
-                sql, params = redshift.prepare_copy_csv_query(s3_path, self.TABLE_NAME)
+                sql, params = redshift.prepare_copy_query(s3_path, self.TABLE_NAME)
                 c.execute(sql, params)
                 logger.info('Copied CSV to table "%s", job %s', self.TABLE_NAME, self.job_id)
 

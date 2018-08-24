@@ -80,8 +80,9 @@ class MVHCurrencyExchangeRatesTest(TestCase, backtosql.TestSQLMixin):
             FROM %(s3_url)s
             FORMAT CSV
             DELIMITER AS %(delimiter)s
+            BLANKSASNULL EMPTYASNULL
             CREDENTIALS %(credentials)s
-            MAXERROR 0 BLANKSASNULL EMPTYASNULL;"""
+            MAXERROR 0;"""
                     ),
                     {
                         "credentials": "aws_access_key_id=bar;aws_secret_access_key=foo",
