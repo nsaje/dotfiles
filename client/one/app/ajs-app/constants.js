@@ -1507,10 +1507,19 @@ var options = {
         {name: 'Other', value: constants.language.OTHER},
     ],
     campaignTypes: [
-        {name: 'Content', value: constants.campaignType.CONTENT},
-        {name: 'Video', value: constants.campaignType.VIDEO},
-        {name: 'Conversion', value: constants.campaignType.CONVERSION},
-        {name: 'Mobile', value: constants.campaignType.MOBILE},
+        {
+            name: 'Native Content Distribution',
+            value: constants.campaignType.CONTENT,
+        },
+        {name: 'Native Video Advertising', value: constants.campaignType.VIDEO},
+        {
+            name: 'Native Conversion Marketing',
+            value: constants.campaignType.CONVERSION,
+        },
+        {
+            name: 'Native Mobile App Advertising',
+            value: constants.campaignType.MOBILE,
+        },
     ],
     iabCategories: [
         {name: 'Uncategorized (IAB24)', value: constants.iabCategory.IAB24},

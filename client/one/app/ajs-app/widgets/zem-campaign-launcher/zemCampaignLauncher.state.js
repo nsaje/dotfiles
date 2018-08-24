@@ -129,7 +129,8 @@ angular
                 }
             }
 
-            function initLauncherWithObjective(objective) {
+            // prettier-ignore
+            function initLauncherWithObjective(objective) { // eslint-disable-line complexity
                 if (
                     !state.campaignObjective ||
                     state.campaignObjective !== objective
@@ -140,20 +141,30 @@ angular
                     state.fields = getDefaultFields(state.orderedSteps);
                     state.fieldsErrors = angular.copy(state.fields);
 
-                    if (
-                        objective &&
-                        objective ===
-                            constants.campaignObjective.VIDEO_ADVERTISING
-                    ) {
-                        state.fields.type = constants.convertToName(
-                            constants.campaignType.VIDEO,
-                            constants.campaignType
-                        );
-                    } else {
-                        state.fields.type = constants.convertToName(
-                            constants.campaignType.CONTENT,
-                            constants.campaignType
-                        );
+                    switch (objective) {
+                        case constants.campaignObjective.VIDEO_ADVERTISING:
+                            state.fields.type = constants.convertToName(
+                                constants.campaignType.VIDEO,
+                                constants.campaignType
+                            );
+                            break;
+                        case constants.campaignObjective.CONVERSION_MARKETING:
+                            state.fields.type = constants.convertToName(
+                                constants.campaignType.CONVERSION,
+                                constants.campaignType
+                            );
+                            break;
+                        case constants.campaignObjective.MOBILE_APP_ADVERTISING:
+                            state.fields.type = constants.convertToName(
+                                constants.campaignType.MOBILE,
+                                constants.campaignType
+                            );
+                            break;
+                        default:
+                            state.fields.type = constants.convertToName(
+                                constants.campaignType.CONTENT,
+                                constants.campaignType
+                            );
                     }
                 }
 
