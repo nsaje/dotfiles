@@ -17,6 +17,7 @@ class GetCampaignStopStatesTest(TestCase):
             {
                 "allowed_to_run": False,
                 "max_allowed_end_date": dates_helper.local_yesterday(),
+                "min_allowed_start_date": None,
                 "almost_depleted": False,
                 "pending_budget_updates": False,
             },
@@ -24,17 +25,62 @@ class GetCampaignStopStatesTest(TestCase):
         )
 
     def test_states_active(self):
+        today = dates_helper.local_today()
         magic_mixer.blend(
             CampaignStopState,
             campaign=self.campaign,
             state=constants.CampaignStopState.ACTIVE,
-            max_allowed_end_date=dates_helper.local_today(),
+            max_allowed_end_date=today,
+            min_allowed_start_date=today,
         )
         states = api.get_campaignstop_states([self.campaign])
         self.assertEqual(
             {
                 "allowed_to_run": True,
                 "max_allowed_end_date": dates_helper.local_today(),
+                "min_allowed_start_date": today,
+                "almost_depleted": False,
+                "pending_budget_updates": False,
+            },
+            states[self.campaign.id],
+        )
+
+    def test_min_start_date_future(self):
+        tomorrow = dates_helper.day_after(dates_helper.local_today())
+        magic_mixer.blend(
+            CampaignStopState,
+            campaign=self.campaign,
+            state=constants.CampaignStopState.ACTIVE,
+            max_allowed_end_date=dates_helper.days_after(dates_helper.local_today(), 7),
+            min_allowed_start_date=tomorrow,
+        )
+        states = api.get_campaignstop_states([self.campaign])
+        self.assertEqual(
+            {
+                "allowed_to_run": True,
+                "max_allowed_end_date": dates_helper.days_after(dates_helper.local_today(), 7),
+                "min_allowed_start_date": tomorrow,
+                "almost_depleted": False,
+                "pending_budget_updates": False,
+            },
+            states[self.campaign.id],
+        )
+
+    def test_min_start_date_none(self):
+        today = dates_helper.local_today()
+        magic_mixer.blend(
+            CampaignStopState,
+            campaign=self.campaign,
+            state=constants.CampaignStopState.ACTIVE,
+            max_allowed_end_date=today,
+            min_allowed_start_date=None,
+        )
+        states = api.get_campaignstop_states([self.campaign])
+        self.assertEqual(
+            {
+                "allowed_to_run": False,
+                "max_allowed_end_date": dates_helper.local_today(),
+                "min_allowed_start_date": None,
                 "almost_depleted": False,
                 "pending_budget_updates": False,
             },
@@ -50,6 +96,7 @@ class GetCampaignStopStatesTest(TestCase):
             {
                 "allowed_to_run": False,
                 "max_allowed_end_date": today,
+                "min_allowed_start_date": None,
                 "almost_depleted": False,
                 "pending_budget_updates": False,
             },
@@ -68,6 +115,7 @@ class GetCampaignStopStatesTest(TestCase):
             {
                 "allowed_to_run": False,  # inactive because end date past
                 "max_allowed_end_date": dates_helper.local_yesterday(),
+                "min_allowed_start_date": None,
                 "almost_depleted": False,
                 "pending_budget_updates": False,
             },
@@ -83,6 +131,7 @@ class GetCampaignStopStatesTest(TestCase):
             {
                 "allowed_to_run": False,
                 "max_allowed_end_date": today,
+                "min_allowed_start_date": None,
                 "almost_depleted": True,
                 "pending_budget_updates": False,
             },
@@ -97,6 +146,7 @@ class GetCampaignStopStatesTest(TestCase):
             {
                 "allowed_to_run": True,
                 "max_allowed_end_date": None,
+                "min_allowed_start_date": None,
                 "almost_depleted": False,
                 "pending_budget_updates": False,
             },
@@ -114,6 +164,7 @@ class GetCampaignStopStatesTest(TestCase):
             {
                 "allowed_to_run": False,
                 "max_allowed_end_date": today,
+                "min_allowed_start_date": None,
                 "almost_depleted": False,
                 "pending_budget_updates": True,
             },
@@ -127,6 +178,7 @@ class GetCampaignStopStatesTest(TestCase):
             campaign=self.campaign,
             state=constants.CampaignStopState.ACTIVE,
             max_allowed_end_date=today,
+            min_allowed_start_date=today,
             pending_budget_updates=True,
         )
 
@@ -135,6 +187,7 @@ class GetCampaignStopStatesTest(TestCase):
             {
                 "allowed_to_run": True,
                 "max_allowed_end_date": today,
+                "min_allowed_start_date": today,
                 "almost_depleted": False,
                 "pending_budget_updates": False,
             },
