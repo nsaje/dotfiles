@@ -9,6 +9,23 @@
                  for="name-input">{{ error }}</div>
         </div>
 
+        <div class="form__group" ng-if="$ctrl.hasPermission('zemauth.fea_can_change_campaign_type')"
+             ng-class="{'form--error': !!$ctrl.errors.type}">
+            <label class="form__label" for="campaign-type-select">
+                Campaign Type:
+                <zem-help-popover content="Campaign type determines the creative requirements and enables certain features. Campaign type can be changed until you create the first ad group."
+                                  placement="top"></zem-help-popover>
+            </label>
+            <select ui-select2="{minimumResultsForSearch: 2}" id="campaign-type-select"
+                    class="button button--plain button--full-width button--dropdown-toggle-icon"
+                    ng-model="$ctrl.entity.settings.type"
+                    >
+                <option ng-repeat="type in $ctrl.campaignTypes" value="{{type.value}}">{{type.name}}</option>
+            </select>
+            <div class="message message--error" ng-repeat="error in $ctrl.errors.type"
+                 for="campaign-type-select">{{ error }}</div>
+        </div>
+
         <div class="form__group" ng-if="$ctrl.hasPermission('zemauth.can_modify_campaign_manager')"
              ng-class="{'form--error': !!$ctrl.errors.campaignManager}">
             <label class="form__label" for="campaign-manager-select">
@@ -43,6 +60,7 @@
             <div class="message message--error" ng-repeat="error in $ctrl.errors.iabCategory"
                  for="iab-category-select">{{ error }}</div>
         </div>
+
         <div class="form__group" ng-if="$ctrl.hasPermission('zemauth.can_see_campaign_language_choices')"
              ng-class="{'form--error': !!$ctrl.errors.language}">
             <label class="form__label" for="campaign-language-select">
@@ -58,22 +76,6 @@
             </select>
             <div class="message message--error" ng-repeat="error in $ctrl.errors.language"
                  for="campaign-language-select">{{ error }}</div>
-        </div>        
-        <div class="form__group" ng-if="$ctrl.hasPermission('zemauth.fea_can_change_campaign_type')"
-             ng-class="{'form--error': !!$ctrl.errors.type}">
-            <label class="form__label" for="campaign-type-select">
-                Campaign Type:
-                <zem-help-popover content="Campaign type determines the creative requirements and enables certain features. Campaign type can be changed until you create the first campaign."
-                                  placement="top"></zem-help-popover>
-            </label>
-            <select ui-select2="{minimumResultsForSearch: 2}" id="campaign-type-select"
-                    class="button button--plain button--full-width button--dropdown-toggle-icon"
-                    ng-model="$ctrl.entity.settings.type"
-                    >
-                <option ng-repeat="type in $ctrl.campaignTypes" value="{{type.value}}">{{type.name}}</option>
-            </select>
-            <div class="message message--error" ng-repeat="error in $ctrl.errors.type"
-                 for="campaign-type-select">{{ error }}</div>
         </div>
     </div>
 </div>
