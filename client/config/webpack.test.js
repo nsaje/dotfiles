@@ -10,6 +10,13 @@ config.module.rules = [
         loaders: ['awesome-typescript-loader', 'angular2-template-loader'],
     },
     {
+        // https://github.com/angular/universal-starter/pull/593/commits/644c5f6f28a760f94ef111f5a611e2c9ed679b6a
+        // Mark files inside `@angular/core` as using SystemJS style dynamic imports.
+        // Removing this will cause deprecation warnings to appear.
+        test: /(\\|\/)@angular(\\|\/)core(\\|\/).+\.js$/,
+        parser: {system: true},
+    },
+    {
         test: /\.html$/,
         loader: 'html-loader',
     },
