@@ -26,9 +26,11 @@ function generateMainConfig(appConfig) {
     var config = common.generateMainConfig(appConfig);
 
     config.entry = {
-        'zemanta-one.polyfills': common.root('./one/polyfills.ts'),
-        'zemanta-one.lib': common.root('./one/vendor.ts'),
-        'zemanta-one': common.root('./one/main.ts'),
+        'zemanta-one': [
+            common.root('./one/polyfills.ts'),
+            common.root('./one/vendor.ts'),
+            common.root('./one/main.ts'),
+        ],
     };
 
     config.output = {
@@ -45,6 +47,24 @@ function generateMainConfig(appConfig) {
             // A Webpack plugin to optimize \ minimize CSS assets.
             new OptimizeCSSAssetsPlugin({}),
         ],
+        splitChunks: {
+            cacheGroups: {
+                polyfills: {
+                    test: /(core-js\/es6|core-js\/es7\/reflect|zone.js\/dist\/zone)/,
+                    chunks: 'all',
+                    name: 'zemanta-one.polyfills',
+                    priority: 20,
+                    enforce: true,
+                },
+                vendor: {
+                    test: /(node_modules|lib\/components)/,
+                    chunks: 'all',
+                    name: 'zemanta-one.lib',
+                    priority: 10,
+                    enforce: true,
+                },
+            },
+        },
     };
 
     // Skip loading styles as they are extracted separately

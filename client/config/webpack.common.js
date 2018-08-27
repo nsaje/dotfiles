@@ -57,11 +57,13 @@ function generateMainConfig(appConfig) {
             // Webpack loader to annotate angular applications. Generates a sourcemaps as well.
             test: /\.js$/,
             include: [root('./one/app/ajs-app')],
+            exclude: /node_modules/,
             use: [{loader: 'ng-annotate-loader'}],
         },
         {
             // Angular TypeScript and template loaders
             test: /\.tsx?$/,
+            exclude: /node_modules/,
             loaders: ['awesome-typescript-loader', 'angular2-template-loader'],
         },
         {
@@ -74,6 +76,7 @@ function generateMainConfig(appConfig) {
         {
             // Allow loading html through js
             test: /\.html$/,
+            exclude: /node_modules/,
             loader: 'html-loader',
         },
         {
@@ -140,6 +143,7 @@ function generateStyleConfig(themeName) {
     config.module.rules = [
         {
             test: /\.less$/,
+            exclude: /node_modules/,
             use: [
                 {loader: MiniCssExtractPlugin.loader},
                 {
