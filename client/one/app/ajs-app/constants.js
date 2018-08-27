@@ -49,6 +49,10 @@ var constants = {
         MANAGED: 6,
         PAAS: 7,
     },
+    campaignTypes: {
+        CONTENT: 1,
+        VIDEO: 2,
+    },
     currency: {
         USD: 'USD',
         EUR: 'EUR',

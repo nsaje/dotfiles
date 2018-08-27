@@ -124,7 +124,12 @@ class NavigationDataViewTest(TestCase):
                     "currency": constants.Currency.USD,
                     "usesBCMv2": False,
                 },
-                "campaign": {"archived": False, "id": 1, "name": "test campaign 1"},
+                "campaign": {
+                    "archived": False,
+                    "id": 1,
+                    "name": "test campaign 1",
+                    "type": constants.CampaignType.CONTENT,
+                },
             },
         )
 
@@ -142,7 +147,12 @@ class NavigationDataViewTest(TestCase):
                     "currency": constants.Currency.USD,
                     "usesBCMv2": False,
                 },
-                "campaign": {"archived": True, "id": 3, "name": "test campaign 3"},
+                "campaign": {
+                    "archived": True,
+                    "id": 3,
+                    "name": "test campaign 3",
+                    "type": constants.CampaignType.CONTENT,
+                },
             },
         )
 
@@ -170,7 +180,12 @@ class NavigationDataViewTest(TestCase):
                     "currency": constants.Currency.USD,
                     "usesBCMv2": False,
                 },
-                "campaign": {"archived": False, "id": 1, "name": "test campaign 1"},
+                "campaign": {
+                    "archived": False,
+                    "id": 1,
+                    "name": "test campaign 1",
+                    "type": constants.CampaignType.CONTENT,
+                },
                 "ad_group": {
                     "archived": False,
                     "id": 1,
@@ -196,7 +211,12 @@ class NavigationDataViewTest(TestCase):
                     "currency": constants.Currency.USD,
                     "usesBCMv2": False,
                 },
-                "campaign": {"archived": False, "id": 2, "name": "test campaign 2"},
+                "campaign": {
+                    "archived": False,
+                    "id": 2,
+                    "name": "test campaign 2",
+                    "type": constants.CampaignType.CONTENT,
+                },
                 "ad_group": {
                     "archived": True,
                     "id": 4,
@@ -293,6 +313,7 @@ class NavigationTreeViewTest(TestCase):
                         "archived": False,
                         "id": 1,
                         "name": "test campaign 1",
+                        "type": constants.CampaignType.CONTENT,
                     }
                 ],
                 "id": 1,
@@ -332,6 +353,7 @@ class NavigationTreeViewTest(TestCase):
                             ],
                             "id": 1,
                             "name": "test campaign 1",
+                            "type": constants.CampaignType.CONTENT,
                         }
                     ],
                     "id": 1,
@@ -384,6 +406,7 @@ class NavigationTreeViewTest(TestCase):
                         "archived": False,
                         "id": 1,
                         "name": "test campaign 1",
+                        "type": constants.CampaignType.CONTENT,
                     }
                 ],
                 "id": 1,
@@ -417,6 +440,7 @@ class NavigationTreeViewTest(TestCase):
                         "id": 2,
                         "name": "test campaign 2",
                         "archived": False,
+                        "type": constants.CampaignType.CONTENT,
                     }
                 ],
                 "id": 2,

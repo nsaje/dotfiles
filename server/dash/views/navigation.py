@@ -170,7 +170,7 @@ class NavigationTreeView(api_common.BaseApiView):
 
     def _load_campaigns_data(self, ad_groups_data, campaigns, map_campaign_settings, load_settings=True):
         data_campaigns = {}
-        for campaign in campaigns.values("id", "name", "account_id"):
+        for campaign in campaigns.values("id", "name", "type", "account_id"):
             campaign_dict = navigation_helpers.get_campaign_dict(
                 campaign, map_campaign_settings.get(campaign["id"]), with_settings=load_settings
             )

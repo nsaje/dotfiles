@@ -43,12 +43,13 @@ def get_ad_group_dict(
 
 def get_campaign_dict(campaign, campaign_settings, with_settings=True):
     if not with_settings:
-        return {"id": campaign["id"], "name": campaign["name"]}
+        return {"id": campaign["id"], "name": campaign["name"], "type": campaign["type"]}
 
     campaign_dict = {
         "id": campaign["id"],
         "name": campaign["name"],
         "archived": campaign_settings.archived if campaign_settings else False,
+        "type": campaign["type"],
     }
     return campaign_dict
 

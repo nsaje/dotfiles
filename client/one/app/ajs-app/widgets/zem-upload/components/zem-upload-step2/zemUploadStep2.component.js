@@ -11,6 +11,7 @@ angular.module('one.widgets').directive('zemUploadStep2', function($timeout) {
             candidates: '=',
             closeModal: '=close',
             autoOpenEditForm: '=',
+            showVideoUpload: '=',
             isEdit: '=',
         },
         controllerAs: 'ctrl',
@@ -58,6 +59,7 @@ angular
         vm.batchNameEdit = false;
         vm.numSuccessful = null;
         vm.saveErrors = null;
+
         vm.adPickerApi = {};
         vm.editFormApi = {};
 
