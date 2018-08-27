@@ -105,7 +105,7 @@ class AdGroupsView(K1APIView):
                 "id": ad_group.id,
                 "name": ad_group.name,
                 "external_name": ad_group.get_external_name(),
-                "start_date": self._get_start_date(ad_group.settings, campaignstop_states),
+                "start_date": ad_group.settings.start_date,
                 "end_date": self._get_end_date(ad_group.settings, campaignstop_states),
                 "time_zone": settings.DEFAULT_TIME_ZONE,
                 "brand_name": ad_group.settings.brand_name,
@@ -173,18 +173,6 @@ class AdGroupsView(K1APIView):
             retargeting.append({"event_type": EVENT_CUSTOM_AUDIENCE, "event_id": str(audience_id), "exclusion": True})
 
         return retargeting
-
-    @staticmethod
-    def _get_start_date(ad_group_settings, campaignstop_states):
-        campaign = ad_group_settings.ad_group.campaign
-        min_allowed_start_date = campaignstop_states.get(campaign.id, {}).get("min_allowed_start_date")
-        if min_allowed_start_date is None:
-            return ad_group_settings.start_date
-
-        if ad_group_settings.start_date is None:
-            return min_allowed_start_date
-
-        return max(ad_group_settings.start_date, min_allowed_start_date)
 
     @staticmethod
     def _get_end_date(ad_group_settings, campaignstop_states):

@@ -12,7 +12,6 @@ import dash.models
 import logging
 
 from utils.magic_mixer import magic_mixer
-from utils import dates_helper
 
 from .base_test import K1APIBaseTest
 
@@ -176,84 +175,6 @@ class AdGroupsTest(K1APIBaseTest):
             [{"id": obj["id"], "brand_name": obj["brand_name"]} for obj in data],
             [{"id": obj.id, "brand_name": obj.settings.brand_name} for obj in ad_groups[1:]],
         )
-
-    @patch("automation.campaignstop.get_campaignstop_states")
-    def test_get_ad_groups_campaignstop_start_date(self, mock_get_campaignstop_states):
-        mock_get_campaignstop_states.return_value = {}
-        source = magic_mixer.blend(dash.models.Source, source_type__type="abc")
-        ad_group = magic_mixer.blend(dash.models.AdGroup, campaign_id=1)
-        ad_group.settings.update(None, start_date=None)
-        magic_mixer.blend(dash.models.AdGroupSource, ad_group=ad_group, source=source)
-
-        response = self.client.get(reverse("k1api.ad_groups"), {"source_types": "abc"})
-
-        data = json.loads(response.content)
-        self.assert_response_ok(response, data)
-        data = data["response"]
-
-        self.assertEqual(data[0]["start_date"], None)
-
-        ad_group.settings.update(None, start_date=dates_helper.local_today())
-
-        response = self.client.get(reverse("k1api.ad_groups"), {"source_types": "abc"})
-
-        data = json.loads(response.content)
-        self.assert_response_ok(response, data)
-        data = data["response"]
-
-        self.assertEqual(data[0]["start_date"], dates_helper.local_today().isoformat())
-
-        min_allowed_start_date = dates_helper.days_after(dates_helper.local_today(), 10)
-        mock_get_campaignstop_states.return_value = {
-            ad_group.campaign_id: {"min_allowed_start_date": min_allowed_start_date}
-        }
-
-        response = self.client.get(reverse("k1api.ad_groups"), {"source_types": "abc"})
-
-        data = json.loads(response.content)
-        self.assert_response_ok(response, data)
-        data = data["response"]
-
-        self.assertEqual(data[0]["start_date"], min_allowed_start_date.isoformat())
-
-    @patch("automation.campaignstop.get_campaignstop_states")
-    def test_get_ad_groups_campaignstop_end_date(self, mock_get_campaignstop_states):
-        mock_get_campaignstop_states.return_value = {}
-        source = magic_mixer.blend(dash.models.Source, source_type__type="abc")
-        ad_group = magic_mixer.blend(dash.models.AdGroup, campaign_id=1)
-        ad_group.settings.update(None, end_date=None)
-        magic_mixer.blend(dash.models.AdGroupSource, ad_group=ad_group, source=source)
-
-        response = self.client.get(reverse("k1api.ad_groups"), {"source_types": "abc"})
-
-        data = json.loads(response.content)
-        self.assert_response_ok(response, data)
-        data = data["response"]
-
-        self.assertEqual(data[0]["end_date"], None)
-
-        end_date = dates_helper.days_after(dates_helper.local_today(), 10)
-        ad_group.settings.update(None, end_date=end_date)
-
-        response = self.client.get(reverse("k1api.ad_groups"), {"source_types": "abc"})
-
-        data = json.loads(response.content)
-        self.assert_response_ok(response, data)
-        data = data["response"]
-
-        self.assertEqual(data[0]["end_date"], end_date.isoformat())
-
-        mock_get_campaignstop_states.return_value = {
-            ad_group.campaign_id: {"max_allowed_end_date": dates_helper.local_today()}
-        }
-
-        response = self.client.get(reverse("k1api.ad_groups"), {"source_types": "abc"})
-
-        data = json.loads(response.content)
-        self.assert_response_ok(response, data)
-        data = data["response"]
-
-        self.assertEqual(data[0]["end_date"], dates_helper.local_today().isoformat())
 
     def test_get_ad_groups_pagination(self):
         n = 10

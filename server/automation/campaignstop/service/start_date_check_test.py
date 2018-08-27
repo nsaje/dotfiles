@@ -37,7 +37,7 @@ class UpdateCampaignsStartDateTestCase(TestCase):
     @patch("automation.campaignstop.service.spends_helper.get_budget_spend_estimates")
     def test_depleted_budget(self, mock_spend_estimates):
         budget = self._set_up_current_budget()
-        mock_spend_estimates.return_value = {budget: budget.amount - (config.THRESHOLD - 1)}
+        mock_spend_estimates.return_value = {budget.id: budget.amount - (config.THRESHOLD - 1)}
         start_date_check.update_campaigns_start_date([self.campaign])
         state = CampaignStopState.objects.get(campaign=self.campaign)
         self.assertEqual(None, state.min_allowed_start_date)
@@ -52,7 +52,7 @@ class UpdateCampaignsStartDateTestCase(TestCase):
     def test_depleted_current_and_future_budget(self, mock_spend_estimates):
         current_budget = self._set_up_current_budget()
         future_budget = self._set_up_future_budget()
-        mock_spend_estimates.return_value = {current_budget: current_budget.amount - (config.THRESHOLD - 1)}
+        mock_spend_estimates.return_value = {current_budget.id: current_budget.amount - (config.THRESHOLD - 1)}
         start_date_check.update_campaigns_start_date([self.campaign])
         state = CampaignStopState.objects.get(campaign=self.campaign)
         self.assertEqual(future_budget.start_date, state.min_allowed_start_date)

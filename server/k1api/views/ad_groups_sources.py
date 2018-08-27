@@ -67,8 +67,8 @@ class AdGroupSourcesView(K1APIView):
         ad_group_source_dicts = []
         for ad_group_source in ad_group_sources:
             ad_group = ad_group_map[ad_group_source.ad_group_id]
-            campaignstop_state = campaignstop_map[ad_group.campaign.id]
-            if self._is_ad_group_source_enabled(ad_group, ad_group_source, campaignstop_state):
+            campaignstop_allowed_to_run = campaignstop_map[ad_group.campaign.id]["allowed_to_run"]
+            if self._is_ad_group_source_enabled(ad_group, ad_group_source, campaignstop_allowed_to_run):
                 source_state = constants.AdGroupSettingsState.ACTIVE
             else:
                 source_state = constants.AdGroupSettingsState.INACTIVE
@@ -103,11 +103,8 @@ class AdGroupSourcesView(K1APIView):
 
         return self.response_ok(ad_group_source_dicts)
 
-    def _is_ad_group_source_enabled(self, ad_group, ad_group_source, campaignstop_state):
-        if not campaignstop_state["allowed_to_run"]:
-            return False
-
-        if campaignstop_state["min_allowed_start_date"] is None:
+    def _is_ad_group_source_enabled(self, ad_group, ad_group_source, campaignstop_allowed_to_run):
+        if not campaignstop_allowed_to_run:
             return False
 
         if ad_group.settings.state != constants.AdGroupSettingsState.ACTIVE:
