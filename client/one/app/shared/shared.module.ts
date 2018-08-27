@@ -3,12 +3,12 @@ import {HttpClientModule} from '@angular/common/http';
 import {NgModule} from '@angular/core';
 import {ChartModule} from 'angular2-highcharts';
 
-import {BigNumberPipe} from './big-number/big-number.pipe';
-import {CategorizedSelectComponent} from './categorized-select/categorized-select.component';
-import {CategorizedTagsListComponent} from './categorized-tags-list/categorized-tags-list.component';
-import {DropdownDirective} from './dropdown/dropdown.directive';
-import {DropdownToggleDirective} from './dropdown/dropdown-toggle.directive';
-import {HelpPopoverComponent} from './help-popover/help-popover.component';
+import {BigNumberPipe} from './pipes/big-number.pipe';
+import {CategorizedSelectComponent} from './components/categorized-select/categorized-select.component';
+import {CategorizedTagsListComponent} from './components/categorized-tags-list/categorized-tags-list.component';
+import {DropdownDirective} from './components/dropdown/dropdown.directive';
+import {DropdownToggleDirective} from './components/dropdown/dropdown-toggle.directive';
+import {HelpPopoverComponent} from './components/help-popover/help-popover.component';
 
 @NgModule({
     imports: [
