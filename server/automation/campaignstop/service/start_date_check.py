@@ -36,8 +36,7 @@ def _find_min_start_date(campaign):
     for budget in budgets:
         if (
             sum(
-                b.amount - spend_estimates.get(budget.id, 0)
-                for b in _get_all_budgets_valid_on_date(budget.start_date, budgets)
+                b.amount - spend_estimates.get(b, 0) for b in _get_all_budgets_valid_on_date(budget.start_date, budgets)
             )
             > config.THRESHOLD
         ):

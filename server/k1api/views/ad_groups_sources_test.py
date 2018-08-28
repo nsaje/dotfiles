@@ -1,3 +1,4 @@
+import collections
 import json
 from operator import itemgetter
 
@@ -26,7 +27,11 @@ logger.setLevel(logging.INFO)
 
 
 class AdGroupsSourcesTest(K1APIBaseTest):
-    def test_get_ad_groups_sources(self):
+    @mock.patch("automation.campaignstop.get_campaignstop_states")
+    def test_get_ad_groups_sources(self, mock_get_campaignstop_states):
+        mock_get_campaignstop_states.return_value = collections.defaultdict(
+            lambda: {"allowed_to_run": True, "min_allowed_start_date": dates_helper.local_today()}
+        )
         response = self.client.get(reverse("k1api.ad_groups.sources"), {"source_types": "b1"})
 
         data = json.loads(response.content)
@@ -61,6 +66,57 @@ class AdGroupsSourcesTest(K1APIBaseTest):
                 "tracking_code": "tracking1&tracking2",
             },
         )
+
+    @mock.patch("automation.campaignstop.get_campaignstop_states")
+    def test_get_ad_group_sources_campaignstop(self, mock_get_campaignstop_states):
+        mock_get_campaignstop_states.return_value = collections.defaultdict(
+            lambda: {"allowed_to_run": True, "min_allowed_start_date": dates_helper.local_today()}
+        )
+        source = magic_mixer.blend(dash.models.Source, source_type__type="abc")
+        campaign = magic_mixer.blend(dash.models.Campaign, account_id=1, real_time_campaign_stop=True)
+        ad_group = magic_mixer.blend(dash.models.AdGroup, campaign=campaign)
+        ad_group.settings.update_unsafe(None, state=dash.constants.AdGroupRunningStatus.ACTIVE, end_date=None)
+        ad_group_source = magic_mixer.blend(dash.models.AdGroupSource, ad_group=ad_group, source=source)
+        ad_group_source.settings.update_unsafe(
+            None,
+            state=dash.constants.AdGroupSourceSettingsState.ACTIVE,
+            cpc_cc="0.12",
+            daily_budget_cc="50.00",
+            ad_group_source=ad_group_source,
+        )
+
+        response = self.client.get(reverse("k1api.ad_groups.sources"), {"ad_group_ids": str(ad_group.id)})
+
+        data = json.loads(response.content)
+        self.assert_response_ok(response, data)
+        data = data["response"]
+
+        self.assertEqual(1, len(data))
+        self.assertEqual(dash.constants.AdGroupSourceSettingsState.ACTIVE, data[0]["state"])
+
+        mock_get_campaignstop_states.return_value = collections.defaultdict(
+            lambda: {"allowed_to_run": True, "min_allowed_start_date": None}
+        )
+
+        response = self.client.get(reverse("k1api.ad_groups.sources"), {"ad_group_ids": str(ad_group.id)})
+
+        data = json.loads(response.content)
+        self.assert_response_ok(response, data)
+        data = data["response"]
+
+        self.assertEqual(dash.constants.AdGroupSourceSettingsState.INACTIVE, data[0]["state"])
+
+        mock_get_campaignstop_states.return_value = collections.defaultdict(
+            lambda: {"allowed_to_run": False, "min_allowed_start_date": dates_helper.local_today()}
+        )
+
+        response = self.client.get(reverse("k1api.ad_groups.sources"), {"ad_group_ids": str(ad_group.id)})
+
+        data = json.loads(response.content)
+        self.assert_response_ok(response, data)
+        data = data["response"]
+
+        self.assertEqual(dash.constants.AdGroupSourceSettingsState.INACTIVE, data[0]["state"])
 
     def test_get_ad_groups_source_bcm_v2(self):
         today = dates_helper.local_today()
@@ -264,8 +320,12 @@ class AdGroupsSourcesTest(K1APIBaseTest):
             self.assertEqual(ad_group_source.blockers, {})
             mock_save.assert_not_called()
 
-    def test_get_ad_groups_blocked_state(self):
+    @mock.patch("automation.campaignstop.get_campaignstop_states")
+    def test_get_ad_groups_blocked_state(self, mock_get_campaignstop_states):
         ad_group = dash.models.AdGroup.objects.get(pk=2)
+        mock_get_campaignstop_states.return_value = {
+            ad_group.campaign_id: {"allowed_to_run": True, "min_allowed_start_date": dates_helper.local_today()}
+        }
         self.assertFalse(ad_group.is_blocked_by_custom_flag())
         response = self.client.get(
             reverse("k1api.ad_groups.sources"), {"ad_group_ids": ad_group.id, "source_types": "b1"}
