@@ -548,8 +548,8 @@ class CampaignSettings(api_common.BaseApiView):
 
         with transaction.atomic():
             try:
-                campaign.settings.update(request, **form_data)
                 campaign.update_type(form_data.get("type"))
+                campaign.settings.update(request, **form_data)
 
             except core.entity.settings.campaign_settings.exceptions.CannotChangeLanguage as err:
                 raise utils.exc.ValidationError(errors={"language": [str(err)]})
