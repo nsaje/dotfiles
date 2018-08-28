@@ -14,7 +14,7 @@ if (APP_CONFIG.env.prod) {
         'https://5443376e0b054647b8c8759811ad4d5b@sentry.io/147373',
         {
             shouldSendCallback: () => APP_CONFIG.env.prod,
-            release: () => APP_CONFIG.buildNumber,
+            release: APP_CONFIG.buildNumber,
         }
     )
         .addPlugin((<any>window).Raven.Plugins.Angular)
