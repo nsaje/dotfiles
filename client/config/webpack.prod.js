@@ -109,6 +109,11 @@ function generateMainConfig(appConfig) {
                 project: 'frontend',
                 deleteAfterCompile: true,
                 suppressErrors: true,
+                filenameTransform: function(filename) {
+                    var prefix =
+                        '~/build-' + appConfig.buildNumber + '/client/one/';
+                    return prefix + filename;
+                },
             }),
         ]);
     }
