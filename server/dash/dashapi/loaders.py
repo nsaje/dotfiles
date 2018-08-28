@@ -540,7 +540,7 @@ class ContentAdsLoader(Loader):
     def _get_submission_status(self, content_ad, content_ad_source, content_ad_submission_policy):
         if self._should_use_amplify_review(content_ad, content_ad_submission_policy):
             outbrain_content_ad_source = self.amplify_reviews_map[content_ad.id]
-            return outbrain_content_ad_source.get_submission_status(), content_ad_source.submission_errors
+            return outbrain_content_ad_source.get_submission_status(), outbrain_content_ad_source.submission_errors
         else:
             return content_ad_source.get_submission_status(), content_ad_source.submission_errors
 
