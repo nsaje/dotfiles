@@ -48,4 +48,4 @@ while true; do
 done
 echo "Server opened port"
 
-$DREDD_CMD $BLUEPRINT http://$SERVER_ENDPOINT --language python --hookfiles=$HOOKFILES --reporter junit --output .junit_acceptance.xml
+$DREDD_CMD $BLUEPRINT http://$SERVER_ENDPOINT --language python --hookfiles=$HOOKFILES --reporter junit --output .junit_acceptance.xml --hooks-worker-connect-timeout 5000
