@@ -1,6 +1,5 @@
 import {ErrorHandler} from '@angular/core';
-
-import {APP_CONFIG} from '../config/app.config';
+import {APP_CONFIG} from '../../app.config';
 
 export class RavenErrorHandler extends ErrorHandler {
     constructor() {

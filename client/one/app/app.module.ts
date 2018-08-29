@@ -3,9 +3,9 @@ import {HttpClientXsrfModule} from '@angular/common/http';
 import {UpgradeModule} from '@angular/upgrade/static';
 import {ErrorHandler, NgModule} from '@angular/core';
 
-import {APP_CONFIG} from './core/config/app.config';
+import {APP_CONFIG} from './app.config';
 import {CoreModule} from './core/core.module';
-import {RavenErrorHandler} from './core/raven/raven-error-handler';
+import {RavenErrorHandler} from './core/handlers/raven-error.handler';
 import {InventoryPlanningModule} from './features/inventory-planning/inventory-planning.module';
 
 // Raven (Sentry) configuration
@@ -31,7 +31,6 @@ if (APP_CONFIG.env.prod) {
         }),
         UpgradeModule,
 
-        // Core "singleton" modules (not feature modules)
         CoreModule,
 
         // Feature modules

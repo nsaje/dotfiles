@@ -3,20 +3,20 @@ var merge = require('webpack-merge');
 var BundleAnalyzerPlugin = require('webpack-bundle-analyzer')
     .BundleAnalyzerPlugin;
 
-var appConfig = common.getAppConfig();
+var appEnvironment = common.getAppEnvironment();
 var configs = [];
 
-var mainConfig = generateMainConfig(appConfig);
+var mainConfig = generateMainConfig(appEnvironment);
 configs.push(mainConfig);
 
-var theme = common.getTheme(appConfig.theme);
-var styleConfig = generateStyleConfig(appConfig, theme);
+var theme = common.getTheme(appEnvironment.theme);
+var styleConfig = generateStyleConfig(appEnvironment, theme);
 configs.push(styleConfig);
 
 module.exports = configs;
 
-function generateMainConfig(appConfig) {
-    var config = common.generateMainConfig(appConfig);
+function generateMainConfig(appEnvironment) {
+    var config = common.generateMainConfig(appEnvironment);
 
     config.entry = {
         'zemanta-one': [
@@ -61,7 +61,7 @@ function generateMainConfig(appConfig) {
         loader: 'null-loader',
     });
 
-    if (appConfig.analyze) {
+    if (appEnvironment.analyze) {
         config.plugins = config.plugins.concat([
             // https://www.npmjs.com/package/webpack-bundle-analyzer
             // Visualize size of webpack output files with an interactive zoomable treemap.
@@ -88,8 +88,8 @@ function generateMainConfig(appConfig) {
     return config;
 }
 
-function generateStyleConfig(appConfig, theme) {
-    var mainConfig = common.generateMainConfig(appConfig);
+function generateStyleConfig(appEnvironment, theme) {
+    var mainConfig = common.generateMainConfig(appEnvironment);
     var styleConfig = common.generateStyleConfig(theme.name);
 
     var config = merge.smart(mainConfig, styleConfig);

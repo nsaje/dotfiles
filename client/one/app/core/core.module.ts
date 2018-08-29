@@ -1,7 +1,6 @@
 import {NgModule, Optional, SkipSelf} from '@angular/core';
-
-import {throwIfAlreadyLoaded} from './module-import-guard';
-import {MulticurrencyService} from './multicurrency/multicurrency.service';
+import {throwIfAlreadyLoaded} from './core.module.guard';
+import {MulticurrencyService} from './services/multicurrency.service';
 
 @NgModule({
     exports: [],
@@ -14,6 +13,6 @@ export class CoreModule {
         @SkipSelf()
         parentModule: CoreModule
     ) {
-        throwIfAlreadyLoaded(parentModule, 'CoreModule');
+        throwIfAlreadyLoaded(parentModule, CoreModule.name);
     }
 }

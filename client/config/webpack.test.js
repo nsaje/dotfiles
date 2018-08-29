@@ -1,8 +1,8 @@
 var webpack = require('webpack');
 var common = require('./webpack.common.js');
 
-var appConfig = common.getAppConfig();
-var config = common.generateMainConfig(appConfig);
+var appEnvironment = common.getAppEnvironment();
+var config = common.generateMainConfig(appEnvironment);
 
 config.module.rules = [
     {

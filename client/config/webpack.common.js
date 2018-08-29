@@ -3,7 +3,7 @@ var path = require('path');
 var MiniCssExtractPlugin = require('mini-css-extract-plugin');
 var FilterChunkWebpackPlugin = require('filter-chunk-webpack-plugin');
 
-var APP_CONFIG = null;
+var APP_ENVIRONMENT = null;
 var THEMES = {
     one: {name: 'one'},
     adtechnacity: {name: 'adtechnacity'},
@@ -14,18 +14,18 @@ var THEMES = {
 };
 
 module.exports.THEMES = THEMES;
-module.exports.getAppConfig = getAppConfig;
+module.exports.getAppEnvironment = getAppEnvironment;
 module.exports.getTheme = getTheme;
 module.exports.getThemes = getThemes;
 module.exports.generateMainConfig = generateMainConfig;
 module.exports.generateStyleConfig = generateStyleConfig;
 module.exports.root = root;
 
-function getAppConfig() {
-    if (!APP_CONFIG) {
-        APP_CONFIG = generateAppConfig(process.env);
+function getAppEnvironment() {
+    if (!APP_ENVIRONMENT) {
+        APP_ENVIRONMENT = generateAppEnvironment(process.env);
     }
-    return APP_CONFIG;
+    return APP_ENVIRONMENT;
 }
 
 function getTheme(name) {
@@ -36,7 +36,7 @@ function getThemes() {
     return THEMES;
 }
 
-function generateMainConfig(appConfig) {
+function generateMainConfig(appEnvironment) {
     var config = {
         module: {},
         plugins: [],
@@ -116,7 +116,9 @@ function generateMainConfig(appConfig) {
         // https://webpack.js.org/plugins/define-plugin/
         // Allows you to create global constants which can be configured at compile time.
         // Define application configuration.
-        new webpack.DefinePlugin({APP_CONFIG: JSON.stringify(appConfig)}),
+        new webpack.DefinePlugin({
+            APP_ENVIRONMENT: JSON.stringify(appEnvironment),
+        }),
 
         // Fix issue with moment.js locales - by default all locales are added (~30k loc)
         new webpack.ContextReplacementPlugin(/moment[/\\]locale$/, /en/),
@@ -163,7 +165,7 @@ function generateStyleConfig(themeName) {
                     options: {
                         paths: [root('./one/app/themes/' + themeName)],
                         relativeUrls: false,
-                        rootpath: APP_CONFIG.staticUrl + '/one/',
+                        rootpath: APP_ENVIRONMENT.staticUrl + '/one/',
                     },
                 },
             ],
@@ -187,7 +189,7 @@ function generateStyleConfig(themeName) {
     return config;
 }
 
-function generateAppConfig(env) {
+function generateAppEnvironment(env) {
     var config = {
         env: {
             dev: env.NODE_ENV === 'development' || !env.NODE_ENV,

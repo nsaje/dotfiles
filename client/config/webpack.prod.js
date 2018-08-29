@@ -6,24 +6,24 @@ var OptimizeCSSAssetsPlugin = require('optimize-css-assets-webpack-plugin');
 var ParallelUglifyPlugin = require('webpack-parallel-uglify-plugin');
 var SentryPlugin = require('webpack-sentry-plugin');
 
-var appConfig = common.getAppConfig();
+var appEnvironment = common.getAppEnvironment();
 var configs = [];
 
 // Main app config
-var mainConfig = generateMainConfig(appConfig);
+var mainConfig = generateMainConfig(appEnvironment);
 configs.push(mainConfig);
 
 // Themes configs
 var themes = common.getThemes();
 Object.keys(themes).forEach(function(key) {
-    var styleConfig = generateStyleConfig(appConfig, themes[key]);
+    var styleConfig = generateStyleConfig(appEnvironment, themes[key]);
     configs.push(styleConfig);
 });
 
 module.exports = configs;
 
-function generateMainConfig(appConfig) {
-    var config = common.generateMainConfig(appConfig);
+function generateMainConfig(appEnvironment) {
+    var config = common.generateMainConfig(appEnvironment);
 
     config.entry = {
         'zemanta-one': [
@@ -98,13 +98,13 @@ function generateMainConfig(appConfig) {
         }),
     ]);
 
-    if (appConfig.branchName === 'master') {
+    if (appEnvironment.branchName === 'master') {
         config.plugins = config.plugins.concat([
             // https://github.com/40thieves/webpack-sentry-plugin
             // Webpack plugin to upload source maps to Sentry
             new SentryPlugin({
-                release: appConfig.buildNumber,
-                apiKey: appConfig.sentryToken,
+                release: appEnvironment.buildNumber,
+                apiKey: appEnvironment.sentryToken,
                 organization: 'zemanta',
                 project: 'frontend',
                 deleteAfterCompile: true,
@@ -124,8 +124,8 @@ function generateMainConfig(appConfig) {
     return config;
 }
 
-function generateStyleConfig(appConfig, theme) {
-    var mainConfig = common.generateMainConfig(appConfig);
+function generateStyleConfig(appEnvironment, theme) {
+    var mainConfig = common.generateMainConfig(appEnvironment);
     var styleConfig = common.generateStyleConfig(theme.name);
 
     var config = merge.smart(mainConfig, styleConfig);
