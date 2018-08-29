@@ -95,18 +95,6 @@ class AdGroupsSourcesTest(K1APIBaseTest):
         self.assertEqual(dash.constants.AdGroupSourceSettingsState.ACTIVE, data[0]["state"])
 
         mock_get_campaignstop_states.return_value = collections.defaultdict(
-            lambda: {"allowed_to_run": True, "min_allowed_start_date": None}
-        )
-
-        response = self.client.get(reverse("k1api.ad_groups.sources"), {"ad_group_ids": str(ad_group.id)})
-
-        data = json.loads(response.content)
-        self.assert_response_ok(response, data)
-        data = data["response"]
-
-        self.assertEqual(dash.constants.AdGroupSourceSettingsState.INACTIVE, data[0]["state"])
-
-        mock_get_campaignstop_states.return_value = collections.defaultdict(
             lambda: {"allowed_to_run": False, "min_allowed_start_date": dates_helper.local_today()}
         )
 
