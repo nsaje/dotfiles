@@ -37,7 +37,7 @@ angular
             constants.entityType.CAMPAIGN
         );
         vm.showVideoUpload =
-            campaign && campaign.type === constants.campaignTypes.VIDEO;
+            campaign && campaign.data.type === constants.campaignTypes.VIDEO;
 
         vm.switchToBeginning = function() {
             vm.step = 0;
