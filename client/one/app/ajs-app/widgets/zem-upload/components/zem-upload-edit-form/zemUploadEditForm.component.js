@@ -1,3 +1,5 @@
+var callToAction = require('../../zemUpload.config').callToAction;
+
 angular.module('one.widgets').directive('zemUploadEditForm', function() {
     // eslint-disable-line max-len
     return {
@@ -60,7 +62,7 @@ angular
         vm.imageCrops = options.imageCrops;
         vm.videoTypeOptions = options.videoTypes;
         vm.videoTypes = constants.videoType;
-        vm.callToActionOptions = defaults.callToAction;
+        vm.callToActionOptions = callToAction;
         vm.candidateStatuses = constants.contentAdCandidateStatus;
         vm.fieldsLoading = {};
         vm.fieldsSaved = {};
@@ -243,7 +245,7 @@ angular
                     return {id: term, text: term};
                 }
             },
-            data: defaults.callToAction,
+            data: callToAction,
         };
 
         vm.videoUploadCallback = function(file) {

@@ -1,4 +1,5 @@
 require('./zemCampaignLauncherGeneralSettings.component.less');
+var constantsHelpers = require('../../../../../shared/helpers/constants.helpers');
 
 angular.module('one').component('zemCampaignLauncherGeneralSettings', {
     bindings: {
@@ -15,7 +16,7 @@ angular.module('one').component('zemCampaignLauncherGeneralSettings', {
         $ctrl.$onInit = function() {
             $ctrl.state = $ctrl.stateService.getState();
             $ctrl.availableIabCategories = getAvailableIabCategories();
-            $ctrl.availableLanguages = options.convertToRestApiCompliantOptions(
+            $ctrl.availableLanguages = constantsHelpers.convertToRestApiCompliantOptions(
                 options.languages,
                 constants.language
             );
@@ -24,7 +25,7 @@ angular.module('one').component('zemCampaignLauncherGeneralSettings', {
                     'zemauth.can_see_campaign_language_choices'
                 )
             ) {
-                $ctrl.state.fields.language = constants.convertToName(
+                $ctrl.state.fields.language = constantsHelpers.convertToName(
                     constants.language.ENGLISH,
                     constants.language
                 );

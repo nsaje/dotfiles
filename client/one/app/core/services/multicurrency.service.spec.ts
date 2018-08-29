@@ -1,12 +1,11 @@
 import {MulticurrencyService} from './multicurrency.service';
-
-declare var constants: any;
+import {CURRENCY} from '../../app.constants';
 
 describe('MulticurrencyService', () => {
     let service: MulticurrencyService;
 
-    const USD_ACCOUNT = {data: {currency: constants.currency.USD}};
-    const EUR_ACCOUNT = {data: {currency: constants.currency.EUR}};
+    const USD_ACCOUNT = {data: {currency: CURRENCY.USD}};
+    const EUR_ACCOUNT = {data: {currency: CURRENCY.EUR}};
 
     beforeEach(() => {
         service = new MulticurrencyService();
@@ -37,10 +36,10 @@ describe('MulticurrencyService', () => {
 
     it('should return correct currency', () => {
         expect(service.getAppropriateCurrency(USD_ACCOUNT)).toEqual(
-            constants.currency.USD
+            CURRENCY.USD
         );
         expect(service.getAppropriateCurrency(EUR_ACCOUNT)).toEqual(
-            constants.currency.EUR
+            CURRENCY.EUR
         );
     });
 });

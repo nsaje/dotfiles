@@ -1,3 +1,5 @@
+var constantsHelpers = require('../../../shared/helpers/constants.helpers');
+
 angular
     .module('one.widgets')
     .service('zemCampaignLauncherStateService', function(
@@ -143,25 +145,25 @@ angular
 
                     switch (objective) {
                         case constants.campaignObjective.VIDEO_ADVERTISING:
-                            state.fields.type = constants.convertToName(
+                            state.fields.type = constantsHelpers.convertToName(
                                 constants.campaignType.VIDEO,
                                 constants.campaignType
                             );
                             break;
                         case constants.campaignObjective.CONVERSION_MARKETING:
-                            state.fields.type = constants.convertToName(
+                            state.fields.type = constantsHelpers.convertToName(
                                 constants.campaignType.CONVERSION,
                                 constants.campaignType
                             );
                             break;
                         case constants.campaignObjective.MOBILE_APP_ADVERTISING:
-                            state.fields.type = constants.convertToName(
+                            state.fields.type = constantsHelpers.convertToName(
                                 constants.campaignType.MOBILE,
                                 constants.campaignType
                             );
                             break;
                         default:
-                            state.fields.type = constants.convertToName(
+                            state.fields.type = constantsHelpers.convertToName(
                                 constants.campaignType.CONTENT,
                                 constants.campaignType
                             );

@@ -1,3 +1,5 @@
+var constantsHelpers = require('../../../shared/helpers/constants.helpers');
+
 angular
     .module('one.widgets')
     .service('zemCloneContentEndpoint', function($q, $http) {
@@ -31,12 +33,12 @@ angular
             };
 
             if (config.state === true) {
-                converted.state = constants.convertToName(
+                converted.state = constantsHelpers.convertToName(
                     constants.settingsState.ACTIVE,
                     constants.settingsState
                 );
             } else if (config.state === false) {
-                converted.state = constants.convertToName(
+                converted.state = constantsHelpers.convertToName(
                     constants.settingsState.INACTIVE,
                     constants.settingsState
                 );

@@ -1,3 +1,5 @@
+var convertFromName = require('../../../shared/helpers/constants.helpers');
+
 angular
     .module('one.widgets')
     .service('zemCloneAdGroupEndpoint', function($q, $http) {
@@ -30,15 +32,15 @@ angular
             converted.id = parseInt(data.id);
             converted.parentId = parseInt(data.campaignId);
             converted.campaignId = parseInt(data.campaignId);
-            converted.state = constants.convertFromName(
+            converted.state = convertFromName.convertFromName(
                 data.state,
                 constants.settingsState
             );
-            converted.status = constants.convertFromName(
+            converted.status = convertFromName.convertFromName(
                 data.status,
                 constants.adGroupRunningStatus
             );
-            converted.active = constants.convertFromName(
+            converted.active = convertFromName.convertFromName(
                 data.active,
                 constants.infoboxStatus
             );

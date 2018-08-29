@@ -1,6 +1,4 @@
-/*exported overwrittes*/
-
-var overwrittes = {
+export const APP_WHITELABEL = {
     greenpark: {
         chartColors: {
             TOTALS: ['#6594fa', '#c1d4fd'],
@@ -47,5 +45,6 @@ var overwrittes = {
     },
 };
 
-// [Workaround - Webpack] Make constants/options global
-window.overwrittes = overwrittes;
+// [Workaround - Webpack] Make overwrittes global
+// AngularJS (backward compatibility)
+(<any>window).overwrittes = APP_WHITELABEL;

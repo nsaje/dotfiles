@@ -19,3 +19,5 @@ export const APP_CONFIG: AppConfig = {
     sentryToken: environment.sentryToken,
     staticUrl: environment.staticUrl,
 };
+
+// TODO: add options when needed in Angular app

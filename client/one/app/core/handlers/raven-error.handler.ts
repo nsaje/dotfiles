@@ -7,10 +7,9 @@ export class RavenErrorHandler extends ErrorHandler {
     }
 
     handleError(error: any): void {
-        // tslint:disable-line
         super.handleError(error);
         if (APP_CONFIG.env.prod) {
-            (<any>window).Raven.captureException(error.originalError || error); // tslint:disable-line
+            (<any>window).Raven.captureException(error.originalError || error);
         }
     }
 }

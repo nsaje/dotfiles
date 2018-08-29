@@ -6,7 +6,7 @@
              ng-class="{'two-columns-list__container--half' : $ctrl.entity.settings.interestTargeting.length > 0 && $ctrl.entity.settings.exclusionInterestTargeting.length > 0 }">
             <div class="two-columns-list__title text-green">Included</div>
             <ul class="two-columns-list__list list-with-bullets">
-                <li ng-repeat="category in $ctrl.entity.settings.interestTargeting">{{$ctrl.constants.interestCategoryText[category]}}</li>
+                <li ng-repeat="category in $ctrl.entity.settings.interestTargeting">{{$ctrl.interestCategoryText[category]}}</li>
             </ul>
         </div>
         <div class="two-columns-list__spacing"
@@ -15,7 +15,7 @@
              ng-class="{'two-columns-list__container--half' : $ctrl.entity.settings.interestTargeting.length > 0 && $ctrl.entity.settings.exclusionInterestTargeting.length > 0 }">
             <div class="two-columns-list__title text-red">Excluded</div>
             <ul class="two-columns-list__list list-with-bullets">
-                <li ng-repeat="category in $ctrl.entity.settings.exclusionInterestTargeting">{{$ctrl.constants.interestCategoryText[category]}}</li>
+                <li ng-repeat="category in $ctrl.entity.settings.exclusionInterestTargeting">{{$ctrl.interestCategoryText[category]}}</li>
             </ul>
         </div>
     </div>

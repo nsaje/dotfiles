@@ -1,5 +1,7 @@
 require('./app/ajs-app/config.module.js');
-require('./app/ajs-app/constants.js');
+require('./app/app.constants');
+require('./app/app.options');
+require('./app/app.whitelabel');
 
 requireAll(require.context('./app/ajs-app/', true, /module\.js$/));
 requireAll(

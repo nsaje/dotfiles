@@ -1,3 +1,5 @@
+var constantsHelpers = require('../../../../../../shared/helpers/constants.helpers');
+
 angular.module('one.widgets').component('zemCampaignGoalEditForm', {
     bindings: {
         campaignGoal: '=',
@@ -133,7 +135,7 @@ angular.module('one.widgets').component('zemCampaignGoalEditForm', {
         function setDefaultValue() {
             if ($ctrl.isEdit || !$ctrl.goalsDefaults) return;
 
-            var kpiName = constants.convertToName(
+            var kpiName = constantsHelpers.convertToName(
                 $ctrl.campaignGoal.type,
                 constants.campaignGoalKPI
             );

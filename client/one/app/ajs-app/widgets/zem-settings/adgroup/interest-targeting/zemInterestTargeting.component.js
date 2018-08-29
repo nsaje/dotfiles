@@ -23,8 +23,13 @@ angular.module('one.widgets').component('zemInterestTargeting', {
         $ctrl.addExcluded = addExcluded;
         $ctrl.removeTargeting = removeTargeting;
 
+        $ctrl.interestCategoryText = [];
+
         $ctrl.$onInit = function() {
             $ctrl.api.register({});
+            options.interests.forEach(function(interest) {
+                $ctrl.interestCategoryText[interest.value] = interest.name;
+            });
         };
 
         $ctrl.$onChanges = function() {
