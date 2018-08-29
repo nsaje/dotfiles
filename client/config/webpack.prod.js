@@ -107,11 +107,13 @@ function generateMainConfig(appEnvironment) {
                 apiKey: appEnvironment.sentryToken,
                 organization: 'zemanta',
                 project: 'frontend',
-                deleteAfterCompile: true,
+                deleteAfterCompile: false,
                 suppressErrors: true,
                 filenameTransform: function(filename) {
                     var prefix =
-                        '~/build-' + appConfig.buildNumber + '/client/one/';
+                        '~/build-' +
+                        appEnvironment.buildNumber +
+                        '/client/one/';
                     return prefix + filename;
                 },
             }),
