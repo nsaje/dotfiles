@@ -208,19 +208,19 @@ export const APP_OPTIONS = {
     campaignTypes: [
         {
             name: 'Native Content Distribution',
-            value: APP_CONSTANTS.campaignType.CONTENT,
+            value: APP_CONSTANTS.campaignTypes.CONTENT,
         },
         {
             name: 'Native Video Advertising',
-            value: APP_CONSTANTS.campaignType.VIDEO,
+            value: APP_CONSTANTS.campaignTypes.VIDEO,
         },
         {
             name: 'Native Conversion Marketing',
-            value: APP_CONSTANTS.campaignType.CONVERSION,
+            value: APP_CONSTANTS.campaignTypes.CONVERSION,
         },
         {
             name: 'Native Mobile App Advertising',
-            value: APP_CONSTANTS.campaignType.MOBILE,
+            value: APP_CONSTANTS.campaignTypes.MOBILE,
         },
     ],
     iabCategories: [

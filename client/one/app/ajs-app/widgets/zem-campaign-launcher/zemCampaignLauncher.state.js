@@ -146,26 +146,26 @@ angular
                     switch (objective) {
                         case constants.campaignObjective.VIDEO_ADVERTISING:
                             state.fields.type = constantsHelpers.convertToName(
-                                constants.campaignType.VIDEO,
-                                constants.campaignType
+                                constants.campaignTypes.VIDEO,
+                                constants.campaignTypes
                             );
                             break;
                         case constants.campaignObjective.CONVERSION_MARKETING:
                             state.fields.type = constantsHelpers.convertToName(
-                                constants.campaignType.CONVERSION,
-                                constants.campaignType
+                                constants.campaignTypes.CONVERSION,
+                                constants.campaignTypes
                             );
                             break;
                         case constants.campaignObjective.MOBILE_APP_ADVERTISING:
                             state.fields.type = constantsHelpers.convertToName(
-                                constants.campaignType.MOBILE,
-                                constants.campaignType
+                                constants.campaignTypes.MOBILE,
+                                constants.campaignTypes
                             );
                             break;
                         default:
                             state.fields.type = constantsHelpers.convertToName(
-                                constants.campaignType.CONTENT,
-                                constants.campaignType
+                                constants.campaignTypes.CONTENT,
+                                constants.campaignTypes
                             );
                     }
                 }

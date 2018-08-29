@@ -39,7 +39,7 @@ angular.module('one.widgets').component('zemCampaignGeneralSettings', {
                 ) &&
                 !$ctrl.entity.settings.type
             ) {
-                $ctrl.entity.settings.type = constants.campaignType.CONTENT;
+                $ctrl.entity.settings.type = constants.campaignTypes.CONTENT;
             }
         };
 

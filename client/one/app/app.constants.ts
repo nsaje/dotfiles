@@ -51,6 +51,12 @@ export const APP_CONSTANTS = {
         MANAGED: 6,
         PAAS: 7,
     },
+    campaignTypes: {
+        CONTENT: 1,
+        VIDEO: 2,
+        CONVERSION: 3,
+        MOBILE: 4,
+    },
     currency: CURRENCY,
     infoboxStatus: {
         ACTIVE: 'active',
@@ -947,12 +953,6 @@ export const APP_CONSTANTS = {
         SIMPLIFIED_CHINESE: 'zh_CN',
         TRADITIONAL_CHINESE: 'zh_TW',
         OTHER: 'any',
-    },
-    campaignType: {
-        CONTENT: 1,
-        VIDEO: 2,
-        CONVERSION: 3,
-        MOBILE: 4,
     },
     campaignObjective: {
         CONTENT_DISTRIBUTION: 1,
