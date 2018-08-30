@@ -82,7 +82,7 @@ function generateMainConfig(appEnvironment) {
         },
     };
 
-    config.devtool = 'source-map';
+    config.devtool = 'inline-source-map';
     config.mode = 'development';
 
     return config;
@@ -106,7 +106,7 @@ function generateStyleConfig(appEnvironment, theme) {
         publicPath: 'one/',
     };
 
-    config.devtool = 'source-map';
+    config.devtool = 'none';
     config.mode = 'development';
 
     return config;

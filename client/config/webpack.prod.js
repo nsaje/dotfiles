@@ -3,7 +3,7 @@ var common = require('./webpack.common.js');
 var merge = require('webpack-merge');
 var CopyWebpackPlugin = require('copy-webpack-plugin');
 var OptimizeCSSAssetsPlugin = require('optimize-css-assets-webpack-plugin');
-var ParallelUglifyPlugin = require('webpack-parallel-uglify-plugin');
+var UglifyJsPlugin = require('uglifyjs-webpack-plugin');
 var SentryPlugin = require('webpack-sentry-plugin');
 
 var appEnvironment = common.getAppEnvironment();
@@ -46,6 +46,10 @@ function generateMainConfig(appEnvironment) {
             // https://github.com/NMFR/optimize-css-assets-webpack-plugin
             // A Webpack plugin to optimize \ minimize CSS assets.
             new OptimizeCSSAssetsPlugin({}),
+            new UglifyJsPlugin({
+                sourceMap: true,
+                parallel: true,
+            }),
         ],
         splitChunks: {
             cacheGroups: {
@@ -90,12 +94,6 @@ function generateMainConfig(appEnvironment) {
                 to: 'assets',
             },
         ]),
-
-        // https://github.com/gdborton/webpack-parallel-uglify-plugin
-        // A faster uglifyjs plugin.
-        new ParallelUglifyPlugin({
-            sourceMap: true,
-        }),
     ]);
 
     if (appEnvironment.branchName === 'master') {
@@ -107,7 +105,7 @@ function generateMainConfig(appEnvironment) {
                 apiKey: appEnvironment.sentryToken,
                 organization: 'zemanta',
                 project: 'frontend',
-                deleteAfterCompile: false,
+                deleteAfterCompile: true,
                 suppressErrors: true,
                 filenameTransform: function(filename) {
                     var prefix =
