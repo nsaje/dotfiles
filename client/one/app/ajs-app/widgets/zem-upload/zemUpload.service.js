@@ -3,7 +3,8 @@ angular
     .service('zemUploadService', function(
         $uibModal,
         $rootScope,
-        zemUploadEndpointService
+        zemUploadEndpointService,
+        zemNavigationNewService
     ) {
         //
         // Public API
@@ -11,14 +12,24 @@ angular
         this.openUploadModal = openUploadModal;
         this.openEditModal = openEditModal;
 
+        function getShowVideoUpload() {
+            var campaign = zemNavigationNewService.getActiveEntityByType(
+                constants.entityType.CAMPAIGN
+            );
+            return (
+                campaign && campaign.data.type === constants.campaignTypes.VIDEO
+            );
+        }
+
         function openUploadModal(adGroup, onSave) {
             var modalScope = $rootScope.$new();
             modalScope.adGroup = adGroup;
             modalScope.onSave = onSave;
+            modalScope.showVideoUpload = getShowVideoUpload();
 
             var modal = $uibModal.open({
                 template:
-                    '<zem-upload ad-group="adGroup" on-save="onSave" close-modal="closeModal"></zem-upload>',
+                    '<zem-upload ad-group="adGroup" on-save="onSave" close-modal="closeModal" show-video-upload="showVideoUpload"></zem-upload>',
                 controller: function($scope) {
                     $scope.closeModal = $scope.$close;
                 },
@@ -40,12 +51,13 @@ angular
                 modalScope.adGroupId
             );
             modalScope.onSave = onSave;
+            modalScope.showVideoUpload = getShowVideoUpload();
 
             var modal = $uibModal.open({
                 template:
                     '<zem-upload-step2 ad-group-id="adGroupId" callback="cb()" close="$close" ' +
                     'is-edit="true" candidates="candidates" batch-id="batchId" endpoint="endpoint" ' +
-                    'auto-open-edit-form="true">' +
+                    'auto-open-edit-form="true" show-video-upload="showVideoUpload">' +
                     '</zem-upload-step2>',
                 controller: function($scope) {
                     $scope.cb = function() {

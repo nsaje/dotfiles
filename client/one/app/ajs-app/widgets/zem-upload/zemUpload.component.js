@@ -11,6 +11,7 @@ angular.module('one.widgets').directive('zemUpload', function() {
             adGroup: '=',
             onSave: '=',
             closeModal: '=',
+            showVideoUpload: '=',
         },
         controllerAs: 'ctrl',
         controller: 'ZemUploadCtrl',
@@ -21,8 +22,7 @@ angular
     .module('one.widgets')
     .controller('ZemUploadCtrl', function(
         zemUploadEndpointService,
-        zemUserService,
-        zemNavigationNewService
+        zemUserService
     ) {
         var vm = this;
         var user = zemUserService.current();
@@ -32,12 +32,6 @@ angular
             .add(user ? user.timezoneOffset : 0, 'seconds')
             .format('M/D/YYYY h:mm A');
         vm.step = 0;
-
-        var campaign = zemNavigationNewService.getActiveEntityByType(
-            constants.entityType.CAMPAIGN
-        );
-        vm.showVideoUpload =
-            campaign && campaign.data.type === constants.campaignTypes.VIDEO;
 
         vm.switchToBeginning = function() {
             vm.step = 0;

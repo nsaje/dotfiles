@@ -208,6 +208,8 @@ class PersistBatchTestCase(TestCase):
         self.assertEqual(0, batch.contentad_set.count())
 
         candidate = batch.contentadcandidate_set.get()
+        candidate.ad_group.campaign.type = constants.CampaignType.VIDEO
+        candidate.ad_group.campaign.save()
 
         contentupload.upload.persist_batch(batch)
         self.assertEqual(0, batch.contentadcandidate_set.count())
@@ -328,6 +330,8 @@ class PersistEditBatchTestCase(TestCase):
 
         content_ad = models.ContentAd.objects.get(id=2)
         candidate = batch.contentadcandidate_set.get()
+        candidate.ad_group.campaign.type = constants.CampaignType.VIDEO
+        candidate.ad_group.campaign.save()
 
         content_ads = contentupload.upload.persist_edit_batch(self.request, batch)
         new_content_ad = models.ContentAd.objects.get(id=content_ad.id)

@@ -185,8 +185,8 @@ class UploadStatusTestCase(TestCase):
         )
 
     def test_ok(self):
-        batch_id = 2
-        ad_group_id = 3
+        batch_id = 8
+        ad_group_id = 7
 
         candidate = models.ContentAdCandidate.objects.get(ad_group_id=ad_group_id)
         expected_candidate = candidate.to_dict()
@@ -229,8 +229,8 @@ class UploadSaveTestCase(TestCase):
     @patch("utils.redirector_helper.insert_redirects")
     def test_ok(self, mock_insert_batch):
         mock_insert_batch.side_effect = self._mock_insert_redirects
-        batch_id = 2
-        ad_group_id = 3
+        batch_id = 8
+        ad_group_id = 7
 
         response = _get_client().post(
             reverse("upload_save", kwargs={"batch_id": batch_id}),
@@ -251,7 +251,7 @@ class UploadSaveTestCase(TestCase):
     def test_change_batch_name(self, mock_insert_batch):
         mock_insert_batch.side_effect = self._mock_insert_redirects
 
-        batch_id = 2
+        batch_id = 8
 
         response = _get_client().post(
             reverse("upload_save", kwargs={"batch_id": batch_id}),
@@ -321,8 +321,8 @@ class UploadSaveTestCase(TestCase):
     def test_redirector_error(self, mock_insert_batch):
         mock_insert_batch.side_effect = Exception()
 
-        batch_id = 2
-        ad_group_id = 3
+        batch_id = 8
+        ad_group_id = 7
 
         response = _get_client().post(
             reverse("upload_save", kwargs={"batch_id": batch_id}),

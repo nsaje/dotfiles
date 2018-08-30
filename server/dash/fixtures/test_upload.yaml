@@ -84,6 +84,12 @@
     model: dash.campaignsettings
     pk: 1
 
+-   fields:
+        campaign: 2
+        created_dt: '2014-06-04T09:58:21'
+    model: dash.campaignsettings
+    pk: 2
+
 # Campaigns
 - fields:
     created_dt: '2014-06-04T09:58:21'
@@ -92,8 +98,20 @@
     account: 1
     settings: 1
     name: 'Test Campaign 1'
+    type: 1
   model: dash.campaign
   pk: 1
+
+- fields:
+    created_dt: '2014-06-04T09:58:21'
+    modified_dt: '2014-06-04T09:58:21'
+    modified_by: 1
+    account: 1
+    settings: 2
+    name: 'Test Campaign 1'
+    type: 2
+  model: dash.campaign
+  pk: 2
 
 # Ad Groups
 - fields:
@@ -156,6 +174,16 @@
   model: dash.adgroup
   pk: 6
 
+- fields:
+    created_dt: '2014-06-04T09:58:21'
+    modified_dt: '2014-06-04T09:58:21'
+    modified_by: 1
+    campaign: 2
+    settings: 7
+    name: 'Test AdGroup 3'  # batch with processed and valid content
+  model: dash.adgroup
+  pk: 7
+
 # Ad Group Settings
 - fields:
     ad_group_id: 1
@@ -198,6 +226,12 @@
         created_dt: '2014-06-04T09:58:21'
     model: dash.adgroupsettings
     pk: 6
+
+-   fields:
+        ad_group: 7
+        created_dt: '2014-06-04T09:58:21'
+    model: dash.adgroupsettings
+    pk: 7
 
 # Source Types
 -   fields:
@@ -353,6 +387,15 @@
     ad_group: 6
   model: dash.uploadbatch
   pk: 7
+
+- fields:
+    created_dt: '2016-05-31T09:00:00'
+    name: 'batch 2'
+    status: 3  # in progress
+    ad_group: 7
+    original_filename: 'test_upload.csv'
+  model: dash.uploadbatch
+  pk: 8
 
 # Content ads
 - fields:
@@ -543,6 +586,32 @@
     additional_data: {'a': 1}
   model: dash.contentadcandidate
   pk: 6
+
+- fields:
+    ad_group: 7
+    batch_id: 8
+    image_status: 3  # ok
+    url_status: 3  # ok
+    created_dt: '2016-05-31T09:00:00'
+    label: 'content ad 1'
+    url: 'http://zemanta.com/blog'
+    title: 'Zemanta blog čšž'
+    image_url: 'http://zemanta.com/img.jpg'
+    image_crop: 'entropy'
+    display_url: 'zemanta.com'
+    brand_name: 'Zemanta'
+    description: 'Zemanta blog'
+    call_to_action: 'Read more'
+    image_width: 500
+    image_height: 500
+    image_hash: '54321cba'
+    primary_tracker_url: 'https://t.zemanta.com/px1.png'
+    secondary_tracker_url: 'https://t.zemanta.com/px2.png'
+    image_id: 'abc12345'
+    video_asset: '12345678-abcd-1234-abcd-123abcd12345'
+  model: dash.contentadcandidate
+  pk: 7
+
 
 # video assets
 - fields:

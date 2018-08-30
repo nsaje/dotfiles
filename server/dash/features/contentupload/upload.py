@@ -244,7 +244,7 @@ def _clean_candidates(candidates):
     cleaned_candidates = []
     errors = {}
     for candidate in candidates:
-        f = forms.ContentAdForm(candidate.to_dict())
+        f = forms.ContentAdForm(candidate.ad_group.campaign, candidate.to_dict())
         if not f.is_valid():
             errors[candidate.id] = f.errors
         cleaned_candidates.append(f.cleaned_data)
@@ -292,12 +292,12 @@ def _update_candidate(data, batch, files):
         _invoke_external_validation(candidate, batch)
 
     candidate.save()
-    return updated_fields
+    return updated_fields, candidate
 
 
-def _get_field_errors(data, files):
+def _get_field_errors(candidate, data, files):
     errors = {}
-    form = forms.ContentAdForm(data, files=files)
+    form = forms.ContentAdForm(candidate.ad_group.campaign, data, files=files)
     if form.is_valid():
         return errors
 
@@ -315,8 +315,8 @@ def _get_field_errors(data, files):
 @transaction.atomic
 def update_candidate(data, defaults, batch, files=None):
     _update_defaults(data, defaults, batch)
-    updated_fields = _update_candidate(data, batch, files)
-    errors = _get_field_errors(data, files)
+    updated_fields, candidate = _update_candidate(data, batch, files)
+    errors = _get_field_errors(candidate, data, files)
     return updated_fields, errors
 
 
@@ -343,7 +343,7 @@ def delete_candidate(candidate):
 
 
 def _get_cleaned_urls(candidate):
-    form = forms.ContentAdForm(candidate.to_dict())
+    form = forms.ContentAdForm(candidate.ad_group.campaign, candidate.to_dict())
     form.is_valid()  # it doesn't matter if the form as a whole is valid or not
     return {"url": form.cleaned_data.get("url"), "image_url": form.cleaned_data.get("image_url")}
 
@@ -471,7 +471,7 @@ def _apply_content_ad_edit(request, candidate):
     if not content_ad:
         raise exc.ChangeForbidden("Update not permitted - original content ad not set")
 
-    f = forms.ContentAdForm(candidate.to_dict())
+    f = forms.ContentAdForm(candidate.ad_group.campaign, candidate.to_dict())
     if not f.is_valid():
         raise exc.CandidateErrorsRemaining("Save not permitted - candidate errors exist")
 

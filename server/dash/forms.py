@@ -1443,6 +1443,10 @@ class ContentAdForm(ContentAdCandidateForm):
     MIN_IMAGE_SIZE = 300
     MAX_IMAGE_SIZE = 10000
 
+    def __init__(self, campaign, *args, **kwargs):
+        super(ContentAdForm, self).__init__(*args, **kwargs)
+        self.campaign = campaign
+
     def _validate_url(self, url):
         validate_url = validators.URLValidator(schemes=["http", "https"])
         try:
@@ -1533,6 +1537,14 @@ class ContentAdForm(ContentAdCandidateForm):
         if url_status == constants.AsyncUploadJobStatus.FAILED:
             return "Content unreachable"
 
+    def _get_video_asset_id_error_msg(self, cleaned_data):
+        video_asset_id = cleaned_data["video_asset_id"]
+        if self.campaign.type == constants.CampaignType.VIDEO and not video_asset_id:
+            return "Video asset required on video campaigns"
+
+        if self.campaign.type != constants.CampaignType.VIDEO and video_asset_id:
+            return "Video asset only allowed on video campaigns"
+
     def _set_tracker_urls(self, cleaned_data):
         cleaned_data["tracker_urls"] = []
         primary_tracker_url = cleaned_data.get("primary_tracker_url")
@@ -1542,10 +1554,6 @@ class ContentAdForm(ContentAdCandidateForm):
         secondary_tracker_url = self.cleaned_data.get("secondary_tracker_url")
         if secondary_tracker_url:
             cleaned_data["tracker_urls"].append(secondary_tracker_url)
-
-    def clean_video_asset_id(self):
-        video_asset = self.cleaned_data.get("video_asset_id")
-        return str(video_asset.id) if video_asset else None
 
     def clean(self):
         cleaned_data = super(ContentAdForm, self).clean()
@@ -1562,6 +1570,10 @@ class ContentAdForm(ContentAdCandidateForm):
         url_error_msg = self._get_url_error_msg(cleaned_data)
         if "url" in cleaned_data and cleaned_data["url"] and url_error_msg:
             self.add_error("url", url_error_msg)
+
+        video_asset_id_error_msg = self._get_video_asset_id_error_msg(cleaned_data)
+        if "video_asset_id" in cleaned_data and video_asset_id_error_msg:
+            self.add_error("video_asset_id", video_asset_id_error_msg)
 
         return cleaned_data
 
