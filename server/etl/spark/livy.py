@@ -1,11 +1,15 @@
 import json
+import logging
 from os import path
 import requests
+import time
 
 from django.conf import settings
 
 FILE_PREFIX = "etl/spark/code"
 LIVY_URL = "http://{}:8998"
+
+logger = logging.getLogger(__name__)
 
 
 def get_session():
@@ -47,6 +51,7 @@ class LivySession:
 
         result = requests.post(self.url + "/sessions", data=json.dumps(data)).json()
         while result["state"] == "starting":
+            time.sleep(1)
             result = requests.get(self.url + "/sessions/" + str(result["id"])).json()
 
         if result["state"] != "idle":
@@ -68,6 +73,7 @@ class LivySession:
 
         result = requests.post(self.url + "/sessions/" + str(self.state) + "/statements", data=json.dumps(data)).json()
         while result["state"] in ("waiting", "running"):
+            time.sleep(1)
             result = requests.get(self.url + "/sessions/" + str(self.state) + "/statements/" + str(result["id"])).json()
 
         if result["state"] != "available":
@@ -81,5 +87,7 @@ class LivySession:
             code = f.read()
 
         code = code.format(*args, **kwargs)
+
+        logger.debug("Running spark code:\n%s", code)
 
         self.run(code)

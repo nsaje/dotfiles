@@ -270,7 +270,7 @@ def _get_campaign_spend(date, all_campaigns, account_id):
             date_query=helpers.get_local_date_query(date)
         )
 
-    logger.info("Running redshift query: %s", query)
+    logger.debug("Running redshift query: %s", query)
 
     with connections[settings.STATS_DB_NAME].cursor() as c:
         c.execute(query)

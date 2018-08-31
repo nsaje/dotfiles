@@ -16,6 +16,9 @@ class ExceptionCommand(BaseCommand):
     # this is extended here to catch exceptions
 
     def execute(self, *args, **options):
+        if int(options["verbosity"]) > 1:
+            root_logger = logging.getLogger("")
+            root_logger.setLevel(logging.DEBUG)
         try:
             application = newrelic.agent.application()
             with newrelic.agent.BackgroundTask(application, name=sys.argv[1]):
