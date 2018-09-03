@@ -119,6 +119,7 @@ class ContentAdSourcesView(K1APIView):
             "content_ad__ad_group__campaign_id",
             "content_ad__ad_group__campaign__account_id",
             "content_ad__ad_group__campaign__account__agency_id",
+            "content_ad__ad_group__amplify_review",
             "content_ad__amplify_review",
             "source_id",
             "source__content_ad_submission_policy",
@@ -149,6 +150,7 @@ class ContentAdSourcesView(K1APIView):
                     "state": self._get_content_ad_source_state(
                         content_ad_source["state"],
                         content_ad_source["source__content_ad_submission_policy"],
+                        content_ad_source["content_ad__ad_group__amplify_review"],
                         content_ad_source["content_ad__amplify_review"],
                         amplify_review_statuses.get(
                             content_ad_source["content_ad_id"], dash.constants.ContentAdSubmissionStatus.PENDING
@@ -167,15 +169,22 @@ class ContentAdSourcesView(K1APIView):
         return {status["content_ad_id"]: status["submission_status"] for status in statuses}
 
     def _get_content_ad_source_state(
-        self, content_ad_source_state, source_submission_policy, content_ad_amplify_review, amplify_review_status
+        self,
+        content_ad_source_state,
+        source_submission_policy,
+        ad_group_amplify_review,
+        content_ad_amplify_review,
+        amplify_review_status,
     ):
         if (
             content_ad_amplify_review
+            and ad_group_amplify_review
             and source_submission_policy == dash.constants.SourceSubmissionPolicy.AUTOMATIC_WITH_AMPLIFY_APPROVAL
             and amplify_review_status != dash.constants.ContentAdSubmissionStatus.APPROVED
         ):
             return dash.constants.ContentAdSourceState.INACTIVE
-        return content_ad_source_state
+        else:
+            return content_ad_source_state
 
     def put(self, request):
         content_ad_id = request.GET.get("content_ad_id")

@@ -195,7 +195,7 @@ class ContentAdsTest(K1APIBaseTest):
         self.assertEqual(data, expected)
 
     def test_get_content_ads_sources_with_amplify_review(self):
-        new_ad_group = magic_mixer.blend(dash.models.AdGroup)
+        new_ad_group = magic_mixer.blend(dash.models.AdGroup, amplify_review=True)
         outbrain_source = dash.models.Source.objects.get(bidder_slug="outbrain")
         magic_mixer.blend(dash.models.AdGroupSource, ad_group=new_ad_group, source=outbrain_source)
         other_ad_group_source = magic_mixer.blend(
