@@ -167,6 +167,7 @@ angular
                                 constants.campaignTypes.CONTENT,
                                 constants.campaignTypes
                             );
+                            break;
                     }
                 }
 

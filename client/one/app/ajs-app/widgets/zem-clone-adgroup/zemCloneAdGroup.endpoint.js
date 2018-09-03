@@ -1,4 +1,4 @@
-var convertFromName = require('../../../shared/helpers/constants.helpers');
+var constantsHelpers = require('../../../shared/helpers/constants.helpers');
 
 angular
     .module('one.widgets')
@@ -32,15 +32,15 @@ angular
             converted.id = parseInt(data.id);
             converted.parentId = parseInt(data.campaignId);
             converted.campaignId = parseInt(data.campaignId);
-            converted.state = convertFromName.convertFromName(
+            converted.state = constantsHelpers.convertFromName(
                 data.state,
                 constants.settingsState
             );
-            converted.status = convertFromName.convertFromName(
+            converted.status = constantsHelpers.convertFromName(
                 data.status,
                 constants.adGroupRunningStatus
             );
-            converted.active = convertFromName.convertFromName(
+            converted.active = constantsHelpers.convertFromName(
                 data.active,
                 constants.infoboxStatus
             );

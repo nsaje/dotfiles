@@ -1,18 +1,17 @@
 import {Injectable} from '@angular/core';
-import {HttpClient, HttpParams, HttpErrorResponse} from '@angular/common/http';
+import {HttpClient, HttpErrorResponse} from '@angular/common/http';
 import {Observable, throwError} from 'rxjs';
 import {map, catchError} from 'rxjs/operators';
 
 import {Filters} from '../types/filters';
 import {Inventory} from '../types/inventory';
-import {ApiResponse} from '../../../shared/types/api-response';
 import {FilterOption} from '../types/filter-option';
+import {ApiResponse} from '../../../shared/types/api-response';
 import {StoreEndpoint} from '../../../shared/types/store-endpoint';
+import {RequestPayload} from '../../../shared/types/request-payload';
 import {InventoryPlanningStore} from './inventory-planning.store';
-import {RequestProperties} from '../types/request-properties';
-import {FilterPayload} from '../types/filter-payload';
-
-const MAX_QUERY_PARAMS_LENGTH = 1900;
+import {INVENTORY_PLANNING_CONFIG} from '../inventory-planning.config';
+import * as endpointHelpers from '../../../shared/helpers/endpoint.helpers';
 
 @Injectable()
 export class InventoryPlanningEndpoint extends StoreEndpoint {
@@ -24,32 +23,32 @@ export class InventoryPlanningEndpoint extends StoreEndpoint {
         store: InventoryPlanningStore,
         selectedFilters: Filters
     ): Observable<Inventory> {
-        const REQUEST_NAME = 'summary';
+        const request = INVENTORY_PLANNING_CONFIG.requests.loadSummary;
 
-        const {method, params, body} = this.buildRequestProperties(
-            selectedFilters
+        const requestPayload = this.buildRequestPayload(selectedFilters);
+        const requestProperties = endpointHelpers.buildRequestProperties(
+            requestPayload
         );
 
-        this.setRequestState(store, REQUEST_NAME, {
+        this.setRequestState(store, request, {
             inProgress: true,
         });
 
         return this.http
-            .request<ApiResponse>(
-                method,
-                '/rest/internal/inventory-planning/summary',
-                {params: params, body: body}
-            )
+            .request<ApiResponse<any>>(requestProperties.method, request.url, {
+                params: requestProperties.params,
+                body: requestProperties.body,
+            })
             .pipe(
-                map((response: ApiResponse) => {
-                    this.setRequestState(store, REQUEST_NAME, {
+                map((response: ApiResponse<any>) => {
+                    this.setRequestState(store, request, {
                         inProgress: false,
                     });
 
                     return response.data;
                 }),
                 catchError((error: HttpErrorResponse) => {
-                    this.setRequestState(store, REQUEST_NAME, {
+                    this.setRequestState(store, request, {
                         inProgress: false,
                         error: true,
                         errorMessage: error.message,
@@ -64,25 +63,25 @@ export class InventoryPlanningEndpoint extends StoreEndpoint {
         store: InventoryPlanningStore,
         selectedFilters: Filters
     ): Observable<FilterOption[]> {
-        const REQUEST_NAME = 'countries';
+        const request = INVENTORY_PLANNING_CONFIG.requests.loadCountries;
 
-        const {method, params, body} = this.buildRequestProperties(
-            selectedFilters
+        const requestPayload = this.buildRequestPayload(selectedFilters);
+        const requestProperties = endpointHelpers.buildRequestProperties(
+            requestPayload
         );
 
-        this.setRequestState(store, REQUEST_NAME, {
+        this.setRequestState(store, request, {
             inProgress: true,
         });
 
         return this.http
-            .request<ApiResponse>(
-                method,
-                '/rest/internal/inventory-planning/countries',
-                {params: params, body: body}
-            )
+            .request<ApiResponse<any>>(requestProperties.method, request.url, {
+                params: requestProperties.params,
+                body: requestProperties.body,
+            })
             .pipe(
-                map((response: ApiResponse) => {
-                    this.setRequestState(store, REQUEST_NAME, {
+                map((response: ApiResponse<any>) => {
+                    this.setRequestState(store, request, {
                         inProgress: false,
                     });
 
@@ -90,7 +89,7 @@ export class InventoryPlanningEndpoint extends StoreEndpoint {
                 }),
                 map(this.convertOptionsValueToString),
                 catchError((error: HttpErrorResponse) => {
-                    this.setRequestState(store, REQUEST_NAME, {
+                    this.setRequestState(store, request, {
                         inProgress: false,
                         error: true,
                         errorMessage: error.message,
@@ -105,25 +104,25 @@ export class InventoryPlanningEndpoint extends StoreEndpoint {
         store: InventoryPlanningStore,
         selectedFilters: Filters
     ): Observable<FilterOption[]> {
-        const REQUEST_NAME = 'publishers';
+        const request = INVENTORY_PLANNING_CONFIG.requests.loadPublishers;
 
-        const {method, params, body} = this.buildRequestProperties(
-            selectedFilters
+        const requestPayload = this.buildRequestPayload(selectedFilters);
+        const requestProperties = endpointHelpers.buildRequestProperties(
+            requestPayload
         );
 
-        this.setRequestState(store, REQUEST_NAME, {
+        this.setRequestState(store, request, {
             inProgress: true,
         });
 
         return this.http
-            .request<ApiResponse>(
-                method,
-                '/rest/internal/inventory-planning/publishers',
-                {params: params, body: body}
-            )
+            .request<ApiResponse<any>>(requestProperties.method, request.url, {
+                params: requestProperties.params,
+                body: requestProperties.body,
+            })
             .pipe(
-                map((response: ApiResponse) => {
-                    this.setRequestState(store, REQUEST_NAME, {
+                map((response: ApiResponse<any>) => {
+                    this.setRequestState(store, request, {
                         inProgress: false,
                     });
 
@@ -131,7 +130,7 @@ export class InventoryPlanningEndpoint extends StoreEndpoint {
                 }),
                 map(this.convertOptionsValueToString),
                 catchError((error: HttpErrorResponse) => {
-                    this.setRequestState(store, REQUEST_NAME, {
+                    this.setRequestState(store, request, {
                         inProgress: false,
                         error: true,
                         errorMessage: error.message,
@@ -146,25 +145,25 @@ export class InventoryPlanningEndpoint extends StoreEndpoint {
         store: InventoryPlanningStore,
         selectedFilters: Filters
     ): Observable<FilterOption[]> {
-        const REQUEST_NAME = 'devices';
+        const request = INVENTORY_PLANNING_CONFIG.requests.loadDevices;
 
-        const {method, params, body} = this.buildRequestProperties(
-            selectedFilters
+        const requestPayload = this.buildRequestPayload(selectedFilters);
+        const requestProperties = endpointHelpers.buildRequestProperties(
+            requestPayload
         );
 
-        this.setRequestState(store, REQUEST_NAME, {
+        this.setRequestState(store, request, {
             inProgress: true,
         });
 
         return this.http
-            .request<ApiResponse>(
-                method,
-                '/rest/internal/inventory-planning/device-types',
-                {params: params, body: body}
-            )
+            .request<ApiResponse<any>>(requestProperties.method, request.url, {
+                params: requestProperties.params,
+                body: requestProperties.body,
+            })
             .pipe(
-                map((response: ApiResponse) => {
-                    this.setRequestState(store, REQUEST_NAME, {
+                map((response: ApiResponse<any>) => {
+                    this.setRequestState(store, request, {
                         inProgress: false,
                     });
 
@@ -172,7 +171,7 @@ export class InventoryPlanningEndpoint extends StoreEndpoint {
                 }),
                 map(this.convertOptionsValueToString),
                 catchError((error: HttpErrorResponse) => {
-                    this.setRequestState(store, REQUEST_NAME, {
+                    this.setRequestState(store, request, {
                         inProgress: false,
                         error: true,
                         errorMessage: error.message,
@@ -187,25 +186,25 @@ export class InventoryPlanningEndpoint extends StoreEndpoint {
         store: InventoryPlanningStore,
         selectedFilters: Filters
     ): Observable<FilterOption[]> {
-        const REQUEST_NAME = 'sources';
+        const request = INVENTORY_PLANNING_CONFIG.requests.loadSources;
 
-        const {method, params, body} = this.buildRequestProperties(
-            selectedFilters
+        const requestPayload = this.buildRequestPayload(selectedFilters);
+        const requestProperties = endpointHelpers.buildRequestProperties(
+            requestPayload
         );
 
-        this.setRequestState(store, REQUEST_NAME, {
+        this.setRequestState(store, request, {
             inProgress: true,
         });
 
         return this.http
-            .request<ApiResponse>(
-                method,
-                '/rest/internal/inventory-planning/media-sources',
-                {params: params, body: body}
-            )
+            .request<ApiResponse<any>>(requestProperties.method, request.url, {
+                params: requestProperties.params,
+                body: requestProperties.body,
+            })
             .pipe(
-                map((response: ApiResponse) => {
-                    this.setRequestState(store, REQUEST_NAME, {
+                map((response: ApiResponse<any>) => {
+                    this.setRequestState(store, request, {
                         inProgress: false,
                     });
 
@@ -213,7 +212,7 @@ export class InventoryPlanningEndpoint extends StoreEndpoint {
                 }),
                 map(this.convertOptionsValueToString),
                 catchError((error: HttpErrorResponse) => {
-                    this.setRequestState(store, REQUEST_NAME, {
+                    this.setRequestState(store, request, {
                         inProgress: false,
                         error: true,
                         errorMessage: error.message,
@@ -224,36 +223,25 @@ export class InventoryPlanningEndpoint extends StoreEndpoint {
             );
     }
 
-    private buildRequestProperties(
-        selectedFilters: Filters
-    ): RequestProperties {
-        const filterPayload = this.buildFilterPayload(selectedFilters);
-        let params = new HttpParams();
-        for (const filter of Object.keys(filterPayload)) {
-            if (filterPayload[filter].length) {
-                params = params.set(filter, filterPayload[filter]);
-            }
-        }
-        if (params.toString().length < MAX_QUERY_PARAMS_LENGTH) {
-            return {method: 'GET', params: params, body: null};
-        } else {
-            return {method: 'POST', params: null, body: filterPayload};
-        }
-    }
-
-    private buildFilterPayload(selectedFilters: Filters): FilterPayload {
+    /**
+     * The following function is used to convert
+     * Filters to RequestPayload.
+     * @param selectedFilters
+     */
+    private buildRequestPayload(selectedFilters: Filters): RequestPayload {
         return {
-            countries: selectedFilters.countries.map(
-                (x: FilterOption) => x.value
-            ),
-            publishers: selectedFilters.publishers.map(
-                (x: FilterOption) => x.value
-            ),
-            devices: selectedFilters.devices.map((x: FilterOption) => x.value),
-            sources: selectedFilters.sources.map((x: FilterOption) => x.value),
+            countries: selectedFilters.countries.map((x: any) => x.value),
+            publishers: selectedFilters.publishers.map((x: any) => x.value),
+            devices: selectedFilters.devices.map((x: any) => x.value),
+            sources: selectedFilters.sources.map((x: any) => x.value),
         };
     }
 
+    /**
+     * The following function is used to convert
+     * options value to string type.
+     * @param options
+     */
     private convertOptionsValueToString(
         options: FilterOption[]
     ): FilterOption[] {

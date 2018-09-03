@@ -1,23 +1,13 @@
 import {environment} from '../environments/environment';
 
-interface AppConfig {
-    env: {
-        dev: boolean;
-        test: boolean;
-        prod: boolean;
-    };
-    buildNumber: String;
-    branchName: String;
-    sentryToken: String;
-    staticUrl: String;
-}
-
-export const APP_CONFIG: AppConfig = {
+export const APP_CONFIG = {
     env: environment.env,
     buildNumber: environment.buildNumber,
     branchName: environment.branchName,
     sentryToken: environment.sentryToken,
     staticUrl: environment.staticUrl,
+    api_legacy_url: '/api',
+    api_rest_url: '/rest',
+    api_rest_internal_url: '/rest/internal',
+    max_query_params_length: 1900,
 };
-
-// TODO: add options when needed in Angular app
