@@ -26,6 +26,7 @@ from . import bcm_mixin
 
 
 AMPLIFY_REVIEW_AGENCIES_DISABLED = {55}  # Outbrain
+AMPLIFY_REVIEW_ACCOUNTS_DISABLED = {490}  # inPowered
 
 
 class AdGroupManager(core.common.QuerySetManager):
@@ -34,7 +35,11 @@ class AdGroupManager(core.common.QuerySetManager):
 
     def _create(self, request, campaign, name, **kwargs):
         ad_group = AdGroup(campaign=campaign, name=name, **kwargs)
-        if settings.AMPLIFY_REVIEW and campaign.account.agency_id not in AMPLIFY_REVIEW_AGENCIES_DISABLED:
+        if (
+            settings.AMPLIFY_REVIEW
+            and campaign.account_id not in AMPLIFY_REVIEW_ACCOUNTS_DISABLED
+            and campaign.account.agency_id not in AMPLIFY_REVIEW_AGENCIES_DISABLED
+        ):
             ad_group.amplify_review = True
         ad_group.save(request)
         return ad_group
