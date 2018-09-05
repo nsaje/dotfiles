@@ -1774,6 +1774,17 @@ class DirectDealConnectionForm(forms.ModelForm):
     def clean(self):
         super(DirectDealConnectionForm, self).clean()
 
+        if self.cleaned_data.get("deals") is None:
+            raise ValidationError("Deals are required!")
+
+        if self.cleaned_data.get("agency") is not None or self.cleaned_data.get("adgroup") is not None:
+            for deal in self.cleaned_data.get("deals").all():
+                query = models.DirectDealConnection.objects.filter(
+                    adgroup__isnull=True, agency__isnull=True, deals__in=[deal]
+                )
+                if query.all().count() > 0:
+                    raise ValidationError("Deal " + deal.deal_id + " is already used as global deal")
+
         if self.cleaned_data.get("agency") is not None and self.cleaned_data.get("adgroup") is not None:
             raise ValidationError("Configuring both agency and adgroup is not allowed")
 
@@ -1793,6 +1804,7 @@ class DirectDealConnectionAdmin(admin.ModelAdmin):
     raw_id_fields = ("adgroup", "agency")
     readonly_fields = ("modified_dt", "created_dt", "created_by")
     list_display = ("id", "source", "exclusive", "adgroup", "agency", "get_deals")
+    search_fields = ("source__name", "deals__deal_id", "adgroup__id", "agency__id")
 
     def get_deals(self, obj):
         return "\n".join([d.deal_id for d in obj.deals.all()])

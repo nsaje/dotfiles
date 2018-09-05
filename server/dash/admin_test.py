@@ -1,10 +1,13 @@
 import mock
+from utils.magic_mixer import magic_mixer
 
 from django.core import urlresolvers
 from django.contrib.admin.sites import AdminSite
 from django.test import TestCase
 from django.http.request import HttpRequest
+from django.core.exceptions import ValidationError
 
+import core.source
 from dash import models
 from dash import constants
 from dash import admin
@@ -75,3 +78,105 @@ class AdGroupAdmin(TestCase):
         self.assertEqual(ad_group.settings.redirect_javascript, javascript)
         self.assertEqual(ad_group.settings.interest_targeting, interest_targeting)
         mock_r1_insert_adgroup.assert_called_with(ad_group)
+
+
+class DirectDealConnectionAdminTestCase(TestCase):
+    def setUp(self):
+        self.source = magic_mixer.blend(core.source.Source, pk=1, bidder_slug="test_exchange_1")
+        self.deal1 = magic_mixer.blend(core.direct_deals.DirectDeal, deal_id="test_1")
+        self.deal2 = magic_mixer.blend(core.direct_deals.DirectDeal, deal_id="test_2")
+        self.adgroup = magic_mixer.blend(core.entity.AdGroup, pk=1000)
+        self.agency = magic_mixer.blend(core.entity.Agency, pk=2000)
+        self.ddc = magic_mixer.blend(core.direct_deals.DirectDealConnection, pk=1, source=self.source)
+        self.ddc.deals.add(self.deal1)
+        self.ddc.save()
+
+    def test_clean_everything_ok(self):
+        direct_deal_connection_admin = admin.DirectDealAdmin(models.DirectDealConnection, AdminSite())
+        direct_deal_connection_admin.form = admin.DirectDealConnectionForm
+
+        form = direct_deal_connection_admin.get_form(None)({})
+        form.cleaned_data = {"source": self.source, "exclusive": False}
+
+        form.cleaned_data["deals"] = core.direct_deals.DirectDeal.objects.filter(deal_id="test_2").all()
+
+        # adgroup
+        form.cleaned_data["adgroup"] = self.adgroup
+        try:
+            form.clean()
+        except Exception as e:
+            self.fail("raised Exception unexpectedly!: " + e.message)
+
+        # agency
+        del form.cleaned_data["adgroup"]
+        form.cleaned_data["agency"] = self.agency
+        try:
+            form.clean()
+        except Exception as e:
+            self.fail("raised Exception unexpectedly!: " + e.message)
+
+    def test_clean_deals_required(self):
+        direct_deal_connection_admin = admin.DirectDealAdmin(models.DirectDealConnection, AdminSite())
+        direct_deal_connection_admin.form = admin.DirectDealConnectionForm
+
+        form = direct_deal_connection_admin.get_form(None)()
+        form.cleaned_data = {"source": self.source, "exclusive": False}
+
+        try:
+            form.clean()
+        except ValidationError as e:
+            self.assertTrue("Deals are required!" in e.message)
+
+    def test_clean_deal_already_used_as_global_deal(self):
+        direct_deal_connection_admin = admin.DirectDealAdmin(models.DirectDealConnection, AdminSite())
+        direct_deal_connection_admin.form = admin.DirectDealConnectionForm
+
+        form = direct_deal_connection_admin.get_form(None)()
+        form.cleaned_data = {"source": self.source, "exclusive": False}
+
+        form.cleaned_data["deals"] = core.direct_deals.DirectDeal.objects.filter(deal_id="test_1").all()
+
+        # adgroup
+        form.cleaned_data["adgroup"] = self.adgroup
+        try:
+            form.clean()
+        except ValidationError as e:
+            self.assertTrue("Deal test_1 is already used as global deal" in e.message)
+
+        # agency
+        del form.cleaned_data["adgroup"]
+        form.cleaned_data["agency"] = self.agency
+        try:
+            form.clean()
+        except ValidationError as e:
+            self.assertTrue("Deal test_1 is already used as global deal" in e.message)
+
+    def test_clean_adgroup_and_agency_selected(self):
+        direct_deal_connection_admin = admin.DirectDealAdmin(models.DirectDealConnection, AdminSite())
+        direct_deal_connection_admin.form = admin.DirectDealConnectionForm
+        form = direct_deal_connection_admin.get_form(None)()
+        form.cleaned_data = {"source": self.source, "exclusive": False}
+
+        form.cleaned_data["deals"] = core.direct_deals.DirectDeal.objects.filter(deal_id="test_2").all()
+
+        form.cleaned_data["adgroup"] = self.adgroup
+        form.cleaned_data["agency"] = self.agency
+
+        try:
+            form.clean()
+        except ValidationError as e:
+            self.assertTrue("Configuring both agency and adgroup is not allowed" in e.message)
+
+    def test_clean_exclusive_flag_for_global_deal(self):
+        direct_deal_connection_admin = admin.DirectDealAdmin(models.DirectDealConnection, AdminSite())
+        direct_deal_connection_admin.form = admin.DirectDealConnectionForm
+
+        form = direct_deal_connection_admin.get_form(None)()
+        form.cleaned_data = {"source": self.source, "exclusive": True}
+
+        form.cleaned_data["deals"] = core.direct_deals.DirectDeal.objects.filter(deal_id="test_2").all()
+
+        try:
+            form.clean()
+        except ValidationError as e:
+            self.assertTrue("Exclusive flag can be True only in combination with agency or adgroup" in e.message)
