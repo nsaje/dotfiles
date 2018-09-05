@@ -35,9 +35,9 @@ class Command(ExceptionCommand):
             set(Account.objects.filter(agency_id=options["agency_id"]).values_list("pk", flat=True)) - skip_accounts
         )
         query = """select account_id, min(date) from mv_account
-        where cost_nano > 0 and account_id in ({})
+        where and date >= '{}' cost_nano > 0 and account_id in ({})
         group by account_id;""".format(
-            ", ".join(map(str, accounts))
+            options["min_date"], ", ".join(map(str, accounts))
         )
         account_since = {}
         with redshiftapi.db.get_stats_cursor() as cur:
