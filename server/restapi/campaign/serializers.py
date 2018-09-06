@@ -57,7 +57,9 @@ class CampaignSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
     )
     iab_category = restapi.serializers.fields.DashConstantField(constants.IABCategory, required=False)
     language = restapi.serializers.fields.DashConstantField(constants.Language, required=False)
-    type = restapi.serializers.fields.DashConstantField(constants.CampaignType, required=False, source="campaign.type")
+    type = restapi.serializers.fields.DashConstantField(
+        constants.CampaignType, default=constants.CampaignType.CONTENT, required=False, source="campaign.type"
+    )
     archived = rest_framework.serializers.BooleanField(required=False)
     autopilot = rest_framework.serializers.BooleanField(required=False)
     tracking = CampaignTrackingSerializer(source="*", required=False)

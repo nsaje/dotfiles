@@ -162,6 +162,7 @@ class CampaignsTest(RESTAPITest):
         new_campaign = self.campaign_repr(
             account_id=186,
             name="All About Testing",
+            type=constants.CampaignType.VIDEO,
             whitelist_publisher_groups=[153, 154],
             blacklist_publisher_groups=[],
         )
@@ -171,7 +172,20 @@ class CampaignsTest(RESTAPITest):
         self.validate_against_db(resp_json["data"])
         new_campaign["id"] = resp_json["data"]["id"]
         self.assertEqual(resp_json["data"], new_campaign)
+        self.assertEqual(resp_json["data"]["type"], constants.CampaignType.get_name(constants.CampaignType.VIDEO))
         mock_send.assert_not_called()
+
+    def test_campaigns_post_no_type(self):
+        new_campaign = self.campaign_repr(account_id=186, name="All About Testing")
+        del new_campaign["id"]
+        del new_campaign["type"]
+        r = self.client.post(reverse("campaigns_list"), data=new_campaign, format="json")
+        resp_json = self.assertResponseValid(r, data_type=dict, status_code=201)
+        self.validate_against_db(resp_json["data"])
+        new_campaign["id"] = resp_json["data"]["id"]
+        new_campaign["type"] = resp_json["data"]["type"]
+        self.assertEqual(resp_json["data"], new_campaign)
+        self.assertEqual(resp_json["data"]["type"], constants.CampaignType.get_name(constants.CampaignType.CONTENT))
 
     def test_campaigns_post_no_account_id(self):
         new_campaign = self.campaign_repr(
