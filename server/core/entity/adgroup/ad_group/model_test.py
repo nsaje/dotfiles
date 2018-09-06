@@ -8,6 +8,8 @@ from dash import history_helpers
 import core.entity
 import core.source
 
+import utils.exc
+
 
 @patch.object(core.entity.AdGroupSource.objects, "bulk_create_on_allowed_sources")
 @patch("utils.redirector_helper.insert_adgroup", autospec=True)
@@ -61,9 +63,10 @@ class AdGroupClone(TestCase):
     def test_clone(self, mock_autopilot_init, mock_k1_ping, mock_insert_adgroup, mock_bulk_clone):
         request = magic_mixer.blend_request_user()
 
-        source_ad_group = magic_mixer.blend(core.entity.AdGroup)
+        source_campaign = magic_mixer.blend(core.entity.Campaign, type=constants.CampaignType.CONVERSION)
+        source_ad_group = magic_mixer.blend(core.entity.AdGroup, campaign=source_campaign)
 
-        campaign = magic_mixer.blend(core.entity.Campaign)
+        campaign = magic_mixer.blend(core.entity.Campaign, type=constants.CampaignType.MOBILE)
         ad_group = core.entity.AdGroup.objects.clone(request, source_ad_group, campaign, "asd")
 
         self.assertNotEqual(ad_group.pk, source_ad_group.pk)
@@ -78,6 +81,38 @@ class AdGroupClone(TestCase):
         history = history_helpers.get_ad_group_history(ad_group)
         self.assertEqual(len(history), 1)
         self.assertEqual(history[0].action_type, constants.HistoryActionType.SETTINGS_CHANGE)
+
+    def test_clone_video(self, mock_autopilot_init, mock_k1_ping, mock_insert_adgroup, mock_bulk_clone):
+        request = magic_mixer.blend_request_user()
+
+        source_campaign = magic_mixer.blend(core.entity.Campaign, type=constants.CampaignType.VIDEO)
+        source_ad_group = magic_mixer.blend(core.entity.AdGroup, campaign=source_campaign)
+
+        campaign = magic_mixer.blend(core.entity.Campaign, type=constants.CampaignType.VIDEO)
+        ad_group = core.entity.AdGroup.objects.clone(request, source_ad_group, campaign, "asd")
+
+        self.assertNotEqual(ad_group.pk, source_ad_group.pk)
+        self.assertEqual(ad_group.campaign, campaign)
+        self.assertEqual(ad_group.name, "asd")
+
+        self.assertTrue(mock_bulk_clone.called)
+        self.assertTrue(mock_insert_adgroup.called)
+        self.assertTrue(mock_autopilot_init.called)
+        mock_k1_ping.assert_called_with(ad_group.id, msg="CampaignAdGroups.put")
+
+        history = history_helpers.get_ad_group_history(ad_group)
+        self.assertEqual(len(history), 1)
+        self.assertEqual(history[0].action_type, constants.HistoryActionType.SETTINGS_CHANGE)
+
+    def test_clone_video_error(self, mock_autopilot_init, mock_k1_ping, mock_insert_adgroup, mock_bulk_clone):
+        request = magic_mixer.blend_request_user()
+
+        source_campaign = magic_mixer.blend(core.entity.Campaign, type=constants.CampaignType.VIDEO)
+        source_ad_group = magic_mixer.blend(core.entity.AdGroup, campaign=source_campaign)
+
+        campaign = magic_mixer.blend(core.entity.Campaign, type=constants.CampaignType.CONTENT)
+        with self.assertRaises(utils.exc.ValidationError):
+            core.entity.AdGroup.objects.clone(request, source_ad_group, campaign, "asd")
 
 
 class AdGroupHistory(TestCase):

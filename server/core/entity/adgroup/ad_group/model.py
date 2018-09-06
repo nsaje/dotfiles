@@ -23,6 +23,7 @@ import core.entity
 import core.source
 
 from . import bcm_mixin
+from . import exceptions
 
 
 AMPLIFY_REVIEW_AGENCIES_DISABLED = {55}  # Outbrain
@@ -84,6 +85,14 @@ class AdGroupManager(core.common.QuerySetManager):
         return ad_group
 
     def clone(self, request, source_ad_group, campaign, new_name):
+        if (
+            source_ad_group.campaign.type == constants.CampaignType.VIDEO
+            or campaign.type == constants.CampaignType.VIDEO
+        ) and source_ad_group.campaign.type != campaign.type:
+            raise exceptions.CampaignTypesDoNotMatch(
+                "When cloning to or from a video campaign, both have to be of the same type."
+            )
+
         core.common.entity_limits.enforce(
             AdGroup.objects.filter(campaign=campaign).exclude_archived(), campaign.account_id
         )

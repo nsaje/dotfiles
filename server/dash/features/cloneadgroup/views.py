@@ -4,6 +4,9 @@ import automation.campaignstop
 from restapi.common.views_base import RESTAPIBaseView
 import restapi.access
 import dash.views.navigation_helpers
+import utils.exc
+
+import core.entity.adgroup.ad_group.exceptions
 
 from . import serializers
 from . import service
@@ -20,13 +23,17 @@ class CloneAdGroup(RESTAPIBaseView):
         form = serializers.CloneAdGroupSerializer(data=request.data, context=self.get_serializer_context())
         form.is_valid(raise_exception=True)
 
-        ad_group = service.clone(
-            request,
-            restapi.access.get_ad_group(user, form.validated_data["ad_group_id"]),
-            restapi.access.get_campaign(user, form.validated_data["destination_campaign_id"]),
-            form.validated_data["destination_ad_group_name"],
-            form.validated_data["clone_ads"],
-        )
+        try:
+            ad_group = service.clone(
+                request,
+                restapi.access.get_ad_group(user, form.validated_data["ad_group_id"]),
+                restapi.access.get_campaign(user, form.validated_data["destination_campaign_id"]),
+                form.validated_data["destination_ad_group_name"],
+                form.validated_data["clone_ads"],
+            )
+
+        except core.entity.adgroup.ad_group.exceptions.CampaignTypesDoNotMatch as err:
+            raise utils.exc.ValidationError(errors={"destination_campaign_id": [str(err)]})
 
         response = dash.views.navigation_helpers.get_ad_group_dict(
             request.user,
