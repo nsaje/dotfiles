@@ -587,7 +587,7 @@ class SourceAdmin(admin.ModelAdmin):
         "modified_dt",
     )
     readonly_fields = ("created_dt", "modified_dt", "deprecated")
-    list_filter = ("maintenance", "deprecated", "released")
+    list_filter = ("maintenance", "deprecated", "released", "supports_video")
 
     def get_queryset(self, request):
         qs = super(SourceAdmin, self).get_queryset(request)

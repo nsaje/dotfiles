@@ -630,6 +630,9 @@ class AdGroupSources(api_common.BaseApiView):
             .order_by("name")
         )
 
+        if ad_group.campaign.type == constants.CampaignType.VIDEO:
+            available_sources = available_sources.filter(supports_video=True)
+
         sources = []
         for source in available_sources:
             sources.append(

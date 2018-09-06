@@ -113,6 +113,7 @@ client/dist
 
 # Client coverage
 client/coverage
+client/package-lock.json
 
 # Server JUnit files
 server/.junit_xml/TEST*
