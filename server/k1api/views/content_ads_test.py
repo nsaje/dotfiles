@@ -339,4 +339,6 @@ class ContentAdsTest(K1APIBaseTest):
         cas = dash.models.ContentAdSource.objects.filter(content_ad_id=1, source__bidder_slug="adblade")[0]
         self.assertEqual(cas.submission_status, 2)
         self.assertEqual(cas.source_content_ad_id, "987654321")
-        mock_influx_timing.assert_any_call("content_ads_source.submission_processing_time", 111678084.394696)
+        mock_influx_timing.assert_any_call(
+            "content_ads_source.submission_processing_time", 111678084.394696, exchange="adblade"
+        )

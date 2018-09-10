@@ -211,7 +211,9 @@ class ContentAdSourcesView(K1APIView):
                 "submission_status"
             ] in [constants.ContentAdSubmissionStatus.REJECTED, constants.ContentAdSubmissionStatus.APPROVED]:
                 time_delta = dates_helper.utc_now() - content_ad_source.modified_dt
-                influx.timing("content_ads_source.submission_processing_time", time_delta.total_seconds())
+                influx.timing(
+                    "content_ads_source.submission_processing_time", time_delta.total_seconds(), exchange=source_slug
+                )
 
             content_ad_source.submission_status = data["submission_status"]
             if content_ad_source.submission_status == constants.ContentAdSubmissionStatus.APPROVED:
