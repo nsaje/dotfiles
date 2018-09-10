@@ -1,13 +1,14 @@
 import logging
 
+import influx
 from django.http import Http404
 
 import dash.constants
+import dash.features.submission_filters
 import dash.models
 from dash import constants
+from utils import dates_helper
 from utils import db_for_reads
-import dash.features.submission_filters
-
 from .base import K1APIView
 
 logger = logging.getLogger(__name__)
@@ -206,6 +207,12 @@ class ContentAdSourcesView(K1APIView):
         modified = False
         content_ad_source = content_ad_source[0]
         if "submission_status" in data and content_ad_source.submission_status != data["submission_status"]:
+            if content_ad_source.submission_status == constants.ContentAdSubmissionStatus.PENDING and data[
+                "submission_status"
+            ] in [constants.ContentAdSubmissionStatus.REJECTED, constants.ContentAdSubmissionStatus.APPROVED]:
+                time_delta = dates_helper.utc_now() - content_ad_source.modified_dt
+                influx.timing("content_ads_source.submission_processing_time", time_delta.total_seconds())
+
             content_ad_source.submission_status = data["submission_status"]
             if content_ad_source.submission_status == constants.ContentAdSubmissionStatus.APPROVED:
                 content_ad_source.submission_errors = None

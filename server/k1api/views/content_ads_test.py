@@ -1,20 +1,21 @@
+import datetime
 import itertools
 import json
+import logging
+import urllib.error
+import urllib.parse
 
-import urllib.request, urllib.parse, urllib.error
 
+import urllib.request
+
+import mock
 from django.core.urlresolvers import reverse
 
-import dash.features.geolocation
-import dash.features.ga
 import dash.constants
+import dash.features.ga
+import dash.features.geolocation
 import dash.models
-
-import logging
-
 from utils.magic_mixer import magic_mixer
-
-
 from .base_test import K1APIBaseTest
 
 logger = logging.getLogger(__name__)
@@ -318,3 +319,24 @@ class ContentAdsTest(K1APIBaseTest):
         data = json.loads(response.content)
         self.assertEqual(response.status_code, 400)
         self.assertIn("Cannot change", data["error"])
+
+    @mock.patch("influx.timing")
+    @mock.patch("utils.dates_helper.utc_now")
+    def test_update_content_ad_status_influx(self, mock_now, mock_influx_timing):
+
+        mock_now.return_value = datetime.datetime(2018, 9, 7, 13, 41, 24, 394696)
+        response = self.client.generic(
+            "PUT",
+            reverse("k1api.content_ads.sources"),
+            json.dumps({"submission_status": 2, "submission_errors": "my-errors"}),
+            "application/json",
+            QUERY_STRING=urllib.parse.urlencode({"content_ad_id": 1, "source_slug": "adblade"}),
+        )
+
+        data = json.loads(response.content)
+        self.assert_response_ok(response, data)
+
+        cas = dash.models.ContentAdSource.objects.filter(content_ad_id=1, source__bidder_slug="adblade")[0]
+        self.assertEqual(cas.submission_status, 2)
+        self.assertEqual(cas.source_content_ad_id, "987654321")
+        mock_influx_timing.assert_any_call("content_ads_source.submission_processing_time", 111678084.394696)
