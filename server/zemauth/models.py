@@ -369,6 +369,10 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ("can_edit_advanced_custom_flags", "User can modify the advanced custom flags in admin"),
             ("can_see_amplify_review_link", "User can see link to Amplify review campaign"),
             ("fea_can_change_campaign_type", "User can change campaign type"),
+            (
+                "can_set_auto_add_new_sources",
+                "User can set automatical addition of newly released sources to ad groups",
+            ),
         )
 
     def get_full_name(self):

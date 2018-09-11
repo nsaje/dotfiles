@@ -479,6 +479,7 @@ class AccountSettingsForm(PublisherGroupsFormMixin, forms.Form):
     currency = forms.TypedChoiceField(
         choices=constants.Currency.get_choices(), error_messages={"required": "Please choose currency for account."}
     )
+    auto_add_new_sources = forms.BooleanField(required=False)
 
     def __init__(self, account, *args, **kwargs):
         self.account = account

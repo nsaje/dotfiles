@@ -38,6 +38,7 @@ from dash import infobox_helpers
 from dash.features import native_server
 
 import core.entity.settings.ad_group_source_settings.exceptions
+import core.entity.adgroup.ad_group_source.exceptions
 
 import stats.helpers
 
@@ -660,7 +661,16 @@ class AdGroupSources(api_common.BaseApiView):
         source_id = json.loads(request.body)["source_id"]
         source = models.Source.objects.get(id=source_id)
 
-        core.entity.AdGroupSource.objects.create(request, ad_group, source, write_history=True, k1_sync=True)
+        try:
+            core.entity.AdGroupSource.objects.create(request, ad_group, source, write_history=True, k1_sync=True)
+
+        except (
+            core.entity.adgroup.ad_group_source.exceptions.SourceNotAllowed,
+            core.entity.adgroup.ad_group_source.exceptions.RetargetingNotSupported,
+            core.entity.adgroup.ad_group_source.exceptions.SourceAlreadyExists,
+            core.entity.adgroup.ad_group_source.exceptions.VideoNotSupported,
+        ) as err:
+            raise exc.ValidationError(str(err))
 
         return self.create_api_response(None)
 

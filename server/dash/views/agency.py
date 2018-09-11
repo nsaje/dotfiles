@@ -1139,6 +1139,10 @@ class AccountSettings(api_common.BaseApiView):
                 if "blacklist_publisher_groups" in form.cleaned_data:
                     settings.blacklist_publisher_groups = form.cleaned_data["blacklist_publisher_groups"]
 
+            if request.user.has_perm("zemauth.can_set_auto_add_new_sources"):
+                if "auto_add_new_sources" in form.cleaned_data:
+                    settings.auto_add_new_sources = form.cleaned_data["auto_add_new_sources"]
+
             account.save(request)
             settings.save(request, action_type=constants.HistoryActionType.SETTINGS_CHANGE)
             return settings
@@ -1392,6 +1396,8 @@ class AccountSettings(api_common.BaseApiView):
                 result["agency"] = ""
         if request.user.has_perm("zemauth.can_see_salesforce_url"):
             result["salesforce_url"] = settings.salesforce_url
+        if request.user.has_perm("zemauth.can_set_auto_add_new_sources"):
+            result["auto_add_new_sources"] = settings.auto_add_new_sources
 
         result["whitelist_publisher_groups"] = settings.whitelist_publisher_groups
         result["blacklist_publisher_groups"] = settings.blacklist_publisher_groups

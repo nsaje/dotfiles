@@ -153,6 +153,24 @@
             api="$ctrl.api"
             class="zem-media-sources-settings"
     ></zem-media-sources-settings>
+    <br />
+    <div class="form" ng-class="{'form--error': !!$ctrl.errors.autoAddNewSources}" ng-if="$ctrl.hasPermission('zemauth.can_set_auto_add_new_sources')">
+        <div class="form__checkbox">
+            <label>
+                <input class="input-checkbox" id="auto-add-new-sources-checkbox" type="checkbox" ng-model="$ctrl.entity.settings.autoAddNewSources">
+                <span class="checkbox-text">
+                    Automatically add new media sources as soon as they become available
+                </span>
+            </label>
+        </div>
+        <div class="message message--error" ng-repeat="error in $ctrl.errors.autoAddNewSources"
+             for="auto-add-new-sources-checkbox">{{ error }}</div>
+        <div class="message message--info message--with-icon m-t-s m-b-none">
+                We are constantly enriching our supply offering with new media sources.
+                Turning this setting to on will enable you to automatically adopt new media 
+                sources as soon as they become available on the platform.
+        </div>
+    </div>
 </div>
 <div class="custom-panel zem-settings-component__container zem-facebook-page-settings" ng-if="false">
     <!-- DISABLED FACEBOOK -->

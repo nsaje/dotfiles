@@ -35,6 +35,7 @@ class AccountSettings(validation.AccountSettingsValidatorMixin, SettingsBase):
         "whitelist_publisher_groups",
         "blacklist_publisher_groups",
         "salesforce_url",
+        "auto_add_new_sources",
     ]
     history_fields = list(_settings_fields)
 
@@ -62,6 +63,8 @@ class AccountSettings(validation.AccountSettingsValidatorMixin, SettingsBase):
 
     salesforce_url = models.URLField(null=True, blank=True, max_length=255)
 
+    auto_add_new_sources = models.BooleanField(default=False)
+
     archived = models.BooleanField(default=False)
     changes_text = models.TextField(blank=True, null=True)
 
@@ -87,6 +90,7 @@ class AccountSettings(validation.AccountSettingsValidatorMixin, SettingsBase):
             "whitelist_publisher_groups": "Whitelist publisher groups",
             "blacklist_publisher_groups": "Blacklist publisher groups",
             "salesforce_url": "SalesForce",
+            "auto_add_new_sources": "Automatically add new sources",
         }
         return NAMES[prop_name]
 

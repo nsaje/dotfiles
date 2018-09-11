@@ -391,15 +391,25 @@ class AdGroup(models.Model, bcm_mixin.AdGroupBCMMixin):
         source_types_added = set(self.adgroupsource_set.all().values_list("source__source_type__type", flat=True))
         if constants.SourceType.OUTBRAIN not in source_types_added:
             outbrain_source = core.source.Source.objects.get(source_type__type=constants.SourceType.OUTBRAIN)
-            core.entity.AdGroupSource.objects.create(
-                request,
-                self,
-                outbrain_source,
-                write_history=False,
-                k1_sync=False,
-                ad_review_only=True,
-                state=constants.AdGroupSourceSettingsState.INACTIVE,
-            )
+
+            try:
+                core.entity.AdGroupSource.objects.create(
+                    request,
+                    self,
+                    outbrain_source,
+                    write_history=False,
+                    k1_sync=False,
+                    ad_review_only=True,
+                    state=constants.AdGroupSourceSettingsState.INACTIVE,
+                )
+
+            except (
+                core.entity.adgroup.ad_group_source.exceptions.SourceNotAllowed,
+                core.entity.adgroup.ad_group_source.exceptions.RetargetingNotSupported,
+                core.entity.adgroup.ad_group_source.exceptions.SourceAlreadyExists,
+                core.entity.adgroup.ad_group_source.exceptions.VideoNotSupported,
+            ) as err:
+                raise utils.exc.ValidationError(str(err))
 
     class QuerySet(models.QuerySet):
         def filter_by_user(self, user):

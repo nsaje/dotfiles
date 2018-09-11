@@ -19,6 +19,8 @@ import utils.exc
 import utils.k1_helper
 import utils.numbers
 
+from . import exceptions
+
 logger = logging.getLogger(__name__)
 
 
@@ -63,16 +65,21 @@ class AdGroupSourceManager(core.common.QuerySetManager):
             and not ad_review_only
             and not ad_group.campaign.account.allowed_sources.filter(pk=source.id).exists()
         ):
-            raise utils.exc.ValidationError("{} media source can not be added to this account.".format(source.name))
+            raise exceptions.SourceNotAllowed("{} media source can not be added to this account.".format(source.name))
 
         if not skip_validation and ad_group_source and not ad_group_source.ad_review_only:
-            raise utils.exc.ValidationError(
+            raise exceptions.SourceAlreadyExists(
                 "{} media source for ad group {} already exists.".format(source.name, ad_group.id)
             )
 
         if not skip_validation and not retargeting_helper.can_add_source_with_retargeting(source, ad_group.settings):
-            raise utils.exc.ValidationError(
+            raise exceptions.RetargetingNotSupported(
                 "{} media source can not be added because it does not support retargeting.".format(source.name)
+            )
+
+        if not skip_validation and ad_group.campaign.type == constants.CampaignType.VIDEO and not source.supports_video:
+            raise exceptions.VideoNotSupported(
+                "{} media source can not be added because it does not support video.".format(source.name)
             )
 
         if not ad_group_source:

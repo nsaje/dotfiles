@@ -35,6 +35,7 @@ class AccountManager(core.common.BaseManager):
 
         settings_updates = {}
         settings_updates["default_account_manager"] = request.user
+        settings_updates["auto_add_new_sources"] = True
         if agency is not None:
             settings_updates["default_sales_representative"] = agency.sales_representative
             settings_updates["default_cs_representative"] = agency.cs_representative

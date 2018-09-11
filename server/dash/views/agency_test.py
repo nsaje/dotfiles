@@ -3128,6 +3128,7 @@ class AccountSettingsTest(TestCase):
                 "salesforce_url": None,
                 "whitelist_publisher_groups": [1],
                 "blacklist_publisher_groups": [1],
+                "auto_add_new_sources": False,
             },
         )
         self.assertEqual(content["data"]["settings"]["facebook_page"], "http://www.facebook.com/dummy_page")

@@ -60,6 +60,13 @@ class AdGroupSourceCreate(TestCase):
         with self.assertRaises(utils.exc.ValidationError):
             core.entity.AdGroupSource.objects.create(self.request, self.ad_group, self.default_source_settings.source)
 
+    def test_create_on_video_campaign(self, mock_k1):
+        self.ad_group.campaign.type = constants.CampaignType.VIDEO
+        self.ad_group.campaign.save()
+
+        with self.assertRaises(utils.exc.ValidationError):
+            core.entity.AdGroupSource.objects.create(self.request, self.ad_group, self.default_source_settings.source)
+
     @patch("automation.autopilot.recalculate_budgets_ad_group")
     def test_create_ad_review_only_already_exists(self, mock_autopilot, mock_k1):
         ad_group_source = magic_mixer.blend(

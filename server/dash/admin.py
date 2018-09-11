@@ -7,12 +7,15 @@ from django.contrib import messages
 from django.db import transaction
 from django import forms
 from django.utils.safestring import mark_safe
+from django.utils.html import format_html
 from django.core.urlresolvers import reverse
 from django.conf import settings
+from django.conf.urls import url
 from django.contrib.postgres.forms import SimpleArrayField
 from django.core.exceptions import ValidationError
 from django.template.defaultfilters import truncatechars
 from django.contrib.admin import SimpleListFilter
+from django.http import HttpResponseRedirect
 
 from import_export import resources, fields
 from import_export.admin import ExportMixin
@@ -34,6 +37,9 @@ from automation import campaignstop
 from utils.admin_common import SaveWithRequestMixin
 
 from dash.features.submission_filters.admin import SubmissionFilterAdmin
+
+import core.features.source_adoption.source_adoption
+import core.features.source_adoption.exceptions
 
 logger = logging.getLogger(__name__)
 
@@ -586,8 +592,76 @@ class SourceAdmin(admin.ModelAdmin):
         "created_dt",
         "modified_dt",
     )
-    readonly_fields = ("created_dt", "modified_dt", "deprecated")
+    readonly_fields = ("created_dt", "modified_dt", "deprecated", "released", "source_actions")
     list_filter = ("maintenance", "deprecated", "released", "supports_video")
+
+    def get_urls(self):
+        urls = super().get_urls()
+        custom_urls = [
+            url(
+                r"^(?P<source_id>.+)/release/$", self.admin_site.admin_view(self.release_source), name="release-source"
+            ),
+            url(
+                r"^(?P<source_id>.+)/unrelease/$",
+                self.admin_site.admin_view(self.unrelease_source),
+                name="unrelease-source",
+            ),
+        ]
+        return custom_urls + urls
+
+    def source_actions(self, source):
+        if source.id is None:
+            return "Source not yet created"
+        if source.released:
+            return format_html(
+                '<a class="button" href="{}">Unrelease</a>', reverse("admin:unrelease-source", args=[source.pk])
+            )
+        else:
+            return format_html(
+                '<a class="button" href="{}">Release</a>', reverse("admin:release-source", args=[source.pk])
+            )
+
+    source_actions.short_description = "Source Release Actions"
+
+    def release_source(self, request, source_id, *args, **kwargs):
+        return self.process_action(
+            request,
+            source_id,
+            core.features.source_adoption.source_adoption.release_source,
+            "Source successfully released and added to {} ad groups. {}",
+        )
+
+    def unrelease_source(self, request, source_id, *args, **kwargs):
+        return self.process_action(
+            request,
+            source_id,
+            core.features.source_adoption.source_adoption.unrelease_source,
+            "Source successfully unreleased.",
+        )
+
+    def process_action(self, request, source_id, fn, message):
+        source = self.get_object(request, source_id)
+
+        try:
+            released_count, retargeting_not_supported_count = fn(request, source)
+
+        except (
+            core.features.source_adoption.exceptions.SourceAlreadyReleased,
+            core.features.source_adoption.exceptions.SourceAlreadyUnreleased,
+        ) as err:
+            messages.set_level(request, messages.ERROR)
+            messages.error(request, str(err))
+
+        else:
+            retargeting_msg = "Not added to {} ad groups due to retargeting not supported or source not allowed.".format(
+                retargeting_not_supported_count
+            )
+            self.message_user(
+                request, message.format(released_count, retargeting_msg if retargeting_not_supported_count else None)
+            )
+
+        url = reverse("admin:dash_source_change", args=[source.pk], current_app=self.admin_site.name)
+        return HttpResponseRedirect(url)
 
     def get_queryset(self, request):
         qs = super(SourceAdmin, self).get_queryset(request)

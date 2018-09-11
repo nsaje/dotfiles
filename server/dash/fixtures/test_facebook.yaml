@@ -152,6 +152,7 @@
         source_type: 100
         maintenance: false
         bidder_slug: 'adsnative'
+        released: true
     model: dash.source
     pk: 100
 
@@ -165,6 +166,7 @@
         bidder_slug: 'facebook'
         supports_retargeting: true
         default_daily_budget_cc: 24
+        released: true
     model: dash.source
     pk: 200
 

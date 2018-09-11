@@ -67,9 +67,19 @@ class AdGroupSourceViewSet(RESTAPIBaseViewSet):
             data = serializer.validated_data
             source = data["ad_group_source"]["source"]
             data.pop("ad_group_source")
-            ad_group_source = core.entity.adgroup.ad_group_source.AdGroupSource.objects.create(
-                request, ad_group, source, write_history=True, k1_sync=False, **data
-            )
+
+            try:
+                ad_group_source = core.entity.adgroup.ad_group_source.AdGroupSource.objects.create(
+                    request, ad_group, source, write_history=True, k1_sync=False, **data
+                )
+
+            except (
+                core.entity.adgroup.ad_group_source.exceptions.SourceNotAllowed,
+                core.entity.adgroup.ad_group_source.exceptions.RetargetingNotSupported,
+                core.entity.adgroup.ad_group_source.exceptions.SourceAlreadyExists,
+                core.entity.adgroup.ad_group_source.exceptions.VideoNotSupported,
+            ) as err:
+                raise utils.exc.ValidationError(str(err))
 
         serializer = serializers.AdGroupSourceSerializer(ad_group_source.get_current_settings())
         return self.response_ok(serializer.data)
