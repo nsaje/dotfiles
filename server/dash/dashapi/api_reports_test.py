@@ -279,6 +279,7 @@ PUBLISHER_1__SOURCE_1 = {
     "blacklisted_level_description": "Blacklisted globally",
     "can_blacklist_publisher": True,
     "notifications": {"message": "Blacklisted globally"},
+    "bid_modifier": None,
 }
 PUBLISHER_2__SOURCE_1 = {
     "publisher_id": "pub2.com__1",
@@ -296,6 +297,7 @@ PUBLISHER_2__SOURCE_1 = {
     "blacklisted": "Active",
     "can_blacklist_publisher": True,
     "blacklisted_level": "",
+    "bid_modifier": None,
 }
 PUBLISHER_2__SOURCE_2 = {
     "publisher_id": "pub2.com__2",
@@ -315,6 +317,7 @@ PUBLISHER_2__SOURCE_2 = {
     "blacklisted_level_description": "Whitelisted in this ad group",
     "can_blacklist_publisher": False,
     "notifications": {"message": "Whitelisted in this ad group"},
+    "bid_modifier": None,
 }
 
 
@@ -457,6 +460,8 @@ class AnnotateTest(TestCase):
             constants.Level.AD_GROUPS,
         )
 
+        print(rows)
+        print([PUBLISHER_1__SOURCE_1, PUBLISHER_2__SOURCE_1, PUBLISHER_2__SOURCE_2])
         self.assertEqual(rows, [PUBLISHER_1__SOURCE_1, PUBLISHER_2__SOURCE_1, PUBLISHER_2__SOURCE_2])
 
     def test_annotate_publisher_campaign_level(self):
@@ -487,7 +492,17 @@ class AnnotateTest(TestCase):
             constants.Level.CAMPAIGNS,
         )
 
-        self.assertEqual(rows, [PUBLISHER_1__SOURCE_1, PUBLISHER_2__SOURCE_1, PUBLISHER_2__SOURCE_2])
+        TEMP_PUBLISHER_1__SOURCE_1 = PUBLISHER_1__SOURCE_1.copy()
+        TEMP_PUBLISHER_2__SOURCE_1 = PUBLISHER_2__SOURCE_1.copy()
+        TEMP_PUBLISHER_2__SOURCE_2 = PUBLISHER_2__SOURCE_2.copy()
+
+        TEMP_PUBLISHER_1__SOURCE_1.pop("bid_modifier")
+        TEMP_PUBLISHER_2__SOURCE_1.pop("bid_modifier")
+        TEMP_PUBLISHER_2__SOURCE_2.pop("bid_modifier")
+
+        # Publishers have the bid_modifier field only on ad_group level (see 'test_annotate_publisher').
+
+        self.assertEqual(rows, [TEMP_PUBLISHER_1__SOURCE_1, TEMP_PUBLISHER_2__SOURCE_1, TEMP_PUBLISHER_2__SOURCE_2])
 
     def test_annotate_breakdown(self):
         rows = [

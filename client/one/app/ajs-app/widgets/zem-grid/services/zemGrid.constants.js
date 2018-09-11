@@ -47,6 +47,7 @@ angular.module('one.widgets').factory('zemGridConstants', function() {
             THUMBNAIL: 'thumbnail',
             TOTALS_LABEL: 'totalsLabel',
             ACTIONS: 'actions',
+            BID_MODIFIER_FIELD: 'bid_modifier',
         },
         gridStyle: {
             CELL_PADDING: 8,

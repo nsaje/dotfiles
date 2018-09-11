@@ -920,6 +920,46 @@ zem-grid {
         .message {
             line-height: 46px;
         }
+
+        .message--middle {
+            margin-top: -8px;
+        }
+    }
+
+    &.bid-modifier-field-modal {
+        width: auto;
+        padding: 8px;
+        background-color: tint(@secondary-color, 90%);
+        border: 1px dashed tint(@secondary-color, 60%);
+        font-size: @default-font-size;
+        box-sizing: border-box;
+        height: 46px;
+        margin-top: 3px;
+        z-index: 999;
+
+        .button .loader {
+            width: 20px;
+            height: 10px;
+            margin: 0 16px 0 17px;
+        }
+
+        .message, .button, .prefixed-field {
+            float: left;
+            margin-left: 10px;
+        }
+
+        .prefixed-field {
+            margin-left: 0;
+            width: 100px;
+        }
+
+        .message {
+            line-height: 46px;
+        }
+
+        .message--middle {
+            margin-top: -8px;
+        }
     }
 }
 

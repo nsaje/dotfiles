@@ -477,6 +477,18 @@ angular
                 order: true,
                 initialOrder: zemGridConstants.gridColumnOrder.ASC,
             },
+            bidModifier: {
+                name: 'Bid Modifier',
+                field: 'bid_modifier',
+                type: zemGridConstants.gridColumnTypes.BID_MODIFIER_FIELD,
+                totalRow: false,
+                help: 'TODO',
+                order: true,
+                initialOrder: zemGridConstants.gridColumnOrder.ASC,
+                shown: 'zemauth.can_use_publisher_bid_modifiers_in_ui',
+                internal: 'zemauth.can_use_publisher_bid_modifiers_in_ui',
+                editable: true,
+            },
 
             // Costs
             mediaCost: {
@@ -1718,6 +1730,7 @@ angular
             COLUMNS.externalId,
             COLUMNS.domain,
             COLUMNS.domainLink,
+            COLUMNS.bidModifier,
         ];
 
         var CONTENT_GROUP = [
@@ -2010,6 +2023,12 @@ angular
         ];
         COLUMNS.bidCpcSetting.exceptions.breakdownBaseLevelOnly = true;
         COLUMNS.dailyBudgetSetting.exceptions.breakdownBaseLevelOnly = true;
+
+        COLUMNS.bidModifier.exceptions.breakdowns = [
+            constants.breakdown.PUBLISHER,
+        ];
+        COLUMNS.bidModifier.exceptions.level = [constants.level.AD_GROUPS];
+        COLUMNS.bidModifier.exceptions.breakdownBaseLevelOnly = true;
 
         // Exceptions (id columns)
         COLUMNS.agencyId.exceptions.breakdowns = [

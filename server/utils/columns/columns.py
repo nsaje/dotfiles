@@ -121,6 +121,7 @@ _FIELD_MAPPING = {
     "video_progress_3s": ("Video Progress 3s",),
     "video_cpv": ("Avg. CPV",),
     "video_cpcv": ("Avg. CPCV",),
+    "bid_modifier": ("Bid Modifier",),
 }
 
 _FIELD_MAPPING_BCMV2_OVERRIDES = {

@@ -24,4 +24,6 @@
         <zem-grid-cell-thumbnail ng-if="ctrl.type === ctrl.gridColumnTypes.THUMBNAIL"  data="ctrl.data" row="ctrl.row" column="ctrl.col" grid="ctrl.grid"></zem-grid-cell-thumbnail>
 
         <zem-grid-cell-checkbox ng-if="ctrl.type === ctrl.gridColumnTypes.CHECKBOX" row="ctrl.row" col="ctrl.col" grid="ctrl.grid"></zem-grid-cell-checkbox>
+
+        <zem-grid-cell-bid-modifier-field ng-if="ctrl.type === ctrl.gridColumnTypes.BID_MODIFIER_FIELD" data="ctrl.data" row="ctrl.row" column="ctrl.col" grid="ctrl.grid"></zem-grid-cell-bid-modifier-field>
 </div>

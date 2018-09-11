@@ -368,9 +368,14 @@ def augment_publisher(row, loader, is_base_level=False):
 
     if loader.has_bid_modifiers:
         modifier_map = loader.modifier_map
+        bid_cpc_map = loader.bid_cpc_map
         modifier = modifier_map.get((source_id, domain))
+        source_bid_cpc = bid_cpc_map.get(source_id)
+
         if modifier is not None:
-            row.update({"bid_modifier": modifier})
+            row.update({"bid_modifier": {"modifier": modifier, "source_bid_cpc": source_bid_cpc}})
+        else:
+            row.update({"bid_modifier": {"modifier": 1.0, "source_bid_cpc": source_bid_cpc}})
 
 
 def augment_publisher_for_report(row, loader, is_base_level=False):
@@ -390,6 +395,11 @@ def augment_publisher_for_report(row, loader, is_base_level=False):
             ).upper(),
         }
     )
+
+    if loader.has_bid_modifiers:
+        modifier_map = loader.modifier_map
+        modifier = modifier_map.get((source_id, domain))
+        row.update({"bid_modifier": modifier})
 
 
 def augment_parent_ids(rows, loader_map, dimension):

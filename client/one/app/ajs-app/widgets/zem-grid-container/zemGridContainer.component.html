@@ -174,3 +174,20 @@
         </div>
     </div>
 </script>
+<script id="zemGridBidModifierFieldModal.html" type="text/ng-template">
+    <div class='bid-modifier-field-modal zem-grid-modal'>
+        <div class="edit-form">
+            <div class="prefixed-field">
+                <span class="prefixed-field__prefix">%</span>
+                <input class="input-text" type="text" ng-model="ctrl.editFormInputValue" ng-trim="false" ng-change="ctrl.filterInput()" focus ng-keydown="ctrl.onKeyDown($event)">
+            </div>
+            <button class="button button--highlight" ng-click="ctrl.onButtonMinus()">−1</button>
+            <button class="button button--highlight" ng-click="ctrl.onButtonPlus()">+1</button>
+            <span class="message message--middle">{{ctrl.currencySymbol}}{{ctrl.sourceBidCpc}} {{ctrl.sign}} {{ctrl.currencySymbol}}<b>{{ctrl.delta}}</b> = {{ctrl.currencySymbol}}{{ctrl.newCpc}}</span>
+            <button ng-show="ctrl.showLoader" class="button button--highlight button--disabled"><span class="loader loader--white"></span></button>
+            <button ng-show="!ctrl.showLoader" class="button button--highlight button--with-icon check-icon" ng-click="ctrl.save()">Save</button>
+            <button class="button button--outline" ng-click="ctrl.closeModal()">Cancel</button>
+            <span class="message message--error" ng-repeat="error in ctrl.errors">{{error}}</span>
+        </div>
+    </div>
+</script>

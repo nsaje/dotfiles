@@ -889,3 +889,14 @@ class PublisherBidModifierLoader(PublisherBlacklistLoader):
         modifiers = PublisherBidModifier.objects.filter(ad_group=self.ad_group)
         modifiers = modifiers.filter(source__in=self.filtered_sources_qs)
         return {(x.source_id, x.publisher): x.modifier for x in modifiers}
+
+    @cached_property
+    def bid_cpc_map(self):
+        ad_group_sources = models.AdGroupSource.objects.filter(ad_group_id=self.ad_group.id).select_related("settings")
+        return {
+            ags.source_id: {
+                "bid_cpc_value": ags.settings.local_cpc_cc,
+                "currency_symbol": core.multicurrency.get_currency_symbol(ags.settings.get_currency()),
+            }
+            for ags in ad_group_sources
+        }

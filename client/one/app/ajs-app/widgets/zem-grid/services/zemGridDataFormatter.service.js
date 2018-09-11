@@ -21,6 +21,8 @@ angular
                     return formatNumber(value, options);
                 case zemGridConstants.gridColumnTypes.CURRENCY:
                     return formatCurrency(value, options);
+                case zemGridConstants.gridColumnTypes.BID_MODIFIER_FIELD:
+                    return formatBidModifier(value, options);
                 default:
                     return (
                         value ||
@@ -129,6 +131,21 @@ angular
             return $filter(
                 'decimalCurrency'
             )(value, getCurrencySymbol(options), fractionSize);
+        }
+
+        function formatBidModifier(value, options) {
+            if (value !== 0 && !value) {
+                return options.defaultValue === undefined
+                    ? 'N/A'
+                    : options.defaultValue;
+            }
+            value = value * 100 - 100; // Scale from [0, max] to [-100, 100 * max - 100] to display as percent.
+            return (
+                $filter('number')(
+                    value,
+                    constants.defaultFractionSize.PERCENT
+                ) + '%'
+            );
         }
 
         function roundNumber(value, options, defaultFractionSize) {

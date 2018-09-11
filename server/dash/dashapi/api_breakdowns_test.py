@@ -316,6 +316,7 @@ PUBLISHER_1__SOURCE_1 = {
     "blacklisted_level_description": "Blacklisted globally",
     "can_blacklist_publisher": True,
     "notifications": {"message": "Blacklisted globally"},
+    "bid_modifier": {"modifier": 1.0, "source_bid_cpc": {"bid_cpc_value": Decimal("0.5010"), "currency_symbol": "$"}},
 }
 PUBLISHER_2__SOURCE_1 = {
     "publisher_id": "pub2.com__1",
@@ -330,6 +331,7 @@ PUBLISHER_2__SOURCE_1 = {
     "status": 3,
     "blacklisted": "Active",
     "can_blacklist_publisher": True,
+    "bid_modifier": {"modifier": 1.0, "source_bid_cpc": {"bid_cpc_value": Decimal("0.5010"), "currency_symbol": "$"}},
 }
 PUBLISHER_2__SOURCE_2 = {
     "publisher_id": "pub2.com__2",
@@ -347,6 +349,7 @@ PUBLISHER_2__SOURCE_2 = {
     "blacklisted_level_description": "Whitelisted in this ad group",
     "can_blacklist_publisher": False,
     "notifications": {"message": "Whitelisted in this ad group"},
+    "bid_modifier": {"modifier": 1.0, "source_bid_cpc": {"bid_cpc_value": Decimal("0.5020"), "currency_symbol": "$"}},
 }
 PUBLISHER_3__SOURCE_2 = {
     "publisher_id": "pub3.com__2",
@@ -364,6 +367,7 @@ PUBLISHER_3__SOURCE_2 = {
     "blacklisted_level_description": "Blacklisted in this ad group",
     "can_blacklist_publisher": False,
     "notifications": {"message": "Blacklisted in this ad group"},
+    "bid_modifier": {"modifier": 1.0, "source_bid_cpc": {"bid_cpc_value": Decimal("0.5020"), "currency_symbol": "$"}},
 }
 PUBLISHER_4__SOURCE_2 = {
     "publisher_id": "pub4.com__2",
@@ -381,6 +385,7 @@ PUBLISHER_4__SOURCE_2 = {
     "blacklisted_level_description": "Whitelisted in this campaign",
     "can_blacklist_publisher": False,
     "notifications": {"message": "Whitelisted in this campaign"},
+    "bid_modifier": {"modifier": 1.0, "source_bid_cpc": {"bid_cpc_value": Decimal("0.5020"), "currency_symbol": "$"}},
 }
 PUBLISHER_5__SOURCE_2 = {
     "publisher_id": "pub5.com__2",
@@ -398,6 +403,7 @@ PUBLISHER_5__SOURCE_2 = {
     "blacklisted_level_description": "Blacklisted in this account",
     "can_blacklist_publisher": False,
     "notifications": {"message": "Blacklisted in this account"},
+    "bid_modifier": {"modifier": 1.0, "source_bid_cpc": {"bid_cpc_value": Decimal("0.5020"), "currency_symbol": "$"}},
 }
 
 
