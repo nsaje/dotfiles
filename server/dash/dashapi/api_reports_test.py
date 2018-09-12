@@ -460,8 +460,6 @@ class AnnotateTest(TestCase):
             constants.Level.AD_GROUPS,
         )
 
-        print(rows)
-        print([PUBLISHER_1__SOURCE_1, PUBLISHER_2__SOURCE_1, PUBLISHER_2__SOURCE_2])
         self.assertEqual(rows, [PUBLISHER_1__SOURCE_1, PUBLISHER_2__SOURCE_1, PUBLISHER_2__SOURCE_2])
 
     def test_annotate_publisher_campaign_level(self):
