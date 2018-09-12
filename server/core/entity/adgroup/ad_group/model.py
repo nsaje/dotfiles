@@ -40,6 +40,7 @@ class AdGroupManager(core.common.QuerySetManager):
             settings.AMPLIFY_REVIEW
             and campaign.account_id not in AMPLIFY_REVIEW_ACCOUNTS_DISABLED
             and campaign.account.agency_id not in AMPLIFY_REVIEW_AGENCIES_DISABLED
+            and campaign.type != constants.CampaignType.VIDEO
         ):
             ad_group.amplify_review = True
         ad_group.save(request)
@@ -389,27 +390,18 @@ class AdGroup(models.Model, bcm_mixin.AdGroupBCMMixin):
 
     def ensure_amplify_review_source(self, request):
         source_types_added = set(self.adgroupsource_set.all().values_list("source__source_type__type", flat=True))
+
         if constants.SourceType.OUTBRAIN not in source_types_added:
             outbrain_source = core.source.Source.objects.get(source_type__type=constants.SourceType.OUTBRAIN)
-
-            try:
-                core.entity.AdGroupSource.objects.create(
-                    request,
-                    self,
-                    outbrain_source,
-                    write_history=False,
-                    k1_sync=False,
-                    ad_review_only=True,
-                    state=constants.AdGroupSourceSettingsState.INACTIVE,
-                )
-
-            except (
-                core.entity.adgroup.ad_group_source.exceptions.SourceNotAllowed,
-                core.entity.adgroup.ad_group_source.exceptions.RetargetingNotSupported,
-                core.entity.adgroup.ad_group_source.exceptions.SourceAlreadyExists,
-                core.entity.adgroup.ad_group_source.exceptions.VideoNotSupported,
-            ) as err:
-                raise utils.exc.ValidationError(str(err))
+            core.entity.AdGroupSource.objects.create(
+                request,
+                self,
+                outbrain_source,
+                write_history=False,
+                k1_sync=False,
+                ad_review_only=True,
+                state=constants.AdGroupSourceSettingsState.INACTIVE,
+            )
 
     class QuerySet(models.QuerySet):
         def filter_by_user(self, user):
