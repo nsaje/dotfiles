@@ -53,6 +53,7 @@ class AdGroupSourceManager(core.common.QuerySetManager):
         k1_sync=True,
         skip_validation=False,
         ad_review_only=False,
+        skip_notification=False,
         **updates
     ):
         try:
@@ -84,9 +85,9 @@ class AdGroupSourceManager(core.common.QuerySetManager):
 
         if not ad_group_source:
             ad_group_source = self._create(ad_group, source, ad_review_only=ad_review_only)
-            ad_group_source.set_initial_settings(request, ad_group, **updates)
+            ad_group_source.set_initial_settings(request, ad_group, skip_notification=skip_notification, **updates)
         elif ad_group_source.ad_review_only and not ad_review_only:
-            self._handle_ad_review_only(ad_group_source)
+            self._handle_ad_review_only(ad_group_source, skip_notification)
         else:
             raise Exception("Erroneous case - should not be reachable")
 
@@ -104,11 +105,13 @@ class AdGroupSourceManager(core.common.QuerySetManager):
 
         return ad_group_source
 
-    def _handle_ad_review_only(self, ad_group_source):
+    def _handle_ad_review_only(self, ad_group_source, skip_notification=False):
         ad_group_source.ad_review_only = False
         ad_group_source.save()
 
-        ad_group_source.settings.update(state=constants.AdGroupSourceSettingsState.ACTIVE, skip_validation=True)
+        ad_group_source.settings.update(
+            state=constants.AdGroupSourceSettingsState.ACTIVE, skip_validation=True, skip_notification=skip_notification
+        )
 
     @transaction.atomic
     def bulk_create_on_allowed_sources(self, request, ad_group, write_history=True, k1_sync=True):
@@ -245,7 +248,7 @@ class AdGroupSource(models.Model):
                 .values_list("id", flat=True),
             )
 
-    def set_initial_settings(self, request, ad_group, **updates):
+    def set_initial_settings(self, request, ad_group, skip_notification=False, **updates):
         from dash.views import helpers
 
         if "cpc_cc" not in updates:
@@ -272,7 +275,14 @@ class AdGroupSource(models.Model):
         if not enabling_autopilot_sources_allowed:
             updates["state"] = constants.AdGroupSourceSettingsState.INACTIVE
 
-        self.settings.update(request, k1_sync=False, skip_automation=True, skip_validation=True, **updates)
+        self.settings.update(
+            request,
+            k1_sync=False,
+            skip_automation=True,
+            skip_validation=True,
+            skip_notification=skip_notification,
+            **updates
+        )
 
     def set_cloned_settings(self, request, source_ad_group_source):
         source_ad_group_source_settings = source_ad_group_source.get_current_settings()

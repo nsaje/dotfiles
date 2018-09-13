@@ -38,8 +38,7 @@ from utils.admin_common import SaveWithRequestMixin
 
 from dash.features.submission_filters.admin import SubmissionFilterAdmin
 
-import core.features.source_adoption.source_adoption
-import core.features.source_adoption.exceptions
+import core.features.source_adoption
 
 logger = logging.getLogger(__name__)
 
@@ -593,7 +592,7 @@ class SourceAdmin(admin.ModelAdmin):
         "created_dt",
         "modified_dt",
     )
-    readonly_fields = ("created_dt", "modified_dt", "deprecated", "released", "source_actions")
+    readonly_fields = ("id", "created_dt", "modified_dt", "deprecated", "released", "source_actions")
     list_filter = ("maintenance", "deprecated", "released", "supports_video")
 
     def get_urls(self):
@@ -628,23 +627,22 @@ class SourceAdmin(admin.ModelAdmin):
         return self.process_action(
             request,
             source_id,
-            core.features.source_adoption.source_adoption.release_source,
-            "Source successfully released and added to {} ad groups. {}",
+            core.features.source_adoption.release_source,
+            "Source successfully released and added to allowed sources on {} accounts. "
+            "Please contact engineering to add the released source to ad groups of accounts "
+            "which have automatic addition of newly released sources turned on.",
         )
 
     def unrelease_source(self, request, source_id, *args, **kwargs):
         return self.process_action(
-            request,
-            source_id,
-            core.features.source_adoption.source_adoption.unrelease_source,
-            "Source successfully unreleased.",
+            request, source_id, core.features.source_adoption.unrelease_source, "Source successfully unreleased."
         )
 
     def process_action(self, request, source_id, fn, message):
         source = self.get_object(request, source_id)
 
         try:
-            released_count, retargeting_not_supported_count = fn(request, source)
+            allowed_count = fn(request, source)
 
         except (
             core.features.source_adoption.exceptions.SourceAlreadyReleased,
@@ -654,12 +652,7 @@ class SourceAdmin(admin.ModelAdmin):
             messages.error(request, str(err))
 
         else:
-            retargeting_msg = "Not added to {} ad groups due to retargeting not supported or source not allowed.".format(
-                retargeting_not_supported_count
-            )
-            self.message_user(
-                request, message.format(released_count, retargeting_msg if retargeting_not_supported_count else None)
-            )
+            self.message_user(request, message.format(allowed_count))
 
         url = reverse("admin:dash_source_change", args=[source.pk], current_app=self.admin_site.name)
         return HttpResponseRedirect(url)

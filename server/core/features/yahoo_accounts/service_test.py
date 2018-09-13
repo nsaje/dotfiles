@@ -16,9 +16,10 @@ class YahooFinalizeMigrationTestCase(django.test.TestCase):
     @classmethod
     def setUpClass(cls):
         super(YahooFinalizeMigrationTestCase, cls).setUpClass()
-        cls.account = magic_mixer.blend(dash.models.Account)
+        yahoo_account = magic_mixer.blend(dash.models.YahooAccount, advertiser_id="AID")
+        cls.account = magic_mixer.blend(dash.models.Account, yahoo_account=yahoo_account)
         cls.other_account = magic_mixer.blend(dash.models.Account)
-        source_type = dash.models.SourceType.objects.get(type=dash.constants.SourceType.YAHOO)
+        source_type = magic_mixer.blend(dash.models.SourceType, type=dash.constants.SourceType.YAHOO)
         cls.source_yahoo = magic_mixer.blend(dash.models.Source, source_type=source_type)
         cls.source_other = magic_mixer.blend(dash.models.Source)
 
@@ -34,6 +35,8 @@ class YahooFinalizeMigrationTestCase(django.test.TestCase):
         mock_k1_helper.get_yahoo_migration.return_value = {
             "status": constants.MIGRATION_STATUS_SWITCHOVER,
             "switchover_date": "2018-05-05",
+            "currency": dash.constants.Currency.USD,
+            "advertiser_id": "ID",
         }
 
         service.finalize_migration(self.account.id)
