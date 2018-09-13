@@ -6,6 +6,10 @@ class UserSerializer(serializers.Serializer):
     id = restapi.serializers.fields.IdField(read_only=True)
     email = serializers.EmailField(read_only=True)
     permissions = serializers.SerializerMethodField()
+    sources = serializers.SerializerMethodField()
 
     def get_permissions(self, user):
         return user.get_all_permissions_with_access_levels()
+
+    def get_sources(self, user):
+        return user.get_sspd_sources()

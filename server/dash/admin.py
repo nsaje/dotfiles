@@ -481,6 +481,7 @@ class AccountAdmin(SlackLoggerMixin, SaveWithRequestMixin, admin.ModelAdmin):
     readonly_fields = ("created_dt", "modified_dt", "modified_by", "uses_bcm_v2", "id", "outbrain_marketer_id")
     exclude = ("users", "settings")
     raw_id_fields = ("default_whitelist", "default_blacklist", "agency", "settings")
+    filter_horizontal = ("allowed_sources",)
     inlines = (AccountUserInline, CampaignInline)
 
     def get_form(self, request, obj=None, **kwargs):

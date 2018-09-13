@@ -31,12 +31,20 @@ class UserAdmin(authadmin.UserAdmin):
             _("Permissions"),
             {"fields": ("is_active", "is_staff", "is_superuser", "is_test_user", "groups", "user_permissions")},
         ),
+        (_("SSPD sources"), {"fields": ["sspd_sources"]}),
         (_("Important dates"), {"fields": ("last_login", "date_joined")}),
     )
 
     add_fieldsets = ((None, {"classes": ("wide",), "fields": ("email", "password1", "password2")}),)
 
     list_display = ("email", "username", "first_name", "last_name", "is_staff", "last_login")
+
+    filter_horizontal = ("groups", "user_permissions", "sspd_sources")
+
+    def formfield_for_manytomany(self, db_field, request, **kwargs):
+        if db_field.name == "sspd_sources":
+            kwargs["queryset"] = models.Source.objects.filter(deprecated=False)
+        return super().formfield_for_manytomany(db_field, request, **kwargs)
 
 
 class InternalGroupAdmin(admin.ModelAdmin):

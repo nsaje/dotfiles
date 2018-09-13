@@ -12,6 +12,8 @@ import utils.demo_anonymizer
 import utils.email_helper
 from functools import reduce
 
+from core.source import Source
+
 
 class UserManager(auth_models.BaseUserManager):
     def get_queryset(self):
@@ -107,6 +109,8 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
     is_service = models.BooleanField(
         default=False, help_text=_("Designates whether a user represents an internal service.")
     )
+
+    sspd_sources = models.ManyToManyField(Source, blank=True)
 
     objects = UserManager()
 
@@ -373,6 +377,7 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
                 "can_set_auto_add_new_sources",
                 "User can set automatical addition of newly released sources to ad groups",
             ),
+            ("sspd_can_see_all_sources", "SSPD user can see all sources"),
         )
 
     def get_full_name(self):
@@ -428,6 +433,18 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
 
     def is_self_managed(self):
         return self.email and "@zemanta" not in self.email.lower()
+
+    def get_sspd_sources(self):
+        if self.has_perm("zemauth.sspd_can_see_all_sources"):
+            sources = Source.objects.filter(deprecated=False)
+        else:
+            sources = self.sspd_sources.all()
+
+        result = []
+        for source in sources:
+            result.append(str(source.id))
+
+        return result
 
 
 class InternalGroup(models.Model):
