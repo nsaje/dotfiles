@@ -8,4 +8,5 @@ urlpatterns = [
     url(
         r"^salesforce/agency-accounts/$", views.AgencyAccountsView.as_view(), name="service.salesforce.agency_accounts"
     ),
+    url(r"^salesforce/credits-list/$", views.CreditsListView.as_view(), name="service.salesforce.credits_list"),
 ]

@@ -2,14 +2,13 @@ from decimal import Decimal
 
 from rest_framework.serializers import ValidationError
 
+import core.bcm.bcm_slack
 import core.bcm.credit_line_item
 import core.entity.account
-import core.bcm.bcm_slack
 import core.multicurrency
-
 import dash.constants
-import zemauth.models
 import utils.converters
+import zemauth.models
 from . import constants
 
 CLIENT_TYPE_OBJECT_MAP = {
@@ -112,3 +111,7 @@ def create_client(request, data):
 
 def get_agency_accounts(z1_account_id):
     return core.entity.account.Account.objects.filter(**_get_client_lookup(z1_account_id)).order_by("name")
+
+
+def get_entity_credits(z1_account_id):
+    return core.bcm.credit_line_item.CreditLineItem.objects.filter(**_get_client_lookup(z1_account_id))

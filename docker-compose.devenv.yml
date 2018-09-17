@@ -26,3 +26,4 @@ services:
         entrypoint: /bin/bash
         command: -c "npm prune && npm install && bower install --dev; [[ -z \"$$CLIENT_SKIP_RUN\" ]] && npm run dev || bash"
         tty: true
+

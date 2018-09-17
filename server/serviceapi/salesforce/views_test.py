@@ -383,3 +383,106 @@ class AgencyAccountsTestCase(TestCase):
             r.json(),
             {"details": {"z1_accountId": ["An agency account must be provided."]}, "errorCode": "ValidationError"},
         )
+
+
+class CreditsListTestCase(TestCase):
+    def setUp(self):
+        self.maxDiff = 10000000
+        self.client = APIClient()
+        self.user = magic_mixer.blend(User, email="jonesjoseph@gmail.com")
+        self.client.force_authenticate(user=self.user)
+
+        self.request_mock = RequestFactory()
+        self.request_mock.user = self.user
+
+    def test_valid_agency(self):
+        agency = magic_mixer.blend(core.entity.agency.Agency, id=1, name="Agency 1")
+        agency.save(self.request_mock)
+        credit = magic_mixer.blend(
+            core.bcm.credit_line_item.CreditLineItem,
+            amount=100,
+            agency=agency,
+            created_dt="2018-02-01",
+            start_date="2018-02-01",
+            end_date="2018-12-31",
+            created_by=self.user,
+        )
+
+        url = reverse("service.salesforce.credits_list")
+        r = self.client.post(url, data={"z1_accountId": "a1"}, format="json")
+        self.assertEqual(
+            r.json(),
+            {
+                "data": [
+                    {
+                        "amount": 100,
+                        "comment": "",
+                        "contractId": "",
+                        "contractNumber": "",
+                        "createdBy": "jonesjoseph@gmail.com",
+                        "createdDt": credit.created_dt.isoformat(),
+                        "currency": "USD",
+                        "endDate": "2018-12-31",
+                        "flatFeeCc": 0,
+                        "flatFeeEndDate": None,
+                        "flatFeeStartDate": None,
+                        "licenseFee": "0.2000",
+                        "modifiedDt": credit.modified_dt.isoformat(),
+                        "refund": False,
+                        "specialTerms": "",
+                        "startDate": "2018-02-01",
+                        "z1_cliId": credit.pk,
+                        "status": "PENDING",
+                    }
+                ]
+            },
+        )
+
+    def test_valid_account(self):
+        account = magic_mixer.blend(core.entity.account.Account, id=1, name="Account 1")
+        account.save(self.request_mock)
+        credit = magic_mixer.blend(
+            core.bcm.credit_line_item.CreditLineItem,
+            amount=100,
+            account=account,
+            created_dt="2018-02-01",
+            start_date="2018-02-01",
+            end_date="2018-12-31",
+            created_by=self.user,
+        )
+
+        url = reverse("service.salesforce.credits_list")
+        r = self.client.post(url, data={"z1_accountId": "b1"}, format="json")
+        self.assertEqual(
+            r.json(),
+            {
+                "data": [
+                    {
+                        "amount": 100,
+                        "comment": "",
+                        "contractId": "",
+                        "contractNumber": "",
+                        "createdBy": "jonesjoseph@gmail.com",
+                        "createdDt": credit.created_dt.isoformat(),
+                        "currency": "USD",
+                        "endDate": "2018-12-31",
+                        "flatFeeCc": 0,
+                        "flatFeeEndDate": None,
+                        "flatFeeStartDate": None,
+                        "licenseFee": "0.2000",
+                        "modifiedDt": credit.modified_dt.isoformat(),
+                        "refund": False,
+                        "specialTerms": "",
+                        "startDate": "2018-02-01",
+                        "z1_cliId": credit.pk,
+                        "status": "PENDING",
+                    }
+                ]
+            },
+        )
+
+    def test_invalid_id(self):
+        url = reverse("service.salesforce.credits_list")
+        r = self.client.post(url, data={"z1_accountId": "b1234466"}, format="json")
+        self.assertEqual(r.json(), {"details": ["No credits found for this ID."], "errorCode": "ValidationError"})
+        self.assertEqual(r.status_code, 400)

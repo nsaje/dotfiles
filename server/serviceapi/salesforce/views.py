@@ -3,9 +3,9 @@ import django.db.utils
 import influx
 from rest_framework.serializers import ValidationError
 
-from .. import base
-from . import serializers, service
 from utils.rest_common import authentication
+from . import serializers, service
+from .. import base
 
 SERVICE_NAME = "salesforce"
 
@@ -66,3 +66,16 @@ class AgencyAccountsView(base.ServiceAPIBaseView):
                 for account in accounts
             ]
         )
+
+
+class CreditsListView(base.ServiceAPIBaseView):
+    authentication_classes = (authentication.gen_oauth_authentication(SERVICE_NAME),)
+
+    def post(self, request):
+        serializer = serializers.Z1IdSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        credits = service.get_entity_credits(serializer.validated_data["z1_account_id"])
+        if not credits:
+            raise ValidationError("No credits found for this ID.")
+        data = serializers.CreditsListSerializer(credits, many=True, context={"request": request})
+        return self.response_ok(data.data, status=200)

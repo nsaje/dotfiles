@@ -1,8 +1,8 @@
 from rest_framework import serializers
 
-import restapi.serializers.fields
 import dash.constants
-
+import restapi.serializers.base
+import restapi.serializers.fields
 from . import constants
 
 
@@ -61,3 +61,32 @@ class AgencyAccountsSerializer(serializers.Serializer):
         if value[0] != constants.ACCOUNT_ID_PREFIX_AGENCY:
             raise serializers.ValidationError("An agency account must be provided.")
         return value
+
+
+class Z1IdSerializer(serializers.Serializer):
+    z1_account_id = restapi.serializers.fields.PlainCharField()
+
+
+class CreditsListSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
+    z1_cli_id = serializers.IntegerField(source="pk")
+    start_date = serializers.DateField()
+    end_date = serializers.DateField()
+    amount = serializers.IntegerField()
+    license_fee = restapi.serializers.fields.BlankDecimalField(max_digits=5, decimal_places=4)
+    flat_fee_cc = serializers.IntegerField()
+    flat_fee_start_date = restapi.serializers.fields.BlankDateField()
+    flat_fee_end_date = restapi.serializers.fields.BlankDateField()
+    contract_id = restapi.serializers.fields.NullPlainCharField()
+    contract_number = restapi.serializers.fields.PlainCharField()
+    status = restapi.serializers.fields.DashConstantField(
+        dash.constants.CreditLineItemStatus  # , default=dash.constants.CreditLineItemStatus.PENDING
+    )
+    refund = serializers.BooleanField()
+    comment = restapi.serializers.fields.PlainCharField()
+    special_terms = restapi.serializers.fields.PlainCharField()
+    currency = restapi.serializers.fields.DashConstantField(
+        dash.constants.Currency, default=dash.constants.Currency.USD
+    )
+    created_dt = serializers.DateTimeField()
+    modified_dt = serializers.DateTimeField()
+    created_by = serializers.EmailField()
