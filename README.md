@@ -27,10 +27,11 @@ For the description of how the client code is organized and written, please view
 - clone this repository
 - make sure you have `git` and `docker`, `docker-compose` installed (tested with Docker CE 17.06.0 on both Linux & macOS)
 - make sure `awscli` is installed and AWS credentials configured (test with `aws s3 ls s3://z1-demo/`)
-- run `make pull`
+- run `make pull` (in addition to AWS keys, you need to specify a region e.g. "us-east-1")
 - create the network zemanta using `docker network create zemanta`
 - run `make run`
 - run `make reset_local_database` to set up your local postgres DB for development (can take a while - 5-10min, grab some coffee)
+- run `make reset_local_stats_database` to set up your local stats postgres DB for development (can take a while - 5-10min, grab some coffee)
 
 Now you have a running local setup of Z1, accessible at [http://localhost:8000](http://localhost:8000).
 You can log in with u/p `test@test.com` / `test123`.
