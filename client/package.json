@@ -29,7 +29,7 @@
     "highcharts-ng": "1.1.0",
     "raven-js": "3.26.4",
     "rxjs": "6.2.2",
-    "rxjs-observable-store": "1.0.0",
+    "rxjs-observable-store": "1.0.1",
     "zone.js": "0.8.26"
   },
   "devDependencies": {
