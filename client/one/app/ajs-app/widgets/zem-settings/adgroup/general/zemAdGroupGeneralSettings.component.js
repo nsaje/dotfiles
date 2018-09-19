@@ -22,6 +22,8 @@ angular.module('one.widgets').component('zemAdGroupGeneralSettings', {
                 'Your campaign has been switched to landing mode. ' +
                 'Please add the budget and continue to adjust settings by your needs. ',
             WARNING_MAX_CPM: '',
+            WARNING_CLICK_CAPPING:
+                'Outbrain and Yahoo don’t support click capping and will be automatically paused in this ad group if you enable this setting.',
         };
         $ctrl.deliveryType = {
             STANDARD: 1,

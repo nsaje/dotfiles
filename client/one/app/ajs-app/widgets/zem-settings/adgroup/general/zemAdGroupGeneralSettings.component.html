@@ -66,6 +66,21 @@
                  for="cpc-input">{{ error }}</div>
         </div>
 
+        <div class="form__group" ng-if="$ctrl.hasPermission('zemauth.can_set_click_capping')">
+            <label class="form__label" for="click-capping-input" is-internal="zemauth.can_set_click_capping">
+                Daily click cap:
+                <zem-help-popover content="Limit number of clicks you want to reach daily within the ad group. Zemanta will stop spending for the rest of the day once it hits the maximum number of clicks you set." placement="top"></zem-help-popover>
+            </label>                                   
+            <input id="click-capping-input"
+                    class="input-text input-text--narrow"
+                    ng-model="$ctrl.entity.settings.clickCappingDailyAdGroupMaxClicks"                       
+                    type="text"                    
+                    zem-numeric-validator>                        
+            <div class="message message--warning message--with-icon">
+                {{ $ctrl.MESSAGES.WARNING_CLICK_CAPPING }}
+            </div>            
+        </div>
+
         <div class="form__group" ng-if="$ctrl.hasPermission('zemauth.can_set_ad_group_max_cpm')"
              ng-class="{'form--error': !!$ctrl.errors.maxCpm}">
             <label class="form__label" for="cpm-input" is-internal="zemauth.can_set_ad_group_max_cpm">
