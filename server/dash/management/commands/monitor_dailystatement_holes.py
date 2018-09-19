@@ -24,6 +24,7 @@ class Command(ExceptionCommand):
             influx.gauge("dailystatement.holes", len(first_unprocessed_dates))
             for campaign_id, date in first_unprocessed_dates.items():
                 logger.info("Campaign %s has daily statement hole starting on %s" % (campaign_id, date))
+            raise Exception("Daily statement holes found! Has to be looked at immediately!")
 
     @staticmethod
     def get_first_unprocessed_dates(date_since):
