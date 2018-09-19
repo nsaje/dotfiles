@@ -7,3 +7,7 @@ class ConversionGoalLimitExceeded(ValidationError):
 
 class MultipleSameTypeGoals(ValidationError):
     pass
+
+
+class ConversionGoalRequired(ValidationError):
+    pass

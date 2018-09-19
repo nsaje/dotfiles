@@ -113,4 +113,7 @@ class CampaignGoalViewSet(RESTAPIBaseViewSet):
         except core.goals.campaign_goal.exceptions.MultipleSameTypeGoals as err:
             raise utils.exc.ValidationError(errors={"type": [str(err)]})
 
+        except core.goals.campaign_goal.exceptions.ConversionGoalRequired as err:
+            raise utils.exc.ValidationError(errors={"conversionGoal": [str(err)]})
+
         return new_goal

@@ -655,6 +655,9 @@ class CampaignSettings(api_common.BaseApiView):
                 except core.goals.campaign_goal.exceptions.MultipleSameTypeGoals as err:
                     raise utils.exc.ValidationError(str(err))
 
+                except core.goals.campaign_goal.exceptions.ConversionGoalRequired as err:
+                    raise utils.exc.ValidationError(str(err))
+
             if is_primary:
                 new_primary_id = goal_added.pk
 

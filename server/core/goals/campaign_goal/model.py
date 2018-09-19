@@ -37,6 +37,7 @@ class CampaignGoalManager(core.common.BaseManager):
     def create(self, request, campaign, goal_type, value, conversion_goal=None, primary=False):
         core.common.entity_limits.enforce(CampaignGoal.objects.filter(campaign=campaign), campaign.account_id)
         self._validate_goal_count(campaign, goal_type)
+        self._validate_cpa_goal(goal_type, conversion_goal)
 
         if conversion_goal is not None:
             goal_type = constants.CampaignGoalKPI.CPA
@@ -73,6 +74,10 @@ class CampaignGoalManager(core.common.BaseManager):
                 raise exceptions.ConversionGoalLimitExceeded("Max conversion goals per campaign exceeded")
         elif goals.exists():
             raise exceptions.MultipleSameTypeGoals("Multiple goals of the same type not allowed")
+
+    def _validate_cpa_goal(self, goal_type, conversion_goal):
+        if goal_type == constants.CampaignGoalKPI.CPA and conversion_goal is None:
+            raise exceptions.ConversionGoalRequired("Conversion goal required when creating a CPA goal")
 
 
 class CampaignGoal(models.Model, bcm_mixin.CampaignGoalBCMMixin):

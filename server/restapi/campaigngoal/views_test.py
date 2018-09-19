@@ -170,3 +170,10 @@ class CampaignGoalsTest(RESTAPITest):
         resp_json = self.assertResponseValid(r)
         self.validate_against_db(resp_json["data"])
         self.assertEqual(resp_json["data"]["value"], test_campaigngoal["value"])
+
+    def test_cpa_no_conversion_goal(self):
+        test_campaigngoal = self.campaigngoal_repr(type=constants.CampaignGoalKPI.CPA, conversionGoal=None)
+        post_data = test_campaigngoal.copy()
+        del post_data["id"]
+        r = self.client.post(reverse("campaigngoals_list", kwargs={"campaign_id": 608}), data=post_data, format="json")
+        self.assertResponseError(r, "ValidationError")

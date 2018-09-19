@@ -8,6 +8,7 @@ import dash.constants
 import core.multicurrency
 from utils.magic_mixer import magic_mixer
 
+from . import exceptions
 from .model import CampaignGoal
 from ..campaign_goal_value import CampaignGoalValue
 
@@ -93,3 +94,10 @@ class TestCampaignGoals(TestCase):
         self.assertEqual(hist.created_by, request.user)
         self.assertEqual(dash.constants.HistoryActionType.GOAL_CHANGE, hist.action_type)
         self.assertEqual(hist.changes_text, 'Changed campaign goal value: "$4.000 CPC"')
+
+    def test_create_cpa_goal_with_no_conversion_goal(self):
+        request = magic_mixer.blend_request_user()
+        campaign = magic_mixer.blend(dash.models.Campaign, id=1)
+
+        with self.assertRaises(exceptions.ConversionGoalRequired):
+            CampaignGoal.objects.create(request, campaign, goal_type=dash.constants.CampaignGoalKPI.CPA, value=1.0)
