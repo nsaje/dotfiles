@@ -78,7 +78,8 @@ values."
                                       doom-themes
                                       js-comint
                                       sr-speedbar
-                                      all-the-icons)
+                                      all-the-icons
+                                      imenu-anywhere)
    ;; A list of packages that cannot be updated.
    dotspacemacs-frozen-packages '()
    ;; A list of packages that will not be installed and loaded.
@@ -356,6 +357,8 @@ you should place your code here."
       (define-key imenu-list-major-mode-map (kbd "C-w h") 'evil-window-left)
       (define-key imenu-list-major-mode-map (kbd "C-w C-w") 'evil-window-next)
       (define-key imenu-list-major-mode-map (kbd "C-w q") 'delete-window))
+    (with-eval-after-load 'imenu-anywhere
+      (spacemacs/set-leader-keys "jI" #'imenu-anywhere))
 
     (with-eval-after-load 'company
       (define-key company-active-map (kbd "C-w") 'evil-delete-backward-word)
@@ -402,11 +405,11 @@ you should place your code here."
     ;; Capture templates for: TODO tasks, Notes, appointments, phone calls, meetings, and org-protocol
     (setq org-capture-templates
           (quote (("i" "inbox" entry (file+headline "~/Dropbox/org/TODOs.org" "INBOX")
-                  "* TODO %?\n:PROPERTIES:\n:CREATED: %U\n:END:")
-                  ("n" "note" entry (file+headline "~/Dropbox/org/TODOs.org" "Notes")
+                  "* TODO %?\n:PROPERTIES:\n:CREATED: %U\n:END:\n")
+                  ("n" "note" entry (file+headline "~/Dropbox/org/TODOs.org" "INBOX")
                   "* %? :NOTE:\n%U\n")
-                  ("m" "Meeting" entry (file+headline "~/Dropbox/org/TODOs.org" "Meetings")
-                  "* MEETING on %U with %? :MEETING:\n:PROPERTIES:\n:CREATED: %U\n:END:"))))
+                  ("m" "Meeting" entry (file+headline "~/Dropbox/org/TODOs.org" "INBOX")
+                  "* MEETING on %U with %? :MEETING:\n:PROPERTIES:\n:CREATED: %U\n:END:\n"))))
     (setq org-agenda-custom-commands
       '(("n" todo "NEXT")))
     (setq org-refile-targets '((nil :maxlevel . 9)
@@ -468,4 +471,38 @@ you should place your code here."
 
     ;; ; flycheck custom
     ;; (setq flycheck-check-syntax-automatically '(idle-change))
+)
+(custom-set-variables
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(package-selected-packages
+   (quote
+    (imenu-anywhere typescript-mode powerline alert org-plus-contrib multiple-cursors hydra projectile csharp-mode rust-mode bind-key packed anaconda-mode all-the-icons dash-functional company iedit smartparens highlight evil goto-chg flycheck epl flyspell-correct yasnippet gitignore-mode helm-core avy magit magit-popup git-commit ghub with-editor async markdown-mode pythonic f js2-mode simple-httpd s org-mime yapfify yaml-mode xterm-color ws-butler winum which-key web-mode web-beautify volatile-highlights vi-tilde-fringe uuidgen use-package unfill toml-mode toc-org tide tagedit sr-speedbar sql-indent spaceline solarized-theme smeargle slim-mode simpleclip shell-pop scss-mode sass-mode restart-emacs rainbow-delimiters racer pyvenv pytest pyenv-mode py-isort pug-mode popwin pip-requirements persp-mode pcre2el paradox orgit org-present org-pomodoro org-download org-bullets open-junk-file omnisharp neotree mwim multi-term move-text mmm-mode markdown-toc magit-gitflow macrostep lorem-ipsum livid-mode live-py-mode linum-relative link-hint less-css-mode json-mode js2-refactor js-doc js-comint indent-guide imenu-list hy-mode hungry-delete htmlize hl-todo highlight-parentheses highlight-numbers highlight-indentation helm-themes helm-swoop helm-pydoc helm-projectile helm-mode-manager helm-make helm-gitignore helm-flx helm-descbinds helm-css-scss helm-company helm-c-yasnippet helm-ag google-translate golden-ratio go-guru go-eldoc gnuplot github-theme gitconfig-mode gitattributes-mode git-timemachine git-messenger git-link git-gutter-fringe git-gutter-fringe+ gh-md fuzzy flyspell-lazy flyspell-correct-helm flycheck-rust flycheck-pos-tip flx-ido fill-column-indicator fancy-battery eyebrowse expand-region exec-path-from-shell evil-visualstar evil-visual-mark-mode evil-unimpaired evil-tutor evil-surround evil-search-highlight-persist evil-numbers evil-nerd-commenter evil-mc evil-matchit evil-magit evil-lisp-state evil-indent-plus evil-iedit-state evil-exchange evil-escape evil-ediff evil-args evil-anzu eval-sexp-fu eshell-z eshell-prompt-extras esh-help emmet-mode elisp-slime-nav dumb-jump doom-themes diff-hl define-word cython-mode csv-mode company-web company-tern company-statistics company-quickhelp company-go company-anaconda column-enforce-mode coffee-mode clean-aindent-mode cargo auto-yasnippet auto-highlight-symbol auto-dictionary auto-compile aggressive-indent adaptive-wrap ace-window ace-link ace-jump-helm-line ac-ispell))))
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ )
+(defun dotspacemacs/emacs-custom-settings ()
+  "Emacs custom settings.
+This is an auto-generated function, do not modify its content directly, use
+Emacs customize menu instead.
+This function is called at the very end of Spacemacs initialization."
+(custom-set-variables
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(package-selected-packages
+   (quote
+    (yasnippet-snippets symon string-inflection spaceline-all-the-icons pippel pipenv password-generator spinner overseer log4e gntp org-brain shut-up nameless skewer-mode json-snatcher json-reformat importmagic epc ctable concurrent deferred impatient-mode parent-mode helm-xref helm-purpose window-purpose request haml-mode godoctor go-tag go-rename fringe-helper git-gutter+ git-gutter flx evil-org let-alist evil-lion evil-cleverparens paredit anzu editorconfig counsel-projectile counsel swiper ivy pkg-info web-completion-data tern pos-tip go-mode centered-cursor-mode browse-at-remote dash memoize helm auto-complete popup font-lock+ undo-tree diminish bind-map typescript-mode powerline alert org-plus-contrib multiple-cursors hydra projectile csharp-mode rust-mode bind-key packed anaconda-mode all-the-icons dash-functional company iedit smartparens highlight evil goto-chg flycheck epl flyspell-correct yasnippet gitignore-mode helm-core avy magit magit-popup git-commit ghub with-editor async markdown-mode pythonic f js2-mode simple-httpd s org-mime yapfify yaml-mode xterm-color ws-butler winum which-key web-mode web-beautify volatile-highlights vi-tilde-fringe uuidgen use-package unfill toml-mode toc-org tide tagedit sr-speedbar sql-indent spaceline solarized-theme smeargle slim-mode simpleclip shell-pop scss-mode sass-mode restart-emacs rainbow-delimiters racer pyvenv pytest pyenv-mode py-isort pug-mode popwin pip-requirements persp-mode pcre2el paradox orgit org-present org-pomodoro org-download org-bullets open-junk-file omnisharp neotree mwim multi-term move-text mmm-mode markdown-toc magit-gitflow macrostep lorem-ipsum livid-mode live-py-mode linum-relative link-hint less-css-mode json-mode js2-refactor js-doc js-comint indent-guide imenu-list hy-mode hungry-delete htmlize hl-todo highlight-parentheses highlight-numbers highlight-indentation helm-themes helm-swoop helm-pydoc helm-projectile helm-mode-manager helm-make helm-gitignore helm-flx helm-descbinds helm-css-scss helm-company helm-c-yasnippet helm-ag google-translate golden-ratio go-guru go-eldoc gnuplot github-theme gitconfig-mode gitattributes-mode git-timemachine git-messenger git-link git-gutter-fringe git-gutter-fringe+ gh-md fuzzy flyspell-lazy flyspell-correct-helm flycheck-rust flycheck-pos-tip flx-ido fill-column-indicator fancy-battery eyebrowse expand-region exec-path-from-shell evil-visualstar evil-visual-mark-mode evil-unimpaired evil-tutor evil-surround evil-search-highlight-persist evil-numbers evil-nerd-commenter evil-mc evil-matchit evil-magit evil-lisp-state evil-indent-plus evil-iedit-state evil-exchange evil-escape evil-ediff evil-args evil-anzu eval-sexp-fu eshell-z eshell-prompt-extras esh-help emmet-mode elisp-slime-nav dumb-jump doom-themes diff-hl define-word cython-mode csv-mode company-web company-tern company-statistics company-quickhelp company-go company-anaconda column-enforce-mode coffee-mode clean-aindent-mode cargo auto-yasnippet auto-highlight-symbol auto-dictionary auto-compile aggressive-indent adaptive-wrap ace-window ace-link ace-jump-helm-line ac-ispell))))
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ )
 )

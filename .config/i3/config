@@ -31,8 +31,9 @@ exec ~/.local/bin/lowbattery.sh
 
 #exec compton -bCG  # too much battery drain
 
-# network manager in tray
+# tray autostart
 exec --no-startup-id nm-applet
+exec --no-startup-id dropbox start
 
 # redshift
 exec --no-startup-id redshift
