@@ -44,3 +44,18 @@ class TestParseVast(django.test.TestCase):
         mock_requests.get.assert_any_call("http://demo.tremormedia.com/proddev/vast/vast_inline_linear.xml")
         self.assertEqual(duration, 30)
         self.assertEqual(formats, expected)
+
+    def test_parse_vast_moat(self, mock_requests):
+        with open("./dash/features/videoassets/test_files/vast_moat.xml") as f:
+            data = f.read()
+
+        expected = [{"bitrate": None, "mime": "application/javascript", "filename": "", "height": 720, "width": 1280}]
+
+        mock_requests.get.return_value.status_code = 200
+        mock_requests.get.return_value.content = data
+
+        duration, formats = service.parse_vast_from_url("test-url")
+
+        mock_requests.get.assert_called_once_with("test-url")
+        self.assertEqual(duration, 30)
+        self.assertEqual(formats, expected)

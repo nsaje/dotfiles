@@ -104,9 +104,11 @@ def _parse_duration(duration_element):
 
 
 def _parse_media_file(media_file):
-    def _get(name, typ=int):
+    def _get(name, typ=int, required=True):
         value = media_file.get(name)
         if value is None:
+            if not required:
+                return value
             raise ParseVastError("Missing MediaFile {}".format(name))
         try:
             return typ(value)
@@ -116,7 +118,7 @@ def _parse_media_file(media_file):
     return {
         "width": _get("width"),
         "height": _get("height"),
-        "bitrate": _get("bitrate"),
+        "bitrate": _get("bitrate", required=False),
         "mime": _get("type", str),
         "filename": "",
     }

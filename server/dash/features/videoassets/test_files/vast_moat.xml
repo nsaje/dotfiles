@@ -1,0 +1,22 @@
+    <VAST xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="vast_2.0.1-creativeView.xsd" version="2.0">
+        <Ad id="moat_ad">
+            <InLine>
+                <AdSystem>2.0</AdSystem>
+                <AdTitle>TEST_zemanta</AdTitle>
+                    <Impression></Impression>
+                <Creatives>
+                    <Creative>
+                        <Linear>
+                            <Duration>00:00:30</Duration>
+                              
+                            <MediaFiles>
+                                 <MediaFile type="application/javascript" apiFramework="VPAID" height="720" width="1280" delivery="progressive"> <![CDATA[https://svastx.moatads.com/zemantavpaid546281849525/moatwrapper.js#vast=https%3a%2f%2fs3.amazonaws.com%2fzemvideos%2fvast%2f63a3b0da-17ac-47b9-a512-0037fa33bfff&level1=1&level2=2&level3=3&level4=4&slicer1=undefined&slicer2=undefined&pcode=zemantavpaid546281849525&spvb=1]]> </MediaFile>
+                            </MediaFiles>
+                        </Linear>
+                    </Creative>
+                        
+                </Creatives>
+            </InLine>
+        </Ad>
+    </VAST>
+
