@@ -16,9 +16,9 @@ def tuplelist_to_csv(data):
     return out.getvalue()
 
 
-def dictlist_to_csv(fields, rows, writeheader=True):
+def dictlist_to_csv(fields, rows, writeheader=True, quoting=csv.QUOTE_ALL):
     out = StringIO.StringIO()
-    writer = csv.DictWriter(out, fields, dialect="excel", quoting=csv.QUOTE_ALL)
+    writer = csv.DictWriter(out, fields, dialect="excel", quoting=quoting)
 
     if writeheader:
         writer.writeheader()

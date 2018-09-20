@@ -55,6 +55,11 @@
         modified_dt: '2014-06-04T09:58:21'
         modified_by: 1
         name: 'test agency 1'
+        cs_representative: 2
+        ob_representative: 3
+        sales_representative: 1
+        whitelabel: "greenpark"
+
     model: dash.agency
     pk: 1
 

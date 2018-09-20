@@ -132,6 +132,9 @@ DEADJOE
 *.iml
 *.ipr
 *.iws
+.ideaDataSources/
+dataSources/
+
 
 # Visual Studio Code
 .vscode

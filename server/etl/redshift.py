@@ -1,13 +1,12 @@
-import backtosql
 import gzip
 import logging
 import os.path
 
 from django.conf import settings
 
+import backtosql
 from redshiftapi import db
 from utils import s3helpers
-
 from . import constants
 from . import helpers
 
@@ -33,6 +32,24 @@ def unload_table(
         c.execute(sql, params)
         logger.info('Unloaded table "%s" to S3 path "%s"', table_name, s3_path)
     return s3_path + "manifest"
+
+
+def refresh_materialized_rds_table(s3_path, table_name, bucket_name):
+    with db.get_write_stats_cursor() as c:
+        logger.info('Unloading table "%s" to S3 path "%s"', table_name, s3_path)
+        sql, params = prepare_copy_query(
+            s3_path,
+            table_name,
+            format=None,
+            removequotes=False,
+            escape=True,
+            is_manifest=False,
+            null_as="$NA$",
+            gzip=False,
+            bucket_name=bucket_name,
+        )
+        c.execute(sql, params)
+        logger.info('Unloaded table "%s" to S3 path "%s"', table_name, s3_path)
 
 
 def unload_table_tz(
@@ -75,7 +92,9 @@ def update_table_from_s3(db_name, s3_manifest_path, table_name, date_from, date_
             logger.info('Loaded table "%s" into replica "%s" from S3 path "%s"', table_name, db_name, s3_manifest_path)
 
 
-def update_table_from_s3_postgres(db_name, s3_manifest_path, table_name, date_from, date_to, account_id=None):
+def update_table_from_s3_postgres(
+    db_name, s3_manifest_path, table_name, date_from, date_to, account_id=None, bucket_name=None
+):
     with db.get_write_stats_transaction(db_name):
         with db.get_write_stats_cursor(db_name) as c:
             logger.info(
@@ -85,7 +104,7 @@ def update_table_from_s3_postgres(db_name, s3_manifest_path, table_name, date_fr
             sql, params = prepare_date_range_delete_query(table_name, date_from, date_to, account_id)
             c.execute(sql, params)
 
-            bucket = s3helpers.S3Helper(bucket_name=settings.S3_BUCKET_STATS)
+            bucket = s3helpers.S3Helper(bucket_name=bucket_name or settings.S3_BUCKET_STATS)
             keys = bucket.list_manifest(s3_manifest_path)
             for f in bucket.open_keys_async(keys):
                 with gzip.GzipFile(fileobj=f, mode="rb") as gunzipped:
@@ -96,7 +115,7 @@ def update_table_from_s3_postgres(db_name, s3_manifest_path, table_name, date_fr
             )
 
 
-def prepare_unload_csv_query(s3_path, table_name, date_from, date_to, account_id=None):
+def prepare_unload_csv_query(s3_path, table_name, date_from, date_to, account_id=None, bucket_name=None):
     sql = backtosql.generate_sql(
         "etl_unload_csv.sql",
         {
@@ -107,7 +126,7 @@ def prepare_unload_csv_query(s3_path, table_name, date_from, date_to, account_id
         },
     )
 
-    s3_url = S3_FILE_URI.format(bucket_name=settings.S3_BUCKET_STATS, key=s3_path)
+    s3_url = S3_FILE_URI.format(bucket_name=bucket_name or settings.S3_BUCKET_STATS, key=s3_path)
     credentials = _get_aws_credentials()
 
     return sql, {"s3_url": s3_url, "credentials": credentials, "delimiter": constants.CSV_DELIMITER}
@@ -126,7 +145,15 @@ def prepare_unload_tz_query(s3_path, table_name, date_from, date_to, account_id=
 
 
 def prepare_copy_query(
-    s3_path, table_name, format="csv", removequotes=False, escape=False, is_manifest=False, null_as=None, gzip=False
+    s3_path,
+    table_name,
+    format="csv",
+    removequotes=False,
+    escape=False,
+    is_manifest=False,
+    null_as=None,
+    gzip=False,
+    bucket_name=None,
 ):
     sql = backtosql.generate_sql(
         "etl_copy.sql",
@@ -141,7 +168,7 @@ def prepare_copy_query(
         },
     )
 
-    s3_url = S3_FILE_URI.format(bucket_name=settings.S3_BUCKET_STATS, key=s3_path)
+    s3_url = S3_FILE_URI.format(bucket_name=bucket_name or settings.S3_BUCKET_STATS, key=s3_path)
     credentials = _get_aws_credentials()
 
     return sql, {"s3_url": s3_url, "credentials": credentials, "delimiter": constants.CSV_DELIMITER}
@@ -171,3 +198,11 @@ def prepare_date_range_delete_query(table_name, date_from, date_to, account_id):
         params["account_id"] = account_id
 
     return sql, params
+
+
+def truncate_table(table_name):
+    sql = backtosql.generate_sql("etl_truncate_mv_rds.sql", {"table": table_name})
+    with db.get_write_stats_cursor() as c:
+        logger.info("Will truncate table %s", table_name)
+        c.execute(sql)
+        logger.info("Table %s truncated", table_name)
