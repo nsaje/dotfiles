@@ -377,7 +377,8 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
                 "can_set_auto_add_new_sources",
                 "User can set automatical addition of newly released sources to ad groups",
             ),
-            ("sspd_can_see_all_sources", "SSPD user can see all sources"),
+            ("sspd_can_see_all_sources", "SSPD: user can see all sources"),
+            ("sspd_can_use_sspd", "SSPD: User can use SSP dashboard"),
         )
 
     def get_full_name(self):
