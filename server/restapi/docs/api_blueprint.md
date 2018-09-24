@@ -162,6 +162,58 @@ In case of an error, the server will return a response with the appropriate stat
 }
 ```
 
+## Pagination
+
+Zemanta One API paginates list views using marker offset pagination by default.
+
+By specifying the `offset` URL query parameter it is possible to use a simple limit offset pagination which might lead to slow responses with large lists.
+
+### Marker Offset Pagination
+
+The format for marker offset pagination URL is:
+
+```
+/rest/v1/{resourceListPath}/{?marker,limit}
+```
+
+Navigation through pages is done by two URL parameters:
+
+* `marker`: the primary key of the last element in the previous page (the first page has `marker=0`)
+* `limit`: maximum number of entries to return, up to `1000`, defaults to `100`
+
+The response has the following content:
+
+```
+{
+    "count": 1000,
+    "next": "https://oneapi.zemanta.com/rest/v1/{resourceListPath}/?marker=200&limit=100",
+    "data": []
+}
+```
+
+### Limit Offset Pagination
+
+The format for limit offset pagination URL is:
+
+```
+/rest/v1/{resourceListPath}/?offset{,limit}
+```
+
+Navigation through pages is done by two URL parameters:
+
+* `offset`: the offset of starting element of the page in the list
+* `limit`: maximum number of entries to return, up to `1000`, defaults to `100`
+
+The response has the following content:
+
+```
+{
+    "count": 1000,
+    "next": "https://oneapi.zemanta.com/rest/v1/{resourceListPath}/?offset=200&limit=100",
+    "previous": "https://oneapi.zemanta.com/rest/v1/{resourceListPath}/?offset=100&limit=100",
+    "data": []
+}
+```
 
 ## Rate Limiting
 

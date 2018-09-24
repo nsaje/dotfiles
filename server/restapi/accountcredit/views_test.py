@@ -76,10 +76,11 @@ class AccountCreditsTest(RESTAPITest):
         account = magic_mixer.blend(dash.models.Account, users=[self.user])
         magic_mixer.cycle(10).blend(dash.models.CreditLineItem, account=account, end_date=datetime.date.today())
         r = self.client.get(reverse("accounts_credits_list", kwargs={"account_id": account.id}))
-        r_paginated = self.client.get(
-            reverse("accounts_credits_list", kwargs={"account_id": account.id}), {"limit": 2, "offset": 5}
-        )
         resp_json = self.assertResponseValid(r, data_type=list)
+        marker_id = int(resp_json["data"][5]["id"]) - 1
+        r_paginated = self.client.get(
+            reverse("accounts_credits_list", kwargs={"account_id": account.id}), {"limit": 2, "marker": marker_id}
+        )
         resp_json_paginated = self.assertResponseValid(r_paginated, data_type=list)
         self.assertEqual(resp_json["data"][5:7], resp_json_paginated["data"])
 
