@@ -1,4 +1,5 @@
 from django.db import transaction
+from rest_framework import permissions
 
 import restapi.common.views_base
 import restapi.access
@@ -12,6 +13,8 @@ from . import serializers
 
 
 class PublishersViewSet(restapi.common.views_base.RESTAPIBaseViewSet):
+    permission_classes = (permissions.IsAuthenticated,)
+
     def list(self, request, ad_group_id):
         ad_group = restapi.access.get_ad_group(request.user, ad_group_id)
         items = self._get_publisher_group_items(ad_group)
