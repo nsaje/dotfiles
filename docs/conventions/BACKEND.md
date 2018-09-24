@@ -36,14 +36,15 @@ Features reside within `features` directory. `core/entities` is a special featur
 ```
 app/
   features/
-    __init__.py         # expose public interface to the feature, expose public models and functions
-    models/
-      __init__.py
-      adgroupsettings.py  # model
-      adgroup.py          # model
-    service.py
-    exceptions.py
-    constants.py
+    <feature-name>/
+      __init__.py         # expose public interface to the feature, expose public models and functions
+      models/
+        __init__.py
+        adgroupsettings.py  # model
+        adgroup.py          # model
+      service.py
+      exceptions.py
+      constants.py
 ```
 
 ### Models 
@@ -198,12 +199,13 @@ core/
       service.py
     ...
 dash/
-  geolocations/   # non-core feature (core does not depend on it)
-    models.py
-      geolocation.py
-    service.py
-  realtimestats/
-    service.py
+  features/
+    geolocations/   # non-core feature (core does not depend on it)
+      models/
+        geolocation.py
+      service.py
+    realtimestats/
+      service.py
 restapi/
   ... # view the RESTAPI view chapter
 ...
