@@ -19,6 +19,7 @@ CREDENTIALS %(credentials)s
 MAXERROR 0
 {% if gzip %}GZIP{% endif %}
 {% if is_manifest %}MANIFEST{% endif %}
+{% if truncate_columns %}TRUNCATECOLUMNS{% endif %}
 ;
 
 {% endautoescape %}

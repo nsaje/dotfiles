@@ -64,4 +64,5 @@ class RDSAgencyTest(TestCase):
             null_as="$NA$",
             gzip=False,
             bucket_name="prodops-test",
+            truncate_columns=True,
         )

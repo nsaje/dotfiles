@@ -47,6 +47,7 @@ def refresh_materialized_rds_table(s3_path, table_name, bucket_name):
             null_as="$NA$",
             gzip=False,
             bucket_name=bucket_name,
+            truncate_columns=True,
         )
         c.execute(sql, params)
         logger.info('Unloaded table "%s" to S3 path "%s"', table_name, s3_path)
@@ -154,6 +155,7 @@ def prepare_copy_query(
     null_as=None,
     gzip=False,
     bucket_name=None,
+    truncate_columns=False,
 ):
     sql = backtosql.generate_sql(
         "etl_copy.sql",
@@ -165,6 +167,7 @@ def prepare_copy_query(
             "escape": escape,
             "null_as": null_as,
             "gzip": gzip,
+            "truncate_columns": truncate_columns,
         },
     )
 
@@ -206,3 +209,11 @@ def truncate_table(table_name):
         logger.info("Will truncate table %s", table_name)
         c.execute(sql)
         logger.info("Table %s truncated", table_name)
+
+
+def get_last_stl_load_error():
+    sql = backtosql.generate_sql("etl_last_st_error_message.sql", {"table": "st_load_errors"})
+    with db.get_write_stats_cursor() as c:
+        c.execute(sql)
+        msg = db.dictfetchall(c)[0]
+        return {k: str(v).strip() for k, v in msg.items()}

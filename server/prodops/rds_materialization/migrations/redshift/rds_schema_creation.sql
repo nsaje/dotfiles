@@ -1,3 +1,5 @@
+-- The order must be the same as the FIELDS in RDSMaterialization subclasses
+
 CREATE TABLE IF NOT EXISTS MV_RDS_AGENCY (
   id                   integer PRIMARY KEY,
   name                 varchar(100),
@@ -10,8 +12,8 @@ CREATE TABLE IF NOT EXISTS MV_RDS_AGENCY (
 
 
 CREATE TABLE IF NOT EXISTS MV_RDS_SOURCE (
-  id                           integer PRIMARY KEY,
-  tracking_slug                varchar(50),
+  id                           INTEGER PRIMARY KEY,
+  tracking_slug                VARCHAR (50),
   bidder_slug                  varchar(50)  NULL,
   name                         varchar(127),
   maintenance                  boolean,
@@ -26,6 +28,7 @@ CREATE TABLE IF NOT EXISTS MV_RDS_SOURCE (
 
 CREATE TABLE IF NOT EXISTS MV_RDS_ACCOUNT (
   id                           integer PRIMARY KEY,
+  name                         varchar(127),
   auto_archiving_enabled       boolean,
   currency                     varchar(30)  NULL,
   yahoo_account_id             integer      NULL,
@@ -35,11 +38,10 @@ CREATE TABLE IF NOT EXISTS MV_RDS_ACCOUNT (
   account_cs_representative    varchar(100) NULL,
   account_ob_representative    varchar(100) NULL,
   archived                     BOOLEAN,
-  account_type                 varchar(50),
-  name                         varchar(127)
+  account_type                 varchar(50)
 );
 
-create TABLE IF NOT EXISTS MV_RDS_CAMPAIGN (
+CREATE TABLE IF NOT EXISTS MV_RDS_CAMPAIGN (
   id                       INTEGER PRIMARY KEY,
   name                     VARCHAR(127),
   type                     VARCHAR(100)  NULL,
@@ -51,32 +53,32 @@ create TABLE IF NOT EXISTS MV_RDS_CAMPAIGN (
   campaign_promotion_goal  VARCHAR(50),
   campaign_goal            VARCHAR(50),
   goal_quantity            VARCHAR(50),
-  target_devices           JSON,
-  target_placements        integer ARRAY NULL,
-  target_os                JSON          NULL,
-  target_region            JSON,
-  exclusion_target_regions JSON,
+  target_devices           VARCHAR(1000),
+  target_placements        VARCHAR(1000) NULL,
+  target_os                VARCHAR(1000) NULL,
+  target_region            VARCHAR(3000),
+  exclusion_target_regions VARCHAR(3000),
   automatic_campaign_stop  BOOLEAN       NULL,
   landing_mode             BOOLEAN       NULL,
   autopilot                BOOLEAN,
   enable_ga_tracking       BOOLEAN,
-  ga_tracking_type         INTEGER,
+  ga_tracking_type         VARCHAR(7),
   enable_adobe_tracking    BOOLEAN,
   archived                 BOOLEAN
 );
 
 CREATE TABLE IF NOT EXISTS MV_RDS_CAMPAIGN_GOAL (
-  id                         integer PRIMARY KEY,
+  id                         INTEGER PRIMARY KEY,
   campaign_goal_type         VARCHAR(100),
   campaign_goal_primary      BOOLEAN,
-  conversion_goal_id         INTEGER NULL,
-  conversion_goal_pixel_slug INTEGER,
-  impressions                INTEGER
+  conversion_goal_id         INTEGER  NULL,
+  conversion_goal_pixel_slug VARCHAR(50)  NULL,
+  impressions INTEGER
 );
 
 
 CREATE TABLE IF NOT EXISTS MV_RDS_CONTENT_AD (
-  id              integer PRIMARY KEY,
+  id              INTEGER PRIMARY KEY,
   ad_group_id     INTEGER,
   archived        BOOLEAN,
   amplify_review  BOOLEAN             NULL,
@@ -94,13 +96,13 @@ CREATE TABLE IF NOT EXISTS MV_RDS_CONTENT_AD (
   crop_areas      VARCHAR(128)        NULL,
   image_crop      VARCHAR(25),
   state           INTEGER             NULL,
-  tracker_urls    VARCHAR(2048) ARRAY NULL,
-  additional_data JSON                NULL,
-  video_asset_id  UUID                NULL,
+  tracker_urls    VARCHAR(2048)       NULL,
+  additional_data VARCHAR(2048)       NULL,
+  video_asset_id  INTEGER             NULL,
   video_status    VARCHAR(100),
   video_name      VARCHAR(255),
   video_duration  INTEGER             NULL,
-  video_formats   JSON                NULL,
+  video_formats   VARCHAR(1000)       NULL,
   video_type      VARCHAR(30),
   video_vast_url  VARCHAR(2048)       NULL
 );
@@ -114,18 +116,18 @@ CREATE TABLE IF NOT EXISTS MV_RDS_AD_GROUP (
   cpc_cc                                  DECIMAL(10, 4)    NULL,
   local_cpc_cc                            DECIMAL(10, 4)    NULL,
   daily_budget_cc                         DECIMAL(10, 4)    NULL,
-  target_devices                          JSON,
-  target_placements                       VARCHAR(24) ARRAY NULL,
-  target_os                               JSON              NULL,
-  target_browsers                         JSON              NULL,
-  exclusion_target_regions                JSON              NULL,
-  retargeting_ad_groups                   JSON,
-  exclusion_retargeting_ad_groups         JSON,
-  bluekai_targeting                       JSON,
-  interest_targeting                      JSON,
-  exclusion_interest_targeting            JSON,
-  audience_targeting                      JSON,
-  exclusion_audience_targeting            JSON,
+  target_devices                          VARCHAR(1000),
+  target_placements                       VARCHAR(24)       NULL,
+  target_os                               varchar(1000)     NULL,
+  target_browsers                         varchar(1000)     NULL,
+  exclusion_target_regions                varchar(4000)     NULL,
+  retargeting_ad_groups                   varchar(4000),
+  exclusion_retargeting_ad_groups         varchar(4000),
+  bluekai_targeting                       varchar(2000),
+  interest_targeting                      varchar(4000),
+  exclusion_interest_targeting            varchar(4000),
+  audience_targeting                      varchar(4000),
+  exclusion_audience_targeting            varchar(4000),
   archived                                BOOLEAN,
   brand_name                              VARCHAR(25),
   call_to_action                          VARCHAR(25),

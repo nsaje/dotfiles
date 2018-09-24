@@ -4,6 +4,7 @@ import influx
 
 from prodops.rds_materialization import rds_materialization
 from utils.command_helpers import ExceptionCommand
+from etl.redshift import get_last_stl_load_error
 
 logger = logging.getLogger(__name__)
 
@@ -30,7 +31,10 @@ class Command(ExceptionCommand):
         specific_table = options.get("specific_table", False)
 
         if specific_table:
-            self._process_rds(self.ALL_ENTITIES.get(specific_table))
+            if self.ALL_ENTITIES.get(specific_table):
+                self._process_rds(self.ALL_ENTITIES.get(specific_table))
+            else:
+                print("{} is not a valid parameter".format(specific_table))
         else:
             for entity in self.ALL_ENTITIES.values():
                 self._process_rds(entity)
@@ -41,5 +45,25 @@ class Command(ExceptionCommand):
             instance.extract_load_data()
             influx.incr("etl.rds_materialization", 1)
         except Exception:
-            logger.exception("Error while processing %s RDS data: %s", instance.TABLE)
-            pass
+            redshift_error = get_last_stl_load_error()
+            redshift_msg = """
+            userid: {userid}
+            slice: {slice}
+            tbl: {tbl}
+            starttime: {starttime}
+            session: {session}
+            query: {query}
+            filename: {filename}
+            line_number: {line_number}
+            colname: {colname}
+            type: {type}
+            col_length: {col_length}
+            position: {position}
+            raw_line: {raw_line}
+            raw_field_value: {raw_field_value}
+            err_code: {err_code}
+            err_reason: {err_reason}
+            """.format(
+                **redshift_error
+            )
+            logger.exception("Error while processing '%s' RDS data: \n %s", instance.TABLE, redshift_msg)

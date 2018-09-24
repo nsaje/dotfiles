@@ -1,4 +1,5 @@
 import os.path
+from collections import OrderedDict
 
 from django.db.models import F, Value, Case, When, CharField
 
@@ -40,8 +41,9 @@ class RDSModelization(object):
     def data_generator(self):
         if not self.rds_data:
             self.rds_data = self._get_rds_queryset()
+        columns = ["id"] + list(self.FIELDS.keys())
         for l in self.rds_data:
-            yield l.values()
+            yield [l.get(col) for col in columns]
 
     def empty_table(self):
         redshift.truncate_table(self.TABLE)
@@ -58,7 +60,7 @@ class RDSModelization(object):
 class RDSAgency(RDSModelization):
     MODEL = dash.models.Agency
     TABLE = "mv_rds_agency"
-    FIELDS = dict(
+    FIELDS = OrderedDict(
         name="name",
         whitelabel=RDSModelization.get_constant_value("whitelabel", dash.constants.Whitelabel),
         default_account_type=RDSModelization.get_constant_value("default_account_type", dash.constants.AccountType),
@@ -71,7 +73,7 @@ class RDSAgency(RDSModelization):
 class RDSSource(RDSModelization):
     MODEL = dash.models.Source
     TABLE = "mv_rds_source"
-    FIELDS = dict(
+    FIELDS = OrderedDict(
         tracking_slug="tracking_slug",
         bidder_slug="bidder_slug",
         name="name",
@@ -93,7 +95,7 @@ class RDSSource(RDSModelization):
 class RDSAccount(RDSModelization):
     MODEL = dash.models.Account
     TABLE = "mv_rds_account"
-    FIELDS = dict(
+    FIELDS = OrderedDict(
         name="name",
         auto_archiving_enabled="auto_archiving_enabled",
         currency="currency",
@@ -111,7 +113,7 @@ class RDSAccount(RDSModelization):
 class RDSCampaign(RDSModelization):
     MODEL = dash.models.Campaign
     TABLE = "mv_rds_campaign"
-    FIELDS = dict(
+    FIELDS = OrderedDict(
         name="name",
         type=RDSModelization.get_constant_value("type", dash.constants.CampaignType),
         account_id="account__id",
@@ -144,7 +146,7 @@ class RDSCampaign(RDSModelization):
 class RDSCampaignGoal(RDSModelization):
     MODEL = dash.models.CampaignGoal
     TABLE = "mv_rds_campaign_goal"
-    FIELDS = dict(
+    FIELDS = OrderedDict(
         campaign_goal_type=RDSModelization.get_constant_value("type", dash.constants.CampaignGoalKPI),
         campaign_goal_primary="primary",
         conversion_goal_id="conversion_goal__id",
@@ -156,7 +158,7 @@ class RDSCampaignGoal(RDSModelization):
 class RDSContentAd(RDSModelization):
     MODEL = dash.models.ContentAd
     TABLE = "mv_rds_content_ad"
-    FIELDS = dict(
+    FIELDS = OrderedDict(
         ad_group_id="ad_group__id",
         archived="archived",
         amplify_review="amplify_review",
@@ -189,7 +191,7 @@ class RDSContentAd(RDSModelization):
 class RDSAdGroup(RDSModelization):
     MODEL = dash.models.AdGroup
     TABLE = "mv_rds_ad_group"
-    FIELDS = dict(
+    FIELDS = OrderedDict(
         campaign_id="campaign_id",
         amplify_review="amplify_review",
         state="settings__state",
