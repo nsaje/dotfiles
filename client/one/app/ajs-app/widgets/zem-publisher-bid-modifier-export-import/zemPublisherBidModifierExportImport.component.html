@@ -1,0 +1,8 @@
+<zem-dropdown-select
+    ng-if="$ctrl.hasPermission('zemauth.can_use_publisher_bid_modifiers_in_ui')"
+    zem-placeholder="Bid Modifiers"
+    zem-dropdown-select-options="$ctrl.actions"
+    zem-on-select="$ctrl.execute(selected)"
+    zem-disabled-title="Nothing here"
+    zem-css-class="show-rows button button--dropdown-toggle-icon">
+</zem-dropdown-select>

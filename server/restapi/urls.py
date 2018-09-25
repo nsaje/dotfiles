@@ -18,6 +18,7 @@ import restapi.geolocation.urls
 import restapi.publishers.urls
 import restapi.publishergroup.urls
 import restapi.publishergroupentry.urls
+import restapi.publisherbidmodifiers.urls
 import restapi.inventory_planning.urls
 from dash.features import cloneadgroup
 from dash.features.bulkactions import clonecontent
@@ -45,6 +46,7 @@ urlpatterns += restapi.geolocation.urls.urlpatterns
 urlpatterns += restapi.publishers.urls.urlpatterns
 urlpatterns += restapi.publishergroup.urls.urlpatterns
 urlpatterns += restapi.publishergroupentry.urls.urlpatterns
+urlpatterns += restapi.publisherbidmodifiers.urls.urlpatterns
 urlpatterns += restapi.inventory_planning.urls.urlpatterns
 urlpatterns += cloneadgroup.urls.urlpatterns
 urlpatterns += clonecontent.urls.urlpatterns

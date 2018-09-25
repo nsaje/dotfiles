@@ -1,0 +1,31 @@
+<div class="modal__header">
+    <div class="modal__title">Update Publisher Bid Modifiers</div>
+</div>
+<div class="modal__body">
+    <div class="form">
+
+        <div class="form__group form__group--choose-file" ng-class="{'form--error': !!$ctrl.errors.file}">
+            <label class="form__label" for="file-input">CSV file with publisher bid modifiers:</label>
+            <zem-file-input zem-file-input-change="$ctrl.fileUploadCallback(file)" zem-file-input-accept=".csv">
+                <button type="button" class="button button--with-icon folder-icon"
+                        ng-click="$ctrl.clearValidationError('entries')" zem-file-input-trigger>Choose file</button>
+                <input class="input-text file-choosen" type="text" id="file-input" readonly ng-model="$ctrl.formData.file.name"
+                        placeholder="No file chosen">
+            </zem-file-input>
+
+            <div class="message message--error" ng-repeat="error in $ctrl.errors.entries">{{ error }}</div>
+            <div class="message message--error" ng-if="$ctrl.errors.errors_csv_key" for="file-input">
+                <p>There were some errors in the attached file.</p>
+                <a ng-click="$ctrl.downloadErrors()">Download the report</a>
+            </div>
+
+        </div>
+    </div>
+</div>
+<div class="modal__footer buttons-panel">
+    <button class="button button--highlight button--with-icon check-icon" ng-disabled="!!$ctrl.putRequestInProgress" ng-if="!$ctrl.isCreationMode" ng-click="$ctrl.upsert()">Update</button>
+    <button class="button button--highlight button--with-icon check-icon" ng-disabled="!!$ctrl.putRequestInProgress" ng-if="$ctrl.isCreationMode" ng-click="$ctrl.upsert()">Create</button>
+    <button type="button" class="button button--outline" ng-disabled="!!$ctrl.putRequestInProgress" ng-if="!$ctrl.isCreationMode" ng-click="$ctrl.modalInstance.dismiss()">Close</button>
+    <button type="button" class="button button--outline" ng-disabled="!!$ctrl.putRequestInProgress" ng-if="$ctrl.isCreationMode" ng-click="$ctrl.modalInstance.dismiss()">Cancel</button>
+    <div class="loader" ng-show="$ctrl.putRequestInProgress"></div>
+</div>

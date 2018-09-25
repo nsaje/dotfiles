@@ -77,6 +77,13 @@ angular
                 gridApi.getMetaData().breakdown
             );
 
+            var gridLevel = gridApi.getMetaData().level;
+            var gridBreakdown = gridApi.getMetaData().breakdown;
+
+            if (gridLevel === 'ad_groups' && gridBreakdown === 'publisher') {
+                fields.push('Source Slug');
+            }
+
             fields = deduplicateFields(fields);
 
             return fields;
