@@ -201,13 +201,8 @@ class AdGroupSettings(
     local_b1_sources_group_cpc_cc = models.DecimalField(
         max_digits=10, decimal_places=4, verbose_name="Bidder's Bid CPC", blank=True, null=True
     )
-    b1_sources_group_cpm = models.DecimalField(  # TODO: CPM Buying
-        max_digits=10,
-        decimal_places=4,
-        default=core.source.AllRTBSourceType.min_cpm,
-        blank=True,
-        null=True,
-        verbose_name="Bidder's Bid CPM",
+    b1_sources_group_cpm = models.DecimalField(
+        max_digits=10, decimal_places=4, default=core.source.AllRTBSourceType.min_cpm, verbose_name="Bidder's Bid CPM"
     )
     local_b1_sources_group_cpm = models.DecimalField(
         max_digits=10, decimal_places=4, verbose_name="Bidder's Bid CPM", blank=True, null=True
@@ -250,7 +245,7 @@ class AdGroupSettings(
                 ("b1_sources_group_state", constants.AdGroupSourceSettingsState.ACTIVE),
                 ("b1_sources_group_daily_budget", Decimal("50.00")),
                 ("b1_sources_group_cpc_cc", Decimal("0.45")),
-                ("b1_sources_group_cpm", Decimal("0.60")),  # TODO: CPM Buying: ask matic
+                ("b1_sources_group_cpm", Decimal("0.60")),
             ]
         )
 
