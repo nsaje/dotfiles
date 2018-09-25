@@ -76,6 +76,7 @@ class AdGroupSettingsTest(TestCase):
                 "b1_sources_group_daily_budget": "500.0000",
                 "b1_sources_group_state": 1,
                 "b1_sources_group_cpc_cc": "0.25",
+                "b1_sources_group_cpm": "1.02",
                 "whitelist_publisher_groups": [1],
                 "blacklist_publisher_groups": [1],
                 "delivery_type": 2,
@@ -144,6 +145,7 @@ class AdGroupSettingsTest(TestCase):
                         {"id": 6, "name": "test audience 6", "archived": False},
                     ],
                     "settings": {
+                        "bidding_type": constants.BiddingType.CPC,
                         "cpc_cc": "",
                         "max_cpm": "",
                         "daily_budget_cc": "100.00",
@@ -181,6 +183,7 @@ class AdGroupSettingsTest(TestCase):
                         "b1_sources_group_daily_budget": "500.0000",
                         "b1_sources_group_state": 1,
                         "b1_sources_group_cpc_cc": "0.0100",
+                        "b1_sources_group_cpm": "1.0100",
                         "whitelist_publisher_groups": [],
                         "blacklist_publisher_groups": [],
                         "delivery_type": 1,
@@ -255,7 +258,7 @@ class AdGroupSettingsTest(TestCase):
                 self.user,
                 [
                     "settings_view",
-                    "can_set_ad_group_max_cpm",
+                    "fea_can_use_cpm_buying",
                     "can_set_delivery_type",
                     "can_set_rtb_sources_as_one_cpc",
                     "can_set_white_blacklist_publisher_groups",
@@ -284,6 +287,7 @@ class AdGroupSettingsTest(TestCase):
                             "exclusion_target_regions": self._target_regions_repr(),
                         },
                         "settings": {
+                            "bidding_type": constants.BiddingType.CPC,
                             "cpc_cc": "0.300",
                             "max_cpm": "1.600",
                             "daily_budget_cc": "200.00",
@@ -326,6 +330,7 @@ class AdGroupSettingsTest(TestCase):
                             "b1_sources_group_daily_budget": "500.0000",
                             "b1_sources_group_state": 1,
                             "b1_sources_group_cpc_cc": "0.25",
+                            "b1_sources_group_cpm": "1.02",
                             "whitelist_publisher_groups": [1],
                             "blacklist_publisher_groups": [1],
                             "delivery_type": 2,
@@ -824,6 +829,54 @@ class AdGroupSettingsTest(TestCase):
         json_data = json.loads(response.content)["data"]
         self.assertEqual(json_data["error_code"], "ValidationError")
         self.assertTrue("89" in json_data["errors"]["b1_sources_group_daily_budget"][0])
+
+    def test_put_bidding_type(self):
+        ad_group = models.AdGroup.objects.get(pk=1)
+        add_permissions(self.user, ["settings_view", "fea_can_use_cpm_buying"])
+        self.assertEqual(constants.BiddingType.CPC, ad_group.bidding_type)
+
+        self.settings_dict["settings"]["bidding_type"] = constants.BiddingType.CPM
+        response = self.client.put(
+            reverse("ad_group_settings", kwargs={"ad_group_id": ad_group.id}),
+            json.dumps(self.settings_dict),
+            follow=True,
+        )
+        json_data = json.loads(response.content)["data"]
+        ad_group.refresh_from_db()
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(constants.BiddingType.CPM, ad_group.bidding_type)
+        self.assertEqual(constants.BiddingType.CPM, json_data["settings"]["bidding_type"])
+
+    def test_put_bidding_type_no_permission(self):
+        ad_group = models.AdGroup.objects.get(pk=1)
+        add_permissions(self.user, ["settings_view"])
+        self.assertEqual(constants.BiddingType.CPC, ad_group.bidding_type)
+
+        self.settings_dict["settings"]["bidding_type"] = constants.BiddingType.CPM
+        response = self.client.put(
+            reverse("ad_group_settings", kwargs={"ad_group_id": ad_group.id}),
+            json.dumps(self.settings_dict),
+            follow=True,
+        )
+        json_data = json.loads(response.content)["data"]
+        ad_group.refresh_from_db()
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(constants.BiddingType.CPC, ad_group.bidding_type)
+        self.assertEqual(constants.BiddingType.CPC, json_data["settings"]["bidding_type"])
+
+    def test_put_bidding_type_activated_ad_group(self):
+        ad_group = models.AdGroup.objects.get(pk=1)
+        add_permissions(self.user, ["settings_view", "fea_can_use_cpm_buying"])
+        ad_group.settings.update_unsafe(None, state=constants.AdGroupRunningStatus.ACTIVE)
+
+        self.settings_dict["settings"]["bidding_type"] = constants.BiddingType.CPM
+        response = self.client.put(
+            reverse("ad_group_settings", kwargs={"ad_group_id": ad_group.id}),
+            json.dumps(self.settings_dict),
+            follow=True,
+        )
+        json_data = json.loads(response.content)["data"]
+        self.assertEqual(json_data["error_code"], "ValidationError")
 
 
 class AdGroupSettingsRetargetableAdgroupsTest(TestCase):

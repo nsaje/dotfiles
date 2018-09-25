@@ -64,6 +64,33 @@ class ValidationTest(TestCase):
             current_settings._validate_autopilot_settings(new_settings)
 
     @mock.patch("automation.autopilot.get_adgroup_minimum_daily_budget", autospec=True)
+    def test_validate_autopilot_settings_all_rtb_cpm(self, mock_get_min_budget):
+        mock_get_min_budget.return_value = 0
+        current_settings = self.ad_group.settings
+        new_settings = current_settings.copy_settings()
+        new_settings.state = constants.AdGroupSettingsState.ACTIVE
+
+        current_settings.b1_sources_group_enabled = True
+        new_settings.b1_sources_group_enabled = True
+
+        current_settings.autopilot_state = constants.AdGroupSettingsAutopilotState.INACTIVE
+        new_settings.autopilot_state = constants.AdGroupSettingsAutopilotState.INACTIVE
+
+        current_settings.b1_sources_group_cpm = Decimal("1.1")
+        new_settings.b1_sources_group_cpm = Decimal("1.2")
+        current_settings._validate_autopilot_settings(new_settings)
+        mock_get_min_budget.assert_called_with(self.ad_group, new_settings)
+
+        current_settings.autopilot_state = constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET
+        new_settings.autopilot_state = constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET
+
+        current_settings.b1_sources_group_cpm = Decimal("1.1")
+        new_settings.b1_sources_group_cpm = Decimal("1.2")
+
+        with self.assertRaises(exceptions.CPMAutopilotNotDisabled):
+            current_settings._validate_autopilot_settings(new_settings)
+
+    @mock.patch("automation.autopilot.get_adgroup_minimum_daily_budget", autospec=True)
     def test_validate_autopilot_settings_all_rtb_daily_budget(self, mock_get_min_budget):
         mock_get_min_budget.return_value = 0
         current_settings = self.ad_group.settings
@@ -76,15 +103,15 @@ class ValidationTest(TestCase):
         current_settings.autopilot_state = constants.AdGroupSettingsAutopilotState.INACTIVE
         new_settings.autopilot_state = constants.AdGroupSettingsAutopilotState.INACTIVE
 
-        current_settings.b1_sources_group_cpc_cc = Decimal("100.0")
-        new_settings.b1_sources_group_cpc_cc = Decimal("200.0")
+        current_settings.b1_sources_group_daily_budget = Decimal("100.0")
+        new_settings.b1_sources_group_daily_budget = Decimal("200.0")
         current_settings._validate_autopilot_settings(new_settings)  # no exception
         mock_get_min_budget.assert_called_with(self.ad_group, new_settings)
 
         current_settings.autopilot_state = constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET
         new_settings.autopilot_state = constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET
 
-        with self.assertRaises(exceptions.CPCAutopilotNotDisabled):
+        with self.assertRaises(exceptions.DailyBudgetAutopilotNotDisabled):
             current_settings._validate_autopilot_settings(new_settings)
 
     @mock.patch("automation.autopilot.get_adgroup_minimum_daily_budget", autospec=True)

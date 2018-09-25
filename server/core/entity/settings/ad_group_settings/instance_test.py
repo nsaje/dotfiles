@@ -130,7 +130,7 @@ class InstanceTest(TestCase):
     @patch("utils.redirector_helper.insert_adgroup")
     def test_get_external_max_cpm(self, mock_insert_adgroup):
         account = magic_mixer.blend(core.entity.Account, uses_bcm_v2=False)
-        request = magic_mixer.blend_request_user(permissions=["can_set_ad_group_max_cpm"])
+        request = magic_mixer.blend_request_user(permissions=["fea_can_use_cpm_buying"])
 
         self.ad_group.settings.update(
             request, max_cpm=None, autopilot_state=constants.AdGroupSettingsAutopilotState.INACTIVE
@@ -150,7 +150,7 @@ class InstanceTest(TestCase):
     @patch("utils.redirector_helper.insert_adgroup")
     def test_get_external_b1_sources_group_daily_budget(self, mock_insert_adgroup):
         account = magic_mixer.blend(core.entity.Account, uses_bcm_v2=False)
-        request = magic_mixer.blend_request_user(permissions=["can_set_ad_group_max_cpm"])
+        request = magic_mixer.blend_request_user(permissions=["fea_can_use_cpm_buying"])
 
         self.ad_group.settings.update(
             request,

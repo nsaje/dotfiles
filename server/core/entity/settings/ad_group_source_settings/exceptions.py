@@ -18,7 +18,15 @@ class CPCNegative(ValidationError):
     pass
 
 
+class CPMNegative(ValidationError):
+    pass
+
+
 class CPCPrecisionExceeded(MulticurrencyValidationError):
+    pass
+
+
+class CPMPrecisionExceeded(MulticurrencyValidationError):
     pass
 
 
@@ -30,7 +38,19 @@ class MaximalCPCTooHigh(MulticurrencyValidationError):
     pass
 
 
+class MinimalCPMTooLow(MulticurrencyValidationError):
+    pass
+
+
+class MaximalCPMTooHigh(MulticurrencyValidationError):
+    pass
+
+
 class RTBSourcesCPCNegative(ValidationError):
+    pass
+
+
+class RTBSourcesCPMNegative(ValidationError):
     pass
 
 

@@ -35,6 +35,7 @@ class AdGroupSourceUpdate(TestCase):
         response = self.ad_group_source.settings.update(
             self.request,
             cpc_cc=decimal.Decimal("1.3"),
+            cpm=decimal.Decimal("2.3"),
             daily_budget_cc=decimal.Decimal("8.2"),
             state=constants.AdGroupSourceSettingsState.ACTIVE,
         )
@@ -44,6 +45,7 @@ class AdGroupSourceUpdate(TestCase):
         settings = self.ad_group_source.get_current_settings()
         self.assertEqual(self.request.user, settings.created_by)
         self.assertEqual(decimal.Decimal("1.3"), settings.cpc_cc)
+        self.assertEqual(decimal.Decimal("2.3"), settings.cpm)
         self.assertEqual(decimal.Decimal("8.2"), settings.daily_budget_cc)
         self.assertEqual(constants.AdGroupSourceSettingsState.ACTIVE, settings.state)
 
@@ -64,6 +66,7 @@ class AdGroupSourceUpdate(TestCase):
         self.ad_group_source.settings.update(
             skip_automation=True,
             cpc_cc=decimal.Decimal("1.3"),
+            cpm=decimal.Decimal("2.3"),
             daily_budget_cc=decimal.Decimal("8.2"),
             state=constants.AdGroupSourceSettingsState.ACTIVE,
         )
@@ -86,6 +89,7 @@ class AdGroupSourceUpdate(TestCase):
         self.ad_group_source.settings.update(
             self.request,
             cpc_cc=decimal.Decimal("1.3"),
+            cpm=decimal.Decimal("2.3"),
             daily_budget_cc=decimal.Decimal("8.2"),
             state=constants.AdGroupSourceSettingsState.ACTIVE,
         )
@@ -95,6 +99,7 @@ class AdGroupSourceUpdate(TestCase):
         self.ad_group_source.settings.update(
             system_user=constants.SystemUserType.CAMPAIGN_STOP,
             cpc_cc=decimal.Decimal("1.3"),
+            cpm=decimal.Decimal("2.3"),
             daily_budget_cc=decimal.Decimal("8.2"),
             state=constants.AdGroupSourceSettingsState.ACTIVE,
         )
@@ -108,6 +113,7 @@ class AdGroupSourceUpdate(TestCase):
         self.ad_group_source.settings.update(
             k1_sync=False,
             cpc_cc=decimal.Decimal("1.3"),
+            cpm=decimal.Decimal("2.3"),
             daily_budget_cc=decimal.Decimal("8.2"),
             state=constants.AdGroupSourceSettingsState.ACTIVE,
         )
@@ -118,18 +124,30 @@ class AdGroupSourceUpdate(TestCase):
         with self.assertRaises(AssertionError):
             self.ad_group_source.settings.update(cpc_cc=0.1)
 
+    def test_update_validate_cpm_not_decimal(self):
+        with self.assertRaises(AssertionError):
+            self.ad_group_source.settings.update(cpm=1.1)
+
     def test_update_skip_validation(self):
         self.ad_group_source.settings.update(
-            skip_validation=True, cpc_cc=decimal.Decimal("-1.2"), daily_budget_cc=decimal.Decimal("8.2")
+            skip_validation=True,
+            cpc_cc=decimal.Decimal("-1.2"),
+            cpm=decimal.Decimal("-2.3"),
+            daily_budget_cc=decimal.Decimal("8.2"),
         )
 
         settings = self.ad_group_source.get_current_settings()
         self.assertEqual(decimal.Decimal("-1.2"), settings.cpc_cc)  # not valid setting
+        self.assertEqual(decimal.Decimal("-2.3"), settings.cpm)  # not valid setting
         self.assertEqual(decimal.Decimal("8.2"), settings.daily_budget_cc)
 
     def test_update_validate_cpc_positive(self):
         with self.assertRaises(utils.exc.ValidationError):
             self.ad_group_source.settings.update(cpc_cc=decimal.Decimal("-1.2"))
+
+    def test_update_validate_cpm_positive(self):
+        with self.assertRaises(utils.exc.ValidationError):
+            self.ad_group_source.settings.update(cpm=decimal.Decimal("-2.3"))
 
     def test_update_validate_cpc_ad_group_max_cpc(self):
         self.ad_group.settings.update_unsafe(None, cpc_cc=decimal.Decimal("1.1"))
@@ -137,17 +155,35 @@ class AdGroupSourceUpdate(TestCase):
         with self.assertRaises(utils.exc.ValidationError):
             self.ad_group_source.settings.update(cpc_cc=decimal.Decimal("1.2"))
 
+    def test_update_validate_cpm_ad_group_max_cpm(self):
+        self.ad_group.settings.update_unsafe(None, max_cpm=decimal.Decimal("2.3"))
+
+        with self.assertRaises(utils.exc.ValidationError):
+            self.ad_group_source.settings.update(cpm=decimal.Decimal("2.4"))
+
     def test_update_validate_cpc_source_max_cpc(self):
         self.source_type.max_cpc = 1.1
         self.source_type.save()
         with self.assertRaises(utils.exc.ValidationError):
             self.ad_group_source.settings.update(cpc_cc=decimal.Decimal("1.2"))
 
+    def test_update_validate_cpm_source_max_cpm(self):
+        self.source_type.max_cpm = 2.3
+        self.source_type.save()
+        with self.assertRaises(utils.exc.ValidationError):
+            self.ad_group_source.settings.update(cpm=decimal.Decimal("2.4"))
+
     def test_update_validate_cpc_source_min_cpc(self):
         self.source_type.min_cpc = 1.1
         self.source_type.save()
         with self.assertRaises(utils.exc.ValidationError):
             self.ad_group_source.settings.update(cpc_cc=decimal.Decimal("1.0"))
+
+    def test_update_validate_cpm_source_min_cpm(self):
+        self.source_type.min_cpm = 2.3
+        self.source_type.save()
+        with self.assertRaises(utils.exc.ValidationError):
+            self.ad_group_source.settings.update(cpm=decimal.Decimal("2.2"))
 
     def test_update_validate_cpc_constraints(self):
         magic_mixer.blend(core.entity.settings.CpcConstraint, ad_group=self.ad_group, source=self.source, min_cpc=1.1)
@@ -216,17 +252,21 @@ class MulticurrencyTest(TestCase):
     def test_set_usd(self, mock_get_exchange_rate):
         ad_group_source = magic_mixer.blend(core.entity.AdGroupSource)
         mock_get_exchange_rate.return_value = decimal.Decimal("2.0")
-        ad_group_source.settings.update(None, cpc_cc=decimal.Decimal("0.50"))
+        ad_group_source.settings.update(None, cpc_cc=decimal.Decimal("0.50"), cpm=decimal.Decimal("1.50"))
         self.assertEqual(ad_group_source.settings.local_cpc_cc, decimal.Decimal("1.00"))
         self.assertEqual(ad_group_source.settings.cpc_cc, decimal.Decimal("0.50"))
+        self.assertEqual(ad_group_source.settings.local_cpm, decimal.Decimal("3.00"))
+        self.assertEqual(ad_group_source.settings.cpm, decimal.Decimal("1.50"))
 
     @patch.object(core.multicurrency, "get_current_exchange_rate")
     def test_set_local(self, mock_get_exchange_rate):
         ad_group_source = magic_mixer.blend(core.entity.AdGroupSource)
         mock_get_exchange_rate.return_value = decimal.Decimal("2.0")
-        ad_group_source.settings.update(None, local_cpc_cc=decimal.Decimal("0.50"))
+        ad_group_source.settings.update(None, local_cpc_cc=decimal.Decimal("0.50"), local_cpm=decimal.Decimal("2.00"))
         self.assertEqual(ad_group_source.settings.local_cpc_cc, decimal.Decimal("0.50"))
         self.assertEqual(ad_group_source.settings.cpc_cc, decimal.Decimal("0.25"))
+        self.assertEqual(ad_group_source.settings.local_cpm, decimal.Decimal("2.00"))
+        self.assertEqual(ad_group_source.settings.cpm, decimal.Decimal("1.00"))
 
     @patch.object(core.multicurrency, "get_current_exchange_rate")
     def test_set_none(self, mock_get_exchange_rate):

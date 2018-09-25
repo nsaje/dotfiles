@@ -130,6 +130,8 @@ class AdGroupSourceSettings(api_common.BaseApiView):
             ad_group_settings_dict["b1_sources_group_daily_budget"] = settings["daily_budget_cc"]
         if "cpc_cc" in settings:
             ad_group_settings_dict["b1_sources_group_cpc_cc"] = settings["cpc_cc"]
+        if "max_cpm" in settings:
+            ad_group_settings_dict["b1_sources_group_cpm"] = settings["max_cpm"]
         if "state" in settings:
             ad_group_settings_dict["b1_sources_group_state"] = settings["state"]
 
@@ -140,6 +142,7 @@ class AdGroupSourceSettings(api_common.BaseApiView):
             {
                 "b1_sources_group_daily_budget": ad_group_settings_dict["b1_sources_group_daily_budget"],
                 "b1_sources_group_cpc_cc": ad_group_settings_dict["b1_sources_group_cpc_cc"],
+                "b1_sources_group_cpm": ad_group_settings_dict["b1_sources_group_cpm"],
                 "b1_sources_group_state": ad_group_settings_dict["b1_sources_group_state"],
             },
         )

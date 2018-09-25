@@ -5,20 +5,21 @@ from utils import numbers
 ZERO = Decimal("0.0000")
 
 
-def calculate_min_cpc(min_cpc, bcm_modifiers):
-    if not bcm_modifiers or not min_cpc:
-        return min_cpc
+def calculate_min_bid_value(min_bid_value, bcm_modifiers):
+    if not bcm_modifiers or not min_bid_value:
+        return min_bid_value
 
-    etfm_min_cpc = apply_fee_and_margin(min_cpc, bcm_modifiers["fee"], bcm_modifiers["margin"])
-    rounded = numbers.round_decimal_ceiling(etfm_min_cpc, places=3)
+    etfm_min_bid_value = apply_fee_and_margin(min_bid_value, bcm_modifiers["fee"], bcm_modifiers["margin"])
+    rounded = numbers.round_decimal_ceiling(etfm_min_bid_value, places=3)
     return rounded
 
 
-def calculate_max_cpc(max_cpc, bcm_modifiers):
-    if not bcm_modifiers or not max_cpc:
-        return max_cpc
-    etfm_max_cpc = apply_fee_and_margin(max_cpc, bcm_modifiers["fee"], bcm_modifiers["margin"])
-    rounded = numbers.round_decimal_floor(etfm_max_cpc, places=3)
+def calculate_max_bid_value(max_bid_value, bcm_modifiers):
+    if not bcm_modifiers or not max_bid_value:
+        return max_bid_value
+
+    etfm_max_bid_value = apply_fee_and_margin(max_bid_value, bcm_modifiers["fee"], bcm_modifiers["margin"])
+    rounded = numbers.round_decimal_floor(etfm_max_bid_value, places=3)
     return rounded
 
 

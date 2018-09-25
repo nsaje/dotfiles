@@ -23,6 +23,7 @@ import core.entity
 import core.source
 
 from . import bcm_mixin
+from . import validation
 from . import exceptions
 
 
@@ -117,7 +118,7 @@ class AdGroupManager(core.common.QuerySetManager):
         return ad_group
 
 
-class AdGroup(models.Model, bcm_mixin.AdGroupBCMMixin):
+class AdGroup(validation.AdGroupValidatorMixin, models.Model, bcm_mixin.AdGroupBCMMixin):
     _current_settings = None
 
     class Meta:
@@ -130,6 +131,7 @@ class AdGroup(models.Model, bcm_mixin.AdGroupBCMMixin):
     name = models.CharField(max_length=127, editable=True, blank=False, null=False)
     campaign = models.ForeignKey("Campaign", on_delete=models.PROTECT)
     sources = models.ManyToManyField("Source", through="AdGroupSource")
+    bidding_type = models.IntegerField(default=constants.BiddingType.CPC, choices=constants.BiddingType.get_choices())
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name="Created at")
     modified_dt = models.DateTimeField(auto_now=True, verbose_name="Modified at")
     modified_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, related_name="+", on_delete=models.PROTECT)
@@ -387,6 +389,15 @@ class AdGroup(models.Model, bcm_mixin.AdGroupBCMMixin):
     def save(self, request, *args, **kwargs):
         self.modified_by = request.user if request else None
         super(AdGroup, self).save(*args, **kwargs)
+
+    def update_bidding_type(self, request, bidding_type=None, skip_permission_check=False):
+        if not skip_permission_check and request and not request.user.has_perm("zemauth.fea_can_use_cpm_buying"):
+            return
+
+        if bidding_type and self.bidding_type != bidding_type:
+            self._validate_bidding_type(bidding_type)
+            self.bidding_type = bidding_type
+            self.save(request)
 
     def ensure_amplify_review_source(self, request):
         source_types_added = set(self.adgroupsource_set.all().values_list("source__source_type__type", flat=True))

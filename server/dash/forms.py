@@ -225,6 +225,9 @@ class AdGroupAdminForm(forms.ModelForm, CustomFlagsFormMixin):
 
 
 class AdGroupSettingsForm(PublisherGroupsFormMixin, MulticurrencySettingsFormMixin, forms.Form):
+    bidding_type = forms.TypedChoiceField(
+        choices=constants.BiddingType.get_choices(), coerce=int, empty_value=None, required=False
+    )
     name = PlainCharField(max_length=127, error_messages={"required": "Please specify ad group name."})
     state = forms.TypedChoiceField(choices=constants.AdGroupSettingsState.get_choices(), coerce=int, empty_value=None)
     start_date = forms.DateField(error_messages={"required": "Please provide start date."})
@@ -298,6 +301,8 @@ class AdGroupSettingsForm(PublisherGroupsFormMixin, MulticurrencySettingsFormMix
     b1_sources_group_daily_budget = forms.DecimalField(decimal_places=4, required=False)
 
     b1_sources_group_cpc_cc = forms.DecimalField(decimal_places=4, required=False)
+
+    b1_sources_group_cpm = forms.DecimalField(decimal_places=4, required=False)
 
     b1_sources_group_state = forms.TypedChoiceField(
         required=False, choices=constants.AdGroupSourceSettingsState.get_choices(), coerce=int, empty_value=None
@@ -444,6 +449,8 @@ class B1SourcesGroupSettingsForm(forms.Form):
     b1_sources_group_daily_budget = forms.DecimalField(decimal_places=4, required=False)
 
     b1_sources_group_cpc_cc = forms.DecimalField(decimal_places=4, required=False)
+
+    b1_sources_group_cpm = forms.DecimalField(decimal_places=4, required=False)
 
     b1_sources_group_state = forms.TypedChoiceField(
         required=False, choices=constants.AdGroupSourceSettingsState.get_choices(), coerce=int, empty_value=None

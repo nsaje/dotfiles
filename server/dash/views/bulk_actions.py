@@ -161,6 +161,32 @@ class AdGroupSourceState(BaseBulkActionView):
                 )
             )
 
+        except core.entity.settings.ad_group_source_settings.exceptions.MinimalCPMTooLow as err:
+            raise exc.ValidationError(
+                "{}: {}".format(
+                    ad_group_source.source.name,
+                    "Minimum CPM on {} is {}.".format(
+                        err.data.get("source_name"),
+                        core.multicurrency.format_value_in_currency(
+                            err.data.get("value"), 2, decimal.ROUND_CEILING, ad_group_source.settings.get_currency()
+                        ),
+                    ),
+                )
+            )
+
+        except core.entity.settings.ad_group_source_settings.exceptions.MaximalCPMTooHigh as err:
+            raise exc.ValidationError(
+                "{}: {}".format(
+                    ad_group_source.source.name,
+                    "Maximum CPM on {} is {}.".format(
+                        err.data.get("source_name"),
+                        core.multicurrency.format_value_in_currency(
+                            err.data.get("value"), 2, decimal.ROUND_FLOOR, ad_group_source.settings.get_currency()
+                        ),
+                    ),
+                )
+            )
+
         except (
             core.entity.settings.ad_group_source_settings.exceptions.CPCInvalid,
             core.entity.settings.ad_group_source_settings.exceptions.RetargetingNotSupported,

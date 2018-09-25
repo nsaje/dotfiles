@@ -263,6 +263,18 @@ class AdGroupSource(models.Model):
                 updates["cpc_cc"] = ad_group.settings.b1_sources_group_cpc_cc
             if ad_group.settings.cpc_cc:
                 updates["cpc_cc"] = min(ad_group.settings.cpc_cc, updates["cpc_cc"])
+        if "cpm" not in updates:
+            updates["cpm"] = self.source.default_cpm
+            if ad_group.settings.is_mobile_only():
+                updates["cpm"] = self.source.default_mobile_cpm
+            if (
+                ad_group.settings.b1_sources_group_enabled
+                and ad_group.settings.b1_sources_group_cpm > 0.0
+                and self.source.source_type.type == constants.SourceType.B1
+            ):
+                updates["cpm"] = ad_group.settings.b1_sources_group_cpm
+            if ad_group.settings.max_cpm:
+                updates["cpm"] = min(ad_group.settings.max_cpm, updates["cpm"])
         if "state" not in updates:
             if helpers.get_source_initial_state(self):
                 updates["state"] = constants.AdGroupSourceSettingsState.ACTIVE
@@ -293,6 +305,7 @@ class AdGroupSource(models.Model):
             skip_validation=True,
             daily_budget_cc=source_ad_group_source_settings.daily_budget_cc,
             cpc_cc=source_ad_group_source_settings.cpc_cc,
+            cpm=source_ad_group_source_settings.cpm,
             state=source_ad_group_source_settings.state,
         )
 

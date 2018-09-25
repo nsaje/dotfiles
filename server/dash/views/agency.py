@@ -35,6 +35,7 @@ from utils import db_for_reads
 import utils.exc
 
 import core.entity.settings.campaign_settings.exceptions
+import core.entity.adgroup.ad_group.exceptions
 import core.entity.settings.ad_group_settings.exceptions
 import core.entity.settings.ad_group_source_settings.exceptions
 import core.goals.campaign_goal.exceptions
@@ -115,7 +116,11 @@ class AdGroupSettings(api_common.BaseApiView):
 
     def _update_adgroup(self, request, ad_group, data):
         try:
+            ad_group.update_bidding_type(request, data.get("bidding_type"))
             ad_group.settings.update(request, **data)
+
+        except core.entity.adgroup.ad_group.exceptions.CannotChangeBiddingType as err:
+            raise utils.exc.ValidationError(errors={"bidding_type": [str(err)]})
 
         except utils.exc.MultipleValidationError as err:
             self._handle_multiple_error(err)
@@ -162,11 +167,27 @@ class AdGroupSettings(api_common.BaseApiView):
         except core.entity.settings.ad_group_source_settings.exceptions.RTBSourcesCPCNegative as err:
             raise utils.exc.ValidationError(errors={"b1_sources_group_cpc_cc": [str(err)]})
 
+        except core.entity.settings.ad_group_source_settings.exceptions.RTBSourcesCPMNegative as err:
+            raise utils.exc.ValidationError(errors={"b1_sources_group_cpm": [str(err)]})
+
         except core.entity.settings.ad_group_source_settings.exceptions.CPCPrecisionExceeded as err:
             raise utils.exc.ValidationError(
                 errors={
                     "b1_sources_group_cpc_cc": [
                         "CPC on {} cannot exceed {} decimal place{}.".format(
+                            err.data.get("source_name"),
+                            err.data.get("value"),
+                            "s" if err.data.get("value") != 1 else "",
+                        )
+                    ]
+                }
+            )
+
+        except core.entity.settings.ad_group_source_settings.exceptions.CPMPrecisionExceeded as err:
+            raise utils.exc.ValidationError(
+                errors={
+                    "b1_sources_group_cpm": [
+                        "CPM on {} cannot exceed {} decimal place{}.".format(
                             err.data.get("source_name"),
                             err.data.get("value"),
                             "s" if err.data.get("value") != 1 else "",
@@ -194,6 +215,34 @@ class AdGroupSettings(api_common.BaseApiView):
                 errors={
                     "b1_sources_group_cpc_cc": [
                         "Maximum CPC on {} is {}.".format(
+                            err.data.get("source_name"),
+                            core.multicurrency.format_value_in_currency(
+                                err.data.get("value"), 2, decimal.ROUND_FLOOR, ad_group.settings.get_currency()
+                            ),
+                        )
+                    ]
+                }
+            )
+
+        except core.entity.settings.ad_group_source_settings.exceptions.MinimalCPMTooLow as err:
+            raise utils.exc.ValidationError(
+                errors={
+                    "b1_sources_group_cpm": [
+                        "Minimum CPM on {} is {}.".format(
+                            err.data.get("source_name"),
+                            core.multicurrency.format_value_in_currency(
+                                err.data.get("value"), 2, decimal.ROUND_CEILING, ad_group.settings.get_currency()
+                            ),
+                        )
+                    ]
+                }
+            )
+
+        except core.entity.settings.ad_group_source_settings.exceptions.MaximalCPMTooHigh as err:
+            raise utils.exc.ValidationError(
+                errors={
+                    "b1_sources_group_cpm": [
+                        "Maximum CPM on {} is {}.".format(
                             err.data.get("source_name"),
                             core.multicurrency.format_value_in_currency(
                                 err.data.get("value"), 2, decimal.ROUND_FLOOR, ad_group.settings.get_currency()
@@ -295,6 +344,7 @@ class AdGroupSettings(api_common.BaseApiView):
             "campaign_id": str(ad_group.campaign_id),
             "name": settings.ad_group_name,
             "state": settings.state,
+            "bidding_type": ad_group.bidding_type,
             "start_date": settings.start_date,
             "end_date": settings.end_date,
             "cpc_cc": "{:.3f}".format(settings.local_cpc_cc) if settings.local_cpc_cc is not None else "",
@@ -321,6 +371,7 @@ class AdGroupSettings(api_common.BaseApiView):
             "b1_sources_group_enabled": settings.b1_sources_group_enabled,
             "b1_sources_group_daily_budget": settings.local_b1_sources_group_daily_budget,
             "b1_sources_group_cpc_cc": settings.local_b1_sources_group_cpc_cc,
+            "b1_sources_group_cpm": settings.local_b1_sources_group_cpm,
             "b1_sources_group_state": settings.b1_sources_group_state,
             "whitelist_publisher_groups": settings.whitelist_publisher_groups,
             "blacklist_publisher_groups": settings.blacklist_publisher_groups,
@@ -551,11 +602,11 @@ class CampaignSettings(api_common.BaseApiView):
                 campaign.update_type(form_data.get("type"))
                 campaign.settings.update(request, **form_data)
 
-            except core.entity.settings.campaign_settings.exceptions.CannotChangeLanguage as err:
-                raise utils.exc.ValidationError(errors={"language": [str(err)]})
-
             except core.entity.campaign.exceptions.CannotChangeType as err:
                 raise utils.exc.ValidationError(errors={"type": [str(err)]})
+
+            except core.entity.settings.campaign_settings.exceptions.CannotChangeLanguage as err:
+                raise utils.exc.ValidationError(errors={"language": [str(err)]})
 
             except core.entity.settings.campaign_settings.exceptions.PublisherWhitelistInvalid as err:
                 raise utils.exc.ValidationError(errors={"whitelist_publisher_groups": [str(err)]})

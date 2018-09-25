@@ -17,6 +17,10 @@ class CPCAutopilotNotDisabled(ValidationError):
     pass
 
 
+class CPMAutopilotNotDisabled(ValidationError):
+    pass
+
+
 class AutopilotDailyBudgetTooLow(ValidationError):
     pass
 

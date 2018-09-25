@@ -60,6 +60,23 @@ class Source(models.Model):
         verbose_name="Default CPC (if ad group is targeting mobile only)",
     )
 
+    default_cpm = models.DecimalField(
+        max_digits=10,
+        decimal_places=4,
+        default=Decimal("0.60"),
+        blank=True,
+        null=True,
+        verbose_name="Default CPM",  # TODO: CPM Buying
+    )
+    default_mobile_cpm = models.DecimalField(
+        max_digits=10,
+        decimal_places=4,
+        default=Decimal("0.60"),
+        blank=True,
+        null=True,  # TODO: CPM Buying
+        verbose_name="Default CPM (if ad group is targeting mobile only)",
+    )
+
     default_daily_budget_cc = models.DecimalField(
         max_digits=10, decimal_places=4, default=Decimal("10.00"), verbose_name="Default daily spend cap"
     )

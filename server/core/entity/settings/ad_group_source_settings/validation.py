@@ -11,6 +11,7 @@ class AdGroupSourceSettingsValidatorMixin(object):
     def clean(self, new_settings):
         bcm_modifiers = self.ad_group_source.ad_group.campaign.get_bcm_modifiers()
         self._validate_ad_group_source_cpc(new_settings, bcm_modifiers)
+        self._validate_ad_group_source_cpm(new_settings, bcm_modifiers)
         self._validate_ad_group_source_daily_budget(new_settings, bcm_modifiers)
         self._validate_ad_group_source_state(new_settings)
 
@@ -28,6 +29,12 @@ class AdGroupSourceSettingsValidatorMixin(object):
             )
         except django.forms.ValidationError as e:
             raise exceptions.CPCInvalid(e.message)
+
+    def _validate_ad_group_source_cpm(self, new_settings, bcm_modifiers):
+        if new_settings.cpm is None:
+            return
+        assert isinstance(new_settings.cpm, decimal.Decimal)
+        validation_helpers.validate_ad_group_source_cpm(new_settings.cpm, self.ad_group_source, bcm_modifiers)
 
     def _validate_ad_group_source_daily_budget(self, new_settings, bcm_modifiers):
         if new_settings.daily_budget_cc is None:

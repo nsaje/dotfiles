@@ -121,11 +121,27 @@ class AdGroupSourceViewSet(RESTAPIBaseViewSet):
         except exceptions.CPCNegative as err:
             raise utils.exc.ValidationError(errors={"cpc": [str(err)]})
 
+        except exceptions.CPMNegative as err:
+            raise utils.exc.ValidationError(errors={"cpm": [str(err)]})
+
         except exceptions.CPCPrecisionExceeded as err:
             raise utils.exc.ValidationError(
                 errors={
                     "cpc": [
                         "CPC on {} cannot exceed {} decimal place{}.".format(
+                            err.data.get("source_name"),
+                            err.data.get("value"),
+                            "s" if err.data.get("value") != 1 else "",
+                        )
+                    ]
+                }
+            )
+
+        except exceptions.CPMPrecisionExceeded as err:
+            raise utils.exc.ValidationError(
+                errors={
+                    "cpm": [
+                        "CPM on {} cannot exceed {} decimal place{}.".format(
                             err.data.get("source_name"),
                             err.data.get("value"),
                             "s" if err.data.get("value") != 1 else "",
@@ -162,8 +178,39 @@ class AdGroupSourceViewSet(RESTAPIBaseViewSet):
                 }
             )
 
+        except exceptions.MinimalCPMTooLow as err:
+            raise utils.exc.ValidationError(
+                errors={
+                    "cpm": [
+                        "Minimum CPM on {} is {}.".format(
+                            err.data.get("source_name"),
+                            core.multicurrency.format_value_in_currency(
+                                err.data.get("value"), 2, decimal.ROUND_CEILING, ad_group_source.settings.get_currency()
+                            ),
+                        )
+                    ]
+                }
+            )
+
+        except exceptions.MaximalCPMTooHigh as err:
+            raise utils.exc.ValidationError(
+                errors={
+                    "cpm": [
+                        "Maximum CPM on {} is {}.".format(
+                            err.data.get("source_name"),
+                            core.multicurrency.format_value_in_currency(
+                                err.data.get("value"), 2, decimal.ROUND_FLOOR, ad_group_source.settings.get_currency()
+                            ),
+                        )
+                    ]
+                }
+            )
+
         except exceptions.RTBSourcesCPCNegative as err:
             raise utils.exc.ValidationError(errors={"cpc": [str(err)]})
+
+        except exceptions.RTBSourcesCPMNegative as err:
+            raise utils.exc.ValidationError(errors={"cpm": [str(err)]})
 
         except exceptions.CPCInvalid as err:
             raise utils.exc.ValidationError(errors={"cpc": [str(err)]})

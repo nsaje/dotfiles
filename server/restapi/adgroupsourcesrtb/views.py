@@ -38,11 +38,27 @@ class AdGroupSourcesRTBViewSet(RESTAPIBaseViewSet):
         except core.entity.settings.ad_group_source_settings.exceptions.RTBSourcesCPCNegative as err:
             raise utils.exc.ValidationError(errors={"cpc": [str(err)]})
 
+        except core.entity.settings.ad_group_source_settings.exceptions.RTBSourcesCPMNegative as err:
+            raise utils.exc.ValidationError(errors={"cpm": [str(err)]})
+
         except core.entity.settings.ad_group_source_settings.exceptions.CPCPrecisionExceeded as err:
             raise utils.exc.ValidationError(
                 errors={
                     "cpc": [
                         "CPC on {} cannot exceed {} decimal place{}.".format(
+                            err.data.get("source_name"),
+                            err.data.get("value"),
+                            "s" if err.data.get("value") != 1 else "",
+                        )
+                    ]
+                }
+            )
+
+        except core.entity.settings.ad_group_source_settings.exceptions.CPMPrecisionExceeded as err:
+            raise utils.exc.ValidationError(
+                errors={
+                    "cpm": [
+                        "CPM on {} cannot exceed {} decimal place{}.".format(
                             err.data.get("source_name"),
                             err.data.get("value"),
                             "s" if err.data.get("value") != 1 else "",
@@ -70,6 +86,34 @@ class AdGroupSourcesRTBViewSet(RESTAPIBaseViewSet):
                 errors={
                     "cpc": [
                         "Maximum CPC on {} is {}.".format(
+                            err.data.get("source_name"),
+                            core.multicurrency.format_value_in_currency(
+                                err.data.get("value"), 2, decimal.ROUND_FLOOR, ad_group.settings.get_currency()
+                            ),
+                        )
+                    ]
+                }
+            )
+
+        except core.entity.settings.ad_group_source_settings.exceptions.MinimalCPMTooLow as err:
+            raise utils.exc.ValidationError(
+                errors={
+                    "cpm": [
+                        "Minimum CPM on {} is {}.".format(
+                            err.data.get("source_name"),
+                            core.multicurrency.format_value_in_currency(
+                                err.data.get("value"), 2, decimal.ROUND_CEILING, ad_group.settings.get_currency()
+                            ),
+                        )
+                    ]
+                }
+            )
+
+        except core.entity.settings.ad_group_source_settings.exceptions.MaximalCPMTooHigh as err:
+            raise utils.exc.ValidationError(
+                errors={
+                    "cpm": [
+                        "Maximum CPM on {} is {}.".format(
                             err.data.get("source_name"),
                             core.multicurrency.format_value_in_currency(
                                 err.data.get("value"), 2, decimal.ROUND_FLOOR, ad_group.settings.get_currency()

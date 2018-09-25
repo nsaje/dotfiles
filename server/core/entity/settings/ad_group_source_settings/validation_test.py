@@ -39,8 +39,10 @@ class ValidateAdGroupSourceUpdatesTestCase(TestCase):
         source_type = magic_mixer.blend(
             core.source.SourceType,
             min_cpc=decimal.Decimal("0.03"),
+            min_cpm=decimal.Decimal("0.03"),
             min_daily_budget=decimal.Decimal("10"),
             max_cpc=decimal.Decimal("5"),
+            max_cpm=decimal.Decimal("5"),
             max_daily_budget=decimal.Decimal("10000"),
         )
         self.source = magic_mixer.blend(core.source.Source, source_type=source_type)
@@ -77,6 +79,40 @@ class ValidateAdGroupSourceUpdatesTestCase(TestCase):
         self.assertEqual(decimal.Decimal("8.403"), exception.data["value"])
 
         updates["cpc_cc"] = decimal.Decimal("5")
+        ad_group_source.settings.update(None, **updates)
+
+    def test_validate_ad_group_source_cpm(self):
+        ad_group_source = magic_mixer.blend(
+            core.entity.AdGroupSource, ad_group__campaign=self.campaign, source=self.source
+        )
+        ad_group_source.settings.update_unsafe(
+            None,
+            state=dash.constants.AdGroupSettingsState.ACTIVE,
+            cpm=decimal.Decimal("0.35"),
+            daily_budget_cc=decimal.Decimal("50"),
+        )
+
+        updates = {}
+
+        updates["cpm"] = decimal.Decimal("0.0")
+        with self.assertRaises(exceptions.MinimalCPMTooLow) as cm:
+            ad_group_source.settings.update(None, **updates)
+
+        updates["cpm"] = decimal.Decimal("0.05")
+        with self.assertRaises(exceptions.MinimalCPMTooLow) as cm:
+            ad_group_source.settings.update(None, **updates)
+
+        exception = cm.exception
+        self.assertEqual(decimal.Decimal("0.051"), exception.data["value"])
+
+        updates["cpm"] = decimal.Decimal("8.404")
+        with self.assertRaises(exceptions.MaximalCPMTooHigh) as cm:
+            ad_group_source.settings.update(None, **updates)
+
+        exception = cm.exception
+        self.assertEqual(decimal.Decimal("8.403"), exception.data["value"])
+
+        updates["cpm"] = decimal.Decimal("5")
         ad_group_source.settings.update(None, **updates)
 
     def test_validate_ad_group_source_daily_budget(self):

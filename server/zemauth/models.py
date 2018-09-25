@@ -379,6 +379,7 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ),
             ("sspd_can_see_all_sources", "SSPD: user can see all sources"),
             ("sspd_can_use_sspd", "SSPD: User can use SSP dashboard"),
+            ("fea_can_use_cpm_buying", "User can use CPM Buying"),
         )
 
     def get_full_name(self):

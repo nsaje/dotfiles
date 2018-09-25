@@ -43,6 +43,13 @@ class AdGroupSourceSettingsState(ConstantBase):
     _VALUES = {ACTIVE: "Enabled", INACTIVE: "Paused"}
 
 
+class BiddingType(ConstantBase):
+    CPC = 1
+    CPM = 2
+
+    _VALUES = {CPC: "CPC", CPM: "CPM"}
+
+
 class ExportStatus(ConstantBase):
     # Generalized constant used for export output formatting. It handles conversion to text for various state classes.
     ACTIVE = 1

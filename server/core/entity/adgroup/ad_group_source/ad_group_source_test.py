@@ -43,6 +43,7 @@ class AdGroupSourceCreate(TestCase):
             self.default_source_settings.source,
             state=constants.AdGroupSourceSettingsState.INACTIVE,
             cpc_cc=decimal.Decimal("0.13"),
+            cpm=decimal.Decimal("1.13"),
             daily_budget_cc=decimal.Decimal("5.2"),
         )
 
@@ -52,6 +53,7 @@ class AdGroupSourceCreate(TestCase):
         new_settings = ad_group_source.get_current_settings()
         self.assertEqual(constants.AdGroupSourceSettingsState.INACTIVE, new_settings.state)
         self.assertEqual(decimal.Decimal("0.13"), new_settings.cpc_cc)
+        self.assertEqual(decimal.Decimal("1.13"), new_settings.cpm)
         self.assertEqual(decimal.Decimal("5.2"), new_settings.daily_budget_cc)
 
     def test_create_already_exists(self, mock_k1):
@@ -167,6 +169,7 @@ class AdGroupSourceClone(TestCase):
             None,
             daily_budget_cc=decimal.Decimal("5"),
             cpc_cc=decimal.Decimal("0.1"),
+            cpm=decimal.Decimal("1.1"),
             state=constants.AdGroupSourceSettingsState.ACTIVE,
         )
 
@@ -180,6 +183,7 @@ class AdGroupSourceClone(TestCase):
         self.assertEqual(ad_group_source.source, source_ad_group_source.source)
         self.assertEqual(ad_group_source_settings.daily_budget_cc, source_ad_group_source.settings.daily_budget_cc)
         self.assertEqual(ad_group_source_settings.cpc_cc, source_ad_group_source.settings.cpc_cc)
+        self.assertEqual(ad_group_source_settings.cpm, source_ad_group_source.settings.cpm)
 
         self.assertTrue(mock_k1.called)
 
@@ -203,7 +207,7 @@ class MigrateToBcmV2Test(TestCase):
             cpc_cc=decimal.Decimal("0.32"),
         )
 
-        request = magic_mixer.blend_request_user(permissions=["can_set_ad_group_max_cpm"])
+        request = magic_mixer.blend_request_user(permissions=["fea_can_use_cpm_buying"])
         ad_group_source.migrate_to_bcm_v2(request, decimal.Decimal("0.2"), decimal.Decimal("0.1"))
 
         ad_group_source_settings = ad_group_source.get_current_settings()

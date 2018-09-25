@@ -33,6 +33,7 @@ class AdGroupSettingsValidatorMixin(object):
         self._validate_bluekai_targeting_change(new_settings)
         self._validate_publisher_groups(new_settings),
         self._validate_b1_sources_group_cpc_cc(new_settings)
+        self._validate_b1_sources_group_cpm(new_settings)
         self._validate_b1_sources_group_daily_budget(new_settings)
 
     def _get_currency_symbol(self):
@@ -133,8 +134,12 @@ class AdGroupSettingsValidatorMixin(object):
             constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET,
         ):
             if self.local_b1_sources_group_cpc_cc != new_settings.local_b1_sources_group_cpc_cc:
-                msg = "Autopilot has to be disabled in order to manage Daily Cap of RTB Sources"
+                msg = "Autopilot has to be disabled in order to manage group CPC of RTB Sources"
                 raise exceptions.CPCAutopilotNotDisabled(msg)
+
+            if self.local_b1_sources_group_cpm != new_settings.local_b1_sources_group_cpm:
+                msg = "Autopilot has to be disabled in order to manage group CPM of RTB Sources"
+                raise exceptions.CPMAutopilotNotDisabled(msg)
 
         min_autopilot_daily_budget = autopilot.get_adgroup_minimum_daily_budget(self.ad_group, new_settings)
         if (
@@ -229,6 +234,14 @@ class AdGroupSettingsValidatorMixin(object):
         assert isinstance(new_settings.local_b1_sources_group_cpc_cc, decimal.Decimal)
         core.entity.settings.ad_group_source_settings.validation_helpers.validate_b1_sources_group_cpc_cc(
             new_settings.local_b1_sources_group_cpc_cc, self, self.ad_group.campaign.get_bcm_modifiers()
+        )
+
+    def _validate_b1_sources_group_cpm(self, new_settings):
+        if self.local_b1_sources_group_cpm == new_settings.local_b1_sources_group_cpm:
+            return
+        assert isinstance(new_settings.local_b1_sources_group_cpm, decimal.Decimal)
+        core.entity.settings.ad_group_source_settings.validation_helpers.validate_b1_sources_group_cpm(
+            new_settings.local_b1_sources_group_cpm, self, self.ad_group.campaign.get_bcm_modifiers()
         )
 
     def _validate_b1_sources_group_daily_budget(self, new_settings):

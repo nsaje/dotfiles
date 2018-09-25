@@ -54,6 +54,7 @@ class AdGroupSettings(
         "description": utils.demo_anonymizer.fake_sentence,
     }
     _settings_fields = [
+        "ad_group_name",
         "state",
         "start_date",
         "end_date",
@@ -84,7 +85,6 @@ class AdGroupSettings(
         "brand_name",
         "description",
         "call_to_action",
-        "ad_group_name",
         "autopilot_state",
         "autopilot_daily_budget",
         "local_autopilot_daily_budget",
@@ -93,6 +93,8 @@ class AdGroupSettings(
         "local_b1_sources_group_daily_budget",
         "b1_sources_group_cpc_cc",
         "local_b1_sources_group_cpc_cc",
+        "b1_sources_group_cpm",
+        "local_b1_sources_group_cpm",
         "b1_sources_group_state",
         "dayparting",
         "max_cpm",
@@ -104,15 +106,18 @@ class AdGroupSettings(
     _permissioned_fields = {
         "click_capping_daily_ad_group_max_clicks": "zemauth.can_set_click_capping",
         "click_capping_daily_click_budget": "zemauth.can_set_click_capping",
-        "max_cpm": "zemauth.can_set_ad_group_max_cpm",
-        "local_max_cpm": "zemauth.can_set_ad_group_max_cpm",
+        "max_cpm": "zemauth.fea_can_use_cpm_buying",
+        "local_max_cpm": "zemauth.fea_can_use_cpm_buying",
+        "b1_sources_group_cpm": "zemauth.fea_can_use_cpm_buying",
+        "local_b1_sources_group_cpm": "zemauth.fea_can_use_cpm_buying",
     }
     multicurrency_fields = [
         "cpc_cc",
+        "max_cpm",
         "autopilot_daily_budget",
         "b1_sources_group_daily_budget",
         "b1_sources_group_cpc_cc",
-        "max_cpm",
+        "b1_sources_group_cpm",
     ]
     history_fields = list(set(_settings_fields) - set(multicurrency_fields))
 
@@ -126,7 +131,9 @@ class AdGroupSettings(
     )
     start_date = models.DateField(null=True, blank=True)
     end_date = models.DateField(null=True, blank=True)
-    cpc_cc = models.DecimalField(max_digits=10, decimal_places=4, blank=True, null=True, verbose_name="Maximum CPC")
+    cpc_cc = models.DecimalField(
+        max_digits=10, decimal_places=4, blank=True, null=True, verbose_name="Maximum CPC"
+    )  # max CPC
     local_cpc_cc = models.DecimalField(
         max_digits=10, decimal_places=4, blank=True, null=True, verbose_name="Maximum CPC"
     )
@@ -194,6 +201,17 @@ class AdGroupSettings(
     local_b1_sources_group_cpc_cc = models.DecimalField(
         max_digits=10, decimal_places=4, verbose_name="Bidder's Bid CPC", blank=True, null=True
     )
+    b1_sources_group_cpm = models.DecimalField(  # TODO: CPM Buying
+        max_digits=10,
+        decimal_places=4,
+        default=core.source.AllRTBSourceType.min_cpm,
+        blank=True,
+        null=True,
+        verbose_name="Bidder's Bid CPM",
+    )
+    local_b1_sources_group_cpm = models.DecimalField(
+        max_digits=10, decimal_places=4, verbose_name="Bidder's Bid CPM", blank=True, null=True
+    )
     b1_sources_group_state = models.IntegerField(
         default=constants.AdGroupSourceSettingsState.INACTIVE,
         choices=constants.AdGroupSourceSettingsState.get_choices(),
@@ -221,6 +239,7 @@ class AdGroupSettings(
                 ("state", constants.AdGroupSettingsState.INACTIVE),
                 ("start_date", dates_helper.utc_today()),
                 ("cpc_cc", None),
+                ("max_cpm", None),
                 ("daily_budget_cc", 10.0000),
                 ("target_devices", constants.AdTargetDevice.get_all()),
                 ("target_regions", ["US"]),
@@ -231,6 +250,7 @@ class AdGroupSettings(
                 ("b1_sources_group_state", constants.AdGroupSourceSettingsState.ACTIVE),
                 ("b1_sources_group_daily_budget", Decimal("50.00")),
                 ("b1_sources_group_cpc_cc", Decimal("0.45")),
+                ("b1_sources_group_cpm", Decimal("0.60")),  # TODO: CPM Buying: ask matic
             ]
         )
 
@@ -289,6 +309,8 @@ class AdGroupSettings(
             "local_b1_sources_group_daily_budget": "Daily budget for all RTB sources",
             "b1_sources_group_cpc_cc": "Bid CPC for all RTB sources",
             "local_b1_sources_group_cpc_cc": "Bid CPC for all RTB sources",
+            "b1_sources_group_cpm": "Bid CPM for all RTB sources",
+            "local_b1_sources_group_cpm": "Bid CPM for all RTB sources",
             "b1_sources_group_state": "State of all RTB sources",
             "delivery_type": "Delivery type",
             "click_capping_daily_ad_group_max_clicks": "Daily maximum number of clicks for ad group",
@@ -342,6 +364,8 @@ class AdGroupSettings(
         elif prop_name == "local_b1_sources_group_daily_budget" and value is not None:
             value = lc_helper.format_currency(Decimal(value), places=2, curr=currency_symbol)
         elif prop_name == "local_b1_sources_group_cpc_cc" and value is not None:
+            value = lc_helper.format_currency(Decimal(value), places=3, curr=currency_symbol)
+        elif prop_name == "local_b1_sources_group_cpm" and value is not None:
             value = lc_helper.format_currency(Decimal(value), places=3, curr=currency_symbol)
         elif prop_name == "click_capping_daily_click_budget" and value is not None:
             value = lc_helper.default_currency(Decimal(value))

@@ -35,8 +35,16 @@ class AdGroupSourceSettings(
         ordering = ("-created_dt",)
         app_label = "dash"
 
-    _settings_fields = ["state", "cpc_cc", "daily_budget_cc", "local_cpc_cc", "local_daily_budget_cc"]
-    multicurrency_fields = ["cpc_cc", "daily_budget_cc"]
+    _settings_fields = [
+        "state",
+        "cpc_cc",
+        "cpm",
+        "daily_budget_cc",
+        "local_cpc_cc",
+        "local_cpm",
+        "local_daily_budget_cc",
+    ]
+    multicurrency_fields = ["cpc_cc", "cpm", "daily_budget_cc"]
     history_fields = list(set(_settings_fields) - set(multicurrency_fields))
 
     id = models.AutoField(primary_key=True)
@@ -53,6 +61,8 @@ class AdGroupSourceSettings(
     )
     cpc_cc = models.DecimalField(max_digits=10, decimal_places=4, blank=True, null=True, verbose_name="CPC")
     local_cpc_cc = models.DecimalField(max_digits=10, decimal_places=4, blank=True, null=True, verbose_name="CPC")
+    cpm = models.DecimalField(max_digits=10, decimal_places=4, blank=True, null=True, verbose_name="CPM")
+    local_cpm = models.DecimalField(max_digits=10, decimal_places=4, blank=True, null=True, verbose_name="CPM")
     daily_budget_cc = models.DecimalField(
         max_digits=10, decimal_places=4, blank=True, null=True, verbose_name="Daily spend cap"
     )
@@ -69,7 +79,9 @@ class AdGroupSourceSettings(
         NAMES = {
             "state": "State",
             "cpc_cc": "CPC",
+            "cpm": "CPM",
             "local_cpc_cc": "CPC",
+            "local_cpm": "CPM",
             "daily_budget_cc": "Daily Spend Cap",
             "local_daily_budget_cc": "Daily Spend Cap",
         }
@@ -80,6 +92,8 @@ class AdGroupSourceSettings(
         if prop_name == "state":
             value = constants.AdGroupSourceSettingsState.get_text(value)
         elif prop_name == "local_cpc_cc" and value is not None:
+            value = lc_helper.format_currency(Decimal(value), places=3, curr=currency_symbol)
+        elif prop_name == "local_cpm" and value is not None:
             value = lc_helper.format_currency(Decimal(value), places=3, curr=currency_symbol)
         elif prop_name == "local_daily_budget_cc" and value is not None:
             value = lc_helper.format_currency(Decimal(value), places=2, curr=currency_symbol)

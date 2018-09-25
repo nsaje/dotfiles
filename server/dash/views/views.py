@@ -791,11 +791,27 @@ class AdGroupSourceSettings(api_common.BaseApiView):
         except core.entity.settings.ad_group_source_settings.exceptions.CPCNegative as err:
             raise exc.ValidationError(errors={"cpc_cc": [str(err)]})
 
+        except core.entity.settings.ad_group_source_settings.exceptions.CPMNegative as err:
+            raise exc.ValidationError(errors={"cpm": [str(err)]})
+
         except core.entity.settings.ad_group_source_settings.exceptions.CPCPrecisionExceeded as err:
             raise exc.ValidationError(
                 errors={
                     "cpc_cc": [
                         "CPC on {} cannot exceed {} decimal place{}.".format(
+                            err.data.get("source_name"),
+                            err.data.get("value"),
+                            "s" if err.data.get("value") != 1 else "",
+                        )
+                    ]
+                }
+            )
+
+        except core.entity.settings.ad_group_source_settings.exceptions.CPMPrecisionExceeded as err:
+            raise exc.ValidationError(
+                errors={
+                    "cpm": [
+                        "CPM on {} cannot exceed {} decimal place{}.".format(
                             err.data.get("source_name"),
                             err.data.get("value"),
                             "s" if err.data.get("value") != 1 else "",
@@ -832,8 +848,39 @@ class AdGroupSourceSettings(api_common.BaseApiView):
                 }
             )
 
+        except core.entity.settings.ad_group_source_settings.exceptions.MinimalCPMTooLow as err:
+            raise exc.ValidationError(
+                errors={
+                    "cpm": [
+                        "Minimum CPM on {} is {}.".format(
+                            err.data.get("source_name"),
+                            core.multicurrency.format_value_in_currency(
+                                err.data.get("value"), 2, decimal.ROUND_CEILING, ad_group_source.settings.get_currency()
+                            ),
+                        )
+                    ]
+                }
+            )
+
+        except core.entity.settings.ad_group_source_settings.exceptions.MaximalCPMTooHigh as err:
+            raise exc.ValidationError(
+                errors={
+                    "cpm": [
+                        "Maximum CPM on {} is {}.".format(
+                            err.data.get("source_name"),
+                            core.multicurrency.format_value_in_currency(
+                                err.data.get("value"), 2, decimal.ROUND_FLOOR, ad_group_source.settings.get_currency()
+                            ),
+                        )
+                    ]
+                }
+            )
+
         except core.entity.settings.ad_group_source_settings.exceptions.RTBSourcesCPCNegative as err:
             raise exc.ValidationError(errors={"cpc_cc": [str(err)]})
+
+        except core.entity.settings.ad_group_source_settings.exceptions.RTBSourcesCPMNegative as err:
+            raise exc.ValidationError(errors={"cpm": [str(err)]})
 
         except core.entity.settings.ad_group_source_settings.exceptions.CPCInvalid as err:
             raise exc.ValidationError(errors={"cpc_cc": [str(err)]})

@@ -17,22 +17,22 @@ class SourceType(models.Model, bcm_mixin.SourceTypeBCMMixin):
         verbose_name_plural = "Source Types"
 
     type = models.CharField(max_length=127, unique=True)
-
     available_actions = ArrayField(models.PositiveSmallIntegerField(), null=True, blank=True)
 
     min_cpc = models.DecimalField(max_digits=10, decimal_places=4, blank=True, null=True, verbose_name="Minimum CPC")
+    max_cpc = models.DecimalField(max_digits=10, decimal_places=4, blank=True, null=True, verbose_name="Maximum CPC")
+
+    min_cpm = models.DecimalField(max_digits=10, decimal_places=4, blank=True, null=True, verbose_name="Minimum CPM")
+    max_cpm = models.DecimalField(max_digits=10, decimal_places=4, blank=True, null=True, verbose_name="Maximum CPM")
+
+    cpc_decimal_places = models.PositiveSmallIntegerField(blank=True, null=True, verbose_name="CPC Decimal Places")
 
     min_daily_budget = models.DecimalField(
         max_digits=10, decimal_places=4, blank=True, null=True, verbose_name="Minimum Daily Spend Cap"
     )
-
-    max_cpc = models.DecimalField(max_digits=10, decimal_places=4, blank=True, null=True, verbose_name="Maximum CPC")
-
     max_daily_budget = models.DecimalField(
         max_digits=10, decimal_places=4, blank=True, null=True, verbose_name="Maximum Daily Spend Cap"
     )
-
-    cpc_decimal_places = models.PositiveSmallIntegerField(blank=True, null=True, verbose_name="CPC Decimal Places")
 
     delete_traffic_metrics_threshold = models.IntegerField(
         default=0,
@@ -51,6 +51,12 @@ class SourceType(models.Model, bcm_mixin.SourceTypeBCMMixin):
         ]:
             min_cpc = max(min_cpc, Decimal("0.25")) if min_cpc else Decimal("0.25")
         return min_cpc
+
+    def get_min_cpm(self, ad_group_settings, bcm_modifiers=None):
+        """ Some source types have different minimal CPMs depending on the settings.
+            Encode these special cases here. """
+        min_cpm = self.get_etfm_min_cpm(bcm_modifiers)
+        return min_cpm
 
     def can_update_state(self):
         return self.available_actions is not None and constants.SourceAction.CAN_UPDATE_STATE in self.available_actions

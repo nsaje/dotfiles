@@ -81,9 +81,9 @@
             </div>            
         </div>
 
-        <div class="form__group" ng-if="$ctrl.hasPermission('zemauth.can_set_ad_group_max_cpm')"
+        <div class="form__group" ng-if="$ctrl.hasPermission('zemauth.fea_can_use_cpm_buying')"
              ng-class="{'form--error': !!$ctrl.errors.maxCpm}">
-            <label class="form__label" for="cpm-input" is-internal="zemauth.can_set_ad_group_max_cpm">
+            <label class="form__label" for="cpm-input" is-internal="zemauth.fea_can_use_cpm_buying">
                 Maximum Bid CPM:
                 <zem-help-popover content="Maximum allowed CPM in this ad group." placement="top"></zem-help-popover>
             </label>

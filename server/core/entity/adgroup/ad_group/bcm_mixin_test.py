@@ -16,7 +16,7 @@ class MigrateToBcmV2Test(TestCase):
         account = magic_mixer.blend(core.entity.Account, uses_bcm_v2=False)
         campaign = magic_mixer.blend(core.entity.Campaign, account=account)
         self.ad_group = magic_mixer.blend(core.entity.AdGroup, campaign=campaign)
-        self.request = magic_mixer.blend_request_user(permissions=["can_set_ad_group_max_cpm"])
+        self.request = magic_mixer.blend_request_user(permissions=["fea_can_use_cpm_buying"])
         self.ad_group.settings.update(
             self.request,
             autopilot_state=constants.AdGroupSettingsAutopilotState.INACTIVE,

@@ -121,8 +121,8 @@ def _is_invalid(ag_source_setting, min_cpc, max_cpc, bcm_modifiers):
 
 
 def _get_bcm_min_max_cpcs(min_cpc, max_cpc, bcm_modifiers):
-    bcm_min_cpc = core.bcm.calculations.calculate_min_cpc(min_cpc, bcm_modifiers)
-    bcm_max_cpc = core.bcm.calculations.calculate_max_cpc(max_cpc, bcm_modifiers)
+    bcm_min_cpc = core.bcm.calculations.calculate_min_bid_value(min_cpc, bcm_modifiers)
+    bcm_max_cpc = core.bcm.calculations.calculate_max_bid_value(max_cpc, bcm_modifiers)
     return bcm_min_cpc, bcm_max_cpc
 
 

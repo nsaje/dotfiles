@@ -414,6 +414,7 @@ class AdGroupSettingsFormTest(TestCase):
 
         self.user = User.objects.get(pk=1)
         self.data = {
+            "bidding_type": constants.BiddingType.CPC,
             "state": constants.AdGroupRunningStatus.INACTIVE,
             "cpc_cc": "1.00",
             "max_cpm": "1.50",
@@ -443,6 +444,7 @@ class AdGroupSettingsFormTest(TestCase):
             "b1_sources_group_daily_budget": "5.00",
             "b1_sources_group_state": 2,
             "b1_sources_group_cpc_cc": Decimal("0.1"),
+            "b1_sources_group_cpm": Decimal("1.4"),
             "whitelist_publisher_groups": [1],
             "blacklist_publisher_groups": [1],
             "delivery_type": "1",
@@ -461,6 +463,7 @@ class AdGroupSettingsFormTest(TestCase):
         self.assertEqual(
             form.cleaned_data,
             {
+                "bidding_type": constants.BiddingType.CPC,
                 "state": constants.AdGroupRunningStatus.INACTIVE,
                 "cpc_cc": Decimal("1.00"),
                 "max_cpm": Decimal("1.50"),
@@ -489,6 +492,7 @@ class AdGroupSettingsFormTest(TestCase):
                 "b1_sources_group_daily_budget": Decimal("5.00"),
                 "b1_sources_group_state": 2,
                 "b1_sources_group_cpc_cc": Decimal("0.1"),
+                "b1_sources_group_cpm": Decimal("1.4"),
                 "whitelist_publisher_groups": [1],
                 "blacklist_publisher_groups": [1],
                 "delivery_type": 1,

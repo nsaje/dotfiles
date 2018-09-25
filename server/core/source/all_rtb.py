@@ -8,8 +8,10 @@ AllRTBSourceType = SourceType(
     id="source-type-0123456789",
     type="all-rtb",
     min_cpc=Decimal("0.01"),
+    min_cpm=Decimal("0.01"),  # TODO: CPM Buying
     min_daily_budget=Decimal("1.00"),
     max_cpc=Decimal("7.0"),
+    max_cpm=Decimal("50.0"),  # TODO: CPM Buying
     max_daily_budget=Decimal("10000.00"),
     cpc_decimal_places=4,
 )
@@ -21,6 +23,7 @@ AllRTBSource = Source(
     source_type=AllRTBSourceType,
     default_daily_budget_cc=Decimal("50.00"),
     default_cpc_cc=Decimal("0.4500"),
+    default_cpm=Decimal("0.6000"),  # TODO: CPM Buying
 )
 
 
