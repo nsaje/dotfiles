@@ -12,13 +12,11 @@ from .mv_helpers_normalized_stats import MVHelpersNormalizedStats
 
 @mock.patch("backtosql.generate_sql")
 @mock.patch("etl.redshift.unload_table_tz")
-@mock.patch("redshiftapi.db.get_write_stats_cursor")
-@mock.patch("redshiftapi.db.get_write_stats_transaction")
-@override_settings(S3_BUCKET_STATS="test-bucket")
+@override_settings(S3_BUCKET_STATS="test_bucket")
 class MVHNormalizedStatsTest(TestCase, backtosql.TestSQLMixin):
     fixtures = ["test_materialize_views"]
 
-    def test_generate(self, mock_transaction, mock_cursor, mock_unload, mock_backtosql):
+    def test_generate(self, mock_unload, mock_backtosql):
         spark_session = mock.MagicMock()
         mv = MVHelpersNormalizedStats(
             "asd", datetime.date(2016, 7, 1), datetime.date(2016, 7, 3), account_id=None, spark_session=spark_session
@@ -67,31 +65,18 @@ class MVHNormalizedStatsTest(TestCase, backtosql.TestSQLMixin):
                 ],
             },
         )
-        spark_session.run_file.assert_called_once_with(
-            "mvh_clean_stats.py",
-            bucket="test-bucket",
-            input_table="stats",
-            output_table="mvh_clean_stats",
-            prefix="spark",
-            sql=mock.ANY,
-            job_id="asd",
-        )
 
-        mock_cursor().__enter__().execute.assert_has_calls(
-            [
-                mock.call(mock.ANY),
-                mock.call(
-                    mock.ANY,
-                    {
-                        "s3_url": "s3://test-bucket/spark/asd/mvh_clean_stats",
-                        "credentials": "aws_access_key_id=bar;aws_secret_access_key=foo",
-                        "delimiter": "\t",
-                    },
-                ),
-            ]
+        self.assertEqual(2, spark_session.run_file.call_count)
+        spark_session.run_file.assert_any_call(
+            "load_csv_from_s3_to_table.py.tmpl",
+            s3_bucket="test_bucket",
+            s3_path="spark/asd/stats/*.gz",
+            table="stats",
+            schema=mock.ANY,
         )
+        spark_session.run_file.assert_any_call("sql_to_table.py.tmpl", table="mvh_clean_stats", sql=mock.ANY)
 
-    def test_generate_account_id(self, mock_transaction, mock_cursor, mock_unload, mock_backtosql):
+    def test_generate_account_id(self, mock_unload, mock_backtosql):
         spark_session = mock.MagicMock()
         mv = MVHelpersNormalizedStats(
             "asd", datetime.date(2016, 7, 1), datetime.date(2016, 7, 3), account_id=1, spark_session=spark_session
@@ -140,26 +125,13 @@ class MVHNormalizedStatsTest(TestCase, backtosql.TestSQLMixin):
                 ],
             },
         )
-        spark_session.run_file.assert_called_once_with(
-            "mvh_clean_stats.py",
-            bucket="test-bucket",
-            input_table="stats",
-            output_table="mvh_clean_stats",
-            prefix="spark",
-            sql=mock.ANY,
-            job_id="asd",
-        )
 
-        mock_cursor().__enter__().execute.assert_has_calls(
-            [
-                mock.call(mock.ANY),
-                mock.call(
-                    mock.ANY,
-                    {
-                        "s3_url": "s3://test-bucket/spark/asd/mvh_clean_stats",
-                        "credentials": "aws_access_key_id=bar;aws_secret_access_key=foo",
-                        "delimiter": "\t",
-                    },
-                ),
-            ]
+        self.assertEqual(2, spark_session.run_file.call_count)
+        spark_session.run_file.assert_any_call(
+            "load_csv_from_s3_to_table.py.tmpl",
+            s3_bucket="test_bucket",
+            s3_path="spark/asd/stats/*.gz",
+            table="stats",
+            schema=mock.ANY,
         )
+        spark_session.run_file.assert_any_call("sql_to_table.py.tmpl", table="mvh_clean_stats", sql=mock.ANY)

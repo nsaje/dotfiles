@@ -1,7 +1,6 @@
 import csv
 import io
 import logging
-import os.path
 from functools import partial
 
 from django.conf import settings
@@ -11,9 +10,6 @@ from utils import threads
 from . import constants
 
 logger = logging.getLogger(__name__)
-
-MATERIALIZED_VIEWS_S3_PREFIX = "materialized_views"
-MATERIALIZED_VIEWS_FILENAME = "{}_{}.csv"
 
 
 def _do_upload_csv(s3_path, generator, bucket_name=None):
@@ -27,39 +23,21 @@ def _do_upload_csv(s3_path, generator, bucket_name=None):
 
         bucket.put(s3_path, csvfile.getvalue())
 
+    return s3_path
 
-def upload_csv_async(table_name, date, job_id, generator):
-    logger.info('Create async CSV for table "%s", job %s', table_name, job_id)
-    s3_path = os.path.join(
-        MATERIALIZED_VIEWS_S3_PREFIX,
-        table_name,
-        date.strftime("%Y/%m/%d/"),
-        MATERIALIZED_VIEWS_FILENAME.format(table_name, job_id),
-    )
 
-    t = threads.AsyncFunction(partial(_do_upload_csv, s3_path, generator))
+def upload_csv_async(s3_path, generator, bucket_name=None):
+    logger.info("Create async CSV to: %s", s3_path)
+    t = threads.AsyncFunction(partial(_do_upload_csv, s3_path, generator, bucket_name=bucket_name))
     t.start()
 
     return t, s3_path
 
 
-def upload_csv(table_name, date, job_id, generator):
-    logger.info('Create CSV for table "%s", job %s', table_name, job_id)
-    s3_path = os.path.join(
-        MATERIALIZED_VIEWS_S3_PREFIX,
-        table_name,
-        date.strftime("%Y/%m/%d/"),
-        MATERIALIZED_VIEWS_FILENAME.format(table_name, job_id),
-    )
+def upload_csv(s3_path, generator, bucket_name=None):
+    logger.info("Create CSV to: %s", s3_path)
 
-    _do_upload_csv(s3_path, generator)
-    logger.info('CSV for table "%s", job %s uploaded', table_name, job_id)
-
-    return s3_path
-
-
-def upload_csv_without_job(table_name, generator, s3_path, bucket_name):
-    logger.info('Create CSV for table "%s"', table_name)
     _do_upload_csv(s3_path, generator, bucket_name=bucket_name)
-    logger.info('CSV for table "%s" uploaded', table_name)
+
+    logger.info("CSV to: %s uploaded", s3_path)
     return s3_path

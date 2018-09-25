@@ -1,4 +1,5 @@
 from .mv_master import MasterView
+from .mv_master_spark import MasterSpark
 from .mv_master_publishers import MasterPublishersView
 from .mv_conversions import MVConversions
 from .mv_touchpoint_conversions import MVTouchpointConversions
@@ -29,8 +30,9 @@ MATERIALIZED_VIEWS = [
     MVHelpersNormalizedStats,
     # Must be done before master, it is used there to generate empty rows for conversions
     MVTouchpointConversions,
-    MasterView,
+    MasterSpark,
     MasterPublishersView,
+    MasterView,
     MVConversions,
     # VIEW: Ad Group, TAB: Ads
     MasterDerivedView.create(

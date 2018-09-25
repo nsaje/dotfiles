@@ -13,14 +13,12 @@ from utils.magic_mixer import magic_mixer
 from .mv_helpers_currency_exchange_rates import MVHelpersCurrencyExchangeRates
 
 
-@mock.patch("redshiftapi.db.get_write_stats_cursor")
-@mock.patch("redshiftapi.db.get_write_stats_transaction")
 @mock.patch("utils.s3helpers.S3Helper")
 class MVHCurrencyExchangeRatesTest(TestCase, backtosql.TestSQLMixin):
     fixtures = ["test_materialize_views"]
 
     @override_settings(S3_BUCKET_STATS="test_bucket")
-    def test_generate(self, mock_s3helper, mock_transaction, mock_cursor):
+    def test_generate(self, mock_s3helper):
         magic_mixer.blend(
             models.CurrencyExchangeRate,
             date=datetime.date(2018, 1, 1),
@@ -40,15 +38,16 @@ class MVHCurrencyExchangeRatesTest(TestCase, backtosql.TestSQLMixin):
             exchange_rate=1.2,
         )
 
+        spark_session = mock.MagicMock()
         mv = MVHelpersCurrencyExchangeRates(
-            "asd", datetime.date(2018, 1, 1), datetime.date(2018, 1, 3), account_id=None
+            "asd", datetime.date(2018, 1, 1), datetime.date(2018, 1, 3), account_id=None, spark_session=spark_session
         )
 
         mv.generate()
 
         self.assertTrue(mock_s3helper.called)
         mock_s3helper().put.assert_called_with(
-            "materialized_views/mvh_currency_exchange_rates/2018/01/03/mvh_currency_exchange_rates_asd.csv",
+            "spark/asd/mvh_currency_exchange_rates/data.csv",
             textwrap.dedent(
                 """\
             2018-01-01\t1\t1.0000\r
@@ -61,34 +60,16 @@ class MVHCurrencyExchangeRatesTest(TestCase, backtosql.TestSQLMixin):
             ),
         )
 
-        mock_cursor().__enter__().execute.assert_has_calls(
+        self.assertEqual(spark_session.run_file.call_count, 2)
+        spark_session.run_file.assert_has_calls(
             [
                 mock.call(
-                    backtosql.SQLMatcher(
-                        """
-            CREATE TEMP TABLE mvh_currency_exchange_rates (
-                date date not null encode delta,
-                account_id integer not null encode lzo,
-                exchange_rate decimal(10, 4) encode lzo
-            ) sortkey(date, account_id);"""
-                    )
+                    "load_csv_from_s3_to_table.py.tmpl",
+                    s3_bucket="test_bucket",
+                    s3_path="spark/asd/mvh_currency_exchange_rates/data.csv",
+                    table="mvh_currency_exchange_rates",
+                    schema=mock.ANY,
                 ),
-                mock.call(
-                    backtosql.SQLMatcher(
-                        """
-            COPY mvh_currency_exchange_rates
-            FROM %(s3_url)s
-            FORMAT CSV
-            DELIMITER AS %(delimiter)s
-            BLANKSASNULL EMPTYASNULL
-            CREDENTIALS %(credentials)s
-            MAXERROR 0;"""
-                    ),
-                    {
-                        "credentials": "aws_access_key_id=bar;aws_secret_access_key=foo",
-                        "s3_url": "s3://test_bucket/materialized_views/mvh_currency_exchange_rates/2018/01/03/mvh_currency_exchange_rates_asd.csv",
-                        "delimiter": "\t",
-                    },
-                ),
+                mock.call("cache_table.py.tmpl", table="mvh_currency_exchange_rates"),
             ]
         )

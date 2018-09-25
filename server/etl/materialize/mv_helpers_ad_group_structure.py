@@ -1,11 +1,13 @@
-import backtosql
 import logging
+import os.path
+
+from django.conf import settings
 
 import dash.models
-from redshiftapi import db
 
-from etl import redshift
+from etl import constants
 from etl import s3
+from etl import spark
 from .materialize import Materialize
 
 logger = logging.getLogger(__name__)
@@ -19,19 +21,25 @@ class MVHelpersAdGroupStructure(Materialize):
 
     TABLE_NAME = "mvh_adgroup_structure"
     IS_TEMPORARY_TABLE = True
+    SPARK_COLUMNS = [
+        spark.Column("agency_id", "int"),
+        spark.Column("account_id", "int"),
+        spark.Column("campaign_id", "int"),
+        spark.Column("ad_group_id", "int"),
+    ]
 
     def generate(self, **kwargs):
-        s3_path = s3.upload_csv(self.TABLE_NAME, self.date_to, self.job_id, self.generate_rows)
+        s3_path = os.path.join(constants.SPARK_S3_PREFIX, self.job_id, self.TABLE_NAME, "data.csv")
+        s3.upload_csv(s3_path, self.generate_rows)
 
-        with db.get_write_stats_transaction():
-            with db.get_write_stats_cursor() as c:
-                sql = backtosql.generate_sql("etl_create_temp_table_mvh_adgroup_structure.sql", None)
-                c.execute(sql)
-
-                logger.info('Copying CSV to table "%s", job %s', self.TABLE_NAME, self.job_id)
-                sql, params = redshift.prepare_copy_query(s3_path, self.TABLE_NAME)
-                c.execute(sql, params)
-                logger.info('Copied CSV to table "%s", job %s', self.TABLE_NAME, self.job_id)
+        self.spark_session.run_file(
+            "load_csv_from_s3_to_table.py.tmpl",
+            table=self.TABLE_NAME,
+            s3_bucket=settings.S3_BUCKET_STATS,
+            s3_path=s3_path,
+            schema=spark.generate_schema(self.SPARK_COLUMNS),
+        )
+        self.spark_session.run_file("cache_table.py.tmpl", table=self.TABLE_NAME)
 
     def generate_rows(self):
         ad_groups = dash.models.AdGroup.objects.select_related("campaign", "campaign__account").all()

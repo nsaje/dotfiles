@@ -76,6 +76,8 @@ def _refresh(
     if account_id:
         validate_can_reprocess_account(account_id)
 
+    spark_session.run_file("initialize.py.tmpl")
+
     total_spend = {}
     if not skip_daily_statements:
         total_spend = daily_statements.reprocess_daily_statements(update_since.date(), account_id)
@@ -122,7 +124,7 @@ def _refresh(
             try:
                 if not skip_vacuum and not mv_class.IS_TEMPORARY_TABLE:
                     maintenance.vacuum(mv_class.TABLE_NAME)
-                if not skip_analyze:
+                if not skip_analyze and not mv_class.IS_TEMPORARY_TABLE:
                     maintenance.analyze(mv_class.TABLE_NAME)
             except Exception:
                 logger.exception("Vacuum and analyze skipped due to error")

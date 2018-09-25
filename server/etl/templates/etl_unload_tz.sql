@@ -10,6 +10,7 @@ ESCAPE
 NULL AS '$NA$'
 GZIP
 MANIFEST
+MAXFILESIZE AS 10 MB
 ;
 
 {% endautoescape %}
