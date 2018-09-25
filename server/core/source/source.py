@@ -61,12 +61,14 @@ class Source(models.Model):
     )
 
     default_cpm = models.DecimalField(
-        max_digits=10, decimal_places=4, default=Decimal("0.60"), verbose_name="Default CPM"
+        max_digits=10, decimal_places=4, default=Decimal("0.60"), blank=True, null=True, verbose_name="Default CPM"
     )
     default_mobile_cpm = models.DecimalField(
         max_digits=10,
         decimal_places=4,
         default=Decimal("0.60"),
+        blank=True,
+        null=True,
         verbose_name="Default CPM (if ad group is targeting mobile only)",
     )
 
