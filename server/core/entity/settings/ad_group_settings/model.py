@@ -202,7 +202,12 @@ class AdGroupSettings(
         max_digits=10, decimal_places=4, verbose_name="Bidder's Bid CPC", blank=True, null=True
     )
     b1_sources_group_cpm = models.DecimalField(
-        max_digits=10, decimal_places=4, default=core.source.AllRTBSourceType.min_cpm, verbose_name="Bidder's Bid CPM"
+        max_digits=10,
+        decimal_places=4,
+        default=core.source.AllRTBSourceType.min_cpm,
+        blank=True,
+        null=True,
+        verbose_name="Bidder's Bid CPM",
     )
     local_b1_sources_group_cpm = models.DecimalField(
         max_digits=10, decimal_places=4, verbose_name="Bidder's Bid CPM", blank=True, null=True
