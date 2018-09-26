@@ -14,10 +14,6 @@ angular.module('one.widgets').component('zemPublisherBidModifierExportImport', {
     ) {
         var $ctrl = this;
 
-        var adGroupId = zemNavigationNewService.getActiveEntityByType(
-            constants.entityType.AD_GROUP
-        ).id;
-
         $ctrl.hasPermission = zemPermissions.hasPermission;
         $ctrl.execute = execute;
         $ctrl.actions = [
@@ -53,17 +49,29 @@ angular.module('one.widgets').component('zemPublisherBidModifierExportImport', {
         }
 
         function downloadBidModifiers() {
-            download(adGroupId);
+            var adGroupId = zemNavigationNewService.getActiveEntityByType(
+                constants.entityType.AD_GROUP
+            );
+            if (adGroupId === null || adGroupId === undefined) {
+                return;
+            }
+            download(adGroupId.id);
         }
 
         function openImportModal() {
+            var adGroupId = zemNavigationNewService.getActiveEntityByType(
+                constants.entityType.AD_GROUP
+            );
+            if (adGroupId === undefined || adGroupId === null) {
+                return;
+            }
             $uibModal.open({
                 component: 'zemPublisherBidModifierUploadModal',
                 backdrop: 'static',
                 keyboard: false,
                 windowClass: 'publisher-group-upload',
                 resolve: {
-                    adGroupId: adGroupId,
+                    adGroupId: adGroupId.id,
                 },
             });
         }
