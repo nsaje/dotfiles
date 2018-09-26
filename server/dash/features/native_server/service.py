@@ -9,7 +9,11 @@ AGENCY_MEDIAMOND = 196
 AGENCY_AMMET = 289
 
 AD_GROUP_SETTINGS_CREATE_HACKS_PER_AGENCY = {
-    AGENCY_RCS: {"target_regions": [], "exclusion_target_regions": []},
+    AGENCY_RCS: {
+        "target_regions": [],
+        "exclusion_target_regions": [],
+        "delivery_type": dash.constants.AdGroupDeliveryType.ACCELERATED,
+    },
     AGENCY_AMMET: {"target_regions": ["AU"], "exclusion_target_regions": []},
     AGENCY_MEDIAMOND: {"tracking_code": "utm_source=Zemanta&utm_medium=referral"},
 }
