@@ -38,16 +38,7 @@ def refresh_materialized_rds_table(s3_path, table_name, bucket_name):
     with db.get_write_stats_cursor() as c:
         logger.info('Unloading table "%s" to S3 path "%s"', table_name, s3_path)
         sql, params = prepare_copy_query(
-            s3_path,
-            table_name,
-            format=None,
-            removequotes=False,
-            escape=True,
-            is_manifest=False,
-            null_as="$NA$",
-            gzip=False,
-            bucket_name=bucket_name,
-            truncate_columns=True,
+            s3_path, table_name, null_as="$NA$", bucket_name=bucket_name, truncate_columns=True
         )
         c.execute(sql, params)
         logger.info('Unloaded table "%s" to S3 path "%s"', table_name, s3_path)
@@ -170,6 +161,7 @@ def prepare_copy_query(
     gzip=False,
     bucket_name=None,
     truncate_columns=False,
+    delimiter=constants.CSV_DELIMITER,
 ):
     sql = backtosql.generate_sql(
         "etl_copy.sql",
@@ -188,7 +180,7 @@ def prepare_copy_query(
     s3_url = S3_FILE_URI.format(bucket_name=bucket_name or settings.S3_BUCKET_STATS, key=s3_path)
     credentials = _get_aws_credentials()
 
-    return sql, {"s3_url": s3_url, "credentials": credentials, "delimiter": constants.CSV_DELIMITER}
+    return sql, {"s3_url": s3_url, "credentials": credentials, "delimiter": delimiter}
 
 
 def _get_aws_credentials():

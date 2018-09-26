@@ -57,12 +57,7 @@ class RDSAgencyTest(TestCase):
         mock_prepare_copy_query.assert_called_with(
             "rds-materialization/agency.csv",
             "mv_rds_agency",
-            format=None,
-            removequotes=False,
-            escape=True,
-            is_manifest=False,
             null_as="$NA$",
-            gzip=False,
             bucket_name="prodops-test",
             truncate_columns=True,
         )
