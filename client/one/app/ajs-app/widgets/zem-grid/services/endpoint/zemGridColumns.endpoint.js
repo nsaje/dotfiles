@@ -2027,7 +2027,7 @@ angular
         COLUMNS.bidModifier.exceptions.breakdowns = [
             constants.breakdown.PUBLISHER,
         ];
-        COLUMNS.bidModifier.exceptions.level = [constants.level.AD_GROUPS];
+        COLUMNS.bidModifier.exceptions.levels = [constants.level.AD_GROUPS];
         COLUMNS.bidModifier.exceptions.breakdownBaseLevelOnly = true;
 
         // Exceptions (id columns)
