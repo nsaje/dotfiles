@@ -8,20 +8,17 @@ angular
         zemNavigationNewService,
         zemUploadService
     ) {
-        // eslint-disable-line max-len
-
         this.createEntity = createEntity;
 
-        function createEntity(entityType, parent) {
-            if (entityType === constants.entityType.CONTENT_AD) {
-                return createContentAds(parent);
+        function createEntity(entityProperties) {
+            if (entityProperties.type === constants.entityType.CONTENT_AD) {
+                return createContentAds(entityProperties.parent);
             }
 
-            var parentId = parent ? parent.id : undefined;
-            return zemEntityService.createEntity(entityType, parentId).then(
+            return zemEntityService.createEntity(entityProperties).then(
                 function(entity) {
-                    entity.type = entityType;
-                    reloadCache(parent, entity);
+                    entity.type = entityProperties.type;
+                    reloadCache(entityProperties.parent, entity);
                     zemNavigationNewService.navigateTo(entity, {
                         settings: 'create',
                     });

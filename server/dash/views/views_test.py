@@ -249,7 +249,9 @@ class AccountCampaignsTest(TestCase):
     def test_put(self, mock_send):
         campaign_name = "New campaign"
 
-        response = self.client.put(reverse("account_campaigns", kwargs={"account_id": "1"}))
+        response = self.client.put(
+            reverse("account_campaigns", kwargs={"account_id": "1"}), data=json.dumps({"campaign_type": "1"})
+        )
 
         self.assertEqual(response.status_code, 200)
 

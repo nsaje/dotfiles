@@ -700,10 +700,13 @@ class AccountCampaigns(api_common.BaseApiView):
 
         account = helpers.get_account(request.user, account_id)
 
-        name = core.entity.helpers.create_default_name(models.Campaign.objects.filter(account=account), "New campaign")
+        form = forms.CampaignForm(json.loads(request.body))
+        if not form.is_valid():
+            raise exc.ValidationError(errors=dict(form.errors))
 
+        name = core.entity.helpers.create_default_name(models.Campaign.objects.filter(account=account), "New campaign")
+        type = form.cleaned_data.get("campaign_type")
         language = constants.Language.ENGLISH if self.rest_proxy else None
-        type = constants.CampaignType.CONTENT if self.rest_proxy else None
         campaign = models.Campaign.objects.create(request, account, name, language=language, type=type, send_mail=True)
         native_server.apply_campaign_create_hacks(request, campaign)
 

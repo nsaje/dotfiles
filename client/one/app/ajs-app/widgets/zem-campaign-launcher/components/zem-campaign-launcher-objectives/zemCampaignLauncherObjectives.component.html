@@ -1,25 +1,7 @@
 <div class="custom-panel">
     <h2>What is your campaign objective?</h2>
-    <div class="clearfix">
-        <button class="zem-campaign-launcher-objectives__objective zem-campaign-launcher-objectives__objective--content button button--outline"
-                ng-click="$ctrl.selectObjective($ctrl.campaignObjective.CONTENT_DISTRIBUTION)">
-            <strong>Native Content Distribution</strong>
-            <span>Drive visits to your site, blog posts or media reports and optimize for on-site engagement metrics.</span>
-        </button>
-        <button class="zem-campaign-launcher-objectives__objective zem-campaign-launcher-objectives__objective--video button button--outline"
-                ng-click="$ctrl.selectObjective($ctrl.campaignObjective.VIDEO_ADVERTISING)">
-            <strong>Native Video Advertising</strong>
-            <span>Get people to watch your videos. Optimize for CPV, CPCV or other, video related objectives.</span>
-        </button>
-        <button class="zem-campaign-launcher-objectives__objective zem-campaign-launcher-objectives__objective--conversion-marketing button button--outline"
-                ng-click="$ctrl.selectObjective($ctrl.campaignObjective.CONVERSION_MARKETING)">
-            <strong>Native Conversion Marketing</strong>
-            <span>Get more people to signup for your product and optimize for CPA or ROAS.</span>
-        </button>
-        <button class="zem-campaign-launcher-objectives__objective zem-campaign-launcher-objectives__objective--mobile-app button button--outline"
-                ng-click="$ctrl.selectObjective($ctrl.campaignObjective.MOBILE_APP_ADVERTISING)">
-            <strong>Native Mobile App Advertising</strong>
-            <span>Drive app installs and optimize for CPI or arbitrary post-install event.</span>
-        </button>
-    </div>
+    <zem-campaign-type-selector
+        class="zem-campaign-type-selector"
+        (on-select)="$ctrl.selectObjective($event)"
+    ></zem-campaign-type-selector>
 </div>

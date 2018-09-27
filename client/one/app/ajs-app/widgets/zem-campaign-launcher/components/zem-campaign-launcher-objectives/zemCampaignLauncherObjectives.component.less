@@ -1,103 +1,11 @@
 @import 'variables';
 
-.zem-campaign-launcher-objectives {
-    .zem-campaign-launcher-objectives__objective {
-        display: block;
-        width: 24%;
-        float: left;
-        margin-right: 1.33333%;
-        position: relative;
-        height: 180px;
-        padding: 80px 10px 20px 10px;
-        text-align: center;
-
-        &::before {
-            content: " ";
-            display: block;
-            position: absolute;
-            width: 40px;
-            height: 40px;
-            left: 50%;
-            top: 20px;
-            margin-left: -20px;
-            background: center center no-repeat;
-        }
-
-        strong {
-            display: block;
-            font-size: 16px;
-            line-height: 20px;
-            font-weight: 700;
-        }
-
-        span {
-            display: block;
-            font-size: @default-font-size;
-            line-height: @default-font-size+4;
-            font-weight: normal;
-            margin-top: 5px;
-        }
+.zem-campaign-launcher-objectives .zem-campaign-type-selector__type-container {
+    @media only screen and (min-width: 500px) {
+        flex: 0 0 50%;
     }
 
-    .zem-campaign-launcher-objectives__objective--content::before {
-        background-image: url('@{images-folder}/campaign-launcher-content-sec.svg');
-    }
-
-    .zem-campaign-launcher-objectives__objective--video::before {
-        background-image: url('@{images-folder}/campaign-launcher-video-sec.svg');
-    }
-
-    .zem-campaign-launcher-objectives__objective--conversion-marketing::before {
-        background-image: url('@{images-folder}/campaign-launcher-conversion-sec.svg');
-    }
-
-    .zem-campaign-launcher-objectives__objective--mobile-app {
-        margin-right: 0;
-    }
-
-    .zem-campaign-launcher-objectives__objective--mobile-app::before {
-        background-image: url('@{images-folder}/campaign-launcher-mobile-app-sec.svg');
-    }
-}
-
-///////////////////////////
-// RESPONSIVE //
-///////////////////////////
-
-@media only screen and (max-width: @desktop-breakpoint) {
-    .zem-campaign-launcher-objectives {
-        .zem-campaign-launcher-objectives__objective {
-            height: 220px;
-        }
-    }
-}
-
-@media only screen and (max-width: @tablet-breakpoint) {
-    .zem-campaign-launcher-objectives {
-        .zem-campaign-launcher-objectives__objective {
-            width: 49%;
-            float: left;
-            margin: 0 2% 2% 0;
-            height: 200px;
-
-            &:nth-child(even) {
-                margin-right: 0;
-            }
-        }
-    }
-}
-
-@media only screen and (max-width: @mobile-breakpoint) {
-    .zem-campaign-launcher-objectives {
-        .zem-campaign-launcher-objectives__objective {
-            width: 100%;
-            float: none;
-            margin: 0 0 @default-spacing 0;
-            height: auto;
-
-            &:last-child {
-                margin-bottom: 0;
-            }
-        }
+    @media only screen and (min-width: 1000px) {
+        flex: 0 0 25%;
     }
 }

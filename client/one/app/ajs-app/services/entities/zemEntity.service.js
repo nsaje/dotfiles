@@ -31,8 +31,10 @@ angular
             return getEntityService(entityType).update(id, data);
         }
 
-        function createEntity(entityType, parentId) {
-            return getEntityService(entityType).create(parentId);
+        function createEntity(entityProperties) {
+            return getEntityService(entityProperties.type).create(
+                entityProperties
+            );
         }
 
         function cloneEntity(entityType, id, data) {

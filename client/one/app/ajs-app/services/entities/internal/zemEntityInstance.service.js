@@ -7,8 +7,6 @@ angular
         zemPubSubService,
         zemCloneAdGroupService
     ) {
-        // eslint-disable-line max-len
-
         function EntityInstanceService(entityType) {
             var EVENTS = {
                 ON_ENTITY_CREATED: 'zem-entity-created',
@@ -31,9 +29,17 @@ angular
             //
             // Internal
             //
-            function create(parentId) {
+            function create(entityProperties) {
+                var parentId = entityProperties.parent
+                    ? entityProperties.parent.id
+                    : null;
+
+                var props = angular.copy(entityProperties);
+                delete props.type;
+                delete props.parent;
+
                 return zemEntityInstanceEndpoint
-                    .create(entityType, parentId)
+                    .create(entityType, parentId, props)
                     .then(function(data) {
                         pubsub.notify(EVENTS.ON_ENTITY_CREATED, {
                             entityType: entityType,

@@ -1,4 +1,4 @@
-describe('component: zemCreateEntityAction', function() {
+describe('zemCreateEntityActionService', function() {
     var $q, $rootScope, $state;
     var zemEntityService,
         zemUploadService,
@@ -21,36 +21,37 @@ describe('component: zemCreateEntityAction', function() {
 
     it('should create Accounts using zemEntityService', function() {
         spyOn(zemEntityService, 'createEntity').and.callThrough();
-        zemCreateEntityActionService.createEntity(constants.entityType.ACCOUNT);
+        var entityProperties = {
+            type: constants.entityType.ACCOUNT,
+            parent: undefined,
+        };
+        zemCreateEntityActionService.createEntity(entityProperties);
         expect(zemEntityService.createEntity).toHaveBeenCalledWith(
-            constants.entityType.ACCOUNT,
-            undefined
+            entityProperties
         );
     });
 
     it('should create Campaigns using zemEntityService', function() {
         spyOn(zemEntityService, 'createEntity').and.callThrough();
-        var parent = {id: -1};
-        zemCreateEntityActionService.createEntity(
-            constants.entityType.CAMPAIGN,
-            parent
-        );
+        var entityProperties = {
+            type: constants.entityType.CAMPAIGN,
+            parent: {id: -1},
+        };
+        zemCreateEntityActionService.createEntity(entityProperties);
         expect(zemEntityService.createEntity).toHaveBeenCalledWith(
-            constants.entityType.CAMPAIGN,
-            -1
+            entityProperties
         );
     });
 
     it('should create AdGroups using zemEntityService', function() {
         spyOn(zemEntityService, 'createEntity').and.callThrough();
-        var parent = {id: -1};
-        zemCreateEntityActionService.createEntity(
-            constants.entityType.AD_GROUP,
-            parent
-        );
+        var entityProperties = {
+            type: constants.entityType.AD_GROUP,
+            parent: {id: -1},
+        };
+        zemCreateEntityActionService.createEntity(entityProperties);
         expect(zemEntityService.createEntity).toHaveBeenCalledWith(
-            constants.entityType.AD_GROUP,
-            -1
+            entityProperties
         );
     });
 
@@ -58,10 +59,10 @@ describe('component: zemCreateEntityAction', function() {
         spyOn(zemEntityService, 'createEntity').and.callThrough();
         spyOn(zemUploadService, 'openUploadModal').and.callThrough();
         var parent = {id: -1};
-        zemCreateEntityActionService.createEntity(
-            constants.entityType.CONTENT_AD,
-            parent
-        );
+        zemCreateEntityActionService.createEntity({
+            type: constants.entityType.CONTENT_AD,
+            parent: parent,
+        });
         expect(zemEntityService.createEntity).not.toHaveBeenCalled();
         expect(zemUploadService.openUploadModal).toHaveBeenCalled();
     });
@@ -81,18 +82,20 @@ describe('component: zemCreateEntityAction', function() {
         it('should reload zemNavigationCache', function() {
             spyOn(zemNavigationService, 'addAccountToCache');
 
-            zemCreateEntityActionService.createEntity(
-                constants.entityType.ACCOUNT
-            );
+            zemCreateEntityActionService.createEntity({
+                type: constants.entityType.ACCOUNT,
+                parent: undefined,
+            });
             $rootScope.$apply();
             expect(zemNavigationService.addAccountToCache).toHaveBeenCalled();
         });
 
         it('should navigate to newly created entity', function() {
             spyOn($state, 'go');
-            zemCreateEntityActionService.createEntity(
-                constants.entityType.ACCOUNT
-            );
+            zemCreateEntityActionService.createEntity({
+                type: constants.entityType.ACCOUNT,
+                parent: undefined,
+            });
             $rootScope.$apply();
             expect($state.go).toHaveBeenCalledWith('v2.analytics', {
                 settings: 'create',

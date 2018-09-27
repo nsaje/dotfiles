@@ -19,13 +19,14 @@ describe('zemEntityInstance', function() {
         var service = zemEntityInstanceService.createInstance(
             constants.entityType.AD_GROUP
         );
-        service.create(1);
+        service.create({parent: {id: 1}});
         service.get(1);
         service.update(1, {settings: {}});
 
         expect(zemEntityInstanceEndpoint.create).toHaveBeenCalledWith(
             constants.entityType.AD_GROUP,
-            1
+            1,
+            {}
         );
         expect(zemEntityInstanceEndpoint.get).toHaveBeenCalledWith(
             constants.entityType.AD_GROUP,
@@ -49,7 +50,7 @@ describe('zemEntityInstance', function() {
             return $q.resolve({});
         });
 
-        service.create(1);
+        service.create({parent: {id: 1}});
         $rootScope.$apply();
         expect(spyOnCreated).toHaveBeenCalledWith(jasmine.any(Object), {
             entityType: constants.entityType.AD_GROUP,

@@ -137,7 +137,7 @@ class CampaignType(ConstantBase):
     MOBILE = 4
 
     _VALUES = {
-        CONTENT: "Native Content Distribution",
+        CONTENT: "Native Ad Campaign",
         VIDEO: "Native Video Advertising",
         CONVERSION: "Native Conversion Marketing",
         MOBILE: "Native Mobile App Advertising",

@@ -1,0 +1,66 @@
+@import 'variables';
+
+.zem-campaign-type-selector {
+    display: flex;
+    flex-wrap: wrap;
+    margin-top: -@default-spacing;
+    margin-left: -@default-spacing;
+    align-content: stretch;
+}
+
+.zem-campaign-type-selector__type-container {
+    flex: 0 0 100%;
+    padding-top: @default-spacing;
+    padding-left: @default-spacing;
+}
+
+.zem-campaign-type-selector__type {
+    position: relative;
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+    padding: 80px 10px 20px;
+    text-align: center;
+
+    &::before {
+        content: '';
+        display: block;
+        position: absolute;
+        width: 40px;
+        height: 40px;
+        left: 50%;
+        top: 20px;
+        margin-left: -20px;
+        background: center center no-repeat;
+    }
+}
+
+.zem-campaign-type-selector__type--content::before {
+    background-image: url('@{images-folder}/campaign-launcher-content-sec.svg');
+}
+
+.zem-campaign-type-selector__type--video::before {
+    background-image: url('@{images-folder}/campaign-launcher-video-sec.svg');
+}
+
+.zem-campaign-type-selector__type--conversion::before {
+    background-image: url('@{images-folder}/campaign-launcher-conversion-sec.svg');
+}
+
+.zem-campaign-type-selector__type--mobile::before {
+    background-image: url('@{images-folder}/campaign-launcher-mobile-app-sec.svg');
+}
+
+.zem-campaign-type-selector__type-name {
+    font-size: 15px;
+    line-height: 18px;
+    font-weight: 700;
+}
+
+.zem-campaign-type-selector__type-description {
+    margin-top: 8px;
+    font-size: @default-font-size;
+    line-height: @default-font-size+4;
+}

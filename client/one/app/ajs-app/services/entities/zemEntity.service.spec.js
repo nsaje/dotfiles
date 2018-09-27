@@ -53,13 +53,29 @@ describe('zemEntityService', function() {
         spyOn(zemCampaignService, 'create').and.callThrough();
         spyOn(zemAdGroupService, 'create').and.callThrough();
 
-        zemEntityService.createEntity(constants.entityType.ACCOUNT);
-        zemEntityService.createEntity(constants.entityType.CAMPAIGN, 2);
-        zemEntityService.createEntity(constants.entityType.AD_GROUP, 3);
+        var accountProperties = {type: constants.entityType.ACCOUNT};
+        var campaignProperties = {
+            type: constants.entityType.CAMPAIGN,
+            parent: {id: 2},
+        };
+        var adGroupProperties = {
+            type: constants.entityType.AD_GROUP,
+            parent: {id: 3},
+        };
 
-        expect(zemAccountService.create).toHaveBeenCalledWith(undefined);
-        expect(zemCampaignService.create).toHaveBeenCalledWith(2);
-        expect(zemAdGroupService.create).toHaveBeenCalledWith(3);
+        zemEntityService.createEntity(accountProperties);
+        zemEntityService.createEntity(campaignProperties);
+        zemEntityService.createEntity(adGroupProperties);
+
+        expect(zemAccountService.create).toHaveBeenCalledWith(
+            accountProperties
+        );
+        expect(zemCampaignService.create).toHaveBeenCalledWith(
+            campaignProperties
+        );
+        expect(zemAdGroupService.create).toHaveBeenCalledWith(
+            adGroupProperties
+        );
 
         $httpBackend.expectPUT('/api/accounts/');
         $httpBackend.expectPUT('/api/accounts/2/campaigns/');

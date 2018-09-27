@@ -22,9 +22,9 @@ describe('zemEntityInstanceEndpoint', function() {
     });
 
     it('should call correct CREATE URLs', function() {
-        zemEntityInstanceEndpoint.create(constants.entityType.ACCOUNT, 1);
-        zemEntityInstanceEndpoint.create(constants.entityType.CAMPAIGN, 1);
-        zemEntityInstanceEndpoint.create(constants.entityType.AD_GROUP, 1);
+        zemEntityInstanceEndpoint.create(constants.entityType.ACCOUNT, 1, {});
+        zemEntityInstanceEndpoint.create(constants.entityType.CAMPAIGN, 1, {});
+        zemEntityInstanceEndpoint.create(constants.entityType.AD_GROUP, 1, {});
 
         $httpBackend.expect('PUT', '/api/accounts/');
         $httpBackend.expect('PUT', '/api/accounts/1/campaigns/');

@@ -6,12 +6,12 @@ angular.module('one.widgets').component('zemCreateEntityAction', {
     controller: function(
         $state,
         $location,
+        $uibModal,
         zemCreateEntityActionService,
         zemToastsService,
         zemNavigationNewService,
         zemPermissions
     ) {
-        // eslint-disable-line max-len
         var $ctrl = this;
         var activeAccount = zemNavigationNewService.getActiveAccount();
         var MAP_PARENT_TYPE = {};
@@ -29,7 +29,7 @@ angular.module('one.widgets').component('zemCreateEntityAction', {
         };
         MAIN_ACTIONS[constants.entityType.CAMPAIGN] = {
             name: 'Campaign',
-            callback: createEntity,
+            callback: showCampaignCreatorModal,
         };
         MAIN_ACTIONS[constants.entityType.AD_GROUP] = {
             name: 'Ad group',
@@ -52,7 +52,6 @@ angular.module('one.widgets').component('zemCreateEntityAction', {
         }
 
         $ctrl.createInProgress = false;
-        $ctrl.createEntity = createEntity;
 
         $ctrl.$onInit = function() {
             $ctrl.entityType =
@@ -65,16 +64,39 @@ angular.module('one.widgets').component('zemCreateEntityAction', {
                 ADDITIONAL_ACTIONS[$ctrl.entityType] || [];
         };
 
-        function createEntity() {
+        function createEntity(entityProperties) {
+            entityProperties = entityProperties || {};
+            entityProperties.type = $ctrl.entityType;
+            entityProperties.parent = $ctrl.parentEntity;
+
             $ctrl.createInProgress = true;
             zemCreateEntityActionService
-                .createEntity($ctrl.entityType, $ctrl.parentEntity)
+                .createEntity(entityProperties)
                 .catch(function(data) {
                     zemToastsService.error(data.data.data, {timeout: 7000});
                 })
                 .finally(function() {
                     $ctrl.createInProgress = false;
                 });
+        }
+
+        function createCampaign(campaignType) {
+            createEntity({campaignType: campaignType});
+        }
+
+        function showCampaignCreatorModal() {
+            var campaignType$ = $uibModal.open({
+                // Use a proxy component in order to be able to use downgraded zem-campaign-creator-modal component
+                controllerAs: '$ctrl',
+                template:
+                    '<zem-campaign-creator-modal class="zem-campaign-creator-modal" (on-close)="$ctrl.close($event)"></zem-campaign-creator-modal>',
+                controller: function($uibModalInstance) {
+                    this.close = $uibModalInstance.close;
+                },
+                windowClass: 'zem-campaign-creator-uib-modal',
+            }).result;
+
+            campaignType$.then(createCampaign);
         }
 
         function openCampaignLauncher() {

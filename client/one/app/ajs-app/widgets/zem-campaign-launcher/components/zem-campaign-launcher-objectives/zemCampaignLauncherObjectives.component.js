@@ -11,7 +11,6 @@ angular.module('one').component('zemCampaignLauncherObjectives', {
 
         $ctrl.$onInit = function() {
             $ctrl.state = $ctrl.stateService.getState();
-            $ctrl.campaignObjective = constants.campaignObjective;
         };
 
         function selectObjective(objective) {

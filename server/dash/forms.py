@@ -733,6 +733,10 @@ class CampaignGoalForm(forms.Form):
         return goal_type
 
 
+class CampaignForm(forms.Form):
+    campaign_type = forms.TypedChoiceField(choices=constants.CampaignType.get_choices(), coerce=int, required=True)
+
+
 class CampaignAdminForm(forms.ModelForm, CustomFlagsFormMixin):
     class Meta:
         model = models.Campaign

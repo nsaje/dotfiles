@@ -9,7 +9,7 @@
                                       batch-id="$ctrl.state.fields.uploadBatch"
                                       batch-name="$ctrl.state.creatives.batchName"
                                       candidates="$ctrl.state.creatives.candidates"
-                                      show-video-upload="$ctrl.state.campaignObjective === $ctrl.campaignObjective.VIDEO_ADVERTISING"
+                                      show-video-upload="$ctrl.state.campaignObjective === $ctrl.campaignTypes.VIDEO"
                                       edit-form-api="$ctrl.state.creatives.editFormApi"
                                       status-updated-callback="$ctrl.stateService.validateFields">
         </zem-upload-content-ad-picker>

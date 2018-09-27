@@ -207,7 +207,7 @@ export const APP_OPTIONS = {
     ],
     campaignTypes: [
         {
-            name: 'Native Content Distribution',
+            name: 'Native Ad Campaign',
             value: APP_CONSTANTS.campaignTypes.CONTENT,
         },
         {

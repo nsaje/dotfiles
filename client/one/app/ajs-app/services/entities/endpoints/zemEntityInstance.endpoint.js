@@ -3,10 +3,9 @@ angular
     .service('zemEntityInstanceEndpoint', function(
         $http,
         $q,
-        zemEntityConverter
+        zemEntityConverter,
+        zemUtils
     ) {
-        // eslint-disable-line max-len
-
         //
         // Public API
         //
@@ -14,12 +13,16 @@ angular
         this.get = get;
         this.update = update;
 
-        function create(entityType, parentId) {
+        function create(entityType, parentId, entityProperties) {
             var deferred = $q.defer();
             var url = getCreateUrl(entityType, parentId);
+            var data =
+                Object.keys(entityProperties).length === 0
+                    ? null
+                    : zemUtils.convertToUnderscore(entityProperties);
 
             $http
-                .put(url)
+                .put(url, data)
                 .success(function(data) {
                     deferred.resolve(data.data);
                 })

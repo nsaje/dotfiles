@@ -1,0 +1,44 @@
+<div class="zem-campaign-type-selector__type-container">
+    <button class="button button--outline zem-campaign-type-selector__type zem-campaign-type-selector__type--content"
+            (click)="onSelect.emit(CAMPAIGN_TYPE.CONTENT)">
+        <span class="zem-campaign-type-selector__type-name">
+            Native Ad Campaign
+        </span>
+        <span class="zem-campaign-type-selector__type-description">
+            Drive visits to your site, blog posts or media reports and optimize for on-site engagement metrics.
+        </span>
+    </button>
+</div>
+<div class="zem-campaign-type-selector__type-container">
+    <button class="button button--outline zem-campaign-type-selector__type zem-campaign-type-selector__type--video"
+            (click)="onSelect.emit(CAMPAIGN_TYPE.VIDEO)">
+        <span class="zem-campaign-type-selector__type-name">
+            Native Video Advertising
+        </span>
+        <span class="zem-campaign-type-selector__type-description">
+            Get people to watch your videos. Optimize for CPV, CPCV or other, video related objectives.
+        </span>
+    </button>
+</div>
+<div class="zem-campaign-type-selector__type-container">
+    <button class="button button--outline zem-campaign-type-selector__type zem-campaign-type-selector__type--conversion"
+            (click)="onSelect.emit(CAMPAIGN_TYPE.CONVERSION)">
+        <span class="zem-campaign-type-selector__type-name">
+            Native Conversion Marketing
+        </span>
+        <span class="zem-campaign-type-selector__type-description">
+            Get more people to signup for your product and optimize for CPA or ROAS.
+        </span>
+    </button>
+</div>
+<div class="zem-campaign-type-selector__type-container">
+    <button class="button button--outline zem-campaign-type-selector__type zem-campaign-type-selector__type--mobile"
+            (click)="onSelect.emit(CAMPAIGN_TYPE.MOBILE)">
+        <span class="zem-campaign-type-selector__type-name">
+            Native Mobile App Advertising
+        </span>
+        <span class="zem-campaign-type-selector__type-description">
+            Drive app installs and optimize for CPI or arbitrary post-install event.
+        </span>
+    </button>
+</div>

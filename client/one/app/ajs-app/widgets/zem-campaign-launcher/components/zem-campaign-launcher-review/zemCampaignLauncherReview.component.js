@@ -1,4 +1,5 @@
 require('./zemCampaignLauncherReview.component.less');
+var constantsHelpers = require('../../../../../shared/helpers/constants.helpers');
 
 angular.module('one').component('zemCampaignLauncherReview', {
     bindings: {
@@ -50,9 +51,13 @@ angular.module('one').component('zemCampaignLauncherReview', {
         }
 
         function getLanguageName(language) {
-            for (var i = 0; i < options.languages.length; i++) {
-                if (options.languages[i].value === language) {
-                    return options.languages[i].name;
+            var languages = constantsHelpers.convertToRestApiCompliantOptions(
+                options.languages,
+                constants.language
+            );
+            for (var i = 0; i < languages.length; i++) {
+                if (languages[i].value === language) {
+                    return languages[i].name;
                 }
             }
         }

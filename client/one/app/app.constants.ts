@@ -20,6 +20,13 @@ export const CURRENCY_SYMBOL = {
     [CURRENCY.CHF]: 'CHF',
 };
 
+export const CAMPAIGN_TYPE = {
+    CONTENT: 1,
+    VIDEO: 2,
+    CONVERSION: 3,
+    MOBILE: 4,
+};
+
 export const APP_CONSTANTS = {
     /**
      * Max. selected media sources in on sources tabs.
@@ -51,12 +58,7 @@ export const APP_CONSTANTS = {
         MANAGED: 6,
         PAAS: 7,
     },
-    campaignTypes: {
-        CONTENT: 1,
-        VIDEO: 2,
-        CONVERSION: 3,
-        MOBILE: 4,
-    },
+    campaignTypes: CAMPAIGN_TYPE,
     currency: CURRENCY,
     infoboxStatus: {
         ACTIVE: 'active',
@@ -953,12 +955,6 @@ export const APP_CONSTANTS = {
         SIMPLIFIED_CHINESE: 'zh_CN',
         TRADITIONAL_CHINESE: 'zh_TW',
         OTHER: 'any',
-    },
-    campaignObjective: {
-        CONTENT_DISTRIBUTION: 1,
-        VIDEO_ADVERTISING: 2,
-        CONVERSION_MARKETING: 3,
-        MOBILE_APP_ADVERTISING: 4,
     },
     promotionGoal: {
         BRAND_BUILDING: 1,

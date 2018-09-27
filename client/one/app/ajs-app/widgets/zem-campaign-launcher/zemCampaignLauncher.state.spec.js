@@ -101,15 +101,13 @@ describe('zemCampaignLauncherStateService', function() {
         );
         expect(stateService.getState().campaignObjective).toEqual(null);
 
-        stateService.initLauncherWithObjective(
-            constants.campaignObjective.CONTENT_DISTRIBUTION
-        );
+        stateService.initLauncherWithObjective(constants.campaignTypes.CONTENT);
         expect(stateService.getState().orderedSteps.length).toBeGreaterThan(1);
         expect(stateService.getState().currentStep).toEqual(
             stateService.getState().orderedSteps[1]
         );
         expect(stateService.getState().campaignObjective).toEqual(
-            constants.campaignObjective.CONTENT_DISTRIBUTION
+            constants.campaignTypes.CONTENT
         );
         expect(stateService.getState().fields).toEqual({
             campaignName: 'default campaign name',
