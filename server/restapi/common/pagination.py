@@ -100,7 +100,7 @@ class MarkerOffsetPagination(pagination.BasePagination):
         else:
             raise ValueError("MarkerOffsetPagination can not handle type {} queryset".format(type(queryset)))
 
-        self.new_marker = page[-1].id if len(page) > 0 else None
+        self.new_marker = page[-1].id if len(page) == self.limit else None
         return page
 
     def get_paginated_response(self, data):

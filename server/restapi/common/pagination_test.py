@@ -151,3 +151,29 @@ class MarkerOffsetPaginationTestCase(TestCase):
             {"count": 120, "next": "http://testserver/?limit=100&marker={}".format(accounts[-1].id), "data": accounts},
         )
         self.assertEqual(accounts[0].id, 0)
+
+    def test_last_page(self):
+        account_qs = [Account(id=x) for x in range(120)]
+        request = Request(factory.get("/", {"marker": account_qs[99].id}))
+        page = self.pagination.paginate_queryset(account_qs, request)
+        content = self.pagination.get_paginated_response(page).data
+        accounts = list(account_qs[100:120])
+        self.assertDictEqual(content, {"count": 120, "next": None, "data": accounts})
+
+    def test_last_whole_page(self):
+        account_qs = [Account(id=x) for x in range(120)]
+        request = Request(factory.get("/", {"marker": account_qs[19].id}))
+        page = self.pagination.paginate_queryset(account_qs, request)
+        content = self.pagination.get_paginated_response(page).data
+        accounts = list(account_qs[20:120])
+        self.assertDictEqual(
+            content,
+            {"count": 120, "next": "http://testserver/?limit=100&marker={}".format(accounts[-1].id), "data": accounts},
+        )
+
+    def test_last_empty_page(self):
+        account_qs = [Account(id=x) for x in range(120)]
+        request = Request(factory.get("/", {"marker": account_qs[119].id}))
+        page = self.pagination.paginate_queryset(account_qs, request)
+        content = self.pagination.get_paginated_response(page).data
+        self.assertDictEqual(content, {"count": 120, "next": None, "data": []})
