@@ -3,7 +3,7 @@
 from django.db import models
 from django.db.models.functions import Concat
 
-import core.entity
+import core.models
 import core.common
 from .publisher_group import PublisherGroup
 
@@ -56,7 +56,7 @@ class PublisherGroupEntry(models.Model):
 
     class QuerySet(models.QuerySet):
         def filter_by_sources(self, sources, include_wo_source=False):
-            if not core.entity.helpers.should_filter_by_sources(sources):
+            if not core.models.helpers.should_filter_by_sources(sources):
                 return self
 
             if not include_wo_source:

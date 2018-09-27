@@ -2,7 +2,7 @@ import mock
 
 from django.test import TestCase
 
-from core import entity
+from core import models
 from utils.magic_mixer import magic_mixer
 
 from . import entity_limits
@@ -28,29 +28,29 @@ class EntityLimitEnforceTest(TestCase):
         self.addCleanup(self.account_exceptions_patcher.stop)
 
     def test_under_default_limit(self):
-        magic_mixer.cycle(1).blend(entity.AdGroup)
+        magic_mixer.cycle(1).blend(models.AdGroup)
 
-        entity_limits.enforce(entity.AdGroup.objects.all(), self.ACCOUNT)
+        entity_limits.enforce(models.AdGroup.objects.all(), self.ACCOUNT)
 
     def test_under_exception_limit(self):
-        magic_mixer.cycle(2).blend(entity.AdGroup)
+        magic_mixer.cycle(2).blend(models.AdGroup)
 
-        entity_limits.enforce(entity.AdGroup.objects.all(), self.ACCOUNT_WITH_EXCEPTION)
+        entity_limits.enforce(models.AdGroup.objects.all(), self.ACCOUNT_WITH_EXCEPTION)
 
     def test_over_default_limit(self):
-        magic_mixer.cycle(2).blend(entity.AdGroup)
+        magic_mixer.cycle(2).blend(models.AdGroup)
 
         with self.assertRaises(entity_limits.EntityLimitExceeded):
-            entity_limits.enforce(entity.AdGroup.objects.all(), self.ACCOUNT)
+            entity_limits.enforce(models.AdGroup.objects.all(), self.ACCOUNT)
 
     def test_over_exception_limit(self):
-        magic_mixer.cycle(3).blend(entity.AdGroup)
+        magic_mixer.cycle(3).blend(models.AdGroup)
 
         with self.assertRaises(entity_limits.EntityLimitExceeded):
-            entity_limits.enforce(entity.AdGroup.objects.all(), self.ACCOUNT_WITH_EXCEPTION)
+            entity_limits.enforce(models.AdGroup.objects.all(), self.ACCOUNT_WITH_EXCEPTION)
 
     def test_over_default_limit_create_count(self):
-        magic_mixer.cycle(1).blend(entity.AdGroup)
+        magic_mixer.cycle(1).blend(models.AdGroup)
 
         with self.assertRaises(entity_limits.EntityLimitExceeded):
-            entity_limits.enforce(entity.AdGroup.objects.all(), self.ACCOUNT, create_count=2)
+            entity_limits.enforce(models.AdGroup.objects.all(), self.ACCOUNT, create_count=2)

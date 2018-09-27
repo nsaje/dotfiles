@@ -16,7 +16,7 @@ from . import exceptions
 class RefundLineItemInstanceMixinTest(TestCase):
     def test_save_history(self):
         request = magic_mixer.blend_request_user()
-        account = magic_mixer.blend(core.entity.Account)
+        account = magic_mixer.blend(core.models.Account)
         start_date = datetime.date(2018, 7, 8)
         end_date = datetime.date(2018, 9, 10)
         refund_start_date = start_date.replace(day=1)

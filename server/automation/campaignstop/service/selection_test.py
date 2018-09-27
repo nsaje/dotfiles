@@ -10,8 +10,8 @@ from . import selection
 from . import config
 
 import dash.constants
-from core.entity.settings.ad_group_settings import AdGroupSettings
-from core.entity.settings.ad_group_source_settings import AdGroupSourceSettings
+from core.models.settings.ad_group_settings import AdGroupSettings
+from core.models.settings.ad_group_source_settings import AdGroupSourceSettings
 from utils.magic_mixer import magic_mixer
 from utils import dates_helper
 
@@ -252,10 +252,10 @@ class UpdateAlmostDepletedTestCase(TestCase):
     @mock.patch("utils.dates_helper.utc_now", side_effect=mocked_afternoon_est_now)
     @mock.patch("utils.k1_helper.update_ad_groups", mock.MagicMock())
     def test_get_spend_method_multiple_entries(self, _):
-        source_type2 = magic_mixer.blend(core.source.source_type.SourceType)
-        source2 = magic_mixer.blend(core.source.Source, type=source_type2)
-        ad_group2 = magic_mixer.blend(core.entity.AdGroup, campaign=self.campaign)
-        ad_group_source2 = magic_mixer.blend(core.entity.AdGroupSource, ad_group=ad_group2, source=source2)
+        source_type2 = magic_mixer.blend(core.models.source_type.SourceType)
+        source2 = magic_mixer.blend(core.models.Source, type=source_type2)
+        ad_group2 = magic_mixer.blend(core.models.AdGroup, campaign=self.campaign)
+        ad_group_source2 = magic_mixer.blend(core.models.AdGroupSource, ad_group=ad_group2, source=source2)
         adg_sources = [self.ad_group_source, ad_group_source2]
         today = dates_helper.local_today()
         adg_source_spends = {
@@ -269,10 +269,10 @@ class UpdateAlmostDepletedTestCase(TestCase):
     @mock.patch("utils.k1_helper.update_ad_groups", mock.MagicMock())
     def test_get_spend_method_multiple_entries_with_source_type_of_b1(self, _):
         today = dates_helper.local_today()
-        source_type2 = magic_mixer.blend(core.source.source_type.SourceType, type=dash.constants.SourceType.B1)
-        source2 = magic_mixer.blend(core.source.Source, type=source_type2)
-        ad_group2 = magic_mixer.blend(core.entity.AdGroup, campaign=self.campaign)
-        ad_group_source2 = magic_mixer.blend(core.entity.AdGroupSource, ad_group=ad_group2, source=source2)
+        source_type2 = magic_mixer.blend(core.models.source_type.SourceType, type=dash.constants.SourceType.B1)
+        source2 = magic_mixer.blend(core.models.Source, type=source_type2)
+        ad_group2 = magic_mixer.blend(core.models.AdGroup, campaign=self.campaign)
+        ad_group_source2 = magic_mixer.blend(core.models.AdGroupSource, ad_group=ad_group2, source=source2)
         adg_sources = [self.ad_group_source, ad_group_source2]
         adg_source_spends = {
             (self.ad_group.id, self.source.id, today): 900.000,
@@ -286,10 +286,10 @@ class UpdateAlmostDepletedTestCase(TestCase):
     def test_in_critical_hours(self, _):
         today = dates_helper.local_today()
         yesterday = dates_helper.local_yesterday()
-        source_type2 = magic_mixer.blend(core.source.source_type.SourceType, type=dash.constants.SourceType.B1)
-        source2 = magic_mixer.blend(core.source.Source, type=source_type2)
-        ad_group2 = magic_mixer.blend(core.entity.AdGroup, campaign=self.campaign)
-        ad_group_source2 = magic_mixer.blend(core.entity.AdGroupSource, ad_group=ad_group2, source=source2)
+        source_type2 = magic_mixer.blend(core.models.source_type.SourceType, type=dash.constants.SourceType.B1)
+        source2 = magic_mixer.blend(core.models.Source, type=source_type2)
+        ad_group2 = magic_mixer.blend(core.models.AdGroup, campaign=self.campaign)
+        ad_group_source2 = magic_mixer.blend(core.models.AdGroupSource, ad_group=ad_group2, source=source2)
         adg_sources = [self.ad_group_source, ad_group_source2]
         adg_source_spends = {
             (self.ad_group.id, self.source.id, today): 900.000,
@@ -305,11 +305,11 @@ class UpdateAlmostDepletedTestCase(TestCase):
         self.source.source_type.save()
         self.ad_group_source.settings.update_unsafe(None, state=dash.constants.AdGroupSourceSettingsState.ACTIVE)
 
-        source_2 = magic_mixer.blend(core.source.Source)
-        source_3 = magic_mixer.blend(core.source.Source)
+        source_2 = magic_mixer.blend(core.models.Source)
+        source_3 = magic_mixer.blend(core.models.Source)
 
-        magic_mixer.blend(core.entity.AdGroupSource, ad_group=self.ad_group, source=source_2)
-        magic_mixer.blend(core.entity.AdGroupSource, ad_group=self.ad_group, source=source_3)
+        magic_mixer.blend(core.models.AdGroupSource, ad_group=self.ad_group, source=source_2)
+        magic_mixer.blend(core.models.AdGroupSource, ad_group=self.ad_group, source=source_3)
 
         today = dates_helper.local_today()
         RealTimeDataHistory.objects.create(ad_group=self.ad_group, source=self.source, date=today, etfm_spend=200.0)
@@ -326,7 +326,7 @@ class UpdateAlmostDepletedTestCase(TestCase):
 
     def _setup_initial_state(self):
         self.today = dates_helper.local_today()
-        self.campaign = magic_mixer.blend(core.entity.Campaign, real_time_campaign_stop=True)
+        self.campaign = magic_mixer.blend(core.models.Campaign, real_time_campaign_stop=True)
         user = magic_mixer.blend_user()
         self.campaign.settings.update(None, campaign_manager=user)
         self.campaign_goal = magic_mixer.blend(core.goals.CampaignGoal, campaign=self.campaign, primary=True)
@@ -351,9 +351,9 @@ class UpdateAlmostDepletedTestCase(TestCase):
             credit_line_item=self.credit_line_item,
             amount=900,
         )
-        self.ad_group = magic_mixer.blend(core.entity.AdGroup, campaign=self.campaign)
+        self.ad_group = magic_mixer.blend(core.models.AdGroup, campaign=self.campaign)
         self.ad_group.settings.update_unsafe(None, state=dash.constants.AdGroupSettingsState.ACTIVE)
-        self.source_type = magic_mixer.blend(core.source.source_type.SourceType)
-        self.source = magic_mixer.blend(core.source.Source, type=self.source_type)
-        self.ad_group_source = magic_mixer.blend(core.entity.AdGroupSource, ad_group=self.ad_group, source=self.source)
+        self.source_type = magic_mixer.blend(core.models.source_type.SourceType)
+        self.source = magic_mixer.blend(core.models.Source, type=self.source_type)
+        self.ad_group_source = magic_mixer.blend(core.models.AdGroupSource, ad_group=self.ad_group, source=self.source)
         self.ad_group_source.settings.update_unsafe(None, state=dash.constants.AdGroupSourceSettingsState.ACTIVE)

@@ -4,7 +4,7 @@ from mock import patch
 
 from django.test import TestCase
 
-from core import source
+from core.models import all_rtb
 from dash import constants
 from dash import models
 from utils import dates_helper
@@ -25,7 +25,7 @@ class AutopilotPrefetchTestCase(TestCase):
         )
         cls.ad_group_source.settings.update_unsafe(None, daily_budget_cc=1000)
         cls.entities = {cls.ad_group_source.ad_group.campaign: {cls.ad_group_source.ad_group: [cls.ad_group_source]}}
-        cls.all_rtb_ad_group_source = source.AllRTBAdGroupSource(cls.ad_group_source.ad_group)
+        cls.all_rtb_ad_group_source = all_rtb.AllRTBAdGroupSource(cls.ad_group_source.ad_group)
 
         cls.conversion_goal = magic_mixer.blend(
             models.ConversionGoal,
@@ -211,7 +211,7 @@ class AutopilotPrefetchTestCase(TestCase):
             self.ad_group_source.ad_group.campaign: {self.ad_group_source.ad_group: [self.ad_group_source]},
             ad_group_source2.ad_group.campaign: {ad_group_source2.ad_group: [ad_group_source2]},
         }
-        all_rtb_ad_group_source2 = source.AllRTBAdGroupSource(ad_group_source2.ad_group)
+        all_rtb_ad_group_source2 = all_rtb.AllRTBAdGroupSource(ad_group_source2.ad_group)
 
         data, campaign_goals, bcm_modifiers_map = prefetch.prefetch_autopilot_data(entities)
 

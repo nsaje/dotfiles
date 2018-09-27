@@ -1,11 +1,11 @@
 import collections
 
-from core import source
+from core.models import all_rtb
 import dash.campaign_goals
 from dash import constants
 from dash.views import helpers
 
-import core.entity
+import core.models
 
 """
 Helper functions that transform breakdown responses into what frontend expects.
@@ -47,7 +47,7 @@ def format_report_rows_performance_fields(rows, goals, currency):
         return
 
     uses_bcm_v2_map = dict(
-        core.entity.Campaign.objects.filter(pk__in=list(campaign_goals_by_campaign_id.keys())).values_list(
+        core.models.Campaign.objects.filter(pk__in=list(campaign_goals_by_campaign_id.keys())).values_list(
             "id", "account__uses_bcm_v2"
         )
     )
@@ -265,8 +265,8 @@ def create_all_rtb_source_row_data(request, ad_group, ad_group_settings, show_rt
         show_rtb_group_cpc = False
 
     return {
-        "breakdown_name": source.AllRTBSource.name,
-        "breakdown_id": source.AllRTBSource.id,
+        "breakdown_name": all_rtb.AllRTBSource.name,
+        "breakdown_id": all_rtb.AllRTBSource.id,
         "state": {"value": ad_group_settings.b1_sources_group_state},
         "status": status,
         "daily_budget": ad_group_settings.local_b1_sources_group_daily_budget,

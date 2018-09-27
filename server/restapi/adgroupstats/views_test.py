@@ -1,7 +1,7 @@
 from restapi.common.views_base_test import RESTAPITest
 from django.core.urlresolvers import reverse
 
-import core.entity.adgroup
+import core.models.ad_group
 import mock
 
 
@@ -15,7 +15,7 @@ class RealtimestatsViewsTest(RESTAPITest):
         resp_json = self.assertResponseValid(r)
         self.assertEqual(resp_json["data"], {"spend": "12.30", "clicks": 12321})
 
-        mock_get.assert_called_with(core.entity.adgroup.AdGroup.objects.get(pk=2040))
+        mock_get.assert_called_with(core.models.ad_group.AdGroup.objects.get(pk=2040))
 
     def test_adgroups_realtimestats_unauthorized(self):
         r = self.client.get(reverse("adgroups_realtimestats", kwargs={"ad_group_id": 2040}))

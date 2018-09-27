@@ -4,7 +4,7 @@ from decimal import Decimal
 from django.test import TestCase
 
 import core.bcm
-import core.entity
+import core.models
 
 from dash import constants
 
@@ -16,7 +16,7 @@ from utils.magic_mixer import magic_mixer
 class TestRefundLineItemManager(TestCase):
     def test_create(self):
         request = magic_mixer.blend_request_user()
-        account = magic_mixer.blend(core.entity.Account)
+        account = magic_mixer.blend(core.models.Account)
 
         start_date = datetime.date(2018, 7, 8)
         end_date = datetime.date(2018, 9, 10)

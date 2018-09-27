@@ -5,7 +5,7 @@ from utils.command_helpers import ExceptionCommand
 
 from etl import refresh
 import redshiftapi.db
-from core.entity.account import Account
+from core.models.account import Account
 
 import utils.slack
 

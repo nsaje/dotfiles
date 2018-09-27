@@ -3,7 +3,7 @@ from restapi.common.pagination import StandardPagination
 import restapi.access
 
 from dash import constants
-import core.entity
+import core.models
 import utils.exc
 from . import serializers
 

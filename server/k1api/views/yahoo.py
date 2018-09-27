@@ -1,6 +1,6 @@
 import logging
 
-import core.entity
+import core.models
 import core.features.yahoo_accounts
 
 from . import base
@@ -15,7 +15,7 @@ class YahooAccountsView(base.K1APIView):
         if account_ids:
             account_ids = account_ids.split(",")
 
-        accounts = core.entity.Account.objects.filter(yahoo_account__isnull=False).select_related("yahoo_account")
+        accounts = core.models.Account.objects.filter(yahoo_account__isnull=False).select_related("yahoo_account")
 
         if account_ids:
             accounts = accounts.filter(id__in=account_ids)

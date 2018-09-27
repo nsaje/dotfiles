@@ -3,9 +3,9 @@
 from django.conf import settings
 from django.db import models
 
-import core.entity.adgroup
-import core.entity.agency
-import core.source
+import core.models.ad_group
+import core.models.agency
+import core.models.source
 from . import DirectDeal
 
 
@@ -14,10 +14,10 @@ class DirectDealConnection(models.Model):
         app_label = "dash"
 
     id = models.AutoField(primary_key=True)
-    source = models.ForeignKey(core.source.Source, null=False, blank=False, on_delete=models.PROTECT)
+    source = models.ForeignKey(core.models.source.Source, null=False, blank=False, on_delete=models.PROTECT)
     exclusive = models.BooleanField()
-    adgroup = models.ForeignKey(core.entity.adgroup.AdGroup, null=True, blank=True, on_delete=models.PROTECT)
-    agency = models.ForeignKey(core.entity.agency.Agency, null=True, blank=True, on_delete=models.PROTECT)
+    adgroup = models.ForeignKey(core.models.ad_group.AdGroup, null=True, blank=True, on_delete=models.PROTECT)
+    agency = models.ForeignKey(core.models.agency.Agency, null=True, blank=True, on_delete=models.PROTECT)
     deals = models.ManyToManyField(DirectDeal)
 
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name="Created at")

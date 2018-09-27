@@ -1,8 +1,8 @@
 from restapi.common.views_base import RESTAPIBaseViewSet
 import restapi.access
 
-import core.entity.settings.ad_group_settings.exceptions
-import core.entity.settings.ad_group_source_settings.exceptions
+import core.models.settings.ad_group_settings.exceptions
+import core.models.settings.ad_group_source_settings.exceptions
 
 import utils.exc
 import decimal
@@ -26,22 +26,22 @@ class AdGroupSourcesRTBViewSet(RESTAPIBaseViewSet):
         try:
             ad_group.settings.update(request, **settings)
 
-        except core.entity.settings.ad_group_settings.exceptions.AdGroupNotPaused as err:
+        except core.models.settings.ad_group_settings.exceptions.AdGroupNotPaused as err:
             raise utils.exc.ValidationError(errors={"group_enabled": [str(err)]})
 
-        except core.entity.settings.ad_group_settings.exceptions.DailyBudgetAutopilotNotDisabled as err:
+        except core.models.settings.ad_group_settings.exceptions.DailyBudgetAutopilotNotDisabled as err:
             raise utils.exc.ValidationError(errors={"daily_budget": [str(err)]})
 
-        except core.entity.settings.ad_group_settings.exceptions.CPCAutopilotNotDisabled as err:
+        except core.models.settings.ad_group_settings.exceptions.CPCAutopilotNotDisabled as err:
             raise utils.exc.ValidationError(errors={"daily_budget": [str(err)]})
 
-        except core.entity.settings.ad_group_source_settings.exceptions.RTBSourcesCPCNegative as err:
+        except core.models.settings.ad_group_source_settings.exceptions.RTBSourcesCPCNegative as err:
             raise utils.exc.ValidationError(errors={"cpc": [str(err)]})
 
-        except core.entity.settings.ad_group_source_settings.exceptions.RTBSourcesCPMNegative as err:
+        except core.models.settings.ad_group_source_settings.exceptions.RTBSourcesCPMNegative as err:
             raise utils.exc.ValidationError(errors={"cpm": [str(err)]})
 
-        except core.entity.settings.ad_group_source_settings.exceptions.CPCPrecisionExceeded as err:
+        except core.models.settings.ad_group_source_settings.exceptions.CPCPrecisionExceeded as err:
             raise utils.exc.ValidationError(
                 errors={
                     "cpc": [
@@ -54,7 +54,7 @@ class AdGroupSourcesRTBViewSet(RESTAPIBaseViewSet):
                 }
             )
 
-        except core.entity.settings.ad_group_source_settings.exceptions.CPMPrecisionExceeded as err:
+        except core.models.settings.ad_group_source_settings.exceptions.CPMPrecisionExceeded as err:
             raise utils.exc.ValidationError(
                 errors={
                     "cpm": [
@@ -67,7 +67,7 @@ class AdGroupSourcesRTBViewSet(RESTAPIBaseViewSet):
                 }
             )
 
-        except core.entity.settings.ad_group_source_settings.exceptions.MinimalCPCTooLow as err:
+        except core.models.settings.ad_group_source_settings.exceptions.MinimalCPCTooLow as err:
             raise utils.exc.ValidationError(
                 errors={
                     "cpc": [
@@ -81,7 +81,7 @@ class AdGroupSourcesRTBViewSet(RESTAPIBaseViewSet):
                 }
             )
 
-        except core.entity.settings.ad_group_source_settings.exceptions.MaximalCPCTooHigh as err:
+        except core.models.settings.ad_group_source_settings.exceptions.MaximalCPCTooHigh as err:
             raise utils.exc.ValidationError(
                 errors={
                     "cpc": [
@@ -95,7 +95,7 @@ class AdGroupSourcesRTBViewSet(RESTAPIBaseViewSet):
                 }
             )
 
-        except core.entity.settings.ad_group_source_settings.exceptions.MinimalCPMTooLow as err:
+        except core.models.settings.ad_group_source_settings.exceptions.MinimalCPMTooLow as err:
             raise utils.exc.ValidationError(
                 errors={
                     "cpm": [
@@ -109,7 +109,7 @@ class AdGroupSourcesRTBViewSet(RESTAPIBaseViewSet):
                 }
             )
 
-        except core.entity.settings.ad_group_source_settings.exceptions.MaximalCPMTooHigh as err:
+        except core.models.settings.ad_group_source_settings.exceptions.MaximalCPMTooHigh as err:
             raise utils.exc.ValidationError(
                 errors={
                     "cpm": [
@@ -123,10 +123,10 @@ class AdGroupSourcesRTBViewSet(RESTAPIBaseViewSet):
                 }
             )
 
-        except core.entity.settings.ad_group_source_settings.exceptions.DailyBudgetNegative as err:
+        except core.models.settings.ad_group_source_settings.exceptions.DailyBudgetNegative as err:
             raise utils.exc.ValidationError(errors={"daily_budget": [str(err)]})
 
-        except core.entity.settings.ad_group_source_settings.exceptions.MinimalDailyBudgetTooLow as err:
+        except core.models.settings.ad_group_source_settings.exceptions.MinimalDailyBudgetTooLow as err:
             raise utils.exc.ValidationError(
                 errors={
                     "daily_budget": [
@@ -139,7 +139,7 @@ class AdGroupSourcesRTBViewSet(RESTAPIBaseViewSet):
                 }
             )
 
-        except core.entity.settings.ad_group_source_settings.exceptions.MaximalDailyBudgetTooHigh as err:
+        except core.models.settings.ad_group_source_settings.exceptions.MaximalDailyBudgetTooHigh as err:
             raise utils.exc.ValidationError(
                 errors={
                     "daily_budget": [

@@ -3,7 +3,7 @@ import json
 from mock import patch
 from django.test import TestCase
 
-import core.entity
+import core.models
 from .. import constants
 from . import update_handler
 
@@ -20,7 +20,7 @@ class Message:
 
 class HandleUpdatesTest(TestCase):
     def setUp(self):
-        self.campaign = magic_mixer.blend(core.entity.Campaign)
+        self.campaign = magic_mixer.blend(core.models.Campaign)
 
     @patch("utils.sqs_helper.delete_messages")
     @patch("utils.sqs_helper.get_all_messages")

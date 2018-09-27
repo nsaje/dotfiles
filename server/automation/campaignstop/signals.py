@@ -1,7 +1,7 @@
 from django.db.models.signals import post_save
 
 import core.bcm
-import core.entity.settings
+import core.models.settings
 from core.signals import settings_change
 
 from .service import update_notifier
@@ -30,11 +30,11 @@ def _notify_budget_line_item_change(sender, instance, **kwargs):
 
 
 def connect_notify_ad_group_settings_change():
-    settings_change.connect(_notify_ad_group_settings_change, sender=core.entity.settings.AdGroupSettings)
+    settings_change.connect(_notify_ad_group_settings_change, sender=core.models.settings.AdGroupSettings)
 
 
 def disconnect_notify_ad_group_settings_change():
-    settings_change.disconnect(_notify_ad_group_settings_change, sender=core.entity.settings.AdGroupSettings)
+    settings_change.disconnect(_notify_ad_group_settings_change, sender=core.models.settings.AdGroupSettings)
 
 
 def _notify_ad_group_settings_change(sender, **kwargs):
@@ -44,12 +44,12 @@ def _notify_ad_group_settings_change(sender, **kwargs):
 
 
 def connect_notify_ad_group_source_settings_change():
-    settings_change.connect(_notify_ad_group_source_settings_change, sender=core.entity.settings.AdGroupSourceSettings)
+    settings_change.connect(_notify_ad_group_source_settings_change, sender=core.models.settings.AdGroupSourceSettings)
 
 
 def disconnect_notify_ad_group_source_settings_change():
     settings_change.disconnect(
-        _notify_ad_group_source_settings_change, sender=core.entity.settings.AdGroupSourceSettings
+        _notify_ad_group_source_settings_change, sender=core.models.settings.AdGroupSourceSettings
     )
 
 

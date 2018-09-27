@@ -3,7 +3,7 @@ from . import YahooAccount
 import dateutil.parser
 from django.db import transaction
 
-import core.entity
+import core.models
 import core.features.yahoo_accounts
 import dash.constants
 import utils.dates_helper
@@ -24,7 +24,7 @@ class CannotRunMigrationException(Exception):
 
 @transaction.atomic
 def finalize_migration(account_id, direct_migration=False, advertiser_id=None, currency=None):
-    account = core.entity.Account.objects.get(pk=account_id)
+    account = core.models.Account.objects.get(pk=account_id)
 
     if direct_migration:
         migration = {
@@ -76,7 +76,7 @@ def finalize_migration(account_id, direct_migration=False, advertiser_id=None, c
 
 def update_source_content_ad_ids(account, mapping):
     content_ad_sources = (
-        core.entity.ContentAdSource.objects.all()
+        core.models.ContentAdSource.objects.all()
         .select_related("content_ad")
         .filter(content_ad__ad_group__campaign__account=account)
         .filter(source__source_type__type=dash.constants.SourceType.YAHOO)
@@ -91,7 +91,7 @@ def update_source_content_ad_ids(account, mapping):
 
 def update_source_campaign_keys(account, mapping):
     ad_group_sources = (
-        core.entity.AdGroupSource.objects.all()
+        core.models.AdGroupSource.objects.all()
         .select_related("ad_group")
         .filter(ad_group__campaign__account=account)
         .filter(source__source_type__type=dash.constants.SourceType.YAHOO)

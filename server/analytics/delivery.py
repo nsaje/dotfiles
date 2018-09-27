@@ -2,7 +2,7 @@ import datetime
 from decimal import Decimal
 
 import core.bcm
-import core.entity
+import core.models
 import dash.constants
 import dash.campaign_goals
 import utils.csv_utils
@@ -57,29 +57,29 @@ def generate_delivery_reports(account_types=[], skip_ok=True, check_pacing=True,
 
     # Filter ad groups that are running today and were running tomorrow
     valid_accounts = (
-        core.entity.account.Account.objects.all()
+        core.models.account.Account.objects.all()
         .filter_by_account_types(account_types or DEFAULT_ACCOUNT_TYPES)
         .values_list("pk", flat=True)
     )
     running_ad_groups = (
-        core.entity.adgroup.AdGroup.objects.filter(campaign__account__id__in=valid_accounts)
+        core.models.ad_group.AdGroup.objects.filter(campaign__account__id__in=valid_accounts)
         .filter_running()
         .filter_running(yesterday)
         .select_related("campaign", "campaign__account", "campaign__account__agency")
     )
-    running_campaigns = core.entity.campaign.Campaign.objects.filter(
+    running_campaigns = core.models.campaign.Campaign.objects.filter(
         pk__in=set(running_ad_groups.values_list("campaign_id", flat=True))
     ).select_related("account", "account__agency")
-    running_accounts = core.entity.account.Account.objects.filter(pk__in=set(c.account_id for c in running_campaigns))
+    running_accounts = core.models.account.Account.objects.filter(pk__in=set(c.account_id for c in running_campaigns))
 
     account_settings_map = {
-        sett.account_id: sett for sett in core.entity.settings.AccountSettings.objects.all().group_current_settings()
+        sett.account_id: sett for sett in core.models.settings.AccountSettings.objects.all().group_current_settings()
     }
     campaign_settings_map = {
-        sett.campaign_id: sett for sett in core.entity.settings.CampaignSettings.objects.all().group_current_settings()
+        sett.campaign_id: sett for sett in core.models.settings.CampaignSettings.objects.all().group_current_settings()
     }
     ad_group_settings_map = {
-        sett.ad_group_id: sett for sett in core.entity.settings.AdGroupSettings.objects.all().group_current_settings()
+        sett.ad_group_id: sett for sett in core.models.settings.AdGroupSettings.objects.all().group_current_settings()
     }
 
     campaign_stats = analytics.helpers.get_stats_multiple(yesterday, campaign=running_campaigns)
@@ -148,7 +148,7 @@ def check_campaign_delivery(
             return analytics.constants.CampaignDeliveryStatus.LOW_PACING
         if projections["pacing"] > HIGH_PACING_THRESHOLD:
             return analytics.constants.CampaignDeliveryStatus.HIGH_PACING
-    active_ad_groups = core.entity.adgroup.AdGroup.objects.filter(campaign=campaign).filter_running()
+    active_ad_groups = core.models.ad_group.AdGroup.objects.filter(campaign=campaign).filter_running()
     if not active_ad_groups.count() and active_amount:
         return analytics.constants.CampaignDeliveryStatus.NO_ACTIVE_AD_GROUPS
     return analytics.constants.CampaignDeliveryStatus.OK
@@ -157,11 +157,11 @@ def check_campaign_delivery(
 def check_ad_group_delivery(ad_group, ad_group_settings, ad_group_stats):
     media = ad_group_stats.get("media")
     data = ad_group_stats.get("data")
-    content_ads = core.entity.contentad.ContentAd.objects.filter(ad_group=ad_group)
-    active_sources = core.entity.adgroup.AdGroupSource.objects.filter(ad_group=ad_group).filter_active()
+    content_ads = core.models.content_ad.ContentAd.objects.filter(ad_group=ad_group)
+    active_sources = core.models.ad_group_source.AdGroupSource.objects.filter(ad_group=ad_group).filter_active()
     b1_active_sources = active_sources.filter(source__source_type__type=dash.constants.SourceType.B1)
     api_active_sources = active_sources.exclude(source__source_type__type=dash.constants.SourceType.B1)
-    approved_ad_sources = core.entity.contentad.ContentAdSource.objects.filter(
+    approved_ad_sources = core.models.content_ad_source.ContentAdSource.objects.filter(
         content_ad__ad_group_id=ad_group.pk, submission_status=dash.constants.ContentAdSubmissionStatus.APPROVED
     )
     api_active_sources_count = api_active_sources.count()

@@ -1,6 +1,6 @@
 from django.test import TestCase
 
-import core.entity
+import core.models
 from utils.magic_mixer import magic_mixer
 from dash import models
 
@@ -11,8 +11,8 @@ from . import exceptions
 
 class TestPublisherBidModifierService(TestCase):
     def setUp(self):
-        self.ad_group = magic_mixer.blend(core.entity.AdGroup)
-        self.source = magic_mixer.blend(core.source.Source, bidder_slug="some_slug")
+        self.ad_group = magic_mixer.blend(core.models.AdGroup)
+        self.source = magic_mixer.blend(core.models.Source, bidder_slug="some_slug")
 
     def _create(self, modifier, publisher="testpub"):
         PublisherBidModifier.objects.create(

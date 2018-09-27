@@ -34,10 +34,10 @@ from utils import db_for_reads
 
 import utils.exc
 
-import core.entity.settings.campaign_settings.exceptions
-import core.entity.adgroup.ad_group.exceptions
-import core.entity.settings.ad_group_settings.exceptions
-import core.entity.settings.ad_group_source_settings.exceptions
+import core.models.settings.campaign_settings.exceptions
+import core.models.ad_group.exceptions
+import core.models.settings.ad_group_settings.exceptions
+import core.models.settings.ad_group_source_settings.exceptions
 import core.goals.campaign_goal.exceptions
 import core.goals.conversion_goal.exceptions
 import core.multicurrency
@@ -119,58 +119,58 @@ class AdGroupSettings(api_common.BaseApiView):
             ad_group.update_bidding_type(request, data.get("bidding_type"))
             ad_group.settings.update(request, **data)
 
-        except core.entity.adgroup.ad_group.exceptions.CannotChangeBiddingType as err:
+        except core.models.ad_group.exceptions.CannotChangeBiddingType as err:
             raise utils.exc.ValidationError(errors={"bidding_type": [str(err)]})
 
         except utils.exc.MultipleValidationError as err:
             self._handle_multiple_error(err)
 
-        except core.entity.settings.ad_group_settings.exceptions.CannotChangeAdGroupState as err:
+        except core.models.settings.ad_group_settings.exceptions.CannotChangeAdGroupState as err:
             raise utils.exc.ValidationError(errors={"state": [str(err)]})
 
-        except core.entity.settings.ad_group_settings.exceptions.AutopilotB1SourcesNotEnabled as err:
+        except core.models.settings.ad_group_settings.exceptions.AutopilotB1SourcesNotEnabled as err:
             raise utils.exc.ValidationError(errors={"autopilot_state": [str(err)]})
 
-        except core.entity.settings.ad_group_settings.exceptions.DailyBudgetAutopilotNotDisabled as err:
+        except core.models.settings.ad_group_settings.exceptions.DailyBudgetAutopilotNotDisabled as err:
             raise utils.exc.ValidationError(errors={"b1_sources_group_daily_budget": [str(err)]})
 
-        except core.entity.settings.ad_group_settings.exceptions.CPCAutopilotNotDisabled as err:
+        except core.models.settings.ad_group_settings.exceptions.CPCAutopilotNotDisabled as err:
             raise utils.exc.ValidationError(errors={"b1_sources_group_daily_budget": [str(err)]})
 
-        except core.entity.settings.ad_group_settings.exceptions.AutopilotDailyBudgetTooLow as err:
+        except core.models.settings.ad_group_settings.exceptions.AutopilotDailyBudgetTooLow as err:
             raise utils.exc.ValidationError(errors={"autopilot_daily_budget": [str(err)]})
 
-        except core.entity.settings.ad_group_settings.exceptions.AutopilotDailyBudgetTooHigh as err:
+        except core.models.settings.ad_group_settings.exceptions.AutopilotDailyBudgetTooHigh as err:
             raise utils.exc.ValidationError(errors={"autopilot_daily_budget": [str(err)]})
 
-        except core.entity.settings.ad_group_settings.exceptions.AdGroupNotPaused as err:
+        except core.models.settings.ad_group_settings.exceptions.AdGroupNotPaused as err:
             raise utils.exc.ValidationError(errors={"b1_sources_group_enabled": [str(err)]})
 
-        except core.entity.settings.ad_group_settings.exceptions.B1DailyBudgetTooHigh as err:
+        except core.models.settings.ad_group_settings.exceptions.B1DailyBudgetTooHigh as err:
             raise utils.exc.ValidationError(errors={"daily_budget_cc": [str(err)]})
 
-        except core.entity.settings.ad_group_settings.exceptions.CantEnableB1SourcesGroup as err:
+        except core.models.settings.ad_group_settings.exceptions.CantEnableB1SourcesGroup as err:
             raise utils.exc.ValidationError(errors={"state": [str(err)]})
 
-        except core.entity.settings.ad_group_settings.exceptions.BluekaiCategoryInvalid as err:
+        except core.models.settings.ad_group_settings.exceptions.BluekaiCategoryInvalid as err:
             raise utils.exc.ValidationError(str(err))
 
-        except core.entity.settings.ad_group_settings.exceptions.YahooDesktopCPCTooLow as err:
+        except core.models.settings.ad_group_settings.exceptions.YahooDesktopCPCTooLow as err:
             raise utils.exc.ValidationError(errors={"target_devices": [str(err)]})
 
-        except core.entity.settings.ad_group_settings.exceptions.PublisherWhitelistInvalid as err:
+        except core.models.settings.ad_group_settings.exceptions.PublisherWhitelistInvalid as err:
             raise utils.exc.ValidationError(errors={"whitelist_publisher_groups": [str(err)]})
 
-        except core.entity.settings.ad_group_settings.exceptions.PublisherBlacklistInvalid as err:
+        except core.models.settings.ad_group_settings.exceptions.PublisherBlacklistInvalid as err:
             raise utils.exc.ValidationError(errors={"blacklist_publisher_groups": [str(err)]})
 
-        except core.entity.settings.ad_group_source_settings.exceptions.RTBSourcesCPCNegative as err:
+        except core.models.settings.ad_group_source_settings.exceptions.RTBSourcesCPCNegative as err:
             raise utils.exc.ValidationError(errors={"b1_sources_group_cpc_cc": [str(err)]})
 
-        except core.entity.settings.ad_group_source_settings.exceptions.RTBSourcesCPMNegative as err:
+        except core.models.settings.ad_group_source_settings.exceptions.RTBSourcesCPMNegative as err:
             raise utils.exc.ValidationError(errors={"b1_sources_group_cpm": [str(err)]})
 
-        except core.entity.settings.ad_group_source_settings.exceptions.CPCPrecisionExceeded as err:
+        except core.models.settings.ad_group_source_settings.exceptions.CPCPrecisionExceeded as err:
             raise utils.exc.ValidationError(
                 errors={
                     "b1_sources_group_cpc_cc": [
@@ -183,7 +183,7 @@ class AdGroupSettings(api_common.BaseApiView):
                 }
             )
 
-        except core.entity.settings.ad_group_source_settings.exceptions.CPMPrecisionExceeded as err:
+        except core.models.settings.ad_group_source_settings.exceptions.CPMPrecisionExceeded as err:
             raise utils.exc.ValidationError(
                 errors={
                     "b1_sources_group_cpm": [
@@ -196,7 +196,7 @@ class AdGroupSettings(api_common.BaseApiView):
                 }
             )
 
-        except core.entity.settings.ad_group_source_settings.exceptions.MinimalCPCTooLow as err:
+        except core.models.settings.ad_group_source_settings.exceptions.MinimalCPCTooLow as err:
             raise utils.exc.ValidationError(
                 errors={
                     "b1_sources_group_cpc_cc": [
@@ -210,7 +210,7 @@ class AdGroupSettings(api_common.BaseApiView):
                 }
             )
 
-        except core.entity.settings.ad_group_source_settings.exceptions.MaximalCPCTooHigh as err:
+        except core.models.settings.ad_group_source_settings.exceptions.MaximalCPCTooHigh as err:
             raise utils.exc.ValidationError(
                 errors={
                     "b1_sources_group_cpc_cc": [
@@ -224,7 +224,7 @@ class AdGroupSettings(api_common.BaseApiView):
                 }
             )
 
-        except core.entity.settings.ad_group_source_settings.exceptions.MinimalCPMTooLow as err:
+        except core.models.settings.ad_group_source_settings.exceptions.MinimalCPMTooLow as err:
             raise utils.exc.ValidationError(
                 errors={
                     "b1_sources_group_cpm": [
@@ -238,7 +238,7 @@ class AdGroupSettings(api_common.BaseApiView):
                 }
             )
 
-        except core.entity.settings.ad_group_source_settings.exceptions.MaximalCPMTooHigh as err:
+        except core.models.settings.ad_group_source_settings.exceptions.MaximalCPMTooHigh as err:
             raise utils.exc.ValidationError(
                 errors={
                     "b1_sources_group_cpm": [
@@ -252,10 +252,10 @@ class AdGroupSettings(api_common.BaseApiView):
                 }
             )
 
-        except core.entity.settings.ad_group_source_settings.exceptions.DailyBudgetNegative as err:
+        except core.models.settings.ad_group_source_settings.exceptions.DailyBudgetNegative as err:
             raise utils.exc.ValidationError(errors={"b1_sources_group_daily_budget": [str(err)]})
 
-        except core.entity.settings.ad_group_source_settings.exceptions.MinimalDailyBudgetTooLow as err:
+        except core.models.settings.ad_group_source_settings.exceptions.MinimalDailyBudgetTooLow as err:
             raise utils.exc.ValidationError(
                 errors={
                     "b1_sources_group_daily_budget": [
@@ -268,7 +268,7 @@ class AdGroupSettings(api_common.BaseApiView):
                 }
             )
 
-        except core.entity.settings.ad_group_source_settings.exceptions.MaximalDailyBudgetTooHigh as err:
+        except core.models.settings.ad_group_source_settings.exceptions.MaximalDailyBudgetTooHigh as err:
             raise utils.exc.ValidationError(
                 errors={
                     "b1_sources_group_daily_budget": [
@@ -285,25 +285,25 @@ class AdGroupSettings(api_common.BaseApiView):
     def _handle_multiple_error(self, err):
         errors = {}
         for e in err.errors:
-            if isinstance(e, core.entity.settings.ad_group_settings.exceptions.MaxCPCTooLow):
+            if isinstance(e, core.models.settings.ad_group_settings.exceptions.MaxCPCTooLow):
                 errors.setdefault("cpc_cc", []).append(str(e))
 
-            elif isinstance(e, core.entity.settings.ad_group_settings.exceptions.MaxCPCTooHigh):
+            elif isinstance(e, core.models.settings.ad_group_settings.exceptions.MaxCPCTooHigh):
                 errors.setdefault("cpc_cc", []).append(str(e))
 
-            elif isinstance(e, core.entity.settings.ad_group_settings.exceptions.MaxCPMTooLow):
+            elif isinstance(e, core.models.settings.ad_group_settings.exceptions.MaxCPMTooLow):
                 errors.setdefault("max_cpm", []).append(str(e))
 
-            elif isinstance(e, core.entity.settings.ad_group_settings.exceptions.MaxCPMTooHigh):
+            elif isinstance(e, core.models.settings.ad_group_settings.exceptions.MaxCPMTooHigh):
                 errors.setdefault("max_cpm", []).append(str(e))
 
-            elif isinstance(e, core.entity.settings.ad_group_settings.exceptions.EndDateBeforeStartDate):
+            elif isinstance(e, core.models.settings.ad_group_settings.exceptions.EndDateBeforeStartDate):
                 errors.setdefault("end_date", []).append(str(e))
 
-            elif isinstance(e, core.entity.settings.ad_group_settings.exceptions.EndDateInThePast):
+            elif isinstance(e, core.models.settings.ad_group_settings.exceptions.EndDateInThePast):
                 errors.setdefault("end_date", []).append(str(e))
 
-            elif isinstance(e, core.entity.settings.ad_group_settings.exceptions.TrackingCodeInvalid):
+            elif isinstance(e, core.models.settings.ad_group_settings.exceptions.TrackingCodeInvalid):
                 errors.setdefault("tracking_code", []).append(str(e))
 
         raise utils.exc.ValidationError(errors=errors)
@@ -507,7 +507,7 @@ class AdGroupSettingsState(api_common.BaseApiView):
         try:
             ad_group.settings.update(request, state=new_state)
 
-        except core.entity.settings.ad_group_settings.exceptions.CannotChangeAdGroupState as err:
+        except core.models.settings.ad_group_settings.exceptions.CannotChangeAdGroupState as err:
             raise utils.exc.ValidationError(error={"state": [str(err)]})
 
         return self.create_api_response({"id": str(ad_group.pk), "state": new_state})
@@ -602,16 +602,16 @@ class CampaignSettings(api_common.BaseApiView):
                 campaign.update_type(form_data.get("type"))
                 campaign.settings.update(request, **form_data)
 
-            except core.entity.campaign.exceptions.CannotChangeType as err:
+            except core.models.campaign.exceptions.CannotChangeType as err:
                 raise utils.exc.ValidationError(errors={"type": [str(err)]})
 
-            except core.entity.settings.campaign_settings.exceptions.CannotChangeLanguage as err:
+            except core.models.settings.campaign_settings.exceptions.CannotChangeLanguage as err:
                 raise utils.exc.ValidationError(errors={"language": [str(err)]})
 
-            except core.entity.settings.campaign_settings.exceptions.PublisherWhitelistInvalid as err:
+            except core.models.settings.campaign_settings.exceptions.PublisherWhitelistInvalid as err:
                 raise utils.exc.ValidationError(errors={"whitelist_publisher_groups": [str(err)]})
 
-            except core.entity.settings.campaign_settings.exceptions.PublisherBlacklistInvalid as err:
+            except core.models.settings.campaign_settings.exceptions.PublisherBlacklistInvalid as err:
                 raise utils.exc.ValidationError(errors={"blacklist_publisher_groups": [str(err)]})
 
             goal_errors = self.set_goals(request, campaign, changes)

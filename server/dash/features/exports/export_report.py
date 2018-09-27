@@ -4,8 +4,7 @@ from django.conf import settings
 from django.db import models
 from dash import constants
 
-import core.entity
-import core.source
+import core.models
 
 
 class ExportReport(models.Model):
@@ -33,8 +32,8 @@ class ExportReport(models.Model):
 
     order_by = models.CharField(max_length=20, null=True, blank=True)
     additional_fields = models.TextField(null=True, blank=True)
-    filtered_sources = models.ManyToManyField(core.source.Source, blank=True)
-    filtered_agencies = models.ManyToManyField(core.entity.Agency, blank=True)
+    filtered_sources = models.ManyToManyField(core.models.Source, blank=True)
+    filtered_agencies = models.ManyToManyField(core.models.Agency, blank=True)
     filtered_account_types = jsonfield.JSONField(blank=True, default=[])
 
     def __str__(self):
@@ -81,14 +80,14 @@ class ExportReport(models.Model):
         return dash.views.helpers.get_additional_columns(self.additional_fields)
 
     def get_filtered_sources(self):
-        all_sources = core.source.Source.objects.all()
+        all_sources = core.models.Source.objects.all()
         if len(self.filtered_sources.all()) == 0:
             return all_sources
         return all_sources.filter(id__in=[source.id for source in self.filtered_sources.all()])
 
     def get_filtered_agencies(self):
         if len(self.filtered_agencies.all()) == 0:
-            return core.entity.Agency.objects.all()
+            return core.models.Agency.objects.all()
         return self.filtered_agencies.all()
 
     def get_filtered_account_types(self):

@@ -2,7 +2,7 @@ import decimal
 from django.test import TestCase
 from mock import patch
 
-import core.entity
+import core.models
 import core.goals
 import dash.constants
 from utils.magic_mixer import magic_mixer
@@ -17,8 +17,8 @@ class UpdateExchangeRatesTestCase(TestCase):
             date="2018-01-01", currency=dash.constants.Currency.EUR, exchange_rate="0.8"
         )
         request = magic_mixer.blend_request_user(is_superuser=True)
-        self.account = magic_mixer.blend(core.entity.Account, currency=dash.constants.Currency.EUR)
-        self.campaign = magic_mixer.blend(core.entity.Campaign, account=self.account)
+        self.account = magic_mixer.blend(core.models.Account, currency=dash.constants.Currency.EUR)
+        self.campaign = magic_mixer.blend(core.models.Campaign, account=self.account)
         self.goal1 = magic_mixer.blend(
             core.goals.CampaignGoal, campaign=self.campaign, primary=True, type=dash.constants.CampaignGoalKPI.CPC
         )
@@ -30,7 +30,7 @@ class UpdateExchangeRatesTestCase(TestCase):
         )
         self.goal1.add_local_value(request, decimal.Decimal("0.15"))
         self.goal2.add_local_value(request, 20)
-        self.ad_group = magic_mixer.blend(core.entity.AdGroup, campaign=self.campaign)
+        self.ad_group = magic_mixer.blend(core.models.AdGroup, campaign=self.campaign)
         self.ad_group.settings.update(
             request,
             skip_automation=True,
@@ -41,7 +41,7 @@ class UpdateExchangeRatesTestCase(TestCase):
             local_b1_sources_group_cpc_cc="0.35",
             local_max_cpm="1.3",
         )
-        self.ad_group_source = magic_mixer.blend(core.entity.AdGroupSource, ad_group=self.ad_group)
+        self.ad_group_source = magic_mixer.blend(core.models.AdGroupSource, ad_group=self.ad_group)
         self.ad_group_source.settings.update(
             request,
             k1_sync=False,

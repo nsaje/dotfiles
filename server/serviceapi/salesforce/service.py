@@ -4,7 +4,7 @@ from rest_framework.serializers import ValidationError
 
 import core.bcm.bcm_slack
 import core.bcm.credit_line_item
-import core.entity.account
+import core.models.account
 import core.multicurrency
 import dash.constants
 import utils.converters
@@ -12,8 +12,8 @@ import zemauth.models
 from . import constants
 
 CLIENT_TYPE_OBJECT_MAP = {
-    constants.CLIENT_TYPE_AGENCY: core.entity.agency.Agency,
-    constants.CLIENT_TYPE_CLIENT_DIRECT: core.entity.account.Account,
+    constants.CLIENT_TYPE_AGENCY: core.models.agency.Agency,
+    constants.CLIENT_TYPE_CLIENT_DIRECT: core.models.account.Account,
 }
 
 DEFAULT_ACCOUNT_TYPE = dash.constants.AccountType.PILOT
@@ -110,7 +110,7 @@ def create_client(request, data):
 
 
 def get_agency_accounts(z1_account_id):
-    return core.entity.account.Account.objects.filter(**_get_client_lookup(z1_account_id)).order_by("name")
+    return core.models.account.Account.objects.filter(**_get_client_lookup(z1_account_id)).order_by("name")
 
 
 def get_entity_credits(z1_account_id):

@@ -1,7 +1,6 @@
 from django.db import transaction
 
-import core.entity
-import core.source
+import core.models
 import utils.exc
 
 from . import exceptions
@@ -12,12 +11,12 @@ LOGGER_UPDATE_BATCH_SIZE = 40
 
 def auto_add_new_ad_group_sources(source_id, logger=None):
     try:
-        source = core.source.Source.objects.get(id=int(source_id))
+        source = core.models.Source.objects.get(id=int(source_id))
 
-    except core.source.Source.DoesNotExist:
+    except core.models.Source.DoesNotExist:
         raise utils.exc.MissingDataError("Source does not exist")
 
-    ad_groups = core.entity.AdGroup.objects.filter(
+    ad_groups = core.models.AdGroup.objects.filter(
         campaign__account__settings__auto_add_new_sources=True, settings__archived=False
     )
     count_available = 0
@@ -26,15 +25,15 @@ def auto_add_new_ad_group_sources(source_id, logger=None):
 
     for ad_group in ad_groups:
         try:
-            core.entity.AdGroupSource.objects.create(None, ad_group, source, skip_notification=True)
+            core.models.AdGroupSource.objects.create(None, ad_group, source, skip_notification=True)
 
-        except core.entity.adgroup.ad_group_source.exceptions.SourceAlreadyExists:
+        except core.models.ad_group_source.exceptions.SourceAlreadyExists:
             pass
 
         except (
-            core.entity.adgroup.ad_group_source.exceptions.SourceNotAllowed,
-            core.entity.adgroup.ad_group_source.exceptions.RetargetingNotSupported,
-            core.entity.adgroup.ad_group_source.exceptions.VideoNotSupported,
+            core.models.ad_group_source.exceptions.SourceNotAllowed,
+            core.models.ad_group_source.exceptions.RetargetingNotSupported,
+            core.models.ad_group_source.exceptions.VideoNotSupported,
         ):
             count_not_available += 1
             continue
@@ -53,7 +52,7 @@ def release_source(request, source):
     if source.released:
         raise exceptions.SourceAlreadyReleased("Source already released")
 
-    accounts = core.entity.Account.objects.filter(settings__auto_add_new_sources=True)
+    accounts = core.models.Account.objects.filter(settings__auto_add_new_sources=True)
     for account in accounts:
         account.allowed_sources.add(source)
 

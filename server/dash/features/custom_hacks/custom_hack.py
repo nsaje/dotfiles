@@ -6,7 +6,7 @@ from django.db import models
 
 from dash import constants
 import core.common
-import core.entity.helpers
+import core.models.helpers
 
 
 class CustomHack(models.Model):
@@ -73,7 +73,7 @@ class CustomHack(models.Model):
     class QuerySet(models.QuerySet):
         def filter_applied(self, source=None, **levels):
             ad_group = levels.get("ad_group")
-            campaign, account, agency = core.entity.helpers.generate_parents(**levels)
+            campaign, account, agency = core.models.helpers.generate_parents(**levels)
             rules = models.Q(agency=None, account=None, campaign=None, ad_group=None)
             if agency:
                 rules |= models.Q(agency=agency)

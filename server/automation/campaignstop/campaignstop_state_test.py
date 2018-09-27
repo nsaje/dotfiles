@@ -2,7 +2,7 @@ from mock import patch
 
 from django.test import TestCase
 
-import core.entity
+import core.models
 from . import CampaignStopState
 
 from utils.magic_mixer import magic_mixer
@@ -11,7 +11,7 @@ from utils import email_helper
 
 class CampaignStopStateTestCase(TestCase):
     def setUp(self):
-        self.campaign = magic_mixer.blend(core.entity.Campaign)
+        self.campaign = magic_mixer.blend(core.models.Campaign)
         self.campaign.settings.update(None, campaign_manager=magic_mixer.blend_user())
 
     @patch("utils.email_helper.send_official_email", wraps=email_helper.send_official_email)

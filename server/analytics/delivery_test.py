@@ -3,7 +3,7 @@ from decimal import Decimal
 
 from django import test
 
-import core.entity
+import core.models
 import dash.features.videoassets.models
 import core.goals
 import core.bcm
@@ -16,8 +16,8 @@ from utils.magic_mixer import magic_mixer
 
 class CampaignDeliveryTestCase(test.TestCase):
     def setUp(self):
-        self.account = magic_mixer.blend(core.entity.account.Account, name="Account", id=1)
-        self.campaign = magic_mixer.blend(core.entity.campaign.Campaign, name="Campaign 1", account_id=1)
+        self.account = magic_mixer.blend(core.models.account.Account, name="Account", id=1)
+        self.campaign = magic_mixer.blend(core.models.campaign.Campaign, name="Campaign 1", account_id=1)
         self.campaign.settings.update(None, iab_category=dash.constants.IABCategory.IAB1_1, enable_ga_tracking=True)
 
         self.goal = core.goals.campaign_goal.CampaignGoal.objects.create_unsafe(
@@ -36,7 +36,7 @@ class CampaignDeliveryTestCase(test.TestCase):
         self.stats_prev = {"visits": 5}
         self.projections = {"pacing": Decimal("90.9")}
 
-        self.ad_group = magic_mixer.blend(core.entity.adgroup.AdGroup, name="Ad Group 1", campaign=self.campaign)
+        self.ad_group = magic_mixer.blend(core.models.ad_group.AdGroup, name="Ad Group 1", campaign=self.campaign)
         self.ad_group_settings = self.ad_group.get_current_settings().copy_settings()
         self.ad_group_settings.start_date = start_date
         self.ad_group_settings.end_date = end_date
@@ -84,7 +84,7 @@ class CampaignDeliveryTestCase(test.TestCase):
         )
 
     def test_budget(self):
-        campaign = magic_mixer.blend(core.entity.campaign.Campaign, name="Campaign 2", account_id=1)
+        campaign = magic_mixer.blend(core.models.campaign.Campaign, name="Campaign 2", account_id=1)
         campaign.settings.update(None, iab_category=dash.constants.IABCategory.IAB1_1)
 
         core.goals.campaign_goal.CampaignGoal.objects.create_unsafe(
@@ -208,30 +208,32 @@ class CampaignDeliveryTestCase(test.TestCase):
 
 class AdGroupDeliveryTestCase(test.TestCase):
     def setUp(self):
-        self.account = magic_mixer.blend(core.entity.account.Account, name="Account", id=1)
+        self.account = magic_mixer.blend(core.models.account.Account, name="Account", id=1)
 
-        self.campaign = magic_mixer.blend(core.entity.campaign.Campaign, name="Campaign 1", account=self.account)
+        self.campaign = magic_mixer.blend(core.models.campaign.Campaign, name="Campaign 1", account=self.account)
 
-        self.ad_group = magic_mixer.blend(core.entity.adgroup.AdGroup, name="Ad Group 1", campaign=self.campaign)
+        self.ad_group = magic_mixer.blend(core.models.ad_group.AdGroup, name="Ad Group 1", campaign=self.campaign)
         self.ad_group.settings.update_unsafe(None, b1_sources_group_enabled=False)
         self.ad_group_settings = self.ad_group.settings
 
         self.stats = {}
 
         self.ad = magic_mixer.blend(
-            core.entity.contentad.ContentAd,
+            core.models.content_ad.ContentAd,
             title="Zemanta",
             url="http://www.zemanta.com",
             ad_group=self.ad_group,
             batch__account=self.account,
         )
-        self.source = magic_mixer.blend(core.source.Source, name="Test Source")
+        self.source = magic_mixer.blend(core.models.Source, name="Test Source")
 
         self.ad_group_source = magic_mixer.blend(
-            core.entity.adgroup.AdGroupSource, ad_group=self.ad_group, source=self.source
+            core.models.ad_group_source.AdGroupSource, ad_group=self.ad_group, source=self.source
         )
         self.ad_group_source.settings.update_unsafe(None, state=1)
-        self.ad_source = core.entity.contentad.ContentAdSource.objects.create(source=self.source, content_ad=self.ad)
+        self.ad_source = core.models.content_ad_source.ContentAdSource.objects.create(
+            source=self.source, content_ad=self.ad
+        )
         self.ad_source.submission_status = dash.constants.ContentAdSubmissionStatus.APPROVED
         self.ad_source.save()
 
@@ -284,17 +286,19 @@ class AdGroupDeliveryTestCase(test.TestCase):
             constants.AdGroupDeliveryStatus.RTB_AS_1_NO_SOURCES,
         )
 
-        source_type = magic_mixer.blend(core.source.SourceType, type="b1")
-        source = magic_mixer.blend(core.source.Source, name="Test B1 Source", source_type=source_type)
+        source_type = magic_mixer.blend(core.models.SourceType, type="b1")
+        source = magic_mixer.blend(core.models.Source, name="Test B1 Source", source_type=source_type)
 
-        ad_group_source = magic_mixer.blend(core.entity.adgroup.AdGroupSource, ad_group=self.ad_group, source=source)
+        ad_group_source = magic_mixer.blend(
+            core.models.ad_group_source.AdGroupSource, ad_group=self.ad_group, source=source
+        )
         ad_group_source.settings.update_unsafe(None, state=1)
         self.assertEqual(
             delivery.check_ad_group_delivery(self.ad_group, s, self.stats), constants.AdGroupDeliveryStatus.OK
         )
 
     def test_interest_b1_sources(self):
-        source_type = magic_mixer.blend(core.source.SourceType, type="b1")
+        source_type = magic_mixer.blend(core.models.SourceType, type="b1")
         self.source.source_type = source_type
         self.source.save()
 
@@ -308,9 +312,9 @@ class AdGroupDeliveryTestCase(test.TestCase):
         )
 
         for i in range(6):
-            source = magic_mixer.blend(core.source.Source, name="Test B1 Source {}".format(i), source_type=source_type)
+            source = magic_mixer.blend(core.models.Source, name="Test B1 Source {}".format(i), source_type=source_type)
             ad_group_source = magic_mixer.blend(
-                core.entity.adgroup.AdGroupSource, ad_group=self.ad_group, source=source
+                core.models.ad_group_source.AdGroupSource, ad_group=self.ad_group, source=source
             )
             ad_group_source.settings.update_unsafe(None, state=1)
         self.assertEqual(
@@ -346,9 +350,11 @@ class AdGroupDeliveryTestCase(test.TestCase):
     def test_missing_data_cost(self):
         self.ad_group_source.settings.update_unsafe(None, state=2)
         # Add an B1 source and disable B1 source
-        source_type = magic_mixer.blend(core.source.SourceType, type="b1")
-        source = magic_mixer.blend(core.source.Source, name="Test B1 Source", source_type=source_type)
-        b1_ad_group_source = magic_mixer.blend(core.entity.adgroup.AdGroupSource, ad_group=self.ad_group, source=source)
+        source_type = magic_mixer.blend(core.models.SourceType, type="b1")
+        source = magic_mixer.blend(core.models.Source, name="Test B1 Source", source_type=source_type)
+        b1_ad_group_source = magic_mixer.blend(
+            core.models.ad_group_source.AdGroupSource, ad_group=self.ad_group, source=source
+        )
         b1_ad_group_source.settings.update_unsafe(None, state=1)
 
         s = self.ad_group_settings.copy_settings()
@@ -380,10 +386,10 @@ class AdGroupDeliveryTestCase(test.TestCase):
 
         # Add an API source and disable B1 source
         b1_ad_group_source.settings.update_unsafe(None, state=2)
-        source_type = magic_mixer.blend(core.source.SourceType, type="yahoo")
-        source = magic_mixer.blend(core.source.Source, name="Test B1 Source", source_type=source_type)
+        source_type = magic_mixer.blend(core.models.SourceType, type="yahoo")
+        source = magic_mixer.blend(core.models.Source, name="Test B1 Source", source_type=source_type)
         api_ad_group_source = magic_mixer.blend(
-            core.entity.adgroup.AdGroupSource, ad_group=self.ad_group, source=source
+            core.models.ad_group_source.AdGroupSource, ad_group=self.ad_group, source=source
         )
         api_ad_group_source.settings.update_unsafe(None, state=1)
 

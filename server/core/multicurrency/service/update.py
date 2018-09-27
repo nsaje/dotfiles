@@ -2,7 +2,7 @@ import logging
 
 from django.db import transaction
 
-import core.entity
+import core.models
 
 import dash.constants
 from utils import dates_helper
@@ -60,7 +60,7 @@ def _update_exchange_rate(currency, rate):
 
 
 def _update_accounts(currency):
-    currency_accounts = core.entity.Account.objects.filter(currency=currency)
+    currency_accounts = core.models.Account.objects.filter(currency=currency)
     for account in currency_accounts:
         _update_account(account)
 

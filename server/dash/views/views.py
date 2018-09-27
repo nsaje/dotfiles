@@ -29,7 +29,7 @@ from utils import threads
 from utils import db_for_reads
 
 import core.multicurrency
-import core.entity.helpers
+import core.models.helpers
 
 from dash import models, region_targeting_helper, retargeting_helper, campaign_goals
 from dash import constants
@@ -37,8 +37,8 @@ from dash import forms
 from dash import infobox_helpers
 from dash.features import native_server
 
-import core.entity.settings.ad_group_source_settings.exceptions
-import core.entity.adgroup.ad_group_source.exceptions
+import core.models.settings.ad_group_source_settings.exceptions
+import core.models.ad_group_source.exceptions
 
 import stats.helpers
 
@@ -321,7 +321,7 @@ class CampaignAdGroups(api_common.BaseApiView):
     def put(self, request, campaign_id):
         campaign = helpers.get_campaign(request.user, campaign_id)
         self._validate_campaign_ready(request, campaign)
-        ad_group = core.entity.AdGroup.objects.create(request, campaign, is_restapi=self.rest_proxy)
+        ad_group = core.models.AdGroup.objects.create(request, campaign, is_restapi=self.rest_proxy)
         native_server.apply_ad_group_create_hacks(request, ad_group)
         return self.create_api_response({"name": ad_group.name, "id": ad_group.id})
 
@@ -662,13 +662,13 @@ class AdGroupSources(api_common.BaseApiView):
         source = models.Source.objects.get(id=source_id)
 
         try:
-            core.entity.AdGroupSource.objects.create(request, ad_group, source, write_history=True, k1_sync=True)
+            core.models.AdGroupSource.objects.create(request, ad_group, source, write_history=True, k1_sync=True)
 
         except (
-            core.entity.adgroup.ad_group_source.exceptions.SourceNotAllowed,
-            core.entity.adgroup.ad_group_source.exceptions.RetargetingNotSupported,
-            core.entity.adgroup.ad_group_source.exceptions.SourceAlreadyExists,
-            core.entity.adgroup.ad_group_source.exceptions.VideoNotSupported,
+            core.models.ad_group_source.exceptions.SourceNotAllowed,
+            core.models.ad_group_source.exceptions.RetargetingNotSupported,
+            core.models.ad_group_source.exceptions.SourceAlreadyExists,
+            core.models.ad_group_source.exceptions.VideoNotSupported,
         ) as err:
             raise exc.ValidationError(str(err))
 
@@ -684,7 +684,7 @@ class Account(api_common.BaseApiView):
         agency = models.Agency.objects.all().filter(users=request.user).first()
 
         account = models.Account.objects.create(
-            request, name=core.entity.helpers.create_default_name(models.Account.objects, "New account"), agency=agency
+            request, name=core.models.helpers.create_default_name(models.Account.objects, "New account"), agency=agency
         )
 
         response = {"name": account.name, "id": account.id}
@@ -704,7 +704,7 @@ class AccountCampaigns(api_common.BaseApiView):
         if not form.is_valid():
             raise exc.ValidationError(errors=dict(form.errors))
 
-        name = core.entity.helpers.create_default_name(models.Campaign.objects.filter(account=account), "New campaign")
+        name = core.models.helpers.create_default_name(models.Campaign.objects.filter(account=account), "New campaign")
         type = form.cleaned_data.get("campaign_type")
         language = constants.Language.ENGLISH if self.rest_proxy else None
         campaign = models.Campaign.objects.create(request, account, name, language=language, type=type, send_mail=True)
@@ -761,10 +761,10 @@ class AdGroupSourceSettings(api_common.BaseApiView):
         try:
             return ad_group_source.settings.update(request, k1_sync=True, **data)
 
-        except core.entity.settings.ad_group_source_settings.exceptions.DailyBudgetNegative as err:
+        except core.models.settings.ad_group_source_settings.exceptions.DailyBudgetNegative as err:
             raise exc.ValidationError(errors={"daily_budget_cc": [str(err)]})
 
-        except core.entity.settings.ad_group_source_settings.exceptions.MinimalDailyBudgetTooLow as err:
+        except core.models.settings.ad_group_source_settings.exceptions.MinimalDailyBudgetTooLow as err:
             raise exc.ValidationError(
                 errors={
                     "daily_budget_cc": [
@@ -777,7 +777,7 @@ class AdGroupSourceSettings(api_common.BaseApiView):
                 }
             )
 
-        except core.entity.settings.ad_group_source_settings.exceptions.MaximalDailyBudgetTooHigh as err:
+        except core.models.settings.ad_group_source_settings.exceptions.MaximalDailyBudgetTooHigh as err:
             raise exc.ValidationError(
                 errors={
                     "daily_budget_cc": [
@@ -791,13 +791,13 @@ class AdGroupSourceSettings(api_common.BaseApiView):
                 }
             )
 
-        except core.entity.settings.ad_group_source_settings.exceptions.CPCNegative as err:
+        except core.models.settings.ad_group_source_settings.exceptions.CPCNegative as err:
             raise exc.ValidationError(errors={"cpc_cc": [str(err)]})
 
-        except core.entity.settings.ad_group_source_settings.exceptions.CPMNegative as err:
+        except core.models.settings.ad_group_source_settings.exceptions.CPMNegative as err:
             raise exc.ValidationError(errors={"cpm": [str(err)]})
 
-        except core.entity.settings.ad_group_source_settings.exceptions.CPCPrecisionExceeded as err:
+        except core.models.settings.ad_group_source_settings.exceptions.CPCPrecisionExceeded as err:
             raise exc.ValidationError(
                 errors={
                     "cpc_cc": [
@@ -810,7 +810,7 @@ class AdGroupSourceSettings(api_common.BaseApiView):
                 }
             )
 
-        except core.entity.settings.ad_group_source_settings.exceptions.CPMPrecisionExceeded as err:
+        except core.models.settings.ad_group_source_settings.exceptions.CPMPrecisionExceeded as err:
             raise exc.ValidationError(
                 errors={
                     "cpm": [
@@ -823,7 +823,7 @@ class AdGroupSourceSettings(api_common.BaseApiView):
                 }
             )
 
-        except core.entity.settings.ad_group_source_settings.exceptions.MinimalCPCTooLow as err:
+        except core.models.settings.ad_group_source_settings.exceptions.MinimalCPCTooLow as err:
             raise exc.ValidationError(
                 errors={
                     "cpc_cc": [
@@ -837,7 +837,7 @@ class AdGroupSourceSettings(api_common.BaseApiView):
                 }
             )
 
-        except core.entity.settings.ad_group_source_settings.exceptions.MaximalCPCTooHigh as err:
+        except core.models.settings.ad_group_source_settings.exceptions.MaximalCPCTooHigh as err:
             raise exc.ValidationError(
                 errors={
                     "cpc_cc": [
@@ -851,7 +851,7 @@ class AdGroupSourceSettings(api_common.BaseApiView):
                 }
             )
 
-        except core.entity.settings.ad_group_source_settings.exceptions.MinimalCPMTooLow as err:
+        except core.models.settings.ad_group_source_settings.exceptions.MinimalCPMTooLow as err:
             raise exc.ValidationError(
                 errors={
                     "cpm": [
@@ -865,7 +865,7 @@ class AdGroupSourceSettings(api_common.BaseApiView):
                 }
             )
 
-        except core.entity.settings.ad_group_source_settings.exceptions.MaximalCPMTooHigh as err:
+        except core.models.settings.ad_group_source_settings.exceptions.MaximalCPMTooHigh as err:
             raise exc.ValidationError(
                 errors={
                     "cpm": [
@@ -879,25 +879,25 @@ class AdGroupSourceSettings(api_common.BaseApiView):
                 }
             )
 
-        except core.entity.settings.ad_group_source_settings.exceptions.RTBSourcesCPCNegative as err:
+        except core.models.settings.ad_group_source_settings.exceptions.RTBSourcesCPCNegative as err:
             raise exc.ValidationError(errors={"cpc_cc": [str(err)]})
 
-        except core.entity.settings.ad_group_source_settings.exceptions.RTBSourcesCPMNegative as err:
+        except core.models.settings.ad_group_source_settings.exceptions.RTBSourcesCPMNegative as err:
             raise exc.ValidationError(errors={"cpm": [str(err)]})
 
-        except core.entity.settings.ad_group_source_settings.exceptions.CPCInvalid as err:
+        except core.models.settings.ad_group_source_settings.exceptions.CPCInvalid as err:
             raise exc.ValidationError(errors={"cpc_cc": [str(err)]})
 
-        except core.entity.settings.ad_group_source_settings.exceptions.RetargetingNotSupported as err:
+        except core.models.settings.ad_group_source_settings.exceptions.RetargetingNotSupported as err:
             raise exc.ValidationError(errors={"state": [str(err)]})
 
-        except core.entity.settings.ad_group_source_settings.exceptions.MediaSourceNotConnectedToFacebook as err:
+        except core.models.settings.ad_group_source_settings.exceptions.MediaSourceNotConnectedToFacebook as err:
             raise exc.ValidationError(errors={"state": [str(err)]})
 
-        except core.entity.settings.ad_group_source_settings.exceptions.YahooCPCTooLow as err:
+        except core.models.settings.ad_group_source_settings.exceptions.YahooCPCTooLow as err:
             raise exc.ValidationError(errors={"state": [str(err)]})
 
-        except core.entity.settings.ad_group_source_settings.exceptions.AutopilotDailySpendCapTooLow as err:
+        except core.models.settings.ad_group_source_settings.exceptions.AutopilotDailySpendCapTooLow as err:
             raise exc.ValidationError(errors={"state": [str(err)]})
 
 

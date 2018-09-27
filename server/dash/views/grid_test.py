@@ -5,7 +5,7 @@ from mock import patch
 from django.core.urlresolvers import reverse
 from django.test import TestCase
 
-from core import source
+from core.models import all_rtb
 from dash import models
 
 from zemauth.models import User
@@ -46,7 +46,7 @@ class RTBSourceSettingsTest(TestCase):
         response = self.client.post(
             reverse(
                 "grid_ad_group_source_settings",
-                kwargs={"ad_group_id": self.ad_group.id, "source_id": source.AllRTBSource.id},
+                kwargs={"ad_group_id": self.ad_group.id, "source_id": all_rtb.AllRTBSource.id},
             ),
             json.dumps({"settings": {"cpc_cc": "0.15"}}),
             content_type="application/json",
@@ -71,7 +71,7 @@ class RTBSourceSettingsTest(TestCase):
         response = self.client.post(
             reverse(
                 "grid_ad_group_source_settings",
-                kwargs={"ad_group_id": self.ad_group.id, "source_id": source.AllRTBSource.id},
+                kwargs={"ad_group_id": self.ad_group.id, "source_id": all_rtb.AllRTBSource.id},
             ),
             json.dumps({"settings": {"cpc_cc": "0.15"}}),
             content_type="application/json",

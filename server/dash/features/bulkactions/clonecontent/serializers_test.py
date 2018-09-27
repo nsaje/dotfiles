@@ -3,7 +3,7 @@ import rest_framework.serializers
 from utils.magic_mixer import magic_mixer
 from utils import test_helper
 
-import core.entity
+import core.models
 from . import serializers
 
 
@@ -58,17 +58,17 @@ class CloneContentAdsSerializer(TestCase):
 
 class GetContentAds(TestCase):
     def setUp(self):
-        self.ads = magic_mixer.cycle(5).blend(core.entity.ContentAd, batch=magic_mixer.RANDOM)
+        self.ads = magic_mixer.cycle(5).blend(core.models.ContentAd, batch=magic_mixer.RANDOM)
 
     def test_get_select_all(self):
         self.assertEqual(
-            test_helper.QuerySetMatcher(serializers.get_content_ads(core.entity.ContentAd.objects.all(), {})), self.ads
+            test_helper.QuerySetMatcher(serializers.get_content_ads(core.models.ContentAd.objects.all(), {})), self.ads
         )
 
     def test_get_select_ads(self):
         self.assertEqual(
             test_helper.QuerySetMatcher(
-                serializers.get_content_ads(core.entity.ContentAd.objects.all(), {"content_ad_ids": [self.ads[0].id]})
+                serializers.get_content_ads(core.models.ContentAd.objects.all(), {"content_ad_ids": [self.ads[0].id]})
             ),
             [self.ads[0]],
         )
@@ -76,7 +76,7 @@ class GetContentAds(TestCase):
     def test_get_select_batch(self):
         self.assertEqual(
             test_helper.QuerySetMatcher(
-                serializers.get_content_ads(core.entity.ContentAd.objects.all(), {"batch_id": self.ads[0].batch_id})
+                serializers.get_content_ads(core.models.ContentAd.objects.all(), {"batch_id": self.ads[0].batch_id})
             ),
             [x for x in self.ads if x.batch_id == self.ads[0].batch_id],
         )
@@ -85,7 +85,7 @@ class GetContentAds(TestCase):
         self.assertEqual(
             test_helper.QuerySetMatcher(
                 serializers.get_content_ads(
-                    core.entity.ContentAd.objects.all(), {"deselected_content_ad_ids": [self.ads[0].id]}
+                    core.models.ContentAd.objects.all(), {"deselected_content_ad_ids": [self.ads[0].id]}
                 )
             ),
             self.ads[1:],
@@ -95,7 +95,7 @@ class GetContentAds(TestCase):
         self.assertEqual(
             test_helper.QuerySetMatcher(
                 serializers.get_content_ads(
-                    core.entity.ContentAd.objects.all(),
+                    core.models.ContentAd.objects.all(),
                     {"batch_id": self.ads[0].batch_id, "deselected_content_ad_ids": [self.ads[1].id]},
                 )
             ),
@@ -104,9 +104,9 @@ class GetContentAds(TestCase):
 
     def test_no_ads(self):
         with self.assertRaises(rest_framework.serializers.ValidationError):
-            serializers.get_content_ads(core.entity.ContentAd.objects.none(), {})
+            serializers.get_content_ads(core.models.ContentAd.objects.none(), {})
 
     def test_all_deselected(self):
-        ads = core.entity.ContentAd.objects.all()
+        ads = core.models.ContentAd.objects.all()
         with self.assertRaises(rest_framework.serializers.ValidationError):
             serializers.get_content_ads(ads, {"deselected_content_ad_ids": [x.id for x in ads]})

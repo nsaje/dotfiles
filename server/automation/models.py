@@ -2,8 +2,8 @@ from django.db import models
 from django.conf import settings
 import dash.constants
 
-import core.entity.campaign
-import core.entity.adgroup
+import core.models.campaign
+import core.models.ad_group
 
 from .campaignstop.campaignstop_state import *  # noqa
 from .campaignstop.real_time_data_history import *  # noqa
@@ -12,7 +12,7 @@ from .campaignstop.real_time_campaign_stop_log import *  # noqa
 
 class CampaignBudgetDepletionNotification(models.Model):
     account_manager = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, related_name="+", on_delete=models.PROTECT)
-    campaign = models.ForeignKey(core.entity.campaign.Campaign, related_name="+", on_delete=models.PROTECT)
+    campaign = models.ForeignKey(core.models.campaign.Campaign, related_name="+", on_delete=models.PROTECT)
     created_dt = models.DateTimeField(
         auto_now_add=True, blank=True, null=True, verbose_name="Created at", db_index=True
     )
@@ -29,10 +29,10 @@ class CampaignBudgetDepletionNotification(models.Model):
 
 
 class AutopilotLog(models.Model):
-    campaign = models.ForeignKey(core.entity.campaign.Campaign, related_name="+", on_delete=models.PROTECT, null=True)
-    ad_group = models.ForeignKey(core.entity.adgroup.AdGroup, related_name="+", on_delete=models.PROTECT)
+    campaign = models.ForeignKey(core.models.campaign.Campaign, related_name="+", on_delete=models.PROTECT, null=True)
+    ad_group = models.ForeignKey(core.models.ad_group.AdGroup, related_name="+", on_delete=models.PROTECT)
     ad_group_source = models.ForeignKey(
-        core.entity.adgroup.AdGroupSource, related_name="+", on_delete=models.PROTECT, null=True
+        core.models.ad_group_source.AdGroupSource, related_name="+", on_delete=models.PROTECT, null=True
     )
     autopilot_type = models.IntegerField(
         default=dash.constants.AdGroupSettingsAutopilotState.INACTIVE,
@@ -74,7 +74,7 @@ class AutopilotLog(models.Model):
 
 
 class CampaignStopLog(models.Model):
-    campaign = models.ForeignKey(core.entity.campaign.Campaign, on_delete=models.PROTECT)
+    campaign = models.ForeignKey(core.models.campaign.Campaign, on_delete=models.PROTECT)
     notes = models.TextField()
     created_dt = models.DateTimeField(
         auto_now_add=True, blank=True, null=True, verbose_name="Created at", db_index=True

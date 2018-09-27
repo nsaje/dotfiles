@@ -1,6 +1,6 @@
 from rest_framework import permissions
 
-import core.entity
+import core.models
 import restapi.access
 import restapi.common.views_base
 
@@ -21,7 +21,7 @@ class CloneContentAds(restapi.common.views_base.RESTAPIBaseView):
         form.is_valid(raise_exception=True)
 
         ad_group = restapi.access.get_ad_group(user, form.validated_data["ad_group_id"])
-        content_ads = core.entity.ContentAd.objects.filter(ad_group=ad_group).filter_by_user(user).exclude_archived()
+        content_ads = core.models.ContentAd.objects.filter(ad_group=ad_group).filter_by_user(user).exclude_archived()
 
         destination_batch = service.clone(
             request,

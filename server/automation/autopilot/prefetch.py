@@ -2,7 +2,7 @@ from collections import defaultdict
 import datetime
 from decimal import Decimal
 
-from core import source
+from core.models import all_rtb
 import dash.campaign_goals
 import dash.constants
 import dash.models
@@ -38,7 +38,7 @@ def prefetch_autopilot_data(entities):
 
             data[ad_group] = {}
             if source_all_rtb_active:
-                all_rtb_ad_group_source = source.AllRTBAdGroupSource(ad_group)
+                all_rtb_ad_group_source = all_rtb.AllRTBAdGroupSource(ad_group)
                 data[ad_group][all_rtb_ad_group_source] = _init_b1_sources_data(
                     ad_group.settings, goal_col, goal_optimal
                 )

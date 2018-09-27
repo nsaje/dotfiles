@@ -4,7 +4,7 @@ from django.core.urlresolvers import reverse
 from rest_framework.test import APIClient
 from utils.magic_mixer import magic_mixer
 
-import core.entity
+import core.models
 import restapi.common.views_base_test
 
 from . import service
@@ -13,9 +13,9 @@ from . import service
 class CloneAdGroupViewTest(restapi.common.views_base_test.RESTAPITest):
     def setUp(self):
         self.user = magic_mixer.blend_user(permissions=["can_clone_adgroups"])
-        self.account = magic_mixer.blend(core.entity.Account, users=[self.user])
-        self.campaign = magic_mixer.blend(core.entity.Campaign, account=self.account)
-        self.ad_group = magic_mixer.blend(core.entity.AdGroup, campaign=self.campaign)
+        self.account = magic_mixer.blend(core.models.Account, users=[self.user])
+        self.campaign = magic_mixer.blend(core.models.Campaign, account=self.account)
+        self.ad_group = magic_mixer.blend(core.models.AdGroup, campaign=self.campaign)
 
         self.client = APIClient()
         self.client.force_authenticate(user=self.user)
@@ -32,8 +32,8 @@ class CloneAdGroupViewTest(restapi.common.views_base_test.RESTAPITest):
         )
 
     def test_no_obj_access(self):
-        campaign = magic_mixer.blend(core.entity.Campaign)
-        ad_group = magic_mixer.blend(core.entity.AdGroup)
+        campaign = magic_mixer.blend(core.models.Campaign)
+        ad_group = magic_mixer.blend(core.models.AdGroup)
 
         data = self.clone_repr(ad_group, campaign)
 
@@ -42,7 +42,7 @@ class CloneAdGroupViewTest(restapi.common.views_base_test.RESTAPITest):
 
     @mock.patch.object(service, "clone", autospec=True)
     def test_post(self, mock_clone):
-        cloned_ad_group = magic_mixer.blend(core.entity.AdGroup)
+        cloned_ad_group = magic_mixer.blend(core.models.AdGroup)
         mock_clone.return_value = cloned_ad_group
 
         data = self.clone_repr(self.ad_group, self.campaign)

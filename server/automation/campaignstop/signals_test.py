@@ -4,8 +4,8 @@ from mock import patch, ANY
 from django.test import TestCase
 
 import core.bcm
-import core.entity
-import core.entity.settings
+import core.models
+import core.models.settings
 import dash.constants
 
 from . import signals
@@ -16,8 +16,8 @@ from utils import dates_helper
 
 class NotifyBudgetsTest(TestCase):
     def setUp(self):
-        account = magic_mixer.blend(core.entity.Account)
-        campaign = magic_mixer.blend(core.entity.Campaign, account=account)
+        account = magic_mixer.blend(core.models.Account)
+        campaign = magic_mixer.blend(core.models.Campaign, account=account)
         credit = magic_mixer.blend(
             core.bcm.CreditLineItem,
             account=account,
@@ -50,7 +50,7 @@ class NotifyBudgetsTest(TestCase):
 
 class NotifyAdGroupSettingsChangeTest(TestCase):
     def setUp(self):
-        self.ad_group = magic_mixer.blend(core.entity.AdGroup)
+        self.ad_group = magic_mixer.blend(core.models.AdGroup)
         signals.connect_notify_ad_group_settings_change()
 
     @patch("automation.campaignstop.service.update_notifier.notify_ad_group_settings_change")
@@ -62,7 +62,7 @@ class NotifyAdGroupSettingsChangeTest(TestCase):
 
 class NotifyAdGroupSourceSettingsChangeTest(TestCase):
     def setUp(self):
-        self.ad_group_source = magic_mixer.blend(core.entity.AdGroupSource)
+        self.ad_group_source = magic_mixer.blend(core.models.AdGroupSource)
         signals.connect_notify_ad_group_source_settings_change()
 
     @patch("automation.campaignstop.service.update_notifier.notify_ad_group_source_settings_change")

@@ -4,7 +4,7 @@ import restapi.access
 
 from django.db import transaction
 
-import core.entity
+import core.models
 import utils.exc
 from . import serializers
 
@@ -25,9 +25,9 @@ class CampaignViewSet(RESTAPIBaseViewSet):
         account_id = request.query_params.get("accountId", None)
         if account_id:
             account = restapi.access.get_account(request.user, account_id)
-            campaigns = core.entity.Campaign.objects.filter(account=account)
+            campaigns = core.models.Campaign.objects.filter(account=account)
         else:
-            campaigns = core.entity.Campaign.objects.all().filter_by_user(request.user)
+            campaigns = core.models.Campaign.objects.all().filter_by_user(request.user)
 
         campaigns = campaigns.select_related("settings").order_by("pk")
         paginator = StandardPagination()
@@ -42,7 +42,7 @@ class CampaignViewSet(RESTAPIBaseViewSet):
         account = restapi.access.get_account(request.user, settings.get("campaign", {}).get("account_id"))
 
         with transaction.atomic():
-            new_campaign = core.entity.Campaign.objects.create(
+            new_campaign = core.models.Campaign.objects.create(
                 request, account=account, name=settings.get("name"), type=settings.get("campaign", {}).get("type")
             )
             self._update_campaign(request, new_campaign, settings)
@@ -54,14 +54,14 @@ class CampaignViewSet(RESTAPIBaseViewSet):
             campaign.update_type(data.get("campaign", {}).get("type"))
             campaign.settings.update(request, **data)
 
-        except core.entity.settings.campaign_settings.exceptions.CannotChangeLanguage as err:
+        except core.models.settings.campaign_settings.exceptions.CannotChangeLanguage as err:
             raise utils.exc.ValidationError(errors={"language": [str(err)]})
 
-        except core.entity.campaign.exceptions.CannotChangeType as err:
+        except core.models.campaign.exceptions.CannotChangeType as err:
             raise utils.exc.ValidationError(errors={"type": [str(err)]})
 
-        except core.entity.settings.campaign_settings.exceptions.PublisherWhitelistInvalid as err:
+        except core.models.settings.campaign_settings.exceptions.PublisherWhitelistInvalid as err:
             raise utils.exc.ValidationError(errors={"targeting": {"publisherGroups": {"included": [str(err)]}}})
 
-        except core.entity.settings.campaign_settings.exceptions.PublisherBlacklistInvalid as err:
+        except core.models.settings.campaign_settings.exceptions.PublisherBlacklistInvalid as err:
             raise utils.exc.ValidationError(errors={"targeting": {"publisherGroups": {"excluded": [str(err)]}}})

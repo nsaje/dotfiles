@@ -3,8 +3,8 @@ from django.core.urlresolvers import reverse
 
 from restapi.common.views_base_test import RESTAPITest
 from dash import constants, models
-from core import source
-import core.entity.adgroup
+from core.models import all_rtb
+import core.models.ad_group
 
 from utils.magic_mixer import magic_mixer
 import mock
@@ -16,9 +16,9 @@ class AdGroupSourcesRTBTest(RESTAPITest):
     def adgroupsourcertb_repr(
         cls,
         group_enabled=True,
-        daily_budget=source.AllRTBSource.default_daily_budget_cc,
+        daily_budget=all_rtb.AllRTBSource.default_daily_budget_cc,
         state=constants.AdGroupSourceSettingsState.ACTIVE,
-        cpc=source.AllRTBSource.default_cpc_cc,
+        cpc=all_rtb.AllRTBSource.default_cpc_cc,
     ):
         representation = {
             "groupEnabled": group_enabled,
@@ -29,7 +29,7 @@ class AdGroupSourcesRTBTest(RESTAPITest):
         return cls.normalize(representation)
 
     def validate_against_db(self, ad_group_id, agsrtb):
-        settings_db = core.entity.adgroup.AdGroup.objects.get(pk=ad_group_id).get_current_settings()
+        settings_db = core.models.ad_group.AdGroup.objects.get(pk=ad_group_id).get_current_settings()
         expected = self.adgroupsourcertb_repr(
             group_enabled=settings_db.b1_sources_group_enabled,
             daily_budget=settings_db.b1_sources_group_daily_budget.quantize(Decimal("1.00")),
@@ -63,9 +63,9 @@ class AdGroupSourcesRTBTest(RESTAPITest):
         self.validate_against_db(2040, resp_json["data"])
         self.assertEqual(test_rtbs, resp_json["data"])
 
-    @mock.patch.object(core.source.source_type.model.SourceType, "get_etfm_max_daily_budget", return_value=89.77)
-    @mock.patch.object(core.source.source_type.model.SourceType, "get_etfm_min_daily_budget", return_value=7.11)
-    @mock.patch.object(core.source.source_type.model.SourceType, "get_etfm_min_cpc", return_value=0.1211)
+    @mock.patch.object(core.models.source_type.model.SourceType, "get_etfm_max_daily_budget", return_value=89.77)
+    @mock.patch.object(core.models.source_type.model.SourceType, "get_etfm_min_daily_budget", return_value=7.11)
+    @mock.patch.object(core.models.source_type.model.SourceType, "get_etfm_min_cpc", return_value=0.1211)
     def test_adgroups_sources_rtb_rounding(self, min_cpc_mock, min_daily_budget_mock, max_daily_budget_mock):
         ad_group = magic_mixer.blend(models.AdGroup, campaign__account__users=[self.user])
         ad_group.settings.update_unsafe(

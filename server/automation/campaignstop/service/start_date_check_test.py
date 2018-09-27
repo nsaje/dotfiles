@@ -3,7 +3,7 @@ from mock import patch
 
 from django.test import TestCase
 
-import core.entity
+import core.models
 import dash.constants
 
 from .. import CampaignStopState
@@ -16,7 +16,7 @@ from utils import dates_helper
 
 class UpdateCampaignsStartDateTestCase(TestCase):
     def setUp(self):
-        self.campaign = magic_mixer.blend(core.entity.Campaign)
+        self.campaign = magic_mixer.blend(core.models.Campaign)
         self.today = dates_helper.local_today()
         self.credit = magic_mixer.blend(
             core.bcm.CreditLineItem,

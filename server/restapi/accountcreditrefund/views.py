@@ -6,7 +6,7 @@ from rest_framework.response import Response
 import restapi.access
 from restapi.common.pagination import StandardPagination
 
-import core.entity
+import core.models
 from core.bcm.refund_line_item import exceptions
 
 import utils.exc

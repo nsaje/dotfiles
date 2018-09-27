@@ -1,6 +1,6 @@
 from django.db import transaction
 
-import core.entity
+import core.models
 
 import core.bcm
 from .. import constants
@@ -10,7 +10,7 @@ from utils import dates_helper
 
 def update_campaigns_end_date(campaigns=None):
     if not campaigns:
-        campaigns = core.entity.Campaign.objects.filter(real_time_campaign_stop=True)
+        campaigns = core.models.Campaign.objects.filter(real_time_campaign_stop=True)
 
     _update_campaigns_end_date([campaign for campaign in campaigns if campaign.real_time_campaign_stop])
 

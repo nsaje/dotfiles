@@ -4,21 +4,20 @@ from core.audiences import *
 from core.bcm import *
 from core.common import *
 from core.deprecated import *
-from core.entity import *
-from core.entity.settings import *
+from core.models.settings import *
 from core.goals import *
 from core.history import *
 from core.pixels import *
-from core.source import *
 from core.publisher_bid_modifiers.publisher_bid_modifier import PublisherBidModifier
 from core.publisher_groups import *
 from core.multicurrency import *
 from core.features.yahoo_accounts.models import *
 from core.direct_deals import *
+from core.models import *
 
 # Core helpers
 from core.bcm.helpers import *
-from core.entity.helpers import *
+from core.models.helpers import *
 from core.history.helpers import *
 
 # Feature models

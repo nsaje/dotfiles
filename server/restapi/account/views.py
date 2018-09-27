@@ -1,7 +1,7 @@
 from restapi.common.views_base import RESTAPIBaseViewSet
 
 import restapi.access
-import core.entity
+import core.models
 import utils.exc
 
 from . import serializers
@@ -28,7 +28,7 @@ class AccountViewSet(RESTAPIBaseViewSet):
         return self.response_ok(serializers.AccountSerializer(account).data)
 
     def list(self, request):
-        accounts = core.entity.Account.objects.all().filter_by_user(request.user)
+        accounts = core.models.Account.objects.all().filter_by_user(request.user)
         return self.response_ok(serializers.AccountSerializer(accounts, many=True).data)
 
     def create(self, request):
@@ -40,7 +40,7 @@ class AccountViewSet(RESTAPIBaseViewSet):
             agency = restapi.access.get_agency(request.user, agency_id)
 
         with transaction.atomic():
-            new_account = core.entity.Account.objects.create(
+            new_account = core.models.Account.objects.create(
                 request,
                 name=serializer.validated_data.get("settings", {}).get("name"),
                 agency=agency,
@@ -59,8 +59,8 @@ class AccountViewSet(RESTAPIBaseViewSet):
         try:
             account.settings.update(request, **data)
 
-        except core.entity.settings.account_settings.exceptions.PublisherWhitelistInvalid as err:
+        except core.models.settings.account_settings.exceptions.PublisherWhitelistInvalid as err:
             raise utils.exc.ValidationError(errors={"targeting": {"publisherGroups": {"included": [str(err)]}}})
 
-        except core.entity.settings.account_settings.exceptions.PublisherBlacklistInvalid as err:
+        except core.models.settings.account_settings.exceptions.PublisherBlacklistInvalid as err:
             raise utils.exc.ValidationError(errors={"targeting": {"publisherGroups": {"excluded": [str(err)]}}})

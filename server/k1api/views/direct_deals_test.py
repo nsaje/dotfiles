@@ -5,18 +5,18 @@ from django.core.urlresolvers import reverse
 
 from .base_test import K1APIBaseTest
 import core.direct_deals
-import core.source
+import core.models
 
 
 class DirectDealsTest(K1APIBaseTest):
     @classmethod
     def setUpTestData(cls):
-        source = magic_mixer.blend(core.source.Source, bidder_slug="test_exchange_1")
+        source = magic_mixer.blend(core.models.Source, bidder_slug="test_exchange_1")
         deal1 = magic_mixer.blend(core.direct_deals.DirectDeal, deal_id="test_1")
         deal2 = magic_mixer.blend(core.direct_deals.DirectDeal, deal_id="test_2")
-        adgroup = magic_mixer.blend(core.entity.AdGroup, pk=1000)
-        adgroup2 = magic_mixer.blend(core.entity.AdGroup, pk=1001)
-        agency = magic_mixer.blend(core.entity.Agency, pk=2000)
+        adgroup = magic_mixer.blend(core.models.AdGroup, pk=1000)
+        adgroup2 = magic_mixer.blend(core.models.AdGroup, pk=1001)
+        agency = magic_mixer.blend(core.models.Agency, pk=2000)
 
         magic_mixer.blend(core.direct_deals.DirectDealConnection, source=source, deals=[deal1])
         magic_mixer.blend(

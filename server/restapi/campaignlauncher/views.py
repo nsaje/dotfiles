@@ -7,7 +7,7 @@ import restapi.serializers.targeting
 import restapi.access
 import dash.features.campaignlauncher
 import dash.features.contentupload
-import core.entity.settings
+import core.models.settings
 import core.multicurrency
 import automation.autopilot
 import utils.lc_helper
@@ -24,7 +24,7 @@ class CampaignLauncherViewSet(RESTAPIBaseViewSet):
 
     def defaults(self, request, account_id):
         account = restapi.access.get_account(request.user, account_id)
-        default_settings = core.entity.settings.AdGroupSettings.get_defaults_dict()
+        default_settings = core.models.settings.AdGroupSettings.get_defaults_dict()
         return self.response_ok(
             {
                 "target_regions": restapi.serializers.targeting.TargetRegionsSerializer(

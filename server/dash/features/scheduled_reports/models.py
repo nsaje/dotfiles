@@ -2,7 +2,7 @@ from django.conf import settings
 from django.db import models
 import jsonfield
 
-import core.entity
+import core.models
 from dash import constants
 from dash import history_helpers
 from dash.features import reports
@@ -41,15 +41,15 @@ class ScheduledReportManager(models.Manager):
     def _get_account(self, user, query):
         constraints = reports_helpers.get_filter_constraints(query["filters"])
         if "ad_group_id" in constraints:
-            ad_group = core.entity.AdGroup.objects.select_related("campaign__account").get(
+            ad_group = core.models.AdGroup.objects.select_related("campaign__account").get(
                 pk=constraints["ad_group_id"]
             )
             return ad_group.campaign.account
         elif "campaign_id" in constraints:
-            campaign = core.entity.Campaign.objects.select_related("account").get(pk=constraints["campaign_id"])
+            campaign = core.models.Campaign.objects.select_related("account").get(pk=constraints["campaign_id"])
             return campaign.account
         elif "account_id" in constraints:
-            return core.entity.Account.objects.get(pk=constraints["account_id"])
+            return core.models.Account.objects.get(pk=constraints["account_id"])
         else:
             return None
 

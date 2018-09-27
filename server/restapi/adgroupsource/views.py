@@ -4,8 +4,8 @@ import restapi.access
 from django.db import transaction
 
 import core.multicurrency
-import core.entity.adgroup.ad_group_source
-from core.entity.settings.ad_group_source_settings import exceptions
+import core.models.ad_group_source
+from core.models.settings.ad_group_source_settings import exceptions
 
 import utils.exc
 import utils.lc_helper
@@ -20,7 +20,7 @@ class AdGroupSourceViewSet(RESTAPIBaseViewSet):
     def list(self, request, ad_group_id):
         ad_group = restapi.access.get_ad_group(request.user, ad_group_id)
         settings = (
-            core.entity.settings.ad_group_source_settings.AdGroupSourceSettings.objects.filter(
+            core.models.settings.ad_group_source_settings.AdGroupSourceSettings.objects.filter(
                 ad_group_source__ad_group=ad_group
             )
             .group_current_settings()
@@ -42,7 +42,7 @@ class AdGroupSourceViewSet(RESTAPIBaseViewSet):
             for item in serializer.validated_data:
                 sources.append(item["ad_group_source"]["source"])
 
-            ad_group_sources = core.entity.adgroup.ad_group_source.AdGroupSource.objects.filter(
+            ad_group_sources = core.models.ad_group_source.AdGroupSource.objects.filter(
                 ad_group=ad_group, source__in=sources
             ).select_related("settings", "source")
 
@@ -69,15 +69,15 @@ class AdGroupSourceViewSet(RESTAPIBaseViewSet):
             data.pop("ad_group_source")
 
             try:
-                ad_group_source = core.entity.adgroup.ad_group_source.AdGroupSource.objects.create(
+                ad_group_source = core.models.ad_group_source.AdGroupSource.objects.create(
                     request, ad_group, source, write_history=True, k1_sync=False, **data
                 )
 
             except (
-                core.entity.adgroup.ad_group_source.exceptions.SourceNotAllowed,
-                core.entity.adgroup.ad_group_source.exceptions.RetargetingNotSupported,
-                core.entity.adgroup.ad_group_source.exceptions.SourceAlreadyExists,
-                core.entity.adgroup.ad_group_source.exceptions.VideoNotSupported,
+                core.models.ad_group_source.exceptions.SourceNotAllowed,
+                core.models.ad_group_source.exceptions.RetargetingNotSupported,
+                core.models.ad_group_source.exceptions.SourceAlreadyExists,
+                core.models.ad_group_source.exceptions.VideoNotSupported,
             ) as err:
                 raise utils.exc.ValidationError(str(err))
 

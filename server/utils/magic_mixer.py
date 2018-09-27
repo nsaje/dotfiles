@@ -5,8 +5,7 @@ from django.contrib.postgres.fields import ArrayField
 from utils import test_helper
 
 import zemauth.models
-import core.entity
-import core.source
+import core.models
 
 
 def get_request_mock(user):
@@ -38,8 +37,8 @@ class MagicMixer(mixer_base.__class__):
         kw = "default_source_settings"
         dss_kwargs = {k[25:]: v for k, v in list(kwargs.items()) if k.startswith(kw)}
 
-        source = self.blend(core.source.Source, **{k: v for k, v in list(kwargs.items()) if not k.startswith(kw)})
-        self.blend(core.source.DefaultSourceSettings, source=source, credentials=self.RANDOM, **dss_kwargs)
+        source = self.blend(core.models.Source, **{k: v for k, v in list(kwargs.items()) if not k.startswith(kw)})
+        self.blend(core.models.DefaultSourceSettings, source=source, credentials=self.RANDOM, **dss_kwargs)
         return source
 
     def postprocess(self, target):

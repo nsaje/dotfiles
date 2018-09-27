@@ -2,7 +2,7 @@ from django import template
 from django.db.models import Q
 
 import dash.constants
-import core.entity
+import core.models
 
 register = template.Library()
 
@@ -22,14 +22,14 @@ def _get_user_agency(context=None):
     user = context["request"].user
     if user.is_anonymous():
         return None
-    return core.entity.agency.Agency.objects.all().filter(Q(users__id=user.id) | Q(account__users__id=user.id)).first()
+    return core.models.agency.Agency.objects.all().filter(Q(users__id=user.id) | Q(account__users__id=user.id)).first()
 
 
 def _get_agency_from_host(context):
     whitelabel = _get_whitelabel_from_host(context)
     if not whitelabel:
         return None
-    return core.entity.agency.Agency.objects.filter(whitelabel=whitelabel).first()
+    return core.models.agency.Agency.objects.filter(whitelabel=whitelabel).first()
 
 
 @register.simple_tag(takes_context=True)

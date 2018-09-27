@@ -2,7 +2,7 @@ import json
 
 from django.core.urlresolvers import reverse
 
-import core.entity
+import core.models
 from core.publisher_groups import publisher_group_helpers
 import core.publisher_bid_modifiers
 import restapi.common.views_base_test
@@ -13,7 +13,7 @@ class PublisherBlacklistTest(restapi.common.views_base_test.RESTAPITest):
     def setUp(self):
         super(PublisherBlacklistTest, self).setUp()
         self.test_request = get_request_mock(self.user)
-        self.test_ad_group = magic_mixer.blend(core.entity.AdGroup, campaign__account__users=[self.user])
+        self.test_ad_group = magic_mixer.blend(core.models.AdGroup, campaign__account__users=[self.user])
 
     def _get_resp_json(self, ad_group_id):
         r = self.client.get(reverse("publishers_list", kwargs={"ad_group_id": ad_group_id}))
@@ -21,7 +21,7 @@ class PublisherBlacklistTest(restapi.common.views_base_test.RESTAPITest):
         return resp_json
 
     def test_adgroups_publishers_list(self):
-        source = core.source.Source.objects.get(bidder_slug="gumgum")
+        source = core.models.Source.objects.get(bidder_slug="gumgum")
         publisher_group_helpers.blacklist_publishers(
             self.test_request,
             [{"publisher": "cnn.com", "source": source, "include_subdomains": True}],
@@ -67,7 +67,7 @@ class PublisherBlacklistTest(restapi.common.views_base_test.RESTAPITest):
         self.assertEqual(self._get_resp_json(self.test_ad_group.id)["data"], test_blacklist)
 
     def test_adgroups_publishers_put_unlist(self):
-        source = core.source.Source.objects.get(bidder_slug="gumgum")
+        source = core.models.Source.objects.get(bidder_slug="gumgum")
         publisher_group_helpers.blacklist_publishers(
             self.test_request,
             [{"publisher": "cnn.com", "source": source, "include_subdomains": True}],
@@ -98,7 +98,7 @@ class PublisherBlacklistTest(restapi.common.views_base_test.RESTAPITest):
         self.assertEqual(self._get_resp_json(self.test_ad_group.id)["data"], [])
 
     def test_modifiers_get(self):
-        source = core.source.Source.objects.get(bidder_slug="gumgum")
+        source = core.models.Source.objects.get(bidder_slug="gumgum")
         core.publisher_bid_modifiers.set(self.test_ad_group, "testpub1", source, 0.5)
         core.publisher_bid_modifiers.set(self.test_ad_group, "testpub2", source, 4.6)
 
@@ -111,7 +111,7 @@ class PublisherBlacklistTest(restapi.common.views_base_test.RESTAPITest):
         )
 
     def test_modifiers_set(self):
-        source = core.source.Source.objects.get(bidder_slug="gumgum")
+        source = core.models.Source.objects.get(bidder_slug="gumgum")
         test_put = [
             {"level": "ADGROUP", "name": "testpub1", "source": "gumgum", "status": "ENABLED", "modifier": 0.5},
             {"level": "ADGROUP", "name": "testpub2", "source": "gumgum", "status": "ENABLED", "modifier": 4.6},
@@ -131,7 +131,7 @@ class PublisherBlacklistTest(restapi.common.views_base_test.RESTAPITest):
         )
 
     def test_modifiers_unset(self):
-        source = core.source.Source.objects.get(bidder_slug="gumgum")
+        source = core.models.Source.objects.get(bidder_slug="gumgum")
         core.publisher_bid_modifiers.set(self.test_ad_group, "testpub1", source, 0.5)
         core.publisher_bid_modifiers.set(self.test_ad_group, "testpub2", source, 4.6)
         test_put = [{"level": "ADGROUP", "name": "testpub1", "source": "gumgum", "status": "ENABLED", "modifier": None}]

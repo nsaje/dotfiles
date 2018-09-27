@@ -6,8 +6,8 @@ from django.db import transaction
 from dash import constants
 
 import core.common
-import core.entity
-import core.entity.settings
+import core.models
+import core.models.settings
 import core.history
 
 ANNOTATION_QUALIFIED_PUBLISHER_GROUPS = set([16922])
@@ -71,7 +71,7 @@ class PublisherGroup(models.Model):
 
         def filter_by_active_adgroups(self):
             data = (
-                core.entity.AdGroup.objects.all()
+                core.models.AdGroup.objects.all()
                 .filter_running()
                 .values_list(
                     "default_blacklist_id",
@@ -117,11 +117,11 @@ class PublisherGroup(models.Model):
     def can_delete(self):
         # Check all ad group settings of the corresponding account/agency if they reference the publisher group
         if self.agency:
-            ad_groups_settings = core.entity.settings.AdGroupSettings.objects.filter(
+            ad_groups_settings = core.models.settings.AdGroupSettings.objects.filter(
                 ad_group__campaign__account__agency=self.agency
             )
         else:
-            ad_groups_settings = core.entity.settings.AdGroupSettings.objects.filter(
+            ad_groups_settings = core.models.settings.AdGroupSettings.objects.filter(
                 ad_group__campaign__account=self.account
             )
 
@@ -144,7 +144,7 @@ class PublisherGroup(models.Model):
         level = constants.HistoryLevel.ACCOUNT if account else constants.HistoryLevel.AGENCY
 
         if not agency:
-            _, _, agency = core.entity.helpers.generate_parents(account=self)
+            _, _, agency = core.models.helpers.generate_parents(account=self)
 
         return core.history.History.objects.create(
             account=account,

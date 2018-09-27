@@ -5,7 +5,7 @@ import time
 import urllib.parse
 
 from core import audiences
-from core import entity
+from core import models
 from core import pixels
 from dash import constants
 from dash import forms
@@ -36,7 +36,7 @@ class Command(ExceptionCommand):
             self._sync_campaign(config)
 
     def _sync_campaign(self, config):
-        campaign = entity.Campaign.objects.get(pk=config["campaign_id"])
+        campaign = models.Campaign.objects.get(pk=config["campaign_id"])
         pixel = pixels.ConversionPixel.objects.get(account_id=campaign.account_id, pk=config["pixel_id"])
 
         product_data = self._parse_feed(config["feed_url"])
@@ -81,7 +81,7 @@ class Command(ExceptionCommand):
         return entries
 
     def _get_ads(self, campaign):
-        content_ads = entity.ContentAd.objects.filter(ad_group__campaign=campaign).exclude_archived()
+        content_ads = models.ContentAd.objects.filter(ad_group__campaign=campaign).exclude_archived()
         return {content_ad.ad_group_id: content_ad for content_ad in content_ads}
 
     def _create_content_ad(self, ad_group, product):
@@ -102,13 +102,13 @@ class Command(ExceptionCommand):
 
     def _get_ad_groups(self, campaign):
         ad_groups = (
-            entity.AdGroup.objects.filter(campaign=campaign).select_related("campaign__account").exclude_archived()
+            models.AdGroup.objects.filter(campaign=campaign).select_related("campaign__account").exclude_archived()
         )
         return {ad_group.name: ad_group for ad_group in ad_groups}
 
     def _create_ad_group(self, campaign, name):
         print("Creating ad group")
-        return entity.AdGroup.objects.create(self.request, campaign, name=name)
+        return models.AdGroup.objects.create(self.request, campaign, name=name)
 
     def _set_ad_group_settings(self, ad_group, audience):
         audience_targeting = [audience.id]
@@ -117,7 +117,7 @@ class Command(ExceptionCommand):
             ad_group.settings.update(self.request, audience_targeting=audience_targeting)
 
     def _pause_sources_without_retargeting(self, ad_group):
-        ad_group_sources = entity.AdGroupSource.objects.filter(ad_group=ad_group).select_related("source")
+        ad_group_sources = models.AdGroupSource.objects.filter(ad_group=ad_group).select_related("source")
         for ad_group_source in ad_group_sources:
             if (
                 ad_group_source.source.can_modify_retargeting_automatically()

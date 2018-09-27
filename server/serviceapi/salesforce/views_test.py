@@ -4,7 +4,7 @@ from django.core.urlresolvers import reverse
 import mock
 
 from zemauth.models import User
-import core.entity
+import core.models
 import dash.constants
 from . import service
 
@@ -25,7 +25,7 @@ class CreateClientTestCase(TestCase):
         data = {"salesforceAccountId": 1, "name": "Agency 1", "type": "agency"}
         url = reverse("service.salesforce.client")
         r = self.client.put(url, data=data, format="json")
-        client = core.entity.agency.Agency.objects.all().order_by("-created_dt").first()
+        client = core.models.agency.Agency.objects.all().order_by("-created_dt").first()
         self.assertEqual(r.json(), {"data": {"z1_accountId": client.get_salesforce_id(), "z1_data": "Agency 1"}})
         self.assertEqual(r.status_code, 200)
         self.assertEqual(client.default_account_type, dash.constants.AccountType.PILOT)
@@ -36,7 +36,7 @@ class CreateClientTestCase(TestCase):
         data = {"salesforceAccountId": 1, "name": "Brand 1", "type": "brand", "currency": "EUR"}
         url = reverse("service.salesforce.client")
         r = self.client.put(url, data=data, format="json")
-        client = core.entity.account.Account.objects.all().order_by("-created_dt").first()
+        client = core.models.account.Account.objects.all().order_by("-created_dt").first()
         self.assertEqual(r.json(), {"data": {"z1_accountId": client.get_salesforce_id(), "z1_data": "Brand 1"}})
         self.assertEqual(r.status_code, 200)
         sett = client.get_current_settings()
@@ -73,7 +73,7 @@ class CreateClientTestCase(TestCase):
             r.json(), {"details": {"type": ['"invalid-type" is not a valid choice.']}, "errorCode": "ValidationError"}
         )
 
-        magic_mixer.blend(core.entity.agency.Agency, name="Name exists")
+        magic_mixer.blend(core.models.agency.Agency, name="Name exists")
         data = {"salesforceAccountId": 1, "type": "agency", "name": "Name exists"}
         r = self.client.put(url, data=data, format="json")
         self.assertEqual(r.status_code, 400)
@@ -88,8 +88,8 @@ class CreateCreditTestCase(TestCase):
         self.user = magic_mixer.blend(User)
         self.client.force_authenticate(user=self.user)
 
-        self.account = magic_mixer.blend(core.entity.account.Account, id=1)
-        self.agency = magic_mixer.blend(core.entity.agency.Agency, id=1)
+        self.account = magic_mixer.blend(core.models.account.Account, id=1)
+        self.agency = magic_mixer.blend(core.models.agency.Agency, id=1)
 
     def test_missing_fields(self):
         url = reverse("service.salesforce.credit")
@@ -363,10 +363,10 @@ class AgencyAccountsTestCase(TestCase):
         self.request_mock.user = self.user
 
     def test_valid(self):
-        magic_mixer.blend(core.entity.agency.Agency, id=1, name="Agency 1").save(self.request_mock)
-        magic_mixer.blend(core.entity.account.Account, agency_id=None, id=1, name="Acc 0").save(self.request_mock)
-        magic_mixer.blend(core.entity.account.Account, agency_id=1, id=2, name="Acc 1").save(self.request_mock)
-        magic_mixer.blend(core.entity.account.Account, agency_id=1, id=3, name="Acc 2").save(self.request_mock)
+        magic_mixer.blend(core.models.agency.Agency, id=1, name="Agency 1").save(self.request_mock)
+        magic_mixer.blend(core.models.account.Account, agency_id=None, id=1, name="Acc 0").save(self.request_mock)
+        magic_mixer.blend(core.models.account.Account, agency_id=1, id=2, name="Acc 1").save(self.request_mock)
+        magic_mixer.blend(core.models.account.Account, agency_id=1, id=3, name="Acc 2").save(self.request_mock)
 
         url = reverse("service.salesforce.agency_accounts")
         r = self.client.post(url, data={"z1_accountId": "a1"}, format="json")
@@ -375,7 +375,7 @@ class AgencyAccountsTestCase(TestCase):
         )
 
     def test_brand(self):
-        magic_mixer.blend(core.entity.account.Account, agency_id=None, id=1, name="Acc 0").save(self.request_mock)
+        magic_mixer.blend(core.models.account.Account, agency_id=None, id=1, name="Acc 0").save(self.request_mock)
 
         url = reverse("service.salesforce.agency_accounts")
         r = self.client.post(url, data={"z1_accountId": "b1"}, format="json")
@@ -396,7 +396,7 @@ class CreditsListTestCase(TestCase):
         self.request_mock.user = self.user
 
     def test_valid_agency(self):
-        agency = magic_mixer.blend(core.entity.agency.Agency, id=1, name="Agency 1")
+        agency = magic_mixer.blend(core.models.agency.Agency, id=1, name="Agency 1")
         agency.save(self.request_mock)
         credit = magic_mixer.blend(
             core.bcm.credit_line_item.CreditLineItem,
@@ -439,7 +439,7 @@ class CreditsListTestCase(TestCase):
         )
 
     def test_valid_account(self):
-        account = magic_mixer.blend(core.entity.account.Account, id=1, name="Account 1")
+        account = magic_mixer.blend(core.models.account.Account, id=1, name="Account 1")
         account.save(self.request_mock)
         credit = magic_mixer.blend(
             core.bcm.credit_line_item.CreditLineItem,

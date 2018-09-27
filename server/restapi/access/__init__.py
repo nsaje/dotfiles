@@ -1,6 +1,6 @@
 from rest_framework import permissions
 
-import core.entity
+import core.models
 import utils.exc
 
 
@@ -29,15 +29,15 @@ class HasAdGroupAccess(permissions.BasePermission):
 
 def get_agency(user, agency_id):
     try:
-        agencies = core.entity.Agency.objects.all().filter_by_user(user)
+        agencies = core.models.Agency.objects.all().filter_by_user(user)
         return agencies.get(id=int(agency_id))
-    except core.entity.Agency.DoesNotExist:
+    except core.models.Agency.DoesNotExist:
         raise utils.exc.MissingDataError("Agency does not exist")
 
 
 def get_account(user, account_id, sources=None, select_related_users=False):
     try:
-        account = core.entity.Account.objects.all().filter_by_user(user).select_related("settings", "agency")
+        account = core.models.Account.objects.all().filter_by_user(user).select_related("settings", "agency")
 
         if sources:
             account = account.filter_by_sources(sources)
@@ -48,14 +48,14 @@ def get_account(user, account_id, sources=None, select_related_users=False):
             account = account.select_related("settings__default_sales_representative")
 
         return account.filter(id=int(account_id)).get()
-    except core.entity.Account.DoesNotExist:
+    except core.models.Account.DoesNotExist:
         raise utils.exc.MissingDataError("Account does not exist")
 
 
 def get_ad_group(user, ad_group_id, sources=None):
     try:
         ad_group = (
-            core.entity.AdGroup.objects.all()
+            core.models.AdGroup.objects.all()
             .select_related("settings", "campaign__account__agency")
             .filter_by_user(user)
             .filter(id=int(ad_group_id))
@@ -65,26 +65,26 @@ def get_ad_group(user, ad_group_id, sources=None):
             ad_group = ad_group.filter_by_sources(sources)
 
         return ad_group.get()
-    except core.entity.AdGroup.DoesNotExist:
+    except core.models.AdGroup.DoesNotExist:
         raise utils.exc.MissingDataError("Ad Group does not exist")
 
 
 def get_content_ad(user, content_ad_id, select_related=False):
     try:
-        content_ad = core.entity.ContentAd.objects.all().filter_by_user(user).filter(id=int(content_ad_id))
+        content_ad = core.models.ContentAd.objects.all().filter_by_user(user).filter(id=int(content_ad_id))
 
         if select_related:
             content_ad = content_ad.select_related("ad_group")
 
         return content_ad.get()
-    except core.entity.AdGroup.DoesNotExist:
+    except core.models.AdGroup.DoesNotExist:
         raise utils.exc.MissingDataError("Content Ad does not exist")
 
 
 def get_campaign(user, campaign_id, sources=None, select_related=False):
     try:
         campaign = (
-            core.entity.Campaign.objects.all()
+            core.models.Campaign.objects.all()
             .select_related("settings", "account__agency")
             .filter_by_user(user)
             .filter(id=int(campaign_id))
@@ -96,12 +96,12 @@ def get_campaign(user, campaign_id, sources=None, select_related=False):
             campaign = campaign.select_related("account")
 
         return campaign.get()
-    except core.entity.Campaign.DoesNotExist:
+    except core.models.Campaign.DoesNotExist:
         raise utils.exc.MissingDataError("Campaign does not exist")
 
 
 def get_upload_batch(user, batch_id):
-    batch = core.entity.UploadBatch.objects.get(pk=batch_id)
+    batch = core.models.UploadBatch.objects.get(pk=batch_id)
     try:
         if batch.account_id:
             get_account(user, batch.account_id)

@@ -3,7 +3,7 @@ import logging
 
 from django.core.urlresolvers import reverse
 
-import core.entity
+import core.models
 import core.features.yahoo_accounts
 import dash.constants
 
@@ -23,9 +23,9 @@ class YahooTest(K1APIBaseTest):
         yahoo_account_2 = magic_mixer.blend(
             core.features.yahoo_accounts.YahooAccount, currency=dash.constants.Currency.EUR
         )
-        account = magic_mixer.blend(core.entity.Account, yahoo_account=yahoo_account)
-        account_2 = magic_mixer.blend(core.entity.Account, yahoo_account=yahoo_account_2)
-        account_3 = magic_mixer.blend(core.entity.Account, yahoo_account=yahoo_account_2)
+        account = magic_mixer.blend(core.models.Account, yahoo_account=yahoo_account)
+        account_2 = magic_mixer.blend(core.models.Account, yahoo_account=yahoo_account_2)
+        account_3 = magic_mixer.blend(core.models.Account, yahoo_account=yahoo_account_2)
         response = self.client.get(reverse("k1api.yahoo_accounts"))
 
         data = json.loads(response.content)
@@ -40,10 +40,10 @@ class YahooTest(K1APIBaseTest):
 
     def test_get_filtered_ad_group(self):
         yahoo_account = magic_mixer.blend(core.features.yahoo_accounts.YahooAccount)
-        account = magic_mixer.blend(core.entity.Account, yahoo_account=yahoo_account)
+        account = magic_mixer.blend(core.models.Account, yahoo_account=yahoo_account)
         # second, filtered out
         yahoo_account_2 = magic_mixer.blend(core.features.yahoo_accounts.YahooAccount)
-        magic_mixer.blend(core.entity.Account, yahoo_account=yahoo_account_2)
+        magic_mixer.blend(core.models.Account, yahoo_account=yahoo_account_2)
         response = self.client.get(reverse("k1api.yahoo_accounts"), {"account_ids": account.id})
 
         data = json.loads(response.content)

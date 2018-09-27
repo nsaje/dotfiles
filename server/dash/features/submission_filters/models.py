@@ -1,7 +1,7 @@
 from django.db import models
 
 import core.common
-import core.entity.helpers
+import core.models.helpers
 from . import constants
 from . import exceptions
 import dash.constants
@@ -84,7 +84,7 @@ class SubmissionFilter(models.Model):
     class QuerySet(models.QuerySet):
         def filter_applied(self, source, content_ad=None, **levels):
             ad_group = levels.get("ad_group") or content_ad and content_ad.ad_group
-            campaign, account, agency = core.entity.helpers.generate_parents(**levels)
+            campaign, account, agency = core.models.helpers.generate_parents(**levels)
             rules = models.Q()
             if agency:
                 rules |= models.Q(agency=agency)

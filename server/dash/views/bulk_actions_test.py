@@ -11,7 +11,7 @@ from dash import history_helpers
 from dash import models
 from dash.views import bulk_actions
 
-import core.source.source_type.model
+import core.models.source_type.model
 from zemauth.models import User
 
 
@@ -110,9 +110,9 @@ class AdGroupSourceStateTest(TestCase):
         self.assertEqual(len(ad_group_sources), facebook_mock.call_count)
         autopilot_check_mock.assert_called_once_with(ad_group, ad_group_sources)
 
-    @patch.object(core.source.source_type.model.SourceType, "get_etfm_max_daily_budget", return_value=89.77)
-    @patch.object(core.source.source_type.model.SourceType, "get_etfm_min_daily_budget", return_value=7.11)
-    @patch.object(core.source.source_type.model.SourceType, "get_min_cpc", return_value=0.1211)
+    @patch.object(core.models.source_type.model.SourceType, "get_etfm_max_daily_budget", return_value=89.77)
+    @patch.object(core.models.source_type.model.SourceType, "get_etfm_min_daily_budget", return_value=7.11)
+    @patch.object(core.models.source_type.model.SourceType, "get_min_cpc", return_value=0.1211)
     def test_adgroups_sources_rounding(self, min_cpc_mock, min_daily_budget_mock, max_daily_budget_mock):
         ad_group_id = 1
         data = {"state": constants.AdGroupSourceSettingsState.ACTIVE, "selected_ids": [ad_group_id]}

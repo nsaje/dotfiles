@@ -501,7 +501,7 @@ class FacebookStopMediaSourcesTest(TestCase):
     fixtures = ["test_views.yaml", "test_facebook.yaml"]
 
     @patch("utils.k1_helper.update_ad_groups")
-    @patch("core.entity.settings.settings_base.SettingsBase.update_unsafe")
+    @patch("core.models.settings.settings_base.SettingsBase.update_unsafe")
     def test_stop_source_on_account(self, save_mock, k1_update_mock):
         account = models.Account.objects.get(pk=100)
         facebook_helper.stop_facebook_media_sources(account)

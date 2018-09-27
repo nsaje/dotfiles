@@ -4,7 +4,7 @@ from mock import patch
 from django.test import TestCase
 
 import core.bcm
-import core.entity
+import core.models
 import dash.constants
 from utils import dates_helper
 from utils.magic_mixer import magic_mixer
@@ -14,8 +14,8 @@ from . import signals
 
 class NotifyBudgetsTest(TestCase):
     def setUp(self):
-        account = magic_mixer.blend(core.entity.Account)
-        self.campaign = magic_mixer.blend(core.entity.Campaign, account=account)
+        account = magic_mixer.blend(core.models.Account)
+        self.campaign = magic_mixer.blend(core.models.Campaign, account=account)
         self.campaign.settings.update_unsafe(None, autopilot=True)
         self.credit = magic_mixer.blend(
             core.bcm.CreditLineItem,

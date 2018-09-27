@@ -4,7 +4,7 @@ import mock
 from celery.exceptions import SoftTimeLimitExceeded
 from django.test import TestCase
 
-import core.entity
+import core.models
 
 from dash.features import scheduled_reports
 from utils.magic_mixer import magic_mixer
@@ -90,7 +90,7 @@ class ReportsExecuteTest(TestCase):
 
     @mock.patch("utils.email_helper.send_async_report_fail")
     def test_send_fail(self, mock_send):
-        ad_group = magic_mixer.blend(core.entity.AdGroup, campaign__account__users=[self.reportJob.user])
+        ad_group = magic_mixer.blend(core.models.AdGroup, campaign__account__users=[self.reportJob.user])
         self.reportJob.query = {
             "options": {
                 "recipients": ["test@test.com"],

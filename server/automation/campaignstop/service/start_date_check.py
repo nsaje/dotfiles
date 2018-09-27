@@ -1,5 +1,5 @@
 import core.bcm
-import core.entity
+import core.models
 
 from .. import CampaignStopState
 from .. import RealTimeCampaignStopLog
@@ -12,7 +12,7 @@ from utils import dates_helper
 
 def update_campaigns_start_date(campaigns=None):
     if not campaigns:
-        campaigns = core.entity.Campaign.objects.filter(real_time_campaign_stop=True)
+        campaigns = core.models.Campaign.objects.filter(real_time_campaign_stop=True)
 
     _update_campaigns_start_date(campaigns)
 

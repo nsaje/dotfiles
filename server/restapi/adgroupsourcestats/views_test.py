@@ -6,8 +6,8 @@ from django.core.urlresolvers import reverse
 
 from restapi.common.views_base_test import RESTAPITest
 
-import core.source
-import core.entity.adgroup
+import core.models
+import core.models.ad_group
 from zemauth.models import User
 from utils.magic_mixer import magic_mixer
 
@@ -19,7 +19,7 @@ class RealtimestatsViewsTest(RESTAPITest):
         user = User.objects.get(pk=1)
         user.user_permissions.remove(permission)
 
-        sources = magic_mixer.cycle(2).blend(core.source.Source, bidder_slug=magic_mixer.RANDOM)
+        sources = magic_mixer.cycle(2).blend(core.models.Source, bidder_slug=magic_mixer.RANDOM)
         data = [
             {"source": sources[0], "spend": decimal.Decimal("12.34567")},
             {"source": sources[1], "spend": decimal.Decimal("0.11111")},
@@ -33,4 +33,4 @@ class RealtimestatsViewsTest(RESTAPITest):
         expected = [{"source": sources[0].name, "spend": "12.35"}, {"source": sources[1].name, "spend": "0.11"}]
         self.assertEqual(resp_json["data"], expected)
 
-        mock_get.assert_called_with(core.entity.adgroup.AdGroup.objects.get(pk=2040), use_local_currency=True)
+        mock_get.assert_called_with(core.models.ad_group.AdGroup.objects.get(pk=2040), use_local_currency=True)

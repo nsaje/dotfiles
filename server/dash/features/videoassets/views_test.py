@@ -5,7 +5,7 @@ from rest_framework.test import APIClient
 
 from utils.magic_mixer import magic_mixer
 
-import core.entity.account
+import core.models.account
 import restapi.common.views_base_test
 from . import constants
 from . import models
@@ -14,7 +14,7 @@ from . import models
 class VideoAssetTest(restapi.common.views_base_test.RESTAPITest):
     def setUp(self):
         self.user = magic_mixer.blend_user(permissions=["fea_video_upload"])
-        self.account = magic_mixer.blend(core.entity.Account, users=[self.user])
+        self.account = magic_mixer.blend(core.models.Account, users=[self.user])
         self.client = APIClient()
         self.client.force_authenticate(user=self.user)
 

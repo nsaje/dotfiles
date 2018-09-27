@@ -1,7 +1,7 @@
 from django.core.urlresolvers import reverse
 
 import dash.models
-import core.source.source_type.model
+import core.models.source_type.model
 from dash import constants
 from utils.magic_mixer import magic_mixer
 
@@ -97,9 +97,9 @@ class AdGroupSourcesTest(RESTAPITest):
         )
         self.assertResponseError(r, "ValidationError")
 
-    @mock.patch.object(core.source.source_type.model.SourceType, "get_etfm_max_daily_budget", return_value=89.77)
-    @mock.patch.object(core.source.source_type.model.SourceType, "get_etfm_min_daily_budget", return_value=7.11)
-    @mock.patch.object(core.source.source_type.model.SourceType, "get_min_cpc", return_value=0.1211)
+    @mock.patch.object(core.models.source_type.model.SourceType, "get_etfm_max_daily_budget", return_value=89.77)
+    @mock.patch.object(core.models.source_type.model.SourceType, "get_etfm_min_daily_budget", return_value=7.11)
+    @mock.patch.object(core.models.source_type.model.SourceType, "get_min_cpc", return_value=0.1211)
     def test_adgroups_sources_rounding(self, min_cpc_mock, min_daily_budget_mock, max_daily_budget_mock):
         ad_group = magic_mixer.blend(dash.models.AdGroup, campaign__account__users=[self.user])
         ad_group.settings.update_unsafe(None, cpc_cc=0.7792)

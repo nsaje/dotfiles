@@ -8,8 +8,7 @@ from django.test import TestCase
 import pytz
 
 import core.features.yahoo_accounts
-import core.entity
-import core.source
+import core.models
 import dash.constants
 from utils.magic_mixer import magic_mixer
 from utils import dates_helper
@@ -21,12 +20,12 @@ from . import refresh
 
 class RefreshRealtimeDataTest(TestCase):
     def setUp(self):
-        self.account = magic_mixer.blend(core.entity.Account, yahoo_account__budgets_tz="America/Los_Angeles")
-        self.campaign = magic_mixer.blend(core.entity.Campaign, real_time_campaign_stop=True, account=self.account)
-        self.ad_group = magic_mixer.blend(core.entity.AdGroup, campaign=self.campaign)
-        self.source_type = magic_mixer.blend(core.source.SourceType, budgets_tz=pytz.utc)
-        self.source = magic_mixer.blend(core.source.Source, source_type=self.source_type)
-        magic_mixer.blend(core.entity.AdGroupSource, ad_group=self.ad_group, source=self.source)
+        self.account = magic_mixer.blend(core.models.Account, yahoo_account__budgets_tz="America/Los_Angeles")
+        self.campaign = magic_mixer.blend(core.models.Campaign, real_time_campaign_stop=True, account=self.account)
+        self.ad_group = magic_mixer.blend(core.models.AdGroup, campaign=self.campaign)
+        self.source_type = magic_mixer.blend(core.models.SourceType, budgets_tz=pytz.utc)
+        self.source = magic_mixer.blend(core.models.Source, source_type=self.source_type)
+        magic_mixer.blend(core.models.AdGroupSource, ad_group=self.ad_group, source=self.source)
 
         self.data = {"stats": [{"source": self.source, "spend": decimal.Decimal("12.0")}]}
 
@@ -71,7 +70,7 @@ class RefreshRealtimeDataTest(TestCase):
     @mock.patch("dash.features.realtimestats.get_ad_group_sources_stats_without_caching")
     def test_refresh_realtime_data_source_error(self, mock_get_realtime_data, mock_influx):
         source_1 = self.source
-        source_2 = magic_mixer.blend(core.source.Source, source_type__budgets_tz=pytz.utc, bidder_slug="s_2")
+        source_2 = magic_mixer.blend(core.models.Source, source_type__budgets_tz=pytz.utc, bidder_slug="s_2")
         RealTimeDataHistory.objects.create(
             ad_group=self.ad_group, source=source_1, date=dates_helper.utc_today(), etfm_spend="1.0"
         )
@@ -120,9 +119,9 @@ class RefreshRealtimeDataTest(TestCase):
 
     @mock.patch("dash.features.realtimestats.get_ad_group_sources_stats_without_caching")
     def test_update_for_custom_campaign(self, mock_get_realtime_data):
-        campaign = magic_mixer.blend(core.entity.Campaign, real_time_campaign_stop=False)
-        ad_group = magic_mixer.blend(core.entity.AdGroup, campaign=campaign)
-        magic_mixer.blend(core.entity.AdGroupSource, ad_group=ad_group, source=self.source)
+        campaign = magic_mixer.blend(core.models.Campaign, real_time_campaign_stop=False)
+        ad_group = magic_mixer.blend(core.models.AdGroup, campaign=campaign)
+        magic_mixer.blend(core.models.AdGroupSource, ad_group=ad_group, source=self.source)
 
         mock_get_realtime_data.return_value = self.data
 
@@ -133,9 +132,9 @@ class RefreshRealtimeDataTest(TestCase):
 
     @mock.patch("dash.features.realtimestats.get_ad_group_sources_stats_without_caching")
     def test_refresh_budgets_tz_behind_source(self, mock_get_realtime_data):
-        yahoo_source_type = magic_mixer.blend(core.source.SourceType, type=dash.constants.SourceType.YAHOO)
-        yahoo_source = magic_mixer.blend(core.source.Source, source_type=yahoo_source_type)
-        magic_mixer.blend(core.entity.AdGroupSource, ad_group=self.ad_group, source=yahoo_source)
+        yahoo_source_type = magic_mixer.blend(core.models.SourceType, type=dash.constants.SourceType.YAHOO)
+        yahoo_source = magic_mixer.blend(core.models.Source, source_type=yahoo_source_type)
+        magic_mixer.blend(core.models.AdGroupSource, ad_group=self.ad_group, source=yahoo_source)
 
         data = {"stats": [{"source": yahoo_source, "spend": decimal.Decimal("10.0")}]}
         mock_get_realtime_data.return_value = data
@@ -166,11 +165,11 @@ class RefreshRealtimeDataTest(TestCase):
 
     @mock.patch("dash.features.realtimestats.get_ad_group_sources_stats_without_caching")
     def test_multiple(self, mock_get_realtime_data):
-        campaign = magic_mixer.blend(core.entity.Campaign, real_time_campaign_stop=True)
-        ad_groups = magic_mixer.cycle(2).blend(core.entity.AdGroup, campaign=campaign)
-        sources = magic_mixer.cycle(2).blend(core.source.Source, source_type=self.source_type)
+        campaign = magic_mixer.blend(core.models.Campaign, real_time_campaign_stop=True)
+        ad_groups = magic_mixer.cycle(2).blend(core.models.AdGroup, campaign=campaign)
+        sources = magic_mixer.cycle(2).blend(core.models.Source, source_type=self.source_type)
         for ad_group, source in itertools.product(ad_groups, sources):
-            magic_mixer.blend(core.entity.AdGroupSource, ad_group=ad_group, source=source)
+            magic_mixer.blend(core.models.AdGroupSource, ad_group=ad_group, source=source)
 
         rt_stats_before = {
             ad_groups[0]: {
@@ -218,10 +217,10 @@ class RefreshRealtimeDataTest(TestCase):
 
 class RefreshIfStaleTest(TestCase):
     def setUp(self):
-        self.campaign_current_data = magic_mixer.blend(core.entity.Campaign, real_time_campaign_stop=True)
-        self.campaign_stale_data = magic_mixer.blend(core.entity.Campaign, real_time_campaign_stop=True)
-        self.campaign_no_data = magic_mixer.blend(core.entity.Campaign, real_time_campaign_stop=True)
-        self.campaign_without_campaing_stop = magic_mixer.blend(core.entity.Campaign, real_time_campaign_stop=False)
+        self.campaign_current_data = magic_mixer.blend(core.models.Campaign, real_time_campaign_stop=True)
+        self.campaign_stale_data = magic_mixer.blend(core.models.Campaign, real_time_campaign_stop=True)
+        self.campaign_no_data = magic_mixer.blend(core.models.Campaign, real_time_campaign_stop=True)
+        self.campaign_without_campaing_stop = magic_mixer.blend(core.models.Campaign, real_time_campaign_stop=False)
 
         self.utc_now_mock = datetime.datetime(2018, 5, 28, 12)
         with test_helper.disable_auto_now_add(RealTimeCampaignDataHistory, "created_dt"):

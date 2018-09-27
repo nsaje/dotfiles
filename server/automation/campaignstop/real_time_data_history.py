@@ -1,12 +1,11 @@
 from django.db import models
 
-import core.entity
-import core.source
+import core.models
 
 
 class RealTimeDataHistory(models.Model):
-    ad_group = models.ForeignKey(core.entity.AdGroup)
-    source = models.ForeignKey(core.source.Source)
+    ad_group = models.ForeignKey(core.models.AdGroup)
+    source = models.ForeignKey(core.models.Source)
     date = models.DateField(db_index=True)
     etfm_spend = models.DecimalField(max_digits=14, decimal_places=4, default=0)
 
@@ -19,7 +18,7 @@ class RealTimeDataHistory(models.Model):
 
 
 class RealTimeCampaignDataHistory(models.Model):
-    campaign = models.ForeignKey(core.entity.Campaign)
+    campaign = models.ForeignKey(core.models.Campaign)
     date = models.DateField(db_index=True)
     etfm_spend = models.DecimalField(max_digits=14, decimal_places=4, default=0)
 

@@ -21,7 +21,7 @@ from dash.features import contentupload
 from dash.views import breakdown_helpers
 
 import core.multicurrency
-import core.entity.settings.ad_group_source_settings.exceptions
+import core.models.settings.ad_group_source_settings.exceptions
 
 from utils import api_common
 from utils import exc
@@ -110,7 +110,7 @@ class AdGroupSourceState(BaseBulkActionView):
         try:
             return ad_group_source.settings.update(request, **data)
 
-        except core.entity.settings.ad_group_source_settings.exceptions.MinimalDailyBudgetTooLow as err:
+        except core.models.settings.ad_group_source_settings.exceptions.MinimalDailyBudgetTooLow as err:
             raise exc.ValidationError(
                 "{}: {}".format(
                     ad_group_source.source.name,
@@ -122,7 +122,7 @@ class AdGroupSourceState(BaseBulkActionView):
                 )
             )
 
-        except core.entity.settings.ad_group_source_settings.exceptions.MaximalDailyBudgetTooHigh as err:
+        except core.models.settings.ad_group_source_settings.exceptions.MaximalDailyBudgetTooHigh as err:
             raise exc.ValidationError(
                 "{}: {}".format(
                     ad_group_source.source.name,
@@ -135,7 +135,7 @@ class AdGroupSourceState(BaseBulkActionView):
                 )
             )
 
-        except core.entity.settings.ad_group_source_settings.exceptions.MinimalCPCTooLow as err:
+        except core.models.settings.ad_group_source_settings.exceptions.MinimalCPCTooLow as err:
             raise exc.ValidationError(
                 "{}: {}".format(
                     ad_group_source.source.name,
@@ -148,7 +148,7 @@ class AdGroupSourceState(BaseBulkActionView):
                 )
             )
 
-        except core.entity.settings.ad_group_source_settings.exceptions.MaximalCPCTooHigh as err:
+        except core.models.settings.ad_group_source_settings.exceptions.MaximalCPCTooHigh as err:
             raise exc.ValidationError(
                 "{}: {}".format(
                     ad_group_source.source.name,
@@ -161,7 +161,7 @@ class AdGroupSourceState(BaseBulkActionView):
                 )
             )
 
-        except core.entity.settings.ad_group_source_settings.exceptions.MinimalCPMTooLow as err:
+        except core.models.settings.ad_group_source_settings.exceptions.MinimalCPMTooLow as err:
             raise exc.ValidationError(
                 "{}: {}".format(
                     ad_group_source.source.name,
@@ -174,7 +174,7 @@ class AdGroupSourceState(BaseBulkActionView):
                 )
             )
 
-        except core.entity.settings.ad_group_source_settings.exceptions.MaximalCPMTooHigh as err:
+        except core.models.settings.ad_group_source_settings.exceptions.MaximalCPMTooHigh as err:
             raise exc.ValidationError(
                 "{}: {}".format(
                     ad_group_source.source.name,
@@ -188,11 +188,11 @@ class AdGroupSourceState(BaseBulkActionView):
             )
 
         except (
-            core.entity.settings.ad_group_source_settings.exceptions.CPCInvalid,
-            core.entity.settings.ad_group_source_settings.exceptions.RetargetingNotSupported,
-            core.entity.settings.ad_group_source_settings.exceptions.MediaSourceNotConnectedToFacebook,
-            core.entity.settings.ad_group_source_settings.exceptions.YahooCPCTooLow,
-            core.entity.settings.ad_group_source_settings.exceptions.AutopilotDailySpendCapTooLow,
+            core.models.settings.ad_group_source_settings.exceptions.CPCInvalid,
+            core.models.settings.ad_group_source_settings.exceptions.RetargetingNotSupported,
+            core.models.settings.ad_group_source_settings.exceptions.MediaSourceNotConnectedToFacebook,
+            core.models.settings.ad_group_source_settings.exceptions.YahooCPCTooLow,
+            core.models.settings.ad_group_source_settings.exceptions.AutopilotDailySpendCapTooLow,
         ) as err:
             raise exc.ValidationError("{}: {}".format(ad_group_source.source.name, str(err)))
 
@@ -533,10 +533,10 @@ class CampaignAdGroupState(BaseBulkActionView):
             self._handle_multiple_error(ad_group, err)
 
         except (
-            core.entity.settings.ad_group_settings.exceptions.CannotChangeAdGroupState,
-            core.entity.settings.ad_group_settings.exceptions.AutopilotDailyBudgetTooLow,
-            core.entity.settings.ad_group_settings.exceptions.AutopilotDailyBudgetTooHigh,
-            core.entity.settings.ad_group_settings.exceptions.YahooDesktopCPCTooLow,
+            core.models.settings.ad_group_settings.exceptions.CannotChangeAdGroupState,
+            core.models.settings.ad_group_settings.exceptions.AutopilotDailyBudgetTooLow,
+            core.models.settings.ad_group_settings.exceptions.AutopilotDailyBudgetTooHigh,
+            core.models.settings.ad_group_settings.exceptions.YahooDesktopCPCTooLow,
         ) as err:
             raise exc.ValidationError("{}: {}".format(ad_group.settings.ad_group_name, str(err)))
 

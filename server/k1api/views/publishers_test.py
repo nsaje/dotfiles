@@ -173,7 +173,7 @@ class PublishersTest(K1APIBaseTest):
 
 class PublisherBidModifiersTest(K1APIBaseTest):
     def setUp(self):
-        self.source = magic_mixer.blend(core.source.Source, bidder_slug="test_source")
+        self.source = magic_mixer.blend(core.models.Source, bidder_slug="test_source")
         super(PublisherBidModifiersTest, self).setUp()
 
     def repr(self, obj):
@@ -193,9 +193,9 @@ class PublisherBidModifiersTest(K1APIBaseTest):
         self.assertEqual(data["response"], [self.repr(obj) for obj in test_objs])
 
     def test_get_with_filters(self):
-        source1 = magic_mixer.blend(core.source.Source, source_type__type="abc")
-        source2 = magic_mixer.blend(core.source.Source, source_type__type="cde")
-        ad_groups = magic_mixer.cycle(6).blend(core.entity.AdGroup)
+        source1 = magic_mixer.blend(core.models.Source, source_type__type="abc")
+        source2 = magic_mixer.blend(core.models.Source, source_type__type="cde")
+        ad_groups = magic_mixer.cycle(6).blend(core.models.AdGroup)
         expected = magic_mixer.cycle(3).blend(
             core.publisher_bid_modifiers.PublisherBidModifier,
             source=source1,

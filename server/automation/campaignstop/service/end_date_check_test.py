@@ -13,7 +13,7 @@ from utils import dates_helper
 
 class UpdateCampaignEndDateTestCase(TestCase):
     def setUp(self):
-        self.campaign = magic_mixer.blend(core.entity.Campaign, real_time_campaign_stop=True)
+        self.campaign = magic_mixer.blend(core.models.Campaign, real_time_campaign_stop=True)
 
         self.today = dates_helper.local_today()
         self.credit = magic_mixer.blend(
@@ -78,7 +78,7 @@ class UpdateCampaignEndDateTestCase(TestCase):
             mock_now.return_value = datetime.datetime(yday.year, yday.month, yday.day, 12)
 
             campaign = magic_mixer.blend(
-                core.entity.Campaign,
+                core.models.Campaign,
                 account=self.campaign.account,  # uses the same credit
                 real_time_campaign_stop=True,
             )

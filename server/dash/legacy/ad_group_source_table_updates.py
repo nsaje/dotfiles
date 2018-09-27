@@ -5,7 +5,7 @@ since it was initially written for a different use case - polling from client wh
 isn't done anymore.
 """
 
-from core import source
+from core.models import all_rtb
 from dash import constants, models
 from dash.views import helpers
 
@@ -40,7 +40,7 @@ def get_updated_ad_group_sources_changes(user, last_change_dt, filtered_sources,
             if status == constants.AdGroupSettingsState.ACTIVE:
                 status = ad_group_settings.b1_sources_group_state
 
-            rows[source.AllRTBSource.id] = {
+            rows[all_rtb.AllRTBSource.id] = {
                 "status_setting": ad_group_settings.b1_sources_group_state,
                 "status": status,
                 "bid_cpc": ad_group_settings.local_b1_sources_group_cpc_cc,

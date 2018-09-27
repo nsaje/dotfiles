@@ -1,7 +1,7 @@
 from django.db import transaction
 
 import dash.constants
-import core.entity
+import core.models
 import core.bcm
 from utils import dates_helper
 from .. import constants
@@ -12,7 +12,7 @@ from . import config
 
 def mark_almost_depleted_campaigns(campaigns=None):
     if not campaigns:
-        campaigns = core.entity.Campaign.objects.filter(real_time_campaign_stop=True)
+        campaigns = core.models.Campaign.objects.filter(real_time_campaign_stop=True)
 
     campaigns = [campaign for campaign in campaigns if campaign.real_time_campaign_stop]
     _mark_almost_depleted_campaigns(campaigns)
@@ -77,7 +77,7 @@ def _get_latest_real_time_data(campaign):
 
 
 def _get_adgroup_sources(campaign):
-    return core.entity.AdGroupSource.objects.filter(ad_group__campaign=campaign).select_related(
+    return core.models.AdGroupSource.objects.filter(ad_group__campaign=campaign).select_related(
         "settings", "ad_group__settings", "source__source_type"
     )
 

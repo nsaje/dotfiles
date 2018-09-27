@@ -12,7 +12,7 @@ import utils.demo_anonymizer
 import utils.email_helper
 from functools import reduce
 
-from core.source import Source
+from core.models import Source
 
 
 class UserManager(auth_models.BaseUserManager):

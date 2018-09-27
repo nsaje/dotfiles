@@ -1,6 +1,6 @@
 import influx
 
-import core.entity
+import core.models
 import automation.campaignstop
 import automation.campaignstop.constants
 
@@ -11,7 +11,7 @@ from utils import dates_helper
 class Command(ExceptionCommand):
     @influx.timer("campaignstop.job_run", job="main")
     def handle(self, *args, **options):
-        campaigns = core.entity.Campaign.objects.filter(
+        campaigns = core.models.Campaign.objects.filter(
             real_time_campaign_stop=True,
             campaignstopstate__almost_depleted=True,
             campaignstopstate__state=automation.campaignstop.constants.CampaignStopState.ACTIVE,

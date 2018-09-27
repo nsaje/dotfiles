@@ -3,7 +3,7 @@ import mock
 
 from django.test import TestCase
 
-import core.entity
+import core.models
 from utils.magic_mixer import magic_mixer
 from utils import dates_helper
 
@@ -14,7 +14,7 @@ from . import config
 
 class UpdateCampaignStopStateTest(TestCase):
     def setUp(self):
-        self.campaign = magic_mixer.blend(core.entity.Campaign, real_time_campaign_stop=True)
+        self.campaign = magic_mixer.blend(core.models.Campaign, real_time_campaign_stop=True)
         notify_patcher = mock.patch("automation.campaignstop.service.update_notifier.notify_campaignstopstate_change")
         notify_patcher.start()
         self.addCleanup(notify_patcher.stop)
@@ -55,7 +55,7 @@ class UpdateCampaignStopStateTest(TestCase):
     def test_stop_campaign_with_exhausted_budget(self, mock_get_prediction):
         mock_get_prediction.return_value = 0
 
-        campaign = magic_mixer.blend(core.entity.Campaign, real_time_campaign_stop=True)
+        campaign = magic_mixer.blend(core.models.Campaign, real_time_campaign_stop=True)
         main.update_campaigns_state(campaigns=[campaign])
 
         campaign_stop_state = CampaignStopState.objects.get(campaign=campaign)

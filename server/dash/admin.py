@@ -26,7 +26,7 @@ from zemauth.models import User as ZemUser
 from dash import constants
 from dash import models
 from dash import forms as dash_forms
-from core.entity.settings.ad_group_source_settings import validation_helpers
+from core.models.settings.ad_group_source_settings import validation_helpers
 from dash import cpc_constraints
 
 import utils.k1_helper

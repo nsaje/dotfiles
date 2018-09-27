@@ -1,9 +1,8 @@
 import logging
 import influx
 
-import core.entity
+import core.models
 import core.features.yahoo_accounts
-import core.source
 from .. import RealTimeDataHistory, RealTimeCampaignDataHistory
 import dash.features.realtimestats
 import dash.constants
@@ -19,7 +18,7 @@ CURRENT_DATA_LIMIT_SECONDS = 120
 
 def refresh_if_stale(campaigns=None):
     if not campaigns:
-        campaigns = core.entity.Campaign.objects.filter(real_time_campaign_stop=True)
+        campaigns = core.models.Campaign.objects.filter(real_time_campaign_stop=True)
     rt_data = dict(
         RealTimeCampaignDataHistory.objects.filter(campaign__in=campaigns)
         .order_by("campaign_id", "-created_dt")
@@ -41,7 +40,7 @@ def _is_stale(last_created_dt):
 
 def refresh_realtime_data(campaigns=None):
     if not campaigns:
-        campaigns = core.entity.Campaign.objects.filter(real_time_campaign_stop=True)
+        campaigns = core.models.Campaign.objects.filter(real_time_campaign_stop=True)
     _refresh_campaigns_realtime_data([campaign for campaign in campaigns if campaign.real_time_campaign_stop])
 
 
@@ -99,7 +98,7 @@ def _refresh_campaign_realtime_data(campaign):
 
 def _should_refresh_campaign_realtime_data_for_yesterday(campaign):
     local_today = dates_helper.local_today()
-    yahoo_source_type = core.source.SourceType.objects.filter(
+    yahoo_source_type = core.models.SourceType.objects.filter(
         source__adgroup__campaign_id=campaign.id, type=dash.constants.SourceType.YAHOO
     )
     if not yahoo_source_type.exists() or not campaign.account.yahoo_account:

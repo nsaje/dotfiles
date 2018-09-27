@@ -4,7 +4,7 @@ import logging
 from utils.command_helpers import ExceptionCommand
 
 import core.audiences
-import core.entity
+import core.models
 
 import redshiftapi
 

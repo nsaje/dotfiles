@@ -6,7 +6,7 @@ from django.test import TestCase
 from django.db.models import Max
 
 import core.bcm
-import core.entity
+import core.models
 import core.multicurrency
 import dash.models
 import dash.constants
@@ -36,8 +36,8 @@ def _configure_datetime_utcnow_mock(mock_datetime, utcnow_value):
 class MultiCurrencyTestCase(TestCase):
     def setUp(self):
         self.mock_today = datetime.date(2018, 3, 1)
-        account = magic_mixer.blend(core.entity.Account, currency=dash.constants.Currency.EUR)
-        self.campaign = magic_mixer.blend(core.entity.Campaign, account=account, real_time_campaign_stop=True)
+        account = magic_mixer.blend(core.models.Account, currency=dash.constants.Currency.EUR)
+        self.campaign = magic_mixer.blend(core.models.Campaign, account=account, real_time_campaign_stop=True)
         self.credit = magic_mixer.blend(
             core.bcm.CreditLineItem,
             account=self.campaign.account,
@@ -744,7 +744,7 @@ class GetCampaignsWithBudgetsInTimeframe(TestCase):
     def setUp(self):
         self.date_since = datetime.date(2018, 2, 25)
         self.mock_today = datetime.date(2018, 3, 1)
-        self.account = magic_mixer.blend(core.entity.Account)
+        self.account = magic_mixer.blend(core.models.Account)
         self.credit = magic_mixer.blend(
             core.bcm.CreditLineItem,
             account=self.account,

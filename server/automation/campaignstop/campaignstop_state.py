@@ -2,7 +2,7 @@ import logging
 
 from django.db import models
 
-import core.entity
+import core.models
 import dash.constants
 
 from . import constants
@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 
 
 class CampaignStopState(models.Model):
-    campaign = models.OneToOneField(core.entity.Campaign)
+    campaign = models.OneToOneField(core.models.Campaign)
     almost_depleted = models.BooleanField(default=False)
     state = models.IntegerField(
         choices=constants.CampaignStopState.get_choices(), default=constants.CampaignStopState.STOPPED

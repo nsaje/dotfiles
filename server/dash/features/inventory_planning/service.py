@@ -1,7 +1,7 @@
 import redshiftapi.api_inventory
 
 import dash.features.geolocation
-import core.source
+import core.models
 
 from . import constants
 
@@ -32,7 +32,7 @@ def _get_countries_map():
 def _get_sources_cache():
     global _sources_cache
     if _sources_cache is None:
-        _sources_cache = core.source.Source.objects.filter(deprecated=False)
+        _sources_cache = core.models.Source.objects.filter(deprecated=False)
     return _sources_cache
 
 

@@ -3,7 +3,7 @@ from django.test import TestCase
 from mock import patch
 
 from utils.magic_mixer import magic_mixer
-import core.entity
+import core.models
 import dash.constants
 
 from . import service
@@ -13,7 +13,7 @@ class TestGoalsService(TestCase):
     @patch.object(core.multicurrency, "get_current_exchange_rate")
     def test_get_campaign_goals_defaults(self, mock_get_exchange_rate):
         mock_get_exchange_rate.return_value = decimal.Decimal("2.0")
-        account = magic_mixer.blend(core.entity.Account)
+        account = magic_mixer.blend(core.models.Account)
 
         self.assertEqual(
             service.get_campaign_goals_defaults(account),

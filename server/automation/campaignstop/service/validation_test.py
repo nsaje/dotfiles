@@ -4,7 +4,7 @@ import mock
 
 from django.test import TestCase
 
-import core.entity
+import core.models
 import core.bcm
 import core.multicurrency
 import dash.constants
@@ -18,7 +18,7 @@ from utils import dates_helper
 
 class ValidateMinimumBudgetAmountTest(TestCase):
     def setUp(self):
-        self.campaign = magic_mixer.blend(core.entity.Campaign, real_time_campaign_stop=True)
+        self.campaign = magic_mixer.blend(core.models.Campaign, real_time_campaign_stop=True)
 
         self.today = dates_helper.local_today()
         self.credit = magic_mixer.blend(

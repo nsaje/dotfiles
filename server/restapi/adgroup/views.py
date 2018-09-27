@@ -2,8 +2,8 @@ from restapi.common.views_base import RESTAPIBaseViewSet
 from restapi.common.pagination import StandardPagination
 import restapi.access
 
-import core.entity
-from core.entity.settings.ad_group_settings import exceptions
+import core.models
+from core.models.settings.ad_group_settings import exceptions
 from . import serializers
 import utils.exc
 
@@ -26,9 +26,9 @@ class AdGroupViewSet(RESTAPIBaseViewSet):
         campaign_id = request.query_params.get("campaignId", None)
         if campaign_id:
             campaign = restapi.access.get_campaign(request.user, campaign_id)
-            ad_groups = core.entity.AdGroup.objects.filter(campaign=campaign)
+            ad_groups = core.models.AdGroup.objects.filter(campaign=campaign)
         else:
-            ad_groups = core.entity.AdGroup.objects.all().filter_by_user(request.user)
+            ad_groups = core.models.AdGroup.objects.all().filter_by_user(request.user)
 
         ad_groups = ad_groups.select_related("settings").order_by("pk")
         paginator = StandardPagination()
@@ -45,7 +45,7 @@ class AdGroupViewSet(RESTAPIBaseViewSet):
         campaign = restapi.access.get_campaign(request.user, settings.get("ad_group", {}).get("campaign_id"))
 
         with transaction.atomic():
-            new_ad_group = core.entity.AdGroup.objects.create(
+            new_ad_group = core.models.AdGroup.objects.create(
                 request, campaign=campaign, name=settings.get("ad_group_name", None), is_restapi=True
             )
             self.update_settings(request, new_ad_group, settings)

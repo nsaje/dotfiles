@@ -2,7 +2,7 @@ import logging
 
 from django.conf import settings
 
-import core.entity
+import core.models
 from . import mark_almost_depleted_campaigns
 from . import update_campaigns_state
 from . import update_campaigns_end_date
@@ -44,7 +44,7 @@ def _filter_messages(type_, messages):
 
 def _extract_campaigns(messages):
     campaign_ids = [message["campaign_id"] for message in messages]
-    return core.entity.Campaign.objects.filter(id__in=campaign_ids)
+    return core.models.Campaign.objects.filter(id__in=campaign_ids)
 
 
 def _handle_initialize(campaigns):

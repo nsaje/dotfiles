@@ -77,9 +77,9 @@ class Audience(models.Model):
 
     def get_ad_groups_using_audience(self):
         #  Circular import workaround
-        import core.entity.adgroup.ad_group
+        import core.models.ad_group
 
-        ad_groups_using_audience = core.entity.adgroup.ad_group.AdGroup.objects.filter(
+        ad_groups_using_audience = core.models.ad_group.AdGroup.objects.filter(
             campaign__account_id=self.pixel.account_id
         ).filter(
             Q(settings__audience_targeting__contains=self.id)

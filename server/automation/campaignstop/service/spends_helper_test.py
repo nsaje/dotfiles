@@ -5,7 +5,7 @@ import mock
 from django.test import TestCase
 
 import core.bcm
-import core.entity
+import core.models
 import core.multicurrency
 import dash.constants
 from utils.magic_mixer import magic_mixer
@@ -24,7 +24,7 @@ class LogMock(object):
 
 class GetPredictionTest(TestCase):
     def setUp(self):
-        self.campaign = magic_mixer.blend(core.entity.Campaign, real_time_campaign_stop=True)
+        self.campaign = magic_mixer.blend(core.models.Campaign, real_time_campaign_stop=True)
 
         today = dates_helper.local_today()
         self.credit = magic_mixer.blend(
@@ -50,7 +50,7 @@ class GetPredictionTest(TestCase):
         self.assertEqual(500, prediction)
 
     def test_get_prediction_no_budget(self):
-        campaign = magic_mixer.blend(core.entity.Campaign, real_time_campaign_stop=True)
+        campaign = magic_mixer.blend(core.models.Campaign, real_time_campaign_stop=True)
 
         prediction = spends_helper.get_predicted_remaining_budget(LogMock(), campaign)
         self.assertEqual(0, prediction)
@@ -292,7 +292,7 @@ class GetPredictionTest(TestCase):
 
 class GetBudgetSpendEstimateTest(TestCase):
     def setUp(self):
-        self.campaign = magic_mixer.blend(core.entity.Campaign, real_time_campaign_stop=True)
+        self.campaign = magic_mixer.blend(core.models.Campaign, real_time_campaign_stop=True)
 
         today = dates_helper.local_today()
         self.credit = magic_mixer.blend(

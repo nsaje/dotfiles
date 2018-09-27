@@ -3,8 +3,7 @@ from django.test import TestCase
 import mock
 
 from utils.magic_mixer import magic_mixer
-import core.entity
-import core.source
+import core.models
 import dash.constants
 
 from . import models, constants, service
@@ -13,15 +12,15 @@ from . import models, constants, service
 class TestGetAnyAppliedFilters(TestCase):
     def setUp(self):
         self.source1 = magic_mixer.blend(
-            core.source.Source, id=1, content_ad_submission_policy=dash.constants.SourceSubmissionPolicy.AUTOMATIC
+            core.models.Source, id=1, content_ad_submission_policy=dash.constants.SourceSubmissionPolicy.AUTOMATIC
         )
         self.source2 = magic_mixer.blend(
-            core.source.Source, id=2, content_ad_submission_policy=dash.constants.SourceSubmissionPolicy.MANUAL
+            core.models.Source, id=2, content_ad_submission_policy=dash.constants.SourceSubmissionPolicy.MANUAL
         )
 
     def test_lookup(self):
-        agency1 = magic_mixer.blend(core.entity.Agency, id=1)
-        agency2 = magic_mixer.blend(core.entity.Agency, id=2)
+        agency1 = magic_mixer.blend(core.models.Agency, id=1)
+        agency2 = magic_mixer.blend(core.models.Agency, id=2)
         sf1 = models.SubmissionFilter.objects.create(
             self.source1, constants.SubmissionFilterState.BLOCK, agency=agency1
         )
@@ -41,18 +40,18 @@ class TestGetAnyAppliedFilters(TestCase):
         )
         # Lookup keys ORed
         self.assertEqual(
-            service._get_any_applied_filters(dict(agency=agency2, source__in=[magic_mixer.blend(core.source.Source)])),
+            service._get_any_applied_filters(dict(agency=agency2, source__in=[magic_mixer.blend(core.models.Source)])),
             {(2, "agency", 2): sf3},
         )
-        self.assertEqual(service._get_any_applied_filters(dict(source=magic_mixer.blend(core.source.Source))), {})
+        self.assertEqual(service._get_any_applied_filters(dict(source=magic_mixer.blend(core.models.Source))), {})
 
     def test_lookup_multiple_levels(self):
-        agency1 = magic_mixer.blend(core.entity.Agency, id=1)
-        account1 = magic_mixer.blend(core.entity.Account, id=1)
-        account2 = magic_mixer.blend(core.entity.Account, id=2)
-        campaign1 = magic_mixer.blend(core.entity.Campaign, id=1)
-        ad_group1 = magic_mixer.blend(core.entity.AdGroup, id=1)
-        content_ad1 = magic_mixer.blend(core.entity.ContentAd, id=1)
+        agency1 = magic_mixer.blend(core.models.Agency, id=1)
+        account1 = magic_mixer.blend(core.models.Account, id=1)
+        account2 = magic_mixer.blend(core.models.Account, id=2)
+        campaign1 = magic_mixer.blend(core.models.Campaign, id=1)
+        ad_group1 = magic_mixer.blend(core.models.AdGroup, id=1)
+        content_ad1 = magic_mixer.blend(core.models.ContentAd, id=1)
         sf1 = models.SubmissionFilter.objects.create(
             self.source1, constants.SubmissionFilterState.BLOCK, agency=agency1
         )

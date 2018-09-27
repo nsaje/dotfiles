@@ -3,7 +3,7 @@ import influx
 from django.db.models import Q
 
 import automation.campaignstop
-import core.entity
+import core.models
 
 from utils.command_helpers import ExceptionCommand
 from utils import dates_helper
@@ -24,7 +24,7 @@ class Command(ExceptionCommand):
     @influx.timer("campaignstop.job_run", job="midnight_refresh")
     def _run_job(self):
         local_tomorrow = dates_helper.day_after(dates_helper.local_today())
-        rechecked_campaigns = core.entity.Campaign.objects.filter(
+        rechecked_campaigns = core.models.Campaign.objects.filter(
             Q(
                 campaignstopstate__state=automation.campaignstop.constants.CampaignStopState.STOPPED,
                 campaignstopstate__max_allowed_end_date__gte=local_tomorrow,

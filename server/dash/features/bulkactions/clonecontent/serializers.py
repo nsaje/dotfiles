@@ -4,7 +4,7 @@ from rest_framework import fields
 
 from dash import constants
 
-import core.entity
+import core.models
 
 import restapi.access
 import restapi.serializers.fields
@@ -33,7 +33,7 @@ class CloneContentAdsSerializer(serializers.Serializer):
 
 class AdGroupSerializer(serializers.ModelSerializer):
     class Meta:
-        model = core.entity.UploadBatch
+        model = core.models.UploadBatch
         fields = ("id", "name")
 
     id = restapi.serializers.fields.IdField()
@@ -42,7 +42,7 @@ class AdGroupSerializer(serializers.ModelSerializer):
 
 class UploadBatchSerializer(serializers.ModelSerializer):
     class Meta:
-        model = core.entity.UploadBatch
+        model = core.models.UploadBatch
         fields = ("id", "name", "ad_group")
 
     id = restapi.serializers.fields.IdField()

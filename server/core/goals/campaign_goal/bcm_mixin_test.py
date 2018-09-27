@@ -4,7 +4,7 @@ from django.test import TestCase
 
 from .model import CampaignGoal
 
-import core.entity
+import core.models
 from dash import campaign_goals
 from dash import constants
 from utils.magic_mixer import magic_mixer
@@ -12,7 +12,7 @@ from utils.magic_mixer import magic_mixer
 
 class CampaignGoalBCMMixinTest(TestCase):
     def setUp(self):
-        campaign = magic_mixer.blend(core.entity.Campaign)
+        campaign = magic_mixer.blend(core.models.Campaign)
 
         cost_types = campaign_goals.COST_DEPENDANT_GOALS
         self.campaign_goals_migrated = magic_mixer.cycle(len(cost_types)).blend(

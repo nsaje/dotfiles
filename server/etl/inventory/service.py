@@ -8,7 +8,7 @@ from redshiftapi import db
 from etl import maintenance
 import dash.features.geolocation
 import dash.constants
-import core.source
+import core.models
 
 
 logger = logging.getLogger(__name__)
@@ -28,7 +28,7 @@ def refresh_inventory_data(date_from, date_to, skip_vacuum=False):
     )
     source_slug_to_id = {
         s.bidder_slug: s.id
-        for s in core.source.Source.objects.filter(
+        for s in core.models.Source.objects.filter(
             Q(deprecated=False) & (Q(released=True) | Q(id__in=NATIVE_AD_SERVER_IDS))
         )
     }

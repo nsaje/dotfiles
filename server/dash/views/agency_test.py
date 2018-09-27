@@ -787,10 +787,10 @@ class AdGroupSettingsTest(TestCase):
         self.assertEqual(ad_group.get_current_settings().cpc_cc, Decimal(5000))
         self.assertEqual(ad_group.get_current_settings().state, constants.AdGroupSettingsState.INACTIVE)
 
-    @patch.object(core.source.source_type.model.SourceType, "get_etfm_max_daily_budget", return_value=89.77)
-    @patch.object(core.source.source_type.model.SourceType, "get_etfm_min_daily_budget", return_value=7.11)
-    @patch.object(core.source.source_type.model.SourceType, "get_etfm_max_cpc", return_value=0.7792)
-    @patch.object(core.source.source_type.model.SourceType, "get_etfm_min_cpc", return_value=0.1211)
+    @patch.object(core.models.source_type.model.SourceType, "get_etfm_max_daily_budget", return_value=89.77)
+    @patch.object(core.models.source_type.model.SourceType, "get_etfm_min_daily_budget", return_value=7.11)
+    @patch.object(core.models.source_type.model.SourceType, "get_etfm_max_cpc", return_value=0.7792)
+    @patch.object(core.models.source_type.model.SourceType, "get_etfm_min_cpc", return_value=0.1211)
     def test_adgroups_sources_rounding(self, min_cpc_mock, max_cpc_mock, min_daily_budget_mock, max_daily_budget_mock):
         def _put_ad_group(ad_group_id, data):
             return self.client.put(

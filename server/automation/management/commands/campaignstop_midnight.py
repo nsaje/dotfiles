@@ -3,7 +3,7 @@ import influx
 from django.db.models import Q
 
 import automation.campaignstop
-import core.entity
+import core.models
 
 from utils.command_helpers import ExceptionCommand
 from utils import dates_helper
@@ -27,7 +27,7 @@ class Command(ExceptionCommand):
         self._correct_states()
 
     def _correct_states(self):
-        campaigns_today = core.entity.Campaign.objects.filter(
+        campaigns_today = core.models.Campaign.objects.filter(
             Q(
                 campaignstopstate__state=automation.campaignstop.constants.CampaignStopState.STOPPED,
                 campaignstopstate__max_allowed_end_date__gte=dates_helper.local_today(),

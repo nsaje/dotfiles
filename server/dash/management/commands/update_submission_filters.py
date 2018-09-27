@@ -4,7 +4,7 @@ from django.db.models import Q
 
 import utils.command_helpers
 import dash.features.submission_filters
-import core.source
+import core.models
 
 
 class Command(utils.command_helpers.ExceptionCommand):
@@ -27,7 +27,7 @@ class Command(utils.command_helpers.ExceptionCommand):
         parser.add_argument("filter_csv", type=str)
 
     def handle(self, *args, **options):
-        source = core.source.Source.objects.get(
+        source = core.models.Source.objects.get(
             Q(bidder_slug="b1_{}".format(options["source"])) | Q(bidder_slug=options["source"])
         )
         state = getattr(dash.features.submission_filters.SubmissionFilterState, options["state"])

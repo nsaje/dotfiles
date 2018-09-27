@@ -2,8 +2,7 @@ from django.core.urlresolvers import reverse
 from utils.magic_mixer import magic_mixer, get_request_mock
 from tempfile import NamedTemporaryFile
 import restapi.common.views_base_test
-import core.entity
-import core.source.source
+import core.models
 import csv
 
 from core.publisher_bid_modifiers import service
@@ -13,8 +12,8 @@ class PublisherBidModifierCSVTest(restapi.common.views_base_test.RESTAPITest):
     def setUp(self):
         super(PublisherBidModifierCSVTest, self).setUp()
         self.test_request = get_request_mock(self.user)
-        self.test_source = magic_mixer.blend(core.source.Source, bidder_slug="test_slug")
-        self.test_ad_group = magic_mixer.blend(core.entity.AdGroup, campaign__account__users=[self.user])
+        self.test_source = magic_mixer.blend(core.models.Source, bidder_slug="test_slug")
+        self.test_ad_group = magic_mixer.blend(core.models.AdGroup, campaign__account__users=[self.user])
 
     def test_update_modifiers(self):
         csv_file = NamedTemporaryFile(mode="w+", suffix=".csv")
