@@ -99,8 +99,7 @@ angular.module('one.widgets').component('zemCloneAdGroupModal', {
 
         function getDataStoreItems() {
             var item,
-                campaigns = [],
-                top = [];
+                campaigns = [];
             angular.forEach(
                 zemNavigationNewService.getNavigationHierarchy().ids.campaigns,
                 function(value) {
@@ -114,14 +113,11 @@ angular.module('one.widgets').component('zemCloneAdGroupModal', {
                         searchableName: value.parent.name + ' ' + value.name,
                     };
                     if (value.parent.id === $ctrl.campaign.parent.id) {
-                        // put current account campaigns to the top
-                        top.push(item);
-                    } else {
                         campaigns.push(item);
                     }
                 }
             );
-            return top.concat(campaigns);
+            return campaigns;
         }
 
         function onCampaignSelected(item) {

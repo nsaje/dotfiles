@@ -56,7 +56,8 @@ class CreateContentAd(TestCase):
         self.assertEqual(mock_insert_redirects.call_count, 1)
         mock_insert_redirects.assert_called_with(content_ads, clickthrough_resolve=True)
 
-    def test_bulk_clone(self, mock_insert_redirects):
+    @patch("utils.k1_helper.update_ad_group", autospec=True)
+    def test_bulk_clone(self, mock_update_ad_group, mock_insert_redirects):
         request = magic_mixer.blend_request_user()
         batch = self._blend_a_batch()
         source_content_ads = magic_mixer.cycle(3).blend(
@@ -78,8 +79,10 @@ class CreateContentAd(TestCase):
         # check redirector sync
         self.assertEqual(mock_insert_redirects.call_count, 1)
         mock_insert_redirects.assert_called_with(content_ads, clickthrough_resolve=False)
+        mock_update_ad_group.assert_called_with(batch.ad_group.id, msg="ContentAdManager.bulk_clone")
 
-    def test_bulk_clone_override_state(self, mock_insert_redirects):
+    @patch("utils.k1_helper.update_ad_group", autospec=True)
+    def test_bulk_clone_override_state(self, mock_update_ad_group, mock_insert_redirects):
         request = magic_mixer.blend_request_user()
         batch = self._blend_a_batch()
         source_content_ads = magic_mixer.cycle(3).blend(
@@ -103,3 +106,4 @@ class CreateContentAd(TestCase):
         # check redirector sync
         self.assertEqual(mock_insert_redirects.call_count, 1)
         mock_insert_redirects.assert_called_with(content_ads, clickthrough_resolve=False)
+        mock_update_ad_group.assert_called_with(batch.ad_group.id, msg="ContentAdManager.bulk_clone")

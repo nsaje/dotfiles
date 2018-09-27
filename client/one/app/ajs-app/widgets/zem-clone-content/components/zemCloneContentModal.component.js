@@ -91,8 +91,7 @@ angular.module('one.widgets').component('zemCloneContentModal', {
         //
         function getDataStoreItems() {
             var item,
-                adGroups = [],
-                top = [];
+                adGroups = [];
             angular.forEach(
                 zemNavigationNewService.getNavigationHierarchy().ids.adGroups,
                 function(value) {
@@ -113,15 +112,12 @@ angular.module('one.widgets').component('zemCloneContentModal', {
                             value.parent.parent.id ===
                             $ctrl.adGroup.parent.parent.id
                         ) {
-                            // put current account to top
-                            top.push(item);
-                        } else {
                             adGroups.push(item);
                         }
                     }
                 }
             );
-            return top.concat(adGroups);
+            return adGroups;
         }
 
         function onAdGroupSelected(item) {

@@ -32,8 +32,9 @@ class CloneAdGroupViewTest(restapi.common.views_base_test.RESTAPITest):
         )
 
     def test_no_obj_access(self):
-        campaign = magic_mixer.blend(core.models.Campaign)
-        ad_group = magic_mixer.blend(core.models.AdGroup)
+        account = magic_mixer.blend(core.models.Account)
+        campaign = magic_mixer.blend(core.models.Campaign, account=account)
+        ad_group = magic_mixer.blend(core.models.AdGroup, campaign=campaign)
 
         data = self.clone_repr(ad_group, campaign)
 

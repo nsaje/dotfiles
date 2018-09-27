@@ -9,6 +9,8 @@ import utils.redirector_helper
 import utils.demo_anonymizer
 import utils.string_helper
 
+from utils import k1_helper
+
 from dash import constants
 from dash import image_helper
 
@@ -71,6 +73,8 @@ class ContentAdManager(models.Manager):
         ad_group.write_history_content_ads_cloned(
             request, content_ads, batch, source_content_ads[0].ad_group, overridden_state
         )
+
+        k1_helper.update_ad_group(ad_group.pk, msg="ContentAdManager.bulk_clone")
 
         return content_ads
 
