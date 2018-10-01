@@ -279,14 +279,16 @@ def apply_pixel_columns(breakdown, rows, pixels, touchpoint_rows):
                     avg_etfm_cost = float(etfm_cost) / count if count else None
                     local_avg_etfm_cost = float(local_etfm_cost) / count if count else None
 
-                    value = sum(
-                        x["conversion_value"]
-                        for x in pixel_rows
-                        if x["window"] <= conversion_window
-                        if x["conversion_value"]
+                    value = float(
+                        sum(
+                            x["conversion_value"]
+                            for x in pixel_rows
+                            if x["window"] <= conversion_window
+                            if x["conversion_value"]
+                        )
                     )
-                    roas = value - local_cost
-                    etfm_roas = value - local_etfm_cost
+                    roas = value - float(local_cost)
+                    etfm_roas = value - float(local_etfm_cost)
                 else:
                     count = None
                     avg_cost = None
