@@ -197,7 +197,8 @@ class InfoBoxHelpersTest(TestCase):
             dash.infobox_helpers.get_yesterday_campaign_spend(campaign),
         )
 
-    def test_calculate_daily_cap(self):
+    @mock.patch("utils.dates_helper.local_today", return_value=datetime.datetime(year=2014, month=6, day=4))
+    def test_calculate_daily_campaign_cap(self, mock_local_today):
         ags = dash.models.AdGroupSource.objects.get(id=2)
 
         ags.settings.update(
@@ -213,6 +214,12 @@ class InfoBoxHelpersTest(TestCase):
         cursor.execute(q, [])
 
         self.assertEqual(0, dash.infobox_helpers.calculate_daily_campaign_cap(campaign))
+
+    @mock.patch("utils.dates_helper.local_today", return_value=datetime.datetime(year=2014, month=6, day=4))
+    def test_calculate_daily_account_cap(self, mock_local_today):
+        account = dash.models.Account.objects.get(pk=1)
+
+        self.assertEqual(600, dash.infobox_helpers.calculate_daily_account_cap(account))
 
     @mock.patch("redshiftapi.api_breakdowns.query")
     def test_get_yesterday_adgroup_spend(self, mock_query):
@@ -838,6 +845,8 @@ class AllAccountsInfoboxHelpersTest(TestCase):
             state=dash.constants.AdGroupSettingsState.ACTIVE,
             autopilot_state=dash.constants.AdGroupSettingsAutopilotState.INACTIVE,
             skip_automation=True,
+            start_date=dates_helper.local_yesterday(),
+            end_date=dates_helper.local_today(),
         )
         self.ad_group_source_local = magic_mixer.blend(dash.models.AdGroupSource, ad_group=self.ad_group_local)
         self.ad_group_source_local.settings.update(
@@ -850,9 +859,11 @@ class AllAccountsInfoboxHelpersTest(TestCase):
         self.b1_ad_group_source_local.settings.update(None, state=dash.constants.AdGroupSourceSettingsState.ACTIVE)
 
     def test_calculate_daily_account_cap(self):
-        account = dash.models.Account.objects.get(pk=1)
-        self.assertEqual(600, dash.infobox_helpers.calculate_daily_account_cap(account))
         self.assertEqual(174, dash.infobox_helpers.calculate_daily_account_cap(self.account_local))
+
+    @mock.patch("utils.dates_helper.local_today", return_value=dates_helper.local_today() + datetime.timedelta(days=1))
+    def test_calculate_daily_account_cap_expired(self, _):
+        self.assertEqual(0, dash.infobox_helpers.calculate_daily_account_cap(self.account_local))
 
     def test_calculate_allocated_and_available_credit(self):
         account = dash.models.Account.objects.get(pk=1)

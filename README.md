@@ -232,12 +232,17 @@ Then you can run acceptance tests with
 The following script enables you to test run your backend changes from a pull request on production data. Front-end
 builds are not yet supported as builds that are not from master branch do not get uploaded to s3.
 
-1. Use `runssh` to get a container with the build of you pull request `runssh z1 ANY {your build number}`.
+1. Use `runssh` to get a container with the build of you pull request `runssh z1 ANY {your branch name}/{your build number}`.
 2. Ssh into the container and set the following settings in `server/localsettings.py.prod`:
    ```
    SECURE_SSL_REDIRECT = False
    SESSION_COOKIE_SECURE = False
    CSRF_COOKIE_SECURE = False
+
+   SECURE_BROWSER_XSS_FILTER = False
+   SECURE_HSTS_INCLUDE_SUBDOMAINS = False
+   SECURE_CONTENT_TYPE_NOSNIFF = False
+   SESSION_COOKIE_SECURE = False
    ```
 3. Save and run server `./manage.py runserver`.
 4. Go to your local terminal and tunnel the connection to your localhost:
@@ -248,6 +253,13 @@ builds are not yet supported as builds that are not from master branch do not ge
    ```
 5. Visit `localhost:{your local port}` and you should be running your PR backend and frontend on production data.
 
+**Note** Authentication with a Google account might not work. In that case add another non-google user and give it the following permissions:
+
+* "Staff status" (if admin is needed)
+* Groups:
+  - Account management - internal
+  - All accounts - can see and manage all accounts
+  - Public - default for all new accounts
 
 
 ## Database migrations - adding field with a default value to a high-throughput table
