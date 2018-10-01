@@ -285,8 +285,8 @@ def apply_pixel_columns(breakdown, rows, pixels, touchpoint_rows):
                         if x["window"] <= conversion_window
                         if x["conversion_value"]
                     )
-                    roas = float(value) - local_cost
-                    etfm_roas = float(value) - local_etfm_cost
+                    roas = value - local_cost
+                    etfm_roas = value - local_etfm_cost
                 else:
                     count = None
                     avg_cost = None
