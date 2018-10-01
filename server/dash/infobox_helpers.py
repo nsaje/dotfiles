@@ -595,9 +595,7 @@ def _retrieve_active_creditlineitems(account):
 
 
 def _compute_daily_cap(**filters):
-    ad_groups = dash.models.AdGroup.objects.filter(
-        settings__state=dash.constants.AdGroupSettingsState.ACTIVE, **filters
-    ).select_related("settings")
+    ad_groups = dash.models.AdGroup.objects.filter(**filters).filter_running().select_related("settings")
 
     adgroup_sources = dash.models.AdGroupSource.objects.filter(
         settings__state=dash.constants.AdGroupSourceSettingsState.ACTIVE, ad_group__in=ad_groups
