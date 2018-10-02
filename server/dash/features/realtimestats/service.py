@@ -66,9 +66,9 @@ def _get_etfm_source_stats(ad_group, *, use_local_currency, no_cache=False, use_
 
 def _clean_sources(ad_group, stats):
     allowed_sources = set(
-        models.AdGroupSource.objects.filter(ad_group=ad_group).exclude(ad_review_only=True).values_list(
-            "source__bidder_slug", flat=True
-        )
+        models.AdGroupSource.objects.filter(ad_group=ad_group)
+        .exclude(ad_review_only=True)
+        .values_list("source__bidder_slug", flat=True)
     )
     cleaned_stats = []
     for stat in stats["stats"]:
