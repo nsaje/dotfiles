@@ -27,6 +27,7 @@ def get_session():
         conf={
             "spark.default.parallelism": 128,  # number of tasks on input
             "spark.sql.shuffle.partitions": 128,  # number of tasks after join or group
+            "spark.sql.broadcastTimeout": 600,
         },
     )
 
