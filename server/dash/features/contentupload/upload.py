@@ -243,8 +243,9 @@ def cancel_upload(batch):
 def _clean_candidates(candidates):
     cleaned_candidates = []
     errors = {}
+    campaign = candidates[0].ad_group.campaign if (candidates and candidates[0].ad_group) else None
     for candidate in candidates:
-        f = forms.ContentAdForm(candidate.ad_group.campaign, candidate.to_dict())
+        f = forms.ContentAdForm(campaign, candidate.to_dict())
         if not f.is_valid():
             errors[candidate.id] = f.errors
         cleaned_candidates.append(f.cleaned_data)
@@ -472,7 +473,8 @@ def _apply_content_ad_edit(request, candidate):
     if not content_ad:
         raise exc.ChangeForbidden("Update not permitted - original content ad not set")
 
-    f = forms.ContentAdForm(candidate.ad_group.campaign, candidate.to_dict())
+    campaign = candidate.ad_group.campaign if candidate.ad_group else None
+    f = forms.ContentAdForm(campaign, candidate.to_dict())
     if not f.is_valid():
         raise exc.CandidateErrorsRemaining("Save not permitted - candidate errors exist")
 
