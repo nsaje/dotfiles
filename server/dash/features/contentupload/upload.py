@@ -298,7 +298,8 @@ def _update_candidate(data, batch, files):
 
 def _get_field_errors(candidate, data, files):
     errors = {}
-    form = forms.ContentAdForm(candidate.ad_group.campaign, data, files=files)
+    campaign = candidate.ad_group.campaign if candidate.ad_group else None
+    form = forms.ContentAdForm(campaign, data, files=files)
     if form.is_valid():
         return errors
 
