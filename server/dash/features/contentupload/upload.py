@@ -101,13 +101,13 @@ def _invoke_external_validation(candidate, batch):
 
 
 def _invoke_lambda_async(data):
-    lambda_helper.invoke_lambda(settings.LAMBDA_CONTENT_UPLOAD_FUNCTION_NAME, data, async=True)
+    lambda_helper.invoke_lambda(settings.LAMBDA_CONTENT_UPLOAD_FUNCTION_NAME, data, do_async=True)
 
 
 @celery.app.task(acks_late=True, name="upload_lambda_execute", time_limit=300, max_retries=5, default_retry_delay=20)
 def _invoke_lambda_celery(data):
     data["raiseException"] = True
-    lambda_helper.invoke_lambda(settings.LAMBDA_CONTENT_UPLOAD_FUNCTION_NAME, data, async=False)
+    lambda_helper.invoke_lambda(settings.LAMBDA_CONTENT_UPLOAD_FUNCTION_NAME, data, do_async=False)
 
 
 def has_skip_validation_magic_word(filename):
@@ -343,7 +343,8 @@ def delete_candidate(candidate):
 
 
 def _get_cleaned_urls(candidate):
-    form = forms.ContentAdForm(candidate.ad_group.campaign, candidate.to_dict())
+    campaign = candidate.ad_group.campaign if candidate.ad_group else None
+    form = forms.ContentAdForm(campaign, candidate.to_dict())
     form.is_valid()  # it doesn't matter if the form as a whole is valid or not
     return {"url": form.cleaned_data.get("url"), "image_url": form.cleaned_data.get("image_url")}
 

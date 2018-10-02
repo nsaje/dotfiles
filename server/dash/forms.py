@@ -1550,6 +1550,8 @@ class ContentAdForm(ContentAdCandidateForm):
             return "Content unreachable"
 
     def _get_video_asset_id_error_msg(self, cleaned_data):
+        if not self.campaign:
+            return None
         video_asset_id = cleaned_data["video_asset_id"]
         if self.campaign.type == constants.CampaignType.VIDEO and not video_asset_id:
             return "Video asset required on video campaigns"

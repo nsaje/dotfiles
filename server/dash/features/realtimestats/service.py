@@ -57,10 +57,25 @@ def _augment_source(stats, sources_by_slug):
 
 def _get_etfm_source_stats(ad_group, *, use_local_currency, no_cache=False, use_source_tz=False):
     stats = _get_k1_source_stats(ad_group, no_cache=no_cache, use_source_tz=use_source_tz)
+    _clean_sources(ad_group, stats)
     _add_fee_and_margin(ad_group, stats["stats"])
     if use_local_currency:
         _to_local_currency(ad_group, stats["stats"])
     return stats
+
+
+def _clean_sources(ad_group, stats):
+    allowed_sources = set(
+        models.AdGroupSource.objects.filter(ad_group=ad_group, ad_review_only=False).values_list(
+            "source__bidder_slug", flat=True
+        )
+    )
+    cleaned_stats = []
+    for stat in stats["stats"]:
+        if stat["source_slug"] not in allowed_sources:
+            continue
+        cleaned_stats.append(stat)
+    stats["stats"] = cleaned_stats
 
 
 def _add_fee_and_margin(ad_group, k1_stats):

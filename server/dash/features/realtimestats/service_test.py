@@ -29,6 +29,7 @@ class RealtimestatsServiceTest(TestCase):
         self.ad_group_sources = magic_mixer.cycle(len(ad_group_sources)).blend(
             core.models.AdGroupSource,
             ad_group=self.ad_group,
+            ad_review_only=False,
             source__source_type__type=(ags["type"] for ags in ad_group_sources),
             source_campaign_key=(ags["source_campaign_key"] for ags in ad_group_sources),
         )
@@ -67,7 +68,13 @@ class RealtimestatsServiceTest(TestCase):
     @mock.patch("utils.redirector_helper.get_adgroup_realtimestats")
     @mock.patch("utils.k1_helper.get_adgroup_realtimestats")
     def test_get_ad_group_stats(self, mock_k1_get, mock_redirector_get):
-        mock_k1_get.return_value = {"stats": [{"spend": 3.0}, {"spend": 1.1}], "errors": {}}
+        mock_k1_get.return_value = {
+            "stats": [
+                {"spend": 3.0, "source_slug": self.ad_group_sources[0].source.bidder_slug},
+                {"spend": 1.1, "source_slug": self.ad_group_sources[1].source.bidder_slug},
+            ],
+            "errors": {},
+        }
         mock_redirector_get.return_value = {"clicks": 13}
 
         result = service.get_ad_group_stats(self.ad_group)
@@ -79,6 +86,9 @@ class RealtimestatsServiceTest(TestCase):
     @mock.patch("utils.k1_helper.get_adgroup_realtimestats")
     def test_get_ad_group_sources_stats(self, mock_k1_get):
         sources = magic_mixer.cycle(2).blend(core.models.Source, bidder_slug=magic_mixer.RANDOM)
+        magic_mixer.cycle(2).blend(
+            core.models.AdGroupSource, ad_group=self.ad_group, source=(s for s in sources), ad_review_only=False
+        )
         mock_k1_get.return_value = {
             "stats": [
                 {"source_slug": sources[0].bidder_slug, "spend": 1.1},
@@ -107,8 +117,45 @@ class RealtimestatsServiceTest(TestCase):
         mock_k1_get.assert_called_once_with(self.ad_group.id, self.expected_params)
 
     @mock.patch("utils.k1_helper.get_adgroup_realtimestats")
+    def test_get_ad_group_sources_stats_only_allowed(self, mock_k1_get):
+        sources = magic_mixer.cycle(2).blend(core.models.Source, bidder_slug=magic_mixer.RANDOM)
+        magic_mixer.cycle(2).blend(
+            core.models.AdGroupSource, ad_group=self.ad_group, source=(s for s in sources), ad_review_only=False
+        )
+        mock_k1_get.return_value = {
+            "stats": [
+                {"source_slug": sources[0].bidder_slug, "spend": 1.1},
+                {"source_slug": sources[1].bidder_slug, "spend": 3.0},
+                {"source_slug": "amplify", "spend": 3.0},
+            ],
+            "errors": {},
+        }
+
+        result = service.get_ad_group_sources_stats(self.ad_group)
+        self.assertEqual(
+            result,
+            [
+                {
+                    "source_slug": sources[1].bidder_slug,
+                    "source": sources[1],
+                    "spend": test_helper.AlmostMatcher(decimal.Decimal("5.7689")),
+                },
+                {
+                    "source_slug": sources[0].bidder_slug,
+                    "source": sources[0],
+                    "spend": test_helper.AlmostMatcher(decimal.Decimal("2.1153")),
+                },
+            ],
+        )
+
+        mock_k1_get.assert_called_once_with(self.ad_group.id, self.expected_params)
+
+    @mock.patch("utils.k1_helper.get_adgroup_realtimestats")
     def test_get_ad_group_sources_stats_multicurrency(self, mock_k1_get):
         sources = magic_mixer.cycle(2).blend(core.models.Source, bidder_slug=magic_mixer.RANDOM)
+        magic_mixer.cycle(2).blend(
+            core.models.AdGroupSource, ad_group=self.ad_group, source=(s for s in sources), ad_review_only=False
+        )
         mock_k1_get.return_value = {
             "stats": [
                 {"source_slug": sources[0].bidder_slug, "spend": decimal.Decimal("1.1")},
@@ -118,6 +165,9 @@ class RealtimestatsServiceTest(TestCase):
         }
 
         ad_group = magic_mixer.blend(core.models.AdGroup, campaign__account__currency=dash.constants.Currency.EUR)
+        magic_mixer.cycle(2).blend(
+            core.models.AdGroupSource, ad_group=ad_group, source=(s for s in sources), ad_review_only=False
+        )
         core.multicurrency.CurrencyExchangeRate.objects.create(
             date=dates_helper.local_today(), currency=dash.constants.Currency.EUR, exchange_rate=decimal.Decimal("1.2")
         )
@@ -190,6 +240,9 @@ class RealtimestatsServiceTest(TestCase):
     @mock.patch("utils.k1_helper.get_adgroup_realtimestats")
     def test_get_ad_group_sources_stats_without_cache(self, mock_k1_get):
         sources = magic_mixer.cycle(2).blend(core.models.Source, bidder_slug=magic_mixer.RANDOM)
+        magic_mixer.cycle(2).blend(
+            core.models.AdGroupSource, ad_group=self.ad_group, source=(s for s in sources), ad_review_only=False
+        )
         mock_k1_get.return_value = {
             "stats": [
                 {"source_slug": sources[0].bidder_slug, "spend": 1.1},

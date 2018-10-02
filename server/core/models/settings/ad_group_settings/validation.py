@@ -146,11 +146,13 @@ class AdGroupSettingsValidatorMixin(object):
             new_settings.autopilot_state == constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET
             and new_settings.autopilot_daily_budget < min_autopilot_daily_budget
         ):
-            msg = "Total Daily Spend Cap must be at least ${min_budget}. Autopilot " "requires ${min_per_source} or more per active media source."
+            msg = "Total Daily Spend Cap must be at least {symbol}{min_budget:.2f}. Autopilot " "requires {symbol}{min_per_source:.2f} or more per active media source."
+            exchange_rate = self._get_exchange_rate()
             raise exceptions.AutopilotDailyBudgetTooLow(
                 msg.format(
-                    min_budget=min_autopilot_daily_budget,
-                    min_per_source=autopilot.settings.BUDGET_AUTOPILOT_MIN_DAILY_BUDGET_PER_SOURCE_CALC,
+                    symbol=self._get_currency_symbol(),
+                    min_budget=min_autopilot_daily_budget * exchange_rate,
+                    min_per_source=autopilot.settings.BUDGET_AUTOPILOT_MIN_DAILY_BUDGET_PER_SOURCE_CALC * exchange_rate,
                 )
             )
 
