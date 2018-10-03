@@ -50,7 +50,9 @@ class RDSAgencyTest(TestCase):
 
     @patch("etl.redshift.prepare_copy_query")
     @patch("redshiftapi.db.get_write_stats_cursor")
-    def test_insert_csv_to_stats_db(self, mock_stats, mock_prepare_copy_query):
+    @patch("redshiftapi.db.get_write_stats_transaction")
+    @patch("etl.redshift.delete_from_table")
+    def test_insert_csv_to_stats_db(self, mock_delete, mock_transaction, mock_stats, mock_prepare_copy_query):
         mock_prepare_copy_query.return_value = None, None
         rds_agency = rds_materialization.RDSAgency()
         rds_agency.load_csv_from_s3()

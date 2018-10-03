@@ -2,9 +2,9 @@ import logging
 
 import influx
 
+from etl.redshift import get_last_stl_load_error
 from prodops.rds_materialization import rds_materialization
 from utils.command_helpers import ExceptionCommand
-from etl.redshift import get_last_stl_load_error
 
 logger = logging.getLogger(__name__)
 
@@ -17,13 +17,12 @@ class Command(ExceptionCommand):
         Run the RDS materialization process: Export data to S3 as CSV and load them in Stats DB.
     Options:
         --specific-table: run the command for a given entity.
-    Available tables: {}
-    """.format(
-        ",".join(ALL_ENTITIES.keys())
+    Available tables: {}""".format(
+        ", ".join(ALL_ENTITIES.keys())
     )
 
     def add_arguments(self, parser):
-        parser.add_argument("--specific-table", type=str)
+        parser.add_argument("--specific-table", type=str, choices=self.ALL_ENTITIES.keys())
 
     @influx.timer("etl.rds_materialization")
     def handle(self, *args, **options):
@@ -34,7 +33,11 @@ class Command(ExceptionCommand):
             if self.ALL_ENTITIES.get(specific_table):
                 self._process_rds(self.ALL_ENTITIES.get(specific_table))
             else:
-                print("{} is not a valid parameter".format(specific_table))
+                print(
+                    "{} is not a valid parameter. Options are {}".format(
+                        specific_table, ", ".join(self.ALL_ENTITIES.keys())
+                    )
+                )
         else:
             for entity in self.ALL_ENTITIES.values():
                 self._process_rds(entity)

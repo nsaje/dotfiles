@@ -134,7 +134,7 @@ DEADJOE
 *.iws
 .ideaDataSources/
 dataSources/
-
+.editorconfig
 
 # Visual Studio Code
 .vscode

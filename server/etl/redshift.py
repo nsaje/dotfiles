@@ -35,13 +35,15 @@ def unload_table(
 
 
 def refresh_materialized_rds_table(s3_path, table_name, bucket_name):
-    with db.get_write_stats_cursor() as c:
-        logger.info('Unloading table "%s" to S3 path "%s"', table_name, s3_path)
-        sql, params = prepare_copy_query(
-            s3_path, table_name, null_as="$NA$", bucket_name=bucket_name, truncate_columns=True
-        )
-        c.execute(sql, params)
-        logger.info('Unloaded table "%s" to S3 path "%s"', table_name, s3_path)
+    with db.get_write_stats_transaction():
+        with db.get_write_stats_cursor() as c:
+            delete_from_table(table_name)
+            logger.info('Unloading table "%s" to S3 path "%s"', table_name, s3_path)
+            sql, params = prepare_copy_query(
+                s3_path, table_name, null_as="$NA$", bucket_name=bucket_name, truncate_columns=True
+            )
+            c.execute(sql, params)
+            logger.info('Unloaded table "%s" to S3 path "%s"', table_name, s3_path)
 
 
 def unload_table_tz(
@@ -65,7 +67,6 @@ def update_table_from_s3(db_name, s3_manifest_path, table_name, date_from, date_
     with db.get_write_stats_transaction(db_name):
         with db.get_write_stats_cursor(db_name) as c:
             logger.info('Loading table "%s" into replica "%s" from S3 path "%s"', table_name, db_name, s3_manifest_path)
-
             sql, params = prepare_date_range_delete_query(table_name, date_from, date_to, account_id)
             c.execute(sql, params)
 
@@ -209,9 +210,9 @@ def prepare_date_range_delete_query(table_name, date_from, date_to, account_id):
     return sql, params
 
 
-def truncate_table(table_name):
-    sql = backtosql.generate_sql("etl_truncate_mv_rds.sql", {"table": table_name})
-    with db.get_write_stats_cursor() as c:
+def delete_from_table(table_name):
+    sql = backtosql.generate_sql("etl_delete_table_mv_rds.sql", {"table": table_name})
+    with db.get_stats_cursor() as c:
         logger.info("Will truncate table %s", table_name)
         c.execute(sql)
         logger.info("Table %s truncated", table_name)

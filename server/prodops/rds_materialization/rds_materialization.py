@@ -46,14 +46,13 @@ class RDSModelization(object):
             yield [l.get(col) for col in columns]
 
     def empty_table(self):
-        redshift.truncate_table(self.TABLE)
+        redshift.delete_from_table(self.TABLE)
 
     def load_csv_from_s3(self):
         redshift.refresh_materialized_rds_table(self.s3_path, self.TABLE, bucket_name=self.BUCKET_NAME)
 
     def extract_load_data(self):
         self.put_csv_to_s3()
-        self.empty_table()
         self.load_csv_from_s3()
 
 
@@ -231,4 +230,4 @@ class RDSAdGroup(RDSModelization):
     )
 
 
-RDS_MATERIALIAZED_VIEW = [RDSAgency, RDSSource, RDSAccount, RDSCampaign, RDSCampaignGoal, RDSContentAd, RDSAdGroup]
+RDS_MATERIALIAZED_VIEW = [RDSAgency, RDSSource, RDSAccount, RDSCampaign, RDSCampaignGoal, RDSAdGroup]

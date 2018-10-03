@@ -52,4 +52,5 @@
 0 0 1 * *        /home/ubuntu/docker-manage-py.sh multicurrency_update
 30 * * * *       /home/ubuntu/docker-manage-py.sh hack_cache_k1api_ga_accounts
 #0 8 * * *        /home/ubuntu/docker-manage-py.sh auto_archive_inactive_entities
-0 12 * * *        /home/ubuntu/docker-manage-py.sh monitor_dailystatement_holes
+0 12 * * *       /home/ubuntu/docker-manage-py.sh monitor_dailystatement_holes
+30 */6 * * *     /home/ubuntu/docker-manage-py.sh rds_materialization
