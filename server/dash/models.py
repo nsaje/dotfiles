@@ -34,6 +34,7 @@ from dash.features.videoassets.models import *
 from dash.features.ga.models import *
 from dash.features.custom_flags import *
 from dash.features.submission_filters import *
+from dash.features.publisher_classification import *
 
 # FIXME: Legacy import - accessing constants through dash.modals
 from dash import constants
