@@ -5,8 +5,8 @@ import mock
 from django.test import TestCase
 
 import core.models
-import core.bcm
-import core.multicurrency
+import core.features.bcm
+import core.features.multicurrency
 import dash.constants
 
 from . import validation
@@ -22,7 +22,7 @@ class ValidateMinimumBudgetAmountTest(TestCase):
 
         self.today = dates_helper.local_today()
         self.credit = magic_mixer.blend(
-            core.bcm.CreditLineItem,
+            core.features.bcm.CreditLineItem,
             account=self.campaign.account,
             start_date=dates_helper.days_before(self.today, 7),
             end_date=self.today,
@@ -31,7 +31,7 @@ class ValidateMinimumBudgetAmountTest(TestCase):
             license_fee=decimal.Decimal("0.1"),
         )
         self.budget = magic_mixer.blend(
-            core.bcm.BudgetLineItem,
+            core.features.bcm.BudgetLineItem,
             campaign=self.campaign,
             start_date=dates_helper.days_before(self.today, 7),
             end_date=self.today,
@@ -45,7 +45,7 @@ class ValidateMinimumBudgetAmountTest(TestCase):
 
         yesterday = dates_helper.local_yesterday()
         magic_mixer.blend(
-            core.bcm.BudgetDailyStatement,
+            core.features.bcm.BudgetDailyStatement,
             budget=self.budget,
             date=yesterday,
             media_spend_nano=200 * (10 ** 9),
@@ -92,7 +92,7 @@ class ValidateMinimumBudgetAmountTest(TestCase):
         self.credit.currency = dash.constants.Currency.EUR
         self.credit.save()
 
-        core.multicurrency.CurrencyExchangeRate.objects.create(
+        core.features.multicurrency.CurrencyExchangeRate.objects.create(
             currency=self.credit.currency, date=dates_helper.local_today(), exchange_rate=decimal.Decimal("1.2")
         )
         with self.assertRaises(validation.CampaignStopValidationException) as e:

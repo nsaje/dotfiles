@@ -1,6 +1,6 @@
 from .base import K1APIView
 
-import core.multicurrency
+import core.features.multicurrency
 import dash.constants
 
 from utils import db_for_reads
@@ -18,7 +18,7 @@ class CurrencyExchangeRateView(K1APIView):
         response = {}
         for currency in currencies:
             try:
-                response[currency] = core.multicurrency.get_current_exchange_rate(currency)
-            except core.multicurrency.CurrencyExchangeRate.DoesNotExist:
+                response[currency] = core.features.multicurrency.get_current_exchange_rate(currency)
+            except core.features.multicurrency.CurrencyExchangeRate.DoesNotExist:
                 return self.response_error('Currency exchange rate for currency "{}" does not exist'.format(currency))
         return self.response_ok(response)

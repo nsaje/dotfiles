@@ -70,7 +70,7 @@ class CampaignInstanceMixin:
             return None
 
         _, account, agency = core.models.helpers.generate_parents(campaign=self)
-        return core.history.History.objects.create(
+        return core.features.history.History.objects.create(
             campaign=self,
             account=account,
             agency=agency,

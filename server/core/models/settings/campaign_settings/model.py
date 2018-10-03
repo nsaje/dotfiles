@@ -10,10 +10,10 @@ import utils.demo_anonymizer
 import utils.string_helper
 from dash import constants
 
-import core.audiences
+import core.features.audiences
 import core.common
 import core.models
-import core.history
+import core.features.history
 import core.models
 from . import validation
 
@@ -116,7 +116,7 @@ class CampaignSettings(validation.CampaignSettingsValidatorMixin, instance.Campa
         )
 
     def get_changes_text(self, changes, separator=", "):
-        return core.history.helpers.get_changes_text_from_dict(self, changes, separator=separator)
+        return core.features.history.helpers.get_changes_text_from_dict(self, changes, separator=separator)
 
     class QuerySet(SettingsQuerySet):
         pass
@@ -200,7 +200,9 @@ class CampaignSettings(validation.CampaignSettingsValidatorMixin, instance.Campa
             if not value:
                 value = ""
             else:
-                names = core.publisher_groups.PublisherGroup.objects.filter(pk__in=value).values_list("name", flat=True)
+                names = core.features.publisher_groups.PublisherGroup.objects.filter(pk__in=value).values_list(
+                    "name", flat=True
+                )
                 value = ", ".join(names)
 
         return value

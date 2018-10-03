@@ -10,7 +10,7 @@ import utils.string_helper
 from dash import constants
 
 import core.common
-import core.history
+import core.features.history
 import core.models
 
 from . import validation
@@ -112,7 +112,9 @@ class AccountSettings(validation.AccountSettingsValidatorMixin, SettingsBase):
             if not value:
                 value = ""
             else:
-                names = core.publisher_groups.PublisherGroup.objects.filter(pk__in=value).values_list("name", flat=True)
+                names = core.features.publisher_groups.PublisherGroup.objects.filter(pk__in=value).values_list(
+                    "name", flat=True
+                )
                 value = ", ".join(names)
         elif prop_name == "account_type":
             value = constants.AccountType.get_text(value)

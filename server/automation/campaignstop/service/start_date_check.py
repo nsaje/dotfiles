@@ -1,4 +1,4 @@
-import core.bcm
+import core.features.bcm
 import core.models
 
 from .. import CampaignStopState

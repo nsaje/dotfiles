@@ -73,7 +73,7 @@ class AdGroupSourcesRTBViewSet(RESTAPIBaseViewSet):
                     "cpc": [
                         "Minimum CPC on {} is {}.".format(
                             err.data.get("source_name"),
-                            core.multicurrency.format_value_in_currency(
+                            core.features.multicurrency.format_value_in_currency(
                                 err.data.get("value"), 2, decimal.ROUND_CEILING, ad_group.settings.get_currency()
                             ),
                         )
@@ -87,7 +87,7 @@ class AdGroupSourcesRTBViewSet(RESTAPIBaseViewSet):
                     "cpc": [
                         "Maximum CPC on {} is {}.".format(
                             err.data.get("source_name"),
-                            core.multicurrency.format_value_in_currency(
+                            core.features.multicurrency.format_value_in_currency(
                                 err.data.get("value"), 2, decimal.ROUND_FLOOR, ad_group.settings.get_currency()
                             ),
                         )
@@ -131,7 +131,7 @@ class AdGroupSourcesRTBViewSet(RESTAPIBaseViewSet):
                 errors={
                     "daily_budget": [
                         "Please provide daily spend cap of at least {}.".format(
-                            core.multicurrency.format_value_in_currency(
+                            core.features.multicurrency.format_value_in_currency(
                                 err.data.get("value"), 0, decimal.ROUND_CEILING, ad_group.settings.get_currency()
                             )
                         )
@@ -145,7 +145,7 @@ class AdGroupSourcesRTBViewSet(RESTAPIBaseViewSet):
                     "daily_budget": [
                         "Maximum allowed daily spend cap is {}. "
                         "If you want use a higher daily spend cap, please contact support.".format(
-                            core.multicurrency.format_value_in_currency(
+                            core.features.multicurrency.format_value_in_currency(
                                 err.data.get("value"), 0, decimal.ROUND_FLOOR, ad_group.settings.get_currency()
                             )
                         )

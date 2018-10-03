@@ -15,11 +15,12 @@ from dash import region_targeting_helper
 from utils import dates_helper
 from utils import lc_helper
 
-import core.audiences
+import core.features.audiences
 import core.common
 import core.models
-import core.history
-import core.multicurrency
+import core.features.history
+import core.features.multicurrency
+import core.features.publisher_groups
 
 
 from ..settings_base import SettingsBase
@@ -255,7 +256,7 @@ class AdGroupSettings(
 
         exchange_rate = Decimal("1.0")
         if currency:
-            exchange_rate = core.multicurrency.get_current_exchange_rate(currency)
+            exchange_rate = core.features.multicurrency.get_current_exchange_rate(currency)
         for field in cls.multicurrency_fields:
             if not defaults.get(field):
                 continue
@@ -319,7 +320,7 @@ class AdGroupSettings(
         return NAMES[prop_name]
 
     def get_human_value(self, prop_name, value):
-        currency_symbol = core.multicurrency.get_currency_symbol(self.get_currency())
+        currency_symbol = core.features.multicurrency.get_currency_symbol(self.get_currency())
         if prop_name == "state":
             value = constants.AdGroupSourceSettingsState.get_text(value)
         elif prop_name == "autopilot_state":
@@ -405,7 +406,9 @@ class AdGroupSettings(
         if not value:
             value = ""
         else:
-            names = core.publisher_groups.PublisherGroup.objects.filter(pk__in=value).values_list("name", flat=True)
+            names = core.features.publisher_groups.PublisherGroup.objects.filter(pk__in=value).values_list(
+                "name", flat=True
+            )
             value = ", ".join(names)
         return value
 
@@ -422,7 +425,7 @@ class AdGroupSettings(
         if not value:
             value = ""
         else:
-            names = core.audiences.Audience.objects.filter(pk__in=value).values_list("name", flat=True)
+            names = core.features.audiences.Audience.objects.filter(pk__in=value).values_list("name", flat=True)
             value = ", ".join(names)
         return value
 
@@ -454,7 +457,7 @@ class AdGroupSettings(
             excluded_keys.update(["target_os", "target_placements"])
 
         valid_changes = {key: value for key, value in changes.items() if key not in excluded_keys}
-        return core.history.helpers.get_changes_text_from_dict(self, valid_changes, separator=separator)
+        return core.features.history.helpers.get_changes_text_from_dict(self, valid_changes, separator=separator)
 
     def get_settings_dict(self):
         # ad group settings form expects 'name' instead of 'ad_group_name'

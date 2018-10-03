@@ -5,9 +5,9 @@ from mock import patch, ANY
 from django.test import TestCase
 from django.db.models import Max
 
-import core.bcm
+import core.features.bcm
 import core.models
-import core.multicurrency
+import core.features.multicurrency
 import dash.models
 import dash.constants
 from etl import daily_statements
@@ -39,7 +39,7 @@ class MultiCurrencyTestCase(TestCase):
         account = magic_mixer.blend(core.models.Account, currency=dash.constants.Currency.EUR)
         self.campaign = magic_mixer.blend(core.models.Campaign, account=account, real_time_campaign_stop=True)
         self.credit = magic_mixer.blend(
-            core.bcm.CreditLineItem,
+            core.features.bcm.CreditLineItem,
             account=self.campaign.account,
             start_date=self.mock_today,
             end_date=self.mock_today,
@@ -49,7 +49,7 @@ class MultiCurrencyTestCase(TestCase):
             currency=dash.constants.Currency.EUR,
         )
         self.budget = magic_mixer.blend(
-            core.bcm.BudgetLineItem,
+            core.features.bcm.BudgetLineItem,
             credit=self.credit,
             campaign=self.campaign,
             start_date=self.mock_today,
@@ -59,7 +59,7 @@ class MultiCurrencyTestCase(TestCase):
         )
 
         self.exchange_rate = Decimal("0.8187")
-        core.multicurrency.CurrencyExchangeRate.objects.create(
+        core.features.multicurrency.CurrencyExchangeRate.objects.create(
             date=self.mock_today, currency=dash.constants.Currency.EUR, exchange_rate=self.exchange_rate
         )
 
@@ -74,7 +74,7 @@ class MultiCurrencyTestCase(TestCase):
         )
 
         daily_statements.reprocess_daily_statements(self.mock_today)
-        statement = core.bcm.BudgetDailyStatement.objects.get(budget=self.budget)
+        statement = core.features.bcm.BudgetDailyStatement.objects.get(budget=self.budget)
 
         self.assertEqual(Decimal("350.0") * 10 ** 9, statement.media_spend_nano)
         self.assertEqual(Decimal("62.055698057") * 10 ** 9, statement.data_spend_nano)
@@ -124,7 +124,7 @@ class MultiCurrencyTestCase(TestCase):
     #     _configure_datetime_utcnow_mock(mock_datetime, datetime.datetime(self.mock_today.year, self.mock_today.month, self.mock_today.day, 12))
 
     #     credit2 = magic_mixer.blend(
-    #         core.bcm.CreditLineItem,
+    #         core.features.bcm.CreditLineItem,
     #         account=self.campaign.account,
     #         start_date=self.mock_today,
     #         end_date=self.mock_today,
@@ -134,7 +134,7 @@ class MultiCurrencyTestCase(TestCase):
     #         currency=dash.constants.Currency.USD,
     #     )
     #     budget2 = magic_mixer.blend(
-    #         core.bcm.BudgetLineItem,
+    #         core.features.bcm.BudgetLineItem,
     #         credit=credit2,
     #         campaign=self.campaign,
     #         start_date=self.mock_today,
@@ -144,7 +144,7 @@ class MultiCurrencyTestCase(TestCase):
     #     )
 
     #     daily_statements.reprocess_daily_statements(self.mock_today)
-    #     eur_statement = core.bcm.BudgetDailyStatement.objects.get(budget=self.budget)
+    #     eur_statement = core.features.bcm.BudgetDailyStatement.objects.get(budget=self.budget)
 
     #     self.assertEqual(Decimal('350.0') * 10**9, eur_statement.media_spend_nano)
     #     self.assertEqual(Decimal('62.055698057') * 10**9, eur_statement.data_spend_nano)
@@ -167,7 +167,7 @@ class MultiCurrencyTestCase(TestCase):
     #         eur_statement.local_license_fee_nano + eur_statement.local_margin_nano
     #     )
 
-    #     usd_statement = core.bcm.BudgetDailyStatement.objects.get(budget=budget2)
+    #     usd_statement = core.features.bcm.BudgetDailyStatement.objects.get(budget=budget2)
     #     self.assertAlmostEqual(
     #         media_nano + data_nano,
     #         Decimal(eur_statement.media_spend_nano + eur_statement.data_spend_nano +
@@ -192,7 +192,7 @@ class DailyStatementsK1TestCase(TestCase):
         self.campaign2 = dash.models.Campaign.objects.get(id=2)
         self.campaign3 = dash.models.Campaign.objects.get(id=3)
 
-        core.multicurrency.CurrencyExchangeRate.objects.create(
+        core.features.multicurrency.CurrencyExchangeRate.objects.create(
             date="1970-01-01", currency=dash.constants.Currency.USD, exchange_rate=1
         )
 
@@ -746,7 +746,7 @@ class GetCampaignsWithBudgetsInTimeframe(TestCase):
         self.mock_today = datetime.date(2018, 3, 1)
         self.account = magic_mixer.blend(core.models.Account)
         self.credit = magic_mixer.blend(
-            core.bcm.CreditLineItem,
+            core.features.bcm.CreditLineItem,
             account=self.account,
             start_date=self.date_since - datetime.timedelta(days=5),
             end_date=self.mock_today + datetime.timedelta(days=5),
@@ -756,7 +756,7 @@ class GetCampaignsWithBudgetsInTimeframe(TestCase):
 
     def _create_budget(self, start_date, end_date):
         return magic_mixer.blend(
-            core.bcm.BudgetLineItem,
+            core.features.bcm.BudgetLineItem,
             credit=self.credit,
             campaign__account=self.account,
             amount=10,

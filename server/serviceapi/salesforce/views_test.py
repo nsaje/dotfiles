@@ -173,7 +173,7 @@ class CreateCreditTestCase(TestCase):
         r = self.client.put(url, data=data, format="json")
         self.assertEqual(r.json(), {"details": {"z1_accountId": "Invalid format"}, "errorCode": "ValidationError"})
 
-    @mock.patch("core.bcm.bcm_slack.log_to_slack")
+    @mock.patch("core.features.bcm.bcm_slack.log_to_slack")
     def test_create_agency_credit(self, mock_slack):
         url = reverse("service.salesforce.credit")
 
@@ -192,7 +192,7 @@ class CreateCreditTestCase(TestCase):
             "currency": "EUR",
         }
         r = self.client.put(url, data=data, format="json")
-        cli = core.bcm.credit_line_item.CreditLineItem.objects.all().order_by("-created_dt").first()
+        cli = core.features.bcm.credit_line_item.CreditLineItem.objects.all().order_by("-created_dt").first()
         self.assertEqual(
             r.json(),
             {
@@ -220,7 +220,7 @@ class CreateCreditTestCase(TestCase):
         )
         self.assertEqual(cli.currency, dash.constants.Currency.EUR)
 
-    @mock.patch("core.bcm.bcm_slack.log_to_slack")
+    @mock.patch("core.features.bcm.bcm_slack.log_to_slack")
     def test_create_account_credit(self, mock_slack):
         url = reverse("service.salesforce.credit")
         data = {
@@ -237,7 +237,7 @@ class CreateCreditTestCase(TestCase):
             "pct_of_budget": "0.1",
         }
         r = self.client.put(url, data=data, format="json")
-        cli = core.bcm.credit_line_item.CreditLineItem.objects.all().order_by("-created_dt").first()
+        cli = core.features.bcm.credit_line_item.CreditLineItem.objects.all().order_by("-created_dt").first()
         self.assertEqual(
             r.json(),
             {
@@ -264,7 +264,7 @@ class CreateCreditTestCase(TestCase):
             ),
         )
 
-    @mock.patch("core.bcm.bcm_slack.log_to_slack")
+    @mock.patch("core.features.bcm.bcm_slack.log_to_slack")
     def test_flat_fee_upfront(self, mock_slack):
         url = reverse("service.salesforce.credit")
         data = {
@@ -281,7 +281,7 @@ class CreateCreditTestCase(TestCase):
             "calc_variable_fee": "100.0",
         }
         r = self.client.put(url, data=data, format="json")
-        cli = core.bcm.credit_line_item.CreditLineItem.objects.all().order_by("-created_dt").first()
+        cli = core.features.bcm.credit_line_item.CreditLineItem.objects.all().order_by("-created_dt").first()
         self.assertEqual(
             r.json(),
             {
@@ -308,7 +308,7 @@ class CreateCreditTestCase(TestCase):
             ),
         )
 
-    @mock.patch("core.bcm.bcm_slack.log_to_slack")
+    @mock.patch("core.features.bcm.bcm_slack.log_to_slack")
     def test_flat_fee(self, mock_slack):
         url = reverse("service.salesforce.credit")
         data = {
@@ -325,7 +325,7 @@ class CreateCreditTestCase(TestCase):
             "calc_variable_fee": "100.0",
         }
         r = self.client.put(url, data=data, format="json")
-        cli = core.bcm.credit_line_item.CreditLineItem.objects.all().order_by("-created_dt").first()
+        cli = core.features.bcm.credit_line_item.CreditLineItem.objects.all().order_by("-created_dt").first()
         self.assertEqual(
             r.json(),
             {
@@ -399,7 +399,7 @@ class CreditsListTestCase(TestCase):
         agency = magic_mixer.blend(core.models.agency.Agency, id=1, name="Agency 1")
         agency.save(self.request_mock)
         credit = magic_mixer.blend(
-            core.bcm.credit_line_item.CreditLineItem,
+            core.features.bcm.credit_line_item.CreditLineItem,
             amount=100,
             agency=agency,
             created_dt="2018-02-01",
@@ -442,7 +442,7 @@ class CreditsListTestCase(TestCase):
         account = magic_mixer.blend(core.models.account.Account, id=1, name="Account 1")
         account.save(self.request_mock)
         credit = magic_mixer.blend(
-            core.bcm.credit_line_item.CreditLineItem,
+            core.features.bcm.credit_line_item.CreditLineItem,
             amount=100,
             account=account,
             created_dt="2018-02-01",

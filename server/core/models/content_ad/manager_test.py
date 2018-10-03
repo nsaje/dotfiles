@@ -6,7 +6,7 @@ from dash import constants
 import core.models
 
 
-@patch.object(core.models.ContentAd.objects, "insert_redirects")
+@patch("core.models.ContentAd.objects.insert_redirects")
 class CreateContentAd(TestCase):
     def test_create(self, mock_insert_redirects):
         ad_group = magic_mixer.blend(core.models.AdGroup)

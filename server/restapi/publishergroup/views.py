@@ -4,7 +4,7 @@ import restapi.access
 
 import rest_framework.viewsets
 
-import core.publisher_groups
+import core.features.publisher_groups
 import utils.exc
 
 from . import serializers
@@ -19,7 +19,7 @@ class PublisherGroupViewSet(RESTAPIBaseViewSet, rest_framework.viewsets.ModelVie
         account = restapi.access.get_account(
             self.request.user, self.kwargs["account_id"]
         )  # check user has account access
-        return core.publisher_groups.PublisherGroup.objects.all().filter_by_account(account)
+        return core.features.publisher_groups.PublisherGroup.objects.all().filter_by_account(account)
 
     def perform_create(self, serializer):
         restapi.access.get_account(self.request.user, self.kwargs["account_id"])

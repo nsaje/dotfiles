@@ -4,7 +4,7 @@ import rfc3987
 from dash import constants
 from . import exceptions
 
-import core.multicurrency
+import core.features.multicurrency
 import dash.features.bluekai
 
 import utils.validation_helper
@@ -12,7 +12,7 @@ import utils.dates_helper
 import utils.exc
 
 import core.models.settings.ad_group_source_settings.validation_helpers
-import core.publisher_groups.publisher_group
+import core.features.publisher_groups.publisher_group
 
 
 # should inherit from core.common.BaseValidator so that full_clean is called on save,
@@ -38,11 +38,11 @@ class AdGroupSettingsValidatorMixin(object):
 
     def _get_currency_symbol(self):
         currency = self.ad_group.campaign.account.currency
-        return core.multicurrency.get_currency_symbol(currency)
+        return core.features.multicurrency.get_currency_symbol(currency)
 
     def _get_exchange_rate(self):
         currency = self.ad_group.campaign.account.currency
-        return core.multicurrency.get_current_exchange_rate(currency)
+        return core.features.multicurrency.get_current_exchange_rate(currency)
 
     def _validate_cpc_cc(self, changes):
         cpc_cc = changes.get("local_cpc_cc", None)
@@ -212,7 +212,7 @@ class AdGroupSettingsValidatorMixin(object):
     def _validate_publisher_groups(self, new_settings):
         if self.whitelist_publisher_groups != new_settings.whitelist_publisher_groups:
             whitelist_count = (
-                core.publisher_groups.publisher_group.PublisherGroup.objects.all()
+                core.features.publisher_groups.publisher_group.PublisherGroup.objects.all()
                 .filter_by_account(self.ad_group.campaign.account)
                 .filter(pk__in=new_settings.whitelist_publisher_groups)
                 .count()
@@ -222,7 +222,7 @@ class AdGroupSettingsValidatorMixin(object):
 
         if self.blacklist_publisher_groups != new_settings.blacklist_publisher_groups:
             blacklist_count = (
-                core.publisher_groups.publisher_group.PublisherGroup.objects.all()
+                core.features.publisher_groups.publisher_group.PublisherGroup.objects.all()
                 .filter_by_account(self.ad_group.campaign.account)
                 .filter(pk__in=new_settings.blacklist_publisher_groups)
                 .count()

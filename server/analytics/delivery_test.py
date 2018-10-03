@@ -4,9 +4,9 @@ from decimal import Decimal
 from django import test
 
 import core.models
-import dash.features.videoassets.models
-import core.goals
-import core.bcm
+import core.features.videoassets.models
+import core.features.goals
+import core.features.bcm
 import dash.constants
 
 from analytics import delivery, constants
@@ -20,15 +20,20 @@ class CampaignDeliveryTestCase(test.TestCase):
         self.campaign = magic_mixer.blend(core.models.campaign.Campaign, name="Campaign 1", account_id=1)
         self.campaign.settings.update(None, iab_category=dash.constants.IABCategory.IAB1_1, enable_ga_tracking=True)
 
-        self.goal = core.goals.campaign_goal.CampaignGoal.objects.create_unsafe(
+        self.goal = core.features.goals.campaign_goal.CampaignGoal.objects.create_unsafe(
             campaign=self.campaign, type=dash.constants.CampaignGoalKPI.TIME_ON_SITE, primary=True
         )
         start_date = datetime.date.today() - datetime.timedelta(1)
         end_date = datetime.date.today() + datetime.timedelta(10)
         self.credit = magic_mixer.blend(
-            core.bcm.CreditLineItem, account_id=1, status=1, start_date=start_date, end_date=end_date, amount=100000
+            core.features.bcm.CreditLineItem,
+            account_id=1,
+            status=1,
+            start_date=start_date,
+            end_date=end_date,
+            amount=100000,
         )
-        self.budget = core.bcm.BudgetLineItem.objects.create_unsafe(
+        self.budget = core.features.bcm.BudgetLineItem.objects.create_unsafe(
             campaign=self.campaign, credit=self.credit, amount=1000, start_date=start_date, end_date=end_date
         )
 
@@ -53,7 +58,7 @@ class CampaignDeliveryTestCase(test.TestCase):
             constants.CampaignDeliveryStatus.NO_GOAL,
         )
 
-        goal = core.goals.campaign_goal.CampaignGoal.objects.create_unsafe(
+        goal = core.features.goals.campaign_goal.CampaignGoal.objects.create_unsafe(
             campaign=self.campaign, type=dash.constants.CampaignGoalKPI.TIME_ON_SITE, primary=False
         )
 
@@ -87,7 +92,7 @@ class CampaignDeliveryTestCase(test.TestCase):
         campaign = magic_mixer.blend(core.models.campaign.Campaign, name="Campaign 2", account_id=1)
         campaign.settings.update(None, iab_category=dash.constants.IABCategory.IAB1_1)
 
-        core.goals.campaign_goal.CampaignGoal.objects.create_unsafe(
+        core.features.goals.campaign_goal.CampaignGoal.objects.create_unsafe(
             campaign=campaign, type=dash.constants.CampaignGoalKPI.TIME_ON_SITE, primary=True
         )
         self.assertEqual(
@@ -430,7 +435,7 @@ class AdGroupDeliveryTestCase(test.TestCase):
         )
 
     def test_missing_video_cost(self):
-        asset = dash.features.videoassets.models.VideoAsset(name="test", account=self.account)
+        asset = core.features.videoassets.models.VideoAsset(name="test", account=self.account)
         asset.save()
 
         self.ad.video_asset = asset

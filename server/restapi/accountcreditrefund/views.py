@@ -7,7 +7,7 @@ import restapi.access
 from restapi.common.pagination import StandardPagination
 
 import core.models
-from core.bcm.refund_line_item import exceptions
+from core.features.bcm.refund_line_item import exceptions
 
 import utils.exc
 
@@ -44,7 +44,7 @@ class AccountCreditRefundViewSet(RESTAPIBaseViewSet):
         serializer = serializers.AccountCreditRefundSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         new_refund = self.update_refund(
-            core.bcm.RefundLineItem.objects.create,
+            core.features.bcm.RefundLineItem.objects.create,
             request=request,
             account=account,
             credit=credit.get(),
@@ -55,7 +55,7 @@ class AccountCreditRefundViewSet(RESTAPIBaseViewSet):
     @staticmethod
     def _get_account_and_credit(request, account_id, credit_id):
         account = restapi.access.get_account(request.user, account_id)
-        credit = core.bcm.CreditLineItem.objects.filter_by_account(account).prefetch_related("budgets")
+        credit = core.features.bcm.CreditLineItem.objects.filter_by_account(account).prefetch_related("budgets")
         if credit_id:
             credit = credit.filter(id=credit_id)
 
@@ -64,7 +64,7 @@ class AccountCreditRefundViewSet(RESTAPIBaseViewSet):
     @staticmethod
     def _get_refund_query(request, account_id, credit_id=None):
         account, credit = AccountCreditRefundViewSet._get_account_and_credit(request, account_id, credit_id)
-        return core.bcm.RefundLineItem.objects.filter(credit__in=credit)
+        return core.features.bcm.RefundLineItem.objects.filter(credit__in=credit)
 
     def update_refund(self, fn, **kwargs):
         try:

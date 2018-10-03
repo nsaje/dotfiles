@@ -4,7 +4,7 @@ import re
 import time
 import urllib.parse
 
-from core import audiences
+from core.features import audiences
 from core import models
 from core import pixels
 from dash import constants

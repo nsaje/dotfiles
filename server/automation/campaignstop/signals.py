@@ -1,6 +1,6 @@
 from django.db.models.signals import post_save
 
-import core.bcm
+import core.features.bcm
 import core.models.settings
 from core.signals import settings_change
 
@@ -9,11 +9,11 @@ from . import CampaignStopState
 
 
 def connect_notify_budgets():
-    post_save.connect(_handle_budget_line_item_change, sender=core.bcm.BudgetLineItem)
+    post_save.connect(_handle_budget_line_item_change, sender=core.features.bcm.BudgetLineItem)
 
 
 def disconnect_notify_budgets():
-    post_save.disconnect(_handle_budget_line_item_change, sender=core.bcm.BudgetLineItem)
+    post_save.disconnect(_handle_budget_line_item_change, sender=core.features.bcm.BudgetLineItem)
 
 
 def _handle_budget_line_item_change(sender, instance, **kwargs):

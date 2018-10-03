@@ -1,7 +1,7 @@
 from django.db import models
 
 
-import core.bcm
+import core.features.bcm
 
 
 class AccountQuerySet(models.QuerySet):
@@ -33,7 +33,7 @@ class AccountQuerySet(models.QuerySet):
     def filter_with_spend(self):
         return self.filter(
             pk__in=set(
-                core.bcm.BudgetDailyStatement.objects.filter(budget__campaign__account_id__in=self)
+                core.features.bcm.BudgetDailyStatement.objects.filter(budget__campaign__account_id__in=self)
                 .filter(media_spend_nano__gt=0)
                 .values_list("budget__campaign__account_id", flat=True)
             )

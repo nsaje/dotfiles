@@ -7,13 +7,13 @@ from django.db import models
 from dash import constants
 from utils import lc_helper
 
-import core.bcm.calculations
+import core.features.bcm.calculations
 import core.models
 import core.models.helpers
-import core.audiences
+import core.features.audiences
 import core.common
-import core.multicurrency
-import core.history
+import core.features.multicurrency
+import core.features.history
 
 from ..settings_base import SettingsBase
 from ..settings_query_set import SettingsQuerySet
@@ -87,7 +87,7 @@ class AdGroupSourceSettings(
         return NAMES.get(prop_name)
 
     def get_human_value(self, prop_name, value):
-        currency_symbol = core.multicurrency.get_currency_symbol(self.get_currency())
+        currency_symbol = core.features.multicurrency.get_currency_symbol(self.get_currency())
         if prop_name == "state":
             value = constants.AdGroupSourceSettingsState.get_text(value)
         elif prop_name == "local_cpc_cc" and value is not None:

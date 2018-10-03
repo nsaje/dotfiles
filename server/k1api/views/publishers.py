@@ -5,7 +5,7 @@ from django.db.models import F
 import dash.constants
 import dash.models
 from utils import db_for_reads
-import core.publisher_bid_modifiers
+import core.features.publisher_bid_modifiers
 
 from .base import K1APIView
 
@@ -80,7 +80,7 @@ class PublisherBidModifiersView(K1APIView):
         source_type = request.GET.get("source_type")
 
         qs = (
-            core.publisher_bid_modifiers.PublisherBidModifier.objects.all()
+            core.features.publisher_bid_modifiers.PublisherBidModifier.objects.all()
             .select_related("source", "source__source_type")
             .order_by("pk")
         )

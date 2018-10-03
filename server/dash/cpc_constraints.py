@@ -3,7 +3,7 @@ from collections import defaultdict
 from django.forms import ValidationError
 from django.db import models
 
-import core.bcm
+import core.features.bcm
 
 import dash
 import dash.models
@@ -121,8 +121,8 @@ def _is_invalid(ag_source_setting, min_cpc, max_cpc, bcm_modifiers):
 
 
 def _get_bcm_min_max_cpcs(min_cpc, max_cpc, bcm_modifiers):
-    bcm_min_cpc = core.bcm.calculations.calculate_min_bid_value(min_cpc, bcm_modifiers)
-    bcm_max_cpc = core.bcm.calculations.calculate_max_bid_value(max_cpc, bcm_modifiers)
+    bcm_min_cpc = core.features.bcm.calculations.calculate_min_bid_value(min_cpc, bcm_modifiers)
+    bcm_max_cpc = core.features.bcm.calculations.calculate_max_bid_value(max_cpc, bcm_modifiers)
     return bcm_min_cpc, bcm_max_cpc
 
 

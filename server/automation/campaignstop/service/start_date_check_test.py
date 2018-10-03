@@ -19,7 +19,7 @@ class UpdateCampaignsStartDateTestCase(TestCase):
         self.campaign = magic_mixer.blend(core.models.Campaign)
         self.today = dates_helper.local_today()
         self.credit = magic_mixer.blend(
-            core.bcm.CreditLineItem,
+            core.features.bcm.CreditLineItem,
             account=self.campaign.account,
             start_date=dates_helper.days_before(self.today, 30),
             end_date=dates_helper.days_after(self.today, 30),
@@ -74,7 +74,7 @@ class UpdateCampaignsStartDateTestCase(TestCase):
 
     def _set_up_budget(self, start_date, end_date):
         return magic_mixer.blend(
-            core.bcm.BudgetLineItem,
+            core.features.bcm.BudgetLineItem,
             campaign=self.campaign,
             start_date=start_date,
             end_date=end_date,

@@ -9,7 +9,7 @@ from django.core.management import call_command
 
 from utils import converters
 import utils.exc
-import core.bcm.exceptions
+import core.features.bcm.exceptions
 
 from dash import models, constants, forms
 from zemauth.models import User
@@ -684,10 +684,10 @@ class BudgetsTestCase(TestCase):
                 campaign_id=2,
             )
         error_classes = (
-            core.bcm.exceptions.StartDateInvalid,
-            core.bcm.exceptions.EndDateInvalid,
-            core.bcm.exceptions.BudgetAmountExceededCreditAmount,
-            core.bcm.exceptions.CreditPending,
+            core.features.bcm.exceptions.StartDateInvalid,
+            core.features.bcm.exceptions.EndDateInvalid,
+            core.features.bcm.exceptions.BudgetAmountExceededCreditAmount,
+            core.features.bcm.exceptions.CreditPending,
         )
         self.assertTrue(all([isinstance(e, error_classes) for e in err.exception.errors]))
 
@@ -700,10 +700,10 @@ class BudgetsTestCase(TestCase):
                 campaign_id=2,
             )
         error_classes = (
-            core.bcm.exceptions.StartDateInvalid,
-            core.bcm.exceptions.EndDateInvalid,
-            core.bcm.exceptions.BudgetAmountNegative,
-            core.bcm.exceptions.CreditPending,
+            core.features.bcm.exceptions.StartDateInvalid,
+            core.features.bcm.exceptions.EndDateInvalid,
+            core.features.bcm.exceptions.BudgetAmountNegative,
+            core.features.bcm.exceptions.CreditPending,
         )
         self.assertTrue(len(err.exception.errors), 4)
         self.assertTrue(all([isinstance(e, error_classes) for e in err.exception.errors]))
@@ -717,9 +717,9 @@ class BudgetsTestCase(TestCase):
                 campaign_id=2,
             )
         error_classes = (
-            core.bcm.exceptions.StartDateInvalid,
-            core.bcm.exceptions.EndDateInvalid,
-            core.bcm.exceptions.CreditPending,
+            core.features.bcm.exceptions.StartDateInvalid,
+            core.features.bcm.exceptions.EndDateInvalid,
+            core.features.bcm.exceptions.CreditPending,
         )
         self.assertTrue(len(err.exception.errors), 3)
         self.assertTrue(all([isinstance(e, error_classes) for e in err.exception.errors]))
@@ -732,7 +732,10 @@ class BudgetsTestCase(TestCase):
                 end_date=TODAY + datetime.timedelta(4),
                 campaign_id=2,
             )
-        error_classes = (core.bcm.exceptions.StartDateBiggerThanEndDate, core.bcm.exceptions.CreditPending)
+        error_classes = (
+            core.features.bcm.exceptions.StartDateBiggerThanEndDate,
+            core.features.bcm.exceptions.CreditPending,
+        )
         self.assertTrue(len(err.exception.errors), 2)
         self.assertTrue(all([isinstance(e, error_classes) for e in err.exception.errors]))
 
@@ -744,7 +747,7 @@ class BudgetsTestCase(TestCase):
                 end_date=TODAY + datetime.timedelta(8),
                 campaign_id=2,
             )
-        self.assertTrue(isinstance(err.exception.errors[0], core.bcm.exceptions.CreditPending))
+        self.assertTrue(isinstance(err.exception.errors[0], core.features.bcm.exceptions.CreditPending))
 
         c.status = constants.CreditLineItemStatus.SIGNED
         c.save()
@@ -760,7 +763,9 @@ class BudgetsTestCase(TestCase):
         b.amount = 100000
         with self.assertRaises(utils.exc.MultipleValidationError) as err:
             b.save()
-        self.assertTrue(isinstance(err.exception.errors[0], core.bcm.exceptions.BudgetAmountExceededCreditAmount))
+        self.assertTrue(
+            isinstance(err.exception.errors[0], core.features.bcm.exceptions.BudgetAmountExceededCreditAmount)
+        )
         b.amount = 800  # rollback
         b.save()
 
@@ -835,7 +840,7 @@ class BudgetsTestCase(TestCase):
         b = models.BudgetLineItem.objects.get(pk=1)
 
         b.start_date = TODAY  # cannot change inactive budgets
-        with self.assertRaises(core.bcm.exceptions.CanNotChangeStartDate):
+        with self.assertRaises(core.features.bcm.exceptions.CanNotChangeStartDate):
             b.save()
         self.assertNotEqual(b.start_date, models.BudgetLineItem.objects.get(pk=1).start_date)
 
@@ -1060,7 +1065,7 @@ class BudgetsTestCase(TestCase):
         self.assertEqual(b.state(), constants.BudgetLineItemState.ACTIVE)
 
         b.start_date = TODAY - datetime.timedelta(2)
-        with self.assertRaises(core.bcm.exceptions.CanNotChangeStartDate):
+        with self.assertRaises(core.features.bcm.exceptions.CanNotChangeStartDate):
             b.save()  # status prevents editing more
         b.start_date = TODAY - datetime.timedelta(1)  # rollback
 
@@ -1102,10 +1107,10 @@ class BudgetsTestCase(TestCase):
             b2.amount = b2.amount + 1
             b2.save()
 
-        self.assertTrue(isinstance(err.exception.errors[0], core.bcm.exceptions.BudgetAmountCannotChange))
+        self.assertTrue(isinstance(err.exception.errors[0], core.features.bcm.exceptions.BudgetAmountCannotChange))
         self.assertEqual(str(err.exception.errors[0]), "Canceled credit's budget amounts cannot change.")
 
-        with self.assertRaises(core.bcm.exceptions.CreditCanceled) as err:
+        with self.assertRaises(core.features.bcm.exceptions.CreditCanceled) as err:
             create_budget(credit=c, amount=300, start_date=TODAY, end_date=TODAY + datetime.timedelta(1), campaign_id=2)
         self.assertEqual(str(err.exception), "Canceled credits cannot have new budget items.")
 
@@ -1575,7 +1580,9 @@ class BudgetReserveTestCase(TestCase):
                 end_date=datetime.date(2015, 11, 10),
                 campaign_id=1,
             )
-        self.assertTrue(isinstance(err.exception.errors[0], core.bcm.exceptions.BudgetAmountExceededCreditAmount))
+        self.assertTrue(
+            isinstance(err.exception.errors[0], core.features.bcm.exceptions.BudgetAmountExceededCreditAmount)
+        )
         self.assertEqual(
             str(err.exception.errors[0]),
             "Budget exceeds the total credit amount by $100.00.",  # isn't really testing overlapping?
@@ -1641,7 +1648,9 @@ class BudgetReserveTestCase(TestCase):
                 end_date=TODAY - datetime.timedelta(1),
                 campaign_id=2,
             )
-        self.assertTrue(isinstance(err.exception.errors[0], core.bcm.exceptions.BudgetAmountExceededCreditAmount))
+        self.assertTrue(
+            isinstance(err.exception.errors[0], core.features.bcm.exceptions.BudgetAmountExceededCreditAmount)
+        )
         self.assertEqual(str(err.exception.errors[0]), "Budget exceeds the total credit amount by $500.00.")
         self.assertEqual(len(c.budgets.all()), 1)
 
@@ -1656,7 +1665,9 @@ class BudgetReserveTestCase(TestCase):
                 end_date=TODAY - datetime.timedelta(1),
                 campaign_id=2,
             )
-        self.assertTrue(isinstance(err.exception.errors[0], core.bcm.exceptions.BudgetAmountExceededCreditAmount))
+        self.assertTrue(
+            isinstance(err.exception.errors[0], core.features.bcm.exceptions.BudgetAmountExceededCreditAmount)
+        )
         self.assertEqual(str(err.exception.errors[0]), "Budget exceeds the total credit amount by $1.00.")
         self.assertEqual(len(c.budgets.all()), 1)
 

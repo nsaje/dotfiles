@@ -6,14 +6,14 @@ from django.core.exceptions import FieldDoesNotExist
 from django.db import models
 from django.db import transaction
 
-import core.history
+import core.features.history
 import core.signals
 from dash import constants
 
 from .update_object import UpdateObject
 
 
-class SettingsBase(models.Model, core.history.HistoryMixin):
+class SettingsBase(models.Model, core.features.history.HistoryMixin):
     class Meta:
         abstract = True
 

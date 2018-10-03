@@ -7,7 +7,7 @@ from utils.magic_mixer import magic_mixer
 from dash import constants
 
 import core.models
-import core.bcm
+import core.features.bcm
 
 
 class MigrateToBcmV2Test(TestCase):
@@ -25,7 +25,9 @@ class MigrateToBcmV2Test(TestCase):
             autopilot_daily_budget=decimal.Decimal("100"),
             max_cpm=decimal.Decimal("1.22"),
         )
-        campaign_goal = magic_mixer.blend(core.goals.CampaignGoal, campaign=campaign, primary=True, value="0.1")
+        campaign_goal = magic_mixer.blend(
+            core.features.goals.CampaignGoal, campaign=campaign, primary=True, value="0.1"
+        )
         campaign_goal.add_value(self.request, decimal.Decimal("0.1"))
 
     def _set_up_patchers(self):

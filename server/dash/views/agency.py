@@ -22,7 +22,7 @@ from dash.features import native_server
 from dash.features import ga, custom_flags
 from dash import content_insights_helper
 
-import core.goals
+import core.features.goals
 
 from utils import api_common
 from utils import exc
@@ -38,9 +38,9 @@ import core.models.settings.campaign_settings.exceptions
 import core.models.ad_group.exceptions
 import core.models.settings.ad_group_settings.exceptions
 import core.models.settings.ad_group_source_settings.exceptions
-import core.goals.campaign_goal.exceptions
-import core.goals.conversion_goal.exceptions
-import core.multicurrency
+import core.features.goals.campaign_goal.exceptions
+import core.features.goals.conversion_goal.exceptions
+import core.features.multicurrency
 
 import restapi.campaigngoal.serializers
 
@@ -202,7 +202,7 @@ class AdGroupSettings(api_common.BaseApiView):
                     "b1_sources_group_cpc_cc": [
                         "Minimum CPC on {} is {}.".format(
                             err.data.get("source_name"),
-                            core.multicurrency.format_value_in_currency(
+                            core.features.multicurrency.format_value_in_currency(
                                 err.data.get("value"), 2, decimal.ROUND_CEILING, ad_group.settings.get_currency()
                             ),
                         )
@@ -216,7 +216,7 @@ class AdGroupSettings(api_common.BaseApiView):
                     "b1_sources_group_cpc_cc": [
                         "Maximum CPC on {} is {}.".format(
                             err.data.get("source_name"),
-                            core.multicurrency.format_value_in_currency(
+                            core.features.multicurrency.format_value_in_currency(
                                 err.data.get("value"), 2, decimal.ROUND_FLOOR, ad_group.settings.get_currency()
                             ),
                         )
@@ -260,7 +260,7 @@ class AdGroupSettings(api_common.BaseApiView):
                 errors={
                     "b1_sources_group_daily_budget": [
                         "Please provide daily spend cap of at least {}.".format(
-                            core.multicurrency.format_value_in_currency(
+                            core.features.multicurrency.format_value_in_currency(
                                 err.data.get("value"), 0, decimal.ROUND_CEILING, ad_group.settings.get_currency()
                             )
                         )
@@ -274,7 +274,7 @@ class AdGroupSettings(api_common.BaseApiView):
                     "b1_sources_group_daily_budget": [
                         "Maximum allowed daily spend cap is {}. "
                         "If you want use a higher daily spend cap, please contact support.".format(
-                            core.multicurrency.format_value_in_currency(
+                            core.features.multicurrency.format_value_in_currency(
                                 err.data.get("value"), 0, decimal.ROUND_FLOOR, ad_group.settings.get_currency()
                             )
                         )
@@ -554,7 +554,7 @@ class CampaignSettings(api_common.BaseApiView):
         if request.user.has_perm("zemauth.can_see_campaign_goals"):
             response["goals"] = self.get_campaign_goals(request, campaign)
             response["goals_defaults"] = restapi.campaigngoal.serializers.CampaignGoalsDefaultsSerializer(
-                core.goals.get_campaign_goals_defaults(campaign.account)
+                core.features.goals.get_campaign_goals_defaults(campaign.account)
             ).data
 
         if self.rest_proxy:
@@ -669,19 +669,19 @@ class CampaignSettings(api_common.BaseApiView):
                             conversion_window=conversion_form.cleaned_data["conversion_window"],
                         )
 
-                    except core.goals.conversion_goal.exceptions.ConversionGoalLimitExceeded as err:
+                    except core.features.goals.conversion_goal.exceptions.ConversionGoalLimitExceeded as err:
                         raise utils.exc.ValidationError(str(err))
 
-                    except core.goals.conversion_goal.exceptions.ConversionWindowRequired as err:
+                    except core.features.goals.conversion_goal.exceptions.ConversionWindowRequired as err:
                         raise utils.exc.ValidationError(errors={"conversion_window": [str(err)]})
 
-                    except core.goals.conversion_goal.exceptions.ConversionPixelInvalid as err:
+                    except core.features.goals.conversion_goal.exceptions.ConversionPixelInvalid as err:
                         raise utils.exc.ValidationError(errors={"goal_id": [str(err)]})
 
-                    except core.goals.conversion_goal.exceptions.ConversionGoalNotUnique as err:
+                    except core.features.goals.conversion_goal.exceptions.ConversionGoalNotUnique as err:
                         raise utils.exc.ValidationError(str(err))
 
-                    except core.goals.conversion_goal.exceptions.GoalIDInvalid as err:
+                    except core.features.goals.conversion_goal.exceptions.GoalIDInvalid as err:
                         raise utils.exc.ValidationError(errors={"goal_id": [str(err)]})
 
                 else:
@@ -700,13 +700,13 @@ class CampaignSettings(api_common.BaseApiView):
                         conversion_goal=new_conversion_goal if conversion_goal else None,
                     )
 
-                except core.goals.campaign_goal.exceptions.ConversionGoalLimitExceeded as err:
+                except core.features.goals.campaign_goal.exceptions.ConversionGoalLimitExceeded as err:
                     raise utils.exc.ValidationError(str(err))
 
-                except core.goals.campaign_goal.exceptions.MultipleSameTypeGoals as err:
+                except core.features.goals.campaign_goal.exceptions.MultipleSameTypeGoals as err:
                     raise utils.exc.ValidationError(str(err))
 
-                except core.goals.campaign_goal.exceptions.ConversionGoalRequired as err:
+                except core.features.goals.campaign_goal.exceptions.ConversionGoalRequired as err:
                     raise utils.exc.ValidationError(str(err))
 
             if is_primary:

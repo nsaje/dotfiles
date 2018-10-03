@@ -1,6 +1,6 @@
 from django.test import TestCase
 
-import dash
+import core.models
 from utils import exc
 from utils.magic_mixer import magic_mixer
 
@@ -10,7 +10,7 @@ from .model import Campaign
 class TestCampaignManager(TestCase):
     def setUp(self):
         self.request = magic_mixer.blend_request_user()
-        self.account = magic_mixer.blend(dash.models.Account, users=[self.request.user])
+        self.account = magic_mixer.blend(core.models.Account, users=[self.request.user])
 
     def test_create(self):
         campaign = Campaign.objects.create(self.request, self.account, "xyz")

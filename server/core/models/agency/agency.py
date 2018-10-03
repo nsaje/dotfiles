@@ -11,7 +11,7 @@ from utils import exc
 import core.common
 import core.models
 import core.features.yahoo_accounts
-import core.history
+import core.features.history
 import core.models
 
 
@@ -110,7 +110,7 @@ class Agency(models.Model):
     def write_history(self, changes_text, changes=None, user=None, system_user=None, action_type=None):
         if not changes and not changes_text:
             return None
-        return core.history.History.objects.create(
+        return core.features.history.History.objects.create(
             agency=self,
             created_by=user,
             system_user=system_user,

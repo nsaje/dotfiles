@@ -8,10 +8,10 @@ from django.db import models, transaction
 
 from dash import constants, retargeting_helper
 
-import core.bcm
+import core.features.bcm
 import core.common
 import core.models
-import core.history
+import core.features.history
 
 import utils.email_helper
 import utils.exc
@@ -367,13 +367,13 @@ class AdGroupSource(models.Model):
     def _transform_daily_budget_cc(self, daily_budget_cc, fee, margin):
         if not daily_budget_cc:
             return daily_budget_cc
-        new_daily_budget_cc = core.bcm.calculations.apply_fee_and_margin(daily_budget_cc, fee, margin)
+        new_daily_budget_cc = core.features.bcm.calculations.apply_fee_and_margin(daily_budget_cc, fee, margin)
         return utils.numbers.round_decimal_ceiling(new_daily_budget_cc, places=0)
 
     def _transform_cpc_cc(self, cpc_cc, fee, margin):
         if not cpc_cc:
             return cpc_cc
-        new_cpc_cc = core.bcm.calculations.apply_fee_and_margin(cpc_cc, fee, margin)
+        new_cpc_cc = core.features.bcm.calculations.apply_fee_and_margin(cpc_cc, fee, margin)
         return utils.numbers.round_decimal_half_down(new_cpc_cc, places=3)
 
     def save(self, request=None, *args, **kwargs):

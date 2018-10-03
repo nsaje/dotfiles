@@ -2,10 +2,10 @@ from decimal import Decimal
 
 from rest_framework.serializers import ValidationError
 
-import core.bcm.bcm_slack
-import core.bcm.credit_line_item
+import core.features.bcm.bcm_slack
+import core.features.bcm.credit_line_item
 import core.models.account
-import core.multicurrency
+import core.features.multicurrency
 import dash.constants
 import utils.converters
 import zemauth.models
@@ -60,29 +60,31 @@ def create_credit_line_item(request, data):
     elif data["pf_schedule"] == constants.PF_SCHEDULE_PCT_FEE:
         cli["license_fee"] = data["pct_of_budget"]
 
-    item = core.bcm.credit_line_item.CreditLineItem.objects.create(request, start_date, end_date, amount, **cli)
+    item = core.features.bcm.credit_line_item.CreditLineItem.objects.create(
+        request, start_date, end_date, amount, **cli
+    )
 
     if item.account:
-        core.bcm.bcm_slack.log_to_slack(
+        core.features.bcm.bcm_slack.log_to_slack(
             item.account.pk,
-            core.bcm.bcm_slack.SLACK_NEW_CREDIT_MSG.format(
+            core.features.bcm.bcm_slack.SLACK_NEW_CREDIT_MSG.format(
                 credit_id=item.pk,
-                url=core.bcm.bcm_slack.ACCOUNT_URL.format(item.account.pk),
+                url=core.features.bcm.bcm_slack.ACCOUNT_URL.format(item.account.pk),
                 account_id=item.account.pk,
                 account_name=item.account.get_long_name(),
                 amount=item.amount,
-                currency_symbol=core.multicurrency.get_currency_symbol(item.currency),
+                currency_symbol=core.features.multicurrency.get_currency_symbol(item.currency),
                 end_date=item.end_date,
             ),
         )
     elif item.agency:
-        core.bcm.bcm_slack.log_to_slack(
+        core.features.bcm.bcm_slack.log_to_slack(
             None,
-            core.bcm.bcm_slack.SLACK_NEW_AGENCY_CREDIT_MSG.format(
+            core.features.bcm.bcm_slack.SLACK_NEW_AGENCY_CREDIT_MSG.format(
                 credit_id=item.pk,
                 agency=item.agency.name,
                 amount=item.amount,
-                currency_symbol=core.multicurrency.get_currency_symbol(item.currency),
+                currency_symbol=core.features.multicurrency.get_currency_symbol(item.currency),
                 end_date=item.end_date,
             ),
         )
@@ -114,4 +116,4 @@ def get_agency_accounts(z1_account_id):
 
 
 def get_entity_credits(z1_account_id):
-    return core.bcm.credit_line_item.CreditLineItem.objects.filter(**_get_client_lookup(z1_account_id))
+    return core.features.bcm.credit_line_item.CreditLineItem.objects.filter(**_get_client_lookup(z1_account_id))

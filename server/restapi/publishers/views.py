@@ -4,9 +4,9 @@ from rest_framework import permissions
 import restapi.common.views_base
 import restapi.access
 import dash.views.helpers
-import core.publisher_groups.publisher_group_helpers
-import core.publisher_bid_modifiers
-import core.publisher_bid_modifiers.exceptions
+import core.features.publisher_groups.publisher_group_helpers
+import core.features.publisher_bid_modifiers
+import core.features.publisher_bid_modifiers.exceptions
 import dash.constants
 
 from . import serializers
@@ -23,7 +23,7 @@ class PublishersViewSet(restapi.common.views_base.RESTAPIBaseViewSet):
         return self.response_ok(serializer.data)
 
     def _get_publisher_group_items(self, ad_group):
-        targeting = core.publisher_groups.publisher_group_helpers.get_publisher_group_targeting_dict(
+        targeting = core.features.publisher_groups.publisher_group_helpers.get_publisher_group_targeting_dict(
             ad_group,
             ad_group.get_current_settings(),
             ad_group.campaign,
@@ -68,7 +68,7 @@ class PublishersViewSet(restapi.common.views_base.RESTAPIBaseViewSet):
         return publishers
 
     def _augment_with_bid_modifiers(self, items, ad_group):
-        modifiers = core.publisher_bid_modifiers.get(ad_group)
+        modifiers = core.features.publisher_bid_modifiers.get(ad_group)
         modifiers_by_publisher_source = {(m["publisher"], m["source"]): m for m in modifiers}
         remaining_modifiers_keys = set(modifiers_by_publisher_source.keys())
 
@@ -107,15 +107,19 @@ class PublishersViewSet(restapi.common.views_base.RESTAPIBaseViewSet):
             cleaned_entry = {"publisher": entry["name"], "source": entry["source"], "include_subdomains": True}
             entity = self._get_level_entity(ad_group, entry)
             if entry["status"] == dash.constants.PublisherStatus.BLACKLISTED:
-                core.publisher_groups.publisher_group_helpers.blacklist_publishers(request, [cleaned_entry], entity)
+                core.features.publisher_groups.publisher_group_helpers.blacklist_publishers(
+                    request, [cleaned_entry], entity
+                )
             elif entry["status"] == dash.constants.PublisherStatus.ENABLED:
-                core.publisher_groups.publisher_group_helpers.unlist_publishers(request, [cleaned_entry], entity)
+                core.features.publisher_groups.publisher_group_helpers.unlist_publishers(
+                    request, [cleaned_entry], entity
+                )
 
             if entry["level"] == dash.constants.PublisherBlacklistLevel.ADGROUP:
                 bid_modifier = entry.get("modifier")
                 try:
-                    core.publisher_bid_modifiers.set(ad_group, entry["name"], entry["source"], bid_modifier)
-                except core.publisher_bid_modifiers.exceptions.BidModifierInvalid:
+                    core.features.publisher_bid_modifiers.set(ad_group, entry["name"], entry["source"], bid_modifier)
+                except core.features.publisher_bid_modifiers.exceptions.BidModifierInvalid:
                     raise serializers.ValidationError({"modifier": "Bid modifier invalid!"})
 
     @staticmethod

@@ -8,7 +8,7 @@ import restapi.access
 import dash.features.campaignlauncher
 import dash.features.contentupload
 import core.models.settings
-import core.multicurrency
+import core.features.multicurrency
 import automation.autopilot
 import utils.lc_helper
 import utils.exc
@@ -36,7 +36,9 @@ class CampaignLauncherViewSet(RESTAPIBaseViewSet):
                 "target_devices": restapi.serializers.targeting.DevicesSerializer(
                     default_settings["target_devices"]
                 ).data,
-                "goals_defaults": CampaignGoalsDefaultsSerializer(core.goals.get_campaign_goals_defaults(account)).data,
+                "goals_defaults": CampaignGoalsDefaultsSerializer(
+                    core.features.goals.get_campaign_goals_defaults(account)
+                ).data,
             }
         )
 
@@ -54,8 +56,8 @@ class CampaignLauncherViewSet(RESTAPIBaseViewSet):
             except Exception as e:
                 errors["upload_batch"] = e
         if "daily_budget" in serializer.validated_data and "budget_amount" in serializer.validated_data:
-            currency_symbol = core.multicurrency.get_currency_symbol(account.currency)
-            exchange_rate = core.multicurrency.get_current_exchange_rate(account.currency)
+            currency_symbol = core.features.multicurrency.get_currency_symbol(account.currency)
+            exchange_rate = core.features.multicurrency.get_current_exchange_rate(account.currency)
             min_daily_budget = automation.autopilot.get_account_default_minimum_daily_budget(account) * exchange_rate
             min_budget_amount = min_daily_budget * BUDGET_DAILY_CAP_FACTOR
             if serializer.validated_data["daily_budget"] < min_daily_budget:

@@ -3,7 +3,7 @@ from utils import test_helper
 
 from django.core.urlresolvers import reverse
 
-import core.publisher_groups
+import core.features.publisher_groups
 from . import views
 
 
@@ -26,7 +26,7 @@ class PublisherGroupTest(RESTAPITest):
         return {"id": str(pg.pk), "name": pg.name, "accountId": str(pg.account_id) if pg.account_id else None}
 
     def validate_against_db(self, data):
-        m = core.publisher_groups.PublisherGroup.objects.get(pk=data["id"])
+        m = core.features.publisher_groups.PublisherGroup.objects.get(pk=data["id"])
         self.assertDictEqual(data, self.publishergroup_repr(m))
 
     def test_get_list(self):

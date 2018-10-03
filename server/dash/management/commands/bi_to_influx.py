@@ -5,7 +5,7 @@ import logging
 from influxdb import InfluxDBClient
 from django.conf import settings
 
-from core.publisher_groups import publisher_group_helpers
+from core.features.publisher_groups import publisher_group_helpers
 from dash import constants
 from dash import models
 import redshiftapi.api_breakdowns

@@ -4,7 +4,7 @@ import newrelic.agent
 
 from utils.queryset_helper import simplify_query, get_pk_list
 from dash import models
-from core.publisher_groups import publisher_group_helpers
+from core.features.publisher_groups import publisher_group_helpers
 from stats import constants
 import dash.constants
 

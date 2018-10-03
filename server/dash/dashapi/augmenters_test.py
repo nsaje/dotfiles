@@ -4,7 +4,7 @@ from utils.magic_mixer import magic_mixer
 from dash.dashapi import loaders, augmenter
 from dash import models
 
-from core.publisher_bid_modifiers import PublisherBidModifier
+from core.features.publisher_bid_modifiers import PublisherBidModifier
 from decimal import Decimal
 
 

@@ -9,7 +9,7 @@ from .. import RealTimeCampaignDataHistory
 from . import config
 
 
-import core.multicurrency
+import core.features.multicurrency
 
 
 logger = logging.getLogger(__name__)
@@ -65,7 +65,7 @@ def get_budget_spend_estimates(log, campaign, budgets):
 
 
 def _to_local_currency(campaign, amount):
-    exchange_rate = core.multicurrency.get_current_exchange_rate(campaign.account.currency)
+    exchange_rate = core.features.multicurrency.get_current_exchange_rate(campaign.account.currency)
     return amount * exchange_rate
 
 

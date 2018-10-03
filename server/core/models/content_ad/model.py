@@ -16,7 +16,7 @@ from dash import image_helper
 
 import core.common
 import core.models
-import core.history
+import core.features.history
 
 from . import prodops_mixin
 from . import instance

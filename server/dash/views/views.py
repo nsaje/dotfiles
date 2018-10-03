@@ -28,7 +28,7 @@ from utils import request_signer
 from utils import threads
 from utils import db_for_reads
 
-import core.multicurrency
+import core.features.multicurrency
 import core.models.helpers
 
 from dash import models, region_targeting_helper, retargeting_helper, campaign_goals
@@ -415,7 +415,7 @@ class CampaignOverview(api_common.BaseApiView):
         settings.append(flight_time_setting.as_dict())
 
         currency = campaign.account.currency
-        currency_symbol = core.multicurrency.get_currency_symbol(currency)
+        currency_symbol = core.features.multicurrency.get_currency_symbol(currency)
 
         total_spend = infobox_helpers.get_total_campaign_budgets_amount(user, campaign)
         total_spend_available = infobox_helpers.calculate_available_campaign_budget(campaign)
@@ -437,7 +437,7 @@ class CampaignOverview(api_common.BaseApiView):
         pacing = monthly_proj.total("pacing") or decimal.Decimal("0")
 
         currency = campaign.account.currency
-        currency_symbol = core.multicurrency.get_currency_symbol(currency)
+        currency_symbol = core.features.multicurrency.get_currency_symbol(currency)
 
         daily_cap = infobox_helpers.calculate_daily_campaign_cap(campaign)
         yesterday_costs = infobox_helpers.get_yesterday_campaign_spend(campaign) or 0
@@ -556,7 +556,7 @@ class AccountOverview(api_common.BaseApiView):
 
         allocated_credit, available_credit = infobox_helpers.calculate_allocated_and_available_credit(account)
 
-        currency_symbol = core.multicurrency.get_currency_symbol(account.currency)
+        currency_symbol = core.features.multicurrency.get_currency_symbol(account.currency)
         allocated_credit_text = lc_helper.format_currency(allocated_credit, curr=currency_symbol)
         unallocated_credit_text = lc_helper.format_currency(available_credit, curr=currency_symbol)
 
@@ -769,7 +769,7 @@ class AdGroupSourceSettings(api_common.BaseApiView):
                 errors={
                     "daily_budget_cc": [
                         "Please provide daily spend cap of at least {}.".format(
-                            core.multicurrency.format_value_in_currency(
+                            core.features.multicurrency.format_value_in_currency(
                                 err.data.get("value"), 0, decimal.ROUND_CEILING, ad_group_source.settings.get_currency()
                             )
                         )
@@ -783,7 +783,7 @@ class AdGroupSourceSettings(api_common.BaseApiView):
                     "daily_budget_cc": [
                         "Maximum allowed daily spend cap is {}. "
                         "If you want use a higher daily spend cap, please contact support.".format(
-                            core.multicurrency.format_value_in_currency(
+                            core.features.multicurrency.format_value_in_currency(
                                 err.data.get("value"), 0, decimal.ROUND_FLOOR, ad_group_source.settings.get_currency()
                             )
                         )
@@ -829,7 +829,7 @@ class AdGroupSourceSettings(api_common.BaseApiView):
                     "cpc_cc": [
                         "Minimum CPC on {} is {}.".format(
                             err.data.get("source_name"),
-                            core.multicurrency.format_value_in_currency(
+                            core.features.multicurrency.format_value_in_currency(
                                 err.data.get("value"), 2, decimal.ROUND_CEILING, ad_group_source.settings.get_currency()
                             ),
                         )
@@ -843,7 +843,7 @@ class AdGroupSourceSettings(api_common.BaseApiView):
                     "cpc_cc": [
                         "Maximum CPC on {} is {}.".format(
                             err.data.get("source_name"),
-                            core.multicurrency.format_value_in_currency(
+                            core.features.multicurrency.format_value_in_currency(
                                 err.data.get("value"), 2, decimal.ROUND_FLOOR, ad_group_source.settings.get_currency()
                             ),
                         )
@@ -1028,7 +1028,7 @@ class AllAccountsOverview(api_common.BaseApiView):
         yesterday_costs = infobox_helpers.get_yesterday_accounts_spend(accounts, use_local_currency)
         yesterday_cost = yesterday_costs["yesterday_etfm_cost"] if uses_bcm_v2 else yesterday_costs["e_yesterday_cost"]
 
-        currency_symbol = core.multicurrency.get_currency_symbol(currency)
+        currency_symbol = core.features.multicurrency.get_currency_symbol(currency)
         overview_settings.append(
             infobox_helpers.OverviewSetting(
                 "Yesterday spend:",
@@ -1065,7 +1065,7 @@ class AllAccountsOverview(api_common.BaseApiView):
         uses_bcm_v2 = settings.ALL_ACCOUNTS_USE_BCM_V2
         yesterday_cost = yesterday_costs["yesterday_etfm_cost"] if uses_bcm_v2 else yesterday_costs["e_yesterday_cost"]
 
-        currency_symbol = core.multicurrency.get_currency_symbol(currency)
+        currency_symbol = core.features.multicurrency.get_currency_symbol(currency)
         overview_settings.append(
             infobox_helpers.OverviewSetting(
                 "Yesterday spend:",

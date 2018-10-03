@@ -5,7 +5,7 @@ import restapi.common.views_base_test
 import core.models
 import csv
 
-from core.publisher_bid_modifiers import service
+from core.features.publisher_bid_modifiers import service
 
 
 class PublisherBidModifierCSVTest(restapi.common.views_base_test.RESTAPITest):

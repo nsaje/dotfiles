@@ -19,7 +19,7 @@ from django.core import validators
 from django.utils.html import strip_tags
 from django.core import exceptions
 
-import core.multicurrency
+import core.features.multicurrency
 from dash import constants
 from dash import fields
 from dash import models
@@ -117,11 +117,11 @@ class PublisherGroupsFormMixin(forms.Form):
 class MulticurrencySettingsFormMixin(forms.Form):
     def get_exchange_rate(self):
         currency = self._get_currency()
-        return core.multicurrency.get_current_exchange_rate(currency)
+        return core.features.multicurrency.get_current_exchange_rate(currency)
 
     def get_currency_symbol(self):
         currency = self._get_currency()
-        return core.multicurrency.get_currency_symbol(currency)
+        return core.features.multicurrency.get_currency_symbol(currency)
 
     def _get_currency(self):
         if self.account:
@@ -1263,13 +1263,13 @@ class RefundLineItemAdminForm(forms.ModelForm):
         try:
             super().full_clean()
 
-        except core.bcm.refund_line_item.exceptions.StartDateInvalid as err:
+        except core.features.bcm.refund_line_item.exceptions.StartDateInvalid as err:
             self.add_error(None, exceptions.ValidationError({"start_date": [str(err)]}))
 
-        except core.bcm.refund_line_item.exceptions.RefundAmountExceededTotalSpend as err:
+        except core.features.bcm.refund_line_item.exceptions.RefundAmountExceededTotalSpend as err:
             self.add_error(None, exceptions.ValidationError({"amount": [str(err)]}))
 
-        except core.bcm.refund_line_item.exceptions.CreditAvailableAmountNegative as err:
+        except core.features.bcm.refund_line_item.exceptions.CreditAvailableAmountNegative as err:
             self.add_error(None, exceptions.ValidationError({"amount": [str(err)]}))
 
 

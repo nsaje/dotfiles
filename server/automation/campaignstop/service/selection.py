@@ -2,7 +2,7 @@ from django.db import transaction
 
 import dash.constants
 import core.models
-import core.bcm
+import core.features.bcm
 from utils import dates_helper
 from .. import constants
 from .. import CampaignStopState, RealTimeDataHistory, RealTimeCampaignStopLog
@@ -38,7 +38,7 @@ def _get_available_campaign_budgets(campaigns):
 
 def _get_all_budget_line_items(campaigns):
     today = dates_helper.local_today()
-    return core.bcm.BudgetLineItem.objects.filter(
+    return core.features.bcm.BudgetLineItem.objects.filter(
         campaign__in=campaigns, start_date__lte=today, end_date__gte=today
     ).select_related("campaign")
 

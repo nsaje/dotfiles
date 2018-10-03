@@ -8,11 +8,11 @@ from dash import models, constants, forms
 from utils import api_common, exc
 from dash.views import helpers
 
-import core.bcm
-import core.bcm.bcm_slack
-import core.multicurrency
+import core.features.bcm
+import core.features.bcm.bcm_slack
+import core.features.multicurrency
 
-from core.bcm import exceptions
+from core.features.bcm import exceptions
 
 logger = logging.getLogger(__name__)
 
@@ -87,15 +87,15 @@ class AccountCreditView(api_common.BaseApiView):
 
         item.instance.created_by = request.user
         item.save(request=request, action_type=constants.HistoryActionType.CREATE)
-        core.bcm.bcm_slack.log_to_slack(
+        core.features.bcm.bcm_slack.log_to_slack(
             account_id,
-            core.bcm.bcm_slack.SLACK_NEW_CREDIT_MSG.format(
+            core.features.bcm.bcm_slack.SLACK_NEW_CREDIT_MSG.format(
                 credit_id=item.instance.pk,
-                url=core.bcm.bcm_slack.ACCOUNT_URL.format(account_id),
+                url=core.features.bcm.bcm_slack.ACCOUNT_URL.format(account_id),
                 account_id=account_id,
                 account_name=account.get_long_name(),
                 amount=item.instance.amount,
-                currency_symbol=core.multicurrency.get_currency_symbol(item.instance.currency),
+                currency_symbol=core.features.multicurrency.get_currency_symbol(item.instance.currency),
                 end_date=item.instance.end_date,
             ),
         )
@@ -212,11 +212,11 @@ class AccountCreditItemView(api_common.BaseApiView):
 
         item_form.save(request=request, action_type=constants.HistoryActionType.CREDIT_CHANGE)
         changes = item_form.instance.get_model_state_changes(model_to_dict(item_form.instance))
-        core.bcm.bcm_slack.log_to_slack(
+        core.features.bcm.bcm_slack.log_to_slack(
             account_id,
-            core.bcm.bcm_slack.SLACK_UPDATED_CREDIT_MSG.format(
+            core.features.bcm.bcm_slack.SLACK_UPDATED_CREDIT_MSG.format(
                 credit_id=credit_id,
-                url=core.bcm.bcm_slack.ACCOUNT_URL.format(account_id),
+                url=core.features.bcm.bcm_slack.ACCOUNT_URL.format(account_id),
                 account_id=account_id,
                 account_name=account.get_long_name(),
                 history=item_form.instance.get_history_changes_text(changes),
@@ -292,7 +292,7 @@ class CampaignBudgetView(api_common.BaseApiView):
                 raise exc.ValidationError(errors=form.errors)
 
         try:
-            item = core.bcm.BudgetLineItem.objects.create(
+            item = core.features.bcm.BudgetLineItem.objects.create(
                 request=request,
                 campaign=campaign,
                 credit=form.cleaned_data["credit"],
@@ -518,11 +518,11 @@ class CampaignBudgetItemView(api_common.BaseApiView):
             raise exc.ValidationError(errors={"end_date": [str(err)]})
 
         changes = item.instance.get_model_state_changes(model_to_dict(item.instance))
-        core.bcm.bcm_slack.log_to_slack(
+        core.features.bcm.bcm_slack.log_to_slack(
             campaign.account_id,
-            core.bcm.bcm_slack.SLACK_UPDATED_BUDGET_MSG.format(
+            core.features.bcm.bcm_slack.SLACK_UPDATED_BUDGET_MSG.format(
                 budget_id=budget_id,
-                url=core.bcm.bcm_slack.CAMPAIGN_URL.format(campaign_id),
+                url=core.features.bcm.bcm_slack.CAMPAIGN_URL.format(campaign_id),
                 campaign_id=campaign_id,
                 campaign_name=campaign.get_long_name(),
                 history=item.instance.get_history_changes_text(changes),

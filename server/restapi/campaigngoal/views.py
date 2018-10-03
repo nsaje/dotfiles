@@ -8,7 +8,7 @@ from django.db import transaction
 from dash import campaign_goals
 from dash import constants
 
-import core.goals
+import core.features.goals
 import utils.exc
 from . import serializers
 
@@ -53,16 +53,18 @@ class CampaignGoalViewSet(RESTAPIBaseViewSet):
     @staticmethod
     def _get_campaign_goal(campaign, goal_id):
         try:
-            goal = core.goals.CampaignGoal.objects.get(campaign=campaign, pk=goal_id)
-        except core.goals.CampaignGoal.DoesNotExist:
+            goal = core.features.goals.CampaignGoal.objects.get(campaign=campaign, pk=goal_id)
+        except core.features.goals.CampaignGoal.DoesNotExist:
             raise utils.exc.MissingDataError("Campaign goal does not exist!")
         return goal
 
     @staticmethod
     def _get_campaign_goals_list(campaign):
         goals = (
-            core.goals.CampaignGoal.objects.filter(campaign=campaign)
-            .prefetch_related(Prefetch("values", queryset=core.goals.CampaignGoalValue.objects.order_by("created_dt")))
+            core.features.goals.CampaignGoal.objects.filter(campaign=campaign)
+            .prefetch_related(
+                Prefetch("values", queryset=core.features.goals.CampaignGoalValue.objects.order_by("created_dt"))
+            )
             .select_related("conversion_goal")
             .order_by("id")
         )
@@ -74,7 +76,7 @@ class CampaignGoalViewSet(RESTAPIBaseViewSet):
         conversion_goal = data.get("conversion_goal")
         if conversion_goal:
             try:
-                new_conversion_goal = core.goals.ConversionGoal.objects.create(
+                new_conversion_goal = core.features.goals.ConversionGoal.objects.create(
                     request,
                     campaign,
                     conversion_goal_type=conversion_goal.get("type"),
@@ -82,23 +84,23 @@ class CampaignGoalViewSet(RESTAPIBaseViewSet):
                     conversion_window=conversion_goal.get("conversion_window"),
                 )
 
-            except core.goals.conversion_goal.exceptions.ConversionGoalLimitExceeded as err:
+            except core.features.goals.conversion_goal.exceptions.ConversionGoalLimitExceeded as err:
                 raise utils.exc.ValidationError(errors={"conversionGoal": [str(err)]})
 
-            except core.goals.conversion_goal.exceptions.ConversionWindowRequired as err:
+            except core.features.goals.conversion_goal.exceptions.ConversionWindowRequired as err:
                 raise utils.exc.ValidationError(errors={"conversionGoal": {"conversionWindow": [str(err)]}})
 
-            except core.goals.conversion_goal.exceptions.ConversionPixelInvalid as err:
+            except core.features.goals.conversion_goal.exceptions.ConversionPixelInvalid as err:
                 raise utils.exc.ValidationError(errors={"conversionGoal": {"goalId": [str(err)]}})
 
-            except core.goals.conversion_goal.exceptions.ConversionGoalNotUnique as err:
+            except core.features.goals.conversion_goal.exceptions.ConversionGoalNotUnique as err:
                 raise utils.exc.ValidationError(errors={"conversionGoal": [str(err)]})
 
-            except core.goals.conversion_goal.exceptions.GoalIDInvalid as err:
+            except core.features.goals.conversion_goal.exceptions.GoalIDInvalid as err:
                 raise utils.exc.ValidationError(errors={"conversionGoal": {"goalId": [str(err)]}})
 
         try:
-            new_goal = core.goals.CampaignGoal.objects.create(
+            new_goal = core.features.goals.CampaignGoal.objects.create(
                 request,
                 campaign,
                 goal_type=constants.CampaignGoalKPI.CPA if conversion_goal else data.get("type"),
@@ -107,13 +109,13 @@ class CampaignGoalViewSet(RESTAPIBaseViewSet):
                 conversion_goal=new_conversion_goal if conversion_goal else None,
             )
 
-        except core.goals.campaign_goal.exceptions.ConversionGoalLimitExceeded as err:
+        except core.features.goals.campaign_goal.exceptions.ConversionGoalLimitExceeded as err:
             raise utils.exc.ValidationError(str(err))
 
-        except core.goals.campaign_goal.exceptions.MultipleSameTypeGoals as err:
+        except core.features.goals.campaign_goal.exceptions.MultipleSameTypeGoals as err:
             raise utils.exc.ValidationError(errors={"type": [str(err)]})
 
-        except core.goals.campaign_goal.exceptions.ConversionGoalRequired as err:
+        except core.features.goals.campaign_goal.exceptions.ConversionGoalRequired as err:
             raise utils.exc.ValidationError(errors={"conversionGoal": [str(err)]})
 
         return new_goal

@@ -5,7 +5,7 @@ from django.db.models import F, Value, Case, When, CharField
 
 import dash.constants
 import dash.models
-from dash.features import videoassets
+from core.features import videoassets
 from etl import s3, redshift
 
 

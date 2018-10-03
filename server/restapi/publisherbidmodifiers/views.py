@@ -7,8 +7,9 @@ from rest_framework.response import Response
 from django.http import HttpResponse
 from django.conf import settings
 
-from core.publisher_bid_modifiers import PublisherBidModifier, service
-from core import publisher_bid_modifiers
+from core.features.publisher_bid_modifiers import PublisherBidModifier
+from core.features.publisher_bid_modifiers import service
+from core.features import publisher_bid_modifiers
 from rest_framework import serializers
 from utils import csv_utils
 from utils import s3helpers

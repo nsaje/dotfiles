@@ -1,6 +1,6 @@
 from utils.command_helpers import ExceptionCommand
 
-import core.multicurrency
+import core.features.multicurrency
 import dash.constants
 
 import influx
@@ -18,4 +18,4 @@ class Command(ExceptionCommand):
         kwargs = {}
         if options["currency"]:
             kwargs["currencies"] = [options["currency"]]
-        core.multicurrency.update_exchange_rates(**kwargs)
+        core.features.multicurrency.update_exchange_rates(**kwargs)

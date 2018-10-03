@@ -4,7 +4,7 @@ from django.contrib.postgres.fields import ArrayField
 from django.db import models
 
 import core.common
-import core.history
+import core.features.history
 import core.models
 
 from .settings_base import SettingsBase
@@ -43,7 +43,9 @@ class AgencySettings(SettingsBase):
             if not value:
                 value = ""
             else:
-                names = core.publisher_groups.PublisherGroup.objects.filter(pk__in=value).values_list("name", flat=True)
+                names = core.features.publisher_groups.PublisherGroup.objects.filter(pk__in=value).values_list(
+                    "name", flat=True
+                )
                 value = ", ".join(names)
         return value
 

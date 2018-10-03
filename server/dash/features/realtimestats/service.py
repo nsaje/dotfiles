@@ -10,7 +10,7 @@ from utils import k1_helper
 from utils import redirector_helper
 from utils import dates_helper
 
-import core.bcm.calculations
+import core.features.bcm.calculations
 import core.features.yahoo_accounts
 
 
@@ -82,12 +82,14 @@ def _add_fee_and_margin(ad_group, k1_stats):
     if ad_group.campaign.account.uses_bcm_v2:
         fee, margin = ad_group.campaign.get_todays_fee_and_margin()
         for stat in k1_stats:
-            stat["spend"] = core.bcm.calculations.apply_fee_and_margin(decimal.Decimal(stat["spend"]), fee, margin)
+            stat["spend"] = core.features.bcm.calculations.apply_fee_and_margin(
+                decimal.Decimal(stat["spend"]), fee, margin
+            )
 
 
 def _to_local_currency(ad_group, stats):
     currency = ad_group.campaign.account.currency
-    exchange_rate = core.multicurrency.get_current_exchange_rate(currency)
+    exchange_rate = core.features.multicurrency.get_current_exchange_rate(currency)
     for stat in stats:
         stat["spend"] = decimal.Decimal(stat["spend"]) * exchange_rate
 

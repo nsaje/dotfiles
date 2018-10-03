@@ -3,7 +3,7 @@ from mock import patch
 
 from django.test import TestCase
 
-import core.bcm
+import core.features.bcm
 import core.models
 import dash.constants
 from utils import dates_helper
@@ -18,7 +18,7 @@ class NotifyBudgetsTest(TestCase):
         self.campaign = magic_mixer.blend(core.models.Campaign, account=account)
         self.campaign.settings.update_unsafe(None, autopilot=True)
         self.credit = magic_mixer.blend(
-            core.bcm.CreditLineItem,
+            core.features.bcm.CreditLineItem,
             account=account,
             start_date=dates_helper.local_yesterday(),
             end_date=dates_helper.local_today(),
@@ -28,7 +28,7 @@ class NotifyBudgetsTest(TestCase):
             license_fee=decimal.Decimal("0.3333"),
         )
         self.budget = magic_mixer.blend(
-            core.bcm.BudgetLineItem,
+            core.features.bcm.BudgetLineItem,
             campaign=self.campaign,
             start_date=dates_helper.local_yesterday(),
             end_date=dates_helper.local_today(),
@@ -48,7 +48,7 @@ class NotifyBudgetsTest(TestCase):
 
     @patch("automation.autopilot.service.recalculate_budgets_campaign")
     def test_recalculate_budget_create(self, mock_recalculate):
-        budget = core.bcm.BudgetLineItem(
+        budget = core.features.bcm.BudgetLineItem(
             campaign=self.campaign,
             start_date=dates_helper.local_yesterday(),
             end_date=dates_helper.local_today(),

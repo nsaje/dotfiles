@@ -10,7 +10,7 @@ from utils.command_helpers import ExceptionCommand
 from dash import constants
 from dash import models
 from dash import publisher_helpers
-from core.publisher_groups import publisher_group_helpers
+from core.features.publisher_groups import publisher_group_helpers
 import redshiftapi.db
 from utils import list_helper
 from utils import slack

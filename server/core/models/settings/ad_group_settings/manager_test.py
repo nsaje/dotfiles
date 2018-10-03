@@ -9,7 +9,7 @@ from utils.magic_mixer import magic_mixer
 from dash import constants
 
 import core.models
-import core.multicurrency
+import core.features.multicurrency
 from . import model
 
 
@@ -28,7 +28,7 @@ class AdGroupSettingsCreate(TestCase):
         )
         self.assertTrue(ad_group_settings.b1_sources_group_enabled)
 
-    @patch.object(core.multicurrency, "get_current_exchange_rate")
+    @patch.object(core.features.multicurrency, "get_current_exchange_rate")
     def test_create_multicurrency(self, mock_exchange_rate):
         mock_exchange_rate.return_value = Decimal("2.0")
         ad_group = magic_mixer.blend(core.models.AdGroup, campaign__account__currency="XYZ")

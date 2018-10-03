@@ -2,7 +2,7 @@ from django.db import transaction
 
 import core.models
 
-import core.bcm
+import core.features.bcm
 from .. import constants
 from .. import RealTimeCampaignStopLog, CampaignStopState
 from utils import dates_helper
@@ -37,7 +37,7 @@ def _prefetch_budgets(campaigns):
     # changing end dates in external systems after they are over.
     budgets_by_campaign = {}
     for budget in (
-        core.bcm.BudgetLineItem.objects.filter(campaign__in=campaigns)
+        core.features.bcm.BudgetLineItem.objects.filter(campaign__in=campaigns)
         .order_by("start_date")
         .values("id", "campaign_id", "start_date", "end_date")
     ):

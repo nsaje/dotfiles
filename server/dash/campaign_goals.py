@@ -5,7 +5,7 @@ from functools import partial
 from django.db import transaction
 from django.db.models import Prefetch
 
-import core.multicurrency
+import core.features.multicurrency
 from dash import models, constants
 import dash.history_helpers
 
@@ -206,7 +206,7 @@ def _get_performance_value(goal_type, metric_value, target_value):
 def format_value(goal_type, value, currency=constants.Currency.USD):
     return (
         value
-        and CAMPAIGN_GOAL_VALUE_FORMAT[goal_type](value, curr=core.multicurrency.get_currency_symbol(currency))
+        and CAMPAIGN_GOAL_VALUE_FORMAT[goal_type](value, curr=core.features.multicurrency.get_currency_symbol(currency))
         or "N/A"
     )
 

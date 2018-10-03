@@ -5,7 +5,7 @@ from django.db import models
 from dash import constants
 from utils import lc_helper
 
-import core.bcm
+import core.features.bcm
 import core.common
 import core.models
 
@@ -103,7 +103,9 @@ class CpcConstraint(models.Model):
 
         @staticmethod
         def _apply_bcm_modifiers(field, bcm_modifiers):
-            return core.bcm.calculations.apply_fee_and_margin(field, bcm_modifiers["fee"], bcm_modifiers["margin"])
+            return core.features.bcm.calculations.apply_fee_and_margin(
+                field, bcm_modifiers["fee"], bcm_modifiers["margin"]
+            )
 
         @staticmethod
         def _round_ceil(field):

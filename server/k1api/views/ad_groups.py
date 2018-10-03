@@ -4,7 +4,7 @@ from django.conf import settings
 
 import dash.constants
 import dash.models
-from core.publisher_groups import publisher_group_helpers
+from core.features.publisher_groups import publisher_group_helpers
 from utils import db_for_reads
 import automation.campaignstop.service
 import dash.features.custom_flags

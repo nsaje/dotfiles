@@ -14,7 +14,7 @@ class ValidateAdGroupSourceUpdatesTestCase(TestCase):
         today = dates_helper.local_today()
         self.account = magic_mixer.blend(core.models.Account, uses_bcm_v2=True)
         self.credit = magic_mixer.blend(
-            core.bcm.CreditLineItem,
+            core.features.bcm.CreditLineItem,
             account=self.account,
             start_date=dates_helper.day_before(today),
             end_date=today,
@@ -26,7 +26,7 @@ class ValidateAdGroupSourceUpdatesTestCase(TestCase):
 
         self.campaign = magic_mixer.blend(core.models.Campaign, account=self.account)
         self.budget = magic_mixer.blend(
-            core.bcm.BudgetLineItem,
+            core.features.bcm.BudgetLineItem,
             campaign=self.campaign,
             start_date=dates_helper.day_before(today),
             end_date=today,

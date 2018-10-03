@@ -7,10 +7,10 @@ from utils import k1_helper
 from utils import redirector_helper
 from utils import exc
 
-import core.audiences
+import core.features.audiences
 import core.common
 import core.models
-import core.history
+import core.features.history
 import core.signals
 
 
@@ -232,13 +232,13 @@ class AdGroupSettingsMixin(object):
 
         max_cpm = self.max_cpm
         if account.uses_bcm_v2:
-            max_cpm = core.bcm.calculations.subtract_fee_and_margin(max_cpm, license_fee, margin)
+            max_cpm = core.features.bcm.calculations.subtract_fee_and_margin(max_cpm, license_fee, margin)
         return max_cpm
 
     def get_external_b1_sources_group_daily_budget(self, account, license_fee, margin):
         b1_sources_group_daily_budget = self.b1_sources_group_daily_budget
         if account.uses_bcm_v2:
-            b1_sources_group_daily_budget = core.bcm.calculations.subtract_fee_and_margin(
+            b1_sources_group_daily_budget = core.features.bcm.calculations.subtract_fee_and_margin(
                 b1_sources_group_daily_budget, license_fee, margin
             )
         return b1_sources_group_daily_budget
@@ -246,7 +246,7 @@ class AdGroupSettingsMixin(object):
     def get_external_b1_sources_group_cpc_cc(self, account, license_fee, margin):
         b1_sources_group_cpc_cc = self.b1_sources_group_cpc_cc
         if account.uses_bcm_v2:
-            b1_sources_group_cpc_cc = core.bcm.calculations.subtract_fee_and_margin(
+            b1_sources_group_cpc_cc = core.features.bcm.calculations.subtract_fee_and_margin(
                 b1_sources_group_cpc_cc, license_fee, margin
             )
         return b1_sources_group_cpc_cc

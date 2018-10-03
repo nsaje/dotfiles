@@ -3,7 +3,7 @@ import logging
 
 from utils.command_helpers import ExceptionCommand
 
-import core.audiences
+import core.features.audiences
 import core.models
 
 import redshiftapi
@@ -20,7 +20,7 @@ class Command(ExceptionCommand):
 
     @influx.timer("audiences.sample_size.cache_refresh_time")
     def handle(self, *args, **options):
-        audiences = core.audiences.Audience.objects.all()
+        audiences = core.features.audiences.Audience.objects.all()
 
         account_id = options.get("account_id")
         if account_id:

@@ -6,7 +6,7 @@ from django.db.models import Sum
 from django.core.cache import caches
 
 import automation.campaignstop
-import core.multicurrency
+import core.features.multicurrency
 
 import dash.constants
 import dash.models
@@ -267,14 +267,14 @@ def calculate_allocated_and_available_credit(account):
 
 
 def calculate_credit_refund(account):
-    return core.bcm.RefundLineItem.objects.filter(
+    return core.features.bcm.RefundLineItem.objects.filter(
         credit__account=account, start_date=utils.dates_helper.local_today().replace(day=1)
     ).aggregate(Sum("amount"))["amount__sum"]
 
 
 def create_yesterday_spend_setting(yesterday_costs, daily_budget, currency, uses_bcm_v2=False):
     yesterday_cost = yesterday_costs["yesterday_etfm_cost"] if uses_bcm_v2 else yesterday_costs["e_yesterday_cost"]
-    currency_symbol = core.multicurrency.get_currency_symbol(currency)
+    currency_symbol = core.features.multicurrency.get_currency_symbol(currency)
 
     filled_daily_ratio = None
     if daily_budget > 0:

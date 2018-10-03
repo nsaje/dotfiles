@@ -10,7 +10,7 @@ from utils import test_helper
 from stats.helpers import Goals
 from dash import models
 from dash import constants
-from core.publisher_groups import publisher_group_helpers
+from core.features.publisher_groups import publisher_group_helpers
 from dash.views import breakdown
 from dash.views import breakdown_helpers
 from dash.constants import Level

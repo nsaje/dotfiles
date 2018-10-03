@@ -5,7 +5,7 @@ from mock import patch
 from .. import CampaignStopState
 from .end_date_check import update_campaigns_end_date
 
-import core.bcm
+import core.features.bcm
 import dash.constants
 from utils.magic_mixer import magic_mixer
 from utils import dates_helper
@@ -17,7 +17,7 @@ class UpdateCampaignEndDateTestCase(TestCase):
 
         self.today = dates_helper.local_today()
         self.credit = magic_mixer.blend(
-            core.bcm.CreditLineItem,
+            core.features.bcm.CreditLineItem,
             account=self.campaign.account,
             start_date=dates_helper.days_before(self.today, 30),
             end_date=dates_helper.days_after(self.today, 30),
@@ -26,7 +26,7 @@ class UpdateCampaignEndDateTestCase(TestCase):
             license_fee="0.1",
         )
         self.budget = magic_mixer.blend(
-            core.bcm.BudgetLineItem,
+            core.features.bcm.BudgetLineItem,
             campaign=self.campaign,
             start_date=dates_helper.days_before(self.today, 7),
             end_date=self.today,
@@ -57,7 +57,7 @@ class UpdateCampaignEndDateTestCase(TestCase):
 
     def test_future_budget(self):
         magic_mixer.blend(
-            core.bcm.BudgetLineItem,
+            core.features.bcm.BudgetLineItem,
             campaign=self.campaign,
             start_date=dates_helper.days_after(self.today, 7),
             end_date=dates_helper.days_after(self.today, 7),
@@ -83,7 +83,7 @@ class UpdateCampaignEndDateTestCase(TestCase):
                 real_time_campaign_stop=True,
             )
             magic_mixer.blend(
-                core.bcm.BudgetLineItem,
+                core.features.bcm.BudgetLineItem,
                 campaign=campaign,
                 start_date=dates_helper.days_after(self.today, 7),
                 end_date=dates_helper.days_after(self.today, 7),

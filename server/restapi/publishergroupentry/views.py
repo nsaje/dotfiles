@@ -6,7 +6,7 @@ import restapi.access
 from rest_framework.response import Response
 import rest_framework.viewsets
 
-import core.publisher_groups
+import core.features.publisher_groups
 from . import serializers
 
 
@@ -22,7 +22,9 @@ class PublisherGroupEntryViewSet(RESTAPIBaseViewSet, rest_framework.viewsets.Mod
         return serializers.PublisherGroupEntrySerializer
 
     def get_queryset(self):
-        publisher_group = core.publisher_groups.PublisherGroup.objects.get(pk=self.kwargs["publisher_group_id"])
+        publisher_group = core.features.publisher_groups.PublisherGroup.objects.get(
+            pk=self.kwargs["publisher_group_id"]
+        )
         restapi.access.get_account(self.request.user, publisher_group.account_id)
         return publisher_group.entries.all().select_related("source")
 
@@ -35,6 +37,8 @@ class PublisherGroupEntryViewSet(RESTAPIBaseViewSet, rest_framework.viewsets.Mod
         return Response(serializer.data, status=201, headers=headers)
 
     def perform_create(self, serializer):
-        publisher_group = core.publisher_groups.PublisherGroup.objects.get(pk=self.kwargs["publisher_group_id"])
+        publisher_group = core.features.publisher_groups.PublisherGroup.objects.get(
+            pk=self.kwargs["publisher_group_id"]
+        )
         restapi.access.get_account(self.request.user, publisher_group.account_id)
         serializer.save(publisher_group_id=self.kwargs["publisher_group_id"])

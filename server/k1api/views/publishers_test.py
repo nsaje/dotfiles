@@ -2,7 +2,7 @@ import json
 
 from django.core.urlresolvers import reverse
 
-import core.publisher_bid_modifiers
+import core.features.publisher_bid_modifiers
 
 import logging
 
@@ -186,7 +186,9 @@ class PublisherBidModifiersTest(K1APIBaseTest):
         }
 
     def test_get(self):
-        test_objs = magic_mixer.cycle(3).blend(core.publisher_bid_modifiers.PublisherBidModifier, source=self.source)
+        test_objs = magic_mixer.cycle(3).blend(
+            core.features.publisher_bid_modifiers.PublisherBidModifier, source=self.source
+        )
         response = self.client.get(reverse("k1api.publisherbidmodifiers"))
         data = json.loads(response.content)
         self.assert_response_ok(response, data)
@@ -197,21 +199,21 @@ class PublisherBidModifiersTest(K1APIBaseTest):
         source2 = magic_mixer.blend(core.models.Source, source_type__type="cde")
         ad_groups = magic_mixer.cycle(6).blend(core.models.AdGroup)
         expected = magic_mixer.cycle(3).blend(
-            core.publisher_bid_modifiers.PublisherBidModifier,
+            core.features.publisher_bid_modifiers.PublisherBidModifier,
             source=source1,
             modifier=1,
             ad_group=(ag for ag in ad_groups[:3]),
         )
         # different souce
         magic_mixer.cycle(3).blend(
-            core.publisher_bid_modifiers.PublisherBidModifier,
+            core.features.publisher_bid_modifiers.PublisherBidModifier,
             source=source2,
             modifier=2,
             ad_group=(ag for ag in ad_groups[:3]),
         )
         # different_ags
         magic_mixer.cycle(3).blend(
-            core.publisher_bid_modifiers.PublisherBidModifier,
+            core.features.publisher_bid_modifiers.PublisherBidModifier,
             source=source1,
             modifier=3,
             ad_group=(ag for ag in ad_groups[3:]),
@@ -226,7 +228,9 @@ class PublisherBidModifiersTest(K1APIBaseTest):
 
     def test_pagination(self):
         test_objs = magic_mixer.cycle(10).blend(
-            core.publisher_bid_modifiers.PublisherBidModifier, source=self.source, modifier=(id for id in range(1, 11))
+            core.features.publisher_bid_modifiers.PublisherBidModifier,
+            source=self.source,
+            modifier=(id for id in range(1, 11)),
         )
         response = self.client.get(reverse("k1api.publisherbidmodifiers"), {"marker": test_objs[2].id, "limit": 5})
         data = json.loads(response.content)

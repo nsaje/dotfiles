@@ -9,7 +9,7 @@ from . import serializers
 
 from django.db import transaction
 
-from core.bcm import exceptions
+from core.features.bcm import exceptions
 
 
 class CampaignBudgetViewSet(RESTAPIBaseViewSet):
@@ -32,7 +32,7 @@ class CampaignBudgetViewSet(RESTAPIBaseViewSet):
     def list(self, request, campaign_id):
         campaign = restapi.access.get_campaign(request.user, campaign_id, select_related=True)
         budgets = (
-            core.bcm.BudgetLineItem.objects.filter(campaign=campaign)
+            core.features.bcm.BudgetLineItem.objects.filter(campaign=campaign)
             .select_related("credit", "campaign__account")
             .order_by("-created_dt")
         )
@@ -55,7 +55,7 @@ class CampaignBudgetViewSet(RESTAPIBaseViewSet):
         new_budget_data = serializer.validated_data
         credit = self._get_credit(campaign, new_budget_data.get("credit", {}).get("id"))
         new_budget = self._update_budget(
-            core.bcm.BudgetLineItem.objects.create,
+            core.features.bcm.BudgetLineItem.objects.create,
             request=request,
             campaign=campaign,
             credit=credit,
@@ -68,16 +68,18 @@ class CampaignBudgetViewSet(RESTAPIBaseViewSet):
     @staticmethod
     def _get_budget(campaign, budget_id):
         try:
-            budget = core.bcm.BudgetLineItem.objects.get(campaign=campaign, pk=budget_id)
-        except core.bcm.BudgetLineItem.DoesNotExist:
+            budget = core.features.bcm.BudgetLineItem.objects.get(campaign=campaign, pk=budget_id)
+        except core.features.bcm.BudgetLineItem.DoesNotExist:
             raise utils.exc.MissingDataError("Budget does not exist!")
         return budget
 
     @staticmethod
     def _get_credit(campaign, credit_id):
         try:
-            credit = core.bcm.CreditLineItem.objects.filter_by_account(account=campaign.account).get(id=credit_id)
-        except core.bcm.CreditLineItem.DoesNotExist:
+            credit = core.features.bcm.CreditLineItem.objects.filter_by_account(account=campaign.account).get(
+                id=credit_id
+            )
+        except core.features.bcm.CreditLineItem.DoesNotExist:
             raise utils.exc.MissingDataError("Credit does not exist!")
         return credit
 

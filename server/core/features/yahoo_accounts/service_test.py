@@ -4,7 +4,7 @@ from unittest.mock import patch
 import django.test
 
 import dash.constants
-import dash.models
+import core.models
 from utils.magic_mixer import magic_mixer
 
 from . import constants
@@ -16,12 +16,12 @@ class YahooFinalizeMigrationTestCase(django.test.TestCase):
     @classmethod
     def setUpClass(cls):
         super(YahooFinalizeMigrationTestCase, cls).setUpClass()
-        yahoo_account = magic_mixer.blend(dash.models.YahooAccount, advertiser_id="AID")
-        cls.account = magic_mixer.blend(dash.models.Account, yahoo_account=yahoo_account)
-        cls.other_account = magic_mixer.blend(dash.models.Account)
-        source_type = magic_mixer.blend(dash.models.SourceType, type=dash.constants.SourceType.YAHOO)
-        cls.source_yahoo = magic_mixer.blend(dash.models.Source, source_type=source_type)
-        cls.source_other = magic_mixer.blend(dash.models.Source)
+        yahoo_account = magic_mixer.blend(models.YahooAccount, advertiser_id="AID")
+        cls.account = magic_mixer.blend(core.models.Account, yahoo_account=yahoo_account)
+        cls.other_account = magic_mixer.blend(core.models.Account)
+        source_type = magic_mixer.blend(core.models.SourceType, type=dash.constants.SourceType.YAHOO)
+        cls.source_yahoo = magic_mixer.blend(core.models.Source, source_type=source_type)
+        cls.source_other = magic_mixer.blend(core.models.Source)
 
     @patch.object(service, "update_source_content_ad_ids")
     @patch.object(service, "update_source_campaign_keys")
@@ -84,19 +84,19 @@ class YahooFinalizeMigrationTestCase(django.test.TestCase):
 
     def test_update_source_campaign_keys(self):
         yahoo_ad_group_sources = magic_mixer.cycle(2).blend(
-            dash.models.AdGroupSource,
+            core.models.AdGroupSource,
             ad_group__campaign__account=self.account,
             source=self.source_yahoo,
             source_campaign_key="test-old",
         )
         other_ad_group_source = magic_mixer.blend(
-            dash.models.AdGroupSource,
+            core.models.AdGroupSource,
             ad_group__campaign__account=self.account,
             source=self.source_other,
             source_campaign_key="test-old",
         )
         other_account_ad_group_source = magic_mixer.blend(
-            dash.models.AdGroupSource,
+            core.models.AdGroupSource,
             ad_group__campaign__account=self.other_account,
             source=self.source_yahoo,
             source_campaign_key="test-old",
@@ -131,21 +131,21 @@ class YahooFinalizeMigrationTestCase(django.test.TestCase):
 
     def test_update_source_content_ad_ids(self):
         yahoo_content_ad_sources = magic_mixer.cycle(2).blend(
-            dash.models.ContentAdSource,
+            core.models.ContentAdSource,
             content_ad__tracker_urls=[],
             content_ad__ad_group__campaign__account=self.account,
             source=self.source_yahoo,
             source_content_ad_id="test-old",
         )
         other_content_ad_source = magic_mixer.blend(
-            dash.models.ContentAdSource,
+            core.models.ContentAdSource,
             content_ad__tracker_urls=[],
             content_ad__ad_group__campaign__account=self.account,
             source=self.source_other,
             source_content_ad_id="test-old",
         )
         other_account_content_ad_source = magic_mixer.blend(
-            dash.models.ContentAdSource,
+            core.models.ContentAdSource,
             content_ad__tracker_urls=[],
             content_ad__ad_group__campaign__account=self.other_account,
             source=self.source_yahoo,

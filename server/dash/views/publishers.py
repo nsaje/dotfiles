@@ -8,7 +8,7 @@ from django.db.models import Count
 from dash import constants
 from dash import forms
 from dash import publisher_helpers
-from core.publisher_groups import publisher_group_helpers, publisher_group_csv_helpers
+from core.features.publisher_groups import publisher_group_helpers, publisher_group_csv_helpers
 from dash import models
 from dash import cpc_constraints
 from dash.views import helpers

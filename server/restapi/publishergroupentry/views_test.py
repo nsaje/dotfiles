@@ -4,7 +4,7 @@ from utils import test_helper
 import mock
 from django.core.urlresolvers import reverse
 
-import core.publisher_groups
+import core.features.publisher_groups
 from . import views
 
 
@@ -41,7 +41,7 @@ class PublisherGroupEntryTest(RESTAPITest):
         return d
 
     def validate_against_db(self, data, check_outbrain_pub_id=True):
-        m = core.publisher_groups.PublisherGroupEntry.objects.get(pk=data["id"])
+        m = core.features.publisher_groups.PublisherGroupEntry.objects.get(pk=data["id"])
         self.assertDictEqual(data, self.publishergroupentry_repr(m, check_outbrain_pub_id))
 
     def test_get_list(self):
@@ -167,4 +167,4 @@ class PublisherGroupEntryTest(RESTAPITest):
         self.validate_against_db(response["data"], check_outbrain_pub_id=False)
 
         # validate outbrainPublisherId was not changed
-        self.assertEqual(core.publisher_groups.PublisherGroupEntry.objects.get(pk=1).outbrain_publisher_id, "")
+        self.assertEqual(core.features.publisher_groups.PublisherGroupEntry.objects.get(pk=1).outbrain_publisher_id, "")

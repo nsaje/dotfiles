@@ -23,7 +23,7 @@ import restapi.inventory_planning.urls
 from dash.features import cloneadgroup
 from dash.features.bulkactions import clonecontent
 import dash.features.bluekai.urls
-import dash.features.videoassets.urls
+import core.features.videoassets.urls
 
 urlpatterns = []
 urlpatterns += restapi.bcm.urls.urlpatterns
@@ -51,4 +51,4 @@ urlpatterns += restapi.inventory_planning.urls.urlpatterns
 urlpatterns += cloneadgroup.urls.urlpatterns
 urlpatterns += clonecontent.urls.urlpatterns
 urlpatterns += dash.features.bluekai.urls.urlpatterns
-urlpatterns += dash.features.videoassets.urls.urlpatterns
+urlpatterns += core.features.videoassets.urls.urlpatterns

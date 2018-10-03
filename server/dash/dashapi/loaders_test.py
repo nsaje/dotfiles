@@ -10,7 +10,7 @@ from dash import constants
 from dash.dashapi import loaders
 
 from utils.magic_mixer import magic_mixer
-from core.publisher_bid_modifiers import PublisherBidModifier
+from core.features.publisher_bid_modifiers import PublisherBidModifier
 
 
 class GetLoaderTest(TestCase):

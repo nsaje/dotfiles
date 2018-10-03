@@ -2,7 +2,7 @@ import decimal
 
 import django.db.models
 
-import core.multicurrency
+import core.features.multicurrency
 
 
 MULTICURRENCY_FIELD_PREFIX = "local_"
@@ -35,7 +35,7 @@ class MulticurrencySettingsMixin(object):
 
     def _get_exchange_rate(self):
         currency = self.get_currency()
-        return core.multicurrency.get_current_exchange_rate(currency)
+        return core.features.multicurrency.get_current_exchange_rate(currency)
 
     def _round(self, field_name, number):
         field = self._meta.get_field(field_name)

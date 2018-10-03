@@ -1,7 +1,7 @@
 from django.db import transaction
 from django.db.models import Q
 
-import core.bcm
+import core.features.bcm
 
 
 class CampaignBCMMixin(object):
@@ -27,7 +27,9 @@ class CampaignBCMMixin(object):
 
     def _get_todays_credit(self):
         credit = (
-            core.bcm.CreditLineItem.objects.filter(Q(account_id=self.account_id) | Q(agency_id=self.account.agency_id))
+            core.features.bcm.CreditLineItem.objects.filter(
+                Q(account_id=self.account_id) | Q(agency_id=self.account.agency_id)
+            )
             .filter_active()
             .first()
         )

@@ -4,12 +4,12 @@ import restapi.access
 
 import rest_framework.serializers
 
-import core.publisher_groups
+import core.features.publisher_groups
 
 
 class PublisherGroupSerializer(serializers.DataNodeSerializerMixin, rest_framework.serializers.ModelSerializer):
     class Meta:
-        model = core.publisher_groups.PublisherGroup
+        model = core.features.publisher_groups.PublisherGroup
         fields = ("id", "name", "account_id")
         list_serializer_class = serializers.DataNodeListSerializer
 
@@ -18,7 +18,7 @@ class PublisherGroupSerializer(serializers.DataNodeSerializerMixin, rest_framewo
     account_id = restapi.serializers.fields.IdField(read_only=True)
 
     def create(self, validated_data):
-        return core.publisher_groups.PublisherGroup.objects.create(
+        return core.features.publisher_groups.PublisherGroup.objects.create(
             validated_data["request"],
             name=validated_data["name"],
             account=restapi.access.get_account(validated_data["request"].user, validated_data["account_id"]),

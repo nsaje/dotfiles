@@ -1,7 +1,7 @@
 from django.conf import settings
 from rest_framework import serializers
 
-import dash.features.videoassets.models
+import core.features.videoassets.models
 import restapi.serializers.fields
 
 from .. import base
@@ -21,10 +21,10 @@ class FormatSerializer(serializers.Serializer):
 
 class PutSerializer(serializers.ModelSerializer):
     class Meta:
-        model = dash.features.videoassets.models.VideoAsset
+        model = core.features.videoassets.models.VideoAsset
         fields = ("status", "error_code", "duration", "formats")
 
-    status = restapi.serializers.fields.DashConstantField(dash.features.videoassets.constants.VideoAssetStatus)
+    status = restapi.serializers.fields.DashConstantField(core.features.videoassets.constants.VideoAssetStatus)
     formats = FormatSerializer(many=True, required=False)
 
 
@@ -37,7 +37,7 @@ class VideoUploadCallbackView(base.ServiceAPIBaseView):
         serializer = PutSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        videoasset = dash.features.videoassets.models.VideoAsset.objects.get(pk=videoasset_id)
+        videoasset = core.features.videoassets.models.VideoAsset.objects.get(pk=videoasset_id)
         videoasset.update_progress(
             status=serializer.validated_data["status"],
             error_code=serializer.validated_data.get("error_code"),

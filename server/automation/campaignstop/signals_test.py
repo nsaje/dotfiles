@@ -3,7 +3,7 @@ from mock import patch, ANY
 
 from django.test import TestCase
 
-import core.bcm
+import core.features.bcm
 import core.models
 import core.models.settings
 import dash.constants
@@ -19,7 +19,7 @@ class NotifyBudgetsTest(TestCase):
         account = magic_mixer.blend(core.models.Account)
         campaign = magic_mixer.blend(core.models.Campaign, account=account)
         credit = magic_mixer.blend(
-            core.bcm.CreditLineItem,
+            core.features.bcm.CreditLineItem,
             account=account,
             start_date=dates_helper.local_yesterday(),
             end_date=dates_helper.local_today(),
@@ -29,7 +29,7 @@ class NotifyBudgetsTest(TestCase):
             license_fee=decimal.Decimal("0.3333"),
         )
         self.budget = magic_mixer.blend(
-            core.bcm.BudgetLineItem,
+            core.features.bcm.BudgetLineItem,
             campaign=campaign,
             start_date=dates_helper.local_yesterday(),
             end_date=dates_helper.local_today(),

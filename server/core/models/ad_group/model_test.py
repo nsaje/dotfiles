@@ -10,7 +10,7 @@ import core.models
 import utils.exc
 
 
-@patch.object(core.models.AdGroupSource.objects, "bulk_create_on_allowed_sources")
+@patch("core.models.AdGroupSource.objects.bulk_create_on_allowed_sources")
 @patch("utils.redirector_helper.insert_adgroup", autospec=True)
 @patch("utils.k1_helper.update_ad_group", autospec=True)
 @patch("automation.autopilot.recalculate_budgets_ad_group", autospec=True)
@@ -37,7 +37,7 @@ class AdGroupCreate(TestCase):
         self.assertEqual(history[0].action_type, constants.HistoryActionType.SETTINGS_CHANGE)
 
     @patch("django.conf.settings.AMPLIFY_REVIEW", True)
-    @patch.object(core.models.AdGroupSource.objects, "create")
+    @patch("core.models.AdGroupSource.objects.create")
     def test_create_amplify_review_ad_group_source(
         self, mock_create, mock_autopilot_init, mock_k1_ping, mock_insert_adgroup, mock_bulk_create
     ):
@@ -54,7 +54,7 @@ class AdGroupCreate(TestCase):
         )
 
 
-@patch.object(core.models.AdGroupSource.objects, "bulk_clone_on_allowed_sources")
+@patch("core.models.AdGroupSource.objects.bulk_clone_on_allowed_sources")
 @patch("utils.redirector_helper.insert_adgroup", autospec=True)
 @patch("utils.k1_helper.update_ad_group", autospec=True)
 @patch("automation.autopilot.recalculate_budgets_ad_group", autospec=True)

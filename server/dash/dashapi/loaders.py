@@ -9,8 +9,8 @@ from zemauth.models import User as ZemUser
 
 from analytics.projections import BudgetProjections
 
-import core.bcm.calculations
-import core.multicurrency
+import core.features.bcm.calculations
+import core.features.multicurrency
 
 from dash import models
 from dash import constants
@@ -20,7 +20,7 @@ from dash.dashapi import data_helper
 
 import stats.helpers
 
-from core.publisher_bid_modifiers import PublisherBidModifier
+from core.features.publisher_bid_modifiers import PublisherBidModifier
 
 """
 Objects that load necessary related objects. All try to execute queries as seldom as possible.
@@ -249,8 +249,8 @@ class AccountsLoader(Loader):
 
     def _refund_exchange_rate(self, refund):
         view_currency = stats.helpers.get_report_currency(self.user, [account for account in self.objs_map.values()])
-        view_currency_exchange_rate = core.multicurrency.get_exchange_rate(refund.start_date, view_currency)
-        account_currency_exchange_rate = core.multicurrency.get_exchange_rate(
+        view_currency_exchange_rate = core.features.multicurrency.get_exchange_rate(refund.start_date, view_currency)
+        account_currency_exchange_rate = core.features.multicurrency.get_exchange_rate(
             refund.start_date, refund.account.currency
         )
         return view_currency_exchange_rate / account_currency_exchange_rate
@@ -896,7 +896,7 @@ class PublisherBidModifierLoader(PublisherBlacklistLoader):
         return {
             ags.source_id: {
                 "bid_cpc_value": ags.settings.local_cpc_cc,
-                "currency_symbol": core.multicurrency.get_currency_symbol(ags.settings.get_currency()),
+                "currency_symbol": core.features.multicurrency.get_currency_symbol(ags.settings.get_currency()),
             }
             for ags in ad_group_sources
         }

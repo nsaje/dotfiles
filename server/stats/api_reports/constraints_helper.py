@@ -1,6 +1,6 @@
 import dash.constants
 import dash.models
-from core.publisher_groups import publisher_group_helpers
+from core.features.publisher_groups import publisher_group_helpers
 import stats.constraints_helper
 import stats.constants
 

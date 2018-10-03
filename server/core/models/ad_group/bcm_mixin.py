@@ -1,6 +1,6 @@
 from django.db import transaction
 
-import core.bcm
+import core.features.bcm
 import dash.constants
 from utils import k1_helper, numbers
 
@@ -60,11 +60,11 @@ class AdGroupBCMMixin(object):
     def _transform_whole_value(self, number, fee, margin):
         if not number:
             return number
-        including_fee_and_margin = core.bcm.calculations.apply_fee_and_margin(number, fee, margin)
+        including_fee_and_margin = core.features.bcm.calculations.apply_fee_and_margin(number, fee, margin)
         return numbers.round_decimal_ceiling(including_fee_and_margin, places=0)
 
     def _transform_fractional_value(self, number, fee, margin):
         if not number:
             return number
-        including_fee_and_margin = core.bcm.calculations.apply_fee_and_margin(number, fee, margin)
+        including_fee_and_margin = core.features.bcm.calculations.apply_fee_and_margin(number, fee, margin)
         return numbers.round_decimal_half_down(including_fee_and_margin, places=3)

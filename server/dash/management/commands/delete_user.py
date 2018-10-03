@@ -2,7 +2,7 @@ import django.apps
 from django.db.models import QuerySet, Model
 from django.utils.six.moves import input
 
-import core.history
+import core.features.history
 from utils.command_helpers import ExceptionCommand
 from zemauth import models
 
@@ -43,7 +43,7 @@ class Command(ExceptionCommand):
         relation_names = set()
         history_models = []
         for model in django.apps.apps.get_models():
-            if issubclass(model, core.history.HistoryModel):
+            if issubclass(model, core.features.history.HistoryModel):
                 history_models.append(model)
             for field in model._meta.get_fields():
                 if self._is_user_relation(model, field):
@@ -83,8 +83,8 @@ class Command(ExceptionCommand):
 
     def _change_ids_and_text_in_history(self, user, deleted_user, relation_names):
         i = 0
-        total = core.history.History.objects.all().count()
-        for history in core.history.History.objects.all().iterator():
+        total = core.features.history.History.objects.all().count()
+        for history in core.features.history.History.objects.all().iterator():
             changed = False
             if history.changes:
                 for field in relation_names:

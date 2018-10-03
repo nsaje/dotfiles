@@ -16,9 +16,9 @@ from utils import k1_helper
 from utils import redirector_helper
 from dash.features import custom_flags
 
-import core.bcm
+import core.features.bcm
 import core.common
-import core.history
+import core.features.history
 import core.models
 
 from . import bcm_mixin
@@ -362,7 +362,7 @@ class AdGroup(validation.AdGroupValidatorMixin, models.Model, bcm_mixin.AdGroupB
             return  # nothing to write
 
         campaign, account, agency = core.models.helpers.generate_parents(ad_group=self)
-        history = core.history.History.objects.create(
+        history = core.features.history.History.objects.create(
             ad_group=self,
             campaign=campaign,
             account=account,

@@ -1,7 +1,7 @@
 from django.db import transaction
 
 import dash.constants
-import core.bcm
+import core.features.bcm
 import utils.k1_helper
 
 
@@ -103,13 +103,15 @@ class AdGroupSourceSettingsMixin(object):
     def get_external_daily_budget_cc(self, account, license_fee, margin):
         daily_budget_cc = self.daily_budget_cc
         if account.uses_bcm_v2:
-            daily_budget_cc = core.bcm.calculations.subtract_fee_and_margin(daily_budget_cc, license_fee, margin)
+            daily_budget_cc = core.features.bcm.calculations.subtract_fee_and_margin(
+                daily_budget_cc, license_fee, margin
+            )
         return daily_budget_cc
 
     def get_external_cpc_cc(self, account, license_fee, margin):
         cpc_cc = self.cpc_cc
         if account.uses_bcm_v2:
-            cpc_cc = core.bcm.calculations.subtract_fee_and_margin(cpc_cc, license_fee, margin)
+            cpc_cc = core.features.bcm.calculations.subtract_fee_and_margin(cpc_cc, license_fee, margin)
         return cpc_cc
 
     def get_currency(self):

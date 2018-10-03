@@ -8,8 +8,8 @@ from utils.magic_mixer import magic_mixer
 from dash import constants
 
 import core.models
-import core.goals
-import core.bcm
+import core.features.goals
+import core.features.bcm
 
 
 class CampaignBcmMixin(TestCase):
@@ -23,7 +23,7 @@ class CampaignBcmMixin(TestCase):
         today = datetime.date.today()
 
         magic_mixer.blend(
-            core.bcm.CreditLineItem,
+            core.features.bcm.CreditLineItem,
             account=self.account,
             start_date=yesterday,
             end_date=today,
@@ -34,7 +34,7 @@ class CampaignBcmMixin(TestCase):
         )
 
         credit = magic_mixer.blend(
-            core.bcm.CreditLineItem,
+            core.features.bcm.CreditLineItem,
             account=self.account,
             start_date=yesterday,
             end_date=today,
@@ -45,7 +45,7 @@ class CampaignBcmMixin(TestCase):
         )
 
         magic_mixer.blend(
-            core.bcm.BudgetLineItem,
+            core.features.bcm.BudgetLineItem,
             campaign=self.campaign,
             start_date=yesterday,
             end_date=today,
@@ -64,7 +64,7 @@ class CampaignBcmMixin(TestCase):
         today = datetime.date.today()
 
         magic_mixer.blend(
-            core.bcm.CreditLineItem,
+            core.features.bcm.CreditLineItem,
             agency=self.agency,
             start_date=yesterday,
             end_date=today,
@@ -84,7 +84,7 @@ class CampaignBcmMixin(TestCase):
         today = datetime.date.today()
 
         credit = magic_mixer.blend(
-            core.bcm.CreditLineItem,
+            core.features.bcm.CreditLineItem,
             agency=self.agency,
             start_date=yesterday,
             end_date=today,
@@ -95,7 +95,7 @@ class CampaignBcmMixin(TestCase):
         )
 
         magic_mixer.blend(
-            core.bcm.BudgetLineItem,
+            core.features.bcm.BudgetLineItem,
             campaign=self.campaign,
             start_date=yesterday,
             end_date=today,
@@ -113,7 +113,7 @@ class CampaignBcmMixin(TestCase):
         yesterday = datetime.date.today() - datetime.timedelta(days=1)
 
         credit = magic_mixer.blend(
-            core.bcm.CreditLineItem,
+            core.features.bcm.CreditLineItem,
             account=self.account,
             start_date=yesterday,
             end_date=yesterday,
@@ -124,7 +124,7 @@ class CampaignBcmMixin(TestCase):
         )
 
         magic_mixer.blend(
-            core.bcm.BudgetLineItem,
+            core.features.bcm.BudgetLineItem,
             campaign=self.campaign,
             start_date=yesterday,
             end_date=yesterday,
@@ -142,12 +142,12 @@ class CampaignBcmMixin(TestCase):
 class MigrateToBCMV2Test(TestCase):
     def setUp(self):
         self.campaign = magic_mixer.blend(core.models.Campaign)
-        self.campaign_goal = magic_mixer.blend(core.goals.CampaignGoal, campaign=self.campaign)
+        self.campaign_goal = magic_mixer.blend(core.features.goals.CampaignGoal, campaign=self.campaign)
         self.ad_group = magic_mixer.blend(core.models.AdGroup, campaign=self.campaign)
 
     @patch("core.models.Campaign.get_todays_fee_and_margin")
     @patch("core.models.AdGroup.migrate_to_bcm_v2")
-    @patch("core.goals.CampaignGoal.migrate_to_bcm_v2")
+    @patch("core.features.goals.CampaignGoal.migrate_to_bcm_v2")
     def test_migrate_to_bcm_v2(self, mock_ad_group_migrate, mock_campaign_goal_migrate, mock_get_fee_and_margin):
         mock_get_fee_and_margin.return_value = decimal.Decimal("0.2"), decimal.Decimal("0.1")
 

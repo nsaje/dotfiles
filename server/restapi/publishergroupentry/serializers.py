@@ -2,12 +2,12 @@ from restapi.serializers import serializers
 import restapi.serializers.fields
 
 import rest_framework.serializers
-import core.publisher_groups
+import core.features.publisher_groups
 
 
 class PublisherGroupEntrySerializer(serializers.DataNodeSerializerMixin, rest_framework.serializers.ModelSerializer):
     class Meta:
-        model = core.publisher_groups.PublisherGroupEntry
+        model = core.features.publisher_groups.PublisherGroupEntry
         fields = ("id", "publisher", "publisher_group_id", "source", "include_subdomains")
         list_serializer_class = serializers.DataNodeListSerializer
 
@@ -19,7 +19,7 @@ class PublisherGroupEntrySerializer(serializers.DataNodeSerializerMixin, rest_fr
 
 class OutbrainPublisherGroupEntrySerializer(PublisherGroupEntrySerializer):
     class Meta:
-        model = core.publisher_groups.PublisherGroupEntry
+        model = core.features.publisher_groups.PublisherGroupEntry
         fields = (
             "id",
             "publisher",

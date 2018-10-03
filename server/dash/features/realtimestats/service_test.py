@@ -45,7 +45,7 @@ class RealtimestatsServiceTest(TestCase):
         today = dates_helper.local_today()
 
         credit = magic_mixer.blend(
-            core.bcm.CreditLineItem,
+            core.features.bcm.CreditLineItem,
             account=self.account,
             start_date=today,
             end_date=today,
@@ -56,7 +56,7 @@ class RealtimestatsServiceTest(TestCase):
         )
 
         magic_mixer.blend(
-            core.bcm.BudgetLineItem,
+            core.features.bcm.BudgetLineItem,
             campaign=self.campaign,
             start_date=today,
             end_date=today,
@@ -168,7 +168,7 @@ class RealtimestatsServiceTest(TestCase):
         magic_mixer.cycle(2).blend(
             core.models.AdGroupSource, ad_group=ad_group, source=(s for s in sources), ad_review_only=False
         )
-        core.multicurrency.CurrencyExchangeRate.objects.create(
+        core.features.multicurrency.CurrencyExchangeRate.objects.create(
             date=dates_helper.local_today(), currency=dash.constants.Currency.EUR, exchange_rate=decimal.Decimal("1.2")
         )
         result = service.get_ad_group_sources_stats(ad_group)

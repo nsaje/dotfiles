@@ -4,7 +4,7 @@ import os.path
 
 from django.conf import settings
 
-import core.multicurrency
+import core.features.multicurrency
 import dash.models
 
 from etl import constants
@@ -43,4 +43,4 @@ class MVHelpersCurrencyExchangeRates(Materialize):
 
         for account in accounts:
             for date in rrule.rrule(rrule.DAILY, dtstart=self.date_from, until=self.date_to):
-                yield (date.date(), account.id, core.multicurrency.get_exchange_rate(date, account.currency))
+                yield (date.date(), account.id, core.features.multicurrency.get_exchange_rate(date, account.currency))

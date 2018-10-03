@@ -1,6 +1,6 @@
 from utils import slack
 import logging
-from dash.models import CustomFlag
+from .model import CustomFlag
 
 
 logger = logging.getLogger(__name__)

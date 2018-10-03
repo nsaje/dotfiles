@@ -2,7 +2,7 @@ import json
 
 from django.core.urlresolvers import reverse
 
-import core.multicurrency
+import core.features.multicurrency
 import dash.constants
 
 from .base_test import K1APIBaseTest
@@ -14,43 +14,43 @@ from utils.magic_mixer import magic_mixer
 class CurrencyExchangeRateViewTest(K1APIBaseTest):
     def setUp(self):
         magic_mixer.blend(
-            core.multicurrency.CurrencyExchangeRate,
+            core.features.multicurrency.CurrencyExchangeRate,
             date=dates_helper.local_today(),
             currency=dash.constants.Currency.EUR,
             exchange_rate="0.987",
         )
         magic_mixer.blend(
-            core.multicurrency.CurrencyExchangeRate,
+            core.features.multicurrency.CurrencyExchangeRate,
             date=dates_helper.local_today(),
             currency=dash.constants.Currency.GBP,
             exchange_rate="0.876",
         )
         magic_mixer.blend(
-            core.multicurrency.CurrencyExchangeRate,
+            core.features.multicurrency.CurrencyExchangeRate,
             date=dates_helper.local_today(),
             currency=dash.constants.Currency.AUD,
             exchange_rate="0.765",
         )
         magic_mixer.blend(
-            core.multicurrency.CurrencyExchangeRate,
+            core.features.multicurrency.CurrencyExchangeRate,
             date=dates_helper.local_today(),
             currency=dash.constants.Currency.SGD,
             exchange_rate="0.654",
         )
         magic_mixer.blend(
-            core.multicurrency.CurrencyExchangeRate,
+            core.features.multicurrency.CurrencyExchangeRate,
             date=dates_helper.local_today(),
             currency=dash.constants.Currency.BRL,
             exchange_rate="0.227",
         )
         magic_mixer.blend(
-            core.multicurrency.CurrencyExchangeRate,
+            core.features.multicurrency.CurrencyExchangeRate,
             date=dates_helper.local_today(),
             currency=dash.constants.Currency.MYR,
             exchange_rate="0.212",
         )
         magic_mixer.blend(
-            core.multicurrency.CurrencyExchangeRate,
+            core.features.multicurrency.CurrencyExchangeRate,
             date=dates_helper.local_today(),
             currency=dash.constants.Currency.CHF,
             exchange_rate="0.862",

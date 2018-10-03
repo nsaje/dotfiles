@@ -17,7 +17,7 @@ from utils import converters
 
 from redshiftapi import db
 
-import core.bcm.calculations
+import core.features.bcm.calculations
 
 from etl import helpers
 from etl import daily_statements_diff
@@ -73,7 +73,7 @@ def _generate_statements(date, campaign, campaign_spend):
 
         if total_spend_nano > 0 and local_budget_spend_total_nano < local_budget_amount_nano:
             local_available_budget_nano = local_budget_amount_nano - local_budget_spend_total_nano
-            usd_available_budget_nano = local_available_budget_nano / core.multicurrency.get_exchange_rate(
+            usd_available_budget_nano = local_available_budget_nano / core.features.multicurrency.get_exchange_rate(
                 date, budget.credit.currency
             )
             if budget.start_date >= FIXED_MARGIN_START_DATE:
@@ -91,11 +91,11 @@ def _generate_statements(date, campaign, campaign_spend):
                 attributed_media_nano = total_media_nano
                 attributed_data_nano = total_data_nano
 
-            license_fee_nano = core.bcm.calculations.calculate_fee(
+            license_fee_nano = core.features.bcm.calculations.calculate_fee(
                 attributed_media_nano + attributed_data_nano, budget.credit.license_fee
             )
             if budget.start_date >= FIXED_MARGIN_START_DATE:
-                margin_nano = core.bcm.calculations.calculate_margin(
+                margin_nano = core.features.bcm.calculations.calculate_margin(
                     attributed_media_nano + attributed_data_nano + license_fee_nano, budget.margin
                 )
 
@@ -155,9 +155,11 @@ def _handle_overspend(date, campaign, media_nano, data_nano):
             budget=budget, date=date, media_spend_nano=0, data_spend_nano=0, license_fee_nano=0, margin_nano=0
         )
 
-    license_fee_nano = core.bcm.calculations.calculate_fee(media_nano + data_nano, budget.credit.license_fee)
+    license_fee_nano = core.features.bcm.calculations.calculate_fee(media_nano + data_nano, budget.credit.license_fee)
     if budget.start_date >= FIXED_MARGIN_START_DATE:
-        margin_nano = core.bcm.calculations.calculate_margin(media_nano + data_nano + license_fee_nano, budget.margin)
+        margin_nano = core.features.bcm.calculations.calculate_margin(
+            media_nano + data_nano + license_fee_nano, budget.margin
+        )
     else:
         margin_nano = (media_nano + data_nano + license_fee_nano) * budget.margin
 

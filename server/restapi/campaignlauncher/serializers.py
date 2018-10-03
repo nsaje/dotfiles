@@ -4,7 +4,7 @@ from rest_framework import fields
 
 import dash.constants
 import utils.lc_helper
-import core.multicurrency
+import core.features.multicurrency
 import restapi.serializers.fields
 from restapi.serializers import targeting
 
@@ -54,8 +54,8 @@ class CampaignLauncherSerializer(serializers.Serializer):
             return value
 
         account = self.context["account"]
-        currency_symbol = core.multicurrency.get_currency_symbol(account.currency)
-        exchange_rate = core.multicurrency.get_current_exchange_rate(account.currency)
+        currency_symbol = core.features.multicurrency.get_currency_symbol(account.currency)
+        exchange_rate = core.features.multicurrency.get_current_exchange_rate(account.currency)
         min_cpc = round(decimal.Decimal("0.05") * exchange_rate, 3)
         max_cpc = round(decimal.Decimal("10") * exchange_rate, 3)
 

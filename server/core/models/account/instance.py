@@ -2,7 +2,7 @@ from django.core.urlresolvers import reverse
 from django.db import transaction
 
 import core.models
-import core.history
+import core.features.history
 
 from dash import constants
 
@@ -98,7 +98,7 @@ class AccountInstanceMixin:
             return None
 
         _, _, agency = core.models.helpers.generate_parents(account=self)
-        return core.history.History.objects.create(
+        return core.features.history.History.objects.create(
             account=self,
             agency=agency,
             created_by=user,

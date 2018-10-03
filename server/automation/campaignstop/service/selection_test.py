@@ -2,8 +2,8 @@ from django.test import TestCase
 import mock
 from datetime import datetime
 
-import core.bcm
-import core.goals
+import core.features.bcm
+import core.features.goals
 from .. import CampaignStopState, RealTimeDataHistory, RealTimeCampaignStopLog
 from .. import constants
 from . import selection
@@ -329,12 +329,12 @@ class UpdateAlmostDepletedTestCase(TestCase):
         self.campaign = magic_mixer.blend(core.models.Campaign, real_time_campaign_stop=True)
         user = magic_mixer.blend_user()
         self.campaign.settings.update(None, campaign_manager=user)
-        self.campaign_goal = magic_mixer.blend(core.goals.CampaignGoal, campaign=self.campaign, primary=True)
+        self.campaign_goal = magic_mixer.blend(core.features.goals.CampaignGoal, campaign=self.campaign, primary=True)
         self.campaign_stop_state = magic_mixer.blend(
             CampaignStopState, campaign=self.campaign, almost_depleted=False, state=constants.CampaignStopState.ACTIVE
         )
         self.credit_line_item = magic_mixer.blend(
-            core.bcm.CreditLineItem,
+            core.features.bcm.CreditLineItem,
             account=self.campaign.account,
             start_date=dates_helper.days_before(self.today, 30),
             end_date=dates_helper.days_after(self.today, 30),
@@ -343,7 +343,7 @@ class UpdateAlmostDepletedTestCase(TestCase):
             license_fee="0.1",
         )
         self.budget_line_item = magic_mixer.blend(
-            core.bcm.BudgetLineItem,
+            core.features.bcm.BudgetLineItem,
             credit=self.credit_line_item,
             campaign=self.campaign,
             start_date=dates_helper.days_before(self.today, 7),

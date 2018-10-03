@@ -1,4 +1,4 @@
-import core.direct_deals
+import core.features.direct_deals
 
 from .base import K1APIView
 
@@ -6,7 +6,9 @@ from .base import K1APIView
 class DirectDealsView(K1APIView):
     def get(self, request):
         deal_connections = (
-            core.direct_deals.DirectDealConnection.objects.select_related("source").prefetch_related("deals").all()
+            core.features.direct_deals.DirectDealConnection.objects.select_related("source")
+            .prefetch_related("deals")
+            .all()
         )
 
         return self.response_ok(

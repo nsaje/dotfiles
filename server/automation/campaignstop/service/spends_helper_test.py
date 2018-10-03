@@ -4,9 +4,9 @@ import mock
 
 from django.test import TestCase
 
-import core.bcm
+import core.features.bcm
 import core.models
-import core.multicurrency
+import core.features.multicurrency
 import dash.constants
 from utils.magic_mixer import magic_mixer
 from utils import dates_helper
@@ -28,7 +28,7 @@ class GetPredictionTest(TestCase):
 
         today = dates_helper.local_today()
         self.credit = magic_mixer.blend(
-            core.bcm.CreditLineItem,
+            core.features.bcm.CreditLineItem,
             account=self.campaign.account,
             start_date=dates_helper.days_before(today, 7),
             end_date=today,
@@ -37,7 +37,7 @@ class GetPredictionTest(TestCase):
             license_fee=decimal.Decimal("0.1"),
         )
         self.budget = magic_mixer.blend(
-            core.bcm.BudgetLineItem,
+            core.features.bcm.BudgetLineItem,
             campaign=self.campaign,
             start_date=dates_helper.days_before(today, 7),
             end_date=today,
@@ -69,7 +69,7 @@ class GetPredictionTest(TestCase):
     def test_get_prediction_with_another_budget_overspent(self):
         today = dates_helper.local_today()
         overspent_budget = magic_mixer.blend(
-            core.bcm.BudgetLineItem,
+            core.features.bcm.BudgetLineItem,
             campaign=self.campaign,
             start_date=dates_helper.days_before(today, 7),
             end_date=today,
@@ -77,7 +77,7 @@ class GetPredictionTest(TestCase):
             amount=0,
         )
         magic_mixer.blend(
-            core.bcm.BudgetDailyStatement,
+            core.features.bcm.BudgetDailyStatement,
             budget=overspent_budget,
             date=dates_helper.local_yesterday(),
             media_spend_nano=500 * (10 ** 9),
@@ -92,14 +92,14 @@ class GetPredictionTest(TestCase):
         prediction = spends_helper.get_predicted_remaining_budget(LogMock(), self.campaign)
         self.assertEqual(500, prediction)
 
-    @mock.patch.object(core.bcm.BudgetLineItem, "get_available_etfm_amount")
+    @mock.patch.object(core.features.bcm.BudgetLineItem, "get_available_etfm_amount")
     def test_get_prediction_with_spent_budget(self, mock_available_amount):
         mock_available_amount.return_value = 0
 
         prediction = spends_helper.get_predicted_remaining_budget(LogMock(), self.campaign)
         self.assertEqual(0, prediction)
 
-    @mock.patch.object(core.bcm.BudgetLineItem, "get_available_etfm_amount")
+    @mock.patch.object(core.features.bcm.BudgetLineItem, "get_available_etfm_amount")
     def test_get_prediction_with_rt_and_budget_spend(self, mock_available_amount):
         mock_available_amount.return_value = 200
         magic_mixer.blend(
@@ -157,7 +157,7 @@ class GetPredictionTest(TestCase):
     def test_get_prediction_with_stale_yesterday_realtime_data(self):
         today = dates_helper.local_today()
         magic_mixer.blend(
-            core.bcm.BudgetDailyStatement,
+            core.features.bcm.BudgetDailyStatement,
             budget=self.budget,
             date=dates_helper.local_yesterday(),
             media_spend_nano=250 * (10 ** 9),
@@ -296,7 +296,7 @@ class GetBudgetSpendEstimateTest(TestCase):
 
         today = dates_helper.local_today()
         self.credit = magic_mixer.blend(
-            core.bcm.CreditLineItem,
+            core.features.bcm.CreditLineItem,
             account=self.campaign.account,
             start_date=dates_helper.days_before(today, 7),
             end_date=today,
@@ -305,7 +305,7 @@ class GetBudgetSpendEstimateTest(TestCase):
             license_fee=decimal.Decimal("0.1"),
         )
         self.budget = magic_mixer.blend(
-            core.bcm.BudgetLineItem,
+            core.features.bcm.BudgetLineItem,
             campaign=self.campaign,
             start_date=dates_helper.days_before(today, 7),
             end_date=today,
@@ -321,7 +321,7 @@ class GetBudgetSpendEstimateTest(TestCase):
 
     def test_past_budget_spend(self):
         magic_mixer.blend(
-            core.bcm.BudgetDailyStatement,
+            core.features.bcm.BudgetDailyStatement,
             budget=self.budget,
             date=dates_helper.local_yesterday(),
             media_spend_nano=150 * (10 ** 9),
@@ -378,7 +378,7 @@ class GetBudgetSpendEstimateTest(TestCase):
     def test_multiple_budgets(self):
         today = dates_helper.local_today()
         new_budget = magic_mixer.blend(
-            core.bcm.BudgetLineItem,
+            core.features.bcm.BudgetLineItem,
             campaign=self.campaign,
             start_date=dates_helper.days_before(today, 7),
             end_date=today,
@@ -393,7 +393,7 @@ class GetBudgetSpendEstimateTest(TestCase):
         )
 
         magic_mixer.blend(
-            core.bcm.BudgetDailyStatement,
+            core.features.bcm.BudgetDailyStatement,
             budget=self.budget,
             date=dates_helper.local_yesterday(),
             media_spend_nano=150 * (10 ** 9),
@@ -418,7 +418,7 @@ class GetBudgetSpendEstimateTest(TestCase):
     def test_multiple_budgets_multiurrency(self):
         today = dates_helper.local_today()
         new_budget = magic_mixer.blend(
-            core.bcm.BudgetLineItem,
+            core.features.bcm.BudgetLineItem,
             campaign=self.campaign,
             start_date=dates_helper.days_before(today, 7),
             end_date=today,
@@ -433,7 +433,7 @@ class GetBudgetSpendEstimateTest(TestCase):
         )
 
         magic_mixer.blend(
-            core.bcm.BudgetDailyStatement,
+            core.features.bcm.BudgetDailyStatement,
             budget=self.budget,
             date=dates_helper.local_yesterday(),
             media_spend_nano=300 * (10 ** 9),
@@ -449,7 +449,7 @@ class GetBudgetSpendEstimateTest(TestCase):
         self.campaign.account.currency = dash.constants.Currency.EUR
         self.campaign.account.save(None)
 
-        core.multicurrency.CurrencyExchangeRate.objects.create(
+        core.features.multicurrency.CurrencyExchangeRate.objects.create(
             currency=dash.constants.Currency.EUR, date=today, exchange_rate="0.5"
         )
 

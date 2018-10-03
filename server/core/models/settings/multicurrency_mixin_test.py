@@ -4,7 +4,7 @@ from mock import patch
 import django.db.models
 from django.test import TestCase
 
-import core.multicurrency
+import core.features.multicurrency
 from dash import constants
 from .multicurrency_mixin import MulticurrencySettingsMixin
 from .update_object import UpdateObject
@@ -31,7 +31,7 @@ class TestSettings(MulticurrencySettingsMixin, django.db.models.Model):
 
 
 class MulticurrencySettingsMixinTest(TestCase):
-    @patch.object(core.multicurrency, "get_current_exchange_rate")
+    @patch.object(core.features.multicurrency, "get_current_exchange_rate")
     def test_get_counterpart_usd(self, mock_get_exchange_rate):
         mock_get_exchange_rate.return_value = Decimal("2.0")
 
@@ -43,7 +43,7 @@ class MulticurrencySettingsMixinTest(TestCase):
 
         mock_get_exchange_rate.assert_called_with(constants.Currency.EUR)
 
-    @patch.object(core.multicurrency, "get_current_exchange_rate")
+    @patch.object(core.features.multicurrency, "get_current_exchange_rate")
     def test_get_counterpart_local(self, mock_get_exchange_rate):
         mock_get_exchange_rate.return_value = Decimal("2.0")
 
@@ -55,7 +55,7 @@ class MulticurrencySettingsMixinTest(TestCase):
 
         mock_get_exchange_rate.assert_called_with(constants.Currency.EUR)
 
-    @patch.object(core.multicurrency, "get_current_exchange_rate")
+    @patch.object(core.features.multicurrency, "get_current_exchange_rate")
     def test_get_counterpart_none(self, mock_get_exchange_rate):
         mock_get_exchange_rate.return_value = Decimal("2.0")
 

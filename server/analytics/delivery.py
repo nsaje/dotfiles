@@ -1,7 +1,7 @@
 import datetime
 from decimal import Decimal
 
-import core.bcm
+import core.features.bcm
 import core.models
 import dash.constants
 import dash.campaign_goals
@@ -128,7 +128,7 @@ def check_campaign_delivery(
     campaign, campaign_settings, campaign_stats, prev_campaign_stats, projections, check_pacing=True
 ):
     visits = campaign_stats.get("visits") or prev_campaign_stats.get("visits") or 0
-    budgets = core.bcm.budget_line_item.BudgetLineItem.objects.filter(campaign=campaign).filter_active()
+    budgets = core.features.bcm.budget_line_item.BudgetLineItem.objects.filter(campaign=campaign).filter_active()
     active_amount = sum(b.allocated_amount() for b in budgets)
     primary_goal = dash.campaign_goals.get_primary_campaign_goal(campaign)
     is_postclick_enabled = campaign_settings.enable_ga_tracking or campaign_settings.enable_adobe_tracking
