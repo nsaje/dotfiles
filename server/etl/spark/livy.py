@@ -21,7 +21,7 @@ def get_session():
         # executor memory has to be of size that assures even distribution of workers between nodes
         # for example with 16G nodes and 2g for executors, some nodes might get 5 workers and some 3
         # instead of 4x8=32, so we need to set a bit more moemory
-        executorMemory="4150m",
+        executorMemory="2150m",
         driverCores=1,
         executorCores=1,
         conf={
