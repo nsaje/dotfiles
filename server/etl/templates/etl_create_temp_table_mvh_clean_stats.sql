@@ -1,9 +1,9 @@
 CREATE TEMP TABLE mvh_clean_stats (
     date date not null encode delta,
-    source_slug varchar(127) encode zstd, -- not null
+    source_slug varchar(127) encode zstd,
 
-    ad_group_id integer encode zstd, -- not null
-    content_ad_id integer encode zstd, -- not null
+    ad_group_id integer encode zstd,
+    content_ad_id integer encode zstd,
     publisher varchar(255) encode zstd,
 
     device_type integer encode bytedict,

@@ -36,7 +36,7 @@ class RDSModelization(object):
         )
 
     def put_csv_to_s3(self):
-        return s3.upload_csv(self.s3_path, self.data_generator, bucket_name=self.BUCKET_NAME)
+        return s3.upload_csv_without_job(self.TABLE, self.data_generator, self.s3_path, self.BUCKET_NAME)
 
     def data_generator(self):
         if not self.rds_data:

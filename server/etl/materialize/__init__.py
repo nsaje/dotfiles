@@ -4,7 +4,6 @@ available for the whole range.
 """
 
 from .mv_master import MasterView
-from .mv_master_spark import MasterSpark
 from .mv_master_publishers import MasterPublishersView
 from .mv_conversions import MVConversions
 from .mv_touchpoint_conversions import MVTouchpointConversions

@@ -1,13 +1,12 @@
+import backtosql
 from dateutil import rrule
 from functools import partial
 import logging
-import os.path
 
-from django.conf import settings
+from redshiftapi import db
 
-from etl import constants
+from etl import redshift
 from etl import s3
-from etl import spark
 from .materialize import Materialize
 
 logger = logging.getLogger(__name__)
@@ -20,28 +19,23 @@ class MVHelpersCampaignFactors(Materialize):
 
     TABLE_NAME = "mvh_campaign_factors"
     IS_TEMPORARY_TABLE = True
-    SPARK_COLUMNS = [
-        spark.Column("date", "string"),
-        spark.Column("campaign_id", "int"),
-        spark.Column("pct_actual_spend", "decimal", 22, 18),
-        spark.Column("pct_license_fee", "decimal", 22, 18),
-        spark.Column("pct_margin", "decimal", 22, 18),
-    ]
 
     def generate(self, campaign_factors, **kwargs):
         self.check_date_range_continuation(campaign_factors)
 
-        s3_path = os.path.join(constants.SPARK_S3_PREFIX, self.job_id, self.TABLE_NAME, "data.csv")
-        s3.upload_csv(s3_path, partial(self.generate_rows, campaign_factors))
-
-        self.spark_session.run_file(
-            "load_csv_from_s3_to_table.py.tmpl",
-            table=self.TABLE_NAME,
-            s3_bucket=settings.S3_BUCKET_STATS,
-            s3_path=s3_path,
-            schema=spark.generate_schema(self.SPARK_COLUMNS),
+        s3_path = s3.upload_csv(
+            self.TABLE_NAME, self.date_to, self.job_id, partial(self.generate_rows, campaign_factors)
         )
-        self.spark_session.run_file("cache_table.py.tmpl", table=self.TABLE_NAME)
+
+        with db.get_write_stats_transaction():
+            with db.get_write_stats_cursor() as c:
+                sql = backtosql.generate_sql("etl_create_temp_table_mvh_campaign_factors.sql", None)
+                c.execute(sql)
+
+                logger.info('Copying CSV to table "%s", job %s', self.TABLE_NAME, self.job_id)
+                sql, params = redshift.prepare_copy_query(s3_path, self.TABLE_NAME)
+                c.execute(sql, params)
+                logger.info('Copied CSV to table "%s", job %s', self.TABLE_NAME, self.job_id)
 
     def generate_rows(self, campaign_factors):
         for date, campaign_dict in campaign_factors.items():

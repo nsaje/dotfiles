@@ -1,6 +1,7 @@
 {% load backtosql_tags %}
 {% autoescape off %}
 
+INSERT INTO mv_master_pubs(
 SELECT
     d.date,
     {{ source_id }} as source_id,
@@ -41,25 +42,19 @@ SELECT
     d.total_time_on_site,
 
     round(
-          d.spend * cast(floor(cf.pct_actual_spend * 100000000)/100000000 AS decimal(10, 8))
+          d.spend * cf.pct_actual_spend::decimal(10, 8)
         * 1000
     ) as effective_cost_nano,
     0 as effective_data_cost_nano,
     round(
-        cast(
-            (nvl(d.spend, 0) * cast(floor(cf.pct_actual_spend * 100000000)/100000000 AS decimal(10, 8)))
-            AS decimal(38, 18)
-        ) * cast(floor(cf.pct_license_fee * 100000000)/100000000 AS decimal(10, 8)) * 1000
+        (
+            (nvl(d.spend, 0) * cf.pct_actual_spend::decimal(10, 8))
+        ) * cf.pct_license_fee::decimal(10, 8) * 1000
     ) as license_fee_nano,
     round(
-        cast(
-            (nvl(d.spend, 0) * cast(floor(cf.pct_actual_spend * 100000000)/100000000 AS decimal(10, 8))) +
-            cast(
-                (nvl(d.spend, 0) * cast(floor(cf.pct_actual_spend * 100000000)/100000000 AS decimal(10, 8)))
-                AS decimal(38, 18)
-            ) * cast(floor(cf.pct_license_fee * 100000000)/100000000 AS decimal(10, 8))
-            AS decimal(38, 18)
-        ) * cast(floor(cf.pct_margin * 100000000)/100000000 AS decimal(10, 8)) * 1000
+        (
+            (nvl(d.spend, 0) * cf.pct_actual_spend::decimal(10, 8)) * (1 + cf.pct_license_fee::decimal(10, 8))
+        ) * cf.pct_margin::decimal(10, 8) * 1000
     ) as margin_nano,
 
     d.users,
@@ -72,56 +67,50 @@ SELECT
     NULL as video_complete,
     NULL as video_progress_3s,
 
-    round(d.spend * 1000 * cast(floor(cer.exchange_rate * 10000)/10000 AS decimal(10, 4))) as local_cost_nano,
+    round(d.spend * 1000 * cer.exchange_rate::decimal(10, 4)) as local_cost_nano,
     0 as local_data_cost_nano,
     -- casting intermediate values to bigint (decimal(19, 0)) because of max precision of 38 in DB
-    round(cast(round(d.spend * cast(floor(cf.pct_actual_spend * 100000000)/100000000 AS decimal(10, 8)) * 1000) AS long) * cast(floor(cer.exchange_rate * 10000)/10000 AS decimal(10, 4))) as local_effective_cost_nano,
+    round(round(d.spend * cf.pct_actual_spend::decimal(10, 8) * 1000)::bigint * cer.exchange_rate::decimal(10, 4)) as local_effective_cost_nano,
     0 as local_effective_data_cost_nano,
     round(
-        cast(round(
-            cast(
-                (nvl(d.spend, 0) * cast(floor(cf.pct_actual_spend * 100000000)/100000000 AS decimal(10, 8)))
-                AS decimal(38, 18)
-            ) * cast(floor(cf.pct_license_fee * 100000000)/100000000 AS decimal(10, 8)) * 1000
-        )AS long) * cast(floor(cer.exchange_rate * 10000)/10000 AS decimal(10, 4))
+        round(
+            (
+                (nvl(d.spend, 0) * cf.pct_actual_spend::decimal(10, 8))
+            ) * cf.pct_license_fee::decimal(10, 8) * 1000
+        )::bigint * cer.exchange_rate::decimal(10, 4)
     ) as local_license_fee_nano,
     round(
-        cast(round(
-            cast(
-                (nvl(d.spend, 0) * cast(floor(cf.pct_actual_spend * 100000000)/100000000 AS decimal(10, 8))) +
-                cast(
-                    (nvl(d.spend, 0) * cast(floor(cf.pct_actual_spend * 100000000)/100000000 AS decimal(10, 8)))
-                    AS decimal(38, 18)
-                ) * cast(floor(cf.pct_license_fee * 100000000)/100000000 AS decimal(10, 8))
-                AS decimal(38, 18)
-            ) * cast(floor(cf.pct_margin * 100000000)/100000000 AS decimal(10, 8)) * 1000
-        ) AS long) * cast(floor(cer.exchange_rate * 10000)/10000 AS decimal(10, 4))
+        round(
+            (
+                (nvl(d.spend, 0) * cf.pct_actual_spend::decimal(10, 8)) * (1 + cf.pct_license_fee::decimal(10, 8))
+            ) * cf.pct_margin::decimal(10, 8) * 1000
+        )::bigint * cer.exchange_rate::decimal(10, 4)
     ) as local_margin_nano
 FROM
   (
     (
       SELECT date, ad_group_id, publisher_id, publisher_name as publisher, SUM(clicks) as clicks, SUM(impressions) as impressions, SUM(spend) as spend
       FROM outbrainpublisherstats
-      WHERE date BETWEEN '{{ date_from }}' AND '{{ date_to }}'
+      WHERE date BETWEEN %(date_from)s AND %(date_to)s
             {% if account_id %}
-                AND ad_group_id IN ({{ ad_group_id|join:"," }})
+                AND ad_group_id=ANY(%(ad_group_id)s)
             {% endif %}
       GROUP BY 1, 2, 3, 4
     ) a
     natural full outer join (
       SELECT date, ad_group_id, publisher, SUM(visits) as visits, SUM(new_visits) as new_visits, SUM(bounced_visits) as bounced_visits, SUM(pageviews) as pageviews, SUM(total_time_on_site) as total_time_on_site, SUM(users) as users
       FROM postclickstats
-      WHERE source='outbrain' AND date BETWEEN '{{ date_from }}' AND '{{ date_to }}'
+      WHERE source='outbrain' AND date BETWEEN %(date_from)s AND %(date_to)s
             {% if account_id %}
-                AND ad_group_id IN ({{ ad_group_id|join:"," }})
+                AND ad_group_id=ANY(%(ad_group_id)s)
             {% endif %}
       GROUP BY 1, 2, 3
     ) b
     natural full outer join (
       SELECT date, source_id, ad_group_id, publisher FROM mv_touchpointconversions
-      WHERE source_id={{ source_id }} AND date BETWEEN '{{ date_from }}' AND '{{ date_to }}'
+      WHERE source_id={{ source_id }} AND date BETWEEN %(date_from)s AND %(date_to)s
         {% if account_id %}
-          AND ad_group_id IN ({{ ad_group_id|join:"," }})
+          AND ad_group_id=ANY(%(ad_group_id)s)
         {% endif %}
       GROUP BY 1, 2, 3, 4
     ) tpc
@@ -130,9 +119,11 @@ FROM
   join mvh_campaign_factors cf on c.campaign_id=cf.campaign_id and d.date=cf.date
   join mvh_currency_exchange_rates cer on c.account_id=cer.account_id and d.date=cer.date
 WHERE
-  d.date BETWEEN '{{ date_from }}' AND '{{ date_to }}'
+  d.date BETWEEN %(date_from)s AND %(date_to)s
   AND COALESCE(d.publisher, '') <> ''
   {% if account_id %}
-    AND d.ad_group_id IN ({{ ad_group_id|join:"," }})
+    AND d.ad_group_id=ANY(%(ad_group_id)s)
   {% endif %}
+
+)
 {% endautoescape %}

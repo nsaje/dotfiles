@@ -8,8 +8,6 @@ from django.conf import settings
 
 FILE_PREFIX = "etl/spark/code"
 LIVY_URL = "http://{}:8998"
-SCALA = "spark"
-PYTHON = "pyspark"
 
 logger = logging.getLogger(__name__)
 
@@ -25,8 +23,8 @@ def get_session():
         driverCores=1,
         executorCores=1,
         conf={
-            "spark.default.parallelism": 128,  # number of tasks on input
-            "spark.sql.shuffle.partitions": 128,  # number of tasks after join or group
+            "spark.default.parallelism": 32,  # number of tasks on input
+            "spark.sql.shuffle.partitions": 32,  # number of tasks after join or group
         },
     )
 
@@ -48,7 +46,7 @@ class LivySession:
         if self.state is not None:
             return
 
-        data = {"kind": PYTHON}
+        data = {"kind": "pyspark"}
         data.update(self.params)
 
         result = requests.post(self.url + "/sessions", data=json.dumps(data)).json()
@@ -67,11 +65,11 @@ class LivySession:
         requests.delete(self.url + "/sessions/" + str(self.state))
         self.state = None
 
-    def run(self, code, kind=PYTHON):
+    def run(self, code):
         if self.state is None:
             raise Exception("Session not started")
 
-        data = {"code": code, "kind": kind}
+        data = {"code": code}
 
         result = requests.post(self.url + "/sessions/" + str(self.state) + "/statements", data=json.dumps(data)).json()
         while result["state"] in ("waiting", "running"):
@@ -84,10 +82,7 @@ class LivySession:
         if result["output"]["status"] == "error":
             raise Exception(result["output"])
 
-        return result["output"]
-
-    def run_file(self, filename, *args, kind=PYTHON, **kwargs):
-        logger.info("Running spark job %s for %s", filename, kwargs.get("table"))
+    def run_file(self, filename, *args, **kwargs):
         with open(path.join(FILE_PREFIX, filename), "r") as f:
             code = f.read()
 
@@ -95,5 +90,4 @@ class LivySession:
 
         logger.debug("Running spark code:\n%s", code)
 
-        self.run(code, kind=kind)
-        logger.info("Done spark job %s for %s", filename, kwargs.get("table"))
+        self.run(code)

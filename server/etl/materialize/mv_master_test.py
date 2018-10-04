@@ -5,6 +5,10 @@ import mock
 
 from django.test import TestCase, override_settings
 
+from dash import constants
+
+from utils import test_helper
+
 from .mv_master import MasterView
 
 
@@ -39,47 +43,563 @@ class MasterViewTest(TestCase, backtosql.TestSQLMixin):
         date_from = datetime.date(2016, 7, 1)
         date_to = datetime.date(2016, 7, 3)
 
-        spark_session = mock.MagicMock()
-        mv = MasterView("asd", date_from, date_to, account_id=None, spark_session=spark_session)
+        mv = MasterView("asd", date_from, date_to, account_id=None)
 
         mv.generate()
 
-        self.assertEqual(spark_session.run_file.call_count, 1)
-        spark_session.run_file.assert_has_calls(
-            [
-                mock.call(
-                    "export_table_to_json_s3.py.tmpl",
-                    s3_bucket="test_bucket",
-                    s3_path="spark/asd/mv_master/",
-                    table="mv_master",
-                )
-            ]
-        )
+        insert_into_master_sql = mock.ANY
 
         mock_cursor().__enter__().execute.assert_has_calls(
             [
                 mock.call(
-                    backtosql.SQLMatcher("DELETE FROM mv_master WHERE (date BETWEEN %(date_from)s AND %(date_to)s);"),
-                    {"date_from": datetime.date(2016, 7, 1), "date_to": datetime.date(2016, 7, 3)},
+                    backtosql.SQLMatcher("DELETE FROM mv_master WHERE date=%(date)s"),
+                    {"date": datetime.date(2016, 7, 1)},
+                ),
+                mock.call(insert_into_master_sql, {"date": datetime.date(2016, 7, 1)}),
+                mock.call(
+                    backtosql.SQLMatcher(
+                        """
+                SELECT
+                    ad_group_id AS ad_group_id,
+                    type AS postclick_source,
+                    content_ad_id AS content_ad_id,
+                    source AS source_slug,
+                    publisher AS publisher,
+                    SUM(bounced_visits) bounced_visits,
+                    json_dict_sum(LISTAGG(conversions, ';'), ';') AS conversions,
+                    SUM(new_visits) new_visits,
+                    SUM(pageviews) pageviews,
+                    SUM(total_time_on_site) total_time_on_site,
+                    SUM(users) users,
+                    SUM(visits) visits
+                FROM postclickstats
+                WHERE date=%(date)s
+                GROUP BY ad_group_id, postclick_source, content_ad_id, source_slug, publisher;
+            """
+                    ),
+                    {"date": datetime.date(2016, 7, 1)},
                 ),
                 mock.call(
                     backtosql.SQLMatcher(
                         """
                 COPY mv_master
                 FROM %(s3_url)s
-                FORMAT JSON 'auto'
+                FORMAT CSV
+                DELIMITER AS %(delimiter)s
+                BLANKSASNULL EMPTYASNULL
                 CREDENTIALS %(credentials)s
-                MAXERROR 0
-                GZIP;"""
+                MAXERROR 0;"""
                     ),
                     {
                         "credentials": "aws_access_key_id=bar;aws_secret_access_key=foo",
-                        "s3_url": "s3://test_bucket/spark/asd/mv_master/",
+                        "s3_url": ("s3://test_bucket/materialized_views/" "mv_master/2016/07/01/mv_master_asd.csv"),
                         "delimiter": "\t",
                     },
                 ),
+                mock.call(mock.ANY, {"date": datetime.date(2016, 7, 1)}),
+                mock.call(
+                    backtosql.SQLMatcher("DELETE FROM mv_master WHERE date=%(date)s"),
+                    {"date": datetime.date(2016, 7, 2)},
+                ),
+                mock.call(insert_into_master_sql, {"date": datetime.date(2016, 7, 2)}),
+                mock.call(mock.ANY, {"date": datetime.date(2016, 7, 2)}),
+                mock.call(
+                    mock.ANY,
+                    {
+                        "credentials": "aws_access_key_id=bar;aws_secret_access_key=foo",
+                        "s3_url": "s3://test_bucket/materialized_views/mv_master/2016/07/02/mv_master_asd.csv",
+                        "delimiter": "\t",
+                    },
+                ),
+                mock.call(mock.ANY, {"date": datetime.date(2016, 7, 2)}),
+                mock.call(
+                    backtosql.SQLMatcher("DELETE FROM mv_master WHERE date=%(date)s"),
+                    {"date": datetime.date(2016, 7, 3)},
+                ),
+                mock.call(insert_into_master_sql, {"date": datetime.date(2016, 7, 3)}),
+                mock.call(mock.ANY, {"date": datetime.date(2016, 7, 3)}),
+                mock.call(
+                    mock.ANY,
+                    {
+                        "credentials": "aws_access_key_id=bar;aws_secret_access_key=foo",
+                        "s3_url": "s3://test_bucket/materialized_views/mv_master/2016/07/03/mv_master_asd.csv",
+                        "delimiter": "\t",
+                    },
+                ),
+                mock.call(mock.ANY, {"date": datetime.date(2016, 7, 3)}),
             ]
         )
+
+    def test_generate_rows(self):
+
+        date = datetime.date(2016, 5, 1)
+
+        mock_cursor = mock.MagicMock()
+
+        postclickstats_return_value = [
+            (
+                (3, 1),
+                (
+                    date,
+                    3,
+                    1,
+                    1,
+                    1,
+                    1,
+                    "bla.com",
+                    "bla.com__3",
+                    constants.DeviceType.UNKNOWN,
+                    None,
+                    None,
+                    constants.PlacementMedium.UNKNOWN,
+                    constants.PlacementType.UNKNOWN,
+                    constants.VideoPlaybackMethod.UNKNOWN,
+                    None,
+                    None,
+                    None,
+                    None,
+                    constants.Age.UNDEFINED,
+                    constants.Gender.UNDEFINED,
+                    constants.AgeGender.UNDEFINED,
+                    0,
+                    0,
+                    0,
+                    0,
+                    2,
+                    22,
+                    12,
+                    100,
+                    20,
+                    0,
+                    0,
+                    0,
+                    "{einpix: 2}",
+                    None,
+                ),
+                None,
+            ),
+            (
+                (1, 3),
+                (
+                    date,
+                    1,
+                    1,
+                    3,
+                    3,
+                    3,
+                    "nesto.com",
+                    "nesto.com__1",
+                    constants.DeviceType.UNKNOWN,
+                    None,
+                    None,
+                    constants.PlacementMedium.UNKNOWN,
+                    constants.PlacementType.UNKNOWN,
+                    constants.VideoPlaybackMethod.UNKNOWN,
+                    None,
+                    None,
+                    None,
+                    None,
+                    constants.Age.UNDEFINED,
+                    constants.Gender.UNDEFINED,
+                    constants.AgeGender.UNDEFINED,
+                    0,
+                    0,
+                    0,
+                    0,
+                    2,
+                    22,
+                    12,
+                    100,
+                    20,
+                    0,
+                    0,
+                    0,
+                    "{einpix: 2}",
+                    None,
+                ),
+                None,
+            ),
+            (
+                (3, 4),
+                (
+                    date,
+                    3,
+                    2,
+                    2,
+                    2,
+                    4,
+                    "trol",
+                    "trol__3",
+                    constants.DeviceType.UNKNOWN,
+                    None,
+                    None,
+                    constants.PlacementMedium.UNKNOWN,
+                    constants.PlacementType.UNKNOWN,
+                    constants.VideoPlaybackMethod.UNKNOWN,
+                    None,
+                    None,
+                    None,
+                    None,
+                    constants.Age.UNDEFINED,
+                    constants.Gender.UNDEFINED,
+                    constants.AgeGender.UNDEFINED,
+                    0,
+                    0,
+                    0,
+                    0,
+                    2,
+                    22,
+                    12,
+                    100,
+                    20,
+                    0,
+                    0,
+                    0,
+                    "{einpix: 2}",
+                    None,
+                ),
+                None,
+            ),
+        ]
+
+        with mock.patch.object(MasterView, "get_postclickstats", return_value=postclickstats_return_value):
+            mv = MasterView("asd", datetime.date(2016, 7, 1), datetime.date(2016, 7, 3), account_id=None)
+            rows = list(mv.generate_rows(mock_cursor, date))
+
+            self.maxDiff = None
+            self.assertCountEqual(
+                rows,
+                [
+                    (
+                        date,
+                        3,
+                        1,
+                        1,
+                        1,
+                        1,
+                        "bla.com",
+                        "bla.com__3",
+                        constants.DeviceType.UNKNOWN,
+                        None,
+                        None,
+                        constants.PlacementMedium.UNKNOWN,
+                        constants.PlacementType.UNKNOWN,
+                        constants.VideoPlaybackMethod.UNKNOWN,
+                        None,
+                        None,
+                        None,
+                        None,
+                        constants.Age.UNDEFINED,
+                        constants.Gender.UNDEFINED,
+                        constants.AgeGender.UNDEFINED,
+                        0,
+                        0,
+                        0,
+                        0,
+                        2,
+                        22,
+                        12,
+                        100,
+                        20,
+                        0,
+                        0,
+                        0,
+                        "{einpix: 2}",
+                        None,
+                    ),
+                    (
+                        date,
+                        1,
+                        1,
+                        3,
+                        3,
+                        3,
+                        "nesto.com",
+                        "nesto.com__1",
+                        constants.DeviceType.UNKNOWN,
+                        None,
+                        None,
+                        constants.PlacementMedium.UNKNOWN,
+                        constants.PlacementType.UNKNOWN,
+                        constants.VideoPlaybackMethod.UNKNOWN,
+                        None,
+                        None,
+                        None,
+                        None,
+                        constants.Age.UNDEFINED,
+                        constants.Gender.UNDEFINED,
+                        constants.AgeGender.UNDEFINED,
+                        0,
+                        0,
+                        0,
+                        0,
+                        2,
+                        22,
+                        12,
+                        100,
+                        20,
+                        0,
+                        0,
+                        0,
+                        "{einpix: 2}",
+                        None,
+                    ),
+                    (
+                        date,
+                        3,
+                        2,
+                        2,
+                        2,
+                        4,
+                        "trol",
+                        "trol__3",
+                        constants.DeviceType.UNKNOWN,
+                        None,
+                        None,
+                        constants.PlacementMedium.UNKNOWN,
+                        constants.PlacementType.UNKNOWN,
+                        constants.VideoPlaybackMethod.UNKNOWN,
+                        None,
+                        None,
+                        None,
+                        None,
+                        constants.Age.UNDEFINED,
+                        constants.Gender.UNDEFINED,
+                        constants.AgeGender.UNDEFINED,
+                        0,
+                        0,
+                        0,
+                        0,
+                        2,
+                        22,
+                        12,
+                        100,
+                        20,
+                        0,
+                        0,
+                        0,
+                        "{einpix: 2}",
+                        None,
+                    ),
+                ],
+            )
+
+    @mock.patch("etl.materialize.mv_master.MasterView.get_postclickstats_query_results")
+    def test_get_postclickstats(self, mock_get_postclickstats_query_results):
+        date = datetime.date(2016, 5, 1)
+
+        mock_get_postclickstats_query_results.return_value = [
+            PostclickstatsResults(1, "gaapi", 1, "outbrain", "Bla.com", 12, "{einpix: 2}", 22, 100, 20, 2, 24),
+            # this one should be left out as its from lower priority postclick source
+            PostclickstatsResults(1, "ga_mail", 2, "outbrain", "beer.com", 12, "{einpix: 2}", 22, 100, 20, 2, 24),
+            PostclickstatsResults(3, "gaapi", 3, "adblade", "Nesto.com", 12, "{einpix: 2}", 22, 100, 20, 2, 24),
+            PostclickstatsResults(2, "omniture", 4, "outbrain", "Trol", 12, "{einpix: 2}", 22, 100, 20, 2, 24),
+        ]
+
+        mv = MasterView("asd", datetime.date(2016, 7, 1), datetime.date(2016, 7, 3), account_id=None)
+        mv.prefetch()
+
+        self.maxDiff = None
+        self.assertCountEqual(
+            list(mv.get_postclickstats(None, date)),
+            [
+                (
+                    (3, 1),
+                    (
+                        date,
+                        3,
+                        1,
+                        1,
+                        1,
+                        1,
+                        "Bla.com",
+                        "Bla.com__3",
+                        constants.DeviceType.UNKNOWN,
+                        None,
+                        None,
+                        constants.PlacementMedium.UNKNOWN,
+                        constants.PlacementType.UNKNOWN,
+                        constants.VideoPlaybackMethod.UNKNOWN,
+                        None,
+                        None,
+                        None,
+                        None,
+                        constants.Age.UNDEFINED,
+                        constants.Gender.UNDEFINED,
+                        constants.AgeGender.UNDEFINED,
+                        0,
+                        0,
+                        0,
+                        0,
+                        2,
+                        22,
+                        12,
+                        100,
+                        20,
+                        0,
+                        0,
+                        0,
+                        0,
+                        24,
+                        2,
+                        None,
+                        None,
+                        None,
+                        None,
+                        None,
+                        None,
+                        None,
+                        None,
+                        None,
+                        None,
+                        None,
+                        None,
+                    ),
+                    ("{einpix: 2}", "gaapi"),
+                ),
+                (
+                    (3, 4),
+                    (
+                        date,
+                        3,
+                        2,
+                        2,
+                        2,
+                        4,
+                        "Trol",
+                        "Trol__3",
+                        constants.DeviceType.UNKNOWN,
+                        None,
+                        None,
+                        constants.PlacementMedium.UNKNOWN,
+                        constants.PlacementType.UNKNOWN,
+                        constants.VideoPlaybackMethod.UNKNOWN,
+                        None,
+                        None,
+                        None,
+                        None,
+                        constants.Age.UNDEFINED,
+                        constants.Gender.UNDEFINED,
+                        constants.AgeGender.UNDEFINED,
+                        0,
+                        0,
+                        0,
+                        0,
+                        2,
+                        22,
+                        12,
+                        100,
+                        20,
+                        0,
+                        0,
+                        0,
+                        0,
+                        24,
+                        2,
+                        None,
+                        None,
+                        None,
+                        None,
+                        None,
+                        None,
+                        None,
+                        None,
+                        None,
+                        None,
+                        None,
+                        None,
+                    ),
+                    ("{einpix: 2}", "omniture"),
+                ),
+                (
+                    (1, 3),
+                    (
+                        date,
+                        1,
+                        1,
+                        3,
+                        3,
+                        3,
+                        "nesto.com",
+                        "nesto.com__1",
+                        constants.DeviceType.UNKNOWN,
+                        None,
+                        None,
+                        constants.PlacementMedium.UNKNOWN,
+                        constants.PlacementType.UNKNOWN,
+                        constants.VideoPlaybackMethod.UNKNOWN,
+                        None,
+                        None,
+                        None,
+                        None,
+                        constants.Age.UNDEFINED,
+                        constants.Gender.UNDEFINED,
+                        constants.AgeGender.UNDEFINED,
+                        0,
+                        0,
+                        0,
+                        0,
+                        2,
+                        22,
+                        12,
+                        100,
+                        20,
+                        0,
+                        0,
+                        0,
+                        0,
+                        24,
+                        2,
+                        None,
+                        None,
+                        None,
+                        None,
+                        None,
+                        None,
+                        None,
+                        None,
+                        None,
+                        None,
+                        None,
+                        None,
+                    ),
+                    ("{einpix: 2}", "gaapi"),
+                ),
+            ],
+        )
+
+    def test_prepare_postclickstats_query(self):
+        date = datetime.date(2016, 5, 1)
+        mv = MasterView("asd", datetime.date(2016, 7, 1), datetime.date(2016, 7, 3), account_id=None)
+        sql, params = mv.prepare_postclickstats_query(date)
+
+        self.assertSQLEquals(
+            sql,
+            """
+        SELECT
+            ad_group_id AS ad_group_id,
+            type AS postclick_source,
+            content_ad_id AS content_ad_id,
+            source AS source_slug,
+            publisher AS publisher,
+            SUM(bounced_visits) bounced_visits,
+            json_dict_sum(LISTAGG(conversions, ';'), ';') AS conversions,
+            SUM(new_visits) new_visits,
+            SUM(pageviews) pageviews,
+            SUM(total_time_on_site) total_time_on_site,
+            SUM(users) users,
+            SUM(visits) visits
+        FROM postclickstats
+        WHERE date=%(date)s
+        GROUP BY
+            ad_group_id,
+            postclick_source,
+            content_ad_id,
+            source_slug,
+            publisher;""",
+        )
+
+        self.assertDictEqual(params, {"date": date})
 
 
 class MasterViewTestByAccountId(TestCase, backtosql.TestSQLMixin):
@@ -95,50 +615,125 @@ class MasterViewTestByAccountId(TestCase, backtosql.TestSQLMixin):
         date_to = datetime.date(2016, 7, 3)
 
         account_id = 1
-        spark_session = mock.MagicMock()
-        mv = MasterView("asd", date_from, date_to, account_id=account_id, spark_session=spark_session)
+        mv = MasterView("asd", date_from, date_to, account_id=account_id)
 
         mv.generate()
 
-        self.assertEqual(spark_session.run_file.call_count, 1)
-        spark_session.run_file.assert_has_calls(
-            [
-                mock.call(
-                    "export_table_to_json_s3.py.tmpl",
-                    s3_bucket="test_bucket",
-                    s3_path="spark/asd/mv_master/",
-                    table="mv_master",
-                )
-            ]
-        )
-
+        insert_into_master_sql = mock.ANY
         mock_cursor().__enter__().execute.assert_has_calls(
             [
                 mock.call(
+                    backtosql.SQLMatcher("DELETE FROM mv_master WHERE date=%(date)s AND account_id=%(account_id)s"),
+                    {"date": datetime.date(2016, 7, 1), "account_id": account_id},
+                ),
+                mock.call(insert_into_master_sql, {"date": datetime.date(2016, 7, 1), "account_id": account_id}),
+                mock.call(
                     backtosql.SQLMatcher(
                         """
-                    DELETE
-                    FROM mv_master
-                    WHERE (date BETWEEN %(date_from)s AND %(date_to)s) AND account_id=%(account_id)s;
-                    """
+                SELECT
+                    ad_group_id AS ad_group_id,
+                    type AS postclick_source,
+                    content_ad_id AS content_ad_id,
+                    source AS source_slug,
+                    publisher AS publisher,
+                    SUM(bounced_visits) bounced_visits,
+                    json_dict_sum(LISTAGG(conversions, ';'), ';') AS conversions,
+                    SUM(new_visits) new_visits,
+                    SUM(pageviews) pageviews,
+                    SUM(total_time_on_site) total_time_on_site,
+                    SUM(users) users,
+                    SUM(visits) visits
+                FROM postclickstats
+                WHERE date=%(date)s AND ad_group_id=ANY(%(ad_group_id)s)
+                GROUP BY ad_group_id, postclick_source, content_ad_id, source_slug, publisher;
+            """
                     ),
-                    {"date_from": datetime.date(2016, 7, 1), "date_to": datetime.date(2016, 7, 3), "account_id": 1},
+                    {"date": datetime.date(2016, 7, 1), "ad_group_id": test_helper.ListMatcher([1, 3, 4])},
                 ),
                 mock.call(
                     backtosql.SQLMatcher(
                         """
                 COPY mv_master
                 FROM %(s3_url)s
-                FORMAT JSON 'auto'
+                FORMAT CSV
+                DELIMITER AS %(delimiter)s
+                BLANKSASNULL EMPTYASNULL
                 CREDENTIALS %(credentials)s
-                MAXERROR 0
-                GZIP;"""
+                MAXERROR 0;"""
                     ),
                     {
                         "credentials": "aws_access_key_id=bar;aws_secret_access_key=foo",
-                        "s3_url": "s3://test_bucket/spark/asd/mv_master/",
+                        "s3_url": "s3://test_bucket/materialized_views/mv_master/2016/07/01/mv_master_asd.csv",
                         "delimiter": "\t",
                     },
                 ),
+                mock.call(mock.ANY, {"date": datetime.date(2016, 7, 1), "account_id": account_id}),
+                mock.call(
+                    backtosql.SQLMatcher("DELETE FROM mv_master WHERE date=%(date)s AND account_id=%(account_id)s"),
+                    {"date": datetime.date(2016, 7, 2), "account_id": account_id},
+                ),
+                mock.call(insert_into_master_sql, {"date": datetime.date(2016, 7, 2), "account_id": account_id}),
+                mock.call(
+                    mock.ANY, {"date": datetime.date(2016, 7, 2), "ad_group_id": test_helper.ListMatcher([1, 3, 4])}
+                ),
+                mock.call(
+                    mock.ANY,
+                    {
+                        "credentials": "aws_access_key_id=bar;aws_secret_access_key=foo",
+                        "s3_url": "s3://test_bucket/materialized_views/mv_master/2016/07/02/mv_master_asd.csv",
+                        "delimiter": "\t",
+                    },
+                ),
+                mock.call(mock.ANY, {"date": datetime.date(2016, 7, 2), "account_id": account_id}),
+                mock.call(
+                    backtosql.SQLMatcher("DELETE FROM mv_master WHERE date=%(date)s AND account_id=%(account_id)s"),
+                    {"date": datetime.date(2016, 7, 3), "account_id": account_id},
+                ),
+                mock.call(insert_into_master_sql, {"date": datetime.date(2016, 7, 3), "account_id": account_id}),
+                mock.call(
+                    mock.ANY, {"date": datetime.date(2016, 7, 3), "ad_group_id": test_helper.ListMatcher([1, 3, 4])}
+                ),
+                mock.call(
+                    mock.ANY,
+                    {
+                        "credentials": "aws_access_key_id=bar;aws_secret_access_key=foo",
+                        "s3_url": "s3://test_bucket/materialized_views/mv_master/2016/07/03/mv_master_asd.csv",
+                        "delimiter": "\t",
+                    },
+                ),
+                mock.call(mock.ANY, {"date": datetime.date(2016, 7, 3), "account_id": account_id}),
             ]
         )
+
+    def test_prepare_postclickstats_query(self):
+        date = datetime.date(2016, 5, 1)
+        mv = MasterView("asd", datetime.date(2016, 7, 1), datetime.date(2016, 7, 3), account_id=1)
+        sql, params = mv.prepare_postclickstats_query(date)
+
+        self.assertSQLEquals(
+            sql,
+            """
+        SELECT
+            ad_group_id AS ad_group_id,
+            type AS postclick_source,
+            content_ad_id AS content_ad_id,
+            source AS source_slug,
+            publisher AS publisher,
+            SUM(bounced_visits) bounced_visits,
+            json_dict_sum(LISTAGG(conversions, ';'), ';') AS conversions,
+            SUM(new_visits) new_visits,
+            SUM(pageviews) pageviews,
+            SUM(total_time_on_site) total_time_on_site,
+            SUM(users) users,
+            SUM(visits) visits
+        FROM postclickstats
+        WHERE date=%(date)s AND ad_group_id=ANY(%(ad_group_id)s)
+        GROUP BY
+            ad_group_id,
+            postclick_source,
+            content_ad_id,
+            source_slug,
+            publisher;""",
+        )
+
+        self.assertDictEqual(params, {"date": date, "ad_group_id": test_helper.ListMatcher([1, 3, 4])})

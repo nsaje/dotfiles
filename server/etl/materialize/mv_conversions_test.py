@@ -9,7 +9,7 @@ from dash import constants
 from utils import test_helper
 
 from .mv_conversions import MVConversions
-from .mv_master_spark import MasterSpark
+from .mv_master import MasterView
 
 
 class MVConversionsTest(TestCase, backtosql.TestSQLMixin):
@@ -24,24 +24,9 @@ class MVConversionsTest(TestCase, backtosql.TestSQLMixin):
         date_from = datetime.date(2016, 7, 1)
         date_to = datetime.date(2016, 7, 3)
 
-        spark_session = mock.MagicMock()
-        mv = MVConversions("asd", date_from, date_to, account_id=None, spark_session=spark_session)
+        mv = MVConversions("asd", date_from, date_to, account_id=None)
 
         mv.generate()
-
-        self.assertEqual(spark_session.run_file.call_count, 2)
-        spark_session.run_file.assert_has_calls(
-            [
-                mock.call(
-                    "load_csv_from_s3_to_table.py.tmpl",
-                    s3_bucket="test_bucket",
-                    s3_path="spark/asd/mv_conversions/*.csv",
-                    schema=mock.ANY,
-                    table="mv_conversions",
-                ),
-                mock.call("cache_table.py.tmpl", table="mv_conversions"),
-            ]
-        )
 
         mock_cursor().__enter__().execute.assert_has_calls(
             [
@@ -85,7 +70,7 @@ class MVConversionsTest(TestCase, backtosql.TestSQLMixin):
                     ),
                     {
                         "credentials": "aws_access_key_id=bar;aws_secret_access_key=foo",
-                        "s3_url": "s3://test_bucket/spark/asd/mv_conversions/2016-07-01.csv",
+                        "s3_url": "s3://test_bucket/materialized_views/mv_conversions/2016/07/01/mv_conversions_asd.csv",
                         "delimiter": "\t",
                     },
                 ),
@@ -98,7 +83,7 @@ class MVConversionsTest(TestCase, backtosql.TestSQLMixin):
                     mock.ANY,
                     {
                         "credentials": "aws_access_key_id=bar;aws_secret_access_key=foo",
-                        "s3_url": "s3://test_bucket/spark/asd/mv_conversions/2016-07-02.csv",
+                        "s3_url": "s3://test_bucket/materialized_views/mv_conversions/2016/07/02/mv_conversions_asd.csv",
                         "delimiter": "\t",
                     },
                 ),
@@ -111,7 +96,7 @@ class MVConversionsTest(TestCase, backtosql.TestSQLMixin):
                     mock.ANY,
                     {
                         "credentials": "aws_access_key_id=bar;aws_secret_access_key=foo",
-                        "s3_url": "s3://test_bucket/spark/asd/mv_conversions/2016-07-03.csv",
+                        "s3_url": "s3://test_bucket/materialized_views/mv_conversions/2016/07/03/mv_conversions_asd.csv",
                         "delimiter": "\t",
                     },
                 ),
@@ -324,7 +309,7 @@ class MVConversionsTest(TestCase, backtosql.TestSQLMixin):
             ),
         ]
 
-        with mock.patch.object(MasterSpark, "get_postclickstats", return_value=postclickstats_return_value):
+        with mock.patch.object(MasterView, "get_postclickstats", return_value=postclickstats_return_value):
 
             mv = MVConversions("asd", datetime.date(2016, 7, 1), datetime.date(2016, 7, 3), account_id=None)
             rows = list(mv.generate_rows(mock_cursor, date))
@@ -352,24 +337,9 @@ class MVConversionsTestAccountId(TestCase, backtosql.TestSQLMixin):
         date_from = datetime.date(2016, 7, 1)
         date_to = datetime.date(2016, 7, 3)
 
-        spark_session = mock.MagicMock()
-        mv = MVConversions("asd", date_from, date_to, account_id=1, spark_session=spark_session)
+        mv = MVConversions("asd", date_from, date_to, account_id=1)
 
         mv.generate()
-
-        self.assertEqual(spark_session.run_file.call_count, 2)
-        spark_session.run_file.assert_has_calls(
-            [
-                mock.call(
-                    "load_csv_from_s3_to_table.py.tmpl",
-                    s3_bucket="test_bucket",
-                    s3_path="spark/asd/mv_conversions/*.csv",
-                    schema=mock.ANY,
-                    table="mv_conversions",
-                ),
-                mock.call("cache_table.py.tmpl", table="mv_conversions"),
-            ]
-        )
 
         mock_cursor().__enter__().execute.assert_has_calls(
             [
@@ -415,7 +385,7 @@ class MVConversionsTestAccountId(TestCase, backtosql.TestSQLMixin):
                     ),
                     {
                         "credentials": "aws_access_key_id=bar;aws_secret_access_key=foo",
-                        "s3_url": "s3://test_bucket/spark/asd/mv_conversions/2016-07-01.csv",
+                        "s3_url": "s3://test_bucket/materialized_views/mv_conversions/2016/07/01/mv_conversions_asd.csv",
                         "delimiter": "\t",
                     },
                 ),
@@ -432,7 +402,7 @@ class MVConversionsTestAccountId(TestCase, backtosql.TestSQLMixin):
                     mock.ANY,
                     {
                         "credentials": "aws_access_key_id=bar;aws_secret_access_key=foo",
-                        "s3_url": "s3://test_bucket/spark/asd/mv_conversions/2016-07-02.csv",
+                        "s3_url": "s3://test_bucket/materialized_views/mv_conversions/2016/07/02/mv_conversions_asd.csv",
                         "delimiter": "\t",
                     },
                 ),
@@ -449,7 +419,7 @@ class MVConversionsTestAccountId(TestCase, backtosql.TestSQLMixin):
                     mock.ANY,
                     {
                         "credentials": "aws_access_key_id=bar;aws_secret_access_key=foo",
-                        "s3_url": "s3://test_bucket/spark/asd/mv_conversions/2016-07-03.csv",
+                        "s3_url": "s3://test_bucket/materialized_views/mv_conversions/2016/07/03/mv_conversions_asd.csv",
                         "delimiter": "\t",
                     },
                 ),

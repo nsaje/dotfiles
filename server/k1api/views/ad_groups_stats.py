@@ -1,6 +1,5 @@
 import logging
 import datetime
-import os.path
 import uuid
 
 from django.conf import settings
@@ -17,8 +16,6 @@ import dash.features.custom_flags
 from .base import K1APIView
 
 logger = logging.getLogger(__name__)
-
-S3_PREFIX = "k1api"
 
 
 class AdGroupStatsView(K1APIView):
@@ -64,9 +61,11 @@ class AdGroupConversionStatsView(K1APIView):
         if ad_group_ids:
             ad_group_ids = ad_group_ids.split(",")
 
-        path = os.path.join(S3_PREFIX, "conversions", from_date.strftime("%Y/%m/%d"), uuid.uuid4().hex + ".csv")
-        etl.s3.upload_csv(
-            path, lambda: redshiftapi.internal_stats.conversions.query_conversions(from_date, to_date, ad_group_ids)
+        path = etl.s3.upload_csv(
+            "conversions",
+            from_date,
+            uuid.uuid4().hex,
+            lambda: redshiftapi.internal_stats.conversions.query_conversions(from_date, to_date, ad_group_ids),
         )
 
         return self.response_ok({"path": path, "bucket": settings.S3_BUCKET_STATS})
@@ -92,11 +91,10 @@ class AdGroupContentAdPublisherStatsView(K1APIView):
         if min_media_cost:
             min_media_cost = float(min_media_cost)
 
-        path = os.path.join(
-            S3_PREFIX, "content_ad_publishers", from_date.strftime("%Y/%m/%d"), uuid.uuid4().hex + ".csv"
-        )
-        etl.s3.upload_csv_async(
-            path,
+        _, path = etl.s3.upload_csv_async(
+            "content_ad_publishers",
+            from_date,
+            uuid.uuid4().hex,
             lambda: redshiftapi.internal_stats.content_ad_publishers.query_content_ad_publishers(
                 from_date, to_date, ad_group_ids, min_media_cost
             ),

@@ -108,20 +108,6 @@ def update_table_from_s3_postgres(
             )
 
 
-def update_table_from_s3_json(s3_path, table_name, date_from, date_to, account_id=None):
-    with db.get_write_stats_transaction():
-        with db.get_write_stats_cursor() as c:
-            logger.info('Deleting data from table "%s" for date range %s - %s', table_name, date_from, date_to)
-            sql, params = prepare_date_range_delete_query(table_name, date_from, date_to, account_id)
-            c.execute(sql, params)
-
-            logger.info('Running copy into table "%s" from %s', table_name, s3_path)
-            sql, params = prepare_copy_query(s3_path, table_name, format="json", gzip=True)
-
-            c.execute(sql, params)
-            logger.info('Done copy into table "%s"', table_name)
-
-
 def prepare_unload_csv_query(s3_path, table_name, date_from, date_to, account_id=None, bucket_name=None):
     sql = backtosql.generate_sql(
         "etl_unload_csv.sql",

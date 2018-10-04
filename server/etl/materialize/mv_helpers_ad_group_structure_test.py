@@ -8,22 +8,21 @@ from django.test import TestCase, override_settings
 from .mv_helpers_ad_group_structure import MVHelpersAdGroupStructure
 
 
+@mock.patch("redshiftapi.db.get_write_stats_cursor")
+@mock.patch("redshiftapi.db.get_write_stats_transaction")
 @mock.patch("utils.s3helpers.S3Helper")
 class MVHAdGroupStructureTest(TestCase, backtosql.TestSQLMixin):
     fixtures = ["test_materialize_views"]
 
     @override_settings(S3_BUCKET_STATS="test_bucket")
-    def test_generate(self, mock_s3helper):
-        spark_session = mock.MagicMock()
-        mv = MVHelpersAdGroupStructure(
-            "asd", datetime.date(2016, 7, 1), datetime.date(2016, 7, 3), account_id=None, spark_session=spark_session
-        )
+    def test_generate(self, mock_s3helper, mock_transaction, mock_cursor):
+        mv = MVHelpersAdGroupStructure("asd", datetime.date(2016, 7, 1), datetime.date(2016, 7, 3), account_id=None)
 
         mv.generate()
 
         self.assertTrue(mock_s3helper.called)
         mock_s3helper().put.assert_called_with(
-            "spark/asd/mvh_adgroup_structure/data.csv",
+            "materialized_views/mvh_adgroup_structure/2016/07/03/mvh_adgroup_structure_asd.csv",
             textwrap.dedent(
                 """\
             1\t1\t1\t1\r
@@ -34,26 +33,45 @@ class MVHAdGroupStructureTest(TestCase, backtosql.TestSQLMixin):
             ),
         )
 
-        self.assertEqual(spark_session.run_file.call_count, 2)
-        spark_session.run_file.assert_has_calls(
+        mock_cursor().__enter__().execute.assert_has_calls(
             [
                 mock.call(
-                    "load_csv_from_s3_to_table.py.tmpl",
-                    s3_bucket="test_bucket",
-                    s3_path="spark/asd/mvh_adgroup_structure/data.csv",
-                    table="mvh_adgroup_structure",
-                    schema=mock.ANY,
+                    backtosql.SQLMatcher(
+                        """
+            CREATE TEMP TABLE mvh_adgroup_structure (
+                agency_id integer encode lzo,
+                account_id integer encode lzo,
+                campaign_id integer encode lzo,
+                ad_group_id integer encode lzo
+            ) sortkey(ad_group_id, campaign_id, account_id, agency_id)"""
+                    )
                 ),
-                mock.call("cache_table.py.tmpl", table="mvh_adgroup_structure"),
+                mock.call(
+                    backtosql.SQLMatcher(
+                        """
+            COPY mvh_adgroup_structure
+            FROM %(s3_url)s
+            FORMAT CSV
+            DELIMITER AS %(delimiter)s
+            BLANKSASNULL EMPTYASNULL
+            CREDENTIALS %(credentials)s
+            MAXERROR 0;"""
+                    ),
+                    {
+                        "credentials": "aws_access_key_id=bar;aws_secret_access_key=foo",
+                        "s3_url": (
+                            "s3://test_bucket/materialized_views/"
+                            "mvh_adgroup_structure/2016/07/03/mvh_adgroup_structure_asd.csv"
+                        ),
+                        "delimiter": "\t",
+                    },
+                ),
             ]
         )
 
     @override_settings(S3_BUCKET_STATS="test_bucket")
-    def test_generate_account_id(self, mock_s3helper):
-        spark_session = mock.MagicMock()
-        mv = MVHelpersAdGroupStructure(
-            "asd", datetime.date(2016, 7, 1), datetime.date(2016, 7, 3), account_id=1, spark_session=spark_session
-        )
+    def test_generate_account_id(self, mock_s3helper, mock_transaction, mock_cursor):
+        mv = MVHelpersAdGroupStructure("asd", datetime.date(2016, 7, 1), datetime.date(2016, 7, 3), account_id=1)
 
         mv.generate()
 
@@ -61,7 +79,7 @@ class MVHAdGroupStructureTest(TestCase, backtosql.TestSQLMixin):
 
         # only account_id=1 is used to generate CSV
         mock_s3helper().put.assert_called_with(
-            "spark/asd/mvh_adgroup_structure/data.csv",
+            "materialized_views/mvh_adgroup_structure/2016/07/03/mvh_adgroup_structure_asd.csv",
             textwrap.dedent(
                 """\
             1\t1\t1\t1\r
@@ -71,16 +89,38 @@ class MVHAdGroupStructureTest(TestCase, backtosql.TestSQLMixin):
             ),
         )
 
-        self.assertEqual(spark_session.run_file.call_count, 2)
-        spark_session.run_file.assert_has_calls(
+        mock_cursor().__enter__().execute.assert_has_calls(
             [
                 mock.call(
-                    "load_csv_from_s3_to_table.py.tmpl",
-                    s3_bucket="test_bucket",
-                    s3_path="spark/asd/mvh_adgroup_structure/data.csv",
-                    table="mvh_adgroup_structure",
-                    schema=mock.ANY,
+                    backtosql.SQLMatcher(
+                        """
+            CREATE TEMP TABLE mvh_adgroup_structure (
+                agency_id integer encode lzo,
+                account_id integer encode lzo,
+                campaign_id integer encode lzo,
+                ad_group_id integer encode lzo
+            ) sortkey(ad_group_id, campaign_id, account_id, agency_id)"""
+                    )
                 ),
-                mock.call("cache_table.py.tmpl", table="mvh_adgroup_structure"),
+                mock.call(
+                    backtosql.SQLMatcher(
+                        """
+            COPY mvh_adgroup_structure
+            FROM %(s3_url)s
+            FORMAT CSV
+            DELIMITER AS %(delimiter)s
+            BLANKSASNULL EMPTYASNULL
+            CREDENTIALS %(credentials)s
+            MAXERROR 0;"""
+                    ),
+                    {
+                        "credentials": "aws_access_key_id=bar;aws_secret_access_key=foo",
+                        "s3_url": (
+                            "s3://test_bucket/materialized_views/"
+                            "mvh_adgroup_structure/2016/07/03/mvh_adgroup_structure_asd.csv"
+                        ),
+                        "delimiter": "\t",
+                    },
+                ),
             ]
         )
