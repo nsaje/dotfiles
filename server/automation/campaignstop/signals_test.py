@@ -53,11 +53,11 @@ class NotifyAdGroupSettingsChangeTest(TestCase):
         self.ad_group = magic_mixer.blend(core.models.AdGroup)
         signals.connect_notify_ad_group_settings_change()
 
-    # @patch("automation.campaignstop.service.update_notifier.notify_ad_group_settings_change")
-    # def test_notify_ad_group_settings_change(self, mock_notify):
-    #     changes = {"end_date": dates_helper.local_today()}
-    #     self.ad_group.settings.update(None, **changes)
-    #     mock_notify.assert_called_with(ANY, changes)
+    @patch("automation.campaignstop.service.update_notifier.notify_ad_group_settings_change")
+    def test_notify_ad_group_settings_change(self, mock_notify):
+        changes = {"end_date": dates_helper.local_today()}
+        self.ad_group.settings.update(None, **changes)
+        mock_notify.assert_called_with(ANY, changes)
 
 
 class NotifyAdGroupSourceSettingsChangeTest(TestCase):

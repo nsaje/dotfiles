@@ -153,26 +153,26 @@ class CampaignBudgetsTest(RESTAPITest):
         )
         self.assertResponseError(r, "ValidationError")
 
-    # def test_campaigns_budgets_time_validation(self):
-    #     test_budget = self.budget_repr(
-    #         id=1,
-    #         creditId=861,
-    #         amount=decimal.Decimal("500.0000"),
-    #         startDate=datetime.date.today() - datetime.timedelta(days=1),
-    #         endDate=datetime.date.today() + datetime.timedelta(days=7),
-    #     )
-    #     r = self.client.post(
-    #         reverse("campaign_budgets_list", kwargs={"campaign_id": 608}), data=test_budget, format="json"
-    #     )
-    #     self.assertResponseError(r, "ValidationError")
-    #     test_budget = self.budget_repr(
-    #         id=1,
-    #         creditId=861,
-    #         amount=decimal.Decimal("500.0000"),
-    #         startDate=datetime.date.today() - datetime.timedelta(days=2),
-    #         endDate=datetime.date.today() - datetime.timedelta(days=1),
-    #     )
-    #     r = self.client.post(
-    #         reverse("campaign_budgets_list", kwargs={"campaign_id": 608}), data=test_budget, format="json"
-    #     )
-    #     self.assertResponseError(r, "ValidationError")
+    def test_campaigns_budgets_time_validation(self):
+        test_budget = self.budget_repr(
+            id=1,
+            creditId=861,
+            amount=decimal.Decimal("500.0000"),
+            startDate=datetime.date.today() - datetime.timedelta(days=1),
+            endDate=datetime.date.today() + datetime.timedelta(days=7),
+        )
+        r = self.client.post(
+            reverse("campaign_budgets_list", kwargs={"campaign_id": 608}), data=test_budget, format="json"
+        )
+        self.assertResponseError(r, "ValidationError")
+        test_budget = self.budget_repr(
+            id=1,
+            creditId=861,
+            amount=decimal.Decimal("500.0000"),
+            startDate=datetime.date.today() - datetime.timedelta(days=2),
+            endDate=datetime.date.today() - datetime.timedelta(days=1),
+        )
+        r = self.client.post(
+            reverse("campaign_budgets_list", kwargs={"campaign_id": 608}), data=test_budget, format="json"
+        )
+        self.assertResponseError(r, "ValidationError")

@@ -174,41 +174,41 @@ class CampaignDeliveryTestCase(test.TestCase):
             constants.CampaignDeliveryStatus.OK,
         )
 
-    # def test_active_ad_groups(self):
-    #     s = self.ad_group_settings.copy_settings()
-    #     s.state = dash.constants.AdGroupSettingsState.INACTIVE
-    #     s.save(None)
+    def test_active_ad_groups(self):
+        s = self.ad_group_settings.copy_settings()
+        s.state = dash.constants.AdGroupSettingsState.INACTIVE
+        s.save(None)
 
-    #     self.assertEqual(
-    #         delivery.check_campaign_delivery(
-    #             self.campaign, self.campaign.settings, self.stats_now, self.stats_prev, self.projections
-    #         ),
-    #         constants.CampaignDeliveryStatus.NO_ACTIVE_AD_GROUPS,
-    #     )
+        self.assertEqual(
+            delivery.check_campaign_delivery(
+                self.campaign, self.campaign.settings, self.stats_now, self.stats_prev, self.projections
+            ),
+            constants.CampaignDeliveryStatus.NO_ACTIVE_AD_GROUPS,
+        )
 
-    #     s = self.ad_group_settings.copy_settings()
-    #     s.state = dash.constants.AdGroupSettingsState.ACTIVE
-    #     s.end_date = s.start_date
-    #     s.save(None)
+        s = self.ad_group_settings.copy_settings()
+        s.state = dash.constants.AdGroupSettingsState.ACTIVE
+        s.end_date = s.start_date
+        s.save(None)
 
-    #     self.assertEqual(
-    #         delivery.check_campaign_delivery(
-    #             self.campaign, self.campaign.settings, self.stats_now, self.stats_prev, self.projections
-    #         ),
-    #         constants.CampaignDeliveryStatus.NO_ACTIVE_AD_GROUPS,
-    #     )
+        self.assertEqual(
+            delivery.check_campaign_delivery(
+                self.campaign, self.campaign.settings, self.stats_now, self.stats_prev, self.projections
+            ),
+            constants.CampaignDeliveryStatus.NO_ACTIVE_AD_GROUPS,
+        )
 
-    #     s = self.ad_group_settings.copy_settings()
-    #     s.state = dash.constants.AdGroupSettingsState.ACTIVE
-    #     s.end_date = None
-    #     s.save(None)
+        s = self.ad_group_settings.copy_settings()
+        s.state = dash.constants.AdGroupSettingsState.ACTIVE
+        s.end_date = None
+        s.save(None)
 
-    #     self.assertEqual(
-    #         delivery.check_campaign_delivery(
-    #             self.campaign, self.campaign.settings, self.stats_now, self.stats_prev, self.projections
-    #         ),
-    #         constants.CampaignDeliveryStatus.OK,
-    #     )
+        self.assertEqual(
+            delivery.check_campaign_delivery(
+                self.campaign, self.campaign.settings, self.stats_now, self.stats_prev, self.projections
+            ),
+            constants.CampaignDeliveryStatus.OK,
+        )
 
 
 class AdGroupDeliveryTestCase(test.TestCase):

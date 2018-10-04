@@ -89,50 +89,50 @@ class UpdateAlmostDepletedTestCase(TestCase):
         selection.mark_almost_depleted_campaigns()
         self.assertTrue(CampaignStopState.objects.filter(campaign=self.campaign).first().almost_depleted)
 
-    # @mock.patch("utils.dates_helper.utc_now", side_effect=mocked_morning_est_now)
-    # @mock.patch("utils.k1_helper.update_ad_groups", mock.MagicMock())
-    # def test_day_before_yesterday_is_used_when_in_critical_hours(self, _):
-    #     self.source.source_type.type = dash.constants.SourceType.B1
-    #     self.source.source_type.save()
-    #     self.ad_group.settings.update(None, b1_sources_group_enabled=True)
-    #     self.ad_group_source.settings.update_unsafe(None, state=dash.constants.AdGroupSourceSettingsState.INACTIVE)
-    #     self.assertEqual(self.ad_group_source.settings.state, dash.constants.AdGroupSourceSettingsState.INACTIVE)
+    @mock.patch("utils.dates_helper.utc_now", side_effect=mocked_morning_est_now)
+    @mock.patch("utils.k1_helper.update_ad_groups", mock.MagicMock())
+    def test_day_before_yesterday_is_used_when_in_critical_hours(self, _):
+        self.source.source_type.type = dash.constants.SourceType.B1
+        self.source.source_type.save()
+        self.ad_group.settings.update(None, b1_sources_group_enabled=True)
+        self.ad_group_source.settings.update_unsafe(None, state=dash.constants.AdGroupSourceSettingsState.INACTIVE)
+        self.assertEqual(self.ad_group_source.settings.state, dash.constants.AdGroupSourceSettingsState.INACTIVE)
 
-    #     today = dates_helper.local_today()
-    #     RealTimeDataHistory.objects.create(ad_group=self.ad_group, source=self.source, date=today, etfm_spend=10.0)
-    #     yesterday = dates_helper.local_yesterday()
-    #     RealTimeDataHistory.objects.create(ad_group=self.ad_group, source=self.source, date=yesterday, etfm_spend=100.0)
-    #     day_before_yesterday = dates_helper.days_before(yesterday, 1)
-    #     RealTimeDataHistory.objects.create(
-    #         ad_group=self.ad_group, source=self.source, date=day_before_yesterday, etfm_spend=1000.0
-    #     )
+        today = dates_helper.local_today()
+        RealTimeDataHistory.objects.create(ad_group=self.ad_group, source=self.source, date=today, etfm_spend=10.0)
+        yesterday = dates_helper.local_yesterday()
+        RealTimeDataHistory.objects.create(ad_group=self.ad_group, source=self.source, date=yesterday, etfm_spend=100.0)
+        day_before_yesterday = dates_helper.days_before(yesterday, 1)
+        RealTimeDataHistory.objects.create(
+            ad_group=self.ad_group, source=self.source, date=day_before_yesterday, etfm_spend=1000.0
+        )
 
-    #     self.assertFalse(CampaignStopState.objects.filter(campaign=self.campaign).first().almost_depleted)
-    #     selection.mark_almost_depleted_campaigns()
-    #     self.assertFalse(CampaignStopState.objects.filter(campaign=self.campaign).first().almost_depleted)
+        self.assertFalse(CampaignStopState.objects.filter(campaign=self.campaign).first().almost_depleted)
+        selection.mark_almost_depleted_campaigns()
+        self.assertFalse(CampaignStopState.objects.filter(campaign=self.campaign).first().almost_depleted)
 
-    # @mock.patch("utils.dates_helper.utc_now", side_effect=mocked_afternoon_est_now)
-    # @mock.patch("utils.k1_helper.update_ad_groups", mock.MagicMock())
-    # def test_daily_budget_cc_and_etfm_spend_do_not_set_almost_depleted_to_true(self, _):
-    #     active_adg = dash.constants.AdGroupSettingsState.ACTIVE
-    #     active_adg_source = dash.constants.AdGroupSourceSettingsState.ACTIVE
+    @mock.patch("utils.dates_helper.utc_now", side_effect=mocked_afternoon_est_now)
+    @mock.patch("utils.k1_helper.update_ad_groups", mock.MagicMock())
+    def test_daily_budget_cc_and_etfm_spend_do_not_set_almost_depleted_to_true(self, _):
+        active_adg = dash.constants.AdGroupSettingsState.ACTIVE
+        active_adg_source = dash.constants.AdGroupSourceSettingsState.ACTIVE
 
-    #     adg_setting_state = AdGroupSettings.objects.filter(ad_group=self.ad_group).first().state
-    #     self.assertEqual(adg_setting_state, active_adg)
-    #     adg_source_setting_state = (
-    #         AdGroupSourceSettings.objects.filter(ad_group_source=self.ad_group_source).first().state
-    #     )
-    #     self.assertEqual(adg_source_setting_state, active_adg_source)
+        adg_setting_state = AdGroupSettings.objects.filter(ad_group=self.ad_group).first().state
+        self.assertEqual(adg_setting_state, active_adg)
+        adg_source_setting_state = (
+            AdGroupSourceSettings.objects.filter(ad_group_source=self.ad_group_source).first().state
+        )
+        self.assertEqual(adg_source_setting_state, active_adg_source)
 
-    #     self.ad_group_source.settings.update_unsafe(None, daily_budget_cc=800)
-    #     today = dates_helper.local_today()
-    #     RealTimeDataHistory.objects.create(
-    #         ad_group=self.ad_group, source=self.source, date=today, etfm_spend=899.0 - config.THRESHOLD
-    #     )
+        self.ad_group_source.settings.update_unsafe(None, daily_budget_cc=800)
+        today = dates_helper.local_today()
+        RealTimeDataHistory.objects.create(
+            ad_group=self.ad_group, source=self.source, date=today, etfm_spend=899.0 - config.THRESHOLD
+        )
 
-    #     self.assertFalse(CampaignStopState.objects.filter(campaign=self.campaign).first().almost_depleted)
-    #     selection.mark_almost_depleted_campaigns()
-    #     self.assertFalse(CampaignStopState.objects.filter(campaign=self.campaign).first().almost_depleted)
+        self.assertFalse(CampaignStopState.objects.filter(campaign=self.campaign).first().almost_depleted)
+        selection.mark_almost_depleted_campaigns()
+        self.assertFalse(CampaignStopState.objects.filter(campaign=self.campaign).first().almost_depleted)
 
     @mock.patch("utils.dates_helper.utc_now", side_effect=mocked_afternoon_est_now)
     @mock.patch("utils.k1_helper.update_ad_groups", mock.MagicMock())

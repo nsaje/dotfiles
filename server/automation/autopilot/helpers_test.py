@@ -307,10 +307,10 @@ class AutopilotGetEntitiesTestCase(test.TestCase):
     def _find_in_result(self, result, ad_group_source):
         return result.get(ad_group_source.ad_group.campaign, {}).get(ad_group_source.ad_group, [])
 
-    # def test_adgroup_budget(self):
-    #     result = helpers.get_autopilot_entities()
-    #     self.assertIn(self.ad_group_source, self._find_in_result(result, self.ad_group_source))
-    #     self.assertIn(self.b1_ad_group_source, self._find_in_result(result, self.b1_ad_group_source))
+    def test_adgroup_budget(self):
+        result = helpers.get_autopilot_entities()
+        self.assertIn(self.ad_group_source, self._find_in_result(result, self.ad_group_source))
+        self.assertIn(self.b1_ad_group_source, self._find_in_result(result, self.b1_ad_group_source))
 
     @patch("automation.campaignstop.get_campaignstop_states")
     def test_campaign_stopped(self, mock_get_campaignstop_states):
@@ -323,24 +323,24 @@ class AutopilotGetEntitiesTestCase(test.TestCase):
         self.assertNotIn(self.ad_group_source, self._find_in_result(result, self.ad_group_source))
         self.assertNotIn(self.b1_ad_group_source, self._find_in_result(result, self.b1_ad_group_source))
 
-    # def test_adgroup_cpc(self):
-    #     self.ad_group_source.ad_group.settings.update_unsafe(
-    #         None, autopilot_state=constants.AdGroupSettingsAutopilotState.ACTIVE_CPC
-    #     )
+    def test_adgroup_cpc(self):
+        self.ad_group_source.ad_group.settings.update_unsafe(
+            None, autopilot_state=constants.AdGroupSettingsAutopilotState.ACTIVE_CPC
+        )
 
-    #     result = helpers.get_autopilot_entities()
-    #     self.assertIn(self.ad_group_source, self._find_in_result(result, self.ad_group_source))
-    #     self.assertIn(self.b1_ad_group_source, self._find_in_result(result, self.b1_ad_group_source))
+        result = helpers.get_autopilot_entities()
+        self.assertIn(self.ad_group_source, self._find_in_result(result, self.ad_group_source))
+        self.assertIn(self.b1_ad_group_source, self._find_in_result(result, self.b1_ad_group_source))
 
-    # def test_campaign_autopilot(self):
-    #     self.ad_group_source.ad_group.settings.update_unsafe(
-    #         None, autopilot_state=constants.AdGroupSettingsAutopilotState.INACTIVE
-    #     )
-    #     self.ad_group_source.ad_group.campaign.settings.update_unsafe(None, autopilot=True)
+    def test_campaign_autopilot(self):
+        self.ad_group_source.ad_group.settings.update_unsafe(
+            None, autopilot_state=constants.AdGroupSettingsAutopilotState.INACTIVE
+        )
+        self.ad_group_source.ad_group.campaign.settings.update_unsafe(None, autopilot=True)
 
-    #     result = helpers.get_autopilot_entities()
-    #     self.assertIn(self.ad_group_source, self._find_in_result(result, self.ad_group_source))
-    #     self.assertIn(self.b1_ad_group_source, self._find_in_result(result, self.b1_ad_group_source))
+        result = helpers.get_autopilot_entities()
+        self.assertIn(self.ad_group_source, self._find_in_result(result, self.ad_group_source))
+        self.assertIn(self.b1_ad_group_source, self._find_in_result(result, self.b1_ad_group_source))
 
     def test_one_campaign(self):
         result = helpers.get_autopilot_entities(campaign=self.ad_group_source.ad_group.campaign)
@@ -367,55 +367,55 @@ class AutopilotGetEntitiesTestCase(test.TestCase):
         self.assertIn(self.ad_group_source, self._find_in_result(result, self.ad_group_source))
         self.assertNotIn(self.b1_ad_group_source, self._find_in_result(result, self.b1_ad_group_source))
 
-    # def test_adgroup_inactive(self):
-    #     self.ad_group_source.ad_group.settings.update_unsafe(
-    #         None, autopilot_state=constants.AdGroupSettingsAutopilotState.INACTIVE
-    #     )
+    def test_adgroup_inactive(self):
+        self.ad_group_source.ad_group.settings.update_unsafe(
+            None, autopilot_state=constants.AdGroupSettingsAutopilotState.INACTIVE
+        )
 
-    #     result = helpers.get_autopilot_entities()
-    #     self.assertNotIn(self.ad_group_source, self._find_in_result(result, self.ad_group_source))
-    #     self.assertIn(self.b1_ad_group_source, self._find_in_result(result, self.b1_ad_group_source))
+        result = helpers.get_autopilot_entities()
+        self.assertNotIn(self.ad_group_source, self._find_in_result(result, self.ad_group_source))
+        self.assertIn(self.b1_ad_group_source, self._find_in_result(result, self.b1_ad_group_source))
 
-    # def test_adgroup_paused(self):
-    #     self.ad_group_source.ad_group.settings.update_unsafe(None, state=constants.AdGroupSettingsState.INACTIVE)
+    def test_adgroup_paused(self):
+        self.ad_group_source.ad_group.settings.update_unsafe(None, state=constants.AdGroupSettingsState.INACTIVE)
 
-    #     result = helpers.get_autopilot_entities()
-    #     self.assertNotIn(self.ad_group_source, self._find_in_result(result, self.ad_group_source))
-    #     self.assertIn(self.b1_ad_group_source, self._find_in_result(result, self.b1_ad_group_source))
+        result = helpers.get_autopilot_entities()
+        self.assertNotIn(self.ad_group_source, self._find_in_result(result, self.ad_group_source))
+        self.assertIn(self.b1_ad_group_source, self._find_in_result(result, self.b1_ad_group_source))
 
-    # def test_adgroup_past(self):
-    #     self.ad_group_source.ad_group.settings.update_unsafe(
-    #         None, end_date=dates_helper.day_before(dates_helper.local_today())
-    #     )
+    def test_adgroup_past(self):
+        self.ad_group_source.ad_group.settings.update_unsafe(
+            None, end_date=dates_helper.day_before(dates_helper.local_today())
+        )
 
-    #     result = helpers.get_autopilot_entities()
-    #     self.assertNotIn(self.ad_group_source, self._find_in_result(result, self.ad_group_source))
-    #     self.assertIn(self.b1_ad_group_source, self._find_in_result(result, self.b1_ad_group_source))
+        result = helpers.get_autopilot_entities()
+        self.assertNotIn(self.ad_group_source, self._find_in_result(result, self.ad_group_source))
+        self.assertIn(self.b1_ad_group_source, self._find_in_result(result, self.b1_ad_group_source))
 
-    # def test_adgroup_future(self):
-    #     self.ad_group_source.ad_group.settings.update_unsafe(
-    #         None, start_date=dates_helper.day_after(dates_helper.local_today())
-    #     )
+    def test_adgroup_future(self):
+        self.ad_group_source.ad_group.settings.update_unsafe(
+            None, start_date=dates_helper.day_after(dates_helper.local_today())
+        )
 
-    #     result = helpers.get_autopilot_entities()
-    #     self.assertNotIn(self.ad_group_source, self._find_in_result(result, self.ad_group_source))
-    #     self.assertIn(self.b1_ad_group_source, self._find_in_result(result, self.b1_ad_group_source))
+        result = helpers.get_autopilot_entities()
+        self.assertNotIn(self.ad_group_source, self._find_in_result(result, self.ad_group_source))
+        self.assertIn(self.b1_ad_group_source, self._find_in_result(result, self.b1_ad_group_source))
 
-    # def test_adgroup_paused_allrtb(self):
-    #     self.b1_ad_group_source.ad_group.settings.update_unsafe(
-    #         None, b1_sources_group_enabled=True, b1_sources_group_state=constants.AdGroupSourceSettingsState.INACTIVE
-    #     )
+    def test_adgroup_paused_allrtb(self):
+        self.b1_ad_group_source.ad_group.settings.update_unsafe(
+            None, b1_sources_group_enabled=True, b1_sources_group_state=constants.AdGroupSourceSettingsState.INACTIVE
+        )
 
-    #     result = helpers.get_autopilot_entities()
-    #     self.assertIn(self.ad_group_source, self._find_in_result(result, self.ad_group_source))
-    #     self.assertNotIn(self.b1_ad_group_source, self._find_in_result(result, self.b1_ad_group_source))
+        result = helpers.get_autopilot_entities()
+        self.assertIn(self.ad_group_source, self._find_in_result(result, self.ad_group_source))
+        self.assertNotIn(self.b1_ad_group_source, self._find_in_result(result, self.b1_ad_group_source))
 
-    # def test_adgroupsource_paused(self):
-    #     self.ad_group_source.settings.update_unsafe(None, state=constants.AdGroupSourceSettingsState.INACTIVE)
+    def test_adgroupsource_paused(self):
+        self.ad_group_source.settings.update_unsafe(None, state=constants.AdGroupSourceSettingsState.INACTIVE)
 
-    #     result = helpers.get_autopilot_entities()
-    #     self.assertNotIn(self.ad_group_source, self._find_in_result(result, self.ad_group_source))
-    #     self.assertIn(self.b1_ad_group_source, self._find_in_result(result, self.b1_ad_group_source))
+        result = helpers.get_autopilot_entities()
+        self.assertNotIn(self.ad_group_source, self._find_in_result(result, self.ad_group_source))
+        self.assertIn(self.b1_ad_group_source, self._find_in_result(result, self.b1_ad_group_source))
 
     def test_select_related(self):
         result = helpers.get_autopilot_entities()
