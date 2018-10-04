@@ -361,37 +361,37 @@ class InfoBoxAccountHelpersTest(TestCase):
     #     }
     #     self.assertEqual(mock_query.call_args[0], (["account_id"], constraints))
 
-    # @mock.patch("redshiftapi.api_breakdowns.query")
-    # def test_get_mtd_accounts_spend(self, mock_query):
-    #     mock_query.return_value = self.mock_stats_mtd
-    #     self.assertEqual(
-    #         {"e_media_cost": 100, "et_cost": 120, "etfm_cost": 140},
-    #         dash.infobox_helpers.get_mtd_accounts_spend(self.accounts, False),
-    #     )
+    @mock.patch("redshiftapi.api_breakdowns.query")
+    def test_get_mtd_accounts_spend(self, mock_query):
+        mock_query.return_value = self.mock_stats_mtd
+        self.assertEqual(
+            {"e_media_cost": 100, "et_cost": 120, "etfm_cost": 140},
+            dash.infobox_helpers.get_mtd_accounts_spend(self.accounts, False),
+        )
 
-    #     # local
-    #     self.assertEqual(
-    #         {"e_media_cost": 20, "et_cost": 40, "etfm_cost": 60},
-    #         dash.infobox_helpers.get_mtd_accounts_spend(self.accounts, True),
-    #     )
+        # local
+        self.assertEqual(
+            {"e_media_cost": 20, "et_cost": 40, "etfm_cost": 60},
+            dash.infobox_helpers.get_mtd_accounts_spend(self.accounts, True),
+        )
 
-    #     month_start = datetime.date.today().replace(day=1)
-    #     constraints = {"account_id": [account.id for account in self.accounts], "date__gte": month_start}
-    #     self.assertEqual(mock_query.call_args[0], (["account_id"], constraints))
+        month_start = datetime.date.today().replace(day=1)
+        constraints = {"account_id": [account.id for account in self.accounts], "date__gte": month_start}
+        self.assertEqual(mock_query.call_args[0], (["account_id"], constraints))
 
-    # @mock.patch("redshiftapi.api_breakdowns.query")
-    # def test_get_yesterday_account_spend(self, mock_query):
-    #     mock_query.return_value = [self.mock_stats_yesterday[0]]
-    #     account = self.accounts[0]
+    @mock.patch("redshiftapi.api_breakdowns.query")
+    def test_get_yesterday_account_spend(self, mock_query):
+        mock_query.return_value = [self.mock_stats_yesterday[0]]
+        account = self.accounts[0]
 
-    #     self.assertEqual(
-    #         {"e_yesterday_cost": 10, "yesterday_et_cost": 20, "yesterday_etfm_cost": 30},
-    #         dash.infobox_helpers.get_yesterday_account_spend(account),
-    #     )
+        self.assertEqual(
+            {"e_yesterday_cost": 10, "yesterday_et_cost": 20, "yesterday_etfm_cost": 30},
+            dash.infobox_helpers.get_yesterday_account_spend(account),
+        )
 
-    #     yesterday = datetime.date.today() - datetime.timedelta(days=1)
-    #     constraints = {"account_id": [account.id], "date__gte": yesterday, "date__lte": yesterday}
-    #     self.assertEqual(mock_query.call_args[0], (["account_id"], constraints))
+        yesterday = datetime.date.today() - datetime.timedelta(days=1)
+        constraints = {"account_id": [account.id], "date__gte": yesterday, "date__lte": yesterday}
+        self.assertEqual(mock_query.call_args[0], (["account_id"], constraints))
 
     # def test_count_active_accounts(self):
     #     today = datetime.datetime.utcnow()
@@ -767,37 +767,37 @@ class InfoBoxAccountHelpersTest(TestCase):
     #         dash.constants.InfoboxStatus.STOPPED, dash.infobox_helpers.get_campaign_running_status(campaign)
     #     )
 
-    # def test_get_account_running_status(self):
-    #     campaign = dash.models.Campaign.objects.get(pk=1)
-    #     ad_group = dash.models.AdGroup.objects.get(pk=1)
-    #     self.assertEqual(
-    #         dash.constants.InfoboxStatus.INACTIVE, dash.infobox_helpers.get_account_running_status(campaign.account)
-    #     )
+    def test_get_account_running_status(self):
+        campaign = dash.models.Campaign.objects.get(pk=1)
+        ad_group = dash.models.AdGroup.objects.get(pk=1)
+        self.assertEqual(
+            dash.constants.InfoboxStatus.INACTIVE, dash.infobox_helpers.get_account_running_status(campaign.account)
+        )
 
-    #     start_date = datetime.datetime.today().date()
-    #     end_date = start_date + datetime.timedelta(days=99)
-    #     ad_group.settings.update_unsafe(
-    #         None, start_date=start_date, end_date=end_date, state=dash.constants.AdGroupSettingsState.ACTIVE
-    #     )
+        start_date = datetime.datetime.today().date()
+        end_date = start_date + datetime.timedelta(days=99)
+        ad_group.settings.update_unsafe(
+            None, start_date=start_date, end_date=end_date, state=dash.constants.AdGroupSettingsState.ACTIVE
+        )
 
-    #     source_settings = dash.models.AdGroupSourceSettings.objects.filter(ad_group_source__ad_group=ad_group).all()[:1]
-    #     for agss in source_settings:
-    #         new_agss = agss.copy_settings()
-    #         new_agss.state = dash.constants.AdGroupSourceSettingsState.ACTIVE
-    #         new_agss.save(None)
+        source_settings = dash.models.AdGroupSourceSettings.objects.filter(ad_group_source__ad_group=ad_group).all()[:1]
+        for agss in source_settings:
+            new_agss = agss.copy_settings()
+            new_agss.state = dash.constants.AdGroupSourceSettingsState.ACTIVE
+            new_agss.save(None)
 
-    #     self.assertEqual(
-    #         dash.constants.InfoboxStatus.ACTIVE, dash.infobox_helpers.get_account_running_status(campaign.account)
-    #     )
+        self.assertEqual(
+            dash.constants.InfoboxStatus.ACTIVE, dash.infobox_helpers.get_account_running_status(campaign.account)
+        )
 
-    #     for adg in dash.models.AdGroup.objects.filter(campaign__account=campaign.account):
-    #         adg_settings = adg.get_current_settings().copy_settings()
-    #         adg_settings.state = dash.constants.AdGroupSettingsState.INACTIVE
-    #         adg_settings.save(None)
+        for adg in dash.models.AdGroup.objects.filter(campaign__account=campaign.account):
+            adg_settings = adg.get_current_settings().copy_settings()
+            adg_settings.state = dash.constants.AdGroupSettingsState.INACTIVE
+            adg_settings.save(None)
 
-    #     self.assertEqual(
-    #         dash.constants.InfoboxStatus.STOPPED, dash.infobox_helpers.get_account_running_status(campaign.account)
-    #     )
+        self.assertEqual(
+            dash.constants.InfoboxStatus.STOPPED, dash.infobox_helpers.get_account_running_status(campaign.account)
+        )
 
 
 class AllAccountsInfoboxHelpersTest(TestCase):
@@ -865,43 +865,43 @@ class AllAccountsInfoboxHelpersTest(TestCase):
     def test_calculate_daily_account_cap_expired(self, _):
         self.assertEqual(0, dash.infobox_helpers.calculate_daily_account_cap(self.account_local))
 
-    # def test_calculate_allocated_and_available_credit(self):
-    #     account = dash.models.Account.objects.get(pk=1)
-    #     campaign = dash.models.Campaign.objects.get(pk=1)
-    #     allocated_credit, available_credit = dash.infobox_helpers.calculate_allocated_and_available_credit(account)
-    #     self.assertEqual(0, available_credit)
-    #     self.assertEqual(0, allocated_credit)
+    def test_calculate_allocated_and_available_credit(self):
+        account = dash.models.Account.objects.get(pk=1)
+        campaign = dash.models.Campaign.objects.get(pk=1)
+        allocated_credit, available_credit = dash.infobox_helpers.calculate_allocated_and_available_credit(account)
+        self.assertEqual(0, available_credit)
+        self.assertEqual(0, allocated_credit)
 
-    #     user = zemauth.models.User.objects.get(pk=1)
-    #     start_date = datetime.datetime.today().date()
-    #     end_date = start_date + datetime.timedelta(days=99)
-    #     credit = dash.models.CreditLineItem.objects.create_unsafe(
-    #         account=account,
-    #         start_date=start_date,
-    #         end_date=end_date,
-    #         amount=100,
-    #         status=dash.constants.CreditLineItemStatus.SIGNED,
-    #         created_by=user,
-    #     )
+        user = zemauth.models.User.objects.get(pk=1)
+        start_date = datetime.datetime.today().date()
+        end_date = start_date + datetime.timedelta(days=99)
+        credit = dash.models.CreditLineItem.objects.create_unsafe(
+            account=account,
+            start_date=start_date,
+            end_date=end_date,
+            amount=100,
+            status=dash.constants.CreditLineItemStatus.SIGNED,
+            created_by=user,
+        )
 
-    #     allocated_credit, available_credit = dash.infobox_helpers.calculate_allocated_and_available_credit(account)
-    #     self.assertEqual(100, available_credit)
+        allocated_credit, available_credit = dash.infobox_helpers.calculate_allocated_and_available_credit(account)
+        self.assertEqual(100, available_credit)
 
-    #     dash.models.BudgetLineItem.objects.create_unsafe(
-    #         campaign=campaign, credit=credit, amount=40, start_date=start_date, end_date=end_date, created_by=user
-    #     )
+        dash.models.BudgetLineItem.objects.create_unsafe(
+            campaign=campaign, credit=credit, amount=40, start_date=start_date, end_date=end_date, created_by=user
+        )
 
-    #     allocated_credit, available_credit = dash.infobox_helpers.calculate_allocated_and_available_credit(account)
-    #     self.assertEqual(40, allocated_credit)
-    #     self.assertEqual(60, available_credit)
+        allocated_credit, available_credit = dash.infobox_helpers.calculate_allocated_and_available_credit(account)
+        self.assertEqual(40, allocated_credit)
+        self.assertEqual(60, available_credit)
 
-    #     dash.models.BudgetLineItem.objects.create_unsafe(
-    #         campaign=campaign, credit=credit, amount=60, start_date=start_date, end_date=end_date, created_by=user
-    #     )
+        dash.models.BudgetLineItem.objects.create_unsafe(
+            campaign=campaign, credit=credit, amount=60, start_date=start_date, end_date=end_date, created_by=user
+        )
 
-    #     allocated_credit, available_credit = dash.infobox_helpers.calculate_allocated_and_available_credit(account)
-    #     self.assertEqual(100, allocated_credit)
-    #     self.assertEqual(00, available_credit)
+        allocated_credit, available_credit = dash.infobox_helpers.calculate_allocated_and_available_credit(account)
+        self.assertEqual(100, allocated_credit)
+        self.assertEqual(00, available_credit)
 
     def test_calculate_allocated_and_available_credit_local_currency(self):
         allocated_credit, available_credit = dash.infobox_helpers.calculate_allocated_and_available_credit(
