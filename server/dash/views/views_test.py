@@ -6,6 +6,7 @@ import datetime
 import decimal
 
 from django.test import TestCase, Client, RequestFactory
+from django.core import mail
 from django.test.utils import override_settings
 from django.http.request import HttpRequest
 from django.core.urlresolvers import reverse
@@ -19,6 +20,7 @@ from dash.views import views
 from dash import history_helpers
 
 from utils import exc
+from utils import test_helper
 from utils.magic_mixer import magic_mixer
 
 import core.models.source_type.model

@@ -13,6 +13,7 @@ import dash.infobox_helpers
 
 from utils import dates_helper
 from utils.magic_mixer import magic_mixer
+from django.test.client import RequestFactory
 
 
 class InfoBoxHelpersTest(TestCase):
