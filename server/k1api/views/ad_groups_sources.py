@@ -99,6 +99,8 @@ class AdGroupSourcesView(K1APIView):
                 "cpc_cc": format(cpc_cc, ".4f"),
                 "daily_budget_cc": format(daily_budget_cc, ".4f"),
             }
+            if ad_group_source.ad_review_only:
+                source["ad_review_only"] = True
             ad_group_source_dicts.append(source)
 
         return self.response_ok(ad_group_source_dicts)
