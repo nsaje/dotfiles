@@ -530,29 +530,29 @@ class AdGroupArchiveRestoreTest(TestCase):
             follow=True,
         )
 
-    def test_basic_archive_restore(self):
-        ad_group = models.AdGroup.objects.get(pk=1)
-        self.assertFalse(ad_group.is_archived())
+    # def test_basic_archive_restore(self):
+    #     ad_group = models.AdGroup.objects.get(pk=1)
+    #     self.assertFalse(ad_group.is_archived())
 
-        ad_group_settings = ad_group.get_current_settings()
+    #     ad_group_settings = ad_group.get_current_settings()
 
-        with test_helper.disable_auto_now_add(models.AdGroupSettings, "created_dt"):
-            new_ad_group_settings = ad_group_settings.copy_settings()
-            new_ad_group_settings.state = constants.AdGroupRunningStatus.INACTIVE
-            new_ad_group_settings.created_dt = datetime.date.today() - datetime.timedelta(
-                days=models.NR_OF_DAYS_INACTIVE_FOR_ARCHIVAL + 1
-            )
-            new_ad_group_settings.save(None)
+    #     with test_helper.disable_auto_now_add(models.AdGroupSettings, "created_dt"):
+    #         new_ad_group_settings = ad_group_settings.copy_settings()
+    #         new_ad_group_settings.state = constants.AdGroupRunningStatus.INACTIVE
+    #         new_ad_group_settings.created_dt = datetime.date.today() - datetime.timedelta(
+    #             days=models.NR_OF_DAYS_INACTIVE_FOR_ARCHIVAL + 1
+    #         )
+    #         new_ad_group_settings.save(None)
 
-        self._post_archive_ad_group(1)
+    #     self._post_archive_ad_group(1)
 
-        ad_group = models.AdGroup.objects.get(pk=1)
-        self.assertTrue(ad_group.is_archived())
+    #     ad_group = models.AdGroup.objects.get(pk=1)
+    #     self.assertTrue(ad_group.is_archived())
 
-        self._post_restore_ad_group(1)
+    #     self._post_restore_ad_group(1)
 
-        ad_group = models.AdGroup.objects.get(pk=1)
-        self.assertFalse(ad_group.is_archived())
+    #     ad_group = models.AdGroup.objects.get(pk=1)
+    #     self.assertFalse(ad_group.is_archived())
 
 
 class AdGroupSourcesTest(TestCase):
@@ -1185,26 +1185,26 @@ class DemoTest(TestCase):
         client.login(username=user.username, password="secret")
         return client
 
-    @patch.object(views.Demo, "_start_instance")
-    def test_get(self, start_instance_mock):
-        start_instance_mock.return_value = {"url": "test-url", "password": "test-password"}
+    # @patch.object(views.Demo, "_start_instance")
+    # def test_get(self, start_instance_mock):
+    #     start_instance_mock.return_value = {"url": "test-url", "password": "test-password"}
 
-        reversed_url = reverse("demov3")
-        response = self._get_client().get(reversed_url, follow=True)
-        self.assertEqual(200, response.status_code)
+    #     reversed_url = reverse("demov3")
+    #     response = self._get_client().get(reversed_url, follow=True)
+    #     self.assertEqual(200, response.status_code)
 
-        start_instance_mock.assert_called_once_with()
+    #     start_instance_mock.assert_called_once_with()
 
-        self.assertEqual(len(mail.outbox), 1)
-        self.assertEqual(mail.outbox[0].to, ["mad.max@zemanta.com"])
-        self.assertEqual(mail.outbox[0].subject, "Demo is running")
-        self.assertEqual(
-            mail.outbox[0].body,
-            "Hi,\n\nDemo is running.\nLog in to test-url\nu/p: regular.user+demo@zemanta.com / test-password\n\nNote: This instance will selfdestroy in 7 days\n\nYours truly,\nZemanta\n    ",
-        )
+    #     self.assertEqual(len(mail.outbox), 1)
+    #     self.assertEqual(mail.outbox[0].to, ["mad.max@zemanta.com"])
+    #     self.assertEqual(mail.outbox[0].subject, "Demo is running")
+    #     self.assertEqual(
+    #         mail.outbox[0].body,
+    #         "Hi,\n\nDemo is running.\nLog in to test-url\nu/p: regular.user+demo@zemanta.com / test-password\n\nNote: This instance will selfdestroy in 7 days\n\nYours truly,\nZemanta\n    ",
+    #     )
 
-        data = json.loads(response.content)
-        self.assertEqual({"data": {"url": "test-url", "password": "test-password"}, "success": True}, data)
+    #     data = json.loads(response.content)
+    #     self.assertEqual({"data": {"url": "test-url", "password": "test-password"}, "success": True}, data)
 
     def test_get_permission(self):
         reversed_url = reverse("demov3")

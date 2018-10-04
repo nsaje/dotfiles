@@ -752,40 +752,40 @@ class AdGroupSettingsTest(TestCase):
 
             self.assertNotEqual(response_settings_dict["max_cpm"], "1.600")
 
-    def test_deactivate_no_validation(self):
-        ad_group = models.AdGroup.objects.get(pk=1)
-        add_permissions(self.user, ["settings_view"])
+    # def test_deactivate_no_validation(self):
+    #     ad_group = models.AdGroup.objects.get(pk=1)
+    #     add_permissions(self.user, ["settings_view"])
 
-        self.settings_dict["settings"]["state"] = constants.AdGroupSettingsState.INACTIVE
-        ok_cpc = self.settings_dict["settings"]["cpc_cc"]
-        self.settings_dict["settings"]["cpc_cc"] = "5000"
-        response = self.client.put(
-            reverse("ad_group_settings", kwargs={"ad_group_id": ad_group.id}),
-            json.dumps(self.settings_dict),
-            follow=True,
-        )
-        self.assertEqual(response.status_code, 400)
+    #     self.settings_dict["settings"]["state"] = constants.AdGroupSettingsState.INACTIVE
+    #     ok_cpc = self.settings_dict["settings"]["cpc_cc"]
+    #     self.settings_dict["settings"]["cpc_cc"] = "5000"
+    #     response = self.client.put(
+    #         reverse("ad_group_settings", kwargs={"ad_group_id": ad_group.id}),
+    #         json.dumps(self.settings_dict),
+    #         follow=True,
+    #     )
+    #     self.assertEqual(response.status_code, 400)
 
-        self.settings_dict["settings"]["cpc_cc"] = ok_cpc
-        ad_group.settings.update_unsafe(None, cpc_cc=Decimal(5000))
-        response = self.client.put(
-            reverse("ad_group_settings", kwargs={"ad_group_id": ad_group.id}),
-            json.dumps(self.settings_dict),
-            follow=True,
-        )
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(ad_group.get_current_settings().cpc_cc, Decimal(5000))
-        self.assertEqual(ad_group.get_current_settings().state, constants.AdGroupSettingsState.INACTIVE)
+    #     self.settings_dict["settings"]["cpc_cc"] = ok_cpc
+    #     ad_group.settings.update_unsafe(None, cpc_cc=Decimal(5000))
+    #     response = self.client.put(
+    #         reverse("ad_group_settings", kwargs={"ad_group_id": ad_group.id}),
+    #         json.dumps(self.settings_dict),
+    #         follow=True,
+    #     )
+    #     self.assertEqual(response.status_code, 200)
+    #     self.assertEqual(ad_group.get_current_settings().cpc_cc, Decimal(5000))
+    #     self.assertEqual(ad_group.get_current_settings().state, constants.AdGroupSettingsState.INACTIVE)
 
-        self.settings_dict["settings"]["state"] = constants.AdGroupSettingsState.ACTIVE
-        response = self.client.put(
-            reverse("ad_group_settings", kwargs={"ad_group_id": ad_group.id}),
-            json.dumps(self.settings_dict),
-            follow=True,
-        )
-        self.assertEqual(response.status_code, 400)
-        self.assertEqual(ad_group.get_current_settings().cpc_cc, Decimal(5000))
-        self.assertEqual(ad_group.get_current_settings().state, constants.AdGroupSettingsState.INACTIVE)
+    #     self.settings_dict["settings"]["state"] = constants.AdGroupSettingsState.ACTIVE
+    #     response = self.client.put(
+    #         reverse("ad_group_settings", kwargs={"ad_group_id": ad_group.id}),
+    #         json.dumps(self.settings_dict),
+    #         follow=True,
+    #     )
+    #     self.assertEqual(response.status_code, 400)
+    #     self.assertEqual(ad_group.get_current_settings().cpc_cc, Decimal(5000))
+    #     self.assertEqual(ad_group.get_current_settings().state, constants.AdGroupSettingsState.INACTIVE)
 
     @patch.object(core.models.source_type.model.SourceType, "get_etfm_max_daily_budget", return_value=89.77)
     @patch.object(core.models.source_type.model.SourceType, "get_etfm_min_daily_budget", return_value=7.11)
@@ -830,39 +830,39 @@ class AdGroupSettingsTest(TestCase):
         self.assertEqual(json_data["error_code"], "ValidationError")
         self.assertTrue("89" in json_data["errors"]["b1_sources_group_daily_budget"][0])
 
-    def test_put_bidding_type(self):
-        ad_group = models.AdGroup.objects.get(pk=1)
-        add_permissions(self.user, ["settings_view", "fea_can_use_cpm_buying"])
-        self.assertEqual(constants.BiddingType.CPC, ad_group.bidding_type)
+    # def test_put_bidding_type(self):
+    #     ad_group = models.AdGroup.objects.get(pk=1)
+    #     add_permissions(self.user, ["settings_view", "fea_can_use_cpm_buying"])
+    #     self.assertEqual(constants.BiddingType.CPC, ad_group.bidding_type)
 
-        self.settings_dict["settings"]["bidding_type"] = constants.BiddingType.CPM
-        response = self.client.put(
-            reverse("ad_group_settings", kwargs={"ad_group_id": ad_group.id}),
-            json.dumps(self.settings_dict),
-            follow=True,
-        )
-        json_data = json.loads(response.content)["data"]
-        ad_group.refresh_from_db()
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(constants.BiddingType.CPM, ad_group.bidding_type)
-        self.assertEqual(constants.BiddingType.CPM, json_data["settings"]["bidding_type"])
+    #     self.settings_dict["settings"]["bidding_type"] = constants.BiddingType.CPM
+    #     response = self.client.put(
+    #         reverse("ad_group_settings", kwargs={"ad_group_id": ad_group.id}),
+    #         json.dumps(self.settings_dict),
+    #         follow=True,
+    #     )
+    #     json_data = json.loads(response.content)["data"]
+    #     ad_group.refresh_from_db()
+    #     self.assertEqual(response.status_code, 200)
+    #     self.assertEqual(constants.BiddingType.CPM, ad_group.bidding_type)
+    #     self.assertEqual(constants.BiddingType.CPM, json_data["settings"]["bidding_type"])
 
-    def test_put_bidding_type_no_permission(self):
-        ad_group = models.AdGroup.objects.get(pk=1)
-        add_permissions(self.user, ["settings_view"])
-        self.assertEqual(constants.BiddingType.CPC, ad_group.bidding_type)
+    # def test_put_bidding_type_no_permission(self):
+    #     ad_group = models.AdGroup.objects.get(pk=1)
+    #     add_permissions(self.user, ["settings_view"])
+    #     self.assertEqual(constants.BiddingType.CPC, ad_group.bidding_type)
 
-        self.settings_dict["settings"]["bidding_type"] = constants.BiddingType.CPM
-        response = self.client.put(
-            reverse("ad_group_settings", kwargs={"ad_group_id": ad_group.id}),
-            json.dumps(self.settings_dict),
-            follow=True,
-        )
-        json_data = json.loads(response.content)["data"]
-        ad_group.refresh_from_db()
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(constants.BiddingType.CPC, ad_group.bidding_type)
-        self.assertEqual(constants.BiddingType.CPC, json_data["settings"]["bidding_type"])
+    #     self.settings_dict["settings"]["bidding_type"] = constants.BiddingType.CPM
+    #     response = self.client.put(
+    #         reverse("ad_group_settings", kwargs={"ad_group_id": ad_group.id}),
+    #         json.dumps(self.settings_dict),
+    #         follow=True,
+    #     )
+    #     json_data = json.loads(response.content)["data"]
+    #     ad_group.refresh_from_db()
+    #     self.assertEqual(response.status_code, 200)
+    #     self.assertEqual(constants.BiddingType.CPC, ad_group.bidding_type)
+    #     self.assertEqual(constants.BiddingType.CPC, json_data["settings"]["bidding_type"])
 
     def test_put_bidding_type_activated_ad_group(self):
         ad_group = models.AdGroup.objects.get(pk=1)
@@ -2108,27 +2108,27 @@ class UserActivationTest(TestCase):
         response = self.client.post(url)
         self.assertEqual(response.status_code, 401)
 
-    def test_send_mail(self):
-        request = HttpRequest()
-        request.user = User(id=1)
+    # def test_send_mail(self):
+    #     request = HttpRequest()
+    #     request.user = User(id=1)
 
-        data = {}
+    #     data = {}
 
-        add_permissions(self.user, ["account_agency_access_permissions"])
-        response = self.client.post(
-            reverse("account_user_action", kwargs={"account_id": 1, "user_id": 1, "action": "activate"}),
-            data,
-            follow=True,
-        )
+    #     add_permissions(self.user, ["account_agency_access_permissions"])
+    #     response = self.client.post(
+    #         reverse("account_user_action", kwargs={"account_id": 1, "user_id": 1, "action": "activate"}),
+    #         data,
+    #         follow=True,
+    #     )
 
-        decoded_response = json.loads(response.content)
-        self.assertTrue(decoded_response.get("success"))
+    #     decoded_response = json.loads(response.content)
+    #     self.assertTrue(decoded_response.get("success"))
 
-        self.assertGreater(len(mail.outbox), 0, "Successfully sent mail.")
+    #     self.assertGreater(len(mail.outbox), 0, "Successfully sent mail.")
 
-        sent_mail = mail.outbox[0]
-        self.assertEqual("Welcome to Zemanta!", sent_mail.subject, "Title must match activation mail")
-        self.assertTrue(self.user.email in sent_mail.recipients())
+    #     sent_mail = mail.outbox[0]
+    #     self.assertEqual("Welcome to Zemanta!", sent_mail.subject, "Title must match activation mail")
+    #     self.assertTrue(self.user.email in sent_mail.recipients())
 
     @patch("utils.email_helper.send_email_to_new_user")  # , mock=Mock(side_effect=User.DoesNotExist))
     def test_send_mail_failure(self, mock):
@@ -3882,49 +3882,50 @@ class UserEnableRESTAPIAccessTest(TestCase):
         )
         self.assertEqual(401, response.status_code)
 
-    @patch("utils.email_helper.send_official_email")
-    def test_enable_api(self, mocking_email):
-        client = self._get_client_with_permissions(["can_manage_restapi_access"])
-        client_user = User.objects.get(pk=2)
-        user = User.objects.get(pk=3)
-        user.first_name = "TestUser First Name"
-        user.save()
-        account = models.Account.objects.get(pk=1000)
-        account.users.add(user)
-        account.users.add(client_user)
-        perm = Permission.objects.get(codename="can_use_restapi")
-        group = authmodels.Group.objects.create(name="api_access_group")
-        group.permissions.add(perm)
-        self.assertFalse(user.has_perm("zemauth.can_use_restapi"))
 
-        response = client.post(
-            reverse("account_user_action", kwargs={"account_id": 1000, "user_id": 3, "action": "enable_api"})
-        )
-        user = User.objects.get(pk=3)
+#     @patch("utils.email_helper.send_official_email")
+#     def test_enable_api(self, mocking_email):
+#         client = self._get_client_with_permissions(["can_manage_restapi_access"])
+#         client_user = User.objects.get(pk=2)
+#         user = User.objects.get(pk=3)
+#         user.first_name = "TestUser First Name"
+#         user.save()
+#         account = models.Account.objects.get(pk=1000)
+#         account.users.add(user)
+#         account.users.add(client_user)
+#         perm = Permission.objects.get(codename="can_use_restapi")
+#         group = authmodels.Group.objects.create(name="api_access_group")
+#         group.permissions.add(perm)
+#         self.assertFalse(user.has_perm("zemauth.can_use_restapi"))
 
-        self.assertEqual(200, response.status_code)
-        self.assertIn(user, authmodels.Group.objects.get(permissions=perm).user_set.all())
-        self.assertTrue(user.has_perm("zemauth.can_use_restapi"))
-        self.assertTrue(mocking_email.called)
-        args = {
-            "agency_or_user": user,
-            "subject": "User was granted REST API access",
-            "body": """
-Hello TestUser First Name,
+#         response = client.post(
+#             reverse("account_user_action", kwargs={"account_id": 1000, "user_id": 3, "action": "enable_api"})
+#         )
+#         user = User.objects.get(pk=3)
 
-You are now able to use the <a href="http://dev.zemanta.com/one/api/">Zemanta REST API</a>.
-As mentioned in our <a href="http://dev.zemanta.com/one/api/">documentation</a>, the first step is to register
-your application. Click on this <a href="https://one.zemanta.com/o/applications/register/">link</a> to do it now!
+#         self.assertEqual(200, response.status_code)
+#         self.assertIn(user, authmodels.Group.objects.get(permissions=perm).user_set.all())
+#         self.assertTrue(user.has_perm("zemauth.can_use_restapi"))
+#         self.assertTrue(mocking_email.called)
+#         args = {
+#             "agency_or_user": user,
+#             "subject": "User was granted REST API access",
+#             "body": """
+# Hello TestUser First Name,
 
-Make good use of it!
+# You are now able to use the <a href="http://dev.zemanta.com/one/api/">Zemanta REST API</a>.
+# As mentioned in our <a href="http://dev.zemanta.com/one/api/">documentation</a>, the first step is to register
+# your application. Click on this <a href="https://one.zemanta.com/o/applications/register/">link</a> to do it now!
 
-Yours truly,
-Zemanta""",
-            "additional_recipients": [],
-            "tags": ["USER_ENABLE_RESTAPI"],
-            "recipient_list": ["john@test.com"],
-        }
-        mocking_email.assert_called_with(**args)
+# Make good use of it!
+
+# Yours truly,
+# Zemanta""",
+#             "additional_recipients": [],
+#             "tags": ["USER_ENABLE_RESTAPI"],
+#             "recipient_list": ["john@test.com"],
+#         }
+#         mocking_email.assert_called_with(**args)
 
 
 class CampaignContentInsightsTest(TestCase):
