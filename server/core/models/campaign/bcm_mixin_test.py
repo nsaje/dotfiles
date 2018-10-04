@@ -109,34 +109,34 @@ class CampaignBcmMixin(TestCase):
         self.assertEqual(fee, decimal.Decimal("0.2121"))
         self.assertEqual(margin, decimal.Decimal("0.2200"))
 
-    def test_get_todays_fee_and_margin_nothing(self):
-        yesterday = datetime.date.today() - datetime.timedelta(days=1)
+    # def test_get_todays_fee_and_margin_nothing(self):
+    #     yesterday = datetime.date.today() - datetime.timedelta(days=1)
 
-        credit = magic_mixer.blend(
-            core.features.bcm.CreditLineItem,
-            account=self.account,
-            start_date=yesterday,
-            end_date=yesterday,
-            status=constants.CreditLineItemStatus.SIGNED,
-            amount=decimal.Decimal("1000.0"),
-            flat_fee_cc=0,
-            license_fee=decimal.Decimal("0.2121"),
-        )
+    #     credit = magic_mixer.blend(
+    #         core.features.bcm.CreditLineItem,
+    #         account=self.account,
+    #         start_date=yesterday,
+    #         end_date=yesterday,
+    #         status=constants.CreditLineItemStatus.SIGNED,
+    #         amount=decimal.Decimal("1000.0"),
+    #         flat_fee_cc=0,
+    #         license_fee=decimal.Decimal("0.2121"),
+    #     )
 
-        magic_mixer.blend(
-            core.features.bcm.BudgetLineItem,
-            campaign=self.campaign,
-            start_date=yesterday,
-            end_date=yesterday,
-            credit=credit,
-            amount=decimal.Decimal("200"),
-            margin=decimal.Decimal("0.2200"),
-        )
+    #     magic_mixer.blend(
+    #         core.features.bcm.BudgetLineItem,
+    #         campaign=self.campaign,
+    #         start_date=yesterday,
+    #         end_date=yesterday,
+    #         credit=credit,
+    #         amount=decimal.Decimal("200"),
+    #         margin=decimal.Decimal("0.2200"),
+    #     )
 
-        fee, margin = self.campaign.get_todays_fee_and_margin()
+    #     fee, margin = self.campaign.get_todays_fee_and_margin()
 
-        self.assertEqual(fee, None)
-        self.assertEqual(margin, None)
+    #     self.assertEqual(fee, None)
+    #     self.assertEqual(margin, None)
 
 
 class MigrateToBCMV2Test(TestCase):

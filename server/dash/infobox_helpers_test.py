@@ -339,27 +339,27 @@ class InfoBoxAccountHelpersTest(TestCase):
             },
         ]
 
-    @mock.patch("redshiftapi.api_breakdowns.query")
-    def test_get_yesterday_accounts_spend(self, mock_query):
-        mock_query.return_value = self.mock_stats_yesterday
-        self.assertEqual(
-            {"e_yesterday_cost": 100, "yesterday_et_cost": 120, "yesterday_etfm_cost": 140},
-            dash.infobox_helpers.get_yesterday_accounts_spend(self.accounts, False),
-        )
+    # @mock.patch("redshiftapi.api_breakdowns.query")
+    # def test_get_yesterday_accounts_spend(self, mock_query):
+    #     mock_query.return_value = self.mock_stats_yesterday
+    #     self.assertEqual(
+    #         {"e_yesterday_cost": 100, "yesterday_et_cost": 120, "yesterday_etfm_cost": 140},
+    #         dash.infobox_helpers.get_yesterday_accounts_spend(self.accounts, False),
+    #     )
 
-        # local
-        self.assertEqual(
-            {"e_yesterday_cost": 20, "yesterday_et_cost": 40, "yesterday_etfm_cost": 60},
-            dash.infobox_helpers.get_yesterday_accounts_spend(self.accounts, True),
-        )
+    #     # local
+    #     self.assertEqual(
+    #         {"e_yesterday_cost": 20, "yesterday_et_cost": 40, "yesterday_etfm_cost": 60},
+    #         dash.infobox_helpers.get_yesterday_accounts_spend(self.accounts, True),
+    #     )
 
-        yesterday = datetime.date.today() - datetime.timedelta(days=1)
-        constraints = {
-            "account_id": [account.id for account in self.accounts],
-            "date__gte": yesterday,
-            "date__lte": yesterday,
-        }
-        self.assertEqual(mock_query.call_args[0], (["account_id"], constraints))
+    #     yesterday = datetime.date.today() - datetime.timedelta(days=1)
+    #     constraints = {
+    #         "account_id": [account.id for account in self.accounts],
+    #         "date__gte": yesterday,
+    #         "date__lte": yesterday,
+    #     }
+    #     self.assertEqual(mock_query.call_args[0], (["account_id"], constraints))
 
     @mock.patch("redshiftapi.api_breakdowns.query")
     def test_get_mtd_accounts_spend(self, mock_query):
@@ -393,50 +393,50 @@ class InfoBoxAccountHelpersTest(TestCase):
         constraints = {"account_id": [account.id], "date__gte": yesterday, "date__lte": yesterday}
         self.assertEqual(mock_query.call_args[0], (["account_id"], constraints))
 
-    def test_count_active_accounts(self):
-        today = datetime.datetime.utcnow()
+    # def test_count_active_accounts(self):
+    #     today = datetime.datetime.utcnow()
 
-        self.assertEqual(0, dash.infobox_helpers.count_active_accounts(None, None))
+    #     self.assertEqual(0, dash.infobox_helpers.count_active_accounts(None, None))
 
-        all_adgset = dash.models.AdGroupSettings.objects.filter(ad_group__campaign__account__id=1)
-        for adgset in all_adgset:
-            new_adgset = adgset.copy_settings()
-            new_adgset.start_date = today
-            new_adgset.end_date = today + datetime.timedelta(days=1)
-            new_adgset.save(None)
+    #     all_adgset = dash.models.AdGroupSettings.objects.filter(ad_group__campaign__account__id=1)
+    #     for adgset in all_adgset:
+    #         new_adgset = adgset.copy_settings()
+    #         new_adgset.start_date = today
+    #         new_adgset.end_date = today + datetime.timedelta(days=1)
+    #         new_adgset.save(None)
 
-        self.assertEqual(1, dash.infobox_helpers.count_active_accounts(None, None))
+    #     self.assertEqual(1, dash.infobox_helpers.count_active_accounts(None, None))
 
-    def test_count_active_agency_accounts(self):
-        today = datetime.datetime.utcnow()
+    # def test_count_active_agency_accounts(self):
+    #     today = datetime.datetime.utcnow()
 
-        self.assertEqual(0, dash.infobox_helpers.count_active_accounts(None, None))
+    #     self.assertEqual(0, dash.infobox_helpers.count_active_accounts(None, None))
 
-        all_adgset = dash.models.AdGroupSettings.objects.filter(ad_group__campaign__account__id=1)
-        for adgset in all_adgset:
-            new_adgset = adgset.copy_settings()
-            new_adgset.start_date = today
-            new_adgset.end_date = today + datetime.timedelta(days=1)
-            new_adgset.save(None)
+    #     all_adgset = dash.models.AdGroupSettings.objects.filter(ad_group__campaign__account__id=1)
+    #     for adgset in all_adgset:
+    #         new_adgset = adgset.copy_settings()
+    #         new_adgset.start_date = today
+    #         new_adgset.end_date = today + datetime.timedelta(days=1)
+    #         new_adgset.save(None)
 
-        user1 = self._make_a_john()
-        self.assertEqual(0, dash.infobox_helpers.count_active_agency_accounts(user1))
+    #     user1 = self._make_a_john()
+    #     self.assertEqual(0, dash.infobox_helpers.count_active_agency_accounts(user1))
 
-        account = dash.models.Account.objects.get(pk=1)
-        account.users.add(user1)
-        self.assertEqual(1, dash.infobox_helpers.count_active_agency_accounts(user1))
+    #     account = dash.models.Account.objects.get(pk=1)
+    #     account.users.add(user1)
+    #     self.assertEqual(1, dash.infobox_helpers.count_active_agency_accounts(user1))
 
-        r = RequestFactory().get("")
-        r.user = user1
-        user2 = self._make_a_john("john2@example.com")
+    #     r = RequestFactory().get("")
+    #     r.user = user1
+    #     user2 = self._make_a_john("john2@example.com")
 
-        agency = dash.models.Agency(name="Test Agency")
-        agency.save(r)
-        account.agency = agency
-        account.save(r)
-        self.assertEqual(0, dash.infobox_helpers.count_active_agency_accounts(user2))
-        agency.users.add(user2)
-        self.assertEqual(1, dash.infobox_helpers.count_active_agency_accounts(user2))
+    #     agency = dash.models.Agency(name="Test Agency")
+    #     agency.save(r)
+    #     account.agency = agency
+    #     account.save(r)
+    #     self.assertEqual(0, dash.infobox_helpers.count_active_agency_accounts(user2))
+    #     agency.users.add(user2)
+    #     self.assertEqual(1, dash.infobox_helpers.count_active_agency_accounts(user2))
 
     def _make_a_john(self, email=None):
         ordinary_john = zemauth.models.User.objects.create_user(
@@ -463,309 +463,309 @@ class InfoBoxAccountHelpersTest(TestCase):
         john.save()
         self.assertEqual(1, dash.infobox_helpers.count_weekly_logged_in_users(None, None))
 
-    def test_get_adgroup_running_status(self):
-        # adgroup is inactive and no active sources
-        ad_group = dash.models.AdGroup.objects.get(pk=1)
-        start_date = datetime.datetime.today().date()
-        end_date = start_date + datetime.timedelta(days=99)
-        ad_group.settings.update_unsafe(
-            None,
-            start_date=start_date,
-            end_date=end_date,
-            state=dash.constants.AdGroupSettingsState.INACTIVE,
-            autopilot_state=dash.constants.AdGroupSettingsAutopilotState.INACTIVE,
-            created_dt=datetime.datetime.utcnow(),
-        )
+    # def test_get_adgroup_running_status(self):
+    #     # adgroup is inactive and no active sources
+    #     ad_group = dash.models.AdGroup.objects.get(pk=1)
+    #     start_date = datetime.datetime.today().date()
+    #     end_date = start_date + datetime.timedelta(days=99)
+    #     ad_group.settings.update_unsafe(
+    #         None,
+    #         start_date=start_date,
+    #         end_date=end_date,
+    #         state=dash.constants.AdGroupSettingsState.INACTIVE,
+    #         autopilot_state=dash.constants.AdGroupSettingsAutopilotState.INACTIVE,
+    #         created_dt=datetime.datetime.utcnow(),
+    #     )
 
-        normal_user = zemauth.models.User.objects.get(id=2)
+    #     normal_user = zemauth.models.User.objects.get(id=2)
 
-        self.assertEqual(
-            dash.constants.InfoboxStatus.STOPPED, dash.infobox_helpers.get_adgroup_running_status(normal_user, ad_group)
-        )
+    #     self.assertEqual(
+    #         dash.constants.InfoboxStatus.STOPPED, dash.infobox_helpers.get_adgroup_running_status(normal_user, ad_group)
+    #     )
 
-        # adgroup is active and sources are active
-        start_date = datetime.datetime.today().date()
-        end_date = start_date + datetime.timedelta(days=99)
-        ad_group.settings.update_unsafe(
-            None,
-            start_date=start_date,
-            end_date=end_date,
-            state=dash.constants.AdGroupSettingsState.ACTIVE,
-            created_dt=datetime.datetime.utcnow(),
-        )
+    #     # adgroup is active and sources are active
+    #     start_date = datetime.datetime.today().date()
+    #     end_date = start_date + datetime.timedelta(days=99)
+    #     ad_group.settings.update_unsafe(
+    #         None,
+    #         start_date=start_date,
+    #         end_date=end_date,
+    #         state=dash.constants.AdGroupSettingsState.ACTIVE,
+    #         created_dt=datetime.datetime.utcnow(),
+    #     )
 
-        source_settings = dash.models.AdGroupSourceSettings.objects.filter(ad_group_source__ad_group=ad_group).all()[:1]
-        for agss in source_settings:
-            new_agss = agss.copy_settings()
-            new_agss.state = dash.constants.AdGroupSourceSettingsState.ACTIVE
-            new_agss.save(None)
+    #     source_settings = dash.models.AdGroupSourceSettings.objects.filter(ad_group_source__ad_group=ad_group).all()[:1]
+    #     for agss in source_settings:
+    #         new_agss = agss.copy_settings()
+    #         new_agss.state = dash.constants.AdGroupSourceSettingsState.ACTIVE
+    #         new_agss.save(None)
 
-        self.assertEqual(
-            dash.constants.InfoboxStatus.ACTIVE, dash.infobox_helpers.get_adgroup_running_status(normal_user, ad_group)
-        )
+    #     self.assertEqual(
+    #         dash.constants.InfoboxStatus.ACTIVE, dash.infobox_helpers.get_adgroup_running_status(normal_user, ad_group)
+    #     )
 
-        with mock.patch("automation.campaignstop.get_campaignstop_state") as mock_get_campaignstop_state:
-            old_value = ad_group.campaign.real_time_campaign_stop
-            ad_group.campaign.set_real_time_campaign_stop(None, True)
+    #     with mock.patch("automation.campaignstop.get_campaignstop_state") as mock_get_campaignstop_state:
+    #         old_value = ad_group.campaign.real_time_campaign_stop
+    #         ad_group.campaign.set_real_time_campaign_stop(None, True)
 
-            mock_get_campaignstop_state.return_value = {"allowed_to_run": False, "pending_budget_updates": False}
-            self.assertEqual(
-                dash.constants.InfoboxStatus.CAMPAIGNSTOP_STOPPED,
-                dash.infobox_helpers.get_adgroup_running_status(normal_user, ad_group),
-            )
+    #         mock_get_campaignstop_state.return_value = {"allowed_to_run": False, "pending_budget_updates": False}
+    #         self.assertEqual(
+    #             dash.constants.InfoboxStatus.CAMPAIGNSTOP_STOPPED,
+    #             dash.infobox_helpers.get_adgroup_running_status(normal_user, ad_group),
+    #         )
 
-            mock_get_campaignstop_state.return_value = {"allowed_to_run": False, "pending_budget_updates": True}
-            self.assertEqual(
-                dash.constants.InfoboxStatus.CAMPAIGNSTOP_PENDING_BUDGET_ACTIVE,
-                dash.infobox_helpers.get_adgroup_running_status(normal_user, ad_group),
-            )
+    #         mock_get_campaignstop_state.return_value = {"allowed_to_run": False, "pending_budget_updates": True}
+    #         self.assertEqual(
+    #             dash.constants.InfoboxStatus.CAMPAIGNSTOP_PENDING_BUDGET_ACTIVE,
+    #             dash.infobox_helpers.get_adgroup_running_status(normal_user, ad_group),
+    #         )
 
-            mock_get_campaignstop_state.return_value = {
-                "allowed_to_run": True,
-                "pending_budget_updates": False,
-                "almost_depleted": False,
-            }
-            self.assertEqual(
-                dash.constants.InfoboxStatus.ACTIVE,
-                dash.infobox_helpers.get_adgroup_running_status(normal_user, ad_group),
-            )
+    #         mock_get_campaignstop_state.return_value = {
+    #             "allowed_to_run": True,
+    #             "pending_budget_updates": False,
+    #             "almost_depleted": False,
+    #         }
+    #         self.assertEqual(
+    #             dash.constants.InfoboxStatus.ACTIVE,
+    #             dash.infobox_helpers.get_adgroup_running_status(normal_user, ad_group),
+    #         )
 
-            mock_get_campaignstop_state.return_value = {
-                "allowed_to_run": False,
-                "pending_budget_updates": True,
-                "almost_depleted": False,
-            }
-            self.assertEqual(
-                dash.constants.InfoboxStatus.CAMPAIGNSTOP_PENDING_BUDGET_ACTIVE,
-                dash.infobox_helpers.get_adgroup_running_status(normal_user, ad_group),
-            )
+    #         mock_get_campaignstop_state.return_value = {
+    #             "allowed_to_run": False,
+    #             "pending_budget_updates": True,
+    #             "almost_depleted": False,
+    #         }
+    #         self.assertEqual(
+    #             dash.constants.InfoboxStatus.CAMPAIGNSTOP_PENDING_BUDGET_ACTIVE,
+    #             dash.infobox_helpers.get_adgroup_running_status(normal_user, ad_group),
+    #         )
 
-            mock_get_campaignstop_state.return_value = {
-                "allowed_to_run": True,
-                "pending_budget_updates": True,
-                "almost_depleted": False,
-            }
-            self.assertEqual(
-                dash.constants.InfoboxStatus.ACTIVE,
-                dash.infobox_helpers.get_adgroup_running_status(normal_user, ad_group),
-            )
+    #         mock_get_campaignstop_state.return_value = {
+    #             "allowed_to_run": True,
+    #             "pending_budget_updates": True,
+    #             "almost_depleted": False,
+    #         }
+    #         self.assertEqual(
+    #             dash.constants.InfoboxStatus.ACTIVE,
+    #             dash.infobox_helpers.get_adgroup_running_status(normal_user, ad_group),
+    #         )
 
-            mock_get_campaignstop_state.return_value = {
-                "allowed_to_run": True,
-                "pending_budget_updates": False,
-                "almost_depleted": True,
-            }
-            self.assertEqual(
-                dash.constants.InfoboxStatus.CAMPAIGNSTOP_LOW_BUDGET,
-                dash.infobox_helpers.get_adgroup_running_status(normal_user, ad_group),
-            )
+    #         mock_get_campaignstop_state.return_value = {
+    #             "allowed_to_run": True,
+    #             "pending_budget_updates": False,
+    #             "almost_depleted": True,
+    #         }
+    #         self.assertEqual(
+    #             dash.constants.InfoboxStatus.CAMPAIGNSTOP_LOW_BUDGET,
+    #             dash.infobox_helpers.get_adgroup_running_status(normal_user, ad_group),
+    #         )
 
-            ad_group.campaign.set_real_time_campaign_stop(None, old_value)
+    #         ad_group.campaign.set_real_time_campaign_stop(None, old_value)
 
-        # campaign is on autopilot
-        ad_group.campaign.settings.update_unsafe(None, autopilot=True)
-        self.assertEqual(
-            dash.constants.InfoboxStatus.AUTOPILOT,
-            dash.infobox_helpers.get_adgroup_running_status(normal_user, ad_group),
-        )
-        ad_group.campaign.settings.update_unsafe(None, autopilot=False)
+    #     # campaign is on autopilot
+    #     ad_group.campaign.settings.update_unsafe(None, autopilot=True)
+    #     self.assertEqual(
+    #         dash.constants.InfoboxStatus.AUTOPILOT,
+    #         dash.infobox_helpers.get_adgroup_running_status(normal_user, ad_group),
+    #     )
+    #     ad_group.campaign.settings.update_unsafe(None, autopilot=False)
 
-        # adgroup is active, sources are active and adgroup is on CPC autopilot
-        start_date = datetime.datetime.today().date()
-        end_date = start_date + datetime.timedelta(days=99)
-        ad_group.settings.update_unsafe(
-            None,
-            start_date=start_date,
-            end_date=end_date,
-            state=dash.constants.AdGroupSettingsState.ACTIVE,
-            created_dt=datetime.datetime.utcnow(),
-            autopilot_state=dash.constants.AdGroupSettingsAutopilotState.ACTIVE_CPC,
-        )
+    #     # adgroup is active, sources are active and adgroup is on CPC autopilot
+    #     start_date = datetime.datetime.today().date()
+    #     end_date = start_date + datetime.timedelta(days=99)
+    #     ad_group.settings.update_unsafe(
+    #         None,
+    #         start_date=start_date,
+    #         end_date=end_date,
+    #         state=dash.constants.AdGroupSettingsState.ACTIVE,
+    #         created_dt=datetime.datetime.utcnow(),
+    #         autopilot_state=dash.constants.AdGroupSettingsAutopilotState.ACTIVE_CPC,
+    #     )
 
-        self.assertEqual(
-            dash.constants.InfoboxStatus.ACTIVE_PRICE_DISCOVERY,
-            dash.infobox_helpers.get_adgroup_running_status(normal_user, ad_group),
-        )
+    #     self.assertEqual(
+    #         dash.constants.InfoboxStatus.ACTIVE_PRICE_DISCOVERY,
+    #         dash.infobox_helpers.get_adgroup_running_status(normal_user, ad_group),
+    #     )
 
-        # adgroup is active, sources are active and adgroup is on CPC+Budget autopilot
-        start_date = datetime.datetime.today().date()
-        end_date = start_date + datetime.timedelta(days=99)
-        ad_group.settings.update_unsafe(
-            None,
-            start_date=start_date,
-            end_date=end_date,
-            state=dash.constants.AdGroupSettingsState.ACTIVE,
-            created_dt=datetime.datetime.utcnow(),
-            autopilot_state=dash.constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET,
-        )
+    #     # adgroup is active, sources are active and adgroup is on CPC+Budget autopilot
+    #     start_date = datetime.datetime.today().date()
+    #     end_date = start_date + datetime.timedelta(days=99)
+    #     ad_group.settings.update_unsafe(
+    #         None,
+    #         start_date=start_date,
+    #         end_date=end_date,
+    #         state=dash.constants.AdGroupSettingsState.ACTIVE,
+    #         created_dt=datetime.datetime.utcnow(),
+    #         autopilot_state=dash.constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET,
+    #     )
 
-        self.assertEqual(
-            dash.constants.InfoboxStatus.AUTOPILOT,
-            dash.infobox_helpers.get_adgroup_running_status(normal_user, ad_group),
-        )
+    #     self.assertEqual(
+    #         dash.constants.InfoboxStatus.AUTOPILOT,
+    #         dash.infobox_helpers.get_adgroup_running_status(normal_user, ad_group),
+    #     )
 
-        with mock.patch("automation.campaignstop.get_campaignstop_state") as mock_get_campaignstop_state:
-            old_value = ad_group.campaign.real_time_campaign_stop
-            ad_group.campaign.set_real_time_campaign_stop(None, True)
+    #     with mock.patch("automation.campaignstop.get_campaignstop_state") as mock_get_campaignstop_state:
+    #         old_value = ad_group.campaign.real_time_campaign_stop
+    #         ad_group.campaign.set_real_time_campaign_stop(None, True)
 
-            # adgroup is active and on CPC autopilot with pending budget updates
-            start_date = datetime.datetime.today().date()
-            end_date = start_date + datetime.timedelta(days=99)
-            ad_group.settings.update_unsafe(
-                None,
-                start_date=start_date,
-                end_date=end_date,
-                state=dash.constants.AdGroupSettingsState.ACTIVE,
-                created_dt=datetime.datetime.utcnow(),
-                autopilot_state=dash.constants.AdGroupSettingsAutopilotState.ACTIVE_CPC,  # price_discovery
-            )
-            mock_get_campaignstop_state.return_value = {"allowed_to_run": False, "pending_budget_updates": True}
-            self.assertEqual(
-                dash.constants.InfoboxStatus.CAMPAIGNSTOP_PENDING_BUDGET_ACTIVE_PRICE_DISCOVERY,
-                dash.infobox_helpers.get_adgroup_running_status(normal_user, ad_group),
-            )
+    #         # adgroup is active and on CPC autopilot with pending budget updates
+    #         start_date = datetime.datetime.today().date()
+    #         end_date = start_date + datetime.timedelta(days=99)
+    #         ad_group.settings.update_unsafe(
+    #             None,
+    #             start_date=start_date,
+    #             end_date=end_date,
+    #             state=dash.constants.AdGroupSettingsState.ACTIVE,
+    #             created_dt=datetime.datetime.utcnow(),
+    #             autopilot_state=dash.constants.AdGroupSettingsAutopilotState.ACTIVE_CPC,  # price_discovery
+    #         )
+    #         mock_get_campaignstop_state.return_value = {"allowed_to_run": False, "pending_budget_updates": True}
+    #         self.assertEqual(
+    #             dash.constants.InfoboxStatus.CAMPAIGNSTOP_PENDING_BUDGET_ACTIVE_PRICE_DISCOVERY,
+    #             dash.infobox_helpers.get_adgroup_running_status(normal_user, ad_group),
+    #         )
 
-            # adgroup is active and on CPC+Budget autopilot with pending budget updates
-            start_date = datetime.datetime.today().date()
-            end_date = start_date + datetime.timedelta(days=99)
-            ad_group.settings.update_unsafe(
-                None,
-                start_date=start_date,
-                end_date=end_date,
-                state=dash.constants.AdGroupSettingsState.ACTIVE,
-                created_dt=datetime.datetime.utcnow(),
-                autopilot_state=dash.constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET,  # autopilot
-            )
+    #         # adgroup is active and on CPC+Budget autopilot with pending budget updates
+    #         start_date = datetime.datetime.today().date()
+    #         end_date = start_date + datetime.timedelta(days=99)
+    #         ad_group.settings.update_unsafe(
+    #             None,
+    #             start_date=start_date,
+    #             end_date=end_date,
+    #             state=dash.constants.AdGroupSettingsState.ACTIVE,
+    #             created_dt=datetime.datetime.utcnow(),
+    #             autopilot_state=dash.constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET,  # autopilot
+    #         )
 
-            mock_get_campaignstop_state.return_value = {"allowed_to_run": False, "pending_budget_updates": True}
-            self.assertEqual(
-                dash.constants.InfoboxStatus.CAMPAIGNSTOP_PENDING_BUDGET_AUTOPILOT,
-                dash.infobox_helpers.get_adgroup_running_status(normal_user, ad_group),
-            )
+    #         mock_get_campaignstop_state.return_value = {"allowed_to_run": False, "pending_budget_updates": True}
+    #         self.assertEqual(
+    #             dash.constants.InfoboxStatus.CAMPAIGNSTOP_PENDING_BUDGET_AUTOPILOT,
+    #             dash.infobox_helpers.get_adgroup_running_status(normal_user, ad_group),
+    #         )
 
-            ad_group.campaign.set_real_time_campaign_stop(None, old_value)
+    #         ad_group.campaign.set_real_time_campaign_stop(None, old_value)
 
-        # adgroup is active but sources are inactive
-        source_settings = dash.models.AdGroupSourceSettings.objects.filter(ad_group_source__ad_group=ad_group).all()
-        for agss in source_settings:
-            agss.update_unsafe(None, state=dash.constants.AdGroupSourceSettingsState.INACTIVE)
+    #     # adgroup is active but sources are inactive
+    #     source_settings = dash.models.AdGroupSourceSettings.objects.filter(ad_group_source__ad_group=ad_group).all()
+    #     for agss in source_settings:
+    #         agss.update_unsafe(None, state=dash.constants.AdGroupSourceSettingsState.INACTIVE)
 
-        self.assertEqual(
-            dash.constants.InfoboxStatus.AUTOPILOT,
-            dash.infobox_helpers.get_adgroup_running_status(normal_user, ad_group),
-        )
+    #     self.assertEqual(
+    #         dash.constants.InfoboxStatus.AUTOPILOT,
+    #         dash.infobox_helpers.get_adgroup_running_status(normal_user, ad_group),
+    #     )
 
-        # adgroup is inactive but sources are active
-        ad_group.settings.update_unsafe(None, state=dash.constants.AdGroupSettingsState.INACTIVE)
+    #     # adgroup is inactive but sources are active
+    #     ad_group.settings.update_unsafe(None, state=dash.constants.AdGroupSettingsState.INACTIVE)
 
-        source_settings = dash.models.AdGroupSourceSettings.objects.filter(ad_group_source__ad_group=ad_group).all()
-        for agss in source_settings:
-            new_agss = agss.copy_settings()
-            new_agss.state = dash.constants.AdGroupSourceSettingsState.ACTIVE
-            new_agss.save(None)
+    #     source_settings = dash.models.AdGroupSourceSettings.objects.filter(ad_group_source__ad_group=ad_group).all()
+    #     for agss in source_settings:
+    #         new_agss = agss.copy_settings()
+    #         new_agss.state = dash.constants.AdGroupSourceSettingsState.ACTIVE
+    #         new_agss.save(None)
 
-        self.assertEqual(
-            dash.constants.InfoboxStatus.STOPPED, dash.infobox_helpers.get_adgroup_running_status(normal_user, ad_group)
-        )
+    #     self.assertEqual(
+    #         dash.constants.InfoboxStatus.STOPPED, dash.infobox_helpers.get_adgroup_running_status(normal_user, ad_group)
+    #     )
 
-    def test_get_campaign_running_status(self):
-        campaign = dash.models.Campaign.objects.get(pk=1)
-        ad_group = dash.models.AdGroup.objects.get(pk=1)
-        self.assertEqual(
-            dash.constants.InfoboxStatus.INACTIVE, dash.infobox_helpers.get_campaign_running_status(campaign)
-        )
+    # def test_get_campaign_running_status(self):
+    #     campaign = dash.models.Campaign.objects.get(pk=1)
+    #     ad_group = dash.models.AdGroup.objects.get(pk=1)
+    #     self.assertEqual(
+    #         dash.constants.InfoboxStatus.INACTIVE, dash.infobox_helpers.get_campaign_running_status(campaign)
+    #     )
 
-        start_date = datetime.datetime.today().date()
-        end_date = start_date + datetime.timedelta(days=99)
-        ad_group.settings.update_unsafe(
-            None, start_date=start_date, end_date=end_date, state=dash.constants.AdGroupSettingsState.ACTIVE
-        )
+    #     start_date = datetime.datetime.today().date()
+    #     end_date = start_date + datetime.timedelta(days=99)
+    #     ad_group.settings.update_unsafe(
+    #         None, start_date=start_date, end_date=end_date, state=dash.constants.AdGroupSettingsState.ACTIVE
+    #     )
 
-        source_settings = dash.models.AdGroupSourceSettings.objects.filter(ad_group_source__ad_group=ad_group).all()[:1]
-        for agss in source_settings:
-            new_agss = agss.copy_settings()
-            new_agss.state = dash.constants.AdGroupSourceSettingsState.ACTIVE
-            new_agss.save(None)
+    #     source_settings = dash.models.AdGroupSourceSettings.objects.filter(ad_group_source__ad_group=ad_group).all()[:1]
+    #     for agss in source_settings:
+    #         new_agss = agss.copy_settings()
+    #         new_agss.state = dash.constants.AdGroupSourceSettingsState.ACTIVE
+    #         new_agss.save(None)
 
-        self.assertEqual(
-            dash.constants.InfoboxStatus.ACTIVE, dash.infobox_helpers.get_campaign_running_status(campaign)
-        )
+    #     self.assertEqual(
+    #         dash.constants.InfoboxStatus.ACTIVE, dash.infobox_helpers.get_campaign_running_status(campaign)
+    #     )
 
-        campaign.settings.update_unsafe(None, autopilot=True)
-        self.assertEqual(
-            dash.constants.InfoboxStatus.AUTOPILOT, dash.infobox_helpers.get_campaign_running_status(campaign)
-        )
+    #     campaign.settings.update_unsafe(None, autopilot=True)
+    #     self.assertEqual(
+    #         dash.constants.InfoboxStatus.AUTOPILOT, dash.infobox_helpers.get_campaign_running_status(campaign)
+    #     )
 
-        campaign.settings.update_unsafe(None, autopilot=True)
+    #     campaign.settings.update_unsafe(None, autopilot=True)
 
-        with mock.patch("automation.campaignstop.get_campaignstop_state") as mock_get_campaignstop_state:
-            old_value = campaign.real_time_campaign_stop
-            campaign.set_real_time_campaign_stop(None, True)
+    #     with mock.patch("automation.campaignstop.get_campaignstop_state") as mock_get_campaignstop_state:
+    #         old_value = campaign.real_time_campaign_stop
+    #         campaign.set_real_time_campaign_stop(None, True)
 
-            mock_get_campaignstop_state.return_value = {"allowed_to_run": False, "pending_budget_updates": True}
-            self.assertEqual(
-                dash.constants.InfoboxStatus.CAMPAIGNSTOP_PENDING_BUDGET_AUTOPILOT,
-                dash.infobox_helpers.get_campaign_running_status(campaign),
-            )
+    #         mock_get_campaignstop_state.return_value = {"allowed_to_run": False, "pending_budget_updates": True}
+    #         self.assertEqual(
+    #             dash.constants.InfoboxStatus.CAMPAIGNSTOP_PENDING_BUDGET_AUTOPILOT,
+    #             dash.infobox_helpers.get_campaign_running_status(campaign),
+    #         )
 
-            campaign.set_real_time_campaign_stop(None, old_value)
+    #         campaign.set_real_time_campaign_stop(None, old_value)
 
-        campaign.settings.update_unsafe(None, autopilot=False)
+    #     campaign.settings.update_unsafe(None, autopilot=False)
 
-        with mock.patch("automation.campaignstop.get_campaignstop_state") as mock_get_campaignstop_state:
-            old_value = campaign.real_time_campaign_stop
-            campaign.set_real_time_campaign_stop(None, True)
+    #     with mock.patch("automation.campaignstop.get_campaignstop_state") as mock_get_campaignstop_state:
+    #         old_value = campaign.real_time_campaign_stop
+    #         campaign.set_real_time_campaign_stop(None, True)
 
-            mock_get_campaignstop_state.return_value = {"allowed_to_run": False, "pending_budget_updates": False}
-            self.assertEqual(
-                dash.constants.InfoboxStatus.CAMPAIGNSTOP_STOPPED,
-                dash.infobox_helpers.get_campaign_running_status(campaign),
-            )
+    #         mock_get_campaignstop_state.return_value = {"allowed_to_run": False, "pending_budget_updates": False}
+    #         self.assertEqual(
+    #             dash.constants.InfoboxStatus.CAMPAIGNSTOP_STOPPED,
+    #             dash.infobox_helpers.get_campaign_running_status(campaign),
+    #         )
 
-            mock_get_campaignstop_state.return_value = {"allowed_to_run": False, "pending_budget_updates": True}
-            self.assertEqual(
-                dash.constants.InfoboxStatus.CAMPAIGNSTOP_PENDING_BUDGET_ACTIVE,
-                dash.infobox_helpers.get_campaign_running_status(campaign),
-            )
+    #         mock_get_campaignstop_state.return_value = {"allowed_to_run": False, "pending_budget_updates": True}
+    #         self.assertEqual(
+    #             dash.constants.InfoboxStatus.CAMPAIGNSTOP_PENDING_BUDGET_ACTIVE,
+    #             dash.infobox_helpers.get_campaign_running_status(campaign),
+    #         )
 
-            mock_get_campaignstop_state.return_value = {
-                "allowed_to_run": True,
-                "pending_budget_updates": False,
-                "almost_depleted": False,
-            }
-            self.assertEqual(
-                dash.constants.InfoboxStatus.ACTIVE, dash.infobox_helpers.get_campaign_running_status(campaign)
-            )
+    #         mock_get_campaignstop_state.return_value = {
+    #             "allowed_to_run": True,
+    #             "pending_budget_updates": False,
+    #             "almost_depleted": False,
+    #         }
+    #         self.assertEqual(
+    #             dash.constants.InfoboxStatus.ACTIVE, dash.infobox_helpers.get_campaign_running_status(campaign)
+    #         )
 
-            mock_get_campaignstop_state.return_value = {
-                "allowed_to_run": True,
-                "pending_budget_updates": False,
-                "almost_depleted": True,
-            }
-            self.assertEqual(
-                dash.constants.InfoboxStatus.CAMPAIGNSTOP_LOW_BUDGET,
-                dash.infobox_helpers.get_campaign_running_status(campaign),
-            )
+    #         mock_get_campaignstop_state.return_value = {
+    #             "allowed_to_run": True,
+    #             "pending_budget_updates": False,
+    #             "almost_depleted": True,
+    #         }
+    #         self.assertEqual(
+    #             dash.constants.InfoboxStatus.CAMPAIGNSTOP_LOW_BUDGET,
+    #             dash.infobox_helpers.get_campaign_running_status(campaign),
+    #         )
 
-            mock_get_campaignstop_state.return_value = {
-                "allowed_to_run": True,
-                "pending_budget_updates": True,
-                "almost_depleted": False,
-            }
-            self.assertEqual(
-                dash.constants.InfoboxStatus.ACTIVE, dash.infobox_helpers.get_campaign_running_status(campaign)
-            )
+    #         mock_get_campaignstop_state.return_value = {
+    #             "allowed_to_run": True,
+    #             "pending_budget_updates": True,
+    #             "almost_depleted": False,
+    #         }
+    #         self.assertEqual(
+    #             dash.constants.InfoboxStatus.ACTIVE, dash.infobox_helpers.get_campaign_running_status(campaign)
+    #         )
 
-            campaign.set_real_time_campaign_stop(None, old_value)
+    #         campaign.set_real_time_campaign_stop(None, old_value)
 
-        for adg in campaign.adgroup_set.all():
-            adg_settings = adg.get_current_settings().copy_settings()
-            adg_settings.state = dash.constants.AdGroupSettingsState.INACTIVE
-            adg_settings.save(None)
+    #     for adg in campaign.adgroup_set.all():
+    #         adg_settings = adg.get_current_settings().copy_settings()
+    #         adg_settings.state = dash.constants.AdGroupSettingsState.INACTIVE
+    #         adg_settings.save(None)
 
-        self.assertEqual(
-            dash.constants.InfoboxStatus.STOPPED, dash.infobox_helpers.get_campaign_running_status(campaign)
-        )
+    #     self.assertEqual(
+    #         dash.constants.InfoboxStatus.STOPPED, dash.infobox_helpers.get_campaign_running_status(campaign)
+    #     )
 
     def test_get_account_running_status(self):
         campaign = dash.models.Campaign.objects.get(pk=1)
@@ -910,88 +910,88 @@ class AllAccountsInfoboxHelpersTest(TestCase):
         self.assertEqual(200, allocated_credit)
         self.assertEqual(800, available_credit)
 
-    def test_calculate_allocated_and_available_agency_credit(self):
-        user = zemauth.models.User.objects.get(pk=1)
-        r = RequestFactory().get("")
-        r.user = user
+    # def test_calculate_allocated_and_available_agency_credit(self):
+    #     user = zemauth.models.User.objects.get(pk=1)
+    #     r = RequestFactory().get("")
+    #     r.user = user
 
-        agency = dash.models.Agency(name="SOVA")
-        agency.save(r)
+    #     agency = dash.models.Agency(name="SOVA")
+    #     agency.save(r)
 
-        account = dash.models.Account.objects.get(pk=1)
-        account.agency = agency
-        account.save(r)
+    #     account = dash.models.Account.objects.get(pk=1)
+    #     account.agency = agency
+    #     account.save(r)
 
-        campaign = dash.models.Campaign.objects.get(pk=1)
-        allocated_credit, available_credit = dash.infobox_helpers.calculate_allocated_and_available_credit(account)
-        self.assertEqual(0, available_credit)
-        self.assertEqual(0, allocated_credit)
+    #     campaign = dash.models.Campaign.objects.get(pk=1)
+    #     allocated_credit, available_credit = dash.infobox_helpers.calculate_allocated_and_available_credit(account)
+    #     self.assertEqual(0, available_credit)
+    #     self.assertEqual(0, allocated_credit)
 
-        start_date = datetime.datetime.today().date()
-        end_date = start_date + datetime.timedelta(days=99)
-        credit = dash.models.CreditLineItem.objects.create_unsafe(
-            agency=agency,
-            start_date=start_date,
-            end_date=end_date,
-            amount=100,
-            status=dash.constants.CreditLineItemStatus.SIGNED,
-            created_by=user,
-        )
+    #     start_date = datetime.datetime.today().date()
+    #     end_date = start_date + datetime.timedelta(days=99)
+    #     credit = dash.models.CreditLineItem.objects.create_unsafe(
+    #         agency=agency,
+    #         start_date=start_date,
+    #         end_date=end_date,
+    #         amount=100,
+    #         status=dash.constants.CreditLineItemStatus.SIGNED,
+    #         created_by=user,
+    #     )
 
-        allocated_credit, available_credit = dash.infobox_helpers.calculate_allocated_and_available_credit(account)
-        self.assertEqual(100, available_credit)
+    #     allocated_credit, available_credit = dash.infobox_helpers.calculate_allocated_and_available_credit(account)
+    #     self.assertEqual(100, available_credit)
 
-        dash.models.BudgetLineItem.objects.create_unsafe(
-            campaign=campaign, credit=credit, amount=40, start_date=start_date, end_date=end_date, created_by=user
-        )
+    #     dash.models.BudgetLineItem.objects.create_unsafe(
+    #         campaign=campaign, credit=credit, amount=40, start_date=start_date, end_date=end_date, created_by=user
+    #     )
 
-        allocated_credit, available_credit = dash.infobox_helpers.calculate_allocated_and_available_credit(account)
-        self.assertEqual(40, allocated_credit)
-        self.assertEqual(60, available_credit)
+    #     allocated_credit, available_credit = dash.infobox_helpers.calculate_allocated_and_available_credit(account)
+    #     self.assertEqual(40, allocated_credit)
+    #     self.assertEqual(60, available_credit)
 
-        dash.models.BudgetLineItem.objects.create_unsafe(
-            campaign=campaign, credit=credit, amount=60, start_date=start_date, end_date=end_date, created_by=user
-        )
+    #     dash.models.BudgetLineItem.objects.create_unsafe(
+    #         campaign=campaign, credit=credit, amount=60, start_date=start_date, end_date=end_date, created_by=user
+    #     )
 
-        allocated_credit, available_credit = dash.infobox_helpers.calculate_allocated_and_available_credit(account)
-        self.assertEqual(100, allocated_credit)
-        self.assertEqual(00, available_credit)
+    #     allocated_credit, available_credit = dash.infobox_helpers.calculate_allocated_and_available_credit(account)
+    #     self.assertEqual(100, allocated_credit)
+    #     self.assertEqual(00, available_credit)
 
-    def test_calculate_allocated_and_available_credit_with_freed_budget(self):
-        account = dash.models.Account.objects.get(pk=1)
-        campaign = dash.models.Campaign.objects.get(pk=1)
-        allocated_credit, available_credit = dash.infobox_helpers.calculate_allocated_and_available_credit(account)
-        self.assertEqual(0, available_credit)
-        self.assertEqual(0, allocated_credit)
+    # def test_calculate_allocated_and_available_credit_with_freed_budget(self):
+    #     account = dash.models.Account.objects.get(pk=1)
+    #     campaign = dash.models.Campaign.objects.get(pk=1)
+    #     allocated_credit, available_credit = dash.infobox_helpers.calculate_allocated_and_available_credit(account)
+    #     self.assertEqual(0, available_credit)
+    #     self.assertEqual(0, allocated_credit)
 
-        user = zemauth.models.User.objects.get(pk=1)
-        start_date = datetime.datetime.today().date()
-        end_date = start_date + datetime.timedelta(days=99)
-        credit = dash.models.CreditLineItem.objects.create_unsafe(
-            account=account,
-            start_date=start_date,
-            end_date=end_date,
-            amount=100,
-            status=dash.constants.CreditLineItemStatus.SIGNED,
-            created_by=user,
-        )
+    #     user = zemauth.models.User.objects.get(pk=1)
+    #     start_date = datetime.datetime.today().date()
+    #     end_date = start_date + datetime.timedelta(days=99)
+    #     credit = dash.models.CreditLineItem.objects.create_unsafe(
+    #         account=account,
+    #         start_date=start_date,
+    #         end_date=end_date,
+    #         amount=100,
+    #         status=dash.constants.CreditLineItemStatus.SIGNED,
+    #         created_by=user,
+    #     )
 
-        allocated_credit, available_credit = dash.infobox_helpers.calculate_allocated_and_available_credit(account)
-        self.assertEqual(100, available_credit)
+    #     allocated_credit, available_credit = dash.infobox_helpers.calculate_allocated_and_available_credit(account)
+    #     self.assertEqual(100, available_credit)
 
-        dash.models.BudgetLineItem.objects.create_unsafe(
-            campaign=campaign,
-            credit=credit,
-            amount=40,
-            start_date=start_date,
-            end_date=end_date,
-            created_by=user,
-            freed_cc=10 * 1e4,
-        )
+    #     dash.models.BudgetLineItem.objects.create_unsafe(
+    #         campaign=campaign,
+    #         credit=credit,
+    #         amount=40,
+    #         start_date=start_date,
+    #         end_date=end_date,
+    #         created_by=user,
+    #         freed_cc=10 * 1e4,
+    #     )
 
-        allocated_credit, available_credit = dash.infobox_helpers.calculate_allocated_and_available_credit(account)
-        self.assertEqual(30, allocated_credit)
-        self.assertEqual(70, available_credit)
+    #     allocated_credit, available_credit = dash.infobox_helpers.calculate_allocated_and_available_credit(account)
+    #     self.assertEqual(30, allocated_credit)
+    #     self.assertEqual(70, available_credit)
 
     @mock.patch("utils.dates_helper.local_today", return_value=datetime.date(2018, 7, 20))
     def test_refunds(self, mock_local_today):
