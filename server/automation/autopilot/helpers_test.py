@@ -6,7 +6,6 @@ from django import test
 from . import helpers
 from dash import constants
 from dash import models
-from utils import dates_helper
 from utils.magic_mixer import magic_mixer
 
 

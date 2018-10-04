@@ -7,7 +7,6 @@ import core.features.goals
 from .. import CampaignStopState, RealTimeDataHistory, RealTimeCampaignStopLog
 from .. import constants
 from . import selection
-from . import config
 
 import dash.constants
 from core.models.settings.ad_group_settings import AdGroupSettings

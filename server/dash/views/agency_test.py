@@ -3,7 +3,6 @@ import json
 import datetime
 import http.client
 
-from django.contrib.auth.models import Permission
 from mock import patch, ANY, call
 from decimal import Decimal
 
@@ -11,7 +10,6 @@ from django.test import TestCase, RequestFactory
 from django.contrib.auth import models as authmodels
 from django.core.urlresolvers import reverse
 from django.http.request import HttpRequest
-from django.core import mail
 from django.conf import settings
 from django.test import Client
 from requests import Response

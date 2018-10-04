@@ -1,5 +1,5 @@
 import decimal
-from mock import patch, ANY
+from mock import patch
 
 from django.test import TestCase
 
