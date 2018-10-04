@@ -86,11 +86,11 @@ class ArticleUploadTest(TestCase):
         self.assertEqual(expected_group_daily_budget, ad_group_settings.b1_sources_group_daily_budget)
         self.assertEqual(dash.constants.AdGroupSourceSettingsState.ACTIVE, ad_group_settings.b1_sources_group_state)
 
-        expected_ob_daily_budget = math.ceil(num_ads * config.DAILY_BUDGET_PER_ARTICLE * config.OB_DAILY_BUDGET_PCT)
-        self.assertEqual(
-            expected_ob_daily_budget,
-            ad_group.adgroupsource_set.get(source__name="Outbrain").get_current_settings().daily_budget_cc,
-        )
+        # expected_ob_daily_budget = math.ceil(num_ads * config.DAILY_BUDGET_PER_ARTICLE * config.OB_DAILY_BUDGET_PCT)
+        # self.assertEqual(
+        #     expected_ob_daily_budget,
+        #     ad_group.adgroupsource_set.get(source__name="Outbrain").get_current_settings().daily_budget_cc,
+        # )
 
     def test_duplicate(self):
         self.assertEqual(0, dash.models.ContentAdCandidate.objects.filter(ad_group_id=1).count())
@@ -210,11 +210,11 @@ class ArticleUploadTest(TestCase):
         self.assertEqual(expected_group_daily_budget, ad_group_settings.b1_sources_group_daily_budget)
         self.assertEqual(dash.constants.AdGroupSourceSettingsState.ACTIVE, ad_group_settings.b1_sources_group_state)
 
-        expected_ob_daily_budget = math.ceil(num_ads * config.DAILY_BUDGET_PER_ARTICLE * config.OB_DAILY_BUDGET_PCT)
-        self.assertEqual(
-            expected_ob_daily_budget,
-            ad_group.adgroupsource_set.get(source__name="Outbrain").get_current_settings().daily_budget_cc,
-        )
+        # expected_ob_daily_budget = math.ceil(num_ads * config.DAILY_BUDGET_PER_ARTICLE * config.OB_DAILY_BUDGET_PCT)
+        # self.assertEqual(
+        #     expected_ob_daily_budget,
+        #     ad_group.adgroupsource_set.get(source__name="Outbrain").get_current_settings().daily_budget_cc,
+        # )
 
 
 @patch("integrations.bizwire.config.AUTOMATION_CAMPAIGN", 1)
