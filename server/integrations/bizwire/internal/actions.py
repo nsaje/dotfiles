@@ -136,11 +136,11 @@ def recalculate_and_set_new_daily_budgets(ad_group_id):
     rtb_cost_per_article = config.DAILY_BUDGET_PER_ARTICLE * (1 - config.OB_DAILY_BUDGET_PCT)
     new_rtb_daily_budget = config.DAILY_BUDGET_RTB_INITIAL + num_content_ads * rtb_cost_per_article
 
-    ob_cost_per_article = config.DAILY_BUDGET_PER_ARTICLE * config.OB_DAILY_BUDGET_PCT
-    new_ob_daily_budget = config.DAILY_BUDGET_OB_INITIAL + num_content_ads * ob_cost_per_article
+    # ob_cost_per_article = config.DAILY_BUDGET_PER_ARTICLE * config.OB_DAILY_BUDGET_PCT
+    # new_ob_daily_budget = config.DAILY_BUDGET_OB_INITIAL + num_content_ads * ob_cost_per_article
 
     _set_rtb_daily_budget(ad_group_id, math.ceil(new_rtb_daily_budget))
-    _set_source_daily_budget(ad_group_id, "outbrain", math.ceil(new_ob_daily_budget))
+    # _set_source_daily_budget(ad_group_id, "outbrain", math.ceil(new_ob_daily_budget))
 
 
 @transaction.atomic
@@ -223,7 +223,7 @@ def _set_initial_sources_settings(ad_group_id):
             "source": source["source"],
             "dailyBudget": config.DAILY_BUDGET_OB_INITIAL,
             "cpc": config.DEFAULT_CPC,
-            "state": "ACTIVE",
+            "state": "ACTIVE" if source["source"] != "outbrain" else "INACTIVE",
         }
         for source in sources
     ]
