@@ -378,4 +378,4 @@ REST_FRAMEWORK = {
 DISABLE_FACEBOOK = True
 AMPLIFY_REVIEW = True
 
-SPARK_MASTER = 'ec2-34-227-25-219.compute-1.amazonaws.com'
+SPARK_MASTER = 'ec2-54-89-174-248.compute-1.amazonaws.com'
