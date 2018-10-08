@@ -347,9 +347,7 @@ class PrepareQueryJointTest(TestCase, backtosql.TestSQLMixin):
                   (coalesce(sum(a.effective_cost_nano), 0) + coalesce(sum(a.effective_data_cost_nano), 0) + coalesce(sum(a.license_fee_nano), 0) + coalesce(sum(a.margin_nano), 0))::float/1000000000 yesterday_etfm_cost
            FROM mv_account a
            WHERE (a.date=%s)
-           GROUP BY 1) temp_yesterday ON (temp_base.account_id = temp_yesterday.account_id
-                                          OR temp_base.account_id IS NULL
-                                          AND temp_yesterday.account_id IS NULL)
+           GROUP BY 1) temp_yesterday ON temp_base.account_id = temp_yesterday.account_id
         ORDER BY total_seconds ASC nulls LAST LIMIT 10
         OFFSET 5
         """,
@@ -415,12 +413,8 @@ class PrepareQueryJointTest(TestCase, backtosql.TestSQLMixin):
            FROM mv_account_pubs a
            WHERE (a.date=%s)
            GROUP BY 1,
-                    2) temp_yesterday ON (temp_base.publisher = temp_yesterday.publisher
-                                          OR temp_base.publisher IS NULL
-                                          AND temp_yesterday.publisher IS NULL)
-        AND (temp_base.source_id = temp_yesterday.source_id
-             OR temp_base.source_id IS NULL
-             AND temp_yesterday.source_id IS NULL)
+                    2) temp_yesterday ON temp_base.publisher = temp_yesterday.publisher
+        AND temp_base.source_id = temp_yesterday.source_id
         ORDER BY total_seconds ASC nulls LAST LIMIT 10
         OFFSET 5
         """,
@@ -525,12 +519,8 @@ class PrepareQueryJointTest(TestCase, backtosql.TestSQLMixin):
                  FROM mv_campaign a
                  WHERE (a.date=%s)
                  GROUP BY 1,
-                          2) temp_yesterday ON (temp_base.account_id = temp_yesterday.account_id
-                                                OR temp_base.account_id IS NULL
-                                                AND temp_yesterday.account_id IS NULL)
-              AND (temp_base.campaign_id = temp_yesterday.campaign_id
-                   OR temp_base.campaign_id IS NULL
-                   AND temp_yesterday.campaign_id IS NULL)) a) b
+                          2) temp_yesterday ON temp_base.account_id = temp_yesterday.account_id
+              AND temp_base.campaign_id = temp_yesterday.campaign_id) a) b
         WHERE r >= 5 + 1
           AND r <= 10
 
@@ -636,12 +626,8 @@ class PrepareQueryJointTest(TestCase, backtosql.TestSQLMixin):
                  WHERE (a.date=%s)
                  GROUP BY 1,
                           2,
-                          3) temp_yesterday ON (temp_base.publisher = temp_yesterday.publisher
-                                                OR temp_base.publisher IS NULL
-                                                AND temp_yesterday.publisher IS NULL)
-              AND (temp_base.source_id = temp_yesterday.source_id
-                   OR temp_base.source_id IS NULL
-                   AND temp_yesterday.source_id IS NULL)
+                          3) temp_yesterday ON temp_base.publisher = temp_yesterday.publisher
+              AND temp_base.source_id = temp_yesterday.source_id
               AND (temp_base.dma = temp_yesterday.dma
                    OR temp_base.dma IS NULL
                    AND temp_yesterday.dma IS NULL)) a) b

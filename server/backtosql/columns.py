@@ -2,12 +2,13 @@ from . import helpers
 
 
 class TemplateColumn(object):
-    def __init__(self, template_name, context=None, group=None, alias=None):
+    def __init__(self, template_name, context=None, group=None, alias=None, null=None):
         self.template_name = template_name
         self.context = context or {}
 
         self.group = group
         self.alias = alias  # is set automatically through model if defined on a model
+        self.null = null
 
     @property
     def column_name(self):
@@ -43,7 +44,11 @@ class TemplateColumn(object):
         return helpers.generate_sql(self.template_name, context)
 
     def column_equal_or_null(self, table1, table2):
-        context = {"first_table_column": self.only_alias(table1), "second_table_column": self.only_alias(table2)}
+        context = {
+            "first_table_column": self.only_alias(table1),
+            "second_table_column": self.only_alias(table2),
+            "null": self.null,
+        }
         return helpers.generate_sql("column_equal_or_null.sql", context)
 
     def as_order(self, direction_hint, nulls=None):
@@ -51,8 +56,8 @@ class TemplateColumn(object):
 
 
 class Column(TemplateColumn):
-    def __init__(self, column_name, group=None, alias=None):
-        super(Column, self).__init__("column.sql", {"column_name": column_name}, alias=alias, group=group)
+    def __init__(self, column_name, group=None, alias=None, null=None):
+        super(Column, self).__init__("column.sql", {"column_name": column_name}, alias=alias, group=group, null=null)
 
 
 class OrderColumn(TemplateColumn):
