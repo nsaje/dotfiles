@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 
-import os
 import collections
 import os.path
 from secretcrypt import Secret
@@ -9,76 +8,88 @@ from secretcrypt import Secret
 DEBUG = True
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = '=o2)mkphq!igv$*josav@qobg)sz^uw2lorv@)kjcr1yct%q8l'
+SECRET_KEY = "=o2)mkphq!igv$*josav@qobg)sz^uw2lorv@)kjcr1yct%q8l"
 
-STATS_DB_NAME = 'stats'
+STATS_DB_NAME = "stats"
 STATS_DB_WRITE_REPLICAS = []
-STATS_DB_WRITE_REPLICAS_POSTGRES = ['stats-postgres']
+STATS_DB_WRITE_REPLICAS_POSTGRES = ["stats-postgres"]
 STATS_DB_READ_REPLICAS = []
-STATS_DB_READ_REPLICAS_POSTGRES = ['stats-postgres']
+STATS_DB_READ_REPLICAS_POSTGRES = ["stats-postgres"]
 
-_REDSHIFT_PASSWORD = ''
-_PG01_PASSWORD = ''
+_REDSHIFT_PASSWORD = ""
+_PG01_PASSWORD = ""
 try:
-    _REDSHIFT_PASSWORD = Secret('kms:region=us-east-1:AQECAHi+LUun9zpdDynDViFKm08DnYVERdz5zNZO4BgKN2CjEAAAAG0wawYJKoZIhvcNAQcGoF4wXAIBADBXBgkqhkiG9w0BBwEwHgYJYIZIAWUDBAEuMBEEDDlDpTJN8Wk6owdToQIBEIAqTeV9zIxNgeNlrCP4EU1waJ6/VgR46uDjdSSW6OaQPqcKk3q95p3+nmFQ').get().decode('utf-8')
-except:
+    _REDSHIFT_PASSWORD = (
+        Secret(
+            "kms:region=us-east-1:AQECAHi+LUun9zpdDynDViFKm08DnYVERdz5zNZO4BgKN2CjEAAAAG0wawYJKoZIhvcNAQcGoF4wXAIBADBXBgkqhkiG9w0BBwEwHgYJYIZIAWUDBAEuMBEEDDlDpTJN8Wk6owdToQIBEIAqTeV9zIxNgeNlrCP4EU1waJ6/VgR46uDjdSSW6OaQPqcKk3q95p3+nmFQ"  # noqa
+        )
+        .get()
+        .decode("utf-8")
+    )
+except Exception:
     pass
 try:
-    _PG01_PASSWORD = Secret('kms:region=us-east-1:AQECAHi+LUun9zpdDynDViFKm08DnYVERdz5zNZO4BgKN2CjEAAAAHQwcgYJKoZIhvcNAQcGoGUwYwIBADBeBgkqhkiG9w0BBwEwHgYJYIZIAWUDBAEuMBEEDN+Qf0GjhUNyUYAMBwIBEIAxik4CbQ5ceWlyBNzT103YK0vZvq/KjSJKVTDp3DTbBuLO4ykRtSlOmOqESX5q7JRtmA==').get().decode('utf-8')
-except:
+    _PG01_PASSWORD = (
+        Secret(
+            "kms:region=us-east-1:AQECAHi+LUun9zpdDynDViFKm08DnYVERdz5zNZO4BgKN2CjEAAAAHQwcgYJKoZIhvcNAQcGoGUwYwIBADBeBgkqhkiG9w0BBwEwHgYJYIZIAWUDBAEuMBEEDN+Qf0GjhUNyUYAMBwIBEIAxik4CbQ5ceWlyBNzT103YK0vZvq/KjSJKVTDp3DTbBuLO4ykRtSlOmOqESX5q7JRtmA=="  # noqa
+        )
+        .get()
+        .decode("utf-8")
+    )
+except Exception:
     pass
 
 _DOCKER_POSTGRES = {
-    'ENGINE': 'django.db.backends.postgresql_psycopg2',
-    'NAME': 'one-dev',
-    'USER': 'eins',
-    'PASSWORD': 'devpwd',
-    'HOST': 'postgres',
-    'PORT': 5432,
-    'TEST': {'NAME': 'onetestdb'},
+    "ENGINE": "django.db.backends.postgresql_psycopg2",
+    "NAME": "one-dev",
+    "USER": "eins",
+    "PASSWORD": "devpwd",
+    "HOST": "postgres",
+    "PORT": 5432,
+    "TEST": {"NAME": "onetestdb"},
 }
 
 DATABASES = {
-    'default': _DOCKER_POSTGRES,
-    'testing_default': _DOCKER_POSTGRES,
+    "default": _DOCKER_POSTGRES,
+    "testing_default": _DOCKER_POSTGRES,
     STATS_DB_NAME: {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'dev',
-        'USER': 'developer',
-        'PASSWORD': _REDSHIFT_PASSWORD,
-        'HOST': 'development-cluster.cf6ca6mynjjb.us-east-1.redshift.amazonaws.com',
-        'PORT': 5439,
+        "ENGINE": "django.db.backends.postgresql_psycopg2",
+        "NAME": "dev",
+        "USER": "developer",
+        "PASSWORD": _REDSHIFT_PASSWORD,
+        "HOST": "development-cluster.cf6ca6mynjjb.us-east-1.redshift.amazonaws.com",
+        "PORT": 5439,
     },
-    'stats-postgres': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'one-dev',
-        'USER': 'eins',
-        'PASSWORD': 'devpwd',
-        'HOST': 'statsdb',
-        'PORT': 5432
+    "stats-postgres": {
+        "ENGINE": "django.db.backends.postgresql_psycopg2",
+        "NAME": "one-dev",
+        "USER": "eins",
+        "PASSWORD": "devpwd",
+        "HOST": "statsdb",
+        "PORT": 5432,
     },
 }
 
-if os.environ.get('DB') == 'pg01':
-    DATABASES['default'] = {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'one',
-        'USER': 'zemadmin',
-        'PASSWORD': _PG01_PASSWORD,
-        'HOST': 'pg01.cmkkg7ghktp5.us-east-1.rds.amazonaws.com',
-        'PORT': 5432,
+if os.environ.get("DB") == "pg01":
+    DATABASES["default"] = {
+        "ENGINE": "django.db.backends.postgresql_psycopg2",
+        "NAME": "one",
+        "USER": "zemadmin",
+        "PASSWORD": _PG01_PASSWORD,
+        "HOST": "pg01.cmkkg7ghktp5.us-east-1.rds.amazonaws.com",
+        "PORT": 5432,
     }
 
 DATABASE_READ_REPLICAS = []
 
-ALLOWED_HOSTS = ['eins', 'einsacceptance', 'localhost']
+ALLOWED_HOSTS = ["eins", "einsacceptance", "localhost"]
 
-BASE_URL = 'https://one.zemanta.com'
+BASE_URL = "https://one.zemanta.com"
 
 ACCOUNT_ACTIVATION_DAYS = 30
 
 SECURE_SSL_REDIRECT = False
-SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 SECURE_REDIRECT_EXEMPT = []
 SESSION_COOKIE_SECURE = False
 CSRF_COOKIE_SECURE = False
@@ -93,113 +104,102 @@ SESSION_COOKIE_SECURE = False
 
 # Email settings
 EMAIL_USE_TLS = True
-EMAIL_HOST = ''
+EMAIL_HOST = ""
 EMAIL_PORT = 587
-EMAIL_HOST_USER = ''
-EMAIL_HOST_PASSWORD = Secret('').get().decode('utf-8')
+EMAIL_HOST_USER = ""
+EMAIL_HOST_PASSWORD = Secret("").get().decode("utf-8")
 
 SEND_AD_GROUP_SETTINGS_CHANGE_MAIL = True
 SEND_NOTIFICATION_MAIL = False
-SUPPLY_REPORTS_FROM_EMAIL = 'supplyreports@zemanta.com'
-FROM_EMAIL = 'help-test@zemanta.com'
+SUPPLY_REPORTS_FROM_EMAIL = "supplyreports@zemanta.com"
+FROM_EMAIL = "help-test@zemanta.com"
 
 # Path to log file
-LOG_FILE = '/app/logs/eins-log.log'
+LOG_FILE = "/app/logs/eins-log.log"
 
 # Stats
-STATSD_INFLUX_HOST = os.environ.get('TELEGRAF_PORT_8135_UDP_ADDR', 'localhost')
-STATSD_INFLUX_PORT = int(os.environ.get('TELEGRAF_PORT_8135_UDP_PORT', '8135'))
+STATSD_INFLUX_HOST = os.environ.get("TELEGRAF_PORT_8135_UDP_ADDR", "localhost")
+STATSD_INFLUX_PORT = int(os.environ.get("TELEGRAF_PORT_8135_UDP_PORT", "8135"))
 
 # Saucelabs
-SAUCELABS_USERNAME = ''
-SAUCELABS_ACCESS_KEY = Secret('').get().decode('utf-8')
+SAUCELABS_USERNAME = ""
+SAUCELABS_ACCESS_KEY = Secret("").get().decode("utf-8")
 
 # Auth
 GOOGLE_OAUTH_ENABLED = False
-GOOGLE_OAUTH_CLIENT_ID = ''
-GOOGLE_OAUTH_CLIENT_SECRET = Secret('').get().decode('utf-8')
+GOOGLE_OAUTH_CLIENT_ID = ""
+GOOGLE_OAUTH_CLIENT_SECRET = Secret("").get().decode("utf-8")
 
 # Static files
 BUILD_NUMBER = None
 
 if BUILD_NUMBER:
-    ROOT_STATIC_URL = 'https://s3.amazonaws.com/z1-static/build-{}'.format(BUILD_NUMBER)
-    _SERVER_STATIC_URL = ROOT_STATIC_URL + '/server'
-    _CLIENT_STATIC_URL = ROOT_STATIC_URL + '/client'
+    ROOT_STATIC_URL = "https://s3.amazonaws.com/z1-static/build-{}".format(BUILD_NUMBER)
+    _SERVER_STATIC_URL = ROOT_STATIC_URL + "/server"
+    _CLIENT_STATIC_URL = ROOT_STATIC_URL + "/client"
 else:
-    _SERVER_STATIC_URL = '/static'
-    _CLIENT_STATIC_URL = 'http://localhost:9999'
+    _SERVER_STATIC_URL = "/static"
+    _CLIENT_STATIC_URL = "http://localhost:9999"
 SERVER_STATIC_URL = _SERVER_STATIC_URL
 CLIENT_STATIC_URL = _CLIENT_STATIC_URL
 
 BRANCH = None
-if os.environ.get('BRANCH'):
-    BRANCH = os.environ.get('BRANCH')
+if os.environ.get("BRANCH"):
+    BRANCH = os.environ.get("BRANCH")
 
 # K1 API
-K1_API_SIGN_KEY = [Secret('plain::aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa').get()]
-K1_REALTIMESTATS_ADGROUP_URL = ''
-K1_YAHOO_MIGRATION_URL = ''
-K1_YAHOO_MIGRATION_CAMPAIGN_MAPPINGS_URL = ''
-K1_YAHOO_MIGRATION_CONTENT_AD_MAPPINGS_URL = ''
+K1_API_SIGN_KEY = [Secret("plain::aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa").get()]
+K1_REALTIMESTATS_ADGROUP_URL = ""
+K1_YAHOO_MIGRATION_URL = ""
+K1_YAHOO_MIGRATION_CAMPAIGN_MAPPINGS_URL = ""
+K1_YAHOO_MIGRATION_CONTENT_AD_MAPPINGS_URL = ""
 
 # Source credentials encryption key
-CREDENTIALS_ENCRYPTION_KEY = Secret('plain::aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa').get()  # has to be 32 bytes
+CREDENTIALS_ENCRYPTION_KEY = Secret("plain::aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa").get()  # has to be 32 bytes
 
 # Pagerduty settings
 PAGER_DUTY_ENABLED = False
-PAGER_DUTY_URL = ''
-PAGER_DUTY_ADOPS_SERVICE_KEY = Secret('').get().decode('utf-8')
-PAGER_DUTY_SYSOPS_SERVICE_KEY = Secret('').get().decode('utf-8')
-PAGER_DUTY_ENGINEERS_SERVICE_KEY = Secret('').get().decode('utf-8')
+PAGER_DUTY_URL = ""
+PAGER_DUTY_ADOPS_SERVICE_KEY = Secret("").get().decode("utf-8")
+PAGER_DUTY_SYSOPS_SERVICE_KEY = Secret("").get().decode("utf-8")
+PAGER_DUTY_ENGINEERS_SERVICE_KEY = Secret("").get().decode("utf-8")
 
 # Sentry config
-RAVEN_CONFIG = {
-    'dsn': '',
-}
+RAVEN_CONFIG = {"dsn": ""}
 
 # S3 related settings
-S3_BUCKET = ''
-S3_BUCKET_STATS = 'nsaje-test'
-S3_BUCKET_DEMO = ''
-S3_BUCKET_THUMBNAILER = ''
-S3_BUCKET_CUSTOM_REPORTS = ''
-S3_BUCKET_PUBLISHER_GROUPS = ''
-S3_BUCKET_VIDEO = ''
+S3_BUCKET = ""
+S3_BUCKET_STATS = "nsaje-test"
+S3_BUCKET_DEMO = ""
+S3_BUCKET_THUMBNAILER = ""
+S3_BUCKET_CUSTOM_REPORTS = ""
+S3_BUCKET_PUBLISHER_GROUPS = ""
+S3_BUCKET_VIDEO = ""
 USE_S3 = False
 
 # adgroup-level reports aggregations
 QUERY_AGGREGATE_REPORTS = False
 
 CACHES = {
-    'default': {
-        'BACKEND': 'django.core.cache.backends.memcached.PyLibMCCache',
-        'LOCATION': ['memcached:11211']
+    "default": {"BACKEND": "django.core.cache.backends.memcached.PyLibMCCache", "LOCATION": ["memcached:11211"]},
+    "breakdowns_rs": {"BACKEND": "django.core.cache.backends.memcached.PyLibMCCache", "LOCATION": ["memcached:11211"]},
+    "redshift_background": {
+        "BACKEND": "django.core.cache.backends.memcached.PyLibMCCache",
+        "LOCATION": ["memcached:11211"],
     },
-    'breakdowns_rs': {
-        'BACKEND': 'django.core.cache.backends.memcached.PyLibMCCache',
-        'LOCATION': ['memcached:11211']
+    "dash_db_cache": {"BACKEND": "django.core.cache.backends.memcached.PyLibMCCache", "LOCATION": ["memcached:11211"]},
+    "audience_sample_size": {
+        "BACKEND": "django.core.cache.backends.memcached.PyLibMCCache",
+        "LOCATION": ["memcached:11211"],
     },
-    'redshift_background': {
-        'BACKEND': 'django.core.cache.backends.memcached.PyLibMCCache',
-        'LOCATION': ['memcached:11211']
+    "inventory_planning": {
+        "BACKEND": "django.core.cache.backends.memcached.PyLibMCCache",
+        "LOCATION": ["memcached:11211"],
     },
-    'dash_db_cache': {
-        'BACKEND': 'django.core.cache.backends.memcached.PyLibMCCache',
-        'LOCATION': ['memcached:11211']
-    },
-    'audience_sample_size': {
-        'BACKEND': 'django.core.cache.backends.memcached.PyLibMCCache',
-        'LOCATION': ['memcached:11211']
-    },
-    'inventory_planning': {
-        'BACKEND': 'django.core.cache.backends.memcached.PyLibMCCache',
-        'LOCATION': ['memcached:11211']
-    },
-    'local_memory_cache': {
-        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
-        'LOCATION': 'unique-snowflake',
-        'TIMEOUT': 60,  # 1 min
+    "local_memory_cache": {
+        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+        "LOCATION": "unique-snowflake",
+        "TIMEOUT": 60,  # 1 min
     },
 }
 
@@ -209,55 +209,55 @@ HASH_CACHE_TTL = 24 * 60 * 60
 
 USE_REDSHIFT_BACKGROUND_CACHE = False
 
-IMAGE_THUMBNAIL_URL = 'https://images2.zemanta.com/'
+IMAGE_THUMBNAIL_URL = "https://images2.zemanta.com/"
 
 # QUEUES
-BROKER_TRANSPORT = 'memory'
-BROKER_URL = BROKER_TRANSPORT + '://'
+BROKER_TRANSPORT = "memory"
+BROKER_URL = BROKER_TRANSPORT + "://"
 
-CELERY_TASK_SERIALIZER = 'pickle'
-CELERY_ACCEPT_CONTENT = ['pickle']
+CELERY_TASK_SERIALIZER = "pickle"
+CELERY_ACCEPT_CONTENT = ["pickle"]
 
 CELERY_ROUTES = {
-    'reports_execute': {'queue': 'reports'},
-    'upload_lambda_execute': {'queue': 'upload-lambda'},
-    'redshift_background_cache': {'queue': 'redshift-background-cache'},
+    "reports_execute": {"queue": "reports"},
+    "upload_lambda_execute": {"queue": "upload-lambda"},
+    "redshift_background_cache": {"queue": "redshift-background-cache"},
 }
 
-QUEUE_NAME_PREFIX = 'test'
+QUEUE_NAME_PREFIX = "test"
 
-SQS_REGION = 'us-east-1'
+SQS_REGION = "us-east-1"
 SQS_VISIBILITY_TIMEOUT = 10 * 60
 
 BROKER_TRANSPORT_OPTIONS = {
-    'visibility_timeout': SQS_VISIBILITY_TIMEOUT,
-    'region': SQS_REGION,
-    'polling_interval': 10,
-    'queue_name_prefix': QUEUE_NAME_PREFIX,
+    "visibility_timeout": SQS_VISIBILITY_TIMEOUT,
+    "region": SQS_REGION,
+    "polling_interval": 10,
+    "queue_name_prefix": QUEUE_NAME_PREFIX,
 }
 
 USE_CELERY_FOR_REPORTS = False
 USE_CELERY_FOR_UPLOAD_LAMBDAS = False
 
 R1_DEMO_MODE = True
-R1_API_SIGN_KEY = Secret('').get()
-R1_REDIRECTS_API_URL = 'https://r1.zemanta.com/api/redirects/'
-R1_REDIRECTS_BATCH_API_URL = 'https://r1.zemanta.com/api/redirectsbatch/'
-R1_REDIRECTS_ADGROUP_API_URL = 'https://r1.zemanta.com/api/adgroup/{adgroup}/'
-R1_REDIRECTS_ADGROUP_REALTIMESTATS_API_URL = 'https://r1.zemanta.com/api/adgroup/{adgroup}/realtimestats'
-R1_VALIDATE_API_URL = 'https://r1.zemanta.com/api/validate/'
-R1_BLANK_REDIRECT_URL = 'http://r1.zemanta.com/b/{redirect_id}/z1/1/{content_ad_id}/'
-R1_CUSTOM_AUDIENCE_API_URL = 'https://r1.zemanta.com/api/audience/{audience_id}/'
-R1_PIXEL_TRAFFIC_URL = 'https://r1.zemanta.com/api/pixeltraffic/request/'
-R1_PIXEL_TRAFFIC_RESULT_URL = 'https://r1.zemanta.com/api/pixeltraffic/result/{job_id}/'
-R1_PIXEL_URL = 'https://r1.zemanta.com/api/pixel/{account_id}/{slug}/'
+R1_API_SIGN_KEY = Secret("").get()
+R1_REDIRECTS_API_URL = "https://r1.zemanta.com/api/redirects/"
+R1_REDIRECTS_BATCH_API_URL = "https://r1.zemanta.com/api/redirectsbatch/"
+R1_REDIRECTS_ADGROUP_API_URL = "https://r1.zemanta.com/api/adgroup/{adgroup}/"
+R1_REDIRECTS_ADGROUP_REALTIMESTATS_API_URL = "https://r1.zemanta.com/api/adgroup/{adgroup}/realtimestats"
+R1_VALIDATE_API_URL = "https://r1.zemanta.com/api/validate/"
+R1_BLANK_REDIRECT_URL = "http://r1.zemanta.com/b/{redirect_id}/z1/1/{content_ad_id}/"
+R1_CUSTOM_AUDIENCE_API_URL = "https://r1.zemanta.com/api/audience/{audience_id}/"
+R1_PIXEL_TRAFFIC_URL = "https://r1.zemanta.com/api/pixeltraffic/request/"
+R1_PIXEL_TRAFFIC_RESULT_URL = "https://r1.zemanta.com/api/pixeltraffic/result/{job_id}/"
+R1_PIXEL_URL = "https://r1.zemanta.com/api/pixel/{account_id}/{slug}/"
 
 # Budget automation
 DEPLETING_AVAILABLE_BUDGET_SCALAR = 1.5
-DEPLETING_CAMPAIGN_BUDGET_EMAIL = 'help@zemanta.com'
+DEPLETING_CAMPAIGN_BUDGET_EMAIL = "help@zemanta.com"
 
-BIDDER_API_SIGN_KEY = [Secret('').get()]
-BIDDER_API_URL_BASE = 'https://b1api.zemanta.com'
+BIDDER_API_SIGN_KEY = [Secret("").get()]
+BIDDER_API_URL_BASE = "https://b1api.zemanta.com"
 
 # BCM
 BUDGET_RESERVE_FACTOR = 0.05
@@ -268,74 +268,81 @@ ENABLE_DJANGO_EXTENSIONS = True
 
 # campaignstop
 
-CAMPAIGN_STOP_UPDATE_HANDLER_QUEUE = 'campaignstop-updates'
+CAMPAIGN_STOP_UPDATE_HANDLER_QUEUE = "campaignstop-updates"
 
 # k1
 K1_DEMO_MODE = False
 K1_CONSISTENCY_SYNC = False
 
-K1_CONSISTENCY_PING_ACCOUNT_QUEUE = 'k1-consistency_ping_account'
-K1_CONSISTENCY_PING_AD_GROUP_QUEUE = 'k1-consistency_ping_ad_group'
-K1_CONSISTENCY_PING_CONTENT_AD_QUEUE = 'k1-consistency_ping_content_ad'
-K1_CONSISTENCY_PING_BLACKLIST_QUEUE = 'k1-consistency_ping_blacklist'
+K1_CONSISTENCY_PING_ACCOUNT_QUEUE = "k1-consistency_ping_account"
+K1_CONSISTENCY_PING_AD_GROUP_QUEUE = "k1-consistency_ping_ad_group"
+K1_CONSISTENCY_PING_CONTENT_AD_QUEUE = "k1-consistency_ping_content_ad"
+K1_CONSISTENCY_PING_BLACKLIST_QUEUE = "k1-consistency_ping_blacklist"
 
 # DeployKitty
-DK_API_KEY = Secret('').get()
-DK_DEMO_PREPARE_ENDPOINT = ''
-DK_DEMO_UP_ENDPOINT = ''
-DK_DEMO_DOWN_ENDPOINT = ''
+DK_API_KEY = Secret("").get()
+DK_DEMO_PREPARE_ENDPOINT = ""
+DK_DEMO_UP_ENDPOINT = ""
+DK_DEMO_DOWN_ENDPOINT = ""
 
 # l1
-LAMBDA_REGION = 'us-east-1'
-LAMBDA_CONTENT_UPLOAD_SIGN_KEY = Secret('').get()
-LAMBDA_CONTENT_UPLOAD_NAMESPACE = 't'
-LAMBDA_CONTENT_UPLOAD_FUNCTION_NAME = 'mock'
-LAMBDA_CONTENT_UPLOAD_CALLBACK_URL = ''
+LAMBDA_REGION = "us-east-1"
+LAMBDA_CONTENT_UPLOAD_SIGN_KEY = Secret("").get()
+LAMBDA_CONTENT_UPLOAD_NAMESPACE = "t"
+LAMBDA_CONTENT_UPLOAD_FUNCTION_NAME = "mock"
+LAMBDA_CONTENT_UPLOAD_CALLBACK_URL = ""
 
-LAMBDA_VIDEO_UPLOAD_SIGN_KEY = Secret('').get()
-LAMBDA_ENVIRONMENT = 'test'
-LAMBDA_CALLBACK_HOST = ''
-VIDEO_PREVIEW_URL = 'https://s3.amazonaws.com/zemvideos/transcoded/{filename}'
-VAST_URL = 'https://s3.amazonaws.com/zemvideos/vast/{filename}'
+LAMBDA_VIDEO_UPLOAD_SIGN_KEY = Secret("").get()
+LAMBDA_ENVIRONMENT = "test"
+LAMBDA_CALLBACK_HOST = ""
+VIDEO_PREVIEW_URL = "https://s3.amazonaws.com/zemvideos/transcoded/{filename}"
+VAST_URL = "https://s3.amazonaws.com/zemvideos/vast/{filename}"
 
 # Slack hooks
-SLACK_INCOMING_HOOK_URL = Secret('').get().decode('utf-8')
+SLACK_INCOMING_HOOK_URL = Secret("").get().decode("utf-8")
 
 # GA credentials - order newest to oldest
 GA_CREDENTIALS = collections.OrderedDict()
-GA_CREDENTIALS['account-2@example.com'] = Secret('').get().decode('utf-8')
-GA_CREDENTIALS['account-1@example.com'] = Secret('').get().decode('utf-8')
+GA_CREDENTIALS["account-2@example.com"] = Secret("").get().decode("utf-8")
+GA_CREDENTIALS["account-1@example.com"] = Secret("").get().decode("utf-8")
 
 # bizwire
-BIZWIRE_API_SIGN_KEY = Secret('plain::aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa').get()
+BIZWIRE_API_SIGN_KEY = Secret("plain::aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa").get()
 # path for S3 mock
-FILE_STORAGE_DIR = '/tmp'
+FILE_STORAGE_DIR = "/tmp"
 
 INFLUX_DATABASES = {
-    'default': {
-        'database': '',
-        'username': '',
-        'password': '',
-        'host': '',
-        'port': 8086,
-        'ssl': True,
-        'verify_ssl': True,
-    },
+    "default": {
+        "database": "",
+        "username": "",
+        "password": "",
+        "host": "",
+        "port": 8086,
+        "ssl": True,
+        "verify_ssl": True,
+    }
 }
 
-BLUEKAI_API_PARTNER_ID = '2661'
-BLUEKAI_API_USER_KEY = ''
-BLUEKAI_API_SECRET_KEY = Secret('').get().decode('utf-8')
+BLUEKAI_API_PARTNER_ID = "2661"
+BLUEKAI_API_USER_KEY = ""
+BLUEKAI_API_SECRET_KEY = Secret("").get().decode("utf-8")
 
-REST_FRAMEWORK = {
-    'UNICODE_JSON': False,
-    'EXCEPTION_HANDLER': 'restapi.common.exceptions.custom_exception_handler',
-}
+REST_FRAMEWORK = {"UNICODE_JSON": False, "EXCEPTION_HANDLER": "restapi.common.exceptions.custom_exception_handler"}
 
 DISABLE_FACEBOOK = False
 AMPLIFY_REVIEW = False
 
-SPARK_MASTER = ''
+SPARK_MASTER = ""
+
+# #  TAPCLICK ftp config
+REPORTS_TO_FTP_SERVER_TAPCLICK = {
+    "ftp_server": Secret("plain::172.17.0.2").get().decode("utf-8"),
+    "ftp_port": 21,
+    "ftp_user": Secret("plain::kev").get().decode("utf-8"),
+    "ftp_password": Secret("plain::test").get().decode("utf-8"),
+    # Key is the report ID, Value is the remote destination for that report
+    "ftp_reports_destinations": {1: "account1", 2: "account2", 3: "account3"},
+}
 
 try:
     from server.localsettings_docker_override import *  # noqa

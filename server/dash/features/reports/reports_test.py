@@ -1,14 +1,13 @@
 import datetime
-import mock
 
+import mock
 from celery.exceptions import SoftTimeLimitExceeded
+from django.conf import settings
 from django.test import TestCase
 
 import core.models
-
 from dash.features import scheduled_reports
 from utils.magic_mixer import magic_mixer
-
 from . import constants
 from . import reports
 from .reportjob import ReportJob
@@ -149,3 +148,74 @@ class ReportsExecuteTest(TestCase):
         self.reportJob.refresh_from_db()
         self.assertEqual(constants.ReportJobStatus.DONE, self.reportJob.status)
         self.assertEqual("test-report-path", self.reportJob.result)
+
+    @mock.patch("dash.features.reports.reports.ReportJobExecutor.send_by_email")
+    @mock.patch("dash.features.reports.reports.ReportJobExecutor.save_to_ftp")
+    @mock.patch("dash.features.reports.reports.ReportJobExecutor.save_to_s3")
+    @mock.patch("dash.features.reports.reports.ReportJobExecutor.get_report")
+    def test_ftp_success(self, mock_get_report, mock_save, mock_ftp, mock_send):
+        self.reportJob.scheduled_report = magic_mixer.blend(
+            scheduled_reports.ScheduledReport,
+            id=list(settings.REPORTS_TO_FTP_SERVER_TAPCLICK["ftp_reports_destinations"])[0],
+            query={},
+        )
+        self.reportJob.save()
+        mock_get_report.return_value = ("a_csv_report", "report_file_name")
+        mock_save.return_value = "test-report-path"
+        reports.execute(self.reportJob.id)
+
+        mock_ftp.assert_called_with(
+            settings.REPORTS_TO_FTP_SERVER_TAPCLICK.get("ftp_server"),
+            settings.REPORTS_TO_FTP_SERVER_TAPCLICK.get("ftp_port"),
+            settings.REPORTS_TO_FTP_SERVER_TAPCLICK.get("ftp_user"),
+            settings.REPORTS_TO_FTP_SERVER_TAPCLICK.get("ftp_password"),
+            settings.REPORTS_TO_FTP_SERVER_TAPCLICK["ftp_reports_destinations"].get(self.reportJob.scheduled_report.id),
+            "{}-{}.csv".format(
+                settings.REPORTS_TO_FTP_SERVER_TAPCLICK["ftp_reports_destinations"].get(
+                    self.reportJob.scheduled_report_id
+                ),
+                datetime.datetime.strftime(datetime.datetime.now(), "%Y-%m-%d"),
+            ),
+            "a_csv_report",
+        )
+
+        self.mock_influx_incr.assert_called_once_with("dash.reports", 1, status="success")
+
+        self.reportJob.refresh_from_db()
+        self.assertEqual(constants.ReportJobStatus.DONE, self.reportJob.status)
+        self.assertEqual("test-report-path", self.reportJob.result)
+
+    @mock.patch("dash.features.reports.reports.ReportJobExecutor.send_by_email")
+    @mock.patch("dash.features.reports.reports.ReportJobExecutor.save_to_ftp")
+    @mock.patch("dash.features.reports.reports.ReportJobExecutor.save_to_s3")
+    @mock.patch("dash.features.reports.reports.ReportJobExecutor.get_report")
+    def test_ftp_fail(self, mock_get_report, mock_save, mock_ftp, mock_send):
+        self.reportJob.scheduled_report = magic_mixer.blend(
+            scheduled_reports.ScheduledReport,
+            id=list(settings.REPORTS_TO_FTP_SERVER_TAPCLICK["ftp_reports_destinations"])[0],
+            query={},
+        )
+        self.reportJob.save()
+        mock_get_report.return_value = ("a_csv_report", "report_file_name")
+        mock_save.return_value = "test-report-path"
+        mock_ftp.side_effect = ConnectionError("connection failed")
+
+        reports.execute(self.reportJob.id)
+        mock_ftp.assert_called_with(
+            settings.REPORTS_TO_FTP_SERVER_TAPCLICK.get("ftp_server"),
+            settings.REPORTS_TO_FTP_SERVER_TAPCLICK.get("ftp_port"),
+            settings.REPORTS_TO_FTP_SERVER_TAPCLICK.get("ftp_user"),
+            settings.REPORTS_TO_FTP_SERVER_TAPCLICK.get("ftp_password"),
+            settings.REPORTS_TO_FTP_SERVER_TAPCLICK["ftp_reports_destinations"].get(self.reportJob.scheduled_report.id),
+            "{}-{}.csv".format(
+                settings.REPORTS_TO_FTP_SERVER_TAPCLICK["ftp_reports_destinations"].get(
+                    self.reportJob.scheduled_report_id
+                ),
+                datetime.datetime.strftime(datetime.datetime.now(), "%Y-%m-%d"),
+            ),
+            "a_csv_report",
+        )
+        self.mock_influx_incr.assert_called_once_with("dash.reports", 1, status="failed")
+        self.reportJob.refresh_from_db()
+        self.assertNotEqual(constants.ReportJobStatus.DONE, self.reportJob.status)
+        self.assertNotEqual("test-report-path", self.reportJob.result)

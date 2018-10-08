@@ -1,41 +1,35 @@
 import abc
 import datetime
+import ftplib
+import io
 import logging
+import os.path
 import random
 import string
-import io
 import traceback
-import os.path
 
 import influx
-
+from celery.exceptions import SoftTimeLimitExceeded
 from django.conf import settings
 
 import dash.constants
-import dash.views.helpers
 import dash.models
-
-from server import celery
-from celery.exceptions import SoftTimeLimitExceeded
-
-import stats.constants
+import dash.views.helpers
 import stats.api_breakdowns
 import stats.api_reports
+import stats.constants
 import stats.helpers
-
-import utils.s3helpers
+import utils.columns
+import utils.dates_helper
 import utils.email_helper
 import utils.exc
-import utils.columns
+import utils.s3helpers
 import utils.sort_helper
-import utils.dates_helper
-from utils import threads
-from utils import csv_utils
+from server import celery
+from utils import csv_utils, threads
 
-from . import constants
-from . import helpers
+from . import constants, helpers
 from .reportjob import ReportJob
-
 
 logger = logging.getLogger(__name__)
 
@@ -97,8 +91,24 @@ class ReportJobExecutor(JobExecutor):
             csv_report, filename = self.get_report(self.job)
 
             report_path = self.save_to_s3(csv_report, filename)
+            if self.job.scheduled_report_id in settings.REPORTS_TO_FTP_SERVER_TAPCLICK["ftp_reports_destinations"]:
+                self.save_to_ftp(
+                    settings.REPORTS_TO_FTP_SERVER_TAPCLICK.get("ftp_server"),
+                    settings.REPORTS_TO_FTP_SERVER_TAPCLICK.get("ftp_port"),
+                    settings.REPORTS_TO_FTP_SERVER_TAPCLICK.get("ftp_user"),
+                    settings.REPORTS_TO_FTP_SERVER_TAPCLICK.get("ftp_password"),
+                    settings.REPORTS_TO_FTP_SERVER_TAPCLICK["ftp_reports_destinations"].get(
+                        self.job.scheduled_report_id
+                    ),
+                    "{}-{}.csv".format(
+                        settings.REPORTS_TO_FTP_SERVER_TAPCLICK["ftp_reports_destinations"].get(
+                            self.job.scheduled_report_id
+                        ),
+                        datetime.datetime.strftime(datetime.datetime.now(), "%Y-%m-%d"),
+                    ),
+                    csv_report,
+                )
             self.send_by_email(self.job, report_path)
-
             self.job.result = report_path
             self.job.status = constants.ReportJobStatus.DONE
             influx.incr("dash.reports", 1, status="success")
@@ -468,3 +478,12 @@ class ReportJobExecutor(JobExecutor):
             return constants.DEFAULT_ORDER
 
         return prefix + column_to_field_map[column_name]
+
+    @staticmethod
+    def save_to_ftp(server, port, ftp_user, ftp_password, destination, filename, report):
+        with ftplib.FTP() as ftp:
+            ftp.connect(server, port)
+            ftp.login(ftp_user, ftp_password)
+            ftp.cwd(destination)
+            to_file = io.BytesIO(report.encode("utf-8"))
+            ftp.storbinary("STOR {}".format(filename), to_file)

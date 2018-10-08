@@ -2,7 +2,6 @@ import stats.constants
 import utils.columns
 from utils.constant_base import ConstantBase
 
-
 EQUALS = "="
 IN = "IN"
 BETWEEN = "between"
