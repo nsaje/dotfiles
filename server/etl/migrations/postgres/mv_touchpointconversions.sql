@@ -1,4 +1,4 @@
-CREATE TABLE mv_touchpointconversions (
+CREATE TABLE IF NOT EXISTS mv_touchpointconversions (
       -- kw::dimensions
       date date not null,
       source_id int2,
@@ -31,3 +31,5 @@ CREATE TABLE mv_touchpointconversions (
       -- kw::end
 );
 CREATE INDEX IF NOT EXISTS mv_touchpointconversions_main_idx ON mv_touchpointconversions (source_id, account_id, campaign_id, ad_group_id, content_ad_id, slug, conversion_window, date);
+CREATE STATISTICS IF NOT EXISTS mv_touchpointconversions_stx (dependencies) ON account_id, campaign_id, ad_group_id, content_ad_id FROM mv_touchpointconversions;
+CREATE STATISTICS IF NOT EXISTS mv_touchpointconversions_stx_slug (dependencies) ON account_id, slug FROM mv_touchpointconversions;

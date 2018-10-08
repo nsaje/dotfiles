@@ -16,6 +16,8 @@ from .materialize import Materialize
 
 logger = logging.getLogger(__name__)
 
+DEPENDENT_COLUMNS = {"agency_id", "account_id", "campaign_id", "ad_group_id", "content_ad_id"}
+
 
 class MasterDerivedView(Materialize):
     SOURCE_VIEW = MasterView.TABLE_NAME
@@ -100,7 +102,10 @@ class MasterDerivedView(Materialize):
         with open(template) as rs:
             assert cls.SORTKEY[0] == "date"
             index = cls.SORTKEY[1:] + ["date"]
-            sql = derived_views.generate_table_definition_postgres(cls.TABLE_NAME, rs, cls.BREAKDOWN, index)
+            dependencies = [col for col in cls.SORTKEY if col in DEPENDENT_COLUMNS]
+            sql = derived_views.generate_table_definition_postgres(
+                cls.TABLE_NAME, rs, cls.BREAKDOWN, index, dependencies
+            )
         return sql
 
     def prepare_insert_query(self, date_from, date_to):

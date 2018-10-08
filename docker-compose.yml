@@ -11,6 +11,7 @@ services:
 
     statspostgres:
         extends: postgres
+        image: postgres:10.0
 
     # this is fake telegraf that only prints stats on stdout
     telegraf:

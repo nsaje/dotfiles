@@ -1,4 +1,4 @@
-CREATE TABLE mv_master_pubs (
+CREATE TABLE IF NOT EXISTS mv_master_pubs (
         -- kw::dimensions
         date date not null,
         source_id int2,
@@ -64,3 +64,4 @@ CREATE TABLE mv_master_pubs (
         -- kw::end
 );
 CREATE INDEX IF NOT EXISTS mv_master_pubs_main_idx ON mv_master_pubs (source_id, account_id, campaign_id, ad_group_id, publisher_source_id, date);
+CREATE STATISTICS IF NOT EXISTS mv_master_pubs_stx (dependencies) ON account_id, campaign_id, ad_group_id FROM mv_master_pubs;

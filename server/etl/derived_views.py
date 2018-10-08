@@ -28,7 +28,9 @@ def generate_table_definition(
     )
 
 
-def generate_table_definition_postgres(table_name, table_definition_stream, breakdown, index, breakdown_overrides=None):
+def generate_table_definition_postgres(
+    table_name, table_definition_stream, breakdown, index, dependencies, breakdown_overrides=None
+):
     dimensions, aggregates = parse_table_definition(table_definition_stream)
 
     if breakdown_overrides:
@@ -37,7 +39,13 @@ def generate_table_definition_postgres(table_name, table_definition_stream, brea
 
     return backtosql.generate_sql(
         "etl_create_table_postgres.sql",
-        dict(table_name=table_name, dimensions=[dimensions[x] for x in breakdown], aggregates=aggregates, index=index),
+        dict(
+            table_name=table_name,
+            dimensions=[dimensions[x] for x in breakdown],
+            aggregates=aggregates,
+            index=index,
+            dependencies=dependencies,
+        ),
     )
 
 

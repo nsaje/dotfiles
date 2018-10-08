@@ -1,4 +1,4 @@
-CREATE TABLE mv_conversions (
+CREATE TABLE IF NOT EXISTS mv_conversions (
       -- kw::dimensions
       date date not null,
       source_id int2,
@@ -18,3 +18,5 @@ CREATE TABLE mv_conversions (
       -- kw::end
 );
 CREATE INDEX IF NOT EXISTS mv_conversions_main_idx ON mv_conversions (source_id, account_id, campaign_id, ad_group_id, content_ad_id, publisher_source_id, slug, date);
+CREATE STATISTICS IF NOT EXISTS mv_conversions_stx (dependencies) ON account_id, campaign_id, ad_group_id, content_ad_id FROM mv_conversions;
+CREATE STATISTICS IF NOT EXISTS mv_conversions_stx_slug (dependencies) ON account_id, slug FROM mv_conversions;

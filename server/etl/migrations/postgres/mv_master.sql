@@ -1,5 +1,5 @@
 -- table definition for the master materialized view table
-CREATE TABLE mv_master (
+CREATE TABLE IF NOT EXISTS mv_master (
        -- kw::dimensions
        date date not null,
        source_id int2,
@@ -65,3 +65,4 @@ CREATE TABLE mv_master (
        -- kw::end
 );
 CREATE INDEX IF NOT EXISTS mv_master_main_idx ON mv_master (source_id, account_id, campaign_id, ad_group_id, content_ad_id, publisher_source_id, date);
+CREATE STATISTICS IF NOT EXISTS mv_master_stx (dependencies) ON account_id, campaign_id, ad_group_id, content_ad_id FROM mv_master;
