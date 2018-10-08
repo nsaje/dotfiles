@@ -14,14 +14,7 @@ from . import view_selector
 
 
 POSTGRES_MAX_DAYS = 62
-POSTGRES_EXCLUDE_VIEWS = (
-    "mv_master",
-    "mv_master_pubs",
-    "mv_account_pubs",
-    "mv_campaign_pubs",
-    "mv_adgroup_pubs",
-    "mv_contentad_pubs",
-)
+POSTGRES_EXCLUDE_VIEWS = ("mv_master", "mv_master_pubs")
 
 
 def should_query_all(breakdown):
