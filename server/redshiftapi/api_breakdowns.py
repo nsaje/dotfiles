@@ -14,14 +14,7 @@ from . import view_selector
 
 
 POSTGRES_MAX_DAYS = 62
-POSTGRES_EXCLUDE_VIEWS = (
-    "mv_master",
-    "mv_master_pubs",
-    "mv_account_pubs",
-    "mv_campaign_pubs",
-    "mv_adgroup_pubs",
-    "mv_contentad_pubs",
-)
+POSTGRES_EXCLUDE_VIEWS = ("mv_master", "mv_master_pubs")
 
 
 def should_query_all(breakdown):
@@ -59,7 +52,10 @@ def query_with_background_cache(*args, **kwargs):
     return rows
 
 
-def _should_use_postgres(breakdown, constraints, parents, use_publishers_view):
+def _should_use_postgres(breakdown, constraints, parents, use_publishers_view, is_reports):
+    if is_reports:
+        return False
+
     needed_dimensions = helpers.get_all_dimensions(breakdown, constraints, parents)
     view = view_selector.get_best_view_base(needed_dimensions, use_publishers_view)
     date_constraint = constraints.get("date__gte") or constraints.get("date__gt") or constraints.get("date")
@@ -85,7 +81,7 @@ def query(
     extra_name="",
     metrics=None,
 ):
-    should_use_postgres = _should_use_postgres(breakdown, constraints, parents, use_publishers_view)
+    should_use_postgres = _should_use_postgres(breakdown, constraints, parents, use_publishers_view, is_reports)
 
     with db_for_reads.use_stats_read_replica_postgres(should_use_postgres):
         orders = ["-media_cost"] + breakdown
