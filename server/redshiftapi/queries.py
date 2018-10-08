@@ -130,14 +130,15 @@ def _prepare_query_joint_for_model(context, template_name):
     sql = backtosql.generate_sql(template_name, context)
 
     params = []
+
+    params.extend(context["constraints"].get_params())
+    params.extend(context["yesterday_constraints"].get_params())
+
     if "conversions_constraints" in context and context["conversions_constraints"].was_generated():
         params.extend(context["conversions_constraints"].get_params())
 
     if "touchpoints_constraints" in context and context["touchpoints_constraints"].was_generated():
         params.extend(context["touchpoints_constraints"].get_params())
-
-    params.extend(context["yesterday_constraints"].get_params())
-    params.extend(context["constraints"].get_params())
 
     return sql, params, context["temp_tables"]
 

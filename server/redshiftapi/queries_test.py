@@ -312,56 +312,50 @@ class PrepareQueryJointTest(TestCase, backtosql.TestSQLMixin):
         self.assertSQLEquals(
             sql,
             """
-        WITH
-            temp_yesterday AS (
-                SELECT
-                    a.account_id AS account_id,
-                    (COALESCE(SUM(a.effective_cost_nano), 0) + COALESCE(SUM(a.effective_data_cost_nano), 0))::float/1000000000 e_yesterday_cost,
-                    (COALESCE(SUM(a.local_effective_cost_nano), 0) + COALESCE(SUM(a.local_effective_data_cost_nano), 0))::float/1000000000 local_e_yesterday_cost,
-                    (COALESCE(SUM(a.local_cost_nano), 0) + COALESCE(SUM(a.local_data_cost_nano), 0))::float/1000000000 local_yesterday_at_cost,
-                    (COALESCE(SUM(a.local_cost_nano), 0) + COALESCE(SUM(a.local_data_cost_nano), 0))::float/1000000000 local_yesterday_cost,
-                    (COALESCE(SUM(a.local_effective_cost_nano), 0) + COALESCE(SUM(a.local_effective_data_cost_nano), 0))::float/1000000000 local_yesterday_et_cost,
-                    (COALESCE(SUM(a.local_effective_cost_nano), 0) + COALESCE(SUM(a.local_effective_data_cost_nano), 0) + COALESCE(SUM(a.local_license_fee_nano), 0) + COALESCE(SUM(a.local_margin_nano), 0))::float/1000000000 local_yesterday_etfm_cost,
-                    (COALESCE(SUM(a.cost_nano), 0) + COALESCE(SUM(a.data_cost_nano), 0))::float/1000000000 yesterday_at_cost,
-                    (COALESCE(SUM(a.cost_nano), 0) + COALESCE(SUM(a.data_cost_nano), 0))::float/1000000000 yesterday_cost,
-                    (COALESCE(SUM(a.effective_cost_nano), 0) + COALESCE(SUM(a.effective_data_cost_nano), 0))::float/1000000000 yesterday_et_cost,
-                    (COALESCE(SUM(a.effective_cost_nano), 0) + COALESCE(SUM(a.effective_data_cost_nano), 0) + COALESCE(SUM(a.license_fee_nano), 0) + COALESCE(SUM(a.margin_nano), 0))::float/1000000000 yesterday_etfm_cost
-                FROM mv_account a
-                WHERE (a.date=%s)
-                GROUP BY 1
-            ),
-            temp_base AS (
-                SELECT
-                    a.account_id AS account_id,
-                    SUM(a.clicks) clicks,
-                    SUM(a.total_time_on_site) total_seconds
-                FROM mv_account a
-                WHERE (a.date>=%s AND a.date<=%s)
-                GROUP BY 1
-            )
-        SELECT
-            temp_base.account_id,
-            temp_base.clicks,
-            temp_base.total_seconds,
-            temp_yesterday.e_yesterday_cost,
-            temp_yesterday.local_e_yesterday_cost,
-            temp_yesterday.local_yesterday_at_cost,
-            temp_yesterday.local_yesterday_cost,
-            temp_yesterday.local_yesterday_et_cost,
-            temp_yesterday.local_yesterday_etfm_cost,
-            temp_yesterday.yesterday_at_cost,
-            temp_yesterday.yesterday_cost,
-            temp_yesterday.yesterday_et_cost,
-            temp_yesterday.yesterday_etfm_cost
-        FROM temp_base LEFT OUTER JOIN temp_yesterday ON
-            (temp_base.account_id = temp_yesterday.account_id OR temp_base.account_id IS NULL AND temp_yesterday.account_id IS NULL)
-        ORDER BY total_seconds ASC NULLS LAST
-        LIMIT 10
+        SELECT temp_base.account_id,
+               temp_base.clicks,
+               temp_base.total_seconds,
+               temp_yesterday.e_yesterday_cost,
+               temp_yesterday.local_e_yesterday_cost,
+               temp_yesterday.local_yesterday_at_cost,
+               temp_yesterday.local_yesterday_cost,
+               temp_yesterday.local_yesterday_et_cost,
+               temp_yesterday.local_yesterday_etfm_cost,
+               temp_yesterday.yesterday_at_cost,
+               temp_yesterday.yesterday_cost,
+               temp_yesterday.yesterday_et_cost,
+               temp_yesterday.yesterday_etfm_cost
+        FROM
+          (SELECT a.account_id AS account_id,
+                  sum(a.clicks) clicks,
+                  sum(a.total_time_on_site) total_seconds
+           FROM mv_account a
+           WHERE (a.date>=%s
+                  AND a.date<=%s)
+           GROUP BY 1) temp_base
+        LEFT OUTER JOIN
+          (SELECT a.account_id AS account_id,
+                  (coalesce(sum(a.effective_cost_nano), 0) + coalesce(sum(a.effective_data_cost_nano), 0))::float/1000000000 e_yesterday_cost,
+                  (coalesce(sum(a.local_effective_cost_nano), 0) + coalesce(sum(a.local_effective_data_cost_nano), 0))::float/1000000000 local_e_yesterday_cost,
+                  (coalesce(sum(a.local_cost_nano), 0) + coalesce(sum(a.local_data_cost_nano), 0))::float/1000000000 local_yesterday_at_cost,
+                  (coalesce(sum(a.local_cost_nano), 0) + coalesce(sum(a.local_data_cost_nano), 0))::float/1000000000 local_yesterday_cost,
+                  (coalesce(sum(a.local_effective_cost_nano), 0) + coalesce(sum(a.local_effective_data_cost_nano), 0))::float/1000000000 local_yesterday_et_cost,
+                  (coalesce(sum(a.local_effective_cost_nano), 0) + coalesce(sum(a.local_effective_data_cost_nano), 0) + coalesce(sum(a.local_license_fee_nano), 0) + coalesce(sum(a.local_margin_nano), 0))::float/1000000000 local_yesterday_etfm_cost,
+                  (coalesce(sum(a.cost_nano), 0) + coalesce(sum(a.data_cost_nano), 0))::float/1000000000 yesterday_at_cost,
+                  (coalesce(sum(a.cost_nano), 0) + coalesce(sum(a.data_cost_nano), 0))::float/1000000000 yesterday_cost,
+                  (coalesce(sum(a.effective_cost_nano), 0) + coalesce(sum(a.effective_data_cost_nano), 0))::float/1000000000 yesterday_et_cost,
+                  (coalesce(sum(a.effective_cost_nano), 0) + coalesce(sum(a.effective_data_cost_nano), 0) + coalesce(sum(a.license_fee_nano), 0) + coalesce(sum(a.margin_nano), 0))::float/1000000000 yesterday_etfm_cost
+           FROM mv_account a
+           WHERE (a.date=%s)
+           GROUP BY 1) temp_yesterday ON (temp_base.account_id = temp_yesterday.account_id
+                                          OR temp_base.account_id IS NULL
+                                          AND temp_yesterday.account_id IS NULL)
+        ORDER BY total_seconds ASC nulls LAST LIMIT 10
         OFFSET 5
         """,
         )
 
-        self.assertEqual(params, [datetime.date(2016, 7, 1), datetime.date(2016, 4, 1), datetime.date(2016, 5, 1)])
+        self.assertEqual(params, [datetime.date(2016, 4, 1), datetime.date(2016, 5, 1), datetime.date(2016, 7, 1)])
 
     @mock.patch("utils.dates_helper.local_today", return_value=datetime.date(2016, 7, 2))
     @mock.patch.object(
@@ -381,60 +375,58 @@ class PrepareQueryJointTest(TestCase, backtosql.TestSQLMixin):
         self.assertSQLEquals(
             sql,
             """
-        WITH
-            temp_yesterday AS (
-                SELECT
-                    a.publisher AS publisher,
-                    a.source_id AS source_id,
-                    (COALESCE(SUM(a.effective_cost_nano), 0) + COALESCE(SUM(a.effective_data_cost_nano), 0))::float/1000000000 e_yesterday_cost,
-                    (COALESCE(SUM(a.local_effective_cost_nano), 0) + COALESCE(SUM(a.local_effective_data_cost_nano), 0))::float/1000000000 local_e_yesterday_cost,
-                    (COALESCE(SUM(a.local_cost_nano), 0) + COALESCE(SUM(a.local_data_cost_nano), 0))::float/1000000000 local_yesterday_at_cost,
-                    (COALESCE(SUM(a.local_cost_nano), 0) + COALESCE(SUM(a.local_data_cost_nano), 0))::float/1000000000 local_yesterday_cost,
-                    (COALESCE(SUM(a.local_effective_cost_nano), 0) + COALESCE(SUM(a.local_effective_data_cost_nano), 0))::float/1000000000 local_yesterday_et_cost,
-                    (COALESCE(SUM(a.local_effective_cost_nano), 0) + COALESCE(SUM(a.local_effective_data_cost_nano), 0) + COALESCE(SUM(a.local_license_fee_nano), 0) + COALESCE(SUM(a.local_margin_nano), 0))::float/1000000000 local_yesterday_etfm_cost,
-                    (COALESCE(SUM(a.cost_nano), 0) + COALESCE(SUM(a.data_cost_nano), 0))::float/1000000000 yesterday_at_cost,
-                    (COALESCE(SUM(a.cost_nano), 0) + COALESCE(SUM(a.data_cost_nano), 0))::float/1000000000 yesterday_cost,
-                    (COALESCE(SUM(a.effective_cost_nano), 0) + COALESCE(SUM(a.effective_data_cost_nano), 0))::float/1000000000 yesterday_et_cost,
-                    (COALESCE(SUM(a.effective_cost_nano), 0) + COALESCE(SUM(a.effective_data_cost_nano), 0) + COALESCE(SUM(a.license_fee_nano), 0) + COALESCE(SUM(a.margin_nano), 0))::float/1000000000 yesterday_etfm_cost
-                FROM mv_account_pubs a
-                WHERE (a.date=%s)
-                GROUP BY 1, 2
-            ),
-            temp_base AS (
-                SELECT
-                    a.publisher AS publisher,
-                    a.source_id AS source_id,
-                    SUM(a.clicks) clicks,
-                    SUM(a.total_time_on_site) total_seconds
-                FROM mv_account_pubs a
-                WHERE (a.date>=%s AND a.date<=%s)
-                GROUP BY 1, 2
-            )
-        SELECT
-            temp_base.publisher,
-            temp_base.source_id,
-            temp_base.clicks,
-            temp_base.total_seconds,
-            temp_yesterday.e_yesterday_cost,
-            temp_yesterday.local_e_yesterday_cost,
-            temp_yesterday.local_yesterday_at_cost,
-            temp_yesterday.local_yesterday_cost,
-            temp_yesterday.local_yesterday_et_cost,
-            temp_yesterday.local_yesterday_etfm_cost,
-            temp_yesterday.yesterday_at_cost,
-            temp_yesterday.yesterday_cost,
-            temp_yesterday.yesterday_et_cost,
-            temp_yesterday.yesterday_etfm_cost
-        FROM temp_base LEFT OUTER JOIN temp_yesterday ON
-            (temp_base.publisher = temp_yesterday.publisher OR temp_base.publisher IS NULL AND temp_yesterday.publisher IS NULL) AND
-            (temp_base.source_id = temp_yesterday.source_id OR temp_base.source_id IS NULL AND temp_yesterday.source_id IS NULL)
-        ORDER BY total_seconds ASC NULLS LAST
-        LIMIT 10
+        SELECT temp_base.publisher,
+               temp_base.source_id,
+               temp_base.clicks,
+               temp_base.total_seconds,
+               temp_yesterday.e_yesterday_cost,
+               temp_yesterday.local_e_yesterday_cost,
+               temp_yesterday.local_yesterday_at_cost,
+               temp_yesterday.local_yesterday_cost,
+               temp_yesterday.local_yesterday_et_cost,
+               temp_yesterday.local_yesterday_etfm_cost,
+               temp_yesterday.yesterday_at_cost,
+               temp_yesterday.yesterday_cost,
+               temp_yesterday.yesterday_et_cost,
+               temp_yesterday.yesterday_etfm_cost
+        FROM
+          (SELECT a.publisher AS publisher,
+                  a.source_id AS source_id,
+                  sum(a.clicks) clicks,
+                  sum(a.total_time_on_site) total_seconds
+           FROM mv_account_pubs a
+           WHERE (a.date>=%s
+                  AND a.date<=%s)
+           GROUP BY 1,
+                    2) temp_base
+        LEFT OUTER JOIN
+          (SELECT a.publisher AS publisher,
+                  a.source_id AS source_id,
+                  (coalesce(sum(a.effective_cost_nano), 0) + coalesce(sum(a.effective_data_cost_nano), 0))::float/1000000000 e_yesterday_cost,
+                  (coalesce(sum(a.local_effective_cost_nano), 0) + coalesce(sum(a.local_effective_data_cost_nano), 0))::float/1000000000 local_e_yesterday_cost,
+                  (coalesce(sum(a.local_cost_nano), 0) + coalesce(sum(a.local_data_cost_nano), 0))::float/1000000000 local_yesterday_at_cost,
+                  (coalesce(sum(a.local_cost_nano), 0) + coalesce(sum(a.local_data_cost_nano), 0))::float/1000000000 local_yesterday_cost,
+                  (coalesce(sum(a.local_effective_cost_nano), 0) + coalesce(sum(a.local_effective_data_cost_nano), 0))::float/1000000000 local_yesterday_et_cost,
+                  (coalesce(sum(a.local_effective_cost_nano), 0) + coalesce(sum(a.local_effective_data_cost_nano), 0) + coalesce(sum(a.local_license_fee_nano), 0) + coalesce(sum(a.local_margin_nano), 0))::float/1000000000 local_yesterday_etfm_cost,
+                  (coalesce(sum(a.cost_nano), 0) + coalesce(sum(a.data_cost_nano), 0))::float/1000000000 yesterday_at_cost,
+                  (coalesce(sum(a.cost_nano), 0) + coalesce(sum(a.data_cost_nano), 0))::float/1000000000 yesterday_cost,
+                  (coalesce(sum(a.effective_cost_nano), 0) + coalesce(sum(a.effective_data_cost_nano), 0))::float/1000000000 yesterday_et_cost,
+                  (coalesce(sum(a.effective_cost_nano), 0) + coalesce(sum(a.effective_data_cost_nano), 0) + coalesce(sum(a.license_fee_nano), 0) + coalesce(sum(a.margin_nano), 0))::float/1000000000 yesterday_etfm_cost
+           FROM mv_account_pubs a
+           WHERE (a.date=%s)
+           GROUP BY 1,
+                    2) temp_yesterday ON (temp_base.publisher = temp_yesterday.publisher
+                                          OR temp_base.publisher IS NULL
+                                          AND temp_yesterday.publisher IS NULL)
+        AND (temp_base.source_id = temp_yesterday.source_id
+             OR temp_base.source_id IS NULL
+             AND temp_yesterday.source_id IS NULL)
+        ORDER BY total_seconds ASC nulls LAST LIMIT 10
         OFFSET 5
         """,
         )
 
-        self.assertEqual(params, [datetime.date(2016, 7, 1), datetime.date(2016, 4, 1), datetime.date(2016, 5, 1)])
+        self.assertEqual(params, [datetime.date(2016, 4, 1), datetime.date(2016, 5, 1), datetime.date(2016, 7, 1)])
 
     @mock.patch("utils.dates_helper.local_today", return_value=datetime.date(2016, 7, 2))
     @mock.patch.object(
@@ -461,94 +453,91 @@ class PrepareQueryJointTest(TestCase, backtosql.TestSQLMixin):
         self.assertSQLEquals(
             sql,
             """
-        WITH
-            temp_yesterday AS (
-                SELECT
-                    a.account_id AS account_id,
-                    a.campaign_id AS campaign_id,
-                    (COALESCE(SUM(a.effective_cost_nano), 0) + COALESCE(SUM(a.effective_data_cost_nano), 0))::float/1000000000 e_yesterday_cost,
-                    (COALESCE(SUM(a.local_effective_cost_nano), 0) + COALESCE(SUM(a.local_effective_data_cost_nano), 0))::float/1000000000 local_e_yesterday_cost,
-                    (COALESCE(SUM(a.local_cost_nano), 0) + COALESCE(SUM(a.local_data_cost_nano), 0))::float/1000000000 local_yesterday_at_cost,
-                    (COALESCE(SUM(a.local_cost_nano), 0) + COALESCE(SUM(a.local_data_cost_nano), 0))::float/1000000000 local_yesterday_cost,
-                    (COALESCE(SUM(a.local_effective_cost_nano), 0) + COALESCE(SUM(a.local_effective_data_cost_nano), 0))::float/1000000000 local_yesterday_et_cost,
-                    (COALESCE(SUM(a.local_effective_cost_nano), 0) + COALESCE(SUM(a.local_effective_data_cost_nano), 0) + COALESCE(SUM(a.local_license_fee_nano), 0) + COALESCE(SUM(a.local_margin_nano), 0))::float/1000000000 local_yesterday_etfm_cost,
-                    (COALESCE(SUM(a.cost_nano), 0) + COALESCE(SUM(a.data_cost_nano), 0))::float/1000000000 yesterday_at_cost,
-                    (COALESCE(SUM(a.cost_nano), 0) + COALESCE(SUM(a.data_cost_nano), 0))::float/1000000000 yesterday_cost,
-                    (COALESCE(SUM(a.effective_cost_nano), 0) + COALESCE(SUM(a.effective_data_cost_nano), 0))::float/1000000000 yesterday_et_cost,
-                    (COALESCE(SUM(a.effective_cost_nano), 0) + COALESCE(SUM(a.effective_data_cost_nano), 0) + COALESCE(SUM(a.license_fee_nano), 0) + COALESCE(SUM(a.margin_nano), 0))::float/1000000000 yesterday_etfm_cost
-                FROM mv_campaign a
-                WHERE (a.date=%s)
-                GROUP BY 1, 2
-            ),
-            temp_base AS (
-                SELECT
-                    a.account_id AS account_id,
-                    a.campaign_id AS campaign_id,
-                    SUM(a.clicks) clicks,
-                    SUM(a.total_time_on_site) total_seconds
-                FROM mv_campaign a
-                WHERE (a.date>=%s AND a.date<=%s)
-                GROUP BY 1, 2
-            )
-        SELECT
-            b.account_id,
-            b.campaign_id,
-            b.clicks,
-            b.total_seconds,
-            b.e_yesterday_cost,
-            b.local_e_yesterday_cost,
-            b.local_yesterday_at_cost,
-            b.local_yesterday_cost,
-            b.local_yesterday_et_cost,
-            b.local_yesterday_etfm_cost,
-            b.yesterday_at_cost,
-            b.yesterday_cost,
-            b.yesterday_et_cost,
-            b.yesterday_etfm_cost
+        SELECT b.account_id,
+               b.campaign_id,
+               b.clicks,
+               b.total_seconds,
+               b.e_yesterday_cost,
+               b.local_e_yesterday_cost,
+               b.local_yesterday_at_cost,
+               b.local_yesterday_cost,
+               b.local_yesterday_et_cost,
+               b.local_yesterday_etfm_cost,
+               b.yesterday_at_cost,
+               b.yesterday_cost,
+               b.yesterday_et_cost,
+               b.yesterday_etfm_cost
         FROM
-            (SELECT a.account_id,
-                    a.campaign_id,
-                    a.clicks,
-                    a.total_seconds,
-                    a.e_yesterday_cost,
-                    a.local_e_yesterday_cost,
-                    a.local_yesterday_at_cost,
-                    a.local_yesterday_cost,
-                    a.local_yesterday_et_cost,
-                    a.local_yesterday_etfm_cost,
-                    a.yesterday_at_cost,
-                    a.yesterday_cost,
-                    a.yesterday_et_cost,
-                    a.yesterday_etfm_cost,
-                    ROW_NUMBER() OVER (PARTITION BY a.account_id
-                                        ORDER BY a.total_seconds ASC NULLS LAST,
-                                                 a.account_id ASC NULLS LAST,
-                                                 a.campaign_id ASC NULLS LAST) AS r
-            FROM
-                (SELECT temp_base.account_id,
-                        temp_base.campaign_id,
-                        temp_base.clicks,
-                        temp_base.total_seconds,
-                        temp_yesterday.e_yesterday_cost,
-                        temp_yesterday.local_e_yesterday_cost,
-                        temp_yesterday.local_yesterday_at_cost,
-                        temp_yesterday.local_yesterday_cost,
-                        temp_yesterday.local_yesterday_et_cost,
-                        temp_yesterday.local_yesterday_etfm_cost,
-                        temp_yesterday.yesterday_at_cost,
-                        temp_yesterday.yesterday_cost,
-                        temp_yesterday.yesterday_et_cost,
-                        temp_yesterday.yesterday_etfm_cost
-                FROM temp_base LEFT OUTER JOIN temp_yesterday ON
-                    (temp_base.account_id = temp_yesterday.account_id OR temp_base.account_id IS NULL AND temp_yesterday.account_id IS NULL) AND
-                    (temp_base.campaign_id = temp_yesterday.campaign_id OR temp_base.campaign_id IS NULL AND temp_yesterday.campaign_id IS NULL)
-                ) a
-            ) b
-        WHERE r >= 5+1 AND r <= 10
+          (SELECT a.account_id,
+                  a.campaign_id,
+                  a.clicks,
+                  a.total_seconds,
+                  a.e_yesterday_cost,
+                  a.local_e_yesterday_cost,
+                  a.local_yesterday_at_cost,
+                  a.local_yesterday_cost,
+                  a.local_yesterday_et_cost,
+                  a.local_yesterday_etfm_cost,
+                  a.yesterday_at_cost,
+                  a.yesterday_cost,
+                  a.yesterday_et_cost,
+                  a.yesterday_etfm_cost,
+                  row_number() over (partition BY a.account_id
+                                     ORDER BY a.total_seconds ASC nulls LAST, a.account_id ASC nulls LAST, a.campaign_id ASC nulls LAST) AS r
+           FROM
+             (SELECT temp_base.account_id,
+                     temp_base.campaign_id,
+                     temp_base.clicks,
+                     temp_base.total_seconds,
+                     temp_yesterday.e_yesterday_cost,
+                     temp_yesterday.local_e_yesterday_cost,
+                     temp_yesterday.local_yesterday_at_cost,
+                     temp_yesterday.local_yesterday_cost,
+                     temp_yesterday.local_yesterday_et_cost,
+                     temp_yesterday.local_yesterday_etfm_cost,
+                     temp_yesterday.yesterday_at_cost,
+                     temp_yesterday.yesterday_cost,
+                     temp_yesterday.yesterday_et_cost,
+                     temp_yesterday.yesterday_etfm_cost
+              FROM
+                (SELECT a.account_id AS account_id,
+                        a.campaign_id AS campaign_id,
+                        sum(a.clicks) clicks,
+                        sum(a.total_time_on_site) total_seconds
+                 FROM mv_campaign a
+                 WHERE (a.date>=%s
+                        AND a.date<=%s)
+                 GROUP BY 1,
+                          2) temp_base
+              LEFT OUTER JOIN
+                (SELECT a.account_id AS account_id,
+                        a.campaign_id AS campaign_id,
+                        (coalesce(sum(a.effective_cost_nano), 0) + coalesce(sum(a.effective_data_cost_nano), 0))::float/1000000000 e_yesterday_cost,
+                        (coalesce(sum(a.local_effective_cost_nano), 0) + coalesce(sum(a.local_effective_data_cost_nano), 0))::float/1000000000 local_e_yesterday_cost,
+                        (coalesce(sum(a.local_cost_nano), 0) + coalesce(sum(a.local_data_cost_nano), 0))::float/1000000000 local_yesterday_at_cost,
+                        (coalesce(sum(a.local_cost_nano), 0) + coalesce(sum(a.local_data_cost_nano), 0))::float/1000000000 local_yesterday_cost,
+                        (coalesce(sum(a.local_effective_cost_nano), 0) + coalesce(sum(a.local_effective_data_cost_nano), 0))::float/1000000000 local_yesterday_et_cost,
+                        (coalesce(sum(a.local_effective_cost_nano), 0) + coalesce(sum(a.local_effective_data_cost_nano), 0) + coalesce(sum(a.local_license_fee_nano), 0) + coalesce(sum(a.local_margin_nano), 0))::float/1000000000 local_yesterday_etfm_cost,
+                        (coalesce(sum(a.cost_nano), 0) + coalesce(sum(a.data_cost_nano), 0))::float/1000000000 yesterday_at_cost,
+                        (coalesce(sum(a.cost_nano), 0) + coalesce(sum(a.data_cost_nano), 0))::float/1000000000 yesterday_cost,
+                        (coalesce(sum(a.effective_cost_nano), 0) + coalesce(sum(a.effective_data_cost_nano), 0))::float/1000000000 yesterday_et_cost,
+                        (coalesce(sum(a.effective_cost_nano), 0) + coalesce(sum(a.effective_data_cost_nano), 0) + coalesce(sum(a.license_fee_nano), 0) + coalesce(sum(a.margin_nano), 0))::float/1000000000 yesterday_etfm_cost
+                 FROM mv_campaign a
+                 WHERE (a.date=%s)
+                 GROUP BY 1,
+                          2) temp_yesterday ON (temp_base.account_id = temp_yesterday.account_id
+                                                OR temp_base.account_id IS NULL
+                                                AND temp_yesterday.account_id IS NULL)
+              AND (temp_base.campaign_id = temp_yesterday.campaign_id
+                   OR temp_base.campaign_id IS NULL
+                   AND temp_yesterday.campaign_id IS NULL)) a) b
+        WHERE r >= 5 + 1
+          AND r <= 10
+
         """,
         )
 
-        self.assertEqual(params, [datetime.date(2016, 7, 1), datetime.date(2016, 4, 1), datetime.date(2016, 5, 1)])
+        self.assertEqual(params, [datetime.date(2016, 4, 1), datetime.date(2016, 5, 1), datetime.date(2016, 7, 1)])
 
     @mock.patch("utils.dates_helper.local_today", return_value=datetime.date(2016, 7, 2))
     @mock.patch.object(
@@ -568,98 +557,100 @@ class PrepareQueryJointTest(TestCase, backtosql.TestSQLMixin):
         self.assertSQLEquals(
             sql,
             """
-        WITH
-            temp_yesterday AS (
-                SELECT
-                    a.publisher AS publisher,
-                    a.source_id AS source_id,
-                    a.dma AS dma,
-                    (COALESCE(SUM(a.effective_cost_nano), 0) + COALESCE(SUM(a.effective_data_cost_nano), 0))::float/1000000000 e_yesterday_cost,
-                    (COALESCE(SUM(a.local_effective_cost_nano), 0) + COALESCE(SUM(a.local_effective_data_cost_nano), 0))::float/1000000000 local_e_yesterday_cost,
-                    (COALESCE(SUM(a.local_cost_nano), 0) + COALESCE(SUM(a.local_data_cost_nano), 0))::float/1000000000 local_yesterday_at_cost,
-                    (COALESCE(SUM(a.local_cost_nano), 0) + COALESCE(SUM(a.local_data_cost_nano), 0))::float/1000000000 local_yesterday_cost,
-                    (COALESCE(SUM(a.local_effective_cost_nano), 0) + COALESCE(SUM(a.local_effective_data_cost_nano), 0))::float/1000000000 local_yesterday_et_cost,
-                    (COALESCE(SUM(a.local_effective_cost_nano), 0) + COALESCE(SUM(a.local_effective_data_cost_nano), 0) + COALESCE(SUM(a.local_license_fee_nano), 0) + COALESCE(SUM(a.local_margin_nano), 0))::float/1000000000 local_yesterday_etfm_cost,
-                    (COALESCE(SUM(a.cost_nano), 0) + COALESCE(SUM(a.data_cost_nano), 0))::float/1000000000 yesterday_at_cost,
-                    (COALESCE(SUM(a.cost_nano), 0) + COALESCE(SUM(a.data_cost_nano), 0))::float/1000000000 yesterday_cost,
-                    (COALESCE(SUM(a.effective_cost_nano), 0) + COALESCE(SUM(a.effective_data_cost_nano), 0))::float/1000000000 yesterday_et_cost,
-                    (COALESCE(SUM(a.effective_cost_nano), 0) + COALESCE(SUM(a.effective_data_cost_nano), 0) + COALESCE(SUM(a.license_fee_nano), 0) + COALESCE(SUM(a.margin_nano), 0))::float/1000000000 yesterday_etfm_cost
-                FROM mv_master_pubs a
-                WHERE (a.date=%s)
-                GROUP BY 1, 2, 3
-            ),
-            temp_base AS (
-                SELECT
-                    a.publisher AS publisher,
-                    a.source_id AS source_id,
-                    a.dma AS dma,
-                    SUM(a.clicks) clicks,
-                    SUM(a.total_time_on_site) total_seconds
-                FROM mv_master_pubs a
-                WHERE (a.date>=%s AND a.date<=%s)
-                GROUP BY 1, 2, 3
-            )
-        SELECT
-            b.publisher,
-            b.source_id,
-            b.dma,
-            b.clicks,
-            b.total_seconds,
-            b.e_yesterday_cost,
-            b.local_e_yesterday_cost,
-            b.local_yesterday_at_cost,
-            b.local_yesterday_cost,
-            b.local_yesterday_et_cost,
-            b.local_yesterday_etfm_cost,
-            b.yesterday_at_cost,
-            b.yesterday_cost,
-            b.yesterday_et_cost,
-            b.yesterday_etfm_cost
+        SELECT b.publisher,
+               b.source_id,
+               b.dma,
+               b.clicks,
+               b.total_seconds,
+               b.e_yesterday_cost,
+               b.local_e_yesterday_cost,
+               b.local_yesterday_at_cost,
+               b.local_yesterday_cost,
+               b.local_yesterday_et_cost,
+               b.local_yesterday_etfm_cost,
+               b.yesterday_at_cost,
+               b.yesterday_cost,
+               b.yesterday_et_cost,
+               b.yesterday_etfm_cost
         FROM
-            (SELECT a.publisher,
-                    a.source_id,
-                    a.dma,
-                    a.clicks,
-                    a.total_seconds,
-                    a.e_yesterday_cost,
-                    a.local_e_yesterday_cost,
-                    a.local_yesterday_at_cost,
-                    a.local_yesterday_cost,
-                    a.local_yesterday_et_cost,
-                    a.local_yesterday_etfm_cost,
-                    a.yesterday_at_cost,
-                    a.yesterday_cost,
-                    a.yesterday_et_cost,
-                    a.yesterday_etfm_cost,
-                    ROW_NUMBER() OVER (PARTITION BY a.publisher, a.source_id
-                                        ORDER BY a.total_seconds ASC NULLS LAST ) AS r
-            FROM
-                (SELECT temp_base.publisher,
-                        temp_base.source_id,
-                        temp_base.dma,
-                        temp_base.clicks,
-                        temp_base.total_seconds,
-                        temp_yesterday.e_yesterday_cost,
-                        temp_yesterday.local_e_yesterday_cost,
-                        temp_yesterday.local_yesterday_at_cost,
-                        temp_yesterday.local_yesterday_cost,
-                        temp_yesterday.local_yesterday_et_cost,
-                        temp_yesterday.local_yesterday_etfm_cost,
-                        temp_yesterday.yesterday_at_cost,
-                        temp_yesterday.yesterday_cost,
-                        temp_yesterday.yesterday_et_cost,
-                        temp_yesterday.yesterday_etfm_cost
-                FROM temp_base LEFT OUTER JOIN temp_yesterday ON
-                    (temp_base.publisher = temp_yesterday.publisher OR temp_base.publisher IS NULL AND temp_yesterday.publisher IS NULL) AND
-                    (temp_base.source_id = temp_yesterday.source_id OR temp_base.source_id IS NULL AND temp_yesterday.source_id IS NULL) AND
-                    (temp_base.dma = temp_yesterday.dma OR temp_base.dma IS NULL AND temp_yesterday.dma IS NULL)
-                ) a
-            ) b
-        WHERE r >= 5+1 AND r <= 10
+          (SELECT a.publisher,
+                  a.source_id,
+                  a.dma,
+                  a.clicks,
+                  a.total_seconds,
+                  a.e_yesterday_cost,
+                  a.local_e_yesterday_cost,
+                  a.local_yesterday_at_cost,
+                  a.local_yesterday_cost,
+                  a.local_yesterday_et_cost,
+                  a.local_yesterday_etfm_cost,
+                  a.yesterday_at_cost,
+                  a.yesterday_cost,
+                  a.yesterday_et_cost,
+                  a.yesterday_etfm_cost,
+                  row_number() over (partition BY a.publisher, a.source_id
+                                     ORDER BY a.total_seconds ASC nulls LAST) AS r
+           FROM
+             (SELECT temp_base.publisher,
+                     temp_base.source_id,
+                     temp_base.dma,
+                     temp_base.clicks,
+                     temp_base.total_seconds,
+                     temp_yesterday.e_yesterday_cost,
+                     temp_yesterday.local_e_yesterday_cost,
+                     temp_yesterday.local_yesterday_at_cost,
+                     temp_yesterday.local_yesterday_cost,
+                     temp_yesterday.local_yesterday_et_cost,
+                     temp_yesterday.local_yesterday_etfm_cost,
+                     temp_yesterday.yesterday_at_cost,
+                     temp_yesterday.yesterday_cost,
+                     temp_yesterday.yesterday_et_cost,
+                     temp_yesterday.yesterday_etfm_cost
+              FROM
+                (SELECT a.publisher AS publisher,
+                        a.source_id AS source_id,
+                        a.dma AS dma,
+                        sum(a.clicks) clicks,
+                        sum(a.total_time_on_site) total_seconds
+                 FROM mv_master_pubs a
+                 WHERE (a.date>=%s
+                        AND a.date<=%s)
+                 GROUP BY 1,
+                          2,
+                          3) temp_base
+              LEFT OUTER JOIN
+                (SELECT a.publisher AS publisher,
+                        a.source_id AS source_id,
+                        a.dma AS dma,
+                        (coalesce(sum(a.effective_cost_nano), 0) + coalesce(sum(a.effective_data_cost_nano), 0))::float/1000000000 e_yesterday_cost,
+                        (coalesce(sum(a.local_effective_cost_nano), 0) + coalesce(sum(a.local_effective_data_cost_nano), 0))::float/1000000000 local_e_yesterday_cost,
+                        (coalesce(sum(a.local_cost_nano), 0) + coalesce(sum(a.local_data_cost_nano), 0))::float/1000000000 local_yesterday_at_cost,
+                        (coalesce(sum(a.local_cost_nano), 0) + coalesce(sum(a.local_data_cost_nano), 0))::float/1000000000 local_yesterday_cost,
+                        (coalesce(sum(a.local_effective_cost_nano), 0) + coalesce(sum(a.local_effective_data_cost_nano), 0))::float/1000000000 local_yesterday_et_cost,
+                        (coalesce(sum(a.local_effective_cost_nano), 0) + coalesce(sum(a.local_effective_data_cost_nano), 0) + coalesce(sum(a.local_license_fee_nano), 0) + coalesce(sum(a.local_margin_nano), 0))::float/1000000000 local_yesterday_etfm_cost,
+                        (coalesce(sum(a.cost_nano), 0) + coalesce(sum(a.data_cost_nano), 0))::float/1000000000 yesterday_at_cost,
+                        (coalesce(sum(a.cost_nano), 0) + coalesce(sum(a.data_cost_nano), 0))::float/1000000000 yesterday_cost,
+                        (coalesce(sum(a.effective_cost_nano), 0) + coalesce(sum(a.effective_data_cost_nano), 0))::float/1000000000 yesterday_et_cost,
+                        (coalesce(sum(a.effective_cost_nano), 0) + coalesce(sum(a.effective_data_cost_nano), 0) + coalesce(sum(a.license_fee_nano), 0) + coalesce(sum(a.margin_nano), 0))::float/1000000000 yesterday_etfm_cost
+                 FROM mv_master_pubs a
+                 WHERE (a.date=%s)
+                 GROUP BY 1,
+                          2,
+                          3) temp_yesterday ON (temp_base.publisher = temp_yesterday.publisher
+                                                OR temp_base.publisher IS NULL
+                                                AND temp_yesterday.publisher IS NULL)
+              AND (temp_base.source_id = temp_yesterday.source_id
+                   OR temp_base.source_id IS NULL
+                   AND temp_yesterday.source_id IS NULL)
+              AND (temp_base.dma = temp_yesterday.dma
+                   OR temp_base.dma IS NULL
+                   AND temp_yesterday.dma IS NULL)) a) b
+        WHERE r >= 5 + 1
+          AND r <= 10
         """,
         )
 
-        self.assertEqual(params, [datetime.date(2016, 7, 1), datetime.date(2016, 4, 1), datetime.date(2016, 5, 1)])
+        self.assertEqual(params, [datetime.date(2016, 4, 1), datetime.date(2016, 5, 1), datetime.date(2016, 7, 1)])
 
 
 class PrepareQueryJointConversionsTest(TestCase, backtosql.TestSQLMixin):
@@ -692,9 +683,9 @@ class PrepareQueryJointConversionsTest(TestCase, backtosql.TestSQLMixin):
             [
                 datetime.date(2016, 4, 1),
                 datetime.date(2016, 5, 1),
+                datetime.date(2016, 7, 1),
                 datetime.date(2016, 4, 1),
                 datetime.date(2016, 5, 1),
-                datetime.date(2016, 7, 1),
                 datetime.date(2016, 4, 1),
                 datetime.date(2016, 5, 1),
             ],
@@ -726,9 +717,9 @@ class PrepareQueryJointConversionsTest(TestCase, backtosql.TestSQLMixin):
             [
                 datetime.date(2016, 4, 1),
                 datetime.date(2016, 5, 1),
+                datetime.date(2016, 7, 1),
                 datetime.date(2016, 4, 1),
                 datetime.date(2016, 5, 1),
-                datetime.date(2016, 7, 1),
                 datetime.date(2016, 4, 1),
                 datetime.date(2016, 5, 1),
             ],
