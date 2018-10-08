@@ -52,14 +52,18 @@ def release_source(request, source):
     if source.released:
         raise exceptions.SourceAlreadyReleased("Source already released")
 
-    accounts = core.models.Account.objects.filter(settings__auto_add_new_sources=True)
+    accounts = core.models.Account.objects.filter(settings__auto_add_new_sources=True).select_related("agency")
+    n_allowed_on = 0
+
     for account in accounts:
-        account.allowed_sources.add(source)
+        if not account.agency or not account.agency.allowed_sources.all():
+            account.allowed_sources.add(source)
+            n_allowed_on += 1
 
     source.released = True
     source.save()
 
-    return len(accounts)
+    return n_allowed_on
 
 
 def unrelease_source(request, source):

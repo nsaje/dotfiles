@@ -96,3 +96,22 @@ class SourceAdoptionTest(django.test.TestCase):
         self.assertTrue(self.source.released)
         self.assertEquals(0, n_allowed_on)
         self.assertFalse(self.source in self.account.allowed_sources.all())
+
+    def test_auto_add_new_sources_agency_no_allowed_sources(self):
+        agency = magic_mixer.blend(dash.models.Agency)
+        self.account.agency = agency
+        self.account.save(None)
+        n_allowed_on = release_source(self.request, self.source)
+        self.assertTrue(self.source.released)
+        self.assertEquals(1, n_allowed_on)
+        self.assertTrue(self.source in self.account.allowed_sources.all())
+
+    def test_auto_add_new_sources_agency_allowed_sources(self):
+        agency = magic_mixer.blend(dash.models.Agency)
+        agency.allowed_sources.add(self.source)
+        self.account.agency = agency
+        self.account.save(None)
+        n_allowed_on = release_source(self.request, self.source)
+        self.assertTrue(self.source.released)
+        self.assertEquals(0, n_allowed_on)
+        self.assertFalse(self.source in self.account.allowed_sources.all())
