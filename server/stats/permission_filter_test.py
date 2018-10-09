@@ -119,6 +119,7 @@ class FilterTestCase(TestCase):
             "exchange",
             "supply_dash_disabled_message",
             "supply_dash_url",
+            "amplify_promoted_link_id",
             "age",
             "age_gender",
             "country",
