@@ -1924,7 +1924,9 @@ angular
 
         // Exceptions (content ad amplify id - only visible on ad group content ad tab)
         COLUMNS.amplifyAdId.exceptions.levels = [constants.level.AD_GROUPS];
-        COLUMNS.amplifyAdId.exceptions.breakdowns = [constants.breakdown.CONTENT_AD];
+        COLUMNS.amplifyAdId.exceptions.breakdowns = [
+            constants.breakdown.CONTENT_AD,
+        ];
         COLUMNS.amplifyAdId.exceptions.breakdownBaseLevelOnly = true;
 
         // Exceptions (state - not yet supported everywhere, only available on base level)
