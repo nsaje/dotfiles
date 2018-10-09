@@ -15,6 +15,7 @@ from . import view_selector
 
 POSTGRES_MAX_DAYS = 62
 POSTGRES_EXCLUDE_VIEWS = ("mv_master", "mv_master_pubs")
+POSTGRES_REPORTS_EXCLUDE_VIEWS = ("mv_account_pubs", "mv_campaign_pubs", "mv_adgroup_pubs", "mv_contentad_pubs")
 
 
 def should_query_all(breakdown):
@@ -53,13 +54,13 @@ def query_with_background_cache(*args, **kwargs):
 
 
 def _should_use_postgres(breakdown, constraints, parents, use_publishers_view, is_reports):
-    if is_reports:
-        return False
-
     needed_dimensions = helpers.get_all_dimensions(breakdown, constraints, parents)
     view = view_selector.get_best_view_base(needed_dimensions, use_publishers_view)
     date_constraint = constraints.get("date__gte") or constraints.get("date__gt") or constraints.get("date")
     date_in_postgres = dates_helper.days_before(dates_helper.local_today(), POSTGRES_MAX_DAYS)
+
+    if is_reports and view in POSTGRES_REPORTS_EXCLUDE_VIEWS:
+        return False
 
     if date_constraint and date_constraint > date_in_postgres and view not in POSTGRES_EXCLUDE_VIEWS:
         return True
