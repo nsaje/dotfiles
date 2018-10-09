@@ -247,6 +247,10 @@ def augment_content_ad(row, loader, is_base_level=False):
         status_per_source = loader.per_source_status_map[content_ad_id]
         row["status_per_source"] = status_per_source
 
+        amplify_content_ad_source = loader.amplify_reviews_map.get(content_ad_id)
+        if loader.user.has_perm("zemauth.can_see_amplify_ad_id_column") and amplify_content_ad_source:
+            row["amplify_promoted_link_id"] = amplify_content_ad_source.source_content_ad_id
+
 
 def augment_content_ad_for_report(row, loader, is_base_level=False):
     content_ad_id = row.get("content_ad_id")

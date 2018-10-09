@@ -76,6 +76,17 @@ angular
                 type: zemGridConstants.gridColumnTypes.TEXT,
                 help: 'The ID number of your content ad.',
             },
+            amplifyAdId: {
+                name: 'Amplify ID',
+                field: 'amplify_promoted_link_id',
+                type: zemGridConstants.gridColumnTypes.TEXT,
+                totalRow: false,
+                help: 'The ID of your content ad in Outbrain Amplify.',
+                order: false,
+                initialOrder: zemGridConstants.gridColumnOrder.DESC,
+                internal: 'zemauth.can_see_amplify_ad_id_column',
+                shown: 'zemauth.can_see_amplify_ad_id_column',
+            },
             sourceId: {
                 internal: 'zemauth.can_see_id_columns_in_table',
                 shown: 'zemauth.can_see_id_columns_in_table',
@@ -1718,6 +1729,7 @@ angular
             COLUMNS.campaignId,
             COLUMNS.adGroupId,
             COLUMNS.contentAdId,
+            COLUMNS.amplifyAdId,
             COLUMNS.sourceId,
             COLUMNS.sourceSlug,
         ]
@@ -1909,6 +1921,11 @@ angular
             breakdown: constants.breakdown.MEDIA_SOURCE,
             shown: false,
         }); // eslint-disable-line max-len
+
+        // Exceptions (content ad amplify id - only visible on ad group content ad tab)
+        COLUMNS.amplifyAdId.exceptions.levels = [constants.level.AD_GROUPS];
+        COLUMNS.amplifyAdId.exceptions.breakdowns = [constants.breakdown.CONTENT_AD];
+        COLUMNS.amplifyAdId.exceptions.breakdownBaseLevelOnly = true;
 
         // Exceptions (state - not yet supported everywhere, only available on base level)
         COLUMNS.state.exceptions.breakdowns = [
