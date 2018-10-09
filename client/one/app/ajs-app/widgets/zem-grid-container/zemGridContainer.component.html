@@ -89,7 +89,14 @@
         </div>
         <div class="submission-status-popover-row" ng-class="{'submission-status-emphasis': submission.source_state !== ''}" ng-repeat="submission in ctrl.approved">
             <span class="submission-status-popover-cell left-cell submission-status-label">{{submission.name}}<span ng-if="submission.source_state === ''">:&nbsp;</span>&nbsp;{{submission.source_state}}<span ng-if="submission.source_state != ''">:&nbsp;</span></span>
-            <span class="submission-status-popover-cell" >{{submission.text}}</span>
+            <span class="submission-status-popover-cell" >
+                {{submission.text}}
+                <span ng-if="ctrl.hasPermission('zemauth.can_see_amplify_review_link') && submission.source_link">
+                    <a ng-href="{{submission.source_link}}" target="_blank" is-internal="zemauth.can_see_amplify_review_link" class="submission-status-popover-link">
+                        <img ng-src="{{ctrl.config.staticUrl}}/one/images/link.svg" class="submission-status-popover-link-img" />
+                    </a>
+                </span>
+            </span>
         </div>
         <div ng-if="ctrl.noSubmissions" class="submission-status-popover-row no-submission-message">
             No Media Sources added yet.
