@@ -1,44 +1,39 @@
+import datetime
 import json
 import logging
-import datetime
 
-from django.contrib import admin
-from django.contrib import messages
-from django.db import transaction
 from django import forms
-from django.utils.safestring import mark_safe
-from django.utils.html import format_html
-from django.core.urlresolvers import reverse
 from django.conf import settings
 from django.conf.urls import url
+from django.contrib import admin
+from django.contrib import messages
+from django.contrib.admin import SimpleListFilter
 from django.contrib.postgres.forms import SimpleArrayField
 from django.core.exceptions import ValidationError
-from django.template.defaultfilters import truncatechars
-from django.contrib.admin import SimpleListFilter
+from django.core.urlresolvers import reverse
+from django.db import transaction
 from django.http import HttpResponseRedirect
-
+from django.template.defaultfilters import truncatechars
+from django.utils.html import format_html
+from django.utils.safestring import mark_safe
 from import_export import resources, fields
 from import_export.admin import ExportMixin
 
-from dash.features.custom_flags.slack_logger import SlackLoggerMixin
-from zemauth.models import User as ZemUser
-
-from dash import constants
-from dash import models
-from dash import forms as dash_forms
-from core.models.settings.ad_group_source_settings import validation_helpers
-from dash import cpc_constraints
-
-import utils.k1_helper
+import core.features.source_adoption
 import utils.email_helper
+import utils.k1_helper
 import utils.redirector_helper
 import utils.slack
 from automation import campaignstop
-from utils.admin_common import SaveWithRequestMixin
-
+from core.models.settings.ad_group_source_settings import validation_helpers
+from dash import constants
+from dash import cpc_constraints
+from dash import forms as dash_forms
+from dash import models
+from dash.features.custom_flags.slack_logger import SlackLoggerMixin
 from dash.features.submission_filters.admin import SubmissionFilterAdmin
-
-import core.features.source_adoption
+from utils.admin_common import SaveWithRequestMixin
+from zemauth.models import User as ZemUser
 
 logger = logging.getLogger(__name__)
 
@@ -1582,6 +1577,51 @@ class PublisherGroupEntryAdmin(ExportMixin, admin.ModelAdmin):
         return self.readonly_fields
 
 
+class PublisherClassificationAdmin(admin.ModelAdmin):
+    list_display = ("pk", "publisher", "category", "toggle_ignore_")
+    readonly_fields = ("pk", "created_dt", "modified_dt")
+    search_fields = ("pk", "publisher", "category", "ignored", "created_dt", "modified_dt")
+
+    def get_urls(self):
+        urls = super().get_urls()
+
+        custom_urls = [
+            url(
+                r"^(?P<classification_id>.+)/ignore/$",
+                self.admin_site.admin_view(self.ignore_classification),
+                name="toggle-ignore-classification",
+            )
+        ]
+        return custom_urls + urls
+
+    def ignore_classification(self, request, classification_id):
+        try:
+            classification = self.get_object(request, classification_id)
+            if classification.ignored is True:
+                classification.ignored = False
+            else:
+                classification.ignored = True
+            classification.save()
+            self.message_user(
+                request,
+                "Publisher: '{}' with classification '{}' was {}".format(
+                    classification.publisher, classification.category, classification.ignored and "ignored" or "valid"
+                ),
+            )
+        except Exception as err:
+            messages.set_level(request, messages.ERROR)
+            messages.error(request, str(err))
+
+        url = reverse("admin:dash_publisherclassification_changelist", current_app=self.admin_site.name)
+        return HttpResponseRedirect(url)
+
+    def toggle_ignore_(self, obj):
+        link = reverse("admin:toggle-ignore-classification", args=(obj.id,))
+        return '<a href="%s">%s</a>' % (link, obj.ignored and "ignored" or "valid")
+
+    toggle_ignore_.allow_tags = True
+
+
 class CpcConstraintAdmin(admin.ModelAdmin):
     model = models.CpcConstraint
     list_display = (
@@ -1913,6 +1953,7 @@ admin.site.register(models.History, HistoryAdmin)
 admin.site.register(models.Audience, AudienceAdmin)
 admin.site.register(models.PublisherGroup, PublisherGroupAdmin)
 admin.site.register(models.PublisherGroupEntry, PublisherGroupEntryAdmin)
+admin.site.register(models.PublisherClassification, PublisherClassificationAdmin)
 admin.site.register(models.CpcConstraint, CpcConstraintAdmin)
 admin.site.register(models.CustomHack, CustomHackAdmin)
 admin.site.register(models.CustomFlag, CustomFlagAdmin)
