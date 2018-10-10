@@ -469,7 +469,7 @@ REST_FRAMEWORK = {
 DISABLE_FACEBOOK = True
 AMPLIFY_REVIEW = True
 
-SPARK_MASTER = "ec2-35-174-165-220.compute-1.amazonaws.com"
+SPARK_MASTER = "ec2-54-235-226-22.compute-1.amazonaws.com"
 
 #  TAPCLICK ftp config
 REPORTS_TO_FTP_SERVER_TAPCLICK = {
