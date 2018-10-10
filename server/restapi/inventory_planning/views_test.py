@@ -5,8 +5,6 @@ from django.core.urlresolvers import reverse
 import restapi.common.views_base_test
 import dash.features.inventory_planning
 
-from . import views
-
 
 class InventoryPlanningViewTest(restapi.common.views_base_test.RESTAPITest):
     @mock.patch.object(dash.features.inventory_planning, "get_summary", autospec=True)
@@ -16,7 +14,13 @@ class InventoryPlanningViewTest(restapi.common.views_base_test.RESTAPITest):
         resp_json = self.assertResponseValid(r)
         mock_func.assert_called_with(r.renderer_context["request"], {})
         self.assertEqual(
-            resp_json["data"], {"auctionCount": 5, "avgCpm": 5.0, "avgCpc": 5.0 / 1000 / views.AVG_CTR, "winRatio": 0.5}
+            resp_json["data"],
+            {
+                "auctionCount": 5,
+                "avgCpm": 5.0,
+                "avgCpc": 5.0 / 1000 / dash.features.inventory_planning.constants.SourceCtr.AVG,
+                "winRatio": 0.5,
+            },
         )
 
     @mock.patch.object(dash.features.inventory_planning, "get_by_country", return_value={}, autospec=True)

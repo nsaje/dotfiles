@@ -10,12 +10,6 @@ from . import serializers
 
 CLIENT_SIDE_CACHE_TIME = 60 * 60 * 24  # cache for 1 day
 
-AVG_CTR = 0.0044
-
-MEDIAMOND_SOURCE_CTR = 0.0012
-RCS_SOURCE_CTR = 0.00042
-NEWSCORP_SOURCE_CTR = 0.0015
-
 SUMMARY = "summary"
 COUNTRIES = "countries"
 PUBLISHERS = "publishers"
@@ -86,13 +80,16 @@ class InventoryPlanningView(RESTAPIBaseView):
 
     @staticmethod
     def _get_source_ctr(request):
-        if request.user.has_perm("zemauth.can_see_mediamond_publishers"):
-            return MEDIAMOND_SOURCE_CTR
-        if request.user.has_perm("zemauth.can_see_rcs_publishers"):
-            return RCS_SOURCE_CTR
-        if request.user.has_perm("zemauth.can_see_newscorp_publishers"):
-            return NEWSCORP_SOURCE_CTR
-        return AVG_CTR
+        if dash.features.inventory_planning.has_mediamond_credentials(request):
+            return dash.features.inventory_planning.constants.SourceCtr.MEDIAMOND
+
+        if dash.features.inventory_planning.has_rcs_credentials(request):
+            return dash.features.inventory_planning.constants.SourceCtr.RCS
+
+        if dash.features.inventory_planning.has_newscorp_credentials(request):
+            return dash.features.inventory_planning.constants.SourceCtr.NEWSCORP
+
+        return dash.features.inventory_planning.constants.SourceCtr.AVG
 
     @staticmethod
     def _remap_breakdown(data, value_field):

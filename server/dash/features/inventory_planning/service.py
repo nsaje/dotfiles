@@ -9,10 +9,6 @@ from . import constants
 ZERO_ROW = {"bids": 0, "bid_reqs": 0, "win_notices": 0, "total_win_price": 0}
 MIN_AUCTIONS = 1000
 
-MEDIAMOND_SOURCE_ID = 115
-RCS_SOURCE_ID = 118
-NEWSCORP_SOURCE_ID = 122
-
 _countries_cache = None
 _sources_cache = None
 
@@ -42,15 +38,43 @@ def _get_filtered_sources_map(request):
         for source in _get_sources_cache()
         if (
             source.released
-            or request.user.has_perm("zemauth.can_see_mediamond_publishers")
-            and source.id == MEDIAMOND_SOURCE_ID
-            or request.user.has_perm("zemauth.can_see_rcs_publishers")
-            and source.id == RCS_SOURCE_ID
-            or request.user.has_perm("zemauth.can_see_newscorp_publishers")
-            and source.id == NEWSCORP_SOURCE_ID
+            or has_mediamond_credentials(request)
+            and source.id == constants.NativeAdServerSourceId.MEDIAMOND
+            or has_rcs_credentials(request)
+            and source.id == constants.NativeAdServerSourceId.RCS
+            or has_newscorp_credentials(request)
+            and source.id in [constants.NativeAdServerSourceId.NEWSCORP, constants.NativeAdServerSourceId.NEWSCORP_TEST]
         )
     }
     return sources_map
+
+
+def has_mediamond_credentials(request):
+    return (
+        request is None
+        or request.user.has_perm("zemauth.can_see_mediamond_publishers")
+        or request.user.agency_set.filter(
+            id__in=[constants.NativeAdServerAgencyId.MEDIAMOND, constants.NativeAdServerAgencyId.MEDIAMOND_SELF_MANAGED]
+        ).exists()
+    )
+
+
+def has_rcs_credentials(request):
+    return (
+        request is None
+        or request.user.has_perm("zemauth.can_see_rcs_publishers")
+        or request.user.agency_set.filter(
+            id__in=[constants.NativeAdServerAgencyId.RCS_MEDIAGROUP, constants.NativeAdServerAgencyId.RCS]
+        ).exists()
+    )
+
+
+def has_newscorp_credentials(request):
+    return (
+        request is None
+        or request.user.has_perm("zemauth.can_see_newscorp_publishers")
+        or request.user.agency_set.filter(id=constants.NativeAdServerAgencyId.NEWSCORP).exists()
+    )
 
 
 def _update_filters(request, filters):
