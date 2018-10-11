@@ -3,11 +3,10 @@ from django.conf import settings
 from django.contrib.postgres.fields import JSONField
 from django.db import models
 
+import core.features.yahoo_accounts
 import utils.demo_anonymizer
 import utils.string_helper
 from dash import constants
-
-import core.features.yahoo_accounts
 
 from . import instance
 from . import manager

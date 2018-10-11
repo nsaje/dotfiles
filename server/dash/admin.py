@@ -5,8 +5,7 @@ import logging
 from django import forms
 from django.conf import settings
 from django.conf.urls import url
-from django.contrib import admin
-from django.contrib import messages
+from django.contrib import admin, messages
 from django.contrib.admin import SimpleListFilter
 from django.contrib.postgres.forms import SimpleArrayField
 from django.core.exceptions import ValidationError
@@ -16,7 +15,7 @@ from django.http import HttpResponseRedirect
 from django.template.defaultfilters import truncatechars
 from django.utils.html import format_html
 from django.utils.safestring import mark_safe
-from import_export import resources, fields
+from import_export import fields, resources
 from import_export.admin import ExportMixin
 
 import core.features.source_adoption
@@ -26,8 +25,7 @@ import utils.redirector_helper
 import utils.slack
 from automation import campaignstop
 from core.models.settings.ad_group_source_settings import validation_helpers
-from dash import constants
-from dash import cpc_constraints
+from dash import constants, cpc_constraints
 from dash import forms as dash_forms
 from dash import models
 from dash.features.custom_flags.slack_logger import SlackLoggerMixin
@@ -121,6 +119,26 @@ class AdGroupSettingsForm(forms.ModelForm):
             "target_devices": forms.SelectMultiple(choices=constants.AdTargetDevice.get_choices()),
             "target_regions": forms.SelectMultiple(choices=constants.AdTargetLocation.get_choices()),
         }
+
+
+class DirectDealConnectionAgencyInline(admin.StackedInline):
+    model = models.DirectDealConnection
+    can_delete = True
+    extra = 0
+    filter_horizontal = ("deals",)
+    exclude = ("created_dt", "modified_dt", "adgroup")
+    readonly_fields = ("created_by",)
+    raw_id_fields = ("agency_id",)
+
+
+class DirectDealConnectionAdGroupsInline(admin.StackedInline):
+    model = models.DirectDealConnection
+    can_delete = True
+    extra = 0
+    filter_horizontal = ("deals",)
+    exclude = ("created_dt", "modified_dt", "agency")
+    readonly_fields = ("created_by",)
+    raw_id_fields = ("adgroup_id",)
 
 
 # Always empty form for source credentials and a link for refresing OAuth credentials for
@@ -372,7 +390,7 @@ class AgencyAdmin(SlackLoggerMixin, ExportMixin, admin.ModelAdmin):
     exclude = ("users",)
     raw_id_fields = ("default_whitelist", "default_blacklist")
     readonly_fields = ("id", "created_dt", "modified_dt", "modified_by")
-    inlines = (AgencyAccountInline, AgencyUserInline)
+    inlines = (AgencyAccountInline, AgencyUserInline, DirectDealConnectionAgencyInline)
     resource_class = AgencyResource
 
     def __init__(self, model, admin_site):
@@ -795,6 +813,7 @@ class AdGroupAdmin(SlackLoggerMixin, admin.ModelAdmin):
     readonly_fields = ("id", "created_dt", "modified_dt", "modified_by")
     exclude = ("settings",)
     form = dash_forms.AdGroupAdminForm
+    inlines = (DirectDealConnectionAdGroupsInline,)
     fieldsets = (
         (None, {"fields": ("name", "campaign", "created_dt", "modified_dt", "modified_by", "custom_flags")}),
         ("Additional targeting", {"classes": ("collapse",), "fields": dash_forms.AdGroupAdminForm.SETTINGS_FIELDS}),
