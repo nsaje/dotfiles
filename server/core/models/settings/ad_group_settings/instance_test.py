@@ -48,6 +48,41 @@ class InstanceTest(TestCase):
             },
         )
 
+    def test_b1_sources_group_adjustments_sets_default_cpm_and_daily_budget(self):
+        request = magic_mixer.blend_request_user(permissions=["fea_can_use_cpm_buying"])
+        self.ad_group.bidding_type = constants.BiddingType.CPM
+        self.ad_group.save(request)
+        current_settings = self.ad_group.get_current_settings()
+        new_settings = current_settings.copy_settings()
+        new_settings.b1_sources_group_enabled = False
+        new_settings.b1_sources_group_cpm = Decimal("0.111")
+        new_settings.b1_sources_group_daily_budget = Decimal("100.0")
+        new_settings.max_cpm = Decimal("0.8")
+        new_settings.save(None)
+
+        # turn on rtb as one
+        current_settings = self.ad_group.get_current_settings()
+        new_settings = current_settings.copy_settings()
+        new_settings.b1_sources_group_enabled = True
+        new_settings.save(None)
+
+        changes = current_settings.get_setting_changes(new_settings)
+        self.assertDictEqual(changes, {"b1_sources_group_enabled": True})
+
+        current_settings._handle_b1_sources_group_adjustments(new_settings)
+        changes_new = current_settings.get_setting_changes(new_settings)
+
+        self.assertDictEqual(
+            changes_new,
+            {
+                "b1_sources_group_enabled": True,
+                "b1_sources_group_cpm": min(new_settings.max_cpm, core.models.AllRTBSource.default_cpm),
+                "b1_sources_group_daily_budget": core.models.AllRTBSource.default_daily_budget_cc,
+                "local_b1_sources_group_cpm": min(new_settings.max_cpm, core.models.AllRTBSource.default_cpm),
+                "local_b1_sources_group_daily_budget": core.models.AllRTBSource.default_daily_budget_cc,
+            },
+        )
+
     def test_b1_sources_group_adjustments_sets_new_cpc_daily_budget(self):
         current_settings = self.ad_group.get_current_settings()
         new_settings = current_settings.copy_settings()
@@ -90,6 +125,51 @@ class InstanceTest(TestCase):
             },
         )
 
+    def test_b1_sources_group_adjustments_sets_new_cpm_daily_budget(self):
+        request = magic_mixer.blend_request_user(permissions=["fea_can_use_cpm_buying"])
+        self.ad_group.bidding_type = constants.BiddingType.CPM
+        self.ad_group.save(request)
+        current_settings = self.ad_group.get_current_settings()
+        new_settings = current_settings.copy_settings()
+        new_settings.b1_sources_group_enabled = False
+        new_settings.b1_sources_group_cpm = Decimal("0.111")
+        new_settings.b1_sources_group_daily_budget = Decimal("100.0")
+        new_settings.max_cpm = Decimal("0.8")
+        new_settings.save(None)
+
+        # turn on rtb as one
+        current_settings = self.ad_group.get_current_settings()
+        new_settings = current_settings.copy_settings()
+        new_settings.b1_sources_group_enabled = True
+        new_settings.b1_sources_group_daily_budget = Decimal("10.0")
+        new_settings.b1_sources_group_cpm = Decimal("0.211")
+        new_settings.save(None)
+
+        changes = current_settings.get_setting_changes(new_settings)
+        self.assertDictEqual(
+            changes,
+            {
+                "b1_sources_group_enabled": True,
+                "b1_sources_group_cpm": Decimal("0.211"),
+                "b1_sources_group_daily_budget": Decimal("10.0"),
+                "local_b1_sources_group_cpm": Decimal("0.211"),
+                "local_b1_sources_group_daily_budget": Decimal("10.0"),
+            },
+        )
+
+        current_settings._handle_b1_sources_group_adjustments(new_settings)
+        changes_new = current_settings.get_setting_changes(new_settings)
+        self.assertDictEqual(
+            changes_new,
+            {
+                "b1_sources_group_enabled": True,
+                "b1_sources_group_cpm": Decimal("0.211"),
+                "b1_sources_group_daily_budget": Decimal("10.0"),
+                "local_b1_sources_group_cpm": Decimal("0.211"),
+                "local_b1_sources_group_daily_budget": Decimal("10.0"),
+            },
+        )
+
     def test_b1_sources_group_adjustments_obeys_new_adgroup_max_cpc(self):
         current_settings = self.ad_group.get_current_settings()
         new_settings = current_settings.copy_settings()
@@ -123,6 +203,45 @@ class InstanceTest(TestCase):
                 "local_b1_sources_group_cpc_cc": Decimal("0.05"),
                 "local_b1_sources_group_daily_budget": core.models.AllRTBSource.default_daily_budget_cc,
                 "local_cpc_cc": Decimal("0.05"),
+            },
+        )
+
+    def test_b1_sources_group_adjustments_obeys_new_adgroup_max_cpm(self):
+        request = magic_mixer.blend_request_user(permissions=["fea_can_use_cpm_buying"])
+        self.ad_group.bidding_type = constants.BiddingType.CPM
+        self.ad_group.save(request)
+        current_settings = self.ad_group.get_current_settings()
+        new_settings = current_settings.copy_settings()
+        new_settings.b1_sources_group_enabled = False
+        new_settings.b1_sources_group_cpm = Decimal("0.111")
+        new_settings.b1_sources_group_daily_budget = Decimal("100.0")
+        new_settings.max_cpm = Decimal("0.8")
+        new_settings.save(None)
+
+        # turn on rtb as one
+        current_settings = self.ad_group.get_current_settings()
+        new_settings = current_settings.copy_settings()
+        new_settings.b1_sources_group_enabled = True
+        new_settings.max_cpm = Decimal("0.05")
+        new_settings.save(None)
+
+        changes = current_settings.get_setting_changes(new_settings)
+        self.assertDictEqual(
+            changes, {"b1_sources_group_enabled": True, "max_cpm": Decimal("0.05"), "local_max_cpm": Decimal("0.05")}
+        )
+
+        current_settings._handle_b1_sources_group_adjustments(new_settings)
+        changes_new = current_settings.get_setting_changes(new_settings)
+        self.assertDictEqual(
+            changes_new,
+            {
+                "b1_sources_group_enabled": True,
+                "b1_sources_group_cpm": Decimal("0.05"),
+                "b1_sources_group_daily_budget": core.models.AllRTBSource.default_daily_budget_cc,
+                "max_cpm": Decimal("0.05"),
+                "local_b1_sources_group_cpm": Decimal("0.05"),
+                "local_b1_sources_group_daily_budget": core.models.AllRTBSource.default_daily_budget_cc,
+                "local_max_cpm": Decimal("0.05"),
             },
         )
 
@@ -187,6 +306,13 @@ class InstanceTest(TestCase):
         ad_group.settings.update_unsafe(None, cpc_cc=Decimal("0.5"))
         ad_group.settings.update(None, cpc_cc=None)
         self.assertIsNone(ad_group.settings.cpc_cc)
+
+    def test_remove_max_cpm(self):
+        request = magic_mixer.blend_request_user(permissions=["fea_can_use_cpm_buying"])
+        ad_group = magic_mixer.blend(core.models.AdGroup)
+        ad_group.settings.update_unsafe(request, max_cpm=Decimal("0.5"))
+        ad_group.settings.update(request, max_cpm=None)
+        self.assertIsNone(ad_group.settings.max_cpm)
 
     @patch("automation.autopilot.recalculate_budgets_ad_group")
     def test_recalculate_autopilot_enable(self, mock_autopilot):

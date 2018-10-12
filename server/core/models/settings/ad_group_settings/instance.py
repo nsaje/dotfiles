@@ -100,37 +100,52 @@ class AdGroupSettingsMixin(object):
 
     def _handle_and_set_change_consequences(self, new_settings):
         self._handle_b1_sources_group_adjustments(new_settings)
-        self._handle_cpc_autopilot_initial_cpcs(new_settings)
+        self._handle_bid_autopilot_initial_bids(new_settings)
         self._handle_cpc_constraints(new_settings)
 
     def _handle_b1_sources_group_adjustments(self, new_settings):
         import dash.views.helpers
 
         changes = self.get_setting_changes(new_settings)
+
         # Turning on RTB-as-one
         if "b1_sources_group_enabled" in changes and changes["b1_sources_group_enabled"]:
             new_settings.b1_sources_group_state = constants.AdGroupSourceSettingsState.ACTIVE
 
-            if "b1_sources_group_cpc_cc" not in changes:
+            if "b1_sources_group_cpc_cc" not in changes and self.ad_group.bidding_type == constants.BiddingType.CPC:
                 new_settings.b1_sources_group_cpc_cc = core.models.AllRTBSource.default_cpc_cc
+
+            if "b1_sources_group_cpm" not in changes and self.ad_group.bidding_type == constants.BiddingType.CPM:
+                new_settings.b1_sources_group_cpm = core.models.AllRTBSource.default_cpm
 
             if "b1_sources_group_daily_budget" not in changes:
                 new_settings.b1_sources_group_daily_budget = core.models.AllRTBSource.default_daily_budget_cc
 
-        # Changing adgroup max cpc
-        if changes.get("cpc_cc") and new_settings.b1_sources_group_enabled:
-            new_settings.b1_sources_group_cpc_cc = min(changes.get("cpc_cc"), new_settings.b1_sources_group_cpc_cc)
+        if self.ad_group.bidding_type == constants.BiddingType.CPM:
+            # Changing adgroup max cpm
+            if changes.get("max_cpm") and new_settings.b1_sources_group_enabled:
+                new_settings.b1_sources_group_cpm = min(changes.get("max_cpm"), new_settings.b1_sources_group_cpm)
 
-        adjusted_b1_sources_group_cpc_cc = dash.views.helpers.adjust_max_cpc(
-            new_settings.b1_sources_group_cpc_cc, new_settings
-        )
-        if new_settings.b1_sources_group_cpc_cc != adjusted_b1_sources_group_cpc_cc:
-            new_settings.b1_sources_group_cpc_cc = adjusted_b1_sources_group_cpc_cc
+            adjusted_b1_sources_group_cpm = dash.views.helpers.adjust_max_bid(
+                new_settings.b1_sources_group_cpm, new_settings
+            )
+            if new_settings.b1_sources_group_cpm != adjusted_b1_sources_group_cpm:
+                new_settings.b1_sources_group_cpm = adjusted_b1_sources_group_cpm
+        else:
+            # Changing adgroup max cpc
+            if changes.get("cpc_cc") and new_settings.b1_sources_group_enabled:
+                new_settings.b1_sources_group_cpc_cc = min(changes.get("cpc_cc"), new_settings.b1_sources_group_cpc_cc)
 
-    def _handle_cpc_autopilot_initial_cpcs(self, new_settings):
+            adjusted_b1_sources_group_cpc_cc = dash.views.helpers.adjust_max_bid(
+                new_settings.b1_sources_group_cpc_cc, new_settings
+            )
+            if new_settings.b1_sources_group_cpc_cc != adjusted_b1_sources_group_cpc_cc:
+                new_settings.b1_sources_group_cpc_cc = adjusted_b1_sources_group_cpc_cc
+
+    def _handle_bid_autopilot_initial_bids(self, new_settings):
         import dash.views.helpers
 
-        if not self._should_set_cpc_autopilot_initial_cpcs(new_settings):
+        if not self._should_set_bid_autopilot_initial_bids(new_settings):
             return
 
         all_b1_sources = self.ad_group.adgroupsource_set.filter(source__source_type__type=constants.SourceType.B1)
@@ -142,13 +157,20 @@ class AdGroupSettingsMixin(object):
         if active_b1_sources.count() < 1:
             return
 
-        avg_cpc_cc = sum(agss.cpc_cc for agss in active_b1_sources_settings) / len(active_b1_sources_settings)
+        ags_bid_field = "cpm" if self.ad_group.bidding_type == constants.BiddingType.CPM else "cpc_cc"
+        avg_bid = sum(getattr(agss, ags_bid_field) for agss in active_b1_sources_settings) / len(
+            active_b1_sources_settings
+        )
+        new_ad_group_sources_bids = {ad_group_source: avg_bid for ad_group_source in all_b1_sources}
 
-        new_settings.b1_sources_group_cpc_cc = avg_cpc_cc
-        new_ad_group_sources_cpcs = {ad_group_source: avg_cpc_cc for ad_group_source in all_b1_sources}
-        dash.views.helpers.set_ad_group_sources_cpcs(new_ad_group_sources_cpcs, self.ad_group, new_settings)
+        if self.ad_group.bidding_type == constants.BiddingType.CPM:
+            new_settings.b1_sources_group_cpm = avg_bid
+            dash.views.helpers.set_ad_group_sources_cpms(new_ad_group_sources_bids, self.ad_group, new_settings)
+        else:
+            new_settings.b1_sources_group_cpc_cc = avg_bid
+            dash.views.helpers.set_ad_group_sources_cpcs(new_ad_group_sources_bids, self.ad_group, new_settings)
 
-    def _should_set_cpc_autopilot_initial_cpcs(self, new_settings):
+    def _should_set_bid_autopilot_initial_bids(self, new_settings):
         return (
             self.autopilot_state == constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET
             and new_settings.autopilot_state == constants.AdGroupSettingsAutopilotState.ACTIVE_CPC
@@ -157,6 +179,9 @@ class AdGroupSettingsMixin(object):
 
     def _handle_cpc_constraints(self, new_settings):
         import dash.views.helpers
+
+        if self.ad_group.bidding_type == constants.BiddingType.CPM:
+            return
 
         ad_group_sources_cpcs = dash.views.helpers.get_adjusted_ad_group_sources_cpcs(self.ad_group, new_settings)
         if self.b1_sources_group_cpc_cc != new_settings.b1_sources_group_cpc_cc:
