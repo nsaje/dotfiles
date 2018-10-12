@@ -129,7 +129,12 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = []
-    SUPERUSER_EXCLUDED_PERMISSIONS = ("disable_public_rcs", "disable_budget_management", "can_see_projections")
+    SUPERUSER_EXCLUDED_PERMISSIONS = (
+        "disable_public_rcs",
+        "disable_public_newscorp",
+        "disable_budget_management",
+        "can_see_projections",
+    )
 
     class Meta:
         verbose_name = _("user")
@@ -381,6 +386,7 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ("sspd_can_use_sspd", "SSPD: User can use SSP dashboard"),
             ("fea_can_use_cpm_buying", "User can use CPM Buying"),
             ("can_see_amplify_live_preview", "User can see Amplify Live Preview link in grid"),
+            ("disable_public_newscorp", "Disable some public features for Newscorp"),
         )
 
     def get_full_name(self):

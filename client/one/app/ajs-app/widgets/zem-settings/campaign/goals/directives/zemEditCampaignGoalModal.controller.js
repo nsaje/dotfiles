@@ -61,7 +61,10 @@ angular
                 return true;
             }
             if (
-                zemPermissions.hasPermission('zemauth.disable_public_rcs') &&
+                (zemPermissions.hasPermission('zemauth.disable_public_rcs') ||
+                    zemPermissions.hasPermission(
+                        'zemauth.disable_public_newscorp'
+                    )) &&
                 !isCpcGoal
             ) {
                 return false;

@@ -172,7 +172,8 @@ angular
         function isAllowLivestreamActionAvailable() {
             return (
                 !zemFullStoryService.isLivestreamAllowed() &&
-                !zemPermissions.hasPermission('zemauth.disable_public_rcs')
+                !zemPermissions.hasPermission('zemauth.disable_public_rcs') &&
+                !zemPermissions.hasPermission('zemauth.disable_public_newscorp')
             );
         }
 
