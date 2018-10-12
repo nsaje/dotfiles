@@ -85,6 +85,14 @@ angular.module('one.widgets').component('zemCreateEntityAction', {
         }
 
         function showCampaignCreatorModal() {
+            if (
+                !zemPermissions.hasPermission(
+                    'zemauth.fea_can_change_campaign_type'
+                )
+            ) {
+                return createCampaign(constants.campaignTypes.CONTENT);
+            }
+
             var campaignType$ = $uibModal.open({
                 // Use a proxy component in order to be able to use downgraded zem-campaign-creator-modal component
                 controllerAs: '$ctrl',
