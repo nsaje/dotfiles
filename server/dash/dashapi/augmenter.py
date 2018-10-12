@@ -6,7 +6,7 @@ Applies dash data to rows. No logics, only write data to proper keys.
 """
 
 # HACK hardcoded for newscorp
-AMPLIFY_LIVE_PREVIEW_URL = "https://www.taste.com.au/recipes/tandoori-roast-cauliflower-rice/g9h9ol5t?wiodb=https://odbcacher.outbrain.com/ODBCacher/api&wixp={amplify_internal_id}"
+AMPLIFY_LIVE_PREVIEW_URL = "https://www.taste.com.au/recipes/tandoori-roast-cauliflower-rice/g9h9ol5t?wiodb%3Dhttps%3A%2F%2Fodbcacher.outbrain.com%2FODBCacher%2Fapi%26wixp%3D{amplify_internal_id}"
 
 
 def get_augmenter_for_dimension(target_dimension):
