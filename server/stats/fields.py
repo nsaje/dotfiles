@@ -42,7 +42,7 @@ CONTENT_ADS_FIELDS = {
     "redirector_url",
     "status_per_source",
     "tracker_urls",
-    "amplify_promoted_link_id",
+    "amplify_live_preview_link",
 }
 
 SOURCE_FIELDS = {

@@ -344,6 +344,10 @@ REPORTS_TO_FTP_SERVER_TAPCLICK = {
     "ftp_reports_destinations": {1: "account1", 2: "account2", 3: "account3"},
 }
 
+AMELIA_INTEGRATION_ENABLED = False
+AMELIA_BASE_URL = ""
+OB_TOKEN_V1 = Secret("plain::test").get().decode("utf-8")
+
 try:
     from server.localsettings_docker_override import *  # noqa
 except ImportError:

@@ -9,6 +9,8 @@ from zemauth.models import User as ZemUser
 
 from analytics.projections import BudgetProjections
 
+from utils import outbrain_internal_helper
+
 import core.features.bcm.calculations
 import core.features.multicurrency
 
@@ -580,6 +582,22 @@ class ContentAdsLoader(Loader):
         for content_ad_source in qs:
             amplify_reviews_map[content_ad_source.content_ad_id] = content_ad_source
         return amplify_reviews_map
+
+    @cached_property
+    def amplify_internal_ids_map(self):
+        content_ad_ids = []
+        ob_external_ids = []
+        for content_ad_id, amplify_content_ad_source in self.amplify_reviews_map.items():
+            ob_external_id = amplify_content_ad_source.source_content_ad_id
+            if not ob_external_id:
+                continue
+            content_ad_ids.append(content_ad_id)
+            ob_external_ids.append(ob_external_id)
+        try:
+            ob_internal_ids = outbrain_internal_helper.to_internal_ids(ob_external_ids)
+            return dict(zip(content_ad_ids, ob_internal_ids))
+        except Exception:
+            return {}
 
 
 class PublisherBlacklistLoader(Loader):

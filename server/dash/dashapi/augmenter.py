@@ -5,6 +5,9 @@ from dash import publisher_helpers
 Applies dash data to rows. No logics, only write data to proper keys.
 """
 
+# HACK hardcoded for newscorp
+AMPLIFY_LIVE_PREVIEW_URL = "https://www.taste.com.au/recipes/tandoori-roast-cauliflower-rice/g9h9ol5t?wiodb=https://odbcacher.outbrain.com/ODBCacher/api&wixp={amplify_internal_id}"
+
 
 def get_augmenter_for_dimension(target_dimension):
     if target_dimension == "account_id":
@@ -247,9 +250,9 @@ def augment_content_ad(row, loader, is_base_level=False):
         status_per_source = loader.per_source_status_map[content_ad_id]
         row["status_per_source"] = status_per_source
 
-        amplify_content_ad_source = loader.amplify_reviews_map.get(content_ad_id)
-        if loader.user.has_perm("zemauth.can_see_amplify_ad_id_column") and amplify_content_ad_source:
-            row["amplify_promoted_link_id"] = amplify_content_ad_source.source_content_ad_id
+        amplify_internal_id = loader.amplify_internal_ids_map.get(content_ad_id)
+        if loader.user.has_perm("zemauth.can_see_amplify_live_preview") and amplify_internal_id:
+            row["amplify_live_preview_link"] = AMPLIFY_LIVE_PREVIEW_URL.format(amplify_internal_id=amplify_internal_id)
 
 
 def augment_content_ad_for_report(row, loader, is_base_level=False):
