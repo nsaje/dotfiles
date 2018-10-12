@@ -114,5 +114,11 @@ class AdGroupSourceSettingsMixin(object):
             cpc_cc = core.features.bcm.calculations.subtract_fee_and_margin(cpc_cc, license_fee, margin)
         return cpc_cc
 
+    def get_external_cpm(self, account, license_fee, margin):
+        cpm = self.cpm
+        if cpm and account.uses_bcm_v2:
+            cpm = core.features.bcm.calculations.subtract_fee_and_margin(cpm, license_fee, margin)
+        return cpm
+
     def get_currency(self):
         return self.ad_group_source.ad_group.campaign.account.currency

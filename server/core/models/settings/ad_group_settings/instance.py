@@ -251,15 +251,6 @@ class AdGroupSettingsMixin(object):
             system_user=self.system_user,
         )
 
-    def get_external_max_cpm(self, account, license_fee, margin):
-        if self.max_cpm is None:
-            return self.max_cpm
-
-        max_cpm = self.max_cpm
-        if account.uses_bcm_v2:
-            max_cpm = core.features.bcm.calculations.subtract_fee_and_margin(max_cpm, license_fee, margin)
-        return max_cpm
-
     def get_external_b1_sources_group_daily_budget(self, account, license_fee, margin):
         b1_sources_group_daily_budget = self.b1_sources_group_daily_budget
         if account.uses_bcm_v2:
@@ -267,14 +258,6 @@ class AdGroupSettingsMixin(object):
                 b1_sources_group_daily_budget, license_fee, margin
             )
         return b1_sources_group_daily_budget
-
-    def get_external_b1_sources_group_cpc_cc(self, account, license_fee, margin):
-        b1_sources_group_cpc_cc = self.b1_sources_group_cpc_cc
-        if account.uses_bcm_v2:
-            b1_sources_group_cpc_cc = core.features.bcm.calculations.subtract_fee_and_margin(
-                b1_sources_group_cpc_cc, license_fee, margin
-            )
-        return b1_sources_group_cpc_cc
 
     def get_currency(self):
         return self.ad_group.campaign.account.currency

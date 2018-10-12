@@ -84,6 +84,7 @@ class AdGroupSourcesView(K1APIView):
                 margin = campaigns_budgets_map[ad_group.campaign_id].margin
 
             cpc_cc = ad_group_source.settings.get_external_cpc_cc(ad_group.campaign.account, license_fee, margin)
+            cpm = ad_group_source.settings.get_external_cpm(ad_group.campaign.account, license_fee, margin)
             daily_budget_cc = ad_group_source.settings.get_external_daily_budget_cc(
                 ad_group.campaign.account, license_fee, margin
             )
@@ -97,6 +98,7 @@ class AdGroupSourcesView(K1APIView):
                 "tracking_code": tracking_code,
                 "state": source_state,
                 "cpc_cc": format(cpc_cc, ".4f"),
+                "cpm": format(cpm, ".4f") if cpm else cpm,
                 "daily_budget_cc": format(daily_budget_cc, ".4f"),
             }
             if ad_group_source.ad_review_only:

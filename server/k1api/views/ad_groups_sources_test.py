@@ -48,6 +48,7 @@ class AdGroupsSourcesTest(K1APIBaseTest):
                 "slug": "b1_adiant",
                 "state": 2,
                 "cpc_cc": "0.1200",
+                "cpm": "0.6000",
                 "daily_budget_cc": "1.5000",
                 "source_campaign_key": ["fake"],
                 "tracking_code": "tracking1&tracking2",
@@ -61,6 +62,7 @@ class AdGroupsSourcesTest(K1APIBaseTest):
                 "slug": "b1_google",
                 "state": 1,
                 "cpc_cc": "0.1300",
+                "cpm": "0.7000",
                 "daily_budget_cc": "1.6000",
                 "source_campaign_key": ["fake"],
                 "tracking_code": "tracking1&tracking2",
@@ -125,7 +127,7 @@ class AdGroupsSourcesTest(K1APIBaseTest):
         source = dash.models.Source.objects.get(bidder_slug="b1_google")
         ad_group_source = magic_mixer.blend(dash.models.AdGroupSource, ad_group=ad_group, source=source)
         ad_group_source.settings.update_unsafe(
-            None, cpc_cc="0.12", daily_budget_cc="50.00", ad_group_source=ad_group_source
+            None, cpc_cc="0.12", cpm="0.12", daily_budget_cc="50.00", ad_group_source=ad_group_source
         )
 
         response = self.client.get(
@@ -145,6 +147,7 @@ class AdGroupsSourcesTest(K1APIBaseTest):
                 "slug": "b1_google",
                 "state": 2,
                 "cpc_cc": "0.0864",
+                "cpm": "0.0864",
                 "daily_budget_cc": "36.0000",
                 "source_campaign_key": {},
                 "tracking_code": ad_group.settings.tracking_code,
@@ -167,6 +170,7 @@ class AdGroupsSourcesTest(K1APIBaseTest):
                 "slug": "b1_adiant",
                 "state": 2,
                 "cpc_cc": "0.1200",
+                "cpm": "0.6000",
                 "daily_budget_cc": "1.5000",
                 "source_campaign_key": ["fake"],
                 "tracking_code": "tracking1&tracking2",

@@ -88,11 +88,7 @@ class AdGroupsView(K1APIView):
                 license_fee = campaigns_budgets_map[ad_group.campaign_id].credit.license_fee
                 margin = campaigns_budgets_map[ad_group.campaign_id].margin
 
-            max_cpm = ad_group.settings.get_external_max_cpm(ad_group.campaign.account, license_fee, margin)
             b1_sources_group_daily_budget = ad_group.settings.get_external_b1_sources_group_daily_budget(
-                ad_group.campaign.account, license_fee, margin
-            )
-            b1_sources_group_cpc_cc = ad_group.settings.get_external_b1_sources_group_cpc_cc(
                 ad_group.campaign.account, license_fee, margin
             )
 
@@ -132,11 +128,9 @@ class AdGroupsView(K1APIView):
                 "goal_types": campaign_goal_types[ad_group.campaign.id],
                 "goals": campaign_goals[ad_group.campaign.id],
                 "dayparting": ad_group.settings.dayparting,
-                "max_cpm": format(max_cpm, ".4f") if max_cpm else max_cpm,
                 "b1_sources_group": {
                     "enabled": ad_group.settings.b1_sources_group_enabled,
                     "daily_budget": b1_sources_group_daily_budget,
-                    "cpc_cc": b1_sources_group_cpc_cc,
                     "state": ad_group.settings.b1_sources_group_state,
                 },
                 "whitelist_publisher_groups": whitelist,
@@ -145,6 +139,7 @@ class AdGroupsView(K1APIView):
                 "click_capping_daily_ad_group_max_clicks": ad_group.settings.click_capping_daily_ad_group_max_clicks,
                 "click_capping_daily_click_budget": ad_group.settings.click_capping_daily_click_budget,
                 "custom_flags": flags,
+                "bidding_type": ad_group.bidding_type,
                 "amplify_review": ad_group.amplify_review,
             }
 

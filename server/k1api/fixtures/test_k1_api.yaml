@@ -481,6 +481,7 @@
         settings: 1
         name: 'test adgroup 1'
         custom_flags: {'flag_1': True}
+        bidding_type: 1
         amplify_review: True
     model: dash.adgroup
     pk: 1
@@ -525,7 +526,6 @@
         b1_sources_group_daily_budget: 10.0
         b1_sources_group_state: 2
         dayparting: {"timezone": "CET", "monday": [1, 2, 3]}
-        max_cpm: '1.6'
         whitelist_publisher_groups: [1, 2]
         blacklist_publisher_groups: [3, 4]
         click_capping_daily_ad_group_max_clicks: 15
@@ -711,6 +711,7 @@
         created_dt: '2014-06-05T09:58:22'
         ad_group_source: 6
         cpc_cc: '0.12'
+        cpm: "0.60"
         daily_budget_cc: '1.5'
         state: 2
     model: dash.adgroupsourcesettings
@@ -738,6 +739,7 @@
         created_dt: '2014-06-05T09:58:22'
         ad_group_source: 9
         cpc_cc: '0.13'
+        cpm: '0.70'
         daily_budget_cc: '1.6'
         state: 1
     model: dash.adgroupsourcesettings
