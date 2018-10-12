@@ -495,5 +495,6 @@ REPORTS_TO_FTP_SERVER_TAPCLICK = {
         738: "RiteAid",
         739: "Treasury_Keystone_Scholars",
         740: "Harrisburg_University_Cybersecurity",
+        746: "Quest_Diagnostics",
     },
 }

@@ -313,12 +313,12 @@ AMPLIFY_REVIEW = False
 
 SPARK_MASTER = ""
 
-#  TAPCLICK ftp config
+# TAPCLICK ftp config
 REPORTS_TO_FTP_SERVER_TAPCLICK = {
-    "ftp_server": Secret("plain::1234").get().decode("utf-8"),
+    "ftp_server": Secret("plain::172.17.0.2").get().decode("utf-8"),
     "ftp_port": 21,
-    "ftp_user": Secret("plain::test").get().decode("utf-8"),
+    "ftp_user": Secret("plain::kev").get().decode("utf-8"),
     "ftp_password": Secret("plain::test").get().decode("utf-8"),
     # Key is the report ID, Value is the remote destination for that report
-    "ftp_reports_destinations": {1: "/ftp/account1/reports/", 2: "/ftp/account2/reports/", 3: "/ftp/account3/reports/"},
+    "ftp_reports_destinations": {1: "account1", 2: "account2", 3: "account3"},
 }
