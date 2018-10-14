@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 TABLE_NAME = "mv_inventory"
 CACHE_NAME = "inventory_planning"
 
-NATIVE_AD_SERVER_IDS = [115, 118, 122]  # Mediamond  # RCS  # News Corp
+NATIVE_AD_SERVER_IDS = [115, 118, 122, 139]  # Mediamond  # RCS  # News Corp # News Corp Test
 
 
 def refresh_inventory_data(date_from, date_to, skip_vacuum=False):
