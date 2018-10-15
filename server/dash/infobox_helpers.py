@@ -74,7 +74,10 @@ class OverviewSeparator(OverviewSetting):
         super(OverviewSeparator, self).__init__("", "", "", setting_type="hr")
 
 
-def format_flight_time(start_date, end_date):
+def format_flight_time(start_date, end_date, no_ad_groups_or_budgets):
+    if no_ad_groups_or_budgets:
+        return "-", None
+
     start_date_str = start_date.strftime("%m/%d") if start_date else ""
     end_date_str = end_date.strftime("%m/%d") if end_date else "Ongoing"
 
@@ -291,7 +294,6 @@ def create_yesterday_spend_setting(yesterday_costs, daily_budget, currency, uses
         "Yesterday spend:",
         utils.lc_helper.format_currency(yesterday_cost, curr=currency_symbol),
         description=daily_ratio_description,
-        tooltip="Yesterday spend" if uses_bcm_v2 else "Yesterday media spend",
     )
     return yesterday_spend_setting
 
@@ -677,3 +679,55 @@ def _get_primary_campaign_goal(user, campaign, performance, currency):
     settings.append(primary_campaign_goal_setting.as_dict())
 
     return settings
+
+
+def calculate_flight_dates(ags_start_date, ags_end_date, budgets_start_date, budgets_end_date):
+    start_date = None
+    end_date = None
+
+    if ags_start_date:
+        start_date = max(ags_start_date, budgets_start_date or datetime.date.min)
+    elif budgets_start_date:
+        start_date = budgets_start_date
+
+    if ags_end_date:
+        end_date = min(ags_end_date, budgets_end_date or datetime.date.max)
+    elif budgets_end_date:
+        end_date = budgets_end_date
+
+    return start_date, end_date
+
+
+def calculate_budgets_flight_dates_for_date_range(campaign, start_date, end_date):
+    budgets_start_date = None
+    budgets_end_date = None
+
+    campaign_budgets = (
+        dash.models.BudgetLineItem.objects.filter(campaign=campaign)
+        .exclude(start_date__gt=end_date or datetime.date.max)
+        .exclude(end_date__lt=start_date or datetime.date.min)
+        .order_by("start_date", "end_date")
+    )
+
+    for budget in campaign_budgets:
+        if not budgets_start_date:
+            budgets_start_date = budget.start_date
+
+        if not budgets_end_date:
+            budgets_end_date = budget.end_date
+
+        if budgets_end_date < budget.start_date:
+            # Non-overlapping budgets
+            today = utils.dates_helper.local_today()
+            if budgets_start_date <= today and budgets_end_date >= today:
+                # Use flight dates of currently active budgets
+                return budgets_start_date, budgets_end_date
+            else:
+                # Proceed finding flight dates of budgets that will be active next
+                budgets_start_date = budget.start_date
+                budgets_end_date = budget.end_date
+        elif budgets_end_date < budget.end_date:
+            # Overlapping budgets, extend range
+            budgets_end_date = budget.end_date
+
+    return budgets_start_date, budgets_end_date

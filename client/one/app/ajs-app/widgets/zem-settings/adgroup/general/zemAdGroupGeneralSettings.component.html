@@ -18,7 +18,7 @@
             <div class="prefixed-field prefixed-field--narrow prefixed-field--with-icon calendar-icon">
                 <input class="input-text" id="start-date-input" type="text" uib-datepicker-popup="MM/dd/yyyy"
                        ng-model="$ctrl.entity.settings.startDate" is-open="$ctrl.startDatePicker.isOpen"
-                       ng-click="$ctrl.openDatePicker('startDate')">
+                       ng-click="$ctrl.openDatePicker('startDate')" ng-disabled="$ctrl.entity.settings.autopilotOnCampaign">
             </div>
             <div class="message message--error" ng-repeat="error in $ctrl.errors.startDate"
                  for="start-date-input">{{ error }}</div>
@@ -32,14 +32,14 @@
                 <zem-help-popover content="The end date of the ad group. Ad group will run until the end of stop date." placement="top"></zem-help-popover>
             </label>
             <div class="prefixed-field prefixed-field--narrow prefixed-field--with-icon calendar-icon m-r">
-                <input class="input-text" id="end-date-input" ng-disabled="$ctrl.entity.warnings.endDate !== undefined"
+                <input class="input-text" id="end-date-input" ng-disabled="$ctrl.entity.settings.autopilotOnCampaign || $ctrl.entity.warnings.endDate !== undefined"
                        type="text" uib-datepicker-popup="MM/dd/yyyy" datepicker-options="$ctrl.endDatePickerOptions"
                        ng-model="$ctrl.entity.settings.endDate" is-open="$ctrl.endDatePicker.isOpen"
                        ng-click="$ctrl.openDatePicker('endDate')">
             </div>
             <div class="form__checkbox">
                 <label>
-                    <input class="input-checkbox" ng-disabled="$ctrl.entity.warnings.endDate !== undefined" type="checkbox"
+                    <input class="input-checkbox" ng-disabled="$ctrl.entity.settings.autopilotOnCampaign || $ctrl.entity.warnings.endDate !== undefined" type="checkbox"
                            id="manual-stop-cb" ng-model="$ctrl.entity.settings.manualStop">
                     <span class="checkbox-text" for="manual-stop-cb">I'll stop it myself</span>
                 </label>
@@ -48,6 +48,9 @@
                  ng-repeat="error in $ctrl.errors.endDate" for="end-date-input">{{ error }}</div>
             <div class="message message--warning message--with-icon" ng-if="$ctrl.entity.warnings.endDate !== undefined">
                 {{ $ctrl.MESSAGES.WARNING_END_DATE }} <a ng-click="$ctrl.goToBudgets()">Add budget</a>
+            </div>
+            <div class="message message--warning message--with-icon" ng-if="$ctrl.entity.settings.autopilotOnCampaign">
+                {{ $ctrl.MESSAGES.WARNING_CAMPAIGN_BUDGET_OPTIMIZATION_FLIGHT_TIME }}
             </div>
         </div>
 
@@ -70,15 +73,15 @@
             <label class="form__label" for="click-capping-input" is-internal="zemauth.can_set_click_capping">
                 Daily click cap:
                 <zem-help-popover content="Limit number of clicks you want to reach daily within the ad group. Zemanta will stop spending for the rest of the day once it hits the maximum number of clicks you set." placement="top"></zem-help-popover>
-            </label>                                   
+            </label>
             <input id="click-capping-input"
                     class="input-text input-text--narrow"
-                    ng-model="$ctrl.entity.settings.clickCappingDailyAdGroupMaxClicks"                       
-                    type="text"                    
-                    zem-numeric-validator>                        
+                    ng-model="$ctrl.entity.settings.clickCappingDailyAdGroupMaxClicks"
+                    type="text"
+                    zem-numeric-validator>
             <div class="message message--info message--with-icon">
                 {{ $ctrl.MESSAGES.INFO_CLICK_CAPPING }}
-            </div>            
+            </div>
         </div>
 
         <div class="form__group" ng-if="$ctrl.hasPermission('zemauth.fea_can_use_cpm_buying')"

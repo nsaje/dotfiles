@@ -58,6 +58,8 @@ class CampaignSettingsMixin(object):
 
     def _handle_budget_autopilot(self, changes):
         if "autopilot" in changes:
+            if changes["autopilot"]:
+                autopilot.adjust_ad_groups_flight_times_on_campaign_budget_autopilot_enabled(self.campaign)
             autopilot.recalculate_budgets_campaign(self.campaign, send_mail=True)
 
     def _validate_changes(self, changes):

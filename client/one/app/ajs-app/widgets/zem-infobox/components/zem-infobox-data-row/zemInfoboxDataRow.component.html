@@ -1,4 +1,10 @@
-<div class="zem-infobox-data-row__value-label">{{$ctrl.row.name}}</div>
+<div class="zem-infobox-data-row__value-label">
+    {{$ctrl.row.name}}
+    <zem-help-popover ng-if="$ctrl.row.tooltip"
+                      content="{{$ctrl.row.tooltip}}"
+                      placement="bottom">
+    </zem-help-popover>
+</div>
 
 <div class="zem-infobox-data-row__value-container">
     <span ng-if="$ctrl.row.icon"
@@ -24,7 +30,7 @@
     </span>
     <zem-help-popover ng-if="$ctrl.row.warning"
                       content="{{$ctrl.row.warning}}"
-                      placement="top">
+                      placement="bottom">
     </zem-help-popover>
     <span ng-if="$ctrl.row.description" class="zem-infobox-data-row__value-description">
         ({{$ctrl.row.description}})

@@ -24,6 +24,10 @@ angular.module('one.widgets').component('zemAdGroupGeneralSettings', {
             WARNING_MAX_CPM: '',
             INFO_CLICK_CAPPING:
                 'Outbrain and Yahoo don’t support click capping and will be automatically paused in this ad group if you enable this setting.',
+            WARNING_CAMPAIGN_BUDGET_OPTIMIZATION_FLIGHT_TIME:
+                'Flight time settings are disabled because campaign budget ' +
+                'optimization is enabled. Budget flight time is used for ' +
+                'running the ad group.',
         };
         $ctrl.deliveryType = {
             STANDARD: 1,

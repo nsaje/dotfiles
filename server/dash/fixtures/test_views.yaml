@@ -158,6 +158,7 @@
 -   fields:
         ad_group: 987
         created_dt: '2014-06-04T09:58:21'
+        start_date: '2014-06-04'
         b1_sources_group_daily_budget: 0
         local_b1_sources_group_daily_budget: 0
         b1_sources_group_cpc_cc: 0.01

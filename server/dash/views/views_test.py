@@ -829,7 +829,7 @@ class AdGroupOverviewTest(TestCase):
 
         settings = response["data"]["basic_settings"] + response["data"]["performance_settings"]
         flight_setting = self._get_setting(settings, "flight")
-        self.assertEqual("03/02 - 04/02", flight_setting["value"])
+        self.assertEqual("-", flight_setting["value"])
 
         budget_setting = self._get_setting(settings, "campaign budget")
         self.assertIsNone(budget_setting, "no permission")

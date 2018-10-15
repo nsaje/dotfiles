@@ -545,3 +545,18 @@ def _report_new_budgets_on_ap_to_influx(entities):
     influx.gauge("automation.autopilot_plus.sources_on", num_sources_on_cpc_ap, autopilot="cpc_autopilot")
     influx.gauge("automation.autopilot_plus.sources_on", num_sources_on_budget_ap, autopilot="budget_autopilot")
     influx.gauge("automation.autopilot_plus.sources_on", num_sources_on_campaign_ap, autopilot="campaign_autopilot")
+
+
+def adjust_ad_groups_flight_times_on_campaign_budget_autopilot_enabled(campaign):
+    ad_groups = campaign.adgroup_set.all().select_related("settings")
+    for ad_group in ad_groups:
+        _set_ad_group_flight_time_to_ongoing(ad_group)
+
+
+def _set_ad_group_flight_time_to_ongoing(ad_group):
+    today = dates_helper.local_today()
+    updates = {"end_date": None}
+    if ad_group.settings.start_date > today:
+        updates["start_date"] = today
+
+    ad_group.settings.update(None, skip_automation=True, system_user=dash.constants.SystemUserType.AUTOPILOT, **updates)

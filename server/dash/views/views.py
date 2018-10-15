@@ -240,7 +240,7 @@ class AdGroupOverview(api_common.BaseApiView):
             "text": infobox_helpers.get_entity_delivery_text(ad_group_running_status),
         }
 
-        basic_settings = self._basic_settings(request.user, ad_group, ad_group_settings)
+        basic_settings = self._basic_settings(request.user, ad_group)
         performance_settings = self._performance_settings(
             ad_group, request.user, ad_group_settings, start_date, end_date, async_perf_query, filtered_sources
         )
@@ -255,16 +255,22 @@ class AdGroupOverview(api_common.BaseApiView):
         }
         return self.create_api_response(response)
 
-    def _basic_settings(self, user, ad_group, ad_group_settings):
+    def _basic_settings(self, user, ad_group):
         settings = []
 
+        start_date, end_date, no_ad_groups_or_budgets = self._calculate_flight_dates(ad_group)
         flight_time, flight_time_left_days = infobox_helpers.format_flight_time(
-            ad_group_settings.start_date, ad_group_settings.end_date
+            start_date, end_date, no_ad_groups_or_budgets
         )
         days_left_description = None
         if flight_time_left_days is not None:
             days_left_description = "{} days left".format(flight_time_left_days)
-        flight_time_setting = infobox_helpers.OverviewSetting("Flight time:", flight_time, days_left_description)
+        flight_time_setting = infobox_helpers.OverviewSetting(
+            "Flight time:",
+            flight_time,
+            days_left_description,
+            tooltip="Ad group's flight time is calculated from campaign budgets' and ad group's flight times.",
+        )
         settings.append(flight_time_setting.as_dict())
 
         return settings
@@ -291,6 +297,19 @@ class AdGroupOverview(api_common.BaseApiView):
             )
 
         return settings
+
+    def _calculate_flight_dates(self, ad_group):
+        budgets_start_date, budgets_end_date = infobox_helpers.calculate_budgets_flight_dates_for_date_range(
+            ad_group.campaign, ad_group.settings.start_date, ad_group.settings.end_date
+        )
+
+        start_date, end_date = infobox_helpers.calculate_flight_dates(
+            ad_group.settings.start_date, ad_group.settings.end_date, budgets_start_date, budgets_end_date
+        )
+
+        no_ad_groups_or_budgets = budgets_start_date is None
+
+        return start_date, end_date, no_ad_groups_or_budgets
 
 
 class AdGroupArchive(api_common.BaseApiView):
@@ -403,15 +422,19 @@ class CampaignOverview(api_common.BaseApiView):
         )
         settings.append(campaign_manager_setting.as_dict())
 
-        start_date, end_date, never_finishes = self._calculate_flight_dates(campaign)
-        if never_finishes:
-            end_date = None
-
-        flight_time, flight_time_left_days = infobox_helpers.format_flight_time(start_date, end_date)
+        start_date, end_date, no_ad_groups_or_budgets = self._calculate_flight_dates(campaign)
+        flight_time, flight_time_left_days = infobox_helpers.format_flight_time(
+            start_date, end_date, no_ad_groups_or_budgets
+        )
         flight_time_left_description = None
         if flight_time_left_days is not None:
             flight_time_left_description = "{} days left".format(flight_time_left_days)
-        flight_time_setting = infobox_helpers.OverviewSetting("Flight time:", flight_time, flight_time_left_description)
+        flight_time_setting = infobox_helpers.OverviewSetting(
+            "Flight time:",
+            flight_time,
+            flight_time_left_description,
+            tooltip="Campaign's flight time is calculated from budgets' and ad groups' flight times.",
+        )
         settings.append(flight_time_setting.as_dict())
 
         currency = campaign.account.currency
@@ -423,7 +446,6 @@ class CampaignOverview(api_common.BaseApiView):
             "Campaign budget:",
             lc_helper.format_currency(total_spend, curr=currency_symbol),
             "{} remaining".format(lc_helper.format_currency(total_spend_available, curr=currency_symbol)),
-            tooltip="Campaign media budget",
         )
         settings.append(campaign_budget_setting.as_dict())
         return settings
@@ -454,7 +476,6 @@ class CampaignOverview(api_common.BaseApiView):
                     "Campaign pacing:",
                     lc_helper.format_currency(attributed_media_spend, curr=currency_symbol),
                     description="{:.2f}% on plan".format(pacing or 0),
-                    tooltip="Campaign pacing for the current month",
                 ).as_dict()
             )
 
@@ -464,6 +485,21 @@ class CampaignOverview(api_common.BaseApiView):
         return settings
 
     def _calculate_flight_dates(self, campaign):
+        ags_start_date, ags_end_date = self._calculate_ad_groups_flight_dates(campaign)
+
+        budgets_start_date, budgets_end_date = infobox_helpers.calculate_budgets_flight_dates_for_date_range(
+            campaign, ags_start_date, ags_end_date
+        )
+
+        start_date, end_date = infobox_helpers.calculate_flight_dates(
+            ags_start_date, ags_end_date, budgets_start_date, budgets_end_date
+        )
+
+        no_ad_groups_or_budgets = ags_start_date is None or budgets_start_date is None
+
+        return start_date, end_date, no_ad_groups_or_budgets
+
+    def _calculate_ad_groups_flight_dates(self, campaign):
         start_date = None
         end_date = None
         never_finishes = False
@@ -473,24 +509,28 @@ class CampaignOverview(api_common.BaseApiView):
             .group_current_settings()
             .values_list("start_date", "end_date")
         )
-        for ad_group_settings in ad_groups_settings:
-            adg_start_date = ad_group_settings[0]
-            adg_end_date = ad_group_settings[1]
+
+        for ags in ad_groups_settings:
+            ag_start_date = ags[0]
+            ag_end_date = ags[1]
 
             if start_date is None:
-                start_date = adg_start_date
+                start_date = ag_start_date
             else:
-                start_date = min(start_date, adg_start_date)
-
-            if adg_end_date is None:
-                never_finishes = True
+                start_date = min(start_date, ag_start_date)
 
             if end_date is None:
-                end_date = adg_end_date
+                end_date = ag_end_date
             else:
-                end_date = max(end_date, adg_end_date or end_date)
+                end_date = max(end_date, ag_end_date or end_date)
 
-        return start_date, end_date, never_finishes
+            if ag_end_date is None:
+                never_finishes = True
+
+        if never_finishes:
+            end_date = None
+
+        return start_date, end_date
 
 
 class AccountOverview(api_common.BaseApiView):
@@ -541,16 +581,12 @@ class AccountOverview(api_common.BaseApiView):
         cs_manager_setting_label = "CS Representative:"
 
         sales_manager_setting = infobox_helpers.OverviewSetting(
-            sales_manager_setting_label,
-            infobox_helpers.format_username(account_settings.default_sales_representative),
-            tooltip="Sales Representative",
+            sales_manager_setting_label, infobox_helpers.format_username(account_settings.default_sales_representative)
         )
         settings.append(sales_manager_setting.as_dict())
 
         cs_manager_setting = infobox_helpers.OverviewSetting(
-            cs_manager_setting_label,
-            infobox_helpers.format_username(account_settings.default_cs_representative),
-            tooltip="Customer Success Representative",
+            cs_manager_setting_label, infobox_helpers.format_username(account_settings.default_cs_representative)
         )
         settings.append(cs_manager_setting.as_dict())
 
@@ -561,10 +597,7 @@ class AccountOverview(api_common.BaseApiView):
         unallocated_credit_text = lc_helper.format_currency(available_credit, curr=currency_symbol)
 
         allocated_credit_setting = infobox_helpers.OverviewSetting(
-            "Allocated credit:",
-            allocated_credit_text,
-            description="{} unallocated".format(unallocated_credit_text),
-            tooltip="Total allocated and unallocated credit",
+            "Allocated credit:", allocated_credit_text, description="{} unallocated".format(unallocated_credit_text)
         )
         settings.append(allocated_credit_setting.as_dict())
 
@@ -572,7 +605,7 @@ class AccountOverview(api_common.BaseApiView):
         if credit_refund:
             credit_refund_text = lc_helper.format_currency(credit_refund, curr=currency_symbol)
             credit_refund_setting = infobox_helpers.OverviewSetting(
-                "Refunded credit:", credit_refund_text, description="", tooltip="Total refunded credit"
+                "Refunded credit:", credit_refund_text, description=""
             )
             settings.append(credit_refund_setting.as_dict())
 
@@ -1031,10 +1064,7 @@ class AllAccountsOverview(api_common.BaseApiView):
         currency_symbol = core.features.multicurrency.get_currency_symbol(currency)
         overview_settings.append(
             infobox_helpers.OverviewSetting(
-                "Yesterday spend:",
-                lc_helper.format_currency(yesterday_cost, curr=currency_symbol),
-                tooltip="Yesterday spend" if uses_bcm_v2 else "Yesterday media spend",
-                section_start=True,
+                "Yesterday spend:", lc_helper.format_currency(yesterday_cost, curr=currency_symbol), section_start=True
             )
         )
 
@@ -1042,9 +1072,7 @@ class AllAccountsOverview(api_common.BaseApiView):
         mtd_cost = mtd_costs["etfm_cost"] if uses_bcm_v2 else mtd_costs["e_media_cost"]
         overview_settings.append(
             infobox_helpers.OverviewSetting(
-                "Month-to-date spend:",
-                lc_helper.format_currency(mtd_cost, curr=currency_symbol),
-                tooltip="Month-to-date spend" if uses_bcm_v2 else "Month-to-date media spend",
+                "Month-to-date spend:", lc_helper.format_currency(mtd_cost, curr=currency_symbol)
             )
         )
 
@@ -1068,10 +1096,7 @@ class AllAccountsOverview(api_common.BaseApiView):
         currency_symbol = core.features.multicurrency.get_currency_symbol(currency)
         overview_settings.append(
             infobox_helpers.OverviewSetting(
-                "Yesterday spend:",
-                lc_helper.format_currency(yesterday_cost, curr=currency_symbol),
-                tooltip="Yesterday spend" if uses_bcm_v2 else "Yesterday media spend",
-                section_start=True,
+                "Yesterday spend:", lc_helper.format_currency(yesterday_cost, curr=currency_symbol), section_start=True
             )
         )
 
@@ -1079,9 +1104,7 @@ class AllAccountsOverview(api_common.BaseApiView):
         mtd_cost = mtd_costs["etfm_cost"] if uses_bcm_v2 else mtd_costs["e_media_cost"]
         overview_settings.append(
             infobox_helpers.OverviewSetting(
-                "Month-to-date spend:",
-                lc_helper.format_currency(mtd_cost, curr=currency_symbol),
-                tooltip="Month-to-date spend" if uses_bcm_v2 else "Month-to-date media spend",
+                "Month-to-date spend:", lc_helper.format_currency(mtd_cost, curr=currency_symbol)
             )
         )
 

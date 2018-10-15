@@ -1,5 +1,6 @@
 from collections import defaultdict
 from decimal import Decimal
+import datetime
 import json
 from mock import patch, call
 import traceback
@@ -8,6 +9,7 @@ from django import test
 
 import dash.constants
 import dash.models
+from utils.magic_mixer import magic_mixer
 
 from . import constants
 from automation import models
@@ -577,3 +579,35 @@ class AutopilotPlusTestCase(test.TestCase):
                 call("automation.autopilot_plus.sources_on", 1, autopilot="campaign_autopilot"),
             ]
         )
+
+    @patch("utils.dates_helper.local_today", return_value=datetime.date(2018, 1, 2))
+    def test_adjust_ad_groups_flight_times_on_campaign_budget_autopilot_enabled(self, mock_local_today):
+        campaign = magic_mixer.blend(dash.models.Campaign)
+        ad_groups = magic_mixer.cycle(3).blend(dash.models.AdGroup, campaign=campaign)
+        ad_groups[0].settings.update(None, start_date=datetime.date(2018, 1, 1), end_date=datetime.date(2018, 2, 1))
+        ad_groups[1].settings.update(None, start_date=datetime.date(2018, 1, 3), end_date=datetime.date(2018, 2, 1))
+        ad_groups[2].settings.update(None, start_date=datetime.date(2018, 1, 3), end_date=None)
+
+        with patch("dash.models.AdGroupSettings.update") as mock_settings_update:
+            service.adjust_ad_groups_flight_times_on_campaign_budget_autopilot_enabled(campaign)
+            mock_settings_update.assert_has_calls(
+                [
+                    call(
+                        None, end_date=None, skip_automation=True, system_user=dash.constants.SystemUserType.AUTOPILOT
+                    ),
+                    call(
+                        None,
+                        start_date=datetime.date(2018, 1, 2),
+                        end_date=None,
+                        skip_automation=True,
+                        system_user=dash.constants.SystemUserType.AUTOPILOT,
+                    ),
+                    call(
+                        None,
+                        start_date=datetime.date(2018, 1, 2),
+                        end_date=None,
+                        skip_automation=True,
+                        system_user=dash.constants.SystemUserType.AUTOPILOT,
+                    ),
+                ]
+            )
