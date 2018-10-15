@@ -1,6 +1,6 @@
 import datetime
 from decimal import Decimal
-from mock import patch, MagicMock
+from mock import patch
 
 from django.test import TestCase, override_settings
 
@@ -408,7 +408,6 @@ PUBLISHER_5__SOURCE_2 = {
 
 
 @patch("utils.threads.AsyncFunction", threads.MockAsyncFunction)
-@patch("utils.sspd_client.get_content_ad_status", MagicMock())
 @override_settings(R1_BLANK_REDIRECT_URL="http://r1.zemanta.com/b/{redirect_id}/z1/1/{content_ad_id}/")
 class QueryTest(TestCase):
 
@@ -980,7 +979,6 @@ class QueryOrderTest(TestCase):
 
 
 @patch("utils.threads.AsyncFunction", threads.MockAsyncFunction)
-@patch("utils.sspd_client.get_content_ad_status", MagicMock())
 @override_settings(R1_BLANK_REDIRECT_URL="http://r1.zemanta.com/b/{redirect_id}/z1/1/{content_ad_id}/")
 class QueryForRowsTest(TestCase):
 
