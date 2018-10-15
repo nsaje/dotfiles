@@ -83,6 +83,7 @@ pycparser==2.18
 pycrypto==2.6.1
 pycurl==7.43.0
 pygments==2.2.0
+pyjwt==1.6.4
 pylibmc==1.5.1
 pyopenssl==16.2.0
 python-dateutil==2.6.0

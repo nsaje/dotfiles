@@ -326,3 +326,6 @@ REPORTS_TO_FTP_SERVER_TAPCLICK = {
 AMELIA_INTEGRATION_ENABLED = False
 AMELIA_BASE_URL = ""
 OB_TOKEN_V1 = Secret("plain::test").get().decode("utf-8")
+
+SSPD_BASE_URL = ""
+SSPD_AUTH_SECRET = ""
