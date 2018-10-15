@@ -6,7 +6,7 @@ import influx
 from dateutil import rrule
 
 import backtosql
-from integrations.bizwire import config
+from integrations.bizwire import config, models
 from integrations.bizwire.internal import helpers
 import dash.models
 
@@ -25,6 +25,7 @@ def run_hourly_job():
     monitor_yesterday_clicks()
     monitor_duplicate_articles()
     monitor_remaining_budget()
+    monitor_past_7_days_clicks()
 
 
 def _get_unique_s3_labels(dates):
@@ -88,27 +89,30 @@ Businesswire campaign is running out of budget. Configure any additional budgets
     email_helper.send_internal_email(recipient_list=emails, subject=subject, body=body)
 
 
-def _get_content_ad_ids_added_yesterday():
-    pacific_tz = pytz.timezone("US/Pacific")
-    pacific_today = helpers.get_pacific_now().date()
-    pacific_midnight_today = pacific_tz.localize(
-        datetime.datetime(pacific_today.year, pacific_today.month, pacific_today.day)
-    )
-
-    pacific_midnight_yesterday = pacific_midnight_today - datetime.timedelta(days=1)
-    return (
-        dash.models.ContentAd.objects.filter(
-            ad_group__campaign=config.AUTOMATION_CAMPAIGN,
-            created_dt__lt=pacific_midnight_today,
-            created_dt__gte=pacific_midnight_yesterday,
-        )
-        .exclude_archived()
-        .values_list("id", flat=True)
-    )
-
-
 def monitor_yesterday_clicks():
     content_ad_ids = _get_content_ad_ids_added_yesterday()
+    missing_clicks = _get_missing_clicks(content_ad_ids)
+    influx.gauge("integrations.bizwire.yesterday_missing_clicks", missing_clicks)
+    _send_missing_clicks_email_alert(missing_clicks)
+
+
+def monitor_past_7_days_clicks():
+    pacific_today = helpers.get_pacific_now().date()
+    past_7_days_ad_groups = models.AdGroupRotation.objects.filter(
+        start_date__gte=dates_helper.days_before(pacific_today, 7)
+    )
+
+    for ad_group in past_7_days_ad_groups:
+        _monitor_missing_clicks(ad_group)
+
+
+def _monitor_missing_clicks(ad_group):
+    content_ad_ids = list(ad_group.contentad_set.all().exclude_archived().values_list('id', flat=True))
+    missing_clicks = _get_missing_clicks(content_ad_ids)
+    influx.gauge("integrations.bizwire.missing_clicks_per_ad_group", missing_clicks, ad_group=ad_group.id)
+
+
+def _get_missing_clicks(content_ad_ids):
     result = db.execute_query(
         backtosql.generate_sql("bizwire_ads_clicks_monitoring.sql", {"content_ad_ids": content_ad_ids}),
         [],
@@ -124,9 +128,7 @@ def monitor_yesterday_clicks():
             continue
 
         missing_clicks += max(15 - content_ads_by_clicks[content_ad_id], 0)
-
-    influx.gauge("integrations.bizwire.yesterday_missing_clicks", missing_clicks)
-    _send_missing_clicks_email_alert(missing_clicks)
+    return missing_clicks
 
 
 def monitor_yesterday_spend():
@@ -153,6 +155,25 @@ def monitor_yesterday_spend():
     influx.gauge("integrations.bizwire.yesterday_spend", actual_spend, type="actual")
     influx.gauge("integrations.bizwire.yesterday_spend", expected_spend, type="expected")
     _send_unexpected_spend_email_alert(expected_spend, actual_spend)
+
+
+def _get_content_ad_ids_added_yesterday():
+    pacific_tz = pytz.timezone("US/Pacific")
+    pacific_today = helpers.get_pacific_now().date()
+    pacific_midnight_today = pacific_tz.localize(
+        datetime.datetime(pacific_today.year, pacific_today.month, pacific_today.day)
+    )
+
+    pacific_midnight_yesterday = pacific_midnight_today - datetime.timedelta(days=1)
+    return (
+        dash.models.ContentAd.objects.filter(
+            ad_group__campaign=config.AUTOMATION_CAMPAIGN,
+            created_dt__lt=pacific_midnight_today,
+            created_dt__gte=pacific_midnight_yesterday,
+        )
+        .exclude_archived()
+        .values_list("id", flat=True)
+    )
 
 
 def monitor_duplicate_articles():
