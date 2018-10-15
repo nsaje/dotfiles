@@ -23,6 +23,7 @@ from dash.dashapi import data_helper
 import stats.helpers
 
 from core.features.publisher_bid_modifiers import PublisherBidModifier
+from utils import sspd_client
 
 """
 Objects that load necessary related objects. All try to execute queries as seldom as possible.
@@ -496,10 +497,12 @@ class ContentAdsLoader(Loader):
                 if source_status is None:
                     source_status = constants.AdGroupSourceSettingsState.INACTIVE
 
+                sspd_status = self.sspd_status_map.get(content_ad_id, {}).get(source_id)
                 submission_status, submission_errors = self._get_submission_status(
                     content_ad,
                     content_ad_source,
                     source_map[content_ad.ad_group_id][source_id]["content_ad_submission_policy"],
+                    sspd_status,
                 )
                 source_link = self._get_source_link(
                     content_ad, source_map[content_ad.ad_group_id][source_id]["content_ad_submission_policy"]
@@ -539,8 +542,10 @@ class ContentAdsLoader(Loader):
             }
         return settings_map
 
-    def _get_submission_status(self, content_ad, content_ad_source, content_ad_submission_policy):
-        if self._should_use_amplify_review(content_ad, content_ad_submission_policy):
+    def _get_submission_status(self, content_ad, content_ad_source, content_ad_submission_policy, sspd_status):
+        if sspd_status and sspd_status["status"] == constants.ContentAdSubmissionStatus.REJECTED:
+            return sspd_status["status"], sspd_status["reason"]
+        elif self._should_use_amplify_review(content_ad, content_ad_submission_policy):
             outbrain_content_ad_source = self.amplify_reviews_map[content_ad.id]
             return outbrain_content_ad_source.get_submission_status(), outbrain_content_ad_source.submission_errors
         else:
@@ -598,6 +603,10 @@ class ContentAdsLoader(Loader):
             return dict(zip(content_ad_ids, ob_internal_ids))
         except Exception:
             return {}
+
+    @cached_property
+    def sspd_status_map(self):
+        return sspd_client.get_content_ad_status(self.objs_ids)
 
 
 class PublisherBlacklistLoader(Loader):
