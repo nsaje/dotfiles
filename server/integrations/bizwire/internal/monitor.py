@@ -107,7 +107,7 @@ def monitor_past_7_days_clicks():
 
 
 def _monitor_missing_clicks(ad_group):
-    content_ad_ids = list(ad_group.contentad_set.all().exclude_archived().values_list('id', flat=True))
+    content_ad_ids = list(ad_group.contentad_set.all().exclude_archived().values_list("id", flat=True))
     missing_clicks = _get_missing_clicks(content_ad_ids)
     influx.gauge("integrations.bizwire.missing_clicks_per_ad_group", missing_clicks, ad_group=ad_group.id)
 
