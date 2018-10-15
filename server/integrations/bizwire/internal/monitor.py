@@ -98,9 +98,12 @@ def monitor_yesterday_clicks():
 
 def monitor_past_7_days_clicks():
     pacific_today = helpers.get_pacific_now().date()
-    past_7_days_ad_groups = models.AdGroupRotation.objects.filter(
-        start_date__gte=dates_helper.days_before(pacific_today, 7), start_date__lt=pacific_today
-    )
+    past_7_days_ad_groups = [
+        rotation.ad_group
+        for rotation in models.AdGroupRotation.objects.filter(
+            start_date__gte=dates_helper.days_before(pacific_today, 7), start_date__lt=pacific_today
+        )
+    ]
 
     for ad_group in past_7_days_ad_groups:
         _monitor_missing_clicks(ad_group)
