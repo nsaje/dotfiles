@@ -16,14 +16,12 @@ import dash.features.ga
 import dash.features.geolocation
 import dash.models
 from utils.magic_mixer import magic_mixer
-from utils import sspd_client
 from .base_test import K1APIBaseTest
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
 
-@mock.patch("utils.sspd_client.get_approval_status", mock.MagicMock())
 class ContentAdsTest(K1APIBaseTest):
     def test_get_content_ad_source_mapping(self):
         test_source_filters = [["adblade"], ["adblade", "outbrain", "yahoo"]]
@@ -191,36 +189,6 @@ class ContentAdsTest(K1APIBaseTest):
                 "source_content_ad_id": "987654321",
                 "tracking_slug": "adblade",
                 "state": 1,
-                "source_slug": "adblade",
-            }
-        ]
-
-        self.assertEqual(data, expected)
-
-    def test_get_content_ads_sources_sspd_rejected(self):
-        content_ad_source = dash.models.ContentAdSource.objects.get(source_id=1, content_ad_id=1)
-        sspd_client.get_approval_status.return_value = {
-            content_ad_source.id: dash.constants.ContentAdSspdStatus.BLOCKED
-        }
-
-        response = self.client.get(
-            reverse("k1api.content_ads.sources"), {"content_ad_ids": 1, "ad_group_ids": 1, "source_slugs": "adblade"}
-        )
-
-        data = json.loads(response.content)
-        self.assert_response_ok(response, data)
-        data = data["response"]
-
-        expected = [
-            {
-                "id": 1,
-                "content_ad_id": 1,
-                "ad_group_id": 1,
-                "source_id": 1,
-                "submission_status": 1,
-                "source_content_ad_id": "987654321",
-                "tracking_slug": "adblade",
-                "state": 2,
                 "source_slug": "adblade",
             }
         ]

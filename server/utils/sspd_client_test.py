@@ -2,7 +2,7 @@ import datetime
 from mock import patch, Mock
 
 from django.test import TestCase
-from requests import Response
+from django.http import HttpResponse
 
 from dash import constants
 
@@ -15,17 +15,16 @@ class SSPDClientTestCase(TestCase):
     @patch("utils.dates_helper.utc_now", Mock(return_value=datetime.datetime(2018, 10, 1, 12)))
     @patch("django.conf.settings.SSPD_AUTH_SECRET", "qwerty")
     def test_get_approval_status(self, mock_request):
-        response = Response()
-        response._content = b'{"1234": "APPROVED", "9876": "BLOCKED", "5555": "PENDING"}'
-        response.status_code = 200
-        mock_request.return_value = response
+        mock_request.return_value = HttpResponse(
+            '{"1234": "APPROVED", "9876": "REJECTED", "5555": "PENDING"}', content_type="application/json"
+        )
         approval_statuses = sspd_client.get_approval_status([1234, 9876, 5555])
         mock_request.assert_called_once_with(
             "get",
             "http://testssp.zemanta.com/service/status",
             data={},
             headers={
-                "Authorization": "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJaMSIsImV4cCI6MTUzODM5NTI2MH0.Xn_HgLj_5Hn6mezRcj58zPJn236hCIm-rE1KDLRiVUg"
+                "Authorization": "Bearer b'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJaMSIsImV4cCI6IjIwMTgtMTAtMDFUMTI6MDA6MDUifQ.QQSM0vAymLkrcoJAXJb5XMbwtxW5qKdSrLCG-LqTqvc'"
             },
             params={"contentAdSourceIds": "1234,9876,5555"},
         )
