@@ -95,6 +95,16 @@ class ContentAdSubmissionStatus(ConstantBase):
     }
 
 
+class ContentAdSspdStatus(ConstantBase):
+    # NOTE: in sync with ContentAdSubmissionStatus
+
+    PENDING = 1
+    APPROVED = 2
+    BLOCKED = 3
+
+    _VALUES = {PENDING: "Pending", APPROVED: "Approved", BLOCKED: "Blocked"}
+
+
 class ContentAdSourceState(ConstantBase):
     ACTIVE = 1
     INACTIVE = 2
