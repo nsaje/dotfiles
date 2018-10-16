@@ -1,5 +1,5 @@
 import datetime
-from mock import patch, Mock
+from mock import patch, Mock, ANY, call
 import json
 
 from django.test import TestCase
@@ -43,6 +43,12 @@ class SSPDClientTestCase(TestCase):
             approval_statuses,
         )
 
+    def _create_requests_response(self, content, status_code=200):
+        response = Response()
+        response._content = content
+        response.status_code = status_code
+        return response
+
     @patch("requests.request")
     @patch("utils.dates_helper.utc_now", Mock(return_value=datetime.datetime(2018, 10, 1, 12)))
     @patch("django.conf.settings.SSPD_AUTH_SECRET", "qwerty")
@@ -83,3 +89,48 @@ class SSPDClientTestCase(TestCase):
             },
             approval_statuses,
         )
+
+    @patch("requests.request")
+    @patch("utils.dates_helper.utc_now", Mock(return_value=datetime.datetime(2018, 10, 1, 12)))
+    @patch("django.conf.settings.SSPD_AUTH_SECRET", "qwerty")
+    @patch("utils.sspd_client.MAX_REQUEST_IDS", 10)
+    def test_paginate_request(self, mock_request):
+        mock_request.side_effect = [
+            self._create_requests_response(json.dumps({k: "APPROVED" for k in range(10)}).encode("utf-8")),
+            self._create_requests_response(json.dumps({k: "BLOCKED" for k in range(10, 20)}).encode("utf-8")),
+            self._create_requests_response(json.dumps({k: "PENDING" for k in range(20, 25)}).encode("utf-8")),
+        ]
+        approval_statuses = sspd_client._paginate_request(
+            "get", "http://testssp.zemanta.com/test", {"testIds": [i for i in range(25)]}, paginate_key="testIds"
+        )
+        mock_request.assert_has_calls(
+            [
+                call(
+                    "get",
+                    "http://testssp.zemanta.com/test",
+                    data={},
+                    headers=ANY,
+                    params={"testIds": "{}".format(",".join(str(x) for x in range(10)))},
+                ),
+                call(
+                    "get",
+                    "http://testssp.zemanta.com/test",
+                    data={},
+                    headers=ANY,
+                    params={"testIds": "{}".format(",".join(str(x) for x in range(10, 20)))},
+                ),
+                call(
+                    "get",
+                    "http://testssp.zemanta.com/test",
+                    data={},
+                    headers=ANY,
+                    params={"testIds": "{}".format(",".join(str(x) for x in range(20, 25)))},
+                ),
+            ]
+        )
+        for i in range(10):
+            self.assertEqual("APPROVED", approval_statuses[str(i)])
+        for i in range(10, 20):
+            self.assertEqual("BLOCKED", approval_statuses[str(i)])
+        for i in range(20, 25):
+            self.assertEqual("PENDING", approval_statuses[str(i)])

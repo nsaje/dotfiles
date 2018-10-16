@@ -1,5 +1,6 @@
 import datetime
 import logging
+import copy
 
 import jwt
 import requests
@@ -15,6 +16,8 @@ logger = logging.getLogger(__name__)
 APPROVAL_STATUS_URL = "/service/approvalstatus"
 CONTENT_AD_STATUS_URL = "/service/contentadstatus"
 
+MAX_REQUEST_IDS = 500
+
 
 class SSPDApiException(Exception):
     pass
@@ -24,8 +27,8 @@ def get_approval_status(content_ad_source_ids):
     url = settings.SSPD_BASE_URL + APPROVAL_STATUS_URL
     if not content_ad_source_ids:
         raise SSPDApiException("Request not allowed")
-    approval_statuses = _make_request(
-        "get", url, params={"contentAdSourceIds": ",".join(str(id_) for id_ in content_ad_source_ids)}
+    approval_statuses = _paginate_request(
+        "get", url, {"contentAdSourceIds": content_ad_source_ids}, paginate_key="contentAdSourceIds"
     )
     return _map_approval_statuses(approval_statuses)
 
@@ -38,8 +41,8 @@ def get_content_ad_status(content_ad_ids):
     url = settings.SSPD_BASE_URL + CONTENT_AD_STATUS_URL
     if not content_ad_ids:
         raise SSPDApiException("Request not allowed")
-    content_ad_statuses = _make_request(
-        "get", url, params={"contentAdIds": ",".join(str(id_) for id_ in content_ad_ids)}
+    content_ad_statuses = _paginate_request(
+        "get", url, params={"contentAdIds": content_ad_ids}, paginate_key="contentAdIds"
     )
     return _map_content_ad_statuses(content_ad_statuses)
 
@@ -56,6 +59,18 @@ def _map_content_ad_statuses(content_ad_statuses):
         }
         for id_, per_source_statuses in content_ad_statuses.items()
     }
+
+
+def _paginate_request(method, url, params, *, paginate_key):
+    start = 0
+    result = {}
+    paginate_list = params.pop(paginate_key)
+    while start < len(paginate_list):
+        page_params = copy.copy(params)
+        page_params[paginate_key] = ",".join(str(el) for el in paginate_list[start : start + MAX_REQUEST_IDS])
+        result.update(_make_request(method, url, params=page_params))
+        start += MAX_REQUEST_IDS
+    return result
 
 
 def _make_request(method, url, data=None, params=None, headers=None):
