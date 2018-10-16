@@ -197,8 +197,8 @@ class ContentAdSourcesView(K1APIView):
                 and source_submission_policy == dash.constants.SourceSubmissionPolicy.AUTOMATIC_WITH_AMPLIFY_APPROVAL
                 and amplify_review_status != dash.constants.ContentAdSubmissionStatus.APPROVED
             )
-            or sspd_status == dash.constants.ContentAdSubmissionStatus.REJECTED
-            or not sspd_status
+            # or sspd_status == dash.constants.ContentAdSubmissionStatus.REJECTED
+            # or not sspd_status
         ):
             return dash.constants.ContentAdSourceState.INACTIVE
         else:
