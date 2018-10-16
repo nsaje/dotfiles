@@ -138,16 +138,16 @@ class ContentAdSourcesView(K1APIView):
 
         amplify_review_statuses = {}
         sspd_statuses = {}
-
         if include_state:
             amplify_review_statuses = self._get_amplify_review_statuses(content_ad_sources)
-            try:
-                sspd_statuses = sspd_client.get_approval_status(
-                    [content_ad_source["id"] for content_ad_source in content_ad_sources]
-                )
-            except sspd_client.SSPDApiException:
-                logger.exception("SSPD client request failed")
-                sspd_statuses = {}
+
+            if content_ad_sources:
+                try:
+                    sspd_statuses = sspd_client.get_approval_status(
+                        [content_ad_source["id"] for content_ad_source in content_ad_sources]
+                    )
+                except sspd_client.SSPDApiException:
+                    logger.exception("SSPD client request failed")
 
         response = []
         for content_ad_source in content_ad_sources:
