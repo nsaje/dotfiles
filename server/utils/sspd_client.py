@@ -22,7 +22,6 @@ class SSPDApiException(Exception):
 
 def get_approval_status(content_ad_source_ids):
     url = settings.SSPD_BASE_URL + APPROVAL_STATUS_URL
-    logger.info("Requesting SSPD approval statuses for %s content ad sources", len(content_ad_source_ids))
     if not content_ad_source_ids:
         raise SSPDApiException("Request not allowed")
     approval_statuses = _make_request(
@@ -37,7 +36,6 @@ def _map_approval_statuses(approval_statuses):
 
 def get_content_ad_status(content_ad_ids):
     url = settings.SSPD_BASE_URL + CONTENT_AD_STATUS_URL
-    logger.info("Requesting SSPD statuses for %s content ads", len(content_ad_ids))
     if not content_ad_ids:
         raise SSPDApiException("Request not allowed")
     content_ad_statuses = _make_request(
