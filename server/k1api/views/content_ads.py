@@ -9,7 +9,7 @@ import dash.models
 from dash import constants
 from utils import dates_helper
 from utils import db_for_reads
-from utils import sspd_client
+# from utils import sspd_client
 from .base import K1APIView
 
 logger = logging.getLogger(__name__)
