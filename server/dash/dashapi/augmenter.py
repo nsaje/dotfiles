@@ -6,7 +6,7 @@ Applies dash data to rows. No logics, only write data to proper keys.
 """
 
 # HACK hardcoded for newscorp
-AMPLIFY_LIVE_PREVIEW_URL = "https://www.taste.com.au/recipes/tandoori-roast-cauliflower-rice/g9h9ol5t?wiodb%3Dhttps%3A%2F%2Fodbcacher.outbrain.com%2FODBCacher%2Fapi%26wixp%3D{amplify_internal_id}"
+NEWSCORP_LIVE_PREVIEW_URL = "https://www.taste.com.au/recipes/tandoori-roast-cauliflower-rice/g9h9ol5t?_b1_ad_group_id={ad_group_id}&_b1_cpm=500&_b1_no_targeting=1"
 
 
 def get_augmenter_for_dimension(target_dimension):
@@ -250,9 +250,8 @@ def augment_content_ad(row, loader, is_base_level=False):
         status_per_source = loader.per_source_status_map[content_ad_id]
         row["status_per_source"] = status_per_source
 
-        amplify_internal_id = loader.amplify_internal_ids_map.get(content_ad_id)
-        if loader.user.has_perm("zemauth.can_see_amplify_live_preview") and amplify_internal_id:
-            row["amplify_live_preview_link"] = AMPLIFY_LIVE_PREVIEW_URL.format(amplify_internal_id=amplify_internal_id)
+        if loader.user.has_perm("zemauth.can_see_amplify_live_preview"):
+            row["amplify_live_preview_link"] = NEWSCORP_LIVE_PREVIEW_URL.format(ad_group_id=ad_group.id)
 
 
 def augment_content_ad_for_report(row, loader, is_base_level=False):

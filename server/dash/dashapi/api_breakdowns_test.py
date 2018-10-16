@@ -137,6 +137,7 @@ CONTENT_AD_1 = {
         "square": "/100.jpg?w=160&h=160&fit=crop&crop=center&fm=jpg",
         "landscape": "/100.jpg?w=256&h=160&fit=crop&crop=center&fm=jpg",
     },
+    "amplify_live_preview_link": "https://www.taste.com.au/recipes/tandoori-roast-cauliflower-rice/g9h9ol5t?_b1_ad_group_id=1&_b1_cpm=500&_b1_no_targeting=1",
     "batch_id": 1,
     "batch_name": "batch 1",
     "upload_time": datetime.datetime(2015, 2, 23, 0, 0),
@@ -182,6 +183,7 @@ CONTENT_AD_2 = {
         "square": "/200.jpg?w=160&h=160&fit=crop&crop=center&fm=jpg",
         "landscape": "/200.jpg?w=256&h=160&fit=crop&crop=center&fm=jpg",
     },
+    "amplify_live_preview_link": "https://www.taste.com.au/recipes/tandoori-roast-cauliflower-rice/g9h9ol5t?_b1_ad_group_id=1&_b1_cpm=500&_b1_no_targeting=1",
     "batch_id": 1,
     "batch_name": "batch 1",
     "upload_time": datetime.datetime(2015, 2, 23, 0, 0),
@@ -283,6 +285,7 @@ SOURCE_1__CONTENT_AD_1 = {
         "landscape": "/100.jpg?w=256&h=160&fit=crop&crop=center&fm=jpg",
     },
     "batch_id": 1,
+    "amplify_live_preview_link": "https://www.taste.com.au/recipes/tandoori-roast-cauliflower-rice/g9h9ol5t?_b1_ad_group_id=1&_b1_cpm=500&_b1_no_targeting=1",
     "batch_name": "batch 1",
     "upload_time": datetime.datetime(2015, 2, 23, 0, 0),
     "redirector_url": "http://r1.zemanta.com/b/r1/z1/1/1/",
@@ -1528,6 +1531,7 @@ class QueryForRowsTest(TestCase):
         )
 
     def test_query_for_rows_ad_groups_break_content_ad(self):
+        self.maxDiff = None
         rows = api_breakdowns.query_for_rows(
             [{"content_ad_id": 1, "clicks": 11}, {"content_ad_id": 2, "clicks": 22}],
             Level.AD_GROUPS,
