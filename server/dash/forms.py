@@ -21,7 +21,6 @@ from django.core import exceptions
 
 import core.features.multicurrency
 from dash import constants
-from dash import fields
 from dash import models
 from dash.views import helpers
 from dash.features.custom_flags.forms import CustomFlagsFormMixin
@@ -33,6 +32,7 @@ from zemauth.models import User as ZemUser
 import stats.constants
 
 import restapi.serializers.targeting
+import restapi.adgroup.serializers
 import dash.compatibility.forms
 
 MAX_ADS_PER_UPLOAD = 100
@@ -291,9 +291,8 @@ class AdGroupSettingsForm(PublisherGroupsFormMixin, MulticurrencySettingsFormMix
         restapi.serializers.targeting.AudienceSerializer, required=False
     )
 
-    dayparting = fields.DaypartingField(
-        required=False,
-        help_text='Example: {"monday": [0,1,2,3], "tuesday": [20, 21, 22, 23], "timezone": "America/New_York"}',
+    dayparting = dash.compatibility.forms.RestFrameworkSerializer(
+        restapi.adgroup.serializers.AdGroupDaypartingSerializer, required=False
     )
 
     b1_sources_group_enabled = forms.BooleanField(required=False)
