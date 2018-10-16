@@ -1,5 +1,7 @@
 import calendar
 import collections
+import logging
+
 from django.core.urlresolvers import reverse
 from django.utils.functional import cached_property
 from django.db.models.query import QuerySet
@@ -24,6 +26,8 @@ import stats.helpers
 
 from core.features.publisher_bid_modifiers import PublisherBidModifier
 from utils import sspd_client
+
+logger = logging.getLogger(__name__)
 
 """
 Objects that load necessary related objects. All try to execute queries as seldom as possible.
@@ -606,7 +610,11 @@ class ContentAdsLoader(Loader):
 
     @cached_property
     def sspd_status_map(self):
-        return sspd_client.get_content_ad_status(self.objs_ids)
+        try:
+            return sspd_client.get_content_ad_status(self.objs_ids)
+        except sspd_client.SSPDApiException:
+            logger.exception("SSPD client request failed")
+            return {}
 
 
 class PublisherBlacklistLoader(Loader):

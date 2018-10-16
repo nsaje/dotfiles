@@ -136,9 +136,13 @@ class ContentAdSourcesView(K1APIView):
             content_ad_sources = dash.features.submission_filters.filter_valid_content_ad_sources(content_ad_sources)
 
         amplify_review_statuses = self._get_amplify_review_statuses(content_ad_sources)
-        sspd_statuses = sspd_client.get_approval_status(
-            [content_ad_source["id"] for content_ad_source in content_ad_sources]
-        )
+        try:
+            sspd_statuses = sspd_client.get_approval_status(
+                [content_ad_source["id"] for content_ad_source in content_ad_sources]
+            )
+        except sspd_client.SSPDApiException:
+            logger.exception("SSPD client request failed")
+            sspd_statuses = {}
 
         response = []
         for content_ad_source in content_ad_sources:
