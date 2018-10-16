@@ -548,7 +548,7 @@ class ContentAdsLoader(Loader):
 
     def _get_submission_status(self, content_ad, content_ad_source, content_ad_submission_policy, sspd_status):
         if not sspd_status:
-            return constants.ContentAdSourceState.PENDING, ""
+            return constants.ContentAdSubmissionStatus.PENDING, ""
         elif sspd_status["status"] == constants.ContentAdSubmissionStatus.REJECTED:
             return sspd_status["status"], sspd_status["reason"]
         elif self._should_use_amplify_review(content_ad, content_ad_submission_policy):
