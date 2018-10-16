@@ -1,10 +1,10 @@
-<a href="" class="button button--with-icon check-icon" ng-click="$ctrl.enableZipTargeting()" ng-hide="$ctrl.isZipTargetingVisible()">Enable ZIP code targeting</a>
+<a href="" class="button button--with-icon check-icon" ng-click="$ctrl.enableZipTargeting()" ng-hide="$ctrl.isZipTargetingVisible()">Enable ZIP / postal code targeting</a>
 
 <div ng-if="$ctrl.isZipTargetingVisible()">
-    <h3>Postal code targeting</h3>
+    <h3>ZIP / Postal code targeting</h3>
 
     <div ng-if="!$ctrl.state.blockers.apiOnlySettings">
-        <div class="custom-panel__description">You can target postal codes in one specific country.</div>
+        <div class="custom-panel__description">You can target ZIP / postal codes in one specific country.</div>
 
         <ui-select theme="select2" class="button button--dropdown-toggle-icon"
                 ng-model="$ctrl.state.zipTargetingType" search-enabled="false" ng-change="$ctrl.stateService.updateState()">
@@ -40,17 +40,17 @@
                 ng-paste="$ctrl.stateService.updateState()"
                 ng-blur="$ctrl.stateService.cleanUserInput()"
                 class="textarea m-t-xs"
-                placeholder="Enter comma-separated postal codes">
+                placeholder="Enter comma-separated ZIP / postal codes">
         </textarea>
     </div>
 
     <div ng-if="$ctrl.state.blockers.apiOnlySettings" class="message message--warning message--with-icon">
-        Current postal code targeting settings are only modifiable by your Customer Success Manager or via Zemanta One API.
+        Current ZIP / postal code targeting settings are only modifiable by your Customer Success Manager or via Zemanta One API.
     </div>
 
     <div class="more-messages__container">
         <div ng-if="$ctrl.state.blockers.countryIncluded" class="message message--warning message--with-icon m-b-s">
-            Please remove {{ $ctrl.state.selectedCountry.name }} from general location targeting or pick a different country for postal code targeting.
+            Please remove {{ $ctrl.state.selectedCountry.name }} from general location targeting or pick a different country for ZIP / postal code targeting.
         </div>
     </div>
 </div>
