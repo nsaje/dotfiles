@@ -96,6 +96,7 @@ class ContentAdSourcesView(K1APIView):
         source_types = request.GET.get("source_types")
         slugs = request.GET.get("source_slugs")
         source_content_ad_ids = request.GET.get("source_content_ad_ids")
+        include_state = request.GET.get("include_state", "True") == "True"
         content_ad_sources = dash.models.ContentAdSource.objects.filter(source__deprecated=False)
 
         if not content_ad_ids:  # exclude archived if not querying by id explicitly
@@ -135,39 +136,44 @@ class ContentAdSourcesView(K1APIView):
         if request.GET.get("use_filters", "false") == "true":
             content_ad_sources = dash.features.submission_filters.filter_valid_content_ad_sources(content_ad_sources)
 
-        amplify_review_statuses = self._get_amplify_review_statuses(content_ad_sources)
-        try:
-            sspd_statuses = sspd_client.get_approval_status(
-                [content_ad_source["id"] for content_ad_source in content_ad_sources]
-            )
-        except sspd_client.SSPDApiException:
-            logger.exception("SSPD client request failed")
-            sspd_statuses = {}
+        amplify_review_statuses = {}
+        sspd_statuses = {}
+
+        if include_state:
+            amplify_review_statuses = self._get_amplify_review_statuses(content_ad_sources)
+            try:
+                sspd_statuses = sspd_client.get_approval_status(
+                    [content_ad_source["id"] for content_ad_source in content_ad_sources]
+                )
+            except sspd_client.SSPDApiException:
+                logger.exception("SSPD client request failed")
+                sspd_statuses = {}
 
         response = []
         for content_ad_source in content_ad_sources:
-            response.append(
-                {
-                    "id": content_ad_source["id"],
-                    "content_ad_id": content_ad_source["content_ad_id"],
-                    "source_id": content_ad_source["source_id"],
-                    "ad_group_id": content_ad_source["content_ad__ad_group_id"],
-                    "source_slug": content_ad_source["source__bidder_slug"],
-                    "tracking_slug": content_ad_source["source__tracking_slug"],
-                    "source_content_ad_id": content_ad_source["source_content_ad_id"],
-                    "submission_status": content_ad_source["submission_status"],
-                    "state": self._get_content_ad_source_state(
-                        content_ad_source["state"],
-                        content_ad_source["source__content_ad_submission_policy"],
-                        content_ad_source["content_ad__ad_group__amplify_review"],
-                        content_ad_source["content_ad__amplify_review"],
-                        amplify_review_statuses.get(
-                            content_ad_source["content_ad_id"], dash.constants.ContentAdSubmissionStatus.PENDING
-                        ),
-                        sspd_statuses.get(content_ad_source["id"]),
+            item = {
+                "id": content_ad_source["id"],
+                "content_ad_id": content_ad_source["content_ad_id"],
+                "source_id": content_ad_source["source_id"],
+                "ad_group_id": content_ad_source["content_ad__ad_group_id"],
+                "source_slug": content_ad_source["source__bidder_slug"],
+                "tracking_slug": content_ad_source["source__tracking_slug"],
+                "source_content_ad_id": content_ad_source["source_content_ad_id"],
+                "submission_status": content_ad_source["submission_status"],
+            }
+            if include_state:
+                item["state"] = self._get_content_ad_source_state(
+                    content_ad_source["state"],
+                    content_ad_source["source__content_ad_submission_policy"],
+                    content_ad_source["content_ad__ad_group__amplify_review"],
+                    content_ad_source["content_ad__amplify_review"],
+                    amplify_review_statuses.get(
+                        content_ad_source["content_ad_id"], dash.constants.ContentAdSubmissionStatus.PENDING
                     ),
-                }
-            )
+                    sspd_statuses.get(content_ad_source["id"]),
+                )
+
+            response.append(item)
 
         return self.response_ok(response)
 
