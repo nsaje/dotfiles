@@ -141,10 +141,10 @@ class ContentAdSourcesView(K1APIView):
 
         if include_state:
             amplify_review_statuses = self._get_amplify_review_statuses(content_ad_sources)
-            if content_ad_sources:
-                sspd_statuses = sspd_client.get_approval_status(
-                    [content_ad_source["id"] for content_ad_source in content_ad_sources]
-                )
+            # if content_ad_sources:
+            #     sspd_statuses = sspd_client.get_approval_status(
+            #         [content_ad_source["id"] for content_ad_source in content_ad_sources]
+            #     )
 
         response = []
         for content_ad_source in content_ad_sources:

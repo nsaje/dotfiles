@@ -501,7 +501,7 @@ class ContentAdsLoader(Loader):
                 if source_status is None:
                     source_status = constants.AdGroupSourceSettingsState.INACTIVE
 
-                sspd_status = self.sspd_status_map.get(content_ad_id, {}).get(source_id)
+                sspd_status = None  # sspd_status = self.sspd_status_map.get(content_ad_id, {}).get(source_id)
                 submission_status, submission_errors = self._get_submission_status(
                     content_ad,
                     content_ad_source,
