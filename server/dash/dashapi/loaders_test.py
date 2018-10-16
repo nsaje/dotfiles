@@ -11,7 +11,8 @@ from dash.dashapi import loaders
 
 from utils.magic_mixer import magic_mixer
 from core.features.publisher_bid_modifiers import PublisherBidModifier
-from utils import sspd_client
+
+# from utils import sspd_client
 
 
 class GetLoaderTest(TestCase):

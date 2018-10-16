@@ -26,7 +26,7 @@ import stats.helpers
 
 from core.features.publisher_bid_modifiers import PublisherBidModifier
 
-# from utils import sspd_client
+from utils import sspd_client
 
 logger = logging.getLogger(__name__)
 
