@@ -348,6 +348,9 @@ AMELIA_INTEGRATION_ENABLED = False
 AMELIA_BASE_URL = ""
 OB_TOKEN_V1 = Secret("plain::test").get().decode("utf-8")
 
+SSPD_BASE_URL = 'http://localhost:8080'
+SSPD_AUTH_SECRET = 'qwerty'
+
 try:
     from server.localsettings_docker_override import *  # noqa
 except ImportError:
