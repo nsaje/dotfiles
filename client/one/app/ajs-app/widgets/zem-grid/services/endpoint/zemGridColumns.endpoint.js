@@ -542,7 +542,8 @@ angular
                 field: 'e_data_cost',
                 type: zemGridConstants.gridColumnTypes.CURRENCY,
                 totalRow: true,
-                help: 'Additional targeting/segmenting costs.',
+                help:
+                    "Additional targeting/segmenting costs. If you are running a video campaign with video files hosted by Zemanta we'll also display the additional video serving cost in this column.",
                 order: true,
                 initialOrder: zemGridConstants.gridColumnOrder.DESC,
                 internal: 'zemauth.can_view_platform_cost_breakdown',

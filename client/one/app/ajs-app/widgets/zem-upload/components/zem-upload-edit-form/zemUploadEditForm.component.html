@@ -138,6 +138,7 @@
                     </div>
                     <div class="message message--error" ng-if="ctrl.fieldsApiErrors['videoAssetId']">Something went wrong. Please try again.</div>
                     <div class="message message--error" ng-if="ctrl.selectedCandidate.videoAsset.status === ctrl.videoAssetStatus.PROCESSING_ERROR">{{ctrl.selectedCandidate.videoAsset.errorMessage}}</div>
+                    <div class="form__text--small" ng-if="ctrl.selectedCandidate.videoAsset.type === ctrl.videoTypes.DIRECT_UPLOAD">Zemanta charges additional $0.10 CPM for video serving costs. The serving cost will be displayed in the data cost column.</div>
                 </div>
 
                 <div class="form__group" ng-if="ctrl.showVideoUpload && ctrl.selectedCandidate.videoAsset.type === ctrl.videoTypes.VAST_UPLOAD">
