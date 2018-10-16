@@ -3,10 +3,14 @@ import textwrap
 
 from django.contrib import admin
 
+import utils.admin_common
+
 from . import constants
 
 
 class RealTimeCampaignStopLogAdmin(admin.ModelAdmin):
+    paginator = utils.admin_common.LargeTablePaginator
+    show_full_result_count = False
     list_display = ("campaign", "event", "event_result", "created_dt")
     list_filter = ("event",)
     readonly_fields = ("event", "created_dt", "event_result", "event_description")
