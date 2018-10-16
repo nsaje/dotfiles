@@ -1,0 +1,31 @@
+<div *ngIf="!areDaypartingSettingsVisible">
+    <button
+        class="button button--with-icon check-icon"
+        (click)="enableDaypartingSettings()"
+    >
+        Enable dayparting
+    </button>
+</div>
+
+<ng-container *ngIf="areDaypartingSettingsVisible">
+    <div class="zem-dayparting-setting__timezone" *ngIf="timezone">
+        Timezone: <strong>{{timezone}}</strong>
+    </div>
+
+    <zem-dayparting-input
+        class="zem-dayparting-input"
+        [dayparting]="dayparting"
+        (onSelection)="handleDaypartingSelectionUpdate($event)"
+    ></zem-dayparting-input>
+
+    <div
+        class="message message--error zem-dayparting-setting__errors"
+        *ngFor="let error of errors.dayparting"
+    >
+        {{error}}
+    </div>
+</ng-container>
+
+<div class="message message--info message--with-icon zem-dayparting-setting__no-support-note">
+    Outbrain and Yahoo don't support dayparting.
+</div>

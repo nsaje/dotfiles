@@ -387,6 +387,7 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ("fea_can_use_cpm_buying", "User can use CPM Buying"),
             ("can_see_amplify_live_preview", "User can see Amplify Live Preview link in grid"),
             ("disable_public_newscorp", "Disable some public features for Newscorp"),
+            ("can_manage_ad_group_dayparting", "User can manage ad groups' dayparting"),
         )
 
     def get_full_name(self):

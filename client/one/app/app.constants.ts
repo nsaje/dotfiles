@@ -27,6 +27,16 @@ export const CAMPAIGN_TYPE = {
     MOBILE: 4,
 };
 
+export enum Day {
+    Monday = 'monday',
+    Tuesday = 'tuesday',
+    Wednesday = 'wednesday',
+    Thursday = 'thursday',
+    Friday = 'friday',
+    Saturday = 'saturday',
+    Sunday = 'sunday',
+}
+
 export const APP_CONSTANTS = {
     /**
      * Max. selected media sources in on sources tabs.

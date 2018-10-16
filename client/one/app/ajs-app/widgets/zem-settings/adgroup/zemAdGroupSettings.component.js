@@ -8,7 +8,10 @@ angular.module('one.widgets').component('zemAdGroupSettings', {
         $ctrl.constants = constants;
         $ctrl.hasPermission = zemPermissions.hasPermission;
         $ctrl.isPermissionInternal = zemPermissions.isPermissionInternal;
+        $ctrl.updateDaypartingSettings = updateDaypartingSettings;
 
-        $ctrl.$onInit = function() {};
+        function updateDaypartingSettings($container, updatedValue) {
+            $container.entity.settings.dayparting = updatedValue;
+        }
     },
 });

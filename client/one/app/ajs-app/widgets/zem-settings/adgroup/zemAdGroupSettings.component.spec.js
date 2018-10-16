@@ -9,6 +9,6 @@ describe('component: zemAdGroupSettings', function() {
     }));
 
     it('should initialize without errors', function() {
-        $ctrl.$onInit();
+        expect($ctrl).toBeDefined();
     });
 });

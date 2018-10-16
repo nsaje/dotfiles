@@ -1,56 +1,74 @@
 <zem-settings-container api="$ctrl.api" settings-title="'Ad Group settings'" entity-type="$ctrl.constants.entityType.AD_GROUP">
     <settings>
         <zem-ad-group-general-settings
-                class="zem-settings-component"
-                entity="$container.entity"
-                errors="$container.errors"
-                api="$container.childApi"
+            class="zem-settings-component"
+            entity="$container.entity"
+            errors="$container.errors"
+            api="$container.childApi"
         ></zem-ad-group-general-settings>
+        <div
+            class="zem-settings-component zem-ad-group-dayparting-settings"
+            ng-if="$ctrl.hasPermission('zemauth.can_manage_ad_group_dayparting')"
+            is-internal="zemauth.can_manage_ad_group_dayparting"
+        >
+            <div class="custom-panel zem-settings-component__container">
+                <h2 class="custom-panel__title">Dayparting</h2>
+                <div class="custom-panel__description">
+                    Select days and hours when you want the ads to be active.
+                </div>
+                <zem-dayparting-setting
+                    class="zem-dayparting-setting"
+                    [dayparting-setting]="$container.entity.settings.dayparting"
+                    [errors]="$container.errors"
+                    (on-change)="$ctrl.updateDaypartingSettings($container, $event)"
+                ></zem-dayparting-setting>
+            </div>
+        </div>
         <zem-device-targeting-settings
-                class="zem-settings-component"
-                entity="$container.entity"
-                errors="$container.errors"
-                api="$container.childApi"
-                ng-if="!$ctrl.hasPermission('zemauth.disable_public_rcs')"
+            class="zem-settings-component"
+            entity="$container.entity"
+            errors="$container.errors"
+            api="$container.childApi"
+            ng-if="!$ctrl.hasPermission('zemauth.disable_public_rcs')"
         ></zem-device-targeting-settings>
         <zem-geo-targeting
-                class="zem-settings-component"
-                entity="$container.entity"
-                errors="$container.errors"
-                api="$container.childApi"
+            class="zem-settings-component"
+            entity="$container.entity"
+            errors="$container.errors"
+            api="$container.childApi"
         ></zem-geo-targeting>
         <zem-demographic-targeting
-                class="zem-settings-component"
-                entity="$container.entity"
-                errors="$container.errors"
-                api="$container.childApi"
-                ng-if="$ctrl.hasPermission('zemauth.can_use_bluekai_targeting') && !$ctrl.hasPermission('zemauth.disable_public_rcs')"
+            class="zem-settings-component"
+            entity="$container.entity"
+            errors="$container.errors"
+            api="$container.childApi"
+            ng-if="$ctrl.hasPermission('zemauth.can_use_bluekai_targeting') && !$ctrl.hasPermission('zemauth.disable_public_rcs')"
         ></zem-demographic-targeting>
         <zem-ad-group-targeting-settings
-                class="zem-settings-component"
-                entity="$container.entity"
-                errors="$container.errors"
-                api="$container.childApi"
+            class="zem-settings-component"
+            entity="$container.entity"
+            errors="$container.errors"
+            api="$container.childApi"
         ></zem-ad-group-targeting-settings>
         <zem-ad-group-tracking-settings
-                class="zem-settings-component"
-                entity="$container.entity"
-                errors="$container.errors"
-                api="$container.childApi"
-                ng-if="!$ctrl.hasPermission('zemauth.disable_public_rcs')"
+            class="zem-settings-component"
+            entity="$container.entity"
+            errors="$container.errors"
+            api="$container.childApi"
+            ng-if="!$ctrl.hasPermission('zemauth.disable_public_rcs')"
         ></zem-ad-group-tracking-settings>
         <zem-ad-group-autopilot-settings
-                class="zem-settings-component"
-                entity="$container.entity"
-                errors="$container.errors"
-                api="$container.childApi"
-                ng-if="!$ctrl.hasPermission('zemauth.disable_public_rcs')"
+            class="zem-settings-component"
+            entity="$container.entity"
+            errors="$container.errors"
+            api="$container.childApi"
+            ng-if="!$ctrl.hasPermission('zemauth.disable_public_rcs')"
         ></zem-ad-group-autopilot-settings>
         <zem-backend-hacks
-                class="zem-settings-component"
-                entity="$container.entity"
-                errors="$container.errors"
-                api="$container.childApi"
+            class="zem-settings-component"
+            entity="$container.entity"
+            errors="$container.errors"
+            api="$container.childApi"
         ></zem-backend-hacks>
     </settings>
 

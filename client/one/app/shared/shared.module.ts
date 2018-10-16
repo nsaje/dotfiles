@@ -9,6 +9,19 @@ import {CategorizedTagsListComponent} from './components/categorized-tags-list/c
 import {DropdownDirective} from './components/dropdown/dropdown.directive';
 import {DropdownToggleDirective} from './components/dropdown/dropdown-toggle.directive';
 import {HelpPopoverComponent} from './components/help-popover/help-popover.component';
+import {DaypartingInputComponent} from './components/dayparting-input/dayparting-input.component';
+
+const EXPORTED_DECLARATIONS = [
+    BigNumberPipe,
+    CategorizedSelectComponent,
+    CategorizedTagsListComponent,
+    DropdownDirective,
+    DropdownToggleDirective,
+    DaypartingInputComponent,
+
+    // Upgraded AngularJS components/ directives
+    HelpPopoverComponent,
+];
 
 @NgModule({
     imports: [
@@ -16,27 +29,7 @@ import {HelpPopoverComponent} from './components/help-popover/help-popover.compo
         HttpClientModule,
         ChartModule.forRoot(require('highcharts')),
     ],
-    declarations: [
-        BigNumberPipe,
-        CategorizedSelectComponent,
-        CategorizedTagsListComponent,
-        DropdownDirective,
-        DropdownToggleDirective,
-
-        // Upgraded AngularJS components/ directives
-        HelpPopoverComponent,
-    ],
-    exports: [
-        CommonModule,
-        ChartModule,
-        BigNumberPipe,
-        CategorizedSelectComponent,
-        CategorizedTagsListComponent,
-        DropdownDirective,
-        DropdownToggleDirective,
-
-        // Upgraded AngularJS components/ directives
-        HelpPopoverComponent,
-    ],
+    declarations: EXPORTED_DECLARATIONS,
+    exports: [CommonModule, ChartModule, ...EXPORTED_DECLARATIONS],
 })
 export class SharedModule {}

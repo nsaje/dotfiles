@@ -1,0 +1,72 @@
+@import 'variables';
+
+.zem-dayparting-input {
+    display: block;
+}
+
+.zem-dayparting-input__dayparting-container {
+    overflow-x: auto;
+}
+
+.zem-dayparting-input__dayparting-header,
+.zem-dayparting-input__day {
+    display: flex;
+}
+
+.zem-dayparting-input__hour-label {
+    flex: 1 0 26px;
+    line-height: 35px;
+    border-right: 1px solid @light-gray;
+    color: @gray;
+    text-align: center;
+}
+
+.zem-dayparting-input__hour-label:first-child {
+    margin-left: 73px;
+}
+
+.zem-dayparting-input__hour-label:last-child {
+    flex-basis: 25px;
+    border-right: 0;
+}
+
+.zem-dayparting-input__hour-label-postfix {
+    display: inline-block;
+    vertical-align: top;
+    margin-top: 10px;
+    line-height: 1;
+    font-size: 8px;
+}
+
+.zem-dayparting-input__day-label {
+    flex: 0 0 73px;
+    padding-right: 6px;
+    line-height: 44px;
+    border-bottom: 1px solid @light-gray;
+    text-align: right;
+    color: @gray;
+}
+
+.zem-dayparting-input__day:last-of-type .zem-dayparting-input__day-label {
+    border-bottom: 0;
+}
+
+.zem-dayparting-input__hour {
+    flex: 1 0 26px;
+    background-color: @light-gray;
+    border-right: 1px solid #ffffff;
+    border-bottom: 1px solid #ffffff;
+}
+
+.zem-dayparting-input__hour:last-child {
+    flex-basis: 25px;
+    border-right: 0;
+}
+
+.zem-dayparting-input__day:last-of-type .zem-dayparting-input__hour {
+    border-bottom: 0;
+}
+
+.zem-dayparting-input__hour--active {
+    background-color: @secondary-color;
+}
