@@ -9,7 +9,7 @@ from . import *
 
 
 class ScheduledExportReportLog(models.Model):
-    scheduled_report = models.ForeignKey(ScheduledExportReport, on_delete=models.PROTECT)
+    scheduled_report = models.ForeignKey(ScheduledExportReport, on_delete=models.CASCADE)
 
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name="Created at")
 

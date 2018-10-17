@@ -33,7 +33,7 @@ class BudgetDailyStatementManager(core.common.BaseManager):
 
 
 class BudgetDailyStatement(models.Model):
-    budget = models.ForeignKey("BudgetLineItem", related_name="statements", on_delete=models.PROTECT)
+    budget = models.ForeignKey("BudgetLineItem", related_name="statements", on_delete=models.CASCADE)
     date = models.DateField()
     media_spend_nano = models.BigIntegerField()
     data_spend_nano = models.BigIntegerField()
