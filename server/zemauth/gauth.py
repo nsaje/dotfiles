@@ -3,7 +3,7 @@ import json
 import logging
 
 from django.conf import settings
-from django.urls import reverse
+from django.core.urlresolvers import reverse
 from oauth2client.client import OAuth2WebServerFlow
 
 logger = logging.getLogger(__name__)

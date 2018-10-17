@@ -1,7 +1,7 @@
 import json
 import logging
 
-from django.urls import reverse
+from django.core.urlresolvers import reverse
 
 import core.models
 import core.features.yahoo_accounts

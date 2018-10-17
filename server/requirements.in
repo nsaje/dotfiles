@@ -1,89 +1,89 @@
-Django==2.1.2
-pylibmc==1.5.2
-jsonfield==2.0.2
-psycopg2-binary==2.7.5
+Django==1.11
+pylibmc==1.5.1
+jsonfield==1.0.0
+psycopg2==2.6.2
 psycogreen==1.0
-python-dateutil==2.7.3
-pytz==2018.5
-PyYAML==3.13
-gunicorn==19.9.0
-gevent==1.3.7
-httplib2==0.11.3
-oauth2client==4.1.3
-rfc3987==1.3.8
+python-dateutil==2.6.0
+pytz==2016.10
+PyYAML==3.12
+gunicorn==19.6.0
+gevent==1.2.1
+httplib2==0.10.3
+oauth2client==4.0.0
+rfc3987==1.3.7
 pycrypto==2.6.1
 unicodecsv==0.14.1
-XlsxWriter==1.1.1
-xlrd==1.1.0
-python-slugify==1.2.6
-newrelic==4.4.1.104
-raven==6.9.0
-boto==2.49.0
-celery==4.2.1
-ipython==7.0.1
-requests==2.19.1
-django-timezone-field==3.0
+XlsxWriter==0.9.6
+xlrd==1.0.0
+python-slugify==1.2.1
+newrelic==2.102.0.85
+raven==6.1.0
+boto==2.48.0
+celery==4.1.0
+ipython==5.2.2
+requests==2.18.4
+django-timezone-field==2.0
 m3-cdecimal==2.3
-uWSGI==2.0.17.1
+uWSGI==2.0.15
 
 # Tests
 mock==2.0.0
-selenium==3.14.1
-unittest-xml-reporting==2.2.0
-freezegun==0.3.11
-mixer==6.1.3
+selenium==3.0.2
+unittest-xml-reporting==2.1.0
+freezegun==0.3.8
+mixer==5.6.6
 
 # for filetype detection(input validation)
-python-magic==0.4.15
+python-magic==0.4.12
 
 # for admin lists exports
-django-import-export==1.1.0
+django-import-export==0.5.1
 
 # for accessing Google Analytics
-google-api-python-client==1.7.4
-pyOpenSSL==18.0.0
+google-api-python-client==1.6.2
+pyOpenSSL==16.2.0
 
 # for secrets encryption
-secretcrypt==1.0.3
+secretcrypt==0.9.1
 
 # Influx
 -e git+https://github.com/Zemanta/django-statsd-influx.git@v0.1.7#egg=django-statsd-influx
-django-ipware==2.1.0
+django-ipware==1.1.6
 # for bi_to_influx
-influxdb==5.2.0
+influxdb
 
 # Demo anonymization
-Faker==0.9.1
+Faker==0.7.3
 
 # for backtosql
-sqlparse==0.2.4
+sqlparse==0.2.2
 
 # handling image uploads in forms
-Pillow==5.3.0
+Pillow==4.0.0
 
 # REST framework
-djangorestframework==3.8.2
-django-oauth-toolkit==1.2.0
+djangorestframework==3.6.2
+django-oauth-toolkit==1.1.2
 oauthlib==2.1.0
 djangorestframework-camel-case==0.2.0
-djangorestframework-recursive==0.1.2
-dredd-hooks==0.2.0
+djangorestframework-recursive==0.1.1
+dredd-hooks==0.1.2
 
 # rate limiting
-django-ratelimit==1.1.0
+django-ratelimit==1.0.1
 
 # Traceback support for running tests in parallel
-tblib==1.3.2
+tblib==1.3.0
 
 # terminal colors
 termcolor==1.1.0
 
 # required for celery
-pycurl==7.43.0.2
+pycurl==7.43.0
 redis==2.10.6
 
 # user agent parser
-ua-parser==0.8.0
+ua-parser==0.7.3
 
 # rss parser for product sync
 feedparser==5.2.1
@@ -92,11 +92,11 @@ feedparser==5.2.1
 defusedxml==0.5.0
 
 # development
-django-extensions==2.1.3
+django-extensions==1.9.7
 django-queryinspect==1.0.0
 django-debug-panel==0.8.3
-django-debug-toolbar==1.10.1
+django-debug-toolbar==1.8
 django-debug-toolbar-template-profiler==1.0.2
-django-silk==3.0.1
+django-silk==1.0.0
 
 PyJWT==1.6.4

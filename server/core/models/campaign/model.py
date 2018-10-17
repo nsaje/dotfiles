@@ -11,7 +11,6 @@ import dash.constants
 
 import utils.demo_anonymizer
 import utils.string_helper
-from utils.settings_fields import CachedOneToOneField
 
 from . import bcm_mixin
 from . import instance
@@ -55,7 +54,7 @@ class Campaign(
     custom_flags = JSONField(null=True, blank=True)
     real_time_campaign_stop = models.BooleanField(default=False)
 
-    settings = CachedOneToOneField(
+    settings = models.OneToOneField(
         "CampaignSettings", null=True, blank=True, on_delete=models.PROTECT, related_name="latest_for_entity"
     )
 

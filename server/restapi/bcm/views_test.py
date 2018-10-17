@@ -6,7 +6,7 @@ import datetime
 from decimal import Decimal
 from dash import history_helpers
 
-from django.urls import reverse
+from django.core.urlresolvers import reverse
 from django.test import TestCase
 
 from zemauth.models import User

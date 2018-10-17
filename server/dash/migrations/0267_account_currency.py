@@ -7,12 +7,14 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    dependencies = [("dash", "0266_account_real_time_campaign_stop")]
+    dependencies = [
+        ('dash', '0266_account_real_time_campaign_stop'),
+    ]
 
     operations = [
         migrations.AddField(
-            model_name="account",
-            name="currency",
-            field=models.CharField(choices=[("USD", "US Dollar"), ("EUR", "Euro")], default="USD", max_length=3),
-        )
+            model_name='account',
+            name='currency',
+            field=models.CharField(choices=[(b'USD', b'US Dollar'), (b'EUR', b'Euro')], default=b'USD', max_length=3),
+        ),
     ]

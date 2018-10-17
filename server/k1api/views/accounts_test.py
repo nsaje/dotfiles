@@ -1,7 +1,7 @@
 import json
 
 
-from django.urls import reverse
+from django.core.urlresolvers import reverse
 
 import dash.features.geolocation
 import dash.features.ga

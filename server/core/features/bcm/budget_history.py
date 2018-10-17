@@ -9,4 +9,4 @@ class BudgetHistory(core.features.history.HistoryModel):
     class Meta:
         app_label = "dash"
 
-    budget = models.ForeignKey("BudgetLineItem", related_name="history", on_delete=models.CASCADE)
+    budget = models.ForeignKey("BudgetLineItem", related_name="history")

@@ -1,6 +1,6 @@
 import mock
 
-from django.urls import reverse
+from django.core.urlresolvers import reverse
 from rest_framework.test import APIClient
 from utils.magic_mixer import magic_mixer
 

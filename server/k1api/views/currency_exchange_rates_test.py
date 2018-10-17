@@ -1,6 +1,6 @@
 import json
 
-from django.urls import reverse
+from django.core.urlresolvers import reverse
 
 import core.features.multicurrency
 import dash.constants

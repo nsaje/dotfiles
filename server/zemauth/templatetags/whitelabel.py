@@ -20,7 +20,7 @@ def _get_user_agency(context=None):
     if not context or "request" not in context:
         return None
     user = context["request"].user
-    if user.is_anonymous:
+    if user.is_anonymous():
         return None
     return core.models.agency.Agency.objects.all().filter(Q(users__id=user.id) | Q(account__users__id=user.id)).first()
 

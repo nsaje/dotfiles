@@ -13,7 +13,7 @@ OAuthLibCore = get_oauthlib_core()
 
 
 class EmailOrUsernameModelBackend(backends.ModelBackend):
-    def authenticate(self, request, username=None, password=None, oauth_data=None):
+    def authenticate(self, username=None, password=None, oauth_data=None):
         influx.incr("signin_request", 1, stage="try")
 
         if oauth_data:

@@ -5,7 +5,6 @@ from django.db import models
 from dash import constants
 
 import core.models
-from utils.json_helper import JSONFIELD_DUMP_KWARGS
 
 
 class ExportReport(models.Model):
@@ -35,7 +34,7 @@ class ExportReport(models.Model):
     additional_fields = models.TextField(null=True, blank=True)
     filtered_sources = models.ManyToManyField(core.models.Source, blank=True)
     filtered_agencies = models.ManyToManyField(core.models.Agency, blank=True)
-    filtered_account_types = jsonfield.JSONField(blank=True, default=[], dump_kwargs=JSONFIELD_DUMP_KWARGS)
+    filtered_account_types = jsonfield.JSONField(blank=True, default=[])
 
     def __str__(self):
         return " ".join(

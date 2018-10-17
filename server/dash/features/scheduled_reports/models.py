@@ -8,7 +8,6 @@ from dash import history_helpers
 from dash.features import reports
 import dash.features.reports.helpers as reports_helpers
 from utils import dates_helper
-from utils.json_helper import JSONFIELD_DUMP_KWARGS
 
 
 class ScheduledReportManager(models.Manager):
@@ -106,7 +105,7 @@ class ScheduledReport(models.Model):
         default=constants.ScheduledReportTimePeriod.YESTERDAY, choices=constants.ScheduledReportTimePeriod.get_choices()
     )
 
-    query = jsonfield.JSONField(dump_kwargs=JSONFIELD_DUMP_KWARGS)
+    query = jsonfield.JSONField()
 
     objects = ScheduledReportManager.from_queryset(ScheduledReportQuerySet)()
 

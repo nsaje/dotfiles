@@ -5,7 +5,7 @@ import random
 
 from freezegun import freeze_time
 
-from django.urls import reverse
+from django.core.urlresolvers import reverse
 from django.test import TestCase, override_settings
 from django.contrib.auth.models import Permission
 

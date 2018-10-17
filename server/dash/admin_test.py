@@ -1,7 +1,7 @@
 import mock
 from utils.magic_mixer import magic_mixer
 
-from django.urls import reverse
+from django.core import urlresolvers
 from django.contrib.admin.sites import AdminSite
 from django.test import TestCase
 from django.http.request import HttpRequest
@@ -26,7 +26,7 @@ class SourceAdminTestCase(TestCase):
         self.client.login(username=user.email, password=password)
 
     def test_deprecate_selected(self):
-        change_url = reverse("admin:dash_source_changelist")
+        change_url = urlresolvers.reverse("admin:dash_source_changelist")
         response = self.client.post(change_url, {"action": "deprecate_selected", "_selected_action": 1}, follow=True)
         self.assertEqual(response.status_code, 200)
 

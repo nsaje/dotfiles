@@ -7,17 +7,19 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    dependencies = [("dash", "0270_merge_20180118_0810")]
+    dependencies = [
+        ('dash', '0270_merge_20180118_0810'),
+    ]
 
     operations = [
         migrations.CreateModel(
-            name="CurrencyExchangeRate",
+            name='CurrencyExchangeRate',
             fields=[
-                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
-                ("date", models.DateField()),
-                ("currency", models.CharField(choices=[("USD", "US Dollar"), ("EUR", "Euro")], max_length=3)),
-                ("exchange_rate", models.DecimalField(decimal_places=4, max_digits=10)),
-                ("is_reference", models.BooleanField(default=False)),
+                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('date', models.DateField()),
+                ('currency', models.CharField(choices=[(b'USD', b'US Dollar'), (b'EUR', b'Euro')], max_length=3)),
+                ('exchange_rate', models.DecimalField(decimal_places=4, max_digits=10)),
+                ('is_reference', models.BooleanField(default=False)),
             ],
-        )
+        ),
     ]

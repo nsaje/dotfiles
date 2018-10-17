@@ -1,6 +1,6 @@
 from rest_framework.test import APIClient
 from django.test import TestCase, RequestFactory
-from django.urls import reverse
+from django.core.urlresolvers import reverse
 import mock
 
 from zemauth.models import User

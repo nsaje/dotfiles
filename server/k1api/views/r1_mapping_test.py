@@ -1,7 +1,7 @@
 import json
 import logging
 
-from django.urls import reverse
+from django.core.urlresolvers import reverse
 
 from .base_test import K1APIBaseTest
 

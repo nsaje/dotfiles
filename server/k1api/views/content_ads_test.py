@@ -9,7 +9,7 @@ import urllib.parse
 import urllib.request
 
 import mock
-from django.urls import reverse
+from django.core.urlresolvers import reverse
 
 import dash.constants
 import dash.features.ga

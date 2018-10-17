@@ -2,7 +2,7 @@ import json
 import logging
 import mock
 
-from django.urls import reverse
+from django.core.urlresolvers import reverse
 
 import dash.models
 
