@@ -3,6 +3,7 @@ import jsonfield
 from django.db import models
 
 import core.common
+from utils.json_helper import JSONFIELD_DUMP_KWARGS
 
 
 class DefaultSourceSettings(models.Model):
@@ -18,6 +19,7 @@ class DefaultSourceSettings(models.Model):
         default={},
         verbose_name="Additional action parameters",
         help_text='Information about format can be found here: <a href="https://sites.google.com/a/zemanta.com/root/content-ads-dsp/additional-source-parameters-format" target="_blank">Zemanta Pages</a>',
+        dump_kwargs=JSONFIELD_DUMP_KWARGS,
     )
 
     default_cpc_cc = models.DecimalField(

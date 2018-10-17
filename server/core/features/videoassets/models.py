@@ -5,6 +5,7 @@ import jsonfield
 from django.db import models
 from django.conf import settings
 
+from utils.json_helper import JSONFIELD_DUMP_KWARGS
 from . import constants
 
 
@@ -56,7 +57,7 @@ class VideoAsset(models.Model):
 
     name = models.CharField(max_length=255)
     duration = models.IntegerField(null=True, blank=True)
-    formats = jsonfield.fields.JSONField(blank=True, null=True)
+    formats = jsonfield.fields.JSONField(blank=True, null=True, dump_kwargs=JSONFIELD_DUMP_KWARGS)
 
     type = models.IntegerField(
         default=constants.VideoAssetType.DIRECT_UPLOAD, choices=constants.VideoAssetType.get_choices()

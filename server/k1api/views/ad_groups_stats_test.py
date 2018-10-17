@@ -3,7 +3,7 @@ import datetime
 
 from mock import patch
 
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 
 import dash.features.geolocation
 import dash.features.ga

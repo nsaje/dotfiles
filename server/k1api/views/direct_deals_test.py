@@ -1,7 +1,7 @@
 import json
 from utils.magic_mixer import magic_mixer
 
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 
 from .base_test import K1APIBaseTest
 import core.features.direct_deals

@@ -13,6 +13,7 @@ import core.models
 import core.features.yahoo_accounts
 import core.features.history
 import core.models
+from utils.settings_fields import CachedOneToOneField
 
 
 class AgencyManager(core.common.QuerySetManager):
@@ -78,7 +79,7 @@ class Agency(models.Model):
         core.features.yahoo_accounts.YahooAccount, on_delete=models.PROTECT, null=True, blank=True
     )
 
-    settings = models.OneToOneField(
+    settings = CachedOneToOneField(
         "AgencySettings", null=True, blank=True, on_delete=models.PROTECT, related_name="latest_for_entity"
     )
 

@@ -77,7 +77,7 @@ class MarkerOffsetPagination(pagination.BasePagination):
             return None
 
         self.marker = self.get_marker(request)
-        self.count = pagination._get_count(queryset)
+        self.count = self.get_count(queryset)
         self.request = request
 
         if isinstance(queryset, QuerySet):
@@ -133,3 +133,12 @@ class MarkerOffsetPagination(pagination.BasePagination):
         url = replace_query_param(url, self.limit_query_param, self.limit)
 
         return replace_query_param(url, self.marker_query_param, self.new_marker)
+
+    def get_count(self, queryset):
+        """
+        Determine an object count, supporting either querysets or regular lists.
+        """
+        try:
+            return queryset.count()
+        except (AttributeError, TypeError):
+            return len(queryset)

@@ -9,7 +9,7 @@ class CampaignGoalValue(models.Model):
         app_label = "dash"
         ordering = ["created_dt"]
 
-    campaign_goal = models.ForeignKey("CampaignGoal", related_name="values")
+    campaign_goal = models.ForeignKey("CampaignGoal", related_name="values", on_delete=models.PROTECT)
     value = models.DecimalField(max_digits=15, decimal_places=5)
     local_value = models.DecimalField(
         max_digits=15, decimal_places=5, null=True, blank=True

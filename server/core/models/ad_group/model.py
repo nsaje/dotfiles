@@ -20,6 +20,7 @@ import core.features.bcm
 import core.common
 import core.features.history
 import core.models
+from utils.settings_fields import CachedOneToOneField
 
 from . import bcm_mixin
 from . import validation
@@ -144,7 +145,7 @@ class AdGroup(validation.AdGroupValidatorMixin, models.Model, bcm_mixin.AdGroupB
 
     custom_flags = JSONField(null=True, blank=True)
 
-    settings = models.OneToOneField(
+    settings = CachedOneToOneField(
         "AdGroupSettings", null=True, blank=True, on_delete=models.PROTECT, related_name="latest_for_entity"
     )
     amplify_review = models.NullBooleanField(default=None)

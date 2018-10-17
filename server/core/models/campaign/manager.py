@@ -52,9 +52,10 @@ class CampaignManager(core.common.BaseManager):
         if request:
             settings_updates["campaign_manager"] = request.user
 
-        campaign.settings = core.models.settings.CampaignSettings(campaign=campaign)
-        campaign.settings.update(request, **settings_updates)
+        campaign_settings = core.models.settings.CampaignSettings(campaign=campaign)
+        campaign_settings.update(request, **settings_updates)
 
+        campaign.settings = campaign_settings
         campaign.settings_id = campaign.settings.id
         campaign.save(request)
 

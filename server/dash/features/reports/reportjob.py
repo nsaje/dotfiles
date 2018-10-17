@@ -4,6 +4,7 @@ import jsonfield
 from django.db import models
 from django.conf import settings
 
+from utils.json_helper import JSONFIELD_DUMP_KWARGS
 from . import constants
 
 
@@ -14,8 +15,8 @@ class ReportJob(models.Model):
     status = models.IntegerField(
         default=constants.ReportJobStatus.IN_PROGRESS, choices=constants.ReportJobStatus.get_choices()
     )
-    query = jsonfield.JSONField()
-    result = jsonfield.JSONField(null=True, blank=True)
+    query = jsonfield.JSONField(dump_kwargs=JSONFIELD_DUMP_KWARGS)
+    result = jsonfield.JSONField(null=True, blank=True, dump_kwargs=JSONFIELD_DUMP_KWARGS)
 
     exception = models.TextField(null=True, blank=True)
 

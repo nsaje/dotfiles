@@ -1,4 +1,4 @@
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.db import transaction
 
 import core.models
@@ -135,6 +135,6 @@ class AccountInstanceMixin:
         return custom_flags
 
     def save(self, request, *args, **kwargs):
-        if request and not request.user.is_anonymous():
+        if request and not request.user.is_anonymous:
             self.modified_by = request.user
         super().save(*args, **kwargs)

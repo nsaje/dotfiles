@@ -3,7 +3,7 @@ import datetime
 
 from mock import patch, ANY
 from django.test import TestCase, Client
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 
 from zemauth.models import User
 from utils import test_helper

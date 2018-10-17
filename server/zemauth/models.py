@@ -471,5 +471,5 @@ class Device(models.Model):
 
 
 class UserDevice(models.Model):
-    user = models.ForeignKey(User)
-    device = models.ForeignKey(Device)
+    user = models.ForeignKey(User, on_delete=models.PROTECT)
+    device = models.ForeignKey(Device, on_delete=models.PROTECT)

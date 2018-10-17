@@ -3,7 +3,7 @@ import datetime
 
 from restapi.common.views_base_test import RESTAPITest
 
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 import redshiftapi.api_quickstats
 
 

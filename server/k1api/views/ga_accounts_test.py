@@ -4,7 +4,7 @@ import datetime
 
 import urllib.request, urllib.parse, urllib.error
 
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 
 import dash.features.geolocation
 import dash.features.ga

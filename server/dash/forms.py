@@ -1062,7 +1062,7 @@ class AdGroupAdsUploadForm(AdGroupAdsUploadBaseForm, ParseCSVExcelFile):
             # That's how those columns are presented in our csv template (that user can download)
             # If the user downloads the template, fills it in and uploades, it
             # immediately works.
-            field = re.sub("_*\(optional\)", "", field)
+            field = re.sub(r"_*\(optional\)", "", field)
             field = EXPRESSIVE_FIELD_NAME_MAPPING.get(field, field)
             if n >= 3 and field not in OPTIONAL_CSV_FIELDS and field not in IGNORED_CSV_FIELDS:
                 raise forms.ValidationError('Unrecognized column name "{0}".'.format(header[n]))
@@ -1472,12 +1472,17 @@ class ContentAdForm(ContentAdCandidateForm):
         return url
 
     def _validate_tracker_url(self, url):
-        validate_url = validators.URLValidator(schemes=["https"])
         if url.lower().startswith("http://"):
             raise forms.ValidationError("Impression tracker URLs have to be HTTPS")
+
+        try:
+            url.encode("ascii")
+        except UnicodeEncodeError:
+            raise forms.ValidationError("Invalid impression tracker URL")
+
+        validate_url = validators.URLValidator(schemes=["https"])
         try:
             # URL is considered invalid if it contains any unicode chars
-            url = url.encode("ascii")
             validate_url(url)
         except (forms.ValidationError, UnicodeEncodeError):
             raise forms.ValidationError("Invalid impression tracker URL")

@@ -15,6 +15,7 @@ import core.common
 import core.models
 import core.features.history
 import core.models
+from utils.json_helper import JSONFIELD_DUMP_KWARGS
 from . import validation
 
 from .. import helpers
@@ -78,12 +79,14 @@ class CampaignSettings(validation.CampaignSettingsValidatorMixin, instance.Campa
         max_digits=20, decimal_places=2, blank=False, null=False, default=0
     )
 
-    target_devices = jsonfield.JSONField(blank=True, default=[])
+    target_devices = jsonfield.JSONField(blank=True, default=[], dump_kwargs=JSONFIELD_DUMP_KWARGS)
     target_placements = ArrayField(models.CharField(max_length=24), null=True, blank=True, verbose_name="Placement")
     target_os = JSONField(null=True, blank=True, verbose_name="Operating Systems")
 
-    target_regions = jsonfield.JSONField(blank=True, default=[])
-    exclusion_target_regions = jsonfield.JSONField(blank=True, null=False, default=[])
+    target_regions = jsonfield.JSONField(blank=True, default=[], dump_kwargs=JSONFIELD_DUMP_KWARGS)
+    exclusion_target_regions = jsonfield.JSONField(
+        blank=True, null=False, default=[], dump_kwargs=JSONFIELD_DUMP_KWARGS
+    )
 
     whitelist_publisher_groups = ArrayField(models.PositiveIntegerField(), blank=True, default=list)
     blacklist_publisher_groups = ArrayField(models.PositiveIntegerField(), blank=True, default=list)
