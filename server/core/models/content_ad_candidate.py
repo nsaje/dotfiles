@@ -43,7 +43,7 @@ class ContentAdCandidate(core.common.FootprintModel):
     image_height = models.PositiveIntegerField(null=True)
     image_hash = models.CharField(max_length=128, null=True)
 
-    original_content_ad = models.ForeignKey("ContentAd", null=True, on_delete=models.CASCADE)
+    original_content_ad = models.ForeignKey("ContentAd", null=True, on_delete=models.PROTECT)
 
     additional_data = JSONField(null=True, blank=True)
 

@@ -18,7 +18,7 @@ class Source(models.Model):
         app_label = "dash"
 
     id = models.AutoField(primary_key=True)
-    source_type = models.ForeignKey("SourceType", null=True, on_delete=models.CASCADE)
+    source_type = models.ForeignKey("SourceType", null=True, on_delete=models.PROTECT)
     name = models.CharField(max_length=127, editable=True, blank=False, null=False)
     tracking_slug = models.CharField(max_length=50, null=False, blank=False, unique=True, verbose_name="Tracking slug")
     bidder_slug = models.CharField(max_length=50, null=True, blank=True, unique=True, verbose_name="B1 Slug")

@@ -13,7 +13,7 @@ from . import *
 class ScheduledExportReport(models.Model):
     id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=100, null=True, blank=True)
-    report = models.ForeignKey(ExportReport, related_name="scheduled_reports", on_delete=models.CASCADE)
+    report = models.ForeignKey(ExportReport, related_name="scheduled_reports", on_delete=models.PROTECT)
 
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name="Created at")
     created_by = models.ForeignKey(

@@ -7,7 +7,7 @@ from . import *
 
 
 class ScheduledExportReportRecipient(models.Model):
-    scheduled_report = models.ForeignKey(ScheduledExportReport, related_name="recipients", on_delete=models.CASCADE)
+    scheduled_report = models.ForeignKey(ScheduledExportReport, related_name="recipients", on_delete=models.PROTECT)
     email = models.EmailField()
 
     class Meta:
