@@ -109,7 +109,7 @@ services:
 
     einsworker_reports:
         extends: eins
-        scale: 2
+        scale: 3
         environment:
           VIRTUAL_HOST: "onereports.zemanta.com"
           NEW_RELIC_APP_NAME: "Zemanta One (Reports)"
