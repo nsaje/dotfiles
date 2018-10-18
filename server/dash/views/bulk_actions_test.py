@@ -87,7 +87,7 @@ class AdGroupSourceStateTest(TestCase):
         self.assertEqual(constants.AdGroupSourceSettingsState.ACTIVE, agss.state)
 
         adg = models.AdGroup.objects.get(pk=ad_group_id)
-        mock_autopilot.assert_called_once_with(adg, send_mail=False)
+        mock_autopilot.assert_called_once_with(adg)
         self.assertEqual(1, mock_check.call_count)
         self.assertEqual(1, mock_table_update.call_count)
 

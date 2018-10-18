@@ -32,9 +32,7 @@ class Command(ExceptionCommand):
         dry_run = options.get("dry_run", False)
         daily_run = options.get("daily_run", False)
         try:
-            automation.autopilot.run_autopilot(
-                send_mail=not dry_run, report_to_influx=not dry_run, dry_run=dry_run, daily_run=daily_run
-            )
+            automation.autopilot.run_autopilot(report_to_influx=not dry_run, dry_run=dry_run, daily_run=daily_run)
         except Exception as exc:
             if not dry_run:
                 utils.slack.publish(

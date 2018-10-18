@@ -218,7 +218,7 @@ class AdGroupSettingsMixin(object):
 
         from automation import autopilot
 
-        autopilot.recalculate_budgets_ad_group(self.ad_group, send_mail=self._should_send_autopilot_mail(changes))
+        autopilot.recalculate_budgets_ad_group(self.ad_group)
 
     def _save_and_propagate(self, request, new_settings, system_user):
         changes = self.get_setting_changes(new_settings)

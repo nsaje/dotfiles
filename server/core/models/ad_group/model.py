@@ -53,7 +53,7 @@ class AdGroupManager(core.common.QuerySetManager):
         ):
             from automation import autopilot
 
-            autopilot.recalculate_budgets_ad_group(ad_group, send_mail=False)
+            autopilot.recalculate_budgets_ad_group(ad_group)
 
         k1_helper.update_ad_group(ad_group.pk, msg="CampaignAdGroups.put")
         redirector_helper.insert_adgroup(ad_group)

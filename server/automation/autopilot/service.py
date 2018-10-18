@@ -32,7 +32,6 @@ def run_autopilot(
     campaign=None,
     adjust_cpcs=True,
     adjust_budgets=True,
-    send_mail=False,
     initialization=False,
     report_to_influx=False,
     dry_run=False,
@@ -93,8 +92,6 @@ def run_autopilot(
                 _save_changes(data, campaign_goals, ad_group, budget_changes, cpc_changes, dry_run, daily_run)
                 changes_data = _get_autopilot_campaign_changes_data(ad_group, changes_data, cpc_changes, budget_changes)
 
-    if send_mail:
-        helpers.send_autopilot_changes_emails(changes_data, bcm_modifiers_map, initialization)
     if report_to_influx:
         # refresh entities from db so we report new data, always report data for all entities
         entities = helpers.get_autopilot_entities()
@@ -231,18 +228,16 @@ def _get_cpc_predictions(ad_group, budget_changes, data, bcm_modifiers, adjust_c
     return cpc_changes
 
 
-def recalculate_budgets_ad_group(ad_group, send_mail=False):
+def recalculate_budgets_ad_group(ad_group):
     changed_sources = set()
     if ad_group.campaign.settings.autopilot:
-        run_autopilot(
-            campaign=ad_group.campaign, adjust_cpcs=False, adjust_budgets=True, initialization=True, send_mail=send_mail
-        )
+        run_autopilot(campaign=ad_group.campaign, adjust_cpcs=False, adjust_budgets=True, initialization=True)
     else:
         paused_sources_changes = _set_paused_ad_group_sources_to_minimum_values(
             ad_group, ad_group.campaign.get_bcm_modifiers()
         )
         autopilot_changes_data = run_autopilot(
-            ad_group=ad_group, adjust_cpcs=False, adjust_budgets=True, initialization=True, send_mail=send_mail
+            ad_group=ad_group, adjust_cpcs=False, adjust_budgets=True, initialization=True
         )
 
         for source, changes in paused_sources_changes.items():
@@ -256,7 +251,7 @@ def recalculate_budgets_ad_group(ad_group, send_mail=False):
     return changed_sources
 
 
-def recalculate_budgets_campaign(campaign, send_mail=False):
+def recalculate_budgets_campaign(campaign):
     if not campaign.settings.autopilot:
         bcm_modifiers = campaign.get_bcm_modifiers()
         budget_autopilot_adgroups = (
@@ -267,7 +262,7 @@ def recalculate_budgets_campaign(campaign, send_mail=False):
         for ad_group in budget_autopilot_adgroups:
             _set_paused_ad_group_sources_to_minimum_values(ad_group, bcm_modifiers)
 
-    run_autopilot(campaign=campaign, adjust_cpcs=False, adjust_budgets=True, initialization=True, send_mail=send_mail)
+    run_autopilot(campaign=campaign, adjust_cpcs=False, adjust_budgets=True, initialization=True)
 
 
 def _set_paused_ad_group_sources_to_minimum_values(ad_group, bcm_modifiers):

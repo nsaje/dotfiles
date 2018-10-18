@@ -35,7 +35,7 @@ class InstanceTestCase(TestCase):
     def test_recalculate_autopilot(self, mock_autopilot):
         campaign = magic_mixer.blend(core.models.Campaign)
         campaign.settings.update(None, autopilot=True)
-        mock_autopilot.assert_called_once_with(campaign, send_mail=True)
+        mock_autopilot.assert_called_once_with(campaign)
 
     @patch.object(core.models.AdGroup, "archive")
     def test_archiving(self, mock_adgroup_archive):

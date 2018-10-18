@@ -64,7 +64,7 @@ class AdGroupSourceSettingsMixin(object):
         ):
             from automation import autopilot
 
-            changed_sources = autopilot.recalculate_budgets_ad_group(self.ad_group_source.ad_group, send_mail=False)
+            changed_sources = autopilot.recalculate_budgets_ad_group(self.ad_group_source.ad_group)
             return [s.source.name for s in changed_sources]
         return []
 
