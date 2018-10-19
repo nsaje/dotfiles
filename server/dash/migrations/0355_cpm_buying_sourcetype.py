@@ -39,6 +39,6 @@ def sourcetype_backfill(apps, schema_editor):
 
 class Migration(migrations.Migration):
 
-    dependencies = [("dash", "0357_undo_foreignkey_on_delete_protected")]
+    dependencies = [("dash", "0354_cpm_buying_fake")]
 
     operations = [migrations.RunPython(sourcetype_backfill)]
