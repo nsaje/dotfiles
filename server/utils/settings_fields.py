@@ -19,15 +19,16 @@ class CachedForwardOneToOneDescriptor(ForwardOneToOneDescriptor):
             "agency": "agency",
         }
 
-        # Resolve field name for reverse reference to this instance.
-        model_name = rel_obj._meta.get_field("latest_for_entity").related_model._meta.model_name
-        if model_name in model_to_field:
-            field_name = model_to_field[model_name]
+        if rel_obj is not None:
+            # Resolve field name for reverse reference to this instance.
+            model_name = rel_obj._meta.get_field("latest_for_entity").related_model._meta.model_name
+            if model_name in model_to_field:
+                field_name = model_to_field[model_name]
 
-            # Manually prepopulate field cache with reverse reference to this instance.
-            rel_obj._state.fields_cache[field_name] = instance
-        else:
-            logger.error("Unsupported related model: %s", model_name)
+                # Manually prepopulate field cache with reverse reference to this instance.
+                rel_obj._state.fields_cache[field_name] = instance
+            else:
+                logger.error("Unsupported related model: %s", model_name)
 
         return rel_obj
 
