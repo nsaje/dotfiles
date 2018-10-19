@@ -7,6 +7,7 @@ import core.features.yahoo_accounts
 import utils.demo_anonymizer
 import utils.string_helper
 from dash import constants
+from utils.settings_fields import CachedOneToOneField
 
 from . import instance
 from . import manager
@@ -65,7 +66,7 @@ class Account(instance.AccountInstanceMixin, models.Model):
         max_length=3, null=True, default=constants.Currency.USD, choices=constants.Currency.get_choices()
     )
 
-    settings = models.OneToOneField(
+    settings = CachedOneToOneField(
         "AccountSettings", null=True, blank=True, on_delete=models.PROTECT, related_name="latest_for_entity"
     )
 

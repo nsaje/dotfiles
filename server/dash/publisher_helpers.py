@@ -14,7 +14,7 @@ def is_publisher_domain(raw_str):
     # keep
     if raw_str is None:
         return False
-    return re.search("\.[a-z]+$", raw_str.lower()) is not None
+    return re.search(r"\.[a-z]+$", raw_str.lower()) is not None
 
 
 def get_publisher_domain_link(raw_str):

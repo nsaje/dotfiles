@@ -3,7 +3,7 @@ from django.db import models
 
 class AdGroupRotation(models.Model):
 
-    ad_group = models.ForeignKey("dash.AdGroup")
+    ad_group = models.ForeignKey("dash.AdGroup", on_delete=models.CASCADE)
     start_date = models.DateField(unique=True)
 
     def __repr__(self):

@@ -5,7 +5,7 @@ import mock
 
 from restapi.common.views_base_test import RESTAPITest
 import restapi.serializers
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 
 import dash.models
 from dash import constants

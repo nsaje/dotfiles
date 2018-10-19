@@ -21,7 +21,7 @@ class ConversionGoalSerializer(serializers.Serializer):
 
 class CampaignGoalSerializer(serializers.Serializer):
     type = restapi.serializers.fields.DashConstantField(dash.constants.CampaignGoalKPI)
-    value = fields.DecimalField(max_digits=15, decimal_places=5)
+    value = fields.DecimalField(max_digits=15, decimal_places=5, rounding=decimal.ROUND_HALF_DOWN)
     conversion_goal = ConversionGoalSerializer(required=False, allow_null=True)
 
 
@@ -39,8 +39,10 @@ class CampaignLauncherSerializer(serializers.Serializer):
         dash.constants.CampaignType, error_messages={"required": "Please specify the type of the campaign."}
     )
     budget_amount = fields.IntegerField(min_value=0)
-    max_cpc = fields.DecimalField(required=False, allow_null=True, max_digits=None, decimal_places=4)
-    daily_budget = fields.DecimalField(max_digits=10, decimal_places=4)
+    max_cpc = fields.DecimalField(
+        required=False, allow_null=True, max_digits=None, decimal_places=4, rounding=decimal.ROUND_HALF_DOWN
+    )
+    daily_budget = fields.DecimalField(max_digits=10, decimal_places=4, rounding=decimal.ROUND_HALF_DOWN)
     upload_batch = restapi.serializers.fields.IdField()
     campaign_goal = CampaignGoalSerializer()
     target_regions = targeting.TargetRegionsSerializer()

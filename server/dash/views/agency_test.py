@@ -9,7 +9,7 @@ from decimal import Decimal
 
 from django.test import TestCase, RequestFactory
 from django.contrib.auth import models as authmodels
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.http.request import HttpRequest
 from django.core import mail
 from django.conf import settings

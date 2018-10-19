@@ -3,7 +3,7 @@ from itertools import cycle
 from mock import patch, ANY, Mock
 
 from django.test import TestCase
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.conf import settings
 
 import dash.features.geolocation

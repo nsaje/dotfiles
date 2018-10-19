@@ -1,3 +1,5 @@
+import decimal
+
 import rest_framework.serializers
 
 import restapi.serializers.fields
@@ -11,7 +13,9 @@ class AccountCreditRefundSerializer(restapi.serializers.base.RESTAPIBaseSerializ
     start_date = rest_framework.serializers.DateField()
     end_date = rest_framework.serializers.DateField(read_only=True)
     amount = rest_framework.serializers.IntegerField()
-    effective_margin = restapi.serializers.fields.PercentToDecimalField(max_digits=5, decimal_places=4)
+    effective_margin = restapi.serializers.fields.PercentToDecimalField(
+        max_digits=5, decimal_places=4, rounding=decimal.ROUND_HALF_DOWN
+    )
     comment = rest_framework.serializers.CharField()
     created_by = rest_framework.serializers.EmailField(read_only=True)
     created_dt = rest_framework.serializers.DateTimeField(read_only=True)

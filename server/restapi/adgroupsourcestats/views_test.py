@@ -2,7 +2,7 @@ import decimal
 import mock
 
 from django.contrib.auth.models import Permission
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 
 from restapi.common.views_base_test import RESTAPITest
 

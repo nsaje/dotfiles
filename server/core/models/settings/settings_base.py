@@ -28,24 +28,6 @@ class SettingsBase(models.Model, core.features.history.HistoryMixin):
     def delete(self, *args, **kwargs):
         raise AssertionError("Deleting settings object not allowed.")
 
-    def __getattr__(self, key):
-        model_to_field = {
-            "adgroupsource": "ad_group_source",
-            "adgroup": "ad_group",
-            "campaign": "campaign",
-            "account": "account",
-            "agency": "agency",
-        }
-        model_name = self._meta.get_field("latest_for_entity").related_model._meta.model_name
-        field_name = model_to_field[model_name]
-        # latest_for_entity is auto populated when entity is loaded with select_related settings
-        # this ensures settings.entity can use same optimization
-        if key == self._meta.get_field(field_name).get_cache_name():
-            v = getattr(self, self._meta.get_field("latest_for_entity").get_cache_name())
-            setattr(self, key, v)
-            return v
-        raise AttributeError("%r object has no attribute %r" % (self.__class__, key))
-
     def _create_copy(self):
         pk = self.pk
         self.pk = None

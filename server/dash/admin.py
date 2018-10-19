@@ -9,10 +9,10 @@ from django.contrib import admin, messages
 from django.contrib.admin import SimpleListFilter
 from django.contrib.postgres.forms import SimpleArrayField
 from django.core.exceptions import ValidationError
-from django.core.urlresolvers import reverse
 from django.db import transaction
 from django.http import HttpResponseRedirect
 from django.template.defaultfilters import truncatechars
+from django.urls import reverse
 from django.utils.html import format_html
 from django.utils.safestring import mark_safe
 from import_export import fields, resources
