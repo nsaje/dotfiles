@@ -266,6 +266,20 @@ class SourceForm(forms.ModelForm):
 
         return cpc_cc
 
+    def clean_default_cpm(self):
+        cpm = self.cleaned_data.get("default_cpm")
+        if cpm:
+            validation_helpers.validate_source_cpm(cpm, self.instance, self.cleaned_data["source_type"])
+
+        return cpm
+
+    def clean_default_mobile_cpm(self):
+        cpm = self.cleaned_data.get("default_mobile_cpm")
+        if cpm:
+            validation_helpers.validate_source_cpm(cpm, self.instance, self.cleaned_data["source_type"])
+
+        return cpm
+
 
 class DefaultSourceSettingsAdmin(admin.ModelAdmin):
     search_fields = ["name"]
@@ -722,8 +736,10 @@ class SourceTypeAdmin(admin.ModelAdmin):
         "type",
         "available_actions",
         "min_cpc",
+        "min_cpm",
         "min_daily_budget",
         "max_cpc",
+        "max_cpm",
         "max_daily_budget",
         "cpc_decimal_places",
         "delete_traffic_metrics_threshold",
