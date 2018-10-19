@@ -204,8 +204,8 @@ class TargetRegionsSerializer(rest_framework.serializers.Serializer):
                 self.fail("invalid_choice", input=key)
         return values
 
-    def validate(self, attrs):
-        data = super(TargetRegionsSerializer, self).validate(attrs)
+    def to_internal_value(self, data):
+        data = super(TargetRegionsSerializer, self).to_internal_value(data)
         return [location for location_list in list(data.values()) for location in location_list if location_list]
 
     def _get_geo_types(self, target_regions):

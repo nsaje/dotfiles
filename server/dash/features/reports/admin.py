@@ -1,5 +1,5 @@
 from django.contrib import admin
-from django.urls import reverse
+from django.core import urlresolvers
 
 import utils.admin_common
 from .reportjob import ReportJob
@@ -39,7 +39,7 @@ class ReportJobAdmin(admin.ModelAdmin):
     def link_to_scheduled_report(self, obj):
         if obj.scheduled_report is None:
             return ""
-        link = reverse("admin:dash_scheduledreport_change", args=[obj.scheduled_report.id])
+        link = urlresolvers.reverse("admin:dash_scheduledreport_change", args=[obj.scheduled_report.id])
         return '<a href="%s">%s</a>' % (link, obj.scheduled_report.name)
 
     link_to_scheduled_report.allow_tags = True

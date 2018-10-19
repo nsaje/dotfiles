@@ -1,5 +1,3 @@
-import decimal
-
 import rest_framework.serializers
 
 import restapi.serializers.fields
@@ -17,14 +15,12 @@ class AccountCreditSerializer(
     start_date = rest_framework.serializers.DateField(read_only=True)
     end_date = rest_framework.serializers.DateField(read_only=True, allow_null=True)
     total = rest_framework.serializers.DecimalField(
-        source="effective_amount", max_digits=20, decimal_places=4, read_only=True, rounding=decimal.ROUND_HALF_DOWN
+        source="effective_amount", max_digits=20, decimal_places=4, read_only=True
     )
     allocated = rest_framework.serializers.DecimalField(
-        source="get_allocated_amount", max_digits=20, decimal_places=4, read_only=True, rounding=decimal.ROUND_HALF_DOWN
+        source="get_allocated_amount", max_digits=20, decimal_places=4, read_only=True
     )
     available = rest_framework.serializers.DecimalField(
-        source="get_available_amount", max_digits=20, decimal_places=4, read_only=True, rounding=decimal.ROUND_HALF_DOWN
+        source="get_available_amount", max_digits=20, decimal_places=4, read_only=True
     )
-    license_fee = rest_framework.serializers.DecimalField(
-        max_digits=5, decimal_places=4, read_only=True, rounding=decimal.ROUND_HALF_DOWN
-    )
+    license_fee = rest_framework.serializers.DecimalField(max_digits=5, decimal_places=4, read_only=True)

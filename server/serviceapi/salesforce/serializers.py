@@ -1,5 +1,3 @@
-import decimal
-
 from rest_framework import serializers
 
 import dash.constants
@@ -29,14 +27,10 @@ class CreditLineSerializer(serializers.Serializer):
     pf_schedule = serializers.ChoiceField(
         [constants.PF_SCHEDULE_FLAT_FEE, constants.PF_SCHEDULE_PCT_FEE, constants.PF_SCHEDULE_UPFRONT]
     )
-    amount_at_signing = serializers.DecimalField(max_digits=8, decimal_places=2, rounding=decimal.ROUND_HALF_DOWN)
+    amount_at_signing = serializers.DecimalField(max_digits=8, decimal_places=2)
 
-    pct_of_budget = serializers.DecimalField(
-        max_digits=6, decimal_places=4, required=False, default=None, rounding=decimal.ROUND_HALF_DOWN
-    )
-    calc_variable_fee = serializers.DecimalField(
-        max_digits=12, decimal_places=4, required=False, default=None, rounding=decimal.ROUND_HALF_DOWN
-    )
+    pct_of_budget = serializers.DecimalField(max_digits=6, decimal_places=4, required=False, default=None)
+    calc_variable_fee = serializers.DecimalField(max_digits=12, decimal_places=4, required=False, default=None)
 
     currency = restapi.serializers.fields.DashConstantField(
         dash.constants.Currency, required=False, default=dash.constants.Currency.USD
@@ -78,9 +72,7 @@ class CreditsListSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
     start_date = serializers.DateField()
     end_date = serializers.DateField()
     amount = serializers.IntegerField()
-    license_fee = restapi.serializers.fields.BlankDecimalField(
-        max_digits=5, decimal_places=4, rounding=decimal.ROUND_HALF_DOWN
-    )
+    license_fee = restapi.serializers.fields.BlankDecimalField(max_digits=5, decimal_places=4)
     flat_fee_cc = serializers.IntegerField()
     flat_fee_start_date = restapi.serializers.fields.BlankDateField()
     flat_fee_end_date = restapi.serializers.fields.BlankDateField()

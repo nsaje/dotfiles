@@ -1,9 +1,8 @@
 import datetime
 import decimal
-import mock
 
 from decimal import Decimal
-from django.test import TestCase
+from django.test import TestCase, mock
 from django.db import connection
 
 import zemauth.models

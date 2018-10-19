@@ -213,7 +213,7 @@ def _threshold_ad_group_constraints(proposed_cpc, ad_group, cpc_change_comments,
     ag_settings = ad_group.get_current_settings()
     if ag_settings.cpc_cc and proposed_cpc > ag_settings.cpc_cc:
         cpc_change_comments += [CpcChangeComment.OVER_AD_GROUP_MAX_CPC]
-        return _round_cpc(ag_settings.cpc_cc, decimal_places=max_cpc_decimal_places, rounding=decimal.ROUND_HALF_DOWN)
+        return _round_cpc(ag_settings.cpc_cc, decimal_places=max_cpc_decimal_places, rounding=decimal.ROUND_DOWN)
     return proposed_cpc
 
 

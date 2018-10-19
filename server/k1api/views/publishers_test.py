@@ -1,6 +1,6 @@
 import json
 
-from django.urls import reverse
+from django.core.urlresolvers import reverse
 
 import core.features.publisher_bid_modifiers
 

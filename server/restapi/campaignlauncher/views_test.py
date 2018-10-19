@@ -1,7 +1,7 @@
 from decimal import Decimal
 import mock
 
-from django.urls import reverse
+from django.core.urlresolvers import reverse
 
 import restapi.common.views_base_test
 import dash.models

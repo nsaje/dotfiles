@@ -3,7 +3,7 @@ import json
 from mock import patch
 import urllib.request, urllib.parse, urllib.error
 
-from django.urls import reverse
+from django.core.urlresolvers import reverse
 from django.db.models import F
 
 import dash.features.geolocation

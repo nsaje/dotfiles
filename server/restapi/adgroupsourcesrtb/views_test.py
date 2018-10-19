@@ -1,5 +1,5 @@
 from decimal import Decimal
-from django.urls import reverse
+from django.core.urlresolvers import reverse
 
 from restapi.common.views_base_test import RESTAPITest
 from dash import constants, models

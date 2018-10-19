@@ -1,4 +1,4 @@
-from django.urls import reverse
+from django.core.urlresolvers import reverse
 
 import restapi.common.views_base_test
 

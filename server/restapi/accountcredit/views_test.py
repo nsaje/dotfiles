@@ -1,7 +1,7 @@
 import datetime
 
 from restapi.common.views_base_test import RESTAPITest
-from django.urls import reverse
+from django.core.urlresolvers import reverse
 
 import dash.models
 import utils.test_helper

@@ -2,7 +2,7 @@ import json
 
 from rest_framework.test import APIClient
 from django.test import TestCase
-from django.urls import reverse
+from django.core.urlresolvers import reverse
 
 from zemauth.models import User
 

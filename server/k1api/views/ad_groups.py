@@ -69,9 +69,7 @@ class AdGroupsView(K1APIView):
             blacklist = ad_group.settings.blacklist_publisher_groups
             whitelist = ad_group.settings.whitelist_publisher_groups
 
-            # Cache ad_group on settings to avoid additional DB queries.
             ad_group = ad_group.settings.ad_group
-
             blacklist, whitelist = publisher_group_helpers.concat_publisher_group_targeting(
                 ad_group,
                 ad_group.settings,

@@ -2,7 +2,7 @@ import json
 
 from mock import patch
 from django.test import TestCase, override_settings
-from django.urls import reverse
+from django.core.urlresolvers import reverse
 
 
 class LambdaCallbackApiTest(TestCase):

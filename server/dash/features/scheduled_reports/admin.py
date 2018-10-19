@@ -1,5 +1,5 @@
 from django.contrib import admin
-from django.urls import reverse
+from django.core import urlresolvers
 from django.db.models import Prefetch
 
 from dash.features import reports
@@ -46,7 +46,7 @@ class ScheduledReportAdmin(admin.ModelAdmin):
 
     def today_job_status(self, obj):
         if len(obj.last_job) > 0:
-            link = reverse("admin:dash_reportjob_change", args=[obj.last_job[0].id])
+            link = urlresolvers.reverse("admin:dash_reportjob_change", args=[obj.last_job[0].id])
             return '<a href="%s">%s</a>' % (link, reports.constants.ReportJobStatus.get_text(obj.last_job[0].status))
 
     today_job_status.allow_tags = True

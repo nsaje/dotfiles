@@ -2,7 +2,7 @@ import calendar
 import collections
 import logging
 
-from django.urls import reverse
+from django.core.urlresolvers import reverse
 from django.utils.functional import cached_property
 from django.db.models.query import QuerySet
 

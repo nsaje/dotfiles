@@ -1,4 +1,4 @@
-from django.urls import reverse
+from django.core.urlresolvers import reverse
 from utils.magic_mixer import magic_mixer, get_request_mock
 from tempfile import NamedTemporaryFile
 import restapi.common.views_base_test

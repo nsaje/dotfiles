@@ -4,7 +4,6 @@ from django.conf import settings
 from django.db import models
 
 from dash import constants
-from utils.json_helper import JSONFIELD_DUMP_KWARGS
 
 from .history_query_set import HistoryQuerySet
 from .history_query_set_manager import HistoryQuerySetManager
@@ -29,7 +28,7 @@ class History(models.Model):
     )
 
     changes_text = models.TextField(blank=False, null=False)
-    changes = jsonfield.JSONField(blank=False, null=False, dump_kwargs=JSONFIELD_DUMP_KWARGS)
+    changes = jsonfield.JSONField(blank=False, null=False)
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name="Created at")
     system_user = models.PositiveSmallIntegerField(
         choices=constants.SystemUserType.get_choices(), null=True, blank=True

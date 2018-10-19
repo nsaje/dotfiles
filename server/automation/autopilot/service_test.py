@@ -99,7 +99,7 @@ class AutopilotPlusTestCase(test.TestCase):
     def assertLogExists(self, campaign=None, ad_group=None, source=None):
         ags = None
         if source is not None:
-            ags = dash.models.AdGroupSource.objects.filter(ad_group_id=ad_group, source_id=source).first()
+            ags = dash.models.AdGroupSource.objects.filter(ad_group_id=ad_group, source_id=source)
         models.AutopilotLog.objects.get(campaign_id=campaign, ad_group_id=ad_group, ad_group_source=ags)
 
     def setUp(self):

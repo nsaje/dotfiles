@@ -1,5 +1,3 @@
-import decimal
-
 from rest_framework import serializers
 
 from restapi.serializers import fields
@@ -29,14 +27,8 @@ class AdGroupSourceSerializer(serializers.Serializer):
         list_serializer_class = AdGroupSourceListSerializer
 
     source = fields.SourceIdSlugField(source="ad_group_source.source")
-    cpc = serializers.DecimalField(
-        max_digits=10, decimal_places=4, source="local_cpc_cc", required=False, rounding=decimal.ROUND_HALF_DOWN
-    )
+    cpc = serializers.DecimalField(max_digits=10, decimal_places=4, source="local_cpc_cc", required=False)
     daily_budget = serializers.DecimalField(
-        max_digits=10,
-        decimal_places=4,
-        source="local_daily_budget_cc",
-        required=False,
-        rounding=decimal.ROUND_HALF_DOWN,
+        max_digits=10, decimal_places=4, source="local_daily_budget_cc", required=False
     )
     state = fields.DashConstantField(constants.AdGroupSourceSettingsState, required=False)

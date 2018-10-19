@@ -1,4 +1,4 @@
-from django.urls import reverse
+from django.core.urlresolvers import reverse
 from django.db import transaction
 
 import core.models

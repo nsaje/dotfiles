@@ -3,7 +3,7 @@ import json
 
 from mock import patch, MagicMock
 from django.core.files.uploadedfile import SimpleUploadedFile
-from django.urls import reverse
+from django.core.urlresolvers import reverse
 from django.test import TestCase, Client
 
 from dash import constants

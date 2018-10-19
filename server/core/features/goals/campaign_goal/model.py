@@ -85,7 +85,7 @@ class CampaignGoal(models.Model, bcm_mixin.CampaignGoalBCMMixin):
         app_label = "dash"
         unique_together = ("campaign", "type", "conversion_goal")
 
-    campaign = models.ForeignKey("Campaign", on_delete=models.CASCADE)
+    campaign = models.ForeignKey("Campaign")
     type = models.PositiveSmallIntegerField(
         default=constants.CampaignGoalKPI.TIME_ON_SITE, choices=constants.CampaignGoalKPI.get_choices()
     )

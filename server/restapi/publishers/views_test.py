@@ -1,6 +1,6 @@
 import json
 
-from django.urls import reverse
+from django.core.urlresolvers import reverse
 
 import core.models
 from core.features.publisher_groups import publisher_group_helpers
@@ -44,36 +44,13 @@ class PublisherBlacklistTest(restapi.common.views_base_test.RESTAPITest):
         self.assertEqual(
             resp_json["data"],
             [
-                {"name": "cnn.com", "source": "gumgum", "status": "BLACKLISTED", "level": "ADGROUP", "modifier": None},
-                {
-                    "name": "cnn2.com",
-                    "source": "gumgum",
-                    "status": "BLACKLISTED",
-                    "level": "CAMPAIGN",
-                    "modifier": None,
-                },
-                {"name": "cnn3.com", "source": "gumgum", "status": "BLACKLISTED", "level": "ACCOUNT", "modifier": None},
+                {"name": "cnn.com", "source": "gumgum", "status": "BLACKLISTED", "level": "ADGROUP"},
+                {"name": "cnn2.com", "source": "gumgum", "status": "BLACKLISTED", "level": "CAMPAIGN"},
+                {"name": "cnn3.com", "source": "gumgum", "status": "BLACKLISTED", "level": "ACCOUNT"},
             ],
         )
 
     def test_adgroups_publishers_put(self):
-        test_blacklist = [
-            {"name": "cnn2.com", "source": "gumgum", "status": "BLACKLISTED", "level": "ADGROUP", "modifier": None},
-            {"name": "cnn3.com", "source": "gumgum", "status": "BLACKLISTED", "level": "CAMPAIGN", "modifier": None},
-            {"name": "cnn4.com", "source": "gumgum", "status": "BLACKLISTED", "level": "ACCOUNT", "modifier": None},
-        ]
-        r = self.client.put(
-            reverse("publishers_list", kwargs={"ad_group_id": self.test_ad_group.id}),
-            data=test_blacklist,
-            format="json",
-        )
-        resp_json = self.assertResponseValid(r, data_type=list)
-        self.assertEqual(resp_json["data"], test_blacklist)
-
-        self.assertEqual(self._get_resp_json(self.test_ad_group.id)["data"], test_blacklist)
-
-    def test_adgroups_publishers_put_no_modifier(self):
-        # The modifier attribute is not required on input.
         test_blacklist = [
             {"name": "cnn2.com", "source": "gumgum", "status": "BLACKLISTED", "level": "ADGROUP"},
             {"name": "cnn3.com", "source": "gumgum", "status": "BLACKLISTED", "level": "CAMPAIGN"},
@@ -85,11 +62,6 @@ class PublisherBlacklistTest(restapi.common.views_base_test.RESTAPITest):
             format="json",
         )
         resp_json = self.assertResponseValid(r, data_type=list)
-
-        # The modifier attribute is always present on output.
-        for elm in test_blacklist:
-            elm["modifier"] = None
-
         self.assertEqual(resp_json["data"], test_blacklist)
 
         self.assertEqual(self._get_resp_json(self.test_ad_group.id)["data"], test_blacklist)
@@ -113,9 +85,9 @@ class PublisherBlacklistTest(restapi.common.views_base_test.RESTAPITest):
         )
 
         put_data = [
-            {"name": "cnn.com", "source": "gumgum", "status": "ENABLED", "level": "ADGROUP", "modifier": None},
-            {"name": "cnn2.com", "source": "gumgum", "status": "ENABLED", "level": "CAMPAIGN", "modifier": None},
-            {"name": "cnn3.com", "source": "gumgum", "status": "ENABLED", "level": "ACCOUNT", "modifier": None},
+            {"name": "cnn.com", "source": "gumgum", "status": "ENABLED", "level": "ADGROUP"},
+            {"name": "cnn2.com", "source": "gumgum", "status": "ENABLED", "level": "CAMPAIGN"},
+            {"name": "cnn3.com", "source": "gumgum", "status": "ENABLED", "level": "ACCOUNT"},
         ]
         r = self.client.put(
             reverse("publishers_list", kwargs={"ad_group_id": self.test_ad_group.id}), data=put_data, format="json"

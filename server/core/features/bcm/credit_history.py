@@ -9,4 +9,4 @@ class CreditHistory(core.features.history.HistoryModel):
     class Meta:
         app_label = "dash"
 
-    credit = models.ForeignKey("CreditLineItem", related_name="history", on_delete=models.CASCADE)
+    credit = models.ForeignKey("CreditLineItem", related_name="history")

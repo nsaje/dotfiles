@@ -12,7 +12,7 @@ from functools import partial
 
 from django.db.models import Q
 from django.conf import settings
-from django.urls import reverse
+from django.core.urlresolvers import reverse
 from django.shortcuts import render, redirect
 from django.http import HttpResponse, Http404
 
