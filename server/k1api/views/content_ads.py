@@ -160,6 +160,7 @@ class ContentAdSourcesView(K1APIView):
             }
             if include_state:
                 item["state"] = self._get_content_ad_source_state(
+                    content_ad_source["content_ad_id"],
                     content_ad_source["state"],
                     content_ad_source["source__content_ad_submission_policy"],
                     content_ad_source["content_ad__ad_group__amplify_review"],
@@ -183,6 +184,7 @@ class ContentAdSourcesView(K1APIView):
 
     def _get_content_ad_source_state(
         self,
+        content_ad_id,
         content_ad_source_state,
         source_submission_policy,
         ad_group_amplify_review,
@@ -199,6 +201,7 @@ class ContentAdSourcesView(K1APIView):
             return dash.constants.ContentAdSourceState.INACTIVE
         elif not sspd_status:
             influx.incr("content_ads_source.missing_sspd_status", 1)
+            logger.info("missing sspd status for content ad: %s", content_ad_id)
             return dash.constants.ContentAdSourceState.INACTIVE
         else:
             return content_ad_source_state
