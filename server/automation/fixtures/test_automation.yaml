@@ -179,6 +179,7 @@
     created_by: 1
     state: 1
     cpc_cc: 100.00
+    max_cpm: 100.00
     autopilot_state: 1
     autopilot_daily_budget: 10
   model: dash.adgroupsettings
@@ -315,7 +316,7 @@
 
 - fields:
     source: 2
-    ad_group: 4
+    ad_group: 4 
     settings: 6
     source_campaign_key: '["fake"]'
   model: dash.adgroupsource
@@ -343,6 +344,7 @@
     created_dt: '2014-06-04T09:58:21'
     ad_group_source: 1
     cpc_cc: '0.12'
+    cpm: '0.12'
     daily_budget_cc: '50.'
     state: 1
   model: dash.adgroupsourcesettings
@@ -352,6 +354,7 @@
     created_dt: '2014-06-04T09:58:22'
     ad_group_source: 1
     cpc_cc: '0.12'
+    cpm: '0.12'
     daily_budget_cc: '60.'
     state: 1
   model: dash.adgroupsourcesettings
@@ -361,6 +364,7 @@
     created_dt: '2014-06-01T09:58:21'
     ad_group_source: 2
     cpc_cc: '0.12'
+    cpm: '0.12'
     daily_budget_cc: '50.'
     state: 1
   model: dash.adgroupsourcesettings
@@ -370,6 +374,7 @@
     created_dt: '2014-06-01T09:58:21'
     ad_group_source: 3
     cpc_cc: '0.12'
+    cpm: '0.12'
     daily_budget_cc: '50.'
     state: 1
   model: dash.adgroupsourcesettings
@@ -379,6 +384,7 @@
     created_dt: '2014-06-01T09:58:21'
     ad_group_source: 4
     cpc_cc: '0.12'
+    cpm: '0.12'
     daily_budget_cc: '50.'
     state: 1
   model: dash.adgroupsourcesettings
@@ -388,6 +394,7 @@
     created_dt: '2014-06-01T09:58:21'
     ad_group_source: 5
     cpc_cc: '0.12'
+    cpm: '0.12'
     daily_budget_cc: '50.'
     state: 1
   model: dash.adgroupsourcesettings
@@ -397,6 +404,7 @@
     created_dt: '2014-06-01T09:58:21'
     ad_group_source: 6
     cpc_cc: '0.12'
+    cpm: '0.12'
     daily_budget_cc: '50.'
     state: 1
   model: dash.adgroupsourcesettings
@@ -406,6 +414,7 @@
     created_dt: '2014-06-01T09:58:21'
     ad_group_source: 7
     cpc_cc: '0.12'
+    cpm: '0.12'
     daily_budget_cc: '50.'
     state: 2
   model: dash.adgroupsourcesettings

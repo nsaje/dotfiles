@@ -51,7 +51,6 @@ def prefetch_autopilot_data(entities):
                     bcm_modifiers,
                     uses_bcm_v2=campaign.account.uses_bcm_v2,
                 )
-
                 if campaign_goal_data:
                     data[ad_group][ad_group_source].update(
                         _populate_prefetch_adgroup_source_goal_data(
@@ -177,7 +176,9 @@ def _init_b1_sources_data(adg_settings, goal_col, goal_optimal):
         goal_col: None,
         "yesterdays_clicks": 0,
         "old_budget": adg_settings.b1_sources_group_daily_budget,
-        "old_cpc_cc": adg_settings.b1_sources_group_cpc_cc,
+        "old_bid": adg_settings.b1_sources_group_cpm
+        if adg_settings.ad_group.bidding_type == dash.constants.BiddingType.CPM
+        else adg_settings.b1_sources_group_cpc_cc,
         "yesterdays_spend_cc": Decimal("0.0"),
         "spend_perc": Decimal("0.0"),
         "dividend": None,
@@ -229,12 +230,18 @@ def _populate_prefetch_adgroup_source_data(ad_group_source, yesterday_row, bcm_m
         if ad_group_source.settings.daily_budget_cc
         else ad_group_source.source.source_type.get_etfm_min_daily_budget(bcm_modifiers)
     )
+    if ad_group_source.ad_group.bidding_type == dash.constants.BiddingType.CPM:
+        old_bid = ad_group_source.settings.cpm if ad_group_source.settings.cpm else ad_group_source.source.default_cpm
+    else:
+        old_bid = (
+            ad_group_source.settings.cpc_cc
+            if ad_group_source.settings.cpc_cc
+            else ad_group_source.source.default_cpc_cc
+        )
     data["yesterdays_spend_cc"] = Decimal(yesterday_row.get(spend_key) or 0)
     data["yesterdays_clicks"] = yesterday_row.get("clicks") or 0
     data["old_budget"] = budget or 0
-    data["old_cpc_cc"] = (
-        ad_group_source.settings.cpc_cc if ad_group_source.settings.cpc_cc else ad_group_source.source.default_cpc_cc
-    )
+    data["old_bid"] = old_bid
     data["spend_perc"] = data["yesterdays_spend_cc"] / budget
     return data
 

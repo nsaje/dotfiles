@@ -268,7 +268,6 @@ class AdGroupSource(models.Model):
                 updates["cpm"] = self.source.default_mobile_cpm
             if (
                 ad_group.settings.b1_sources_group_enabled
-                and ad_group.settings.b1_sources_group_cpm is not None  # TODO: CPM Buying: remove after migraton
                 and ad_group.settings.b1_sources_group_cpm > 0.0
                 and self.source.source_type.type == constants.SourceType.B1
             ):

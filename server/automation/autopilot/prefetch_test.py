@@ -109,7 +109,7 @@ class AutopilotPrefetchTestCase(TestCase):
                     "goal_optimal": Decimal("20"),
                     "goal_performance": 0.8,
                     "old_budget": 1000,
-                    "old_cpc_cc": Decimal("0.15"),
+                    "old_bid": Decimal("0.15"),
                     "spend_perc": Decimal("0.025"),
                     "yesterdays_clicks": 13,
                     "yesterdays_spend_cc": Decimal("25"),
@@ -121,7 +121,7 @@ class AutopilotPrefetchTestCase(TestCase):
                     "goal_optimal": Decimal("20"),
                     "goal_performance": 0.8,
                     "old_budget": Decimal("50.00"),
-                    "old_cpc_cc": Decimal("0.45"),
+                    "old_bid": Decimal("0.45"),
                     "spend_perc": Decimal("0.5"),
                     "yesterdays_clicks": 13,
                     "yesterdays_spend_cc": Decimal("25"),
@@ -155,7 +155,7 @@ class AutopilotPrefetchTestCase(TestCase):
                     "goal_optimal": Decimal("0.05"),
                     "goal_performance": 1,
                     "old_budget": 1000,
-                    "old_cpc_cc": Decimal("0.15"),
+                    "old_bid": Decimal("0.15"),
                     "spend_perc": Decimal("0.025"),
                     "yesterdays_clicks": 13,
                     "yesterdays_spend_cc": Decimal("25"),
@@ -167,7 +167,7 @@ class AutopilotPrefetchTestCase(TestCase):
                     "goal_optimal": Decimal("0.05"),
                     "goal_performance": 1,
                     "old_budget": Decimal("50.00"),
-                    "old_cpc_cc": Decimal("0.45"),
+                    "old_bid": Decimal("0.45"),
                     "spend_perc": Decimal("0.5"),
                     "yesterdays_clicks": 13,
                     "yesterdays_spend_cc": Decimal("25"),
@@ -178,6 +178,51 @@ class AutopilotPrefetchTestCase(TestCase):
             self.ad_group_source.ad_group.campaign: {
                 "goal": self.goal_value.campaign_goal,
                 "value": Decimal("1") / self.goal_value.value,
+            }
+        }
+        expected_bcm = {self.ad_group_source.ad_group.campaign: {"fee": Decimal("0.2"), "margin": Decimal("0")}}
+        self.assertEqual(data, expected_data)
+        self.assertEqual(campaign_goals, expected_goals)
+        self.assertEqual(bcm_modifiers_map, expected_bcm)
+
+    def test_other_goal_cpm(self):
+        self.ad_group_source.ad_group.settings.update_unsafe(None, b1_sources_group_enabled=True)
+        self.ad_group_source.ad_group.bidding_type = constants.BiddingType.CPM
+        self.ad_group_source.ad_group.save(None)
+        data, campaign_goals, bcm_modifiers_map = prefetch.prefetch_autopilot_data(self.entities)
+
+        expected_data = {
+            self.ad_group_source.ad_group: {
+                self.ad_group_source: {
+                    "avg_tos": 16,
+                    "dividend": 32.0,
+                    "divisor": 2.0,
+                    "goal_optimal": Decimal("20"),
+                    "goal_performance": 0.8,
+                    "old_budget": 1000,
+                    "old_bid": Decimal("1.00"),
+                    "spend_perc": Decimal("0.025"),
+                    "yesterdays_clicks": 13,
+                    "yesterdays_spend_cc": Decimal("25"),
+                },
+                self.all_rtb_ad_group_source: {
+                    "avg_tos": 16.0,
+                    "dividend": 32.0,
+                    "divisor": 2.0,
+                    "goal_optimal": Decimal("20"),
+                    "goal_performance": 0.8,
+                    "old_budget": Decimal("50.00"),
+                    "old_bid": Decimal("1.00"),
+                    "spend_perc": Decimal("0.5"),
+                    "yesterdays_clicks": 13,
+                    "yesterdays_spend_cc": Decimal("25"),
+                },
+            }
+        }
+        expected_goals = {
+            self.ad_group_source.ad_group.campaign: {
+                "goal": self.goal_value.campaign_goal,
+                "value": self.goal_value.value,
             }
         }
         expected_bcm = {self.ad_group_source.ad_group.campaign: {"fee": Decimal("0.2"), "margin": Decimal("0")}}

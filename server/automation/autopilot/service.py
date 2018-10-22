@@ -12,7 +12,7 @@ import dash.constants
 from automation import models
 from . import budgets
 from . import constants
-from . import cpc
+from . import bid
 from .campaign import calculate_campaigns_daily_budget
 from . import helpers
 from . import prefetch
@@ -23,14 +23,14 @@ from utils import k1_helper
 
 logger = logging.getLogger(__name__)
 
-SKIP_CAMPAIGN_CPC_AUTOPILOT_AGENCIES = (220,)
+SKIP_CAMPAIGN_BID_AUTOPILOT_AGENCIES = (220,)
 
 
 @influx.timer("automation.autopilot_plus.run_autopilot")
 def run_autopilot(
     ad_group=None,
     campaign=None,
-    adjust_cpcs=True,
+    adjust_bids=True,
     adjust_budgets=True,
     initialization=False,
     report_to_influx=False,
@@ -59,21 +59,21 @@ def run_autopilot(
                 campaign.account.uses_bcm_v2,
                 adjust_budgets,
             )
-            cpc_changes_map = {}
+            bid_changes_map = {}
             for ad_group in ad_groups:
-                cpc_changes_map[ad_group] = _get_cpc_predictions(
+                bid_changes_map[ad_group] = _get_bid_predictions(
                     ad_group,
                     budget_changes_map[ad_group],
                     data[ad_group],
                     bcm_modifiers_map.get(campaign),
-                    adjust_cpcs,
+                    adjust_bids,
                     is_budget_ap_enabled=True,
                 )
                 changes_data = _get_autopilot_campaign_changes_data(
-                    ad_group, changes_data, cpc_changes_map[ad_group], budget_changes_map[ad_group]
+                    ad_group, changes_data, bid_changes_map[ad_group], budget_changes_map[ad_group]
                 )
             _save_changes_campaign(
-                campaign, ad_groups, data, campaign_goals, budget_changes_map, cpc_changes_map, dry_run, daily_run
+                campaign, ad_groups, data, campaign_goals, budget_changes_map, bid_changes_map, dry_run, daily_run
             )
         else:
             for ad_group in ad_groups:
@@ -86,11 +86,11 @@ def run_autopilot(
                     adjust_budgets,
                     daily_run,
                 )
-                cpc_changes = _get_cpc_predictions(
-                    ad_group, budget_changes, data[ad_group], bcm_modifiers_map.get(campaign), adjust_cpcs
+                bid_changes = _get_bid_predictions(
+                    ad_group, budget_changes, data[ad_group], bcm_modifiers_map.get(campaign), adjust_bids
                 )
-                _save_changes(data, campaign_goals, ad_group, budget_changes, cpc_changes, dry_run, daily_run)
-                changes_data = _get_autopilot_campaign_changes_data(ad_group, changes_data, cpc_changes, budget_changes)
+                _save_changes(data, campaign_goals, ad_group, budget_changes, bid_changes, dry_run, daily_run)
+                changes_data = _get_autopilot_campaign_changes_data(ad_group, changes_data, bid_changes, budget_changes)
 
     if report_to_influx:
         # refresh entities from db so we report new data, always report data for all entities
@@ -100,15 +100,9 @@ def run_autopilot(
     return changes_data
 
 
-def _can_run_cpc_autopilot(campaign):
-    if campaign.account.agency_id in SKIP_CAMPAIGN_CPC_AUTOPILOT_AGENCIES:
-        return False
-    return True
-
-
 @transaction.atomic
 def _save_changes_campaign(
-    campaign, ad_groups, data, campaign_goals, budget_changes_map, cpc_changes_map, dry_run, daily_run
+    campaign, ad_groups, data, campaign_goals, budget_changes_map, bid_changes_map, dry_run, daily_run
 ):
     if dry_run:
         return
@@ -118,22 +112,22 @@ def _save_changes_campaign(
             campaign_goals,
             ad_group,
             budget_changes_map[ad_group],
-            cpc_changes_map[ad_group],
+            bid_changes_map[ad_group],
             dry_run,
             daily_run,
             campaign=campaign,
         )
 
 
-def _save_changes(data, campaign_goals, ad_group, budget_changes, cpc_changes, dry_run, daily_run, campaign=None):
+def _save_changes(data, campaign_goals, ad_group, budget_changes, bid_changes, dry_run, daily_run, campaign=None):
     if dry_run:
         return
     try:
         with transaction.atomic():
-            set_autopilot_changes(cpc_changes, budget_changes, ad_group, dry_run=dry_run)
+            set_autopilot_changes(bid_changes, budget_changes, ad_group, dry_run=dry_run)
             persist_autopilot_changes_to_log(
                 ad_group,
-                cpc_changes,
+                bid_changes,
                 budget_changes,
                 data[ad_group],
                 ad_group.settings.autopilot_state,
@@ -213,31 +207,37 @@ def _filter_data_budget_ap_allrtb(data, ad_group):
     return data
 
 
-def _get_cpc_predictions(ad_group, budget_changes, data, bcm_modifiers, adjust_cpcs, is_budget_ap_enabled=False):
-    if not _can_run_cpc_autopilot(ad_group.campaign):
+def _get_bid_predictions(ad_group, budget_changes, data, bcm_modifiers, adjust_bids, is_budget_ap_enabled=False):
+    if not _can_run_bid_autopilot(ad_group.campaign):
         return {}
-    cpc_changes = {}
+    bid_changes = {}
     rtb_as_one = ad_group.settings.b1_sources_group_enabled
-    active_cpc_budget = dash.constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET
-    is_budget_ap_enabled = ad_group.settings.autopilot_state == active_cpc_budget or is_budget_ap_enabled
-    if adjust_cpcs:
+    active_bid_budget = dash.constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET
+    is_budget_ap_enabled = ad_group.settings.autopilot_state == active_bid_budget or is_budget_ap_enabled
+    if adjust_bids:
         adjust_rtb_sources = not rtb_as_one or (is_budget_ap_enabled and rtb_as_one)
-        cpc_changes = cpc.get_autopilot_cpc_recommendations(
+        bid_changes = bid.get_autopilot_bid_recommendations(
             ad_group, data, bcm_modifiers, budget_changes=budget_changes, adjust_rtb_sources=adjust_rtb_sources
         )
-    return cpc_changes
+    return bid_changes
+
+
+def _can_run_bid_autopilot(campaign):
+    if campaign.account.agency_id in SKIP_CAMPAIGN_BID_AUTOPILOT_AGENCIES:
+        return False
+    return True
 
 
 def recalculate_budgets_ad_group(ad_group):
     changed_sources = set()
     if ad_group.campaign.settings.autopilot:
-        run_autopilot(campaign=ad_group.campaign, adjust_cpcs=False, adjust_budgets=True, initialization=True)
+        run_autopilot(campaign=ad_group.campaign, adjust_bids=False, adjust_budgets=True, initialization=True)
     else:
         paused_sources_changes = _set_paused_ad_group_sources_to_minimum_values(
             ad_group, ad_group.campaign.get_bcm_modifiers()
         )
         autopilot_changes_data = run_autopilot(
-            ad_group=ad_group, adjust_cpcs=False, adjust_budgets=True, initialization=True
+            ad_group=ad_group, adjust_bids=False, adjust_budgets=True, initialization=True
         )
 
         for source, changes in paused_sources_changes.items():
@@ -262,7 +262,7 @@ def recalculate_budgets_campaign(campaign):
         for ad_group in budget_autopilot_adgroups:
             _set_paused_ad_group_sources_to_minimum_values(ad_group, bcm_modifiers)
 
-    run_autopilot(campaign=campaign, adjust_cpcs=False, adjust_budgets=True, initialization=True)
+    run_autopilot(campaign=campaign, adjust_bids=False, adjust_budgets=True, initialization=True)
 
 
 def _set_paused_ad_group_sources_to_minimum_values(ad_group, bcm_modifiers):
@@ -294,7 +294,7 @@ def _set_paused_ad_group_sources_to_minimum_values(ad_group, bcm_modifiers):
             old_budget = (
                 ag_source_setting.daily_budget_cc
                 if ag_source_setting.daily_budget_cc
-                else helpers.get_ad_group_sources_minimum_cpc(ag_source, bcm_modifiers)
+                else helpers.get_ad_group_sources_minimum_bid(ag_source, bcm_modifiers)
             )
         new_budgets[ag_source] = {
             "old_budget": old_budget,
@@ -312,15 +312,15 @@ def _set_paused_ad_group_sources_to_minimum_values(ad_group, bcm_modifiers):
     return new_budgets
 
 
-def _get_autopilot_campaign_changes_data(ad_group, email_changes_data, cpc_changes, budget_changes):
+def _get_autopilot_campaign_changes_data(ad_group, email_changes_data, bid_changes, budget_changes):
     camp = ad_group.campaign
     if camp not in email_changes_data:
         email_changes_data[camp] = {}
     email_changes_data[camp][ad_group] = {}
-    for s in set(list(cpc_changes.keys()) + list(budget_changes.keys())):
+    for s in set(list(bid_changes.keys()) + list(budget_changes.keys())):
         email_changes_data[camp][ad_group][s] = {}
-        if s in cpc_changes:
-            email_changes_data[camp][ad_group][s] = cpc_changes[s].copy()
+        if s in bid_changes:
+            email_changes_data[camp][ad_group][s] = bid_changes[s].copy()
         if s in budget_changes:
             email_changes_data[camp][ad_group][s].update(budget_changes[s])
     return email_changes_data
@@ -328,7 +328,7 @@ def _get_autopilot_campaign_changes_data(ad_group, email_changes_data, cpc_chang
 
 def persist_autopilot_changes_to_log(
     ad_group,
-    cpc_changes,
+    bid_changes,
     budget_changes,
     data,
     autopilot_state,
@@ -345,23 +345,23 @@ def persist_autopilot_changes_to_log(
             uses_bcm_v2 = ad_group.campaign.account.uses_bcm_v2
             goal_c = helpers.get_campaign_goal_column(campaign_goal_data["goal"], uses_bcm_v2)
         goal_value = data[ag_source][goal_c] if goal_c and goal_c in data[ag_source] else 0.0
-        new_cpc_cc = data[ag_source].get("old_cpc_cc", None)
-        if cpc_changes:
-            if ag_source in cpc_changes:
-                new_cpc_cc = cpc_changes[ag_source]["new_cpc_cc"]
-            elif rtb_as_one and all_rtb_ad_group_source in cpc_changes:
-                new_cpc_cc = cpc_changes[all_rtb_ad_group_source]["new_cpc_cc"]
+        new_bid = data[ag_source].get("old_bid", None)
+        if bid_changes:
+            if ag_source in bid_changes:
+                new_bid = bid_changes[ag_source]["new_bid"]
+            elif rtb_as_one and all_rtb_ad_group_source in bid_changes:
+                new_bid = bid_changes[all_rtb_ad_group_source]["new_bid"]
         new_daily_budget = old_budget
         if budget_changes:
             if ag_source in budget_changes:
                 new_daily_budget = budget_changes[ag_source]["new_budget"]
             elif all_rtb_ad_group_source in budget_changes:
                 new_daily_budget = None
-        cpc_comments = []
-        if ag_source in cpc_changes:
-            cpc_comments = cpc_changes[ag_source]["cpc_comments"]
-        elif rtb_as_one and all_rtb_ad_group_source in cpc_changes:
-            cpc_comments = cpc_changes[all_rtb_ad_group_source]["cpc_comments"]
+        bid_comments = []
+        if ag_source in bid_changes:
+            bid_comments = bid_changes[ag_source]["bid_comments"]
+        elif rtb_as_one and all_rtb_ad_group_source in bid_changes:
+            bid_comments = bid_changes[all_rtb_ad_group_source]["bid_comments"]
         budget_comments = (
             budget_changes[ag_source]["budget_comments"] if budget_changes and ag_source in budget_changes else []
         )
@@ -371,14 +371,14 @@ def persist_autopilot_changes_to_log(
             ad_group=ad_group,
             autopilot_type=autopilot_state,
             ad_group_source=ag_source if ag_source != all_rtb_ad_group_source else None,
-            previous_cpc_cc=data[ag_source].get("old_cpc_cc", None),
-            new_cpc_cc=new_cpc_cc,
+            previous_cpc_cc=data[ag_source].get("old_bid", None),
+            new_cpc_cc=new_bid,
             previous_daily_budget=old_budget,
             new_daily_budget=new_daily_budget,
             yesterdays_spend_cc=data[ag_source].get("yesterdays_spend_cc", None),
             yesterdays_clicks=data[ag_source].get("yesterdays_clicks", None),
             goal_value=goal_value,
-            cpc_comments=", ".join(constants.CpcChangeComment.get_text(c) for c in cpc_comments),
+            cpc_comments=", ".join(constants.BidChangeComment.get_text(c, ad_group.bidding_type) for c in bid_comments),
             budget_comments=", ".join(constants.DailyBudgetChangeComment.get_text(b) for b in budget_comments),
             campaign_goal=campaign_goal_data["goal"].type if campaign_goal_data else None,
             campaign_goal_optimal_value=campaign_goal_data["value"] if campaign_goal_data else None,
@@ -388,16 +388,19 @@ def persist_autopilot_changes_to_log(
 
 
 def set_autopilot_changes(
-    cpc_changes={}, budget_changes={}, ad_group=None, system_user=dash.constants.SystemUserType.AUTOPILOT, dry_run=False
+    bid_changes={}, budget_changes={}, ad_group=None, system_user=dash.constants.SystemUserType.AUTOPILOT, dry_run=False
 ):
-    for ag_source in set(list(cpc_changes.keys()) + list(budget_changes.keys())):
+    for ag_source in set(list(bid_changes.keys()) + list(budget_changes.keys())):
         changes = {}
         if (
-            cpc_changes
-            and ag_source in cpc_changes
-            and cpc_changes[ag_source]["old_cpc_cc"] != cpc_changes[ag_source]["new_cpc_cc"]
+            bid_changes
+            and ag_source in bid_changes
+            and bid_changes[ag_source]["old_bid"] != bid_changes[ag_source]["new_bid"]
         ):
-            changes["cpc_cc"] = cpc_changes[ag_source]["new_cpc_cc"]
+            ad_group_source_bid_field = (
+                "cpm" if ad_group and ad_group.bidding_type == dash.constants.BiddingType.CPM else "cpc_cc"
+            )
+            changes[ad_group_source_bid_field] = bid_changes[ag_source]["new_bid"]
         if (
             budget_changes
             and ag_source in budget_changes
@@ -433,8 +436,8 @@ def _report_adgroups_data_to_influx(entities, campaign_daily_budgets):
     total_budget_on_campaign_ap = Decimal(0.0)
     num_on_budget_ap = 0
     total_budget_on_budget_ap = Decimal(0.0)
-    num_on_cpc_ap = 0
-    yesterday_spend_on_cpc_ap = Decimal(0.0)
+    num_on_bid_ap = 0
+    yesterday_spend_on_bid_ap = Decimal(0.0)
     yesterday_spend_on_budget_ap = Decimal(0.0)
     yesterday_spend_on_campaign_ap = Decimal(0.0)
     yesterday = dates_helper.local_today() - datetime.timedelta(days=1)
@@ -464,11 +467,11 @@ def _report_adgroups_data_to_influx(entities, campaign_daily_budgets):
                     total_budget_on_budget_ap += ad_group.settings.autopilot_daily_budget
                     yesterday_spend_on_budget_ap += yesterday_spend
                 elif ad_group.settings.autopilot_state == dash.constants.AdGroupSettingsAutopilotState.ACTIVE_CPC:
-                    num_on_cpc_ap += 1
-                    yesterday_spend_on_cpc_ap += yesterday_spend
+                    num_on_bid_ap += 1
+                    yesterday_spend_on_bid_ap += yesterday_spend
 
     influx.gauge("automation.autopilot_plus.adgroups_on", num_on_budget_ap, autopilot="budget_autopilot")
-    influx.gauge("automation.autopilot_plus.adgroups_on", num_on_cpc_ap, autopilot="cpc_autopilot")
+    influx.gauge("automation.autopilot_plus.adgroups_on", num_on_bid_ap, autopilot="bid_autopilot")
     influx.gauge("automation.autopilot_plus.adgroups_on", num_ad_groups_on_campaign_ap, autopilot="campaign_autopilot")
     influx.gauge("automation.autopilot_plus.campaigns_on", num_campaigns_on_campaign_ap, autopilot="campaign_autopilot")
 
@@ -489,18 +492,18 @@ def _report_adgroups_data_to_influx(entities, campaign_daily_budgets):
         "automation.autopilot_plus.spend", yesterday_spend_on_budget_ap, autopilot="budget_autopilot", type="yesterday"
     )
     influx.gauge(
-        "automation.autopilot_plus.spend", yesterday_spend_on_cpc_ap, autopilot="cpc_autopilot", type="yesterday"
+        "automation.autopilot_plus.spend", yesterday_spend_on_bid_ap, autopilot="bid_autopilot", type="yesterday"
     )
 
 
 def _report_new_budgets_on_ap_to_influx(entities):
     total_budget_on_campaign_ap = Decimal(0.0)
     total_budget_on_budget_ap = Decimal(0.0)
-    total_budget_on_cpc_ap = Decimal(0.0)
+    total_budget_on_bid_ap = Decimal(0.0)
     total_budget_on_all_ap = Decimal(0.0)
     num_sources_on_campaign_ap = 0
     num_sources_on_budget_ap = 0
-    num_sources_on_cpc_ap = 0
+    num_sources_on_bid_ap = 0
     active = dash.constants.AdGroupSourceSettingsState.ACTIVE
     rtb_as_one_budget_counted_adgroups = set()
     for campaign, ad_groups in entities.items():
@@ -526,10 +529,10 @@ def _report_new_budgets_on_ap_to_influx(entities):
                     total_budget_on_budget_ap += daily_budget
                     num_sources_on_budget_ap += 1
                 elif ad_group.settings.autopilot_state == dash.constants.AdGroupSettingsAutopilotState.ACTIVE_CPC:
-                    total_budget_on_cpc_ap += daily_budget
-                    num_sources_on_cpc_ap += 1
+                    total_budget_on_bid_ap += daily_budget
+                    num_sources_on_bid_ap += 1
 
-    influx.gauge("automation.autopilot_plus.spend", total_budget_on_cpc_ap, autopilot="cpc_autopilot", type="actual")
+    influx.gauge("automation.autopilot_plus.spend", total_budget_on_bid_ap, autopilot="bid_autopilot", type="actual")
     influx.gauge(
         "automation.autopilot_plus.spend", total_budget_on_budget_ap, autopilot="budget_autopilot", type="actual"
     )
@@ -537,7 +540,7 @@ def _report_new_budgets_on_ap_to_influx(entities):
         "automation.autopilot_plus.spend", total_budget_on_campaign_ap, autopilot="campaign_autopilot", type="actual"
     )
 
-    influx.gauge("automation.autopilot_plus.sources_on", num_sources_on_cpc_ap, autopilot="cpc_autopilot")
+    influx.gauge("automation.autopilot_plus.sources_on", num_sources_on_bid_ap, autopilot="bid_autopilot")
     influx.gauge("automation.autopilot_plus.sources_on", num_sources_on_budget_ap, autopilot="budget_autopilot")
     influx.gauge("automation.autopilot_plus.sources_on", num_sources_on_campaign_ap, autopilot="campaign_autopilot")
 

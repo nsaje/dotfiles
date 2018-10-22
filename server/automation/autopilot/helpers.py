@@ -9,6 +9,7 @@ from automation import campaignstop
 import dash
 import dash.constants
 import dash.models
+
 from . import settings
 
 logger = logging.getLogger(__name__)
@@ -186,6 +187,9 @@ def update_ad_group_b1_sources_group_values(ad_group, changes, system_user=None)
     if "cpc_cc" in changes:
         kwargs["b1_sources_group_cpc_cc"] = changes["cpc_cc"]
 
+    if "cpm" in changes:
+        kwargs["b1_sources_group_cpm"] = changes["cpm"]
+
     if "daily_budget_cc" in changes:
         kwargs["b1_sources_group_daily_budget"] = changes["daily_budget_cc"]
 
@@ -195,9 +199,14 @@ def update_ad_group_b1_sources_group_values(ad_group, changes, system_user=None)
     ad_group.settings.update(None, skip_validation=True, system_user=system_user, **kwargs)
 
 
-def get_ad_group_sources_minimum_cpc(ad_group_source, bcm_modifiers):
-    etfm_min_cpc = ad_group_source.source.source_type.get_etfm_min_cpc(bcm_modifiers)
-    return max(settings.AUTOPILOT_MIN_CPC, etfm_min_cpc or 0)
+def get_ad_group_sources_minimum_bid(ad_group_source, bcm_modifiers):
+    if ad_group_source.ad_group.bidding_type == dash.constants.BiddingType.CPM:
+        etfm_min_bid = ad_group_source.source.source_type.get_etfm_min_cpm(bcm_modifiers)
+        autopilot_min_bid = settings.AUTOPILOT_MIN_CPM
+    else:
+        etfm_min_bid = ad_group_source.source.source_type.get_etfm_min_cpc(bcm_modifiers)
+        autopilot_min_bid = settings.AUTOPILOT_MIN_CPC
+    return max(autopilot_min_bid, etfm_min_bid or 0)
 
 
 def get_ad_group_sources_minimum_daily_budget(ad_group_source, bcm_modifiers):

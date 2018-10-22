@@ -27,7 +27,7 @@ class AutopilotPlusTestCase(test.TestCase):
             result[ags] = {"old_budget": Decimal("10.0"), "new_budget": Decimal("20.0"), "budget_comments": []}
         return result
 
-    def mock_cpc_recommender(self, ad_group, data, bcm, budget_changes, adjust_rtb_sources):
+    def mock_bid_recommender(self, ad_group, data, bcm, budget_changes, adjust_rtb_sources):
         result = {}
         for ags in data:
             if ad_group.id != 3:
@@ -35,27 +35,31 @@ class AutopilotPlusTestCase(test.TestCase):
                     budget_changes.get(ags),
                     {"old_budget": Decimal("10.0"), "new_budget": Decimal("20.0"), "budget_comments": []},
                 )
-            result[ags] = {"old_cpc_cc": Decimal("0.1"), "new_cpc_cc": Decimal("0.2"), "cpc_comments": []}
+            result[ags] = {"old_bid": Decimal("0.1"), "new_bid": Decimal("0.2"), "bid_comments": []}
         return result
 
-    def _update_call(self, ad_group, source, budget=True, cpc=True):
+    def _update_call(self, ad_group, source, budget=True, bid=True, bidding_type=dash.constants.BiddingType.CPC):
         changes = {}
         if budget:
             changes["daily_budget_cc"] = Decimal("20.0")
-        if cpc:
+        if bid and bidding_type == dash.constants.BiddingType.CPM:
+            changes["cpm"] = Decimal("0.2")
+        elif bid:
             changes["cpc_cc"] = Decimal("0.2")
         ad_group_source = dash.models.AdGroupSource.objects.get(ad_group_id=ad_group, source_id=source)
         return call(ad_group_source, changes, 2)
 
-    def _update_allrtb_call(self, ad_group, budget=True, cpc=True):
+    def _update_allrtb_call(self, ad_group, budget=True, bid=True, bidding_type=dash.constants.BiddingType.CPC):
         changes = {}
         if budget:
             changes["daily_budget_cc"] = Decimal("20.0")
-        if cpc:
+        if bid and bidding_type == dash.constants.BiddingType.CPM:
+            changes["cpm"] = Decimal("0.2")
+        elif bid:
             changes["cpc_cc"] = Decimal("0.2")
         return call(dash.models.AdGroup.objects.get(id=ad_group), changes, 2)
 
-    def _email_changes(self, budgets=[], cpc=[]):
+    def _email_changes(self, budgets=[], bid=[]):
         result = {}
         for campaign in dash.models.Campaign.objects.all():
             campaign_data = {}
@@ -69,10 +73,8 @@ class AutopilotPlusTestCase(test.TestCase):
                         ags_data.update(
                             {"old_budget": Decimal("10.0"), "new_budget": Decimal("20.0"), "budget_comments": []}
                         )
-                    if ad_group.id in cpc:
-                        ags_data.update(
-                            {"old_cpc_cc": Decimal("0.1"), "new_cpc_cc": Decimal("0.2"), "cpc_comments": []}
-                        )
+                    if ad_group.id in bid:
+                        ags_data.update({"old_bid": Decimal("0.1"), "new_bid": Decimal("0.2"), "bid_comments": []})
                     if ags_data:
                         ad_group_data[ags] = ags_data
                 if ad_group_data:
@@ -120,12 +122,12 @@ class AutopilotPlusTestCase(test.TestCase):
     @patch("automation.autopilot.helpers.update_ad_group_b1_sources_group_values")
     @patch("automation.autopilot.helpers.update_ad_group_source_values")
     @patch("automation.autopilot.prefetch.prefetch_autopilot_data")
-    @patch("automation.autopilot.cpc.get_autopilot_cpc_recommendations")
+    @patch("automation.autopilot.bid.get_autopilot_bid_recommendations")
     @patch("automation.autopilot.budgets.get_autopilot_daily_budget_recommendations")
     def test_run_autopilot_daily_run(
         self,
         mock_budgets,
-        mock_cpc,
+        mock_bid,
         mock_prefetch,
         mock_update,
         mock_update_allrtb,
@@ -133,7 +135,7 @@ class AutopilotPlusTestCase(test.TestCase):
         mock_influx_budgets,
     ):
         mock_budgets.side_effect = self.mock_budget_recommender
-        mock_cpc.side_effect = self.mock_cpc_recommender
+        mock_bid.side_effect = self.mock_bid_recommender
         mock_prefetch.return_value = (self.data, {}, {})
 
         service.run_autopilot(daily_run=True, report_to_influx=True)
@@ -177,28 +179,28 @@ class AutopilotPlusTestCase(test.TestCase):
     @patch("automation.autopilot.helpers.update_ad_group_b1_sources_group_values")
     @patch("automation.autopilot.helpers.update_ad_group_source_values")
     @patch("automation.autopilot.prefetch.prefetch_autopilot_data")
-    @patch("automation.autopilot.cpc.get_autopilot_cpc_recommendations")
+    @patch("automation.autopilot.bid.get_autopilot_bid_recommendations")
     @patch("automation.autopilot.budgets.get_autopilot_daily_budget_recommendations")
     def test_run_autopilot_initialize_adgroup(
-        self, mock_budgets, mock_cpc, mock_prefetch, mock_update, mock_update_allrtb
+        self, mock_budgets, mock_bid, mock_prefetch, mock_update, mock_update_allrtb
     ):
         mock_budgets.side_effect = self.mock_budget_recommender
-        mock_cpc.side_effect = self.mock_cpc_recommender
+        mock_bid.side_effect = self.mock_bid_recommender
         mock_prefetch.return_value = (self.data, {}, {})
 
         ad_group = dash.models.AdGroup.objects.get(pk=4)
-        service.run_autopilot(ad_group=ad_group, initialization=True, adjust_cpcs=False)
+        service.run_autopilot(ad_group=ad_group, initialization=True, adjust_bids=False)
 
         self.assertCountEqual(
             mock_update.call_args_list,
             [
-                self._update_call(ad_group=4, source=1, cpc=False),
-                self._update_call(ad_group=4, source=2, cpc=False),
-                self._update_call(ad_group=4, source=3, cpc=False),
-                self._update_call(ad_group=4, source=4, cpc=False),
+                self._update_call(ad_group=4, source=1, bid=False),
+                self._update_call(ad_group=4, source=2, bid=False),
+                self._update_call(ad_group=4, source=3, bid=False),
+                self._update_call(ad_group=4, source=4, bid=False),
             ],
         )
-        self.assertCountEqual(mock_update_allrtb.call_args_list, [self._update_allrtb_call(ad_group=4, cpc=False)])
+        self.assertCountEqual(mock_update_allrtb.call_args_list, [self._update_allrtb_call(ad_group=4, bid=False)])
         self.assertLogExists(ad_group=4, source=1)
         self.assertLogExists(ad_group=4, source=2)
         self.assertLogExists(ad_group=4, source=3)
@@ -208,20 +210,20 @@ class AutopilotPlusTestCase(test.TestCase):
     @patch("automation.autopilot.helpers.update_ad_group_b1_sources_group_values")
     @patch("automation.autopilot.helpers.update_ad_group_source_values")
     @patch("automation.autopilot.prefetch.prefetch_autopilot_data")
-    @patch("automation.autopilot.cpc.get_autopilot_cpc_recommendations")
+    @patch("automation.autopilot.bid.get_autopilot_bid_recommendations")
     @patch("automation.autopilot.budgets.get_autopilot_daily_budget_recommendations")
     def test_run_autopilot_intialize_campaign(
-        self, mock_budgets, mock_cpc, mock_prefetch, mock_update, mock_update_allrtb
+        self, mock_budgets, mock_bid, mock_prefetch, mock_update, mock_update_allrtb
     ):
         mock_budgets.side_effect = self.mock_budget_recommender
-        mock_cpc.side_effect = self.mock_cpc_recommender
+        mock_bid.side_effect = self.mock_bid_recommender
         mock_prefetch.return_value = (self.data, {}, {})
 
         campaign = dash.models.Campaign.objects.get(pk=2)
-        service.run_autopilot(campaign=campaign, initialization=True, adjust_cpcs=False)
+        service.run_autopilot(campaign=campaign, initialization=True, adjust_bids=False)
 
-        self.assertCountEqual(mock_update.call_args_list, [self._update_call(ad_group=2, source=1, cpc=False)])
-        self.assertCountEqual(mock_update_allrtb.call_args_list, [self._update_allrtb_call(ad_group=2, cpc=False)])
+        self.assertCountEqual(mock_update.call_args_list, [self._update_call(ad_group=2, source=1, bid=False)])
+        self.assertCountEqual(mock_update_allrtb.call_args_list, [self._update_allrtb_call(ad_group=2, bid=False)])
         self.assertLogExists(campaign=2, ad_group=2, source=1)
         self.assertLogExists(campaign=2, ad_group=2, source=None)
 
@@ -256,7 +258,7 @@ class AutopilotPlusTestCase(test.TestCase):
     @patch("automation.autopilot.prefetch.prefetch_autopilot_data")
     @patch("automation.autopilot.helpers.get_autopilot_entities")
     @patch("automation.autopilot.helpers.get_active_ad_groups_on_autopilot")
-    @patch("automation.autopilot.service._get_cpc_predictions")
+    @patch("automation.autopilot.service._get_bid_predictions")
     @patch("automation.autopilot.service._get_budget_predictions_for_adgroup")
     @patch("automation.autopilot.service.set_autopilot_changes")
     @patch("automation.autopilot.service.persist_autopilot_changes_to_log")
@@ -299,10 +301,22 @@ class AutopilotPlusTestCase(test.TestCase):
     @patch("automation.autopilot.helpers.update_ad_group_source_values")
     def test_set_autopilot_changes_only_cpc(self, mock_update_values):
         ag_source = dash.models.AdGroupSource.objects.get(id=1)
-        cpc_changes = {ag_source: {"old_cpc_cc": Decimal("0.1"), "new_cpc_cc": Decimal("0.2")}}
-        service.set_autopilot_changes(cpc_changes=cpc_changes)
+        cpc_changes = {ag_source: {"old_bid": Decimal("0.1"), "new_bid": Decimal("0.2")}}
+        service.set_autopilot_changes(bid_changes=cpc_changes)
         mock_update_values.assert_called_with(
             ag_source, {"cpc_cc": Decimal("0.2")}, dash.constants.SystemUserType.AUTOPILOT
+        )
+        mock_update_values.assert_called_once()
+
+    @patch("automation.autopilot.helpers.update_ad_group_source_values")
+    def test_set_autopilot_changes_only_cpm(self, mock_update_values):
+        ag_source = dash.models.AdGroupSource.objects.get(id=1)
+        ag_source.ad_group.bidding_type = dash.constants.BiddingType.CPM
+        ag_source.ad_group.save(None)
+        cpm_changes = {ag_source: {"old_bid": Decimal("0.1"), "new_bid": Decimal("0.2")}}
+        service.set_autopilot_changes(bid_changes=cpm_changes, ad_group=ag_source.ad_group)
+        mock_update_values.assert_called_with(
+            ag_source, {"cpm": Decimal("0.2")}, dash.constants.SystemUserType.AUTOPILOT
         )
         mock_update_values.assert_called_once()
 
@@ -310,9 +324,20 @@ class AutopilotPlusTestCase(test.TestCase):
     def test_set_autopilot_changes_only_cpc_rtb_as_one(self, mock_update_values):
         ag = dash.models.AdGroup.objects.get(id=1)
         ag_source = dash.models.AllRTBAdGroupSource(ag)
-        cpc_changes = {ag_source: {"old_cpc_cc": Decimal("0.1"), "new_cpc_cc": Decimal("0.2")}}
-        service.set_autopilot_changes(cpc_changes=cpc_changes, ad_group=ag)
+        cpc_changes = {ag_source: {"old_bid": Decimal("0.1"), "new_bid": Decimal("0.2")}}
+        service.set_autopilot_changes(bid_changes=cpc_changes, ad_group=ag)
         mock_update_values.assert_called_with(ag, {"cpc_cc": Decimal("0.2")}, dash.constants.SystemUserType.AUTOPILOT)
+        mock_update_values.assert_called_once()
+
+    @patch("automation.autopilot.helpers.update_ad_group_b1_sources_group_values")
+    def test_set_autopilot_changes_only_cpm_rtb_as_one(self, mock_update_values):
+        ag = dash.models.AdGroup.objects.get(id=1)
+        ag.bidding_type = dash.constants.BiddingType.CPM
+        ag.save(None)
+        ag_source = dash.models.AllRTBAdGroupSource(ag)
+        cpm_changes = {ag_source: {"old_bid": Decimal("0.1"), "new_bid": Decimal("0.2")}}
+        service.set_autopilot_changes(bid_changes=cpm_changes, ad_group=ag)
+        mock_update_values.assert_called_with(ag, {"cpm": Decimal("0.2")}, dash.constants.SystemUserType.AUTOPILOT)
         mock_update_values.assert_called_once()
 
     @patch("automation.autopilot.helpers.update_ad_group_source_values")
@@ -329,8 +354,8 @@ class AutopilotPlusTestCase(test.TestCase):
     def test_set_autopilot_changes_budget_and_cpc(self, mock_update_values):
         ag_source = dash.models.AdGroupSource.objects.get(id=1)
         budget_changes = {ag_source: {"old_budget": Decimal("100"), "new_budget": Decimal("200")}}
-        cpc_changes = {ag_source: {"old_cpc_cc": Decimal("0.1"), "new_cpc_cc": Decimal("0.2")}}
-        service.set_autopilot_changes(cpc_changes=cpc_changes, budget_changes=budget_changes)
+        cpc_changes = {ag_source: {"old_bid": Decimal("0.1"), "new_bid": Decimal("0.2")}}
+        service.set_autopilot_changes(bid_changes=cpc_changes, budget_changes=budget_changes)
         mock_update_values.assert_called_with(
             ag_source,
             {"cpc_cc": Decimal("0.2"), "daily_budget_cc": Decimal("200")},
@@ -339,11 +364,40 @@ class AutopilotPlusTestCase(test.TestCase):
         mock_update_values.assert_called_once()
 
     @patch("automation.autopilot.helpers.update_ad_group_source_values")
+    def test_set_autopilot_changes_budget_and_cpm(self, mock_update_values):
+        ag_source = dash.models.AdGroupSource.objects.get(id=1)
+        ag_source.ad_group.bidding_type = dash.constants.BiddingType.CPM
+        ag_source.ad_group.save(None)
+        budget_changes = {ag_source: {"old_budget": Decimal("100"), "new_budget": Decimal("200")}}
+        cpm_changes = {ag_source: {"old_bid": Decimal("0.1"), "new_bid": Decimal("0.2")}}
+        service.set_autopilot_changes(
+            bid_changes=cpm_changes, budget_changes=budget_changes, ad_group=ag_source.ad_group
+        )
+        mock_update_values.assert_called_with(
+            ag_source,
+            {"cpm": Decimal("0.2"), "daily_budget_cc": Decimal("200")},
+            dash.constants.SystemUserType.AUTOPILOT,
+        )
+        mock_update_values.assert_called_once()
+
+    @patch("automation.autopilot.helpers.update_ad_group_source_values")
     def test_set_autopilot_changes_budget_and_cpc_no_change(self, mock_update_values):
         ag_source = dash.models.AdGroupSource.objects.get(id=1)
         budget_changes = {ag_source: {"old_budget": Decimal("100"), "new_budget": Decimal("100")}}
-        cpc_changes = {ag_source: {"old_cpc_cc": Decimal("0.1"), "new_cpc_cc": Decimal("0.1")}}
-        service.set_autopilot_changes(cpc_changes=cpc_changes, budget_changes=budget_changes)
+        cpc_changes = {ag_source: {"old_bid": Decimal("0.1"), "new_bid": Decimal("0.1")}}
+        service.set_autopilot_changes(bid_changes=cpc_changes, budget_changes=budget_changes)
+        self.assertEqual(mock_update_values.called, False)
+
+    @patch("automation.autopilot.helpers.update_ad_group_source_values")
+    def test_set_autopilot_changes_budget_and_cpm_no_change(self, mock_update_values):
+        ag_source = dash.models.AdGroupSource.objects.get(id=1)
+        ag_source.ad_group.bidding_type = dash.constants.BiddingType.CPM
+        ag_source.ad_group.save(None)
+        budget_changes = {ag_source: {"old_budget": Decimal("100"), "new_budget": Decimal("100")}}
+        cpm_changes = {ag_source: {"old_bid": Decimal("0.1"), "new_bid": Decimal("0.1")}}
+        service.set_autopilot_changes(
+            bid_changes=cpm_changes, budget_changes=budget_changes, ad_group=ag_source.ad_group
+        )
         self.assertEqual(mock_update_values.called, False)
 
     @patch("automation.autopilot.helpers.update_ad_group_b1_sources_group_values")
@@ -357,16 +411,39 @@ class AutopilotPlusTestCase(test.TestCase):
             ag_source_rtb: {"old_budget": Decimal("10"), "new_budget": Decimal("20")},
         }
         cpc_changes = {
-            ag_source: {"old_cpc_cc": Decimal("0.1"), "new_cpc_cc": Decimal("0.2")},
-            ag_source_rtb: {"old_cpc_cc": Decimal("0.11"), "new_cpc_cc": Decimal("0.22")},
+            ag_source: {"old_bid": Decimal("0.1"), "new_bid": Decimal("0.2")},
+            ag_source_rtb: {"old_bid": Decimal("0.11"), "new_bid": Decimal("0.22")},
         }
         ap = dash.constants.SystemUserType.AUTOPILOT
-        service.set_autopilot_changes(cpc_changes=cpc_changes, budget_changes=budget_changes, ad_group=ag)
+        service.set_autopilot_changes(bid_changes=cpc_changes, budget_changes=budget_changes, ad_group=ag)
         mock_update_values.assert_called_with(
             ag_source, {"cpc_cc": Decimal("0.2"), "daily_budget_cc": Decimal("200")}, ap
         )
         mock_update_values.assert_called_once()
         mock_update_rtb.assert_called_with(ag, {"cpc_cc": Decimal("0.22"), "daily_budget_cc": Decimal("20")}, ap)
+        mock_update_rtb.assert_called_once()
+
+    @patch("automation.autopilot.helpers.update_ad_group_b1_sources_group_values")
+    @patch("automation.autopilot.helpers.update_ad_group_source_values")
+    def test_set_autopilot_changes_budget_and_cpm_rtb_as_one(self, mock_update_values, mock_update_rtb):
+        ag_source = dash.models.AdGroupSource.objects.get(id=1)
+        ag = dash.models.AdGroup.objects.get(id=1)
+        ag.bidding_type = dash.constants.BiddingType.CPM
+        ag.save(None)
+        ag_source_rtb = dash.models.AllRTBAdGroupSource(ag)
+        budget_changes = {
+            ag_source: {"old_budget": Decimal("100"), "new_budget": Decimal("200")},
+            ag_source_rtb: {"old_budget": Decimal("10"), "new_budget": Decimal("20")},
+        }
+        cpm_changes = {
+            ag_source: {"old_bid": Decimal("0.1"), "new_bid": Decimal("0.2")},
+            ag_source_rtb: {"old_bid": Decimal("0.11"), "new_bid": Decimal("0.22")},
+        }
+        ap = dash.constants.SystemUserType.AUTOPILOT
+        service.set_autopilot_changes(bid_changes=cpm_changes, budget_changes=budget_changes, ad_group=ag)
+        mock_update_values.assert_called_with(ag_source, {"cpm": Decimal("0.2"), "daily_budget_cc": Decimal("200")}, ap)
+        mock_update_values.assert_called_once()
+        mock_update_rtb.assert_called_with(ag, {"cpm": Decimal("0.22"), "daily_budget_cc": Decimal("20")}, ap)
         mock_update_rtb.assert_called_once()
 
     @patch("automation.autopilot.settings.BUDGET_AP_MIN_SOURCE_BUDGET", Decimal("0.3"))
@@ -457,7 +534,7 @@ class AutopilotPlusTestCase(test.TestCase):
         }
         changed_sources = service.recalculate_budgets_ad_group(adg)
         mock_run_autopilot.assert_called_once_with(
-            ad_group=adg, adjust_cpcs=False, adjust_budgets=True, initialization=True
+            ad_group=adg, adjust_bids=False, adjust_budgets=True, initialization=True
         )
         self.assertTrue(paused_ad_group_source in changed_sources)
         self.assertTrue(changed_source in changed_sources)
@@ -480,7 +557,7 @@ class AutopilotPlusTestCase(test.TestCase):
         }
         changed_sources = service.recalculate_budgets_ad_group(adg)
         mock_run_autopilot.assert_called_once_with(
-            campaign=adg.campaign, adjust_cpcs=False, adjust_budgets=True, initialization=True
+            campaign=adg.campaign, adjust_bids=False, adjust_budgets=True, initialization=True
         )
         self.assertEqual(set(), changed_sources)
         self.assertFalse(mock_set_paused.called)
@@ -491,7 +568,7 @@ class AutopilotPlusTestCase(test.TestCase):
         campaign = dash.models.Campaign.objects.get(pk=4)
         service.recalculate_budgets_campaign(campaign)
         mock_run_autopilot.assert_called_once_with(
-            campaign=campaign, adjust_cpcs=False, adjust_budgets=True, initialization=True
+            campaign=campaign, adjust_bids=False, adjust_budgets=True, initialization=True
         )
         self.assertTrue(mock_set_paused.called)
 
@@ -502,7 +579,7 @@ class AutopilotPlusTestCase(test.TestCase):
         campaign.settings.update_unsafe(None, autopilot=True)
         service.recalculate_budgets_campaign(campaign)
         mock_run_autopilot.assert_called_once_with(
-            campaign=campaign, adjust_cpcs=False, adjust_budgets=True, initialization=True
+            campaign=campaign, adjust_bids=False, adjust_budgets=True, initialization=True
         )
         self.assertFalse(mock_set_paused.called)
 
@@ -526,7 +603,7 @@ class AutopilotPlusTestCase(test.TestCase):
         mock_influx.assert_has_calls(
             [
                 call("automation.autopilot_plus.adgroups_on", 2, autopilot="budget_autopilot"),
-                call("automation.autopilot_plus.adgroups_on", 1, autopilot="cpc_autopilot"),
+                call("automation.autopilot_plus.adgroups_on", 1, autopilot="bid_autopilot"),
                 call("automation.autopilot_plus.adgroups_on", 1, autopilot="campaign_autopilot"),
                 call("automation.autopilot_plus.campaigns_on", 1, autopilot="campaign_autopilot"),
                 call("automation.autopilot_plus.spend", Decimal("50"), autopilot="budget_autopilot", type="expected"),
@@ -535,7 +612,7 @@ class AutopilotPlusTestCase(test.TestCase):
                     "automation.autopilot_plus.spend", Decimal("12"), autopilot="campaign_autopilot", type="yesterday"
                 ),
                 call("automation.autopilot_plus.spend", Decimal("35"), autopilot="budget_autopilot", type="yesterday"),
-                call("automation.autopilot_plus.spend", Decimal("10"), autopilot="cpc_autopilot", type="yesterday"),
+                call("automation.autopilot_plus.spend", Decimal("10"), autopilot="bid_autopilot", type="yesterday"),
             ]
         )
 
@@ -564,10 +641,10 @@ class AutopilotPlusTestCase(test.TestCase):
 
         mock_influx.assert_has_calls(
             [
-                call("automation.autopilot_plus.spend", Decimal("50"), autopilot="cpc_autopilot", type="actual"),
+                call("automation.autopilot_plus.spend", Decimal("50"), autopilot="bid_autopilot", type="actual"),
                 call("automation.autopilot_plus.spend", Decimal("210"), autopilot="budget_autopilot", type="actual"),
                 call("automation.autopilot_plus.spend", Decimal("50"), autopilot="campaign_autopilot", type="actual"),
-                call("automation.autopilot_plus.sources_on", 1, autopilot="cpc_autopilot"),
+                call("automation.autopilot_plus.sources_on", 1, autopilot="bid_autopilot"),
                 call("automation.autopilot_plus.sources_on", 4, autopilot="budget_autopilot"),
                 call("automation.autopilot_plus.sources_on", 1, autopilot="campaign_autopilot"),
             ]

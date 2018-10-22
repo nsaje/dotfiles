@@ -40,7 +40,7 @@ class AutopilotHelpersTestCase(test.TestCase):
             self.assertTrue(adg_settings.autopilot_state == constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET)
         self.assertFalse(models.AdGroup.objects.get(id=2) in cpc_ap_adgs + budget_ap_adgs + all_ap_adgs)
 
-    def test_update_ad_group_source_values(self):
+    def test_update_ad_group_source_values_cpc(self):
         ag_source = models.AdGroupSource.objects.get(id=1)
         ag_source_settings = ag_source.get_current_settings()
         old_daily_budget = ag_source_settings.daily_budget_cc
@@ -53,6 +53,20 @@ class AutopilotHelpersTestCase(test.TestCase):
         self.assertNotEqual(new_count, old_count)
         self.assertEqual(ag_source_settings.daily_budget_cc, old_daily_budget + Decimal("10"))
         self.assertEqual(ag_source_settings.cpc_cc, old_cpc + Decimal("0.5"))
+
+    def test_update_ad_group_source_values_cpm(self):
+        ag_source = models.AdGroupSource.objects.get(id=1)
+        ag_source_settings = ag_source.get_current_settings()
+        old_daily_budget = ag_source_settings.daily_budget_cc
+        old_cpm = ag_source_settings.cpm
+        old_count = models.AdGroupSourceSettings.objects.count()
+        helpers.update_ad_group_source_values(
+            ag_source, {"daily_budget_cc": old_daily_budget + Decimal("10"), "cpm": old_cpm + Decimal("0.5")}
+        )
+        new_count = models.AdGroupSourceSettings.objects.count()
+        self.assertNotEqual(new_count, old_count)
+        self.assertEqual(ag_source_settings.daily_budget_cc, old_daily_budget + Decimal("10"))
+        self.assertEqual(ag_source_settings.cpm, old_cpm + Decimal("0.5"))
 
     def test_get_autopilot_active_sources_settings(self):
         adgroups = models.AdGroup.objects.filter(id__in=[1, 2, 3])
@@ -84,10 +98,27 @@ class AutopilotHelpersTestCase(test.TestCase):
         helpers.update_ad_group_b1_sources_group_values(ag, changes, system_user=ap)
 
         mock_set_ad_group_sources_cpcs.assert_called()
-
         mock_k1_update_ad_group.assert_called()
 
         self.assertEqual(ag.settings.b1_sources_group_cpc_cc, Decimal("0.123"))
+        self.assertEqual(ag.settings.b1_sources_group_daily_budget, Decimal("123"))
+        self.assertEqual(ag.settings.system_user, ap)
+
+    @patch("utils.k1_helper.update_ad_group")
+    @patch("core.models.settings.ad_group_settings.helpers.set_ad_group_sources_cpms")
+    def test_update_ad_group_b1_sources_group_cpm_values(self, mock_set_ad_group_sources_cpms, mock_k1_update_ad_group):
+        ag = models.AdGroup.objects.get(id=1)
+        ag.bidding_type = constants.BiddingType.CPM
+        ag.save(None)
+
+        changes = {"cpm": Decimal("0.123"), "daily_budget_cc": Decimal("123")}
+        ap = constants.SystemUserType.AUTOPILOT
+        helpers.update_ad_group_b1_sources_group_values(ag, changes, system_user=ap)
+
+        mock_set_ad_group_sources_cpms.assert_called()
+        mock_k1_update_ad_group.assert_called()
+
+        self.assertEqual(ag.settings.b1_sources_group_cpm, Decimal("0.123"))
         self.assertEqual(ag.settings.b1_sources_group_daily_budget, Decimal("123"))
         self.assertEqual(ag.settings.system_user, ap)
 
