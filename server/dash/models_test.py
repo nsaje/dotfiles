@@ -162,8 +162,10 @@ class AdGroupSettingsTest(TestCase):
             'Whitelist publisher groups set to "pg 1"',
             'Brand name set to "Example"',
             'Bid CPC for all RTB sources set to "$0.100"',
+            'Bid CPM for all RTB sources set to "$1.100"',
             'Daily budget for all RTB sources set to "$500.00"',
             'Max CPC bid set to "$1.000"',
+            'Max CPM bid set to "$1.600"',
             'Interest targeting set to "A, B"',
             'Exclusion interest targeting set to "C, D"',
             'Blacklist publisher groups set to ""',
@@ -179,7 +181,6 @@ class AdGroupSettingsTest(TestCase):
             'Exclusion ad groups set to "test adgroup 3, test adgroup 4 on budget autopilot"',
             'Dayparting set to "Monday: 1, 2, 5; Tuesday: 10, 12; Timezone: CET"',
             'Pixel retargeting tags set to "http://a.com/b.jpg, http://a.com/c.jpg"',
-            'Max CPM set to "$1.60"',
             'Operating Systems set to "Android (6.0 Marshmallow)"',
             'Browser targeting set to "Chrome"',
             'Retargeting ad groups set to "test adgroup 1, test adgroup 2"',
@@ -1048,6 +1049,32 @@ class HistoryTest(TestCase):
         self.assertEqual(ad_group, hist.ad_group)
         self.assertEqual({"local_cpc_cc": 5.101}, hist.changes)
 
+    def test_create_ad_group_history_cpm(self):
+        ad_group = models.AdGroup.objects.get(pk=1)
+
+        ad_group.settings.update_unsafe(None, local_max_cpm=4.999)
+        adgss = ad_group.settings
+
+        hist = ad_group.write_history("", changes=model_to_dict(adgss))
+
+        self.assertEqual(ad_group, hist.ad_group)
+        self.assertEqual(4.999, hist.changes["local_max_cpm"])
+
+        adgss = adgss.copy_settings()
+        adgss.local_max_cpm = Decimal("5.103")
+        adgss.save(None)
+
+        adg_hist = self._latest_ad_group_history(ad_group=ad_group)
+        self.maxDiff = None
+        self.assertEqual(1, adg_hist.ad_group.id)
+        self.assertDictEqual({"local_max_cpm": "5.103"}, adg_hist.changes)
+        self.assertEqual('Max CPM bid set from "$4.999" to "$5.103"', adg_hist.changes_text)
+
+        hist = ad_group.write_history("", changes={"local_max_cpm": 5.101})
+
+        self.assertEqual(ad_group, hist.ad_group)
+        self.assertEqual({"local_max_cpm": 5.101}, hist.changes)
+
     def test_create_ad_group_source_history(self):
         ad_group = models.AdGroup.objects.get(pk=2)
         source = models.Source.objects.get(pk=1)
@@ -1284,6 +1311,11 @@ class SourceTypeTestCase(TestCase):
         settings_desktop = models.AdGroupSettings(ad_group_id=1, target_devices=[constants.AdTargetDevice.DESKTOP])
         self.assertEqual(source_type.get_min_cpc(settings), Decimal("0.05"))
         self.assertEqual(source_type.get_min_cpc(settings_desktop), Decimal("0.25"))
+
+    def test_yahoo_min_cpm(self):
+        source_type = models.SourceType(type=constants.SourceType.YAHOO, min_cpm=Decimal("0.05"))
+        settings = models.AdGroupSettings(ad_group_id=1)
+        self.assertEqual(source_type.get_min_cpm(settings), Decimal("0.25"))
 
 
 class PublisherGroupTest(TestCase):

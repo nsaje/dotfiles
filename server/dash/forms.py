@@ -364,7 +364,7 @@ class AdGroupSettingsForm(PublisherGroupsFormMixin, MulticurrencySettingsFormMix
         if max_cpm:
             currency_symbol = self.get_currency_symbol()
             min_max_cpm = decimal.Decimal("0.05") * self.get_exchange_rate()
-            max_max_cpm = decimal.Decimal("10") * self.get_exchange_rate()
+            max_max_cpm = decimal.Decimal("25") * self.get_exchange_rate()
 
             if max_cpm < min_max_cpm:
                 raise forms.ValidationError(
@@ -463,6 +463,7 @@ class B1SourcesGroupSettingsForm(forms.Form):
 
 class AdGroupSourceSettingsForm(forms.Form):
     cpc_cc = forms.DecimalField(decimal_places=4, required=False)
+    cpm = forms.DecimalField(decimal_places=4, required=False)
     daily_budget_cc = forms.DecimalField(decimal_places=4, required=False)
     state = forms.TypedChoiceField(
         choices=constants.AdGroupSettingsState.get_choices(), coerce=int, required=False, empty_value=None

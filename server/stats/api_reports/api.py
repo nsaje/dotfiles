@@ -113,6 +113,7 @@ UNABLE_TO_SORT = (
     "campaign",
     "brand_name",
     "bid_cpc",
+    "bid_cpm",
     "batch_name",
     "source",
     "blacklisted_level",

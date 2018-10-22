@@ -45,6 +45,8 @@ def get_updated_ad_group_sources_changes(user, last_change_dt, filtered_sources,
                 "status": status,
                 "bid_cpc": ad_group_settings.local_b1_sources_group_cpc_cc,
                 "current_bid_cpc": ad_group_settings.local_b1_sources_group_cpc_cc,
+                "bid_cpm": ad_group_settings.local_b1_sources_group_cpm,
+                "current_bid_cpm": ad_group_settings.local_b1_sources_group_cpm,
                 "daily_budget": ad_group_settings.local_b1_sources_group_daily_budget,
                 "current_daily_budget": ad_group_settings.local_b1_sources_group_daily_budget,
             }
@@ -52,10 +54,12 @@ def get_updated_ad_group_sources_changes(user, last_change_dt, filtered_sources,
             ags_setting = settings_map.get(ad_group_source.id)
 
             current_bid_cpc = None
+            current_bid_cpm = None
             current_daily_budget = None
             status = None
             if ags_setting and ad_group_settings:
                 current_bid_cpc = ags_setting.local_cpc_cc
+                current_bid_cpm = ags_setting.local_cpm
                 current_daily_budget = ags_setting.local_daily_budget_cc
                 status = ad_group_settings.state
                 if status == constants.AdGroupSettingsState.ACTIVE:
@@ -66,10 +70,13 @@ def get_updated_ad_group_sources_changes(user, last_change_dt, filtered_sources,
                 status_setting = ags_setting.state
 
             bid_cpc = current_bid_cpc
+            bid_cpm = current_bid_cpm
             daily_budget = current_daily_budget
 
             if ags_setting and ags_setting.local_cpc_cc:
                 bid_cpc = ags_setting.local_cpc_cc
+            if ags_setting and ags_setting.local_cpm:
+                bid_cpm = ags_setting.local_cpm
             if ags_setting and ags_setting.local_daily_budget_cc:
                 daily_budget = ags_setting.local_daily_budget_cc
 
@@ -77,7 +84,9 @@ def get_updated_ad_group_sources_changes(user, last_change_dt, filtered_sources,
                 "status_setting": status_setting,
                 "status": status,
                 "bid_cpc": bid_cpc,
+                "bid_cpm": bid_cpm,
                 "current_bid_cpc": current_bid_cpc,
+                "current_bid_cpm": current_bid_cpm,
                 "daily_budget": daily_budget,
                 "current_daily_budget": current_daily_budget,
             }

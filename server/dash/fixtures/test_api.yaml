@@ -447,6 +447,10 @@
         target_regions: ['693']
         target_devices: ['desktop', 'mobile']
         start_date: '2015-03-02'
+        b1_sources_group_cpc_cc: '0.0100'
+        local_b1_sources_group_cpc_cc: '0.0100'
+        b1_sources_group_cpm: '1.0100'
+        local_b1_sources_group_cpm: '1.0100'
     model: dash.adgroupsettings
     pk: 3
 

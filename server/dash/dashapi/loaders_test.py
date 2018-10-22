@@ -608,9 +608,15 @@ class AdGroupSourcesLoaderTest(TestCase):
                     "local_daily_budget": Decimal("10.0000"),
                     "bid_cpc": Decimal("0.5010"),
                     "local_bid_cpc": Decimal("0.5010"),
+                    "bid_cpm": Decimal("0.4010"),
+                    "local_bid_cpm": Decimal("0.4010"),
                     "editable_fields": {
                         "state": {"message": "This source must be managed manually.", "enabled": False},
                         "bid_cpc": {
+                            "message": "This value cannot be edited because the ad group is on Autopilot.",
+                            "enabled": False,
+                        },
+                        "bid_cpm": {
                             "message": "This value cannot be edited because the ad group is on Autopilot.",
                             "enabled": False,
                         },
@@ -630,9 +636,15 @@ class AdGroupSourcesLoaderTest(TestCase):
                     "local_daily_budget": Decimal("20.0000"),
                     "bid_cpc": Decimal("0.5020"),
                     "local_bid_cpc": Decimal("0.5020"),
+                    "bid_cpm": Decimal("0.4020"),
+                    "local_bid_cpm": Decimal("0.4020"),
                     "editable_fields": {
                         "state": {"message": None, "enabled": True},
                         "bid_cpc": {
+                            "message": "This value cannot be edited because the ad group is on Autopilot.",
+                            "enabled": False,
+                        },
+                        "bid_cpm": {
                             "message": "This value cannot be edited because the ad group is on Autopilot.",
                             "enabled": False,
                         },
@@ -653,6 +665,10 @@ class AdGroupSourcesLoaderTest(TestCase):
         ap_source = self.loader.settings_map[1]
         self.assertEqual(
             ap_source["editable_fields"]["bid_cpc"],
+            {"message": "This value cannot be edited because the campaign is on Autopilot.", "enabled": False},
+        )
+        self.assertEqual(
+            ap_source["editable_fields"]["bid_cpm"],
             {"message": "This value cannot be edited because the campaign is on Autopilot.", "enabled": False},
         )
         self.assertEqual(

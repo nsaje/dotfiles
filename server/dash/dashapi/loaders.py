@@ -789,6 +789,8 @@ class AdGroupSourcesLoader(Loader):
                 "status": data_helper.get_source_status(ad_group_source, state, self.ad_group_settings.state),
                 "bid_cpc": source_settings.cpc_cc if source_settings else None,
                 "local_bid_cpc": source_settings.local_cpc_cc if source_settings else None,
+                "bid_cpm": source_settings.cpm if source_settings else None,
+                "local_bid_cpm": source_settings.local_cpm if source_settings else None,
                 "daily_budget": source_settings.daily_budget_cc if source_settings else None,
                 "local_daily_budget": source_settings.local_daily_budget_cc if source_settings else None,
                 "supply_dash_url": ad_group_source.get_supply_dash_url(),
@@ -803,20 +805,22 @@ class AdGroupSourcesLoader(Loader):
 
             # MVP for all-RTB-sources-as-one
             if self.ad_group_settings.b1_sources_group_enabled and source.source_type.type == constants.SourceType.B1:
-                can_edit_cpc = not self.user.has_perm("zemauth.can_set_rtb_sources_as_one_cpc")
-                cpc_message = None
+                can_edit_bid = not self.user.has_perm("zemauth.can_set_rtb_sources_as_one_cpc")
+                bid_message = None
                 if self.campaign_settings.autopilot:
-                    cpc_message = "This value cannot be edited because the campaign is on Autopilot."
+                    bid_message = "This value cannot be edited because the campaign is on Autopilot."
                 elif self.ad_group_settings.autopilot_state != constants.AdGroupSettingsAutopilotState.INACTIVE:
-                    cpc_message = "This value cannot be edited because the ad group is on Autopilot."
-                elif not can_edit_cpc:
-                    cpc_message = "Please edit RTB Sources' Bid CPC."
+                    bid_message = "This value cannot be edited because the ad group is on Autopilot."
+                elif not can_edit_bid:
+                    bid_message = "Please edit RTB Sources' Bid {}."
                 result[source_id]["daily_budget"] = None
                 result[source_id]["local_daily_budget"] = None
                 result[source_id]["editable_fields"]["daily_budget"]["enabled"] = False
                 result[source_id]["editable_fields"]["daily_budget"]["message"] = None
-                result[source_id]["editable_fields"]["bid_cpc"]["enabled"] = can_edit_cpc
-                result[source_id]["editable_fields"]["bid_cpc"]["message"] = cpc_message
+                result[source_id]["editable_fields"]["bid_cpc"]["enabled"] = can_edit_bid
+                result[source_id]["editable_fields"]["bid_cpc"]["message"] = bid_message.format("CPC")
+                result[source_id]["editable_fields"]["bid_cpm"]["enabled"] = can_edit_bid
+                result[source_id]["editable_fields"]["bid_cpm"]["message"] = bid_message.format("CPM")
                 if (
                     self.ad_group_settings.b1_sources_group_state == constants.AdGroupSourceSettingsState.INACTIVE
                     and result[source_id]["status"] == constants.AdGroupSourceSettingsState.ACTIVE
@@ -928,11 +932,12 @@ class PublisherBidModifierLoader(PublisherBlacklistLoader):
         return {(x.source_id, x.publisher): x.modifier for x in modifiers}
 
     @cached_property
-    def bid_cpc_map(self):
+    def bid_value_map(self):
         ad_group_sources = models.AdGroupSource.objects.filter(ad_group_id=self.ad_group.id).select_related("settings")
         return {
             ags.source_id: {
                 "bid_cpc_value": ags.settings.local_cpc_cc,
+                "bid_cpm_value": ags.settings.local_cpm,
                 "currency_symbol": core.features.multicurrency.get_currency_symbol(ags.settings.get_currency()),
             }
             for ags in ad_group_sources

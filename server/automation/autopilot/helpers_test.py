@@ -75,7 +75,7 @@ class AutopilotHelpersTestCase(test.TestCase):
         )
 
     @patch("utils.k1_helper.update_ad_group")
-    @patch("dash.views.helpers.set_ad_group_sources_cpcs")
+    @patch("core.models.settings.ad_group_settings.helpers.set_ad_group_sources_cpcs")
     def test_update_ad_group_b1_sources_group_cpc_values(self, mock_set_ad_group_sources_cpcs, mock_k1_update_ad_group):
         ag = models.AdGroup.objects.get(id=1)
 

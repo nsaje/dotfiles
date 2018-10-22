@@ -79,8 +79,8 @@ angular
                         vm.sourceBidCpc = undefined;
                         value = undefined;
                     } else {
-                        vm.sourceBidCpc = vm.data.value.source_bid_cpc
-                            ? vm.data.value.source_bid_cpc.bid_cpc_value
+                        vm.sourceBidCpc = vm.data.value.source_bid_value
+                            ? vm.data.value.source_bid_value.bid_cpc_value
                             : undefined;
 
                         var value = vm.data.value.modifier

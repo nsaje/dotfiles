@@ -578,7 +578,7 @@ class AdGroupSettingsFormTest(TestCase):
         form = forms.AdGroupSettingsForm(self.ad_group, self.user, self.data)
         self.assertFalse(form.is_valid())
 
-        self.data["max_cpm"] = "10.1"
+        self.data["max_cpm"] = "25.1"
         form = forms.AdGroupSettingsForm(self.ad_group, self.user, self.data)
         self.assertFalse(form.is_valid())
 

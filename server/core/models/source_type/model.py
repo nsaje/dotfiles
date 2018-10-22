@@ -56,6 +56,8 @@ class SourceType(models.Model, bcm_mixin.SourceTypeBCMMixin):
         """ Some source types have different minimal CPMs depending on the settings.
             Encode these special cases here. """
         min_cpm = self.get_etfm_min_cpm(bcm_modifiers)
+        if self.type == constants.SourceType.YAHOO:
+            min_cpm = max(min_cpm, Decimal("0.25")) if min_cpm else Decimal("0.25")
         return min_cpm
 
     def can_update_state(self):
@@ -63,6 +65,12 @@ class SourceType(models.Model, bcm_mixin.SourceTypeBCMMixin):
 
     def can_update_cpc(self):
         return self.available_actions is not None and constants.SourceAction.CAN_UPDATE_CPC in self.available_actions
+
+    def can_update_cpm(self):
+        return self.available_actions is not None and constants.SourceAction.CAN_UPDATE_CPM in self.available_actions
+
+    def can_set_max_cpm(self):
+        return self.available_actions is not None and constants.SourceAction.CAN_SET_MAX_CPM in self.available_actions
 
     def can_update_daily_budget_manual(self):
         return (
@@ -180,9 +188,6 @@ class SourceType(models.Model, bcm_mixin.SourceTypeBCMMixin):
             self.available_actions is not None
             and constants.SourceAction.CAN_MODIFY_PUBLISHER_BLACKLIST_AUTOMATIC in self.available_actions
         )
-
-    def can_set_max_cpm(self):
-        return self.available_actions is not None and constants.SourceAction.CAN_SET_MAX_CPM in self.available_actions
 
     def __str__(self):
         return self.type

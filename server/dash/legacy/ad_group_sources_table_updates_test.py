@@ -29,6 +29,8 @@ class AdGroupSourcesTableUpdatesTest(TestCase):
                     "daily_budget": Decimal("10.0000"),
                     "bid_cpc": Decimal("0.5010"),
                     "current_bid_cpc": Decimal("0.5010"),
+                    "bid_cpm": Decimal("0.4010"),
+                    "current_bid_cpm": Decimal("0.4010"),
                 },
                 2: {
                     "status": 2,
@@ -37,6 +39,8 @@ class AdGroupSourcesTableUpdatesTest(TestCase):
                     "daily_budget": Decimal("20.0000"),
                     "bid_cpc": Decimal("0.5020"),
                     "current_bid_cpc": Decimal("0.5020"),
+                    "bid_cpm": Decimal("0.4020"),
+                    "current_bid_cpm": Decimal("0.4020"),
                 },
             },
             "last_change": datetime(2014, 6, 5, 9, 58, 21),
@@ -50,6 +54,7 @@ class AdGroupSourcesTableUpdatesTest(TestCase):
             b1_sources_group_enabled=True,
             b1_sources_group_state=constants.AdGroupSourceSettingsState.ACTIVE,
             local_b1_sources_group_cpc_cc=Decimal("0.01"),
+            local_b1_sources_group_cpm=Decimal("1.01"),
             b1_sources_group_daily_budget=Decimal("5.0"),
             local_b1_sources_group_daily_budget=Decimal("10.0"),
         )
@@ -65,6 +70,8 @@ class AdGroupSourcesTableUpdatesTest(TestCase):
                     "status_setting": 1,
                     "bid_cpc": Decimal("0.5010"),
                     "current_bid_cpc": Decimal("0.5010"),
+                    "bid_cpm": Decimal("0.4010"),
+                    "current_bid_cpm": Decimal("0.4010"),
                 },
                 2: {
                     "status": 2,
@@ -73,6 +80,8 @@ class AdGroupSourcesTableUpdatesTest(TestCase):
                     "daily_budget": Decimal("20.0000"),
                     "bid_cpc": Decimal("0.5020"),
                     "current_bid_cpc": Decimal("0.5020"),
+                    "bid_cpm": Decimal("0.4020"),
+                    "current_bid_cpm": Decimal("0.4020"),
                 },
                 "0123456789": {
                     "status": 1,
@@ -81,6 +90,8 @@ class AdGroupSourcesTableUpdatesTest(TestCase):
                     "daily_budget": Decimal("10.0000"),
                     "bid_cpc": Decimal("0.0100"),
                     "current_bid_cpc": Decimal("0.0100"),
+                    "bid_cpm": Decimal("1.0100"),
+                    "current_bid_cpm": Decimal("1.0100"),
                 },
             },
             "last_change": datetime(2014, 6, 5, 9, 58, 21),
@@ -98,6 +109,8 @@ class AdGroupSourcesTableUpdatesTest(TestCase):
             "daily_budget": Decimal("20.0000"),
             "bid_cpc": Decimal("0.5020"),
             "current_bid_cpc": Decimal("0.5020"),
+            "bid_cpm": Decimal("0.4020"),
+            "current_bid_cpm": Decimal("0.4020"),
         }
         expected = {
             "status": 2,
@@ -106,6 +119,8 @@ class AdGroupSourcesTableUpdatesTest(TestCase):
             "daily_budget": Decimal("20.0000"),
             "bid_cpc": Decimal("0.5020"),
             "current_bid_cpc": Decimal("0.5020"),
+            "bid_cpm": Decimal("0.4020"),
+            "current_bid_cpm": Decimal("0.4020"),
         }
 
         notifications = {}
@@ -127,12 +142,16 @@ class AdGroupSourcesTableUpdatesTest(TestCase):
             "daily_budget": Decimal("20.0000"),
             "bid_cpc": Decimal("0.5020"),
             "current_bid_cpc": Decimal("0.5020"),
+            "bid_cpm": Decimal("0.4020"),
+            "current_bid_cpm": Decimal("0.4020"),
         }
         expected = {
             "status": 1,
             "status_setting": 1,
             "bid_cpc": Decimal("0.5020"),
             "current_bid_cpc": Decimal("0.5020"),
+            "bid_cpm": Decimal("0.4020"),
+            "current_bid_cpm": Decimal("0.4020"),
         }
 
         notifications = {}
@@ -153,12 +172,16 @@ class AdGroupSourcesTableUpdatesTest(TestCase):
             "daily_budget": Decimal("20.0000"),
             "bid_cpc": Decimal("0.5020"),
             "current_bid_cpc": Decimal("0.5020"),
+            "bid_cpm": Decimal("0.4020"),
+            "current_bid_cpm": Decimal("0.4020"),
         }
         expected = {
             "status": 2,
             "status_setting": 1,
             "bid_cpc": Decimal("0.5020"),
             "current_bid_cpc": Decimal("0.5020"),
+            "bid_cpm": Decimal("0.4020"),
+            "current_bid_cpm": Decimal("0.4020"),
         }
 
         notifications = {}

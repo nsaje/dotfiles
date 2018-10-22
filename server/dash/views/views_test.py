@@ -306,22 +306,30 @@ class AdGroupSourceSettingsTest(TestCase):
     def test_put_local(self, mock_ad_group_source_settings_update):
         self.client.put(
             reverse("ad_group_source_settings", kwargs={"ad_group_id": "1", "source_id": "1"}),
-            data=json.dumps({"cpc_cc": "0.5"}),
+            data=json.dumps({"cpc_cc": "0.5", "cpm": "0.5"}),
         )
 
         args, kwargs = mock_ad_group_source_settings_update.call_args
         self.assertIsNone(kwargs.get("cpc_cc"))
+        self.assertIsNone(kwargs.get("cpm"))
         self.assertEqual(kwargs.get("local_cpc_cc"), decimal.Decimal("0.5"))
+        self.assertEqual(kwargs.get("local_cpm"), decimal.Decimal("0.5"))
 
     @patch("utils.k1_helper.update_ad_group")
     def test_cpc_bigger_than_max(self, mock_k1_ping):
         current_settings = self.ad_group.get_current_settings()
         new_settings = current_settings.copy_settings()
         new_settings.cpc_cc = decimal.Decimal("1.0")
+        new_settings.max_cpm = decimal.Decimal("2.0")
         new_settings.save(None)
         response = self.client.put(
             reverse("ad_group_source_settings", kwargs={"ad_group_id": "1", "source_id": "1"}),
             data=json.dumps({"cpc_cc": "2.0"}),
+        )
+        self.assertEqual(response.status_code, 400)
+        response = self.client.put(
+            reverse("ad_group_source_settings", kwargs={"ad_group_id": "1", "source_id": "1"}),
+            data=json.dumps({"cpm": "3.0"}),
         )
         self.assertEqual(response.status_code, 400)
 
@@ -372,6 +380,22 @@ class AdGroupSourceSettingsTest(TestCase):
         )
         self.assertEqual(response.status_code, 200)
 
+    def test_source_cpm_over_ad_group_maximum(self):
+        self._set_ad_group_end_date(days_delta=3)
+        response = self.client.put(
+            reverse("ad_group_source_settings", kwargs={"ad_group_id": "1", "source_id": "1"}),
+            data=json.dumps({"cpm": "1.70"}),
+        )
+        self.assertEqual(response.status_code, 400)
+
+    def test_source_cpm_equal_ad_group_maximum(self):
+        self._set_ad_group_end_date(days_delta=3)
+        response = self.client.put(
+            reverse("ad_group_source_settings", kwargs={"ad_group_id": "1", "source_id": "1"}),
+            data=json.dumps({"cpm": "1.60"}),
+        )
+        self.assertEqual(response.status_code, 200)
+
     @patch("automation.autopilot.recalculate_budgets_ad_group")
     def test_adgroup_on_budget_autopilot_trigger_budget_autopilot_on_source_state_change(self, mock_budget_ap):
         self._set_ad_group_end_date(days_delta=3)
@@ -407,9 +431,10 @@ class AdGroupSourceSettingsTest(TestCase):
 
     @patch.object(core.models.source_type.model.SourceType, "get_etfm_max_daily_budget", return_value=89.77)
     @patch.object(core.models.source_type.model.SourceType, "get_etfm_min_daily_budget", return_value=7.11)
+    @patch.object(core.models.source_type.model.SourceType, "get_min_cpm", return_value=0.1211)
     @patch.object(core.models.source_type.model.SourceType, "get_min_cpc", return_value=0.1211)
-    def test_adgroups_sources_rounding(self, min_cpc_mock, min_daily_budget_mock, max_daily_budget_mock):
-        self.ad_group.settings.update_unsafe(None, cpc_cc=0.7792)
+    def test_adgroups_sources_rounding(self, min_cpc_mock, min_cpm_mock, min_daily_budget_mock, max_daily_budget_mock):
+        self.ad_group.settings.update_unsafe(None, cpc_cc=0.7792, max_cpm=0.7792)
 
         # min cpc - would return 0.12 without rounding ceiling
         r = self.client.put(
@@ -446,6 +471,24 @@ class AdGroupSourceSettingsTest(TestCase):
         json_data = json.loads(r.content)["data"]
         self.assertEqual(json_data["error_code"], "ValidationError")
         self.assertTrue("89" in json_data["errors"]["daily_budget_cc"][0])
+
+        # min cpm - would return 0.12 without rounding ceiling
+        r = self.client.put(
+            reverse("ad_group_source_settings", kwargs={"ad_group_id": "1", "source_id": "1"}),
+            data=json.dumps({"cpc_cc": "0.14", "cpm": "0.1200"}),
+        )
+        json_data = json.loads(r.content)["data"]
+        self.assertEqual(json_data["error_code"], "ValidationError")
+        self.assertTrue("0.13" in json_data["errors"]["cpm"][0])
+
+        # max cpm - would return 0.78 without rounding floor
+        r = self.client.put(
+            reverse("ad_group_source_settings", kwargs={"ad_group_id": "1", "source_id": "1"}),
+            data=json.dumps({"cpc_cc": "0.14", "cpm": "0.78"}),
+        )
+        json_data = json.loads(r.content)["data"]
+        self.assertEqual(json_data["error_code"], "ValidationError")
+        self.assertTrue("0.77" in json_data["errors"]["cpm"][0])
 
 
 class CampaignAdGroups(TestCase):

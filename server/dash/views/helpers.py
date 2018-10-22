@@ -7,7 +7,6 @@ import json
 from decimal import Decimal
 
 from django.conf import settings
-from django.db import transaction
 from django.db.models import Q, Max
 from django.utils.functional import cached_property
 
@@ -16,7 +15,6 @@ import automation.autopilot
 
 from dash import models
 from dash import constants
-from dash import cpc_constraints
 
 from dash.dashapi import data_helper
 
@@ -505,6 +503,10 @@ def get_editable_fields(
         ad_group, ad_group_source, ad_group_settings, campaign_settings
     )
 
+    editable_fields["bid_cpm"] = _get_editable_fields_bid_cpm(
+        ad_group, ad_group_source, ad_group_settings, campaign_settings
+    )
+
     editable_fields["daily_budget"] = _get_editable_fields_daily_budget(
         ad_group, ad_group_source, ad_group_settings, campaign_settings
     )
@@ -520,8 +522,31 @@ def _get_editable_fields_bid_cpc(ad_group, ad_group_source, ad_group_settings, c
         or ad_group_settings.autopilot_state != constants.AdGroupSettingsAutopilotState.INACTIVE
         or campaign_settings.autopilot
     ):
-        message = _get_bid_cpc_daily_budget_disabled_message(
-            ad_group, ad_group_source, ad_group_settings, campaign_settings
+        default_msg = "This media source doesn't support setting this value through the dashboard."
+        message = (
+            _get_bid_value_daily_budget_disabled_message(
+                ad_group, ad_group_source, ad_group_settings, campaign_settings
+            )
+            or default_msg
+        )
+
+    return {"enabled": message is None, "message": message}
+
+
+def _get_editable_fields_bid_cpm(ad_group, ad_group_source, ad_group_settings, campaign_settings):
+    message = None
+
+    if (
+        not ad_group_source.source.can_update_cpm()
+        or ad_group_settings.autopilot_state != constants.AdGroupSettingsAutopilotState.INACTIVE
+        or campaign_settings.autopilot
+    ):
+        default_msg = "This source can not be enabled because it does not support CPM buying."
+        message = (
+            _get_bid_value_daily_budget_disabled_message(
+                ad_group, ad_group_source, ad_group_settings, campaign_settings
+            )
+            or default_msg
         )
 
     return {"enabled": message is None, "message": message}
@@ -536,8 +561,12 @@ def _get_editable_fields_daily_budget(ad_group, ad_group_source, ad_group_settin
         or ad_group_settings.autopilot_state == constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET
         or campaign_settings.autopilot
     ):
-        message = _get_bid_cpc_daily_budget_disabled_message(
-            ad_group, ad_group_source, ad_group_settings, campaign_settings
+        default_msg = "This media source doesn't support setting this value through the dashboard."
+        message = (
+            _get_bid_value_daily_budget_disabled_message(
+                ad_group, ad_group_source, ad_group_settings, campaign_settings
+            )
+            or default_msg
         )
 
     return {"enabled": message is None, "message": message}
@@ -580,6 +609,8 @@ def _get_editable_fields_status_setting(
         message = "Please connect your Facebook page to add Facebook as media source."
     elif message is None and not check_yahoo_min_cpc(ad_group_settings, ad_group_source, ad_group_source_settings):
         message = "This source can not be enabled with the current settings - CPC too low for desktop targeting."
+    elif message is None and not check_yahoo_min_cpm(ad_group_settings, ad_group_source, ad_group_source_settings):
+        message = "This source can not be enabled with the current settings - CPM too low."
     elif message is None and not check_max_cpm(ad_group_source, ad_group_settings):
         message = "This source can not be enabled because it does not support max CPM restriction."
 
@@ -606,11 +637,29 @@ def check_facebook_source(ad_group_source):
 
 def check_yahoo_min_cpc(ad_group_settings, ad_group_source, ad_group_source_settings):
     source_type = ad_group_source.source.source_type
-    if source_type.type != constants.SourceType.YAHOO:
+    if (
+        source_type.type != constants.SourceType.YAHOO
+        or ad_group_settings.ad_group.bidding_type != constants.BiddingType.CPC
+    ):
         return True
 
     min_cpc = source_type.get_min_cpc(ad_group_settings)
     if min_cpc and ad_group_source_settings.cpc_cc < min_cpc:
+        return False
+
+    return True
+
+
+def check_yahoo_min_cpm(ad_group_settings, ad_group_source, ad_group_source_settings):
+    source_type = ad_group_source.source.source_type
+    if (
+        source_type.type != constants.SourceType.YAHOO
+        or ad_group_settings.ad_group.bidding_type != constants.BiddingType.CPM
+    ):
+        return True
+
+    min_cpm = source_type.get_min_cpm(ad_group_settings)
+    if min_cpm and ad_group_source_settings.cpm < min_cpm:
         return False
 
     return True
@@ -653,7 +702,7 @@ def _get_status_setting_disabled_message_for_target_regions(
         )
 
 
-def _get_bid_cpc_daily_budget_disabled_message(ad_group, ad_group_source, ad_group_settings, campaign_settings):
+def _get_bid_value_daily_budget_disabled_message(ad_group, ad_group_source, ad_group_settings, campaign_settings):
     if ad_group_source.source.maintenance:
         return "This value cannot be edited because the media source is currently in maintenance."
 
@@ -666,7 +715,7 @@ def _get_bid_cpc_daily_budget_disabled_message(ad_group, ad_group_source, ad_gro
     ]:
         return "This value cannot be edited because the ad group is on Autopilot."
 
-    return "This media source doesn't support setting this value through the dashboard."
+    return None
 
 
 def enabling_autopilot_sources_allowed(ad_group, ad_group_sources):
@@ -695,94 +744,6 @@ def _enabling_autopilot_sources_allowed(ad_group, number_of_sources_to_enable):
         ad_group.settings.autopilot_daily_budget - required_budget
         >= automation.autopilot.get_adgroup_minimum_daily_budget(ad_group, ad_group.settings)
     )
-
-
-def get_adjusted_ad_group_sources_cpcs(ad_group, ad_group_settings):
-    adjusted_cpcs = {}
-    for ad_group_source in ad_group.adgroupsource_set.all().select_related(
-        "source__source_type",
-        "settings",
-        "ad_group__settings",
-        "ad_group__campaign__settings",
-        "ad_group__campaign__account__agency",
-    ):
-        proposed_cpc = ad_group_source.get_current_settings().cpc_cc
-        adjusted_cpc = _get_adjusted_ad_group_source_bid(
-            proposed_cpc, ad_group_source, ad_group_settings, ad_group.campaign.settings
-        )
-        if (
-            ad_group_source.source.source_type.type != constants.SourceType.B1
-            and ad_group_source.get_current_settings().state == constants.AdGroupSourceSettingsState.INACTIVE
-        ):
-            continue
-        adjusted_cpcs[ad_group_source] = adjusted_cpc
-    return adjusted_cpcs
-
-
-def validate_ad_group_sources_cpc_constraints(bcm_modifiers, ad_group_sources_cpcs, ad_group):
-    rules_per_source = cpc_constraints.get_rules_per_source(ad_group, bcm_modifiers)
-    for ad_group_source, proposed_cpc in list(ad_group_sources_cpcs.items()):
-        if proposed_cpc:
-            cpc_constraints.validate_cpc(proposed_cpc, rules=rules_per_source[ad_group_source.source])
-
-
-@transaction.atomic
-def set_ad_group_sources_cpcs(ad_group_sources_cpcs, ad_group, ad_group_settings, skip_validation=False):
-    rules_per_source = cpc_constraints.get_rules_per_source(ad_group)
-    for ad_group_source, proposed_cpc in list(ad_group_sources_cpcs.items()):
-        adjusted_cpc = _get_adjusted_ad_group_source_bid(
-            proposed_cpc, ad_group_source, ad_group_settings, ad_group.campaign.settings
-        )
-        if adjusted_cpc:
-            adjusted_cpc = cpc_constraints.adjust_cpc(adjusted_cpc, rules=rules_per_source[ad_group_source.source])
-
-        ad_group_source_settings = ad_group_source.get_current_settings()
-        if ad_group_source_settings.cpc_cc == adjusted_cpc:
-            continue
-        ad_group_source.settings.update(cpc_cc=adjusted_cpc, k1_sync=False, skip_validation=skip_validation)
-
-
-@transaction.atomic
-def set_ad_group_sources_cpms(ad_group_sources_cpms, ad_group, ad_group_settings, skip_validation=False):
-    for ad_group_source, proposed_cpm in list(ad_group_sources_cpms.items()):
-        adjusted_cpm = _get_adjusted_ad_group_source_bid(
-            proposed_cpm, ad_group_source, ad_group_settings, ad_group.campaign.settings
-        )
-        ad_group_source_settings = ad_group_source.get_current_settings()
-        if ad_group_source_settings.cpm == adjusted_cpm:
-            continue
-        ad_group_source.settings.update(cpm=adjusted_cpm, k1_sync=False, skip_validation=skip_validation)
-
-
-def _get_adjusted_ad_group_source_bid(proposed_bid, ad_group_source, ad_group_settings, campaign_settings):
-    if (
-        ad_group_settings.b1_sources_group_enabled
-        and ad_group_source.source.source_type.type == constants.SourceType.B1
-        and ad_group_settings.autopilot_state != constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET
-        and not campaign_settings.autopilot
-    ):
-        proposed_bid = (
-            ad_group_settings.b1_sources_group_cpm
-            if ad_group_settings.ad_group.bidding_type == constants.BiddingType.CPM
-            else ad_group_settings.b1_sources_group_cpc_cc
-        )
-    return adjust_max_bid(proposed_bid, ad_group_settings)
-
-
-def adjust_max_bid(proposed_bid, ad_group_settings):
-    max_bid = (
-        ad_group_settings.max_cpm
-        if ad_group_settings.ad_group.bidding_type == constants.BiddingType.CPM
-        else ad_group_settings.cpc_cc
-    )
-
-    if not (proposed_bid and max_bid):
-        return proposed_bid
-
-    if proposed_bid > max_bid:
-        return max_bid
-
-    return proposed_bid
 
 
 def format_decimal_to_percent(num):

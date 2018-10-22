@@ -41,6 +41,7 @@ class AdGroupStatsView(K1APIView):
                 "impressions": stats["impressions"],
                 "clicks": stats["clicks"],
                 "cpc": stats["cpc"],
+                "cpm": stats["cpm"],
             }
         )
 

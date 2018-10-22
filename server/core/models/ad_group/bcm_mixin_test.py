@@ -22,6 +22,7 @@ class MigrateToBcmV2Test(TestCase):
             autopilot_state=constants.AdGroupSettingsAutopilotState.INACTIVE,
             b1_sources_group_daily_budget=decimal.Decimal("50"),
             b1_sources_group_cpc_cc=decimal.Decimal("0.3"),
+            b1_sources_group_cpm=decimal.Decimal("0.3"),
             autopilot_daily_budget=decimal.Decimal("100"),
             max_cpm=decimal.Decimal("1.22"),
         )
@@ -77,4 +78,5 @@ class MigrateToBcmV2Test(TestCase):
         self.assertEqual(70, self.ad_group.settings.b1_sources_group_daily_budget)
         self.assertEqual(139, self.ad_group.settings.autopilot_daily_budget)
         self.assertEqual(decimal.Decimal("0.417"), self.ad_group.settings.b1_sources_group_cpc_cc)
+        self.assertEqual(decimal.Decimal("0.417"), self.ad_group.settings.b1_sources_group_cpm)
         self.assertEqual(decimal.Decimal("1.694"), self.ad_group.settings.max_cpm)

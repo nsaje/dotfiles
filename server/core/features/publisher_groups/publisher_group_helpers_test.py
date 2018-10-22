@@ -221,7 +221,7 @@ class PublisherGroupHelpersTest(TestCase):
         self.assertEqual(models.CpcConstraint.objects.all().count(), 1)
 
     @mock.patch("utils.email_helper.send_obj_changes_notification_email")
-    def test_blacklist_publisher_account_enforce_cpc_belove_limit(self, mock_email):
+    def test_blacklist_publisher_account_enforce_cpc_below_limit(self, mock_email):
         obj = models.Account.objects.get(pk=1)
         outbrain = models.Source.objects.get(pk=3)
         non_relevant_entries = [

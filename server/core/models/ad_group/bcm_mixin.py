@@ -34,6 +34,7 @@ class AdGroupBCMMixin(object):
         new_b1_sources_group_cpc_cc = self._transform_fractional_value(
             self.settings.b1_sources_group_cpc_cc, fee, margin
         )
+        new_b1_sources_group_cpm = self._transform_fractional_value(self.settings.b1_sources_group_cpm, fee, margin)
         new_cpc_cc = self._transform_fractional_value(self.settings.cpc_cc, fee, margin)
         new_max_cpm = self._transform_fractional_value(self.settings.max_cpm, fee, margin)
         new_autopilot_daily_budget = self._transform_whole_value(self.settings.autopilot_daily_budget, fee, margin)
@@ -50,7 +51,12 @@ class AdGroupBCMMixin(object):
         # NOTE: this is done separately so that cpc_cc is already set,
         # otherwise ad group sources cpcs are changed before settings
         # are saved and can exceed max ad group cpc
-        self.settings.update(request, skip_validation=True, b1_sources_group_cpc_cc=new_b1_sources_group_cpc_cc)
+        self.settings.update(
+            request,
+            skip_validation=True,
+            b1_sources_group_cpc_cc=new_b1_sources_group_cpc_cc,
+            b1_sources_group_cpm=new_b1_sources_group_cpm,
+        )
 
     def _validate_correct_settings_migration(self, request):
         # NOTE: We could be saving invalid settings because we skip this part of validation when

@@ -61,12 +61,12 @@ class Source(models.Model):
     )
 
     default_cpm = models.DecimalField(
-        max_digits=10, decimal_places=4, default=Decimal("0.60"), verbose_name="Default CPM"
+        max_digits=10, decimal_places=4, default=Decimal("1.00"), verbose_name="Default CPM"
     )
     default_mobile_cpm = models.DecimalField(
         max_digits=10,
         decimal_places=4,
-        default=Decimal("0.60"),
+        default=Decimal("1.00"),
         verbose_name="Default CPM (if ad group is targeting mobile only)",
     )
 
@@ -84,6 +84,12 @@ class Source(models.Model):
 
     def can_update_cpc(self):
         return self.source_type.can_update_cpc() and not self.maintenance and not self.deprecated
+
+    def can_update_cpm(self):
+        return self.source_type.can_update_cpm() and not self.maintenance and not self.deprecated
+
+    def can_set_max_cpm(self):
+        return self.source_type.can_set_max_cpm() and not self.maintenance and not self.deprecated
 
     def can_update_daily_budget_manual(self):
         return self.source_type.can_update_daily_budget_manual() and not self.maintenance and not self.deprecated
@@ -145,9 +151,6 @@ class Source(models.Model):
 
     def can_modify_retargeting_manually(self):
         return self.supports_retargeting_manually and not self.maintenance and not self.deprecated
-
-    def can_set_max_cpm(self):
-        return self.source_type.can_set_max_cpm() and not self.maintenance and not self.deprecated
 
     def get_default_settings(self):
         try:

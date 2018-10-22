@@ -112,8 +112,9 @@ class AdGroupSourceStateTest(TestCase):
 
     @patch.object(core.models.source_type.model.SourceType, "get_etfm_max_daily_budget", return_value=89.77)
     @patch.object(core.models.source_type.model.SourceType, "get_etfm_min_daily_budget", return_value=7.11)
+    @patch.object(core.models.source_type.model.SourceType, "get_min_cpm", return_value=0.1211)
     @patch.object(core.models.source_type.model.SourceType, "get_min_cpc", return_value=0.1211)
-    def test_adgroups_sources_rounding(self, min_cpc_mock, min_daily_budget_mock, max_daily_budget_mock):
+    def test_adgroups_sources_rounding(self, min_cpc_mock, min_cpm_mock, min_daily_budget_mock, max_daily_budget_mock):
         ad_group_id = 1
         data = {"state": constants.AdGroupSourceSettingsState.ACTIVE, "selected_ids": [ad_group_id]}
         ad_group = models.AdGroup.objects.get(pk=ad_group_id)
@@ -123,6 +124,7 @@ class AdGroupSourceStateTest(TestCase):
         ad_group_settings.audience_targeting = False
         ad_group_settings.exclusion_audience_targeting = False
         ad_group_settings.cpc_cc = 0.7792
+        ad_group_settings.max_cpm = 0.7792
         ad_group_settings.save(None)
 
         ad_group_sources = ad_group.adgroupsource_set.all()
@@ -167,6 +169,27 @@ class AdGroupSourceStateTest(TestCase):
         json_data = json.loads(response.content)["data"]
         self.assertEqual(json_data["error_code"], "ValidationError")
         self.assertTrue("89" in json_data["message"])
+
+        # min cpm - would return 0.12 without rounding ceiling
+        for ags in ad_group_sources:
+            ags_settings = ags.settings.copy_settings()
+            ags_settings.daily_budget_cc = 70
+            ags_settings.cpm = 0.12
+            ags_settings.save(None)
+        response = self._post_source_state(ad_group_id, data)
+        json_data = json.loads(response.content)["data"]
+        self.assertEqual(json_data["error_code"], "ValidationError")
+        self.assertTrue("0.13" in json_data["message"])
+
+        # max cpm - would return 0.78 without rounding floor
+        for ags in ad_group_sources:
+            ags_settings = ags.settings.copy_settings()
+            ags_settings.cpm = 0.78
+            ags_settings.save(None)
+        response = self._post_source_state(ad_group_id, data)
+        json_data = json.loads(response.content)["data"]
+        self.assertEqual(json_data["error_code"], "ValidationError")
+        self.assertTrue("0.77" in json_data["message"])
 
 
 class AdGroupContentAdArchiveTest(TestCase):

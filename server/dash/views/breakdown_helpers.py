@@ -207,7 +207,7 @@ def get_ad_group_sources_extras(ad_group):
 
 
 # MVP for all-RTB-sources-as-one
-def create_all_rtb_source_row(request, constraints, can_show_rtb_group_cpc):
+def create_all_rtb_source_row(request, constraints, can_show_rtb_group_bid):
     ad_group = constraints["ad_group"]
     settings = ad_group.get_current_settings()
     if not settings.b1_sources_group_enabled:
@@ -219,12 +219,12 @@ def create_all_rtb_source_row(request, constraints, can_show_rtb_group_cpc):
     rtb_source_ids = list(map(str, rtb_source_ids))
 
     # Create All RTB Source row using rtb_source_ids for newly created group
-    all_rtb_source_row = create_all_rtb_source_row_data(request, ad_group, settings, can_show_rtb_group_cpc)
+    all_rtb_source_row = create_all_rtb_source_row_data(request, ad_group, settings, can_show_rtb_group_bid)
     all_rtb_source_row["group"] = {"ids": rtb_source_ids}
     return all_rtb_source_row
 
 
-def create_all_rtb_source_row_data(request, ad_group, ad_group_settings, show_rtb_group_cpc):
+def create_all_rtb_source_row_data(request, ad_group, ad_group_settings, show_rtb_group_bid):
     status = {"value": ad_group_settings.b1_sources_group_state}
     notifications = {}
     if (
@@ -249,20 +249,20 @@ def create_all_rtb_source_row_data(request, ad_group, ad_group_settings, show_rt
         daily_budget_edit_enabled = False
         daily_budget_edit_message = "This value cannot be edited because the campaign is on Autopilot."
 
-    cpc_edit_message = None
-    cpc_edit_enabled = True
+    bid_edit_enabled = True
+    bid_edit_message = None
     if ad_group_settings.autopilot_state != constants.AdGroupSettingsAutopilotState.INACTIVE:
-        cpc_edit_message = "This value cannot be edited because the ad group is on Autopilot."
-        cpc_edit_enabled = False
+        bid_edit_enabled = False
+        bid_edit_message = "This value cannot be edited because the ad group is on Autopilot."
     if campaign_settings.autopilot:
-        cpc_edit_message = "This value cannot be edited because the campaign is on Autopilot."
-        cpc_edit_enabled = False
+        bid_edit_enabled = False
+        bid_edit_message = "This value cannot be edited because the campaign is on Autopilot."
 
     if (
         ad_group_settings.autopilot_state == constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET
         or campaign_settings.autopilot
     ):
-        show_rtb_group_cpc = False
+        show_rtb_group_bid = False
 
     return {
         "breakdown_name": all_rtb.AllRTBSource.name,
@@ -270,11 +270,13 @@ def create_all_rtb_source_row_data(request, ad_group, ad_group_settings, show_rt
         "state": {"value": ad_group_settings.b1_sources_group_state},
         "status": status,
         "daily_budget": ad_group_settings.local_b1_sources_group_daily_budget,
-        "bid_cpc": ad_group_settings.local_b1_sources_group_cpc_cc if show_rtb_group_cpc else "",
+        "bid_cpc": ad_group_settings.local_b1_sources_group_cpc_cc if show_rtb_group_bid else "",
+        "bid_cpm": ad_group_settings.local_b1_sources_group_cpm if show_rtb_group_bid else "",
         "notifications": notifications,
         "editable_fields": {
             "state": {"message": state_edit_message, "enabled": state_edit_enabled},
             "daily_budget": {"message": daily_budget_edit_message, "enabled": daily_budget_edit_enabled},
-            "bid_cpc": {"message": cpc_edit_message, "enabled": cpc_edit_enabled and show_rtb_group_cpc},
+            "bid_cpc": {"message": bid_edit_message, "enabled": bid_edit_enabled and show_rtb_group_bid},
+            "bid_cpm": {"message": bid_edit_message, "enabled": bid_edit_enabled and show_rtb_group_bid},
         },
     }

@@ -245,7 +245,7 @@ class AdGroupSettings(
                 ("b1_sources_group_state", constants.AdGroupSourceSettingsState.ACTIVE),
                 ("b1_sources_group_daily_budget", Decimal("50.00")),
                 ("b1_sources_group_cpc_cc", Decimal("0.45")),
-                ("b1_sources_group_cpm", Decimal("0.60")),
+                ("b1_sources_group_cpm", Decimal("1.00")),
             ]
         )
 
@@ -266,6 +266,8 @@ class AdGroupSettings(
             "end_date": "End date",
             "cpc_cc": "Max CPC bid",
             "local_cpc_cc": "Max CPC bid",
+            "max_cpm": "Max CPM bid",
+            "local_max_cpm": "Max CPM bid",
             "daily_budget_cc": "Daily spend cap",
             "target_devices": "Device targeting",
             "target_placements": "Placement",
@@ -297,8 +299,6 @@ class AdGroupSettings(
             "autopilot_daily_budget": "Autopilot's Daily Spend Cap",
             "local_autopilot_daily_budget": "Autopilot's Daily Spend Cap",
             "dayparting": "Dayparting",
-            "max_cpm": "Max CPM",
-            "local_max_cpm": "Max CPM",
             "b1_sources_group_enabled": "Group all RTB sources",
             "b1_sources_group_daily_budget": "Daily budget for all RTB sources",
             "local_b1_sources_group_daily_budget": "Daily budget for all RTB sources",
@@ -326,6 +326,8 @@ class AdGroupSettings(
             value = "I'll stop it myself"
         elif prop_name == "local_cpc_cc" and value is not None:
             value = lc_helper.format_currency(Decimal(value), places=3, curr=currency_symbol)
+        elif prop_name == "local_max_cpm" and value is not None:
+            value = lc_helper.format_currency(Decimal(value), places=3, curr=currency_symbol)
         elif prop_name == "daily_budget_cc" and value is not None:
             value = lc_helper.format_currency(Decimal(value), places=2, curr=currency_symbol)
         elif prop_name == "target_devices":
@@ -352,8 +354,6 @@ class AdGroupSettings(
             value = ", ".join(value)
         elif prop_name == "dayparting":
             value = AdGroupSettings._get_dayparting_human_value(value)
-        elif prop_name == "local_max_cpm" and value is not None:
-            value = lc_helper.format_currency(Decimal(value), places=2, curr=currency_symbol)
         elif prop_name == "b1_sources_group_state":
             value = constants.AdGroupSourceSettingsState.get_text(value)
         elif prop_name == "local_b1_sources_group_daily_budget" and value is not None:

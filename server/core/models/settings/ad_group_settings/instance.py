@@ -2,6 +2,8 @@ from django.db import transaction
 
 from dash import constants
 from dash import retargeting_helper
+import dash.cpc_constraints
+
 from utils import email_helper
 from utils import k1_helper
 from utils import redirector_helper
@@ -12,6 +14,8 @@ import core.common
 import core.models
 import core.features.history
 import core.signals
+
+from . import helpers
 
 
 class AdGroupSettingsMixin(object):
@@ -75,7 +79,7 @@ class AdGroupSettingsMixin(object):
 
         for field, value in list(updates.items()):
             required_permission = not skip_permission_check and self._permissioned_fields.get(field)
-            if required_permission and not (user and user.has_perm(required_permission)):
+            if required_permission and not (user is None or user.has_perm(required_permission)):
                 continue
             if field in set(self._settings_fields):
                 new_updates[field] = value
@@ -101,11 +105,9 @@ class AdGroupSettingsMixin(object):
     def _handle_and_set_change_consequences(self, new_settings):
         self._handle_b1_sources_group_adjustments(new_settings)
         self._handle_bid_autopilot_initial_bids(new_settings)
-        self._handle_cpc_constraints(new_settings)
+        self._handle_bid_constraints(new_settings)
 
     def _handle_b1_sources_group_adjustments(self, new_settings):
-        import dash.views.helpers
-
         changes = self.get_setting_changes(new_settings)
 
         # Turning on RTB-as-one
@@ -126,9 +128,7 @@ class AdGroupSettingsMixin(object):
             if changes.get("max_cpm") and new_settings.b1_sources_group_enabled:
                 new_settings.b1_sources_group_cpm = min(changes.get("max_cpm"), new_settings.b1_sources_group_cpm)
 
-            adjusted_b1_sources_group_cpm = dash.views.helpers.adjust_max_bid(
-                new_settings.b1_sources_group_cpm, new_settings
-            )
+            adjusted_b1_sources_group_cpm = helpers.adjust_max_bid(new_settings.b1_sources_group_cpm, new_settings)
             if new_settings.b1_sources_group_cpm != adjusted_b1_sources_group_cpm:
                 new_settings.b1_sources_group_cpm = adjusted_b1_sources_group_cpm
         else:
@@ -136,15 +136,13 @@ class AdGroupSettingsMixin(object):
             if changes.get("cpc_cc") and new_settings.b1_sources_group_enabled:
                 new_settings.b1_sources_group_cpc_cc = min(changes.get("cpc_cc"), new_settings.b1_sources_group_cpc_cc)
 
-            adjusted_b1_sources_group_cpc_cc = dash.views.helpers.adjust_max_bid(
+            adjusted_b1_sources_group_cpc_cc = helpers.adjust_max_bid(
                 new_settings.b1_sources_group_cpc_cc, new_settings
             )
             if new_settings.b1_sources_group_cpc_cc != adjusted_b1_sources_group_cpc_cc:
                 new_settings.b1_sources_group_cpc_cc = adjusted_b1_sources_group_cpc_cc
 
     def _handle_bid_autopilot_initial_bids(self, new_settings):
-        import dash.views.helpers
-
         if not self._should_set_bid_autopilot_initial_bids(new_settings):
             return
 
@@ -165,10 +163,10 @@ class AdGroupSettingsMixin(object):
 
         if self.ad_group.bidding_type == constants.BiddingType.CPM:
             new_settings.b1_sources_group_cpm = avg_bid
-            dash.views.helpers.set_ad_group_sources_cpms(new_ad_group_sources_bids, self.ad_group, new_settings)
+            helpers.set_ad_group_sources_cpms(new_ad_group_sources_bids, self.ad_group, new_settings)
         else:
             new_settings.b1_sources_group_cpc_cc = avg_bid
-            dash.views.helpers.set_ad_group_sources_cpcs(new_ad_group_sources_bids, self.ad_group, new_settings)
+            helpers.set_ad_group_sources_cpcs(new_ad_group_sources_bids, self.ad_group, new_settings)
 
     def _should_set_bid_autopilot_initial_bids(self, new_settings):
         return (
@@ -177,24 +175,24 @@ class AdGroupSettingsMixin(object):
             and new_settings.b1_sources_group_enabled
         )
 
-    def _handle_cpc_constraints(self, new_settings):
-        import dash.views.helpers
-
+    def _handle_bid_constraints(self, new_settings):
+        ad_group_sources_bids = helpers.get_adjusted_ad_group_sources_bids(self.ad_group, new_settings)
         if self.ad_group.bidding_type == constants.BiddingType.CPM:
-            return
+            self._handle_cpm_constraints(new_settings, ad_group_sources_bids)
+        else:
+            self._handle_cpc_constraints(new_settings, ad_group_sources_bids)
 
-        ad_group_sources_cpcs = dash.views.helpers.get_adjusted_ad_group_sources_cpcs(self.ad_group, new_settings)
+    def _handle_cpm_constraints(self, new_settings, ad_group_sources_cpms):
+        helpers.set_ad_group_sources_cpms(ad_group_sources_cpms, self.ad_group, new_settings, skip_validation=True)
+
+    def _handle_cpc_constraints(self, new_settings, ad_group_sources_cpcs):
         if self.b1_sources_group_cpc_cc != new_settings.b1_sources_group_cpc_cc:
             bcm_modifiers = self.ad_group.campaign.get_bcm_modifiers()
             try:
-                dash.views.helpers.validate_ad_group_sources_cpc_constraints(
-                    bcm_modifiers, ad_group_sources_cpcs, self.ad_group
-                )
+                helpers.validate_ad_group_sources_cpc_constraints(bcm_modifiers, ad_group_sources_cpcs, self.ad_group)
             except dash.cpc_constraints.ValidationError as err:
                 raise exc.ValidationError(errors={"b1_sources_group_cpc_cc": list(set(err))})
-        dash.views.helpers.set_ad_group_sources_cpcs(
-            ad_group_sources_cpcs, self.ad_group, new_settings, skip_validation=True
-        )
+        helpers.set_ad_group_sources_cpcs(ad_group_sources_cpcs, self.ad_group, new_settings, skip_validation=True)
 
     def _should_recalculate_budget_autopilot(self, changes):
         ap_ad_group_budget_fields = ["autopilot_daily_budget", "autopilot_state", "b1_sources_group_state"]

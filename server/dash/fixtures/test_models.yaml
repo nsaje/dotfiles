@@ -404,6 +404,7 @@
         b1_sources_group_state: 1
         local_b1_sources_group_daily_budget: '500.0000'
         local_b1_sources_group_cpc_cc: '0.1'
+        local_b1_sources_group_cpm: '1.1'
         whitelist_publisher_groups: [1]
         blacklist_publisher_groups: [2]
         autopilot_state: 1

@@ -40,6 +40,7 @@ _FIELD_MAPPING = {
     "source_id": ("Media Source Id", "Media Source ID", "Source ID"),
     "source_slug": ("Media Source Slug", "Source Slug"),
     "bid_cpc": ("Bid CPC",),
+    "bid_cpm": ("Bid CPM",),
     "daily_budget": ("Daily Spend Cap",),
     "supply_dash_url": ("Link",),
     "status": ("Status",),
@@ -161,6 +162,7 @@ _FIELD_MAPPING_PUBLISHERS_OVERRIDES = {"domain_link": ("Link",)}
 
 _COST_FIELDS = (
     "bid_cpc",
+    "bid_cpm",
     "daily_budget",
     "agency_cost",
     "agency_cost_refund",

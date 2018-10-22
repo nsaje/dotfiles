@@ -890,7 +890,7 @@ class AdGroupSourceSettings(api_common.BaseApiView):
                     "cpm": [
                         "Minimum CPM on {} is {}.".format(
                             err.data.get("source_name"),
-                            core.multicurrency.format_value_in_currency(
+                            core.features.multicurrency.format_value_in_currency(
                                 err.data.get("value"), 2, decimal.ROUND_CEILING, ad_group_source.settings.get_currency()
                             ),
                         )
@@ -904,7 +904,7 @@ class AdGroupSourceSettings(api_common.BaseApiView):
                     "cpm": [
                         "Maximum CPM on {} is {}.".format(
                             err.data.get("source_name"),
-                            core.multicurrency.format_value_in_currency(
+                            core.features.multicurrency.format_value_in_currency(
                                 err.data.get("value"), 2, decimal.ROUND_FLOOR, ad_group_source.settings.get_currency()
                             ),
                         )

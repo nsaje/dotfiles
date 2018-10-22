@@ -215,6 +215,10 @@ AD_GROUP_SOURCE_1 = {
     "current_bid_cpc": Decimal("0.5010"),
     "local_bid_cpc": Decimal("0.5010"),
     "local_current_bid_cpc": Decimal("0.5010"),
+    "bid_cpm": Decimal("0.4010"),
+    "current_bid_cpm": Decimal("0.4010"),
+    "local_bid_cpm": Decimal("0.4010"),
+    "local_current_bid_cpm": Decimal("0.4010"),
     "archived": False,
     "maintenance": False,
     "supply_dash_url": None,
@@ -225,6 +229,7 @@ AD_GROUP_SOURCE_1 = {
     "editable_fields": {
         "state": {"message": "This source must be managed manually.", "enabled": False},
         "bid_cpc": {"message": "This value cannot be edited because the ad group is on Autopilot.", "enabled": False},
+        "bid_cpm": {"message": "This value cannot be edited because the ad group is on Autopilot.", "enabled": False},
         "daily_budget": {
             "message": "This value cannot be edited because the ad group is on Autopilot.",
             "enabled": False,
@@ -246,6 +251,10 @@ AD_GROUP_SOURCE_2 = {
     "current_bid_cpc": Decimal("0.5020"),
     "local_bid_cpc": Decimal("0.5020"),
     "local_current_bid_cpc": Decimal("0.5020"),
+    "bid_cpm": Decimal("0.4020"),
+    "current_bid_cpm": Decimal("0.4020"),
+    "local_bid_cpm": Decimal("0.4020"),
+    "local_current_bid_cpm": Decimal("0.4020"),
     "archived": False,
     "maintenance": False,
     "supply_dash_url": None,
@@ -256,6 +265,7 @@ AD_GROUP_SOURCE_2 = {
     "editable_fields": {
         "state": {"message": None, "enabled": True},
         "bid_cpc": {"message": "This value cannot be edited because the ad group is on Autopilot.", "enabled": False},
+        "bid_cpm": {"message": "This value cannot be edited because the ad group is on Autopilot.", "enabled": False},
         "daily_budget": {
             "message": "This value cannot be edited because the ad group is on Autopilot.",
             "enabled": False,

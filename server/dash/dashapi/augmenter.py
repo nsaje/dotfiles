@@ -296,6 +296,8 @@ def augment_source(row, loader, is_base_level=False):
                 "local_daily_budget",
                 "min_bid_cpc",
                 "max_bid_cpc",
+                "min_bid_cpm",
+                "max_bid_cpm",
                 "state",
                 "supply_dash_url",
                 "supply_dash_disabled_message",
@@ -313,6 +315,22 @@ def augment_source(row, loader, is_base_level=False):
                     "local_bid_cpc": settings["local_bid_cpc"],
                     "current_bid_cpc": settings["bid_cpc"],
                     "local_current_bid_cpc": settings["local_bid_cpc"],
+                }
+            )
+
+        if "bid_cpm" in settings:
+            row.update(
+                {
+                    "bid_cpm": settings["bid_cpm"],
+                    "local_bid_cpm": settings["local_bid_cpm"],
+                    "current_bid_cpm": settings["bid_cpm"],
+                    "local_current_bid_cpm": settings["local_bid_cpm"],
+                }
+            )
+
+        if "bid_cpc" in settings or "bid_cpm" in settings:
+            row.update(
+                {
                     "current_daily_budget": settings["daily_budget"],
                     "local_current_daily_budget": settings["local_daily_budget"],
                 }
@@ -374,14 +392,14 @@ def augment_publisher(row, loader, is_base_level=False):
 
     if loader.has_bid_modifiers:
         modifier_map = loader.modifier_map
-        bid_cpc_map = loader.bid_cpc_map
+        bid_value_map = loader.bid_value_map
         modifier = modifier_map.get((source_id, domain))
-        source_bid_cpc = bid_cpc_map.get(source_id)
+        source_bid_value = bid_value_map.get(source_id)
 
-        if modifier is not None:
-            row.update({"bid_modifier": {"modifier": modifier, "source_bid_cpc": source_bid_cpc}})
+        if modifier is not None:  # TODO: CPM Buying: rename
+            row.update({"bid_modifier": {"modifier": modifier, "source_bid_value": source_bid_value}})
         else:
-            row.update({"bid_modifier": {"modifier": 1.0, "source_bid_cpc": source_bid_cpc}})
+            row.update({"bid_modifier": {"modifier": 1.0, "source_bid_value": source_bid_value}})
 
 
 def augment_publisher_for_report(row, loader, is_base_level=False):

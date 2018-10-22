@@ -15,7 +15,7 @@ class PublisherAugmenterTest(TestCase):
         magic_mixer.blend(PublisherBidModifier, ad_group=ad_group, source=source, publisher="pub1.com", modifier=0.5)
         # settings = magic_mixer.blend(models.AdGroupSourceSettings, id=1, cpc_cc = 1.5)
         ad_group_source = magic_mixer.blend(models.AdGroupSource, source=source, ad_group=ad_group)
-        ad_group_source.settings.update(None, cpc_cc=Decimal("1.5"))
+        ad_group_source.settings.update(None, cpc_cc=Decimal("1.5"), cpm=Decimal("2.5"))
         user = magic_mixer.blend_user()
 
         self.bid_modifier_loader = loaders.PublisherBidModifierLoader(
@@ -35,7 +35,14 @@ class PublisherAugmenterTest(TestCase):
         self.augmenter([row], self.bid_modifier_loader)
         self.assertDictEqual(
             row["bid_modifier"],
-            {"modifier": 0.5, "source_bid_cpc": {"bid_cpc_value": Decimal("1.5000"), "currency_symbol": "$"}},
+            {
+                "modifier": 0.5,
+                "source_bid_value": {
+                    "bid_cpc_value": Decimal("1.5000"),
+                    "bid_cpm_value": Decimal("2.5000"),
+                    "currency_symbol": "$",
+                },
+            },
         )
 
     def test_report_augmenter_bid_modifiers(self):
