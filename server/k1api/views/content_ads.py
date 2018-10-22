@@ -9,8 +9,7 @@ import dash.models
 from dash import constants
 from utils import dates_helper
 from utils import db_for_reads
-
-# from utils import sspd_client
+from utils import sspd_client
 from .base import K1APIView
 
 logger = logging.getLogger(__name__)
@@ -142,10 +141,10 @@ class ContentAdSourcesView(K1APIView):
 
         if include_state:
             amplify_review_statuses = self._get_amplify_review_statuses(content_ad_sources)
-            # if content_ad_sources:
-            #     sspd_statuses = sspd_client.get_approval_status(
-            #         [content_ad_source["id"] for content_ad_source in content_ad_sources]
-            #     )
+            if content_ad_sources:
+                sspd_statuses = sspd_client.get_approval_status(
+                    [content_ad_source["id"] for content_ad_source in content_ad_sources]
+                )
 
         response = []
         for content_ad_source in content_ad_sources:
@@ -192,15 +191,14 @@ class ContentAdSourcesView(K1APIView):
         sspd_status,
     ):
         if (
-            (
-                content_ad_amplify_review
-                and ad_group_amplify_review
-                and source_submission_policy == dash.constants.SourceSubmissionPolicy.AUTOMATIC_WITH_AMPLIFY_APPROVAL
-                and amplify_review_status != dash.constants.ContentAdSubmissionStatus.APPROVED
-            )
-            # or sspd_status == dash.constants.ContentAdSubmissionStatus.REJECTED
-            # or not sspd_status
-        ):
+            content_ad_amplify_review
+            and ad_group_amplify_review
+            and source_submission_policy == dash.constants.SourceSubmissionPolicy.AUTOMATIC_WITH_AMPLIFY_APPROVAL
+            and amplify_review_status != dash.constants.ContentAdSubmissionStatus.APPROVED
+        ) or sspd_status == dash.constants.ContentAdSubmissionStatus.REJECTED:
+            return dash.constants.ContentAdSourceState.INACTIVE
+        elif not sspd_status:
+            influx.incr("content_ads_source.missing_sspd_status", 1)
             return dash.constants.ContentAdSourceState.INACTIVE
         else:
             return content_ad_source_state
