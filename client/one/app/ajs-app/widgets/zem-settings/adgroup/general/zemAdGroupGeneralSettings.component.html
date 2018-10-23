@@ -54,7 +54,42 @@
             </div>
         </div>
 
-        <div class="form__group" ng-if="$ctrl.hasPermission('zemauth.can_set_ad_group_max_cpc')"
+        <div class="form__group" ng-if="$ctrl.hasPermission('zemauth.fea_can_use_cpm_buying')">
+            <label class="form__label" is-internal="zemauth.fea_can_use_cpm_buying">
+                Bidding type:
+            </label>
+            <div class="form__radio">
+                <label>
+                    <input
+                        class="input-radio"
+                        type="radio"
+                        ng-model="$ctrl.entity.settings.biddingType"
+                        ng-change="$ctrl.setBidSectionVisibility($ctrl.biddingType.CPC)"
+                        ng-value="$ctrl.biddingType.CPC">
+                    <span class="radio-text">
+                        CPC <span class="text-gray">- Bidding is optimizing for the number of clicks that your ad receives.</span>
+                    </span>
+                </label>
+            </div>
+            <div class="form__radio">
+                <label>
+                    <input
+                        class="input-radio"
+                        type="radio"
+                        ng-model="$ctrl.entity.settings.biddingType"
+                        ng-change="$ctrl.setBidSectionVisibility($ctrl.biddingType.CPM)"
+                        ng-value="$ctrl.biddingType.CPM">
+                    <span class="radio-text">
+                        CPM <span class="text-gray">- Bidding is focused on the number of impressions of your ad.</span>
+                    </span>
+                </label>
+            </div>
+            <div class="message message--error" ng-repeat="error in $ctrl.errors.biddingType">
+                {{ error }}
+            </div>
+        </div>
+
+        <div class="form__group" ng-if="$ctrl.isBidCpcSectionVisible"
              ng-class="{'form--error': !!$ctrl.errors.cpc}">
             <label class="form__label" for="cpc-input" is-internal="zemauth.can_set_ad_group_max_cpc">
                 Maximum Bid CPC:
@@ -69,22 +104,7 @@
                  for="cpc-input">{{ error }}</div>
         </div>
 
-        <div class="form__group" ng-if="$ctrl.hasPermission('zemauth.can_set_click_capping')">
-            <label class="form__label" for="click-capping-input" is-internal="zemauth.can_set_click_capping">
-                Daily click cap:
-                <zem-help-popover content="Limit number of clicks you want to reach daily within the ad group. Zemanta will stop spending for the rest of the day once it hits the maximum number of clicks you set." placement="top"></zem-help-popover>
-            </label>
-            <input id="click-capping-input"
-                    class="input-text input-text--narrow"
-                    ng-model="$ctrl.entity.settings.clickCappingDailyAdGroupMaxClicks"
-                    type="text"
-                    zem-numeric-validator>
-            <div class="message message--info message--with-icon">
-                {{ $ctrl.MESSAGES.INFO_CLICK_CAPPING }}
-            </div>
-        </div>
-
-        <div class="form__group" ng-if="$ctrl.hasPermission('zemauth.fea_can_use_cpm_buying')"
+        <div class="form__group" ng-if="$ctrl.isBidCpmSectionVisible"
              ng-class="{'form--error': !!$ctrl.errors.maxCpm}">
             <label class="form__label" for="cpm-input" is-internal="zemauth.fea_can_use_cpm_buying">
                 Maximum Bid CPM:
@@ -105,6 +125,21 @@
             </div>
             <div class="message message--error" ng-if="$ctrl.entity.warnings.maxCpm === undefined"
                  ng-repeat="error in $ctrl.errors.maxCpm" for="cpm-input">{{ error }}</div>
+        </div>
+
+        <div class="form__group" ng-if="$ctrl.hasPermission('zemauth.can_set_click_capping')">
+            <label class="form__label" for="click-capping-input" is-internal="zemauth.can_set_click_capping">
+                Daily click cap:
+                <zem-help-popover content="Limit number of clicks you want to reach daily within the ad group. Zemanta will stop spending for the rest of the day once it hits the maximum number of clicks you set." placement="top"></zem-help-popover>
+            </label>
+            <input id="click-capping-input"
+                    class="input-text input-text--narrow"
+                    ng-model="$ctrl.entity.settings.clickCappingDailyAdGroupMaxClicks"
+                    type="text"
+                    zem-numeric-validator>
+            <div class="message message--info message--with-icon">
+                {{ $ctrl.MESSAGES.INFO_CLICK_CAPPING }}
+            </div>
         </div>
 
         <div class="form__group" ng-if="$ctrl.hasPermission('zemauth.can_set_delivery_type')">

@@ -37,6 +37,11 @@ export enum Day {
     Sunday = 'sunday',
 }
 
+export enum BiddingType {
+    CPC = 1,
+    CPM = 2,
+}
+
 export const APP_CONSTANTS = {
     /**
      * Max. selected media sources in on sources tabs.
@@ -70,6 +75,7 @@ export const APP_CONSTANTS = {
     },
     campaignTypes: CAMPAIGN_TYPE,
     currency: CURRENCY,
+    biddingType: BiddingType,
     infoboxStatus: {
         ACTIVE: 'active',
         ACTIVE_PRICE_DISCOVERY: 'active-price-discovery',
