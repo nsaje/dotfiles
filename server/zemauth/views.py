@@ -3,7 +3,7 @@ import urllib.request, urllib.parse, urllib.error
 from django.conf import settings
 from django.contrib import auth
 from django.contrib.auth import views as auth_views, tokens as auth_tokens
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.shortcuts import redirect
 from django.http import HttpResponseRedirect
 from django.utils.http import urlsafe_base64_decode
@@ -65,7 +65,7 @@ def login(request, *args, **kwargs):
     if settings.GOOGLE_OAUTH_ENABLED:
         kwargs["extra_context"]["gauth_url"] = gauth.get_uri(request)
 
-    response = auth_views.login(request, *args, **kwargs)
+    response = auth_views.LoginView.as_view(**kwargs)(request, *args, **kwargs)
     if request.method == "POST":
         devices.handle_user_device(request, response)
 

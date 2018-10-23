@@ -1,3 +1,5 @@
+import decimal
+
 import rest_framework.serializers
 
 import restapi.serializers.fields
@@ -113,6 +115,7 @@ class AdGroupAutopilotSerializer(restapi.serializers.base.RESTAPIBaseSerializer)
         output_precision=2,
         allow_null=True,
         required=False,
+        rounding=decimal.ROUND_HALF_DOWN,
     )
 
 
@@ -138,20 +141,38 @@ class AdGroupSerializer(
     end_date = restapi.serializers.fields.BlankDateField(required=False, allow_null=True)
     tracking_code = restapi.serializers.fields.NullPlainCharField(required=False, allow_blank=True)
     max_cpc = restapi.serializers.fields.TwoWayBlankDecimalField(
-        source="local_cpc_cc", max_digits=10, decimal_places=4, output_precision=3, allow_null=True, required=False
+        source="local_cpc_cc",
+        max_digits=10,
+        decimal_places=4,
+        output_precision=3,
+        allow_null=True,
+        required=False,
+        rounding=decimal.ROUND_HALF_DOWN,
     )
     max_cpm = restapi.serializers.fields.TwoWayBlankDecimalField(
-        source="local_max_cpm", max_digits=10, decimal_places=4, output_precision=3, allow_null=True, required=False
+        source="local_max_cpm",
+        max_digits=10,
+        decimal_places=4,
+        output_precision=3,
+        allow_null=True,
+        required=False,
+        rounding=decimal.ROUND_HALF_DOWN,
     )
     daily_budget = restapi.serializers.fields.TwoWayBlankDecimalField(
-        source="daily_budget_cc", max_digits=10, decimal_places=4, output_precision=2, allow_null=True, required=False
+        source="daily_budget_cc",
+        max_digits=10,
+        decimal_places=4,
+        output_precision=2,
+        allow_null=True,
+        required=False,
+        rounding=decimal.ROUND_HALF_DOWN,
     )
     delivery_type = restapi.serializers.fields.DashConstantField(constants.AdGroupDeliveryType, required=False)
     click_capping_daily_ad_group_max_clicks = restapi.serializers.fields.BlankIntegerField(
         allow_null=True, required=False
     )
     click_capping_daily_click_budget = restapi.serializers.fields.BlankDecimalField(
-        max_digits=10, decimal_places=4, allow_null=True, required=False
+        max_digits=10, decimal_places=4, allow_null=True, required=False, rounding=decimal.ROUND_HALF_DOWN
     )
     dayparting = AdGroupDaypartingSerializer(required=False, allow_null=True)
     targeting = AdGroupTargetingSerializer(source="*", required=False)

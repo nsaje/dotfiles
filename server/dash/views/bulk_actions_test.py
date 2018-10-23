@@ -1,7 +1,7 @@
 import json
 from mock import patch, ANY
 
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.http.request import HttpRequest
 from django.test import TestCase, Client, RequestFactory
 

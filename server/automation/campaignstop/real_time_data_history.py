@@ -4,8 +4,8 @@ import core.models
 
 
 class RealTimeDataHistory(models.Model):
-    ad_group = models.ForeignKey(core.models.AdGroup)
-    source = models.ForeignKey(core.models.Source)
+    ad_group = models.ForeignKey(core.models.AdGroup, on_delete=models.CASCADE)
+    source = models.ForeignKey(core.models.Source, on_delete=models.CASCADE)
     date = models.DateField(db_index=True)
     etfm_spend = models.DecimalField(max_digits=14, decimal_places=4, default=0)
 
@@ -18,7 +18,7 @@ class RealTimeDataHistory(models.Model):
 
 
 class RealTimeCampaignDataHistory(models.Model):
-    campaign = models.ForeignKey(core.models.Campaign)
+    campaign = models.ForeignKey(core.models.Campaign, on_delete=models.CASCADE)
     date = models.DateField(db_index=True)
     etfm_spend = models.DecimalField(max_digits=14, decimal_places=4, default=0)
 

@@ -7,7 +7,7 @@ from dash import models
 from dash import constants
 
 from django.test import TestCase
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 
 from utils import test_helper
 

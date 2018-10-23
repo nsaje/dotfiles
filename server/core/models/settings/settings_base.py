@@ -9,6 +9,7 @@ from django.db import transaction
 import core.features.history
 import core.signals
 from dash import constants
+from utils.settings_fields import resolve_related_model_field_name
 
 from .update_object import UpdateObject
 
@@ -27,24 +28,6 @@ class SettingsBase(models.Model, core.features.history.HistoryMixin):
 
     def delete(self, *args, **kwargs):
         raise AssertionError("Deleting settings object not allowed.")
-
-    def __getattr__(self, key):
-        model_to_field = {
-            "adgroupsource": "ad_group_source",
-            "adgroup": "ad_group",
-            "campaign": "campaign",
-            "account": "account",
-            "agency": "agency",
-        }
-        model_name = self._meta.get_field("latest_for_entity").related_model._meta.model_name
-        field_name = model_to_field[model_name]
-        # latest_for_entity is auto populated when entity is loaded with select_related settings
-        # this ensures settings.entity can use same optimization
-        if key == self._meta.get_field(field_name).get_cache_name():
-            v = getattr(self, self._meta.get_field("latest_for_entity").get_cache_name())
-            setattr(self, key, v)
-            return v
-        raise AttributeError("%r object has no attribute %r" % (self.__class__, key))
 
     def _create_copy(self):
         pk = self.pk
@@ -98,6 +81,7 @@ class SettingsBase(models.Model, core.features.history.HistoryMixin):
         for k, v in changes.items():
             setattr(self, k, v)
         super(SettingsBase, self).save(update_fields=update_fields)
+        self._update_source_settings_reference()
         core.signals.settings_change.send_robust(sender=self.__class__, request=request, instance=self, changes=kwargs)
 
     def copy_settings(self):
@@ -141,3 +125,15 @@ class SettingsBase(models.Model, core.features.history.HistoryMixin):
             return True
         except FieldDoesNotExist:
             return False
+
+    def _update_source_settings_reference(self):
+        """
+        When saving a SettingBase instance the source field settings_id reference
+        has to be updated in order to avoid deleting settings from field cache.
+        """
+        field_name = resolve_related_model_field_name(self)
+        if field_name:
+            source_field = getattr(self, field_name)
+            if self.pk is not None and source_field.settings_id is None:
+                # SettingsBase has been saved, but settings_id has not been updated yet.
+                source_field.settings_id = self.pk

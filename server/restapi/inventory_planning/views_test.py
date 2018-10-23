@@ -1,6 +1,6 @@
 import mock
 
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 
 import restapi.common.views_base_test
 import dash.features.inventory_planning

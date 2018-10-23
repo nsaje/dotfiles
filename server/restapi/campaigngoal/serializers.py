@@ -1,3 +1,5 @@
+import decimal
+
 import rest_framework.serializers
 
 import restapi.serializers.fields
@@ -60,7 +62,7 @@ class CampaignGoalSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
     id = restapi.serializers.fields.OutIntIdField(read_only=True)
     type = restapi.serializers.fields.DashConstantField(constants.CampaignGoalKPI)
     primary = rest_framework.serializers.BooleanField()
-    value = rest_framework.serializers.DecimalField(max_digits=20, decimal_places=5)
+    value = rest_framework.serializers.DecimalField(max_digits=20, decimal_places=5, rounding=decimal.ROUND_HALF_DOWN)
     conversion_goal = ConversionGoalSerializer(source="*", allow_null=True, required=False)
 
     def get_value(self, goal):

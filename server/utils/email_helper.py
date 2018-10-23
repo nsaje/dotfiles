@@ -5,7 +5,7 @@ from decimal import Decimal
 
 from django.db.models import Q
 from django.conf import settings
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.contrib.auth.tokens import default_token_generator
 from django.utils.http import urlsafe_base64_encode
 from django.core.mail.message import EmailMultiAlternatives
@@ -395,7 +395,7 @@ def send_email_to_new_user(user, request, agency=None):
 
 
 def _generate_password_reset_url(user, request):
-    encoded_id = urlsafe_base64_encode(str(user.pk).encode("utf-8"))
+    encoded_id = urlsafe_base64_encode(str(user.pk).encode("utf-8")).decode("utf-8")
     token = default_token_generator.make_token(user)
 
     url = request.build_absolute_uri(reverse("set_password", args=(encoded_id, token)))

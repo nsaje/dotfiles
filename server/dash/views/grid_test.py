@@ -2,7 +2,7 @@ from decimal import Decimal
 import json
 from mock import patch
 
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.test import TestCase
 
 from core.models import all_rtb

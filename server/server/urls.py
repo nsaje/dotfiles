@@ -82,7 +82,7 @@ urlpatterns += [
         name="set_password",
     ),
     url(r"^admin$", AdminRedirectView.as_view(url="/admin/")),
-    url(r"^admin/", include(admin.site.urls)),
+    url(r"^admin/", admin.site.urls),
     url(r"^oauth2callback", zemauth.views.google_callback, name="zemauth.views.google_callback"),
     url(r"^supply_dash/", login_required(dash.views.views.supply_dash_redirect), name="supply_dash_redirect"),
     url(r"^user/", zemauth.views.UserView.as_view(), name="user_details"),
@@ -131,7 +131,7 @@ oauth2_urlpatterns += [
         name="authorized-token-delete",
     ),
 ]
-urlpatterns += [url(r"^o/", include(oauth2_urlpatterns, namespace="oauth2_provider"))]
+urlpatterns += [url(r"^o/", include((oauth2_urlpatterns, "oauth2_provider"), namespace="oauth2_provider"))]
 
 # K1 API
 urlpatterns += [url(r"^k1api/", include("k1api.urls"))]
@@ -218,12 +218,12 @@ urlpatterns += [
         name="upload_cancel",
     ),
     url(
-        r"^api/contentads/upload" "/(?P<batch_id>\d+)/candidate/(?:(?P<candidate_id>\d+)/)?$",
+        r"^api/contentads/upload" r"/(?P<batch_id>\d+)/candidate/(?:(?P<candidate_id>\d+)/)?$",
         login_required(dash.features.contentupload.views.Candidate.as_view()),
         name="upload_candidate",
     ),
     url(
-        r"^api/contentads/upload" "/(?P<batch_id>\d+)/candidate_update/(?:(?P<candidate_id>\d+)/)?$",
+        r"^api/contentads/upload" r"/(?P<batch_id>\d+)/candidate_update/(?:(?P<candidate_id>\d+)/)?$",
         login_required(dash.features.contentupload.views.CandidateUpdate.as_view()),
         name="upload_candidate_update",
     ),

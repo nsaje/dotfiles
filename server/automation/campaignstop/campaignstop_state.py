@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 
 
 class CampaignStopState(models.Model):
-    campaign = models.OneToOneField(core.models.Campaign)
+    campaign = models.OneToOneField(core.models.Campaign, on_delete=models.CASCADE)
     almost_depleted = models.BooleanField(default=False)
     state = models.IntegerField(
         choices=constants.CampaignStopState.get_choices(), default=constants.CampaignStopState.STOPPED

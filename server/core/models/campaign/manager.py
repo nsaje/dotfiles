@@ -54,8 +54,6 @@ class CampaignManager(core.common.BaseManager):
 
         campaign.settings = core.models.settings.CampaignSettings(campaign=campaign)
         campaign.settings.update(request, **settings_updates)
-
-        campaign.settings_id = campaign.settings.id
         campaign.save(request)
 
         if send_mail:

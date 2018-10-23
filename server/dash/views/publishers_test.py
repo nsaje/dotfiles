@@ -4,7 +4,7 @@ from mock import patch
 from dash import constants
 from dash import models
 
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.http.request import HttpRequest
 from django.test import Client, TestCase, override_settings
 

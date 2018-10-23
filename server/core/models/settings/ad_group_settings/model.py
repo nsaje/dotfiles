@@ -21,7 +21,7 @@ import core.models
 import core.features.history
 import core.features.multicurrency
 import core.features.publisher_groups
-
+from utils.json_helper import JSONFIELD_DUMP_KWARGS
 
 from ..settings_base import SettingsBase
 from .. import multicurrency_mixin
@@ -141,26 +141,28 @@ class AdGroupSettings(
         max_digits=10, decimal_places=4, blank=True, null=True, verbose_name="Daily spend cap"
     )
 
-    target_devices = jsonfield.JSONField(blank=True, default=[])
+    target_devices = jsonfield.JSONField(blank=True, default=[], dump_kwargs=JSONFIELD_DUMP_KWARGS)
     target_placements = ArrayField(models.CharField(max_length=24), null=True, blank=True, verbose_name="Placement")
     target_os = JSONField(null=True, blank=True, verbose_name="Operating System")
     target_browsers = JSONField(null=True, blank=True, verbose_name="Browsers")
 
-    target_regions = jsonfield.JSONField(blank=True, default=[])
-    exclusion_target_regions = jsonfield.JSONField(blank=True, null=False, default=[])
-    retargeting_ad_groups = jsonfield.JSONField(blank=True, default=[])
-    exclusion_retargeting_ad_groups = jsonfield.JSONField(blank=True, default=[])
-    bluekai_targeting = jsonfield.JSONField(blank=True, default=[])
+    target_regions = jsonfield.JSONField(blank=True, default=[], dump_kwargs=JSONFIELD_DUMP_KWARGS)
+    exclusion_target_regions = jsonfield.JSONField(
+        blank=True, null=False, default=[], dump_kwargs=JSONFIELD_DUMP_KWARGS
+    )
+    retargeting_ad_groups = jsonfield.JSONField(blank=True, default=[], dump_kwargs=JSONFIELD_DUMP_KWARGS)
+    exclusion_retargeting_ad_groups = jsonfield.JSONField(blank=True, default=[], dump_kwargs=JSONFIELD_DUMP_KWARGS)
+    bluekai_targeting = jsonfield.JSONField(blank=True, default=[], dump_kwargs=JSONFIELD_DUMP_KWARGS)
 
-    interest_targeting = jsonfield.JSONField(blank=True, default=[])
-    exclusion_interest_targeting = jsonfield.JSONField(blank=True, default=[])
-    audience_targeting = jsonfield.JSONField(blank=True, default=[])
-    exclusion_audience_targeting = jsonfield.JSONField(blank=True, default=[])
+    interest_targeting = jsonfield.JSONField(blank=True, default=[], dump_kwargs=JSONFIELD_DUMP_KWARGS)
+    exclusion_interest_targeting = jsonfield.JSONField(blank=True, default=[], dump_kwargs=JSONFIELD_DUMP_KWARGS)
+    audience_targeting = jsonfield.JSONField(blank=True, default=[], dump_kwargs=JSONFIELD_DUMP_KWARGS)
+    exclusion_audience_targeting = jsonfield.JSONField(blank=True, default=[], dump_kwargs=JSONFIELD_DUMP_KWARGS)
 
     whitelist_publisher_groups = ArrayField(models.PositiveIntegerField(), blank=True, default=list)
     blacklist_publisher_groups = ArrayField(models.PositiveIntegerField(), blank=True, default=list)
 
-    redirect_pixel_urls = jsonfield.JSONField(blank=True, default=[])
+    redirect_pixel_urls = jsonfield.JSONField(blank=True, default=[], dump_kwargs=JSONFIELD_DUMP_KWARGS)
     redirect_javascript = models.TextField(blank=True)
     notes = models.TextField(blank=True)
     tracking_code = models.TextField(blank=True)
@@ -212,7 +214,7 @@ class AdGroupSettings(
         choices=constants.AdGroupSourceSettingsState.get_choices(),
     )
 
-    dayparting = jsonfield.JSONField(blank=True, default=dict)
+    dayparting = jsonfield.JSONField(blank=True, default=dict, dump_kwargs=JSONFIELD_DUMP_KWARGS)
 
     max_cpm = models.DecimalField(max_digits=10, decimal_places=4, blank=True, null=True, verbose_name="Maximum CPM")
     local_max_cpm = models.DecimalField(

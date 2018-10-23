@@ -5,6 +5,11 @@ import json
 import pytz
 import uuid
 
+from django.core.serializers.json import DjangoJSONEncoder
+
+
+JSONFIELD_DUMP_KWARGS = {"cls": DjangoJSONEncoder, "separators": (",", ":")}
+
 
 class JSONEncoder(json.JSONEncoder):
     def __init__(self, convert_datetimes_tz=None, **kwargs):

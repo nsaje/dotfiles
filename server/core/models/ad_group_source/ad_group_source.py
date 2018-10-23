@@ -3,7 +3,7 @@ import jsonfield
 import logging
 
 from django.conf import settings
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.db import models, transaction
 
 from dash import constants, retargeting_helper
@@ -17,6 +17,8 @@ import utils.email_helper
 import utils.exc
 import utils.k1_helper
 import utils.numbers
+from utils.settings_fields import CachedOneToOneField
+from utils.json_helper import JSONFIELD_DUMP_KWARGS
 
 from . import exceptions
 
@@ -209,7 +211,7 @@ class AdGroupSource(models.Model):
     ad_group = models.ForeignKey("AdGroup", on_delete=models.PROTECT)
 
     source_credentials = models.ForeignKey("SourceCredentials", null=True, on_delete=models.PROTECT)
-    source_campaign_key = jsonfield.JSONField(blank=True, default={})
+    source_campaign_key = jsonfield.JSONField(blank=True, default={}, dump_kwargs=JSONFIELD_DUMP_KWARGS)
 
     last_successful_sync_dt = models.DateTimeField(blank=True, null=True)
     last_successful_reports_sync_dt = models.DateTimeField(blank=True, null=True)
@@ -217,9 +219,9 @@ class AdGroupSource(models.Model):
     can_manage_content_ads = models.BooleanField(null=False, blank=False, default=False)
 
     source_content_ad_id = models.CharField(max_length=100, null=True, blank=True)
-    blockers = jsonfield.JSONField(blank=True, default={})
+    blockers = jsonfield.JSONField(blank=True, default={}, dump_kwargs=JSONFIELD_DUMP_KWARGS)
 
-    settings = models.OneToOneField(
+    settings = CachedOneToOneField(
         "AdGroupSourceSettings", null=True, blank=True, on_delete=models.PROTECT, related_name="latest_for_entity"
     )
     ad_review_only = models.NullBooleanField(default=None)
