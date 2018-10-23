@@ -45,6 +45,7 @@ class BidChangeComment(ConstantBase):
         BID_CONSTRAINT_APPLIED: "bid {bid} had to be adjusted to meet applied {bid} constraints",
     }
 
+    @classmethod
     def get_text(self, constant, bidding_type=dash.constants.BiddingType.CPC):
         text = super().get_text(constant)
         return text.format(bid="CPM" if bidding_type == dash.constants.BiddingType.CPM else "CPC")
