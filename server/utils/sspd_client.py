@@ -1,4 +1,5 @@
 import datetime
+import json
 import logging
 import copy
 
@@ -23,13 +24,18 @@ class SSPDApiException(Exception):
     pass
 
 
-def get_approval_status(content_ad_source_ids):
+def get_approval_status(
+    ad_group_ids=None, content_ad_ids=None, source_types=None, slugs=None, content_ad_source_ids=None
+):
     url = settings.SSPD_BASE_URL + APPROVAL_STATUS_URL
-    if not content_ad_source_ids:
-        raise SSPDApiException("Request not allowed")
-    approval_statuses = _paginate_request(
-        "get", url, {"contentAdSourceIds": content_ad_source_ids}, paginate_key="contentAdSourceIds"
-    )
+    approval_status_dict = {
+        "ad_group_ids": ad_group_ids,
+        "content_ad_ids": content_ad_ids,
+        "source_types": source_types,
+        "slugs": slugs,
+        "content_ad_source_ids": content_ad_source_ids,
+    }
+    approval_statuses = _make_request("post", url, data=json.dumps(approval_status_dict))
     return _map_approval_statuses(approval_statuses)
 
 
@@ -77,6 +83,8 @@ def _make_request(method, url, data=None, params=None, headers=None):
     if not headers:
         headers = {}
     _augment_with_auth_headers(headers)
+    if method == "post":
+        headers.update({"Content-type": "application/json"})
     response = requests.request(
         method, url, data=data if data else {}, params=params if params else {}, headers=headers
     )

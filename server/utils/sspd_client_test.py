@@ -23,15 +23,24 @@ class SSPDClientTestCase(TestCase):
         response._content = b'{"1234": "APPROVED", "9876": "BLOCKED", "5555": "PENDING"}'
         response.status_code = 200
         mock_request.return_value = response
-        approval_statuses = sspd_client.get_approval_status([1234, 9876, 5555])
+        approval_statuses = sspd_client.get_approval_status(content_ad_source_ids=[1234, 9876, 5555])
         mock_request.assert_called_once_with(
-            "get",
+            "post",
             "http://testssp.zemanta.com/service/approvalstatus",
-            data={},
+            data=json.dumps(
+                {
+                    "ad_group_ids": None,
+                    "content_ad_ids": None,
+                    "source_types": None,
+                    "slugs": None,
+                    "content_ad_source_ids": [1234, 9876, 5555],
+                }
+            ),
             headers={
-                "Authorization": "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJaMSIsImV4cCI6MTUzODM5NTI2MH0.Xn_HgLj_5Hn6mezRcj58zPJn236hCIm-rE1KDLRiVUg"
+                "Authorization": "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJaMSIsImV4cCI6MTUzODM5NTI2MH0.Xn_HgLj_5Hn6mezRcj58zPJn236hCIm-rE1KDLRiVUg",
+                "Content-type": "application/json",
             },
-            params={"contentAdSourceIds": "1234,9876,5555"},
+            params={},
         )
 
         self.assertEqual(
