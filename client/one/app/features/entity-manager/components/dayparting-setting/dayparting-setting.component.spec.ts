@@ -98,23 +98,25 @@ describe('DaypartingSettingComponent', () => {
         ];
     });
 
-    it('should correctly generate dayparting on empty dayparting setting input', () => {
-        const mockedSetting: DaypartingSetting = {};
-        component.daypartingSetting = mockedSetting;
-        component.ngOnChanges({
-            daypartingSetting: new SimpleChange(null, mockedSetting, false),
-        });
-        component.dayparting.forEach(day => {
-            expect(day.hours).toEqual(Array(24).fill(false));
-        });
-    });
-
-    it('should correctly generate dayparting on dayparting setting input change', () => {
+    it('should generate dayparting and show dayparting input on dayparting setting input change when dayparting is enabled', () => {
         component.daypartingSetting = mockedSetting;
         component.ngOnChanges({
             daypartingSetting: new SimpleChange(null, mockedSetting, false),
         });
         expect(component.dayparting).toEqual(mockedDayparting);
+        expect(component.isDaypartingInputVisible).toBe(true);
+    });
+
+    it('should not generate dayparting and should hide dayparting input on dayparting setting input change when dayparting is disabled', () => {
+        const mockedSetting: DaypartingSetting = {};
+        component.isDaypartingInputVisible = true;
+        component.daypartingSetting = mockedSetting;
+        component.ngOnChanges({
+            daypartingSetting: new SimpleChange(null, mockedSetting, false),
+        });
+        expect(component.timezone).not.toBeDefined();
+        expect(component.dayparting).not.toBeDefined();
+        expect(component.isDaypartingInputVisible).toBe(false);
     });
 
     it('should set timezone on dayparting setting input change', () => {
@@ -123,7 +125,7 @@ describe('DaypartingSettingComponent', () => {
         component.ngOnChanges({
             daypartingSetting: new SimpleChange(null, mockedSetting, false),
         });
-        expect(component.timezone).toBe(undefined);
+        expect(component.timezone).not.toBeDefined();
 
         mockedSetting = {timezone: 'UTC'};
         component.daypartingSetting = mockedSetting;
@@ -133,24 +135,13 @@ describe('DaypartingSettingComponent', () => {
         expect(component.timezone).toBe('UTC');
     });
 
-    it('should correctly determine if dayparting settings widget is visible', () => {
-        let mockedSetting: DaypartingSetting = {};
-        component.daypartingSetting = mockedSetting;
-        component.ngOnChanges({
-            daypartingSetting: new SimpleChange(null, mockedSetting, false),
+    it('should generate dayparting with all hours active and show dayparting input when user enables dayparting', () => {
+        expect(component.isDaypartingInputVisible).not.toBeDefined();
+        component.enableDayparting();
+        component.dayparting.forEach(day => {
+            expect(day.hours).toEqual(Array(24).fill(true));
         });
-        expect(component.areDaypartingSettingsVisible).toBe(false);
-
-        component.enableDaypartingSettings();
-        expect(component.areDaypartingSettingsVisible).toBe(true);
-
-        component.wereDaypartingSettingsEnabled = false;
-        mockedSetting = {[Day.Monday]: [0, 1]};
-        component.daypartingSetting = mockedSetting;
-        component.ngOnChanges({
-            daypartingSetting: new SimpleChange(null, mockedSetting, false),
-        });
-        expect(component.areDaypartingSettingsVisible).toBe(true);
+        expect(component.isDaypartingInputVisible).toBe(true);
     });
 
     it('should correctly generate dayparting setting on dayparting selection update', () => {
@@ -161,5 +152,15 @@ describe('DaypartingSettingComponent', () => {
             ...mockedSetting,
             timezone: 'UTC',
         });
+    });
+
+    it('should return empty dayparting setting on dayparting selection update when every hour of every day is active', () => {
+        spyOn(component.onChange, 'emit').and.stub();
+        component.timezone = 'UTC';
+        const allActiveDayparting = Array(7).fill({
+            hours: Array(24).fill(true),
+        });
+        component.handleDaypartingSelectionUpdate(allActiveDayparting);
+        expect(component.onChange.emit).toHaveBeenCalledWith({});
     });
 });

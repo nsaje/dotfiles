@@ -70,3 +70,38 @@
 .zem-dayparting-input__hour--active {
     background-color: @secondary-color;
 }
+
+.zem-dayparting-input__legend {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.zem-dayparting-input__legend-item {
+    position: relative;
+    flex: 0 0 auto;
+    height: 16px;
+    margin-top: @default-spacing;
+    margin-right: @default-spacing;
+    padding-left: 14px;
+
+    &:last-child {
+        margin-right: 0;
+    }
+}
+
+.zem-dayparting-input__legend-item::before {
+    content: '';
+    display: block;
+    position: absolute;
+    top: 50%;
+    left: 0;
+    transform: translateY(-50%);
+    width: 10px;
+    height: 10px;
+    background-color: @light-gray;
+}
+
+.zem-dayparting-input__legend-item--active::before {
+    background-color: @secondary-color;
+}

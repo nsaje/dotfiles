@@ -8,7 +8,6 @@ import {
     Input,
     SimpleChanges,
     OnChanges,
-    HostListener,
 } from '@angular/core';
 import {downgradeComponent} from '@angular/upgrade/static';
 import {Day} from '../../../../app.constants';
@@ -28,21 +27,21 @@ export class DaypartingSettingComponent implements OnChanges {
     @Output()
     onChange = new EventEmitter<DaypartingSetting>();
 
-    wereDaypartingSettingsEnabled = false;
-    areDaypartingSettingsVisible = false;
+    isDaypartingInputVisible: boolean;
     dayparting: DaypartingDay[];
     timezone: string;
 
     ngOnChanges(changes: SimpleChanges) {
         if (changes.daypartingSetting) {
-            this.dayparting = this.generateDaypartingFromSettings(
-                this.daypartingSetting
-            );
-            this.timezone = (this.daypartingSetting || {}).timezone;
-            this.areDaypartingSettingsVisible = this.getDaypartingSettingsVisibility(
-                this.wereDaypartingSettingsEnabled,
-                this.daypartingSetting
-            );
+            if (this.isDaypartingEnabled(this.daypartingSetting)) {
+                this.timezone = this.daypartingSetting.timezone;
+                this.dayparting = this.generateDaypartingFromSettings(
+                    this.daypartingSetting
+                );
+                this.isDaypartingInputVisible = true;
+            } else {
+                this.isDaypartingInputVisible = false;
+            }
         }
     }
 
@@ -50,63 +49,92 @@ export class DaypartingSettingComponent implements OnChanges {
         this.onChange.emit(this.generateSettings(dayparting, this.timezone));
     }
 
-    enableDaypartingSettings() {
-        this.wereDaypartingSettingsEnabled = this.areDaypartingSettingsVisible = true;
+    enableDayparting() {
+        // Dayparting was previously disabled. When enabling, generate
+        // dayparting with all hours active since we want to show every hour in
+        // dayparting input as active.
+        this.dayparting = this.generateDaypartingFromSettings(
+            this.daypartingSetting || {},
+            true
+        );
+        this.isDaypartingInputVisible = true;
     }
 
-    private getDaypartingSettingsVisibility(
-        wereDaypartingSettingsEnabled: boolean,
-        daypartingSetting: DaypartingSetting
-    ): boolean {
-        return (
-            wereDaypartingSettingsEnabled ||
-            (daypartingSetting && Object.keys(daypartingSetting).length !== 0)
-        );
+    private isDaypartingEnabled(daypartingSetting: DaypartingSetting): boolean {
+        return daypartingSetting && Object.keys(daypartingSetting).length !== 0;
     }
 
     private generateDaypartingFromSettings(
-        daypartingSetting: DaypartingSetting = {}
+        daypartingSetting: DaypartingSetting,
+        allActive = false
     ): DaypartingDay[] {
         return [
             {
                 day: Day.Monday,
                 name: 'Monday',
-                hours: this.generateHoursList(daypartingSetting[Day.Monday]),
+                hours: this.generateHoursList(
+                    allActive,
+                    daypartingSetting[Day.Monday]
+                ),
             },
             {
                 day: Day.Tuesday,
                 name: 'Tuesday',
-                hours: this.generateHoursList(daypartingSetting[Day.Tuesday]),
+                hours: this.generateHoursList(
+                    allActive,
+                    daypartingSetting[Day.Tuesday]
+                ),
             },
             {
                 day: Day.Wednesday,
                 name: 'Wednesday',
-                hours: this.generateHoursList(daypartingSetting[Day.Wednesday]),
+                hours: this.generateHoursList(
+                    allActive,
+                    daypartingSetting[Day.Wednesday]
+                ),
             },
             {
                 day: Day.Thursday,
                 name: 'Thursday',
-                hours: this.generateHoursList(daypartingSetting[Day.Thursday]),
+                hours: this.generateHoursList(
+                    allActive,
+                    daypartingSetting[Day.Thursday]
+                ),
             },
             {
                 day: Day.Friday,
                 name: 'Friday',
-                hours: this.generateHoursList(daypartingSetting[Day.Friday]),
+                hours: this.generateHoursList(
+                    allActive,
+                    daypartingSetting[Day.Friday]
+                ),
             },
             {
                 day: Day.Saturday,
                 name: 'Saturday',
-                hours: this.generateHoursList(daypartingSetting[Day.Saturday]),
+                hours: this.generateHoursList(
+                    allActive,
+                    daypartingSetting[Day.Saturday]
+                ),
             },
             {
                 day: Day.Sunday,
                 name: 'Sunday',
-                hours: this.generateHoursList(daypartingSetting[Day.Sunday]),
+                hours: this.generateHoursList(
+                    allActive,
+                    daypartingSetting[Day.Sunday]
+                ),
             },
         ];
     }
 
-    private generateHoursList(activeHours: number[] = []): boolean[] {
+    private generateHoursList(
+        allActive: boolean,
+        activeHours: number[] = []
+    ): boolean[] {
+        if (allActive) {
+            return new Array<boolean>(24).fill(true);
+        }
         const hours = [];
         for (let i = 0; i < 24; i++) {
             hours[i] = activeHours.indexOf(i) !== -1;
@@ -124,13 +152,22 @@ export class DaypartingSettingComponent implements OnChanges {
             daypartingSetting.timezone = timezone;
         }
 
+        let allActive = true;
         dayparting.forEach(day => {
             const activeHours = this.getDayActiveHours(day);
             if (activeHours.length > 0) {
                 daypartingSetting[day.day] = activeHours;
             }
+            if (activeHours.length < 24) {
+                allActive = false;
+            }
         });
 
+        // If every hour of every day is active, disable dayparting since ads
+        // will run all the time.
+        if (allActive) {
+            return {};
+        }
         return daypartingSetting;
     }
 
