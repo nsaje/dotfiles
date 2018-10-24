@@ -2,7 +2,6 @@ import logging
 
 import influx
 from django.http import Http404
-from functools import partial
 
 import dash.constants
 import dash.features.submission_filters
@@ -10,8 +9,6 @@ import dash.models
 from dash import constants
 from utils import dates_helper
 from utils import db_for_reads
-from utils import sspd_client
-from utils import threads
 from .base import K1APIView
 
 logger = logging.getLogger(__name__)
@@ -100,18 +97,6 @@ class ContentAdSourcesView(K1APIView):
         source_content_ad_ids = request.GET.get("source_content_ad_ids")
         include_state = request.GET.get("include_state", "True") == "True"
 
-        sspd_thread = None
-        if include_state:
-            sspd_fn = partial(
-                sspd_client.get_approval_status,
-                ad_group_ids.split(",") if ad_group_ids else None,
-                content_ad_ids.split(",") if content_ad_ids else None,
-                source_types.split(",") if source_types else None,
-                slugs.split(",") if slugs else None,
-            )
-            sspd_thread = threads.AsyncFunction(sspd_fn)
-            sspd_thread.start()
-
         content_ad_sources = dash.models.ContentAdSource.objects.filter(source__deprecated=False)
 
         if not content_ad_ids:  # exclude archived if not querying by id explicitly
@@ -152,13 +137,9 @@ class ContentAdSourcesView(K1APIView):
             content_ad_sources = dash.features.submission_filters.filter_valid_content_ad_sources(content_ad_sources)
 
         amplify_review_statuses = {}
-        sspd_statuses = {}
 
         if include_state:
             amplify_review_statuses = self._get_amplify_review_statuses(content_ad_sources)
-            if sspd_thread is not None:
-                sspd_thread.join()
-                sspd_statuses = sspd_thread.get_result()
 
         response = []
         for content_ad_source in content_ad_sources:
@@ -182,7 +163,6 @@ class ContentAdSourcesView(K1APIView):
                     amplify_review_statuses.get(
                         content_ad_source["content_ad_id"], dash.constants.ContentAdSubmissionStatus.PENDING
                     ),
-                    sspd_statuses.get(content_ad_source["id"]),
                 )
 
             response.append(item)
@@ -204,18 +184,13 @@ class ContentAdSourcesView(K1APIView):
         ad_group_amplify_review,
         content_ad_amplify_review,
         amplify_review_status,
-        sspd_status,
     ):
         if (
             content_ad_amplify_review
             and ad_group_amplify_review
             and source_submission_policy == dash.constants.SourceSubmissionPolicy.AUTOMATIC_WITH_AMPLIFY_APPROVAL
             and amplify_review_status != dash.constants.ContentAdSubmissionStatus.APPROVED
-        ) or sspd_status == dash.constants.ContentAdSubmissionStatus.REJECTED:
-            return dash.constants.ContentAdSourceState.INACTIVE
-        elif not sspd_status:
-            influx.incr("content_ads_source.missing_sspd_status", 1)
-            logger.info("missing sspd status for content ad: %s", content_ad_id)
+        ):
             return dash.constants.ContentAdSourceState.INACTIVE
         else:
             return content_ad_source_state
