@@ -95,8 +95,7 @@ class ContentAdSourcesView(K1APIView):
         source_types = request.GET.get("source_types")
         slugs = request.GET.get("source_slugs")
         source_content_ad_ids = request.GET.get("source_content_ad_ids")
-        include_state = request.GET.get("include_state", "True") == "True"
-
+        include_state = request.GET.get("include_state", "true").lower() == "true"
         content_ad_sources = dash.models.ContentAdSource.objects.filter(source__deprecated=False)
 
         if not content_ad_ids:  # exclude archived if not querying by id explicitly
