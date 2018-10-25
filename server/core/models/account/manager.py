@@ -1,10 +1,14 @@
+import logging
+
 from django.db import transaction
 
-from dash import constants
-import core.features.yahoo_accounts
 import core.common
-
+import core.features.yahoo_accounts
+from dash import constants
+from utils import slack
 from . import model
+
+logger = logging.getLogger(__name__)
 
 
 EUR_AGENCIES = [196, 175, 179, 201]
@@ -52,5 +56,16 @@ class AccountManager(core.common.BaseManager):
             account.allowed_sources.add(*agency.allowed_sources.all())
         else:
             account.allowed_sources.add(*core.models.Source.objects.filter(released=True, deprecated=False))
-
+        slack_msg = (
+            "New Account #{id} <https://one.zemanta.com/v2/credit/account/{id}|{account_name}> was created "
+            "{agency}.".format(
+                id=account.id,
+                account_name=account.name,
+                agency=" for account {}".format(account.agency.name) if account.agency else "",
+            )
+        )
+        try:
+            slack.publish(text=slack_msg, channel="client-developement")
+        except Exception:
+            logger.exception("Connection error with Slack.")
         return account
