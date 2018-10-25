@@ -93,6 +93,11 @@ class AdGroupSourceSettingsMixin(object):
         )
 
     def add_to_history(self, user, action_type, changes):
+        if self.ad_group_source.ad_group.bidding_type == dash.constants.BiddingType.CPM:
+            changes.pop("local_cpc_cc", None)
+        else:
+            changes.pop("local_cpm", None)
+
         _, changes_text = self.construct_changes(
             "Created settings.", "Source: {}.".format(self.ad_group_source.source.name), changes
         )
