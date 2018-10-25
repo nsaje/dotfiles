@@ -24,7 +24,7 @@ class CreditLineItemManager(core.common.QuerySetManager):
     def create(self, request, start_date, end_date, amount, **kwargs):
         cli = CreditLineItem(start_date=start_date, end_date=end_date, amount=amount, **kwargs)
         cli.created_by = request.user
-        cli.save()
+        cli.save(request=request, action_type=constants.HistoryActionType.CREATE)
         return cli
 
 

@@ -1,18 +1,20 @@
-from decimal import Decimal
 import json
 import logging
+from decimal import Decimal
 
 from django.forms.models import model_to_dict
-
-from dash import models, constants, forms
-from utils import api_common, exc
-from dash.views import helpers
 
 import core.features.bcm
 import core.features.bcm.bcm_slack
 import core.features.multicurrency
-
 from core.features.bcm import exceptions
+from dash import constants
+from dash import forms
+from dash import models
+from dash.views import helpers
+from utils import api_common
+from utils import exc
+from utils import slack
 
 logger = logging.getLogger(__name__)
 
@@ -85,21 +87,10 @@ class AccountCreditView(api_common.BaseApiView):
         if item.errors:
             raise exc.ValidationError(errors=item.errors)
 
-        item.instance.created_by = request.user
-        item.save(request=request, action_type=constants.HistoryActionType.CREATE)
-        core.features.bcm.bcm_slack.log_to_slack(
-            account_id,
-            core.features.bcm.bcm_slack.SLACK_NEW_CREDIT_MSG.format(
-                credit_id=item.instance.pk,
-                url=core.features.bcm.bcm_slack.ACCOUNT_URL.format(account_id),
-                account_id=account_id,
-                account_name=account.get_long_name(),
-                amount=item.instance.amount,
-                currency_symbol=core.features.multicurrency.get_currency_symbol(item.instance.currency),
-                end_date=item.instance.end_date,
-            ),
-        )
-        return self.create_api_response(item.instance.pk)
+        cli = core.features.bcm.CreditLineItem.objects.create(request, **item.cleaned_data)
+
+        self._post_on_slack(cli, account_id, account)
+        return self.create_api_response(cli.pk)
 
     def _prepare_credit(self, credit):
         flat_fee = credit.get_flat_fee_on_date_range(credit.start_date, credit.end_date)
@@ -156,6 +147,31 @@ class AccountCreditView(api_common.BaseApiView):
             "available": str(total - allocated - past),
             "currency": account.currency,
         }
+
+    def _post_on_slack(self, cli, account_id, account):
+        slack_msg = core.features.bcm.bcm_slack.SLACK_NEW_CREDIT_MSG.format(
+            credit_id=cli.pk,
+            url=core.features.bcm.bcm_slack.ACCOUNT_URL.format(account_id),
+            account_id=account_id,
+            account_name=account.get_long_name(),
+            amount=cli.amount,
+            currency_symbol=core.features.multicurrency.get_currency_symbol(cli.currency),
+            end_date=cli.end_date,
+        )
+        msg_type = slack.MESSAGE_TYPE_INFO
+        if not (cli.contract_id or cli.contract_number):
+            slack_msg = core.features.bcm.bcm_slack.SLACK_NEW_CREDIT_WITHOUT_CONTRACT_MSG.format(
+                credit_id=cli.pk,
+                url=core.features.bcm.bcm_slack.ACCOUNT_URL.format(account_id),
+                account_id=account_id,
+                account_name=account.get_long_name(),
+                amount=cli.amount,
+                currency_symbol=core.features.multicurrency.get_currency_symbol(cli.currency),
+                end_date=cli.end_date,
+            )
+            msg_type = slack.MESSAGE_TYPE_WARNING
+
+        core.features.bcm.bcm_slack.log_to_slack(account_id, slack_msg, msg_type=msg_type)
 
 
 class AccountCreditItemView(api_common.BaseApiView):
