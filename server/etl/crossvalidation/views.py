@@ -21,7 +21,7 @@ def crossvalidation(request):
 
     try:
         request_signer.verify_wsgi_request(request, settings.BIDDER_API_SIGN_KEY)
-    except request_signer.SignatureError as e:
+    except request_signer.SignatureError:
         logger.exception("Invalid crossvalidation signature.")
         return _error_response("Invalid crossvalidation signature.", status=401)
 

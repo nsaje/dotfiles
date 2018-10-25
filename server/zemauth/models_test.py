@@ -43,8 +43,8 @@ class UserManagerTestCase(test.TestCase):
         self.assertEqual(returned, "normal@domain.com")
 
     def test_create_user_email_domain_normalize_with_whitespace(self):
-        returned = models.UserManager.normalize_email("email\ with_whitespace@D.COM")
-        self.assertEqual(returned, "email\ with_whitespace@d.com")
+        returned = models.UserManager.normalize_email("email with_whitespace@D.COM")
+        self.assertEqual(returned, "email with_whitespace@d.com")
 
     def test_empty_email(self):
         self.assertRaises(ValueError, models.User.objects.create_user, email="")
