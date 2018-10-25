@@ -33,6 +33,13 @@ angular.module('one.widgets').component('zemZipTargeting', {
 
         function initializeWatches() {
             $scope.$watch('$ctrl.entity.settings.targetRegions', function() {
+                if (
+                    $ctrl.state.zipTargetingType ===
+                    constants.zipTargetingType.EXCLUDE
+                ) {
+                    $ctrl.state.blockers.countryIncluded = false;
+                    return;
+                }
                 $ctrl.stateService.checkConstraints();
             });
         }

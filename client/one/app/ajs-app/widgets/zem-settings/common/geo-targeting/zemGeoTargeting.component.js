@@ -62,6 +62,20 @@ angular.module('one.widgets').component('zemGeoTargeting', {
             );
         };
 
+        $ctrl.hasTargetingSet = function() {
+            if (!$ctrl.state) {
+                return false;
+            }
+            if (
+                $ctrl.entity.settings.targetRegions.postalCodes.length ||
+                $ctrl.state.targetings.excluded.length ||
+                $ctrl.state.targetings.included.length
+            ) {
+                return true;
+            }
+            return false;
+        };
+
         function initializeWatches() {
             var watchExpressions = [
                 '$ctrl.entity.settings.targetRegions',

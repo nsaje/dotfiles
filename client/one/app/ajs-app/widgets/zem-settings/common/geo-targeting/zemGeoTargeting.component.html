@@ -6,6 +6,7 @@
     <div class="custom-panel__description">
         The countries, states and DMA regions where your content ads will be shown.
     </div>
+    <div ng-if="!$ctrl.hasTargetingSet()" class="message block m-b">{{ $ctrl.texts.defaultTargetingSelected }}</div>
 
     <zem-inclusion-targeting-list
         texts="$ctrl.texts"
