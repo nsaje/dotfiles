@@ -194,6 +194,7 @@ class NavigationDataViewTest(TestCase):
                     "status": 1,
                     "autopilot_state": 2,
                     "active": "active",
+                    "bidding_type": 1,
                 },
             },
         )
@@ -225,6 +226,7 @@ class NavigationDataViewTest(TestCase):
                     "status": 2,
                     "autopilot_state": 2,
                     "active": "stopped",
+                    "bidding_type": 2,
                 },
             },
         )
@@ -290,6 +292,7 @@ class NavigationTreeViewTest(TestCase):
                                 "status": 1,
                                 "autopilot_state": 2,
                                 "active": "active",
+                                "bidding_type": 1,
                             },
                             {
                                 "archived": False,
@@ -299,6 +302,7 @@ class NavigationTreeViewTest(TestCase):
                                 "status": 2,  # past dates
                                 "autopilot_state": 2,
                                 "active": "inactive",
+                                "bidding_type": 1,
                             },
                             {
                                 "archived": False,
@@ -308,6 +312,7 @@ class NavigationTreeViewTest(TestCase):
                                 "status": 2,
                                 "autopilot_state": 2,
                                 "active": "stopped",
+                                "bidding_type": 2,
                             },
                         ],
                         "archived": False,
@@ -383,6 +388,7 @@ class NavigationTreeViewTest(TestCase):
                                 "status": 1,
                                 "autopilot_state": 2,
                                 "active": "active",
+                                "bidding_type": 1,
                             },
                             {
                                 "archived": False,
@@ -392,6 +398,7 @@ class NavigationTreeViewTest(TestCase):
                                 "status": 2,
                                 "autopilot_state": 2,
                                 "active": "inactive",
+                                "bidding_type": 1,
                             },
                             {
                                 "archived": False,
@@ -401,6 +408,7 @@ class NavigationTreeViewTest(TestCase):
                                 "status": 2,
                                 "autopilot_state": 2,
                                 "active": "stopped",
+                                "bidding_type": 2,
                             },
                         ],
                         "archived": False,
@@ -435,6 +443,7 @@ class NavigationTreeViewTest(TestCase):
                                 "status": 2,
                                 "autopilot_state": 2,
                                 "active": "stopped",
+                                "bidding_type": 2,
                             }
                         ],
                         "id": 2,

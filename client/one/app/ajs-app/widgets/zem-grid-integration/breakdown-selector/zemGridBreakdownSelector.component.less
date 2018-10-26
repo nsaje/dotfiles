@@ -1,0 +1,41 @@
+@import 'variables';
+
+.zem-grid-breakdown-selector {
+    zem-internal-feature {
+        left: -6px;
+        top: -1px;
+    }
+
+    .internal {
+        border: none;
+        line-height: 5px;
+        margin-right: 3px;
+        vertical-align: bottom;
+    }
+}
+
+.zem-grid-breakdown-selector .dropdown-menu {
+    margin: 8px 0 20px 0;
+    padding: 0;
+    border: none;
+    box-shadow: 0px 0px 8px 0px rgba(0,0,0,0.1);
+    width: 200px;
+    max-height: 400px;
+    overflow: hidden;
+    box-sizing: border-box;
+
+    .dropdown-menu__container {
+        max-height: 350px;
+        margin-bottom: 50px;
+    }
+
+    .buttons-panel {
+        background-color: tint(@secondary-color,90%);
+        box-shadow: 0px 0px 3px 0px fade(@secondary-color,40%);
+        padding: 10px @default-spacing;
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+    }
+}

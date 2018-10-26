@@ -293,7 +293,20 @@ angular
                 type: zemGridConstants.gridColumnTypes.CURRENCY,
                 shown: true,
                 fractionSize: 3,
-                help: 'Maximum bid price (in USD) per click.',
+                help: 'Maximum bid price per click.',
+                totalRow: false,
+                order: true,
+                editable: true,
+                initialOrder: zemGridConstants.gridColumnOrder.DESC,
+                defaultValue: '',
+            },
+            bidCpmSetting: {
+                name: 'Bid CPM',
+                field: 'bid_cpm',
+                type: zemGridConstants.gridColumnTypes.CURRENCY,
+                shown: true,
+                fractionSize: 3,
+                help: 'Maximum bid price per thousand impressions.',
                 totalRow: false,
                 order: true,
                 editable: true,
@@ -1692,6 +1705,7 @@ angular
             COLUMNS.submissionStatus,
             COLUMNS.performance,
             COLUMNS.bidCpcSetting,
+            COLUMNS.bidCpmSetting,
             COLUMNS.dailyBudgetSetting,
         ];
 
@@ -2035,14 +2049,19 @@ angular
         COLUMNS.bidCpcSetting.exceptions.breakdowns = [
             constants.breakdown.MEDIA_SOURCE,
         ];
+        COLUMNS.bidCpmSetting.exceptions.breakdowns = [
+            constants.breakdown.MEDIA_SOURCE,
+        ];
         COLUMNS.dailyBudgetSetting.exceptions.breakdowns = [
             constants.breakdown.MEDIA_SOURCE,
         ];
         COLUMNS.bidCpcSetting.exceptions.levels = [constants.level.AD_GROUPS];
+        COLUMNS.bidCpmSetting.exceptions.levels = [constants.level.AD_GROUPS];
         COLUMNS.dailyBudgetSetting.exceptions.levels = [
             constants.level.AD_GROUPS,
         ];
         COLUMNS.bidCpcSetting.exceptions.breakdownBaseLevelOnly = true;
+        COLUMNS.bidCpmSetting.exceptions.breakdownBaseLevelOnly = true;
         COLUMNS.dailyBudgetSetting.exceptions.breakdownBaseLevelOnly = true;
 
         COLUMNS.bidModifier.exceptions.breakdowns = [

@@ -133,7 +133,9 @@ class NavigationTreeView(api_common.BaseApiView):
             map_ad_groups_settings = {ags.ad_group_id: ags for ags in ad_groups_settings}
 
         data_ad_groups = {}
-        for ad_group in ad_groups.values("id", "campaign_id", "name", "campaign__real_time_campaign_stop"):
+        for ad_group in ad_groups.values(
+            "id", "campaign_id", "name", "bidding_type", "campaign__real_time_campaign_stop"
+        ):
             ad_group_settings = map_ad_groups_settings.get(ad_group["id"])
 
             ad_group_dict = navigation_helpers.get_ad_group_dict(

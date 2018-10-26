@@ -1,3 +1,5 @@
+require('./zemGridBreakdownSelector.component.less');
+
 angular.module('one.widgets').component('zemGridBreakdownSelector', {
     bindings: {
         api: '=',

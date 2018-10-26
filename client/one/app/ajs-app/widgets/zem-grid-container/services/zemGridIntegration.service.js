@@ -49,7 +49,7 @@ angular
                 breakdown = _breakdown;
                 entity = _entity;
                 grid.dataSource = createDataSource(entity, breakdown);
-                loadState();
+                setGridDataSourceDateRangeAndFilters();
             }
 
             function setGridApi(api) {
@@ -145,15 +145,11 @@ angular
             }
 
             function reload() {
-                loadState();
+                setGridDataSourceDateRangeAndFilters();
                 grid.dataSource.loadData();
             }
 
-            function loadState() {
-                loadDataFilter();
-            }
-
-            function loadDataFilter() {
+            function setGridDataSourceDateRangeAndFilters() {
                 var dateRange = zemDataFilterService.getDateRange();
                 grid.dataSource.setDateRange(dateRange);
 

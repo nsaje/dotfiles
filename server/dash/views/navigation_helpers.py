@@ -28,6 +28,7 @@ def get_ad_group_dict(
         "state": state,
         "archived": ad_group_settings.archived if ad_group_settings else False,
         "autopilot_state": autopilot_state,
+        "bidding_type": ad_group["bidding_type"],
         "active": infobox_helpers.get_adgroup_running_status_class(
             user,
             autopilot_state,

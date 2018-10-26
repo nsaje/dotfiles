@@ -54,9 +54,16 @@
             </div>
         </div>
 
-        <div class="form__group" ng-if="$ctrl.hasPermission('zemauth.fea_can_use_cpm_buying')">
+        <div
+            class="form__group"
+            ng-if="$ctrl.hasPermission('zemauth.fea_can_use_cpm_buying')"
+        >
             <label class="form__label" is-internal="zemauth.fea_can_use_cpm_buying">
                 Bidding type:
+                <zem-help-popover
+                    content="Select the bidding type that best fits the objective of your campaign. CPC bidding focuses the algorithm on delivering clicks at the desired click price. The CPM bidding will deliver impressions at the given price or lower."
+                    placement="top"
+                ></zem-help-popover>
             </label>
             <div class="form__radio">
                 <label>
@@ -64,12 +71,46 @@
                         class="input-radio"
                         type="radio"
                         ng-model="$ctrl.entity.settings.biddingType"
-                        ng-change="$ctrl.setBidSectionVisibility($ctrl.biddingType.CPC)"
                         ng-value="$ctrl.biddingType.CPC">
                     <span class="radio-text">
-                        CPC <span class="text-gray">- Bidding is optimizing for the number of clicks that your ad receives.</span>
+                        CPC <span class="text-gray">- Focus on the clicks that your ad receives.</span>
                     </span>
                 </label>
+                <div
+                    class="form__indented zem-ad-group-general-settings__bid-settings-form"
+                    ng-if="$ctrl.entity.settings.biddingType === $ctrl.biddingType.CPC"
+                    ng-class="{'form--error': !!$ctrl.errors.cpc}"
+                >
+                    <div class="form__group">
+                        <label
+                            class="form__label zem-ad-group-general-settings__max-bid-label"
+                            for="cpc-input"
+                            is-internal="zemauth.can_set_ad_group_max_cpc"
+                        >
+                            Maximum Bid CPC:
+                        </label>
+                        <div class="prefixed-field prefixed-field--narrow">
+                            <span class="prefixed-field__prefix">
+                                {{$ctrl.currencySymbol}}
+                            </span>
+                            <input
+                                class="input-text"
+                                id="cpc-input"
+                                type="text"
+                                ng-model="$ctrl.entity.settings.cpc"
+                                zem-currency-input
+                                fraction-size="3"
+                                empty-text="No limit">
+                        </div>
+                        <div
+                            class="message message--error zem-ad-group-general-settings__bid-settings-error"
+                            ng-repeat="error in $ctrl.errors.cpc"
+                            for="cpc-input"
+                        >
+                            {{ error }}
+                        </div>
+                    </div>
+                </div>
             </div>
             <div class="form__radio">
                 <label>
@@ -77,54 +118,98 @@
                         class="input-radio"
                         type="radio"
                         ng-model="$ctrl.entity.settings.biddingType"
-                        ng-change="$ctrl.setBidSectionVisibility($ctrl.biddingType.CPM)"
                         ng-value="$ctrl.biddingType.CPM">
                     <span class="radio-text">
-                        CPM <span class="text-gray">- Bidding is focused on the number of impressions of your ad.</span>
+                        CPM <span class="text-gray">- Focus on the impressions of your ad.</span>
                     </span>
                 </label>
+                <div
+                    class="form__indented zem-ad-group-general-settings__bid-settings-form"
+                    ng-if="$ctrl.entity.settings.biddingType === $ctrl.biddingType.CPM"
+                    ng-class="{'form--error': !!$ctrl.errors.maxCpm}"
+                >
+                    <div class="form__group">
+                        <label
+                            class="form__label zem-ad-group-general-settings__max-bid-label"
+                            for="cpm-input"
+                        >
+                            Maximum Bid CPM:
+                        </label>
+                        <div class="prefixed-field prefixed-field--narrow">
+                            <span class="prefixed-field__prefix">
+                                {{$ctrl.currencySymbol}}
+                            </span>
+                            <input
+                                class="input-text"
+                                id="cpm-input"
+                                type="text"
+                                ng-model="$ctrl.entity.settings.maxCpm"
+                                ng-disabled="$ctrl.entity.warnings.maxCpm !== undefined"
+                                zem-currency-input
+                                fraction-size="3"
+                                empty-text="No limit">
+                        </div>
+                        <div
+                            class="message message--warning message--with-icon zem-ad-group-general-settings__bid-settings-warning"
+                            ng-if="$ctrl.entity.warnings.maxCpm !== undefined"
+                        >
+                            {{ $ctrl.MESSAGES.WARNING_MAX_CPM }}
+                        </div>
+                        <div
+                            class="message message--error zem-ad-group-general-settings__bid-settings-error"
+                            ng-if="$ctrl.entity.warnings.maxCpm === undefined"
+                            ng-repeat="error in $ctrl.errors.maxCpm"
+                            for="cpm-input"
+                        >
+                            {{ error }}
+                        </div>
+                    </div>
+                </div>
+                <div
+                    class="message message--error zem-ad-group-general-settings__bid-settings-error"
+                    ng-repeat="error in $ctrl.errors.biddingType"
+                >
+                    {{ error }}
+                </div>
             </div>
-            <div class="message message--error" ng-repeat="error in $ctrl.errors.biddingType">
+        </div>
+
+        <div
+            class="form__group"
+            ng-if="!$ctrl.hasPermission('zemauth.fea_can_use_cpm_buying') && $ctrl.hasPermission('zemauth.can_set_ad_group_max_cpc')"
+            ng-class="{'form--error': !!$ctrl.errors.cpc}"
+        >
+            <label
+                class="form__label"
+                for="cpc-input"
+                is-internal="zemauth.can_set_ad_group_max_cpc"
+            >
+                Maximum Bid CPC:
+                <zem-help-popover
+                    content="Maximum allowed CPC in this ad group."
+                    placement="top"
+                ></zem-help-popover>
+            </label>
+            <div class="prefixed-field prefixed-field--narrow">
+                <span class="prefixed-field__prefix">
+                    {{$ctrl.currencySymbol}}
+                </span>
+                <input
+                    class="input-text"
+                    id="cpc-input"
+                    type="text"
+                    ng-model="$ctrl.entity.settings.cpc"
+                    zem-currency-input
+                    fraction-size="3"
+                    empty-text="No limit">
+            </div>
+            <div
+                class="message message--error"
+                ng-repeat="error in $ctrl.errors.cpc"
+                for="cpc-input"
+            >
                 {{ error }}
             </div>
-        </div>
-
-        <div class="form__group" ng-if="$ctrl.isBidCpcSectionVisible"
-             ng-class="{'form--error': !!$ctrl.errors.cpc}">
-            <label class="form__label" for="cpc-input" is-internal="zemauth.can_set_ad_group_max_cpc">
-                Maximum Bid CPC:
-                <zem-help-popover content="Maximum allowed CPC in this ad group." placement="top"></zem-help-popover>
-            </label>
-            <div class="prefixed-field prefixed-field--narrow">
-                <span class="prefixed-field__prefix">{{$ctrl.currencySymbol}}</span>
-                <input class="input-text" id="cpc-input" type="text" ng-model="$ctrl.entity.settings.cpc"
-                       zem-currency-input fraction-size="3" empty-text="No limit">
-            </div>
-            <div class="message message--error" ng-repeat="error in $ctrl.errors.cpc"
-                 for="cpc-input">{{ error }}</div>
-        </div>
-
-        <div class="form__group" ng-if="$ctrl.isBidCpmSectionVisible"
-             ng-class="{'form--error': !!$ctrl.errors.maxCpm}">
-            <label class="form__label" for="cpm-input" is-internal="zemauth.fea_can_use_cpm_buying">
-                Maximum Bid CPM:
-                <zem-help-popover content="Maximum allowed CPM in this ad group." placement="top"></zem-help-popover>
-            </label>
-            <div class="prefixed-field prefixed-field--narrow">
-                <span class="prefixed-field__prefix">{{$ctrl.currencySymbol}}</span>
-                <input id="cpm-input"
-                       class="input-text"
-                       ng-model="$ctrl.entity.settings.maxCpm"
-                       ng-disabled="$ctrl.entity.warnings.maxCpm !== undefined"
-                       type="text"
-                       empty-text="No limit"
-                       zem-currency-input fraction-size="3">
-            </div>
-            <div class="message message--warning message--with-icon" ng-if="$ctrl.entity.warnings.maxCpm !== undefined">
-                {{ $ctrl.MESSAGES.WARNING_MAX_CPM }}
-            </div>
-            <div class="message message--error" ng-if="$ctrl.entity.warnings.maxCpm === undefined"
-                 ng-repeat="error in $ctrl.errors.maxCpm" for="cpm-input">{{ error }}</div>
         </div>
 
         <div class="form__group" ng-if="$ctrl.hasPermission('zemauth.can_set_click_capping')">

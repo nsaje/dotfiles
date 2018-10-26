@@ -40,10 +40,6 @@ angular.module('one.widgets').component('zemAdGroupGeneralSettings', {
         $ctrl.endDatePickerOptions = {minDate: new Date()};
         $ctrl.openDatePicker = openDatePicker;
         $ctrl.goToBudgets = goToBudgets;
-        $ctrl.setBidSectionVisibility = setBidSectionVisibility;
-
-        $ctrl.isBidCpcSectionVisible = false;
-        $ctrl.isBidCpmSectionVisible = false;
 
         $ctrl.$onInit = function() {
             initializeWatches();
@@ -64,10 +60,6 @@ angular.module('one.widgets').component('zemAdGroupGeneralSettings', {
                     'disable/pause these media sources: ' +
                     $ctrl.entity.warnings.maxCpm.sources.join(', ') +
                     '.';
-            }
-
-            if ($ctrl.entity && $ctrl.entity.settings) {
-                setBidSectionVisibility($ctrl.entity.settings.biddingType);
             }
         };
 
@@ -101,24 +93,6 @@ angular.module('one.widgets').component('zemAdGroupGeneralSettings', {
                     $ctrl.entity.settings.manualStop = true;
                 }
             });
-        }
-
-        function setBidSectionVisibility(biddingType) {
-            if (
-                biddingType === constants.biddingType.CPC &&
-                zemPermissions.hasPermission('zemauth.can_set_ad_group_max_cpc')
-            ) {
-                $ctrl.isBidCpcSectionVisible = true;
-                $ctrl.isBidCpmSectionVisible = false;
-            }
-
-            if (
-                biddingType === constants.biddingType.CPM &&
-                zemPermissions.hasPermission('zemauth.fea_can_use_cpm_buying')
-            ) {
-                $ctrl.isBidCpcSectionVisible = false;
-                $ctrl.isBidCpmSectionVisible = true;
-            }
         }
 
         function openDatePicker(type) {
