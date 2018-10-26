@@ -495,7 +495,8 @@ angular
                 field: 'bid_modifier',
                 type: zemGridConstants.gridColumnTypes.BID_MODIFIER_FIELD,
                 totalRow: false,
-                help: 'TODO',
+                help:
+                    'Bid modifiers allow you to adjust the bid per publisher. The bid set on media source level is used as a starting point and adjusted on % basis.',
                 order: true,
                 initialOrder: zemGridConstants.gridColumnOrder.ASC,
                 shown: 'zemauth.can_use_publisher_bid_modifiers_in_ui',
@@ -2231,7 +2232,10 @@ angular
             // status not orderable on publisher tabs
             if (breakdowns.indexOf(constants.breakdown.PUBLISHER) >= 0) {
                 columns.forEach(function(column) {
-                    if (column.field === COLUMNS.status.field) {
+                    if (
+                        column.field === COLUMNS.status.field ||
+                        column.field === COLUMNS.bidModifier.field
+                    ) {
                         column.order = false;
                     }
                 });

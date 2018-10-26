@@ -18,4 +18,9 @@ urlpatterns = [
         views.PublisherBidModifiersErrorDownload.as_view({"get": "download"}),
         name="publisher_bid_modifiers_error_download",
     ),
+    url(
+        r"^internal/adgroups/publishers/modifiers/example_csv_download",
+        views.PublisherBidModifiersExampleCSVDownload.as_view({"get": "download"}),
+        name="publisher_bid_modifiers_example_download",
+    ),
 ]

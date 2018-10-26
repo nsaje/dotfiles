@@ -90,3 +90,9 @@ class PublisherBidModifiersErrorDownload(restapi.common.views_base.RESTAPIBaseVi
         )
 
         return self.create_csv_response("publisher_bid_modifier_errors", content=content)
+
+
+class PublisherBidModifiersExampleCSVDownload(restapi.common.views_base.RESTAPIBaseViewSet, CSVMixin):
+    def download(self, request):
+        csv_example_file = service.make_csv_example_file()
+        return self.create_csv_response("example_bid_modifiers", content=csv_example_file)

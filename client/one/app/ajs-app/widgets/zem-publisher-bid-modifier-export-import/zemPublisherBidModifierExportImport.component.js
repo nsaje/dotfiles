@@ -15,6 +15,7 @@ angular.module('one.widgets').component('zemPublisherBidModifierExportImport', {
         var $ctrl = this;
 
         $ctrl.hasPermission = zemPermissions.hasPermission;
+        $ctrl.isAdGroupLevel = isAdGroupLevel;
         $ctrl.execute = execute;
         $ctrl.actions = [
             {
@@ -30,6 +31,16 @@ angular.module('one.widgets').component('zemPublisherBidModifierExportImport', {
                 hasPermission: true,
             },
         ];
+
+        function isAdGroupLevel() {
+            var adGroup = zemNavigationNewService.getActiveEntityByType(
+                constants.entityType.AD_GROUP
+            );
+            if (adGroup === undefined || adGroup === null) {
+                return false;
+            }
+            return true;
+        }
 
         function execute(selected) {
             for (var i = 0; i < $ctrl.actions.length; i++) {

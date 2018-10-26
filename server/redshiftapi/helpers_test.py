@@ -35,6 +35,11 @@ class HelperTest(TestCase):
             helpers.inflate_parent_constraints([{"publisher_id": "sad__2"}]), [{"publisher": "sad", "source_id": 2}]
         )
 
+        self.assertEqual(
+            helpers.inflate_parent_constraints([{"publisher_id": ["sad__2", "tralala__7"]}]),
+            [{"publisher": "sad", "source_id": 2}, {"publisher": "tralala", "source_id": 7}],
+        )
+
         self.assertEqual(helpers.inflate_parent_constraints([{"source_id": 1}]), [{"source_id": 1}])
 
     def test_optimize_parent_constraints(self):

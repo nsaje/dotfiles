@@ -6,7 +6,8 @@ angular
         $http,
         $templateCache,
         $compile,
-        $document
+        $document,
+        $window
     ) {
         // eslint-disable-line max-len
         var body;
@@ -60,6 +61,21 @@ angular
             body.append(compiledModal);
             modal = compiledModal;
 
+            $timeout(function() {
+                if (!modal) return;
+                var elementWidth = modal[0].offsetWidth;
+                var overflow =
+                    elementWidth +
+                    toggleElementPosition.left -
+                    $window.innerWidth;
+                if (overflow > 0) {
+                    modal.addClass('zem-grid-modal-wrapper--fullsize');
+                    modal[0].style.removeProperty('top');
+                    modal[0].style.removeProperty('left');
+                    body.addClass('modal-open');
+                }
+            }, 0);
+
             // Focus element with 'focus' attribute
             $timeout(function() {
                 if (!modal) return;
@@ -107,6 +123,7 @@ angular
             deregisterLocationChangeStart();
 
             toggleElement.removeClass('modal-open');
+            body.removeClass('modal-open');
         }
 
         return {

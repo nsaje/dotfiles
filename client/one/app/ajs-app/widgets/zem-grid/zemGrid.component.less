@@ -837,128 +837,251 @@ zem-grid {
     }
 }
 
-// Modals
-.zem-grid-modal {
+// Modal
+.zem-grid-modal-wrapper {
     display: block;
     position: absolute;
     top: -9999px;
     left: -9999px;
 
-    &.state-selector-modal {
-        width: auto;
-        background-color: @zem-grid-bg-color;
-        border: 1px solid tint(@secondary-color, 80%);
-        border-top-right-radius: @border-radius;
-        border-bottom-left-radius: @border-radius;
-        border-bottom-right-radius: @border-radius;
-        margin-top: 4px;
+    &.zem-grid-modal-wrapper--fullsize {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 2000;    
+        background: rgba(0, 0, 0, 0.2);
 
-        .wait-message {
-            padding: 5px;
-        }
+        .zem-grid-modal {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
 
-        .state-list {
-            list-style: none;
-            margin: 0;
-            padding: 0;
+            &.bid-modifier-field-modal {
+                margin-top: 0px;
+                height: auto;
+                width: 250px;
+                border: 0;
+                background: rgb(255, 255, 255);
+                padding: 15px;
+                border-radius: 5px;
+                box-shadow: rgba(0, 0, 0, 0.5) 0px 5px 15px 0px;
 
-            .state-item {
-                display: block;
-                padding: 5px 10px;
-                color: @text-color;
-                transition: background-color @default-animation;
+                .message {
+                    flex: 0 0 100%;
+                    margin-top: 0px;
+                    margin-left: 0px;
+                    text-align: center;
+                }
+
+                .field-wrapper {
+                    flex: 0 0 48%;
+
+                    .prefixed-field {
+                        width: auto;
+                    }
+                }
+
+                .field-button-wrapper {
+                    flex: 0 0 48%;
+                    justify-content: space-between;
+
+                    .button {
+                        flex: 0 0 46%;
+                        margin: 0;
+                    }
+                }
+    
+                .button-wrapper {
+                    flex: 0 0 100%;
+                    justify-content: space-between;
+
+                    .button {
+                        flex: 0 0 48%;
+                        margin: 0;
+                    }
+                }
             }
 
-            .state-item:hover {
-                background-color: tint(@secondary-color, 80%);
-                cursor: pointer;
+            &.editable-currency-field-modal {
+                margin-top: 0px;
+                height: auto;
+                width: 250px;
+                border: 0;
+                background: rgb(255, 255, 255);
+                padding: 15px;
+                border-radius: 5px;
+                box-shadow: rgba(0, 0, 0, 0.5) 0px 5px 15px 0px;
+
+                .field-wrapper {
+                    flex: 0 0 100%;
+
+                    .prefixed-field {
+                        width: auto;
+                    }
+                }
+    
+                .button-wrapper {
+                    margin-top: 10px;
+                    flex: 0 0 100%;
+                    justify-content: space-between;
+
+                    .button {
+                        flex: 0 0 48%;
+                        margin: 0;
+                    }
+                }
             }
 
-            .state-icon {
-                margin-right: 10px;
+            .edit-form {
+                flex-wrap: wrap;
+                justify-content: space-between;
             }
 
-            .state-text {
-                display: inline-block;
-                vertical-align: middle;
-            }
-
-            .disabled-message {
-                font-size: 12px;
-                text-decoration: underline;
-            }
         }
     }
 
-    &.editable-currency-field-modal {
-        width: auto;
-        padding: 8px;
-        background-color: tint(@secondary-color, 90%);
-        border: 1px dashed tint(@secondary-color, 60%);
-        font-size: @default-font-size;
-        box-sizing: border-box;
-        height: 46px;
-        margin-top: 3px;
-        z-index: 999;
+    .zem-grid-modal {
+        display: block;
 
-        .button .loader {
-            width: 20px;
-            height: 10px;
-            margin: 0 16px 0 17px;
+        .edit-form {
+            display: flex;
+            flex-wrap: nowrap;
+        }
+        
+        &.state-selector-modal {
+            width: auto;
+            background-color: @zem-grid-bg-color;
+            border: 1px solid tint(@secondary-color, 80%);
+            border-top-right-radius: @border-radius;
+            border-bottom-left-radius: @border-radius;
+            border-bottom-right-radius: @border-radius;
+            margin-top: 4px;
+
+            .wait-message {
+                padding: 5px;
+            }
+
+            .state-list {
+                list-style: none;
+                margin: 0;
+                padding: 0;
+
+                .state-item {
+                    display: block;
+                    padding: 5px 10px;
+                    color: @text-color;
+                    transition: background-color @default-animation;
+                }
+
+                .state-item:hover {
+                    background-color: tint(@secondary-color, 80%);
+                    cursor: pointer;
+                }
+
+                .state-icon {
+                    margin-right: 10px;
+                }
+
+                .state-text {
+                    display: inline-block;
+                    vertical-align: middle;
+                }
+
+                .disabled-message {
+                    font-size: 12px;
+                    text-decoration: underline;
+                }
+            }
         }
 
-        .message, .button, .prefixed-field {
-            float: left;
-            margin-left: 10px;
+        &.editable-currency-field-modal {
+            width: auto;
+            padding: 8px;
+            background-color: tint(@secondary-color, 90%);
+            border: 1px dashed tint(@secondary-color, 60%);
+            font-size: @default-font-size;
+            box-sizing: border-box;
+            height: 46px;
+            margin-top: 3px;
+            z-index: 999;
+
+            .button .loader {
+                width: 20px;
+                height: 10px;
+                margin: 0 16px 0 17px;
+            }
+
+            .message, .button, .prefixed-field {
+                float: left;
+                margin-left: 10px;
+            }
+
+            .prefixed-field {
+                margin-left: 0;
+                width: 100px;
+            }
+
+            .button-wrapper {
+                display: flex;
+                flex-wrap: nowrap;            
+            }
+
+            .message {
+                line-height: 46px;
+            }
+
+            .message--middle {
+                margin-top: -8px;
+            }
         }
 
-        .prefixed-field {
-            margin-left: 0;
-            width: 100px;
-        }
+        &.bid-modifier-field-modal {
+            width: auto;
+            padding: 8px;
+            background-color: tint(@secondary-color, 90%);
+            border: 1px dashed tint(@secondary-color, 60%);
+            font-size: @default-font-size;
+            box-sizing: border-box;
+            height: 46px;
+            margin-top: 3px;
+            z-index: 999;
 
-        .message {
-            line-height: 46px;
-        }
+            .button .loader {
+                width: 20px;
+                height: 10px;
+                margin: 0 16px 0 17px;
+            }
 
-        .message--middle {
-            margin-top: -8px;
-        }
-    }
+            .message, .button, .prefixed-field {
+                margin-left: 10px;
+            }
 
-    &.bid-modifier-field-modal {
-        width: auto;
-        padding: 8px;
-        background-color: tint(@secondary-color, 90%);
-        border: 1px dashed tint(@secondary-color, 60%);
-        font-size: @default-font-size;
-        box-sizing: border-box;
-        height: 46px;
-        margin-top: 3px;
-        z-index: 999;
+            .prefixed-field {
+                margin-left: 0;
+                width: 100px;
+            }
 
-        .button .loader {
-            width: 20px;
-            height: 10px;
-            margin: 0 16px 0 17px;
-        }
+            .field-button-wrapper {
+                display: flex;
+                flex-wrap: nowrap;                
+            }
 
-        .message, .button, .prefixed-field {
-            float: left;
-            margin-left: 10px;
-        }
+            .button-wrapper {
+                display: flex;
+                flex-wrap: nowrap;            
+            }
 
-        .prefixed-field {
-            margin-left: 0;
-            width: 100px;
-        }
+            .message {
+                white-space: pre;
+                line-height: 46px;
+            }
 
-        .message {
-            line-height: 46px;
-        }
-
-        .message--middle {
-            margin-top: -8px;
+            .message--middle {
+                margin-top: -8px;
+            }
         }
     }
 }

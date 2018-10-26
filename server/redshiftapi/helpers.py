@@ -42,18 +42,21 @@ def inflate_parent_constraints(parents):
 
     for parent in parents:
         if "publisher_id" in parent:
-            # publisher_id is an aggregate so not the most suitable for a constraint
-            new_parent = copy.copy(parent)
 
-            publisher_id = new_parent.pop("publisher_id")
-            publisher, source_id = publisher_helpers.dissect_publisher_id(publisher_id)
+            publisher_ids = parent["publisher_id"]
+            if not isinstance(publisher_ids, list):
+                publisher_ids = [publisher_ids]
 
-            new_parent["publisher"] = publisher
+            for publisher_id in publisher_ids:
+                publisher, source_id = publisher_helpers.dissect_publisher_id(publisher_id)
 
-            if source_id:
-                new_parent["source_id"] = source_id
+                new_parent = {}
+                new_parent["publisher"] = publisher
 
-            new_parents.append(new_parent)
+                if source_id:
+                    new_parent["source_id"] = source_id
+
+                new_parents.append(new_parent)
         else:
             new_parents.append(parent)
 

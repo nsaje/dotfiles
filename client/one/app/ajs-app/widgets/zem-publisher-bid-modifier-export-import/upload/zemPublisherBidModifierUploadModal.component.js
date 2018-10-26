@@ -4,7 +4,7 @@ angular.module('one.widgets').component('zemPublisherBidModifierUploadModal', {
         resolve: '<',
         modalInstance: '<',
     },
-    controller: function($scope, $q, $http, $window) {
+    controller: function($scope, $q, $http, $window, $state) {
         var $ctrl = this;
 
         $ctrl.isCreationMode = false;
@@ -13,6 +13,7 @@ angular.module('one.widgets').component('zemPublisherBidModifierUploadModal', {
         $ctrl.clearValidationError = clearValidationError;
         $ctrl.fileUploadCallback = fileUploadCallback;
         $ctrl.downloadErrors = downloadErrors;
+        $ctrl.downloadExample = downloadExample;
 
         $ctrl.errors = {};
         $ctrl.putRequestInProgress = false;
@@ -59,6 +60,7 @@ angular.module('one.widgets').component('zemPublisherBidModifierUploadModal', {
             upsertReal($ctrl.resolve.adGroupId, $ctrl.formData)
                 .then(function() {
                     $ctrl.modalInstance.close();
+                    $state.reload();
                 })
                 .catch(function(data) {
                     $ctrl.errors.entries = [data.details.file];
@@ -99,6 +101,12 @@ angular.module('one.widgets').component('zemPublisherBidModifierUploadModal', {
                 $ctrl.resolve.adGroupId +
                 '/publishers/modifiers/error_download/' +
                 $ctrl.errors.errors_csv_key;
+            $window.open(url, '_blank');
+        }
+
+        function downloadExample() {
+            var url =
+                '/rest/internal/adgroups/publishers/modifiers/example_csv_download/';
             $window.open(url, '_blank');
         }
     },

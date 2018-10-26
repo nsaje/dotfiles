@@ -118,7 +118,9 @@ class PublishersViewSet(restapi.common.views_base.RESTAPIBaseViewSet):
             if entry["level"] == dash.constants.PublisherBlacklistLevel.ADGROUP:
                 bid_modifier = entry.get("modifier")
                 try:
-                    core.features.publisher_bid_modifiers.set(ad_group, entry["name"], entry["source"], bid_modifier)
+                    core.features.publisher_bid_modifiers.set(
+                        ad_group, entry["name"], entry["source"], bid_modifier, user=request.user
+                    )
                 except core.features.publisher_bid_modifiers.exceptions.BidModifierInvalid:
                     raise serializers.ValidationError({"modifier": "Bid modifier invalid!"})
 

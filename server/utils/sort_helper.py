@@ -2,6 +2,7 @@ import collections
 
 
 def sort_results(results, order_fields=None):
+
     # when there is only a single item passed
     # in instead of a list, return it immediately
     if not isinstance(results, collections.Sequence):

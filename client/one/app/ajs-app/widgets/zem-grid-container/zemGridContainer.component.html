@@ -105,19 +105,21 @@
 </script>
 <!-- Modal templates -->
 <script id="zemGridCellActionsDropdown.html" type="text/ng-template">
-    <div class="dropdown-menu dropdown-menu--only-buttons zem-grid-modal">
-        <button class="button button--with-icon"
-                ng-click="ctrl.execute(button)"
-                ng-repeat="button in ctrl.buttons"
-                ng-class="{
-                    'edit-icon': button.type === 'edit',
-                    'archive-icon': button.type === 'archive',
-                    'restore-icon': button.type === 'restore',
-                    'copy-icon': button.type === 'clone',
-                    'download-icon': button.type === 'download',
-                    'blacklist-add-icon': button.type === 'blacklist-adgroup' || button.type === 'blacklist-campaign' || button.type === 'blacklist-account' || button.type === 'blacklist-global',
-                    'blacklist-remove-icon': button.type === 'unlist-adgroup' || button.type === 'unlist-campaign' || button.type === 'unlist-account' || button.type === 'unlist-global'
-                }">{{ button.name }}</button>
+    <div class='zem-grid-modal-wrapper'>
+        <div class="dropdown-menu dropdown-menu--only-buttons zem-grid-modal">
+            <button class="button button--with-icon"
+                    ng-click="ctrl.execute(button)"
+                    ng-repeat="button in ctrl.buttons"
+                    ng-class="{
+                        'edit-icon': button.type === 'edit',
+                        'archive-icon': button.type === 'archive',
+                        'restore-icon': button.type === 'restore',
+                        'copy-icon': button.type === 'clone',
+                        'download-icon': button.type === 'download',
+                        'blacklist-add-icon': button.type === 'blacklist-adgroup' || button.type === 'blacklist-campaign' || button.type === 'blacklist-account' || button.type === 'blacklist-global',
+                        'blacklist-remove-icon': button.type === 'unlist-adgroup' || button.type === 'unlist-campaign' || button.type === 'unlist-account' || button.type === 'unlist-global'
+                    }">{{ button.name }}</button>
+        </div>
     </div>
 </script>
 <script id="zemGridStateSelectorModal.html" type="text/ng-template">
@@ -165,36 +167,50 @@
     </div>
 </script>
 <script id="zemGridEditableCurrencyFieldModal.html" type="text/ng-template">
-    <div class='editable-currency-field-modal zem-grid-modal'>
-        <div ng-if="ctrl.isSaveRequestInProgress() && !ctrl.showLoader" class="message">
-            Save in progress. Please wait ...
-        </div>
-        <div ng-if="!ctrl.isSaveRequestInProgress() || ctrl.showLoader" class="edit-form">
-            <div class="prefixed-field">
-                <span class="prefixed-field__prefix">{{ctrl.currencySymbol}}</span>
-                <input class="input-text" type="text" ng-model="ctrl.editFormInputValue" ng-trim="false" ng-change="ctrl.filterInput()" focus ng-keydown="ctrl.onKeyDown($event)">
+    <div class='zem-grid-modal-wrapper'>
+        <div class='editable-currency-field-modal zem-grid-modal'>
+            <div ng-if="ctrl.isSaveRequestInProgress() && !ctrl.showLoader" class="message">
+                Save in progress. Please wait ...
             </div>
-            <button ng-show="ctrl.showLoader" class="button button--highlight button--disabled"><span class="loader loader--white"></span></button>
-            <button ng-show="!ctrl.showLoader" class="button button--highlight button--with-icon check-icon" ng-click="ctrl.save()">Save</button>
-            <button class="button button--outline" ng-click="ctrl.closeModal()">Cancel</button>
-            <span class="message message--error" ng-repeat="error in ctrl.errors">{{error}}</span>
+            <div ng-if="!ctrl.isSaveRequestInProgress() || ctrl.showLoader" class="edit-form">
+                <div class="field-wrapper">
+                    <div class="prefixed-field">
+                        <span class="prefixed-field__prefix">{{ctrl.currencySymbol}}</span>
+                        <input class="input-text" type="text" ng-model="ctrl.editFormInputValue" ng-trim="false" ng-change="ctrl.filterInput()" focus ng-keydown="ctrl.onKeyDown($event)">
+                    </div>
+                </div>
+                <div class="button-wrapper">
+                    <button ng-show="!ctrl.showLoader" class="button button--highlight button--with-icon check-icon" ng-click="ctrl.save()">Save</button>
+                    <button class="button button--outline" ng-click="ctrl.closeModal()">Cancel</button>
+                    <button ng-show="ctrl.showLoader" class="button button--highlight button--disabled"><span class="loader loader--white"></span></button>
+                </div>
+                <span class="message message--error" ng-repeat="error in ctrl.errors">{{error}}</span>
+            </div>
         </div>
     </div>
 </script>
 <script id="zemGridBidModifierFieldModal.html" type="text/ng-template">
-    <div class='bid-modifier-field-modal zem-grid-modal'>
-        <div class="edit-form">
-            <div class="prefixed-field">
-                <span class="prefixed-field__prefix">%</span>
-                <input class="input-text" type="text" ng-model="ctrl.editFormInputValue" ng-trim="false" ng-change="ctrl.filterInput()" focus ng-keydown="ctrl.onKeyDown($event)">
+    <div class='zem-grid-modal-wrapper'>
+        <div class='bid-modifier-field-modal zem-grid-modal'>
+            <div class="edit-form">
+                <div class="field-wrapper">
+                    <div class="prefixed-field">
+                        <span class="prefixed-field__prefix">%</span>
+                        <input class="input-text" type="text" ng-model="ctrl.editFormInputValue" ng-trim="false" ng-change="ctrl.filterInput()" focus ng-keydown="ctrl.onKeyDown($event)">
+                    </div>
+                </div>
+                <div class="field-button-wrapper">
+                    <button class="button button--highlight" ng-click="ctrl.onButtonMinus()">−1</button>
+                    <button class="button button--highlight" ng-click="ctrl.onButtonPlus()">+1</button>
+                </div>
+                <span class="message message--middle">{{ctrl.currencySymbol}}{{ctrl.sourceBidCpc}} {{ctrl.sign}} {{ctrl.currencySymbol}}<b>{{ctrl.delta}}</b> = {{ctrl.currencySymbol}}{{ctrl.newCpc}}</span>
+                <div class="button-wrapper">
+                    <button ng-show="ctrl.showLoader" class="button button--highlight button--disabled"><span class="loader loader--white"></span></button>
+                    <button ng-show="!ctrl.showLoader" class="button button--highlight button--with-icon check-icon" ng-click="ctrl.save()">Save</button>
+                    <button class="button button--outline" ng-click="ctrl.closeModal()">Cancel</button>
+                </div>
+                <span class="message message--error" ng-repeat="error in ctrl.errors">{{error}}</span>        
             </div>
-            <button class="button button--highlight" ng-click="ctrl.onButtonMinus()">−1</button>
-            <button class="button button--highlight" ng-click="ctrl.onButtonPlus()">+1</button>
-            <span class="message message--middle">{{ctrl.currencySymbol}}{{ctrl.sourceBidCpc}} {{ctrl.sign}} {{ctrl.currencySymbol}}<b>{{ctrl.delta}}</b> = {{ctrl.currencySymbol}}{{ctrl.newCpc}}</span>
-            <button ng-show="ctrl.showLoader" class="button button--highlight button--disabled"><span class="loader loader--white"></span></button>
-            <button ng-show="!ctrl.showLoader" class="button button--highlight button--with-icon check-icon" ng-click="ctrl.save()">Save</button>
-            <button class="button button--outline" ng-click="ctrl.closeModal()">Cancel</button>
-            <span class="message message--error" ng-repeat="error in ctrl.errors">{{error}}</span>
         </div>
     </div>
 </script>
