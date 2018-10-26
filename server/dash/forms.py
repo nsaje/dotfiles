@@ -1139,6 +1139,8 @@ class CreditLineItemForm(forms.ModelForm):
             "status",
             "comment",
             "currency",
+            "contract_id",
+            "contract_number",
         ]
 
 

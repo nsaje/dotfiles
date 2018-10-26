@@ -52,6 +52,16 @@
             <textarea class="textarea" id="comment-input" type="text" ng-model="$ctrl.state.creditItem.comment" maxlength="256"></textarea>
             <div class="message message--error" ng-repeat="error in $ctrl.state.requests.saveCreditItem.errors.comment" for="comment">{{ error }}</div>
         </div>
+        <div class="form__group" ng-class="{'form--error': !!$ctrl.state.requests.saveCreditItem.errors.contractId}">
+            <label class="form__label" for="contractID-input">Contract ID</label>
+            <input class="input-text" id="contractID-input" type="text" placeholder="123456ABC789NgQAAU" ng-model="$ctrl.state.creditItem.contractId" />
+            <div class="message message--error" ng-repeat="error in $ctrl.state.requests.saveCreditItem.errors.contractId" for="contractID-input">{{ error }}</div>
+        </div>
+        <div class="form__group" ng-class="{'form--error': !!$ctrl.state.requests.saveCreditItem.errors.contractNumber}">
+            <label class="form__label" for="contractNumber-input">Contract Number</label>
+            <input class="input-text" id="contractNumber-input" type="text" placeholder="123456789" ng-model="$ctrl.state.creditItem.contractNumber" />
+            <div class="message message--error" ng-repeat="error in $ctrl.state.requests.saveCreditItem.errors.contractNumber" for="contractNumber-input">{{ error }}</div>
+        </div>
         <div class="form__group" ng-class="{'form--error': !!$ctrl.state.requests.saveCreditItem.errors.agency}" ng-if="$ctrl.account.data.agency">
             <label class="form__label">Agency credit</label>
             <div class="form__checkbox">
