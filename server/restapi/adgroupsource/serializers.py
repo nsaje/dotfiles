@@ -10,16 +10,26 @@ import dash.models
 
 class AdGroupSourceListSerializer(serializers.ListSerializer):
     def to_internal_value(self, data):
+
+        if not isinstance(data, list):
+            # Data should only be processed if it is a list; if not, validation will fail in super call.
+            return super().to_internal_value(data)
+
         source_slugs = []
         for item in data:
-            source_slugs.append(item.get("source"))
+            source = item.get("source", None)
+            if not source:
+                raise serializers.ValidationError("Object '%s' has no source!" % item)
+
+            source_slugs.append(source)
         sources = dash.models.Source.objects.filter(bidder_slug__in=source_slugs)
         sources_by_slug = {s.bidder_slug: s for s in sources}
         for item in data:
-            source = sources_by_slug.get(item.get("source"))
+            source = sources_by_slug.get(item.get("source"), None)
             if not source:
                 raise serializers.ValidationError("Invalid source in object '%s'!" % item)
             item["source"] = source
+
         ret = super().to_internal_value(data)
         return ret
 
