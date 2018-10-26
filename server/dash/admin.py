@@ -295,12 +295,13 @@ class DefaultSourceSettingsAdmin(admin.ModelAdmin):
         if obj.credentials is None:
             return "/"
 
-        return '<a href="{credentials_url}">{credentials}</a>'.format(
-            credentials_url=reverse("admin:dash_sourcecredentials_change", args=(obj.credentials.id,)),
-            credentials=obj.credentials,
+        return mark_safe(
+            '<a href="{credentials_url}">{credentials}</a>'.format(
+                credentials_url=reverse("admin:dash_sourcecredentials_change", args=(obj.credentials.id,)),
+                credentials=obj.credentials,
+            )
         )
 
-    credentials_.allow_tags = True
     credentials_.admin_order_field = "credentials"
 
 
@@ -856,7 +857,6 @@ class AdGroupAdmin(SlackLoggerMixin, admin.ModelAdmin):
             pass
         return False
 
-    is_archived_.allow_tags = True
     is_archived_.short_description = "Is archived"
     is_archived_.boolean = True
 
@@ -880,20 +880,22 @@ class AdGroupAdmin(SlackLoggerMixin, admin.ModelAdmin):
         self.log_custom_flags_event_to_slack(old_obj, ad_group, user=request.user.email)
 
     def account_(self, obj):
-        return '<a href="{account_url}">{account}</a>'.format(
-            account_url=reverse("admin:dash_account_change", args=(obj.campaign.account.id,)),
-            account=obj.campaign.account,
+        return mark_safe(
+            '<a href="{account_url}">{account}</a>'.format(
+                account_url=reverse("admin:dash_account_change", args=(obj.campaign.account.id,)),
+                account=obj.campaign.account,
+            )
         )
 
-    account_.allow_tags = True
     account_.admin_order_field = "campaign__account"
 
     def campaign_(self, obj):
-        return '<a href="{campaign_url}">{campaign}</a>'.format(
-            campaign_url=reverse("admin:dash_campaign_change", args=(obj.campaign.id,)), campaign=obj.campaign
+        return mark_safe(
+            '<a href="{campaign_url}">{campaign}</a>'.format(
+                campaign_url=reverse("admin:dash_campaign_change", args=(obj.campaign.id,)), campaign=obj.campaign
+            )
         )
 
-    campaign_.allow_tags = True
     campaign_.admin_order_field = "campaign"
 
 
@@ -909,18 +911,19 @@ class AdGroupSourceAdmin(SaveWithRequestMixin, admin.ModelAdmin):
         return qs
 
     def ad_group_(self, obj):
-        return '<a href="{ad_group_url}">{name}</a>'.format(
-            ad_group_url=reverse("admin:dash_adgroup_change", args=(obj.ad_group.id,)),
-            name="{} / {} / {} - {} ({})".format(
-                obj.ad_group.campaign.account.name,
-                obj.ad_group.campaign.name,
-                obj.ad_group.name,
-                obj.source.name,
-                obj.ad_group.id,
-            ),
+        return mark_safe(
+            '<a href="{ad_group_url}">{name}</a>'.format(
+                ad_group_url=reverse("admin:dash_adgroup_change", args=(obj.ad_group.id,)),
+                name="{} / {} / {} - {} ({})".format(
+                    obj.ad_group.campaign.account.name,
+                    obj.ad_group.campaign.name,
+                    obj.ad_group.name,
+                    obj.source.name,
+                    obj.ad_group.id,
+                ),
+            )
         )
 
-    ad_group_.allow_tags = True
     ad_group_.admin_order_field = "ad_group"
 
 
@@ -974,14 +977,14 @@ class OutbrainAccountAdmin(admin.ModelAdmin):
     readonly_fields = ("_z1_account",)
 
     def _z1_account(self, obj):
-        return ", ".join(
-            '<a href="{account_url}">{account}</a>'.format(
-                account_url=reverse("admin:dash_account_change", args=(account.pk,)), account=account.name
+        return mark_safe(
+            ", ".join(
+                '<a href="{account_url}">{account}</a>'.format(
+                    account_url=reverse("admin:dash_account_change", args=(account.pk,)), account=account.name
+                )
+                for account in models.Account.objects.filter(outbrain_marketer_id=obj.marketer_id)
             )
-            for account in models.Account.objects.filter(outbrain_marketer_id=obj.marketer_id)
         )
-
-    _z1_account.allow_tags = True
 
 
 def reject_content_ad_sources(modeladmin, request, queryset):
@@ -1091,12 +1094,13 @@ class ContentAdSourceAdmin(admin.ModelAdmin):
         return False
 
     def submission_status_(self, obj):
-        return '<span style="color:{color}">{submission_status}</span>'.format(
-            color=self.display_submission_status_colors[obj.submission_status],
-            submission_status=obj.get_submission_status_display(),
+        return mark_safe(
+            '<span style="color:{color}">{submission_status}</span>'.format(
+                color=self.display_submission_status_colors[obj.submission_status],
+                submission_status=obj.get_submission_status_display(),
+            )
         )
 
-    submission_status_.allow_tags = True
     submission_status_.admin_order_field = "submission_status"
 
     def content_ad_id_(self, obj):
@@ -1106,7 +1110,7 @@ class ContentAdSourceAdmin(admin.ModelAdmin):
 
     def ad_group_name(self, obj):
         ad_group = obj.content_ad.ad_group
-        return (
+        return mark_safe(
             '<a href="{account_url}">{account_name}</a> / <a href="{campaign_url}">{campaign_name}</a>'
             ' / <a href="{ad_group_url}">{ad_group_name}</a> - ({ad_group_id})'.format(
                 account_url=reverse("admin:dash_account_change", args=(ad_group.campaign.account.id,)),
@@ -1118,8 +1122,6 @@ class ContentAdSourceAdmin(admin.ModelAdmin):
                 ad_group_id=str(ad_group.id),
             )
         )
-
-    ad_group_name.allow_tags = True
 
     def ad_group_settings_status(self, obj):
         ad_group = obj.content_ad.ad_group
@@ -1298,9 +1300,7 @@ class ScheduledExportReportAdmin(admin.ModelAdmin):
 
     def report_(self, obj):
         link = reverse("admin:dash_exportreport_change", args=(obj.report.id,))
-        return '<a href="%s">%s</a>' % (link, obj.report)
-
-    report_.allow_tags = True
+        return mark_safe('<a href="%s">%s</a>' % (link, obj.report))
 
     def _agencies(self, obj):
         if len(obj.report.filtered_agencies.all()) == 0:
@@ -1497,7 +1497,7 @@ class HistoryAdmin(ExportMixin, admin.ModelAdmin):
         )
 
     def agency_(self, obj):
-        return (
+        return mark_safe(
             '<a href="{agency_url}">{agency}</a>'.format(
                 agency_url=reverse("admin:dash_agency_change", args=(obj.agency.id,)), agency=obj.agency
             )
@@ -1505,11 +1505,10 @@ class HistoryAdmin(ExportMixin, admin.ModelAdmin):
             else "-"
         )
 
-    agency_.allow_tags = True
     agency_.admin_order_field = "agency"
 
     def account_(self, obj):
-        return (
+        return mark_safe(
             '<a href="{account_url}">{account}</a>'.format(
                 account_url=reverse("admin:dash_account_change", args=(obj.account.id,)), account=obj.account
             )
@@ -1517,11 +1516,10 @@ class HistoryAdmin(ExportMixin, admin.ModelAdmin):
             else "-"
         )
 
-    account_.allow_tags = True
     account_.admin_order_field = "account"
 
     def campaign_(self, obj):
-        return (
+        return mark_safe(
             '<a href="{campaign_url}">{campaign}</a>'.format(
                 campaign_url=reverse("admin:dash_campaign_change", args=(obj.campaign.id,)), campaign=obj.campaign
             )
@@ -1529,11 +1527,10 @@ class HistoryAdmin(ExportMixin, admin.ModelAdmin):
             else "-"
         )
 
-    campaign_.allow_tags = True
     campaign_.admin_order_field = "campaign"
 
     def ad_group_(self, obj):
-        return (
+        return mark_safe(
             '<a href="{ad_group_url}">{ad_group}</a>'.format(
                 ad_group_url=reverse("admin:dash_adgroup_change", args=(obj.ad_group.id,)), ad_group=obj.ad_group
             )
@@ -1541,7 +1538,6 @@ class HistoryAdmin(ExportMixin, admin.ModelAdmin):
             else "-"
         )
 
-    ad_group_.allow_tags = True
     ad_group_.admin_order_field = "ad_group"
 
     def has_add_permission(self, request):
@@ -1652,9 +1648,7 @@ class PublisherClassificationAdmin(admin.ModelAdmin):
 
     def toggle_ignore_(self, obj):
         link = reverse("admin:toggle-ignore-classification", args=(obj.id,))
-        return '<a href="%s">%s</a>' % (link, obj.ignored and "ignored" or "valid")
-
-    toggle_ignore_.allow_tags = True
+        return mark_safe('<a href="%s">%s</a>' % (link, obj.ignored and "ignored" or "valid"))
 
 
 class CpcConstraintAdmin(admin.ModelAdmin):

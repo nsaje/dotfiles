@@ -1,6 +1,7 @@
 from django.contrib import admin
 from django.urls import reverse
 from django.db.models import Prefetch
+from django.utils.safestring import mark_safe
 
 from dash.features import reports
 from utils import dates_helper
@@ -47,9 +48,9 @@ class ScheduledReportAdmin(admin.ModelAdmin):
     def today_job_status(self, obj):
         if len(obj.last_job) > 0:
             link = reverse("admin:dash_reportjob_change", args=[obj.last_job[0].id])
-            return '<a href="%s">%s</a>' % (link, reports.constants.ReportJobStatus.get_text(obj.last_job[0].status))
-
-    today_job_status.allow_tags = True
+            return mark_safe(
+                '<a href="%s">%s</a>' % (link, reports.constants.ReportJobStatus.get_text(obj.last_job[0].status))
+            )
 
 
 admin.site.register(models.ScheduledReport, ScheduledReportAdmin)

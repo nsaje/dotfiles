@@ -6,6 +6,7 @@ from django.conf import settings
 from django.contrib.postgres.fields import JSONField
 from django.db import models, transaction
 from django.template.defaultfilters import pluralize
+from django.utils.safestring import mark_safe
 
 import utils.demo_anonymizer
 import utils.string_helper
@@ -160,11 +161,9 @@ class AdGroup(validation.AdGroupValidatorMixin, models.Model, bcm_mixin.AdGroupB
 
     def admin_link(self):
         if self.id:
-            return '<a href="/admin/dash/adgroup/%d/">Edit</a>' % self.id
+            return mark_safe('<a href="/admin/dash/adgroup/%d/">Edit</a>' % self.id)
         else:
             return "N/A"
-
-    admin_link.allow_tags = True
 
     @newrelic.agent.function_trace()
     def get_current_settings(self):

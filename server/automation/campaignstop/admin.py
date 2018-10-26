@@ -2,6 +2,7 @@ import pprint
 import textwrap
 
 from django.contrib import admin
+from django.utils.safestring import mark_safe
 
 import utils.admin_common
 
@@ -26,6 +27,9 @@ class RealTimeCampaignStopLogAdmin(admin.ModelAdmin):
     )
 
     def event_description(self, obj):
+        return mark_safe(self._get_event_description(obj))
+
+    def _get_event_description(self, obj):
         if not obj.context:
             return "No context captured."
 
@@ -38,8 +42,6 @@ class RealTimeCampaignStopLogAdmin(admin.ModelAdmin):
         elif obj.event == constants.CampaignStopEvent.BUDGET_AMOUNT_VALIDATION:
             pass
         return "Event type unknown. Captured context:<br /><pre>{}</pre>".format(pprint.pformat(obj.context))
-
-    event_description.allow_tags = True
 
     def _get_depletion_check_description(self, obj):
         desc = textwrap.dedent(
@@ -115,6 +117,9 @@ class RealTimeCampaignStopLogAdmin(admin.ModelAdmin):
         ).replace("\n", "<br />")
 
     def event_result(self, obj):
+        return mark_safe(self._get_event_result(obj))
+
+    def _get_event_result(self, obj):
         if obj.event == constants.CampaignStopEvent.BUDGET_DEPLETION_CHECK:
             return self._format_state(obj)
         elif obj.event == constants.CampaignStopEvent.SELECTION_CHECK:
@@ -124,8 +129,6 @@ class RealTimeCampaignStopLogAdmin(admin.ModelAdmin):
         elif obj.event == constants.CampaignStopEvent.BUDGET_AMOUNT_VALIDATION:
             pass
         return "N/A"
-
-    event_result.allow_tags = True
 
     @staticmethod
     def _format_state(obj):

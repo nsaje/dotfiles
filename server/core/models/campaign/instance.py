@@ -1,5 +1,6 @@
 from django.urls import reverse
 from django.db import transaction
+from django.utils.safestring import mark_safe
 
 import core.models
 
@@ -13,7 +14,7 @@ class CampaignInstanceMixin:
 
     def admin_link(self):
         if self.id:
-            return '<a href="/admin/dash/campaign/%d/">Edit</a>' % self.id
+            return mark_safe('<a href="/admin/dash/campaign/%d/">Edit</a>' % self.id)
         else:
             return "N/A"
 
@@ -24,8 +25,6 @@ class CampaignInstanceMixin:
 
     def get_long_name(self):
         return "{}, Campaign {}".format(self.account.get_long_name(), self.name)
-
-    admin_link.allow_tags = True
 
     def get_sales_representative(self):
         return self.account.get_current_settings().default_sales_representative

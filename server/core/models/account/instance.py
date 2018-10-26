@@ -1,5 +1,6 @@
 from django.urls import reverse
 from django.db import transaction
+from django.utils.safestring import mark_safe
 
 import core.models
 import core.features.history
@@ -70,11 +71,9 @@ class AccountInstanceMixin:
 
     def admin_link(self):
         if self.id:
-            return '<a href="/admin/dash/account/%d/">Edit</a>' % self.id
+            return mark_safe('<a href="/admin/dash/account/%d/">Edit</a>' % self.id)
         else:
             return "N/A"
-
-    admin_link.allow_tags = True
 
     def get_account_url(self, request):
         account_settings_url = request.build_absolute_uri(reverse("admin:dash_account_change", args=(self.pk,)))
