@@ -43,6 +43,7 @@ CONTENT_ADS_FIELDS = {
     "status_per_source",
     "tracker_urls",
     "amplify_live_preview_link",
+    "sspd_url",
 }
 
 SOURCE_FIELDS = {

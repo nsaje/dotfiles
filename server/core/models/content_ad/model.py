@@ -173,6 +173,12 @@ class ContentAd(models.Model, prodops_mixin.ProdopsMixin, instance.ContentAdInst
     def get_redirector_url(self):
         return settings.R1_BLANK_REDIRECT_URL.format(redirect_id=self.redirect_id, content_ad_id=self.id)
 
+    def get_sspd_url(self):
+        if self.id:
+            return settings.SSPD_CONTENT_AD_REDIRECT_URL.format(id=self.id)
+        else:
+            return "N/A"
+
     def __str__(self):
         return "{cn}(id={id}, ad_group={ad_group}, image_id={image_id}, state={state})".format(
             cn=self.__class__.__name__, id=self.id, ad_group=self.ad_group, image_id=self.image_id, state=self.state

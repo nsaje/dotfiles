@@ -509,5 +509,16 @@ OB_TOKEN_V1 = (
     .decode("utf-8")
 )
 
+SSPD_ACCOUNT_REDIRECT_URL = "https://ssp.zemanta.com/ad-review?accountId={id}"
+SSPD_CAMPAIGN_REDIRECT_URL = "https://ssp.zemanta.com/ad-review?campaignId={id}"
+SSPD_AD_GROUP_REDIRECT_URL = "https://ssp.zemanta.com/ad-review?adGroupId={id}"
+SSPD_CONTENT_AD_REDIRECT_URL = "https://ssp.zemanta.com/ad-review?contentAdId={id}"
+
 SSPD_BASE_URL = "https://ssp.zemanta.com"
-SSPD_AUTH_SECRET = Secret("kms:region=us-east-1:AQECAHjdfiP9DHF52gr8mpTmZ/ZwRu2qZbRw8dV0ohsw+OhZewAAAMYwgcMGCSqGSIb3DQEHBqCBtTCBsgIBADCBrAYJKoZIhvcNAQcBMB4GCWCGSAFlAwQBLjARBAzaWTRo41YGZIqijeICARCAf8lwlJmXqs66J8sHIecNvqaQc1vnDUTiYPjjVTflHLseULmqNaUaTHym6AW8KV9qpaGgtaMAPXvfQi3Jjeb5J6vw82xWnZ1cPpyT7eTvISzg7bq77e6a2LVR8u3/MjLV+f1yOffSEr9vTkx8ZxVjklwb3EcaRawX8I+j1h9z80g=").get().decode("utf-8")
+SSPD_AUTH_SECRET = (
+    Secret(
+        "kms:region=us-east-1:AQECAHjdfiP9DHF52gr8mpTmZ/ZwRu2qZbRw8dV0ohsw+OhZewAAAMYwgcMGCSqGSIb3DQEHBqCBtTCBsgIBADCBrAYJKoZIhvcNAQcBMB4GCWCGSAFlAwQBLjARBAzaWTRo41YGZIqijeICARCAf8lwlJmXqs66J8sHIecNvqaQc1vnDUTiYPjjVTflHLseULmqNaUaTHym6AW8KV9qpaGgtaMAPXvfQi3Jjeb5J6vw82xWnZ1cPpyT7eTvISzg7bq77e6a2LVR8u3/MjLV+f1yOffSEr9vTkx8ZxVjklwb3EcaRawX8I+j1h9z80g="
+    )
+    .get()
+    .decode("utf-8")
+)

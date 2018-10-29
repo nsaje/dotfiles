@@ -70,6 +70,7 @@ def augment_account(row, loader, is_base_level=False):
                 "name": account.name,
                 "agency_id": account.agency_id,
                 "agency": account.agency.name if account.agency else "",
+                "sspd_url": account.get_sspd_url(),
             }
         )
 
@@ -134,7 +135,14 @@ def augment_campaign(row, loader, is_base_level=False):
     refunds = None
     if campaign_id:
         campaign = loader.objs_map[campaign_id]
-        row.update({"agency_id": campaign.account.agency_id, "account_id": campaign.account_id, "name": campaign.name})
+        row.update(
+            {
+                "agency_id": campaign.account.agency_id,
+                "account_id": campaign.account_id,
+                "name": campaign.name,
+                "sspd_url": campaign.get_sspd_url(),
+            }
+        )
 
         settings = loader.settings_map[campaign_id]
         copy_fields_if_exists(["status", "archived", "campaign_manager"], settings, row)
@@ -184,6 +192,7 @@ def augment_ad_group(row, loader, is_base_level=False):
                 "account_id": ad_group.campaign.account_id,
                 "campaign_id": ad_group.campaign_id,
                 "name": ad_group.name,
+                "sspd_url": ad_group.get_sspd_url(),
             }
         )
 
@@ -215,6 +224,7 @@ def augment_content_ad(row, loader, is_base_level=False):
 
     if content_ad_id:
         content_ad = loader.objs_map[content_ad_id]
+
         row.update(
             {
                 "agency_id": content_ad.ad_group.campaign.account.agency_id,
@@ -238,6 +248,7 @@ def augment_content_ad(row, loader, is_base_level=False):
                 "status": content_ad.state,
                 "archived": content_ad.archived,
                 "redirector_url": content_ad.get_redirector_url(),
+                "sspd_url": content_ad.get_sspd_url(),
             }
         )
 

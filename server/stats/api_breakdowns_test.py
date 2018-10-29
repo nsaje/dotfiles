@@ -1,6 +1,7 @@
 import datetime
 import mock
 from django.test import TestCase
+from django.conf import settings
 
 from utils import test_helper, threads
 
@@ -79,6 +80,7 @@ class ApiBreakdownQueryTest(TestCase):
                     "license_fee_projection": None,
                     "campaign_manager": "supertestuser@test.com",
                     "archived": False,
+                    "sspd_url": settings.SSPD_CAMPAIGN_REDIRECT_URL.format(id=1),
                 },
                 {
                     "status": 2,
@@ -95,6 +97,7 @@ class ApiBreakdownQueryTest(TestCase):
                     "campaign_manager": "mad.max@zemanta.com",
                     "parent_breakdown_id": "",
                     "license_fee_projection": None,
+                    "sspd_url": settings.SSPD_CAMPAIGN_REDIRECT_URL.format(id=2),
                 },
             ],
         )
@@ -143,6 +146,7 @@ class ApiBreakdownQueryTest(TestCase):
                     "license_fee_projection": None,
                     "campaign_manager": "supertestuser@test.com",
                     "archived": False,
+                    "sspd_url": settings.SSPD_CAMPAIGN_REDIRECT_URL.format(id=1),
                 },
                 {
                     "campaign_id": 2,
@@ -160,6 +164,7 @@ class ApiBreakdownQueryTest(TestCase):
                     "license_fee_projection": None,
                     "campaign_manager": "mad.max@zemanta.com",
                     "archived": True,  # archived last
+                    "sspd_url": settings.SSPD_CAMPAIGN_REDIRECT_URL.format(id=2),
                 },
             ],
         )

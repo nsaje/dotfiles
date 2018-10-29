@@ -71,3 +71,9 @@ class Account(instance.AccountInstanceMixin, models.Model):
     )
 
     objects = manager.AccountManager.from_queryset(queryset.AccountQuerySet)()
+
+    def get_sspd_url(self):
+        if self.id:
+            return settings.SSPD_ACCOUNT_REDIRECT_URL.format(id=self.id)
+        else:
+            return "N/A"

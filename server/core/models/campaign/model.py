@@ -62,3 +62,9 @@ class Campaign(
     USERS_FIELD = "users"
 
     objects = manager.CampaignManager.from_queryset(queryset.CampaignQuerySet)()
+
+    def get_sspd_url(self):
+        if self.id:
+            return settings.SSPD_CAMPAIGN_REDIRECT_URL.format(id=self.id)
+        else:
+            return "N/A"

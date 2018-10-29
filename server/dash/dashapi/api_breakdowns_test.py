@@ -3,6 +3,7 @@ from decimal import Decimal
 from mock import patch, MagicMock
 
 from django.test import TestCase, override_settings
+from django.conf import settings
 
 from utils.dict_helper import dict_join
 from zemauth.models import User
@@ -65,6 +66,7 @@ ACCOUNT_1 = {
     "flat_fee": 0,
     "total_fee": 0,
     "total_fee_projection": Decimal("0"),
+    "sspd_url": settings.SSPD_ACCOUNT_REDIRECT_URL.format(id=1),
 }
 
 CAMPAIGN_1 = {
@@ -79,6 +81,7 @@ CAMPAIGN_1 = {
     "allocated_budgets": None,
     "spend_projection": None,
     "license_fee_projection": None,
+    "sspd_url": settings.SSPD_CAMPAIGN_REDIRECT_URL.format(id=1),
 }
 CAMPAIGN_2 = {
     "campaign_id": 2,
@@ -92,6 +95,7 @@ CAMPAIGN_2 = {
     "allocated_budgets": None,
     "spend_projection": None,
     "license_fee_projection": None,
+    "sspd_url": settings.SSPD_CAMPAIGN_REDIRECT_URL.format(id=2),
 }
 
 AD_GROUP_1 = {
@@ -103,6 +107,7 @@ AD_GROUP_1 = {
     "name": "test adgroup 1",
     "status": 1,
     "state": 1,
+    "sspd_url": settings.SSPD_AD_GROUP_REDIRECT_URL.format(id=1),
 }
 AD_GROUP_2 = {
     "ad_group_id": 2,
@@ -113,6 +118,7 @@ AD_GROUP_2 = {
     "name": "test adgroup 2",
     "status": 2,
     "state": 2,
+    "sspd_url": settings.SSPD_AD_GROUP_REDIRECT_URL.format(id=2),
 }
 
 AD_GROUP_BASE_1 = dict_join(AD_GROUP_1, {"campaign_has_available_budget": False})
@@ -162,6 +168,7 @@ CONTENT_AD_1 = {
         },
     },
     "tracker_urls": ["http://testurl1.com", "http://testurl2.com"],
+    "sspd_url": settings.SSPD_CONTENT_AD_REDIRECT_URL.format(id=1),
 }
 
 CONTENT_AD_2 = {
@@ -201,6 +208,7 @@ CONTENT_AD_2 = {
         }
     },
     "tracker_urls": [],
+    "sspd_url": settings.SSPD_CONTENT_AD_REDIRECT_URL.format(id=2),
 }
 
 # sources on ad group level
@@ -311,6 +319,7 @@ SOURCE_1__CONTENT_AD_1 = {
             "submission_errors": None,
         }
     },
+    "sspd_url": settings.SSPD_CONTENT_AD_REDIRECT_URL.format(id=1),
 }
 
 PUBLISHER_1__SOURCE_1 = {

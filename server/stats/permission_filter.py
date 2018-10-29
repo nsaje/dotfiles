@@ -155,6 +155,7 @@ FIELD_PERMISSION_MAPPING = {
     "etfm_performance": ("zemauth.campaign_goal_performance", "zemauth.can_view_end_user_cost_breakdown"),
     "styles": ("zemauth.campaign_goal_performance",),
     "bid_modifier": ("zemauth.can_use_publisher_bid_modifiers_in_ui",),
+    "sspd_url": ("zemauth.can_see_sspd_url",),
 }
 
 

@@ -273,6 +273,17 @@ angular
                 internal: 'zemauth.can_see_salesforce_url',
                 shown: 'zemauth.can_see_salesforce_url',
             },
+            sspdUrl: {
+                name: 'SSPD Link',
+                field: 'sspd_url',
+                type: zemGridConstants.gridColumnTypes.ICON_LINK,
+                totalRow: false,
+                help: 'URL to SSP dashboard',
+                order: false,
+                initialOrder: zemGridConstants.gridColumnOrder.DESC,
+                internal: 'zemauth.can_see_sspd_url',
+                shown: 'zemauth.can_see_sspd_url',
+            },
 
             // Media source
             supplyDashUrl: {
@@ -1746,6 +1757,7 @@ angular
             COLUMNS.contentAdId,
             COLUMNS.sourceId,
             COLUMNS.sourceSlug,
+            COLUMNS.sspdUrl,
         ]
             .concat(ACCOUNT_MANAGEMENT_GROUP)
             .concat(CAMPAIGN_MANAGEMENT_GROUP);

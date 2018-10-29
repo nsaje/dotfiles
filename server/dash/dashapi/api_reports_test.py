@@ -4,6 +4,7 @@ from decimal import Decimal
 from mock import patch, MagicMock
 
 from django.test import TestCase, override_settings
+from django.conf import settings
 
 from dash import constants
 from dash import models
@@ -33,6 +34,7 @@ ACCOUNT_1 = {
     "flat_fee": 0,
     "total_fee": 0,
     "total_fee_projection": Decimal("0"),
+    "sspd_url": settings.SSPD_ACCOUNT_REDIRECT_URL.format(id=1),
 }
 
 CAMPAIGN_1 = {
@@ -49,6 +51,7 @@ CAMPAIGN_1 = {
     "allocated_budgets": None,
     "spend_projection": None,
     "license_fee_projection": None,
+    "sspd_url": settings.SSPD_CAMPAIGN_REDIRECT_URL.format(id=1),
 }
 CAMPAIGN_2 = {
     "campaign": "test campaign 2",
@@ -64,6 +67,7 @@ CAMPAIGN_2 = {
     "allocated_budgets": None,
     "spend_projection": None,
     "license_fee_projection": None,
+    "sspd_url": settings.SSPD_CAMPAIGN_REDIRECT_URL.format(id=2),
 }
 
 AD_GROUP_1 = {
@@ -77,6 +81,7 @@ AD_GROUP_1 = {
     "status": "ENABLED",
     "ad_group_status": "ENABLED",
     "state": 1,
+    "sspd_url": settings.SSPD_AD_GROUP_REDIRECT_URL.format(id=1),
 }
 AD_GROUP_2 = {
     "ad_group": "test adgroup 2",
@@ -89,6 +94,7 @@ AD_GROUP_2 = {
     "status": "PAUSED",
     "ad_group_status": "PAUSED",
     "state": 2,
+    "sspd_url": settings.SSPD_AD_GROUP_REDIRECT_URL.format(id=2),
 }
 
 CONTENT_AD_1 = {
@@ -138,6 +144,7 @@ CONTENT_AD_1 = {
             "submission_errors": None,
         },
     },
+    "sspd_url": settings.SSPD_CONTENT_AD_REDIRECT_URL.format(id=1),
 }
 CONTENT_AD_2 = {
     "content_ad_id": 2,
@@ -179,6 +186,7 @@ CONTENT_AD_2 = {
             "submission_errors": None,
         }
     },
+    "sspd_url": settings.SSPD_CONTENT_AD_REDIRECT_URL.format(id=2),
 }
 
 SOURCE_1 = {

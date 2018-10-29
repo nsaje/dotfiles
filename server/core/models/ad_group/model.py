@@ -165,6 +165,14 @@ class AdGroup(validation.AdGroupValidatorMixin, models.Model, bcm_mixin.AdGroupB
         else:
             return "N/A"
 
+    admin_link.allow_tags = True
+
+    def get_sspd_url(self):
+        if self.id:
+            return settings.SSPD_AD_GROUP_REDIRECT_URL.format(id=self.id)
+        else:
+            return "N/A"
+
     @newrelic.agent.function_trace()
     def get_current_settings(self):
         return self.settings
