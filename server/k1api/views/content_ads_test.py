@@ -1,4 +1,4 @@
-import datetime
+from datetime import datetime, timedelta
 import itertools
 import json
 import logging
@@ -15,6 +15,7 @@ import dash.constants
 import dash.features.ga
 import dash.features.geolocation
 import dash.models
+from utils import test_helper
 from utils.magic_mixer import magic_mixer
 from utils import sspd_client
 from .base_test import K1APIBaseTest
@@ -254,6 +255,46 @@ class ContentAdsTest(K1APIBaseTest):
 
         self.assertEqual(data, expected)
 
+    def test_get_content_ads_sources_with_modified_dt(self):
+        with test_helper.disable_auto_now_add(dash.models.ContentAdSource, "created_dt"):
+            with test_helper.disable_auto_now(dash.models.ContentAdSource, "modified_dt"):
+                ad_group = magic_mixer.blend(dash.models.AdGroup)
+                outbrain_source = dash.models.Source.objects.get(bidder_slug="outbrain")
+
+                content_ad_one = magic_mixer.blend(dash.models.ContentAd, ad_group=ad_group)
+                content_ad_two = magic_mixer.blend(dash.models.ContentAd, ad_group=ad_group)
+
+                magic_mixer.blend(
+                    dash.models.ContentAdSource,
+                    state=dash.constants.ContentAdSourceState.ACTIVE,
+                    content_ad=content_ad_one,
+                    source=outbrain_source,
+                    submission_status=dash.constants.ContentAdSubmissionStatus.APPROVED,
+                    created_dt=(datetime.utcnow() - timedelta(days=10)),
+                    modified_dt=(datetime.utcnow() - timedelta(days=10)),
+                )
+
+                magic_mixer.blend(
+                    dash.models.ContentAdSource,
+                    state=dash.constants.ContentAdSourceState.ACTIVE,
+                    content_ad=content_ad_two,
+                    source=outbrain_source,
+                    submission_status=dash.constants.ContentAdSubmissionStatus.APPROVED,
+                    created_dt=datetime.utcnow(),
+                    modified_dt=datetime.utcnow(),
+                )
+
+                response = self.client.get(
+                    reverse("k1api.content_ads.sources"),
+                    {"modified_dt_from": (datetime.utcnow() - timedelta(days=5)).strftime("%Y-%m-%dT%H:%M:%SZ")},
+                )
+
+                data = json.loads(response.content)
+                self.assert_response_ok(response, data)
+                data = data["response"]
+
+                self.assertEqual(len(data), 1)
+
     def test_get_content_ads_sources_with_amplify_review(self):
         new_ad_group = magic_mixer.blend(dash.models.AdGroup, amplify_review=True)
         outbrain_source = dash.models.Source.objects.get(bidder_slug="outbrain")
@@ -388,7 +429,7 @@ class ContentAdsTest(K1APIBaseTest):
     @mock.patch("utils.dates_helper.utc_now")
     def test_update_content_ad_status_influx(self, mock_now, mock_influx_timing):
 
-        mock_now.return_value = datetime.datetime(2018, 9, 7, 13, 41, 24, 394696)
+        mock_now.return_value = datetime(2018, 9, 7, 13, 41, 24, 394696)
         response = self.client.generic(
             "PUT",
             reverse("k1api.content_ads.sources"),

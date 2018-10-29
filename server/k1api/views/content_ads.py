@@ -1,3 +1,4 @@
+from datetime import datetime
 import logging
 
 import influx
@@ -98,6 +99,7 @@ class ContentAdSourcesView(K1APIView):
         source_types = request.GET.get("source_types")
         slugs = request.GET.get("source_slugs")
         source_content_ad_ids = request.GET.get("source_content_ad_ids")
+        modified_dt_from = request.GET.get("modified_dt_from")
         include_state = request.GET.get("include_state", "true").lower() == "true"
 
         sspd_thread = None
@@ -127,6 +129,15 @@ class ContentAdSourcesView(K1APIView):
             content_ad_sources = content_ad_sources.filter(source__source_type__type__in=source_types.split(","))
         if slugs:
             content_ad_sources = content_ad_sources.filter(source__bidder_slug__in=slugs.split(","))
+
+        if modified_dt_from:
+            try:
+                modified_dt = datetime.strptime(modified_dt_from, "%Y-%m-%dT%H:%M:%SZ")
+            except ValueError as error:
+                logger.exception("Invalid input parameters.")
+                return self.response_error(str(error), status=400)
+
+            content_ad_sources = content_ad_sources.filter(modified_dt__gte=modified_dt)
 
         content_ad_sources = content_ad_sources.select_related(
             "content_ad", "source", "content_ad__ad_group__campaign__account"

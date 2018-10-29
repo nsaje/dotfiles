@@ -141,3 +141,12 @@ def disable_auto_now_add(cls, field_name):
     field.auto_now_add = False
     yield
     field.auto_now_add = prev_auto_now_add
+
+
+@contextmanager
+def disable_auto_now(cls, field_name):
+    field = cls._meta.get_field(field_name)
+    prev_auto_now = field.auto_now
+    field.auto_now = False
+    yield
+    field.auto_now = prev_auto_now
