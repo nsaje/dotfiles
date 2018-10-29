@@ -2,6 +2,7 @@ from datetime import datetime
 import logging
 
 import influx
+import newrelic.agent
 from django.http import Http404
 from functools import partial
 
@@ -168,8 +169,7 @@ class ContentAdSourcesView(K1APIView):
         if include_state:
             amplify_review_statuses = self._get_amplify_review_statuses(content_ad_sources)
             if sspd_thread is not None:
-                sspd_thread.join()
-                sspd_statuses = sspd_thread.get_result()
+                sspd_statuses = self._get_sspd_thread_result(sspd_thread)
 
         response = []
         for content_ad_source in content_ad_sources:
@@ -199,6 +199,11 @@ class ContentAdSourcesView(K1APIView):
             response.append(item)
 
         return self.response_ok(response)
+
+    @newrelic.agent.function_trace()
+    def _get_sspd_thread_result(self, sspd_thread):
+        sspd_thread.join()
+        return sspd_thread.get_result()
 
     def _get_amplify_review_statuses(self, content_ad_sources):
         statuses = dash.models.ContentAdSource.objects.filter(
