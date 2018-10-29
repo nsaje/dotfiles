@@ -29,11 +29,11 @@ class SSPDClientTestCase(TestCase):
             "http://testssp.zemanta.com/service/approvalstatus",
             data=json.dumps(
                 {
-                    "ad_group_ids": None,
-                    "content_ad_ids": None,
-                    "source_types": None,
+                    "adGroupIds": None,
+                    "contentAdIds": None,
+                    "sourceTypes": None,
                     "slugs": None,
-                    "content_ad_source_ids": [1234, 9876, 5555],
+                    "contentAdSourceIds": [1234, 9876, 5555],
                 }
             ),
             headers={
@@ -41,6 +41,7 @@ class SSPDClientTestCase(TestCase):
                 "Content-type": "application/json",
             },
             params={},
+            timeout=None,
         )
 
         self.assertEqual(
@@ -74,6 +75,7 @@ class SSPDClientTestCase(TestCase):
         response._content = json.dumps(response_content).encode()
         response.status_code = 200
         mock_request.return_value = response
+        sspd_client.TIMEOUT = (10, 10)
         approval_statuses = sspd_client.get_content_ad_status([1234, 9876, 5555])
         mock_request.assert_called_once_with(
             "get",
@@ -83,6 +85,7 @@ class SSPDClientTestCase(TestCase):
                 "Authorization": "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJaMSIsImV4cCI6MTUzODM5NTI2MH0.Xn_HgLj_5Hn6mezRcj58zPJn236hCIm-rE1KDLRiVUg"
             },
             params={"contentAdIds": "1234,9876,5555"},
+            timeout=sspd_client.TIMEOUT,
         )
 
         self.assertEqual(
@@ -109,8 +112,13 @@ class SSPDClientTestCase(TestCase):
             self._create_requests_response(json.dumps({k: "BLOCKED" for k in range(10, 20)}).encode("utf-8")),
             self._create_requests_response(json.dumps({k: "PENDING" for k in range(20, 25)}).encode("utf-8")),
         ]
+        sspd_client_timeout = (10, 10)
         approval_statuses = sspd_client._paginate_request(
-            "get", "http://testssp.zemanta.com/test", {"testIds": [i for i in range(25)]}, paginate_key="testIds"
+            "get",
+            "http://testssp.zemanta.com/test",
+            {"testIds": [i for i in range(25)]},
+            paginate_key="testIds",
+            timeout=sspd_client_timeout,
         )
         mock_request.assert_has_calls(
             [
@@ -120,6 +128,7 @@ class SSPDClientTestCase(TestCase):
                     data={},
                     headers=ANY,
                     params={"testIds": "{}".format(",".join(str(x) for x in range(10)))},
+                    timeout=sspd_client_timeout,
                 ),
                 call(
                     "get",
@@ -127,6 +136,7 @@ class SSPDClientTestCase(TestCase):
                     data={},
                     headers=ANY,
                     params={"testIds": "{}".format(",".join(str(x) for x in range(10, 20)))},
+                    timeout=sspd_client_timeout,
                 ),
                 call(
                     "get",
@@ -134,6 +144,7 @@ class SSPDClientTestCase(TestCase):
                     data={},
                     headers=ANY,
                     params={"testIds": "{}".format(",".join(str(x) for x in range(20, 25)))},
+                    timeout=sspd_client_timeout,
                 ),
             ]
         )

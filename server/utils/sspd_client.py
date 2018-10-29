@@ -18,6 +18,7 @@ APPROVAL_STATUS_URL = "/service/approvalstatus"
 CONTENT_AD_STATUS_URL = "/service/contentadstatus"
 
 MAX_REQUEST_IDS = 500
+TIMEOUT = (10, 10)  # TIMEOUT IN SECONDS (CONNECT TIME, READ TIME)
 
 
 class SSPDApiException(Exception):
@@ -29,11 +30,11 @@ def get_approval_status(
 ):
     url = settings.SSPD_BASE_URL + APPROVAL_STATUS_URL
     approval_status_dict = {
-        "ad_group_ids": ad_group_ids,
-        "content_ad_ids": content_ad_ids,
-        "source_types": source_types,
+        "adGroupIds": ad_group_ids,
+        "contentAdIds": content_ad_ids,
+        "sourceTypes": source_types,
         "slugs": slugs,
-        "content_ad_source_ids": content_ad_source_ids,
+        "contentAdSourceIds": content_ad_source_ids,
     }
     approval_statuses = _make_request("post", url, data=json.dumps(approval_status_dict))
     return _map_approval_statuses(approval_statuses)
@@ -48,7 +49,7 @@ def get_content_ad_status(content_ad_ids):
     if not content_ad_ids:
         raise SSPDApiException("Request not allowed")
     content_ad_statuses = _paginate_request(
-        "get", url, params={"contentAdIds": content_ad_ids}, paginate_key="contentAdIds"
+        "get", url, params={"contentAdIds": content_ad_ids}, paginate_key="contentAdIds", timeout=TIMEOUT
     )
     return _map_content_ad_statuses(content_ad_statuses)
 
@@ -67,27 +68,31 @@ def _map_content_ad_statuses(content_ad_statuses):
     }
 
 
-def _paginate_request(method, url, params, *, paginate_key):
+def _paginate_request(method, url, params, *, paginate_key, timeout=None):
     start = 0
     result = {}
     paginate_list = params.pop(paginate_key)
     while start < len(paginate_list):
         page_params = copy.copy(params)
         page_params[paginate_key] = ",".join(str(el) for el in paginate_list[start : start + MAX_REQUEST_IDS])
-        result.update(_make_request(method, url, params=page_params))
+        result.update(_make_request(method, url, params=page_params, timeout=timeout))
         start += MAX_REQUEST_IDS
     return result
 
 
-def _make_request(method, url, data=None, params=None, headers=None):
+def _make_request(method, url, data=None, params=None, headers=None, timeout=None):
     if not headers:
         headers = {}
     _augment_with_auth_headers(headers)
     if method == "post":
         headers.update({"Content-type": "application/json"})
-    response = requests.request(
-        method, url, data=data if data else {}, params=params if params else {}, headers=headers
-    )
+    try:
+        response = requests.request(
+            method, url, data=data if data else {}, params=params if params else {}, headers=headers, timeout=timeout
+        )
+    except requests.exceptions.RequestException as exception:
+        logger.exception(exception)
+        raise SSPDApiException(exception) from exception
     if not response.ok:
         raise SSPDApiException("Request failed")
     return response.json()

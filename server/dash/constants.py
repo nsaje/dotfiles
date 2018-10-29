@@ -85,6 +85,7 @@ class ContentAdSubmissionStatus(ConstantBase):
     APPROVED = 2
     REJECTED = 3
     LIMIT_REACHED = 4
+    NOT_AVAILABLE = 5
 
     _VALUES = {
         NOT_SUBMITTED: "Not submitted",
@@ -92,6 +93,7 @@ class ContentAdSubmissionStatus(ConstantBase):
         APPROVED: "Approved",
         REJECTED: "Rejected",
         LIMIT_REACHED: "Limit reached",
+        NOT_AVAILABLE: "Not available",
     }
 
 

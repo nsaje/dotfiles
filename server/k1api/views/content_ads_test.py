@@ -197,6 +197,63 @@ class ContentAdsTest(K1APIBaseTest):
 
         self.assertEqual(data, expected)
 
+    def test_get_content_ads_sources_sspd_rejected(self):
+        content_ad_source = dash.models.ContentAdSource.objects.get(source_id=1, content_ad_id=1)
+        sspd_client.get_approval_status.return_value = {
+            content_ad_source.id: dash.constants.ContentAdSspdStatus.BLOCKED
+        }
+
+        response = self.client.get(
+            reverse("k1api.content_ads.sources"), {"content_ad_ids": 1, "ad_group_ids": 1, "source_slugs": "adblade"}
+        )
+
+        data = json.loads(response.content)
+        self.assert_response_ok(response, data)
+        data = data["response"]
+
+        expected = [
+            {
+                "id": 1,
+                "content_ad_id": 1,
+                "ad_group_id": 1,
+                "source_id": 1,
+                "submission_status": 1,
+                "source_content_ad_id": "987654321",
+                "tracking_slug": "adblade",
+                "state": 2,
+                "source_slug": "adblade",
+            }
+        ]
+
+        self.assertEqual(data, expected)
+
+    def test_get_content_ads_sources_sspd_rejected_status_none(self):
+        sspd_client.get_approval_status.return_value = {}
+
+        response = self.client.get(
+            reverse("k1api.content_ads.sources"), {"content_ad_ids": 1, "ad_group_ids": 1, "source_slugs": "adblade"}
+        )
+
+        data = json.loads(response.content)
+        self.assert_response_ok(response, data)
+        data = data["response"]
+
+        expected = [
+            {
+                "id": 1,
+                "content_ad_id": 1,
+                "ad_group_id": 1,
+                "source_id": 1,
+                "submission_status": 1,
+                "source_content_ad_id": "987654321",
+                "tracking_slug": "adblade",
+                "state": 2,
+                "source_slug": "adblade",
+            }
+        ]
+
+        self.assertEqual(data, expected)
+
     def test_get_content_ads_sources_with_amplify_review(self):
         new_ad_group = magic_mixer.blend(dash.models.AdGroup, amplify_review=True)
         outbrain_source = dash.models.Source.objects.get(bidder_slug="outbrain")
