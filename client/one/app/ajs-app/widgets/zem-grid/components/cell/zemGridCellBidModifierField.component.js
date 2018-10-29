@@ -69,10 +69,9 @@ angular
                         formatterOptions
                     );
 
-                    if (vm.row.id === 'all publishers__4') {
-                        vm.isEditable = false;
-                        vm.data = undefined;
-                        formatterOptions.defaultValue = undefined;
+                    if (vm.data) {
+                        vm.isEditable = vm.data.isEditable;
+                        vm.editMessage = vm.data.editMessage;
                     }
 
                     if (!vm.data || !vm.data.value) {

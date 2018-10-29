@@ -293,6 +293,7 @@ PUBLISHER_1__SOURCE_1 = {
     "can_blacklist_publisher": True,
     "notifications": {"message": "Blacklisted globally"},
     "bid_modifier": None,
+    "editable_fields": {"bid_modifier": {"message": None, "enabled": True}},
 }
 PUBLISHER_2__SOURCE_1 = {
     "publisher_id": "pub2.com__1",
@@ -311,6 +312,7 @@ PUBLISHER_2__SOURCE_1 = {
     "can_blacklist_publisher": True,
     "blacklisted_level": "",
     "bid_modifier": None,
+    "editable_fields": {"bid_modifier": {"message": None, "enabled": True}},
 }
 PUBLISHER_2__SOURCE_2 = {
     "publisher_id": "pub2.com__2",
@@ -331,6 +333,7 @@ PUBLISHER_2__SOURCE_2 = {
     "can_blacklist_publisher": False,
     "notifications": {"message": "Whitelisted in this ad group"},
     "bid_modifier": None,
+    "editable_fields": {"bid_modifier": {"message": None, "enabled": True}},
 }
 
 
@@ -511,6 +514,10 @@ class AnnotateTest(TestCase):
         TEMP_PUBLISHER_1__SOURCE_1.pop("bid_modifier")
         TEMP_PUBLISHER_2__SOURCE_1.pop("bid_modifier")
         TEMP_PUBLISHER_2__SOURCE_2.pop("bid_modifier")
+
+        TEMP_PUBLISHER_1__SOURCE_1.pop("editable_fields")
+        TEMP_PUBLISHER_2__SOURCE_1.pop("editable_fields")
+        TEMP_PUBLISHER_2__SOURCE_2.pop("editable_fields")
 
         # Publishers have the bid_modifier field only on ad_group level (see 'test_annotate_publisher').
 

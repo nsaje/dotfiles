@@ -401,6 +401,13 @@ def augment_publisher(row, loader, is_base_level=False):
         else:
             row.update({"bid_modifier": {"modifier": 1.0, "source_bid_value": source_bid_value}})
 
+        editable = True
+        message = None
+        if source.source_type.type in [constants.SourceType.YAHOO, constants.SourceType.OUTBRAIN]:
+            editable = False
+            message = "This source does not support bid modifiers."
+        row.update({"editable_fields": {"bid_modifier": {"enabled": editable, "message": message}}})
+
 
 def augment_publisher_for_report(row, loader, is_base_level=False):
     domain, _ = publisher_helpers.dissect_publisher_id(row["publisher_id"])

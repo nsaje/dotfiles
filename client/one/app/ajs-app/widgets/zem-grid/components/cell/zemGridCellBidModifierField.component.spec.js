@@ -45,16 +45,6 @@ describe('zemGridCellBidModifierField', function() {
         };
     }));
 
-    it("should display N/A and not be editable if publisher is 'all publishers'", function() {
-        mockDirective('zemGridModal');
-
-        scope.ctrl.row.id = 'all publishers__4';
-        element = $compile(template)(scope);
-        scope.$digest();
-
-        expect(element.text().trim()).toEqual('N/A');
-    });
-
     it("should display 0.00% if field's value is not defined", function() {
         mockDirective('zemGridModal');
 

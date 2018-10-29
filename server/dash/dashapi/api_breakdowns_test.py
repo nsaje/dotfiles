@@ -337,6 +337,7 @@ PUBLISHER_1__SOURCE_1 = {
             "currency_symbol": "$",
         },
     },
+    "editable_fields": {"bid_modifier": {"message": None, "enabled": True}},
 }
 PUBLISHER_2__SOURCE_1 = {
     "publisher_id": "pub2.com__1",
@@ -359,6 +360,7 @@ PUBLISHER_2__SOURCE_1 = {
             "currency_symbol": "$",
         },
     },
+    "editable_fields": {"bid_modifier": {"message": None, "enabled": True}},
 }
 PUBLISHER_2__SOURCE_2 = {
     "publisher_id": "pub2.com__2",
@@ -384,6 +386,7 @@ PUBLISHER_2__SOURCE_2 = {
             "currency_symbol": "$",
         },
     },
+    "editable_fields": {"bid_modifier": {"message": None, "enabled": True}},
 }
 PUBLISHER_3__SOURCE_2 = {
     "publisher_id": "pub3.com__2",
@@ -409,6 +412,7 @@ PUBLISHER_3__SOURCE_2 = {
             "currency_symbol": "$",
         },
     },
+    "editable_fields": {"bid_modifier": {"message": None, "enabled": True}},
 }
 PUBLISHER_4__SOURCE_2 = {
     "publisher_id": "pub4.com__2",
@@ -434,6 +438,7 @@ PUBLISHER_4__SOURCE_2 = {
             "currency_symbol": "$",
         },
     },
+    "editable_fields": {"bid_modifier": {"message": None, "enabled": True}},
 }
 PUBLISHER_5__SOURCE_2 = {
     "publisher_id": "pub5.com__2",
@@ -459,6 +464,7 @@ PUBLISHER_5__SOURCE_2 = {
             "currency_symbol": "$",
         },
     },
+    "editable_fields": {"bid_modifier": {"message": None, "enabled": True}},
 }
 
 
