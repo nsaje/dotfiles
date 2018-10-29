@@ -133,6 +133,9 @@ angular
                     case zemGridEndpointColumns.COLUMNS.bidCpcSetting.field:
                         convertedSettings.cpc_cc = settings[key];
                         break;
+                    case zemGridEndpointColumns.COLUMNS.bidCpmSetting.field:
+                        convertedSettings.cpm = settings[key];
+                        break;
                     case zemGridEndpointColumns
                         .COLUMNS.dailyBudgetSetting.field:
                         convertedSettings.daily_budget_cc = settings[key];

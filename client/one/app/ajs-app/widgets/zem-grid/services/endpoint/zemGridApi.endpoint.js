@@ -104,6 +104,11 @@ angular
                         errors.b1_sources_group_cpc_cc
                     );
                 }
+                if (errors.hasOwnProperty('b1_sources_group_cpm')) {
+                    errors.cpm = (errors.cpm || []).concat(
+                        errors.b1_sources_group_cpm
+                    );
+                }
                 if (errors.hasOwnProperty('b1_sources_group_daily_budget')) {
                     errors.daily_budget_cc = (
                         errors.daily_budget_cc || []
@@ -111,6 +116,7 @@ angular
                 }
                 var result = {
                     cpc: errors.cpc_cc,
+                    cpm: errors.cpm,
                     dailyBudget: errors.daily_budget_cc,
                     state: errors.state,
                 };
