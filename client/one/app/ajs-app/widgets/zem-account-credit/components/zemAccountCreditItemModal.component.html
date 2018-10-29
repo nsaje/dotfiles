@@ -26,7 +26,7 @@
             <div ng-repeat="error in $ctrl.state.requests.saveCreditItem.errors.endDate" class="message message--error" for="end-date-input">{{ error }}</div>
         </div>
         <div class="form__group" ng-class="{'form--error': !!$ctrl.state.requests.saveCreditItem.errors.licenseFee}">
-            <label class="form__label" for="license-fee-input">License Fee (%)</label>
+            <label class="form__label" for="license-fee-select">License Fee (%)</label>
             <ui-select class="button button--plain button--narrow button--dropdown-toggle-icon" theme="select2"
                        id="license-fee-select" ng-model="$ctrl.state.creditItem.licenseFee" ng-disabled="$ctrl.state.creditItem.isSigned"
                        search-enabled="true">

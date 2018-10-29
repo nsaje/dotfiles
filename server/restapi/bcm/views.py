@@ -257,6 +257,8 @@ class AccountCreditItemView(api_common.BaseApiView):
                 "comment": item.comment,
                 "is_agency": item.is_agency(),
                 "salesforce_url": item.get_salesforce_url(),
+                "contract_id": item.contract_id,
+                "contract_number": item.contract_number,
                 "budgets": [
                     {
                         "campaign": str(b.campaign),

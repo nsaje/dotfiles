@@ -405,6 +405,8 @@ class AccountCreditItemViewTest(BCMViewTestCase):
                     }
                 ],
                 "salesforce_url": None,
+                "contract_id": None,
+                "contract_number": None,
             },
         )
 
@@ -508,6 +510,8 @@ class AccountCreditItemViewTest(BCMViewTestCase):
                     }
                 ],
                 "salesforce_url": None,
+                "contract_id": None,
+                "contract_number": None,
             },
         )
 
