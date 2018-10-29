@@ -19,31 +19,53 @@ class AdGroupSourcesRTBTest(RESTAPITest):
         daily_budget=all_rtb.AllRTBSource.default_daily_budget_cc,
         state=constants.AdGroupSourceSettingsState.ACTIVE,
         cpc=all_rtb.AllRTBSource.default_cpc_cc,
+        cpm=None,
     ):
         representation = {
             "groupEnabled": group_enabled,
             "dailyBudget": daily_budget,
             "state": constants.AdGroupSourceSettingsState.get_name(state),
-            "cpc": cpc,
+            "cpc": cpc if cpm is None else None,
+            "cpm": cpm,
         }
         return cls.normalize(representation)
 
     def validate_against_db(self, ad_group_id, agsrtb):
         settings_db = core.models.ad_group.AdGroup.objects.get(pk=ad_group_id).get_current_settings()
-        expected = self.adgroupsourcertb_repr(
-            group_enabled=settings_db.b1_sources_group_enabled,
-            daily_budget=settings_db.b1_sources_group_daily_budget.quantize(Decimal("1.00")),
-            state=settings_db.b1_sources_group_state,
-            cpc=settings_db.b1_sources_group_cpc_cc,
-        )
+        if settings_db.ad_group.bidding_type == constants.BiddingType.CPM:
+            expected = self.adgroupsourcertb_repr(
+                group_enabled=settings_db.b1_sources_group_enabled,
+                daily_budget=settings_db.b1_sources_group_daily_budget.quantize(Decimal("1.00")),
+                state=settings_db.b1_sources_group_state,
+                cpm=settings_db.b1_sources_group_cpm,
+            )
+        else:
+            expected = self.adgroupsourcertb_repr(
+                group_enabled=settings_db.b1_sources_group_enabled,
+                daily_budget=settings_db.b1_sources_group_daily_budget.quantize(Decimal("1.00")),
+                state=settings_db.b1_sources_group_state,
+                cpc=settings_db.b1_sources_group_cpc_cc,
+            )
         self.assertEqual(expected, agsrtb)
 
-    def test_adgroups_sources_rtb_get(self):
+    def test_adgroups_sources_rtb_get_cpc(self):
         r = self.client.get(reverse("adgroups_sources_rtb_details", kwargs={"ad_group_id": 2040}))
         resp_json = self.assertResponseValid(r)
+        self.assertIsNotNone(resp_json["data"]["cpc"])
+        self.assertIsNone(resp_json["data"]["cpm"])
         self.validate_against_db(2040, resp_json["data"])
 
-    def test_adgroups_sources_rtb_put(self):
+    def test_adgroups_sources_rtb_get_cpm(self):
+        ad_group = core.models.ad_group.AdGroup.objects.get(pk=2040)
+        ad_group.bidding_type = constants.BiddingType.CPM
+        ad_group.save(None)
+        r = self.client.get(reverse("adgroups_sources_rtb_details", kwargs={"ad_group_id": 2040}))
+        resp_json = self.assertResponseValid(r)
+        self.assertIsNone(resp_json["data"]["cpc"])
+        self.assertIsNotNone(resp_json["data"]["cpm"])
+        self.validate_against_db(2040, resp_json["data"])
+
+    def test_adgroups_sources_rtb_put_cpc(self):
         test_rtbs = self.adgroupsourcertb_repr(
             group_enabled=True, daily_budget="12.38", state=constants.AdGroupSettingsState.ACTIVE, cpc="0.1230"
         )
@@ -51,6 +73,24 @@ class AdGroupSourcesRTBTest(RESTAPITest):
             reverse("adgroups_sources_rtb_details", kwargs={"ad_group_id": 2040}), data=test_rtbs, format="json"
         )
         resp_json = self.assertResponseValid(r)
+        self.assertEquals("0.1230", resp_json["data"]["cpc"])
+        self.assertIsNone(resp_json["data"]["cpm"])
+        self.validate_against_db(2040, resp_json["data"])
+        self.assertEqual(test_rtbs, resp_json["data"])
+
+    def test_adgroups_sources_rtb_put_cpm(self):
+        ad_group = core.models.ad_group.AdGroup.objects.get(pk=2040)
+        ad_group.bidding_type = constants.BiddingType.CPM
+        ad_group.save(None)
+        test_rtbs = self.adgroupsourcertb_repr(
+            group_enabled=True, daily_budget="12.38", state=constants.AdGroupSettingsState.ACTIVE, cpm="1.1230"
+        )
+        r = self.client.put(
+            reverse("adgroups_sources_rtb_details", kwargs={"ad_group_id": 2040}), data=test_rtbs, format="json"
+        )
+        resp_json = self.assertResponseValid(r)
+        self.assertIsNone(resp_json["data"]["cpc"])
+        self.assertEquals("1.1230", resp_json["data"]["cpm"])
         self.validate_against_db(2040, resp_json["data"])
         self.assertEqual(test_rtbs, resp_json["data"])
 
@@ -60,13 +100,34 @@ class AdGroupSourcesRTBTest(RESTAPITest):
             reverse("adgroups_sources_rtb_details", kwargs={"ad_group_id": 2040}), data=test_rtbs, format="json"
         )
         resp_json = self.assertResponseValid(r)
+        self.assertIsNotNone(resp_json["data"]["cpc"])
+        self.assertIsNone(resp_json["data"]["cpm"])
         self.validate_against_db(2040, resp_json["data"])
         self.assertEqual(test_rtbs, resp_json["data"])
+
+    def test_adgroups_sources_rtb_bidding_type_fail(self):
+        ad_group = core.models.ad_group.AdGroup.objects.get(pk=2040)
+        test_rtbs = self.adgroupsourcertb_repr()
+        test_rtbs["cpm"] = "1.11"
+
+        r = self.client.put(
+            reverse("adgroups_sources_rtb_details", kwargs={"ad_group_id": 2040}), data=test_rtbs, format="json"
+        )
+        self.assertResponseError(r, "ValidationError")
+        self.assertTrue("cpm" in json.loads(r.content)["details"])
+
+        ad_group.bidding_type = constants.BiddingType.CPM
+        ad_group.save(None)
+        r = self.client.put(
+            reverse("adgroups_sources_rtb_details", kwargs={"ad_group_id": 2040}), data=test_rtbs, format="json"
+        )
+        self.assertResponseError(r, "ValidationError")
+        self.assertTrue("cpc" in json.loads(r.content)["details"])
 
     @mock.patch.object(core.models.source_type.model.SourceType, "get_etfm_max_daily_budget", return_value=89.77)
     @mock.patch.object(core.models.source_type.model.SourceType, "get_etfm_min_daily_budget", return_value=7.11)
     @mock.patch.object(core.models.source_type.model.SourceType, "get_etfm_min_cpc", return_value=0.1211)
-    def test_adgroups_sources_rtb_rounding(self, min_cpc_mock, min_daily_budget_mock, max_daily_budget_mock):
+    def test_adgroups_sources_rtb_rounding_cpc(self, min_cpc_mock, min_daily_budget_mock, max_daily_budget_mock):
         ad_group = magic_mixer.blend(models.AdGroup, campaign__account__users=[self.user])
         ad_group.settings.update_unsafe(
             None, cpc_cc=0.7792, autopilot_state=constants.AdGroupSettingsAutopilotState.INACTIVE
@@ -103,3 +164,28 @@ class AdGroupSourcesRTBTest(RESTAPITest):
         )
         self.assertResponseError(r, "ValidationError")
         self.assertTrue("89" in json.loads(r.content)["details"]["dailyBudget"][0])
+
+    @mock.patch.object(core.models.source_type.model.SourceType, "get_etfm_min_cpm", return_value=0.1211)
+    def test_adgroups_sources_rtb_rounding_cpm(self, min_cpm_mock):
+        ad_group = magic_mixer.blend(
+            models.AdGroup, campaign__account__users=[self.user], bidding_type=constants.BiddingType.CPM
+        )
+        ad_group.settings.update_unsafe(
+            None, max_cpm=0.7792, autopilot_state=constants.AdGroupSettingsAutopilotState.INACTIVE
+        )
+
+        # min cpm - would return 0.12 without rounding ceiling
+        test_agsr = self.adgroupsourcertb_repr(cpm="0.1200")
+        r = self.client.put(
+            reverse("adgroups_sources_rtb_details", kwargs={"ad_group_id": ad_group.id}), test_agsr, format="json"
+        )
+        self.assertResponseError(r, "ValidationError")
+        self.assertTrue("0.13" in json.loads(r.content)["details"]["cpm"][0])
+
+        # max cpm - would return 0.78 without rounding floor
+        test_agsr = self.adgroupsourcertb_repr(cpm="0.78")
+        r = self.client.put(
+            reverse("adgroups_sources_rtb_details", kwargs={"ad_group_id": ad_group.id}), test_agsr, format="json"
+        )
+        self.assertResponseError(r, "ValidationError")
+        self.assertTrue("0.77" in json.loads(r.content)["details"]["cpm"][0])

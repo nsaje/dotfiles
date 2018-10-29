@@ -41,11 +41,12 @@ class AdGroupSettingsTest(TestCase):
         self.maxDiff = None
         self.settings_dict = {
             "settings": {
+                "bidding_type": constants.BiddingType.CPC,
                 "state": constants.AdGroupRunningStatus.INACTIVE,
                 "start_date": "2015-05-01",
                 "end_date": str(datetime.date.today()),
                 "cpc_cc": "0.3000",
-                "max_cpm": "1.6000",
+                "max_cpm": None,  # "1.6000",
                 "daily_budget_cc": "200.0000",
                 "target_devices": ["DESKTOP"],
                 "target_browsers": [{"family": constants.BrowserFamily.CHROME}],
@@ -76,7 +77,7 @@ class AdGroupSettingsTest(TestCase):
                 "b1_sources_group_daily_budget": "500.0000",
                 "b1_sources_group_state": 1,
                 "b1_sources_group_cpc_cc": "0.25",
-                "b1_sources_group_cpm": "1.02",
+                "b1_sources_group_cpm": None,
                 "whitelist_publisher_groups": [1],
                 "blacklist_publisher_groups": [1],
                 "delivery_type": 2,
@@ -197,19 +198,35 @@ class AdGroupSettingsTest(TestCase):
         )
 
     @patch.object(core.features.multicurrency, "get_current_exchange_rate")
-    def test_get_local(self, mock_get_exchange_rate):
+    def test_get_local_cpc(self, mock_get_exchange_rate):
         add_permissions(self.user, ["settings_view", "can_manage_settings_in_local_currency", "fea_can_use_cpm_buying"])
         mock_get_exchange_rate.return_value = Decimal("2.0")
 
         account = magic_mixer.blend(models.Account, users=[self.user], currency=constants.Currency.EUR)
         campaign = magic_mixer.blend(models.Campaign, account=account)
         ad_group = magic_mixer.blend(models.AdGroup, campaign=campaign)
-        ad_group.settings.update(None, cpc_cc=Decimal(5), max_cpm=Decimal(5))
+        ad_group.settings.update(None, cpc_cc=Decimal(5))
 
         response = self.client.get(reverse("ad_group_settings", kwargs={"ad_group_id": ad_group.id}), follow=True)
         json_blob = json.loads(response.content)
         settings = json_blob.get("data").get("settings")
+
         self.assertEqual(settings.get("cpc_cc"), "10.000")
+
+    @patch.object(core.features.multicurrency, "get_current_exchange_rate")
+    def test_get_local_cpm(self, mock_get_exchange_rate):
+        add_permissions(self.user, ["settings_view", "can_manage_settings_in_local_currency", "fea_can_use_cpm_buying"])
+        mock_get_exchange_rate.return_value = Decimal("2.0")
+
+        account = magic_mixer.blend(models.Account, users=[self.user], currency=constants.Currency.EUR)
+        campaign = magic_mixer.blend(models.Campaign, account=account)
+        ad_group = magic_mixer.blend(models.AdGroup, campaign=campaign, bidding_type=constants.BiddingType.CPM)
+        ad_group.settings.update(None, max_cpm=Decimal(5))
+
+        response = self.client.get(reverse("ad_group_settings", kwargs={"ad_group_id": ad_group.id}), follow=True)
+        json_blob = json.loads(response.content)
+        settings = json_blob.get("data").get("settings")
+
         self.assertEqual(settings.get("max_cpm"), "10.000")
 
     def test_get_not_retargetable(self):
@@ -245,12 +262,15 @@ class AdGroupSettingsTest(TestCase):
 
     @patch("utils.redirector_helper.insert_adgroup")
     @patch("utils.k1_helper.update_ad_group")
-    def test_put(self, mock_k1_ping, mock_redirector_insert_adgroup):
+    def test_put_cpc(self, mock_k1_ping, mock_redirector_insert_adgroup):
         with patch("utils.dates_helper.local_today") as mock_now:
             # mock datetime so that budget is always valid
             mock_now.return_value = datetime.date(2016, 1, 5)
 
             ad_group = models.AdGroup.objects.get(pk=1)
+            ad_group.settings.update_unsafe(None, max_cpm=1.600, local_max_cpm=1.600)
+
+            self.settings_dict["settings"]["b1_sources_group_cpm"] = None
 
             old_settings = ad_group.get_current_settings()
             self.assertIsNotNone(old_settings.pk)
@@ -331,6 +351,127 @@ class AdGroupSettingsTest(TestCase):
                             "b1_sources_group_daily_budget": "500.0000",
                             "b1_sources_group_state": 1,
                             "b1_sources_group_cpc_cc": "0.25",
+                            "b1_sources_group_cpm": "1.0100",
+                            "whitelist_publisher_groups": [1],
+                            "blacklist_publisher_groups": [1],
+                            "delivery_type": 2,
+                            "click_capping_daily_ad_group_max_clicks": 15,
+                            "click_capping_daily_click_budget": "7.5000",
+                        },
+                    },
+                    "success": True,
+                },
+            )
+
+            ad_group.settings.refresh_from_db()
+            new_settings = ad_group.get_current_settings()
+
+            self.assertEqual(new_settings.display_url, "example.com")
+            self.assertEqual(new_settings.brand_name, "Example")
+            self.assertEqual(new_settings.description, "Example description")
+            self.assertEqual(new_settings.call_to_action, "Call to action")
+            self.assertEqual(new_settings.delivery_type, 2)
+
+            mock_redirector_insert_adgroup.assert_called_with(ad_group)
+
+            hist = history_helpers.get_ad_group_history(ad_group).first()
+            self.assertEqual(constants.HistoryActionType.SETTINGS_CHANGE, hist.action_type)
+
+    @patch("utils.redirector_helper.insert_adgroup")
+    @patch("utils.k1_helper.update_ad_group")
+    def test_put_cpm(self, mock_k1_ping, mock_redirector_insert_adgroup):
+        with patch("utils.dates_helper.local_today") as mock_now:
+            # mock datetime so that budget is always valid
+            mock_now.return_value = datetime.date(2016, 1, 5)
+
+            ad_group = models.AdGroup.objects.get(pk=1)
+            ad_group.settings.update_unsafe(None, cpc_cc=0.300, local_cpc_cc=0.300)
+
+            self.settings_dict["settings"]["bidding_type"] = constants.BiddingType.CPM
+            self.settings_dict["settings"]["cpc_cc"] = None
+            self.settings_dict["settings"]["max_cpm"] = "1.600"
+            self.settings_dict["settings"]["b1_sources_group_cpc_cc"] = None
+            self.settings_dict["settings"]["b1_sources_group_cpm"] = "1.02"
+
+            old_settings = ad_group.get_current_settings()
+            self.assertIsNotNone(old_settings.pk)
+
+            add_permissions(
+                self.user,
+                [
+                    "settings_view",
+                    "fea_can_use_cpm_buying",
+                    "can_set_delivery_type",
+                    "can_set_rtb_sources_as_one_cpc",
+                    "can_set_white_blacklist_publisher_groups",
+                    "can_set_advanced_device_targeting",
+                    "can_set_click_capping",
+                ],
+            )
+            response = self.client.put(
+                reverse("ad_group_settings", kwargs={"ad_group_id": ad_group.id}),
+                json.dumps(self.settings_dict),
+                follow=True,
+            )
+            mock_k1_ping.assert_called_with(1, msg="AdGroupSettings.put")
+
+            self.assertEqual(
+                json.loads(response.content),
+                {
+                    "data": {
+                        "archived": False,
+                        "action_is_waiting": False,
+                        "default_settings": {
+                            "target_devices": ["MOBILE"],
+                            "target_os": [],
+                            "target_placements": [],
+                            "target_regions": self._target_regions_repr(dma=["501"], countries=["NC"]),
+                            "exclusion_target_regions": self._target_regions_repr(),
+                        },
+                        "settings": {
+                            "bidding_type": constants.BiddingType.CPM,
+                            "cpc_cc": "0.300",
+                            "max_cpm": "1.600",
+                            "daily_budget_cc": "200.00",
+                            "end_date": str(datetime.date.today()),
+                            "id": "1",
+                            "campaign_id": "1",
+                            "name": "Test ad group name",
+                            "start_date": "2015-05-01",
+                            "state": 2,
+                            "target_devices": ["DESKTOP"],
+                            "target_os": [],
+                            "target_browsers": [{"family": "CHROME"}],
+                            "target_placements": [],
+                            "target_regions": self._target_regions_repr(dma=["693"], countries=["GB"]),
+                            "exclusion_target_regions": self._target_regions_repr(),
+                            "autopilot_daily_budget": "150.00",
+                            "retargeting_ad_groups": [2],
+                            "exclusion_retargeting_ad_groups": [9],
+                            "audience_targeting": [1],
+                            "exclusion_audience_targeting": [4],
+                            "bluekai_targeting": {
+                                "AND": [
+                                    {"category": "bluekai:123"},
+                                    {"OR": [{"category": "lotame:123"}, {"category": "outbrain:321"}]},
+                                ]
+                            },
+                            "bluekai_targeting_old": ["and", "bluekai:123", ["or", "lotame:123", "outbrain:321"]],
+                            "tracking_code": "def=123",
+                            "autopilot_state": constants.AdGroupSettingsAutopilotState.INACTIVE,
+                            "autopilot_min_budget": "10",
+                            "autopilot_optimization_goal": None,
+                            "autopilot_on_campaign": False,
+                            "notes": "Some note",
+                            "interest_targeting": ["fun", "games"],
+                            "exclusion_interest_targeting": ["religion", "weather"],
+                            "redirect_pixel_urls": ["http://a.com/b.jpg", "http://a.com/c.jpg"],
+                            "redirect_javascript": "alert('a')",
+                            "dayparting": {"monday": [0, 1, 2, 3], "tuesday": [10, 11, 12]},
+                            "b1_sources_group_enabled": True,
+                            "b1_sources_group_daily_budget": "500.0000",
+                            "b1_sources_group_state": 1,
+                            "b1_sources_group_cpc_cc": "0.0100",
                             "b1_sources_group_cpm": "1.02",
                             "whitelist_publisher_groups": [1],
                             "blacklist_publisher_groups": [1],
@@ -435,8 +576,10 @@ class AdGroupSettingsTest(TestCase):
             mock_now.return_value = datetime.date(2016, 1, 5)
 
             ad_group = models.AdGroup.objects.get(pk=1)
-            ad_group.bidding_type = constants.BiddingType.CPM
-            ad_group.save(None)
+
+            del self.settings_dict["settings"]["b1_sources_group_cpc_cc"]
+            self.settings_dict["settings"]["bidding_type"] = constants.BiddingType.CPM
+            self.settings_dict["settings"]["cpc_cc"] = None
 
             old_settings = ad_group.get_current_settings()
             self.assertIsNotNone(old_settings.pk)
@@ -507,7 +650,7 @@ class AdGroupSettingsTest(TestCase):
 
     @patch("utils.redirector_helper.insert_adgroup")
     @patch("automation.autopilot.recalculate_budgets_ad_group")
-    def test_put_set_budget_autopilot_triggers_budget_reallocation(
+    def test_put_set_budget_autopilot_triggers_budget_reallocation_cpc(
         self, mock_redirector_insert_adgroup, mock_init_autopilot
     ):
         with patch("utils.dates_helper.local_today") as mock_now:
@@ -522,6 +665,57 @@ class AdGroupSettingsTest(TestCase):
 
             self.assertIsNotNone(old_settings.pk)
             # in order to not change it
+            self.settings_dict["settings"]["b1_sources_group_cpc_cc"] = str(new_settings.local_b1_sources_group_cpc_cc)
+            self.settings_dict["settings"]["b1_sources_group_cpm"] = str(new_settings.local_b1_sources_group_cpm)
+            self.settings_dict["settings"]["b1_sources_group_daily_budget"] = str(
+                new_settings.local_b1_sources_group_daily_budget
+            )
+
+            self.settings_dict["settings"]["autopilot_state"] = 1
+            self.settings_dict["settings"]["autopilot_daily_budget"] = "200.00"
+
+            add_permissions(self.user, ["settings_view", "can_set_adgroup_to_auto_pilot", "fea_can_use_cpm_buying"])
+            self.client.put(
+                reverse("ad_group_settings", kwargs={"ad_group_id": ad_group.id}),
+                json.dumps(self.settings_dict),
+                follow=True,
+            )
+
+            ad_group.settings.refresh_from_db()
+            new_settings = ad_group.get_current_settings().copy_settings()
+
+            request = HttpRequest()
+            request.user = User(id=1)
+
+            # can it actually be saved to the db
+            new_settings.save(request)
+
+            self.assertEqual(new_settings.autopilot_state, 1)
+            self.assertEqual(new_settings.autopilot_daily_budget, Decimal("200"))
+
+            self.assertEqual(mock_init_autopilot.called, True)
+
+    @patch("utils.redirector_helper.insert_adgroup")
+    @patch("automation.autopilot.recalculate_budgets_ad_group")
+    def test_put_set_budget_autopilot_triggers_budget_reallocation_cpm(
+        self, mock_redirector_insert_adgroup, mock_init_autopilot
+    ):
+        with patch("utils.dates_helper.local_today") as mock_now:
+            # mock datetime so that budget is always valid
+            mock_now.return_value = datetime.date(2016, 1, 5)
+
+            ad_group = models.AdGroup.objects.get(pk=987)
+            ad_group.bidding_type = constants.BiddingType.CPM
+            ad_group.save(None)
+            old_settings = ad_group.get_current_settings()
+            new_settings = old_settings.copy_settings()
+            new_settings.autopilot_state = 2
+            new_settings.save(None)
+
+            self.assertIsNotNone(old_settings.pk)
+            # in order to not change it
+            del self.settings_dict["settings"]["bidding_type"]
+            del self.settings_dict["settings"]["cpc_cc"]
             self.settings_dict["settings"]["b1_sources_group_cpc_cc"] = str(new_settings.local_b1_sources_group_cpc_cc)
             self.settings_dict["settings"]["b1_sources_group_cpm"] = str(new_settings.local_b1_sources_group_cpm)
             self.settings_dict["settings"]["b1_sources_group_daily_budget"] = str(
@@ -621,6 +815,10 @@ class AdGroupSettingsTest(TestCase):
             ad_group = models.AdGroup.objects.get(pk=1)
             ad_group.bidding_type = constants.BiddingType.CPM
             ad_group.save(None)
+
+            del self.settings_dict["settings"]["bidding_type"]
+            del self.settings_dict["settings"]["b1_sources_group_cpc_cc"]
+            self.settings_dict["settings"]["cpc_cc"] = None
 
             old_settings = ad_group.get_current_settings()
             self.assertIsNotNone(old_settings.pk)
@@ -723,6 +921,12 @@ class AdGroupSettingsTest(TestCase):
             ad_group = models.AdGroup.objects.get(pk=1)
             ad_group.bidding_type = constants.BiddingType.CPM
             ad_group.save(None)
+
+            del self.settings_dict["settings"]["bidding_type"]
+            del self.settings_dict["settings"]["cpc_cc"]
+            self.settings_dict["settings"]["max_cpm"] = "1.600"
+            self.settings_dict["settings"]["b1_sources_group_cpm"] = "1.02"
+
             old_settings = ad_group.get_current_settings()
             self.assertIsNotNone(old_settings.pk)
 
@@ -992,7 +1196,8 @@ class AdGroupSettingsTest(TestCase):
         add_permissions(self.user, ["settings_view", "fea_can_use_cpm_buying"])
         ad_group_id = 1
         default_cpc = 0.25
-        default_cpm = 0.3
+
+        self.settings_dict["settings"]["b1_sources_group_cpm"] = None
 
         # min cpc - would return 0.12 without rounding ceiling
         self.settings_dict["settings"]["b1_sources_group_cpc_cc"] = 0.12
@@ -1008,23 +1213,8 @@ class AdGroupSettingsTest(TestCase):
         self.assertEqual(json_data["error_code"], "ValidationError")
         self.assertTrue("0.77" in json_data["errors"]["b1_sources_group_cpc_cc"][0])
 
-        # min cpm - would return 0.12 without rounding ceiling
-        self.settings_dict["settings"]["b1_sources_group_cpc_cc"] = default_cpc
-        self.settings_dict["settings"]["b1_sources_group_cpm"] = 0.12
-        response = _put_ad_group(ad_group_id, self.settings_dict)
-        json_data = json.loads(response.content)["data"]
-        self.assertEqual(json_data["error_code"], "ValidationError")
-        self.assertTrue("0.13" in json_data["errors"]["b1_sources_group_cpm"][0])
-
-        # max cpm - would return 0.78 without rounding floor
-        self.settings_dict["settings"]["b1_sources_group_cpm"] = 0.78
-        response = _put_ad_group(ad_group_id, self.settings_dict)
-        json_data = json.loads(response.content)["data"]
-        self.assertEqual(json_data["error_code"], "ValidationError")
-        self.assertTrue("0.77" in json_data["errors"]["b1_sources_group_cpm"][0])
-
         # min daily budget - would return 7 without rounding ceiling
-        self.settings_dict["settings"]["b1_sources_group_cpm"] = default_cpm
+        self.settings_dict["settings"]["b1_sources_group_cpc_cc"] = default_cpc
         self.settings_dict["settings"]["b1_sources_group_daily_budget"] = 7
         response = _put_ad_group(ad_group_id, self.settings_dict)
         json_data = json.loads(response.content)["data"]
@@ -1038,12 +1228,34 @@ class AdGroupSettingsTest(TestCase):
         self.assertEqual(json_data["error_code"], "ValidationError")
         self.assertTrue("89" in json_data["errors"]["b1_sources_group_daily_budget"][0])
 
+        self.settings_dict["settings"]["bidding_type"] = constants.BiddingType.CPM
+        self.settings_dict["settings"]["cpc_cc"] = None
+        self.settings_dict["settings"]["b1_sources_group_cpc_cc"] = None
+
+        # min cpm - would return 0.12 without rounding ceiling
+        self.settings_dict["settings"]["b1_sources_group_cpm"] = 0.12
+        response = _put_ad_group(ad_group_id, self.settings_dict)
+        json_data = json.loads(response.content)["data"]
+        self.assertEqual(json_data["error_code"], "ValidationError")
+        self.assertTrue("0.13" in json_data["errors"]["b1_sources_group_cpm"][0])
+
+        # max cpm - would return 0.78 without rounding floor
+        self.settings_dict["settings"]["b1_sources_group_cpm"] = 0.78
+        response = _put_ad_group(ad_group_id, self.settings_dict)
+        json_data = json.loads(response.content)["data"]
+        self.assertEqual(json_data["error_code"], "ValidationError")
+        self.assertTrue("0.77" in json_data["errors"]["b1_sources_group_cpm"][0])
+
     def test_put_bidding_type(self):
         ad_group = models.AdGroup.objects.get(pk=1)
         add_permissions(self.user, ["settings_view", "fea_can_use_cpm_buying"])
         self.assertEqual(constants.BiddingType.CPC, ad_group.bidding_type)
 
+        del self.settings_dict["settings"]["cpc_cc"]
+        del self.settings_dict["settings"]["b1_sources_group_cpc_cc"]
+        del self.settings_dict["settings"]["b1_sources_group_cpm"]
         self.settings_dict["settings"]["bidding_type"] = constants.BiddingType.CPM
+
         response = self.client.put(
             reverse("ad_group_settings", kwargs={"ad_group_id": ad_group.id}),
             json.dumps(self.settings_dict),

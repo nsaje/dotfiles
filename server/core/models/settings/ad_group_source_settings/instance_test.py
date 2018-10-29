@@ -30,11 +30,10 @@ class AdGroupSourceUpdate(TestCase):
         self.email_send_notification_mock = email_send_patcher.start()
         self.addCleanup(email_send_patcher.stop)
 
-    def test_update(self):
+    def test_update_cpc(self):
         response = self.ad_group_source.settings.update(
             self.request,
             cpc_cc=decimal.Decimal("1.3"),
-            cpm=decimal.Decimal("2.3"),
             daily_budget_cc=decimal.Decimal("8.2"),
             state=constants.AdGroupSourceSettingsState.ACTIVE,
         )
@@ -44,9 +43,22 @@ class AdGroupSourceUpdate(TestCase):
         settings = self.ad_group_source.get_current_settings()
         self.assertEqual(self.request.user, settings.created_by)
         self.assertEqual(decimal.Decimal("1.3"), settings.cpc_cc)
-        self.assertEqual(decimal.Decimal("2.3"), settings.cpm)
         self.assertEqual(decimal.Decimal("8.2"), settings.daily_budget_cc)
-        self.assertEqual(constants.AdGroupSourceSettingsState.ACTIVE, settings.state)
+
+        self.assertTrue(self.recalculate_autopilot_mock.called)
+        self.k1_update_mock.assert_called_once_with(self.ad_group.id, "AdGroupSource.update")
+        self.assertTrue(self.email_send_notification_mock.called)
+
+    def test_update_cpm(self):
+        self.ad_group.bidding_type = constants.BiddingType.CPM
+        response = self.ad_group_source.settings.update(
+            self.request, cpm=decimal.Decimal("2.3"), state=constants.AdGroupSourceSettingsState.ACTIVE
+        )
+
+        self.assertIn("autopilot_changed_sources_text", response)
+
+        settings = self.ad_group_source.get_current_settings()
+        self.assertEqual(decimal.Decimal("2.3"), settings.cpm)
 
         self.assertTrue(self.recalculate_autopilot_mock.called)
         self.k1_update_mock.assert_called_once_with(self.ad_group.id, "AdGroupSource.update")
@@ -61,10 +73,20 @@ class AdGroupSourceUpdate(TestCase):
         self.k1_update_mock.assert_not_called()
         self.assertFalse(self.email_send_notification_mock.called)
 
-    def test_update_skip_automation(self):
+    def test_update_skip_automation_cpc(self):
         self.ad_group_source.settings.update(
             skip_automation=True,
             cpc_cc=decimal.Decimal("1.3"),
+            daily_budget_cc=decimal.Decimal("8.2"),
+            state=constants.AdGroupSourceSettingsState.ACTIVE,
+        )
+
+        self.assertFalse(self.recalculate_autopilot_mock.called)
+
+    def test_update_skip_automation_cpm(self):
+        self.ad_group.bidding_type = constants.BiddingType.CPM
+        self.ad_group_source.settings.update(
+            skip_automation=True,
             cpm=decimal.Decimal("2.3"),
             daily_budget_cc=decimal.Decimal("8.2"),
             state=constants.AdGroupSourceSettingsState.ACTIVE,
@@ -82,22 +104,46 @@ class AdGroupSourceUpdate(TestCase):
         )
         self.assertFalse(self.recalculate_autopilot_mock.called)
 
-    def test_update_campaign_autopilot(self):
+    def test_update_campaign_cpc_autopilot(self):
         self.ad_group.settings.update_unsafe(None, autopilot_state=constants.AdGroupSettingsAutopilotState.INACTIVE)
         self.ad_group.campaign.settings.update_unsafe(None, autopilot=True)
         self.ad_group_source.settings.update(
             self.request,
             cpc_cc=decimal.Decimal("1.3"),
+            daily_budget_cc=decimal.Decimal("8.2"),
+            state=constants.AdGroupSourceSettingsState.ACTIVE,
+        )
+        self.assertTrue(self.recalculate_autopilot_mock.called)
+
+    def test_update_campaign_cpm_autopilot(self):
+        self.ad_group.bidding_type = constants.BiddingType.CPM
+        self.ad_group.settings.update_unsafe(None, autopilot_state=constants.AdGroupSettingsAutopilotState.INACTIVE)
+        self.ad_group.campaign.settings.update_unsafe(None, autopilot=True)
+        self.ad_group_source.settings.update(
+            self.request,
             cpm=decimal.Decimal("2.3"),
             daily_budget_cc=decimal.Decimal("8.2"),
             state=constants.AdGroupSourceSettingsState.ACTIVE,
         )
         self.assertTrue(self.recalculate_autopilot_mock.called)
 
-    def test_update_no_request(self):
+    def test_update_no_request_cpc(self):
         self.ad_group_source.settings.update(
             system_user=constants.SystemUserType.CAMPAIGN_STOP,
             cpc_cc=decimal.Decimal("1.3"),
+            daily_budget_cc=decimal.Decimal("8.2"),
+            state=constants.AdGroupSourceSettingsState.ACTIVE,
+        )
+
+        settings = self.ad_group_source.get_current_settings()
+        self.assertEqual(constants.SystemUserType.CAMPAIGN_STOP, settings.system_user)
+
+        self.assertFalse(self.email_send_notification_mock.called)
+
+    def test_update_no_request_cpm(self):
+        self.ad_group.bidding_type = constants.BiddingType.CPM
+        self.ad_group_source.settings.update(
+            system_user=constants.SystemUserType.CAMPAIGN_STOP,
             cpm=decimal.Decimal("2.3"),
             daily_budget_cc=decimal.Decimal("8.2"),
             state=constants.AdGroupSourceSettingsState.ACTIVE,
@@ -108,10 +154,20 @@ class AdGroupSourceUpdate(TestCase):
 
         self.assertFalse(self.email_send_notification_mock.called)
 
-    def test_update_no_k1_sync(self):
+    def test_update_no_k1_sync_cpc(self):
         self.ad_group_source.settings.update(
             k1_sync=False,
             cpc_cc=decimal.Decimal("1.3"),
+            daily_budget_cc=decimal.Decimal("8.2"),
+            state=constants.AdGroupSourceSettingsState.ACTIVE,
+        )
+
+        self.assertFalse(self.k1_update_mock.called)
+
+    def test_update_no_k1_sync_cpm(self):
+        self.ad_group.bidding_type = constants.BiddingType.CPM
+        self.ad_group_source.settings.update(
+            k1_sync=False,
             cpm=decimal.Decimal("2.3"),
             daily_budget_cc=decimal.Decimal("8.2"),
             state=constants.AdGroupSourceSettingsState.ACTIVE,
@@ -124,6 +180,7 @@ class AdGroupSourceUpdate(TestCase):
             self.ad_group_source.settings.update(cpc_cc=0.1)
 
     def test_update_validate_cpm_not_decimal(self):
+        self.ad_group.bidding_type = constants.BiddingType.CPM
         with self.assertRaises(AssertionError):
             self.ad_group_source.settings.update(cpm=1.1)
 
@@ -251,9 +308,12 @@ class MulticurrencyTest(TestCase):
     def test_set_usd(self, mock_get_exchange_rate):
         ad_group_source = magic_mixer.blend(core.models.AdGroupSource)
         mock_get_exchange_rate.return_value = decimal.Decimal("2.0")
-        ad_group_source.settings.update(None, cpc_cc=decimal.Decimal("0.50"), cpm=decimal.Decimal("1.50"))
+        ad_group_source.settings.update(None, cpc_cc=decimal.Decimal("0.50"))
         self.assertEqual(ad_group_source.settings.local_cpc_cc, decimal.Decimal("1.00"))
         self.assertEqual(ad_group_source.settings.cpc_cc, decimal.Decimal("0.50"))
+
+        ad_group_source.ad_group.bidding_type = constants.BiddingType.CPM
+        ad_group_source.settings.update(None, cpm=decimal.Decimal("1.50"))
         self.assertEqual(ad_group_source.settings.local_cpm, decimal.Decimal("3.00"))
         self.assertEqual(ad_group_source.settings.cpm, decimal.Decimal("1.50"))
 
@@ -261,9 +321,12 @@ class MulticurrencyTest(TestCase):
     def test_set_local(self, mock_get_exchange_rate):
         ad_group_source = magic_mixer.blend(core.models.AdGroupSource)
         mock_get_exchange_rate.return_value = decimal.Decimal("2.0")
-        ad_group_source.settings.update(None, local_cpc_cc=decimal.Decimal("0.50"), local_cpm=decimal.Decimal("2.00"))
+        ad_group_source.settings.update(None, local_cpc_cc=decimal.Decimal("0.50"))
         self.assertEqual(ad_group_source.settings.local_cpc_cc, decimal.Decimal("0.50"))
         self.assertEqual(ad_group_source.settings.cpc_cc, decimal.Decimal("0.25"))
+
+        ad_group_source.ad_group.bidding_type = constants.BiddingType.CPM
+        ad_group_source.settings.update(None, local_cpm=decimal.Decimal("2.00"))
         self.assertEqual(ad_group_source.settings.local_cpm, decimal.Decimal("2.00"))
         self.assertEqual(ad_group_source.settings.cpm, decimal.Decimal("1.00"))
 

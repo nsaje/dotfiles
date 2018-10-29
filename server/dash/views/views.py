@@ -912,10 +912,16 @@ class AdGroupSourceSettings(api_common.BaseApiView):
                 }
             )
 
-        except core.models.settings.ad_group_source_settings.exceptions.RTBSourcesCPCNegative as err:
+        except core.models.settings.ad_group_source_settings.exceptions.CannotSetCPC as err:
             raise exc.ValidationError(errors={"cpc_cc": [str(err)]})
 
-        except core.models.settings.ad_group_source_settings.exceptions.RTBSourcesCPMNegative as err:
+        except core.models.settings.ad_group_source_settings.exceptions.CannotSetCPM as err:
+            raise exc.ValidationError(errors={"cpm": [str(err)]})
+
+        except core.models.settings.ad_group_source_settings.exceptions.B1SourcesCPCNegative as err:
+            raise exc.ValidationError(errors={"cpc_cc": [str(err)]})
+
+        except core.models.settings.ad_group_source_settings.exceptions.B1SourcesCPMNegative as err:
             raise exc.ValidationError(errors={"cpm": [str(err)]})
 
         except core.models.settings.ad_group_source_settings.exceptions.CPCInvalid as err:

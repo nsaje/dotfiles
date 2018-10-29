@@ -188,6 +188,8 @@ class AdGroupSourceState(BaseBulkActionView):
             )
 
         except (
+            core.models.settings.ad_group_source_settings.exceptions.CannotSetCPC,
+            core.models.settings.ad_group_source_settings.exceptions.CannotSetCPM,
             core.models.settings.ad_group_source_settings.exceptions.CPCInvalid,
             core.models.settings.ad_group_source_settings.exceptions.RetargetingNotSupported,
             core.models.settings.ad_group_source_settings.exceptions.MediaSourceNotConnectedToFacebook,

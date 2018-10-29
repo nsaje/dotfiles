@@ -2,6 +2,7 @@ import datetime
 import string
 from decimal import Decimal
 import mock
+import json
 
 from restapi.common.views_base_test import RESTAPITest
 import restapi.serializers
@@ -25,12 +26,13 @@ class AdGroupsTest(RESTAPITest):
         id=1,
         campaign_id=1,
         name="My test ad group",
+        bidding_type=constants.BiddingType.CPC,
         state=constants.AdGroupSettingsState.INACTIVE,
         archived=False,
         start_date=datetime.date.today(),
         end_date=None,
         max_cpc="0.600",
-        max_cpm="1.700",
+        max_cpm=None,
         daily_budget="15.00",
         tracking_code="a=b",
         target_regions={"countries": ["US"], "postalCodes": ["CA:12345"]},
@@ -64,11 +66,14 @@ class AdGroupsTest(RESTAPITest):
             "id": str(id),
             "campaignId": str(campaign_id),
             "name": name,
+            "biddingType": constants.BiddingType.get_name(bidding_type),
             "state": constants.AdGroupSettingsState.get_name(state),
             "archived": archived,
             "startDate": start_date,
             "endDate": end_date if end_date else cls.expected_none_date_output,
-            "maxCpc": Decimal(max_cpc).quantize(Decimal("1.000")) if max_cpc else cls.expected_none_decimal_output,
+            "maxCpc": Decimal(max_cpc).quantize(Decimal("1.000"))
+            if max_cpc and max_cpm is None
+            else cls.expected_none_decimal_output,
             "maxCpm": Decimal(max_cpm).quantize(Decimal("1.000")) if max_cpm else cls.expected_none_decimal_output,
             "dailyBudget": Decimal(daily_budget).quantize(Decimal("1.00"))
             if daily_budget
@@ -130,12 +135,13 @@ class AdGroupsTest(RESTAPITest):
             id=adgroup_db.id,
             campaign_id=adgroup_db.campaign_id,
             name=settings_db.ad_group_name,
+            bidding_type=settings_db.ad_group.bidding_type,
             state=settings_db.state,
             archived=settings_db.archived,
             start_date=settings_db.start_date,
             end_date=settings_db.end_date,
-            max_cpc=settings_db.local_cpc_cc,
-            max_cpm=settings_db.local_max_cpm,
+            max_cpc=None if adgroup_db.bidding_type == constants.BiddingType.CPM else settings_db.local_cpc_cc,
+            max_cpm=settings_db.local_max_cpm if adgroup_db.bidding_type == constants.BiddingType.CPM else None,
             daily_budget=settings_db.daily_budget_cc,
             tracking_code=settings_db.tracking_code,
             target_regions=self._partition_regions(settings_db.target_regions),
@@ -160,10 +166,22 @@ class AdGroupsTest(RESTAPITest):
         )
         self.assertEqual(expected, adgroup)
 
-    def test_adgroups_get(self):
+    def test_adgroups_get_cpc(self):
         r = self.client.get(reverse("adgroups_details", kwargs={"ad_group_id": 2040}))
         resp_json = self.assertResponseValid(r)
         self.validate_against_db(resp_json["data"])
+        self.assertTrue(resp_json["data"]["maxCpc"])
+        self.assertFalse(resp_json["data"]["maxCpm"])
+
+    def test_adgroups_get_cpm(self):
+        ad_group = dash.models.AdGroup.objects.get(id=2040)
+        ad_group.bidding_type = constants.BiddingType.CPM
+        ad_group.save(None)
+        r = self.client.get(reverse("adgroups_details", kwargs={"ad_group_id": 2040}))
+        resp_json = self.assertResponseValid(r)
+        self.validate_against_db(resp_json["data"])
+        self.assertFalse(resp_json["data"]["maxCpc"])
+        self.assertTrue(resp_json["data"]["maxCpm"])
 
     def test_adgroups_list(self):
         r = self.client.get(reverse("adgroups_list"))
@@ -210,7 +228,7 @@ class AdGroupsTest(RESTAPITest):
         self.assertEqual(len(resp_json["data"]), 1)
         self.assertEqual(resp_json["data"][0]["id"], str(adgroup1_account1.id))
 
-    def test_adgroups_post(self):
+    def test_adgroups_post_cpc(self):
         new_ad_group = self.adgroup_repr(campaign_id=608, name="Test Group")
         del new_ad_group["id"]
         r = self.client.post(reverse("adgroups_list"), data=new_ad_group, format="json")
@@ -220,6 +238,21 @@ class AdGroupsTest(RESTAPITest):
         self.assertEqual(resp_json["data"], new_ad_group)
         adgroup_db = dash.models.AdGroup.objects.get(pk=new_ad_group["id"])
         self.assertEqual(adgroup_db.name, adgroup_db.get_current_settings().ad_group_name)
+        self.assertTrue(resp_json["data"]["maxCpc"])
+        self.assertFalse(resp_json["data"]["maxCpm"])
+
+    def test_adgroups_post_cpm(self):
+        new_ad_group = self.adgroup_repr(
+            campaign_id=608, name="Test Group", bidding_type=constants.BiddingType.CPM, max_cpm="3.100"
+        )
+        del new_ad_group["id"]
+        r = self.client.post(reverse("adgroups_list"), data=new_ad_group, format="json")
+        resp_json = self.assertResponseValid(r, data_type=dict, status_code=201)
+        self.validate_against_db(resp_json["data"])
+        new_ad_group["id"] = resp_json["data"]["id"]
+        self.assertEqual(resp_json["data"], new_ad_group)
+        self.assertFalse(resp_json["data"]["maxCpc"])
+        self.assertTrue(resp_json["data"]["maxCpm"])
 
     def test_adgroups_post_no_campaign_id(self):
         new_ad_group = self.adgroup_repr(campaign_id=608, name="Test Group")
@@ -250,12 +283,26 @@ class AdGroupsTest(RESTAPITest):
         r = self.client.post(reverse("adgroups_list"), data=new_ad_group, format="json")
         self.assertResponseError(r, "ValidationError")
 
-    def test_adgroups_put(self):
+    def test_adgroups_put_cpc(self):
         test_adgroup = self.adgroup_repr(id=2040, campaign_id=608)
         r = self.client.put(reverse("adgroups_details", kwargs={"ad_group_id": 2040}), data=test_adgroup, format="json")
         resp_json = self.assertResponseValid(r)
         self.validate_against_db(resp_json["data"])
         self.assertEqual(resp_json["data"], test_adgroup)
+
+    def test_adgroups_put_cpm(self):
+        ad_group = dash.models.AdGroup.objects.get(id=2040)
+        ad_group.bidding_type = constants.BiddingType.CPM
+        ad_group.save(None)
+        test_adgroup = self.adgroup_repr(
+            id=2040, campaign_id=608, bidding_type=constants.BiddingType.CPM, max_cpm="3.100"
+        )
+        r = self.client.put(reverse("adgroups_details", kwargs={"ad_group_id": 2040}), data=test_adgroup, format="json")
+        resp_json = self.assertResponseValid(r)
+        self.validate_against_db(resp_json["data"])
+        self.assertEqual(resp_json["data"], test_adgroup)
+        self.assertFalse(resp_json["data"]["maxCpc"])
+        self.assertTrue(resp_json["data"]["maxCpm"])
 
     def test_adgroups_put_name(self):
         adgroup = self.adgroup_repr(name="New Name")
@@ -341,15 +388,21 @@ class AdGroupsTest(RESTAPITest):
         self.assertResponseError(r, "ValidationError")
 
     def test_adgroups_post_high_cpm(self):
-        new_ad_group = self.adgroup_repr(campaign_id=608, name="Test Group", max_cpm=Decimal("9000"))
+        new_ad_group = self.adgroup_repr(
+            campaign_id=608, name="Test Group", max_cpm=Decimal("9000"), bidding_type=constants.BiddingType.CPM
+        )
         del new_ad_group["id"]
         r = self.client.post(reverse("adgroups_list"), data=new_ad_group, format="json")
+        resp_json = json.loads(r.content)
         self.assertResponseError(r, "ValidationError")
+        self.assertTrue("25" in resp_json["details"]["maxCpm"][0])
 
     def test_adgroups_put_low_cpm(self):
-        adgroup = self.adgroup_repr(max_cpm="0.0")
+        adgroup = self.adgroup_repr(bidding_type=constants.BiddingType.CPM, max_cpm="0.0")
         r = self.client.put(reverse("adgroups_details", kwargs={"ad_group_id": 2040}), data=adgroup, format="json")
+        resp_json = json.loads(r.content)
         self.assertResponseError(r, "ValidationError")
+        self.assertTrue("0.05" in resp_json["details"]["maxCpm"][0])
 
     def test_adgroups_put_end_date_before_start_date(self):
         adgroup = self.adgroup_repr(
@@ -435,6 +488,36 @@ class AdGroupsTest(RESTAPITest):
         self.assertEqual(resp_json["data"]["clickCappingDailyAdGroupMaxClicks"], self.expected_none_click_output)
         self.assertEqual(resp_json["data"]["clickCappingDailyClickBudget"], self.expected_none_click_output)
         self.assertEqual(resp_json["data"]["dayparting"]["timezone"], "")
+
+    def test_adgroups_put_blank_bid(self):
+        ad_group = dash.models.AdGroup.objects.get(id=2040)
+        ad_group.settings.update_unsafe(None, cpc_cc=1.1, max_cpm=3.1)
+        ad_group.refresh_from_db()
+        self.assertEqual(Decimal("1.1000"), ad_group.settings.cpc_cc)
+        self.assertEqual(Decimal("3.1000"), ad_group.settings.max_cpm)
+
+        data = self.adgroup_repr(max_cpc="", max_cpm="")
+        r = self.client.put(reverse("adgroups_details", kwargs={"ad_group_id": 2040}), data=data, format="json")
+        resp_json = self.assertResponseValid(r)
+        self.validate_against_db(resp_json["data"])
+        self.assertEqual(resp_json["data"]["maxCpm"], self.expected_none_decimal_output)
+        ad_group.refresh_from_db()
+        self.assertIsNone(ad_group.settings.cpc_cc)
+        self.assertEqual(Decimal("3.1000"), ad_group.settings.max_cpm)
+
+        ad_group.settings.update_unsafe(None, cpc_cc=1.1, max_cpm=3.1)
+        ad_group.refresh_from_db()
+        self.assertEqual(Decimal("1.1000"), ad_group.settings.cpc_cc)
+        self.assertEqual(Decimal("3.1000"), ad_group.settings.max_cpm)
+
+        data["biddingType"] = "CPM"
+        r = self.client.put(reverse("adgroups_details", kwargs={"ad_group_id": 2040}), data=data, format="json")
+        resp_json = self.assertResponseValid(r)
+        self.validate_against_db(resp_json["data"])
+        self.assertEqual(resp_json["data"]["maxCpm"], self.expected_none_decimal_output)
+        ad_group.refresh_from_db()
+        self.assertEqual(Decimal("1.1000"), ad_group.settings.cpc_cc)
+        self.assertIsNone(ad_group.settings.max_cpm)
 
     def test_adgroups_put_none(self):
         adgroup = self.adgroup_repr(

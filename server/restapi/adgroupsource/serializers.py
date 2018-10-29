@@ -2,7 +2,7 @@ import decimal
 
 from rest_framework import serializers
 
-from restapi.serializers import fields
+import restapi.serializers.fields
 
 from dash import constants
 import dash.models
@@ -34,13 +34,36 @@ class AdGroupSourceListSerializer(serializers.ListSerializer):
         return ret
 
 
-class AdGroupSourceSerializer(serializers.Serializer):
+class AdGroupSourceSerializer(restapi.serializers.serializers.PermissionedFieldsMixin, serializers.Serializer):
     class Meta:
         list_serializer_class = AdGroupSourceListSerializer
+        permissioned_fields = {"cpm": "zemauth.fea_can_use_cpm_buying"}
 
-    source = fields.SourceIdSlugField(source="ad_group_source.source")
+    @property
+    def fields(self):
+        fields = super().fields
+        ad_group = self.context.get("ad_group")
+        if ad_group and ad_group.bidding_type == constants.BiddingType.CPM:
+            fields["cpc"].allow_null = True
+        elif "cpm" in fields:
+            fields["cpm"].allow_null = True
+        return fields
+
+    def to_representation(self, instance):
+        ret = super().to_representation(instance)
+        ad_group = self.context.get("ad_group")
+        if ad_group and ad_group.bidding_type == constants.BiddingType.CPM:
+            ret["cpc"] = None
+        elif "cpm" in ret:
+            ret["cpm"] = None
+        return ret
+
+    source = restapi.serializers.fields.SourceIdSlugField(source="ad_group_source.source")
     cpc = serializers.DecimalField(
         max_digits=10, decimal_places=4, source="local_cpc_cc", required=False, rounding=decimal.ROUND_HALF_DOWN
+    )
+    cpm = serializers.DecimalField(
+        max_digits=10, decimal_places=4, source="local_cpm", required=False, rounding=decimal.ROUND_HALF_DOWN
     )
     daily_budget = serializers.DecimalField(
         max_digits=10,
@@ -49,4 +72,4 @@ class AdGroupSourceSerializer(serializers.Serializer):
         required=False,
         rounding=decimal.ROUND_HALF_DOWN,
     )
-    state = fields.DashConstantField(constants.AdGroupSourceSettingsState, required=False)
+    state = restapi.serializers.fields.DashConstantField(constants.AdGroupSourceSettingsState, required=False)

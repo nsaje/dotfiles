@@ -170,6 +170,9 @@ class AdGroupSourceStateTest(TestCase):
         self.assertEqual(json_data["error_code"], "ValidationError")
         self.assertTrue("89" in json_data["message"])
 
+        ad_group.bidding_type = constants.BiddingType.CPM
+        ad_group.save(None)
+
         # min cpm - would return 0.12 without rounding ceiling
         for ags in ad_group_sources:
             ags_settings = ags.settings.copy_settings()

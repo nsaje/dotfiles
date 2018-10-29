@@ -407,7 +407,7 @@ def augment_publisher(row, loader, is_base_level=False):
         modifier = modifier_map.get((source_id, domain))
         source_bid_value = bid_value_map.get(source_id)
 
-        if modifier is not None:  # TODO: CPM Buying: rename
+        if modifier is not None:
             row.update({"bid_modifier": {"modifier": modifier, "source_bid_value": source_bid_value}})
         else:
             row.update({"bid_modifier": {"modifier": 1.0, "source_bid_value": source_bid_value}})

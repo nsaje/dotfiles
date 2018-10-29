@@ -128,10 +128,22 @@ class AdGroupSerializer(
             "click_capping_daily_click_budget": "zemauth.can_set_click_capping",
         }
 
+    def to_representation(self, instance):
+        ret = super().to_representation(instance)
+        ad_group = instance.ad_group
+        if ad_group and ad_group.bidding_type == constants.BiddingType.CPM:
+            ret["max_cpc"] = ""
+        elif "max_cpm" in ret:
+            ret["max_cpm"] = ""
+        return ret
+
     id = restapi.serializers.fields.IdField(read_only=True, source="ad_group.id")
     campaign_id = restapi.serializers.fields.IdField(source="ad_group.campaign_id")
     name = restapi.serializers.fields.PlainCharField(
         source="ad_group_name", max_length=127, error_messages={"required": "Please specify ad group name."}
+    )
+    bidding_type = restapi.serializers.fields.DashConstantField(
+        constants.BiddingType, source="ad_group.bidding_type", required=False
     )
     state = restapi.serializers.fields.DashConstantField(
         constants.AdGroupSettingsState, default=constants.AdGroupSettingsState.INACTIVE

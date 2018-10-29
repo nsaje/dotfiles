@@ -23,7 +23,6 @@ class ValidateAdGroupSourceUpdatesTestCase(TestCase):
             flat_fee_cc=0,
             license_fee=decimal.Decimal("0.15"),
         )
-
         self.campaign = magic_mixer.blend(core.models.Campaign, account=self.account)
         self.budget = magic_mixer.blend(
             core.features.bcm.BudgetLineItem,
@@ -81,9 +80,10 @@ class ValidateAdGroupSourceUpdatesTestCase(TestCase):
         ad_group_source.settings.update(None, **updates)
 
     def test_validate_ad_group_source_cpm(self):
-        ad_group_source = magic_mixer.blend(
-            core.models.AdGroupSource, ad_group__campaign=self.campaign, source=self.source
+        ad_group = magic_mixer.blend(
+            core.models.AdGroup, campaign=self.campaign, bidding_type=dash.constants.BiddingType.CPM
         )
+        ad_group_source = magic_mixer.blend(core.models.AdGroupSource, ad_group=ad_group, source=self.source)
         ad_group_source.settings.update_unsafe(
             None,
             state=dash.constants.AdGroupSettingsState.ACTIVE,
@@ -113,6 +113,76 @@ class ValidateAdGroupSourceUpdatesTestCase(TestCase):
 
         updates["cpm"] = decimal.Decimal("5")
         ad_group_source.settings.update(None, **updates)
+
+    def test_validate_ad_group_source_cpc_bidding_type_switch(self):
+        ad_group = magic_mixer.blend(
+            core.models.AdGroup, campaign=self.campaign, bidding_type=dash.constants.BiddingType.CPC
+        )
+        ad_group.settings.update_unsafe(None, max_cpm=1.0, local_max_cpm=1.0)
+        ad_group_source = magic_mixer.blend(core.models.AdGroupSource, ad_group=ad_group, source=self.source)
+        ad_group_source.settings.update_unsafe(
+            None,
+            state=dash.constants.AdGroupSettingsState.ACTIVE,
+            cpc_cc=decimal.Decimal("0.35"),
+            cpm=decimal.Decimal("1.1"),
+        )
+
+        updates = {}
+        updates["cpc_cc"] = decimal.Decimal("5")
+        ad_group_source.settings.update(None, **updates)
+
+    def test_validate_ad_group_source_cpm_bidding_type_switch(self):
+        ad_group = magic_mixer.blend(
+            core.models.AdGroup, campaign=self.campaign, bidding_type=dash.constants.BiddingType.CPM
+        )
+        ad_group.settings.update_unsafe(None, cpc_cc=1.0, local_cpc_cc=1.0)
+        ad_group_source = magic_mixer.blend(core.models.AdGroupSource, ad_group=ad_group, source=self.source)
+        ad_group_source.settings.update_unsafe(
+            None,
+            state=dash.constants.AdGroupSettingsState.ACTIVE,
+            cpc_cc=decimal.Decimal("1.1"),
+            cpm=decimal.Decimal("0.35"),
+        )
+
+        updates = {}
+        updates["cpm"] = decimal.Decimal("5")
+        ad_group_source.settings.update(None, **updates)
+
+    def test_validate_ad_group_source_bidding_type_cpc(self):
+        ad_group = magic_mixer.blend(
+            core.models.AdGroup, campaign=self.campaign, bidding_type=dash.constants.BiddingType.CPC
+        )
+        ad_group_source = magic_mixer.blend(core.models.AdGroupSource, ad_group=ad_group, source=self.source)
+        ad_group_source.settings.update_unsafe(
+            None,
+            state=dash.constants.AdGroupSettingsState.ACTIVE,
+            cpc_cc=decimal.Decimal("0.35"),
+            cpm=decimal.Decimal("1.00"),
+            daily_budget_cc=decimal.Decimal("50"),
+        )
+
+        updates = {}
+        updates["cpm"] = decimal.Decimal("1.1")
+        with self.assertRaises(exceptions.CannotSetCPM):
+            ad_group_source.settings.update(None, **updates)
+
+    def test_validate_ad_group_source_bidding_type_cpm(self):
+        ad_group = magic_mixer.blend(
+            core.models.AdGroup, campaign=self.campaign, bidding_type=dash.constants.BiddingType.CPM
+        )
+        ad_group_source = magic_mixer.blend(core.models.AdGroupSource, ad_group=ad_group, source=self.source)
+        ad_group_source.settings.update_unsafe(
+            None,
+            state=dash.constants.AdGroupSettingsState.ACTIVE,
+            cpc_cc=decimal.Decimal("0.35"),
+            cpm=decimal.Decimal("1.00"),
+            daily_budget_cc=decimal.Decimal("50"),
+        )
+
+        updates = {}
+        updates["cpc_cc"] = decimal.Decimal("1.1")
+        with self.assertRaises(exceptions.CannotSetCPC):
+            ad_group_source.settings.update(None, **updates)
 
     def test_validate_ad_group_source_daily_budget(self):
         ad_group_source = magic_mixer.blend(

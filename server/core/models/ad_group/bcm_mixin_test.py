@@ -17,7 +17,7 @@ class MigrateToBcmV2Test(TestCase):
         campaign = magic_mixer.blend(core.models.Campaign, account=account)
         self.ad_group = magic_mixer.blend(core.models.AdGroup, campaign=campaign)
         self.request = magic_mixer.blend_request_user(permissions=["fea_can_use_cpm_buying"])
-        self.ad_group.settings.update(
+        self.ad_group.settings.update_unsafe(
             self.request,
             autopilot_state=constants.AdGroupSettingsAutopilotState.INACTIVE,
             b1_sources_group_daily_budget=decimal.Decimal("50"),

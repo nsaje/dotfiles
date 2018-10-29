@@ -75,7 +75,7 @@ def validate_b1_sources_group_cpc_cc(cpc_cc, ad_group_settings, bcm_modifiers=No
         return
 
     if cpc_cc < 0:
-        raise exceptions.RTBSourcesCPCNegative("RTB Sources' bid CPC must be positive.")
+        raise exceptions.B1SourcesCPCNegative("RTB Sources' bid CPC must be positive.")
 
     validate_source_cpc_cc(cpc_cc, all_rtb.AllRTBSource, all_rtb.AllRTBSourceType, bcm_modifiers)
 
@@ -88,7 +88,7 @@ def validate_b1_sources_group_cpm(cpm, ad_group_settings, bcm_modifiers=None):
         return
 
     if cpm < 0:
-        raise exceptions.RTBSourcesCPMNegative("RTB Sources' bid CPM must be positive.")
+        raise exceptions.B1SourcesCPMNegative("RTB Sources' bid CPM must be positive.")
 
     validate_source_cpm(cpm, all_rtb.AllRTBSource, all_rtb.AllRTBSourceType, bcm_modifiers)
 

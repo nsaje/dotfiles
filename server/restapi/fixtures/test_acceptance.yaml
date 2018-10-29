@@ -356,6 +356,7 @@
         campaign: 608
         settings: 1
         name: 'My ad group'
+        bidding_type: 1
         default_blacklist_id: 156
     model: dash.adgroup
     pk: 2040
@@ -391,6 +392,8 @@
         dayparting: {"monday": [0, 1, 2, 3], "friday": [10, 11, 23], "timezone": "America/New_York"}
         b1_sources_group_cpc_cc: '0.01'
         local_b1_sources_group_cpc_cc: '0.01'
+        b1_sources_group_cpm: '1.01'
+        local_b1_sources_group_cpm: '1.01'
         b1_sources_group_daily_budget: 0
         local_b1_sources_group_daily_budget: 0
     model: dash.adgroupsettings
@@ -436,6 +439,8 @@
         ad_group_source: 1
         cpc_cc: '0.12'
         local_cpc_cc: '0.12'
+        cpm: '1.12'
+        local_cpm: '1.12'
         daily_budget_cc: '50.'
         local_daily_budget_cc: '50.'
         state: 1
@@ -447,6 +452,8 @@
         ad_group_source: 2
         cpc_cc: '0.12'
         local_cpc_cc: '0.12'
+        cpm: '1.12'
+        local_cpm: '1.12'
         daily_budget_cc: '50.'
         local_daily_budget_cc: '50.'
         state: 2
@@ -458,6 +465,8 @@
         ad_group_source: 3
         cpc_cc: '0.52'
         local_cpc_cc: '0.52'
+        cpm: '1.52'
+        local_cpm: '1.52'
         daily_budget_cc: '50.'
         local_daily_budget_cc: '50.'
         state: 2

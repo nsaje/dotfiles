@@ -26,13 +26,17 @@ class AdGroupSourceViewSet(RESTAPIBaseViewSet):
             .group_current_settings()
             .select_related("ad_group_source__source")
         )
-        serializer = serializers.AdGroupSourceSerializer(settings, many=True)
+        serializer = serializers.AdGroupSourceSerializer(
+            settings, many=True, context={"request": request, "ad_group": ad_group}
+        )
         return self.response_ok(serializer.data)
 
     def put(self, request, ad_group_id):
         ad_group = restapi.access.get_ad_group(request.user, ad_group_id)
 
-        serializer = serializers.AdGroupSourceSerializer(data=request.data, many=True)
+        serializer = serializers.AdGroupSourceSerializer(
+            data=request.data, many=True, context={"request": request, "ad_group": ad_group}
+        )
         serializer.is_valid(raise_exception=True)
 
         with transaction.atomic():
@@ -206,10 +210,16 @@ class AdGroupSourceViewSet(RESTAPIBaseViewSet):
                 }
             )
 
-        except exceptions.RTBSourcesCPCNegative as err:
+        except exceptions.CannotSetCPC as err:
             raise utils.exc.ValidationError(errors={"cpc": [str(err)]})
 
-        except exceptions.RTBSourcesCPMNegative as err:
+        except exceptions.CannotSetCPM as err:
+            raise utils.exc.ValidationError(errors={"cpm": [str(err)]})
+
+        except exceptions.B1SourcesCPCNegative as err:
+            raise utils.exc.ValidationError(errors={"cpc": [str(err)]})
+
+        except exceptions.B1SourcesCPMNegative as err:
             raise utils.exc.ValidationError(errors={"cpm": [str(err)]})
 
         except exceptions.CPCInvalid as err:

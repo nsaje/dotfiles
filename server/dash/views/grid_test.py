@@ -85,11 +85,12 @@ class RTBSourceSettingsTest(TestCase):
         parsed = json.loads(response.content)
         self.assertFalse(parsed["success"])
         self.assertEqual("ValidationError", parsed["data"]["error_code"])
-        self.assertTrue("b1_sources_group_cpc_cc" in parsed["data"]["errors"])
+        self.assertTrue("0.10" in parsed["data"]["errors"]["b1_sources_group_cpc_cc"][0])
 
     @patch("utils.redirector_helper.insert_adgroup")
     def test_post_cpm(self, mock_redirector_insert_adgroup):
         self.ad_group.bidding_type = constants.BiddingType.CPM
+        self.ad_group.save(None)
         prev_ad_group_settings = self.ad_group.get_current_settings()
         response = self.client.post(
             reverse(
@@ -111,6 +112,7 @@ class RTBSourceSettingsTest(TestCase):
 
     def test_validate_max_cpm(self):
         self.ad_group.bidding_type = constants.BiddingType.CPM
+        self.ad_group.save(None)
         updated_ad_group_settings = self.ad_group.get_current_settings().copy_settings()
         updated_ad_group_settings.max_cpm = Decimal("0.40")
         updated_ad_group_settings.save(None)
@@ -129,4 +131,4 @@ class RTBSourceSettingsTest(TestCase):
         parsed = json.loads(response.content)
         self.assertFalse(parsed["success"])
         self.assertEqual("ValidationError", parsed["data"]["error_code"])
-        self.assertTrue("b1_sources_group_cpm" in parsed["data"]["errors"])
+        self.assertTrue("0.40" in parsed["data"]["errors"]["b1_sources_group_cpm"][0])

@@ -3,6 +3,7 @@ from restapi.common.pagination import StandardPagination
 import restapi.access
 
 import core.models
+import core.models.ad_group.exceptions
 from core.models.settings.ad_group_settings import exceptions
 from . import serializers
 import utils.exc
@@ -56,11 +57,21 @@ class AdGroupViewSet(RESTAPIBaseViewSet):
 
     def update_settings(self, request, ad_group, settings):
         try:
+            ad_group.update_bidding_type(request, settings.get("ad_group", {}).get("bidding_type"))
             ad_group.settings.update(request, **settings)
+
+        except core.models.ad_group.exceptions.CannotChangeBiddingType as err:
+            raise utils.exc.ValidationError(errors={"bidding_type": [str(err)]})
 
         except utils.exc.MultipleValidationError as err:
             errors = {}
             for e in err.errors:
+                if isinstance(e, exceptions.CannotSetCPC):
+                    errors.setdefault("max_cpc", []).append(str(e))
+
+                elif isinstance(e, exceptions.CannotSetCPM):
+                    errors.setdefault("max_cpm", []).append(str(e))
+
                 if isinstance(e, exceptions.MaxCPCTooLow):
                     errors.setdefault("max_cpc", []).append(str(e))
 

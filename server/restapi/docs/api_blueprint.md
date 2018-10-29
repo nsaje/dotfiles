@@ -798,23 +798,24 @@ An Ad Group is a collection of Content Ads that has specific targeting settings.
 Before any Ad Groups in the campaign can be activated, a campaign must
 have at least one active [Budget](#budget) and at least one [Goal](#goal) associated.
 
-Property     | Type                      | Description                                                                                                                      | Create   | Update
--------------|---------------------------|----------------------------------------------------------------------------------------------------------------------------------|----------|-----------|
-id           | string                    | the ad group's id                                                                                                                | N/A      | read only
-campaignId   | string                    | id of the campaign this ad group belongs to                                                                                      | required | read only
-name         | string                    | the name of the ad group                                                                                                         | required | optional
-state        | `ACTIVE` / `INACTIVE`     | Ad group state. Set to `ACTIVE` to activate the Ad Group and to `INACTIVE` to deactivate it.                                     | optional | optional
-archived     | bool                      | Is the Ad Group archived? Set to `true` to archive an Ad Group and to `false` to restore it.                                     | optional | optional
-startDate    | string                    | start date of the ad group                                                                                                       | optional | optional
-endDate      | string                    | End date of the ad group. Omit to leave it running until state is manually set to `INACTIVE`.                                    | optional | optional
-startDate    | string                    | start date of the ad group                                                                                                       | optional | optional
-maxCpc       | [money](#money)           | maximum CPC for this ad group                                                                                                    | optional | optional
-maxCpm       | [money](#money)           | maximum CPM for this ad group (currently beta only, please contact us for access)                                                | optional | optional
-targeting    | [targeting](#targeting)   | targeting settings                                                                                                               | optional | optional
-dayparting   | [dayparting](#dayparting) | dayparting settings                                                                                                              | optional | optional
-trackingCode | string                    | tracking codes appended to all content ads URLs ([more](http://help.zemanta.com/article/show/12985-tracking-parameters--macros)) | optional | optional
-autopilot    | [autopilot](#autopilot)   | Zemanta Autopilot settings                                                                                                       | optional | optional
-deliveryType | [delivery](#delivery)     | Delivery Type. Set to `STANDARD` to deliver ads throughout the day and to `ACCELERATED` to deliver ads as soon as possible.      | optional | optional
+Property     | Type                      | Description                                                                                                                        | Create   | Update
+-------------|---------------------------|------------------------------------------------------------------------------------------------------------------------------------|----------|-----------|
+id           | string                    | the ad group's id                                                                                                                  | N/A      | read only
+campaignId   | string                    | id of the campaign this ad group belongs to                                                                                        | required | read only
+name         | string                    | the name of the ad group                                                                                                           | required | optional
+state        | `ACTIVE` / `INACTIVE`     | Ad group state. Set to `ACTIVE` to activate the Ad Group and to `INACTIVE` to deactivate it.                                       | optional | optional
+archived     | bool                      | Is the Ad Group archived? Set to `true` to archive an Ad Group and to `false` to restore it.                                       | optional | optional
+startDate    | string                    | start date of the ad group                                                                                                         | optional | optional
+endDate      | string                    | End date of the ad group. Omit to leave it running until state is manually set to `INACTIVE`.                                      | optional | optional
+startDate    | string                    | start date of the ad group                                                                                                         | optional | optional
+biddingType  | `CPC` / `CPM`             | Bidding type. Set to `CPC` (use maxCpc) to focus on the clicks that your ad receives or `CPM` (use maxCpm) to focus on impressions.| optional | optional
+maxCpc       | [money](#money)           | maximum CPC for this ad group                                                                                                      | optional | optional
+maxCpm       | [money](#money)           | maximum CPM for this ad group (currently beta only, please contact us for access)                                                  | optional | optional
+targeting    | [targeting](#targeting)   | targeting settings                                                                                                                 | optional | optional
+dayparting   | [dayparting](#dayparting) | dayparting settings                                                                                                                | optional | optional
+trackingCode | string                    | tracking codes appended to all content ads URLs ([more](http://help.zemanta.com/article/show/12985-tracking-parameters--macros))   | optional | optional
+autopilot    | [autopilot](#autopilot)   | Zemanta Autopilot settings                                                                                                         | optional | optional
+deliveryType | [delivery](#delivery)     | Delivery Type. Set to `STANDARD` to deliver ads throughout the day and to `ACCELERATED` to deliver ads as soon as possible.        | optional | optional
 
 <a name="targeting"></a>
 #### Targeting Settings
@@ -991,10 +992,11 @@ CPC you are willing to pay on that source and the daily budget you wish
 to spend on that source.
 
 Property    | Type                | Description
-------------|---------------------|------------------------------------------------|
+------------|---------------------|-------------------------------------------------------------|
 source      | string              | source identifier
 state       | `ACTIVE`/`INACTIVE` | is ad group being promoted on the given source
 cpc         | [money](#money)     | CPC for the given source
+cpm         | [money](#money)     | CPM for the given source (when ad group biddingType is CPM)
 dailyBudget | [money](#money)     | daily budget for the given source
 
 ### Get ad group source settings [GET /rest/v1/adgroups/{adGroupId}/sources/]
@@ -1010,18 +1012,21 @@ dailyBudget | [money](#money)     | daily budget for the given source
                     "source": "yahoo",
                     "state": "ACTIVE",
                     "cpc": "0.20",
+                    "cpm": null,
                     "dailyBudget": "10.0"
                 },
                 {
                     "source": "gumgum",
                     "state": "ACTIVE",
                     "cpc": "0.20",
+                    "cpm": null,
                     "dailyBudget": "10.0"
                 },
                 {
                     "source": "triplelift",
                     "state": "ACTIVE",
                     "cpc": "0.20",
+                    "cpm": null,
                     "dailyBudget": "10.0"
                 }
             ]
@@ -1055,18 +1060,21 @@ dailyBudget | [money](#money)     | daily budget for the given source
                     "source": "yahoo",
                     "state": "ACTIVE",
                     "cpc": "0.20",
+                    "cpm": null,
                     "dailyBudget": "10.0"
                 },
                 {
                     "source": "gumgum",
                     "state": "ACTIVE",
                     "cpc": "0.25",
+                    "cpm": null,
                     "dailyBudget": "15.0"
                 },
                 {
                     "source": "triplelift",
                     "state": "INACTIVE",
                     "cpc": "0.20",
+                    "cpm": null,
                     "dailyBudget": "10.0"
                 }
             ]
@@ -1094,6 +1102,7 @@ dailyBudget | [money](#money)     | daily budget for the given source
                 "source": "adiant",
                 "state": "ACTIVE",
                 "cpc": "0.25",
+                "cpm": null,
                 "dailyBudget": "15.0"
             }
         }
@@ -1118,6 +1127,8 @@ Property     | Type                | Description
 -------------|---------------------|---------------------------------------------------------------|
 groupEnabled | boolean             | enable or disable treating all RTB sources as a single source
 state        | `ACTIVE`/`INACTIVE` | the state of all RTB sources
+cpc          | [money](#money)     | CPC for all RTB sources
+cpm          | [money](#money)     | CPM for all RTB sources (when ad group biddingType is CPM)
 dailyBudget  | [money](#money)     | daily budget shared among all RTB sources
 
 ### Get ad group source settings for All RTB sources as one [GET /rest/v1/adgroups/{adGroupId}/sources/rtb/]
@@ -1131,6 +1142,8 @@ dailyBudget  | [money](#money)     | daily budget shared among all RTB sources
             "data": {
                 "groupEnabled": true,
                 "state": "ACTIVE",
+                "cpc": "0.25",
+                "cpm": null,
                 "dailyBudget": "50.00"
             }
         }
@@ -2807,8 +2820,9 @@ Examples:
 - `archived`: `false` (boolean)
 - `startDate`: `2016-10-05` (string)
 - `endDate`: `2116-11-05` (string, optional, nullable)
+- `bidding_type`: `CPC` (string)
 - `maxCpc`: `0.25` (string)
-- `maxCpm`: `1.20` (string)
+- `maxCpm`: (string)
 - `dailyBudget`: `20.0` (string)
 - `targeting` (targeting)
 - `trackingCode`: `this=1&that=2` (string)

@@ -16,7 +16,10 @@ class AdGroupSourceSettingsValidatorMixin(object):
         self._validate_ad_group_source_state(new_settings)
 
     def _validate_ad_group_source_cpc(self, new_settings, bcm_modifiers):
-        if new_settings.cpc_cc is None:
+        is_cpm_buying = self.ad_group_source.ad_group.bidding_type == constants.BiddingType.CPM
+        if is_cpm_buying and new_settings.cpc_cc != self.cpc_cc:
+            raise exceptions.CannotSetCPC("Cannot set ad group source CPC when ad group bidding type is CPM")
+        if new_settings.cpc_cc is None or is_cpm_buying and new_settings.cpc_cc == self.cpc_cc:
             return
         assert isinstance(new_settings.cpc_cc, decimal.Decimal)
         validation_helpers.validate_ad_group_source_cpc_cc(new_settings.cpc_cc, self.ad_group_source, bcm_modifiers)
@@ -31,7 +34,10 @@ class AdGroupSourceSettingsValidatorMixin(object):
             raise exceptions.CPCInvalid(e.message)
 
     def _validate_ad_group_source_cpm(self, new_settings, bcm_modifiers):
-        if new_settings.cpm is None:
+        is_cpm_buying = self.ad_group_source.ad_group.bidding_type == constants.BiddingType.CPM
+        if not is_cpm_buying and new_settings.cpm != self.cpm:
+            raise exceptions.CannotSetCPM("Cannot set ad group source CPM when ad group bidding type is CPC")
+        if new_settings.cpm is None or not is_cpm_buying and new_settings.cpm == self.cpm:
             return
         assert isinstance(new_settings.cpm, decimal.Decimal)
         validation_helpers.validate_ad_group_source_cpm(new_settings.cpm, self.ad_group_source, bcm_modifiers)

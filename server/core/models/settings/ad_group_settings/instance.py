@@ -66,11 +66,25 @@ class AdGroupSettingsMixin(object):
             updates.pop("exclusion_audience_targeting", None)
         return updates
 
-    @staticmethod
-    def _remap_fields_for_compatibility(updates):
+    def _remap_fields_for_compatibility(self, updates):
         if "name" in updates:
             updates["ad_group_name"] = updates["name"]
+
+        if self.ad_group.bidding_type == constants.BiddingType.CPM:
+            self._remove_no_change_fields(updates, "cpc_cc")
+        else:
+            self._remove_no_change_fields(updates, "max_cpm")
+
+        self._remove_no_change_fields(updates, "b1_sources_group_cpc_cc")
+        self._remove_no_change_fields(updates, "b1_sources_group_cpm")
+
         return updates
+
+    def _remove_no_change_fields(self, updates, field):
+        local_field = "local_" + field
+        if field in updates and updates[field] is None or local_field in updates and updates[local_field] is None:
+            updates.pop(field, None)
+            updates.pop(local_field, None)
 
     def _remove_disallowed_fields(self, request, updates, skip_permission_check):
         user = request.user if request else None

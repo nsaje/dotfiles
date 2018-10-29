@@ -46,11 +46,19 @@ class MaximalCPMTooHigh(MulticurrencyValidationError):
     pass
 
 
-class RTBSourcesCPCNegative(ValidationError):
+class CannotSetCPC(ValidationError):
     pass
 
 
-class RTBSourcesCPMNegative(ValidationError):
+class CannotSetCPM(ValidationError):
+    pass
+
+
+class B1SourcesCPCNegative(ValidationError):
+    pass
+
+
+class B1SourcesCPMNegative(ValidationError):
     pass
 
 

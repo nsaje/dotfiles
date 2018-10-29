@@ -45,6 +45,10 @@ class AdGroupSettingsValidatorMixin(object):
         return core.features.multicurrency.get_current_exchange_rate(currency)
 
     def _validate_cpc_cc(self, changes):
+        is_cpm_buying = self.ad_group.bidding_type == constants.BiddingType.CPM
+        if is_cpm_buying and "local_cpc_cc" in changes:
+            raise exceptions.CannotSetCPC("Cannot set ad group max CPC when ad group bidding type is CPM")
+
         cpc_cc = changes.get("local_cpc_cc", None)
         if cpc_cc is not None:
             currency_symbol = self._get_currency_symbol()
@@ -61,11 +65,15 @@ class AdGroupSettingsValidatorMixin(object):
                 )
 
     def _validate_max_cpm(self, changes):
+        is_cpm_buying = self.ad_group.bidding_type == constants.BiddingType.CPM
+        if not is_cpm_buying and "local_max_cpm" in changes:
+            raise exceptions.CannotSetCPM("Cannot set ad group max CPM when ad group bidding type is CPC")
+
         max_cpm = changes.get("local_max_cpm")
         if max_cpm is not None:
             currency_symbol = self._get_currency_symbol()
             min_max_cpm = decimal.Decimal("0.05") * self._get_exchange_rate()
-            max_max_cpm = decimal.Decimal("10") * self._get_exchange_rate()
+            max_max_cpm = decimal.Decimal("25") * self._get_exchange_rate()
 
             if max_cpm < min_max_cpm:
                 raise exceptions.MaxCPMTooLow(
@@ -231,6 +239,11 @@ class AdGroupSettingsValidatorMixin(object):
                 raise exceptions.PublisherBlacklistInvalid("Invalid blacklist publisher group selection.")
 
     def _validate_b1_sources_group_cpc_cc(self, new_settings):
+        is_cpm_buying = self.ad_group.bidding_type == constants.BiddingType.CPM
+        if is_cpm_buying and self.local_b1_sources_group_cpc_cc != new_settings.local_b1_sources_group_cpc_cc:
+            raise exceptions.CannotSetB1SourcesCPC(
+                "Cannot set all RTB sources group CPC when ad group bidding type is CPM"
+            )
         if self.local_b1_sources_group_cpc_cc == new_settings.local_b1_sources_group_cpc_cc:
             return
         assert isinstance(new_settings.local_b1_sources_group_cpc_cc, decimal.Decimal)
@@ -239,6 +252,11 @@ class AdGroupSettingsValidatorMixin(object):
         )
 
     def _validate_b1_sources_group_cpm(self, new_settings):
+        is_cpm_buying = self.ad_group.bidding_type == constants.BiddingType.CPM
+        if not is_cpm_buying and self.local_b1_sources_group_cpm != new_settings.local_b1_sources_group_cpm:
+            raise exceptions.CannotSetB1SourcesCPM(
+                "Cannot set all RTB sources group CPM when ad group bidding type is CPC"
+            )
         if self.local_b1_sources_group_cpm == new_settings.local_b1_sources_group_cpm:
             return
         assert isinstance(new_settings.local_b1_sources_group_cpm, decimal.Decimal)

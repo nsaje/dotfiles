@@ -41,11 +41,27 @@ class CantEnableB1SourcesGroup(ValidationError):
     pass
 
 
+class CannotSetB1SourcesCPC(ValidationError):
+    pass
+
+
+class CannotSetB1SourcesCPM(ValidationError):
+    pass
+
+
 class BluekaiCategoryInvalid(ValidationError):
     pass
 
 
 class YahooDesktopCPCTooLow(ValidationError):
+    pass
+
+
+class CannotSetCPC(ValidationError):
+    pass
+
+
+class CannotSetCPM(ValidationError):
     pass
 
 

@@ -16,6 +16,25 @@ class ValidationTest(TestCase):
         self.request = magic_mixer.blend_request_user()
         self.ad_group = magic_mixer.blend(core.models.AdGroup)
 
+    def test_validate_bidding_type_bit_fail(self):
+        self.ad_group.bidding_type = constants.BiddingType.CPC
+        current_settings = self.ad_group.settings
+        new_settings = current_settings.copy_settings()
+
+        current_settings.local_cpc_cc = Decimal("1.1")
+        new_settings.local_cpc_cc = Decimal("1.2")
+        current_settings.local_max_cpm = Decimal("1.1")
+        new_settings.local_max_cpm = Decimal("1.2")
+
+        changes = current_settings.get_setting_changes(new_settings)
+
+        with self.assertRaises(exceptions.CannotSetCPM):
+            current_settings._validate_max_cpm(changes)
+
+        current_settings.ad_group.bidding_type = constants.BiddingType.CPM
+        with self.assertRaises(exceptions.CannotSetCPC):
+            current_settings._validate_cpc_cc(changes)
+
     @mock.patch("automation.autopilot.get_adgroup_minimum_daily_budget", autospec=True)
     def test_validate_autopilot_settings_to_full_ap_wo_all_rtb_enabled(self, mock_get_min_budget):
         mock_get_min_budget.return_value = 0
@@ -89,6 +108,26 @@ class ValidationTest(TestCase):
 
         with self.assertRaises(exceptions.CPMAutopilotNotDisabled):
             current_settings._validate_autopilot_settings(new_settings)
+
+    def test_validate_all_rtb_bidding_type_bid_fail(self):
+        self.ad_group.bidding_type = constants.BiddingType.CPC
+        current_settings = self.ad_group.settings
+        new_settings = current_settings.copy_settings()
+
+        current_settings.local_b1_sources_group_cpc_cc = Decimal("1.1")
+        new_settings.local_b1_sources_group_cpc_cc = Decimal("1.2")
+        current_settings.local_b1_sources_group_cpm = Decimal("1.1")
+        new_settings.local_b1_sources_group_cpm = Decimal("1.2")
+
+        current_settings.autopilot_state = constants.AdGroupSettingsAutopilotState.INACTIVE
+        new_settings.autopilot_state = constants.AdGroupSettingsAutopilotState.INACTIVE
+
+        with self.assertRaises(exceptions.CannotSetB1SourcesCPM):
+            current_settings._validate_b1_sources_group_cpm(new_settings)
+
+        self.ad_group.bidding_type = constants.BiddingType.CPM
+        with self.assertRaises(exceptions.CannotSetB1SourcesCPC):
+            current_settings._validate_b1_sources_group_cpc_cc(new_settings)
 
     @mock.patch("automation.autopilot.get_adgroup_minimum_daily_budget", autospec=True)
     def test_validate_autopilot_settings_all_rtb_daily_budget(self, mock_get_min_budget):

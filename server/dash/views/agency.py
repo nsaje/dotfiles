@@ -125,22 +125,39 @@ class AdGroupSettings(api_common.BaseApiView):
         except utils.exc.MultipleValidationError as err:
             self._handle_multiple_error(err)
 
-        except core.models.settings.ad_group_settings.exceptions.CannotChangeAdGroupState as err:
+        except (
+            core.models.settings.ad_group_settings.exceptions.CannotChangeAdGroupState,
+            core.models.settings.ad_group_settings.exceptions.CantEnableB1SourcesGroup,
+        ) as err:
             raise utils.exc.ValidationError(errors={"state": [str(err)]})
 
         except core.models.settings.ad_group_settings.exceptions.AutopilotB1SourcesNotEnabled as err:
             raise utils.exc.ValidationError(errors={"autopilot_state": [str(err)]})
 
-        except core.models.settings.ad_group_settings.exceptions.DailyBudgetAutopilotNotDisabled as err:
+        except (
+            core.models.settings.ad_group_settings.exceptions.DailyBudgetAutopilotNotDisabled,
+            core.models.settings.ad_group_source_settings.exceptions.DailyBudgetNegative,
+        ) as err:
             raise utils.exc.ValidationError(errors={"b1_sources_group_daily_budget": [str(err)]})
 
-        except core.models.settings.ad_group_settings.exceptions.CPCAutopilotNotDisabled as err:
-            raise utils.exc.ValidationError(errors={"b1_sources_group_daily_budget": [str(err)]})
+        except (
+            core.models.settings.ad_group_settings.exceptions.CPCAutopilotNotDisabled,
+            core.models.settings.ad_group_settings.exceptions.CannotSetB1SourcesCPC,
+            core.models.settings.ad_group_source_settings.exceptions.B1SourcesCPCNegative,
+        ) as err:
+            raise utils.exc.ValidationError(errors={"b1_sources_group_cpc_cc": [str(err)]})
 
-        except core.models.settings.ad_group_settings.exceptions.AutopilotDailyBudgetTooLow as err:
-            raise utils.exc.ValidationError(errors={"autopilot_daily_budget": [str(err)]})
+        except (
+            core.models.settings.ad_group_settings.exceptions.CPMAutopilotNotDisabled,
+            core.models.settings.ad_group_settings.exceptions.CannotSetB1SourcesCPM,
+            core.models.settings.ad_group_source_settings.exceptions.B1SourcesCPMNegative,
+        ) as err:
+            raise utils.exc.ValidationError(errors={"b1_sources_group_cpm": [str(err)]})
 
-        except core.models.settings.ad_group_settings.exceptions.AutopilotDailyBudgetTooHigh as err:
+        except (
+            core.models.settings.ad_group_settings.exceptions.AutopilotDailyBudgetTooLow,
+            core.models.settings.ad_group_settings.exceptions.AutopilotDailyBudgetTooHigh,
+        ) as err:
             raise utils.exc.ValidationError(errors={"autopilot_daily_budget": [str(err)]})
 
         except core.models.settings.ad_group_settings.exceptions.AdGroupNotPaused as err:
@@ -148,9 +165,6 @@ class AdGroupSettings(api_common.BaseApiView):
 
         except core.models.settings.ad_group_settings.exceptions.B1DailyBudgetTooHigh as err:
             raise utils.exc.ValidationError(errors={"daily_budget_cc": [str(err)]})
-
-        except core.models.settings.ad_group_settings.exceptions.CantEnableB1SourcesGroup as err:
-            raise utils.exc.ValidationError(errors={"state": [str(err)]})
 
         except core.models.settings.ad_group_settings.exceptions.BluekaiCategoryInvalid as err:
             raise utils.exc.ValidationError(str(err))
@@ -163,12 +177,6 @@ class AdGroupSettings(api_common.BaseApiView):
 
         except core.models.settings.ad_group_settings.exceptions.PublisherBlacklistInvalid as err:
             raise utils.exc.ValidationError(errors={"blacklist_publisher_groups": [str(err)]})
-
-        except core.models.settings.ad_group_source_settings.exceptions.RTBSourcesCPCNegative as err:
-            raise utils.exc.ValidationError(errors={"b1_sources_group_cpc_cc": [str(err)]})
-
-        except core.models.settings.ad_group_source_settings.exceptions.RTBSourcesCPMNegative as err:
-            raise utils.exc.ValidationError(errors={"b1_sources_group_cpm": [str(err)]})
 
         except core.models.settings.ad_group_source_settings.exceptions.CPCPrecisionExceeded as err:
             raise utils.exc.ValidationError(
@@ -252,9 +260,6 @@ class AdGroupSettings(api_common.BaseApiView):
                 }
             )
 
-        except core.models.settings.ad_group_source_settings.exceptions.DailyBudgetNegative as err:
-            raise utils.exc.ValidationError(errors={"b1_sources_group_daily_budget": [str(err)]})
-
         except core.models.settings.ad_group_source_settings.exceptions.MinimalDailyBudgetTooLow as err:
             raise utils.exc.ValidationError(
                 errors={
@@ -285,6 +290,12 @@ class AdGroupSettings(api_common.BaseApiView):
     def _handle_multiple_error(self, err):
         errors = {}
         for e in err.errors:
+            if isinstance(e, core.models.settings.ad_group_settings.exceptions.CannotSetCPC):
+                errors.setdefault("cpc_cc", []).append(str(e))
+
+            if isinstance(e, core.models.settings.ad_group_settings.exceptions.CannotSetCPM):
+                errors.setdefault("max_cpm", []).append(str(e))
+
             if isinstance(e, core.models.settings.ad_group_settings.exceptions.MaxCPCTooLow):
                 errors.setdefault("cpc_cc", []).append(str(e))
 

@@ -289,7 +289,7 @@ class InstanceTest(TestCase):
 
     def test_remove_max_cpm(self):
         request = magic_mixer.blend_request_user(permissions=["fea_can_use_cpm_buying"])
-        ad_group = magic_mixer.blend(core.models.AdGroup)
+        ad_group = magic_mixer.blend(core.models.AdGroup, bidding_type=constants.BiddingType.CPM)
         ad_group.settings.update_unsafe(request, max_cpm=Decimal("0.5"))
         ad_group.settings.update(request, max_cpm=None)
         self.assertIsNone(ad_group.settings.max_cpm)
