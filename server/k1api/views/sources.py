@@ -5,8 +5,8 @@ from django.db import transaction
 import dash.constants
 import dash.models
 from dash import constants
-from utils import redirector_helper
 from utils import db_for_reads
+from utils import redirector_helper
 
 from .base import K1APIView
 

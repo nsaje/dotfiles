@@ -2,7 +2,9 @@ from decimal import Decimal
 
 from django.test import TestCase
 
-from utils.html_helpers import TableCell, TableRow, Url
+from utils.html_helpers import TableCell
+from utils.html_helpers import TableRow
+from utils.html_helpers import Url
 
 
 class HtmlHelpersTest(TestCase):

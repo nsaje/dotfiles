@@ -8,6 +8,7 @@ from django.conf import settings
 
 from utils import s3helpers
 from utils import threads
+
 from . import constants
 
 logger = logging.getLogger(__name__)

@@ -1,33 +1,35 @@
 # -*- coding: utf-8 -*-
-import json
 import datetime
 import http.client
-
-from django.contrib.auth.models import Permission
-from mock import patch, ANY, call
+import json
 from decimal import Decimal
 
-from django.test import TestCase, RequestFactory
-from django.contrib.auth import models as authmodels
-from django.urls import reverse
-from django.http.request import HttpRequest
-from django.core import mail
 from django.conf import settings
+from django.contrib.auth import models as authmodels
+from django.contrib.auth.models import Permission
+from django.core import mail
+from django.http.request import HttpRequest
 from django.test import Client
+from django.test import RequestFactory
+from django.test import TestCase
+from django.urls import reverse
+from mock import ANY
+from mock import call
+from mock import patch
 from requests import Response
 
-from zemauth.models import User
-from dash import models
+import core.features.multicurrency
 from dash import constants
-from dash.views import agency
 from dash import forms
 from dash import history_helpers
+from dash import models
 from dash.features import ga
-import core.features.multicurrency
-
+from dash.views import agency
 from utils import exc
 from utils.magic_mixer import magic_mixer
-from utils.test_helper import add_permissions, fake_request
+from utils.test_helper import add_permissions
+from utils.test_helper import fake_request
+from zemauth.models import User
 
 
 class AdGroupSettingsTest(TestCase):

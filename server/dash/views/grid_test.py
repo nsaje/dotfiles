@@ -1,16 +1,15 @@
-from decimal import Decimal
 import json
+from decimal import Decimal
+
+from django.test import TestCase
+from django.urls import reverse
 from mock import patch
 
-from django.urls import reverse
-from django.test import TestCase
-
 from core.models import all_rtb
-from dash import models
 from dash import constants
-
-from zemauth.models import User
+from dash import models
 from utils.test_helper import add_permissions
+from zemauth.models import User
 
 
 class RTBSourceSettingsTest(TestCase):

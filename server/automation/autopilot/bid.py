@@ -1,11 +1,12 @@
 import decimal
 import logging
 
-from .constants import BidChangeComment
-from . import settings
-from dash import cpc_constraints
 import dash.constants
 import dash.models
+from dash import cpc_constraints
+
+from . import settings
+from .constants import BidChangeComment
 
 logger = logging.getLogger(__name__)
 

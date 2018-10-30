@@ -1,11 +1,11 @@
 import collections
 
-from core.models import all_rtb
+import core.models
 import dash.campaign_goals
+from core.models import all_rtb
 from dash import constants
 from dash.views import helpers
 
-import core.models
 
 """
 Helper functions that transform breakdown responses into what frontend expects.

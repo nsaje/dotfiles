@@ -1,48 +1,47 @@
 # -*- coding: utf-8 -*-
-import datetime
-import json
-import decimal
-import logging
 import base64
+import datetime
+import decimal
 import http.client
-import urllib.request, urllib.parse, urllib.error
-import urllib.request, urllib.error, urllib.parse
-import pytz
+import json
+import logging
+import urllib.error
+import urllib.parse
+import urllib.request
 from functools import partial
 
-from django.db.models import Q
-from django.conf import settings
-from django.urls import reverse
-from django.shortcuts import render, redirect
-from django.http import HttpResponse, Http404
-
 import influx
+import pytz
+from django.conf import settings
+from django.db.models import Q
+from django.http import Http404
+from django.http import HttpResponse
+from django.shortcuts import redirect
+from django.shortcuts import render
+from django.urls import reverse
 
-from dash.views import helpers
-
-from utils import lc_helper
-from utils import api_common
-from utils import exc
-from utils import email_helper
-from utils import request_signer
-from utils import threads
-from utils import db_for_reads
-
+import analytics.projections
 import core.features.multicurrency
+import core.models.ad_group_source.exceptions
 import core.models.helpers
-
-from dash import models, region_targeting_helper, retargeting_helper, campaign_goals
+import core.models.settings.ad_group_source_settings.exceptions
+import stats.helpers
+from dash import campaign_goals
 from dash import constants
 from dash import forms
 from dash import infobox_helpers
+from dash import models
+from dash import region_targeting_helper
+from dash import retargeting_helper
 from dash.features import native_server
-
-import core.models.settings.ad_group_source_settings.exceptions
-import core.models.ad_group_source.exceptions
-
-import stats.helpers
-
-import analytics.projections
+from dash.views import helpers
+from utils import api_common
+from utils import db_for_reads
+from utils import email_helper
+from utils import exc
+from utils import lc_helper
+from utils import request_signer
+from utils import threads
 
 logger = logging.getLogger(__name__)
 

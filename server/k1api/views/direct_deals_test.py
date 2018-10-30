@@ -1,11 +1,12 @@
 import json
-from utils.magic_mixer import magic_mixer
 
 from django.urls import reverse
 
-from .base_test import K1APIBaseTest
 import core.features.direct_deals
 import core.models
+from utils.magic_mixer import magic_mixer
+
+from .base_test import K1APIBaseTest
 
 
 class DirectDealsTest(K1APIBaseTest):

@@ -1,14 +1,15 @@
+import datetime
 import json
 import logging
-import datetime
-
-import urllib.request, urllib.parse, urllib.error
+import urllib.error
+import urllib.parse
+import urllib.request
 
 from django.urls import reverse
 
-import dash.features.geolocation
-import dash.features.ga
 import dash.constants
+import dash.features.ga
+import dash.features.geolocation
 import dash.models
 
 from .base_test import K1APIBaseTest

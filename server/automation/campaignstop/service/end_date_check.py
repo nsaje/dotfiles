@@ -1,11 +1,12 @@
 from django.db import transaction
 
-import core.models
-
 import core.features.bcm
-from .. import constants
-from .. import RealTimeCampaignStopLog, CampaignStopState
+import core.models
 from utils import dates_helper
+
+from .. import CampaignStopState
+from .. import RealTimeCampaignStopLog
+from .. import constants
 
 
 def update_campaigns_end_date(campaigns=None):

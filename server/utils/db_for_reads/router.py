@@ -1,10 +1,9 @@
-import random
 import itertools
+import random
 
 from django.conf import settings
 
 import utils.request_context
-
 
 DEFAULT_DB_ALIAS = "default"
 DEFAULT_STATS_DB_ALIAS = settings.STATS_DB_NAME

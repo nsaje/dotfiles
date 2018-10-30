@@ -1,8 +1,8 @@
-from rest_framework.test import APIClient
+from django.conf.urls import url
 from django.test import TestCase
 from django.test import override_settings
 from django.urls import reverse
-from django.conf.urls import url
+from rest_framework.test import APIClient
 
 from . import base
 

@@ -1,5 +1,5 @@
-from django.db.models import Func
 from django.core.exceptions import ValidationError
+from django.db.models import Func
 
 
 class Round(Func):

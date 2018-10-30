@@ -4,7 +4,6 @@ from django.db import transaction
 from django.forms.models import model_to_dict
 
 import core.features.bcm
-
 import utils.lc_helper
 
 

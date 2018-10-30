@@ -1,15 +1,14 @@
 import logging
-import backtosql
 
 from django.core.cache import caches
 from django.db.models import Q
 
-from redshiftapi import db
-from etl import maintenance
-import dash.features.geolocation
-import dash.constants
+import backtosql
 import core.models
-
+import dash.constants
+import dash.features.geolocation
+from etl import maintenance
+from redshiftapi import db
 
 logger = logging.getLogger(__name__)
 

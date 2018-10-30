@@ -1,19 +1,21 @@
-import json
 import datetime
+import json
 
-from mock import patch, ANY
-from django.test import TestCase, Client
+from django.test import Client
+from django.test import TestCase
 from django.urls import reverse
+from mock import ANY
+from mock import patch
 
-from zemauth.models import User
-from utils import test_helper
-from stats.helpers import Goals
-from dash import models
-from dash import constants
 from core.features.publisher_groups import publisher_group_helpers
+from dash import constants
+from dash import models
+from dash.constants import Level
 from dash.views import breakdown
 from dash.views import breakdown_helpers
-from dash.constants import Level
+from stats.helpers import Goals
+from utils import test_helper
+from zemauth.models import User
 
 
 def get_publisher_group_targeting_dict():

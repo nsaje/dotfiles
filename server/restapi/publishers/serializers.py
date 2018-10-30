@@ -1,8 +1,8 @@
 from rest_framework import serializers
 
-import restapi.serializers.fields
 import dash.constants
 import dash.views.publishers
+import restapi.serializers.fields
 
 
 class PublisherListSerializer(serializers.ListSerializer):

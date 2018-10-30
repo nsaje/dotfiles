@@ -2,11 +2,12 @@ import json
 
 from django.urls import reverse
 
-import core.models
-from core.features.publisher_groups import publisher_group_helpers
 import core.features.publisher_bid_modifiers
+import core.models
 import restapi.common.views_base_test
-from utils.magic_mixer import magic_mixer, get_request_mock
+from core.features.publisher_groups import publisher_group_helpers
+from utils.magic_mixer import get_request_mock
+from utils.magic_mixer import magic_mixer
 
 
 class PublisherBlacklistTest(restapi.common.views_base_test.RESTAPITest):

@@ -3,6 +3,7 @@ from django.urls import reverse
 from django.utils.safestring import mark_safe
 
 import utils.admin_common
+
 from .reportjob import ReportJob
 
 

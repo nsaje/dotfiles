@@ -2,13 +2,12 @@ import decimal
 
 import newrelic.agent
 
+from utils import dates_helper
+
 from . import refresh
 from . import spends_helper
 from .. import RealTimeCampaignStopLog
 from ..constants import CampaignStopEvent
-
-from utils import dates_helper
-
 
 RESERVED_PROPORTION = decimal.Decimal("0.1")
 

@@ -1,15 +1,14 @@
 import decimal
-import mock
 
+import mock
 from django.contrib.auth.models import Permission
 from django.urls import reverse
 
-from restapi.common.views_base_test import RESTAPITest
-
 import core.models
 import core.models.ad_group
-from zemauth.models import User
+from restapi.common.views_base_test import RESTAPITest
 from utils.magic_mixer import magic_mixer
+from zemauth.models import User
 
 
 class RealtimestatsViewsTest(RESTAPITest):

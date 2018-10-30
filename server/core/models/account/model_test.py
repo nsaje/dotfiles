@@ -1,9 +1,8 @@
+from django.test import TestCase
 from mock import patch
 
-from django.test import TestCase
-from utils.magic_mixer import magic_mixer
-
 import core.models
+from utils.magic_mixer import magic_mixer
 
 
 class AccountQuerySetTest(TestCase):

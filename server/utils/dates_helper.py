@@ -1,8 +1,7 @@
-import pytz
 import datetime
 
+import pytz
 from django.conf import settings
-
 
 DEFAULT_TIME_ZONE = pytz.timezone(settings.DEFAULT_TIME_ZONE)
 

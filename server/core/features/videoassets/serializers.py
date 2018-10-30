@@ -1,10 +1,10 @@
-from rest_framework import serializers
 from rest_framework import fields
+from rest_framework import serializers
 
 import restapi.serializers.fields
 
-from . import models
 from . import constants
+from . import models
 
 
 class UploadInfoSerializer(serializers.Serializer):

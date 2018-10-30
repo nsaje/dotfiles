@@ -4,14 +4,14 @@ import copy
 import hashlib
 import hmac
 import json
-import urllib.request, urllib.parse, urllib.error
+import urllib.error
 import urllib.parse
+import urllib.request
 
 import requests
 from django.conf import settings
 
 from utils import dates_helper
-
 
 TAXONOMY_URL = "https://taxonomy.bluekai.com/taxonomy/categories"
 SEGMENT_INVENTORY_URL = "https://services.bluekai.com/" "Services/WS/SegmentInventory"

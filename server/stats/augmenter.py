@@ -1,11 +1,9 @@
 import datetime
 
 from dash import constants as dash_constants
-
 from stats import constants
 from stats import fields
 from stats import helpers
-
 
 UNKNOWN = "Not reported"
 

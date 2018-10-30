@@ -1,7 +1,7 @@
 import datetime
 
-from mock import patch
 from django import test
+from mock import patch
 
 import analytics.helpers
 import dash.models

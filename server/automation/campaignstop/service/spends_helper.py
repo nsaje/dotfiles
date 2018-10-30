@@ -1,16 +1,13 @@
 import datetime
-from decimal import Decimal
 import logging
+from decimal import Decimal
 
+import core.features.multicurrency
 from utils import dates_helper
 from utils import numbers
 
-from .. import RealTimeCampaignDataHistory
 from . import config
-
-
-import core.features.multicurrency
-
+from .. import RealTimeCampaignDataHistory
 
 logger = logging.getLogger(__name__)
 

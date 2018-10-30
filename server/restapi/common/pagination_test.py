@@ -1,11 +1,12 @@
 from django.test import TestCase
-
 from rest_framework.request import Request
 from rest_framework.test import APIRequestFactory
 
 from dash.models import Account
 from utils.magic_mixer import magic_mixer
-from .pagination import StandardPagination, MarkerOffsetPagination
+
+from .pagination import MarkerOffsetPagination
+from .pagination import StandardPagination
 
 factory = APIRequestFactory()
 

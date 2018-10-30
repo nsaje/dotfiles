@@ -1,17 +1,18 @@
 import datetime
 import json
-import mock
 
-from django.urls import reverse
+import mock
 from django.test import TestCase
+from django.urls import reverse
 from rest_framework.test import APIClient
-from zemauth.models import User
 
 import dash.constants
 import dash.models
-from utils import test_helper, threads
-from dash.features.reports import reports
 from dash.features.reports import constants
+from dash.features.reports import reports
+from utils import test_helper
+from utils import threads
+from zemauth.models import User
 
 
 class ReportViewsTest(TestCase):

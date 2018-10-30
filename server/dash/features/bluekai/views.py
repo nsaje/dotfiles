@@ -3,8 +3,8 @@ from rest_framework import permissions
 import restapi.common.views_base
 from restapi.serializers.targeting import AudienceSerializer
 
-from . import service
 from . import serializers
+from . import service
 
 
 class TaxonomyTreeInternalView(restapi.common.views_base.RESTAPIBaseView):

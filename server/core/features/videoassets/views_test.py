@@ -1,12 +1,12 @@
 import mock
-from django.urls import reverse
 from django.test import override_settings
+from django.urls import reverse
 from rest_framework.test import APIClient
-
-from utils.magic_mixer import magic_mixer
 
 import core.models.account
 import restapi.common.views_base_test
+from utils.magic_mixer import magic_mixer
+
 from . import constants
 from . import models
 

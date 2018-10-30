@@ -1,6 +1,7 @@
 from decimal import Decimal
 
 from core.models.ad_group_source import AdGroupSource
+
 from .source import Source
 from .source_type import SourceType
 

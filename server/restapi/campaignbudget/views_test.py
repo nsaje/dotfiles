@@ -1,12 +1,12 @@
-from restapi.common.views_base_test import RESTAPITest
+import datetime
+import decimal
+
+import mock
 from django.urls import reverse
 
 import dash.models
 from dash import constants
-
-import mock
-import datetime
-import decimal
+from restapi.common.views_base_test import RESTAPITest
 
 
 class CampaignBudgetsTest(RESTAPITest):

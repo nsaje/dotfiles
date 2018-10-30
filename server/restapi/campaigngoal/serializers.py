@@ -1,12 +1,11 @@
 import decimal
+from decimal import Decimal
 
 import rest_framework.serializers
 
-import restapi.serializers.fields
 import restapi.serializers.base
-
+import restapi.serializers.fields
 from dash import constants
-from decimal import Decimal
 
 
 class CampaignGoalsDefaultsSerializer(restapi.serializers.base.RESTAPIBaseSerializer):

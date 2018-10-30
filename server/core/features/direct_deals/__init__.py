@@ -1,1 +1,2 @@
-from .models import DirectDeal, DirectDealConnection
+from .models import DirectDeal
+from .models import DirectDealConnection

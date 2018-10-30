@@ -1,13 +1,11 @@
-from mock import patch
 from django.test import TestCase
-from utils.magic_mixer import magic_mixer
-
-from dash import constants
-from dash import history_helpers
+from mock import patch
 
 import core.models
-
 import utils.exc
+from dash import constants
+from dash import history_helpers
+from utils.magic_mixer import magic_mixer
 
 
 @patch("core.models.AdGroupSource.objects.bulk_create_on_allowed_sources")

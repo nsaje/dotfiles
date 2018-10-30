@@ -1,6 +1,6 @@
-import influx
 import logging
 
+import influx
 from django.conf import settings
 from django.db import connections
 

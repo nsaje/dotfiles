@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 
 from django.db import models
-from django.db.models import Q, Case, When
+from django.db.models import Case
+from django.db.models import Q
+from django.db.models import When
 from django.db.models.expressions import RawSQL
 
 from dash import constants

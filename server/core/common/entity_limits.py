@@ -2,7 +2,6 @@ from collections import defaultdict
 
 from django.core.exceptions import PermissionDenied
 
-
 DEFAULT_LIMITS = {
     "Account": 500,
     "Campaign": 500,

@@ -1,12 +1,10 @@
-from django.urls import reverse
 from django.db import transaction
+from django.urls import reverse
 from django.utils.safestring import mark_safe
 
-import core.models
 import core.features.history
-
+import core.models
 from dash import constants
-
 from utils import exc
 from utils import json_helper
 

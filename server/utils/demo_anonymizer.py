@@ -1,6 +1,5 @@
 import itertools
 
-
 _name_pools = None
 _fake_factory = None
 

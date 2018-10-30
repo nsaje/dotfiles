@@ -1,7 +1,8 @@
 from django.test import TestCase
-import dash.models
-import dash.history_helpers
+
 import dash.constants
+import dash.history_helpers
+import dash.models
 from zemauth.models import User
 
 

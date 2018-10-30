@@ -1,8 +1,9 @@
 from decimal import Decimal
-from .constants import BidChangeComment
-from dash.constants import CampaignGoalKPI
-from dash.constants import BiddingType
 
+from dash.constants import BiddingType
+from dash.constants import CampaignGoalKPI
+
+from .constants import BidChangeComment
 
 # Autopilot General Settings
 SYNC_IS_RECENT_HOURS = 2

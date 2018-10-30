@@ -1,11 +1,12 @@
-import urllib.request, urllib.error, urllib.parse
 import json
+import urllib.error
+import urllib.parse
+import urllib.request
 
 from django.conf import settings
 
-from utils import request_signer
 from dash import models
-
+from utils import request_signer
 
 AD_GROUP_IDS = []
 

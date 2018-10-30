@@ -1,13 +1,14 @@
 import datetime
-from mock import patch
 
 from django.test import TestCase
+from mock import patch
 
-from .campaign import calculate_campaigns_daily_budget
 from dash import constants
 from dash import models
 from utils import dates_helper
 from utils.magic_mixer import magic_mixer
+
+from .campaign import calculate_campaigns_daily_budget
 
 
 class AutopilotCalculateCampaignDailyBudgetTestCase(TestCase):

@@ -1,6 +1,6 @@
 import unittest
-
 from decimal import Decimal
+
 from utils import lc_helper
 
 

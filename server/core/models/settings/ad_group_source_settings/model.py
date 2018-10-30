@@ -4,21 +4,19 @@ from decimal import Decimal
 
 from django.db import models
 
+import core.common
+import core.features.audiences
+import core.features.bcm.calculations
+import core.features.history
+import core.features.multicurrency
+import core.models
+import core.models.helpers
 from dash import constants
 from utils import lc_helper
 
-import core.features.bcm.calculations
-import core.models
-import core.models.helpers
-import core.features.audiences
-import core.common
-import core.features.multicurrency
-import core.features.history
-
+from .. import multicurrency_mixin
 from ..settings_base import SettingsBase
 from ..settings_query_set import SettingsQuerySet
-from .. import multicurrency_mixin
-
 from .instance import AdGroupSourceSettingsMixin
 from .validation import AdGroupSourceSettingsValidatorMixin
 

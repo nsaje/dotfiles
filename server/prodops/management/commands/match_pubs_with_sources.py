@@ -1,11 +1,12 @@
-import unicodecsv as csv
 import datetime
 import uuid
 
-import redshiftapi.db
-import utils.command_helpers
+import unicodecsv as csv
+
 import dash.models
 import prodops.helpers as hlp
+import redshiftapi.db
+import utils.command_helpers
 
 PUBS_PER_CHUNK = 1000
 QUERY = """SELECT DISTINCT publisher, source_id

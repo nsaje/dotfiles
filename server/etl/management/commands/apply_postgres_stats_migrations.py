@@ -4,9 +4,9 @@ import os
 from django.conf import settings
 from django.db import connections
 
-from etl.materialize import MATERIALIZED_VIEWS
 from etl import maintenance
 from etl import materialize
+from etl.materialize import MATERIALIZED_VIEWS
 from utils.command_helpers import ExceptionCommand
 
 logger = logging.getLogger(__name__)

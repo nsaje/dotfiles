@@ -1,6 +1,5 @@
-import rest_framework.throttling
 import rest_framework.settings
-
+import rest_framework.throttling
 from django.conf import settings
 
 

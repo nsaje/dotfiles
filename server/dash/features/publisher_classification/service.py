@@ -3,7 +3,10 @@ import datetime
 import logging
 
 from django.db import IntegrityError
-from django.db.models import Case, CharField, Value, When
+from django.db.models import Case
+from django.db.models import CharField
+from django.db.models import Value
+from django.db.models import When
 
 from dash import models
 

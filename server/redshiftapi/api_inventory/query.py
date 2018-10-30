@@ -3,7 +3,6 @@ import redshiftapi.db
 
 from . import model
 
-
 COUNTRY = "country"
 PUBLISHER = "publisher"
 DEVICE_TYPE = "device_type"

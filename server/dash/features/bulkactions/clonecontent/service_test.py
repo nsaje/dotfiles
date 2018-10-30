@@ -1,9 +1,10 @@
 from django.test import TestCase
 from mock import patch
-from utils.magic_mixer import magic_mixer
 
 import core.models
 from core.models.account.exceptions import AccountDoesNotMatch
+from utils.magic_mixer import magic_mixer
+
 from . import service
 
 

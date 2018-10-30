@@ -1,9 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import io as StringIO
 import csv
-
+import io as StringIO
 
 FORMULA_SYMBOLS = ("@", "+", "-", "=")
 

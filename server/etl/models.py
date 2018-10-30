@@ -1,6 +1,6 @@
 from django.db import models
-import backtosql
 
+import backtosql
 
 BREAKDOWN = 1
 AGGREGATES = 2

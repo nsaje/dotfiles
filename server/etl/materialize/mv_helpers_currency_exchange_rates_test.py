@@ -1,13 +1,13 @@
-import backtosql
 import datetime
-import mock
 import textwrap
 
-from django.test import TestCase, override_settings
+import mock
+from django.test import TestCase
+from django.test import override_settings
 
-from dash import models
+import backtosql
 from dash import constants
-
+from dash import models
 from utils.magic_mixer import magic_mixer
 
 from .mv_helpers_currency_exchange_rates import MVHelpersCurrencyExchangeRates

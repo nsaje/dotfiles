@@ -1,13 +1,14 @@
 from decimal import Decimal
-from mock import patch
 
 from django import test
+from mock import patch
 
-from . import helpers
 from dash import constants
 from dash import models
 from utils import dates_helper
 from utils.magic_mixer import magic_mixer
+
+from . import helpers
 
 
 class AutopilotHelpersTestCase(test.TestCase):

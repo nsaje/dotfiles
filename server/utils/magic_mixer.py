@@ -1,11 +1,10 @@
-from mock import Mock
-from mixer.backend.django import mixer as mixer_base
 from django.contrib.postgres.fields import ArrayField
+from mixer.backend.django import mixer as mixer_base
+from mock import Mock
 
-from utils import test_helper
-
-import zemauth.models
 import core.models
+import zemauth.models
+from utils import test_helper
 
 
 def get_request_mock(user):

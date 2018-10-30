@@ -1,8 +1,8 @@
+from collections import OrderedDict
+
 import rest_framework.serializers
 from rest_framework.fields import SkipField
 from rest_framework.relations import PKOnlyObject
-
-from collections import OrderedDict
 
 
 class RESTAPIBaseSerializer(rest_framework.serializers.Serializer):

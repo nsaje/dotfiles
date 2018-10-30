@@ -1,10 +1,11 @@
 import datetime
-import pytz
 import re
 
 import boto3
+import pytz
 
-from integrations.bizwire import config, models
+from integrations.bizwire import config
+from integrations.bizwire import models
 from utils import dates_helper
 
 REGEX_KEY_PARTS = re.compile(

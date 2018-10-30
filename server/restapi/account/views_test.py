@@ -1,7 +1,7 @@
-from restapi.common.views_base_test import RESTAPITest
 from django.urls import reverse
 
 import dash.models
+from restapi.common.views_base_test import RESTAPITest
 
 
 class AccountsTest(RESTAPITest):

@@ -1,17 +1,15 @@
-import mock
-
-from django.test import TestCase
 from decimal import Decimal
 
-from zemauth.models import User
+import mock
+from django.test import TestCase
 
-from dash import models
-from dash import constants
-from dash.dashapi import loaders
-
-from utils.magic_mixer import magic_mixer
 from core.features.publisher_bid_modifiers import PublisherBidModifier
+from dash import constants
+from dash import models
+from dash.dashapi import loaders
 from utils import sspd_client
+from utils.magic_mixer import magic_mixer
+from zemauth.models import User
 
 
 class GetLoaderTest(TestCase):

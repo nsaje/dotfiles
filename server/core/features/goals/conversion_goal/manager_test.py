@@ -1,8 +1,8 @@
 from django.test import TestCase
 
 import core.models
-import dash.history_helpers
 import dash.constants
+import dash.history_helpers
 from utils.magic_mixer import magic_mixer
 
 from .model import ConversionGoal

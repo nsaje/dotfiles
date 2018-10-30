@@ -1,10 +1,10 @@
-from django.urls import reverse
 from django.contrib import admin
+from django.urls import reverse
 from django.utils.html import format_html
 
-from . import models
 import dash.models
 
+from . import models
 from .campaignstop.admin import RealTimeCampaignStopLogAdmin
 
 

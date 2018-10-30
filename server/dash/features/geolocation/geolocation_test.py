@@ -1,8 +1,9 @@
 from django.test import TestCase
 from mixer.backend.django import mixer
 
-from . import geolocation
 import dash.constants
+
+from . import geolocation
 
 
 class GeolocationTestCase(TestCase):

@@ -1,11 +1,13 @@
-from django.urls import reverse
-from utils.magic_mixer import magic_mixer, get_request_mock
-from tempfile import NamedTemporaryFile
-import restapi.common.views_base_test
-import core.models
 import csv
+from tempfile import NamedTemporaryFile
 
+from django.urls import reverse
+
+import core.models
+import restapi.common.views_base_test
 from core.features.publisher_bid_modifiers import service
+from utils.magic_mixer import get_request_mock
+from utils.magic_mixer import magic_mixer
 
 
 class PublisherBidModifierCSVTest(restapi.common.views_base_test.RESTAPITest):

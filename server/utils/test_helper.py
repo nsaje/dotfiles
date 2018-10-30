@@ -1,14 +1,13 @@
 import datetime
 import http.client
 import operator
-import mock
 from contextlib import contextmanager
-
-from django.contrib.auth.models import Permission
-import django.core.files
-
-from django.test.client import RequestFactory
 from functools import reduce
+
+import django.core.files
+import mock
+from django.contrib.auth.models import Permission
+from django.test.client import RequestFactory
 
 
 def add_permissions(user, permissions):

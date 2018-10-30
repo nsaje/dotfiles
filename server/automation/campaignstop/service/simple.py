@@ -1,19 +1,18 @@
 import datetime
-import logging
-import pytz
 import decimal
+import logging
 
 import influx
-
-from django.db.models import Q
+import pytz
 from django.conf import settings
-import dash.constants
+from django.db.models import Q
 
 import automation.models
-import utils.url_helper
-import utils.email_helper
+import dash.constants
 import utils.dates_helper
+import utils.email_helper
 import utils.k1_helper
+import utils.url_helper
 
 logger = logging.getLogger(__name__)
 

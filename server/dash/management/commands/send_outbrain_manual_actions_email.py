@@ -5,9 +5,10 @@ import textwrap
 from django.conf import settings
 from django.core.mail import send_mail
 
-from dash import models
 from dash import constants
-from utils.command_helpers import set_logger_verbosity, ExceptionCommand
+from dash import models
+from utils.command_helpers import ExceptionCommand
+from utils.command_helpers import set_logger_verbosity
 from utils.url_helper import get_full_z1_url
 
 logger = logging.getLogger(__name__)

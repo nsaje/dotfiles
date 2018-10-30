@@ -1,13 +1,12 @@
 import datetime
 
-from influxdb import InfluxDBClient
 from django.conf import settings
+from influxdb import InfluxDBClient
 
 import analytics.monitor
 import utils.command_helpers
 import utils.dates_helper
 import utils.slack
-
 
 INFLUX_MEASUREMENT = "z1_analytics_overspend"
 ALERT_MSG_OVERSPEND = """Overspend on {date} on accounts:

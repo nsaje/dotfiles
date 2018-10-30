@@ -1,10 +1,8 @@
 from django.test import TestCase
 
-from utils.magic_mixer import magic_mixer
-
-from dash import publisher_helpers
-
 import core.features.publisher_groups
+from dash import publisher_helpers
+from utils.magic_mixer import magic_mixer
 
 
 class PublisherHelpersTest(TestCase):

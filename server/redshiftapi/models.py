@@ -1,17 +1,14 @@
-import backtosql
 import collections
 import copy
 
-from utils import converters
-from utils.dict_helper import dict_join
-from utils import cache_helper
-
+import backtosql
 import dash.constants
 import stats.constants
-
 from redshiftapi import helpers
 from redshiftapi import view_selector
-
+from utils import cache_helper
+from utils import converters
+from utils.dict_helper import dict_join
 
 BREAKDOWN = 1
 AGGREGATE = 2

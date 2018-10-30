@@ -1,13 +1,11 @@
-from restapi.common.views_base import RESTAPIBaseViewSet
-
-import restapi.access
-import core.models
-import utils.exc
-
-from . import serializers
-
 from django.db import transaction
 
+import core.models
+import restapi.access
+import utils.exc
+from restapi.common.views_base import RESTAPIBaseViewSet
+
+from . import serializers
 
 UPDATABLE_SETTINGS_FIELDS = ("name", "whitelist_publisher_groups", "blacklist_publisher_groups")
 

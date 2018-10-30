@@ -1,8 +1,8 @@
 import json
-from unittest import mock
-import urllib.request
-import urllib.error
 import unittest
+import urllib.error
+import urllib.request
+from unittest import mock
 
 from django.test.client import RequestFactory
 

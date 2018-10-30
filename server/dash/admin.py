@@ -5,7 +5,8 @@ import logging
 from django import forms
 from django.conf import settings
 from django.conf.urls import url
-from django.contrib import admin, messages
+from django.contrib import admin
+from django.contrib import messages
 from django.contrib.admin import SimpleListFilter
 from django.contrib.postgres.forms import SimpleArrayField
 from django.core.exceptions import ValidationError
@@ -15,7 +16,8 @@ from django.template.defaultfilters import truncatechars
 from django.urls import reverse
 from django.utils.html import format_html
 from django.utils.safestring import mark_safe
-from import_export import fields, resources
+from import_export import fields
+from import_export import resources
 from import_export.admin import ExportMixin
 
 import core.features.source_adoption
@@ -25,7 +27,8 @@ import utils.redirector_helper
 import utils.slack
 from automation import campaignstop
 from core.models.settings.ad_group_source_settings import validation_helpers
-from dash import constants, cpc_constraints
+from dash import constants
+from dash import cpc_constraints
 from dash import forms as dash_forms
 from dash import models
 from dash.features.custom_flags.slack_logger import SlackLoggerMixin

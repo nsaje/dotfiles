@@ -1,3 +1,4 @@
+# isort:skip_file
 from .refresh import refresh_realtime_data
 from .main import update_campaigns_state
 from .end_date_check import update_campaigns_end_date

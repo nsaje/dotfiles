@@ -26,9 +26,11 @@ import utils.exc
 import utils.s3helpers
 import utils.sort_helper
 from server import celery
-from utils import csv_utils, threads
+from utils import csv_utils
+from utils import threads
 
-from . import constants, helpers
+from . import constants
+from . import helpers
 from .reportjob import ReportJob
 
 logger = logging.getLogger(__name__)

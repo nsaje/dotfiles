@@ -2,7 +2,6 @@ from django.conf.urls import url
 
 from . import views
 
-
 urlpatterns = [
     url(
         r"internal/accounts/(?P<account_id>\d+)/credit/(?P<credit_id>\d+)/refunds/(?P<refund_id>\d+)",

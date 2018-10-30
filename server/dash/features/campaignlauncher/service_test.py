@@ -1,12 +1,12 @@
-import mock
-from decimal import Decimal
 import datetime
+from decimal import Decimal
 
+import mock
 from django.test import TestCase
 
-from utils.magic_mixer import magic_mixer
-import dash.models
 import dash.constants
+import dash.models
+from utils.magic_mixer import magic_mixer
 
 from . import service
 

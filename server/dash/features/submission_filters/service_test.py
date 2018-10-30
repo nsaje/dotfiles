@@ -1,12 +1,13 @@
+import mock
 from django.test import TestCase
 
-import mock
-
-from utils.magic_mixer import magic_mixer
 import core.models
 import dash.constants
+from utils.magic_mixer import magic_mixer
 
-from . import models, constants, service
+from . import constants
+from . import models
+from . import service
 
 
 class TestGetAnyAppliedFilters(TestCase):

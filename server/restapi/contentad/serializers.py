@@ -1,8 +1,8 @@
 import rest_framework.serializers
 
-import dash.models
 import dash.constants
 import dash.features.contentupload
+import dash.models
 import restapi.serializers.fields
 import restapi.serializers.serializers
 

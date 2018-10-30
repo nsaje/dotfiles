@@ -1,6 +1,6 @@
 import collections
-import sqlparse
 
+import sqlparse
 from django.db.models.query import QuerySet
 from django.template import loader
 

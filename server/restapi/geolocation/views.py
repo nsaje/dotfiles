@@ -1,7 +1,8 @@
 from rest_framework import permissions
 
-import restapi.common.views_base
 import dash.features.geolocation
+import restapi.common.views_base
+
 from . import serializers
 
 

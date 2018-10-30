@@ -2,7 +2,6 @@ from django.template import Library
 
 import backtosql
 
-
 register = Library()
 
 

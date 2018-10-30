@@ -1,13 +1,11 @@
 import datetime
 import logging
 
-from utils.command_helpers import ExceptionCommand
-
-from etl import refresh
 import redshiftapi.db
-from core.models.account import Account
-
 import utils.slack
+from core.models.account import Account
+from etl import refresh
+from utils.command_helpers import ExceptionCommand
 
 logger = logging.getLogger(__name__)
 NUM_OF_BATCHES = 4

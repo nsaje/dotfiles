@@ -1,7 +1,9 @@
 from django.db.models import Q
 
-from . import models, constants
 import dash.constants
+
+from . import constants
+from . import models
 
 _FIELD_MAPPER = {
     "content_ad": "content_ad_id",

@@ -5,26 +5,27 @@ from decimal import Decimal
 from django.conf import settings
 from django.db import models
 from django.db import transaction
-from django.db.models import Sum, Q, F
+from django.db.models import F
+from django.db.models import Q
+from django.db.models import Sum
 from django.forms.models import model_to_dict
 
+import core.common
+import core.features.bcm
+import core.features.bcm.helpers
+import core.features.history
+import core.features.multicurrency
+import utils.dates_helper
 import utils.demo_anonymizer
 import utils.string_helper
-import utils.dates_helper
 from dash import constants
 from utils import converters
 from utils import lc_helper
 from utils import validation_helper
 
-import core.features.bcm
-import core.features.bcm.helpers
-import core.common
-import core.features.history
-import core.features.multicurrency
+from . import bcm_slack
 from . import dailystatement
 from . import exceptions
-from . import bcm_slack
-
 
 EXCLUDE_ACCOUNTS_LOW_AMOUNT_CHECK = (431, 305)
 

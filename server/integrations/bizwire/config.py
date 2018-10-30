@@ -1,5 +1,6 @@
 import datetime
 from decimal import Decimal
+
 from dash import constants
 
 START_DATE = datetime.date(2016, 12, 3)

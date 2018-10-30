@@ -2,7 +2,8 @@ from django.db import transaction
 
 import core.features.bcm
 import dash.constants
-from utils import k1_helper, numbers
+from utils import k1_helper
+from utils import numbers
 
 
 class AdGroupBCMMixin(object):

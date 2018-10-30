@@ -1,8 +1,8 @@
-from restapi.common.views_base_test import RESTAPITest
+import mock
 from django.urls import reverse
 
 import core.models.ad_group
-import mock
+from restapi.common.views_base_test import RESTAPITest
 
 
 class RealtimestatsViewsTest(RESTAPITest):

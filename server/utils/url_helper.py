@@ -1,5 +1,6 @@
+import urllib.error
 import urllib.parse
-import urllib.request, urllib.parse, urllib.error
+import urllib.request
 
 from django.conf import settings
 

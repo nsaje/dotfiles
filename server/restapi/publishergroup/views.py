@@ -1,11 +1,10 @@
-from restapi.common.views_base import RESTAPIBaseViewSet
-from restapi.common.permissions import CanEditPublisherGroupsPermission
-import restapi.access
-
 import rest_framework.viewsets
 
 import core.features.publisher_groups
+import restapi.access
 import utils.exc
+from restapi.common.permissions import CanEditPublisherGroupsPermission
+from restapi.common.views_base import RESTAPIBaseViewSet
 
 from . import serializers
 

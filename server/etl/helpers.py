@@ -3,7 +3,6 @@ import datetime
 from dateutil import rrule
 
 import dash.features.performance_tracking.constants
-
 from utils import dates_helper
 
 

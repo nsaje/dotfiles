@@ -1,16 +1,14 @@
 # -*- coding: utf-8 -*-
 
 from decimal import Decimal
+
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
 import core.common
 import core.models
-from dash import constants
-
-import core.common
-import core.models
 import utils.exc
+from dash import constants
 
 
 class Source(models.Model):

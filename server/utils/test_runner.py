@@ -1,15 +1,13 @@
-import os
 import logging
-import time
 import operator
-
+import os
+import time
 import unittest
-
-from xmlrunner.extra.djangotestrunner import XMLTestRunner
 
 import django.test
 from django.conf import settings
 from django.core.management import call_command
+from xmlrunner.extra.djangotestrunner import XMLTestRunner
 
 
 class SplitTestsRunner(django.test.runner.DiscoverRunner):

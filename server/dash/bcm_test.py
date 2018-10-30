@@ -1,19 +1,20 @@
-from mock import patch
 import datetime
 import io
 from decimal import Decimal
 
-from django.test import TestCase
 from django.core.exceptions import ValidationError
 from django.core.management import call_command
-
-from utils import converters
-import utils.exc
-import core.features.bcm.exceptions
-
-from dash import models, constants, forms
-from zemauth.models import User
 from django.http.request import HttpRequest
+from django.test import TestCase
+from mock import patch
+
+import core.features.bcm.exceptions
+import utils.exc
+from dash import constants
+from dash import forms
+from dash import models
+from utils import converters
+from zemauth.models import User
 
 TODAY = datetime.datetime(2015, 12, 1).date()
 YESTERDAY = TODAY - datetime.timedelta(1)

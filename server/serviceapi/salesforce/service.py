@@ -4,11 +4,12 @@ from rest_framework.serializers import ValidationError
 
 import core.features.bcm.bcm_slack
 import core.features.bcm.credit_line_item
-import core.models.account
 import core.features.multicurrency
+import core.models.account
 import dash.constants
 import utils.converters
 import zemauth.models
+
 from . import constants
 
 CLIENT_TYPE_OBJECT_MAP = {

@@ -1,17 +1,17 @@
 import decimal
-from mock import patch, ANY
 
 from django.test import TestCase
+from mock import ANY
+from mock import patch
 
 import core.features.bcm
 import core.models
 import core.models.settings
 import dash.constants
+from utils import dates_helper
+from utils.magic_mixer import magic_mixer
 
 from . import signals
-
-from utils.magic_mixer import magic_mixer
-from utils import dates_helper
 
 
 class NotifyBudgetsTest(TestCase):

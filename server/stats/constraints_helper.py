@@ -2,11 +2,12 @@ import copy
 
 import newrelic.agent
 
-from utils.queryset_helper import simplify_query, get_pk_list
-from dash import models
-from core.features.publisher_groups import publisher_group_helpers
-from stats import constants
 import dash.constants
+from core.features.publisher_groups import publisher_group_helpers
+from dash import models
+from stats import constants
+from utils.queryset_helper import get_pk_list
+from utils.queryset_helper import simplify_query
 
 
 def narrow_filtered_sources(sources, ad_group_sources):

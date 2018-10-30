@@ -1,14 +1,15 @@
-from decimal import Decimal
-from mock import patch
 import operator
+from decimal import Decimal
 
 from django import test
+from mock import patch
+
+import dash
+import dash.constants
+import dash.models
 
 from . import budgets
 from . import constants
-import dash
-import dash.models
-import dash.constants
 
 
 class AutopilotBudgetsTestCase(test.TestCase):

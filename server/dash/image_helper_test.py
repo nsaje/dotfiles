@@ -1,8 +1,9 @@
 import datetime
 import time
 
+from django.test import TestCase
+from django.test import override_settings
 from mock import patch
-from django.test import TestCase, override_settings
 
 from dash import image_helper
 

@@ -1,12 +1,12 @@
 from django.db import transaction
 
-from automation import autopilot
 import dash.constants
 import dash.features.ga
 import utils.email_helper
+import utils.exc
 import utils.k1_helper
 import utils.redirector_helper
-import utils.exc
+from automation import autopilot
 
 
 class CampaignSettingsMixin(object):

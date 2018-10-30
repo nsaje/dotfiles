@@ -1,22 +1,22 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-import json
-from mock import patch
 import datetime
+import json
 from decimal import Decimal
-from dash import history_helpers
 
-from django.urls import reverse
 from django.test import TestCase
-
-from zemauth.models import User
-from dash import models, constants
-from utils.test_helper import fake_request
 from django.test.client import RequestFactory
+from django.urls import reverse
+from mock import patch
 
 import automation.campaignstop
+from dash import constants
+from dash import history_helpers
+from dash import models
 from utils import converters
 from utils import test_helper
+from utils.test_helper import fake_request
+from zemauth.models import User
 
 
 class BCMViewTestCase(TestCase):

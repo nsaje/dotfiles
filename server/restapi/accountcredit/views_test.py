@@ -1,10 +1,10 @@
 import datetime
 
-from restapi.common.views_base_test import RESTAPITest
 from django.urls import reverse
 
 import dash.models
 import utils.test_helper
+from restapi.common.views_base_test import RESTAPITest
 from utils.magic_mixer import magic_mixer
 
 

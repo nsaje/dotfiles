@@ -1,18 +1,16 @@
 # -*- coding: utf-8 -*-
 
 from django.conf import settings
-from django.db import models
 from django.contrib.postgres.fields import JSONField
-
-from dash import constants
-from utils import json_helper
-from utils import exc
+from django.db import models
 
 import core.common
-import core.models
-import core.features.yahoo_accounts
 import core.features.history
+import core.features.yahoo_accounts
 import core.models
+from dash import constants
+from utils import exc
+from utils import json_helper
 from utils.settings_fields import CachedOneToOneField
 
 

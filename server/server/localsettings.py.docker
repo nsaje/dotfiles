@@ -2,6 +2,7 @@
 
 import collections
 import os.path
+
 from secretcrypt import Secret
 
 # SECURITY WARNING: don't run with debug turned on in production!

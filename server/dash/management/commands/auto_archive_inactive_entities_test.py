@@ -1,14 +1,13 @@
-import mock
 import datetime
 
-from dash import models
-from dash import constants
-
+import mock
 from django.test import TestCase
-from utils.magic_mixer import magic_mixer
-from utils import dates_helper
 
+from dash import constants
+from dash import models
 from dash.management.commands import auto_archive_inactive_entities
+from utils import dates_helper
+from utils.magic_mixer import magic_mixer
 
 
 @mock.patch("redshiftapi.api_breakdowns.query", return_value={})

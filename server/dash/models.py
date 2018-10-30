@@ -1,3 +1,4 @@
+# isort:skip_file
 # flake8: noqa
 # Core models
 from core.features.audiences import *

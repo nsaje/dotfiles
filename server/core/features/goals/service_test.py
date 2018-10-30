@@ -1,10 +1,11 @@
 import decimal
+
 from django.test import TestCase
 from mock import patch
 
-from utils.magic_mixer import magic_mixer
 import core.models
 import dash.constants
+from utils.magic_mixer import magic_mixer
 
 from . import service
 

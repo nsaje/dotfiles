@@ -1,11 +1,11 @@
 import logging
 
+import influx
 
 from dash import models
 from utils import redirector_helper
-from utils.command_helpers import set_logger_verbosity, ExceptionCommand
-import influx
-
+from utils.command_helpers import ExceptionCommand
+from utils.command_helpers import set_logger_verbosity
 
 logger = logging.getLogger(__name__)
 

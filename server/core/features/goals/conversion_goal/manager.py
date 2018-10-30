@@ -1,7 +1,7 @@
 from django.db import transaction
 
-from dash import constants
 import core.common
+from dash import constants
 
 from . import model
 from . import validator

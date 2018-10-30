@@ -1,11 +1,16 @@
 import os
+
 import django
+
+# django has to be started before the models are imported
+from dash.models import Account  # noqa
+from dash.models import AdGroup
+from dash.models import Campaign
+from dash.models import ContentAdSource
 
 os.environ["DJANGO_SETTINGS_MODULE"] = "server.settings"
 django.setup()
 
-# django has to be started before the models are imported
-from dash.models import Campaign, AdGroup, ContentAdSource, Account  # noqa
 
 """
 This script check how many ContentAds doesn't have a tracker_urls set. ContentAds are filtered by specified exchange.

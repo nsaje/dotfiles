@@ -1,11 +1,15 @@
 import logging
 import operator
-from decimal import Decimal, ROUND_CEILING, ROUND_DOWN
-from random import betavariate, random
+from decimal import ROUND_CEILING
+from decimal import ROUND_DOWN
+from decimal import Decimal
+from random import betavariate
+from random import random
 
 import dash
-import dash.views.helpers
 import dash.constants
+import dash.views.helpers
+
 from . import constants
 from . import helpers
 from . import settings

@@ -1,13 +1,12 @@
 import decimal
-from mock import patch
 
 from django.test import TestCase
-from utils.magic_mixer import magic_mixer
-from dash import constants
+from mock import patch
 
 import core.models
-
 import utils.exc
+from dash import constants
+from utils.magic_mixer import magic_mixer
 
 
 class AdGroupSourceUpdate(TestCase):

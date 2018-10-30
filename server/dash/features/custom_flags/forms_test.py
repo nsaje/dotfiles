@@ -1,9 +1,11 @@
 from django.test import TestCase
 from mock import Mock
 
-from . import model, forms
-from zemauth.models import User
 from dash.models import Account
+from zemauth.models import User
+
+from . import forms
+from . import model
 
 
 class CustomFlagsFormMixinTest(TestCase):

@@ -1,9 +1,9 @@
 from django.test import TestCase
 from mock import patch
-from utils.magic_mixer import magic_mixer
 
-from dash import constants
 import core.models
+from dash import constants
+from utils.magic_mixer import magic_mixer
 
 
 @patch("core.models.ContentAd.objects.insert_redirects")

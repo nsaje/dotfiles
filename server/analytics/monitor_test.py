@@ -1,13 +1,15 @@
 import datetime
 from decimal import Decimal
-from django.test import TestCase
-import mock
 
-from dash.models import BudgetLineItem, BudgetDailyStatement
+import mock
+from django.test import TestCase
+
 import dash.constants
-from analytics import monitor
-from utils import converters
 import utils.dates_helper
+from analytics import monitor
+from dash.models import BudgetDailyStatement
+from dash.models import BudgetLineItem
+from utils import converters
 
 
 def _create_daily_statement(date, budget, media_nano, data_nano=0, margin_nano=0):

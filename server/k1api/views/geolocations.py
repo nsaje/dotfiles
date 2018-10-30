@@ -1,10 +1,9 @@
 import logging
 
-
 import dash.constants
+import dash.features.geolocation
 import dash.models
 from utils import db_for_reads
-import dash.features.geolocation
 
 from .base import K1APIView
 

@@ -4,11 +4,10 @@ from django.urls import reverse
 
 import core.features.multicurrency
 import dash.constants
-
-from .base_test import K1APIBaseTest
-
 from utils import dates_helper
 from utils.magic_mixer import magic_mixer
+
+from .base_test import K1APIBaseTest
 
 
 class CurrencyExchangeRateViewTest(K1APIBaseTest):

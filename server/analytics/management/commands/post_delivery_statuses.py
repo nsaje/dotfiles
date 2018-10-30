@@ -2,8 +2,8 @@ from decimal import Decimal
 
 import influx
 
-import analytics.delivery
 import analytics.constants
+import analytics.delivery
 import utils.command_helpers
 import utils.slack
 

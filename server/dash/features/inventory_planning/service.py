@@ -1,10 +1,8 @@
+import core.models
+import dash.features.geolocation
 import redshiftapi.api_inventory
 
-import dash.features.geolocation
-import core.models
-
 from . import constants
-
 
 ZERO_ROW = {"bids": 0, "bid_reqs": 0, "win_notices": 0, "total_win_price": 0}
 MIN_AUCTIONS = 1000

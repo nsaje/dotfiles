@@ -1,11 +1,10 @@
 import mock
-
 from django.urls import reverse
 from rest_framework.test import APIClient
-from utils.magic_mixer import magic_mixer
 
 import core.models
 import restapi.common.views_base_test
+from utils.magic_mixer import magic_mixer
 
 from . import service
 

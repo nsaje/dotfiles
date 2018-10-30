@@ -1,19 +1,17 @@
 from django.db import transaction
 
+import core.common
+import core.features.audiences
+import core.features.history
+import core.models
+import core.signals
+import dash.cpc_constraints
 from dash import constants
 from dash import retargeting_helper
-import dash.cpc_constraints
-
 from utils import email_helper
+from utils import exc
 from utils import k1_helper
 from utils import redirector_helper
-from utils import exc
-
-import core.features.audiences
-import core.common
-import core.models
-import core.features.history
-import core.signals
 
 from . import helpers
 

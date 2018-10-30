@@ -1,8 +1,8 @@
-from restapi.serializers import serializers
-import restapi.serializers.fields
-
 import rest_framework.serializers
+
 import core.features.publisher_groups
+import restapi.serializers.fields
+from restapi.serializers import serializers
 
 
 class PublisherGroupEntrySerializer(serializers.DataNodeSerializerMixin, rest_framework.serializers.ModelSerializer):

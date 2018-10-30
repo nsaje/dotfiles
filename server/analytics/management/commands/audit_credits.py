@@ -1,8 +1,8 @@
 import datetime
 
+import analytics.monitor
 import utils.command_helpers
 import utils.email_helper
-import analytics.monitor
 
 
 class Command(utils.command_helpers.ExceptionCommand):

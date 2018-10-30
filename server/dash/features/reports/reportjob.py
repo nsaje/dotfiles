@@ -1,10 +1,10 @@
 
 import jsonfield
-
-from django.db import models
 from django.conf import settings
+from django.db import models
 
 from utils.json_helper import JSONFIELD_DUMP_KWARGS
+
 from . import constants
 
 

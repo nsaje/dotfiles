@@ -1,9 +1,9 @@
 from django.db import models
 
-from . import queryset
-
 import core.common
 import core.features.multicurrency
+
+from . import queryset
 
 
 class BudgetDailyStatementManager(core.common.BaseManager):

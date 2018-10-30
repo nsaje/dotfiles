@@ -1,10 +1,11 @@
 import json
 
+import redshiftapi.api_audiences
 from dash import forms
 from dash import models
-import redshiftapi.api_audiences
 from utils import api_common
 from utils import exc
+
 from . import helpers
 
 

@@ -1,7 +1,7 @@
 import decimal
-from defusedxml import ElementTree
-import requests
 
+import requests
+from defusedxml import ElementTree
 
 ECB_EXCHANGE_RATES_XML = "http://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml"
 

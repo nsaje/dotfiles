@@ -1,16 +1,15 @@
 import collections
 import datetime
-from dateutil import rrule, relativedelta
 
-from utils import sort_helper
+from dateutil import relativedelta
+from dateutil import rrule
 
-from dash import constants as dash_constants
 import dash.models
-
 import stats.helpers
+from dash import constants as dash_constants
 from stats import constants
 from stats import fields
-
+from utils import sort_helper
 
 """
 Apply any modifications to reports that should be returned by redshiftapi as data source

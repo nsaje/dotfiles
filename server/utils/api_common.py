@@ -1,15 +1,17 @@
 import json
 import logging
+import time
 
-from django.http import HttpResponse, Http404
-from django.views.generic import View
+import influx
 from django.conf import settings
+from django.http import Http404
+from django.http import HttpResponse
+from django.views.generic import View
 
 from utils import influx_helper
 from utils import json_helper
+
 from . import exc
-import influx
-import time
 
 logger = logging.getLogger(__name__)
 

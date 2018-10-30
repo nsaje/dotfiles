@@ -1,6 +1,6 @@
 from django import test
-
-from django.db import IntegrityError, transaction
+from django.db import IntegrityError
+from django.db import transaction
 
 from zemauth import models
 

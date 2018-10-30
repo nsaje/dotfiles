@@ -1,8 +1,8 @@
 from django.test import TestCase
 from rest_framework.exceptions import ErrorDetail
 
-from utils.magic_mixer import magic_mixer
 import dash.models
+from utils.magic_mixer import magic_mixer
 
 from . import serializers
 

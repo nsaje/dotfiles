@@ -1,8 +1,8 @@
-import backtosql
 import datetime
 
 from django.test import TestCase
 
+import backtosql
 from etl import helpers
 
 

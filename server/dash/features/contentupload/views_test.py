@@ -1,15 +1,17 @@
 # -*- coding: utf-8 -*-
 import json
 
-from mock import patch, MagicMock
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.test import Client
+from django.test import TestCase
 from django.urls import reverse
-from django.test import TestCase, Client
+from mock import MagicMock
+from mock import patch
 
 from dash import constants
 from dash import models
-from zemauth.models import User
 from utils.magic_mixer import magic_mixer
+from zemauth.models import User
 
 
 def _get_client(superuser=False):

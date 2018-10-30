@@ -4,13 +4,11 @@ from decimal import Decimal
 from django.test import TestCase
 
 import core.features.bcm
-
 from dash import constants
-
 from utils.magic_mixer import magic_mixer
 
-from . import model
 from . import exceptions
+from . import model
 
 
 class RefundLineItemInstanceMixinTest(TestCase):

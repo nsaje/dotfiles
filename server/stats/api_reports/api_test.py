@@ -1,11 +1,10 @@
 import datetime
+
 from django.test import TestCase
 
 import dash.models
-
-from utils import test_helper
-
 from stats import api_reports
+from utils import test_helper
 
 
 class ApiReportsTest(TestCase):

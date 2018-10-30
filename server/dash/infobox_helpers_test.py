@@ -1,20 +1,18 @@
 import datetime
 import decimal
-import mock
-
 from decimal import Decimal
-from django.test import TestCase
-from django.db import connection
 
-import zemauth.models
+import mock
+from django.db import connection
+from django.test import TestCase
+from django.test.client import RequestFactory
 
 import dash.constants
-import dash.models
 import dash.infobox_helpers
-
+import dash.models
+import zemauth.models
 from utils import dates_helper
 from utils.magic_mixer import magic_mixer
-from django.test.client import RequestFactory
 
 
 class InfoBoxHelpersTest(TestCase):

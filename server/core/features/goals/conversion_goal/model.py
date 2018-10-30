@@ -2,8 +2,8 @@
 
 from django.db import models
 
-from dash import constants
 import dash.features.performance_tracking.constants
+from dash import constants
 
 from . import manager
 from . import validator

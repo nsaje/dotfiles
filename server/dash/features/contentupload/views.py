@@ -3,15 +3,15 @@ import json
 from django.db import transaction
 from django.http import Http404
 
+import utils.exc
 from dash import constants
 from dash import forms
 from dash import models
 from dash.views import helpers
 from utils import api_common
-import utils.exc
 
-from . import upload
 from . import exc
+from . import upload
 
 
 def _get_account_ad_group(user, form):

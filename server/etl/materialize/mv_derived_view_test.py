@@ -1,8 +1,9 @@
-import backtosql
 import datetime
-import mock
 
+import mock
 from django.test import TestCase
+
+import backtosql
 
 from .mv_derived_view import MasterDerivedView
 

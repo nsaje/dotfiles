@@ -1,10 +1,10 @@
-import mock
 import datetime
 
-from restapi.common.views_base_test import RESTAPITest
-
+import mock
 from django.urls import reverse
+
 import redshiftapi.api_quickstats
+from restapi.common.views_base_test import RESTAPITest
 
 
 class CampaignStatsTest(RESTAPITest):

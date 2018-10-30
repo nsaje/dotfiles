@@ -1,14 +1,13 @@
 import datetime
-from mock import patch
 
 from django.http.request import HttpRequest
 from django.http.response import HttpResponse
 from django.test import TestCase
-
-from zemauth import devices
-from zemauth import models
+from mock import patch
 
 from utils import threads
+from zemauth import devices
+from zemauth import models
 
 MOCK_NOW = datetime.datetime(2017, 3, 20, 12)
 

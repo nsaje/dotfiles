@@ -1,9 +1,10 @@
 import datetime
-from mock import patch
 
 from django.test import TestCase
+from mock import patch
 
 from dash import constants
+
 from . import helpers
 
 

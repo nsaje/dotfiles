@@ -1,13 +1,12 @@
 import decimal
 
+import pytz
 import rest_framework.serializers
 
-import restapi.serializers.fields
 import restapi.serializers.base
+import restapi.serializers.fields
 import restapi.serializers.serializers
-
 from dash import constants
-import pytz
 
 
 class AdGroupGeoSerializer(restapi.serializers.base.RESTAPIBaseSerializer):

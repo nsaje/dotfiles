@@ -1,4 +1,9 @@
-from django.forms.fields import MultiValueField, CharField, IntegerField, FloatField, BooleanField
+from django.forms.fields import BooleanField
+from django.forms.fields import CharField
+from django.forms.fields import FloatField
+from django.forms.fields import IntegerField
+from django.forms.fields import MultiValueField
+
 from .widgets import CustomFlagsWidget
 
 

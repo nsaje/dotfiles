@@ -3,10 +3,11 @@ import json
 import logging
 
 import requests
-
-from dash import constants, models
-from utils import k1_helper
 from django.conf import settings
+
+from dash import constants
+from dash import models
+from utils import k1_helper
 
 logger = logging.getLogger(__name__)
 

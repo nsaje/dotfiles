@@ -1,5 +1,5 @@
-import json
 import contextlib
+import json
 
 import boto.sqs
 from boto.sqs.message import Message

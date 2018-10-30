@@ -1,12 +1,12 @@
-from restapi.common.views_base import RESTAPIBaseViewSet
-from restapi.common.pagination import StandardPagination
-from restapi.common.permissions import CanEditPublisherGroupsPermission
-import restapi.access
-
-from rest_framework.response import Response
 import rest_framework.viewsets
+from rest_framework.response import Response
 
 import core.features.publisher_groups
+import restapi.access
+from restapi.common.pagination import StandardPagination
+from restapi.common.permissions import CanEditPublisherGroupsPermission
+from restapi.common.views_base import RESTAPIBaseViewSet
+
 from . import serializers
 
 

@@ -2,10 +2,9 @@ import datetime
 
 from django.test import TestCase
 
+from redshiftapi import helpers
 from stats import constants
 from utils import test_helper
-
-from redshiftapi import helpers
 
 
 class HelperTest(TestCase):

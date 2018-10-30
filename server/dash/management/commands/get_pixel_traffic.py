@@ -1,8 +1,8 @@
 import logging
 
 from dash import models
-from utils.command_helpers import ExceptionCommand
 from utils import redirector_helper
+from utils.command_helpers import ExceptionCommand
 
 logger = logging.getLogger(__name__)
 

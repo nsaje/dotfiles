@@ -1,9 +1,8 @@
-from rest_framework import serializers
 from rest_framework import fields
+from rest_framework import serializers
 
-import restapi.serializers.serializers
 import restapi.serializers.fields
-
+import restapi.serializers.serializers
 
 COUNTRY = "country"
 DEVICE_TYPE = "device_type"

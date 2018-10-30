@@ -1,11 +1,11 @@
 from rest_framework import serializers
 
+import restapi.serializers.fields
+import stats.constants
 from dash import constants
 from dash.features.reports import helpers as reports_helpers
 from dash.features.reports import serializers as reports_serializers
 from dash.views import helpers
-import restapi.serializers.fields
-import stats.constants
 
 
 class ScheduledReportSerializer(serializers.Serializer):

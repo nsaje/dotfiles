@@ -1,32 +1,28 @@
 import datetime
-import json
-import slugify
 import decimal
-
-from django.db import transaction
+import json
 
 import influx
-
-from automation import autopilot
-
-from dash import api
-from dash import constants
-from dash import forms
-from dash import models
-from dash import retargeting_helper
-from dash import legacy
-from dash.dashapi import data_helper
-from dash.views import helpers
-from dash.features import contentupload
-from dash.views import breakdown_helpers
+import slugify
+from django.db import transaction
 
 import core.features.multicurrency
 import core.models.settings.ad_group_source_settings.exceptions
-
+from automation import autopilot
+from dash import api
+from dash import constants
+from dash import forms
+from dash import legacy
+from dash import models
+from dash import retargeting_helper
+from dash.dashapi import data_helper
+from dash.features import contentupload
+from dash.views import breakdown_helpers
+from dash.views import helpers
 from utils import api_common
+from utils import csv_utils
 from utils import exc
 from utils import k1_helper
-from utils import csv_utils
 
 
 class BaseBulkActionView(api_common.BaseApiView):

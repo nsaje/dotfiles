@@ -6,6 +6,7 @@ import core.common
 import core.features.yahoo_accounts
 from dash import constants
 from utils import slack
+
 from . import model
 
 logger = logging.getLogger(__name__)

@@ -1,14 +1,18 @@
-import logging
-import influx
 import datetime
 import gzip
+import logging
 from io import StringIO
 
-from dash import models
-from utils.command_helpers import ExceptionCommand
-from utils import s3helpers, email_helper, dates_helper, csv_utils
-from stats.api_breakdowns import Goals
+import influx
+
 import redshiftapi.api_breakdowns
+from dash import models
+from stats.api_breakdowns import Goals
+from utils import csv_utils
+from utils import dates_helper
+from utils import email_helper
+from utils import s3helpers
+from utils.command_helpers import ExceptionCommand
 
 logger = logging.getLogger(__name__)
 

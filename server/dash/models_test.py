@@ -4,19 +4,22 @@ import textwrap
 from decimal import Decimal
 
 import pytz
-from mock import patch
-from django.db.models.signals import pre_save
-from django.test import TestCase, override_settings
-from django.http.request import HttpRequest
-from django.core.exceptions import ValidationError
 from django.conf import settings
+from django.core.exceptions import ValidationError
+from django.db.models.signals import pre_save
 from django.forms.models import model_to_dict
+from django.http.request import HttpRequest
+from django.test import TestCase
+from django.test import override_settings
+from mock import patch
 
-from dash import models, constants
+from dash import constants
+from dash import models
+from utils import exc
+from utils import test_helper
+from utils.magic_mixer import magic_mixer
 from zemauth import models as zemauthmodels
 from zemauth.models import User
-from utils import exc, test_helper
-from utils.magic_mixer import magic_mixer
 
 
 class AdGroupSettingsTest(TestCase):

@@ -1,10 +1,11 @@
-from mock import patch
-
 from django.test import TestCase
 from mixer.backend.django import mixer
+from mock import patch
+
+from dash.features.bluekai import constants
+from dash.features.bluekai import models
 
 from . import taxonomy
-from dash.features.bluekai import constants, models
 
 
 class GetTreeTestCase(TestCase):

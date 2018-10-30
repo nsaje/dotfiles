@@ -1,6 +1,5 @@
-from mock import patch
-
 from django import test
+from mock import patch
 
 import core.models
 from utils.magic_mixer import magic_mixer

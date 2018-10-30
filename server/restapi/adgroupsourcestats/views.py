@@ -1,8 +1,8 @@
-from restapi.common.views_base import RESTAPIBaseViewSet
-import restapi.access
+from rest_framework import permissions
 
 import dash.features.realtimestats
-from rest_framework import permissions
+import restapi.access
+from restapi.common.views_base import RESTAPIBaseViewSet
 
 from . import serializers
 

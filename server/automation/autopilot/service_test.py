@@ -1,18 +1,19 @@
-from collections import defaultdict
-from decimal import Decimal
 import datetime
 import json
-from mock import patch, call
 import traceback
+from collections import defaultdict
+from decimal import Decimal
 
 from django import test
+from mock import call
+from mock import patch
 
 import dash.constants
 import dash.models
+from automation import models
 from utils.magic_mixer import magic_mixer
 
 from . import constants
-from automation import models
 from . import service
 
 

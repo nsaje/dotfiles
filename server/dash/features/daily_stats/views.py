@@ -1,16 +1,14 @@
 import dash.views.helpers
-from dash import models
-from dash import constants
-from dash import campaign_goals
-
-from utils import api_common
-from utils import exc
-from utils import db_for_reads
-from utils import columns
-
 import stats.api_breakdowns
 import stats.api_dailystats
 import stats.constraints_helper
+from dash import campaign_goals
+from dash import constants
+from dash import models
+from utils import api_common
+from utils import columns
+from utils import db_for_reads
+from utils import exc
 
 from . import helpers
 

@@ -1,8 +1,8 @@
-from redshiftapi import db
-from redshiftapi import queries
 from collections import namedtuple
 
 import dash.models
+from redshiftapi import db
+from redshiftapi import queries
 
 
 def query_conversions(date_from, date_to, ad_group_ids=None):

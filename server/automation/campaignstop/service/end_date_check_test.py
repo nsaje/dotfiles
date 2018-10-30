@@ -1,14 +1,15 @@
 import datetime
+
 from django.test import TestCase
 from mock import patch
 
-from .. import CampaignStopState
-from .end_date_check import update_campaigns_end_date
-
 import core.features.bcm
 import dash.constants
-from utils.magic_mixer import magic_mixer
 from utils import dates_helper
+from utils.magic_mixer import magic_mixer
+
+from .. import CampaignStopState
+from .end_date_check import update_campaigns_end_date
 
 
 class UpdateCampaignEndDateTestCase(TestCase):

@@ -1,18 +1,19 @@
-import logging
 import datetime
+import logging
 from decimal import Decimal
 
-from django.db.models import F, Sum
+from django.db.models import F
+from django.db.models import Sum
 
-import dash.models
-import dash.constants
-import automation.models
+import analytics.helpers
 import analytics.projections
+import automation.models
+import dash.constants
+import dash.models
 import etl.refresh
+import redshiftapi.db
 from automation import autopilot
 from utils import converters
-import redshiftapi.db
-import analytics.helpers
 
 logger = logging.getLogger("stats.monitor")
 

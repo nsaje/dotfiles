@@ -1,6 +1,5 @@
 import backtosql
 
-
 KW_DIMENSIONS = "kw::dimensions"
 KW_AGGREGATES = "kw::aggregates"
 KW_END = "kw::end"

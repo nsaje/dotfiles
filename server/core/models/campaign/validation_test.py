@@ -3,6 +3,7 @@ from django.test import TestCase
 import core.models
 from dash import constants
 from utils.magic_mixer import magic_mixer
+
 from . import exceptions
 
 

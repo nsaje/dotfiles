@@ -3,8 +3,8 @@ import os
 
 import xlsxwriter
 
-import redshiftapi.db
 import dash.constants
+import redshiftapi.db
 
 TIME_OF_DAY_UTC = """SELECT date_part('hour', bid_timestamp) as h, count(*) as clicks
 FROM audience_report

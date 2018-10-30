@@ -1,10 +1,10 @@
-from django.test import TestCase
 import mock
+from django.test import TestCase
 
 import dash.models
 import utils.exc
-from utils.magic_mixer import magic_mixer
 from restapi import access
+from utils.magic_mixer import magic_mixer
 
 
 class GeneratePermissionClass(TestCase):

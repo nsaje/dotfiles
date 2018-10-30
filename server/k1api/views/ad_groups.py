@@ -2,12 +2,12 @@ import logging
 
 from django.conf import settings
 
+import automation.campaignstop.service
 import dash.constants
+import dash.features.custom_flags
 import dash.models
 from core.features.publisher_groups import publisher_group_helpers
 from utils import db_for_reads
-import automation.campaignstop.service
-import dash.features.custom_flags
 
 from .base import K1APIView
 

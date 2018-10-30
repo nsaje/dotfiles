@@ -1,12 +1,13 @@
 import json
 import logging
 import time
-import urllib.request, urllib.error, urllib.parse
+import urllib.error
+import urllib.parse
+import urllib.request
 
 from django.conf import settings
 
 from utils import request_signer
-
 
 logger = logging.getLogger(__name__)
 

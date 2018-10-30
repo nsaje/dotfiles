@@ -1,10 +1,9 @@
 import unicodecsv as csv
-
 from django.db.models import Q
 
-import utils.command_helpers
-import dash.features.submission_filters
 import core.models
+import dash.features.submission_filters
+import utils.command_helpers
 
 
 class Command(utils.command_helpers.ExceptionCommand):

@@ -1,5 +1,4 @@
 import django.db.models
-
 from rest_framework import serializers
 
 import dash.models

@@ -1,16 +1,14 @@
 # -*- coding: utf-8 -*-
-import json
-from mock import patch
 import datetime
-
-from dash import models
-from dash import constants
+import json
 
 from django.test import TestCase
 from django.urls import reverse
+from mock import patch
 
+from dash import constants
+from dash import models
 from utils import test_helper
-
 from zemauth.models import User
 
 

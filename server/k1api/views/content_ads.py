@@ -1,10 +1,10 @@
-from datetime import datetime
 import logging
+from datetime import datetime
+from functools import partial
 
 import influx
 import newrelic.agent
 from django.http import Http404
-from functools import partial
 
 import dash.constants
 import dash.features.submission_filters
@@ -14,6 +14,7 @@ from utils import dates_helper
 from utils import db_for_reads
 from utils import sspd_client
 from utils import threads
+
 from .base import K1APIView
 
 logger = logging.getLogger(__name__)

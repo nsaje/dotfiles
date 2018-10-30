@@ -3,15 +3,14 @@ Sign https requests with hmac to ensure secrecy and security.
 To ensure ssl certificate validity, use urllib_secure_open.
 """
 
-import urllib
-import ssl
-import os
-import urllib.parse
 import base64
-import hmac
 import hashlib
+import hmac
+import os
+import ssl
 import time
-
+import urllib
+import urllib.parse
 
 TS_HEADER = "Zapi-auth-ts"
 SIGNATURE_HEADER = "Zapi-auth-signature"

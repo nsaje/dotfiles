@@ -1,14 +1,16 @@
 import datetime
-import urllib.request, urllib.parse, urllib.error
+import urllib.error
+import urllib.parse
+import urllib.request
 
 from django.conf import settings
 
-import dash.models
 import dash.constants
-from redshiftapi.models import MVMaster
+import dash.models
 import redshiftapi.db
-from utils import s3helpers
 import utils.csv_utils
+from redshiftapi.models import MVMaster
+from utils import s3helpers
 
 DOWNLOAD_URL = "https://one.zemanta.com/api/custom_report_download/"
 INVENTORY_REPORT_QUERY = """SELECT {breakdown}, SUM(bid_reqs)

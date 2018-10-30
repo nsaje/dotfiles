@@ -1,7 +1,7 @@
 import json
 import logging
-import mock
 
+import mock
 from django.urls import reverse
 
 import dash.models

@@ -1,15 +1,15 @@
-import backtosql
 import logging
 import os.path
 
 from django.conf import settings
 
+import backtosql
 import dash.models
-from redshiftapi import db
-
 from etl import constants
 from etl import helpers
 from etl import redshift
+from redshiftapi import db
+
 from .materialize import Materialize
 
 logger = logging.getLogger(__name__)

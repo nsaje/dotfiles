@@ -1,19 +1,19 @@
 import json
 import math
-from mock import patch, ANY, MagicMock
 import random
 
-from freezegun import freeze_time
-
-from django.urls import reverse
-from django.test import TestCase, override_settings
 from django.contrib.auth.models import Permission
-
-from integrations.bizwire import config
+from django.test import TestCase
+from django.test import override_settings
+from django.urls import reverse
+from freezegun import freeze_time
+from mock import ANY
+from mock import MagicMock
+from mock import patch
 
 import dash.constants
 import dash.models
-
+from integrations.bizwire import config
 from zemauth.models import User
 
 

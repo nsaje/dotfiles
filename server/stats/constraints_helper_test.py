@@ -3,14 +3,12 @@ import datetime
 from django.conf import settings
 from django.test import TestCase
 
+import dash.constants
+import dash.models
+from stats import constraints_helper
 from utils import test_helper
 from utils.magic_mixer import magic_mixer
 from zemauth.models import User
-
-import dash.models
-import dash.constants
-
-from stats import constraints_helper
 
 
 class PrepareConstraints(TestCase):

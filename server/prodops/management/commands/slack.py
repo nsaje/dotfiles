@@ -1,7 +1,7 @@
 import sys
 
-import utils.slack
 import utils.command_helpers
+import utils.slack
 
 
 class Command(utils.command_helpers.ExceptionCommand):

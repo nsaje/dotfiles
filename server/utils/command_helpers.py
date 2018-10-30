@@ -1,10 +1,10 @@
-import logging
 import datetime
-import dateutil.parser
+import logging
 import sys
 
-from django.core.management.base import BaseCommand
+import dateutil.parser
 import newrelic.agent
+from django.core.management.base import BaseCommand
 
 import dash.models
 

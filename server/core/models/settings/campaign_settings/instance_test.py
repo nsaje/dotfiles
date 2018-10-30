@@ -1,10 +1,9 @@
+from django.test import TestCase
 from mock import patch
 
-from django.test import TestCase
-
 import core.models
-from utils.magic_mixer import magic_mixer
 import utils.exc
+from utils.magic_mixer import magic_mixer
 
 
 class InstanceTestCase(TestCase):

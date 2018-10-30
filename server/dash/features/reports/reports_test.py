@@ -8,6 +8,7 @@ from django.test import TestCase
 import core.models
 from dash.features import scheduled_reports
 from utils.magic_mixer import magic_mixer
+
 from . import constants
 from . import reports
 from .reportjob import ReportJob

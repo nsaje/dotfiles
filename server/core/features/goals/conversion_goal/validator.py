@@ -1,8 +1,8 @@
 import core.common
 import dash.constants
 
-from . import model
 from . import exceptions
+from . import model
 
 
 class ConversionGoalValidator(core.common.BaseValidator):

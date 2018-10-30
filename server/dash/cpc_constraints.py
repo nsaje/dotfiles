@@ -1,13 +1,12 @@
 from collections import defaultdict
 
-from django.forms import ValidationError
 from django.db import models
+from django.forms import ValidationError
 
 import core.features.bcm
-
 import dash
-import dash.models
 import dash.constants
+import dash.models
 
 
 class CpcValidationError(ValidationError):

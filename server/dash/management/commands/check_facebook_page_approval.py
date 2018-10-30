@@ -1,11 +1,13 @@
 
 import logging
 
+from django.conf import settings
 from django.core.management import CommandError
 
+from dash import constants
+from dash import facebook_helper
+from dash import models
 from utils.command_helpers import ExceptionCommand
-from dash import models, constants, facebook_helper
-from django.conf import settings
 
 logger = logging.getLogger(__name__)
 

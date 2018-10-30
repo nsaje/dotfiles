@@ -1,11 +1,10 @@
+import copy
 import datetime
 import json
 import logging
-import copy
 
 import jwt
 import requests
-
 from django.conf import settings
 
 from dash import constants

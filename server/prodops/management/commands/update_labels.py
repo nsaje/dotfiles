@@ -1,11 +1,10 @@
-import logging
-import unicodecsv
 import argparse
+import logging
 
+import unicodecsv
 from django.core.management.base import CommandError
 
 from dash.models import ContentAd
-
 from utils.command_helpers import ExceptionCommand
 
 logger = logging.getLogger(__name__)

@@ -1,11 +1,11 @@
-from collections import namedtuple
 import datetime
+from collections import namedtuple
+
 import requests
 from defusedxml import ElementTree
 
 from . import constants
 from . import models
-
 
 UploadInfo = namedtuple("UploadInfo", ["type", "url"])
 

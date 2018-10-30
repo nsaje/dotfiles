@@ -1,14 +1,14 @@
-import mock
 from decimal import Decimal
 
+import mock
 from django.test import TestCase
-from utils.magic_mixer import magic_mixer
 
 import core.models
 from dash import constants
+from utils.magic_mixer import magic_mixer
 
-from . import model
 from . import exceptions
+from . import model
 
 
 class ValidationTest(TestCase):

@@ -1,51 +1,45 @@
-import json
-import re
-import logging
 import decimal
+import json
+import logging
+import re
 
+from django.conf import settings
+from django.contrib.auth import models as authmodels
 from django.db import transaction
 from django.db.models import Prefetch
 from django.db.models import Q
-from django.conf import settings
-from django.contrib.auth import models as authmodels
 from django.http import Http404
 
-from automation import autopilot
-from dash.views import helpers
-from dash import forms
-from dash import models
-from dash import constants
-from dash import retargeting_helper
-from dash import campaign_goals
-from dash import facebook_helper
-from dash.features import native_server
-from dash.features import ga, custom_flags
-from dash import content_insights_helper
-
 import core.features.goals
-
-from utils import api_common
-from utils import exc
-from utils import email_helper
-from utils import k1_helper
-from utils import redirector_helper
-from utils import dates_helper
-from utils import db_for_reads
-
-import utils.exc
-
-import core.models.settings.campaign_settings.exceptions
-import core.models.ad_group.exceptions
-import core.models.settings.ad_group_settings.exceptions
-import core.models.settings.ad_group_source_settings.exceptions
 import core.features.goals.campaign_goal.exceptions
 import core.features.goals.conversion_goal.exceptions
 import core.features.multicurrency
-
+import core.models.ad_group.exceptions
+import core.models.settings.ad_group_settings.exceptions
+import core.models.settings.ad_group_source_settings.exceptions
+import core.models.settings.campaign_settings.exceptions
 import restapi.campaigngoal.serializers
-
+import utils.exc
+from automation import autopilot
+from dash import campaign_goals
+from dash import constants
+from dash import content_insights_helper
+from dash import facebook_helper
+from dash import forms
+from dash import models
+from dash import retargeting_helper
+from dash.features import custom_flags
+from dash.features import ga
+from dash.features import native_server
+from dash.views import helpers
+from utils import api_common
+from utils import dates_helper
+from utils import db_for_reads
+from utils import email_helper
+from utils import exc
+from utils import k1_helper
+from utils import redirector_helper
 from zemauth.models import User as ZemUser
-
 
 logger = logging.getLogger(__name__)
 

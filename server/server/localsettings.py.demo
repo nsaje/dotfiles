@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 
-import os
 import collections
+import os
+
 from secretcrypt import Secret
 
 # SECURITY WARNING: don't run with debug turned on in production!

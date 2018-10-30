@@ -1,8 +1,8 @@
-from collections import namedtuple
 import json
-from mock import patch
+from collections import namedtuple
 
 from django.test import TestCase
+from mock import patch
 
 from . import bluekaiapi
 

@@ -1,6 +1,5 @@
-import mock
-
 import django.test
+import mock
 
 from . import service
 

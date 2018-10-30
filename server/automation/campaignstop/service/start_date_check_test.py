@@ -1,17 +1,16 @@
 import decimal
-from mock import patch
 
 from django.test import TestCase
+from mock import patch
 
 import core.models
 import dash.constants
-
-from .. import CampaignStopState
-from . import start_date_check
-from . import config
-
-from utils.magic_mixer import magic_mixer
 from utils import dates_helper
+from utils.magic_mixer import magic_mixer
+
+from . import config
+from . import start_date_check
+from .. import CampaignStopState
 
 
 class UpdateCampaignsStartDateTestCase(TestCase):

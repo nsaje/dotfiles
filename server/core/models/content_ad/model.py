@@ -2,24 +2,23 @@
 import urllib.parse
 
 from django.conf import settings
-from django.contrib.postgres.fields import ArrayField, JSONField
-from django.db import models, transaction
-
-import utils.redirector_helper
-import utils.demo_anonymizer
-import utils.string_helper
-
-from utils import k1_helper
-
-from dash import constants
-from dash import image_helper
+from django.contrib.postgres.fields import ArrayField
+from django.contrib.postgres.fields import JSONField
+from django.db import models
+from django.db import transaction
 
 import core.common
-import core.models
 import core.features.history
+import core.models
+import utils.demo_anonymizer
+import utils.redirector_helper
+import utils.string_helper
+from dash import constants
+from dash import image_helper
+from utils import k1_helper
 
-from . import prodops_mixin
 from . import instance
+from . import prodops_mixin
 
 
 class ContentAdManager(models.Manager):

@@ -1,11 +1,11 @@
 import datetime
-import mock
 
+import mock
 from django.test import TestCase
 
-from redshiftapi import queries
-from redshiftapi import db
 from redshiftapi import api_quickstats
+from redshiftapi import db
+from redshiftapi import queries
 
 
 class QuickstatsTest(TestCase):

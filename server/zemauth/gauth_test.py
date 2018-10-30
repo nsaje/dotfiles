@@ -1,5 +1,5 @@
-from django import test
 import mock
+from django import test
 
 from zemauth import gauth
 

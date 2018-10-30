@@ -1,7 +1,7 @@
 import decimal
-from mock import patch
 
 from django.test import TestCase
+from mock import patch
 
 import core.features.bcm
 import core.models

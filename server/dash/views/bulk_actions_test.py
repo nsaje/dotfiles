@@ -1,17 +1,19 @@
 import json
-from mock import patch, ANY
 
-from django.urls import reverse
 from django.http.request import HttpRequest
-from django.test import TestCase, Client, RequestFactory
+from django.test import Client
+from django.test import RequestFactory
+from django.test import TestCase
+from django.urls import reverse
+from mock import ANY
+from mock import patch
 
+import core.models.source_type.model
 from dash import api
 from dash import constants
 from dash import history_helpers
 from dash import models
 from dash.views import bulk_actions
-
-import core.models.source_type.model
 from zemauth.models import User
 
 

@@ -5,19 +5,18 @@ from decimal import Decimal
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models
-from django.forms.models import model_to_dict
 from django.db.models import Q
+from django.forms.models import model_to_dict
 
+import core.common
+import core.features.history
+import core.features.multicurrency
 import utils.demo_anonymizer
 import utils.string_helper
 from dash import constants
 from utils import converters
 from utils import dates_helper
 from utils import lc_helper
-
-import core.common
-import core.features.history
-import core.features.multicurrency
 
 
 class CreditLineItemManager(core.common.QuerySetManager):

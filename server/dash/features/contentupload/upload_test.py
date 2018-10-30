@@ -3,9 +3,10 @@ import datetime
 
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.http.request import HttpRequest
-from django.test import TestCase, override_settings
-from mock import patch, Mock
-from utils.magic_mixer import magic_mixer
+from django.test import TestCase
+from django.test import override_settings
+from mock import Mock
+from mock import patch
 
 import utils.s3helpers
 import zemauth.models
@@ -13,6 +14,7 @@ from dash import constants
 from dash import forms
 from dash import models
 from dash.features import contentupload
+from utils.magic_mixer import magic_mixer
 
 valid_candidate = {
     "label": "test",

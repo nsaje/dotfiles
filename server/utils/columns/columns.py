@@ -1,8 +1,9 @@
 import collections
+
 import dash.constants
 from utils import dates_helper
-from . import exceptions
 
+from . import exceptions
 
 _FIELD_MAPPING = {
     "date": ("Date",),

@@ -2,10 +2,8 @@
 import datetime
 import logging
 
-
 import dash.constants
 import dash.models
-
 from utils.command_helpers import ExceptionCommand
 
 logger = logging.getLogger(__name__)

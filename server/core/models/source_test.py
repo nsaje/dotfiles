@@ -1,10 +1,9 @@
 from django.test import TestCase
-from utils.magic_mixer import magic_mixer
-from utils import test_helper
-
-from dash import constants
 
 import core.models
+from dash import constants
+from utils import test_helper
+from utils.magic_mixer import magic_mixer
 
 
 class CanManageContentAds(TestCase):

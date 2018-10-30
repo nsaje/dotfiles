@@ -1,11 +1,9 @@
 import json
+import logging
 
 from django.urls import reverse
 
 import core.features.publisher_bid_modifiers
-
-import logging
-
 from utils.magic_mixer import magic_mixer
 
 from .base_test import K1APIBaseTest

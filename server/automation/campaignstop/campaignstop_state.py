@@ -4,15 +4,13 @@ from django.db import models
 
 import core.models
 import dash.constants
-
-from . import constants
-
-from utils import k1_helper
+import zemauth.models
 from utils import dates_helper
 from utils import email_helper
+from utils import k1_helper
 from utils import url_helper
 
-import zemauth.models
+from . import constants
 
 logger = logging.getLogger(__name__)
 

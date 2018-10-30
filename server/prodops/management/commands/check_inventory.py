@@ -1,10 +1,11 @@
-import unicodecsv as csv
 import datetime
 import re
 
-import utils.command_helpers
+import unicodecsv as csv
+
 import prodops.audience_report
 import prodops.helpers
+import utils.command_helpers
 
 
 class Command(utils.command_helpers.ExceptionCommand):

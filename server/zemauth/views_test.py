@@ -1,10 +1,10 @@
+import json
+
 from django import test
 from django.urls import reverse
-
 from rest_framework.test import APIClient
-from zemauth.models import User
 
-import json
+from zemauth.models import User
 
 
 class UserViewTest(test.TestCase):

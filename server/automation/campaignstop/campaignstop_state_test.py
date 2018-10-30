@@ -1,12 +1,11 @@
+from django.test import TestCase
 from mock import patch
 
-from django.test import TestCase
-
 import core.models
-from . import CampaignStopState
-
-from utils.magic_mixer import magic_mixer
 from utils import email_helper
+from utils.magic_mixer import magic_mixer
+
+from . import CampaignStopState
 
 
 class CampaignStopStateTestCase(TestCase):

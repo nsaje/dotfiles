@@ -1,3 +1,4 @@
+# isort:skip_file
 from functools import partial
 
 from utils import threads

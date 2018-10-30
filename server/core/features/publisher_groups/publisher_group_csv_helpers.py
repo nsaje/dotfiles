@@ -7,7 +7,8 @@ import string
 from django.conf import settings
 
 from core import models
-from utils import csv_utils, s3helpers
+from utils import csv_utils
+from utils import s3helpers
 
 logger = logging.getLogger(__name__)
 

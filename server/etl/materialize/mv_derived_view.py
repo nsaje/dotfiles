@@ -1,18 +1,18 @@
-import backtosql
 import logging
 
 from django.utils.functional import cached_property
 
-from redshiftapi import db
-
+import backtosql
 from etl import derived_views
 from etl import models
 from etl import redshift
+from redshiftapi import db
+
+from .materialize import Materialize
+from .mv_conversions import MVConversions
 from .mv_master import MasterView
 from .mv_master_publishers import MasterPublishersView
-from .mv_conversions import MVConversions
 from .mv_touchpoint_conversions import MVTouchpointConversions
-from .materialize import Materialize
 
 logger = logging.getLogger(__name__)
 

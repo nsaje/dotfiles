@@ -1,19 +1,18 @@
 import datetime
 import decimal
-import mock
 
+import mock
 from django.test import TestCase
 
-import core.models
 import core.features.bcm
 import core.features.multicurrency
+import core.models
 import dash.constants
+from utils import dates_helper
+from utils.magic_mixer import magic_mixer
 
 from . import validation
 from .. import RealTimeCampaignDataHistory
-
-from utils.magic_mixer import magic_mixer
-from utils import dates_helper
 
 
 class ValidateMinimumBudgetAmountTest(TestCase):

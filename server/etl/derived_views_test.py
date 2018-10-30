@@ -1,7 +1,8 @@
-import backtosql
 import io
 
 from django.test import TestCase
+
+import backtosql
 
 from . import derived_views
 

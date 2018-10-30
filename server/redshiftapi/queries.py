@@ -1,9 +1,9 @@
 import backtosql
 
 from . import exceptions
+from . import helpers
 from . import models
 from . import view_selector
-from . import helpers
 
 
 def prepare_temp_table_create(temp_tables):

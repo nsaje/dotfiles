@@ -1,26 +1,23 @@
-import backtosql
-from collections import defaultdict
-from decimal import Decimal
 import datetime
 import logging
+from collections import defaultdict
+from decimal import Decimal
 
 from dateutil import rrule
-from django.db import transaction
-from django.db.models import Sum, Max
-from django.db import connections
 from django.conf import settings
+from django.db import connections
+from django.db import transaction
+from django.db.models import Max
+from django.db.models import Sum
 
-import dash.models
-
-from utils import dates_helper
-from utils import converters
-
-from redshiftapi import db
-
+import backtosql
 import core.features.bcm.calculations
-
-from etl import helpers
+import dash.models
 from etl import daily_statements_diff
+from etl import helpers
+from redshiftapi import db
+from utils import converters
+from utils import dates_helper
 
 logger = logging.getLogger(__name__)
 

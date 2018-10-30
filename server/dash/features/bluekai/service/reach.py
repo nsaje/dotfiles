@@ -2,8 +2,9 @@ import logging
 
 from django.core.cache import caches
 
-from . import bluekaiapi
 from utils import cache_helper
+
+from . import bluekaiapi
 
 logger = logging.getLogger(__name__)
 

@@ -1,15 +1,14 @@
 import datetime
 import decimal
-from mock import patch
 
 from django.test import TestCase
-from utils.magic_mixer import magic_mixer
+from mock import patch
 
-from dash import constants
-
-import core.models
-import core.features.goals
 import core.features.bcm
+import core.features.goals
+import core.models
+from dash import constants
+from utils.magic_mixer import magic_mixer
 
 
 class CampaignBcmMixin(TestCase):

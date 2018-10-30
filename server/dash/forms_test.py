@@ -1,22 +1,23 @@
 # -*- coding: utf-8 -*-
 import csv
 import datetime
-from decimal import Decimal
 import io
+from decimal import Decimal
 
+from django.contrib.auth.models import Permission
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.forms import ValidationError
 from django.test import TestCase
-from django.core.files.uploadedfile import SimpleUploadedFile
-from django.contrib.auth.models import Permission
-from mock import patch, Mock
+from mock import Mock
+from mock import patch
 
 from dash import constants
 from dash import forms
 from dash import models
 from utils import test_helper
-from zemauth.models import User
-from utils.test_helper import ListMatcher
 from utils.magic_mixer import magic_mixer
+from utils.test_helper import ListMatcher
+from zemauth.models import User
 
 EXAMPLE_CSV_CONTENT = [
     forms.EXAMPLE_CSV_CONTENT["url"],

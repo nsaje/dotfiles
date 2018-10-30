@@ -1,9 +1,8 @@
 from django.db import transaction
 
-from dash.features.bulkactions import clonecontent
-
 import core.models
 from core.models.account.exceptions import AccountDoesNotMatch
+from dash.features.bulkactions import clonecontent
 
 
 def clone(request, source_ad_group, campaign, ad_group_name, clone_ads):

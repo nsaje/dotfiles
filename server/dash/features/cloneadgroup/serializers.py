@@ -1,6 +1,6 @@
 from rest_framework import serializers
-import restapi.serializers.fields
 
+import restapi.serializers.fields
 from dash import constants
 
 

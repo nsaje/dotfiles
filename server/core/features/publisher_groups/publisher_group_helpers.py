@@ -1,12 +1,15 @@
-from collections import defaultdict
 import logging
 import re
+from collections import defaultdict
 from decimal import Decimal
 
 from django.conf import settings
 from django.db import transaction
 
-from dash import constants, cpc_constraints, history_helpers, models
+from dash import constants
+from dash import cpc_constraints
+from dash import history_helpers
+from dash import models
 from dash.views import helpers
 from utils import email_helper
 

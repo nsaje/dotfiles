@@ -4,7 +4,6 @@ import django.db.models
 
 import core.features.multicurrency
 
-
 MULTICURRENCY_FIELD_PREFIX = "local_"
 
 

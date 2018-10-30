@@ -1,9 +1,12 @@
 from django.test import TestCase
 from mixer.backend.django import mixer
-from mock import patch, ANY
+from mock import ANY
+from mock import patch
+
+from dash.features.bluekai import constants
+from dash.features.bluekai import models
 
 from . import maintenance
-from dash.features.bluekai import constants, models
 
 TEST_TAXONOMY = [
     {

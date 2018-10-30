@@ -1,17 +1,19 @@
 import decimal
-from typing import Iterable, List, Optional
+from typing import Iterable
+from typing import List
+from typing import Optional
 
 from django.db import transaction
 
 import core.models
 from utils import dates_helper
 
-from . import spends_helper
-from . import refresh_realtime_data
-from .. import CampaignStopState
-from .. import constants
-from .. import RealTimeCampaignStopLog
 from . import config
+from . import refresh_realtime_data
+from . import spends_helper
+from .. import CampaignStopState
+from .. import RealTimeCampaignStopLog
+from .. import constants
 
 
 def update_campaigns_state(campaigns: Optional[List[core.models.Campaign]] = None) -> None:

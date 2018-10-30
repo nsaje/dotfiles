@@ -1,14 +1,13 @@
 import datetime
 import logging
 
+import influx
 from django.db.models import Q
 
 from dash import constants
 from dash import models
-from utils.command_helpers import ExceptionCommand
 from utils import dates_helper
-
-import influx
+from utils.command_helpers import ExceptionCommand
 
 logger = logging.getLogger(__name__)
 

@@ -1,31 +1,37 @@
 import datetime
-import signal
-import json
 import functools
-import os
-import tarfile
-import urllib.request, urllib.parse, urllib.error
-import urllib.request, urllib.error, urllib.parse
-import sys
 import io
+import json
+import logging
+import os
+import signal
+import sys
+import tarfile
+import urllib.error
+import urllib.parse
+import urllib.request
 
 import faker
 import influx
-
-from django.db import models, transaction, connections
-from django.db.models.signals import pre_save
 from django.conf import settings
 from django.core.serializers import serialize
-from django.template import Variable, VariableDoesNotExist
+from django.db import connections
+from django.db import models
+from django.db import transaction
+from django.db.models.signals import pre_save
+from django.template import Variable
+from django.template import VariableDoesNotExist
 
-from dash import constants
 import dash.models
 import zemauth.models
-from utils.command_helpers import ExceptionCommand
-from utils import demo_anonymizer, s3helpers, request_signer, json_helper, grouper
+from dash import constants
+from utils import demo_anonymizer
+from utils import grouper
+from utils import json_helper
+from utils import request_signer
+from utils import s3helpers
 from utils import unique_ordered_list
-
-import logging
+from utils.command_helpers import ExceptionCommand
 
 logger = logging.getLogger(__name__)
 

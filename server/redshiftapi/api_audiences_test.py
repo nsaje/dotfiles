@@ -1,7 +1,8 @@
 import datetime
-from mock import MagicMock, patch
 
 from django.test import TestCase
+from mock import MagicMock
+from mock import patch
 
 import backtosql
 from dash import models

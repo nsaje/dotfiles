@@ -1,8 +1,9 @@
-from django.db.models import QuerySet, Sum, F
+from django.db.models import F
+from django.db.models import QuerySet
+from django.db.models import Sum
 
 import utils.converters
 import utils.dates_helper
-
 
 ET_TOTALS_FIELDS = ["media_spend_nano", "data_spend_nano"]
 ETF_TOTALS_FIELDS = ["media_spend_nano", "data_spend_nano", "license_fee_nano"]

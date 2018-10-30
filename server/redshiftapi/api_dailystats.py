@@ -1,7 +1,5 @@
-from redshiftapi import api_breakdowns
-
 import dash.constants
-
+from redshiftapi import api_breakdowns
 
 __all__ = ["query"]
 

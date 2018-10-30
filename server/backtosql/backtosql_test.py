@@ -1,6 +1,8 @@
 import difflib
+
+from django.template import Context
+from django.template import Template
 from django.test import TestCase
-from django.template import Context, Template
 
 import backtosql
 from backtosql import helpers

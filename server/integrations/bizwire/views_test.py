@@ -1,8 +1,10 @@
 import json
-from mock import patch, ANY
 
+from django.test import TestCase
+from django.test import override_settings
 from django.urls import reverse
-from django.test import TestCase, override_settings
+from mock import ANY
+from mock import patch
 
 from integrations.bizwire import views
 

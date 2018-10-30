@@ -1,6 +1,6 @@
+import analytics.monitor
 import utils.command_helpers
 import utils.slack
-import analytics.monitor
 
 ALERT_MSG_ENTITY = """{} {} ({}) is spending ({}) with an unconfirmed hack - *{}*"""
 ALERT_MSG_GLOBAL = """Unconfirmed global hack *{}* is spending"""

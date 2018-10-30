@@ -1,16 +1,18 @@
 import datetime
-from mock import patch, Mock, ANY, call
 import json
 
 from django.test import TestCase
+from mock import ANY
+from mock import Mock
+from mock import call
+from mock import patch
 from requests import Response
 
 from dash import constants
 from dash import models
+from utils.magic_mixer import magic_mixer
 
 from . import sspd_client
-
-from utils.magic_mixer import magic_mixer
 
 
 @patch("django.conf.settings.SSPD_BASE_URL", "http://testssp.zemanta.com")

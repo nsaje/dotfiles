@@ -5,7 +5,7 @@ Run a test server for REST API acceptance testing.
 Creates a separate acceptance_test_$NAME database and loads
 acceptance tests fixtures. Then it runs a server against that database.
 """
-
+# isort:skip_file
 import argparse
 import os
 import signal

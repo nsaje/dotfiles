@@ -1,30 +1,30 @@
 # -*- coding: utf-8 -*-
 
-import json
-from mock import patch, ANY
 import datetime
 import decimal
+import json
 
-from django.test import TestCase, Client, RequestFactory
-from django.core import mail
-from django.test.utils import override_settings
-from django.http.request import HttpRequest
-from django.urls import reverse
 from django.contrib.auth.models import Permission
-
-from zemauth.models import User
-
-from dash import models
-from dash import constants
-from dash.views import views
-from dash import history_helpers
-
-from utils import exc
-from utils import test_helper
-from utils.magic_mixer import magic_mixer
+from django.core import mail
+from django.http.request import HttpRequest
+from django.test import Client
+from django.test import RequestFactory
+from django.test import TestCase
+from django.test.utils import override_settings
+from django.urls import reverse
+from mock import ANY
+from mock import patch
 
 import core.models.source_type.model
 import zemauth.models
+from dash import constants
+from dash import history_helpers
+from dash import models
+from dash.views import views
+from utils import exc
+from utils import test_helper
+from utils.magic_mixer import magic_mixer
+from zemauth.models import User
 
 
 class UserTest(TestCase):

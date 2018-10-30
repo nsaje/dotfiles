@@ -1,15 +1,15 @@
 from __future__ import unicode_literals
 
+from django.conf import settings
 from django.core.cache import cache
 from django.test import TestCase
 from django.test import override_settings
-from django.conf import settings
-
 from rest_framework.response import Response
 from rest_framework.test import APIRequestFactory
 from rest_framework.views import APIView
 
 from utils.magic_mixer import magic_mixer
+
 from .throttling import UserRateOverrideThrottle
 
 

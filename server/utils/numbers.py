@@ -1,5 +1,6 @@
 import decimal
-from math import log10, floor
+from math import floor
+from math import log10
 
 
 def round_decimal_floor(number, places=2):

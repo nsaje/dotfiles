@@ -1,10 +1,9 @@
-from django.test import TestCase
 import mock
-from utils.magic_mixer import magic_mixer
-
-from dash import constants
+from django.test import TestCase
 
 import core.models
+from dash import constants
+from utils.magic_mixer import magic_mixer
 
 
 class UploadBatchCreate(TestCase):

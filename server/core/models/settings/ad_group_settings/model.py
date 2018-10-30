@@ -1,36 +1,36 @@
-import pytz
 import datetime
-import jsonfield
 import json
-from django.conf import settings
-from django.contrib.postgres.fields import ArrayField, JSONField
-from django.db import models
 from collections import OrderedDict
 from decimal import Decimal
 
+import jsonfield
+import pytz
+from django.conf import settings
+from django.contrib.postgres.fields import ArrayField
+from django.contrib.postgres.fields import JSONField
+from django.db import models
+
+import core.common
+import core.features.audiences
+import core.features.history
+import core.features.multicurrency
+import core.features.publisher_groups
+import core.models
 import utils.demo_anonymizer
 import utils.string_helper
 from dash import constants
 from dash import region_targeting_helper
 from utils import dates_helper
 from utils import lc_helper
-
-import core.features.audiences
-import core.common
-import core.models
-import core.features.history
-import core.features.multicurrency
-import core.features.publisher_groups
 from utils.json_helper import JSONFIELD_DUMP_KWARGS
 
-from ..settings_base import SettingsBase
-from .. import multicurrency_mixin
-
+from . import instance
 from . import manager
 from . import queryset
-from . import instance
 from . import validation
 from .. import helpers
+from .. import multicurrency_mixin
+from ..settings_base import SettingsBase
 
 
 class AdGroupSettings(

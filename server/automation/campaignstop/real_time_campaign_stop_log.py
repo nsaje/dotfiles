@@ -1,10 +1,10 @@
-from django.db import models
 from django.contrib.postgres.fields import JSONField
+from django.db import models
 
 import core.models
-from . import constants
-
 from utils import json_helper
+
+from . import constants
 
 
 class RealTimeCampaignStopLog(models.Model):

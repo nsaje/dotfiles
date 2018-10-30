@@ -1,11 +1,9 @@
+import csv
 import logging
 
-import csv
-
-from utils.command_helpers import ExceptionCommand
-import dash.regions
-
 import dash.features.geolocation
+import dash.regions
+from utils.command_helpers import ExceptionCommand
 
 logger = logging.getLogger(__name__)
 

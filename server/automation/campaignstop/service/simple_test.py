@@ -1,16 +1,16 @@
 import decimal
 from datetime import datetime
+
+from django import test
+from django.core import mail
+from django.http.request import HttpRequest
 from mock import patch
 
-from django.core import mail
-from django import test
-from django.http.request import HttpRequest
-
-from . import simple
 from automation import models as automationmodels
 from dash import models
-
 from zemauth.models import User
+
+from . import simple
 
 
 class DatetimeMock(datetime):
