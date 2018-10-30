@@ -42,7 +42,7 @@ logger = logging.getLogger(__name__)
 
 
 class StrWidget(forms.Widget):
-    def render(self, name, value, attrs=None):
+    def render(self, name, value, attrs=None, renderer=None):
         return mark_safe(str(value))
 
     def value_from_datadict(self, data, files, name):
@@ -50,7 +50,7 @@ class StrWidget(forms.Widget):
 
 
 class StrFieldWidget(forms.Widget):
-    def render(self, name, value, attrs=None):
+    def render(self, name, value, attrs=None, renderer=None):
         return mark_safe("<p>" + str(value) + "</p>")
 
     def value_from_datadict(self, data, files, name):
