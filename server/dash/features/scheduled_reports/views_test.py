@@ -1,13 +1,14 @@
 import json
 
 from django.contrib.auth.models import Permission
+from django.test import Client
+from django.test import TestCase
 from django.urls import reverse
-from django.test import TestCase, Client
 from mixer.backend.django import mixer
 
+import zemauth.models
 from dash import constants
 from dash.features.scheduled_reports import models
-import zemauth.models
 
 
 class ScheduledReportsTestCase(TestCase):

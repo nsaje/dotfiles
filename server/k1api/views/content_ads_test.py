@@ -1,12 +1,11 @@
-from datetime import datetime, timedelta
 import itertools
 import json
 import logging
 import urllib.error
 import urllib.parse
-
-
 import urllib.request
+from datetime import datetime
+from datetime import timedelta
 
 import mock
 from django.urls import reverse
@@ -15,9 +14,10 @@ import dash.constants
 import dash.features.ga
 import dash.features.geolocation
 import dash.models
+from utils import sspd_client
 from utils import test_helper
 from utils.magic_mixer import magic_mixer
-from utils import sspd_client
+
 from .base_test import K1APIBaseTest
 
 logger = logging.getLogger(__name__)

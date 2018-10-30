@@ -1,6 +1,6 @@
-from dash import models
 from dash import constants
 from dash import infobox_helpers
+from dash import models
 
 
 def get_ad_group_dict(

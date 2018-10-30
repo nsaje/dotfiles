@@ -1,12 +1,11 @@
-import influx
 import logging
 
-from utils.command_helpers import ExceptionCommand
+import influx
 
 import core.features.audiences
 import core.models
-
 import redshiftapi
+from utils.command_helpers import ExceptionCommand
 
 logger = logging.getLogger(__name__)
 

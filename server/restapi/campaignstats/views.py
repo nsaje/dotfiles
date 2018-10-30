@@ -1,8 +1,7 @@
-from restapi.common.views_base import RESTAPIBaseViewSet
-import restapi.access
-
 import redshiftapi.api_quickstats
+import restapi.access
 import utils.exc
+from restapi.common.views_base import RESTAPIBaseViewSet
 
 from . import serializers
 

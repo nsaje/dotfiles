@@ -1,14 +1,15 @@
-from rest_framework.test import APIClient
-from django.test import TestCase, RequestFactory
-from django.urls import reverse
 import mock
+from django.test import RequestFactory
+from django.test import TestCase
+from django.urls import reverse
+from rest_framework.test import APIClient
 
-from zemauth.models import User
 import core.models
 import dash.constants
-from . import service
-
 from utils.magic_mixer import magic_mixer
+from zemauth.models import User
+
+from . import service
 
 
 class CreateClientTestCase(TestCase):

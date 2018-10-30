@@ -1,4 +1,6 @@
-from stats.constants import StructureDimension, DeliveryDimension, TimeDimension
+from stats.constants import DeliveryDimension
+from stats.constants import StructureDimension
+from stats.constants import TimeDimension
 
 DIMENSION_FIELDS = set(StructureDimension._ALL) | set(DeliveryDimension._ALL) | set(TimeDimension._ALL)
 DIMENSION_FIELDS |= set(

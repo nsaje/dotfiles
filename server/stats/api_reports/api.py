@@ -1,15 +1,13 @@
 from django.utils.text import slugify
 
-import redshiftapi.api_reports
 import dash.dashapi.api_reports
-
+import redshiftapi.api_reports
 from stats import api_breakdowns
 from stats import constants
 from stats import helpers
 from stats import permission_filter
-
-from utils import sort_helper
 from utils import columns
+from utils import sort_helper
 
 from .format_helper import format_values
 

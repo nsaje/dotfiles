@@ -2,10 +2,9 @@ import decimal
 
 from rest_framework import serializers
 
-import restapi.serializers.fields
-
-from dash import constants
 import dash.models
+import restapi.serializers.fields
+from dash import constants
 
 
 class AdGroupSourceListSerializer(serializers.ListSerializer):

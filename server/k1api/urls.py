@@ -2,19 +2,18 @@ from django.conf.urls import url
 
 from .views import accounts
 from .views import ad_groups
-from .views import ad_groups_stats
 from .views import ad_groups_sources
+from .views import ad_groups_stats
 from .views import content_ads
-from .views import sources
-from .views import publishers
-from .views import geolocations
-from .views import r1_mapping
-from .views import ga_accounts
-from .views import outbrain
-from .views import yahoo
-from .views import direct_deals
 from .views import currency_exchange_rates
-
+from .views import direct_deals
+from .views import ga_accounts
+from .views import geolocations
+from .views import outbrain
+from .views import publishers
+from .views import r1_mapping
+from .views import sources
+from .views import yahoo
 
 urlpatterns = [
     url(r"^ad_groups$", ad_groups.AdGroupsView.as_view(), name="k1api.ad_groups"),

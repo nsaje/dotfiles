@@ -6,14 +6,14 @@ import dateutil.parser
 import influx
 
 import backtosql
-from utils.command_helpers import ExceptionCommand
+import redshiftapi.db
+from core.features.publisher_groups import publisher_group_helpers
 from dash import constants
 from dash import models
 from dash import publisher_helpers
-from core.features.publisher_groups import publisher_group_helpers
-import redshiftapi.db
 from utils import list_helper
 from utils import slack
+from utils.command_helpers import ExceptionCommand
 
 logger = logging.getLogger(__name__)
 

@@ -1,6 +1,5 @@
-import threading
 import copy
-
+import threading
 
 _threadlocal = threading.local()
 

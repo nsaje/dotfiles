@@ -1,14 +1,12 @@
 import logging
-import newrelic.agent
 
+import newrelic.agent
 from django.db import transaction
 from django.db.models import Q
 
-from utils import email_helper
-
-from dash import models
 from dash import constants
-
+from dash import models
+from utils import email_helper
 
 logger = logging.getLogger(__name__)
 

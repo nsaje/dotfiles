@@ -1,10 +1,12 @@
 from django.test import TestCase
 
-from .. import constants, CampaignStopState
-from . import api
 import core.models
 from utils import dates_helper
 from utils.magic_mixer import magic_mixer
+
+from . import api
+from .. import CampaignStopState
+from .. import constants
 
 
 class GetCampaignStopStatesTest(TestCase):

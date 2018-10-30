@@ -5,13 +5,12 @@ from django.contrib.postgres.fields import ArrayField
 from django.db import models
 from django.db import transaction
 
-import utils.demo_anonymizer
-import utils.string_helper
-from dash import constants
-
 import core.common
 import core.features.history
 import core.models
+import utils.demo_anonymizer
+import utils.string_helper
+from dash import constants
 
 from . import validation
 from ..settings_base import SettingsBase

@@ -4,9 +4,9 @@ from django.test import TestCase
 
 import core.models
 import dash.constants
-from utils.magic_mixer import magic_mixer
-from utils import dates_helper
 from core.models.settings.ad_group_source_settings import exceptions
+from utils import dates_helper
+from utils.magic_mixer import magic_mixer
 
 
 class ValidateAdGroupSourceUpdatesTestCase(TestCase):

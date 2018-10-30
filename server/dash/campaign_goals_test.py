@@ -1,16 +1,17 @@
-from mock import patch
-from decimal import Decimal
 import datetime
+from decimal import Decimal
 
-from django.test import TestCase
 from django.http.request import HttpRequest
+from django.test import TestCase
+from mock import patch
 
-from dash import models, constants
 from dash import campaign_goals
-from dash import infobox_helpers
+from dash import constants
 from dash import history_helpers
-from zemauth.models import User
+from dash import infobox_helpers
+from dash import models
 from dash.constants import CampaignGoalPerformance as cgp
+from zemauth.models import User
 
 
 class CampaignGoalsTestCase(TestCase):

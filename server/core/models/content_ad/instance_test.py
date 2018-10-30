@@ -1,16 +1,15 @@
 import mock
-
 from django.test import TestCase
-from utils.magic_mixer import magic_mixer
 
+import core.models.content_ad_source.model
 from dash import constants
 from utils import email_helper
 from utils import k1_helper
 from utils import redirector_helper
+from utils.magic_mixer import magic_mixer
 
-import core.models.content_ad_source.model
-from . import model
 from . import instance
+from . import model
 
 
 class InstanceTest(TestCase):

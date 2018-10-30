@@ -2,7 +2,6 @@ from django.conf.urls import url
 
 from . import views
 
-
 urlpatterns = [
     url(r"^v1/contentads/batch/$", views.ContentAdBatchViewList.as_view(), name="contentads_batch_list"),
     url(

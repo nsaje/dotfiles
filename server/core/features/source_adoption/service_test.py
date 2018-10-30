@@ -1,14 +1,13 @@
 import django.test
 
 import core.models
-
-from utils.magic_mixer import magic_mixer
 import utils.exc
+from utils.magic_mixer import magic_mixer
 
 from . import auto_add_new_ad_group_sources
+from . import exceptions
 from . import release_source
 from . import unrelease_source
-from . import exceptions
 
 
 class SourceAdoptionCommandTest(django.test.TestCase):

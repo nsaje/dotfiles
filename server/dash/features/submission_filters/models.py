@@ -2,9 +2,10 @@ from django.db import models
 
 import core.common
 import core.models.helpers
+import dash.constants
+
 from . import constants
 from . import exceptions
-import dash.constants
 
 
 class SubmissionFilterManager(core.common.BaseManager):

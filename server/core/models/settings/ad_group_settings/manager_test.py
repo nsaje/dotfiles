@@ -1,15 +1,15 @@
-from mock import patch
-from decimal import Decimal
 import datetime
-from django.test import TestCase
+from decimal import Decimal
 
+from django.test import TestCase
+from mock import patch
+
+import core.features.multicurrency
+import core.models
+from dash import constants
 from utils import dates_helper
 from utils.magic_mixer import magic_mixer
 
-from dash import constants
-
-import core.models
-import core.features.multicurrency
 from . import model
 
 

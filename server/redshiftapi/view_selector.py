@@ -1,6 +1,5 @@
 import stats.constants as sc
 
-
 DEVICE = {sc.DEVICE, sc.DEVICE_OS}
 PLACEMENT = {sc.PLACEMENT_MEDIUM, sc.PLACEMENT_TYPE, sc.VIDEO_PLAYBACK_METHOD}
 GEO = {sc.COUNTRY, sc.STATE, sc.DMA}

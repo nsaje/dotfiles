@@ -1,11 +1,11 @@
 import datetime
 
-from django.core.management.base import BaseCommand
 from django.conf import settings
+from django.core.management.base import BaseCommand
 
 import dash.models
-from utils.command_helpers import parse_id_list
 from utils import converters
+from utils.command_helpers import parse_id_list
 
 
 class Command(BaseCommand):

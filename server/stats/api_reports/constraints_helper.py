@@ -1,8 +1,8 @@
 import dash.constants
 import dash.models
-from core.features.publisher_groups import publisher_group_helpers
-import stats.constraints_helper
 import stats.constants
+import stats.constraints_helper
+from core.features.publisher_groups import publisher_group_helpers
 
 
 def _intersection(base_collection, qs_ids):

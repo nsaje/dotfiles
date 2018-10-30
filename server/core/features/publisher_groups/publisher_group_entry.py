@@ -3,8 +3,9 @@
 from django.db import models
 from django.db.models.functions import Concat
 
-import core.models
 import core.common
+import core.models
+
 from .publisher_group import PublisherGroup
 
 

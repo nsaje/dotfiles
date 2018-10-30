@@ -1,29 +1,22 @@
 import copy
 import datetime
+from decimal import Decimal
 
+from django.core.cache import caches
 from django.db import models
 from django.db.models import Sum
-from django.core.cache import caches
 
 import automation.campaignstop
 import core.features.multicurrency
-
+import dash.campaign_goals
 import dash.constants
 import dash.models
-import dash.campaign_goals
-
 import redshiftapi.api_breakdowns
-
+import utils.cache_helper
 import utils.dates_helper
 import utils.lc_helper
-import utils.cache_helper
-
 import zemauth.models
-
 from utils import converters
-
-from decimal import Decimal
-
 
 MAX_PREVIEW_REGIONS = 1
 

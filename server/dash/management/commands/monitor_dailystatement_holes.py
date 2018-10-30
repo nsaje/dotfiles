@@ -1,11 +1,11 @@
-import logging
 import datetime
+import logging
 
+import influx
 from django.db import connection
 
 from etl import daily_statements_k1
 from utils.command_helpers import ExceptionCommand
-import influx
 
 logger = logging.getLogger(__name__)
 

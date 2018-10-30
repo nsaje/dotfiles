@@ -2,18 +2,18 @@
 import datetime
 import decimal
 
-from django.test import TestCase, RequestFactory
-from django.http.request import HttpRequest
 from django.core.exceptions import MultipleObjectsReturned
-
-
-from dash.views import helpers
-from dash import models
-from dash import constants
-from dash import publisher_helpers
-from utils.test_helper import fake_request
-from utils import exc
+from django.http.request import HttpRequest
+from django.test import RequestFactory
+from django.test import TestCase
 from mock import patch
+
+from dash import constants
+from dash import models
+from dash import publisher_helpers
+from dash.views import helpers
+from utils import exc
+from utils.test_helper import fake_request
 from zemauth.models import User
 
 

@@ -2,12 +2,10 @@ import datetime
 
 from django.test import TestCase
 
-import stats.constants
-
-import dash.models
 import dash.campaign_goals
 import dash.constants
-
+import dash.models
+import stats.constants
 from redshiftapi import postprocess
 
 

@@ -1,12 +1,12 @@
+import jsonfield
 from django.conf import settings
 from django.db import models
-import jsonfield
 
 import core.models
+import dash.features.reports.helpers as reports_helpers
 from dash import constants
 from dash import history_helpers
 from dash.features import reports
-import dash.features.reports.helpers as reports_helpers
 from utils import dates_helper
 from utils.json_helper import JSONFIELD_DUMP_KWARGS
 

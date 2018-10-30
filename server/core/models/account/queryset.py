@@ -1,6 +1,5 @@
 from django.db import models
 
-
 import core.features.bcm
 
 

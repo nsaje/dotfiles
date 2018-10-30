@@ -1,6 +1,6 @@
-from django.test import TestCase
-import rest_framework.serializers
 import rest_framework.exceptions
+import rest_framework.serializers
+from django.test import TestCase
 
 from restapi.common.exceptions import custom_exception_handler
 from utils import exc

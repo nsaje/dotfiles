@@ -1,5 +1,5 @@
-from utils.constant_base import ConstantBase
 import dash.constants
+from utils.constant_base import ConstantBase
 
 
 class BidChangeComment(ConstantBase):

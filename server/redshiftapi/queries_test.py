@@ -1,15 +1,14 @@
-import backtosql
 import datetime
-import mock
 
+import mock
 from django.test import TestCase
 
+import backtosql
+import dash.models
 from stats.helpers import Goals
 
-import dash.models
-
-from . import queries
 from . import models
+from . import queries
 
 
 class PrepareQueryAllTest(TestCase, backtosql.TestSQLMixin):

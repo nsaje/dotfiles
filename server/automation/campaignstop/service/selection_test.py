@@ -1,19 +1,22 @@
-from django.test import TestCase
-import mock
 from datetime import datetime
+
+import mock
+from django.test import TestCase
 
 import core.features.bcm
 import core.features.goals
-from .. import CampaignStopState, RealTimeDataHistory, RealTimeCampaignStopLog
-from .. import constants
-from . import selection
-from . import config
-
 import dash.constants
 from core.models.settings.ad_group_settings import AdGroupSettings
 from core.models.settings.ad_group_source_settings import AdGroupSourceSettings
-from utils.magic_mixer import magic_mixer
 from utils import dates_helper
+from utils.magic_mixer import magic_mixer
+
+from . import config
+from . import selection
+from .. import CampaignStopState
+from .. import RealTimeCampaignStopLog
+from .. import RealTimeDataHistory
+from .. import constants
 
 
 class UpdateAlmostDepletedTestCase(TestCase):

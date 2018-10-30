@@ -1,7 +1,6 @@
 import logging
 import sys
 
-
 from integrations.bizwire.internal import reprocess
 from utils import command_helpers
 

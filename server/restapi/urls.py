@@ -1,29 +1,29 @@
-import restapi.bcm.urls
+import core.features.videoassets.urls
+import dash.features.bluekai.urls
 import restapi.account.urls
 import restapi.accountcredit.urls
 import restapi.accountcreditrefund.urls
-import restapi.campaign.urls
-import restapi.campaignstats.urls
-import restapi.campaignlauncher.urls
-import restapi.campaigngoal.urls
-import restapi.campaignbudget.urls
 import restapi.adgroup.urls
-import restapi.adgroupstats.urls
 import restapi.adgroupsource.urls
-import restapi.adgroupsourcestats.urls
 import restapi.adgroupsourcesrtb.urls
+import restapi.adgroupsourcestats.urls
+import restapi.adgroupstats.urls
+import restapi.bcm.urls
+import restapi.campaign.urls
+import restapi.campaignbudget.urls
+import restapi.campaigngoal.urls
+import restapi.campaignlauncher.urls
+import restapi.campaignstats.urls
 import restapi.contentad.urls
-import restapi.report.urls
 import restapi.geolocation.urls
-import restapi.publishers.urls
+import restapi.inventory_planning.urls
+import restapi.publisherbidmodifiers.urls
 import restapi.publishergroup.urls
 import restapi.publishergroupentry.urls
-import restapi.publisherbidmodifiers.urls
-import restapi.inventory_planning.urls
+import restapi.publishers.urls
+import restapi.report.urls
 from dash.features import cloneadgroup
 from dash.features.bulkactions import clonecontent
-import dash.features.bluekai.urls
-import core.features.videoassets.urls
 
 urlpatterns = []
 urlpatterns += restapi.bcm.urls.urlpatterns

@@ -1,7 +1,7 @@
 import csv
 
-import utils.command_helpers
 import redshiftapi.db
+import utils.command_helpers
 
 MANDATORY_COLUMNS = {"account_id", "campaign_id", "ad_group_id", "content_ad_id", "source_id", "publisher"}
 

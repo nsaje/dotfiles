@@ -1,3 +1,4 @@
+# isort:skip_file
 from .helpers import BackToSQLException
 from .helpers import clean_sql
 from .helpers import generate_sql

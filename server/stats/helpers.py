@@ -1,18 +1,16 @@
+import collections
 import datetime
 import logging
 
-import collections
+from django.db.models import Model
+from django.db.models import QuerySet
 
-from django.db.models import QuerySet, Model
-
-from utils import sort_helper
-from utils import exc
-
-import dash.models
 import dash.constants
-
+import dash.models
 from stats import constants
 from stats import fields
+from utils import exc
+from utils import sort_helper
 
 logger = logging.getLogger(__name__)
 

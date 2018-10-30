@@ -1,5 +1,7 @@
-from .. import constants, CampaignStopState
 from utils import dates_helper
+
+from .. import CampaignStopState
+from .. import constants
 
 
 def get_campaignstop_state(campaign):

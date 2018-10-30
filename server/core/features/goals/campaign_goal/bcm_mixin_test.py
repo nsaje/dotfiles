@@ -2,11 +2,11 @@ import decimal
 
 from django.test import TestCase
 
-from .model import CampaignGoal
-
 import core.models
 from dash import constants
 from utils.magic_mixer import magic_mixer
+
+from .model import CampaignGoal
 
 
 class CampaignGoalBCMMixinTest(TestCase):

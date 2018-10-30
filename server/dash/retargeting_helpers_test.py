@@ -1,6 +1,7 @@
 from django.test import TestCase
-import dash.models
+
 import dash.constants
+import dash.models
 import dash.retargeting_helper
 
 

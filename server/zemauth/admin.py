@@ -1,7 +1,8 @@
 from django.contrib import admin
-from django.utils.translation import ugettext_lazy as _
-from django.contrib.auth import admin as authadmin, forms
+from django.contrib.auth import admin as authadmin
+from django.contrib.auth import forms
 from django.contrib.auth.models import Permission
+from django.utils.translation import ugettext_lazy as _
 
 from . import models
 

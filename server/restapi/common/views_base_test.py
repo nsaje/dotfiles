@@ -1,10 +1,11 @@
 import json
 
-from django.test import TestCase, override_settings
+from django.test import TestCase
+from django.test import override_settings
 from rest_framework.test import APIClient
-from zemauth.models import User
 
 from utils import json_helper
+from zemauth.models import User
 
 
 @override_settings(R1_DEMO_MODE=True)

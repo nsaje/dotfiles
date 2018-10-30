@@ -1,14 +1,15 @@
-import numbers
 import csv
+import io as StringIO
+import numbers
+import os
 import random
 import string
-import os
 
-import io as StringIO
-from utils import s3helpers
-from django.db import transaction
 from django.conf import settings
+from django.db import transaction
+
 from dash import models
+from utils import s3helpers
 
 from . import exceptions
 from .publisher_bid_modifier import PublisherBidModifier

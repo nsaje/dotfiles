@@ -1,10 +1,11 @@
-import urllib.request, urllib.error, urllib.parse
 import base64
-import hmac
 import hashlib
-import time
-import urllib.request, urllib.parse, urllib.error
+import hmac
 import json
+import time
+import urllib.error
+import urllib.parse
+import urllib.request
 
 SECRET = "a" * 16
 ZEMANTA_ENDPOINT = "http://localhost:8000/integrations/businesswire/promotion_export/"

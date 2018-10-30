@@ -1,11 +1,11 @@
-import backtosql
 import logging
 
+import backtosql
 import dash.models
-from redshiftapi import db
-
 from etl import redshift
 from etl import s3
+from redshiftapi import db
+
 from .materialize import Materialize
 
 logger = logging.getLogger(__name__)

@@ -1,5 +1,6 @@
 import django.apps
-from django.db.models import QuerySet, Model
+from django.db.models import Model
+from django.db.models import QuerySet
 from django.utils.six.moves import input
 
 import core.features.history

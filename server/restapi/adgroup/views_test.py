@@ -1,18 +1,18 @@
 import datetime
+import json
 import string
 from decimal import Decimal
-import mock
-import json
 
-from restapi.common.views_base_test import RESTAPITest
-import restapi.serializers
+import mock
 from django.urls import reverse
 
 import dash.models
-from dash import constants
-from automation import autopilot
-from utils.magic_mixer import magic_mixer
+import restapi.serializers
 import utils.test_helper
+from automation import autopilot
+from dash import constants
+from restapi.common.views_base_test import RESTAPITest
+from utils.magic_mixer import magic_mixer
 
 
 class AdGroupsTest(RESTAPITest):

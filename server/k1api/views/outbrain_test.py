@@ -1,20 +1,18 @@
 import json
-
-from mock import patch
-import urllib.request, urllib.parse, urllib.error
-
-from django.urls import reverse
-from django.db.models import F
-
-import dash.features.geolocation
-import dash.features.ga
-import dash.constants
-import dash.models
-
 import logging
+import urllib.error
+import urllib.parse
+import urllib.request
 
+from django.db.models import F
+from django.urls import reverse
+from mock import patch
+
+import dash.constants
+import dash.features.ga
+import dash.features.geolocation
+import dash.models
 from utils import email_helper
-
 
 from .base_test import K1APIBaseTest
 

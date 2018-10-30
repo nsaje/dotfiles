@@ -3,14 +3,14 @@ import logging
 from django.conf import settings
 
 import core.models
+from utils import sqs_helper
+
 from . import mark_almost_depleted_campaigns
-from . import update_campaigns_state
 from . import update_campaigns_end_date
 from . import update_campaigns_start_date
-from .. import constants
+from . import update_campaigns_state
 from .. import CampaignStopState
-
-from utils import sqs_helper
+from .. import constants
 
 logger = logging.getLogger(__name__)
 

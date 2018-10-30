@@ -1,9 +1,10 @@
-import logging
 import json
+import logging
 
-from django.http import JsonResponse, Http404
-from django.views.decorators.csrf import csrf_exempt
 from django.conf import settings
+from django.http import Http404
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
 
 from dash.features import contentupload
 from utils import request_signer

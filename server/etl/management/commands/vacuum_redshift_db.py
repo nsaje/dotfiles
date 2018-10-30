@@ -1,9 +1,8 @@
-from utils.command_helpers import ExceptionCommand
+import influx
 
 from etl import maintenance
 from etl import refresh
-
-import influx
+from utils.command_helpers import ExceptionCommand
 
 
 class Command(ExceptionCommand):

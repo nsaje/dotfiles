@@ -1,10 +1,10 @@
-from mock import patch
 import datetime
 
 from django.test import TestCase
+from mock import patch
 
-from stats.helpers import Goals
 from redshiftapi import api_breakdowns
+from stats.helpers import Goals
 
 
 class ApiTest(TestCase):

@@ -2,8 +2,9 @@
 
 import base64
 import json
-import requests
 import logging
+
+import requests
 
 from dash import models
 

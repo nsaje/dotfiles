@@ -3,13 +3,17 @@ import logging
 from django.db import transaction
 
 import core.models
-
 import dash.constants
 from utils import dates_helper
 
+from . import aud
+from . import brl
+from . import chf
+from . import eur
+from . import gbp
+from . import myr
+from . import sgd
 from ..currency_exchange_rate import CurrencyExchangeRate
-from . import eur, gbp, aud, sgd, brl, myr, chf
-
 
 logger = logging.getLogger(__name__)
 

@@ -5,7 +5,6 @@ import utils.exc
 
 from . import exceptions
 
-
 LOGGER_UPDATE_BATCH_SIZE = 40
 
 

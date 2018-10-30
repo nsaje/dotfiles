@@ -1,7 +1,6 @@
-from stats import permission_filter
-
 import redshiftapi.api_breakdowns
 import redshiftapi.api_dailystats
+from stats import permission_filter
 
 
 def query(user, level, breakdown, metrics, constraints, goals, order, should_use_publishers_view=False):

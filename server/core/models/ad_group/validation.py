@@ -1,5 +1,4 @@
 import core.models
-
 import dash.constants
 
 from . import exceptions

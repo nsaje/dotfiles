@@ -1,18 +1,16 @@
-from restapi.common.views_base import RESTAPIBaseViewSet
-from restapi.common.pagination import StandardPagination
-import restapi.access
-
-from django.db.models import Prefetch
 from django.db import transaction
-
-from dash import campaign_goals
-from dash import constants
+from django.db.models import Prefetch
+from rest_framework.response import Response
 
 import core.features.goals
+import restapi.access
 import utils.exc
-from . import serializers
+from dash import campaign_goals
+from dash import constants
+from restapi.common.pagination import StandardPagination
+from restapi.common.views_base import RESTAPIBaseViewSet
 
-from rest_framework.response import Response
+from . import serializers
 
 
 class CampaignGoalViewSet(RESTAPIBaseViewSet):

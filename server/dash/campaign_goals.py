@@ -1,20 +1,19 @@
 import datetime
-from decimal import Decimal, ROUND_DOWN
+from decimal import ROUND_DOWN
+from decimal import Decimal
 from functools import partial
 
 from django.db import transaction
 from django.db.models import Prefetch
 
 import core.features.multicurrency
-from dash import models, constants
 import dash.history_helpers
-
 import stats.api_breakdowns
 import stats.constraints_helper
-
-from utils import exc
 import utils.lc_helper
-
+from dash import constants
+from dash import models
+from utils import exc
 
 CAMPAIGN_GOAL_NAME_FORMAT = {
     constants.CampaignGoalKPI.TIME_ON_SITE: "{} Time on Site - Seconds",

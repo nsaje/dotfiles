@@ -1,10 +1,12 @@
-import influx
 import json
 import logging
 import time
-import urllib.request, urllib.error, urllib.parse
-import requests
+import urllib.error
+import urllib.parse
+import urllib.request
 
+import influx
+import requests
 from django.conf import settings
 
 from utils import request_signer

@@ -1,5 +1,7 @@
 import json
-import urllib.request, urllib.error, urllib.parse
+import urllib.error
+import urllib.parse
+import urllib.request
 
 from django.conf import settings
 

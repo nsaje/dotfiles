@@ -1,9 +1,11 @@
 from decimal import Decimal
 
-from django import test, forms
+from django import forms
+from django import test
 
+from dash import constants
 from dash import cpc_constraints
-from dash import models, constants
+from dash import models
 from zemauth.models import User
 
 

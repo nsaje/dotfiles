@@ -1,14 +1,15 @@
 import decimal
+
 from django.test import TestCase
 from mock import patch
 
-import core.models
 import core.features.goals
+import core.models
 import dash.constants
 from utils.magic_mixer import magic_mixer
 
-from .. import CurrencyExchangeRate
 from . import update
+from .. import CurrencyExchangeRate
 
 
 class UpdateExchangeRatesTestCase(TestCase):

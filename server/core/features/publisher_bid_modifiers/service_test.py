@@ -1,12 +1,12 @@
 from django.test import TestCase
 
 import core.models
-from utils.magic_mixer import magic_mixer
 from dash import models
+from utils.magic_mixer import magic_mixer
 
-from .publisher_bid_modifier import PublisherBidModifier
-from . import service
 from . import exceptions
+from . import service
+from .publisher_bid_modifier import PublisherBidModifier
 
 
 class TestPublisherBidModifierService(TestCase):

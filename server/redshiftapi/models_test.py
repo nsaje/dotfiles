@@ -1,14 +1,12 @@
-import backtosql
 import datetime
-import mock
 
+import mock
 from django.test import TestCase
 
+import backtosql
 import dash.models
-from stats.helpers import Goals
-
 from redshiftapi import models
-
+from stats.helpers import Goals
 
 ALL_AGGREGATES = [
     "clicks",

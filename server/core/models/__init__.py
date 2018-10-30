@@ -1,3 +1,4 @@
+# isort:skip_file
 from .source import Source
 from .source_credentials import SourceCredentials
 from .default_source_settings import DefaultSourceSettings

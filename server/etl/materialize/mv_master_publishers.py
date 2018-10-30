@@ -1,10 +1,10 @@
-import backtosql
 import logging
 
-from redshiftapi import db
-
+import backtosql
 from etl import helpers
 from etl import redshift
+from redshiftapi import db
+
 from .materialize import Materialize
 
 logger = logging.getLogger(__name__)

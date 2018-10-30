@@ -1,14 +1,14 @@
-from restapi.common.views_base import RESTAPIBaseViewSet
-from restapi.common.pagination import StandardPagination
-import restapi.access
+from django.db import transaction
 
 import core.models
 import core.models.ad_group.exceptions
-from core.models.settings.ad_group_settings import exceptions
-from . import serializers
+import restapi.access
 import utils.exc
+from core.models.settings.ad_group_settings import exceptions
+from restapi.common.pagination import StandardPagination
+from restapi.common.views_base import RESTAPIBaseViewSet
 
-from django.db import transaction
+from . import serializers
 
 
 class AdGroupViewSet(RESTAPIBaseViewSet):

@@ -1,12 +1,11 @@
 import mock
-
-from restapi.common.views_base_test import RESTAPITest
 from django.urls import reverse
 
+import dash.models
 import restapi.serializers
 from automation import autopilot
-import dash.models
 from dash import constants
+from restapi.common.views_base_test import RESTAPITest
 from utils.magic_mixer import magic_mixer
 
 

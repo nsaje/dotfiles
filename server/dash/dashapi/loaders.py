@@ -2,30 +2,24 @@ import calendar
 import collections
 import logging
 
+from django.db.models.query import QuerySet
 from django.urls import reverse
 from django.utils.functional import cached_property
-from django.db.models.query import QuerySet
 
 import automation.campaignstop
-from zemauth.models import User as ZemUser
-
-from analytics.projections import BudgetProjections
-
-from utils import outbrain_internal_helper
-
 import core.features.bcm.calculations
 import core.features.multicurrency
-
-from dash import models
-from dash import constants
-from dash import publisher_helpers
-from dash.views import helpers as view_helpers
-from dash.dashapi import data_helper
-
 import stats.helpers
-
+from analytics.projections import BudgetProjections
 from core.features.publisher_bid_modifiers import PublisherBidModifier
+from dash import constants
+from dash import models
+from dash import publisher_helpers
+from dash.dashapi import data_helper
+from dash.views import helpers as view_helpers
+from utils import outbrain_internal_helper
 from utils import sspd_client
+from zemauth.models import User as ZemUser
 
 logger = logging.getLogger(__name__)
 

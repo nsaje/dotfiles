@@ -1,10 +1,9 @@
 import mock
+from django.test import TestCase
+from django.test import override_settings
 
-from django.test import TestCase, override_settings
-
-from . import service
 from . import models
-
+from . import service
 
 ACCOUNTS_LIST_RESPONSE = {
     "username": "account-1@zemanta-api.iam.gserviceaccount.com",

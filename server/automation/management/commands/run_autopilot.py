@@ -3,8 +3,8 @@ import logging
 import influx
 
 import automation.autopilot
-from utils.command_helpers import ExceptionCommand
 import utils.slack
+from utils.command_helpers import ExceptionCommand
 
 logger = logging.getLogger(__name__)
 

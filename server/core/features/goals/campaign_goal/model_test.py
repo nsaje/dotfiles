@@ -1,16 +1,17 @@
 from decimal import Decimal
-from mock import patch
-from django.test import TestCase
 
-import core.models
-import dash.history_helpers
-import dash.constants
+from django.test import TestCase
+from mock import patch
+
 import core.features.multicurrency
+import core.models
+import dash.constants
+import dash.history_helpers
 from utils.magic_mixer import magic_mixer
 
 from . import exceptions
-from .model import CampaignGoal
 from ..campaign_goal_value import CampaignGoalValue
+from .model import CampaignGoal
 
 
 class TestCampaignGoals(TestCase):

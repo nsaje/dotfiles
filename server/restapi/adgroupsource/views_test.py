@@ -1,14 +1,13 @@
-from django.urls import reverse
-
-import dash.models
-import core.models.source_type.model
-from dash import constants
-from utils.magic_mixer import magic_mixer
-
-import mock
 import json
 
+import mock
+from django.urls import reverse
+
+import core.models.source_type.model
+import dash.models
+from dash import constants
 from restapi.common.views_base_test import RESTAPITest
+from utils.magic_mixer import magic_mixer
 
 
 class AdGroupSourcesTest(RESTAPITest):

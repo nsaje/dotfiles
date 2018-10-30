@@ -2,13 +2,15 @@ import textwrap
 
 import mock
 from django.http.request import HttpRequest
-from django.test import TestCase, override_settings
+from django.test import TestCase
+from django.test import override_settings
 
 import zemauth.models
 from dash import history_helpers
 from dash import models
-from . import publisher_group_helpers
+
 from . import publisher_group_csv_helpers
+from . import publisher_group_helpers
 
 
 class PublisherGroupHelpersTest(TestCase):

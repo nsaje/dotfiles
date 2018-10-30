@@ -1,27 +1,29 @@
-from collections import OrderedDict
-import logging
-from functools import partial
 import json
+import logging
 import re
-import urllib.request, urllib.error, urllib.parse
+import urllib.error
+import urllib.parse
+import urllib.request
+from collections import OrderedDict
+from functools import partial
 
 import influx
-from ratelimit.mixins import RatelimitMixin
-
-from django.core.cache import caches
 from django.conf import settings
-from django.http import JsonResponse, Http404
-from django.views.generic import View
+from django.core.cache import caches
+from django.http import Http404
+from django.http import JsonResponse
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
+from django.views.generic import View
+from ratelimit.mixins import RatelimitMixin
 
 import backtosql
-from redshiftapi import db
-from . import config
-
 import dash.models
-from utils import request_signer, threads
+from redshiftapi import db
+from utils import request_signer
+from utils import threads
 
+from . import config
 
 logger = logging.getLogger(__name__)
 

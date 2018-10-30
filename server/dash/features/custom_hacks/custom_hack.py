@@ -4,9 +4,9 @@ import datetime
 from django.conf import settings
 from django.db import models
 
-from dash import constants
 import core.common
 import core.models.helpers
+from dash import constants
 
 
 class CustomHack(models.Model):

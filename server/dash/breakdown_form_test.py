@@ -4,12 +4,10 @@ import datetime
 
 from django.test import TestCase
 
-from zemauth.models import User
-
-from dash import models
 from dash import forms
-
+from dash import models
 from utils import test_helper
+from zemauth.models import User
 
 
 class BreakdownFormTest(TestCase):

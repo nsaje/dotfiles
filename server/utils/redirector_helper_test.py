@@ -1,9 +1,10 @@
 import json
 
-from mock import patch, Mock
-
-from django.test import TestCase, override_settings
 from django.conf import settings
+from django.test import TestCase
+from django.test import override_settings
+from mock import Mock
+from mock import patch
 
 import dash.models
 from utils import redirector_helper

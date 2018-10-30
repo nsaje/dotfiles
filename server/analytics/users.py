@@ -1,8 +1,8 @@
 import datetime
 
-from dash import constants
-import zemauth.models
 import dash.models
+import zemauth.models
+from dash import constants
 
 
 def _get_api_user_emails():

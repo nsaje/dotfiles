@@ -1,7 +1,7 @@
-import utils.command_helpers
-import dash.models
-
 from django.db.models import Q
+
+import dash.models
+import utils.command_helpers
 
 LOOKUP_KEYS = ("service", "summary", "source", "source_id", "rtb_only")
 

@@ -2,10 +2,10 @@ import logging
 
 from django.db.models import F
 
+import core.features.publisher_bid_modifiers
 import dash.constants
 import dash.models
 from utils import db_for_reads
-import core.features.publisher_bid_modifiers
 
 from .base import K1APIView
 

@@ -1,14 +1,14 @@
-import os
-import io
 import hashlib
+import io
+import json
+import os
 from functools import partial
 
-import json
 import boto
 from boto.s3.key import Key
+from django.conf import settings
 
 import utils.threads
-from django.conf import settings
 
 
 class TimeoutException(Exception):

@@ -4,7 +4,9 @@ import influx
 from rest_framework.serializers import ValidationError
 
 from utils.rest_common import authentication
-from . import serializers, service
+
+from . import serializers
+from . import service
 from .. import base
 
 SERVICE_NAME = "salesforce"

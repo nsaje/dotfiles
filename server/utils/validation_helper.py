@@ -1,6 +1,7 @@
 import re
 
 from django.core.exceptions import ValidationError
+
 import utils.exc
 
 HTML_RE = re.compile(r".*<.+>.*")

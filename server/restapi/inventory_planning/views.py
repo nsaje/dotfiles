@@ -1,12 +1,11 @@
-from rest_framework import permissions
 import django.http
 import django.utils.cache
+from rest_framework import permissions
 
-from restapi.common.views_base import RESTAPIBaseView
 import dash.features.inventory_planning
+from restapi.common.views_base import RESTAPIBaseView
 
 from . import serializers
-
 
 CLIENT_SIDE_CACHE_TIME = 60 * 60 * 24  # cache for 1 day
 

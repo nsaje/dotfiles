@@ -1,24 +1,24 @@
 # -*- coding: utf-8 -*-
-import jsonfield
 import logging
 
+import jsonfield
 from django.conf import settings
+from django.db import models
+from django.db import transaction
 from django.urls import reverse
-from django.db import models, transaction
 
-from dash import constants, retargeting_helper
-
-import core.features.bcm
 import core.common
-import core.models
+import core.features.bcm
 import core.features.history
-
+import core.models
 import utils.email_helper
 import utils.exc
 import utils.k1_helper
 import utils.numbers
-from utils.settings_fields import CachedOneToOneField
+from dash import constants
+from dash import retargeting_helper
 from utils.json_helper import JSONFIELD_DUMP_KWARGS
+from utils.settings_fields import CachedOneToOneField
 
 from . import exceptions
 

@@ -1,7 +1,7 @@
 import decimal
 
-import dash.constants
 import core.features.multicurrency
+import dash.constants
 import utils.numbers
 
 _CAMPAIGN_GOAL_DEFAULT_VALUE = {

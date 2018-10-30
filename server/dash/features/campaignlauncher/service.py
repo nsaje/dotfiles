@@ -1,11 +1,10 @@
 import rest_framework
 
-from dash import models
 import dash.constants
-from dash.features import contentupload
 import utils.dates_helper
 import utils.exc
-
+from dash import models
+from dash.features import contentupload
 
 AD_GROUP_NAME_TEMPLATE = "{campaign_name} - Ad Group #1"
 

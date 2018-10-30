@@ -1,17 +1,18 @@
 import datetime
 from decimal import Decimal
+
+from django.conf import settings
+from django.core import mail
+from django.test import TestCase
+from django.test import override_settings
+from django.test.client import RequestFactory
 from mock import patch
 
-from django.test import TestCase, override_settings
-from django.test.client import RequestFactory
-from django.core import mail
-from django.conf import settings
-
-from zemauth.models import User
-from dash import models as dash_models
 import dash.constants
+from dash import models as dash_models
 from utils import email_helper
 from utils.magic_mixer import magic_mixer
+from zemauth.models import User
 
 
 class EmailAPITestCase(TestCase):

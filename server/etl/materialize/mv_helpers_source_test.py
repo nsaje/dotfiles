@@ -1,9 +1,11 @@
-import backtosql
 import datetime
-import mock
 import textwrap
 
-from django.test import TestCase, override_settings
+import mock
+from django.test import TestCase
+from django.test import override_settings
+
+import backtosql
 
 from .mv_helpers_source import MVHelpersSource
 

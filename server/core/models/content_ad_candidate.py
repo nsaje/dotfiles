@@ -2,10 +2,9 @@
 from django.contrib.postgres.fields import JSONField
 from django.db import models
 
+import core.common
 from dash import constants
 from dash import image_helper
-
-import core.common
 
 
 class ContentAdCandidate(core.common.FootprintModel):

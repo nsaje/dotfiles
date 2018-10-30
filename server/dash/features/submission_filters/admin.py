@@ -1,9 +1,11 @@
 from django.contrib import admin
 from django.core.exceptions import ValidationError
 
-from .models import SubmissionFilter
-from .exceptions import SourcePolicyException, SubmissionFilterExistsException, MultipleFilterEntitiesException
 from .constants import SubmissionFilterState
+from .exceptions import MultipleFilterEntitiesException
+from .exceptions import SourcePolicyException
+from .exceptions import SubmissionFilterExistsException
+from .models import SubmissionFilter
 
 
 class SubmissionFilterAdmin(admin.ModelAdmin):

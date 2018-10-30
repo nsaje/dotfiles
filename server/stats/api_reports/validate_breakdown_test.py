@@ -2,7 +2,8 @@ from django.test import TestCase
 
 from dash.constants import Level
 from stats import constants
-from stats.api_reports import validate_breakdown_by_permissions, validate_breakdown_by_structure
+from stats.api_reports import validate_breakdown_by_permissions
+from stats.api_reports import validate_breakdown_by_structure
 from utils import exc
 from utils import test_helper
 from zemauth.models import User

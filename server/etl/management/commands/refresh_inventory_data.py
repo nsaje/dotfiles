@@ -1,8 +1,9 @@
 import datetime
+
 import dateutil.parser
 
-from utils.command_helpers import ExceptionCommand
 from etl.inventory.service import refresh_inventory_data
+from utils.command_helpers import ExceptionCommand
 
 
 class Command(ExceptionCommand):

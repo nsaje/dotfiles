@@ -1,9 +1,10 @@
-from django.test import TestCase
 import rest_framework.serializers
-from utils.magic_mixer import magic_mixer
-from utils import test_helper
+from django.test import TestCase
 
 import core.models
+from utils import test_helper
+from utils.magic_mixer import magic_mixer
+
 from . import serializers
 
 

@@ -4,11 +4,9 @@ from django.conf import settings
 from django.contrib.postgres.fields import JSONField
 from django.db import models
 
-import core.models
 import core.common
-
+import core.models
 import dash.constants
-
 import utils.demo_anonymizer
 import utils.string_helper
 from utils.settings_fields import CachedOneToOneField
@@ -17,7 +15,6 @@ from . import bcm_mixin
 from . import instance
 from . import manager
 from . import queryset
-
 from . import validation
 
 

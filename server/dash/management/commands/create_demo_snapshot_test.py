@@ -1,13 +1,15 @@
 import difflib
-import mock
 
-from django.utils.six import StringIO
+import mock
 from django.core.management import call_command
 from django.db.models.signals import pre_save
-from django.test import TransactionTestCase, override_settings
+from django.test import TransactionTestCase
+from django.test import override_settings
+from django.utils.six import StringIO
 
 from dash.management.commands import create_demo_snapshot
-from utils import request_signer, s3helpers
+from utils import request_signer
+from utils import s3helpers
 
 
 class CreateDemoSnapshotTest(TransactionTestCase):

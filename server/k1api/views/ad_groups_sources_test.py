@@ -1,24 +1,22 @@
 import collections
 import json
+import logging
+import urllib.error
+import urllib.parse
+import urllib.request
 from operator import itemgetter
 
 import mock
-import urllib.request, urllib.parse, urllib.error
-
 from django.urls import reverse
 
-import dash.features.geolocation
-import dash.features.ga
 import dash.constants
-import dash.models
 import dash.features.custom_flags.constants
-
-import logging
-
+import dash.features.ga
+import dash.features.geolocation
+import dash.models
 from dash.features import custom_flags
-from utils.magic_mixer import magic_mixer
 from utils import dates_helper
-
+from utils.magic_mixer import magic_mixer
 
 from .base_test import K1APIBaseTest
 

@@ -1,13 +1,14 @@
 import decimal
 from decimal import Decimal
-from mock import patch
 
 from django import test
+from mock import patch
+
+import dash.constants
+import dash.models
 
 from . import bid
 from .constants import BidChangeComment
-import dash.models
-import dash.constants
 
 
 class AutopilotBidTestCase(test.TestCase):

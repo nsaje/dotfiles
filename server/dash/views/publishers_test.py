@@ -1,15 +1,16 @@
 import json
+
+from django.http.request import HttpRequest
+from django.test import Client
+from django.test import TestCase
+from django.test import override_settings
+from django.urls import reverse
 from mock import patch
 
 from dash import constants
 from dash import models
-
-from django.urls import reverse
-from django.http.request import HttpRequest
-from django.test import Client, TestCase, override_settings
-
-from utils import test_helper
 from utils import s3helpers
+from utils import test_helper
 from zemauth.models import User
 
 

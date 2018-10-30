@@ -1,16 +1,16 @@
 import copy
 import datetime
+
 from django.test import TestCase
 
 import dash.constants
 import zemauth.models
 from dash import models
-from utils import test_helper
-from utils import exc
-
-from stats import helpers
 from stats import constants
 from stats import fields
+from stats import helpers
+from utils import exc
+from utils import test_helper
 
 
 class HelpersTest(TestCase):

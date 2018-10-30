@@ -1,8 +1,9 @@
 import copy
 import logging
 
-from . import bluekaiapi
 from dash.features.bluekai import models
+
+from . import bluekaiapi
 
 logger = logging.getLogger(__name__)
 

@@ -1,9 +1,8 @@
-from utils.command_helpers import ExceptionCommand
+import influx
 
 import core.features.multicurrency
 import dash.constants
-
-import influx
+from utils.command_helpers import ExceptionCommand
 
 
 class Command(ExceptionCommand):

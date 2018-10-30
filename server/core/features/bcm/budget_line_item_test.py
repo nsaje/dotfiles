@@ -1,19 +1,18 @@
-from decimal import Decimal
 import datetime
+from decimal import Decimal
 
-from mock import patch
 from django.test import TestCase
-from utils.exc import ValidationError
-from . import exceptions
+from mock import patch
 
-import zemauth
 import core.models
 import dash.constants
+import zemauth
+from utils.exc import ValidationError
 from utils.magic_mixer import magic_mixer
 
+from . import exceptions
 from .budget_line_item import BudgetLineItem
 from .credit_line_item import CreditLineItem
-
 
 TODAY = datetime.datetime(2015, 12, 1).date()
 

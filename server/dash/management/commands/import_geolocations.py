@@ -3,11 +3,10 @@ import logging
 
 from django.db import transaction
 
-from utils.command_helpers import ExceptionCommand
+import dash.features.geolocation
 import dash.regions
 from dash import constants
-
-import dash.features.geolocation
+from utils.command_helpers import ExceptionCommand
 
 logger = logging.getLogger(__name__)
 

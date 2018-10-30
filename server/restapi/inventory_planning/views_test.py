@@ -1,9 +1,8 @@
 import mock
-
 from django.urls import reverse
 
-import restapi.common.views_base_test
 import dash.features.inventory_planning
+import restapi.common.views_base_test
 
 
 class InventoryPlanningViewTest(restapi.common.views_base_test.RESTAPITest):

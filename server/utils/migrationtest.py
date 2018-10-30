@@ -26,10 +26,12 @@ SOFTWARE.
 """
 
 import unittest
-from django.test import TransactionTestCase
-from django.core.management import call_command, CommandError
+
+from django.core.management import CommandError
+from django.core.management import call_command
 from django.db import connection
 from django.db.migrations.loader import MigrationLoader
+from django.test import TransactionTestCase
 
 
 class MigrationTest(TransactionTestCase):

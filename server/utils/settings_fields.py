@@ -3,7 +3,6 @@ import logging
 from django.db.models import OneToOneField
 from django.db.models.fields.related_descriptors import ForwardOneToOneDescriptor
 
-
 logger = logging.getLogger(__name__)
 
 

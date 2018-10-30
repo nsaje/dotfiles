@@ -1,10 +1,10 @@
 import logging
 
-from utils import sqs_helper
 from django.conf import settings
 
-from .. import constants
+from utils import sqs_helper
 
+from .. import constants
 
 logger = logging.getLogger(__name__)
 

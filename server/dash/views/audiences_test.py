@@ -1,16 +1,17 @@
 # -*- coding: utf-8 -*-
 import json
 
-from django.contrib.auth import models as authmodels
-from django.urls import reverse
-from django.test import TestCase
-from django.conf import settings
 import mock
+from django.conf import settings
+from django.contrib.auth import models as authmodels
+from django.test import TestCase
+from django.urls import reverse
 
-from dash import constants, history_helpers
+from dash import constants
+from dash import history_helpers
 from dash import models
-from zemauth import models as zmodels
 from utils.magic_mixer import magic_mixer
+from zemauth import models as zmodels
 
 
 class AudiencesTest(TestCase):

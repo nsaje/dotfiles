@@ -1,13 +1,13 @@
 import decimal
-from mock import patch, MagicMock
 
 from django.test import TestCase
-from utils.magic_mixer import magic_mixer
+from mock import MagicMock
+from mock import patch
 
-from dash import constants
-
-import core.models
 import core.features.bcm
+import core.models
+from dash import constants
+from utils.magic_mixer import magic_mixer
 
 
 class MigrateToBcmV2Test(TestCase):

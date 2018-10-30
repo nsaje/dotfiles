@@ -2,10 +2,9 @@ import datetime
 import sys
 
 import automation.campaignstop
-
-from utils.command_helpers import ExceptionCommand
 from utils import dates_helper
 from utils import slack
+from utils.command_helpers import ExceptionCommand
 
 
 class Command(ExceptionCommand):

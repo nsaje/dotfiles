@@ -1,18 +1,20 @@
 import datetime
-import string
 import logging
+import string
 from functools import partial
 
-from ua_parser import user_agent_parser
 import ipware.ip
 import requests
-
 from django.conf import settings
-from django.db import IntegrityError, transaction
+from django.db import IntegrityError
+from django.db import transaction
 from django.utils.crypto import get_random_string
+from ua_parser import user_agent_parser
 
+from utils import dates_helper
+from utils import email_helper
+from utils import threads
 from zemauth import models
-from utils import dates_helper, email_helper, threads
 
 logger = logging.getLogger(__name__)
 

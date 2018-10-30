@@ -1,9 +1,9 @@
-import backtosql
-from redshiftapi import db
-from redshiftapi import models as rsmodels
 from collections import namedtuple
 
+import backtosql
 import dash.models
+from redshiftapi import db
+from redshiftapi import models as rsmodels
 
 columns = [
     "source_slug",

@@ -3,27 +3,24 @@ from collections import OrderedDict
 
 import jsonfield
 from django.conf import settings
-from django.contrib.postgres.fields import ArrayField, JSONField
+from django.contrib.postgres.fields import ArrayField
+from django.contrib.postgres.fields import JSONField
 from django.db import models
 
+import core.common
+import core.features.audiences
+import core.features.history
+import core.models
 import utils.demo_anonymizer
 import utils.string_helper
 from dash import constants
-
-import core.features.audiences
-import core.common
-import core.models
-import core.features.history
-import core.models
 from utils.json_helper import JSONFIELD_DUMP_KWARGS
-from . import validation
-
-from .. import helpers
-
-from ..settings_base import SettingsBase
-from ..settings_query_set import SettingsQuerySet
 
 from . import instance
+from . import validation
+from .. import helpers
+from ..settings_base import SettingsBase
+from ..settings_query_set import SettingsQuerySet
 
 
 class CampaignSettings(validation.CampaignSettingsValidatorMixin, instance.CampaignSettingsMixin, SettingsBase):

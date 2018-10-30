@@ -1,12 +1,10 @@
-import logging
 import datetime
-
-from utils.command_helpers import ExceptionCommand
+import logging
 
 import etl.redshift
 from etl import refresh
-
 from utils import dates_helper
+from utils.command_helpers import ExceptionCommand
 
 logger = logging.getLogger(__name__)
 

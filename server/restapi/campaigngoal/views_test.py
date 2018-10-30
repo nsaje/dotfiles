@@ -1,11 +1,11 @@
-from restapi.common.views_base_test import RESTAPITest
+from decimal import Decimal
+
 from django.urls import reverse
 
 import dash.models
 from dash import constants
+from restapi.common.views_base_test import RESTAPITest
 from utils.magic_mixer import magic_mixer
-
-from decimal import Decimal
 
 
 class CampaignGoalsTest(RESTAPITest):

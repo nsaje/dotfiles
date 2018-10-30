@@ -1,12 +1,13 @@
-import backtosql
-from dateutil import rrule
-from functools import partial
 import logging
+from functools import partial
 
-from redshiftapi import db
+from dateutil import rrule
 
+import backtosql
 from etl import redshift
 from etl import s3
+from redshiftapi import db
+
 from .materialize import Materialize
 
 logger = logging.getLogger(__name__)

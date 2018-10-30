@@ -1,9 +1,6 @@
-from utils import queryset_helper
-
 import dash.constants
-
 from redshiftapi import api_breakdowns
-
+from utils import queryset_helper
 
 __all__ = ["query", "query_totals"]
 

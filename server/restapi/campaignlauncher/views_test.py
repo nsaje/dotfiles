@@ -1,12 +1,12 @@
 from decimal import Decimal
-import mock
 
+import mock
 from django.urls import reverse
 
-import restapi.common.views_base_test
-import dash.models
 import dash.constants
 import dash.features.campaignlauncher
+import dash.models
+import restapi.common.views_base_test
 from utils.magic_mixer import magic_mixer
 
 

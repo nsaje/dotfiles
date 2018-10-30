@@ -1,21 +1,20 @@
-import influx
 import datetime
+import logging
 import random
 import string
-import logging
 
-from django.core.cache import caches
+import influx
 from django.conf import settings
-import dash.models
+from django.core.cache import caches
 
+import dash.models
+import utils.slack
 from etl import daily_statements
+from etl import maintenance
 from etl import materialization_run
 from etl import materialize
-from etl import maintenance
 from etl import redshift
 from etl import spark
-
-import utils.slack
 
 logger = logging.getLogger(__name__)
 

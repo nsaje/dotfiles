@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 import logging
-
 import mimetypes
 
 from django.conf import settings

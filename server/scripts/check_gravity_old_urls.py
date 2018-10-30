@@ -1,7 +1,9 @@
 import json
-import requests
 import logging
 import sys
+
+import requests
+
 from dash import models
 
 logging.getLogger("requests").setLevel(logging.CRITICAL)

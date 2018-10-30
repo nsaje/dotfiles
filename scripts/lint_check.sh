@@ -43,4 +43,3 @@ docker run --rm -v $PWD:/src --workdir=/src/server/ --entrypoint=sh py3-tools \
            -c 'mypy $(find . -name "*.py" | xargs grep typing | cut -d ":" -f1 | sort | uniq)'
 EXITCODE=$?
 report_check_result $EXITCODE "mypy"
-

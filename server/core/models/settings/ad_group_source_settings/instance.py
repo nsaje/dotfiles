@@ -1,7 +1,7 @@
 from django.db import transaction
 
-import dash.constants
 import core.features.bcm
+import dash.constants
 import utils.k1_helper
 
 

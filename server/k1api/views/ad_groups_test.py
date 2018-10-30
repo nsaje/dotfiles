@@ -1,18 +1,15 @@
 import json
-
-from mock import patch
-
-from django.urls import reverse
-
-import dash.features.geolocation
-import dash.features.ga
-import dash.constants
-import dash.models
-
 import logging
 
-from utils.magic_mixer import magic_mixer
+from django.urls import reverse
+from mock import patch
+
+import dash.constants
+import dash.features.ga
+import dash.features.geolocation
+import dash.models
 from utils import dates_helper
+from utils.magic_mixer import magic_mixer
 
 from .base_test import K1APIBaseTest
 

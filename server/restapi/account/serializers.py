@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
-from dash import constants
 import restapi.serializers.fields
+from dash import constants
 
 
 class TargetingIncludeExcludeSerializer(serializers.Serializer):

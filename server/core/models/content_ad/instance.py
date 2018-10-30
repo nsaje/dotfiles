@@ -1,10 +1,9 @@
 from django.db import transaction
 
+import dash.constants
 import utils.email_helper
 import utils.k1_helper
 import utils.redirector_helper
-import dash.constants
-
 
 VALID_UPDATE_FIELDS = set(
     [

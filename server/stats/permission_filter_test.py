@@ -1,16 +1,14 @@
 from django.test import TestCase
 
+from dash import campaign_goals
+from dash import models
+from dash.constants import Level
+from stats import permission_filter
+from stats.helpers import Goals
 from utils import exc
 from utils import test_helper
 from utils.magic_mixer import magic_mixer
 from zemauth.models import User
-
-from dash import models
-from dash import campaign_goals
-from dash.constants import Level
-
-from stats import permission_filter
-from stats.helpers import Goals
 
 
 def generate_rows(fields):

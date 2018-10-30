@@ -1,21 +1,21 @@
 import datetime
 from decimal import Decimal
-from mock import patch, MagicMock
 
-from django.test import TestCase, override_settings
 from django.conf import settings
-
-from utils.dict_helper import dict_join
-from zemauth.models import User
+from django.test import TestCase
+from django.test import override_settings
+from mock import MagicMock
+from mock import patch
 
 from dash import models
-from dash.constants import Level, PublisherBlacklistLevel
+from dash.constants import Level
+from dash.constants import PublisherBlacklistLevel
 from dash.dashapi import api_breakdowns
-from dash.dashapi import helpers
 from dash.dashapi import augmenter
-
+from dash.dashapi import helpers
 from utils import threads
-
+from utils.dict_helper import dict_join
+from zemauth.models import User
 
 """
 NOTE 1: The following dicts represent rows that are returned by dashapi.api_breakdowns query functions.

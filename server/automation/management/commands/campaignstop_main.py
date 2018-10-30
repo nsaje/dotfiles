@@ -1,11 +1,10 @@
 import influx
 
-import core.models
 import automation.campaignstop
 import automation.campaignstop.constants
-
-from utils.command_helpers import ExceptionCommand
+import core.models
 from utils import dates_helper
+from utils.command_helpers import ExceptionCommand
 
 
 class Command(ExceptionCommand):

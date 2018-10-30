@@ -3,10 +3,9 @@ from rest_framework import serializers
 
 import core.features.videoassets.models
 import restapi.serializers.fields
-
-from .. import base
 from utils.rest_common import authentication
 
+from .. import base
 
 SERVICE_NAME = "l1-video-upload"
 

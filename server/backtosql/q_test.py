@@ -1,7 +1,8 @@
-import backtosql
 import datetime
 
 from django.test import TestCase
+
+import backtosql
 
 
 class QTestCase(TestCase, backtosql.TestSQLMixin):

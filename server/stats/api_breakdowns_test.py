@@ -1,15 +1,15 @@
 import datetime
+
 import mock
-from django.test import TestCase
 from django.conf import settings
+from django.test import TestCase
 
-from utils import test_helper, threads
-
-from zemauth.models import User
 from dash import models
 from dash.constants import Level
-
 from stats import api_breakdowns
+from utils import test_helper
+from utils import threads
+from zemauth.models import User
 
 
 @mock.patch("utils.threads.AsyncFunction", threads.MockAsyncFunction)

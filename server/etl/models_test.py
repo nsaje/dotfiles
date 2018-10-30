@@ -1,7 +1,6 @@
-import backtosql
-
 from django.test import TestCase
 
+import backtosql
 from etl import models
 
 

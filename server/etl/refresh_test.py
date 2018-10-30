@@ -1,9 +1,9 @@
 import datetime
+
 import mock
-
 from django.test import TestCase
-import dash.models
 
+import dash.models
 from etl import materialize
 from etl import redshift
 from etl import refresh

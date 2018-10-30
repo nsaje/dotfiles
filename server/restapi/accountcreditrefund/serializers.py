@@ -2,8 +2,8 @@ import decimal
 
 import rest_framework.serializers
 
-import restapi.serializers.fields
 import restapi.serializers.base
+import restapi.serializers.fields
 
 
 class AccountCreditRefundSerializer(restapi.serializers.base.RESTAPIBaseSerializer):

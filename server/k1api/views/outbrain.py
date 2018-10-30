@@ -5,8 +5,8 @@ from django.http import Http404
 
 import dash.constants
 import dash.models
-from utils import email_helper
 from utils import db_for_reads
+from utils import email_helper
 
 from .base import K1APIView
 

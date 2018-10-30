@@ -1,15 +1,15 @@
-import datetime
-import collections
 import calendar
-from decimal import Decimal, ROUND_HALF_UP
+import collections
+import datetime
+from decimal import ROUND_HALF_UP
+from decimal import Decimal
 
 import newrelic.agent
 from django.db.models import Prefetch
 
-import dash.models
 import dash.constants
+import dash.models
 import utils.dates_helper
-
 from utils import converters
 
 

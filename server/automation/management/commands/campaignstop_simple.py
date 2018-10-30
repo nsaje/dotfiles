@@ -1,6 +1,6 @@
 import logging
-import influx
 
+import influx
 
 import automation.campaignstop
 from utils.command_helpers import ExceptionCommand

@@ -1,16 +1,17 @@
 import copy
 import datetime
 from decimal import Decimal
-from mock import patch, MagicMock
 
-from django.test import TestCase, override_settings
 from django.conf import settings
+from django.test import TestCase
+from django.test import override_settings
+from mock import MagicMock
+from mock import patch
 
 from dash import constants
 from dash import models
 from dash.dashapi import api_reports
 from zemauth.models import User
-
 
 ACCOUNT_1 = {
     "account": "test account 1",

@@ -1,21 +1,22 @@
 import datetime
 import decimal
-import mock
 import itertools
 
+import mock
+import pytz
 from django.conf import settings
 from django.test import TestCase
-import pytz
 
 import core.features.yahoo_accounts
 import core.models
 import dash.constants
-from utils.magic_mixer import magic_mixer
 from utils import dates_helper
 from utils import test_helper
+from utils.magic_mixer import magic_mixer
 
-from .. import RealTimeDataHistory, RealTimeCampaignDataHistory
 from . import refresh
+from .. import RealTimeCampaignDataHistory
+from .. import RealTimeDataHistory
 
 
 class RefreshRealtimeDataTest(TestCase):

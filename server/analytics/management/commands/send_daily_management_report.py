@@ -1,6 +1,8 @@
 import logging
+
 import utils.email_helper
-from utils.command_helpers import set_logger_verbosity, ExceptionCommand
+from utils.command_helpers import ExceptionCommand
+from utils.command_helpers import set_logger_verbosity
 
 logger = logging.getLogger(__name__)
 

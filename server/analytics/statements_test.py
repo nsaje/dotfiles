@@ -1,9 +1,8 @@
 import mock
-
 from django.test import TestCase
 
-from analytics import statements
 import dash.models
+from analytics import statements
 
 
 class TestStatements(TestCase):

@@ -1,11 +1,12 @@
-from django.test import TestCase
-from utils.magic_mixer import magic_mixer
+from decimal import Decimal
 
-from dash.dashapi import loaders, augmenter
-from dash import models
+from django.test import TestCase
 
 from core.features.publisher_bid_modifiers import PublisherBidModifier
-from decimal import Decimal
+from dash import models
+from dash.dashapi import augmenter
+from dash.dashapi import loaders
+from utils.magic_mixer import magic_mixer
 
 
 class PublisherAugmenterTest(TestCase):

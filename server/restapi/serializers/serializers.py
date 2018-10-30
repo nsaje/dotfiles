@@ -1,8 +1,8 @@
 import warnings
 
-from rest_framework import serializers
-from djangorestframework_camel_case.util import camel_to_underscore
 from django.http.request import QueryDict
+from djangorestframework_camel_case.util import camel_to_underscore
+from rest_framework import serializers
 
 import utils.list_helper
 

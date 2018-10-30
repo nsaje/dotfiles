@@ -2,7 +2,6 @@ from django.conf.urls import url
 
 from . import views
 
-
 urlpatterns = [
     url(
         r"^v1/publishergroups/(?P<publisher_group_id>\d+)/entries/(?P<entry_id>\d+)$",

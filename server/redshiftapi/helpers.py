@@ -1,18 +1,16 @@
-import backtosql
 import collections
 import copy
 import datetime
-import dateutil
 import re
 
-from dash import publisher_helpers
+import dateutil
 
+import backtosql
+import stats.helpers
+from dash import publisher_helpers
+from stats import constants
 from utils import dates_helper
 from utils import sort_helper
-
-import stats.helpers
-from stats import constants
-
 
 PIXEL_METRIC_REGEX = re.compile(r"avg_(et_|etfm_)?cost_per_pixel")
 CONVERSION_GOAL_REGEX = re.compile(r"avg_(et_|etfm_)?cost_per_conversion_goal")

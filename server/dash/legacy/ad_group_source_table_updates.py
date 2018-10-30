@@ -6,7 +6,8 @@ isn't done anymore.
 """
 
 from core.models import all_rtb
-from dash import constants, models
+from dash import constants
+from dash import models
 from dash.views import helpers
 
 

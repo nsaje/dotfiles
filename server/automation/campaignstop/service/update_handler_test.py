@@ -1,13 +1,13 @@
 import json
 
-from mock import patch
 from django.test import TestCase
+from mock import patch
 
 import core.models
-from .. import constants
-from . import update_handler
-
 from utils.magic_mixer import magic_mixer
+
+from . import update_handler
+from .. import constants
 
 
 class Message:

@@ -1,11 +1,10 @@
-from threading import Thread
 import logging
+from threading import Thread
 
 from django.conf import settings
 from django.db import connection
 
 import utils.request_context
-
 
 logger = logging.getLogger(__name__)
 

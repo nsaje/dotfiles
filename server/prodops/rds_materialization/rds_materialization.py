@@ -1,12 +1,17 @@
 import os.path
 from collections import OrderedDict
 
-from django.db.models import F, Value, Case, When, CharField
+from django.db.models import Case
+from django.db.models import CharField
+from django.db.models import F
+from django.db.models import Value
+from django.db.models import When
 
 import dash.constants
 import dash.models
 from core.features import videoassets
-from etl import s3, redshift
+from etl import redshift
+from etl import s3
 
 
 class RDSModelization(object):

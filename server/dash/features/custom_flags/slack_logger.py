@@ -1,7 +1,8 @@
-from utils import slack
 import logging
-from .model import CustomFlag
 
+from utils import slack
+
+from .model import CustomFlag
 
 logger = logging.getLogger(__name__)
 

@@ -1,14 +1,15 @@
+import json
 from decimal import Decimal
+
+import mock
 from django.urls import reverse
 
-from restapi.common.views_base_test import RESTAPITest
-from dash import constants, models
-from core.models import all_rtb
 import core.models.ad_group
-
+from core.models import all_rtb
+from dash import constants
+from dash import models
+from restapi.common.views_base_test import RESTAPITest
 from utils.magic_mixer import magic_mixer
-import mock
-import json
 
 
 class AdGroupSourcesRTBTest(RESTAPITest):

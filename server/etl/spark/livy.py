@@ -1,9 +1,9 @@
 import json
 import logging
-from os import path
-import requests
 import time
+from os import path
 
+import requests
 from django.conf import settings
 
 FILE_PREFIX = "etl/spark/code"

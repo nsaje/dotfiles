@@ -1,11 +1,10 @@
 import datetime
 
-import utils.command_helpers
-
-import dash.models
 import dash.constants
-import redshiftapi.db
+import dash.models
 import prodops.helpers
+import redshiftapi.db
+import utils.command_helpers
 
 QUERY = "SELECT campaign_id, SUM(impressions) FROM mv_campaign WHERE date >= '{}' AND campaign_id IN ({}) GROUP BY campaign_id"
 

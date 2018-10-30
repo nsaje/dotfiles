@@ -1,10 +1,11 @@
-import rest_framework.serializers
 import rest_framework.permissions
+import rest_framework.serializers
 
 import restapi.common.views_base
+
 from . import constants
-from . import serializers
 from . import models
+from . import serializers
 from . import service
 
 

@@ -1,13 +1,15 @@
 import contextlib
-import influx
 import logging
 from collections import namedtuple
 
-from django.db import connections, transaction
+import influx
 from django.core.cache import caches
+from django.db import connections
+from django.db import transaction
 
-from utils import cache_helper
 import utils.db_for_reads
+from utils import cache_helper
+
 from . import queries
 
 logger = logging.getLogger(__name__)

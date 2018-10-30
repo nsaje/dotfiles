@@ -3,8 +3,8 @@ import logging
 import influx
 
 from dash import models
-from dash.features.reports import reports
 from dash.features import scheduled_reports
+from dash.features.reports import reports
 from utils.command_helpers import ExceptionCommand
 
 logger = logging.getLogger(__name__)

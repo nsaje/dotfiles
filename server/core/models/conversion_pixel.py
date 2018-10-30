@@ -2,7 +2,8 @@
 import datetime
 
 from django.conf import settings
-from django.db import models, transaction
+from django.db import models
+from django.db import transaction
 
 
 class ConversionPixel(models.Model):

@@ -7,6 +7,7 @@ Transaction names can be listed with `dredd restapi/api_blueprint.md dummy --nam
 """
 
 import json
+
 import dredd_hooks as hooks
 
 stash = {}

@@ -2,9 +2,8 @@ import copy
 
 from dash.dashapi import augmenter
 from dash.dashapi import loaders
-
-from stats import constants
 from redshiftapi.postprocess import _get_representative_dates
+from stats import constants
 
 HIERARCHICAL_DIMENSIONS = [constants.ACCOUNT, constants.CAMPAIGN, constants.AD_GROUP, constants.CONTENT_AD]
 

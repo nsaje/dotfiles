@@ -1,13 +1,14 @@
 import datetime
-from decimal import Decimal
 from collections import Counter
-
-import utils.command_helpers
-import dash.models
-import redshiftapi.db
+from decimal import Decimal
 
 import influx
-from django.db.models import Count, Min
+from django.db.models import Count
+from django.db.models import Min
+
+import dash.models
+import redshiftapi.db
+import utils.command_helpers
 
 RS_QUERY = """SELECT {entity}_id, (COALESCE(SUM(effective_cost_nano), 0) / 1000000000.0 / {n})::decimal
 FROM mv_master

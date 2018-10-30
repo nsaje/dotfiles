@@ -1,16 +1,18 @@
-import mock
 import json
 
-from restapi.common.views_base_test import RESTAPITest
+import mock
+from django.test import TestCase
+from django.test import override_settings
 from django.urls import reverse
-from django.test import TestCase, override_settings
 from rest_framework.test import APIClient
+
+import dash.models
+import utils.test_helper
+from dash import constants
+from dash.features import contentupload
+from restapi.common.views_base_test import RESTAPITest
 from zemauth.models import User
 
-import utils.test_helper
-import dash.models
-from dash.features import contentupload
-from dash import constants
 from . import views
 
 

@@ -1,6 +1,6 @@
+import analytics.monitor
 import utils.command_helpers
 import utils.slack
-import analytics.monitor
 
 ALERT_MSG_AD_GROUPS = """Autopilot did not run today on the following ad groups:
 {}"""

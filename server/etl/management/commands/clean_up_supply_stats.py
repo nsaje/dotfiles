@@ -1,14 +1,13 @@
 import datetime
 import logging
+
 import influx
 
-from utils.command_helpers import ExceptionCommand
 import utils.dates_helper
-from redshiftapi import db
-
 from etl import maintenance
 from etl import redshift
-
+from redshiftapi import db
+from utils.command_helpers import ExceptionCommand
 
 logger = logging.getLogger(__name__)
 

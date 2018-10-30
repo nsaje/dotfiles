@@ -2,9 +2,8 @@ import decimal
 
 import rest_framework.serializers
 
-import restapi.serializers.fields
 import restapi.serializers.base
-
+import restapi.serializers.fields
 from dash import constants
 
 

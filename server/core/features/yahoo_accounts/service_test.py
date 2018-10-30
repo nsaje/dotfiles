@@ -3,8 +3,8 @@ from unittest.mock import patch
 
 import django.test
 
-import dash.constants
 import core.models
+import dash.constants
 from utils.magic_mixer import magic_mixer
 
 from . import constants

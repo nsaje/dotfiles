@@ -1,14 +1,13 @@
-from collections import OrderedDict
 import datetime
 import decimal
-
-from .. import constants
-from .. import RealTimeCampaignStopLog
+from collections import OrderedDict
 
 from redshiftapi import db
-
 from utils import dates_helper
 from utils import numbers
+
+from .. import RealTimeCampaignStopLog
+from .. import constants
 
 
 def audit_stopped_campaigns(date):

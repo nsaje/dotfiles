@@ -1,14 +1,13 @@
-from collections import defaultdict
 import datetime
 import logging
+from collections import defaultdict
 
 from django.db.models import Q
-
-from automation import campaignstop
 
 import dash
 import dash.constants
 import dash.models
+from automation import campaignstop
 
 from . import settings
 

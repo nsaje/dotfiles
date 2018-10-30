@@ -1,8 +1,8 @@
 import datetime
 
+import analytics.monitor
 import utils.command_helpers
 import utils.slack
-import analytics.monitor
 
 ALERT_MSG = """Spend on {d2} is {change}% lower than on {d1} (below threshold {thr}%). Check <https://one.zemanta.com/all_accounts/accounts?start_date={fd}&end_date={td}&page=1|Zemanta one>."""
 

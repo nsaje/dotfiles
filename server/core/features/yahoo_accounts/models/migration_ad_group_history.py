@@ -1,5 +1,4 @@
 import jsonfield
-
 from django.db import models
 
 from utils.json_helper import JSONFIELD_DUMP_KWARGS

@@ -1,20 +1,20 @@
+import logging
 import time
 from itertools import cycle
-from mock import patch, ANY, Mock
 
+from django.conf import settings
 from django.test import TestCase
 from django.urls import reverse
-from django.conf import settings
+from mock import ANY
+from mock import Mock
+from mock import patch
 
-import dash.features.geolocation
-import dash.features.ga
 import dash.constants
+import dash.features.ga
+import dash.features.geolocation
 import dash.models
 
-import logging
-
 from .. import urls
-
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)

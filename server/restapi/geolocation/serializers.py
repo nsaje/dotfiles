@@ -1,8 +1,8 @@
-from rest_framework import serializers
 from rest_framework import fields
+from rest_framework import serializers
 
-import dash.features.geolocation
 import dash.constants
+import dash.features.geolocation
 import restapi.serializers.fields
 import restapi.serializers.serializers
 

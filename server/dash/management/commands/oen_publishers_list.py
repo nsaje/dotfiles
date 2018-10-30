@@ -1,7 +1,7 @@
 import redshiftapi
-from utils.command_helpers import ExceptionCommand
 from utils import dates_helper
 from utils import s3helpers
+from utils.command_helpers import ExceptionCommand
 
 select_query = """
 SELECT publisher, exchange, sum(bid_reqs) AS num_bid_req

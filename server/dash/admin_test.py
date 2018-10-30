@@ -1,16 +1,15 @@
 import mock
-from utils.magic_mixer import magic_mixer
-
-from django.urls import reverse
 from django.contrib.admin.sites import AdminSite
-from django.test import TestCase
-from django.http.request import HttpRequest
 from django.core.exceptions import ValidationError
+from django.http.request import HttpRequest
+from django.test import TestCase
+from django.urls import reverse
 
 import core.models
-from dash import models
-from dash import constants
 from dash import admin
+from dash import constants
+from dash import models
+from utils.magic_mixer import magic_mixer
 from zemauth.models import User
 
 

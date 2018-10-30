@@ -1,9 +1,9 @@
-from restapi.common.views_base_test import RESTAPITest
-from utils import test_helper
-
 from django.urls import reverse
 
 import core.features.publisher_groups
+from restapi.common.views_base_test import RESTAPITest
+from utils import test_helper
+
 from . import views
 
 

@@ -1,8 +1,8 @@
 import io
 import re
-import httplib2
 
 import googleapiclient.discovery
+import httplib2
 from django.conf import settings
 from django.db import transaction
 from oauth2client.service_account import ServiceAccountCredentials

@@ -1,36 +1,33 @@
-from django.contrib.auth.decorators import login_required
-from django.conf.urls import include, url
+import django.views.defaults
+import oauth2_provider.views
+from django.conf import settings
+from django.conf.urls import include
+from django.conf.urls import url
 from django.contrib import admin
 from django.contrib.auth import views as auth_views
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import render
 from django.views.generic import RedirectView
 from django.views.generic import TemplateView
-from django.conf import settings
-import django.views.defaults
-from django.shortcuts import render
-import oauth2_provider.views
-
-from zemauth.forms import AuthenticationForm
-
-import etl.crossvalidation.views
-import zemauth.views
 
 import dash.features.contentupload.views
 import dash.features.daily_stats.views
 import dash.features.scheduled_reports.views
-import dash.views.breakdown
 import dash.views.agency
-import dash.views.views
-import dash.views.navigation
-import dash.views.callbacks
-import dash.views.grid
-import dash.views.audiences
 import dash.views.alerts
+import dash.views.audiences
+import dash.views.breakdown
 import dash.views.bulk_actions
-import dash.views.publishers
+import dash.views.callbacks
 import dash.views.custom_report
-
+import dash.views.grid
+import dash.views.navigation
+import dash.views.publishers
+import dash.views.views
+import etl.crossvalidation.views
 import restapi.bcm.urls
-
+import zemauth.views
+from zemauth.forms import AuthenticationForm
 
 admin.site.login = login_required(admin.site.login)
 

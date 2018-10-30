@@ -1,11 +1,12 @@
 from decimal import Decimal
-from mock import patch
 
 import django.db.models
 from django.test import TestCase
+from mock import patch
 
 import core.features.multicurrency
 from dash import constants
+
 from .multicurrency_mixin import MulticurrencySettingsMixin
 from .update_object import UpdateObject
 

@@ -1,13 +1,16 @@
 from django.db import transaction
 
-import dash.constants
-import core.models
 import core.features.bcm
+import core.models
+import dash.constants
 from utils import dates_helper
-from .. import constants
-from .. import CampaignStopState, RealTimeDataHistory, RealTimeCampaignStopLog
-from . import refresh_realtime_data
+
 from . import config
+from . import refresh_realtime_data
+from .. import CampaignStopState
+from .. import RealTimeCampaignStopLog
+from .. import RealTimeDataHistory
+from .. import constants
 
 
 def mark_almost_depleted_campaigns(campaigns=None):

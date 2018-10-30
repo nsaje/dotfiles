@@ -1,8 +1,8 @@
 from django import test
 from django.test import RequestFactory
 
-from zemauth import models
 from zemauth import backends
+from zemauth import models
 
 
 class EmailOrUsernameModelBackendTestCase(test.TestCase):

@@ -1,9 +1,8 @@
-from .base import K1APIView
-
 import core.features.multicurrency
 import dash.constants
-
 from utils import db_for_reads
+
+from .base import K1APIView
 
 
 class CurrencyExchangeRateView(K1APIView):

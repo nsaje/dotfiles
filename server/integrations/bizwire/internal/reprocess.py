@@ -5,9 +5,9 @@ import logging
 import boto3
 from django.conf import settings
 
+import dash.models
 from integrations.bizwire import config
 from integrations.bizwire.internal import helpers
-import dash.models
 from utils import dates_helper
 
 logger = logging.getLogger(__name__)

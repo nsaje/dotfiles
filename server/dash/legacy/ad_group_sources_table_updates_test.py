@@ -1,12 +1,13 @@
+from datetime import datetime
+from decimal import Decimal
+
 from django.test import TestCase
 
-from dash.legacy import ad_group_source_table_updates
 from dash import constants
 from dash import models
+from dash.legacy import ad_group_source_table_updates
 from dash.views import helpers
 from zemauth.models import User
-from decimal import Decimal
-from datetime import datetime
 
 
 class AdGroupSourcesTableUpdatesTest(TestCase):

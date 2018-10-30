@@ -5,7 +5,8 @@ from django import test
 import analytics.management_report
 import dash.models
 import zemauth.models
-from utils.html_helpers import TableCell, TableRow
+from utils.html_helpers import TableCell
+from utils.html_helpers import TableRow
 from utils.magic_mixer import magic_mixer
 
 

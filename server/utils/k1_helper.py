@@ -1,14 +1,14 @@
-import time
 import json
 import logging
-import urllib.request, urllib.parse, urllib.error
-import urllib.request, urllib.error, urllib.parse
+import time
+import urllib.error
+import urllib.parse
+import urllib.request
 
 import newrelic.agent
 from django.conf import settings
 
 from server.celery import app
-
 from utils import request_signer
 
 logger = logging.getLogger(__name__)

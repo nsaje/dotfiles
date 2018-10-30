@@ -1,6 +1,7 @@
 import unittest
-from zemauth.models import User
+
 from utils.migrationtest import MigrationTest
+from zemauth.models import User
 
 # based on https://github.com/plumdog/django_migration_testcase
 

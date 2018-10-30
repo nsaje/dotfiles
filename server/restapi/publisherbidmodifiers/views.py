@@ -1,19 +1,19 @@
-import csv
 import codecs
+import csv
 import os
 
+from django.conf import settings
+from django.http import HttpResponse
+from rest_framework import serializers
 from rest_framework.parsers import MultiPartParser
 from rest_framework.response import Response
-from django.http import HttpResponse
-from django.conf import settings
 
+import restapi
+from core.features import publisher_bid_modifiers
 from core.features.publisher_bid_modifiers import PublisherBidModifier
 from core.features.publisher_bid_modifiers import service
-from core.features import publisher_bid_modifiers
-from rest_framework import serializers
 from utils import csv_utils
 from utils import s3helpers
-import restapi
 
 
 class CSVMixin(object):

@@ -1,13 +1,13 @@
 import decimal
 
 from django.test import TestCase
-from mock import patch
 from mixer.backend.django import mixer
+from mock import patch
 
 from . import constants
 from . import models
-from . import service
 from . import serializers
+from . import service
 
 
 class TestSerializerCommonMixin(object):

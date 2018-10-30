@@ -1,19 +1,19 @@
 import logging
-import influx
-import ipware.ip
 import time
 
+import djangorestframework_camel_case.util
+import influx
+import ipware.ip
+import rest_framework.parsers
+import rest_framework.renderers
+from djangorestframework_camel_case.parser import CamelCaseJSONParser
+from rest_framework import permissions
+from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.viewsets import ViewSetMixin
-import rest_framework.renderers
-import rest_framework.parsers
-from rest_framework.response import Response
-from rest_framework import permissions
-from djangorestframework_camel_case.parser import CamelCaseJSONParser
-import djangorestframework_camel_case.util
 
-from utils import json_helper
 import utils.rest_common.authentication
+from utils import json_helper
 
 logger = logging.getLogger(__name__)
 

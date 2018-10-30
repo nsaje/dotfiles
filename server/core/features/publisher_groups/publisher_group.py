@@ -3,12 +3,12 @@
 from django.conf import settings
 from django.db import models
 from django.db import transaction
-from dash import constants
 
 import core.common
+import core.features.history
 import core.models
 import core.models.settings
-import core.features.history
+from dash import constants
 
 ANNOTATION_QUALIFIED_PUBLISHER_GROUPS = set([16922])
 

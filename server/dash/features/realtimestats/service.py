@@ -1,18 +1,19 @@
 import decimal
 import logging
+import urllib.error
+import urllib.parse
+import urllib.request
 from operator import itemgetter
-import urllib.request, urllib.error, urllib.parse
 
 import influx
 
-from dash import constants, models
-from utils import k1_helper
-from utils import redirector_helper
-from utils import dates_helper
-
 import core.features.bcm.calculations
 import core.features.yahoo_accounts
-
+from dash import constants
+from dash import models
+from utils import dates_helper
+from utils import k1_helper
+from utils import redirector_helper
 
 logger = logging.getLogger(__name__)
 

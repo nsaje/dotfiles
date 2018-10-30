@@ -1,17 +1,20 @@
 import datetime
 import decimal
-import mock
-import urllib.request, urllib.error, urllib.parse
-import pytz
+import urllib.error
+import urllib.parse
+import urllib.request
 
+import mock
+import pytz
 from django.test import TestCase
 
-import core.models
 import core.features.yahoo_accounts
+import core.models
 import dash.constants
 from dash.features.realtimestats import service
+from utils import dates_helper
+from utils import test_helper
 from utils.magic_mixer import magic_mixer
-from utils import dates_helper, test_helper
 
 
 class RealtimestatsServiceTest(TestCase):

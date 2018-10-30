@@ -1,6 +1,6 @@
-import dash.models
 from collections import defaultdict
 
+import dash.models
 import redshiftapi.api_breakdowns
 import stats.api_breakdowns
 

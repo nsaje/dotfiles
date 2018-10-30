@@ -1,17 +1,15 @@
 import datetime
 import logging
+
 import influx
-
-from utils.command_helpers import ExceptionCommand
-import utils.dates_helper
-from redshiftapi import db
-
-from etl import maintenance
-from etl import refresh
-from etl import redshift
-
 from django.conf import settings
 
+import utils.dates_helper
+from etl import maintenance
+from etl import redshift
+from etl import refresh
+from redshiftapi import db
+from utils.command_helpers import ExceptionCommand
 
 logger = logging.getLogger(__name__)
 

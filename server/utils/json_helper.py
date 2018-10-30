@@ -2,11 +2,10 @@
 import datetime
 import decimal
 import json
-import pytz
 import uuid
 
+import pytz
 from django.core.serializers.json import DjangoJSONEncoder
-
 
 JSONFIELD_DUMP_KWARGS = {"cls": DjangoJSONEncoder, "separators": (",", ":")}
 

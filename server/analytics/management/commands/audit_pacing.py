@@ -1,12 +1,11 @@
 import datetime
 from decimal import Decimal
 
+import analytics.monitor
+import dash.models
 import utils.command_helpers
 import utils.email_helper
-
 import zemauth.models
-import dash.models
-import analytics.monitor
 
 VALID_PACING_ACCOUNT_TYPES = (
     dash.constants.AccountType.ACTIVATED,

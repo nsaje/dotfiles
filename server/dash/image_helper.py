@@ -1,7 +1,7 @@
 import os
-import urllib.parse
-import time
 import random
+import time
+import urllib.parse
 
 from django.conf import settings
 

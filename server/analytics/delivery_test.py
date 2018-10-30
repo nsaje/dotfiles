@@ -3,14 +3,13 @@ from decimal import Decimal
 
 from django import test
 
-import core.models
-import core.features.videoassets.models
-import core.features.goals
 import core.features.bcm
+import core.features.goals
+import core.features.videoassets.models
+import core.models
 import dash.constants
-
-from analytics import delivery, constants
-
+from analytics import constants
+from analytics import delivery
 from utils.magic_mixer import magic_mixer
 
 

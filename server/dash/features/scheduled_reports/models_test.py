@@ -1,8 +1,8 @@
 import datetime
-from mock import patch
 
 from django.test import TestCase
 from mixer.backend.django import mixer
+from mock import patch
 
 from dash import constants
 from dash.features import reports

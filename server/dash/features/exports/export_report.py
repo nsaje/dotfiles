@@ -2,9 +2,9 @@
 import jsonfield
 from django.conf import settings
 from django.db import models
-from dash import constants
 
 import core.models
+from dash import constants
 from utils.json_helper import JSONFIELD_DUMP_KWARGS
 
 

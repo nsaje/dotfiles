@@ -1,28 +1,28 @@
-import urllib.request, urllib.parse, urllib.error
+import urllib.error
+import urllib.parse
+import urllib.request
 
+import influx
 from django.conf import settings
 from django.contrib import auth
-from django.contrib.auth import views as auth_views, tokens as auth_tokens
-from django.urls import reverse
-from django.shortcuts import redirect
+from django.contrib.auth import tokens as auth_tokens
+from django.contrib.auth import views as auth_views
 from django.http import HttpResponseRedirect
-from django.utils.http import urlsafe_base64_decode
-from django.template.response import TemplateResponse
+from django.shortcuts import redirect
 from django.shortcuts import resolve_url
-
+from django.template.response import TemplateResponse
+from django.urls import reverse
+from django.utils.http import urlsafe_base64_decode
 from ratelimit.decorators import ratelimit
-import influx
-
-from utils import email_helper
-import utils.rest_common.authentication
-
-from zemauth.models import User
-from zemauth import forms
-from zemauth import devices
-
-from rest_framework.views import APIView
-from rest_framework.response import Response
 from rest_framework import permissions
+from rest_framework.response import Response
+from rest_framework.views import APIView
+
+import utils.rest_common.authentication
+from utils import email_helper
+from zemauth import devices
+from zemauth import forms
+from zemauth.models import User
 
 from . import gauth
 from . import serializers

@@ -1,14 +1,13 @@
 import dash.campaign_goals
 import dash.models
-from dash.constants import Level, CampaignGoalKPI
-
-from utils import exc
-
+from dash.constants import CampaignGoalKPI
+from dash.constants import Level
 from stats import constants
 from stats import fields
+from stats.constants import DeliveryDimension
+from stats.constants import StructureDimension
 from stats.constraints_helper import get_uses_bcm_v2
-from stats.constants import StructureDimension, DeliveryDimension
-
+from utils import exc
 
 NOT_PUBLIC_ANYMORE = [
     "zemauth.can_view_platform_cost_breakdown_derived",

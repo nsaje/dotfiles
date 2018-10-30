@@ -1,17 +1,14 @@
-import json
 import datetime
-
-from mock import patch
-
-from django.urls import reverse
-
-import dash.features.geolocation
-import dash.features.ga
-import dash.constants
-import dash.models
-
+import json
 import logging
 
+from django.urls import reverse
+from mock import patch
+
+import dash.constants
+import dash.features.ga
+import dash.features.geolocation
+import dash.models
 from redshiftapi import api_quickstats
 
 from .base_test import K1APIBaseTest

@@ -1,15 +1,16 @@
 import decimal
-import mock
 
+import mock
 from django.test import TestCase
 
 import core.models
-from utils.magic_mixer import magic_mixer
 from utils import dates_helper
+from utils.magic_mixer import magic_mixer
 
-from .. import CampaignStopState, constants
-from . import main
 from . import config
+from . import main
+from .. import CampaignStopState
+from .. import constants
 
 
 class UpdateCampaignStopStateTest(TestCase):

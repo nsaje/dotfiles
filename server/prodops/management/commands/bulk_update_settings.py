@@ -1,6 +1,7 @@
-from dash import models
-import utils.command_helpers
 from django.db.models import Q
+
+import utils.command_helpers
+from dash import models
 
 
 class Command(utils.command_helpers.ExceptionCommand):

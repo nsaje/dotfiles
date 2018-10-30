@@ -1,4 +1,5 @@
-from django.db.models import aggregates, FloatField
+from django.db.models import FloatField
+from django.db.models import aggregates
 
 
 class SumDivision(aggregates.Aggregate):

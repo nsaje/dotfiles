@@ -4,8 +4,8 @@ import core.features.bcm
 import core.models.settings
 from core.signals import settings_change
 
-from .service import update_notifier
 from . import CampaignStopState
+from .service import update_notifier
 
 
 def connect_notify_budgets():

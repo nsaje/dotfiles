@@ -1,8 +1,8 @@
-from decimal import Decimal
 import itertools
-from mock import patch
+from decimal import Decimal
 
 from django.test import TestCase
+from mock import patch
 
 from core.models import all_rtb
 from dash import constants

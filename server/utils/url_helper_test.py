@@ -1,7 +1,7 @@
 import urllib.parse
 
-from django.test import TestCase
 from django.conf import settings
+from django.test import TestCase
 
 from utils import url_helper
 

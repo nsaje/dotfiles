@@ -1,20 +1,18 @@
 import datetime
 from decimal import Decimal
 
-from django import test
 import mock
-
-import dash.models
-import dash.constants
-import analytics.projections
-import utils.dates_helper
-from utils.test_helper import fake_request
-
+from django import test
 from django.test.client import RequestFactory
-from zemauth.models import User
 
+import analytics.projections
+import dash.constants
+import dash.models
+import utils.dates_helper
 from utils import converters
 from utils.magic_mixer import magic_mixer
+from utils.test_helper import fake_request
+from zemauth.models import User
 
 
 class ProjectionsTestCase(test.TestCase):

@@ -1,19 +1,20 @@
-from collections import defaultdict
 import datetime
 import logging
+from collections import defaultdict
 
-from influxdb import InfluxDBClient
 from django.conf import settings
+from influxdb import InfluxDBClient
 
+import redshiftapi.api_breakdowns
+import stats.api_breakdowns
+import zemauth.models
 from core.features.publisher_groups import publisher_group_helpers
 from dash import constants
 from dash import models
-import redshiftapi.api_breakdowns
-import stats.api_breakdowns
 from stats.helpers import Goals
-from utils.command_helpers import ExceptionCommand, parse_date
 from utils import grouper
-import zemauth.models
+from utils.command_helpers import ExceptionCommand
+from utils.command_helpers import parse_date
 
 logger = logging.getLogger(__name__)
 

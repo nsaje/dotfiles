@@ -2,11 +2,13 @@ import datetime
 
 from django.template.loader import render_to_string
 
-import dash.models
-import dash.constants
 import analytics.projections
+import dash.constants
+import dash.models
 from utils import converters
-from utils.html_helpers import TableCell, TableRow, Url
+from utils.html_helpers import TableCell
+from utils.html_helpers import TableRow
+from utils.html_helpers import Url
 
 NEW_ITEMS_LIST_REPORT_TITLES = {
     "campaigns": "Campaigns created yesterday",

@@ -1,16 +1,14 @@
 import datetime
 import logging
 
+import newrelic.agent
 from django.conf import settings
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 
-import newrelic.agent
-
-import redshiftapi.api_breakdowns
-
-from utils import request_signer
 import dash.models
+import redshiftapi.api_breakdowns
+from utils import request_signer
 
 logger = logging.getLogger(__name__)
 

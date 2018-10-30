@@ -2,10 +2,10 @@ from django.test import TestCase
 
 import core.models
 import dash.constants
-from .model import Account
-
-from utils.magic_mixer import magic_mixer
 import zemauth.models
+from utils.magic_mixer import magic_mixer
+
+from .model import Account
 
 
 class AccountManagerTestCase(TestCase):

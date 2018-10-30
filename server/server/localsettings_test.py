@@ -1,7 +1,8 @@
-from django import test
 import ast
-import os
 import glob
+import os
+
+from django import test
 
 
 class LocalSettingsTestCase(test.TestCase):

@@ -1,12 +1,12 @@
-from collections import defaultdict
 import datetime
+from collections import defaultdict
 from decimal import Decimal
 
-from core.models import all_rtb
 import dash.campaign_goals
 import dash.constants
 import dash.models
 import redshiftapi.api_breakdowns
+from core.models import all_rtb
 from stats.api_breakdowns import Goals
 from utils import dates_helper
 

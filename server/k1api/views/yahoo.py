@@ -1,7 +1,7 @@
 import logging
 
-import core.models
 import core.features.yahoo_accounts
+import core.models
 
 from . import base
 

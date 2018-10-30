@@ -2,7 +2,8 @@ import json
 
 from boto.sqs.message import Message
 from django.test import TestCase
-from mock import patch, MagicMock
+from mock import MagicMock
+from mock import patch
 
 from utils import sqs_helper
 

@@ -1,13 +1,13 @@
-from django.db import models
 from django.conf import settings
+from django.db import models
+
+import core.models.ad_group
+import core.models.campaign
 import dash.constants
 
-import core.models.campaign
-import core.models.ad_group
-
 from .campaignstop.campaignstop_state import *  # noqa
-from .campaignstop.real_time_data_history import *  # noqa
 from .campaignstop.real_time_campaign_stop_log import *  # noqa
+from .campaignstop.real_time_data_history import *  # noqa
 
 
 class CampaignBudgetDepletionNotification(models.Model):

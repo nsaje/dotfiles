@@ -1,7 +1,7 @@
-import httplib2
 import json
 import logging
 
+import httplib2
 from django.conf import settings
 from django.urls import reverse
 from oauth2client.client import OAuth2WebServerFlow

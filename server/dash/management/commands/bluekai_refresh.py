@@ -1,8 +1,8 @@
 import logging
 
+import utils.slack
 from dash.features.bluekai.service import maintenance
 from utils.command_helpers import ExceptionCommand
-import utils.slack
 
 logger = logging.getLogger(__name__)
 

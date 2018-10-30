@@ -1,13 +1,11 @@
 from django.db import transaction
 
 import core.common
-
-from dash import constants
 import utils.exc
+from dash import constants
 from utils import email_helper
 
 from . import model
-
 
 # These agencies should have campaign stop turned off
 # (for example Outbrain)

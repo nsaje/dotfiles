@@ -1,15 +1,16 @@
-from dateutil import rrule
-from functools import partial
 import json
 import logging
+from functools import partial
 
-from redshiftapi import db
+from dateutil import rrule
 
 from etl import helpers
 from etl import redshift
 from etl import s3
-from .mv_master import MasterView
+from redshiftapi import db
+
 from .materialize import Materialize
+from .mv_master import MasterView
 
 logger = logging.getLogger(__name__)
 

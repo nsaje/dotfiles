@@ -2,12 +2,11 @@
 
 from django.db import models
 
+import core.common
+import core.features.bcm
+import core.models
 from dash import constants
 from utils import lc_helper
-
-import core.features.bcm
-import core.common
-import core.models
 
 
 class CpcConstraint(models.Model):

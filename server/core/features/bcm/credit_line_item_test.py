@@ -4,10 +4,10 @@ from decimal import Decimal
 # from django.core.exceptions import ValidationError
 from django.test import TestCase
 
-import zemauth
 import core.models
-from utils.magic_mixer import magic_mixer
+import zemauth
 from utils import test_helper
+from utils.magic_mixer import magic_mixer
 
 from .credit_line_item import CreditLineItem
 from .refund_line_item.model import RefundLineItem

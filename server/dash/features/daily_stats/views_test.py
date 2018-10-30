@@ -1,16 +1,17 @@
-from mock import patch
+import copy
 import datetime
 import json
-import copy
 from decimal import Decimal
 
 from django.contrib.auth import models as authmodels
 from django.test import TestCase
 from django.urls import reverse
+from mock import patch
 
+from dash import constants
+from dash import models
 from utils.test_helper import fake_request
 from zemauth.models import User
-from dash import constants, models
 
 
 class BaseDailyStatsTest(TestCase):

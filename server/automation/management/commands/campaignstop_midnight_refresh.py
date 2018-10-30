@@ -1,12 +1,10 @@
 import influx
-
 from django.db.models import Q
 
 import automation.campaignstop
 import core.models
-
-from utils.command_helpers import ExceptionCommand
 from utils import dates_helper
+from utils.command_helpers import ExceptionCommand
 
 
 class Command(ExceptionCommand):

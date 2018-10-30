@@ -1,12 +1,13 @@
 from django.test import TestCase
 
-from utils.magic_mixer import magic_mixer
-
-import zemauth.models
 import core.models
 import dash.constants
+import zemauth.models
+from utils.magic_mixer import magic_mixer
 
-from . import models, constants, exceptions
+from . import constants
+from . import exceptions
+from . import models
 
 
 class TestModels(TestCase):

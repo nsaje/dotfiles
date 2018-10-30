@@ -1,8 +1,7 @@
-import backtosql
 import logging
 
+import backtosql
 from redshiftapi import db
-
 
 logger = logging.getLogger(__name__)
 

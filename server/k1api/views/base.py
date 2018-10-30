@@ -6,11 +6,11 @@ from django.conf import settings
 from django.http import JsonResponse
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
-from rest_framework.views import APIView
 from rest_framework import permissions
+from rest_framework.views import APIView
 
-from utils.rest_common import authentication
 from utils import influx_helper
+from utils.rest_common import authentication
 
 logger = logging.getLogger(__name__)
 

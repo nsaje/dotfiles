@@ -1,11 +1,11 @@
 import datetime
+
 from django import test
-from dash import content_insights_helper
-import dash.models
-
-from zemauth.models import User
-
 from mock import patch
+
+import dash.models
+from dash import content_insights_helper
+from zemauth.models import User
 
 
 class ContentInsightsHelperTestCase(test.TestCase):

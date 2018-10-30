@@ -1,7 +1,7 @@
 import sys
 
-from django.utils import six
 import rest_framework.serializers
+from django.utils import six
 
 import dash.constants
 import dash.regions

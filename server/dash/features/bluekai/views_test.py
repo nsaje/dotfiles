@@ -1,8 +1,8 @@
-from mock import patch
 import json
 
-from django.urls import reverse
 from django.test import TestCase
+from django.urls import reverse
+from mock import patch
 from rest_framework.test import APIClient
 
 from utils.magic_mixer import magic_mixer

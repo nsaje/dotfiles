@@ -1,14 +1,13 @@
 import json
 
-from rest_framework.test import APIClient
 from django.test import TestCase
 from django.urls import reverse
+from rest_framework.test import APIClient
 
-from zemauth.models import User
-
-from utils.magic_mixer import magic_mixer
-import core.features.videoassets.models
 import core.features.videoassets.constants
+import core.features.videoassets.models
+from utils.magic_mixer import magic_mixer
+from zemauth.models import User
 
 
 class VideoUploadCallbackTestCase(TestCase):

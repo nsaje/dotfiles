@@ -1,6 +1,6 @@
 from django.contrib import admin
-from django.urls import reverse
 from django.db.models import Prefetch
+from django.urls import reverse
 from django.utils.safestring import mark_safe
 
 from dash.features import reports

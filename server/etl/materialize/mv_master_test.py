@@ -1,16 +1,15 @@
 import collections
-import backtosql
 import datetime
+
 import mock
+from django.test import TestCase
+from django.test import override_settings
 
-from django.test import TestCase, override_settings
-
+import backtosql
 from dash import constants
-
 from utils import test_helper
 
 from .mv_master import MasterView
-
 
 PostclickstatsResults = collections.namedtuple(
     "Result2",

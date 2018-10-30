@@ -1,15 +1,16 @@
 import datetime
 from decimal import Decimal
-from mock import patch, ANY
 
-from django.test import TestCase
 from django.db.models import Max
+from django.test import TestCase
+from mock import ANY
+from mock import patch
 
 import core.features.bcm
-import core.models
 import core.features.multicurrency
-import dash.models
+import core.models
 import dash.constants
+import dash.models
 from etl import daily_statements
 from utils import converters
 from utils import test_helper

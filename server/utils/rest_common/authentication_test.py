@@ -1,14 +1,18 @@
-import urllib.request, urllib.error, urllib.parse
+import urllib.error
+import urllib.parse
+import urllib.request
 
 from django.test import TestCase
 from django.test.client import RequestFactory
-from django.utils.timezone import now, timedelta
-from oauth2_provider.models import AccessToken, Application
+from django.utils.timezone import now
+from django.utils.timezone import timedelta
+from oauth2_provider.models import AccessToken
+from oauth2_provider.models import Application
 
-
-from . import authentication
 import zemauth.models
 from utils import request_signer
+
+from . import authentication
 
 
 def urllib2_to_wsgi_request(request):

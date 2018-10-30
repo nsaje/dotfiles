@@ -1,6 +1,5 @@
 import logging
 
-
 import dash.constants
 import dash.models
 from utils import db_for_reads

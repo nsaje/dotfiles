@@ -1,4 +1,7 @@
-from django.forms.widgets import MultiWidget, TextInput, NumberInput, CheckboxInput
+from django.forms.widgets import CheckboxInput
+from django.forms.widgets import MultiWidget
+from django.forms.widgets import NumberInput
+from django.forms.widgets import TextInput
 
 
 class CustomFlagsWidget(MultiWidget):

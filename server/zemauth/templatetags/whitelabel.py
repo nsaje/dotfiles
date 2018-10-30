@@ -1,8 +1,8 @@
 from django import template
 from django.db.models import Q
 
-import dash.constants
 import core.models
+import dash.constants
 
 register = template.Library()
 
