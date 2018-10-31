@@ -66,7 +66,7 @@ class AccountManager(core.common.BaseManager):
             )
         )
         try:
-            slack.publish(text=slack_msg, channel="client-development")
+            slack.publish(text=slack_msg, channel="z1-new-accounts")
         except Exception:
             logger.exception("Connection error with Slack.")
         return account
