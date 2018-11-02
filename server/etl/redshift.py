@@ -131,7 +131,8 @@ def prepare_unload_tz_query(s3_path, table_name, date_from, date_to, account_id=
     params["table"] = table_name
     params["account_id_str"] = str(account_id) if account_id else None
     if account_id:
-        params["ad_group_id"] = helpers.get_ad_group_ids_or_none(account_id)
+        ad_group_ids = helpers.get_ad_group_ids_or_none(account_id) or []
+        params["ad_group_id"] = map(str, ad_group_ids)
     sql = backtosql.generate_sql("etl_unload_tz.sql", params)
     s3_url = S3_FILE_URI.format(bucket_name=settings.S3_BUCKET_STATS, key=s3_path)
     credentials = _get_aws_credentials()
