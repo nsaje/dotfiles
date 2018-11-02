@@ -8,8 +8,6 @@ ALERT_MSG_CPC_CHANGES = """Autopilot made irregular CPC adjustments on the follo
 {}"""
 ALERT_MSG_BUDGET_CHANGES = """Autopilot made irregular budget adjustments on the following ad groups:
 {}"""
-ALERT_MSG_BUDGET_TOTALS = """Autopilot budget was not correctly allocated on the following ad groups:
-{}"""
 
 
 class Command(utils.command_helpers.ExceptionCommand):
@@ -29,16 +27,14 @@ class Command(utils.command_helpers.ExceptionCommand):
         self.slack = options["slack"]
 
         self._audit_autopilot_ad_groups()
-        # self._audit_autopilot_budget_totals()
-        # self._audit_autopilot_budget_changes()
-        # self._audit_autopilot_cpc_changes()
+        self._audit_autopilot_daily_caps_changes()
+        self._audit_autopilot_cpc_changes()
 
     def _audit_autopilot_ad_groups(self):
         alarms = analytics.monitor.audit_autopilot_ad_groups()
         if not alarms:
             return
 
-        self._print(ALERT_MSG_AD_GROUPS.format(""))
         details = ""
         for ad_group in alarms:
             self._print("- {} {}".format(ad_group.name, ad_group.pk))
@@ -47,28 +43,13 @@ class Command(utils.command_helpers.ExceptionCommand):
             utils.slack.publish(
                 ALERT_MSG_AD_GROUPS.format(details), msg_type=utils.slack.MESSAGE_TYPE_CRITICAL, username="Autopilot"
             )
+            return
+        self._print(ALERT_MSG_AD_GROUPS.format(details))
 
-    def _audit_autopilot_budget_totals(self):
-        alarms = analytics.monitor.audit_autopilot_budget_totals()
+    def _audit_autopilot_daily_caps_changes(self):
+        alarms = analytics.monitor.audit_autopilot_daily_caps_changes()
         if not alarms:
             return
-        self._print(ALERT_MSG_BUDGET_TOTALS.format(""))
-        details = ""
-        for ad_group, error in alarms.items():
-            self._print("- {} {}: {}".format(ad_group.name, ad_group.pk, error))
-            details += " - {}: {}$\n".format(utils.slack.ad_group_url(ad_group), error)
-        if self.slack:
-            utils.slack.publish(
-                ALERT_MSG_BUDGET_TOTALS.format(details),
-                msg_type=utils.slack.MESSAGE_TYPE_CRITICAL,
-                username="Autopilot",
-            )
-
-    def _audit_autopilot_budget_changes(self):
-        alarms = analytics.monitor.audit_autopilot_budget_changes()
-        if not alarms:
-            return
-        self._print(ALERT_MSG_BUDGET_CHANGES.format(""))
         details = ""
         for ad_group, error in alarms.items():
             self._print("- {} {}: {}".format(str(ad_group.name), ad_group.pk, error))
@@ -79,12 +60,13 @@ class Command(utils.command_helpers.ExceptionCommand):
                 msg_type=utils.slack.MESSAGE_TYPE_CRITICAL,
                 username="Autopilot",
             )
+            return
+        self._print(ALERT_MSG_BUDGET_CHANGES.format(details))
 
     def _audit_autopilot_cpc_changes(self):
         alarms = analytics.monitor.audit_autopilot_cpc_changes()
         if not alarms:
             return
-        self._print(ALERT_MSG_CPC_CHANGES.format(""))
         details = ""
         for source, error in alarms.items():
             error_msg = "all adjustments were positive" if error > 0 else "all adjustments were negative"
@@ -94,3 +76,5 @@ class Command(utils.command_helpers.ExceptionCommand):
             utils.slack.publish(
                 ALERT_MSG_CPC_CHANGES.format(details), msg_type=utils.slack.MESSAGE_TYPE_WARNING, username="Autopilot"
             )
+            return
+        self._print(ALERT_MSG_CPC_CHANGES.format(details))

@@ -8,6 +8,7 @@ from django.db.models import Sum
 import analytics.helpers
 import analytics.projections
 import automation.models
+import backtosql
 import dash.constants
 import dash.models
 import etl.refresh
@@ -18,35 +19,6 @@ from utils import converters
 logger = logging.getLogger("stats.monitor")
 
 MAX_ERR = 10 ** 7  # 0.01$
-SPEND_INTEGRITY_QUERY = """SELECT sum(effective_cost_nano) as media, sum(effective_data_cost_nano) as data, SUM(license_fee_nano) AS fee, SUM(margin_nano) AS margin
-FROM {tbl}
-WHERE date = '{d}'{additional}
-"""
-
-AD_GROUP_SPEND_QUERY = """SELECT ad_group_id
-FROM mv_master
-WHERE date = '{d}'
-GROUP BY ad_group_id
-HAVING SUM(effective_cost_nano) >= {threshold}"""
-
-CLICK_DISCREPANCY_QUERY = """SELECT campaign_id, (CASE
-  WHEN SUM(clicks) = 0 THEN NULL
-  WHEN SUM(visits) = 0 THEN 1
-  WHEN SUM(clicks) < SUM(visits) THEN 0
-  ELSE (SUM(CAST(clicks AS FLOAT)) - SUM(visits)) / SUM(clicks) END)*100.0 cd
-FROM mv_master
-WHERE date >= '{from_date}' AND date <= '{till_date}' AND campaign_id IN ({campaigns})
-GROUP BY campaign_id"""
-
-OVERSPEND_QUERY = """SELECT account_id,
-       (sum(cost_nano) - sum(effective_cost_nano)) +
-       (sum(data_cost_nano) - sum(effective_data_cost_nano)) as diff
-FROM mv_account
-WHERE date = '{date}'
-GROUP BY account_id
-HAVING sum(cost_nano) - sum(effective_cost_nano) > {threshold} or
-       sum(data_cost_nano) - sum(effective_data_cost_nano) > {threshold}
-"""
 
 API_ACCOUNTS = (293, 305)
 
@@ -56,7 +28,10 @@ def _get_rs_spend(table_name, date, account_id=None):
     if account_id:
         additional = " AND account_id = {}".format(account_id)
     with redshiftapi.db.get_stats_cursor() as c:
-        c.execute(SPEND_INTEGRITY_QUERY.format(tbl=table_name, d=str(date), additional=additional))
+        spend_integrity_query = backtosql.generate_sql(
+            "sql/monitor_spend_integrity.sql", dict(tbl=table_name, d=str(date), additional=additional)
+        )
+        c.execute(spend_integrity_query)
         return redshiftapi.db.dictfetchall(c)[0]
     return {}
 
@@ -135,13 +110,22 @@ def audit_autopilot_ad_groups():
             datetime.datetime.combine(date, datetime.time.max),
         ),
         is_autopilot_job_run=True,
+        ad_group__created_dt__lt=date,
     )
     ad_groups_in_logs = set(log.ad_group for log in ap_logs)
-    ad_groups_ap_running = set(autopilot.helpers.get_active_ad_groups_on_autopilot()[0])
+    ad_groups_ap_running = set(
+        ad
+        for ad in autopilot.helpers.get_active_ad_groups_on_autopilot()[0]
+        if ad.created_dt < datetime.datetime.combine(date, datetime.time.min)
+    )
     return ad_groups_ap_running - ad_groups_in_logs
 
 
 def audit_autopilot_cpc_changes(date=None, min_changes=25):
+    """
+    When Autopilot modifies the daily cap, all modifications should not be all positive or all negative, it should
+    be balanced.
+    """
     if not date:
         date = datetime.date.today()
     ap_logs = automation.models.AutopilotLog.objects.filter(
@@ -169,28 +153,11 @@ def audit_autopilot_cpc_changes(date=None, min_changes=25):
     return alarms
 
 
-def audit_autopilot_budget_totals(date=None, error=Decimal("0.001")):
-    if not date:
-        date = datetime.date.today()
-    alarms = {}
-    state = dash.constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET
-    ad_groups, ad_groups_settings = autopilot.helpers.get_active_ad_groups_on_autopilot(state)
-    ad_group_sources_settings = autopilot.helpers.get_autopilot_active_sources_settings(
-        {ags.ad_group: ags for ags in ad_groups_settings}
-    )
-    for settings in ad_groups_settings:
-        total_ap_budget = Decimal(0)
-        filtered_source_settings = [
-            agss for agss in ad_group_sources_settings if agss.ad_group_source.ad_group_id == settings.ad_group_id
-        ]
-        for source_settings in filtered_source_settings:
-            total_ap_budget += source_settings.daily_budget_cc
-        if abs(settings.autopilot_daily_budget - total_ap_budget) >= error:
-            alarms[settings.ad_group] = settings.autopilot_daily_budget - total_ap_budget
-    return alarms
-
-
-def audit_autopilot_budget_changes(date=None, error=Decimal("0.001")):
+def audit_autopilot_daily_caps_changes(date=None, error=Decimal("0.001")):
+    """
+    Autopilot is modifying the daily cap of each source, by taking some money from the sources performing bad
+    to assign it to sources performing the best. But at the end the total of all sources's daily cap must be the same.
+    """
     if not date:
         date = datetime.date.today()
     ap_logs = automation.models.AutopilotLog.objects.filter(
@@ -217,11 +184,11 @@ def audit_autopilot_budget_changes(date=None, error=Decimal("0.001")):
 
 
 def audit_overspend(date, min_overspend=Decimal("0.1")):
-    rows = redshiftapi.db.execute_query(
-        OVERSPEND_QUERY.format(date=str(date), threshold=str(int(min_overspend * converters.CURRENCY_TO_NANO))),
-        [],
-        "audit_overspend",
+    overspend_query = backtosql.generate_sql(
+        "sql/monitor_overspend.sql",
+        dict(date=str(date), threshold=str(int(min_overspend * converters.CURRENCY_TO_NANO))),
     )
+    rows = redshiftapi.db.execute_query(overspend_query, [], "audit_overspend")
     accounts_map = {account.id: account for account in dash.models.Account.objects.all()}
     alarms = {}
     for row in rows:
@@ -232,6 +199,7 @@ def audit_overspend(date, min_overspend=Decimal("0.1")):
 
 def audit_running_ad_groups(min_spend=Decimal("50.0"), account_types=None):
     """
+    Alert how many ad groups had a very low spend
     Audit ad groups spend of non API active ad groups of types:
     - PILOT
     - ACTIVATED
@@ -255,14 +223,17 @@ def audit_running_ad_groups(min_spend=Decimal("50.0"), account_types=None):
     )
 
     with redshiftapi.db.get_stats_cursor() as c:
-        c.execute(
-            AD_GROUP_SPEND_QUERY.format(d=str(yesterday), threshold=str(int(min_spend * converters.CURRENCY_TO_NANO)))
+        ad_group_spend_query = backtosql.generate_sql(
+            "sql/monitor_ad_group_spend.sql",
+            dict(d=str(yesterday), threshold=str(int(min_spend * converters.CURRENCY_TO_NANO))),
         )
+        c.execute(ad_group_spend_query)
         spending_ad_group_ids = set(int(row[0]) for row in c.fetchall())
     return dash.models.AdGroup.objects.filter(pk__in=((running_ad_group_ids - spending_ad_group_ids) - api_ad_groups))
 
 
 def audit_account_credits(date=None, days=14):
+
     if not date:
         date = datetime.date.today()
     ending_credit_accounts = set(
@@ -275,6 +246,7 @@ def audit_account_credits(date=None, days=14):
         credit.account or credit.agency.account_set.all().first()
         for credit in dash.models.CreditLineItem.objects.filter(end_date__gte=date + datetime.timedelta(days))
     )
+    # only accounts with no future credits
     return ending_credit_accounts - future_credit_accounts
 
 
@@ -305,17 +277,13 @@ def audit_click_discrepancy(date=None, days=30, threshold=20):
 
     data_base, data_test = {}, {}
     with redshiftapi.db.get_stats_cursor() as c:
-        c.execute(
-            CLICK_DISCREPANCY_QUERY.format(
-                campaigns=",".join(map(str, list(campaigns.keys()))), from_date=from_date, till_date=till_date
-            )
+        click_discrepancy_query = backtosql.generate_sql(
+            "sql/monitor_click_discrepancy.sql",
+            dict(campaigns=",".join(map(str, list(campaigns.keys()))), from_date=from_date, till_date=till_date),
         )
+        c.execute(click_discrepancy_query)
         data_base = {int(r[0]): r[1] for r in c.fetchall()}
-        c.execute(
-            CLICK_DISCREPANCY_QUERY.format(
-                campaigns=",".join(map(str, list(campaigns.keys()))), from_date=date, till_date=date
-            )
-        )
+        c.execute(click_discrepancy_query)
         data_test = {int(r[0]): r[1] for r in c.fetchall()}
 
     alarms = []

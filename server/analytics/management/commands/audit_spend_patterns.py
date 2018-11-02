@@ -49,8 +49,8 @@ class Command(utils.command_helpers.ExceptionCommand):
                     ALERT_MSG.format(
                         d2=date.strftime("%b %d %Y"),
                         d1=(date - datetime.timedelta(1)).strftime("%b %d %Y"),
-                        change=(1 - change) * 100,
-                        thr=(1 - thr) * 100,
+                        change=round((1 - change) * 100, 2),
+                        thr=round((1 - thr) * 100, 2),
                         fd=str(date - datetime.timedelta(7)),
                         td=str(date + datetime.timedelta(1)),
                     ),
