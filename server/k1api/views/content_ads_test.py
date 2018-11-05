@@ -173,7 +173,7 @@ class ContentAdsTest(K1APIBaseTest):
         self.assertEqual(5, len(data_without_archived))
         self.assertEqual(6, len(data_with_archived))
 
-    def test_get_content_ads_sources(self):
+    def test_get_content_ads_sources_smoke(self):
         response = self.client.get(
             reverse("k1api.content_ads.sources"), {"content_ad_ids": 1, "ad_group_ids": 1, "source_slugs": "adblade"}
         )
@@ -333,50 +333,98 @@ class ContentAdsTest(K1APIBaseTest):
             content_ad_sources[1].id: dash.constants.ContentAdSspdStatus.APPROVED,
             content_ad_sources[2].id: dash.constants.ContentAdSspdStatus.APPROVED,
         }
-        response = self.client.get(
-            reverse("k1api.content_ads.sources"), {"ad_group_ids": new_ad_group.id, "source_slugs": "newsource"}
-        )
 
+        with self.assertNumQueries(3):
+            response = self.client.get(
+                reverse("k1api.content_ads.sources"),
+                {"ad_group_ids": new_ad_group.id, "source_slugs": "newsource", "use_filters": "true"},
+            )
+
+            data = json.loads(response.content)
+            self.assert_response_ok(response, data)
+            data = data["response"]
+
+            expected = [
+                {
+                    "id": content_ad_sources[0].id,
+                    "ad_group_id": content_ads[0].ad_group_id,
+                    "content_ad_id": content_ads[0].id,
+                    "source_id": other_ad_group_source.source_id,
+                    "source_content_ad_id": content_ad_sources[0].source_content_ad_id,
+                    "source_slug": "newsource",
+                    "state": dash.constants.ContentAdSourceState.ACTIVE,
+                    "submission_status": dash.constants.ContentAdSubmissionStatus.APPROVED,
+                    "tracking_slug": content_ad_sources[0].source.tracking_slug,
+                },
+                {
+                    "id": content_ad_sources[1].id,
+                    "ad_group_id": content_ads[1].ad_group_id,
+                    "content_ad_id": content_ads[1].id,
+                    "source_id": other_ad_group_source.source_id,
+                    "source_content_ad_id": content_ad_sources[1].source_content_ad_id,
+                    "source_slug": "newsource",
+                    "state": dash.constants.ContentAdSourceState.INACTIVE,
+                    "submission_status": dash.constants.ContentAdSubmissionStatus.APPROVED,
+                    "tracking_slug": content_ad_sources[1].source.tracking_slug,
+                },
+                {
+                    "id": content_ad_sources[2].id,
+                    "ad_group_id": content_ads[2].ad_group_id,
+                    "content_ad_id": content_ads[2].id,
+                    "source_id": other_ad_group_source.source_id,
+                    "source_content_ad_id": content_ad_sources[2].source_content_ad_id,
+                    "source_slug": "newsource",
+                    "state": dash.constants.ContentAdSourceState.ACTIVE,
+                    "submission_status": dash.constants.ContentAdSubmissionStatus.APPROVED,
+                    "tracking_slug": content_ad_sources[2].source.tracking_slug,
+                },
+            ]
+            self.assertCountEqual(data, expected)
+
+    def test_get_content_ads_sources_filters(self):
+        sources = magic_mixer.cycle(3).blend(dash.models.Source, bidder_slug=(s for s in ("s1", "s2", "s3")))
+        ad_groups = magic_mixer.cycle(3).blend(dash.models.AdGroup)
+        content_ads = magic_mixer.cycle(9).blend(
+            dash.models.ContentAd, ad_group=(ag for ag in itertools.cycle(ad_groups))
+        )
+        for ca in content_ads:
+            magic_mixer.cycle(len(sources)).blend(
+                dash.models.ContentAdSource, content_ad=ca, source=(s for s in sources)
+            )
+
+        # test content_ad_ids filter
+        content_ad_ids = [ca.id for ca in content_ads[:3]]
+        response = self.client.get(
+            reverse("k1api.content_ads.sources"), {"content_ad_ids": ",".join(map(str, content_ad_ids))}
+        )
         data = json.loads(response.content)
         self.assert_response_ok(response, data)
-        data = data["response"]
+        self.assertEqual(set(content_ad_ids), set([ca["content_ad_id"] for ca in data["response"]]))
 
-        expected = [
-            {
-                "id": content_ad_sources[0].id,
-                "ad_group_id": content_ads[0].ad_group_id,
-                "content_ad_id": content_ads[0].id,
-                "source_id": other_ad_group_source.source_id,
-                "source_content_ad_id": content_ad_sources[0].source_content_ad_id,
-                "source_slug": "newsource",
-                "state": dash.constants.ContentAdSourceState.ACTIVE,
-                "submission_status": dash.constants.ContentAdSubmissionStatus.APPROVED,
-                "tracking_slug": content_ad_sources[0].source.tracking_slug,
-            },
-            {
-                "id": content_ad_sources[1].id,
-                "ad_group_id": content_ads[1].ad_group_id,
-                "content_ad_id": content_ads[1].id,
-                "source_id": other_ad_group_source.source_id,
-                "source_content_ad_id": content_ad_sources[1].source_content_ad_id,
-                "source_slug": "newsource",
-                "state": dash.constants.ContentAdSourceState.INACTIVE,
-                "submission_status": dash.constants.ContentAdSubmissionStatus.APPROVED,
-                "tracking_slug": content_ad_sources[1].source.tracking_slug,
-            },
-            {
-                "id": content_ad_sources[2].id,
-                "ad_group_id": content_ads[2].ad_group_id,
-                "content_ad_id": content_ads[2].id,
-                "source_id": other_ad_group_source.source_id,
-                "source_content_ad_id": content_ad_sources[2].source_content_ad_id,
-                "source_slug": "newsource",
-                "state": dash.constants.ContentAdSourceState.ACTIVE,
-                "submission_status": dash.constants.ContentAdSubmissionStatus.APPROVED,
-                "tracking_slug": content_ad_sources[2].source.tracking_slug,
-            },
-        ]
-        self.assertCountEqual(data, expected)
+        # test ad_group_ids filter
+        ad_group_ids = [ag.id for ag in ad_groups[:2]]
+        response = self.client.get(
+            reverse("k1api.content_ads.sources"), {"ad_group_ids": ",".join(map(str, ad_group_ids))}
+        )
+        data = json.loads(response.content)
+        self.assert_response_ok(response, data)
+        self.assertEqual(set(ad_group_ids), set([ca["ad_group_id"] for ca in data["response"]]))
+
+        # test source_types filter
+        source_types_strs = [s.source_type.type for s in sources[:2]]
+        source_ids = [s.id for s in sources[:2]]
+        response = self.client.get(reverse("k1api.content_ads.sources"), {"source_types": ",".join(source_types_strs)})
+        data = json.loads(response.content)
+        self.assert_response_ok(response, data)
+        self.assertEqual(set(source_ids), set([ca["source_id"] for ca in data["response"]]))
+
+        # test source_slugs filter
+        source_slugs = [s.bidder_slug for s in sources[:2]]
+        source_ids = [s.id for s in sources[:2]]
+        response = self.client.get(reverse("k1api.content_ads.sources"), {"source_slugs": ",".join(source_slugs)})
+        data = json.loads(response.content)
+        self.assert_response_ok(response, data)
+        self.assertEqual(set(source_ids), set([ca["source_id"] for ca in data["response"]]))
 
     def test_update_content_ad_status(self):
         cas = dash.models.ContentAdSource.objects.get(pk=1)

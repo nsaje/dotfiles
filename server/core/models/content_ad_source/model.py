@@ -28,6 +28,7 @@ class ContentAdSourceManager(models.Manager):
 class ContentAdSource(models.Model, prodops_mixin.ProdopsMixin):
     class Meta:
         app_label = "dash"
+        indexes = [models.Index(fields=["content_ad", "source"])]
 
     source = models.ForeignKey("Source", on_delete=models.PROTECT)
     content_ad = models.ForeignKey("ContentAd", on_delete=models.PROTECT)
