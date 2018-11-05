@@ -40,7 +40,7 @@ class RDSAgencyTest(TestCase):
     def test_put_csv_to_S3(self):
         rds_agency = rds_materialization.RDSAgency()
         s3_path = rds_agency.put_csv_to_s3()
-        self.assertEqual(s3_path, "rds-materialization/agency.csv")
+        self.assertEqual(s3_path, "agency.csv")
         local_path = "{}/agency.csv".format(settings.FILE_STORAGE_DIR)
         self.assertTrue(os.path.isfile(local_path))
         csv_open = os.open(local_path, os.O_RDONLY)
@@ -58,9 +58,5 @@ class RDSAgencyTest(TestCase):
         rds_agency = rds_materialization.RDSAgency()
         rds_agency.load_csv_from_s3()
         mock_prepare_copy_query.assert_called_with(
-            "rds-materialization/agency.csv",
-            "mv_rds_agency",
-            null_as="$NA$",
-            bucket_name="prodops-test",
-            truncate_columns=True,
+            "agency.csv", "mv_rds_agency", null_as="$NA$", bucket_name=rds_agency.BUCKET_NAME, truncate_columns=True
         )

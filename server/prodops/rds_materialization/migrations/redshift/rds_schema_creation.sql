@@ -98,10 +98,10 @@ CREATE TABLE IF NOT EXISTS MV_RDS_CONTENT_AD (
   state           INTEGER             NULL,
   tracker_urls    VARCHAR(2048)       NULL,
   additional_data VARCHAR(2048)       NULL,
-  video_asset_id  INTEGER             NULL,
+  video_asset_id  VARCHAR(256)        NULL,
   video_status    VARCHAR(100),
   video_name      VARCHAR(255),
-  video_duration  INTEGER             NULL,
+  video_duration  VARCHAR(50)         NULL,
   video_formats   VARCHAR(1000)       NULL,
   video_type      VARCHAR(30),
   video_vast_url  VARCHAR(2048)       NULL

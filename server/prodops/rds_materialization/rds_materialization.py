@@ -17,8 +17,8 @@ from etl import s3
 class RDSModelization(object):
     MODEL = None
     FIELDS = dict()
-    BUCKET_NAME = "prodops-test"
-    FOLDER = "rds-materialization"
+    BUCKET_NAME = "z1-rds-materialization"
+    FOLDER = ""
 
     def __init__(self):
         self.rds_data = None
@@ -33,12 +33,15 @@ class RDSModelization(object):
         )
 
     def _get_rds_queryset(self):
-        return self.MODEL.objects.values("id").annotate(
+        qs = self.MODEL.objects.values("id").annotate(
             **{
                 k if not isinstance(v, Case) else k: F(v) if not isinstance(v, Case) else v
                 for k, v in self.FIELDS.items()
             }
         )
+        if hasattr(self, "EXCLUDE"):
+            return qs.exclude(**self.EXCLUDE)
+        return qs
 
     def put_csv_to_s3(self):
         return s3.upload_csv_without_job(self.TABLE, self.data_generator, self.s3_path, self.BUCKET_NAME)
@@ -190,6 +193,7 @@ class RDSContentAd(RDSModelization):
         video_type=RDSModelization.get_constant_value("video_asset__type", videoassets.constants.VideoAssetType),
         video_vast_url="video_asset__vast_url",
     )
+    EXCLUDE = dict(ad_group__campaign__account_id=305)
 
 
 class RDSAdGroup(RDSModelization):
@@ -235,4 +239,4 @@ class RDSAdGroup(RDSModelization):
     )
 
 
-RDS_MATERIALIAZED_VIEW = [RDSAgency, RDSSource, RDSAccount, RDSCampaign, RDSCampaignGoal, RDSAdGroup]
+RDS_MATERIALIAZED_VIEW = [RDSAgency, RDSSource, RDSAccount, RDSCampaign, RDSCampaignGoal, RDSAdGroup, RDSContentAd]
