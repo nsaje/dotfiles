@@ -232,7 +232,6 @@ class ContentAdSourcesView(K1APIView):
             return dash.constants.ContentAdSourceState.INACTIVE
         elif not sspd_status:
             influx.incr("content_ads_source.missing_sspd_status", 1)
-            logger.info("missing sspd status for content ad: %s", content_ad_id)
             return dash.constants.ContentAdSourceState.INACTIVE
         else:
             return content_ad_source_state
