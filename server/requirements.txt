@@ -18,6 +18,7 @@ celery==4.2.1
 certifi==2018.8.24
 cffi==1.11.5
 chardet==3.0.4
+croniter==0.3.25
 cryptography==2.3.1
 decorator==4.0.11
 defusedxml==0.5.0
@@ -92,6 +93,7 @@ pyjwt==1.6.4
 pylibmc==1.5.2
 pyopenssl==18.0.0
 pyscrypt==1.6.2
+python-crontab==2.3.5
 python-dateutil==2.7.3
 python-magic==0.4.15
 python-slugify==1.2.6

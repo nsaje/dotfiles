@@ -60,6 +60,7 @@ INSTALLED_APPS = [
     "analytics",
     "prodops",
     "integrations.bizwire",
+    "dcron",
     "dev",
 ]
 
@@ -365,3 +366,5 @@ CELERY_RESULT_SERIALIZER = "pickle"
 CELERY_ACCEPT_CONTENT = {"pickle"}
 
 RESTAPI_REPORTS_URL = "https://%s.s3.amazonaws.com" % RESTAPI_REPORTS_BUCKET
+
+DCRON = {"base_command": "/home/ubuntu/docker-manage-py.sh", "default_warning_wait": 60, "warning_waits": {}}
