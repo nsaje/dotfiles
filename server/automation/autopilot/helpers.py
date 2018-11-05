@@ -4,6 +4,8 @@ from collections import defaultdict
 
 from django.db.models import Q
 
+import core.features.bcm
+
 import dash
 import dash.constants
 import dash.models
@@ -208,11 +210,16 @@ def get_ad_group_sources_minimum_bid(ad_group_source, bcm_modifiers):
     return max(autopilot_min_bid, etfm_min_bid or 0)
 
 
-def get_ad_group_sources_minimum_daily_budget(ad_group_source, bcm_modifiers):
+def get_ad_group_sources_minimum_daily_budget(ad_group_source, uses_bcm_v2, bcm_modifiers):
     source_min_daily_budget = ad_group_source.source.source_type.get_etfm_min_daily_budget(bcm_modifiers)
+    ap_settings_min_budget = settings.BUDGET_AP_MIN_SOURCE_BUDGET
+    if uses_bcm_v2:
+        ap_settings_min_budget = core.features.bcm.calculations.calculate_min_daily_budget(
+            ap_settings_min_budget, bcm_modifiers
+        )
     if not source_min_daily_budget:
-        return settings.BUDGET_AP_MIN_SOURCE_BUDGET
-    return max(settings.BUDGET_AP_MIN_SOURCE_BUDGET, source_min_daily_budget)
+        return ap_settings_min_budget
+    return max(ap_settings_min_budget, source_min_daily_budget)
 
 
 def get_campaign_goal_column(campaign_goal, uses_bcm_v2=False):

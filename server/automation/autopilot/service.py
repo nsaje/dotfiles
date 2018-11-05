@@ -299,7 +299,9 @@ def _set_paused_ad_group_sources_to_minimum_values(ad_group, bcm_modifiers):
             )
         new_budgets[ag_source] = {
             "old_budget": old_budget,
-            "new_budget": helpers.get_ad_group_sources_minimum_daily_budget(ag_source, bcm_modifiers),
+            "new_budget": helpers.get_ad_group_sources_minimum_daily_budget(
+                ag_source, ad_group.campaign.account.uses_bcm_v2, bcm_modifiers
+            ),
             "budget_comments": [constants.DailyBudgetChangeComment.INITIALIZE_PILOT_PAUSED_SOURCE],
         }
     try:
