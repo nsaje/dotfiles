@@ -136,6 +136,7 @@ def audit_autopilot_cpc_changes(date=None, min_changes=25):
         is_autopilot_job_run=True,
         ad_group_source__source__deprecated=False,
         ad_group_source__source__maintenance=False,
+        ad_group_source__source__released=True,
     )
     source_changes = {}
     for log in ap_logs:
