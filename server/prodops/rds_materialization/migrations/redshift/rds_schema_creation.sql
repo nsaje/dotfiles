@@ -110,6 +110,7 @@ CREATE TABLE IF NOT EXISTS MV_RDS_CONTENT_AD (
 
 CREATE TABLE IF NOT EXISTS MV_RDS_AD_GROUP (
   id                                      integer PRIMARY KEY,
+  name                                    VARCHAR(127),
   campaign_id                             INTEGER,
   amplify_review                          BOOLEAN           NULL,
   state                                   VARCHAR(20),
@@ -146,4 +147,14 @@ CREATE TABLE IF NOT EXISTS MV_RDS_AD_GROUP (
   delivery_type                           VARCHAR(20),
   click_capping_daily_ad_group_max_clicks INTEGER,
   click_capping_daily_click_budget        DECIMAL(10, 4)    NULL
+);
+
+
+CREATE TABLE IF NOT EXISTS MV_RDS_GEOLOCATION (
+  key         VARCHAR(20) PRIMARY KEY,
+  type        VARCHAR(10) NULL,
+  name        VARCHAR(127),
+  woeid       VARCHAR(20) NULL,
+  outbrain_id VARCHAR(40) NULL,
+  facebook_key VARCHAR(40) NULL
 );

@@ -19,6 +19,7 @@ class RDSModelization(object):
     FIELDS = dict()
     BUCKET_NAME = "z1-rds-materialization"
     FOLDER = ""
+    PK = "id"
 
     def __init__(self):
         self.rds_data = None
@@ -33,7 +34,7 @@ class RDSModelization(object):
         )
 
     def _get_rds_queryset(self):
-        qs = self.MODEL.objects.values("id").annotate(
+        qs = self.MODEL.objects.values(self.PK).annotate(
             **{
                 k if not isinstance(v, Case) else k: F(v) if not isinstance(v, Case) else v
                 for k, v in self.FIELDS.items()
@@ -49,7 +50,7 @@ class RDSModelization(object):
     def data_generator(self):
         if not self.rds_data:
             self.rds_data = self._get_rds_queryset()
-        columns = ["id"] + list(self.FIELDS.keys())
+        columns = [self.PK] + list(self.FIELDS.keys())
         for l in self.rds_data:
             yield [l.get(col) for col in columns]
 
@@ -200,6 +201,7 @@ class RDSAdGroup(RDSModelization):
     MODEL = dash.models.AdGroup
     TABLE = "mv_rds_ad_group"
     FIELDS = OrderedDict(
+        name="name",
         campaign_id="campaign_id",
         amplify_review="amplify_review",
         state="settings__state",
@@ -239,4 +241,26 @@ class RDSAdGroup(RDSModelization):
     )
 
 
-RDS_MATERIALIAZED_VIEW = [RDSAgency, RDSSource, RDSAccount, RDSCampaign, RDSCampaignGoal, RDSAdGroup, RDSContentAd]
+class RDSGeolocation(RDSModelization):
+    MODEL = dash.models.Geolocation
+    TABLE = "mv_rds_geolocation"
+    PK = "key"
+    FIELDS = dict(
+        type=RDSModelization.get_constant_value("type", dash.constants.LocationType),
+        name="name",
+        woeid="woeid",
+        outbrain_id="outbrain_id",
+        facebook_key="facebook_key",
+    )
+
+
+RDS_MATERIALIAZED_VIEW = [
+    RDSAgency,
+    RDSSource,
+    RDSAccount,
+    RDSCampaign,
+    RDSCampaignGoal,
+    RDSAdGroup,
+    RDSContentAd,
+    RDSGeolocation,
+]
