@@ -57,13 +57,8 @@ class AccountManager(core.common.BaseManager):
             account.allowed_sources.add(*agency.allowed_sources.all())
         else:
             account.allowed_sources.add(*core.models.Source.objects.filter(released=True, deprecated=False))
-        slack_msg = (
-            "New Account #{id} <https://one.zemanta.com/v2/credit/account/{id}|{account_name}> was created "
-            "{agency}.".format(
-                id=account.id,
-                account_name=account.name,
-                agency=" for account {}".format(account.agency.name) if account.agency else "",
-            )
+        slack_msg = "Account #<https://one.zemanta.com/v2/analytics/account/{id}|{id}> was created" "{agency}.".format(
+            id=account.id, agency=" for agency {} .".format(account.agency.name) if account.agency else ""
         )
         try:
             slack.publish(text=slack_msg, channel="z1-new-accounts")
