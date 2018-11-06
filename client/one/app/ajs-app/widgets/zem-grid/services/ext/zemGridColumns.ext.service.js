@@ -43,6 +43,12 @@ angular
                     pubsub.notify(grid.meta.pubsub.EVENTS.EXT_COLUMNS_UPDATED);
                     pubsub.notify(grid.meta.pubsub.EVENTS.METADATA_UPDATED);
                 });
+                zemNavigationNewService.onHierarchyUpdate(function() {
+                    // Changed entity properties (e.g. ad group's bidding type)
+                    // affect columns shown in grid.
+                    pubsub.notify(grid.meta.pubsub.EVENTS.EXT_COLUMNS_UPDATED);
+                    pubsub.notify(grid.meta.pubsub.EVENTS.METADATA_UPDATED);
+                });
             }
 
             function initializeColumns() {
