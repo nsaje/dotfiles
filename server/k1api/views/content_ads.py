@@ -103,9 +103,12 @@ class ContentAdSourcesView(K1APIView):
         source_content_ad_ids = request.GET.get("source_content_ad_ids")
         modified_dt_from = request.GET.get("modified_dt_from")
         include_state = request.GET.get("include_state", "true").lower() == "true"
+        include_blocked = request.GET.get("include_blocked", "true").lower() == "true"
+
+        should_get_review_information = include_state or not include_blocked
 
         sspd_thread = None
-        if include_state:
+        if should_get_review_information:
             sspd_fn = partial(
                 sspd_client.get_approval_status,
                 ad_group_ids.split(",") if ad_group_ids else None,
@@ -167,10 +170,20 @@ class ContentAdSourcesView(K1APIView):
         amplify_review_statuses = {}
         sspd_statuses = {}
 
-        if include_state:
+        if should_get_review_information:
             amplify_review_statuses = self._get_amplify_review_statuses(content_ad_sources)
             if sspd_thread is not None:
                 sspd_statuses = self._get_sspd_thread_result(sspd_thread)
+
+        if not include_blocked:
+            content_ad_sources = [
+                content_ad_source
+                for content_ad_source in content_ad_sources
+                if not (
+                    self._is_blocked_by_amplify(content_ad_source, amplify_review_statuses)
+                    or self._is_blocked_by_sspd(content_ad_source, sspd_statuses)
+                )
+            ]
 
         response = []
         for content_ad_source in content_ad_sources:
@@ -186,25 +199,12 @@ class ContentAdSourcesView(K1APIView):
             }
             if include_state:
                 item["state"] = self._get_content_ad_source_state(
-                    content_ad_source["content_ad_id"],
-                    content_ad_source["state"],
-                    content_ad_source["source__content_ad_submission_policy"],
-                    content_ad_source["content_ad__ad_group__amplify_review"],
-                    content_ad_source["content_ad__amplify_review"],
-                    amplify_review_statuses.get(
-                        content_ad_source["content_ad_id"], dash.constants.ContentAdSubmissionStatus.PENDING
-                    ),
-                    sspd_statuses.get(content_ad_source["id"]),
+                    content_ad_source, amplify_review_statuses, sspd_statuses
                 )
 
             response.append(item)
 
         return self.response_ok(response)
-
-    @newrelic.agent.function_trace()
-    def _get_sspd_thread_result(self, sspd_thread):
-        sspd_thread.join()
-        return sspd_thread.get_result()
 
     def _get_amplify_review_statuses(self, content_ad_sources):
         statuses = dash.models.ContentAdSource.objects.filter(
@@ -213,28 +213,43 @@ class ContentAdSourcesView(K1APIView):
         ).values("content_ad_id", "submission_status")
         return {status["content_ad_id"]: status["submission_status"] for status in statuses}
 
-    def _get_content_ad_source_state(
-        self,
-        content_ad_id,
-        content_ad_source_state,
-        source_submission_policy,
-        ad_group_amplify_review,
-        content_ad_amplify_review,
-        amplify_review_status,
-        sspd_status,
-    ):
-        if (
+    @newrelic.agent.function_trace()
+    def _get_sspd_thread_result(self, sspd_thread):
+        sspd_thread.join()
+        return sspd_thread.get_result()
+
+    def _get_content_ad_source_state(self, content_ad_source, amplify_review_statuses, sspd_statuses):
+        if self._is_blocked_by_amplify(content_ad_source, amplify_review_statuses) or self._is_blocked_by_sspd(
+            content_ad_source, sspd_statuses
+        ):
+            return dash.constants.ContentAdSourceState.INACTIVE
+        else:
+            return content_ad_source["state"]
+
+    @staticmethod
+    def _is_blocked_by_amplify(content_ad_source, amplify_review_statuses):
+        source_submission_policy = content_ad_source["source__content_ad_submission_policy"]
+        ad_group_amplify_review = content_ad_source["content_ad__ad_group__amplify_review"]
+        content_ad_amplify_review = content_ad_source["content_ad__amplify_review"]
+        amplify_review_status = amplify_review_statuses.get(
+            content_ad_source["content_ad_id"], dash.constants.ContentAdSubmissionStatus.PENDING
+        )
+        return (
             content_ad_amplify_review
             and ad_group_amplify_review
             and source_submission_policy == dash.constants.SourceSubmissionPolicy.AUTOMATIC_WITH_AMPLIFY_APPROVAL
             and amplify_review_status != dash.constants.ContentAdSubmissionStatus.APPROVED
-        ) or sspd_status == dash.constants.ContentAdSubmissionStatus.REJECTED:
-            return dash.constants.ContentAdSourceState.INACTIVE
-        elif not sspd_status:
+        )
+
+    @staticmethod
+    def _is_blocked_by_sspd(content_ad_source, sspd_statuses):
+        sspd_status = sspd_statuses.get(content_ad_source["id"])
+
+        if not sspd_status:
             influx.incr("content_ads_source.missing_sspd_status", 1)
-            return dash.constants.ContentAdSourceState.INACTIVE
-        else:
-            return content_ad_source_state
+            return True
+
+        return sspd_status == dash.constants.ContentAdSubmissionStatus.REJECTED
 
     def put(self, request):
         content_ad_id = request.GET.get("content_ad_id")

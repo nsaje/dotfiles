@@ -18,6 +18,7 @@ from utils import sspd_client
 from utils import test_helper
 from utils.magic_mixer import magic_mixer
 
+from . import content_ads
 from .base_test import K1APIBaseTest
 
 logger = logging.getLogger(__name__)
@@ -425,6 +426,60 @@ class ContentAdsTest(K1APIBaseTest):
         data = json.loads(response.content)
         self.assert_response_ok(response, data)
         self.assertEqual(set(source_ids), set([ca["source_id"] for ca in data["response"]]))
+
+    @mock.patch.object(content_ads.ContentAdSourcesView, "_is_blocked_by_sspd")
+    @mock.patch.object(content_ads.ContentAdSourcesView, "_is_blocked_by_amplify")
+    def test_get_content_ads_non_blocked(self, mock_sspd, mock_amplify):
+        cad = magic_mixer.blend(dash.models.ContentAd)
+        cadss = magic_mixer.cycle(4).blend(dash.models.ContentAdSource, content_ad=cad)
+
+        def set_blocked(mock_obj, content_ad_sources):
+            blocked_ids = set(cas.id for cas in content_ad_sources)
+
+            def side_effect(content_ad_source_values, _):
+                return content_ad_source_values["id"] in blocked_ids
+
+            mock_obj.side_effect = side_effect
+
+        # include blocked - all blocked, all returned
+        set_blocked(mock_sspd, cadss)
+        set_blocked(mock_amplify, cadss)
+        response = self.client.get(
+            reverse("k1api.content_ads.sources"), {"content_ad_ids": cad.id, "include_blocked": "true"}
+        )
+        data = json.loads(response.content)
+        self.assert_response_ok(response, data)
+        self.assertEqual(set(cads.id for cads in cadss), set([ca["id"] for ca in data["response"]]))
+
+        # do not include blocked - all blocked, none returned
+        set_blocked(mock_sspd, cadss)
+        set_blocked(mock_amplify, cadss)
+        response = self.client.get(
+            reverse("k1api.content_ads.sources"), {"content_ad_ids": cad.id, "include_blocked": "false"}
+        )
+        data = json.loads(response.content)
+        self.assert_response_ok(response, data)
+        self.assertEqual(set(), set([ca["id"] for ca in data["response"]]))
+
+        # do not include blocked - none blocked, all returned
+        set_blocked(mock_sspd, [])
+        set_blocked(mock_amplify, [])
+        response = self.client.get(
+            reverse("k1api.content_ads.sources"), {"content_ad_ids": cad.id, "include_blocked": "false"}
+        )
+        data = json.loads(response.content)
+        self.assert_response_ok(response, data)
+        self.assertEqual(set(cads.id for cads in cadss), set([ca["id"] for ca in data["response"]]))
+
+        # do not include blocked - some blocked, some returned
+        set_blocked(mock_sspd, cadss[0:2])
+        set_blocked(mock_amplify, cadss[1:3])
+        response = self.client.get(
+            reverse("k1api.content_ads.sources"), {"content_ad_ids": cad.id, "include_blocked": "false"}
+        )
+        data = json.loads(response.content)
+        self.assert_response_ok(response, data)
+        self.assertEqual(set([cadss[3].id]), set([ca["id"] for ca in data["response"]]))
 
     def test_update_content_ad_status(self):
         cas = dash.models.ContentAdSource.objects.get(pk=1)
