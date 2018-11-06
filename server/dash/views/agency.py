@@ -1635,8 +1635,8 @@ class AccountUsers(api_common.BaseApiView):
             "id": user.id,
             "name": user.get_full_name(),
             "email": user.email,
-            "last_login": user.last_login.date(),
-            "is_active": user.last_login != user.date_joined,
+            "last_login": user.last_login and user.last_login.date(),
+            "is_active": not user.last_login or user.last_login != user.date_joined,
             "is_agency_manager": agency_managers,
             "can_use_restapi": user.has_perm("zemauth.can_use_restapi"),
         }
