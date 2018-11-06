@@ -48,6 +48,7 @@ class AdGroupCreate(TestCase):
             write_history=False,
             k1_sync=False,
             ad_review_only=True,
+            skip_notification=True,
             state=constants.AdGroupSourceSettingsState.INACTIVE,
         )
 

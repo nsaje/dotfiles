@@ -417,6 +417,7 @@ class AdGroup(validation.AdGroupValidatorMixin, models.Model, bcm_mixin.AdGroupB
                 write_history=False,
                 k1_sync=False,
                 ad_review_only=True,
+                skip_notification=True,
                 state=constants.AdGroupSourceSettingsState.INACTIVE,
             )
 

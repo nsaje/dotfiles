@@ -134,7 +134,13 @@ class AdGroupSourceManager(core.common.QuerySetManager):
 
             try:
                 ad_group_source = self.create(
-                    request, ad_group, source, write_history=False, k1_sync=False, skip_validation=True
+                    request,
+                    ad_group,
+                    source,
+                    write_history=False,
+                    k1_sync=False,
+                    skip_validation=True,
+                    skip_notification=True,
                 )
                 added_ad_group_sources.append(ad_group_source)
             except utils.exc.MissingDataError:
