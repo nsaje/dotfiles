@@ -8,11 +8,6 @@ import analytics.client_report
 class ManagementReportTestCase(test.TestCase):
     fixtures = ["test_projections"]
 
-    def test_client_report_html(self):
-        report = analytics.client_report.get_weekly_report_html()
-        self.assertIn("<table", report)
-        self.assertIn("</table>", report)
-
     def test_rows(self):
         rows = analytics.client_report._prepare_table_rows(datetime.date(2017, 2, 14))
         self.assertEqual(

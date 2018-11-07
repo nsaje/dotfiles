@@ -15,4 +15,3 @@ class Command(ExceptionCommand):
         set_logger_verbosity(logger, options)
 
         utils.email_helper.send_weekly_inventory_report_email()
-        utils.email_helper.send_weekly_client_report_email()

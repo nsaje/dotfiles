@@ -475,13 +475,6 @@ def send_daily_management_report_email():
     )
 
 
-def send_weekly_client_report_email():
-    send_internal_email(
-        custom_html=analytics.client_report.get_weekly_report_html(),
-        **params_from_template(dash.constants.EmailTemplateType.WEEKLY_CLIENT_REPORT)
-    )
-
-
 def send_weekly_inventory_report_email():
     send_internal_email(
         **params_from_template(

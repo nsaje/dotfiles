@@ -1,7 +1,6 @@
 import datetime
 
 from django.db import models
-from django.template.loader import render_to_string
 
 import dash.constants
 import dash.models
@@ -121,9 +120,3 @@ def _generate_table_html(date):
         html += row.as_html(position)
     html += "</table>"
     return html
-
-
-def get_weekly_report_html(date=None):
-    if not date:
-        date = datetime.date.today()
-    return render_to_string("client_report.html", {"table": _generate_table_html(date)})
