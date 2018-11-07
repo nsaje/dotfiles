@@ -39,21 +39,21 @@ node('master') {
                     try {
                         sh 'make test_acceptance'
                     } finally {
-                        junit 'server/.junit_acceptance.xml'
+                        junit testResults: 'server/.junit_acceptance.xml', allowEmptyResults: true
                     }
                 },
                 'Server test': {
                     try {
                         sh 'make test_server | stdbuf -i0 -o0 -e0 tee /dev/stderr | tail -n 10 | grep "PASSED"'
                     } finally {
-                        junit 'server/.junit_xml/*.xml'
+                        junit testResults: 'server/.junit_xml/*.xml', allowEmptyResults: true
                     }
                 },
                 'Client test': {
                     try {
                         sh 'make test_client'                     
                     } finally {
-                        junit 'client/test-results.xml'
+                        junit testResults: 'client/test-results.xml', allowEmptyResults: true
                     }
                 },
                 'Client build': {

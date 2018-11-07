@@ -10,12 +10,14 @@ ifdef HUDSON_COOKIE # Jenkins
 	Z1_CLIENT_IMAGE := $(shell printf "$(ECR_BASE)/z1-client:$(GIT_BRANCH).$(BUILD_NUM)")
 	Z1_SERVER_IMAGE := $(shell printf "$(ECR_BASE)/z1:$(GIT_BRANCH).$(BUILD_NUM)")
 	ACCEPTANCE_IMAGE := $(shell printf "$(ECR_BASE)/z1:$(GIT_BRANCH).$(BUILD_NUM)")
+	SKIP_TESTS := $(shell [[ "$(GIT_BRANCH)" == *skiptest* ]] && echo "true" || echo "")
 else # Local development environment
 	GIT_BRANCH := $(shell git rev-parse --abbrev-ref HEAD)
 	BUILD_NUM  := $(shell printf "00000" )
 	Z1_CLIENT_IMAGE := $(shell printf "$(ECR_BASE)/z1-client")
 	Z1_SERVER_IMAGE := $(shell printf "$(ECR_BASE)/z1")
 	ACCEPTANCE_IMAGE := $(shell printf "$(ECR_BASE)/z1")
+	SKIP_TESTS := ""
 endif
 
 # Exported because docker-compose.*.yml uses it
@@ -46,6 +48,7 @@ reset_local_stats_database:	## loads latest materialization dump to local stats 
 
 test_server:	## runs server tests
 	mkdir -p server/.junit_xml/
+	[ -n "$(SKIP_TESTS)" ] && echo "Skipping tests due to skiptest in branch name, PASSED" || \
 	docker-compose \
 			-f docker-compose.yml \
 			-f docker-compose.jenkins.yml \
@@ -55,6 +58,7 @@ test_server:	## runs server tests
 			server bash -x ./run_tests.sh
 
 test_client:	## runs client tests
+	[ -n "$(SKIP_TESTS)" ] && echo "Skipping tests due to skiptest in branch name" || \
 	docker run \
 		   --rm \
 		   -u 1000 \
@@ -65,12 +69,15 @@ test_client:	## runs client tests
 		   bash -c "npm run tests"
 
 test_acceptance:	## runs tests against a running server in a container
+	[ -n "$(SKIP_TESTS)" ] && echo "Skipping tests due to skiptest in branch name" || \
 	./scripts/docker_test_acceptance.sh
 
 lint_server:	## runs server linters
+	[ -n "$(SKIP_TESTS)" ] && echo "Skipping tests due to skiptest in branch name" || \
 	bash ./scripts/lint_check.sh
 
 lint_client:	## runs client linters
+	[ -n "$(SKIP_TESTS)" ] && echo "Skipping tests due to skiptest in branch name" || \
 	docker run \
 		   --rm \
 		   -v $(PWD)/client:/app/ \
