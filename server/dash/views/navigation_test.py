@@ -343,7 +343,6 @@ class NavigationTreeViewTest(TestCase):
 
     @patch("datetime.datetime", MockDatetime)
     def test_get_no_statuses(self):
-        self.maxDiff = None
         response = self._get(1, loadStatuses="false")
         self.assertCountEqual(
             [
