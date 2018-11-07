@@ -13,7 +13,7 @@ def get_ad_group_dict(
     with_settings=True,
 ):
     if not with_settings:
-        return {"id": ad_group["id"], "name": ad_group["name"]}
+        return {"id": ad_group["id"], "name": ad_group["name"], "bidding_type": ad_group["bidding_type"]}
 
     running_status = models.AdGroup.get_running_status(ad_group_settings)
     state = ad_group_settings.state if ad_group_settings else constants.AdGroupSettingsState.INACTIVE

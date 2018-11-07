@@ -343,6 +343,7 @@ class NavigationTreeViewTest(TestCase):
 
     @patch("datetime.datetime", MockDatetime)
     def test_get_no_statuses(self):
+        self.maxDiff = None
         response = self._get(1, loadStatuses="false")
         self.assertCountEqual(
             [
@@ -350,9 +351,9 @@ class NavigationTreeViewTest(TestCase):
                     "campaigns": [
                         {
                             "adGroups": [
-                                {"id": 1, "name": "test adgroup 1"},
-                                {"id": 2, "name": "test adgroup 2"},
-                                {"id": 3, "name": "test adgroup 3"},
+                                {"id": 1, "name": "test adgroup 1", "bidding_type": 1},
+                                {"id": 2, "name": "test adgroup 2", "bidding_type": 1},
+                                {"id": 3, "name": "test adgroup 3", "bidding_type": 2},
                             ],
                             "id": 1,
                             "name": "test campaign 1",
