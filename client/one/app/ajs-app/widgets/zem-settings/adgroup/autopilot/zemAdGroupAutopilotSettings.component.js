@@ -13,17 +13,17 @@ angular.module('one.widgets').component('zemAdGroupAutopilotSettings', {
         zemMulticurrencyService
     ) {
         var MSG_ALL_RTB_ENABLED_AD_GROUP_INACTIVE =
-            'One joint Bid CPC and Daily Spend Cap for will be set for all ' +
+            'One joint Bid and Daily Spend Cap will be set for all ' +
             'RTB sources. Please check the Daily Spend Cap in the Media Sources tab before enabling the ad group.';
         var MSG_ALL_RTB_ENABLED_AD_GROUP_ACTIVE =
             'This ad group will be automatically paused to set one joint Bid ' +
-            'CPC and Daily Spend Cap for all RTB sources. Please check the Daily Spend Cap in the Media Sources ' +
+            'and Daily Spend Cap for all RTB sources. Please check the Daily Spend Cap in the Media Sources ' +
             'tab before enabling the ad group.';
         var MSG_ALL_RTB_DISABLED_AD_GROUP_INACTIVE =
-            'Bid CPCs and Daily Spend Caps of all RTB sources will be ' +
+            'Bids and Daily Spend Caps of all RTB sources will be ' +
             'reset. Please check Daily Spend Caps in the Media Sources tab before you enable the ad group.';
         var MSG_ALL_RTB_DISABLED_AD_GROUP_ACTIVE =
-            'This ad group will be automatically paused to reset the Bid CPCs ' +
+            'This ad group will be automatically paused to reset the Bids ' +
             'and Daily Spend Caps of all RTB sources. Please check Daily Spend Caps in the Media Sources tab before ' +
             'you enable the ad group.';
 
