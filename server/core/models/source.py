@@ -83,12 +83,6 @@ class Source(models.Model):
     def can_update_cpc(self):
         return self.source_type.can_update_cpc() and not self.maintenance and not self.deprecated
 
-    def can_update_cpm(self):
-        return self.source_type.can_update_cpm() and not self.maintenance and not self.deprecated
-
-    def can_set_max_cpm(self):
-        return self.source_type.can_set_max_cpm() and not self.maintenance and not self.deprecated
-
     def can_update_daily_budget_manual(self):
         return self.source_type.can_update_daily_budget_manual() and not self.maintenance and not self.deprecated
 

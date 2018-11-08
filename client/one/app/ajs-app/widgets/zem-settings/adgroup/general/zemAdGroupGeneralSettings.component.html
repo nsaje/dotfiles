@@ -144,16 +144,14 @@
                                 id="cpm-input"
                                 type="text"
                                 ng-model="$ctrl.entity.settings.maxCpm"
-                                ng-disabled="$ctrl.entity.warnings.maxCpm !== undefined"
                                 zem-currency-input
                                 fraction-size="3"
                                 empty-text="No limit">
                         </div>
                         <div
-                            class="message message--warning message--with-icon zem-ad-group-general-settings__bid-settings-warning"
-                            ng-if="$ctrl.entity.warnings.maxCpm !== undefined"
+                            class="message message--info message--with-icon zem-ad-group-general-settings__bid-settings-warning"
                         >
-                            {{ $ctrl.MESSAGES.WARNING_MAX_CPM }}
+                            Outbrain doesn’t support CPM bidding and will be automatically paused in this ad group if you enable this setting.
                         </div>
                         <div
                             class="message message--error zem-ad-group-general-settings__bid-settings-error"

@@ -384,19 +384,16 @@ class AdGroupSourceTableEditableFieldsTest(TestCase):
             {"enabled": False, "message": "This source can not be enabled with the current settings - CPM too low."},
         )
 
-    def test_get_editable_fields_status_setting_max_cpm(self):
+    def test_get_editable_fields_status_setting_cpm_bidding(self):
         ad_group_source = models.AdGroupSource.objects.get(pk=1)
         ad_group_source_settings = models.AdGroupSourceSettings.objects.get(pk=1)
         ad_group_source.source.supports_retargeting = True
         ad_group_source.source.save()
 
         ad_group_settings = models.AdGroupSettings.objects.get(pk=1)
-        ad_group_settings.max_cpm = decimal.Decimal("1.5")
+        ad_group_settings.ad_group.bidding_type = constants.BiddingType.CPM
 
-        ad_group_source.source.source_type.available_actions = [
-            constants.SourceAction.CAN_UPDATE_STATE,
-            constants.SourceAction.CAN_SET_MAX_CPM,
-        ]
+        ad_group_source.source.source_type.available_actions = [constants.SourceAction.CAN_UPDATE_STATE]
 
         allowed_sources = set([ad_group_source.source_id])
         result = helpers._get_editable_fields_status_setting(
@@ -404,19 +401,6 @@ class AdGroupSourceTableEditableFieldsTest(TestCase):
         )
 
         self.assertEqual(result, {"enabled": True, "message": None})
-
-        ad_group_source.source.source_type.available_actions.remove(constants.SourceAction.CAN_SET_MAX_CPM)
-        result = helpers._get_editable_fields_status_setting(
-            ad_group_source.ad_group, ad_group_source, ad_group_settings, ad_group_source_settings, allowed_sources
-        )
-
-        self.assertEqual(
-            result,
-            {
-                "enabled": False,
-                "message": "This source can not be enabled because it does not support max CPM restriction.",
-            },
-        )
 
     def test_get_editable_fields_without_retargeting(self):
         ad_group_source = models.AdGroupSource.objects.get(pk=1)
@@ -718,40 +702,19 @@ class AdGroupSourceTableEditableFieldsTest(TestCase):
             result, {"enabled": False, "message": "This value cannot be edited because the campaign is on Autopilot."}
         )
 
-    def test_get_editable_fields_bid_cpm_enabled(self):
+    def test_get_editable_fields_bid_cpm(self):
         ad_group_source = models.AdGroupSource.objects.get(pk=1)
 
         ad_group_settings = ad_group_source.ad_group.get_current_settings()
         ad_group_settings.end_date = None
         ad_group_settings.autopilot_state = constants.AdGroupSettingsAutopilotState.INACTIVE
         campaign_settings = ad_group_source.ad_group.campaign.get_current_settings()
-
-        ad_group_source.source.source_type.available_actions = [constants.SourceAction.CAN_UPDATE_CPM]
 
         result = helpers._get_editable_fields_bid_cpm(
             ad_group_source.ad_group, ad_group_source, ad_group_settings, campaign_settings
         )
 
         self.assertEqual(result, {"enabled": True, "message": None})
-
-    def test_get_editable_fields_bid_cpm_disabled(self):
-        ad_group_source = models.AdGroupSource.objects.get(pk=1)
-
-        ad_group_settings = ad_group_source.ad_group.get_current_settings()
-        ad_group_settings.autopilot_state = constants.AdGroupSettingsAutopilotState.INACTIVE
-        ad_group_settings.end_date = None
-        campaign_settings = ad_group_source.ad_group.campaign.get_current_settings()
-
-        ad_group_source.source.source_type.available_actions = []
-
-        result = helpers._get_editable_fields_bid_cpm(
-            ad_group_source.ad_group, ad_group_source, ad_group_settings, campaign_settings
-        )
-
-        self.assertEqual(
-            result,
-            {"enabled": False, "message": "This source can not be enabled because it does not support CPM buying."},
-        )
 
     def test_get_editable_fields_bid_cpm_adgroup_cpm_autopilot(self):
         ad_group_source = models.AdGroupSource.objects.get(pk=1)
@@ -796,7 +759,6 @@ class AdGroupSourceTableEditableFieldsTest(TestCase):
         ad_group_settings.end_date = None
         campaign_settings = ad_group_source.ad_group.campaign.get_current_settings()
 
-        ad_group_source.source.source_type.available_actions = [constants.SourceAction.CAN_UPDATE_CPM]
         ad_group_source.source.maintenance = True
 
         result = helpers._get_editable_fields_bid_cpm(

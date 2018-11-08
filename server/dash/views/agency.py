@@ -313,18 +313,6 @@ class AdGroupSettings(api_common.BaseApiView):
 
         raise utils.exc.ValidationError(errors=errors)
 
-    def _supports_max_cpm(self, ad_group_sources):
-        unsupported_sources = []
-        for ad_group_source in ad_group_sources:
-            if ad_group_source.settings.state != constants.AdGroupSourceSettingsState.ACTIVE:
-                continue
-
-            source = ad_group_source.source
-            if not source.can_set_max_cpm():
-                unsupported_sources.append(source)
-
-        return unsupported_sources
-
     def get_warnings(self, request, ad_group_settings):
         warnings = {}
 
@@ -333,10 +321,6 @@ class AdGroupSettings(api_common.BaseApiView):
         if not supports_retargeting:
             retargeting_warning = {"sources": [s.name for s in unsupported_sources]}
             warnings["retargeting"] = retargeting_warning
-
-        max_cpm_unsupported_sources = self._supports_max_cpm(ad_group_sources)
-        if max_cpm_unsupported_sources:
-            warnings["max_cpm"] = {"sources": [s.name for s in max_cpm_unsupported_sources]}
 
         return warnings
 

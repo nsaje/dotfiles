@@ -248,20 +248,6 @@ class AdGroupSettingsTest(TestCase):
 
         self.assertDictEqual(json.loads(response.content)["data"]["warnings"]["retargeting"], {"sources": ["Yahoo"]})
 
-    def test_get_max_cpm_unsupported(self):
-        ad_group = models.AdGroup.objects.get(pk=1)
-        source = models.Source.objects.get(pk=5)
-
-        req = RequestFactory().get("/")
-        req.user = User(id=1)
-
-        ags = models.AdGroupSource.objects.get(ad_group=ad_group, source=source)
-        ags.settings.update_unsafe(None, state=constants.AdGroupSourceSettingsState.ACTIVE)
-
-        add_permissions(self.user, ["settings_view"])
-        response = self.client.get(reverse("ad_group_settings", kwargs={"ad_group_id": ad_group.id}), follow=True)
-        self.assertDictEqual(json.loads(response.content)["data"]["warnings"]["max_cpm"], {"sources": ["Yahoo"]})
-
     @patch("utils.redirector_helper.insert_adgroup")
     @patch("utils.k1_helper.update_ad_group")
     def test_put_cpc(self, mock_k1_ping, mock_redirector_insert_adgroup):

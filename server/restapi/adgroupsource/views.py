@@ -111,7 +111,7 @@ class AdGroupSourceViewSet(RESTAPIBaseViewSet):
                 errors={
                     "daily_budget": [
                         "Maximum allowed daily spend cap is {}. "
-                        "If you want use a higher daily spend cap, please contact support.".format(
+                        "If you want to use a higher daily spend cap, please contact support.".format(
                             core.features.multicurrency.format_value_in_currency(
                                 err.data.get("value"), 0, decimal.ROUND_FLOOR, ad_group_source.settings.get_currency()
                             )

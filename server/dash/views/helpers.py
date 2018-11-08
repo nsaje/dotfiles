@@ -521,12 +521,8 @@ def _get_editable_fields_bid_cpc(ad_group, ad_group_source, ad_group_settings, c
         or ad_group_settings.autopilot_state != constants.AdGroupSettingsAutopilotState.INACTIVE
         or campaign_settings.autopilot
     ):
-        default_msg = "This media source doesn't support setting this value through the dashboard."
-        message = (
-            _get_bid_value_daily_budget_disabled_message(
-                ad_group, ad_group_source, ad_group_settings, campaign_settings
-            )
-            or default_msg
+        message = _get_bid_value_daily_budget_disabled_message(
+            ad_group, ad_group_source, ad_group_settings, campaign_settings
         )
 
     return {"enabled": message is None, "message": message}
@@ -536,16 +532,11 @@ def _get_editable_fields_bid_cpm(ad_group, ad_group_source, ad_group_settings, c
     message = None
 
     if (
-        not ad_group_source.source.can_update_cpm()
-        or ad_group_settings.autopilot_state != constants.AdGroupSettingsAutopilotState.INACTIVE
+        ad_group_settings.autopilot_state != constants.AdGroupSettingsAutopilotState.INACTIVE
         or campaign_settings.autopilot
     ):
-        default_msg = "This source can not be enabled because it does not support CPM buying."
-        message = (
-            _get_bid_value_daily_budget_disabled_message(
-                ad_group, ad_group_source, ad_group_settings, campaign_settings
-            )
-            or default_msg
+        message = _get_bid_value_daily_budget_disabled_message(
+            ad_group, ad_group_source, ad_group_settings, campaign_settings
         )
 
     return {"enabled": message is None, "message": message}
@@ -560,12 +551,8 @@ def _get_editable_fields_daily_budget(ad_group, ad_group_source, ad_group_settin
         or ad_group_settings.autopilot_state == constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET
         or campaign_settings.autopilot
     ):
-        default_msg = "This media source doesn't support setting this value through the dashboard."
-        message = (
-            _get_bid_value_daily_budget_disabled_message(
-                ad_group, ad_group_source, ad_group_settings, campaign_settings
-            )
-            or default_msg
+        message = _get_bid_value_daily_budget_disabled_message(
+            ad_group, ad_group_source, ad_group_settings, campaign_settings
         )
 
     return {"enabled": message is None, "message": message}
@@ -610,8 +597,6 @@ def _get_editable_fields_status_setting(
         message = "This source can not be enabled with the current settings - CPC too low for desktop targeting."
     elif message is None and not check_yahoo_min_cpm(ad_group_settings, ad_group_source, ad_group_source_settings):
         message = "This source can not be enabled with the current settings - CPM too low."
-    elif message is None and not check_max_cpm(ad_group_source, ad_group_settings):
-        message = "This source can not be enabled because it does not support max CPM restriction."
 
     return {"enabled": message is None, "message": message}
 
@@ -664,13 +649,6 @@ def check_yahoo_min_cpm(ad_group_settings, ad_group_source, ad_group_source_sett
     return True
 
 
-def check_max_cpm(ad_group_source, ad_group_settings):
-    if ad_group_settings.max_cpm and not ad_group_source.source.source_type.can_set_max_cpm():
-        return False
-
-    return True
-
-
 def _get_status_setting_disabled_message(ad_group_source):
     if ad_group_source.source.maintenance:
         return "This source is currently in maintenance mode."
@@ -714,7 +692,7 @@ def _get_bid_value_daily_budget_disabled_message(ad_group, ad_group_source, ad_g
     ]:
         return "This value cannot be edited because the ad group is on Autopilot."
 
-    return None
+    return "This media source doesn't support setting this value through the dashboard."
 
 
 def enabling_autopilot_sources_allowed(ad_group, ad_group_sources):

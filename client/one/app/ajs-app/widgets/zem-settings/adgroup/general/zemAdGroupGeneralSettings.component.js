@@ -21,7 +21,6 @@ angular.module('one.widgets').component('zemAdGroupGeneralSettings', {
             WARNING_END_DATE:
                 'Your campaign has been switched to landing mode. ' +
                 'Please add the budget and continue to adjust settings by your needs. ',
-            WARNING_MAX_CPM: '',
             INFO_CLICK_CAPPING:
                 'Outbrain and Yahoo don’t support click capping and will be automatically paused in this ad group if you enable this setting.',
             WARNING_CAMPAIGN_BUDGET_OPTIMIZATION_FLIGHT_TIME:
@@ -50,17 +49,6 @@ angular.module('one.widgets').component('zemAdGroupGeneralSettings', {
             $ctrl.currencySymbol = zemMulticurrencyService.getAppropriateCurrencySymbol(
                 zemNavigationNewService.getActiveAccount()
             );
-        };
-
-        $ctrl.$onChanges = function() {
-            if ($ctrl.entity && $ctrl.entity.warnings.maxCpm) {
-                $ctrl.MESSAGES.WARNING_MAX_CPM =
-                    'You have some active media sources ' +
-                    "that don't support max CPM restriction. To start using it, please " +
-                    'disable/pause these media sources: ' +
-                    $ctrl.entity.warnings.maxCpm.sources.join(', ') +
-                    '.';
-            }
         };
 
         function goToBudgets() {

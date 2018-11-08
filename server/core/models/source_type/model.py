@@ -66,12 +66,6 @@ class SourceType(models.Model, bcm_mixin.SourceTypeBCMMixin):
     def can_update_cpc(self):
         return self.available_actions is not None and constants.SourceAction.CAN_UPDATE_CPC in self.available_actions
 
-    def can_update_cpm(self):
-        return self.available_actions is not None and constants.SourceAction.CAN_UPDATE_CPM in self.available_actions
-
-    def can_set_max_cpm(self):
-        return self.available_actions is not None and constants.SourceAction.CAN_SET_MAX_CPM in self.available_actions
-
     def can_update_daily_budget_manual(self):
         return (
             self.available_actions is not None
