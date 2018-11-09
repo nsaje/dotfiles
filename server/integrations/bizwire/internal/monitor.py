@@ -25,7 +25,7 @@ def run_hourly_job():
     monitor_yesterday_clicks()
     monitor_duplicate_articles()
     monitor_remaining_budget()
-    monitor_past_7_days_clicks()
+    monitor_past_n_days_clicks(10)
 
 
 def _get_unique_s3_labels(dates):
@@ -96,16 +96,16 @@ def monitor_yesterday_clicks():
     _send_missing_clicks_email_alert(missing_clicks)
 
 
-def monitor_past_7_days_clicks():
+def monitor_past_n_days_clicks(num_days):
     pacific_today = helpers.get_pacific_now().date()
-    past_7_days_ad_groups = [
+    past_n_days_ad_groups = [
         rotation.ad_group
         for rotation in models.AdGroupRotation.objects.filter(
-            start_date__gte=dates_helper.days_before(pacific_today, 7), start_date__lt=pacific_today
+            start_date__gte=dates_helper.days_before(pacific_today, num_days), start_date__lt=pacific_today
         )
     ]
 
-    for ad_group in past_7_days_ad_groups:
+    for ad_group in past_n_days_ad_groups:
         _monitor_missing_clicks(ad_group)
 
 
