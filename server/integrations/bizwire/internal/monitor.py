@@ -144,7 +144,7 @@ def _send_missing_clicks_email_alert(ad_group, missing_clicks):
     subject = "[BIZWIRE] Missing clicks on ad group {}".format(ad_group.name)
     body = """Hi,
 
-Ad group {} has been running for {} or more days and it's still missing {} clicks.""".format(
+Ad group {} has been running for {} or more days and is still missing {} clicks.""".format(
         "https://one.zemanta.com/v2/analytics/adgroup/{}".format(ad_group.id),
         MISSING_CLICKS_ALERT_MIN_AD_GROUP_AGE,
         missing_clicks,
