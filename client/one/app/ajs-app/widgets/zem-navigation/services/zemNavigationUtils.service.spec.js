@@ -16,11 +16,15 @@ describe('ZemNavigationUtils', function() {
             var account = createAccount(accountIdx);
             hierarchy.children.push(account);
             for (var campaignIdx = 0; campaignIdx < size[1]; ++campaignIdx) {
-                var campaign = createCampaign(campaignIdx);
+                var campaign = createCampaign(accountIdx, campaignIdx);
                 campaign.parent = account;
                 account.children.push(campaign);
                 for (var adGroupIdx = 0; adGroupIdx < size[2]; ++adGroupIdx) {
-                    var adGroup = createAdGroup(adGroupIdx);
+                    var adGroup = createAdGroup(
+                        accountIdx,
+                        campaignIdx,
+                        adGroupIdx
+                    );
                     adGroup.parent = campaign;
                     campaign.children.push(adGroup);
                 }
@@ -29,30 +33,39 @@ describe('ZemNavigationUtils', function() {
         return hierarchy;
     }
 
-    function createAccount(idx) {
+    function createAccount(accountIdx) {
+        accountIdx += 1;
         return {
             type: constants.entityType.ACCOUNT,
-            name: 'account ' + idx,
+            id: parseInt('' + accountIdx + '000'),
+            name: 'account ' + accountIdx,
             data: {
-                agency: 'agency ' + idx,
+                agency: 'agency ' + accountIdx,
             },
             children: [],
         };
     }
 
-    function createCampaign(idx) {
+    function createCampaign(accountIdx, campaignIdx) {
+        accountIdx += 1;
+        campaignIdx += 1;
         return {
             type: constants.entityType.CAMPAIGN,
-            name: 'campaign ' + idx,
+            id: parseInt('' + accountIdx + campaignIdx + '000'),
+            name: 'campaign ' + campaignIdx,
             data: {},
             children: [],
         };
     }
 
-    function createAdGroup(idx) {
+    function createAdGroup(accountIdx, campaignIdx, adGroupIdx) {
+        accountIdx += 1;
+        campaignIdx += 1;
+        adGroupIdx += 1;
         return {
             type: constants.entityType.AD_GROUP,
-            name: 'adgroup ' + idx,
+            id: parseInt('' + accountIdx + campaignIdx + adGroupIdx + '000'),
+            name: 'adgroup ' + adGroupIdx,
             data: {},
         };
     }
@@ -72,7 +85,7 @@ describe('ZemNavigationUtils', function() {
         expect(list[13].type).toEqual(constants.entityType.AD_GROUP);
     });
 
-    it('should filter list while keeping parent entities', function() {
+    it('should filter list by name while keeping parent entities', function() {
         var hierarchy = createEntityHierarchy();
         var list = zemNavigationUtils.convertToEntityList(hierarchy);
 
@@ -82,16 +95,33 @@ describe('ZemNavigationUtils', function() {
         filteredList = zemNavigationUtils.filterEntityList(list, 'campaign');
         expect(filteredList.length).toBe(6);
 
-        filteredList = zemNavigationUtils.filterEntityList(list, 'campaign 1');
+        filteredList = zemNavigationUtils.filterEntityList(list, 'campaign 2');
         expect(filteredList.length).toBe(4);
 
         filteredList = zemNavigationUtils.filterEntityList(list, 'adgroup');
         expect(filteredList.length).toBe(22);
 
-        filteredList = zemNavigationUtils.filterEntityList(list, 'adgroup 1');
+        filteredList = zemNavigationUtils.filterEntityList(list, 'adgroup 2');
         expect(filteredList.length).toBe(10);
         expect(filteredList[0].type).toEqual(constants.entityType.ACCOUNT);
         expect(filteredList[1].type).toEqual(constants.entityType.CAMPAIGN);
+        expect(filteredList[2].type).toEqual(constants.entityType.AD_GROUP);
+    });
+
+    it('should filter list by id while keeping parent entities', function() {
+        var hierarchy = createEntityHierarchy();
+        var list = zemNavigationUtils.convertToEntityList(hierarchy);
+
+        var filteredList = zemNavigationUtils.filterEntityList(list, '2000');
+        expect(filteredList.length).toBe(1);
+        expect(filteredList[0].type).toEqual(constants.entityType.ACCOUNT);
+
+        filteredList = zemNavigationUtils.filterEntityList(list, '21000');
+        expect(filteredList.length).toBe(2);
+        expect(filteredList[1].type).toEqual(constants.entityType.CAMPAIGN);
+
+        filteredList = zemNavigationUtils.filterEntityList(list, '213000');
+        expect(filteredList.length).toBe(3);
         expect(filteredList[2].type).toEqual(constants.entityType.AD_GROUP);
     });
 
@@ -108,7 +138,7 @@ describe('ZemNavigationUtils', function() {
 
         filteredList = zemNavigationUtils.filterEntityList(
             list,
-            'adgroup 1',
+            'adgroup 2',
             false
         );
         expect(filteredList.length).toBe(10);

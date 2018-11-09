@@ -28,6 +28,7 @@ angular.module('one.widgets').service('zemNavigationUtils', function() {
         // Keep parents in list (e.g. keep account and campaign if ad group is present in filtered list)
 
         query = query.toLowerCase();
+        var idQuery = parseInt(query, 10);
         var filteredList = list;
 
         filteredList = filteredList.filter(function(item) {
@@ -37,7 +38,10 @@ angular.module('one.widgets').service('zemNavigationUtils', function() {
         filteredList = filteredList.filter(function(item) {
             if (item.type !== constants.entityType.AD_GROUP) return true;
             if (filterAgency && isFilteredByAgency(item, query)) return true;
-            return isFilteredByName(item, query);
+            return (
+                (idQuery && isFilteredById(item, idQuery)) ||
+                isFilteredByName(item, query)
+            );
         });
 
         filteredList = filteredList.filter(function(item, idx) {
@@ -48,7 +52,10 @@ angular.module('one.widgets').service('zemNavigationUtils', function() {
             )
                 return true;
             if (filterAgency && isFilteredByAgency(item, query)) return true;
-            return isFilteredByName(item, query);
+            return (
+                (idQuery && isFilteredById(item, idQuery)) ||
+                isFilteredByName(item, query)
+            );
         });
 
         filteredList = filteredList.filter(function(item, idx) {
@@ -59,7 +66,10 @@ angular.module('one.widgets').service('zemNavigationUtils', function() {
             )
                 return true;
             if (filterAgency && isFilteredByAgency(item, query)) return true;
-            return isFilteredByName(item, query);
+            return (
+                (idQuery && isFilteredById(item, idQuery)) ||
+                isFilteredByName(item, query)
+            );
         });
 
         return filteredList;
@@ -74,6 +84,10 @@ angular.module('one.widgets').service('zemNavigationUtils', function() {
             account.data.agency &&
             account.data.agency.toLowerCase().indexOf(query) >= 0
         );
+    }
+
+    function isFilteredById(item, idQuery) {
+        return parseInt(item.id) === idQuery;
     }
 
     function isFilteredByName(item, query) {
