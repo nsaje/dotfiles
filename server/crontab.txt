@@ -1,57 +1,56 @@
-# -- We removed cron.yaml and moved to more straightforward solution.
 # -- This is plain crontab formatted file. Please note you should be careful with syntax
-
-0 9,12,15 * * *  /home/ubuntu/docker-manage-py.sh monitor_blacklists
-15 9 * * *       /home/ubuntu/docker-manage-py.sh run_autopilot --daily-run
-15 10 * * *      /home/ubuntu/docker-manage-py.sh audit_autopilot --slack
-0 14 * * *       /home/ubuntu/docker-manage-py.sh audit_overspend --slack --influx
-*/5 * * * *      /home/ubuntu/docker-manage-py.sh refresh_etl 3
-0 12 * * *       /home/ubuntu/docker-manage-py.sh send_outbrain_manual_actions_email
-40 * * * *       /home/ubuntu/docker-manage-py.sh monitor_adgroup_propagation
-10 9-20 * * *    /home/ubuntu/docker-manage-py.sh send_scheduled_reports
-30 16 * * *      /home/ubuntu/docker-manage-py.sh send_supply_report_emails
-0 12 * * *       /home/ubuntu/docker-manage-py.sh free_inactive_allocated_assets
-0 8 * * *        /home/ubuntu/docker-manage-py.sh create_demo_snapshot
-*/5 * * * *      /home/ubuntu/docker-manage-py.sh check_facebook_page_approval
-0 * * * *        /home/ubuntu/docker-manage-py.sh monitor_selfmanaged
+# -- We removed cron.yaml and moved to more straightforward solution.
+#0 8 * * *        /home/ubuntu/docker-manage-py.sh auto_archive_inactive_entities
+#20 7,11 * * *    /home/ubuntu/docker-manage-py.sh audit_spend_integrity --slack
+*/1 * * * *      /home/ubuntu/docker-manage-py.sh handle_auto_save_batches
+*/15 * * * *     /home/ubuntu/docker-manage-py.sh clean_up_old_in_progress_batches
 */15 * * * *     /home/ubuntu/docker-manage-py.sh monitor_demo
+*/2 * * * *      /home/ubuntu/docker-manage-py.sh campaignstop_main
+*/20 * * * *     /home/ubuntu/docker-manage-py.sh campaignstop_simple
+*/5 * * * *      /home/ubuntu/docker-manage-py.sh campaignstop_handle_updates
+*/5 * * * *      /home/ubuntu/docker-manage-py.sh check_facebook_page_approval
+*/5 * * * *      /home/ubuntu/docker-manage-py.sh refresh_etl 3
+0 * * * *        /home/ubuntu/docker-manage-py.sh bizwire_hourly_job
+0 * * * *        /home/ubuntu/docker-manage-py.sh campaignstop_selection
+0 * * * *        /home/ubuntu/docker-manage-py.sh monitor_content_ad_upload
+0 * * * *        /home/ubuntu/docker-manage-py.sh monitor_selfmanaged
+0 * * * *        /home/ubuntu/docker-manage-py.sh refresh_ga_linked_accounts
+0 0 * * *        /home/ubuntu/docker-manage-py.sh cleartokens
+0 0 1 * *        /home/ubuntu/docker-manage-py.sh multicurrency_update
+0 10 * * *       /home/ubuntu/docker-manage-py.sh campaignstop_monitor --slack
+0 10 5,15,25 * * /home/ubuntu/docker-manage-py.sh audit_pacing --send-emails
+0 12 * * *       /home/ubuntu/docker-manage-py.sh bluekai_refresh --slack
+0 12 * * *       /home/ubuntu/docker-manage-py.sh free_inactive_allocated_assets
+0 12 * * *       /home/ubuntu/docker-manage-py.sh monitor_dailystatement_holes
+0 12 * * *       /home/ubuntu/docker-manage-py.sh send_outbrain_manual_actions_email
+0 14 * * *       /home/ubuntu/docker-manage-py.sh audit_overspend --slack --influx
+0 22 * * *        /home/ubuntu/docker-manage-py.sh clean_up_postgres_stats
+0 22 * * *        /home/ubuntu/docker-manage-py.sh clean_up_supply_stats  # has to run before vacuum_stats
+0 23 * * *        /home/ubuntu/docker-manage-py.sh vacuum_stats
+0 4 * * *        /home/ubuntu/docker-manage-py.sh oen_publishers_list
+0 4,5 * * *      /home/ubuntu/docker-manage-py.sh campaignstop_midnight --check-time
+0 5 * * *        /home/ubuntu/docker-manage-py.sh get_pixel_traffic
 0 7 * * *        /home/ubuntu/docker-manage-py.sh send_daily_management_report
 0 7 * * 1        /home/ubuntu/docker-manage-py.sh send_weekly_reports
-0 * * * *        /home/ubuntu/docker-manage-py.sh monitor_content_ad_upload
-15 9 * * 1       /home/ubuntu/docker-manage-py.sh audit_credits --send-emails
-15 7 * * *       /home/ubuntu/docker-manage-py.sh audit_spend_patterns
-#20 7,11 * * *    /home/ubuntu/docker-manage-py.sh audit_spend_integrity --slack
-20 11 * * *      /home/ubuntu/docker-manage-py.sh audit_hacks --slack
-0 10 5,15,25 * * /home/ubuntu/docker-manage-py.sh audit_pacing --send-emails
-20 10 * * *      /home/ubuntu/docker-manage-py.sh daily_audit --send-emails
-15 10 * * *      /home/ubuntu/docker-manage-py.sh post_delivery_statuses
-10 10 * * *      /home/ubuntu/docker-manage-py.sh generate_hack_report -n 14 -i
-0 * * * *        /home/ubuntu/docker-manage-py.sh bizwire_hourly_job
-5 * * * *        /home/ubuntu/docker-manage-py.sh bizwire_monitor
-0 0 * * *        /home/ubuntu/docker-manage-py.sh cleartokens
-0 5 * * *        /home/ubuntu/docker-manage-py.sh get_pixel_traffic
-50 * * * *       /home/ubuntu/docker-manage-py.sh compare_blacklists
-0 22 * * *        /home/ubuntu/docker-manage-py.sh clean_up_supply_stats  # has to run before vacuum_stats
-0 22 * * *        /home/ubuntu/docker-manage-py.sh clean_up_postgres_stats
-0 23 * * *        /home/ubuntu/docker-manage-py.sh vacuum_stats
-30 6 * * *       /home/ubuntu/docker-manage-py.sh bi_to_influx
-0 12 * * *       /home/ubuntu/docker-manage-py.sh bluekai_refresh --slack
-44 */5 * * *     /home/ubuntu/docker-manage-py.sh refresh_audience_sample_size_cache
-*/1 * * * *      /home/ubuntu/docker-manage-py.sh handle_auto_save_batches
+0 8 * * *        /home/ubuntu/docker-manage-py.sh create_demo_snapshot
 0 8 * * *        /home/ubuntu/docker-manage-py.sh send_oen_postclickkpi_cpa_email
-0 * * * *        /home/ubuntu/docker-manage-py.sh refresh_ga_linked_accounts
-30 7 1 * *       /home/ubuntu/docker-manage-py.sh refresh_inventory_data
-0 4 * * *        /home/ubuntu/docker-manage-py.sh oen_publishers_list
-*/2 * * * *      /home/ubuntu/docker-manage-py.sh campaignstop_main
-50 3,4 * * *     /home/ubuntu/docker-manage-py.sh campaignstop_midnight_refresh --check-time
-0 4,5 * * *      /home/ubuntu/docker-manage-py.sh campaignstop_midnight --check-time
-0 * * * *        /home/ubuntu/docker-manage-py.sh campaignstop_selection
-*/5 * * * *      /home/ubuntu/docker-manage-py.sh campaignstop_handle_updates
-0 10 * * *       /home/ubuntu/docker-manage-py.sh campaignstop_monitor --slack
-*/20 * * * *     /home/ubuntu/docker-manage-py.sh campaignstop_simple
-*/15 * * * *     /home/ubuntu/docker-manage-py.sh clean_up_old_in_progress_batches
-0 0 1 * *        /home/ubuntu/docker-manage-py.sh multicurrency_update
+0 9,12,15 * * *  /home/ubuntu/docker-manage-py.sh monitor_blacklists
+5 * * * *        /home/ubuntu/docker-manage-py.sh bizwire_monitor
+10 10 * * *      /home/ubuntu/docker-manage-py.sh generate_hack_report -n 14 -i
+10 9-20 * * *    /home/ubuntu/docker-manage-py.sh send_scheduled_reports
+15 10 * * *      /home/ubuntu/docker-manage-py.sh audit_autopilot --slack
+15 10 * * *      /home/ubuntu/docker-manage-py.sh post_delivery_statuses
+15 7 * * *       /home/ubuntu/docker-manage-py.sh audit_spend_patterns
+15 9 * * *       /home/ubuntu/docker-manage-py.sh run_autopilot --daily-run
+15 9 * * 1       /home/ubuntu/docker-manage-py.sh audit_credits --send-emails
+20 10 * * *      /home/ubuntu/docker-manage-py.sh daily_audit --send-emails
+20 11 * * *      /home/ubuntu/docker-manage-py.sh audit_hacks --slack
 30 * * * *       /home/ubuntu/docker-manage-py.sh hack_cache_k1api_ga_accounts
-#0 8 * * *        /home/ubuntu/docker-manage-py.sh auto_archive_inactive_entities
-0 12 * * *       /home/ubuntu/docker-manage-py.sh monitor_dailystatement_holes
 30 */6 * * *     /home/ubuntu/docker-manage-py.sh rds_materialization
+30 16 * * *      /home/ubuntu/docker-manage-py.sh send_supply_report_emails
+30 6 * * *       /home/ubuntu/docker-manage-py.sh bi_to_influx
+30 7 1 * *       /home/ubuntu/docker-manage-py.sh refresh_inventory_data
+40 * * * *       /home/ubuntu/docker-manage-py.sh monitor_adgroup_propagation
+44 */5 * * *     /home/ubuntu/docker-manage-py.sh refresh_audience_sample_size_cache
+50 * * * *       /home/ubuntu/docker-manage-py.sh compare_blacklists
+50 3,4 * * *     /home/ubuntu/docker-manage-py.sh campaignstop_midnight_refresh --check-time
