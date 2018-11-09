@@ -17,12 +17,13 @@ from utils import email_helper
 logger = logging.getLogger(__name__)
 
 MISSING_CLICKS_THRESHOLD = 3
+MISSING_CLICKS_ALERT_HOUR_UTC = 8
+MISSING_CLICKS_ALERT_MIN_AD_GROUP_AGE = 5
 
 
 def run_hourly_job():
     monitor_num_ingested_articles()
     monitor_yesterday_spend()
-    monitor_yesterday_clicks()
     monitor_duplicate_articles()
     monitor_remaining_budget()
     monitor_past_n_days_clicks(10)
@@ -89,30 +90,25 @@ Businesswire campaign is running out of budget. Configure any additional budgets
     email_helper.send_internal_email(recipient_list=emails, subject=subject, body=body)
 
 
-def monitor_yesterday_clicks():
-    content_ad_ids = _get_content_ad_ids_added_yesterday()
-    missing_clicks = _get_missing_clicks(content_ad_ids)
-    influx.gauge("integrations.bizwire.yesterday_missing_clicks", missing_clicks)
-    _send_missing_clicks_email_alert(missing_clicks)
-
-
 def monitor_past_n_days_clicks(num_days):
     pacific_today = helpers.get_pacific_now().date()
-    past_n_days_ad_groups = [
-        rotation.ad_group
+    past_n_days_ad_group_rotations = [
+        rotation
         for rotation in models.AdGroupRotation.objects.filter(
             start_date__gte=dates_helper.days_before(pacific_today, num_days), start_date__lt=pacific_today
         )
     ]
 
-    for ad_group in past_n_days_ad_groups:
-        _monitor_missing_clicks(ad_group)
+    for rotation in past_n_days_ad_group_rotations:
+        content_ad_ids = list(rotation.ad_group.contentad_set.all().exclude_archived().values_list("id", flat=True))
+        missing_clicks = _get_missing_clicks(content_ad_ids)
+        _post_missing_clicks_metric(rotation.ad_group, rotation.start_date, missing_clicks)
+        if _should_send_missing_clicks_email_alert(rotation.start_date):
+            _send_missing_clicks_email_alert(rotation.ad_group, missing_clicks)
 
 
-def _monitor_missing_clicks(ad_group):
-    content_ad_ids = list(ad_group.contentad_set.all().exclude_archived().values_list("id", flat=True))
-    missing_clicks = _get_missing_clicks(content_ad_ids)
-    ad_group_tag = str(ad_group.id) + " ({})".format(ad_group.name[:10])
+def _post_missing_clicks_metric(ad_group, date, missing_clicks):
+    ad_group_tag = str(ad_group.id) + " ({})".format(date.isoformat())
     influx.gauge("integrations.bizwire.7_days_missing_clicks", missing_clicks, adgroup=ad_group_tag)
 
 
@@ -133,6 +129,27 @@ def _get_missing_clicks(content_ad_ids):
 
         missing_clicks += max(15 - content_ads_by_clicks[content_ad_id], 0)
     return missing_clicks
+
+
+def _should_send_missing_clicks_email_alert(ad_group_date, missing_clicks):
+    utc_now = dates_helper.utc_now()
+    is_mail_alert_hour = utc_now.hour == MISSING_CLICKS_ALERT_HOUR_UTC
+    missing_clicks_over_threshold = missing_clicks > MISSING_CLICKS_THRESHOLD
+    ad_group_over_min_alert_age = (utc_now.date() - ad_group_date).days > MISSING_CLICKS_ALERT_MIN_AD_GROUP_AGE
+    return is_mail_alert_hour and missing_clicks_over_threshold and ad_group_over_min_alert_age
+
+
+def _send_missing_clicks_email_alert(ad_group, missing_clicks):
+    emails = config.NOTIFICATION_EMAILS
+    subject = "[BIZWIRE] Missing clicks on ad group {}".format(ad_group.name)
+    body = """Hi,
+
+Ad group {} has been running for {} or more days and it's still missing {} clicks.""".format(
+        "https://one.zemanta.com/v2/analytics/adgroup/{}".format(ad_group.id),
+        MISSING_CLICKS_ALERT_MIN_AD_GROUP_AGE,
+        missing_clicks,
+    )
+    email_helper.send_internal_email(recipient_list=emails, subject=subject, body=body)
 
 
 def monitor_yesterday_spend():
@@ -227,22 +244,5 @@ def _send_unexpected_spend_email_alert(expected_spend, actual_spend):
 
 Yesterday's expected spend was {} and actual spend was {}.""".format(
         expected_spend, actual_spend
-    )
-    email_helper.send_internal_email(recipient_list=emails, subject=subject, body=body)
-
-
-def _send_missing_clicks_email_alert(missing_clicks):
-    if dates_helper.utc_now().hour != 5:
-        return
-
-    if missing_clicks < MISSING_CLICKS_THRESHOLD:
-        return
-
-    emails = config.NOTIFICATION_EMAILS
-    subject = "[BIZWIRE] Missing yesterday clicks"
-    body = """Hi,
-
-Missing {} clicks on content ads yesterday.""".format(
-        missing_clicks
     )
     email_helper.send_internal_email(recipient_list=emails, subject=subject, body=body)
