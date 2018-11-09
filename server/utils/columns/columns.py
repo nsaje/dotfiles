@@ -124,6 +124,7 @@ _FIELD_MAPPING = {
     "video_cpv": ("Avg. CPV",),
     "video_cpcv": ("Avg. CPCV",),
     "bid_modifier": ("Bid Modifier",),
+    "sspd_url": ("SSPD Link",),
 }
 
 _FIELD_MAPPING_BCMV2_OVERRIDES = {
