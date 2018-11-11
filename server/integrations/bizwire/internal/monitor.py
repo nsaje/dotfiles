@@ -103,7 +103,7 @@ def monitor_past_n_days_clicks(num_days):
         content_ad_ids = list(rotation.ad_group.contentad_set.all().exclude_archived().values_list("id", flat=True))
         missing_clicks = _get_missing_clicks(content_ad_ids)
         _post_missing_clicks_metric(rotation.ad_group, rotation.start_date, missing_clicks)
-        if _should_send_missing_clicks_email_alert(rotation.start_date):
+        if _should_send_missing_clicks_email_alert(rotation.start_date, missing_clicks):
             _send_missing_clicks_email_alert(rotation.ad_group, missing_clicks)
 
 
