@@ -184,7 +184,7 @@ def monitor_yesterday_spend(should_send_emails=False):
 
 def _should_send_unexpected_spend_email_alert(should_send_emails, expected_spend, actual_spend):
     is_mail_alert_hour = dates_helper.utc_now().hour == UNEXPECTED_SPEND_ALERT_HOUR_UTC
-    is_overspend_significant = (actual_spend - expected_spend) > 20
+    is_overspend_significant = (float(actual_spend) - float(expected_spend)) > 20
     return should_send_emails and is_mail_alert_hour and is_overspend_significant
 
 
