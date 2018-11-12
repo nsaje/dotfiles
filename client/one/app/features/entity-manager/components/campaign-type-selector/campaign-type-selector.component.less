@@ -53,6 +53,10 @@
     background-image: url('@{images-folder}/campaign-launcher-mobile-app-sec.svg');
 }
 
+.zem-campaign-type-selector__type--display::before {
+    background-image: url('@{images-folder}/campaign-launcher-display-sec.svg');
+}
+
 .zem-campaign-type-selector__type-name {
     font-size: 15px;
     line-height: 18px;
@@ -63,4 +67,11 @@
     margin-top: 8px;
     font-size: @default-font-size;
     line-height: @default-font-size+4;
+}
+
+.zem-campaign-type-selector__display-request-message {
+    flex: 0 0 100%;
+    padding-top: 2*@default-spacing;
+    padding-left: @default-spacing;
+    padding-bottom: @default-spacing;
 }

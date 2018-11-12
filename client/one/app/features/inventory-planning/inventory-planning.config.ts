@@ -1,6 +1,6 @@
 import {APP_CONFIG} from '../../app.config';
 
-const apiUrl = `${APP_CONFIG.api_rest_internal_url}/inventory-planning`;
+const apiUrl = `${APP_CONFIG.apiRestInternalUrl}/inventory-planning`;
 
 export const INVENTORY_PLANNING_CONFIG = {
     requests: {

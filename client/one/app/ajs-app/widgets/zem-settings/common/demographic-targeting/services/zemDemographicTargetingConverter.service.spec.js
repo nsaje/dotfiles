@@ -10,6 +10,8 @@ describe('state: zemDemographicTargetingStateService', function() {
     };
 
     beforeEach(angular.mock.module('one'));
+    beforeEach(angular.mock.module('one.mocks.zemInitializationService'));
+
     beforeEach(inject(function($injector) {
         zemDemographicTargetingConverter = $injector.get(
             'zemDemographicTargetingConverter'

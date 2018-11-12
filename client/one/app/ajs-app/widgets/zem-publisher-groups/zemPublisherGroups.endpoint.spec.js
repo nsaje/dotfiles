@@ -4,6 +4,8 @@ describe('component: zemPublisherGroupsEndpoint', function() {
     var zemPublisherGroupsEndpoint;
 
     beforeEach(angular.mock.module('one'));
+    beforeEach(angular.mock.module('one.mocks.zemInitializationService'));
+
     beforeEach(inject(function(
         _$injector_,
         _$http_,

@@ -4,6 +4,7 @@ describe('component: zemPublisherGroupsUpload', function() {
     var bindings;
 
     beforeEach(angular.mock.module('one'));
+    beforeEach(angular.mock.module('one.mocks.zemInitializationService'));
 
     beforeEach(inject(function(
         $componentController,

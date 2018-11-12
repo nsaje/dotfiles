@@ -1,4 +1,6 @@
 <zem-campaign-type-selector
     class="zem-campaign-type-selector"
+    [shouldShowDisplayType]="true"
+    [shouldLogCampaignTypeSelection]="true"
     (onSelect)="onSubmit.emit($event)"
 ></zem-campaign-type-selector>

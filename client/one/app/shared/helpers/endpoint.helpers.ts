@@ -17,7 +17,7 @@ export function buildRequestProperties(
             params = params.set(item, payload[item].join());
         }
     }
-    if (params.toString().length < APP_CONFIG.max_query_params_length) {
+    if (params.toString().length < APP_CONFIG.maxQueryParamsLength) {
         return {method: 'GET', params: params, body: null};
     } else {
         return {method: 'POST', params: null, body: payload};

@@ -40,8 +40,10 @@ if (APP_CONFIG.env.prod) {
     ],
     providers: [
         {provide: ErrorHandler, useClass: RavenErrorHandler},
-        upgradeProvider('zemPermissions'),
+        upgradeProvider('$rootScope', 'ajs$rootScope'),
         upgradeProvider('$location', 'ajs$location'),
+        upgradeProvider('zemPermissions'),
+        upgradeProvider('zemNavigationNewService'),
     ],
 })
 export class AppModule {

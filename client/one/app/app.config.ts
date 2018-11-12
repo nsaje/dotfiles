@@ -6,8 +6,9 @@ export const APP_CONFIG = {
     branchName: environment.branchName,
     sentryToken: environment.sentryToken,
     staticUrl: environment.staticUrl,
-    api_legacy_url: '/api',
-    api_rest_url: '/rest',
-    api_rest_internal_url: '/rest/internal',
-    max_query_params_length: 1900,
+    apiLegacyUrl: '/api',
+    apiRestUrl: '/rest',
+    apiRestInternalUrl: '/rest/internal',
+    maxQueryParamsLength: 1900,
+    GAKey: 'UA-74379813-2',
 };

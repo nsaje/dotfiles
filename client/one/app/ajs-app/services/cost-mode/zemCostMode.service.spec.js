@@ -3,6 +3,8 @@ describe('zemCostModeService', function() {
     var onUpdate;
 
     beforeEach(angular.mock.module('one'));
+    beforeEach(angular.mock.module('one.mocks.zemInitializationService'));
+
     beforeEach(inject(function(_zemCostModeService_) {
         onUpdate = angular.noop;
 
