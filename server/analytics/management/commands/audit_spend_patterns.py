@@ -12,7 +12,7 @@ class Command(utils.command_helpers.ExceptionCommand):
 
     def add_arguments(self, parser):
         parser.add_argument("--date", "-d", dest="date", help="Date checked (default yesterday)")
-        parser.add_argument("--day-range", dest="day_range", default=5, help="Range of days to check (default 5)")
+        parser.add_argument("--day-range", dest="day_range", default=1, help="Range of days to check (default 5)")
         parser.add_argument("--threshold", dest="threshold", default=0.8, help="Threshold for alarm (default 0.8)")
         parser.add_argument(
             "--fdm-threshold",

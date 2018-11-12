@@ -76,6 +76,7 @@ def audit_spend_patterns(date=None, threshold=0.8, first_in_month_threshold=0.6,
         .order_by("date")
     )
     totals = [row["total"] for row in result]
+    # check the difference in the total between date -1 and date -2 then date -2 and date -3 ....
     changes = [(date + datetime.timedelta(-x), float(totals[-x - 1]) / totals[-x - 2]) for x in range(0, day_range - 1)]
     alarming_dates = [
         (d, change)
@@ -86,6 +87,7 @@ def audit_spend_patterns(date=None, threshold=0.8, first_in_month_threshold=0.6,
 
 
 def audit_pacing(date, max_pacing=Decimal("200.0"), min_pacing=Decimal("50.0"), **constraints):
+    # fixme tfischer 05/11/18: Paused until account types are properly marked. INPW is considered activated.
     if date is None:
         date = datetime.datetime.utcnow().date() - datetime.timedelta(1)
 
@@ -319,3 +321,60 @@ def audit_custom_hacks(minimal_spend=Decimal("0.0001")):
             (unconfirmed_hack, "media: ${media}, data: ${data}, fee: ${fee}, margin: ${margin}".format(**spend[0]))
         )
     return alarms
+
+
+def audit_bid_cpc_vs_ecpc(bid_cpc_threshold=2, yesterday_spend_threshold=20):
+    yesterday = datetime.date.today() - datetime.timedelta(1)
+    active_ad_groups = (
+        dash.models.AdGroup.objects.all().filter_running(yesterday).exclude(campaign__account__id__in=API_ACCOUNTS)
+    )
+    ads_non_exploratory = (
+        dash.models.AdGroupSource.objects.filter(ad_group__in=active_ad_groups)
+        .filter_active()
+        .values("ad_group_id", "source_id", "settings__cpc_cc", "source__name", "ad_group__name")
+    )
+
+    ad_group_sources = {
+        (ads["ad_group_id"], ads["source_id"]): {
+            "cpc": ads["settings__cpc_cc"],
+            "source_name": ads["source__name"],
+            "name": ads["ad_group__name"],
+        }
+        for ads in ads_non_exploratory
+    }
+
+    with redshiftapi.db.get_stats_cursor() as c:
+        yesterday_spend_query = backtosql.generate_sql(
+            "sql/monitor_yesterday_spend.sql",
+            dict(
+                yesterday=yesterday.strftime("%Y-%m-%d"),
+                excluded_account_ids=str(API_ACCOUNTS),
+                yesterday_spend_threshold=yesterday_spend_threshold,
+            ),
+        )
+        c.execute(yesterday_spend_query)
+        yesterday_spends = [
+            dict(ad_group_id=i[0], source_id=i[1], total_clicks=i[2], total_spend=i[3], ecpc=i[4]) for i in c.fetchall()
+        ]
+        alerts = []
+        for spend in yesterday_spends:
+            ads = ad_group_sources.get((spend["ad_group_id"], spend["source_id"]))
+            if not ads:
+                continue
+            if spend["ecpc"] >= (ads["cpc"] * bid_cpc_threshold):
+                higher_yesterday_cpc = dash.models.AdGroupSource.objects.filter(
+                    ad_group__id=spend["ad_group_id"],
+                    source__id=spend["source_id"],
+                    settings__created_dt__range=(
+                        datetime.datetime.combine(yesterday, datetime.time.min),
+                        datetime.datetime.combine(datetime.date.today(), datetime.time.max),
+                    ),
+                    settings__cpc_cc__gt=ads["cpc"],
+                ).values("settings__cpc_cc")
+                if higher_yesterday_cpc:
+                    # We skip the sources in which yesterday's CPC was a higher value than the current CPC, it would
+                    # produce a false-positive alert because the eCPC will be higher as the old and high value was used.
+                    continue
+                ads.update(spend)
+                alerts.append(ads)
+        return alerts
