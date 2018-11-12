@@ -52,11 +52,13 @@ angular
             ].join('::');
         }
 
+        /* eslint-disable complexity */
         function isGoalAvailable(option) {
             var isAvailable = true,
                 goal = $scope.campaignGoal,
                 isCpcGoal = option.value === constants.campaignGoalKPI.CPC,
                 countConversionGoals = 0;
+
             if (!goal || (goal && goal.type === option.value)) {
                 return true;
             }
@@ -77,12 +79,23 @@ angular
                 countConversionGoals +=
                     goal.type === constants.campaignGoalKPI.CPA;
             });
+
             if (
                 option.value === constants.campaignGoalKPI.CPA &&
                 countConversionGoals < MAX_CONVERSION_GOALS
             ) {
                 return true;
             }
+
+            // Display campaigns do not support CPCV goals
+            if (
+                parseInt($scope.campaign.type) ===
+                    constants.campaignTypes.DISPLAY &&
+                option.value === constants.campaignGoalKPI.CPCV
+            ) {
+                return false;
+            }
+
             return isAvailable;
         }
 
