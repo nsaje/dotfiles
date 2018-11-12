@@ -163,5 +163,5 @@ CREATE TABLE IF NOT EXISTS MV_RDS_PUBLISHER_CLASSIFICATION (
   id          INTEGER PRIMARY KEY,
   publisher   VARCHAR(128),
   category    VARCHAR(128),
-  ignored     BOOLEAN,
-)
+  ignored     BOOLEAN
+);
