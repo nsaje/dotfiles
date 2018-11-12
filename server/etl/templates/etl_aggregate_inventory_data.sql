@@ -14,11 +14,13 @@ INSERT INTO mv_inventory (
           ) THEN country
           ELSE NULL
         END as country,
-        publisher,
+        CASE
+          WHEN publisher LIKE 'ligatus-network%%' THEN 'Undisclosed Ligatus publishers'
+          WHEN publisher LIKE 'AutoCreated%%' THEN 'Undisclosed AppNexus publishers'
+          ELSE publisher
+        END as publisher,
         CASE
           WHEN device_type = 1 THEN 4  -- when mobile then phone
-          WHEN device_type = 6 THEN 3  -- when connected then tv
-          WHEN device_type = 7 THEN 3  -- when settopbox then tv
           ELSE device_type
         END as device_type,
         CASE
@@ -38,6 +40,7 @@ INSERT INTO mv_inventory (
           AND country <> ''
           AND publisher <> ''
           AND device_type > 0
+          AND device_type NOT IN (3, 6, 7) -- not in tv, connected or settop box
           AND exchange IN (
             {% for source_slug in source_slug_to_id.keys %}
               {% if forloop.last %}
