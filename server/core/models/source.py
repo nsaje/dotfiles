@@ -34,6 +34,9 @@ class Source(models.Model):
     )
 
     supports_video = models.BooleanField(default=False, help_text=_("Designates whether source supports video."))
+    supports_display = models.BooleanField(
+        default=False, help_text=_("Designates whether source supports display ads.")
+    )
 
     impression_trackers_count = models.PositiveSmallIntegerField(
         default=0, help_text=_("Number of impression trackers we know this source supports.")

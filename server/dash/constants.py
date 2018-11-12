@@ -147,12 +147,14 @@ class CampaignType(ConstantBase):
     VIDEO = 2
     CONVERSION = 3
     MOBILE = 4
+    DISPLAY = 5
 
     _VALUES = {
         CONTENT: "Native Ad Campaign",
         VIDEO: "Native Video Advertising",
         CONVERSION: "Native Conversion Marketing",
         MOBILE: "Native Mobile App Advertising",
+        DISPLAY: "Display Ad Campaign",
     }
 
 
