@@ -5,6 +5,7 @@ from django.conf import settings
 from django.test import TestCase
 
 from dash import models
+from dash.constants import CampaignType
 from dash.constants import Level
 from stats import api_breakdowns
 from utils import test_helper
@@ -81,6 +82,7 @@ class ApiBreakdownQueryTest(TestCase):
                     "campaign_manager": "supertestuser@test.com",
                     "archived": False,
                     "sspd_url": settings.SSPD_CAMPAIGN_REDIRECT_URL.format(id=1),
+                    "campaign_type": CampaignType.get_text(CampaignType.CONTENT),
                 },
                 {
                     "status": 2,
@@ -98,6 +100,7 @@ class ApiBreakdownQueryTest(TestCase):
                     "parent_breakdown_id": "",
                     "license_fee_projection": None,
                     "sspd_url": settings.SSPD_CAMPAIGN_REDIRECT_URL.format(id=2),
+                    "campaign_type": CampaignType.get_text(CampaignType.CONTENT),
                 },
             ],
         )
@@ -147,6 +150,7 @@ class ApiBreakdownQueryTest(TestCase):
                     "campaign_manager": "supertestuser@test.com",
                     "archived": False,
                     "sspd_url": settings.SSPD_CAMPAIGN_REDIRECT_URL.format(id=1),
+                    "campaign_type": CampaignType.get_text(CampaignType.CONTENT),
                 },
                 {
                     "campaign_id": 2,
@@ -165,6 +169,7 @@ class ApiBreakdownQueryTest(TestCase):
                     "campaign_manager": "mad.max@zemanta.com",
                     "archived": True,  # archived last
                     "sspd_url": settings.SSPD_CAMPAIGN_REDIRECT_URL.format(id=2),
+                    "campaign_type": CampaignType.get_text(CampaignType.CONTENT),
                 },
             ],
         )

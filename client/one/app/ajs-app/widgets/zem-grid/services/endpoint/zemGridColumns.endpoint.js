@@ -284,6 +284,16 @@ angular
                 internal: 'zemauth.can_see_sspd_url',
                 shown: 'zemauth.can_see_sspd_url',
             },
+            campaignType: {
+                name: 'Campaign Type',
+                field: 'campaign_type',
+                type: zemGridConstants.gridColumnTypes.TEXT,
+                totalRow: false,
+                order: false,
+                initialOrder: zemGridConstants.gridColumnOrder.DESC,
+                internal: 'zemauth.can_see_campaign_type_in_breakdowns',
+                shown: 'zemauth.can_see_campaign_type_in_breakdowns',
+            },
 
             // Media source
             supplyDashUrl: {
@@ -1747,7 +1757,10 @@ angular
             COLUMNS.salesforceUrl,
         ];
 
-        var CAMPAIGN_MANAGEMENT_GROUP = [COLUMNS.campaignManager];
+        var CAMPAIGN_MANAGEMENT_GROUP = [
+            COLUMNS.campaignManager,
+            COLUMNS.campaignType,
+        ];
 
         var MANAGEMENT_GROUP = [
             COLUMNS.agencyId,

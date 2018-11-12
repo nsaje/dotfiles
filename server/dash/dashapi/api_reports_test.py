@@ -53,6 +53,7 @@ CAMPAIGN_1 = {
     "spend_projection": None,
     "license_fee_projection": None,
     "sspd_url": settings.SSPD_CAMPAIGN_REDIRECT_URL.format(id=1),
+    "campaign_type": constants.CampaignType.get_text(constants.CampaignType.CONTENT),
 }
 CAMPAIGN_2 = {
     "campaign": "test campaign 2",
@@ -69,6 +70,7 @@ CAMPAIGN_2 = {
     "spend_projection": None,
     "license_fee_projection": None,
     "sspd_url": settings.SSPD_CAMPAIGN_REDIRECT_URL.format(id=2),
+    "campaign_type": constants.CampaignType.get_text(constants.CampaignType.CONTENT),
 }
 
 AD_GROUP_1 = {

@@ -141,6 +141,7 @@ def augment_campaign(row, loader, is_base_level=False):
                 "account_id": campaign.account_id,
                 "name": campaign.name,
                 "sspd_url": campaign.get_sspd_url(),
+                "campaign_type": constants.CampaignType.get_text(campaign.type),
             }
         )
 

@@ -125,6 +125,7 @@ _FIELD_MAPPING = {
     "video_cpcv": ("Avg. CPCV",),
     "bid_modifier": ("Bid Modifier",),
     "sspd_url": ("SSPD Link",),
+    "campaign_type": ("Campaign Type",),
 }
 
 _FIELD_MAPPING_BCMV2_OVERRIDES = {

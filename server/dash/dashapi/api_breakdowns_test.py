@@ -8,6 +8,7 @@ from mock import MagicMock
 from mock import patch
 
 from dash import models
+from dash.constants import CampaignType
 from dash.constants import Level
 from dash.constants import PublisherBlacklistLevel
 from dash.dashapi import api_breakdowns
@@ -82,6 +83,7 @@ CAMPAIGN_1 = {
     "spend_projection": None,
     "license_fee_projection": None,
     "sspd_url": settings.SSPD_CAMPAIGN_REDIRECT_URL.format(id=1),
+    "campaign_type": CampaignType.get_text(CampaignType.CONTENT),
 }
 CAMPAIGN_2 = {
     "campaign_id": 2,
@@ -96,6 +98,7 @@ CAMPAIGN_2 = {
     "spend_projection": None,
     "license_fee_projection": None,
     "sspd_url": settings.SSPD_CAMPAIGN_REDIRECT_URL.format(id=2),
+    "campaign_type": CampaignType.get_text(CampaignType.CONTENT),
 }
 
 AD_GROUP_1 = {
