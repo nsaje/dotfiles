@@ -20,13 +20,15 @@ MISSING_CLICKS_THRESHOLD = 3
 MISSING_CLICKS_ALERT_HOUR_UTC = 8
 MISSING_CLICKS_ALERT_MIN_AD_GROUP_AGE = 5
 
+UNEXPECTED_SPEND_ALERT_HOUR_UTC = 14
 
-def run_hourly_job():
+
+def run_hourly_job(should_send_emails=False):
     monitor_num_ingested_articles()
-    monitor_yesterday_spend()
+    monitor_yesterday_spend(should_send_emails=should_send_emails)
     monitor_duplicate_articles()
     monitor_remaining_budget()
-    monitor_past_n_days_clicks(10)
+    monitor_past_n_days_clicks(10, should_send_emails=should_send_emails)
 
 
 def _get_unique_s3_labels(dates):
@@ -90,7 +92,7 @@ Businesswire campaign is running out of budget. Configure any additional budgets
     email_helper.send_internal_email(recipient_list=emails, subject=subject, body=body)
 
 
-def monitor_past_n_days_clicks(num_days):
+def monitor_past_n_days_clicks(num_days, should_send_emails=False):
     pacific_today = helpers.get_pacific_now().date()
     past_n_days_ad_group_rotations = [
         rotation
@@ -103,13 +105,14 @@ def monitor_past_n_days_clicks(num_days):
         content_ad_ids = list(rotation.ad_group.contentad_set.all().exclude_archived().values_list("id", flat=True))
         missing_clicks = _get_missing_clicks(content_ad_ids)
         _post_missing_clicks_metric(rotation.ad_group, rotation.start_date, missing_clicks)
-        if _should_send_missing_clicks_email_alert(rotation.start_date, missing_clicks):
+        if _should_send_missing_clicks_email_alert(should_send_emails, rotation.start_date, missing_clicks):
             _send_missing_clicks_email_alert(rotation.ad_group, missing_clicks)
 
 
 def _post_missing_clicks_metric(ad_group, date, missing_clicks):
     ad_group_tag = str(ad_group.id) + " ({})".format(date.isoformat())
     influx.gauge("integrations.bizwire.7_days_missing_clicks", missing_clicks, adgroup=ad_group_tag)
+    influx.gauge("integrations.bizwire.n_days_missing_clicks", missing_clicks, adgroup=ad_group_tag)
 
 
 def _get_missing_clicks(content_ad_ids):
@@ -131,12 +134,12 @@ def _get_missing_clicks(content_ad_ids):
     return missing_clicks
 
 
-def _should_send_missing_clicks_email_alert(ad_group_date, missing_clicks):
+def _should_send_missing_clicks_email_alert(should_send_emails, ad_group_date, missing_clicks):
     utc_now = dates_helper.utc_now()
     is_mail_alert_hour = utc_now.hour == MISSING_CLICKS_ALERT_HOUR_UTC
     missing_clicks_over_threshold = missing_clicks > MISSING_CLICKS_THRESHOLD
     ad_group_over_min_alert_age = (utc_now.date() - ad_group_date).days > MISSING_CLICKS_ALERT_MIN_AD_GROUP_AGE
-    return is_mail_alert_hour and missing_clicks_over_threshold and ad_group_over_min_alert_age
+    return should_send_emails and is_mail_alert_hour and missing_clicks_over_threshold and ad_group_over_min_alert_age
 
 
 def _send_missing_clicks_email_alert(ad_group, missing_clicks):
@@ -152,7 +155,7 @@ Ad group {} has been running for {} or more days and is still missing {} clicks.
     email_helper.send_internal_email(recipient_list=emails, subject=subject, body=body)
 
 
-def monitor_yesterday_spend():
+def monitor_yesterday_spend(should_send_emails=False):
     content_ad_ids = _get_content_ad_ids_added_yesterday()
     actual_spend = 0
     if content_ad_ids:
@@ -175,7 +178,25 @@ def monitor_yesterday_spend():
 
     influx.gauge("integrations.bizwire.yesterday_spend", actual_spend, type="actual")
     influx.gauge("integrations.bizwire.yesterday_spend", expected_spend, type="expected")
-    _send_unexpected_spend_email_alert(expected_spend, actual_spend)
+    if _should_send_unexpected_spend_email_alert(should_send_emails, expected_spend, actual_spend):
+        _send_unexpected_spend_email_alert(expected_spend, actual_spend)
+
+
+def _should_send_unexpected_spend_email_alert(should_send_emails, expected_spend, actual_spend):
+    is_mail_alert_hour = dates_helper.utc_now().hour == UNEXPECTED_SPEND_ALERT_HOUR_UTC
+    is_overspend_significant = (actual_spend - expected_spend) > 20
+    return should_send_emails and is_mail_alert_hour and is_overspend_significant
+
+
+def _send_unexpected_spend_email_alert(expected_spend, actual_spend):
+    emails = config.NOTIFICATION_EMAILS
+    subject = "[BIZWIRE] Campaign unexpected yesterday spend"
+    body = """Hi,
+
+Yesterday's expected spend was {} and actual spend was {}.""".format(
+        expected_spend, actual_spend
+    )
+    email_helper.send_internal_email(recipient_list=emails, subject=subject, body=body)
 
 
 def _get_content_ad_ids_added_yesterday():
@@ -229,20 +250,3 @@ def _monitor_duplicate_articles_30d():
 
     num_duplicate = abs(num_labels - num_distinct)
     influx.gauge("integrations.bizwire.labels", num_duplicate, type="duplicate_30d")
-
-
-def _send_unexpected_spend_email_alert(expected_spend, actual_spend):
-    if dates_helper.utc_now().hour != 14:
-        return
-
-    if actual_spend < expected_spend:
-        return
-
-    emails = config.NOTIFICATION_EMAILS
-    subject = "[BIZWIRE] Campaign unexpected yesterday spend"
-    body = """Hi,
-
-Yesterday's expected spend was {} and actual spend was {}.""".format(
-        expected_spend, actual_spend
-    )
-    email_helper.send_internal_email(recipient_list=emails, subject=subject, body=body)

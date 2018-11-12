@@ -35,7 +35,7 @@
 0 8 * * *        /home/ubuntu/docker-manage-py.sh create_demo_snapshot
 0 8 * * *        /home/ubuntu/docker-manage-py.sh send_oen_postclickkpi_cpa_email
 0 9,12,15 * * *  /home/ubuntu/docker-manage-py.sh monitor_blacklists
-5 * * * *        /home/ubuntu/docker-manage-py.sh bizwire_monitor
+5 * * * *        /home/ubuntu/docker-manage-py.sh bizwire_monitor --send-emails
 10 10 * * *      /home/ubuntu/docker-manage-py.sh generate_hack_report -n 14 -i
 10 9-20 * * *    /home/ubuntu/docker-manage-py.sh send_scheduled_reports
 15 10 * * *      /home/ubuntu/docker-manage-py.sh audit_autopilot --slack
