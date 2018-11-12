@@ -43,6 +43,10 @@ export enum BiddingType {
     CPM = 2,
 }
 
+export enum SpecialAccount {
+    OEN = 305,
+}
+
 export const APP_CONSTANTS = {
     /**
      * Max. selected media sources in on sources tabs.
@@ -74,6 +78,7 @@ export const APP_CONSTANTS = {
         MANAGED: 6,
         PAAS: 7,
     },
+    specialAccount: SpecialAccount,
     campaignTypes: CAMPAIGN_TYPE,
     currency: CURRENCY,
     biddingType: BiddingType,

@@ -2,6 +2,8 @@ angular.module('one.widgets').service('zemNavigationUtils', function() {
     this.convertToEntityList = convertToEntityList;
     this.filterEntityList = filterEntityList;
 
+    var ACCOUNTS_EXCLUDED_FROM_SEARCH = [constants.specialAccount.OEN];
+
     function convertToEntityList(entity) {
         var list = flattenNavigationHierarchy(entity);
         if (entity.type) {
@@ -32,7 +34,9 @@ angular.module('one.widgets').service('zemNavigationUtils', function() {
         var filteredList = list;
 
         filteredList = filteredList.filter(function(item) {
-            return !item.data.archived || filterArchived;
+            var isAccountExcluded = isAccountExcludedFromSearch(item);
+            var isItemIncluded = !item.data.archived || filterArchived;
+            return !isAccountExcluded && isItemIncluded;
         });
 
         filteredList = filteredList.filter(function(item) {
@@ -75,15 +79,28 @@ angular.module('one.widgets').service('zemNavigationUtils', function() {
         return filteredList;
     }
 
+    function isAccountExcludedFromSearch(item) {
+        var account = getAccountFromItem(item);
+        return ACCOUNTS_EXCLUDED_FROM_SEARCH.indexOf(account.id) !== -1;
+    }
+
     function isFilteredByAgency(item, query) {
-        var account = item;
-        if (item.type === constants.entityType.AD_GROUP)
-            account = item.parent.parent;
-        if (item.type === constants.entityType.CAMPAIGN) account = item.parent;
+        var account = getAccountFromItem(item);
         return (
             account.data.agency &&
             account.data.agency.toLowerCase().indexOf(query) >= 0
         );
+    }
+
+    function getAccountFromItem(item) {
+        switch (item.type) {
+            case constants.entityType.AD_GROUP:
+                return item.parent.parent;
+            case constants.entityType.CAMPAIGN:
+                return item.parent;
+            default:
+                return item;
+        }
     }
 
     function isFilteredById(item, idQuery) {
