@@ -12,7 +12,7 @@ angular.module('one.widgets').component('zemCampaignGeneralSettings', {
 
         $ctrl.iabCategoriesSorted = iabCategoriesSorted;
         $ctrl.languages = options.languages;
-        $ctrl.campaignTypes = options.campaignTypes;
+        $ctrl.campaignTypes = options.campaignTypes.filter(filterTypes);
         $ctrl.hasPermission = zemPermissions.hasPermission;
         $ctrl.isPermissionInternal = zemPermissions.isPermissionInternal;
 
@@ -51,6 +51,18 @@ angular.module('one.widgets').component('zemCampaignGeneralSettings', {
                 return 1;
             }
             return obj1.name.localeCompare(obj2.name);
+        }
+
+        function filterTypes(option) {
+            if (
+                option.value === constants.campaignTypes.DISPLAY &&
+                !zemPermissions.hasPermission(
+                    'zemauth.fea_can_change_campaign_type_to_display'
+                )
+            ) {
+                return false;
+            }
+            return true;
         }
     },
 });

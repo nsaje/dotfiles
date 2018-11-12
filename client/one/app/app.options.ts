@@ -222,6 +222,10 @@ export const APP_OPTIONS = {
             name: 'Native Mobile App Advertising',
             value: APP_CONSTANTS.campaignTypes.MOBILE,
         },
+        {
+            name: 'Display Ad Campaign',
+            value: APP_CONSTANTS.campaignTypes.DISPLAY,
+        },
     ],
     iabCategories: [
         {name: 'Uncategorized (IAB24)', value: APP_CONSTANTS.iabCategory.IAB24},

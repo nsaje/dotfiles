@@ -25,6 +25,7 @@ export const CAMPAIGN_TYPE = {
     VIDEO: 2,
     CONVERSION: 3,
     MOBILE: 4,
+    DISPLAY: 5,
 };
 
 export enum Day {
