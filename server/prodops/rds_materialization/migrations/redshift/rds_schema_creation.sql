@@ -73,7 +73,7 @@ CREATE TABLE IF NOT EXISTS MV_RDS_CAMPAIGN_GOAL (
   campaign_goal_primary      BOOLEAN,
   conversion_goal_id         INTEGER  NULL,
   conversion_goal_pixel_slug VARCHAR(50)  NULL,
-  impressions INTEGER
+  impressions                INTEGER
 );
 
 
@@ -151,10 +151,17 @@ CREATE TABLE IF NOT EXISTS MV_RDS_AD_GROUP (
 
 
 CREATE TABLE IF NOT EXISTS MV_RDS_GEOLOCATION (
-  key         VARCHAR(20) PRIMARY KEY,
-  type        VARCHAR(10) NULL,
-  name        VARCHAR(127),
-  woeid       VARCHAR(20) NULL,
-  outbrain_id VARCHAR(40) NULL,
-  facebook_key VARCHAR(40) NULL
+  key           VARCHAR(20) PRIMARY KEY,
+  type          VARCHAR(10) NULL,
+  name          VARCHAR(127),
+  woeid         VARCHAR(20) NULL,
+  outbrain_id   VARCHAR(40) NULL,
+  facebook_key  VARCHAR(40) NULL
 );
+
+CREATE TABLE IF NOT EXISTS MV_RDS_PUBLISHER_CLASSIFICATION (
+  id          INTEGER PRIMARY KEY,
+  publisher   VARCHAR(128),
+  category    VARCHAR(128),
+  ignored     BOOLEAN,
+)

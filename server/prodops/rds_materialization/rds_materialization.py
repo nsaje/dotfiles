@@ -245,12 +245,22 @@ class RDSGeolocation(RDSModelization):
     MODEL = dash.models.Geolocation
     TABLE = "mv_rds_geolocation"
     PK = "key"
-    FIELDS = dict(
+    FIELDS = OrderedDict(
         type=RDSModelization.get_constant_value("type", dash.constants.LocationType),
         name="name",
         woeid="woeid",
         outbrain_id="outbrain_id",
         facebook_key="facebook_key",
+    )
+
+
+class RDSPublisherClassification(RDSModelization):
+    MODEL = dash.models.PublisherClassification
+    TABLE = "mv_rds_publisher_classification"
+    FIELDS = OrderedDict(
+        publisher="publisher",
+        category=RDSModelization.get_constant_value("category", dash.constants.InterestCategory),
+        ignored="ignored",
     )
 
 
@@ -263,4 +273,5 @@ RDS_MATERIALIAZED_VIEW = [
     RDSAdGroup,
     RDSContentAd,
     RDSGeolocation,
+    RDSPublisherClassification,
 ]
