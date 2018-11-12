@@ -85,11 +85,13 @@ class AdGroupSettingsTest(TestCase):
                 "delivery_type": 2,
                 "click_capping_daily_ad_group_max_clicks": 15,
                 "click_capping_daily_click_budget": "7.5000",
+                "frequency_capping": 20,
             }
         }
 
         self.user = User.objects.get(pk=1)
         add_permissions(self.user, ["can_set_click_capping"])
+        add_permissions(self.user, ["can_set_frequency_capping"])
 
         self.assertFalse(self.user.is_superuser)
 
@@ -192,6 +194,7 @@ class AdGroupSettingsTest(TestCase):
                         "delivery_type": 1,
                         "click_capping_daily_ad_group_max_clicks": 10,
                         "click_capping_daily_click_budget": "5.0000",
+                        "frequency_capping": 20,
                     },
                     "warnings": {},
                 },
@@ -273,6 +276,7 @@ class AdGroupSettingsTest(TestCase):
                     "can_set_white_blacklist_publisher_groups",
                     "can_set_advanced_device_targeting",
                     "can_set_click_capping",
+                    "can_set_frequency_capping",
                 ],
             )
             response = self.client.put(
@@ -345,6 +349,7 @@ class AdGroupSettingsTest(TestCase):
                             "delivery_type": 2,
                             "click_capping_daily_ad_group_max_clicks": 15,
                             "click_capping_daily_click_budget": "7.5000",
+                            "frequency_capping": 20,
                         },
                     },
                     "success": True,
@@ -394,6 +399,7 @@ class AdGroupSettingsTest(TestCase):
                     "can_set_white_blacklist_publisher_groups",
                     "can_set_advanced_device_targeting",
                     "can_set_click_capping",
+                    "can_set_frequency_capping",
                 ],
             )
             response = self.client.put(
@@ -466,6 +472,7 @@ class AdGroupSettingsTest(TestCase):
                             "delivery_type": 2,
                             "click_capping_daily_ad_group_max_clicks": 15,
                             "click_capping_daily_click_budget": "7.5000",
+                            "frequency_capping": 20,
                         },
                     },
                     "success": True,
@@ -2576,6 +2583,8 @@ class CampaignSettingsTest(TestCase):
             mock_now.return_value = datetime.datetime(2015, 6, 5, 13, 22, 20)
 
     def test_get(self):
+        add_permissions(self.user, ["can_set_frequency_capping"])
+
         response = self.client.get("/api/campaigns/1/settings/")
 
         content = json.loads(response.content)
@@ -2595,6 +2604,7 @@ class CampaignSettingsTest(TestCase):
         self.assertEqual(content["data"]["settings"]["whitelist_publisher_groups"], [1])
         self.assertEqual(content["data"]["settings"]["blacklist_publisher_groups"], [1])
         self.assertEqual(content["data"]["settings"]["autopilot"], False)
+        self.assertEqual(content["data"]["settings"]["frequency_capping"], 30)
 
     @patch("automation.autopilot.recalculate_budgets_campaign")
     @patch("dash.views.agency.ga.is_readable")
@@ -2620,6 +2630,7 @@ class CampaignSettingsTest(TestCase):
                 "can_modify_campaign_iab_category",
                 "can_set_ga_api_tracking",
                 "can_set_white_blacklist_publisher_groups",
+                "can_set_frequency_capping",
             ],
         )
         campaign = models.Campaign.objects.get(pk=1)
@@ -2634,6 +2645,7 @@ class CampaignSettingsTest(TestCase):
         self.assertNotEqual(settings.ga_property_id, "UA-123456789-3")
         self.assertNotEqual(settings.enable_adobe_tracking, True)
         self.assertNotEqual(settings.adobe_tracking_param, "cid")
+        self.assertNotEqual(settings.frequency_capping, 35)
 
         # ensure this campaign has a goal
         models.CampaignGoal.objects.create_unsafe(campaign_id=campaign.id)
@@ -2661,6 +2673,7 @@ class CampaignSettingsTest(TestCase):
                         "whitelist_publisher_groups": [1, 3],
                         "blacklist_publisher_groups": [1, 3],
                         "autopilot": True,
+                        "frequency_capping": 35,
                     }
                 }
             ),
@@ -2690,6 +2703,7 @@ class CampaignSettingsTest(TestCase):
         self.assertEqual(settings.whitelist_publisher_groups, [1, 3])
         self.assertEqual(settings.blacklist_publisher_groups, [1, 3])
         self.assertEqual(settings.autopilot, True)
+        self.assertEqual(settings.frequency_capping, 35)
 
         mock_send_campaign_notification_email.assert_called_with(campaign, response.wsgi_request, ANY)
         mock_send_ga_email.assert_called_with(self.user)
@@ -3076,6 +3090,7 @@ class AccountSettingsTest(TestCase):
                 "can_modify_account_type",
                 "can_see_salesforce_url",
                 "can_modify_facebook_page",
+                "can_set_frequency_capping",
             ]
         )
 
@@ -3096,6 +3111,7 @@ class AccountSettingsTest(TestCase):
                 "whitelist_publisher_groups": [1],
                 "blacklist_publisher_groups": [1],
                 "currency": "USD",
+                "frequency_capping": 40,
             },
         )
 
@@ -3536,6 +3552,7 @@ class AccountSettingsTest(TestCase):
                 "can_set_account_cs_representative",
                 "can_set_account_ob_representative",
                 "can_modify_facebook_page",
+                "can_set_frequency_capping",
             ]
         )
         response = Response()
@@ -3564,6 +3581,7 @@ class AccountSettingsTest(TestCase):
                         "allowed_sources": {"1": {"allowed": True}},
                         "facebook_page": "http://www.facebook.com/dummy_page",
                         "currency": "USD",
+                        "frequency_capping": "45",
                     }
                 }
             ),
@@ -3590,6 +3608,7 @@ class AccountSettingsTest(TestCase):
                 "whitelist_publisher_groups": [1],
                 "blacklist_publisher_groups": [1],
                 "auto_add_new_sources": False,
+                "frequency_capping": 45,
             },
         )
         self.assertEqual(content["data"]["settings"]["facebook_page"], "http://www.facebook.com/dummy_page")
@@ -3644,6 +3663,42 @@ class AccountSettingsTest(TestCase):
 
         content = json.loads(response.content)
         self.assertFalse(content["success"])
+
+    def test_put_no_permission_can_set_frequency_capping(self):
+        client = self._get_client_with_permissions(
+            [
+                "can_modify_account_name",
+                "can_modify_account_manager",
+                "can_modify_account_type",
+                "can_modify_allowed_sources",
+                "can_set_account_sales_representative",
+                "can_set_account_cs_representative",
+                "can_set_account_ob_representative",
+                "can_modify_facebook_page",
+            ]
+        )
+
+        response = client.put(
+            reverse("account_settings", kwargs={"account_id": 1}),
+            json.dumps(
+                {
+                    "settings": {
+                        "name": "changed name",
+                        "default_sales_representative": "1",
+                        "default_account_manager": "3",
+                        "account_type": "4",
+                        "id": "1",
+                        "allowed_sources": {"1": {"allowed": True}},
+                        "facebook_page": "dummy_page",
+                        "currency": "USD",
+                        "frequency_capping": "45",
+                    }
+                }
+            ),
+            content_type="application/json",
+        )
+
+        self.assertEqual(response.status_code, 401)
 
     def test_get_changes_text_for_media_sources(self):
         view = agency.AccountSettings()

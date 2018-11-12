@@ -77,6 +77,9 @@ class AdGroupsTest(K1APIBaseTest):
                 "click_capping_daily_click_budget": "5.0000",
                 "custom_flags": {"flag_1": True, "flag_2": True, "flag_3": True, "flag_4": True},
                 "amplify_review": True,
+                "freqcap_account": 40,
+                "freqcap_campaign": 30,
+                "freqcap_adgroup": 20,
             },
         )
 
@@ -145,6 +148,9 @@ class AdGroupsTest(K1APIBaseTest):
                 "click_capping_daily_click_budget": "5.0000",
                 "custom_flags": {"flag_1": False, "flag_2": True, "flag_3": True, "flag_4": True},
                 "amplify_review": True,
+                "freqcap_account": 40,
+                "freqcap_campaign": 30,
+                "freqcap_adgroup": 20,
             },
         )
 

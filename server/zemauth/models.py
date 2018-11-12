@@ -390,6 +390,7 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ("can_see_sspd_url", "User can see SSP dashboard URL"),
             ("can_see_campaign_type_in_breakdowns", "Can see Campaign Type in breakdowns"),
             ("fea_can_change_campaign_type_to_display", "User can change campaign type to display"),
+            ("can_set_frequency_capping", "User can set frequency capping"),
         )
 
     def get_full_name(self):

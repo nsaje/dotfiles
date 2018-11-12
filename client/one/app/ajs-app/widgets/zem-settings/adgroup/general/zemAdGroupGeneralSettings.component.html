@@ -252,5 +252,20 @@
                 {{ error }}
             </div>
         </div>
+
+        <div class="form__group" ng-if="$ctrl.hasPermission('zemauth.can_set_frequency_capping')">
+            <label class="form__label" for="frequency-capping-input" is-internal="zemauth.can_set_frequency_capping">
+                Daily impression frequency cap:
+                <zem-help-popover content="This setting defines the maximum number of times your ads from this ad group will be shown to a unique user in one day." placement="top"></zem-help-popover>
+            </label>
+            <input id="frequency-capping-input"
+                    class="input-text input-text--narrow"
+                    ng-model="$ctrl.entity.settings.frequencyCapping"
+                    type="text"
+                    zem-numeric-validator>
+            <div class="message message--info message--with-icon">
+                {{ $ctrl.MESSAGES.INFO_FREQUENCY_CAPPING }}
+            </div>
+        </div>
     </div>
 </div>

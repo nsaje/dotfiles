@@ -52,6 +52,7 @@
         whitelist_publisher_groups: [9, 10]
         blacklist_publisher_groups: [11, 12]
         default_cs_representative: 1
+        frequency_capping: 40
     model: dash.accountsettings
     pk: 1
 
@@ -187,6 +188,7 @@
         ga_property_id: 'UA-123-2'
         whitelist_publisher_groups: [5, 6]
         blacklist_publisher_groups: [7, 8]
+        frequency_capping: 30
     model: dash.campaignsettings
     pk: 1
 
@@ -530,6 +532,7 @@
         blacklist_publisher_groups: [3, 4]
         click_capping_daily_ad_group_max_clicks: 15
         click_capping_daily_click_budget: '5.0000'
+        frequency_capping: 20
     model: dash.adgroupsettings
     pk: 1
 

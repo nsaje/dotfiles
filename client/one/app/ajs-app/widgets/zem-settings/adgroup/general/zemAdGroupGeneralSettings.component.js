@@ -27,6 +27,8 @@ angular.module('one.widgets').component('zemAdGroupGeneralSettings', {
                 'Flight time settings are disabled because campaign budget ' +
                 'optimization is enabled. Budget flight time is used for ' +
                 'running the ad group.',
+            INFO_FREQUENCY_CAPPING:
+                'Outbrain and Yahoo don’t support impression frequency capping. Ads will run with no limitations on these sources.',
         };
         $ctrl.deliveryType = {
             STANDARD: 1,

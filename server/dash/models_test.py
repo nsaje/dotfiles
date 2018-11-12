@@ -96,6 +96,7 @@ class AdGroupSettingsTest(TestCase):
             "local_b1_sources_group_daily_budget": Decimal("500"),
             "local_cpc_cc": None,
             "local_max_cpm": None,
+            "frequency_capping": 20,
         }
         self.assertEqual(models.AdGroupSettings.objects.get(id=1).get_settings_dict(), settings_dict)
 
@@ -364,6 +365,7 @@ class CampaignSettingsTest(TestCase):
             "adobe_tracking_param": "",
             "whitelist_publisher_groups": [1],
             "blacklist_publisher_groups": [2],
+            "frequency_capping": 30,
         }
 
         self.assertEqual(models.CampaignSettings.objects.get(id=1).get_settings_dict(), settings_dict)

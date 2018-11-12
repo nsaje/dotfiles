@@ -143,6 +143,9 @@ class AdGroupsView(K1APIView):
                 "custom_flags": flags,
                 "bidding_type": ad_group.bidding_type,
                 "amplify_review": ad_group.amplify_review,
+                "freqcap_account": ad_group.campaign.account.settings.frequency_capping,
+                "freqcap_campaign": ad_group.campaign.settings.frequency_capping,
+                "freqcap_adgroup": ad_group.settings.frequency_capping,
             }
 
             ad_group_dicts.append(ad_group_dict)

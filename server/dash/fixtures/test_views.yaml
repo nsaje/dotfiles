@@ -69,6 +69,7 @@
         account_type: 3
         whitelist_publisher_groups: [1]
         blacklist_publisher_groups: [1]
+        frequency_capping: 40
     model: dash.accountsettings
     pk: 1
 
@@ -119,6 +120,7 @@
         target_regions: ['NC', '501']
         whitelist_publisher_groups: [1]
         blacklist_publisher_groups: [1]
+        frequency_capping: 30
     model: dash.campaignsettings
     pk: 1
 

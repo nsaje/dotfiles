@@ -278,6 +278,7 @@ class CampaignSettingsFormTest(TestCase):
             "whitelist_publisher_groups": [],
             "blacklist_publisher_groups": [],
             "autopilot": True,
+            "frequency_capping": 30,
         }
 
     @patch("utils.dates_helper.local_today")
@@ -311,6 +312,7 @@ class CampaignSettingsFormTest(TestCase):
                 "whitelist_publisher_groups": [],
                 "blacklist_publisher_groups": [],
                 "autopilot": True,
+                "frequency_capping": 30,
             },
         )
 
@@ -451,6 +453,7 @@ class AdGroupSettingsFormTest(TestCase):
             "delivery_type": "1",
             "click_capping_daily_ad_group_max_clicks": 10,
             "click_capping_daily_click_budget": "5.0000",
+            "frequency_capping": 20,
         }
 
     @patch("utils.dates_helper.local_today")
@@ -499,6 +502,7 @@ class AdGroupSettingsFormTest(TestCase):
                 "delivery_type": 1,
                 "click_capping_daily_ad_group_max_clicks": 10,
                 "click_capping_daily_click_budget": Decimal("5.0000"),
+                "frequency_capping": 20,
             },
         )
 

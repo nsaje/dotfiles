@@ -13,6 +13,11 @@ angular.module('one.widgets').component('zemAccountGeneralSettings', {
         $ctrl.hasPermission = zemPermissions.hasPermission;
         $ctrl.isPermissionInternal = zemPermissions.isPermissionInternal;
 
+        $ctrl.MESSAGES = {
+            INFO_FREQUENCY_CAPPING:
+                'Outbrain and Yahoo don’t support impression frequency capping. Ads will run with no limitations on these sources.',
+        };
+
         $ctrl.updateAgencyDefaults = updateAgencyDefaults;
         $ctrl.agencySelect2Config = {
             // TODO: Refactor

@@ -315,6 +315,8 @@ class AdGroupSettingsForm(PublisherGroupsFormMixin, MulticurrencySettingsFormMix
     click_capping_daily_ad_group_max_clicks = forms.IntegerField(required=False)
     click_capping_daily_click_budget = forms.DecimalField(decimal_places=4, required=False)
 
+    frequency_capping = forms.IntegerField(required=False)
+
     def __init__(self, ad_group, user, *args, **kwargs):
         self.ad_group = ad_group
         self.account = ad_group.campaign.account
@@ -488,6 +490,7 @@ class AccountSettingsForm(PublisherGroupsFormMixin, forms.Form):
         choices=constants.Currency.get_choices(), error_messages={"required": "Please choose currency for account."}
     )
     auto_add_new_sources = forms.BooleanField(required=False)
+    frequency_capping = forms.IntegerField(required=False)
 
     def __init__(self, account, *args, **kwargs):
         self.account = account
@@ -833,6 +836,8 @@ class CampaignSettingsForm(PublisherGroupsFormMixin, forms.Form):
     adobe_tracking_param = PlainCharField(max_length=10, required=False)
 
     autopilot = forms.BooleanField(required=False)
+
+    frequency_capping = forms.IntegerField(required=False)
 
     def __init__(self, campaign, *args, **kwargs):
         self.campaign = campaign

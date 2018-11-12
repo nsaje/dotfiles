@@ -50,6 +50,7 @@ class CampaignSettings(validation.CampaignSettingsValidatorMixin, instance.Campa
         "adobe_tracking_param",
         "whitelist_publisher_groups",
         "blacklist_publisher_groups",
+        "frequency_capping",
     ]
     history_fields = list(_settings_fields)
 
@@ -103,6 +104,8 @@ class CampaignSettings(validation.CampaignSettingsValidatorMixin, instance.Campa
     archived = models.BooleanField(default=False)
     changes_text = models.TextField(blank=True, null=True)
 
+    frequency_capping = models.PositiveIntegerField(blank=True, null=True)
+
     objects = core.common.QuerySetManager()
 
     def add_to_history(self, user, action_type, changes, history_changes_text=None):
@@ -148,6 +151,7 @@ class CampaignSettings(validation.CampaignSettingsValidatorMixin, instance.Campa
             "adobe_tracking_param": "Adobe tracking parameter",
             "whitelist_publisher_groups": "Whitelist publisher groups",
             "blacklist_publisher_groups": "Blacklist publisher groups",
+            "frequency_capping": "Frequency Capping",
         }
 
         return NAMES[prop_name]

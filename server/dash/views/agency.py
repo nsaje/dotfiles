@@ -396,6 +396,9 @@ class AdGroupSettings(api_common.BaseApiView):
         result["bluekai_targeting"] = AudienceSerializer(settings.bluekai_targeting).data
         result["bluekai_targeting_old"] = AudienceSerializer(settings.bluekai_targeting, use_list_repr=True).data
 
+        if request.user.has_perm("zemauth.can_set_frequency_capping"):
+            result["frequency_capping"] = settings.frequency_capping
+
         return result
 
     def get_default_settings_dict(self, ad_group):
@@ -784,6 +787,9 @@ class CampaignSettings(api_common.BaseApiView):
         result["target_devices"] = DevicesSerializer(settings.target_devices).data
         result["target_os"] = OSsSerializer(settings.target_os).data
         result["target_placements"] = PlacementsSerializer(settings.target_placements).data
+
+        if request.user.has_perm("zemauth.can_set_frequency_capping"):
+            result["frequency_capping"] = settings.frequency_capping
 
         return result
 
@@ -1186,6 +1192,11 @@ class AccountSettings(api_common.BaseApiView):
                 if "auto_add_new_sources" in form.cleaned_data:
                     settings.auto_add_new_sources = form.cleaned_data["auto_add_new_sources"]
 
+            if "frequency_capping" in form.cleaned_data and form.cleaned_data["frequency_capping"]:
+                if not request.user.has_perm("zemauth.can_set_frequency_capping"):
+                    raise exc.AuthorizationError()
+                settings.frequency_capping = form.cleaned_data["frequency_capping"]
+
             account.save(request)
             settings.save(request, action_type=constants.HistoryActionType.SETTINGS_CHANGE)
             return settings
@@ -1444,6 +1455,9 @@ class AccountSettings(api_common.BaseApiView):
 
         result["whitelist_publisher_groups"] = settings.whitelist_publisher_groups
         result["blacklist_publisher_groups"] = settings.blacklist_publisher_groups
+
+        if request.user.has_perm("zemauth.can_set_frequency_capping"):
+            result["frequency_capping"] = settings.frequency_capping
 
         return result
 

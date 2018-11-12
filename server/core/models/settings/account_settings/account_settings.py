@@ -35,6 +35,7 @@ class AccountSettings(validation.AccountSettingsValidatorMixin, SettingsBase):
         "blacklist_publisher_groups",
         "salesforce_url",
         "auto_add_new_sources",
+        "frequency_capping",
     ]
     history_fields = list(_settings_fields)
 
@@ -67,6 +68,8 @@ class AccountSettings(validation.AccountSettingsValidatorMixin, SettingsBase):
     archived = models.BooleanField(default=False)
     changes_text = models.TextField(blank=True, null=True)
 
+    frequency_capping = models.PositiveIntegerField(blank=True, null=True)
+
     objects = core.common.QuerySetManager()
 
     @transaction.atomic
@@ -90,6 +93,7 @@ class AccountSettings(validation.AccountSettingsValidatorMixin, SettingsBase):
             "blacklist_publisher_groups": "Blacklist publisher groups",
             "salesforce_url": "SalesForce",
             "auto_add_new_sources": "Automatically add new sources",
+            "frequency_capping": "Frequency Capping",
         }
         return NAMES[prop_name]
 
