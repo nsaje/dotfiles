@@ -2,6 +2,7 @@ import datetime
 import logging
 import random
 import string
+from functools import partial
 
 import influx
 from django.conf import settings
@@ -15,6 +16,7 @@ from etl import materialization_run
 from etl import materialize
 from etl import redshift
 from etl import spark
+from utils import threads
 
 logger = logging.getLogger(__name__)
 
@@ -104,32 +106,38 @@ def _refresh(
             job_id,
         )
 
+    replication_threads = []
+
     for mv_class in views:
-        mv = mv_class(job_id, date_from, date_to, account_id=account_id, spark_session=spark_session)
-        with influx.block_timer("etl.refresh_k1.generate_table", table=mv_class.TABLE_NAME):
-            mv.generate(campaign_factors=effective_spend_factors)
+        _materialize_view(
+            mv_class,
+            job_id,
+            date_from,
+            date_to,
+            dump_and_abort,
+            effective_spend_factors,
+            skip_vacuum,
+            skip_analyze,
+            account_id,
+            spark_session,
+        )
 
-            if mv_class.TABLE_NAME == dump_and_abort:
-                logger.info("Dumping %s", dump_and_abort)
-                s3_path = redshift.unload_table(
-                    job_id, mv_class.TABLE_NAME, date_from, date_to, prefix=redshift.DUMP_S3_PREFIX
-                )
-                logger.info("Dumped %s to %s", dump_and_abort, s3_path)
-                logger.info("Aborting after %s", dump_and_abort)
-                exit()
+        repl_func = partial(
+            mv_unload_and_copy_into_replicas,
+            mv_class,
+            job_id,
+            date_from,
+            date_to,
+            account_id,
+            skip_vacuum,
+            skip_analyze,
+        )
+        repl_thread = threads.AsyncFunction(repl_func)
+        repl_thread.start()
+        replication_threads.append(repl_thread)
 
-            try:
-                if not skip_vacuum and not mv_class.IS_TEMPORARY_TABLE:
-                    maintenance.vacuum(mv_class.TABLE_NAME)
-                if not skip_analyze:
-                    maintenance.analyze(mv_class.TABLE_NAME)
-            except Exception:
-                logger.exception("Vacuum and analyze skipped due to error")
-
-    # save processed data to S3 to for potential read replication
-    unload_and_copy_into_replicas(
-        views, job_id, date_from, date_to, account_id=account_id, skip_vacuum=skip_vacuum, skip_analyze=skip_analyze
-    )
+    for thread in replication_threads:
+        thread.join_and_get_result()
 
     # while everything is being updated data is not consistent among tables
     # so might as well leave cache until refresh finishes
@@ -138,31 +146,105 @@ def _refresh(
     influx.incr("etl.refresh_k1.refresh_k1_reports_finished", 1)
 
 
+def _materialize_view(
+    mv_class,
+    job_id,
+    date_from,
+    date_to,
+    dump_and_abort,
+    effective_spend_factors,
+    skip_vacuum,
+    skip_analyze,
+    account_id,
+    spark_session,
+):
+    mv = mv_class(job_id, date_from, date_to, account_id=account_id, spark_session=spark_session)
+    with influx.block_timer("etl.refresh_k1.generate_table", table=mv_class.TABLE_NAME):
+        mv.generate(campaign_factors=effective_spend_factors)
+
+        if mv_class.TABLE_NAME == dump_and_abort:
+            logger.info("Dumping %s", dump_and_abort)
+            s3_path = redshift.unload_table(
+                job_id, mv_class.TABLE_NAME, date_from, date_to, prefix=redshift.DUMP_S3_PREFIX
+            )
+            logger.info("Dumped %s to %s", dump_and_abort, s3_path)
+            logger.info("Aborting after %s", dump_and_abort)
+            exit()
+
+        try:
+            if not skip_vacuum and not mv_class.IS_TEMPORARY_TABLE:
+                maintenance.vacuum(mv_class.TABLE_NAME)
+            if not skip_analyze:
+                maintenance.analyze(mv_class.TABLE_NAME)
+        except Exception:
+            logger.exception("Vacuum and analyze skipped due to error")
+
+
 def unload_and_copy_into_replicas(
     views, job_id, date_from, date_to, account_id=None, skip_vacuum=False, skip_analyze=False
 ):
     for mv_class in views:
-        if not mv_class.IS_TEMPORARY_TABLE:
-            s3_path = redshift.unload_table(job_id, mv_class.TABLE_NAME, date_from, date_to, account_id=account_id)
-            for db_name in settings.STATS_DB_WRITE_REPLICAS:
-                redshift.update_table_from_s3(
-                    db_name, s3_path, mv_class.TABLE_NAME, date_from, date_to, account_id=account_id
-                )
-                if not skip_vacuum:
-                    maintenance.vacuum(mv_class.TABLE_NAME, db_name=db_name)
-                if not skip_analyze:
-                    maintenance.analyze(mv_class.TABLE_NAME, db_name=db_name)
-            if mv_class in (materialize.MasterView, materialize.MasterPublishersView):
-                # do not copy mv_master and mv_master_pubs into postgres, too large
-                continue
-            for db_name in settings.STATS_DB_WRITE_REPLICAS_POSTGRES:
-                redshift.update_table_from_s3_postgres(
-                    db_name, s3_path, mv_class.TABLE_NAME, date_from, date_to, account_id=account_id
-                )
-                if not skip_vacuum:
-                    maintenance.vacuum(mv_class.TABLE_NAME, db_name=db_name)
-                if not skip_analyze:
-                    maintenance.analyze(mv_class.TABLE_NAME, db_name=db_name)
+        mv_unload_and_copy_into_replicas(mv_class, job_id, date_from, date_to, account_id, skip_vacuum, skip_analyze)
+
+
+def mv_unload_and_copy_into_replicas(
+    mv_class, job_id, date_from, date_to, account_id=None, skip_vacuum=False, skip_analyze=False
+):
+    if mv_class.IS_TEMPORARY_TABLE:
+        return
+    s3_path = redshift.unload_table(job_id, mv_class.TABLE_NAME, date_from, date_to, account_id=account_id)
+    update_threads = []
+    for db_name in settings.STATS_DB_WRITE_REPLICAS:
+        async_func = partial(
+            update_table,
+            db_name,
+            s3_path,
+            mv_class.TABLE_NAME,
+            date_from,
+            date_to,
+            account_id,
+            skip_vacuum,
+            skip_analyze,
+        )
+        async_thread = threads.AsyncFunction(async_func)
+        async_thread.start()
+        update_threads.append(async_thread)
+    if mv_class not in (materialize.MasterView, materialize.MasterPublishersView):
+        # do not copy mv_master and mv_master_pubs into postgres, too large
+        for db_name in settings.STATS_DB_WRITE_REPLICAS_POSTGRES:
+            async_func = partial(
+                update_table_postgres,
+                db_name,
+                s3_path,
+                mv_class.TABLE_NAME,
+                date_from,
+                date_to,
+                account_id,
+                skip_vacuum,
+                skip_analyze,
+            )
+            async_thread = threads.AsyncFunction(async_func)
+            async_thread.start()
+            update_threads.append(async_thread)
+
+    for thread in update_threads:
+        thread.join_and_get_result()
+
+
+def update_table(db_name, s3_path, table_name, date_from, date_to, account_id, skip_vacuum, skip_analyze):
+    redshift.update_table_from_s3(db_name, s3_path, table_name, date_from, date_to, account_id=account_id)
+    if not skip_vacuum:
+        maintenance.vacuum(table_name, db_name=db_name)
+    if not skip_analyze:
+        maintenance.analyze(table_name, db_name=db_name)
+
+
+def update_table_postgres(db_name, s3_path, table_name, date_from, date_to, account_id, skip_vacuum, skip_analyze):
+    redshift.update_table_from_s3_postgres(db_name, s3_path, table_name, date_from, date_to, account_id=account_id)
+    if not skip_vacuum:
+        maintenance.vacuum(table_name, db_name=db_name)
+    if not skip_analyze:
+        maintenance.analyze(table_name, db_name=db_name)
 
 
 def get_all_views_table_names(temporary=False):
