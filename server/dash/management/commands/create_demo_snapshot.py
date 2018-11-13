@@ -209,11 +209,6 @@ def _prepare_demo_objects(serialize_list, demo_mappings, demo_users_set):
     _add_to_serialize_list(serialize_list, list(currencies))
     _extract_dependencies_and_anonymize(serialize_list, demo_users_set, anonymized_objects)
 
-    # add email templates
-    email_templates = dash.models.EmailTemplate.objects.all()
-    _add_to_serialize_list(serialize_list, list(email_templates))
-    _extract_dependencies_and_anonymize(serialize_list, demo_users_set, anonymized_objects)
-
     # add demo accounts
     for demo_mapping in demo_mappings:
         name_pools = demo_anonymizer.DemoNamePools(
