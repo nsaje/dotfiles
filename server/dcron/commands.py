@@ -1,9 +1,78 @@
+import logging
 import shlex
+import socket
+import sys
 
+import influx
 from django.conf import settings
 from django.core import management
 
+import django_pglocks
+from dcron import alerts
+from dcron import constants
 from dcron import exceptions
+from dcron import models
+from utils import dates_helper
+
+logger = logging.getLogger(__name__)
+
+
+class DCronCommand(management.base.BaseCommand):
+    """
+    Base class for management commands scheduled with distributed cron.
+    It takes care of advisory locking, updating DCronJob records, sending metrics and logging.
+    """
+
+    def handle(self, *args, **options):
+        command_name = sys.argv[1]
+        start_dt = dates_helper.utc_now()
+        host_name = socket.gethostname()
+
+        with django_pglocks.advisory_lock(command_name, wait=False) as acquired:
+            if not acquired:
+                logger.debug("Another process is executing cron job %s - aborting on host %s", command_name, host_name)
+                return
+
+            models.DCronJob.objects.update_or_create(
+                command_name=command_name, defaults={"executed_dt": start_dt, "completed_dt": None, "host": host_name}
+            )
+
+            logger.info("Started cron job %s on host %s", command_name, host_name)
+
+            influx.incr("dcron_command_count", 1, command_name=command_name)
+
+            try:
+                self._handle(*args, **options)
+            except Exception:
+                logger.exception("Exception in DCronCommand %s", command_name)
+
+                dcron_job = models.DCronJob.objects.filter(command_name=command_name).first()
+                if dcron_job:
+                    if dcron_job.alert != constants.Alert.FAILURE:
+                        models.DCronJob.objects.filter(command_name=command_name).update(alert=constants.Alert.FAILURE)
+                        alerts.trigger_pagerduty_alert(command_name, constants.Alert.FAILURE)
+                else:
+                    logger.error("DCronCommand %s does not exist - could not set Failure alert.", command_name)
+
+            finally:
+                finish_dt = dates_helper.utc_now()
+                models.DCronJob.objects.update_or_create(
+                    command_name=command_name, defaults={"completed_dt": finish_dt}
+                )
+
+                logger.info(
+                    "Finished cron job %s on host %s in %s seconds",
+                    command_name,
+                    host_name,
+                    (finish_dt - start_dt).total_seconds(),
+                )
+
+                influx.timing(
+                    "dcron_command_duration", (finish_dt - start_dt).total_seconds(), command_name=command_name
+                )
+
+    def _handle(self, *args, **options):
+        raise NotImplementedError("Not implemented.")
 
 
 def extract_management_command_name(command: str) -> str:  # typing (for mypy check)
@@ -40,6 +109,10 @@ def extract_and_verify_management_command_name(command: str) -> str:  # typing (
     if command_name not in management.get_commands():
         raise exceptions.UnregisteredManagementCommand("%s is not a registered management command" % command_name)
 
-    # TODO check that command_name is an instance of DCronCommand
+    # TODO uncomment to add command type checking
+    # command_class = type(management.load_command_class(management.get_commands()[command_name], command_name))
+    # if not issubclass(command_class, DCronCommand):
+    #     # TODO define a new type of exception
+    #     raise exceptions.DCronException("%s is not a DCronCommand" % command_name)
 
     return command_name

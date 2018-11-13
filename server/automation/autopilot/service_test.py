@@ -1,5 +1,4 @@
 import datetime
-import json
 import traceback
 from collections import defaultdict
 from decimal import Decimal
@@ -228,7 +227,7 @@ class AutopilotPlusTestCase(test.TestCase):
         self.assertLogExists(campaign=2, ad_group=2, source=1)
         self.assertLogExists(campaign=2, ad_group=2, source=None)
 
-    @patch("urllib.request.urlopen")
+    @patch("utils.pagerduty_helper.requests.post")
     @test.override_settings(
         HOSTNAME="testhost",
         PAGER_DUTY_ENABLED=True,
@@ -244,16 +243,15 @@ class AutopilotPlusTestCase(test.TestCase):
         )
         mock_urlopen.assert_called_with(
             "http://pagerduty.example.com",
-            json.dumps(
-                {
-                    "service_key": "123abc",
-                    "incident_key": "automation_autopilot_error",
-                    "event_type": "trigger",
-                    "description": desc,
-                    "client": "Zemanta One - testhost",
-                    "details": {"element": ""},  # '<AdGroup: Test AdGroup 1>'
-                }
-            ),
+            json={
+                "service_key": "123abc",
+                "incident_key": "automation_autopilot_error",
+                "event_type": "trigger",
+                "description": desc,
+                "client": "Zemanta One - testhost",
+                "details": {"element": ""},  # '<AdGroup: Test AdGroup 1>'
+            },
+            timeout=60,
         )
 
     @patch("automation.autopilot.prefetch.prefetch_autopilot_data")

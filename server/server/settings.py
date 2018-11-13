@@ -9,6 +9,8 @@ https://docs.djangoproject.com/en/dev/ref/settings/
 """
 # isort:skip_file
 import copy
+from datetime import timedelta
+
 from secretcrypt import Secret
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
@@ -367,4 +369,11 @@ CELERY_ACCEPT_CONTENT = {"pickle"}
 
 RESTAPI_REPORTS_URL = "https://%s.s3.amazonaws.com" % RESTAPI_REPORTS_BUCKET
 
-DCRON = {"base_command": "/home/ubuntu/docker-manage-py.sh", "default_warning_wait": 60, "warning_waits": {}}
+DCRON = {
+    "base_command": "/home/ubuntu/docker-manage-py.sh",
+    "check_margin": timedelta(seconds=5),
+    "default_warning_wait": 60,
+    "warning_waits": {},
+    "default_max_duration": 3600,
+    "max_durations": {},
+}

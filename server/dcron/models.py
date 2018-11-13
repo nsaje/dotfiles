@@ -1,5 +1,7 @@
 from django.db import models
 
+from dcron import constants
+
 
 class DCronJob(models.Model):
     """
@@ -10,6 +12,7 @@ class DCronJob(models.Model):
     executed_dt = models.DateTimeField(null=True, blank=True)
     completed_dt = models.DateTimeField(null=True, blank=True)
     host = models.CharField(max_length=100, null=True, blank=True)
+    alert = models.IntegerField(choices=constants.Alert.get_choices(), default=constants.Alert.OK)
 
     def __str__(self):
         return self.command_name
@@ -29,7 +32,8 @@ class DCronJobSettings(models.Model):
     full_command = models.CharField(max_length=250)
     enabled = models.BooleanField(default=True)
     warning_wait = models.FloatField()
-    manual_warning_wait = models.BooleanField(default=False)
+    max_duration = models.FloatField()
+    manual_override = models.BooleanField(default=False)
 
     class Meta:
         verbose_name = "Distributed Cron Job Settings"

@@ -164,6 +164,7 @@ PAGER_DUTY_URL = ""
 PAGER_DUTY_ADOPS_SERVICE_KEY = Secret("").get().decode("utf-8")
 PAGER_DUTY_SYSOPS_SERVICE_KEY = Secret("").get().decode("utf-8")
 PAGER_DUTY_ENGINEERS_SERVICE_KEY = Secret("").get().decode("utf-8")
+PAGER_DUTY_Z1_SERVICE_KEY = Secret("").get().decode("utf-8")
 
 # Sentry config
 RAVEN_CONFIG = {"dsn": ""}

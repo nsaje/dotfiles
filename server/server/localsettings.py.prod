@@ -216,6 +216,13 @@ PAGER_DUTY_ENGINEERS_SERVICE_KEY = (
     .get()
     .decode("utf-8")
 )
+PAGER_DUTY_Z1_SERVICE_KEY = (
+    Secret(
+        "kms:region=us-east-1:AQECAHjdfiP9DHF52gr8mpTmZ/ZwRu2qZbRw8dV0ohsw+OhZewAAAH4wfAYJKoZIhvcNAQcGoG8wbQIBADBoBgkqhkiG9w0BBwEwHgYJYIZIAWUDBAEuMBEEDET3Wr7lEc/oITPGfAIBEIA7AQ2g41S8jeHOPg7SW82SgrqBu0RzdlwWWFGL3VhFhaVer9cVTu6+ZqBA+18wKvtrwrz+qLLf9GPJ4u8="  # noqa
+    )
+    .get()
+    .decode("utf-8")
+)
 
 # Sentry config
 _SENTRY_PUBLIC_KEY = "96ae3fca225743d0b52c08870527386e"

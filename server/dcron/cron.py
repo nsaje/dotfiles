@@ -1,9 +1,9 @@
 import logging
 import typing
 
-import crontab
 from django.conf import settings
 
+import crontab
 from dcron import commands
 from dcron import exceptions
 from dcron import models
@@ -44,13 +44,6 @@ def process_crontab_items(file_name: typing.Optional[str] = None, file_contents:
 
 
 def _process_cron_item(cron_item: crontab.CronItem) -> str:
-    """
-    Process a crontab.CronItem.
-    It creates or updates DCronJob and corresponding DCronJobSettings.
-    :param cron_item: a crontab.CronItem
-    :return: the name of the processed management command
-    """
-
     settings_kwargs = _dcron_job_settings_kwargs(cron_item)
 
     command_name = commands.extract_and_verify_management_command_name(settings_kwargs["full_command"])
@@ -62,14 +55,18 @@ def _process_cron_item(cron_item: crontab.CronItem) -> str:
     settings_kwargs["warning_wait"] = settings.DCRON["warning_waits"].get(
         command_name, settings.DCRON["default_warning_wait"]
     )
+    settings_kwargs["max_duration"] = settings.DCRON["max_durations"].get(
+        command_name, settings.DCRON["default_max_duration"]
+    )
 
     dcron_job_settings = models.DCronJobSettings.objects.filter(job=dcron_job).first()
     if dcron_job_settings:
         # DCronJobSettings already exists.
 
-        if dcron_job_settings.manual_warning_wait:
-            # Manual warning wait is selected, thus don't update it.
+        if dcron_job_settings.manual_override:
+            # Manual override is selected, thus don't update it.
             del settings_kwargs["warning_wait"]
+            del settings_kwargs["max_duration"]
 
         if any(getattr(dcron_job_settings, k) != v for k, v in settings_kwargs.items()):
             # There are changes - update DCronJobSettings.
@@ -89,13 +86,6 @@ def _process_cron_item(cron_item: crontab.CronItem) -> str:
 def _crontab_items_iterator(
     file_name: typing.Optional[str] = None, file_contents: typing.Optional[str] = None
 ) -> typing.Iterator[crontab.CronItem]:
-    """
-    Create a generator of crontab.CronItem objects read from an input file or a string.
-    :param file_name: the name of the file to read
-    :param file_contents: the contents of the file
-    :return: the generator
-    """
-
     if not (bool(file_name) ^ bool(file_contents)):
         raise exceptions.ParameterException("Provide either file_name or file_contents parameter")
 
@@ -110,12 +100,6 @@ def _crontab_items_iterator(
 
 
 def _dcron_job_settings_kwargs(cron_item: crontab.CronItem) -> dict:
-    """
-    Create DCronJobSettings creation kwargs from input crontab.CronItem.
-    :param cron_item: a crontab.CronItem
-    :return: kwargs for DCronJobSettings creation
-    """
-
     return {
         "schedule": cron_item.slices.clean_render(),
         "full_command": cron_item.command,
