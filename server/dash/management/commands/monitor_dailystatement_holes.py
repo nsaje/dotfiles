@@ -4,7 +4,7 @@ import logging
 import influx
 from django.db import connection
 
-from etl import daily_statements_k1
+from etl import daily_statements
 from utils.command_helpers import ExceptionCommand
 
 logger = logging.getLogger(__name__)
@@ -28,7 +28,7 @@ class Command(ExceptionCommand):
 
     @staticmethod
     def get_first_unprocessed_dates(date_since):
-        campaigns = daily_statements_k1.get_campaigns_with_spend(date_since)
+        campaigns = daily_statements.get_campaigns_with_spend(date_since)
         # for each budget associate daily statement for each date from start to end
         # return first date for which daily statement does not exist for each campaign
         query = """
