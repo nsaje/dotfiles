@@ -29,6 +29,4 @@ class Command(utils.command_helpers.ExceptionCommand):
         if not self.slack:
             self.stdout.write(text)
             return
-        utils.slack.publish(
-            text, msg_type=utils.slack.MESSAGE_TYPE_WARNING, username="Audit CPC", channel="z1-monitor"
-        )
+        utils.slack.publish(text, msg_type=utils.slack.MESSAGE_TYPE_WARNING, username="Audit CPC", channel="z1-monitor")
