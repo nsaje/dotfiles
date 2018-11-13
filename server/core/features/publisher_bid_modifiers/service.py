@@ -38,8 +38,9 @@ def set(ad_group, publisher, source, modifier, user=None, write_history=True):
 
     _update_or_create(ad_group, source, publisher, modifier)
     if write_history:
+        percentage = "{:.2%}".format(modifier - 1.0)
         ad_group.write_history(
-            "Publisher: %s (%s). Bid modifier set to %s." % (publisher, source.name, modifier), user=user
+            "Publisher: %s (%s). Bid modifier set to %s." % (publisher, source.name, percentage), user=user
         )
 
 
