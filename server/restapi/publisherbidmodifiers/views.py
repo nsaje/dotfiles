@@ -4,6 +4,7 @@ import os
 
 from django.conf import settings
 from django.http import HttpResponse
+from rest_framework import permissions
 from rest_framework import serializers
 from rest_framework.parsers import MultiPartParser
 from rest_framework.response import Response
@@ -30,6 +31,8 @@ class CSVMixin(object):
 
 
 class PublisherBidModifiersDownload(restapi.common.views_base.RESTAPIBaseViewSet, CSVMixin):
+    permission_classes = (permissions.IsAuthenticated,)
+
     def download(self, request, ad_group_id):
         ad_group = restapi.access.get_ad_group(request.user, ad_group_id)
 
@@ -43,7 +46,7 @@ class PublisherBidModifiersDownload(restapi.common.views_base.RESTAPIBaseViewSet
 
 
 class PublisherBidModifiersUpload(restapi.common.views_base.RESTAPIBaseViewSet):
-
+    permission_classes = (permissions.IsAuthenticated,)
     parser_classes = (MultiPartParser,)
 
     def upload(self, request, ad_group_id):
@@ -81,6 +84,8 @@ class PublisherBidModifiersUpload(restapi.common.views_base.RESTAPIBaseViewSet):
 
 
 class PublisherBidModifiersErrorDownload(restapi.common.views_base.RESTAPIBaseViewSet, CSVMixin):
+    permission_classes = (permissions.IsAuthenticated,)
+
     def download(self, request, ad_group_id, csv_error_key):
         ad_group = restapi.access.get_ad_group(request.user, ad_group_id)
 
@@ -93,6 +98,8 @@ class PublisherBidModifiersErrorDownload(restapi.common.views_base.RESTAPIBaseVi
 
 
 class PublisherBidModifiersExampleCSVDownload(restapi.common.views_base.RESTAPIBaseViewSet, CSVMixin):
+    permission_classes = (permissions.IsAuthenticated,)
+
     def download(self, request):
         csv_example_file = service.make_csv_example_file()
         return self.create_csv_response("example_bid_modifiers", content=csv_example_file)
