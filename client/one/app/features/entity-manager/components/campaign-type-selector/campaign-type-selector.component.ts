@@ -6,6 +6,7 @@ import {
     Output,
     EventEmitter,
     Input,
+    Inject,
 } from '@angular/core';
 import {downgradeComponent} from '@angular/upgrade/static';
 import {CAMPAIGN_TYPE} from '../../../../app.constants';
@@ -27,22 +28,25 @@ export class CampaignTypeSelectorComponent {
     isDisplayDemoRequestVisible = false;
     CAMPAIGN_TYPE = CAMPAIGN_TYPE;
 
-    constructor(private googleAnalyticsService: GoogleAnalyticsService) {}
+    constructor(
+        private googleAnalyticsService: GoogleAnalyticsService,
+        @Inject('zemPermissions') private zemPermissions: any
+    ) {}
 
     selectCampaignType(campaignType: number) {
         if (this.shouldLogCampaignTypeSelection) {
             this.googleAnalyticsService.logCampaignTypeSelection(campaignType);
         }
-        this.onSelect.emit(campaignType);
-    }
-
-    showDisplayDemoRequest() {
-        if (this.shouldLogCampaignTypeSelection) {
-            this.googleAnalyticsService.logCampaignTypeSelection(
-                CAMPAIGN_TYPE.DISPLAY
-            );
+        if (
+            campaignType === CAMPAIGN_TYPE.DISPLAY &&
+            !this.zemPermissions.hasPermission(
+                'zemauth.fea_can_change_campaign_type_to_display'
+            )
+        ) {
+            this.isDisplayDemoRequestVisible = true;
+            return;
         }
-        this.isDisplayDemoRequestVisible = true;
+        this.onSelect.emit(campaignType);
     }
 }
 

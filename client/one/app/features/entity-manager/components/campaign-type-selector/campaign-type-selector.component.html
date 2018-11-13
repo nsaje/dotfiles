@@ -45,9 +45,9 @@
     </div>
     <div class="zem-campaign-type-selector__type-container" *ngIf="shouldShowDisplayType">
         <button class="button button--outline zem-campaign-type-selector__type zem-campaign-type-selector__type--display"
-                (click)="showDisplayDemoRequest()">
+                (click)="selectCampaignType(CAMPAIGN_TYPE.DISPLAY)">                
             <span class="zem-campaign-type-selector__type-name">
-                Display Advertising
+                Display Ad Campaign
             </span>
             <span class="zem-campaign-type-selector__type-description">
                 Put your creative under control using display inventory with Zemanta’s CPC bidding and on-site engagement optimization.
