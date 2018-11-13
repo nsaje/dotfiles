@@ -1,6 +1,7 @@
 import datetime
 import logging
 
+from analytics import monitor
 from etl import materialize
 from etl import refresh
 from utils import dates_helper
@@ -53,12 +54,16 @@ class Command(ExceptionCommand):
         if since is None:
             logger.error(err)
             return
-
-        refresh.refresh(
-            since,
-            options.get("account_id"),
-            skip_vacuum=skip_vacuum,
-            skip_analyze=skip_analyze,
-            skip_daily_statements=skip_daily_statements,
-            dump_and_abort=dump_and_abort,
-        )
+        try:
+            refresh.refresh(
+                since,
+                options.get("account_id"),
+                skip_vacuum=skip_vacuum,
+                skip_analyze=skip_analyze,
+                skip_daily_statements=skip_daily_statements,
+                dump_and_abort=dump_and_abort,
+            )
+        except Exception as e:
+            logger.exception(e)
+        finally:
+            monitor.audit_spend_integrity(None)

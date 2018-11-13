@@ -18,7 +18,7 @@ from utils import converters
 
 logger = logging.getLogger("stats.monitor")
 
-MAX_ERR = 10 ** 7  # 0.01$
+MAX_ERR = 10 ** 9  # 0.0001$
 
 API_ACCOUNTS = (293, 305)
 
@@ -42,12 +42,16 @@ def audit_spend_integrity(date, account_id=None, max_err=MAX_ERR):
     spend_queryset = dash.models.BudgetDailyStatement.objects.filter(date=date)
     if account_id:
         spend_queryset = spend_queryset.filter(budget__campaign__account_id=account_id)
-    daily_spend = spend_queryset.values("date").annotate(
-        media=Sum(F("media_spend_nano")),
-        data=Sum(F("data_spend_nano")),
-        margin=Sum(F("margin_nano")),
-        fee=Sum(F("license_fee_nano")),
-    )[0]
+    daily_spend = (
+        spend_queryset.values("date")
+        .annotate(
+            media=Sum(F("media_spend_nano")),
+            data=Sum(F("data_spend_nano")),
+            margin=Sum(F("margin_nano")),
+            fee=Sum(F("license_fee_nano")),
+        )
+        .first()
+    )
     integrity_issues = []
     for table_name in etl.refresh.get_all_views_table_names():
 
@@ -282,7 +286,9 @@ def audit_click_discrepancy(date=None, days=30, threshold=20):
     with redshiftapi.db.get_stats_cursor() as c:
         click_discrepancy_query = backtosql.generate_sql(
             "sql/monitor_click_discrepancy.sql",
-            dict(campaigns=",".join(map(str, list(campaigns.keys()))), from_date=from_date, till_date=till_date),
+            dict(
+                campaigns=",".join(map(str, list(campaigns.keys()))), from_date=str(from_date), till_date=str(till_date)
+            ),
         )
         c.execute(click_discrepancy_query)
         data_base = {int(r[0]): r[1] for r in c.fetchall()}

@@ -3,7 +3,7 @@ import utils.command_helpers
 import utils.slack
 
 ALERT_MSG = """Yesterday, Ad group *{name}* (<https://one.zemanta.com/v2/analytics/adgroup/{ad_group_id}/sources | {ad_group_id}>)
-spend ${total_spend} with too high eCPC (${ecpc}) compared to its bid CPC (${cpc}) on *{source_name}*.
+spent ${total_spend} with too high eCPC (${ecpc}) compared to its bid CPC (${cpc}) on *{source_name}*.
 """
 
 

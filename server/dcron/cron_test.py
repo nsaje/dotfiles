@@ -1,9 +1,10 @@
 from django.conf import settings
-from django.test import TestCase, override_settings
+from django.test import TestCase
+from django.test import override_settings
 
-from dcron.exceptions import ParameterException
-from dcron import models
 from dcron import cron
+from dcron import models
+from dcron.exceptions import ParameterException
 
 
 class CrontabItemsGeneratorTestCase(TestCase):
@@ -33,7 +34,6 @@ class CrontabItemsGeneratorTestCase(TestCase):
 0 * * * *        /home/ubuntu/docker-manage-py.sh monitor_selfmanaged
 #Some more comments
 0 7 * * 1        /home/ubuntu/docker-manage-py.sh send_weekly_reports
-#20 7,11 * * *    /home/ubuntu/docker-manage-py.sh audit_spend_integrity --slack
 0 0 * * *        /home/ubuntu/docker-manage-py.sh cleartokens
 */1 * * * *      /home/ubuntu/docker-manage-py.sh handle_auto_save_batches
 # Test non-standard definitions
@@ -85,11 +85,6 @@ class CrontabItemsGeneratorTestCase(TestCase):
                     "schedule": "0 7 * * 1",
                     "full_command": "/home/ubuntu/docker-manage-py.sh send_weekly_reports",
                     "enabled": True,
-                },
-                {
-                    "schedule": "20 7,11 * * *",
-                    "full_command": "/home/ubuntu/docker-manage-py.sh audit_spend_integrity --slack",
-                    "enabled": False,
                 },
                 {
                     "schedule": "0 0 * * *",
@@ -157,15 +152,14 @@ class DCronModelsTestCase(TestCase):
         "0 9,12,15 * * *\t%s monitor_blacklists\n" % settings.DCRON["base_command"]
         + "15 9 * * *\t%s run_autopilot --daily-run\n" % settings.DCRON["base_command"]
         + "*/5 * * * *\t%s refresh_etl 3\n" % settings.DCRON["base_command"]
-        + "#20 7,11 * * *\t%s audit_spend_integrity --slack\n" % settings.DCRON["base_command"]
     )
 
     def test_create_records(self):
 
         cron.process_crontab_items(file_contents=self.crontab_example)
 
-        self.assertEqual(models.DCronJob.objects.count(), 4)
-        self.assertEqual(models.DCronJobSettings.objects.count(), 4)
+        self.assertEqual(models.DCronJob.objects.count(), 3)
+        self.assertEqual(models.DCronJobSettings.objects.count(), 3)
 
         job_settings = models.DCronJobSettings.objects.get(job__command_name="monitor_blacklists")
         self.assertEqual(job_settings.job.command_name, "monitor_blacklists")
@@ -198,17 +192,6 @@ class DCronModelsTestCase(TestCase):
         self.assertEqual(job_settings.full_command, "%s refresh_etl 3" % settings.DCRON["base_command"])
         self.assertEqual(job_settings.enabled, True)
         self.assertEqual(job_settings.warning_wait, 3600)
-        self.assertEqual(job_settings.manual_warning_wait, False)
-
-        job_settings = models.DCronJobSettings.objects.get(job__command_name="audit_spend_integrity")
-        self.assertEqual(job_settings.job.command_name, "audit_spend_integrity")
-        self.assertEqual(job_settings.job.executed_dt, None)
-        self.assertEqual(job_settings.job.completed_dt, None)
-        self.assertEqual(job_settings.job.host, None)
-        self.assertEqual(job_settings.schedule, "20 7,11 * * *")
-        self.assertEqual(job_settings.full_command, "%s audit_spend_integrity --slack" % settings.DCRON["base_command"])
-        self.assertEqual(job_settings.enabled, False)
-        self.assertEqual(job_settings.warning_wait, 60)
         self.assertEqual(job_settings.manual_warning_wait, False)
 
     def test_update_records(self):
@@ -292,22 +275,7 @@ class DCronModelsTestCase(TestCase):
         self.assertEqual(job_settings.warning_wait, 3600)
         self.assertEqual(job_settings.manual_warning_wait, False)
 
-        cron_item = next(cron_item_generator)
-
-        with self.assertNumQueries(6):
-            # DCronJob and DCronJobSettings need to be created.
-            cron._process_cron_item(cron_item)
-
-        job_settings = models.DCronJobSettings.objects.get(job__command_name="audit_spend_integrity")
-        self.assertEqual(job_settings.job.command_name, "audit_spend_integrity")
-        self.assertEqual(job_settings.job.executed_dt, None)
-        self.assertEqual(job_settings.job.completed_dt, None)
-        self.assertEqual(job_settings.job.host, None)
-        self.assertEqual(job_settings.schedule, "20 7,11 * * *")
-        self.assertEqual(job_settings.full_command, "%s audit_spend_integrity --slack" % settings.DCRON["base_command"])
-        self.assertEqual(job_settings.enabled, False)
-        self.assertEqual(job_settings.warning_wait, 60)
-        self.assertEqual(job_settings.manual_warning_wait, False)
+        self.assertNumQueries(6)
 
     def test_remove_records(self):
         dcj = models.DCronJob.objects.create(command_name="monitor_blacklists")
@@ -335,15 +303,6 @@ class DCronModelsTestCase(TestCase):
             full_command="%s refresh_etl 3" % settings.DCRON["base_command"],
             enabled=True,
             warning_wait=settings.DCRON["warning_waits"]["refresh_etl"],
-        )
-
-        dcj = models.DCronJob.objects.create(command_name="audit_spend_integrity")
-        models.DCronJobSettings.objects.create(
-            job=dcj,
-            schedule="20 7,11 * * *",
-            full_command="%s audit_spend_integrity --slack" % settings.DCRON["base_command"],
-            enabled=False,
-            warning_wait=settings.DCRON["default_warning_wait"],
         )
 
         dcj = models.DCronJob.objects.create(command_name="delete_me_1")
@@ -377,8 +336,8 @@ class DCronModelsTestCase(TestCase):
 
         cron.process_crontab_items(file_contents=crontab_example)
 
-        self.assertEqual(models.DCronJob.objects.count(), 4)
-        self.assertEqual(models.DCronJobSettings.objects.count(), 4)
+        self.assertEqual(models.DCronJob.objects.count(), 3)
+        self.assertEqual(models.DCronJobSettings.objects.count(), 3)
 
         job_settings = models.DCronJobSettings.objects.get(job__command_name="monitor_blacklists")
         self.assertEqual(job_settings.job.command_name, "monitor_blacklists")
@@ -411,17 +370,6 @@ class DCronModelsTestCase(TestCase):
         self.assertEqual(job_settings.full_command, "%s refresh_etl 3" % settings.DCRON["base_command"])
         self.assertEqual(job_settings.enabled, True)
         self.assertEqual(job_settings.warning_wait, 3600)
-        self.assertEqual(job_settings.manual_warning_wait, False)
-
-        job_settings = models.DCronJobSettings.objects.get(job__command_name="audit_spend_integrity")
-        self.assertEqual(job_settings.job.command_name, "audit_spend_integrity")
-        self.assertEqual(job_settings.job.executed_dt, None)
-        self.assertEqual(job_settings.job.completed_dt, None)
-        self.assertEqual(job_settings.job.host, None)
-        self.assertEqual(job_settings.schedule, "20 7,11 * * *")
-        self.assertEqual(job_settings.full_command, "%s audit_spend_integrity --slack" % settings.DCRON["base_command"])
-        self.assertEqual(job_settings.enabled, False)
-        self.assertEqual(job_settings.warning_wait, 60)
         self.assertEqual(job_settings.manual_warning_wait, False)
 
     def test_manual_warning_wait(self):
