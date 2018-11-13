@@ -14,7 +14,11 @@ class EmailTemplate(models.Model):
     body = models.TextField(blank=True, null=False)
 
     def __str__(self):
-        return constants.EmailTemplateType.get_text(self.template_type) if self.template_type else "Unassigned"
+        return (
+            (constants.EmailTemplateType.get_text(self.template_type) or "<noname>")
+            if self.template_type
+            else "Unassigned"
+        )
 
     class Meta:
         unique_together = ("template_type",)

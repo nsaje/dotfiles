@@ -1678,6 +1678,7 @@ class EmailTemplateType(ConstantBase):
     _VALUES = {
         ADGROUP_CHANGE: "Ad group settings change",
         CAMPAIGN_CHANGE: "Campaign settings change",
+        ACCOUNT_CHANGE: "Account settings change",
         BUDGET_CHANGE: "Budget change",
         PIXEL_ADD: "New conversion pixel",
         PASSWORD_RESET: "User password reset",
