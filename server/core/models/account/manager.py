@@ -40,12 +40,13 @@ class AccountManager(core.common.BaseManager):
 
         settings_updates = {}
         settings_updates["default_account_manager"] = request.user
-        # TODO: Seamless source release: set auto adding to true when the feature is released
+        # TODO: Seamless source release: set auto adding to true only when agency not a NAS
         if agency is not None:
             settings_updates["default_sales_representative"] = agency.sales_representative
             settings_updates["default_cs_representative"] = agency.cs_representative
             settings_updates["ob_representative"] = agency.ob_representative
             settings_updates["account_type"] = constants.AccountType.ACTIVATED
+            settings_updates["auto_add_new_sources"] = True
 
         account.settings = core.models.settings.AccountSettings(account=account)
         account.settings.update(request, **settings_updates)
