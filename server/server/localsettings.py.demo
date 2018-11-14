@@ -66,7 +66,7 @@ SESSION_COOKIE_SECURE = True
 EMAIL_USE_TLS = True
 EMAIL_HOST = "smtp.mailgun.org"
 EMAIL_PORT = 587
-EMAIL_HOST_USER = "postmaster-demo@zemanta.com"
+EMAIL_HOST_USER = "postmaster@zemanta.com"
 EMAIL_HOST_PASSWORD = (
     Secret(
         "kms:region=us-east-1:CiDdfiP9DHF52gr8mpTmZ/ZwRu2qZbRw8dV0ohsw+OhZexKnAQEBAgB43X4j/QxxedoK/JqU5mf2cEbtqmW0cPHVdKIbMPjoWXsAAAB+MHwGCSqGSIb3DQEHBqBvMG0CAQAwaAYJKoZIhvcNAQcBMB4GCWCGSAFlAwQBLjARBAzpGjCakrtQfw7D11MCARCAOwKSTJW6VlUIy62SvaX3+b3tcHyyZBLIlJozr0SYzHqQ3q6VrDEHrOCKgTJBtmVSPx+aluzY/KQQ6per"  # noqa
@@ -77,8 +77,8 @@ EMAIL_HOST_PASSWORD = (
 
 SEND_AD_GROUP_SETTINGS_CHANGE_MAIL = False
 SEND_NOTIFICATION_MAIL = False
-SUPPLY_REPORTS_FROM_EMAIL = "supplyreports@zemanta.com"
-FROM_EMAIL = "help-test@zemanta.com"
+SUPPLY_REPORTS_FROM_EMAIL = "supplyreports-demo@zemanta.com"
+FROM_EMAIL = "help-demo@zemanta.com"
 
 # Path to log file
 LOG_FILE = "/app/logs/eins-log.log"
