@@ -25,7 +25,13 @@ angular.module('one.widgets').service('zemNavigationUtils', function() {
         return list;
     }
 
-    function filterEntityList(list, query, filterArchived, filterAgency) {
+    function filterEntityList(
+        list,
+        query,
+        activeAccount,
+        filterArchived,
+        filterAgency
+    ) {
         // Filter list using query and filter state (archived, etc.)
         // Keep parents in list (e.g. keep account and campaign if ad group is present in filtered list)
 
@@ -34,7 +40,10 @@ angular.module('one.widgets').service('zemNavigationUtils', function() {
         var filteredList = list;
 
         filteredList = filteredList.filter(function(item) {
-            var isAccountExcluded = isAccountExcludedFromSearch(item);
+            var isAccountExcluded = isAccountExcludedFromSearch(
+                item,
+                activeAccount
+            );
             var isItemIncluded = !item.data.archived || filterArchived;
             return !isAccountExcluded && isItemIncluded;
         });
@@ -79,8 +88,12 @@ angular.module('one.widgets').service('zemNavigationUtils', function() {
         return filteredList;
     }
 
-    function isAccountExcludedFromSearch(item) {
+    function isAccountExcludedFromSearch(item, activeAccount) {
         var account = getAccountFromItem(item);
+        if (activeAccount && activeAccount.id === account.id) {
+            // Don't exclude active account's items from search
+            return false;
+        }
         return ACCOUNTS_EXCLUDED_FROM_SEARCH.indexOf(account.id) !== -1;
     }
 

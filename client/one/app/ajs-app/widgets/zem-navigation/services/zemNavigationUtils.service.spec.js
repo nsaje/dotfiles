@@ -129,16 +129,27 @@ describe('ZemNavigationUtils', function() {
         var accounts = createEntityHierarchy();
         var list = zemNavigationUtils.convertToEntityList(accounts);
 
-        var filteredList = zemNavigationUtils.filterEntityList(list, '', false);
+        var filteredList = zemNavigationUtils.filterEntityList(
+            list,
+            '',
+            null,
+            false
+        );
         expect(filteredList.length).toBe(22);
 
         list[2].data.archived = true;
-        filteredList = zemNavigationUtils.filterEntityList(list, '', false);
+        filteredList = zemNavigationUtils.filterEntityList(
+            list,
+            '',
+            null,
+            false
+        );
         expect(filteredList.length).toBe(21);
 
         filteredList = zemNavigationUtils.filterEntityList(
             list,
             'adgroup 2',
+            null,
             false
         );
         expect(filteredList.length).toBe(10);
@@ -151,6 +162,7 @@ describe('ZemNavigationUtils', function() {
         var filteredList = zemNavigationUtils.filterEntityList(
             list,
             'agency',
+            null,
             false
         );
         expect(filteredList.length).toBe(0);
@@ -158,6 +170,7 @@ describe('ZemNavigationUtils', function() {
         filteredList = zemNavigationUtils.filterEntityList(
             list,
             'agency',
+            null,
             false,
             true
         );
@@ -166,6 +179,7 @@ describe('ZemNavigationUtils', function() {
         filteredList = zemNavigationUtils.filterEntityList(
             list,
             'agency 1',
+            null,
             false,
             true
         );

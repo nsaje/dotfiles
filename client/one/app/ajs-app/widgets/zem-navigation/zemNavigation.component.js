@@ -182,6 +182,7 @@ angular.module('one.widgets').component('zemNavigation', {
         function filterList() {
             if (!$ctrl.list) return;
             var showArchived = zemDataFilterService.getShowArchived();
+            var activeAccount = zemNavigationNewService.getActiveAccount();
 
             var list = $ctrl.list;
             if ($ctrl.entityList && $ctrl.query.length === 0) {
@@ -191,6 +192,7 @@ angular.module('one.widgets').component('zemNavigation', {
             $ctrl.filteredList = zemNavigationUtils.filterEntityList(
                 list,
                 $ctrl.query,
+                activeAccount,
                 showArchived,
                 $ctrl.showAgency
             );
