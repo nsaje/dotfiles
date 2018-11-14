@@ -8,6 +8,8 @@ import utils.exc
 from dash import constants
 from utils.magic_mixer import magic_mixer
 
+from . import exceptions
+
 
 class AdGroupSourceUpdate(TestCase):
     def setUp(self):
@@ -62,6 +64,56 @@ class AdGroupSourceUpdate(TestCase):
         self.assertTrue(self.recalculate_autopilot_mock.called)
         self.k1_update_mock.assert_called_once_with(self.ad_group.id, "AdGroupSource.update")
         self.assertTrue(self.email_send_notification_mock.called)
+
+    def test_update_cpm_fail(self):
+        with self.assertRaises(exceptions.CannotSetCPM):
+            self.ad_group_source.settings.update(
+                self.request,
+                cpm=decimal.Decimal("1.3"),
+                daily_budget_cc=decimal.Decimal("8.2"),
+                state=constants.AdGroupSourceSettingsState.ACTIVE,
+            )
+
+    def test_update_cpc_fail(self):
+        self.ad_group.bidding_type = constants.BiddingType.CPM
+        with self.assertRaises(exceptions.CannotSetCPC):
+            self.ad_group_source.settings.update(
+                self.request,
+                cpc_cc=decimal.Decimal("1.3"),
+                daily_budget_cc=decimal.Decimal("8.2"),
+                state=constants.AdGroupSourceSettingsState.ACTIVE,
+            )
+
+    def test_update_cpm_none(self):
+        old_cpm = decimal.Decimal("1.0")
+        self.ad_group_source.settings.update_unsafe(None, cpm=old_cpm)
+        self.ad_group_source.settings.update(
+            self.request,
+            cpc_cc=decimal.Decimal("1.3"),
+            cpm=None,
+            daily_budget_cc=decimal.Decimal("8.2"),
+            state=constants.AdGroupSourceSettingsState.ACTIVE,
+        )
+        settings = self.ad_group_source.get_current_settings()
+        self.assertEqual(decimal.Decimal("1.3"), settings.cpc_cc)
+        self.assertEqual(old_cpm, settings.cpm)
+        self.assertEqual(decimal.Decimal("8.2"), settings.daily_budget_cc)
+
+    def test_update_cpc_none(self):
+        self.ad_group.bidding_type = constants.BiddingType.CPM
+        old_cpc = decimal.Decimal("1.0")
+        self.ad_group_source.settings.update_unsafe(None, cpc_cc=old_cpc)
+        self.ad_group_source.settings.update(
+            self.request,
+            cpc_cc=None,
+            cpm=decimal.Decimal("1.3"),
+            daily_budget_cc=decimal.Decimal("8.2"),
+            state=constants.AdGroupSourceSettingsState.ACTIVE,
+        )
+        settings = self.ad_group_source.get_current_settings()
+        self.assertEqual(old_cpc, settings.cpc_cc)
+        self.assertEqual(decimal.Decimal("1.3"), settings.cpm)
+        self.assertEqual(decimal.Decimal("8.2"), settings.daily_budget_cc)
 
     def test_update_no_changes(self):
         response = self.ad_group_source.settings.update()

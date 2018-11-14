@@ -22,6 +22,8 @@ class AdGroupSourceSettingsMixin(object):
         if not updates:
             return result
 
+        updates = self._filter_and_remap_input(updates)
+
         new_settings = self.copy_settings()
         for key, value in updates.items():
             if key == "state" and self.ad_group_source.ad_review_only:
@@ -55,6 +57,19 @@ class AdGroupSourceSettingsMixin(object):
             self._notify_ad_group_source_settings_changed(request, changes, old_settings, new_settings)
 
         return result
+
+    def _filter_and_remap_input(self, updates):
+        if self.ad_group_source.ad_group.bidding_type == dash.constants.BiddingType.CPM:
+            self._remove_no_change_fields(updates, "cpc_cc")
+        else:
+            self._remove_no_change_fields(updates, "cpm")
+        return updates
+
+    def _remove_no_change_fields(self, updates, field):
+        local_field = "local_" + field
+        if field in updates and updates[field] is None or local_field in updates and updates[local_field] is None:
+            updates.pop(field, None)
+            updates.pop(local_field, None)
 
     def _handle_budget_autopilot(self, changes):
         ad_group_settings = self.ad_group_source.ad_group.settings
