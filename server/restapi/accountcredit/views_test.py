@@ -2,6 +2,7 @@ import datetime
 
 from django.urls import reverse
 
+import dash.constants
 import dash.models
 import utils.test_helper
 from restapi.common.views_base_test import RESTAPITest
@@ -24,6 +25,7 @@ class AccountCreditsTest(RESTAPITest):
         allocated="200.0",
         available="300.0",
         license_fee=None,
+        status=dash.constants.CreditLineItemStatus.SIGNED,
     ):
         resp = {
             "id": id,
@@ -33,6 +35,7 @@ class AccountCreditsTest(RESTAPITest):
             "total": total,
             "allocated": allocated,
             "available": available,
+            "status": dash.constants.CreditLineItemStatus.get_name(status),
         }
         if license_fee is not None:
             resp["licenseFee"] = license_fee
@@ -50,6 +53,7 @@ class AccountCreditsTest(RESTAPITest):
             allocated=credit_db.get_allocated_amount(),
             available=credit_db.effective_amount() - credit_db.get_allocated_amount(),
             license_fee=license_fee,
+            status=credit_db.status,
         )
         self.assertEqual(expected, credit)
 

@@ -2,6 +2,7 @@ import decimal
 
 import rest_framework.serializers
 
+import dash.constants
 import restapi.serializers.fields
 import restapi.serializers.serializers
 
@@ -28,3 +29,4 @@ class AccountCreditSerializer(
     license_fee = rest_framework.serializers.DecimalField(
         max_digits=5, decimal_places=4, read_only=True, rounding=decimal.ROUND_HALF_DOWN
     )
+    status = restapi.serializers.fields.DashConstantField(dash.constants.CreditLineItemStatus, read_only=True)
