@@ -4,12 +4,12 @@ from utils import s3helpers
 from utils.command_helpers import ExceptionCommand
 
 select_query = """
-SELECT publisher, exchange, sum(bid_reqs) AS num_bid_req
+SELECT publisher, exchange, sum(bid_reqs) AS bid_reqs, sum(slots) AS slots, sum(zuid_reqs) AS zuid_reqs
 FROM supply_stats
-WHERE date >= %s AND blacklisted = false
+WHERE date >= %s AND blacklisted = false AND adstxt_status != 'HasAdstxt'
 GROUP BY exchange, publisher
 HAVING sum(bid_reqs) > %s
-ORDER BY num_bid_req DESC
+ORDER BY bid_reqs DESC
 """
 
 unload_query = """
