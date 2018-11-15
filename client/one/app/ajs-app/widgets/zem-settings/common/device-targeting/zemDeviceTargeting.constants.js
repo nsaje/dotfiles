@@ -23,6 +23,7 @@ angular
             {value: 'ANDROID_7_1', name: '7.1 Nougat'},
             {value: 'ANDROID_8_0', name: '8.0 Oreo'},
             {value: 'ANDROID_8_1', name: '8.1 Oreo'},
+            {value: 'ANDROID_9_0', name: '9.0 Pie'},
         ];
 
         var VERSIONS_IOS = [
@@ -51,6 +52,8 @@ angular
             {value: 'IOS_10_2', name: '10.2'},
             {value: 'IOS_10_3', name: '10.3'},
             {value: 'IOS_11_0', name: '11.0'},
+            {value: 'IOS_12_0', name: '12.0'},
+            {value: 'IOS_12_1', name: '12.1'},
         ];
 
         var VERSIONS_OSX = [
@@ -64,6 +67,7 @@ angular
             {value: 'MACOSX_10_11', name: '10.11 El Capitan'},
             {value: 'MACOSX_10_12', name: '10.12 Sierra'},
             {value: 'MACOSX_10_13', name: '10.13 High Sierra'},
+            {value: 'MACOSX_10_14', name: '10.14 Mojave'},
         ];
 
         var VERSIONS_WINDOWS = [
