@@ -16,7 +16,7 @@ AD_GROUP_SETTINGS_CREATE_HACKS_PER_AGENCY = {
         "delivery_type": dash.constants.AdGroupDeliveryType.ACCELERATED,
     },
     AGENCY_AMMET: {"target_regions": ["AU"], "exclusion_target_regions": []},
-    AGENCY_MEDIAMOND: {"tracking_code": "utm_source=Zemanta&utm_medium=referral"},
+    AGENCY_MEDIAMOND: {"tracking_code": "utm_source=Mediamond&utm_medium=referral"},
     AGENCY_NEWSCORP: {
         "delivery_type": dash.constants.AdGroupDeliveryType.ACCELERATED,
         "target_regions": ["AU"],
