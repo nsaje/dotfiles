@@ -240,7 +240,7 @@ class AdGroupSettingsMixin(object):
 
         if "tracking_code" in changes or "click_capping_daily_ad_group_max_clicks" in changes:
             redirector_helper.insert_adgroup(self.ad_group)
-        k1_helper.update_ad_group(self.ad_group.pk, msg="AdGroupSettings.put")
+        k1_helper.update_ad_group(self.ad_group, msg="AdGroupSettings.put")
 
         self._send_notification_email(request, new_settings)
 

@@ -14,57 +14,59 @@ from utils import request_signer
 logger = logging.getLogger(__name__)
 
 
-def update_accounts(account_ids, msg="", priority=False):
-    for account_id in account_ids:
-        update_account(account_id, msg=msg, priority=priority)
+def update_accounts(accounts, msg="", priority=False):
+    for account in accounts:
+        update_account(account, msg=msg, priority=priority)
 
 
-def update_account(account_id, msg="", priority=False):
+def update_account(account, msg="", priority=False):
     _send_task(
         settings.K1_CONSISTENCY_PING_ACCOUNT_QUEUE,
         "consistency_ping_account",
-        account_id=account_id,
+        account_id=account.id,
         msg=msg,
         priority=priority,
     )
 
 
-def update_ad_groups(ad_group_ids, msg="", priority=False):
-    for ag_id in ad_group_ids:
-        update_ad_group(ag_id, msg=msg, priority=priority)
+def update_ad_groups(ad_groups, msg="", priority=False):
+    for ad_group in ad_groups:
+        update_ad_group(ad_group, msg=msg, priority=priority)
 
 
-def update_ad_group(ad_group_id, msg="", priority=False):
+def update_ad_group(ad_group, msg="", priority=False):
     _send_task(
         settings.K1_CONSISTENCY_PING_AD_GROUP_QUEUE,
         "consistency_ping_ad_group",
-        ad_group_id=ad_group_id,
+        account_id=ad_group.campaign.account_id,
+        ad_group_id=ad_group.id,
         msg=msg,
         priority=priority,
     )
 
 
-def update_content_ads(ad_group_id, content_ad_ids, msg="", priority=False):
-    for ad_id in content_ad_ids:
-        update_content_ad(ad_group_id, ad_id, msg=msg, priority=priority)
+def update_content_ads(content_ads, msg="", priority=False):
+    for content_ad in content_ads:
+        update_content_ad(content_ad, msg=msg, priority=priority)
 
 
-def update_content_ad(ad_group_id, content_ad_id, msg="", priority=False):
+def update_content_ad(content_ad, msg="", priority=False):
     _send_task(
         settings.K1_CONSISTENCY_PING_CONTENT_AD_QUEUE,
         "consistency_ping_content_ad",
-        ad_group_id=ad_group_id,
-        content_ad_id=content_ad_id,
+        account_id=content_ad.ad_group.campaign.account_id,
+        ad_group_id=content_ad.ad_group_id,
+        content_ad_id=content_ad.id,
         msg=msg,
         priority=priority,
     )
 
 
-def update_blacklist(ad_group_id, msg="", priority=False):
+def update_blacklist(ad_group, msg="", priority=False):
     _send_task(
         settings.K1_CONSISTENCY_PING_BLACKLIST_QUEUE,
         "consistency_ping_blacklist",
-        ad_group_id=ad_group_id,
+        ad_group_id=ad_group.id,
         msg=msg,
         priority=priority,
     )

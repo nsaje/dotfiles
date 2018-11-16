@@ -78,7 +78,7 @@ class AdGroupSourceState(BaseBulkActionView):
         ):
             autopilot.recalculate_budgets_ad_group(ad_group)
 
-        k1_helper.update_ad_group(ad_group.pk, msg="AdGroupSourceState.post")
+        k1_helper.update_ad_group(ad_group, msg="AdGroupSourceState.post")
 
         editable_fields = self._get_editable_fields(ad_group, ad_group_settings, campaign_settings, ad_group_sources)
         response = {
@@ -301,7 +301,7 @@ class AdGroupContentAdArchive(BaseBulkActionView):
         content_ads = content_ads.all()
 
         api.update_content_ads_archived_state(request, content_ads, ad_group, archived=True)
-        k1_helper.update_content_ads(ad_group.pk, [ad.pk for ad in content_ads], msg="AdGroupContentAdArchive.post")
+        k1_helper.update_content_ads(list(content_ads), msg="AdGroupContentAdArchive.post")
 
         response["archivedCount"] = content_ads.count()
         response.update(self.create_rows(content_ads, archived=True, state=constants.ContentAdSourceState.INACTIVE))
@@ -322,7 +322,7 @@ class AdGroupContentAdRestore(BaseBulkActionView):
         )
 
         api.update_content_ads_archived_state(request, content_ads, ad_group, archived=False)
-        k1_helper.update_content_ads(ad_group.pk, [ad.pk for ad in content_ads], msg="AdGroupContentAdRestore.post")
+        k1_helper.update_content_ads(list(content_ads), msg="AdGroupContentAdRestore.post")
 
         return self.create_api_response(
             self.create_rows(content_ads, archived=False, state=constants.ContentAdSourceState.INACTIVE)
@@ -350,7 +350,7 @@ class AdGroupContentAdState(BaseBulkActionView):
         if content_ads.exists():
             api.update_content_ads_state(content_ads, state, request)
             api.add_content_ads_state_change_to_history_and_notify(ad_group, content_ads, state, request)
-            k1_helper.update_content_ads(ad_group.pk, [ad.pk for ad in content_ads], msg="AdGroupContentAdState.post")
+            k1_helper.update_content_ads(list(content_ads), msg="AdGroupContentAdState.post")
 
         # refresh
         content_ads = content_ads.all()

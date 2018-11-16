@@ -12,7 +12,7 @@ class AdGroupBCMMixin(object):
         self._migrate_settings_to_bcm_v2(request, fee, margin)
         self._validate_correct_settings_migration(request)
         self._migrate_ad_group_sources_to_bcm_v2(request, fee, margin)
-        k1_helper.update_ad_group(self.id, "migrate_to_bcm_v2")
+        k1_helper.update_ad_group(self, "migrate_to_bcm_v2")
 
     def _migrate_ad_group_sources_to_bcm_v2(self, request, fee, margin):
         ad_group_sources = self._get_ad_group_sources_to_migrate()

@@ -79,7 +79,7 @@ class CreateContentAd(TestCase):
         # check redirector sync
         self.assertEqual(mock_insert_redirects.call_count, 1)
         mock_insert_redirects.assert_called_with(content_ads, clickthrough_resolve=False)
-        mock_update_ad_group.assert_called_with(batch.ad_group.id, msg="ContentAdManager.bulk_clone")
+        mock_update_ad_group.assert_called_with(batch.ad_group, msg="ContentAdManager.bulk_clone")
 
     @patch("utils.k1_helper.update_ad_group", autospec=True)
     def test_bulk_clone_override_state(self, mock_update_ad_group, mock_insert_redirects):
@@ -106,4 +106,4 @@ class CreateContentAd(TestCase):
         # check redirector sync
         self.assertEqual(mock_insert_redirects.call_count, 1)
         mock_insert_redirects.assert_called_with(content_ads, clickthrough_resolve=False)
-        mock_update_ad_group.assert_called_with(batch.ad_group.id, msg="ContentAdManager.bulk_clone")
+        mock_update_ad_group.assert_called_with(batch.ad_group, msg="ContentAdManager.bulk_clone")

@@ -93,7 +93,7 @@ class AdGroupSourceStateTest(TestCase):
         self.assertEqual(1, mock_check.call_count)
         self.assertEqual(1, mock_table_update.call_count)
 
-        mock_k1_ping.assert_called_once_with(1, msg="AdGroupSourceState.post")
+        mock_k1_ping.assert_called_once_with(adg, msg="AdGroupSourceState.post")
 
     @patch("dash.views.helpers.enabling_autopilot_sources_allowed")
     @patch("dash.views.helpers.check_facebook_source")
@@ -217,13 +217,13 @@ class AdGroupContentAdArchiveTest(TestCase):
     @patch("utils.k1_helper.update_content_ads")
     def test_post(self, mock_k1_ping, mock_send_mail):
         ad_group = models.AdGroup.objects.get(pk=1)
-        content_ad_id = 2
+        content_ad = models.ContentAd.objects.get(pk=2)
 
-        data = {"selected_ids": [content_ad_id]}
+        data = {"selected_ids": [content_ad.id]}
 
         response = self._post_content_ad_archive(ad_group.id, data)
-        mock_k1_ping.assert_called_with(1, [content_ad_id], msg="AdGroupContentAdArchive.post")
-        content_ad = models.ContentAd.objects.get(pk=content_ad_id)
+        mock_k1_ping.assert_called_with([content_ad], msg="AdGroupContentAdArchive.post")
+        content_ad.refresh_from_db()
         self.assertEqual(content_ad.archived, True)
 
         response_dict = json.loads(response.content)
@@ -407,7 +407,7 @@ class AdGroupContentAdRestore(TestCase):
         data = {"selected_ids": [content_ad_id]}
 
         response = self._post_content_ad_restore(ad_group.id, data)
-        mock_k1_ping.assert_called_with(1, [2], msg="AdGroupContentAdRestore.post")
+        mock_k1_ping.assert_called_with([content_ad], msg="AdGroupContentAdRestore.post")
 
         content_ad = models.ContentAd.objects.get(pk=content_ad_id)
         self.assertEqual(content_ad.archived, False)
@@ -580,12 +580,13 @@ class AdGroupContentAdStateTest(TestCase):
 
         ad_group_id = 1
         content_ad_id = 1
+        content_ad = models.ContentAd.objects.get(pk=content_ad_id)
 
         data = {"state": constants.ContentAdSourceState.INACTIVE, "selected_ids": [content_ad_id]}
 
         response = self._post_content_ad_state(ad_group_id, data)
 
-        mock_k1_ping.assert_called_with(1, [1], msg="AdGroupContentAdState.post")
+        mock_k1_ping.assert_called_with([content_ad], msg="AdGroupContentAdState.post")
 
         content_ad = models.ContentAd.objects.get(pk=content_ad_id)
         self.assertEqual(content_ad.state, constants.ContentAdSourceState.INACTIVE)
