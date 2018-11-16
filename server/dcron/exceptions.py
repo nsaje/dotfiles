@@ -14,3 +14,9 @@ class UnregisteredManagementCommand(DCronException):
     """Unregistered management command exception."""
 
     pass
+
+
+class NotDcronCommand(DCronException):
+    """Not a DCronCommand exception."""
+
+    pass

@@ -1,6 +1,5 @@
 import logging
 import shlex
-import socket
 import sys
 
 import influx
@@ -24,9 +23,24 @@ class DCronCommand(management.base.BaseCommand):
     """
 
     def handle(self, *args, **options):
-        command_name = sys.argv[1]
+        command_name = self._get_command_name()
         start_dt = dates_helper.utc_now()
-        host_name = socket.gethostname()
+        host_name = settings.HOSTNAME
+
+        dcron_job = (
+            models.DCronJob.objects.filter(command_name=command_name)
+            .exclude(dcronjobsettings=None)
+            .select_related("dcronjobsettings")
+            .first()
+        )
+        if (
+            dcron_job
+            and dcron_job.executed_dt
+            and dcron_job.completed_dt
+            and (start_dt - dcron_job.executed_dt).total_seconds() < dcron_job.dcronjobsettings.min_separation
+        ):
+            logger.debug("Cron job has just completed, not going to run %s on %s", command_name, host_name)
+            return
 
         with django_pglocks.advisory_lock(command_name, wait=False) as acquired:
             if not acquired:
@@ -74,6 +88,9 @@ class DCronCommand(management.base.BaseCommand):
     def _handle(self, *args, **options):
         raise NotImplementedError("Not implemented.")
 
+    def _get_command_name(self):
+        return sys.argv[1]
+
 
 def extract_management_command_name(command: str) -> str:  # typing (for mypy check)
     """
@@ -108,11 +125,5 @@ def extract_and_verify_management_command_name(command: str) -> str:  # typing (
 
     if command_name not in management.get_commands():
         raise exceptions.UnregisteredManagementCommand("%s is not a registered management command" % command_name)
-
-    # TODO uncomment to add command type checking
-    # command_class = type(management.load_command_class(management.get_commands()[command_name], command_name))
-    # if not issubclass(command_class, DCronCommand):
-    #     # TODO define a new type of exception
-    #     raise exceptions.DCronException("%s is not a DCronCommand" % command_name)
 
     return command_name

@@ -1,6 +1,11 @@
-from django.core.management.base import BaseCommand, CommandError
+import logging
+
+from django.core.management.base import BaseCommand
+from django.core.management.base import CommandError
 
 from dcron.cron import process_crontab_items
+
+logger = logging.getLogger(__name__)
 
 
 class Command(BaseCommand):
@@ -17,6 +22,7 @@ class Command(BaseCommand):
             process_crontab_items(file_name=file_name)
 
         except Exception as exc:
+            logger.exception("Failed syncing distributed cron jobs.")
             raise CommandError("Failed syncing distributed cron jobs.") from exc
 
         self.stdout.write(self.style.SUCCESS("Successfully synced distributed cron jobs."))

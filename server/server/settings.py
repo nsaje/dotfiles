@@ -376,4 +376,6 @@ DCRON = {
     "warning_waits": {},
     "default_max_duration": 3600,
     "max_durations": {},
+    "default_min_separation": 30,
+    "min_separations": {},
 }

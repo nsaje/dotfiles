@@ -1,10 +1,11 @@
-import socket
+import datetime
 import threading
 
 import mock
 from django.conf import settings
 from django.test import TestCase
 from django.test import TransactionTestCase
+from django.utils import timezone
 
 import django_pglocks
 from dcron import alerts
@@ -12,7 +13,6 @@ from dcron import commands
 from dcron import constants
 from dcron import exceptions
 from dcron import models
-from dcron.commands import DCronCommand
 from utils import pagerduty_helper
 
 
@@ -66,7 +66,7 @@ class DCronCommandTestCase(TransactionTestCase):
         event_2 = threading.Event()
         event_3 = threading.Event()
 
-        class DummyCommand(DCronCommand):
+        class DummyCommand(commands.DCronCommand):
             def handle(self, *args, **options):
                 super().handle(*args, **options)
                 event_3.set()
@@ -96,7 +96,7 @@ class DCronCommandTestCase(TransactionTestCase):
         dcron_job = dcron_job_qs.get()
         self.assertIsNotNone(dcron_job.executed_dt)
         self.assertIsNone(dcron_job.completed_dt)
-        self.assertEqual(dcron_job.host, socket.gethostname())
+        self.assertEqual(dcron_job.host, settings.HOSTNAME)
         self.assertEqual(dcron_job.alert, constants.Alert.OK)
 
         try:
@@ -108,7 +108,7 @@ class DCronCommandTestCase(TransactionTestCase):
             dcron_job = dcron_job_qs.get()
             self.assertIsNotNone(dcron_job.executed_dt)
             self.assertIsNone(dcron_job.completed_dt)
-            self.assertEqual(dcron_job.host, socket.gethostname())
+            self.assertEqual(dcron_job.host, settings.HOSTNAME)
             self.assertEqual(dcron_job.alert, constants.Alert.OK)
 
         finally:
@@ -127,7 +127,7 @@ class DCronCommandTestCase(TransactionTestCase):
         self.assertIsNotNone(dcron_job.executed_dt)
         self.assertIsNotNone(dcron_job.completed_dt)
         self.assertTrue(dcron_job.completed_dt > dcron_job.executed_dt)
-        self.assertEqual(dcron_job.host, socket.gethostname())
+        self.assertEqual(dcron_job.host, settings.HOSTNAME)
         self.assertEqual(dcron_job.alert, constants.Alert.OK)
 
         with django_pglocks.advisory_lock(DUMMY_COMMAND, wait=False) as acquired:
@@ -138,7 +138,7 @@ class DCronCommandTestCase(TransactionTestCase):
     @mock.patch("influx.timing")
     @mock.patch("utils.pagerduty_helper._post_event")
     def test_failure(self, mock_post_event, mock_influx_timing, mock_influx_incr):
-        class DummyCommand(DCronCommand):
+        class DummyCommand(commands.DCronCommand):
             def _handle(self, *args, **options):
                 raise RuntimeError("TEST!")
 
@@ -153,7 +153,7 @@ class DCronCommandTestCase(TransactionTestCase):
         dcron_job = dcron_job_qs.get()
         self.assertIsNotNone(dcron_job.executed_dt)
         self.assertIsNotNone(dcron_job.completed_dt)
-        self.assertEqual(dcron_job.host, socket.gethostname())
+        self.assertEqual(dcron_job.host, settings.HOSTNAME)
         self.assertEqual(dcron_job.alert, constants.Alert.FAILURE)
 
         mock_influx_incr.assert_has_calls([mock.call("dcron_command_count", 1, command_name=DUMMY_COMMAND)])
@@ -174,3 +174,29 @@ class DCronCommandTestCase(TransactionTestCase):
                 )
             ]
         )
+
+    @mock.patch("sys.argv", ["manage.py", DUMMY_COMMAND])
+    @mock.patch("influx.incr")
+    @mock.patch("influx.timing")
+    def test_min_separation(self, mock_influx_timing, mock_influx_incr):
+        class DummyCommand(commands.DCronCommand):
+            def _handle(self, *args, **options):
+                pass
+
+        dummy_command = DummyCommand()
+
+        now_dt = timezone.now()
+        executed_dt = now_dt - datetime.timedelta(seconds=15)
+        completed_dt = now_dt - datetime.timedelta(seconds=1)
+        dcron_job = models.DCronJob.objects.create(
+            command_name=DUMMY_COMMAND, executed_dt=executed_dt, completed_dt=completed_dt
+        )
+        models.DCronJobSettings.objects.create(job=dcron_job, schedule="", full_command="")
+
+        with self.assertNumQueries(1):
+            dummy_command.execute(**{"no_color": None, "stdout": None, "stderr": None})
+
+        models.DCronJob.objects.filter(command_name=DUMMY_COMMAND)
+
+        mock_influx_incr.assert_has_calls([])
+        self.assertEqual(len(mock_influx_timing.call_args_list), 0)

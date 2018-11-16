@@ -28,6 +28,10 @@ def _create_job(command_name, job_kwargs_dict, settings_kwargs_dict):
         settings_kwargs_dict.setdefault(
             "max_duration", settings.DCRON["max_durations"].get(command_name, settings.DCRON["default_max_duration"])
         )
+        settings_kwargs_dict.setdefault(
+            "min_separation",
+            settings.DCRON["min_separations"].get(command_name, settings.DCRON["default_min_separation"]),
+        )
 
         models.DCronJobSettings.objects.create(job=dcron_job, full_command=full_command, **settings_kwargs_dict)
 
@@ -42,6 +46,8 @@ def _create_job(command_name, job_kwargs_dict, settings_kwargs_dict):
         "warning_waits": {"some_command": 600},
         "default_max_duration": 3600,
         "max_durations": {},
+        "default_min_separation": 30,
+        "min_separations": {},
     }
 )
 class CheckAlertsExecutionTimesTestCase(TestCase):
@@ -174,6 +180,8 @@ class CheckAlertsExecutionTimesTestCase(TestCase):
         "warning_waits": {},
         "default_max_duration": 7200,
         "max_durations": {"command_08": 3600, "command_09": 3600, "command_19": 3600},
+        "default_min_separation": 30,
+        "min_separations": {},
     }
 )
 class CheckAlertsTestCase(TestCase):
@@ -316,6 +324,8 @@ class CheckAlertsTestCase(TestCase):
         "warning_waits": {},
         "default_max_duration": 10,
         "max_durations": {},
+        "default_min_separation": 30,
+        "min_separations": {},
     }
 )
 class HandleAlertsTestCase(TestCase):

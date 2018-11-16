@@ -24,8 +24,9 @@ def process_crontab_items(file_name: typing.Optional[str] = None, file_contents:
     for cron_item in _crontab_items_iterator(file_name=file_name, file_contents=file_contents):
         try:
             command_name = _process_cron_item(cron_item)  # type: typing.Union[str, None]
-        except exceptions.UnregisteredManagementCommand:
+        except exceptions.UnregisteredManagementCommand as exc:
             command_name = None
+            logger.warning(str(exc))
         except exceptions.DCronException as exc:
             logger.error("Failed creating or updating dcron job: %s", exc)
             try:
@@ -58,6 +59,9 @@ def _process_cron_item(cron_item: crontab.CronItem) -> str:
     settings_kwargs["max_duration"] = settings.DCRON["max_durations"].get(
         command_name, settings.DCRON["default_max_duration"]
     )
+    settings_kwargs["min_separation"] = settings.DCRON["min_separations"].get(
+        command_name, settings.DCRON["default_min_separation"]
+    )
 
     dcron_job_settings = models.DCronJobSettings.objects.filter(job=dcron_job).first()
     if dcron_job_settings:
@@ -67,6 +71,7 @@ def _process_cron_item(cron_item: crontab.CronItem) -> str:
             # Manual override is selected, thus don't update it.
             del settings_kwargs["warning_wait"]
             del settings_kwargs["max_duration"]
+            del settings_kwargs["min_separation"]
 
         if any(getattr(dcron_job_settings, k) != v for k, v in settings_kwargs.items()):
             # There are changes - update DCronJobSettings.

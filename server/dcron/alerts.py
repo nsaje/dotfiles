@@ -23,7 +23,9 @@ def handle_alerts() -> None:
     # First check if there are any DCronJobs that can not be checked dued to missing DCronJobSettings.
     without_settings = models.DCronJob.objects.filter(dcronjobsettings=None).values_list("command_name", flat=True)
     if without_settings:
-        logger.error("There are DCronJobs without settings: %s", ", ".join(without_settings))
+        logger.error(
+            "Found DCronJobs without settings: %s. Please run sync_dcron_jobs command.", ", ".join(without_settings)
+        )
 
     for dcron_job in models.DCronJob.objects.filter(dcronjobsettings__enabled=True).select_related("dcronjobsettings"):
         alert = _check_alert(dcron_job)
@@ -66,7 +68,6 @@ def _check_alert(dcron_job: models.DCronJob, current_date_time: typing.Optional[
     current_date_time = current_date_time or dates_helper.utc_now()
 
     if not dcron_job.executed_dt:
-        # TODO Can we do something in this case? Maybe store first seen?
         return AlertId(constants.Alert.OK)
 
     if not hasattr(dcron_job, "dcronjobsettings"):

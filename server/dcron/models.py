@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.db import models
 
 from dcron import constants
@@ -31,8 +32,9 @@ class DCronJobSettings(models.Model):
     schedule = models.CharField(max_length=250)
     full_command = models.CharField(max_length=250)
     enabled = models.BooleanField(default=True)
-    warning_wait = models.FloatField()
-    max_duration = models.FloatField()
+    warning_wait = models.FloatField(default=settings.DCRON["default_warning_wait"])
+    max_duration = models.FloatField(default=settings.DCRON["default_max_duration"])
+    min_separation = models.FloatField(default=settings.DCRON["default_min_separation"])
     manual_override = models.BooleanField(default=False)
 
     class Meta:
