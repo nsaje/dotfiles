@@ -1,8 +1,9 @@
+from django.core.management.base import BaseCommand
+
 from dcron.alerts import handle_alerts
-from dcron.commands import DCronCommand
 
 
-class Command(DCronCommand):
+class Command(BaseCommand):
     help = "Check execution of cron jobs defined in DCronJob model."
 
     def _handle(self, *args, **options):
