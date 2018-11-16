@@ -88,4 +88,6 @@ class CampaignSettingsMixin(object):
 
         ad_group_changes = any(prop in changes for prop in ["iab_category", "language"])
         if ad_group_changes:
-            utils.k1_helper.update_ad_groups(campaign_ad_groups, msg="CampaignSettings.update")
+            utils.k1_helper.update_ad_groups(
+                (ad_group.pk for ad_group in campaign_ad_groups), msg="CampaignSettings.update"
+            )

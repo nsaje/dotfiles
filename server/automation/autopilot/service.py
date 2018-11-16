@@ -136,7 +136,7 @@ def _save_changes(data, campaign_goals, ad_group, budget_changes, bid_changes, d
                 is_autopilot_job_run=daily_run,
                 campaign=campaign,
             )
-        k1_helper.update_ad_group(ad_group, "run_autopilot")
+        k1_helper.update_ad_group(ad_group.pk, "run_autopilot")
     except Exception as e:
         _report_autopilot_exception(ad_group, e)
 

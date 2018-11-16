@@ -44,7 +44,7 @@ class AudienceManager(core.common.BaseManager):
 
             redirector_helper.upsert_audience(audience)
 
-        k1_helper.update_account(pixel.account, msg="audience.create")
+        k1_helper.update_account(pixel.account_id, msg="audience.create")
 
         return audience
 
@@ -123,4 +123,4 @@ class Audience(models.Model):
         self._save()
 
         redirector_helper.upsert_audience(self)
-        k1_helper.update_account(self.pixel.account, msg="audience.update")
+        k1_helper.update_account(self.pixel.account_id, msg="audience.update")

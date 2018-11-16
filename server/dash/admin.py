@@ -463,9 +463,7 @@ class AgencyAdmin(SlackLoggerMixin, ExportMixin, admin.ModelAdmin):
                     account.yahoo_account = obj.yahoo_account
                     account.save(request)
         utils.k1_helper.update_ad_groups(
-            models.AdGroup.objects.filter(campaign__account__agency_id=obj.id)
-            .select_related("campaign")
-            .only("id", "campaign__account_id"),
+            models.AdGroup.objects.filter(campaign__account__agency_id=obj.id).values_list("id", flat=True),
             "AgencyAdmin.save_model",
         )
         self.log_custom_flags_event_to_slack(old_obj, obj, user=request.user.email)
@@ -550,9 +548,7 @@ class AccountAdmin(SlackLoggerMixin, SaveWithRequestMixin, admin.ModelAdmin):
         old_obj = models.Account.objects.get(id=obj.id)
         obj.save(request)
         utils.k1_helper.update_ad_groups(
-            models.AdGroup.objects.filter(campaign__account_id=obj.id)
-            .select_related("campaign")
-            .only("id", "campaign__account_id"),
+            models.AdGroup.objects.filter(campaign__account_id=obj.id).values_list("id", flat=True),
             "AccountAdmin.save_model",
         )
         self.log_custom_flags_event_to_slack(old_obj, obj, user=request.user.email)
@@ -593,10 +589,7 @@ class CampaignAdmin(SlackLoggerMixin, admin.ModelAdmin):
         if obj.real_time_campaign_stop and not old_obj.real_time_campaign_stop:
             campaignstop.notify_initialize(obj)
         utils.k1_helper.update_ad_groups(
-            models.AdGroup.objects.filter(campaign_id=obj.id)
-            .select_related("campaign")
-            .only("id", "campaign__account_id"),
-            "CampaignAdmin.save_model",
+            models.AdGroup.objects.filter(campaign_id=obj.id).values_list("id", flat=True), "CampaignAdmin.save_model"
         )
         self.log_custom_flags_event_to_slack(old_obj, obj, user=request.user.email)
 
@@ -886,7 +879,7 @@ class AdGroupAdmin(SlackLoggerMixin, admin.ModelAdmin):
             changes_text = new_settings.get_changes_text(current_settings, new_settings, request.user, separator="\n")
             utils.email_helper.send_ad_group_notification_email(ad_group, request, changes_text)
         ad_group.save(request)
-        utils.k1_helper.update_ad_group(ad_group, msg="AdGroupAdmin.save_model")
+        utils.k1_helper.update_ad_group(ad_group.pk, msg="AdGroupAdmin.save_model")
         self.log_custom_flags_event_to_slack(old_obj, ad_group, user=request.user.email)
 
     def account_(self, obj):
@@ -1052,7 +1045,7 @@ def _resubmit_content_ad(queryset, clear=False):
             cas.source_content_ad_id = None
         cas.submission_status = -1
         cas.save()
-        utils.k1_helper.update_content_ad(cas.content_ad, "content ad resubmit")
+        utils.k1_helper.update_content_ad(cas.content_ad.ad_group.pk, cas.content_ad.pk, "content ad resubmit")
 
 
 def resubmit_content_ads(modeladmin, request, queryset):
@@ -1140,7 +1133,9 @@ class ContentAdSourceAdmin(admin.ModelAdmin):
 
     def save_model(self, request, content_ad_source, form, change):
         content_ad_source.save()
-        utils.k1_helper.update_content_ad(content_ad_source.content_ad, msg="admin.content_ad_source")
+        utils.k1_helper.update_content_ad(
+            content_ad_source.content_ad.ad_group_id, content_ad_source.content_ad_id, msg="admin.content_ad_source"
+        )
 
     def __init__(self, *args, **kwargs):
         super(ContentAdSourceAdmin, self).__init__(*args, **kwargs)

@@ -69,14 +69,12 @@ def get_ad_group(user, ad_group_id, sources=None):
         raise utils.exc.MissingDataError("Ad Group does not exist")
 
 
-def get_content_ad(user, content_ad_id):
+def get_content_ad(user, content_ad_id, select_related=False):
     try:
-        content_ad = (
-            core.models.ContentAd.objects.all()
-            .select_related("ad_group")
-            .filter_by_user(user)
-            .filter(id=int(content_ad_id))
-        )
+        content_ad = core.models.ContentAd.objects.all().filter_by_user(user).filter(id=int(content_ad_id))
+
+        if select_related:
+            content_ad = content_ad.select_related("ad_group")
 
         return content_ad.get()
     except core.models.AdGroup.DoesNotExist:

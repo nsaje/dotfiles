@@ -877,7 +877,7 @@ class ConversionPixel(api_common.BaseApiView):
                     ).format(audience_pixels[0].name)
                     raise exc.ValidationError(errors={"audience_enabled": msg})
 
-                k1_helper.update_account(account, msg="conversion_pixel.create")
+                k1_helper.update_account(account_id, msg="conversion_pixel.create")
 
                 changes_text = "Added conversion pixel with audience enabled named {}.".format(conversion_pixel.name)
                 account.write_history(
@@ -900,7 +900,7 @@ class ConversionPixel(api_common.BaseApiView):
                     form.add_error("additional_pixel", msg)
                     raise exc.ValidationError(errors=dict(form.errors))
 
-                k1_helper.update_account(account, msg="conversion_pixel.create")
+                k1_helper.update_account(account_id, msg="conversion_pixel.create")
                 changes_text = 'Created a pixel named "{}" as additional audience pixel.'.format(conversion_pixel.name)
                 account.write_history(
                     changes_text,
@@ -996,7 +996,7 @@ class ConversionPixel(api_common.BaseApiView):
                         audience_pixels[0].name
                     )  # noqa
                     raise exc.ValidationError(errors={"audience_enabled": msg})
-                k1_helper.update_account(conversion_pixel.account, msg="conversion_pixel.update")
+                k1_helper.update_account(conversion_pixel.account.id, msg="conversion_pixel.update")
                 self._r1_upsert_audiences(conversion_pixel)
 
         return self.create_api_response(self._format_pixel(conversion_pixel, request.user))

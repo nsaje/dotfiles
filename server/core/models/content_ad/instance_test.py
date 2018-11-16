@@ -33,7 +33,7 @@ class InstanceTest(TestCase):
             action_type=constants.HistoryActionType.CONTENT_AD_STATE_CHANGE,
             user=None,
         )
-        mock_k1_update.assert_called_with(content_ad, msg=mock.ANY)
+        mock_k1_update.assert_called_with(content_ad.ad_group_id, content_ad.id, msg=mock.ANY)
         mock_email_helper.assert_called_once()
 
     @mock.patch.object(redirector_helper, "update_redirect")
@@ -65,4 +65,4 @@ class InstanceTest(TestCase):
         content_ad.ad_group.write_history.assert_called_with(
             "Content ad %s edited." % content_ad.pk, action_type=constants.HistoryActionType.CONTENT_AD_EDIT, user=None
         )
-        mock_k1_update.assert_called_with(content_ad, msg=mock.ANY)
+        mock_k1_update.assert_called_with(content_ad.ad_group_id, content_ad.id, msg=mock.ANY)

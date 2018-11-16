@@ -51,7 +51,7 @@ class AdGroupSourceSettingsMixin(object):
             result["autopilot_changed_sources_text"] = ", ".join(autopilot_changed_sources)
 
         if k1_sync:
-            utils.k1_helper.update_ad_group(self.ad_group_source.ad_group, "AdGroupSource.update")
+            utils.k1_helper.update_ad_group(self.ad_group_source.ad_group.pk, "AdGroupSource.update")
 
         if not skip_notification:
             self._notify_ad_group_source_settings_changed(request, changes, old_settings, new_settings)

@@ -56,7 +56,7 @@ class AdGroupManager(core.common.QuerySetManager):
 
             autopilot.recalculate_budgets_ad_group(ad_group)
 
-        k1_helper.update_ad_group(ad_group, msg="CampaignAdGroups.put")
+        k1_helper.update_ad_group(ad_group.pk, msg="CampaignAdGroups.put")
         redirector_helper.insert_adgroup(ad_group)
 
     def create(self, request, campaign, is_restapi=False, name=None, **kwargs):

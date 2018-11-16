@@ -35,7 +35,7 @@ class ContentAdInstanceMixin(object):
             user=request and request.user or None,
             action_type=dash.constants.HistoryActionType.CONTENT_AD_STATE_CHANGE,
         )
-        utils.k1_helper.update_content_ad(self, msg="ContentAd.set_state")
+        utils.k1_helper.update_content_ad(self.ad_group_id, self.id, msg="ContentAd.set_state")
         utils.email_helper.send_ad_group_notification_email(self.ad_group, request, description)
 
     @transaction.atomic()
@@ -64,4 +64,4 @@ class ContentAdInstanceMixin(object):
                 user=request and request.user or None,
                 action_type=dash.constants.HistoryActionType.CONTENT_AD_EDIT,
             )
-        utils.k1_helper.update_content_ad(self, msg="ContentAd.update")
+        utils.k1_helper.update_content_ad(self.ad_group_id, self.id, msg="ContentAd.update")

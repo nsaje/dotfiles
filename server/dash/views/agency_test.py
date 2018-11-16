@@ -284,7 +284,7 @@ class AdGroupSettingsTest(TestCase):
                 json.dumps(self.settings_dict),
                 follow=True,
             )
-            mock_k1_ping.assert_called_with(ad_group, msg="AdGroupSettings.put")
+            mock_k1_ping.assert_called_with(1, msg="AdGroupSettings.put")
 
             self.assertEqual(
                 json.loads(response.content),
@@ -407,7 +407,7 @@ class AdGroupSettingsTest(TestCase):
                 json.dumps(self.settings_dict),
                 follow=True,
             )
-            mock_k1_ping.assert_called_with(ad_group, msg="AdGroupSettings.put")
+            mock_k1_ping.assert_called_with(1, msg="AdGroupSettings.put")
 
             self.assertEqual(
                 json.loads(response.content),
@@ -550,7 +550,7 @@ class AdGroupSettingsTest(TestCase):
             response = self.client.put(
                 reverse("ad_group_settings", kwargs={"ad_group_id": ad_group.id}), json.dumps(new_settings), follow=True
             )
-            mock_k1_ping.assert_called_with(ad_group, msg="AdGroupSettings.put")
+            mock_k1_ping.assert_called_with(1, msg="AdGroupSettings.put")
 
             resp_json = json.loads(response.content)
             self.assertEqual(resp_json["data"]["settings"]["cpc_cc"], "0.050")
@@ -587,7 +587,7 @@ class AdGroupSettingsTest(TestCase):
             response = self.client.put(
                 reverse("ad_group_settings", kwargs={"ad_group_id": ad_group.id}), json.dumps(new_settings), follow=True
             )
-            mock_k1_ping.assert_called_with(ad_group, msg="AdGroupSettings.put")
+            mock_k1_ping.assert_called_with(1, msg="AdGroupSettings.put")
 
             resp_json = json.loads(response.content)
             self.assertEqual(resp_json["data"]["settings"]["max_cpm"], "0.050")
@@ -787,7 +787,7 @@ class AdGroupSettingsTest(TestCase):
             response = self.client.put(
                 reverse("ad_group_settings", kwargs={"ad_group_id": ad_group.id}), json.dumps(new_settings), follow=True
             )
-            mock_k1_ping.assert_called_with(ad_group, msg="AdGroupSettings.put")
+            mock_k1_ping.assert_called_with(1, msg="AdGroupSettings.put")
 
             resp_json = json.loads(response.content)
             self.assertEqual(resp_json["data"]["settings"]["b1_sources_group_cpc_cc"], "0.1")
@@ -826,7 +826,7 @@ class AdGroupSettingsTest(TestCase):
             response = self.client.put(
                 reverse("ad_group_settings", kwargs={"ad_group_id": ad_group.id}), json.dumps(new_settings), follow=True
             )
-            mock_k1_ping.assert_called_with(ad_group, msg="AdGroupSettings.put")
+            mock_k1_ping.assert_called_with(1, msg="AdGroupSettings.put")
 
             resp_json = json.loads(response.content)
             self.assertEqual(resp_json["data"]["settings"]["b1_sources_group_cpm"], "0.1")
@@ -890,7 +890,7 @@ class AdGroupSettingsTest(TestCase):
             response = self.client.put(
                 reverse("ad_group_settings", kwargs={"ad_group_id": ad_group.id}), json.dumps(new_settings), follow=True
             )
-            mock_k1_ping.assert_called_with(ad_group, msg="AdGroupSettings.put")
+            mock_k1_ping.assert_called_with(1, msg="AdGroupSettings.put")
             self.maxDiff = None
 
             resp_json = json.loads(response.content)
@@ -971,7 +971,7 @@ class AdGroupSettingsTest(TestCase):
             response = self.client.put(
                 reverse("ad_group_settings", kwargs={"ad_group_id": ad_group.id}), json.dumps(new_settings), follow=True
             )
-            mock_k1_ping.assert_called_with(ad_group, msg="AdGroupSettings.put")
+            mock_k1_ping.assert_called_with(1, msg="AdGroupSettings.put")
             self.maxDiff = None
 
             resp_json = json.loads(response.content)
@@ -1389,7 +1389,7 @@ class AdGroupSettingsStateTest(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(ad_group.get_current_settings().state, constants.AdGroupSettingsState.ACTIVE)
-        mock_k1_ping.assert_called_with(ad_group, msg="AdGroupSettings.put")
+        mock_k1_ping.assert_called_with(2, msg="AdGroupSettings.put")
 
     @patch("dash.dashapi.data_helper.campaign_has_available_budget")
     @patch("utils.k1_helper.update_ad_group")
@@ -1457,7 +1457,7 @@ class AdGroupSettingsStateTest(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(ad_group.get_current_settings().state, constants.AdGroupSettingsState.INACTIVE)
-        mock_k1_ping.assert_called_with(ad_group, msg="AdGroupSettings.put")
+        mock_k1_ping.assert_called_with(1, msg="AdGroupSettings.put")
 
     def test_inactivate_already_inactivated(self):
         ad_group = models.AdGroup.objects.get(pk=2)
@@ -1698,7 +1698,7 @@ class ConversionPixelTestCase(TestCase):
             json.loads(response.content),
         )
 
-        ping_mock.assert_called_with(models.Account.objects.get(pk=1), msg="conversion_pixel.create")
+        ping_mock.assert_called_with(1, msg="conversion_pixel.create")
         self.assertFalse(redirector_mock.called)
 
     @patch("utils.redirector_helper.upsert_audience")
@@ -1897,7 +1897,7 @@ class ConversionPixelTestCase(TestCase):
             json.loads(response.content),
         )
 
-        ping_mock.assert_called_with(models.Account.objects.get(pk=1), msg="conversion_pixel.update")
+        ping_mock.assert_called_with(1, msg="conversion_pixel.update")
         self.assertEqual(redirector_mock.call_count, 4)
 
     @patch("utils.redirector_helper.upsert_audience")
@@ -2379,7 +2379,7 @@ class ConversionPixelTestCase(TestCase):
         self.assertEqual(constants.HistoryActionType.CONVERSION_PIXEL_CREATE_AS_ADDITIONAL, hist.action_type)
         self.assertEqual('Created a pixel named "name" as additional audience pixel.', hist.changes_text)
 
-        ping_mock.assert_called_with(models.Account.objects.get(pk=1), msg="conversion_pixel.create")
+        ping_mock.assert_called_with(1, msg="conversion_pixel.create")
 
     @patch("utils.k1_helper.update_account")
     def test_post_additional_pixel_enabled_without_permissions(self, ping_mock):

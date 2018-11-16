@@ -47,7 +47,7 @@ class AdGroupSourceUpdate(TestCase):
         self.assertEqual(decimal.Decimal("8.2"), settings.daily_budget_cc)
 
         self.assertTrue(self.recalculate_autopilot_mock.called)
-        self.k1_update_mock.assert_called_once_with(self.ad_group, "AdGroupSource.update")
+        self.k1_update_mock.assert_called_once_with(self.ad_group.id, "AdGroupSource.update")
         self.assertTrue(self.email_send_notification_mock.called)
 
     def test_update_cpm(self):
@@ -62,7 +62,7 @@ class AdGroupSourceUpdate(TestCase):
         self.assertEqual(decimal.Decimal("2.3"), settings.cpm)
 
         self.assertTrue(self.recalculate_autopilot_mock.called)
-        self.k1_update_mock.assert_called_once_with(self.ad_group, "AdGroupSource.update")
+        self.k1_update_mock.assert_called_once_with(self.ad_group.id, "AdGroupSource.update")
         self.assertTrue(self.email_send_notification_mock.called)
 
     def test_update_cpm_fail(self):

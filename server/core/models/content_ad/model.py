@@ -73,7 +73,7 @@ class ContentAdManager(models.Manager):
             request, content_ads, batch, source_content_ads[0].ad_group, overridden_state
         )
 
-        k1_helper.update_ad_group(ad_group, msg="ContentAdManager.bulk_clone")
+        k1_helper.update_ad_group(ad_group.pk, msg="ContentAdManager.bulk_clone")
 
         return content_ads
 

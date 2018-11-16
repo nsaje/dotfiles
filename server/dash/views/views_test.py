@@ -381,7 +381,7 @@ class AdGroupSourceSettingsTest(TestCase):
             data=json.dumps({"cpc_cc": "0.15"}),
         )
         self.assertEqual(response.status_code, 200)
-        mock_k1_ping.assert_called_with(models.AdGroup.objects.get(pk=1), "AdGroupSource.update")
+        mock_k1_ping.assert_called_with(1, "AdGroupSource.update")
 
         hist = history_helpers.get_ad_group_history(models.AdGroup.objects.get(pk=1)).first()
         self.assertEqual(constants.HistoryActionType.SETTINGS_CHANGE, hist.action_type)
