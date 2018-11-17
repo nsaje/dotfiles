@@ -156,21 +156,26 @@ class ReportsExecuteTest(TestCase):
     @mock.patch("dash.features.reports.reports.ReportJobExecutor.get_report")
     def test_ftp_success(self, mock_get_report, mock_save, mock_ftp, mock_send):
         self.reportJob.scheduled_report = magic_mixer.blend(
-            scheduled_reports.ScheduledReport, id=list(settings.FTP_REPORTS.keys())[0], query={}
+            scheduled_reports.ScheduledReport,
+            id=list(settings.REPORTS_TO_FTP_SERVER_TAPCLICK["ftp_reports_destinations"])[0],
+            query={},
         )
         self.reportJob.save()
         mock_get_report.return_value = ("a_csv_report", "report_file_name")
         mock_save.return_value = "test-report-path"
         reports.execute(self.reportJob.id)
-        ftp_report = settings.FTP_REPORTS[self.reportJob.scheduled_report.id]
+
         mock_ftp.assert_called_with(
-            ftp_report["config"].get("ftp_server"),
-            ftp_report["config"].get("ftp_port"),
-            ftp_report["config"].get("ftp_user"),
-            ftp_report["config"].get("ftp_password"),
-            ftp_report["destination"],
+            settings.REPORTS_TO_FTP_SERVER_TAPCLICK.get("ftp_server"),
+            settings.REPORTS_TO_FTP_SERVER_TAPCLICK.get("ftp_port"),
+            settings.REPORTS_TO_FTP_SERVER_TAPCLICK.get("ftp_user"),
+            settings.REPORTS_TO_FTP_SERVER_TAPCLICK.get("ftp_password"),
+            settings.REPORTS_TO_FTP_SERVER_TAPCLICK["ftp_reports_destinations"].get(self.reportJob.scheduled_report.id),
             "{}-{}.csv".format(
-                ftp_report["destination"], datetime.datetime.strftime(datetime.datetime.now(), "%Y-%m-%d")
+                settings.REPORTS_TO_FTP_SERVER_TAPCLICK["ftp_reports_destinations"].get(
+                    self.reportJob.scheduled_report_id
+                ),
+                datetime.datetime.strftime(datetime.datetime.now(), "%Y-%m-%d"),
             ),
             "a_csv_report",
         )
@@ -187,7 +192,9 @@ class ReportsExecuteTest(TestCase):
     @mock.patch("dash.features.reports.reports.ReportJobExecutor.get_report")
     def test_ftp_fail(self, mock_get_report, mock_save, mock_ftp, mock_send):
         self.reportJob.scheduled_report = magic_mixer.blend(
-            scheduled_reports.ScheduledReport, id=list(settings.FTP_REPORTS.keys())[0], query={}
+            scheduled_reports.ScheduledReport,
+            id=list(settings.REPORTS_TO_FTP_SERVER_TAPCLICK["ftp_reports_destinations"])[0],
+            query={},
         )
         self.reportJob.save()
         mock_get_report.return_value = ("a_csv_report", "report_file_name")
@@ -195,15 +202,17 @@ class ReportsExecuteTest(TestCase):
         mock_ftp.side_effect = ConnectionError("connection failed")
 
         reports.execute(self.reportJob.id)
-        ftp_report = settings.FTP_REPORTS[self.reportJob.scheduled_report.id]
         mock_ftp.assert_called_with(
-            ftp_report["config"].get("ftp_server"),
-            ftp_report["config"].get("ftp_port"),
-            ftp_report["config"].get("ftp_user"),
-            ftp_report["config"].get("ftp_password"),
-            ftp_report["destination"],
+            settings.REPORTS_TO_FTP_SERVER_TAPCLICK.get("ftp_server"),
+            settings.REPORTS_TO_FTP_SERVER_TAPCLICK.get("ftp_port"),
+            settings.REPORTS_TO_FTP_SERVER_TAPCLICK.get("ftp_user"),
+            settings.REPORTS_TO_FTP_SERVER_TAPCLICK.get("ftp_password"),
+            settings.REPORTS_TO_FTP_SERVER_TAPCLICK["ftp_reports_destinations"].get(self.reportJob.scheduled_report.id),
             "{}-{}.csv".format(
-                ftp_report["destination"], datetime.datetime.strftime(datetime.datetime.now(), "%Y-%m-%d")
+                settings.REPORTS_TO_FTP_SERVER_TAPCLICK["ftp_reports_destinations"].get(
+                    self.reportJob.scheduled_report_id
+                ),
+                datetime.datetime.strftime(datetime.datetime.now(), "%Y-%m-%d"),
             ),
             "a_csv_report",
         )

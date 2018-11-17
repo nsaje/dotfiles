@@ -93,16 +93,19 @@ class ReportJobExecutor(JobExecutor):
             csv_report, filename = self.get_report(self.job)
 
             report_path = self.save_to_s3(csv_report, filename)
-            if self.job.scheduled_report_id in settings.FTP_REPORTS.keys():
-                report = settings.FTP_REPORTS[self.job.scheduled_report_id]
+            if self.job.scheduled_report_id in settings.REPORTS_TO_FTP_SERVER_TAPCLICK["ftp_reports_destinations"]:
                 self.save_to_ftp(
-                    report["config"].get("ftp_server"),
-                    report["config"].get("ftp_port"),
-                    report["config"].get("ftp_user"),
-                    report["config"].get("ftp_password"),
-                    report["destination"],
+                    settings.REPORTS_TO_FTP_SERVER_TAPCLICK.get("ftp_server"),
+                    settings.REPORTS_TO_FTP_SERVER_TAPCLICK.get("ftp_port"),
+                    settings.REPORTS_TO_FTP_SERVER_TAPCLICK.get("ftp_user"),
+                    settings.REPORTS_TO_FTP_SERVER_TAPCLICK.get("ftp_password"),
+                    settings.REPORTS_TO_FTP_SERVER_TAPCLICK["ftp_reports_destinations"].get(
+                        self.job.scheduled_report_id
+                    ),
                     "{}-{}.csv".format(
-                        report["destination"] or self.job.scheduled_report.name,
+                        settings.REPORTS_TO_FTP_SERVER_TAPCLICK["ftp_reports_destinations"].get(
+                            self.job.scheduled_report_id
+                        ),
                         datetime.datetime.strftime(datetime.datetime.now(), "%Y-%m-%d"),
                     ),
                     csv_report,

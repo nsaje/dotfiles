@@ -336,30 +336,14 @@ AMPLIFY_REVIEW = False
 
 SPARK_MASTER = ""
 
-#  TAPCLICK ftp config
-TAPCLICK_FTP_CONFIG = {
-    "ftp_server": Secret("plain::127.0.0.1").get().decode("utf-8"),
+# #  TAPCLICK ftp config
+REPORTS_TO_FTP_SERVER_TAPCLICK = {
+    "ftp_server": Secret("plain::172.17.0.2").get().decode("utf-8"),
     "ftp_port": 21,
-    "ftp_user": Secret("plain::test1").get().decode("utf-8"),
-    "ftp_password": Secret("plain::test2").get().decode("utf-8"),
-}
-
-#  AMMET FTP config
-AMMET_FTP_CONFIG = {
-    "ftp_server": Secret("plain::127.0.0.1").get().decode("utf-8"),
-    "ftp_port": 2121,
-    "ftp_user": Secret("plain::test2").get().decode("utf-8"),
-    "ftp_password": Secret("plain::test2").get().decode("utf-8"),
-}
-
-FTP_REPORTS = {
+    "ftp_user": Secret("plain::kev").get().decode("utf-8"),
+    "ftp_password": Secret("plain::test").get().decode("utf-8"),
     # Key is the report ID, Value is the remote destination for that report
-    1: {"destination": "account1", "config": TAPCLICK_FTP_CONFIG},
-    2: {"destination": "account2", "server_config": TAPCLICK_FTP_CONFIG},
-    3: {"destination": "account3", "config": TAPCLICK_FTP_CONFIG},
-    4: {"destination": "account4", "config": TAPCLICK_FTP_CONFIG},
-    5: {"destination": "account5", "config": TAPCLICK_FTP_CONFIG},
-    6: {"destination": "", "config": AMMET_FTP_CONFIG},
+    "ftp_reports_destinations": {1: "account1", 2: "account2", 3: "account3"},
 }
 
 AMELIA_INTEGRATION_ENABLED = False

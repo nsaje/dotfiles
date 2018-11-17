@@ -483,8 +483,8 @@ AMPLIFY_REVIEW = True
 
 SPARK_MASTER = "ec2-18-207-210-111.compute-1.amazonaws.com"
 
-#  TAPCLICK FTP config
-TAPCLICK_FTP_CONFIG = {
+#  TAPCLICK ftp config
+REPORTS_TO_FTP_SERVER_TAPCLICK = {
     "ftp_server": Secret(
         "kms:region=us-east-1:AQECAHjdfiP9DHF52gr8mpTmZ/ZwRu2qZbRw8dV0ohsw+OhZewAAAG8wbQYJKoZIhvcNAQcGoGAwXgIBADBZBgkqhkiG9w0BBwEwHgYJYIZIAWUDBAEuMBEEDG72iGlMrtDPHHVW8wIBEIAshBlVActmNG3EhD/GWzRjTraCyWvT08W7oBwBF7oDjTm0arJQ+F189SVnH80="  # noqa
     )
@@ -501,42 +501,15 @@ TAPCLICK_FTP_CONFIG = {
     )
     .get()
     .decode("utf-8"),
-}
-
-
-#  AMMET FTP config
-AMMET_FTP_CONFIG = {
-    {
-        "ftp_server": Secret(
-            "kms:region=us-east-1:AQECAHjdfiP9DHF52gr8mpTmZ/ZwRu2qZbRw8dV0ohsw+OhZewAAAG4wbAYJKoZIhvcNAQcGoF8wXQIBADBYBgkqhkiG9w0BBwEwHgYJYIZIAWUDBAEuMBEEDJW9SdchR9Dr4Q+vDQIBEIArSfMz+DTO8Oe9prgW8OQn38e4/5sPwgbsPv5eXD20saIO/J97hQImdEYZIg=="  # noqa
-        )
-        .get()
-        .decode("utf-8"),
-        "ftp_port": 2121,
-        "ftp_user": Secret(
-            "kms:region=us-east-1:AQECAHjdfiP9DHF52gr8mpTmZ/ZwRu2qZbRw8dV0ohsw+OhZewAAAIUwgYIGCSqGSIb3DQEHBqB1MHMCAQAwbgYJKoZIhvcNAQcBMB4GCWCGSAFlAwQBLjARBAz+poZvh1ZNdUMDWEQCARCAQVwYjmNCMPD00zlygqFVhQhtDgmShoVEKRu1CDASzwbef32CmdmX+jxqyQADm61qAtnVzAQYRHdw8+rHsrIaMCsV"  # noqa
-        )
-        .get()
-        .decode("utf-8"),
-        "ftp_password": Secret(
-            "kms:region=us-east-1:AQECAHjdfiP9DHF52gr8mpTmZ/ZwRu2qZbRw8dV0ohsw+OhZewAAAH4wfAYJKoZIhvcNAQcGoG8wbQIBADBoBgkqhkiG9w0BBwEwHgYJYIZIAWUDBAEuMBEEDKPYPZzLZOb01Gc7NQIBEIA7phV8BG66XVn5StwGcjMJtQHnrjbg28kJUdEQexes7fN05IM9BnD88zmjDG+ScHWXXvqJ68xH84vIkNc="  # noqa
-        )
-        .get()
-        .decode("utf-8"),
-    }
-}
-
-FTP_REPORTS = {
     # Key is the report ID, Value is the remote destination for that report
-    737: {"destination": "The_Hershey_Company", "config": TAPCLICK_FTP_CONFIG},
-    738: {"destination": "RiteAid", "server_config": TAPCLICK_FTP_CONFIG},
-    739: {"destination": "Treasury_Keystone_Scholars", "config": TAPCLICK_FTP_CONFIG},
-    740: {"destination": "Harrisburg_University_Cybersecurity", "config": TAPCLICK_FTP_CONFIG},
-    746: {"destination": "Quest_Diagnostics", "config": TAPCLICK_FTP_CONFIG},
-    785: {"destination": "Quest_Direct", "config": TAPCLICK_FTP_CONFIG},
-    786: {"destination": "", "config": AMMET_FTP_CONFIG},
+    "ftp_reports_destinations": {
+        737: "The_Hershey_Company",
+        738: "RiteAid",
+        739: "Treasury_Keystone_Scholars",
+        740: "Harrisburg_University_Cybersecurity",
+        746: "Quest_Diagnostics",
+    },
 }
-
 
 AMELIA_INTEGRATION_ENABLED = True
 AMELIA_BASE_URL = "http://ec2-18-204-166-9.compute-1.amazonaws.com:8080/Amelia/api/internal/v2/api/internal/v2/"
