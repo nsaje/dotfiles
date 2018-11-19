@@ -12,9 +12,8 @@ angular.module('one.widgets').component('zemCampaignGoalEditForm', {
         onChange: '&?',
     },
     template: require('./zemCampaignGoalEditForm.component.html'),
-    controller: function(zemNavigationNewService, zemMulticurrencyService) {
+    controller: function(zemCampaignGoalsService) {
         var $ctrl = this;
-        var activeAccount;
 
         $ctrl.updateTypeChange = updateTypeChange;
         $ctrl.propagateChange = propagateChange;
@@ -27,11 +26,17 @@ angular.module('one.widgets').component('zemCampaignGoalEditForm', {
         $ctrl.setAvailableConversionWindowsForPixel = setAvailableConversionWindowsForPixel;
 
         $ctrl.$onInit = function() {
-            activeAccount = zemNavigationNewService.getActiveAccount();
             $ctrl.campaignGoal = $ctrl.campaignGoal || {};
-            $ctrl.goalUnit = getGoalUnit($ctrl.campaignGoal);
             $ctrl.conversionGoalTypes = options.conversionGoalTypes;
             $ctrl.conversionWindows = options.conversionWindows;
+            $ctrl.availableGoals = zemCampaignGoalsService.extendAvailableGoalsWithEditedGoal(
+                $ctrl.campaignGoal,
+                $ctrl.availableGoals
+            );
+            $ctrl.goalUnit = getGoalUnit(
+                $ctrl.campaignGoal,
+                $ctrl.availableGoals
+            );
         };
 
         function updateTypeChange(goalUnit) {
@@ -116,20 +121,12 @@ angular.module('one.widgets').component('zemCampaignGoalEditForm', {
             $ctrl.conversionWindows = pixel.conversionWindows;
         }
 
-        function getGoalUnit(goal) {
-            for (var i = 0; i < options.campaignGoalKPIs.length; i++) {
-                var kpiDefault = options.campaignGoalKPIs[i];
-                if (kpiDefault.value === goal.type) {
-                    if (kpiDefault.unit !== '__CURRENCY__') {
-                        return kpiDefault.unit;
-                    }
-
-                    return zemMulticurrencyService.getAppropriateCurrencySymbol(
-                        activeAccount
-                    );
-                }
-            }
-            return '';
+        function getGoalUnit(goal, availableGoals) {
+            return (
+                availableGoals.find(function(item) {
+                    return item.value === goal.type;
+                }) || {}
+            ).unit;
         }
 
         function setDefaultValue() {

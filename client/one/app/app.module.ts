@@ -8,6 +8,7 @@ import {CoreModule} from './core/core.module';
 import {RavenErrorHandler} from './core/handlers/raven-error.handler';
 import {InventoryPlanningModule} from './features/inventory-planning/inventory-planning.module';
 import {EntityManagerModule} from './features/entity-manager/entity-manager.module';
+import {CampaignGoalsModule} from './features/campaign-goals/campaign-goals.module';
 
 // Raven (Sentry) configuration
 if (APP_CONFIG.env.prod) {
@@ -37,6 +38,7 @@ if (APP_CONFIG.env.prod) {
         // Feature modules
         InventoryPlanningModule,
         EntityManagerModule,
+        CampaignGoalsModule,
     ],
     providers: [
         {provide: ErrorHandler, useClass: RavenErrorHandler},

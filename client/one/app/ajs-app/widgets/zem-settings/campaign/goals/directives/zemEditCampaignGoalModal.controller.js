@@ -7,8 +7,7 @@ angular
         $scope,
         zemConversionPixelsEndpoint,
         zemCampaignGoalValidationEndpoint,
-        zemNavigationNewService,
-        zemMulticurrencyService,
+        zemCampaignGoalsService,
         zemPermissions
     ) {
         // eslint-disable-line max-len
@@ -18,10 +17,6 @@ angular
         $scope.pixels = {};
         $scope.newPixel = {};
         $scope.savingInProgress = false;
-
-        var activeAccount = zemNavigationNewService.getActiveAccount();
-
-        var MAX_CONVERSION_GOALS = 15;
 
         if ($scope.campaignGoal === undefined) {
             $scope.newCampaignGoal = true;
@@ -52,51 +47,15 @@ angular
             ].join('::');
         }
 
-        /* eslint-disable complexity */
-        function isGoalAvailable(option) {
-            var isAvailable = true,
-                goal = $scope.campaignGoal,
-                isCpcGoal = option.value === constants.campaignGoalKPI.CPC,
-                countConversionGoals = 0;
-
-            if (!goal || (goal && goal.type === option.value)) {
-                return true;
-            }
-            if (
-                (zemPermissions.hasPermission('zemauth.disable_public_rcs') ||
-                    zemPermissions.hasPermission(
-                        'zemauth.disable_public_newscorp'
-                    )) &&
-                !isCpcGoal
-            ) {
-                return false;
-            }
-
-            $scope.campaignGoals.forEach(function(goal) {
-                if (goal.type === option.value) {
-                    isAvailable = false;
-                }
-                countConversionGoals +=
-                    goal.type === constants.campaignGoalKPI.CPA;
-            });
-
-            if (
-                option.value === constants.campaignGoalKPI.CPA &&
-                countConversionGoals < MAX_CONVERSION_GOALS
-            ) {
-                return true;
-            }
-
-            // Display campaigns do not support CPCV goals
-            if (
-                parseInt($scope.campaign.type) ===
-                    constants.campaignTypes.DISPLAY &&
-                option.value === constants.campaignGoalKPI.CPCV
-            ) {
-                return false;
-            }
-
-            return isAvailable;
+        function getAvailableGoals() {
+            var onlyCpc =
+                zemPermissions.hasPermission('zemauth.disable_public_rcs') ||
+                zemPermissions.hasPermission('zemauth.disable_public_newscorp');
+            return zemCampaignGoalsService.getAvailableGoals(
+                $scope.campaignGoals,
+                parseInt($scope.campaign.type),
+                onlyCpc
+            );
         }
 
         $scope.validate = function(newGoal, allErrors) {
@@ -213,17 +172,7 @@ angular
             return $scope.campaignGoal.type === constants.campaignGoalKPI.CPA;
         };
 
-        $scope.campaignGoalKPIs = angular
-            .copy(options.campaignGoalKPIs)
-            .filter(isGoalAvailable)
-            .map(function(goalKPI) {
-                if (goalKPI.unit === '__CURRENCY__') {
-                    goalKPI.unit = zemMulticurrencyService.getAppropriateCurrencySymbol(
-                        activeAccount
-                    );
-                }
-                return goalKPI;
-            });
+        $scope.campaignGoalKPIs = getAvailableGoals();
 
         function filterPixels(pixels) {
             var availablePixels = [];
