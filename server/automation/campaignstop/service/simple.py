@@ -264,4 +264,4 @@ def _stop_all_ad_groups(campaign):
         new_settings = current_settings.copy_settings()
         new_settings.state = dash.constants.AdGroupSettingsState.INACTIVE
         new_settings.save(None)
-        utils.k1_helper.update_ad_group(ad_group.id, msg="automation.stop_campaign", priority=True)
+        utils.k1_helper.update_ad_group(ad_group, msg="automation.stop_campaign", priority=True)

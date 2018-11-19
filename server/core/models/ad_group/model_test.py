@@ -28,7 +28,7 @@ class AdGroupCreate(TestCase):
         self.assertTrue(mock_bulk_create.called)
         self.assertTrue(mock_insert_adgroup.called)
         self.assertTrue(mock_autopilot_init.called)
-        mock_k1_ping.assert_called_with(ad_group.id, msg="CampaignAdGroups.put")
+        mock_k1_ping.assert_called_with(ad_group, msg="CampaignAdGroups.put")
 
         history = history_helpers.get_ad_group_history(ad_group)
         self.assertEqual(len(history), 1)
@@ -74,7 +74,7 @@ class AdGroupClone(TestCase):
         self.assertTrue(mock_bulk_clone.called)
         self.assertTrue(mock_insert_adgroup.called)
         self.assertTrue(mock_autopilot_init.called)
-        mock_k1_ping.assert_called_with(ad_group.id, msg="CampaignAdGroups.put")
+        mock_k1_ping.assert_called_with(ad_group, msg="CampaignAdGroups.put")
 
         history = history_helpers.get_ad_group_history(ad_group)
         self.assertEqual(len(history), 1)
@@ -96,7 +96,7 @@ class AdGroupClone(TestCase):
         self.assertTrue(mock_bulk_clone.called)
         self.assertTrue(mock_insert_adgroup.called)
         self.assertTrue(mock_autopilot_init.called)
-        mock_k1_ping.assert_called_with(ad_group.id, msg="CampaignAdGroups.put")
+        mock_k1_ping.assert_called_with(ad_group, msg="CampaignAdGroups.put")
 
         history = history_helpers.get_ad_group_history(ad_group)
         self.assertEqual(len(history), 1)

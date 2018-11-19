@@ -285,7 +285,7 @@ class AudiencesTest(TestCase):
         self.assertEqual(history[0].created_by_id, 1)
 
         redirector_upsert_audience_mock.assert_called_with(audiences[0])
-        k1_update_account_mock.assert_called_with(audiences[0].pixel.account_id, msg="audience.create")
+        k1_update_account_mock.assert_called_with(audiences[0].pixel.account, msg="audience.create")
 
     @mock.patch("utils.k1_helper.update_account")
     @mock.patch("utils.redirector_helper.upsert_audience")
@@ -336,7 +336,7 @@ class AudiencesTest(TestCase):
         self.assertEqual(history[0].created_by_id, 1)
 
         redirector_upsert_audience_mock.assert_called_with(audiences[0])
-        k1_update_account_mock.assert_called_with(audiences[0].pixel.account_id, msg="audience.update")
+        k1_update_account_mock.assert_called_with(audiences[0].pixel.account, msg="audience.update")
 
     @mock.patch("utils.k1_helper.update_account")
     @mock.patch("utils.redirector_helper.upsert_audience")
@@ -374,7 +374,7 @@ class AudiencesTest(TestCase):
         self.assertEqual('Created audience "Test Audience".', hist.changes_text)
 
         redirector_upsert_audience_mock.assert_called_with(audience)
-        k1_update_account_mock.assert_called_with(audience.pixel.account_id, msg="audience.create")
+        k1_update_account_mock.assert_called_with(audience.pixel.account, msg="audience.create")
 
 
 class AudienceArchiveTest(TestCase):

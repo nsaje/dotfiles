@@ -60,8 +60,8 @@ class CampaignStopState(models.Model):
             self._ping_k1_for_ad_groups("campaignstop.start_date_change")
 
     def _ping_k1_for_ad_groups(self, message, priority=False):
-        ad_group_ids = self.campaign.adgroup_set.all().exclude_archived().values_list("id", flat=True)
-        k1_helper.update_ad_groups(ad_group_ids, message, priority=priority)
+        ad_groups = self.campaign.adgroup_set.all().exclude_archived().only("id")
+        k1_helper.update_ad_groups(ad_groups, message, priority=priority)
 
     def update_almost_depleted(self, is_depleted):
         if is_depleted and not self.almost_depleted:

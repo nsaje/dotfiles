@@ -102,7 +102,7 @@ class AdGroupSourceManager(core.common.QuerySetManager):
             api.add_content_ad_sources(ad_group_source)
 
         if k1_sync:
-            utils.k1_helper.update_ad_group(ad_group.id, msg="AdGroupSources.put")
+            utils.k1_helper.update_ad_group(ad_group, msg="AdGroupSources.put")
 
         return ad_group_source
 
@@ -152,7 +152,7 @@ class AdGroupSourceManager(core.common.QuerySetManager):
             raise Exception("Can't write history at this stage")
 
         if k1_sync and added_ad_group_sources:
-            utils.k1_helper.update_ad_group(ad_group.id, msg="AdGroupSources.put")
+            utils.k1_helper.update_ad_group(ad_group, msg="AdGroupSources.put")
 
         return added_ad_group_sources
 
@@ -172,7 +172,7 @@ class AdGroupSourceManager(core.common.QuerySetManager):
             api.add_content_ad_sources(ad_group_source)
 
         if k1_sync:
-            utils.k1_helper.update_ad_group(ad_group.id, msg="AdGroupSources.put")
+            utils.k1_helper.update_ad_group(ad_group, msg="AdGroupSources.put")
 
         return ad_group_source
 
@@ -204,7 +204,7 @@ class AdGroupSourceManager(core.common.QuerySetManager):
             raise Exception("Can't write history at this stage")
 
         if k1_sync and added_ad_group_sources:
-            utils.k1_helper.update_ad_group(ad_group.id, msg="AdGroupSources.put")
+            utils.k1_helper.update_ad_group(ad_group, msg="AdGroupSources.put")
 
         return added_ad_group_sources
 

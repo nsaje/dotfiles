@@ -129,7 +129,7 @@ def persist_batch(batch):
         _save_history(batch, content_ads)
 
     k1_helper.update_content_ads(
-        batch.ad_group_id, [ad.pk for ad in batch.contentad_set.all()], msg="upload.process_async.insert"
+        batch.contentad_set.all().select_related("ad_group__campaign"), msg="upload.process_async.insert"
     )
     return content_ads
 
@@ -169,7 +169,7 @@ def persist_edit_batch(request, batch):
 
         _save_history(batch, content_ads)
 
-    k1_helper.update_content_ads(batch.ad_group_id, [ad.pk for ad in content_ads], msg="upload.process_async.edit")
+    k1_helper.update_content_ads(content_ads, msg="upload.process_async.edit")
     return content_ads
 
 

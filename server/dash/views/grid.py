@@ -48,7 +48,7 @@ class ContentAdSettings(api_common.BaseApiView):
     def post(self, request, content_ad_id):
         if not request.user.has_perm("zemauth.can_access_table_breakdowns_feature"):
             raise exc.MissingDataError()
-        content_ad = views.helpers.get_content_ad(request.user, content_ad_id, select_related=True)
+        content_ad = views.helpers.get_content_ad(request.user, content_ad_id)
 
         data = json.loads(request.body)
         settings = data["settings"]
@@ -69,7 +69,7 @@ class ContentAdSettings(api_common.BaseApiView):
 
 class ContentAdEdit(api_common.BaseApiView):
     def post(self, request, content_ad_id):
-        content_ad = views.helpers.get_content_ad(request.user, content_ad_id, select_related=True)
+        content_ad = views.helpers.get_content_ad(request.user, content_ad_id)
 
         batch, candidates = contentupload.upload.insert_edit_candidates(request.user, [content_ad], content_ad.ad_group)
         return self.create_api_response(

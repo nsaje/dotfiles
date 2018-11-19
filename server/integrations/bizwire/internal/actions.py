@@ -57,13 +57,17 @@ def check_pacific_noon_and_stop_ads():
 
     todays_ad_groups = _get_todays_ad_groups()
 
-    content_ads = dash.models.ContentAd.objects.filter(
-        ad_group__campaign_id=config.AUTOMATION_CAMPAIGN, state=dash.constants.ContentAdSourceState.ACTIVE
-    ).exclude(ad_group__in=todays_ad_groups)
+    content_ads = (
+        dash.models.ContentAd.objects.filter(
+            ad_group__campaign_id=config.AUTOMATION_CAMPAIGN, state=dash.constants.ContentAdSourceState.ACTIVE
+        )
+        .exclude(ad_group__in=todays_ad_groups)
+        .select_related("ad_group")
+    )
     dash.api.update_content_ads_state(content_ads, dash.constants.ContentAdSourceState.INACTIVE, None)
 
-    ad_group_ids = set(ca.ad_group_id for ca in content_ads)
-    k1_helper.update_ad_groups(ad_group_ids, msg="bizwire.rotate_adgroup")
+    ad_groups = set(ca.ad_group for ca in content_ads)
+    k1_helper.update_ad_groups(ad_groups, msg="bizwire.rotate_adgroup")
 
 
 def _get_todays_ad_groups():
@@ -171,7 +175,7 @@ def _create_ad_group(name, start_date):
     _set_custom_cpcs(ad_group_id)
     _set_all_rtb_default_cpc(ad_group_id)
 
-    k1_helper.update_ad_group(ad_group_id, msg="bizwire.create_adgroup")
+    k1_helper.update_ad_group(dash.models.AdGroup.objects.get(pk=ad_group_id), msg="bizwire.create_adgroup")
     return ad_group_id
 
 
