@@ -61,4 +61,4 @@
             * provides selection functionality used by checkbox directives (header and cell)
         * `$ctrl.grid.meta.api = zemGridApi.createInstance($ctrl.grid)`
             * `zemGridApi` provides interface for interaction with `zemGrid` - reference can be sent to non-grid components (e.g. `zemGridColumnSelector`, `zemGridBreakdownSelector` etc.)
-* `onInitialized` output is used to set grid api via `tab.gridIntegrationService.setGridApi(gridApi`) once `zemGrid` is initialized
+* `onInitialized` output is used to set grid api via `tab.gridIntegrationService.setGridApi(gridApi)` once `zemGrid` is initialized
