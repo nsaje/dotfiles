@@ -42,6 +42,7 @@ def _create_job(command_name, job_kwargs_dict, settings_kwargs_dict):
     DCRON={
         "base_command": "/home/ubuntu/docker-manage-py.sh",
         "check_margin": datetime.timedelta(seconds=5),
+        "severities": {},
         "default_warning_wait": 60,
         "warning_waits": {"some_command": 600},
         "default_max_duration": 3600,
@@ -176,6 +177,7 @@ class CheckAlertsExecutionTimesTestCase(TestCase):
     DCRON={
         "base_command": "/home/ubuntu/docker-manage-py.sh",
         "check_margin": datetime.timedelta(seconds=5),
+        "severities": {},
         "default_warning_wait": 600,
         "warning_waits": {},
         "default_max_duration": 7200,
@@ -320,6 +322,7 @@ class CheckAlertsTestCase(TestCase):
     DCRON={
         "base_command": "/home/ubuntu/docker-manage-py.sh",
         "check_margin": datetime.timedelta(seconds=5),
+        "severities": {},
         "default_warning_wait": 600,
         "warning_waits": {},
         "default_max_duration": 10,
@@ -356,7 +359,7 @@ class HandleAlertsTestCase(TestCase):
             "completed_dt": dates_helper.utc_now() - datetime.timedelta(minutes=20, seconds=57),
             "alert": constants.Alert.OK,
         }
-        settings_kwargs_dict = {"schedule": "0 * * * *"}
+        settings_kwargs_dict = {"schedule": "0 * * * *", "severity": constants.Severity.HIGH}
         _create_job("command_03", job_kwargs_dict, settings_kwargs_dict)
 
         # Missed last execution, but alerting already.
@@ -414,6 +417,7 @@ class HandleAlertsTestCase(TestCase):
                     pagerduty_helper.PagerDutyEventType.Z1,
                     "command_02",
                     alerts._alert_message("command_02", constants.Alert.OK),
+                    event_severity=pagerduty_helper.PagerDutyEventSeverity.WARNING,
                     details=None,
                 ),
                 mock.call(
@@ -421,6 +425,7 @@ class HandleAlertsTestCase(TestCase):
                     pagerduty_helper.PagerDutyEventType.Z1,
                     "command_03",
                     alerts._alert_message("command_03", constants.Alert.EXECUTION),
+                    event_severity=pagerduty_helper.PagerDutyEventSeverity.CRITICAL,
                     details=None,
                 ),
                 mock.call(
@@ -428,6 +433,7 @@ class HandleAlertsTestCase(TestCase):
                     pagerduty_helper.PagerDutyEventType.Z1,
                     "command_05",
                     alerts._alert_message("command_05", constants.Alert.DURATION),
+                    event_severity=pagerduty_helper.PagerDutyEventSeverity.WARNING,
                     details=None,
                 ),
                 mock.call(
@@ -435,6 +441,7 @@ class HandleAlertsTestCase(TestCase):
                     pagerduty_helper.PagerDutyEventType.Z1,
                     "command_07",
                     alerts._alert_message("command_07", constants.Alert.DURATION),
+                    event_severity=pagerduty_helper.PagerDutyEventSeverity.WARNING,
                     details=None,
                 ),
             ]

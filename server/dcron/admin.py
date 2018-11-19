@@ -8,7 +8,12 @@ class DCronJobAdmin(admin.ModelAdmin):
     ordering = ["command_name"]
     list_display = ("command_name", "host", "duration", "executed_dt", "completed_dt", "alert")
     search_fields = ("command_name",)
-    list_filter = ("alert", "dcronjobsettings__enabled", "dcronjobsettings__manual_override")
+    list_filter = (
+        "alert",
+        "dcronjobsettings__enabled",
+        "dcronjobsettings__severity",
+        "dcronjobsettings__manual_override",
+    )
     readonly_fields = ("command_name", "host", "executed_dt", "completed_dt", "alert")
 
     def duration(self, obj):
@@ -29,11 +34,12 @@ class DCronJobAdminSettings(admin.ModelAdmin):
         "schedule",
         "full_command",
         "enabled",
+        "severity",
         "warning_wait",
         "max_duration",
         "min_separation",
         "manual_override",
     )
     search_fields = ("job__command_name",)
-    list_filter = ("job__alert", "enabled", "manual_override")
+    list_filter = ("job__alert", "enabled", "severity", "manual_override")
     readonly_fields = ("job", "schedule", "full_command", "enabled")

@@ -194,7 +194,7 @@ CREDENTIALS_ENCRYPTION_KEY = Secret(
 
 # Pagerduty settings
 PAGER_DUTY_ENABLED = True
-PAGER_DUTY_URL = "https://events.pagerduty.com/generic/2010-04-15/create_event.json"
+PAGER_DUTY_URL = "https://events.pagerduty.com/v2/enqueue"
 PAGER_DUTY_ADOPS_SERVICE_KEY = (
     Secret(
         "kms:region=us-east-1:CiDdfiP9DHF52gr8mpTmZ/ZwRu2qZbRw8dV0ohsw+OhZexKnAQEBAgB43X4j/QxxedoK/JqU5mf2cEbtqmW0cPHVdKIbMPjoWXsAAAB+MHwGCSqGSIb3DQEHBqBvMG0CAQAwaAYJKoZIhvcNAQcBMB4GCWCGSAFlAwQBLjARBAw5lF3I191Lg8w1NMkCARCAO+tCIGKBBUVGGRvoAHK2hg1Xq/Oi32HWknLKhMFMPJpTi0QV9LU1ne39/y4+Q6PWm/BJYzcFVcCquGhz"  # noqa

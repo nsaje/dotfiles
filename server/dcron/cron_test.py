@@ -153,6 +153,7 @@ class CrontabItemsGeneratorTestCase(TestCase):
     DCRON={
         "base_command": "/home/ubuntu/docker-manage-py.sh",
         "check_margin": timedelta(seconds=5),
+        "severities": {"run_autopilot": constants.Severity.HIGH},
         "default_warning_wait": 60,
         "warning_waits": {"monitor_blacklists": 120, "refresh_etl": 3600},
         "default_max_duration": 3600,
@@ -175,6 +176,7 @@ class DCronModelsTestCase(TestCase):
         command_name,
         schedule,
         enabled=True,
+        severity=constants.Severity.LOW,
         warning_wait=settings.DCRON["default_warning_wait"],
         max_duration=settings.DCRON["default_max_duration"],
         min_separation=settings.DCRON["default_min_separation"],
@@ -191,6 +193,7 @@ class DCronModelsTestCase(TestCase):
         self.assertEqual(job_settings.schedule, schedule)
         self.assertEqual(job_settings.full_command, full_command)
         self.assertEqual(job_settings.enabled, enabled)
+        self.assertEqual(job_settings.severity, severity)
         self.assertEqual(job_settings.warning_wait, warning_wait)
         self.assertEqual(job_settings.max_duration, max_duration)
         self.assertEqual(job_settings.min_separation, min_separation)
@@ -207,7 +210,9 @@ class DCronModelsTestCase(TestCase):
         self._assert_job_settings(job_settings, "monitor_blacklists", "0 9,12,15 * * *", warning_wait=120)
 
         job_settings = models.DCronJobSettings.objects.get(job__command_name="run_autopilot")
-        self._assert_job_settings(job_settings, "run_autopilot", "15 9 * * *", extra_params=" --daily-run")
+        self._assert_job_settings(
+            job_settings, "run_autopilot", "15 9 * * *", severity=constants.Severity.HIGH, extra_params=" --daily-run"
+        )
 
         job_settings = models.DCronJobSettings.objects.get(job__command_name="refresh_etl")
         self._assert_job_settings(job_settings, "refresh_etl", "*/5 * * * *", warning_wait=3600, extra_params=" 3")
@@ -259,7 +264,9 @@ class DCronModelsTestCase(TestCase):
             cron._process_cron_item(cron_item)
 
         job_settings = models.DCronJobSettings.objects.get(job__command_name="run_autopilot")
-        self._assert_job_settings(job_settings, "run_autopilot", "15 9 * * *", extra_params=" --daily-run")
+        self._assert_job_settings(
+            job_settings, "run_autopilot", "15 9 * * *", severity=constants.Severity.HIGH, extra_params=" --daily-run"
+        )
 
         cron_item = next(cron_item_generator)
 
@@ -335,7 +342,9 @@ class DCronModelsTestCase(TestCase):
         self._assert_job_settings(job_settings, "monitor_blacklists", "0 9,12,15 * * *", warning_wait=120)
 
         job_settings = models.DCronJobSettings.objects.get(job__command_name="run_autopilot")
-        self._assert_job_settings(job_settings, "run_autopilot", "15 9 * * *", extra_params=" --daily-run")
+        self._assert_job_settings(
+            job_settings, "run_autopilot", "15 9 * * *", severity=constants.Severity.HIGH, extra_params=" --daily-run"
+        )
 
         job_settings = models.DCronJobSettings.objects.get(job__command_name="refresh_etl")
         self._assert_job_settings(job_settings, "refresh_etl", "*/5 * * * *", warning_wait=3600, extra_params=" 3")

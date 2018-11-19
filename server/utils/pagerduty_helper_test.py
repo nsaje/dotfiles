@@ -15,12 +15,15 @@ from utils import pagerduty_helper
 class PagerDutyHelperTestCase(TestCase):
     def test_trigger(self, mock_urlopen):
         data = {
-            "service_key": "123abc",
-            "incident_key": "adgroup_stop_failed",
-            "event_type": "trigger",
-            "description": "Adgroup stop action failed",
-            "client": "Zemanta One - testhost",
-            "details": {"action_log_admin_url": "https://one.zemanta.com/admin/actionlog/actionlog/1/"},
+            "routing_key": "123abc",
+            "dedup_key": "adgroup_stop_failed",
+            "event_action": "trigger",
+            "payload": {
+                "summary": "Adgroup stop action failed",
+                "source": "Zemanta One - testhost",
+                "severity": pagerduty_helper.PagerDutyEventSeverity.CRITICAL,
+                "custom_details": {"action_log_admin_url": "https://one.zemanta.com/admin/actionlog/actionlog/1/"},
+            },
         }
 
         pagerduty_helper.trigger(
@@ -34,12 +37,15 @@ class PagerDutyHelperTestCase(TestCase):
 
     def test_resolve(self, mock_urlopen):
         data = {
-            "service_key": "123abc",
-            "incident_key": "adgroup_stop_failed",
-            "event_type": "resolve",
-            "description": "Adgroup stop action failed",
-            "client": "Zemanta One - testhost",
-            "details": {"action_log_admin_url": "https://one.zemanta.com/admin/actionlog/actionlog/1/"},
+            "routing_key": "123abc",
+            "dedup_key": "adgroup_stop_failed",
+            "event_action": "resolve",
+            "payload": {
+                "summary": "Adgroup stop action failed",
+                "source": "Zemanta One - testhost",
+                "severity": pagerduty_helper.PagerDutyEventSeverity.CRITICAL,
+                "custom_details": {"action_log_admin_url": "https://one.zemanta.com/admin/actionlog/actionlog/1/"},
+            },
         }
 
         pagerduty_helper.resolve(

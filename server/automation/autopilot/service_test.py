@@ -10,6 +10,7 @@ from mock import patch
 import dash.constants
 import dash.models
 from automation import models
+from utils import pagerduty_helper
 from utils.magic_mixer import magic_mixer
 
 from . import constants
@@ -244,12 +245,15 @@ class AutopilotPlusTestCase(test.TestCase):
         mock_urlopen.assert_called_with(
             "http://pagerduty.example.com",
             json={
-                "service_key": "123abc",
-                "incident_key": "automation_autopilot_error",
-                "event_type": "trigger",
-                "description": desc,
-                "client": "Zemanta One - testhost",
-                "details": {"element": ""},  # '<AdGroup: Test AdGroup 1>'
+                "routing_key": "123abc",
+                "dedup_key": "automation_autopilot_error",
+                "event_action": "trigger",
+                "payload": {
+                    "summary": desc,
+                    "source": "Zemanta One - testhost",
+                    "severity": pagerduty_helper.PagerDutyEventSeverity.CRITICAL,
+                    "custom_details": {"element": ""},  # '<AdGroup: Test AdGroup 1>'
+                },
             },
             timeout=60,
         )

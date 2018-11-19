@@ -32,6 +32,7 @@ class DCronJobSettings(models.Model):
     schedule = models.CharField(max_length=250)
     full_command = models.CharField(max_length=250)
     enabled = models.BooleanField(default=True)
+    severity = models.IntegerField(choices=constants.Severity.get_choices(), default=constants.Severity.LOW)
     warning_wait = models.FloatField(default=settings.DCRON["default_warning_wait"])
     max_duration = models.FloatField(default=settings.DCRON["default_max_duration"])
     min_separation = models.FloatField(default=settings.DCRON["default_min_separation"])

@@ -32,36 +32,42 @@ def handle_alerts() -> None:
 
         if dcron_job.alert != alert:
             models.DCronJob.objects.filter(id=dcron_job.id).update(alert=alert)
-
-            if alert != constants.Alert.OK:
-                trigger_pagerduty_alert(dcron_job.command_name, alert)
-            else:
-                resolve_pagerduty_alert(dcron_job.command_name, alert)
+            handle_pagerduty_alert(dcron_job, alert)
 
 
-def trigger_pagerduty_alert(command_name: str, alert: AlertId) -> None:
+def handle_pagerduty_alert(dcron_job: models.DCronJob, alert: AlertId) -> None:
     """
-    Trigger pagerduty alert.
-    :param command_name: cron management command name
+    Handle pagerduty alert - trigger or resolve pagerduty alert based on alert status.
+    :param dcron_job: cron management command name
     :param alert: alert id from dcron.constants.Alert
     """
-    description = _alert_message(command_name, alert)
-    pagerduty_helper.trigger(pagerduty_helper.PagerDutyEventType.Z1, command_name, description)
+
+    description = _alert_message(dcron_job.command_name, alert)
+    if hasattr(dcron_job, "dcronjobsettings"):
+        event_severity = _convert_severity(dcron_job.dcronjobsettings.severity)
+    else:
+        event_severity = pagerduty_helper.PagerDutyEventSeverity.WARNING
+
+    if alert != constants.Alert.OK:
+        pagerduty_helper.trigger(
+            pagerduty_helper.PagerDutyEventType.Z1, dcron_job.command_name, description, event_severity=event_severity
+        )
+    else:
+        pagerduty_helper.resolve(
+            pagerduty_helper.PagerDutyEventType.Z1, dcron_job.command_name, description, event_severity=event_severity
+        )
 
 
-def resolve_pagerduty_alert(command_name: str, alert: AlertId) -> None:
-    """
-    Resolve pagerduty alert.
-    :param command_name: cron management command name
-    :param alert: alert id from dcron.constants.Alert
-    """
-    description = _alert_message(command_name, alert)
-    pagerduty_helper.resolve(pagerduty_helper.PagerDutyEventType.Z1, command_name, description)
-
-
-def _alert_message(command_name: str, alert: AlertId) -> str:
+def _alert_message(command_name: str, alert: int) -> str:
     alert_type = constants.Alert.get_text(alert)
     return "Cron command alert: {} - {}".format(command_name, alert_type)
+
+
+def _convert_severity(severity: int) -> str:
+    if severity is constants.Severity.HIGH:
+        return pagerduty_helper.PagerDutyEventSeverity.CRITICAL
+
+    return pagerduty_helper.PagerDutyEventSeverity.WARNING
 
 
 def _check_alert(dcron_job: models.DCronJob, current_date_time: typing.Optional[datetime.datetime] = None) -> AlertId:

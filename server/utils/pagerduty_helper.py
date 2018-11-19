@@ -17,15 +17,29 @@ class PagerDutyEventType(ConstantBase):
     _VALUES = {SYSOPS: "SysOps", ADOPS: "AdOps", ENGINEERS: "Engineers"}
 
 
-def trigger(event_type, incident_key, description, details=None, **kwargs):
-    _post_event("trigger", event_type, incident_key, description, details=details, **kwargs)
+class PagerDutyEventSeverity(ConstantBase):
+    CRITICAL = "critical"
+    ERROR = "error"
+    WARNING = "warning"
+    INFO = "info"
+
+    _VALUES = {CRITICAL: CRITICAL, ERROR: ERROR, WARNING: WARNING, INFO: INFO}
 
 
-def resolve(event_type, incident_key, description, details=None, **kwargs):
-    _post_event("resolve", event_type, incident_key, description, details=details, **kwargs)
+def trigger(event_type, incident_key, description, event_severity=None, details=None, **kwargs):
+    _post_event(
+        "trigger", event_type, incident_key, description, event_severity=event_severity, details=details, **kwargs
+    )
 
 
-def _post_event(command, event_type, incident_key, description, details=None, **kwargs):
+def resolve(event_type, incident_key, description, event_severity=None, details=None, **kwargs):
+    _post_event(
+        "resolve", event_type, incident_key, description, event_severity=event_severity, details=details, **kwargs
+    )
+
+
+def _post_event(command, event_type, incident_key, description, event_severity=None, details=None, **kwargs):
+    event_severity = event_severity or PagerDutyEventSeverity.CRITICAL
     timeout = kwargs.get("timeout", 60)
 
     if not settings.PAGER_DUTY_ENABLED:
@@ -42,12 +56,15 @@ def _post_event(command, event_type, incident_key, description, details=None, **
         raise AttributeError("Invalid event type")
 
     data = {
-        "service_key": service_key,
-        "incident_key": incident_key,
-        "event_type": command,
-        "description": description,
-        "client": "Zemanta One - {0}".format(settings.HOSTNAME),
-        "details": details,
+        "routing_key": service_key,
+        "event_action": command,
+        "dedup_key": incident_key,
+        "payload": {
+            "summary": description,
+            "source": "Zemanta One - {0}".format(settings.HOSTNAME),
+            "severity": event_severity,
+            "custom_details": details,
+        },
     }
 
     try:

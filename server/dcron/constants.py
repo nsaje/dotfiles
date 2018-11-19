@@ -8,3 +8,10 @@ class Alert(ConstantBase):
     FAILURE = 3
 
     _VALUES = {OK: "OK", EXECUTION: "Execution", DURATION: "Duration", FAILURE: "Failure"}
+
+
+class Severity(ConstantBase):
+    LOW = 0
+    HIGH = 1
+
+    _VALUES = {LOW: "low", HIGH: "high"}

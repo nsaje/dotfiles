@@ -170,6 +170,7 @@ class DCronCommandTestCase(TransactionTestCase):
                     pagerduty_helper.PagerDutyEventType.Z1,
                     DUMMY_COMMAND,
                     alerts._alert_message(DUMMY_COMMAND, constants.Alert.FAILURE),
+                    event_severity=pagerduty_helper.PagerDutyEventSeverity.WARNING,
                     details=None,
                 )
             ]
