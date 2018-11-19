@@ -52,6 +52,62 @@ def get_segment_reach(expression):
     return query_result["reach"]
 
 
+def _transform_expression(expression):
+    expression = _transform_expression_recur(expression)
+    return _format_expression(expression)
+
+
+def _transform_expression_recur(expression):
+    if _is_bluekai_category(expression):
+        return _transform_to_leaf_node(expression)
+    operator = expression[0].upper()
+    subexpression = [_transform_expression_recur(s) for s in expression[1:]]
+    if operator == "NOT":
+        # NOTE: our NOT representation has direct OR children while bluekai expects a single AND level inbetween
+        assert _is_simple_expression(
+            subexpression, operator="OR"
+        ), "expected NOT expression to have a single OR operator with a list of categories"
+        return {operator: {"AND": subexpression}}
+    return {operator: subexpression}
+
+
+def _is_simple_expression(expression, *, operator):
+    # is expression of form: {"OR": [{"cat": 1234}, {"cat": ...}]}
+    only_has_operator = list(expression[0].keys()) == [operator]
+    only_category_children = all(list(el.keys()) == ["cat"] for el in list(expression[0].values())[0])
+    return only_has_operator and only_category_children
+
+
+def _is_bluekai_category(expression):
+    return isinstance(expression, str) and expression.startswith("bluekai:")
+
+
+def _transform_to_leaf_node(expression):
+    return {"cat": int(expression.replace("bluekai:", ""))}
+
+
+def _format_expression(expression):
+    if list(expression.keys()) == ["OR"]:
+        expression = {"AND": [{"AND": [expression]}]}
+    elif list(expression.keys()) == ["NOT"] or (
+        list(expression.keys()) == ["AND"] and any(list(el.keys()) == ["OR"] for el in expression["AND"])
+    ):
+        expression = {"AND": [expression]}
+
+    for subexp in expression["AND"]:
+        if list(subexp.keys()) != ["AND"]:
+            continue
+
+        for i, subsubexp in enumerate(subexp["AND"]):
+            if list(subsubexp.keys()) == ["NOT"]:
+                # extract NOT into top level AND
+                expression["AND"][0]["AND"].pop(i)
+                expression["AND"].append(subsubexp)
+                break
+
+    return expression
+
+
 def get_audience(audience_id):
     url = AUDIENCES_URL + str(audience_id)
     response = _perform_request("GET", url, params={})
@@ -94,41 +150,3 @@ def _perform_request(method, url, params=None, data=""):
     response = requests.request(method, url, params=params_signed, headers=HEADERS, data=data)
     response.raise_for_status()
     return response
-
-
-def _transform_expression(expression):
-    expression = _transform_expression_recur(expression)
-    return _format_expression(expression)
-
-
-def _format_expression(expression):
-    if list(expression.keys()) == ["OR"]:
-        expression = {"AND": [{"AND": [expression]}]}
-    elif list(expression.keys()) == ["NOT"] or (
-        list(expression.keys()) == ["AND"] and any(list(el.keys()) == ["OR"] for el in expression["AND"])
-    ):
-        expression = {"AND": [expression]}
-
-    for subexp in expression["AND"]:
-        if list(subexp.keys()) != ["AND"]:
-            continue
-
-        for i, subsubexp in enumerate(subexp["AND"]):
-            if list(subsubexp.keys()) == ["NOT"]:
-                # extract NOT into top level AND
-                expression["AND"][0]["AND"].pop(i)
-                expression["AND"].append(subsubexp)
-                break
-
-    return expression
-
-
-def _transform_expression_recur(expression):
-    if isinstance(expression, str) and expression.startswith("bluekai:"):
-        return {"cat": int(expression.replace("bluekai:", ""))}
-    operator = expression[0].upper()
-    subexpression = [_transform_expression_recur(s) for s in expression[1:]]
-    if operator == "NOT":
-        # NOT must hold a dict instead of a list
-        return {operator: {list(subexpression[0].keys())[0]: list(subexpression[0].values())[0]}}
-    return {operator: subexpression}

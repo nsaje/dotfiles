@@ -50,20 +50,23 @@ class SegmentReachTestCase(TestCase):
         )
 
     def test_single_and_with_not(self):
-        expression = ["and", ["or", "bluekai:1234"], ["not", "bluekai:5432"]]
+        expression = ["and", ["or", "bluekai:1234"], ["not", ["or", "bluekai:5432"]]]
         bluekaiapi.get_segment_reach(expression)
 
         self.mock_perform_request.assert_called_with(
             "POST",
             bluekaiapi.SEGMENT_INVENTORY_URL,
             params={"countries": "ALL"},
-            data='{"AND":[{"AND":[{"OR":[{"cat":1234}]}]},{"NOT":{"cat":5432}}]}',
+            data='{"AND":[{"AND":[{"OR":[{"cat":1234}]}]},{"NOT":{"AND":[{"OR":[{"cat":5432}]}]}}]}',
         )
 
     def test_only_not(self):
-        expression = ["not", "bluekai:5432"]
+        expression = ["not", ["or", "bluekai:5432"]]
         bluekaiapi.get_segment_reach(expression)
 
         self.mock_perform_request.assert_called_with(
-            "POST", bluekaiapi.SEGMENT_INVENTORY_URL, params={"countries": "ALL"}, data='{"AND":[{"NOT":{"cat":5432}}]}'
+            "POST",
+            bluekaiapi.SEGMENT_INVENTORY_URL,
+            params={"countries": "ALL"},
+            data='{"AND":[{"NOT":{"AND":[{"OR":[{"cat":5432}]}]}}]}',
         )
