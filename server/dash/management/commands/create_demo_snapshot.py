@@ -25,6 +25,7 @@ from django.template import VariableDoesNotExist
 import dash.models
 import zemauth.models
 from dash import constants
+from dcron import models as dcron_models
 from utils import demo_anonymizer
 from utils import grouper
 from utils import json_helper
@@ -95,11 +96,12 @@ def _postgres_read_only(using="default"):
             old_pg_options = db_options.setdefault("options", "")
             readonly_option = "-c default_transaction_read_only=on"
             db_options["options"] = " ".join([readonly_option, old_pg_options])
+            connections[using].connect()
             try:
                 ret = func(*args, **kwargs)
             finally:
                 db_options["options"] = old_pg_options
-                connections[using].close()
+                connections[using].connect()
             return ret
 
         return f
@@ -178,6 +180,9 @@ class Command(ExceptionCommand):
 
 
 def _pre_save_handler(sender, instance, *args, **kwargs):
+    if sender == dcron_models.DCronJob:
+        return
+
     raise Exception("Do not save inside the demo data dump command!")
 
 
