@@ -96,7 +96,7 @@ class RTBSourceSettingsTest(TestCase):
                 "grid_ad_group_source_settings",
                 kwargs={"ad_group_id": self.ad_group.id, "source_id": all_rtb.AllRTBSource.id},
             ),
-            json.dumps({"settings": {"max_cpm": "0.35"}}),
+            json.dumps({"settings": {"cpm": "0.35"}}),
             content_type="application/json",
             follow=True,
         )
@@ -121,7 +121,7 @@ class RTBSourceSettingsTest(TestCase):
                 "grid_ad_group_source_settings",
                 kwargs={"ad_group_id": self.ad_group.id, "source_id": all_rtb.AllRTBSource.id},
             ),
-            json.dumps({"settings": {"max_cpm": "0.45"}}),
+            json.dumps({"settings": {"cpm": "0.45"}}),
             content_type="application/json",
             follow=True,
         )
