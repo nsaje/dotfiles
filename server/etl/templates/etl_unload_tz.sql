@@ -1,7 +1,11 @@
 {% autoescape off %}
 
 UNLOAD
+{% if table == "stats" %}
+('SELECT * FROM (SELECT * FROM stats_diff UNION ALL SELECT * FROM stats) AS stats WHERE (date BETWEEN \'{{ tzdate_from }}\' AND \'{{ tzdate_to }}\') AND ((hour is null and date >= \'{{ date_from }}\' and date <= \'{{ date_to }}\') OR (hour is not null and date > \'{{ tzdate_from }}\' and date < \'{{ tzdate_to }}\') OR (hour is not null and ((date=\'{{tzdate_from}}\' and hour >= {{ tzhour_from }}) or (date = \'{{tzdate_to}}\' and hour < {{tzhour_to}})))) {% if account_id_str %} AND ad_group_id IN ({{ ad_group_id|join:"," }}){% endif %}')
+{% else %}
 ('SELECT * FROM {{ table }} WHERE (date BETWEEN \'{{ tzdate_from }}\' AND \'{{ tzdate_to }}\') AND ((hour is null and date >= \'{{ date_from }}\' and date <= \'{{ date_to }}\') OR (hour is not null and date > \'{{ tzdate_from }}\' and date < \'{{ tzdate_to }}\') OR (hour is not null and ((date=\'{{tzdate_from}}\' and hour >= {{ tzhour_from }}) or (date = \'{{tzdate_to}}\' and hour < {{tzhour_to}})))) {% if account_id_str %} AND ad_group_id IN ({{ ad_group_id|join:"," }}){% endif %}')
+{% endif %}
 TO %(s3_url)s
 DELIMITER AS %(delimiter)s
 CREDENTIALS %(credentials)s

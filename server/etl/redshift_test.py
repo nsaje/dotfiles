@@ -73,7 +73,7 @@ class ReplicasTest(TestCase, backtosql.TestSQLMixin):
             sql,
             """
         UNLOAD
-        ('SELECT * FROM stats WHERE (date BETWEEN \\'2016-05-01\\' AND \\'2016-05-04\\') AND ((hour is null and date >= \\'2016-05-01\\' and date <= \\'2016-05-03\\') OR (hour is not null and date > \\'2016-05-01\\' and date < \\'2016-05-04\\') OR (hour is not null and ((date=\\'2016-05-01\\' and hour >= 4) or (date = \\'2016-05-04\\' and hour < 4)))) ')
+        ('SELECT * FROM (SELECT * FROM stats_diff UNION ALL SELECT * FROM stats) AS stats WHERE (date BETWEEN \\'2016-05-01\\' AND \\'2016-05-04\\') AND ((hour is null and date >= \\'2016-05-01\\' and date <= \\'2016-05-03\\') OR (hour is not null and date > \\'2016-05-01\\' and date < \\'2016-05-04\\') OR (hour is not null and ((date=\\'2016-05-01\\' and hour >= 4) or (date = \\'2016-05-04\\' and hour < 4)))) ')
         TO %(s3_url)s
         DELIMITER AS %(delimiter)s
         CREDENTIALS %(credentials)s
@@ -97,7 +97,7 @@ class ReplicasTest(TestCase, backtosql.TestSQLMixin):
             sql,
             """
         UNLOAD
-        ('SELECT * FROM stats WHERE (date BETWEEN \\'2016-05-01\\' AND \\'2016-05-04\\') AND ((hour is null and date >= \\'2016-05-01\\' and date <= \\'2016-05-03\\') OR (hour is not null and date > \\'2016-05-01\\' and date < \\'2016-05-04\\') OR (hour is not null and ((date=\\'2016-05-01\\' and hour >= 4) or (date = \\'2016-05-04\\' and hour < 4))))  AND ad_group_id IN (1,2,3)')
+        ('SELECT * FROM (SELECT * FROM stats_diff UNION ALL SELECT * FROM stats) AS stats WHERE (date BETWEEN \\'2016-05-01\\' AND \\'2016-05-04\\') AND ((hour is null and date >= \\'2016-05-01\\' and date <= \\'2016-05-03\\') OR (hour is not null and date > \\'2016-05-01\\' and date < \\'2016-05-04\\') OR (hour is not null and ((date=\\'2016-05-01\\' and hour >= 4) or (date = \\'2016-05-04\\' and hour < 4))))  AND ad_group_id IN (1,2,3)')
         TO %(s3_url)s
         DELIMITER AS %(delimiter)s
         CREDENTIALS %(credentials)s

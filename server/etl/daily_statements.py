@@ -253,7 +253,7 @@ def _get_campaign_spend(date, all_campaigns, account_id):
         ad_group_ids = helpers.get_ad_group_ids_or_none(account_id)
         query = """
         select ad_group_id, sum(spend), sum(data_spend)
-        from stats
+        from (SELECT * FROM stats_diff UNION ALL SELECT * FROM stats) AS stats
         where ({date_query}) and ad_group_id IN ({ad_group_ids})
         group by ad_group_id
         """.format(
@@ -262,7 +262,7 @@ def _get_campaign_spend(date, all_campaigns, account_id):
     else:
         query = """
         select ad_group_id, sum(spend), sum(data_spend)
-        from stats
+        from (SELECT * FROM stats_diff UNION ALL SELECT * FROM stats) AS stats
         where {date_query}
         group by ad_group_id
         """.format(

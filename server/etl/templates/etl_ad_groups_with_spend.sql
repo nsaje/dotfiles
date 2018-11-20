@@ -1,6 +1,6 @@
 
  SELECT ad_group_id
- FROM stats
+ FROM (SELECT * FROM stats_diff UNION ALL SELECT * FROM stats) AS stats
  WHERE
   -- query only date first so redshift can use sort key
   date >= %(tzdate_from)s AND date <= %(tzdate_to)s AND (

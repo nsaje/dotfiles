@@ -36,7 +36,7 @@ class Command(ExceptionCommand):
 
         query = """
             select media_source, sum(impressions), sum(spend)
-            from stats
+            from (SELECT * FROM stats_diff UNION ALL SELECT * FROM stats) AS stats
             where {date_query}
             group by media_source
         """.format(

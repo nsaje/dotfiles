@@ -1,0 +1,1 @@
+CREATE TABLE stats_diff (LIKE stats);
