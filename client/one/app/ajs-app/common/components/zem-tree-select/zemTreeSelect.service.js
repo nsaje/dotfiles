@@ -1,16 +1,12 @@
 angular.module('one.common').service('zemTreeSelectService', function() {
-    //eslint-disable-line max-len
-
     this.createList = createList;
-    this.filterList = filterList;
+    this.getVisibleItems = getVisibleItems;
+    this.getVisibleItemsMatchingQuery = getVisibleItemsMatchingQuery;
+    this.getVisibleItemsAfterItemToggled = getVisibleItemsAfterItemToggled;
 
     function createList(root) {
         var list = createListRecursion(root, [], null);
-
-        // Remove root from list and make childs visible
-        list[0].isCollapsed = false;
-        list.shift();
-
+        list.shift(); // Remove root from list
         return list;
     }
 
@@ -38,29 +34,77 @@ angular.module('one.common').service('zemTreeSelectService', function() {
             isSelectable: !node.navigationOnly,
         };
         item.isLeaf = !node.childNodes || !node.childNodes.length;
-        item.isCollapsed = !item.isLeaf;
+        initializeVisibleAndCollapsedProperty(item);
 
         return item;
     }
 
-    function filterList(list, searchQuery) {
-        if (searchQuery) {
-            searchQuery = searchQuery.toLowerCase();
-            return list.filter(function(item) {
-                return (
-                    item.name.toLowerCase().indexOf(searchQuery) >= 0 ||
-                    item.id.indexOf(searchQuery) >= 0
-                );
+    function initializeVisibleAndCollapsedProperty(item) {
+        item.isVisible = item.level < 2;
+        item.isCollapsed = true;
+    }
+
+    function getVisibleItems(allItems) {
+        return allItems.filter(function(item) {
+            return item.isVisible;
+        });
+    }
+
+    function getVisibleItemsMatchingQuery(query, allItems) {
+        query = query ? query.toLowerCase() : null;
+
+        allItems.forEach(function(item) {
+            if (query) {
+                item.isVisible = false;
+                item.isCollapsed = true;
+            } else {
+                initializeVisibleAndCollapsedProperty(item);
+            }
+        });
+
+        if (query) {
+            allItems.forEach(function(item) {
+                if (
+                    item.name.toLowerCase().indexOf(query) !== -1 ||
+                    item.id.indexOf(query) !== -1
+                ) {
+                    item.isVisible = true;
+                    makeParentsVisibleAndExpanded(item);
+                }
             });
         }
 
-        return list.filter(function(item) {
-            var parent = item.parent;
-            while (parent) {
-                if (parent.isCollapsed) return false;
-                parent = parent.parent;
-            }
-            return true;
-        });
+        return getVisibleItems(allItems);
+    }
+
+    function getVisibleItemsAfterItemToggled(toggledItem, allItems) {
+        toggleItemCollapse(toggledItem, allItems);
+        return getVisibleItems(allItems);
+    }
+
+    function toggleItemCollapse(toggledItem, allItems) {
+        toggledItem.isCollapsed = !toggledItem.isCollapsed;
+        toggleChildrenVisibility(toggledItem, allItems);
+    }
+
+    function toggleChildrenVisibility(parent, allItems) {
+        allItems
+            .filter(function(item) {
+                return item.parent === parent;
+            })
+            .forEach(function(item) {
+                item.isVisible = !parent.isCollapsed;
+                item.isCollapsed = true;
+                toggleChildrenVisibility(item, allItems);
+            });
+    }
+
+    function makeParentsVisibleAndExpanded(item) {
+        var parent = (item || {}).parent;
+        while (parent) {
+            parent.isVisible = true;
+            parent.isCollapsed = false;
+            parent = parent.parent;
+        }
     }
 });

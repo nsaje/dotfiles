@@ -24,10 +24,12 @@ angular.module('one.common').component('zemTreeSelect', {
         $ctrl.highlightItem = highlightItem;
         $ctrl.getParentsInfo = getParentsInfo;
 
+        var allItems;
+
         $ctrl.$onInit = function() {
-            $ctrl.list = zemTreeSelectService.createList($ctrl.rootNode);
-            $ctrl.filteredList = zemTreeSelectService.filterList($ctrl.list);
-            highlightItem($ctrl.filteredList[0]);
+            allItems = zemTreeSelectService.createList($ctrl.rootNode);
+            $ctrl.visibleItems = zemTreeSelectService.getVisibleItems(allItems);
+            highlightItem($ctrl.visibleItems[0]);
             initializeSelection();
             initializeDropdownHandler();
         };
@@ -36,14 +38,14 @@ angular.module('one.common').component('zemTreeSelect', {
             if (!$ctrl.initialSelection) return;
 
             var mapIds = {};
-            $ctrl.list.forEach(function(node) {
+            allItems.forEach(function(node) {
                 mapIds[node.id.toString()] = node;
             });
             $ctrl.initialSelection.forEach(function(id) {
                 mapIds[id].selected = true;
             });
 
-            $ctrl.selectedItems = $ctrl.list.filter(function(item) {
+            $ctrl.selectedItems = allItems.filter(function(item) {
                 return item.selected;
             });
         }
@@ -51,27 +53,28 @@ angular.module('one.common').component('zemTreeSelect', {
         function toggleDropdown() {
             if ($ctrl.dropdownVisible) {
                 $ctrl.dropdownVisible = false;
-                $ctrl.searchQuery = '';
             } else {
                 $ctrl.dropdownVisible = true;
             }
         }
 
         function onSearch(searchQuery) {
-            $ctrl.filteredList = zemTreeSelectService.filterList(
-                $ctrl.list,
-                searchQuery
+            $ctrl.visibleItems = zemTreeSelectService.getVisibleItemsMatchingQuery(
+                searchQuery,
+                allItems
             );
-            highlightItem($ctrl.filteredList[0]);
+            highlightItem($ctrl.visibleItems[0]);
         }
 
-        function toggleCollapse(category) {
-            category.isCollapsed = !category.isCollapsed;
-            $ctrl.filteredList = zemTreeSelectService.filterList($ctrl.list);
+        function toggleCollapse(item) {
+            $ctrl.visibleItems = zemTreeSelectService.getVisibleItemsAfterItemToggled(
+                item,
+                allItems
+            );
         }
 
         function toggleItemState(item) {
-            if (item.isLeaf || $ctrl.searchQuery) {
+            if (item.isLeaf) {
                 toggleSelection(item);
             } else {
                 toggleCollapse(item);
@@ -85,7 +88,7 @@ angular.module('one.common').component('zemTreeSelect', {
         }
 
         function updateSelection() {
-            $ctrl.selectedItems = $ctrl.list.filter(function(item) {
+            $ctrl.selectedItems = allItems.filter(function(item) {
                 return item.selected;
             });
             $ctrl.onUpdate({
@@ -143,7 +146,6 @@ angular.module('one.common').component('zemTreeSelect', {
         //
         var KEY_ENTER = 13;
         var KEY_ESC = 27;
-        var KEY_SPACE = 32;
         var KEY_LEFT_ARROW = 37;
         var KEY_UP_ARROW = 38;
         var KEY_RIGHT_ARROW = 39;
@@ -154,7 +156,6 @@ angular.module('one.common').component('zemTreeSelect', {
             KEY_LEFT_ARROW,
             KEY_RIGHT_ARROW,
             KEY_ENTER,
-            KEY_SPACE,
             KEY_ESC,
         ];
 
@@ -175,7 +176,7 @@ angular.module('one.common').component('zemTreeSelect', {
                 event.keyCode === KEY_RIGHT_ARROW
             )
                 handleCollapse(event);
-            if (event.keyCode === KEY_ENTER || event.keyCode === KEY_SPACE)
+            if (event.keyCode === KEY_ENTER)
                 toggleSelection($ctrl.highlightedItem);
             if (event.keyCode === KEY_ESC) toggleDropdown();
 
@@ -185,20 +186,18 @@ angular.module('one.common').component('zemTreeSelect', {
         }
 
         function handleBasicMovement(event) {
-            var lastIdx = $ctrl.filteredList.length - 1;
-            var idx = $ctrl.filteredList.indexOf($ctrl.highlightedItem);
+            var lastIdx = $ctrl.visibleItems.length - 1;
+            var idx = $ctrl.visibleItems.indexOf($ctrl.highlightedItem);
             if (event.keyCode === KEY_UP_ARROW)
                 idx = idx <= 0 ? lastIdx : --idx;
             if (event.keyCode === KEY_DOWN_ARROW)
                 idx = idx >= lastIdx ? 0 : ++idx;
 
-            $ctrl.highlightedItem = $ctrl.filteredList[idx];
+            $ctrl.highlightedItem = $ctrl.visibleItems[idx];
             scrollToItem($ctrl.highlightedItem);
         }
 
         function handleCollapse(event) {
-            if ($ctrl.searchQuery) return;
-
             if (event.keyCode === KEY_LEFT_ARROW) {
                 if (
                     $ctrl.highlightedItem.isCollapsed &&
@@ -229,7 +228,7 @@ angular.module('one.common').component('zemTreeSelect', {
             var $scrollContainer = $element.find('.scroll-container');
             var height = $scrollContainer.height();
 
-            var idx = $ctrl.filteredList.indexOf(item);
+            var idx = $ctrl.visibleItems.indexOf(item);
             var selectedPos = idx * $ctrl.ITEM_HEIGHT;
 
             var viewFrom = $scrollContainer.scrollTop();

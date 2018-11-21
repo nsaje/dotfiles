@@ -20,34 +20,21 @@
     </div>
     <div class="zem-tree-select-dropdown" ng-class="{ 'zem-tree-select-dropdown--active': $ctrl.dropdownVisible }" tabindex="1" >
         <ul class="zem-tree-select-dropdown__list scroll-container custom-scroller" vs-repeat vs-scroll-parent=".scroll-container" vs-size="{{$ctrl.ITEM_HEIGHT}}">
-            <li ng-repeat="item in $ctrl.filteredList"
+            <li ng-repeat="item in $ctrl.visibleItems"
                 class="zem-tree-select-dropdown-item"
                 ng-click="$ctrl.toggleItemState(item); $event.stopPropagation();"
                 ng-mouseover="$ctrl.highlightItem(item)"
                 ng-class="{
                     'zem-tree-select-dropdown-item--highlighted': item === $ctrl.highlightedItem,
-                    'zem-tree-select-dropdown-item--selected': item.selected,
-                    'zem-tree-select-dropdown-item--search-result': $ctrl.searchQuery
+                    'zem-tree-select-dropdown-item--selected': item.selected
                 }">
-                <div ng-if="$ctrl.searchQuery">
-                    <span class="zem-tree-select-dropdown-item__name"
-                          ng-bind-html="item.name | highlight: $ctrl.searchQuery"
-                    ></span>
-                    <span class="zem-tree-select-dropdown-item__details"> {{ $ctrl.getParentsInfo(item) }} </span>
-                    <label class="zem-tree-select-dropdown-item__checkbox">
-                        <input type="checkbox" class="input-checkbox" ng-model="item.selected"/>
-                        <span class="checkbox-text"></span>
-                    </label>
-                </div>
-
-                <div ng-if="!$ctrl.searchQuery"
-                     ng-style="{
+                <div ng-style="{
                         'margin-left': (item.level * 10 + (item.isLeaf ? 30 : 0))+'px',
                      }">
                     <span class="collapse-indicator" ng-show='!item.isLeaf'
                           ng-class="{'collapse-indicator--expanded': !item.isCollapsed}">
                     </span>
-                    <span class="zem-tree-select-dropdown-item__name" ng-bind-html="item.name"></span>
+                    <span class="zem-tree-select-dropdown-item__name" ng-bind-html="item.name | highlight: $ctrl.searchQuery"></span>
                     <label class="zem-tree-select-dropdown-item__checkbox"
                            ng-click="$ctrl.toggleSelection(item); $event.stopPropagation();"
                            ng-if="item.isSelectable">
