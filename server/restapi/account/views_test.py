@@ -1,6 +1,7 @@
 from django.urls import reverse
 
 import dash.models
+import utils.test_helper
 from restapi.common.views_base_test import RESTAPITest
 
 
@@ -14,6 +15,7 @@ class AccountsTest(RESTAPITest):
         whitelist_publisher_groups=[153],
         blacklist_publisher_groups=[154],
         currency=dash.constants.Currency.USD,
+        frequency_capping=None,
     ):
         representation = {
             "id": str(id),
@@ -23,6 +25,7 @@ class AccountsTest(RESTAPITest):
                 "publisherGroups": {"included": whitelist_publisher_groups, "excluded": blacklist_publisher_groups}
             },
             "currency": currency,
+            "frequencyCapping": frequency_capping,
         }
         return cls.normalize(representation)
 
@@ -36,6 +39,7 @@ class AccountsTest(RESTAPITest):
             whitelist_publisher_groups=settings_db.whitelist_publisher_groups,
             blacklist_publisher_groups=settings_db.blacklist_publisher_groups,
             currency=account_db.currency,
+            frequency_capping=settings_db.frequency_capping,
         )
         self.assertEqual(expected, account)
 
@@ -48,7 +52,11 @@ class AccountsTest(RESTAPITest):
 
     def test_accounts_post(self):
         new_account = self.account_repr(
-            name="mytest", agency_id=1, whitelist_publisher_groups=[153, 154], blacklist_publisher_groups=[]
+            name="mytest",
+            agency_id=1,
+            whitelist_publisher_groups=[153, 154],
+            blacklist_publisher_groups=[],
+            frequency_capping=33,
         )
         del new_account["id"]
         self._test_accounts_post(new_account)
@@ -85,6 +93,14 @@ class AccountsTest(RESTAPITest):
     def test_accounts_get(self):
         r = self.client.get(reverse("accounts_details", kwargs={"account_id": 186}))
         resp_json = self.assertResponseValid(r)
+        self.validate_against_db(resp_json["data"])
+
+    def test_account_get_permissionless(self):
+        utils.test_helper.remove_permissions(self.user, permissions=["can_set_frequency_capping"])
+        r = self.client.get(reverse("accounts_details", kwargs={"account_id": 186}))
+        resp_json = self.assertResponseValid(r)
+        self.assertFalse("frequencyCapping" in resp_json["data"])
+        resp_json["data"]["frequencyCapping"] = None
         self.validate_against_db(resp_json["data"])
 
     def test_accounts_put(self):

@@ -48,7 +48,12 @@ class CampaignTargetingSerializer(restapi.serializers.base.RESTAPIBaseSerializer
     publisher_groups = PublisherGroupsSerializer(source="*", required=False)
 
 
-class CampaignSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
+class CampaignSerializer(
+    restapi.serializers.serializers.PermissionedFieldsMixin, restapi.serializers.base.RESTAPIBaseSerializer
+):
+    class Meta:
+        permissioned_fields = {"frequency_capping": "zemauth.can_set_frequency_capping"}
+
     id = restapi.serializers.fields.IdField(read_only=True, source="campaign.id")
     account_id = restapi.serializers.fields.IdField(source="campaign.account_id")
     name = restapi.serializers.fields.PlainCharField(
@@ -63,6 +68,7 @@ class CampaignSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
     autopilot = rest_framework.serializers.BooleanField(required=False)
     tracking = CampaignTrackingSerializer(source="*", required=False)
     targeting = CampaignTargetingSerializer(source="*", required=False)
+    frequency_capping = rest_framework.serializers.IntegerField(allow_null=True, required=False)
 
     def validate_iab_category(self, value):
         if value != constants.IABCategory.IAB24 and "-" not in value:

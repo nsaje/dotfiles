@@ -13,7 +13,10 @@ class AccountTargetingSerializer(serializers.Serializer):
     publisher_groups = TargetingIncludeExcludeSerializer(source="*")
 
 
-class AccountSerializer(serializers.Serializer):
+class AccountSerializer(restapi.serializers.serializers.PermissionedFieldsMixin, serializers.Serializer):
+    class Meta:
+        permissioned_fields = {"frequency_capping": "zemauth.can_set_frequency_capping"}
+
     id = restapi.serializers.fields.IdField(read_only=True)
     agency_id = restapi.serializers.fields.IdField(required=False, allow_null=True)
     targeting = AccountTargetingSerializer(source="settings", required=False)
@@ -23,3 +26,4 @@ class AccountSerializer(serializers.Serializer):
     currency = restapi.serializers.fields.DashConstantField(
         constants.Currency, default=constants.Currency.USD, required=False
     )
+    frequency_capping = serializers.IntegerField(allow_null=True, required=False, source="settings.frequency_capping")

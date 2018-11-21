@@ -125,6 +125,7 @@ class AdGroupSerializer(
         permissioned_fields = {
             "click_capping_daily_ad_group_max_clicks": "zemauth.can_set_click_capping",
             "click_capping_daily_click_budget": "zemauth.can_set_click_capping",
+            "frequency_capping": "zemauth.can_set_frequency_capping",
         }
 
     def to_representation(self, instance):
@@ -188,3 +189,4 @@ class AdGroupSerializer(
     dayparting = AdGroupDaypartingSerializer(required=False, allow_null=True)
     targeting = AdGroupTargetingSerializer(source="*", required=False)
     autopilot = AdGroupAutopilotSerializer(source="*", required=False)
+    frequency_capping = rest_framework.serializers.IntegerField(allow_null=True, required=False)

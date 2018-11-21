@@ -3,6 +3,7 @@ from django.urls import reverse
 
 import dash.models
 import restapi.serializers
+import utils.test_helper
 from automation import autopilot
 from dash import constants
 from restapi.common.views_base_test import RESTAPITest
@@ -31,6 +32,7 @@ class CampaignsTest(RESTAPITest):
         target_devices=[constants.AdTargetDevice.DESKTOP],
         target_placements=[constants.Placement.APP],
         target_os=[{"name": constants.OperatingSystem.ANDROID}, {"name": constants.OperatingSystem.LINUX}],
+        frequency_capping=None,
     ):
         representation = {
             "id": str(id),
@@ -55,6 +57,7 @@ class CampaignsTest(RESTAPITest):
                 "os": restapi.serializers.targeting.OSsSerializer(target_os).data,
                 "publisherGroups": {"included": whitelist_publisher_groups, "excluded": blacklist_publisher_groups},
             },
+            "frequencyCapping": frequency_capping,
         }
         return cls.normalize(representation)
 
@@ -80,6 +83,7 @@ class CampaignsTest(RESTAPITest):
             target_devices=settings_db.target_devices,
             target_placements=settings_db.target_placements,
             target_os=settings_db.target_os,
+            frequency_capping=settings_db.frequency_capping,
         )
         self.assertEqual(expected, campaign)
 
@@ -89,7 +93,7 @@ class CampaignsTest(RESTAPITest):
         self.validate_against_db(resp_json["data"])
 
     def test_campaigns_put(self):
-        test_campaign = self.campaign_repr(id=608, account_id=186, name="My test campaign!")
+        test_campaign = self.campaign_repr(id=608, account_id=186, name="My test campaign!", frequency_capping=33)
         r = self.client.put(
             reverse("campaigns_details", kwargs={"campaign_id": 608}), data=test_campaign, format="json"
         )
@@ -135,6 +139,15 @@ class CampaignsTest(RESTAPITest):
         for item in resp_json["data"]:
             self.validate_against_db(item)
 
+    def test_campaigns_list_permissionless(self):
+        utils.test_helper.remove_permissions(self.user, permissions=["can_set_frequency_capping"])
+        r = self.client.get(reverse("campaigns_list"))
+        resp_json = self.assertResponseValid(r, data_type=list)
+        for item in resp_json["data"]:
+            self.assertFalse("frequencyCapping" in item)
+            item["frequencyCapping"] = None
+            self.validate_against_db(item)
+
     def test_campaigns_list_account_id(self):
         account_id = 186
         r = self.client.get(reverse("campaigns_list"), data={"accountId": account_id})
@@ -164,6 +177,7 @@ class CampaignsTest(RESTAPITest):
             type=constants.CampaignType.VIDEO,
             whitelist_publisher_groups=[153, 154],
             blacklist_publisher_groups=[],
+            frequency_capping=33,
         )
         del new_campaign["id"]
         r = self.client.post(reverse("campaigns_list"), data=new_campaign, format="json")
@@ -175,7 +189,7 @@ class CampaignsTest(RESTAPITest):
         mock_send.assert_not_called()
 
     def test_campaigns_post_no_type(self):
-        new_campaign = self.campaign_repr(account_id=186, name="All About Testing")
+        new_campaign = self.campaign_repr(account_id=186, name="All About Testing", frequency_capping=33)
         del new_campaign["id"]
         del new_campaign["type"]
         r = self.client.post(reverse("campaigns_list"), data=new_campaign, format="json")

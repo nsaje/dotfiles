@@ -20,6 +20,7 @@ class AdGroupsTest(RESTAPITest):
     expected_none_date_output = None
     expected_none_decimal_output = ""
     expected_none_click_output = None
+    expected_none_frequency_capping_output = None
 
     def adgroup_repr(
         cls,
@@ -56,6 +57,7 @@ class AdGroupsTest(RESTAPITest):
         delivery_type=constants.AdGroupDeliveryType.STANDARD,
         click_capping_daily_ad_group_max_clicks=120,
         click_capping_daily_click_budget="12.0000",
+        frequency_capping=None,
     ):
         final_target_regions = {"countries": [], "regions": [], "dma": [], "cities": [], "postalCodes": []}
         final_target_regions.update(target_regions)
@@ -108,6 +110,7 @@ class AdGroupsTest(RESTAPITest):
             "clickCappingDailyClickBudget": click_capping_daily_click_budget
             if click_capping_daily_click_budget
             else cls.expected_none_click_output,
+            "frequencyCapping": frequency_capping if frequency_capping else cls.expected_none_frequency_capping_output,
         }
         return cls.normalize(representation)
 
@@ -163,6 +166,7 @@ class AdGroupsTest(RESTAPITest):
             target_browsers=settings_db.target_browsers,
             click_capping_daily_ad_group_max_clicks=settings_db.click_capping_daily_ad_group_max_clicks,
             click_capping_daily_click_budget=settings_db.click_capping_daily_click_budget,
+            frequency_capping=settings_db.frequency_capping,
         )
         self.assertEqual(expected, adgroup)
 
@@ -312,6 +316,13 @@ class AdGroupsTest(RESTAPITest):
         adgroup_db = dash.models.AdGroup.objects.get(pk=2040)
         self.assertEqual(adgroup_db.name, adgroup_db.get_current_settings().ad_group_name)
 
+    def test_adgroups_put_frequency_capping(self):
+        adgroup = self.adgroup_repr(frequency_capping=33)
+        r = self.client.put(reverse("adgroups_details", kwargs={"ad_group_id": 2040}), data=adgroup, format="json")
+        resp_json = self.assertResponseValid(r)
+        self.validate_against_db(resp_json["data"])
+        self.assertEqual(resp_json["data"]["frequencyCapping"], 33)
+
     def test_adgroups_put_empty(self):
         put_data = {}
         settings_count = dash.models.AdGroupSettings.objects.filter(ad_group_id=2040).count()
@@ -451,13 +462,17 @@ class AdGroupsTest(RESTAPITest):
         self.assertResponseError(r, "ValidationError")
 
     def test_adgroups_get_permissioned(self):
-        utils.test_helper.remove_permissions(self.user, permissions=["can_set_click_capping"])
+        utils.test_helper.remove_permissions(
+            self.user, permissions=["can_set_click_capping", "can_set_frequency_capping"]
+        )
         r = self.client.get(reverse("adgroups_details", kwargs={"ad_group_id": 2040}))
         resp_json = self.assertResponseValid(r)
         self.assertFalse("clickCappingDailyAdGroupMaxClicks" in resp_json["data"])
         self.assertFalse("clickCappingDailyClickBudget" in resp_json["data"])
+        self.assertFalse("frequencyCapping" in resp_json["data"])
         resp_json["data"]["clickCappingDailyAdGroupMaxClicks"] = self.expected_none_click_output
         resp_json["data"]["clickCappingDailyClickBudget"] = self.expected_none_click_output
+        resp_json["data"]["frequencyCapping"] = self.expected_none_frequency_capping_output
         self.validate_against_db(resp_json["data"])
 
     def test_adgroups_put_blank_strings(self):
@@ -473,6 +488,7 @@ class AdGroupsTest(RESTAPITest):
             click_capping_daily_ad_group_max_clicks="",
             click_capping_daily_click_budget="",
             dayparting={"timezone": ""},
+            frequency_capping="",
         )
         r = self.client.put(reverse("adgroups_details", kwargs={"ad_group_id": 2040}), data=adgroup, format="json")
         resp_json = self.assertResponseValid(r)
@@ -488,6 +504,7 @@ class AdGroupsTest(RESTAPITest):
         self.assertEqual(resp_json["data"]["clickCappingDailyAdGroupMaxClicks"], self.expected_none_click_output)
         self.assertEqual(resp_json["data"]["clickCappingDailyClickBudget"], self.expected_none_click_output)
         self.assertEqual(resp_json["data"]["dayparting"]["timezone"], "")
+        self.assertEqual(resp_json["data"]["frequencyCapping"], self.expected_none_frequency_capping_output)
 
     def test_adgroups_put_blank_bid(self):
         ad_group = dash.models.AdGroup.objects.get(id=2040)
@@ -533,6 +550,7 @@ class AdGroupsTest(RESTAPITest):
             click_capping_daily_click_budget=None,
             dayparting=None,
             target_regions={},
+            frequency_capping=None,
         )
         r = self.client.put(reverse("adgroups_details", kwargs={"ad_group_id": 2040}), data=adgroup, format="json")
         resp_json = self.assertResponseValid(r)
@@ -552,6 +570,7 @@ class AdGroupsTest(RESTAPITest):
             resp_json["data"]["targeting"]["geo"]["included"],
             {"countries": [], "regions": [], "dma": [], "cities": [], "postalCodes": []},
         )
+        self.assertEqual(resp_json["data"]["frequencyCapping"], self.expected_none_frequency_capping_output)
 
     def test_adgroups_publisher_groups(self):
         adgroup = self.adgroup_repr(whitelist_publisher_groups=[153], blacklist_publisher_groups=[154])
