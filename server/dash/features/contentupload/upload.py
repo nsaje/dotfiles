@@ -352,7 +352,7 @@ def _get_cleaned_urls(candidate):
 
 
 def _process_image_url_update(candidate, image_url, callback_data):
-    if "originUrl" not in callback_data["image"] or callback_data["image"]["originUrl"] != image_url:
+    if "originUrl" not in callback_data.get("image") or callback_data.get("image", {}).get("originUrl") != image_url:
         # prevent issues with concurrent jobs
         return
 
