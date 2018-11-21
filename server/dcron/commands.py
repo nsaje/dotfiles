@@ -65,6 +65,7 @@ class DCronCommand(management.base.BaseCommand):
                     if dcron_job.alert != constants.Alert.FAILURE:
                         models.DCronJob.objects.filter(command_name=command_name).update(alert=constants.Alert.FAILURE)
                         alerts.handle_pagerduty_alert(dcron_job, constants.Alert.FAILURE)
+                        alerts.handle_slack_alert(dcron_job, constants.Alert.FAILURE)
                 else:
                     logger.error("DCronCommand %s does not exist - could not set Failure alert.", command_name)
 

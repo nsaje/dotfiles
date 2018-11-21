@@ -137,7 +137,8 @@ class DCronCommandTestCase(TransactionTestCase):
     @mock.patch("influx.incr")
     @mock.patch("influx.timing")
     @mock.patch("utils.pagerduty_helper._post_event")
-    def test_failure(self, mock_post_event, mock_influx_timing, mock_influx_incr):
+    @mock.patch("utils.slack.publish")
+    def test_failure(self, mock_slack_publish, mock_post_event, mock_influx_timing, mock_influx_incr):
         class DummyCommand(commands.DCronCommand):
             def _handle(self, *args, **options):
                 raise RuntimeError("TEST!")
@@ -174,6 +175,10 @@ class DCronCommandTestCase(TransactionTestCase):
                     details=None,
                 )
             ]
+        )
+
+        mock_slack_publish.assert_has_calls(
+            [mock.call("", **alerts._create_slack_publish_params(dcron_job, constants.Alert.FAILURE))]
         )
 
     @mock.patch("sys.argv", ["manage.py", DUMMY_COMMAND])

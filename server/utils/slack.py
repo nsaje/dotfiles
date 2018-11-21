@@ -47,10 +47,12 @@ def account_url(account, tab="campaigns"):
     return link(url, account.name)
 
 
-def publish(text, channel=None, msg_type=MESSAGE_TYPE_INFO, username=DEFAULT_USERNAME):
+def publish(text, channel=None, msg_type=MESSAGE_TYPE_INFO, username=DEFAULT_USERNAME, attachments=None):
     data = {"text": text, "username": username}
     if msg_type:
         data["icon_emoji"] = msg_type
     if channel:
         data["channel"] = channel
+    if attachments:
+        data["attachments"] = attachments
     _post_to_slack(data)

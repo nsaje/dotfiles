@@ -333,8 +333,9 @@ class CheckAlertsTestCase(TestCase):
 )
 class HandleAlertsTestCase(TestCase):
     @mock.patch("utils.pagerduty_helper._post_event")
+    @mock.patch("utils.slack.publish")
     @mock.patch("utils.dates_helper.utc_now", return_value=_get_rounded_now(minute=17, second=3))
-    def test_many_dcron_jobs(self, mock_now, mock_post_event):
+    def test_many_dcron_jobs(self, mock_now, mock_slack_publish, mock_post_event):
         # Executed in time.
         job_kwargs_dict = {
             "executed_dt": dates_helper.utc_now() - datetime.timedelta(minutes=15),
@@ -445,4 +446,151 @@ class HandleAlertsTestCase(TestCase):
                     details=None,
                 ),
             ]
+        )
+
+        mock_slack_publish.assert_has_calls(
+            [
+                mock.call(
+                    "",
+                    **alerts._create_slack_publish_params(
+                        models.DCronJob.objects.get(command_name="command_02"), constants.Alert.OK
+                    )
+                ),
+                mock.call(
+                    "",
+                    **alerts._create_slack_publish_params(
+                        models.DCronJob.objects.get(command_name="command_03"), constants.Alert.EXECUTION
+                    )
+                ),
+                mock.call(
+                    "",
+                    **alerts._create_slack_publish_params(
+                        models.DCronJob.objects.get(command_name="command_05"), constants.Alert.DURATION
+                    )
+                ),
+                mock.call(
+                    "",
+                    **alerts._create_slack_publish_params(
+                        models.DCronJob.objects.get(command_name="command_07"), constants.Alert.DURATION
+                    )
+                ),
+            ]
+        )
+
+
+class SlackAlertTestCase(TestCase):
+    def test_create_slack_publish_params_ok_low(self):
+        dcron_job = _create_job("some_command", {}, {})
+
+        params = alerts._create_slack_publish_params(dcron_job, constants.Alert.OK)
+
+        self.assertDictEqual(
+            params,
+            {
+                "channel": alerts.SLACK_CHANNEL_LOW_SEVERITY,
+                "msg_type": None,
+                "username": alerts.SLACK_USERNAME,
+                "attachments": [
+                    {
+                        "title": "[OK] Cron Command Alert",
+                        "title_link": settings.BASE_URL + "/admin/dcron/dcronjob/%s/change/" % dcron_job.pk,
+                        "color": "good",
+                        "fallback": alerts._alert_message("some_command", constants.Alert.OK),
+                        "text": "The problem with a command run by cron has been resolved",
+                        "fields": [
+                            {
+                                "title": dcron_job.command_name,
+                                "value": constants.Alert.get_description(constants.Alert.OK),
+                            }
+                        ],
+                    }
+                ],
+            },
+        )
+
+    def test_create_slack_publish_params_warning_low(self):
+        dcron_job = _create_job("some_command", {}, {})
+
+        params = alerts._create_slack_publish_params(dcron_job, constants.Alert.DURATION)
+
+        self.assertDictEqual(
+            params,
+            {
+                "channel": alerts.SLACK_CHANNEL_LOW_SEVERITY,
+                "msg_type": None,
+                "username": alerts.SLACK_USERNAME,
+                "attachments": [
+                    {
+                        "title": "[Alerting] Cron Command Alert",
+                        "title_link": settings.BASE_URL + "/admin/dcron/dcronjob/%s/change/" % dcron_job.pk,
+                        "color": "warning",
+                        "fallback": alerts._alert_message("some_command", constants.Alert.DURATION),
+                        "text": "There is a problem with a command run by cron",
+                        "fields": [
+                            {
+                                "title": dcron_job.command_name,
+                                "value": constants.Alert.get_description(constants.Alert.DURATION),
+                            }
+                        ],
+                    }
+                ],
+            },
+        )
+
+    def test_create_slack_publish_params_ok_high(self):
+        dcron_job = _create_job("some_command", {}, {"severity": constants.Severity.HIGH})
+
+        params = alerts._create_slack_publish_params(dcron_job, constants.Alert.OK)
+
+        self.assertDictEqual(
+            params,
+            {
+                "channel": alerts.SLACK_CHANNEL_HIGH_SEVERITY,
+                "msg_type": None,
+                "username": alerts.SLACK_USERNAME,
+                "attachments": [
+                    {
+                        "title": "[OK] Cron Command Alert",
+                        "title_link": settings.BASE_URL + "/admin/dcron/dcronjob/%s/change/" % dcron_job.pk,
+                        "color": "good",
+                        "fallback": alerts._alert_message("some_command", constants.Alert.OK),
+                        "text": "The problem with a command run by cron has been resolved",
+                        "fields": [
+                            {
+                                "title": dcron_job.command_name,
+                                "value": constants.Alert.get_description(constants.Alert.OK),
+                            }
+                        ],
+                    }
+                ],
+            },
+        )
+
+    def test_create_slack_publish_params_warning_high(self):
+        dcron_job = _create_job("some_command", {}, {"severity": constants.Severity.HIGH})
+
+        params = alerts._create_slack_publish_params(dcron_job, constants.Alert.DURATION)
+
+        self.assertDictEqual(
+            params,
+            {
+                "channel": alerts.SLACK_CHANNEL_HIGH_SEVERITY,
+                "msg_type": None,
+                "username": alerts.SLACK_USERNAME,
+                "attachments": [
+                    {
+                        "title": "[Alerting] Cron Command Alert",
+                        "title_link": settings.BASE_URL + "/admin/dcron/dcronjob/%s/change/" % dcron_job.pk,
+                        "color": "danger",
+                        "fallback": alerts._alert_message("some_command", constants.Alert.DURATION),
+                        "text": "There is a problem with a command run by cron",
+                        "fields": [
+                            {
+                                "title": dcron_job.command_name,
+                                "value": constants.Alert.get_description(constants.Alert.DURATION),
+                            }
+                        ],
+                    }
+                ],
+            },
         )

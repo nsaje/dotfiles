@@ -1,16 +1,27 @@
 import datetime
 import logging
 import typing
+import urllib.parse
 
 from django.conf import settings
+from django.urls import reverse
 
 import croniter
 from dcron import constants
 from dcron import models
 from utils import dates_helper
 from utils import pagerduty_helper
+from utils import slack
 
 logger = logging.getLogger(__name__)
+
+SLACK_USERNAME = "Dcron Alert"
+SLACK_CHANNEL_LOW_SEVERITY = "z1-team-alerts-aux"
+SLACK_CHANNEL_HIGH_SEVERITY = "z1-team-alerts"
+SLACK_SEVERITY_OK = "good"
+SLACK_SEVERITY_WARNING = "warning"
+SLACK_SEVERITY_DANGER = "danger"
+
 
 AlertId = typing.NewType("AlertId", int)
 
@@ -33,6 +44,7 @@ def handle_alerts() -> None:
         if dcron_job.alert != alert:
             models.DCronJob.objects.filter(id=dcron_job.id).update(alert=alert)
             handle_pagerduty_alert(dcron_job, alert)
+            handle_slack_alert(dcron_job, alert)
 
 
 def handle_pagerduty_alert(dcron_job: models.DCronJob, alert: AlertId) -> None:
@@ -44,7 +56,7 @@ def handle_pagerduty_alert(dcron_job: models.DCronJob, alert: AlertId) -> None:
 
     description = _alert_message(dcron_job.command_name, alert)
     if hasattr(dcron_job, "dcronjobsettings"):
-        event_severity = _convert_severity(dcron_job.dcronjobsettings.severity)
+        event_severity = _to_pagerduty_severity(dcron_job.dcronjobsettings.severity)
     else:
         event_severity = pagerduty_helper.PagerDutyEventSeverity.WARNING
 
@@ -58,16 +70,78 @@ def handle_pagerduty_alert(dcron_job: models.DCronJob, alert: AlertId) -> None:
         )
 
 
+def handle_slack_alert(dcron_job: models.DCronJob, alert: AlertId) -> None:
+    """
+    Handle slack alert - send a message based on alert status.
+    :param dcron_job: cron management command name
+    :param alert: alert id from dcron.constants.Alert
+    """
+
+    slack_kwargs = _create_slack_publish_params(dcron_job, alert)
+    slack.publish("", **slack_kwargs)
+
+
 def _alert_message(command_name: str, alert: int) -> str:
-    alert_type = constants.Alert.get_text(alert)
-    return "Cron command alert: {} - {}".format(command_name, alert_type)
+    alert_type = constants.Alert.get_description(alert)
+    return "Cron job alert: {} - {}".format(command_name, alert_type)
 
 
-def _convert_severity(severity: int) -> str:
+def _to_pagerduty_severity(severity: int) -> str:
     if severity is constants.Severity.HIGH:
         return pagerduty_helper.PagerDutyEventSeverity.CRITICAL
 
     return pagerduty_helper.PagerDutyEventSeverity.WARNING
+
+
+def _to_slack_severity(severity: int) -> str:
+    if severity is constants.Severity.HIGH:
+        return SLACK_SEVERITY_DANGER
+
+    return SLACK_SEVERITY_WARNING
+
+
+def _create_slack_publish_params(dcron_job: models.DCronJob, alert: AlertId) -> dict:
+    summary = "There is a problem with a command run by cron"
+    fallback_message = _alert_message(dcron_job.command_name, alert)
+
+    # determine severity
+    if hasattr(dcron_job, "dcronjobsettings"):
+        slack_severity = _to_slack_severity(dcron_job.dcronjobsettings.severity)
+    else:
+        slack_severity = SLACK_SEVERITY_WARNING
+
+    # determine channel name based on severity
+    if slack_severity == SLACK_SEVERITY_DANGER:
+        channel_name = SLACK_CHANNEL_HIGH_SEVERITY
+    else:
+        channel_name = SLACK_CHANNEL_LOW_SEVERITY
+
+    if alert is constants.Alert.OK:
+        # in case of OK, override severity and summary
+        slack_severity = SLACK_SEVERITY_OK
+        summary = "The problem with a command run by cron has been resolved"
+
+    return {
+        "channel": channel_name,
+        "msg_type": None,
+        "username": SLACK_USERNAME,
+        "attachments": [
+            {
+                "title": "[%s] Cron Command Alert" % ("OK" if alert is constants.Alert.OK else "Alerting"),
+                "title_link": urllib.parse.urljoin(
+                    settings.BASE_URL,
+                    reverse(
+                        "admin:{}_{}_change".format(dcron_job._meta.app_label, dcron_job._meta.model_name),
+                        args=(dcron_job.pk,),
+                    ),
+                ),
+                "color": slack_severity,
+                "fallback": fallback_message,
+                "text": summary,
+                "fields": [{"title": dcron_job.command_name, "value": constants.Alert.get_description(alert)}],
+            }
+        ],
+    }
 
 
 def _check_alert(dcron_job: models.DCronJob, current_date_time: typing.Optional[datetime.datetime] = None) -> AlertId:
