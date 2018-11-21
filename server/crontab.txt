@@ -1,5 +1,5 @@
 # -- This is plain crontab formatted file. Please note you should be careful with syntax
-# -- We removed cron.yaml and moved to more straightforward solution.
+# -- This configuration is used by dcron app for job monitoring and alerting (see dcron/README.md)
 # -- Sorted by running sort -nbk 2 crontab.txt. (second column: hours)`
 * * * * *        /home/ubuntu/docker-manage-py.sh check_dcron_jobs
 */1 * * * *      /home/ubuntu/docker-manage-py.sh handle_auto_save_batches

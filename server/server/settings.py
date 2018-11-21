@@ -13,6 +13,8 @@ from datetime import timedelta
 
 from secretcrypt import Secret
 
+from dcron import constants as dcron_constants
+
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 import os
 
@@ -371,12 +373,34 @@ RESTAPI_REPORTS_URL = "https://%s.s3.amazonaws.com" % RESTAPI_REPORTS_BUCKET
 
 DCRON = {
     "base_command": "/home/ubuntu/docker-manage-py.sh",
+    # Do not trigger alerts if the next scheduled iteration is due to run in this time margin.
     "check_margin": timedelta(seconds=5),
-    "severities": {},
-    "default_warning_wait": 60,
-    "warning_waits": {},
-    "default_max_duration": 3600,
-    "max_durations": {},
+    # Job severity overrides.
+    "severities": {
+        "run_autopilot": dcron_constants.Severity.HIGH,
+        "refresh_etl": dcron_constants.Severity.HIGH,
+        "campaignstop_main": dcron_constants.Severity.HIGH,
+        "campaignstop_simple": dcron_constants.Severity.HIGH,
+        "campaignstop_handle_updates": dcron_constants.Severity.HIGH,
+        "campaignstop_selection": dcron_constants.Severity.HIGH,
+        "campaignstop_midnight_refresh": dcron_constants.Severity.HIGH,
+        "campaignstop_midnight": dcron_constants.Severity.HIGH,
+        "campaignstop_monitor": dcron_constants.Severity.HIGH,
+    },
+    # How long to wait before warning alert if job execution is late.
+    "default_warning_wait": 300,  # 5 min
+    # Job warning wait overrides.
+    "warning_waits": {
+        "monitor_adgroup_propagation": 3900,  # 1h 5 min
+        "campaignstop_simple": 1500,  # 25 min
+        "campaignstop_handle_updates": 600,  # 10 min
+        "refresh_etl": 600,  # 10 min
+    },
+    # Maximum duration of a job before alerting.
+    "default_max_duration": 3600,  # 1h
+    # Job maximum duration overrides.
+    "max_durations": {"monitor_adgroup_propagation": 23400, "refresh_etl": 9000},  # 6 h 30 min, 2 h 30 min
+    # If the same job is run within this interval, the second should exit before doing anything.
     "default_min_separation": 30,
     "min_separations": {},
 }

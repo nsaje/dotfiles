@@ -177,12 +177,16 @@ class DCronModelsTestCase(TestCase):
         schedule,
         enabled=True,
         severity=constants.Severity.LOW,
-        warning_wait=settings.DCRON["default_warning_wait"],
-        max_duration=settings.DCRON["default_max_duration"],
-        min_separation=settings.DCRON["default_min_separation"],
+        warning_wait=None,
+        max_duration=None,
+        min_separation=None,
         manual_override=False,
         extra_params="",
     ):
+        warning_wait = warning_wait or settings.DCRON["default_warning_wait"]
+        max_duration = max_duration or settings.DCRON["default_max_duration"]
+        min_separation = min_separation or settings.DCRON["default_min_separation"]
+
         full_command = "%s %s%s" % (settings.DCRON["base_command"], command_name, extra_params)
 
         self.assertEqual(job_settings.job.command_name, command_name)
