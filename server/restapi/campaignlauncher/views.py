@@ -2,7 +2,6 @@ from django.db import transaction
 from rest_framework import permissions
 
 import automation.autopilot
-import core.features.bcm.exceptions
 import core.features.multicurrency
 import core.models.settings
 import dash.features.campaignlauncher
@@ -85,40 +84,31 @@ class CampaignLauncherViewSet(RESTAPIBaseViewSet):
 
         upload_batch = restapi.access.get_upload_batch(request.user, serializer.validated_data["upload_batch"])
 
-        try:
-            campaign = dash.features.campaignlauncher.launch(
-                request=request,
-                account=account,
-                name=serializer.validated_data["campaign_name"],
-                iab_category=serializer.validated_data["iab_category"],
-                language=serializer.validated_data["language"],
-                type=serializer.validated_data["type"],
-                budget_amount=serializer.validated_data["budget_amount"],
-                max_cpc=serializer.validated_data["max_cpc"],
-                daily_budget=serializer.validated_data["daily_budget"],
-                upload_batch=upload_batch,
-                goal_type=serializer.validated_data["campaign_goal"]["type"],
-                goal_value=serializer.validated_data["campaign_goal"]["value"],
-                target_regions=serializer.validated_data["target_regions"],
-                exclusion_target_regions=serializer.validated_data["exclusion_target_regions"],
-                target_devices=serializer.validated_data["target_devices"],
-                target_placements=serializer.validated_data["target_placements"],
-                target_os=serializer.validated_data["target_os"],
-                conversion_goal_type=serializer.validated_data["campaign_goal"].get("conversion_goal", {}).get("type"),
-                conversion_goal_goal_id=serializer.validated_data["campaign_goal"]
-                .get("conversion_goal", {})
-                .get("goal_id"),
-                conversion_goal_window=serializer.validated_data["campaign_goal"]
-                .get("conversion_goal", {})
-                .get("conversion_window"),
-            )
-
-        except utils.exc.MultipleValidationError as err:
-            errors = {}
-            for e in err.errors:
-                if isinstance(e, core.features.bcm.exceptions.BudgetAmountExceededCreditAmount):
-                    errors.setdefault("budget_amount", []).append(str(e))
-
-            raise utils.exc.ValidationError(errors=errors)
+        campaign = dash.features.campaignlauncher.launch(
+            request=request,
+            account=account,
+            name=serializer.validated_data["campaign_name"],
+            iab_category=serializer.validated_data["iab_category"],
+            language=serializer.validated_data["language"],
+            type=serializer.validated_data["type"],
+            budget_amount=serializer.validated_data["budget_amount"],
+            max_cpc=serializer.validated_data["max_cpc"],
+            daily_budget=serializer.validated_data["daily_budget"],
+            upload_batch=upload_batch,
+            goal_type=serializer.validated_data["campaign_goal"]["type"],
+            goal_value=serializer.validated_data["campaign_goal"]["value"],
+            target_regions=serializer.validated_data["target_regions"],
+            exclusion_target_regions=serializer.validated_data["exclusion_target_regions"],
+            target_devices=serializer.validated_data["target_devices"],
+            target_placements=serializer.validated_data["target_placements"],
+            target_os=serializer.validated_data["target_os"],
+            conversion_goal_type=serializer.validated_data["campaign_goal"].get("conversion_goal", {}).get("type"),
+            conversion_goal_goal_id=serializer.validated_data["campaign_goal"]
+            .get("conversion_goal", {})
+            .get("goal_id"),
+            conversion_goal_window=serializer.validated_data["campaign_goal"]
+            .get("conversion_goal", {})
+            .get("conversion_window"),
+        )
 
         return self.response_ok({"campaignId": campaign.id})

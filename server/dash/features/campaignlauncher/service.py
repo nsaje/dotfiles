@@ -1,5 +1,6 @@
 import rest_framework
 
+import core.features.bcm.exceptions
 import dash.constants
 import utils.dates_helper
 import utils.exc
@@ -67,6 +68,7 @@ def launch(
 
     start_date = utils.dates_helper.local_today()
     end_date = credit_to_use.end_date
+
     try:
         models.BudgetLineItem.objects.create(
             request=request,
@@ -77,6 +79,14 @@ def launch(
             amount=budget_amount,
             comment="Created via campaign launcher.",
         )
+
+    except utils.exc.MultipleValidationError as err:
+        errors = {}
+        for e in err.errors:
+            if isinstance(e, core.features.bcm.exceptions.BudgetAmountExceededCreditAmount):
+                errors.setdefault("budget_amount", []).append(str(e))
+        raise rest_framework.serializers.ValidationError(errors)
+
     except Exception as e:
         raise rest_framework.serializers.ValidationError({"budget_amount": _extract_error_list(e)})
 
