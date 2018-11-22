@@ -15,3 +15,7 @@ class RetargetingNotSupported(ValidationError):
 
 class VideoNotSupported(ValidationError):
     pass
+
+
+class DisplayNotSupported(ValidationError):
+    pass

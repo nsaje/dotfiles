@@ -80,6 +80,7 @@ class AdGroupSourceViewSet(RESTAPIBaseViewSet):
                 core.models.ad_group_source.exceptions.RetargetingNotSupported,
                 core.models.ad_group_source.exceptions.SourceAlreadyExists,
                 core.models.ad_group_source.exceptions.VideoNotSupported,
+                core.models.ad_group_source.exceptions.DisplayNotSupported,
             ) as err:
                 raise utils.exc.ValidationError(str(err))
 

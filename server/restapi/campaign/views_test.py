@@ -273,3 +273,12 @@ class CampaignsTest(RESTAPITest):
             reverse("campaigns_details", kwargs={"campaign_id": 608}), data=test_campaign, format="json"
         )
         self.assertResponseError(r, "ValidationError")
+
+    def test_type_validation(self):
+        campaign = dash.models.Campaign.objects.get(id=608)
+        magic_mixer.blend(dash.models.AdGroup, campaign=campaign)
+        test_campaign = self.campaign_repr(id=608, account_id=186, type=constants.CampaignType.DISPLAY)
+        r = self.client.put(
+            reverse("campaigns_details", kwargs={"campaign_id": 608}), data=test_campaign, format="json"
+        )
+        self.assertResponseError(r, "ValidationError")

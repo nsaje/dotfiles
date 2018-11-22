@@ -16,8 +16,10 @@ class ContentAdCandidate(core.common.FootprintModel):
     title = models.TextField(null=True, blank=True, default="")
     image_url = models.TextField(null=True, blank=True, default=None)
     image_crop = models.TextField(null=True, blank=True, default=constants.ImageCrop.CENTER)
+    type = models.IntegerField(choices=constants.AdType.get_choices(), default=constants.AdType.CONTENT)
 
     video_asset = models.ForeignKey("VideoAsset", blank=True, null=True, on_delete=models.PROTECT)
+    ad_tag = models.TextField(null=True, blank=True)
 
     display_url = models.TextField(null=True, blank=True, default="")
     brand_name = models.TextField(null=True, blank=True, default="")
@@ -41,6 +43,7 @@ class ContentAdCandidate(core.common.FootprintModel):
     image_width = models.PositiveIntegerField(null=True)
     image_height = models.PositiveIntegerField(null=True)
     image_hash = models.CharField(max_length=128, null=True)
+    image_file_size = models.PositiveIntegerField(null=True)
 
     original_content_ad = models.ForeignKey("ContentAd", null=True, on_delete=models.CASCADE)
 
@@ -54,13 +57,16 @@ class ContentAdCandidate(core.common.FootprintModel):
             "label": self.label,
             "url": self.url,
             "title": self.title,
+            "type": self.type,
             "image_url": self.image_url,
             "image_id": self.image_id,
             "image_hash": self.image_hash,
             "image_width": self.image_width,
             "image_height": self.image_height,
+            "image_file_size": self.image_file_size,
             "image_crop": self.image_crop,
             "video_asset_id": str(self.video_asset.id) if self.video_asset else None,
+            "ad_tag": self.ad_tag,
             "display_url": self.display_url,
             "description": self.description,
             "brand_name": self.brand_name,

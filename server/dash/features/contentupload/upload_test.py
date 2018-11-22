@@ -41,6 +41,46 @@ invalid_candidate = {
     "secondary_tracker_url": "http://example.com/px2.png",
 }
 
+valid_display_candidate = {
+    "label": "test",
+    "type": constants.AdType.IMAGE,
+    "url": "http://zemanta.com/test-content-ad",
+    "title": "test content ad",
+    "image_url": "http://zemanta.com/test-image.jpg",
+    "primary_tracker_url": "https://example.com/px1.png",
+    "secondary_tracker_url": "https://example.com/px2.png",
+}
+
+invalid_display_candidate = {
+    "label": "repeat" * 61,
+    "type": constants.AdType.IMAGE,
+    "url": "ftp://zemanta.com/test-content-ad",
+    "image_url": "file://zemanta.com/test-image.jpg",
+    "primary_tracker_url": "http://example.com/px1.png",
+    "secondary_tracker_url": "http://example.com/px2.png",
+}
+
+valid_display_ad_tag_candidate = {
+    "label": "test",
+    "title": "Ad tag test",
+    "type": constants.AdType.AD_TAG,
+    "url": "http://zemanta.com/test-content-ad",
+    "ad_tag": "<body></body>",
+    "image_width": 300,
+    "image_height": 250,
+    "primary_tracker_url": "https://example.com/px1.png",
+    "secondary_tracker_url": "https://example.com/px2.png",
+}
+
+invalid_display_ad_tag_candidate = {
+    "label": "repeat" * 61,
+    "type": constants.AdType.AD_TAG,
+    "url": "ftp://zemanta.com/test-content-ad",
+    "image_height": 100,
+    "primary_tracker_url": "http://example.com/px1.png",
+    "secondary_tracker_url": "http://example.com/px2.png",
+}
+
 
 class InsertCandidatesTestCase(TestCase):
     fixtures = ["test_upload.yaml"]
@@ -78,6 +118,7 @@ class InsertCandidatesTestCase(TestCase):
         self.assertEqual(valid_candidate["primary_tracker_url"], candidate.primary_tracker_url)
         self.assertEqual(valid_candidate["secondary_tracker_url"], candidate.secondary_tracker_url)
         self.assertEqual(valid_candidate["additional_data"], candidate.additional_data)
+        self.assertEqual(None, candidate.ad_tag)
 
     @patch("utils.lambda_helper.invoke_lambda", Mock())
     def test_empty_candidate(self):
@@ -111,6 +152,7 @@ class InsertCandidatesTestCase(TestCase):
         self.assertEqual("Read more", candidate.call_to_action)
         self.assertEqual("", candidate.primary_tracker_url)
         self.assertEqual("", candidate.secondary_tracker_url)
+        self.assertEqual(None, candidate.ad_tag)
 
     @patch("utils.lambda_helper.invoke_lambda", Mock())
     def test_automatic_fields(self):
@@ -149,6 +191,77 @@ class InsertCandidatesTestCase(TestCase):
         self.assertEqual("Read more", candidate.call_to_action)
         self.assertEqual("", candidate.primary_tracker_url)
         self.assertEqual("", candidate.secondary_tracker_url)
+        self.assertEqual(None, candidate.ad_tag)
+
+    @patch("utils.lambda_helper.invoke_lambda", Mock())
+    def test_insert_display_candidates(self):
+        data = [valid_display_candidate]
+
+        account = models.Account.objects.get(id=1)
+        ad_group = models.AdGroup.objects.get(id=1)
+        batch_name = "batch1"
+        filename = "test_upload.csv"
+        self.assertEqual(0, models.UploadBatch.objects.filter(ad_group=ad_group).count())
+        self.assertEqual(0, models.ContentAdCandidate.objects.filter(ad_group=ad_group).count())
+
+        contentupload.upload.insert_candidates(None, account, data, ad_group, batch_name, filename)
+        self.assertEqual(1, models.UploadBatch.objects.filter(ad_group=ad_group).count())
+        self.assertEqual(1, models.ContentAdCandidate.objects.filter(ad_group=ad_group).count())
+
+        batch = models.UploadBatch.objects.filter(ad_group=ad_group).get()
+        self.assertEqual(batch_name, batch.name)
+        self.assertEqual(ad_group, batch.ad_group)
+        self.assertEqual(filename, batch.original_filename)
+
+        candidate = models.ContentAdCandidate.objects.filter(ad_group=ad_group).get()
+        self.assertEqual(valid_display_candidate["label"], candidate.label)
+        self.assertEqual(valid_display_candidate["url"], candidate.url)
+        self.assertEqual(valid_display_candidate["title"], candidate.title)
+        self.assertEqual(valid_display_candidate["image_url"], candidate.image_url)
+        self.assertEqual("center", candidate.image_crop)
+        self.assertEqual("", candidate.display_url)
+        self.assertEqual("", candidate.brand_name)
+        self.assertEqual("", candidate.description)
+        self.assertEqual("Read more", candidate.call_to_action)
+        self.assertEqual(valid_display_candidate["primary_tracker_url"], candidate.primary_tracker_url)
+        self.assertEqual(valid_display_candidate["secondary_tracker_url"], candidate.secondary_tracker_url)
+        self.assertEqual(None, candidate.additional_data)
+        self.assertEqual(None, candidate.ad_tag)
+
+    @patch("utils.lambda_helper.invoke_lambda", Mock())
+    def test_insert_display_ad_tag_candidates(self):
+        data = [valid_display_ad_tag_candidate]
+
+        account = models.Account.objects.get(id=1)
+        ad_group = models.AdGroup.objects.get(id=1)
+        batch_name = "batch1"
+        filename = "test_upload.csv"
+        self.assertEqual(0, models.UploadBatch.objects.filter(ad_group=ad_group).count())
+        self.assertEqual(0, models.ContentAdCandidate.objects.filter(ad_group=ad_group).count())
+
+        contentupload.upload.insert_candidates(None, account, data, ad_group, batch_name, filename)
+        self.assertEqual(1, models.UploadBatch.objects.filter(ad_group=ad_group).count())
+        self.assertEqual(1, models.ContentAdCandidate.objects.filter(ad_group=ad_group).count())
+
+        batch = models.UploadBatch.objects.filter(ad_group=ad_group).get()
+        self.assertEqual(batch_name, batch.name)
+        self.assertEqual(ad_group, batch.ad_group)
+        self.assertEqual(filename, batch.original_filename)
+
+        candidate = models.ContentAdCandidate.objects.filter(ad_group=ad_group).get()
+        self.assertEqual(valid_display_ad_tag_candidate["label"], candidate.label)
+        self.assertEqual(valid_display_ad_tag_candidate["url"], candidate.url)
+        self.assertEqual(valid_display_ad_tag_candidate["title"], candidate.title)
+        self.assertEqual("", candidate.image_url)
+        self.assertEqual("center", candidate.image_crop)
+        self.assertEqual("", candidate.display_url)
+        self.assertEqual("", candidate.brand_name)
+        self.assertEqual("", candidate.description)
+        self.assertEqual("Read more", candidate.call_to_action)
+        self.assertEqual(valid_display_ad_tag_candidate["primary_tracker_url"], candidate.primary_tracker_url)
+        self.assertEqual(valid_display_ad_tag_candidate["secondary_tracker_url"], candidate.secondary_tracker_url)
+        self.assertEqual(None, candidate.additional_data)
+        self.assertEqual(valid_display_ad_tag_candidate["ad_tag"], candidate.ad_tag)
 
 
 class InsertEditCandidatesTestCase(TestCase):
@@ -184,6 +297,43 @@ class InsertEditCandidatesTestCase(TestCase):
         self.assertEqual(content_ads[0].call_to_action, candidate.call_to_action)
         self.assertEqual(content_ads[0].tracker_urls[0], candidate.primary_tracker_url)
         self.assertEqual(content_ads[0].tracker_urls[1], candidate.secondary_tracker_url)
+        self.assertEqual(None, candidate.image_id)
+        self.assertEqual(None, candidate.image_width)
+        self.assertEqual(None, candidate.image_height)
+        self.assertEqual(None, candidate.image_hash)
+        self.assertEqual(content_ads[0], candidate.original_content_ad)
+
+    @patch("utils.lambda_helper.invoke_lambda", Mock())
+    def test_insert_edit_display_candidates(self):
+        ad_group = models.AdGroup.objects.get(id=8)
+        content_ads = ad_group.contentad_set.all()
+        in_progress_before = ad_group.uploadbatch_set.filter(status=constants.UploadBatchStatus.IN_PROGRESS).count()
+
+        contentupload.upload.insert_edit_candidates(None, content_ads, ad_group)
+        in_progress_after = ad_group.uploadbatch_set.filter(status=constants.UploadBatchStatus.IN_PROGRESS).count()
+        self.assertEqual(in_progress_before + 1, in_progress_after)
+
+        batch = ad_group.uploadbatch_set.get(status=constants.UploadBatchStatus.IN_PROGRESS)
+        self.assertEqual(constants.UploadBatchType.EDIT, batch.type)
+        self.assertEqual(1, batch.contentadcandidate_set.count())
+
+        candidate = batch.contentadcandidate_set.get()
+        self.assertEqual(content_ads[0].ad_group_id, candidate.ad_group_id)
+        self.assertNotEqual(content_ads[0].batch_id, candidate.batch_id)
+        self.assertEqual(constants.AsyncUploadJobStatus.WAITING_RESPONSE, candidate.image_status)
+        self.assertEqual(constants.AsyncUploadJobStatus.WAITING_RESPONSE, candidate.url_status)
+        self.assertEqual(content_ads[0].label, candidate.label)
+        self.assertEqual(content_ads[0].title, candidate.title)
+        self.assertEqual(content_ads[0].url, candidate.url)
+        self.assertEqual(content_ads[0].get_image_url(), candidate.image_url)
+        self.assertEqual(content_ads[0].image_crop, candidate.image_crop)
+        self.assertEqual(content_ads[0].display_url, candidate.display_url)
+        self.assertEqual(content_ads[0].brand_name, candidate.brand_name)
+        self.assertEqual(content_ads[0].description, candidate.description)
+        self.assertEqual(content_ads[0].call_to_action, candidate.call_to_action)
+        self.assertEqual(content_ads[0].tracker_urls[0], candidate.primary_tracker_url)
+        self.assertEqual(content_ads[0].tracker_urls[1], candidate.secondary_tracker_url)
+        self.assertEqual(content_ads[0].ad_tag, candidate.ad_tag)
         self.assertEqual(None, candidate.image_id)
         self.assertEqual(None, candidate.image_width)
         self.assertEqual(None, candidate.image_height)
@@ -234,6 +384,103 @@ class PersistBatchTestCase(TestCase):
         self.assertEqual(candidate.image_width, content_ad.image_width)
         self.assertEqual(candidate.image_height, content_ad.image_height)
         self.assertEqual(candidate.image_hash, content_ad.image_hash)
+        self.assertEqual(candidate.ad_tag, content_ad.ad_tag)
+
+        batch.refresh_from_db()
+        self.assertEqual(constants.UploadBatchStatus.DONE, batch.status)
+        self.assertTrue(mock_insert_redirects.called)
+
+    @patch("utils.redirector_helper.insert_redirects")
+    @patch.object(utils.s3helpers.S3Helper, "put")
+    def test_valid_display_ad_candidates(self, mock_s3helper_put, mock_insert_redirects):
+        def redirector_response(content_ads, clickthrough_resolve):
+            return {
+                str(content_ad.id): {"redirect": {"url": content_ad.url}, "redirectid": "123456"}
+                for content_ad in content_ads
+            }
+
+        mock_insert_redirects.side_effect = redirector_response
+
+        batch = models.UploadBatch.objects.get(id=11)
+        self.assertEqual(1, batch.contentadcandidate_set.count())
+        self.assertEqual(0, batch.contentad_set.count())
+
+        candidate = batch.contentadcandidate_set.get()
+        candidate.ad_group.campaign.type = constants.CampaignType.DISPLAY
+        candidate.ad_group.campaign.save()
+
+        contentupload.upload.persist_batch(batch)
+        self.assertEqual(0, batch.contentadcandidate_set.count())
+        self.assertEqual(1, batch.contentad_set.count())
+        self.assertFalse(mock_s3helper_put.called)
+
+        content_ad = batch.contentad_set.get()
+        self.assertEqual(1, len(content_ad.contentadsource_set.all()))
+
+        self.assertEqual(candidate.label, content_ad.label)
+        self.assertEqual(candidate.url, content_ad.url)
+        self.assertEqual("123456", content_ad.redirect_id)
+        self.assertEqual(candidate.title, content_ad.title)
+        self.assertEqual(candidate.display_url, content_ad.display_url)
+        self.assertEqual(candidate.description, content_ad.description)
+        self.assertEqual(candidate.brand_name, content_ad.brand_name)
+        self.assertEqual(candidate.call_to_action, content_ad.call_to_action)
+        self.assertEqual([candidate.primary_tracker_url, candidate.secondary_tracker_url], content_ad.tracker_urls)
+        self.assertEqual(candidate.image_id, content_ad.image_id)
+        self.assertEqual(candidate.image_width, content_ad.image_width)
+        self.assertEqual(candidate.image_height, content_ad.image_height)
+        self.assertEqual(candidate.image_hash, content_ad.image_hash)
+        self.assertEqual(candidate.image_file_size, content_ad.image_file_size)
+        self.assertEqual(candidate.ad_tag, content_ad.ad_tag)
+        self.assertFalse(candidate.ad_tag)
+
+        batch.refresh_from_db()
+        self.assertEqual(constants.UploadBatchStatus.DONE, batch.status)
+        self.assertTrue(mock_insert_redirects.called)
+
+    @patch("utils.redirector_helper.insert_redirects")
+    @patch.object(utils.s3helpers.S3Helper, "put")
+    def test_valid_display_ad_tag_candidates(self, mock_s3helper_put, mock_insert_redirects):
+        def redirector_response(content_ads, clickthrough_resolve):
+            return {
+                str(content_ad.id): {"redirect": {"url": content_ad.url}, "redirectid": "123456"}
+                for content_ad in content_ads
+            }
+
+        mock_insert_redirects.side_effect = redirector_response
+
+        batch = models.UploadBatch.objects.get(id=10)
+        self.assertEqual(1, batch.contentadcandidate_set.count())
+        self.assertEqual(0, batch.contentad_set.count())
+
+        candidate = batch.contentadcandidate_set.get()
+        candidate.ad_group.campaign.type = constants.CampaignType.DISPLAY
+        candidate.ad_group.campaign.save()
+
+        contentupload.upload.persist_batch(batch)
+        self.assertEqual(0, batch.contentadcandidate_set.count())
+        self.assertEqual(1, batch.contentad_set.count())
+        self.assertFalse(mock_s3helper_put.called)
+
+        content_ad = batch.contentad_set.get()
+        self.assertEqual(1, len(content_ad.contentadsource_set.all()))
+
+        self.assertEqual(candidate.label, content_ad.label)
+        self.assertEqual(candidate.url, content_ad.url)
+        self.assertEqual("123456", content_ad.redirect_id)
+        self.assertEqual(candidate.title, content_ad.title)
+        self.assertEqual(candidate.display_url, content_ad.display_url)
+        self.assertEqual(candidate.description, content_ad.description)
+        self.assertEqual(candidate.brand_name, content_ad.brand_name)
+        self.assertEqual(candidate.call_to_action, content_ad.call_to_action)
+        self.assertEqual([candidate.primary_tracker_url, candidate.secondary_tracker_url], content_ad.tracker_urls)
+        self.assertEqual(candidate.image_id, content_ad.image_id)
+        self.assertEqual(candidate.image_width, content_ad.image_width)
+        self.assertEqual(candidate.image_height, content_ad.image_height)
+        self.assertEqual(candidate.image_hash, content_ad.image_hash)
+        self.assertEqual(candidate.image_file_size, content_ad.image_file_size)
+        self.assertEqual(candidate.ad_tag, content_ad.ad_tag)
+        self.assertTrue(candidate.ad_tag)
 
         batch.refresh_from_db()
         self.assertEqual(constants.UploadBatchStatus.DONE, batch.status)
@@ -438,6 +685,7 @@ class AddCandidateTestCase(TestCase):
                 "label": "",
                 "url": "",
                 "title": "",
+                "type": constants.AdType.CONTENT,
                 "image_url": None,
                 "image_crop": constants.ImageCrop.CENTER,
                 "display_url": "",
@@ -450,10 +698,12 @@ class AddCandidateTestCase(TestCase):
                 "image_height": None,
                 "image_width": None,
                 "image_id": None,
+                "image_file_size": None,
                 "image_status": constants.AsyncUploadJobStatus.PENDING_START,
                 "url_status": constants.AsyncUploadJobStatus.PENDING_START,
                 "hosted_image_url": None,
                 "video_asset_id": None,
+                "ad_tag": None,
                 "additional_data": None,
             },
             candidate.to_dict(),
@@ -478,6 +728,7 @@ class AddCandidateTestCase(TestCase):
                 "label": "",
                 "url": "",
                 "title": "",
+                "type": constants.AdType.CONTENT,
                 "image_url": None,
                 "image_crop": "abc",
                 "display_url": "example.com",
@@ -490,10 +741,12 @@ class AddCandidateTestCase(TestCase):
                 "image_height": None,
                 "image_width": None,
                 "image_id": None,
+                "image_file_size": None,
                 "image_status": constants.AsyncUploadJobStatus.PENDING_START,
                 "url_status": constants.AsyncUploadJobStatus.PENDING_START,
                 "hosted_image_url": None,
                 "video_asset_id": None,
+                "ad_tag": None,
                 "additional_data": None,
             },
             candidate.to_dict(),
@@ -520,6 +773,7 @@ class GetCandidatesWithErrorsTestCase(TestCase):
                     "label": "test",
                     "url": "http://zemanta.com/test-content-ad",
                     "title": "test content ad",
+                    "type": constants.AdType.CONTENT,
                     "image_url": "http://zemanta.com/test-image.jpg",
                     "image_crop": "faces",
                     "display_url": "zemanta.com",
@@ -537,8 +791,10 @@ class GetCandidatesWithErrorsTestCase(TestCase):
                     "image_height": None,
                     "url_status": constants.AsyncUploadJobStatus.WAITING_RESPONSE,
                     "image_status": constants.AsyncUploadJobStatus.WAITING_RESPONSE,
+                    "image_file_size": None,
                     "id": candidates[0].id,
                     "video_asset_id": None,
+                    "ad_tag": None,
                     "additional_data": {"a": 1},
                 }
             ],
@@ -567,6 +823,7 @@ class GetCandidatesWithErrorsTestCase(TestCase):
                     "description": "",
                     "call_to_action": "Read more",
                     "title": "",
+                    "type": constants.AdType.CONTENT,
                     "url": "ftp://zemanta.com/test-content-ad",
                     "errors": {
                         "image_crop": ["Choose a valid image crop"],
@@ -591,9 +848,210 @@ class GetCandidatesWithErrorsTestCase(TestCase):
                     "image_url": "file://zemanta.com/test-image.jpg",
                     "url_status": constants.AsyncUploadJobStatus.WAITING_RESPONSE,
                     "image_status": constants.AsyncUploadJobStatus.WAITING_RESPONSE,
+                    "image_file_size": None,
                     "secondary_tracker_url": "http://example.com/px2.png",
                     "id": candidates[0].id,
                     "video_asset_id": None,
+                    "ad_tag": None,
+                    "additional_data": None,
+                }
+            ],
+            result,
+        )
+
+    @patch("utils.lambda_helper.invoke_lambda", Mock())
+    def test_valid_display_candidate(self):
+        data = [valid_display_candidate]
+        # prepare candidate
+        account = models.Account.objects.get(id=1)
+        campaign = magic_mixer.blend(models.Campaign, type=constants.CampaignType.DISPLAY, account=account)
+        ad_group = magic_mixer.blend(models.AdGroup, campaign=campaign)
+        batch, candidates = contentupload.upload.insert_candidates(
+            None, account, data, ad_group, "batch1", "test_upload.csv"
+        )
+
+        result = contentupload.upload.get_candidates_with_errors(candidates)
+        self.assertEqual(
+            [
+                {
+                    "label": "test",
+                    "url": "http://zemanta.com/test-content-ad",
+                    "title": "test content ad",
+                    "type": constants.AdType.IMAGE,
+                    "image_url": "http://zemanta.com/test-image.jpg",
+                    "image_crop": "center",
+                    "display_url": "",
+                    "brand_name": "",
+                    "description": "",
+                    "call_to_action": "Read more",
+                    "primary_tracker_url": "https://example.com/px1.png",
+                    "secondary_tracker_url": "https://example.com/px2.png",
+                    "hosted_image_url": None,
+                    "image_hash": None,
+                    "errors": {"__all__": ["Content ad still processing"]},
+                    "image_width": None,
+                    "image_id": None,
+                    "image_height": None,
+                    "url_status": constants.AsyncUploadJobStatus.WAITING_RESPONSE,
+                    "image_status": constants.AsyncUploadJobStatus.WAITING_RESPONSE,
+                    "image_file_size": None,
+                    "id": candidates[0].id,
+                    "video_asset_id": None,
+                    "ad_tag": None,
+                    "additional_data": None,
+                }
+            ],
+            result,
+        )
+
+    @patch("utils.lambda_helper.invoke_lambda", Mock())
+    def test_invalid_display_candidate(self):
+        data = [invalid_display_candidate]
+
+        # prepare candidate
+        account = models.Account.objects.get(id=1)
+        campaign = magic_mixer.blend(models.Campaign, type=constants.CampaignType.DISPLAY, account=account)
+        ad_group = magic_mixer.blend(models.AdGroup, campaign=campaign)
+        batch, candidates = contentupload.upload.insert_candidates(
+            None, account, data, ad_group, "batch1", "test_upload.csv"
+        )
+
+        result = contentupload.upload.get_candidates_with_errors(candidates)
+        self.assertEqual(
+            [
+                {
+                    "hosted_image_url": None,
+                    "image_crop": "center",
+                    "primary_tracker_url": "http://example.com/px1.png",
+                    "image_hash": None,
+                    "description": "",
+                    "call_to_action": "Read more",
+                    "title": "",
+                    "type": constants.AdType.IMAGE,
+                    "url": "ftp://zemanta.com/test-content-ad",
+                    "errors": {
+                        "__all__": ["Content ad still processing"],
+                        "title": ["Missing title"],
+                        "url": ["Invalid URL"],
+                        "label": ["Label too long (max 256 characters)"],
+                        "image_url": ["Invalid image URL"],
+                        "primary_tracker_url": ["Impression tracker URLs have to be HTTPS"],
+                        "secondary_tracker_url": ["Impression tracker URLs have to be HTTPS"],
+                    },
+                    "display_url": "",
+                    "brand_name": "",
+                    "image_width": None,
+                    "label": "repeat" * 61,
+                    "image_id": None,
+                    "image_height": None,
+                    "image_url": "file://zemanta.com/test-image.jpg",
+                    "url_status": constants.AsyncUploadJobStatus.WAITING_RESPONSE,
+                    "image_status": constants.AsyncUploadJobStatus.WAITING_RESPONSE,
+                    "image_file_size": None,
+                    "secondary_tracker_url": "http://example.com/px2.png",
+                    "id": candidates[0].id,
+                    "video_asset_id": None,
+                    "ad_tag": None,
+                    "additional_data": None,
+                }
+            ],
+            result,
+        )
+
+    @patch("utils.lambda_helper.invoke_lambda", Mock())
+    def test_valid_display_ad_tag_candidate(self):
+        data = [valid_display_ad_tag_candidate]
+        # prepare candidate
+        account = models.Account.objects.get(id=1)
+        campaign = magic_mixer.blend(models.Campaign, type=constants.CampaignType.DISPLAY, account=account)
+        ad_group = magic_mixer.blend(models.AdGroup, campaign=campaign)
+        batch, candidates = contentupload.upload.insert_candidates(
+            None, account, data, ad_group, "batch1", "test_upload.csv"
+        )
+
+        result = contentupload.upload.get_candidates_with_errors(candidates)
+        self.assertEqual(
+            [
+                {
+                    "label": "test",
+                    "url": "http://zemanta.com/test-content-ad",
+                    "title": "Ad tag test",
+                    "type": constants.AdType.AD_TAG,
+                    "image_url": "",
+                    "image_crop": "center",
+                    "display_url": "",
+                    "brand_name": "",
+                    "description": "",
+                    "call_to_action": "Read more",
+                    "primary_tracker_url": "https://example.com/px1.png",
+                    "secondary_tracker_url": "https://example.com/px2.png",
+                    "hosted_image_url": None,
+                    "image_hash": None,
+                    "errors": {"__all__": ["Content ad still processing"]},
+                    "image_width": 300,
+                    "image_id": None,
+                    "image_height": 250,
+                    "url_status": constants.AsyncUploadJobStatus.WAITING_RESPONSE,
+                    "image_status": constants.AsyncUploadJobStatus.PENDING_START,
+                    "image_file_size": None,
+                    "id": candidates[0].id,
+                    "video_asset_id": None,
+                    "ad_tag": "<body></body>",
+                    "additional_data": None,
+                }
+            ],
+            result,
+        )
+
+    @patch("utils.lambda_helper.invoke_lambda", Mock())
+    def test_invalid_display_ad_tag_candidate(self):
+        data = [invalid_display_ad_tag_candidate]
+
+        # prepare candidate
+        account = models.Account.objects.get(id=1)
+        campaign = magic_mixer.blend(models.Campaign, type=constants.CampaignType.DISPLAY, account=account)
+        ad_group = magic_mixer.blend(models.AdGroup, campaign=campaign)
+        batch, candidates = contentupload.upload.insert_candidates(
+            None, account, data, ad_group, "batch1", "test_upload.csv"
+        )
+
+        result = contentupload.upload.get_candidates_with_errors(candidates)
+        self.assertEqual(
+            [
+                {
+                    "hosted_image_url": None,
+                    "image_crop": "center",
+                    "primary_tracker_url": "http://example.com/px1.png",
+                    "image_hash": None,
+                    "description": "",
+                    "call_to_action": "Read more",
+                    "title": "",
+                    "type": constants.AdType.AD_TAG,
+                    "url": "ftp://zemanta.com/test-content-ad",
+                    "errors": {
+                        "__all__": ["Content ad still processing"],
+                        "title": ["Missing title"],
+                        "url": ["Invalid URL"],
+                        "label": ["Label too long (max 256 characters)"],
+                        "ad_tag": ["Missing ad tag"],
+                        "image_width": ["Missing ad width"],
+                        "primary_tracker_url": ["Impression tracker URLs have to be HTTPS"],
+                        "secondary_tracker_url": ["Impression tracker URLs have to be HTTPS"],
+                    },
+                    "display_url": "",
+                    "brand_name": "",
+                    "image_width": None,
+                    "label": "repeat" * 61,
+                    "image_id": None,
+                    "image_height": 100,
+                    "image_url": "",
+                    "url_status": constants.AsyncUploadJobStatus.WAITING_RESPONSE,
+                    "image_status": constants.AsyncUploadJobStatus.PENDING_START,
+                    "image_file_size": None,
+                    "secondary_tracker_url": "http://example.com/px2.png",
+                    "id": candidates[0].id,
+                    "video_asset_id": None,
+                    "ad_tag": None,
                     "additional_data": None,
                 }
             ],
@@ -858,7 +1316,6 @@ class UploadTest(TestCase):
         self.assertEqual(lambda_data1["imageUrl"], "http://test.url.com/image1.png")
         self.assertEqual(lambda_data1["pageUrl"], "http://test.url.com/page1")
         self.assertEqual(lambda_data1["namespace"], "name/space")
-        self.assertTrue(lambda_data1["batchID"])
         self.assertTrue(lambda_data1["candidateID"])
 
         self.assertEqual(lambda_name2, "content-upload")
@@ -866,7 +1323,6 @@ class UploadTest(TestCase):
         self.assertEqual(lambda_data2["imageUrl"], "http://test.url.com/image2.png")
         self.assertEqual(lambda_data2["pageUrl"], "http://test.url.com/page2")
         self.assertEqual(lambda_data2["namespace"], "name/space")
-        self.assertTrue(lambda_data2["batchID"])
         self.assertTrue(lambda_data2["candidateID"])
 
     def test_process_callback(self, *mocks):
@@ -900,6 +1356,7 @@ class UploadTest(TestCase):
                 "image": {
                     "valid": True,
                     "width": 1500,
+                    "file_size": 120000,
                     "hash": "0000000000000000",
                     "id": "demo/demo-123/srv/some-batch/31eb9a632e3547039169d1b650155e14",
                     "height": 245,
@@ -911,6 +1368,41 @@ class UploadTest(TestCase):
         candidate = models.ContentAdCandidate.objects.get(pk=candidates[0].pk)
         self.assertEqual(candidate.url_status, constants.AsyncUploadJobStatus.OK)
         self.assertEqual(candidate.image_status, constants.AsyncUploadJobStatus.OK)
+
+    def test_process_ad_tag_callback(self, *mocks):
+        account = models.Account.objects.get(id=1)
+        ad_group = models.AdGroup.objects.get(pk=1)
+        _, candidates = contentupload.upload.insert_candidates(
+            None,
+            account,
+            [
+                {
+                    "type": constants.AdType.AD_TAG,
+                    "url": "http://www.zemanta.com/insights/2016/5/23/fighting-the-ad-fraud-one-impression-at-a-time",
+                }
+            ],
+            ad_group,
+            "Test batch",
+            "test_upload.csv",
+        )
+        candidates[0].image_status = constants.AsyncUploadJobStatus.WAITING_RESPONSE
+        candidates[0].url_status = constants.AsyncUploadJobStatus.WAITING_RESPONSE
+        candidates[0].save()
+
+        contentupload.upload.process_callback(
+            {
+                "id": candidates[0].pk,
+                "url": {
+                    "originUrl": "http://www.zemanta.com/insights/2016/5/23/fighting-the-ad-fraud-one-impression-at-a-time",
+                    "valid": True,
+                    "targetUrl": "http://www.zemanta.com/insights/2016/5/23/fighting-the-ad-fraud-one-impression-at-a-time",
+                },
+            }
+        )
+
+        candidate = models.ContentAdCandidate.objects.get(pk=candidates[0].pk)
+        self.assertEqual(candidate.url_status, constants.AsyncUploadJobStatus.OK)
+        self.assertEqual(candidate.image_status, constants.AsyncUploadJobStatus.WAITING_RESPONSE)
 
     def test_process_callback_url_pending_start(self, *mocks):
         account = models.Account.objects.get(id=1)
@@ -938,6 +1430,7 @@ class UploadTest(TestCase):
                 "image": {
                     "valid": True,
                     "width": 1500,
+                    "file_size": 120000,
                     "hash": "0000000000000000",
                     "id": "demo/demo-123/srv/some-batch/31eb9a632e3547039169d1b650155e14",
                     "height": 245,

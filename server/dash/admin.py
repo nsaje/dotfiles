@@ -631,7 +631,7 @@ class SourceAdmin(admin.ModelAdmin):
         "modified_dt",
     )
     readonly_fields = ("id", "created_dt", "modified_dt", "deprecated", "released", "source_actions")
-    list_filter = ("maintenance", "deprecated", "released", "supports_video")
+    list_filter = ("maintenance", "deprecated", "released", "supports_video", "supports_display")
 
     def get_urls(self):
         urls = super().get_urls()

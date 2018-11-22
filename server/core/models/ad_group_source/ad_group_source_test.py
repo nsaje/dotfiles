@@ -67,6 +67,13 @@ class AdGroupSourceCreate(TestCase):
         with self.assertRaises(utils.exc.ValidationError):
             core.models.AdGroupSource.objects.create(self.request, self.ad_group, self.default_source_settings.source)
 
+    def test_create_on_display_campaign(self, mock_k1):
+        self.ad_group.campaign.type = constants.CampaignType.DISPLAY
+        self.ad_group.campaign.save()
+
+        with self.assertRaises(utils.exc.ValidationError):
+            core.models.AdGroupSource.objects.create(self.request, self.ad_group, self.default_source_settings.source)
+
     @patch("automation.autopilot.recalculate_budgets_ad_group")
     def test_create_ad_review_only_already_exists(self, mock_autopilot, mock_k1):
         ad_group_source = magic_mixer.blend(
@@ -146,6 +153,35 @@ class AdGroupSourceCreate(TestCase):
 
     def test_video_campaign_bulk_create_on_content_sources(self, mock_k1):
         self.ad_group.campaign.type = constants.CampaignType.VIDEO
+        self.ad_group.campaign.save()
+        ad_group_sources = core.models.AdGroupSource.objects.bulk_create_on_allowed_sources(
+            self.request, self.ad_group, write_history=False
+        )
+        self.assertCountEqual(ad_group_sources, [])
+        self.assertFalse(mock_k1.called)
+
+    def test_bulk_create_on_display_sources(self, mock_k1):
+        self.default_source_settings.source.supports_display = True
+        self.default_source_settings.source.save()
+        ad_group_sources = core.models.AdGroupSource.objects.bulk_create_on_allowed_sources(
+            self.request, self.ad_group, write_history=False
+        )
+        self.assertEqual([x.source for x in ad_group_sources], [self.default_source_settings.source])
+        self.assertTrue(mock_k1.called)
+
+    def test_display_campaign_bulk_create_on_display_sources(self, mock_k1):
+        self.default_source_settings.source.supports_display = True
+        self.default_source_settings.source.save()
+        self.ad_group.campaign.type = constants.CampaignType.DISPLAY
+        self.ad_group.campaign.save()
+        ad_group_sources = core.models.AdGroupSource.objects.bulk_create_on_allowed_sources(
+            self.request, self.ad_group, write_history=False
+        )
+        self.assertEqual([x.source for x in ad_group_sources], [self.default_source_settings.source])
+        self.assertTrue(mock_k1.called)
+
+    def test_display_campaign_bulk_create_on_content_sources(self, mock_k1):
+        self.ad_group.campaign.type = constants.CampaignType.DISPLAY
         self.ad_group.campaign.save()
         ad_group_sources = core.models.AdGroupSource.objects.bulk_create_on_allowed_sources(
             self.request, self.ad_group, write_history=False

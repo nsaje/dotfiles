@@ -114,6 +114,22 @@ class ContentAdSourceState(ConstantBase):
     _VALUES = {ACTIVE: "Enabled", INACTIVE: "Paused"}
 
 
+class AdType(ConstantBase):
+    CONTENT = 1
+    VIDEO = 2
+    IMAGE = 3
+    AD_TAG = 4
+
+    _VALUES = {CONTENT: "Content ad", VIDEO: "Video ad", IMAGE: "Image display ad", AD_TAG: "Display ad tag"}
+
+
+class DisplayAdSize(ConstantBase):
+    INLINE_RECTANGLE = (300, 250)  # width, height
+    MOBILE_LEADERBOARD = (320, 50)
+
+    _VALUES = {INLINE_RECTANGLE: "Inline rectangle", MOBILE_LEADERBOARD: "Mobile leaderboard"}
+
+
 class PublisherStatus(ConstantBase):
     ENABLED = 1
     BLACKLISTED = 2

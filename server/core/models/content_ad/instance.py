@@ -7,6 +7,7 @@ import utils.redirector_helper
 
 VALID_UPDATE_FIELDS = set(
     [
+        "type",
         "url",
         "brand_name",
         "display_url",
@@ -16,6 +17,9 @@ VALID_UPDATE_FIELDS = set(
         "tracker_urls",
         "call_to_action",
         "additional_data",
+        "ad_tag",
+        "image_width",
+        "image_height",
     ]
 )
 

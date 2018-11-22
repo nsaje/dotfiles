@@ -84,6 +84,15 @@ class AdGroupSourceManager(core.common.QuerySetManager):
                 "{} media source can not be added because it does not support video.".format(source.name)
             )
 
+        if (
+            not skip_validation
+            and ad_group.campaign.type == constants.CampaignType.DISPLAY
+            and not source.supports_display
+        ):
+            raise exceptions.DisplayNotSupported(
+                "{} media source can not be added because it does not support display ads.".format(source.name)
+            )
+
         if not ad_group_source:
             ad_group_source = self._create(ad_group, source, ad_review_only=ad_review_only)
             ad_group_source.set_initial_settings(request, ad_group, skip_notification=skip_notification, **updates)
@@ -129,6 +138,8 @@ class AdGroupSourceManager(core.common.QuerySetManager):
                 source.maintenance
                 or ad_group.campaign.type == constants.CampaignType.VIDEO
                 and not source.supports_video
+                or ad_group.campaign.type == constants.CampaignType.DISPLAY
+                and not source.supports_display
             ):
                 continue
 

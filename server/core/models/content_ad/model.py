@@ -27,6 +27,10 @@ class ContentAdManager(models.Manager):
             ad_group=batch.ad_group,
             batch=batch,
             amplify_review=batch.ad_group.amplify_review and settings.AMPLIFY_REVIEW,
+            type={
+                constants.CampaignType.VIDEO: constants.AdType.VIDEO,
+                constants.CampaignType.DISPLAY: constants.AdType.IMAGE,
+            }.get(batch.ad_group.campaign.type, constants.AdType.CONTENT),
         )
 
         for field in kwargs:
@@ -108,6 +112,9 @@ class ContentAd(models.Model, prodops_mixin.ProdopsMixin, instance.ContentAdInst
     brand_name = models.CharField(max_length=25, blank=True, default="")
     description = models.CharField(max_length=150, blank=True, default="")
     call_to_action = models.CharField(max_length=25, blank=True, default="")
+    type = models.IntegerField(
+        blank=True, null=True, choices=constants.AdType.get_choices(), default=constants.AdType.CONTENT
+    )  # TODO: Display: set to NOT NULL after deploy! make custom migration to set types!
 
     ad_group = models.ForeignKey("AdGroup", on_delete=models.PROTECT)
     batch = models.ForeignKey("UploadBatch", on_delete=models.PROTECT)
@@ -117,10 +124,12 @@ class ContentAd(models.Model, prodops_mixin.ProdopsMixin, instance.ContentAdInst
     image_width = models.PositiveIntegerField(null=True)
     image_height = models.PositiveIntegerField(null=True)
     image_hash = models.CharField(max_length=128, null=True)
+    image_file_size = models.PositiveIntegerField(null=True)
     crop_areas = models.CharField(max_length=128, null=True)
     image_crop = models.CharField(max_length=25, default=constants.ImageCrop.CENTER)
 
     video_asset = models.ForeignKey("VideoAsset", blank=True, null=True, on_delete=models.PROTECT)
+    ad_tag = models.TextField(null=True, blank=True)
 
     redirect_id = models.CharField(max_length=128, null=True)
 
@@ -188,6 +197,7 @@ class ContentAd(models.Model, prodops_mixin.ProdopsMixin, instance.ContentAdInst
             "label": self.label,
             "url": self.url,
             "title": self.title,
+            "type": self.type,
             "image_url": self.get_image_url(),
             "image_id": self.image_id,
             "image_hash": self.image_hash,
@@ -195,6 +205,7 @@ class ContentAd(models.Model, prodops_mixin.ProdopsMixin, instance.ContentAdInst
             "image_height": self.image_height,
             "image_crop": self.image_crop,
             "video_asset_id": str(self.video_asset.id) if self.video_asset else None,
+            "ad_tag": self.ad_tag,
             "display_url": self.display_url,
             "description": self.description,
             "brand_name": self.brand_name,
@@ -208,6 +219,7 @@ class ContentAd(models.Model, prodops_mixin.ProdopsMixin, instance.ContentAdInst
             "label",
             "url",
             "title",
+            "type",
             "display_url",
             "brand_name",
             "description",
@@ -221,6 +233,7 @@ class ContentAd(models.Model, prodops_mixin.ProdopsMixin, instance.ContentAdInst
             "state",
             "tracker_urls",
             "video_asset_id",
+            "ad_tag",
         )
         candidate = {}
         for field in fields:

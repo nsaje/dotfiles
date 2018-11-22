@@ -112,6 +112,38 @@ class AdGroupClone(TestCase):
         with self.assertRaises(utils.exc.ValidationError):
             core.models.AdGroup.objects.clone(request, source_ad_group, campaign, "asd")
 
+    def test_clone_display(self, mock_autopilot_init, mock_k1_ping, mock_insert_adgroup, mock_bulk_clone):
+        request = magic_mixer.blend_request_user()
+
+        source_campaign = magic_mixer.blend(core.models.Campaign, type=constants.CampaignType.DISPLAY)
+        source_ad_group = magic_mixer.blend(core.models.AdGroup, campaign=source_campaign)
+
+        campaign = magic_mixer.blend(core.models.Campaign, type=constants.CampaignType.DISPLAY)
+        ad_group = core.models.AdGroup.objects.clone(request, source_ad_group, campaign, "asd")
+
+        self.assertNotEqual(ad_group.pk, source_ad_group.pk)
+        self.assertEqual(ad_group.campaign, campaign)
+        self.assertEqual(ad_group.name, "asd")
+
+        self.assertTrue(mock_bulk_clone.called)
+        self.assertTrue(mock_insert_adgroup.called)
+        self.assertTrue(mock_autopilot_init.called)
+        mock_k1_ping.assert_called_with(ad_group, msg="CampaignAdGroups.put")
+
+        history = history_helpers.get_ad_group_history(ad_group)
+        self.assertEqual(len(history), 1)
+        self.assertEqual(history[0].action_type, constants.HistoryActionType.SETTINGS_CHANGE)
+
+    def test_clone_display_error(self, mock_autopilot_init, mock_k1_ping, mock_insert_adgroup, mock_bulk_clone):
+        request = magic_mixer.blend_request_user()
+
+        source_campaign = magic_mixer.blend(core.models.Campaign, type=constants.CampaignType.DISPLAY)
+        source_ad_group = magic_mixer.blend(core.models.AdGroup, campaign=source_campaign)
+
+        campaign = magic_mixer.blend(core.models.Campaign, type=constants.CampaignType.CONTENT)
+        with self.assertRaises(utils.exc.ValidationError):
+            core.models.AdGroup.objects.clone(request, source_ad_group, campaign, "asd")
+
 
 class AdGroupHistory(TestCase):
     def test_history_ad_group_created(self):

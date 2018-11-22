@@ -57,6 +57,9 @@ class InstanceTest(TestCase):
 
         updates = {field: field for field in instance.VALID_UPDATE_FIELDS}
         updates["tracker_urls"] = ["test1", "test2"]
+        updates["image_width"] = 300
+        updates["image_height"] = 250
+        updates["type"] = constants.AdType.CONTENT
         content_ad.update(None, **updates)
 
         for field in updates:

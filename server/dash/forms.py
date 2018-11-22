@@ -1356,6 +1356,15 @@ class ContentAdCandidateForm(forms.ModelForm):
     image = forms.ImageField(required=False, error_messages={"invalid_image": "Invalid image file"})
     # TODO: Set queryset in __init__ to filter video assets by account
     video_asset_id = forms.ModelChoiceField(queryset=models.VideoAsset.objects.all(), required=False)
+    type = forms.TypedChoiceField(
+        choices=constants.AdType.get_choices(),
+        required=False,
+        error_messages={"invalid_choice": "Choose a valid ad type"},
+        coerce=int,
+    )
+    ad_tag = forms.CharField(required=False)
+    image_width = forms.IntegerField(required=False)
+    image_height = forms.IntegerField(required=False)
 
     def __init__(self, data, files=None):
         if files and "image" in files:
@@ -1380,12 +1389,21 @@ class ContentAdCandidateForm(forms.ModelForm):
 
         return call_to_action
 
+    def clean_type(self):
+        if not self.cleaned_data.get("type"):
+            return constants.AdType.CONTENT
+        return self.cleaned_data["type"]
+
+    def clean_ad_tag(self):
+        return self.cleaned_data.get("ad_tag") or None
+
     class Meta:
         model = models.ContentAdCandidate
         fields = [
             "label",
             "url",
             "title",
+            "type",
             "image_url",
             "image_crop",
             "video_asset_id",
@@ -1454,8 +1472,7 @@ class ContentAdForm(ContentAdCandidateForm):
 
     image_id = PlainCharField(required=False)
     image_hash = PlainCharField(required=False)
-    image_width = forms.IntegerField(required=False)
-    image_height = forms.IntegerField(required=False)
+    image_file_size = forms.IntegerField(required=False)
 
     image_status = forms.IntegerField(required=False)
     url_status = forms.IntegerField(required=False)
@@ -1543,18 +1560,26 @@ class ContentAdForm(ContentAdCandidateForm):
         if image_status == constants.AsyncUploadJobStatus.FAILED:
             return "Image could not be processed"
 
-        if image_status == constants.AsyncUploadJobStatus.OK and not (
+        return self._validate_image_parameters(cleaned_data) or self._validate_image_size(cleaned_data)
+
+    def _validate_image_parameters(self, cleaned_data):
+        if not (
             cleaned_data["image_id"]
             and cleaned_data["image_hash"]
             and cleaned_data["image_width"]
             and cleaned_data["image_height"]
+            and cleaned_data["image_file_size"]
         ):
             return "Image could not be processed"
 
-        if cleaned_data["image_width"] < self.MIN_IMAGE_SIZE or cleaned_data["image_height"] < self.MIN_IMAGE_SIZE:
+    def _validate_image_size(self, cleaned_data):
+        image_width = cleaned_data["image_width"]
+        image_height = cleaned_data["image_height"]
+
+        if image_width < self.MIN_IMAGE_SIZE or image_height < self.MIN_IMAGE_SIZE:
             return "Image too small (minimum size is {min}x{min} px)".format(min=self.MIN_IMAGE_SIZE)
 
-        if cleaned_data["image_width"] > self.MAX_IMAGE_SIZE or cleaned_data["image_height"] > self.MAX_IMAGE_SIZE:
+        if image_width > self.MAX_IMAGE_SIZE or image_height > self.MAX_IMAGE_SIZE:
             return "Image too big (maximum size is {max}x{max} px)".format(max=self.MAX_IMAGE_SIZE)
 
     def _get_url_error_msg(self, cleaned_data):
@@ -1603,6 +1628,94 @@ class ContentAdForm(ContentAdCandidateForm):
             self.add_error("video_asset_id", video_asset_id_error_msg)
 
         return cleaned_data
+
+
+class ImageAdForm(ContentAdForm):
+    type = forms.TypedChoiceField(
+        choices=constants.AdType.get_choices(),
+        error_messages={"invalid_choice": "Choose a valid ad type", "required": "Missing ad type"},
+        coerce=int,
+    )
+    image_crop = forms.ChoiceField(choices=constants.ImageCrop.get_choices(), required=False)
+    display_url = DisplayURLField(
+        required=False, error_messages={"max_length": "Display URL too long (max %(limit_value)d characters)"}
+    )
+    brand_name = PlainCharField(required=False)
+    description = PlainCharField(required=False)
+    call_to_action = PlainCharField(required=False)
+
+    MAX_IMAGE_FILE_SIZE = 153600
+
+    def clean_type(self):
+        if not self.cleaned_data.get("type") == constants.AdType.IMAGE:
+            raise forms.ValidationError("Invalid display ad type")
+        return self.cleaned_data["type"]
+
+    def _validate_image_size(self, cleaned_data):
+        if not cleaned_data.get("image_width") or not cleaned_data.get("image_height"):
+            return
+
+        file_size = cleaned_data.get("image_file_size")
+        if file_size and file_size > self.MAX_IMAGE_FILE_SIZE:
+            return "Image file size too big (maximum size is 150kb)"
+
+        supported_sizes = constants.DisplayAdSize.get_all()
+        if all(
+            cleaned_data["image_width"] != size[0] or cleaned_data["image_height"] != size[1]
+            for size in supported_sizes
+        ):
+            sizes = ", ".join([str(s[0]) + "x" + str(s[1]) for s in supported_sizes])
+            return "Image size invalid. Supported sizes are (width x height): {sizes}".format(sizes=sizes)
+
+    def _set_defaults(self, cleaned_data):
+        self.cleaned_data["display_url"] = ""
+        self.cleaned_data["brand_name"] = ""
+        self.cleaned_data["description"] = ""
+        self.cleaned_data["additional_data"] = None
+        self.cleaned_data["ad_tag"] = None
+
+    def clean(self):
+        self._set_defaults(self.cleaned_data)
+        return super().clean()
+
+
+class AdTagForm(ImageAdForm):
+    image_url = PlainCharField(required=False)
+    ad_tag = forms.CharField(error_messages={"required": "Missing ad tag"})
+
+    image_width = forms.IntegerField(error_messages={"required": "Missing ad width"})
+    image_height = forms.IntegerField(error_messages={"required": "Missing ad height"})
+
+    def clean_type(self):
+        if not self.cleaned_data.get("type") == constants.AdType.AD_TAG:
+            raise forms.ValidationError("Invalid display ad type")
+        return self.cleaned_data["type"]
+
+    def clean_image_url(self):
+        return self.cleaned_data.get("image_url")
+
+    def clean_ad_tag(self):
+        return self.cleaned_data.get("ad_tag")
+
+    def _get_image_error_msg(self, cleaned_data):
+        return
+
+    def _set_defaults(self, cleaned_data):
+        self.cleaned_data["display_url"] = ""
+        self.cleaned_data["brand_name"] = ""
+        self.cleaned_data["description"] = ""
+        self.cleaned_data["additional_data"] = None
+        self.cleaned_data["image_url"] = None
+        self.cleaned_data["image_id"] = None
+        self.cleaned_data["image_hash"] = None
+        self.cleaned_data["image_file_size"] = None
+        self.cleaned_data["image_status"] = constants.AsyncUploadJobStatus.OK
+
+    def clean(self):
+        ad_size_error = self._validate_image_size(self.cleaned_data)
+        if ad_size_error:
+            self.add_error("image_url", ad_size_error)
+        return super().clean()
 
 
 class AudienceRuleForm(forms.Form):

@@ -666,6 +666,9 @@ class AdGroupSources(api_common.BaseApiView):
         if ad_group.campaign.type == constants.CampaignType.VIDEO:
             available_sources = available_sources.filter(supports_video=True)
 
+        if ad_group.campaign.type == constants.CampaignType.DISPLAY:
+            available_sources = available_sources.filter(supports_display=True)
+
         sources = []
         for source in available_sources:
             sources.append(
@@ -701,6 +704,7 @@ class AdGroupSources(api_common.BaseApiView):
             core.models.ad_group_source.exceptions.RetargetingNotSupported,
             core.models.ad_group_source.exceptions.SourceAlreadyExists,
             core.models.ad_group_source.exceptions.VideoNotSupported,
+            core.models.ad_group_source.exceptions.DisplayNotSupported,
         ) as err:
             raise exc.ValidationError(str(err))
 

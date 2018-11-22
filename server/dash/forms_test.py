@@ -1054,10 +1054,14 @@ class ContentAdCandidateFormTestCase(TestCase):
                 "label": "label",
                 "url": "http://zemanta.com",
                 "title": "Title",
+                "type": constants.AdType.CONTENT,
                 "image": self.valid_image,
                 "image_url": "http://zemanta.com/img.jpg",
                 "image_crop": "center",
+                "image_height": None,
+                "image_width": None,
                 "video_asset_id": "12345678-abcd-1234-abcd-123abcd12345",
+                "ad_tag": None,
                 "display_url": "zemanta.com",
                 "brand_name": "Zemanta",
                 "description": "Description",
@@ -1102,6 +1106,30 @@ class ContentAdCandidateFormTestCase(TestCase):
         self.assertTrue(f.is_valid())
         self.assertEqual(f.cleaned_data["call_to_action"], "Read more")
 
+    def test_ad_tag(self):
+        data, files = self._get_valid_data()
+        data["type"] = constants.AdType.AD_TAG
+        data["ad_tag"] = "<body></body>"
+        data["image_width"] = 300
+        data["image_height"] = 250
+        del data["image_url"]
+        del data["image_crop"]
+        del data["video_asset_id"]
+        del data["display_url"]
+        del data["brand_name"]
+        del data["description"]
+        del data["call_to_action"]
+        del data["primary_tracker_url"]
+        del data["secondary_tracker_url"]
+        f = forms.ContentAdCandidateForm(data, files)
+        self.assertTrue(f.is_valid())
+        self.assertEqual("<body></body>", f.cleaned_data["ad_tag"])
+        self.assertEqual("center", f.cleaned_data["image_crop"])
+        self.assertEqual("", f.cleaned_data["display_url"])
+        self.assertEqual("", f.cleaned_data["brand_name"])
+        self.assertEqual("", f.cleaned_data["description"])
+        self.assertEqual(constants.DEFAULT_CALL_TO_ACTION, f.cleaned_data["call_to_action"])
+
 
 class ContentAdFormTestCase(TestCase):
     def setUp(self):
@@ -1124,6 +1152,7 @@ class ContentAdFormTestCase(TestCase):
             "image_hash": "imagehash",
             "image_width": 500,
             "image_height": 500,
+            "image_file_size": 120000,
             "image_status": constants.AsyncUploadJobStatus.OK,
             "url_status": constants.AsyncUploadJobStatus.OK,
         }
@@ -1422,6 +1451,441 @@ class ContentAdFormTestCase(TestCase):
         data = self._get_valid_data()
         data["secondary_tracker_url"] = "https://zemanta.com/š"
         f = forms.ContentAdForm(self.campaign, data)
+        self.assertFalse(f.is_valid())
+        self.assertEqual({"secondary_tracker_url": ["Invalid impression tracker URL"]}, f.errors)
+
+
+class ImageAdFormTestCase(TestCase):
+    def setUp(self):
+        self.campaign = magic_mixer.blend(models.Campaign, type=constants.CampaignType.DISPLAY)
+
+    def _get_valid_data(self):
+        return {
+            "label": "label",
+            "url": "http://zemanta.com",
+            "title": "Title",
+            "type": constants.AdType.IMAGE,
+            "image_url": "http://zemanta.com/img.jpg",
+            "primary_tracker_url": "https://zemanta.com/px1",
+            "secondary_tracker_url": "https://zemanta.com/px2",
+            "image_id": "id123",
+            "image_hash": "imagehash",
+            "image_width": 300,
+            "image_height": 250,
+            "image_status": constants.AsyncUploadJobStatus.OK,
+            "image_file_size": 120000,
+            "url_status": constants.AsyncUploadJobStatus.OK,
+        }
+
+    def test_form(self):
+        f = forms.ImageAdForm(self.campaign, self._get_valid_data())
+        self.assertTrue(f.is_valid())
+
+    def test_image_status_pending_start(self):
+        data = self._get_valid_data()
+        data["image_status"] = constants.AsyncUploadJobStatus.PENDING_START
+        f = forms.ImageAdForm(self.campaign, data)
+        self.assertFalse(f.is_valid())
+        self.assertEqual({"__all__": ["Content ad still processing"]}, f.errors)
+
+    def test_image_status_waiting_response(self):
+        data = self._get_valid_data()
+        data["image_status"] = constants.AsyncUploadJobStatus.WAITING_RESPONSE
+        f = forms.ImageAdForm(self.campaign, data)
+        self.assertFalse(f.is_valid())
+        self.assertEqual({"__all__": ["Content ad still processing"]}, f.errors)
+
+    def test_url_status_pending_start(self):
+        data = self._get_valid_data()
+        data["url_status"] = constants.AsyncUploadJobStatus.PENDING_START
+        f = forms.ImageAdForm(self.campaign, data)
+        self.assertFalse(f.is_valid())
+        self.assertEqual({"__all__": ["Content ad still processing"]}, f.errors)
+
+    def test_url_status_waiting_response(self):
+        data = self._get_valid_data()
+        data["url_status"] = constants.AsyncUploadJobStatus.WAITING_RESPONSE
+        f = forms.ImageAdForm(self.campaign, data)
+        self.assertFalse(f.is_valid())
+        self.assertEqual({"__all__": ["Content ad still processing"]}, f.errors)
+
+    def test_invalid_image_status(self):
+        data = self._get_valid_data()
+        data["image_status"] = constants.AsyncUploadJobStatus.FAILED
+        f = forms.ImageAdForm(self.campaign, data)
+        self.assertFalse(f.is_valid())
+        self.assertEqual({"image_url": ["Image could not be processed"]}, f.errors)
+
+    def test_no_image_url_and_invalid_status(self):
+        data = self._get_valid_data()
+        data["image_url"] = None
+        data["image_status"] = constants.AsyncUploadJobStatus.FAILED
+        f = forms.ImageAdForm(self.campaign, data)
+        self.assertFalse(f.is_valid())
+        self.assertEqual({"image_url": ["Missing image"]}, f.errors)
+
+    def test_not_reachable_url(self):
+        data = self._get_valid_data()
+        data["url_status"] = constants.AsyncUploadJobStatus.FAILED
+        f = forms.ImageAdForm(self.campaign, data)
+        self.assertFalse(f.is_valid())
+        self.assertEqual({"url": ["Content unreachable"]}, f.errors)
+
+    def test_no_url_and_invalid_status(self):
+        data = self._get_valid_data()
+        data["url"] = None
+        data["url_status"] = constants.AsyncUploadJobStatus.FAILED
+        f = forms.ImageAdForm(self.campaign, data)
+        self.assertFalse(f.is_valid())
+        self.assertEqual({"url": ["Missing URL"]}, f.errors)
+
+    def test_missing_image_id(self):
+        data = self._get_valid_data()
+        del data["image_id"]
+        f = forms.ImageAdForm(self.campaign, data)
+        self.assertFalse(f.is_valid())
+        self.assertEqual({"image_url": ["Image could not be processed"]}, f.errors)
+
+    def test_missing_image_hash(self):
+        data = self._get_valid_data()
+        del data["image_hash"]
+        f = forms.ImageAdForm(self.campaign, data)
+        self.assertFalse(f.is_valid())
+        self.assertEqual({"image_url": ["Image could not be processed"]}, f.errors)
+
+    def test_missing_image_width(self):
+        data = self._get_valid_data()
+        del data["image_width"]
+        f = forms.ImageAdForm(self.campaign, data)
+        self.assertFalse(f.is_valid())
+        self.assertEqual({"image_url": ["Image could not be processed"]}, f.errors)
+
+    def test_missing_image_height(self):
+        data = self._get_valid_data()
+        del data["image_height"]
+        f = forms.ImageAdForm(self.campaign, data)
+        self.assertFalse(f.is_valid())
+        self.assertEqual({"image_url": ["Image could not be processed"]}, f.errors)
+
+    def test_missing_image_file_size(self):
+        data = self._get_valid_data()
+        del data["image_file_size"]
+        f = forms.ImageAdForm(self.campaign, data)
+        self.assertFalse(f.is_valid())
+        self.assertEqual({"image_url": ["Image could not be processed"]}, f.errors)
+
+    def test_missing_image_file_size_too_high(self):
+        data = self._get_valid_data()
+        data["image_file_size"] = 200000
+        f = forms.ImageAdForm(self.campaign, data)
+        self.assertFalse(f.is_valid())
+        self.assertEqual({"image_url": ["Image file size too big (maximum size is 150kb)"]}, f.errors)
+
+    def test_image_supported_width(self):
+        data = self._get_valid_data()
+        data["image_width"] = 1
+        f = forms.ImageAdForm(self.campaign, data)
+        self.assertFalse(f.is_valid())
+        self.assertEqual(
+            {"image_url": ["Image size invalid. Supported sizes are (width x height): 300x250, 320x50"]}, f.errors
+        )
+
+    def test_image_supported_height(self):
+        data = self._get_valid_data()
+        data["image_height"] = 1
+        f = forms.ImageAdForm(self.campaign, data)
+        self.assertFalse(f.is_valid())
+        self.assertEqual(
+            {"image_url": ["Image size invalid. Supported sizes are (width x height): 300x250, 320x50"]}, f.errors
+        )
+
+    def test_invalid_url_status(self):
+        data = self._get_valid_data()
+        data["url_status"] = constants.AsyncUploadJobStatus.FAILED
+        f = forms.ImageAdForm(self.campaign, data)
+        self.assertFalse(f.is_valid())
+        self.assertEqual({"url": ["Content unreachable"]}, f.errors)
+
+    def test_label_too_long(self):
+        data = self._get_valid_data()
+        data["label"] = "a" * 1000
+        f = forms.ImageAdForm(self.campaign, data)
+        self.assertFalse(f.is_valid())
+        self.assertEqual({"label": ["Label too long (max 256 characters)"]}, f.errors)
+
+    def test_missing_url(self):
+        data = self._get_valid_data()
+        del data["url"]
+        f = forms.ImageAdForm(self.campaign, data)
+        self.assertFalse(f.is_valid())
+        self.assertEqual({"url": ["Missing URL"]}, f.errors)
+
+    def test_url_too_long(self):
+        data = self._get_valid_data()
+        data["url"] = "http://example.com/" + ("repeat" * 200)
+        f = forms.ImageAdForm(self.campaign, data)
+        self.assertFalse(f.is_valid())
+        self.assertEqual({"url": ["URL too long (max 936 characters)"]}, f.errors)
+
+    def test_invalid_url(self):
+        data = self._get_valid_data()
+        data["url"] = "ttp://example.com"
+        f = forms.ImageAdForm(self.campaign, data)
+        self.assertFalse(f.is_valid())
+        self.assertEqual({"url": ["Invalid URL"]}, f.errors)
+
+    def test_missing_title(self):
+        data = self._get_valid_data()
+        del data["title"]
+        f = forms.ImageAdForm(self.campaign, data)
+        self.assertFalse(f.is_valid())
+        self.assertEqual({"title": ["Missing title"]}, f.errors)
+
+    def test_title_too_long(self):
+        data = self._get_valid_data()
+        data["title"] = "repeat" * 19
+        f = forms.ImageAdForm(self.campaign, data)
+        self.assertFalse(f.is_valid())
+        self.assertEqual({"title": ["Title too long (max 90 characters)"]}, f.errors)
+
+    def test_missing_image_url(self):
+        data = self._get_valid_data()
+        del data["image_url"]
+        f = forms.ImageAdForm(self.campaign, data)
+        self.assertFalse(f.is_valid())
+        self.assertEqual({"image_url": ["Missing image"]}, f.errors)
+
+    def test_invalid_image_url(self):
+        data = self._get_valid_data()
+        data["image_url"] = "ttp://example.com"
+        f = forms.ImageAdForm(self.campaign, data)
+        self.assertFalse(f.is_valid())
+        self.assertEqual({"image_url": ["Invalid image URL"]}, f.errors)
+
+    def test_no_unneeded_fields(self):
+        data = self._get_valid_data()
+        f = forms.ImageAdForm(self.campaign, data)
+        self.assertTrue(f.is_valid())
+        self.assertEqual("center", f.cleaned_data["image_crop"])
+        self.assertEqual("", f.cleaned_data["display_url"])
+        self.assertEqual("", f.cleaned_data["brand_name"])
+        self.assertEqual("", f.cleaned_data["description"])
+        self.assertEqual(constants.DEFAULT_CALL_TO_ACTION, f.cleaned_data["call_to_action"])
+        self.assertEqual(None, f.cleaned_data["additional_data"])
+
+    def test_empty_unneeded_fields(self):
+        data = self._get_valid_data()
+        data["image_crop"] = ""
+        data["display_url"] = ""
+        data["brand_name"] = ""
+        data["description"] = ""
+        data["call_to_action"] = ""
+        data["additional_data"] = ""
+        f = forms.ImageAdForm(self.campaign, data)
+        self.assertTrue(f.is_valid())
+        self.assertEqual("center", f.cleaned_data["image_crop"])
+        self.assertEqual("", f.cleaned_data["display_url"])
+        self.assertEqual("", f.cleaned_data["brand_name"])
+        self.assertEqual("", f.cleaned_data["description"])
+        self.assertEqual(constants.DEFAULT_CALL_TO_ACTION, f.cleaned_data["call_to_action"])
+        self.assertEqual(None, f.cleaned_data["additional_data"])
+
+    def test_http_primary_tracker(self):
+        data = self._get_valid_data()
+        data["primary_tracker_url"] = "http://zemanta.com/"
+        f = forms.ImageAdForm(self.campaign, data)
+        self.assertFalse(f.is_valid())
+        self.assertEqual({"primary_tracker_url": ["Impression tracker URLs have to be HTTPS"]}, f.errors)
+
+    def test_http_secondary_tracker(self):
+        data = self._get_valid_data()
+        data["secondary_tracker_url"] = "http://zemanta.com/"
+        f = forms.ImageAdForm(self.campaign, data)
+        self.assertFalse(f.is_valid())
+        self.assertEqual({"secondary_tracker_url": ["Impression tracker URLs have to be HTTPS"]}, f.errors)
+
+    def test_unicode_primary_tracker(self):
+        data = self._get_valid_data()
+        data["primary_tracker_url"] = "https://zemanta.com/š"
+        f = forms.ImageAdForm(self.campaign, data)
+        self.assertFalse(f.is_valid())
+        self.assertEqual({"primary_tracker_url": ["Invalid impression tracker URL"]}, f.errors)
+
+    def test_unicode_secondary_tracker(self):
+        data = self._get_valid_data()
+        data["secondary_tracker_url"] = "https://zemanta.com/š"
+        f = forms.ImageAdForm(self.campaign, data)
+        self.assertFalse(f.is_valid())
+        self.assertEqual({"secondary_tracker_url": ["Invalid impression tracker URL"]}, f.errors)
+
+
+class AdTagFormTestCase(TestCase):
+    def setUp(self):
+        self.campaign = magic_mixer.blend(models.Campaign, type=constants.CampaignType.DISPLAY)
+
+    def _get_valid_data(self):
+        return {
+            "label": "label",
+            "title": "Ad tag ad",
+            "url": "http://zemanta.com",
+            "type": constants.AdType.AD_TAG,
+            "ad_tag": "<body></body>",
+            "primary_tracker_url": "https://zemanta.com/px1",
+            "secondary_tracker_url": "https://zemanta.com/px2",
+            "image_width": 300,
+            "image_height": 250,
+            "url_status": constants.AsyncUploadJobStatus.OK,
+        }
+
+    def test_form(self):
+        f = forms.AdTagForm(self.campaign, self._get_valid_data())
+        self.assertTrue(f.is_valid())
+        self.assertEqual(f.cleaned_data["image_status"], constants.AsyncUploadJobStatus.OK)
+
+    def test_missing_ad_tag(self):
+        data = self._get_valid_data()
+        del data["ad_tag"]
+        f = forms.AdTagForm(self.campaign, data)
+        self.assertFalse(f.is_valid())
+        self.assertEqual({"ad_tag": ["Missing ad tag"]}, f.errors)
+
+    def test_not_reachable_url(self):
+        data = self._get_valid_data()
+        data["url_status"] = constants.AsyncUploadJobStatus.FAILED
+        f = forms.AdTagForm(self.campaign, data)
+        self.assertFalse(f.is_valid())
+        self.assertEqual({"url": ["Content unreachable"]}, f.errors)
+
+    def test_no_url_and_invalid_status(self):
+        data = self._get_valid_data()
+        data["url"] = None
+        data["url_status"] = constants.AsyncUploadJobStatus.FAILED
+        f = forms.AdTagForm(self.campaign, data)
+        self.assertFalse(f.is_valid())
+        self.assertEqual({"url": ["Missing URL"]}, f.errors)
+
+    def test_missing_image_width(self):
+        data = self._get_valid_data()
+        del data["image_width"]
+        f = forms.AdTagForm(self.campaign, data)
+        self.assertFalse(f.is_valid())
+        self.assertEqual({"image_width": ["Missing ad width"]}, f.errors)
+
+    def test_missing_image_height(self):
+        data = self._get_valid_data()
+        del data["image_height"]
+        f = forms.AdTagForm(self.campaign, data)
+        self.assertFalse(f.is_valid())
+        self.assertEqual({"image_height": ["Missing ad height"]}, f.errors)
+
+    def test_image_supported_width(self):
+        data = self._get_valid_data()
+        data["image_width"] = 1
+        f = forms.AdTagForm(self.campaign, data)
+        self.assertFalse(f.is_valid())
+        self.assertEqual(
+            {"image_url": ["Image size invalid. Supported sizes are (width x height): 300x250, 320x50"]}, f.errors
+        )
+
+    def test_image_supported_height(self):
+        data = self._get_valid_data()
+        data["image_height"] = 1
+        f = forms.AdTagForm(self.campaign, data)
+        self.assertFalse(f.is_valid())
+        self.assertEqual(
+            {"image_url": ["Image size invalid. Supported sizes are (width x height): 300x250, 320x50"]}, f.errors
+        )
+
+    def test_invalid_url_status(self):
+        data = self._get_valid_data()
+        data["url_status"] = constants.AsyncUploadJobStatus.FAILED
+        f = forms.AdTagForm(self.campaign, data)
+        self.assertFalse(f.is_valid())
+        self.assertEqual({"url": ["Content unreachable"]}, f.errors)
+
+    def test_label_too_long(self):
+        data = self._get_valid_data()
+        data["label"] = "a" * 1000
+        f = forms.AdTagForm(self.campaign, data)
+        self.assertFalse(f.is_valid())
+        self.assertEqual({"label": ["Label too long (max 256 characters)"]}, f.errors)
+
+    def test_missing_url(self):
+        data = self._get_valid_data()
+        del data["url"]
+        f = forms.AdTagForm(self.campaign, data)
+        self.assertFalse(f.is_valid())
+        self.assertEqual({"url": ["Missing URL"]}, f.errors)
+
+    def test_url_too_long(self):
+        data = self._get_valid_data()
+        data["url"] = "http://example.com/" + ("repeat" * 200)
+        f = forms.AdTagForm(self.campaign, data)
+        self.assertFalse(f.is_valid())
+        self.assertEqual({"url": ["URL too long (max 936 characters)"]}, f.errors)
+
+    def test_invalid_url(self):
+        data = self._get_valid_data()
+        data["url"] = "ttp://example.com"
+        f = forms.AdTagForm(self.campaign, data)
+        self.assertFalse(f.is_valid())
+        self.assertEqual({"url": ["Invalid URL"]}, f.errors)
+
+    def test_no_unneeded_fields(self):
+        data = self._get_valid_data()
+        f = forms.AdTagForm(self.campaign, data)
+        self.assertTrue(f.is_valid())
+        self.assertEqual("center", f.cleaned_data["image_crop"])
+        self.assertEqual("", f.cleaned_data["display_url"])
+        self.assertEqual("", f.cleaned_data["brand_name"])
+        self.assertEqual("", f.cleaned_data["description"])
+        self.assertEqual(constants.DEFAULT_CALL_TO_ACTION, f.cleaned_data["call_to_action"])
+        self.assertEqual(None, f.cleaned_data["additional_data"])
+
+    def test_empty_unneeded_fields(self):
+        data = self._get_valid_data()
+        data["image_url"] = ""
+        data["image_crop"] = ""
+        data["display_url"] = ""
+        data["brand_name"] = ""
+        data["description"] = ""
+        data["call_to_action"] = ""
+        data["additional_data"] = None
+        f = forms.AdTagForm(self.campaign, data)
+        self.assertTrue(f.is_valid())
+        self.assertEqual(None, f.cleaned_data["image_url"])
+        self.assertEqual("center", f.cleaned_data["image_crop"])
+        self.assertEqual("", f.cleaned_data["display_url"])
+        self.assertEqual("", f.cleaned_data["brand_name"])
+        self.assertEqual("", f.cleaned_data["description"])
+        self.assertEqual(constants.DEFAULT_CALL_TO_ACTION, f.cleaned_data["call_to_action"])
+        self.assertEqual(None, f.cleaned_data["additional_data"])
+
+    def test_http_primary_tracker(self):
+        data = self._get_valid_data()
+        data["primary_tracker_url"] = "http://zemanta.com/"
+        f = forms.AdTagForm(self.campaign, data)
+        self.assertFalse(f.is_valid())
+        self.assertEqual({"primary_tracker_url": ["Impression tracker URLs have to be HTTPS"]}, f.errors)
+
+    def test_http_secondary_tracker(self):
+        data = self._get_valid_data()
+        data["secondary_tracker_url"] = "http://zemanta.com/"
+        f = forms.AdTagForm(self.campaign, data)
+        self.assertFalse(f.is_valid())
+        self.assertEqual({"secondary_tracker_url": ["Impression tracker URLs have to be HTTPS"]}, f.errors)
+
+    def test_unicode_primary_tracker(self):
+        data = self._get_valid_data()
+        data["primary_tracker_url"] = "https://zemanta.com/š"
+        f = forms.AdTagForm(self.campaign, data)
+        self.assertFalse(f.is_valid())
+        self.assertEqual({"primary_tracker_url": ["Invalid impression tracker URL"]}, f.errors)
+
+    def test_unicode_secondary_tracker(self):
+        data = self._get_valid_data()
+        data["secondary_tracker_url"] = "https://zemanta.com/š"
+        f = forms.AdTagForm(self.campaign, data)
         self.assertFalse(f.is_valid())
         self.assertEqual({"secondary_tracker_url": ["Invalid impression tracker URL"]}, f.errors)
 

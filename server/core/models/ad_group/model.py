@@ -42,6 +42,7 @@ class AdGroupManager(core.common.QuerySetManager):
             and campaign.account_id not in AMPLIFY_REVIEW_ACCOUNTS_DISABLED
             and campaign.account.agency_id not in AMPLIFY_REVIEW_AGENCIES_DISABLED
             and campaign.type != constants.CampaignType.VIDEO
+            and campaign.type != constants.CampaignType.DISPLAY
         ):
             ad_group.amplify_review = True
         ad_group.save(request)
@@ -90,10 +91,10 @@ class AdGroupManager(core.common.QuerySetManager):
         if (
             source_ad_group.campaign.type == constants.CampaignType.VIDEO
             or campaign.type == constants.CampaignType.VIDEO
+            or source_ad_group.campaign.type == constants.CampaignType.DISPLAY
+            or campaign.type == constants.CampaignType.DISPLAY
         ) and source_ad_group.campaign.type != campaign.type:
-            raise exceptions.CampaignTypesDoNotMatch(
-                "When cloning to or from a video campaign, both have to be of the same type."
-            )
+            raise exceptions.CampaignTypesDoNotMatch("Source and destination campaign types do not match.")
 
         core.common.entity_limits.enforce(
             AdGroup.objects.filter(campaign=campaign).exclude_archived(), campaign.account_id

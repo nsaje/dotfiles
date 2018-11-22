@@ -32,8 +32,9 @@ class MockAsyncValidation(threading.Thread):
             if rand > self.fail_probability:
                 self.candidate.image_id = "p/srv/8678/13f72b5e37a64860a73ac95ff51b2a3e"
                 self.candidate.image_hash = "1234"
-                self.candidate.image_height = 500
-                self.candidate.image_width = 500
+                self.candidate.image_height = 250
+                self.candidate.image_width = 300
+                self.candidate.image_file_size = 120000
                 self.candidate.image_status = constants.AsyncUploadJobStatus.OK
             else:
                 self.candidate.image_status = constants.AsyncUploadJobStatus.FAILED

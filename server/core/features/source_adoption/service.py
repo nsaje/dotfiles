@@ -33,6 +33,7 @@ def auto_add_new_ad_group_sources(source_id, logger=None):
             core.models.ad_group_source.exceptions.SourceNotAllowed,
             core.models.ad_group_source.exceptions.RetargetingNotSupported,
             core.models.ad_group_source.exceptions.VideoNotSupported,
+            core.models.ad_group_source.exceptions.DisplayNotSupported,
         ):
             count_not_available += 1
             continue

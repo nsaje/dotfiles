@@ -210,6 +210,7 @@ class TestBatchUpload(TestCase):
             candidate.image_hash = "1234"
             candidate.image_height = 500
             candidate.image_width = 500
+            candidate.image_file_size = 120000
             candidate.image_status = constants.AsyncUploadJobStatus.OK
             candidate.url_status = constants.AsyncUploadJobStatus.OK
             candidate.save()

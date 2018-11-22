@@ -19,7 +19,7 @@ from . import upload_dev
 
 logger = logging.getLogger(__name__)
 
-VALID_DEFAULTS_FIELDS = set(["image_crop", "description", "display_url", "brand_name", "call_to_action"])
+VALID_DEFAULTS_FIELDS = set(["image_crop", "description", "display_url", "brand_name", "call_to_action", "ad_tag"])
 VALID_UPDATE_FIELDS = set(
     [
         "url",
@@ -31,6 +31,10 @@ VALID_UPDATE_FIELDS = set(
         "primary_tracker_url",
         "secondary_tracker_url",
         "call_to_action",
+        "ad_tag",
+        "type",
+        "image_height",
+        "image_width",
     ]
 )
 
@@ -62,12 +66,13 @@ def _reset_candidate_async_status(candidate):
     if candidate.url:
         candidate.url_status = constants.AsyncUploadJobStatus.WAITING_RESPONSE
 
-    if candidate.image_url:
+    if candidate.type != constants.AdType.AD_TAG and candidate.image_url:
         candidate.image_status = constants.AsyncUploadJobStatus.WAITING_RESPONSE
         candidate.image_id = None
         candidate.image_hash = None
         candidate.image_width = None
         candidate.image_height = None
+        candidate.image_file_size = None
 
     candidate.save()
 
@@ -89,11 +94,14 @@ def _invoke_external_validation(candidate, batch):
         "candidateID": candidate.pk,
         "pageUrl": cleaned_urls["url"],
         "adGroupID": candidate.ad_group_id,
-        "batchID": candidate.batch.pk,
         "imageUrl": cleaned_urls["image_url"],
         "callbackUrl": settings.LAMBDA_CONTENT_UPLOAD_CALLBACK_URL,
         "skipUrlValidation": skip_url_validation,
+        "normalize": candidate.type not in [constants.AdType.IMAGE, constants.AdType.AD_TAG],
     }
+    if candidate.type == constants.AdType.AD_TAG:
+        del data["imageUrl"]
+
     if settings.USE_CELERY_FOR_UPLOAD_LAMBDAS:
         _invoke_lambda_celery.delay(data)
     else:
@@ -245,11 +253,21 @@ def _clean_candidates(candidates):
     errors = {}
     campaign = candidates[0].ad_group.campaign if (candidates and candidates[0].ad_group) else None
     for candidate in candidates:
-        f = forms.ContentAdForm(campaign, candidate.to_dict())
+        form = _get_candidate_form(candidate)
+        f = form(campaign, candidate.to_dict())
         if not f.is_valid():
             errors[candidate.id] = f.errors
         cleaned_candidates.append(f.cleaned_data)
     return cleaned_candidates, errors
+
+
+def _get_candidate_form(candidate):
+    if candidate.type == constants.AdType.IMAGE:
+        return forms.ImageAdForm
+    if candidate.type == constants.AdType.AD_TAG:
+        return forms.AdTagForm
+
+    return forms.ContentAdForm
 
 
 def _update_defaults(data, defaults, batch):
@@ -299,8 +317,9 @@ def _update_candidate(data, batch, files):
 def _get_field_errors(candidate, data, files):
     errors = {}
     campaign = candidate.ad_group.campaign if candidate.ad_group else None
-    form = forms.ContentAdForm(campaign, data, files=files)
-    if form.is_valid():
+    form = _get_candidate_form(candidate)
+    f = form(campaign, data, files=files)
+    if f.is_valid():
         return errors
 
     fields = set(data.keys())
@@ -308,9 +327,9 @@ def _get_field_errors(candidate, data, files):
         fields |= set(files.keys())
 
     for field in fields:
-        if field not in form.errors:
+        if field not in f.errors:
             continue
-        errors[field] = form.errors[field]
+        errors[field] = f.errors[field]
     return errors
 
 
@@ -327,6 +346,8 @@ def add_candidate(batch):
     if batch.type == constants.UploadBatchType.EDIT:
         raise exc.ChangeForbidden("Cannot add candidate - batch in edit mode")
 
+    campaign_type = batch.ad_group.campaign.type if batch.ad_group else None
+
     return batch.contentadcandidate_set.create(
         ad_group_id=batch.ad_group_id,
         image_crop=batch.default_image_crop,
@@ -334,6 +355,10 @@ def add_candidate(batch):
         brand_name=batch.default_brand_name,
         description=batch.default_description,
         call_to_action=batch.default_call_to_action,
+        type={
+            constants.CampaignType.VIDEO: constants.AdType.VIDEO,
+            constants.CampaignType.DISPLAY: constants.AdType.IMAGE,
+        }.get(campaign_type, constants.AdType.CONTENT),
     )
 
 
@@ -346,14 +371,16 @@ def delete_candidate(candidate):
 
 def _get_cleaned_urls(candidate):
     campaign = candidate.ad_group.campaign if candidate.ad_group else None
-    form = forms.ContentAdForm(campaign, candidate.to_dict())
-    form.is_valid()  # it doesn't matter if the form as a whole is valid or not
-    return {"url": form.cleaned_data.get("url"), "image_url": form.cleaned_data.get("image_url")}
+    form = _get_candidate_form(candidate)
+    f = form(campaign, candidate.to_dict())
+    f.is_valid()  # it doesn't matter if the form as a whole is valid or not
+    return {"url": f.cleaned_data.get("url"), "image_url": f.cleaned_data.get("image_url")}
 
 
 def _process_image_url_update(candidate, image_url, callback_data):
     if (
-        "originUrl" not in callback_data.get("image", {})
+        candidate.type == constants.AdType.AD_TAG
+        or "originUrl" not in callback_data.get("image", {})
         or callback_data.get("image", {}).get("originUrl") != image_url
     ):
         # prevent issues with concurrent jobs
@@ -365,11 +392,12 @@ def _process_image_url_update(candidate, image_url, callback_data):
 
     candidate.image_status = constants.AsyncUploadJobStatus.FAILED
     try:
-        if callback_data["image"]["valid"]:
+        if candidate.type != constants.AdType.AD_TAG and callback_data["image"]["valid"]:
             candidate.image_id = callback_data["image"]["id"]
             candidate.image_width = callback_data["image"]["width"]
             candidate.image_height = callback_data["image"]["height"]
             candidate.image_hash = callback_data["image"]["hash"]
+            candidate.image_file_size = callback_data["image"]["file_size"]
             candidate.image_status = constants.AsyncUploadJobStatus.OK
     except KeyError:
         logger.exception("Failed to parse callback data %s", str(callback_data))
@@ -478,7 +506,8 @@ def _apply_content_ad_edit(request, candidate):
         raise exc.ChangeForbidden("Update not permitted - original content ad not set")
 
     campaign = candidate.ad_group.campaign if candidate.ad_group else None
-    f = forms.ContentAdForm(campaign, candidate.to_dict())
+    form = _get_candidate_form(candidate)
+    f = form(campaign, candidate.to_dict())
     if not f.is_valid():
         raise exc.CandidateErrorsRemaining("Save not permitted - candidate errors exist")
 
