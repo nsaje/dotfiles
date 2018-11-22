@@ -1,4 +1,7 @@
 var callToAction = require('../../zemUpload.config').callToAction;
+var creativesManagerHelpers = require('../../../../../features/creatives-manager/helpers/creatives-manager.helpers');
+var creativesManagerConfig = require('../../../../../features/creatives-manager/creatives-manager.config')
+    .CREATIVES_MANAGER_CONFIG;
 
 angular.module('one.widgets').directive('zemUploadEditForm', function() {
     // eslint-disable-line max-len
@@ -15,6 +18,7 @@ angular.module('one.widgets').directive('zemUploadEditForm', function() {
             batchId: '=',
             isEdit: '=',
             showVideoUpload: '=',
+            showDisplayUpload: '=',
         },
         controllerAs: 'ctrl',
         template: require('./zemUploadEditForm.component.html'),
@@ -40,6 +44,7 @@ angular
         $q,
         $timeout,
         $scope,
+        $sce,
         zemPermissions
     ) {
         // eslint-disable-line max-len
@@ -59,6 +64,8 @@ angular
         vm.videoAssetStatus = constants.videoAssetStatus;
         vm.hasPermission = zemPermissions.hasPermission;
 
+        vm.adType = constants.adType;
+        vm.adSizes = options.adSizes;
         vm.imageCrops = options.imageCrops;
         vm.videoTypeOptions = options.videoTypes;
         vm.videoTypes = constants.videoType;
@@ -88,6 +95,14 @@ angular
             vm.fieldsSaved = {};
             vm.fieldsApiErrors = {};
 
+            if (vm.showVideoUpload) {
+                handleVideoCreatives();
+            } else if (vm.showDisplayUpload) {
+                handleDisplayCreatives();
+            } else {
+                handleNativeCreatives();
+            }
+
             if (vm.isEdit && vm.selectedCandidate.videoAssetId) {
                 vm.startPollingVideoAssetStatus(candidate);
             }
@@ -96,6 +111,77 @@ angular
                     type: constants.videoType.DIRECT_UPLOAD,
                     status: constants.videoAssetStatus.INITIALIZED,
                 };
+            }
+        }
+
+        function handleVideoCreatives() {
+            vm.adTypes = filterAdTypes(
+                [constants.campaignTypes.VIDEO],
+                options.adTypes
+            );
+            if (!vm.isEdit) {
+                validateAndResetAdType(
+                    [constants.campaignTypes.VIDEO],
+                    constants.adType.VIDEO
+                );
+            }
+        }
+
+        function handleDisplayCreatives() {
+            vm.adTypes = filterAdTypes(
+                [constants.campaignTypes.DISPLAY],
+                options.adTypes
+            );
+            if (!vm.isEdit) {
+                validateAndResetAdType(
+                    [constants.campaignTypes.DISPLAY],
+                    constants.adType.IMAGE
+                );
+            }
+        }
+
+        function handleNativeCreatives() {
+            vm.adTypes = filterAdTypes(
+                [
+                    constants.campaignTypes.CONTENT,
+                    constants.campaignTypes.CONVERSION,
+                    constants.campaignTypes.MOBILE,
+                ],
+                options.adTypes
+            );
+            if (!vm.isEdit) {
+                validateAndResetAdType(
+                    [
+                        constants.campaignTypes.CONTENT,
+                        constants.campaignTypes.CONVERSION,
+                        constants.campaignTypes.MOBILE,
+                    ],
+                    constants.adType.CONTENT
+                );
+            }
+        }
+
+        function filterAdTypes(campaignTypes, adTypes) {
+            return angular.copy(adTypes).filter(function(adType) {
+                return campaignTypes.some(function(x) {
+                    return adType.campaignTypes.indexOf(x) >= 0;
+                });
+            });
+        }
+
+        function validateAndResetAdType(campaignTypes, defaultAdType) {
+            var adType = options.adTypes.find(function(adType) {
+                var found = false;
+                if (adType.value === vm.selectedCandidate.adType) {
+                    found = campaignTypes.some(function(x) {
+                        return adType.campaignTypes.indexOf(x) >= 0;
+                    });
+                }
+                return found;
+            });
+            if (!adType) {
+                vm.selectedCandidate.adType = defaultAdType;
+                vm.updateField(vm.selectedCandidate, 'adType');
             }
         }
 
@@ -232,6 +318,16 @@ angular
             vm.fieldsSaved.image = false;
             vm.fieldsSaved.imageUrl = false;
             vm.showImageUpload = !vm.showImageUpload;
+        };
+
+        vm.getIframeSrc = function(adTag) {
+            var iframeSrc = creativesManagerHelpers.getPreviewIframeSrc(
+                creativesManagerConfig.previewIframeSrcPrefix,
+                adTag
+            );
+            // Use $sce (Strict Contextual Escaping) to render trusted values
+            // https://docs.angularjs.org/api/ng/service/$sce
+            return $sce.trustAsResourceUrl(iframeSrc);
         };
 
         vm.callToActionSelect2Config = {

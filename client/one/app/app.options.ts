@@ -3124,6 +3124,46 @@ export const APP_OPTIONS = {
         {name: 'Malaysian Ringgit', value: APP_CONSTANTS.currency.MYR},
         {name: 'Swiss Franc', value: APP_CONSTANTS.currency.CHF},
     ],
+    adTypes: [
+        {
+            name: 'Content Ad',
+            value: APP_CONSTANTS.adType.CONTENT,
+            campaignTypes: [
+                APP_CONSTANTS.campaignTypes.CONTENT,
+                APP_CONSTANTS.campaignTypes.CONVERSION,
+                APP_CONSTANTS.campaignTypes.MOBILE,
+            ],
+        },
+        {
+            name: 'Video Ad',
+            value: APP_CONSTANTS.adType.VIDEO,
+            campaignTypes: [APP_CONSTANTS.campaignTypes.VIDEO],
+        },
+        {
+            name: 'Image Display Ad',
+            value: APP_CONSTANTS.adType.IMAGE,
+            campaignTypes: [APP_CONSTANTS.campaignTypes.DISPLAY],
+        },
+        {
+            name: 'Display Ad Tag',
+            value: APP_CONSTANTS.adType.AD_TAG,
+            campaignTypes: [APP_CONSTANTS.campaignTypes.DISPLAY],
+        },
+    ],
+    adSizes: [
+        {
+            name: '320x50',
+            value: APP_CONSTANTS.adSize.S_320X50,
+            width: 320,
+            height: 50,
+        },
+        {
+            name: '300x250',
+            value: APP_CONSTANTS.adSize.S_300X250,
+            width: 300,
+            height: 250,
+        },
+    ],
 };
 
 // [Workaround - Webpack] Make options global

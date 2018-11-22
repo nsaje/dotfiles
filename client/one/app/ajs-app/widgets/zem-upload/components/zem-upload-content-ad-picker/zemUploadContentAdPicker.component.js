@@ -6,6 +6,7 @@ angular.module('one.widgets').component('zemUploadContentAdPicker', {
         candidates: '=',
         isEdit: '=?',
         showVideoUpload: '=?',
+        showDisplayUpload: '=?',
         adPickerApi: '=?',
         editFormApi: '=?',
         statusUpdatedCallback: '=?',
@@ -25,9 +26,13 @@ angular.module('one.widgets').component('zemUploadContentAdPicker', {
         $ctrl.download = download;
         $ctrl.updateCandidateCallback = updateCandidateCallback;
         $ctrl.refreshCandidatesCallback = refreshCandidatesCallback;
+        $ctrl.adType = constants.adType;
 
         $ctrl.$onInit = function() {
             $ctrl.editFormApi = $ctrl.editFormApi || {};
+            $ctrl.titlePlaceholder = $ctrl.showDisplayUpload
+                ? 'Ad Name'
+                : 'Ad Title';
 
             if ($ctrl.adPickerApi) {
                 $ctrl.adPickerApi.getWaitingCandidateIds = getWaitingCandidateIds;
@@ -42,6 +47,13 @@ angular.module('one.widgets').component('zemUploadContentAdPicker', {
         $ctrl.$onDestroy = function() {
             stopPolling();
             stopPollingAllVideoAssetsStatuses();
+        };
+
+        $ctrl.getAdSize = function(candidate) {
+            if (candidate.imageWidth && candidate.imageHeight) {
+                return candidate.imageWidth + 'x' + candidate.imageHeight;
+            }
+            return '';
         };
 
         function isCandidateStatusLoading(candidate) {
@@ -76,6 +88,7 @@ angular.module('one.widgets').component('zemUploadContentAdPicker', {
             );
         }
 
+        // eslint-disable-next-line complexity
         function getAsyncUploadJobStatus(candidate) {
             if (
                 candidate.imageStatus ===
@@ -101,8 +114,9 @@ angular.module('one.widgets').component('zemUploadContentAdPicker', {
             }
 
             if (
-                candidate.imageStatus ===
-                    constants.asyncUploadJobStatus.PENDING_START ||
+                (candidate.imageStatus ===
+                    constants.asyncUploadJobStatus.PENDING_START &&
+                    candidate.adType !== constants.adType.AD_TAG) ||
                 candidate.urlStatus ===
                     constants.asyncUploadJobStatus.PENDING_START
             ) {
@@ -163,6 +177,7 @@ angular.module('one.widgets').component('zemUploadContentAdPicker', {
         }
 
         var pollInterval = null;
+
         function startPolling() {
             if (pollInterval !== null) {
                 return;

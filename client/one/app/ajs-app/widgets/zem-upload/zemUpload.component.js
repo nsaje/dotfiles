@@ -12,6 +12,7 @@ angular.module('one.widgets').directive('zemUpload', function() {
             onSave: '=',
             closeModal: '=',
             showVideoUpload: '=',
+            showDisplayUpload: '=',
         },
         controllerAs: 'ctrl',
         controller: 'ZemUploadCtrl',

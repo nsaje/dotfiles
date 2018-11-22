@@ -9,6 +9,7 @@
 @form-input-width-content-upload: 68%;
 @form-additional-info-width-content-upload: 14%;
 @preview-width: 40%;
+@form-textarea-height-content-upload: 300px;
 
 .content-upload .modal-dialog {
     width: @modal-content-width;
@@ -257,6 +258,11 @@
     }
 }
 
+.content-upload__ad-size {
+    position: relative;
+    width: 70px;
+}
+
 .content-upload__ad-image-container {
     width: 56px;
     position: relative;
@@ -419,7 +425,10 @@
         }
 
         .textarea {
+            min-width: @form-input-width-content-upload;
             max-width: @form-input-width-content-upload;
+            height: @form-textarea-height-content-upload;            
+            min-height: @form-textarea-height-content-upload;
         }
     }
 }
@@ -1008,6 +1017,12 @@
                         height: 40px;
                     }
 
+                    &.content-upload__ad-size {
+                        position: absolute;
+                        width: 70px;
+                    }
+                    
+                    &.content-upload__ad-size
                     &.content-upload__ad-title {
                         margin-bottom: 10px;
                     }
@@ -1016,11 +1031,11 @@
                         margin-top: 10px;
                     }
 
+                    &.content-upload__ad-size
                     &.content-upload__ad-title,
                     &.content-upload__ad-error-container,
                     &.content-upload__ad-action-buttons {
                         padding: 0 0 0 50px;
-
                     }
 
                     .content-upload__ad-error {

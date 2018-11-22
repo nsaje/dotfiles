@@ -47,6 +47,18 @@ export enum SpecialAccount {
     OEN = 305,
 }
 
+export enum AdType {
+    CONTENT = 1,
+    VIDEO = 2,
+    IMAGE = 3,
+    AD_TAG = 4,
+}
+
+export enum AdSize {
+    S_320X50 = 1,
+    S_300X250 = 2,
+}
+
 export const APP_CONSTANTS = {
     /**
      * Max. selected media sources in on sources tabs.
@@ -1155,6 +1167,8 @@ export const APP_CONSTANTS = {
         ERROR: 'Error',
         INVALID: 'Invalid',
     },
+    adType: AdType,
+    adSize: AdSize,
     imageCrop: {
         CENTER: 'center',
         FACES: 'faces',

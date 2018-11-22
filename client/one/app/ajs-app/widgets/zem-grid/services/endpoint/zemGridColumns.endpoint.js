@@ -1656,7 +1656,7 @@ angular
         NAME_COLUMN_BRANDING[constants.breakdown.CONTENT_AD] = {
             name: 'Content Ad',
             help:
-                'The creative title/headline of a content ad. The link to landing page includes tracking codes.',
+                'The creative title/name/headline of a content ad. The link to landing page includes tracking codes.',
         };
         NAME_COLUMN_BRANDING[constants.breakdown.MEDIA_SOURCE] = {
             name: 'Media Source',

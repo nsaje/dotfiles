@@ -33,17 +33,20 @@ angular.module('one.widgets').service('zemUploadApiConverter', function() {
         if (defaults.indexOf('displayUrl') >= 0) {
             ret.push('display_url');
         }
+
         return ret;
     }
 
     function convertPartialUpdateToApi(candidate) {
-        return {
+        var item = {
             id: candidate.id,
             label: candidate.label,
             url: candidate.url,
             title: candidate.title,
             image_url: candidate.imageUrl,
             image_crop: candidate.imageCrop,
+            type: candidate.adType,
+            ad_tag: candidate.adTag,
             video_asset_id: candidate.videoAssetId,
             display_url: candidate.displayUrl,
             brand_name: candidate.brandName,
@@ -52,6 +55,18 @@ angular.module('one.widgets').service('zemUploadApiConverter', function() {
             primary_tracker_url: candidate.primaryTrackerUrl,
             secondary_tracker_url: candidate.secondaryTrackerUrl,
         };
+
+        if (candidate.adSize) {
+            var adSize = options.adSizes.find(function(size) {
+                return size.value === candidate.adSize;
+            });
+            if (adSize) {
+                item.image_width = adSize.width;
+                item.image_height = adSize.height;
+            }
+        }
+
+        return item;
     }
 
     function removeUndefinedValues(obj) {
@@ -73,6 +88,9 @@ angular.module('one.widgets').service('zemUploadApiConverter', function() {
             image: errors.image,
             imageUrl: errors.image_url,
             imageCrop: errors.image_crop,
+            adType: errors.type,
+            adSize: getAdSizeErrors(errors.image_width, errors.image_height),
+            adTag: errors.ad_tag,
             videoAssetId: errors.video_asset_id,
             displayUrl: errors.display_url,
             brandName: errors.brand_name,
@@ -98,6 +116,9 @@ angular.module('one.widgets').service('zemUploadApiConverter', function() {
             imageWidth: candidate.image_width,
             imageHeight: candidate.image_height,
             imageCrop: candidate.image_crop,
+            adType: candidate.type,
+            adSize: getAdSize(candidate.image_width, candidate.image_height),
+            adTag: candidate.ad_tag,
             videoAssetId: candidate.video_asset_id,
             hostedImageUrl: candidate.hosted_image_url,
             displayUrl: candidate.display_url,
@@ -144,6 +165,9 @@ angular.module('one.widgets').service('zemUploadApiConverter', function() {
             file: errors.candidates,
             batchName: errors.batch_name,
             displayUrl: errors.display_url,
+            adType: errors.type,
+            adSize: getAdSizeErrors(errors.image_width, errors.image_height),
+            adTag: errors.ad_tag,
             brandName: errors.brand_name,
             description: errors.description,
             callToAction: errors.call_to_action,
@@ -163,5 +187,23 @@ angular.module('one.widgets').service('zemUploadApiConverter', function() {
         return {
             batchName: errors.batch_name,
         };
+    }
+
+    function getAdSize(imageWidth, imageHeight) {
+        if (imageWidth && imageHeight) {
+            var adSize = options.adSizes.find(function(size) {
+                return size.width === imageWidth && size.height === imageHeight;
+            });
+            if (adSize) {
+                return adSize.value;
+            }
+        }
+        return undefined;
+    }
+
+    function getAdSizeErrors(errorsImageWidth, errorsImageHeight) {
+        if (errorsImageWidth || errorsImageHeight) {
+            return 'Wrong or missing Ad Size.';
+        }
     }
 });

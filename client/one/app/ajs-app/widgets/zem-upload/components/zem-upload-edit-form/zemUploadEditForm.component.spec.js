@@ -60,6 +60,7 @@ describe('ZemUploadEditFormCtrl', function() {
             candidate = {
                 url: 'http://zemanta.com',
                 title: 'Zemanta Blog',
+                adType: constants.adType.CONTENT,
                 imageUrl: 'http://zemanta.com/img.jpg',
                 imageCrop: 'center',
                 description: '',
@@ -98,6 +99,7 @@ describe('ZemUploadEditFormCtrl', function() {
             ctrl.selectedCandidate = {
                 url: 'http://zemanta.com',
                 title: 'Zemanta Blog',
+                adType: constants.adType.CONTENT,
                 imageUrl: 'http://zemanta.com/img.jpg',
                 imageCrop: 'center',
                 description: '',
@@ -346,6 +348,49 @@ describe('ZemUploadEditFormCtrl', function() {
                 videoAssetId: 1,
                 videoUploadProgress: 0,
             });
+        });
+    });
+
+    describe('edit candidate type', function() {
+        it('correctly initializes adType for native', function() {
+            var candidate = {
+                adType: constants.adType.CONTENT,
+            };
+
+            ctrl.showVideoUpload = false;
+            ctrl.showDisplayUpload = false;
+            spyOn(ctrl, 'updateField').and.stub();
+            ctrl.api.open(candidate);
+
+            expect(ctrl.selectedCandidate.adType).toBe(
+                constants.adType.CONTENT
+            );
+        });
+
+        it('correctly initializes adType for video', function() {
+            var candidate = {
+                adType: constants.adType.CONTENT,
+            };
+
+            ctrl.showVideoUpload = true;
+            ctrl.showDisplayUpload = false;
+            spyOn(ctrl, 'updateField').and.stub();
+            ctrl.api.open(candidate);
+
+            expect(ctrl.selectedCandidate.adType).toBe(constants.adType.VIDEO);
+        });
+
+        it('correctly initializes adType for display', function() {
+            var candidate = {
+                adType: constants.adType.CONTENT,
+            };
+
+            ctrl.showVideoUpload = false;
+            ctrl.showDisplayUpload = true;
+            spyOn(ctrl, 'updateField').and.stub();
+            ctrl.api.open(candidate);
+
+            expect(ctrl.selectedCandidate.adType).toBe(constants.adType.IMAGE);
         });
     });
 });

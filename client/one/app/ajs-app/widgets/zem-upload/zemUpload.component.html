@@ -1,6 +1,37 @@
 <ng-switch on="ctrl.step">
-    <zem-upload-step1 ng-switch-when="1" endpoint="ctrl.endpoint" callback="ctrl.switchToContentAdPicker(batchId, batchName, candidates)" close="ctrl.closeModal" default-batch-name="ctrl.defaultBatchName"></zem-upload-step1>
-    <zem-upload-step2 ng-switch-when="2" endpoint="ctrl.endpoint" callback="ctrl.switchToSuccessScreen(numSuccessful)" candidates="ctrl.candidates" batch-id="ctrl.batchId" batch-name="ctrl.batchName" close="ctrl.closeModal" auto-open-edit-form="ctrl.autoOpenEditForm" show-video-upload="ctrl.showVideoUpload"></zem-upload-step2>
-    <zem-upload-step3 ng-switch-when="3" callback="ctrl.switchToBeginning()" ad-group="ctrl.adGroup" num-successful="ctrl.numSuccessful" on-save="ctrl.onSave" close="ctrl.closeModal"></zem-upload-step3>
-    <zem-upload-step0 ng-switch-when="0" endpoint="ctrl.endpoint" single-callback="ctrl.switchToContentAdPicker(batchId, batchName, candidates, autoOpenEditForm)" csv-callback="ctrl.switchToFileUpload()" close="ctrl.closeModal" default-batch-name="ctrl.defaultBatchName"></zem-upload-step0>
+    <zem-upload-step1 
+        ng-switch-when="1" 
+        endpoint="ctrl.endpoint" 
+        callback="ctrl.switchToContentAdPicker(batchId, batchName, candidates)" 
+        close="ctrl.closeModal" 
+        default-batch-name="ctrl.defaultBatchName">
+    </zem-upload-step1>
+    <zem-upload-step2 
+        ng-switch-when="2" 
+        endpoint="ctrl.endpoint" 
+        callback="ctrl.switchToSuccessScreen(numSuccessful)" 
+        candidates="ctrl.candidates" 
+        batch-id="ctrl.batchId" 
+        batch-name="ctrl.batchName" 
+        close="ctrl.closeModal" 
+        auto-open-edit-form="ctrl.autoOpenEditForm" 
+        show-video-upload="ctrl.showVideoUpload"
+        show-display-upload="ctrl.showDisplayUpload">
+    </zem-upload-step2>
+    <zem-upload-step3 
+        ng-switch-when="3" 
+        callback="ctrl.switchToBeginning()" 
+        ad-group="ctrl.adGroup" 
+        num-successful="ctrl.numSuccessful" 
+        on-save="ctrl.onSave" 
+        close="ctrl.closeModal">
+    </zem-upload-step3>
+    <zem-upload-step0 
+        ng-switch-when="0" 
+        endpoint="ctrl.endpoint" 
+        single-callback="ctrl.switchToContentAdPicker(batchId, batchName, candidates, autoOpenEditForm)" 
+        csv-callback="ctrl.switchToFileUpload()" 
+        close="ctrl.closeModal" 
+        default-batch-name="ctrl.defaultBatchName">
+    </zem-upload-step0>
 </ng-switch>

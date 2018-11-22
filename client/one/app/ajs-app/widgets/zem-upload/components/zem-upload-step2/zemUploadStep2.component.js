@@ -12,6 +12,7 @@ angular.module('one.widgets').directive('zemUploadStep2', function($timeout) {
             closeModal: '=close',
             autoOpenEditForm: '=',
             showVideoUpload: '=',
+            showDisplayUpload: '=',
             isEdit: '=',
         },
         controllerAs: 'ctrl',

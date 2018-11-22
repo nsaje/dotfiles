@@ -75,8 +75,8 @@
         </button>
     </h2>
     <div ng-if="$ctrl.state.steps.creatives">
-        <div class="zem-campaign-launcher-review__creatives-list">
-            <div ng-if="!$ctrl.state.creatives.candidates.length">No creatives uploaded.</div>
+        <div ng-if="!$ctrl.state.creatives.candidates.length">No creatives uploaded.</div>
+        <div class="zem-campaign-launcher-review__creatives-list" ng-if="!$ctrl.isDisplayCampaign">
             <div class="zem-campaign-launcher-review__creatives-list-item" ng-repeat="creative in $ctrl.state.creatives.candidates">
                 <img src="{{ creative.hostedImageUrl }}" class="creative__image"/>
                 <div class="creative__title">{{ creative.title }}</div>
@@ -84,6 +84,19 @@
                 <div class="creative__description">{{ creative.description }}</div>
                 <div class="creative__display-url"><a href="{{ creative.url }}" target="_blank">{{ creative.displayUrl }}</a></div>
                 <a href="{{ creative.url }}" class="button creative__button" target="_blank">{{ creative.callToAction }}</a>
+            </div>
+            <div ng-repeat="dummyCreative in $ctrl.dummyCreatives track by $index" class="zem-campaign-launcher-review__dummy-creatives-item"></div>
+        </div>
+        <div class="zem-campaign-launcher-review__creatives-list" ng-if="$ctrl.isDisplayCampaign">
+            <div class="zem-campaign-launcher-review__creatives-list-item" ng-repeat="creative in $ctrl.state.creatives.candidates">
+                <img src="{{ creative.hostedImageUrl }}" 
+                     class="creative__image" 
+                     ng-if="creative.adType === $ctrl.adType.IMAGE"/>
+                <iframe ng-if="creative.adType === $ctrl.adType.AD_TAG"
+                        class="creative__iframe"
+                        src="{{ $ctrl.getIframeSrc(creative.adTag) }}">
+                </iframe>
+                <div class="creative__title"><a href="{{ creative.url }}" target="_blank">{{ creative.title }}</a></div>
             </div>
             <div ng-repeat="dummyCreative in $ctrl.dummyCreatives track by $index" class="zem-campaign-launcher-review__dummy-creatives-item"></div>
         </div>
