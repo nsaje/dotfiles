@@ -35,6 +35,7 @@ class AdGroupsView(K1APIView):
         ad_group_ids = request.GET.get("ad_group_ids")
         source_types = request.GET.get("source_types")
         slugs = request.GET.get("source_slugs")
+        only_active = request.GET.get("only_active") == "true"
         if ad_group_ids:
             ad_group_ids = ad_group_ids.split(",")
         if source_types:
@@ -43,7 +44,7 @@ class AdGroupsView(K1APIView):
             slugs = slugs.split(",")
 
         ad_groups, campaigns_budgets_map, campaignstop_states = self._get_ad_groups(
-            ad_group_ids, source_types, slugs, marker, limit
+            ad_group_ids, source_types, slugs, marker, only_active, limit
         )
 
         campaign_ids = set(ad_group.campaign_id for ad_group in ad_groups)
@@ -103,6 +104,7 @@ class AdGroupsView(K1APIView):
                 "id": ad_group.id,
                 "name": ad_group.name,
                 "external_name": ad_group.get_external_name(),
+                "state": ad_group.settings.state,
                 "start_date": self._get_start_date(ad_group.settings, campaignstop_states),
                 "end_date": self._get_end_date(ad_group.settings, campaignstop_states),
                 "time_zone": settings.DEFAULT_TIME_ZONE,
@@ -232,7 +234,7 @@ class AdGroupsView(K1APIView):
         return campaign_goals_dicts
 
     @staticmethod
-    def _get_ad_groups(ad_group_ids, source_types, slugs, marker, limit):
+    def _get_ad_groups(ad_group_ids, source_types, slugs, marker, only_active, limit):
         ad_groups = dash.models.AdGroup.objects.all()
 
         if ad_group_ids:
@@ -247,6 +249,9 @@ class AdGroupsView(K1APIView):
             if slugs:
                 ad_group_sources = ad_group_sources.filter(source__bidder_slug__in=slugs)
             ad_groups = ad_groups.filter(pk__in=ad_group_sources.values("ad_group_id"))
+
+        if only_active:
+            ad_groups = ad_groups.filter(settings__state=dash.constants.AdGroupSettingsState.ACTIVE)
 
         ad_groups = ad_groups.exclude_archived()
 
