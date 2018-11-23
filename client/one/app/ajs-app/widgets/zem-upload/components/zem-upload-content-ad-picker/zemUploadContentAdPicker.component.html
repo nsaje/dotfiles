@@ -1,6 +1,6 @@
 <div class="content-upload__ads-container custom-scroller">
     <table class="custom-table content-upload__ads-table">
-        <tr ng-repeat="candidate in $ctrl.candidates track by $index" ng-class="{'content-upload__selected-ad': candidate.id === $ctrl.editFormApi.selectedId}" ng-click="$ctrl.editFormApi.open(candidate)">
+        <tr ng-repeat="candidate in $ctrl.candidates track by $index" ng-class="{'content-upload__selected-ad': candidate.id === $ctrl.editFormApi.selectedId}" ng-click="$ctrl.toggleEditForm(candidate)">
             <td class="content-upload__ad-status" ng-class="{
                 'content-upload__ad-status--loading': $ctrl.isCandidateStatusLoading(candidate),
                 'content-upload__ad-status--ok': $ctrl.isCandidateStatusOk(candidate),

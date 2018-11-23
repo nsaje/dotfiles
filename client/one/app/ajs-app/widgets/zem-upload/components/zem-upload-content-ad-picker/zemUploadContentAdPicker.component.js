@@ -56,6 +56,14 @@ angular.module('one.widgets').component('zemUploadContentAdPicker', {
             return '';
         };
 
+        $ctrl.toggleEditForm = function(candidate) {
+            if ($ctrl.editFormApi.selectedId) {
+                $ctrl.editFormApi.close(candidate);
+            } else {
+                $ctrl.editFormApi.open(candidate);
+            }
+        };
+
         function isCandidateStatusLoading(candidate) {
             var asyncUploadJobStatus = getAsyncUploadJobStatus(candidate);
             return (
