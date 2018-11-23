@@ -115,6 +115,8 @@ class RDSAccount(RDSModelization):
         account_ob_representative="settings__ob_representative__email",
         archived="settings__archived",
         account_type=RDSModelization.get_constant_value("settings__account_type", dash.constants.AccountType),
+        whitelist_publisher_groups="settings__whitelist_publisher_groups",
+        blacklist_publisher_groups="settings__blacklist_publisher_groups",
     )
 
 
@@ -137,8 +139,10 @@ class RDSCampaign(RDSModelization):
         target_devices="settings__target_devices",
         target_placements="settings__target_placements",
         target_os="settings__target_os",
-        target_region="settings__target_regions",
+        target_regions="settings__target_regions",
         exclusion_target_regions="settings__exclusion_target_regions",
+        whitelist_publisher_groups="settings__whitelist_publisher_groups",
+        blacklist_publisher_groups="settings__blacklist_publisher_groups",
         automatic_campaign_stop="settings__automatic_campaign_stop",
         landing_mode="settings__landing_mode",
         autopilot="settings__autopilot",
@@ -155,6 +159,7 @@ class RDSCampaignGoal(RDSModelization):
     MODEL = dash.models.CampaignGoal
     TABLE = "mv_rds_campaign_goal"
     FIELDS = OrderedDict(
+        campaign_id="campaign_id",
         campaign_goal_type=RDSModelization.get_constant_value("type", dash.constants.CampaignGoalKPI),
         campaign_goal_primary="primary",
         conversion_goal_id="conversion_goal__id",
@@ -212,6 +217,7 @@ class RDSAdGroup(RDSModelization):
         target_placements="settings__target_placements",
         target_os="settings__target_os",
         target_browsers="settings__target_browsers",
+        target_regions="settings__target_regions",
         exclusion_target_regions="settings__exclusion_target_regions",
         retargeting_ad_groups="settings__retargeting_ad_groups",
         exclusion_retargeting_ad_groups="settings__exclusion_retargeting_ad_groups",
@@ -220,9 +226,9 @@ class RDSAdGroup(RDSModelization):
         exclusion_interest_targeting="settings__exclusion_interest_targeting",
         audience_targeting="settings__audience_targeting",
         exclusion_audience_targeting="settings__exclusion_audience_targeting",
+        whitelist_publisher_groups="settings__whitelist_publisher_groups",
+        blacklist_publisher_groups="settings__blacklist_publisher_groups",
         archived="settings__archived",
-        brand_name="settings__brand_name",
-        call_to_action="settings__call_to_action",
         autopilot_state="settings__autopilot_state",
         autopilot_daily_budget="settings__autopilot_daily_budget",
         local_autopilot_daily_budget="settings__local_autopilot_daily_budget",
@@ -238,6 +244,9 @@ class RDSAdGroup(RDSModelization):
         delivery_type="settings__delivery_type",
         click_capping_daily_ad_group_max_clicks="settings__click_capping_daily_ad_group_max_clicks",
         click_capping_daily_click_budget="settings__click_capping_daily_click_budget",
+        start_date="settings__start_date",
+        end_date="settings__end_date",
+        created_dt="created_dt",
     )
 
 

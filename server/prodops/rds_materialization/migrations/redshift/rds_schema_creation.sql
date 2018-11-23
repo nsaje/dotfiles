@@ -38,7 +38,9 @@ CREATE TABLE IF NOT EXISTS MV_RDS_ACCOUNT (
   account_cs_representative    varchar(100) NULL,
   account_ob_representative    varchar(100) NULL,
   archived                     BOOLEAN,
-  account_type                 varchar(50)
+  account_type                 varchar(50),
+  whitelist_publisher_groups   varchar(4000),
+  blacklist_publisher_groups   varchar(4000)
 );
 
 CREATE TABLE IF NOT EXISTS MV_RDS_CAMPAIGN (
@@ -56,8 +58,10 @@ CREATE TABLE IF NOT EXISTS MV_RDS_CAMPAIGN (
   target_devices           VARCHAR(1000),
   target_placements        VARCHAR(1000) NULL,
   target_os                VARCHAR(1000) NULL,
-  target_region            VARCHAR(3000),
-  exclusion_target_regions VARCHAR(3000),
+  target_regions           VARCHAR(3000) NULL,
+  exclusion_target_regions VARCHAR(3000) NULL,
+  whitelist_publisher_groups              VARCHAR(4000),
+  blacklist_publisher_groups              VARCHAR(4000),
   automatic_campaign_stop  BOOLEAN       NULL,
   landing_mode             BOOLEAN       NULL,
   autopilot                BOOLEAN,
@@ -69,6 +73,7 @@ CREATE TABLE IF NOT EXISTS MV_RDS_CAMPAIGN (
 
 CREATE TABLE IF NOT EXISTS MV_RDS_CAMPAIGN_GOAL (
   id                         INTEGER PRIMARY KEY,
+  campaign_id                INTEGER,
   campaign_goal_type         VARCHAR(100),
   campaign_goal_primary      BOOLEAN,
   conversion_goal_id         INTEGER  NULL,
@@ -121,6 +126,7 @@ CREATE TABLE IF NOT EXISTS MV_RDS_AD_GROUP (
   target_placements                       VARCHAR(24)       NULL,
   target_os                               varchar(1000)     NULL,
   target_browsers                         varchar(1000)     NULL,
+  target_regions                          varchar(4000)     NULL,
   exclusion_target_regions                varchar(4000)     NULL,
   retargeting_ad_groups                   varchar(4000),
   exclusion_retargeting_ad_groups         varchar(4000),
@@ -129,9 +135,9 @@ CREATE TABLE IF NOT EXISTS MV_RDS_AD_GROUP (
   exclusion_interest_targeting            varchar(4000),
   audience_targeting                      varchar(4000),
   exclusion_audience_targeting            varchar(4000),
+  whitelist_publisher_groups              varchar(4000),
+  blacklist_publisher_groups              varchar(4000),
   archived                                BOOLEAN,
-  brand_name                              VARCHAR(25),
-  call_to_action                          VARCHAR(25),
   autopilot_state                         INTEGER           NULL,
   autopilot_daily_budget                  DECIMAL(10, 4)    NULL,
   local_autopilot_daily_budget            DECIMAL(10, 4)    NULL,
@@ -146,7 +152,11 @@ CREATE TABLE IF NOT EXISTS MV_RDS_AD_GROUP (
   local_max_cpm                           DECIMAL(10, 4)    NULL,
   delivery_type                           VARCHAR(20),
   click_capping_daily_ad_group_max_clicks INTEGER,
-  click_capping_daily_click_budget        DECIMAL(10, 4)    NULL
+  click_capping_daily_click_budget        DECIMAL(10, 4)    NULL,
+
+  start_date                              DATE,
+  end_date                                DATE              NULL,
+  created_dt                              DATETIME
 );
 
 
