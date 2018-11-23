@@ -203,7 +203,7 @@ angular.module('one.widgets').service('zemUploadApiConverter', function() {
 
     function getAdSizeErrors(errorsImageWidth, errorsImageHeight) {
         if (errorsImageWidth || errorsImageHeight) {
-            return 'Wrong or missing Ad Size.';
+            return ['Missing ad size.'];
         }
     }
 });

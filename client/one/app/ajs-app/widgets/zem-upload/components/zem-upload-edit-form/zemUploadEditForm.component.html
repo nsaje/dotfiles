@@ -54,7 +54,8 @@
                             'content-upload__change-status--successful': ctrl.fieldsSaved.image && !ctrl.fieldsHaveErrors('image')}">
                         </div>
                         <div class="message message--error" for="image-input" ng-if="ctrl.fieldsApiErrors['image']">Something went wrong. <a href ng-click="ctrl.updateField(ctrl.selectedCandidate, 'image')" tabindex="-1">Try again</a></div>
-                        <div class="message message--error" for="image-url-input" ng-repeat="error in ctrl.selectedCandidate.errors.image" ng-if="ctrl.showImageUpload">{{ error }}</div>
+                        <div class="message message--error" for="image-url-input" ng-repeat="error in ctrl.selectedCandidate.errors.image">{{ error }}</div>
+                        <div class="message message--error" for="image-url-input" ng-repeat="error in ctrl.selectedCandidate.errors.imageUrl" ng-if="ctrl.showImageUpload">{{ error }}</div>
                         <div class="form__text--small">We recommend using HQ images, at least 1200x628 pixels or above. The minimum required image for a native ad is 300x300 pixels.</div>                    
                         <div class="form__text--small">
                             <a href ng-click="ctrl.toggleImageUpload()" tabindex="-1" ng-if="!ctrl.isEdit">
@@ -74,7 +75,7 @@
                             'content-upload__change-status--successful': ctrl.fieldsSaved.imageUrl && !ctrl.fieldsHaveErrors('imageUrl')}">
                         </div>
                         <div class="message message--error" for="image-url-input" ng-if="ctrl.fieldsApiErrors['imageUrl']">Something went wrong. <a href ng-click="ctrl.updateField(ctrl.selectedCandidate, 'imageUrl')" tabindex="-1">Try again</a></div>
-                        <div class="message message--error" for="image-url-input" ng-repeat="error in ctrl.selectedCandidate.errors.imageUrl" ng-if="!ctrl.showImageUpload">{{ error }}</div>
+                        <div class="message message--error" for="image-url-input" ng-repeat="error in ctrl.selectedCandidate.errors.imageUrl">{{ error }}</div>
                         <div class="form__text--small">We recommend using HQ images, at least 1200x628 pixels or above. The minimum required image for a native ad is 300x300 pixels.</div>                    
                         <div class="form__text--small">
                             <a href class="action-link" ng-click="ctrl.toggleImageUpload()" tabindex="-1">
@@ -324,7 +325,8 @@
                                 'content-upload__change-status--successful': ctrl.fieldsSaved.image && !ctrl.fieldsHaveErrors('image')}">
                             </div>
                             <div class="message message--error" for="image-input" ng-if="ctrl.fieldsApiErrors['image']">Something went wrong. <a href ng-click="ctrl.updateField(ctrl.selectedCandidate, 'image')" tabindex="-1">Try again</a></div>
-                            <div class="message message--error" for="image-url-input" ng-repeat="error in ctrl.selectedCandidate.errors.image" ng-if="ctrl.showImageUpload">{{ error }}</div>                            
+                            <div class="message message--error" for="image-url-input" ng-repeat="error in ctrl.selectedCandidate.errors.image">{{ error }}</div>
+                            <div class="message message--error" for="image-url-input" ng-repeat="error in ctrl.selectedCandidate.errors.imageUrl" ng-if="ctrl.showImageUpload">{{ error }}</div>
                             <div class="form__text--small" ng-if="ctrl.showDisplayUpload">We support images of size 300x250 pixels or 320x50 pixels and in png, jpg, gif format. The maximum allowed image size is 150kB.</div>
                             <div class="form__text--small">
                                 <a href ng-click="ctrl.toggleImageUpload()" tabindex="-1" ng-if="!ctrl.isEdit">
@@ -344,7 +346,7 @@
                                 'content-upload__change-status--successful': ctrl.fieldsSaved.imageUrl && !ctrl.fieldsHaveErrors('imageUrl')}">
                             </div>
                             <div class="message message--error" for="image-url-input" ng-if="ctrl.fieldsApiErrors['imageUrl']">Something went wrong. <a href ng-click="ctrl.updateField(ctrl.selectedCandidate, 'imageUrl')" tabindex="-1">Try again</a></div>
-                            <div class="message message--error" for="image-url-input" ng-repeat="error in ctrl.selectedCandidate.errors.imageUrl" ng-if="!ctrl.showImageUpload">{{ error }}</div>                            
+                            <div class="message message--error" for="image-url-input" ng-repeat="error in ctrl.selectedCandidate.errors.imageUrl">{{ error }}</div>
                             <div class="form__text--small" ng-if="ctrl.showDisplayUpload">We support images of size 300x250 pixels or 320x50 pixels and in png, jpg, gif format. The maximum allowed image size is 150kB.</div>
                             <div class="form__text--small">
                                 <a href class="action-link" ng-click="ctrl.toggleImageUpload()" tabindex="-1">
@@ -364,9 +366,7 @@
                                 <ui-select-choices repeat="item.value as item in ctrl.adSizes" class="ui-select-choices">
                                     {{item.name}}
                                 </ui-select-choices>
-                            </ui-select>
-                            <div class="message message--error" for="ad-size-input" ng-if="ctrl.fieldsApiErrors['adSize']">Something went wrong. <a href ng-click="ctrl.updateField(ctrl.selectedCandidate, 'adSize')" tabindex="-1">Try again</a></div>
-                            <div class="message message--error" for="ad-size-input" ng-repeat="error in ctrl.selectedCandidate.errors.adSize">{{ error }}</div>
+                            </ui-select>                            
                             <div class="content-upload__field-additional-info content-upload__change-status content-upload__change-status--dropdown-on-the-left" ng-class="{
                                 'content-upload__change-status--loading': ctrl.fieldsLoading.adSize,
                                 'content-upload__change-status--successful': ctrl.fieldsSaved.adSize && !ctrl.fieldsHaveErrors('adSize')}">
@@ -374,7 +374,9 @@
                                     Use as default
                                 </a>
                             </div>
-                        </div>   
+                            <div class="message message--error" for="ad-size-input" ng-if="ctrl.fieldsApiErrors['adSize']">Something went wrong. <a href ng-click="ctrl.updateField(ctrl.selectedCandidate, 'adSize')" tabindex="-1">Try again</a></div>
+                            <div class="message message--error" for="ad-size-input" ng-repeat="error in ctrl.selectedCandidate.errors.adSize">{{ error }}</div>
+                        </div>
 
                         <div class="form__group" ng-class="{'form--error': ctrl.fieldsHaveErrors(['adTag'])}">
                             <label class="form__label" for="ad-tag-input">Ad Tag</label>
@@ -390,7 +392,7 @@
                                 'content-upload__change-status--successful': ctrl.fieldsSaved.adTag && !ctrl.fieldsHaveErrors('adTag')}">
                             </div>
                             <div class="message message--error" for="ad-tag-input" ng-if="ctrl.fieldsApiErrors['adTag']">Something went wrong. <a href ng-click="ctrl.updateField(ctrl.selectedCandidate, 'adTag')" tabindex="-1">Try again</a></div>
-                            <div class="message message--error" for="ad-tag-input" ng-repeat="error in ctrl.selectedCandidate.errors.adTag" ng-if="!ctrl.showImageUpload">{{ error }}</div>
+                            <div class="message message--error" for="ad-tag-input" ng-repeat="error in ctrl.selectedCandidate.errors.adTag">{{ error }}</div>
                             <div class="form__text--small">If using JS code, it must also include a click macro.</div>                            
                         </div>  
                     </div>
