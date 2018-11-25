@@ -104,7 +104,6 @@ class AdGroupsView(K1APIView):
                 "id": ad_group.id,
                 "name": ad_group.name,
                 "external_name": ad_group.get_external_name(),
-                "state": ad_group.settings.state,
                 "start_date": self._get_start_date(ad_group.settings, campaignstop_states),
                 "end_date": self._get_end_date(ad_group.settings, campaignstop_states),
                 "time_zone": settings.DEFAULT_TIME_ZONE,
