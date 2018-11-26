@@ -11,7 +11,8 @@ angular
         zemIntercomService,
         zemSupportHeroService,
         zemDesignHelpersService,
-        zemGoogleAnalyticsService
+        zemGoogleAnalyticsService,
+        zemMixpanelService
     ) {
         // eslint-disable-line max-len
         this.initApp = initApp;
@@ -25,6 +26,7 @@ angular
             zemNavigationService.init();
 
             zemGoogleAnalyticsService.init();
+            zemMixpanelService.init();
             zemDesignHelpersService.init();
 
             // Service initializers that need to resolve before user can use the app

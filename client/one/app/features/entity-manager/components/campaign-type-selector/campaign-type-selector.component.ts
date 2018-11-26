@@ -11,6 +11,7 @@ import {
 import {downgradeComponent} from '@angular/upgrade/static';
 import {CAMPAIGN_TYPE} from '../../../../app.constants';
 import {GoogleAnalyticsService} from '../../../../core/google-analytics/google-analytics.service';
+import {MixpanelService} from '../../../../core/mixpanel/mixpanel.service';
 
 @Component({
     selector: 'zem-campaign-type-selector',
@@ -30,12 +31,14 @@ export class CampaignTypeSelectorComponent {
 
     constructor(
         private googleAnalyticsService: GoogleAnalyticsService,
+        private mixpanelService: MixpanelService,
         @Inject('zemPermissions') private zemPermissions: any
     ) {}
 
     selectCampaignType(campaignType: number) {
         if (this.shouldLogCampaignTypeSelection) {
             this.googleAnalyticsService.logCampaignTypeSelection(campaignType);
+            this.mixpanelService.logCampaignTypeSelection(campaignType);
         }
         if (
             campaignType === CAMPAIGN_TYPE.DISPLAY &&
