@@ -1,6 +1,7 @@
 import django.test
 
 import core.models
+import dash.constants
 import utils.exc
 from utils.magic_mixer import magic_mixer
 
@@ -16,17 +17,49 @@ class SourceAdoptionCommandTest(django.test.TestCase):
         self.account = magic_mixer.blend(core.models.Account)
         campaign = magic_mixer.blend(core.models.Campaign, account=self.account)
         self.ad_group = magic_mixer.blend(core.models.AdGroup, campaign=campaign)
+        self.ad_group.settings.update_unsafe(
+            None,
+            b1_sources_group_enabled=True,
+            autopilot_state=dash.constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET,
+        )
         self.source = magic_mixer.blend(core.models.Source, id=0, released=False, maintenance=False)
         magic_mixer.blend(core.models.DefaultSourceSettings, source=self.source, credentials=magic_mixer.RANDOM)
         self.account.settings.update_unsafe(self.request, auto_add_new_sources=True)
 
-    def test_auto_add_new_ad_group_sources(self):
+    def test_auto_add_new_ad_group_sources_only_all_rtb(self):
+        self.ad_group.settings.update_unsafe(
+            None, b1_sources_group_enabled=True, autopilot_state=dash.constants.AdGroupSettingsAutopilotState.INACTIVE
+        )
         self.account.allowed_sources.add(self.source)
         n_available_on, n_not_available_on = auto_add_new_ad_group_sources(self.source.id)
         ad_group_sources = core.models.AdGroupSource.objects.filter(ad_group=self.ad_group, source=self.source)
         self.assertEqual(1, n_available_on)
         self.assertEqual(0, n_not_available_on)
         self.assertEqual(1, len(ad_group_sources))
+
+    def test_auto_add_new_ad_group_sources_only_budget_autopilot(self):
+        self.ad_group.settings.update_unsafe(
+            None,
+            b1_sources_group_enabled=False,
+            autopilot_state=dash.constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET,
+        )
+        self.account.allowed_sources.add(self.source)
+        n_available_on, n_not_available_on = auto_add_new_ad_group_sources(self.source.id)
+        ad_group_sources = core.models.AdGroupSource.objects.filter(ad_group=self.ad_group, source=self.source)
+        self.assertEqual(1, n_available_on)
+        self.assertEqual(0, n_not_available_on)
+        self.assertEqual(1, len(ad_group_sources))
+
+    def test_auto_add_new_ad_group_sources_no_allrtb_budget_autopilot(self):
+        self.ad_group.settings.update_unsafe(
+            None, b1_sources_group_enabled=False, autopilot_state=dash.constants.AdGroupSettingsAutopilotState.INACTIVE
+        )
+        self.account.allowed_sources.add(self.source)
+        n_available_on, n_not_available_on = auto_add_new_ad_group_sources(self.source.id)
+        ad_group_sources = core.models.AdGroupSource.objects.filter(ad_group=self.ad_group, source=self.source)
+        self.assertEqual(0, n_available_on)
+        self.assertEqual(0, n_not_available_on)
+        self.assertEqual(0, len(ad_group_sources))
 
     def test_auto_add_new_ad_group_sources_not_allowed(self):
         n_available_on, n_not_available_on = auto_add_new_ad_group_sources(self.source.id)

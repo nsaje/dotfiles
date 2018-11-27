@@ -1,6 +1,8 @@
 from django.db import transaction
+from django.db.models import Q
 
 import core.models
+import dash.constants
 import utils.exc
 
 from . import exceptions
@@ -16,8 +18,14 @@ def auto_add_new_ad_group_sources(source_id, logger=None):
         raise utils.exc.MissingDataError("Source does not exist")
 
     ad_groups = core.models.AdGroup.objects.filter(
-        campaign__account__settings__auto_add_new_sources=True, settings__archived=False
+        Q(campaign__account__settings__auto_add_new_sources=True)
+        & Q(settings__archived=False)
+        & (
+            Q(settings__autopilot_state=dash.constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET)
+            | Q(settings__b1_sources_group_enabled=True)
+        )
     )
+
     count_available = 0
     count_not_available = 0
     total_count = len(ad_groups)
