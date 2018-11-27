@@ -248,7 +248,7 @@ class AdGroupSettingsValidatorMixin(object):
             return
         assert isinstance(new_settings.local_b1_sources_group_cpc_cc, decimal.Decimal)
         core.models.settings.ad_group_source_settings.validation_helpers.validate_b1_sources_group_cpc_cc(
-            new_settings.local_b1_sources_group_cpc_cc, self, self.ad_group.campaign.get_bcm_modifiers()
+            new_settings.b1_sources_group_cpc_cc, self, self.ad_group.campaign.get_bcm_modifiers()
         )
 
     def _validate_b1_sources_group_cpm(self, new_settings):
@@ -261,7 +261,7 @@ class AdGroupSettingsValidatorMixin(object):
             return
         assert isinstance(new_settings.local_b1_sources_group_cpm, decimal.Decimal)
         core.models.settings.ad_group_source_settings.validation_helpers.validate_b1_sources_group_cpm(
-            new_settings.local_b1_sources_group_cpm, self, self.ad_group.campaign.get_bcm_modifiers()
+            new_settings.b1_sources_group_cpm, self, self.ad_group.campaign.get_bcm_modifiers()
         )
 
     def _validate_b1_sources_group_daily_budget(self, new_settings):
@@ -269,5 +269,5 @@ class AdGroupSettingsValidatorMixin(object):
             return
         assert isinstance(new_settings.local_b1_sources_group_daily_budget, decimal.Decimal)
         core.models.settings.ad_group_source_settings.validation_helpers.validate_b1_sources_group_daily_budget(
-            new_settings.local_b1_sources_group_daily_budget, self, self.ad_group.campaign.get_bcm_modifiers()
+            new_settings.b1_sources_group_daily_budget, self, self.ad_group.campaign.get_bcm_modifiers()
         )

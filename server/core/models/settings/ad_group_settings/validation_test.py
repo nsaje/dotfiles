@@ -1,10 +1,13 @@
+import decimal
 from decimal import Decimal
 
 import mock
 from django.test import TestCase
 
 import core.models
+import core.models.settings.ad_group_source_settings.exceptions
 from dash import constants
+from utils import dates_helper
 from utils.magic_mixer import magic_mixer
 
 from . import exceptions
@@ -16,7 +19,7 @@ class ValidationTest(TestCase):
         self.request = magic_mixer.blend_request_user()
         self.ad_group = magic_mixer.blend(core.models.AdGroup)
 
-    def test_validate_bidding_type_bit_fail(self):
+    def test_validate_bidding_type_bid_fail(self):
         self.ad_group.bidding_type = constants.BiddingType.CPC
         current_settings = self.ad_group.settings
         new_settings = current_settings.copy_settings()
@@ -108,6 +111,82 @@ class ValidationTest(TestCase):
 
         with self.assertRaises(exceptions.CPMAutopilotNotDisabled):
             current_settings._validate_autopilot_settings(new_settings)
+
+    @mock.patch("automation.autopilot.get_adgroup_minimum_daily_budget", autospec=True)
+    def test_validate_autopilot_settings_all_rtb_cpc_multicurrency(self, mock_get_min_budget):
+        mock_get_min_budget.return_value = 0
+        core.features.multicurrency.CurrencyExchangeRate.objects.create(
+            currency=constants.Currency.AUD, date=dates_helper.local_today(), exchange_rate=decimal.Decimal("1.38")
+        )
+        self.ad_group.campaign.account.currency = constants.Currency.AUD
+        self.ad_group.settings.update(None, local_cpc_cc=decimal.Decimal("2.00"))
+
+        current_settings = self.ad_group.settings
+        new_settings = current_settings.copy_settings()
+        new_settings.state = constants.AdGroupSettingsState.ACTIVE
+
+        current_settings.b1_sources_group_enabled = True
+        new_settings.b1_sources_group_enabled = True
+
+        current_settings.autopilot_state = constants.AdGroupSettingsAutopilotState.INACTIVE
+        new_settings.autopilot_state = constants.AdGroupSettingsAutopilotState.INACTIVE
+
+        self.ad_group.settings.update(None, local_b1_sources_group_cpc_cc=decimal.Decimal("2.00"))
+
+        with self.assertRaises(core.models.settings.ad_group_source_settings.exceptions.MaximalCPCTooHigh):
+            self.ad_group.settings.update(None, local_b1_sources_group_cpc_cc=decimal.Decimal("2.01"))
+
+    @mock.patch("automation.autopilot.get_adgroup_minimum_daily_budget", autospec=True)
+    def test_validate_autopilot_settings_all_rtb_cpm_multicurrency(self, mock_get_min_budget):
+        mock_get_min_budget.return_value = 0
+        core.features.multicurrency.CurrencyExchangeRate.objects.create(
+            currency=constants.Currency.AUD, date=dates_helper.local_today(), exchange_rate=decimal.Decimal("1.38")
+        )
+        self.ad_group.bidding_type = constants.BiddingType.CPM
+        self.ad_group.campaign.account.currency = constants.Currency.AUD
+        self.ad_group.settings.update(None, local_max_cpm=decimal.Decimal("2.00"))
+
+        current_settings = self.ad_group.settings
+        new_settings = current_settings.copy_settings()
+        new_settings.state = constants.AdGroupSettingsState.ACTIVE
+
+        current_settings.b1_sources_group_enabled = True
+        new_settings.b1_sources_group_enabled = True
+
+        current_settings.autopilot_state = constants.AdGroupSettingsAutopilotState.INACTIVE
+        new_settings.autopilot_state = constants.AdGroupSettingsAutopilotState.INACTIVE
+
+        self.ad_group.settings.update(None, local_b1_sources_group_cpm=decimal.Decimal("2.00"))
+
+        with self.assertRaises(core.models.settings.ad_group_source_settings.exceptions.MaximalCPMTooHigh):
+            self.ad_group.settings.update(None, local_b1_sources_group_cpm=decimal.Decimal("2.01"))
+
+    @mock.patch("automation.autopilot.get_adgroup_minimum_daily_budget", autospec=True)
+    def test_validate_autopilot_settings_all_rtb_daily_budget_multicurrency(self, mock_get_min_budget):
+        mock_get_min_budget.return_value = 0
+        exchange_rate = decimal.Decimal("2.00")
+        core.features.multicurrency.CurrencyExchangeRate.objects.create(
+            currency=constants.Currency.AUD, date=dates_helper.local_today(), exchange_rate=exchange_rate
+        )
+        self.ad_group.campaign.account.currency = constants.Currency.AUD
+
+        current_settings = self.ad_group.settings
+        new_settings = current_settings.copy_settings()
+        new_settings.state = constants.AdGroupSettingsState.ACTIVE
+
+        current_settings.b1_sources_group_enabled = True
+        new_settings.b1_sources_group_enabled = True
+
+        current_settings.autopilot_state = constants.AdGroupSettingsAutopilotState.INACTIVE
+        new_settings.autopilot_state = constants.AdGroupSettingsAutopilotState.INACTIVE
+
+        max_daily_budget = core.models.all_rtb.AllRTBSourceType.max_daily_budget
+        self.ad_group.settings.update(None, local_b1_sources_group_daily_budget=max_daily_budget * exchange_rate)
+
+        with self.assertRaises(core.models.settings.ad_group_source_settings.exceptions.MaximalDailyBudgetTooHigh):
+            self.ad_group.settings.update(
+                None, local_b1_sources_group_daily_budget=max_daily_budget * exchange_rate + Decimal("2.00")
+            )
 
     def test_validate_all_rtb_bidding_type_bid_fail(self):
         self.ad_group.bidding_type = constants.BiddingType.CPC
