@@ -7,21 +7,18 @@ import {Filters} from '../types/filters';
 import {Inventory} from '../types/inventory';
 import {FilterOption} from '../types/filter-option';
 import {ApiResponse} from '../../../shared/types/api-response';
-import {StoreEndpoint} from '../../../shared/types/store-endpoint';
 import {RequestPayload} from '../../../shared/types/request-payload';
-import {InventoryPlanningStore} from './inventory-planning.store';
 import {INVENTORY_PLANNING_CONFIG} from '../inventory-planning.config';
 import * as endpointHelpers from '../../../shared/helpers/endpoint.helpers';
+import {StoreRequestStateUpdater} from '../../../shared/types/store-request-state-updater';
 
 @Injectable()
-export class InventoryPlanningEndpoint extends StoreEndpoint {
-    constructor(private http: HttpClient) {
-        super();
-    }
+export class InventoryPlanningEndpoint {
+    constructor(private http: HttpClient) {}
 
     loadSummary(
-        store: InventoryPlanningStore,
-        selectedFilters: Filters
+        selectedFilters: Filters,
+        requestStateUpdater: StoreRequestStateUpdater
     ): Observable<Inventory> {
         const request = INVENTORY_PLANNING_CONFIG.requests.loadSummary;
 
@@ -30,7 +27,7 @@ export class InventoryPlanningEndpoint extends StoreEndpoint {
             requestPayload
         );
 
-        this.setRequestState(store, request, {
+        requestStateUpdater(request.name, {
             inProgress: true,
         });
 
@@ -41,14 +38,14 @@ export class InventoryPlanningEndpoint extends StoreEndpoint {
             })
             .pipe(
                 map((response: ApiResponse<any>) => {
-                    this.setRequestState(store, request, {
+                    requestStateUpdater(request.name, {
                         inProgress: false,
                     });
 
                     return response.data;
                 }),
                 catchError((error: HttpErrorResponse) => {
-                    this.setRequestState(store, request, {
+                    requestStateUpdater(request.name, {
                         inProgress: false,
                         error: true,
                         errorMessage: error.message,
@@ -60,8 +57,8 @@ export class InventoryPlanningEndpoint extends StoreEndpoint {
     }
 
     loadCountries(
-        store: InventoryPlanningStore,
-        selectedFilters: Filters
+        selectedFilters: Filters,
+        requestStateUpdater: StoreRequestStateUpdater
     ): Observable<FilterOption[]> {
         const request = INVENTORY_PLANNING_CONFIG.requests.loadCountries;
 
@@ -70,7 +67,7 @@ export class InventoryPlanningEndpoint extends StoreEndpoint {
             requestPayload
         );
 
-        this.setRequestState(store, request, {
+        requestStateUpdater(request.name, {
             inProgress: true,
         });
 
@@ -81,7 +78,7 @@ export class InventoryPlanningEndpoint extends StoreEndpoint {
             })
             .pipe(
                 map((response: ApiResponse<any>) => {
-                    this.setRequestState(store, request, {
+                    requestStateUpdater(request.name, {
                         inProgress: false,
                     });
 
@@ -89,7 +86,7 @@ export class InventoryPlanningEndpoint extends StoreEndpoint {
                 }),
                 map(this.convertOptionsValueToString),
                 catchError((error: HttpErrorResponse) => {
-                    this.setRequestState(store, request, {
+                    requestStateUpdater(request.name, {
                         inProgress: false,
                         error: true,
                         errorMessage: error.message,
@@ -101,8 +98,8 @@ export class InventoryPlanningEndpoint extends StoreEndpoint {
     }
 
     loadPublishers(
-        store: InventoryPlanningStore,
-        selectedFilters: Filters
+        selectedFilters: Filters,
+        requestStateUpdater: StoreRequestStateUpdater
     ): Observable<FilterOption[]> {
         const request = INVENTORY_PLANNING_CONFIG.requests.loadPublishers;
 
@@ -111,7 +108,7 @@ export class InventoryPlanningEndpoint extends StoreEndpoint {
             requestPayload
         );
 
-        this.setRequestState(store, request, {
+        requestStateUpdater(request.name, {
             inProgress: true,
         });
 
@@ -122,7 +119,7 @@ export class InventoryPlanningEndpoint extends StoreEndpoint {
             })
             .pipe(
                 map((response: ApiResponse<any>) => {
-                    this.setRequestState(store, request, {
+                    requestStateUpdater(request.name, {
                         inProgress: false,
                     });
 
@@ -130,7 +127,7 @@ export class InventoryPlanningEndpoint extends StoreEndpoint {
                 }),
                 map(this.convertOptionsValueToString),
                 catchError((error: HttpErrorResponse) => {
-                    this.setRequestState(store, request, {
+                    requestStateUpdater(request.name, {
                         inProgress: false,
                         error: true,
                         errorMessage: error.message,
@@ -142,8 +139,8 @@ export class InventoryPlanningEndpoint extends StoreEndpoint {
     }
 
     loadDevices(
-        store: InventoryPlanningStore,
-        selectedFilters: Filters
+        selectedFilters: Filters,
+        requestStateUpdater: StoreRequestStateUpdater
     ): Observable<FilterOption[]> {
         const request = INVENTORY_PLANNING_CONFIG.requests.loadDevices;
 
@@ -152,7 +149,7 @@ export class InventoryPlanningEndpoint extends StoreEndpoint {
             requestPayload
         );
 
-        this.setRequestState(store, request, {
+        requestStateUpdater(request.name, {
             inProgress: true,
         });
 
@@ -163,7 +160,7 @@ export class InventoryPlanningEndpoint extends StoreEndpoint {
             })
             .pipe(
                 map((response: ApiResponse<any>) => {
-                    this.setRequestState(store, request, {
+                    requestStateUpdater(request.name, {
                         inProgress: false,
                     });
 
@@ -171,7 +168,7 @@ export class InventoryPlanningEndpoint extends StoreEndpoint {
                 }),
                 map(this.convertOptionsValueToString),
                 catchError((error: HttpErrorResponse) => {
-                    this.setRequestState(store, request, {
+                    requestStateUpdater(request.name, {
                         inProgress: false,
                         error: true,
                         errorMessage: error.message,
@@ -183,8 +180,8 @@ export class InventoryPlanningEndpoint extends StoreEndpoint {
     }
 
     loadSources(
-        store: InventoryPlanningStore,
-        selectedFilters: Filters
+        selectedFilters: Filters,
+        requestStateUpdater: StoreRequestStateUpdater
     ): Observable<FilterOption[]> {
         const request = INVENTORY_PLANNING_CONFIG.requests.loadSources;
 
@@ -193,7 +190,7 @@ export class InventoryPlanningEndpoint extends StoreEndpoint {
             requestPayload
         );
 
-        this.setRequestState(store, request, {
+        requestStateUpdater(request.name, {
             inProgress: true,
         });
 
@@ -204,7 +201,7 @@ export class InventoryPlanningEndpoint extends StoreEndpoint {
             })
             .pipe(
                 map((response: ApiResponse<any>) => {
-                    this.setRequestState(store, request, {
+                    requestStateUpdater(request.name, {
                         inProgress: false,
                     });
 
@@ -212,7 +209,7 @@ export class InventoryPlanningEndpoint extends StoreEndpoint {
                 }),
                 map(this.convertOptionsValueToString),
                 catchError((error: HttpErrorResponse) => {
-                    this.setRequestState(store, request, {
+                    requestStateUpdater(request.name, {
                         inProgress: false,
                         error: true,
                         errorMessage: error.message,
@@ -223,11 +220,6 @@ export class InventoryPlanningEndpoint extends StoreEndpoint {
             );
     }
 
-    /**
-     * The following function is used to convert
-     * Filters to RequestPayload.
-     * @param selectedFilters
-     */
     private buildRequestPayload(selectedFilters: Filters): RequestPayload {
         return {
             countries: selectedFilters.countries.map((x: any) => x.value),
@@ -237,11 +229,6 @@ export class InventoryPlanningEndpoint extends StoreEndpoint {
         };
     }
 
-    /**
-     * The following function is used to convert
-     * options value to string type.
-     * @param options
-     */
     private convertOptionsValueToString(
         options: FilterOption[]
     ): FilterOption[] {

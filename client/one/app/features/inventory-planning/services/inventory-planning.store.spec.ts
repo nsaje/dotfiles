@@ -190,14 +190,21 @@ describe('InventoryPlanningStore', () => {
                 {key: 'devices', value: 'device 1'},
                 {key: 'sources', value: 'test source 1'},
             ]);
-            expect(endpointSpy.loadCountries).toHaveBeenCalledWith(store, {
-                countries: [{name: '', value: 'country 1', auctionCount: -1}],
-                publishers: [
-                    {name: '', value: 'publisher 1', auctionCount: -1},
-                ],
-                devices: [{name: '', value: 'device 1', auctionCount: -1}],
-                sources: [{name: '', value: 'test source 1', auctionCount: -1}],
-            });
+            expect(endpointSpy.loadCountries).toHaveBeenCalledWith(
+                {
+                    countries: [
+                        {name: '', value: 'country 1', auctionCount: -1},
+                    ],
+                    publishers: [
+                        {name: '', value: 'publisher 1', auctionCount: -1},
+                    ],
+                    devices: [{name: '', value: 'device 1', auctionCount: -1}],
+                    sources: [
+                        {name: '', value: 'test source 1', auctionCount: -1},
+                    ],
+                },
+                jasmine.any(Function)
+            );
         });
 
         it('should correctly toggle selected options', () => {

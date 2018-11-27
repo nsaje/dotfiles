@@ -2,12 +2,8 @@ import {HttpParams} from '@angular/common/http';
 import {APP_CONFIG} from '../../app.config';
 import {RequestPayload} from '../types/request-payload';
 import {RequestProperties} from '../types/request-properties';
+import {StoreRequestStateUpdater} from '../types/store-request-state-updater';
 
-/**
- * The following function is used to create
- * request properties from the given payload.
- * @param payload
- */
 export function buildRequestProperties(
     payload: RequestPayload
 ): RequestProperties {
@@ -22,4 +18,18 @@ export function buildRequestProperties(
     } else {
         return {method: 'POST', params: null, body: payload};
     }
+}
+
+export function getStoreRequestStateUpdater(
+    store: any
+): StoreRequestStateUpdater {
+    return (requestName, requestState) => {
+        store.setState({
+            ...store.state,
+            requests: {
+                ...store.state.requests,
+                [requestName]: requestState,
+            },
+        });
+    };
 }
