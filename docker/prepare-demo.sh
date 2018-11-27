@@ -44,7 +44,7 @@ echo "Extracting dump files"
 tar -xf dump.tar
 
 echo "Loading dump"
-python $DIR/manage.py loaddata dump*.json
+ls -v dump*.json | xargs python $DIR/manage.py loaddata
 
 echo "Loading geolocations"
 python $DIR/manage.py import_geolocations dash/features/geolocation/supported_locations/GeoIP2-City-Locations-en.csv dash/features/geolocation/supported_locations/yahoo-mapping.csv dash/features/geolocation/supported_locations/outbrain-mapping.csv dash/features/geolocation/supported_locations/facebook-mapping.csv
