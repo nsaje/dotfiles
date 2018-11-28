@@ -169,8 +169,9 @@ class CampaignsTest(RESTAPITest):
         resp_json_paginated = self.assertResponseValid(r_paginated, data_type=list)
         self.assertEqual(resp_json["data"][5:7], resp_json_paginated["data"])
 
+    @mock.patch("automation.autopilot.recalculate_budgets_campaign")
     @mock.patch("utils.email_helper.send_campaign_created_email")
-    def test_campaigns_post(self, mock_send):
+    def test_campaigns_post(self, mock_send, mock_autopilot):
         new_campaign = self.campaign_repr(
             account_id=186,
             name="All About Testing",
@@ -188,7 +189,8 @@ class CampaignsTest(RESTAPITest):
         self.assertEqual(resp_json["data"]["type"], constants.CampaignType.get_name(constants.CampaignType.VIDEO))
         mock_send.assert_not_called()
 
-    def test_campaigns_post_no_type(self):
+    @mock.patch("automation.autopilot.recalculate_budgets_campaign")
+    def test_campaigns_post_no_type(self, mock_autopilot):
         new_campaign = self.campaign_repr(account_id=186, name="All About Testing", frequency_capping=33)
         del new_campaign["id"]
         del new_campaign["type"]

@@ -245,8 +245,9 @@ class AccountCampaignsTest(TestCase):
         self.client = Client()
         self.client.login(username=User.objects.get(pk=1).email, password="secret")
 
+    @patch("automation.autopilot.recalculate_budgets_campaign")
     @patch("utils.email_helper.send_campaign_created_email")
-    def test_put(self, mock_send):
+    def test_put(self, mock_send, mock_autopilot):
         campaign_name = "New campaign"
 
         response = self.client.put(

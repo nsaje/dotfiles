@@ -12,6 +12,9 @@ from . import model
 AGENCIES_WITHOUT_CAMPAIGN_STOP = {55}
 ACCOUNTS_WITHOUT_CAMPAIGN_STOP = {490, 512, 513}  # inPowered
 
+ACCOUNTS_WITH_AUTOPILOT_DISABLED = {305}
+CAMPAIGN_AUTOPILOT_ENABLED_VALUE = True
+
 
 class CampaignManager(core.common.BaseManager):
     @transaction.atomic
@@ -46,6 +49,9 @@ class CampaignManager(core.common.BaseManager):
         settings_updates["name"] = name
         settings_updates["iab_category"] = iab_category
         settings_updates["language"] = language
+
+        if account.id not in ACCOUNTS_WITH_AUTOPILOT_DISABLED:
+            settings_updates["autopilot"] = CAMPAIGN_AUTOPILOT_ENABLED_VALUE
 
         if request:
             settings_updates["campaign_manager"] = request.user

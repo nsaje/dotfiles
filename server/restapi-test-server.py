@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+
 """
 Run a test server for REST API acceptance testing.
 
@@ -44,6 +45,11 @@ django.setup()
 print("Creating a test database...")
 db = connection.creation.create_test_db(autoclobber=True, keepdb=args.keepdb)
 print("Using test database: %s" % db)
+
+print("Overriding CAMPAIGN_AUTOPILOT_ENABLED_VALUE in campaign manager...")
+from core.models.campaign import manager  # noqa
+
+manager.CAMPAIGN_AUTOPILOT_ENABLED_VALUE = False
 
 
 def sigterm_handler(signum, frame):

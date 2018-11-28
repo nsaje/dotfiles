@@ -1,4 +1,5 @@
 from django.test import TestCase
+from mock import patch
 
 import core.models
 from utils import exc
@@ -12,7 +13,8 @@ class TestCampaignManager(TestCase):
         self.request = magic_mixer.blend_request_user()
         self.account = magic_mixer.blend(core.models.Account, users=[self.request.user])
 
-    def test_create(self):
+    @patch("automation.autopilot.recalculate_budgets_campaign")
+    def test_create(self, mock_autopilot):
         campaign = Campaign.objects.create(self.request, self.account, "xyz")
         campaign_settings = campaign.get_current_settings()
         self.assertEqual(campaign.account, self.account)
