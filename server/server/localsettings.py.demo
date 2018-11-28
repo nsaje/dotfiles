@@ -84,7 +84,7 @@ FROM_EMAIL = "help-demo@zemanta.com"
 LOG_FILE = "/app/logs/eins-log.log"
 
 # Stats
-STATSD_INFLUX_HOST = os.environ.get("TELEGRAF_PORT_8135_UDP_ADDR", "telegraf")
+STATSD_INFLUX_HOST = os.environ.get("TELEGRAF_PORT_8135_UDP_ADDR", "127.0.0.1")
 STATSD_INFLUX_PORT = int(os.environ.get("TELEGRAF_PORT_8135_UDP_PORT", "8135"))
 
 # Saucelabs
