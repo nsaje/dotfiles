@@ -285,6 +285,7 @@ agencyId  | string                | the agency's id                            |
 name      | string                | the name of the account                    | required | optional
 targeting | [targeting](#account-targeting) | account targeting settings       | optional | optional
 currency  | [Currency](#currency) | the account's currency (default is USD)    | optional | N\A
+frequencyCapping | number | The maximum number of times ads from the account can be shown to a unique user in one day. | optional | optional
 
 <a name="account-targeting"></a>
 #### Account Targeting Settings
@@ -417,6 +418,7 @@ archived  | bool                  | Is the Campaign archived? Set to `true` to a
 autopilot | bool                  | Autopilot Budget optimization. [Read more](http://www.zemanta.com/blog/new-way-achieve-stronger-campaign-performance/). | optional | optional
 tracking  | [tracking](#tracking) | tracking settings                          | optional | optional
 targeting    | [targeting](#campaign-targeting)   | campaign targeting settings                                                                                                               | optional | optional
+frequencyCapping | number | The maximum number of times ads from the campaign can be shown to a unique user in one day. | optional | optional
 
 
 <a name="tracking"></a>
@@ -816,6 +818,7 @@ dayparting   | [dayparting](#dayparting) | dayparting settings                  
 trackingCode | string                    | tracking codes appended to all content ads URLs ([more](http://help.zemanta.com/article/show/12985-tracking-parameters--macros))   | optional | optional
 autopilot    | [autopilot](#autopilot)   | Zemanta Autopilot settings                                                                                                         | optional | optional
 deliveryType | [delivery](#delivery)     | Delivery Type. Set to `STANDARD` to deliver ads throughout the day and to `ACCELERATED` to deliver ads as soon as possible.        | optional | optional
+frequencyCapping | number | The maximum number of times ads from the ad group can be shown to a unique user in one day.                                                           | optional | optional
 
 <a name="targeting"></a>
 #### Targeting Settings
@@ -2829,6 +2832,7 @@ Examples:
 - `autopilot` (autopilot)
 - `dayparting` (dayparting)
 - `deliveryType`: `STANDARD` (string)
+- `frequencyCapping`: 10 (number, optional, nullable)
 
 ## AdGroupIds (object)
 
@@ -2878,6 +2882,7 @@ Examples:
 - `iabCategory`: `IAB1_1` (string)
 - `tracking` (tracking)
 - `targeting` (campaignTargeting)
+- `frequencyCapping`: 10 (number, optional, nullable)
 
 ## CampaignIds (object)
 
@@ -2907,6 +2912,7 @@ Examples:
 
 - `name`: `My Account 1` (string)
 - `targeting` (accountTargeting)
+- `frequencyCapping`: 10 (number, optional, nullable)
 
 ## AccountIds (object)
 
