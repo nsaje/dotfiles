@@ -17,6 +17,10 @@ from . import views
 
 
 class ContentAdsTest(RESTAPITest):
+    def setUp(self):
+        super().setUp()
+        utils.test_helper.add_permissions(self.user, ["fea_can_change_campaign_type_to_display"])
+
     @classmethod
     def contentad_repr(
         cls,
@@ -86,6 +90,23 @@ class ContentAdsTest(RESTAPITest):
         r = self.client.get(reverse("contentads_details", kwargs={"content_ad_id": 16805}))
         resp_json = self.assertResponseValid(r)
         self.assertIn("additionalData", resp_json["data"])
+        self.assertNotIn("type", resp_json["data"])
+        self.assertNotIn("adTag", resp_json["data"])
+        self.assertNotIn("adWidth", resp_json["data"])
+        self.assertNotIn("adHeight", resp_json["data"])
+
+    def test_contentads_get_permissioned_display(self):
+        utils.test_helper.add_permissions(self.user, ["can_use_ad_additional_data"])
+        content_ad = dash.models.ContentAd.objects.get(id=16805)
+        content_ad.ad_group.campaign.type = dash.constants.CampaignType.DISPLAY
+        content_ad.ad_group.campaign.save(None)
+        r = self.client.get(reverse("contentads_details", kwargs={"content_ad_id": 16805}))
+        resp_json = self.assertResponseValid(r)
+        self.assertIn("additionalData", resp_json["data"])
+        self.assertIn("type", resp_json["data"])
+        self.assertIn("adTag", resp_json["data"])
+        self.assertIn("adWidth", resp_json["data"])
+        self.assertIn("adHeight", resp_json["data"])
 
     def test_contentads_put(self):
         r = self.client.put(
@@ -157,8 +178,47 @@ class TestBatchUpload(TestCase):
             "trackerUrls": ["https://www.example.com/a", "https://www.example.com/b"],
         }
 
+    @staticmethod
+    def _mock_image_ad(title):
+        return {
+            "state": "ACTIVE",
+            "url": "https://www.example.com/p/83895c0e-3bbe-4ad7-a0f6-c1917788ceb9",
+            "title": title,
+            "imageUrl": "http://example.com/p/srv/9018/e5d6adb68f1d404f82541e335c50bbd3.jpg?w=1024&h=768&fit=crop&crop=center&fm=jpg",
+            "label": "",
+            "trackerUrls": ["https://www.example.com/a", "https://www.example.com/b"],
+            "type": constants.AdType.get_name(constants.AdType.IMAGE),
+        }
+
+    @staticmethod
+    def _mock_ad_tag(title):
+        return {
+            "state": "ACTIVE",
+            "url": "https://www.example.com/p/83895c0e-3bbe-4ad7-a0f6-c1917788ceb9",
+            "title": title,
+            "label": "",
+            "ad_tag": "<body></body>",
+            "adWidth": 300,
+            "adHeight": 250,
+            "trackerUrls": ["https://www.example.com/a", "https://www.example.com/b"],
+            "type": constants.AdType.get_name(constants.AdType.AD_TAG),
+        }
+
+    @staticmethod
+    def _approve_candidates(batch, is_display_ad=False):
+        for candidate in batch.contentadcandidate_set.all():
+            candidate.image_id = "p/srv/8678/13f72b5e37a64860a73ac95ff51b2a3e"
+            candidate.image_hash = "1234"
+            candidate.image_height = 250 if is_display_ad else 500
+            candidate.image_width = 300 if is_display_ad else 500
+            candidate.image_file_size = 120000
+            candidate.image_status = constants.AsyncUploadJobStatus.OK
+            candidate.url_status = constants.AsyncUploadJobStatus.OK
+            candidate.save()
+        contentupload.upload._handle_auto_save(batch)
+
     @mock.patch("dash.features.contentupload.upload._invoke_external_validation", mock.Mock())
-    def test_batch_upload_success(self):
+    def test_content_batch_upload_success(self):
         to_upload = [self._mock_content_ad("test1"), self._mock_content_ad("test2")]
         r = self.client.post(reverse("contentads_batch_list") + "?adGroupId=987", to_upload, format="json")
         self.assertEqual(r.status_code, 201)
@@ -186,9 +246,9 @@ class TestBatchUpload(TestCase):
         self.assertEqual(resp_json["data"]["status"], "DONE")
         self.assertEqual(batch_id, int(resp_json["data"]["id"]))
 
-        saved_content_ads = batch.contentad_set.all().order_by("pk")
+        saved_display_ads = batch.contentad_set.all().order_by("pk")
         self.assertEqual(len(to_upload), len(resp_json["data"]["approvedContentAds"]))
-        self.assertEqual(len(to_upload), len(saved_content_ads))
+        self.assertEqual(len(to_upload), len(saved_display_ads))
         for i in range(len(to_upload)):
             for field in (
                 "state",
@@ -201,23 +261,54 @@ class TestBatchUpload(TestCase):
                 "trackerUrls",
             ):
                 self.assertEqual(to_upload[i][field], resp_json["data"]["approvedContentAds"][i][field])
-            self.assertEqual(saved_content_ads[i].id, int(resp_json["data"]["approvedContentAds"][i]["id"]))
+            self.assertEqual(saved_display_ads[i].id, int(resp_json["data"]["approvedContentAds"][i]["id"]))
+
+    def test_display_batch_upload_success(self):
+        to_upload = [self._mock_image_ad("image"), self._mock_ad_tag("ad_tag")]
+        r = self.client.post(reverse("contentads_batch_list") + "?adGroupId=987", to_upload, format="json")
+        self.assertEqual(r.status_code, 201)
+        resp_json = json.loads(r.content)
+        self.assertIsInstance(resp_json["data"], dict)
+        self.assertEqual(resp_json["data"]["status"], "IN_PROGRESS")
+        self.assertIn("id", resp_json["data"])
+
+        batch_id = int(resp_json["data"]["id"])
+        batch = dash.models.UploadBatch.objects.get(pk=batch_id)
+
+        r = self.client.get(reverse("contentads_batch_details", kwargs={"batch_id": batch_id}))
+        self.assertEqual(r.status_code, 200)
+        resp_json = json.loads(r.content)
+        self.assertIsInstance(resp_json["data"], dict)
+        self.assertEqual(resp_json["data"]["status"], "IN_PROGRESS")
+        self.assertEqual(batch_id, int(resp_json["data"]["id"]))
+
+        self._approve_candidates(batch, is_display_ad=True)
+
+        r = self.client.get(reverse("contentads_batch_details", kwargs={"batch_id": batch_id}))
+        self.assertEqual(r.status_code, 200)
+        resp_json = json.loads(r.content)
+        self.assertIsInstance(resp_json["data"], dict)
+        self.assertEqual(resp_json["data"]["status"], "DONE")
+        self.assertEqual(batch_id, int(resp_json["data"]["id"]))
+
+        saved_display_ads = batch.contentad_set.all().order_by("pk")
+        self.assertEqual(len(to_upload), len(resp_json["data"]["approvedContentAds"]))
+        self.assertEqual(len(to_upload), len(saved_display_ads))
+        for i in range(len(to_upload)):
+            for field in ("state", "title", "label", "trackerUrls"):
+                self.assertEqual(to_upload[i][field], resp_json["data"]["approvedContentAds"][i][field])
+            self.assertEqual(saved_display_ads[i].id, int(resp_json["data"]["approvedContentAds"][i]["id"]))
 
     @staticmethod
-    def _approve_candidates(batch):
+    def _reject_candidates(batch):
         for candidate in batch.contentadcandidate_set.all():
-            candidate.image_id = "p/srv/8678/13f72b5e37a64860a73ac95ff51b2a3e"
-            candidate.image_hash = "1234"
-            candidate.image_height = 500
-            candidate.image_width = 500
-            candidate.image_file_size = 120000
-            candidate.image_status = constants.AsyncUploadJobStatus.OK
-            candidate.url_status = constants.AsyncUploadJobStatus.OK
+            candidate.image_status = constants.AsyncUploadJobStatus.FAILED
+            candidate.url_status = constants.AsyncUploadJobStatus.FAILED
             candidate.save()
         contentupload.upload._handle_auto_save(batch)
 
     @mock.patch("dash.features.contentupload.upload._invoke_external_validation", mock.Mock())
-    def test_batch_upload_failure(self):
+    def test_content_batch_upload_failure(self):
         to_upload = [self._mock_content_ad("test1"), self._mock_content_ad("test2")]
         r = self.client.post(reverse("contentads_batch_list") + "?adGroupId=987", to_upload, format="json")
         self.assertEqual(r.status_code, 201)
@@ -246,10 +337,32 @@ class TestBatchUpload(TestCase):
         self.assertEqual(resp_json["data"]["approvedContentAds"], [])
         self.assertEqual(batch_id, int(resp_json["data"]["id"]))
 
-    @staticmethod
-    def _reject_candidates(batch):
-        for candidate in batch.contentadcandidate_set.all():
-            candidate.image_status = constants.AsyncUploadJobStatus.FAILED
-            candidate.url_status = constants.AsyncUploadJobStatus.FAILED
-            candidate.save()
-        contentupload.upload._handle_auto_save(batch)
+    @mock.patch("dash.features.contentupload.upload._invoke_external_validation", mock.Mock())
+    def test_display_batch_upload_failure(self):
+        to_upload = [self._mock_image_ad("image"), self._mock_ad_tag("ad_tag")]
+        r = self.client.post(reverse("contentads_batch_list") + "?adGroupId=987", to_upload, format="json")
+        self.assertEqual(r.status_code, 201)
+        resp_json = json.loads(r.content)
+        self.assertIsInstance(resp_json["data"], dict)
+        self.assertEqual(resp_json["data"]["status"], "IN_PROGRESS")
+        self.assertIn("id", resp_json["data"])
+
+        batch_id = int(resp_json["data"]["id"])
+        batch = dash.models.UploadBatch.objects.get(pk=batch_id)
+
+        r = self.client.get(reverse("contentads_batch_details", kwargs={"batch_id": batch_id}))
+        self.assertEqual(r.status_code, 200)
+        resp_json = json.loads(r.content)
+        self.assertIsInstance(resp_json["data"], dict)
+        self.assertEqual(resp_json["data"]["status"], "IN_PROGRESS")
+        self.assertEqual(batch_id, int(resp_json["data"]["id"]))
+
+        self._reject_candidates(batch)
+
+        r = self.client.get(reverse("contentads_batch_details", kwargs={"batch_id": batch_id}))
+        self.assertEqual(r.status_code, 200)
+        resp_json = json.loads(r.content)
+        self.assertIsInstance(resp_json["data"], dict)
+        self.assertEqual(resp_json["data"]["status"], "FAILED")
+        self.assertEqual(resp_json["data"]["approvedContentAds"], [])
+        self.assertEqual(batch_id, int(resp_json["data"]["id"]))

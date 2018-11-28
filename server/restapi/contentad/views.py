@@ -58,23 +58,38 @@ class ContentAdBatchViewList(RESTAPIBaseView):
             raise serializers.ValidationError("Must pass adGroupId parameter")
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
 
-        serializer = serializers.ContentAdCandidateSerializer(data=request.data, many=True)
-        serializer.is_valid(raise_exception=True)
+        candidates_data = []
+
+        for candidate in request.data:
+            serializer = self._get_candidate_serializer(candidate)
+            serializer = serializer(data=candidate, context={"request": request})
+            serializer.is_valid(raise_exception=True)
+            candidates_data.append(serializer.validated_data)
 
         batch_name = self._generate_batch_name("API Upload")
-        candidates_data = serializer.validated_data
         filename = None
 
         batch, candidates = contentupload.upload.insert_candidates(
             request.user, ad_group.campaign.account, candidates_data, ad_group, batch_name, filename, auto_save=True
         )
 
-        batch_serializer = serializers.UploadBatchSerializer(batch)
+        batch_serializer = serializers.UploadBatchSerializer(batch, context={"request": request})
         return self.response_ok(batch_serializer.data, status=201)
 
     @staticmethod
     def _generate_batch_name(prefix):
         return "%s %s" % (prefix, dates_helper.local_now().strftime("%m/%d/%Y %H:%M %z"))
+
+    def _get_candidate_serializer(self, candidate):
+        type_serializer = serializers.AdTypeSerializer(data=candidate)
+        type_serializer.is_valid(raise_exception=True)
+        ad_type = type_serializer.validated_data.get("type")
+
+        if ad_type == dash.constants.AdType.IMAGE:
+            return serializers.ImageAdCandidateSerializer
+        if ad_type == dash.constants.AdType.AD_TAG:
+            return serializers.AdTagCandidateSerializer
+        return serializers.ContentAdCandidateSerializer
 
 
 class ContentAdBatchViewDetails(RESTAPIBaseView):
@@ -85,5 +100,5 @@ class ContentAdBatchViewDetails(RESTAPIBaseView):
             raise exc.MissingDataError("Upload batch does not exist")
         helpers.get_ad_group(request.user, batch.ad_group_id)  # permissions check
 
-        batch_serializer = serializers.UploadBatchSerializer(batch)
+        batch_serializer = serializers.UploadBatchSerializer(batch, context={"request": request})
         return self.response_ok(batch_serializer.data)

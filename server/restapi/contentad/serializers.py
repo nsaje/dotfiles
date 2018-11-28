@@ -16,6 +16,7 @@ class ContentAdSerializer(
             "id",
             "ad_group_id",
             "state",
+            "type",
             "url",
             "title",
             "image_url",
@@ -27,15 +28,40 @@ class ContentAdSerializer(
             "image_crop",
             "tracker_urls",
             "additional_data",
+            "ad_width",
+            "ad_height",
+            "ad_tag",
         )
         read_only_fields = tuple(set(fields) - set(("state", "url", "tracker_urls", "label", "additional_data")))
-        permissioned_fields = {"additional_data": "zemauth.can_use_ad_additional_data"}
+        permissioned_fields = {
+            "additional_data": "zemauth.can_use_ad_additional_data",
+            "type": "zemauth.fea_can_change_campaign_type_to_display",
+            "ad_width": "zemauth.fea_can_change_campaign_type_to_display",
+            "ad_height": "zemauth.fea_can_change_campaign_type_to_display",
+            "ad_tag": "zemauth.fea_can_change_campaign_type_to_display",
+        }
+
+    def to_representation(self, ad):
+        ret = super().to_representation(ad)
+        if ad.ad_group.campaign.type != dash.constants.CampaignType.DISPLAY:
+            ret.pop("type", None)
+            ret.pop("ad_width", None)
+            ret.pop("ad_height", None)
+            ret.pop("ad_tag", None)
+
+        return ret
 
     id = restapi.serializers.fields.IdField(required=False)
     ad_group_id = restapi.serializers.fields.IdField(source="ad_group", required=False)
     state = restapi.serializers.fields.DashConstantField(dash.constants.ContentAdSourceState, required=False)
     url = rest_framework.serializers.URLField(required=False)
     image_url = rest_framework.serializers.URLField(source="get_image_url", required=False)
+    type = restapi.serializers.fields.DashConstantField(
+        dash.constants.AdType, default=dash.constants.AdType.CONTENT, required=False
+    )
+    ad_width = rest_framework.serializers.IntegerField(source="image_width", required=False)
+    ad_height = rest_framework.serializers.IntegerField(source="image_height", required=False)
+    ad_tag = rest_framework.serializers.CharField(required=False)
 
 
 class ContentAdCandidateSerializer(rest_framework.serializers.ModelSerializer):
@@ -76,6 +102,46 @@ class ContentAdCandidateSerializer(rest_framework.serializers.ModelSerializer):
         if len(tracker_urls) > 2:
             raise rest_framework.serializers.ValidationError("A maximum of two tracker URLs are supported.")
         return internal_data
+
+
+class ImageAdCandidateSerializer(restapi.serializers.serializers.PermissionedFieldsMixin, ContentAdCandidateSerializer):
+    class Meta:
+        model = dash.models.ContentAdCandidate
+        fields = ("url", "title", "image_url", "label", "type")
+        permissioned_fields = {"type": "zemauth.fea_can_change_campaign_type_to_display"}
+
+    type = restapi.serializers.fields.DashConstantField(dash.constants.AdType)
+    url = restapi.serializers.fields.PlainCharField(required=True)
+    title = restapi.serializers.fields.PlainCharField(required=True)
+    image_url = restapi.serializers.fields.PlainCharField(required=True)
+    label = restapi.serializers.fields.PlainCharField(allow_blank=True, allow_null=True, required=False)
+
+
+class AdTagCandidateSerializer(restapi.serializers.serializers.PermissionedFieldsMixin, ContentAdCandidateSerializer):
+    class Meta:
+        model = dash.models.ContentAdCandidate
+        fields = ("url", "title", "label", "type", "ad_tag", "ad_width", "ad_height")
+        extra_kwargs = {"primary_tracker_url": {"allow_empty": True}, "secondary_tracker_url": {"allow_empty": True}}
+        permissioned_fields = {
+            "type": "zemauth.fea_can_change_campaign_type_to_display",
+            "ad_width": "zemauth.fea_can_change_campaign_type_to_display",
+            "ad_height": "zemauth.fea_can_change_campaign_type_to_display",
+            "ad_tag": "zemauth.fea_can_change_campaign_type_to_display",
+        }
+
+    type = restapi.serializers.fields.DashConstantField(dash.constants.AdType)
+    url = restapi.serializers.fields.PlainCharField(required=True)
+    title = restapi.serializers.fields.PlainCharField(required=True)
+    label = restapi.serializers.fields.PlainCharField(allow_blank=True, allow_null=True, required=False)
+    ad_tag = rest_framework.serializers.CharField(required=True)
+    ad_width = rest_framework.serializers.IntegerField(source="image_width", required=True)
+    ad_height = rest_framework.serializers.IntegerField(source="image_height", required=True)
+
+
+class AdTypeSerializer(rest_framework.serializers.Serializer):
+    type = restapi.serializers.fields.DashConstantField(
+        dash.constants.AdType, default=dash.constants.AdType.CONTENT, required=False
+    )
 
 
 class UploadBatchSerializer(rest_framework.serializers.Serializer):
