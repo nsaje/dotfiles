@@ -19,17 +19,17 @@ AUTOPILOT_CPC_CHANGE_TABLE = (
     {"underspend_upper_limit": -0.6, "underspend_lower_limit": -0.4, "bid_proc_increase": Decimal("0.25")},
     {"underspend_upper_limit": -0.4, "underspend_lower_limit": -0.2, "bid_proc_increase": Decimal("0.1")},
     {"underspend_upper_limit": -0.2, "underspend_lower_limit": -0.1, "bid_proc_increase": Decimal("0.05")},
-    {"underspend_upper_limit": -0.1, "underspend_lower_limit": -0.05, "bid_proc_increase": Decimal("-0.02")},
-    {"underspend_upper_limit": -0.05, "underspend_lower_limit": -0.01, "bid_proc_increase": Decimal("-0.1")},
-    {"underspend_upper_limit": -0.01, "underspend_lower_limit": 100.00, "bid_proc_increase": Decimal("-0.15")},
+    {"underspend_upper_limit": -0.1, "underspend_lower_limit": -0.05, "bid_proc_increase": Decimal("0.02")},
+    {"underspend_upper_limit": -0.05, "underspend_lower_limit": -0.01, "bid_proc_increase": Decimal("0.01")},
+    {"underspend_upper_limit": -0.01, "underspend_lower_limit": 10000.00, "bid_proc_increase": Decimal("-0.05")},
 )
 
 AUTOPILOT_CPC_CHANGE_PERFORMANCE_FACTOR_TABLE = (
     {"performance_upper_limit": 1.0, "performance_lower_limit": 0.75, "performance_factor": Decimal("1.0")},
-    {"performance_upper_limit": 0.75, "performance_lower_limit": 0.6, "performance_factor": Decimal("0.98")},
-    {"performance_upper_limit": 0.6, "performance_lower_limit": 0.4, "performance_factor": Decimal("0.95")},
-    {"performance_upper_limit": 0.4, "performance_lower_limit": 0.2, "performance_factor": Decimal("0.93")},
-    {"performance_upper_limit": 0.2, "performance_lower_limit": 0.0, "performance_factor": Decimal("0.90")},
+    {"performance_upper_limit": 0.75, "performance_lower_limit": 0.6, "performance_factor": Decimal("0.99")},
+    {"performance_upper_limit": 0.6, "performance_lower_limit": 0.4, "performance_factor": Decimal("0.975")},
+    {"performance_upper_limit": 0.4, "performance_lower_limit": 0.2, "performance_factor": Decimal("0.96")},
+    {"performance_upper_limit": 0.2, "performance_lower_limit": 0.0, "performance_factor": Decimal("0.95")},
 )
 
 AUTOPILOT_MIN_CPC = Decimal("0.03")
@@ -50,17 +50,17 @@ AUTOPILOT_CPM_CHANGE_TABLE = (
     {"underspend_upper_limit": -0.6, "underspend_lower_limit": -0.4, "bid_proc_increase": Decimal("0.25")},
     {"underspend_upper_limit": -0.4, "underspend_lower_limit": -0.2, "bid_proc_increase": Decimal("0.1")},
     {"underspend_upper_limit": -0.2, "underspend_lower_limit": -0.1, "bid_proc_increase": Decimal("0.05")},
-    {"underspend_upper_limit": -0.1, "underspend_lower_limit": -0.05, "bid_proc_increase": Decimal("-0.02")},
-    {"underspend_upper_limit": -0.05, "underspend_lower_limit": -0.01, "bid_proc_increase": Decimal("-0.1")},
-    {"underspend_upper_limit": -0.01, "underspend_lower_limit": 100.00, "bid_proc_increase": Decimal("-0.15")},
+    {"underspend_upper_limit": -0.1, "underspend_lower_limit": -0.05, "bid_proc_increase": Decimal("0.02")},
+    {"underspend_upper_limit": -0.05, "underspend_lower_limit": -0.01, "bid_proc_increase": Decimal("0.01")},
+    {"underspend_upper_limit": -0.01, "underspend_lower_limit": 10000.00, "bid_proc_increase": Decimal("-0.05")},
 )
 
 AUTOPILOT_CPM_CHANGE_PERFORMANCE_FACTOR_TABLE = (
     {"performance_upper_limit": 1.0, "performance_lower_limit": 0.75, "performance_factor": Decimal("1.0")},
-    {"performance_upper_limit": 0.75, "performance_lower_limit": 0.6, "performance_factor": Decimal("0.98")},
-    {"performance_upper_limit": 0.6, "performance_lower_limit": 0.4, "performance_factor": Decimal("0.95")},
-    {"performance_upper_limit": 0.4, "performance_lower_limit": 0.2, "performance_factor": Decimal("0.93")},
-    {"performance_upper_limit": 0.2, "performance_lower_limit": 0.0, "performance_factor": Decimal("0.90")},
+    {"performance_upper_limit": 0.75, "performance_lower_limit": 0.6, "performance_factor": Decimal("0.99")},
+    {"performance_upper_limit": 0.6, "performance_lower_limit": 0.4, "performance_factor": Decimal("0.975")},
+    {"performance_upper_limit": 0.4, "performance_lower_limit": 0.2, "performance_factor": Decimal("0.96")},
+    {"performance_upper_limit": 0.2, "performance_lower_limit": 0.0, "performance_factor": Decimal("0.95")},
 )
 
 AUTOPILOT_MIN_CPM = Decimal("0.01")
