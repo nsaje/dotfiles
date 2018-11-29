@@ -11,7 +11,9 @@ from .constants import BidChangeComment
 logger = logging.getLogger(__name__)
 
 
-def get_autopilot_bid_recommendations(ad_group, data, bcm_modifiers, budget_changes=None, adjust_rtb_sources=True):
+def get_autopilot_bid_recommendations(
+    ad_group, data, bcm_modifiers, campaign_goal, budget_changes=None, adjust_rtb_sources=True
+):
     recommended_changes = {}
     ag_sources = list(data.keys())
     all_rtb_ad_group_source = _find_all_rtb_ad_group_source(ag_sources)
@@ -35,7 +37,8 @@ def get_autopilot_bid_recommendations(ad_group, data, bcm_modifiers, budget_chan
                 old_bid,
                 budget_changes[ag_source]["new_budget"] if budget_changes else data[ag_source]["old_budget"],
                 data[ag_source]["yesterdays_spend_cc"],
-                ad_group.bidding_type,
+                campaign_goal,
+                bidding_type=ad_group.bidding_type,
             )
         else:
             proposed_bid, calculation_comments = calculate_new_autopilot_bid_automatic_mode_rtb(
@@ -46,6 +49,7 @@ def get_autopilot_bid_recommendations(ad_group, data, bcm_modifiers, budget_chan
                 data[all_rtb_ad_group_source]["yesterdays_spend_cc"],
                 data[ag_source]["yesterdays_spend_cc"],
                 data[ag_source]["goal_performance"],
+                campaign_goal,
             )
 
         bid_change_comments += calculation_comments
@@ -90,7 +94,7 @@ def _round_bid(num, decimal_places=settings.AUTOPILOT_BID_MAX_DEC_PLACES, roundi
 
 
 def calculate_new_autopilot_bid(
-    current_bid, current_daily_budget, yesterdays_spend, bidding_type=dash.constants.BiddingType.CPC
+    current_bid, current_daily_budget, yesterdays_spend, campaign_goal, bidding_type=dash.constants.BiddingType.CPC
 ):
     underspend_perc = yesterdays_spend / current_daily_budget - 1
     current_bid, bid_change_comments = _get_calculate_bid_comments(
@@ -110,7 +114,8 @@ def calculate_new_autopilot_bid(
             new_bid = _round_bid(new_bid)
             break
 
-    return _threshold_autopilot_min_max_bid(new_bid, bid_change_comments)
+    new_bid, bid_change_comments = _threshold_autopilot_min_max_bid(new_bid, bid_change_comments)
+    return _threshold_bid_goal(new_bid, bid_change_comments, campaign_goal, bidding_type)
 
 
 def calculate_new_autopilot_bid_automatic_mode_rtb(
@@ -119,6 +124,7 @@ def calculate_new_autopilot_bid_automatic_mode_rtb(
     rtb_yesterdays_spend,
     source_yesterday_spend,
     performance,
+    campaign_goal,
     bidding_type=dash.constants.BiddingType.CPC,
 ):
     underspend_perc = rtb_yesterdays_spend / rtb_daily_budget - 1
@@ -148,7 +154,8 @@ def calculate_new_autopilot_bid_automatic_mode_rtb(
 
     new_bid = _threshold_bid_min_change(new_bid < current_bid, current_bid, new_bid, bidding_type)
     new_bid = _round_bid(new_bid)
-    return _threshold_autopilot_min_max_bid(new_bid, bid_change_comments)
+    new_bid, bid_change_comments = _threshold_autopilot_min_max_bid(new_bid, bid_change_comments)
+    return _threshold_bid_goal(new_bid, bid_change_comments, campaign_goal, bidding_type)
 
 
 def _get_calculate_bid_comments(current_bid, current_daily_budget, yesterdays_spend, bidding_type):
@@ -262,10 +269,18 @@ def _threshold_increasing_bid(current_bid, new_bid, bidding_type):
     return new_bid
 
 
+def _threshold_bid_goal(bid, bid_change_comments, campaign_goal, bidding_type):
+    goal = campaign_goal.get("goal")
+    if goal and goal.type == dash.constants.CampaignGoalKPI.CPC and bidding_type == dash.constants.BiddingType.CPC:
+        min_bid = campaign_goal["value"] * settings.BID_GOAL_THRESHOLD
+        if bid < min_bid:
+            return (min_bid, bid_change_comments + [BidChangeComment.UNDER_GOAL_BID])
+    return (bid, bid_change_comments)
+
+
 def _threshold_autopilot_min_max_bid(bid, bid_change_comments, bidding_type=dash.constants.BiddingType.CPC):
     min_autopilot_bid = settings.get_autopilot_min_bid(bidding_type)
     max_autopilot_bid = settings.get_autopilot_max_bid(bidding_type)
-
     if min_autopilot_bid > bid:
         return (min_autopilot_bid, bid_change_comments + [BidChangeComment.UNDER_AUTOPILOT_MIN_BID])
     if max_autopilot_bid < bid:

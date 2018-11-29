@@ -68,6 +68,7 @@ def run_autopilot(
                     data[ad_group],
                     bcm_modifiers_map.get(campaign),
                     adjust_bids,
+                    campaign_goals.get(campaign, {}),
                     is_budget_ap_enabled=True,
                 )
                 changes_data = _get_autopilot_campaign_changes_data(
@@ -88,7 +89,12 @@ def run_autopilot(
                     daily_run,
                 )
                 bid_changes = _get_bid_predictions(
-                    ad_group, budget_changes, data[ad_group], bcm_modifiers_map.get(campaign), adjust_bids
+                    ad_group,
+                    budget_changes,
+                    data[ad_group],
+                    bcm_modifiers_map.get(campaign),
+                    adjust_bids,
+                    campaign_goals.get(campaign, {}),
                 )
                 _save_changes(data, campaign_goals, ad_group, budget_changes, bid_changes, dry_run, daily_run)
                 changes_data = _get_autopilot_campaign_changes_data(ad_group, changes_data, bid_changes, budget_changes)
@@ -208,7 +214,9 @@ def _filter_data_budget_ap_allrtb(data, ad_group):
     return data
 
 
-def _get_bid_predictions(ad_group, budget_changes, data, bcm_modifiers, adjust_bids, is_budget_ap_enabled=False):
+def _get_bid_predictions(
+    ad_group, budget_changes, data, bcm_modifiers, adjust_bids, campaign_goal, is_budget_ap_enabled=False
+):
     if not _can_run_bid_autopilot(ad_group.campaign):
         return {}
     bid_changes = {}
@@ -218,7 +226,12 @@ def _get_bid_predictions(ad_group, budget_changes, data, bcm_modifiers, adjust_b
     if adjust_bids:
         adjust_rtb_sources = not rtb_as_one or (is_budget_ap_enabled and rtb_as_one)
         bid_changes = bid.get_autopilot_bid_recommendations(
-            ad_group, data, bcm_modifiers, budget_changes=budget_changes, adjust_rtb_sources=adjust_rtb_sources
+            ad_group,
+            data,
+            bcm_modifiers,
+            campaign_goal,
+            budget_changes=budget_changes,
+            adjust_rtb_sources=adjust_rtb_sources,
         )
     return bid_changes
 

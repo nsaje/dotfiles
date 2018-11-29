@@ -28,7 +28,7 @@ class AutopilotPlusTestCase(test.TestCase):
             result[ags] = {"old_budget": Decimal("10.0"), "new_budget": Decimal("20.0"), "budget_comments": []}
         return result
 
-    def mock_bid_recommender(self, ad_group, data, bcm, budget_changes, adjust_rtb_sources):
+    def mock_bid_recommender(self, ad_group, data, bcm, campaign_goal, budget_changes, adjust_rtb_sources):
         result = {}
         for ags in data:
             if ad_group.id != 3:

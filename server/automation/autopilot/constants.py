@@ -22,6 +22,7 @@ class BidChangeComment(ConstantBase):
     OVER_AD_GROUP_SOURCE_MIN_BID = 17  # deprecated
     UNDER_AD_GROUP_SOURCE_MIN_BID = 18  # deprecated
     BID_CONSTRAINT_APPLIED = 19
+    UNDER_GOAL_BID = 20
 
     _VALUES = {
         BUDGET_MANUALLY_CHANGED: "budget was manually changed recently",
@@ -43,6 +44,7 @@ class BidChangeComment(ConstantBase):
         OVER_AD_GROUP_SOURCE_MIN_BID: "higher bid {bid} would not meet Ad Group-Source specific {bid} constraint",
         UNDER_AD_GROUP_SOURCE_MIN_BID: "lower bid {bid} would not meet Ad Group-Source specific {bid} constraint",
         BID_CONSTRAINT_APPLIED: "bid {bid} had to be adjusted to meet applied {bid} constraints",
+        UNDER_GOAL_BID: "bid {bid} would be lowered under the goal set on campaign (adjusted for threshold)",
     }
 
     @classmethod

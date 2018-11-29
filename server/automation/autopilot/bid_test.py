@@ -60,9 +60,15 @@ class AutopilotBidTestCase(test.TestCase):
             ("3.5", "10", "1", "3", [BidChangeComment.CURRENT_BID_TOO_HIGH]),
             ("0.05", "10", "1", "0.1", [BidChangeComment.CURRENT_BID_TOO_LOW]),
         )
+        campaign_goal = {
+            "goal": dash.models.CampaignGoal(type=dash.constants.CampaignGoalKPI.TIME_ON_SITE),
+            "value": Decimal("30"),
+        }
         for test_case in test_cases:
             self.assertEqual(
-                bid.calculate_new_autopilot_bid(Decimal(test_case[0]), Decimal(test_case[1]), Decimal(test_case[2])),
+                bid.calculate_new_autopilot_bid(
+                    Decimal(test_case[0]), Decimal(test_case[1]), Decimal(test_case[2]), campaign_goal
+                ),
                 (Decimal(test_case[3]), test_case[4]),
             )
 
@@ -72,10 +78,36 @@ class AutopilotBidTestCase(test.TestCase):
         for test_case in test_cases:
             self.assertEqual(
                 bid.calculate_new_autopilot_bid(
-                    Decimal(test_case[0]), Decimal(test_case[1]), Decimal(test_case[2]), adgroup.bidding_type
+                    Decimal(test_case[0]),
+                    Decimal(test_case[1]),
+                    Decimal(test_case[2]),
+                    campaign_goal,
+                    adgroup.bidding_type,
                 ),
                 (Decimal(test_case[3]), test_case[4]),
             )
+
+    def test_calculate_new_autopilot_bid_min_cpc_goal(self):
+        test_case = ("0.12", "10", "9.96")
+        campaign_goal = {
+            "goal": dash.models.CampaignGoal(type=dash.constants.CampaignGoalKPI.TIME_ON_SITE),
+            "value": Decimal("5"),
+        }
+        new_bid, bid_change_comments = bid.calculate_new_autopilot_bid(
+            Decimal(test_case[0]), Decimal(test_case[1]), Decimal(test_case[2]), campaign_goal
+        )
+        self.assertEqual(Decimal("0.114"), new_bid)
+        self.assertEqual([], bid_change_comments)
+
+        campaign_goal = {
+            "goal": dash.models.CampaignGoal(type=dash.constants.CampaignGoalKPI.CPC),
+            "value": Decimal("5"),
+        }
+        new_bid, bid_change_comments = bid.calculate_new_autopilot_bid(
+            Decimal(test_case[0]), Decimal(test_case[1]), Decimal(test_case[2]), campaign_goal
+        )
+        self.assertEqual(4, new_bid)
+        self.assertEqual([BidChangeComment.UNDER_GOAL_BID], bid_change_comments)
 
     @patch("automation.autopilot.settings.AUTOPILOT_CPC_NO_SPEND_CHANGE", Decimal("0.4"))
     @patch(
@@ -146,9 +178,18 @@ class AutopilotBidTestCase(test.TestCase):
             ("0.5", "10", "10", "0", 1.0, "0.7", []),  # source with no spend
             ("0.5", "10", "8", "0", 1.0, "0.75", []),  # higher budget_fulfillment_factor overrides source with no spend
         )
+        campaign_goal = {
+            "goal": dash.models.CampaignGoal(type=dash.constants.CampaignGoalKPI.TIME_ON_SITE),
+            "value": Decimal("30"),
+        }
         for test_case in test_cases:
             new_bid, comments = bid.calculate_new_autopilot_bid_automatic_mode_rtb(
-                Decimal(test_case[0]), Decimal(test_case[1]), Decimal(test_case[2]), Decimal(test_case[3]), test_case[4]
+                Decimal(test_case[0]),
+                Decimal(test_case[1]),
+                Decimal(test_case[2]),
+                Decimal(test_case[3]),
+                test_case[4],
+                campaign_goal,
             )
             self.assertEqual(
                 (new_bid, comments),
@@ -176,6 +217,7 @@ class AutopilotBidTestCase(test.TestCase):
                 Decimal(test_case[2]),
                 Decimal(test_case[3]),
                 test_case[4],
+                campaign_goal,
                 adgroup.bidding_type,
             )
             self.assertEqual(
@@ -193,6 +235,38 @@ class AutopilotBidTestCase(test.TestCase):
                     + '"'
                 ),
             )
+
+    def test_calculate_new_autopilot_bid_automatic_mode_rtb_min_cpc_goal(self):
+        campaign_goal = {
+            "goal": dash.models.CampaignGoal(type=dash.constants.CampaignGoalKPI.TIME_ON_SITE),
+            "value": Decimal("5"),
+        }
+        test_case = ("0.12", "10", "9.96", "2.5", 0.7)
+        new_bid, bid_change_comments = bid.calculate_new_autopilot_bid_automatic_mode_rtb(
+            Decimal(test_case[0]),
+            Decimal(test_case[1]),
+            Decimal(test_case[2]),
+            Decimal(test_case[3]),
+            test_case[4],
+            campaign_goal,
+        )
+        self.assertEqual(Decimal("0.113"), new_bid)
+        self.assertEqual([], bid_change_comments)
+
+        campaign_goal = {
+            "goal": dash.models.CampaignGoal(type=dash.constants.CampaignGoalKPI.CPC),
+            "value": Decimal("5"),
+        }
+        new_bid, bid_change_comments = bid.calculate_new_autopilot_bid_automatic_mode_rtb(
+            Decimal(test_case[0]),
+            Decimal(test_case[1]),
+            Decimal(test_case[2]),
+            Decimal(test_case[3]),
+            test_case[4],
+            campaign_goal,
+        )
+        self.assertEqual(4, new_bid)
+        self.assertEqual([BidChangeComment.UNDER_GOAL_BID], bid_change_comments)
 
     @patch("automation.autopilot.settings.AUTOPILOT_MIN_CPC", Decimal("0.1"))
     @patch("automation.autopilot.settings.AUTOPILOT_MAX_CPC", Decimal("3"))
