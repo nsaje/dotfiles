@@ -342,7 +342,7 @@ class AdGroupSettingsTest(TestCase):
                             "b1_sources_group_enabled": True,
                             "b1_sources_group_daily_budget": "500.0000",
                             "b1_sources_group_state": 1,
-                            "b1_sources_group_cpc_cc": "0.25",
+                            "b1_sources_group_cpc_cc": "0.3000",
                             "b1_sources_group_cpm": "1.0100",
                             "whitelist_publisher_groups": [1],
                             "blacklist_publisher_groups": [1],
@@ -466,7 +466,7 @@ class AdGroupSettingsTest(TestCase):
                             "b1_sources_group_daily_budget": "500.0000",
                             "b1_sources_group_state": 1,
                             "b1_sources_group_cpc_cc": "0.0100",
-                            "b1_sources_group_cpm": "1.02",
+                            "b1_sources_group_cpm": "1.6000",
                             "whitelist_publisher_groups": [1],
                             "blacklist_publisher_groups": [1],
                             "delivery_type": 2,
@@ -775,11 +775,12 @@ class AdGroupSettingsTest(TestCase):
             mock_now.return_value = datetime.date(2016, 1, 5)
 
             ad_group = models.AdGroup.objects.get(pk=1)
-
+            ad_group.settings.update_unsafe(None, cpc_cc=7.00)
             old_settings = ad_group.get_current_settings()
             self.assertIsNotNone(old_settings.pk)
 
             add_permissions(self.user, ["settings_view", "can_set_rtb_sources_as_one_cpc"])
+            self.settings_dict["settings"]["cpc_cc"] = ad_group.settings.cpc_cc
             new_settings = {}
             new_settings.update(self.settings_dict)
             new_settings["settings"]["b1_sources_group_cpc_cc"] = "0.1"
@@ -810,10 +811,12 @@ class AdGroupSettingsTest(TestCase):
             ad_group = models.AdGroup.objects.get(pk=1)
             ad_group.bidding_type = constants.BiddingType.CPM
             ad_group.save(None)
+            ad_group.settings.update_unsafe(None, max_cpm=20.00)
 
             del self.settings_dict["settings"]["bidding_type"]
             del self.settings_dict["settings"]["b1_sources_group_cpc_cc"]
             self.settings_dict["settings"]["cpc_cc"] = None
+            self.settings_dict["settings"]["max_cpm"] = ad_group.settings.max_cpm
 
             old_settings = ad_group.get_current_settings()
             self.assertIsNotNone(old_settings.pk)

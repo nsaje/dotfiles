@@ -141,6 +141,10 @@ class AdGroupSettingsMixin(object):
                 new_settings.b1_sources_group_cpm = min(changes.get("max_cpm"), new_settings.b1_sources_group_cpm)
 
             adjusted_b1_sources_group_cpm = helpers.adjust_max_bid(new_settings.b1_sources_group_cpm, new_settings)
+            adjusted_b1_sources_group_cpm = helpers._adjust_ad_group_source_bid_to_max(
+                self.ad_group, new_settings, adjusted_b1_sources_group_cpm
+            )
+
             if new_settings.b1_sources_group_cpm != adjusted_b1_sources_group_cpm:
                 new_settings.b1_sources_group_cpm = adjusted_b1_sources_group_cpm
         else:
@@ -151,6 +155,10 @@ class AdGroupSettingsMixin(object):
             adjusted_b1_sources_group_cpc_cc = helpers.adjust_max_bid(
                 new_settings.b1_sources_group_cpc_cc, new_settings
             )
+            adjusted_b1_sources_group_cpc_cc = helpers._adjust_ad_group_source_bid_to_max(
+                self.ad_group, new_settings, adjusted_b1_sources_group_cpc_cc
+            )
+
             if new_settings.b1_sources_group_cpc_cc != adjusted_b1_sources_group_cpc_cc:
                 new_settings.b1_sources_group_cpc_cc = adjusted_b1_sources_group_cpc_cc
 
