@@ -454,6 +454,11 @@ class AdGroup(validation.AdGroupValidatorMixin, models.Model, bcm_mixin.AdGroupB
                 return self
             return self.exclude(settings__archived=True)
 
+        def exclude_display(self, show_display=False):
+            if show_display:
+                return self
+            return self.exclude(campaign__type=constants.CampaignType.DISPLAY)
+
         def filter_running(self, date=None):
             """
             This function checks if adgroup is running on arbitrary number of adgroups

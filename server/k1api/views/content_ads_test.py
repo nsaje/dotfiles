@@ -550,3 +550,59 @@ class ContentAdsTest(K1APIBaseTest):
         mock_influx_timing.assert_any_call(
             "content_ads_source.submission_processing_time", 111678084.394696, exchange="adblade"
         )
+
+    def test_get_content_ads_exclude_display(self):
+        campaign_native = magic_mixer.blend(dash.models.Campaign, type=dash.constants.CampaignType.CONTENT)
+        campaign_display = magic_mixer.blend(dash.models.Campaign, type=dash.constants.CampaignType.DISPLAY)
+
+        ad_group_native = magic_mixer.blend(dash.models.AdGroup, campaign=campaign_native)
+        ad_group_display = magic_mixer.blend(dash.models.AdGroup, campaign=campaign_display)
+
+        content_ads_native = magic_mixer.cycle(10).blend(dash.models.ContentAd, ad_group=ad_group_native)
+        magic_mixer.cycle(10).blend(dash.models.ContentAd, ad_group=ad_group_display)
+
+        response = self.client.get(
+            reverse("k1api.content_ads"),
+            {
+                "ad_group_ids": ",".join(str(ag.id) for ag in [ad_group_native, ad_group_display]),
+                "exclude_display": "true",
+            },
+        )
+
+        data = json.loads(response.content)
+        self.assert_response_ok(response, data)
+        data = data["response"]
+        self.assertEqual(set([obj["id"] for obj in data]), set([obj.id for obj in content_ads_native]))
+
+    def test_get_content_ad_sources_exclude_display(self):
+        campaign_native = magic_mixer.blend(dash.models.Campaign, type=dash.constants.CampaignType.CONTENT)
+        campaign_display = magic_mixer.blend(dash.models.Campaign, type=dash.constants.CampaignType.DISPLAY)
+
+        ad_group_native = magic_mixer.blend(dash.models.AdGroup, campaign=campaign_native)
+        ad_group_display = magic_mixer.blend(dash.models.AdGroup, campaign=campaign_display)
+
+        content_ad_native = magic_mixer.blend(dash.models.ContentAd, ad_group=ad_group_native)
+        content_ad_display = magic_mixer.blend(dash.models.ContentAd, ad_group=ad_group_display)
+
+        sources = magic_mixer.cycle(10).blend(dash.models.Source)
+
+        content_ad_sources_native = magic_mixer.cycle(len(sources)).blend(
+            dash.models.ContentAdSource, content_ad=content_ad_native, source=(s for s in sources)
+        )
+        magic_mixer.cycle(len(sources)).blend(
+            dash.models.ContentAdSource, content_ad=content_ad_display, source=(s for s in sources)
+        )
+
+        response = self.client.get(
+            reverse("k1api.content_ads.sources"),
+            {
+                "content_ad_ids": ",".join(str(ca.id) for ca in [content_ad_native, content_ad_display]),
+                "include_state": "false",
+                "exclude_display": "true",
+            },
+        )
+
+        data = json.loads(response.content)
+        self.assert_response_ok(response, data)
+        data = data["response"]
+        self.assertEqual(set([obj["id"] for obj in data]), set([obj.id for obj in content_ad_sources_native]))

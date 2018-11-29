@@ -272,3 +272,23 @@ class AdGroupsTest(K1APIBaseTest):
         data = data["response"]
 
         self.assertEqual([obj["id"] for obj in data], [obj.id for obj in ad_groups[3:8]])
+
+    def test_get_ad_groups_exclude_display(self):
+        campaign_native = magic_mixer.blend(dash.models.Campaign, type=dash.constants.CampaignType.CONTENT)
+        campaign_display = magic_mixer.blend(dash.models.Campaign, type=dash.constants.CampaignType.DISPLAY)
+
+        ad_groups_native = magic_mixer.cycle(10).blend(dash.models.AdGroup, campaign=campaign_native)
+        ad_groups_display = magic_mixer.cycle(10).blend(dash.models.AdGroup, campaign=campaign_display)
+
+        response = self.client.get(
+            reverse("k1api.ad_groups"),
+            {
+                "ad_group_ids": ",".join(str(ag.id) for ag in list(set(ad_groups_native) | set(ad_groups_display))),
+                "exclude_display": "true",
+            },
+        )
+
+        data = json.loads(response.content)
+        self.assert_response_ok(response, data)
+        data = data["response"]
+        self.assertEqual(set([obj["id"] for obj in data]), set([obj.id for obj in ad_groups_native]))

@@ -31,6 +31,7 @@ class ContentAdsView(K1APIView):
         content_ad_ids = request.GET.get("content_ad_ids")
         ad_group_ids = request.GET.get("ad_group_ids")
         include_archived = request.GET.get("include_archived") == "True"
+        exclude_display = request.GET.get("exclude_display", "false").lower() == "true"
 
         content_ads = dash.models.ContentAd.objects.all()
         if not include_archived:
@@ -43,6 +44,8 @@ class ContentAdsView(K1APIView):
         if ad_group_ids:
             ad_group_ids = ad_group_ids.split(",")
             content_ads = content_ads.filter(ad_group_id__in=ad_group_ids)
+        if exclude_display:
+            content_ads = content_ads.exclude_display()
         content_ads = content_ads.select_related("ad_group", "ad_group__campaign", "ad_group__campaign__account")
         campaign_settings_map = {
             cs.campaign_id: cs
@@ -106,6 +109,7 @@ class ContentAdSourcesView(K1APIView):
         modified_dt_from = request.GET.get("modified_dt_from")
         include_state = request.GET.get("include_state", "true").lower() == "true"
         include_blocked = request.GET.get("include_blocked", "true").lower() == "true"
+        exclude_display = request.GET.get("exclude_display", "false").lower() == "true"
 
         should_get_review_information = include_state or not include_blocked
 
@@ -136,6 +140,8 @@ class ContentAdSourcesView(K1APIView):
             content_ad_sources = content_ad_sources.filter(source__source_type__type__in=source_types.split(","))
         if slugs:
             content_ad_sources = content_ad_sources.filter(source__bidder_slug__in=slugs.split(","))
+        if exclude_display:
+            content_ad_sources = content_ad_sources.exclude_display()
 
         if modified_dt_from:
             try:
@@ -153,6 +159,7 @@ class ContentAdSourcesView(K1APIView):
             "content_ad_id",
             "content_ad__ad_group_id",
             "content_ad__ad_group__campaign_id",
+            "content_ad__ad_group__campaign__type",
             "content_ad__ad_group__campaign__account_id",
             "content_ad__ad_group__campaign__account__agency_id",
             "content_ad__ad_group__amplify_review",
@@ -237,6 +244,9 @@ class ContentAdSourcesView(K1APIView):
 
     @staticmethod
     def _is_blocked_by_amplify(content_ad_source, amplify_review_statuses):
+        if content_ad_source["content_ad__ad_group__campaign__type"] == dash.constants.CampaignType.DISPLAY:
+            return False
+
         source_submission_policy = content_ad_source["source__content_ad_submission_policy"]
         ad_group_amplify_review = content_ad_source["content_ad__ad_group__amplify_review"]
         content_ad_amplify_review = content_ad_source["content_ad__amplify_review"]
@@ -252,6 +262,9 @@ class ContentAdSourcesView(K1APIView):
 
     @staticmethod
     def _is_blocked_by_sspd(content_ad_source, sspd_statuses):
+        if content_ad_source["content_ad__ad_group__campaign__type"] == dash.constants.CampaignType.DISPLAY:
+            return False
+
         sspd_status = sspd_statuses.get(content_ad_source["id"])
 
         if not sspd_status:

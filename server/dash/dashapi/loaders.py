@@ -539,6 +539,14 @@ class ContentAdsLoader(Loader):
         return settings_map
 
     def _get_submission_status(self, content_ad, content_ad_source, content_ad_submission_policy):
+        if content_ad.ad_group.campaign.type == constants.CampaignType.DISPLAY:
+            return content_ad_source.get_submission_status(), content_ad_source.submission_errors
+        else:
+            return self._get_submission_status_for_native_ads(
+                content_ad, content_ad_source, content_ad_submission_policy
+            )
+
+    def _get_submission_status_for_native_ads(self, content_ad, content_ad_source, content_ad_submission_policy):
         if self.sspd_status_map is None:
             return constants.ContentAdSubmissionStatus.NOT_AVAILABLE, ""
         sspd_status = self.sspd_status_map.get(content_ad.id, {}).get(content_ad_source.source_id)

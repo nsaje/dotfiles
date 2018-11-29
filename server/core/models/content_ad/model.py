@@ -265,7 +265,11 @@ class ContentAd(models.Model, prodops_mixin.ProdopsMixin, instance.ContentAdInst
         def exclude_archived(self, show_archived=False):
             if show_archived:
                 return self
-
             return self.filter(archived=False)
+
+        def exclude_display(self, show_display=False):
+            if show_display:
+                return self
+            return self.exclude(ad_group__campaign__type=constants.CampaignType.DISPLAY)
 
     objects = ContentAdManager.from_queryset(QuerySet)()

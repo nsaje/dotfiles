@@ -36,6 +36,8 @@ class AdGroupsView(K1APIView):
         source_types = request.GET.get("source_types")
         slugs = request.GET.get("source_slugs")
         only_active = request.GET.get("only_active") == "true"
+        exclude_display = request.GET.get("exclude_display", "false").lower() == "true"
+
         if ad_group_ids:
             ad_group_ids = ad_group_ids.split(",")
         if source_types:
@@ -44,7 +46,7 @@ class AdGroupsView(K1APIView):
             slugs = slugs.split(",")
 
         ad_groups, campaigns_budgets_map, campaignstop_states = self._get_ad_groups(
-            ad_group_ids, source_types, slugs, marker, only_active, limit
+            ad_group_ids, source_types, slugs, only_active, exclude_display, marker, limit
         )
 
         campaign_ids = set(ad_group.campaign_id for ad_group in ad_groups)
@@ -233,7 +235,7 @@ class AdGroupsView(K1APIView):
         return campaign_goals_dicts
 
     @staticmethod
-    def _get_ad_groups(ad_group_ids, source_types, slugs, marker, only_active, limit):
+    def _get_ad_groups(ad_group_ids, source_types, slugs, only_active, exclude_display, marker, limit):
         ad_groups = dash.models.AdGroup.objects.all()
 
         if ad_group_ids:
@@ -251,6 +253,8 @@ class AdGroupsView(K1APIView):
 
         if only_active:
             ad_groups = ad_groups.filter(settings__state=dash.constants.AdGroupSettingsState.ACTIVE)
+        if exclude_display:
+            ad_groups = ad_groups.exclude_display()
 
         ad_groups = ad_groups.exclude_archived()
 
