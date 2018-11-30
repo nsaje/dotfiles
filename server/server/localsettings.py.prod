@@ -527,12 +527,14 @@ AMMET_FTP_CONFIG = {
 FTP_REPORTS = {
     # Key is the report ID, Value is the remote destination for that report
     737: {"destination": "The_Hershey_Company", "config": TAPCLICK_FTP_CONFIG},
-    738: {"destination": "RiteAid", "server_config": TAPCLICK_FTP_CONFIG},
+    738: {"destination": "RiteAid", "config": TAPCLICK_FTP_CONFIG},
     739: {"destination": "Treasury_Keystone_Scholars", "config": TAPCLICK_FTP_CONFIG},
     740: {"destination": "Harrisburg_University_Cybersecurity", "config": TAPCLICK_FTP_CONFIG},
     746: {"destination": "Quest_Diagnostics", "config": TAPCLICK_FTP_CONFIG},
     785: {"destination": "Quest_Direct", "config": TAPCLICK_FTP_CONFIG},
     786: {"destination": "", "config": AMMET_FTP_CONFIG},
+    795: {"destination": "Quest_UnitedHealthcare", "config": TAPCLICK_FTP_CONFIG},
+    796: {"destination": "PA_College_of_Health_and_Sciences", "config": TAPCLICK_FTP_CONFIG},
 }
 
 
