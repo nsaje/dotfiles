@@ -58,7 +58,7 @@ class Command(ExceptionCommand):
             except Exception as e:
                 err.append(e)
         to = None
-        if options["from"]:
+        if options["to"]:
             to = datetime.datetime.strptime(options["to"], "%Y-%m-%d")
 
         if since is None:
