@@ -39,6 +39,7 @@ from utils import email_helper
 from utils import exc
 from utils import k1_helper
 from utils import redirector_helper
+from utils import slack
 from zemauth.models import User as ZemUser
 
 logger = logging.getLogger(__name__)
@@ -1137,6 +1138,8 @@ class AccountSettings(api_common.BaseApiView):
             )
 
     def save_settings(self, request, account, form):
+        old_name = account.name
+
         with transaction.atomic():
             # Form is additionally validated in self.set_allowed_sources method
             if not form.is_valid():
@@ -1199,6 +1202,21 @@ class AccountSettings(api_common.BaseApiView):
 
             account.save(request)
             settings.save(request, action_type=constants.HistoryActionType.SETTINGS_CHANGE)
+
+            if account.name != old_name and "New account" in old_name:
+                slack_msg = (
+                    "Account #<https://one.zemanta.com/v2/analytics/account/{id}|{id}> {name} was created"
+                    "{agency}.".format(
+                        id=account.id,
+                        name=account.name,
+                        agency=" for agency {}".format(account.agency.name) if account.agency else "",
+                    )
+                )
+                try:
+                    slack.publish(text=slack_msg, channel="z1-new-accounts")
+                except Exception:
+                    logger.exception("Connection error with Slack.")
+
             return settings
 
     def _validate_essential_account_settings(self, user, form):
