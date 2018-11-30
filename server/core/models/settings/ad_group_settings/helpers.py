@@ -80,7 +80,6 @@ def _get_adjusted_ad_group_source_bid(proposed_bid, ad_group_source, ad_group_se
             ad_group_settings.autopilot_state != constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET
             or (campaign_goal and campaign_goal.type != constants.CampaignGoalKPI.CPA)
         )
-        and not campaign_settings.autopilot
     ):
         proposed_bid = (
             ad_group_settings.b1_sources_group_cpm
