@@ -224,7 +224,10 @@ def _get_bid_predictions(
     active_bid_budget = dash.constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET
     is_budget_ap_enabled = ad_group.settings.autopilot_state == active_bid_budget or is_budget_ap_enabled
     if adjust_bids:
-        adjust_rtb_sources = not rtb_as_one or (is_budget_ap_enabled and rtb_as_one)
+        goal = campaign_goal.get("goal")
+        adjust_rtb_sources = not rtb_as_one or (
+            goal and goal.type == dash.constants.CampaignGoalKPI.CPA and is_budget_ap_enabled
+        )
         bid_changes = bid.get_autopilot_bid_recommendations(
             ad_group,
             data,
