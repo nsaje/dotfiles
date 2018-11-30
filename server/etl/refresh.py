@@ -42,6 +42,7 @@ def refresh(
     skip_analyze=False,
     skip_daily_statements=False,
     dump_and_abort=None,
+    update_to=None,
 ):
     do_post_to_slack = (datetime.datetime.today() - update_since).days > SLACK_MIN_DAYS_TO_PROCESS
     if do_post_to_slack or account_id:
@@ -56,6 +57,7 @@ def refresh(
             skip_analyze=skip_analyze,
             skip_daily_statements=skip_daily_statements,
             dump_and_abort=dump_and_abort,
+            update_to=update_to,
         )
     if do_post_to_slack or account_id:
         _post_to_slack("finished", update_since, account_id)
@@ -71,6 +73,7 @@ def _refresh(
     skip_analyze=False,
     skip_daily_statements=False,
     dump_and_abort=None,
+    update_to=None,
 ):
     influx.incr("etl.refresh_k1.refresh_k1_reports", 1)
 
@@ -83,7 +86,7 @@ def _refresh(
     effective_spend_factors = daily_statements.get_effective_spend(total_spend, update_since.date(), account_id)
 
     dates = sorted(effective_spend_factors.keys())
-    date_from, date_to = dates[0], dates[-1]
+    date_from, date_to = dates[0], (update_to or dates[-1])
     job_id = generate_job_id(account_id)
 
     logger.info(

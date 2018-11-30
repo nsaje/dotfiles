@@ -16,6 +16,13 @@ class Command(ExceptionCommand):
 
     def add_arguments(self, parser):
         parser.add_argument("from", type=str)
+        parser.add_argument(
+            "to",
+            type=str,
+            default=None,
+            nargs="?",
+            help="Limit date range - expect daily statements to be reprocessed already.",
+        )
         parser.add_argument("--account_id", type=int)
         parser.add_argument("--skip-vacuum", action="store_true")
         parser.add_argument("--skip-analyze", action="store_true")
@@ -50,6 +57,9 @@ class Command(ExceptionCommand):
                 since = datetime.datetime.today() - datetime.timedelta(days=delta)
             except Exception as e:
                 err.append(e)
+        to = None
+        if options["from"]:
+            to = datetime.datetime.strptime(options["to"], "%Y-%m-%d")
 
         if since is None:
             logger.error(err)
@@ -62,6 +72,7 @@ class Command(ExceptionCommand):
                 skip_analyze=skip_analyze,
                 skip_daily_statements=skip_daily_statements,
                 dump_and_abort=dump_and_abort,
+                update_to=to,
             )
         except Exception as e:
             logger.exception(e)
