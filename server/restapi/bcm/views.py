@@ -168,6 +168,7 @@ class AccountCreditView(api_common.BaseApiView):
                 amount=cli.amount,
                 currency_symbol=core.features.multicurrency.get_currency_symbol(cli.currency),
                 end_date=cli.end_date,
+                comment="Comments: _{}_".format(cli.comment) if cli.comment else "",
             )
             msg_type = slack.MESSAGE_TYPE_WARNING
 
