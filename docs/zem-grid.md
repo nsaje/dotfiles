@@ -62,3 +62,53 @@
         * `$ctrl.grid.meta.api = zemGridApi.createInstance($ctrl.grid)`
             * `zemGridApi` provides interface for interaction with `zemGrid` - reference can be sent to non-grid components (e.g. `zemGridColumnSelector`, `zemGridBreakdownSelector` etc.)
 * `onInitialized` output is used to set grid api via `tab.gridIntegrationService.setGridApi(gridApi)` once `zemGrid` is initialized
+
+# `zemReportDownload` 
+
+## `zemReportQueryConfig` component
+
+* `zemReportQueryConfig` component is used for rendering *Columns* section in *Export Report* modal
+* the `$onInit`method is used to initialize columns categories (Management, Content, ...) and hooks to the *private* `update` method
+* to initialize the columns categories the `zemGridApi` service is used:
+ * `$ctrl.gridApi.getCategorizedColumns`
+* the private `update` method uses `zemReportFieldsService` service to generate the selected fields which are then rendered as tags in the *Columns* form group
+ ```plain
+ var fields = zemReportFieldsService.getFields(
+ 	$ctrl.gridApi.getMetaData().level,
+ 	$ctrl.gridApi.getMetaData().breakdown,
+ 	$ctrl.breakdown,
+ 	$ctrl.config.includeIds,
+ 	$ctrl.selectedColumns,
+ 	getTogglableColumns(allColumns),
+ 	getGridColumns(allColumns)
+ );
+ ```
+* `zemReportQueryConfig` uses two child components (`zemReportColumnSelector`, `zemColumnSelector`)
+* `zemReportColumnSelector` is a component used for rendering the template for managing grid columns 
+ * it behaves as a proxy to the `zemColumnSelector` component
+* `zemColumnSelector` is a component used for rendering checkboxes for each category of grid columns that the user can select
+ * when the checkbox is toggled the change gets pushed back to the parent
+ * this component is used in `zemReportColumnSelector` and `zemGridColumnSelector` component
+* the data flow between `zemReportQueryConfig` and the child components is realized through the function and property binding pattern:
+ ```plain
+ on-column-toggled="$ctrl.onColumnToggled({field: field})"
+ on-all-columns-toggled="$ctrl.onAllColumnsToggled({isChecked: isChecked})"
+ categories="$ctrl.categories"
+ ```
+ 
+## `zemReportFieldsService` service
+
+* `zemReportFieldsService` is used to generate the fields that are shown to the user as selected tags/columns for export in the `zemReportQueryConfig` template
+* this fields are filtered based on the provided inputs  (*gridLevel*, *gridBreakdown*, *selectedFields*, *gridFields* ...)
+* `zemReportFieldsService` exports one public method called `getFields`
+ ```plain
+ function getFields(
+	 gridLevel,
+	 gridBreakdown,
+	 breakdown,
+	 includeIds,
+	 selectedFields,
+	 togglableColumns,
+	 gridFields
+) { ... }
+ ```

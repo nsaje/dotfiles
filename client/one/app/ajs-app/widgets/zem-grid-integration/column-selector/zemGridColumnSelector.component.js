@@ -9,9 +9,9 @@ angular.module('one.widgets').component('zemGridColumnSelector', {
         var $ctrl = this;
 
         $ctrl.categories = [];
-        $ctrl.onSelectColumn = onSelectColumn;
+        $ctrl.onColumnToggled = onColumnToggled;
+        $ctrl.onAllColumnsToggled = onAllColumnsToggled;
         $ctrl.focusInput = focusInput;
-        $ctrl.toggleColumns = toggleColumns;
         $ctrl.isCostModeToggleAllowed = zemCostModeService.isToggleAllowed;
         $ctrl.toggleCostMode = zemCostModeService.toggleCostMode;
 
@@ -20,14 +20,14 @@ angular.module('one.widgets').component('zemGridColumnSelector', {
             $ctrl.api.onColumnsUpdated(null, initializeCategories);
         };
 
-        function toggleColumns(newColumnsState) {
+        function onAllColumnsToggled(newColumnsState) {
             $ctrl.api.setVisibleColumns(
                 $ctrl.api.getTogglableColumns($ctrl.api.getColumns()),
                 newColumnsState
             );
         }
 
-        function onSelectColumn(selectedColumnField) {
+        function onColumnToggled(selectedColumnField) {
             var column = $ctrl.api.findColumnInCategories(
                 $ctrl.categories,
                 selectedColumnField

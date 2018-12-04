@@ -36,8 +36,10 @@
         <zem-report-column-selector
             disabled="$ctrl.disabled"
             ng-if="$ctrl.hasPermission('zemauth.fea_can_use_column_picker_in_reports')"
-            toggle-columns="$ctrl.toggleColumns(columnsToToggle, visible)"
-            api="$ctrl.gridApi"></zem-report-column-selector>
+            on-column-toggled="$ctrl.onColumnToggled(field)"
+            on-all-columns-toggled="$ctrl.onAllColumnsToggled(isChecked)"
+            categories="$ctrl.categories">
+        </zem-report-column-selector>
     </div>
 </div>
 <hr ng-if="$ctrl.appliedFilterConditions.length">

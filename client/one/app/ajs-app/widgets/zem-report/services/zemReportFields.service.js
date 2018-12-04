@@ -9,8 +9,6 @@ angular
             all_accounts: [],
         };
 
-        var HIDDEN_TYPES = ['stateSelector', 'submissionStatus'];
-
         var REMAPPED_FIELDS = {
             Thumbnail: ['Image Hash', 'Image URL'],
         };
@@ -22,6 +20,7 @@ angular
             'Account',
             'Agency',
         ];
+
         var FIELDS_WITH_STATUSES = [
             'Account',
             'Campaign',
@@ -30,27 +29,21 @@ angular
             'Publisher',
         ];
 
-        var BREAKDOWN_REQUIRED_FIELDS = {
-            content_ad: [
-                'URL',
-                'Thumbnail',
-                'Brand Name',
-                'Description',
-                'Label',
-                'Call to action',
-                'Impression trackers',
-            ],
-        };
-
         var COLUMNS_TO_REMOVE = ['Actions'];
 
         // Public API
         this.getFields = getFields;
 
-        function getFields(gridApi, breakdown, includeIds) {
-            var fields = angular.copy(
-                ALWAYS_FIELDS[gridApi.getMetaData().level]
-            );
+        function getFields(
+            gridLevel,
+            gridBreakdown,
+            breakdown,
+            includeIds,
+            selectedFields,
+            togglableColumns,
+            gridFields
+        ) {
+            var fields = angular.copy(ALWAYS_FIELDS[gridLevel]);
             if (
                 zemPermissions.hasPermission(
                     'zemauth.can_view_account_agency_information'
@@ -62,67 +55,64 @@ angular
 
             for (var i = 0; i < breakdown.length; i++) {
                 fields.push(breakdown[i].report_query);
-                fields = addBreakdownRequiredFields(fields, breakdown[i].query);
             }
 
-            fields = fields.concat(getGridFields(gridApi));
-
+            fields = fields.concat(gridFields);
             fields = filterOutClientOnlyFields(fields);
-            fields = remapFields(fields);
-
             fields = addIdFields(fields, includeIds);
-            fields = addStatusFields(
-                fields,
-                gridApi.getMetaData().level,
-                gridApi.getMetaData().breakdown
-            );
-
-            var gridLevel = gridApi.getMetaData().level;
-            var gridBreakdown = gridApi.getMetaData().breakdown;
+            fields = addStatusFields(fields, gridLevel, gridBreakdown);
 
             if (gridLevel === 'ad_groups' && gridBreakdown === 'publisher') {
                 fields.push('Source Slug');
             }
 
+            fields = filterBySelectedFields(
+                fields,
+                selectedFields,
+                togglableColumns
+            );
+            fields = remapFields(fields);
             fields = deduplicateFields(fields);
 
             return fields;
         }
 
-        function getGridFields(gridApi) {
-            return gridApi
-                .getColumns()
-                .filter(function(column) {
-                    return column.visible;
-                })
-                .filter(function(column) {
-                    return !column.disabled;
-                })
-                .filter(function(column) {
-                    return column.data.name;
-                })
-                .filter(function(column) {
-                    return HIDDEN_TYPES.indexOf(column.data.type) < 0;
-                })
-                .map(function(column) {
-                    return column.data.name;
-                });
-        }
+        function filterBySelectedFields(
+            fields,
+            selectedFields,
+            togglableColumns
+        ) {
+            // filter by selected fields
+            var newFields = fields.filter(function(item) {
+                if (!togglableColumns.includes(item)) {
+                    // Keep extra fields (always fields, fields with statuses...)
+                    return item;
+                }
+                // Keep selected fields
+                return selectedFields.indexOf(item) !== -1;
+            });
 
-        function remapFields(fields) {
-            var newFields = [];
-            for (var i = 0; i < fields.length; i++) {
-                if (fields[i] in REMAPPED_FIELDS) {
-                    newFields = newFields.concat(REMAPPED_FIELDS[fields[i]]);
-                } else {
-                    newFields.push(fields[i]);
+            for (var i = 0; i < selectedFields.length; i++) {
+                if (!newFields.includes(selectedFields[i])) {
+                    // Add additional selected fields
+                    newFields.push(selectedFields[i]);
                 }
             }
+
             return newFields;
         }
 
-        function addBreakdownRequiredFields(fields, breakdown) {
-            return fields.concat(BREAKDOWN_REQUIRED_FIELDS[breakdown] || []);
+        function remapFields(fields) {
+            var newFields = angular.copy(fields);
+            for (var i = 0; i < fields.length; i++) {
+                if (fields[i] in REMAPPED_FIELDS) {
+                    newFields = newFields.concat(REMAPPED_FIELDS[fields[i]]);
+                    newFields = newFields.filter(function(item) {
+                        return item !== fields[i];
+                    });
+                }
+            }
+            return newFields;
         }
 
         function filterOutClientOnlyFields(fields) {

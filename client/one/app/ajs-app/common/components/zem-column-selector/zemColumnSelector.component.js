@@ -3,8 +3,8 @@ require('./zemColumnSelector.component.less');
 angular.module('one.widgets').component('zemColumnSelector', {
     bindings: {
         categories: '<',
-        onSelectColumn: '&',
-        onToggleColumns: '&',
+        onColumnToggled: '&',
+        onAllColumnsToggled: '&',
     },
     template: require('./zemColumnSelector.component.html'),
     controller: function() {

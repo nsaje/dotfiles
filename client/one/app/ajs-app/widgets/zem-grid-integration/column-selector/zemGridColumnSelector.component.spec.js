@@ -26,16 +26,16 @@ describe('component: zemGridColumnSelector', function() {
         $ctrl = $componentController('zemGridColumnSelector', locals, bindings);
     }));
 
-    it('calls setVisibleColumns when toggleColumns method is called', function() {
+    it('calls setVisibleColumns when onAllColumnsToggled method is called', function() {
         spyOn($ctrl.api, 'setVisibleColumns');
-        $ctrl.toggleColumns();
+        $ctrl.onAllColumnsToggled();
         expect($ctrl.api.setVisibleColumns).toHaveBeenCalled();
     });
 
-    it('calls findColumnInCategories and setVisibleColumns when onSelectColumn method is called', function() {
+    it('calls findColumnInCategories and setVisibleColumns when onColumnToggled method is called', function() {
         spyOn($ctrl.api, 'findColumnInCategories').and.callThrough();
         spyOn($ctrl.api, 'setVisibleColumns');
-        $ctrl.onSelectColumn();
+        $ctrl.onColumnToggled();
         expect($ctrl.api.setVisibleColumns).toHaveBeenCalled();
         expect($ctrl.api.findColumnInCategories).toHaveBeenCalled();
     });

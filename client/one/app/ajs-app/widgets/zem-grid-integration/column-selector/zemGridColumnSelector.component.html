@@ -14,10 +14,10 @@
             </div>
 
             <zem-column-selector
-                on-toggle-columns="$ctrl.toggleColumns(isChecked)"
-                on-select-column="$ctrl.onSelectColumn(field)"
-                categories="$ctrl.categories"
-                ></zem-column-selector>
+                on-column-toggled="$ctrl.onColumnToggled(field)"
+                on-all-columns-toggled="$ctrl.onAllColumnsToggled(isChecked)"
+                categories="$ctrl.categories">
+            </zem-column-selector>
         </div>
     </div>
 </span>

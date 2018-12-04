@@ -25,17 +25,15 @@ describe('component: zemReportQueryConfig', function() {
         spyOn($ctrl, 'update').and.callFake(function() {});
         $ctrl.toggleColumns(columns, false);
 
-        expect($ctrl.unselectedColumns.length).toBe(3);
         expect($ctrl.selectedColumns.length).toBe(0);
     });
 
-    it('selects all unselected columns', function() {
+    it('selects all columns', function() {
         var columns = getSelectedColumns();
-        $ctrl.unselectedColumns = angular.copy(columns);
+        $ctrl.selectedColumns = [];
         spyOn($ctrl, 'update').and.callFake(function() {});
-        $ctrl.toggleColumns(columns, true);
+        $ctrl.toggleColumns(angular.copy(columns), true);
 
-        expect($ctrl.unselectedColumns.length).toBe(0);
         expect($ctrl.selectedColumns.length).toBe(3);
     });
 
@@ -46,7 +44,6 @@ describe('component: zemReportQueryConfig', function() {
         var selectedColumn = ['my selected column'];
         $ctrl.toggleColumns(selectedColumn, true);
 
-        expect($ctrl.unselectedColumns.length).toBe(0);
         expect($ctrl.selectedColumns.length).toBe(4);
     });
 
@@ -57,7 +54,6 @@ describe('component: zemReportQueryConfig', function() {
         var selectedColumn = ['my unselected column'];
         $ctrl.toggleColumns(selectedColumn, false);
 
-        expect($ctrl.unselectedColumns.length).toBe(1);
         expect($ctrl.selectedColumns.length).toBe(3);
     });
 

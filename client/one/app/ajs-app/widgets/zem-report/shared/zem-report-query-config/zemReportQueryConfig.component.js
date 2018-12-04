@@ -11,19 +11,25 @@ angular.module('one.widgets').component('zemReportQueryConfig', {
         zemFilterSelectorService,
         zemReportBreakdownService,
         zemReportFieldsService,
+        zemCostModeService,
         zemPermissions
     ) {
         var $ctrl = this;
 
+        var HIDDEN_TYPES = ['stateSelector', 'submissionStatus'];
+
         var NR_SHORTLIST_ITEMS = 9;
         var SHORTLIST_LIMIT = 15;
         var refundColumns = [];
+        var allColumns = [];
 
         //
         // Public API
         //
         $ctrl.hasPermission = zemPermissions.hasPermission;
         $ctrl.isPermissionInternal = zemPermissions.isPermissionInternal;
+        $ctrl.onColumnToggled = onColumnToggled;
+        $ctrl.onAllColumnsToggled = onAllColumnsToggled;
 
         $ctrl.showAllSelectedFields = showAllSelectedFields;
         $ctrl.showAllAppliedFilters = showAllAppliedFilters;
@@ -50,8 +56,9 @@ angular.module('one.widgets').component('zemReportQueryConfig', {
         $ctrl.view = '';
         $ctrl.breakdown = [];
         $ctrl.availableBreakdowns = {};
+
+        $ctrl.categories = [];
         $ctrl.selectedColumns = [];
-        $ctrl.unselectedColumns = [];
 
         $ctrl.$onInit = function() {
             $ctrl.appliedFilterConditions = zemFilterSelectorService.getAppliedConditions();
@@ -89,33 +96,41 @@ angular.module('one.widgets').component('zemReportQueryConfig', {
                 $ctrl.showAllAccountsCreditRefunds = true;
             }
 
-            refundColumns = getRefundColumns();
+            allColumns = getAllColumns();
+            refundColumns = getRefundColumns(allColumns);
+            $ctrl.categories = getCategories(allColumns);
+            $ctrl.selectedColumns = getSelectedColumns();
+
             update();
         };
 
-        function getRefundColumns() {
-            return $ctrl.gridApi
-                .getColumns()
-                .filter(function(column) {
-                    return column.data.isRefund;
-                })
-                .map(function(column) {
-                    return column.data.name;
-                });
+        function onColumnToggled(field) {
+            var column =
+                $ctrl.gridApi.findColumnInCategories($ctrl.categories, field) ||
+                {};
+            setVisibleColumns(column, !column.visible);
         }
 
-        function addBreakdown(breakdown) {
-            $ctrl.breakdown.push(breakdown);
-            update();
+        function onAllColumnsToggled(isChecked) {
+            setVisibleColumns(
+                $ctrl.gridApi.getTogglableColumns(allColumns),
+                isChecked
+            );
         }
 
-        function removeBreakdown(breakdown) {
-            $ctrl.breakdown.splice($ctrl.breakdown.indexOf(breakdown), 1);
-            update();
-        }
+        function setVisibleColumns(toggledColumns, visible) {
+            var columnsToToggle = $ctrl.gridApi.getColumnsToToggle(
+                toggledColumns,
+                allColumns
+            );
 
-        function onlyUnique(value, index, self) {
-            return self.indexOf(value) === index;
+            columnsToToggle.forEach(function(column) {
+                column.visible = visible;
+            });
+
+            $ctrl.categories = getCategories(allColumns);
+
+            toggleColumns(columnsToToggle.map(getColumnName), visible);
         }
 
         function toggleColumns(columnsToToggle, visible) {
@@ -126,18 +141,10 @@ angular.module('one.widgets').component('zemReportQueryConfig', {
                     if (index === -1) {
                         $ctrl.selectedColumns.push(column);
                     }
-                    index = $ctrl.unselectedColumns.indexOf(column);
-                    if (index !== -1) {
-                        $ctrl.unselectedColumns.splice(index, 1);
-                    }
                 } else {
                     index = $ctrl.selectedColumns.indexOf(column);
                     if (index !== -1) {
                         $ctrl.selectedColumns.splice(index, 1);
-                    }
-                    index = $ctrl.unselectedColumns.indexOf(column);
-                    if (index === -1) {
-                        $ctrl.unselectedColumns.push(column);
                     }
                 }
             });
@@ -146,23 +153,18 @@ angular.module('one.widgets').component('zemReportQueryConfig', {
         }
 
         function update() {
-            var defaultFields = zemReportFieldsService.getFields(
-                $ctrl.gridApi,
+            var fields = zemReportFieldsService.getFields(
+                $ctrl.gridApi.getMetaData().level,
+                $ctrl.gridApi.getMetaData().breakdown,
                 $ctrl.breakdown,
-                $ctrl.config.includeIds
+                $ctrl.config.includeIds,
+                $ctrl.selectedColumns,
+                getTogglableColumns(allColumns),
+                getGridColumns(allColumns)
             );
-            var selectedFields = $ctrl.selectedColumns;
-            var unSelectedFields = $ctrl.unselectedColumns;
 
-            var mergedFields = defaultFields
-                .filter(function(field) {
-                    return unSelectedFields.indexOf(field) === -1;
-                })
-                .concat(selectedFields)
-                .filter(onlyUnique);
-
-            handleRefunds(mergedFields);
-            $ctrl.config.selectedFields = mergedFields;
+            handleRefunds(fields);
+            $ctrl.config.selectedFields = fields;
 
             $ctrl.showAllSelectedFields();
 
@@ -188,6 +190,70 @@ angular.module('one.widgets').component('zemReportQueryConfig', {
                 $ctrl.breakdown,
                 $ctrl.gridApi.getMetaData()
             );
+        }
+
+        function getAllColumns() {
+            return angular.copy($ctrl.gridApi.getColumns());
+        }
+
+        function getRefundColumns(columns) {
+            var refundColumns = [];
+            for (var i = 0; i < columns.length; i++) {
+                if (columns[i].data.isRefund) {
+                    refundColumns.push(getColumnName(columns[i]));
+                }
+            }
+            return refundColumns;
+        }
+
+        function getCategories(columns) {
+            return $ctrl.gridApi.getCategorizedColumns(
+                zemCostModeService,
+                columns
+            );
+        }
+
+        function getSelectedColumns() {
+            var selectedColumns = [];
+            $ctrl.categories.forEach(function(category) {
+                selectedColumns = selectedColumns.concat(
+                    category.columns.filter(function(item) {
+                        return item.visible;
+                    })
+                );
+            });
+            return selectedColumns.map(getColumnName);
+        }
+
+        function getTogglableColumns(columns) {
+            return $ctrl.gridApi
+                .getTogglableColumns(columns)
+                .map(getColumnName);
+        }
+
+        function getGridColumns(columns) {
+            var gridColumns = [];
+            for (var i = 0; i < columns.length; i++) {
+                if (
+                    columns[i].visible &&
+                    !columns[i].disabled &&
+                    columns[i].data.name &&
+                    HIDDEN_TYPES.indexOf(columns[i].data.type) < 0
+                ) {
+                    gridColumns.push(getColumnName(columns[i]));
+                }
+            }
+            return gridColumns;
+        }
+
+        function addBreakdown(breakdown) {
+            $ctrl.breakdown.push(breakdown);
+            update();
+        }
+
+        function removeBreakdown(breakdown) {
+            $ctrl.breakdown.splice($ctrl.breakdown.indexOf(breakdown), 1);
+            update();
         }
 
         function handleRefunds(fields) {
@@ -229,6 +295,10 @@ angular.module('one.widgets').component('zemReportQueryConfig', {
 
         function showAllAppliedFilters() {
             $ctrl.shownAppliedFilterConditions = $ctrl.appliedFilterConditions;
+        }
+
+        function getColumnName(column) {
+            return column.data.name;
         }
     },
 });

@@ -65,8 +65,10 @@ angular
                 getVisibleColumns: angular.noop,
                 getCostMode: angular.noop,
                 setCostMode: angular.noop,
-                getTogglableColumns: angular.noop,
                 onSelectColumn: angular.noop,
+                getTogglableColumns: function() {
+                    return [];
+                },
 
                 // Listeners - pubsub rewiring
                 onMetaDataUpdated: angular.noop,

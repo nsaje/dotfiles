@@ -6,8 +6,8 @@
         ng-model="$ctrl.searchQuery"
         ng-keyup="$ctrl.onSearch($ctrl.searchQuery)"
         placeholder="Search">
-    <button class="button-as-link button-as-link--secondary-color" ng-click="$ctrl.onToggleColumns({isChecked: true})">Select All</button>
-    <button class="button-as-link button-as-link--secondary-color" ng-click="$ctrl.onToggleColumns({isChecked: false})">Select None</button>
+    <button class="button-as-link button-as-link--secondary-color" ng-click="$ctrl.onAllColumnsToggled({isChecked: true})">Select All</button>
+    <button class="button-as-link button-as-link--secondary-color" ng-click="$ctrl.onAllColumnsToggled({isChecked: false})">Select None</button>
 </div>
 <div class="dropdown-menu__no-match" ng-if="$ctrl.filteredCategories.length === 0">
     No match
@@ -24,7 +24,7 @@
                 zem-lazy-popover-animation-class="fade"
                 zem-lazy-popover-append-to-body="true"
                 is-internal="{{column.internal}}">
-                <label ng-click="$ctrl.onSelectColumn({field: column.field})">
+                <label ng-click="$ctrl.onColumnToggled({field: column.field})">
                     <input class="input-checkbox"
                            ng-disabled="column.disabled"
                            type="checkbox"
@@ -37,7 +37,7 @@
             <div class="dropdown-menu__subcategory-name">{{ subcategory.name }}</div>
             <ul ng-if="subcategory.type === 'condensed'" class="dropdown-menu__list dropdown-menu__list--condensed">
                 <li class="dropdown-menu__list-item" ng-repeat="subColumn in subcategory.columns">
-                    <label ng-click="$ctrl.onSelectColumn({field: subColumn.field})">
+                    <label ng-click="$ctrl.onColumnToggled({field: subColumn.field})">
                         <input class="input-checkbox" type="checkbox" ng-checked="subColumn.visible">
                         <span class="checkbox-text">{{ subColumn.data.shortName }}</span>
                     </label>
