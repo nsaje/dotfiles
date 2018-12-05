@@ -115,9 +115,7 @@ class ContentAd(
     brand_name = models.CharField(max_length=25, blank=True, default="")
     description = models.CharField(max_length=150, blank=True, default="")
     call_to_action = models.CharField(max_length=25, blank=True, default="")
-    type = models.IntegerField(
-        blank=True, null=True, choices=constants.AdType.get_choices(), default=constants.AdType.CONTENT
-    )  # TODO: Display: set to NOT NULL after deploy! make custom migration to set types!
+    type = models.IntegerField(choices=constants.AdType.get_choices(), default=constants.AdType.CONTENT)
 
     ad_group = models.ForeignKey("AdGroup", on_delete=models.PROTECT)
     batch = models.ForeignKey("UploadBatch", on_delete=models.PROTECT)
