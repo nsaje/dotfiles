@@ -558,8 +558,10 @@ class ContentAdsTest(K1APIBaseTest):
         ad_group_native = magic_mixer.blend(dash.models.AdGroup, campaign=campaign_native)
         ad_group_display = magic_mixer.blend(dash.models.AdGroup, campaign=campaign_display)
 
-        content_ads_native = magic_mixer.cycle(10).blend(dash.models.ContentAd, ad_group=ad_group_native)
-        magic_mixer.cycle(10).blend(dash.models.ContentAd, ad_group=ad_group_display)
+        content_ads_native = magic_mixer.cycle(10).blend(
+            dash.models.ContentAd, ad_group=ad_group_native, type=dash.constants.AdType.CONTENT
+        )
+        magic_mixer.cycle(10).blend(dash.models.ContentAd, ad_group=ad_group_display, type=dash.constants.AdType.IMAGE)
 
         response = self.client.get(
             reverse("k1api.content_ads"),
@@ -581,8 +583,12 @@ class ContentAdsTest(K1APIBaseTest):
         ad_group_native = magic_mixer.blend(dash.models.AdGroup, campaign=campaign_native)
         ad_group_display = magic_mixer.blend(dash.models.AdGroup, campaign=campaign_display)
 
-        content_ad_native = magic_mixer.blend(dash.models.ContentAd, ad_group=ad_group_native)
-        content_ad_display = magic_mixer.blend(dash.models.ContentAd, ad_group=ad_group_display)
+        content_ad_native = magic_mixer.blend(
+            dash.models.ContentAd, ad_group=ad_group_native, type=dash.constants.AdType.CONTENT
+        )
+        content_ad_display = magic_mixer.blend(
+            dash.models.ContentAd, ad_group=ad_group_display, type=dash.constants.AdType.IMAGE
+        )
 
         sources = magic_mixer.cycle(10).blend(dash.models.Source)
 

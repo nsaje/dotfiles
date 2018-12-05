@@ -360,6 +360,8 @@ class PersistBatchTestCase(TestCase):
         self.assertEqual(0, batch.contentad_set.count())
 
         candidate = batch.contentadcandidate_set.get()
+        candidate.type = constants.AdType.VIDEO
+        candidate.save()
         candidate.ad_group.campaign.type = constants.CampaignType.VIDEO
         candidate.ad_group.campaign.save()
 

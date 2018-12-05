@@ -19,6 +19,7 @@ from utils import k1_helper
 
 from . import instance
 from . import prodops_mixin
+from . import validation
 
 
 class ContentAdManager(models.Manager):
@@ -92,7 +93,9 @@ class ContentAdManager(models.Manager):
             content_ad.save()
 
 
-class ContentAd(models.Model, prodops_mixin.ProdopsMixin, instance.ContentAdInstanceMixin):
+class ContentAd(
+    validation.ContentAdValidatorMixin, instance.ContentAdInstanceMixin, models.Model, prodops_mixin.ProdopsMixin
+):
     class Meta:
         get_latest_by = "created_dt"
         app_label = "dash"
@@ -144,6 +147,11 @@ class ContentAd(models.Model, prodops_mixin.ProdopsMixin, instance.ContentAdInst
 
     additional_data = JSONField(null=True, blank=True)
     amplify_review = models.NullBooleanField(default=None)
+
+    @transaction.atomic
+    def save(self, *args, **kwargs):
+        self.clean()
+        super().save(*args, **kwargs)
 
     def get_original_image_url(self, width=None, height=None):
         if self.image_id is None:

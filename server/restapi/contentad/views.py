@@ -1,5 +1,6 @@
 import rest_framework.serializers
 
+import core.models.content_ad.exceptions
 import dash.models
 from dash.features import contentupload
 from dash.views import helpers
@@ -46,7 +47,10 @@ class ContentAdViewDetails(RESTAPIBaseView):
                 raise rest_framework.serializers.ValidationError("URL can't be edited via API.")
             content_ad.set_url(request, url)
 
-        content_ad.update(request, **serializer.validated_data)
+        try:
+            content_ad.update(request, **serializer.validated_data)
+        except core.models.content_ad.exceptions.CampaignAdTypeMismatch as err:
+            raise exc.ValidationError(errors={"type": [str(err)]})
 
         return self.response_ok(serializers.ContentAdSerializer(content_ad, context={"request": request}).data)
 

@@ -3,6 +3,7 @@ import json
 from django.db import transaction
 from django.http import Http404
 
+import core.models.content_ad.exceptions
 import utils.exc
 from dash import constants
 from dash import forms
@@ -98,7 +99,11 @@ class UploadSave(api_common.BaseApiView):
 
             try:
                 content_ads = upload.persist_batch(batch)
-            except (exc.InvalidBatchStatus, exc.CandidateErrorsRemaining) as e:
+            except (
+                exc.InvalidBatchStatus,
+                exc.CandidateErrorsRemaining,
+                core.models.content_ad.exceptions.CampaignAdTypeMismatch,
+            ) as e:
                 raise utils.exc.ValidationError(message=str(e))
 
         return content_ads
@@ -106,7 +111,11 @@ class UploadSave(api_common.BaseApiView):
     def _execute_update(self, request, batch):
         try:
             return upload.persist_edit_batch(request, batch)
-        except (exc.InvalidBatchStatus, exc.CandidateErrorsRemaining) as e:
+        except (
+            exc.InvalidBatchStatus,
+            exc.CandidateErrorsRemaining,
+            core.models.content_ad.exceptions.CampaignAdTypeMismatch,
+        ) as e:
             raise utils.exc.ValidationError(message=str(e))
 
     def post(self, request, batch_id):

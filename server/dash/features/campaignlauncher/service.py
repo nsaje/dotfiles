@@ -120,6 +120,10 @@ def launch(
         raise rest_framework.serializers.ValidationError(", ".join(_extract_error_list(e)))
 
     upload_batch.set_ad_group(ad_group)
-    contentupload.upload.persist_batch(upload_batch)
+
+    try:
+        contentupload.upload.persist_batch(upload_batch)
+    except core.models.content_ad.exceptions.CampaignAdTypeMismatch as e:
+        raise rest_framework.serializers.ValidationError({"type": [str(e)]})
 
     return campaign

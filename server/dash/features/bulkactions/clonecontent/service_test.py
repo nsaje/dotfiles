@@ -2,6 +2,8 @@ from django.test import TestCase
 from mock import patch
 
 import core.models
+import core.models.content_ad.exceptions
+import dash.constants
 from core.models.account.exceptions import AccountDoesNotMatch
 from utils.magic_mixer import magic_mixer
 
@@ -27,6 +29,12 @@ class Clone(TestCase):
         )
 
         self.assertEqual(batch.ad_group, self.ad_group)
+
+    def test_clone_type_mismatch(self, _):
+        self.ad_group.campaign.type = dash.constants.CampaignType.VIDEO
+        self.ad_group.campaign.save(None)
+        with self.assertRaises(core.models.content_ad.exceptions.CampaignAdTypeMismatch):
+            service.clone(self.request, self.source_ad_group, self.source_content_ads, self.ad_group)
 
     def test_validate_other_account(self, _):
         other_account = magic_mixer.blend(core.models.Account)

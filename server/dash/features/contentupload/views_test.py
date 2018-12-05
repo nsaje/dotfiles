@@ -413,6 +413,7 @@ class UploadSaveTestCase(TestCase):
         mock_insert_batch.side_effect = self._mock_insert_redirects
         batch_id = 8
         ad_group_id = 7
+        models.ContentAdCandidate.objects.filter(id=7).update(type=constants.AdType.VIDEO)
 
         response = _get_client().post(
             reverse("upload_save", kwargs={"batch_id": batch_id}),
@@ -430,10 +431,36 @@ class UploadSaveTestCase(TestCase):
         )
 
     @patch("utils.redirector_helper.insert_redirects")
+    def test_type_mismatch(self, mock_insert_batch):
+        mock_insert_batch.side_effect = self._mock_insert_redirects
+        batch_id = 8
+
+        response = _get_client().post(
+            reverse("upload_save", kwargs={"batch_id": batch_id}),
+            json.dumps({}),
+            content_type="application/json",
+            follow=True,
+        )
+        self.assertEqual(400, response.status_code)
+        self.assertEqual(
+            {
+                "success": False,
+                "data": {
+                    "error_code": "ValidationError",
+                    "message": "Creative type does not match the campaign type.",
+                    "errors": None,
+                    "data": None,
+                },
+            },
+            json.loads(response.content),
+        )
+
+    @patch("utils.redirector_helper.insert_redirects")
     def test_change_batch_name(self, mock_insert_batch):
         mock_insert_batch.side_effect = self._mock_insert_redirects
 
         batch_id = 8
+        models.ContentAdCandidate.objects.filter(id=7).update(type=constants.AdType.VIDEO)
 
         response = _get_client().post(
             reverse("upload_save", kwargs={"batch_id": batch_id}),
@@ -505,6 +532,7 @@ class UploadSaveTestCase(TestCase):
 
         batch_id = 8
         ad_group_id = 7
+        models.ContentAdCandidate.objects.filter(id=7).update(type=constants.AdType.VIDEO)
 
         response = _get_client().post(
             reverse("upload_save", kwargs={"batch_id": batch_id}),

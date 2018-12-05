@@ -264,6 +264,7 @@ class TestBatchUpload(TestCase):
             self.assertEqual(saved_display_ads[i].id, int(resp_json["data"]["approvedContentAds"][i]["id"]))
 
     def test_display_batch_upload_success(self):
+        dash.models.Campaign.objects.filter(adgroup__id=987).update(type=dash.constants.CampaignType.DISPLAY)
         to_upload = [self._mock_image_ad("image"), self._mock_ad_tag("ad_tag")]
         r = self.client.post(reverse("contentads_batch_list") + "?adGroupId=987", to_upload, format="json")
         self.assertEqual(r.status_code, 201)

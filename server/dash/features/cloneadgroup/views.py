@@ -2,6 +2,7 @@ from rest_framework import permissions
 
 import automation.campaignstop
 import core.models.ad_group.exceptions
+import core.models.content_ad.exceptions
 import dash.views.navigation_helpers
 import restapi.access
 import utils.exc
@@ -31,7 +32,10 @@ class CloneAdGroup(RESTAPIBaseView):
                 form.validated_data["clone_ads"],
             )
 
-        except core.models.ad_group.exceptions.CampaignTypesDoNotMatch as err:
+        except (
+            core.models.ad_group.exceptions.CampaignTypesDoNotMatch,
+            core.models.content_ad.exceptions.CampaignAdTypeMismatch,
+        ) as err:
             raise utils.exc.ValidationError(errors={"destination_campaign_id": [str(err)]})
 
         response = dash.views.navigation_helpers.get_ad_group_dict(
