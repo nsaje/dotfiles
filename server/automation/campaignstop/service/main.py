@@ -1,3 +1,4 @@
+import concurrent.futures
 import decimal
 from typing import Iterable
 from typing import List
@@ -18,7 +19,7 @@ from .. import constants
 
 def update_campaigns_state(campaigns: Optional[List[core.models.Campaign]] = None) -> None:
     campaigns_list = _get_campaigns(campaigns)
-    _update_campaigns(campaign for campaign in campaigns_list if campaign.real_time_campaign_stop)
+    _process_campaigns(campaign for campaign in campaigns_list if campaign.real_time_campaign_stop)
 
 
 def _get_campaigns(campaigns: Optional[List[core.models.Campaign]] = None) -> Iterable[core.models.Campaign]:
@@ -27,10 +28,14 @@ def _get_campaigns(campaigns: Optional[List[core.models.Campaign]] = None) -> It
     return core.models.Campaign.objects.filter(real_time_campaign_stop=True)
 
 
-def _update_campaigns(campaigns: Iterable[core.models.Campaign]) -> None:
-    for campaign in campaigns:
-        refresh_realtime_data([campaign])
-        _update_campaign(campaign)
+def _process_campaigns(campaigns: Iterable[core.models.Campaign]) -> None:
+    with concurrent.futures.ThreadPoolExecutor(max_workers=config.JOB_PARALLELISM) as executor:
+        executor.map(_process_campaign, campaigns)
+
+
+def _process_campaign(campaign: core.models.Campaign) -> None:
+    refresh_realtime_data([campaign])
+    _update_campaign(campaign)
 
 
 @transaction.atomic

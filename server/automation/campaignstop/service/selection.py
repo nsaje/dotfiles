@@ -1,3 +1,5 @@
+import concurrent.futures
+from functools import partial
 from django.db import transaction
 
 import core.features.bcm
@@ -86,9 +88,17 @@ def _get_adgroup_sources(campaign):
 
 
 def _mark_campaigns(campaign_daily_budgets, campaign_available_amount):
-    for campaign, campaign_daily_budget in campaign_daily_budgets.items():
-        available_amount = campaign_available_amount.get(campaign, 0)
-        _mark_campaign(campaign, campaign_daily_budget, available_amount)
+    with concurrent.futures.ThreadPoolExecutor(max_workers=config.JOB_PARALLELISM) as executor:
+        executor.map(
+            partial(_check_and_mark_campaign, campaign_daily_budgets, campaign_available_amount),
+            campaign_daily_budgets.keys(),
+        )
+
+
+def _check_and_mark_campaign(campaign_daily_budgets, campaign_available_amount, campaign):
+    campaign_daily_budget = campaign_daily_budgets[campaign]
+    available_amount = campaign_available_amount.get(campaign, 0)
+    _mark_campaign(campaign, campaign_daily_budget, available_amount)
 
 
 @transaction.atomic

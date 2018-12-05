@@ -16,12 +16,29 @@ from .. import constants
 class UpdateCampaignStopStateTest(TestCase):
     def setUp(self):
         self.campaign = magic_mixer.blend(core.models.Campaign, real_time_campaign_stop=True)
+        self._prepare_update_notifier_mock()
+        self._prepare_threadpoolexecutor_mock()
+
+    def _prepare_update_notifier_mock(self):
         notify_patcher = mock.patch("automation.campaignstop.service.update_notifier.notify_campaignstopstate_change")
         notify_patcher.start()
         self.addCleanup(notify_patcher.stop)
 
+    def _prepare_threadpoolexecutor_mock(self):
+        # NOTE: Code ran in a separate thread would use a separate transaction which would make testing hard. In order
+        # to avoid this we use sequential map instead of threads to produce results.
+        def _eager_map(fun, iter_):
+            return list(map(fun, iter_))
+
+        patcher = mock.patch("concurrent.futures.ThreadPoolExecutor")
+        mock_threadpoolexecutor = patcher.start()
+
+        mock_threadpoolexecutor.return_value.__enter__.return_value.map = _eager_map
+        self.addCleanup(patcher.stop)
+
     @mock.patch("automation.campaignstop.service.spends_helper.get_predicted_remaining_budget")
     def test_create_campaign_state(self, mock_get_prediction):
+        self._prepare_threadpoolexecutor_mock()
         mock_get_prediction.return_value = config.THRESHOLD * 2
         self.assertFalse(CampaignStopState.objects.filter(campaign=self.campaign).exists())
 

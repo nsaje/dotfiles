@@ -22,6 +22,19 @@ from .. import constants
 class UpdateAlmostDepletedTestCase(TestCase):
     def setUp(self):
         self._setup_initial_state()
+        self._prepare_threadpoolexecutor_mock()
+
+    def _prepare_threadpoolexecutor_mock(self):
+        # NOTE: Code ran in a separate thread would use a separate transaction which would make testing hard. In order
+        # to avoid this we use sequential map instead of threads to produce results.
+        def _eager_map(fun, iter_):
+            return list(map(fun, iter_))
+
+        patcher = mock.patch("concurrent.futures.ThreadPoolExecutor")
+        mock_threadpoolexecutor = patcher.start()
+
+        mock_threadpoolexecutor.return_value.__enter__.return_value.map = _eager_map
+        self.addCleanup(patcher.stop)
 
     def mocked_afternoon_est_now():
         today = datetime.today()
