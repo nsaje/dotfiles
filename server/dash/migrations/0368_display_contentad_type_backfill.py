@@ -23,7 +23,7 @@ FROM    dash_adgroup ag
         ON ag.campaign_id = cmp.id
 WHERE   cac.ad_group_id = ag.id
         AND cmp.type = 2
-        AND cac.video_asset IS NOT NULL
+        AND cac.video_asset_id IS NOT NULL
         AND cac.id BETWEEN %s AND %s;
 """
 
@@ -85,7 +85,6 @@ WHERE   ca.ad_group_id = ag.id
         AND cmp.type = 5
         AND image_id IS NOT NULL
         AND image_hash IS NOT NULL
-        AND image_file_size IS NOT NULL
         AND ad_tag IS NULL
         AND ca.id BETWEEN %s AND %s;
 """
@@ -100,7 +99,6 @@ WHERE   ca.ad_group_id = ag.id
         AND cmp.type = 5
         AND image_id IS NULL
         AND image_hash IS NULL
-        AND image_file_size IS NULL
         AND ad_tag IS NOT NULL
         AND ca.id BETWEEN %s AND %s;
 """
