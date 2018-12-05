@@ -1,3 +1,4 @@
+import datetime
 import logging
 
 from django.db.models import F
@@ -32,6 +33,17 @@ def process_cpc_billing(from_date, to_date, agency_id):
     ad_groups_cpc_micro = [(i["ad_group_id"], _calculate_cpc_micro(i["cpc_cc"], license_fee)) for i in ad_groups_w_cpc]
     _update_mvh_ad_groups_cpc(ad_groups_cpc_micro)
     _insert_stats_diff(from_date, to_date)
+
+
+def check_discrepancy(from_date, to_date):
+    if to_date == datetime.date.today():
+        to_date = datetime.date.today() - datetime.timedelta(1)
+
+    context = helpers.get_local_multiday_date_context(from_date, to_date)
+    sql = backtosql.generate_sql("nas_spend_discrepency.sql", context)
+    with redshiftapi.db.get_stats_cursor() as c:
+        c.execute(sql)
+        return redshiftapi.db.dictfetchall()
 
 
 def _calculate_cpc_micro(cpc_value, fee, margin=0):

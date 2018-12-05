@@ -1,8 +1,11 @@
 import datetime
 
+import utils.slack
 from dash.features.native_server import constants
 from dash.features.native_server import native_server_billing
 from utils.command_helpers import ExceptionCommand
+
+MESSAGE = "Adgroup #{ad_group_id} have its eCPC ({ecpc}) different from its CPC ({cpc})."
 
 
 class Command(ExceptionCommand):
@@ -14,11 +17,13 @@ class Command(ExceptionCommand):
             "--from",
             type=str,
             default=3,
-            help="Start of the billing period to process. " "Date or number of daays to process.",
+            help="Start of the billing period to process. Date ('%Y-%m-%d') or number of days to process.",
         )
         parser.add_argument("--until", type=str, help="End date of the billing period to process.")
+        parser.add_argument("--slack", action="store_true", help="Post discrepency message on Slack.")
 
     def handle(self, *args, **options):
+        self.slack = options["slack"]
 
         if options.get("until"):
             until = datetime.datetime.strptime(options["until"], "%Y-%m-%d").date()
@@ -40,3 +45,21 @@ class Command(ExceptionCommand):
                 )
             )
         native_server_billing.process_cpc_billing(since, until, agency_id)
+
+        discrepancies = native_server_billing.check_discrepancy(since, until)
+        if discrepancies:
+            messages = [MESSAGE.format(**disc) for disc in discrepancies]
+            text = "\n".join(messages)
+
+            if self.slack:
+                try:
+                    utils.slack.publish(
+                        text,
+                        channel="z1-monitor",
+                        username="NAS CPC billing",
+                        msg_type=utils.slack.MESSAGE_TYPE_WARNING,
+                    )
+                except Exception as e:
+                    raise e
+
+            self.stdout.write(text)
