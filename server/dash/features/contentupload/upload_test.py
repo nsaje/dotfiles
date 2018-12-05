@@ -1282,6 +1282,19 @@ class GetCandidatesCsvTestCase(TestCase):
         content = contentupload.upload.get_candidates_csv(batch)
         self.assertEqual(
             '"URL","Title","Image URL","Display URL","Brand name","Description","Call to action",'
+            '"Label","Image crop","Primary impression tracker URL","Secondary impression tracker URL"\r\n'
+            '"http://zemanta.com/blog","Zemanta blog čšž","http://zemanta.com/img.jpg","zemanta.com",'
+            '"Zemanta","Zemanta blog","Read more","content ad 1","entropy","",""\r\n',
+            content,
+        )
+
+    def test_candidates_csv_unprocessed_display(self):
+        batch = models.UploadBatch.objects.get(id=1)
+        batch.ad_group.campaign.type = constants.CampaignType.DISPLAY
+        batch.ad_group.campaign.save(None)
+        content = contentupload.upload.get_candidates_csv(batch)
+        self.assertEqual(
+            '"URL","Title","Image URL","Display URL","Brand name","Description","Call to action",'
             '"Label","Image crop","Primary impression tracker URL","Secondary impression tracker URL",'
             '"Creative size","Ad tag"\r\n'
             '"http://zemanta.com/blog","Zemanta blog čšž","http://zemanta.com/img.jpg","zemanta.com",'
@@ -1291,6 +1304,20 @@ class GetCandidatesCsvTestCase(TestCase):
 
     def test_candidates_csv_processed(self):
         batch = models.UploadBatch.objects.get(id=2)
+        content = contentupload.upload.get_candidates_csv(batch)
+        self.assertEqual(
+            '"URL","Title","Image URL","Display URL","Brand name","Description","Call to action",'
+            '"Label","Image crop","Primary impression tracker URL","Secondary impression tracker URL"\r\n'
+            '"http://zemanta.com/blog","Zemanta blog čšž","http://zemanta.com/img.jpg","zemanta.com",'
+            '"Zemanta","Zemanta blog","Read more","content ad 1","entropy","https://t.zemanta.com/px1.png",'
+            '"https://t.zemanta.com/px2.png"\r\n',
+            content,
+        )
+
+    def test_candidates_csv_processed_display(self):
+        batch = models.UploadBatch.objects.get(id=2)
+        batch.ad_group.campaign.type = constants.CampaignType.DISPLAY
+        batch.ad_group.campaign.save(None)
         content = contentupload.upload.get_candidates_csv(batch)
         self.assertEqual(
             '"URL","Title","Image URL","Display URL","Brand name","Description","Call to action",'

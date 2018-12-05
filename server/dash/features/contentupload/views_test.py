@@ -113,6 +113,7 @@ class UploadCsvTestCase(TestCase):
         self.assertEqual("batch 12", batch.name)
         self.assertEqual("test_upload.csv", batch.original_filename)
 
+        self.assertEqual(constants.AdType.IMAGE, candidate.type)
         self.assertEqual("test", candidate.label)
         self.assertEqual("http://zemanta.com/test-content-ad", candidate.url)
         self.assertEqual("test content ad", candidate.title)
@@ -162,6 +163,7 @@ class UploadCsvTestCase(TestCase):
         self.assertEqual("batch 12", batch.name)
         self.assertEqual("test_upload.csv", batch.original_filename)
 
+        self.assertEqual(constants.AdType.AD_TAG, candidate.type)
         self.assertEqual("test", candidate.label)
         self.assertEqual("http://zemanta.com/test-content-ad", candidate.url)
         self.assertEqual("test content ad", candidate.title)
@@ -605,6 +607,28 @@ class CandidatesDownloadTestCase(TestCase):
         batch_id = 1
 
         batch = models.UploadBatch.objects.get(id=batch_id)
+        self.assertEqual(constants.UploadBatchStatus.IN_PROGRESS, batch.status)
+
+        response = _get_client().get(reverse("upload_candidates_download", kwargs={"batch_id": batch_id}), follow=True)
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(
+            (
+                '"URL","Title","Image URL","Display URL","Brand name","Description","Call to action",'
+                '"Label","Image crop","Primary impression tracker URL","Secondary impression'
+                ' tracker URL"\r\n"http://zemanta.com/blog","Zemanta blog čšž",'
+                '"http://zemanta.com/img.jpg","zemanta.com","Zemanta","Zemanta blog","Read more",'
+                '"content ad 1","entropy","",""\r\n'
+            ).encode("utf-8"),
+            response.content,
+        )
+        self.assertEqual('attachment; filename="batch 1.csv"', response.get("Content-Disposition"))
+
+    def test_valid_display(self):
+        batch_id = 1
+
+        batch = models.UploadBatch.objects.get(id=batch_id)
+        batch.ad_group.campaign.type = constants.CampaignType.DISPLAY
+        batch.ad_group.campaign.save(None)
         self.assertEqual(constants.UploadBatchStatus.IN_PROGRESS, batch.status)
 
         response = _get_client().get(reverse("upload_candidates_download", kwargs={"batch_id": batch_id}), follow=True)

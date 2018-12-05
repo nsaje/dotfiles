@@ -1054,7 +1054,7 @@ class ContentAdCandidateFormTestCase(TestCase):
                 "label": "label",
                 "url": "http://zemanta.com",
                 "title": "Title",
-                "type": constants.AdType.CONTENT,
+                "type": constants.AdType.VIDEO,
                 "image": self.valid_image,
                 "image_url": "http://zemanta.com/img.jpg",
                 "image_crop": "center",

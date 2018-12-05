@@ -910,6 +910,7 @@ OPTIONAL_CSV_FIELDS = [
 ALL_CSV_FIELDS = MANDATORY_CSV_FIELDS + OPTIONAL_CSV_FIELDS
 IGNORED_CSV_FIELDS = ["errors"]
 JOINT_CSV_FIELDS = {"creative_size": ("x", "image_width", "image_height")}
+DISPLAY_SPECIFIC_FIELDS = ["creative_size", "ad_tag"]
 
 EXPRESSIVE_FIELD_NAME_MAPPING = {
     "primary_impression_tracker_url": "primary_tracker_url",
@@ -1414,11 +1415,16 @@ class ContentAdCandidateForm(forms.ModelForm):
 
     def clean(self):
         cleaned_data = super().clean()
-        ad_type = cleaned_data.get("type")
+        if cleaned_data.get("type"):
+            return cleaned_data
 
-        if not ad_type and self.campaign and self.campaign.type == constants.CampaignType.DISPLAY:
+        if self.campaign and self.campaign.type == constants.CampaignType.DISPLAY:
             cleaned_data["type"] = constants.AdType.AD_TAG if cleaned_data.get("ad_tag") else constants.AdType.IMAGE
-        elif not ad_type:
+
+        elif self.campaign and self.campaign.type == constants.CampaignType.VIDEO or cleaned_data.get("video_asset_id"):
+            cleaned_data["type"] = constants.AdType.VIDEO
+
+        else:
             cleaned_data["type"] = constants.AdType.CONTENT
 
         return cleaned_data

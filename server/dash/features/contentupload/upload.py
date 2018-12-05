@@ -207,7 +207,7 @@ def get_candidates_with_errors(candidates):
 
 def get_candidates_csv(batch):
     candidates = batch.contentadcandidate_set.all()
-    return _get_candidates_csv(candidates)
+    return _get_candidates_csv(batch.ad_group, candidates)
 
 
 def _update_content_ads(request, update_candidates):
@@ -218,10 +218,21 @@ def _update_content_ads(request, update_candidates):
     return updated_content_ads
 
 
-def _get_candidates_csv(candidates):
+def _get_candidates_csv(ad_group, candidates):
     fields = [_transform_field(field) for field in forms.ALL_CSV_FIELDS]
     rows = _get_candidates_csv_rows(candidates)
+    fields, rows = _remove_ad_type_specific_fields_and_rows(ad_group, fields, rows)
     return csv_utils.dictlist_to_csv(fields, rows)
+
+
+def _remove_ad_type_specific_fields_and_rows(ad_group, fields, rows):
+    if ad_group.campaign.type != constants.CampaignType.DISPLAY:
+        for field in forms.DISPLAY_SPECIFIC_FIELDS:
+            field = _transform_field(field)
+            field in fields and fields.remove(field)
+            for row in rows:
+                row.pop(field, None)
+    return fields, rows
 
 
 def _get_candidates_csv_rows(candidates):

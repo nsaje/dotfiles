@@ -392,7 +392,6 @@ class AdGroupContentAdCSV(api_common.BaseApiView):
                 "brand_name": content_ad.brand_name,
                 "description": content_ad.description,
                 "call_to_action": content_ad.call_to_action,
-                "ad_tag": content_ad.ad_tag,
             }
 
             if content_ad.label:
@@ -410,8 +409,12 @@ class AdGroupContentAdCSV(api_common.BaseApiView):
                 if len(content_ad.tracker_urls) > 1:
                     content_ad_dict["secondary_tracker_url"] = content_ad.tracker_urls[1]
 
-            if content_ad.image_width and content_ad.image_height:
-                content_ad_dict["creative_size"] = "x".join((str(content_ad.image_width), str(content_ad.image_height)))
+            if ad_group.campaign.type == constants.CampaignType.DISPLAY:
+                content_ad_dict["ad_tag"] = content_ad.ad_tag
+                if content_ad.image_width and content_ad.image_height:
+                    content_ad_dict["creative_size"] = "x".join(
+                        (str(content_ad.image_width), str(content_ad.image_height))
+                    )
 
             # delete keys that are not to be exported
             for k in list(content_ad_dict.keys()):
@@ -425,9 +428,13 @@ class AdGroupContentAdCSV(api_common.BaseApiView):
             slugify.slugify(ad_group.name),
             datetime.datetime.now().strftime("%Y-%m-%d"),
         )
-        content = csv_utils.dictlist_to_csv(
-            list(forms.CSV_EXPORT_COLUMN_NAMES_DICT.values()), self._map_to_csv_column_names(content_ad_dicts)
-        )
+        fields = forms.CSV_EXPORT_COLUMN_NAMES_DICT.copy()
+
+        if ad_group.campaign.type != constants.CampaignType.DISPLAY:
+            for field in forms.DISPLAY_SPECIFIC_FIELDS:
+                fields.pop(field, None)
+
+        content = csv_utils.dictlist_to_csv(list(fields.values()), self._map_to_csv_column_names(content_ad_dicts))
 
         return self.create_csv_response(filename, content=content)
 
