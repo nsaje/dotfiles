@@ -57,10 +57,6 @@ class MasterView(Materialize):
                     sql, params = redshift.prepare_copy_query(s3_path, self.TABLE_NAME)
                     c.execute(sql, params)
 
-                    logger.info("Copying any diff data from mv_master_diff for day %s, job %s", date, self.job_id)
-                    sql, params = self.prepare_copy_diff_data_query(c, date)
-                    c.execute(sql, params)
-
     def generate_rows(self, cursor, date):
         for _, row, _ in self.get_postclickstats(cursor, date):
             yield row
@@ -208,8 +204,3 @@ class MasterView(Materialize):
         )
 
         return sql, self._add_ad_group_id_param({"date": date})
-
-    def prepare_copy_diff_data_query(self, cursor, date):
-        sql = backtosql.generate_sql("etl_copy_diff_into_mv_master.sql", {"account_id": self.account_id})
-
-        return sql, self._add_account_id_param({"date": date})

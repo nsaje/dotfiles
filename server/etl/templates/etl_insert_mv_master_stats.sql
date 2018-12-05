@@ -1,6 +1,4 @@
 {% autoescape off %}
--- etl_copy_diff_into_mv_master.sql includes some similar logics that need to be updated in case this one
--- gets updated.
 
 INSERT INTO mv_master (
   SELECT

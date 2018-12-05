@@ -95,7 +95,6 @@ class MasterViewTest(TestCase, backtosql.TestSQLMixin):
                         "delimiter": "\t",
                     },
                 ),
-                mock.call(mock.ANY, {"date": datetime.date(2016, 7, 1)}),
                 mock.call(
                     backtosql.SQLMatcher("DELETE FROM mv_master WHERE date=%(date)s"),
                     {"date": datetime.date(2016, 7, 2)},
@@ -110,7 +109,6 @@ class MasterViewTest(TestCase, backtosql.TestSQLMixin):
                         "delimiter": "\t",
                     },
                 ),
-                mock.call(mock.ANY, {"date": datetime.date(2016, 7, 2)}),
                 mock.call(
                     backtosql.SQLMatcher("DELETE FROM mv_master WHERE date=%(date)s"),
                     {"date": datetime.date(2016, 7, 3)},
@@ -125,7 +123,6 @@ class MasterViewTest(TestCase, backtosql.TestSQLMixin):
                         "delimiter": "\t",
                     },
                 ),
-                mock.call(mock.ANY, {"date": datetime.date(2016, 7, 3)}),
             ]
         )
 
@@ -666,7 +663,6 @@ class MasterViewTestByAccountId(TestCase, backtosql.TestSQLMixin):
                         "delimiter": "\t",
                     },
                 ),
-                mock.call(mock.ANY, {"date": datetime.date(2016, 7, 1), "account_id": account_id}),
                 mock.call(
                     backtosql.SQLMatcher("DELETE FROM mv_master WHERE date=%(date)s AND account_id=%(account_id)s"),
                     {"date": datetime.date(2016, 7, 2), "account_id": account_id},
@@ -683,7 +679,6 @@ class MasterViewTestByAccountId(TestCase, backtosql.TestSQLMixin):
                         "delimiter": "\t",
                     },
                 ),
-                mock.call(mock.ANY, {"date": datetime.date(2016, 7, 2), "account_id": account_id}),
                 mock.call(
                     backtosql.SQLMatcher("DELETE FROM mv_master WHERE date=%(date)s AND account_id=%(account_id)s"),
                     {"date": datetime.date(2016, 7, 3), "account_id": account_id},
@@ -700,7 +695,6 @@ class MasterViewTestByAccountId(TestCase, backtosql.TestSQLMixin):
                         "delimiter": "\t",
                     },
                 ),
-                mock.call(mock.ANY, {"date": datetime.date(2016, 7, 3), "account_id": account_id}),
             ]
         )
 

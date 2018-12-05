@@ -13,7 +13,6 @@ from django.db.models import Sum
 import backtosql
 import core.features.bcm.calculations
 import dash.models
-from etl import daily_statements_diff
 from etl import helpers
 from redshiftapi import db
 from utils import converters
@@ -244,8 +243,6 @@ def _get_campaign_spend(date, all_campaigns, account_id):
     ad_group_campaign = {}
     for campaign in all_campaigns:
         campaign_spend[campaign.id] = {"media_nano": 0, "data_nano": 0}
-        spend_diff = daily_statements_diff.SPEND_DIFF_NANO.get(date, {}).get(campaign.id, 0)
-        campaign_spend[campaign.id]["media_nano"] += spend_diff
         for ad_group in campaign.adgroup_set.all():
             ad_group_campaign[ad_group.id] = campaign.id
 
