@@ -10,7 +10,7 @@ angular
         };
 
         var REMAPPED_FIELDS = {
-            Thumbnail: ['Image Hash', 'Image URL'],
+            Thumbnail: ['Image Hash', 'Image URL', 'Ad Tag'],
         };
 
         var FIELDS_WITH_IDS = [

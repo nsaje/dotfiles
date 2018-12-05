@@ -472,6 +472,28 @@ angular
                 orderField: 'tracker_urls',
                 initialOrder: zemGridConstants.gridColumnOrder.ASC,
             },
+            adType: {
+                name: 'Creative Type',
+                field: 'creative_type',
+                type: zemGridConstants.gridColumnTypes.TEXT,
+                totalRow: false,
+                titleField: 'creative_type',
+                order: true,
+                orderField: 'creative_type',
+                initialOrder: zemGridConstants.gridColumnOrder.ASC,
+                shown: true,
+            },
+            creativeSize: {
+                name: 'Creative Size',
+                field: 'creative_size',
+                type: zemGridConstants.gridColumnTypes.TEXT,
+                totalRow: false,
+                titleField: 'creative_size',
+                order: true,
+                orderField: 'creative_size',
+                initialOrder: zemGridConstants.gridColumnOrder.ASC,
+                shown: true,
+            },
 
             // Publisher
             externalId: {
@@ -1791,6 +1813,8 @@ angular
             COLUMNS.brandName,
             COLUMNS.description,
             COLUMNS.callToAction,
+            COLUMNS.adType,
+            COLUMNS.creativeSize,
             COLUMNS.label,
             COLUMNS.impressionTrackers,
             COLUMNS.uploadTime,

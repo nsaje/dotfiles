@@ -55,8 +55,8 @@ export enum AdType {
 }
 
 export enum AdSize {
-    S_320X50 = 1,
-    S_300X250 = 2,
+    MOBILE_LEADERBOARD = 1,
+    INLINE_RECTANGLE = 2,
 }
 
 export const APP_CONSTANTS = {

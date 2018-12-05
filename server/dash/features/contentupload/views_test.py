@@ -32,7 +32,7 @@ class UploadCsvTestCase(TestCase):
     fixtures = ["test_upload.yaml"]
 
     @patch("utils.lambda_helper.invoke_lambda", MagicMock())
-    def test_post(self):
+    def test_post_content_ad(self):
         ad_group_id = 1
         mock_file = SimpleUploadedFile(
             "test_upload.csv",
@@ -78,7 +78,107 @@ class UploadCsvTestCase(TestCase):
         self.assertEqual("Click for more", candidate.call_to_action)
 
     @patch("utils.lambda_helper.invoke_lambda", MagicMock())
-    def test_post_defaults(self):
+    def test_post_image_ad(self):
+        user = User.objects.get(pk=2)
+        account = magic_mixer.blend(models.Account, users=[user])
+        campaign = magic_mixer.blend(models.Campaign, account=account, type=constants.CampaignType.DISPLAY)
+        ad_group = magic_mixer.blend(models.AdGroup, campaign=campaign)
+        mock_file = SimpleUploadedFile(
+            "test_upload.csv",
+            b"URL,Name,Image URL,Label,Primary impression tracker url,Secondary impression tracker url\n"
+            b"http://zemanta.com/test-content-ad,test content ad,"
+            b"http://zemanta.com/test-image.jpg,test,https://t.zemanta.com/px1.png,"
+            b"https://t.zemanta.com/px2.png",
+        )
+        response = _get_client().post(
+            reverse("upload_csv", kwargs={}),
+            {"candidates": mock_file, "batch_name": "batch 12", "ad_group_id": ad_group.id, "account_id": account.id},
+            follow=True,
+        )
+
+        batch = models.UploadBatch.objects.filter(ad_group_id=ad_group.id).latest()
+        candidate = batch.contentadcandidate_set.get()
+
+        expected_candidate = candidate.to_dict()
+        expected_candidate["errors"] = {"__all__": ["Content ad still processing"]}
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            {
+                "success": True,
+                "data": {"batch_id": batch.id, "batch_name": "batch 12", "candidates": [expected_candidate]},
+            },
+            json.loads(response.content),
+        )
+
+        self.assertEqual("batch 12", batch.name)
+        self.assertEqual("test_upload.csv", batch.original_filename)
+
+        self.assertEqual("test", candidate.label)
+        self.assertEqual("http://zemanta.com/test-content-ad", candidate.url)
+        self.assertEqual("test content ad", candidate.title)
+        self.assertEqual("http://zemanta.com/test-image.jpg", candidate.image_url)
+        self.assertEqual("center", candidate.image_crop)
+        self.assertEqual("https://t.zemanta.com/px1.png", candidate.primary_tracker_url)
+        self.assertEqual("https://t.zemanta.com/px2.png", candidate.secondary_tracker_url)
+        self.assertEqual("", candidate.display_url)
+        self.assertEqual("", candidate.brand_name)
+        self.assertEqual("", candidate.description)
+        self.assertEqual("Read more", candidate.call_to_action)
+
+    @patch("utils.lambda_helper.invoke_lambda", MagicMock())
+    def test_post_ad_tag(self):
+        user = User.objects.get(pk=2)
+        account = magic_mixer.blend(models.Account, users=[user])
+        campaign = magic_mixer.blend(models.Campaign, account=account, type=constants.CampaignType.DISPLAY)
+        ad_group = magic_mixer.blend(models.AdGroup, campaign=campaign)
+        mock_file = SimpleUploadedFile(
+            "test_upload.csv",
+            b"URL,Name,Image URL,Creative Size,Ad Tag,Label,Primary impression tracker url,Secondary impression tracker url\n"
+            b"http://zemanta.com/test-content-ad,test content ad,"
+            b",  300 X  250 ,<body></body>,test,https://t.zemanta.com/px1.png,"
+            b"https://t.zemanta.com/px2.png",
+        )
+        response = _get_client().post(
+            reverse("upload_csv", kwargs={}),
+            {"candidates": mock_file, "batch_name": "batch 12", "ad_group_id": ad_group.id, "account_id": account.id},
+            follow=True,
+        )
+
+        batch = models.UploadBatch.objects.filter(ad_group_id=ad_group.id).latest()
+        candidate = batch.contentadcandidate_set.get()
+
+        expected_candidate = candidate.to_dict()
+        expected_candidate["errors"] = {"__all__": ["Content ad still processing"]}
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            {
+                "success": True,
+                "data": {"batch_id": batch.id, "batch_name": "batch 12", "candidates": [expected_candidate]},
+            },
+            json.loads(response.content),
+        )
+
+        self.assertEqual("batch 12", batch.name)
+        self.assertEqual("test_upload.csv", batch.original_filename)
+
+        self.assertEqual("test", candidate.label)
+        self.assertEqual("http://zemanta.com/test-content-ad", candidate.url)
+        self.assertEqual("test content ad", candidate.title)
+        self.assertEqual("<body></body>", candidate.ad_tag)
+        self.assertEqual(300, candidate.image_width)
+        self.assertEqual(250, candidate.image_height)
+        self.assertEqual("", candidate.image_url)
+        self.assertEqual("center", candidate.image_crop)
+        self.assertEqual("https://t.zemanta.com/px1.png", candidate.primary_tracker_url)
+        self.assertEqual("https://t.zemanta.com/px2.png", candidate.secondary_tracker_url)
+        self.assertEqual("", candidate.display_url)
+        self.assertEqual("", candidate.brand_name)
+        self.assertEqual("", candidate.description)
+        self.assertEqual("Read more", candidate.call_to_action)
+
+    @patch("utils.lambda_helper.invoke_lambda", MagicMock())
+    def test_post_content_ad_defaults(self):
         ad_group_id = 1
         ad_group_settings = models.AdGroup.objects.get(id=ad_group_id).get_current_settings().copy_settings()
         ad_group_settings.brand_name = "Default brand name"
@@ -128,7 +228,7 @@ class UploadCsvTestCase(TestCase):
         self.assertEqual("Read more", candidate.call_to_action)
 
     @patch("utils.lambda_helper.invoke_lambda", MagicMock())
-    def test_post_errors(self):
+    def test_post_content_ad_errors(self):
         ad_group_id = 1
         mock_file = SimpleUploadedFile(
             "test_upload.csv",
@@ -162,6 +262,86 @@ class UploadCsvTestCase(TestCase):
             {
                 "success": True,
                 "data": {"batch_id": batch.id, "batch_name": "batch 1", "candidates": [expected_candidate]},
+            },
+            json.loads(response.content),
+        )
+
+    @patch("utils.lambda_helper.invoke_lambda", MagicMock())
+    def test_post_image_ad_errors(self):
+        user = User.objects.get(pk=2)
+        account = magic_mixer.blend(models.Account, users=[user])
+        campaign = magic_mixer.blend(models.Campaign, account=account, type=constants.CampaignType.DISPLAY)
+        ad_group = magic_mixer.blend(models.AdGroup, campaign=campaign)
+        mock_file = SimpleUploadedFile(
+            "test_upload.csv",
+            b"URL,Name,Image URL,Label,Primary impression tracker url,Secondary impression tracker url\n"
+            b"ahttp://zemanta.com/test-content-ad,,"
+            b"ahttp://zemanta.com/test-image.jpg,,http://t.zemanta.com/px1.png,"
+            b"https://t.zemanta.com/px2.png",
+        )
+        response = _get_client().post(
+            reverse("upload_csv", kwargs={}),
+            {"candidates": mock_file, "batch_name": "batch 12", "ad_group_id": ad_group.id, "account_id": account.id},
+            follow=True,
+        )
+
+        batch = models.UploadBatch.objects.filter(ad_group_id=ad_group.id).latest()
+        candidate = batch.contentadcandidate_set.get()
+
+        expected_candidate = candidate.to_dict()
+        expected_candidate["errors"] = {
+            "__all__": ["Content ad still processing"],
+            "primary_tracker_url": ["Impression tracker URLs have to be HTTPS"],
+            "image_url": ["Invalid image URL"],
+            "title": ["Missing ad name"],
+            "url": ["Invalid URL"],
+        }
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            {
+                "success": True,
+                "data": {"batch_id": batch.id, "batch_name": "batch 12", "candidates": [expected_candidate]},
+            },
+            json.loads(response.content),
+        )
+
+    @patch("utils.lambda_helper.invoke_lambda", MagicMock())
+    def test_post_ad_tag_errors(self):
+        user = User.objects.get(pk=2)
+        account = magic_mixer.blend(models.Account, users=[user])
+        campaign = magic_mixer.blend(models.Campaign, account=account, type=constants.CampaignType.DISPLAY)
+        ad_group = magic_mixer.blend(models.AdGroup, campaign=campaign)
+        mock_file = SimpleUploadedFile(
+            "test_upload.csv",
+            b"URL,Name,Image URL,Creative Size,Ad Tag,Label,Primary impression tracker url,Secondary impression tracker url\n"
+            b"ahttp://zemanta.com/test-content-ad,,"
+            b",  350 X  200 ,<body></body>,test,http://t.zemanta.com/px1.png,"
+            b"https://t.zemanta.com/px2.png",
+        )
+        response = _get_client().post(
+            reverse("upload_csv", kwargs={}),
+            {"candidates": mock_file, "batch_name": "batch 12", "ad_group_id": ad_group.id, "account_id": account.id},
+            follow=True,
+        )
+
+        batch = models.UploadBatch.objects.filter(ad_group_id=ad_group.id).latest()
+        candidate = batch.contentadcandidate_set.get()
+
+        expected_candidate = candidate.to_dict()
+        expected_candidate["errors"] = {
+            "__all__": ["Content ad still processing"],
+            "primary_tracker_url": ["Impression tracker URLs have to be HTTPS"],
+            "title": ["Missing ad name"],
+            "url": ["Invalid URL"],
+            "image_url": ["Image size invalid. Supported sizes are (width x height): 300x250, 320x50"],
+        }
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            {
+                "success": True,
+                "data": {"batch_id": batch.id, "batch_name": "batch 12", "candidates": [expected_candidate]},
             },
             json.loads(response.content),
         )
@@ -405,9 +585,9 @@ class CandidatesDownloadTestCase(TestCase):
             (
                 '"URL","Title","Image URL","Display URL","Brand name","Description","Call to action",'
                 '"Label","Image crop","Primary impression tracker URL","Secondary impression'
-                ' tracker URL"\r\n"http://zemanta.com/blog","Zemanta blog čšž",'
+                ' tracker URL","Creative size","Ad tag"\r\n"http://zemanta.com/blog","Zemanta blog čšž",'
                 '"http://zemanta.com/img.jpg","zemanta.com","Zemanta","Zemanta blog","Read more",'
-                '"content ad 1","entropy","",""\r\n'
+                '"content ad 1","entropy","","","",""\r\n'
             ).encode("utf-8"),
             response.content,
         )

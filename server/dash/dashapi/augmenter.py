@@ -234,6 +234,8 @@ def augment_content_ad(row, loader, is_base_level=False):
                 "ad_group_id": content_ad.ad_group_id,
                 "name": content_ad.title,
                 "title": content_ad.title,
+                "creative_type": constants.AdType.get_text(content_ad.type),
+                "creative_size": content_ad.get_creative_size(),
                 "display_url": content_ad.display_url,
                 "brand_name": content_ad.brand_name,
                 "description": content_ad.description,
@@ -242,6 +244,8 @@ def augment_content_ad(row, loader, is_base_level=False):
                 "image_urls": {
                     "square": content_ad.get_image_url(160, 160),
                     "landscape": content_ad.get_image_url(256, 160),
+                    "image": content_ad.get_image_url(),
+                    "ad_tag": content_ad.ad_tag,
                 },
                 "image_hash": content_ad.image_hash,
                 "tracker_urls": content_ad.tracker_urls or [],

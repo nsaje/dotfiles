@@ -3126,7 +3126,7 @@ export const APP_OPTIONS = {
     ],
     adTypes: [
         {
-            name: 'Content Ad',
+            name: 'Content ad',
             value: APP_CONSTANTS.adType.CONTENT,
             campaignTypes: [
                 APP_CONSTANTS.campaignTypes.CONTENT,
@@ -3135,17 +3135,17 @@ export const APP_OPTIONS = {
             ],
         },
         {
-            name: 'Video Ad',
+            name: 'Video ad',
             value: APP_CONSTANTS.adType.VIDEO,
             campaignTypes: [APP_CONSTANTS.campaignTypes.VIDEO],
         },
         {
-            name: 'Image Display Ad',
+            name: 'Image display ad',
             value: APP_CONSTANTS.adType.IMAGE,
             campaignTypes: [APP_CONSTANTS.campaignTypes.DISPLAY],
         },
         {
-            name: 'Display Ad Tag',
+            name: 'Display ad tag',
             value: APP_CONSTANTS.adType.AD_TAG,
             campaignTypes: [APP_CONSTANTS.campaignTypes.DISPLAY],
         },
@@ -3153,13 +3153,13 @@ export const APP_OPTIONS = {
     adSizes: [
         {
             name: '320x50',
-            value: APP_CONSTANTS.adSize.S_320X50,
+            value: APP_CONSTANTS.adSize.MOBILE_LEADERBOARD,
             width: 320,
             height: 50,
         },
         {
             name: '300x250',
-            value: APP_CONSTANTS.adSize.S_300X250,
+            value: APP_CONSTANTS.adSize.INLINE_RECTANGLE,
             width: 300,
             height: 250,
         },

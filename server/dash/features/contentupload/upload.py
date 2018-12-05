@@ -227,8 +227,19 @@ def _get_candidates_csv(candidates):
 def _get_candidates_csv_rows(candidates):
     rows = []
     for candidate in sorted(candidates, key=lambda x: x.id):
-        rows.append({_transform_field(k): v for k, v in list(candidate.to_dict().items()) if k in forms.ALL_CSV_FIELDS})
+        row = {_transform_field(k): v for k, v in list(candidate.to_dict().items()) if k in forms.ALL_CSV_FIELDS}
+        row = _remap_separate_to_joint_fields(candidate, row)
+        rows.append(row)
     return rows
+
+
+def _remap_separate_to_joint_fields(candidate, row):
+    for joint_field, joint_params in forms.JOINT_CSV_FIELDS.items():
+        attr1 = getattr(candidate, joint_params[1], None)
+        attr2 = getattr(candidate, joint_params[2], None)
+        if attr1 and attr2:
+            row[_transform_field(joint_field)] = joint_params[0].join((str(attr1), str(attr2)))
+    return row
 
 
 def _transform_field(field):
@@ -284,8 +295,9 @@ def _update_defaults(data, defaults, batch):
 
 def _update_candidate(data, batch, files):
     candidate = batch.contentadcandidate_set.get(id=data.pop("id"))
+    campaign = candidate.ad_group.campaign if candidate.ad_group else None
 
-    form = forms.ContentAdCandidateForm(data, files)
+    form = forms.ContentAdCandidateForm(campaign, data, files)
     form.is_valid()  # used only to clean data of any possible unsupported fields
 
     updated_fields = {}
@@ -489,7 +501,7 @@ def clean_up_old_in_progress_batches(created_before):
 def _create_candidates(content_ads_data, ad_group, batch):
     candidates_added = []
     for content_ad in content_ads_data:
-        form = forms.ContentAdCandidateForm(content_ad)
+        form = forms.ContentAdCandidateForm(ad_group.campaign, content_ad)
         form.is_valid()  # used only to clean data of any possible unsupported fields
 
         fields = {k: v for k, v in list(form.cleaned_data.items()) if k != "image"}

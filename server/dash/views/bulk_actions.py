@@ -392,6 +392,7 @@ class AdGroupContentAdCSV(api_common.BaseApiView):
                 "brand_name": content_ad.brand_name,
                 "description": content_ad.description,
                 "call_to_action": content_ad.call_to_action,
+                "ad_tag": content_ad.ad_tag,
             }
 
             if content_ad.label:
@@ -408,6 +409,9 @@ class AdGroupContentAdCSV(api_common.BaseApiView):
                     content_ad_dict["primary_tracker_url"] = content_ad.tracker_urls[0]
                 if len(content_ad.tracker_urls) > 1:
                     content_ad_dict["secondary_tracker_url"] = content_ad.tracker_urls[1]
+
+            if content_ad.image_width and content_ad.image_height:
+                content_ad_dict["creative_size"] = "x".join((str(content_ad.image_width), str(content_ad.image_height)))
 
             # delete keys that are not to be exported
             for k in list(content_ad_dict.keys()):

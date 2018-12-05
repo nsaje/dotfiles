@@ -1046,7 +1046,7 @@ class ContentAdCandidateFormTestCase(TestCase):
         )
 
     def test_valid(self):
-        f = forms.ContentAdCandidateForm(*self._get_valid_data())
+        f = forms.ContentAdCandidateForm(None, *self._get_valid_data())
         self.assertTrue(f.is_valid())
         self.assertEqual(
             f.cleaned_data,
@@ -1075,34 +1075,34 @@ class ContentAdCandidateFormTestCase(TestCase):
     def test_invalid_image(self):
         data, files = self._get_valid_data()
         files["image"] = self.invalid_image
-        f = forms.ContentAdCandidateForm(data, files)
+        f = forms.ContentAdCandidateForm(None, data, files)
         self.assertFalse(f.is_valid())
         self.assertEqual(f.errors["image"], ["Invalid image file"])
 
     def test_capitalized_image_crop(self):
         data, files = self._get_valid_data()
         data["image_crop"] = "Center"
-        f = forms.ContentAdCandidateForm(data, files)
+        f = forms.ContentAdCandidateForm(None, data, files)
         self.assertTrue(f.is_valid())
 
     def test_skipped_image_crop(self):
         data, files = self._get_valid_data()
         del data["image_crop"]
-        f = forms.ContentAdCandidateForm(data, files)
+        f = forms.ContentAdCandidateForm(None, data, files)
         self.assertTrue(f.is_valid())
         self.assertEqual(f.cleaned_data["image_crop"], "center")
 
     def test_empty_image_crop(self):
         data, files = self._get_valid_data()
         data["image_crop"] = ""
-        f = forms.ContentAdCandidateForm(data, files)
+        f = forms.ContentAdCandidateForm(None, data, files)
         self.assertTrue(f.is_valid())
         self.assertEqual(f.cleaned_data["image_crop"], "center")
 
     def test_skipped_call_to_action(self):
         data, files = self._get_valid_data()
         del data["call_to_action"]
-        f = forms.ContentAdCandidateForm(data, files)
+        f = forms.ContentAdCandidateForm(None, data, files)
         self.assertTrue(f.is_valid())
         self.assertEqual(f.cleaned_data["call_to_action"], "Read more")
 
@@ -1121,7 +1121,7 @@ class ContentAdCandidateFormTestCase(TestCase):
         del data["call_to_action"]
         del data["primary_tracker_url"]
         del data["secondary_tracker_url"]
-        f = forms.ContentAdCandidateForm(data, files)
+        f = forms.ContentAdCandidateForm(None, data, files)
         self.assertTrue(f.is_valid())
         self.assertEqual("<body></body>", f.cleaned_data["ad_tag"])
         self.assertEqual("center", f.cleaned_data["image_crop"])
@@ -1639,14 +1639,14 @@ class ImageAdFormTestCase(TestCase):
         del data["title"]
         f = forms.ImageAdForm(self.campaign, data)
         self.assertFalse(f.is_valid())
-        self.assertEqual({"title": ["Missing title"]}, f.errors)
+        self.assertEqual({"title": ["Missing ad name"]}, f.errors)
 
     def test_title_too_long(self):
         data = self._get_valid_data()
         data["title"] = "repeat" * 19
         f = forms.ImageAdForm(self.campaign, data)
         self.assertFalse(f.is_valid())
-        self.assertEqual({"title": ["Title too long (max 90 characters)"]}, f.errors)
+        self.assertEqual({"title": ["Ad name too long (max 90 characters)"]}, f.errors)
 
     def test_missing_image_url(self):
         data = self._get_valid_data()

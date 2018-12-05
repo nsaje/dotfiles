@@ -534,11 +534,7 @@
                             src="{{ctrl.getIframeSrc(ctrl.selectedCandidate.adTag)}}"
                             width="{{ ctrl.selectedCandidate.imageWidth || 300 }}" 
                             height="{{ ctrl.selectedCandidate.imageHeight || 250 }}">
-                    </iframe>
-                    <a href="{{ ctrl.selectedCandidate.url }}" class="ad-preview__title">
-                        <span ng-if="ctrl.selectedCandidate.title.length > 0">{{ ctrl.selectedCandidate.title }}</span>
-                        <span ng-if="ctrl.selectedCandidate.title.length == 0">Ad Name</span>
-                    </a>
+                    </iframe>                    
                 </div>
             </div>
         </div>

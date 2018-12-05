@@ -111,8 +111,8 @@ describe('zemUploadContentAdPicker', function() {
             });
             $rootScope.$digest();
 
-            expect($ctrl.candidates).not.toEqual([resolvedCandidate]);
-            expect($ctrl.candidates[0].title).toEqual('Title 1');
+            expect($ctrl.candidates).toEqual([resolvedCandidate]);
+            expect($ctrl.candidates[0].title).toEqual('');
             expect($ctrl.candidates[0].imageStatus).toEqual(
                 constants.asyncUploadJobStatus.OK
             );
@@ -122,7 +122,7 @@ describe('zemUploadContentAdPicker', function() {
             expect($ctrl.candidates[0].hostedImageUrl).toBe(
                 'http://zemanta.com/img1.jpg'
             );
-            expect($ctrl.candidates[0].errors.title).toBeUndefined();
+            expect($ctrl.candidates[0].errors.title).toEqual(['Invalid title']);
             expect($ctrl.candidates[0].errors.url).toEqual(['Invalid URL']);
 
             $interval.flush(2500);

@@ -9,6 +9,7 @@ angular.module('one.widgets').directive('zemUploadStep1', function() {
             callback: '&',
             close: '=',
             defaultBatchName: '=',
+            showDisplayUpload: '=',
         },
         controllerAs: 'ctrl',
         template: require('./zemUploadStep1.component.html'),

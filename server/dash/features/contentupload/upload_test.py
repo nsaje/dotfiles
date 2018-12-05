@@ -931,7 +931,7 @@ class GetCandidatesWithErrorsTestCase(TestCase):
                     "url": "ftp://zemanta.com/test-content-ad",
                     "errors": {
                         "__all__": ["Content ad still processing"],
-                        "title": ["Missing title"],
+                        "title": ["Missing ad name"],
                         "url": ["Invalid URL"],
                         "label": ["Label too long (max 256 characters)"],
                         "image_url": ["Invalid image URL"],
@@ -1030,7 +1030,7 @@ class GetCandidatesWithErrorsTestCase(TestCase):
                     "url": "ftp://zemanta.com/test-content-ad",
                     "errors": {
                         "__all__": ["Content ad still processing"],
-                        "title": ["Missing title"],
+                        "title": ["Missing ad name"],
                         "url": ["Invalid URL"],
                         "label": ["Label too long (max 256 characters)"],
                         "ad_tag": ["Missing ad tag"],
@@ -1275,14 +1275,28 @@ class GetCandidatesCsvTestCase(TestCase):
 
     fixtures = ["test_upload.yaml"]
 
-    def test_candidates_csv(self):
+    def test_candidates_csv_unprocessed(self):
         batch = models.UploadBatch.objects.get(id=1)
         content = contentupload.upload.get_candidates_csv(batch)
         self.assertEqual(
             '"URL","Title","Image URL","Display URL","Brand name","Description","Call to action",'
-            '"Label","Image crop","Primary impression tracker URL","Secondary impression tracker URL"\r\n'
+            '"Label","Image crop","Primary impression tracker URL","Secondary impression tracker URL",'
+            '"Creative size","Ad tag"\r\n'
             '"http://zemanta.com/blog","Zemanta blog čšž","http://zemanta.com/img.jpg","zemanta.com",'
-            '"Zemanta","Zemanta blog","Read more","content ad 1","entropy","",""\r\n',
+            '"Zemanta","Zemanta blog","Read more","content ad 1","entropy","","","",""\r\n',
+            content,
+        )
+
+    def test_candidates_csv_processed(self):
+        batch = models.UploadBatch.objects.get(id=2)
+        content = contentupload.upload.get_candidates_csv(batch)
+        self.assertEqual(
+            '"URL","Title","Image URL","Display URL","Brand name","Description","Call to action",'
+            '"Label","Image crop","Primary impression tracker URL","Secondary impression tracker URL",'
+            '"Creative size","Ad tag"\r\n'
+            '"http://zemanta.com/blog","Zemanta blog čšž","http://zemanta.com/img.jpg","zemanta.com",'
+            '"Zemanta","Zemanta blog","Read more","content ad 1","entropy","https://t.zemanta.com/px1.png",'
+            '"https://t.zemanta.com/px2.png","500x500",""\r\n',
             content,
         )
 

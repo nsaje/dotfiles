@@ -58,7 +58,26 @@ angular
                 destinationBatchName: errors.destinationBatchName
                     ? errors.destinationBatchName[0]
                     : null,
-                message: data.status === 500 ? 'Something went wrong' : null,
+                destinationCampaignType: errors.type ? errors.type[0] : null,
+                message: convertErrorMessage(data, errors),
             };
+        }
+
+        function convertErrorMessage(data, errors) {
+            switch (data.status) {
+                case 500:
+                    return 'Something went wrong';
+                case 400:
+                    return handleBadRequest(errors);
+                default:
+                    return null;
+            }
+        }
+
+        function handleBadRequest(errors) {
+            if (errors.type) {
+                return errors.type[0];
+            }
+            return null;
         }
     });

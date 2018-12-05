@@ -57,7 +57,10 @@ angular.module('one.widgets').component('zemUploadContentAdPicker', {
         };
 
         $ctrl.toggleEditForm = function(candidate) {
-            if ($ctrl.editFormApi.selectedId) {
+            if (
+                $ctrl.editFormApi.selectedId &&
+                $ctrl.editFormApi.selectedId === candidate.id
+            ) {
                 $ctrl.editFormApi.close(candidate);
             } else {
                 $ctrl.editFormApi.open(candidate);
@@ -201,6 +204,7 @@ angular.module('one.widgets').component('zemUploadContentAdPicker', {
                     .checkStatus($ctrl.batchId, waitingCandidates)
                     .then(function(data) {
                         updateCandidatesStatuses(data.candidates);
+                        refreshCandidates(data.candidates);
                     });
             }, 2500);
         }

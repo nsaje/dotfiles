@@ -1,12 +1,10 @@
-<span class="zem-grid-cell-thumbnail {{ctrl.column.type}}-type">
-    <img ng-show="ctrl.data.square" ng-src="{{ctrl.data.square}}"
-         zem-lazy-popover-template="'zemGridThumbnailPreviewPopover.html'"
-         zem-lazy-popover-custom-classes="zem-grid-thumbnail-popover"
-         zem-lazy-popover-placement="left"
-         zem-lazy-popover-stay-open-on-hover="true"
-         zem-lazy-popover-animation-class="fade"
-         zem-lazy-popover-append-to-body="true" />
-    <div ng-show="!ctrl.data.square" class="zem-grid-cell-base-field__container">
-        <span class="zem-grid-cell-base-field__value">N/A</span>
-    </div>         
+<span class="zem-grid-cell-thumbnail {{ctrl.column.type}}-type"
+        zem-lazy-popover-template="'zemGridThumbnailPreviewPopover.html'"
+        zem-lazy-popover-custom-classes="zem-grid-thumbnail-popover"
+        zem-lazy-popover-placement="left"
+        zem-lazy-popover-stay-open-on-hover="true"
+        zem-lazy-popover-animation-class="fade"
+        zem-lazy-popover-append-to-body="true">
+    <img ng-show="ctrl.data.square" ng-src="{{ctrl.data.square}}"/>
+    <div ng-show="ctrl.data.ad_tag" class="zem-grid-cell-thumbnail__ad-tag"></div>
 </span>

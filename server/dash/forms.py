@@ -904,9 +904,12 @@ OPTIONAL_CSV_FIELDS = [
     "image_crop",
     "primary_tracker_url",
     "secondary_tracker_url",
+    "creative_size",
+    "ad_tag",
 ]
 ALL_CSV_FIELDS = MANDATORY_CSV_FIELDS + OPTIONAL_CSV_FIELDS
 IGNORED_CSV_FIELDS = ["errors"]
+JOINT_CSV_FIELDS = {"creative_size": ("x", "image_width", "image_height")}
 
 EXPRESSIVE_FIELD_NAME_MAPPING = {
     "primary_impression_tracker_url": "primary_tracker_url",
@@ -937,6 +940,8 @@ CSV_EXPORT_COLUMN_NAMES_DICT = OrderedDict(
         ["primary_tracker_url", "Primary impression tracker URL"],
         ["secondary_tracker_url", "Secondary impression tracker URL"],
         ["label", "Label"],
+        ["creative_size", "Creative size"],
+        ["ad_tag", "Ad tag"],
     ]
 )
 
@@ -1046,6 +1051,16 @@ class ParseCSVExcelFile(object):
 
         return row
 
+    def _remap_joint_to_separate_fields(self, row):
+        for joint_field, joint_params in JOINT_CSV_FIELDS.items():
+            row_field = row.pop(joint_field, None)
+            if row_field:
+                field1, field2 = re.sub(r"\s+", "", row_field.lower()).split(joint_params[0])
+                row[joint_params[1]] = field1
+                row[joint_params[2]] = field2
+
+        return row
+
 
 class AdGroupAdsUploadForm(AdGroupAdsUploadBaseForm, ParseCSVExcelFile):
     candidates = forms.FileField(error_messages={"required": "Please choose a file to upload."})
@@ -1055,10 +1070,13 @@ class AdGroupAdsUploadForm(AdGroupAdsUploadBaseForm, ParseCSVExcelFile):
         # ones that are then used across the application
         column_names = [col.strip(" _").lower().replace(" ", "_") for col in header]
 
+        if len(column_names) > 1 and column_names[1] == "name":
+            column_names[1] = "title"
+
         if len(column_names) < 1 or column_names[0] != "url":
             raise forms.ValidationError("First column in header should be URL.")
 
-        if len(column_names) < 2 or column_names[1] != "title":
+        if len(column_names) < 2 or (column_names[1] != "title"):
             raise forms.ValidationError("Second column in header should be Title.")
 
         if len(column_names) < 3 or column_names[2] != "image_url":
@@ -1101,6 +1119,7 @@ class AdGroupAdsUploadForm(AdGroupAdsUploadBaseForm, ParseCSVExcelFile):
 
         data = (dict(list(zip(column_names, row))) for row in rows[1:])
         data = [self._remove_unnecessary_fields(row) for row in data if not self._is_example_row(row)]
+        data = [self._remap_joint_to_separate_fields(row) for row in data]
 
         if len(data) < 1:
             raise forms.ValidationError("Uploaded file is empty.")
@@ -1366,10 +1385,11 @@ class ContentAdCandidateForm(forms.ModelForm):
     image_width = forms.IntegerField(required=False)
     image_height = forms.IntegerField(required=False)
 
-    def __init__(self, data, files=None):
+    def __init__(self, campaign, data, files=None):
         if files and "image" in files:
             files["image"].seek(0)
         super(ContentAdCandidateForm, self).__init__(data, files)
+        self.campaign = campaign
 
     def clean_image_crop(self):
         image_crop = self.cleaned_data.get("image_crop")
@@ -1389,13 +1409,19 @@ class ContentAdCandidateForm(forms.ModelForm):
 
         return call_to_action
 
-    def clean_type(self):
-        if not self.cleaned_data.get("type"):
-            return constants.AdType.CONTENT
-        return self.cleaned_data["type"]
-
     def clean_ad_tag(self):
         return self.cleaned_data.get("ad_tag") or None
+
+    def clean(self):
+        cleaned_data = super().clean()
+        ad_type = cleaned_data.get("type")
+
+        if not ad_type and self.campaign and self.campaign.type == constants.CampaignType.DISPLAY:
+            cleaned_data["type"] = constants.AdType.AD_TAG if cleaned_data.get("ad_tag") else constants.AdType.IMAGE
+        elif not ad_type:
+            cleaned_data["type"] = constants.AdType.CONTENT
+
+        return cleaned_data
 
     class Meta:
         model = models.ContentAdCandidate
@@ -1481,7 +1507,7 @@ class ContentAdForm(ContentAdCandidateForm):
     MAX_IMAGE_SIZE = 10000
 
     def __init__(self, campaign, *args, **kwargs):
-        super(ContentAdForm, self).__init__(*args, **kwargs)
+        super(ContentAdForm, self).__init__(campaign, *args, **kwargs)
         self.campaign = campaign
 
     def _validate_url(self, url):
@@ -1631,6 +1657,13 @@ class ContentAdForm(ContentAdCandidateForm):
 
 
 class ImageAdForm(ContentAdForm):
+    title = PlainCharField(
+        max_length=90,
+        error_messages={
+            "required": "Missing ad name",
+            "max_length": "Ad name too long (max %(limit_value)d characters)",
+        },
+    )
     type = forms.TypedChoiceField(
         choices=constants.AdType.get_choices(),
         error_messages={"invalid_choice": "Choose a valid ad type", "required": "Missing ad type"},

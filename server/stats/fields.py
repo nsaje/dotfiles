@@ -30,6 +30,8 @@ DIMENSION_FIELDS |= set(
 CONTENT_ADS_FIELDS = {
     "url",
     "title",
+    "creative_type",
+    "creative_size",
     "display_url",
     "brand_name",
     "description",
@@ -41,6 +43,7 @@ CONTENT_ADS_FIELDS = {
     "image_hash",
     "image_urls",
     "image_url",
+    "ad_tag",
     "redirector_url",
     "status_per_source",
     "tracker_urls",

@@ -21,10 +21,15 @@
                 <input class="input-text file-choosen" type="text" id="file-input" readonly
                        placeholder="No file chosen" ng-value="ctrl.formData.file.name">
                 <div class="message message--error" ng-repeat="error in ctrl.formErrors.file" for="file-input">{{ error }}</div>
-                <div class="message message--help message--with-icon">
+                <div class="message message--help message--with-icon" ng-if="!ctrl.showDisplayUpload">
                     <p>If you have trouble with the file structure, you can download our example file and start from there.</p>
                     <a href="{{ ctrl.config.staticUrl }}/one/assets/Zemanta_Content_Ads_Template.csv">Download CSV example file</a><br>
                     <a href="{{ ctrl.config.staticUrl }}/one/assets/Zemanta_Content_Ads_Template.xlsx">Download Excel example file</a>
+                </div>
+                <div class="message message--help message--with-icon" ng-if="ctrl.showDisplayUpload">
+                    <p>If you have trouble with the file structure, you can download our example file and start from there.</p>
+                    <a href="{{ ctrl.config.staticUrl }}/one/assets/Zemanta_Display_Ads_Template.csv">Download CSV example file</a><br>
+                    <a href="{{ ctrl.config.staticUrl }}/one/assets/Zemanta_Display_Ads_Template.xlsx">Download Excel example file</a>
                 </div>
             </div>
         </div>

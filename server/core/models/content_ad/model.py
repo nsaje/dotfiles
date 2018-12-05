@@ -187,6 +187,12 @@ class ContentAd(models.Model, prodops_mixin.ProdopsMixin, instance.ContentAdInst
         else:
             return "N/A"
 
+    def get_creative_size(self):
+        if self.image_width and self.image_height:
+            return str(self.image_width) + "x" + str(self.image_height)
+        else:
+            return "N/A"
+
     def __str__(self):
         return "{cn}(id={id}, ad_group={ad_group}, image_id={image_id}, state={state})".format(
             cn=self.__class__.__name__, id=self.id, ad_group=self.ad_group, image_id=self.image_id, state=self.state
