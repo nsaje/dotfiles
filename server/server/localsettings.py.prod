@@ -29,7 +29,7 @@ STATS_DB_READ_REPLICAS_POSTGRES = ["stats-postgres-1", "stats-postgres-2"]
 # https://docs.djangoproject.com/en/1.7/ref/settings/#databases
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.postgresql_psycopg2",
+        "ENGINE": "django_db_geventpool.backends.postgresql_psycopg2",
         "NAME": "one",
         "USER": "eins23",
         "PASSWORD": Secret(
@@ -40,9 +40,10 @@ DATABASES = {
         "HOST": "eins.cmkkg7ghktp5.us-east-1.rds.amazonaws.com",
         "PORT": 5432,
         "TEST": {"NAME": "test_one_%s_%s" % (socket.gethostname(), int(time.time() * 1E6))},
+        "OPTIONS": {"MAX_CONNS": 20},
     },
     "read-replica": {
-        "ENGINE": "django.db.backends.postgresql_psycopg2",
+        "ENGINE": "django_db_geventpool.backends.postgresql_psycopg2",
         "NAME": "one",
         "USER": "eins23",
         "PASSWORD": Secret(
@@ -52,9 +53,10 @@ DATABASES = {
         .decode("utf-8"),
         "HOST": "eins-replica.cmkkg7ghktp5.us-east-1.rds.amazonaws.com",
         "PORT": 5432,
+        "OPTIONS": {"MAX_CONNS": 20},
     },
     STATS_DB_NAME: {
-        "ENGINE": "django.db.backends.postgresql_psycopg2",
+        "ENGINE": "django_db_geventpool.backends.postgresql_psycopg2",
         "NAME": "k1",
         "USER": "eins2",
         "PASSWORD": Secret(
@@ -64,9 +66,10 @@ DATABASES = {
         .decode("utf-8"),
         "HOST": "zemantaone.cf6ca6mynjjb.us-east-1.redshift.amazonaws.com",
         "PORT": 5439,
+        "OPTIONS": {"MAX_CONNS": 20},
     },
     "stats-postgres-1": {
-        "ENGINE": "django.db.backends.postgresql_psycopg2",
+        "ENGINE": "django_db_geventpool.backends.postgresql_psycopg2",
         "NAME": "stats",
         "USER": "eins",
         "PASSWORD": Secret(
@@ -76,9 +79,10 @@ DATABASES = {
         .decode("utf-8"),
         "HOST": "ec2-18-209-193-186.compute-1.amazonaws.com",
         "PORT": 5432,
+        "OPTIONS": {"MAX_CONNS": 20},
     },
     "stats-postgres-2": {
-        "ENGINE": "django.db.backends.postgresql_psycopg2",
+        "ENGINE": "django_db_geventpool.backends.postgresql_psycopg2",
         "NAME": "stats",
         "USER": "eins",
         "PASSWORD": Secret(
@@ -88,6 +92,7 @@ DATABASES = {
         .decode("utf-8"),
         "HOST": "ec2-18-209-135-192.compute-1.amazonaws.com",
         "PORT": 5432,
+        "OPTIONS": {"MAX_CONNS": 20},
     },
 }
 DATABASE_READ_REPLICAS = ["read-replica"]
