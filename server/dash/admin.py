@@ -341,8 +341,15 @@ class AgencyAccountInline(admin.TabularInline):
         "settings",
     )
 
+    def get_queryset(self, request):
+        qs = super(AgencyAccountInline, self).get_queryset(request)
+        return qs.select_related("settings").prefetch_related("users")
+
+    def _cs_rep(self, obj):
+        return obj.settings.default_cs_representative.email
+
     ordering = ("-created_dt",)
-    readonly_fields = ("admin_link", "uses_bcm_v2", "yahoo_account")
+    readonly_fields = ("admin_link", "uses_bcm_v2", "yahoo_account", "_cs_rep")
     raw_id_fields = ("default_whitelist", "default_blacklist")
 
 
@@ -468,6 +475,11 @@ class AgencyAdmin(SlackLoggerMixin, ExportMixin, admin.ModelAdmin):
             .only("id", "campaign__account_id"),
             "AgencyAdmin.save_model",
         )
+        if "cs_representative" in form.changed_data:
+            cs_rep = ZemUser.objects.get(email=form.cleaned_data["cs_representative"])
+            for account in obj.account_set.all():
+                account.settings.update(request, default_cs_representative=cs_rep)
+
         self.log_custom_flags_event_to_slack(old_obj, obj, user=request.user.email)
 
 
