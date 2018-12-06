@@ -384,3 +384,21 @@ def audit_bid_cpc_vs_ecpc(bid_cpc_threshold=2, yesterday_spend_threshold=20):
                 ads.update(spend)
                 alerts.append(ads)
         return alerts
+
+
+def publisher_high_ctr(ctr_threshold=3, date=None, max_clicks=100, max_impressions=100):
+    if not date:
+        date = datetime.date.today() - datetime.timedelta(1)
+
+    sql = backtosql.generate_sql(
+        "sql/monitor_get_publisher_high_ctr.sql",
+        {
+            "date": date.strftime("%Y-%m-%d"),
+            "ctr_threshold": ctr_threshold,
+            "max_clicks": max_clicks,
+            "max_impressions": max_impressions,
+        },
+    )
+    with redshiftapi.db.get_stats_cursor() as c:
+        c.execute(sql)
+        return redshiftapi.db.dictfetchall(c)
