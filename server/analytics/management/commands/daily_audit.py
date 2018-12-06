@@ -1,3 +1,4 @@
+import datetime
 from decimal import Decimal
 
 import analytics.delivery
@@ -7,6 +8,7 @@ import dash.models
 import utils.command_helpers
 import utils.csv_utils
 import utils.email_helper
+from server import settings
 
 RECIPIENTS = (
     "operations@zemanta.com",
@@ -72,6 +74,7 @@ class Command(utils.command_helpers.ExceptionCommand):
         self.audit_account_credits(options)
         self.audit_click_discrepancy(options)
         self.audit_cpc_vs_ecpc(options)
+        self.audit_publishers_blacklisted(options)
 
         if self.alarms and self.send_emails:
             utils.email_helper.send_internal_email(
@@ -159,3 +162,16 @@ class Command(utils.command_helpers.ExceptionCommand):
             )
         self._print(msg)
         self.email_body += "<h3>{}</h3>\n {}".format(title, msg)
+
+    def audit_publishers_blacklisted(self, options):
+        yesterday = datetime.date.today() - datetime.timedelta(1)
+        blacklisted_yesterday = dash.models.PublisherGroupEntry.objects.filter(
+            publisher_group__id=settings.GLOBAL_BLACKLIST_ID, modified_dt__contains=yesterday
+        )
+        if not blacklisted_yesterday:
+            return
+        title = "Publishers blacklisted yesterday:"
+        msg = ["Publisher '{}' was added to the global blacklist.".format(p.publisher) for p in blacklisted_yesterday]
+        text = "\n".join(msg)
+        self._print("{}\n   {}".format(title, text))
+        self.email_body += "<h3>{}</h3> \n{}".format(title, text)
