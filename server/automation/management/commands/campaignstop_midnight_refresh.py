@@ -1,7 +1,9 @@
+import concurrent.futures
 import influx
 from django.db.models import Q
 
 import automation.campaignstop
+from automation.campaignstop.service import config
 import core.models
 from utils import dates_helper
 from utils.command_helpers import ExceptionCommand
@@ -28,4 +30,5 @@ class Command(ExceptionCommand):
                 campaignstopstate__max_allowed_end_date__gte=local_tomorrow,
             )
         )
-        automation.campaignstop.refresh_realtime_data(rechecked_campaigns)
+        with concurrent.futures.ThreadPoolExecutor(max_workers=config.JOB_PARALLELISM) as executor:
+            executor.map(automation.campaignstop.refresh_realtime_data, rechecked_campaigns)
