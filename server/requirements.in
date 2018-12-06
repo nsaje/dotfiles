@@ -105,6 +105,3 @@ django-debug-toolbar-template-profiler==1.0.2
 django-silk==3.0.1
 
 PyJWT==1.6.4
-
-# db pooling
-django-db-geventpool==3.0.0

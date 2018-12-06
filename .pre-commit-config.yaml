@@ -3,7 +3,6 @@ repos:
   rev: "v1.2.0"
   hooks:
   - id: seed-isort-config
-    language_version: python3
     entry: seed-isort-config
     args: [--application-directories=./server/]
     files: requirements.txt
