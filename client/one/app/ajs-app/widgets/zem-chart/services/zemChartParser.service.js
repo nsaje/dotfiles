@@ -196,6 +196,7 @@ angular
             data = transformDate(data);
             data = fillGaps(data);
             chart.config.series.unshift({
+                id: name,
                 name: name,
                 color: color,
                 yAxis: yAxis,
@@ -220,6 +221,7 @@ angular
             }
 
             chart.config.series.push({
+                id: name,
                 name: name,
                 color: color,
                 yAxis: yAxis,
