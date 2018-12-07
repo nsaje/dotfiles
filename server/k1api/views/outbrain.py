@@ -1,5 +1,6 @@
 import logging
 
+from django.db import transaction
 from django.db.models import F
 from django.http import Http404
 
@@ -49,18 +50,24 @@ class OutbrainMarketerIdView(K1APIView):
             return self.response_ok(ad_group.campaign.account.outbrain_marketer_id)
 
         try:
-            unused_accounts = dash.models.OutbrainAccount.objects.filter(used=False).order_by("created_dt")
-            if len(unused_accounts) == 10 or len(unused_accounts) == 3:
-                email_helper.send_outbrain_accounts_running_out_email(len(unused_accounts))
-            outbrain_account = unused_accounts[0]
+            with transaction.atomic():
+                unused_accounts = list(
+                    dash.models.OutbrainAccount.objects.select_for_update().filter(used=False).order_by("created_dt")
+                )
+
+                if len(unused_accounts) == 10 or len(unused_accounts) == 3:
+                    email_helper.send_outbrain_accounts_running_out_email(len(unused_accounts))
+
+                outbrain_account = unused_accounts[0]
+
+                outbrain_account.used = True
+                outbrain_account.save()
+
+                ad_group.campaign.account.outbrain_marketer_id = outbrain_account.marketer_id
+                ad_group.campaign.account.save(request)
+
         except IndexError:
             return self.response_error("No unused Outbrain accounts available.", 404)
-
-        outbrain_account.used = True
-        outbrain_account.save()
-
-        ad_group.campaign.account.outbrain_marketer_id = outbrain_account.marketer_id
-        ad_group.campaign.account.save(request)
 
         return self.response_ok(ad_group.campaign.account.outbrain_marketer_id)
 
