@@ -12,7 +12,7 @@ from utils.command_helpers import ExceptionCommand
 logger = logging.getLogger(__name__)
 
 
-SUPPLY_STATS_KEEP_DAYS = 35
+SUPPLY_STATS_KEEP_DAYS = 31
 SUPPLY_STATS_TABLE = "supply_stats"
 
 
