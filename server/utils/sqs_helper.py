@@ -28,27 +28,37 @@ def write_message_json(queue_name, body):
 
 
 @contextlib.contextmanager
-def process_all_json_messages(queue_name):
-    messages = get_all_messages(queue_name)
+def process_json_messages(queue_name, limit=None):
+    messages = _get_messages(queue_name, limit=limit)
     yield _get_json_content(messages)
-    delete_messages(queue_name, messages)
+    _delete_messages(queue_name, messages)
+
+
+def _get_messages(queue_name, *, limit):
+    queue = _get_queue(_get_connection(), queue_name)
+    rs = queue.get_messages(min(limit, MAX_MESSAGES_PER_BATCH))
+    messages = rs[:]
+    while len(rs) > 0 and (not limit or len(messages) < limit):
+        num_to_fetch = _calculate_num_to_fetch(messages, limit)
+        rs = queue.get_messages(num_to_fetch)
+        messages.extend(rs)
+    return messages
+
+
+def _calculate_num_to_fetch(existing_messages, limit):
+    if limit is None:
+        return MAX_MESSAGES_PER_BATCH
+    missing_to_limit = limit - len(existing_messages)
+    if missing_to_limit < MAX_MESSAGES_PER_BATCH:
+        return max(0, missing_to_limit)
+    return MAX_MESSAGES_PER_BATCH
 
 
 def _get_json_content(messages):
     return [json.loads(message.get_body()) for message in messages]
 
 
-def get_all_messages(queue_name):
-    queue = _get_queue(_get_connection(), queue_name)
-    rs = queue.get_messages(MAX_MESSAGES_PER_BATCH)
-    messages = []
-    while len(rs) > 0:
-        messages.extend(rs)
-        rs = queue.get_messages(MAX_MESSAGES_PER_BATCH)
-    return messages
-
-
-def delete_messages(queue_name, messages):
+def _delete_messages(queue_name, messages):
     connection = _get_connection()
     queue = _get_queue(connection, queue_name)
     for i in range(0, len(messages), MAX_MESSAGES_PER_BATCH):
