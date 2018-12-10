@@ -1,9 +1,7 @@
-import concurrent.futures
 import influx
 from django.db.models import Q
 
 import automation.campaignstop
-from automation.campaignstop.service import config
 import core.models
 from utils import dates_helper
 from utils.command_helpers import ExceptionCommand

@@ -15,8 +15,6 @@ class Command(ExceptionCommand):
             campaignstopstate__almost_depleted=True,
             campaignstopstate__state=automation.campaignstop.constants.CampaignStopState.ACTIVE,
         ).select_related("campaignstopstate")
-
-        automation.campaignstop.refresh_realtime_data(campaigns)
         automation.campaignstop.update_campaigns_state(campaigns)
 
         self._monitor(campaigns)

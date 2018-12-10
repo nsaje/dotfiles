@@ -1,45 +1,95 @@
+from collections import defaultdict
 import logging
+import time
 
 from django.conf import settings
 
 import core.models
 from utils import sqs_helper
 
+from .. import CampaignStopState
+from .. import constants
 from . import mark_almost_depleted_campaigns
 from . import update_campaigns_end_date
 from . import update_campaigns_start_date
 from . import update_campaigns_state
-from .. import CampaignStopState
-from .. import constants
 
 logger = logging.getLogger(__name__)
 
 
+MAX_MESSAGES_TO_FETCH = 5000
+CAMPAIGNS_PER_BATCH = 100
+MAX_JOB_DURATION_SECONDS = 4 * 60 + 30
+
+
 def handle_updates():
-    with sqs_helper.process_json_messages(settings.CAMPAIGN_STOP_UPDATE_HANDLER_QUEUE) as messages:
-        budget_campaigns = _extract_campaigns(_filter_messages(constants.CampaignUpdateType.BUDGET, messages))
-        if budget_campaigns:
-            _handle_budget_updates(budget_campaigns)
+    start_time = _time()
+    with sqs_helper.process_json_messages(
+        settings.CAMPAIGN_STOP_UPDATE_HANDLER_QUEUE, limit=MAX_MESSAGES_TO_FETCH
+    ) as messages:
+        updates_by_campaign = _get_updates_by_campaign(messages)
 
-        daily_cap_campaigns = _extract_campaigns(_filter_messages(constants.CampaignUpdateType.DAILY_CAP, messages))
-        if daily_cap_campaigns:
-            _handle_daily_cap_updates(daily_cap_campaigns)
-
-        initalize_campaigns = _extract_campaigns(
-            _filter_messages(constants.CampaignUpdateType.INITIALIZATION, messages)
-        )
-        if initalize_campaigns:
-            _handle_initialize(initalize_campaigns)
-
-        campaignstopstate_campaigns = _extract_campaigns(
-            _filter_messages(constants.CampaignUpdateType.CAMPAIGNSTOP_STATE, messages)
-        )
-        if campaignstopstate_campaigns:
-            _handle_campaignstopstate_change(campaignstopstate_campaigns)
+        campaigns = list(updates_by_campaign.keys())
+        while campaigns:
+            campaigns_batch, campaigns = campaigns[:CAMPAIGNS_PER_BATCH], campaigns[CAMPAIGNS_PER_BATCH:]
+            _process_batch({campaign: updates_by_campaign[campaign] for campaign in campaigns_batch})
+            if _time() - start_time > MAX_JOB_DURATION_SECONDS:
+                break
+        if campaigns:
+            logger.info(
+                "Out of time for processing - sending updates for %s campaigns back to the queue. Campaigns: %s",
+                len(campaigns),
+                ",".join(map(str, [c.id for c in campaigns])),
+            )
+            _notify_remaining_campaigns(campaigns, updates_by_campaign)
 
 
-def _filter_messages(type_, messages):
-    return [message for message in messages if message["type"] == type_]
+def _time():
+    return time.time()
+
+
+def _get_updates_by_campaign(messages):
+    campaigns_map = {campaign.id: campaign for campaign in _extract_campaigns(messages)}
+    updates_by_campaign = defaultdict(set)
+    for message in messages:
+        campaign = campaigns_map[message["campaign_id"]]
+        updates_by_campaign[campaign].add(message["type"])
+    return updates_by_campaign
+
+
+def _notify_remaining_campaigns(campaigns, updates_by_campaign):
+    from . import notify
+
+    for campaign in campaigns:
+        for update in updates_by_campaign[campaign]:
+            notify(campaign, update)
+
+
+def _process_batch(batch):
+    campaigns_by_update = _get_campaigns_by_type(batch)
+    budget_campaigns = campaigns_by_update[constants.CampaignUpdateType.BUDGET]
+    if budget_campaigns:
+        _handle_budget_updates(budget_campaigns)
+
+    daily_cap_campaigns = campaigns_by_update[constants.CampaignUpdateType.DAILY_CAP]
+    if daily_cap_campaigns:
+        _handle_daily_cap_updates(daily_cap_campaigns)
+
+    initialize_campaigns = campaigns_by_update[constants.CampaignUpdateType.INITIALIZATION]
+    if initialize_campaigns:
+        _handle_initialize(initialize_campaigns)
+
+    campaignstopstate_campaigns = campaigns_by_update[constants.CampaignUpdateType.CAMPAIGNSTOP_STATE]
+    if campaignstopstate_campaigns:
+        _handle_campaignstopstate_change(campaignstopstate_campaigns)
+
+
+def _get_campaigns_by_type(updates_by_campaign):
+    campaigns_by_update = {type_: [] for type_ in constants.CampaignUpdateType.get_all()}
+    for campaign, updates in updates_by_campaign.items():
+        for update in updates:
+            campaigns_by_update[update].append(campaign)
+    return campaigns_by_update
 
 
 def _extract_campaigns(messages):
@@ -58,15 +108,15 @@ def _handle_budget_updates(campaigns):
     _unset_pending_updates(campaigns)
 
 
-def _handle_campaignstopstate_change(campaigns):
-    logger.info("Handle campaign stop state change: campaigns=%s", [campaign.id for campaign in campaigns])
-    update_campaigns_start_date(campaigns)
-
-
 def _unset_pending_updates(campaigns):
     for campaign in campaigns:
         campaignstop_state, _ = CampaignStopState.objects.get_or_create(campaign=campaign)
         campaignstop_state.update_pending_budget_updates(False)
+
+
+def _handle_campaignstopstate_change(campaigns):
+    logger.info("Handle campaign stop state change: campaigns=%s", [campaign.id for campaign in campaigns])
+    update_campaigns_start_date(campaigns)
 
 
 def _full_check(campaigns):

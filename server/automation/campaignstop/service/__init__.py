@@ -8,5 +8,5 @@ from .validation import validate_minimum_budget_amount, CampaignStopValidationEx
 from .selection import mark_almost_depleted_campaigns
 from .update_handler import handle_updates
 from .monitor import audit_stopped_campaigns
-from .update_notifier import notify_initialize
+from .update_notifier import notify_initialize, notify
 from .simple import notify_depleting_budget_campaigns, stop_and_notify_depleted_budget_campaigns
