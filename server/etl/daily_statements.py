@@ -24,7 +24,7 @@ FIXED_MARGIN_START_DATE = datetime.date(2017, 6, 21)
 
 
 def _generate_statements(date, campaign, campaign_spend):
-    logger.info("Generate daily statements for %s, %s: %s", campaign.id, date, campaign_spend)
+    logger.debug("Generate daily statements for %s, %s: %s", campaign.id, date, campaign_spend)
 
     budgets = dash.models.BudgetLineItem.objects.filter(
         campaign_id=campaign.id, start_date__lte=date, end_date__gte=date
