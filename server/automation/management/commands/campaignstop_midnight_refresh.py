@@ -29,4 +29,6 @@ class Command(ExceptionCommand):
             )
         )
         with concurrent.futures.ThreadPoolExecutor(max_workers=config.JOB_PARALLELISM) as executor:
-            executor.map(automation.campaignstop.refresh_realtime_data, [[campaign] for campaign in rechecked_campaigns])
+            executor.map(
+                automation.campaignstop.refresh_realtime_data, [[campaign] for campaign in rechecked_campaigns]
+            )
