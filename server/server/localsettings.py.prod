@@ -562,6 +562,23 @@ SSPD_AUTH_SECRET = (
     .decode("utf-8")
 )
 
+BIGQUERY_CREDENTIALS = {
+    "type": "service_account",
+    "project_id": "scenic-torch",
+    "private_key_id": "653f204a67619d139e00ceda0e8781bfc6f4a135",
+    "private_key": Secret(
+        "kms:region=us-east-1:AQECAHjdfiP9DHF52gr8mpTmZ/ZwRu2qZbRw8dV0ohsw+OhZewAABxAwggcMBgkqhkiG9w0BBwagggb9MIIG+QIBADCCBvIGCSqGSIb3DQEHATAeBglghkgBZQMEAS4wEQQMipwOG3iuGxnsUtCOAgEQgIIGw99uZytnO8pITe9Svyn3PoMLbltdC6uvhaNEftNb4KuxWfmdOQHUDBXz/q479oKO590HHEZq+KbZvqv+eAXti868dPuBI0JeQOFzNi4Absl+1I903aNTlQBDSixrV0rTHY3uUUU5sSF2oX5kI5l6CULBuJe74gIhytTC5IdUKeyNso5EARJK4tJMzHG8xua0XzFMQMbAe4RNNUBj0WoR/isXnFfoNFC+sE5kxz2tidAX83vi7bYgVu6TkKnQKnLpmqfJWw9czlJiUICyRegK5k6048VWAnrDoX5NVfcOwP4FAA+NRgSBy+ZauUqrWtDmPcQ7hR+9cu7kPYcELgD4ZWab0oc9fy5xNP2K5xWpg6zO9fpwjladq5gSPTWJSylqT/v5Yx1Sc14K1g9XDnrdL5/Rs6Ysb+kHO+1ZFIwSvyHYAPv2B4RYVbGE4kIFeCZtqTmkSie/1yoCa0all0jvXur7lsgEu3fiTTXz0+LcG8ojUk4yxDvomOyGzS62N9uYXLMm1nzQw3SQxgP0ncBLtg4a26Iukn4lgERJodVJ1BsnNvLw7wrwOL/W96/ULtosGXXBta6HAW6Xemcam0STr6Lt5zR3TpENSbIhseS9rh4xtbXs25+hbVBpM5kYsOYZRK36OAHJA+b7xNwXAL7ek2rbopSeT7VVqadIlfopGH/RHCdCjGaTm+9tGa8gDUU/6axFZTRRj5gpfi2ZuDWkGtWQZciHs77t3UKtTICzmlzdtpN3+eThWw7acJCNw+eGujG1ds+2CMPzXYtvIVfd6e5a3RFm7TiTBpVtuA2jV2K7OO/zyqwelMfcj65HOJVBQmVi0sjUuxlXch9CiBIHCiMH24AxOvyPTaCFgU0eNm/ctMAbvox+sD4VceUcuBNiFXdLd3wig2WoJJgjvqA9TdacvGJMpqF52efD7rw3DMkOxojRkXLWUUNF2fDfRSLRii8RrFD2tqGFRHVMbXMrxy4PuAbllRgyfD4cAEj7dkvab3Bt99zIXpQ6stLl6H1jWk1mUFrbRnfnxmaV/Ijw0Pd6Uvr8cua74lFUNYY0bx5sZfHf52Qo1F0cufowIqOx8WmA7TmiCtUOiogZiPHVBuTfwFmnpYz8Vfr4503DA7Lf/W/VS10AAZIjzqfFzc30cxoibVBlcmJx7DDluMkb6ucLEXyq918oC4T/spt7i0M4MjmUxEfXD8uOWe/+zy2Am21MYz2hgzaUVn+IkMdsg8ZV2Jv+jjb1y1pGUjs0o+tvLjF5lHwd86TYCnDCelkjbE6nYHLhlQJWvxI1XVRChVAbYqZwe4hjf9iauqud27vznMmsot+MRmagVlAUAznIIopyt8DYGIxgVxHKi5x1hGOWBObNF55a8DOjT2kAYLErCLp5wpVdP8KIMiSGRzlafklEDqmSZOYSL1+kp8LjLu0XWpEvSPkZqF8gMOosyxaClYMY23ttFCUZElwOc4MGHOwoRP0Xg8PlcSILHAyhti5svpAFEe6OxluDCCOJSNei6adKRu7th+IL8J3jGmtje127Lz39Nw1k8UEESOaiklD4AeXgLZy0LZI4rqbTeFczKa4xQ7tfYuKx9G9/cA+cW+eG3sC3ixCg8yyoSmH4tg9dMZG9muZl+l94BAGPuPdS3jGtcIf2ER6diH7UtUTNB98+sbIqSzddrqHFto4xkaF9O9xu0HQb60dDvV2DEQn18C3C2BWbp5mdt7rh75DXa+50VNAR0fn++pFX6xU/7FPyeKLJ4zyf4imOG9KEjfOw9v3Xpdm6f1sC4WhB1TYJQV6lJyqrXgLFfYhcT8LK8GDu+fmJlE2bEUR4PnczOtOva0Ja13cD0633OCH+8kKJ04Hs8m2SaH9Z1TvYNEKu3fipxzjO5vX9VqdJaFdUHX+E8h/y1tzU5VcXjZrDzhHG032lRSZb2Q1e9w6usy4d9eeiajdcFGtkI16ZZSnAXyUNXRYkEz3avJ4gfomAGD6b/aIAhwjTCpQWE/34yXcC7BnTtaKbyc8sLXTZMP3hokdbqNb3ZcspdHnsBk6NdqfEE1x0tlOz05m+XyGjfKWpISw+nXFbsOPn00F1oUjMMq6HjQOaNAI3aN4eGcelnzcMvDgm7LT+8LRgsNYrJw+bCdY6tAnoJCT1zyTsm7k8SXCVznvI5U5j4suYcUbIHe+q08QiKGBbocuXSX0LG7E9BYZ2vyq3/i0MRhH3Xuyl7bn1tdDlsFArZbrXUXuvKP/BX1+yHCnUH4dFKxKajCakLc+5c3l0CRUwxM41iMSiqnZCf6cTWgbRoK/5Uq3mW6Sq2Gho5g=="  # noqa
+    )
+    .get()
+    .decode("utf-8"),
+    "client_email": "z1ba-001@scenic-torch.iam.gserviceaccount.com",
+    "client_id": "113127002879033371809",
+    "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+    "token_uri": "https://oauth2.googleapis.com/token",
+    "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+    "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/z1ba-001%40scenic-torch.iam.gserviceaccount.com",
+}
+
 if os.environ.get("IS_RUNSSH"):
     print("Detected running in runssh, modifying some settings. Check localsettings.py.prod for details.")
 
