@@ -46,6 +46,7 @@ angular
                     vm.showStateSwitch = false;
                     vm.buttons = [];
                     vm.disabledMessage = '';
+                    vm.stateCautionMessage = null;
 
                     if (vm.row) {
                         vm.enablingAutopilotSourcesAllowed =
@@ -92,6 +93,10 @@ angular
                                 vm.disabledMessage = AUTOPILOT_DISABLED_MSG;
                             }
                         }
+
+                        vm.stateCautionMessage = zemGridActionsService.getStateCautionMessage(
+                            vm.row
+                        );
                     }
                 }
 

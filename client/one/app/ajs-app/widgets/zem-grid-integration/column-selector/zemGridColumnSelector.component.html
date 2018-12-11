@@ -6,7 +6,7 @@
     <div class="dropdown-menu dropdown-menu-right" uib-dropdown-menu ng-click="$event.stopPropagation()">
         <div class="dropdown-menu__container dropdown-menu__column-selector">
             <div ng-if="$ctrl.isCostModeToggleAllowed()" is-internal="true" id="cost-mode-switcher" class="dropdown-menu__switch-button-container">
-                <span class="switch-button"
+                <span class="switch-button switch-button--small"
                     ng-class="{'switch-button--checked': $ctrl.isCostModePlatform}"
                     ng-click="$ctrl.toggleCostMode()"
                 ></span>

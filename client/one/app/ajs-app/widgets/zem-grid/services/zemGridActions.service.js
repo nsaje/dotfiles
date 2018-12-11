@@ -45,6 +45,7 @@ angular
         // Public API
         this.getButtons = getButtons;
         this.isStateSwitchVisible = isStateSwitchVisible;
+        this.getStateCautionMessage = getStateCautionMessage;
         this.getWidth = getWidth;
 
         // prettier-ignore
@@ -155,10 +156,24 @@ angular
             return false;
         }
 
+        function getStateCautionMessage(row) {
+            if (
+                row.data.archived ||
+                !row.data.stats ||
+                !row.data.stats.status ||
+                !row.data.stats.status.important ||
+                !row.data.stats.status.popoverMessage
+            ) {
+                return null;
+            }
+
+            return row.data.stats.status.popoverMessage;
+        }
+
         function getWidth(level, breakdown, row) {
             var width = 0;
             if (isStateSwitchVisible(level, breakdown, row)) {
-                width += 50;
+                width += 54;
             }
             var buttons = getButtons(level, breakdown, row);
             if (buttons.length > 0) {
@@ -169,6 +184,9 @@ angular
                 ) {
                     width += 40;
                 }
+            }
+            if (getStateCautionMessage(row)) {
+                width += 10;
             }
             return width;
         }
