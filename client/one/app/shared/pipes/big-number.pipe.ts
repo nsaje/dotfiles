@@ -6,7 +6,7 @@ import {Pipe, PipeTransform} from '@angular/core';
  * Example:
  *   {{ 2000000 | bigNumber }}
  *   formats to: 2M
-*/
+ */
 @Pipe({name: 'bigNumber'})
 export class BigNumberPipe implements PipeTransform {
     transform(value: number): string {

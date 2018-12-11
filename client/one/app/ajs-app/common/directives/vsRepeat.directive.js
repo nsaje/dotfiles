@@ -84,20 +84,20 @@
         matchingFunction = dde.matches
             ? 'matches'
             : dde.matchesSelector
-                ? 'matchesSelector'
-                : dde.webkitMatches
-                    ? 'webkitMatches'
-                    : dde.webkitMatchesSelector
-                        ? 'webkitMatchesSelector'
-                        : dde.msMatches
-                            ? 'msMatches'
-                            : dde.msMatchesSelector
-                                ? 'msMatchesSelector'
-                                : dde.mozMatches
-                                    ? 'mozMatches'
-                                    : dde.mozMatchesSelector
-                                        ? 'mozMatchesSelector'
-                                        : null;
+            ? 'matchesSelector'
+            : dde.webkitMatches
+            ? 'webkitMatches'
+            : dde.webkitMatchesSelector
+            ? 'webkitMatchesSelector'
+            : dde.msMatches
+            ? 'msMatches'
+            : dde.msMatchesSelector
+            ? 'msMatchesSelector'
+            : dde.mozMatches
+            ? 'mozMatches'
+            : dde.mozMatchesSelector
+            ? 'mozMatchesSelector'
+            : null;
 
     var closestElement =
         angular.element.prototype.closest ||
