@@ -43,7 +43,7 @@ def check_discrepancy(from_date, to_date):
     sql = backtosql.generate_sql("nas_spend_discrepency.sql", context)
     with redshiftapi.db.get_stats_cursor() as c:
         c.execute(sql)
-        return redshiftapi.db.dictfetchall()
+        return redshiftapi.db.dictfetchall(c)
 
 
 def _calculate_cpc_micro(cpc_value, fee, margin=0):
