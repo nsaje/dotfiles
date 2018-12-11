@@ -221,7 +221,7 @@ def audit_running_ad_groups(min_spend=Decimal("50.0"), account_types=None):
     yesterday = datetime.date.today() - datetime.timedelta(1)
     running_ad_group_ids = set(
         dash.models.AdGroup.objects.all()
-        .filter_running(date=yesterday)
+        .filter_current_and_active(date=yesterday)
         .filter_by_account_types(account_types)
         .values_list("pk", flat=True)
     )
@@ -332,7 +332,9 @@ def audit_custom_hacks(minimal_spend=Decimal("0.0001")):
 def audit_bid_cpc_vs_ecpc(bid_cpc_threshold=2, yesterday_spend_threshold=20):
     yesterday = datetime.date.today() - datetime.timedelta(1)
     active_ad_groups = (
-        dash.models.AdGroup.objects.all().filter_running(yesterday).exclude(campaign__account__id__in=API_ACCOUNTS)
+        dash.models.AdGroup.objects.all()
+        .filter_current_and_active(yesterday)
+        .exclude(campaign__account__id__in=API_ACCOUNTS)
     )
     ads_non_exploratory = (
         dash.models.AdGroupSource.objects.filter(ad_group__in=active_ad_groups)

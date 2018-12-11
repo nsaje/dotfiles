@@ -47,7 +47,7 @@ class Command(utils.command_helpers.ExceptionCommand):
         days_running = int(options["days_running"])
         flying_ad_groups = [
             ad_group
-            for ad_group in dash.models.AdGroup.objects.all().filter_running().exclude_archived()
+            for ad_group in dash.models.AdGroup.objects.all().filter_current_and_active().exclude_archived()
             if (date - ad_group.get_current_settings().start_date).days >= days_running
         ]
         flying_campaigns = {

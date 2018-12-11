@@ -71,7 +71,7 @@ class Command(utils.command_helpers.ExceptionCommand):
         if options["is_live"]:
             cas_list = cas_list.filter(
                 content_ad__ad_group_id__in=dash.models.AdGroup.objects.all()
-                .filter_running()
+                .filter_current_and_active()
                 .values_list("pk", flat=True)
             )
             flags.append("live")

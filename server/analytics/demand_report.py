@@ -9,7 +9,9 @@ from django.db.models import F
 from django.db.models import Q
 
 from analytics import demand_report_definitions
+from automation.campaignstop import constants as campaignstop_constants
 from core import models
+from core.features import bcm
 from dash import constants
 from redshiftapi import db
 from utils import bigquery_helper
@@ -28,31 +30,39 @@ def create_report():
     """
 
     yesterday = datetime.date.today() - datetime.timedelta(days=1)
-    date_string = yesterday.strftime("%Y-%m-%d")
 
     ad_group_spend_dict = {e["ad_group_id"]: e for e in _get_ad_group_spend()}
-    ad_group_dict = _get_ad_group_data_dict(ad_group_spend_dict.keys())
+    ad_group_dict = _get_ad_group_data_dict()
     campaign_data = _get_campaign_data(ad_group_dict.keys())
+    budget_data_dict = _get_budget_data_dict(ad_group_dict.keys())
     user_email_dict = _get_user_email_dict(campaign_data)
 
     output_stream = _generate_bq_csv_file(
-        campaign_data, ad_group_dict, ad_group_spend_dict, user_email_dict, date_string
+        campaign_data, ad_group_dict, budget_data_dict, ad_group_spend_dict, user_email_dict, yesterday
     )
-    _update_big_query(output_stream, date_string)
+    _update_big_query(output_stream, yesterday)
 
     logger.info("Demand report done.")
 
 
-def _update_big_query(output_stream, date_string):
+def _update_big_query(output_stream, date):
     logger.info("Updating BigQuery.")
-    delete_query = "delete from %s.%s where date = '%s'" % (DATASET_NAME, TABLE_NAME, date_string)
-    bigquery_helper.query(delete_query, timeout=BIGQUERY_TIMEOUT, use_legacy_sql=False)
+    _delete_big_query_records(date)
+    logger.info("Uploading data to BigQuery.")
     bigquery_helper.upload_csv_file(
         output_stream, DATASET_NAME, TABLE_NAME, timeout=BIGQUERY_TIMEOUT, skip_leading_rows=1
     )
 
 
-def _generate_bq_csv_file(campaign_data, ad_group_dict, ad_group_spend_dict, user_email_dict, date):
+def _delete_big_query_records(date):
+    date_string = date.strftime("%Y-%m-%d")
+
+    logger.info("Deleting existing records for %s from BigQuery.", date_string)
+    delete_query = "delete from %s.%s where date = '%s'" % (DATASET_NAME, TABLE_NAME, date_string)
+    bigquery_helper.query(delete_query, timeout=BIGQUERY_TIMEOUT, use_legacy_sql=False)
+
+
+def _generate_bq_csv_file(campaign_data, ad_group_dict, budget_data_dict, ad_group_spend_dict, user_email_dict, date):
     logger.info("Generating CSV file.")
     output_stream = io.BytesIO()
 
@@ -61,14 +71,17 @@ def _generate_bq_csv_file(campaign_data, ad_group_dict, ad_group_spend_dict, use
     )
     csv_writer.writeheader()
 
-    for row in _csv_rows_generator(campaign_data, ad_group_dict, ad_group_spend_dict, user_email_dict, date):
+    for row in _csv_rows_generator(
+        campaign_data, ad_group_dict, budget_data_dict, ad_group_spend_dict, user_email_dict, date
+    ):
         csv_writer.writerow(row)
 
     output_stream.seek(0)
     return output_stream
 
 
-def _csv_rows_generator(campaign_data, ad_group_dict, ad_group_spend_dict, user_email_dict, date):
+def _csv_rows_generator(campaign_data, ad_group_dict, budget_data_dict, ad_group_spend_dict, user_email_dict, date):
+    date_string = date.strftime("%Y-%m-%d")
     source_id_map = _source_id_map(constants.SourceType.OUTBRAIN, constants.SourceType.YAHOO)
 
     for campaign_data_row in campaign_data:
@@ -77,20 +90,14 @@ def _csv_rows_generator(campaign_data, ad_group_dict, ad_group_spend_dict, user_
         if not campaign_dict:
             raise Exception("No AdGroups for campaign_id %s!" % campaign_data_row["campaign_id"])
 
-        for ad_group_source_rows in campaign_dict.values():
-            row = ad_group_source_rows[0].copy()
+        ad_group_stats_dict = _calculate_ad_group_stats(
+            budget_data_dict, campaign_data_row, campaign_dict, ad_group_spend_dict, source_id_map
+        )
+
+        for ad_group_id in campaign_dict:
+            row = campaign_dict[ad_group_id][0].copy()
             row.update(campaign_data_row)
-
-            calculated_daily_budget, calculated_cpc = _calculate_budget_and_cpc(
-                row, ad_group_source_rows, source_id_map
-            )
-            row["calculated_daily_budget"] = calculated_daily_budget
-            row["calculated_cpc"] = calculated_cpc
-
-            impressions, clicks, spend = _aggregate_stats(ad_group_spend_dict, row["adgroup_id"])
-            row["impressions"] = impressions
-            row["clicks"] = clicks
-            row["spend"] = spend
+            row.update(ad_group_stats_dict[ad_group_id])
 
             target_regions, geo_targeting_types = _resolve_geo_targeting(row)
             row["target_regions"] = target_regions
@@ -102,7 +109,7 @@ def _csv_rows_generator(campaign_data, ad_group_dict, ad_group_spend_dict, user_
                 else "N/A"
             )
             row["type"] = constants.CampaignType.get_name(row["type"])
-            row["date"] = date
+            row["date"] = date_string
             row["cs_email"] = user_email_dict.get(campaign_data_row["cs_representative_id"], "N/A")
             row["sales_email"] = user_email_dict.get(campaign_data_row["sales_representative_id"], "N/A")
 
@@ -110,8 +117,8 @@ def _csv_rows_generator(campaign_data, ad_group_dict, ad_group_spend_dict, user_
             yield row
 
 
-def _get_ad_group_data_dict(ad_group_ids):
-    ad_group_data = _get_ad_group_data(ad_group_ids)
+def _get_ad_group_data_dict():
+    ad_group_data = _get_ad_group_data()
     ad_group_dict = {}
     for row in ad_group_data:
         campaign_dict = ad_group_dict.setdefault(row["campaign_id"], {})
@@ -119,6 +126,16 @@ def _get_ad_group_data_dict(ad_group_ids):
         ad_group_list.append(row)
 
     return ad_group_dict
+
+
+def _get_budget_data_dict(campaign_ids):
+    budget_data = _get_budget_data(campaign_ids)
+    budget_dict = {}
+    for row in budget_data:
+        campaing_list = budget_dict.setdefault(row["campaign_id"], [])
+        campaing_list.append(row)
+
+    return budget_dict
 
 
 def _aggregate_stats(ad_group_spend_dict, ad_group_id):
@@ -138,7 +155,62 @@ def _aggregate_stats(ad_group_spend_dict, ad_group_id):
     return impressions, clicks, spend
 
 
-def _calculate_budget_and_cpc(adgroup_row, ad_group_source_rows, source_id_map):
+def _calculate_ad_group_stats(budget_data_dict, campaign_data_row, campaign_dict, ad_group_spend_dict, source_id_map):
+    if not campaign_dict:
+        return {}
+
+    ad_group_dict = {}
+
+    for ad_group_id in campaign_dict:
+        impressions, clicks, spend = _aggregate_stats(ad_group_spend_dict, ad_group_id)
+        budget, cpc = _calculate_budget_and_cpc(campaign_data_row, campaign_dict[ad_group_id], source_id_map)
+        ad_group_dict[ad_group_id] = {
+            "impressions": impressions,
+            "clicks": clicks,
+            "spend": spend,
+            "calculated_daily_budget": budget,
+            "calculated_cpc": cpc,
+        }
+
+    campaign_id = campaign_dict[ad_group_id][0]["campaign_id"]
+
+    if campaign_id not in budget_data_dict:
+        logger.warning("No budget data for campaign id %s", campaign_id)
+        return ad_group_dict
+
+    budget_data = budget_data_dict[campaign_id]
+
+    full_budget_yesterday = Decimal(sum(item["amount"] for item in budget_data))
+    spend_until_yesterday = Decimal(sum(item["spend_nano"] for item in budget_data) / 1000000000)
+    remaining_budget_yesterday = full_budget_yesterday - spend_until_yesterday
+
+    configured_budget = Decimal(sum(item["calculated_daily_budget"] for item in ad_group_dict.values()))
+
+    if remaining_budget_yesterday < configured_budget:
+        if remaining_budget_yesterday > 0:
+            # distribute remaining budget according to AdGroup daily budgets
+            for ad_group_id in ad_group_dict:
+                ad_group_remaining_budget = (
+                    remaining_budget_yesterday
+                    * ad_group_dict[ad_group_id]["calculated_daily_budget"]
+                    / configured_budget
+                )
+                ad_group_dict[ad_group_id]["calculated_daily_budget"] = (
+                    Decimal(ad_group_dict[ad_group_id]["spend"]) + ad_group_remaining_budget
+                )
+
+        else:
+            # use actual spend as AdGroup daily budgets
+            for ad_group_id in ad_group_dict:
+                ad_group_dict[ad_group_id]["calculated_daily_budget"] = Decimal(ad_group_dict[ad_group_id]["spend"])
+
+    return ad_group_dict
+
+
+def _calculate_budget_and_cpc(campaign_data_row, ad_group_source_rows, source_id_map):
+    adgroup_row = campaign_data_row.copy()
+    adgroup_row.update(ad_group_source_rows[0])
+
     if adgroup_row["autopilot"] or adgroup_row["autopilot_state"] in (
         constants.AdGroupSettingsAutopilotState.INACTIVE,
         constants.AdGroupSettingsAutopilotState.ACTIVE_CPC,
@@ -387,7 +459,7 @@ def _get_user_email_dict(campaign_data):
     return rows
 
 
-def _get_ad_group_data(ad_group_ids, date=None):
+def _get_ad_group_data(date=None):
     if date is None:
         date = datetime.date.today() - datetime.timedelta(days=1)
 
@@ -432,14 +504,21 @@ def _get_ad_group_data(ad_group_ids, date=None):
 
     logger.info("Querying AdGroupSource data.")
     rows = list(
-        models.AdGroupSource.objects.filter(ad_group__id__in=ad_group_ids)
-        .filter(
+        models.AdGroupSource.objects.filter(
             ad_group__settings__archived=False,
             ad_group__settings__state=constants.AdGroupSettingsState.ACTIVE,
             settings__state=constants.AdGroupSourceSettingsState.ACTIVE,
+            ad_group__campaign__settings__archived=False,
             ad_group__settings__start_date__lte=date,
         )
         .filter(Q(ad_group__settings__end_date__gte=date) | Q(ad_group__settings__end_date__isnull=True))
+        .filter(
+            Q(
+                ad_group__campaign__real_time_campaign_stop=True,
+                ad_group__campaign__campaignstopstate__state=campaignstop_constants.CampaignStopState.ACTIVE,
+            )
+            | Q(ad_group__campaign__real_time_campaign_stop=False)
+        )
         .select_related("ad_group", "ad_group__settings", "settings")
         .annotate(**field_mapping)
         .values(*field_mapping.keys())
@@ -493,6 +572,25 @@ def _get_campaign_data(campaign_ids):
         .values(*output_values)
     )
     logger.info("Got %s Campaign data rows.", len(rows))
+    return rows
+
+
+def _get_budget_data(campaign_ids, date=None):
+    if date is None:
+        date = datetime.date.today() - datetime.timedelta(days=1)
+
+    logger.info("Querying budget data.")
+    rows = list(
+        bcm.BudgetLineItem.objects.filter(statements__date__lte=date, campaign_id__in=campaign_ids)
+        .annotate_spend_data()
+        .annotate(
+            spend_nano=(
+                F("spend_data_media") + F("spend_data_data") + F("spend_data_license_fee") + F("spend_data_margin")
+            )
+        )
+        .values("id", "amount", "campaign_id", "spend_nano")
+    )
+    logger.info("Got %s budget data rows.", len(rows))
     return rows
 
 

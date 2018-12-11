@@ -37,6 +37,7 @@
 10 9-20 * * *    /home/ubuntu/docker-manage-py.sh send_scheduled_reports
 15 9 * * *       /home/ubuntu/docker-manage-py.sh run_autopilot --daily-run
 15 9 * * 1       /home/ubuntu/docker-manage-py.sh audit_credits --send-emails
+30 9 * * *       /home/ubuntu/docker-manage-py.sh create_demand_report
 0 10 * * *       /home/ubuntu/docker-manage-py.sh campaignstop_monitor --slack
 0 10 5,15,25 * * /home/ubuntu/docker-manage-py.sh audit_pacing --send-emails
 10 10 * * *      /home/ubuntu/docker-manage-py.sh generate_hack_report -n 14 -i

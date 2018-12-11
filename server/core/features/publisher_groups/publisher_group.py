@@ -72,7 +72,7 @@ class PublisherGroup(models.Model):
         def filter_by_active_adgroups(self):
             data = (
                 core.models.AdGroup.objects.all()
-                .filter_running()
+                .filter_current_and_active()
                 .values_list(
                     "default_blacklist_id",
                     "default_whitelist_id",

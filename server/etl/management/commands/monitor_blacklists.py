@@ -45,7 +45,7 @@ class Command(ExceptionCommand):
         if options.get("date_to") is not None:
             date_to = dateutil.parser.parse(options["date_to"]).date()
 
-        ad_groups = models.AdGroup.objects.all().exclude_archived().filter_running()
+        ad_groups = models.AdGroup.objects.all().exclude_archived().filter_current_and_active()
         if not options["include_oen"]:
             ad_groups = ad_groups.exclude(campaign__account__id=OEN)
         if options.get("ad_group_ids") is not None:

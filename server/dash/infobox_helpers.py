@@ -292,13 +292,13 @@ def create_yesterday_spend_setting(yesterday_costs, daily_budget, currency, uses
 
 
 def count_active_adgroups(campaign):
-    return dash.models.AdGroup.objects.filter(campaign=campaign).filter_running().count()
+    return dash.models.AdGroup.objects.filter(campaign=campaign).filter_current_and_active().count()
 
 
 def count_active_campaigns(account):
     active_campaign_ids = set(
         dash.models.AdGroup.objects.filter(campaign__account=account)
-        .filter_running()
+        .filter_current_and_active()
         .values_list("campaign", flat=True)
     )
     return len(active_campaign_ids)
@@ -307,7 +307,7 @@ def count_active_campaigns(account):
 def count_active_agency_accounts(user):
     return (
         dash.models.AdGroup.objects.all()
-        .filter_running()
+        .filter_current_and_active()
         .filter_by_user(user)
         .order_by()  # disable default adgroup order
         .values("campaign__account")
@@ -325,7 +325,7 @@ def _active_account_ids():
 
     active_account_ids = set(
         dash.models.AdGroup.objects.all()
-        .filter_running()
+        .filter_current_and_active()
         .order_by()  # disable default adgroup order
         .values_list("campaign__account", flat=True)
         .distinct()
@@ -525,7 +525,7 @@ def get_campaign_running_status(campaign):
         if campaignstop_state_status:
             return campaignstop_state_status
 
-    running_exists = dash.models.AdGroup.objects.filter(campaign=campaign).filter_running().exists()
+    running_exists = dash.models.AdGroup.objects.filter(campaign=campaign).filter_current_and_active().exists()
     if running_exists:
         if campaign.settings.autopilot:
             return dash.constants.InfoboxStatus.AUTOPILOT
@@ -550,7 +550,7 @@ def _get_campaignstop_state_status(campaignstop_state, autopilot=False, price_di
 
 
 def get_account_running_status(account):
-    running_exists = dash.models.AdGroup.objects.filter(campaign__account=account).filter_running().exists()
+    running_exists = dash.models.AdGroup.objects.filter(campaign__account=account).filter_current_and_active().exists()
     if running_exists:
         return dash.constants.InfoboxStatus.ACTIVE
 
@@ -590,7 +590,7 @@ def _retrieve_active_creditlineitems(account):
 
 
 def _compute_daily_cap(**filters):
-    ad_groups = dash.models.AdGroup.objects.filter(**filters).filter_running().select_related("settings")
+    ad_groups = dash.models.AdGroup.objects.filter(**filters).filter_current_and_active().select_related("settings")
 
     adgroup_sources = dash.models.AdGroupSource.objects.filter(
         settings__state=dash.constants.AdGroupSourceSettingsState.ACTIVE, ad_group__in=ad_groups

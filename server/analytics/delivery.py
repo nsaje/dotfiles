@@ -63,8 +63,8 @@ def generate_delivery_reports(account_types=[], skip_ok=True, check_pacing=True,
     )
     running_ad_groups = (
         core.models.ad_group.AdGroup.objects.filter(campaign__account__id__in=valid_accounts)
-        .filter_running()
-        .filter_running(yesterday)
+        .filter_current_and_active()
+        .filter_current_and_active(yesterday)
         .select_related("campaign", "campaign__account", "campaign__account__agency")
     )
     running_campaigns = core.models.campaign.Campaign.objects.filter(
@@ -148,7 +148,7 @@ def check_campaign_delivery(
             return analytics.constants.CampaignDeliveryStatus.LOW_PACING
         if projections["pacing"] > HIGH_PACING_THRESHOLD:
             return analytics.constants.CampaignDeliveryStatus.HIGH_PACING
-    active_ad_groups = core.models.ad_group.AdGroup.objects.filter(campaign=campaign).filter_running()
+    active_ad_groups = core.models.ad_group.AdGroup.objects.filter(campaign=campaign).filter_current_and_active()
     if not active_ad_groups.count() and active_amount:
         return analytics.constants.CampaignDeliveryStatus.NO_ACTIVE_AD_GROUPS
     return analytics.constants.CampaignDeliveryStatus.OK

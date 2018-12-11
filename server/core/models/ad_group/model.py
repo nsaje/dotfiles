@@ -459,9 +459,9 @@ class AdGroup(validation.AdGroupValidatorMixin, models.Model, bcm_mixin.AdGroupB
                 return self
             return self.exclude(campaign__type=constants.CampaignType.DISPLAY)
 
-        def filter_running(self, date=None):
+        def filter_current_and_active(self, date=None):
             """
-            This function checks if adgroup is running on arbitrary number of adgroups
+            This function checks if adgroup is active and current on arbitrary number of adgroups
             with a fixed amount of queries.
             An adgroup is running if:
                 - it was set as active(adgroupsettings)
@@ -478,3 +478,28 @@ class AdGroup(validation.AdGroupValidatorMixin, models.Model, bcm_mixin.AdGroupB
             Returns only ad groups that have settings set to active.
             """
             return self.filter(settings__state=constants.AdGroupSettingsState.ACTIVE)
+
+        def filter_running(self, date=None):
+            """
+            Return only running ad groups.
+            """
+
+            # FIXME:circular dependency
+            from automation.campaignstop import constants as campaignstop_constants
+
+            return (
+                self.filter_current_and_active(date=date)
+                .filter(
+                    adgroupsource__settings__state=constants.AdGroupSourceSettingsState.ACTIVE,
+                    settings__archived=False,
+                    campaign__settings__archived=False,
+                )
+                .filter(
+                    models.Q(
+                        campaign__real_time_campaign_stop=True,
+                        campaign__campaignstopstate__state=campaignstop_constants.CampaignStopState.ACTIVE,
+                    )
+                    | models.Q(campaign__real_time_campaign_stop=False)
+                )
+                .distinct()
+            )
