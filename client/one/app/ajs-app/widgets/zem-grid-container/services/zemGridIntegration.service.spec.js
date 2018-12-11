@@ -1,5 +1,4 @@
 describe('component: zemGridIntegrationService', function() {
-    var $timeout;
     var zemDataSourceService, zemGridEndpointService, zemGridMocks;
     var zemGridIntegrationService, zemDataFilterService, zemSelectionService;
 
@@ -9,8 +8,6 @@ describe('component: zemGridIntegrationService', function() {
     beforeEach(angular.mock.module('one'));
     beforeEach(angular.mock.module('one.mocks.zemInitializationService'));
     beforeEach(inject(function($injector) {
-        $timeout = $injector.get('$timeout');
-
         zemGridMocks = $injector.get('zemGridMocks');
         zemDataSourceService = $injector.get('zemDataSourceService');
         zemGridEndpointService = $injector.get('zemGridEndpointService');
@@ -63,8 +60,6 @@ describe('component: zemGridIntegrationService', function() {
                 constants.breakdown.CAMPAIGN
             )
         );
-        expect(zemSelectionService.onSelectionUpdate).not.toHaveBeenCalled();
-        $timeout.flush();
         expect(zemSelectionService.onSelectionUpdate).toHaveBeenCalled();
     });
 

@@ -54,7 +54,7 @@ angular
 
             function setGridApi(api) {
                 grid.api = api;
-                $timeout(initializeSelectionBind);
+                initializeSelectionBind();
             }
 
             function getGrid() {
