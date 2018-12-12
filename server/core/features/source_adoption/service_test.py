@@ -6,6 +6,7 @@ import utils.exc
 from utils.magic_mixer import magic_mixer
 
 from . import auto_add_new_ad_group_sources
+from . import complete_release_shell
 from . import exceptions
 from . import release_source
 from . import unrelease_source
@@ -31,7 +32,7 @@ class SourceAdoptionCommandTest(django.test.TestCase):
             None, b1_sources_group_enabled=True, autopilot_state=dash.constants.AdGroupSettingsAutopilotState.INACTIVE
         )
         self.account.allowed_sources.add(self.source)
-        n_available_on, n_not_available_on = auto_add_new_ad_group_sources(self.source.id)
+        n_available_on, n_not_available_on = auto_add_new_ad_group_sources(self.source)
         ad_group_sources = core.models.AdGroupSource.objects.filter(ad_group=self.ad_group, source=self.source)
         self.assertEqual(1, n_available_on)
         self.assertEqual(0, n_not_available_on)
@@ -44,7 +45,7 @@ class SourceAdoptionCommandTest(django.test.TestCase):
             autopilot_state=dash.constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET,
         )
         self.account.allowed_sources.add(self.source)
-        n_available_on, n_not_available_on = auto_add_new_ad_group_sources(self.source.id)
+        n_available_on, n_not_available_on = auto_add_new_ad_group_sources(self.source)
         ad_group_sources = core.models.AdGroupSource.objects.filter(ad_group=self.ad_group, source=self.source)
         self.assertEqual(1, n_available_on)
         self.assertEqual(0, n_not_available_on)
@@ -55,14 +56,14 @@ class SourceAdoptionCommandTest(django.test.TestCase):
             None, b1_sources_group_enabled=False, autopilot_state=dash.constants.AdGroupSettingsAutopilotState.INACTIVE
         )
         self.account.allowed_sources.add(self.source)
-        n_available_on, n_not_available_on = auto_add_new_ad_group_sources(self.source.id)
+        n_available_on, n_not_available_on = auto_add_new_ad_group_sources(self.source)
         ad_group_sources = core.models.AdGroupSource.objects.filter(ad_group=self.ad_group, source=self.source)
         self.assertEqual(0, n_available_on)
         self.assertEqual(0, n_not_available_on)
         self.assertEqual(0, len(ad_group_sources))
 
     def test_auto_add_new_ad_group_sources_not_allowed(self):
-        n_available_on, n_not_available_on = auto_add_new_ad_group_sources(self.source.id)
+        n_available_on, n_not_available_on = auto_add_new_ad_group_sources(self.source)
         ad_group_sources = core.models.AdGroupSource.objects.filter(ad_group=self.ad_group, source=self.source)
         self.assertEqual(0, n_available_on)
         self.assertEqual(1, n_not_available_on)
@@ -71,7 +72,7 @@ class SourceAdoptionCommandTest(django.test.TestCase):
     def test_auto_add_new_sources_false(self):
         self.account.allowed_sources.add(self.source)
         self.account.settings.update_unsafe(self.request, auto_add_new_sources=False)
-        n_available_on, n_not_available_on = auto_add_new_ad_group_sources(self.source.id)
+        n_available_on, n_not_available_on = auto_add_new_ad_group_sources(self.source)
         ad_group_sources = core.models.AdGroupSource.objects.filter(ad_group=self.ad_group, source=self.source)
         self.assertEqual(0, n_available_on)
         self.assertEqual(0, n_not_available_on)
@@ -80,7 +81,7 @@ class SourceAdoptionCommandTest(django.test.TestCase):
     def test_archived(self):
         self.account.allowed_sources.add(self.source)
         self.ad_group.settings.update_unsafe(self.request, archived=True)
-        n_available_on, n_not_available_on = auto_add_new_ad_group_sources(self.source.id)
+        n_available_on, n_not_available_on = auto_add_new_ad_group_sources(self.source)
         ad_group_sources = core.models.AdGroupSource.objects.filter(ad_group=self.ad_group, source=self.source)
         self.assertEqual(0, n_available_on)
         self.assertEqual(0, n_not_available_on)
@@ -88,7 +89,7 @@ class SourceAdoptionCommandTest(django.test.TestCase):
 
     def test_invalid_source_id(self):
         with self.assertRaises(utils.exc.MissingDataError):
-            auto_add_new_ad_group_sources(1234)
+            complete_release_shell([1234])
 
 
 class SourceAdoptionTest(django.test.TestCase):

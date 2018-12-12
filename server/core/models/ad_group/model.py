@@ -360,7 +360,7 @@ class AdGroup(validation.AdGroupValidatorMixin, models.Model, bcm_mixin.AdGroupB
 
     def write_history_source_added(self, request, ad_group_source):
         self.write_history(
-            "{} source added.".format(ad_group_source.source.name),
+            "{} source added".format(ad_group_source.source.name),
             user=request.user if request else None,
             action_type=constants.HistoryActionType.MEDIA_SOURCE_ADD,
         )

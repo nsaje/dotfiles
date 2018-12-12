@@ -58,7 +58,8 @@ class AdGroupSourceManager(core.common.QuerySetManager):
         **updates
     ):
         try:
-            ad_group_source = AdGroupSource.objects.get(source=source, ad_group=ad_group)
+            # TODO: fix the problem of duplicated entries for "source, adgroup" pairs
+            ad_group_source = AdGroupSource.objects.filter(source=source, ad_group=ad_group).first()
         except AdGroupSource.DoesNotExist:
             ad_group_source = None
 
