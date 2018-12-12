@@ -33,7 +33,7 @@ class Command(ExceptionCommand):
                 self.stdout.write("Publisher classifications are up-to-date. No new classifications inserted.")
                 return
             for d in update:
-                self.stdout.write("New publisher classification {publisher} {category} added.".format(**d))
+                self.stdout.write("New publisher classification '{publisher}'/'{category}' added.".format(**d))
 
         elif options.get("csv"):
             self.stdout.write("Will update publisher classifications from CSV file.")

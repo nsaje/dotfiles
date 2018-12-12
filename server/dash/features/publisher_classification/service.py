@@ -53,12 +53,11 @@ def update_publisher_classsifications_from_oen():
         )
         .values("publisher", "category")
     )
-    print(new_publisher_entries)
     classification_to_create = new_publisher_entries.difference(
         all_publisher_classification.values("publisher", "category")
     ).values("category", "publisher")
     if not classification_to_create:
-        return False
+        return []
     models.PublisherClassification.objects.bulk_create(
         [models.PublisherClassification(**i) for i in classification_to_create]
     )
