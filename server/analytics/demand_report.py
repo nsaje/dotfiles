@@ -181,7 +181,7 @@ def _calculate_ad_group_stats(budget_data_dict, campaign_data_row, campaign_dict
     budget_data = budget_data_dict[campaign_id]
 
     full_budget_yesterday = Decimal(sum(item["amount"] for item in budget_data))
-    spend_until_yesterday = Decimal(sum(item["spend_nano"] for item in budget_data) / 1000000000)
+    spend_until_yesterday = Decimal(sum(item["spend_data_etfm_total"] for item in budget_data) / 1000000000)
     remaining_budget_yesterday = full_budget_yesterday - spend_until_yesterday
 
     configured_budget = Decimal(sum(item["calculated_daily_budget"] for item in ad_group_dict.values()))
@@ -583,12 +583,7 @@ def _get_budget_data(campaign_ids, date=None):
     rows = list(
         bcm.BudgetLineItem.objects.filter(statements__date__lte=date, campaign_id__in=campaign_ids)
         .annotate_spend_data()
-        .annotate(
-            spend_nano=(
-                F("spend_data_media") + F("spend_data_data") + F("spend_data_license_fee") + F("spend_data_margin")
-            )
-        )
-        .values("id", "amount", "campaign_id", "spend_nano")
+        .values("id", "amount", "campaign_id", "spend_data_etfm_total")
     )
     logger.info("Got %s budget data rows.", len(rows))
     return rows

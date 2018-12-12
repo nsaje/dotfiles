@@ -490,19 +490,19 @@ class BudgetDataTestCase(test.TestCase):
                     "id": self.budget_1_1.id,
                     "amount": 420,
                     "campaign_id": self.campaign_1.id,
-                    "spend_nano": Decimal("400000000000"),
+                    "spend_data_etfm_total": Decimal("400000000000"),
                 },
                 {
                     "id": self.budget_1_2.id,
                     "amount": 1000,
                     "campaign_id": self.campaign_1.id,
-                    "spend_nano": Decimal("200000000000"),
+                    "spend_data_etfm_total": Decimal("200000000000"),
                 },
                 {
                     "id": self.budget_2_1.id,
                     "amount": 500,
                     "campaign_id": self.campaign_2.id,
-                    "spend_nano": Decimal("200000000000"),
+                    "spend_data_etfm_total": Decimal("200000000000"),
                 },
             ],
         )
