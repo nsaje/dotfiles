@@ -37,6 +37,7 @@ class History(models.Model):
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL, related_name="+", on_delete=models.PROTECT, null=True, blank=True
     )
+    stack_trace = models.TextField(blank=True, null=True)
 
     objects = HistoryQuerySetManager()
 
