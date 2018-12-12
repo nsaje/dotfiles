@@ -311,7 +311,7 @@ Zemanta
             "User test@user.com started a new livestream session, accesssible on: http://www.google.com",
         )
         self.assertEqual(mail.outbox[0].from_email, "Zemanta <{}>".format(settings.FROM_EMAIL))
-        self.assertEqual(mail.outbox[0].bcc, ["operations@zemanta.com", "ziga.stopinsek@zemanta.com"])
+        self.assertEqual(mail.outbox[0].bcc, ["zem-operations@outbrain.com", "ziga.stopinsek@zemanta.com"])
 
     def test_send_pacing_email_low(self):
         account = magic_mixer.blend(dash_models.Account, name="Test account")
@@ -321,7 +321,7 @@ Zemanta
 
         email_helper.send_pacing_notification_email(
             campaign,
-            ["prodops@zemanta.com"],
+            ["prodops@outbrain.com"],
             Decimal("15.123456"),
             "low",
             {"ideal_daily_media_spend": Decimal("123.45678")},
@@ -340,7 +340,7 @@ Yours truly,
 Zemanta""",
         )
         self.assertEqual(mail.outbox[0].from_email, "Zemanta <{}>".format(settings.FROM_EMAIL))
-        self.assertEqual(mail.outbox[0].to, ["prodops@zemanta.com"])
+        self.assertEqual(mail.outbox[0].to, ["prodops@outbrain.com"])
 
     def test_send_pacing_email_high(self):
         account = magic_mixer.blend(dash_models.Account, name="Test account")
@@ -350,7 +350,7 @@ Zemanta""",
 
         email_helper.send_pacing_notification_email(
             campaign,
-            ["prodops@zemanta.com"],
+            ["prodops@outbrain.com"],
             Decimal("155.123456"),
             "high",
             {"ideal_daily_media_spend": Decimal("123.45678")},
@@ -369,7 +369,7 @@ Yours truly,
 Zemanta""",
         )
         self.assertEqual(mail.outbox[0].from_email, "Zemanta <{}>".format(settings.FROM_EMAIL))
-        self.assertEqual(mail.outbox[0].to, ["prodops@zemanta.com"])
+        self.assertEqual(mail.outbox[0].to, ["prodops@outbrain.com"])
 
     def test_send_budget_notification_email(self):
         campaign_manager = User.objects.create_user("manager@user.com")

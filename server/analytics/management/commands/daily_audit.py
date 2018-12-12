@@ -11,8 +11,8 @@ import utils.email_helper
 from server import settings
 
 RECIPIENTS = (
-    "operations@zemanta.com",
-    "prodops@zemanta.com",
+    "zem-operations@outbrain.com",
+    "prodops@outbrain.com",
     "oen-supply-team@outbrain.com",
     "zstopinsek@outbrain.com",
     "tadej.pavlic@zemanta.com",

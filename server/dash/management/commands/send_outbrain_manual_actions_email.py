@@ -13,7 +13,7 @@ from utils.url_helper import get_full_z1_url
 
 logger = logging.getLogger(__name__)
 
-DEFAULT_EMAIL_RECIPIENTS = ["operations@zemanta.com", "prodops@zemanta.com"]
+DEFAULT_EMAIL_RECIPIENTS = ["zem-operations@outbrain.com", "prodops@outbrain.com"]
 
 
 class Command(ExceptionCommand):
