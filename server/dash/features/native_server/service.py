@@ -36,7 +36,7 @@ FIXED_CAMPAIGN_TYPE_PER_AGENCY = {
 
 
 def _update_ad_group_sources_cpc(request, ad_group, cpc_cc):
-    ad_group.settings.update(request, b1_sources_group_cpc_cc=cpc_cc)
+    ad_group.settings.update(request, b1_sources_group_cpc_cc=cpc_cc, skip_validation=True)
     for ad_group_source in ad_group.adgroupsource_set.all().select_related("settings"):
         ad_group_source.settings.update(request, cpc_cc=cpc_cc)
 
