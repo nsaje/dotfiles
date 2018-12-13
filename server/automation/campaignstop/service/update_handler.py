@@ -52,7 +52,11 @@ def _get_updates_by_campaign(messages):
     campaigns_map = {campaign.id: campaign for campaign in _extract_campaigns(messages)}
     updates_by_campaign = defaultdict(set)
     for message in messages:
-        campaign = campaigns_map[message["campaign_id"]]
+        campaign_id = message["campaign_id"]
+        if campaign_id not in campaigns_map:
+            logger.warning("Received an update for non-existing campaign id: %s", campaign_id)
+            continue
+        campaign = campaigns_map[campaign_id]
         updates_by_campaign[campaign].add(message["type"])
     return updates_by_campaign
 
