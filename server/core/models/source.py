@@ -25,9 +25,7 @@ class Source(models.Model):
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name="Created at")
     modified_dt = models.DateTimeField(auto_now=True, verbose_name="Modified at")
     released = models.BooleanField(default=False)
-    billing_type = models.IntegerField(
-        default=constants.BillingType.DEFAULT, choices=constants.BillingType.get_choices()
-    )
+    cpc_billing = models.BooleanField(default=False)
 
     supports_retargeting = models.BooleanField(
         default=False, help_text=_("Designates whether source supports retargeting automatically.")
