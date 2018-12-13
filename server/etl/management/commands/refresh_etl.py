@@ -74,7 +74,5 @@ class Command(ExceptionCommand):
                 dump_and_abort=dump_and_abort,
                 update_to=to,
             )
-        except Exception as e:
-            logger.exception(e)
         finally:
             monitor.audit_spend_integrity(None)
