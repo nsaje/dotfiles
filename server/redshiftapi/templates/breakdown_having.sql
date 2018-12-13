@@ -1,7 +1,7 @@
 {% load backtosql_tags %}
 {% autoescape off %}
 
-/* breakdown_having.sql {{ view }}: {{ breakdown }}*/
+/* breakdown_having.sql {{ view }}: {{ breakdown|only_column }}*/
 SELECT
     {% if breakdown %} {{ breakdown|column_as_alias:"base_table" }}, {% endif %}
     {{ aggregates|column_as_alias:"base_table" }}

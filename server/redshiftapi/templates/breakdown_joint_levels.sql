@@ -1,7 +1,7 @@
 {% load backtosql_tags %}
 {% autoescape off %}
 
-/* breakdown_joint_levels.sql {{ base_view }}: {{ breakdown }} */
+/* breakdown_joint_levels.sql {{ base_view }}: {{ breakdown|only_column }} */
 SELECT
     {{ breakdown|only_alias:"b" }},
     {{ aggregates|only_alias:"b" }},
