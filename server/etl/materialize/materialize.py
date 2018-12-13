@@ -4,6 +4,7 @@ from etl import helpers
 class Materialize(object):
 
     TABLE_NAME = "missing"
+    SOURCE_VIEW = None
     IS_TEMPORARY_TABLE = False
     IS_DERIVED_VIEW = False
 
