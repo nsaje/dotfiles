@@ -24,7 +24,7 @@ def process_cpc_billing(from_date, to_date, agency_id):
     ad_groups_w_cpc = (
         dash.models.AdGroupSource.objects.filter(
             ad_group__in=dash.models.AdGroup.objects.filter(campaign__account__agency_id=agency_id),
-            source__cpc_billing=True,
+            source__billing_type=dash.constants.BillingType.FIXED_CPC,
         )
         .annotate(cpc_cc=F("settings__cpc_cc"))
         .values("ad_group_id", "cpc_cc")

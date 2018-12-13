@@ -50,6 +50,13 @@ class BiddingType(ConstantBase):
     _VALUES = {CPC: "CPC", CPM: "CPM"}
 
 
+class BillingType(ConstantBase):
+    DEFAULT = 1
+    FIXED_CPM = 2
+    FIXED_CPC = 3
+    _VALUES = {DEFAULT: "default", FIXED_CPC: "fixed CPC", FIXED_CPM: "fixed CPM"}
+
+
 class ExportStatus(ConstantBase):
     # Generalized constant used for export output formatting. It handles conversion to text for various state classes.
     ACTIVE = 1
