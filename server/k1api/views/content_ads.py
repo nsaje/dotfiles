@@ -1,6 +1,5 @@
 import logging
 from datetime import datetime
-from functools import partial
 
 import newrelic.agent
 from django.http import Http404
@@ -12,10 +11,17 @@ from dash import constants
 from utils import dates_helper
 from utils import db_router
 from utils import metrics_compat
-from utils import sspd_client
-from utils import threads
 
 from .base import K1APIView
+
+# from utils import sspd_client
+
+
+# from functools import partial
+
+
+# from utils import threads
+
 
 logger = logging.getLogger(__name__)
 
@@ -138,16 +144,17 @@ class ContentAdSourcesView(K1APIView):
         should_get_review_information = include_state or not include_blocked
 
         sspd_thread = None
-        if should_get_review_information:
-            sspd_fn = partial(
-                sspd_client.get_approval_status,
-                ad_group_ids.split(",") if ad_group_ids else None,
-                content_ad_ids.split(",") if content_ad_ids else None,
-                source_types.split(",") if source_types else None,
-                slugs.split(",") if slugs else None,
-            )
-            sspd_thread = threads.AsyncFunction(sspd_fn)
-            sspd_thread.start()
+        # TODO(nsaje): disabled to test if it improves full_check performance
+        # if should_get_review_information:
+        #     sspd_fn = partial(
+        #         sspd_client.get_approval_status,
+        #         ad_group_ids.split(",") if ad_group_ids else None,
+        #         content_ad_ids.split(",") if content_ad_ids else None,
+        #         source_types.split(",") if source_types else None,
+        #         slugs.split(",") if slugs else None,
+        #     )
+        #     sspd_thread = threads.AsyncFunction(sspd_fn)
+        #     sspd_thread.start()
 
         content_ad_sources = dash.models.ContentAdSource.objects.filter(source__deprecated=False)
 
@@ -286,6 +293,8 @@ class ContentAdSourcesView(K1APIView):
 
     @staticmethod
     def _is_blocked_by_sspd(content_ad_source, sspd_statuses):
+        # TODO(nsaje): disabled to test if it improves full_check performance
+        return False
         if content_ad_source["content_ad__ad_group__campaign__type"] == dash.constants.CampaignType.DISPLAY:
             return False
 
