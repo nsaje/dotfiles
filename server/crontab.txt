@@ -36,7 +36,7 @@
 0 8 * * *        /home/ubuntu/docker-manage-py.sh create_demo_snapshot
 0 8 * * *        /home/ubuntu/docker-manage-py.sh send_oen_postclickkpi_cpa_email
 0 9,12,15 * * *  /home/ubuntu/docker-manage-py.sh monitor_blacklists
-10 11-20 * * *    /home/ubuntu/docker-manage-py.sh send_scheduled_reports
+10 10-20 * * *    /home/ubuntu/docker-manage-py.sh send_scheduled_reports
 15 9 * * *       /home/ubuntu/docker-manage-py.sh run_autopilot --daily-run
 15 9 * * 1       /home/ubuntu/docker-manage-py.sh audit_credits --send-emails
 30 9 * * *       /home/ubuntu/docker-manage-py.sh create_demand_report
