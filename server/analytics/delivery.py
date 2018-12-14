@@ -1,20 +1,22 @@
 import datetime
 from decimal import Decimal
 
+from django.db.models import Count
+from django.db.models import F
+from django.db.models import Prefetch
+
 import analytics.constants
 import analytics.helpers
 import analytics.projections
 import analytics.statements
-import core.features.bcm
-import core.models
 import dash.campaign_goals
 import dash.constants
 import dash.infobox_helpers
 import utils.csv_utils
 
-CAMPAIGN_REPORT_HEADER = ("Campaign", "Campaign ID", "URL", "CS Rep", "Yesterday spend", "Daily Spend Cap", "Delivery")
+CAMPAIGN_REPORT_HEADER = ("Account", "Campaign ID", "URL", "CS Rep", "Yesterday spend", "Daily Spend Cap", "Delivery")
 AD_GROUP_REPORT_HEADER = (
-    "Ad group",
+    "Account",
     "Ad group ID",
     "URL",
     "CS Rep",
@@ -44,43 +46,71 @@ DEFAULT_ACCOUNT_TYPES = (
 )
 
 UNBILLABLE_SEGMENT_PARTS = ("outbrain", "lr-", "lotame", "obs", "obi", "obl")
-HIGH_PACING_THRESHOLD = Decimal("200.0")
-LOW_PACING_THRESHOLD = Decimal("50.0")
 MIN_B1_ACTIVE_SOURCES_FOR_INTEREST_TARGETING = 5
 
-IGNORED_VIDEO_COST_AD_GROUPS = (9709, 26439, 21383, 26442, 21385, 33364, 33360, 26438, 26470, 13224)
 
-
-def generate_delivery_reports(account_types=[], skip_ok=True, check_pacing=True, generate_csv=True):
+def generate_delivery_reports(account_types=[], skip_ok=True, generate_csv=True):
     today = datetime.date.today()
     yesterday = today - datetime.timedelta(1)
 
-    # Filter ad groups that are running today and were running tomorrow
+    # Filter ad groups that are running today and were running yesterday
     valid_accounts = (
-        core.models.account.Account.objects.all()
+        dash.models.account.Account.objects.all()
         .filter_by_account_types(account_types or DEFAULT_ACCOUNT_TYPES)
         .values_list("pk", flat=True)
     )
     running_ad_groups = (
-        core.models.ad_group.AdGroup.objects.filter(campaign__account__id__in=valid_accounts)
-        .filter_current_and_active()
-        .filter_current_and_active(yesterday)
-        .select_related("campaign", "campaign__account", "campaign__account__agency")
+        dash.models.ad_group.AdGroup.objects.filter(campaign__account__id__in=valid_accounts)
+        .filter_running()
+        .filter_running(yesterday)
+        .select_related("campaign", "campaign__account", "campaign__account__agency", "settings")
+        .prefetch_related(
+            Prefetch(
+                "adgroupsource_set",
+                to_attr="sources_b1_active",
+                queryset=dash.models.AdGroupSource.objects.filter(
+                    settings__state=dash.constants.AdGroupSourceSettingsState.ACTIVE,
+                    source__source_type__type=dash.constants.SourceType.B1,
+                ),
+            ),
+            Prefetch(
+                "adgroupsource_set",
+                to_attr="sources_api_active",
+                queryset=dash.models.AdGroupSource.objects.filter(
+                    settings__state=dash.constants.AdGroupSourceSettingsState.ACTIVE
+                ).exclude(source__source_type__type=dash.constants.SourceType.B1),
+            ),
+            Prefetch("contentad_set", to_attr="content_ads", queryset=dash.models.ContentAd.objects.all()),
+            Prefetch(
+                "contentad_set",
+                to_attr="content_ads_inactive",
+                queryset=dash.models.ContentAd.objects.filter(state=dash.constants.ContentAdSourceState.INACTIVE),
+            ),
+        )
     )
-    running_campaigns = core.models.campaign.Campaign.objects.filter(
-        pk__in=set(running_ad_groups.values_list("campaign_id", flat=True))
-    ).select_related("account", "account__agency")
-    running_accounts = core.models.account.Account.objects.filter(pk__in=set(c.account_id for c in running_campaigns))
-
-    account_settings_map = {
-        sett.account_id: sett for sett in core.models.settings.AccountSettings.objects.all().group_current_settings()
-    }
-    campaign_settings_map = {
-        sett.campaign_id: sett for sett in core.models.settings.CampaignSettings.objects.all().group_current_settings()
-    }
-    ad_group_settings_map = {
-        sett.ad_group_id: sett for sett in core.models.settings.AdGroupSettings.objects.all().group_current_settings()
-    }
+    running_campaigns = (
+        dash.models.campaign.Campaign.objects.filter(
+            pk__in=set(running_ad_groups.values_list("campaign_id", flat=True))
+        )
+        .select_related("account", "account__agency", "settings")
+        .prefetch_related(
+            Prefetch(
+                "campaigngoal_set",
+                to_attr="campaign_goals",
+                queryset=dash.models.CampaignGoal.objects.all().filter(primary=True),
+            ),
+            Prefetch(
+                "adgroup_set", to_attr="ad_groups_active", queryset=dash.models.AdGroup.objects.all().filter_active()
+            ),
+            Prefetch(
+                "budgets",
+                to_attr="ending_budgets",
+                queryset=dash.models.BudgetLineItem.objects.filter(
+                    end_date__range=(datetime.date.today(), (datetime.date.today() + datetime.timedelta(30)))
+                ),
+            ),
+        )
+    )
 
     campaign_stats = analytics.helpers.get_stats_multiple(yesterday, campaign=running_campaigns)
 
@@ -89,24 +119,9 @@ def generate_delivery_reports(account_types=[], skip_ok=True, check_pacing=True,
     )
     ad_group_stats = analytics.helpers.get_stats_multiple(yesterday, ad_group=running_ad_groups)
 
-    campaign_projections = analytics.projections.CurrentMonthBudgetProjections(
-        "campaign", date=today, accounts=running_accounts
-    )
+    campaign_data = _prepare_campaign_data(running_campaigns, campaign_stats, prev_campaign_stats, skip_ok=skip_ok)
 
-    campaign_data = _prepare_campaign_data(
-        running_campaigns,
-        campaign_settings_map,
-        account_settings_map,
-        campaign_stats,
-        prev_campaign_stats,
-        campaign_projections,
-        skip_ok=skip_ok,
-        check_pacing=check_pacing,
-    )
-
-    ad_group_data = _prepare_ad_group_data(
-        running_ad_groups, ad_group_settings_map, ad_group_stats, account_settings_map, skip_ok=skip_ok
-    )
+    ad_group_data = _prepare_ad_group_data(running_ad_groups, ad_group_stats, skip_ok=skip_ok)
 
     return {
         "campaign": analytics.statements.generate_csv(
@@ -124,101 +139,61 @@ def generate_delivery_reports(account_types=[], skip_ok=True, check_pacing=True,
     }
 
 
-def check_campaign_delivery(
-    campaign, campaign_settings, campaign_stats, prev_campaign_stats, projections, check_pacing=True
-):
-    visits = campaign_stats.get("visits") or prev_campaign_stats.get("visits") or 0
-    budgets = core.features.bcm.budget_line_item.BudgetLineItem.objects.filter(campaign=campaign).filter_active()
-    active_amount = sum(b.allocated_amount() for b in budgets)
-    primary_goal = dash.campaign_goals.get_primary_campaign_goal(campaign)
-    is_postclick_enabled = campaign_settings.enable_ga_tracking or campaign_settings.enable_adobe_tracking
-    if not primary_goal:
-        return analytics.constants.CampaignDeliveryStatus.NO_GOAL
-    if campaign_settings.iab_category == dash.constants.IABCategory.IAB24:
+def check_campaign_delivery(campaign, campaign_stats, prev_campaign_stats):
+    visits = campaign_stats.get("visits") or prev_campaign_stats.get("visits", 0)
+    conversions = campaign_stats.get("conversions", 0)
+    primary_goal = campaign.campaign_goals[0]
+    is_postclick_enabled = campaign.settings.enable_ga_tracking or campaign.settings.enable_adobe_tracking
+
+    if campaign.settings.iab_category == dash.constants.IABCategory.IAB24:
         return analytics.constants.CampaignDeliveryStatus.IAB_UNDEFINED
-    if active_amount <= 0:
-        return analytics.constants.CampaignDeliveryStatus.NO_BUDGET
     if primary_goal.type in ENGAGEMENT_GOALS:
         if not is_postclick_enabled:
             return analytics.constants.CampaignDeliveryStatus.MISSING_POSTCLICK_SETUP
         if visits <= 0:
             return analytics.constants.CampaignDeliveryStatus.MISSING_POSTCLICK_STATS
-    if check_pacing and projections["pacing"] is not None:
-        if projections["pacing"] < LOW_PACING_THRESHOLD:
-            return analytics.constants.CampaignDeliveryStatus.LOW_PACING
-        if projections["pacing"] > HIGH_PACING_THRESHOLD:
-            return analytics.constants.CampaignDeliveryStatus.HIGH_PACING
-    active_ad_groups = core.models.ad_group.AdGroup.objects.filter(campaign=campaign).filter_current_and_active()
-    if not active_ad_groups.count() and active_amount:
+    if primary_goal.type == dash.constants.CampaignGoalKPI.CPA and not conversions:
+        return analytics.constants.CampaignDeliveryStatus.CPA_NO_CONVERSIONS
+    if not campaign.ad_groups_active:
         return analytics.constants.CampaignDeliveryStatus.NO_ACTIVE_AD_GROUPS
+    if campaign.ending_budgets:
+        return analytics.constants.CampaignDeliveryStatus.CAMPAIGN_WITH_ENDING_BUDGET
     return analytics.constants.CampaignDeliveryStatus.OK
 
 
-def check_ad_group_delivery(ad_group, ad_group_settings, ad_group_stats):
-    media = ad_group_stats.get("media")
-    data = ad_group_stats.get("data")
-    content_ads = core.models.content_ad.ContentAd.objects.filter(ad_group=ad_group)
-    active_sources = core.models.ad_group_source.AdGroupSource.objects.filter(ad_group=ad_group).filter_active()
-    b1_active_sources = active_sources.filter(source__source_type__type=dash.constants.SourceType.B1)
-    api_active_sources = active_sources.exclude(source__source_type__type=dash.constants.SourceType.B1)
-    approved_ad_sources = core.models.content_ad_source.ContentAdSource.objects.filter(
-        content_ad__ad_group_id=ad_group.pk, submission_status=dash.constants.ContentAdSubmissionStatus.APPROVED
-    )
-    api_active_sources_count = api_active_sources.count()
-    b1_active_sources_count = b1_active_sources.count()
-    rtb_as_1_mvp_enabled = ad_group_settings.b1_sources_group_state == dash.constants.AdGroupSourceSettingsState.ACTIVE
-    if not content_ads.count():
+def check_ad_group_delivery(ad_group, approved_ad_sources_count):
+    rtb_as_1_mvp_enabled = ad_group.settings.b1_sources_group_state == dash.constants.AdGroupSourceSettingsState.ACTIVE
+    if not ad_group.content_ads:
         return analytics.constants.AdGroupDeliveryStatus.MISSING_ADS
-    if not approved_ad_sources.count():
+    if not approved_ad_sources_count:
         return analytics.constants.AdGroupDeliveryStatus.NO_ADS_APPROVED
-    if not active_sources.count():
+    if not ad_group.sources_b1_active and not ad_group.sources_api_active:
         return analytics.constants.AdGroupDeliveryStatus.NO_ACTIVE_SOURCES
-    if ad_group_settings.b1_sources_group_enabled and rtb_as_1_mvp_enabled and not b1_active_sources_count:
+    if ad_group.settings.b1_sources_group_enabled and rtb_as_1_mvp_enabled and not ad_group.sources_b1_active:
         return analytics.constants.AdGroupDeliveryStatus.RTB_AS_1_NO_SOURCES
-    if ad_group_settings.whitelist_publisher_groups:
-        if ad_group_settings.interest_targeting:
+    if ad_group.settings.whitelist_publisher_groups:
+        if ad_group.settings.interest_targeting:
             return analytics.constants.AdGroupDeliveryStatus.WHITELIST_AND_INTERESTS
-        if ad_group_settings.bluekai_targeting:
+        if ad_group.settings.bluekai_targeting:
             return analytics.constants.AdGroupDeliveryStatus.WHITELIST_AND_DATA
     if (
-        not api_active_sources_count
-        and ad_group_settings.interest_targeting
-        and b1_active_sources_count <= MIN_B1_ACTIVE_SOURCES_FOR_INTEREST_TARGETING
+        not ad_group.sources_api_active
+        and ad_group.settings.interest_targeting
+        and len(ad_group.sources_b1_active) <= MIN_B1_ACTIVE_SOURCES_FOR_INTEREST_TARGETING
     ):
         return analytics.constants.AdGroupDeliveryStatus.TOO_LITTLE_B1_SOURCES_FOR_INTEREST_TARGETING
-    if (
-        _extract_unbillable_data_segments(ad_group_settings.bluekai_targeting)
-        and b1_active_sources_count
-        and media
-        and not data
-    ):
-        return analytics.constants.AdGroupDeliveryStatus.MISSING_DATA_COST
-    is_video_spending = _has_video_assets(content_ads) and media
-    if is_video_spending and not data and ad_group.pk not in IGNORED_VIDEO_COST_AD_GROUPS:
-        return analytics.constants.AdGroupDeliveryStatus.MISSING_VIDEO_COST
+    if len(ad_group.content_ads_inactive) == len(ad_group.content_ads):
+        return analytics.constants.AdGroupDeliveryStatus.NO_ACTIVE_ADS
+    if ad_group.settings.interest_targeting and ad_group.settings.bluekai_targeting:
+        return analytics.constants.AdGroupDeliveryStatus.INTEREST_TARGETING_AND_BLUEKAI
     return analytics.constants.AdGroupDeliveryStatus.OK
 
 
-def _prepare_campaign_data(
-    running_campaigns,
-    campaign_settings_map,
-    account_settings_map,
-    campaign_stats,
-    prev_campaign_stats,
-    campaign_projections,
-    skip_ok=True,
-    check_pacing=True,
-):
+def _prepare_campaign_data(running_campaigns, campaign_stats, prev_campaign_stats, skip_ok=True):
     campaign_data = []
     for campaign in running_campaigns:
-        campaign_settings = campaign_settings_map[campaign.pk]
         delivery = check_campaign_delivery(
-            campaign,
-            campaign_settings,
-            campaign_stats.get(campaign.pk, {}),
-            prev_campaign_stats.get(campaign.pk, {}),
-            campaign_projections.row(campaign.pk),
-            check_pacing=check_pacing,
+            campaign, campaign_stats.get(campaign.pk, {}), prev_campaign_stats.get(campaign.pk, {})
         )
         if skip_ok and delivery == "ok":
             continue
@@ -228,10 +203,10 @@ def _prepare_campaign_data(
         )
         campaign_data.append(
             (
-                campaign.get_long_name(),
+                "{}".format(campaign.account.get_long_name()),
                 campaign.pk,
                 CAMPAIGN_URL.format(campaign.pk),
-                account_settings_map[campaign.account_id].default_cs_representative,
+                campaign.account.settings.default_cs_representative,
                 spend,
                 cap,
                 delivery,
@@ -240,13 +215,20 @@ def _prepare_campaign_data(
     return campaign_data
 
 
-def _prepare_ad_group_data(
-    running_ad_groups, ad_group_settings_map, ad_group_stats, account_settings_map, skip_ok=True
-):
+def _prepare_ad_group_data(running_ad_groups, ad_group_stats, skip_ok=True):
     ad_group_data = []
+    ad_group_count_content_ad_sources = {
+        ads["ad_group"]: ads["count_content_ad_sources"]
+        for ads in dash.models.content_ad_source.ContentAdSource.objects.filter(
+            submission_status=dash.constants.ContentAdSubmissionStatus.APPROVED,
+            content_ad__ad_group__in=running_ad_groups.values_list("id", flat=True),
+        )
+        .values(ad_group=F("content_ad__ad_group_id"))
+        .annotate(count_content_ad_sources=Count("id"))
+    }
+
     for ad_group in running_ad_groups:
-        ad_group_settings = ad_group_settings_map[ad_group.pk]
-        delivery = check_ad_group_delivery(ad_group, ad_group_settings, ad_group_stats.get(ad_group.pk, {}))
+        delivery = check_ad_group_delivery(ad_group, ad_group_count_content_ad_sources.get(ad_group.pk, 0))
         if skip_ok and delivery == "ok":
             continue
         cap = Decimal(dash.infobox_helpers.calculate_daily_ad_group_cap(ad_group))
@@ -255,43 +237,14 @@ def _prepare_ad_group_data(
         )
         ad_group_data.append(
             (
-                "{}, {}".format(ad_group.campaign.get_long_name(), ad_group.name),
+                "{}".format(ad_group.campaign.account.get_long_name()),
                 ad_group.pk,
                 AD_GROUP_URL.format(ad_group.pk),
-                account_settings_map[ad_group.campaign.account_id].default_cs_representative,
-                ad_group_settings.end_date or "none",
+                ad_group.campaign.account.settings.default_cs_representative,
+                ad_group.settings.end_date or "none",
                 spend,
                 cap,
                 delivery,
             )
         )
     return ad_group_data
-
-
-def _extract_unbillable_data_segments(targeting_exp):
-    segments = set()
-    if not targeting_exp:
-        return segments
-    for part in targeting_exp:
-        if type(part) == list:
-            filtered_part = _extract_unbillable_data_segments(part)
-            if filtered_part:
-                segments |= filtered_part
-            continue
-        if part.lower() in ("and", "or", "not"):
-            continue
-        if not any(
-            unbillable_segment_type
-            for unbillable_segment_type in UNBILLABLE_SEGMENT_PARTS
-            if unbillable_segment_type in part
-        ):
-            segments.add(part)
-            continue
-    return segments
-
-
-def _has_video_assets(content_ads):
-    for ad in content_ads:
-        if ad.video_asset:
-            return True
-    return False

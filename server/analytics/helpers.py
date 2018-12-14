@@ -44,7 +44,6 @@ def get_stats_multiple(date, **lookup):
      - get_stats_multiple(date, ad_group=ad_group_list)
      - get_stats_multiple(date, campaign=campaign_list)
      - get_stats_multiple(date, account=account_list)
-     - get_stats_multiple(date, agency=agency_list)
 
     Only one lookup entry is expected (ad_group, campaign, account or agency).
     """

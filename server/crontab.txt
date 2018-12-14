@@ -49,6 +49,7 @@
 45 10 * * *      /home/ubuntu/docker-manage-py.sh audit_cpc_vs_ecpc --slack # must run after autopilot imported data.
 0 11 * * *       /home/ubuntu/docker-manage-py.sh nas_cpc_billing 220 --slack
 20 11 * * *      /home/ubuntu/docker-manage-py.sh audit_hacks --slack
+30 11 * * *      /home/ubuntu/docker-manage-py.sh audit_ad_group_missing_data_cost --slack
 0 12 * * *       /home/ubuntu/docker-manage-py.sh bluekai_refresh --slack
 0 12 * * *       /home/ubuntu/docker-manage-py.sh free_inactive_allocated_assets
 0 12 * * *       /home/ubuntu/docker-manage-py.sh monitor_dailystatement_holes

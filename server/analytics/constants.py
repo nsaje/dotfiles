@@ -3,25 +3,21 @@ from utils.constant_base import ConstantBase
 
 class CampaignDeliveryStatus(ConstantBase):
     OK = "ok"
-    NO_GOAL = "no-goal"
     IAB_UNDEFINED = "iab-undefined"
-    NO_BUDGET = "no-budget"
     MISSING_POSTCLICK_STATS = "missing-postclick-stats"
     MISSING_POSTCLICK_SETUP = "missing-postclick-setup"
-    LOW_PACING = "low-pacing"
-    HIGH_PACING = "high-pacing"
     NO_ACTIVE_AD_GROUPS = "no-active-ad-groups"
+    CAMPAIGN_WITH_ENDING_BUDGET = "campaign-with-ending-budget"
+    CPA_NO_CONVERSIONS = "CPA-goal-with-no-conversions"
 
     _VALUES = {
         OK: "OK",
-        NO_GOAL: "No campaign goal set",
         IAB_UNDEFINED: "IAB Category undefined",
-        NO_BUDGET: "No budget",
         MISSING_POSTCLICK_STATS: "Missing engagement data",
         MISSING_POSTCLICK_SETUP: "Google / Adobe analytics are not set up",
-        LOW_PACING: "Campaign pacing is low",
-        HIGH_PACING: "Campaign pacing is high",
         NO_ACTIVE_AD_GROUPS: "Campaign has budget but no active ad groups",
+        CAMPAIGN_WITH_ENDING_BUDGET: "Campaign with budget ending within 30 days",
+        CPA_NO_CONVERSIONS: "Campaign set with CPA goal but has no conversions",
     }
 
 
@@ -33,9 +29,9 @@ class AdGroupDeliveryStatus(ConstantBase):
     RTB_AS_1_NO_SOURCES = "rtb-as-1-no-sources"
     WHITELIST_AND_INTERESTS = "whitelist-and-interest-targeting"
     WHITELIST_AND_DATA = "whitelist-and-data-targeting"
-    MISSING_DATA_COST = "missing-data-cost"
     TOO_LITTLE_B1_SOURCES_FOR_INTEREST_TARGETING = "too-little-b1-sources-for-interest-targeting"
-    MISSING_VIDEO_COST = "missing-video-cost"
+    NO_ACTIVE_ADS = "no-active-ads"
+    INTEREST_TARGETING_AND_BLUEKAI = "interest-targeting-and-Bluekai"
 
     _VALUES = {
         OK: "OK",
@@ -45,7 +41,7 @@ class AdGroupDeliveryStatus(ConstantBase):
         RTB_AS_1_NO_SOURCES: "RTB-as-1 enabled but no active b1 sources",
         WHITELIST_AND_INTERESTS: "Whitelist and interest targeting set",
         WHITELIST_AND_DATA: "Whitelist and data targeting set",
-        MISSING_DATA_COST: "Missing data cost",
-        MISSING_VIDEO_COST: "Missing video cost",
         TOO_LITTLE_B1_SOURCES_FOR_INTEREST_TARGETING: "Too little active b1 sources for successfull interest targeting",
+        NO_ACTIVE_ADS: "No active content ads on a running ad group",
+        INTEREST_TARGETING_AND_BLUEKAI: "Interest targeting and Blukai set at the same time",
     }

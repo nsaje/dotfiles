@@ -404,3 +404,57 @@ def publisher_high_ctr(ctr_threshold=3, date=None, max_clicks=100, max_impressio
     with redshiftapi.db.get_stats_cursor() as c:
         c.execute(sql)
         return redshiftapi.db.dictfetchall(c)
+
+
+def audit_ad_group_missing_data_cost(date=None, days=1):
+    def _extract_unbillable_data_segments(targeting_exp):
+        segments = set()
+        if not targeting_exp:
+            return segments
+        for part in targeting_exp:
+            if type(part) == list:
+                filtered_part = _extract_unbillable_data_segments(part)
+                if filtered_part:
+                    segments |= filtered_part
+                continue
+            if part.lower() in ("and", "or", "not"):
+                continue
+            if not any(
+                unbillable_segment_type
+                for unbillable_segment_type in ("outbrain", "lr-", "lotame", "obs", "obi", "obl")
+                if unbillable_segment_type in part
+            ):
+                segments.add(part)
+                continue
+        return segments
+
+    if date is None:
+        date = datetime.date.today()
+    yesterday = date - datetime.timedelta(days)
+
+    running_ad_groups = (
+        dash.models.ad_group.AdGroup.objects.filter(
+            campaign__account__id__in=dash.models.account.Account.objects.all()
+            .filter_by_account_types(
+                [
+                    dash.constants.AccountType.PILOT,
+                    dash.constants.AccountType.ACTIVATED,
+                    dash.constants.AccountType.MANAGED,
+                ]
+            )
+            .values_list("pk", flat=True)
+        )
+        .filter_running()
+        .filter_running(yesterday)
+    )
+
+    ad_group_stats = analytics.helpers.get_stats_multiple(yesterday, ad_group=running_ad_groups)
+    missing = []
+
+    for ad_group in running_ad_groups:
+        media = ad_group_stats.get("media")
+        data = ad_group_stats.get("data")
+        if _extract_unbillable_data_segments(ad_group.settings.bluekai_targeting) and media and not data:
+            missing.append(ad_group.id)
+
+    return missing
