@@ -87,6 +87,9 @@ LOG_FILE = "/app/logs/eins-log.log"
 STATSD_INFLUX_HOST = os.environ.get("TELEGRAF_PORT_8135_UDP_ADDR", "127.0.0.1")
 STATSD_INFLUX_PORT = int(os.environ.get("TELEGRAF_PORT_8135_UDP_PORT", "8135"))
 
+# Intercom
+INTERCOM_ID_VERIFICATION_SECRET = Secret("").get()
+
 # Saucelabs
 SAUCELABS_USERNAME = ""
 SAUCELABS_ACCESS_KEY = Secret("").get().decode("utf-8")

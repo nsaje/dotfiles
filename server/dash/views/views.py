@@ -2,6 +2,8 @@
 import base64
 import datetime
 import decimal
+import hashlib
+import hmac
 import http.client
 import json
 import logging
@@ -153,6 +155,10 @@ class User(api_common.BaseApiView):
             return {}
 
         agency = helpers.get_user_agency(user)
+        intercom_user_hash = hmac.new(
+            settings.INTERCOM_ID_VERIFICATION_SECRET, user.email.encode("utf-8"), digestmod=hashlib.sha256
+        ).hexdigest()
+
         return {
             "id": str(user.pk),
             "email": user.email,
@@ -162,6 +168,7 @@ class User(api_common.BaseApiView):
             "timezone_offset": pytz.timezone(settings.DEFAULT_TIME_ZONE)
             .utcoffset(datetime.datetime.utcnow(), is_dst=True)
             .total_seconds(),
+            "intercom_user_hash": intercom_user_hash,
         }
 
 

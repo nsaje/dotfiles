@@ -63,6 +63,7 @@ class UserTest(TestCase):
                         "name": "",
                         "permissions": {},
                         "timezone_offset": -18000.0,
+                        "intercom_user_hash": "f155378ffe82ba35372073d7c396ac6bbbe718cd502b397e773b49fde5cde3c4",
                     }
                 },
                 "success": True,
@@ -87,6 +88,7 @@ class UserTest(TestCase):
                         "name": "",
                         "permissions": {},
                         "timezone_offset": -14400.0,
+                        "intercom_user_hash": "f155378ffe82ba35372073d7c396ac6bbbe718cd502b397e773b49fde5cde3c4",
                     }
                 },
                 "success": True,
@@ -112,6 +114,7 @@ class UserTest(TestCase):
                         "name": "",
                         "permissions": {},
                         "timezone_offset": -14400.0,
+                        "intercom_user_hash": "f155378ffe82ba35372073d7c396ac6bbbe718cd502b397e773b49fde5cde3c4",
                     }
                 },
                 "success": True,

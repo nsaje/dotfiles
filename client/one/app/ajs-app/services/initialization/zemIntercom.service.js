@@ -11,6 +11,7 @@ angular.module('one.services').factory('zemIntercomService', function($window) {
             app_id: INTERCOM_APP_ID,
             name: user.name,
             email: user.email,
+            user_hash: user.intercomUserHash,
         };
 
         companyObject = getCompanyObjectFromEmail(user.email);
