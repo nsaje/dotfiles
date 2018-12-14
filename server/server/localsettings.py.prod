@@ -37,7 +37,7 @@ DATABASES = {
         )
         .get()
         .decode("utf-8"),
-        "HOST": "eins.cmkkg7ghktp5.us-east-1.rds.amazonaws.com",
+        "HOST": "z1db",
         "PORT": 5432,
         "TEST": {"NAME": "test_one_%s_%s" % (socket.gethostname(), int(time.time() * 1E6))},
     },
@@ -50,7 +50,7 @@ DATABASES = {
         )
         .get()
         .decode("utf-8"),
-        "HOST": "eins-replica.cmkkg7ghktp5.us-east-1.rds.amazonaws.com",
+        "HOST": "z1db-replica",
         "PORT": 5432,
     },
     STATS_DB_NAME: {
