@@ -56,7 +56,8 @@ angular.module('one.widgets').component('zemUploadContentAdPicker', {
             return '';
         };
 
-        $ctrl.toggleEditForm = function(candidate) {
+        $ctrl.toggleEditForm = function(candidate, event) {
+            event.stopPropagation();
             if (
                 $ctrl.editFormApi.selectedId &&
                 $ctrl.editFormApi.selectedId === candidate.id
