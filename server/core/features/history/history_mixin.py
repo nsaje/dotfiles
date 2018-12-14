@@ -70,11 +70,11 @@ class HistoryMixin(object):
         parts = []
         if self.post_init_newly_created:
             parts.append(created_text)
-
-        if created_text_id:
-            parts.append(created_text_id)
         text = self.get_history_changes_text(changes)
-        if text:
-            parts.append(text)
+        if self.post_init_newly_created or text:
+            if created_text_id:
+                parts.append(created_text_id)
+            if text:
+                parts.append(text)
         changes_text = " ".join(parts)
         return changes, changes_text
