@@ -411,7 +411,7 @@ def get_weekly_active_users(filtered_agencies, filtered_account_types):
 
     # users = _filter_user_by_account_type(users, filtered_account_types)
     # return users
-    return 0
+    return []
 
 
 def count_weekly_selfmanaged_actions(filtered_agencies, filtered_account_types):
