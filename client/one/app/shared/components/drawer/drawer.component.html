@@ -1,0 +1,10 @@
+<div class="zem-drawer__backdrop" (click)="closeRequest.emit()"></div>
+
+<div class="zem-drawer__panel">
+    <button
+        class="zem-drawer__close-button"
+        title="Close drawer"
+        (click)="closeRequest.emit()"
+    ></button>
+    <ng-content></ng-content>
+</div>

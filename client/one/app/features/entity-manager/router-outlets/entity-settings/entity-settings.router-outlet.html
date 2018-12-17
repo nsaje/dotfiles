@@ -1,0 +1,14 @@
+<zem-account-settings-drawer
+    *ngIf="entityType === EntityType.ACCOUNT"
+    [entityId]="entityId"
+></zem-account-settings-drawer>
+
+<zem-campaign-settings-drawer
+    *ngIf="entityType === EntityType.CAMPAIGN"
+    [entityId]="entityId"
+></zem-campaign-settings-drawer>
+
+<zem-ad-group-settings-drawer
+    *ngIf="entityType === EntityType.AD_GROUP"
+    [entityId]="entityId"
+></zem-ad-group-settings-drawer>

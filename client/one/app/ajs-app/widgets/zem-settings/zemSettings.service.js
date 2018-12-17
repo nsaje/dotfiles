@@ -5,6 +5,7 @@ angular
         $location,
         $state,
         $timeout,
+        zemPermissions,
         zemPubSubService,
         zemNavigationNewService
     ) {
@@ -28,6 +29,14 @@ angular
         this.onClose = onClose;
 
         function init() {
+            if (
+                zemPermissions.hasPermission(
+                    'zemauth.can_use_new_entity_settings_drawers'
+                )
+            ) {
+                return;
+            }
+
             handleStateChange();
             handleLocationChange();
 

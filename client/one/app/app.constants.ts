@@ -28,6 +28,13 @@ export const CAMPAIGN_TYPE = {
     DISPLAY: 5,
 };
 
+export enum EntityType {
+    CONTENT_AD = 'contentAd',
+    AD_GROUP = 'adGroup',
+    CAMPAIGN = 'campaign',
+    ACCOUNT = 'account',
+}
+
 export enum Day {
     Monday = 'monday',
     Tuesday = 'tuesday',
@@ -1050,12 +1057,7 @@ export const APP_CONSTANTS = {
         SINGLE: 'single',
         BULK: 'bulk',
     },
-    entityType: {
-        CONTENT_AD: 'contentAd',
-        AD_GROUP: 'adGroup',
-        CAMPAIGN: 'campaign',
-        ACCOUNT: 'account',
-    },
+    entityType: EntityType,
     levelStateParam: {
         ACCOUNTS: 'accounts',
         ACCOUNT: 'account',

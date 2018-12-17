@@ -1,3 +1,6 @@
+var ENTITY_MANAGER_CONFIG = require('../../../../../features/entity-manager/entity-manager.config')
+    .ENTITY_MANAGER_CONFIG;
+
 angular.module('one.widgets').component('zemInfoboxHeader', {
     bindings: {
         entity: '<',
@@ -5,6 +8,7 @@ angular.module('one.widgets').component('zemInfoboxHeader', {
     template: require('./zemInfoboxHeader.component.html'),
     controller: function(
         $timeout,
+        $location,
         zemSettingsService,
         zemEntityService,
         zemNavigationService,
@@ -14,7 +18,7 @@ angular.module('one.widgets').component('zemInfoboxHeader', {
         // eslint-disable-line max-len
         var $ctrl = this;
 
-        $ctrl.openSettings = zemSettingsService.open;
+        $ctrl.openSettings = openSettings;
         $ctrl.toggleEntityState = toggleEntityState;
 
         $ctrl.$onChanges = function(changes) {
@@ -22,6 +26,20 @@ angular.module('one.widgets').component('zemInfoboxHeader', {
                 updateView(changes.entity.currentValue);
             }
         };
+
+        function openSettings() {
+            if (
+                zemPermissions.hasPermission(
+                    'zemauth.can_use_new_entity_settings_drawers'
+                )
+            ) {
+                $location
+                    .search(ENTITY_MANAGER_CONFIG.settingsQueryParam, true)
+                    .replace();
+            } else {
+                zemSettingsService.open();
+            }
+        }
 
         function updateView(entity) {
             $ctrl.isEntityAvailable = false;

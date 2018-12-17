@@ -1,0 +1,72 @@
+@import 'variables';
+
+.zem-drawer__panel {
+    display: block;
+    position: fixed;
+    z-index: @z-index--drawer;
+    top: 0;
+    bottom: 0;
+    left: 100%;
+    width: calc(100% - 35px);
+    transform: translateX(0);
+    background: @light-gray;
+    transition: transform @default-animation;
+    will-change: transform;
+
+    @media only screen and (min-width: 835px) {
+        max-width: 50%;
+        min-width: 800px;
+    }
+}
+
+.zem-drawer--open .zem-drawer__panel {
+    transform: translateX(-100%);
+    box-shadow: -5px 0px 30px 0px fade(black, 20%);
+}
+
+.zem-drawer__close-button {
+    position: absolute;
+    top: 5px;
+    left: -30px;
+    width: 30px;
+    height: 50px;
+    visibility: hidden;
+    opacity: 0;
+    border-top-left-radius: @border-radius;
+    border-bottom-left-radius: @border-radius;
+    background: rgba(@light-gray, 0.6) url('images/arrow-white.svg') no-repeat 10px center;
+    background-size: 12px;
+    border: 0;
+    outline: 0;
+    transition: background-color @default-animation;
+
+    &:hover {
+        background-color: @light-gray;
+        background-image: url('images/arrow-gray.svg');
+    }
+}
+
+.zem-drawer--open .zem-drawer__close-button {
+    opacity: 1;
+    visibility: visible;
+}
+
+.zem-drawer__backdrop {
+    position: fixed;
+    z-index: @z-index--drawer - 1;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    visibility: hidden;
+    opacity: 0;
+    background: black;
+    background-clip: content-box;
+    transition: opacity @default-animation, visibility @default-animation;
+    will-change: opacity;
+}
+
+.zem-drawer--open .zem-drawer__backdrop {
+    visibility: visible;
+    opacity: 0.5;
+}

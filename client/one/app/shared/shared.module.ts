@@ -10,6 +10,7 @@ import {DropdownDirective} from './components/dropdown/dropdown.directive';
 import {DropdownToggleDirective} from './components/dropdown/dropdown-toggle.directive';
 import {HelpPopoverComponent} from './components/help-popover/help-popover.component';
 import {DaypartingInputComponent} from './components/dayparting-input/dayparting-input.component';
+import {DrawerComponent} from './components/drawer/drawer.component';
 
 const EXPORTED_DECLARATIONS = [
     BigNumberPipe,
@@ -17,6 +18,7 @@ const EXPORTED_DECLARATIONS = [
     CategorizedTagsListComponent,
     DropdownDirective,
     DropdownToggleDirective,
+    DrawerComponent,
     DaypartingInputComponent,
 
     // Upgraded AngularJS components/ directives
