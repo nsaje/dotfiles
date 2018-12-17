@@ -208,19 +208,19 @@ class DemandReportTestCase(test.TestCase):
             campaign=self.campaign_2, type=constants.CampaignGoalKPI.CPA, primary=True
         )
 
-        start_date = datetime.date.today() - datetime.timedelta(days=3)
-        end_date = datetime.date.today() + datetime.timedelta(days=5)
+        self.start_date = datetime.date.today() - datetime.timedelta(days=3)
+        self.end_date = datetime.date.today() + datetime.timedelta(days=5)
 
         self.credit = magic_mixer.blend(
             core.features.bcm.CreditLineItem,
             account_id=self.account_1.id,
             status=constants.CreditLineItemStatus.SIGNED,
-            start_date=start_date,
-            end_date=end_date,
+            start_date=self.start_date,
+            end_date=self.end_date,
             amount=100000,
         )
         self.budget_1_1 = core.features.bcm.BudgetLineItem.objects.create_unsafe(
-            campaign=self.campaign_1, credit=self.credit, amount=450, start_date=start_date, end_date=end_date
+            campaign=self.campaign_1, credit=self.credit, amount=450, start_date=self.start_date, end_date=self.end_date
         )
 
         self.ad_group_1_1 = magic_mixer.blend(core.models.AdGroup, campaign=self.campaign_1)
@@ -228,8 +228,8 @@ class DemandReportTestCase(test.TestCase):
             None,
             archived=False,
             state=constants.AdGroupSettingsState.ACTIVE,
-            start_date=start_date,
-            end_date=end_date,
+            start_date=self.start_date,
+            end_date=self.end_date,
             daily_budget=Decimal("1000.0"),
             b1_sources_group_daily_budget=Decimal("1000.0"),
             autopilot_state=constants.AdGroupSettingsAutopilotState.ACTIVE_CPC,
@@ -249,8 +249,8 @@ class DemandReportTestCase(test.TestCase):
             None,
             archived=False,
             state=constants.AdGroupSettingsState.ACTIVE,
-            start_date=start_date,
-            end_date=end_date,
+            start_date=self.start_date,
+            end_date=self.end_date,
             daily_budget=Decimal("5000.0"),
             b1_sources_group_daily_budget=Decimal("5000.0"),
             autopilot_state=constants.AdGroupSettingsAutopilotState.INACTIVE,
@@ -278,7 +278,11 @@ class DemandReportTestCase(test.TestCase):
         )
 
         self.budget_2_1 = core.features.bcm.BudgetLineItem.objects.create_unsafe(
-            campaign=self.campaign_2, credit=self.credit, amount=1000, start_date=start_date, end_date=end_date
+            campaign=self.campaign_2,
+            credit=self.credit,
+            amount=1000,
+            start_date=self.start_date,
+            end_date=self.end_date,
         )
 
         self.ad_group_2_1 = magic_mixer.blend(core.models.AdGroup, campaign=self.campaign_2)
@@ -286,8 +290,8 @@ class DemandReportTestCase(test.TestCase):
             None,
             archived=False,
             state=constants.AdGroupSettingsState.ACTIVE,
-            start_date=start_date,
-            end_date=end_date,
+            start_date=self.start_date,
+            end_date=self.end_date,
             daily_budget=Decimal("100.0"),
             autopilot_daily_budget=Decimal("100.0"),
         )
@@ -305,8 +309,8 @@ class DemandReportTestCase(test.TestCase):
             None,
             archived=False,
             state=constants.AdGroupSettingsState.ACTIVE,
-            start_date=start_date,
-            end_date=end_date,
+            start_date=self.start_date,
+            end_date=self.end_date,
             daily_budget=Decimal("50.0"),
             autopilot_daily_budget=Decimal("50.0"),
         )
@@ -337,20 +341,12 @@ class DemandReportTestCase(test.TestCase):
     @patch("redshiftapi.db.get_stats_cursor")
     def test_create_report(self, mock_db, mock_upload, mock_query, mock_spend):
         spend_rows = [
-            [self.ad_group_1_1.id, 318199, 75, 120171358829, 2020300000, 21563232808, 0],
-            [self.ad_group_1_2.id, 405265, 407, 106650000000, None, 8647297181, 37051139260],
-            [self.ad_group_2_1.id, 308172, 75, 120193358829, 2010500000, 21582132808, 0],
+            [self.ad_group_1_1.id, 318199, 75, 143754891637],
+            [self.ad_group_1_2.id, 405265, 407, 152348436441],
+            [self.ad_group_2_1.id, 308172, 75, 143785991637],
             # no spend for ad_group_2_2
         ]
-        columns = [
-            "ad_group_id",
-            "impressions",
-            "clicks",
-            "effective_cost_nano",
-            "effective_data_cost_nano",
-            "license_fee_nano",
-            "margin_nano",
-        ]
+        columns = ["ad_group_id", "impressions", "clicks", "spend_nano"]
 
         mock_spend.return_value = [dict(zip(columns, row)) for row in spend_rows]
 
@@ -377,8 +373,8 @@ class DemandReportTestCase(test.TestCase):
             blacklist_publisher_groups="TRUE",
             impressions="318199",
             clicks="75",
-            spend="143.75489163700001",
-            calculated_daily_budget="168.7548916370000142705976032",
+            spend="143.754891637",
+            calculated_daily_budget="168.7548916369999858488881728",
             calculated_cpc="",
             target_regions=["US"],
             world_region="North America",
@@ -421,6 +417,130 @@ class DemandReportTestCase(test.TestCase):
             clicks="0",
             spend="0",
             calculated_daily_budget="50.0000",
+            calculated_cpc="",
+            target_regions=["US"],
+            world_region="North America",
+            geo_targeting_type=["country"],
+        )
+
+    @patch("analytics.demand_report._get_ad_group_spend")
+    @patch("utils.bigquery_helper.query")
+    @patch("utils.bigquery_helper.upload_csv_file")
+    @patch("redshiftapi.db.get_stats_cursor")
+    def test_create_report_missing_ad_group_ids(self, mock_db, mock_upload, mock_query, mock_spend):
+
+        with patch("automation.autopilot.recalculate_budgets_ad_group"):
+            self.ad_group_2_3 = magic_mixer.blend(core.models.AdGroup, campaign=self.campaign_2)
+            self.ad_group_2_3.settings.update(
+                None,
+                archived=True,
+                state=constants.AdGroupSettingsState.INACTIVE,
+                start_date=self.start_date,
+                end_date=self.end_date,
+                daily_budget=Decimal("10.0"),
+                autopilot_daily_budget=Decimal("10.0"),
+            )
+
+            self.ad_group_source_2_3_1 = magic_mixer.blend(core.models.AdGroupSource, ad_group=self.ad_group_2_3)
+            self.ad_group_source_2_3_1.settings.update_unsafe(
+                None,
+                state=constants.AdGroupSourceSettingsState.ACTIVE,
+                cpc_cc=Decimal("1.0"),
+                daily_budget_cc=Decimal("10.0"),
+            )
+
+        spend_rows = [
+            [self.ad_group_1_1.id, 318199, 75, 143754891637],
+            [self.ad_group_1_2.id, 405265, 407, 152348436441],
+            [self.ad_group_2_1.id, 308172, 75, 143785991637],
+            # no spend for ad_group_2_2
+            [self.ad_group_2_3.id, 3, 1, 0],
+        ]
+        columns = ["ad_group_id", "impressions", "clicks", "spend_nano"]
+
+        mock_spend.return_value = [dict(zip(columns, row)) for row in spend_rows]
+
+        with self.assertNumQueries(6):
+            demand_report.create_report()
+
+        calls = mock_upload.call_args_list
+        self.assertEqual(len(calls), 1)
+        args, kwargs = calls[0]
+        self.assertEqual(args[1], demand_report.DATASET_NAME)
+        self.assertEqual(args[2], demand_report.TABLE_NAME)
+        self.assertEqual(kwargs["timeout"], demand_report.BIGQUERY_TIMEOUT)
+        self.assertEqual(kwargs["skip_leading_rows"], 1)
+
+        csv_reader = csv.DictReader(args[0])
+
+        rows = sorted([row for row in csv_reader], key=lambda x: int(x["adgroup_id"]))
+
+        self.assertEqual(len(rows), 5)
+
+        self._assert_row_data(
+            self.ad_group_1_1,
+            rows[0],
+            blacklist_publisher_groups="TRUE",
+            impressions="318199",
+            clicks="75",
+            spend="143.754891637",
+            calculated_daily_budget="168.7548916369999858488881728",
+            calculated_cpc="",
+            target_regions=["US"],
+            world_region="North America",
+            geo_targeting_type=["country"],
+        )
+
+        self._assert_row_data(
+            self.ad_group_1_2,
+            rows[1],
+            blacklist_publisher_groups="TRUE",
+            impressions="405265",
+            clicks="407",
+            spend="152.348436441",
+            calculated_daily_budget="277.3484364409999898271053098",
+            calculated_cpc="0.4500",
+            target_regions=["US"],
+            world_region="North America",
+            geo_targeting_type=["country"],
+        )
+
+        self._assert_row_data(
+            self.ad_group_2_1,
+            rows[2],
+            blacklist_publisher_groups="TRUE",
+            impressions="308172",
+            clicks="75",
+            spend="143.785991637",
+            calculated_daily_budget="100.0000",
+            calculated_cpc="",
+            target_regions=["US"],
+            world_region="North America",
+            geo_targeting_type=["country"],
+        )
+
+        self._assert_row_data(
+            self.ad_group_2_2,
+            rows[3],
+            blacklist_publisher_groups="TRUE",
+            impressions="0",
+            clicks="0",
+            spend="0",
+            calculated_daily_budget="50.0000",
+            calculated_cpc="",
+            target_regions=["US"],
+            world_region="North America",
+            geo_targeting_type=["country"],
+        )
+
+        self._assert_row_data(
+            self.ad_group_2_3,
+            rows[4],
+            blacklist_publisher_groups="TRUE",
+            impressions="3",
+            clicks="1",
+            spend="0.0",
+            calculated_daily_budget="10.0000",
             calculated_cpc="",
             target_regions=["US"],
             world_region="North America",

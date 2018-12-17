@@ -6,10 +6,8 @@ from decimal import Decimal
 
 import unicodecsv as csv
 from django.db.models import F
-from django.db.models import Q
 
 from analytics import demand_report_definitions
-from automation.campaignstop import constants as campaignstop_constants
 from core import models
 from core.features import bcm
 from dash import constants
@@ -32,7 +30,7 @@ def create_report():
     yesterday = datetime.date.today() - datetime.timedelta(days=1)
 
     ad_group_spend_dict = {e["ad_group_id"]: e for e in _get_ad_group_spend()}
-    ad_group_dict = _get_ad_group_data_dict()
+    ad_group_dict = _get_ad_group_data_dict(ad_group_spend_dict.keys())
     campaign_data = _get_campaign_data(ad_group_dict.keys())
     budget_data_dict = _get_budget_data_dict(ad_group_dict.keys())
     user_email_dict = _get_user_email_dict(campaign_data)
@@ -117,8 +115,13 @@ def _csv_rows_generator(campaign_data, ad_group_dict, budget_data_dict, ad_group
             yield row
 
 
-def _get_ad_group_data_dict():
+def _get_ad_group_data_dict(spend_ad_group_ids):
     ad_group_data = _get_ad_group_data()
+
+    missing_ad_group_ids = set(spend_ad_group_ids) - set(row["adgroup_id"] for row in ad_group_data)
+    if missing_ad_group_ids:
+        ad_group_data.extend(_get_ad_group_data(ad_group_ids=missing_ad_group_ids))
+
     ad_group_dict = {}
     for row in ad_group_data:
         campaign_dict = ad_group_dict.setdefault(row["campaign_id"], {})
@@ -145,12 +148,7 @@ def _aggregate_stats(ad_group_spend_dict, ad_group_id):
         ad_group_spend = ad_group_spend_dict[ad_group_id]
         impressions = ad_group_spend["impressions"]
         clicks = ad_group_spend["clicks"]
-
-        costs = [
-            ad_group_spend[k] or "0"
-            for k in ["effective_cost_nano", "effective_data_cost_nano", "license_fee_nano", "margin_nano"]
-        ]
-        spend = sum(map(lambda x: float(x) / 1000000000, costs))
+        spend = float(ad_group_spend["spend_nano"]) / 1000000000
 
     return impressions, clicks, spend
 
@@ -459,7 +457,7 @@ def _get_user_email_dict(campaign_data):
     return rows
 
 
-def _get_ad_group_data(date=None):
+def _get_ad_group_data(ad_group_ids=None, date=None):
     if date is None:
         date = datetime.date.today() - datetime.timedelta(days=1)
 
@@ -502,24 +500,16 @@ def _get_ad_group_data(date=None):
         "adgroupsourcesettings_daily_budget_cc": F("settings__daily_budget_cc"),
     }
 
+    if ad_group_ids is None:
+        qs = models.AdGroupSource.objects.all().filter_running(date=date)
+    else:
+        qs = models.AdGroupSource.objects.filter(
+            ad_group__id__in=ad_group_ids, settings__state=constants.AdGroupSourceSettingsState.ACTIVE
+        )
+
     logger.info("Querying AdGroupSource data.")
     rows = list(
-        models.AdGroupSource.objects.filter(
-            ad_group__settings__archived=False,
-            ad_group__settings__state=constants.AdGroupSettingsState.ACTIVE,
-            settings__state=constants.AdGroupSourceSettingsState.ACTIVE,
-            ad_group__campaign__settings__archived=False,
-            ad_group__settings__start_date__lte=date,
-        )
-        .filter(Q(ad_group__settings__end_date__gte=date) | Q(ad_group__settings__end_date__isnull=True))
-        .filter(
-            Q(
-                ad_group__campaign__real_time_campaign_stop=True,
-                ad_group__campaign__campaignstopstate__state=campaignstop_constants.CampaignStopState.ACTIVE,
-            )
-            | Q(ad_group__campaign__real_time_campaign_stop=False)
-        )
-        .select_related("ad_group", "ad_group__settings", "settings")
+        qs.select_related("ad_group", "ad_group__settings", "settings")
         .annotate(**field_mapping)
         .values(*field_mapping.keys())
     )
@@ -594,17 +584,15 @@ def _get_ad_group_spend():
 
     sql = """
 SELECT
-  ad_group_id,
-  sum(impressions) AS impressions,
-  sum(clicks) AS clicks,
-  sum(effective_cost_nano) AS effective_cost_nano,
-  sum(effective_data_cost_nano) AS effective_data_cost_nano,
-  sum(license_fee_nano) AS license_fee_nano,
-  sum(margin_nano) AS margin_nano
+    ad_group_id,
+    SUM(impressions) AS impressions,
+    SUM(clicks) AS clicks,
+    SUM(COALESCE(effective_cost_nano, 0) + COALESCE(effective_data_cost_nano, 0) + COALESCE(license_fee_nano, 0) + COALESCE(margin_nano, 0)) AS spend_nano
 FROM mv_adgroup
 WHERE
-  date = date(CURRENT_DATE - interval '1 day')
+    date = DATE(CURRENT_DATE - interval '1 day')
 GROUP BY ad_group_id
+HAVING SUM(impressions) > 0
     """
 
     with db.get_stats_cursor() as cursor:
