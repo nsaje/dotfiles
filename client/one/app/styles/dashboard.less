@@ -23,13 +23,14 @@
 
 .zem-container {
     min-height: 100vh;
-    padding: @default-spacing*1.5+@header-height @default-spacing 72px @default-spacing;
+    padding: @default-spacing*1.5+ @header-height @default-spacing 72px
+        @default-spacing;
     position: relative;
     transition: padding-top @default-animation;
 }
 
 .no-tabset.zem-container {
-    padding-top: @default-spacing*1.5+@header-height;
+    padding-top: @default-spacing*1.5+ @header-height;
 }
 
 .content-container {
@@ -122,7 +123,7 @@
 
 @media only screen and (min-width: ((@desktop-breakpoint)+1)) {
     .fixed-header .zem-container {
-        padding-top: @default-spacing*1.5+@header-height;
+        padding-top: @default-spacing*1.5+ @header-height;
     }
 }
 

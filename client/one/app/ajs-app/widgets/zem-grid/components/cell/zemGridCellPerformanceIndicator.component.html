@@ -1,10 +1,15 @@
 <span class="zem-grid-cell-performance-indicator" ng-show="ctrl.isFieldVisible">
-    <img class="zem-icon {{ctrl.overall.class}}" ng-src="{{ctrl.config.staticUrl}}/one/images/{{ctrl.overall.file}}" />
-    <span ng-show="ctrl.statusList.length"
-          class="performance-popover-trigger"
-          zem-lazy-popover-template="'zemGridPerformanceIndicatorPopover.html'"
-          zem-lazy-popover-placement="top"
-          zem-lazy-popover-stay-open-on-hover="true"
-          zem-lazy-popover-append-to-body="true">
+    <img
+        class="zem-icon {{ ctrl.overall.class }}"
+        ng-src="{{ ctrl.config.staticUrl }}/one/images/{{ ctrl.overall.file }}"
+    />
+    <span
+        ng-show="ctrl.statusList.length"
+        class="performance-popover-trigger"
+        zem-lazy-popover-template="'zemGridPerformanceIndicatorPopover.html'"
+        zem-lazy-popover-placement="top"
+        zem-lazy-popover-stay-open-on-hover="true"
+        zem-lazy-popover-append-to-body="true"
+    >
     </span>
 </span>

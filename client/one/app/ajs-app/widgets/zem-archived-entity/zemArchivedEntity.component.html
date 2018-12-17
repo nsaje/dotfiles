@@ -1,9 +1,15 @@
-<h1 class="content-container__title">{{$ctrl.getEntityTypeName()}} archived</h1>
+<h1 class="content-container__title">
+    {{ $ctrl.getEntityTypeName() }} archived
+</h1>
 
 <div class="custom-panel">
-    <div class="loader loader--full-width" ng-show="$ctrl.requestInProgress"></div>
+    <div
+        class="loader loader--full-width"
+        ng-show="$ctrl.requestInProgress"
+    ></div>
     <div class="message">
-        {{$ctrl.getEntityTypeName()}} <strong>{{entity.name}}</strong> is archived.
+        {{ $ctrl.getEntityTypeName() }} <strong>{{ entity.name }}</strong> is
+        archived.
     </div>
     <div class="m-t">
         <button class="button" ng-click="$ctrl.restore()">Restore</button>

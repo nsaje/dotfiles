@@ -2,23 +2,35 @@
     <div class="zem-dayparting-input__dayparting-header">
         <span
             class="zem-dayparting-input__hour-label"
-            *ngFor="let _ of dayparting[0].hours; index as hour; first as isFirst; last as isLast"
+            *ngFor="
+                let _ of dayparting[0].hours;
+                index as hour;
+                first as isFirst;
+                last as isLast
+            "
         >
-            {{hour}}<!--
-            --><span *ngIf="isFirst || isLast" class="zem-dayparting-input__hour-label-postfix">00</span>
+            {{ hour
+            }}<!--
+            --><span
+                *ngIf="isFirst || isLast"
+                class="zem-dayparting-input__hour-label-postfix"
+                >00</span
+            >
         </span>
     </div>
     <div
         class="zem-dayparting-input__day"
         *ngFor="let day of dayparting; trackBy: trackByIndex"
     >
-        <span class="zem-dayparting-input__day-label">
-            {{day.name}}
-        </span>
+        <span class="zem-dayparting-input__day-label"> {{ day.name }} </span>
         <span
             class="zem-dayparting-input__hour"
             [ngClass]="{'zem-dayparting-input__hour--active': isActive}"
-            *ngFor="let isActive of day.hours; index as hour; trackBy: trackByIndex"
+            *ngFor="
+                let isActive of day.hours;
+                index as hour;
+                trackBy: trackByIndex
+            "
             (mousedown)="startSelection(day, hour)"
             (mouseover)="toggleMultipleHourStates(day, hour)"
             (touchstart)="toggleHourState(day, hour)"
@@ -27,10 +39,10 @@
 </div>
 
 <div class="zem-dayparting-input__legend">
-    <span class="zem-dayparting-input__legend-item">
-        Inactive hour
-    </span>
-    <span class="zem-dayparting-input__legend-item zem-dayparting-input__legend-item--active">
+    <span class="zem-dayparting-input__legend-item"> Inactive hour </span>
+    <span
+        class="zem-dayparting-input__legend-item zem-dayparting-input__legend-item--active"
+    >
         Active hour
     </span>
 </div>

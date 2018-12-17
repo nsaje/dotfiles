@@ -1,39 +1,78 @@
 <div>
-    <div class="modal__body content-upload__content-ad-picker-container" ng-class="{'content-upload__content-ad-picker-container--editing': !!ctrl.editFormApi.selectedId}">
+    <div
+        class="modal__body content-upload__content-ad-picker-container"
+        ng-class="{'content-upload__content-ad-picker-container--editing': !!ctrl.editFormApi.selectedId}"
+    >
         <div class="clearfix"></div>
         <div class="content-upload__batch-name-container" ng-if="!ctrl.isEdit">
             <span class="content-upload__batch-name">Batch name:</span>
-            <span class="content-upload__batch-title" ng-show="!ctrl.batchNameEdit">{{ ctrl.formData.batchName }}</span>
-            <input class="input-text" type="text" ng-show="ctrl.batchNameEdit" ng-model="ctrl.formData.batchName"
-                   id="batch-name-input" ng-focus="ctrl.clearBatchNameErrors()" ng-class="{'form--error': ctrl.saveErrors.batchName}"/>
-            <a href class="button button--small button--with-icon edit-icon" ng-click="ctrl.toggleBatchNameEdit($event)"
-               ng-if="!ctrl.batchNameEdit">Edit batch name</a>
-            <a href class="button button--small button--with-icon check-icon" ng-click="ctrl.toggleBatchNameEdit($event)"
-               ng-if="ctrl.batchNameEdit">Save</a>
+            <span
+                class="content-upload__batch-title"
+                ng-show="!ctrl.batchNameEdit"
+                >{{ ctrl.formData.batchName }}</span
+            >
+            <input
+                class="input-text"
+                type="text"
+                ng-show="ctrl.batchNameEdit"
+                ng-model="ctrl.formData.batchName"
+                id="batch-name-input"
+                ng-focus="ctrl.clearBatchNameErrors()"
+                ng-class="{'form--error': ctrl.saveErrors.batchName}"
+            />
+            <a
+                href
+                class="button button--small button--with-icon edit-icon"
+                ng-click="ctrl.toggleBatchNameEdit($event)"
+                ng-if="!ctrl.batchNameEdit"
+                >Edit batch name</a
+            >
+            <a
+                href
+                class="button button--small button--with-icon check-icon"
+                ng-click="ctrl.toggleBatchNameEdit($event)"
+                ng-if="ctrl.batchNameEdit"
+                >Save</a
+            >
         </div>
         <div class="content-upload__batch-name-container" ng-if="ctrl.isEdit">
             <span class="content-upload__batch-title">You're editing:</span>
         </div>
-        <zem-upload-content-ad-picker class="zem-upload-content-ad-picker content-upload__content-ad-picker"
-                                      endpoint="ctrl.endpoint"
-                                      batch-id="ctrl.batchId"
-                                      batch-name="ctrl.batchName"
-                                      candidates="ctrl.candidates"
-                                      is-edit="ctrl.isEdit"
-                                      show-video-upload="ctrl.showVideoUpload"
-                                      show-display-upload="ctrl.showDisplayUpload"
-                                      ad-picker-api="ctrl.adPickerApi"
-                                      edit-form-api="ctrl.editFormApi">
+        <zem-upload-content-ad-picker
+            class="zem-upload-content-ad-picker content-upload__content-ad-picker"
+            endpoint="ctrl.endpoint"
+            batch-id="ctrl.batchId"
+            batch-name="ctrl.batchName"
+            candidates="ctrl.candidates"
+            is-edit="ctrl.isEdit"
+            show-video-upload="ctrl.showVideoUpload"
+            show-display-upload="ctrl.showDisplayUpload"
+            ad-picker-api="ctrl.adPickerApi"
+            edit-form-api="ctrl.editFormApi"
+        >
         </zem-upload-content-ad-picker>
         <div class="clear"></div>
     </div>
     <div class="modal__footer buttons-panel">
-        <button type="button" class="button button--highlight button--with-icon check-icon" ng-click="ctrl.save()" ng-disabled="ctrl.isSaveDisabled()">
+        <button
+            type="button"
+            class="button button--highlight button--with-icon check-icon"
+            ng-click="ctrl.save()"
+            ng-disabled="ctrl.isSaveDisabled()"
+        >
             <span ng-if="!ctrl.isEdit">Upload</span>
             <span ng-if="ctrl.isEdit">Save</span>
         </button>
-        <button type="button" class="button button--outline" ng-click="ctrl.cancel()">Cancel</button>
+        <button
+            type="button"
+            class="button button--outline"
+            ng-click="ctrl.cancel()"
+        >
+            Cancel
+        </button>
         <div class="loader" ng-if="ctrl.isLoading()"></div>
-        <div class="message message--error" ng-if="ctrl.getSaveErrorMsg()">{{ ctrl.getSaveErrorMsg() }}</div>
+        <div class="message message--error" ng-if="ctrl.getSaveErrorMsg()">
+            {{ ctrl.getSaveErrorMsg() }}
+        </div>
     </div>
 </div>

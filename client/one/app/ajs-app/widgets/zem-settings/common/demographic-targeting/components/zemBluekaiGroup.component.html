@@ -1,14 +1,29 @@
 <div>
     <h4 class="zem-demographic-targeting__group-header">
-        <span ng-if="$ctrl.getGroupType() == $ctrl.GROUP_TYPES.DEFAULT"><strong>Include</strong> people who match at least <strong>one</strong> of the following:</span>
-        <span ng-if="$ctrl.getGroupType() == $ctrl.GROUP_TYPES.EXCLUDE"><strong>Exclude</strong> people who match at least <strong>one</strong> of the following:</span>
-        <span ng-if="$ctrl.getGroupType() == $ctrl.GROUP_TYPES.NARROW">And <strong>must also</strong> match at least <strong>one</strong> of the following:</span>
-        <a class="alternative-link zem-tree-select-list__item-remove-action" ng-click="$ctrl.removeGroup()" href>Remove</a>
+        <span ng-if="$ctrl.getGroupType() == $ctrl.GROUP_TYPES.DEFAULT"
+            ><strong>Include</strong> people who match at least
+            <strong>one</strong> of the following:</span
+        >
+        <span ng-if="$ctrl.getGroupType() == $ctrl.GROUP_TYPES.EXCLUDE"
+            ><strong>Exclude</strong> people who match at least
+            <strong>one</strong> of the following:</span
+        >
+        <span ng-if="$ctrl.getGroupType() == $ctrl.GROUP_TYPES.NARROW"
+            >And <strong>must also</strong> match at least
+            <strong>one</strong> of the following:</span
+        >
+        <a
+            class="alternative-link zem-tree-select-list__item-remove-action"
+            ng-click="$ctrl.removeGroup()"
+            href
+            >Remove</a
+        >
     </h4>
-    <zem-tree-select class="zem-select"
-                     ng-if="$ctrl.bluekaiTaxonomy"
-                     root-node="$ctrl.bluekaiTaxonomy"
-                     initial-selection="$ctrl.initialCategories"
-                     on-update="$ctrl.onSelectionUpdate(nodes)"
+    <zem-tree-select
+        class="zem-select"
+        ng-if="$ctrl.bluekaiTaxonomy"
+        root-node="$ctrl.bluekaiTaxonomy"
+        initial-selection="$ctrl.initialCategories"
+        on-update="$ctrl.onSelectionUpdate(nodes)"
     ></zem-tree-select>
 </div>

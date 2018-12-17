@@ -1,47 +1,88 @@
-<div class="zem-categorized-select__container" [ngClass]="{'zem-categorized-select__container--search-enabled': selectedCategory}">
-    <div class="zem-categorized-select__search-container" *ngIf="selectedCategory">
-        <input class="input-text zem-categorized-select__search-input"
-               type="text"
-               placeholder="Search for {{selectedCategory.name}} ..."
-               #searchQueryInput
-               (keyup)="search$.next(searchQueryInput.value)">
+<div
+    class="zem-categorized-select__container"
+    [ngClass]="{
+        'zem-categorized-select__container--search-enabled': selectedCategory
+    }"
+>
+    <div
+        class="zem-categorized-select__search-container"
+        *ngIf="selectedCategory"
+    >
+        <input
+            class="input-text zem-categorized-select__search-input"
+            type="text"
+            placeholder="Search for {{ selectedCategory.name }} ..."
+            #searchQueryInput
+            (keyup)="search$.next(searchQueryInput.value)"
+        />
     </div>
 
-    <div class="zem-categorized-select__lists-container custom-scroller" *ngIf="!selectedCategory">
-        <ul class="zem-categorized-select__list zem-categorized-select__category-list">
-            <li class="zem-categorized-select__list-item"
+    <div
+        class="zem-categorized-select__lists-container custom-scroller"
+        *ngIf="!selectedCategory"
+    >
+        <ul
+            class="zem-categorized-select__list zem-categorized-select__category-list"
+        >
+            <li
+                class="zem-categorized-select__list-item"
                 *ngFor="let category of categorizedItems; let index = index"
-                [ngClass]="{'zem-categorized-select__list-item--highlighted': category === highlightedEntity}"
-                (click)="selectCategory(category.key)">
-                {{category.name}}
+                [ngClass]="{
+                    'zem-categorized-select__list-item--highlighted':
+                        category === highlightedEntity
+                }"
+                (click)="selectCategory(category.key)"
+            >
+                {{ category.name }}
             </li>
         </ul>
     </div>
 
-    <div class="zem-categorized-select__lists-container custom-scroller" *ngIf="selectedCategory">
-        <ul class="zem-categorized-select__list zem-categorized-select__items-list">
-            <li class="zem-categorized-select__list-item"
+    <div
+        class="zem-categorized-select__lists-container custom-scroller"
+        *ngIf="selectedCategory"
+    >
+        <ul
+            class="zem-categorized-select__list zem-categorized-select__items-list"
+        >
+            <li
+                class="zem-categorized-select__list-item"
                 *ngFor="let item of renderedItems"
-                [ngClass]="{'zem-categorized-select__list-item--highlighted': item === highlightedEntity}"
+                [ngClass]="{
+                    'zem-categorized-select__list-item--highlighted':
+                        item === highlightedEntity
+                }"
                 (click)="toggleItem(item)"
-                title="{{item.name}}">
-                <input type="checkbox"
-                       class="input-checkbox zem-categorized-select__list-item-checkbox"
-                       [checked]="isItemInList(item, selectedItems)">
-                <span class="checkbox-text zem-categorized-select__list-item-name">{{item.name}}</span>
-                <span class="zem-categorized-select__list-item-description">{{item.description}}</span>
+                title="{{ item.name }}"
+            >
+                <input
+                    type="checkbox"
+                    class="input-checkbox zem-categorized-select__list-item-checkbox"
+                    [checked]="isItemInList(item, selectedItems)"
+                />
+                <span
+                    class="checkbox-text zem-categorized-select__list-item-name"
+                    >{{ item.name }}</span
+                >
+                <span class="zem-categorized-select__list-item-description">{{
+                    item.description
+                }}</span>
             </li>
         </ul>
     </div>
 
     <div class="zem-categorized-select__actions-container">
-        <button class="button button--outline zem-categorized-select__action-button"
-                *ngIf="selectedCategory"
-                (click)="resetSelectedCategory()">
+        <button
+            class="button button--outline zem-categorized-select__action-button"
+            *ngIf="selectedCategory"
+            (click)="resetSelectedCategory()"
+        >
             Back
         </button>
-        <button class="button button--highlight button--with-icon check-icon zem-categorized-select__action-button zem-categorized-select__apply-button"
-                (click)="applySelection()">
+        <button
+            class="button button--highlight button--with-icon check-icon zem-categorized-select__action-button zem-categorized-select__apply-button"
+            (click)="applySelection()"
+        >
             Apply
         </button>
     </div>

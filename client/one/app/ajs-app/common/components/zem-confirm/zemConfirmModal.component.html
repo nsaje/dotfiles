@@ -5,6 +5,17 @@
     <div class="m-b">{{ $ctrl.resolve.params.text }}</div>
 </div>
 <div class="modal__footer buttons-panel">
-    <button class="button button--highlight" ng-click="$ctrl.modalInstance.close()">Yes</button>
-    <button type="button" class="button button--outline" ng-click="$ctrl.modalInstance.dismiss()">No</button>
+    <button
+        class="button button--highlight"
+        ng-click="$ctrl.modalInstance.close()"
+    >
+        Yes
+    </button>
+    <button
+        type="button"
+        class="button button--outline"
+        ng-click="$ctrl.modalInstance.dismiss()"
+    >
+        No
+    </button>
 </div>

@@ -1,19 +1,33 @@
-<hr>
+<hr />
 
 <button
     ng-disabled="$ctrl.disabled"
     class="button button--small button--with-icon add-icon button__add-more-columns"
     ng-click="$ctrl.showCollapsed = !$ctrl.showCollapsed"
     ng-hide="$ctrl.showCollapsed"
-    >Manage columns</button>
+>
+    Manage columns
+</button>
 
-<div class="collapsable zem-report-column-selector" ng-show="$ctrl.showCollapsed">
+<div
+    class="collapsable zem-report-column-selector"
+    ng-show="$ctrl.showCollapsed"
+>
     <zem-column-selector
         on-column-toggled="$ctrl.onColumnToggled({field: field})"
-        on-all-columns-toggled="$ctrl.onAllColumnsToggled({isChecked: isChecked})"
-        categories="$ctrl.categories">
+        on-all-columns-toggled="
+            $ctrl.onAllColumnsToggled({isChecked: isChecked})
+        "
+        categories="$ctrl.categories"
+    >
     </zem-column-selector>
     <div class="zem-report-column-selector__action-buttons">
-        <button class="button button--outline" ng-click="$ctrl.showCollapsed = !$ctrl.showCollapsed" ng-hide="!$ctrl.showCollapsed">Close</button>
+        <button
+            class="button button--outline"
+            ng-click="$ctrl.showCollapsed = !$ctrl.showCollapsed"
+            ng-hide="!$ctrl.showCollapsed"
+        >
+            Close
+        </button>
     </div>
 </div>

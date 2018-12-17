@@ -1,44 +1,88 @@
 <div class="zem-tree-select">
-    {{$ctrl.data.name}} {{$ctrl.data.id}} {{$ctrl.data.size}}
+    {{ $ctrl.data.name }} {{ $ctrl.data.id }} {{ $ctrl.data.size }}
     <ul class="list-with-bullets zem-tree-select-list">
-        <li class="zem-tree-select-list__item" ng-repeat="item in $ctrl.selectedItems track by $index">
-            <span class="zem-tree-select-list__item-name"> {{item.name}} </span>
-            <span class="zem-tree-select-list__item-details"> {{ $ctrl.getParentsInfo(item) }} </span>
-            <a class="button button--extra-small button--with-icon button--only-icon remove-icon zem-tree-select-list__item-remove-action"
-               ng-click="$ctrl.toggleSelection(item); $event.stopPropagation()" href>
+        <li
+            class="zem-tree-select-list__item"
+            ng-repeat="item in $ctrl.selectedItems track by $index"
+        >
+            <span class="zem-tree-select-list__item-name">
+                {{ item.name }}
+            </span>
+            <span class="zem-tree-select-list__item-details">
+                {{ $ctrl.getParentsInfo(item) }}
+            </span>
+            <a
+                class="button button--extra-small button--with-icon button--only-icon remove-icon zem-tree-select-list__item-remove-action"
+                ng-click="$ctrl.toggleSelection(item); $event.stopPropagation()"
+                href
+            >
             </a>
         </li>
-        <li class="zem-tree-select-list__item" ng-if="!$ctrl.selectedItems.length">
-            <span class="zem-tree-select-list__item-details"> List is currently empty. To add segments click in the field below. </span>
+        <li
+            class="zem-tree-select-list__item"
+            ng-if="!$ctrl.selectedItems.length"
+        >
+            <span class="zem-tree-select-list__item-details">
+                List is currently empty. To add segments click in the field
+                below.
+            </span>
         </li>
     </ul>
     <div class="search">
-        <input type="text" placeholder="Select targeting categories ..." class="input-text"
-               ng-model="$ctrl.searchQuery"
-               ng-change="$ctrl.onSearch($ctrl.searchQuery)"
+        <input
+            type="text"
+            placeholder="Select targeting categories ..."
+            class="input-text"
+            ng-model="$ctrl.searchQuery"
+            ng-change="$ctrl.onSearch($ctrl.searchQuery)"
         />
     </div>
-    <div class="zem-tree-select-dropdown" ng-class="{ 'zem-tree-select-dropdown--active': $ctrl.dropdownVisible }" tabindex="1" >
-        <ul class="zem-tree-select-dropdown__list scroll-container custom-scroller" vs-repeat vs-scroll-parent=".scroll-container" vs-size="{{$ctrl.ITEM_HEIGHT}}">
-            <li ng-repeat="item in $ctrl.visibleItems"
+    <div
+        class="zem-tree-select-dropdown"
+        ng-class="{ 'zem-tree-select-dropdown--active': $ctrl.dropdownVisible }"
+        tabindex="1"
+    >
+        <ul
+            class="zem-tree-select-dropdown__list scroll-container custom-scroller"
+            vs-repeat
+            vs-scroll-parent=".scroll-container"
+            vs-size="{{ $ctrl.ITEM_HEIGHT }}"
+        >
+            <li
+                ng-repeat="item in $ctrl.visibleItems"
                 class="zem-tree-select-dropdown-item"
                 ng-click="$ctrl.toggleItemState(item); $event.stopPropagation();"
                 ng-mouseover="$ctrl.highlightItem(item)"
                 ng-class="{
                     'zem-tree-select-dropdown-item--highlighted': item === $ctrl.highlightedItem,
                     'zem-tree-select-dropdown-item--selected': item.selected
-                }">
-                <div ng-style="{
+                }"
+            >
+                <div
+                    ng-style="{
                         'margin-left': (item.level * 10 + (item.isLeaf ? 30 : 0))+'px',
-                     }">
-                    <span class="collapse-indicator" ng-show='!item.isLeaf'
-                          ng-class="{'collapse-indicator--expanded': !item.isCollapsed}">
+                     }"
+                >
+                    <span
+                        class="collapse-indicator"
+                        ng-show="!item.isLeaf"
+                        ng-class="{'collapse-indicator--expanded': !item.isCollapsed}"
+                    >
                     </span>
-                    <span class="zem-tree-select-dropdown-item__name" ng-bind-html="item.name | highlight: $ctrl.searchQuery"></span>
-                    <label class="zem-tree-select-dropdown-item__checkbox"
-                           ng-click="$ctrl.toggleSelection(item); $event.stopPropagation();"
-                           ng-if="item.isSelectable">
-                        <input type="checkbox" class="input-checkbox" ng-model="item.selected"/>
+                    <span
+                        class="zem-tree-select-dropdown-item__name"
+                        ng-bind-html="item.name | highlight: $ctrl.searchQuery"
+                    ></span>
+                    <label
+                        class="zem-tree-select-dropdown-item__checkbox"
+                        ng-click="$ctrl.toggleSelection(item); $event.stopPropagation();"
+                        ng-if="item.isSelectable"
+                    >
+                        <input
+                            type="checkbox"
+                            class="input-checkbox"
+                            ng-model="item.selected"
+                        />
                         <span class="checkbox-text"></span>
                     </label>
                 </div>
@@ -47,18 +91,43 @@
 
         <!-- FIXME: Move Info to separate component (transclude) - it depends on demographic/bluekai input data -->
         <div class="zem-tree-select-dropdown__info custom-scroller">
-            <h2 class="zem-tree-select-dropdown-info__title">{{ $ctrl.highlightedItem.name }}</h2>
-            <div class="zem-tree-select-dropdown-info__id">{{ $ctrl.highlightedItem.value.id }}</div>
-            <div ng-show="$ctrl.highlightedItem.isSelectable" class="zem-tree-select-dropdown-info__data-row">
-                CPM price: <strong>${{ $ctrl.highlightedItem.value.price }}</strong>
+            <h2 class="zem-tree-select-dropdown-info__title">
+                {{ $ctrl.highlightedItem.name }}
+            </h2>
+            <div class="zem-tree-select-dropdown-info__id">
+                {{ $ctrl.highlightedItem.value.id }}
             </div>
-            <div ng-show="$ctrl.highlightedItem.isSelectable" class="zem-tree-select-dropdown-info__data-row m-b-s">
-                Reach: <strong>{{ $ctrl.highlightedItem.value.reach.value | number }}</strong>
+            <div
+                ng-show="$ctrl.highlightedItem.isSelectable"
+                class="zem-tree-select-dropdown-info__data-row"
+            >
+                CPM price:
+                <strong>${{ $ctrl.highlightedItem.value.price }}</strong>
+            </div>
+            <div
+                ng-show="$ctrl.highlightedItem.isSelectable"
+                class="zem-tree-select-dropdown-info__data-row m-b-s"
+            >
+                Reach:
+                <strong>{{
+                    $ctrl.highlightedItem.value.reach.value | number
+                }}</strong>
                 <div class="zem-reach-bar">
                     <div class="zem-reach-bar__progress--background"></div>
-                    <div class="zem-reach-bar__progress" ng-style="{width: (100 - $ctrl.highlightedItem.value.reach.relative) + '%'}"></div>
-                    <div class="zem-reach-bar__legend zem-reach-bar__legend--left">Specific</div>
-                    <div class="zem-reach-bar__legend zem-reach-bar__legend--right">Broad</div>
+                    <div
+                        class="zem-reach-bar__progress"
+                        ng-style="{width: (100 - $ctrl.highlightedItem.value.reach.relative) + '%'}"
+                    ></div>
+                    <div
+                        class="zem-reach-bar__legend zem-reach-bar__legend--left"
+                    >
+                        Specific
+                    </div>
+                    <div
+                        class="zem-reach-bar__legend zem-reach-bar__legend--right"
+                    >
+                        Broad
+                    </div>
                 </div>
             </div>
             <div class="zem-tree-select-dropdown-info__text">

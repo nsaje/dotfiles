@@ -1,26 +1,29 @@
-<zem-settings-container api="$ctrl.api" settings-title="'Account settings'" entity-type="$ctrl.constants.entityType.ACCOUNT">
+<zem-settings-container
+    api="$ctrl.api"
+    settings-title="'Account settings'"
+    entity-type="$ctrl.constants.entityType.ACCOUNT"
+>
     <settings>
         <zem-account-general-settings
-                class="zem-settings-component"
-                entity="$container.entity"
-                errors="$container.errors"
-                api="$container.childApi"
+            class="zem-settings-component"
+            entity="$container.entity"
+            errors="$container.errors"
+            api="$container.childApi"
         ></zem-account-general-settings>
         <zem-account-targeting-settings
-                class="zem-settings-component"
-                entity="$container.entity"
-                errors="$container.errors"
-                api="$container.childApi"
-                ng-if="$ctrl.hasPermission('zemauth.can_set_white_blacklist_publisher_groups') && $ctrl.hasPermission('zemauth.can_see_publisher_groups_ui')"
+            class="zem-settings-component"
+            entity="$container.entity"
+            errors="$container.errors"
+            api="$container.childApi"
+            ng-if="$ctrl.hasPermission('zemauth.can_set_white_blacklist_publisher_groups') && $ctrl.hasPermission('zemauth.can_see_publisher_groups_ui')"
         ></zem-account-targeting-settings>
         <zem-backend-hacks
-                class="zem-settings-component"
-                entity="$container.entity"
-                errors="$container.errors"
-                api="$container.childApi"
+            class="zem-settings-component"
+            entity="$container.entity"
+            errors="$container.errors"
+            api="$container.childApi"
         ></zem-backend-hacks>
     </settings>
 
-    <custom>
-    </custom>
+    <custom> </custom>
 </zem-settings-container>

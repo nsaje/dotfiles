@@ -1,199 +1,406 @@
 <div class="custom-panel zem-settings-component__container">
     <h2 class="custom-panel__title">General settings</h2>
     <div class="form">
-        <div class="form__group" ng-if="$ctrl.hasPermission('zemauth.can_modify_account_name')"
-             ng-class="{'form--error': !!$ctrl.errors.name}">
+        <div
+            class="form__group"
+            ng-if="$ctrl.hasPermission('zemauth.can_modify_account_name')"
+            ng-class="{'form--error': !!$ctrl.errors.name}"
+        >
             <label class="form__label" for="name-input">Name:</label>
-            <input class="input-text" id="name-input" type="text" ng-model="$ctrl.entity.settings.name">
-            <div class="message message--error" ng-repeat="error in $ctrl.errors.name"
-                 for="name-input">{{ error }}</div>
+            <input
+                class="input-text"
+                id="name-input"
+                type="text"
+                ng-model="$ctrl.entity.settings.name"
+            />
+            <div
+                class="message message--error"
+                ng-repeat="error in $ctrl.errors.name"
+                for="name-input"
+            >
+                {{ error }}
+            </div>
         </div>
 
-        <div class="form__group" ng-if="$ctrl.hasPermission('zemauth.can_modify_account_manager')"
-             ng-class="{'form--error': !!$ctrl.errors.defaultAccountManager}">
+        <div
+            class="form__group"
+            ng-if="$ctrl.hasPermission('zemauth.can_modify_account_manager')"
+            ng-class="{'form--error': !!$ctrl.errors.defaultAccountManager}"
+        >
             <label class="form__label" for="account-manager-select">
                 Account Manager:
-                <zem-help-popover content="Account manager responsible for the campaign and the communication with the client."
-                                  placement="top"></zem-help-popover>
+                <zem-help-popover
+                    content="Account manager responsible for the campaign and the communication with the client."
+                    placement="top"
+                ></zem-help-popover>
             </label>
-            <ui-select theme="select2" id="account-manager-select"
-                       class="button button--plain button--full-width button--dropdown-toggle-icon"
-                       ng-model="$ctrl.entity.settings.defaultAccountManager">
-                <ui-select-match>{{$select.selected.name}}</ui-select-match>
-                <ui-select-choices repeat="manager.id as manager in $ctrl.entity.accountManagers | orderBy:'name' | filter:$select.search" class="ui-select-choices">
-                    <div ng-bind-html="manager.name | highlight: $select.search"></div>
+            <ui-select
+                theme="select2"
+                id="account-manager-select"
+                class="button button--plain button--full-width button--dropdown-toggle-icon"
+                ng-model="$ctrl.entity.settings.defaultAccountManager"
+            >
+                <ui-select-match>{{ $select.selected.name }}</ui-select-match>
+                <ui-select-choices
+                    repeat="manager.id as manager in $ctrl.entity.accountManagers | orderBy:'name' | filter:$select.search"
+                    class="ui-select-choices"
+                >
+                    <div
+                        ng-bind-html="manager.name | highlight: $select.search"
+                    ></div>
                 </ui-select-choices>
             </ui-select>
-            <div class="message message--error" ng-repeat="error in $ctrl.errors.defaultAccountManager"
-                 for="account-manager-select">{{ error }}</div>
+            <div
+                class="message message--error"
+                ng-repeat="error in $ctrl.errors.defaultAccountManager"
+                for="account-manager-select"
+            >
+                {{ error }}
+            </div>
         </div>
 
-        <div class="form__group" ng-if="$ctrl.hasPermission('zemauth.can_set_account_sales_representative')"
-             ng-class="{'form--error': !!$ctrl.errors.defaultSalesRepresentative}">
-            <label class="form__label" is-internal="zemauth.can_set_account_sales_representative"
-                   for="sales-representative-select">
+        <div
+            class="form__group"
+            ng-if="$ctrl.hasPermission('zemauth.can_set_account_sales_representative')"
+            ng-class="{'form--error': !!$ctrl.errors.defaultSalesRepresentative}"
+        >
+            <label
+                class="form__label"
+                is-internal="zemauth.can_set_account_sales_representative"
+                for="sales-representative-select"
+            >
                 Sales Representative:
-                <zem-help-popover content="Sales representative responsible for the campaign and the communication with the client."
-                                  placement="top"></zem-help-popover>
+                <zem-help-popover
+                    content="Sales representative responsible for the campaign and the communication with the client."
+                    placement="top"
+                ></zem-help-popover>
             </label>
-            <ui-select theme="select2" id="sales-representative-select"
-                       class="button button--plain button--full-width button--dropdown-toggle-icon"
-                       ng-model="$ctrl.entity.settings.defaultSalesRepresentative">
-                <ui-select-match>{{$select.selected.name}}</ui-select-match>
-                <ui-select-choices repeat="rep.id as rep in $ctrl.entity.salesReps | orderBy:getName | filter:$select.search" class="ui-select-choices">
-                    <div ng-bind-html="rep.name | highlight: $select.search"></div>
+            <ui-select
+                theme="select2"
+                id="sales-representative-select"
+                class="button button--plain button--full-width button--dropdown-toggle-icon"
+                ng-model="$ctrl.entity.settings.defaultSalesRepresentative"
+            >
+                <ui-select-match>{{ $select.selected.name }}</ui-select-match>
+                <ui-select-choices
+                    repeat="rep.id as rep in $ctrl.entity.salesReps | orderBy:getName | filter:$select.search"
+                    class="ui-select-choices"
+                >
+                    <div
+                        ng-bind-html="rep.name | highlight: $select.search"
+                    ></div>
                 </ui-select-choices>
             </ui-select>
-            <div class="message message--error" ng-repeat="error in $ctrl.errors.defaultSalesRepresentative"
-                 for="sales-representative-select">{{ error }}</div>
+            <div
+                class="message message--error"
+                ng-repeat="error in $ctrl.errors.defaultSalesRepresentative"
+                for="sales-representative-select"
+            >
+                {{ error }}
+            </div>
         </div>
 
-        <div class="form__group" ng-if="$ctrl.hasPermission('zemauth.can_set_account_cs_representative')"
-             ng-class="{'form--error': !!$ctrl.errors.defaultCsRepresentative}">
-            <label class="form__label" is-internal="zemauth.can_set_account_cs_representative"
-                   for="sales-representative-select">
+        <div
+            class="form__group"
+            ng-if="$ctrl.hasPermission('zemauth.can_set_account_cs_representative')"
+            ng-class="{'form--error': !!$ctrl.errors.defaultCsRepresentative}"
+        >
+            <label
+                class="form__label"
+                is-internal="zemauth.can_set_account_cs_representative"
+                for="sales-representative-select"
+            >
                 CS Representative:
-                <zem-help-popover content="Customer Success Manager responsible for the campaign and the communication with the client."
-                                  placement="top"></zem-help-popover>
+                <zem-help-popover
+                    content="Customer Success Manager responsible for the campaign and the communication with the client."
+                    placement="top"
+                ></zem-help-popover>
             </label>
-            <ui-select theme="select2" id="cs-representative-select"
-                       class="button button--plain button--full-width button--dropdown-toggle-icon"
-                       ng-model="$ctrl.entity.settings.defaultCsRepresentative">
-                <ui-select-match>{{$select.selected.name}}</ui-select-match>
-                <ui-select-choices repeat="rep.id as rep in $ctrl.entity.csReps | orderBy:getName | filter:$select.search" class="ui-select-choices">
-                    <div ng-bind-html="rep.name | highlight: $select.search"></div>
+            <ui-select
+                theme="select2"
+                id="cs-representative-select"
+                class="button button--plain button--full-width button--dropdown-toggle-icon"
+                ng-model="$ctrl.entity.settings.defaultCsRepresentative"
+            >
+                <ui-select-match>{{ $select.selected.name }}</ui-select-match>
+                <ui-select-choices
+                    repeat="rep.id as rep in $ctrl.entity.csReps | orderBy:getName | filter:$select.search"
+                    class="ui-select-choices"
+                >
+                    <div
+                        ng-bind-html="rep.name | highlight: $select.search"
+                    ></div>
                 </ui-select-choices>
             </ui-select>
-            <div class="message message--error" ng-repeat="error in $ctrl.errors.defaultCsRepresentative"
-                 for="cs-representative-select">{{ error }}</div>
+            <div
+                class="message message--error"
+                ng-repeat="error in $ctrl.errors.defaultCsRepresentative"
+                for="cs-representative-select"
+            >
+                {{ error }}
+            </div>
         </div>
 
-        <div class="form__group" ng-if="$ctrl.hasPermission('zemauth.can_set_account_ob_representative')"
-             ng-class="{'form--error': !!$ctrl.errors.obRepresentative}">
-            <label class="form__label" is-internal="zemauth.can_set_account_ob_representative"
-                   for="ob-representative-select">
+        <div
+            class="form__group"
+            ng-if="$ctrl.hasPermission('zemauth.can_set_account_ob_representative')"
+            ng-class="{'form--error': !!$ctrl.errors.obRepresentative}"
+        >
+            <label
+                class="form__label"
+                is-internal="zemauth.can_set_account_ob_representative"
+                for="ob-representative-select"
+            >
                 OB Representative:
-                <zem-help-popover content="Outbrain Manager responsible for the account and the communication with the client."
-                                  placement="top"></zem-help-popover>
+                <zem-help-popover
+                    content="Outbrain Manager responsible for the account and the communication with the client."
+                    placement="top"
+                ></zem-help-popover>
             </label>
-            <ui-select theme="select2" id="ob-representative-select"
-                       class="button button--plain button--full-width button--dropdown-toggle-icon"
-                       ng-model="$ctrl.entity.settings.obRepresentative">
-                <ui-select-match>{{$select.selected.name}}</ui-select-match>
-                <ui-select-choices repeat="rep.id as rep in $ctrl.entity.obReps | orderBy:getName | filter:$select.search" class="ui-select-choices">
-                    <div ng-bind-html="rep.name | highlight: $select.search"></div>
+            <ui-select
+                theme="select2"
+                id="ob-representative-select"
+                class="button button--plain button--full-width button--dropdown-toggle-icon"
+                ng-model="$ctrl.entity.settings.obRepresentative"
+            >
+                <ui-select-match>{{ $select.selected.name }}</ui-select-match>
+                <ui-select-choices
+                    repeat="rep.id as rep in $ctrl.entity.obReps | orderBy:getName | filter:$select.search"
+                    class="ui-select-choices"
+                >
+                    <div
+                        ng-bind-html="rep.name | highlight: $select.search"
+                    ></div>
                 </ui-select-choices>
             </ui-select>
-            <div class="message message--error" ng-repeat="error in $ctrl.errors.obRepresentative"
-                 for="ob-representative-select">{{ error }}</div>
+            <div
+                class="message message--error"
+                ng-repeat="error in $ctrl.errors.obRepresentative"
+                for="ob-representative-select"
+            >
+                {{ error }}
+            </div>
         </div>
 
-        <div class="form__group" ng-if="$ctrl.hasPermission('zemauth.can_modify_account_type')"
-             ng-class="{'form--error': !!$ctrl.errors.accountType}">
-            <label class="form__label" is-internal="zemauth.can_modify_account_type"
-                   for="account-type-select">Account Type:</label>
-            <ui-select theme="select2" id="account-type-select"
-                       class="button button--plain button--full-width button--dropdown-toggle-icon"
-                       ng-model="$ctrl.entity.settings.accountType" search-enabled="false">
-                <ui-select-match>{{$select.selected.name}}</ui-select-match>
-                <ui-select-choices repeat="type.value as type in $ctrl.options.accountTypes" class="ui-select-choices">
+        <div
+            class="form__group"
+            ng-if="$ctrl.hasPermission('zemauth.can_modify_account_type')"
+            ng-class="{'form--error': !!$ctrl.errors.accountType}"
+        >
+            <label
+                class="form__label"
+                is-internal="zemauth.can_modify_account_type"
+                for="account-type-select"
+                >Account Type:</label
+            >
+            <ui-select
+                theme="select2"
+                id="account-type-select"
+                class="button button--plain button--full-width button--dropdown-toggle-icon"
+                ng-model="$ctrl.entity.settings.accountType"
+                search-enabled="false"
+            >
+                <ui-select-match>{{ $select.selected.name }}</ui-select-match>
+                <ui-select-choices
+                    repeat="type.value as type in $ctrl.options.accountTypes"
+                    class="ui-select-choices"
+                >
                     <div ng-bind-html="type.name"></div>
                 </ui-select-choices>
             </ui-select>
-            <div class="message message--error" ng-repeat="error in $ctrl.errors.accountType"
-                 for="account-type-select">{{ error }}</div>
+            <div
+                class="message message--error"
+                ng-repeat="error in $ctrl.errors.accountType"
+                for="account-type-select"
+            >
+                {{ error }}
+            </div>
         </div>
 
-        <div class="form__group" ng-if="$ctrl.hasPermission('zemauth.can_set_agency_for_account')"
-             ng-class="{'form--error': !!$ctrl.errors.agency}">
-            <label class="form__label" is-internal="zemauth.can_set_agency_for_account" for="agency-select">
+        <div
+            class="form__group"
+            ng-if="$ctrl.hasPermission('zemauth.can_set_agency_for_account')"
+            ng-class="{'form--error': !!$ctrl.errors.agency}"
+        >
+            <label
+                class="form__label"
+                is-internal="zemauth.can_set_agency_for_account"
+                for="agency-select"
+            >
                 Agency:
-                <zem-help-popover content="Agency that this account is part of." placement="top"></zem-help-popover>
+                <zem-help-popover
+                    content="Agency that this account is part of."
+                    placement="top"
+                ></zem-help-popover>
             </label>
-            <div ui-select2="$ctrl.agencySelect2Config" id="agency-select"
-                 class="button button--plain button--full-width button--dropdown-toggle-icon"
-                 ng-model="$ctrl.entity.settings.agency" ng-change="$ctrl.updateAgencyDefaults()"></div>
-            <div class="message message--error" ng-repeat="error in $ctrl.errors.agency"
-                 for="agency-select">{{ error }}</div>
+            <div
+                ui-select2="$ctrl.agencySelect2Config"
+                id="agency-select"
+                class="button button--plain button--full-width button--dropdown-toggle-icon"
+                ng-model="$ctrl.entity.settings.agency"
+                ng-change="$ctrl.updateAgencyDefaults()"
+            ></div>
+            <div
+                class="message message--error"
+                ng-repeat="error in $ctrl.errors.agency"
+                for="agency-select"
+            >
+                {{ error }}
+            </div>
         </div>
-        <div class="form__group" ng-if="$ctrl.hasPermission('zemauth.can_see_salesforce_url')"
-             ng-class="{'form--error': !!$ctrl.errors.salesforceUrl}">
-            <label class="form__label" for="name-input" is-internal="zemauth.can_see_salesforce_url">
+        <div
+            class="form__group"
+            ng-if="$ctrl.hasPermission('zemauth.can_see_salesforce_url')"
+            ng-class="{'form--error': !!$ctrl.errors.salesforceUrl}"
+        >
+            <label
+                class="form__label"
+                for="name-input"
+                is-internal="zemauth.can_see_salesforce_url"
+            >
                 SalesForce:
-                <zem-help-popover content="URL of this account in SalesForce"
-                                  placement="top"></zem-help-popover>
+                <zem-help-popover
+                    content="URL of this account in SalesForce"
+                    placement="top"
+                ></zem-help-popover>
             </label>
-            <input class="input-text" id="name-input" type="text" ng-model="$ctrl.entity.settings.salesforceUrl">
-            <div class="message message--error" ng-repeat="error in $ctrl.errors.salesforceUrl"
-                 for="name-input">{{ error }}</div>
+            <input
+                class="input-text"
+                id="name-input"
+                type="text"
+                ng-model="$ctrl.entity.settings.salesforceUrl"
+            />
+            <div
+                class="message message--error"
+                ng-repeat="error in $ctrl.errors.salesforceUrl"
+                for="name-input"
+            >
+                {{ error }}
+            </div>
         </div>
-        <div class="form__group" ng-class="{'form--error': !!$ctrl.errors.currency}">
+        <div
+            class="form__group"
+            ng-class="{'form--error': !!$ctrl.errors.currency}"
+        >
             <label class="form__label" for="currency-select">
                 Currency:
-                <zem-help-popover content="Currency can be updated only if Account has no Campaigns yet."
-                                  placement="top"></zem-help-popover>
+                <zem-help-popover
+                    content="Currency can be updated only if Account has no Campaigns yet."
+                    placement="top"
+                ></zem-help-popover>
             </label>
-            <select ui-select2="{minimumResultsForSearch: 5}" id="currency-select"
-                    class="button button--plain button--full-width button--dropdown-toggle-icon"
-                    ng-model="$ctrl.entity.settings.currency"
-                    >
-                <option ng-repeat="currency in $ctrl.options.currencies" value="{{currency.value}}">{{currency.name}}</option>
+            <select
+                ui-select2="{minimumResultsForSearch: 5}"
+                id="currency-select"
+                class="button button--plain button--full-width button--dropdown-toggle-icon"
+                ng-model="$ctrl.entity.settings.currency"
+            >
+                <option
+                    ng-repeat="currency in $ctrl.options.currencies"
+                    value="{{ currency.value }}"
+                    >{{ currency.name }}</option
+                >
             </select>
-            <div class="message message--error" ng-repeat="error in $ctrl.errors.currency"
-                 for="currency-select">{{ error }}</div>
+            <div
+                class="message message--error"
+                ng-repeat="error in $ctrl.errors.currency"
+                for="currency-select"
+            >
+                {{ error }}
+            </div>
         </div>
     </div>
-    <div class="form__group" ng-if="$ctrl.hasPermission('zemauth.can_set_frequency_capping')">
-        <label class="form__label" for="frequency-capping-input" is-internal="zemauth.can_set_frequency_capping">
+    <div
+        class="form__group"
+        ng-if="$ctrl.hasPermission('zemauth.can_set_frequency_capping')"
+    >
+        <label
+            class="form__label"
+            for="frequency-capping-input"
+            is-internal="zemauth.can_set_frequency_capping"
+        >
             Daily impression frequency cap:
-            <zem-help-popover content="This setting defines the maximum number of times your ads from this account will be shown to a unique user in one day." placement="top"></zem-help-popover>
+            <zem-help-popover
+                content="This setting defines the maximum number of times your ads from this account will be shown to a unique user in one day."
+                placement="top"
+            ></zem-help-popover>
         </label>
-        <input id="frequency-capping-input"
-                class="input-text input-text--narrow"
-                ng-model="$ctrl.entity.settings.frequencyCapping"
-                type="text"
-                zem-numeric-validator>
+        <input
+            id="frequency-capping-input"
+            class="input-text input-text--narrow"
+            ng-model="$ctrl.entity.settings.frequencyCapping"
+            type="text"
+            zem-numeric-validator
+        />
         <div class="message message--info message--with-icon">
             {{ $ctrl.MESSAGES.INFO_FREQUENCY_CAPPING }}
         </div>
     </div>
 </div>
-<div class="custom-panel zem-settings-component__container zem-media-sources-settings" ng-if="!$ctrl.hasPermission('zemauth.disable_public_rcs') && !$ctrl.hasPermission('zemauth.disable_public_newscorp')">
+<div
+    class="custom-panel zem-settings-component__container zem-media-sources-settings"
+    ng-if="!$ctrl.hasPermission('zemauth.disable_public_rcs') && !$ctrl.hasPermission('zemauth.disable_public_newscorp')"
+>
     <h2 class="custom-panel__title">Media Sources</h2>
-    <div class="custom-panel__description">Media sources made available on this account.</div>
+    <div class="custom-panel__description">
+        Media sources made available on this account.
+    </div>
     <zem-media-sources-settings
-            entity="$ctrl.entity"
-            errors="$ctrl.errors"
-            api="$ctrl.api"
-            class="zem-media-sources-settings"
+        entity="$ctrl.entity"
+        errors="$ctrl.errors"
+        api="$ctrl.api"
+        class="zem-media-sources-settings"
     ></zem-media-sources-settings>
     <br />
-    <div class="form" ng-class="{'form--error': !!$ctrl.errors.autoAddNewSources}" ng-if="$ctrl.hasPermission('zemauth.can_set_auto_add_new_sources')">
+    <div
+        class="form"
+        ng-class="{'form--error': !!$ctrl.errors.autoAddNewSources}"
+        ng-if="$ctrl.hasPermission('zemauth.can_set_auto_add_new_sources')"
+    >
         <div class="form__checkbox">
             <label>
-                <input class="input-checkbox" id="auto-add-new-sources-checkbox" type="checkbox" ng-model="$ctrl.entity.settings.autoAddNewSources">
+                <input
+                    class="input-checkbox"
+                    id="auto-add-new-sources-checkbox"
+                    type="checkbox"
+                    ng-model="$ctrl.entity.settings.autoAddNewSources"
+                />
                 <span class="checkbox-text">
-                    Automatically add new media sources as soon as they become available
+                    Automatically add new media sources as soon as they become
+                    available
                 </span>
             </label>
         </div>
-        <div class="message message--error" ng-repeat="error in $ctrl.errors.autoAddNewSources"
-             for="auto-add-new-sources-checkbox">{{ error }}</div>
+        <div
+            class="message message--error"
+            ng-repeat="error in $ctrl.errors.autoAddNewSources"
+            for="auto-add-new-sources-checkbox"
+        >
+            {{ error }}
+        </div>
         <div class="custom-panel__description">
-            As we are always working to add new supply partners to our platform, remembering to add these new partners 
-            to each of your existing accounts and ad groups can be cumbersome. This setting will allow Zemanta to automatically 
-            allow and enable new media sources on your accounts and ad groups as they become available.
+            As we are always working to add new supply partners to our platform,
+            remembering to add these new partners to each of your existing
+            accounts and ad groups can be cumbersome. This setting will allow
+            Zemanta to automatically allow and enable new media sources on your
+            accounts and ad groups as they become available.
         </div>
     </div>
 </div>
-<div class="custom-panel zem-settings-component__container zem-facebook-page-settings" ng-if="false">
+<div
+    class="custom-panel zem-settings-component__container zem-facebook-page-settings"
+    ng-if="false"
+>
     <!-- DISABLED FACEBOOK -->
     <h2 class="custom-panel__title">Facebook page</h2>
-    <div class="custom-panel__description">Facebook Page to which ads will be connected to. This is a requirement for advertising on Facebook and Instagram.</div>
+    <div class="custom-panel__description">
+        Facebook Page to which ads will be connected to. This is a requirement
+        for advertising on Facebook and Instagram.
+    </div>
     <zem-facebook-page-settings
-            entity="$ctrl.entity"
-            errors="$ctrl.errors"
-            api="$ctrl.api"
-            class="zem-facebook-page-settings"
+        entity="$ctrl.entity"
+        errors="$ctrl.errors"
+        api="$ctrl.api"
+        class="zem-facebook-page-settings"
     ></zem-facebook-page-settings>
 </div>

@@ -1,51 +1,65 @@
 <h1 class="content-container__title">Inventory Planning</h1>
 
-<zem-inventory-planning-summary class="zem-inventory-planning-summary"
-                                [auctionCount]="(store.state$ | async).inventory.auctionCount"
-                                [avgCpm]="(store.state$ | async).inventory.avgCpm"
-                                [avgCpc]="(store.state$ | async).inventory.avgCpc"
-                                [winRatio]="(store.state$ | async).inventory.winRatio"
-                                [isLoading]="(store.state$ | async).requests.summary.inProgress">
+<zem-inventory-planning-summary
+    class="zem-inventory-planning-summary"
+    [auctionCount]="(store.state$ | async).inventory.auctionCount"
+    [avgCpm]="(store.state$ | async).inventory.avgCpm"
+    [avgCpc]="(store.state$ | async).inventory.avgCpc"
+    [winRatio]="(store.state$ | async).inventory.winRatio"
+    [isLoading]="(store.state$ | async).requests.summary.inProgress"
+>
 </zem-inventory-planning-summary>
 
-<zem-inventory-planning-filter class="zem-inventory-planning-filter"
-                            [availableFilters]="(store.state$ | async).availableFilters"
-                            [selectedFilters]="(store.state$ | async).selectedFilters"
-                            (onRemove)="store.toggleOption($event)"
-                            (onApply)="store.applyFilters($event)">
+<zem-inventory-planning-filter
+    class="zem-inventory-planning-filter"
+    [availableFilters]="(store.state$ | async).availableFilters"
+    [selectedFilters]="(store.state$ | async).selectedFilters"
+    (onRemove)="store.toggleOption($event)"
+    (onApply)="store.applyFilters($event)"
+>
 </zem-inventory-planning-filter>
 
 <div class="custom-panel zem-inventory-planning__breakdowns clearfix">
-    <zem-inventory-planning-breakdown class="zem-inventory-planning-breakdown"
-                                    breakdownName="Country"
-                                    [options]="(store.state$ | async).availableFilters.countries"
-                                    [selected]="(store.state$ | async).selectedFilters.countries"
-                                    [isLoading]="(store.state$ | async).requests.countries.inProgress"
-                                    (onToggle)="store.toggleOption({key: 'countries', value: $event})">
+    <zem-inventory-planning-breakdown
+        class="zem-inventory-planning-breakdown"
+        breakdownName="Country"
+        [options]="(store.state$ | async).availableFilters.countries"
+        [selected]="(store.state$ | async).selectedFilters.countries"
+        [isLoading]="(store.state$ | async).requests.countries.inProgress"
+        (onToggle)="store.toggleOption({key: 'countries', value: $event})"
+    >
     </zem-inventory-planning-breakdown>
-    <zem-inventory-planning-breakdown class="zem-inventory-planning-breakdown"
-                                    breakdownName="Publisher"
-                                    [options]="(store.state$ | async).availableFilters.publishers"
-                                    [selected]="(store.state$ | async).selectedFilters.publishers"
-                                    [isLoading]="(store.state$ | async).requests.publishers.inProgress"
-                                    (onToggle)="store.toggleOption({key: 'publishers', value: $event})">
+    <zem-inventory-planning-breakdown
+        class="zem-inventory-planning-breakdown"
+        breakdownName="Publisher"
+        [options]="(store.state$ | async).availableFilters.publishers"
+        [selected]="(store.state$ | async).selectedFilters.publishers"
+        [isLoading]="(store.state$ | async).requests.publishers.inProgress"
+        (onToggle)="store.toggleOption({key: 'publishers', value: $event})"
+    >
     </zem-inventory-planning-breakdown>
-    <zem-inventory-planning-breakdown class="zem-inventory-planning-breakdown"
-                                    breakdownName="Device Type"
-                                    [options]="(store.state$ | async).availableFilters.devices"
-                                    [selected]="(store.state$ | async).selectedFilters.devices"
-                                    [isLoading]="(store.state$ | async).requests.devices.inProgress"
-                                    (onToggle)="store.toggleOption({key: 'devices', value: $event})">
+    <zem-inventory-planning-breakdown
+        class="zem-inventory-planning-breakdown"
+        breakdownName="Device Type"
+        [options]="(store.state$ | async).availableFilters.devices"
+        [selected]="(store.state$ | async).selectedFilters.devices"
+        [isLoading]="(store.state$ | async).requests.devices.inProgress"
+        (onToggle)="store.toggleOption({key: 'devices', value: $event})"
+    >
     </zem-inventory-planning-breakdown>
-    <zem-inventory-planning-breakdown class="zem-inventory-planning-breakdown"
-                                    breakdownName="Media Source"
-                                    [options]="(store.state$ | async).availableFilters.sources"
-                                    [selected]="(store.state$ | async).selectedFilters.sources"
-                                    [isLoading]="(store.state$ | async).requests.sources.inProgress"
-                                    (onToggle)="store.toggleOption({key: 'sources', value: $event})">
+    <zem-inventory-planning-breakdown
+        class="zem-inventory-planning-breakdown"
+        breakdownName="Media Source"
+        [options]="(store.state$ | async).availableFilters.sources"
+        [selected]="(store.state$ | async).selectedFilters.sources"
+        [isLoading]="(store.state$ | async).requests.sources.inProgress"
+        (onToggle)="store.toggleOption({key: 'sources', value: $event})"
+    >
     </zem-inventory-planning-breakdown>
 </div>
 
 <div class="message message--info message--with-icon block m-b">
-    This report is an aggregate over 30 consecutive days and includes only RTB media sources. Outbrain and Yahoo data is not included. The report is updated every month.
+    This report is an aggregate over 30 consecutive days and includes only RTB
+    media sources. Outbrain and Yahoo data is not included. The report is
+    updated every month.
 </div>

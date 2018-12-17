@@ -1,20 +1,24 @@
-<span class="zem-grid-cell-base-field"
-      ng-class="ctrl.class">
+<span class="zem-grid-cell-base-field" ng-class="ctrl.class">
     <div class="zem-grid-cell-base-field__container">
-        <span title="{{ctrl.formattedValue}}"
+        <span
+            title="{{ ctrl.formattedValue }}"
             class="zem-grid-cell-base-field__value"
             ng-bind="ctrl.formattedValue"
-            zem-lazy-popover-text="{{ctrl.data.popoverMessage}}"
+            zem-lazy-popover-text="{{ ctrl.data.popoverMessage }}"
             zem-lazy-popover-placement="left"
             zem-lazy-popover-animation-class="fade"
-            zem-lazy-popover-append-to-body="true">
+            zem-lazy-popover-append-to-body="true"
+        >
         </span>
-        <span ng-show="ctrl.refundFormattedValue && ctrl.hasPermission('zemauth.can_see_credit_refunds')"
+        <span
+            ng-show="ctrl.refundFormattedValue && ctrl.hasPermission('zemauth.can_see_credit_refunds')"
             class="zem-grid-cell-base-field__refund"
-            title="-{{ctrl.refundFormattedValue}}"
+            title="-{{ ctrl.refundFormattedValue }}"
             zem-lazy-popover-text="This number represents the refunded amount. It will not be charged at the end of the month."
             zem-lazy-popover-placement="top"
             zem-lazy-popover-animation-class="fade"
-            zem-lazy-popover-append-to-body="true">-{{ctrl.refundFormattedValue}}</span>
+            zem-lazy-popover-append-to-body="true"
+            >-{{ ctrl.refundFormattedValue }}</span
+        >
     </div>
 </span>

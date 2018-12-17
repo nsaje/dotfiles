@@ -1,16 +1,18 @@
-<label class="zem-grid-cell-checkbox"
-      zem-lazy-popover-visible="{{ ctrl.checkboxModel.tooltip }}"
-      zem-lazy-popover-text="{{ ctrl.checkboxModel.tooltip }}"
-      zem-lazy-popover-placement="right"
-      zem-lazy-popover-animation-class="fade"
-      zem-lazy-popover-append-to-body="true"
+<label
+    class="zem-grid-cell-checkbox"
+    zem-lazy-popover-visible="{{ ctrl.checkboxModel.tooltip }}"
+    zem-lazy-popover-text="{{ ctrl.checkboxModel.tooltip }}"
+    zem-lazy-popover-placement="right"
+    zem-lazy-popover-animation-class="fade"
+    zem-lazy-popover-append-to-body="true"
 >
-     <input ng-show="ctrl.checkboxModel.visible"
-            type="checkbox"
-            ng-disabled="ctrl.checkboxModel.disabled"
-            data-ng-model="ctrl.checkboxModel.checked"
-            data-ng-change="ctrl.toggleSelection()"
-            class="input-checkbox"
-     />
-     <span class="checkbox-text"></span>
+    <input
+        ng-show="ctrl.checkboxModel.visible"
+        type="checkbox"
+        ng-disabled="ctrl.checkboxModel.disabled"
+        data-ng-model="ctrl.checkboxModel.checked"
+        data-ng-change="ctrl.toggleSelection()"
+        class="input-checkbox"
+    />
+    <span class="checkbox-text"></span>
 </label>

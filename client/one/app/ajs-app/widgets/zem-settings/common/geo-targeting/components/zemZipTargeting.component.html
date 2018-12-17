@@ -1,56 +1,96 @@
-<a href="" class="button button--with-icon check-icon" ng-click="$ctrl.enableZipTargeting()" ng-hide="$ctrl.isZipTargetingVisible()">Enable ZIP / postal code targeting</a>
+<a
+    href=""
+    class="button button--with-icon check-icon"
+    ng-click="$ctrl.enableZipTargeting()"
+    ng-hide="$ctrl.isZipTargetingVisible()"
+    >Enable ZIP / postal code targeting</a
+>
 
 <div ng-if="$ctrl.isZipTargetingVisible()">
     <h3>ZIP / Postal code targeting</h3>
 
     <div ng-if="!$ctrl.state.blockers.apiOnlySettings">
-        <div class="custom-panel__description">You can target ZIP / postal codes in one specific country.</div>
+        <div class="custom-panel__description">
+            You can target ZIP / postal codes in one specific country.
+        </div>
 
-        <ui-select theme="select2" class="button button--dropdown-toggle-icon"
-                ng-model="$ctrl.state.zipTargetingType" search-enabled="false" ng-change="$ctrl.stateService.updateState()">
-            <ui-select-match>{{$select.selected.name}}</ui-select-match>
-            <ui-select-choices repeat="type.value as type in $ctrl.options.zipTargetingTypes"
-                            class="ui-select-choices"
-                            position="down">
+        <ui-select
+            theme="select2"
+            class="button button--dropdown-toggle-icon"
+            ng-model="$ctrl.state.zipTargetingType"
+            search-enabled="false"
+            ng-change="$ctrl.stateService.updateState()"
+        >
+            <ui-select-match>{{ $select.selected.name }}</ui-select-match>
+            <ui-select-choices
+                repeat="type.value as type in $ctrl.options.zipTargetingTypes"
+                class="ui-select-choices"
+                position="down"
+            >
                 <div>{{ type.name }}</div>
             </ui-select-choices>
         </ui-select>
 
-        <ui-select theme="select2" class="button button--dropdown-toggle-icon zem-zip-targeting__country select2-mobile-fullscreen-dropdown"
-                ng-model="$ctrl.state.selectedCountry" ng-change="$ctrl.stateService.updateState()" >
-            <ui-select-match class="ui-select-match" placeholder="Select country">{{$select.selected.name}}</ui-select-match>
-            <ui-select-choices repeat="country in $ctrl.state.countrySearchResults"
-                            class="ui-select-choices"
-                            position="down"
-                            refresh="$ctrl.stateService.searchCountries($select.search)"
-                            refresh-delay="250"
-                            min-input-length="1">
-                <div ng-bind-html="country.name | highlight: $select.search"></div>
+        <ui-select
+            theme="select2"
+            class="button button--dropdown-toggle-icon zem-zip-targeting__country select2-mobile-fullscreen-dropdown"
+            ng-model="$ctrl.state.selectedCountry"
+            ng-change="$ctrl.stateService.updateState()"
+        >
+            <ui-select-match
+                class="ui-select-match"
+                placeholder="Select country"
+                >{{ $select.selected.name }}</ui-select-match
+            >
+            <ui-select-choices
+                repeat="country in $ctrl.state.countrySearchResults"
+                class="ui-select-choices"
+                position="down"
+                refresh="$ctrl.stateService.searchCountries($select.search)"
+                refresh-delay="250"
+                min-input-length="1"
+            >
+                <div
+                    ng-bind-html="country.name | highlight: $select.search"
+                ></div>
             </ui-select-choices>
             <ui-select-no-choice>
                 <span ng-show="$select.search !== ''">No countries found.</span>
-                <span ng-show="$select.search === ''">Start typing to search for countries.</span>
+                <span ng-show="$select.search === ''"
+                    >Start typing to search for countries.</span
+                >
             </ui-select-no-choice>
         </ui-select>
 
-        <textarea ng-if="$ctrl.state.selectedCountry && !$ctrl.state.blockers.countryIncluded"
-                ng-model="$ctrl.state.textareaContent"
-                ng-model-options="{ updateOn: 'default blur', debounce: { default: 250, blur: 0 }}"
-                ng-change="$ctrl.stateService.updateState()"
-                ng-paste="$ctrl.stateService.updateState()"
-                ng-blur="$ctrl.stateService.cleanUserInput()"
-                class="textarea m-t-xs"
-                placeholder="Enter comma-separated ZIP / postal codes">
+        <textarea
+            ng-if="$ctrl.state.selectedCountry && !$ctrl.state.blockers.countryIncluded"
+            ng-model="$ctrl.state.textareaContent"
+            ng-model-options="{ updateOn: 'default blur', debounce: { default: 250, blur: 0 }}"
+            ng-change="$ctrl.stateService.updateState()"
+            ng-paste="$ctrl.stateService.updateState()"
+            ng-blur="$ctrl.stateService.cleanUserInput()"
+            class="textarea m-t-xs"
+            placeholder="Enter comma-separated ZIP / postal codes"
+        >
         </textarea>
     </div>
 
-    <div ng-if="$ctrl.state.blockers.apiOnlySettings" class="message message--warning message--with-icon">
-        Current ZIP / postal code targeting settings are only modifiable by your Customer Success Manager or via Zemanta One API.
+    <div
+        ng-if="$ctrl.state.blockers.apiOnlySettings"
+        class="message message--warning message--with-icon"
+    >
+        Current ZIP / postal code targeting settings are only modifiable by your
+        Customer Success Manager or via Zemanta One API.
     </div>
 
     <div class="more-messages__container">
-        <div ng-if="$ctrl.state.blockers.countryIncluded" class="message message--warning message--with-icon m-b-s">
-            Please remove {{ $ctrl.state.selectedCountry.name }} from general location targeting or pick a different country for ZIP / postal code targeting.
+        <div
+            ng-if="$ctrl.state.blockers.countryIncluded"
+            class="message message--warning message--with-icon m-b-s"
+        >
+            Please remove {{ $ctrl.state.selectedCountry.name }} from general
+            location targeting or pick a different country for ZIP / postal code
+            targeting.
         </div>
     </div>
 </div>

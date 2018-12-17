@@ -1,22 +1,42 @@
 <span
     class="zem-grid-column-selector dropdown"
     uib-dropdown
-    ng-click="$ctrl.focusInput($event)">
-    <a href class="button button--dropdown-toggle-icon" uib-dropdown-toggle title="Show/hide columns">Columns</a>
-    <div class="dropdown-menu dropdown-menu-right" uib-dropdown-menu ng-click="$event.stopPropagation()">
+    ng-click="$ctrl.focusInput($event)"
+>
+    <a
+        href
+        class="button button--dropdown-toggle-icon"
+        uib-dropdown-toggle
+        title="Show/hide columns"
+        >Columns</a
+    >
+    <div
+        class="dropdown-menu dropdown-menu-right"
+        uib-dropdown-menu
+        ng-click="$event.stopPropagation()"
+    >
         <div class="dropdown-menu__container dropdown-menu__column-selector">
-            <div ng-if="$ctrl.isCostModeToggleAllowed()" is-internal="true" id="cost-mode-switcher" class="dropdown-menu__switch-button-container">
-                <span class="switch-button switch-button--small"
+            <div
+                ng-if="$ctrl.isCostModeToggleAllowed()"
+                is-internal="true"
+                id="cost-mode-switcher"
+                class="dropdown-menu__switch-button-container"
+            >
+                <span
+                    class="switch-button switch-button--small"
                     ng-class="{'switch-button--checked': $ctrl.isCostModePlatform}"
                     ng-click="$ctrl.toggleCostMode()"
                 ></span>
-                <span class="switch-button__text">Show costs without fees and margin</span>
+                <span class="switch-button__text"
+                    >Show costs without fees and margin</span
+                >
             </div>
 
             <zem-column-selector
                 on-column-toggled="$ctrl.onColumnToggled(field)"
                 on-all-columns-toggled="$ctrl.onAllColumnsToggled(isChecked)"
-                categories="$ctrl.categories">
+                categories="$ctrl.categories"
+            >
             </zem-column-selector>
         </div>
     </div>

@@ -10,9 +10,9 @@
     "tests-watch": "NODE_ENV=test karma start karma.conf.js --no-single-run",
     "lint:eslint": "eslint one --format codeframe",
     "lint:tslint": "tslint --project tsconfig.json --format codeFrame",
-    "lint:prettier": "prettier --list-different 'one/**/*.{js,ts}'",
+    "lint:prettier": "prettier --list-different 'one/**/*.{js,ts,less,html}'",
     "lint": "npm run lint:eslint && npm run lint:tslint && npm run lint:prettier",
-    "prettier:format": "prettier --write 'one/**/*.{js,ts}'"
+    "prettier:format": "prettier --write 'one/**/*.{js,ts,less,html}'"
   },
   "dependencies": {
     "@angular/common": "7.1.2",

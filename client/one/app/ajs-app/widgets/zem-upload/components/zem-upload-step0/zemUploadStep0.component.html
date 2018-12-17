@@ -3,17 +3,42 @@
         <div class="modal__title">How do you want to upload your ads?</div>
     </div>
     <div class="modal__body clearfix">
-        <div class="modal__description">Start adding your ads by choosing one of options below.</div>
-        <a href ng-click="ctrl.switchToSingleContentAdUpload()" class="button button--big">
+        <div class="modal__description">
+            Start adding your ads by choosing one of options below.
+        </div>
+        <a
+            href
+            ng-click="ctrl.switchToSingleContentAdUpload()"
+            class="button button--big"
+        >
             Single Content Ad
-            <span class="small-text"><strong>Choose this if you want to add ads one by one.</strong> You can add multiple ads.</span>
+            <span class="small-text"
+                ><strong>Choose this if you want to add ads one by one.</strong>
+                You can add multiple ads.</span
+            >
         </a>
-        <a href ng-click="ctrl.switchToCsvUpload()" class="button button--big content-upload__file-upload-button">
+        <a
+            href
+            ng-click="ctrl.switchToCsvUpload()"
+            class="button button--big content-upload__file-upload-button"
+        >
             File upload
-            <span class="small-text"><strong>Choose this if you have CSV or Excel file with a lot of ads.</strong> You can download example file structure in the next step.
+            <span class="small-text"
+                ><strong
+                    >Choose this if you have CSV or Excel file with a lot of
+                    ads.</strong
+                >
+                You can download example file structure in the next step.</span
+            >
         </a>
     </div>
     <div class="modal__footer buttons-panel">
-        <button type="button" class="button button--outline" ng-click="ctrl.close()">Cancel</button>
+        <button
+            type="button"
+            class="button button--outline"
+            ng-click="ctrl.close()"
+        >
+            Cancel
+        </button>
     </div>
 </div>

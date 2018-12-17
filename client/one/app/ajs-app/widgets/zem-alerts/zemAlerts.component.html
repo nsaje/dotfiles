@@ -1,28 +1,36 @@
 <div class="zem-alerts-container">
     <div ng-repeat="alert in $ctrl.alerts">
-        <div uib-alert
-             ng-if="!!alert.close"
-             close="alert.close()"
-             class="message message--with-icon"
-             ng-class="{
+        <div
+            uib-alert
+            ng-if="!!alert.close"
+            close="alert.close()"
+            class="message message--with-icon"
+            ng-class="{
                  'message--info': alert.type === $ctrl.alertTypes.info,
                  'message--success-box': alert.type === $ctrl.alertTypes.success,
                  'message--warning': alert.type === $ctrl.alertTypes.warning,
                  'message--error-box': alert.type === $ctrl.alertTypes.danger,
-             }">
-            <zem-internal-feature ng-if="!!alert.permission && $ctrl.isPermissionInternal(alert.permission)"></zem-internal-feature>
+             }"
+        >
+            <zem-internal-feature
+                ng-if="!!alert.permission && $ctrl.isPermissionInternal(alert.permission)"
+            ></zem-internal-feature>
             <div ng-bind-html="alert.message"></div>
         </div>
-        <div uib-alert
-             ng-if="!alert.close"
-             class="message message--with-icon"
-             ng-class="{
+        <div
+            uib-alert
+            ng-if="!alert.close"
+            class="message message--with-icon"
+            ng-class="{
                  'message--info': alert.type === $ctrl.alertTypes.info,
                  'message--success-box': alert.type === $ctrl.alertTypes.success,
                  'message--warning': alert.type === $ctrl.alertTypes.warning,
                  'message--error-box': alert.type === $ctrl.alertTypes.danger,
-             }">
-            <zem-internal-feature ng-if="!!alert.permission && $ctrl.isPermissionInternal(alert.permission)"></zem-internal-feature>
+             }"
+        >
+            <zem-internal-feature
+                ng-if="!!alert.permission && $ctrl.isPermissionInternal(alert.permission)"
+            ></zem-internal-feature>
             <div ng-bind-html="alert.message"></div>
         </div>
     </div>

@@ -2,9 +2,7 @@
     <button ng-click="$ctrl.close()" class="zem-side-panel__close"></button>
 
     <div class="zem-history__header">
-        <h1 class="zem-history__header-title">
-            History
-        </h1>
+        <h1 class="zem-history__header-title">History</h1>
     </div>
 
     <div class="zem-history__body custom-scroller">
@@ -13,18 +11,28 @@
                 <table class="custom-table">
                     <thead>
                         <tr>
-                            <th ng-class="{
+                            <th
+                                ng-class="{
                                 'sort-indicator': $ctrl.orderField === 'datetime',
                                 'sort-indicator--reversed': $ctrl.orderReversed,
-                            }">
-                                <a href ng-click="$ctrl.changeOrder('datetime')">Date</a>
+                            }"
+                            >
+                                <a href ng-click="$ctrl.changeOrder('datetime')"
+                                    >Date</a
+                                >
                             </th>
                             <!-- TODO: Order by User is not working properly -->
-                            <th ng-class="{
+                            <th
+                                ng-class="{
                                 'sort-indicator': $ctrl.orderField === 'changedBy',
                                 'sort-indicator--reversed': $ctrl.orderReversed,
-                            }">
-                                <a href ng-click="$ctrl.changeOrder('changedBy')">User</a>
+                            }"
+                            >
+                                <a
+                                    href
+                                    ng-click="$ctrl.changeOrder('changedBy')"
+                                    >User</a
+                                >
                             </th>
                             <th class="custom-table__break-word">Notes</th>
                         </tr>
@@ -33,15 +41,21 @@
                         <tr ng-repeat="item in $ctrl.history">
                             <td class="no-wrap">{{ item.datetime }}</td>
                             <td>{{ item.changedBy }}</td>
-                            <td class="custom-table__break-word">{{ item.changesText }}</td>
+                            <td class="custom-table__break-word">
+                                {{ item.changesText }}
+                            </td>
                         </tr>
                         <tr ng-if="$ctrl.requestInProgress">
                             <td colspan="3">
                                 <div class="loader loader--full-width"></div>
                             </td>
                         </tr>
-                        <tr ng-show="!$ctrl.requestInProgress && (!$ctrl.history || $ctrl.history.length === 0)">
-                            <td class="custom-table__no-data" colspan="3">No data</td>
+                        <tr
+                            ng-show="!$ctrl.requestInProgress && (!$ctrl.history || $ctrl.history.length === 0)"
+                        >
+                            <td class="custom-table__no-data" colspan="3">
+                                No data
+                            </td>
                         </tr>
                     </tbody>
                 </table>
@@ -50,6 +64,12 @@
     </div>
 
     <div class="zem-history__footer buttons-panel">
-        <button type="button" class="button button--outline" ng-click="$ctrl.close()">Close</button>
+        <button
+            type="button"
+            class="button button--outline"
+            ng-click="$ctrl.close()"
+        >
+            Close
+        </button>
     </div>
 </zem-side-panel>

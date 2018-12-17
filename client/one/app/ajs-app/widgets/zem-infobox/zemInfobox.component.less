@@ -17,7 +17,7 @@
         z-index: 10;
         display: block;
         position: absolute;
-        .position-properties(0,0,0,0);
+        .position-properties(0, 0, 0, 0);
         background-color: white;
         width: auto;
         height: auto;
@@ -162,7 +162,7 @@
 }
 
 .zem-infobox__delivery--autopilot .zem-infobox__delivery-icon::before {
-    background: url("images/autopilot-green.svg") no-repeat;
+    background: url('images/autopilot-green.svg') no-repeat;
     width: 14px;
     height: 14px;
     top: -1px;
@@ -174,7 +174,7 @@
     height: 14px;
 
     &::before {
-        background: url("images/autopilot-landing-green.svg") no-repeat;
+        background: url('images/autopilot-landing-green.svg') no-repeat;
     }
 }
 
@@ -222,7 +222,7 @@
         .position-properties(auto);
 
         .loader {
-            .position-properties(@zem-infobox-header__height,0,0,0);
+            .position-properties(@zem-infobox-header__height, 0, 0, 0);
         }
     }
 
@@ -233,7 +233,8 @@
         overflow-y: auto;
         min-height: 40px;
         max-height: 330px;
-        padding: (@zem-infobox_spacing)-5 @zem-infobox_spacing @zem-infobox_spacing @zem-infobox_spacing;
+        padding: (@zem-infobox_spacing)-5 @zem-infobox_spacing
+            @zem-infobox_spacing @zem-infobox_spacing;
     }
 
     .zem-infobox-data-row {
@@ -263,7 +264,8 @@
 
 @media only screen and (max-width: @mobile-breakpoint) {
     .zem-infobox-header__entity-info {
-        padding-right: @zem-infobox-header__settings_width_mobile + @zem-infobox_spacing;
+        padding-right: @zem-infobox-header__settings_width_mobile +
+            @zem-infobox_spacing;
     }
 
     .zem-infobox-header__settings {
@@ -273,12 +275,13 @@
             font-size: 0;
 
             &::before {
-                content: " ";
+                content: ' ';
                 display: block;
                 position: absolute;
                 left: 7px;
                 top: 7px;
-                background: url('@{images-folder}/settings-sec.svg') center center;
+                background: url('@{images-folder}/settings-sec.svg') center
+                    center;
                 background-size: 16px;
                 width: 16px;
                 height: 16px;

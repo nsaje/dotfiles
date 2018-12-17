@@ -1,67 +1,121 @@
 <div class="content-upload__ads-container custom-scroller">
     <table class="custom-table content-upload__ads-table">
-        <tr ng-repeat="candidate in $ctrl.candidates track by $index" ng-class="{'content-upload__selected-ad': candidate.id === $ctrl.editFormApi.selectedId}" ng-click="$ctrl.toggleEditForm(candidate, $event)">
-            <td class="content-upload__ad-status" ng-class="{
+        <tr
+            ng-repeat="candidate in $ctrl.candidates track by $index"
+            ng-class="{'content-upload__selected-ad': candidate.id === $ctrl.editFormApi.selectedId}"
+            ng-click="$ctrl.toggleEditForm(candidate, $event)"
+        >
+            <td
+                class="content-upload__ad-status"
+                ng-class="{
                 'content-upload__ad-status--loading': $ctrl.isCandidateStatusLoading(candidate),
                 'content-upload__ad-status--ok': $ctrl.isCandidateStatusOk(candidate),
                 'content-upload__ad-status--error': $ctrl.isCandidateStatusError(candidate)
-            }">
-            </td>
+            }"
+            ></td>
             <td class="content-upload__ad-image-container">
-                <img class="content-upload__ad-image" ng-if="candidate.hostedImageUrl || candidate.imageUrl" ng-src="{{candidate.hostedImageUrl}}" />
+                <img
+                    class="content-upload__ad-image"
+                    ng-if="candidate.hostedImageUrl || candidate.imageUrl"
+                    ng-src="{{ candidate.hostedImageUrl }}"
+                />
             </td>
             <td class="content-upload__ad-size" ng-if="$ctrl.showDisplayUpload">
                 {{ $ctrl.getAdSize(candidate) }}
             </td>
             <td class="content-upload__ad-title">
                 <div class="content-upload__ad-title--two-lines">
-                    <div>{{ candidate.title }}
-                        <span ng-if="!candidate.title">{{ $ctrl.titlePlaceholder }} #{{ $index + 1 }}</span>
+                    <div>
+                        {{ candidate.title }}
+                        <span ng-if="!candidate.title"
+                            >{{ $ctrl.titlePlaceholder }} #{{
+                                $index + 1
+                            }}</span
+                        >
                     </div>
                 </div>
             </td>
-            <td class="content-upload__ad-link">
-                {{ candidate.url }}
-            </td>
+            <td class="content-upload__ad-link">{{ candidate.url }}</td>
             <td class="content-upload__ad-error-container">
-                <div ng-if="$ctrl.getContentErrorsMsg(candidate)" class="content-upload__ad-error content-upload__ad-error--content">
+                <div
+                    ng-if="$ctrl.getContentErrorsMsg(candidate)"
+                    class="content-upload__ad-error content-upload__ad-error--content"
+                >
                     {{ $ctrl.getContentErrorsMsg(candidate) }}
                 </div>
-                <div ng-if="$ctrl.getImageErrorsMsg(candidate)" class="content-upload__ad-error content-upload__ad-error--image">
+                <div
+                    ng-if="$ctrl.getImageErrorsMsg(candidate)"
+                    class="content-upload__ad-error content-upload__ad-error--image"
+                >
                     {{ $ctrl.getImageErrorsMsg(candidate) }}
                 </div>
             </td>
             <td class="buttons-panel content-upload__ad-action-buttons">
-                <div class="message message--error" ng-if="candidate.removeRequestFailed">
+                <div
+                    class="message message--error"
+                    ng-if="candidate.removeRequestFailed"
+                >
                     Something went wrong. Please try again.
                 </div>
-                <div class="loader" ng-if="candidate.removeRequestInProgress"></div>
-                <a href ng-click="$ctrl.toggleEditForm(candidate, $event)" class="button button--small button--with-icon edit-icon" ng-disabled="candidate.removeRequestInProgress">Edit</a>
-                <a href ng-click="$ctrl.removeCandidate(candidate, $event)" class="button button--small button--with-icon remove-icon" ng-disabled="candidate.removeRequestInProgress" ng-if="!$ctrl.isEdit">Remove</a>
+                <div
+                    class="loader"
+                    ng-if="candidate.removeRequestInProgress"
+                ></div>
+                <a
+                    href
+                    ng-click="$ctrl.toggleEditForm(candidate, $event)"
+                    class="button button--small button--with-icon edit-icon"
+                    ng-disabled="candidate.removeRequestInProgress"
+                    >Edit</a
+                >
+                <a
+                    href
+                    ng-click="$ctrl.removeCandidate(candidate, $event)"
+                    class="button button--small button--with-icon remove-icon"
+                    ng-disabled="candidate.removeRequestInProgress"
+                    ng-if="!$ctrl.isEdit"
+                    >Remove</a
+                >
             </td>
         </tr>
     </table>
 
     <div class="buttons-panel">
-        <button type="button" class="button button--highlight button--with-icon add-icon"
-            ng-click="$ctrl.addCandidate()" ng-disabled="$ctrl.addCandidateRequestInProgress" ng-if="!$ctrl.isEdit">
+        <button
+            type="button"
+            class="button button--highlight button--with-icon add-icon"
+            ng-click="$ctrl.addCandidate()"
+            ng-disabled="$ctrl.addCandidateRequestInProgress"
+            ng-if="!$ctrl.isEdit"
+        >
             Add new creative
         </button>
-        <button type="button" class="button button--with-icon download-icon" ng-click="$ctrl.download()">
+        <button
+            type="button"
+            class="button button--with-icon download-icon"
+            ng-click="$ctrl.download()"
+        >
             Download Ads Snapshot
         </button>
         <div class="loader" ng-if="$ctrl.addCandidateRequestInProgress"></div>
-        <div class="message message--error" ng-if="$ctrl.addCandidateRequestFailed">Something went wrong. Please try again.</div>
+        <div
+            class="message message--error"
+            ng-if="$ctrl.addCandidateRequestFailed"
+        >
+            Something went wrong. Please try again.
+        </div>
     </div>
 </div>
 
-<zem-upload-edit-form endpoint="$ctrl.endpoint"
-                      api="$ctrl.editFormApi"
-                      update-callback="$ctrl.updateCandidateCallback"
-                      refresh-callback="$ctrl.refreshCandidatesCallback"
-                      start-polling-video-asset-status="$ctrl.startPollingVideoAssetStatus"
-                      batch-id="$ctrl.batchId"
-                      is-edit="$ctrl.isEdit"
-                      show-video-upload="$ctrl.showVideoUpload"
-                      show-display-upload="$ctrl.showDisplayUpload">
+<zem-upload-edit-form
+    endpoint="$ctrl.endpoint"
+    api="$ctrl.editFormApi"
+    update-callback="$ctrl.updateCandidateCallback"
+    refresh-callback="$ctrl.refreshCandidatesCallback"
+    start-polling-video-asset-status="$ctrl.startPollingVideoAssetStatus"
+    batch-id="$ctrl.batchId"
+    is-edit="$ctrl.isEdit"
+    show-video-upload="$ctrl.showVideoUpload"
+    show-display-upload="$ctrl.showDisplayUpload"
+>
 </zem-upload-edit-form>

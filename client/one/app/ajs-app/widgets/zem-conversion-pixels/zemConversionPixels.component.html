@@ -1,26 +1,58 @@
 <div class="custom-panel">
     <h2 class="custom-panel__title">Pixels</h2>
-    <div class="custom-panel__description">Zemanta's pixels allow you to report conversions, build audiences and get insights about how people use your website.</div>
+    <div class="custom-panel__description">
+        Zemanta's pixels allow you to report conversions, build audiences and
+        get insights about how people use your website.
+    </div>
     <div class="custom-table__mobile-container">
         <table class="custom-table">
             <thead>
                 <tr>
-                    <th class="arrow" ng-class="{ordered: $ctrl.orderField === 'name' && !$ctrl.orderReverse, 'ordered-reverse': $ctrl.orderField === 'name' && $ctrl.orderReverse}">
-                        <a href class="order" ng-click="$ctrl.orderField = 'name'; $ctrl.orderReverse = !$ctrl.orderReverse">Name</a>
-                        <zem-help-popover content="Pixel's name" placement="top"></zem-help-popover>
+                    <th
+                        class="arrow"
+                        ng-class="{ordered: $ctrl.orderField === 'name' && !$ctrl.orderReverse, 'ordered-reverse': $ctrl.orderField === 'name' && $ctrl.orderReverse}"
+                    >
+                        <a
+                            href
+                            class="order"
+                            ng-click="$ctrl.orderField = 'name'; $ctrl.orderReverse = !$ctrl.orderReverse"
+                            >Name</a
+                        >
+                        <zem-help-popover
+                            content="Pixel's name"
+                            placement="top"
+                        ></zem-help-popover>
                     </th>
-                    <th ng-if="$ctrl.hasPermission('zemauth.can_see_pixel_traffic')" is-internal="zemauth.can_see_pixel_traffic">
+                    <th
+                        ng-if="$ctrl.hasPermission('zemauth.can_see_pixel_traffic')"
+                        is-internal="zemauth.can_see_pixel_traffic"
+                    >
                         Last Triggered
-                        <zem-help-popover content="Synchronized every 24 hours." placement="top"></zem-help-popover>
+                        <zem-help-popover
+                            content="Synchronized every 24 hours."
+                            placement="top"
+                        ></zem-help-popover>
                     </th>
-                    <th ng-if="$ctrl.hasPermission('zemauth.can_see_pixel_traffic')" is-internal="zemauth.can_see_pixel_traffic">
+                    <th
+                        ng-if="$ctrl.hasPermission('zemauth.can_see_pixel_traffic')"
+                        is-internal="zemauth.can_see_pixel_traffic"
+                    >
                         Traffic Yesterday
-                        <zem-help-popover content="Number of times pixel triggered yesterday. Synchronized every 24 hours." placement="top"></zem-help-popover>
+                        <zem-help-popover
+                            content="Number of times pixel triggered yesterday. Synchronized every 24 hours."
+                            placement="top"
+                        ></zem-help-popover>
                     </th>
-                    <th ng-if="$ctrl.hasPermission('zemauth.can_redirect_pixels')" is-internal="zemauth.can_redirect_pixels">
+                    <th
+                        ng-if="$ctrl.hasPermission('zemauth.can_redirect_pixels')"
+                        is-internal="zemauth.can_redirect_pixels"
+                    >
                         Redirected
                     </th>
-                    <th ng-if="$ctrl.hasPermission('zemauth.can_see_pixel_notes')" is-internal="zemauth.can_see_pixel_notes">
+                    <th
+                        ng-if="$ctrl.hasPermission('zemauth.can_see_pixel_notes')"
+                        is-internal="zemauth.can_see_pixel_notes"
+                    >
                         Notes
                     </th>
                     <th></th>
@@ -28,44 +60,108 @@
                 </tr>
             </thead>
             <tbody>
-                <tr ng-class="{'archived': item.archived}" ng-repeat="item in $ctrl.state.conversionPixels | orderBy:$ctrl.orderField:$ctrl.orderReverse">
+                <tr
+                    ng-class="{'archived': item.archived}"
+                    ng-repeat="item in $ctrl.state.conversionPixels | orderBy:$ctrl.orderField:$ctrl.orderReverse"
+                >
                     <td>
                         <strong>{{ item.name }}</strong>
-                        <span ng-if="item.audienceEnabled" class="text-gray">(Custom audience pixel)</span>
-                        <span ng-if="item.additionalPixel" class="text-gray">(Additional custom audience pixel)</span>
+                        <span ng-if="item.audienceEnabled" class="text-gray"
+                            >(Custom audience pixel)</span
+                        >
+                        <span ng-if="item.additionalPixel" class="text-gray"
+                            >(Additional custom audience pixel)</span
+                        >
                     </td>
-                    <td ng-if="$ctrl.hasPermission('zemauth.can_see_pixel_traffic')">
-                        {{ (item.lastTriggered | date:'M/d/yyyy h:mm a') || 'Never' }}
+                    <td
+                        ng-if="$ctrl.hasPermission('zemauth.can_see_pixel_traffic')"
+                    >
+                        {{
+                            (item.lastTriggered | date: 'M/d/yyyy h:mm a') ||
+                                'Never'
+                        }}
                     </td>
-                    <td ng-if="$ctrl.hasPermission('zemauth.can_see_pixel_traffic')">
+                    <td
+                        ng-if="$ctrl.hasPermission('zemauth.can_see_pixel_traffic')"
+                    >
                         {{ item.impressions }}
                     </td>
-                    <td ng-if="$ctrl.hasPermission('zemauth.can_redirect_pixels')">
+                    <td
+                        ng-if="$ctrl.hasPermission('zemauth.can_redirect_pixels')"
+                    >
                         {{ item.redirectUrl ? 'Yes' : 'No' }}
                     </td>
-                    <td class="custom-table__break-word" ng-if="$ctrl.hasPermission('zemauth.can_see_pixel_notes')">
+                    <td
+                        class="custom-table__break-word"
+                        ng-if="$ctrl.hasPermission('zemauth.can_see_pixel_notes')"
+                    >
                         {{ item.notes }}
                     </td>
                     <td>
-                        <span class="loader" ng-if="$ctrl.state.requests.archive[item.id].inProgress || $ctrl.state.requests.restore[item.id].inProgress"></span>
-                        <span ng-if="$ctrl.state.requests.archive[item.id].error || $ctrl.state.requests.restore[item.id].error" class="message message--error">
-                             {{ $ctrl.state.requests.archive[item.id].error.audience_enabled || $ctrl.state.requests.restore[item.id].error.audience_enabled }}
+                        <span
+                            class="loader"
+                            ng-if="$ctrl.state.requests.archive[item.id].inProgress || $ctrl.state.requests.restore[item.id].inProgress"
+                        ></span>
+                        <span
+                            ng-if="$ctrl.state.requests.archive[item.id].error || $ctrl.state.requests.restore[item.id].error"
+                            class="message message--error"
+                        >
+                            {{
+                                $ctrl.state.requests.archive[item.id].error
+                                    .audience_enabled ||
+                                    $ctrl.state.requests.restore[item.id].error
+                                        .audience_enabled
+                            }}
                         </span>
                     </td>
                     <td class="custom-table__action-buttons">
-                        <span ng-if="$ctrl.hasPermission('zemauth.archive_restore_entity') && !item.archived">
-                            <zem-internal-feature ng-if="isPermissionInternal('zemauth.archive_restore_entity')" popover-placement="left"></zem-internal-feature>
-                            <a tabindex="-1" ng-click="$ctrl.archiveConversionPixel(item)" href class="button button--small button--with-icon archive-icon">Archive</a>
+                        <span
+                            ng-if="$ctrl.hasPermission('zemauth.archive_restore_entity') && !item.archived"
+                        >
+                            <zem-internal-feature
+                                ng-if="isPermissionInternal('zemauth.archive_restore_entity')"
+                                popover-placement="left"
+                            ></zem-internal-feature>
+                            <a
+                                tabindex="-1"
+                                ng-click="$ctrl.archiveConversionPixel(item)"
+                                href
+                                class="button button--small button--with-icon archive-icon"
+                                >Archive</a
+                            >
                         </span>
-                        <span ng-if="$ctrl.hasPermission('zemauth.archive_restore_entity') && !!item.archived">
-                            <zem-internal-feature ng-if="isPermissionInternal('zemauth.archive_restore_entity')" popover-placement="left"></zem-internal-feature>
-                            <a tabindex="-1" ng-click="$ctrl.restoreConversionPixel(item)" href class="button button--small button--with-icon archive-icon">Restore</a>
+                        <span
+                            ng-if="$ctrl.hasPermission('zemauth.archive_restore_entity') && !!item.archived"
+                        >
+                            <zem-internal-feature
+                                ng-if="isPermissionInternal('zemauth.archive_restore_entity')"
+                                popover-placement="left"
+                            ></zem-internal-feature>
+                            <a
+                                tabindex="-1"
+                                ng-click="$ctrl.restoreConversionPixel(item)"
+                                href
+                                class="button button--small button--with-icon archive-icon"
+                                >Restore</a
+                            >
                         </span>
                         <span ng-if="!item.archived">
-                            <a tabindex="-1" ng-click="$ctrl.copyConversionPixelTag(item)" href class="button button--small button--with-icon copy-icon">Copy tag</a>
+                            <a
+                                tabindex="-1"
+                                ng-click="$ctrl.copyConversionPixelTag(item)"
+                                href
+                                class="button button--small button--with-icon copy-icon"
+                                >Copy tag</a
+                            >
                         </span>
                         <span ng-if="!item.archived">
-                            <a tabindex="-1" ng-click="$ctrl.editConversionPixel(item)" href class="button button--small button--with-icon edit-icon">Edit pixel</a>
+                            <a
+                                tabindex="-1"
+                                ng-click="$ctrl.editConversionPixel(item)"
+                                href
+                                class="button button--small button--with-icon edit-icon"
+                                >Edit pixel</a
+                            >
                         </span>
                     </td>
                 </tr>
@@ -74,14 +170,25 @@
                         <div class="loader loader--full-width"></div>
                     </td>
                 </tr>
-                <tr ng-hide="$ctrl.state.conversionPixels.length || $ctrl.state.requests.list.inProgress">
+                <tr
+                    ng-hide="$ctrl.state.conversionPixels.length || $ctrl.state.requests.list.inProgress"
+                >
                     <td colspan="7" class="custom-table__no-data">No data</td>
                 </tr>
             </tbody>
         </table>
     </div>
-    <button type="button" class="button button--with-icon add-icon" ng-class="{'disabled': !!$ctrl.state.requests.list.inProgress || !!$ctrl.state.requests.list.error}" ng-click="$ctrl.addConversionPixel()">Add Pixel</button>
+    <button
+        type="button"
+        class="button button--with-icon add-icon"
+        ng-class="{'disabled': !!$ctrl.state.requests.list.inProgress || !!$ctrl.state.requests.list.error}"
+        ng-click="$ctrl.addConversionPixel()"
+    >
+        Add Pixel
+    </button>
     <span ng-if="!!$ctrl.state.requests.list.error" class="error">
-        An error has occurred while loading pixels. Please contact support at <a href="mailto:help@zemanta.com">help@zemanta.com</a> if the error persists.
+        An error has occurred while loading pixels. Please contact support at
+        <a href="mailto:help@zemanta.com">help@zemanta.com</a> if the error
+        persists.
     </span>
 </div>

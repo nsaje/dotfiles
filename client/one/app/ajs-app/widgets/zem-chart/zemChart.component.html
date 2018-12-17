@@ -1,25 +1,50 @@
-<div class="loader zem-chart__loader" ng-show="!$ctrl.initialized || $ctrl.chart.isLoading"></div>
-<zem-chart-metric-selector class="zem-chart-metrics-selector"
-        chart="$ctrl.chart"
-        metric="$ctrl.metrics.metric1"
-        on-metric-changed="$ctrl.onMetricsChanged(value, $ctrl.metrics.metric2)"
+<div
+    class="loader zem-chart__loader"
+    ng-show="!$ctrl.initialized || $ctrl.chart.isLoading"
+></div>
+<zem-chart-metric-selector
+    class="zem-chart-metrics-selector"
+    chart="$ctrl.chart"
+    metric="$ctrl.metrics.metric1"
+    on-metric-changed="$ctrl.onMetricsChanged(value, $ctrl.metrics.metric2)"
 ></zem-chart-metric-selector>
-<zem-chart-metric-selector class="zem-chart-metrics-selector zem-chart-metrics-selector--second"
-       chart="$ctrl.chart"
-       metric="$ctrl.metrics.metric2"
-       on-metric-changed="$ctrl.onMetricsChanged($ctrl.metrics.metric1, value)"
-       nullable="true"
+<zem-chart-metric-selector
+    class="zem-chart-metrics-selector zem-chart-metrics-selector--second"
+    chart="$ctrl.chart"
+    metric="$ctrl.metrics.metric2"
+    on-metric-changed="$ctrl.onMetricsChanged($ctrl.metrics.metric1, value)"
+    nullable="true"
 ></zem-chart-metric-selector>
 <ul class="zem-chart__legend">
-    <li class="zem-chart__legend-item" ng-repeat="item in $ctrl.chart.legend.items"
-        ng-style="{'background-color': item.color2, color: item.color1}" title="{{ item.name }}">
-        <div class="button-remove"
-             ng-class="{disabled: (item.id === null && $ctrl.chart.legend.items.length === 1) || !item.removable }"
-             ng-click="$ctrl.removeLegendItem(item)" ng-style="{'background-color': item.color1}">
-            <img ng-src="{{ $ctrl.config.staticUrl }}/one/images/remove-white.svg">
+    <li
+        class="zem-chart__legend-item"
+        ng-repeat="item in $ctrl.chart.legend.items"
+        ng-style="{'background-color': item.color2, color: item.color1}"
+        title="{{ item.name }}"
+    >
+        <div
+            class="button-remove"
+            ng-class="{disabled: (item.id === null && $ctrl.chart.legend.items.length === 1) || !item.removable }"
+            ng-click="$ctrl.removeLegendItem(item)"
+            ng-style="{'background-color': item.color1}"
+        >
+            <img
+                ng-src="{{
+                    $ctrl.config.staticUrl
+                }}/one/images/remove-white.svg"
+            />
         </div>
         {{ item.name }}
     </li>
 </ul>
-<div class="zem-chart__no-data" ng-if="$ctrl.initialized && !$ctrl.chart.hasData && !$ctrl.chart.isLoading"><span>No data</span></div>
-<highchart ng-if="$ctrl.initialized" config="$ctrl.chart.config" class="zem-chart__container"></highchart>
+<div
+    class="zem-chart__no-data"
+    ng-if="$ctrl.initialized && !$ctrl.chart.hasData && !$ctrl.chart.isLoading"
+>
+    <span>No data</span>
+</div>
+<highchart
+    ng-if="$ctrl.initialized"
+    config="$ctrl.chart.config"
+    class="zem-chart__container"
+></highchart>

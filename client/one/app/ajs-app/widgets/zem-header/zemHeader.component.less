@@ -10,12 +10,37 @@
     height: @header-height;
 
     background: @header-left-color;
-    background: -moz-linear-gradient(-45deg, @header-left-color 0%, @header-right-color 100%);
-    background: -webkit-gradient(left top, right bottom, color-stop(0%, @header-left-color), color-stop(100%, @header-right-color));
-    background: -webkit-linear-gradient(-45deg, @header-left-color 0%, @header-right-color 100%);
-    background: -o-linear-gradient(-45deg, @header-left-color 0%, @header-right-color 100%);
-    background: -ms-linear-gradient(-45deg, @header-left-color 0%, @header-right-color 100%);
-    background: linear-gradient(135deg, @header-left-color 0%, @header-right-color 100%);
+    background: -moz-linear-gradient(
+        -45deg,
+        @header-left-color 0%,
+        @header-right-color 100%
+    );
+    background: -webkit-gradient(
+        left top,
+        right bottom,
+        color-stop(0%, @header-left-color),
+        color-stop(100%, @header-right-color)
+    );
+    background: -webkit-linear-gradient(
+        -45deg,
+        @header-left-color 0%,
+        @header-right-color 100%
+    );
+    background: -o-linear-gradient(
+        -45deg,
+        @header-left-color 0%,
+        @header-right-color 100%
+    );
+    background: -ms-linear-gradient(
+        -45deg,
+        @header-left-color 0%,
+        @header-right-color 100%
+    );
+    background: linear-gradient(
+        135deg,
+        @header-left-color 0%,
+        @header-right-color 100%
+    );
     filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='@header-left-color', endColorstr='@header-right-color', GradientType=1 );
 
     position: fixed;
@@ -36,9 +61,9 @@
 
     .button {
         height: 40px;
-        background-color: fade(white,20%);
+        background-color: fade(white, 20%);
         border: none;
-        border-left: 1px solid fade(white,0%);
+        border-left: 1px solid fade(white, 0%);
         color: white !important;
         margin: 10px 0;
         transition: all @default-animation;
@@ -50,7 +75,7 @@
 
         &:not(.button--disabled):not([disabled]):hover {
             background-color: fade(white, 50%);
-            border-left: 1px solid fade(white,0%);
+            border-left: 1px solid fade(white, 0%);
             color: white;
         }
     }
@@ -141,7 +166,6 @@
     padding: 10px 20px;
     transition: all @default-animation;
 
-
     &:hover {
         background-color: fade(white, 10%);
     }
@@ -174,14 +198,18 @@
     z-index: 999;
     border-radius: 0;
     .border-bottom-radius (@border-radius);
-    box-shadow: 0px 0px 8px 0px rgba(0,0,0,0.1);
+    box-shadow: 0px 0px 8px 0px rgba(0, 0, 0, 0.1);
     transition: all @default-animation;
     transform: translateZ(0);
 
     &::after {
-        content: " ";
+        content: ' ';
         display: block;
-        background: linear-gradient(to bottom, fade(black,20%), fade(black,0%));
+        background: linear-gradient(
+            to bottom,
+            fade(black, 20%),
+            fade(black, 0%)
+        );
         position: absolute;
         top: 0;
         width: 100%;
@@ -234,7 +262,7 @@
     position: relative;
 
     &::before {
-        content: "";
+        content: '';
         display: block;
         position: absolute;
         top: 5px;
@@ -266,7 +294,8 @@
         border-radius: @border-radius;
     }
 
-    &:active, &:focus {
+    &:active,
+    &:focus {
         text-decoration: none;
     }
 }
@@ -330,11 +359,10 @@
 .zem-header-menu__group-title {
     font-size: 10px;
     text-transform: uppercase;
-    color: fade(white,50%);
+    color: fade(white, 50%);
     padding: 10px @default-spacing 2px @default-spacing;
     border-bottom: 1px solid fade(black, 10%);
 }
-
 
 .zem-header-date-range-picker {
     float: right;
@@ -370,7 +398,7 @@
         display: block !important;
         border-radius: 0;
         .border-bottom-radius (@border-radius);
-        box-shadow: 0px 0px 8px 0px rgba(0,0,0,0.1);
+        box-shadow: 0px 0px 8px 0px rgba(0, 0, 0, 0.1);
         transition: opacity @default-animation;
 
         &.open {
@@ -379,13 +407,17 @@
         }
 
         .ranges:before {
-            background: linear-gradient(to bottom, fade(black,20%), fade(black,0%));
+            background: linear-gradient(
+                to bottom,
+                fade(black, 20%),
+                fade(black, 0%)
+            );
             position: absolute;
             top: 0;
             left: 0;
             right: 0;
             height: 6px;
-            content: "";
+            content: '';
             display: block;
         }
 
@@ -414,55 +446,81 @@
 }
 
 @media only screen and (min-width: 1250px) {
-    .zem-header-breadcrumb__link { max-width: 120px; }
+    .zem-header-breadcrumb__link {
+        max-width: 120px;
+    }
 }
 
 @media only screen and (min-width: 1280px) {
-    .zem-header-breadcrumb__link { max-width: 130px; }
+    .zem-header-breadcrumb__link {
+        max-width: 130px;
+    }
 }
 
 @media only screen and (min-width: 1300px) {
-    .zem-header-breadcrumb__link { max-width: 152px; }
+    .zem-header-breadcrumb__link {
+        max-width: 152px;
+    }
 }
 
 @media only screen and (min-width: 1350px) {
-    .zem-header-breadcrumb__link { max-width: 168px; }
+    .zem-header-breadcrumb__link {
+        max-width: 168px;
+    }
 }
 
 @media only screen and (min-width: 1400px) {
-    .zem-header-breadcrumb__link { max-width: 186px; }
+    .zem-header-breadcrumb__link {
+        max-width: 186px;
+    }
 }
 
 @media only screen and (min-width: 1450px) {
-    .zem-header-breadcrumb__link { max-width: 202px; }
+    .zem-header-breadcrumb__link {
+        max-width: 202px;
+    }
 }
 
 @media only screen and (min-width: 1500px) {
-    .zem-header-breadcrumb__link { max-width: 218px; }
+    .zem-header-breadcrumb__link {
+        max-width: 218px;
+    }
 }
 
 @media only screen and (min-width: 1550px) {
-    .zem-header-breadcrumb__link { max-width: 234px; }
+    .zem-header-breadcrumb__link {
+        max-width: 234px;
+    }
 }
 
 @media only screen and (min-width: 1600px) {
-    .zem-header-breadcrumb__link { max-width: 250px; }
+    .zem-header-breadcrumb__link {
+        max-width: 250px;
+    }
 }
 
 @media only screen and (min-width: 1650px) {
-    .zem-header-breadcrumb__link { max-width: 266px; }
+    .zem-header-breadcrumb__link {
+        max-width: 266px;
+    }
 }
 
 @media only screen and (min-width: 1700px) {
-    .zem-header-breadcrumb__link { max-width: 282px; }
+    .zem-header-breadcrumb__link {
+        max-width: 282px;
+    }
 }
 
 @media only screen and (min-width: 1750px) {
-    .zem-header-breadcrumb__link { max-width: 298px; }
+    .zem-header-breadcrumb__link {
+        max-width: 298px;
+    }
 }
 
 @media only screen and (min-width: 1800px) {
-    .zem-header-breadcrumb__link { max-width: 314px; }
+    .zem-header-breadcrumb__link {
+        max-width: 314px;
+    }
 }
 
 @media only screen and (min-width: ((@desktop-breakpoint)+1)) {
@@ -596,8 +654,8 @@
 
         .zem-header-date-range-picker-dropdown {
             position: fixed;
-            top: 30px!important;
-            margin-top: 0!important;
+            top: 30px !important;
+            margin-top: 0 !important;
         }
     }
 }
@@ -678,7 +736,7 @@
         display: none;
         pointer-events: none;
     }
-    
+
     .zem-header-date-range-picker--mobile {
         display: block;
         pointer-events: auto;

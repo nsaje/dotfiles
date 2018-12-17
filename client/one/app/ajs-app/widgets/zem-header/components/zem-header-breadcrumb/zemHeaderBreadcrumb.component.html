@@ -1,8 +1,16 @@
-<div ng-repeat="item in $ctrl.breadcrumb"
-     class="zem-header-breadcrumb__item"
-     ng-class="{'zem-header-breadcrumb__item--with-slash': $index > 0}">
-    <a class="zem-header-breadcrumb__link" ng-href="{{ item.href }}" title="{{ item.name }}">
-        <span class="zem-header-breadcrumb__type-name">{{ item.typeName }}:</span>
+<div
+    ng-repeat="item in $ctrl.breadcrumb"
+    class="zem-header-breadcrumb__item"
+    ng-class="{'zem-header-breadcrumb__item--with-slash': $index > 0}"
+>
+    <a
+        class="zem-header-breadcrumb__link"
+        ng-href="{{ item.href }}"
+        title="{{ item.name }}"
+    >
+        <span class="zem-header-breadcrumb__type-name"
+            >{{ item.typeName }}:</span
+        >
         {{ item.name }}
     </a>
 </div>

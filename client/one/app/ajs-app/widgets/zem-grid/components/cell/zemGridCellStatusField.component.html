@@ -1,8 +1,10 @@
-<span class="zem-grid-cell-status-field"
-      ng-class="{'important': ctrl.data.important && !ctrl.row.archived}"
-      zem-lazy-popover-html-unsafe="{{ctrl.data.popoverMessage}}"
-      zem-lazy-popover-placement="right"
-      zem-lazy-popover-animation-class="fade"
-      zem-lazy-popover-append-to-body="true"
-      ng-bind="ctrl.statusText">
+<span
+    class="zem-grid-cell-status-field"
+    ng-class="{'important': ctrl.data.important && !ctrl.row.archived}"
+    zem-lazy-popover-html-unsafe="{{ ctrl.data.popoverMessage }}"
+    zem-lazy-popover-placement="right"
+    zem-lazy-popover-animation-class="fade"
+    zem-lazy-popover-append-to-body="true"
+    ng-bind="ctrl.statusText"
+>
 </span>

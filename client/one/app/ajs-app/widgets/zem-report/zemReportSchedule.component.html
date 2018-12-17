@@ -1,27 +1,42 @@
-<div class="modal__header">
-    <div class="modal__title">Schedule Report</div>
-</div>
+<div class="modal__header"><div class="modal__title">Schedule Report</div></div>
 <div class="modal__body">
     <h3>You are scheduling a report with the following settings:</h3>
-    <hr>
+    <hr />
     <div class="form">
-        <div class="form__group" ng-class="{'form--error': !!$ctrl.errors.name}">
-            <label class="form__label" for="report-name-input">Report name</label>
-            <input type="text"
-                   zem-focus-select
-                   id="report-name-input"
-                   class="input-text"
-                   ng-model="$ctrl.name"
-                   placeholder="Name of the report" />
-            <div class="message message--error" ng-repeat="error in $ctrl.errors.name"
-                 for="report-name-input">{{ error }}</div>
+        <div
+            class="form__group"
+            ng-class="{'form--error': !!$ctrl.errors.name}"
+        >
+            <label class="form__label" for="report-name-input"
+                >Report name</label
+            >
+            <input
+                type="text"
+                zem-focus-select
+                id="report-name-input"
+                class="input-text"
+                ng-model="$ctrl.name"
+                placeholder="Name of the report"
+            />
+            <div
+                class="message message--error"
+                ng-repeat="error in $ctrl.errors.name"
+                for="report-name-input"
+            >
+                {{ error }}
+            </div>
         </div>
 
-        <div class="form__group" ng-class="{'form--error': !!$ctrl.errors.frequency}">
+        <div
+            class="form__group"
+            ng-class="{'form--error': !!$ctrl.errors.frequency}"
+        >
             <label class="form__label" for="frequency-select">
                 Frequency
-                <zem-help-popover content="Report will be delivered to your inbox every day, week or month at 2AM EST."
-                                  placement="top"></zem-help-popover>
+                <zem-help-popover
+                    content="Report will be delivered to your inbox every day, week or month at 2AM EST."
+                    placement="top"
+                ></zem-help-popover>
             </label>
             <ui-select
                 theme="select2"
@@ -29,73 +44,160 @@
                 id="frequency-select"
                 class="button button--plain button--full-width button--dropdown-toggle-icon"
                 ng-model="$ctrl.frequency"
-                ng-change="frequencyChanged()">
-                <ui-select-match class="ui-select-match" placeholder="Choose frequency">{{$select.selected.name}}</ui-select-match>
-                <ui-select-choices repeat="freq in $ctrl.optionsFrequencies" class="ui-select-choices">
-                    <div>{{freq.name}}</div>
+                ng-change="frequencyChanged()"
+            >
+                <ui-select-match
+                    class="ui-select-match"
+                    placeholder="Choose frequency"
+                    >{{ $select.selected.name }}</ui-select-match
+                >
+                <ui-select-choices
+                    repeat="freq in $ctrl.optionsFrequencies"
+                    class="ui-select-choices"
+                >
+                    <div>{{ freq.name }}</div>
                 </ui-select-choices>
             </ui-select>
-            <div class="message message--error" ng-repeat="error in $ctrl.errors.frequency"
-                 for="frequency-select">{{ error }}</div>
+            <div
+                class="message message--error"
+                ng-repeat="error in $ctrl.errors.frequency"
+                for="frequency-select"
+            >
+                {{ error }}
+            </div>
         </div>
 
-        <div class="form__group" ng-class="{'form--error': !!$ctrl.errors.day_of_week}"
-             ng-if="$ctrl.dayOfWeekShown()">
+        <div
+            class="form__group"
+            ng-class="{'form--error': !!$ctrl.errors.day_of_week}"
+            ng-if="$ctrl.dayOfWeekShown()"
+        >
             <label class="form__label" for="day-of-week-select">
                 Day of week
-                <zem-help-popover content="Report will be delivered every week on this day." placement="top"></zem-help-popover>
+                <zem-help-popover
+                    content="Report will be delivered every week on this day."
+                    placement="top"
+                ></zem-help-popover>
             </label>
             <ui-select
                 theme="select2"
                 search-enabled="false"
                 id="day-of-week-select"
                 class="button button--plain button--full-width button--dropdown-toggle-icon"
-                ng-model="$ctrl.dayOfWeek">
-                <ui-select-match class="ui-select-match" placeholder="Choose day of week">{{$select.selected.name}}</ui-select-match>
-                <ui-select-choices repeat="dow in $ctrl.optionsDaysOfWeek" class="ui-select-choices">
-                    <div>{{dow.name}}</div>
+                ng-model="$ctrl.dayOfWeek"
+            >
+                <ui-select-match
+                    class="ui-select-match"
+                    placeholder="Choose day of week"
+                    >{{ $select.selected.name }}</ui-select-match
+                >
+                <ui-select-choices
+                    repeat="dow in $ctrl.optionsDaysOfWeek"
+                    class="ui-select-choices"
+                >
+                    <div>{{ dow.name }}</div>
                 </ui-select-choices>
             </ui-select>
-            <div class="message message--error" ng-repeat="error in $ctrl.errors.day_of_week"
-                 for="day-of-week-select">{{ error }}</div>
+            <div
+                class="message message--error"
+                ng-repeat="error in $ctrl.errors.day_of_week"
+                for="day-of-week-select"
+            >
+                {{ error }}
+            </div>
         </div>
 
-        <div class="form__group" ng-class="{'form--error': !!$ctrl.errors.time_period}">
+        <div
+            class="form__group"
+            ng-class="{'form--error': !!$ctrl.errors.time_period}"
+        >
             <label class="form__label" for="time-period-select">
                 Time period
-                <zem-help-popover content="Report will contain data for selected time period." placement="top"></zem-help-popover>
+                <zem-help-popover
+                    content="Report will contain data for selected time period."
+                    placement="top"
+                ></zem-help-popover>
             </label>
             <ui-select
                 theme="select2"
                 search-enabled="false"
                 id="time-period-select"
                 class="button button--plain button--full-width button--dropdown-toggle-icon"
-                ng-model="$ctrl.timePeriod">
-                <ui-select-match class="ui-select-match" placeholder="Choose Time period">{{$select.selected.name}}</ui-select-match>
-                <ui-select-choices repeat="tp in $ctrl.optionsTimePeriods" class="ui-select-choices">
-                    <div>{{tp.name}}</div>
+                ng-model="$ctrl.timePeriod"
+            >
+                <ui-select-match
+                    class="ui-select-match"
+                    placeholder="Choose Time period"
+                    >{{ $select.selected.name }}</ui-select-match
+                >
+                <ui-select-choices
+                    repeat="tp in $ctrl.optionsTimePeriods"
+                    class="ui-select-choices"
+                >
+                    <div>{{ tp.name }}</div>
                 </ui-select-choices>
             </ui-select>
-            <div class="message message--error" ng-repeat="error in $ctrl.errors.time_period"
-                 for="time-period-select">{{ error }}</div>
+            <div
+                class="message message--error"
+                ng-repeat="error in $ctrl.errors.time_period"
+                for="time-period-select"
+            >
+                {{ error }}
+            </div>
         </div>
-        <hr>
+        <hr />
         <zem-report-query-config
             grid-api="$ctrl.resolve.api"
             disabled="$ctrl.jobPosted"
-            config="$ctrl.queryConfig"></zem-report-query-config>
-        <hr>
-        <div class="form__group" ng-class="{'form__group--error': $ctrl.errors.query.options.recipients.length > 0}">
+            config="$ctrl.queryConfig"
+        ></zem-report-query-config>
+        <hr />
+        <div
+            class="form__group"
+            ng-class="{'form__group--error': $ctrl.errors.query.options.recipients.length > 0}"
+        >
             <label class="form__label">Recipients</label>
-            <textarea class="textarea" ng-model="$ctrl.recipients" placeholder="Comma-separated list of recipient email addresses" ng-disabled="$ctrl.jobPosted"></textarea>
-            <div ng-repeat="error in $ctrl.errors.query.options.recipients" class="message message--error" for="recipients">{{ error }}</div>
+            <textarea
+                class="textarea"
+                ng-model="$ctrl.recipients"
+                placeholder="Comma-separated list of recipient email addresses"
+                ng-disabled="$ctrl.jobPosted"
+            ></textarea>
+            <div
+                ng-repeat="error in $ctrl.errors.query.options.recipients"
+                class="message message--error"
+                for="recipients"
+            >
+                {{ error }}
+            </div>
         </div>
     </div>
 </div>
 <div class="modal__footer buttons-panel">
-    <button type="submit" class="button button--highlight button--with-icon download-icon" ng-click="$ctrl.scheduleReport()" ng-disabled="$ctrl.jobPosted">Schedule</button>
-    <button type="button" class="button button--outline" ng-click="$ctrl.close()">Cancel</button>
+    <button
+        type="submit"
+        class="button button--highlight button--with-icon download-icon"
+        ng-click="$ctrl.scheduleReport()"
+        ng-disabled="$ctrl.jobPosted"
+    >
+        Schedule
+    </button>
+    <button
+        type="button"
+        class="button button--outline"
+        ng-click="$ctrl.close()"
+    >
+        Cancel
+    </button>
     <div class="loader" ng-show="$ctrl.jobPosted"></div>
-    <span class="message message--error" ng-repeat="error in $ctrl.errors.nonFieldErrors">{{ error }}</span>
-    <span class="message message--error" ng-if="$ctrl.hasError && !$ctrl.errors">An error has occured. Please contact support at <a href="mailto:help@zemanta.com">help@zemanta.com</a> if the error persists.</span>
+    <span
+        class="message message--error"
+        ng-repeat="error in $ctrl.errors.nonFieldErrors"
+        >{{ error }}</span
+    >
+    <span class="message message--error" ng-if="$ctrl.hasError && !$ctrl.errors"
+        >An error has occured. Please contact support at
+        <a href="mailto:help@zemanta.com">help@zemanta.com</a> if the error
+        persists.</span
+    >
 </div>

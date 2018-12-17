@@ -1,15 +1,49 @@
 <span class="zem-grid-cell-external-link">
     <span ng-switch="ctrl.column.type">
         <span ng-switch-when="link" class="icon-link">
-            <a ng-show="ctrl.url && ctrl.fieldVisible" ng-href="{{ctrl.url}}" target="_blank"><img ng-src="{{ctrl.config.staticUrl}}/one/images/link.svg" class="link-img"></a>
-            <img ng-show="!ctrl.url && ctrl.row.data.supplyDashDisabledMessage && ctrl.fieldVisible" ng-src="{{ctrl.config.staticUrl}}/one/images/link.svg" class="link-img link-img-disabled" zem-lazy-popover-text="{{ctrl.row.data.supplyDashDisabledMessage}}" zem-lazy-popover-placement="right" zem-lazy-popover-append-to-body="true" zem-lazy-popover-animation-class="fade">
+            <a
+                ng-show="ctrl.url && ctrl.fieldVisible"
+                ng-href="{{ ctrl.url }}"
+                target="_blank"
+                ><img
+                    ng-src="{{ ctrl.config.staticUrl }}/one/images/link.svg"
+                    class="link-img"
+            /></a>
+            <img
+                ng-show="!ctrl.url && ctrl.row.data.supplyDashDisabledMessage && ctrl.fieldVisible"
+                ng-src="{{ ctrl.config.staticUrl }}/one/images/link.svg"
+                class="link-img link-img-disabled"
+                zem-lazy-popover-text="{{
+                    ctrl.row.data.supplyDashDisabledMessage
+                }}"
+                zem-lazy-popover-placement="right"
+                zem-lazy-popover-append-to-body="true"
+                zem-lazy-popover-animation-class="fade"
+            />
         </span>
         <span ng-switch-when="visibleLink" class="visible-link">
-            <a ng-show="ctrl.url && ctrl.fieldVisible" ng-href="{{ctrl.url}}" target="_blank"><img ng-src="{{ctrl.config.staticUrl}}/one/images/link.svg" class="link-img"></a>
+            <a
+                ng-show="ctrl.url && ctrl.fieldVisible"
+                ng-href="{{ ctrl.url }}"
+                target="_blank"
+                ><img
+                    ng-src="{{ ctrl.config.staticUrl }}/one/images/link.svg"
+                    class="link-img"
+            /></a>
         </span>
         <span ng-switch-default class="text-link">
-            <a ng-show="ctrl.url && ctrl.fieldVisible" ng-href="{{ctrl.url}}" ng-click="ctrl.openUrl($event)" ng-attr-title="{{ctrl.text}}">{{ctrl.text}}</a>
-            <span ng-show="!ctrl.url && ctrl.fieldVisible" class="text-link-disabled">{{ctrl.text}}</span>
+            <a
+                ng-show="ctrl.url && ctrl.fieldVisible"
+                ng-href="{{ ctrl.url }}"
+                ng-click="ctrl.openUrl($event)"
+                ng-attr-title="{{ ctrl.text }}"
+                >{{ ctrl.text }}</a
+            >
+            <span
+                ng-show="!ctrl.url && ctrl.fieldVisible"
+                class="text-link-disabled"
+                >{{ ctrl.text }}</span
+            >
         </span>
     </span>
 </span>

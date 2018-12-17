@@ -1,12 +1,41 @@
 <div>
     <div class="modal__body">
         <div class="content-upload__uploading-completed">
-            <div class="content-upload__uploading-completed-title">Uploading completed</div>
-            <p><strong>{{ ctrl.numSuccessful }} <ng-pluralize count="ctrl.numSuccessful" when="{'one': 'ad', 'other': 'ads'}"></ng-pluralize></strong> <ng-pluralize count="ctrl.numSuccessful" when="{'one': 'was', 'other': 'were'}"></ng-pluralize> successfully added to the ad group <strong>{{ ctrl.adGroup.name }}</strong>.</p>
+            <div class="content-upload__uploading-completed-title">
+                Uploading completed
+            </div>
+            <p>
+                <strong
+                    >{{ ctrl.numSuccessful }}
+                    <ng-pluralize
+                        count="ctrl.numSuccessful"
+                        when="{'one': 'ad', 'other': 'ads'}"
+                    ></ng-pluralize
+                ></strong>
+                <ng-pluralize
+                    count="ctrl.numSuccessful"
+                    when="{'one': 'was', 'other': 'were'}"
+                ></ng-pluralize>
+                successfully added to the ad group
+                <strong>{{ ctrl.adGroup.name }}</strong
+                >.
+            </p>
         </div>
     </div>
     <div class="modal__footer buttons-panel">
-        <button type="button" class="button button--highlight" ng-click="ctrl.callback()">Upload more ads</button>
-        <button type="button" class="button button--outline" ng-click="ctrl.close()">Close</button>
+        <button
+            type="button"
+            class="button button--highlight"
+            ng-click="ctrl.callback()"
+        >
+            Upload more ads
+        </button>
+        <button
+            type="button"
+            class="button button--outline"
+            ng-click="ctrl.close()"
+        >
+            Close
+        </button>
     </div>
 </div>

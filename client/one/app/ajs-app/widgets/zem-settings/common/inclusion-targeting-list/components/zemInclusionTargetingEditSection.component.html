@@ -1,63 +1,98 @@
-<div class="two-columns-list__title {{$ctrl.selectedTitleClass}}">{{ $ctrl.selectedTitle }}</div>
-<div ng-repeat="section in $ctrl.sectionOrder" class="two-columns-list__section">
+<div class="two-columns-list__title {{ $ctrl.selectedTitleClass }}">
+    {{ $ctrl.selectedTitle }}
+</div>
+<div
+    ng-repeat="section in $ctrl.sectionOrder"
+    class="two-columns-list__section"
+>
     <div class="two-columns-list__section-name" ng-show="$ctrl.displaySections">
         {{ section }}
     </div>
     <ul class="two-columns-list__list list-with-bullets">
-        <li ng-repeat="targeting in $ctrl.selectedItemsBySection[section] | limitTo: $ctrl.getSectionLimit(section)"
+        <li
+            ng-repeat="targeting in $ctrl.selectedItemsBySection[section] | limitTo: $ctrl.getSectionLimit(section)"
             ng-class="{
                 'two-columns-list__list--one-icon': targeting.badges.length === 1,
                 'two-columns-list__list--two-icons': targeting.badges.length === 2,
                 'two-columns-list__list--three-icons': targeting.badges.length === 3,
-            }">
+            }"
+        >
             {{ targeting.title }}
-            <span class="text-gray" ng-show="targeting.archived">(Archived)</span>
+            <span class="text-gray" ng-show="targeting.archived"
+                >(Archived)</span
+            >
             <div class="targeting-not-supported" ng-show="targeting.badges">
-                <div class="targeting-not-supported__icon targeting-not-supported__icon--{{badge.class}}"
+                <div
+                    class="targeting-not-supported__icon targeting-not-supported__icon--{{
+                        badge.class
+                    }}"
                     ng-repeat="badge in targeting.badges"
-                    title="{{badge.text}}"
-                    alt="{{badge.text}}">
-                </div>
+                    title="{{ badge.text }}"
+                    alt="{{ badge.text }}"
+                ></div>
             </div>
-            <a class="button button--extra-small button--with-icon button--only-icon remove-icon"
-            ng-click="$ctrl.remove(targeting)" href>
+            <a
+                class="button button--extra-small button--with-icon button--only-icon remove-icon"
+                ng-click="$ctrl.remove(targeting)"
+                href
+            >
             </a>
         </li>
-        <li class="two-columns-list__show-more" ng-if="$ctrl.selectedItemsBySection[section].length > $ctrl.getSectionLimit(section)">
-            <a class="alternative-link" ng-click="$ctrl.expandSection(section)">Show all ({{$ctrl.selectedItemsBySection[section].length}})</a>
+        <li
+            class="two-columns-list__show-more"
+            ng-if="$ctrl.selectedItemsBySection[section].length > $ctrl.getSectionLimit(section)"
+        >
+            <a class="alternative-link" ng-click="$ctrl.expandSection(section)"
+                >Show all ({{
+                    $ctrl.selectedItemsBySection[section].length
+                }})</a
+            >
         </li>
     </ul>
 </div>
 <div class="two-columns-list__empty" ng-show="!$ctrl.sectionOrder.length">
     List is currently empty. To add items click in the field below.
 </div>
-<ui-select ng-model="$ctrl.currentlySelected"
-           class="two-columns-list__add-dropdown"
-           on-select="$ctrl.onItemSelected($select.selected)"
-           ng-disabled="$ctrl.disabled"
-           theme="bootstrap"
-           sortable="false"
-           close-on-select="false">
-    <ui-select-match class="ui-select-match" class="ui-select-match" placeholder="{{$ctrl.selectTargetingButtonText}}">
+<ui-select
+    ng-model="$ctrl.currentlySelected"
+    class="two-columns-list__add-dropdown"
+    on-select="$ctrl.onItemSelected($select.selected)"
+    ng-disabled="$ctrl.disabled"
+    theme="bootstrap"
+    sortable="false"
+    close-on-select="false"
+>
+    <ui-select-match
+        class="ui-select-match"
+        class="ui-select-match"
+        placeholder="{{ $ctrl.selectTargetingButtonText }}"
+    >
         {{ $ctrl.selectTargetingButtonText }}
     </ui-select-match>
-    <ui-select-choices repeat="targeting in $ctrl.unselectedItems | filter: {name: $select.search} track by targeting.id"
-                       class="ui-select-choices"
-                       group-by="$ctrl.groupBy"
-                       refresh="$ctrl.onRefresh($select.search)"
-                       refresh-delay="250"
-                       position="down">
+    <ui-select-choices
+        repeat="targeting in $ctrl.unselectedItems | filter: {name: $select.search} track by targeting.id"
+        class="ui-select-choices"
+        group-by="$ctrl.groupBy"
+        refresh="$ctrl.onRefresh($select.search)"
+        refresh-delay="250"
+        position="down"
+    >
         <span ng-bind-html="targeting.name | highlight: $select.search"></span>
         <div class="targeting-not-supported" ng-show="targeting.badges">
-            <div ng-repeat="badge in targeting.badges"
-                 class="targeting-not-supported__icon targeting-not-supported__icon--{{badge.class}}"
-                 title="{{badge.text}}"
-                 alt="{{badge.text}}">
-            </div>
+            <div
+                ng-repeat="badge in targeting.badges"
+                class="targeting-not-supported__icon targeting-not-supported__icon--{{
+                    badge.class
+                }}"
+                title="{{ badge.text }}"
+                alt="{{ badge.text }}"
+            ></div>
         </div>
     </ui-select-choices>
     <ui-select-no-choice>
         <span ng-show="$select.search !== ''">{{ $ctrl.noChoiceText }}</span>
-        <span ng-show="$select.search === ''">Start typing to search for items.</span>
+        <span ng-show="$select.search === ''"
+            >Start typing to search for items.</span
+        >
     </ui-select-no-choice>
 </ui-select>

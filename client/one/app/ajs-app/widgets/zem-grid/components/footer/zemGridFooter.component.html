@@ -1,18 +1,18 @@
 <div class="zem-grid-sticky__container">
-<div class="zem-grid-sticky__footer">
-<div class="zem-grid-sticky__scroller-container">
-    <div class="zem-grid-sticky__scroller-content"></div>
-</div>
-<div class="zem-grid-footer">
-    <div class="zem-grid-row" ng-if="ctrl.grid.footer.row.data">
-        <zem-grid-cell ng-repeat="col in ctrl.grid.header.visibleColumns track by $index"
-                       col="col"
-                       data="ctrl.grid.footer.row.data.stats[col.field]"
-                       row="ctrl.grid.footer.row"
-                       grid="ctrl.grid"
-        ></zem-grid-cell>
+    <div class="zem-grid-sticky__footer">
+        <div class="zem-grid-sticky__scroller-container">
+            <div class="zem-grid-sticky__scroller-content"></div>
+        </div>
+        <div class="zem-grid-footer">
+            <div class="zem-grid-row" ng-if="ctrl.grid.footer.row.data">
+                <zem-grid-cell
+                    ng-repeat="col in ctrl.grid.header.visibleColumns track by $index"
+                    col="col"
+                    data="ctrl.grid.footer.row.data.stats[col.field]"
+                    row="ctrl.grid.footer.row"
+                    grid="ctrl.grid"
+                ></zem-grid-cell>
+            </div>
+        </div>
     </div>
-</div>
-
-</div>
 </div>

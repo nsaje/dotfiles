@@ -1,89 +1,266 @@
 <div class="modal__header">
     <div class="modal__title" ng-if="$ctrl.createMode">Add Credit</div>
-    <div class="modal__title" ng-if="!$ctrl.createMode">Edit Credit Item #{{ $ctrl.state.creditItem.id }}</div>
+    <div class="modal__title" ng-if="!$ctrl.createMode">
+        Edit Credit Item #{{ $ctrl.state.creditItem.id }}
+    </div>
 </div>
 <div class="modal__body">
-    <div class="loader loader--full-width" ng-show="$ctrl.state.requests.reloadCreditItem.inProgress"></div>
-    <p>Created by <strong>{{ $ctrl.state.creditItem.createdBy }}</strong> on <strong>{{ $ctrl.state.creditItem.createdOn }}</strong></p>
-    <hr>
-    <div class="form" id="form-account-credit-item" ng-class="{ 'new': $ctrl.createMode, 'edit': !$ctrl.createMode }" ng-show="!$ctrl.state.requests.reloadCreditItem.inProgress">
-        <div class="form__group" ng-class="{'form--error': !!$ctrl.state.requests.saveCreditItem.errors.startDate}">
+    <div
+        class="loader loader--full-width"
+        ng-show="$ctrl.state.requests.reloadCreditItem.inProgress"
+    ></div>
+    <p>
+        Created by <strong>{{ $ctrl.state.creditItem.createdBy }}</strong> on
+        <strong>{{ $ctrl.state.creditItem.createdOn }}</strong>
+    </p>
+    <hr />
+    <div
+        class="form"
+        id="form-account-credit-item"
+        ng-class="{ 'new': $ctrl.createMode, 'edit': !$ctrl.createMode }"
+        ng-show="!$ctrl.state.requests.reloadCreditItem.inProgress"
+    >
+        <div
+            class="form__group"
+            ng-class="{'form--error': !!$ctrl.state.requests.saveCreditItem.errors.startDate}"
+        >
             <label class="form__label" for="start-date-input">Valid From</label>
-            <div class="prefixed-field prefixed-field--narrow prefixed-field--with-icon calendar-icon">
-                <input class="input-text" id="start-date-input" type="text" uib-datepicker-popup="MM/dd/yyyy"
-                       ng-model="$ctrl.state.creditItem.startDate" datepicker-options="$ctrl.startDatePickerOptions"
-                       is-open="$ctrl.isStartDatePickerOpen" ng-click="$ctrl.openStartDatePicker()" ng-disabled="$ctrl.state.creditItem.isSigned" />
+            <div
+                class="prefixed-field prefixed-field--narrow prefixed-field--with-icon calendar-icon"
+            >
+                <input
+                    class="input-text"
+                    id="start-date-input"
+                    type="text"
+                    uib-datepicker-popup="MM/dd/yyyy"
+                    ng-model="$ctrl.state.creditItem.startDate"
+                    datepicker-options="$ctrl.startDatePickerOptions"
+                    is-open="$ctrl.isStartDatePickerOpen"
+                    ng-click="$ctrl.openStartDatePicker()"
+                    ng-disabled="$ctrl.state.creditItem.isSigned"
+                />
             </div>
-            <div ng-repeat="error in $ctrl.state.requests.saveCreditItem.errors.startDate" class="message message--error" for="start-date-input">{{ error }}</div>
+            <div
+                ng-repeat="error in $ctrl.state.requests.saveCreditItem.errors.startDate"
+                class="message message--error"
+                for="start-date-input"
+            >
+                {{ error }}
+            </div>
         </div>
-        <div class="form__group" ng-class="{'form--error': !!$ctrl.state.requests.saveCreditItem.errors.endDate}">
+        <div
+            class="form__group"
+            ng-class="{'form--error': !!$ctrl.state.requests.saveCreditItem.errors.endDate}"
+        >
             <label class="form__label" for="end-date-input">Valid To</label>
-            <div class="prefixed-field prefixed-field--narrow prefixed-field--with-icon calendar-icon">
-                <input class="input-text" id="end-date-input" type="text" uib-datepicker-popup="MM/dd/yyyy"
-                       ng-model="$ctrl.state.creditItem.endDate" datepicker-options="$ctrl.endDatePickerOptions"
-                       is-open="$ctrl.isEndDatePickerOpen" ng-click="$ctrl.openEndDatePicker()" />
+            <div
+                class="prefixed-field prefixed-field--narrow prefixed-field--with-icon calendar-icon"
+            >
+                <input
+                    class="input-text"
+                    id="end-date-input"
+                    type="text"
+                    uib-datepicker-popup="MM/dd/yyyy"
+                    ng-model="$ctrl.state.creditItem.endDate"
+                    datepicker-options="$ctrl.endDatePickerOptions"
+                    is-open="$ctrl.isEndDatePickerOpen"
+                    ng-click="$ctrl.openEndDatePicker()"
+                />
             </div>
-            <div ng-repeat="error in $ctrl.state.requests.saveCreditItem.errors.endDate" class="message message--error" for="end-date-input">{{ error }}</div>
+            <div
+                ng-repeat="error in $ctrl.state.requests.saveCreditItem.errors.endDate"
+                class="message message--error"
+                for="end-date-input"
+            >
+                {{ error }}
+            </div>
         </div>
-        <div class="form__group" ng-class="{'form--error': !!$ctrl.state.requests.saveCreditItem.errors.licenseFee}">
-            <label class="form__label" for="license-fee-select">License Fee (%)</label>
-            <ui-select class="button button--plain button--narrow button--dropdown-toggle-icon" theme="select2"
-                       id="license-fee-select" ng-model="$ctrl.state.creditItem.licenseFee" ng-disabled="$ctrl.state.creditItem.isSigned"
-                       search-enabled="true">
-                <ui-select-match>{{$select.selected | number:2}}%</ui-select-match>
-                <ui-select-choices repeat="fee in $ctrl.getLicenseFees($select.search, $ctrl.state.creditItem.licenseFee) | filter: $select.search" class="ui-select-choices">
+        <div
+            class="form__group"
+            ng-class="{'form--error': !!$ctrl.state.requests.saveCreditItem.errors.licenseFee}"
+        >
+            <label class="form__label" for="license-fee-select"
+                >License Fee (%)</label
+            >
+            <ui-select
+                class="button button--plain button--narrow button--dropdown-toggle-icon"
+                theme="select2"
+                id="license-fee-select"
+                ng-model="$ctrl.state.creditItem.licenseFee"
+                ng-disabled="$ctrl.state.creditItem.isSigned"
+                search-enabled="true"
+            >
+                <ui-select-match
+                    >{{ $select.selected | number: 2 }}%</ui-select-match
+                >
+                <ui-select-choices
+                    repeat="fee in $ctrl.getLicenseFees($select.search, $ctrl.state.creditItem.licenseFee) | filter: $select.search"
+                    class="ui-select-choices"
+                >
                     <span ng-bind-html="fee"></span>%
                 </ui-select-choices>
             </ui-select>
-            <div class="message message--error" ng-repeat="error in $ctrl.state.requests.saveCreditItem.errors.licenseFee" for="license-fee">{{ error }}</div>
+            <div
+                class="message message--error"
+                ng-repeat="error in $ctrl.state.requests.saveCreditItem.errors.licenseFee"
+                for="license-fee"
+            >
+                {{ error }}
+            </div>
         </div>
-        <div class="form__group" ng-class="{'form--error': !!$ctrl.state.requests.saveCreditItem.errors.amount}">
+        <div
+            class="form__group"
+            ng-class="{'form--error': !!$ctrl.state.requests.saveCreditItem.errors.amount}"
+        >
             <label class="form__label" for="amount-input">Credit</label>
-            <div class="prefixed-field postfixed-field prefixed-field--narrow postfixed-field--narrow">
-                <span class="prefixed-field__prefix" ng-if="!$ctrl.createMode">{{$ctrl.state.creditItem.currencySymbol}}</span>
-                <span class="prefixed-field__prefix" ng-if="$ctrl.createMode">{{$ctrl.newCreditCurrencySymbol}}</span>
-                <input class="input-text" id="amount-input" type="text" ng-model="$ctrl.state.creditItem.amount" zem-currency-input fraction-size="0">
+            <div
+                class="prefixed-field postfixed-field prefixed-field--narrow postfixed-field--narrow"
+            >
+                <span
+                    class="prefixed-field__prefix"
+                    ng-if="!$ctrl.createMode"
+                    >{{ $ctrl.state.creditItem.currencySymbol }}</span
+                >
+                <span class="prefixed-field__prefix" ng-if="$ctrl.createMode">{{
+                    $ctrl.newCreditCurrencySymbol
+                }}</span>
+                <input
+                    class="input-text"
+                    id="amount-input"
+                    type="text"
+                    ng-model="$ctrl.state.creditItem.amount"
+                    zem-currency-input
+                    fraction-size="0"
+                />
                 <span class="postfixed-field__postfix">.00</span>
             </div>
-            <div ng-repeat="error in $ctrl.state.requests.saveCreditItem.errors.amount" class="message message--error" for="amount">{{ error }}</div>
+            <div
+                ng-repeat="error in $ctrl.state.requests.saveCreditItem.errors.amount"
+                class="message message--error"
+                for="amount"
+            >
+                {{ error }}
+            </div>
         </div>
-        <div class="form__group" ng-class="{'form--error': !!$ctrl.state.requests.saveCreditItem.errors.comment}">
+        <div
+            class="form__group"
+            ng-class="{'form--error': !!$ctrl.state.requests.saveCreditItem.errors.comment}"
+        >
             <label class="form__label" for="comment-input">Custom Notes</label>
-            <textarea class="textarea" id="comment-input" type="text" ng-model="$ctrl.state.creditItem.comment" maxlength="256"></textarea>
-            <div class="message message--error" ng-repeat="error in $ctrl.state.requests.saveCreditItem.errors.comment" for="comment">{{ error }}</div>
+            <textarea
+                class="textarea"
+                id="comment-input"
+                type="text"
+                ng-model="$ctrl.state.creditItem.comment"
+                maxlength="256"
+            ></textarea>
+            <div
+                class="message message--error"
+                ng-repeat="error in $ctrl.state.requests.saveCreditItem.errors.comment"
+                for="comment"
+            >
+                {{ error }}
+            </div>
         </div>
-        <div class="form__group" ng-class="{'form--error': !!$ctrl.state.requests.saveCreditItem.errors.contractId}">
-            <label class="form__label" for="contractID-input">Contract ID</label>
-            <input class="input-text" id="contractID-input" type="text" placeholder="123456ABC789NgQAAU" ng-model="$ctrl.state.creditItem.contractId" />
-            <div class="message message--error" ng-repeat="error in $ctrl.state.requests.saveCreditItem.errors.contractId" for="contractID-input">{{ error }}</div>
+        <div
+            class="form__group"
+            ng-class="{'form--error': !!$ctrl.state.requests.saveCreditItem.errors.contractId}"
+        >
+            <label class="form__label" for="contractID-input"
+                >Contract ID</label
+            >
+            <input
+                class="input-text"
+                id="contractID-input"
+                type="text"
+                placeholder="123456ABC789NgQAAU"
+                ng-model="$ctrl.state.creditItem.contractId"
+            />
+            <div
+                class="message message--error"
+                ng-repeat="error in $ctrl.state.requests.saveCreditItem.errors.contractId"
+                for="contractID-input"
+            >
+                {{ error }}
+            </div>
         </div>
-        <div class="form__group" ng-class="{'form--error': !!$ctrl.state.requests.saveCreditItem.errors.contractNumber}">
-            <label class="form__label" for="contractNumber-input">Contract Number</label>
-            <input class="input-text" id="contractNumber-input" type="text" placeholder="123456789" ng-model="$ctrl.state.creditItem.contractNumber" />
-            <div class="message message--error" ng-repeat="error in $ctrl.state.requests.saveCreditItem.errors.contractNumber" for="contractNumber-input">{{ error }}</div>
+        <div
+            class="form__group"
+            ng-class="{'form--error': !!$ctrl.state.requests.saveCreditItem.errors.contractNumber}"
+        >
+            <label class="form__label" for="contractNumber-input"
+                >Contract Number</label
+            >
+            <input
+                class="input-text"
+                id="contractNumber-input"
+                type="text"
+                placeholder="123456789"
+                ng-model="$ctrl.state.creditItem.contractNumber"
+            />
+            <div
+                class="message message--error"
+                ng-repeat="error in $ctrl.state.requests.saveCreditItem.errors.contractNumber"
+                for="contractNumber-input"
+            >
+                {{ error }}
+            </div>
         </div>
-        <div class="form__group" ng-class="{'form--error': !!$ctrl.state.requests.saveCreditItem.errors.agency}" ng-if="$ctrl.account.data.agency">
+        <div
+            class="form__group"
+            ng-class="{'form--error': !!$ctrl.state.requests.saveCreditItem.errors.agency}"
+            ng-if="$ctrl.account.data.agency"
+        >
             <label class="form__label">Agency credit</label>
             <div class="form__checkbox">
                 <label>
-                    <input class="input-checkbox" id="is-agency-input" type="checkbox" ng-model="$ctrl.state.creditItem.isAgency">
+                    <input
+                        class="input-checkbox"
+                        id="is-agency-input"
+                        type="checkbox"
+                        ng-model="$ctrl.state.creditItem.isAgency"
+                    />
                     <span class="checkbox-text"></span>
                 </label>
             </div>
-            <div class="message message--error" ng-repeat="error in $ctrl.state.requests.saveCreditItem.errors.agency" for="is-agency-input">{{ error }}</div>
+            <div
+                class="message message--error"
+                ng-repeat="error in $ctrl.state.requests.saveCreditItem.errors.agency"
+                for="is-agency-input"
+            >
+                {{ error }}
+            </div>
         </div>
-        <hr>
-        <p>By signing the credit line item, no more future changes to the amount, fee and start date will be possible.</p>
-        <div class="form__checkbox" ng-class="{'form--error': !!$ctrl.state.requests.saveCreditItem.errors.status}">
+        <hr />
+        <p>
+            By signing the credit line item, no more future changes to the
+            amount, fee and start date will be possible.
+        </p>
+        <div
+            class="form__checkbox"
+            ng-class="{'form--error': !!$ctrl.state.requests.saveCreditItem.errors.status}"
+        >
             <label>
-                <input class="input-checkbox" id="is-signed-input" type="checkbox" ng-model="$ctrl.state.creditItem.isSigned" ng-disabled="$ctrl.wasSigned">
+                <input
+                    class="input-checkbox"
+                    id="is-signed-input"
+                    type="checkbox"
+                    ng-model="$ctrl.state.creditItem.isSigned"
+                    ng-disabled="$ctrl.wasSigned"
+                />
                 <span class="checkbox-text">Signed</span>
             </label>
-            <div ng-repeat="error in $ctrl.state.requests.saveCreditItem.errors.status" class="message message--error" for="is-signed-input">{{ error }}</div>
+            <div
+                ng-repeat="error in $ctrl.state.requests.saveCreditItem.errors.status"
+                class="message message--error"
+                for="is-signed-input"
+            >
+                {{ error }}
+            </div>
         </div>
     </div>
     <div ng-show="!$ctrl.createMode">
-        <hr>
+        <hr />
         <h3>Allocated budget items</h3>
         <p>Only the latest 100 budgets are shown.</p>
         <table class="custom-table">
@@ -98,24 +275,68 @@
             </thead>
             <tbody>
                 <tr ng-repeat="budget in $ctrl.state.creditItem.budgets">
-                    <td class="custom-table__break-word">{{ budget.campaign }}</td>
-                    <td>{{ budget.total | decimalCurrency:budget.currencySymbol:2 }}</td>
-                    <td>{{ budget.spend | decimalCurrency:budget.currencySymbol:2 }}</td>
+                    <td class="custom-table__break-word">
+                        {{ budget.campaign }}
+                    </td>
+                    <td>
+                        {{
+                            budget.total
+                                | decimalCurrency: budget.currencySymbol:2
+                        }}
+                    </td>
+                    <td>
+                        {{
+                            budget.spend
+                                | decimalCurrency: budget.currencySymbol:2
+                        }}
+                    </td>
                     <td>{{ budget.startDate }} - {{ budget.endDate }}</td>
-                    <td><zem-note-popover content="{{ budget.comment }}" placement="top" class="note-popover"></zem-note-popover></td>
+                    <td>
+                        <zem-note-popover
+                            content="{{ budget.comment }}"
+                            placement="top"
+                            class="note-popover"
+                        ></zem-note-popover>
+                    </td>
                 </tr>
                 <tr ng-show="!$ctrl.state.creditItem.numOfBudgets">
-                    <td colspan="5" class="custom-table__no-data">No allocated budget items.</td>
+                    <td colspan="5" class="custom-table__no-data">
+                        No allocated budget items.
+                    </td>
                 </tr>
             </tbody>
         </table>
     </div>
 </div>
 <div class="modal__footer buttons-panel">
-    <button type="button" class="button button--highlight button--with-icon check-icon" ng-click="$ctrl.saveCreditItem()" ng-disabled="$ctrl.state.requests.saveCreditItem.inProgress">Save</button>
-    <button type="button" class="button button--outline" ng-click="$ctrl.discardCreditItem()" ng-disabled="$ctrl.state.requests.saveCreditItem.inProgress">Discard</button>
-    <div class="loader" ng-show="$ctrl.state.requests.saveCreditItem.inProgress"></div>
-    <span ng-show="$ctrl.saved" class="message message--success">Your updates have been saved.</span>
-    <span ng-show="$ctrl.saved === false" class="message message--error">An error occurred while saving. Please correct the marked fields and save again.</span>
-    <span ng-show="$ctrl.discarded" class="message">Your updates have been discarded.</span>
+    <button
+        type="button"
+        class="button button--highlight button--with-icon check-icon"
+        ng-click="$ctrl.saveCreditItem()"
+        ng-disabled="$ctrl.state.requests.saveCreditItem.inProgress"
+    >
+        Save
+    </button>
+    <button
+        type="button"
+        class="button button--outline"
+        ng-click="$ctrl.discardCreditItem()"
+        ng-disabled="$ctrl.state.requests.saveCreditItem.inProgress"
+    >
+        Discard
+    </button>
+    <div
+        class="loader"
+        ng-show="$ctrl.state.requests.saveCreditItem.inProgress"
+    ></div>
+    <span ng-show="$ctrl.saved" class="message message--success"
+        >Your updates have been saved.</span
+    >
+    <span ng-show="$ctrl.saved === false" class="message message--error"
+        >An error occurred while saving. Please correct the marked fields and
+        save again.</span
+    >
+    <span ng-show="$ctrl.discarded" class="message"
+        >Your updates have been discarded.</span
+    >
 </div>

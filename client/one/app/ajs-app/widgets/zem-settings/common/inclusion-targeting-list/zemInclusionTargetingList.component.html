@@ -1,45 +1,71 @@
 <div ng-show="!$ctrl.isTargetingEditSectionVisible()">
-    <button class="button button--with-icon check-icon" ng-click="$ctrl.enableTargetingEditSection()">
+    <button
+        class="button button--with-icon check-icon"
+        ng-click="$ctrl.enableTargetingEditSection()"
+    >
         {{ $ctrl.texts.toggleTargetingEditSection }}
     </button>
 </div>
 
-<div ng-show="$ctrl.isTargetingEditSectionVisible()" class="two-columns-list two-columns-list--with-dropdown m-b-s clearfix">
-    <div class="two-columns-list__container" ng-class="{'two-columns-list__container--half': $ctrl.targetings.excluded.length || $ctrl.showExcludedSection}">
-        <zem-inclusion-targeting-edit-section selected-title-class="text-green"
-                                              selected-title="{{$ctrl.texts.selectedIncludedTitle}}"
-                                              selected-items="$ctrl.targetings.included"
-                                              unselected-items="$ctrl.targetings.notSelected"
-                                              display-sections="$ctrl.displaySections"
-                                              disabled="$ctrl.disabled"
-                                              remove="$ctrl.remove"
-                                              group-by="$ctrl.groupBySection"
-                                              on-select="$ctrl.include"
-                                              on-refresh="$ctrl.onRefresh"
-                                              select-targeting-button-text="{{$ctrl.texts.selectTargetingButton}}"
-                                              no-choice-text="{{$ctrl.texts.noChoice}}">
+<div
+    ng-show="$ctrl.isTargetingEditSectionVisible()"
+    class="two-columns-list two-columns-list--with-dropdown m-b-s clearfix"
+>
+    <div
+        class="two-columns-list__container"
+        ng-class="{'two-columns-list__container--half': $ctrl.targetings.excluded.length || $ctrl.showExcludedSection}"
+    >
+        <zem-inclusion-targeting-edit-section
+            selected-title-class="text-green"
+            selected-title="{{ $ctrl.texts.selectedIncludedTitle }}"
+            selected-items="$ctrl.targetings.included"
+            unselected-items="$ctrl.targetings.notSelected"
+            display-sections="$ctrl.displaySections"
+            disabled="$ctrl.disabled"
+            remove="$ctrl.remove"
+            group-by="$ctrl.groupBySection"
+            on-select="($ctrl.include)"
+            on-refresh="($ctrl.onRefresh)"
+            select-targeting-button-text="{{
+                $ctrl.texts.selectTargetingButton
+            }}"
+            no-choice-text="{{ $ctrl.texts.noChoice }}"
+        >
         </zem-inclusion-targeting-edit-section>
     </div>
-    <div class="two-columns-list__spacing" ng-show="$ctrl.targetings.excluded.length || $ctrl.showExcludedSection"></div>
-    <div class="two-columns-list__container two-columns-list__container--half" ng-show="$ctrl.targetings.excluded.length || $ctrl.showExcludedSection">
-        <zem-inclusion-targeting-edit-section selected-title-class="text-red"
-                                              selected-title="{{$ctrl.texts.selectedExcludedTitle}}"
-                                              selected-items="$ctrl.targetings.excluded"
-                                              unselected-items="$ctrl.targetings.notSelected"
-                                              display-sections="$ctrl.displaySections"
-                                              disabled="$ctrl.disabled"
-                                              remove="$ctrl.remove"
-                                              group-by="$ctrl.groupBySection"
-                                              on-select="$ctrl.exclude"
-                                              on-refresh="$ctrl.onRefresh"
-                                              select-targeting-button-text="{{$ctrl.texts.selectTargetingButton}}"
-                                              no-choice-text="{{$ctrl.texts.noChoice}}">
+    <div
+        class="two-columns-list__spacing"
+        ng-show="$ctrl.targetings.excluded.length || $ctrl.showExcludedSection"
+    ></div>
+    <div
+        class="two-columns-list__container two-columns-list__container--half"
+        ng-show="$ctrl.targetings.excluded.length || $ctrl.showExcludedSection"
+    >
+        <zem-inclusion-targeting-edit-section
+            selected-title-class="text-red"
+            selected-title="{{ $ctrl.texts.selectedExcludedTitle }}"
+            selected-items="$ctrl.targetings.excluded"
+            unselected-items="$ctrl.targetings.notSelected"
+            display-sections="$ctrl.displaySections"
+            disabled="$ctrl.disabled"
+            remove="$ctrl.remove"
+            group-by="$ctrl.groupBySection"
+            on-select="($ctrl.exclude)"
+            on-refresh="($ctrl.onRefresh)"
+            select-targeting-button-text="{{
+                $ctrl.texts.selectTargetingButton
+            }}"
+            no-choice-text="{{ $ctrl.texts.noChoice }}"
+        >
         </zem-inclusion-targeting-edit-section>
     </div>
 </div>
 
-<a ng-click="$ctrl.showExcludedSection = !$ctrl.showExcludedSection"
-   class="alternative-link"
-   ng-show="$ctrl.isTargetingEditSectionVisible() && !$ctrl.targetings.excluded.length && !$ctrl.showExcludedSection" href>
+<a
+    ng-click="$ctrl.showExcludedSection = !$ctrl.showExcludedSection"
+    class="alternative-link"
+    ng-show="$ctrl.isTargetingEditSectionVisible() && !$ctrl.targetings.excluded.length && !$ctrl.showExcludedSection"
+    href
+>
     Add excluded list
 </a>

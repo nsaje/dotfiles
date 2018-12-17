@@ -3,43 +3,121 @@
 </div>
 <div class="modal__body">
     <div class="form">
+        <p>
+            Upload the file with bid modifiers. You can download a sample file
+            below. Please note:
+        </p>
 
-    <p>Upload the file with bid modifiers. You can download a sample file below. Please note:</p>
+        <ul>
+            <li>
+                You have to specify media source name and publisher name as
+                reported in the dashboard. For the media source name please
+                refer to source slug column.
+            </li>
+            <li>
+                In the CSV file the values should range from 0 up. The resulting
+                publisher modifier is obtained by multiplying existing publisher
+                bid with the number from the imported CSV file.
+            </li>
+            <li>
+                Bid modifiers less than one reduce the bid and publisher
+                modifiers greater than one increase the bid proportionally. To
+                reset the bid use 1.
+            </li>
+            <li>
+                The import only updates the publisher's bid modifiers that are
+                sent in the uploaded file. Other preexisting bid modifiers
+                remain the same.
+            </li>
+        </ul>
 
-    <ul>
-        <li>You have to specify media source name and publisher name as reported in the dashboard. For the media source name please refer to source slug column.</li>
-        <li>In the CSV file the values should range from 0 up. The resulting publisher modifier is obtained by multiplying existing publisher bid with the number from the imported CSV file.</li>
-        <li>Bid modifiers less than one reduce the bid and publisher modifiers greater than one increase the bid proportionally. To reset the bid use 1.</li>
-        <li>The import only updates the publisher's bid modifiers that are sent in the uploaded file. Other preexisting bid modifiers remain the same.</li>
-    </ul>
-
-        <div class="form__group form__group--choose-file" ng-class="{'form--error': !!$ctrl.errors.file}">
-            <label class="form__label" for="file-input">CSV file with publisher bid modifiers:</label>
-            <zem-file-input zem-file-input-change="$ctrl.fileUploadCallback(file)" zem-file-input-accept=".csv">
-                <button type="button" class="button button--with-icon folder-icon"
-                        ng-click="$ctrl.clearValidationError('entries')" zem-file-input-trigger>Choose file</button>
-                <input class="input-text file-choosen" type="text" id="file-input" readonly ng-model="$ctrl.formData.file.name"
-                        placeholder="No file chosen">
+        <div
+            class="form__group form__group--choose-file"
+            ng-class="{'form--error': !!$ctrl.errors.file}"
+        >
+            <label class="form__label" for="file-input"
+                >CSV file with publisher bid modifiers:</label
+            >
+            <zem-file-input
+                zem-file-input-change="$ctrl.fileUploadCallback(file)"
+                zem-file-input-accept=".csv"
+            >
+                <button
+                    type="button"
+                    class="button button--with-icon folder-icon"
+                    ng-click="$ctrl.clearValidationError('entries')"
+                    zem-file-input-trigger
+                >
+                    Choose file
+                </button>
+                <input
+                    class="input-text file-choosen"
+                    type="text"
+                    id="file-input"
+                    readonly
+                    ng-model="$ctrl.formData.file.name"
+                    placeholder="No file chosen"
+                />
             </zem-file-input>
 
-            <div class="message message--error" ng-repeat="error in $ctrl.errors.entries">{{ error }}</div>
-            <div class="message message--error" ng-if="$ctrl.errors.errors_csv_key" for="file-input">
+            <div
+                class="message message--error"
+                ng-repeat="error in $ctrl.errors.entries"
+            >
+                {{ error }}
+            </div>
+            <div
+                class="message message--error"
+                ng-if="$ctrl.errors.errors_csv_key"
+                for="file-input"
+            >
                 <p>There were some errors in the attached file.</p>
                 <a ng-click="$ctrl.downloadErrors()">Download the report</a>
             </div>
 
             <div class="message message--help message--with-icon">
                 <p>You can download our example file here.</p>
-                <a ng-click="$ctrl.downloadExample()">Download CSV example file</a><br>
+                <a ng-click="$ctrl.downloadExample()"
+                    >Download CSV example file</a
+                ><br />
             </div>
-
         </div>
     </div>
 </div>
 <div class="modal__footer buttons-panel">
-    <button class="button button--highlight button--with-icon check-icon" ng-disabled="!!$ctrl.putRequestInProgress" ng-if="!$ctrl.isCreationMode" ng-click="$ctrl.upsert()">Update</button>
-    <button class="button button--highlight button--with-icon check-icon" ng-disabled="!!$ctrl.putRequestInProgress" ng-if="$ctrl.isCreationMode" ng-click="$ctrl.upsert()">Create</button>
-    <button type="button" class="button button--outline" ng-disabled="!!$ctrl.putRequestInProgress" ng-if="!$ctrl.isCreationMode" ng-click="$ctrl.modalInstance.dismiss()">Close</button>
-    <button type="button" class="button button--outline" ng-disabled="!!$ctrl.putRequestInProgress" ng-if="$ctrl.isCreationMode" ng-click="$ctrl.modalInstance.dismiss()">Cancel</button>
+    <button
+        class="button button--highlight button--with-icon check-icon"
+        ng-disabled="!!$ctrl.putRequestInProgress"
+        ng-if="!$ctrl.isCreationMode"
+        ng-click="$ctrl.upsert()"
+    >
+        Update
+    </button>
+    <button
+        class="button button--highlight button--with-icon check-icon"
+        ng-disabled="!!$ctrl.putRequestInProgress"
+        ng-if="$ctrl.isCreationMode"
+        ng-click="$ctrl.upsert()"
+    >
+        Create
+    </button>
+    <button
+        type="button"
+        class="button button--outline"
+        ng-disabled="!!$ctrl.putRequestInProgress"
+        ng-if="!$ctrl.isCreationMode"
+        ng-click="$ctrl.modalInstance.dismiss()"
+    >
+        Close
+    </button>
+    <button
+        type="button"
+        class="button button--outline"
+        ng-disabled="!!$ctrl.putRequestInProgress"
+        ng-if="$ctrl.isCreationMode"
+        ng-click="$ctrl.modalInstance.dismiss()"
+    >
+        Cancel
+    </button>
     <div class="loader" ng-show="$ctrl.putRequestInProgress"></div>
 </div>

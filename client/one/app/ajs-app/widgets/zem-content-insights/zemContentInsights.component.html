@@ -8,45 +8,79 @@
             <table class="custom-table">
                 <thead>
                     <tr>
-                        <th class="content-insights__number-column text-gray"></th>
-                        <th>{{$ctrl.data.summary}}</th>
-                        <th class="content-insights__number-performance-column text-right">{{$ctrl.data.metric}}</th>
+                        <th
+                            class="content-insights__number-column text-gray"
+                        ></th>
+                        <th>{{ $ctrl.data.summary }}</th>
+                        <th
+                            class="content-insights__number-performance-column text-right"
+                        >
+                            {{ $ctrl.data.metric }}
+                        </th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr ng-repeat="row in $ctrl.data.bestPerformerRows track by $index"
-                        ng-class="{'archived': row.archived}">
-                        <td class="content-insights__number-column text-gray">{{$index + 1}}</td>
+                    <tr
+                        ng-repeat="row in $ctrl.data.bestPerformerRows track by $index"
+                        ng-class="{'archived': row.archived}"
+                    >
+                        <td class="content-insights__number-column text-gray">
+                            {{ $index + 1 }}
+                        </td>
                         <td>{{ row.summary }}</td>
-                        <td class="content-insights__number-performance-column text-right text-green">{{ row.metric }}</td>
+                        <td
+                            class="content-insights__number-performance-column text-right text-green"
+                        >
+                            {{ row.metric }}
+                        </td>
                     </tr>
                     <tr ng-hide="$ctrl.data.bestPerformerRows.length">
-                        <td colspan="3" class="custom-table__no-data">No data</td>
+                        <td colspan="3" class="custom-table__no-data">
+                            No data
+                        </td>
                     </tr>
                 </tbody>
             </table>
         </div>
 
         <div class="content-insights__container m-r-none">
-            <div class="content-insights__title text-red">Under-performing Titles</div>
+            <div class="content-insights__title text-red">
+                Under-performing Titles
+            </div>
 
             <table class="custom-table">
                 <thead>
                     <tr>
-                        <th class="content-insights__number-column text-gray"></th>
-                        <th>{{$ctrl.data.summary}}</th>
-                        <th class="content-insights__number-performance-column text-right">{{$ctrl.data.metric}}</th>
+                        <th
+                            class="content-insights__number-column text-gray"
+                        ></th>
+                        <th>{{ $ctrl.data.summary }}</th>
+                        <th
+                            class="content-insights__number-performance-column text-right"
+                        >
+                            {{ $ctrl.data.metric }}
+                        </th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr ng-repeat="row in $ctrl.data.worstPerformerRows track by $index"
-                        ng-class="{'archived': row.archived}">
-                        <td class="content-insights__number-column text-gray">{{$index + 1}}</td>
+                    <tr
+                        ng-repeat="row in $ctrl.data.worstPerformerRows track by $index"
+                        ng-class="{'archived': row.archived}"
+                    >
+                        <td class="content-insights__number-column text-gray">
+                            {{ $index + 1 }}
+                        </td>
                         <td>{{ row.summary }}</td>
-                        <td class="content-insights__number-performance-column text-right text-red">{{ row.metric }}</td>
+                        <td
+                            class="content-insights__number-performance-column text-right text-red"
+                        >
+                            {{ row.metric }}
+                        </td>
                     </tr>
                     <tr ng-hide="$ctrl.data.worstPerformerRows.length">
-                        <td colspan="3" class="custom-table__no-data">No data</td>
+                        <td colspan="3" class="custom-table__no-data">
+                            No data
+                        </td>
                     </tr>
                 </tbody>
             </table>

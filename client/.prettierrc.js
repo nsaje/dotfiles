@@ -7,4 +7,12 @@ module.exports = {
     trailingComma: 'es5',
     bracketSpacing: false,
     arrowParens: 'avoid',
+    overrides: [
+        {
+            files: '*.html',
+            options: {
+                parser: 'angular',
+            },
+        },
+    ],
 };

@@ -1,31 +1,55 @@
-<h2 class="zem-inventory-planning-breakdown__title">{{breakdownName}}</h2>
-<div class="zem-inventory-planning-breakdown__container"
-     [ngClass]="{'zem-inventory-planning-breakdown__container--loading': isLoading}">
-    <div *ngIf="isLoading" class="loader zem-inventory-planning-breakdown__loader"></div>
+<h2 class="zem-inventory-planning-breakdown__title">{{ breakdownName }}</h2>
+<div
+    class="zem-inventory-planning-breakdown__container"
+    [ngClass]="{
+        'zem-inventory-planning-breakdown__container--loading': isLoading
+    }"
+>
+    <div
+        *ngIf="isLoading"
+        class="loader zem-inventory-planning-breakdown__loader"
+    ></div>
 
     <div class="zem-inventory-planning-breakdown__search-container">
-        <input type="text"
-               placeholder="Search for {{breakdownName}} ..."
-               class="input-text"
-               #searchQueryInput
-               (keyup)="search$.next(searchQueryInput.value)">
+        <input
+            type="text"
+            placeholder="Search for {{ breakdownName }} ..."
+            class="input-text"
+            #searchQueryInput
+            (keyup)="search$.next(searchQueryInput.value)"
+        />
     </div>
 
-    <div class="zem-inventory-planning-breakdown__options-container custom-scroller">
+    <div
+        class="zem-inventory-planning-breakdown__options-container custom-scroller"
+    >
         <table class="zem-inventory-planning__options-table">
-            <tr class="zem-inventory-planning-breakdown__option-item"
-                *ngFor="let option of searchResults; let index = index; trackBy: trackByOption"
-                (click)="toggle(option.value)">
+            <tr
+                class="zem-inventory-planning-breakdown__option-item"
+                *ngFor="
+                    let option of searchResults;
+                    let index = index;
+                    trackBy: trackByOption
+                "
+                (click)="toggle(option.value)"
+            >
                 <td class="zem-inventory-planning-breakdown__name">
-                    <input class="input-checkbox zem-inventory-planning-breakdown__checkbox"
-                           type="checkbox"
-                           [checked]="selectedIndices.indexOf(index) !== -1" />
-                    <span class="zem-inventory-planning-breakdown__name-text checkbox-text">
-                        {{option.name || option.value}}
+                    <input
+                        class="input-checkbox zem-inventory-planning-breakdown__checkbox"
+                        type="checkbox"
+                        [checked]="selectedIndices.indexOf(index) !== -1"
+                    />
+                    <span
+                        class="zem-inventory-planning-breakdown__name-text checkbox-text"
+                    >
+                        {{ option.name || option.value }}
                     </span>
                 </td>
                 <td class="zem-inventory-planning-breakdown__auction-count">
-                    <span class="zem-inventory-planning-breakdown__auction-count-number">{{option.auctionCount | bigNumber}}</span>
+                    <span
+                        class="zem-inventory-planning-breakdown__auction-count-number"
+                        >{{ option.auctionCount | bigNumber }}</span
+                    >
                 </td>
             </tr>
         </table>

@@ -1,21 +1,38 @@
-<div ng-if="$ctrl.isStateSwitchAvailable"
-     class="zem-infobox-header__item zem-infobox-header__state-switch">
-    <span class="switch-button"
-          ng-class="{'switch-button--checked': $ctrl.isEntityEnabled}"
-          ng-click="$ctrl.toggleEntityState()"></span>
+<div
+    ng-if="$ctrl.isStateSwitchAvailable"
+    class="zem-infobox-header__item zem-infobox-header__state-switch"
+>
+    <span
+        class="switch-button"
+        ng-class="{'switch-button--checked': $ctrl.isEntityEnabled}"
+        ng-click="$ctrl.toggleEntityState()"
+    ></span>
 </div>
 
-<div class="zem-infobox-header__item zem-infobox-header__entity-info"
-     ng-class="{
+<div
+    class="zem-infobox-header__item zem-infobox-header__entity-info"
+    ng-class="{
         'zem-infobox-header__entity-info--no-state-switch': !$ctrl.isStateSwitchAvailable,
         'zem-infobox-header__entity-info--no-entity': !$ctrl.isEntityAvailable
-     }">
-    <div ng-if="$ctrl.level" class="zem-infobox-header__level">{{$ctrl.level}}:</div>
-    <div ng-if="$ctrl.isEntityAvailable" class="zem-infobox-header__entity-name" title="{{$ctrl.entityName}}">
-        {{$ctrl.entityName}}
+     }"
+>
+    <div ng-if="$ctrl.level" class="zem-infobox-header__level">
+        {{ $ctrl.level }}:
+    </div>
+    <div
+        ng-if="$ctrl.isEntityAvailable"
+        class="zem-infobox-header__entity-name"
+        title="{{ $ctrl.entityName }}"
+    >
+        {{ $ctrl.entityName }}
     </div>
 </div>
 
-<div ng-if="$ctrl.isEntityAvailable" class="zem-infobox-header__item zem-infobox-header__settings">
-    <button class="button button--full-width" ng-click="$ctrl.openSettings()">Settings</button>
+<div
+    ng-if="$ctrl.isEntityAvailable"
+    class="zem-infobox-header__item zem-infobox-header__settings"
+>
+    <button class="button button--full-width" ng-click="$ctrl.openSettings()">
+        Settings
+    </button>
 </div>

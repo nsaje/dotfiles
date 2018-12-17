@@ -1,83 +1,215 @@
 <div class="modal__header">
-    <div class="modal__title">{{$ctrl.title}}</div>
+    <div class="modal__title">{{ $ctrl.title }}</div>
 </div>
 <div class="modal__body">
     <div class="form" id="conversion-pixel-form">
-        <div class="form__group" ng-class="{'form--error': !!$ctrl.getRequest().validationErrors.name}">
+        <div
+            class="form__group"
+            ng-class="{'form--error': !!$ctrl.getRequest().validationErrors.name}"
+        >
             <label class="form__label" for="name-input">Name</label>
-            <input class="input-text" type="text" zem-focus-select id="name-input" ng-model="$ctrl.pixel.name"
-                   ng-change="$ctrl.clearError()" />
-            <div class="message message--error" ng-repeat="error in $ctrl.getRequest().validationErrors.name" for="name-input">{{ error }}</div>
+            <input
+                class="input-text"
+                type="text"
+                zem-focus-select
+                id="name-input"
+                ng-model="$ctrl.pixel.name"
+                ng-change="$ctrl.clearError()"
+            />
+            <div
+                class="message message--error"
+                ng-repeat="error in $ctrl.getRequest().validationErrors.name"
+                for="name-input"
+            >
+                {{ error }}
+            </div>
         </div>
 
-        <div class="form__group" ng-if="$ctrl.hasPermission('zemauth.can_redirect_pixels')" ng-class="{'form--error': !!$ctrl.getRequest().validationErrors.redirect_url}">
-            <label for="redirect-url-input" class="form__label" is-internal="zemauth.can_redirect_pixels">
+        <div
+            class="form__group"
+            ng-if="$ctrl.hasPermission('zemauth.can_redirect_pixels')"
+            ng-class="{'form--error': !!$ctrl.getRequest().validationErrors.redirect_url}"
+        >
+            <label
+                for="redirect-url-input"
+                class="form__label"
+                is-internal="zemauth.can_redirect_pixels"
+            >
                 Redirect Url
-                <zem-help-popover content="Enter the URL you want the pixel to be redirected to." placement="top"></zem-help-popover>
+                <zem-help-popover
+                    content="Enter the URL you want the pixel to be redirected to."
+                    placement="top"
+                ></zem-help-popover>
             </label>
-            <input type="text" id="redirect-url-input" class="input-text" ng-model="$ctrl.pixel.redirectUrl" ng-change="$ctrl.clearError()" />
-            <div ng-repeat="error in $ctrl.getRequest().validationErrors.redirect_url" class="message message--error" for="redirect-url-input">{{ error }}</div>
+            <input
+                type="text"
+                id="redirect-url-input"
+                class="input-text"
+                ng-model="$ctrl.pixel.redirectUrl"
+                ng-change="$ctrl.clearError()"
+            />
+            <div
+                ng-repeat="error in $ctrl.getRequest().validationErrors.redirect_url"
+                class="message message--error"
+                for="redirect-url-input"
+            >
+                {{ error }}
+            </div>
         </div>
 
-        <div class="form__group" ng-class="{'form--error': !!$ctrl.error && !!$ctrl.errorMessage}"
-             ng-if="$ctrl.hasPermission('zemauth.account_custom_audiences_view')">
-            <label class="form__label" for="audience-enabled-input" is-internal="zemauth.account_custom_audiences_view">
+        <div
+            class="form__group"
+            ng-class="{'form--error': !!$ctrl.error && !!$ctrl.errorMessage}"
+            ng-if="$ctrl.hasPermission('zemauth.account_custom_audiences_view')"
+        >
+            <label
+                class="form__label"
+                for="audience-enabled-input"
+                is-internal="zemauth.account_custom_audiences_view"
+            >
                 Build custom audiences from this pixel
             </label>
             <div class="form__checkbox">
                 <label>
-                    <input class="input-checkbox" type="checkbox" id="audience-enabled-input" ng-model="$ctrl.pixel.audienceEnabled"
-                           ng-disabled="!!$ctrl.audiencePixel" ng-focus="$ctrl.clearError()" ng-change="$ctrl.clearError()" />
-                    <span class="checkbox-text" for="audience-enabled-input"></span>
+                    <input
+                        class="input-checkbox"
+                        type="checkbox"
+                        id="audience-enabled-input"
+                        ng-model="$ctrl.pixel.audienceEnabled"
+                        ng-disabled="!!$ctrl.audiencePixel"
+                        ng-focus="$ctrl.clearError()"
+                        ng-change="$ctrl.clearError()"
+                    />
+                    <span
+                        class="checkbox-text"
+                        for="audience-enabled-input"
+                    ></span>
                 </label>
-
             </div>
         </div>
-        <div class="form__group" ng-class="{'form--error': !!$ctrl.getRequest().validationErrors.additional_pixel}" ng-if="$ctrl.hasPermission('zemauth.can_promote_additional_pixel') && !$ctrl.pixel.audienceEnabled  && !!$ctrl.audiencePixel" >
-            <label class="form__label" for="enable-additional-pixel-input">Make this pixel an Additional Audience Pixel</label>
+        <div
+            class="form__group"
+            ng-class="{'form--error': !!$ctrl.getRequest().validationErrors.additional_pixel}"
+            ng-if="$ctrl.hasPermission('zemauth.can_promote_additional_pixel') && !$ctrl.pixel.audienceEnabled  && !!$ctrl.audiencePixel"
+        >
+            <label class="form__label" for="enable-additional-pixel-input"
+                >Make this pixel an Additional Audience Pixel</label
+            >
             <div class="form__checkbox">
                 <label>
-                    <input class="input-checkbox" type="checkbox" id="enable-additional-pixel-input"
-                           ng-change="$ctrl.clearError()"
-                           ng-model="$ctrl.pixel.additionalPixel"
-                           ng-disabled="$ctrl.pixel.additionalPixel && !$ctrl.isCreationMode"/>
-                    <span class="checkbox-text" for="enable-additional-pixel-input"></span>
+                    <input
+                        class="input-checkbox"
+                        type="checkbox"
+                        id="enable-additional-pixel-input"
+                        ng-change="$ctrl.clearError()"
+                        ng-model="$ctrl.pixel.additionalPixel"
+                        ng-disabled="$ctrl.pixel.additionalPixel && !$ctrl.isCreationMode"
+                    />
+                    <span
+                        class="checkbox-text"
+                        for="enable-additional-pixel-input"
+                    ></span>
                 </label>
             </div>
-            <div class="message message--error" ng-repeat="error in $ctrl.getRequest().validationErrors.additional_pixel" for="enable-additional-pixel-input">{{ error }}</div>
+            <div
+                class="message message--error"
+                ng-repeat="error in $ctrl.getRequest().validationErrors.additional_pixel"
+                for="enable-additional-pixel-input"
+            >
+                {{ error }}
+            </div>
         </div>
 
-        <div class="form__group" ng-class="{'form--error': !!$ctrl.getRequest().validationErrors.notes}" ng-if="$ctrl.hasPermission('zemauth.can_see_pixel_notes')">
-            <label class="form__label" for="notes-input" is-internal="zemauth.can_see_pixel_notes">Notes<zem-help-popover content="Add a note describing where the pixel is placed on your website and what it tracks." placement="top"></zem-help-popover></label>
-            <textarea class="textarea" id="notes-input" type="text" ng-model="$ctrl.pixel.notes"></textarea>
-            <div class="message message--error" ng-repeat="error in $ctrl.getRequest().validationErrors.notes" for="notes-input">{{ error }}</div>
+        <div
+            class="form__group"
+            ng-class="{'form--error': !!$ctrl.getRequest().validationErrors.notes}"
+            ng-if="$ctrl.hasPermission('zemauth.can_see_pixel_notes')"
+        >
+            <label
+                class="form__label"
+                for="notes-input"
+                is-internal="zemauth.can_see_pixel_notes"
+                >Notes<zem-help-popover
+                    content="Add a note describing where the pixel is placed on your website and what it tracks."
+                    placement="top"
+                ></zem-help-popover
+            ></label>
+            <textarea
+                class="textarea"
+                id="notes-input"
+                type="text"
+                ng-model="$ctrl.pixel.notes"
+            ></textarea>
+            <div
+                class="message message--error"
+                ng-repeat="error in $ctrl.getRequest().validationErrors.notes"
+                for="notes-input"
+            >
+                {{ error }}
+            </div>
         </div>
     </div>
 
-    <div ng-if="$ctrl.hasPermission('zemauth.account_custom_audiences_view')" class="m-b">
-        <div class="message message--info message--with-icon" ng-if="!$ctrl.audiencePixel">
-            Only one pixel can be used for building custom audiences. This choice is permanent. If you want to change this, please contact your Customer Success Manager.
+    <div
+        ng-if="$ctrl.hasPermission('zemauth.account_custom_audiences_view')"
+        class="m-b"
+    >
+        <div
+            class="message message--info message--with-icon"
+            ng-if="!$ctrl.audiencePixel"
+        >
+            Only one pixel can be used for building custom audiences. This
+            choice is permanent. If you want to change this, please contact your
+            Customer Success Manager.
         </div>
 
-        <div class="message message--info message--with-icon" ng-if="$ctrl.audiencePixel && $ctrl.audiencePixel.id != $ctrl.pixel.id">
-            Only one pixel can be used for building custom audiences. You have already set pixel {{ $ctrl.audiencePixel.name }} for audience building, if you want to change this, please contact your Customer Success Manager.
+        <div
+            class="message message--info message--with-icon"
+            ng-if="$ctrl.audiencePixel && $ctrl.audiencePixel.id != $ctrl.pixel.id"
+        >
+            Only one pixel can be used for building custom audiences. You have
+            already set pixel {{ $ctrl.audiencePixel.name }} for audience
+            building, if you want to change this, please contact your Customer
+            Success Manager.
         </div>
-        <div class="message message--warning message--with-icon" ng-if="$ctrl.pixel.additionalPixel">
-            Only Custom Audience Pixel (The primary one) is synced with OutBrain, not the additional one!
+        <div
+            class="message message--warning message--with-icon"
+            ng-if="$ctrl.pixel.additionalPixel"
+        >
+            Only Custom Audience Pixel (The primary one) is synced with
+            OutBrain, not the additional one!
         </div>
     </div>
 
-    <hr>
+    <hr />
 
     <h3>Where do I place my pixel on my site?</h3>
-    <p>Pixels need to be properly placed in order to measure goals effectively. We recommend placing your pixel on the confirmation page which is shown to a person after the desired action is performed.</p>
+    <p>
+        Pixels need to be properly placed in order to measure goals effectively.
+        We recommend placing your pixel on the confirmation page which is shown
+        to a person after the desired action is performed.
+    </p>
 </div>
 <div class="modal__footer buttons-panel">
-    <button type="submit" class="button button--highlight button--with-icon check-icon" ng-click="$ctrl.submit()" ng-class="{'disabled': !!$ctrl.getRequest().inProgress}">{{$ctrl.buttonText}}</button>
-    <button type="button" class="button button--outline" ng-click="$ctrl.cancel()">Cancel</button>
+    <button
+        type="submit"
+        class="button button--highlight button--with-icon check-icon"
+        ng-click="$ctrl.submit()"
+        ng-class="{'disabled': !!$ctrl.getRequest().inProgress}"
+    >
+        {{ $ctrl.buttonText }}
+    </button>
+    <button
+        type="button"
+        class="button button--outline"
+        ng-click="$ctrl.cancel()"
+    >
+        Cancel
+    </button>
     <div class="loader" ng-show="$ctrl.getRequest().inProgress"></div>
     <span class="message message--error" ng-if="$ctrl.getRequest().error">
-        An error has occured. Please contact support at <a href="mailto:help@zemanta.com">help@zemanta.com</a> if the error persists.
+        An error has occured. Please contact support at
+        <a href="mailto:help@zemanta.com">help@zemanta.com</a> if the error
+        persists.
     </span>
 </div>
-

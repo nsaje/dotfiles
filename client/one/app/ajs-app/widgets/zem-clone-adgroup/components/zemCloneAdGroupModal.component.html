@@ -1,33 +1,61 @@
-<div class="modal__header">
-    <div class="modal__title">Clone ad group</div>
-</div>
+<div class="modal__header"><div class="modal__title">Clone ad group</div></div>
 <div class="modal__body">
+    Clone ad group <strong>{{ $ctrl.adGroup.name }}</strong> to the selected
+    destination campaign.
 
-    Clone ad group <strong>{{ $ctrl.adGroup.name }}</strong> to the selected destination campaign.
-
-    <div class="form__group" ng-class="{'form--error': !!$ctrl.errors.destinationAdGroupName}">
+    <div
+        class="form__group"
+        ng-class="{'form--error': !!$ctrl.errors.destinationAdGroupName}"
+    >
         <label class="form__label" for="ad-group-name">Ad group name</label>
-        <input class="input-text" type="text" id="ad-group-name" ng-model="$ctrl.destinationAdGroupName"></input>
-        <div class="message message--error" for="ad-group-name" ng-if="!!$ctrl.errors.destinationAdGroupName">{{ $ctrl.errors.destinationAdGroupName }}</div>
+        <input
+            class="input-text"
+            type="text"
+            id="ad-group-name"
+            ng-model="$ctrl.destinationAdGroupName"
+        />
+        <div
+            class="message message--error"
+            for="ad-group-name"
+            ng-if="!!$ctrl.errors.destinationAdGroupName"
+        >
+            {{ $ctrl.errors.destinationAdGroupName }}
+        </div>
     </div>
 
-    <div class="form__group" ng-class="{'form--error': !!$ctrl.errors.destinationCampaignId}">
-        <label class="form__label" for="campaign-input">Destination campaign</label>
+    <div
+        class="form__group"
+        ng-class="{'form--error': !!$ctrl.errors.destinationCampaignId}"
+    >
+        <label class="form__label" for="campaign-input"
+            >Destination campaign</label
+        >
         <zem-select
             store="$ctrl.store"
             texts="$ctrl.texts"
             class="zem-select--zem-clone-ad-group"
             selected-id="$ctrl.destinationCampaignId"
-            on-select="$ctrl.onCampaignSelected(item);"
+            on-select="$ctrl.onCampaignSelected(item)"
         ></zem-select>
-        <div class="message message--error" for="campaign-input" ng-if="!!$ctrl.errors.destinationCampaignId">{{ $ctrl.errors.destinationCampaignId }}</div>
+        <div
+            class="message message--error"
+            for="campaign-input"
+            ng-if="!!$ctrl.errors.destinationCampaignId"
+        >
+            {{ $ctrl.errors.destinationCampaignId }}
+        </div>
     </div>
 
     <div class="form__group">
         <div class="form__radio">
             <label>
-                <input class="input-radio" type="radio" id="clone-ads"
-                    ng-model="$ctrl.cloneAds" ng-value="{{ true }}">
+                <input
+                    class="input-radio"
+                    type="radio"
+                    id="clone-ads"
+                    ng-model="$ctrl.cloneAds"
+                    ng-value="{{ true }}"
+                />
                 <span class="radio-text">
                     Clone ad group settings and ads
                 </span>
@@ -35,18 +63,36 @@
         </div>
         <div class="form__radio">
             <label>
-                <input class="input-radio" type="radio" id="clone-ads"
-                       ng-model="$ctrl.cloneAds" ng-value="{{ false }}">
-                <span class="radio-text">
-                    Clone ad group settings only
-                </span>
+                <input
+                    class="input-radio"
+                    type="radio"
+                    id="clone-ads"
+                    ng-model="$ctrl.cloneAds"
+                    ng-value="{{ false }}"
+                />
+                <span class="radio-text"> Clone ad group settings only </span>
             </label>
         </div>
     </div>
 </div>
 <div class="modal__footer buttons-panel">
-    <button class="button button--highlight button--with-icon copy-icon" ng-disabled="!!$ctrl.requestInProgress" ng-click="$ctrl.submit()">Clone</button>
-    <button type="button" class="button button--outline" ng-disabled="!!$ctrl.requestInProgress" ng-click="$ctrl.modalInstance.dismiss()">Cancel</button>
+    <button
+        class="button button--highlight button--with-icon copy-icon"
+        ng-disabled="!!$ctrl.requestInProgress"
+        ng-click="$ctrl.submit()"
+    >
+        Clone
+    </button>
+    <button
+        type="button"
+        class="button button--outline"
+        ng-disabled="!!$ctrl.requestInProgress"
+        ng-click="$ctrl.modalInstance.dismiss()"
+    >
+        Cancel
+    </button>
     <div class="loader" ng-show="$ctrl.requestInProgress"></div>
-    <span ng-show="$ctrl.errors.message" class="message message--error">{{ $ctrl.errors.message }}</span>
+    <span ng-show="$ctrl.errors.message" class="message message--error">{{
+        $ctrl.errors.message
+    }}</span>
 </div>

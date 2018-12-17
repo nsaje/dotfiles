@@ -1,14 +1,20 @@
-<div class="zem-grid-row" ng-class="ctrl.getRowClass()" ng-hide="ctrl.row.dummy">
-    <zem-grid-cell ng-repeat="col in ctrl.grid.header.visibleColumns track by $index"
-                   ng-show="ctrl.row.type!=constants.gridRowType.BREAKDOWN"
-                   col="col"
-                   data="ctrl.row.data.stats[col.field]"
-                   row="ctrl.row"
-                   grid="ctrl.grid"
+<div
+    class="zem-grid-row"
+    ng-class="ctrl.getRowClass()"
+    ng-hide="ctrl.row.dummy"
+>
+    <zem-grid-cell
+        ng-repeat="col in ctrl.grid.header.visibleColumns track by $index"
+        ng-show="ctrl.row.type!=constants.gridRowType.BREAKDOWN"
+        col="col"
+        data="ctrl.row.data.stats[col.field]"
+        row="ctrl.row"
+        grid="ctrl.grid"
     ></zem-grid-cell>
 
-    <zem-grid-row-breakdown ng-show="ctrl.row.type==constants.gridRowType.BREAKDOWN"
-                            row="ctrl.row"
-                            grid="ctrl.grid"
+    <zem-grid-row-breakdown
+        ng-show="ctrl.row.type==constants.gridRowType.BREAKDOWN"
+        row="ctrl.row"
+        grid="ctrl.grid"
     ></zem-grid-row-breakdown>
 </div>

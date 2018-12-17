@@ -1,22 +1,49 @@
 <div class="zem-navigation__search">
-    <input type="text" ng-model="$ctrl.query"
-           ng-change="$ctrl.filter($ctrl.query)"
-           ng-click="$event.stopPropagation()"
-           placeholder="Search"
-           class="input-text"/>
+    <input
+        type="text"
+        ng-model="$ctrl.query"
+        ng-change="$ctrl.filter($ctrl.query)"
+        ng-click="$event.stopPropagation()"
+        placeholder="Search"
+        class="input-text"
+    />
 </div>
 
 <div class="zem-navigation__results custom-scroller">
     <div class="loader" ng-if="!$ctrl.list"></div>
-    <div class="zem-navigation__no-results" ng-if="$ctrl.filteredList.length === 0">no matches found</div>
-    <ul class="zem-navigation__results-list" vs-repeat vs-scroll-parent=".zem-navigation__results" vs-size="$ctrl.getItemHeight(item)">
-        <li ng-repeat="item in $ctrl.filteredList" >
-            <a class="zem-navigation__item"
-               ng-href="{{$ctrl.getItemHref(item)}}"
-               ng-class="$ctrl.getItemClasses(item)">
-            <span class="zem-navigation__item-icon" ng-class="$ctrl.getItemIconClass(item)"></span>
-            <span class="zem-navigation__item-name" title="{{ item.data.name }}">{{ item.data.name }}</span>
-            <span class="zem-navigation__item-agency" ng-if="$ctrl.showAgency" ng-show="item.data.agency">({{item.data.agency}})</span>
+    <div
+        class="zem-navigation__no-results"
+        ng-if="$ctrl.filteredList.length === 0"
+    >
+        no matches found
+    </div>
+    <ul
+        class="zem-navigation__results-list"
+        vs-repeat
+        vs-scroll-parent=".zem-navigation__results"
+        vs-size="$ctrl.getItemHeight(item)"
+    >
+        <li ng-repeat="item in $ctrl.filteredList">
+            <a
+                class="zem-navigation__item"
+                ng-href="{{ $ctrl.getItemHref(item) }}"
+                ng-class="$ctrl.getItemClasses(item)"
+            >
+                <span
+                    class="zem-navigation__item-icon"
+                    ng-class="$ctrl.getItemIconClass(item)"
+                ></span>
+                <span
+                    class="zem-navigation__item-name"
+                    title="{{ item.data.name }}"
+                    >{{ item.data.name }}</span
+                >
+                <span
+                    class="zem-navigation__item-agency"
+                    ng-if="$ctrl.showAgency"
+                    ng-show="item.data.agency"
+                    >({{ item.data.agency }})</span
+                >
             </a>
         </li>
     </ul>

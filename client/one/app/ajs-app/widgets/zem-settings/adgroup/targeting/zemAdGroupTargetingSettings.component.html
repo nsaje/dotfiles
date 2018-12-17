@@ -1,4 +1,7 @@
-<div class="custom-panel zem-settings-component__container zem-account-targeting-settings" is-internal="zemauth.can_target_custom_audiences">
+<div
+    class="custom-panel zem-settings-component__container zem-account-targeting-settings"
+    is-internal="zemauth.can_target_custom_audiences"
+>
     <h2 class="custom-panel__title">Targeting</h2>
     <zem-audience-targeting
         entity="$ctrl.entity"
@@ -23,17 +26,48 @@
             ng-if="$ctrl.hasPermission('zemauth.can_set_white_blacklist_publisher_groups') && $ctrl.hasPermission('zemauth.can_see_publisher_groups_ui')"
             class="zem-publisher-group-targeting"
         ></zem-publisher-group-targeting>
-        <div class="form form--border-top" ng-if="!$ctrl.hasPermission('zemauth.can_use_bluekai_targeting') && !$ctrl.hasPermission('zemauth.disable_public_rcs')">
+        <div
+            class="form form--border-top"
+            ng-if="!$ctrl.hasPermission('zemauth.can_use_bluekai_targeting') && !$ctrl.hasPermission('zemauth.disable_public_rcs')"
+        >
             <div class="form__title">BlueKai & LiveRamp audience targeting</div>
-            <div class="form__text">This is a read-only section. Please contact your Zemanta Customer Success Manager if you want to set up or change BlueKai and LiveRamp audience targeting.</div>
-            <div class="message message--success message--with-icon m-t" ng-if="$ctrl.entity.settings.bluekaiTargeting.length">Audience targeting set up.</div>
-            <div class="message m-t-s m-b-none" ng-if="!$ctrl.entity.settings.bluekaiTargeting.length">No audience targeting set.</div>
+            <div class="form__text">
+                This is a read-only section. Please contact your Zemanta
+                Customer Success Manager if you want to set up or change BlueKai
+                and LiveRamp audience targeting.
+            </div>
+            <div
+                class="message message--success message--with-icon m-t"
+                ng-if="$ctrl.entity.settings.bluekaiTargeting.length"
+            >
+                Audience targeting set up.
+            </div>
+            <div
+                class="message m-t-s m-b-none"
+                ng-if="!$ctrl.entity.settings.bluekaiTargeting.length"
+            >
+                No audience targeting set.
+            </div>
         </div>
         <div class="form form--last">
             <div class="form__title">Special notes</div>
-            <div class="form__text">Any additional targeting set on the backend will be described here. This is a read-only section. Please contact your Zemanta Customer Success Manager if you want to set up or change it.</div>
-            <div class="textarea--dashed break-long-words m-t" ng-if="$ctrl.entity.settings.notes">{{$ctrl.entity.settings.notes}}</div>
-            <div class="message m-t-s m-b-none" ng-if="!$ctrl.entity.settings.notes">No special notes.</div>
+            <div class="form__text">
+                Any additional targeting set on the backend will be described
+                here. This is a read-only section. Please contact your Zemanta
+                Customer Success Manager if you want to set up or change it.
+            </div>
+            <div
+                class="textarea--dashed break-long-words m-t"
+                ng-if="$ctrl.entity.settings.notes"
+            >
+                {{ $ctrl.entity.settings.notes }}
+            </div>
+            <div
+                class="message m-t-s m-b-none"
+                ng-if="!$ctrl.entity.settings.notes"
+            >
+                No special notes.
+            </div>
         </div>
     </div>
 </div>

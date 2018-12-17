@@ -1,40 +1,70 @@
-<div *ngIf="isLoading" class="loader zem-inventory-planning-summary__loader"></div>
+<div
+    *ngIf="isLoading"
+    class="loader zem-inventory-planning-summary__loader"
+></div>
 
-<div class="custom-panel zem-inventory-planning-summary__section zem-inventory-planning-summary__info-container"
-     [ngClass]="{'zem-inventory-planning-summary__section--loading': isLoading}">
+<div
+    class="custom-panel zem-inventory-planning-summary__section zem-inventory-planning-summary__info-container"
+    [ngClass]="{'zem-inventory-planning-summary__section--loading': isLoading}"
+>
     <div class="icon hammer-icon"></div>
-    <div class="zem-inventory-planning-summary__value-name">Number of auctions:</div>
-    <div *ngIf="!isLoading" class="zem-inventory-planning-summary__value">{{auctionCount | bigNumber}}</div>
+    <div class="zem-inventory-planning-summary__value-name">
+        Number of auctions:
+    </div>
+    <div *ngIf="!isLoading" class="zem-inventory-planning-summary__value">
+        {{ auctionCount | bigNumber }}
+    </div>
 </div>
 <div class="zem-inventory-planning-summary__spacing"></div>
-<div class="custom-panel zem-inventory-planning-summary__section zem-inventory-planning-summary__info-container"
-     [ngClass]="{'zem-inventory-planning-summary__section--loading': isLoading}">
+<div
+    class="custom-panel zem-inventory-planning-summary__section zem-inventory-planning-summary__info-container"
+    [ngClass]="{'zem-inventory-planning-summary__section--loading': isLoading}"
+>
     <div class="icon money-icon"></div>
     <div class="zem-inventory-planning-summary__value-name">Average CPM:</div>
-    <div *ngIf="(avgCpm === 0 || avgCpm) && !isLoading" class="zem-inventory-planning-summary__value">
-        ${{avgCpm | number:'1.2-2'}}
+    <div
+        *ngIf="(avgCpm === 0 || avgCpm) && !isLoading"
+        class="zem-inventory-planning-summary__value"
+    >
+        ${{ avgCpm | number: '1.2-2' }}
     </div>
-    <div *ngIf="(avgCpm !== 0 && !avgCpm) && !isLoading" class="zem-inventory-planning-summary__value-missing">
+    <div
+        *ngIf="avgCpm !== 0 && !avgCpm && !isLoading"
+        class="zem-inventory-planning-summary__value-missing"
+    >
         Not enough data
     </div>
 </div>
 <div class="zem-inventory-planning-summary__spacing"></div>
-<div class="custom-panel zem-inventory-planning-summary__section zem-inventory-planning-summary__info-container"
-     [ngClass]="{'zem-inventory-planning-summary__section--loading': isLoading}">
+<div
+    class="custom-panel zem-inventory-planning-summary__section zem-inventory-planning-summary__info-container"
+    [ngClass]="{'zem-inventory-planning-summary__section--loading': isLoading}"
+>
     <div class="icon money-icon"></div>
     <div class="zem-inventory-planning-summary__value-name">Average CPC:</div>
-    <div *ngIf="(avgCpc === 0 || avgCpc) && !isLoading" class="zem-inventory-planning-summary__value">
-        ${{avgCpc | number:'1.2-2'}}
+    <div
+        *ngIf="(avgCpc === 0 || avgCpc) && !isLoading"
+        class="zem-inventory-planning-summary__value"
+    >
+        ${{ avgCpc | number: '1.2-2' }}
     </div>
-    <div *ngIf="(avgCpc !== 0 && !avgCpc) && !isLoading" class="zem-inventory-planning-summary__value-missing">
+    <div
+        *ngIf="avgCpc !== 0 && !avgCpc && !isLoading"
+        class="zem-inventory-planning-summary__value-missing"
+    >
         Not enough data
     </div>
 </div>
-<div class="zem-inventory-planning-summary__spacing zem-inventory-planning-summary__spacing--for-graph"></div>
-<div class="custom-panel zem-inventory-planning-summary__section zem-inventory-planning-summary__chart-container"
-     [ngClass]="{'zem-inventory-planning-summary__section--loading': isLoading}">
+<div
+    class="zem-inventory-planning-summary__spacing zem-inventory-planning-summary__spacing--for-graph"
+></div>
+<div
+    class="custom-panel zem-inventory-planning-summary__section zem-inventory-planning-summary__chart-container"
+    [ngClass]="{'zem-inventory-planning-summary__section--loading': isLoading}"
+>
     <chart [options]="chartOptions"></chart>
     <div class="message message--info message--with-icon m-t">
-        This chart is based on a mathematical model. In practice the win rate might be different.
+        This chart is based on a mathematical model. In practice the win rate
+        might be different.
     </div>
 </div>

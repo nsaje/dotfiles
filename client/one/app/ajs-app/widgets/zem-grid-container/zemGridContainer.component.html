@@ -1,20 +1,25 @@
 <div class="zem-grid-container__header">
     <zem-grid-container-tabs
-            tabs="$ctrl.tabs"
-            entity="$ctrl.entity"
-            breakdown="$ctrl.breakdown"
-            class="zem-grid-container-tabs"
+        tabs="$ctrl.tabs"
+        entity="$ctrl.entity"
+        breakdown="$ctrl.breakdown"
+        class="zem-grid-container-tabs"
     ></zem-grid-container-tabs>
 </div>
 
 <div class="custom-panel zem-grid-container__body">
     <div ng-repeat="tab in $ctrl.tabs">
         <div ng-show="tab.selected">
-            <div ng-if="tab.activated && tab.breakdown === $ctrl.constants.breakdown.INSIGHTS">
-                <zem-content-insights ng-if="tab.activated" entity="$ctrl.entity"></zem-content-insights>
+            <div
+                ng-if="tab.activated && tab.breakdown === $ctrl.constants.breakdown.INSIGHTS"
+            >
+                <zem-content-insights
+                    ng-if="tab.activated"
+                    entity="$ctrl.entity"
+                ></zem-content-insights>
             </div>
 
-            <div ng-if="tab.breakdown !== $ctrl.constants.breakdown.INSIGHTS" >
+            <div ng-if="tab.breakdown !== $ctrl.constants.breakdown.INSIGHTS">
                 <div ng-if="!tab.activated" class="zem-dummy-grid-container">
                     <div class="zem-dummy-grid-container__actions"></div>
                     <div class="zem-dummy-grid-container__header"></div>
@@ -24,17 +29,19 @@
                 <div ng-if="tab.activated">
                     <zem-alerts entity="$ctrl.entity"></zem-alerts>
 
-                    <zem-grid-container-actions ng-if="tab.grid.api.getMetaData()"
-                                                entity="$ctrl.entity"
-                                                breakdown="tab.breakdown"
-                                                level="$ctrl.level"
-                                                grid-api="tab.grid.api"
-                                                class="zem-grid-container-actions"
+                    <zem-grid-container-actions
+                        ng-if="tab.grid.api.getMetaData()"
+                        entity="$ctrl.entity"
+                        breakdown="tab.breakdown"
+                        level="$ctrl.level"
+                        grid-api="tab.grid.api"
+                        class="zem-grid-container-actions"
                     ></zem-grid-container-actions>
 
-                    <zem-grid data-data-source="tab.grid.dataSource"
-                              options="tab.grid.options"
-                              on-initialized="$ctrl.onGridInitialized(tab, api)"
+                    <zem-grid
+                        data-data-source="tab.grid.dataSource"
+                        options="tab.grid.options"
+                        on-initialized="$ctrl.onGridInitialized(tab, api)"
                     ></zem-grid>
                 </div>
             </div>
@@ -78,7 +85,7 @@
         </div>
         <div class="ad-preview__container" ng-if="ctrl.isAdTag()">
             <div class="ad-preview__item ad-preview__item--display">
-                <iframe class="ad-preview__iframe"                
+                <iframe class="ad-preview__iframe"
                         src="{{ctrl.getIframeSrc(ctrl.data.ad_tag)}}"
                         width="{{ctrl.getCreativeWidth()}}"
                         height="{{ctrl.getCreativeHeight()}}">
@@ -226,7 +233,7 @@
                     <button ng-show="!ctrl.showLoader" class="button button--highlight button--with-icon check-icon" ng-click="ctrl.save()">Save</button>
                     <button class="button button--outline" ng-click="ctrl.closeModal()">Cancel</button>
                 </div>
-                <span class="message message--error" ng-repeat="error in ctrl.errors">{{error}}</span>        
+                <span class="message message--error" ng-repeat="error in ctrl.errors">{{error}}</span>
             </div>
         </div>
     </div>

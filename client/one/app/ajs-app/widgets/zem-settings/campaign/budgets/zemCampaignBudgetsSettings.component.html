@@ -1,35 +1,112 @@
-<div class="custom-panel zem-settings-component__container zem-campaign-budgets-settings">
+<div
+    class="custom-panel zem-settings-component__container zem-campaign-budgets-settings"
+>
     <h2 class="custom-panel__title">Budget</h2>
-    <div class="custom-panel__description">Once Zemanta's Customer Success team assigns a credit line to your account you have the ability to create budget items and associate them with campaigns you're planning. Budget represents the amount of money you're willing to pay to have ads from your campaign shown over the period you set it to run. You set a budget for each campaign you create.</div>
+    <div class="custom-panel__description">
+        Once Zemanta's Customer Success team assigns a credit line to your
+        account you have the ability to create budget items and associate them
+        with campaigns you're planning. Budget represents the amount of money
+        you're willing to pay to have ads from your campaign shown over the
+        period you set it to run. You set a budget for each campaign you create.
+    </div>
     <div class="zem-campaign-budgets-settings__budget-overview">
         <div class="zem-campaign-budgets-settings__budget-overview-box">
-            <span class="zem-campaign-budgets-settings__budget-overview-name">Campaign Spend</span>
-            <span class="zem-campaign-budgets-settings__budget-overview-value">{{ $ctrl.budgets.totals.lifetimeCampaignSpend | decimalCurrency:$ctrl.budgets.totals.currencySymbol:2 }}</span>
+            <span class="zem-campaign-budgets-settings__budget-overview-name"
+                >Campaign Spend</span
+            >
+            <span
+                class="zem-campaign-budgets-settings__budget-overview-value"
+                >{{
+                    $ctrl.budgets.totals.lifetimeCampaignSpend
+                        | decimalCurrency: $ctrl.budgets.totals.currencySymbol:2
+                }}</span
+            >
         </div>
-        <div class="zem-campaign-budgets-settings__budget-overview-box" ng-if="$ctrl.canAccessPlatformCosts()">
-            <span class="zem-campaign-budgets-settings__budget-overview-name">Media Spend</span>
-            <span class="zem-campaign-budgets-settings__budget-overview-value">{{ $ctrl.budgets.totals.lifetimeMediaSpend | decimalCurrency:$ctrl.budgets.totals.currencySymbol:2 }}</span>
+        <div
+            class="zem-campaign-budgets-settings__budget-overview-box"
+            ng-if="$ctrl.canAccessPlatformCosts()"
+        >
+            <span class="zem-campaign-budgets-settings__budget-overview-name"
+                >Media Spend</span
+            >
+            <span
+                class="zem-campaign-budgets-settings__budget-overview-value"
+                >{{
+                    $ctrl.budgets.totals.lifetimeMediaSpend
+                        | decimalCurrency: $ctrl.budgets.totals.currencySymbol:2
+                }}</span
+            >
         </div>
-        <div class="zem-campaign-budgets-settings__budget-overview-box" ng-if="$ctrl.canAccessPlatformCosts()">
-            <span class="zem-campaign-budgets-settings__budget-overview-name">Data Spend</span>
-            <span class="zem-campaign-budgets-settings__budget-overview-value">{{ $ctrl.budgets.totals.lifetimeDataSpend | decimalCurrency:$ctrl.budgets.totals.currencySymbol:2 }}</span>
+        <div
+            class="zem-campaign-budgets-settings__budget-overview-box"
+            ng-if="$ctrl.canAccessPlatformCosts()"
+        >
+            <span class="zem-campaign-budgets-settings__budget-overview-name"
+                >Data Spend</span
+            >
+            <span
+                class="zem-campaign-budgets-settings__budget-overview-value"
+                >{{
+                    $ctrl.budgets.totals.lifetimeDataSpend
+                        | decimalCurrency: $ctrl.budgets.totals.currencySymbol:2
+                }}</span
+            >
         </div>
-        <div class="zem-campaign-budgets-settings__budget-overview-box" ng-if="$ctrl.canAccessPlatformCosts()">
-            <span class="zem-campaign-budgets-settings__budget-overview-name">License Fee</span>
-            <span class="zem-campaign-budgets-settings__budget-overview-value">{{ $ctrl.budgets.totals.lifetimeLicenseFee | decimalCurrency:$ctrl.budgets.totals.currencySymbol:2 }}</span>
+        <div
+            class="zem-campaign-budgets-settings__budget-overview-box"
+            ng-if="$ctrl.canAccessPlatformCosts()"
+        >
+            <span class="zem-campaign-budgets-settings__budget-overview-name"
+                >License Fee</span
+            >
+            <span
+                class="zem-campaign-budgets-settings__budget-overview-value"
+                >{{
+                    $ctrl.budgets.totals.lifetimeLicenseFee
+                        | decimalCurrency: $ctrl.budgets.totals.currencySymbol:2
+                }}</span
+            >
         </div>
-        <div class="zem-campaign-budgets-settings__budget-overview-box" ng-if="$ctrl.canAccessAgencyCosts()">
-            <span class="zem-campaign-budgets-settings__budget-overview-name">Margin</span>
-            <span class="zem-campaign-budgets-settings__budget-overview-value">{{ $ctrl.budgets.totals.lifetimeMargin | decimalCurrency:$ctrl.budgets.totals.currencySymbol:2 }}</span>
+        <div
+            class="zem-campaign-budgets-settings__budget-overview-box"
+            ng-if="$ctrl.canAccessAgencyCosts()"
+        >
+            <span class="zem-campaign-budgets-settings__budget-overview-name"
+                >Margin</span
+            >
+            <span
+                class="zem-campaign-budgets-settings__budget-overview-value"
+                >{{
+                    $ctrl.budgets.totals.lifetimeMargin
+                        | decimalCurrency: $ctrl.budgets.totals.currencySymbol:2
+                }}</span
+            >
         </div>
-        <div class="zem-campaign-budgets-settings__budget-overview-box zem-campaign-budgets-settings__budget-overview-box--exposed">
-            <span class="zem-campaign-budgets-settings__budget-overview-name">Available Budget</span>
-            <span class="zem-campaign-budgets-settings__budget-overview-value">{{ $ctrl.budgets.totals.currentAvailable | decimalCurrency:$ctrl.budgets.totals.currencySymbol:2 }}</span>
+        <div
+            class="zem-campaign-budgets-settings__budget-overview-box zem-campaign-budgets-settings__budget-overview-box--exposed"
+        >
+            <span class="zem-campaign-budgets-settings__budget-overview-name"
+                >Available Budget</span
+            >
+            <span
+                class="zem-campaign-budgets-settings__budget-overview-value"
+                >{{
+                    $ctrl.budgets.totals.currentAvailable
+                        | decimalCurrency: $ctrl.budgets.totals.currencySymbol:2
+                }}</span
+            >
         </div>
-        <div class="zem-campaign-budgets-settings__budget-overview-box zem-campaign-budgets-settings__budget-overview-box--exposed">
-            <span class="zem-campaign-budgets-settings__budget-overview-name">Unallocated Credit</span>
+        <div
+            class="zem-campaign-budgets-settings__budget-overview-box zem-campaign-budgets-settings__budget-overview-box--exposed"
+        >
+            <span class="zem-campaign-budgets-settings__budget-overview-name"
+                >Unallocated Credit</span
+            >
             <span class="zem-campaign-budgets-settings__budget-overview-value">
-                {{ $ctrl.budgets.totals.currentUnallocated | decimalCurrency:$ctrl.budgets.totals.currencySymbol:2 }}
+                {{
+                    $ctrl.budgets.totals.currentUnallocated
+                        | decimalCurrency: $ctrl.budgets.totals.currencySymbol:2
+                }}
             </span>
         </div>
     </div>
@@ -44,9 +121,7 @@
                     <th>End Date</th>
                     <th>Budget</th>
                     <th ng-if="$ctrl.canAccessPlatformCosts()">License Fee</th>
-                    <th ng-if="$ctrl.canAccessAgencyCosts()">
-                        Margin
-                    </th>
+                    <th ng-if="$ctrl.canAccessAgencyCosts()">Margin</th>
                     <th>Total Spend</th>
                     <th>Available Budget</th>
                     <th class="notes">Notes</th>
@@ -54,28 +129,57 @@
                 </tr>
             </thead>
             <tbody>
-                <tr ng-repeat="item in $ctrl.budgets.active" ng-class="{ 'row-updated': item.id == $ctrl.updatedId }">
+                <tr
+                    ng-repeat="item in $ctrl.budgets.active"
+                    ng-class="{ 'row-updated': item.id == $ctrl.updatedId }"
+                >
                     <td>{{ item.id }}</td>
                     <td>{{ item.startDate }}</td>
                     <td>{{ item.endDate }}</td>
-                    <td>{{ item.total | decimalCurrency:item.currencySymbol:2 }}</td>
-                    <td ng-if="$ctrl.canAccessPlatformCosts()">{{ item.licenseFee }}</td>
+                    <td>
+                        {{
+                            item.total | decimalCurrency: item.currencySymbol:2
+                        }}
+                    </td>
+                    <td ng-if="$ctrl.canAccessPlatformCosts()">
+                        {{ item.licenseFee }}
+                    </td>
                     <td ng-if="$ctrl.canAccessAgencyCosts()">
                         {{ item.margin }}
                     </td>
-                    <td>{{ item.spend | decimalCurrency:item.currencySymbol:2 }}</td>
-                    <td>{{ item.available | decimalCurrency:item.currencySymbol:2 }}</td>
+                    <td>
+                        {{
+                            item.spend | decimalCurrency: item.currencySymbol:2
+                        }}
+                    </td>
+                    <td>
+                        {{
+                            item.available
+                                | decimalCurrency: item.currencySymbol:2
+                        }}
+                    </td>
                     <td class="custom-table__break-word">
-                        <zem-note-popover content="{{ item.comment }}" placement="top" ng-if="item.comment.length > 0"
-                                          class="note-popover"></zem-note-popover>
+                        <zem-note-popover
+                            content="{{ item.comment }}"
+                            placement="top"
+                            ng-if="item.comment.length > 0"
+                            class="note-popover"
+                        ></zem-note-popover>
                     </td>
                     <td class="custom-table__action-buttons">
-                        <a class="button button--small button--with-icon button--only-icon edit-icon" ng-click="$ctrl.editBudgetItem(item.id)"
-                           ng-if="(item.isEditable || item.isUpdatable) && !$ctrl.hasPermission('zemauth.disable_budget_management')"></a>
+                        <a
+                            class="button button--small button--with-icon button--only-icon edit-icon"
+                            ng-click="$ctrl.editBudgetItem(item.id)"
+                            ng-if="(item.isEditable || item.isUpdatable) && !$ctrl.hasPermission('zemauth.disable_budget_management')"
+                        ></a>
                     </td>
                 </tr>
-                <tr ng-hide="$ctrl.budgets.active.length || $ctrl.loadingInProgress">
-                    <td colspan="10" class="custom-table__no-data">No active budget items.</td>
+                <tr
+                    ng-hide="$ctrl.budgets.active.length || $ctrl.loadingInProgress"
+                >
+                    <td colspan="10" class="custom-table__no-data">
+                        No active budget items.
+                    </td>
                 </tr>
                 <tr ng-if="$ctrl.loadingInProgress">
                     <td colspan="10">
@@ -85,66 +189,119 @@
             </tbody>
         </table>
     </div>
-    <button type="button" class="button button--with-icon add-icon" ng-click="$ctrl.addBudgetItem()"
-            ng-disabled="!$ctrl.getAvailableCredit().length" ng-show="!$ctrl.hasPermission('zemauth.disable_budget_management')">Add Budget Item
+    <button
+        type="button"
+        class="button button--with-icon add-icon"
+        ng-click="$ctrl.addBudgetItem()"
+        ng-disabled="!$ctrl.getAvailableCredit().length"
+        ng-show="!$ctrl.hasPermission('zemauth.disable_budget_management')"
+    >
+        Add Budget Item
     </button>
 
-    <a href="" class="collapsable__show-collapsed" ng-click="$ctrl.showCollapsed = !$ctrl.showCollapsed" ng-hide="$ctrl.showCollapsed">Show depleted budget items</a>
+    <a
+        href=""
+        class="collapsable__show-collapsed"
+        ng-click="$ctrl.showCollapsed = !$ctrl.showCollapsed"
+        ng-hide="$ctrl.showCollapsed"
+        >Show depleted budget items</a
+    >
 
-    <div class="collapsable zem-campaign-budgets-settings__collapsable" ng-show="$ctrl.showCollapsed">
+    <div
+        class="collapsable zem-campaign-budgets-settings__collapsable"
+        ng-show="$ctrl.showCollapsed"
+    >
         <h3 class="custom-panel__sub-title">Depleted Budget Items</h3>
         <div class="custom-table__mobile-container">
             <table class="custom-table">
                 <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Start Date</th>
-                    <th>End Date</th>
-                    <th>Total Budget</th>
-                    <th ng-if="$ctrl.canAccessPlatformCosts()">License Fee</th>
-                    <th ng-if="$ctrl.canAccessAgencyCosts()">
-                        Margin
-                    </th>
-                    <th>Total Spend</th>
-                    <th>Available Budget</th>
-                    <th class="custom-table__break-word">Notes</th>
-                    <th></th>
-                </tr>
+                    <tr>
+                        <th>ID</th>
+                        <th>Start Date</th>
+                        <th>End Date</th>
+                        <th>Total Budget</th>
+                        <th ng-if="$ctrl.canAccessPlatformCosts()">
+                            License Fee
+                        </th>
+                        <th ng-if="$ctrl.canAccessAgencyCosts()">Margin</th>
+                        <th>Total Spend</th>
+                        <th>Available Budget</th>
+                        <th class="custom-table__break-word">Notes</th>
+                        <th></th>
+                    </tr>
                 </thead>
                 <tbody>
-                <tr ng-repeat="item in $ctrl.budgets.past" ng-class="{ 'row-updated': item.id == updatedId }">
-                    <td>{{ item.id }}</td>
-                    <td>{{ item.startDate }}</td>
-                    <td>{{ item.endDate }}</td>
+                    <tr
+                        ng-repeat="item in $ctrl.budgets.past"
+                        ng-class="{ 'row-updated': item.id == updatedId }"
+                    >
+                        <td>{{ item.id }}</td>
+                        <td>{{ item.startDate }}</td>
+                        <td>{{ item.endDate }}</td>
 
-                    <td>{{ item.total | decimalCurrency:item.currencySymbol:2 }}</td>
-                    <td ng-if="$ctrl.canAccessPlatformCosts()">{{ item.licenseFee }}</td>
-                    <td ng-if="$ctrl.canAccessAgencyCosts()">
-                        {{ item.margin }}
-                    </td>
-                    <td>{{ item.spend | decimalCurrency:item.currencySymbol:2 }}</td>
-                    <td>{{ item.available | decimalCurrency:item.currencySymbol:2 }}</td>
+                        <td>
+                            {{
+                                item.total
+                                    | decimalCurrency: item.currencySymbol:2
+                            }}
+                        </td>
+                        <td ng-if="$ctrl.canAccessPlatformCosts()">
+                            {{ item.licenseFee }}
+                        </td>
+                        <td ng-if="$ctrl.canAccessAgencyCosts()">
+                            {{ item.margin }}
+                        </td>
+                        <td>
+                            {{
+                                item.spend
+                                    | decimalCurrency: item.currencySymbol:2
+                            }}
+                        </td>
+                        <td>
+                            {{
+                                item.available
+                                    | decimalCurrency: item.currencySymbol:2
+                            }}
+                        </td>
 
-                    <td class="custom-table__break-word">
-                        <zem-note-popover content="{{ item.comment }}" placement="top" ng-if="item.comment.length > 0"
-                                          class="note-popover"></zem-note-popover>
-                    </td>
-                    <td class="custom-table__action-buttons">
-                        <a class="button button--small button--with-icon edit-icon" ng-click="$ctrl.editBudgetItem(item.id)"
-                           ng-if="item.isEditable">Edit</a>
-                    </td>
-                </tr>
-                <tr ng-hide="$ctrl.budgets.past.length || $ctrl.loadingInProgress">
-                    <td colspan="10" class="custom-table__no-data">No depleted budget items.</td>
-                </tr>
-                <tr ng-if="$ctrl.loadingInProgress">
-                    <td colspan="10">
-                        <div class="loader loader--full-width"></div>
-                    </td>
-                </tr>
+                        <td class="custom-table__break-word">
+                            <zem-note-popover
+                                content="{{ item.comment }}"
+                                placement="top"
+                                ng-if="item.comment.length > 0"
+                                class="note-popover"
+                            ></zem-note-popover>
+                        </td>
+                        <td class="custom-table__action-buttons">
+                            <a
+                                class="button button--small button--with-icon edit-icon"
+                                ng-click="$ctrl.editBudgetItem(item.id)"
+                                ng-if="item.isEditable"
+                                >Edit</a
+                            >
+                        </td>
+                    </tr>
+                    <tr
+                        ng-hide="$ctrl.budgets.past.length || $ctrl.loadingInProgress"
+                    >
+                        <td colspan="10" class="custom-table__no-data">
+                            No depleted budget items.
+                        </td>
+                    </tr>
+                    <tr ng-if="$ctrl.loadingInProgress">
+                        <td colspan="10">
+                            <div class="loader loader--full-width"></div>
+                        </td>
+                    </tr>
                 </tbody>
             </table>
         </div>
     </div>
-    <a href="" class="collapsable__hide-collapsed" ng-click="$ctrl.showCollapsed = !$ctrl.showCollapsed" ng-hide="!$ctrl.showCollapsed">Hide depleted budget items</a>
+    <a
+        href=""
+        class="collapsable__hide-collapsed"
+        ng-click="$ctrl.showCollapsed = !$ctrl.showCollapsed"
+        ng-hide="!$ctrl.showCollapsed"
+        >Hide depleted budget items</a
+    >
 </div>

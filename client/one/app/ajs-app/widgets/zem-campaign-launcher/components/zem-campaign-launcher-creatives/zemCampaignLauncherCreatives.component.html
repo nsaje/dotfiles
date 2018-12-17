@@ -1,22 +1,33 @@
 <div class="custom-panel">
-    <span class="loader" ng-show="$ctrl.state.requests.createCreativesBatch.inProgress"></span>
+    <span
+        class="loader"
+        ng-show="$ctrl.state.requests.createCreativesBatch.inProgress"
+    ></span>
 
-    <div ng-if="$ctrl.state.requests.createCreativesBatch.success"
-         class="zem-campaign-launcher-creatives__ad-picker-container content-upload__content-ad-picker-container"
-         ng-class="{'content-upload__content-ad-picker-container--editing': !!$ctrl.state.creatives.editFormApi.selectedId}">
-        <zem-upload-content-ad-picker class="zem-upload-content-ad-picker"
-                                      endpoint="$ctrl.state.creatives.endpoint"
-                                      batch-id="$ctrl.state.fields.uploadBatch"
-                                      batch-name="$ctrl.state.creatives.batchName"
-                                      candidates="$ctrl.state.creatives.candidates"
-                                      show-video-upload="$ctrl.state.campaignObjective === $ctrl.campaignTypes.VIDEO"
-                                      show-display-upload="$ctrl.state.campaignObjective === $ctrl.campaignTypes.DISPLAY"
-                                      edit-form-api="$ctrl.state.creatives.editFormApi"
-                                      status-updated-callback="$ctrl.stateService.validateFields">
+    <div
+        ng-if="$ctrl.state.requests.createCreativesBatch.success"
+        class="zem-campaign-launcher-creatives__ad-picker-container content-upload__content-ad-picker-container"
+        ng-class="{'content-upload__content-ad-picker-container--editing': !!$ctrl.state.creatives.editFormApi.selectedId}"
+    >
+        <zem-upload-content-ad-picker
+            class="zem-upload-content-ad-picker"
+            endpoint="$ctrl.state.creatives.endpoint"
+            batch-id="$ctrl.state.fields.uploadBatch"
+            batch-name="$ctrl.state.creatives.batchName"
+            candidates="$ctrl.state.creatives.candidates"
+            show-video-upload="$ctrl.state.campaignObjective === $ctrl.campaignTypes.VIDEO"
+            show-display-upload="$ctrl.state.campaignObjective === $ctrl.campaignTypes.DISPLAY"
+            edit-form-api="$ctrl.state.creatives.editFormApi"
+            status-updated-callback="$ctrl.stateService.validateFields"
+        >
         </zem-upload-content-ad-picker>
     </div>
 
-    <span class="message message--error" ng-show="$ctrl.state.requests.createCreativesBatch.error">
-        An error occurred. <a href ng-click="$ctrl.initUploadWidget()">Try again.</a>
+    <span
+        class="message message--error"
+        ng-show="$ctrl.state.requests.createCreativesBatch.error"
+    >
+        An error occurred.
+        <a href ng-click="$ctrl.initUploadWidget()">Try again.</a>
     </span>
 </div>

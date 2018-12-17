@@ -1,6 +1,4 @@
-<div class="modal__header">
-    <div class="modal__title">Request demo</div>
-</div>
+<div class="modal__header"><div class="modal__title">Request demo</div></div>
 <div class="modal__body">
     <div ng-if="$ctrl.requestInProgress">
         <p>Requesting demo instance</p>
@@ -10,20 +8,24 @@
     <div ng-if="!$ctrl.requestInProgress && !$ctrl.error">
         <h4>Demo is running</h4>
         <p>Login information will be sent to your email shortly.</p>
-        <div class="message message--info message--with-icon">NOTE: This instance will selfdestroy in 7 days.</div>
+        <div class="message message--info message--with-icon">
+            NOTE: This instance will selfdestroy in 7 days.
+        </div>
     </div>
 
     <div class="message message--error" ng-if="$ctrl.error">
-        <span ng-if="$ctrl.errorMessage">
-            {{$ctrl.errorMessage}}
-        </span>
-        <span ng-if="!$ctrl.errorMessage">
-            An error has occured.
-        </span>
+        <span ng-if="$ctrl.errorMessage"> {{ $ctrl.errorMessage }} </span>
+        <span ng-if="!$ctrl.errorMessage"> An error has occured. </span>
     </div>
 </div>
 <div class="modal__footer buttons-panel">
     <div ng-if="$ctrl.closeModal">
-        <button type="button" class="button button--outline" ng-click="$ctrl.closeModal()">Close</button>
+        <button
+            type="button"
+            class="button button--outline"
+            ng-click="$ctrl.closeModal()"
+        >
+            Close
+        </button>
     </div>
 </div>

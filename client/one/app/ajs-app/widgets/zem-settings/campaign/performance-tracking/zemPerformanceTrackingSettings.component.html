@@ -1,97 +1,205 @@
 <div class="custom-panel zem-settings-component__container">
     <h2 class="custom-panel__title">Performance tracking</h2>
-    <div class="custom-panel__description">Connect your Google/Adobe Analytics account to better track your campaign performance.</div>
+    <div class="custom-panel__description">
+        Connect your Google/Adobe Analytics account to better track your
+        campaign performance.
+    </div>
     <div class="form">
         <div class="form__checkbox">
             <label>
-                <input class="input-checkbox" type="checkbox" id="enable-ga-tracking" ng-model="$ctrl.entity.settings.enableGaTracking">
+                <input
+                    class="input-checkbox"
+                    type="checkbox"
+                    id="enable-ga-tracking"
+                    ng-model="$ctrl.entity.settings.enableGaTracking"
+                />
                 <span class="checkbox-text">
                     Enable Google Analytics performance tracking
-                    <zem-help-popover content="This adds performance tracking codes (_z1_msid, _z1_adgid, _z1_caid) to all URLs." placement="top"></zem-help-popover>
+                    <zem-help-popover
+                        content="This adds performance tracking codes (_z1_msid, _z1_adgid, _z1_caid) to all URLs."
+                        placement="top"
+                    ></zem-help-popover>
                 </span>
             </label>
         </div>
 
-        <div class="form__indented" ng-if="$ctrl.hasPermission('zemauth.can_set_ga_api_tracking') && $ctrl.entity.settings.enableGaTracking">
+        <div
+            class="form__indented"
+            ng-if="$ctrl.hasPermission('zemauth.can_set_ga_api_tracking') && $ctrl.entity.settings.enableGaTracking"
+        >
             <div class="form__group">
-                <label for="ga-tracking-type-select" class="form__label"
-                       is-internal="zemauth.can_set_ga_api_tracking">
+                <label
+                    for="ga-tracking-type-select"
+                    class="form__label"
+                    is-internal="zemauth.can_set_ga_api_tracking"
+                >
                     Reporting type
-                    <zem-help-popover content="Google Analytics reporting type." placement="top"></zem-help-popover>
+                    <zem-help-popover
+                        content="Google Analytics reporting type."
+                        placement="top"
+                    ></zem-help-popover>
                 </label>
-                <ui-select id="ga-tracking-type-select" class="button button--plain button--full-width button--dropdown-toggle-icon"
-                        theme="select2" search-enabled="false" ng-model="$ctrl.entity.settings.gaTrackingType">
+                <ui-select
+                    id="ga-tracking-type-select"
+                    class="button button--plain button--full-width button--dropdown-toggle-icon"
+                    theme="select2"
+                    search-enabled="false"
+                    ng-model="$ctrl.entity.settings.gaTrackingType"
+                >
                     <ui-select-match>
-                        <div ng-bind="$ctrl.getGaTrackingTypeByValue($ctrl.entity.settings.gaTrackingType).name"></div>
+                        <div
+                            ng-bind="$ctrl.getGaTrackingTypeByValue($ctrl.entity.settings.gaTrackingType).name"
+                        ></div>
                     </ui-select-match>
-                    <ui-select-choices repeat="type.value as type in $ctrl.options.gaTrackingType" class="ui-select-choices">
-                        <div>{{type.name}}</div>
+                    <ui-select-choices
+                        repeat="type.value as type in $ctrl.options.gaTrackingType"
+                        class="ui-select-choices"
+                    >
+                        <div>{{ type.name }}</div>
                     </ui-select-choices>
                 </ui-select>
-                <div class="message message--info message--with-icon m-t-xs" ng-if="$ctrl.entity.settings.gaTrackingType === $ctrl.constants.gaTrackingType.EMAIL">
+                <div
+                    class="message message--info message--with-icon m-t-xs"
+                    ng-if="$ctrl.entity.settings.gaTrackingType === $ctrl.constants.gaTrackingType.EMAIL"
+                >
                     <p>
-                        Email reporting relies on automated daily reports sent from Google Analytics to us. It does not require additional permissions on your Google Analytics account or property, but it is less reliable than API reporting. Please see instructions below.
+                        Email reporting relies on automated daily reports sent
+                        from Google Analytics to us. It does not require
+                        additional permissions on your Google Analytics account
+                        or property, but it is less reliable than API reporting.
+                        Please see instructions below.
                     </p>
-                    <a href="http://help.zemanta.com/article/show/12522-setting-up-automated-google-analytics-reports"
-                       target="_blank" class="alternative-link">
-                        Download a guide to setting up Automated Google Analytics Report via email
+                    <a
+                        href="http://help.zemanta.com/article/show/12522-setting-up-automated-google-analytics-reports"
+                        target="_blank"
+                        class="alternative-link"
+                    >
+                        Download a guide to setting up Automated Google
+                        Analytics Report via email
                     </a>
                 </div>
-                <div class="message message--info message--with-icon m-t-xs" ng-if="$ctrl.entity.settings.gaTrackingType === $ctrl.constants.gaTrackingType.API">
+                <div
+                    class="message message--info message--with-icon m-t-xs"
+                    ng-if="$ctrl.entity.settings.gaTrackingType === $ctrl.constants.gaTrackingType.API"
+                >
                     <p>
-                        API reporting allows the system to automatically download reports from your Google Analytics account or property. It requires that you add a user to your Google Analytics account or property with the read & analyze permission. Please see instructions below.
+                        API reporting allows the system to automatically
+                        download reports from your Google Analytics account or
+                        property. It requires that you add a user to your Google
+                        Analytics account or property with the read & analyze
+                        permission. Please see instructions below.
                     </p>
-                    <a href="http://help.zemanta.com/article/show/10814-realtime-google-analytics-reports_1"
-                       target="_blank" class="alternative-link">
-                        Download a guide to setting up Automated Google Analytics Report via API
+                    <a
+                        href="http://help.zemanta.com/article/show/10814-realtime-google-analytics-reports_1"
+                        target="_blank"
+                        class="alternative-link"
+                    >
+                        Download a guide to setting up Automated Google
+                        Analytics Report via API
                     </a>
                 </div>
             </div>
-            <div class="form__group" ng-class="{'form--error': !!$ctrl.errors.gaPropertyId}"
-                 ng-if="$ctrl.hasPermission('zemauth.can_set_ga_api_tracking') && $ctrl.entity.settings.gaTrackingType === $ctrl.constants.gaTrackingType.API && $ctrl.entity.settings.enableGaTracking">
-                <label class="form__label" for="ga-property-id-input" is-internal="zemauth.can_set_ga_api_tracking">
+            <div
+                class="form__group"
+                ng-class="{'form--error': !!$ctrl.errors.gaPropertyId}"
+                ng-if="$ctrl.hasPermission('zemauth.can_set_ga_api_tracking') && $ctrl.entity.settings.gaTrackingType === $ctrl.constants.gaTrackingType.API && $ctrl.entity.settings.enableGaTracking"
+            >
+                <label
+                    class="form__label"
+                    for="ga-property-id-input"
+                    is-internal="zemauth.can_set_ga_api_tracking"
+                >
                     Web property ID
-                    <zem-help-popover content="Google Analytics web property ID." placement="top"></zem-help-popover>
+                    <zem-help-popover
+                        content="Google Analytics web property ID."
+                        placement="top"
+                    ></zem-help-popover>
                 </label>
-                <input class="input-text" id="ga-property-id-input" type="text"
-                       ng-model="$ctrl.entity.settings.gaPropertyId" placeholder="UA-xxxxxxx-yy">
-                <div class="message" ng-if="!$ctrl.errors.gaPropertyId.length && $ctrl.entity.settings.gaPropertyReadable !== undefined"
-                     ng-class="$ctrl.entity.settings.gaPropertyReadable ? 'ga-connected' : 'ga-pending'">
-                    {{ $ctrl.entity.settings.gaPropertyReadable ? 'Connected' : 'Pending' }}
+                <input
+                    class="input-text"
+                    id="ga-property-id-input"
+                    type="text"
+                    ng-model="$ctrl.entity.settings.gaPropertyId"
+                    placeholder="UA-xxxxxxx-yy"
+                />
+                <div
+                    class="message"
+                    ng-if="!$ctrl.errors.gaPropertyId.length && $ctrl.entity.settings.gaPropertyReadable !== undefined"
+                    ng-class="$ctrl.entity.settings.gaPropertyReadable ? 'ga-connected' : 'ga-pending'"
+                >
+                    {{
+                        $ctrl.entity.settings.gaPropertyReadable
+                            ? 'Connected'
+                            : 'Pending'
+                    }}
                 </div>
 
-                <div ng-repeat="error in $ctrl.errors.gaPropertyId" class="message message--error" for="ga-property-id-input">{{ error }}</div>
+                <div
+                    ng-repeat="error in $ctrl.errors.gaPropertyId"
+                    class="message message--error"
+                    for="ga-property-id-input"
+                >
+                    {{ error }}
+                </div>
             </div>
         </div>
 
         <div class="form__checkbox">
             <label>
-                <input class="input-checkbox" type="checkbox" id="enable-adobe-tracking"
-                       ng-model="$ctrl.entity.settings.enableAdobeTracking">
+                <input
+                    class="input-checkbox"
+                    type="checkbox"
+                    id="enable-adobe-tracking"
+                    ng-model="$ctrl.entity.settings.enableAdobeTracking"
+                />
                 <span class="checkbox-text" for="enable-adobe-tracking">
                     Enable Adobe Analytics performance tracking
-                    <zem-help-popover content="This adds performance tracking codes to all URLs." placement="top"></zem-help-popover>
+                    <zem-help-popover
+                        content="This adds performance tracking codes to all URLs."
+                        placement="top"
+                    ></zem-help-popover>
                 </span>
             </label>
         </div>
 
-        <div class="form__indented m-b-none" ng-if="$ctrl.entity.settings.enableAdobeTracking">
-            <div class="form__group" ng-class="{'form--error': !!$ctrl.errors.adobeTrackingParam}">
+        <div
+            class="form__indented m-b-none"
+            ng-if="$ctrl.entity.settings.enableAdobeTracking"
+        >
+            <div
+                class="form__group"
+                ng-class="{'form--error': !!$ctrl.errors.adobeTrackingParam}"
+            >
                 <label class="form__label" for="adobe-tracking-param-input">
                     Adobe tracking parameter
-                    <zem-help-popover content="Name of the tracking parameter used for Adobe Analytics."
-                                      placement="top"></zem-help-popover>
+                    <zem-help-popover
+                        content="Name of the tracking parameter used for Adobe Analytics."
+                        placement="top"
+                    ></zem-help-popover>
                 </label>
-                <input class="input-text" id="adobe-tracking-param-input" type="text"
-                       ng-model="$ctrl.entity.settings.adobeTrackingParam">
+                <input
+                    class="input-text"
+                    id="adobe-tracking-param-input"
+                    type="text"
+                    ng-model="$ctrl.entity.settings.adobeTrackingParam"
+                />
                 <div class="message message--info message--with-icon m-t-xs">
-                    <a href="http://help.zemanta.com/article/show/12524-setting-up-automated-adobe-analytics-reports"
-                       target="_blank" class="alternative-link">Download a guide to setting up Automated Adobe Analytics Report</a>
+                    <a
+                        href="http://help.zemanta.com/article/show/12524-setting-up-automated-adobe-analytics-reports"
+                        target="_blank"
+                        class="alternative-link"
+                        >Download a guide to setting up Automated Adobe
+                        Analytics Report</a
+                    >
                 </div>
-                <div ng-repeat="error in $ctrl.errors.adobeTrackingParam" class="message message--error"
-                   for="adobe-tracking-param-input">{{ error }}</div>
+                <div
+                    ng-repeat="error in $ctrl.errors.adobeTrackingParam"
+                    class="message message--error"
+                    for="adobe-tracking-param-input"
+                >
+                    {{ error }}
+                </div>
             </div>
         </div>
     </div>
 </div>
-

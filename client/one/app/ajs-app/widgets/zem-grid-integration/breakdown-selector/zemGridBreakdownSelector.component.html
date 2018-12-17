@@ -1,26 +1,54 @@
 <span class="zem-grid-breakdown-selector dropdown" uib-dropdown>
-    <a href class="button button--dropdown-toggle-icon" uib-dropdown-toggle title="Show/hide breakdowns">Breakdowns</a>
+    <a
+        href
+        class="button button--dropdown-toggle-icon"
+        uib-dropdown-toggle
+        title="Show/hide breakdowns"
+        >Breakdowns</a
+    >
     <div class="dropdown-menu dropdown-menu-right" uib-dropdown-menu>
         <div class="dropdown-menu__container custom-scroller">
-            <div class="dropdown-menu__category" ng-repeat="group in $ctrl.breakdownGroups" ng-click="$event.stopPropagation()" ng-if="group.breakdowns.length > 0">
-                <div class="dropdown-menu__category-name" is-internal="{{group.internal}}">
+            <div
+                class="dropdown-menu__category"
+                ng-repeat="group in $ctrl.breakdownGroups"
+                ng-click="$event.stopPropagation()"
+                ng-if="group.breakdowns.length > 0"
+            >
+                <div
+                    class="dropdown-menu__category-name"
+                    is-internal="{{ group.internal }}"
+                >
                     {{ group.name }}
                 </div>
                 <ul class="dropdown-menu__list">
-                    <li class="dropdown-menu__list-item" ng-repeat="breakdown in breakdowns = (group.breakdowns | filter: {shown: true})"
-                        is-internal="{{breakdown.internal}}">
+                    <li
+                        class="dropdown-menu__list-item"
+                        ng-repeat="breakdown in breakdowns = (group.breakdowns | filter: {shown: true})"
+                        is-internal="{{ breakdown.internal }}"
+                    >
                         <label>
-                            <input class="input-checkbox" type="checkbox" ng-model="breakdown.checked"
-                                   ng-change="$ctrl.onChecked(breakdown, group)">
-                            <span class="checkbox-text">{{ breakdown.name }}</span>
+                            <input
+                                class="input-checkbox"
+                                type="checkbox"
+                                ng-model="breakdown.checked"
+                                ng-change="$ctrl.onChecked(breakdown, group)"
+                            />
+                            <span class="checkbox-text">{{
+                                breakdown.name
+                            }}</span>
                         </label>
                     </li>
                 </ul>
             </div>
         </div>
         <div class="buttons-panel">
-            <button type="button" class="button button--highlight button--with-icon check-icon"
-                    ng-click="$ctrl.applyBreakdown()">Apply</button>
+            <button
+                type="button"
+                class="button button--highlight button--with-icon check-icon"
+                ng-click="$ctrl.applyBreakdown()"
+            >
+                Apply
+            </button>
         </div>
     </div>
 </span>

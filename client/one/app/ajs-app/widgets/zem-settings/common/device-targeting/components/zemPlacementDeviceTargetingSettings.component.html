@@ -1,18 +1,23 @@
-<div ng-repeat="placement in $ctrl.state.placements"
-     class="form__group zem-placement-device-targeting__option
-            zem-placement-device-targeting__option--{{placement.value}}"
-     ng-class="{
+<div
+    ng-repeat="placement in $ctrl.state.placements"
+    class="form__group zem-placement-device-targeting__option
+            zem-placement-device-targeting__option--{{ placement.value }}"
+    ng-class="{
             'zem-placement-device-targeting__option--active': placement.selected,
             'zem-placement-device-targeting__option--enabled': placement.enabled,
         }"
 >
-    <label class="form__label" for="{{placement.value}}"></label>
+    <label class="form__label" for="{{ placement.value }}"></label>
     <div class="form__checkbox">
         <label>
-            <input class="input-checkbox" type="checkbox" id="{{placement.value}}"
-                   ng-model="placement.selected" ng-change="$ctrl.stateService.update()">
+            <input
+                class="input-checkbox"
+                type="checkbox"
+                id="{{ placement.value }}"
+                ng-model="placement.selected"
+                ng-change="$ctrl.stateService.update()"
+            />
             <span class="checkbox-text">{{ placement.name }}</span>
         </label>
     </div>
-
 </div>

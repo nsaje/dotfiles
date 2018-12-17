@@ -23,7 +23,7 @@
 
 .zem-side-panel__drawer--visible {
     transform: translateX(-100%);
-    box-shadow: -5px 0px 30px 0px fade(black,20%);
+    box-shadow: -5px 0px 30px 0px fade(black, 20%);
 
     .zem-side-panel__close {
         opacity: 0.8;
@@ -47,12 +47,11 @@
 
 .zem-side-panel__overlay--visible {
     visibility: visible;
-    opacity: .5;
+    opacity: 0.5;
     transition-property: opacity;
 }
 
 .zem-side-panel__container {
-
 }
 
 .zem-side-panel__close {
@@ -64,7 +63,8 @@
     height: 50px;
     border-top-left-radius: @border-radius;
     border-bottom-left-radius: @border-radius;
-    background: fade(@white,50%) url('images/arrow-white.svg') no-repeat 10px center;
+    background: fade(@white, 50%) url('images/arrow-white.svg') no-repeat 10px
+        center;
     background-size: 12px;
     opacity: 0;
     visibility: hidden;

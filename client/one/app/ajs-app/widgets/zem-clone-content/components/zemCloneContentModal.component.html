@@ -1,34 +1,67 @@
-<div class="modal__header">
-    <div class="modal__title">Clone ads</div>
-</div>
+<div class="modal__header"><div class="modal__title">Clone ads</div></div>
 <div class="modal__body">
+    <span
+        >Clone selected ads from ad group
+        <strong>{{ $ctrl.adGroup.name }}</strong> to the destination ad
+        group.</span
+    >
 
-    <span>Clone selected ads from ad group <strong>{{ $ctrl.adGroup.name }}</strong> to the destination ad group.</span>
-
-    <div class="form__group" ng-class="{'form--error': !!$ctrl.errors.destinationBatchName}">
+    <div
+        class="form__group"
+        ng-class="{'form--error': !!$ctrl.errors.destinationBatchName}"
+    >
         <label class="form__label" for="batch-name">Batch name</label>
-        <input class="input-text" type="text" id="batch-name" ng-model="$ctrl.destinationBatchName"></input>
-        <div class="message message--error" for="batch-name" ng-if="!!$ctrl.errors.destinationBatchName">{{ $ctrl.errors.destinationBatchName }}</div>
+        <input
+            class="input-text"
+            type="text"
+            id="batch-name"
+            ng-model="$ctrl.destinationBatchName"
+        />
+        <div
+            class="message message--error"
+            for="batch-name"
+            ng-if="!!$ctrl.errors.destinationBatchName"
+        >
+            {{ $ctrl.errors.destinationBatchName }}
+        </div>
     </div>
 
-    <div class="form__group" ng-class="{'form--error': !!$ctrl.errors.destinationAdGroupId}">
-        <label class="form__label" for="ad-group-input">Destination ad group</label>
+    <div
+        class="form__group"
+        ng-class="{'form--error': !!$ctrl.errors.destinationAdGroupId}"
+    >
+        <label class="form__label" for="ad-group-input"
+            >Destination ad group</label
+        >
         <zem-select
             store="$ctrl.store"
             texts="$ctrl.texts"
             class="zem-select--zem-clone-content"
             selected-id="$ctrl.destinationAdGroupId"
-            on-select="$ctrl.onAdGroupSelected(item);"
+            on-select="$ctrl.onAdGroupSelected(item)"
         ></zem-select>
-        <div class="message message--error" for="ad-group-input" ng-if="!!$ctrl.errors.destinationAdGroupId">{{ $ctrl.errors.destinationAdGroupId }}</div>
+        <div
+            class="message message--error"
+            for="ad-group-input"
+            ng-if="!!$ctrl.errors.destinationAdGroupId"
+        >
+            {{ $ctrl.errors.destinationAdGroupId }}
+        </div>
     </div>
 
     <div class="form__group">
-        <label class="form__label" for="cloned-content-state">State of cloned ads</label>
+        <label class="form__label" for="cloned-content-state"
+            >State of cloned ads</label
+        >
         <div class="form__radio">
             <label>
-                <input class="input-radio" type="radio" id="cloned-content-state"
-                    ng-model="$ctrl.clonedContentState" ng-value="{{ null }}">
+                <input
+                    class="input-radio"
+                    type="radio"
+                    id="cloned-content-state"
+                    ng-model="$ctrl.clonedContentState"
+                    ng-value="{{ null }}"
+                />
                 <span class="radio-text">
                     Cloned ads will keep their state
                 </span>
@@ -36,8 +69,13 @@
         </div>
         <div class="form__radio">
             <label>
-                <input class="input-radio" type="radio" id="cloned-content-state"
-                       ng-model="$ctrl.clonedContentState" ng-value="{{ true }}">
+                <input
+                    class="input-radio"
+                    type="radio"
+                    id="cloned-content-state"
+                    ng-model="$ctrl.clonedContentState"
+                    ng-value="{{ true }}"
+                />
                 <span class="radio-text">
                     All cloned ads will be <b>enabled</b>
                 </span>
@@ -45,19 +83,38 @@
         </div>
         <div class="form__radio">
             <label>
-                <input class="input-radio" type="radio" id="cloned-content-state"
-                       ng-model="$ctrl.clonedContentState" ng-value="{{ false }}">
+                <input
+                    class="input-radio"
+                    type="radio"
+                    id="cloned-content-state"
+                    ng-model="$ctrl.clonedContentState"
+                    ng-value="{{ false }}"
+                />
                 <span class="radio-text">
                     All cloned ads will be <b>paused</b>
                 </span>
             </label>
         </div>
     </div>
-
 </div>
 <div class="modal__footer buttons-panel">
-    <button class="button button--highlight button--with-icon copy-icon" ng-disabled="!!$ctrl.requestInProgress" ng-click="$ctrl.submit()">Clone</button>
-    <button type="button" class="button button--outline" ng-disabled="!!$ctrl.requestInProgress" ng-click="$ctrl.modalInstance.dismiss()">Cancel</button>
+    <button
+        class="button button--highlight button--with-icon copy-icon"
+        ng-disabled="!!$ctrl.requestInProgress"
+        ng-click="$ctrl.submit()"
+    >
+        Clone
+    </button>
+    <button
+        type="button"
+        class="button button--outline"
+        ng-disabled="!!$ctrl.requestInProgress"
+        ng-click="$ctrl.modalInstance.dismiss()"
+    >
+        Cancel
+    </button>
     <div class="loader" ng-show="$ctrl.requestInProgress"></div>
-    <span ng-show="$ctrl.errors.message" class="message message--error">{{ $ctrl.errors.message }}</span>
+    <span ng-show="$ctrl.errors.message" class="message message--error">{{
+        $ctrl.errors.message
+    }}</span>
 </div>

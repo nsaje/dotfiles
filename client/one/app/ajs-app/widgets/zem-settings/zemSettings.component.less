@@ -14,7 +14,7 @@
     height: 60px;
     z-index: 1000;
     background: @light-gray;
-    border-bottom: 1px solid darken(@light-gray,5%);
+    border-bottom: 1px solid darken(@light-gray, 5%);
 }
 
 .zem-settings__header-title {
@@ -23,7 +23,7 @@
     font-size: 24px;
     margin: 10px 0;
     white-space: nowrap;
-    overflow:hidden;
+    overflow: hidden;
     text-overflow: ellipsis;
 }
 
@@ -51,8 +51,8 @@
     height: 60px;
     padding: 0 @default-spacing;
     display: table;
-    background-color: tint(@secondary-color,90%);
-    box-shadow: 0px 0px 3px 0px fade(@secondary-color,40%);
+    background-color: tint(@secondary-color, 90%);
+    box-shadow: 0px 0px 3px 0px fade(@secondary-color, 40%);
 }
 
 .zem-settings__footer-cell {
@@ -125,7 +125,7 @@
                 font-size: 0;
 
                 &::after {
-                    content: "Archive";
+                    content: 'Archive';
                     font-size: @default-font-size;
                 }
             }
@@ -228,7 +228,7 @@
     float: right;
 
     &:before {
-        content: "";
+        content: '';
         height: 10px;
         width: 10px;
         display: inline-block;
@@ -263,7 +263,7 @@
         color: @secondary-color;
 
         .zem-campaign-goals__goal-number {
-            background-color: tint(@secondary-color,90%);
+            background-color: tint(@secondary-color, 90%);
         }
     }
 }
@@ -391,7 +391,7 @@
 
 .zem-device-targeting-settings {
     .form::after {
-        content: "";
+        content: '';
         display: block;
         clear: both;
     }
@@ -428,7 +428,8 @@
 
 .zem-device-targeting__desktop {
     .form__label {
-        background: url('images/device-desktop-gray.svg') no-repeat center center;
+        background: url('images/device-desktop-gray.svg') no-repeat center
+            center;
         background-size: 100px;
     }
 
@@ -535,7 +536,7 @@
         position: relative;
 
         &::after {
-            content: " ";
+            content: ' ';
             display: block;
             position: absolute;
             right: 0;
@@ -543,7 +544,8 @@
             height: 26px;
             width: 26px;
             background-size: contain;
-            background: url('images/device-mobile-gray.svg') no-repeat center center;
+            background: url('images/device-mobile-gray.svg') no-repeat center
+                center;
         }
     }
 }
@@ -559,7 +561,7 @@
     pointer-events: none;
 
     &::before {
-        content: " ";
+        content: ' ';
         display: block;
         position: absolute;
         left: 0px;
@@ -587,7 +589,7 @@
 }
 
 .zem-os-device-targeting__platform-name--IOS::before,
-.zem-os-device-targeting__platform-name--MACOSX::before{
+.zem-os-device-targeting__platform-name--MACOSX::before {
     background-image: url('images/os-apple.svg');
     margin-top: -2px;
 }
@@ -608,7 +610,8 @@
 
 .zem-placement-device-targeting__option--SITE {
     .form__label {
-        background: url('images/placement-website-gray.svg') no-repeat center center;
+        background: url('images/placement-website-gray.svg') no-repeat center
+            center;
         background-size: 100px;
     }
 
@@ -621,7 +624,8 @@
 
 .zem-placement-device-targeting__option--APP {
     .form__label {
-        background: url('images/placement-in-app-gray.svg') no-repeat center center;
+        background: url('images/placement-in-app-gray.svg') no-repeat center
+            center;
         background-size: 80px;
     }
 
@@ -707,7 +711,7 @@
 @media only screen and (max-width: @mobile-breakpoint) {
     .zem-device-targeting-settings {
         .form::after {
-            content: "";
+            content: '';
             display: block;
             clear: both;
         }
@@ -743,7 +747,6 @@
                 display: inline-block;
             }
         }
-
 
         .zem-device-targeting__desktop {
             .form__label {
@@ -896,15 +899,18 @@
 
     &:hover {
         .targeting-not-supported .targeting-not-supported__icon--yahoo {
-            background: url('images/not-supported-yahoo.svg') no-repeat center center;
+            background: url('images/not-supported-yahoo.svg') no-repeat center
+                center;
         }
 
         .targeting-not-supported .targeting-not-supported__icon--outbrain {
-            background: url('images/not-supported-outbrain.svg') no-repeat center center;
+            background: url('images/not-supported-outbrain.svg') no-repeat
+                center center;
         }
 
         .targeting-not-supported .targeting-not-supported__icon--facebook {
-            background: url('images/not-supported-facebook.svg') no-repeat center center;
+            background: url('images/not-supported-facebook.svg') no-repeat
+                center center;
         }
     }
 
@@ -914,15 +920,18 @@
         }
 
         .targeting-not-supported .targeting-not-supported__icon--yahoo {
-            background: url('images/not-supported-yahoo-white.svg') no-repeat center center;
+            background: url('images/not-supported-yahoo-white.svg') no-repeat
+                center center;
         }
 
         .targeting-not-supported .targeting-not-supported__icon--outbrain {
-            background: url('images/not-supported-outbrain-white.svg') no-repeat center center;
+            background: url('images/not-supported-outbrain-white.svg') no-repeat
+                center center;
         }
 
         .targeting-not-supported .targeting-not-supported__icon--facebook {
-            background: url('images/not-supported-facebook-white.svg') no-repeat center center;
+            background: url('images/not-supported-facebook-white.svg') no-repeat
+                center center;
         }
     }
 }
@@ -981,7 +990,6 @@
     position: relative;
 }
 
-
 ///////////////////////////
 // Demographic targeting //
 ///////////////////////////
@@ -1019,7 +1027,7 @@
 }
 
 .zem-demographic-targeting-overview__box--price {
-    background-color: fade(@secondary-color,10%);
+    background-color: fade(@secondary-color, 10%);
     width: 180px;
 }
 
@@ -1095,7 +1103,6 @@
     }
 
     .checkbox-text {
-
     }
 
     .button.add-icon {
@@ -1196,7 +1203,6 @@
     }
 }
 
-
 ///////////////////////////
 // Bakcend hacks //
 ///////////////////////////
@@ -1212,7 +1218,6 @@
 ///////////////////////////
 
 .zem-campaign-budgets-settings {
-
 }
 
 .zem-campaign-budgets-settings__budget-overview {
@@ -1292,7 +1297,7 @@
     }
 
     .zem-campaign-budgets-settings__budget-overview-name::after {
-        content: ":";
+        content: ':';
     }
 
     .zem-campaign-budgets-settings__budget-overview-value {

@@ -2,17 +2,43 @@
     <div class="modal__title">Cloning successful</div>
 </div>
 <div class="modal__body">
-
     <div ng-if="!!$ctrl.resolve.cloneAds">
-        Ad group <strong>{{ $ctrl.resolve.adGroup.name }}</strong>, its settings and ads, was successfully cloned to campaign <strong>{{ $ctrl.resolve.destinationCampaign.name }}</strong> as ad group <strong class="text-secondary">{{ $ctrl.resolve.destinationAdGroup.name }}</strong>.
+        Ad group <strong>{{ $ctrl.resolve.adGroup.name }}</strong
+        >, its settings and ads, was successfully cloned to campaign
+        <strong>{{ $ctrl.resolve.destinationCampaign.name }}</strong> as ad
+        group
+        <strong class="text-secondary">{{
+            $ctrl.resolve.destinationAdGroup.name
+        }}</strong
+        >.
     </div>
 
     <div ng-if="!$ctrl.resolve.cloneAds">
-        Ad group <strong>{{ $ctrl.resolve.adGroup.name }}</strong> and its settings was successfully cloned to campaign <strong>{{ $ctrl.resolve.destinationCampaign.name }}</strong> as ad group <strong class="text-secondary">{{ $ctrl.resolve.destinationAdGroup.name }}</strong>.
+        Ad group <strong>{{ $ctrl.resolve.adGroup.name }}</strong> and its
+        settings was successfully cloned to campaign
+        <strong>{{ $ctrl.resolve.destinationCampaign.name }}</strong> as ad
+        group
+        <strong class="text-secondary">{{
+            $ctrl.resolve.destinationAdGroup.name
+        }}</strong
+        >.
     </div>
 
-    <div class="m-t"><a class="button button--highlight" ng-click="$ctrl.navigateTo($event)" href>Visit newly created Ad Group</a></div>
+    <div class="m-t">
+        <a
+            class="button button--highlight"
+            ng-click="$ctrl.navigateTo($event)"
+            href
+            >Visit newly created Ad Group</a
+        >
+    </div>
 </div>
 <div class="modal__footer buttons-panel">
-    <button type="button" class="button button--outline" ng-click="$ctrl.modalInstance.dismiss()">Close</button>
+    <button
+        type="button"
+        class="button button--outline"
+        ng-click="$ctrl.modalInstance.dismiss()"
+    >
+        Close
+    </button>
 </div>

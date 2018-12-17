@@ -1,30 +1,71 @@
 <h1 class="content-container__title">Account credit</h1>
-<div class="custom-panel" ng-show="!$ctrl.state.requests.reloadCredit.inProgress && !$ctrl.state.requests.reloadCreditRefunds.inProgress">
+<div
+    class="custom-panel"
+    ng-show="!$ctrl.state.requests.reloadCredit.inProgress && !$ctrl.state.requests.reloadCreditRefunds.inProgress"
+>
     <h2 class="custom-panel__title">Overview</h2>
     <div class="custom-panel__description">
-        Account credit is the basis of allocating any budget to any campaign. Valid credit items are used by campaign budget items in the order they are listed.
+        Account credit is the basis of allocating any budget to any campaign.
+        Valid credit items are used by campaign budget items in the order they
+        are listed.
     </div>
-    <div class="loader loader--full-width" ng-show="$ctrl.state.requests.reloadCredit.inProgress || $ctrl.state.requests.reloadCreditRefunds.inProgress"></div>
+    <div
+        class="loader loader--full-width"
+        ng-show="$ctrl.state.requests.reloadCredit.inProgress || $ctrl.state.requests.reloadCreditRefunds.inProgress"
+    ></div>
     <div class="zem-account-credit__credit-overview">
         <div class="zem-account-credit__credit-overview-box">
-            <span class="zem-account-credit__credit-overview-name">Total Account Value</span>
-            <span class="zem-account-credit__credit-overview-value">{{ $ctrl.state.credit.totals.total | decimalCurrency:$ctrl.state.credit.totals.currencySymbol:2 }}</span>
+            <span class="zem-account-credit__credit-overview-name"
+                >Total Account Value</span
+            >
+            <span class="zem-account-credit__credit-overview-value">{{
+                $ctrl.state.credit.totals.total
+                    | decimalCurrency
+                        : $ctrl.state.credit.totals.currencySymbol
+                        : 2
+            }}</span>
         </div>
         <div class="zem-account-credit__credit-overview-box">
-            <span class="zem-account-credit__credit-overview-name">Allocated To Budget Items</span>
-            <span class="zem-account-credit__credit-overview-value">{{ $ctrl.state.credit.totals.allocated | decimalCurrency:$ctrl.state.credit.totals.currencySymbol:2 }}</span>
+            <span class="zem-account-credit__credit-overview-name"
+                >Allocated To Budget Items</span
+            >
+            <span class="zem-account-credit__credit-overview-value">{{
+                $ctrl.state.credit.totals.allocated
+                    | decimalCurrency
+                        : $ctrl.state.credit.totals.currencySymbol
+                        : 2
+            }}</span>
         </div>
         <div class="zem-account-credit__credit-overview-box">
-            <span class="zem-account-credit__credit-overview-name">Past Credit</span>
-            <span class="zem-account-credit__credit-overview-value">{{ $ctrl.state.credit.totals.past | decimalCurrency:$ctrl.state.credit.totals.currencySymbol:2 }}</span>
+            <span class="zem-account-credit__credit-overview-name"
+                >Past Credit</span
+            >
+            <span class="zem-account-credit__credit-overview-value">{{
+                $ctrl.state.credit.totals.past
+                    | decimalCurrency
+                        : $ctrl.state.credit.totals.currencySymbol
+                        : 2
+            }}</span>
         </div>
-        <div class="zem-account-credit__credit-overview-box zem-account-credit__credit-overview-box--exposed">
-            <span class="zem-account-credit__credit-overview-name">Available Account Credit</span>
-            <span class="zem-account-credit__credit-overview-value">{{ $ctrl.state.credit.totals.available | decimalCurrency:$ctrl.state.credit.totals.currencySymbol:2 }}</span>
+        <div
+            class="zem-account-credit__credit-overview-box zem-account-credit__credit-overview-box--exposed"
+        >
+            <span class="zem-account-credit__credit-overview-name"
+                >Available Account Credit</span
+            >
+            <span class="zem-account-credit__credit-overview-value">{{
+                $ctrl.state.credit.totals.available
+                    | decimalCurrency
+                        : $ctrl.state.credit.totals.currencySymbol
+                        : 2
+            }}</span>
         </div>
     </div>
 </div>
-<div class="custom-panel" ng-show="!$ctrl.state.requests.reloadCredit.inProgress && !$ctrl.state.requests.reloadCreditRefunds.inProgress">
+<div
+    class="custom-panel"
+    ng-show="!$ctrl.state.requests.reloadCredit.inProgress && !$ctrl.state.requests.reloadCreditRefunds.inProgress"
+>
     <h2 class="custom-panel__title">Active Credit Items</h2>
     <div class="custom-table__mobile-container">
         <table class="custom-table">
@@ -49,64 +90,128 @@
             <tbody ng-repeat="item in $ctrl.state.credit.active">
                 <tr>
                     <td>Credit</td>
-                    <td ng-if="item.salesforceUrl"><a href="{{ item.salesforceUrl }}">{{ item.id }}</a></td>
+                    <td ng-if="item.salesforceUrl">
+                        <a href="{{ item.salesforceUrl }}">{{ item.id }}</a>
+                    </td>
                     <td ng-if="!item.salesforceUrl">{{ item.id }}</td>
-                    <td>{{ item.createdBy }}<br /><span class="text-gray">{{ item.createdOn }}</span></td>
+                    <td>
+                        {{ item.createdBy }}<br /><span class="text-gray">{{
+                            item.createdOn
+                        }}</span>
+                    </td>
                     <td>{{ item.startDate }}</td>
                     <td>{{ item.endDate }}</td>
                     <td>
-                        <span ng-show="item.isSigned" class="text-green">Yes</span>
-                        <span ng-show="!item.isSigned && !item.isCanceled" class="text-red">No</span>
-                        <span ng-show="item.isCanceled" class="text-gray">Canceled</span>
+                        <span ng-show="item.isSigned" class="text-green"
+                            >Yes</span
+                        >
+                        <span
+                            ng-show="!item.isSigned && !item.isCanceled"
+                            class="text-red"
+                            >No</span
+                        >
+                        <span ng-show="item.isCanceled" class="text-gray"
+                            >Canceled</span
+                        >
                     </td>
                     <td>{{ item.licenseFee }}</td>
-                    <td>{{ item.flatFee | decimalCurrency:item.currencySymbol:2 }}</td>
-                    <td>{{ item.total | decimalCurrency:item.currencySymbol:2 }}</td>
                     <td>
-                        {{ item.allocated | decimalCurrency:item.currencySymbol:2 }}<br>
-                        <span class="text-gray">({{ item.numOfBudgets }} budget <ng-pluralize count="item.numOfBudgets" when="{'0': 'items', '1': 'item', 'other': 'items'}"></ng-pluralize>)</span>
+                        {{
+                            item.flatFee
+                                | decimalCurrency: item.currencySymbol:2
+                        }}
                     </td>
-                    <td>{{ item.available | decimalCurrency:item.currencySymbol:2 }}</td>
+                    <td>
+                        {{
+                            item.total | decimalCurrency: item.currencySymbol:2
+                        }}
+                    </td>
+                    <td>
+                        {{
+                            item.allocated
+                                | decimalCurrency: item.currencySymbol:2
+                        }}<br />
+                        <span class="text-gray"
+                            >({{ item.numOfBudgets }} budget
+                            <ng-pluralize
+                                count="item.numOfBudgets"
+                                when="{'0': 'items', '1': 'item', 'other': 'items'}"
+                            ></ng-pluralize
+                            >)</span
+                        >
+                    </td>
+                    <td>
+                        {{
+                            item.available
+                                | decimalCurrency: item.currencySymbol:2
+                        }}
+                    </td>
                     <td ng-if="$ctrl.account.data.agency">
-                        <span ng-show="item.isAgency" class="text-green">Yes</span>
-                        <span ng-show="!item.isAgency" class="text-red">No</span>
+                        <span ng-show="item.isAgency" class="text-green"
+                            >Yes</span
+                        >
+                        <span ng-show="!item.isAgency" class="text-red"
+                            >No</span
+                        >
                     </td>
                     <td class="custom-table__break-word">{{ item.comment }}</td>
                     <td class="custom-table__action-buttons">
-                        <button class="button button--small button--with-icon edit-icon"
-                                ng-click="$ctrl.openCreditItemModal(item.id)"
-                                ng-if="!item.isCanceled">
+                        <button
+                            class="button button--small button--with-icon edit-icon"
+                            ng-click="$ctrl.openCreditItemModal(item.id)"
+                            ng-if="!item.isCanceled"
+                        >
                             Edit
                         </button>
-                        <button class="button button--small button--with-icon remove-icon"
-                                ng-click="$ctrl.cancelCreditItem(item.id)"
-                                ng-if="item.isSigned">
+                        <button
+                            class="button button--small button--with-icon remove-icon"
+                            ng-click="$ctrl.cancelCreditItem(item.id)"
+                            ng-if="item.isSigned"
+                        >
                             Cancel
                         </button>
-                        <button class="button button--small button--with-icon restore-icon"
-                                ng-click="$ctrl.openCreditRefundItemModal(item)"
-                                ng-if="!item.isCanceled && $ctrl.hasPermission('zemauth.can_manage_credit_refunds')">
+                        <button
+                            class="button button--small button--with-icon restore-icon"
+                            ng-click="$ctrl.openCreditRefundItemModal(item)"
+                            ng-if="!item.isCanceled && $ctrl.hasPermission('zemauth.can_manage_credit_refunds')"
+                        >
                             Refund
                         </button>
                     </td>
                 </tr>
-                <tr ng-repeat="refund in $ctrl.state.creditRefunds[item.id]" ng-if="$ctrl.hasPermission('zemauth.can_manage_credit_refunds')">
+                <tr
+                    ng-repeat="refund in $ctrl.state.creditRefunds[item.id]"
+                    ng-if="$ctrl.hasPermission('zemauth.can_manage_credit_refunds')"
+                >
                     <td>Refund</td>
-                    <td >{{ refund.id }}</td>
-                    <td>{{ refund.createdBy }}<br /><span class="text-gray">{{ refund.createdOn }}</span></td>
+                    <td>{{ refund.id }}</td>
+                    <td>
+                        {{ refund.createdBy }}<br /><span class="text-gray">{{
+                            refund.createdOn
+                        }}</span>
+                    </td>
                     <td>{{ refund.startDate }}</td>
                     <td>{{ refund.endDate }}</td>
                     <td></td>
                     <td></td>
                     <td></td>
-                    <td>{{ refund.amount | decimalCurrency:item.currencySymbol:2 }}<br /><span class="text-gray">Refunded</span></td>
+                    <td>
+                        {{
+                            refund.amount
+                                | decimalCurrency: item.currencySymbol:2
+                        }}<br /><span class="text-gray">Refunded</span>
+                    </td>
                     <td></td>
                     <td></td>
                     <td ng-if="$ctrl.account.data.agency"></td>
-                    <td class="custom-table__break-word">{{ refund.comment }}</td>
+                    <td class="custom-table__break-word">
+                        {{ refund.comment }}
+                    </td>
                     <td></td>
                 </tr>
-                <tr ng-if="$ctrl.hasPermission('zemauth.can_manage_credit_refunds') && $ctrl.state.creditRefunds.hasOwnProperty(item.id)">
+                <tr
+                    ng-if="$ctrl.hasPermission('zemauth.can_manage_credit_refunds') && $ctrl.state.creditRefunds.hasOwnProperty(item.id)"
+                >
                     <td>Credit total:</td>
                     <td></td>
                     <td></td>
@@ -115,7 +220,12 @@
                     <td></td>
                     <td></td>
                     <td></td>
-                    <td>{{ $ctrl.state.creditRefundTotals[item.id] | decimalCurrency:item.currencySymbol:2 }}</td>
+                    <td>
+                        {{
+                            $ctrl.state.creditRefundTotals[item.id]
+                                | decimalCurrency: item.currencySymbol:2
+                        }}
+                    </td>
                     <td></td>
                     <td></td>
                     <td ng-if="$ctrl.account.data.agency"></td>
@@ -124,13 +234,24 @@
                 </tr>
             </tbody>
             <tr ng-show="!$ctrl.state.credit.active.length">
-                <td colspan="13" class="custom-table__no-data">No active credit items.</td>
+                <td colspan="13" class="custom-table__no-data">
+                    No active credit items.
+                </td>
             </tr>
         </table>
     </div>
-    <button type="button" class="button button--with-icon add-icon" ng-click="$ctrl.openCreditItemModal()">Add Credit Item</button>
+    <button
+        type="button"
+        class="button button--with-icon add-icon"
+        ng-click="$ctrl.openCreditItemModal()"
+    >
+        Add Credit Item
+    </button>
 </div>
-<div class="custom-panel" ng-show="!$ctrl.state.requests.reloadCredit.inProgress && !$ctrl.state.requests.reloadCreditRefunds.inProgress">
+<div
+    class="custom-panel"
+    ng-show="!$ctrl.state.requests.reloadCredit.inProgress && !$ctrl.state.requests.reloadCreditRefunds.inProgress"
+>
     <h2 class="custom-panel__title">Past Credit Items</h2>
     <div class="custom-table__mobile-container">
         <table class="custom-table">
@@ -153,50 +274,110 @@
             </thead>
             <tbody ng-repeat="item in $ctrl.state.credit.past">
                 <tr>
-                    <td ng-if="item.salesforceUrl"><a href="{{ item.salesforceUrl }}">{{ item.id }}</a></td>
+                    <td ng-if="item.salesforceUrl">
+                        <a href="{{ item.salesforceUrl }}">{{ item.id }}</a>
+                    </td>
                     <td ng-if="!item.salesforceUrl">{{ item.id }}</td>
-                    <td>{{ item.createdBy }}<br /><span class="text-gray">{{ item.createdOn }}</span></td>
+                    <td>
+                        {{ item.createdBy }}<br /><span class="text-gray">{{
+                            item.createdOn
+                        }}</span>
+                    </td>
                     <td>{{ item.startDate }}</td>
                     <td>{{ item.endDate }}</td>
                     <td>
-                        <span ng-show="item.isSigned" class="text-green">Yes</span>
-                        <span ng-show="!item.isSigned && !item.isCanceled" class="text-red">No</span>
-                        <span ng-show="item.isCanceled" class="text-gray">Canceled</span>
+                        <span ng-show="item.isSigned" class="text-green"
+                            >Yes</span
+                        >
+                        <span
+                            ng-show="!item.isSigned && !item.isCanceled"
+                            class="text-red"
+                            >No</span
+                        >
+                        <span ng-show="item.isCanceled" class="text-gray"
+                            >Canceled</span
+                        >
                     </td>
                     <td>{{ item.licenseFee }}</td>
-                    <td>{{ item.flatFee | decimalCurrency:item.currencySymbol:2 }}</td>
-                    <td>{{ item.total | decimalCurrency:item.currencySymbol:2 }}</td>
                     <td>
-                        {{ item.allocated | decimalCurrency:item.currencySymbol:2 }}<br>
-                        <span class="text-gray">({{ item.numOfBudgets }} budget <ng-pluralize count="item.numOfBudgets" when="{'0': 'items', '1': 'item', 'other': 'items'}"></ng-pluralize>)</span>
+                        {{
+                            item.flatFee
+                                | decimalCurrency: item.currencySymbol:2
+                        }}
                     </td>
-                    <td>{{ item.available | decimalCurrency:item.currencySymbol:2 }}</td>
+                    <td>
+                        {{
+                            item.total | decimalCurrency: item.currencySymbol:2
+                        }}
+                    </td>
+                    <td>
+                        {{
+                            item.allocated
+                                | decimalCurrency: item.currencySymbol:2
+                        }}<br />
+                        <span class="text-gray"
+                            >({{ item.numOfBudgets }} budget
+                            <ng-pluralize
+                                count="item.numOfBudgets"
+                                when="{'0': 'items', '1': 'item', 'other': 'items'}"
+                            ></ng-pluralize
+                            >)</span
+                        >
+                    </td>
+                    <td>
+                        {{
+                            item.available
+                                | decimalCurrency: item.currencySymbol:2
+                        }}
+                    </td>
                     <td ng-if="$ctrl.account.data.agency">
-                        <span ng-show="item.isAgency" class="text-green">Yes</span>
-                        <span ng-show="!item.isAgency" class="text-red">No</span>
+                        <span ng-show="item.isAgency" class="text-green"
+                            >Yes</span
+                        >
+                        <span ng-show="!item.isAgency" class="text-red"
+                            >No</span
+                        >
                     </td>
                     <td class="custom-table__break-word">{{ item.comment }}</td>
                     <td class="custom-table__action-buttons"></td>
                 </tr>
                 <tr ng-show="!$ctrl.state.credit.past.length" class="message">
-                    <td colspan="12" class="custom-table__no-data">No past credit items.</td>
+                    <td colspan="12" class="custom-table__no-data">
+                        No past credit items.
+                    </td>
                 </tr>
-                <tr ng-repeat="refund in $ctrl.state.creditRefunds[item.id]" ng-if="$ctrl.hasPermission('zemauth.can_manage_credit_refunds')">
-                    <td >{{ refund.id }}</td>
-                    <td>{{ refund.createdBy }}<br /><span class="text-gray">{{ refund.createdOn }}</span></td>
+                <tr
+                    ng-repeat="refund in $ctrl.state.creditRefunds[item.id]"
+                    ng-if="$ctrl.hasPermission('zemauth.can_manage_credit_refunds')"
+                >
+                    <td>{{ refund.id }}</td>
+                    <td>
+                        {{ refund.createdBy }}<br /><span class="text-gray">{{
+                            refund.createdOn
+                        }}</span>
+                    </td>
                     <td>{{ refund.startDate }}</td>
                     <td>{{ refund.endDate }}</td>
                     <td></td>
                     <td></td>
                     <td></td>
-                    <td>{{ refund.amount | decimalCurrency:item.currencySymbol:2 }}<br /><span class="text-gray">Refunded</span></td>
+                    <td>
+                        {{
+                            refund.amount
+                                | decimalCurrency: item.currencySymbol:2
+                        }}<br /><span class="text-gray">Refunded</span>
+                    </td>
                     <td></td>
                     <td></td>
                     <td ng-if="$ctrl.account.data.agency"></td>
-                    <td class="custom-table__break-word">{{ refund.comment }}</td>
+                    <td class="custom-table__break-word">
+                        {{ refund.comment }}
+                    </td>
                     <td></td>
                 </tr>
-                <tr ng-if="$ctrl.hasPermission('zemauth.can_manage_credit_refunds') && $ctrl.state.creditRefunds.hasOwnProperty(item.id)">
+                <tr
+                    ng-if="$ctrl.hasPermission('zemauth.can_manage_credit_refunds') && $ctrl.state.creditRefunds.hasOwnProperty(item.id)"
+                >
                     <td>Credit total:</td>
                     <td></td>
                     <td></td>
@@ -204,7 +385,12 @@
                     <td></td>
                     <td></td>
                     <td></td>
-                    <td>{{ $ctrl.state.creditTotals[item.id] | decimalCurrency:item.currencySymbol:2 }}</td>
+                    <td>
+                        {{
+                            $ctrl.state.creditTotals[item.id]
+                                | decimalCurrency: item.currencySymbol:2
+                        }}
+                    </td>
                     <td></td>
                     <td></td>
                     <td ng-if="$ctrl.account.data.agency"></td>

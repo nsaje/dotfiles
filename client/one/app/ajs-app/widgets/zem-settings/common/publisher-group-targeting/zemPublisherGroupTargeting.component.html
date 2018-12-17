@@ -1,6 +1,14 @@
-<div class="form" ng-if="$ctrl.hasPermission('zemauth.can_set_white_blacklist_publisher_groups') && $ctrl.hasPermission('zemauth.can_see_publisher_groups_ui')">
-    <div class="form__title" is-internal="zemauth.can_see_publisher_groups_ui">Publishers</div>
-    <div class="form__text">Define your publisher targeting by whitelisting or blacklisting publisher groups.</div>
+<div
+    class="form"
+    ng-if="$ctrl.hasPermission('zemauth.can_set_white_blacklist_publisher_groups') && $ctrl.hasPermission('zemauth.can_see_publisher_groups_ui')"
+>
+    <div class="form__title" is-internal="zemauth.can_see_publisher_groups_ui">
+        Publishers
+    </div>
+    <div class="form__text">
+        Define your publisher targeting by whitelisting or blacklisting
+        publisher groups.
+    </div>
     <zem-inclusion-targeting-list
         texts="$ctrl.texts"
         targetings="$ctrl.targetings"
@@ -9,8 +17,20 @@
         remove-targeting="$ctrl.removeTargeting(targeting)"
     ></zem-inclusion-targeting-list>
     <div class="more-messages__container">
-        <div class="message message--error" ng-repeat="error in $ctrl.errors.whitelistPublisherGroups">{{ error }}</div>
-        <div class="message message--error" ng-repeat="error in $ctrl.errors.blacklistPublisherGroups">{{ error }}</div>
-        <div class="message message--info message--with-icon m-b-none">Outbrain and Yahoo don't support publisher targeting.</div>
+        <div
+            class="message message--error"
+            ng-repeat="error in $ctrl.errors.whitelistPublisherGroups"
+        >
+            {{ error }}
+        </div>
+        <div
+            class="message message--error"
+            ng-repeat="error in $ctrl.errors.blacklistPublisherGroups"
+        >
+            {{ error }}
+        </div>
+        <div class="message message--info message--with-icon m-b-none">
+            Outbrain and Yahoo don't support publisher targeting.
+        </div>
     </div>
 </div>

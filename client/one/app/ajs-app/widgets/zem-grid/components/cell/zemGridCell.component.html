@@ -1,29 +1,107 @@
 <div class="zem-grid-cell">
-        <zem-grid-cell-breakdown-field ng-if="ctrl.type === ctrl.gridColumnTypes.BREAKDOWN" data="ctrl.data" row="ctrl.row" column="ctrl.col" grid="ctrl.grid"></zem-grid-cell-breakdown-field>
+    <zem-grid-cell-breakdown-field
+        ng-if="ctrl.type === ctrl.gridColumnTypes.BREAKDOWN"
+        data="ctrl.data"
+        row="ctrl.row"
+        column="ctrl.col"
+        grid="ctrl.grid"
+    ></zem-grid-cell-breakdown-field>
 
-        <zem-grid-cell-actions ng-if="ctrl.type === ctrl.gridColumnTypes.ACTIONS" row="ctrl.row" grid="ctrl.grid"></zem-grid-cell-actions>
+    <zem-grid-cell-actions
+        ng-if="ctrl.type === ctrl.gridColumnTypes.ACTIONS"
+        row="ctrl.row"
+        grid="ctrl.grid"
+    ></zem-grid-cell-actions>
 
-        <zem-grid-cell-state-selector ng-if="ctrl.type === ctrl.gridColumnTypes.STATE_SELECTOR" data="ctrl.data" row="ctrl.row" column="ctrl.col" grid="ctrl.grid"></zem-grid-cell-state-selector>
+    <zem-grid-cell-state-selector
+        ng-if="ctrl.type === ctrl.gridColumnTypes.STATE_SELECTOR"
+        data="ctrl.data"
+        row="ctrl.row"
+        column="ctrl.col"
+        grid="ctrl.grid"
+    ></zem-grid-cell-state-selector>
 
-        <zem-grid-cell-status-field  ng-if="ctrl.type === ctrl.gridColumnTypes.STATUS" data="ctrl.data" row="ctrl.row" grid="ctrl.grid"></zem-grid-cell-status-field>
+    <zem-grid-cell-status-field
+        ng-if="ctrl.type === ctrl.gridColumnTypes.STATUS"
+        data="ctrl.data"
+        row="ctrl.row"
+        grid="ctrl.grid"
+    ></zem-grid-cell-status-field>
 
-        <zem-grid-cell-edit-button ng-if="ctrl.type === ctrl.gridColumnTypes.EDIT_BUTTON" data="ctrl.data" row="ctrl.row" column="ctrl.col" grid="ctrl.grid"></zem-grid-cell-edit-button>
+    <zem-grid-cell-edit-button
+        ng-if="ctrl.type === ctrl.gridColumnTypes.EDIT_BUTTON"
+        data="ctrl.data"
+        row="ctrl.row"
+        column="ctrl.col"
+        grid="ctrl.grid"
+    ></zem-grid-cell-edit-button>
 
-        <zem-grid-cell-clone-button ng-if="ctrl.type === ctrl.gridColumnTypes.CLONE_BUTTON" data="ctrl.data" row="ctrl.row" column="ctrl.col" grid="ctrl.grid"></zem-grid-cell-clone-button>
+    <zem-grid-cell-clone-button
+        ng-if="ctrl.type === ctrl.gridColumnTypes.CLONE_BUTTON"
+        data="ctrl.data"
+        row="ctrl.row"
+        column="ctrl.col"
+        grid="ctrl.grid"
+    ></zem-grid-cell-clone-button>
 
-        <zem-grid-cell-submission-status ng-if="ctrl.type === ctrl.gridColumnTypes.SUBMISSION_STATUS" data="ctrl.data" row="ctrl.row" column="ctrl.col" grid="ctrl.grid"></zem-grid-cell-submission-status>
+    <zem-grid-cell-submission-status
+        ng-if="ctrl.type === ctrl.gridColumnTypes.SUBMISSION_STATUS"
+        data="ctrl.data"
+        row="ctrl.row"
+        column="ctrl.col"
+        grid="ctrl.grid"
+    ></zem-grid-cell-submission-status>
 
-        <zem-grid-cell-performance-indicator ng-if="ctrl.type === ctrl.gridColumnTypes.PERFORMANCE_INDICATOR" data="ctrl.data" row="ctrl.row"></zem-grid-cell-performance-indicator>
+    <zem-grid-cell-performance-indicator
+        ng-if="ctrl.type === ctrl.gridColumnTypes.PERFORMANCE_INDICATOR"
+        data="ctrl.data"
+        row="ctrl.row"
+    ></zem-grid-cell-performance-indicator>
 
-        <zem-grid-cell-external-link ng-if="ctrl.type === ctrl.gridColumnTypes.EXTERNAL_LINK" data="ctrl.data" row="ctrl.row" column="ctrl.col" grid="ctrl.grid"></zem-grid-cell-external-link>
+    <zem-grid-cell-external-link
+        ng-if="ctrl.type === ctrl.gridColumnTypes.EXTERNAL_LINK"
+        data="ctrl.data"
+        row="ctrl.row"
+        column="ctrl.col"
+        grid="ctrl.grid"
+    ></zem-grid-cell-external-link>
 
-        <zem-grid-cell-editable-base-field ng-if="ctrl.type === ctrl.gridColumnTypes.EDITABLE_BASE_FIELD" data="ctrl.data" row="ctrl.row" column="ctrl.col" grid="ctrl.grid"></zem-grid-cell-editable-base-field>
+    <zem-grid-cell-editable-base-field
+        ng-if="ctrl.type === ctrl.gridColumnTypes.EDITABLE_BASE_FIELD"
+        data="ctrl.data"
+        row="ctrl.row"
+        column="ctrl.col"
+        grid="ctrl.grid"
+    ></zem-grid-cell-editable-base-field>
 
-        <zem-grid-cell-base-field ng-if="ctrl.type === ctrl.gridColumnTypes.BASE_FIELD"  data="ctrl.data" row="ctrl.row" column="ctrl.col" grid="ctrl.grid"></zem-grid-cell-base-field>
+    <zem-grid-cell-base-field
+        ng-if="ctrl.type === ctrl.gridColumnTypes.BASE_FIELD"
+        data="ctrl.data"
+        row="ctrl.row"
+        column="ctrl.col"
+        grid="ctrl.grid"
+    ></zem-grid-cell-base-field>
 
-        <zem-grid-cell-thumbnail ng-if="ctrl.type === ctrl.gridColumnTypes.THUMBNAIL"  data="ctrl.data" row="ctrl.row" column="ctrl.col" grid="ctrl.grid"></zem-grid-cell-thumbnail>
+    <zem-grid-cell-thumbnail
+        ng-if="ctrl.type === ctrl.gridColumnTypes.THUMBNAIL"
+        data="ctrl.data"
+        row="ctrl.row"
+        column="ctrl.col"
+        grid="ctrl.grid"
+    ></zem-grid-cell-thumbnail>
 
-        <zem-grid-cell-checkbox ng-if="ctrl.type === ctrl.gridColumnTypes.CHECKBOX" row="ctrl.row" col="ctrl.col" grid="ctrl.grid"></zem-grid-cell-checkbox>
+    <zem-grid-cell-checkbox
+        ng-if="ctrl.type === ctrl.gridColumnTypes.CHECKBOX"
+        row="ctrl.row"
+        col="ctrl.col"
+        grid="ctrl.grid"
+    ></zem-grid-cell-checkbox>
 
-        <zem-grid-cell-bid-modifier-field ng-if="ctrl.type === ctrl.gridColumnTypes.BID_MODIFIER_FIELD" data="ctrl.data" row="ctrl.row" column="ctrl.col" grid="ctrl.grid"></zem-grid-cell-bid-modifier-field>
+    <zem-grid-cell-bid-modifier-field
+        ng-if="ctrl.type === ctrl.gridColumnTypes.BID_MODIFIER_FIELD"
+        data="ctrl.data"
+        row="ctrl.row"
+        column="ctrl.col"
+        grid="ctrl.grid"
+    ></zem-grid-cell-bid-modifier-field>
 </div>

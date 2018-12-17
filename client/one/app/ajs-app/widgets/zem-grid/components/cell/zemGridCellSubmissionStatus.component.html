@@ -1,26 +1,34 @@
-<span ng-show="ctrl.data"
-      class="zem-grid-cell-submission-status"
-      zem-lazy-popover-template="'zemGridSubmissionStatusPopover.html'"
-      zem-lazy-popover-custom-classes="zem-grid-submission-status-popover custom-scroller"
-      zem-lazy-popover-stay-open-on-hover="true"
-      zem-lazy-popover-placement="left"
-      zem-lazy-popover-append-to-body="true"
-      zem-lazy-popover-animation-class="fade">
-    <span ng-show="ctrl.approved.length"
-          class="field approved"
-          ng-class="{'one-field': !ctrl.nonApproved.length, 'archived': ctrl.archived}">
-        {{ctrl.approved.length}}
+<span
+    ng-show="ctrl.data"
+    class="zem-grid-cell-submission-status"
+    zem-lazy-popover-template="'zemGridSubmissionStatusPopover.html'"
+    zem-lazy-popover-custom-classes="zem-grid-submission-status-popover custom-scroller"
+    zem-lazy-popover-stay-open-on-hover="true"
+    zem-lazy-popover-placement="left"
+    zem-lazy-popover-append-to-body="true"
+    zem-lazy-popover-animation-class="fade"
+>
+    <span
+        ng-show="ctrl.approved.length"
+        class="field approved"
+        ng-class="{'one-field': !ctrl.nonApproved.length, 'archived': ctrl.archived}"
+    >
+        {{ ctrl.approved.length }}
     </span>
 
-    <span ng-show="ctrl.nonApproved.length"
-          class="field non-approved"
-          ng-class="{'one-field': !ctrl.approved.length, 'archived': ctrl.archived}">
-        {{ctrl.nonApproved.length}}
+    <span
+        ng-show="ctrl.nonApproved.length"
+        class="field non-approved"
+        ng-class="{'one-field': !ctrl.approved.length, 'archived': ctrl.archived}"
+    >
+        {{ ctrl.nonApproved.length }}
     </span>
 
-    <span ng-show="ctrl.noSubmissions"
-          class="field no-submission"
-          ng-class="{'archived': ctrl.archived}">
+    <span
+        ng-show="ctrl.noSubmissions"
+        class="field no-submission"
+        ng-class="{'archived': ctrl.archived}"
+    >
         0
     </span>
 </span>

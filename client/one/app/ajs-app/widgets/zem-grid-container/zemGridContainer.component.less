@@ -1,8 +1,14 @@
 @import 'variables';
 
-zem-grid-container { display: block; }
-zem-grid-container-actions { display: block; }
-zem-grid-container-tabs { display: block; }
+zem-grid-container {
+    display: block;
+}
+zem-grid-container-actions {
+    display: block;
+}
+zem-grid-container-tabs {
+    display: block;
+}
 
 .zem-grid-container {
     margin-top: 20px;
@@ -25,7 +31,7 @@ zem-grid-container-tabs { display: block; }
 .zem-grid__tab {
     color: @text-color;
     text-decoration: none;
-    background-color: darken(@light-gray,4%);
+    background-color: darken(@light-gray, 4%);
     font-size: 14px;
     padding: 6px @default-spacing;
     margin: 4px 5px 0 0;
@@ -56,7 +62,8 @@ zem-grid-container-tabs { display: block; }
     height: 45px;
 }
 
-.zem-dummy-grid-container__header, .zem-dummy-grid-container__footer {
+.zem-dummy-grid-container__header,
+.zem-dummy-grid-container__footer {
     height: 44px;
     background-color: tint(@secondary-color, 90%);
 }

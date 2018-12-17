@@ -1,38 +1,56 @@
 <div class="zem-infobox-data-row__value-label">
-    {{$ctrl.row.name}}
-    <zem-help-popover ng-if="$ctrl.row.tooltip"
-                      content="{{$ctrl.row.tooltip}}"
-                      placement="bottom">
+    {{ $ctrl.row.name }}
+    <zem-help-popover
+        ng-if="$ctrl.row.tooltip"
+        content="{{ $ctrl.row.tooltip }}"
+        placement="bottom"
+    >
     </zem-help-popover>
 </div>
 
 <div class="zem-infobox-data-row__value-container">
-    <span ng-if="$ctrl.row.icon"
-          class="zem-infobox-data-row__performance-emoticon performance-emoticon"
-          ng-class="{
+    <span
+        ng-if="$ctrl.row.icon"
+        class="zem-infobox-data-row__performance-emoticon performance-emoticon"
+        ng-class="{
               'performance-emoticon--neutral': $ctrl.row.icon === $ctrl.constants.emoticon.NEUTRAL,
               'performance-emoticon--happy': $ctrl.row.icon === $ctrl.constants.emoticon.HAPPY,
               'performance-emoticon--sad': $ctrl.row.icon === $ctrl.constants.emoticon.SAD,
-          }">
+          }"
+    >
     </span>
-    <span class="zem-infobox-data-row__value-and-details"
-          zem-lazy-popover-html-unsafe="{{$ctrl.row.detailsContent}}"
-          zem-lazy-popover-placement="bottom"
-          zem-lazy-popover-append-to-body="true"
-          zem-lazy-popover-animation-class="fade"
-          zem-lazy-popover-stay-open-on-hover="true">
-        <span class="zem-infobox-data-row__value"
-              ng-class="{
+    <span
+        class="zem-infobox-data-row__value-and-details"
+        zem-lazy-popover-html-unsafe="{{ $ctrl.row.detailsContent }}"
+        zem-lazy-popover-placement="bottom"
+        zem-lazy-popover-append-to-body="true"
+        zem-lazy-popover-animation-class="fade"
+        zem-lazy-popover-stay-open-on-hover="true"
+    >
+        <span
+            class="zem-infobox-data-row__value"
+            ng-class="{
                   'text-green': $ctrl.row.icon === $ctrl.constants.emoticon.HAPPY,
                   'text-red': $ctrl.row.icon === $ctrl.constants.emoticon.SAD,
-              }">{{$ctrl.row.value}}</span>
-        <span ng-if="$ctrl.row.detailsLabel" class="zem-infobox-data-row__details-label">({{$ctrl.row.detailsLabel}})</span>
+              }"
+            >{{ $ctrl.row.value }}</span
+        >
+        <span
+            ng-if="$ctrl.row.detailsLabel"
+            class="zem-infobox-data-row__details-label"
+            >({{ $ctrl.row.detailsLabel }})</span
+        >
     </span>
-    <zem-help-popover ng-if="$ctrl.row.warning"
-                      content="{{$ctrl.row.warning}}"
-                      placement="bottom">
+    <zem-help-popover
+        ng-if="$ctrl.row.warning"
+        content="{{ $ctrl.row.warning }}"
+        placement="bottom"
+    >
     </zem-help-popover>
-    <span ng-if="$ctrl.row.description" class="zem-infobox-data-row__value-description">
-        ({{$ctrl.row.description}})
+    <span
+        ng-if="$ctrl.row.description"
+        class="zem-infobox-data-row__value-description"
+    >
+        ({{ $ctrl.row.description }})
     </span>
 </div>

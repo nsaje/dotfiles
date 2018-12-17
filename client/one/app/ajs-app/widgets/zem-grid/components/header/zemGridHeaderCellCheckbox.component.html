@@ -1,35 +1,70 @@
-<div class="zem-grid-cell zem-grid-header-cell-checkbox" ng-style="ctrl.getStyle()">
-    <label class="zem-grid-cell-checkbox" ng-if="ctrl.isVisible() && !ctrl.getCustomFilters()">
-        <input class="input-checkbox allFilterCheckbox"
-               type="checkbox"
-               data-ng-model="ctrl.allFilterChecked"
-               ng-click="ctrl.toggleAllFilter($event)"
+<div
+    class="zem-grid-cell zem-grid-header-cell-checkbox"
+    ng-style="ctrl.getStyle()"
+>
+    <label
+        class="zem-grid-cell-checkbox"
+        ng-if="ctrl.isVisible() && !ctrl.getCustomFilters()"
+    >
+        <input
+            class="input-checkbox allFilterCheckbox"
+            type="checkbox"
+            data-ng-model="ctrl.allFilterChecked"
+            ng-click="ctrl.toggleAllFilter($event)"
         />
         <span class="checkbox-text"></span>
     </label>
 
-    <div class="dropdown" ng-if="ctrl.isVisible() && ctrl.getCustomFilters()" uib-dropdown dropdown-append-to-body="true">
+    <div
+        class="dropdown"
+        ng-if="ctrl.isVisible() && ctrl.getCustomFilters()"
+        uib-dropdown
+        dropdown-append-to-body="true"
+    >
         <label class="zem-grid-cell-checkbox">
-            <input class="input-checkbox allFilterCheckbox"
-                   type="checkbox"
-                   data-ng-model="ctrl.allFilterChecked"
-                   ng-click="ctrl.toggleAllFilter($event)"
+            <input
+                class="input-checkbox allFilterCheckbox"
+                type="checkbox"
+                data-ng-model="ctrl.allFilterChecked"
+                ng-click="ctrl.toggleAllFilter($event)"
             />
             <span class="checkbox-text"></span>
         </label>
-        <div class="button button--outline button--dropdown-toggle-icon button--table-header" uib-dropdown-toggle></div>
-        <ul class="dropdown-menu zem-grid-header-cell-checkbox-custom-filters-dropdown-menu" role="menu" uib-dropdown-menu>
-            <li role="presentation" ng-repeat="customFilter in ctrl.getCustomFilters()">
-                <div ng-if="customFilter.type ===  ctrl.zemGridConstants.gridSelectionCustomFilterType.ITEM">
-                    <a role="menuitem" tabindex="-1" ng-click="ctrl.selectCustomFilter(customFilter.filter)">
+        <div
+            class="button button--outline button--dropdown-toggle-icon button--table-header"
+            uib-dropdown-toggle
+        ></div>
+        <ul
+            class="dropdown-menu zem-grid-header-cell-checkbox-custom-filters-dropdown-menu"
+            role="menu"
+            uib-dropdown-menu
+        >
+            <li
+                role="presentation"
+                ng-repeat="customFilter in ctrl.getCustomFilters()"
+            >
+                <div
+                    ng-if="customFilter.type ===  ctrl.zemGridConstants.gridSelectionCustomFilterType.ITEM"
+                >
+                    <a
+                        role="menuitem"
+                        tabindex="-1"
+                        ng-click="ctrl.selectCustomFilter(customFilter.filter)"
+                    >
                         {{ customFilter.filter.name }}
                     </a>
                 </div>
-                <div ng-if="customFilter.type === ctrl.zemGridConstants.gridSelectionCustomFilterType.LIST">
+                <div
+                    ng-if="customFilter.type === ctrl.zemGridConstants.gridSelectionCustomFilterType.LIST"
+                >
                     <h3 class="m-b-xs">{{ customFilter.name }}:</h3>
                     <ul class="list-with-bullets">
                         <li ng-repeat="filter in customFilter.filters">
-                            <a role="menuitem" tabindex="-1" ng-click="ctrl.selectCustomFilter(filter)">
+                            <a
+                                role="menuitem"
+                                tabindex="-1"
+                                ng-click="ctrl.selectCustomFilter(filter)"
+                            >
                                 {{ filter.name }}
                             </a>
                         </li>

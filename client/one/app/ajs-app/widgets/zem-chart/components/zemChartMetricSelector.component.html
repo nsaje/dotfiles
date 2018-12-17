@@ -1,29 +1,63 @@
 <span class="dropdown" uib-dropdown>
-    <a href class="button button--dropdown-toggle-icon" uib-dropdown-toggle title="{{$ctrl.metric.name}}">{{$ctrl.metric.name}}</a>
+    <a
+        href
+        class="button button--dropdown-toggle-icon"
+        uib-dropdown-toggle
+        title="{{ $ctrl.metric.name }}"
+        >{{ $ctrl.metric.name }}</a
+    >
     <div class="dropdown-menu" uib-dropdown-menu>
         <div class="dropdown-menu__container custom-scroller">
-            <div class="dropdown-menu__category" ng-repeat="category in $ctrl.categories">
-                <div class="dropdown-menu__category-name">{{ category.name }}</div>
-                <div class="dropdown-menu__category-description" ng-if="category.description">{{ category.description
-                    }}
+            <div
+                class="dropdown-menu__category"
+                ng-repeat="category in $ctrl.categories"
+            >
+                <div class="dropdown-menu__category-name">
+                    {{ category.name }}
                 </div>
-                <ul class="dropdown-menu__list dropdown-menu__list--two-columns" ng-if="category.metrics.length > 0">
-                    <li class="dropdown-menu__list-item dropdown-menu__list-item--option"
-                        ng-repeat="metric in category.metrics">
-                        <div class="dropdown-menu__option" ng-click="$ctrl.onChanged(metric)"
-                             is-internal="{{metric.internal}}"
-                             ng-class="{'dropdown-menu__option--selected': metric === $ctrl.metric}">
+                <div
+                    class="dropdown-menu__category-description"
+                    ng-if="category.description"
+                >
+                    {{ category.description }}
+                </div>
+                <ul
+                    class="dropdown-menu__list dropdown-menu__list--two-columns"
+                    ng-if="category.metrics.length > 0"
+                >
+                    <li
+                        class="dropdown-menu__list-item dropdown-menu__list-item--option"
+                        ng-repeat="metric in category.metrics"
+                    >
+                        <div
+                            class="dropdown-menu__option"
+                            ng-click="$ctrl.onChanged(metric)"
+                            is-internal="{{ metric.internal }}"
+                            ng-class="{'dropdown-menu__option--selected': metric === $ctrl.metric}"
+                        >
                             {{ metric.name }}
                         </div>
                     </li>
                 </ul>
-                <div class="dropdown-menu__subcategory" ng-repeat="subcategory in category.subcategories">
-                    <div class="dropdown-menu__subcategory-name">{{ subcategory.name }}</div>
-                    <ul class="dropdown-menu__list dropdown-menu__list--condensed">
-                        <li class="dropdown-menu__list-item dropdown-menu__list-item--option"
-                            ng-repeat="metric in subcategory.metrics">
-                            <div class="dropdown-menu__option" ng-click="$ctrl.onChanged(metric)"
-                                 ng-class="{'dropdown-menu__option--selected': metric === $ctrl.metric}">
+                <div
+                    class="dropdown-menu__subcategory"
+                    ng-repeat="subcategory in category.subcategories"
+                >
+                    <div class="dropdown-menu__subcategory-name">
+                        {{ subcategory.name }}
+                    </div>
+                    <ul
+                        class="dropdown-menu__list dropdown-menu__list--condensed"
+                    >
+                        <li
+                            class="dropdown-menu__list-item dropdown-menu__list-item--option"
+                            ng-repeat="metric in subcategory.metrics"
+                        >
+                            <div
+                                class="dropdown-menu__option"
+                                ng-click="$ctrl.onChanged(metric)"
+                                ng-class="{'dropdown-menu__option--selected': metric === $ctrl.metric}"
+                            >
                                 {{ metric.shortName }}
                             </div>
                         </li>
@@ -31,9 +65,12 @@
                 </div>
             </div>
             <div ng-if="$ctrl.nullable" class="dropdown-menu__list">
-                <span class="dropdown-menu__option" ng-click="$ctrl.onChanged(null)"
-                      ng-class="{'dropdown-menu__option--selected': !$ctrl.metric.value}">
-                  None
+                <span
+                    class="dropdown-menu__option"
+                    ng-click="$ctrl.onChanged(null)"
+                    ng-class="{'dropdown-menu__option--selected': !$ctrl.metric.value}"
+                >
+                    None
                 </span>
             </div>
         </div>

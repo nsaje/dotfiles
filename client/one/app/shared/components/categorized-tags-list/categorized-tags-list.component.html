@@ -1,17 +1,23 @@
-<div class="zem-categorized-tags-list__empty-text-container" *ngIf="categorizedItems.length === 0">
-    {{emptyText}}
+<div
+    class="zem-categorized-tags-list__empty-text-container"
+    *ngIf="categorizedItems.length === 0"
+>
+    {{ emptyText }}
 </div>
 
 <ng-container *ngFor="let category of categorizedItems">
     <div class="zem-categorized-tags-list__category-container">
-        <div class="zem-categorized-tags-list__category-name">{{category.name}}</div>
+        <div class="zem-categorized-tags-list__category-name">
+            {{ category.name }}
+        </div>
         <ul class="zem-categorized-tags-list__items-list">
             <ng-container *ngFor="let item of category.items">
                 <li class="zem-categorized-tags-list__item">
-                    {{item.name}}
-                    <button class="zem-categorized-tags-list__remove-item"
-                            (click)="removeItem(category, item)">
-                    </button>
+                    {{ item.name }}
+                    <button
+                        class="zem-categorized-tags-list__remove-item"
+                        (click)="removeItem(category, item)"
+                    ></button>
                 </li>
             </ng-container>
         </ul>

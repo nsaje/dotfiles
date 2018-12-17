@@ -1,54 +1,133 @@
-<div class="modal__header">
-    <div class="modal__title">Export Report</div>
-</div>
+<div class="modal__header"><div class="modal__title">Export Report</div></div>
 <div class="modal__body">
     <h3>You are exporting a report with the following settings:</h3>
-    <hr>
+    <hr />
     <div class="form">
         <div class="form__group form__group--informative">
             <label class="form__label">Date range</label>
-            <div class="form__information">{{ $ctrl.dateRange.startDate.format('ll') }} - {{ $ctrl.dateRange.endDate.format('ll') }}</div>
+            <div class="form__information">
+                {{ $ctrl.dateRange.startDate.format('ll') }} -
+                {{ $ctrl.dateRange.endDate.format('ll') }}
+            </div>
         </div>
         <zem-report-query-config
             grid-api="$ctrl.resolve.api"
             disabled="$ctrl.jobPosted"
-            config="$ctrl.queryConfig"></zem-report-query-config>
-        <hr>
+            config="$ctrl.queryConfig"
+        ></zem-report-query-config>
+        <hr />
         <div class="form__group">
-            <label class="form__label" for="send-report-checkbox">Send report</label>
+            <label class="form__label" for="send-report-checkbox"
+                >Send report</label
+            >
             <div class="form__checkbox">
                 <label>
-                    <input id="send-report-checkbox"
-                           type="checkbox"
-                           ng-model="$ctrl.sendReport"
-                           ng-disabled="$ctrl.jobPosted"
-                           class="input-checkbox">
-                    <span class="checkbox-text" for="send-report-checkbox"></span>
+                    <input
+                        id="send-report-checkbox"
+                        type="checkbox"
+                        ng-model="$ctrl.sendReport"
+                        ng-disabled="$ctrl.jobPosted"
+                        class="input-checkbox"
+                    />
+                    <span
+                        class="checkbox-text"
+                        for="send-report-checkbox"
+                    ></span>
                 </label>
             </div>
         </div>
         <div class="form__group" ng-if="$ctrl.sendReport">
-            <label class="form__label" for="recipients">Report will be sent to</label>
+            <label class="form__label" for="recipients"
+                >Report will be sent to</label
+            >
             <div class="form__information" id="recipients">
                 {{ $ctrl.user.email }}
             </div>
         </div>
-        <div class="form__group" ng-class="{'form__group--error': $ctrl.errors.options.recipients.length > 0}" ng-if="$ctrl.sendReport">
+        <div
+            class="form__group"
+            ng-class="{'form__group--error': $ctrl.errors.options.recipients.length > 0}"
+            ng-if="$ctrl.sendReport"
+        >
             <label class="form__label">Add more recipients</label>
-            <textarea class="textarea" ng-model="$ctrl.recipients" placeholder="Comma-separated list of recipient email addresses" ng-disabled="$ctrl.jobPosted"></textarea>
-            <div ng-repeat="error in $ctrl.errors.options.recipients" class="message message--error" for="recipients">{{ error }}</div>
+            <textarea
+                class="textarea"
+                ng-model="$ctrl.recipients"
+                placeholder="Comma-separated list of recipient email addresses"
+                ng-disabled="$ctrl.jobPosted"
+            ></textarea>
+            <div
+                ng-repeat="error in $ctrl.errors.options.recipients"
+                class="message message--error"
+                for="recipients"
+            >
+                {{ error }}
+            </div>
         </div>
     </div>
 </div>
 <div class="modal__footer buttons-panel">
-    <button type="submit" class="button button--highlight button--with-icon send-icon" ng-click="$ctrl.startReport()" ng-show="!$ctrl.jobDone" ng-disabled="$ctrl.jobPosted" ng-if="$ctrl.sendReport">Send</button>
-    <button type="submit" class="button button--highlight button--with-icon download-icon" ng-click="$ctrl.startReport()" ng-show="!$ctrl.jobDone" ng-disabled="$ctrl.jobPosted" ng-if="!$ctrl.sendReport">Download</button>
-    <button type="button" class="button button--outline" ng-click="$ctrl.cancel()" ng-show="!$ctrl.jobDone">Cancel</button>
-    <button type="button" class="button button--outline" ng-click="$ctrl.close()" ng-show="$ctrl.jobDone">Close</button>
+    <button
+        type="submit"
+        class="button button--highlight button--with-icon send-icon"
+        ng-click="$ctrl.startReport()"
+        ng-show="!$ctrl.jobDone"
+        ng-disabled="$ctrl.jobPosted"
+        ng-if="$ctrl.sendReport"
+    >
+        Send
+    </button>
+    <button
+        type="submit"
+        class="button button--highlight button--with-icon download-icon"
+        ng-click="$ctrl.startReport()"
+        ng-show="!$ctrl.jobDone"
+        ng-disabled="$ctrl.jobPosted"
+        ng-if="!$ctrl.sendReport"
+    >
+        Download
+    </button>
+    <button
+        type="button"
+        class="button button--outline"
+        ng-click="$ctrl.cancel()"
+        ng-show="!$ctrl.jobDone"
+    >
+        Cancel
+    </button>
+    <button
+        type="button"
+        class="button button--outline"
+        ng-click="$ctrl.close()"
+        ng-show="$ctrl.jobDone"
+    >
+        Close
+    </button>
     <div class="loader" ng-show="$ctrl.jobPosted && !$ctrl.jobDone"></div>
-    <span ng-show="$ctrl.reportSent">Requested report will be sent to your inbox shortly.</span>
-    <span ng-if="$ctrl.reportUrl">Requested report can be downloaded here: <a href="{{ $ctrl.reportUrl }}" target="_blank">Download Report</a></span>
-    <span class="message message--error" ng-repeat="error in $ctrl.errors.nonFieldErrors">{{ error }}</span>
-    <span class="message message--error" ng-if="$ctrl.hasError && !$ctrl.errors && !$ctrl.errorMsg">An error has occured. Please contact support at <a href="mailto:help@zemanta.com">help@zemanta.com</a> if the error persists.</span>
-    <span class="message message--error" ng-if="$ctrl.hasError && $ctrl.errorMsg">{{ $ctrl.errorMsg }}</span>
+    <span ng-show="$ctrl.reportSent"
+        >Requested report will be sent to your inbox shortly.</span
+    >
+    <span ng-if="$ctrl.reportUrl"
+        >Requested report can be downloaded here:
+        <a href="{{ $ctrl.reportUrl }}" target="_blank"
+            >Download Report</a
+        ></span
+    >
+    <span
+        class="message message--error"
+        ng-repeat="error in $ctrl.errors.nonFieldErrors"
+        >{{ error }}</span
+    >
+    <span
+        class="message message--error"
+        ng-if="$ctrl.hasError && !$ctrl.errors && !$ctrl.errorMsg"
+        >An error has occured. Please contact support at
+        <a href="mailto:help@zemanta.com">help@zemanta.com</a> if the error
+        persists.</span
+    >
+    <span
+        class="message message--error"
+        ng-if="$ctrl.hasError && $ctrl.errorMsg"
+        >{{ $ctrl.errorMsg }}</span
+    >
 </div>

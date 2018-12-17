@@ -15,7 +15,7 @@
 
 <ng-container *ngIf="isDaypartingInputVisible">
     <div class="zem-dayparting-setting__timezone" *ngIf="timezone">
-        Timezone: <strong>{{timezone}}</strong>
+        Timezone: <strong>{{ timezone }}</strong>
     </div>
 
     <zem-dayparting-input
@@ -28,10 +28,13 @@
         class="message message--error zem-dayparting-setting__errors"
         *ngFor="let error of errors.dayparting"
     >
-        {{error}}
+        {{ error }}
     </div>
 </ng-container>
 
-<div class="message message--info message--with-icon zem-dayparting-setting__no-support-message">
-    Outbrain and Yahoo don't support dayparting. Ads will be running on these sources all the time.
+<div
+    class="message message--info message--with-icon zem-dayparting-setting__no-support-message"
+>
+    Outbrain and Yahoo don't support dayparting. Ads will be running on these
+    sources all the time.
 </div>

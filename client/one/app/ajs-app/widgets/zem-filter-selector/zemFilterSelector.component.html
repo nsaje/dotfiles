@@ -1,40 +1,97 @@
-<div ng-show="$ctrl.appliedConditions.length" class="applied-conditions" ng-class="{'applied-conditions--border-visible': $ctrl.isExpanded()}">
+<div
+    ng-show="$ctrl.appliedConditions.length"
+    class="applied-conditions"
+    ng-class="{'applied-conditions--border-visible': $ctrl.isExpanded()}"
+>
     <span class="applied-conditions__title">Filter</span>
-    <button ng-click="$ctrl.scrollAppliedConditionsList('left')" ng-show="$ctrl.isListElementOverflowing" class="applied-conditions__arrow applied-conditions__arrow--left"></button>
+    <button
+        ng-click="$ctrl.scrollAppliedConditionsList('left')"
+        ng-show="$ctrl.isListElementOverflowing"
+        class="applied-conditions__arrow applied-conditions__arrow--left"
+    ></button>
     <div class="applied-conditions__list-container">
         <div class="applied-conditions__list">
-            <span ng-repeat="condition in $ctrl.appliedConditions" class="applied-conditions__condition">
-                <span class="applied-conditions__condition-name">{{condition.name}}</span>
-                <span class="applied-conditions__condition-text" title="{{condition.text}}">{{condition.text}}</span>
-                <a ng-click="$ctrl.removeCondition(condition.condition, condition.value)" class="applied-conditions__remove-condition" href></a>
+            <span
+                ng-repeat="condition in $ctrl.appliedConditions"
+                class="applied-conditions__condition"
+            >
+                <span class="applied-conditions__condition-name">{{
+                    condition.name
+                }}</span>
+                <span
+                    class="applied-conditions__condition-text"
+                    title="{{ condition.text }}"
+                    >{{ condition.text }}</span
+                >
+                <a
+                    ng-click="$ctrl.removeCondition(condition.condition, condition.value)"
+                    class="applied-conditions__remove-condition"
+                    href
+                ></a>
             </span>
         </div>
     </div>
-    <button ng-click="$ctrl.scrollAppliedConditionsList('right')" ng-show="$ctrl.isListElementOverflowing" class="applied-conditions__arrow applied-conditions__arrow--right"></button>
-    <button ng-click="$ctrl.clearFilter()" class="applied-conditions__clear-filter button button--dark-backgrounds button--with-icon remove-icon">Clear filter</button>
+    <button
+        ng-click="$ctrl.scrollAppliedConditionsList('right')"
+        ng-show="$ctrl.isListElementOverflowing"
+        class="applied-conditions__arrow applied-conditions__arrow--right"
+    ></button>
+    <button
+        ng-click="$ctrl.clearFilter()"
+        class="applied-conditions__clear-filter button button--dark-backgrounds button--with-icon remove-icon"
+    >
+        Clear filter
+    </button>
 </div>
-<div ng-show="$ctrl.isExpanded()" class="filter-sections custom-scroller clearfix" ng-class="$ctrl.getVisibleSectionsClasses()">
-    <div ng-repeat="section in $ctrl.visibleSections" is-internal="{{section.permissions[0]}}" class="filter-sections__section filter-sections__section--{{section.cssClass}}">
+<div
+    ng-show="$ctrl.isExpanded()"
+    class="filter-sections custom-scroller clearfix"
+    ng-class="$ctrl.getVisibleSectionsClasses()"
+>
+    <div
+        ng-repeat="section in $ctrl.visibleSections"
+        is-internal="{{ section.permissions[0] }}"
+        class="filter-sections__section filter-sections__section--{{
+            section.cssClass
+        }}"
+    >
         <div class="filter-sections__section-title">
-            {{section.title}}
-            <a ng-if="section.condition.type === 'list' && section.options.length > 1"
-               ng-click="$ctrl.toggleSelectAll(section)" class="filter-sections__select-all-toggle"
-               ng-class="{'filter-sections__select-all-toggle--select-none':section.allOptionsSelected}">
+            {{ section.title }}
+            <a
+                ng-if="section.condition.type === 'list' && section.options.length > 1"
+                ng-click="$ctrl.toggleSelectAll(section)"
+                class="filter-sections__select-all-toggle"
+                ng-class="{'filter-sections__select-all-toggle--select-none':section.allOptionsSelected}"
+            >
                 <span ng-if="!section.allOptionsSelected">Select all</span>
                 <span ng-if="section.allOptionsSelected">Select none</span>
             </a>
         </div>
         <div class="filter-sections__options-container custom-scroller">
             <ul class="filter-sections__options-list">
-                <li ng-repeat="option in section.options" class="filter-sections__option">
+                <li
+                    ng-repeat="option in section.options"
+                    class="filter-sections__option"
+                >
                     <span ng-switch="section.condition.type">
                         <label ng-switch-when="list">
-                            <input class="input-checkbox" type="checkbox" name="{{section.condition.name}}" ng-model="option.enabled">
-                            <span class="checkbox-text">{{option.text}}</span>
+                            <input
+                                class="input-checkbox"
+                                type="checkbox"
+                                name="{{ section.condition.name }}"
+                                ng-model="option.enabled"
+                            />
+                            <span class="checkbox-text">{{ option.text }}</span>
                         </label>
                         <label ng-switch-when="value">
-                            <input class="input-radio" type="radio" name="{{section.condition.name}}" ng-model="section.value" ng-value="option.value">
-                            <span class="radio-text">{{option.text}}</span>
+                            <input
+                                class="input-radio"
+                                type="radio"
+                                name="{{ section.condition.name }}"
+                                ng-model="section.value"
+                                ng-value="option.value"
+                            />
+                            <span class="radio-text">{{ option.text }}</span>
                         </label>
                     </span>
                 </li>
@@ -42,7 +99,17 @@
         </div>
     </div>
     <div class="buttons-panel filter-sections__button-container">
-        <button ng-click="$ctrl.closeFilter()" class="button button--dark-backgrounds">Close</button>
-        <button ng-click="$ctrl.applyFilter()" class="button button--highlight button--with-icon check-icon">Apply filter</button>
+        <button
+            ng-click="$ctrl.closeFilter()"
+            class="button button--dark-backgrounds"
+        >
+            Close
+        </button>
+        <button
+            ng-click="$ctrl.applyFilter()"
+            class="button button--highlight button--with-icon check-icon"
+        >
+            Apply filter
+        </button>
     </div>
 </div>

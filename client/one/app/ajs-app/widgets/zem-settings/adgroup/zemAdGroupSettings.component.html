@@ -1,4 +1,8 @@
-<zem-settings-container api="$ctrl.api" settings-title="'Ad Group settings'" entity-type="$ctrl.constants.entityType.AD_GROUP">
+<zem-settings-container
+    api="$ctrl.api"
+    settings-title="'Ad Group settings'"
+    entity-type="$ctrl.constants.entityType.AD_GROUP"
+>
     <settings>
         <zem-ad-group-general-settings
             class="zem-settings-component"
@@ -14,13 +18,17 @@
             <div class="custom-panel zem-settings-component__container">
                 <h2 class="custom-panel__title">Dayparting</h2>
                 <div class="custom-panel__description">
-                    You can schedule your ads to be active for specific hours and days of the week. Ads will be shown in the viewer’s local time.
+                    You can schedule your ads to be active for specific hours
+                    and days of the week. Ads will be shown in the viewer’s
+                    local time.
                 </div>
                 <zem-dayparting-setting
                     class="zem-dayparting-setting"
                     [dayparting-setting]="$container.entity.settings.dayparting"
                     [errors]="$container.errors"
-                    (on-change)="$ctrl.updateDaypartingSettings($container, $event)"
+                    (on-change)="
+                        $ctrl.updateDaypartingSettings($container, $event)
+                    "
                 ></zem-dayparting-setting>
             </div>
         </div>
@@ -72,6 +80,5 @@
         ></zem-backend-hacks>
     </settings>
 
-    <custom>
-    </custom>
+    <custom> </custom>
 </zem-settings-container>

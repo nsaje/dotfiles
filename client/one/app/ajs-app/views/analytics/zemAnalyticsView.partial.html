@@ -1,26 +1,29 @@
 <div class="chart-infobox__container">
     <div class="custom-panel chart-infobox__chart">
         <zem-chart
-                ng-if="$ctrl.initialized"
-                level="$ctrl.level"
-                breakdown="$ctrl.chartBreakdown"
-                entity-id="$ctrl.entity.id"
-                class="zem-chart">
+            ng-if="$ctrl.initialized"
+            level="$ctrl.level"
+            breakdown="$ctrl.chartBreakdown"
+            entity-id="$ctrl.entity.id"
+            class="zem-chart"
+        >
         </zem-chart>
     </div>
     <div class="chart-infobox__spacing"></div>
     <div class="custom-panel chart-infobox__infobox">
         <zem-infobox
-                ng-if="$ctrl.initialized"
-                class="zem-infobox"
-                entity="$ctrl.entity">
+            ng-if="$ctrl.initialized"
+            class="zem-infobox"
+            entity="$ctrl.entity"
+        >
         </zem-infobox>
     </div>
 </div>
 <zem-grid-container
-        ng-if="$ctrl.initialized"
-        class="zem-grid-container"
-        entity="$ctrl.entity"
-        breakdown="$ctrl.breakdown"
-        level="$ctrl.level">
+    ng-if="$ctrl.initialized"
+    class="zem-grid-container"
+    entity="$ctrl.entity"
+    breakdown="$ctrl.breakdown"
+    level="$ctrl.level"
+>
 </zem-grid-container>

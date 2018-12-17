@@ -1,86 +1,146 @@
-<div class="modal__header">
-    <div class="modal__title">Export Report</div>
-</div>
+<div class="modal__header"><div class="modal__title">Export Report</div></div>
 <div class="modal__body">
-    <div class="message message--info message--with-icon m-b-s"
-         ng-if="hasPermission('zemauth.can_access_table_breakdowns_feature') && hasPermission('zemauth.hide_old_table_on_all_accounts_account_campaign_level')">
-        Exports currently don't support some of the breakdowns available in the table view.
+    <div
+        class="message message--info message--with-icon m-b-s"
+        ng-if="hasPermission('zemauth.can_access_table_breakdowns_feature') && hasPermission('zemauth.hide_old_table_on_all_accounts_account_campaign_level')"
+    >
+        Exports currently don't support some of the breakdowns available in the
+        table view.
     </div>
     <div class="form" id="download-export-report-form">
         <div class="form__group">
             <label class="form__label" for="granularity-select">
                 Report Granularity
-                <zem-help-popover content="Granularity of the report." placement="top"></zem-help-popover>
+                <zem-help-popover
+                    content="Granularity of the report."
+                    placement="top"
+                ></zem-help-popover>
             </label>
-            <ui-select config
+            <ui-select
+                config
                 id="granularity-select"
                 theme="select2"
                 search-enabled="false"
                 ng-model="export.type"
                 class="button button--plain button--full-width button--dropdown-toggle-icon"
-                ng-change="checkDownloadAllowed()">
-                <ui-select-match class="ui-select-match" placeholder="Choose granularity">{{$select.selected.name}}</ui-select-match>
-                <ui-select-choices repeat="option in options | filter:{hidden: '!true'}" class="ui-select-choices">
-                    {{option.name}}
+                ng-change="checkDownloadAllowed()"
+            >
+                <ui-select-match
+                    class="ui-select-match"
+                    placeholder="Choose granularity"
+                    >{{ $select.selected.name }}</ui-select-match
+                >
+                <ui-select-choices
+                    repeat="option in options | filter:{hidden: '!true'}"
+                    class="ui-select-choices"
+                >
+                    {{ option.name }}
                 </ui-select-choices>
             </ui-select>
         </div>
         <div class="form__group">
-            <label class="form__label" for="by-day-checkbox">Breakdown by day</label>
+            <label class="form__label" for="by-day-checkbox"
+                >Breakdown by day</label
+            >
             <div class="form__checkbox">
                 <label>
-                    <input id="by-day-checkbox"
+                    <input
+                        id="by-day-checkbox"
                         type="checkbox"
                         ng-model="export.byDay"
                         class="input-checkbox"
-                        ng-change="checkDownloadAllowed()">
+                        ng-change="checkDownloadAllowed()"
+                    />
                     <span class="checkbox-text"></span>
                 </label>
             </div>
         </div>
-        <div class="form__group" ng-if="hasPermission('zemauth.can_include_totals_in_reports')">
-            <label class="form__label" for="include-totals-checkbox" is-internal="zemauth.can_include_totals_in_reports">Include totals</label>
+        <div
+            class="form__group"
+            ng-if="hasPermission('zemauth.can_include_totals_in_reports')"
+        >
+            <label
+                class="form__label"
+                for="include-totals-checkbox"
+                is-internal="zemauth.can_include_totals_in_reports"
+                >Include totals</label
+            >
             <div class="form__checkbox">
                 <label>
-                    <input id="include-totals-checkbox"
-                           type="checkbox"
-                           ng-model="export.includeTotals"
-                           class="input-checkbox">
-                    <span class="checkbox-text" for="include-totals-checkbox"></span>
+                    <input
+                        id="include-totals-checkbox"
+                        type="checkbox"
+                        ng-model="export.includeTotals"
+                        class="input-checkbox"
+                    />
+                    <span
+                        class="checkbox-text"
+                        for="include-totals-checkbox"
+                    ></span>
                 </label>
             </div>
         </div>
-        <div class="form__group" ng-if="hasPermission('zemauth.can_include_model_ids_in_reports')">
-            <label class="form__label" for="add-ids-checkbox" is-internal="zemauth.can_include_model_ids_in_reports">Add IDs to report</label>
+        <div
+            class="form__group"
+            ng-if="hasPermission('zemauth.can_include_model_ids_in_reports')"
+        >
+            <label
+                class="form__label"
+                for="add-ids-checkbox"
+                is-internal="zemauth.can_include_model_ids_in_reports"
+                >Add IDs to report</label
+            >
             <div class="form__checkbox">
                 <label>
-                    <input id="add-ids-checkbox"
-                           type="checkbox"
-                           ng-model="export.includeIds"
-                           class="input-checkbox">
+                    <input
+                        id="add-ids-checkbox"
+                        type="checkbox"
+                        ng-model="export.includeIds"
+                        class="input-checkbox"
+                    />
                     <span class="checkbox-text" for="add-ids-checkbox"></span>
                 </label>
             </div>
         </div>
         <div class="form__group">
-            <label class="form__label" for="add-missing-checkbox" >Include items with no spend</label>
+            <label class="form__label" for="add-missing-checkbox"
+                >Include items with no spend</label
+            >
             <div class="form__checkbox">
                 <label>
-                    <input id="add-missing-checkbox"
-                           type="checkbox"
-                           ng-model="export.includeMissing"
-                           class="input-checkbox">
-                    <span class="checkbox-text" for="add-missing-checkbox"></span>
+                    <input
+                        id="add-missing-checkbox"
+                        type="checkbox"
+                        ng-model="export.includeMissing"
+                        class="input-checkbox"
+                    />
+                    <span
+                        class="checkbox-text"
+                        for="add-missing-checkbox"
+                    ></span>
                 </label>
             </div>
         </div>
     </div>
 </div>
 <div class="modal__footer buttons-panel">
-    <button type="submit" class="button button--highlight button--with-icon download-icon"
-            ng-disabled="!downloadAllowed" ng-click="downloadReport()">Download Now</button>
-    <button type="button" class="button button--outline" ng-click="$dismiss()">Cancel</button>
+    <button
+        type="submit"
+        class="button button--highlight button--with-icon download-icon"
+        ng-disabled="!downloadAllowed"
+        ng-click="downloadReport()"
+    >
+        Download Now
+    </button>
+    <button type="button" class="button button--outline" ng-click="$dismiss()">
+        Cancel
+    </button>
 
     <div class="loader" ng-show="addConversionGoalInProgress"></div>
-    <span class="message message--error" ng-if="error" ng-if="!downloadAllowed">{{downloadNotAllowedMessage}}</span>
+    <span
+        class="message message--error"
+        ng-if="error"
+        ng-if="!downloadAllowed"
+        >{{ downloadNotAllowedMessage }}</span
+    >
 </div>

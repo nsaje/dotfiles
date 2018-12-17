@@ -4,42 +4,134 @@
     </div>
     <div class="modal__body">
         <div class="form file-upload-form">
-            <div class="form__group" ng-class="{'form--error': !!ctrl.formErrors.batchName}">
-                <label class="form__label" for="batch-name-input">Batch name:</label>
-                <input class="input-text" type="text" id="batch-name-input" ng-model="ctrl.formData.batchName"
-                       ng-focus="ctrl.clearFormErrors('batchName')" />
-                <div class="form__text--small">Batch name is only visible to you as a reference to this uploaded batch. By default it will use current Date and Time.</div>
-                <div class="message message--error" ng-repeat="error in ctrl.formErrors.batchName" for="batch-name-input">{{ error }}</div>
+            <div
+                class="form__group"
+                ng-class="{'form--error': !!ctrl.formErrors.batchName}"
+            >
+                <label class="form__label" for="batch-name-input"
+                    >Batch name:</label
+                >
+                <input
+                    class="input-text"
+                    type="text"
+                    id="batch-name-input"
+                    ng-model="ctrl.formData.batchName"
+                    ng-focus="ctrl.clearFormErrors('batchName')"
+                />
+                <div class="form__text--small">
+                    Batch name is only visible to you as a reference to this
+                    uploaded batch. By default it will use current Date and
+                    Time.
+                </div>
+                <div
+                    class="message message--error"
+                    ng-repeat="error in ctrl.formErrors.batchName"
+                    for="batch-name-input"
+                >
+                    {{ error }}
+                </div>
             </div>
-            <div class="form__group form__group--choose-file" ng-class="{'form--error': !!ctrl.formErrors.file}">
+            <div
+                class="form__group form__group--choose-file"
+                ng-class="{'form--error': !!ctrl.formErrors.file}"
+            >
                 <label class="form__label" for="file-input">File:</label>
-                <zem-file-input zem-file-input-change="ctrl.fileUploadCallback(file)" zem-file-input-accept=".csv,.xls,.xlsx">
-                    <button type="button" class="button button--with-icon folder-icon"
-                            ng-click="ctrl.clearFormErrors('file')" zem-file-input-trigger>Choose file</button>
+                <zem-file-input
+                    zem-file-input-change="ctrl.fileUploadCallback(file)"
+                    zem-file-input-accept=".csv,.xls,.xlsx"
+                >
+                    <button
+                        type="button"
+                        class="button button--with-icon folder-icon"
+                        ng-click="ctrl.clearFormErrors('file')"
+                        zem-file-input-trigger
+                    >
+                        Choose file
+                    </button>
                 </zem-file-input>
 
-                <input class="input-text file-choosen" type="text" id="file-input" readonly
-                       placeholder="No file chosen" ng-value="ctrl.formData.file.name">
-                <div class="message message--error" ng-repeat="error in ctrl.formErrors.file" for="file-input">{{ error }}</div>
-                <div class="message message--help message--with-icon" ng-if="!ctrl.showDisplayUpload">
-                    <p>If you have trouble with the file structure, you can download our example file and start from there.</p>
-                    <a href="{{ ctrl.config.staticUrl }}/one/assets/Zemanta_Content_Ads_Template.csv">Download CSV example file</a><br>
-                    <a href="{{ ctrl.config.staticUrl }}/one/assets/Zemanta_Content_Ads_Template.xlsx">Download Excel example file</a>
+                <input
+                    class="input-text file-choosen"
+                    type="text"
+                    id="file-input"
+                    readonly
+                    placeholder="No file chosen"
+                    ng-value="ctrl.formData.file.name"
+                />
+                <div
+                    class="message message--error"
+                    ng-repeat="error in ctrl.formErrors.file"
+                    for="file-input"
+                >
+                    {{ error }}
                 </div>
-                <div class="message message--help message--with-icon" ng-if="ctrl.showDisplayUpload">
-                    <p>If you have trouble with the file structure, you can download our example file and start from there.</p>
-                    <a href="{{ ctrl.config.staticUrl }}/one/assets/Zemanta_Display_Ads_Template.csv">Download CSV example file</a><br>
-                    <a href="{{ ctrl.config.staticUrl }}/one/assets/Zemanta_Display_Ads_Template.xlsx">Download Excel example file</a>
+                <div
+                    class="message message--help message--with-icon"
+                    ng-if="!ctrl.showDisplayUpload"
+                >
+                    <p>
+                        If you have trouble with the file structure, you can
+                        download our example file and start from there.
+                    </p>
+                    <a
+                        href="{{
+                            ctrl.config.staticUrl
+                        }}/one/assets/Zemanta_Content_Ads_Template.csv"
+                        >Download CSV example file</a
+                    ><br />
+                    <a
+                        href="{{
+                            ctrl.config.staticUrl
+                        }}/one/assets/Zemanta_Content_Ads_Template.xlsx"
+                        >Download Excel example file</a
+                    >
+                </div>
+                <div
+                    class="message message--help message--with-icon"
+                    ng-if="ctrl.showDisplayUpload"
+                >
+                    <p>
+                        If you have trouble with the file structure, you can
+                        download our example file and start from there.
+                    </p>
+                    <a
+                        href="{{
+                            ctrl.config.staticUrl
+                        }}/one/assets/Zemanta_Display_Ads_Template.csv"
+                        >Download CSV example file</a
+                    ><br />
+                    <a
+                        href="{{
+                            ctrl.config.staticUrl
+                        }}/one/assets/Zemanta_Display_Ads_Template.xlsx"
+                        >Download Excel example file</a
+                    >
                 </div>
             </div>
         </div>
     </div>
 
     <div class="modal__footer buttons-panel">
-        <button type="button" class="button button--highlight button--with-icon check-icon"
-                ng-click="ctrl.upload()" ng-disabled="ctrl.requestInProgress">Upload file</button>
-        <button type="button" class="button button--outline" ng-click="ctrl.close()">Cancel</button>
+        <button
+            type="button"
+            class="button button--highlight button--with-icon check-icon"
+            ng-click="ctrl.upload()"
+            ng-disabled="ctrl.requestInProgress"
+        >
+            Upload file
+        </button>
+        <button
+            type="button"
+            class="button button--outline"
+            ng-click="ctrl.close()"
+        >
+            Cancel
+        </button>
         <div class="loader text-right" ng-if="ctrl.requestInProgress"></div>
-        <span class="message message--error" ng-if="ctrl.requestFailed && !ctrl.formErrors && !ctrl.requestInProgress">Oops. Something went wrong. Please try again.</span>
+        <span
+            class="message message--error"
+            ng-if="ctrl.requestFailed && !ctrl.formErrors && !ctrl.requestInProgress"
+            >Oops. Something went wrong. Please try again.</span
+        >
     </div>
 </div>

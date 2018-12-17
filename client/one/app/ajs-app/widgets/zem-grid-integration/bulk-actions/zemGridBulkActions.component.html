@@ -1,10 +1,11 @@
 <zem-dropdown-select
-        zem-placeholder="Actions"
-        zem-dropdown-select-options="$ctrl.actions"
-        zem-on-select="$ctrl.execute(selected)"
-        zem-check-disabled="!$ctrl.isEnabled()"
-        zem-disabled-title="At least one row has to be selected before using Bulk Actions."
-        zem-css-class="show-rows button button--dropdown-toggle-icon">
+    zem-placeholder="Actions"
+    zem-dropdown-select-options="$ctrl.actions"
+    zem-on-select="$ctrl.execute(selected)"
+    zem-check-disabled="!$ctrl.isEnabled()"
+    zem-disabled-title="At least one row has to be selected before using Bulk Actions."
+    zem-css-class="show-rows button button--dropdown-toggle-icon"
+>
 </zem-dropdown-select>
 
 <div class="loader" ng-show="$ctrl.showLoader"></div>

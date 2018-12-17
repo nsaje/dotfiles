@@ -1,5 +1,8 @@
 <div class="zem-grid" zem-grid-copy>
-    <div class="loader loader--takeover" ng-show="$ctrl.grid.meta.loading"></div>
+    <div
+        class="loader loader--takeover"
+        ng-show="$ctrl.grid.meta.loading"
+    ></div>
     <div ng-if="$ctrl.grid.meta.initialized">
         <zem-grid-header grid="$ctrl.grid"></zem-grid-header>
         <zem-grid-body grid="$ctrl.grid"></zem-grid-body>

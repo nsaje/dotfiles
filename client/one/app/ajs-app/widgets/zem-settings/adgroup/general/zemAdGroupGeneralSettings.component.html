@@ -1,56 +1,129 @@
-<div class="custom-panel zem-settings-component__container zem-ad-group-general-settings">
+<div
+    class="custom-panel zem-settings-component__container zem-ad-group-general-settings"
+>
     <h2 class="custom-panel__title">General settings</h2>
     <div class="form">
-        <div class="form__group" ng-class="{'form--error': !!$ctrl.errors.name}">
+        <div
+            class="form__group"
+            ng-class="{'form--error': !!$ctrl.errors.name}"
+        >
             <label class="form__label" for="name-input">Name:</label>
-            <input class="input-text" id="name-input" type="text" ng-model="$ctrl.entity.settings.name">
-            <div class="message message--error" ng-repeat="error in $ctrl.errors.name"
-                 for="name-input">{{ error }}</div>
+            <input
+                class="input-text"
+                id="name-input"
+                type="text"
+                ng-model="$ctrl.entity.settings.name"
+            />
+            <div
+                class="message message--error"
+                ng-repeat="error in $ctrl.errors.name"
+                for="name-input"
+            >
+                {{ error }}
+            </div>
         </div>
 
-        <div class="form__group" ng-class="{
+        <div
+            class="form__group"
+            ng-class="{
                                      'form--error': !!$ctrl.errors.startDate,
-                                     'calendar-is-open': $ctrl.startDatePicker.isOpen}">
+                                     'calendar-is-open': $ctrl.startDatePicker.isOpen}"
+        >
             <label class="form__label" for="start-date-input">
                 Start date:
-                <zem-help-popover content="The start date of the ad group. If the date is set in the future, the ad group will not run until that date." placement="top"></zem-help-popover>
+                <zem-help-popover
+                    content="The start date of the ad group. If the date is set in the future, the ad group will not run until that date."
+                    placement="top"
+                ></zem-help-popover>
             </label>
-            <div class="prefixed-field prefixed-field--narrow prefixed-field--with-icon calendar-icon">
-                <input class="input-text" id="start-date-input" type="text" uib-datepicker-popup="MM/dd/yyyy"
-                       ng-model="$ctrl.entity.settings.startDate" is-open="$ctrl.startDatePicker.isOpen"
-                       ng-click="$ctrl.openDatePicker('startDate')" ng-disabled="$ctrl.entity.settings.autopilotOnCampaign">
+            <div
+                class="prefixed-field prefixed-field--narrow prefixed-field--with-icon calendar-icon"
+            >
+                <input
+                    class="input-text"
+                    id="start-date-input"
+                    type="text"
+                    uib-datepicker-popup="MM/dd/yyyy"
+                    ng-model="$ctrl.entity.settings.startDate"
+                    is-open="$ctrl.startDatePicker.isOpen"
+                    ng-click="$ctrl.openDatePicker('startDate')"
+                    ng-disabled="$ctrl.entity.settings.autopilotOnCampaign"
+                />
             </div>
-            <div class="message message--error" ng-repeat="error in $ctrl.errors.startDate"
-                 for="start-date-input">{{ error }}</div>
+            <div
+                class="message message--error"
+                ng-repeat="error in $ctrl.errors.startDate"
+                for="start-date-input"
+            >
+                {{ error }}
+            </div>
         </div>
 
-        <div class="form__group" ng-class="{
+        <div
+            class="form__group"
+            ng-class="{
                                      'form--error': !!$ctrl.errors.endDate,
-                                     'calendar-is-open': $ctrl.endDatePicker.isOpen}">
+                                     'calendar-is-open': $ctrl.endDatePicker.isOpen}"
+        >
             <label class="form__label" for="end-date-input">
                 End date:
-                <zem-help-popover content="The end date of the ad group. Ad group will run until the end of stop date." placement="top"></zem-help-popover>
+                <zem-help-popover
+                    content="The end date of the ad group. Ad group will run until the end of stop date."
+                    placement="top"
+                ></zem-help-popover>
             </label>
-            <div class="prefixed-field prefixed-field--narrow prefixed-field--with-icon calendar-icon m-r">
-                <input class="input-text" id="end-date-input" ng-disabled="$ctrl.entity.settings.autopilotOnCampaign || $ctrl.entity.warnings.endDate !== undefined"
-                       type="text" uib-datepicker-popup="MM/dd/yyyy" datepicker-options="$ctrl.endDatePickerOptions"
-                       ng-model="$ctrl.entity.settings.endDate" is-open="$ctrl.endDatePicker.isOpen"
-                       ng-click="$ctrl.openDatePicker('endDate')">
+            <div
+                class="prefixed-field prefixed-field--narrow prefixed-field--with-icon calendar-icon m-r"
+            >
+                <input
+                    class="input-text"
+                    id="end-date-input"
+                    ng-disabled="$ctrl.entity.settings.autopilotOnCampaign || $ctrl.entity.warnings.endDate !== undefined"
+                    type="text"
+                    uib-datepicker-popup="MM/dd/yyyy"
+                    datepicker-options="$ctrl.endDatePickerOptions"
+                    ng-model="$ctrl.entity.settings.endDate"
+                    is-open="$ctrl.endDatePicker.isOpen"
+                    ng-click="$ctrl.openDatePicker('endDate')"
+                />
             </div>
             <div class="form__checkbox">
                 <label>
-                    <input class="input-checkbox" ng-disabled="$ctrl.entity.settings.autopilotOnCampaign || $ctrl.entity.warnings.endDate !== undefined" type="checkbox"
-                           id="manual-stop-cb" ng-model="$ctrl.entity.settings.manualStop">
-                    <span class="checkbox-text" for="manual-stop-cb">I'll stop it myself</span>
+                    <input
+                        class="input-checkbox"
+                        ng-disabled="$ctrl.entity.settings.autopilotOnCampaign || $ctrl.entity.warnings.endDate !== undefined"
+                        type="checkbox"
+                        id="manual-stop-cb"
+                        ng-model="$ctrl.entity.settings.manualStop"
+                    />
+                    <span class="checkbox-text" for="manual-stop-cb"
+                        >I'll stop it myself</span
+                    >
                 </label>
             </div>
-            <div class="message message--error" ng-if="$ctrl.entity.warnings.endDate === undefined"
-                 ng-repeat="error in $ctrl.errors.endDate" for="end-date-input">{{ error }}</div>
-            <div class="message message--warning message--with-icon" ng-if="$ctrl.entity.warnings.endDate !== undefined">
-                {{ $ctrl.MESSAGES.WARNING_END_DATE }} <a ng-click="$ctrl.goToBudgets()">Add budget</a>
+            <div
+                class="message message--error"
+                ng-if="$ctrl.entity.warnings.endDate === undefined"
+                ng-repeat="error in $ctrl.errors.endDate"
+                for="end-date-input"
+            >
+                {{ error }}
             </div>
-            <div class="message message--warning message--with-icon" ng-if="$ctrl.entity.settings.autopilotOnCampaign">
-                {{ $ctrl.MESSAGES.WARNING_CAMPAIGN_BUDGET_OPTIMIZATION_FLIGHT_TIME }}
+            <div
+                class="message message--warning message--with-icon"
+                ng-if="$ctrl.entity.warnings.endDate !== undefined"
+            >
+                {{ $ctrl.MESSAGES.WARNING_END_DATE }}
+                <a ng-click="$ctrl.goToBudgets()">Add budget</a>
+            </div>
+            <div
+                class="message message--warning message--with-icon"
+                ng-if="$ctrl.entity.settings.autopilotOnCampaign"
+            >
+                {{
+                    $ctrl.MESSAGES
+                        .WARNING_CAMPAIGN_BUDGET_OPTIMIZATION_FLIGHT_TIME
+                }}
             </div>
         </div>
 
@@ -58,7 +131,10 @@
             class="form__group"
             ng-if="$ctrl.hasPermission('zemauth.fea_can_use_cpm_buying')"
         >
-            <label class="form__label" is-internal="zemauth.fea_can_use_cpm_buying">
+            <label
+                class="form__label"
+                is-internal="zemauth.fea_can_use_cpm_buying"
+            >
                 Bidding type:
                 <zem-help-popover
                     content="Select the bidding type that best fits the objective of your campaign. CPC bidding focuses the algorithm on delivering clicks at the desired click price. The CPM bidding will deliver impressions at the given price or lower."
@@ -71,9 +147,13 @@
                         class="input-radio"
                         type="radio"
                         ng-model="$ctrl.entity.settings.biddingType"
-                        ng-value="$ctrl.biddingType.CPC">
+                        ng-value="$ctrl.biddingType.CPC"
+                    />
                     <span class="radio-text">
-                        CPC <span class="text-gray">- Focus on the clicks that your ad receives.</span>
+                        CPC
+                        <span class="text-gray"
+                            >- Focus on the clicks that your ad receives.</span
+                        >
                     </span>
                 </label>
                 <div
@@ -91,7 +171,7 @@
                         </label>
                         <div class="prefixed-field prefixed-field--narrow">
                             <span class="prefixed-field__prefix">
-                                {{$ctrl.currencySymbol}}
+                                {{ $ctrl.currencySymbol }}
                             </span>
                             <input
                                 class="input-text"
@@ -100,12 +180,14 @@
                                 ng-model="$ctrl.entity.settings.cpc"
                                 zem-currency-input
                                 fraction-size="3"
-                                empty-text="No limit">
+                                empty-text="No limit"
+                            />
                         </div>
                         <div
                             class="message message--info message--with-icon zem-ad-group-general-settings__bid-settings-warning"
                         >
-                            The change of Maximum Bid CPC will update bids on all media sources within the ad group.
+                            The change of Maximum Bid CPC will update bids on
+                            all media sources within the ad group.
                         </div>
                         <div
                             class="message message--error zem-ad-group-general-settings__bid-settings-error"
@@ -123,9 +205,13 @@
                         class="input-radio"
                         type="radio"
                         ng-model="$ctrl.entity.settings.biddingType"
-                        ng-value="$ctrl.biddingType.CPM">
+                        ng-value="$ctrl.biddingType.CPM"
+                    />
                     <span class="radio-text">
-                        CPM <span class="text-gray">- Focus on the impressions of your ad.</span>
+                        CPM
+                        <span class="text-gray"
+                            >- Focus on the impressions of your ad.</span
+                        >
                     </span>
                 </label>
                 <div
@@ -142,7 +228,7 @@
                         </label>
                         <div class="prefixed-field prefixed-field--narrow">
                             <span class="prefixed-field__prefix">
-                                {{$ctrl.currencySymbol}}
+                                {{ $ctrl.currencySymbol }}
                             </span>
                             <input
                                 class="input-text"
@@ -151,17 +237,21 @@
                                 ng-model="$ctrl.entity.settings.maxCpm"
                                 zem-currency-input
                                 fraction-size="3"
-                                empty-text="No limit">
+                                empty-text="No limit"
+                            />
                         </div>
                         <div
                             class="message message--info message--with-icon zem-ad-group-general-settings__bid-settings-warning"
                         >
-                            The change of Maximum Bid CPM will update bids on all media sources within the ad group.
+                            The change of Maximum Bid CPM will update bids on
+                            all media sources within the ad group.
                         </div>
                         <div
                             class="message message--info message--with-icon zem-ad-group-general-settings__bid-settings-warning"
                         >
-                            Outbrain doesn’t support CPM bidding and will be automatically paused in this ad group if you enable this setting.
+                            Outbrain doesn’t support CPM bidding and will be
+                            automatically paused in this ad group if you enable
+                            this setting.
                         </div>
                         <div
                             class="message message--error zem-ad-group-general-settings__bid-settings-error"
@@ -200,7 +290,7 @@
             </label>
             <div class="prefixed-field prefixed-field--narrow">
                 <span class="prefixed-field__prefix">
-                    {{$ctrl.currencySymbol}}
+                    {{ $ctrl.currencySymbol }}
                 </span>
                 <input
                     class="input-text"
@@ -209,7 +299,8 @@
                     ng-model="$ctrl.entity.settings.cpc"
                     zem-currency-input
                     fraction-size="3"
-                    empty-text="No limit">
+                    empty-text="No limit"
+                />
             </div>
             <div
                 class="message message--error"
@@ -220,59 +311,109 @@
             </div>
         </div>
 
-        <div class="form__group" ng-if="$ctrl.hasPermission('zemauth.can_set_click_capping')">
-            <label class="form__label" for="click-capping-input" is-internal="zemauth.can_set_click_capping">
+        <div
+            class="form__group"
+            ng-if="$ctrl.hasPermission('zemauth.can_set_click_capping')"
+        >
+            <label
+                class="form__label"
+                for="click-capping-input"
+                is-internal="zemauth.can_set_click_capping"
+            >
                 Daily click cap:
-                <zem-help-popover content="Limit number of clicks you want to reach daily within the ad group. Zemanta will stop spending for the rest of the day once it hits the maximum number of clicks you set." placement="top"></zem-help-popover>
+                <zem-help-popover
+                    content="Limit number of clicks you want to reach daily within the ad group. Zemanta will stop spending for the rest of the day once it hits the maximum number of clicks you set."
+                    placement="top"
+                ></zem-help-popover>
             </label>
-            <input id="click-capping-input"
-                    class="input-text input-text--narrow"
-                    ng-model="$ctrl.entity.settings.clickCappingDailyAdGroupMaxClicks"
-                    type="text"
-                    zem-numeric-validator>
+            <input
+                id="click-capping-input"
+                class="input-text input-text--narrow"
+                ng-model="$ctrl.entity.settings.clickCappingDailyAdGroupMaxClicks"
+                type="text"
+                zem-numeric-validator
+            />
             <div class="message message--info message--with-icon">
                 {{ $ctrl.MESSAGES.INFO_CLICK_CAPPING }}
             </div>
         </div>
 
-        <div class="form__group" ng-if="$ctrl.hasPermission('zemauth.can_set_delivery_type')">
-            <label class="form__label" is-internal="zemauth.can_set_delivery_type">
+        <div
+            class="form__group"
+            ng-if="$ctrl.hasPermission('zemauth.can_set_delivery_type')"
+        >
+            <label
+                class="form__label"
+                is-internal="zemauth.can_set_delivery_type"
+            >
                 Delivery type:
-                <zem-help-popover content="Delivery type determines how your ads will be delivered throughout the day. Standard option is optimal in most cases as it makes sure that people from various timezones and with different browsing habits can be reached. Accelerated campaign will deliver ads within first hours of the day and stop once it reaches daily cap." placement="top"></zem-help-popover>
+                <zem-help-popover
+                    content="Delivery type determines how your ads will be delivered throughout the day. Standard option is optimal in most cases as it makes sure that people from various timezones and with different browsing habits can be reached. Accelerated campaign will deliver ads within first hours of the day and stop once it reaches daily cap."
+                    placement="top"
+                ></zem-help-popover>
             </label>
             <div class="form__radio">
                 <label>
-                    <input class="input-radio" type="radio"
-                        ng-model="$ctrl.entity.settings.deliveryType" ng-value="$ctrl.deliveryType.STANDARD">
+                    <input
+                        class="input-radio"
+                        type="radio"
+                        ng-model="$ctrl.entity.settings.deliveryType"
+                        ng-value="$ctrl.deliveryType.STANDARD"
+                    />
                     <span class="radio-text">
-                        Standard <span class="text-gray">- Deliver ads throughout the day.</span>
+                        Standard
+                        <span class="text-gray"
+                            >- Deliver ads throughout the day.</span
+                        >
                     </span>
                 </label>
             </div>
             <div class="form__radio">
                 <label>
-                    <input class="input-radio" type="radio"
-                           ng-model="$ctrl.entity.settings.deliveryType" ng-value="{{ $ctrl.deliveryType.ACCELERATED }}">
+                    <input
+                        class="input-radio"
+                        type="radio"
+                        ng-model="$ctrl.entity.settings.deliveryType"
+                        ng-value="{{ $ctrl.deliveryType.ACCELERATED }}"
+                    />
                     <span class="radio-text">
-                        Accelerated <span class="text-gray">- Deliver ads as soon as possible.</span>
+                        Accelerated
+                        <span class="text-gray"
+                            >- Deliver ads as soon as possible.</span
+                        >
                     </span>
                 </label>
             </div>
-            <div class="message message--error" ng-repeat="error in $ctrl.errors.deliveryType">
+            <div
+                class="message message--error"
+                ng-repeat="error in $ctrl.errors.deliveryType"
+            >
                 {{ error }}
             </div>
         </div>
 
-        <div class="form__group" ng-if="$ctrl.hasPermission('zemauth.can_set_frequency_capping')">
-            <label class="form__label" for="frequency-capping-input" is-internal="zemauth.can_set_frequency_capping">
+        <div
+            class="form__group"
+            ng-if="$ctrl.hasPermission('zemauth.can_set_frequency_capping')"
+        >
+            <label
+                class="form__label"
+                for="frequency-capping-input"
+                is-internal="zemauth.can_set_frequency_capping"
+            >
                 Daily impression frequency cap:
-                <zem-help-popover content="This setting defines the maximum number of times your ads from this ad group will be shown to a unique user in one day." placement="top"></zem-help-popover>
+                <zem-help-popover
+                    content="This setting defines the maximum number of times your ads from this ad group will be shown to a unique user in one day."
+                    placement="top"
+                ></zem-help-popover>
             </label>
-            <input id="frequency-capping-input"
-                    class="input-text input-text--narrow"
-                    ng-model="$ctrl.entity.settings.frequencyCapping"
-                    type="text"
-                    zem-numeric-validator>
+            <input
+                id="frequency-capping-input"
+                class="input-text input-text--narrow"
+                ng-model="$ctrl.entity.settings.frequencyCapping"
+                type="text"
+                zem-numeric-validator
+            />
             <div class="message message--info message--with-icon">
                 {{ $ctrl.MESSAGES.INFO_FREQUENCY_CAPPING }}
             </div>

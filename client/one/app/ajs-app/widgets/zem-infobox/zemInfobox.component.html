@@ -1,8 +1,14 @@
-<zem-infobox-header class="zem-infobox-header" entity="$ctrl.entity" ng-show="$ctrl.entity !== undefined"></zem-infobox-header>
+<zem-infobox-header
+    class="zem-infobox-header"
+    entity="$ctrl.entity"
+    ng-show="$ctrl.entity !== undefined"
+></zem-infobox-header>
 
 <div class="zem-infobox__content custom-scroller">
     <div class="loader" ng-show="$ctrl.loadRequestInProgress"></div>
-    <div ng-if="$ctrl.delivery" class="zem-infobox__delivery zem-infobox-data-row"
+    <div
+        ng-if="$ctrl.delivery"
+        class="zem-infobox__delivery zem-infobox-data-row"
         ng-class="{
             'zem-infobox__delivery--active': 
                 $ctrl.delivery.status === 'active' ||
@@ -21,27 +27,45 @@
                 $ctrl.delivery.status === 'campaignstop-pending-budget-updates',
             'zem-infobox__delivery--landing-mode': 
                 $ctrl.delivery.status === 'landing-mode',
-        }">
+        }"
+    >
         <div class="zem-infobox-data-row__value-label">Delivery:</div>
         <div class="zem-infobox-data-row__value-container">
             <span class="zem-infobox__delivery-icon"></span>
-            <span class="zem-infobox__delivery-text zem-infobox-data-row__value">{{$ctrl.delivery.text}}</span>
+            <span
+                class="zem-infobox__delivery-text zem-infobox-data-row__value"
+                >{{ $ctrl.delivery.text }}</span
+            >
         </div>
     </div>
-    <zem-infobox-data-row ng-repeat="row in $ctrl.basicSettings"
-                          class="zem-infobox-data-row"
-                          row="row"
-                          is-internal="{{row.internal}}">
+    <zem-infobox-data-row
+        ng-repeat="row in $ctrl.basicSettings"
+        class="zem-infobox-data-row"
+        row="row"
+        is-internal="{{ row.internal }}"
+    >
     </zem-infobox-data-row>
-    <hr ng-if="$ctrl.performanceSettings" class="zem-infobox__content-separator" />
+    <hr
+        ng-if="$ctrl.performanceSettings"
+        class="zem-infobox__content-separator"
+    />
     <zem-infobox-realtimestats></zem-infobox-realtimestats>
-    <zem-infobox-data-row ng-repeat="row in $ctrl.performanceSettings"
-                          class="zem-infobox-data-row zem-infobox-data-row--exposed"
-                          row="row"
-                          is-internal="{{row.internal}}">
+    <zem-infobox-data-row
+        ng-repeat="row in $ctrl.performanceSettings"
+        class="zem-infobox-data-row zem-infobox-data-row--exposed"
+        row="row"
+        is-internal="{{ row.internal }}"
+    >
     </zem-infobox-data-row>
-    <hr ng-if="$ctrl.isEntityAvailable" class="zem-infobox__content-separator" />
-    <a ng-if="$ctrl.isEntityAvailable" class="alternative-link link-with-icon history-icon" ng-click="$ctrl.openHistory($event)">
+    <hr
+        ng-if="$ctrl.isEntityAvailable"
+        class="zem-infobox__content-separator"
+    />
+    <a
+        ng-if="$ctrl.isEntityAvailable"
+        class="alternative-link link-with-icon history-icon"
+        ng-click="$ctrl.openHistory($event)"
+    >
         View history
     </a>
 </div>

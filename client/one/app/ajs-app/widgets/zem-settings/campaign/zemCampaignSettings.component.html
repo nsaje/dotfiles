@@ -1,67 +1,70 @@
-<zem-settings-container api="$ctrl.api" settings-title="'Campaign settings'" entity-type="$ctrl.constants.entityType.CAMPAIGN">
+<zem-settings-container
+    api="$ctrl.api"
+    settings-title="'Campaign settings'"
+    entity-type="$ctrl.constants.entityType.CAMPAIGN"
+>
     <settings>
         <zem-campaign-general-settings
-                class="zem-settings-component"
-                entity="$container.entity"
-                errors="$container.errors"
-                api="$container.childApi"
+            class="zem-settings-component"
+            entity="$container.entity"
+            errors="$container.errors"
+            api="$container.childApi"
         ></zem-campaign-general-settings>
         <zem-campaign-goals-settings
-                class="zem-settings-component"
-                entity="$container.entity"
-                errors="$container.errors"
-                api="$container.childApi"
+            class="zem-settings-component"
+            entity="$container.entity"
+            errors="$container.errors"
+            api="$container.childApi"
         ></zem-campaign-goals-settings>
         <zem-device-targeting-settings
-                class="zem-settings-component"
-                entity="$container.entity"
-                errors="$container.errors"
-                api="$container.childApi"
-                ng-if="$ctrl.hasPermission('zemauth.settings_defaults_on_campaign_level')"
+            class="zem-settings-component"
+            entity="$container.entity"
+            errors="$container.errors"
+            api="$container.childApi"
+            ng-if="$ctrl.hasPermission('zemauth.settings_defaults_on_campaign_level')"
         ></zem-device-targeting-settings>
         <zem-geo-targeting
-                class="zem-settings-component"
-                entity="$container.entity"
-                errors="$container.errors"
-                api="$container.childApi"
-                ng-if="$ctrl.hasPermission('zemauth.settings_defaults_on_campaign_level')"
+            class="zem-settings-component"
+            entity="$container.entity"
+            errors="$container.errors"
+            api="$container.childApi"
+            ng-if="$ctrl.hasPermission('zemauth.settings_defaults_on_campaign_level')"
         ></zem-geo-targeting>
         <zem-campaign-targeting-settings
-                class="zem-settings-component"
-                entity="$container.entity"
-                errors="$container.errors"
-                api="$container.childApi"
-                ng-if="$ctrl.hasPermission('zemauth.can_set_white_blacklist_publisher_groups') && $ctrl.hasPermission('zemauth.can_see_publisher_groups_ui')"
+            class="zem-settings-component"
+            entity="$container.entity"
+            errors="$container.errors"
+            api="$container.childApi"
+            ng-if="$ctrl.hasPermission('zemauth.can_set_white_blacklist_publisher_groups') && $ctrl.hasPermission('zemauth.can_see_publisher_groups_ui')"
         ></zem-campaign-targeting-settings>
         <zem-performance-tracking-settings
-                class="zem-settings-component"
-                entity="$container.entity"
-                errors="$container.errors"
-                api="$container.childApi"
-                ng-if="!$ctrl.hasPermission('zemauth.disable_public_rcs')"
+            class="zem-settings-component"
+            entity="$container.entity"
+            errors="$container.errors"
+            api="$container.childApi"
+            ng-if="!$ctrl.hasPermission('zemauth.disable_public_rcs')"
         ></zem-performance-tracking-settings>
         <zem-campaign-budgets-settings
-                class="zem-settings-component"
-                entity="$container.entity"
-                errors="$container.errors"
-                api="$container.childApi"
-                ng-if="$ctrl.hasPermission('zemauth.can_see_new_budgets')"
+            class="zem-settings-component"
+            entity="$container.entity"
+            errors="$container.errors"
+            api="$container.childApi"
+            ng-if="$ctrl.hasPermission('zemauth.can_see_new_budgets')"
         ></zem-campaign-budgets-settings>
         <zem-campaign-budget-optimization-settings
-                class="zem-settings-component"
-                entity="$container.entity"
-                errors="$container.errors"
-                api="$container.childApi"
-                ng-if="$ctrl.hasPermission('zemauth.can_see_budget_optimization')"
+            class="zem-settings-component"
+            entity="$container.entity"
+            errors="$container.errors"
+            api="$container.childApi"
+            ng-if="$ctrl.hasPermission('zemauth.can_see_budget_optimization')"
         ></zem-campaign-budget-optimization-settings>
         <zem-backend-hacks
-                class="zem-settings-component"
-                entity="$container.entity"
-                errors="$container.errors"
-                api="$container.childApi"
+            class="zem-settings-component"
+            entity="$container.entity"
+            errors="$container.errors"
+            api="$container.childApi"
         ></zem-backend-hacks>
     </settings>
 
-    <custom>
-    </custom>
+    <custom> </custom>
 </zem-settings-container>

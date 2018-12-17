@@ -1,126 +1,194 @@
 <div class="form__group form__group--informative">
     <label class="form__label">View</label>
-    <div class="form__information">
-        {{ $ctrl.view }}
-    </div>
+    <div class="form__information">{{ $ctrl.view }}</div>
 </div>
-<hr>
+<hr />
 <div class="form__group form__group--informative">
     <label class="form__label">Breakdowns</label>
     <div class="form__information">
-        <span ng-repeat="dimension in $ctrl.shownBreakdown" ng-click="$ctrl.removeBreakdown(dimension)" class="tag tag--remove-button">{{ dimension.name }}</span>
+        <span
+            ng-repeat="dimension in $ctrl.shownBreakdown"
+            ng-click="$ctrl.removeBreakdown(dimension)"
+            class="tag tag--remove-button"
+            >{{ dimension.name }}</span
+        >
 
         <ui-select
-              theme="select2"
-              search-enabled="false"
-              ng-model="$ctrl.addbreakdown"
-              ng-disabled="$ctrl.disabled"
-              class="button button--small button--with-icon button--dropdown-toggle-icon add-icon zem-report-query-config__add-breakdown"
-              ng-if="$ctrl.availableBreakdowns.length">
-            <ui-select-match class="ui-select-match" placeholder="Add breakdown">Add breakdown</ui-select-match>
-            <ui-select-choices repeat="breakdown in $ctrl.availableBreakdowns" class="ui-select-choices">
-                <div ng-click="$ctrl.addBreakdown(breakdown)">{{breakdown.name}}</div>
+            theme="select2"
+            search-enabled="false"
+            ng-model="$ctrl.addbreakdown"
+            ng-disabled="$ctrl.disabled"
+            class="button button--small button--with-icon button--dropdown-toggle-icon add-icon zem-report-query-config__add-breakdown"
+            ng-if="$ctrl.availableBreakdowns.length"
+        >
+            <ui-select-match class="ui-select-match" placeholder="Add breakdown"
+                >Add breakdown</ui-select-match
+            >
+            <ui-select-choices
+                repeat="breakdown in $ctrl.availableBreakdowns"
+                class="ui-select-choices"
+            >
+                <div ng-click="$ctrl.addBreakdown(breakdown)">
+                    {{ breakdown.name }}
+                </div>
             </ui-select-choices>
         </ui-select>
     </div>
 </div>
-<hr>
+<hr />
 <div class="form__group form__group--informative">
     <label class="form__label">Columns</label>
     <div class="form__information">
         <div>
-            <span ng-repeat="field in $ctrl.shownSelectedFields" class="tag">{{ field }}</span>
-            <a class="tag tag--show-more" ng-click="$ctrl.showAllSelectedFields()"
-                ng-if="$ctrl.shownSelectedFields.length < $ctrl.config.selectedFields.length">...</a>
+            <span ng-repeat="field in $ctrl.shownSelectedFields" class="tag">{{
+                field
+            }}</span>
+            <a
+                class="tag tag--show-more"
+                ng-click="$ctrl.showAllSelectedFields()"
+                ng-if="$ctrl.shownSelectedFields.length < $ctrl.config.selectedFields.length"
+                >...</a
+            >
         </div>
         <zem-report-column-selector
             disabled="$ctrl.disabled"
             ng-if="$ctrl.hasPermission('zemauth.fea_can_use_column_picker_in_reports')"
             on-column-toggled="$ctrl.onColumnToggled(field)"
             on-all-columns-toggled="$ctrl.onAllColumnsToggled(isChecked)"
-            categories="$ctrl.categories">
+            categories="$ctrl.categories"
+        >
         </zem-report-column-selector>
     </div>
 </div>
-<hr ng-if="$ctrl.appliedFilterConditions.length">
-<div class="form__group form__group--informative" ng-if="$ctrl.appliedFilterConditions.length">
+<hr ng-if="$ctrl.appliedFilterConditions.length" />
+<div
+    class="form__group form__group--informative"
+    ng-if="$ctrl.appliedFilterConditions.length"
+>
     <label class="form__label">Filters</label>
     <div class="form__information">
-        <span ng-repeat="condition in $ctrl.shownAppliedFilterConditions" class="tag">{{condition.text}}</span>
-        <a class="tag tag--show-more" ng-click="$ctrl.showAllAppliedFilters()"
-           ng-if="$ctrl.shownAppliedFilterConditions.length < $ctrl.appliedFilterConditions.length">...</a>
+        <span
+            ng-repeat="condition in $ctrl.shownAppliedFilterConditions"
+            class="tag"
+            >{{ condition.text }}</span
+        >
+        <a
+            class="tag tag--show-more"
+            ng-click="$ctrl.showAllAppliedFilters()"
+            ng-if="$ctrl.shownAppliedFilterConditions.length < $ctrl.appliedFilterConditions.length"
+            >...</a
+        >
     </div>
 </div>
-<hr>
+<hr />
 <div class="form__group form__group--informative">
-    <zem-internal-feature ng-if="$ctrl.isPermissionInternal('zemauth.can_include_totals_in_reports')" popover-placement="right"></zem-internal-feature>
-    <label class="form__label" for="include-totals-checkbox">Include totals</label>
+    <zem-internal-feature
+        ng-if="$ctrl.isPermissionInternal('zemauth.can_include_totals_in_reports')"
+        popover-placement="right"
+    ></zem-internal-feature>
+    <label class="form__label" for="include-totals-checkbox"
+        >Include totals</label
+    >
     <div class="form__checkbox">
         <label>
-            <input id="include-totals-checkbox"
-                   type="checkbox"
-                   ng-model="$ctrl.config.includeTotals"
-                   ng-disabled="$ctrl.disabled || $ctrl.config.allAccountsInLocalCurrency"
-                   class="input-checkbox">
+            <input
+                id="include-totals-checkbox"
+                type="checkbox"
+                ng-model="$ctrl.config.includeTotals"
+                ng-disabled="$ctrl.disabled || $ctrl.config.allAccountsInLocalCurrency"
+                class="input-checkbox"
+            />
             <span class="checkbox-text"></span>
         </label>
     </div>
 </div>
-<div ng-if="!$ctrl.hasPermission('zemauth.fea_can_use_column_picker_in_reports')" class="form__group" >
-    <label class="form__label" for="add-ids-checkbox" is-internal="zemauth.can_include_model_ids_in_reports">Add IDs to report</label>
+<div
+    ng-if="!$ctrl.hasPermission('zemauth.fea_can_use_column_picker_in_reports')"
+    class="form__group"
+>
+    <label
+        class="form__label"
+        for="add-ids-checkbox"
+        is-internal="zemauth.can_include_model_ids_in_reports"
+        >Add IDs to report</label
+    >
     <div class="form__checkbox">
         <label>
-            <input id="add-ids-checkbox"
-                   type="checkbox"
-                   ng-model="$ctrl.config.includeIds"
-                   ng-disabled="$ctrl.disabled"
-                   ng-change="$ctrl.update()"
-                   class="input-checkbox">
+            <input
+                id="add-ids-checkbox"
+                type="checkbox"
+                ng-model="$ctrl.config.includeIds"
+                ng-disabled="$ctrl.disabled"
+                ng-change="$ctrl.update()"
+                class="input-checkbox"
+            />
             <span class="checkbox-text" for="add-ids-checkbox"></span>
         </label>
     </div>
 </div>
 <div class="form__group" ng-if="$ctrl.showIncludeItemsWithNoSpend">
-    <label class="form__label" for="add-missing-checkbox" >Include items with no spend</label>
+    <label class="form__label" for="add-missing-checkbox"
+        >Include items with no spend</label
+    >
     <div class="form__checkbox">
         <label>
-            <input id="add-missing-checkbox"
-                   type="checkbox"
-                   ng-model="$ctrl.config.includeItemsWithNoSpend"
-                   ng-disabled="$ctrl.disabled"
-                   class="input-checkbox">
+            <input
+                id="add-missing-checkbox"
+                type="checkbox"
+                ng-model="$ctrl.config.includeItemsWithNoSpend"
+                ng-disabled="$ctrl.disabled"
+                class="input-checkbox"
+            />
             <span class="checkbox-text" for="add-missing-checkbox"></span>
         </label>
     </div>
 </div>
-<div ng-if="$ctrl.showAllAccountsInLocalCurrencyCheckbox" class="form__group" >
-    <label class="form__label" for="all-accounts-in-local-currency-checkbox" is-internal="zemauth.can_request_accounts_report_in_local_currencies">
+<div ng-if="$ctrl.showAllAccountsInLocalCurrencyCheckbox" class="form__group">
+    <label
+        class="form__label"
+        for="all-accounts-in-local-currency-checkbox"
+        is-internal="zemauth.can_request_accounts_report_in_local_currencies"
+    >
         Use accounts' local currencies to generate report
     </label>
     <div class="form__checkbox">
         <label>
-            <input id="all-accounts-in-local-currency-checkbox"
-                   type="checkbox"
-                   ng-model="$ctrl.config.allAccountsInLocalCurrency"
-                   ng-disabled="$ctrl.disabled"
-                   class="input-checkbox">
-            <span class="checkbox-text" for="all-accounts-in-local-currency-checkbox"></span>
+            <input
+                id="all-accounts-in-local-currency-checkbox"
+                type="checkbox"
+                ng-model="$ctrl.config.allAccountsInLocalCurrency"
+                ng-disabled="$ctrl.disabled"
+                class="input-checkbox"
+            />
+            <span
+                class="checkbox-text"
+                for="all-accounts-in-local-currency-checkbox"
+            ></span>
         </label>
     </div>
 </div>
-<div ng-if="$ctrl.showAllAccountsCreditRefunds" class="form__group" >
-    <label class="form__label" for="all-accounts-include-credit-refunds" is-internal="zemauth.can_include_credit_refunds_in_report">
+<div ng-if="$ctrl.showAllAccountsCreditRefunds" class="form__group">
+    <label
+        class="form__label"
+        for="all-accounts-include-credit-refunds"
+        is-internal="zemauth.can_include_credit_refunds_in_report"
+    >
         Include credit refunds
     </label>
     <div class="form__checkbox">
         <label>
-            <input id="all-accounts-include-credit-refunds"
-                   type="checkbox"
-                   ng-model="$ctrl.config.allAccountsIncludeCreditRefunds"
-                   ng-disabled="$ctrl.disabled"
-                   ng-change="$ctrl.update()"
-                   class="input-checkbox">
-            <span class="checkbox-text" for="all-accounts-include-credit-refunds"></span>
+            <input
+                id="all-accounts-include-credit-refunds"
+                type="checkbox"
+                ng-model="$ctrl.config.allAccountsIncludeCreditRefunds"
+                ng-disabled="$ctrl.disabled"
+                ng-change="$ctrl.update()"
+                class="input-checkbox"
+            />
+            <span
+                class="checkbox-text"
+                for="all-accounts-include-credit-refunds"
+            ></span>
         </label>
     </div>
 </div>

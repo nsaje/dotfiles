@@ -1,36 +1,51 @@
 <div class="zem-select">
-    <div class="button button--search button--plain button--full-width button--dropdown-toggle-icon">
-        <span tabindex="1"
-              id="selected-item-label"
-              class="button__search-selection"
-              ng-show="!$ctrl.dropdownVisible"
-        >{{ $ctrl.selected.name || $ctrl.texts.placeholder }}</span>
-        <input tabindex="2"
-               type="text"
-               ng-show="!!$ctrl.dropdownVisible"
-               class="button__search-input"
-               placeholder="{{ $ctrl.texts.placeholder }}"
-               ng-model="$ctrl.searchQuery"
-               ng-change="$ctrl.onSearch($ctrl.searchQuery)"
-               ng-model-options="{ debounce: { default: 250, blur: 0 } }"
+    <div
+        class="button button--search button--plain button--full-width button--dropdown-toggle-icon"
+    >
+        <span
+            tabindex="1"
+            id="selected-item-label"
+            class="button__search-selection"
+            ng-show="!$ctrl.dropdownVisible"
+            >{{ $ctrl.selected.name || $ctrl.texts.placeholder }}</span
+        >
+        <input
+            tabindex="2"
+            type="text"
+            ng-show="!!$ctrl.dropdownVisible"
+            class="button__search-input"
+            placeholder="{{ $ctrl.texts.placeholder }}"
+            ng-model="$ctrl.searchQuery"
+            ng-change="$ctrl.onSearch($ctrl.searchQuery)"
+            ng-model-options="{ debounce: { default: 250, blur: 0 } }"
         />
-        <div class="zem-select-dropdown" ng-class="{ 'zem-select-dropdown--active': $ctrl.dropdownVisible }" tabindex="3">
-            <ul class="zem-select-dropdown__list scroll-container custom-scroller"
-                vs-repeat vs-scroll-parent=".scroll-container" vs-size="$ctrl.getItemHeight(item)">
-
-                <li ng-repeat="item in $ctrl.list.items"
+        <div
+            class="zem-select-dropdown"
+            ng-class="{ 'zem-select-dropdown--active': $ctrl.dropdownVisible }"
+            tabindex="3"
+        >
+            <ul
+                class="zem-select-dropdown__list scroll-container custom-scroller"
+                vs-repeat
+                vs-scroll-parent=".scroll-container"
+                vs-size="$ctrl.getItemHeight(item)"
+            >
+                <li
+                    ng-repeat="item in $ctrl.list.items"
                     class="zem-select-dropdown-item"
                     ng-click="$ctrl.onItemClick(item); $event.stopPropagation();"
-                    ng-mouseover="$ctrl.toggleHighlighted(item)" ng-class="{
+                    ng-mouseover="$ctrl.toggleHighlighted(item)"
+                    ng-class="{
                                'zem-select-dropdown-item--highlighted': item === $ctrl.highlighted,
                                'zem-select-dropdown-item--selected': item === $ctrl.selected,
                                'zem-select-dropdown-item--search-result': $ctrl.searchQuery
-                               }">
+                               }"
+                >
                     <div
                         ng-class="$ctrl.getItemClasses(item)"
                         title="{{ item.name }}"
-                        ng-bind-html="item.name | highlight: item.isHeader ? '' : $ctrl.searchQuery">
-                    </div>
+                        ng-bind-html="item.name | highlight: item.isHeader ? '' : $ctrl.searchQuery"
+                    ></div>
                 </li>
             </ul>
         </div>

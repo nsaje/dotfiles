@@ -1,8 +1,18 @@
 <div uib-dropdown is-open="$ctrl.open" on-toggle="$ctrl.onToggle(open)">
-    <a href class="zem-header__dropdown-button zem-header__dropdown-button--left-border zem-header__dropdown-button--right-border" uib-dropdown-toggle>
-        <img class="zem-header__dropdown-button-icon" ng-src="{{$ctrl.config.staticUrl}}/one/images/magnifier-white.svg">
+    <a
+        href
+        class="zem-header__dropdown-button zem-header__dropdown-button--left-border zem-header__dropdown-button--right-border"
+        uib-dropdown-toggle
+    >
+        <img
+            class="zem-header__dropdown-button-icon"
+            ng-src="{{ $ctrl.config.staticUrl }}/one/images/magnifier-white.svg"
+        />
     </a>
-    <div class="dropdown-menu zem-header__dropdown-menu zem-header__dropdown-menu--navigation" uib-dropdown-menu>
+    <div
+        class="dropdown-menu zem-header__dropdown-menu zem-header__dropdown-menu--navigation"
+        uib-dropdown-menu
+    >
         <zem-navigation class="zem-navigation"></zem-navigation>
     </div>
 </div>

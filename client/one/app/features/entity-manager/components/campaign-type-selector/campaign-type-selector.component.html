@@ -1,56 +1,74 @@
 <ng-container *ngIf="!isDisplayDemoRequestVisible">
     <div class="zem-campaign-type-selector__type-container">
-        <button class="button button--outline zem-campaign-type-selector__type zem-campaign-type-selector__type--content"
-                (click)="selectCampaignType(CAMPAIGN_TYPE.CONTENT)">
+        <button
+            class="button button--outline zem-campaign-type-selector__type zem-campaign-type-selector__type--content"
+            (click)="selectCampaignType(CAMPAIGN_TYPE.CONTENT)"
+        >
             <span class="zem-campaign-type-selector__type-name">
                 Native Ad Campaign
             </span>
             <span class="zem-campaign-type-selector__type-description">
-                Drive visits to your site, blog posts or media reports and optimize for on-site engagement metrics.
+                Drive visits to your site, blog posts or media reports and
+                optimize for on-site engagement metrics.
             </span>
         </button>
     </div>
     <div class="zem-campaign-type-selector__type-container">
-        <button class="button button--outline zem-campaign-type-selector__type zem-campaign-type-selector__type--video"
-                (click)="selectCampaignType(CAMPAIGN_TYPE.VIDEO)">
+        <button
+            class="button button--outline zem-campaign-type-selector__type zem-campaign-type-selector__type--video"
+            (click)="selectCampaignType(CAMPAIGN_TYPE.VIDEO)"
+        >
             <span class="zem-campaign-type-selector__type-name">
                 Native Video Advertising
             </span>
             <span class="zem-campaign-type-selector__type-description">
-                Get people to watch your videos. Optimize for CPV, CPCV or other, video related objectives.
+                Get people to watch your videos. Optimize for CPV, CPCV or
+                other, video related objectives.
             </span>
         </button>
     </div>
     <div class="zem-campaign-type-selector__type-container">
-        <button class="button button--outline zem-campaign-type-selector__type zem-campaign-type-selector__type--conversion"
-                (click)="selectCampaignType(CAMPAIGN_TYPE.CONVERSION)">
+        <button
+            class="button button--outline zem-campaign-type-selector__type zem-campaign-type-selector__type--conversion"
+            (click)="selectCampaignType(CAMPAIGN_TYPE.CONVERSION)"
+        >
             <span class="zem-campaign-type-selector__type-name">
                 Native Conversion Marketing
             </span>
             <span class="zem-campaign-type-selector__type-description">
-                Get more people to signup for your product and optimize for CPA or ROAS.
+                Get more people to signup for your product and optimize for CPA
+                or ROAS.
             </span>
         </button>
     </div>
     <div class="zem-campaign-type-selector__type-container">
-        <button class="button button--outline zem-campaign-type-selector__type zem-campaign-type-selector__type--mobile"
-                (click)="selectCampaignType(CAMPAIGN_TYPE.MOBILE)">
+        <button
+            class="button button--outline zem-campaign-type-selector__type zem-campaign-type-selector__type--mobile"
+            (click)="selectCampaignType(CAMPAIGN_TYPE.MOBILE)"
+        >
             <span class="zem-campaign-type-selector__type-name">
                 Native Mobile App Advertising
             </span>
             <span class="zem-campaign-type-selector__type-description">
-                Drive app installs and optimize for CPI or arbitrary post-install event.
+                Drive app installs and optimize for CPI or arbitrary
+                post-install event.
             </span>
         </button>
     </div>
-    <div class="zem-campaign-type-selector__type-container" *ngIf="shouldShowDisplayType">
-        <button class="button button--outline zem-campaign-type-selector__type zem-campaign-type-selector__type--display"
-                (click)="selectCampaignType(CAMPAIGN_TYPE.DISPLAY)">                
+    <div
+        class="zem-campaign-type-selector__type-container"
+        *ngIf="shouldShowDisplayType"
+    >
+        <button
+            class="button button--outline zem-campaign-type-selector__type zem-campaign-type-selector__type--display"
+            (click)="selectCampaignType(CAMPAIGN_TYPE.DISPLAY)"
+        >
             <span class="zem-campaign-type-selector__type-name">
                 Display Ad Campaign
             </span>
             <span class="zem-campaign-type-selector__type-description">
-                Put your creative under control using display inventory with Zemanta’s CPC bidding and on-site engagement optimization.
+                Put your creative under control using display inventory with
+                Zemanta’s CPC bidding and on-site engagement optimization.
             </span>
         </button>
     </div>
@@ -58,6 +76,12 @@
 
 <ng-container *ngIf="isDisplayDemoRequestVisible">
     <div class="zem-campaign-type-selector__display-request-message">
-        Display advertising is currently in private beta. If you are interested please <a href="https://docs.google.com/forms/d/e/1FAIpQLSdc7ucy9x0S_FaepLW4Rk5WyoXElOapuGsW5zG6mwnKYnIldg/viewform" target="_blank">sign up here</a>.
+        Display advertising is currently in private beta. If you are interested
+        please
+        <a
+            href="https://docs.google.com/forms/d/e/1FAIpQLSdc7ucy9x0S_FaepLW4Rk5WyoXElOapuGsW5zG6mwnKYnIldg/viewform"
+            target="_blank"
+            >sign up here</a
+        >.
     </div>
 </ng-container>

@@ -1,12 +1,24 @@
 <div class="zem-grid-sticky__container">
-<div class="zem-grid-sticky__header">
-<div class="zem-grid-header">
-    <div class="zem-grid-row" ng-show="ctrl.visible">
-        <div class="zem-grid-header-cell" ng-repeat="column in ctrl.model.visibleColumns track by $index">
-            <zem-grid-header-cell-checkbox ng-if="column.type === 'checkbox'" grid="ctrl.grid"> </zem-grid-header-cell-checkbox>
-            <zem-grid-header-cell-data ng-if="column.type !== 'checkbox'" grid="ctrl.grid" column="column"> </zem-grid-header-cell-data>
+    <div class="zem-grid-sticky__header">
+        <div class="zem-grid-header">
+            <div class="zem-grid-row" ng-show="ctrl.visible">
+                <div
+                    class="zem-grid-header-cell"
+                    ng-repeat="column in ctrl.model.visibleColumns track by $index"
+                >
+                    <zem-grid-header-cell-checkbox
+                        ng-if="column.type === 'checkbox'"
+                        grid="ctrl.grid"
+                    >
+                    </zem-grid-header-cell-checkbox>
+                    <zem-grid-header-cell-data
+                        ng-if="column.type !== 'checkbox'"
+                        grid="ctrl.grid"
+                        column="column"
+                    >
+                    </zem-grid-header-cell-data>
+                </div>
+            </div>
         </div>
     </div>
-</div>
-</div>
 </div>

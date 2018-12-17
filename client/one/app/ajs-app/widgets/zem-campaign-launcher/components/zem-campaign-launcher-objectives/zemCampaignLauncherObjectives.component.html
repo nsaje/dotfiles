@@ -2,7 +2,11 @@
     <h2>What is your campaign objective?</h2>
     <zem-campaign-type-selector
         class="zem-campaign-type-selector"
-        [should-show-display-type]="$ctrl.hasPermission('zemauth.fea_can_change_campaign_type_to_display')"
+        [should-show-display-type]="
+            $ctrl.hasPermission(
+                'zemauth.fea_can_change_campaign_type_to_display'
+            )
+        "
         (on-select)="$ctrl.selectObjective($event)"
     ></zem-campaign-type-selector>
 </div>

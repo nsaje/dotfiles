@@ -1,93 +1,185 @@
 <div class="custom-panel zem-settings-component__container">
     <h2 class="custom-panel__title">General settings</h2>
     <div class="form">
-        <div class="form__group" ng-if="$ctrl.hasPermission('zemauth.can_modify_account_name')"
-             ng-class="{'form--error': !!$ctrl.errors.name}">
+        <div
+            class="form__group"
+            ng-if="$ctrl.hasPermission('zemauth.can_modify_account_name')"
+            ng-class="{'form--error': !!$ctrl.errors.name}"
+        >
             <label class="form__label" for="name-input">Name:</label>
-            <input class="input-text" id="name-input" type="text" ng-model="$ctrl.entity.settings.name">
-            <div class="message message--error" ng-repeat="error in $ctrl.errors.name"
-                 for="name-input">{{ error }}</div>
+            <input
+                class="input-text"
+                id="name-input"
+                type="text"
+                ng-model="$ctrl.entity.settings.name"
+            />
+            <div
+                class="message message--error"
+                ng-repeat="error in $ctrl.errors.name"
+                for="name-input"
+            >
+                {{ error }}
+            </div>
         </div>
 
-        <div class="form__group" ng-if="$ctrl.hasPermission('zemauth.fea_can_change_campaign_type')"
-             ng-class="{'form--error': !!$ctrl.errors.type}">
+        <div
+            class="form__group"
+            ng-if="$ctrl.hasPermission('zemauth.fea_can_change_campaign_type')"
+            ng-class="{'form--error': !!$ctrl.errors.type}"
+        >
             <label class="form__label" for="campaign-type-select">
                 Campaign Type:
-                <zem-help-popover content="Campaign type determines the creative requirements and enables certain features. Campaign type can be changed until you create the first ad group."
-                                  placement="top"></zem-help-popover>
+                <zem-help-popover
+                    content="Campaign type determines the creative requirements and enables certain features. Campaign type can be changed until you create the first ad group."
+                    placement="top"
+                ></zem-help-popover>
             </label>
-            <select ui-select2="{minimumResultsForSearch: 2}" id="campaign-type-select"
-                    class="button button--plain button--full-width button--dropdown-toggle-icon"
-                    ng-model="$ctrl.entity.settings.type"
-                    >
-                <option ng-repeat="type in $ctrl.campaignTypes" value="{{type.value}}">{{type.name}}</option>
+            <select
+                ui-select2="{minimumResultsForSearch: 2}"
+                id="campaign-type-select"
+                class="button button--plain button--full-width button--dropdown-toggle-icon"
+                ng-model="$ctrl.entity.settings.type"
+            >
+                <option
+                    ng-repeat="type in $ctrl.campaignTypes"
+                    value="{{ type.value }}"
+                    >{{ type.name }}</option
+                >
             </select>
-            <div class="message message--error" ng-repeat="error in $ctrl.errors.type"
-                 for="campaign-type-select">{{ error }}</div>
+            <div
+                class="message message--error"
+                ng-repeat="error in $ctrl.errors.type"
+                for="campaign-type-select"
+            >
+                {{ error }}
+            </div>
         </div>
 
-        <div class="form__group" ng-if="$ctrl.hasPermission('zemauth.can_modify_campaign_manager')"
-             ng-class="{'form--error': !!$ctrl.errors.campaignManager}">
+        <div
+            class="form__group"
+            ng-if="$ctrl.hasPermission('zemauth.can_modify_campaign_manager')"
+            ng-class="{'form--error': !!$ctrl.errors.campaignManager}"
+        >
             <label class="form__label" for="campaign-manager-select">
                 Campaign Manager:
-                <zem-help-popover content="Campaign manager responsible for the campaign and the communication with the client."
-                                  placement="top"></zem-help-popover>
+                <zem-help-popover
+                    content="Campaign manager responsible for the campaign and the communication with the client."
+                    placement="top"
+                ></zem-help-popover>
             </label>
-            <ui-select theme="select2" id="campaign-manager-select"
-                       class="button button--plain button--full-width button--dropdown-toggle-icon"
-                       ng-model="$ctrl.entity.settings.campaignManager">
-                <ui-select-match>{{$select.selected.name}}</ui-select-match>
-                <ui-select-choices repeat="manager.id as manager in $ctrl.entity.campaignManagers | orderBy:'name' | filter:$select.search" class="ui-select-choices">
-                    <div ng-bind-html="manager.name | highlight: $select.search"></div>
+            <ui-select
+                theme="select2"
+                id="campaign-manager-select"
+                class="button button--plain button--full-width button--dropdown-toggle-icon"
+                ng-model="$ctrl.entity.settings.campaignManager"
+            >
+                <ui-select-match>{{ $select.selected.name }}</ui-select-match>
+                <ui-select-choices
+                    repeat="manager.id as manager in $ctrl.entity.campaignManagers | orderBy:'name' | filter:$select.search"
+                    class="ui-select-choices"
+                >
+                    <div
+                        ng-bind-html="manager.name | highlight: $select.search"
+                    ></div>
                 </ui-select-choices>
             </ui-select>
-            <div class="message message--error" ng-repeat="error in $ctrl.errors.campaignManager"
-                 for="campaign-manager-select">{{ error }}</div>
+            <div
+                class="message message--error"
+                ng-repeat="error in $ctrl.errors.campaignManager"
+                for="campaign-manager-select"
+            >
+                {{ error }}
+            </div>
         </div>
 
-        <div class="form__group" ng-if="$ctrl.hasPermission('zemauth.can_modify_campaign_iab_category')"
-             ng-class="{'form--error': !!$ctrl.errors.iabCategory}">
+        <div
+            class="form__group"
+            ng-if="$ctrl.hasPermission('zemauth.can_modify_campaign_iab_category')"
+            ng-class="{'form--error': !!$ctrl.errors.iabCategory}"
+        >
             <label class="form__label" for="iab-category-select">
                 Campaign Category:
-                <zem-help-popover content="Specify campaign's content category. All campaigns must list one top-level category. If you are using mixed content consider splitting your campaign."
-                                  placement="top"></zem-help-popover>
+                <zem-help-popover
+                    content="Specify campaign's content category. All campaigns must list one top-level category. If you are using mixed content consider splitting your campaign."
+                    placement="top"
+                ></zem-help-popover>
             </label>
-            <select ui-select2="{minimumResultsForSearch: 2}" id="iab-category-select"
-                    class="button button--plain button--full-width button--dropdown-toggle-icon"
-                    ng-model="$ctrl.entity.settings.iabCategory">
-                <option ng-repeat="category in $ctrl.iabCategoriesSorted" value="{{category.value}}">{{category.name}}</option>
+            <select
+                ui-select2="{minimumResultsForSearch: 2}"
+                id="iab-category-select"
+                class="button button--plain button--full-width button--dropdown-toggle-icon"
+                ng-model="$ctrl.entity.settings.iabCategory"
+            >
+                <option
+                    ng-repeat="category in $ctrl.iabCategoriesSorted"
+                    value="{{ category.value }}"
+                    >{{ category.name }}</option
+                >
             </select>
-            <div class="message message--error" ng-repeat="error in $ctrl.errors.iabCategory"
-                 for="iab-category-select">{{ error }}</div>
+            <div
+                class="message message--error"
+                ng-repeat="error in $ctrl.errors.iabCategory"
+                for="iab-category-select"
+            >
+                {{ error }}
+            </div>
         </div>
 
-        <div class="form__group" ng-if="$ctrl.hasPermission('zemauth.can_see_campaign_language_choices')"
-             ng-class="{'form--error': !!$ctrl.errors.language}">
+        <div
+            class="form__group"
+            ng-if="$ctrl.hasPermission('zemauth.can_see_campaign_language_choices')"
+            ng-class="{'form--error': !!$ctrl.errors.language}"
+        >
             <label class="form__label" for="campaign-language-select">
                 Campaign Language:
-                <zem-help-popover content="Language can be updated only if Campaign has no Ad Groups yet."
-                                  placement="top"></zem-help-popover>
+                <zem-help-popover
+                    content="Language can be updated only if Campaign has no Ad Groups yet."
+                    placement="top"
+                ></zem-help-popover>
             </label>
-            <select ui-select2="{minimumResultsForSearch: 2}" id="campaign-language-select"
-                    class="button button--plain button--full-width button--dropdown-toggle-icon"
-                    ng-model="$ctrl.entity.settings.language"
-                    >
-                <option ng-repeat="language in $ctrl.languages" value="{{language.value}}">{{language.name}}</option>
+            <select
+                ui-select2="{minimumResultsForSearch: 2}"
+                id="campaign-language-select"
+                class="button button--plain button--full-width button--dropdown-toggle-icon"
+                ng-model="$ctrl.entity.settings.language"
+            >
+                <option
+                    ng-repeat="language in $ctrl.languages"
+                    value="{{ language.value }}"
+                    >{{ language.name }}</option
+                >
             </select>
-            <div class="message message--error" ng-repeat="error in $ctrl.errors.language"
-                 for="campaign-language-select">{{ error }}</div>
+            <div
+                class="message message--error"
+                ng-repeat="error in $ctrl.errors.language"
+                for="campaign-language-select"
+            >
+                {{ error }}
+            </div>
         </div>
 
-        <div class="form__group" ng-if="$ctrl.hasPermission('zemauth.can_set_frequency_capping')">
-            <label class="form__label" for="frequency-capping-input" is-internal="zemauth.can_set_frequency_capping">
+        <div
+            class="form__group"
+            ng-if="$ctrl.hasPermission('zemauth.can_set_frequency_capping')"
+        >
+            <label
+                class="form__label"
+                for="frequency-capping-input"
+                is-internal="zemauth.can_set_frequency_capping"
+            >
                 Daily impression frequency cap:
-                <zem-help-popover content="This setting defines the maximum number of times your ads from this campaign will be shown to a unique user in one day." placement="top"></zem-help-popover>
+                <zem-help-popover
+                    content="This setting defines the maximum number of times your ads from this campaign will be shown to a unique user in one day."
+                    placement="top"
+                ></zem-help-popover>
             </label>
-            <input id="frequency-capping-input"
-                    class="input-text input-text--narrow"
-                    ng-model="$ctrl.entity.settings.frequencyCapping"
-                    type="text"
-                    zem-numeric-validator>
+            <input
+                id="frequency-capping-input"
+                class="input-text input-text--narrow"
+                ng-model="$ctrl.entity.settings.frequencyCapping"
+                type="text"
+                zem-numeric-validator
+            />
             <div class="message message--info message--with-icon">
                 {{ $ctrl.MESSAGES.INFO_FREQUENCY_CAPPING }}
             </div>

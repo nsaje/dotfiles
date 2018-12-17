@@ -1,16 +1,26 @@
 <div class="custom-panel">
     <h2 class="custom-panel__title">Audiences</h2>
-    <div class="custom-panel__description">Custom audiences allow you to target your ads to a specific set of people with whom you have already established a relationship. Audiences can be defined by a combination of rules used to identify users who took specific actions on your website.</div>
-    <zem-custom-audiences-list class="zem-custom-audiences-list" ng-if="$ctrl.stateService" state-service="$ctrl.stateService"></zem-custom-audiences-list>
-    <button type="button"
+    <div class="custom-panel__description">
+        Custom audiences allow you to target your ads to a specific set of
+        people with whom you have already established a relationship. Audiences
+        can be defined by a combination of rules used to identify users who took
+        specific actions on your website.
+    </div>
+    <zem-custom-audiences-list
+        class="zem-custom-audiences-list"
+        ng-if="$ctrl.stateService"
+        state-service="$ctrl.stateService"
+    ></zem-custom-audiences-list>
+    <button
+        type="button"
         class="button button--with-icon add-icon"
         ng-class="{'disabled': !$ctrl.audiencePixel}"
         ng-click="$ctrl.openAudienceModal()"
         zem-lazy-popover-html-unsafe="{{ $ctrl.tooltipText() }}"
         zem-lazy-popover-placement="right"
         zem-lazy-popover-append-to-body="true"
-        zem-lazy-popover-animation-class="fade">
+        zem-lazy-popover-animation-class="fade"
+    >
         Add Custom Audience
     </button>
 </div>
-

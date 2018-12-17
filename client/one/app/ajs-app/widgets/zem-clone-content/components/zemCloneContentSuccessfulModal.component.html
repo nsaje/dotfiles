@@ -2,10 +2,26 @@
     <div class="modal__title">Cloning successful</div>
 </div>
 <div class="modal__body">
-    Ad(s) were copied to the ad group <strong>{{ $ctrl.resolve.destinationBatch.adGroup.name }}</strong>, under the batch name <strong class="text-secondary">{{ $ctrl.resolve.destinationBatch.name }}</strong>.
+    Ad(s) were copied to the ad group
+    <strong>{{ $ctrl.resolve.destinationBatch.adGroup.name }}</strong
+    >, under the batch name
+    <strong class="text-secondary">{{
+        $ctrl.resolve.destinationBatch.name
+    }}</strong
+    >.
 
-    <div class="m-t"><a class="button button--highlight" ng-click="$ctrl.navigateTo()" href>View newly created ads</a></div>
+    <div class="m-t">
+        <a class="button button--highlight" ng-click="$ctrl.navigateTo()" href
+            >View newly created ads</a
+        >
+    </div>
 </div>
 <div class="modal__footer buttons-panel">
-    <button type="button" class="button button--outline" ng-click="$ctrl.modalInstance.dismiss()">Close</button>
+    <button
+        type="button"
+        class="button button--outline"
+        ng-click="$ctrl.modalInstance.dismiss()"
+    >
+        Close
+    </button>
 </div>

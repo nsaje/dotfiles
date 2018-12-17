@@ -1,8 +1,10 @@
 <!-- TODO -->
 <div class="clearfix">
-    <a ng-repeat="tab in $ctrl.tabs" class="zem-grid__tab pull-left"
-         ng-class="{'zem-grid__tab--active': tab.selected }"
-         ng-click="$ctrl.navigateTo($event, tab)"
+    <a
+        ng-repeat="tab in $ctrl.tabs"
+        class="zem-grid__tab pull-left"
+        ng-class="{'zem-grid__tab--active': tab.selected }"
+        ng-click="$ctrl.navigateTo($event, tab)"
     >
         <span>{{ tab.name }}</span>
     </a>

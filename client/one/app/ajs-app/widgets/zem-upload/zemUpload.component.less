@@ -67,7 +67,7 @@
     .modal__body {
         overflow: hidden;
         position: relative;
-		margin-bottom: 60px;
+        margin-bottom: 60px;
     }
 
     .modal__footer {
@@ -162,7 +162,7 @@
     color: @primary-color;
     position: relative;
     white-space: nowrap;
-    overflow:hidden;
+    overflow: hidden;
     text-overflow: ellipsis;
     line-height: 30px;
     font-size: 18px;
@@ -210,16 +210,16 @@
     }
 
     tr:last-child td {
-        border-bottom: 1px solid tint(@secondary-color,80%);
+        border-bottom: 1px solid tint(@secondary-color, 80%);
     }
 
     tr:hover td {
-        background: tint(@secondary-color,96%);
+        background: tint(@secondary-color, 96%);
     }
 }
 
 .content-upload__selected-ad {
-    background: tint(@secondary-color,96%);
+    background: tint(@secondary-color, 96%);
 }
 
 .content-upload__ad-status {
@@ -227,7 +227,7 @@
     position: relative;
 
     &::before {
-        content: "";
+        content: '';
         display: block;
         position: absolute;
         width: 20px;
@@ -268,14 +268,14 @@
     position: relative;
 
     &::before {
-        content: "";
+        content: '';
         display: block;
         position: absolute;
         width: 40px;
         height: 40px;
         top: 50%;
         transform: translateY(-50%);
-        background: #FFFFFF url('images/image-gray.svg') center center no-repeat;
+        background: #ffffff url('images/image-gray.svg') center center no-repeat;
         background-size: 20px;
         border: 1px solid @light-gray;
     }
@@ -292,7 +292,7 @@
     overflow: hidden;
 
     &:after {
-        content: "";
+        content: '';
         height: 100%;
         display: inline-block;
         vertical-align: middle;
@@ -319,7 +319,7 @@
     padding-left: 18px;
 
     &::before {
-        content: "";
+        content: '';
         display: block;
         width: 12px;
         height: 12px;
@@ -375,8 +375,8 @@
     right: -@content-upload-ad-editing-width - 1;
     transition: all @default-animation;
     padding: 0 15px 15px 15px;
-    background: tint(@secondary-color,96%);
-    box-shadow: 0 0 10px 0 fade(@secondary-color,25%);
+    background: tint(@secondary-color, 96%);
+    box-shadow: 0 0 10px 0 fade(@secondary-color, 25%);
     border-top-right-radius: @border-radius;
 
     .form,
@@ -393,7 +393,8 @@
 
     .form__indented-group {
         width: @form-input-width-content-upload;
-        margin-left: 100 - @form-input-width-content-upload - @form-additional-info-width-content-upload;
+        margin-left: 100 - @form-input-width-content-upload -
+            @form-additional-info-width-content-upload;
     }
 
     .form__group {
@@ -401,7 +402,8 @@
         .form__text,
         .form__text--small {
             width: @form-input-width-content-upload;
-            margin-left: 100 - @form-input-width-content-upload - @form-additional-info-width-content-upload;
+            margin-left: 100 - @form-input-width-content-upload -
+                @form-additional-info-width-content-upload;
         }
 
         .button--full-width {
@@ -409,7 +411,8 @@
         }
 
         .form__label {
-            width: 100 - 2 - @form-input-width-content-upload - @form-additional-info-width-content-upload;
+            width: 100 - 2 - @form-input-width-content-upload -
+                @form-additional-info-width-content-upload;
         }
 
         .textarea,
@@ -427,7 +430,7 @@
         .textarea {
             min-width: @form-input-width-content-upload;
             max-width: @form-input-width-content-upload;
-            height: @form-textarea-height-content-upload;            
+            height: @form-textarea-height-content-upload;
             min-height: @form-textarea-height-content-upload;
         }
     }
@@ -465,7 +468,7 @@
 
     &::after,
     &::before {
-        content: " ";
+        content: ' ';
         display: block;
         position: absolute;
         width: 0;
@@ -485,7 +488,8 @@
     &::after {
         border-style: solid;
         border-width: 0 8px 8px 8px;
-        border-color: transparent transparent tint(@secondary-color,96%) transparent;
+        border-color: transparent transparent tint(@secondary-color, 96%)
+            transparent;
     }
 
     &:last-child {
@@ -520,7 +524,7 @@
 }
 
 .content-upload__edit-form-container--form {
-    box-shadow: 0 0 10px 0 fade(@secondary-color,25%);
+    box-shadow: 0 0 10px 0 fade(@secondary-color, 25%);
 }
 
 .content-upload__edit-form-hide {
@@ -536,12 +540,13 @@
     z-index: 2;
 
     &::after {
-        content: "";
+        content: '';
         display: block;
         position: absolute;
         width: 36px;
         height: 36px;
-        background: tint(@secondary-color,90%) url('@{images-folder}/arrow-sec.svg') 14px center no-repeat;
+        background: tint(@secondary-color, 90%)
+            url('@{images-folder}/arrow-sec.svg') 14px center no-repeat;
         background-size: 10px;
         border-radius: 50%;
         right: 0;
@@ -563,7 +568,7 @@
     font-size: 18px;
     line-height: 22px;
     white-space: nowrap;
-    overflow:hidden;
+    overflow: hidden;
     text-overflow: ellipsis;
 }
 
@@ -616,7 +621,7 @@
     position: relative;
 
     &::before {
-        content: "";
+        content: '';
         display: block;
         width: 20px;
         height: 20px;
@@ -653,7 +658,7 @@
     position: relative;
 
     &::before {
-        content: "";
+        content: '';
         display: block;
         position: absolute;
         width: 60px;
@@ -738,7 +743,7 @@
         width: auto;
         left: auto;
         right: -@content-upload-ad-editing-width-above-breakpoint;
-        background: tint(@secondary-color,96%);
+        background: tint(@secondary-color, 96%);
     }
 
     .content-upload__edit-form-title-container--tabs {
@@ -976,7 +981,8 @@
         }
     }
 
-    .content-upload__content-ad-picker-container--editing .content-upload__ads-table,
+    .content-upload__content-ad-picker-container--editing
+        .content-upload__ads-table,
     .content-upload__ads-table {
         display: block;
 
@@ -990,7 +996,7 @@
                 padding: @default-spacing;
                 width: auto;
                 height: auto;
-                border-bottom: 1px solid tint(@secondary-color,90%);
+                border-bottom: 1px solid tint(@secondary-color, 90%);
 
                 &:last-child {
                     border-bottom: none;
@@ -1021,8 +1027,8 @@
                         position: absolute;
                         width: 70px;
                     }
-                    
-                    &.content-upload__ad-size
+
+                    &.content-upload__ad-size,
                     &.content-upload__ad-title {
                         margin-bottom: 10px;
                     }
@@ -1031,7 +1037,7 @@
                         margin-top: 10px;
                     }
 
-                    &.content-upload__ad-size
+                    &.content-upload__ad-size,
                     &.content-upload__ad-title,
                     &.content-upload__ad-error-container,
                     &.content-upload__ad-action-buttons {
