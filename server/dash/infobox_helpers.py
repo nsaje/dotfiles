@@ -407,10 +407,11 @@ def get_weekly_active_users(filtered_agencies, filtered_account_types):
     # a certain time and not when data actually changes. This behaviour is by design - currently
     # it is ok if this data is a bit dated - confirmed by product
 
-    users = zemauth.models.User.objects.all().filter(pk__in=_active_user_ids()).filter_by_agencies(filtered_agencies)
+    # users = zemauth.models.User.objects.all().filter(pk__in=_active_user_ids()).filter_by_agencies(filtered_agencies)
 
-    users = _filter_user_by_account_type(users, filtered_account_types)
-    return users
+    # users = _filter_user_by_account_type(users, filtered_account_types)
+    # return users
+    return 0
 
 
 def count_weekly_selfmanaged_actions(filtered_agencies, filtered_account_types):
