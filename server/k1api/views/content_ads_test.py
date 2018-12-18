@@ -9,7 +9,6 @@ from datetime import timedelta
 
 import mock
 from django.urls import reverse
-from rest_framework.test import APIClient
 
 import dash.constants
 import dash.features.ga
