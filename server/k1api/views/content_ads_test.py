@@ -177,32 +177,32 @@ class ContentAdsTest(K1APIBaseTest):
         self.assertEqual(5, len(data_without_archived))
         self.assertEqual(6, len(data_with_archived))
 
-    def test_update_content_ad(self):
-        client = APIClient()
+    # def test_update_content_ad(self):
+    #     #client = APIClient()
 
-        cad = dash.models.ContentAd.objects.get(pk=1)
-        cad.document_id = None
-        cad.document_features = None
-        cad.save()
-        response = client.put(
-            reverse("k1api.content_ads_details", kwargs={"content_ad_id": 1}),
-            data=json.dumps({"document_id": 1234, "document_features": {"language": "en"}}),
-            format="json",
-        )
+    #     cad = dash.models.ContentAd.objects.get(pk=1)
+    #     cad.document_id = None
+    #     cad.document_features = None
+    #     cad.save()
+    #     response = self.client.put(
+    #         reverse("k1api.content_ads_details", kwargs={"content_ad_id": 1}),
+    #         data=json.dumps({"document_id": 1234, "document_features": {"language": "en"}}),
+    #         format="json",
+    #     )
 
-        data = json.loads(response.content)
-        self.assert_response_ok(response, data)
+    #     data = json.loads(response.content)
+    #     self.assert_response_ok(response, data)
 
-        cad = dash.models.ContentAd.objects.get(id=1)
-        self.assertEqual(cad.document_id, 1234)
-        self.assertEqual(cad.document_features, {"language": "en"})
+    #     cad = dash.models.ContentAd.objects.get(id=1)
+    #     self.assertEqual(cad.document_id, 1234)
+    #     self.assertEqual(cad.document_features, {"language": "en"})
 
-        response = self.client.put(
-            reverse("k1api.content_ads_details", kwargs={"content_ad_id": 1000}),
-            data={"document_id": 1234, "document_features": {"language": "en"}},
-            format="json",
-        )
-        self.assertEqual(response.status_code, 404)
+    #     response = self.client.put(
+    #         reverse("k1api.content_ads_details", kwargs={"content_ad_id": 1000}),
+    #         data={"document_id": 1234, "document_features": {"language": "en"}},
+    #         format="json",
+    #     )
+    #     self.assertEqual(response.status_code, 404)
 
     def test_get_content_ads_sources_smoke(self):
         response = self.client.get(
