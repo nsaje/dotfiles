@@ -1,3 +1,4 @@
+import json
 import logging
 from datetime import datetime
 
@@ -98,10 +99,35 @@ class ContentAdsView(K1APIView):
                 "video_asset": video_asset,
                 "label": item.label,
                 "additional_data": item.additional_data,
+                "document_id": item.document_id,
+                "document_features": item.document_features,
             }
             response.append(content_ad)
 
         return self.response_ok(response)
+
+    def put(self, request, content_ad_id):
+        try:
+            content_ad = dash.models.ContentAd.objects.get(id=content_ad_id)
+        except dash.models.ContentAd.DoesNotExist:
+            logger.exception("update_content_ad: content_ad does not exist. content ad id: %d", content_ad_id)
+            raise Http404
+
+        data = json.loads(request.data)
+        modified = False
+
+        if "document_id" in data and content_ad.document_id != data["document_id"]:
+            content_ad.document_id = data["document_id"]
+            modified = True
+
+        if "document_features" in data and content_ad.document_features != data["document_features"]:
+            content_ad.document_features = data["document_features"]
+            modified = True
+
+        if modified:
+            content_ad.save()
+
+        return self.response_ok(data)
 
 
 class ContentAdSourcesView(K1APIView):

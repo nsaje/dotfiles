@@ -132,6 +132,9 @@ class ContentAd(
     video_asset = models.ForeignKey("VideoAsset", blank=True, null=True, on_delete=models.PROTECT)
     ad_tag = models.TextField(null=True, blank=True)
 
+    document_id = models.IntegerField(null=True, blank=True)
+    document_features = JSONField(null=True, blank=True)
+
     redirect_id = models.CharField(max_length=128, null=True)
 
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name="Created at")

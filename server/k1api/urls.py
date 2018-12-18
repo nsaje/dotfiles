@@ -35,6 +35,9 @@ urlpatterns = [
         name="k1api.ad_groups.sources.blockers",
     ),
     url(r"^content_ads$", content_ads.ContentAdsView.as_view(), name="k1api.content_ads"),
+    url(
+        r"^content_ads/(?P<content_ad_id>\d+)$", content_ads.ContentAdsView.as_view(), name="k1api.content_ads_details"
+    ),
     url(r"^content_ads/sources$", content_ads.ContentAdSourcesView.as_view(), name="k1api.content_ads.sources"),
     url(r"^accounts$", accounts.AccountsView.as_view(), name="k1api.accounts"),
     url(r"^sources$", sources.SourcesView.as_view(), name="k1api.sources"),
