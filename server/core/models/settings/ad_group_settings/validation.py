@@ -14,6 +14,8 @@ from dash import constants
 
 from . import exceptions
 
+ARBITRARY_BLUEKAI_CATEGORIES_AGENCIES = {33}  # inPowered
+
 
 # should inherit from core.common.BaseValidator so that full_clean is called on save,
 # but until the refactoring is completed let's call clean() manually
@@ -177,11 +179,10 @@ class AdGroupSettingsValidatorMixin(object):
                 "To disable managing Daily Spend Cap for All RTB as one, ad group must be paused first."
             raise exceptions.AdGroupNotPaused(msg)
 
-    @classmethod
-    def _validate_bluekai_tageting(cls, bluekai_targeting):
+    def _validate_bluekai_tageting(self, bluekai_targeting):
         if isinstance(bluekai_targeting, list):
             for subexp in bluekai_targeting[1:]:
-                cls._validate_bluekai_tageting(subexp)
+                self._validate_bluekai_tageting(subexp)
         else:
             typ, id_ = bluekai_targeting.split(":", 1)
             if typ == "bluekai":
@@ -189,7 +190,12 @@ class AdGroupSettingsValidatorMixin(object):
                     b_id = int(id_)
                 except ValueError:
                     raise exceptions.BluekaiCategoryInvalid('Invalid BlueKai category id format: "{}"'.format(id_))
-                if not dash.features.bluekai.models.BlueKaiCategory.objects.active().filter(category_id=b_id):
+                should_validate_category = (
+                    self.ad_group.campaign.account.agency_id not in ARBITRARY_BLUEKAI_CATEGORIES_AGENCIES
+                )
+                if should_validate_category and not dash.features.bluekai.models.BlueKaiCategory.objects.active().filter(
+                    category_id=b_id
+                ):
                     raise exceptions.BluekaiCategoryInvalid('Invalid BlueKai category id: "{}"'.format(b_id))
 
     def _validate_bluekai_targeting_change(self, new_settings):
