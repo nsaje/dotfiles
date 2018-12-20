@@ -15,6 +15,7 @@ import etl.refresh
 import redshiftapi.db
 from automation import autopilot
 from utils import converters
+from utils import db_for_reads
 
 logger = logging.getLogger("stats.monitor")
 
@@ -36,6 +37,7 @@ def _get_rs_spend(table_name, date, account_id=None):
     return {}
 
 
+@db_for_reads.use_read_replica()
 def audit_spend_integrity(date, account_id=None, max_err=MAX_ERR):
     if date is None:
         date = datetime.datetime.utcnow().date() - datetime.timedelta(1)
@@ -69,6 +71,7 @@ def audit_spend_integrity(date, account_id=None, max_err=MAX_ERR):
     return integrity_issues
 
 
+@db_for_reads.use_read_replica()
 def audit_spend_patterns(date=None, threshold=0.8, first_in_month_threshold=0.6, day_range=3):
     if date is None:
         date = datetime.datetime.utcnow().date() - datetime.timedelta(1)
@@ -90,6 +93,7 @@ def audit_spend_patterns(date=None, threshold=0.8, first_in_month_threshold=0.6,
     return alarming_dates
 
 
+@db_for_reads.use_read_replica()
 def audit_pacing(date, max_pacing=Decimal("200.0"), min_pacing=Decimal("50.0"), **constraints):
     # fixme tfischer 05/11/18: Paused until account types are properly marked. INPW is considered activated.
     if date is None:
@@ -108,6 +112,7 @@ def audit_pacing(date, max_pacing=Decimal("200.0"), min_pacing=Decimal("50.0"), 
     return alarms
 
 
+@db_for_reads.use_read_replica()
 def audit_autopilot_ad_groups():
     date = datetime.date.today()
     ap_logs = automation.models.AutopilotLog.objects.filter(
@@ -127,6 +132,7 @@ def audit_autopilot_ad_groups():
     return ad_groups_ap_running - ad_groups_in_logs
 
 
+@db_for_reads.use_read_replica()
 def audit_autopilot_cpc_changes(date=None, min_changes=25):
     """
     When Autopilot modifies the daily cap, all modifications should not be all positive or all negative, it should
@@ -160,6 +166,7 @@ def audit_autopilot_cpc_changes(date=None, min_changes=25):
     return alarms
 
 
+@db_for_reads.use_read_replica()
 def audit_autopilot_daily_caps_changes(date=None, error=Decimal("0.001")):
     """
     Autopilot is modifying the daily cap of each source, by taking some money from the sources performing bad
@@ -190,6 +197,7 @@ def audit_autopilot_daily_caps_changes(date=None, error=Decimal("0.001")):
     return alarms
 
 
+@db_for_reads.use_read_replica()
 def audit_overspend(date, min_overspend=Decimal("0.1")):
     overspend_query = backtosql.generate_sql(
         "sql/monitor_overspend.sql",
@@ -204,6 +212,7 @@ def audit_overspend(date, min_overspend=Decimal("0.1")):
     return alarms
 
 
+@db_for_reads.use_read_replica()
 def audit_running_ad_groups(min_spend=Decimal("50.0"), account_types=None):
     """
     Alert how many ad groups had a very low spend
@@ -239,6 +248,7 @@ def audit_running_ad_groups(min_spend=Decimal("50.0"), account_types=None):
     return dash.models.AdGroup.objects.filter(pk__in=((running_ad_group_ids - spending_ad_group_ids) - api_ad_groups))
 
 
+@db_for_reads.use_read_replica()
 def audit_account_credits(date=None, days=14):
 
     if not date:
@@ -257,6 +267,7 @@ def audit_account_credits(date=None, days=14):
     return ending_credit_accounts - future_credit_accounts
 
 
+@db_for_reads.use_read_replica()
 def audit_click_discrepancy(date=None, days=30, threshold=20):
     if date is None:
         date = datetime.date.today() - datetime.timedelta(1)
@@ -308,6 +319,7 @@ def audit_click_discrepancy(date=None, days=30, threshold=20):
     return alarms
 
 
+@db_for_reads.use_read_replica()
 def audit_custom_hacks(minimal_spend=Decimal("0.0001")):
     alarms = []
     for unconfirmed_hack in dash.models.CustomHack.objects.filter(confirmed_by__isnull=True).filter_active(True):
@@ -329,62 +341,115 @@ def audit_custom_hacks(minimal_spend=Decimal("0.0001")):
     return alarms
 
 
+@db_for_reads.use_read_replica()
 def audit_bid_cpc_vs_ecpc(bid_cpc_threshold=2, yesterday_spend_threshold=20):
     yesterday = datetime.date.today() - datetime.timedelta(1)
     active_ad_groups = (
         dash.models.AdGroup.objects.all()
-        .filter_current_and_active(yesterday)
+        .filter_running(yesterday)
         .exclude(campaign__account__id__in=API_ACCOUNTS)
+        .exclude(bidding_type=dash.constants.BiddingType.CPM)
+        .select_related("settings", "campaign")
     )
-    ads_non_exploratory = (
+
+    per_ad_groups_audit = dash.models.AdGroup.objects.filter(
+        id__in=active_ad_groups.filter(settings__b1_sources_group_enabled=True).exclude(
+            campaign__in=dash.models.CampaignGoal.objects.filter(
+                primary=True, type=dash.constants.CampaignGoalKPI.CPA
+            ).values_list("campaign", flat=True)
+        )
+    ).values("id", "name", "settings__cpc_cc")
+
+    ad_group_cpc = dict(
+        dash.models.AdGroupSource.objects.filter(
+            ad_group__in=per_ad_groups_audit.values_list("id", flat=True),
+            settings__state=dash.constants.AdGroupSourceSettingsState.ACTIVE,
+            source__source_type__type=dash.constants.SourceType.B1,
+        )
+        .values_list("ad_group__id", "settings__cpc_cc")
+        .distinct()
+    )
+
+    per_adgs_audit = (
         dash.models.AdGroupSource.objects.filter(ad_group__in=active_ad_groups)
-        .filter_active()
+        .filter(settings__state=dash.constants.AdGroupSourceSettingsState.ACTIVE)
+        .exclude(ad_group__in=per_ad_groups_audit.values_list("id", flat=True))  # Avoid duplicates
         .values("ad_group_id", "source_id", "settings__cpc_cc", "source__name", "ad_group__name")
     )
 
-    ad_group_sources = {
-        (ads["ad_group_id"], ads["source_id"]): {
-            "cpc": ads["settings__cpc_cc"],
-            "source_name": ads["source__name"],
-            "name": ads["ad_group__name"],
+    ad_group_sources_cpc = {
+        (adgs["ad_group_id"], adgs["source_id"]): {
+            "cpc": round(adgs["settings__cpc_cc"], 3),
+            "source_name": adgs["source__name"],
+            "name": adgs["ad_group__name"],
         }
-        for ads in ads_non_exploratory
+        for adgs in per_adgs_audit
     }
+
+    # We add the CPC defined on the adgroup level
+    if per_ad_groups_audit:
+        ad_group_sources_cpc.update(
+            {
+                (ad["id"], 0): {
+                    "cpc": round(ad_group_cpc.get(ad["id"]), 3),
+                    "source_name": "b1_rtb",
+                    "name": ad["name"],
+                }
+                for ad in per_ad_groups_audit
+            }
+        )
 
     with redshiftapi.db.get_stats_cursor() as c:
         yesterday_spend_query = backtosql.generate_sql(
             "sql/monitor_yesterday_spend.sql",
             dict(
                 yesterday=yesterday.strftime("%Y-%m-%d"),
-                excluded_account_ids=str(API_ACCOUNTS),
+                excluded_account_ids=API_ACCOUNTS,
                 yesterday_spend_threshold=yesterday_spend_threshold,
+                per_ad_groups=tuple(per_ad_groups_audit.values_list("id", flat=True)),
+                excluded_sources=(3, 4),  # Yahoo and Outbrain
             ),
         )
         c.execute(yesterday_spend_query)
-        yesterday_spends = [
-            dict(ad_group_id=i[0], source_id=i[1], total_clicks=i[2], total_spend=i[3], ecpc=i[4]) for i in c.fetchall()
-        ]
+        yesterday_spends = redshiftapi.db.dictfetchall(c)
         alerts = []
         for spend in yesterday_spends:
-            ads = ad_group_sources.get((spend["ad_group_id"], spend["source_id"]))
-            if not ads:
+            adgs = ad_group_sources_cpc.get((spend["ad_group_id"], spend["source_id"]))
+            if not adgs:
                 continue
-            if spend["ecpc"] >= (ads["cpc"] * bid_cpc_threshold):
-                higher_yesterday_cpc = dash.models.AdGroupSource.objects.filter(
-                    ad_group__id=spend["ad_group_id"],
-                    source__id=spend["source_id"],
-                    settings__created_dt__range=(
-                        datetime.datetime.combine(yesterday, datetime.time.min),
-                        datetime.datetime.combine(datetime.date.today(), datetime.time.max),
-                    ),
-                    settings__cpc_cc__gt=ads["cpc"],
-                ).values("settings__cpc_cc")
+            if spend["ecpc"] >= (adgs["cpc"] * bid_cpc_threshold):
+                if adgs.get("source_name") == "b1_rtb":
+                    higher_yesterday_cpc = dash.models.AdGroup.objects.filter(
+                        id=spend["ad_group_id"],
+                        settings__created_dt__range=(
+                            datetime.datetime.combine(yesterday, datetime.time.min),
+                            datetime.datetime.combine(datetime.date.today(), datetime.time.max),
+                        ),
+                        settings__cpc_cc__gt=adgs["cpc"],
+                    ).values("settings__cpc_cc")
+                else:
+                    higher_yesterday_cpc = dash.models.AdGroupSource.objects.filter(
+                        ad_group__id=spend["ad_group_id"],
+                        source__id=spend["source_id"],
+                        settings__created_dt__range=(
+                            datetime.datetime.combine(yesterday, datetime.time.min),
+                            datetime.datetime.combine(datetime.date.today(), datetime.time.max),
+                        ),
+                        settings__cpc_cc__gt=adgs["cpc"],
+                    ).values("settings__cpc_cc")
                 if higher_yesterday_cpc:
                     # We skip the sources in which yesterday's CPC was a higher value than the current CPC, it would
                     # produce a false-positive alert because the eCPC will be higher as the old and high value was used.
                     continue
-                ads.update(spend)
-                alerts.append(ads)
+                alert = {
+                    "ad_group_id": spend["ad_group_id"],
+                    "name": adgs["name"],
+                    "cpc": adgs["cpc"],
+                    "ecpc": spend["ecpc"],
+                    "source_name": adgs["source_name"],
+                    "total_spend": spend["total_spend"],
+                }
+                alerts.append(alert)
         return alerts
 
 
