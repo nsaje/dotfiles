@@ -1,9 +1,15 @@
+import logging
+
 from django.db import transaction
 
 import dash.constants
 import utils.email_helper
 import utils.k1_helper
 import utils.redirector_helper
+
+logger = logging.getLogger(__name__)
+
+OEN_ACCOUNT_ID = 305
 
 VALID_UPDATE_FIELDS = set(
     [
@@ -60,6 +66,10 @@ class ContentAdInstanceMixin(object):
         for field, value in list(kwargs.items()):
             if field in VALID_UPDATE_FIELDS:
                 setattr(self, field, value)
+        try:
+            self._handle_oen_document_data()
+        except Exception:
+            logger.exception("Something went wrong when trying to map OEN's document data")
         self.save()
         if write_history:
             description = "Content ad {id} edited.".format(id=self.pk)
@@ -69,3 +79,21 @@ class ContentAdInstanceMixin(object):
                 action_type=dash.constants.HistoryActionType.CONTENT_AD_EDIT,
             )
         utils.k1_helper.update_content_ad(self, msg="ContentAd.update")
+
+    def _handle_oen_document_data(self):
+        if not self.ad_group.campaign.account_id == OEN_ACCOUNT_ID or not self.additional_data:
+            return
+
+        oen_document_id = self.additional_data.get("documentId")
+        if oen_document_id and oen_document_id != self.document_id:
+            self.document_id = oen_document_id
+            self.document_features = self._remap_document_feature_fields(self.additional_data)
+
+    @staticmethod
+    def _remap_document_feature_fields(additional_data):
+        document_features = {}
+        if "language" in additional_data:
+            document_features["language"] = [{"value": additional_data["language"].lower(), "confidence": 0.99}]
+        if "documentFeatures" in additional_data:
+            document_features["categories"] = additional_data["documentFeatures"]
+        return document_features

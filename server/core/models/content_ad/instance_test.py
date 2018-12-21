@@ -69,3 +69,31 @@ class InstanceTest(TestCase):
             "Content ad %s edited." % content_ad.pk, action_type=constants.HistoryActionType.CONTENT_AD_EDIT, user=None
         )
         mock_k1_update.assert_called_with(content_ad, msg=mock.ANY)
+
+    @mock.patch.object(k1_helper, "update_content_ad")
+    def test_oen_document_data(self, mock_k1_update):
+        content_ad = magic_mixer.blend(model.ContentAd, ad_group__campaign__account__id=305)
+
+        additional_data = {
+            "documentId": 12345,
+            "language": "EN",
+            "documentFeatures": [{"value": "1234", "confidence": 0.99}, {"value": "4321", "confidence": 0.01}],
+        }
+        content_ad.update(None, additional_data=additional_data)
+        self.assertEqual(content_ad.document_id, 12345)
+        self.assertEqual(
+            content_ad.document_features,
+            {
+                "language": [{"value": "en", "confidence": 0.99}],
+                "categories": [{"value": "1234", "confidence": 0.99}, {"value": "4321", "confidence": 0.01}],
+            },
+        )
+
+    @mock.patch.object(k1_helper, "update_content_ad")
+    def test_oen_document_data_no_change_if_not_present(self, mock_k1_update):
+        content_ad = magic_mixer.blend(model.ContentAd, document_id=123, document_features={"a": "b"})
+
+        additional_data = {"language": "EN"}
+        content_ad.update(None, additional_data=additional_data)
+        self.assertEqual(content_ad.document_id, 123)
+        self.assertEqual(content_ad.document_features, {"a": "b"})
