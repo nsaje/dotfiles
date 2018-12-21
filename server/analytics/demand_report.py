@@ -556,7 +556,7 @@ def _get_campaign_data(campaign_ids):
 
     logger.info("Querying Campaign data.")
     rows = list(
-        models.Campaign.objects.filter(id__in=campaign_ids, account__settings__archived=False, settings__archived=False)
+        models.Campaign.objects.filter(id__in=campaign_ids)
         .select_related("account__agency", "account__agency__settings", "account", "account__settings", "settings")
         .annotate(**field_mapping)
         .values(*output_values)
