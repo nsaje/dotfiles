@@ -17,7 +17,6 @@ angular.module('one.widgets').component('zemInfobox', {
         $location,
         $window
     ) {
-        // eslint-disable-line max-len
         var $ctrl = this;
         $ctrl.hasPermission = zemPermissions.hasPermission;
         $ctrl.openHistory = openHistory;
@@ -32,61 +31,28 @@ angular.module('one.widgets').component('zemInfobox', {
         var legacyActionExecutedHandler;
 
         $ctrl.$onInit = function() {
-            if (!$state.includes('v2.analytics')) {
-                $ctrl.entity = zemNavigationNewService.getActiveEntity();
-                updateHandler();
-                if ($ctrl.entity) {
-                    legacyEntityUpdateHandler = zemEntityService
-                        .getEntityService($ctrl.entity.type)
-                        .onEntityUpdated(updateHandler);
-                    legacyActionExecutedHandler = zemEntityService
-                        .getEntityService($ctrl.entity.type)
-                        .onActionExecuted(updateHandler);
-                }
-
-                legacyActiveEntityUpdateHandler = zemNavigationNewService.onActiveEntityChange(
-                    function(event, activeEntity) {
-                        if (legacyEntityUpdateHandler)
-                            legacyEntityUpdateHandler();
-                        if (legacyActionExecutedHandler)
-                            legacyActionExecutedHandler();
-
-                        $ctrl.entity = activeEntity;
-                        updateHandler();
-                        if (activeEntity) {
-                            legacyEntityUpdateHandler = zemEntityService
-                                .getEntityService($ctrl.entity.type)
-                                .onEntityUpdated(updateHandler);
-                            legacyActionExecutedHandler = zemEntityService
-                                .getEntityService($ctrl.entity.type)
-                                .onActionExecuted(updateHandler);
-                        }
-                    }
-                );
-            }
-
             dateRangeUpdateHandler = zemDataFilterService.onDateRangeUpdate(
-                updateHandler
+                reloadInfoboxData
             );
             dataFilterUpdateHandler = zemDataFilterService.onDataFilterUpdate(
-                updateHandler
+                reloadInfoboxData
             );
         };
 
         $ctrl.$onChanges = function(changes) {
-            if ($state.includes('v2.analytics')) {
-                $ctrl.entity = changes.entity.currentValue;
-                updateHandler();
-                if ($ctrl.entity) {
-                    if (entityUpdateHandler) entityUpdateHandler();
-                    entityUpdateHandler = zemEntityService
-                        .getEntityService($ctrl.entity.type)
-                        .onEntityUpdated(updateHandler);
-                    if (actionExecutedHandler) actionExecutedHandler();
-                    actionExecutedHandler = zemEntityService
-                        .getEntityService($ctrl.entity.type)
-                        .onActionExecuted(updateHandler);
-                }
+            onEntityUpdated();
+
+            if (entityUpdateHandler) entityUpdateHandler();
+            if (actionExecutedHandler) actionExecutedHandler();
+
+            var entity = changes.entity.currentValue;
+            if (entity) {
+                entityUpdateHandler = zemEntityService
+                    .getEntityService(entity.type)
+                    .onEntityUpdated(onEntityUpdated);
+                actionExecutedHandler = zemEntityService
+                    .getEntityService(entity.type)
+                    .onActionExecuted(onActionExecuted);
             }
         };
 
@@ -102,7 +68,30 @@ angular.module('one.widgets').component('zemInfobox', {
             if (legacyActionExecutedHandler) legacyActionExecutedHandler();
         };
 
-        function updateHandler() {
+        function onEntityUpdated() {
+            updateEntity();
+            reloadInfoboxData();
+        }
+
+        function onActionExecuted(event, actionData) {
+            updateEntity(actionData.data.data.state);
+            reloadInfoboxData();
+        }
+
+        function updateEntity(updatedEntityState) {
+            $ctrl.entity = angular.copy(
+                zemNavigationNewService.getActiveEntity()
+            );
+
+            if (updatedEntityState) {
+                // Update entity's state immediately after action is executed to
+                // show consistent state in infobox even when navigation load is
+                // not yet finished
+                $ctrl.entity.data.state = updatedEntityState;
+            }
+        }
+
+        function reloadInfoboxData() {
             $ctrl.loadRequestInProgress = true;
             zemInfoboxService
                 .reloadInfoboxData($ctrl.entity)
@@ -122,7 +111,6 @@ angular.module('one.widgets').component('zemInfobox', {
                 return;
             }
 
-            $ctrl.entity = zemNavigationNewService.getActiveEntity();
             $ctrl.isEntityAvailable = $ctrl.entity ? true : false;
             $ctrl.delivery = data.delivery;
             $ctrl.basicSettings = data.basicSettings;

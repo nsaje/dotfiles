@@ -32,7 +32,7 @@ describe('zemInfobox', function() {
             mockedAsyncFunction
         );
 
-        $ctrl.$onInit();
+        $ctrl.$onChanges({entity: {currentValue: null}});
         $rootScope.$digest();
 
         expect($ctrl.delivery).toEqual(data.delivery);
