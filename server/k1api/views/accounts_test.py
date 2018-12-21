@@ -34,6 +34,7 @@ class AccountsTest(K1APIBaseTest):
             data[0],
             {
                 "id": 1,
+                "agency_id": 20,
                 "name": "test account 1",
                 "outbrain_marketer_id": "abcde",
                 "outbrain_amplify_review_only": False,

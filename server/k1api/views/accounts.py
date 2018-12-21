@@ -63,6 +63,7 @@ class AccountsView(K1APIView):
 
             account_dict = {
                 "id": account.id,
+                "agency_id": account.agency_id,
                 "name": account.name,
                 "pixels": pixels,
                 "custom_audiences": accounts_audiences[account.id],
