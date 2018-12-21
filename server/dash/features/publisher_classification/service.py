@@ -33,14 +33,12 @@ def update_publisher_classifications_from_csv(csv_file):
                 continue
 
 
-def update_publisher_classsifications_from_oen():
-    yesterday = datetime.datetime.now() - datetime.timedelta(days=1)
+def update_publisher_classsifications_from_oen(date_from=None):
+    date_from = date_from or datetime.datetime.now() - datetime.timedelta(days=7)
     all_publisher_classification = models.PublisherClassification.objects.all()
     new_publisher_entries = (
         models.PublisherGroupEntry.objects.filter(
-            modified_dt__gte=yesterday,
-            publisher_group_id__in=constants.PUBLISHER_GROUP_CATEGORY_MAPPING,
-            publisher__in=all_publisher_classification.values("publisher"),
+            modified_dt__gte=date_from, publisher_group_id__in=constants.PUBLISHER_GROUP_CATEGORY_MAPPING.keys()
         )
         .annotate(
             category=Case(
