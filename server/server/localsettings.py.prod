@@ -77,18 +77,18 @@ DATABASES = {
         "HOST": "ec2-18-209-193-186.compute-1.amazonaws.com",
         "PORT": 5432,
     },
-    "stats-postgres-2": {
-        "ENGINE": "django.db.backends.postgresql_psycopg2",
-        "NAME": "stats",
-        "USER": "eins",
-        "PASSWORD": Secret(
-            "kms:region=us-east-1:AQECAHjdfiP9DHF52gr8mpTmZ/ZwRu2qZbRw8dV0ohsw+OhZewAAAHcwdQYJKoZIhvcNAQcGoGgwZgIBADBhBgkqhkiG9w0BBwEwHgYJYIZIAWUDBAEuMBEEDK3IqgDoSl1V4mFwogIBEIA0F2w720RQ0wEwhyDG0xbYXxETXTW/JcIONIBJEY4mxTuODNV4BLQwuM+JvdQkjpORFtf2Wg=="  # noqa
-        )
-        .get()
-        .decode("utf-8"),
-        "HOST": "ec2-18-209-135-192.compute-1.amazonaws.com",
-        "PORT": 5432,
-    },
+    # "stats-postgres-2": {
+    #     "ENGINE": "django.db.backends.postgresql_psycopg2",
+    #     "NAME": "stats",
+    #     "USER": "eins",
+    #     "PASSWORD": Secret(
+    #         "kms:region=us-east-1:AQECAHjdfiP9DHF52gr8mpTmZ/ZwRu2qZbRw8dV0ohsw+OhZewAAAHcwdQYJKoZIhvcNAQcGoGgwZgIBADBhBgkqhkiG9w0BBwEwHgYJYIZIAWUDBAEuMBEEDK3IqgDoSl1V4mFwogIBEIA0F2w720RQ0wEwhyDG0xbYXxETXTW/JcIONIBJEY4mxTuODNV4BLQwuM+JvdQkjpORFtf2Wg=="  # noqa
+    #     )
+    #     .get()
+    #     .decode("utf-8"),
+    #     "HOST": "ec2-18-209-135-192.compute-1.amazonaws.com",
+    #     "PORT": 5432,
+    # },
 }
 DATABASE_READ_REPLICAS = ["read-replica"]
 
