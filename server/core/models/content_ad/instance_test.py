@@ -75,9 +75,9 @@ class InstanceTest(TestCase):
         content_ad = magic_mixer.blend(model.ContentAd, ad_group__campaign__account__id=305)
 
         additional_data = {
-            "documentId": 12345,
+            "document_id": 12345,
             "language": "EN",
-            "documentFeatures": [{"value": "1234", "confidence": 0.99}, {"value": "4321", "confidence": 0.01}],
+            "document_features": [{"value": "1234", "confidence": 0.99}, {"value": "4321", "confidence": 0.01}],
         }
         content_ad.update(None, additional_data=additional_data)
         self.assertEqual(content_ad.document_id, 12345)

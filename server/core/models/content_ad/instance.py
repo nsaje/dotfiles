@@ -84,7 +84,7 @@ class ContentAdInstanceMixin(object):
         if not self.ad_group.campaign.account_id == OEN_ACCOUNT_ID or not self.additional_data:
             return
 
-        oen_document_id = self.additional_data.get("documentId")
+        oen_document_id = self.additional_data.get("document_id")
         if oen_document_id and oen_document_id != self.document_id:
             self.document_id = oen_document_id
             self.document_features = self._remap_document_feature_fields(self.additional_data)
@@ -94,6 +94,6 @@ class ContentAdInstanceMixin(object):
         document_features = {}
         if "language" in additional_data:
             document_features["language"] = [{"value": additional_data["language"].lower(), "confidence": 0.99}]
-        if "documentFeatures" in additional_data:
-            document_features["categories"] = additional_data["documentFeatures"]
+        if "document_features" in additional_data:
+            document_features["categories"] = additional_data["document_features"]
         return document_features
