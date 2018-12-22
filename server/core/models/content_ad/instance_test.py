@@ -84,7 +84,7 @@ class InstanceTest(TestCase):
         self.assertEqual(
             content_ad.document_features,
             {
-                "language": [{"value": "en", "confidence": 0.99}],
+                "language": [{"value": "en", "confidence": 1.0}],
                 "categories": [{"value": "1234", "confidence": 0.99}, {"value": "4321", "confidence": 0.01}],
             },
         )

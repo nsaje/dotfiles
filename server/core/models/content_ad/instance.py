@@ -93,7 +93,7 @@ class ContentAdInstanceMixin(object):
     def _remap_document_feature_fields(additional_data):
         document_features = {}
         if "language" in additional_data:
-            document_features["language"] = [{"value": additional_data["language"].lower(), "confidence": 0.99}]
+            document_features["language"] = [{"value": additional_data["language"].lower(), "confidence": 1.0}]
         if "document_features" in additional_data:
             document_features["categories"] = additional_data["document_features"]
         return document_features
