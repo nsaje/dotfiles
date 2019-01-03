@@ -648,6 +648,43 @@ class EffectiveSpendPctsK1TestCase(TestCase):
         self.assertEqual(Decimal("0.6"), pct_license_fee)
 
     @patch("utils.dates_helper.local_today")
+    def test_margin_over_50_pct(self, mock_today):
+        campaign = dash.models.Campaign.objects.get(id=1)
+        budget = dash.models.BudgetLineItem.objects.get(id=1)
+        date = datetime.date(2015, 2, 1)
+        mock_today.return_value = date
+
+        campaign_spend = {"media_nano": 40 * converters.CURRENCY_TO_NANO, "data_nano": 40 * converters.CURRENCY_TO_NANO}
+        total_spend = {date: {campaign.id: campaign_spend}}
+
+        license_fee_nano = (campaign_spend["media_nano"] + campaign_spend["data_nano"]) * budget.credit.license_fee
+        desired_margin_pct = Decimal("0.6")
+        margin_nano = (
+            (campaign_spend["media_nano"] + campaign_spend["data_nano"] + license_fee_nano)
+            * desired_margin_pct
+            / (1 - desired_margin_pct)
+        )
+        expected_margin_as_pct_of_spend = margin_nano / (
+            campaign_spend["media_nano"] + campaign_spend["data_nano"] + license_fee_nano
+        )
+
+        dash.models.BudgetDailyStatement.objects.create(
+            budget=budget,
+            date=date,
+            media_spend_nano=campaign_spend["media_nano"],
+            data_spend_nano=campaign_spend["data_nano"],
+            license_fee_nano=license_fee_nano,
+            margin_nano=margin_nano,
+        )
+
+        effective_spend = daily_statements.get_effective_spend(total_spend, date, None)
+        pct_actual_spend, pct_license_fee, pct_margin = effective_spend[date][campaign]
+
+        self.assertEqual(Decimal("1"), pct_actual_spend)
+        self.assertEqual(Decimal("0.2"), pct_license_fee)
+        self.assertEqual(expected_margin_as_pct_of_spend, pct_margin)
+
+    @patch("utils.dates_helper.local_today")
     def test_spend_missing(self, mock_today):
         campaign = dash.models.Campaign.objects.get(id=1)
         budget = dash.models.BudgetLineItem.objects.get(id=1)

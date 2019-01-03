@@ -231,7 +231,7 @@ def _get_effective_spend_pcts(date, campaign, campaign_spend, attributed_spends)
 
     pct_margin = 0
     if attributed_spend_nano + license_fee_nano > 0:
-        pct_margin = min(1, margin_nano / Decimal(attributed_spend_nano + license_fee_nano))
+        pct_margin = margin_nano / Decimal(attributed_spend_nano + license_fee_nano)
 
     return pct_actual_spend, pct_license_fee, pct_margin
 
