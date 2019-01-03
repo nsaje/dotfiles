@@ -137,6 +137,7 @@ PAGER_DUTY_ADOPS_SERVICE_KEY = Secret("").get().decode("utf-8")
 PAGER_DUTY_SYSOPS_SERVICE_KEY = Secret("").get().decode("utf-8")
 PAGER_DUTY_ENGINEERS_SERVICE_KEY = Secret("").get().decode("utf-8")
 PAGER_DUTY_Z1_SERVICE_KEY = Secret("").get().decode("utf-8")
+PAGER_DUTY_PRODOPS_SERVICE_KEY = Secret("").get().decode("utf-8")
 
 # Sentry config
 _SENTRY_PUBLIC_KEY = "1b43af2fb6d84ba188ecdf0a85ee5800"  # Zemanta One / Eins Demo project

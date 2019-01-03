@@ -8,6 +8,7 @@ from django.db import connections
 
 import dash.models
 import utils.email_helper
+import utils.pagerduty_helper as pgdh
 from etl import helpers
 from utils import converters
 from utils import csv_utils
@@ -17,6 +18,7 @@ logger = logging.getLogger(__name__)
 
 
 class Command(ExceptionCommand):
+    @pgdh.catch_and_report_exception(pgdh.PagerDutyEventType.PRODOPS)
     def handle(self, *args, **options):
         today_utc = pytz.UTC.localize(datetime.datetime.utcnow())
         today = today_utc.astimezone(pytz.timezone(settings.DEFAULT_TIME_ZONE)).replace(tzinfo=None)

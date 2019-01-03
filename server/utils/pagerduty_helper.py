@@ -1,4 +1,6 @@
 import logging
+import traceback
+from functools import wraps
 
 import requests
 from django.conf import settings
@@ -13,8 +15,9 @@ class PagerDutyEventType(ConstantBase):
     ADOPS = "adops"  # DEPRECATED (12/27/16)
     ENGINEERS = "engineers"
     Z1 = "Z1"
+    PRODOPS = "prodops"
 
-    _VALUES = {SYSOPS: "SysOps", ADOPS: "AdOps", ENGINEERS: "Engineers"}
+    _VALUES = {SYSOPS: "SysOps", ADOPS: "AdOps", ENGINEERS: "Engineers", PRODOPS: "ProdOps"}
 
 
 class PagerDutyEventSeverity(ConstantBase):
@@ -38,6 +41,24 @@ def resolve(event_type, incident_key, description, event_severity=None, details=
     )
 
 
+def catch_and_report_exception(event_type, event_severity=None):
+    def decorator(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            try:
+                func(*args, **kwargs)
+            except Exception as ex:
+                func_name = func.__qualname__
+                incident_key = "exc:{}".format(func_name)
+                description = "Exception in function {}\n{}".format(func_name, traceback.format_exc())
+                trigger(event_type, incident_key, description, event_severity=event_severity)
+                raise ex
+
+        return wrapper
+
+    return decorator
+
+
 def _post_event(command, event_type, incident_key, description, event_severity=None, details=None, **kwargs):
     event_severity = event_severity or PagerDutyEventSeverity.CRITICAL
     timeout = kwargs.get("timeout", 60)
@@ -52,6 +73,8 @@ def _post_event(command, event_type, incident_key, description, event_severity=N
         service_key = settings.PAGER_DUTY_ENGINEERS_SERVICE_KEY
     elif event_type == PagerDutyEventType.Z1:
         service_key = settings.PAGER_DUTY_Z1_SERVICE_KEY
+    elif event_type == PagerDutyEventType.PRODOPS:
+        service_key = settings.PAGER_DUTY_PRODOPS_SERVICE_KEY
     else:
         raise AttributeError("Invalid event type")
 
