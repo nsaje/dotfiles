@@ -18,12 +18,11 @@ class RefreshTest(TestCase):
 
     @mock.patch("etl.maintenance.vacuum", mock.Mock())
     @mock.patch("etl.maintenance.analyze", mock.Mock())
-    @mock.patch("etl.spark.get_session")
     @mock.patch("utils.slack.publish")
     @mock.patch("etl.daily_statements.get_effective_spend")
     @mock.patch("etl.daily_statements.reprocess_daily_statements")
     @mock.patch("etl.refresh.generate_job_id", return_value="asd")
-    def test_refresh(self, mock_generate_job_id, mock_reprocess, mock_geteffspend, mock_slack, mock_getspark):
+    def test_refresh(self, mock_generate_job_id, mock_reprocess, mock_geteffspend, mock_slack):
         mock_mat_view = mock.MagicMock()
 
         effective_spend_factors = {
@@ -39,13 +38,7 @@ class RefreshTest(TestCase):
 
         refresh.refresh(datetime.datetime(2016, 5, 10))
 
-        mock_mat_view.assert_called_with(
-            "asd",
-            datetime.date(2016, 5, 10),
-            datetime.date(2016, 5, 13),
-            account_id=None,
-            spark_session=mock_getspark.return_value.__enter__.return_value,
-        )
+        mock_mat_view.assert_called_with("asd", datetime.date(2016, 5, 10), datetime.date(2016, 5, 13), account_id=None)
 
         mock_mat_view().generate.assert_called_with(campaign_factors=effective_spend_factors)
         mock_slack.assert_has_calls(
@@ -66,14 +59,11 @@ class RefreshTest(TestCase):
 
     @mock.patch("etl.maintenance.vacuum", mock.Mock())
     @mock.patch("etl.maintenance.analyze", mock.Mock())
-    @mock.patch("etl.spark.get_session")
     @mock.patch("utils.slack.publish")
     @mock.patch("etl.daily_statements.get_effective_spend")
     @mock.patch("etl.daily_statements.reprocess_daily_statements")
     @mock.patch("etl.refresh.generate_job_id", return_value="asd")
-    def test_refresh_skip_daily_statements(
-        self, mock_generate_job_id, mock_reprocess, mock_geteffspend, mock_slack, mock_getspark
-    ):
+    def test_refresh_skip_daily_statements(self, mock_generate_job_id, mock_reprocess, mock_geteffspend, mock_slack):
         mock_mat_view = mock.MagicMock()
 
         effective_spend_factors = {
@@ -89,13 +79,7 @@ class RefreshTest(TestCase):
 
         refresh.refresh(datetime.datetime(2016, 5, 10), skip_daily_statements=True)
 
-        mock_mat_view.assert_called_with(
-            "asd",
-            datetime.date(2016, 5, 10),
-            datetime.date(2016, 5, 13),
-            account_id=None,
-            spark_session=mock_getspark.return_value.__enter__.return_value,
-        )
+        mock_mat_view.assert_called_with("asd", datetime.date(2016, 5, 10), datetime.date(2016, 5, 13), account_id=None)
 
         mock_mat_view().generate.assert_called_with(campaign_factors=effective_spend_factors)
         mock_slack.assert_has_calls(
@@ -114,17 +98,14 @@ class RefreshTest(TestCase):
         )
         mock_reprocess.assert_not_called()
 
+    @mock.patch("etl.redshift.unload_table")
     @mock.patch("etl.maintenance.vacuum", mock.Mock())
     @mock.patch("etl.maintenance.analyze", mock.Mock())
     @mock.patch("utils.slack.publish", mock.Mock())
-    @mock.patch("etl.spark.get_session")
-    @mock.patch("etl.redshift.unload_table")
     @mock.patch("etl.daily_statements.get_effective_spend")
     @mock.patch("etl.daily_statements.reprocess_daily_statements")
     @mock.patch("etl.refresh.generate_job_id", return_value="asd")
-    def test_refresh_dump_and_abort(
-        self, mock_generate_job_id, mock_reprocess, mock_geteffspend, mock_unload, mock_getspark
-    ):
+    def test_refresh_dump_and_abort(self, mock_generate_job_id, mock_reprocess, mock_geteffspend, mock_unload):
         mock_mat_view1 = mock.MagicMock()
         mock_mat_view1.TABLE_NAME = "abort_this"
         mock_mat_view2 = mock.MagicMock()
@@ -144,11 +125,7 @@ class RefreshTest(TestCase):
             refresh.refresh(datetime.datetime(2016, 5, 10), dump_and_abort="abort_this")
 
         mock_mat_view1.assert_called_with(
-            "asd",
-            datetime.date(2016, 5, 10),
-            datetime.date(2016, 5, 13),
-            account_id=None,
-            spark_session=mock_getspark.return_value.__enter__.return_value,
+            "asd", datetime.date(2016, 5, 10), datetime.date(2016, 5, 13), account_id=None
         )
         mock_mat_view2.assert_not_called()
 
@@ -168,12 +145,11 @@ class RefreshByAccountTest(TestCase):
 
     @mock.patch("etl.maintenance.vacuum", mock.Mock())
     @mock.patch("etl.maintenance.analyze", mock.Mock())
-    @mock.patch("etl.spark.get_session")
     @mock.patch("utils.slack.publish")
     @mock.patch("etl.daily_statements.get_effective_spend")
     @mock.patch("etl.daily_statements.reprocess_daily_statements")
     @mock.patch("etl.refresh.generate_job_id", return_value="asd")
-    def test_refresh(self, mock_generate_job_id, mock_reprocess, mock_geteffspend, mock_slack, mock_getspark):
+    def test_refresh(self, mock_generate_job_id, mock_reprocess, mock_geteffspend, mock_slack):
         mock_mat_view = mock.MagicMock()
 
         effective_spend_factors = {
@@ -189,13 +165,7 @@ class RefreshByAccountTest(TestCase):
 
         refresh.refresh(datetime.datetime(2016, 5, 10), account_id=1)
 
-        mock_mat_view.assert_called_with(
-            "asd",
-            datetime.date(2016, 5, 10),
-            datetime.date(2016, 5, 13),
-            account_id=1,
-            spark_session=mock_getspark.return_value.__enter__.return_value,
-        )
+        mock_mat_view.assert_called_with("asd", datetime.date(2016, 5, 10), datetime.date(2016, 5, 13), account_id=1)
 
         mock_mat_view().generate.assert_called_with(campaign_factors=effective_spend_factors)
         mock_slack.assert_has_calls(
@@ -214,7 +184,6 @@ class RefreshByAccountTest(TestCase):
         )
 
     @mock.patch("utils.slack.publish", mock.Mock())
-    @mock.patch("etl.spark.get_session", mock.MagicMock())
     def test_refresh_account_validate(self):
         with self.assertRaises(dash.models.Account.DoesNotExist):
             refresh.refresh(datetime.datetime(2016, 5, 10), 1000)
