@@ -27,6 +27,7 @@ ACCOUNT_EXCEPTIONS = defaultdict(
             950: 20000,  # MatchesFashion
         },
         "PublisherGroup": {305: 200000},  # OEN
+        "BudgetLineItem": {305: 1000},  # OEN
     },
 )
 
