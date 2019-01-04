@@ -37,6 +37,7 @@ repos:
       entry: prettier --config ./client/.prettierrc.js --write
       language: node
       files: \.(js|ts|less|html)$
+      exclude: ^server/
 - repo: https://github.com/pre-commit/mirrors-eslint
   sha: master
   hooks:

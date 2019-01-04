@@ -20,6 +20,7 @@ from rest_framework.views import APIView
 
 import utils.rest_common.authentication
 from utils import email_helper
+from utils import recaptcha_helper
 from zemauth import devices
 from zemauth import forms
 from zemauth.models import User
@@ -116,7 +117,7 @@ def password_reset(request, template_name=None):
     if request.method == "POST":
         form = forms.PasswordResetForm(request.POST)
 
-        if form.is_valid():
+        if form.is_valid() and recaptcha_helper.check_recaptcha(request):
             success = True
 
             try:

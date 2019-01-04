@@ -375,3 +375,12 @@ BIGQUERY_CREDENTIALS = {
     "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
     "client_x509_cert_url": "",
 }
+
+RECAPTCHA_URL = "https://www.google.com/recaptcha/api/siteverify"
+RECAPTCHA_SECRET_KEY = (
+    Secret(
+        "kms:region=us-east-1:AQECAHjdfiP9DHF52gr8mpTmZ/ZwRu2qZbRw8dV0ohsw+OhZewAAAIcwgYQGCSqGSIb3DQEHBqB3MHUCAQAwcAYJKoZIhvcNAQcBMB4GCWCGSAFlAwQBLjARBAyoGhza9A0lwj48YD8CARCAQ2kcX6pr9CT9gWlQ61QLmQh7G08ogWbL519QGLI7PTl5mnIl4e0rYEhK6wNBiaDlIGApXbirvKnriYXCNPRidds4FZk="
+    )
+    .get()
+    .decode("utf-8")
+)  # noqa
