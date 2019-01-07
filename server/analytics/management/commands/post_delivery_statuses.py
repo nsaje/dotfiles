@@ -25,7 +25,7 @@ class Command(utils.command_helpers.ExceptionCommand):
     def handle(*args, **kwargs):
         reports = analytics.delivery.generate_delivery_reports(skip_ok=True, generate_csv=False)
 
-        for account, camp_id, url, cs, spend, cap, issue in reports["campaign"]:
+        for account, camp_id, url, cs, spend, cap, issue, monitoring_paused in reports["campaign"]:
             influx.gauge(
                 "campaign_delivery",
                 int(spend * 100 / cap) if cap else 0,
@@ -35,9 +35,10 @@ class Command(utils.command_helpers.ExceptionCommand):
                 cs=cs.get_full_name().encode("ascii", errors="ignore").decode() if cs else "None",
                 cap=cap_to_category(cap),
                 retentionPolicy="3days",
+                monitoringPaused=monitoring_paused,
             )
 
-        for account, adgroup_id, url, cs, end_date, spend, cap, issue in reports["ad_group"]:
+        for account, adgroup_id, url, cs, end_date, spend, cap, issue, monitoring_paused in reports["ad_group"]:
             influx.gauge(
                 "adgroup_delivery",
                 int(spend * 100 / cap) if cap else 0,
@@ -47,4 +48,5 @@ class Command(utils.command_helpers.ExceptionCommand):
                 cs=cs.get_full_name().encode("ascii", errors="ignore").decode() if cs else "None",
                 cap=cap_to_category(cap),
                 retentionPolicy="3days",
+                monitoringPaused=monitoring_paused,
             )

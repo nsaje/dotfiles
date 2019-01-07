@@ -218,23 +218,24 @@ def _prepare_campaign_data(running_campaigns, campaign_stats, prev_campaign_stat
     campaign_data = []
     for campaign in running_campaigns:
         delivery = check_campaign_delivery(
-            campaign, campaign_stats.get(campaign.pk, {}), prev_campaign_stats.get(campaign.pk, {})
+            campaign, campaign_stats.get(campaign.id, {}), prev_campaign_stats.get(campaign.id, {})
         )
         if skip_ok and delivery == "ok":
             continue
         cap = Decimal(dash.infobox_helpers.calculate_daily_campaign_cap(campaign))
-        spend = campaign_stats.get(campaign.pk, {}).get("media", Decimal(0)) + campaign_stats.get(campaign.pk, {}).get(
+        spend = campaign_stats.get(campaign.id, {}).get("media", Decimal(0)) + campaign_stats.get(campaign.id, {}).get(
             "data", Decimal(0)
         )
         campaign_data.append(
             (
                 "{}".format(campaign.account.get_long_name()),
-                campaign.pk,
-                CAMPAIGN_URL.format(campaign.pk),
+                campaign.id,
+                CAMPAIGN_URL.format(campaign.id),
                 campaign.account.settings.default_cs_representative,
                 spend,
                 cap,
                 delivery,
+                campaign.get_all_custom_flags().get("z1_stop_delivery_monitoring", False),
             )
         )
     return campaign_data
@@ -253,23 +254,24 @@ def _prepare_ad_group_data(running_ad_groups, ad_group_stats, skip_ok=True):
     }
 
     for ad_group in running_ad_groups:
-        delivery = check_ad_group_delivery(ad_group, ad_group_count_content_ad_sources.get(ad_group.pk, 0))
+        delivery = check_ad_group_delivery(ad_group, ad_group_count_content_ad_sources.get(ad_group.id, 0))
         if skip_ok and delivery == "ok":
             continue
         cap = Decimal(dash.infobox_helpers.calculate_daily_ad_group_cap(ad_group))
-        spend = ad_group_stats.get(ad_group.pk, {}).get("media", Decimal(0)) + ad_group_stats.get(ad_group.pk, {}).get(
+        spend = ad_group_stats.get(ad_group.id, {}).get("media", Decimal(0)) + ad_group_stats.get(ad_group.id, {}).get(
             "data", Decimal(0)
         )
         ad_group_data.append(
             (
                 "{}".format(ad_group.campaign.account.get_long_name()),
-                ad_group.pk,
-                AD_GROUP_URL.format(ad_group.pk),
+                ad_group.id,
+                AD_GROUP_URL.format(ad_group.id),
                 ad_group.campaign.account.settings.default_cs_representative,
                 ad_group.settings.end_date or "none",
                 spend,
                 cap,
                 delivery,
+                ad_group.get_all_custom_flags().get("z1_stop_delivery_monitoring", False),
             )
         )
     return ad_group_data
