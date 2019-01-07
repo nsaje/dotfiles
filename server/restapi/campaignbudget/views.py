@@ -61,6 +61,8 @@ class CampaignBudgetViewSet(RESTAPIBaseViewSet):
             start_date=new_budget_data.get("start_date"),
             end_date=new_budget_data.get("end_date"),
             amount=new_budget_data.get("amount"),
+            margin=new_budget_data.get("margin"),
+            comment=new_budget_data.get("comment"),
         )
         return self.response_ok(serializers.CampaignBudgetSerializer(new_budget).data, status=201)
 

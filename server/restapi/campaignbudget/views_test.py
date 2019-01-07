@@ -16,6 +16,8 @@ class CampaignBudgetsTest(RESTAPITest):
         id=1,
         creditId=1,
         amount="500.0000",
+        margin="0.15",
+        comment="mycomment",
         startDate=datetime.date.today(),
         endDate=datetime.date.today(),
         state=constants.BudgetLineItemState.ACTIVE,
@@ -26,6 +28,8 @@ class CampaignBudgetsTest(RESTAPITest):
             "id": str(id),
             "creditId": str(creditId),
             "amount": str(amount),
+            "margin": str(margin),
+            "comment": str(comment),
             "startDate": startDate,
             "endDate": endDate,
             "state": constants.BudgetLineItemState.get_name(state),
@@ -47,6 +51,8 @@ class CampaignBudgetsTest(RESTAPITest):
             state=budget_db.state(),
             spend=spend,
             available=allocated,
+            margin=budget_db.margin,
+            comment=budget_db.comment,
         )
         self.assertEqual(expected, budget)
 

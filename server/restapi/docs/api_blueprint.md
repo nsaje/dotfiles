@@ -524,11 +524,15 @@ to spend a portion of the credit.
 A campaign needs at least one active budget associated with it before its
 Ad Groups can be started.
 
+More info available [here](http://help.zemanta.com/article/show/36733-budget-management).
+
 Property  | Type            | Description                                      | Create   | Update
 ----------|-----------------|--------------------------------------------------|----------|-----------|
 id        | string          | the budget'id                                    | N/A      | read only
 creditId  | string          | id of the credit this budget is part of          | required | read only
 amount    | [money](#money) | total amount allocated by the budget             | required | optional
+margin    | string (decimal)| margin percentage fraction (e.g. 0.1)            | optional | optional
+comment   | string          | free-form text field                             | optional | optional
 startDate | date            | budget start date, must be in the future         | required | optional
 endDate   | date            | budget end date, must end before the credit ends | required | optional
 state     | string          | budget state, ACTIVE / PENDING / INACTIVE / DEPLETED | N/A  | read only
@@ -548,6 +552,8 @@ available | [money](#money) | the amount of the budget still available         |
                     "id": "1910",
                     "creditId": "861",
                     "amount": "400",
+                    "margin": "0.1",
+                    "comment": "my budget",
                     "startDate": "2016-01-01",
                     "endDate": "2016-01-31",
                     "state": "ACTIVE",
@@ -567,6 +573,8 @@ available | [money](#money) | the amount of the budget still available         |
         {
             "creditId": "861",
             "amount": "600",
+            "margin": "0.1",
+            "comment": "my budget",
             "startDate": "2016-01-01",
             "endDate": "2016-01-31"
         }
@@ -577,6 +585,8 @@ available | [money](#money) | the amount of the budget still available         |
             "data": {
                 "id": "1911",
                 "amount": "600",
+                "margin": "0.1",
+                "comment": "my budget",
                 "startDate": "2016-01-01",
                 "endDate": "2016-01-31",
                 "state": "ACTIVE",
@@ -599,6 +609,8 @@ available | [money](#money) | the amount of the budget still available         |
                 "id": "1910",
                 "creditId": "861",
                 "amount": "400",
+                "margin": "0.1",
+                "comment": "my budget",
                 "startDate": "2016-01-01",
                 "endDate": "2016-01-31",
                 "state": "ACTIVE",
@@ -627,6 +639,8 @@ available | [money](#money) | the amount of the budget still available         |
                 "id": "1911",
                 "creditId": "861",
                 "amount": "800",
+                "margin": "0.1",
+                "comment": "my budget",
                 "startDate": "2016-01-01",
                 "endDate": "2016-01-31",
                 "state": "ACTIVE",
