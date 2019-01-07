@@ -54,6 +54,7 @@ class BudgetLineItemManager(core.common.QuerySetManager):
                 campaign_id=campaign.id,
                 campaign_name=campaign.get_long_name(),
                 amount=item.amount,
+                margin=item.margin,
                 currency_symbol=core.features.multicurrency.get_currency_symbol(item.credit.currency),
                 end_date=item.end_date,
             ),

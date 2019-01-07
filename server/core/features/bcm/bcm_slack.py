@@ -13,7 +13,7 @@ SLACK_NEW_CREDIT_MSG = "New credit #{credit_id} added on account <{url}|{account
 SLACK_NEW_CREDIT_WITHOUT_CONTRACT_MSG = "New credit #{credit_id} added on account <{url}|{account_name}> with amount {currency_symbol}{amount} and end date {end_date} *has been created without contract ID or contract Number!* {comment}"
 SLACK_NEW_AGENCY_CREDIT_MSG = "New agency credit #{credit_id} added to agency {agency} with amount {currency_symbol}{amount} and end date {end_date}."
 SLACK_UPDATED_CREDIT_MSG = "Credit #{credit_id} on account <{url}|{account_name}> updated: {history}"
-SLACK_NEW_BUDGET_MSG = "New budget #{budget_id} added on campaign <{url}|{campaign_name}> with amount {currency_symbol}{amount} and end date {end_date}."
+SLACK_NEW_BUDGET_MSG = "New budget #{budget_id} added on campaign <{url}|{campaign_name}> with amount {currency_symbol}{amount} (including {margin}% of margin) and end date {end_date}."
 SLACK_UPDATED_BUDGET_MSG = "Budget #{budget_id} on campaign <{url}|{campaign_name}> updated: {history}"
 
 
