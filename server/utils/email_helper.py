@@ -475,24 +475,6 @@ def send_daily_management_report_email():
     )
 
 
-def send_weekly_inventory_report_email():
-    send_internal_email(
-        **params_from_template(
-            dash.constants.EmailTemplateType.WEEKLY_INVENTORY_REPORT,
-            report_url=analytics.statements.generate_csv(
-                "inventory-report/valid-{}.csv".format(str(dates_helper.local_today())),
-                analytics.statements.inventory_report_csv,
-                blacklisted=False,
-            ),
-            bl_report_url=analytics.statements.generate_csv(
-                "inventory-report/blacklisted-{}.csv".format(str(dates_helper.local_today())),
-                analytics.statements.inventory_report_csv,
-                blacklisted=True,
-            ),
-        )
-    )
-
-
 def send_new_user_device_email(request, browser, os, city, country):
     send_official_email(
         agency_or_user=request.user,
