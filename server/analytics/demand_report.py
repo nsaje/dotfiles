@@ -13,11 +13,14 @@ from core.features import bcm
 from dash import constants
 from redshiftapi import db
 from utils import bigquery_helper
+from utils import queryset_helper
 from zemauth.models import User
 
 DATASET_NAME = "ba"
 TABLE_NAME = "demand"
 BIGQUERY_TIMEOUT = 300
+
+AD_GROUP_CHUNK_SIZE = 2000
 
 logger = logging.getLogger(__name__)
 
@@ -30,14 +33,8 @@ def create_report():
     yesterday = datetime.date.today() - datetime.timedelta(days=1)
 
     ad_group_spend_dict = {e["ad_group_id"]: e for e in _get_ad_group_spend()}
-    ad_group_dict = _get_ad_group_data_dict(ad_group_spend_dict.keys())
-    campaign_data = _get_campaign_data(ad_group_dict.keys())
-    budget_data_dict = _get_budget_data_dict(ad_group_dict.keys())
-    user_email_dict = _get_user_email_dict(campaign_data)
 
-    output_stream = _generate_bq_csv_file(
-        campaign_data, ad_group_dict, budget_data_dict, ad_group_spend_dict, user_email_dict, yesterday
-    )
+    output_stream = _generate_bq_csv_file(ad_group_spend_dict, yesterday)
     _update_big_query(output_stream, yesterday)
 
     logger.info("Demand report done.")
@@ -60,7 +57,7 @@ def _delete_big_query_records(date):
     bigquery_helper.query(delete_query, timeout=BIGQUERY_TIMEOUT, use_legacy_sql=False)
 
 
-def _generate_bq_csv_file(campaign_data, ad_group_dict, budget_data_dict, ad_group_spend_dict, user_email_dict, date):
+def _generate_bq_csv_file(ad_group_spend_dict, date):
     logger.info("Generating CSV file.")
     output_stream = io.BytesIO()
 
@@ -69,33 +66,63 @@ def _generate_bq_csv_file(campaign_data, ad_group_dict, budget_data_dict, ad_gro
     )
     csv_writer.writeheader()
 
-    for row in _csv_rows_generator(
-        campaign_data, ad_group_dict, budget_data_dict, ad_group_spend_dict, user_email_dict, date
-    ):
+    for row in _csv_rows_generator(ad_group_spend_dict, date):
         csv_writer.writerow(row)
 
     output_stream.seek(0)
+    logger.info("Done generating CSV file.")
     return output_stream
 
 
-def _csv_rows_generator(campaign_data, ad_group_dict, budget_data_dict, ad_group_spend_dict, user_email_dict, date):
+def _csv_rows_generator(ad_group_spend_dict, date):
     date_string = date.strftime("%Y-%m-%d")
     source_id_map = _source_id_map(constants.SourceType.OUTBRAIN, constants.SourceType.YAHOO)
 
-    for campaign_data_row in campaign_data:
-        campaign_dict = ad_group_dict[campaign_data_row["campaign_id"]]
+    missing_ad_group_ids = set(ad_group_spend_dict.keys())
 
-        if not campaign_dict:
-            raise Exception("No AdGroups for campaign_id %s!" % campaign_data_row["campaign_id"])
+    for row in _ad_group_rows_generator(_get_ad_group_data(), ad_group_spend_dict, source_id_map):
+        row["date"] = date_string
+        missing_ad_group_ids.discard(row["adgroup_id"])
+        yield row
+
+    for row in _ad_group_rows_generator(
+        _get_ad_group_data(ad_group_ids=missing_ad_group_ids), ad_group_spend_dict, source_id_map
+    ):
+        row["date"] = date_string
+        yield row
+
+
+def _ad_group_rows_generator(ad_group_query_set, ad_group_spend_dict, source_id_map):
+    chunk_id = 0
+
+    for ad_group_data_chunk in queryset_helper.chunk_iterator(ad_group_query_set, chunk_size=AD_GROUP_CHUNK_SIZE):
+        chunk_id += 1
+        logger.info("Processing ad group chunk #%s", chunk_id)
+
+        campaign_ids = set(e["campaign_id"] for e in ad_group_data_chunk)
+
+        campaign_data_dict = {e["campaign_id"]: e for e in _get_campaign_data(campaign_ids)}
+
+        account_data_dict = {e["campaign_id"]: e for e in _get_account_data(campaign_ids)}
+
+        user_email_dict = _get_user_email_dict(account_data_dict.values())
+
+        ad_group_ids = set(e["adgroup_id"] for e in ad_group_data_chunk)
+
+        ad_group_source_data_dict = {}
+        for ad_group_source_row in _get_ad_group_source_data(ad_group_ids):
+            ad_group_source_list = ad_group_source_data_dict.setdefault(ad_group_source_row["adgroup_id"], [])
+            ad_group_source_list.append(ad_group_source_row)
 
         ad_group_stats_dict = _calculate_ad_group_stats(
-            budget_data_dict, campaign_data_row, campaign_dict, ad_group_spend_dict, source_id_map
+            ad_group_data_chunk, campaign_data_dict, ad_group_source_data_dict, ad_group_spend_dict, source_id_map
         )
 
-        for ad_group_id in campaign_dict:
-            row = campaign_dict[ad_group_id][0].copy()
-            row.update(campaign_data_row)
-            row.update(ad_group_stats_dict[ad_group_id])
+        for ad_group_data_row in ad_group_data_chunk:
+            row = ad_group_data_row.copy()
+            row.update(campaign_data_dict[row["campaign_id"]])
+            row.update(account_data_dict[row["campaign_id"]])
+            row.update(ad_group_stats_dict[row["adgroup_id"]])
 
             target_regions, geo_targeting_types = _resolve_geo_targeting(row)
             row["target_regions"] = target_regions
@@ -107,36 +134,19 @@ def _csv_rows_generator(campaign_data, ad_group_dict, budget_data_dict, ad_group
                 else "N/A"
             )
             row["type"] = constants.CampaignType.get_name(row["type"])
-            row["date"] = date_string
-            row["cs_email"] = user_email_dict.get(campaign_data_row["cs_representative_id"], "N/A")
-            row["sales_email"] = user_email_dict.get(campaign_data_row["sales_representative_id"], "N/A")
+            row["cs_email"] = user_email_dict.get(row["cs_representative_id"], "N/A")
+            row["sales_email"] = user_email_dict.get(row["sales_representative_id"], "N/A")
 
             _normalize_row(row)
             yield row
-
-
-def _get_ad_group_data_dict(spend_ad_group_ids):
-    ad_group_data = _get_ad_group_data()
-
-    missing_ad_group_ids = set(spend_ad_group_ids) - set(row["adgroup_id"] for row in ad_group_data)
-    if missing_ad_group_ids:
-        ad_group_data.extend(_get_ad_group_data(ad_group_ids=missing_ad_group_ids))
-
-    ad_group_dict = {}
-    for row in ad_group_data:
-        campaign_dict = ad_group_dict.setdefault(row["campaign_id"], {})
-        ad_group_list = campaign_dict.setdefault(row["adgroup_id"], [])
-        ad_group_list.append(row)
-
-    return ad_group_dict
 
 
 def _get_budget_data_dict(campaign_ids):
     budget_data = _get_budget_data(campaign_ids)
     budget_dict = {}
     for row in budget_data:
-        campaing_list = budget_dict.setdefault(row["campaign_id"], [])
-        campaing_list.append(row)
+        campaign_list = budget_dict.setdefault(row["campaign_id"], [])
+        campaign_list.append(row)
 
     return budget_dict
 
@@ -153,15 +163,27 @@ def _aggregate_stats(ad_group_spend_dict, ad_group_id):
     return impressions, clicks, spend
 
 
-def _calculate_ad_group_stats(budget_data_dict, campaign_data_row, campaign_dict, ad_group_spend_dict, source_id_map):
-    if not campaign_dict:
-        return {}
+def _calculate_ad_group_stats(
+    ad_group_data_chunk, campaign_data_dict, ad_group_source_data_dict, ad_group_spend_dict, source_id_map
+):
+    budget_data_dict = _get_budget_data_dict(set(e["campaign_id"] for e in ad_group_data_chunk))
 
     ad_group_dict = {}
+    campaign_adgroup_map = {}
 
-    for ad_group_id in campaign_dict:
+    for ad_group_data_row in ad_group_data_chunk:
+        ad_group_id = ad_group_data_row["adgroup_id"]
+
+        ad_group_id_set = campaign_adgroup_map.setdefault(ad_group_data_row["campaign_id"], set())
+        ad_group_id_set.add(ad_group_id)
+
         impressions, clicks, spend = _aggregate_stats(ad_group_spend_dict, ad_group_id)
-        budget, cpc = _calculate_budget_and_cpc(campaign_data_row, campaign_dict[ad_group_id], source_id_map)
+        budget, cpc = _calculate_budget_and_cpc(
+            campaign_data_dict[ad_group_data_row["campaign_id"]],
+            ad_group_data_row,
+            ad_group_source_data_dict[ad_group_id],
+            source_id_map,
+        )
         ad_group_dict[ad_group_id] = {
             "impressions": impressions,
             "clicks": clicks,
@@ -170,43 +192,49 @@ def _calculate_ad_group_stats(budget_data_dict, campaign_data_row, campaign_dict
             "calculated_cpc": cpc,
         }
 
-    campaign_id = campaign_dict[ad_group_id][0]["campaign_id"]
+    for campaign_id, ad_group_id_set in campaign_adgroup_map.items():
+        if campaign_id not in budget_data_dict:
+            logger.warning("No budget data for campaign id %s", campaign_id)
+            continue
 
-    if campaign_id not in budget_data_dict:
-        logger.warning("No budget data for campaign id %s", campaign_id)
-        return ad_group_dict
+        budget_data = budget_data_dict[campaign_id]
 
-    budget_data = budget_data_dict[campaign_id]
+        full_budget_yesterday = Decimal(sum(item["amount"] for item in budget_data))
+        spend_until_yesterday = Decimal(sum(item["spend_data_etfm_total"] for item in budget_data) / 1000000000)
+        remaining_budget_yesterday = full_budget_yesterday - spend_until_yesterday
 
-    full_budget_yesterday = Decimal(sum(item["amount"] for item in budget_data))
-    spend_until_yesterday = Decimal(sum(item["spend_data_etfm_total"] for item in budget_data) / 1000000000)
-    remaining_budget_yesterday = full_budget_yesterday - spend_until_yesterday
+        configured_budget = Decimal(
+            sum(
+                item["calculated_daily_budget"]
+                for ad_group_id, item in ad_group_dict.items()
+                if ad_group_id in campaign_adgroup_map[campaign_id]
+            )
+        )
 
-    configured_budget = Decimal(sum(item["calculated_daily_budget"] for item in ad_group_dict.values()))
+        if remaining_budget_yesterday < configured_budget:
+            if remaining_budget_yesterday > 0:
+                # distribute remaining budget according to AdGroup daily budgets
+                for ad_group_id in ad_group_id_set:
+                    ad_group_remaining_budget = (
+                        remaining_budget_yesterday
+                        * ad_group_dict[ad_group_id]["calculated_daily_budget"]
+                        / configured_budget
+                    )
+                    ad_group_dict[ad_group_id]["calculated_daily_budget"] = (
+                        Decimal(ad_group_dict[ad_group_id]["spend"]) + ad_group_remaining_budget
+                    )
 
-    if remaining_budget_yesterday < configured_budget:
-        if remaining_budget_yesterday > 0:
-            # distribute remaining budget according to AdGroup daily budgets
-            for ad_group_id in ad_group_dict:
-                ad_group_remaining_budget = (
-                    remaining_budget_yesterday
-                    * ad_group_dict[ad_group_id]["calculated_daily_budget"]
-                    / configured_budget
-                )
-                ad_group_dict[ad_group_id]["calculated_daily_budget"] = (
-                    Decimal(ad_group_dict[ad_group_id]["spend"]) + ad_group_remaining_budget
-                )
-
-        else:
-            # use actual spend as AdGroup daily budgets
-            for ad_group_id in ad_group_dict:
-                ad_group_dict[ad_group_id]["calculated_daily_budget"] = Decimal(ad_group_dict[ad_group_id]["spend"])
+            else:
+                # use actual spend as AdGroup daily budgets
+                for ad_group_id in ad_group_id_set:
+                    ad_group_dict[ad_group_id]["calculated_daily_budget"] = Decimal(ad_group_dict[ad_group_id]["spend"])
 
     return ad_group_dict
 
 
-def _calculate_budget_and_cpc(campaign_data_row, ad_group_source_rows, source_id_map):
+def _calculate_budget_and_cpc(campaign_data_row, ad_group_data_row, ad_group_source_rows, source_id_map):
     adgroup_row = campaign_data_row.copy()
+    adgroup_row.update(ad_group_data_row)
     adgroup_row.update(ad_group_source_rows[0])
 
     if adgroup_row["autopilot"] or adgroup_row["autopilot_state"] in (
@@ -443,100 +471,49 @@ def _is_number(input_arg):
         return False
 
 
-def _get_user_email_dict(campaign_data):
+def _get_user_email_dict(account_data):
     user_ids = set()
-    for campaign_row in campaign_data:
+    for account_row in account_data:
         for field in ("sales_representative_id", "cs_representative_id"):
-            uid = campaign_row[field]
+            uid = account_row[field]
             if uid:
                 user_ids.add(uid)
 
-    logger.info("Querying User data.")
-    rows = dict(User.objects.filter(id__in=user_ids).values_list("id", "email"))
-    logger.info("Got %s User data rows.", len(rows))
-    return rows
+    return dict(User.objects.filter(id__in=user_ids).values_list("id", "email"))
 
 
-def _get_ad_group_data(ad_group_ids=None, date=None):
-    if date is None:
-        date = datetime.date.today() - datetime.timedelta(days=1)
-
+def _get_account_data(campaign_ids):
     field_mapping = {
-        "adgroup_id": F("ad_group__id"),
-        "campaign_id": F("ad_group__campaign_id"),
-        "adgroup_name": F("ad_group__name"),
-        "adgroup_created_dt": F("ad_group__created_dt"),
-        "adgroup_default_blacklist_id": F("ad_group__default_blacklist_id"),
-        "start_date": F("ad_group__settings__start_date"),
-        "end_date": F("ad_group__settings__end_date"),
-        "cpc_cc": F("ad_group__settings__cpc_cc"),
-        "target_devices": F("ad_group__settings__target_devices"),
-        "target_regions": F("ad_group__settings__target_regions"),
-        "autopilot_daily_budget": F("ad_group__settings__autopilot_daily_budget"),
-        "autopilot_state": F("ad_group__settings__autopilot_state"),
-        "retargeting_ad_groups": F("ad_group__settings__retargeting_ad_groups"),
-        "exclusion_retargeting_ad_groups": F("ad_group__settings__exclusion_retargeting_ad_groups"),
-        "bluekai_targeting": F("ad_group__settings__bluekai_targeting"),
-        "exclusion_interest_targeting": F("ad_group__settings__exclusion_interest_targeting"),
-        "interest_targeting": F("ad_group__settings__interest_targeting"),
-        "audience_targeting": F("ad_group__settings__audience_targeting"),
-        "exclusion_audience_targeting": F("ad_group__settings__exclusion_audience_targeting"),
-        "b1_sources_group_daily_budget": F("ad_group__settings__b1_sources_group_daily_budget"),
-        "b1_sources_group_enabled": F("ad_group__settings__b1_sources_group_enabled"),
-        "b1_sources_group_state": F("ad_group__settings__b1_sources_group_state"),
-        "dayparting": F("ad_group__settings__dayparting"),
-        "adgroupsettings_blacklist_publisher_groups": F("ad_group__settings__blacklist_publisher_groups"),
-        "adgroupsettings_whitelist_publisher_groups": F("ad_group__settings__whitelist_publisher_groups"),
-        "b1_sources_group_cpc_cc": F("ad_group__settings__b1_sources_group_cpc_cc"),
-        "exclusion_target_regions": F("ad_group__settings__exclusion_target_regions"),
-        "target_os": F("ad_group__settings__target_os"),
-        "target_placements": F("ad_group__settings__target_placements"),
-        "delivery_type": F("ad_group__settings__delivery_type"),
-        "click_capping_daily_ad_group_max_clicks": F("ad_group__settings__click_capping_daily_ad_group_max_clicks"),
-        "b1_sources_group_cpm": F("ad_group__settings__b1_sources_group_cpm"),
-        "adgroupsettings_frequency_capping": F("ad_group__settings__frequency_capping"),
-        "adgroupsource_source_id": F("source_id"),
-        "adgroupsourcesettings_cpc_cc": F("settings__cpc_cc"),
-        "adgroupsourcesettings_daily_budget_cc": F("settings__daily_budget_cc"),
+        "campaign_id": F("campaign__id"),
+        "agency_name": F("agency__name"),
+        "agency_created_dt": F("agency__created_dt"),
+        "sales_representative_id": F("agency__sales_representative_id"),
+        "cs_representative_id": F("agency__cs_representative_id"),
+        "whitelabel": F("agency__whitelabel"),
+        "agency_default_blacklist_id": F("agency__default_blacklist_id"),
+        "whitelist_publisher_groups": F("agency__settings__whitelist_publisher_groups"),
+        "blacklist_publisher_groups": F("agency__settings__blacklist_publisher_groups"),
+        "account_name": F("name"),
+        "account_created_dt": F("created_dt"),
+        "account_default_blacklist_id": F("default_blacklist_id"),
+        "account_type": F("settings__account_type"),
+        "accountsettings_blacklist_publisher_groups": F("settings__blacklist_publisher_groups"),
+        "accountsettings_whitelist_publisher_groups": F("settings__whitelist_publisher_groups"),
+        "auto_add_new_sources": F("settings__auto_add_new_sources"),
+        "frequency_capping": F("settings__frequency_capping"),
     }
+    output_values = list(field_mapping.keys()) + ["agency_id", "currency"]
 
-    if ad_group_ids is None:
-        qs = models.AdGroupSource.objects.all().filter_running(date=date)
-    else:
-        qs = models.AdGroupSource.objects.filter(
-            ad_group__id__in=ad_group_ids, settings__state=constants.AdGroupSourceSettingsState.ACTIVE
-        )
-
-    logger.info("Querying AdGroupSource data.")
-    rows = list(
-        qs.select_related("ad_group", "ad_group__settings", "settings")
+    return (
+        models.Account.objects.filter(campaign__id__in=campaign_ids)
+        .select_related("agency", "agency__settings", "settings")
         .annotate(**field_mapping)
-        .values(*field_mapping.keys())
+        .values(*output_values)
     )
-    logger.info("Got %s AdGroupSource data rows.", len(rows))
-    return rows
 
 
 def _get_campaign_data(campaign_ids):
     field_mapping = {
-        "agency_id": F("account__agency__id"),
-        "agency_name": F("account__agency__name"),
-        "agency_created_dt": F("account__agency__created_dt"),
-        "sales_representative_id": F("account__agency__sales_representative_id"),
-        "cs_representative_id": F("account__agency__cs_representative_id"),
-        "whitelabel": F("account__agency__whitelabel"),
-        "agency_default_blacklist_id": F("account__agency__default_blacklist_id"),
-        "whitelist_publisher_groups": F("account__agency__settings__whitelist_publisher_groups"),
-        "blacklist_publisher_groups": F("account__agency__settings__blacklist_publisher_groups"),
-        "account_name": F("account__name"),
-        "account_created_dt": F("account__created_dt"),
-        "account_default_blacklist_id": F("account__default_blacklist_id"),
-        "currency": F("account__currency"),
-        "account_type": F("account__settings__account_type"),
-        "accountsettings_blacklist_publisher_groups": F("account__settings__blacklist_publisher_groups"),
-        "accountsettings_whitelist_publisher_groups": F("account__settings__whitelist_publisher_groups"),
-        "auto_add_new_sources": F("account__settings__auto_add_new_sources"),
-        "frequency_capping": F("account__settings__frequency_capping"),
         "campaign_id": F("id"),
         "campaign_name": F("name"),
         "campaign_created_dt": F("created_dt"),
@@ -554,29 +531,93 @@ def _get_campaign_data(campaign_ids):
     }
     output_values = list(field_mapping.keys()) + ["account_id", "modified_by_id", "type", "real_time_campaign_stop"]
 
-    logger.info("Querying Campaign data.")
-    rows = list(
+    return (
         models.Campaign.objects.filter(id__in=campaign_ids)
-        .select_related("account__agency", "account__agency__settings", "account", "account__settings", "settings")
+        .select_related("settings")
         .annotate(**field_mapping)
         .values(*output_values)
     )
-    logger.info("Got %s Campaign data rows.", len(rows))
-    return rows
 
 
 def _get_budget_data(campaign_ids, date=None):
     if date is None:
         date = datetime.date.today() - datetime.timedelta(days=1)
 
-    logger.info("Querying budget data.")
-    rows = list(
+    return (
         bcm.BudgetLineItem.objects.filter(statements__date__lte=date, campaign_id__in=campaign_ids)
         .annotate_spend_data()
         .values("id", "amount", "campaign_id", "spend_data_etfm_total")
     )
-    logger.info("Got %s budget data rows.", len(rows))
-    return rows
+
+
+def _get_ad_group_data(ad_group_ids=None, date=None):
+    if date is None:
+        date = datetime.date.today() - datetime.timedelta(days=1)
+
+    field_mapping = {
+        "adgroup_id": F("id"),
+        "adgroup_name": F("name"),
+        "adgroup_created_dt": F("created_dt"),
+        "adgroup_default_blacklist_id": F("default_blacklist_id"),
+        "start_date": F("settings__start_date"),
+        "end_date": F("settings__end_date"),
+        "cpc_cc": F("settings__cpc_cc"),
+        "target_devices": F("settings__target_devices"),
+        "target_regions": F("settings__target_regions"),
+        "autopilot_daily_budget": F("settings__autopilot_daily_budget"),
+        "autopilot_state": F("settings__autopilot_state"),
+        "retargeting_ad_groups": F("settings__retargeting_ad_groups"),
+        "exclusion_retargeting_ad_groups": F("settings__exclusion_retargeting_ad_groups"),
+        "bluekai_targeting": F("settings__bluekai_targeting"),
+        "exclusion_interest_targeting": F("settings__exclusion_interest_targeting"),
+        "interest_targeting": F("settings__interest_targeting"),
+        "audience_targeting": F("settings__audience_targeting"),
+        "exclusion_audience_targeting": F("settings__exclusion_audience_targeting"),
+        "b1_sources_group_daily_budget": F("settings__b1_sources_group_daily_budget"),
+        "b1_sources_group_enabled": F("settings__b1_sources_group_enabled"),
+        "b1_sources_group_state": F("settings__b1_sources_group_state"),
+        "dayparting": F("settings__dayparting"),
+        "adgroupsettings_blacklist_publisher_groups": F("settings__blacklist_publisher_groups"),
+        "adgroupsettings_whitelist_publisher_groups": F("settings__whitelist_publisher_groups"),
+        "b1_sources_group_cpc_cc": F("settings__b1_sources_group_cpc_cc"),
+        "exclusion_target_regions": F("settings__exclusion_target_regions"),
+        "target_os": F("settings__target_os"),
+        "target_placements": F("settings__target_placements"),
+        "delivery_type": F("settings__delivery_type"),
+        "click_capping_daily_ad_group_max_clicks": F("settings__click_capping_daily_ad_group_max_clicks"),
+        "b1_sources_group_cpm": F("settings__b1_sources_group_cpm"),
+        "adgroupsettings_frequency_capping": F("settings__frequency_capping"),
+    }
+
+    output_values = list(field_mapping.keys()) + ["campaign_id"]
+
+    if ad_group_ids is None:
+        qs = models.AdGroup.objects.all().filter_running(date=date)
+    else:
+        qs = models.AdGroup.objects.filter(id__in=ad_group_ids)
+
+    return qs.select_related("settings").annotate(**field_mapping).values(*output_values)
+
+
+def _get_ad_group_source_data(ad_group_ids=None, date=None):
+    if date is None:
+        date = datetime.date.today() - datetime.timedelta(days=1)
+
+    field_mapping = {
+        "adgroup_id": F("ad_group_id"),
+        "adgroupsource_source_id": F("source_id"),
+        "adgroupsourcesettings_cpc_cc": F("settings__cpc_cc"),
+        "adgroupsourcesettings_daily_budget_cc": F("settings__daily_budget_cc"),
+    }
+
+    if ad_group_ids is None:
+        qs = models.AdGroupSource.objects.all().filter_running(date=date)
+    else:
+        qs = models.AdGroupSource.objects.filter(
+            ad_group__id__in=ad_group_ids, settings__state=constants.AdGroupSourceSettingsState.ACTIVE
+        )
+
+    return qs.select_related("settings").annotate(**field_mapping).values(*field_mapping.keys())
 
 
 def _get_ad_group_spend():
