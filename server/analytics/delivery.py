@@ -68,7 +68,7 @@ def generate_delivery_reports(account_types=[], skip_ok=True, generate_csv=True)
 
     running_ad_groups = set(
         dash.models.AdGroup.objects.filter(campaign__account__id__in=valid_accounts)
-        .filter_current_and_active(yesterday)
+        .filter_running(yesterday)
         .select_related("campaign", "settings")
         .prefetch_related(
             Prefetch(
