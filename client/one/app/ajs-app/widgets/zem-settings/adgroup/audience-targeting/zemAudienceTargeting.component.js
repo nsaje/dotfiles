@@ -22,7 +22,7 @@ angular.module('one.widgets').component('zemAudienceTargeting', {
             selectedExcludedTitle: 'Excluded Audiences',
             selectTargetingButton: 'Add Custom Audience',
             noChoice: 'No available ad group or audience',
-            toggleTargetingEditSection: 'Enable audience targeting',
+            toggleTargetingEditSection: 'Enable retargeting',
         };
         $ctrl.addIncluded = addIncluded;
         $ctrl.addExcluded = addExcluded;
@@ -42,9 +42,8 @@ angular.module('one.widgets').component('zemAudienceTargeting', {
                 $ctrl.entity.warnings.retargeting !== undefined
             ) {
                 var text =
-                    'You have some active media sources that ' +
-                    "don't support retargeting. " +
-                    'To start using it please disable/pause these media sources:';
+                    "The following sources don't support retargeting and will be " +
+                    'automatically paused in this ad group if you enable this setting:';
                 var sourcesText = $ctrl.entity.warnings.retargeting.sources.join(
                     ', '
                 );

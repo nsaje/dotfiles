@@ -187,7 +187,6 @@ class AdGroupSourceState(BaseBulkActionView):
             core.models.settings.ad_group_source_settings.exceptions.CannotSetCPC,
             core.models.settings.ad_group_source_settings.exceptions.CannotSetCPM,
             core.models.settings.ad_group_source_settings.exceptions.CPCInvalid,
-            core.models.settings.ad_group_source_settings.exceptions.RetargetingNotSupported,
             core.models.settings.ad_group_source_settings.exceptions.MediaSourceNotConnectedToFacebook,
             core.models.settings.ad_group_source_settings.exceptions.YahooCPCTooLow,
             core.models.settings.ad_group_source_settings.exceptions.AutopilotDailySpendCapTooLow,

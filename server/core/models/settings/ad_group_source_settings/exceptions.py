@@ -66,10 +66,6 @@ class CPCInvalid(ValidationError):
     pass
 
 
-class RetargetingNotSupported(ValidationError):
-    pass
-
-
 class MediaSourceNotConnectedToFacebook(ValidationError):
     pass
 

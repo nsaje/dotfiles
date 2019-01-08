@@ -937,9 +937,6 @@ class AdGroupSourceSettings(api_common.BaseApiView):
         except core.models.settings.ad_group_source_settings.exceptions.CPCInvalid as err:
             raise exc.ValidationError(errors={"cpc_cc": [str(err)]})
 
-        except core.models.settings.ad_group_source_settings.exceptions.RetargetingNotSupported as err:
-            raise exc.ValidationError(errors={"state": [str(err)]})
-
         except core.models.settings.ad_group_source_settings.exceptions.MediaSourceNotConnectedToFacebook as err:
             raise exc.ValidationError(errors={"state": [str(err)]})
 

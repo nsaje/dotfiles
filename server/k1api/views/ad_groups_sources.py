@@ -99,6 +99,7 @@ class AdGroupSourcesView(K1APIView):
                 "cpc_cc": format(cpc_cc, ".4f"),
                 "cpm": format(cpm, ".4f") if cpm else cpm,
                 "daily_budget_cc": format(daily_budget_cc, ".4f"),
+                "blockers": ad_group_source.blockers,
             }
             if ad_group_source.ad_review_only:
                 source["ad_review_only"] = True
@@ -180,25 +181,32 @@ class AdGroupSourceBlockersView(K1APIView):
         Add/remove a blocker of an ad group source.
         """
         ad_group_id = request.GET.get("ad_group_id")
-        source_slug = request.GET.get("source_slug")
-        ad_group_source = dash.models.AdGroupSource.objects.only("blockers").get(
-            ad_group_id=ad_group_id, source__bidder_slug=source_slug
+        blockers_update = request.data
+        response = {}
+
+        ad_group_sources = dash.models.AdGroupSource.objects.only("blockers", "source").filter(
+            ad_group_id=ad_group_id, source__bidder_slug__in=blockers_update.keys()
         )
 
-        blockers_update = request.data
-        changes = 0
-        for key, value in list(blockers_update.items()):
-            if not (isinstance(key, str) and (isinstance(value, str) or value is None)):
-                return self.response_error(
-                    "Bad input: blocker key should be string and value should be either string or None", status=400
-                )
-            if value and value != ad_group_source.blockers.get(key):
-                ad_group_source.blockers[key] = value
-                changes += 1
-            if not value and key in ad_group_source.blockers:
-                del ad_group_source.blockers[key]
-                changes += 1
+        for ags in ad_group_sources:
+            blockers = blockers_update.get(ags.source.bidder_slug, {})
+            changes = 0
+            for key, value in list(blockers.items()):
+                if not (isinstance(key, str) and (isinstance(value, str) or value is None)):
+                    return self.response_error(
+                        "Bad input: blocker key should be a string and value should be either a string or None",
+                        status=400,
+                    )
+                if value and value != ags.blockers.get(key):
+                    ags.blockers[key] = value
+                    changes += 1
+                if not value and key in ags.blockers:
+                    del ags.blockers[key]
+                    changes += 1
 
-        if changes:
-            ad_group_source.save()
-        return self.response_ok(ad_group_source.blockers)
+            if changes:
+                ags.save()
+
+            response[ags.source.bidder_slug] = ags.blockers
+
+        return self.response_ok(response)

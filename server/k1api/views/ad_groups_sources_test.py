@@ -50,6 +50,7 @@ class AdGroupsSourcesTest(K1APIBaseTest):
                 "daily_budget_cc": "1.5000",
                 "source_campaign_key": ["fake"],
                 "tracking_code": "tracking1&tracking2",
+                "blockers": {},
             },
         )
 
@@ -64,6 +65,7 @@ class AdGroupsSourcesTest(K1APIBaseTest):
                 "daily_budget_cc": "1.6000",
                 "source_campaign_key": ["fake"],
                 "tracking_code": "tracking1&tracking2",
+                "blockers": {},
             },
         )
 
@@ -149,6 +151,7 @@ class AdGroupsSourcesTest(K1APIBaseTest):
                 "daily_budget_cc": "36.0000",
                 "source_campaign_key": {},
                 "tracking_code": ad_group.settings.tracking_code,
+                "blockers": {},
             },
         )
 
@@ -172,6 +175,7 @@ class AdGroupsSourcesTest(K1APIBaseTest):
                 "daily_budget_cc": "1.5000",
                 "source_campaign_key": ["fake"],
                 "tracking_code": "tracking1&tracking2",
+                "blockers": {},
             },
         )
 
@@ -250,8 +254,8 @@ class AdGroupsSourcesTest(K1APIBaseTest):
         self.assertEqual(data["error"], "Must provide ad_group_id, source_slug and conf")
 
     def test_update_ad_group_source_blockers(self):
-        params = {"source_slug": "adblade", "ad_group_id": 1}
-        put_body = {"interest-targeting": "Waiting for interest targeting to be set manually."}
+        params = {"ad_group_id": 1}
+        put_body = {"adblade": {"interest-targeting": "Waiting for interest targeting to be set manually."}}
         response = self.client.generic(
             "PUT",
             reverse("k1api.ad_groups.sources.blockers"),
@@ -264,15 +268,11 @@ class AdGroupsSourcesTest(K1APIBaseTest):
         self.assertEqual(data["response"], put_body)
 
         ad_group_source = dash.models.AdGroupSource.objects.get(ad_group_id=1, source__bidder_slug="adblade")
-        self.assertEqual(ad_group_source.blockers, put_body)
+        self.assertEqual(ad_group_source.blockers, put_body["adblade"])
 
-    def test_update_ad_group_source_blockers_remove(self):
-        ad_group_source = dash.models.AdGroupSource.objects.get(ad_group_id=1, source__bidder_slug="adblade")
-        ad_group_source.blockers = {"interest-targeting": "Waiting for interest targeting to be set manually."}
-        ad_group_source.save()
-
-        params = {"source_slug": "adblade", "ad_group_id": 1}
-        put_body = {"interest-targeting": None}
+    def test_update_ad_group_source_blockers_ad_group_does_not_exist(self):
+        params = {"ad_group_id": 1234}
+        put_body = {"adblade": {"interest-targeting": "Waiting for interest targeting to be set manually."}}
         response = self.client.generic(
             "PUT",
             reverse("k1api.ad_groups.sources.blockers"),
@@ -284,6 +284,38 @@ class AdGroupsSourcesTest(K1APIBaseTest):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(data["response"], {})
 
+    def test_update_ad_group_source_blockers_ad_group_source_does_not_exist(self):
+        params = {"ad_group_id": 1}
+        put_body = {"asdf": {"interest-targeting": "Waiting for interest targeting to be set manually."}}
+        response = self.client.generic(
+            "PUT",
+            reverse("k1api.ad_groups.sources.blockers"),
+            json.dumps(put_body),
+            "application/json",
+            QUERY_STRING=urllib.parse.urlencode(params),
+        )
+        data = json.loads(response.content)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(data["response"], {})
+
+    def test_update_ad_group_source_blockers_remove(self):
+        ad_group_source = dash.models.AdGroupSource.objects.get(ad_group_id=1, source__bidder_slug="adblade")
+        ad_group_source.blockers = {"interest-targeting": "Waiting for interest targeting to be set manually."}
+        ad_group_source.save()
+
+        params = {"ad_group_id": 1}
+        put_body = {"adblade": {"interest-targeting": None}}
+        response = self.client.generic(
+            "PUT",
+            reverse("k1api.ad_groups.sources.blockers"),
+            json.dumps(put_body),
+            "application/json",
+            QUERY_STRING=urllib.parse.urlencode(params),
+        )
+        data = json.loads(response.content)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(data["response"], {"adblade": {}})
+
         ad_group_source.refresh_from_db()
         self.assertEqual(ad_group_source.blockers, {})
 
@@ -293,8 +325,8 @@ class AdGroupsSourcesTest(K1APIBaseTest):
         ad_group_source.save()
 
         with mock.patch.object(dash.models.AdGroupSource, "save") as mock_save:
-            params = {"source_slug": "adblade", "ad_group_id": 1}
-            put_body = {"geo-exclusion": None}
+            params = {"ad_group_id": 1}
+            put_body = {"adblade": {"geo-exclusion": None}}
             response = self.client.generic(
                 "PUT",
                 reverse("k1api.ad_groups.sources.blockers"),
@@ -304,7 +336,7 @@ class AdGroupsSourcesTest(K1APIBaseTest):
             )
             data = json.loads(response.content)
             self.assertEqual(response.status_code, 200)
-            self.assertEqual(data["response"], {})
+            self.assertEqual(data["response"], {"adblade": {}})
 
             ad_group_source.refresh_from_db()
             self.assertEqual(ad_group_source.blockers, {})

@@ -446,18 +446,6 @@ class AdGroupSourceSettingsTest(TestCase):
         self.assertEqual(mock_budget_ap.called, False)
         self.assertEqual(response.status_code, 200)
 
-    def test_adgroup_w_retargeting_and_source_without(self):
-        for source in models.Source.objects.all():
-            source.supports_retargeting = False
-            source.save()
-
-        self._set_ad_group_end_date(days_delta=3)
-        response = self.client.put(
-            reverse("ad_group_source_settings", kwargs={"ad_group_id": "1", "source_id": "1"}),
-            data=json.dumps({"state": "1"}),
-        )
-        self.assertEqual(response.status_code, 400)
-
     @patch.object(core.models.source_type.model.SourceType, "get_etfm_max_daily_budget", return_value=89.77)
     @patch.object(core.models.source_type.model.SourceType, "get_etfm_min_daily_budget", return_value=7.11)
     @patch.object(core.models.source_type.model.SourceType, "get_min_cpc", return_value=0.1211)

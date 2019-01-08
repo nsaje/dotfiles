@@ -4,7 +4,6 @@ import django.forms
 
 from dash import constants
 from dash import cpc_constraints
-from dash import retargeting_helper
 
 from . import exceptions
 from . import validation_helpers
@@ -58,14 +57,7 @@ class AdGroupSourceSettingsValidatorMixin(object):
 
         if self.state != new_settings.state and new_settings.state == constants.AdGroupSettingsState.ACTIVE:
             ad_group_settings = self.ad_group_source.ad_group.settings
-            if not retargeting_helper.can_add_source_with_retargeting(
-                self.ad_group_source.source, self.ad_group_source.ad_group.settings
-            ):
-                raise exceptions.RetargetingNotSupported(
-                    "Cannot enable media source that does not support"
-                    "retargeting on adgroup with retargeting enabled."
-                )
-            elif not helpers.check_facebook_source(self.ad_group_source):
+            if not helpers.check_facebook_source(self.ad_group_source):
                 raise exceptions.MediaSourceNotConnectedToFacebook(
                     "Cannot enable Facebook media source that isn't connected to a Facebook page."
                 )

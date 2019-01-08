@@ -317,14 +317,6 @@ class AdGroupSourceUpdate(TestCase):
         with self.assertRaises(utils.exc.ValidationError):
             self.ad_group_source.settings.update(daily_budget_cc=decimal.Decimal("2.2"))
 
-    def test_update_validate_state_retargeting(self):
-        self.ad_group.settings.update_unsafe(None, retargeting_ad_groups=[1])
-        self.source.supports_retargeting = False
-        self.source.supports_retargeting_manually = False
-        self.source.save()
-        with self.assertRaises(utils.exc.ValidationError):
-            self.ad_group_source.settings.update(state=constants.AdGroupSourceSettingsState.ACTIVE)
-
     def test_update_validate_state_facebook(self):
         self.source_type.type = constants.SourceType.FACEBOOK
         self.source_type.save()

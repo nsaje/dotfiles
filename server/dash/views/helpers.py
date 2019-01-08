@@ -577,21 +577,7 @@ def _get_editable_fields_status_setting(
 
     # there are cases where a condition is entered(region targeting) but no
     # error message is output - this is why this is a separate loop
-    if (
-        message is None
-        and (
-            ad_group_settings.retargeting_ad_groups
-            or ad_group_settings.exclusion_retargeting_ad_groups
-            or ad_group_settings.audience_targeting
-            or ad_group_settings.exclusion_audience_targeting
-        )
-        and not (
-            ad_group_source.source.can_modify_retargeting_automatically()
-            or ad_group_source.source.can_modify_retargeting_manually()
-        )
-    ):
-        message = "This source can not be enabled because it does not support retargeting."
-    elif message is None and not check_facebook_source(ad_group_source):
+    if message is None and not check_facebook_source(ad_group_source):
         message = "Please connect your Facebook page to add Facebook as media source."
     elif message is None and not check_yahoo_min_cpc(ad_group_settings, ad_group_source, ad_group_source_settings):
         message = "This source can not be enabled with the current settings - CPC too low for desktop targeting."

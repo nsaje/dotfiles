@@ -32,6 +32,7 @@ class SourcesView(K1APIView):
                 "credentials": None,
                 "source_type": source.source_type.type,
                 "bidder_slug": source.bidder_slug,
+                "supports_retargeting": source.supports_retargeting,
             }
             try:
                 default_credentials = source.defaultsourcesettings.credentials

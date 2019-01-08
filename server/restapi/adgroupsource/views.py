@@ -224,9 +224,6 @@ class AdGroupSourceViewSet(RESTAPIBaseViewSet):
         except exceptions.CPCInvalid as err:
             raise utils.exc.ValidationError(errors={"cpc": [str(err)]})
 
-        except exceptions.RetargetingNotSupported as err:
-            raise utils.exc.ValidationError(errors={"state": [str(err)]})
-
         except exceptions.MediaSourceNotConnectedToFacebook as err:
             raise utils.exc.ValidationError(errors={"state": [str(err)]})
 
