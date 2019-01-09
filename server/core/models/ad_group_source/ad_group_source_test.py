@@ -119,6 +119,18 @@ class AdGroupSourceCreate(TestCase):
         ).group_current_settings()
         self.assertEqual([x.state for x in ad_group_source_settings], [constants.AdGroupSourceSettingsState.ACTIVE])
 
+    def test_bulk_create_on_allowed_sources_deprecated(self, mock_k1):
+        self.default_source_settings.source.deprecated = True
+        self.default_source_settings.source.save()
+        request = magic_mixer.blend_request_user()
+
+        ad_group_sources = core.models.AdGroupSource.objects.bulk_create_on_allowed_sources(
+            request, self.ad_group, write_history=False
+        )
+
+        self.assertCountEqual(ad_group_sources, [])
+        self.assertFalse(mock_k1.called)
+
     def test_bulk_create_on_allowed_sources_maintenance(self, mock_k1):
         self.default_source_settings.source.maintenance = True
         self.default_source_settings.source.save()

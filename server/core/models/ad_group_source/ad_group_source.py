@@ -138,7 +138,8 @@ class AdGroupSourceManager(core.common.QuerySetManager):
 
         for source in sources:
             if (
-                source.maintenance
+                source.deprecated
+                or source.maintenance
                 or ad_group.campaign.type == constants.CampaignType.VIDEO
                 and not source.supports_video
                 or ad_group.campaign.type == constants.CampaignType.DISPLAY
