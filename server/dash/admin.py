@@ -466,21 +466,30 @@ class AgencyAdmin(SlackLoggerMixin, ExportMixin, admin.ModelAdmin):
         if changes:
             new_settings.save(request)
         obj.save(request)
-        if "yahoo_account" in form.changed_data:
-            for account in obj.account_set.all():
-                if not account.yahoo_account:
-                    account.yahoo_account = obj.yahoo_account
-                    account.save(request)
+
+        account_updates = dict()
+        if "cs_representative" in form.changed_data:
+            account_updates["default_cs_representative"] = ZemUser.objects.get(
+                email=form.cleaned_data["cs_representative"]
+            )
+        if "ob_representative" in form.changed_data:
+            account_updates["ob_representative"] = ZemUser.objects.get(email=form.cleaned_data["ob_representative"])
+        if "account_type" in form.changed_data:
+            account_updates["account_type"] = form.cleaned_data["default_account_type"]
+
+        for account in obj.account_set.all():
+            if account_updates:
+                account.settings.update(request, **account_updates)
+            if "yahoo_account" in form.changed_data:
+                account.yahoo_account = obj.yahoo_account
+                account.save(request)
+
         utils.k1_helper.update_ad_groups(
             models.AdGroup.objects.filter(campaign__account__agency_id=obj.id)
             .select_related("campaign")
             .only("id", "campaign__account_id"),
             "AgencyAdmin.save_model",
         )
-        if "cs_representative" in form.changed_data:
-            cs_rep = ZemUser.objects.get(email=form.cleaned_data["cs_representative"])
-            for account in obj.account_set.all():
-                account.settings.update(request, default_cs_representative=cs_rep)
 
         self.log_custom_flags_event_to_slack(old_obj, obj, user=request.user.email)
 
