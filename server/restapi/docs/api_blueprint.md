@@ -671,13 +671,13 @@ conversionGoal  | [conversion goal](#conversion-goal) | conversion goal | option
 
 <!-- TODO: explain conversion goals -->
 
-Property         | Type                          | Description                 | Create   | Update
------------------|-------------------------------|-----------------------------|----------|-----------|
-type             | [enum](#conversion-goal-type) | conversion goal type        | required | read only
-name             | string                        | name of the conversion goal | required | read only
-conversionWindow | [enum](#conversion-window)    | conversion goal type        | required | read only
-goalId           | string                        | goal id                     | N/A      | read only
-pixelUrl         | url                           | pixel url, if applicable    | N/A      | read only
+Property         | Type                          | Description                 | Create   | Create pixel goal | Update
+-----------------|-------------------------------|-----------------------------|----------|-------------------|-----------|
+type             | [enum](#conversion-goal-type) | conversion goal type        | required | required          | read only |
+name             | string                        | name of the conversion goal | required | N/A               | read only |
+conversionWindow | [enum](#conversion-window)    | conversion goal type        | required | required          | read only |
+goalId           | string                        | goal id                     | N/A      | required          | read only |
+pixelUrl         | url                           | pixel url, if applicable    | N/A      | N/A               | read only | 
 
 
 ### List campaign goals [GET /rest/v1/campaigns/{campaignId}/goals/]
@@ -705,6 +705,11 @@ pixelUrl         | url                           | pixel url, if applicable    |
         }
 
 ### Add a campaign goal [POST /rest/v1/campaigns/{campaignId}/goals/]
+
+When creating a pixel goal the `goalId` field should contain the ID of the pixel you want to use.  
+The pixel ID can be found on your Account Pixels page (`https://one.zemanta.com/v2/pixels/account/<accountId>`) by clicking the Copy Tag button.  
+Inside the tag you will find a URL of form `https://p1.zemanta.com/p/<accountId>/<pixelId>/`.  
+Use the `pixelId` number when creating a new pixel (see example 2).
 
 + Parameters
     + campaignId: 608 (required)
@@ -742,6 +747,36 @@ pixelUrl         | url                           | pixel url, if applicable    |
             }
         }
 
++ Request (application/json)
+
+        {
+            "type": "CPA",
+            "value": "30.0",
+            "primary": true,
+            "conversionGoal": {
+                "type": "PIXEL",
+                "conversionWindow": "LEQ_7_DAYS",
+                "goalId": "101"
+            }
+        }
+
++ Response 201 (application/json)
+
+        {
+            "data": {
+                "id": "1234",
+                "type": "CPA",
+                "value": "30.0",
+                "primary": true,
+                "conversionGoal": {
+                    "type": "PIXEL",
+                    "name": "My pixel",
+                    "conversionWindow": "LEQ_7_DAYS",
+                    "goalId": "101",
+                    "pixelUrl": "https://p1.zemanta.com/p/1/4321/"
+                }
+            }
+        }
 
 ### Get campagin goal details [GET /rest/v1/campaigns/{campaignId}/goals/{goalId}]
 
