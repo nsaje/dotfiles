@@ -1,7 +1,10 @@
 import csv
 import datetime
+import gzip
 import logging
 
+import influx
+from django.conf import settings
 from django.db import IntegrityError
 from django.db.models import Case
 from django.db.models import CharField
@@ -9,6 +12,8 @@ from django.db.models import Value
 from django.db.models import When
 
 from dash import models
+from utils import csv_utils
+from utils import s3helpers
 
 from . import constants
 
@@ -60,3 +65,22 @@ def update_publisher_classsifications_from_oen(date_from=None):
         [models.PublisherClassification(**i) for i in classification_to_create]
     )
     return classification_to_create
+
+
+def upload_publisher_classifications_to_s3():
+    all_publisher_classifications = models.PublisherClassification.objects.all().values_list("publisher", "category")
+    archive = gzip.compress(
+        csv_utils.tuplelist_to_csv((i for i in all_publisher_classifications), dialect="excel-tab").encode()
+    )
+    s3 = s3helpers.S3Helper(bucket_name=settings.S3_BUCKET_B1_DATA_USE)
+    try:
+        s3.put(
+            "/verticals/publisher_classifications_{}.gz".format(
+                datetime.datetime.strftime(datetime.datetime.today(), "%y-%m-%d_%H%M")
+            ),
+            archive,
+        )
+        influx.incr("publisher_classifications_to_s3", 1, status="success")
+    except Exception as e:
+        influx.incr("publisher_classifications_to_s3", 1, status="failed")
+        logger.exception(e)

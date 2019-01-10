@@ -181,6 +181,8 @@ S3_BUCKET_THUMBNAILER = ""
 S3_BUCKET_CUSTOM_REPORTS = ""
 S3_BUCKET_PUBLISHER_GROUPS = ""
 S3_BUCKET_VIDEO = ""
+S3_BUCKET_B1_DATA_USE = ""
+
 USE_S3 = False
 
 # adgroup-level reports aggregations

@@ -7,7 +7,7 @@ from utils.command_helpers import ExceptionCommand
 class Command(ExceptionCommand):
 
     help = """
-    Update data to Publisher Classification table, either from OEN or from a csv file.
+    Update data to Publisher Classification table, either from OEN or from a csv file. Can also dump table to S3.
     Duplicates are ignored. CSV columns headers must be accordingly to this:
     {}
     """.format(
@@ -24,6 +24,9 @@ class Command(ExceptionCommand):
             action="store_true",
             help="Import new classifications from OEN (Publisher Groups)",
         )
+        parser.add_argument(
+            "--upload-to-s3", default=False, action="store_true", help="Export publisher classifications from RDS to S3"
+        )
 
     def handle(self, *args, **options):
         if options.get("update_from_oen"):
@@ -35,8 +38,10 @@ class Command(ExceptionCommand):
             for d in update:
                 self.stdout.write("New publisher classification '{publisher}'/'{category}' added.".format(**d))
 
-        elif options.get("csv"):
+        if options.get("csv"):
             self.stdout.write("Will update publisher classifications from CSV file.")
             publisher_classification.update_publisher_classifications_from_csv(options.get("csv"))
-        else:
-            raise Exception("no parameter provided.")
+        if options.get("upload_to_s3"):
+            self.stdout.write("Will dump all RDS Publisher classifications to S3.")
+            publisher_classification.upload_publisher_classifications_to_s3()
+            self.stdout.write("Publisher classiciations uploaded on S3.")

@@ -158,6 +158,7 @@ S3_BUCKET_THUMBNAILER = "zemthumbnailer"
 S3_BUCKET_CUSTOM_REPORTS = ""
 S3_BUCKET_PUBLISHER_GROUPS = ""
 S3_BUCKET_VIDEO = ""
+S3_BUCKET_B1_DATA_USE = ""
 USE_S3 = True
 
 # adgroup-level reports aggregations

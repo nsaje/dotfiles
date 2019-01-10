@@ -7,9 +7,9 @@ import io as StringIO
 FORMULA_SYMBOLS = ("@", "+", "-", "=")
 
 
-def tuplelist_to_csv(data):
+def tuplelist_to_csv(data, dialect="excel"):
     out = StringIO.StringIO()
-    csv_file = csv.writer(out, dialect="excel", quoting=csv.QUOTE_ALL)
+    csv_file = csv.writer(out, dialect=dialect, quoting=csv.QUOTE_ALL)
     for row in data:
         csv_file.writerow(_sanitize_list_row(row))
     return out.getvalue()
