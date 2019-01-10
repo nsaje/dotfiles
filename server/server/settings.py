@@ -352,6 +352,18 @@ SOURCE_OAUTH_URIS = {
 
 PASSWORD_RESET_TIMEOUT_DAYS = 7
 
+PASSWORD_MIN_LENGTH = 9
+
+AUTH_PASSWORD_VALIDATORS = [
+    {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
+    {
+        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
+        "OPTIONS": {"min_length": PASSWORD_MIN_LENGTH},
+    },
+    {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
+    {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
+]
+
 # Time zone used to convert datetimes in API responses
 DEFAULT_TIME_ZONE = "America/New_York"
 

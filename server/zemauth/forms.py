@@ -1,5 +1,7 @@
 from django import forms
+from django.conf import settings
 from django.contrib.auth import forms as auth_forms
+from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
 
 
@@ -30,12 +32,17 @@ class PasswordResetForm(forms.Form):
 
 
 class SetPasswordForm(forms.Form):
-    new_password = forms.CharField(min_length=6, widget=forms.PasswordInput)
+    new_password = forms.CharField(min_length=settings.PASSWORD_MIN_LENGTH, widget=forms.PasswordInput)
     email = forms.EmailField(widget=forms.HiddenInput())  # needed for FullStory
 
     def __init__(self, user, *args, **kwargs):
         self.user = user
         super(SetPasswordForm, self).__init__(initial={"email": user.email}, *args, **kwargs)
+
+    def clean(self):
+        cleaned_data = super().clean()
+        value = cleaned_data.get("new_password")
+        validate_password(value, user=self.user)
 
     def save(self, commit=True):
         self.user.set_password(self.cleaned_data["new_password"])
