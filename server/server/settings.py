@@ -187,6 +187,7 @@ SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 RESTAPI_REPORTS_BUCKET = "z1-rest-reports"
 
 GLOBAL_BLACKLIST_ID = 1
+AD_LOOKUP_AD_GROUP_ID = 1
 
 REST_FRAMEWORK = {"UNICODE_JSON": False, "EXCEPTION_HANDLER": "restapi.common.exceptions.custom_exception_handler"}
 

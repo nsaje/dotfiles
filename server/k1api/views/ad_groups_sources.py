@@ -1,5 +1,7 @@
 import logging
 
+from django.conf import settings
+
 import automation.campaignstop.service
 import dash.constants
 import dash.features.custom_flags
@@ -108,6 +110,9 @@ class AdGroupSourcesView(K1APIView):
         return self.response_ok(ad_group_source_dicts)
 
     def _is_ad_group_source_enabled(self, ad_group, ad_group_source, allowed_to_run):
+        if ad_group.id == settings.AD_LOOKUP_AD_GROUP_ID:
+            return True
+
         if not allowed_to_run:
             return False
 

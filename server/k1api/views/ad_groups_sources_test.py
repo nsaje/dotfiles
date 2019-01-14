@@ -7,6 +7,7 @@ import urllib.request
 from operator import itemgetter
 
 import mock
+from django.test import override_settings
 from django.urls import reverse
 
 import dash.constants
@@ -24,6 +25,7 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
 
+@override_settings(AD_LOOKUP_AD_GROUP_ID=9999)
 class AdGroupsSourcesTest(K1APIBaseTest):
     @mock.patch("automation.campaignstop.get_campaignstop_states")
     def test_get_ad_groups_sources(self, mock_get_campaignstop_states):
@@ -152,6 +154,52 @@ class AdGroupsSourcesTest(K1APIBaseTest):
                 "source_campaign_key": {},
                 "tracking_code": ad_group.settings.tracking_code,
                 "blockers": {},
+            },
+        )
+
+    def test_get_ad_groups_source_adlookup(self):
+        today = dates_helper.local_today()
+        request = magic_mixer.blend_request_user()
+        account = magic_mixer.blend(dash.models.Account, uses_bcm_v2=True)
+        credit_line_item = dash.models.CreditLineItem.objects.create(
+            request,
+            today,
+            today,
+            100,
+            account=account,
+            license_fee="0.2",
+            status=dash.constants.CreditLineItemStatus.SIGNED,
+        )
+        campaign = magic_mixer.blend(dash.models.Campaign, account=account)
+        dash.models.BudgetLineItem.objects.create(request, campaign, credit_line_item, today, today, 100, margin="0.1")
+        ad_group = magic_mixer.blend(dash.models.AdGroup, campaign=campaign, id=9999)
+        source = dash.models.Source.objects.get(bidder_slug="b1_google")
+        ad_group_source = magic_mixer.blend(dash.models.AdGroupSource, ad_group=ad_group, source=source)
+        ad_group_source.settings.update_unsafe(
+            None, cpc_cc="0.12", cpm="0.12", daily_budget_cc="50.00", ad_group_source=ad_group_source
+        )
+
+        response = self.client.get(
+            reverse("k1api.ad_groups.sources"), {"source_types": "b1", "ad_group_ids": [ad_group.id]}
+        )
+
+        data = json.loads(response.content)
+        self.assert_response_ok(response, data)
+        data = data["response"]
+
+        self.assertEqual(len(data), 1)
+
+        self.assertDictEqual(
+            data[0],
+            {
+                "ad_group_id": ad_group.id,
+                "slug": "b1_google",
+                "state": 1,
+                "cpc_cc": "0.0864",
+                "cpm": "0.0864",
+                "daily_budget_cc": "36.0000",
+                "source_campaign_key": {},
+                "tracking_code": ad_group.settings.tracking_code,
             },
         )
 
