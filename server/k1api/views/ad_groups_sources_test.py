@@ -200,6 +200,7 @@ class AdGroupsSourcesTest(K1APIBaseTest):
                 "daily_budget_cc": "36.0000",
                 "source_campaign_key": {},
                 "tracking_code": ad_group.settings.tracking_code,
+                "blockers": {},
             },
         )
 
