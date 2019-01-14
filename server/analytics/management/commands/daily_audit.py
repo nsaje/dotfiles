@@ -4,6 +4,7 @@ from decimal import Decimal
 import analytics.delivery
 import analytics.monitor
 import analytics.statements
+import dash.features.submission_filters.constants as sf_constants
 import dash.models
 import utils.command_helpers
 import utils.csv_utils
@@ -75,6 +76,7 @@ class Command(utils.command_helpers.ExceptionCommand):
         self.audit_click_discrepancy(options)
         self.audit_cpc_vs_ecpc(options)
         self.audit_publishers_blacklisted(options)
+        self.audit_submission_filters(options)
 
         if self.alarms and self.send_emails:
             utils.email_helper.send_internal_email(
@@ -156,7 +158,7 @@ class Command(utils.command_helpers.ExceptionCommand):
         self._print("{}\n".format(title))
         msg = ""
         for alarm in alarms:
-            msg += """Ad group <b>{name}</b> (https://one.zemanta.com/v2/analytics/adgroup/{ad_group_id}/sources) spent ${total_spend}
+            msg += """- Ad group <b>{name}</b> (https://one.zemanta.com/v2/analytics/adgroup/{ad_group_id}/sources) spent ${total_spend}
              with too high eCPC (${ecpc}) compared to its bid CPC (${cpc}) on <b>{source_name}</b>. \n""".format(
                 **alarm
             )
@@ -171,7 +173,32 @@ class Command(utils.command_helpers.ExceptionCommand):
         if not blacklisted_yesterday:
             return
         title = "Publishers blacklisted yesterday:"
-        msg = ["Publisher '{}' was added to the global blacklist.".format(p.publisher) for p in blacklisted_yesterday]
+        msg = ["- Publisher '{}' was added to the global blacklist.".format(p.publisher) for p in blacklisted_yesterday]
         text = "\n".join(msg)
         self._print("{}\n   {}".format(title, text))
         self.email_body += "<h3>{}</h3> \n{}".format(title, text)
+
+    def audit_submission_filters(self, options):
+        yesterday = datetime.date.today() - datetime.timedelta(1)
+        updated_yesterday = dash.models.SubmissionFilter.objects.filter(modified_dt__contains=yesterday).select_related(
+            "source", "account", "agency", "campaign", "ad_group", "content_ad"
+        )
+        if not updated_yesterday:
+            return
+
+        title = "Submissions filter changed yesterday:"
+        messages = [
+            """- Submission filter #{id} state was set to '{state}' on source '{source}' for {agency}{account}{ad_group}{content_ad}""".format(
+                id=sf.id,
+                state=sf_constants.SubmissionFilterState.get_text(sf.state),
+                source=sf.source,
+                agency="agency '{}'.".format(sf.agency) if sf.agency else "",
+                account="account '{}'.".format(sf.account) if sf.account else "",
+                ad_group="ad group '{}'.".format(sf.ad_group) if sf.ad_group else "",
+                content_ad="content ad '{}'.".format(sf.content_ad) if sf.content_ad else "",
+            )
+            for sf in updated_yesterday
+        ]
+        text = "\n".join(messages)
+        self._print("\n".join([title, text]))
+        self.email_body += "<h3>{}</h3>\n{}".format(title, text)

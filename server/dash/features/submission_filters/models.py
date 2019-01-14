@@ -64,6 +64,8 @@ class SubmissionFilter(models.Model):
     )
 
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name="Created at")
+    modified_dt = models.DateTimeField(auto_now=True, verbose_name="Modified at")
+    description = models.TextField(null=True, blank=True)
 
     def get_lookup_key(self):
         if self.content_ad_id:
