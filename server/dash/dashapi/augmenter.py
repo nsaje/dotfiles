@@ -269,6 +269,10 @@ def augment_content_ad(row, loader, is_base_level=False):
         if loader.user.has_perm("zemauth.can_see_amplify_live_preview"):
             row["amplify_live_preview_link"] = NEWSCORP_LIVE_PREVIEW_URL.format(ad_group_id=ad_group.id)
 
+        amplify_internal_id = loader.amplify_internal_ids_map.get(content_ad_id)
+        if loader.user.has_perm("zemauth.can_see_amplify_ad_id_column") and amplify_internal_id:
+            row["amplify_promoted_link_id"] = amplify_internal_id
+
 
 def augment_content_ad_for_report(row, loader, is_base_level=False):
     content_ad_id = row.get("content_ad_id")

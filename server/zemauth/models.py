@@ -392,6 +392,7 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ("fea_can_change_campaign_type_to_display", "User can change campaign type to display"),
             ("can_set_frequency_capping", "User can set frequency capping"),
             ("can_use_new_entity_settings_drawers", "User can use new entity settings drawers"),
+            ("can_see_amplify_ad_id_column", "User can see Amplify ad id column in grid"),
         )
 
     def get_full_name(self):
