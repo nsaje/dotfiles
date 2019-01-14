@@ -9,9 +9,11 @@ from .campaignstop.admin import RealTimeCampaignStopLogAdmin
 
 
 class CampaignBudgetDepletionNotificationAdmin(admin.ModelAdmin):
-    search_fields = ["campaign__name"]
+    search_fields = ("campaign__name",)
     list_display = ("account_manager", "campaign", "available_budget", "yesterdays_spend", "stopped", "created_dt")
-    readonly_fields = ["created_dt"]
+    readonly_fields = ("created_dt",)
+    raw_id_fields = ("campaign",)
+    autocomplete_fields = ("account_manager",)
 
     def get_queryset(self, request):
         qs = super(CampaignBudgetDepletionNotificationAdmin, self).get_queryset(request)
@@ -23,7 +25,7 @@ admin.site.register(models.CampaignBudgetDepletionNotification, CampaignBudgetDe
 
 
 class AutopilotLogAdmin(admin.ModelAdmin):
-    search_fields = ["ad_group__name"]
+    search_fields = ("ad_group__name",)
     list_display = (
         "get_campaign",
         "ad_group",
@@ -43,7 +45,9 @@ class AutopilotLogAdmin(admin.ModelAdmin):
         "cpc_comments",
         "budget_comments",
     )
-    readonly_fields = ["created_dt"]
+    readonly_fields = ("created_dt",)
+    raw_id_fields = ("campaign", "ad_group")
+    autocomplete_fields = ("ad_group_source",)
 
     def get_queryset(self, request):
         qs = super(AutopilotLogAdmin, self).get_queryset(request)
@@ -85,6 +89,7 @@ class CampaignStopLogAdmin(admin.ModelAdmin):
     list_display = ("id", "campaign_link", "formatted_notes", "created_dt")
     readonly_fields = ["created_dt"]
     list_filter = [CampaignListFilter]
+    raw_id_fields = ("campaign",)
 
     def get_queryset(self, request):
         qs = super(CampaignStopLogAdmin, self).get_queryset(request)

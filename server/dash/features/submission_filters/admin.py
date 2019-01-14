@@ -27,6 +27,7 @@ class SubmissionFilterAdmin(admin.ModelAdmin):
         "content_ad__brand_name",
     )
     readonly_fields = ("created_dt",)
+    autocomplete_fields = ("source", "agency", "account")
 
     def save_model(self, request, obj, form, change):
         possible_keys = [obj.agency_id, obj.account_id, obj.campaign_id, obj.ad_group_id, obj.content_ad_id]

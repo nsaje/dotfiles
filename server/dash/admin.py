@@ -39,9 +39,8 @@ from zemauth.models import User as ZemUser
 
 logger = logging.getLogger(__name__)
 
+
 # Forms for inline user functionality.
-
-
 class StrWidget(forms.Widget):
     def render(self, name, value, attrs=None, renderer=None):
         return mark_safe(str(value))
@@ -145,10 +144,7 @@ class DirectDealConnectionAdGroupsInline(admin.StackedInline):
     raw_id_fields = ("adgroup_id",)
 
 
-# Always empty form for source credentials and a link for refresing OAuth credentials for
-# sources that use them
-
-
+# Always empty form for source credentials and a link for refresing OAuth credentials for sources that use them
 class SourceCredentialsForm(forms.ModelForm):
     credentials = forms.CharField(
         label="Credentials", required=False, widget=forms.Textarea(attrs={"rows": 15, "cols": 60})
@@ -285,10 +281,12 @@ class SourceForm(forms.ModelForm):
         return cpm
 
 
+# Default Sources Settings
 class DefaultSourceSettingsAdmin(admin.ModelAdmin):
-    search_fields = ["name"]
+    search_fields = ("name",)
     list_display = ("source", "credentials_")
     readonly_fields = ("default_cpc_cc", "mobile_cpc_cc", "daily_budget_cc")
+    autocomplete_fields = ("source", "credentials")
 
     def get_queryset(self, request):
         qs = super(DefaultSourceSettingsAdmin, self).get_queryset(request)
@@ -310,13 +308,11 @@ class DefaultSourceSettingsAdmin(admin.ModelAdmin):
 
 
 # Agency
-
-
 class AgencyUserInline(admin.TabularInline):
     model = models.Agency.users.through
     form = AgencyUserForm
     extra = 0
-    raw_id_fields = ("user",)
+    autocomplete_fields = ("user",)
     verbose_name = "Agency Manager"
     verbose_name_plural = "Agency Managers"
 
@@ -399,7 +395,6 @@ class AgencyResource(resources.ModelResource):
 
 
 class AgencyAdmin(SlackLoggerMixin, ExportMixin, admin.ModelAdmin):
-    search_fields = ["name"]
     form = dash_forms.AgencyAdminForm
     list_display = (
         "name",
@@ -418,6 +413,8 @@ class AgencyAdmin(SlackLoggerMixin, ExportMixin, admin.ModelAdmin):
     readonly_fields = ("id", "created_dt", "modified_dt", "modified_by")
     inlines = (AgencyAccountInline, AgencyUserInline, DirectDealConnectionAgencyInline)
     resource_class = AgencyResource
+    search_fields = ("name", "id")
+    autocomplete_fields = ("allowed_sources", "cs_representative", "sales_representative", "ob_representative")
 
     def __init__(self, model, admin_site):
         super(AgencyAdmin, self).__init__(model, admin_site)
@@ -505,13 +502,12 @@ def render_change_form(self, request, context, *args, **kwargs):
 
 
 # Account
-
-
 class AccountUserInline(admin.TabularInline):
     model = models.Account.users.through
     form = AbstractUserForm
     extra = 0
-    raw_id_fields = ("user",)
+    # raw_id_fields = ("user",)
+    autocomplete_fields = ("user",)
 
     def __str__(self):
         return self.name
@@ -525,17 +521,27 @@ class CampaignInline(admin.TabularInline):
     can_delete = False
     exclude = ("users", "groups", "created_dt", "modified_dt", "modified_by", "custom_flags", "settings")
     ordering = ("-created_dt",)
-    readonly_fields = ("admin_link",)
-    raw_id_fields = ("default_whitelist", "default_blacklist", "account", "settings")
+    readonly_fields = ("admin_link", "default_whitelist", "default_blacklist", "settings")
+    autocomplete_fields = ("account",)
 
 
 class AccountAdmin(SlackLoggerMixin, SaveWithRequestMixin, admin.ModelAdmin):
     form = dash_forms.AccountAdminForm
-    search_fields = ["name"]
+    search_fields = ("name", "id")
     list_display = ("id", "name", "created_dt", "modified_dt", "salesforce_url", "uses_bcm_v2")
-    readonly_fields = ("created_dt", "modified_dt", "modified_by", "uses_bcm_v2", "id", "outbrain_marketer_id")
+    readonly_fields = (
+        "created_dt",
+        "modified_dt",
+        "modified_by",
+        "uses_bcm_v2",
+        "id",
+        "outbrain_marketer_id",
+        "default_whitelist",
+        "default_blacklist",
+        "agency",
+        "settings",
+    )
     exclude = ("users", "settings")
-    raw_id_fields = ("default_whitelist", "default_blacklist", "agency", "settings")
     filter_horizontal = ("allowed_sources",)
     inlines = (AccountUserInline, CampaignInline)
 
@@ -583,8 +589,6 @@ class AccountAdmin(SlackLoggerMixin, SaveWithRequestMixin, admin.ModelAdmin):
 
 
 # Campaign
-
-
 class AdGroupInline(admin.TabularInline):
     verbose_name = "Ad Group"
     verbose_name_plural = "Ad Groups"
@@ -598,10 +602,10 @@ class AdGroupInline(admin.TabularInline):
 
 
 class CampaignAdmin(SlackLoggerMixin, admin.ModelAdmin):
-    search_fields = ["name"]
+    search_fields = ("name", "id")
     list_display = ("id", "name", "created_dt", "modified_dt")
-    readonly_fields = ("created_dt", "modified_dt", "modified_by", "id")
-    raw_id_fields = ("default_whitelist", "default_blacklist", "account")
+    readonly_fields = ("created_dt", "modified_dt", "modified_by", "id", "account")
+    raw_id_fields = ("default_whitelist", "default_blacklist")
     exclude = ("settings",)
     inlines = (AdGroupInline,)
     form = dash_forms.CampaignAdminForm
@@ -640,6 +644,7 @@ class CampaignAdmin(SlackLoggerMixin, admin.ModelAdmin):
         return "/v2/analytics/campaign/{}".format(obj.id)
 
 
+# Source
 class SourceAdmin(admin.ModelAdmin):
     form = SourceForm
     search_fields = ("name", "bidder_slug")
@@ -655,6 +660,7 @@ class SourceAdmin(admin.ModelAdmin):
         "created_dt",
         "modified_dt",
     )
+    autocomplete_fields = ("source_type",)
     readonly_fields = ("id", "created_dt", "modified_dt", "deprecated", "released", "source_actions")
     list_filter = ("maintenance", "deprecated", "released", "supports_video", "supports_display")
 
@@ -765,6 +771,7 @@ class SourceAdmin(admin.ModelAdmin):
         return stopped_ad_group_sources
 
 
+# Source Type
 class SourceTypeAdmin(admin.ModelAdmin):
     form = SourceTypeForm
 
@@ -780,6 +787,7 @@ class SourceTypeAdmin(admin.ModelAdmin):
         "cpc_decimal_places",
         "delete_traffic_metrics_threshold",
     )
+    search_fields = ("type", "id")
 
     def get_readonly_fields(self, request, obj=None):
         if obj:
@@ -794,9 +802,10 @@ class SourceCredentialsAdmin(admin.ModelAdmin):
     form = SourceCredentialsForm
     verbose_name = "Source Credentials"
     verbose_name_plural = "Source Credentials"
-    search_fields = ["name", "source"]
+    search_fields = ("name", "source")
     list_display = ("name", "source", "created_dt", "modified_dt")
     readonly_fields = ("created_dt", "modified_dt")
+    autocomplete_fields = ("source",)
 
 
 class CampaignSettingsAdmin(SaveWithRequestMixin, admin.ModelAdmin):
@@ -816,7 +825,7 @@ class CampaignSettingsAdmin(SaveWithRequestMixin, admin.ModelAdmin):
 
     actions = None
 
-    search_fields = ["campaign__name"]
+    search_fields = ("campaign__name",)
     list_display = ("campaign", "campaign_manager", "iab_category", "promotion_goal", "created_dt")
 
     def has_add_permission(self, request):
@@ -827,8 +836,6 @@ class CampaignSettingsAdmin(SaveWithRequestMixin, admin.ModelAdmin):
 
 
 # Ad Group
-
-
 class IsArchivedFilter(admin.SimpleListFilter):
     title = "Is archived"
     parameter_name = "is_archived"
@@ -857,15 +864,16 @@ class AdGroupAdmin(SlackLoggerMixin, admin.ModelAdmin):
     class Media:
         css = {"all": ("css/admin/style.css",)}
 
-    search_fields = ["name"]
+    search_fields = ("name",)
     list_display = ("id", "name", "campaign_", "account_", "is_archived_", "created_dt", "modified_dt")
     list_filter = [IsArchivedFilter]
 
-    raw_id_fields = ("campaign", "settings", "default_blacklist", "default_whitelist")
+    raw_id_fields = ("campaign", "settings", "default_blacklist", "default_whitelist", "campaign")
     readonly_fields = ("id", "created_dt", "modified_dt", "modified_by")
     exclude = ("settings",)
     form = dash_forms.AdGroupAdminForm
     inlines = (DirectDealConnectionAdGroupsInline,)
+
     fieldsets = (
         (None, {"fields": ("name", "campaign", "created_dt", "modified_dt", "modified_by", "custom_flags")}),
         ("Additional targeting", {"classes": ("collapse",), "fields": dash_forms.AdGroupAdminForm.SETTINGS_FIELDS}),
@@ -935,9 +943,11 @@ class AdGroupAdmin(SlackLoggerMixin, admin.ModelAdmin):
     campaign_.admin_order_field = "campaign"
 
 
+# Ad Group Source
 class AdGroupSourceAdmin(SaveWithRequestMixin, admin.ModelAdmin):
     list_display = ("ad_group_", "source_content_ad_id")
     exclude = ("settings",)
+    search_fields = ("id", "name")
 
     list_filter = ("source",)
 
@@ -963,12 +973,14 @@ class AdGroupSourceAdmin(SaveWithRequestMixin, admin.ModelAdmin):
     ad_group_.admin_order_field = "ad_group"
 
 
+# Ad Group Settings
 class AdGroupSettingsAdmin(SaveWithRequestMixin, admin.ModelAdmin):
 
     actions = None
 
-    search_fields = ["ad_group__name"]
+    search_fields = ("ad_group__name",)
     list_display = ("ad_group", "state", "cpc_cc", "daily_budget_cc", "start_date", "end_date", "created_dt")
+    readonly_fields = ("created_by", "ad_group")
 
     def has_delete_permission(self, request, obj=None):
         return False
@@ -976,8 +988,9 @@ class AdGroupSettingsAdmin(SaveWithRequestMixin, admin.ModelAdmin):
 
 class AdGroupSourceSettingsAdmin(admin.ModelAdmin):
     raw_id_fields = ("ad_group_source",)
-    search_fields = ["ad_group_source__ad_group__name", "ad_group_source__source__name"]
+    search_fields = ("ad_group_source__ad_group__name", "ad_group_source__source__name")
     list_display = ("ad_group_source", "state", "cpc_cc", "daily_budget_cc", "created_dt")
+    readonly_fields = ("created_by",)
 
 
 class AdGroupModelChoiceField(forms.ModelChoiceField):
@@ -985,6 +998,7 @@ class AdGroupModelChoiceField(forms.ModelChoiceField):
         return "{} | {} | {}".format(obj.campaign.account.name, obj.campaign.name, obj.name)
 
 
+# Demo Mapping
 class DemoMappingAdminForm(forms.ModelForm):
     real_account = forms.ModelChoiceField(queryset=models.Account.objects.order_by("name"))
     demo_campaign_name_pool = SimpleArrayField(
@@ -998,6 +1012,7 @@ class DemoMappingAdminForm(forms.ModelForm):
 class DemoMappingAdmin(admin.ModelAdmin):
     list_display = ("real_account", "demo_account_name", "demo_campaign_name_pool_", "demo_ad_group_name_pool_")
     form = DemoMappingAdminForm
+    autocomplete_fields = ("real_account",)
 
     def demo_campaign_name_pool_(self, obj):
         return truncatechars(", ".join(obj.demo_campaign_name_pool), 70)
@@ -1006,6 +1021,7 @@ class DemoMappingAdmin(admin.ModelAdmin):
         return truncatechars(", ".join(obj.demo_ad_group_name_pool), 70)
 
 
+# OutBrain Account
 class OutbrainAccountAdmin(admin.ModelAdmin):
     list_display = ("marketer_id", "marketer_name", "used", "created_dt", "modified_dt")
     list_filter = ("used",)
@@ -1173,6 +1189,7 @@ class ContentAdSourceAdmin(admin.ModelAdmin):
         self.list_display_links = None
 
 
+# Credit Line Item
 class CreditLineItemResource(resources.ModelResource):
     class Meta:
         model = models.CreditLineItem
@@ -1227,6 +1244,7 @@ class CreditLineItemAdmin(ExportMixin, SaveWithRequestMixin, admin.ModelAdmin):
         return False
 
 
+# Refund
 class RefundLineItemResource(resources.ModelResource):
     class Meta:
         model = models.RefundLineItem
@@ -1257,6 +1275,7 @@ class RefundLineItemAdmin(ExportMixin, SaveWithRequestMixin, admin.ModelAdmin):
     list_filter = ("account", "created_by", "credit")
     readonly_fields = ("id", "end_date", "created_dt", "created_by")
     search_fields = ("id", "account__name", "amount", "comment")
+    autocomplete_fields = ("account", "credit")
     actions = None
     form = dash_forms.RefundLineItemAdminForm
     resource_class = RefundLineItemResource
@@ -1275,17 +1294,22 @@ class RefundLineItemAdmin(ExportMixin, SaveWithRequestMixin, admin.ModelAdmin):
             messages.error(request, str(err))
 
 
+# Budgets
 class BudgetLineItemAdmin(SaveWithRequestMixin, admin.ModelAdmin):
     list_display = ("__str__", "campaign", "start_date", "end_date", "amount", "license_fee", "created_dt")
     date_hierarchy = "start_date"
     list_filter = ["created_by"]
     readonly_fields = ("created_dt", "created_by", "freed_cc")
     search_fields = ("campaign__name", "campaign__account__name", "amount")
+    autocomplete_fields = ("credit",)
+    raw_id_fields = ("campaign",)
+
     form = dash_forms.BudgetLineItemAdminForm
 
 
+# Scheduled Reports
 class ScheduledExportReportLogAdmin(admin.ModelAdmin):
-    search_fields = ["scheduled_report"]
+    search_fields = ("scheduled_report",)
     list_display = (
         "created_dt",
         "start_date",
@@ -1297,10 +1321,11 @@ class ScheduledExportReportLogAdmin(admin.ModelAdmin):
         "errors",
     )
     readonly_fields = ["created_dt"]
+    autocomplete_fields = ("scheduled_report",)
 
 
 class ScheduledExportReportAdmin(admin.ModelAdmin):
-    search_fields = ["name", "created_by__email"]
+    search_fields = ("name", "created_by__email")
     list_display = (
         "created_dt",
         "created_by",
@@ -1316,9 +1341,10 @@ class ScheduledExportReportAdmin(admin.ModelAdmin):
         "get_recipients",
         "state",
     )
-    readonly_fields = ["created_dt"]
+    readonly_fields = ["created_dt", "created_by"]
     list_filter = ("state", "sending_frequency")
     ordering = ("state", "-created_dt")
+    raw_id_fields = ("report",)
 
     def get_recipients(self, obj):
         return ", ".join(obj.get_recipients_emails_list())
@@ -1352,7 +1378,7 @@ class ScheduledExportReportAdmin(admin.ModelAdmin):
 
 
 class ExportReportAdmin(admin.ModelAdmin):
-    search_fields = ["created_by__email"]
+    search_fields = ("created_by__email",)
     list_display = (
         "created_dt",
         "created_by",
@@ -1371,6 +1397,7 @@ class ExportReportAdmin(admin.ModelAdmin):
         "_account_types",
     )
     readonly_fields = ["created_dt"]
+    autocomplete_fields = ("account",)
 
     def get_sources(self, obj):
         if len(obj.filtered_sources.all()) == 0:
@@ -1394,6 +1421,7 @@ class ExportReportAdmin(admin.ModelAdmin):
     _agencies.short_description = "Filtered Account Types"
 
 
+# Email Templates
 class EmailTemplateAdmin(admin.ModelAdmin):
     actions = None
 
@@ -1417,7 +1445,10 @@ class EmailTemplateAdmin(admin.ModelAdmin):
         return True
 
 
+# Facebook Account
 class FacebookAccount(admin.ModelAdmin):
+    autocomplete_fields = ("account",)
+
     def get_queryset(self, request):
         qs = super(FacebookAccount, self).get_queryset(request)
         qs = qs.select_related("account")
@@ -1499,7 +1530,7 @@ class HistoryAdmin(ExportMixin, admin.ModelAdmin):
 
     list_filter = (SelfManagedFilter, ("created_dt", admin.DateFieldListFilter), "action_type", "level", "system_user")
 
-    search_fields = [
+    search_fields = (
         "agency__id",
         "agency__name",
         "account__name",
@@ -1510,7 +1541,7 @@ class HistoryAdmin(ExportMixin, admin.ModelAdmin):
         "ad_group__id",
         "changes_text",
         "created_by__email",
-    ]
+    )
 
     ordering = ("-created_dt",)
     date_hierarchy = "created_dt"
@@ -1584,6 +1615,7 @@ class HistoryAdmin(ExportMixin, admin.ModelAdmin):
         return True
 
 
+# Audience
 class AudienceRuleAdmin(admin.TabularInline):
     model = models.AudienceRule
     extra = 3
@@ -1591,14 +1623,17 @@ class AudienceRuleAdmin(admin.TabularInline):
 
 class AudienceAdmin(admin.ModelAdmin):
     list_display = ("pixel", "ttl", "prefill_days", "created_dt", "modified_dt")
-
     inlines = [AudienceRuleAdmin]
     exclude = ("ad_group_settings",)
+    readonly_fields = ("created_by",)
 
 
+# Publisher Group
 class PublisherGroupAdmin(admin.ModelAdmin):
     list_display = ("name", "account", "agency", "created_dt", "modified_dt")
     readonly_fields = ("modified_by",)
+    search_fields = ("name",)
+    autocomplete_fields = ("account", "agency")
 
     def get_queryset(self, request):
         qs = super(PublisherGroupAdmin, self).get_queryset(request)
@@ -1609,6 +1644,7 @@ class PublisherGroupAdmin(admin.ModelAdmin):
         obj.save(request)
 
 
+# Publisher Group
 class PublisherGroupListFilter(SimpleListFilter):
     title = "Publisher Group Type"
     parameter_name = "publisher_group_type"
@@ -1626,8 +1662,9 @@ class PublisherGroupListFilter(SimpleListFilter):
 class PublisherGroupEntryAdmin(ExportMixin, admin.ModelAdmin):
     list_display = ("publisher_group", "publisher", "source", "include_subdomains", "created_dt", "modified_dt")
     readonly_fields = ("created_dt", "modified_dt")
-    search_fields = ["publisher_group__name", "publisher_group__id", "publisher", "source__name"]
+    search_fields = ("publisher_group__name", "publisher_group__id", "publisher", "source__name")
     raw_id_fields = ("publisher_group",)
+    autocomplete_fields = ("source",)
 
     list_filter = (("created_dt", admin.DateFieldListFilter), PublisherGroupListFilter, "source")
 
@@ -1642,6 +1679,7 @@ class PublisherGroupEntryAdmin(ExportMixin, admin.ModelAdmin):
         return self.readonly_fields
 
 
+# Publisher Classification
 class PublisherClassificationAdmin(admin.ModelAdmin):
     list_display = ("pk", "publisher", "category", "toggle_ignore_")
     readonly_fields = ("pk", "created_dt", "modified_dt")
@@ -1685,6 +1723,7 @@ class PublisherClassificationAdmin(admin.ModelAdmin):
         return mark_safe('<a href="%s">%s</a>' % (link, obj.ignored and "ignored" or "valid"))
 
 
+# CPC constraints
 class CpcConstraintAdmin(admin.ModelAdmin):
     model = models.CpcConstraint
     list_display = (
@@ -1713,9 +1752,9 @@ class CpcConstraintAdmin(admin.ModelAdmin):
         "ad_group__name",
         "ad_group__id",
     )
-
     readonly_fields = ("created_dt",)
     raw_id_fields = ("agency", "account", "campaign", "ad_group")
+    autocomplete_fields = ("source",)
 
     ordering = ("-created_dt",)
     date_hierarchy = "created_dt"
@@ -1771,6 +1810,7 @@ class CpcConstraintAdmin(admin.ModelAdmin):
         return obj.campaign or (obj.ad_group and obj.ad_group.campaign) or None
 
 
+# Custom Hacks
 class CustomHackStatusFilter(SimpleListFilter):
     title = "Status"
     parameter_name = "removed_dt"
@@ -1863,6 +1903,7 @@ class CustomHackAdmin(admin.ModelAdmin):
 
     ordering = ("-created_dt",)
     date_hierarchy = "created_dt"
+    autocomplete_fields = ("source",)
 
     def mark_removed(self, request, queryset):
         queryset.update(removed_dt=datetime.datetime.now())
@@ -1927,6 +1968,7 @@ class CustomHackAdmin(admin.ModelAdmin):
         return obj.ad_group and "{} | {}".format(obj.ad_group.pk, str(obj.ad_group.name)) or ""
 
 
+# Custom Flags
 class CustomFlagAdmin(admin.ModelAdmin):
     model = models.CustomFlag
 
@@ -1938,6 +1980,7 @@ class CustomFlagAdmin(admin.ModelAdmin):
         return actions
 
 
+# Deals
 class DirectDealConnectionForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super(DirectDealConnectionForm, self).__init__(*args, **kwargs)
@@ -1972,10 +2015,11 @@ class DirectDealConnectionForm(forms.ModelForm):
 class DirectDealConnectionAdmin(admin.ModelAdmin):
     model = models.DirectDealConnection
     form = DirectDealConnectionForm
-    raw_id_fields = ("adgroup", "agency")
+    raw_id_fields = ("adgroup",)
     readonly_fields = ("modified_dt", "created_dt", "created_by")
     list_display = ("id", "source", "exclusive", "adgroup", "agency", "get_deals")
     search_fields = ("source__name", "deals__deal_id", "adgroup__id", "agency__id")
+    autocomplete_fields = ("source", "agency")
 
     def get_deals(self, obj):
         return "\n".join([d.deal_id for d in obj.deals.all()])

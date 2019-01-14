@@ -24,7 +24,7 @@ class UserChangeForm(forms.UserChangeForm):
 class UserAdmin(authadmin.UserAdmin):
     form = UserChangeForm
     add_form = UserCreationForm
-
+    search_fields = ("email", "username", "first_name", "last_name")
     fieldsets = (
         (None, {"fields": ("email", "password")}),
         (_("Personal info"), {"fields": ("username", "first_name", "last_name")}),
@@ -40,7 +40,7 @@ class UserAdmin(authadmin.UserAdmin):
 
     list_display = ("email", "username", "first_name", "last_name", "is_staff", "last_login")
 
-    filter_horizontal = ("groups", "user_permissions", "sspd_sources")
+    filter_horizontal = ("sspd_sources", "groups", "user_permissions")
 
     def formfield_for_manytomany(self, db_field, request, **kwargs):
         if db_field.name == "sspd_sources":
@@ -49,6 +49,8 @@ class UserAdmin(authadmin.UserAdmin):
 
 
 class InternalGroupAdmin(admin.ModelAdmin):
+    search_fields = ("id", "name")
+
     def get_queryset(self, request):
         qs = super(InternalGroupAdmin, self).get_queryset(request)
         qs = qs.select_related("group")
@@ -56,6 +58,8 @@ class InternalGroupAdmin(admin.ModelAdmin):
 
 
 class PermissionAdmin(admin.ModelAdmin):
+    search_fields = ("id", "name")
+
     def get_queryset(self, request):
         qs = super(PermissionAdmin, self).get_queryset(request)
         qs = qs.select_related("content_type")
