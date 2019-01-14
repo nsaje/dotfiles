@@ -65,6 +65,15 @@ OUTPUT_COLUMN_NAMES = [
     "sales_email",
     "cs_email",
     "frequency_capping",
+    "active_ssps",
+    "active_ssps_count",
+    "bidding_type",
+    "goal_type",
+    "goal_value",
+    "budget_end_date",
+    "credit_end_date",
+    "remaining_credit",
+    "remaining_budget",
 ]
 
 WORLD_REGIONS = {

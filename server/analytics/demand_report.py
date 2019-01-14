@@ -2,17 +2,31 @@ import datetime
 import io
 import json
 import logging
+from collections import defaultdict
 from decimal import Decimal
 
 import unicodecsv as csv
+from django.db.models import DateField
+from django.db.models import ExpressionWrapper
 from django.db.models import F
+from django.db.models import FloatField
+from django.db.models import Func
+from django.db.models import Max
+from django.db.models import OuterRef
+from django.db.models import Q
+from django.db.models import Subquery
+from django.db.models.functions import Cast
+from django.db.models.functions import Coalesce
 
 from analytics import demand_report_definitions
 from core import models
 from core.features import bcm
+from core.features.goals import campaign_goal
+from core.features.goals import campaign_goal_value
 from dash import constants
 from redshiftapi import db
 from utils import bigquery_helper
+from utils import converters
 from utils import queryset_helper
 from zemauth.models import User
 
@@ -102,17 +116,23 @@ def _ad_group_rows_generator(ad_group_query_set, ad_group_spend_dict, source_id_
         campaign_ids = set(e["campaign_id"] for e in ad_group_data_chunk)
 
         campaign_data_dict = {e["campaign_id"]: e for e in _get_campaign_data(campaign_ids)}
+        logger.info("Fetched %s campaign data rows for chunk #%s", len(campaign_data_dict), chunk_id)
 
         account_data_dict = {e["campaign_id"]: e for e in _get_account_data(campaign_ids)}
+        logger.info("Fetched %s account data rows for chunk #%s", len(account_data_dict), chunk_id)
 
         user_email_dict = _get_user_email_dict(account_data_dict.values())
+        logger.info("Fetched %s user data rows for chunk #%s", len(user_email_dict), chunk_id)
+
+        remaining_budget_dict = _get_remaining_budget_data_map(campaign_ids)
+        logger.info("Fetched %s remaining budget data rows for chunk #%s", len(remaining_budget_dict), chunk_id)
 
         ad_group_ids = set(e["adgroup_id"] for e in ad_group_data_chunk)
 
-        ad_group_source_data_dict = {}
+        ad_group_source_data_dict = defaultdict(list)
         for ad_group_source_row in _get_ad_group_source_data(ad_group_ids):
-            ad_group_source_list = ad_group_source_data_dict.setdefault(ad_group_source_row["adgroup_id"], [])
-            ad_group_source_list.append(ad_group_source_row)
+            ad_group_source_data_dict[ad_group_source_row["adgroup_id"]].append(ad_group_source_row)
+        logger.info("Fetched %s ad group source data rows for chunk #%s", len(ad_group_source_data_dict), chunk_id)
 
         ad_group_stats_dict = _calculate_ad_group_stats(
             ad_group_data_chunk, campaign_data_dict, ad_group_source_data_dict, ad_group_spend_dict, source_id_map
@@ -122,6 +142,7 @@ def _ad_group_rows_generator(ad_group_query_set, ad_group_spend_dict, source_id_
             row = ad_group_data_row.copy()
             row.update(campaign_data_dict[row["campaign_id"]])
             row.update(account_data_dict[row["campaign_id"]])
+            row.update(remaining_budget_dict.get(row["campaign_id"], {"remaining_budget": Decimal(0.0)}))
             row.update(ad_group_stats_dict[row["adgroup_id"]])
 
             target_regions, geo_targeting_types = _resolve_geo_targeting(row)
@@ -143,10 +164,9 @@ def _ad_group_rows_generator(ad_group_query_set, ad_group_spend_dict, source_id_
 
 def _get_budget_data_dict(campaign_ids):
     budget_data = _get_budget_data(campaign_ids)
-    budget_dict = {}
+    budget_dict = defaultdict(list)
     for row in budget_data:
-        campaign_list = budget_dict.setdefault(row["campaign_id"], [])
-        campaign_list.append(row)
+        budget_dict[row["campaign_id"]].append(row)
 
     return budget_dict
 
@@ -169,13 +189,16 @@ def _calculate_ad_group_stats(
     budget_data_dict = _get_budget_data_dict(set(e["campaign_id"] for e in ad_group_data_chunk))
 
     ad_group_dict = {}
-    campaign_adgroup_map = {}
+    campaign_adgroup_map = defaultdict(set)
 
     for ad_group_data_row in ad_group_data_chunk:
         ad_group_id = ad_group_data_row["adgroup_id"]
+        campaign_adgroup_map[ad_group_data_row["campaign_id"]].add(ad_group_id)
 
-        ad_group_id_set = campaign_adgroup_map.setdefault(ad_group_data_row["campaign_id"], set())
-        ad_group_id_set.add(ad_group_id)
+        if ad_group_data_row["adgroupsettings_state"] == constants.AdGroupSourceSettingsState.ACTIVE:
+            active_ssps = [ssp["adgroupsource_source_name"] for ssp in ad_group_source_data_dict[ad_group_id]]
+        else:
+            active_ssps = []
 
         impressions, clicks, spend = _aggregate_stats(ad_group_spend_dict, ad_group_id)
         budget, cpc = _calculate_budget_and_cpc(
@@ -190,6 +213,9 @@ def _calculate_ad_group_stats(
             "spend": spend,
             "calculated_daily_budget": budget,
             "calculated_cpc": cpc,
+            "active_ssps": ", ".join(sorted(active_ssps)),
+            "active_ssps_count": len(active_ssps),
+            "bidding_type": ad_group_data_row["adgroup_bidding_type"],
         }
 
     for campaign_id, ad_group_id_set in campaign_adgroup_map.items():
@@ -482,7 +508,10 @@ def _get_user_email_dict(account_data):
     return dict(User.objects.filter(id__in=user_ids).values_list("id", "email"))
 
 
-def _get_account_data(campaign_ids):
+def _get_account_data(campaign_ids, date=None):
+    if date is None:
+        date = datetime.date.today() - datetime.timedelta(days=1)
+
     field_mapping = {
         "campaign_id": F("campaign__id"),
         "agency_name": F("agency__name"),
@@ -502,11 +531,54 @@ def _get_account_data(campaign_ids):
         "auto_add_new_sources": F("settings__auto_add_new_sources"),
         "frequency_capping": F("settings__frequency_capping"),
     }
-    output_values = list(field_mapping.keys()) + ["agency_id", "currency"]
+    output_values = list(field_mapping.keys()) + ["agency_id", "currency", "credit_end_date", "remaining_credit"]
+
+    credit_query = (
+        bcm.CreditLineItem.objects.filter(Q(account__id=OuterRef("id")) | Q(agency__account__id=OuterRef("id")))
+        .filter(currency=OuterRef("currency"))
+        .filter_active(date)
+    )
+
+    remaining_credit_query = (
+        credit_query.annotate(
+            budget_amount=Subquery(
+                bcm.BudgetLineItem.objects.filter(credit__id=OuterRef("id"))
+                .annotate(
+                    budget_amount=Func(
+                        Coalesce(Cast("amount", FloatField()), 0.0)
+                        - converters.CC_TO_DECIMAL_CURRENCY * Coalesce(Cast("freed_cc", FloatField()), 0.0),
+                        function="SUM",
+                    )
+                )
+                .values("budget_amount"),
+                output_field=FloatField(),
+            )
+        )
+        .annotate(
+            credit_amount=ExpressionWrapper(
+                Coalesce("amount", 0) - converters.CC_TO_DECIMAL_CURRENCY * Coalesce("flat_fee_cc", 0),
+                output_field=FloatField(),
+            )
+        )
+        .annotate(
+            remaining_credit=Func(Coalesce("credit_amount", 0.0), function="SUM")
+            - Func(Coalesce("budget_amount", 0.0), function="SUM")
+        )
+        .values("remaining_credit")
+    )
 
     return (
         models.Account.objects.filter(campaign__id__in=campaign_ids)
         .select_related("agency", "agency__settings", "settings")
+        .annotate(remaining_credit=Subquery(remaining_credit_query, output_field=FloatField()))
+        .annotate(
+            credit_end_date=Subquery(
+                credit_query.annotate(max_end_date=Max("end_date"))
+                .order_by("-max_end_date")
+                .values("max_end_date")[:1],
+                output_field=DateField(),
+            )
+        )
         .annotate(**field_mapping)
         .values(*output_values)
     )
@@ -529,13 +601,97 @@ def _get_campaign_data(campaign_ids):
         "autopilot": F("settings__autopilot"),
         "campaignsettings_frequency_capping": F("settings__frequency_capping"),
     }
-    output_values = list(field_mapping.keys()) + ["account_id", "modified_by_id", "type", "real_time_campaign_stop"]
+    output_values = list(field_mapping.keys()) + [
+        "account_id",
+        "modified_by_id",
+        "type",
+        "real_time_campaign_stop",
+        "goal_type",
+        "goal_value",
+        "budget_end_date",
+    ]
+
+    goal_query = campaign_goal.CampaignGoal.objects.filter(campaign__id=OuterRef("id"), primary=True).filter(
+        Q(
+            values__created_dt=Subquery(
+                campaign_goal_value.CampaignGoalValue.objects.filter(campaign_goal_id=OuterRef("id"))
+                .annotate(max_created_dt=Max("created_dt"))
+                .values("max_created_dt")
+                .order_by("-max_created_dt")[:1]
+            )
+        )
+        | Q(values__isnull=True)
+    )
 
     return (
         models.Campaign.objects.filter(id__in=campaign_ids)
         .select_related("settings")
+        .annotate(
+            goal_type=Subquery(goal_query.values("type")), goal_value=Subquery(goal_query.values("values__value"))
+        )
+        .annotate(
+            budget_end_date=Subquery(
+                bcm.BudgetLineItem.objects.filter(campaign__id=OuterRef("id"))
+                .annotate(max_end_date=Max("end_date"))
+                .order_by("-max_end_date")
+                .values("max_end_date")[:1]
+            )
+        )
         .annotate(**field_mapping)
         .values(*output_values)
+    )
+
+
+def _get_remaining_budget_data_map(campaign_ids, date=None):
+    budget_map = defaultdict(list)
+    for record in _get_remaining_budget_data(campaign_ids, date=date):
+        budget_map[record["campaign_id"]].append(record)
+
+    remaining_budget_map = {}
+    for campaign_id, record_list in budget_map.items():
+        uses_bcm_v2 = record_list[0]["uses_bcm_v2"]
+
+        budget = 0
+        for record in record_list:
+
+            if uses_bcm_v2:
+                spend_attribute = "spend_data_local_etfm_total"
+                multiplication_factor = 1
+            else:
+                spend_attribute = "spend_data_local_etf_total"
+                multiplication_factor = 1 - record["license_fee"]
+
+            total_spend = converters.nano_to_decimal(record[spend_attribute] or 0)
+            allocated_amount = (
+                Decimal(record["amount"] * converters.CURRENCY_TO_CC - record["freed_cc"])
+                * converters.CC_TO_DECIMAL_CURRENCY
+            )
+            budget += (allocated_amount - total_spend) * multiplication_factor
+
+        remaining_budget_map[campaign_id] = {"remaining_budget": budget}
+
+    return remaining_budget_map
+
+
+def _get_remaining_budget_data(campaign_ids, date=None):
+    if date is None:
+        date = datetime.date.today() - datetime.timedelta(days=1)
+
+    return (
+        bcm.BudgetLineItem.objects.filter(campaign__id__in=campaign_ids)
+        .filter_active(date)
+        .annotate_spend_data()
+        .annotate(license_fee=F("credit__license_fee"))
+        .annotate(uses_bcm_v2=F("campaign__account__uses_bcm_v2"))
+        .values(
+            "amount",
+            "freed_cc",
+            "campaign_id",
+            "spend_data_local_etfm_total",
+            "spend_data_local_etf_total",
+            "license_fee",
+            "uses_bcm_v2",
+        )
     )
 
 
@@ -587,6 +743,8 @@ def _get_ad_group_data(ad_group_ids=None, date=None):
         "click_capping_daily_ad_group_max_clicks": F("settings__click_capping_daily_ad_group_max_clicks"),
         "b1_sources_group_cpm": F("settings__b1_sources_group_cpm"),
         "adgroupsettings_frequency_capping": F("settings__frequency_capping"),
+        "adgroupsettings_state": F("settings__state"),
+        "adgroup_bidding_type": F("bidding_type"),
     }
 
     output_values = list(field_mapping.keys()) + ["campaign_id"]
@@ -606,6 +764,7 @@ def _get_ad_group_source_data(ad_group_ids=None, date=None):
     field_mapping = {
         "adgroup_id": F("ad_group_id"),
         "adgroupsource_source_id": F("source_id"),
+        "adgroupsource_source_name": F("source__name"),
         "adgroupsourcesettings_cpc_cc": F("settings__cpc_cc"),
         "adgroupsourcesettings_daily_budget_cc": F("settings__daily_budget_cc"),
     }

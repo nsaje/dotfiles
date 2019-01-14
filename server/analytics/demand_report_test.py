@@ -15,6 +15,8 @@ from analytics import demand_report
 from automation import campaignstop
 from automation.campaignstop import constants as campaignstop_constants
 from dash import constants
+from dash.infobox_helpers import calculate_allocated_and_available_credit
+from dash.infobox_helpers import calculate_available_campaign_budget
 from utils.magic_mixer import magic_mixer
 
 
@@ -28,6 +30,10 @@ def _create_daily_budget_statements(budget, dates, **kwargs):
         "data_spend_nano": 25000000000,
         "license_fee_nano": 25000000000,
         "margin_nano": 25000000000,
+        "local_media_spend_nano": 25000000000,
+        "local_data_spend_nano": 25000000000,
+        "local_license_fee_nano": 25000000000,
+        "local_margin_nano": 25000000000,
     }
     create_kwargs.update(**kwargs)
 
@@ -54,6 +60,25 @@ class DemandReportTestCase(test.TestCase):
 
         target_regions = target_regions or []
         geo_targeting_type = geo_targeting_type or []
+
+        primary_goal = ad_group.campaign.campaigngoal_set.filter(primary=True).first()
+        if primary_goal:
+            goal_type = primary_goal.type
+            goal_value = primary_goal.get_current_value()
+            if goal_value is None:
+                goal_value = ""
+            else:
+                goal_value = goal_value.value
+        else:
+            goal_type = ""
+            goal_value = ""
+
+        with patch("utils.dates_helper.local_today") as mock_local_today:
+            mock_local_today.return_value = datetime.date.today() - datetime.timedelta(days=1)
+            _, remaining_credit = calculate_allocated_and_available_credit(ad_group.campaign.account)
+            remaining_credit = float(remaining_credit)
+
+            remaining_budget = calculate_available_campaign_budget(ad_group.campaign)
 
         checks = {
             "date": (datetime.date.today() - datetime.timedelta(days=1)).strftime("%Y-%m-%d"),
@@ -124,6 +149,24 @@ class DemandReportTestCase(test.TestCase):
             "sales_email": ad_group.campaign.account.agency.sales_representative.email,
             "cs_email": ad_group.campaign.account.agency.cs_representative.email,
             "frequency_capping": demand_report._bool_repr(ad_group.campaign.account.settings.frequency_capping),
+            "active_ssps": ", ".join(
+                sorted(
+                    ags.source.name
+                    for ags in ad_group.adgroupsource_set.filter(
+                        ad_group__settings__state=constants.AdGroupSourceSettingsState.ACTIVE
+                    )
+                )
+            ),
+            "active_ssps_count": ad_group.adgroupsource_set.filter(
+                ad_group__settings__state=constants.AdGroupSourceSettingsState.ACTIVE
+            ).count(),
+            "bidding_type": ad_group.bidding_type,
+            "goal_type": goal_type,
+            "goal_value": goal_value,
+            "budget_end_date": ad_group.campaign.budgets.order_by("-end_date").first().end_date,
+            "credit_end_date": ad_group.campaign.account.credits.order_by("-end_date").first().end_date,
+            "remaining_credit": remaining_credit,
+            "remaining_budget": remaining_budget,
         }
 
         for column, value in checks.items():
@@ -206,6 +249,10 @@ class DemandReportTestCase(test.TestCase):
 
         self.goal_2 = core.features.goals.campaign_goal.CampaignGoal.objects.create_unsafe(
             campaign=self.campaign_2, type=constants.CampaignGoalKPI.CPA, primary=True
+        )
+
+        self.goal_value_2_1 = magic_mixer.cycle(4).blend(
+            core.features.goals.campaign_goal_value.CampaignGoalValue, campaign_goal=self.goal_2
         )
 
         self.start_date = datetime.date.today() - datetime.timedelta(days=3)
@@ -350,7 +397,7 @@ class DemandReportTestCase(test.TestCase):
 
         mock_spend.return_value = [dict(zip(columns, row)) for row in spend_rows]
 
-        with self.assertNumQueries(7):
+        with self.assertNumQueries(8):
             demand_report.create_report()
 
         calls = mock_upload.call_args_list
@@ -460,7 +507,7 @@ class DemandReportTestCase(test.TestCase):
 
         mock_spend.return_value = [dict(zip(columns, row)) for row in spend_rows]
 
-        with self.assertNumQueries(13):
+        with self.assertNumQueries(15):
             demand_report.create_report()
 
         calls = mock_upload.call_args_list
