@@ -47,15 +47,15 @@ class Command(utils.command_helpers.ExceptionCommand):
         days_running = int(options["days_running"])
         flying_ad_groups = [
             ad_group
-            for ad_group in dash.models.AdGroup.objects.all().filter_current_and_active().exclude_archived()
-            if (date - ad_group.get_current_settings().start_date).days >= days_running
+            for ad_group in dash.models.AdGroup.objects.all().filter_running()
+            if (date - ad_group.settings.start_date).days >= days_running
         ]
         flying_campaigns = {
             c.pk: c
             for c in dash.models.Campaign.objects.filter(
-                id__in=set(adg.campaign_id for adg in flying_ad_groups)
+                id__in=set(adg.campaign_id for adg in flying_ad_groups), settings__autopilot=False
             ).select_related("account")
-            if c.account.get_current_settings().account_type in VALID_PACING_ACCOUNT_TYPES
+            if c.account.settings.account_type in VALID_PACING_ACCOUNT_TYPES
         }
         alarms = analytics.monitor.audit_pacing(
             date=date,
