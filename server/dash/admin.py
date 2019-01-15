@@ -128,18 +128,38 @@ class DirectDealConnectionAgencyInline(admin.StackedInline):
     model = models.DirectDealConnection
     can_delete = True
     extra = 0
-    filter_horizontal = ("deals",)
-    exclude = ("created_dt", "modified_dt", "adgroup")
+    autocomplete_fields = ("deals", "source")
+    exclude = ("created_dt", "modified_dt", "adgroup", "campaign", "account")
     readonly_fields = ("created_by",)
     raw_id_fields = ("agency_id",)
+
+
+class DirectDealConnectionAccountInline(admin.StackedInline):
+    model = models.DirectDealConnection
+    can_delete = True
+    extra = 0
+    autocomplete_fields = ("deals", "source")
+    exclude = ("created_dt", "modified_dt", "adgroup", "campaign", "agency")
+    readonly_fields = ("created_by",)
+    raw_id_fields = ("account_id",)
+
+
+class DirectDealConnectionCampaignInline(admin.StackedInline):
+    model = models.DirectDealConnection
+    can_delete = True
+    extra = 0
+    autocomplete_fields = ("deals", "source")
+    exclude = ("created_dt", "modified_dt", "adgroup", "account", "agency")
+    readonly_fields = ("created_by",)
+    raw_id_fields = ("campaign_id",)
 
 
 class DirectDealConnectionAdGroupsInline(admin.StackedInline):
     model = models.DirectDealConnection
     can_delete = True
     extra = 0
-    filter_horizontal = ("deals",)
-    exclude = ("created_dt", "modified_dt", "agency")
+    autocomplete_fields = ("deals", "source")
+    exclude = ("created_dt", "modified_dt", "agency", "account", "campaign")
     readonly_fields = ("created_by",)
     raw_id_fields = ("adgroup_id",)
 
@@ -543,7 +563,7 @@ class AccountAdmin(SlackLoggerMixin, SaveWithRequestMixin, admin.ModelAdmin):
     )
     exclude = ("users", "settings")
     filter_horizontal = ("allowed_sources",)
-    inlines = (AccountUserInline, CampaignInline)
+    inlines = (AccountUserInline, CampaignInline, DirectDealConnectionAccountInline)
 
     def get_form(self, request, obj=None, **kwargs):
         form = super(AccountAdmin, self).get_form(request, obj=obj, **kwargs)
@@ -607,7 +627,7 @@ class CampaignAdmin(SlackLoggerMixin, admin.ModelAdmin):
     readonly_fields = ("created_dt", "modified_dt", "modified_by", "id", "account")
     raw_id_fields = ("default_whitelist", "default_blacklist")
     exclude = ("settings",)
-    inlines = (AdGroupInline,)
+    inlines = (AdGroupInline, DirectDealConnectionCampaignInline)
     form = dash_forms.CampaignAdminForm
 
     def get_form(self, request, obj=None, **kwargs):
@@ -2015,11 +2035,11 @@ class DirectDealConnectionForm(forms.ModelForm):
 class DirectDealConnectionAdmin(admin.ModelAdmin):
     model = models.DirectDealConnection
     form = DirectDealConnectionForm
-    raw_id_fields = ("adgroup",)
+    raw_id_fields = ("adgroup", "campaign")
     readonly_fields = ("modified_dt", "created_dt", "created_by")
     list_display = ("id", "source", "exclusive", "adgroup", "agency", "get_deals")
     search_fields = ("source__name", "deals__deal_id", "adgroup__id", "agency__id")
-    autocomplete_fields = ("source", "agency")
+    autocomplete_fields = ("source", "agency", "account", "deals")
 
     def get_deals(self, obj):
         return "\n".join([d.deal_id for d in obj.deals.all()])
@@ -2032,6 +2052,7 @@ class DirectDealConnectionAdmin(admin.ModelAdmin):
 class DirectDealAdmin(admin.ModelAdmin):
     model = models.DirectDeal
     list_display = ("deal_id",)
+    search_fields = ("id", "deal_id")
 
 
 admin.site.register(models.Agency, AgencyAdmin)

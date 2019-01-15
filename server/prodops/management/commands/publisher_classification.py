@@ -34,7 +34,6 @@ class Command(ExceptionCommand):
             update = publisher_classification.update_publisher_classsifications_from_oen()
             if not update:
                 self.stdout.write("Publisher classifications are up-to-date. No new classifications inserted.")
-                return
             for d in update:
                 self.stdout.write("New publisher classification '{publisher}'/'{category}' added.".format(**d))
 

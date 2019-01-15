@@ -18,6 +18,8 @@ class DirectDealsView(K1APIView):
                     "exclusive": deal_connection.exclusive,
                     "adgroup_id": deal_connection.adgroup_id,
                     "agency_id": deal_connection.agency_id,
+                    "account_id": deal_connection.account_id,
+                    "campaign_id": deal_connection.campaign_id,
                     "deals": [deal.deal_id for deal in deal_connection.deals.all()],
                 }
                 for deal_connection in deal_connections

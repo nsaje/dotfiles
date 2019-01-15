@@ -393,6 +393,7 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ("can_set_frequency_capping", "User can set frequency capping"),
             ("can_use_new_entity_settings_drawers", "User can use new entity settings drawers"),
             ("can_see_amplify_ad_id_column", "User can see Amplify ad id column in grid"),
+            ("can_see_deals_in_ui", "User can see the deals on the entity settings"),
         )
 
     def get_full_name(self):
