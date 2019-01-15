@@ -261,7 +261,6 @@ def _calculate_ad_group_stats(
 def _calculate_budget_and_cpc(campaign_data_row, ad_group_data_row, ad_group_source_rows, source_id_map):
     adgroup_row = campaign_data_row.copy()
     adgroup_row.update(ad_group_data_row)
-    adgroup_row.update(ad_group_source_rows[0])
 
     if adgroup_row["autopilot"] or adgroup_row["autopilot_state"] in (
         constants.AdGroupSettingsAutopilotState.INACTIVE,
