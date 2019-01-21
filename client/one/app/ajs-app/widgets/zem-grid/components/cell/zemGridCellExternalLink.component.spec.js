@@ -5,6 +5,7 @@ describe('zemGridCellExternalLink', function() {
         '<zem-grid-cell-external-link data="ctrl.data" row="ctrl.row" column="ctrl.column" grid="ctrl.grid"></zem-grid-cell-external-link>'; // eslint-disable-line max-len
 
     beforeEach(angular.mock.module('one'));
+    beforeEach(angular.mock.module('one.mocks.downgradedProviders'));
     beforeEach(angular.mock.module('one.mocks.zemInitializationService'));
 
     beforeEach(inject(function($rootScope, _$compile_) {

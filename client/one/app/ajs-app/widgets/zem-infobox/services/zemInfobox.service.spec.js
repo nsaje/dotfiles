@@ -5,6 +5,7 @@ describe('zemInfoboxService', function() {
     var zemInfoboxEndpoint;
 
     beforeEach(angular.mock.module('one'));
+    beforeEach(angular.mock.module('one.mocks.downgradedProviders'));
     beforeEach(angular.mock.module('one.mocks.zemInitializationService'));
     beforeEach(inject(function(_$injector_) {
         $injector = _$injector_;

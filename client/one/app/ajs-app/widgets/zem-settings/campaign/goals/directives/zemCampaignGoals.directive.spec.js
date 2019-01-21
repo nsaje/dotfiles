@@ -2,6 +2,7 @@ describe('zemCampaignGoals', function() {
     var $scope, element, isolate;
 
     beforeEach(angular.mock.module('one'));
+    beforeEach(angular.mock.module('one.mocks.downgradedProviders'));
     beforeEach(angular.mock.module('one.mocks.zemInitializationService'));
 
     beforeEach(inject(function($compile, $rootScope) {

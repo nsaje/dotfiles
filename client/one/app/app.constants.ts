@@ -35,6 +35,16 @@ export enum EntityType {
     ACCOUNT = 'account',
 }
 
+export enum EntityUpdateAction {
+    EDIT = 'edit',
+    CREATE = 'create',
+    ARCHIVE = 'archive',
+    RESTORE = 'restore',
+    ACTIVATE = 'activate',
+    DEACTIVATE = 'deactivate',
+    CLONE = 'clone',
+}
+
 export enum Day {
     Monday = 'monday',
     Tuesday = 'tuesday',
@@ -66,15 +76,17 @@ export enum AdSize {
     INLINE_RECTANGLE = 2,
 }
 
+export enum AdGroupState {
+    ACTIVE = 1,
+    INACTIVE = 2,
+}
+
 export const APP_CONSTANTS = {
     /**
      * Max. selected media sources in on sources tabs.
      */
     maxSelectedSources: 3,
-    settingsState: {
-        ACTIVE: 1,
-        INACTIVE: 2,
-    },
+    settingsState: AdGroupState,
     adGroupSettingsAutopilotState: {
         ACTIVE_CPC_BUDGET: 1,
         INACTIVE: 2,
@@ -1045,14 +1057,7 @@ export const APP_CONSTANTS = {
         720: '30 days',
         2160: '90 days',
     },
-    entityAction: {
-        ACTIVATE: 'activate',
-        DEACTIVATE: 'deactivate',
-        ARCHIVE: 'archive',
-        RESTORE: 'restore',
-        EDIT: 'edit',
-        CLONE: 'clone',
-    },
+    entityAction: EntityUpdateAction,
     entityActionType: {
         SINGLE: 'single',
         BULK: 'bulk',

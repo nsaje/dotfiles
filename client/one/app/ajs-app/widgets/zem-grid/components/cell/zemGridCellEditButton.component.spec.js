@@ -6,6 +6,7 @@ describe('zemGridCellEditButton', function() {
         '</zem-grid-cell-edit-button>';
 
     beforeEach(angular.mock.module('one'));
+    beforeEach(angular.mock.module('one.mocks.downgradedProviders'));
     beforeEach(angular.mock.module('one.mocks.zemInitializationService'));
 
     beforeEach(inject(function(

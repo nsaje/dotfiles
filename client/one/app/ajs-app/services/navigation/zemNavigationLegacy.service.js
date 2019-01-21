@@ -3,7 +3,8 @@ angular
     .factory('zemNavigationService', function(
         $rootScope,
         $q,
-        zemNavigationLegacyEndpoint
+        zemNavigationLegacyEndpoint,
+        zemEntitiesUpdatesService
     ) {
         // eslint-disable-line max-len
 
@@ -164,6 +165,7 @@ angular
             }
         }
 
+        // TODO (jurebajt): Unused - remove
         function updateAllAccountsCache(data) {
             Object.keys(data).forEach(function(key) {
                 accounts[key] = data[key];
@@ -171,18 +173,21 @@ angular
             notifyCacheUpdate();
         }
 
+        // TODO (jurebajt): Unused - remove
         function updateAccountCache(id, data) {
             var fromCache = findAccountInNavTree(id);
             updateModel(fromCache.account, data);
             notifyCacheUpdate();
         }
 
+        // TODO (jurebajt): Unused - remove
         function updateCampaignCache(id, data) {
             var fromCache = findCampaignInNavTree(id);
             updateModel(fromCache.campaign, data);
             notifyCacheUpdate();
         }
 
+        // TODO (jurebajt): Unused - remove
         function updateAdGroupCache(id, data) {
             var fromCache = findAdGroupInNavTree(id);
             updateModel(fromCache.adGroup, data);
@@ -207,6 +212,10 @@ angular
         }
 
         function init() {
+            zemEntitiesUpdatesService
+                .getAllUpdates$()
+                .subscribe(reloadOnEntityUpdate);
+
             $rootScope.$emit('navigation-loading', true);
             return zemNavigationLegacyEndpoint
                 .list(true)
@@ -278,6 +287,18 @@ angular
             postoponedUpdates.accounts = [];
             postoponedUpdates.campaigns = [];
             postoponedUpdates.adGroups = [];
+        }
+
+        function reloadOnEntityUpdate(entityUpdate) {
+            if (entityUpdate.type === constants.entityType.ACCOUNT) {
+                return reloadAccount(entityUpdate.id);
+            }
+            if (entityUpdate.type === constants.entityType.CAMPAIGN) {
+                return reloadCampaign(entityUpdate.id);
+            }
+            if (entityUpdate.type === constants.entityType.AD_GROUP) {
+                return reloadAdGroup(entityUpdate.id);
+            }
         }
 
         function reloadAccount(id) {

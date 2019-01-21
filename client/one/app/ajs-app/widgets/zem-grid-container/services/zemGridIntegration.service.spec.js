@@ -6,6 +6,7 @@ describe('component: zemGridIntegrationService', function() {
     var $scope;
 
     beforeEach(angular.mock.module('one'));
+    beforeEach(angular.mock.module('one.mocks.downgradedProviders'));
     beforeEach(angular.mock.module('one.mocks.zemInitializationService'));
     beforeEach(inject(function($injector) {
         zemGridMocks = $injector.get('zemGridMocks');

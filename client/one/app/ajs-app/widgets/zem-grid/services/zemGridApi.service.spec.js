@@ -5,6 +5,7 @@ describe('zemGridApi', function() {
     var zemGridPubSub;
 
     beforeEach(angular.mock.module('one'));
+    beforeEach(angular.mock.module('one.mocks.downgradedProviders'));
     beforeEach(angular.mock.module('one.mocks.zemInitializationService'));
     beforeEach(angular.mock.module('one.mocks.NgZone'));
 

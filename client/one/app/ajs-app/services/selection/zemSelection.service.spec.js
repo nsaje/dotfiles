@@ -3,6 +3,7 @@ describe('zemSelectionService', function() {
     var zemSelectionService;
 
     beforeEach(angular.mock.module('one'));
+    beforeEach(angular.mock.module('one.mocks.downgradedProviders'));
     beforeEach(angular.mock.module('one.mocks.zemInitializationService'));
     beforeEach(inject(function(_$location_, _zemSelectionService_) {
         $location = _$location_;

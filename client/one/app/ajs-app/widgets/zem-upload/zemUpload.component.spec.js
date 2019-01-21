@@ -24,6 +24,7 @@ describe('zemUpload', function() {
             $compileProvider = _$compileProvider_;
         })
     );
+    beforeEach(angular.mock.module('one.mocks.downgradedProviders'));
     beforeEach(angular.mock.module('one.mocks.zemInitializationService'));
 
     beforeEach(inject(function($rootScope, _$compile_) {
@@ -99,6 +100,7 @@ describe('ZemUploadCtrl', function() {
     var onUploadSave = function() {};
 
     beforeEach(angular.mock.module('one'));
+    beforeEach(angular.mock.module('one.mocks.downgradedProviders'));
     beforeEach(angular.mock.module('one.mocks.zemInitializationService'));
     beforeEach(inject(function(
         $rootScope,

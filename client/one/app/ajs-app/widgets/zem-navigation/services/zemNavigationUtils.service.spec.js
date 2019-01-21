@@ -2,6 +2,7 @@ describe('ZemNavigationUtils', function() {
     var zemNavigationUtils;
 
     beforeEach(angular.mock.module('one'));
+    beforeEach(angular.mock.module('one.mocks.downgradedProviders'));
     beforeEach(angular.mock.module('one.mocks.zemInitializationService'));
     beforeEach(inject(function(_zemNavigationUtils_) {
         zemNavigationUtils = _zemNavigationUtils_;

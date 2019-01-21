@@ -6,6 +6,7 @@ describe('zemNavigationService', function() {
         mockApiFunc;
 
     beforeEach(angular.mock.module('one'));
+    beforeEach(angular.mock.module('one.mocks.downgradedProviders'));
     beforeEach(angular.mock.module('one.mocks.zemInitializationService'));
     beforeEach(function() {
         mockApiFunc = function() {

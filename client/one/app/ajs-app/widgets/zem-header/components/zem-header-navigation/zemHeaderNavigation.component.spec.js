@@ -4,6 +4,7 @@ describe('component: zemHeaderNavigation', function() {
     var ctrl;
 
     beforeEach(angular.mock.module('one'));
+    beforeEach(angular.mock.module('one.mocks.downgradedProviders'));
     beforeEach(angular.mock.module('one.mocks.zemInitializationService'));
     beforeEach(inject(function(_$componentController_, _hotkeys_) {
         $componentController = _$componentController_;

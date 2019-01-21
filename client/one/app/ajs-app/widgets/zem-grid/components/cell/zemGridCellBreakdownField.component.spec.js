@@ -5,6 +5,7 @@ describe('zemGridCellBreakdownField', function() {
         '<zem-grid-cell-breakdown-field data="ctrl.data" row="ctrl.row" column="ctrl.col" grid="ctrl.grid"></zem-grid-cell-breakdown-field>'; // eslint-disable-line max-len
 
     beforeEach(angular.mock.module('one'));
+    beforeEach(angular.mock.module('one.mocks.downgradedProviders'));
     beforeEach(angular.mock.module('one.mocks.zemInitializationService'));
 
     beforeEach(inject(function($rootScope, _$compile_) {

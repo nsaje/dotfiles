@@ -29,7 +29,7 @@ angular
 
         this.getAction = entityActionsService.getAction;
         this.onActionExecuted = entityActionsService.onActionExecuted;
-        this.onEntityCreated = entityInstanceService.onEntityCreated;
+        this.onEntityCreated = entityInstanceService.onEntityCreated; // TODO (jurebajt): Unused - remove
         this.onEntityUpdated = entityInstanceService.onEntityUpdated;
 
         // TODO: refactor (new service?)

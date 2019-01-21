@@ -2,6 +2,7 @@ describe('ZemUploadEditFormCtrl', function() {
     var scope, $q, ctrl, $timeout, $injector;
 
     beforeEach(angular.mock.module('one'));
+    beforeEach(angular.mock.module('one.mocks.downgradedProviders'));
     beforeEach(angular.mock.module('one.mocks.zemInitializationService'));
     beforeEach(angular.mock.module('stateMock'));
 

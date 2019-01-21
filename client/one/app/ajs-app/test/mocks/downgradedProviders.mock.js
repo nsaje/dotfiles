@@ -1,3 +1,5 @@
+var empty = require('rxjs').empty;
+
 var mockedFunction = function() {};
 
 angular
@@ -8,4 +10,8 @@ angular
     })
     .service('zemCampaignGoalsService', function() {
         this.getAvailableGoals = mockedFunction;
+    })
+    .service('zemEntitiesUpdatesService', function() {
+        this.getAllUpdates$ = empty();
+        this.getUpdatesOfEntity$ = empty();
     });

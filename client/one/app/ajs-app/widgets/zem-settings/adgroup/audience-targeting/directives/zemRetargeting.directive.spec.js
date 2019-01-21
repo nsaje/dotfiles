@@ -5,6 +5,7 @@ describe('zemRetargeting', function() {
         '<zem-retargeting zem-selected-adgroup-ids="selectedAdgroupIds" zem-retargetable-adgroups="retargetableAdgroups" zem-account="account"></zem-retargeting>'; // eslint-disable-line max-len
 
     beforeEach(angular.mock.module('one'));
+    beforeEach(angular.mock.module('one.mocks.downgradedProviders'));
     beforeEach(angular.mock.module('one.mocks.zemInitializationService'));
 
     beforeEach(inject(function($compile, $rootScope) {

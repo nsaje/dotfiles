@@ -27,6 +27,7 @@
     "angular2-highcharts": "0.5.5",
     "clone": "2.1.2",
     "core-js": "2.6.1",
+    "fast-deep-equal": "2.0.1",
     "highcharts": "6.2.0",
     "highcharts-ng": "1.2.1",
     "raven-js": "3.27.0",
@@ -37,7 +38,7 @@
   "devDependencies": {
     "@angular/language-service": "7.1.4",
     "@types/angular": "1.6.53",
-    "@types/jasmine": "3.3.5",
+    "@types/jasmine": "3.3.3",
     "@types/webpack-env": "1.13.6",
     "angular-mocks": "1.5.8",
     "angular2-template-loader": "0.6.2",

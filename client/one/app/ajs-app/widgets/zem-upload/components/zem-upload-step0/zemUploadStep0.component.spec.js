@@ -2,6 +2,7 @@ describe('ZemUploadStep0Ctrl', function() {
     var scope, $q, ctrl;
 
     beforeEach(angular.mock.module('one'));
+    beforeEach(angular.mock.module('one.mocks.downgradedProviders'));
     beforeEach(angular.mock.module('one.mocks.zemInitializationService'));
     beforeEach(inject(function($controller, $rootScope, _$q_) {
         $q = _$q_;

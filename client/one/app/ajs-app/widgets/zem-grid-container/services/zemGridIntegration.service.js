@@ -9,7 +9,8 @@ angular
         zemDataFilterService,
         zemSelectionService,
         zemAdGroupService,
-        zemGridIntegrationSelectionService
+        zemGridIntegrationSelectionService,
+        zemEntitiesUpdatesService
     ) {
         // eslint-disable-line
 
@@ -25,7 +26,7 @@ angular
             this.getGrid = getGrid;
             this.setGridApi = setGridApi;
 
-            function initialize() {
+            function initialize(entity) {
                 initializeGrid();
 
                 var onDateRangeUpdateHandler = zemDataFilterService.onDateRangeUpdate(
@@ -37,12 +38,30 @@ angular
                 $scope.$on('$destroy', onDateRangeUpdateHandler);
                 $scope.$on('$destroy', onDataFilterUpdateHandler);
 
-                // TODO: Check this out - Why only AdGroupService
-                // Fixed grid not refreshing after settings are saved in side panel.
-                var onEntityUpdatedHandler = zemAdGroupService.onEntityUpdated(
-                    reload
-                );
-                $scope.$on('$destroy', onEntityUpdatedHandler);
+                if (
+                    zemPermissions.hasPermission(
+                        'zemauth.can_use_new_entity_settings_drawers'
+                    )
+                ) {
+                    var entitiesUpdates$ = zemEntitiesUpdatesService
+                        .getUpdatesOfEntity$(entity.id, entity.type)
+                        .subscribe(function(entityUpdate) {
+                            if (
+                                entityUpdate.action ===
+                                constants.entityAction.EDIT
+                            ) {
+                                reload();
+                            }
+                        });
+                    $scope.$on('$destroy', function() {
+                        entitiesUpdates$.unsubscribe();
+                    });
+                } else {
+                    var onEntityUpdatedHandler = zemAdGroupService.onEntityUpdated(
+                        reload
+                    );
+                    $scope.$on('$destroy', onEntityUpdatedHandler);
+                }
             }
 
             function configureDataSource(_entity, _breakdown) {

@@ -3,6 +3,7 @@ describe('component: zemAudienceTargeting', function() {
         var $ctrl; // eslint-disable-line no-unused-vars
 
         beforeEach(angular.mock.module('one'));
+        beforeEach(angular.mock.module('one.mocks.downgradedProviders'));
         beforeEach(angular.mock.module('one.mocks.zemInitializationService'));
 
         beforeEach(inject(function($rootScope, $componentController) {
@@ -23,6 +24,7 @@ describe('component: zemAudienceTargeting', function() {
         var $ctrl, targetings; // eslint-disable-line no-unused-vars
 
         beforeEach(angular.mock.module('one'));
+        beforeEach(angular.mock.module('one.mocks.downgradedProviders'));
         beforeEach(angular.mock.module('one.mocks.zemInitializationService'));
 
         beforeEach(inject(function($rootScope, $componentController) {

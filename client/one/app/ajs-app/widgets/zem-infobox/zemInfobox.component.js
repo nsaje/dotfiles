@@ -15,13 +15,15 @@ angular.module('one.widgets').component('zemInfobox', {
         zemUtils,
         $state,
         $location,
-        $window
+        $window,
+        zemEntitiesUpdatesService
     ) {
         var $ctrl = this;
         $ctrl.hasPermission = zemPermissions.hasPermission;
         $ctrl.openHistory = openHistory;
 
         var entityUpdateHandler;
+        var entitiesUpdates$;
         var actionExecutedHandler;
         var dateRangeUpdateHandler;
         var dataFilterUpdateHandler;
@@ -54,11 +56,30 @@ angular.module('one.widgets').component('zemInfobox', {
                     .getEntityService(entity.type)
                     .onActionExecuted(onActionExecuted);
             }
+
+            if (
+                zemPermissions.hasPermission(
+                    'zemauth.can_use_new_entity_settings_drawers'
+                )
+            ) {
+                if (entitiesUpdates$) entitiesUpdates$.unsubscribe();
+
+                entitiesUpdates$ = zemEntitiesUpdatesService
+                    .getUpdatesOfEntity$(entity.id, entity.type)
+                    .subscribe(function(entityUpdate) {
+                        if (
+                            entityUpdate.action === constants.entityAction.EDIT
+                        ) {
+                            onEntityUpdated();
+                        }
+                    });
+            }
         };
 
         $ctrl.$onDestroy = function() {
             if (entityUpdateHandler) entityUpdateHandler();
             if (actionExecutedHandler) actionExecutedHandler();
+            if (entitiesUpdates$) entitiesUpdates$.unsubscribe();
             if (dateRangeUpdateHandler) dateRangeUpdateHandler();
             if (dataFilterUpdateHandler) dataFilterUpdateHandler();
 

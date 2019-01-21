@@ -2,6 +2,7 @@ describe('zemGridDataValidator', function() {
     var zemGridDataValidator, tests, options;
 
     beforeEach(angular.mock.module('one'));
+    beforeEach(angular.mock.module('one.mocks.downgradedProviders'));
     beforeEach(angular.mock.module('one.mocks.zemInitializationService'));
 
     beforeEach(inject(function(_zemGridDataValidator_) {

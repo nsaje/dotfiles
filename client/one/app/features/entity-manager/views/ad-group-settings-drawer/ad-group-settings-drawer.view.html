@@ -1,3 +1,5 @@
 <zem-drawer [isOpen]="isOpen" (closeRequest)="close()" class="zem-drawer">
-    Settings for adgroup with id {{ entityId }}
+    Settings for adgroup with id {{ store.state.adGroup.id }}
+    <button (click)="saveSettings()">Save</button>
+    <button (click)="archive()">Archive</button>
 </zem-drawer>

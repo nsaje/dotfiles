@@ -68,7 +68,7 @@ angular.module('one.widgets').component('zemGridContainer', {
                     tab.gridIntegrationService = zemGridIntegrationService.createInstance(
                         $childScope
                     );
-                    tab.gridIntegrationService.initialize();
+                    tab.gridIntegrationService.initialize($ctrl.entity);
                     tab.gridIntegrationService.configureDataSource(
                         $ctrl.entity,
                         tab.breakdown

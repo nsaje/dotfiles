@@ -2,6 +2,7 @@ describe('component: zemAccountTargetingSettings', function() {
     var $ctrl; // eslint-disable-line no-unused-vars
 
     beforeEach(angular.mock.module('one'));
+    beforeEach(angular.mock.module('one.mocks.downgradedProviders'));
     beforeEach(angular.mock.module('one.mocks.zemInitializationService'));
 
     beforeEach(inject(function($rootScope, $componentController) {

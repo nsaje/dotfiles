@@ -3,6 +3,7 @@ describe('zemEntityInstance', function() {
     var $rootScope, $q;
 
     beforeEach(angular.mock.module('one'));
+    beforeEach(angular.mock.module('one.mocks.downgradedProviders'));
     beforeEach(angular.mock.module('one.mocks.zemInitializationService'));
     beforeEach(inject(function($injector) {
         $q = $injector.get('$q');

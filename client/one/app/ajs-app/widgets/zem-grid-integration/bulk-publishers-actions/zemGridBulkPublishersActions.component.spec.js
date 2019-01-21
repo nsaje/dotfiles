@@ -6,6 +6,7 @@ describe('component: zemGridBulkPublishersActions', function() {
     var $ctrl, api, $q;
 
     beforeEach(angular.mock.module('one'));
+    beforeEach(angular.mock.module('one.mocks.downgradedProviders'));
     beforeEach(angular.mock.module('one.mocks.zemInitializationService'));
     beforeEach(inject(function($injector) {
         $componentController = $injector.get('$componentController');

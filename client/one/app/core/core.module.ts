@@ -3,10 +3,10 @@ import {throwIfAlreadyLoaded} from './core.module.guard';
 import {MulticurrencyService} from './multicurrency/multicurrency.service';
 import {GoogleAnalyticsService} from './google-analytics/google-analytics.service';
 import {MixpanelService} from './mixpanel/mixpanel.service';
+import {EntitiesModule} from './entities/entities.module';
 
 @NgModule({
-    exports: [],
-    declarations: [],
+    imports: [EntitiesModule],
     providers: [GoogleAnalyticsService, MulticurrencyService, MixpanelService],
 })
 export class CoreModule {

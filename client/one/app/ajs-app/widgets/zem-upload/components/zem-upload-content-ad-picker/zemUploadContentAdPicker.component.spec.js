@@ -2,6 +2,7 @@ describe('zemUploadContentAdPicker', function() {
     var $rootScope, $injector, $q, $ctrl, $interval;
 
     beforeEach(angular.mock.module('one'));
+    beforeEach(angular.mock.module('one.mocks.downgradedProviders'));
     beforeEach(angular.mock.module('one.mocks.zemInitializationService'));
 
     beforeEach(inject(function(

@@ -3,6 +3,7 @@ describe('component: zemReportQueryConfig', function() {
     var $ctrl, zemPermissions;
 
     beforeEach(angular.mock.module('one'));
+    beforeEach(angular.mock.module('one.mocks.downgradedProviders'));
     beforeEach(angular.mock.module('one.mocks.zemInitializationService'));
     beforeEach(angular.mock.module('one.mocks.zemPermissions'));
 

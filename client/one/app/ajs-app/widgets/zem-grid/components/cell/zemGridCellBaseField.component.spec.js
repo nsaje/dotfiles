@@ -5,6 +5,7 @@ describe('zemGridCellBaseField', function() {
         '<zem-grid-cell-base-field data="ctrl.data" column="ctrl.col" row="ctrl.row" grid="ctrl.grid"></zem-grid-cell-base-field>'; // eslint-disable-line max-len
 
     beforeEach(angular.mock.module('one'));
+    beforeEach(angular.mock.module('one.mocks.downgradedProviders'));
     beforeEach(angular.mock.module('one.mocks.zemInitializationService'));
 
     beforeEach(inject(function(

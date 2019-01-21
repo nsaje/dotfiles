@@ -2,6 +2,7 @@ describe('component: zemFacebookPageSettings', function() {
     var $ctrl; // eslint-disable-line
 
     beforeEach(angular.mock.module('one'));
+    beforeEach(angular.mock.module('one.mocks.downgradedProviders'));
     beforeEach(angular.mock.module('one.mocks.zemInitializationService'));
 
     beforeEach(inject(function($rootScope, $componentController) {
