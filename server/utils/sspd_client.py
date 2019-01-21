@@ -15,6 +15,10 @@ logger = logging.getLogger(__name__)
 
 APPROVAL_STATUS_URL = "/service/approvalstatus"
 CONTENT_AD_STATUS_URL = "/service/contentadstatus"
+SOURCE_URL = "/service/source"
+AD_GROUP_URL = "/service/adgroup"
+CONTENT_AD_URL = "/service/contentad"
+CONTENT_AD_SOURCE_URL = "/service/contentadsource"
 
 MAX_REQUEST_IDS = 500
 TIMEOUT = (10, 10)  # TIMEOUT IN SECONDS (CONNECT TIME, READ TIME)
@@ -65,6 +69,141 @@ def _map_content_ad_statuses(content_ad_statuses):
         }
         for id_, per_source_statuses in content_ad_statuses.items()
     }
+
+
+def sync_batch(batch):
+    ad_group = models.AdGroup.objects.get(id=batch.ad_group_id)
+    if ad_group.campaign.type == constants.CampaignType.DISPLAY:
+        return
+
+    success = sync_ad_groups({ad_group})
+    if not success:
+        logger.info("Fail to sync ad_groups to SSPD for batch %s.", batch.id)
+        return
+
+    content_ads = _get_content_ads(batch)
+    sources = _get_sources(content_ads)
+    content_ad_sources = _get_content_ad_sources(content_ads)
+
+    success = sync_sources(sources)
+    if not success:
+        logger.info("Fail to sync sources to SSPD for batch %s.", batch.id)
+        return
+
+    success = sync_content_ads(content_ads)
+    if not success:
+        logger.info("Fail to sync content_ads to SSPD for batch %s.", batch.id)
+        return
+
+    success = sync_content_ad_sources(content_ad_sources)
+    if not success:
+        logger.info("Fail to sync content_ad_sources to SSPD for batch %s.", batch.id)
+
+
+def _get_content_ads(batch):
+    return set(batch.contentad_set.all())
+
+
+def _get_sources(content_ads):
+    items = set()
+    for content_ad in content_ads:
+        sources = set(content_ad.sources.all())
+        items |= sources
+    return items
+
+
+def _get_content_ad_sources(content_ads):
+    items = set()
+    for content_ad in content_ads:
+        content_ad_sources = set(content_ad.contentadsource_set.all())
+        items |= content_ad_sources
+    return items
+
+
+def sync_sources(sources):
+    try:
+        url = settings.SSPD_BASE_URL + SOURCE_URL
+
+        request = []
+        for item in sources:
+            item_dict = {
+                "id": item.id,
+                "name": item.name,
+                "sourceType": item.source_type.type,
+                "bidderSlug": item.bidder_slug,
+            }
+            request.append(item_dict)
+
+        response = _make_request("post", url, data=json.dumps(request), timeout=TIMEOUT)
+        return response["data"]
+    except SSPDApiException:
+        return False
+
+
+def sync_ad_groups(ad_groups):
+    try:
+        url = settings.SSPD_BASE_URL + AD_GROUP_URL
+
+        request = []
+        for item in ad_groups:
+            item_dict = {
+                "id": item.id,
+                "name": item.name,
+                "campaignId": item.campaign.id,
+                "campaignName": item.campaign.name,
+                "accountId": item.campaign.account.id,
+                "accountName": item.campaign.account.name,
+                "agencyId": item.campaign.account.agency.id,
+                "agencyName": item.campaign.account.agency.name,
+            }
+            request.append(item_dict)
+
+        response = _make_request("post", url, data=json.dumps(request), timeout=TIMEOUT)
+        return response["data"]
+    except SSPDApiException:
+        return False
+
+
+def sync_content_ads(content_ads):
+    try:
+        url = settings.SSPD_BASE_URL + CONTENT_AD_URL
+
+        request = []
+        for item in content_ads:
+            item_dict = {
+                "id": item.id,
+                "adGroupId": item.ad_group_id,
+                "title": item.title,
+                "description": item.description,
+                "brandName": item.brand_name,
+                "imageId": item.image_id,
+            }
+            request.append(item_dict)
+
+        response = _make_request("post", url, data=json.dumps(request), timeout=TIMEOUT)
+        return response["data"]
+    except SSPDApiException:
+        return False
+
+
+def sync_content_ad_sources(content_ad_sources):
+    try:
+        url = settings.SSPD_BASE_URL + CONTENT_AD_SOURCE_URL
+
+        request = []
+        for item in content_ad_sources:
+            item_dict = {
+                "id": item.id,
+                "contentAdId": item.content_ad_id,
+                "sourceId": item.source_id,
+                "sourceContentAdId": item.source_content_ad_id,
+            }
+            request.append(item_dict)
+
+        response = _make_request("post", url, data=json.dumps(request), timeout=TIMEOUT)
+        return response["data"]
+    except SSPDApiException:
+        return False
 
 
 def _paginate_request(method, url, params, *, paginate_key, timeout=None):

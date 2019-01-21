@@ -410,6 +410,7 @@ class UploadSaveTestCase(TestCase):
             for content_ad in content_ads
         }
 
+    @patch("utils.sspd_client.sync_batch", MagicMock())
     @patch("utils.redirector_helper.insert_redirects")
     def test_ok(self, mock_insert_batch):
         mock_insert_batch.side_effect = self._mock_insert_redirects
@@ -457,6 +458,7 @@ class UploadSaveTestCase(TestCase):
             json.loads(response.content),
         )
 
+    @patch("utils.sspd_client.sync_batch", MagicMock())
     @patch("utils.redirector_helper.insert_redirects")
     def test_change_batch_name(self, mock_insert_batch):
         mock_insert_batch.side_effect = self._mock_insert_redirects

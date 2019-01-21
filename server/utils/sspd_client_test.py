@@ -156,3 +156,144 @@ class SSPDClientTestCase(TestCase):
             self.assertEqual("BLOCKED", approval_statuses[str(i)])
         for i in range(20, 25):
             self.assertEqual("PENDING", approval_statuses[str(i)])
+
+    @patch("utils.sspd_client.sync_content_ad_sources")
+    @patch("utils.sspd_client.sync_content_ads")
+    @patch("utils.sspd_client.sync_ad_groups")
+    @patch("utils.sspd_client.sync_sources")
+    def test_sync_batch(
+        self, mock_sync_source, mock_sync_ad_groups, mock_sync_content_ads, mock_sync_content_ad_sources
+    ):
+
+        mock_sync_source.return_value = True
+        mock_sync_ad_groups.return_value = True
+        mock_sync_content_ads.return_value = True
+        mock_sync_content_ad_sources.return_value = True
+
+        source = magic_mixer.blend(models.Source)
+        agency = magic_mixer.blend(models.Agency)
+        account = magic_mixer.blend(models.Account, agency=agency)
+        campaign = magic_mixer.blend(models.Campaign, account=account, type=constants.CampaignType.CONTENT)
+        ad_group = magic_mixer.blend(models.AdGroup, campaign=campaign)
+        batch = magic_mixer.blend(models.UploadBatch, ad_group=ad_group)
+
+        content_ads = magic_mixer.cycle(3).blend(models.ContentAd, ad_group=ad_group, batch=batch)
+        content_ad_sources = magic_mixer.cycle(3).blend(
+            models.ContentAdSource,
+            content_ad=(ca for ca in content_ads),
+            source=source,
+            state=constants.ContentAdSourceState.ACTIVE,
+            submission_status=constants.ContentAdSubmissionStatus.APPROVED,
+        )
+
+        sspd_client.sync_batch(batch)
+
+        mock_sync_source.assert_called_once_with({source})
+        mock_sync_ad_groups.assert_called_once_with({ad_group})
+        mock_sync_content_ads.assert_called_once_with(set(content_ads))
+        mock_sync_content_ad_sources.assert_called_once_with(set(content_ad_sources))
+
+    @patch("utils.sspd_client._make_request")
+    def test_sync_sources(self, mock_request):
+        source_type = magic_mixer.blend(models.SourceType)
+        source = magic_mixer.blend(models.Source, source_type=source_type)
+
+        sspd_client.sync_sources({source})
+
+        data = [
+            {
+                "id": source.id,
+                "name": source.name,
+                "sourceType": source.source_type.type,
+                "bidderSlug": source.bidder_slug,
+            }
+        ]
+
+        mock_request.assert_called_once_with(
+            "post", "http://testssp.zemanta.com/service/source", data=json.dumps(data), timeout=sspd_client.TIMEOUT
+        )
+
+    @patch("utils.sspd_client._make_request")
+    def test_sync_ad_groups(self, mock_request):
+        agency = magic_mixer.blend(models.Agency)
+        account = magic_mixer.blend(models.Account, agency=agency)
+        campaign = magic_mixer.blend(models.Campaign, account=account, type=constants.CampaignType.CONTENT)
+        ad_group = magic_mixer.blend(models.AdGroup, campaign=campaign)
+
+        sspd_client.sync_ad_groups({ad_group})
+
+        data = [
+            {
+                "id": ad_group.id,
+                "name": ad_group.name,
+                "campaignId": ad_group.campaign.id,
+                "campaignName": ad_group.campaign.name,
+                "accountId": ad_group.campaign.account.id,
+                "accountName": ad_group.campaign.account.name,
+                "agencyId": ad_group.campaign.account.agency.id,
+                "agencyName": ad_group.campaign.account.agency.name,
+            }
+        ]
+
+        mock_request.assert_called_once_with(
+            "post", "http://testssp.zemanta.com/service/adgroup", data=json.dumps(data), timeout=sspd_client.TIMEOUT
+        )
+
+    @patch("utils.sspd_client._make_request")
+    def test_sync_content_ads(self, mock_request):
+        agency = magic_mixer.blend(models.Agency)
+        account = magic_mixer.blend(models.Account, agency=agency)
+        campaign = magic_mixer.blend(models.Campaign, account=account, type=constants.CampaignType.CONTENT)
+        ad_group = magic_mixer.blend(models.AdGroup, campaign=campaign)
+        content_ad = magic_mixer.blend(models.ContentAd, ad_group=ad_group)
+
+        sspd_client.sync_content_ads({content_ad})
+
+        data = [
+            {
+                "id": content_ad.id,
+                "adGroupId": content_ad.ad_group_id,
+                "title": content_ad.title,
+                "description": content_ad.description,
+                "brandName": content_ad.brand_name,
+                "imageId": content_ad.image_id,
+            }
+        ]
+
+        mock_request.assert_called_once_with(
+            "post", "http://testssp.zemanta.com/service/contentad", data=json.dumps(data), timeout=sspd_client.TIMEOUT
+        )
+
+    @patch("utils.sspd_client._make_request")
+    def test_sync_content_ad_sources(self, mock_request):
+        source = magic_mixer.blend(models.Source)
+        agency = magic_mixer.blend(models.Agency)
+        account = magic_mixer.blend(models.Account, agency=agency)
+        campaign = magic_mixer.blend(models.Campaign, account=account, type=constants.CampaignType.CONTENT)
+        ad_group = magic_mixer.blend(models.AdGroup, campaign=campaign)
+        content_ad = magic_mixer.blend(models.ContentAd, ad_group=ad_group)
+        content_ad_source = magic_mixer.blend(
+            models.ContentAdSource,
+            content_ad=content_ad,
+            source=source,
+            state=constants.ContentAdSourceState.ACTIVE,
+            submission_status=constants.ContentAdSubmissionStatus.APPROVED,
+        )
+
+        sspd_client.sync_content_ad_sources({content_ad_source})
+
+        data = [
+            {
+                "id": content_ad_source.id,
+                "contentAdId": content_ad_source.content_ad_id,
+                "sourceId": content_ad_source.source_id,
+                "sourceContentAdId": content_ad_source.source_content_ad_id,
+            }
+        ]
+
+        mock_request.assert_called_once_with(
+            "post",
+            "http://testssp.zemanta.com/service/contentadsource",
+            data=json.dumps(data),
+            timeout=sspd_client.TIMEOUT,
+        )

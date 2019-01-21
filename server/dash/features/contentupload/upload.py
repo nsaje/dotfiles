@@ -13,6 +13,7 @@ from utils import csv_utils
 from utils import k1_helper
 from utils import lambda_helper
 from utils import redirector_helper
+from utils import sspd_client
 
 from . import exc
 from . import upload_dev
@@ -136,6 +137,8 @@ def persist_batch(batch):
 
         _save_history(batch, content_ads)
 
+    sspd_client.sync_batch(batch)
+
     k1_helper.update_content_ads(
         batch.contentad_set.all().select_related("ad_group__campaign"), msg="upload.process_async.insert"
     )
@@ -176,6 +179,8 @@ def persist_edit_batch(request, batch):
         batch.delete()
 
         _save_history(batch, content_ads)
+
+    sspd_client.sync_batch(batch)
 
     k1_helper.update_content_ads(content_ads, msg="upload.process_async.edit")
     return content_ads

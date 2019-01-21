@@ -344,6 +344,7 @@ class InsertEditCandidatesTestCase(TestCase):
 class PersistBatchTestCase(TestCase):
     fixtures = ["test_upload.yaml"]
 
+    @patch("utils.sspd_client.sync_batch", Mock())
     @patch("utils.redirector_helper.insert_redirects")
     @patch.object(utils.s3helpers.S3Helper, "put")
     def test_valid_candidates(self, mock_s3helper_put, mock_insert_redirects):
@@ -575,6 +576,7 @@ class PersistEditBatchTestCase(TestCase):
         self.request = HttpRequest()
         self.request.user = zemauth.models.User.objects.get(id=1)
 
+    @patch("utils.sspd_client.sync_batch", Mock())
     @patch("utils.redirector_helper.update_redirects", autospec=True)
     def test_persist_edit_batch(self, mock_update_redirects):
         batch = models.UploadBatch.objects.get(id=7)
