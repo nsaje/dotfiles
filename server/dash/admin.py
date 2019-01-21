@@ -545,18 +545,22 @@ class CampaignInline(admin.TabularInline):
     extra = 0
     max_num = 0
     can_delete = False
-    exclude = ("users", "groups", "created_dt", "modified_dt", "modified_by", "custom_flags", "settings")
+    exclude = ("users", "groups", "created_dt", "modified_dt", "modified_by", "custom_flags", "settings", "entity_tags")
     ordering = ("-created_dt",)
     readonly_fields = (
         "name",
         "type",
         "real_time_campaign_stop",
-        "admin_link",
         "default_whitelist",
         "default_blacklist",
         "settings",
+        "_entity_tags",
+        "admin_link",
     )
     autocomplete_fields = ("account",)
+
+    def _entity_tags(self, obj):
+        return ", ".join(str(e) for e in obj.entity_tags.all())
 
 
 class AccountAdmin(SlackLoggerMixin, SaveWithRequestMixin, admin.ModelAdmin):
@@ -637,10 +641,21 @@ class AdGroupInline(admin.TabularInline):
     extra = 0
     max_num = 0
     can_delete = False
-    exclude = ("users", "created_dt", "modified_dt", "modified_by", "custom_flags", "settings")
+    exclude = ("users", "created_dt", "modified_dt", "modified_by", "custom_flags", "settings", "entity_tags")
     ordering = ("-created_dt",)
-    readonly_fields = ("name", "bidding_type", "default_whitelist", "default_blacklist", "amplify_review", "admin_link")
+    readonly_fields = (
+        "name",
+        "bidding_type",
+        "default_whitelist",
+        "default_blacklist",
+        "amplify_review",
+        "_entity_tags",
+        "admin_link",
+    )
     raw_id_fields = ("default_whitelist", "default_blacklist")
+
+    def _entity_tags(self, obj):
+        return ", ".join(str(e) for e in obj.entity_tags.all())
 
 
 class CampaignAdmin(SlackLoggerMixin, admin.ModelAdmin):
@@ -927,7 +942,10 @@ class AdGroupAdmin(SlackLoggerMixin, admin.ModelAdmin):
     inlines = (DirectDealConnectionAdGroupsInline,)
 
     fieldsets = (
-        (None, {"fields": ("name", "campaign", "created_dt", "modified_dt", "modified_by", "custom_flags")}),
+        (
+            None,
+            {"fields": ("name", "campaign", "created_dt", "modified_dt", "modified_by", "entity_tags", "custom_flags")},
+        ),
         ("Additional targeting", {"classes": ("collapse",), "fields": dash_forms.AdGroupAdminForm.SETTINGS_FIELDS}),
     )
 
