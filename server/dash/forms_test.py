@@ -227,8 +227,6 @@ class AdGroupAdminFormTest(TestCase):
         form = forms.AdGroupAdminForm(instance=ad_group)
         self.assertEqual("", form.initial["notes"])
         self.assertEqual([], form.initial["bluekai_targeting"])
-        self.assertEqual([], form.initial["interest_targeting"])
-        self.assertEqual([], form.initial["exclusion_interest_targeting"])
         self.assertEqual([], form.initial["redirect_pixel_urls"])
         self.assertEqual("", form.initial["redirect_javascript"])
 
@@ -246,8 +244,6 @@ class AdGroupAdminFormTest(TestCase):
         form = forms.AdGroupAdminForm(instance=ad_group)
         self.assertEqual("a", form.initial["notes"])
         self.assertEqual(["a"], form.initial["bluekai_targeting"])
-        self.assertEqual(["a"], form.initial["interest_targeting"])
-        self.assertEqual(["a"], form.initial["exclusion_interest_targeting"])
         self.assertEqual(["a"], form.initial["redirect_pixel_urls"])
         self.assertEqual('alert("a");', form.initial["redirect_javascript"])
 

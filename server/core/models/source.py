@@ -7,7 +7,9 @@ from django.utils.translation import ugettext_lazy as _
 
 import core.common
 import core.models
+import tagulous
 import utils.exc
+from core.models import tags
 from dash import constants
 
 
@@ -78,6 +80,8 @@ class Source(models.Model):
     default_daily_budget_cc = models.DecimalField(
         max_digits=10, decimal_places=4, default=Decimal("10.00"), verbose_name="Default daily spend cap"
     )
+
+    entity_tags = tagulous.models.TagField(to=tags.EntityTag, blank=True)
 
     objects = core.common.QuerySetManager()
 

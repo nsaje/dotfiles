@@ -13,8 +13,10 @@ import core.common
 import core.features.bcm
 import core.features.history
 import core.models
+import tagulous
 import utils.demo_anonymizer
 import utils.string_helper
+from core.models import tags
 from dash import constants
 from dash.features import custom_flags
 from utils import dates_helper
@@ -150,6 +152,8 @@ class AdGroup(validation.AdGroupValidatorMixin, models.Model, bcm_mixin.AdGroupB
         "AdGroupSettings", null=True, blank=True, on_delete=models.PROTECT, related_name="latest_for_entity"
     )
     amplify_review = models.NullBooleanField(default=None)
+
+    entity_tags = tagulous.models.TagField(to=tags.EntityTag, blank=True)
 
     objects = AdGroupManager()
 

@@ -7,6 +7,8 @@
 
 .zem-settings__header {
     position: absolute;
+    display: flex;
+    align-items: flex-end;
     padding: 0 @default-spacing;
     top: 0;
     left: 0;
@@ -18,6 +20,7 @@
 }
 
 .zem-settings__header-title {
+    flex: 1 1 auto;
     color: @secondary-color;
     font-weight: 400;
     font-size: 24px;
@@ -30,6 +33,11 @@
 .zem-settings__header-title--location {
     font-size: 12px;
     color: @gray;
+}
+
+.zem-settings__admin-link {
+    flex: 0 0 85px;
+    margin: 10px @default-spacing;
 }
 
 .zem-settings__body {

@@ -394,6 +394,7 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ("can_use_new_entity_settings_drawers", "User can use new entity settings drawers"),
             ("can_see_amplify_ad_id_column", "User can see Amplify ad id column in grid"),
             ("can_see_deals_in_ui", "User can see the deals on the entity settings"),
+            ("can_see_open_in_admin", "User can see Open in Admin link"),
         )
 
     def get_full_name(self):

@@ -8,6 +8,8 @@ import core.common
 import core.features.history
 import core.features.yahoo_accounts
 import core.models
+import tagulous
+from core.models import tags
 from dash import constants
 from utils import exc
 from utils import json_helper
@@ -80,6 +82,8 @@ class Agency(models.Model):
     settings = CachedOneToOneField(
         "AgencySettings", null=True, blank=True, on_delete=models.PROTECT, related_name="latest_for_entity"
     )
+
+    entity_tags = tagulous.models.TagField(to=tags.EntityTag, blank=True)
 
     def admin_link(self):
         if self.id:

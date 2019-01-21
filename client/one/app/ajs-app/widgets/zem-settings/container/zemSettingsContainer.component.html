@@ -7,6 +7,15 @@
         </div>
         {{ $ctrl.entity.settings.name }}
     </h1>
+    <a
+        class="alternative-link zem-settings__admin-link"
+        href="{{ $ctrl.adminLink }}"
+        target="_blank"
+        ng-if="$ctrl.hasPermission('zemauth.can_see_open_in_admin')"
+        is-internal="zemauth.can_see_open_in_admin"
+    >
+        Open in Admin
+    </a>
 </div>
 
 <div class="zem-settings__body custom-scroller" ng-if="!$ctrl.entity.archived">

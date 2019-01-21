@@ -2,6 +2,7 @@ import datetime
 import json
 import logging
 
+import tagulous
 from django import forms
 from django.conf import settings
 from django.conf.urls import url
@@ -27,6 +28,7 @@ import utils.pagerduty_helper as pgdh
 import utils.redirector_helper
 import utils.slack
 from automation import campaignstop
+from core.models import tags
 from core.models.settings.ad_group_source_settings import validation_helpers
 from dash import constants
 from dash import cpc_constraints
@@ -332,7 +334,9 @@ class AgencyUserInline(admin.TabularInline):
     model = models.Agency.users.through
     form = AgencyUserForm
     extra = 0
-    autocomplete_fields = ("user",)
+    max_num = 0
+    can_delete = False
+    readonly_fields = ("user",)
     verbose_name = "Agency Manager"
     verbose_name_plural = "Agency Managers"
 
@@ -526,8 +530,9 @@ class AccountUserInline(admin.TabularInline):
     model = models.Account.users.through
     form = AbstractUserForm
     extra = 0
-    # raw_id_fields = ("user",)
-    autocomplete_fields = ("user",)
+    max_num = 0
+    can_delete = False
+    readonly_fields = ("user",)
 
     def __str__(self):
         return self.name
@@ -538,10 +543,19 @@ class CampaignInline(admin.TabularInline):
     verbose_name_plural = "Campaigns"
     model = models.Campaign
     extra = 0
+    max_num = 0
     can_delete = False
     exclude = ("users", "groups", "created_dt", "modified_dt", "modified_by", "custom_flags", "settings")
     ordering = ("-created_dt",)
-    readonly_fields = ("admin_link", "default_whitelist", "default_blacklist", "settings")
+    readonly_fields = (
+        "name",
+        "type",
+        "real_time_campaign_stop",
+        "admin_link",
+        "default_whitelist",
+        "default_blacklist",
+        "settings",
+    )
     autocomplete_fields = ("account",)
 
 
@@ -550,6 +564,10 @@ class AccountAdmin(SlackLoggerMixin, SaveWithRequestMixin, admin.ModelAdmin):
     search_fields = ("name", "id")
     list_display = ("id", "name", "created_dt", "modified_dt", "salesforce_url", "uses_bcm_v2")
     readonly_fields = (
+        "name",
+        "salesforce_url",
+        "currency",
+        "allowed_sources",
         "created_dt",
         "modified_dt",
         "modified_by",
@@ -607,6 +625,9 @@ class AccountAdmin(SlackLoggerMixin, SaveWithRequestMixin, admin.ModelAdmin):
         )
         self.log_custom_flags_event_to_slack(old_obj, obj, user=request.user.email)
 
+    def view_on_site(self, obj):
+        return "/v2/analytics/account/{}?settings".format(obj.id)
+
 
 # Campaign
 class AdGroupInline(admin.TabularInline):
@@ -614,17 +635,28 @@ class AdGroupInline(admin.TabularInline):
     verbose_name_plural = "Ad Groups"
     model = models.AdGroup
     extra = 0
+    max_num = 0
     can_delete = False
     exclude = ("users", "created_dt", "modified_dt", "modified_by", "custom_flags", "settings")
     ordering = ("-created_dt",)
-    readonly_fields = ("admin_link",)
+    readonly_fields = ("name", "bidding_type", "default_whitelist", "default_blacklist", "amplify_review", "admin_link")
     raw_id_fields = ("default_whitelist", "default_blacklist")
 
 
 class CampaignAdmin(SlackLoggerMixin, admin.ModelAdmin):
     search_fields = ("name", "id")
     list_display = ("id", "name", "created_dt", "modified_dt")
-    readonly_fields = ("created_dt", "modified_dt", "modified_by", "id", "account")
+    readonly_fields = (
+        "name",
+        "type",
+        "created_dt",
+        "modified_dt",
+        "modified_by",
+        "id",
+        "account",
+        "default_whitelist",
+        "default_blacklist",
+    )
     raw_id_fields = ("default_whitelist", "default_blacklist")
     exclude = ("settings",)
     inlines = (AdGroupInline, DirectDealConnectionCampaignInline)
@@ -661,7 +693,7 @@ class CampaignAdmin(SlackLoggerMixin, admin.ModelAdmin):
             formset.save()
 
     def view_on_site(self, obj):
-        return "/v2/analytics/campaign/{}".format(obj.id)
+        return "/v2/analytics/campaign/{}?settings".format(obj.id)
 
 
 # Source
@@ -888,8 +920,8 @@ class AdGroupAdmin(SlackLoggerMixin, admin.ModelAdmin):
     list_display = ("id", "name", "campaign_", "account_", "is_archived_", "created_dt", "modified_dt")
     list_filter = [IsArchivedFilter]
 
-    raw_id_fields = ("campaign", "settings", "default_blacklist", "default_whitelist", "campaign")
-    readonly_fields = ("id", "created_dt", "modified_dt", "modified_by")
+    raw_id_fields = ("settings", "default_blacklist", "default_whitelist")
+    readonly_fields = ("id", "name", "campaign", "created_dt", "modified_dt", "modified_by")
     exclude = ("settings",)
     form = dash_forms.AdGroupAdminForm
     inlines = (DirectDealConnectionAdGroupsInline,)
@@ -910,7 +942,7 @@ class AdGroupAdmin(SlackLoggerMixin, admin.ModelAdmin):
         return qs
 
     def view_on_site(self, obj):
-        return "/v2/analytics/adgroup/{}".format(obj.id)
+        return "/v2/analytics/adgroup/{}?settings".format(obj.id)
 
     def is_archived_(self, obj):
         try:
@@ -2055,12 +2087,16 @@ class DirectDealAdmin(admin.ModelAdmin):
     search_fields = ("id", "deal_id")
 
 
-admin.site.register(models.Agency, AgencyAdmin)
-admin.site.register(models.Account, AccountAdmin)
-admin.site.register(models.Campaign, CampaignAdmin)
+class EntityTagAdmin(admin.ModelAdmin):
+    model = tags.EntityTag
+
+
+tagulous.admin.register(models.Agency, AgencyAdmin)
+tagulous.admin.register(models.Account, AccountAdmin)
+tagulous.admin.register(models.Campaign, CampaignAdmin)
 admin.site.register(models.CampaignSettings, CampaignSettingsAdmin)
-admin.site.register(models.Source, SourceAdmin)
-admin.site.register(models.AdGroup, AdGroupAdmin)
+tagulous.admin.register(models.Source, SourceAdmin)
+tagulous.admin.register(models.AdGroup, AdGroupAdmin)
 admin.site.register(models.AdGroupSource, AdGroupSourceAdmin)
 admin.site.register(models.AdGroupSettings, AdGroupSettingsAdmin)
 admin.site.register(models.AdGroupSourceSettings, AdGroupSourceSettingsAdmin)
@@ -2089,3 +2125,4 @@ admin.site.register(models.CustomFlag, CustomFlagAdmin)
 admin.site.register(models.SubmissionFilter, SubmissionFilterAdmin)
 admin.site.register(models.DirectDeal, DirectDealAdmin)
 admin.site.register(models.DirectDealConnection, DirectDealConnectionAdmin)
+tagulous.admin.register(tags.EntityTag, EntityTagAdmin)

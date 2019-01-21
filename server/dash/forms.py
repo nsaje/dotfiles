@@ -64,12 +64,6 @@ class PlainCharField(forms.CharField):
         return super(PlainCharField, self).clean(value)
 
 
-class DaypartingWidget(forms.Textarea):
-    class Media:
-        js = ("libs/jquery/jquery-2.1.1.min.js", "js/admin/timezones.js", "js/admin/dayparting.js")
-        css = {"all": ("css/admin/dayparting.css",)}
-
-
 REDIRECT_JS_HELP_TEXT = """!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
 n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;
 n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;
@@ -131,19 +125,7 @@ class MulticurrencySettingsFormMixin(forms.Form):
 
 
 class AdGroupAdminForm(forms.ModelForm, CustomFlagsFormMixin):
-    SETTINGS_FIELDS = [
-        "notes",
-        "bluekai_targeting",
-        "interest_targeting",
-        "exclusion_interest_targeting",
-        "redirect_pixel_urls",
-        "redirect_javascript",
-        "target_devices",
-        "target_placements",
-        "target_os",
-        "click_capping_daily_ad_group_max_clicks",
-        "dayparting",
-    ]
+    SETTINGS_FIELDS = ["notes", "bluekai_targeting", "redirect_pixel_urls", "redirect_javascript"]
     notes = PlainCharField(
         required=False,
         widget=forms.Textarea,
@@ -152,18 +134,6 @@ class AdGroupAdminForm(forms.ModelForm, CustomFlagsFormMixin):
     bluekai_targeting = postgres_forms.JSONField(
         required=False,
         help_text='Example: ["and", "bluekai:446103", ["not", ["or", "bluekai:510120", "bluekai:510122"]]]',
-    )
-    interest_targeting = forms.MultipleChoiceField(
-        required=False,
-        choices=constants.InterestCategory.get_choices(),
-        widget=FilteredSelectMultiple(verbose_name="inclusion interest categories", is_stacked=False),
-        help_text="Select interests and demographics you want to include.",
-    )
-    exclusion_interest_targeting = forms.MultipleChoiceField(
-        required=False,
-        choices=constants.InterestCategory.get_choices(),
-        widget=FilteredSelectMultiple(verbose_name="exclusion interest categories", is_stacked=False),
-        help_text="Select interests and demographics you want to exclude.",
     )
     redirect_pixel_urls = postgres_forms.SimpleArrayField(
         PlainCharField(),
@@ -176,37 +146,6 @@ class AdGroupAdminForm(forms.ModelForm, CustomFlagsFormMixin):
         required=False,
         widget=forms.Textarea,
         help_text='Example: <span style="width:600px; display:block">%s</span>' % strip_tags(REDIRECT_JS_HELP_TEXT),
-    )
-    target_devices = forms.MultipleChoiceField(
-        required=False, help_text="Select devices you want to include.", choices=constants.AdTargetDevice.get_choices()
-    )
-    target_placements = forms.MultipleChoiceField(
-        required=False,
-        help_text="Select placement media you want to include.",
-        choices=constants.Placement.get_choices(),
-    )
-    target_os = postgres_forms.JSONField(
-        required=False,
-        help_text="""Example that sets windows targeting OR android version 6.0 OR ios with version range 8.0 - 9.0:<br />
-        [<br />
-        &emsp;{"name": "windows"},<br />
-        &emsp;{"name": "android", "version": {"exact": "android_6_0"}},<br />
-        &emsp;{"name": "ios", "version": {"min": "ios_8_0", "max": "ios_9_0"}}<br />
-        ]<br /><br />
-        Note: version range is inclusive<br />"""
-        + """
-        <b>Operating system codes:</b> {}<br />
-        <b>Operating system version codes:</b> {}<br />
-        """.format(
-            ", ".join(sorted(str(x[0]) for x in constants.OperatingSystem.get_choices())),
-            ", ".join(sorted(str(x[0]) for x in constants.OperatingSystemVersion.get_choices())),
-        ),
-    )
-    click_capping_daily_ad_group_max_clicks = forms.IntegerField(required=False)
-    dayparting = postgres_forms.JSONField(
-        required=False,
-        widget=DaypartingWidget,
-        help_text='Choosing an hour of "0" means the ad group will be active between 00:00 and 01:00.',
     )
 
     def __init__(self, *args, **kwargs):
@@ -221,7 +160,7 @@ class AdGroupAdminForm(forms.ModelForm, CustomFlagsFormMixin):
         super(AdGroupAdminForm, self).__init__(*args, **kwargs)
 
     class Meta:
-        model = models.Campaign
+        model = models.AdGroup
         fields = "__all__"
 
 

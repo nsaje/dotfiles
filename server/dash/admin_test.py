@@ -44,7 +44,6 @@ class AdGroupAdmin(TestCase):
     def test_save_additional_targeting(self, mock_r1_insert_adgroup):
         trackers = ["http://a.com", "http://b.com"]
         javascript = 'alert("A");'
-        interest_targeting = ["segment1", "segment2"]
 
         ad_group = models.AdGroup.objects.get(pk=1)
 
@@ -67,15 +66,12 @@ class AdGroupAdmin(TestCase):
 
         form.cleaned_data["redirect_pixel_urls"] = trackers
         form.cleaned_data["redirect_javascript"] = javascript
-        form.cleaned_data["interest_targeting"] = interest_targeting
-        form.cleaned_data["exclusion_interest_targeting"] = interest_targeting
         adgroup_admin.save_model(request, ad_group, form, None)
         old_settings = models.AdGroupSettings.objects.filter(ad_group=ad_group)[1]
         self.assertNotEqual(old_settings.redirect_pixel_urls, trackers)
         self.assertNotEqual(old_settings.redirect_javascript, javascript)
         self.assertEqual(ad_group.settings.redirect_pixel_urls, trackers)
         self.assertEqual(ad_group.settings.redirect_javascript, javascript)
-        self.assertEqual(ad_group.settings.interest_targeting, interest_targeting)
         mock_r1_insert_adgroup.assert_called_with(ad_group)
 
 

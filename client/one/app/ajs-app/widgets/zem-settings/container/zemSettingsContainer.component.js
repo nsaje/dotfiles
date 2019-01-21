@@ -36,6 +36,7 @@ angular.module('one.widgets').component('zemSettingsContainer', {
         var settingsComponents = [];
 
         $ctrl.entity = null;
+        $ctrl.adminLink = null;
         $ctrl.errors = {};
         $ctrl.status = {
             code: STATUS_CODE_NONE,
@@ -80,6 +81,7 @@ angular.module('one.widgets').component('zemSettingsContainer', {
         function setEntity(entity) {
             $ctrl.origEntity = entity;
             $ctrl.entity = angular.copy(entity);
+            $ctrl.adminLink = getAdminLink();
         }
 
         function save() {
@@ -258,6 +260,18 @@ angular.module('one.widgets').component('zemSettingsContainer', {
                 return TOOLTIP_RESTORE_CAMPAIGN;
             if ($ctrl.entityType === constants.entityType.AD_GROUP)
                 return TOOLTIP_RESTORE_ADGROUP;
+        }
+
+        function getAdminLink() {
+            var entity = '';
+            if ($ctrl.entityType === constants.entityType.ACCOUNT)
+                entity = 'account';
+            if ($ctrl.entityType === constants.entityType.CAMPAIGN)
+                entity = 'campaign';
+            if ($ctrl.entityType === constants.entityType.AD_GROUP)
+                entity = 'adgroup';
+
+            return '/admin/dash/' + entity + '/' + $ctrl.entity.id + '/change/';
         }
     },
 });

@@ -5,6 +5,7 @@
 #    pip-compile --no-annotate --output-file server/requirements.txt server/requirements.in
 #
 -e git+https://github.com/Zemanta/django-statsd-influx.git@v0.1.7#egg=django-statsd-influx
+-e git+https://github.com/dubirajara/django-tagulous.git@ea13f2aa7773eca99446cb7e0fedc4056ae3916a#egg=django-tagulous
 amqp==2.3.2
 asn1crypto==0.24.0
 autopep8==1.4

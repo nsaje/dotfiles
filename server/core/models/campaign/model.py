@@ -7,8 +7,10 @@ from django.db import models
 import core.common
 import core.models
 import dash.constants
+import tagulous
 import utils.demo_anonymizer
 import utils.string_helper
+from core.models import tags
 from utils.settings_fields import CachedOneToOneField
 
 from . import bcm_mixin
@@ -55,6 +57,8 @@ class Campaign(
     settings = CachedOneToOneField(
         "CampaignSettings", null=True, blank=True, on_delete=models.PROTECT, related_name="latest_for_entity"
     )
+
+    entity_tags = tagulous.models.TagField(to=tags.EntityTag, blank=True)
 
     USERS_FIELD = "users"
 

@@ -23,7 +23,7 @@ class SourceAdoptionCommandTest(django.test.TestCase):
             b1_sources_group_enabled=True,
             autopilot_state=dash.constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET,
         )
-        self.source = magic_mixer.blend(core.models.Source, id=0, released=False, maintenance=False)
+        self.source = magic_mixer.blend(core.models.Source, released=False, maintenance=False)
         magic_mixer.blend(core.models.DefaultSourceSettings, source=self.source, credentials=magic_mixer.RANDOM)
         self.account.settings.update_unsafe(self.request, auto_add_new_sources=True)
 
