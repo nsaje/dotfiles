@@ -3,6 +3,12 @@ from django.contrib import admin
 from dcron import models
 
 
+class DCronJobSettingsInline(admin.StackedInline):
+    model = models.DCronJobSettings
+    can_delete = False
+    readonly_fields = ("schedule", "full_command", "enabled")
+
+
 @admin.register(models.DCronJob)
 class DCronJobAdmin(admin.ModelAdmin):
     ordering = ["command_name"]
@@ -15,6 +21,7 @@ class DCronJobAdmin(admin.ModelAdmin):
         "dcronjobsettings__manual_override",
     )
     readonly_fields = ("command_name", "host", "executed_dt", "completed_dt", "alert")
+    inlines = [DCronJobSettingsInline]
 
     def duration(self, obj):
         if obj.executed_dt and obj.completed_dt:
@@ -26,7 +33,7 @@ class DCronJobAdmin(admin.ModelAdmin):
 
 
 @admin.register(models.DCronJobSettings)
-class DCronJobAdminSettings(admin.ModelAdmin):
+class DCronJobSettingsAdmin(admin.ModelAdmin):
     ordering = ["job__command_name"]
     raw_id_fields = ("job",)
     list_display = (
