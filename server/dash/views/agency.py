@@ -1723,7 +1723,7 @@ class AccountUserAction(api_common.BaseApiView):
         user.groups.remove(*groups)
 
     def _enable_api(self, request, user, account):
-        perm = authmodels.Permission.objects.get(codename="can_use_restapi")
+        perm = authmodels.Permission.objects.get(codename="this_is_restapi_group")
         api_group = authmodels.Group.objects.get(permissions=perm)
 
         if api_group not in user.groups.all():

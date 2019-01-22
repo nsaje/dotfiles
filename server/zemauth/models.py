@@ -395,6 +395,7 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ("can_see_amplify_ad_id_column", "User can see Amplify ad id column in grid"),
             ("can_see_deals_in_ui", "User can see the deals on the entity settings"),
             ("can_see_open_in_admin", "User can see Open in Admin link"),
+            ("this_is_restapi_group", "MARKS THE GROUP THAT CONTAINS PUBLIC REST API PERMISSIONS."),
         )
 
     def get_full_name(self):

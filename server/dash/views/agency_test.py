@@ -4359,8 +4359,10 @@ class UserEnableRESTAPIAccessTest(TestCase):
         account.users.add(user)
         account.users.add(client_user)
         perm = Permission.objects.get(codename="can_use_restapi")
+        perm_indicator = Permission.objects.get(codename="this_is_restapi_group")
         group = authmodels.Group.objects.create(name="api_access_group")
         group.permissions.add(perm)
+        group.permissions.add(perm_indicator)
         self.assertFalse(user.has_perm("zemauth.can_use_restapi"))
 
         response = client.post(
