@@ -21,7 +21,7 @@ SECRET_KEY = (
 
 STATS_DB_NAME = "k1"
 STATS_DB_WRITE_REPLICAS = []
-STATS_DB_WRITE_REPLICAS_POSTGRES = ["stats-postgres-1"]
+STATS_DB_WRITE_REPLICAS_POSTGRES = ["stats-postgres-1", "stats-postgres-2"]
 STATS_DB_READ_REPLICAS = []
 STATS_DB_READ_REPLICAS_POSTGRES = ["stats-postgres-1"]
 
