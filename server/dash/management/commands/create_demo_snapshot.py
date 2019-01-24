@@ -214,6 +214,11 @@ def _prepare_demo_objects(serialize_list, demo_mappings, demo_users_set):
     _add_to_serialize_list(serialize_list, list(currencies))
     _extract_dependencies_and_anonymize(serialize_list, demo_users_set, anonymized_objects)
 
+    # add BlueKai categories
+    bluekai_categories = dash.models.BlueKaiCategory.objects.all()
+    _add_to_serialize_list(serialize_list, list(bluekai_categories))
+    _extract_dependencies_and_anonymize(serialize_list, demo_users_set, anonymized_objects)
+
     # add email templates
     email_templates = dash.models.EmailTemplate.objects.all()
     _add_to_serialize_list(serialize_list, list(email_templates))
