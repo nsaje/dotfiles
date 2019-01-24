@@ -64,7 +64,7 @@ class CreditLineItem(core.common.FootprintModel, core.features.history.HistoryMi
         default=constants.CreditLineItemStatus.PENDING, choices=constants.CreditLineItemStatus.get_choices()
     )
     refund = models.BooleanField(null=False, blank=False, default=False)
-    comment = models.CharField(max_length=256, blank=True, null=True)
+    comment = models.CharField(max_length=10000, blank=True, null=True)
     special_terms = models.CharField(max_length=256, blank=True, null=True)
 
     currency = models.CharField(max_length=3, default=constants.Currency.USD, choices=constants.Currency.get_choices())
