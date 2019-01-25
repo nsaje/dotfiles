@@ -121,6 +121,7 @@ def _get_page_and_size(offset, limit):
 
 class AllAccountsBreakdown(api_common.BaseApiView):
     @db_for_reads.use_stats_read_replica()
+    @newrelic.agent.function_trace()
     def post(self, request, breakdown):
         if not request.user.has_perm("zemauth.can_access_table_breakdowns_feature"):
             raise exc.MissingDataError()

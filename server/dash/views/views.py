@@ -13,6 +13,7 @@ import urllib.request
 from functools import partial
 
 import influx
+import newrelic.agent
 import pytz
 from django.conf import settings
 from django.db.models import Q
@@ -343,6 +344,7 @@ class AdGroupRestore(api_common.BaseApiView):
 
 class CampaignAdGroups(api_common.BaseApiView):
     @influx.timer("dash.api")
+    @newrelic.agent.function_trace()
     def put(self, request, campaign_id):
         campaign = helpers.get_campaign(request.user, campaign_id)
         self._validate_campaign_ready(request, campaign)

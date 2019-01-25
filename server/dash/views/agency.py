@@ -3,6 +3,7 @@ import json
 import logging
 import re
 
+import newrelic.agent
 from django.conf import settings
 from django.contrib.auth import models as authmodels
 from django.db import transaction
@@ -1748,6 +1749,7 @@ class AccountUserAction(api_common.BaseApiView):
 
 class CampaignContentInsights(api_common.BaseApiView):
     @db_for_reads.use_stats_read_replica()
+    @newrelic.agent.function_trace()
     def get(self, request, campaign_id):
         if not request.user.has_perm("zemauth.can_view_campaign_content_insights_side_tab"):
             raise exc.AuthorizationError()

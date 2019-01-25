@@ -1,3 +1,5 @@
+import newrelic.agent
+
 import dash.views.helpers
 import stats.api_breakdowns
 import stats.api_dailystats
@@ -232,6 +234,7 @@ class AllAccountsPublishersDailyStats(AllAccountsDailyStatsView):
         return params
 
     @db_for_reads.use_stats_read_replica()
+    @newrelic.agent.function_trace()
     def get(self, request):
         if not request.user.has_perm("zemauth.can_see_publishers"):
             raise exc.MissingDataError()
