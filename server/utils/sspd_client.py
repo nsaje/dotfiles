@@ -138,6 +138,9 @@ def sync_sources(sources):
         return response["data"]
     except SSPDApiException:
         return False
+    except Exception as ex:
+        logger.error("Unexpected error: %s", ex)
+        return False
 
 
 def sync_ad_groups(ad_groups):
@@ -153,14 +156,17 @@ def sync_ad_groups(ad_groups):
                 "campaignName": item.campaign.name,
                 "accountId": item.campaign.account.id,
                 "accountName": item.campaign.account.name,
-                "agencyId": item.campaign.account.agency.id,
-                "agencyName": item.campaign.account.agency.name,
+                "agencyId": item.campaign.account.agency.id if item.campaign.account.agency else "",
+                "agencyName": item.campaign.account.agency.name if item.campaign.account.agency else "",
             }
             request.append(item_dict)
 
         response = _make_request("post", url, data=json.dumps(request), timeout=TIMEOUT)
         return response["data"]
     except SSPDApiException:
+        return False
+    except Exception as ex:
+        logger.error("Unexpected error: %s", ex)
         return False
 
 
@@ -184,6 +190,9 @@ def sync_content_ads(content_ads):
         return response["data"]
     except SSPDApiException:
         return False
+    except Exception as ex:
+        logger.error("Unexpected error: %s", ex)
+        return False
 
 
 def sync_content_ad_sources(content_ad_sources):
@@ -203,6 +212,9 @@ def sync_content_ad_sources(content_ad_sources):
         response = _make_request("post", url, data=json.dumps(request), timeout=TIMEOUT)
         return response["data"]
     except SSPDApiException:
+        return False
+    except Exception as ex:
+        logger.error("Unexpected error: %s", ex)
         return False
 
 
