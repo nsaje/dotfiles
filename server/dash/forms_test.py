@@ -1257,6 +1257,13 @@ class ContentAdFormTestCase(TestCase):
         self.assertFalse(f.is_valid())
         self.assertEqual({"image_url": ["Image too big (maximum size is 10000x10000 px)"]}, f.errors)
 
+    def test_image_width_oen(self):
+        self.campaign.account.id = 305
+        data = self._get_valid_data()
+        data["image_width"] = 1
+        f = forms.ContentAdForm(self.campaign, data)
+        self.assertTrue(f.is_valid())
+
     def test_image_min_height(self):
         data = self._get_valid_data()
         data["image_height"] = 1
@@ -1270,6 +1277,13 @@ class ContentAdFormTestCase(TestCase):
         f = forms.ContentAdForm(self.campaign, data)
         self.assertFalse(f.is_valid())
         self.assertEqual({"image_url": ["Image too big (maximum size is 10000x10000 px)"]}, f.errors)
+
+    def test_image_height_oen(self):
+        self.campaign.account.id = 305
+        data = self._get_valid_data()
+        data["image_height"] = 1
+        f = forms.ContentAdForm(self.campaign, data)
+        self.assertTrue(f.is_valid())
 
     def test_invalid_url_status(self):
         data = self._get_valid_data()

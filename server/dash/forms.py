@@ -1544,6 +1544,9 @@ class ContentAdForm(ContentAdCandidateForm):
             return "Image could not be processed"
 
     def _validate_image_size(self, cleaned_data):
+        if self.campaign and self.campaign.account.id == 305:
+            return
+
         image_width = cleaned_data["image_width"]
         image_height = cleaned_data["image_height"]
 
