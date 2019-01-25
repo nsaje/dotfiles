@@ -34,7 +34,6 @@
 30 7 1 * *       /home/ubuntu/docker-manage-py.sh refresh_inventory_data
 #0 8 * * *        /home/ubuntu/docker-manage-py.sh auto_archive_inactive_entities
 0 8 * * *        /home/ubuntu/docker-manage-py.sh create_demo_snapshot
-0 8 * * *        /home/ubuntu/docker-manage-py.sh send_oen_postclickkpi_cpa_email
 0 9,12,15 * * *  /home/ubuntu/docker-manage-py.sh monitor_blacklists
 10 10-20 * * *    /home/ubuntu/docker-manage-py.sh send_scheduled_reports
 15 9 * * *       /home/ubuntu/docker-manage-py.sh run_autopilot --daily-run
