@@ -150,6 +150,7 @@ class Command(ExceptionCommand):
         for i, group_data in enumerate(grouped_list):
             dump_group_data = serialize("python", group_data)
             _attach_demo_users(dump_group_data, demo_users_pks)
+            _remove_entity_tags(dump_group_data)
 
             group_json = json.dumps(dump_group_data, indent=4, cls=json_helper.JSONEncoder)
 
@@ -281,6 +282,11 @@ def _attach_demo_users(dump_data, demo_users_pks):
     for entity in dump_data:
         if entity["model"] == "dash.account":
             entity["fields"]["users"] = list(demo_users_pks)
+
+
+def _remove_entity_tags(dump_data):
+    for entity in dump_data:
+        entity["fields"].pop("entity_tags", None)
 
 
 def _add_to_serialize_list(serialize_list, objs):

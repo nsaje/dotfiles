@@ -49,11 +49,11 @@ ls -v dump*.json | xargs python $DIR/manage.py loaddata
 echo "Loading geolocations"
 python $DIR/manage.py import_geolocations dash/features/geolocation/supported_locations/GeoIP2-City-Locations-en.csv dash/features/geolocation/supported_locations/yahoo-mapping.csv dash/features/geolocation/supported_locations/outbrain-mapping.csv dash/features/geolocation/supported_locations/facebook-mapping.csv
 
-echo "Incrementing sequences"
+echo "Restarting sequences"
 python $DIR/manage.py dbshell <<SQL | grep 'ALTER SEQUENCE' | python $DIR/manage.py dbshell
 SELECT 'ALTER SEQUENCE ' ||
        quote_ident(S.relname) ||
-       ' INCREMENT BY 1000000;'
+       ' RESTART WITH 10000000;'
 FROM pg_class AS S
 WHERE S.relkind = 'S'
 SQL
