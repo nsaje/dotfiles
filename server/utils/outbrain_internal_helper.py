@@ -1,3 +1,5 @@
+import base64
+import json
 import logging
 
 import requests
@@ -5,11 +7,22 @@ from django.conf import settings
 
 logger = logging.getLogger(__name__)
 
-NUM_RETRIES = 3
-URL_IDS_TO_INTERNAL = "ids/{external_ids}/toInternal"
+COMMON_HEADERS = {"Host": "obproxy-ingress.zemanta.com"}
+
+NUM_RETRIES = 1
+TIMEOUT = 2
+
+URL_IDS_TO_INTERNAL = "/ids/{external_ids}/toInternal"
+URL_LOGIN = "/login"
+
+api_token = None
 
 
 class OutbrainInternalAPIException(Exception):
+    pass
+
+
+class OutbrainInternalAPITimeoutException(OutbrainInternalAPIException):
     pass
 
 
@@ -36,9 +49,14 @@ def _call_api(url, method="GET", **kwargs):
     if settings.K1_DEMO_MODE:
         return {}
     headers = kwargs.pop("headers", {})
-    headers["OB-TOKEN-V1"] = settings.OB_TOKEN_V1
-    headers["Host"] = "amelia"
-    r = requests.request(method=method, url=url, headers=headers, **kwargs)
+    headers.update(COMMON_HEADERS)
+    headers["OB-TOKEN-V1"] = _get_api_token()
+    try:
+        r = requests.request(method=method, url=url, headers=headers, **kwargs, timeout=TIMEOUT)
+    except requests.exceptions.Timeout as e:
+        logger.exception("Outbrain Internal API timing out!")
+        raise OutbrainInternalAPITimeoutException(e)
+
     if r.status_code != 200:
         raise OutbrainInternalAPIException("Invalid response status code. response: {}".format(r.content))
 
@@ -48,3 +66,26 @@ def _call_api(url, method="GET", **kwargs):
         raise OutbrainInternalAPIException("JSON deserialization not successful: {}".format(r.content))
 
     return ret
+
+
+def _get_api_token():
+    global api_token
+
+    if api_token:
+        return api_token
+
+    credentials = _base64_encode_credentials(settings.OUTBRAIN_INTERNAL_USERNAME, settings.OUTBRAIN_INTERNAL_PASSWORD)
+    headers = {"Authorization": "Basic {}".format(credentials.decode("utf-8"))}
+    headers.update(COMMON_HEADERS)
+    r = requests.request(method="GET", url=settings.AMELIA_BASE_URL + URL_LOGIN, headers=headers)
+
+    if r.status_code != 200:
+        raise OutbrainInternalAPIException(u"Unable to obtain API token. Response: {}".format(r.text))
+
+    api_token = json.loads(r.text)["OB-TOKEN-V1"]
+
+    return api_token
+
+
+def _base64_encode_credentials(username, password):
+    return base64.b64encode((username + ":" + password).encode("utf-8"))

@@ -599,7 +599,6 @@ class ContentAdsLoader(Loader):
 
     @cached_property
     def amplify_internal_ids_map(self):
-        return {}
         content_ad_ids = []
         ob_external_ids = []
         for content_ad_id, amplify_content_ad_source in self.amplify_reviews_map.items():
