@@ -85,6 +85,7 @@ termcolor==1.1.0
 # required for celery
 pycurl==7.43.0.2
 redis==2.10.6
+django-redis==4.10.0
 
 # user agent parser
 ua-parser==0.8.0
