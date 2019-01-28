@@ -31,7 +31,7 @@ class ReportJobAdmin(admin.ModelAdmin):
 
     readonly_fields = ("created_dt", "user", "query", "result", "scheduled_report", "link_to_scheduled_report")
 
-    search_fields = ("user__email",)
+    search_fields = ("user__email", "result")
 
     def get_queryset(self, request):
         qs = super(ReportJobAdmin, self).get_queryset(request)
