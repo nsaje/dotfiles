@@ -2,11 +2,11 @@ import logging
 import shlex
 import sys
 
+import django_pglocks
 import influx
 from django.conf import settings
 from django.core import management
 
-import django_pglocks
 from dcron import alerts
 from dcron import constants
 from dcron import exceptions
@@ -39,12 +39,12 @@ class DCronCommand(management.base.BaseCommand):
             and dcron_job.completed_dt
             and (start_dt - dcron_job.executed_dt).total_seconds() < dcron_job.dcronjobsettings.min_separation
         ):
-            logger.debug("Cron job has just completed, not going to run %s on %s", command_name, host_name)
+            logger.info("Cron job has just completed, not going to run %s on %s", command_name, host_name)
             return
 
         with django_pglocks.advisory_lock(command_name, wait=False) as acquired:
             if not acquired:
-                logger.debug("Another process is executing cron job %s - aborting on host %s", command_name, host_name)
+                logger.info("Another process is executing cron job %s - aborting on host %s", command_name, host_name)
                 return
 
             models.DCronJob.objects.update_or_create(
