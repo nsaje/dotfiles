@@ -77,7 +77,7 @@ angular
                 help: 'The ID number of your content ad.',
             },
             amplifyAdId: {
-                name: 'Amplify ID',
+                name: 'Outbrain Ad ID',
                 field: 'amplify_promoted_link_id',
                 type: zemGridConstants.gridColumnTypes.TEXT,
                 totalRow: false,
