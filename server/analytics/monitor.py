@@ -257,11 +257,15 @@ def audit_account_credits(date=None, days=14):
         credit.account or credit.agency.account_set.all().first()
         for credit in dash.models.CreditLineItem.objects.filter(
             end_date__gte=date, end_date__lt=date + datetime.timedelta(days)
-        )
+        ).prefetch_related("agency__account_set")
+        if credit.account or credit.agency.account_set.all()
     )
     future_credit_accounts = set(
         credit.account or credit.agency.account_set.all().first()
-        for credit in dash.models.CreditLineItem.objects.filter(end_date__gte=date + datetime.timedelta(days))
+        for credit in dash.models.CreditLineItem.objects.filter(
+            end_date__gte=date + datetime.timedelta(days)
+        ).prefetch_related("agency__account_set")
+        if credit.account or credit.agency.account_set.all()
     )
     # only accounts with no future credits
     return ending_credit_accounts - future_credit_accounts

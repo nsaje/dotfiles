@@ -19,7 +19,7 @@ class Command(utils.command_helpers.ExceptionCommand):
     def handle(self, *args, **options):
         yesterday = datetime.date.today() - datetime.timedelta(1)
         self.slack = options["slack"]
-        self.date = datetime.datetime.strptime(options["date"], "%Y-%m-%d").date() or yesterday
+        self.date = datetime.datetime.strptime(options["date"], "%Y-%m-%d").date() if options["date"] else yesterday
         self.max_clicks = options["max_clicks"]
         self.max_impressions = options["max_impressions"]
         self.ctr = options["ctr"]
