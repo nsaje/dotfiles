@@ -28,7 +28,7 @@
 0 4,5 * * *      /home/ubuntu/docker-manage-py.sh campaignstop_midnight --check-time
 0 5 * * *        /home/ubuntu/docker-manage-py.sh get_pixel_traffic
 30 6,9 * * *     /home/ubuntu/docker-manage-py.sh create_demand_report
-0 7 * * *        /home/ubuntu/docker-manage-py.sh send_daily_management_report
+#0 7 * * *        /home/ubuntu/docker-manage-py.sh send_daily_management_report
 15 7 * * *       /home/ubuntu/docker-manage-py.sh audit_spend_patterns
 30 7 1 * *       /home/ubuntu/docker-manage-py.sh refresh_inventory_data
 #0 8 * * *        /home/ubuntu/docker-manage-py.sh auto_archive_inactive_entities
