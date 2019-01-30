@@ -31,6 +31,18 @@ angular.module('one.views').config(function($stateProvider) {
         },
     });
 
+    $stateProvider.state('v2.createEntity', {
+        url: '/create/{level:account|campaign|adgroup}/{id:int}',
+        template:
+            '<zem-new-entity-analytics-mock-view></zem-new-entity-analytics-mock-view>',
+        params: {
+            id: {
+                value: null,
+                squash: true,
+            },
+        },
+    });
+
     $stateProvider.state('v2.reports', {
         url: '/reports/{level:accounts|account}/{id:int}',
         template: require('./scheduled-reports/zemScheduledReports.partial.html'),

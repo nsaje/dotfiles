@@ -10,6 +10,7 @@ import {InventoryPlanningModule} from './features/inventory-planning/inventory-p
 import {EntityManagerModule} from './features/entity-manager/entity-manager.module';
 import {CampaignGoalsModule} from './features/campaign-goals/campaign-goals.module';
 import {CreativesManagerModule} from './features/creatives-manager/creatives-manager.module';
+import {ViewsModule} from './views/views.module';
 
 // Raven (Sentry) configuration
 if (APP_CONFIG.env.prod) {
@@ -35,6 +36,7 @@ if (APP_CONFIG.env.prod) {
         UpgradeModule,
 
         CoreModule,
+        ViewsModule,
 
         // Feature modules
         InventoryPlanningModule,

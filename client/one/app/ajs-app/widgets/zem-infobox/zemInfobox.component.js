@@ -62,17 +62,22 @@ angular.module('one.widgets').component('zemInfobox', {
                     'zemauth.can_use_new_entity_settings_drawers'
                 )
             ) {
-                if (entitiesUpdates$) entitiesUpdates$.unsubscribe();
+                if (entitiesUpdates$) {
+                    entitiesUpdates$.unsubscribe();
+                }
 
-                entitiesUpdates$ = zemEntitiesUpdatesService
-                    .getUpdatesOfEntity$(entity.id, entity.type)
-                    .subscribe(function(entityUpdate) {
-                        if (
-                            entityUpdate.action === constants.entityAction.EDIT
-                        ) {
-                            onEntityUpdated();
-                        }
-                    });
+                if (entity) {
+                    entitiesUpdates$ = zemEntitiesUpdatesService
+                        .getUpdatesOfEntity$(entity.id, entity.type)
+                        .subscribe(function(entityUpdate) {
+                            if (
+                                entityUpdate.action ===
+                                constants.entityAction.EDIT
+                            ) {
+                                onEntityUpdated();
+                            }
+                        });
+                }
             }
         };
 

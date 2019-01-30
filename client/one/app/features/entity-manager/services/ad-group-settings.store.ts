@@ -45,20 +45,16 @@ export class AdGroupSettingsStore extends Store<AdGroupSettingsStoreState>
         });
     }
 
-    archiveEntity(): Promise<boolean> {
-        return new Promise<boolean>((resolve, reject) => {
-            // TODO (jurebajt): Add request state updater callback
-            this.adGroupService.archive(this.state.adGroup.id).subscribe(
-                () => {
-                    this.zemNavigationNewService.refreshState();
-                    resolve(true);
-                },
-                errors => {
-                    // TODO (jurebajt): Set state errors
-                    reject(false);
-                }
-            );
-        });
+    archiveEntity() {
+        // TODO (jurebajt): Add request state updater callback
+        this.adGroupService.archive(this.state.adGroup.id).subscribe(
+            () => {
+                this.zemNavigationNewService.refreshState();
+            },
+            errors => {
+                // TODO (jurebajt): Set state errors
+            }
+        );
     }
 
     ngOnDestroy(): void {

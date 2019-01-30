@@ -25,15 +25,45 @@ angular.module('one.widgets').component('zemCreateEntityAction', {
         var MAIN_ACTIONS = {};
         MAIN_ACTIONS[constants.entityType.ACCOUNT] = {
             name: 'Account',
-            callback: createEntity,
+            callback: function() {
+                if (
+                    zemPermissions.hasPermission(
+                        'zemauth.can_use_new_entity_settings_drawers'
+                    )
+                ) {
+                    navigateToEntityCreation();
+                } else {
+                    createEntity();
+                }
+            },
         };
         MAIN_ACTIONS[constants.entityType.CAMPAIGN] = {
             name: 'Campaign',
-            callback: showCampaignCreatorModal,
+            callback: function() {
+                if (
+                    zemPermissions.hasPermission(
+                        'zemauth.can_use_new_entity_settings_drawers'
+                    )
+                ) {
+                    navigateToEntityCreation();
+                } else {
+                    showCampaignCreatorModal();
+                }
+            },
         };
         MAIN_ACTIONS[constants.entityType.AD_GROUP] = {
             name: 'Ad group',
-            callback: createEntity,
+            callback: function() {
+                if (
+                    zemPermissions.hasPermission(
+                        'zemauth.can_use_new_entity_settings_drawers'
+                    )
+                ) {
+                    navigateToEntityCreation();
+                } else {
+                    createEntity();
+                }
+            },
         };
         MAIN_ACTIONS[constants.entityType.CONTENT_AD] = {
             name: 'Content Ads',
@@ -63,6 +93,17 @@ angular.module('one.widgets').component('zemCreateEntityAction', {
             $ctrl.additionalActions =
                 ADDITIONAL_ACTIONS[$ctrl.entityType] || [];
         };
+
+        function navigateToEntityCreation() {
+            var url = $state.href('v2.createEntity', {
+                level:
+                    constants.levelToLevelStateParamMap[
+                        constants.entityTypeToLevelMap[$ctrl.entityType]
+                    ],
+                id: $ctrl.parentEntity ? $ctrl.parentEntity.id : null,
+            });
+            $location.url(url);
+        }
 
         function createEntity(entityProperties) {
             entityProperties = entityProperties || {};

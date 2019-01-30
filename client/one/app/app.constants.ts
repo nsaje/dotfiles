@@ -45,6 +45,13 @@ export enum EntityUpdateAction {
     CLONE = 'clone',
 }
 
+export enum LevelStateParam {
+    ACCOUNTS = 'accounts',
+    ACCOUNT = 'account',
+    CAMPAIGN = 'campaign',
+    AD_GROUP = 'adgroup',
+}
+
 export enum Day {
     Monday = 'monday',
     Tuesday = 'tuesday',
@@ -1063,12 +1070,7 @@ export const APP_CONSTANTS = {
         BULK: 'bulk',
     },
     entityType: EntityType,
-    levelStateParam: {
-        ACCOUNTS: 'accounts',
-        ACCOUNT: 'account',
-        CAMPAIGN: 'campaign',
-        AD_GROUP: 'adgroup',
-    },
+    levelStateParam: LevelStateParam,
     level: {
         AD_GROUPS: 'ad_groups',
         CAMPAIGNS: 'campaigns',
@@ -1281,6 +1283,7 @@ export const APP_CONSTANTS = {
     breakdownToBreakdownStateParamMap: {},
     levelToEntityTypeMap: {},
     entityTypeToLevelMap: {},
+    entityToParentTypeMap: {},
     currencySymbol: CURRENCY_SYMBOL,
     campaignGoalValueText: {},
     automaticallyOptimizedKPIGoals: {},
@@ -1343,6 +1346,12 @@ APP_CONSTANTS.entityTypeToLevelMap[APP_CONSTANTS.entityType.CAMPAIGN] =
     APP_CONSTANTS.level.CAMPAIGNS;
 APP_CONSTANTS.entityTypeToLevelMap[APP_CONSTANTS.entityType.AD_GROUP] =
     APP_CONSTANTS.level.AD_GROUPS;
+
+APP_CONSTANTS.entityToParentTypeMap[EntityType.ACCOUNT] = null;
+APP_CONSTANTS.entityToParentTypeMap[EntityType.CAMPAIGN] = EntityType.ACCOUNT;
+APP_CONSTANTS.entityToParentTypeMap[EntityType.AD_GROUP] = EntityType.CAMPAIGN;
+APP_CONSTANTS.entityToParentTypeMap[EntityType.CONTENT_AD] =
+    EntityType.AD_GROUP;
 
 APP_CONSTANTS.campaignGoalValueText[APP_CONSTANTS.campaignGoalKPI.CPA] = 'CPA';
 APP_CONSTANTS.campaignGoalValueText[APP_CONSTANTS.campaignGoalKPI.CPC] = 'CPC';

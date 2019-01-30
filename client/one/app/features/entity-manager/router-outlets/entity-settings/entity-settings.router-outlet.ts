@@ -11,6 +11,7 @@ import {ENTITY_MANAGER_CONFIG} from '../../entity-manager.config';
 export class EntitySettingsRouterOutlet implements OnInit {
     readonly EntityType = EntityType;
     entityId: number = null;
+    newEntityParentId: number = null;
     entityType: EntityType = null;
 
     constructor(
@@ -38,6 +39,10 @@ export class EntitySettingsRouterOutlet implements OnInit {
     }
 
     private updateActiveSettingsEntity() {
+        this.entityId = null;
+        this.newEntityParentId = null;
+        this.entityType = null;
+
         if (
             this.ajs$state.includes('v2.analytics') &&
             this.isSettingsQueryParamSet()
@@ -46,9 +51,11 @@ export class EntitySettingsRouterOutlet implements OnInit {
                 ENTITY_MANAGER_CONFIG.idStateParam
             ];
             this.entityType = this.getEntityTypeFromStateParams();
-        } else {
-            this.entityId = null;
-            this.entityType = null;
+        } else if (this.ajs$state.includes('v2.createEntity')) {
+            this.newEntityParentId = this.ajs$state.params[
+                ENTITY_MANAGER_CONFIG.idStateParam
+            ];
+            this.entityType = this.getEntityTypeFromStateParams();
         }
     }
 

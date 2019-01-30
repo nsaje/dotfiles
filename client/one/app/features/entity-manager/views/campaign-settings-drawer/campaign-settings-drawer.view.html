@@ -1,3 +1,8 @@
-<zem-drawer [isOpen]="isOpen" (closeRequest)="close()" class="zem-drawer">
+<zem-drawer
+    [isOpen]="isOpen"
+    [isClosable]="!isNewEntity"
+    (closeRequest)="cancel()"
+    class="zem-drawer"
+>
     Settings for campaign with id {{ entityId }}
 </zem-drawer>

@@ -1,5 +1,15 @@
-<zem-drawer [isOpen]="isOpen" (closeRequest)="close()" class="zem-drawer">
+<zem-drawer
+    [isOpen]="isOpen"
+    [isClosable]="!isNewEntity"
+    (closeRequest)="cancel()"
+    class="zem-drawer"
+>
     Settings for adgroup with id {{ store.state.adGroup.id }}
-    <button (click)="saveSettings()">Save</button>
-    <button (click)="archive()">Archive</button>
+
+    <button (click)="saveSettings()">
+        <ng-container *ngIf="isNewEntity">Create</ng-container>
+        <ng-container *ngIf="!isNewEntity">Save</ng-container>
+    </button>
+    <button (click)="cancel()">Cancel</button>
+    <button *ngIf="!isNewEntity" (click)="archive()">Archive</button>
 </zem-drawer>

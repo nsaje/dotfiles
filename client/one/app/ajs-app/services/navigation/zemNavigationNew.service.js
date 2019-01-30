@@ -67,6 +67,10 @@ angular
                 constants.levelStateParamToLevelMap[$state.params.level];
             var type = constants.levelToEntityTypeMap[level];
 
+            if ($state.includes('v2.createEntity')) {
+                type = constants.entityToParentTypeMap[type];
+            }
+
             if (hierarchyRoot && zemNavigationService.isFullyLoaded()) {
                 var entity = getEntityById(type, id);
                 setActiveEntity(entity);

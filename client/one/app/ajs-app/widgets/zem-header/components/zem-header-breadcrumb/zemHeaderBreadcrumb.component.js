@@ -174,6 +174,13 @@ angular.module('one.widgets').component('zemHeaderBreadcrumb', {
                     root: true,
                 };
             }
+            if ($state.includes('v2.createEntity')) {
+                return {
+                    typeName: 'Entity management',
+                    name: 'New entity',
+                    href: $location.absUrl(),
+                };
+            }
             return null;
         }
     },

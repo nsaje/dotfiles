@@ -10,12 +10,17 @@ import {ENTITY_MANAGER_CONFIG} from '../../entity-manager.config';
 export class AccountSettingsDrawerView implements AfterViewInit {
     @Input()
     entityId: number;
+    @Input()
+    newEntityParentId: number;
 
     isOpen: boolean;
+    isNewEntity: boolean;
 
     constructor(@Inject('ajs$location') private ajs$location: any) {}
 
     ngAfterViewInit() {
+        this.isNewEntity = !this.entityId;
+
         setTimeout(() => {
             this.open();
         });
@@ -25,7 +30,7 @@ export class AccountSettingsDrawerView implements AfterViewInit {
         this.isOpen = true;
     }
 
-    close() {
+    cancel() {
         this.isOpen = false;
         setTimeout(() => {
             this.ajs$location

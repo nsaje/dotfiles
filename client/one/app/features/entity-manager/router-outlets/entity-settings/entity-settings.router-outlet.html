@@ -1,14 +1,17 @@
 <zem-account-settings-drawer
     *ngIf="entityType === EntityType.ACCOUNT"
     [entityId]="entityId"
+    [newEntityParentId]="newEntityParentId"
 ></zem-account-settings-drawer>
 
 <zem-campaign-settings-drawer
     *ngIf="entityType === EntityType.CAMPAIGN"
     [entityId]="entityId"
+    [newEntityParentId]="newEntityParentId"
 ></zem-campaign-settings-drawer>
 
 <zem-ad-group-settings-drawer
     *ngIf="entityType === EntityType.AD_GROUP"
     [entityId]="entityId"
+    [newEntityParentId]="newEntityParentId"
 ></zem-ad-group-settings-drawer>

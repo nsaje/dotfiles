@@ -43,19 +43,21 @@ angular
                         'zemauth.can_use_new_entity_settings_drawers'
                     )
                 ) {
-                    var entitiesUpdates$ = zemEntitiesUpdatesService
-                        .getUpdatesOfEntity$(entity.id, entity.type)
-                        .subscribe(function(entityUpdate) {
-                            if (
-                                entityUpdate.action ===
-                                constants.entityAction.EDIT
-                            ) {
-                                reload();
-                            }
+                    if (entity) {
+                        var entitiesUpdates$ = zemEntitiesUpdatesService
+                            .getUpdatesOfEntity$(entity.id, entity.type)
+                            .subscribe(function(entityUpdate) {
+                                if (
+                                    entityUpdate.action ===
+                                    constants.entityAction.EDIT
+                                ) {
+                                    reload();
+                                }
+                            });
+                        $scope.$on('$destroy', function() {
+                            entitiesUpdates$.unsubscribe();
                         });
-                    $scope.$on('$destroy', function() {
-                        entitiesUpdates$.unsubscribe();
-                    });
+                    }
                 } else {
                     var onEntityUpdatedHandler = zemAdGroupService.onEntityUpdated(
                         reload

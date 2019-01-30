@@ -84,6 +84,10 @@ angular
         }
 
         function checkIfEntityExists() {
+            if ($state.includes('v2.createEntity')) {
+                return $q.resolve();
+            }
+
             var entityGetter = getEntityGetter($state.params.level);
             if (!entityGetter) return $q.resolve();
 
