@@ -41,8 +41,6 @@ class BudgetDepletionTestCase(test.TestCase):
     @patch("automation.campaignstop.service.simple._send_depleting_budget_notification_email")
     def test_notify_campaign_with_depleting_budget(self, mock):
         campaign = models.Campaign.objects.get(pk=1)
-        user = User.objects.create_user("accountmanager@test.com")
-        campaign.account.settings.update(None, default_account_manager=user)
         simple._notify_campaign_with_depleting_budget(campaign, 100, 150)
 
         notif = automationmodels.CampaignBudgetDepletionNotification.objects.all().latest("created_dt")
@@ -53,7 +51,7 @@ class BudgetDepletionTestCase(test.TestCase):
         mock.assert_called_with(
             campaign,
             "https://one.zemanta.com/v2/analytics/campaign/1?settings&settingsScrollTo=zemCampaignBudgetsSettings",
-            ["accountmanager@test.com", "em@il.com"],
+            ["em@il.com"],
             100,
             150,
             decimal.Decimal("60.0000"),

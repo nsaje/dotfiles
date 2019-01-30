@@ -229,13 +229,10 @@ def _format_whitespace(content):
 
 def email_manager_list(campaign):
     """
-    Fetch campaign manager and account manager emails if they exist
+    Fetch campaign manager email if it exists
     """
     campaign_manager = campaign.settings.campaign_manager
-    account_manager = campaign.account.settings.default_account_manager
     ret = set([])
-    if account_manager is not None:
-        ret.add(account_manager.email)
     if campaign_manager is not None:
         ret.add(campaign_manager.email)
     return sorted(ret)
