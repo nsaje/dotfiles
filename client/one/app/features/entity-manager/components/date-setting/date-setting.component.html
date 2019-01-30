@@ -1,0 +1,32 @@
+<div class="zem-form-group">
+    <label class="zem-form-group__label">
+        {{ label }}
+        <zem-help-popover
+            *ngIf="helpMessage"
+            content="{{ helpMessage }}"
+            placement="top"
+        ></zem-help-popover>
+    </label>
+    <div class="zem-form-group__content">
+        <zem-date-input
+            class="zem-form-group__content-item zem-date-input"
+            [value]="model"
+            [minDate]="minDate"
+            [isDisabled]="isDisabled"
+            [hasError]="errors && errors.length > 0"
+            (valueChange)="onValueChange($event)"
+        ></zem-date-input>
+        <div
+            class="zem-form-group__content-item zem-message zem-message--error"
+            *ngFor="let error of errors"
+        >
+            {{ error }}
+        </div>
+        <div
+            class="zem-form-group__content-item zem-message zem-message--info zem-message--with-icon zem-info-bg-icon"
+            *ngIf="infoMessage"
+        >
+            {{ infoMessage }}
+        </div>
+    </div>
+</div>

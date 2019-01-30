@@ -1,0 +1,41 @@
+<div
+    class="zem-prefixed-input zem-prefixed-input--narrow zem-prefixed-input--with-icon zem-calendar-bg-icon"
+    [ngClass]="{'zem-prefixed-input--error': hasError}"
+>
+    <input
+        class="zem-input-text zem-prefixed-input__input"
+        [ngClass]="{'zem-prefixed-input__input--error': hasError}"
+        type="text"
+        placeholder="MM / dd / yyyy"
+        ngbDatepicker
+        #zemDatepicker="ngbDatepicker"
+        [ngModel]="model"
+        [minDate]="minDate"
+        [disabled]="isDisabled"
+        [dayTemplate]="zemDateInputDay"
+        (dateSelect)="onDateSelect($event)"
+        (click)="zemDatepicker.toggle()"
+        (keydown.arrowdown)="zemDatepicker.toggle()"
+    />
+</div>
+
+<ng-template
+    #zemDateInputDay
+    let-date
+    let-currentMonth="currentMonth"
+    let-selected="selected"
+    let-disabled="disabled"
+    let-focused="focused"
+>
+    <span
+        class="zem-date-input__day"
+        [class.zem-date-input__day--focused]="focused"
+        [class.zem-date-input__day--selected]="selected"
+        [class.zem-date-input__day--muted]="
+            date.month !== currentMonth && !disabled && !focused && !selected
+        "
+        [class.zem-date-input__day--disabled]="disabled"
+    >
+        {{ date.day }}
+    </span>
+</ng-template>

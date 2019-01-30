@@ -1,0 +1,34 @@
+<div class="zem-form-group">
+    <label class="zem-form-group__label">
+        {{ label }}
+        <zem-help-popover
+            *ngIf="helpMessage"
+            content="{{ helpMessage }}"
+            placement="top"
+        ></zem-help-popover>
+    </label>
+    <div class="zem-form-group__content">
+        <input
+            class="zem-form-group__content-item zem-input-text"
+            [ngClass]="{'zem-input-text--error': errors.length > 0}"
+            type="text"
+            placeholder="{{ placeholder }}"
+            maxlength="{{ maxLength }}"
+            [(ngModel)]="model"
+            (blur)="onBlur($event)"
+            [disabled]="isDisabled"
+        />
+        <div
+            class="zem-form-group__content-item zem-message zem-message--error"
+            *ngFor="let error of errors"
+        >
+            {{ error }}
+        </div>
+        <div
+            class="zem-form-group__content-item zem-message zem-message--info zem-message--with-icon zem-info-bg-icon"
+            *ngIf="infoMessage"
+        >
+            {{ infoMessage }}
+        </div>
+    </div>
+</div>

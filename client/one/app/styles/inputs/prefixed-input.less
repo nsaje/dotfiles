@@ -1,0 +1,92 @@
+@import 'variables';
+
+.zem-prefixed-input {
+    display: flex;
+}
+
+.zem-prefixed-input__prefix {
+    background: white;
+    border: 1px solid @input-border-color;
+    height: @default-button-input-height;
+    line-height: 18px;
+    padding: 5px 10px;
+    box-sizing: border-box;
+    border-radius: @border-radius;
+    box-shadow: inset 3px 3px 3px 0px rgba(0, 0, 0, 0.05);
+    border-right: none;
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+    color: @gray;
+    font-style: normal;
+    cursor: default;
+    padding: 6px 10px 4px 10px;
+    background-color: @very-light-gray;
+    white-space: nowrap;
+
+    &::-webkit-input-placeholder {
+        color: @gray;
+    }
+    &::-moz-placeholder {
+        color: @gray;
+    }
+    &:-ms-input-placeholder {
+        color: @gray;
+    }
+    &:-moz-placeholder {
+        color: @gray;
+    }
+}
+
+.zem-prefixed-input--with-icon::before {
+    background: white;
+    border: 1px solid @input-border-color;
+    height: @default-button-input-height;
+    line-height: 18px;
+    padding: 5px 10px;
+    box-sizing: border-box;
+    border-radius: @border-radius;
+    box-shadow: inset 3px 3px 3px 0px rgba(0, 0, 0, 0.05);
+    content: '';
+    border-right: none;
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+    background-color: @very-light-gray;
+    background-repeat: no-repeat;
+    background-position: center center;
+
+    &::-webkit-input-placeholder {
+        color: @gray;
+    }
+    &::-moz-placeholder {
+        color: @gray;
+    }
+    &:-ms-input-placeholder {
+        color: @gray;
+    }
+    &:-moz-placeholder {
+        color: @gray;
+    }
+}
+
+.zem-prefixed-input__input {
+    border-left: none;
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+    box-shadow: inset -1px 3px 3px 0px rgba(0, 0, 0, 0.05);
+
+    &:focus {
+        padding-left: 9px;
+        box-shadow: 0px 0px 5px 0px rgba(0, 0, 0, 0.2);
+        border-left: 1px solid darken(@input-border-color, 20%);
+    }
+}
+
+.zem-prefixed-input--narrow {
+    max-width: @smaller-field;
+}
+
+.zem-prefixed-input__prefix--error,
+.zem-prefixed-input__input--error,
+.zem-prefixed-input--error.zem-prefixed-input--with-icon::before {
+    border-color: @red;
+}

@@ -15,9 +15,10 @@
       "dom"
     ],
     "types": [
-        "webpack-env",
         "angular",
-        "jasmine"
+        "clone",
+        "jasmine",
+        "webpack-env"
     ],
     "typeRoots": [
       "node_modules/@types"

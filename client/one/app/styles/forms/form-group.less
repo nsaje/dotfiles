@@ -1,0 +1,23 @@
+@import 'variables';
+
+.zem-form-group {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.zem-form-group__label {
+    flex: 0 0 200px;
+}
+
+.zem-form-group__content {
+    flex: 1 1 auto;
+    min-width: 300px;
+}
+
+.zem-form-group__content-item {
+    margin-bottom: (@default-spacing)-10px;
+}
+
+.zem-form-group__content-item&:last-child {
+    margin-bottom: 0;
+}

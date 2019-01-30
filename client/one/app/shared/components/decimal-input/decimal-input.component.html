@@ -1,0 +1,13 @@
+<input
+    class="zem-input-text"
+    [ngClass]="{'zem-input-text--error': hasError}"
+    type="text"
+    placeholder="{{ placeholder }}"
+    [(ngModel)]="model"
+    [disabled]="isDisabled"
+    (paste)="onPaste($event)"
+    (blur)="onBlur()"
+    zemFilterKeydownEvent
+    [keyFilter]="keyFilter"
+    (filteredKeydown)="onKeydown($event)"
+/>

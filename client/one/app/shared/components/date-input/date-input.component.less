@@ -1,0 +1,72 @@
+@import 'variables';
+
+.zem-date-input .zem-calendar-bg-icon::before {
+    background-size: @default-button-input-height - 12;
+    background-position: center;
+    width: 34px;
+}
+
+.zem-date-input__day {
+    display: inline-block;
+    text-align: center;
+    width: 2.8rem;
+    height: 2.3rem;
+    line-height: 2.3rem;
+    border-radius: 0.25rem;
+}
+
+.zem-date-input__day:not(.zem-date-input__day--disabled) {
+    &:hover {
+        opacity: 1;
+        color: @white;
+        background-color: @secondary-color;
+        border-color: @secondary-color;
+    }
+}
+
+.zem-date-input__day--focused {
+    color: @white;
+    background-color: @secondary-color;
+    border-color: @secondary-color;
+}
+
+.zem-date-input__day--selected {
+    color: @white;
+    background-color: @secondary-color;
+    border-color: @secondary-color;
+}
+
+.zem-date-input__day--muted {
+    color: @gray;
+    opacity: 0.5;
+}
+
+.zem-date-input__day--disabled {
+    color: @gray;
+    cursor: not-allowed;
+}
+
+/////////////////////////////
+// NgbDatepicker overrides //
+/////////////////////////////
+
+.zem-date-input .ngb-dp-day {
+    width: 2.8rem;
+    height: 2.3rem;
+}
+
+.zem-date-input .ngb-dp-weekdays {
+    border-bottom: 0;
+    border-radius: 0;
+}
+
+.zem-date-input .ngb-dp-weekday {
+    width: 2.8rem;
+}
+
+.zem-date-input .ngb-dp-weekday {
+    line-height: 2rem;
+    text-align: center;
+    font-style: normal;
+    font-weight: bold;
+}

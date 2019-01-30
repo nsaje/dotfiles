@@ -1,0 +1,50 @@
+@import 'variables';
+
+.zem-input-text {
+    background: white;
+    border: 1px solid @input-border-color;
+    height: @default-button-input-height;
+    line-height: 18px;
+    padding: 5px 10px;
+    box-sizing: border-box;
+    border-radius: @border-radius;
+    box-shadow: inset 3px 3px 3px 0px rgba(0, 0, 0, 0.05);
+    width: 100%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+
+    &:focus {
+        border: 1px solid darken(@input-border-color, 20%);
+        outline: none;
+        box-shadow: 0px 0px 5px 0px rgba(0, 0, 0, 0.2);
+    }
+
+    &::-webkit-input-placeholder {
+        color: @gray;
+    }
+    &::-moz-placeholder {
+        color: @gray;
+    }
+    &:-ms-input-placeholder {
+        color: @gray;
+    }
+    &:-moz-placeholder {
+        color: @gray;
+    }
+
+    &[readonly],
+    &[disabled] {
+        background-color: @very-light-gray;
+        cursor: not-allowed;
+        color: @dark-gray;
+    }
+}
+
+.zem-input-text--error {
+    border-color: @red;
+}
+
+.zem-input-text--narrow {
+    max-width: @smaller-field;
+}

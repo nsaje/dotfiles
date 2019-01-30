@@ -1,0 +1,53 @@
+@import 'variables';
+
+.zem-message {
+    position: relative;
+}
+
+.zem-message > p:last-child {
+    margin-bottom: 0;
+}
+
+.zem-message > ul:last-child {
+    margin-bottom: 0;
+}
+
+.zem-message--error {
+    color: @red;
+}
+
+.zem-message--error > a {
+    color: @red !important;
+}
+
+.zem-message--error .list-with-bullets > li::before {
+    background-color: tint(@red, 50%);
+}
+
+.zem-message--info {
+    background-color: tint(@blue, 95%);
+    border: 1px solid tint(@blue, 85%);
+    padding: 8px 10px;
+    border-radius: @border-radius;
+}
+
+.zem-message--info .list-with-bullets > li::before {
+    background-color: tint(@blue, 50%);
+}
+
+.zem-message--with-icon {
+    padding-left: 34px;
+}
+
+.zem-message--with-icon::before {
+    content: '';
+    background-size: 18px;
+    background-repeat: no-repeat;
+    background-position: center center;
+    width: 18px;
+    height: 18px;
+    position: absolute;
+    left: 7px;
+    top: 7px;
+    opacity: 0.25;
+}

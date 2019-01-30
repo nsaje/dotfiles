@@ -9,6 +9,13 @@ import {EntitySettingsRouterOutlet} from './router-outlets/entity-settings/entit
 import {AdGroupSettingsDrawerView} from './views/ad-group-settings-drawer/ad-group-settings-drawer.view';
 import {CampaignSettingsDrawerView} from './views/campaign-settings-drawer/campaign-settings-drawer.view';
 import {AccountSettingsDrawerView} from './views/account-settings-drawer/account-settings-drawer.view';
+import {TextSettingComponent} from './components/text-setting/text-setting.component';
+import {TextAreaSettingComponent} from './components/textarea-setting/textarea-setting.component';
+import {IntegerSettingComponent} from './components/integer-setting/integer-setting.component';
+import {DecimalSettingComponent} from './components/decimal-setting/decimal-setting.component';
+import {CurrencySettingComponent} from './components/currency-setting/currency-setting.component';
+import {DateSettingComponent} from './components/date-setting/date-setting.component';
+import {SelectSettingComponent} from './components/select-setting/select-setting.component';
 
 @NgModule({
     declarations: [
@@ -20,6 +27,13 @@ import {AccountSettingsDrawerView} from './views/account-settings-drawer/account
         CampaignCreatorModalComponent,
         CampaignTypeSelectorComponent,
         DaypartingSettingComponent,
+        TextSettingComponent,
+        TextAreaSettingComponent,
+        IntegerSettingComponent,
+        DecimalSettingComponent,
+        CurrencySettingComponent,
+        DateSettingComponent,
+        SelectSettingComponent,
     ],
     imports: [SharedModule],
     entryComponents: [

@@ -1,0 +1,11 @@
+<ng-select
+    class="zem-ng-select"
+    [ngClass]="{'zem-ng-select--error': hasError}"
+    placeholder="{{ placeholder }}"
+    bindLabel="{{ bindLabel }}"
+    bindValue="{{ bindValue }}"
+    [items]="items"
+    [ngModel]="model"
+    [disabled]="isDisabled"
+    (change)="onChange($event)"
+></ng-select>

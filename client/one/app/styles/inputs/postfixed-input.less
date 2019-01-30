@@ -1,0 +1,96 @@
+@import 'variables';
+
+.zem-postfixed-input {
+    display: flex;
+}
+
+.zem-postfixed-input__postfix {
+    background: white;
+    border: 1px solid @input-border-color;
+    height: @default-button-input-height;
+    line-height: 18px;
+    padding: 5px 10px;
+    box-sizing: border-box;
+    border-radius: @border-radius;
+    box-shadow: inset 3px 3px 3px 0px rgba(0, 0, 0, 0.05);
+    color: @gray;
+    font-style: normal;
+    cursor: default;
+    padding: 6px 10px 4px 10px;
+    vertical-align: top;
+    background-color: @very-light-gray;
+    white-space: nowrap;
+    border-left: none;
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+    box-shadow: inset 0px 3px 3px 0px rgba(0, 0, 0, 0.05);
+
+    &::-webkit-input-placeholder {
+        color: @gray;
+    }
+    &::-moz-placeholder {
+        color: @gray;
+    }
+    &:-ms-input-placeholder {
+        color: @gray;
+    }
+    &:-moz-placeholder {
+        color: @gray;
+    }
+}
+
+.zem-postfixed-input--with-icon::after {
+    background: white;
+    border: 1px solid @input-border-color;
+    height: @default-button-input-height;
+    line-height: 18px;
+    padding: 5px 10px;
+    box-sizing: border-box;
+    border-radius: @border-radius;
+    box-shadow: inset 3px 3px 3px 0px rgba(0, 0, 0, 0.05);
+    content: '';
+    border-left: none;
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+    background-color: @very-light-gray;
+    background-repeat: no-repeat;
+    background-position: center center;
+    background-size: @default-button-input-height - 6;
+
+    &::-webkit-input-placeholder {
+        color: @gray;
+    }
+    &::-moz-placeholder {
+        color: @gray;
+    }
+    &:-ms-input-placeholder {
+        color: @gray;
+    }
+    &:-moz-placeholder {
+        color: @gray;
+    }
+}
+
+.zem-postfixed-input__input {
+    float: none;
+    width: 100%;
+    display: table-cell;
+    border-right: none;
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+
+    &:focus {
+        box-shadow: 0px 0px 5px 0px rgba(0, 0, 0, 0.2);
+        border-right: 1px solid darken(@input-border-color, 20%);
+    }
+}
+
+.zem-postfixed-input--narrow {
+    max-width: @smaller-field;
+}
+
+.zem-postfixed-input__postfix--error,
+.zem-postfixed-input__input--error,
+.zem-postfixed-input--error.zem-postfixed-input--with-icon::after {
+    border-color: @red;
+}

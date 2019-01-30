@@ -88,6 +88,22 @@ export enum AdGroupState {
     INACTIVE = 2,
 }
 
+export enum KeyCode {
+    BACKSPACE = 8,
+    TAB = 9,
+    ENTER = 13,
+    SHIFT = 16,
+    ESCAPE = 27,
+    SPACE = 32,
+    END = 35,
+    HOME = 36,
+    LEFT_ARROW = 37,
+    UP_ARROW = 38,
+    RIGHT_ARROW = 39,
+    DOWN_ARROW = 40,
+    DELETE = 46,
+}
+
 export const APP_CONSTANTS = {
     /**
      * Max. selected media sources in on sources tabs.
@@ -120,6 +136,7 @@ export const APP_CONSTANTS = {
     campaignTypes: CAMPAIGN_TYPE,
     currency: CURRENCY,
     biddingType: BiddingType,
+    keyCode: KeyCode,
     infoboxStatus: {
         ACTIVE: 'active',
         ACTIVE_PRICE_DISCOVERY: 'active-price-discovery',
