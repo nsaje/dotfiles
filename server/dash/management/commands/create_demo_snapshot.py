@@ -87,7 +87,7 @@ def alarm_handler(*args, **kwargs):
     raise Exception("Create demo snapshot timed out!")
 
 
-def _postgres_read_only(using="eins-direct"):
+def _postgres_read_only(using="default"):
     def decorator(func):
         @functools.wraps(func)
         def f(*args, **kwargs):
@@ -113,7 +113,7 @@ class Command(ExceptionCommand):
     help = """ Create a DB snapshot for demo deploys. """
 
     # put connection in read-only mode
-    @_postgres_read_only(using="eins-direct")
+    @_postgres_read_only(using="default")
     def handle(self, *args, **options):
         if options.get("verbosity", 0) > 1:
             logger.setLevel(logging.DEBUG)
