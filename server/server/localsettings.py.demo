@@ -319,6 +319,7 @@ REST_FRAMEWORK = {
     "EXCEPTION_HANDLER": "restapi.common.exceptions.custom_exception_handler",
     "DEFAULT_THROTTLE_CLASSES": ("rest_framework.throttling.UserRateThrottle",),
     "DEFAULT_THROTTLE_RATES": {"user": "20/second"},
+    "DEFAULT_VERSIONING_CLASS": "rest_framework.versioning.NamespaceVersioning",
 }
 
 DISABLE_FACEBOOK = True

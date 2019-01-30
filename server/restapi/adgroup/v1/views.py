@@ -20,7 +20,7 @@ class AdGroupViewSet(RESTAPIBaseViewSet):
         ad_group = restapi.access.get_ad_group(request.user, ad_group_id)
         serializer = serializers.AdGroupSerializer(data=request.data, partial=True, context={"request": request})
         serializer.is_valid(raise_exception=True)
-        self.update_settings(request, ad_group, serializer.validated_data)
+        self._update_settings(request, ad_group, serializer.validated_data)
         return self.response_ok(serializers.AdGroupSerializer(ad_group.settings, context={"request": request}).data)
 
     def list(self, request):
@@ -49,13 +49,14 @@ class AdGroupViewSet(RESTAPIBaseViewSet):
             new_ad_group = core.models.AdGroup.objects.create(
                 request, campaign=campaign, name=settings.get("ad_group_name", None), is_restapi=True
             )
-            self.update_settings(request, new_ad_group, settings)
+            self._update_settings(request, new_ad_group, settings)
 
         return self.response_ok(
             serializers.AdGroupSerializer(new_ad_group.settings, context={"request": request}).data, status=201
         )
 
-    def update_settings(self, request, ad_group, settings):
+    @staticmethod
+    def _update_settings(request, ad_group, settings):
         try:
             ad_group.update_bidding_type(request, settings.get("ad_group", {}).get("bidding_type"))
             ad_group.settings.update(request, **settings)

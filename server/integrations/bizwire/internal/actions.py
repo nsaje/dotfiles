@@ -9,7 +9,7 @@ from rest_framework.test import force_authenticate
 import dash.api
 import dash.constants
 import dash.models
-import restapi.adgroup.views
+import restapi.adgroup.v1.views
 import restapi.adgroupsource.views
 import restapi.adgroupsourcesrtb.views
 from integrations.bizwire import config
@@ -167,7 +167,7 @@ def _create_ad_group(name, start_date):
         "autopilot": {"state": "INACTIVE"},
     }
     url = "rest/v1/adgroups/"
-    r = _make_restapi_fake_post_request(restapi.adgroup.views.AdGroupViewSet, url, data)
+    r = _make_restapi_fake_post_request(restapi.adgroup.v1.views.AdGroupViewSet, url, data)
     ad_group_id = int(r["id"])
     _set_initial_sources_settings(ad_group_id)
     _set_initial_rtb_settings(ad_group_id)
@@ -182,7 +182,7 @@ def _create_ad_group(name, start_date):
 def _set_ad_group(ad_group_id, state):
     data = {"state": state}
     url = "rest/v1/adgroups/{}/".format(ad_group_id)
-    return _make_restapi_fake_put_request(restapi.adgroup.views.AdGroupViewSet, url, data, view_args=[ad_group_id])
+    return _make_restapi_fake_put_request(restapi.adgroup.v1.views.AdGroupViewSet, url, data, view_args=[ad_group_id])
 
 
 def _set_custom_cpcs(ad_group_id):

@@ -2,6 +2,7 @@
 import datetime
 
 import newrelic.agent
+import tagulous
 from django.conf import settings
 from django.contrib.postgres.fields import JSONField
 from django.db import models
@@ -13,7 +14,6 @@ import core.common
 import core.features.bcm
 import core.features.history
 import core.models
-import tagulous
 import utils.demo_anonymizer
 import utils.string_helper
 from core.models import tags
@@ -37,7 +37,7 @@ class AdGroupManager(core.common.QuerySetManager):
     def _create_default_name(self, campaign):
         return core.models.helpers.create_default_name(AdGroup.objects.filter(campaign=campaign), "New ad group")
 
-    def _create(self, request, campaign, name, **kwargs):
+    def _create(self, request, campaign, name, do_save=True, **kwargs):
         ad_group = AdGroup(campaign=campaign, name=name, **kwargs)
         if (
             settings.AMPLIFY_REVIEW
@@ -47,7 +47,8 @@ class AdGroupManager(core.common.QuerySetManager):
             and campaign.type != constants.CampaignType.DISPLAY
         ):
             ad_group.amplify_review = True
-        ad_group.save(request)
+        if do_save:
+            ad_group.save(request)
         return ad_group
 
     def _post_create(self, ad_group):
@@ -118,6 +119,12 @@ class AdGroupManager(core.common.QuerySetManager):
         self._post_create(ad_group)
         ad_group.write_history_cloned_from(request, source_ad_group)
         source_ad_group.write_history_cloned_to(request, ad_group)
+        return ad_group
+
+    def get_restapi_default(self, request, campaign):
+        name = self._create_default_name(campaign)
+        ad_group = self._create(request, campaign, name=name, do_save=False)
+        ad_group.settings = core.models.settings.AdGroupSettings.objects.get_restapi_default(ad_group, name=name)
         return ad_group
 
 

@@ -33,7 +33,7 @@ from zemauth.models import User as ZemUser
 import stats.constants
 
 import restapi.serializers.targeting
-import restapi.adgroup.serializers
+import restapi.adgroup.v1.serializers
 import dash.compatibility.forms
 
 MAX_ADS_PER_UPLOAD = 100
@@ -232,7 +232,7 @@ class AdGroupSettingsForm(PublisherGroupsFormMixin, MulticurrencySettingsFormMix
     )
 
     dayparting = dash.compatibility.forms.RestFrameworkSerializer(
-        restapi.adgroup.serializers.AdGroupDaypartingSerializer, required=False
+        restapi.adgroup.v1.serializers.AdGroupDaypartingSerializer, required=False
     )
 
     b1_sources_group_enabled = forms.BooleanField(required=False)

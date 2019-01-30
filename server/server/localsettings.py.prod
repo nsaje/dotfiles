@@ -491,6 +491,7 @@ REST_FRAMEWORK = {
         "oendev@outbrain.com": "160/second",
         "filippo.portolano@inpwrd.com": "30/second",
     },
+    "DEFAULT_VERSIONING_CLASS": "rest_framework.versioning.NamespaceVersioning",
 }
 
 DISABLE_FACEBOOK = True

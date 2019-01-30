@@ -4,7 +4,6 @@ import time
 import djangorestframework_camel_case.util
 import influx
 import ipware.ip
-import rest_framework.parsers
 import rest_framework.renderers
 from djangorestframework_camel_case.parser import CamelCaseJSONParser
 from rest_framework import permissions
@@ -75,8 +74,10 @@ class RESTAPIBaseView(APIView):
         return drf_response
 
     @staticmethod
-    def response_ok(data, errors=None, **kwargs):
+    def response_ok(data, extra=None, errors=None, **kwargs):
         data = {"data": data}
+        if extra:
+            data["extra"] = extra
         if errors:
             data["errors"] = errors
         return Response(data, **kwargs)

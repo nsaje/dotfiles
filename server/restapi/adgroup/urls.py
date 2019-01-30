@@ -1,12 +1,10 @@
+from django.conf.urls import include
 from django.conf.urls import url
 
-from . import views
+import restapi.adgroup.internal.urls
+import restapi.adgroup.v1.urls
 
 urlpatterns = [
-    url(
-        r"^v1/adgroups/(?P<ad_group_id>\d+)$",
-        views.AdGroupViewSet.as_view({"get": "get", "put": "put"}),
-        name="adgroups_details",
-    ),
-    url(r"^v1/adgroups/$", views.AdGroupViewSet.as_view({"get": "list", "post": "create"}), name="adgroups_list"),
+    url(r"^v1/adgroups/", include(restapi.adgroup.v1.urls, namespace="v1")),
+    url(r"^internal/adgroups/", include(restapi.adgroup.internal.urls, namespace="internal")),
 ]

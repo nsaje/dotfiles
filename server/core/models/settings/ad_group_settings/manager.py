@@ -19,6 +19,15 @@ class AdGroupSettingsManager(core.common.QuerySetManager):
         new_settings.ad_group_name = ad_group.name
         return new_settings
 
+    def _create_restapi_default_obj(self, ad_group, name):
+        new_settings = self._create_default_obj(ad_group)
+        new_settings.ad_group_name = name
+        new_settings.autopilot_state = constants.AdGroupSettingsAutopilotState.INACTIVE
+        new_settings.autopilot_daily_budget = 0
+        new_settings.b1_sources_group_enabled = False
+        new_settings.b1_sources_group_state = constants.AdGroupSourceSettingsState.INACTIVE
+        return new_settings
+
     def create_default(self, ad_group, name):
         new_settings = self._create_default_obj(ad_group)
         new_settings.ad_group_name = name
@@ -26,14 +35,12 @@ class AdGroupSettingsManager(core.common.QuerySetManager):
         return new_settings
 
     def create_restapi_default(self, ad_group, name):
-        new_settings = self._create_default_obj(ad_group)
-        new_settings.ad_group_name = name
-        new_settings.autopilot_state = constants.AdGroupSettingsAutopilotState.INACTIVE
-        new_settings.autopilot_daily_budget = 0
-        new_settings.b1_sources_group_enabled = False
-        new_settings.b1_sources_group_state = constants.AdGroupSourceSettingsState.INACTIVE
+        new_settings = self._create_restapi_default_obj(ad_group, name)
         new_settings.update_unsafe(None)
         return new_settings
+
+    def get_restapi_default(self, ad_group, name):
+        return self._create_restapi_default_obj(ad_group, name)
 
     def clone(self, request, ad_group, source_ad_group_settings, state=constants.AdGroupSettingsState.INACTIVE):
         new_settings = self._create_default_obj(ad_group)

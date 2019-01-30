@@ -190,7 +190,11 @@ RESTAPI_REPORTS_BUCKET = "z1-rest-reports"
 GLOBAL_BLACKLIST_ID = 1
 AD_LOOKUP_AD_GROUP_ID = 1
 
-REST_FRAMEWORK = {"UNICODE_JSON": False, "EXCEPTION_HANDLER": "restapi.common.exceptions.custom_exception_handler"}
+REST_FRAMEWORK = {
+    "UNICODE_JSON": False,
+    "EXCEPTION_HANDLER": "restapi.common.exceptions.custom_exception_handler",
+    "DEFAULT_VERSIONING_CLASS": "rest_framework.versioning.NamespaceVersioning",
+}
 
 ALL_ACCOUNTS_USE_BCM_V2 = False
 DISABLE_FACEBOOK = True

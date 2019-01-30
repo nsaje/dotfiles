@@ -335,7 +335,11 @@ BLUEKAI_API_PARTNER_ID = "2661"
 BLUEKAI_API_USER_KEY = ""
 BLUEKAI_API_SECRET_KEY = Secret("").get().decode("utf-8")
 
-REST_FRAMEWORK = {"UNICODE_JSON": False, "EXCEPTION_HANDLER": "restapi.common.exceptions.custom_exception_handler"}
+REST_FRAMEWORK = {
+    "UNICODE_JSON": False,
+    "EXCEPTION_HANDLER": "restapi.common.exceptions.custom_exception_handler",
+    "DEFAULT_VERSIONING_CLASS": "rest_framework.versioning.NamespaceVersioning",
+}
 
 DISABLE_FACEBOOK = False
 AMPLIFY_REVIEW = False
