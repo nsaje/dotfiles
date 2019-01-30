@@ -339,6 +339,7 @@ REST_FRAMEWORK = {
     "UNICODE_JSON": False,
     "EXCEPTION_HANDLER": "restapi.common.exceptions.custom_exception_handler",
     "DEFAULT_VERSIONING_CLASS": "rest_framework.versioning.NamespaceVersioning",
+    "DEFAULT_THROTTLE_RATES": {"user": "100/second", "reportjob-create": "100/second"},  # per compute node
 }
 
 DISABLE_FACEBOOK = False
