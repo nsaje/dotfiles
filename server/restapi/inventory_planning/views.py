@@ -152,7 +152,7 @@ class InventoryPlanningView(RESTAPIBaseViewSet):
         csv_data = csv_utils.insert_csv_paragraph(csv_data, "SSPs", media_sources_data, "name", "auction_count")
         csv_data = csv_utils.insert_csv_paragraph(csv_data, "Countries", countries_data, "name", "auction_count")
         csv_data = csv_utils.insert_csv_paragraph(
-            csv_data, "Publishers", publishers_data[:1000], "name", "auction_count"
+            csv_data, "Publishers", publishers_data[:1000], "value", "auction_count"
         )
 
         return csv_data
