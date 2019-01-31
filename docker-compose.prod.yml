@@ -90,7 +90,7 @@ services:
           GUNICORN_LOG_LEVEL: "warn"
         mem_limit: 6g
         #   default cpu.cfs_period_us is 100000. That is 100% of one CPU core
-        cpu_quota: 700000
+        cpus: 8
         labels:
           traefik.backend: "oneapi.zemanta.com"
           traefik.frontend.rule: "Host:oneapi.zemanta.com"

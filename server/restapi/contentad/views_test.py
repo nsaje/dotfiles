@@ -153,6 +153,31 @@ class ContentAdsTest(RESTAPITest):
         self.assertEqual(resp_json["data"]["trackerUrls"], ["test1", "test2"])
         self.assertNotEqual(resp_json["data"]["title"], "newtitle")  # readonly
 
+    def test_contentads_put_brand_name_allowed(self):
+        content_ad = dash.models.ContentAd.objects.get(pk=16805)
+        views.ACCOUNTS_CAN_EDIT_BRAND_NAME.append(content_ad.ad_group.campaign.account_id)
+        r = self.client.put(
+            reverse("contentads_details", kwargs={"content_ad_id": content_ad.pk}),
+            data={"brandName": "New Brand Name"},
+            format="json",
+        )
+        resp_json = self.assertResponseValid(r)
+        self.validate_against_db(resp_json["data"])
+        self.assertEqual(resp_json["data"]["brandName"], "New Brand Name")
+
+    def test_contentads_put_brand_name_not_allowed(self):
+        content_ad = dash.models.ContentAd.objects.get(pk=16805)
+        old_brand_name = content_ad.brand_name
+        views.ACCOUNTS_CAN_EDIT_BRAND_NAME = []
+        r = self.client.put(
+            reverse("contentads_details", kwargs={"content_ad_id": content_ad.pk}),
+            data={"brandName": "New Brand Name"},
+            format="json",
+        )
+        resp_json = self.assertResponseValid(r)
+        self.validate_against_db(resp_json["data"])
+        self.assertEqual(resp_json["data"]["brandName"], old_brand_name)
+
 
 @override_settings(R1_DEMO_MODE=True)
 class TestBatchUpload(TestCase):

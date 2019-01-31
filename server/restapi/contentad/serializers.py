@@ -32,7 +32,9 @@ class ContentAdSerializer(
             "ad_height",
             "ad_tag",
         )
-        read_only_fields = tuple(set(fields) - set(("state", "url", "tracker_urls", "label", "additional_data")))
+        read_only_fields = tuple(
+            set(fields) - set(("state", "url", "tracker_urls", "label", "additional_data", "brand_name"))
+        )
         permissioned_fields = {
             "additional_data": "zemauth.can_use_ad_additional_data",
             "type": "zemauth.fea_can_change_campaign_type_to_display",

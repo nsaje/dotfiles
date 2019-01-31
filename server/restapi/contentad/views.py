@@ -11,6 +11,7 @@ from utils import exc
 from . import serializers
 
 ACCOUNTS_CAN_EDIT_URL = [305]
+ACCOUNTS_CAN_EDIT_BRAND_NAME = [305]
 
 
 class ContentAdViewList(RESTAPIBaseView):
@@ -47,6 +48,11 @@ class ContentAdViewDetails(RESTAPIBaseView):
                 raise rest_framework.serializers.ValidationError("URL can't be edited via API.")
             content_ad.set_url(request, url)
 
+        if (
+            "brand_name" in serializer.validated_data
+            and content_ad.ad_group.campaign.account_id not in ACCOUNTS_CAN_EDIT_BRAND_NAME
+        ):
+            del serializer.validated_data["brand_name"]
         try:
             content_ad.update(request, **serializer.validated_data)
         except core.models.content_ad.exceptions.CampaignAdTypeMismatch as err:
