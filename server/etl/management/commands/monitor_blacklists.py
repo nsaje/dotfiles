@@ -107,8 +107,8 @@ class Command(ExceptionCommand):
                 include_global=True,
             )
 
-            blacklisted_publishers = set(list_helper.flatten(publishers_map[x] for x in blacklist))
-            whitelisted_publishers = set(list_helper.flatten(publishers_map[x] for x in whitelist))
+            blacklisted_publishers = _extract_publishers_from_map(publishers_map, blacklist)
+            whitelisted_publishers = _extract_publishers_from_map(publishers_map, whitelist)
 
             # filter out recently blacklisted, because we can still have some data for blacklisted
             overall_blacklisted_entry_ids |= set(
@@ -256,3 +256,7 @@ class Command(ExceptionCommand):
             publishers_map[publisher_group.id] = publisher_group.entries.all().filter(created_dt__lte=listed_before)
 
         return publishers_map
+
+
+def _extract_publishers_from_map(publishers_map, publisher_set):
+    return set(list_helper.flatten(publishers_map[x] for x in publisher_set if x in publishers_map))
