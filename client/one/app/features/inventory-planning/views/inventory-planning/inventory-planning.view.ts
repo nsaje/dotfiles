@@ -37,6 +37,7 @@ export class InventoryPlanningView implements OnInit, OnDestroy {
     constructor(
         private postAsGetRequestService: PostAsGetRequestService,
         @Inject('ajs$location') private ajs$location: any,
+        @Inject('zemPermissions') private zemPermissions: any,
         public store: InventoryPlanningStore
     ) {}
 

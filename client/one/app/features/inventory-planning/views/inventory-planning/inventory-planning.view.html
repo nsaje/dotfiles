@@ -19,7 +19,14 @@
         (onApply)="store.applyFilters($event)"
     >
     </zem-inventory-planning-filter>
-    <div class="zem-inventory-planning__export-container">
+    <div
+        class="zem-inventory-planning__export-container"
+        *ngIf="
+            zemPermissions.hasPermission(
+                'zemauth.can_use_advanced_inventory_planning_features'
+            )
+        "
+    >
         <button
             class="button button--highlight"
             (click)="exportInventoryData()"
