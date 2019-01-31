@@ -33,6 +33,7 @@ from dash.features import custom_flags
 from dash.features import ga
 from dash.features import native_server
 from dash.views import helpers
+from restapi.serializers.deals import DirectDealConnectionSerializer
 from utils import api_common
 from utils import dates_helper
 from utils import db_for_reads
@@ -82,6 +83,11 @@ class AdGroupSettings(api_common.BaseApiView):
             response["hacks"] = models.CustomHack.objects.all().filter_applied(ad_group=ad_group).filter_active(
                 True
             ).to_dict_list() + custom_flags.helpers.get_all_custom_flags_on_ad_group(ad_group)
+
+        if request.user.has_perm("zemauth.can_see_deals_in_ui"):
+            response.update(
+                {"deals": [DirectDealConnectionSerializer(d).data for d in ad_group.get_all_applied_deals()]}
+            )
 
         return self.create_api_response(response)
 
@@ -564,6 +570,11 @@ class CampaignSettings(api_common.BaseApiView):
             response["hacks"] = models.CustomHack.objects.all().filter_applied(campaign=campaign).filter_active(
                 True
             ).to_dict_list() + custom_flags.helpers.get_all_custom_flags_on_campaign(campaign)
+
+        if request.user.has_perm("zemauth.can_see_deals_in_ui"):
+            response.update(
+                {"deals": [DirectDealConnectionSerializer(d).data for d in campaign.get_all_applied_deals()]}
+            )
 
         return self.create_api_response(response)
 
@@ -1111,6 +1122,11 @@ class AccountSettings(api_common.BaseApiView):
             response["hacks"] = models.CustomHack.objects.all().filter_applied(account=account).filter_active(
                 True
             ).to_dict_list() + custom_flags.helpers.get_all_custom_flags_on_account(account)
+
+        if request.user.has_perm("zemauth.can_see_deals_in_ui"):
+            response.update(
+                {"deals": [DirectDealConnectionSerializer(d).data for d in account.get_all_applied_deals()]}
+            )
 
         return self.create_api_response(response)
 

@@ -5,6 +5,7 @@ from django.contrib.postgres.fields import JSONField
 from django.db import models
 
 import core.common
+import core.features.deals
 import core.features.history
 import core.features.yahoo_accounts
 import core.models
@@ -109,6 +110,11 @@ class Agency(models.Model):
             settings = core.models.settings.AgencySettings(agency=self)
 
         return settings
+
+    def get_all_applied_deals(self):
+        return core.features.deals.DirectDealConnection.objects.filter(
+            models.Q(agency=self.id) | models.Q(agency=None, account=None, campaign=None, adgroup=None)
+        )
 
     def write_history(self, changes_text, changes=None, user=None, system_user=None, action_type=None):
         if not changes and not changes_text:

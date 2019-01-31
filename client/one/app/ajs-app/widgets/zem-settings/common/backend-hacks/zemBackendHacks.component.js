@@ -1,7 +1,6 @@
 angular.module('one.widgets').component('zemBackendHacks', {
     bindings: {
         entity: '<',
-        errors: '<',
         api: '<',
     },
     template: require('./zemBackendHacks.component.html'),

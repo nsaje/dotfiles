@@ -2051,48 +2051,25 @@ class CustomFlagAdmin(admin.ModelAdmin):
 
 
 # Deals
-class DirectDealConnectionForm(forms.ModelForm):
-    def __init__(self, *args, **kwargs):
-        super(DirectDealConnectionForm, self).__init__(*args, **kwargs)
-
-    def clean(self):
-        super(DirectDealConnectionForm, self).clean()
-
-        if self.cleaned_data.get("deals") is None:
-            raise ValidationError("Deals are required!")
-
-        if self.cleaned_data.get("agency") is not None or self.cleaned_data.get("adgroup") is not None:
-            for deal in self.cleaned_data.get("deals").all():
-                query = models.DirectDealConnection.objects.filter(
-                    adgroup__isnull=True, agency__isnull=True, deals__in=[deal]
-                )
-                if query.all().count() > 0:
-                    raise ValidationError("Deal " + deal.deal_id + " is already used as global deal")
-
-        if self.cleaned_data.get("agency") is not None and self.cleaned_data.get("adgroup") is not None:
-            raise ValidationError("Configuring both agency and adgroup is not allowed")
-
-        if self.cleaned_data.get("exclusive") is True:
-            if self.cleaned_data.get("agency") is None and self.cleaned_data.get("adgroup") is None:
-                raise ValidationError("Exclusive flag can be True only in combination with agency or adgroup")
-
-    def save_model(self, request, obj, form, change):
-        if getattr(obj, "created_by", None) is None:
-            obj.author = request.user
-        obj.save()
-
-
 class DirectDealConnectionAdmin(admin.ModelAdmin):
     model = models.DirectDealConnection
-    form = DirectDealConnectionForm
+    form = dash_forms.DirectDealConnectionAdminForm
     raw_id_fields = ("adgroup", "campaign")
-    readonly_fields = ("modified_dt", "created_dt", "created_by")
-    list_display = ("id", "source", "exclusive", "adgroup", "agency", "get_deals")
-    search_fields = ("source__name", "deals__deal_id", "adgroup__id", "agency__id")
+    readonly_fields = ("id", "modified_dt", "created_dt", "created_by")
+    list_display = ("id", "source", "exclusive", "is_global", "agency", "account", "campaign", "adgroup", "deal_id")
+    search_fields = ("source__name", "deals__deal_id", "adgroup__id", "campaign__id", "account__id", "agency__id")
     autocomplete_fields = ("source", "agency", "account", "deals")
 
-    def get_deals(self, obj):
-        return "\n".join([d.deal_id for d in obj.deals.all()])
+    def deal_id(self, obj):
+        return ", ".join([d.deal_id for d in obj.deals.all()])
+
+    # Workaround to have boolean value displayed as an icon instead of a text.
+    def is_global(self, obj):
+        if obj.is_global:
+            return True
+        return False
+
+    is_global.boolean = True
 
     @pgdh.catch_and_report_exception(pgdh.PagerDutyEventType.PRODOPS)
     def save_model(self, request, obj, form, change):

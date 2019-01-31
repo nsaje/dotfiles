@@ -1,7 +1,9 @@
 from django.db import transaction
+from django.db.models import Q
 from django.urls import reverse
 from django.utils.safestring import mark_safe
 
+import core.features.deals
 import core.models
 from dash import constants
 from utils import json_helper
@@ -97,6 +99,14 @@ class CampaignInstanceMixin:
         if self.custom_flags:
             custom_flags.update({k: v for k, v in self.custom_flags.items() if v})
         return custom_flags
+
+    def get_all_applied_deals(self):
+        return core.features.deals.DirectDealConnection.objects.filter(
+            Q(campaign=self.id)
+            | Q(account=self.account)
+            | Q(agency=self.account.agency, agency__isnull=False)
+            | Q(agency=None, account=None, campaign=None, adgroup=None)
+        )
 
     def set_real_time_campaign_stop(self, request=None, is_enabled=False):
         self.real_time_campaign_stop = is_enabled

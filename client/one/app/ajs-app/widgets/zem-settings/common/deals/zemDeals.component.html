@@ -1,0 +1,52 @@
+<div
+    class="custom-panel zem-settings-component__container"
+    ng-if="$ctrl.hasPermission('zemauth.can_see_deals_in_ui')"
+>
+    <h2 class="custom-panel__title" is-internal="zemauth.can_see_deals_in_ui">
+        Deals
+    </h2>
+    <div class="message" ng-if="!$ctrl.deals">No deals set.</div>
+    <div class="custom-table__mobile-container">
+        <table
+            class="custom-table custom-table--base-color-strong"
+            ng-if="$ctrl.deals"
+        >
+            <thead>
+                <tr>
+                    <th>Direct deal Connection ID</th>
+                    <th>Deal ID</th>
+                    <th>Level</th>
+                    <th>Exclusive</th>
+                    <th>Source</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr ng-repeat="deal in $ctrl.deals">
+                    <td>
+                        <a href="{{ deal.adminURL }}">{{
+                            deal.directDealConnectionId
+                        }}</a>
+                    </td>
+                    <td>{{ deal.dealId }}</td>
+                    <td>{{ deal.level }}</td>
+
+                    <td>
+                        <span
+                            class="icon check-icon"
+                            ng-if="deal.exclusive"
+                        ></span>
+                        <span
+                            class="icon remove-icon"
+                            ng-if="!deal.exclusive"
+                        ></span>
+                    </td>
+                    <td>{{ deal.source }}</td>
+                    <td>
+                        <strong>{{ deal.description }}</strong>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>

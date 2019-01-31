@@ -12,7 +12,7 @@ from core.features.publisher_bid_modifiers.publisher_bid_modifier import Publish
 from core.features.publisher_groups import *
 from core.features.multicurrency import *
 from core.features.yahoo_accounts.models import *
-from core.features.direct_deals import *
+from core.features.deals import *
 from core.features.videoassets.models import *
 
 # Core helpers

@@ -2,12 +2,12 @@
 
 from decimal import Decimal
 
+import tagulous
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
 import core.common
 import core.models
-import tagulous
 import utils.exc
 from core.models import tags
 from dash import constants
@@ -171,4 +171,5 @@ class Source(models.Model):
             return self.filter(id__in=[x.id for x in self.select_related("source_type") if x.can_manage_content_ads()])
 
     def __str__(self):
-        return self.name
+        deprecated = "(deprecated)" if self.deprecated else ""
+        return "{} {}".format(self.name, deprecated)

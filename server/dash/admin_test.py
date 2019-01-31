@@ -8,6 +8,7 @@ from django.urls import reverse
 import core.models
 from dash import admin
 from dash import constants
+from dash import forms
 from dash import models
 from utils.magic_mixer import magic_mixer
 from zemauth.models import User
@@ -78,22 +79,22 @@ class AdGroupAdmin(TestCase):
 class DirectDealConnectionAdminTestCase(TestCase):
     def setUp(self):
         self.source = magic_mixer.blend(core.models.Source, pk=1, bidder_slug="test_exchange_1")
-        self.deal1 = magic_mixer.blend(core.features.direct_deals.DirectDeal, deal_id="test_1")
-        self.deal2 = magic_mixer.blend(core.features.direct_deals.DirectDeal, deal_id="test_2")
+        self.deal1 = magic_mixer.blend(core.features.deals.DirectDeal, deal_id="test_1")
+        self.deal2 = magic_mixer.blend(core.features.deals.DirectDeal, deal_id="test_2")
         self.adgroup = magic_mixer.blend(core.models.AdGroup, pk=1000)
         self.agency = magic_mixer.blend(core.models.Agency, pk=2000)
-        self.ddc = magic_mixer.blend(core.features.direct_deals.DirectDealConnection, pk=1, source=self.source)
+        self.ddc = magic_mixer.blend(core.features.deals.DirectDealConnection, pk=1, source=self.source)
         self.ddc.deals.add(self.deal1)
         self.ddc.save()
 
     def test_clean_everything_ok(self):
         direct_deal_connection_admin = admin.DirectDealAdmin(models.DirectDealConnection, AdminSite())
-        direct_deal_connection_admin.form = admin.DirectDealConnectionForm
+        direct_deal_connection_admin.form = forms.DirectDealConnectionAdminForm
 
         form = direct_deal_connection_admin.get_form(None)({})
         form.cleaned_data = {"source": self.source, "exclusive": False}
 
-        form.cleaned_data["deals"] = core.features.direct_deals.DirectDeal.objects.filter(deal_id="test_2").all()
+        form.cleaned_data["deals"] = core.features.deals.DirectDeal.objects.filter(deal_id="test_2").all()
 
         # adgroup
         form.cleaned_data["adgroup"] = self.adgroup
@@ -112,7 +113,7 @@ class DirectDealConnectionAdminTestCase(TestCase):
 
     def test_clean_deals_required(self):
         direct_deal_connection_admin = admin.DirectDealAdmin(models.DirectDealConnection, AdminSite())
-        direct_deal_connection_admin.form = admin.DirectDealConnectionForm
+        direct_deal_connection_admin.form = forms.DirectDealConnectionAdminForm
 
         form = direct_deal_connection_admin.get_form(None)()
         form.cleaned_data = {"source": self.source, "exclusive": False}
@@ -124,12 +125,12 @@ class DirectDealConnectionAdminTestCase(TestCase):
 
     def test_clean_deal_already_used_as_global_deal(self):
         direct_deal_connection_admin = admin.DirectDealAdmin(models.DirectDealConnection, AdminSite())
-        direct_deal_connection_admin.form = admin.DirectDealConnectionForm
+        direct_deal_connection_admin.form = forms.DirectDealConnectionAdminForm
 
         form = direct_deal_connection_admin.get_form(None)()
         form.cleaned_data = {"source": self.source, "exclusive": False}
 
-        form.cleaned_data["deals"] = core.features.direct_deals.DirectDeal.objects.filter(deal_id="test_1").all()
+        form.cleaned_data["deals"] = core.features.deals.DirectDeal.objects.filter(deal_id="test_1").all()
 
         # adgroup
         form.cleaned_data["adgroup"] = self.adgroup
@@ -148,11 +149,11 @@ class DirectDealConnectionAdminTestCase(TestCase):
 
     def test_clean_adgroup_and_agency_selected(self):
         direct_deal_connection_admin = admin.DirectDealAdmin(models.DirectDealConnection, AdminSite())
-        direct_deal_connection_admin.form = admin.DirectDealConnectionForm
+        direct_deal_connection_admin.form = forms.DirectDealConnectionAdminForm
         form = direct_deal_connection_admin.get_form(None)()
         form.cleaned_data = {"source": self.source, "exclusive": False}
 
-        form.cleaned_data["deals"] = core.features.direct_deals.DirectDeal.objects.filter(deal_id="test_2").all()
+        form.cleaned_data["deals"] = core.features.deals.DirectDeal.objects.filter(deal_id="test_2").all()
 
         form.cleaned_data["adgroup"] = self.adgroup
         form.cleaned_data["agency"] = self.agency
@@ -164,12 +165,12 @@ class DirectDealConnectionAdminTestCase(TestCase):
 
     def test_clean_exclusive_flag_for_global_deal(self):
         direct_deal_connection_admin = admin.DirectDealAdmin(models.DirectDealConnection, AdminSite())
-        direct_deal_connection_admin.form = admin.DirectDealConnectionForm
+        direct_deal_connection_admin.form = forms.DirectDealConnectionAdminForm
 
         form = direct_deal_connection_admin.get_form(None)()
         form.cleaned_data = {"source": self.source, "exclusive": True}
 
-        form.cleaned_data["deals"] = core.features.direct_deals.DirectDeal.objects.filter(deal_id="test_2").all()
+        form.cleaned_data["deals"] = core.features.deals.DirectDeal.objects.filter(deal_id="test_2").all()
 
         try:
             form.clean()

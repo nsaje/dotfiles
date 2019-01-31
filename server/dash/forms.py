@@ -21,13 +21,14 @@ from django.utils.html import strip_tags
 from django.core import exceptions
 
 import core.features.multicurrency
+import core.features.deals.direct_deal_connection.exceptions
+
 from dash import constants
 from dash import models
 from dash.views import helpers
 from dash.features.custom_flags.forms import CustomFlagsFormMixin
 from utils import dates_helper
 from utils import validation_helper
-
 from zemauth.models import User as ZemUser
 
 import stats.constants
@@ -1963,3 +1964,42 @@ class PublisherGroupUploadForm(forms.Form, ParseCSVExcelFile):
             row["include_subdomains"] = bool(self.cleaned_data.get("include_subdomains"))
 
         return data
+
+
+class DirectDealConnectionAdminForm(forms.ModelForm):
+
+    # This check couldn't be done one the model validation because it requires the relation to deals to exist.
+    def clean_deals(self):
+        if (
+            self.cleaned_data.get("agency") is not None
+            or self.cleaned_data.get("account") is not None
+            or self.cleaned_data.get("campaign") is not None
+            or self.cleaned_data.get("adgroup") is not None
+        ):
+            query = (
+                models.DirectDeal.objects.filter(
+                    directdealconnection__in=models.DirectDealConnection.objects.filter(
+                        adgroup__isnull=True,
+                        agency__isnull=True,
+                        account__isnull=True,
+                        campaign__isnull=True,
+                        deals__in=self.cleaned_data.get("deals"),
+                    )
+                )
+                .values_list("deal_id", flat=True)
+                .distinct()
+            )
+            if query:
+                err = "deals with deal_id {ids} already used as global deal".format(ids=", ".join(list(query)))
+                raise core.features.deals.direct_deal_connection.exceptions.DealAlreadyUsedAsGlobalDeal(err)
+        return self.cleaned_data.get("deals")
+
+    def full_clean(self):
+        try:
+            super(DirectDealConnectionAdminForm, self).full_clean()
+        except core.features.deals.direct_deal_connection.exceptions.CannotSetExclusiveAndGlobal as err:
+            self.add_error("exclusive", err)
+        except core.features.deals.direct_deal_connection.exceptions.CannotSetMultipleEntities as err:
+            self.add_error(None, err)
+        except core.features.deals.direct_deal_connection.exceptions.DealAlreadyUsedAsGlobalDeal as err:
+            self.add_error(None, err)

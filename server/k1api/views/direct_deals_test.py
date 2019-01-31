@@ -2,7 +2,7 @@ import json
 
 from django.urls import reverse
 
-import core.features.direct_deals
+import core.features.deals
 import core.models
 from utils.magic_mixer import magic_mixer
 
@@ -13,45 +13,33 @@ class DirectDealsTest(K1APIBaseTest):
     @classmethod
     def setUpTestData(cls):
         source = magic_mixer.blend(core.models.Source, bidder_slug="test_exchange_1")
-        deal1 = magic_mixer.blend(core.features.direct_deals.DirectDeal, deal_id="test_1")
-        deal2 = magic_mixer.blend(core.features.direct_deals.DirectDeal, deal_id="test_2")
+        deal1 = magic_mixer.blend(core.features.deals.DirectDeal, deal_id="test_1")
+        deal2 = magic_mixer.blend(core.features.deals.DirectDeal, deal_id="test_2")
         adgroup = magic_mixer.blend(core.models.AdGroup, pk=1000)
         adgroup2 = magic_mixer.blend(core.models.AdGroup, pk=1001)
         agency = magic_mixer.blend(core.models.Agency, pk=2000)
         account = magic_mixer.blend(core.models.Account, pk=3000)
         campaign = magic_mixer.blend(core.models.Campaign, pk=4000)
 
-        magic_mixer.blend(core.features.direct_deals.DirectDealConnection, source=source, deals=[deal1])
+        magic_mixer.blend(core.features.deals.DirectDealConnection, source=source, deals=[deal1])
         magic_mixer.blend(
-            core.features.direct_deals.DirectDealConnection,
-            source=source,
-            deals=[deal1],
-            adgroup=adgroup,
-            exclusive=False,
+            core.features.deals.DirectDealConnection, source=source, deals=[deal1], adgroup=adgroup, exclusive=False
         )
         magic_mixer.blend(
-            core.features.direct_deals.DirectDealConnection,
-            source=source,
-            deals=[deal2],
-            agency=agency,
-            exclusive=False,
+            core.features.deals.DirectDealConnection, source=source, deals=[deal2], agency=agency, exclusive=False
         )
         magic_mixer.blend(
-            core.features.direct_deals.DirectDealConnection,
+            core.features.deals.DirectDealConnection,
             source=source,
             deals=[deal1, deal2],
             adgroup=adgroup2,
             exclusive=True,
         )
         magic_mixer.blend(
-            core.features.direct_deals.DirectDealConnection,
-            source=source,
-            deals=[deal2],
-            account=account,
-            exclusive=False,
+            core.features.deals.DirectDealConnection, source=source, deals=[deal2], account=account, exclusive=False
         )
         magic_mixer.blend(
-            core.features.direct_deals.DirectDealConnection,
+            core.features.deals.DirectDealConnection,
             source=source,
             deals=[deal1, deal2],
             campaign=campaign,

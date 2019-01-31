@@ -1,5 +1,5 @@
 <div
-    class="custom-panel zem-settings-component__container zem-backend-hacks"
+    class="custom-panel zem-settings-component__container"
     ng-if="$ctrl.hasPermission('zemauth.can_see_backend_hacks')"
 >
     <h2 class="custom-panel__title" is-internal="zemauth.can_see_backend_hacks">
@@ -9,7 +9,10 @@
         No backend hacks set.
     </div>
     <div class="custom-table__mobile-container">
-        <table class="custom-table" ng-if="$ctrl.entity.hacks.length">
+        <table
+            class="custom-table custom-table--base-color-strong"
+            ng-if="$ctrl.entity.hacks.length"
+        >
             <thead>
                 <tr>
                     <th>Level</th>

@@ -12,6 +12,7 @@ from django.utils.safestring import mark_safe
 
 import core.common
 import core.features.bcm
+import core.features.deals
 import core.features.history
 import core.models
 import utils.demo_anonymizer
@@ -403,6 +404,15 @@ class AdGroup(validation.AdGroupValidatorMixin, models.Model, bcm_mixin.AdGroupB
 
     def get_name_with_id(self):
         return "{} ({})".format(self.name, self.id)
+
+    def get_all_applied_deals(self):
+        return core.features.deals.DirectDealConnection.objects.filter(
+            models.Q(adgroup=self.id)
+            | models.Q(campaign=self.campaign)
+            | models.Q(account=self.campaign.account)
+            | models.Q(agency=self.campaign.account.agency, agency__isnull=False)
+            | models.Q(agency=None, account=None, campaign=None, adgroup=None)
+        )
 
     def save(self, request, *args, **kwargs):
         self.modified_by = request.user if request else None

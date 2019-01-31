@@ -1,7 +1,9 @@
 from django.db import transaction
+from django.db.models import Q
 from django.urls import reverse
 from django.utils.safestring import mark_safe
 
+import core.features.deals
 import core.features.history
 import core.models
 from dash import constants
@@ -130,6 +132,13 @@ class AccountInstanceMixin:
         if self.custom_flags:
             custom_flags.update({k: v for k, v in self.custom_flags.items() if v})
         return custom_flags
+
+    def get_all_applied_deals(self):
+        return core.features.deals.DirectDealConnection.objects.filter(
+            Q(account=self.id)
+            | Q(agency=self.agency, agency__isnull=False)
+            | Q(agency=None, account=None, campaign=None, adgroup=None)
+        )
 
     def save(self, request, *args, **kwargs):
         if request and not request.user.is_anonymous:
