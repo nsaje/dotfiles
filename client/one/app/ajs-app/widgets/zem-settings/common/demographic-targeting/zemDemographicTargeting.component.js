@@ -1,17 +1,15 @@
 angular.module('one.widgets').component('zemDemographicTargeting', {
     bindings: {
-        entity: '<',
-        errors: '<',
-        api: '<',
+        bluekaiTargeting: '<',
+        entityId: '<', // Workaround to know when to reinitialize state service (on entity change)
+        onUpdate: '&',
     },
     template: require('./zemDemographicTargeting.component.html'),
     controller: function(
-        zemUtils,
         zemDemographicTaxonomyService,
         zemDemographicTargetingConstants,
         zemDemographicTargetingStateService
     ) {
-        // eslint-disable-line max-len
         var $ctrl = this;
 
         $ctrl.isEnabled = isEnabled;
@@ -23,21 +21,24 @@ angular.module('one.widgets').component('zemDemographicTargeting', {
         $ctrl.canAddInclusion = canAddInclusion;
 
         $ctrl.$onInit = function() {
-            $ctrl.api.register({});
+            $ctrl.stateService = zemDemographicTargetingStateService.createInstance(
+                onUpdate
+            );
         };
 
         $ctrl.$onChanges = function(changes) {
-            if (changes.entity && $ctrl.entity) {
+            if (changes.entityId) {
                 zemDemographicTaxonomyService.getTaxonomy().then(initialize);
             }
         };
 
         function initialize() {
-            $ctrl.stateService = zemDemographicTargetingStateService.createInstance(
-                $ctrl.entity
-            );
-            $ctrl.stateService.initialize();
+            $ctrl.stateService.initialize($ctrl.bluekaiTargeting);
             $ctrl.state = $ctrl.stateService.getState();
+        }
+
+        function onUpdate(bluekaiTargeting) {
+            $ctrl.onUpdate({$event: bluekaiTargeting});
         }
 
         function enable() {

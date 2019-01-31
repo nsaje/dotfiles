@@ -22,12 +22,6 @@ describe('state: zemDemographicTargetingStateService', function() {
         ],
     };
 
-    var entity = {
-        settings: {
-            bluekaiTargeting: expressionEditable,
-        },
-    };
-
     beforeEach(angular.mock.module('one'));
     beforeEach(angular.mock.module('one.mocks.downgradedProviders'));
     beforeEach(angular.mock.module('one.mocks.zemInitializationService'));
@@ -59,11 +53,9 @@ describe('state: zemDemographicTargetingStateService', function() {
     }));
 
     it('should prepare state object', function() {
-        var stateService = zemDemographicTargetingStateService.createInstance({
-            settings: {
-                bluekaiTargeting: expressionNonEditable,
-            },
-        });
+        var stateService = zemDemographicTargetingStateService.createInstance(
+            function() {}
+        );
         expect(stateService.getState()).toEqual({
             expressionTree: null,
             info: null,
@@ -73,9 +65,9 @@ describe('state: zemDemographicTargetingStateService', function() {
 
     it('should load the state on initalization', function() {
         var stateService = zemDemographicTargetingStateService.createInstance(
-            entity
+            function() {}
         );
-        stateService.initialize();
+        stateService.initialize(expressionEditable);
         expect(stateService.getState()).toEqual({
             expressionTree: jasmine.any(Object),
             info: jasmine.any(Object),
@@ -85,21 +77,19 @@ describe('state: zemDemographicTargetingStateService', function() {
 
     it('should allow editing on predefined structure', function() {
         var stateService = zemDemographicTargetingStateService.createInstance(
-            entity
+            function() {}
         );
 
-        stateService.initialize();
+        stateService.initialize(expressionEditable);
         expect(stateService.getState().editable).toBe(true);
     });
 
     it('should not allow editing on complex nested structures', function() {
-        var stateService = zemDemographicTargetingStateService.createInstance({
-            settings: {
-                bluekaiTargeting: expressionNonEditable,
-            },
-        });
+        var stateService = zemDemographicTargetingStateService.createInstance(
+            function() {}
+        );
 
-        stateService.initialize();
+        stateService.initialize(expressionNonEditable);
         expect(stateService.getState().editable).toBe(false);
     });
 });

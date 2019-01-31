@@ -16,6 +16,7 @@ import {DecimalSettingComponent} from './components/decimal-setting/decimal-sett
 import {CurrencySettingComponent} from './components/currency-setting/currency-setting.component';
 import {DateSettingComponent} from './components/date-setting/date-setting.component';
 import {SelectSettingComponent} from './components/select-setting/select-setting.component';
+import {DemographicTargetingComponent} from './components/demographic-targeting/demographic-targeting.component';
 
 @NgModule({
     declarations: [
@@ -34,6 +35,7 @@ import {SelectSettingComponent} from './components/select-setting/select-setting
         CurrencySettingComponent,
         DateSettingComponent,
         SelectSettingComponent,
+        DemographicTargetingComponent,
     ],
     imports: [SharedModule],
     entryComponents: [

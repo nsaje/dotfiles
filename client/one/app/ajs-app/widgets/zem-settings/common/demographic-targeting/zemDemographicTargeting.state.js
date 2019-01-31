@@ -11,7 +11,7 @@ angular
     ) {
         //eslint-disable-line max-len
 
-        function StateService(entity) {
+        function StateService(updateCallback) {
             // eslint-disable-line
             //
             // State Object
@@ -35,12 +35,14 @@ angular
             ///////////////////////////////////////////////////////////////////////////////////////////////
             // Internals
             //
-            function initialize() {
+            function initialize(bluekaiTargeting) {
                 state.expressionTree = zemDemographicTargetingConverter.convertFromApi(
-                    entity.settings.bluekaiTargeting
+                    bluekaiTargeting
                 );
                 state.editable = isEditable(state.expressionTree);
-                if (state.editable) updateInfo();
+                if (state.editable) {
+                    updateInfo(bluekaiTargeting);
+                }
             }
 
             function getState() {
@@ -108,13 +110,14 @@ angular
             }
 
             function update() {
-                entity.settings.bluekaiTargeting = zemDemographicTargetingConverter.convertToApi(
+                var newBluekaiTargeting = zemDemographicTargetingConverter.convertToApi(
                     state.expressionTree
                 );
-                updateInfo();
+                updateCallback(newBluekaiTargeting);
+                updateInfo(newBluekaiTargeting);
             }
 
-            function updateInfo() {
+            function updateInfo(bluekaiTargeting) {
                 if (!state.editable) {
                     state.info = null;
                     return;
@@ -133,34 +136,32 @@ angular
                     return c.price > max ? c.price : max;
                 }, 0);
 
-                updateReach();
+                updateReach(bluekaiTargeting);
             }
 
-            function updateReach() {
-                zemDemographicTargetingEndpoint
-                    .getReach(entity.settings.bluekaiTargeting)
-                    .then(
-                        function(data) {
-                            if (data && data.value) {
-                                state.info.reach = {
-                                    value: $filter('number')(data.value),
-                                    relative: data.relative,
-                                };
-                            } else {
-                                state.info.reach = {
-                                    value: 'N/A',
-                                    relative: 0,
-                                };
-                            }
-                        },
-                        function(error) {
-                            if (!error) return; // Promise aborted
-
+            function updateReach(bluekaiTargeting) {
+                zemDemographicTargetingEndpoint.getReach(bluekaiTargeting).then(
+                    function(data) {
+                        if (data && data.value) {
                             state.info.reach = {
-                                error: true,
+                                value: $filter('number')(data.value),
+                                relative: data.relative,
+                            };
+                        } else {
+                            state.info.reach = {
+                                value: 'N/A',
+                                relative: 0,
                             };
                         }
-                    );
+                    },
+                    function(error) {
+                        if (!error) return; // Promise aborted
+
+                        state.info.reach = {
+                            error: true,
+                        };
+                    }
+                );
             }
 
             function isEditable(expressionTree) {
@@ -255,8 +256,8 @@ angular
         }
 
         return {
-            createInstance: function(entity) {
-                return new StateService(entity);
+            createInstance: function(updateCallback) {
+                return new StateService(updateCallback);
             },
         };
     });

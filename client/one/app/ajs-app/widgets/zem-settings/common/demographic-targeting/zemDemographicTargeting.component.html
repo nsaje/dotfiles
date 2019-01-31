@@ -1,127 +1,109 @@
-<div
-    class="custom-panel zem-settings-component__container zem-demographic-targeting"
->
-    <h2 class="custom-panel__title">BlueKai audience targeting</h2>
-    <div class="custom-panel__description">
-        Setup audience targeting based on BlueKai audience segments. For setting
-        up Bombora, Liveramp or Lotame targeting please contact your Customer
-        Success Manager.
-    </div>
-
-    <div ng-if="$ctrl.isEnabled()">
+<div ng-if="$ctrl.isEnabled()">
+    <div ng-if="$ctrl.state.info" class="zem-demographic-targeting__overview">
         <div
-            ng-if="$ctrl.state.info"
-            class="zem-demographic-targeting__overview"
+            class="zem-demographic-targeting-overview__box zem-demographic-targeting-overview__box--price"
         >
-            <div
-                class="zem-demographic-targeting-overview__box zem-demographic-targeting-overview__box--price"
+            CPM price:
+            <span
+                class="help-popover"
+                zem-lazy-popover-html-unsafe="The CPM displays the cost charged for using BlueKai targeting. <br>The cost depends on the segments used. <br>The CPM data targeting cost is calculated into your bid CPC."
+                zem-lazy-popover-placement="top"
+                zem-lazy-popover-append-to-body="true"
+                zem-lazy-popover-animation-class="fade"
+            ></span>
+            <strong class="zem-demographic-targeting-overview__value"
+                >${{ $ctrl.state.info.price }}</strong
             >
-                CPM price:
-                <span
-                    class="help-popover"
-                    zem-lazy-popover-html-unsafe="The CPM displays the cost charged for using BlueKai targeting. <br>The cost depends on the segments used. <br>The CPM data targeting cost is calculated into your bid CPC."
-                    zem-lazy-popover-placement="top"
-                    zem-lazy-popover-append-to-body="true"
-                    zem-lazy-popover-animation-class="fade"
-                ></span>
-                <strong class="zem-demographic-targeting-overview__value"
-                    >${{ $ctrl.state.info.price }}</strong
-                >
+        </div>
+        <div
+            class="zem-demographic-targeting-overview__box zem-demographic-targeting-overview__box--reach"
+        >
+            Reach:
+            <strong
+                class="zem-demographic-targeting-overview__value"
+                ng-if="$ctrl.state.info.reach.value"
+                >{{ $ctrl.state.info.reach.value }}</strong
+            >
+            <div
+                class="message message--error"
+                ng-if="$ctrl.state.info.reach.error"
+            >
+                Bluekai not accessible at the moment.
             </div>
+            <div class="loader" ng-if="!$ctrl.state.info.reach"></div>
             <div
-                class="zem-demographic-targeting-overview__box zem-demographic-targeting-overview__box--reach"
+                class="zem-reach-bar"
+                ng-if="$ctrl.state.info.reach.relative >= 0"
             >
-                Reach:
-                <strong
-                    class="zem-demographic-targeting-overview__value"
-                    ng-if="$ctrl.state.info.reach.value"
-                    >{{ $ctrl.state.info.reach.value }}</strong
-                >
+                <div class="zem-reach-bar__progress--background"></div>
                 <div
-                    class="message message--error"
-                    ng-if="$ctrl.state.info.reach.error"
-                >
-                    Bluekai not accessible at the moment.
+                    class="zem-reach-bar__progress"
+                    ng-style="{width: (100 - $ctrl.state.info.reach.relative) + '%'}"
+                ></div>
+                <div class="zem-reach-bar__legend zem-reach-bar__legend--left">
+                    Specific
                 </div>
-                <div class="loader" ng-if="!$ctrl.state.info.reach"></div>
-                <div
-                    class="zem-reach-bar"
-                    ng-if="$ctrl.state.info.reach.relative >= 0"
-                >
-                    <div class="zem-reach-bar__progress--background"></div>
-                    <div
-                        class="zem-reach-bar__progress"
-                        ng-style="{width: (100 - $ctrl.state.info.reach.relative) + '%'}"
-                    ></div>
-                    <div
-                        class="zem-reach-bar__legend zem-reach-bar__legend--left"
-                    >
-                        Specific
-                    </div>
-                    <div
-                        class="zem-reach-bar__legend zem-reach-bar__legend--right"
-                    >
-                        Broad
-                    </div>
+                <div class="zem-reach-bar__legend zem-reach-bar__legend--right">
+                    Broad
                 </div>
             </div>
         </div>
+    </div>
 
-        <div ng-if="$ctrl.state.editable">
-            <div
-                class="zem-demographic-targeting__group"
-                ng-repeat="node in $ctrl.state.expressionTree.childNodes"
-            >
-                <zem-bluekai-group
-                    node="node"
-                    state-service="$ctrl.stateService"
-                ></zem-bluekai-group>
-            </div>
-
-            <div class="zem-demographic-targeting__actions">
-                <a
-                    class="alternative-link"
-                    ng-if="$ctrl.canAddInclusion()"
-                    ng-click="$ctrl.addInclusion()"
-                >
-                    Narrow audience
-                </a>
-                <span
-                    class="v-line"
-                    ng-if="$ctrl.canAddInclusion() && $ctrl.canAddExclusion()"
-                ></span>
-                <a
-                    class="alternative-link"
-                    ng-if="$ctrl.canAddExclusion()"
-                    ng-click="$ctrl.addExclusion()"
-                >
-                    Exclude audience
-                </a>
-            </div>
-        </div>
+    <div ng-if="$ctrl.state.editable">
         <div
-            ng-if="!$ctrl.state.editable"
-            class="zem-demographic-targeting__group zem-demographic-targeting__group--inactive"
+            class="zem-demographic-targeting__group"
+            ng-repeat="node in $ctrl.state.expressionTree.childNodes"
         >
-            <div class="message message--success message--with-icon m-t">
-                Audience targeting set up.
-            </div>
+            <zem-bluekai-group
+                node="node"
+                state-service="$ctrl.stateService"
+            ></zem-bluekai-group>
+        </div>
+
+        <div class="zem-demographic-targeting__actions">
+            <a
+                class="alternative-link"
+                ng-if="$ctrl.canAddInclusion()"
+                ng-click="$ctrl.addInclusion()"
+            >
+                Narrow audience
+            </a>
+            <span
+                class="v-line"
+                ng-if="$ctrl.canAddInclusion() && $ctrl.canAddExclusion()"
+            ></span>
+            <a
+                class="alternative-link"
+                ng-if="$ctrl.canAddExclusion()"
+                ng-click="$ctrl.addExclusion()"
+            >
+                Exclude audience
+            </a>
         </div>
     </div>
-
-    <div ng-if="$ctrl.state && !$ctrl.isEnabled()">
-        <button
-            class="button button--with-icon check-icon"
-            ng-click="$ctrl.enable()"
-        >
-            Enable targeting
-        </button>
-    </div>
-
     <div
-        class="zem-demographic-targeting__notification message message--info message--with-icon"
+        ng-if="!$ctrl.state.editable"
+        class="zem-demographic-targeting__group zem-demographic-targeting__group--inactive"
     >
-        To apply audience targeting to Outbrain and Yahoo, please contact your
-        Customer Success Manager.
+        <div class="message message--success message--with-icon m-t">
+            Audience targeting set up.
+        </div>
     </div>
+</div>
+
+<div ng-if="$ctrl.state && !$ctrl.isEnabled()">
+    <button
+        class="button button--with-icon check-icon"
+        ng-click="$ctrl.enable()"
+    >
+        Enable targeting
+    </button>
+</div>
+
+<div
+    class="zem-demographic-targeting__notification message message--info message--with-icon"
+>
+    To apply audience targeting to Outbrain and Yahoo, please contact your
+    Customer Success Manager.
 </div>

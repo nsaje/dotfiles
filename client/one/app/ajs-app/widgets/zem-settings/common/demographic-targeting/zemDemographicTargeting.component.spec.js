@@ -7,9 +7,9 @@ describe('component: zemDemographicTargeting', function() {
 
     beforeEach(inject(function($rootScope, $componentController) {
         var bindings = {
-            entity: {settings: {}},
-            errors: {},
-            api: {register: angular.noop},
+            bluekaiTargeting: {},
+            entityId: 1,
+            onUpdate: angular.noop,
         };
         $ctrl = $componentController('zemDemographicTargeting', {}, bindings);
     }));

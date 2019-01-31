@@ -45,13 +45,23 @@
             errors="$container.errors"
             api="$container.childApi"
         ></zem-geo-targeting>
-        <zem-demographic-targeting
-            class="zem-settings-component"
-            entity="$container.entity"
-            errors="$container.errors"
-            api="$container.childApi"
+        <div
+            class="custom-panel zem-settings-component__container"
             ng-if="$ctrl.hasPermission('zemauth.can_use_bluekai_targeting') && !$ctrl.hasPermission('zemauth.disable_public_rcs')"
-        ></zem-demographic-targeting>
+        >
+            <h2 class="custom-panel__title">BlueKai audience targeting</h2>
+            <div class="custom-panel__description">
+                Setup audience targeting based on BlueKai audience segments. For
+                setting up Bombora, Liveramp or Lotame targeting please contact
+                your Customer Success Manager.
+            </div>
+            <zem-demographic-targeting
+                class="zem-settings-component"
+                bluekai-targeting="$container.entity.settings.bluekaiTargeting"
+                entity-id="$container.entity.id"
+                on-update="$ctrl.updateBluekaiTargeting($container, $event)"
+            ></zem-demographic-targeting>
+        </div>
         <zem-ad-group-targeting-settings
             class="zem-settings-component"
             entity="$container.entity"
