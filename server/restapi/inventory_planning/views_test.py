@@ -133,7 +133,7 @@ class InventoryPlanningViewTest(restapi.common.views_base_test.RESTAPITest):
             },
             {
                 "country": "b",
-                "publisher": "P1",
+                "publisher": "P2",
                 "device_type": 5,
                 "source_id": 123,
                 "name": "B",
@@ -184,8 +184,8 @@ class InventoryPlanningViewTest(restapi.common.views_base_test.RESTAPITest):
             "B,60\r\n"
             "\r\n"
             "Publishers\r\n"
-            "A,10\r\n"
-            "B,60\r\n"
+            "P1,10\r\n"
+            "P2,60\r\n"
             "\r\n"
         )
         self.assertEqual(expected_csv, response_csv)
