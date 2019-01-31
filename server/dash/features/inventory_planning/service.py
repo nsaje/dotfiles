@@ -4,14 +4,14 @@ import redshiftapi.api_inventory
 
 from . import constants
 
-ZERO_ROW = {"bids": 0, "bid_reqs": 0, "win_notices": 0, "total_win_price": 0}
+ZERO_ROW = {"bids": 0, "bid_reqs": 0, "win_notices": 0, "total_win_price": 0, "slots": 0, "redirects": 0}
 MIN_AUCTIONS = 1000
 
 _countries_cache = None
 _sources_cache = None
 
 
-def _get_countries_map():
+def get_countries_map():
     global _countries_cache
     if _countries_cache is None:
         _countries_cache = {
@@ -30,7 +30,7 @@ def _get_sources_cache():
     return _sources_cache
 
 
-def _get_filtered_sources_map(request):
+def get_filtered_sources_map(request):
     sources_map = {
         source.id: source.name
         for source in _get_sources_cache()
@@ -76,24 +76,25 @@ def has_newscorp_credentials(request):
 
 
 def _update_filters(request, filters):
+    updated_filters = filters.copy()
     if "source_id" not in filters:
-        filters["source_id"] = list(_get_filtered_sources_map(request).keys())
-    return filters
+        updated_filters["source_id"] = list(get_filtered_sources_map(request).keys())
+    return updated_filters
 
 
 def get_summary(request, filters):
-    filters = _update_filters(request, filters)
-    data = redshiftapi.api_inventory.query(breakdown=None, constraints=filters)[0]
+    updated_filters = _update_filters(request, filters)
+    data = redshiftapi.api_inventory.query(breakdown=None, constraints=updated_filters)[0]
     for field in data:
         data[field] = data[field] or 0
     return data
 
 
 def get_by_country(request, filters):
-    filters = _update_filters(request, filters)
-    data = redshiftapi.api_inventory.query(breakdown="country", constraints=filters)
+    updated_filters = _update_filters(request, filters)
+    data = redshiftapi.api_inventory.query(breakdown="country", constraints=updated_filters)
     data = list(filter(_min_auctions_filter, data))
-    countries_map = _get_countries_map()
+    countries_map = get_countries_map()
     _add_zero_rows(data, "country", sorted(countries_map.keys()))
     for item in data:
         item["name"] = countries_map.get(item["country"], "Not reported")
@@ -101,8 +102,8 @@ def get_by_country(request, filters):
 
 
 def get_by_publisher(request, filters):
-    filters = _update_filters(request, filters)
-    data = redshiftapi.api_inventory.query(breakdown="publisher", constraints=filters)
+    updated_filters = _update_filters(request, filters)
+    data = redshiftapi.api_inventory.query(breakdown="publisher", constraints=updated_filters)
     data = list(filter(_min_auctions_filter, data))
     ordered_top_publishers = redshiftapi.api_inventory.query_top_publishers()
     _add_zero_rows(data, "publisher", ordered_top_publishers)
@@ -110,8 +111,8 @@ def get_by_publisher(request, filters):
 
 
 def get_by_device_type(request, filters):
-    filters = _update_filters(request, filters)
-    data = redshiftapi.api_inventory.query(breakdown="device_type", constraints=filters)
+    updated_filters = _update_filters(request, filters)
+    data = redshiftapi.api_inventory.query(breakdown="device_type", constraints=updated_filters)
     data = list(filter(_min_auctions_filter, data))
     device_types_map = dict(constants.InventoryDeviceType.get_choices())
     _add_zero_rows(data, "device_type", sorted(device_types_map.keys()))
@@ -123,7 +124,7 @@ def get_by_device_type(request, filters):
 def get_by_media_source(request, filters):
     data = redshiftapi.api_inventory.query(breakdown="source_id", constraints=filters)
     data = list(filter(_min_auctions_filter, data))
-    sources_map = _get_filtered_sources_map(request)
+    sources_map = get_filtered_sources_map(request)
     _add_zero_rows(data, "source_id", sorted(sources_map.keys()))
     data = list(filter(lambda item: item["source_id"] in sources_map, data))
     for item in data:

@@ -32,7 +32,9 @@ INSERT INTO mv_inventory (
         SUM(bid_reqs),
         SUM(bids),
         SUM(win_notices),
-        SUM(total_win_price)
+        SUM(total_win_price),
+        SUM(slots),
+        SUM(redirects)
 
     FROM supply_stats
 
@@ -50,6 +52,7 @@ INSERT INTO mv_inventory (
               {% endif %}
             {% endfor %}
           )
+          AND NOT adstxt_status = 'HasAdstxt'
 
     GROUP BY 1, 2, 3, 4
 

@@ -50,17 +50,3 @@ class NativeAdServerAgencyId(ConstantBase):
         RCS: "RCS agency ID",
         NEWSCORP: "NewsCorp agency ID",
     }
-
-
-class SourceCtr(ConstantBase):
-    AVG = 0.0044
-    MEDIAMOND = 0.0012
-    RCS = 0.00042
-    NEWSCORP = 0.0015
-
-    _VALUES = {
-        AVG: "Average source CTR",
-        MEDIAMOND: "Mediamond source CTR",
-        RCS: "RCS source CTR",
-        NEWSCORP: "NewsCorp source CTR",
-    }

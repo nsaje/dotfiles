@@ -11,3 +11,5 @@ class Inventory(backtosql.Model):
     bids = backtosql.TemplateColumn("part_sum.sql", {"column_name": "bids"}, group="aggregates")
     win_notices = backtosql.TemplateColumn("part_sum.sql", {"column_name": "win_notices"}, group="aggregates")
     total_win_price = backtosql.TemplateColumn("part_sum.sql", {"column_name": "total_win_price"}, group="aggregates")
+    slots = backtosql.TemplateColumn("part_sum.sql", {"column_name": "slots"}, group="aggregates")
+    redirects = backtosql.TemplateColumn("part_sum.sql", {"column_name": "redirects"}, group="aggregates")

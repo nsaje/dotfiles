@@ -4,10 +4,16 @@ import {MulticurrencyService} from './multicurrency/multicurrency.service';
 import {GoogleAnalyticsService} from './google-analytics/google-analytics.service';
 import {MixpanelService} from './mixpanel/mixpanel.service';
 import {EntitiesModule} from './entities/entities.module';
+import {PostAsGetRequestService} from './post-as-get-request/post-as-get-request.service';
 
 @NgModule({
     imports: [EntitiesModule],
-    providers: [GoogleAnalyticsService, MulticurrencyService, MixpanelService],
+    providers: [
+        GoogleAnalyticsService,
+        MulticurrencyService,
+        MixpanelService,
+        PostAsGetRequestService,
+    ],
 })
 export class CoreModule {
     constructor(

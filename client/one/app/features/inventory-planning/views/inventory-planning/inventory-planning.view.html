@@ -10,15 +10,24 @@
 >
 </zem-inventory-planning-summary>
 
-<zem-inventory-planning-filter
-    class="zem-inventory-planning-filter"
-    [availableFilters]="(store.state$ | async).availableFilters"
-    [selectedFilters]="(store.state$ | async).selectedFilters"
-    (onRemove)="store.toggleOption($event)"
-    (onApply)="store.applyFilters($event)"
->
-</zem-inventory-planning-filter>
-
+<div class="zem-inventory-planning__action-container">
+    <zem-inventory-planning-filter
+        class="zem-inventory-planning-filter zem-inventory-planning__filter"
+        [availableFilters]="(store.state$ | async).availableFilters"
+        [selectedFilters]="(store.state$ | async).selectedFilters"
+        (onRemove)="store.toggleOption($event)"
+        (onApply)="store.applyFilters($event)"
+    >
+    </zem-inventory-planning-filter>
+    <div class="zem-inventory-planning__export-container">
+        <button
+            class="button button--highlight"
+            (click)="exportInventoryData()"
+        >
+            Export
+        </button>
+    </div>
+</div>
 <div class="custom-panel zem-inventory-planning__breakdowns clearfix">
     <zem-inventory-planning-breakdown
         class="zem-inventory-planning-breakdown"

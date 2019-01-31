@@ -19,6 +19,8 @@ class InventoryTestCase(TestCase):
 SELECT
    sum(bid_reqs) bid_reqs,
    sum(bids) bids,
+   sum(redirects) redirects,
+   sum(slots) slots,
    sum(total_win_price) total_win_price,
    sum(win_notices) win_notices
 FROM mv_inventory
@@ -42,6 +44,8 @@ SELECT
    country as country,
    sum(bid_reqs) bid_reqs,
    sum(bids) bids,
+   sum(redirects) redirects,
+   sum(slots) slots,
    sum(total_win_price) total_win_price,
    sum(win_notices) win_notices
 FROM mv_inventory

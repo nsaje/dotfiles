@@ -17,6 +17,8 @@ import {Filters} from '../../types/filters';
 import {FilterOption} from '../../types/filter-option';
 import {InventoryPlanningStore} from '../../services/inventory-planning.store';
 import {InventoryPlanningEndpoint} from '../../services/inventory-planning.endpoint';
+import {PostAsGetRequestService} from '../../../../core/post-as-get-request/post-as-get-request.service';
+import * as requestPayloadHelpers from '../../helpers/request-payload.helpers';
 
 const FILTER_URL_PARAMS = ['countries', 'publishers', 'devices', 'sources'];
 
@@ -33,6 +35,7 @@ export class InventoryPlanningView implements OnInit, OnDestroy {
     private ngUnsubscribe$: Subject<undefined> = new Subject();
 
     constructor(
+        private postAsGetRequestService: PostAsGetRequestService,
         @Inject('ajs$location') private ajs$location: any,
         public store: InventoryPlanningStore
     ) {}
@@ -69,6 +72,14 @@ export class InventoryPlanningView implements OnInit, OnDestroy {
                 .join(',');
             this.setUrlParam(paramName, paramValue);
         });
+    }
+
+    exportInventoryData() {
+        const filterPayload = requestPayloadHelpers.buildRequestPayload(
+            this.store.state.selectedFilters
+        );
+        const url = '/rest/internal/inventory-planning/export';
+        this.postAsGetRequestService.postAsGet(filterPayload, url);
     }
 
     private getPreselectedFiltersFromUrlParams(): {

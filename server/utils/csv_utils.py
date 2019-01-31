@@ -4,6 +4,8 @@
 import csv
 import io as StringIO
 
+import django.http
+
 FORMULA_SYMBOLS = ("@", "+", "-", "=")
 
 
@@ -45,3 +47,26 @@ def _prepend_if_formula(value):
     if value and str(value).startswith(FORMULA_SYMBOLS):
         value = "'" + str(value)
     return value
+
+
+def insert_csv_row(data, row_title, row_data):
+    data.append((row_title,))
+    data.append(tuple(row_data))
+    data.append((None,))
+    return data
+
+
+def insert_csv_paragraph(data, paragraph_title, paragraph_data, key, value):
+    data.append((paragraph_title,))
+    for pd in paragraph_data:
+        if pd[value]:
+            data.append((pd[key], pd[value]))
+    data.append((None,))
+    return data
+
+
+def create_csv_response(data="", filename="", status_code=200):
+    content_type = "text/csv; name={}.csv".format(filename)
+    response = django.http.HttpResponse(data, content_type=content_type, status=status_code)
+    response["Content-Disposition"] = "attachment; filename={}.csv".format(filename)
+    return response

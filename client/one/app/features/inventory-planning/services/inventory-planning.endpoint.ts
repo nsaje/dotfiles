@@ -10,6 +10,7 @@ import {ApiResponse} from '../../../shared/types/api-response';
 import {RequestPayload} from '../../../shared/types/request-payload';
 import {INVENTORY_PLANNING_CONFIG} from '../inventory-planning.config';
 import * as endpointHelpers from '../../../shared/helpers/endpoint.helpers';
+import * as requestPayloadHelpers from '../helpers/request-payload.helpers';
 import {StoreRequestStateUpdater} from '../../../shared/types/store-request-state-updater';
 
 @Injectable()
@@ -22,7 +23,9 @@ export class InventoryPlanningEndpoint {
     ): Observable<Inventory> {
         const request = INVENTORY_PLANNING_CONFIG.requests.loadSummary;
 
-        const requestPayload = this.buildRequestPayload(selectedFilters);
+        const requestPayload = requestPayloadHelpers.buildRequestPayload(
+            selectedFilters
+        );
         const requestProperties = endpointHelpers.buildRequestProperties(
             requestPayload
         );
@@ -62,7 +65,9 @@ export class InventoryPlanningEndpoint {
     ): Observable<FilterOption[]> {
         const request = INVENTORY_PLANNING_CONFIG.requests.loadCountries;
 
-        const requestPayload = this.buildRequestPayload(selectedFilters);
+        const requestPayload = requestPayloadHelpers.buildRequestPayload(
+            selectedFilters
+        );
         const requestProperties = endpointHelpers.buildRequestProperties(
             requestPayload
         );
@@ -103,7 +108,9 @@ export class InventoryPlanningEndpoint {
     ): Observable<FilterOption[]> {
         const request = INVENTORY_PLANNING_CONFIG.requests.loadPublishers;
 
-        const requestPayload = this.buildRequestPayload(selectedFilters);
+        const requestPayload = requestPayloadHelpers.buildRequestPayload(
+            selectedFilters
+        );
         const requestProperties = endpointHelpers.buildRequestProperties(
             requestPayload
         );
@@ -144,7 +151,9 @@ export class InventoryPlanningEndpoint {
     ): Observable<FilterOption[]> {
         const request = INVENTORY_PLANNING_CONFIG.requests.loadDevices;
 
-        const requestPayload = this.buildRequestPayload(selectedFilters);
+        const requestPayload = requestPayloadHelpers.buildRequestPayload(
+            selectedFilters
+        );
         const requestProperties = endpointHelpers.buildRequestProperties(
             requestPayload
         );
@@ -185,7 +194,9 @@ export class InventoryPlanningEndpoint {
     ): Observable<FilterOption[]> {
         const request = INVENTORY_PLANNING_CONFIG.requests.loadSources;
 
-        const requestPayload = this.buildRequestPayload(selectedFilters);
+        const requestPayload = requestPayloadHelpers.buildRequestPayload(
+            selectedFilters
+        );
         const requestProperties = endpointHelpers.buildRequestProperties(
             requestPayload
         );
@@ -218,15 +229,6 @@ export class InventoryPlanningEndpoint {
                     return throwError(error);
                 })
             );
-    }
-
-    private buildRequestPayload(selectedFilters: Filters): RequestPayload {
-        return {
-            countries: selectedFilters.countries.map((x: any) => x.value),
-            publishers: selectedFilters.publishers.map((x: any) => x.value),
-            devices: selectedFilters.devices.map((x: any) => x.value),
-            sources: selectedFilters.sources.map((x: any) => x.value),
-        };
     }
 
     private convertOptionsValueToString(

@@ -8,7 +8,7 @@
         margin-top: @default-spacing*1.5;
     }
 
-    .zem-inventory-planning-filter {
+    .zem-inventory-planning__action-container {
         margin: @default-spacing*1.5 0;
     }
 
@@ -33,6 +33,27 @@
 
 .zem-inventory-planning__breakdowns {
     margin-bottom: @default-spacing*1.5;
+}
+
+.zem-inventory-planning__action-container {
+    display: flex;
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    align-content: flex-start;
+    padding: @default-spacing;
+    background-color: darken(@light-gray, 4%);
+}
+
+.zem-inventory-planning__filter {
+    flex: 1 1 auto;
+}
+
+.zem-inventory-planning__export-container {
+    flex: 0 0 50px;
+    padding: 0 @default-spacing;
+    margin-left: @default-spacing;
+    border-left: 1px solid darken(@light-gray, 10%);
+    background-color: darken(@light-gray, 4%);
 }
 
 ///////////////////////////

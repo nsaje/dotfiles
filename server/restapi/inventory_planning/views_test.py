@@ -8,25 +8,44 @@ import restapi.common.views_base_test
 class InventoryPlanningViewTest(restapi.common.views_base_test.RESTAPITest):
     @mock.patch.object(dash.features.inventory_planning, "get_summary", autospec=True)
     def test_summary(self, mock_func):
-        mock_func.return_value = {"bid_reqs": 5, "bids": 4, "win_notices": 2, "total_win_price": 10.0}
+        mock_func.return_value = {
+            "bid_reqs": 5,
+            "bids": 4,
+            "win_notices": 2,
+            "total_win_price": 10.0,
+            "slots": 10,
+            "redirects": 1,
+        }
         r = self.client.post(reverse("inventory_planning", kwargs=dict(breakdown="summary")))
         resp_json = self.assertResponseValid(r)
         mock_func.assert_called_with(r.renderer_context["request"], {})
         self.assertEqual(
-            resp_json["data"],
-            {
-                "auctionCount": 5,
-                "avgCpm": 5.0,
-                "avgCpc": 5.0 / 1000 / dash.features.inventory_planning.constants.SourceCtr.AVG,
-                "winRatio": 0.5,
-            },
+            resp_json["data"], {"auctionCount": 10, "avgCpm": 5.0, "avgCpc": 10.0 / 1000 / 1, "winRatio": 0.5}
         )
 
     @mock.patch.object(dash.features.inventory_planning, "get_by_country", return_value={}, autospec=True)
     def test_by_country(self, mock_func):
         mock_func.return_value = [
-            {"country": "a", "name": "A", "bid_reqs": 5, "bids": 4, "win_notices": 2, "total_win_price": 10.0},
-            {"country": "b", "name": "B", "bid_reqs": 50, "bids": 40, "win_notices": 20, "total_win_price": 100.0},
+            {
+                "country": "a",
+                "name": "A",
+                "bid_reqs": 5,
+                "bids": 4,
+                "win_notices": 2,
+                "total_win_price": 10.0,
+                "slots": 10,
+                "redirects": 1,
+            },
+            {
+                "country": "b",
+                "name": "B",
+                "bid_reqs": 50,
+                "bids": 40,
+                "win_notices": 20,
+                "total_win_price": 100.0,
+                "slots": 60,
+                "redirects": 10,
+            },
         ]
 
         r = self.client.post(reverse("inventory_planning", kwargs=dict(breakdown="countries")))
@@ -34,7 +53,7 @@ class InventoryPlanningViewTest(restapi.common.views_base_test.RESTAPITest):
         mock_func.assert_called_with(r.renderer_context["request"], {})
         self.assertEqual(
             resp_json["data"],
-            [{"value": "a", "name": "A", "auctionCount": 5}, {"value": "b", "name": "B", "auctionCount": 50}],
+            [{"value": "a", "name": "A", "auctionCount": 10}, {"value": "b", "name": "B", "auctionCount": 60}],
         )
 
     @mock.patch.object(dash.features.inventory_planning, "get_by_device_type", return_value={}, autospec=True)
@@ -91,3 +110,144 @@ class InventoryPlanningViewTest(restapi.common.views_base_test.RESTAPITest):
             r.renderer_context["request"],
             {"country": ["1", "2"], "publisher": ["3", "4"], "device_type": [5, 6], "source_id": [7, 8]},
         )
+
+    @mock.patch.object(dash.features.inventory_planning, "get_by_media_source", return_value={}, autospec=True)
+    @mock.patch.object(dash.features.inventory_planning, "get_by_device_type", return_value={}, autospec=True)
+    @mock.patch.object(dash.features.inventory_planning, "get_by_publisher", return_value={}, autospec=True)
+    @mock.patch.object(dash.features.inventory_planning, "get_by_country", return_value={}, autospec=True)
+    @mock.patch.object(dash.features.inventory_planning, "get_summary", return_value={}, autospec=True)
+    def test_export_filters(self, mock_summary, mock_country, mock_publisher, mock_device_type, mock_media_source):
+        mock_data = [
+            {
+                "country": "a",
+                "publisher": "P1",
+                "device_type": 2,
+                "source_id": 123,
+                "name": "A",
+                "bid_reqs": 5,
+                "bids": 4,
+                "win_notices": 2,
+                "total_win_price": 10.0,
+                "slots": 10,
+                "redirects": 1,
+            },
+            {
+                "country": "b",
+                "publisher": "P1",
+                "device_type": 5,
+                "source_id": 123,
+                "name": "B",
+                "bid_reqs": 50,
+                "bids": 40,
+                "win_notices": 20,
+                "total_win_price": 100.0,
+                "slots": 60,
+                "redirects": 10,
+            },
+        ]
+        mock_summary.return_value = mock_data[0]
+        mock_country.return_value = mock_data
+        mock_publisher.return_value = mock_data
+        mock_device_type.return_value = mock_data
+        mock_media_source.return_value = mock_data
+
+        r = self.client.post(
+            reverse("inventory_planning_export"),
+            data={"countries": ["US", "UK"], "publishers": ["www.msn.com"], "devices": ["5"], "sources": ["85"]},
+            format="json",
+        )
+        response_csv = r.content.decode("utf-8").replace('"', "")
+        expected_csv = (
+            "Active filters\r\n"
+            "Countries\r\n"
+            "United States,UK\r\n"
+            "\r\n"
+            "Publishers\r\n"
+            "www.msn.com\r\n"
+            "\r\n"
+            "Devices\r\n"
+            "Tablet\r\n"
+            "\r\n"
+            "SSPs\r\n"
+            "85\r\n"
+            "\r\n"
+            "Devices\r\n"
+            "A,10\r\n"
+            "B,60\r\n"
+            "\r\n"
+            "SSPs\r\n"
+            "A,10\r\n"
+            "B,60\r\n"
+            "\r\n"
+            "Countries\r\n"
+            "A,10\r\n"
+            "B,60\r\n"
+            "\r\n"
+            "Publishers\r\n"
+            "A,10\r\n"
+            "B,60\r\n"
+            "\r\n"
+        )
+        self.assertEqual(expected_csv, response_csv)
+
+    @mock.patch.object(dash.features.inventory_planning, "get_by_media_source", return_value={}, autospec=True)
+    @mock.patch.object(dash.features.inventory_planning, "get_by_device_type", return_value={}, autospec=True)
+    @mock.patch.object(dash.features.inventory_planning, "get_by_publisher", return_value={}, autospec=True)
+    @mock.patch.object(dash.features.inventory_planning, "get_by_country", return_value={}, autospec=True)
+    @mock.patch.object(dash.features.inventory_planning, "get_summary", return_value={}, autospec=True)
+    def test_export_no_filters(self, mock_summary, mock_country, mock_publisher, mock_device_type, mock_media_source):
+        mock_data = [
+            {
+                "country": "a",
+                "publisher": "P1",
+                "device_type": 2,
+                "source_id": 123,
+                "name": "A",
+                "bid_reqs": 5,
+                "bids": 4,
+                "win_notices": 2,
+                "total_win_price": 10.0,
+                "slots": 10,
+                "redirects": 1,
+            },
+            {
+                "country": "b",
+                "publisher": "P1",
+                "device_type": 5,
+                "source_id": 123,
+                "name": "B",
+                "bid_reqs": 50,
+                "bids": 40,
+                "win_notices": 20,
+                "total_win_price": 100.0,
+                "slots": 60,
+                "redirects": 10,
+            },
+        ]
+        mock_summary.return_value = mock_data[0]
+        mock_country.return_value = mock_data
+        mock_publisher.return_value = mock_data
+        mock_device_type.return_value = mock_data
+        mock_media_source.return_value = mock_data
+
+        r = self.client.post(reverse("inventory_planning_export"), data={}, format="json")
+        response_csv = r.content.decode("utf-8").replace('"', "")
+        expected_csv = (
+            "Devices\r\n"
+            "A,10\r\n"
+            "B,60\r\n"
+            "\r\n"
+            "SSPs\r\n"
+            "A,10\r\n"
+            "B,60\r\n"
+            "\r\n"
+            "Countries\r\n"
+            "A,10\r\n"
+            "B,60\r\n"
+            "\r\n"
+            "Publishers\r\n"
+            "A,10\r\n"
+            "B,60\r\n"
+            "\r\n"
+        )
+        self.assertEqual(expected_csv, response_csv)
