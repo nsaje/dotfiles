@@ -7,9 +7,12 @@ from django.db.models import F
 from django.db.models import Value
 from django.db.models import When
 
+import core.features.goals
+import core.features.videoassets
+import core.models
 import dash.constants
-import dash.models
-from core.features import videoassets
+import dash.features.geolocation
+import dash.features.publisher_classification
 from etl import redshift
 from etl import s3
 
@@ -41,7 +44,11 @@ class RDSModelization(object):
             }
         )
         if hasattr(self, "EXCLUDE"):
-            return qs.exclude(**self.EXCLUDE)
+            qs = qs.exclude(**self.EXCLUDE)
+        if hasattr(self, "ORDER_BY"):
+            qs = qs.order_by(*self.ORDER_BY)
+        if hasattr(self, "DISTINCT"):
+            qs = qs.distinct(*self.DISTINCT)
         return qs
 
     def put_csv_to_s3(self):
@@ -66,7 +73,7 @@ class RDSModelization(object):
 
 
 class RDSAgency(RDSModelization):
-    MODEL = dash.models.Agency
+    MODEL = core.models.Agency
     TABLE = "mv_rds_agency"
     FIELDS = OrderedDict(
         name="name",
@@ -79,7 +86,7 @@ class RDSAgency(RDSModelization):
 
 
 class RDSSource(RDSModelization):
-    MODEL = dash.models.Source
+    MODEL = core.models.Source
     TABLE = "mv_rds_source"
     FIELDS = OrderedDict(
         tracking_slug="tracking_slug",
@@ -101,7 +108,7 @@ class RDSSource(RDSModelization):
 
 
 class RDSAccount(RDSModelization):
-    MODEL = dash.models.Account
+    MODEL = core.models.Account
     TABLE = "mv_rds_account"
     FIELDS = OrderedDict(
         name="name",
@@ -121,7 +128,7 @@ class RDSAccount(RDSModelization):
 
 
 class RDSCampaign(RDSModelization):
-    MODEL = dash.models.Campaign
+    MODEL = core.models.Campaign
     TABLE = "mv_rds_campaign"
     FIELDS = OrderedDict(
         name="name",
@@ -156,20 +163,24 @@ class RDSCampaign(RDSModelization):
 
 
 class RDSCampaignGoal(RDSModelization):
-    MODEL = dash.models.CampaignGoal
+    MODEL = core.features.goals.CampaignGoalValue
     TABLE = "mv_rds_campaign_goal"
+    PK = "campaign_goal_id"
     FIELDS = OrderedDict(
-        campaign_id="campaign_id",
-        campaign_goal_type=RDSModelization.get_constant_value("type", dash.constants.CampaignGoalKPI),
-        campaign_goal_primary="primary",
-        conversion_goal_id="conversion_goal__id",
-        conversion_goal_pixel_slug="conversion_goal__pixel__slug",
-        impressions="conversion_goal__pixel__impressions",
+        campaign_id="campaign_goal__campaign_id",
+        campaign_goal_type=RDSModelization.get_constant_value("campaign_goal__type", dash.constants.CampaignGoalKPI),
+        campaign_goal_primary="campaign_goal__primary",
+        conversion_goal_id="campaign_goal__conversion_goal__id",
+        conversion_goal_pixel_slug="campaign_goal__conversion_goal__pixel__slug",
+        impressions="campaign_goal__conversion_goal__pixel__impressions",
+        value="value",
     )
+    ORDER_BY = ["campaign_goal", "created_dt"]
+    DISTINCT = ["campaign_goal"]
 
 
 class RDSContentAd(RDSModelization):
-    MODEL = dash.models.ContentAd
+    MODEL = core.models.ContentAd
     TABLE = "mv_rds_content_ad"
     FIELDS = OrderedDict(
         ad_group_id="ad_group__id",
@@ -192,18 +203,22 @@ class RDSContentAd(RDSModelization):
         tracker_urls="tracker_urls",
         additional_data="additional_data",
         video_asset_id="video_asset__id",
-        video_status=RDSModelization.get_constant_value("video_asset__status", videoassets.constants.VideoAssetStatus),
+        video_status=RDSModelization.get_constant_value(
+            "video_asset__status", core.features.videoassets.constants.VideoAssetStatus
+        ),
         video_name="video_asset__name",
         video_duration="video_asset__duration",
         video_formats="video_asset__formats",
-        video_type=RDSModelization.get_constant_value("video_asset__type", videoassets.constants.VideoAssetType),
+        video_type=RDSModelization.get_constant_value(
+            "video_asset__type", core.features.videoassets.constants.VideoAssetType
+        ),
         video_vast_url="video_asset__vast_url",
     )
     EXCLUDE = dict(ad_group__campaign__account_id=305)
 
 
 class RDSAdGroup(RDSModelization):
-    MODEL = dash.models.AdGroup
+    MODEL = core.models.AdGroup
     TABLE = "mv_rds_ad_group"
     FIELDS = OrderedDict(
         name="name",
@@ -251,7 +266,7 @@ class RDSAdGroup(RDSModelization):
 
 
 class RDSGeolocation(RDSModelization):
-    MODEL = dash.models.Geolocation
+    MODEL = dash.features.geolocation.Geolocation
     TABLE = "mv_rds_geolocation"
     PK = "key"
     FIELDS = OrderedDict(
@@ -264,13 +279,48 @@ class RDSGeolocation(RDSModelization):
 
 
 class RDSPublisherClassification(RDSModelization):
-    MODEL = dash.models.PublisherClassification
+    MODEL = dash.features.publisher_classification.PublisherClassification
     TABLE = "mv_rds_publisher_classification"
     FIELDS = OrderedDict(
         publisher="publisher",
         category=RDSModelization.get_constant_value("category", dash.constants.InterestCategory),
         ignored="ignored",
     )
+
+
+class RDSAgencyTag(RDSModelization):
+    MODEL = core.models.EntityTag
+    TABLE = "mv_rds_agency_tag"
+    FIELDS = OrderedDict(agency="agency", name="name", slug="slug")
+    EXCLUDE = dict(agency__isnull=True)
+
+
+class RDSAccountTag(RDSModelization):
+    MODEL = core.models.EntityTag
+    TABLE = "mv_rds_account_tag"
+    FIELDS = OrderedDict(account="account", name="name", slug="slug")
+    EXCLUDE = dict(account__isnull=True)
+
+
+class RDSCampaignTag(RDSModelization):
+    MODEL = core.models.EntityTag
+    TABLE = "mv_rds_campaign_tag"
+    FIELDS = OrderedDict(campaign="campaign", name="name", slug="slug")
+    EXCLUDE = dict(campaign__isnull=True)
+
+
+class RDSAdgroupTag(RDSModelization):
+    MODEL = core.models.EntityTag
+    TABLE = "mv_rds_ad_group_tag"
+    FIELDS = OrderedDict(adgroup="adgroup", name="name", slug="slug")
+    EXCLUDE = dict(adgroup__isnull=True)
+
+
+class RDSSourceTag(RDSModelization):
+    MODEL = core.models.EntityTag
+    TABLE = "mv_rds_source_tag"
+    FIELDS = OrderedDict(source="source", name="name", slug="slug")
+    EXCLUDE = dict(source__isnull=True)
 
 
 RDS_MATERIALIAZED_VIEW = [
@@ -283,4 +333,9 @@ RDS_MATERIALIAZED_VIEW = [
     RDSContentAd,
     RDSGeolocation,
     RDSPublisherClassification,
+    RDSAgencyTag,
+    RDSAccountTag,
+    RDSCampaignTag,
+    RDSAdgroupTag,
+    RDSSourceTag,
 ]

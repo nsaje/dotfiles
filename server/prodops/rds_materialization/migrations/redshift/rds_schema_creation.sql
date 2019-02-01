@@ -72,13 +72,14 @@ CREATE TABLE IF NOT EXISTS MV_RDS_CAMPAIGN (
 );
 
 CREATE TABLE IF NOT EXISTS MV_RDS_CAMPAIGN_GOAL (
-  id                         INTEGER PRIMARY KEY,
+  campaign_goal_id           INTEGER PRIMARY KEY,
   campaign_id                INTEGER,
   campaign_goal_type         VARCHAR(100),
   campaign_goal_primary      BOOLEAN,
   conversion_goal_id         INTEGER  NULL,
   conversion_goal_pixel_slug VARCHAR(50)  NULL,
-  impressions                INTEGER
+  impressions                INTEGER,
+  value                      DECIMAL(15, 5)
 );
 
 
@@ -174,4 +175,39 @@ CREATE TABLE IF NOT EXISTS MV_RDS_PUBLISHER_CLASSIFICATION (
   publisher   VARCHAR(128),
   category    VARCHAR(128),
   ignored     BOOLEAN
+);
+
+CREATE TABLE IF NOT EXISTS MV_RDS_AGENCY_TAG (
+  id      INTEGER PRIMARY KEY,
+  agency  INTEGER,
+  name    VARCHAR(255) UNIQUE,
+  slug    VARCHAR(50)
+);
+
+CREATE TABLE IF NOT EXISTS MV_RDS_ACCOUNT_TAG (
+  id        INTEGER PRIMARY KEY,
+  account   INTEGER,
+  name      VARCHAR(255) UNIQUE,
+  slug      VARCHAR(50)
+);
+
+CREATE TABLE IF NOT EXISTS MV_RDS_CAMPAIGN_TAG (
+  id        INTEGER PRIMARY KEY,
+  campaign  INTEGER,
+  name      VARCHAR(255) UNIQUE,
+  slug      VARCHAR(50)
+);
+
+CREATE TABLE IF NOT EXISTS MV_RDS_AD_GROUP_TAG (
+  id        INTEGER PRIMARY KEY,
+  adgroup   INTEGER,
+  name      VARCHAR(255) UNIQUE,
+  slug      VARCHAR(50)
+);
+
+CREATE TABLE IF NOT EXISTS MV_RDS_SOURCE_TAG (
+  id        INTEGER PRIMARY KEY,
+  source    INTEGER,
+  name      VARCHAR(255) UNIQUE,
+  slug      VARCHAR(50)
 );
