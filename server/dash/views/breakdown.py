@@ -15,7 +15,7 @@ from dash import forms
 from dash.views import breakdown_helpers
 from dash.views import helpers
 from utils import api_common
-from utils import db_for_reads
+from utils import db_router
 from utils import exc
 from utils import threads
 
@@ -120,7 +120,7 @@ def _get_page_and_size(offset, limit):
 
 
 class AllAccountsBreakdown(api_common.BaseApiView):
-    @db_for_reads.use_stats_read_replica()
+    @db_router.use_stats_read_replica()
     @newrelic.agent.function_trace()
     def post(self, request, breakdown):
         if not request.user.has_perm("zemauth.can_access_table_breakdowns_feature"):
@@ -188,7 +188,7 @@ class AllAccountsBreakdown(api_common.BaseApiView):
 
 
 class AccountBreakdown(api_common.BaseApiView):
-    @db_for_reads.use_stats_read_replica()
+    @db_router.use_stats_read_replica()
     @newrelic.agent.function_trace()
     def post(self, request, account_id, breakdown):
         if not request.user.has_perm("zemauth.can_access_table_breakdowns_feature"):
@@ -268,7 +268,7 @@ class AccountBreakdown(api_common.BaseApiView):
 
 
 class CampaignBreakdown(api_common.BaseApiView):
-    @db_for_reads.use_stats_read_replica()
+    @db_router.use_stats_read_replica()
     @newrelic.agent.function_trace()
     def post(self, request, campaign_id, breakdown):
         if not request.user.has_perm("zemauth.can_access_table_breakdowns_feature"):
@@ -357,7 +357,7 @@ class CampaignBreakdown(api_common.BaseApiView):
 
 
 class AdGroupBreakdown(api_common.BaseApiView):
-    @db_for_reads.use_stats_read_replica()
+    @db_router.use_stats_read_replica()
     @newrelic.agent.function_trace()
     def post(self, request, ad_group_id, breakdown):
         if not request.user.has_perm("zemauth.can_access_table_breakdowns_feature_on_ad_group_level"):

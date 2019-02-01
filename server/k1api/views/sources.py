@@ -5,7 +5,7 @@ from django.db import transaction
 import dash.constants
 import dash.models
 from dash import constants
-from utils import db_for_reads
+from utils import db_router
 from utils import redirector_helper
 
 from .base import K1APIView
@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 
 
 class SourcesView(K1APIView):
-    @db_for_reads.use_read_replica()
+    @db_router.use_read_replica()
     def get(self, request):
         source_slugs = request.GET.get("source_slugs")
         sources = dash.models.Source.objects.all().select_related(

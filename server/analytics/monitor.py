@@ -15,7 +15,7 @@ import etl.refresh
 import redshiftapi.db
 from automation import autopilot
 from utils import converters
-from utils import db_for_reads
+from utils import db_router
 
 logger = logging.getLogger("stats.monitor")
 
@@ -37,7 +37,7 @@ def _get_rs_spend(table_name, date, account_id=None):
     return {}
 
 
-@db_for_reads.use_read_replica()
+@db_router.use_read_replica()
 def audit_spend_integrity(date, account_id=None, max_err=MAX_ERR):
     if date is None:
         date = datetime.datetime.utcnow().date() - datetime.timedelta(1)
@@ -71,7 +71,7 @@ def audit_spend_integrity(date, account_id=None, max_err=MAX_ERR):
     return integrity_issues
 
 
-@db_for_reads.use_read_replica()
+@db_router.use_read_replica()
 def audit_spend_patterns(date=None, threshold=0.8, first_in_month_threshold=0.6, day_range=3):
     if date is None:
         date = datetime.datetime.utcnow().date() - datetime.timedelta(1)
@@ -93,7 +93,7 @@ def audit_spend_patterns(date=None, threshold=0.8, first_in_month_threshold=0.6,
     return alarming_dates
 
 
-@db_for_reads.use_read_replica()
+@db_router.use_read_replica()
 def audit_pacing(date, max_pacing=Decimal("200.0"), min_pacing=Decimal("50.0"), **constraints):
     # fixme tfischer 05/11/18: Paused until account types are properly marked. INPW is considered activated.
     if date is None:
@@ -112,7 +112,7 @@ def audit_pacing(date, max_pacing=Decimal("200.0"), min_pacing=Decimal("50.0"), 
     return alarms
 
 
-@db_for_reads.use_read_replica()
+@db_router.use_read_replica()
 def audit_autopilot_ad_groups():
     date = datetime.date.today()
     ap_logs = automation.models.AutopilotLog.objects.filter(
@@ -132,7 +132,7 @@ def audit_autopilot_ad_groups():
     return ad_groups_ap_running - ad_groups_in_logs
 
 
-@db_for_reads.use_read_replica()
+@db_router.use_read_replica()
 def audit_autopilot_cpc_changes(date=None, min_changes=25):
     """
     When Autopilot modifies the daily cap, all modifications should not be all positive or all negative, it should
@@ -166,7 +166,7 @@ def audit_autopilot_cpc_changes(date=None, min_changes=25):
     return alarms
 
 
-@db_for_reads.use_read_replica()
+@db_router.use_read_replica()
 def audit_autopilot_daily_caps_changes(date=None, error=Decimal("0.001")):
     """
     Autopilot is modifying the daily cap of each source, by taking some money from the sources performing bad
@@ -197,7 +197,7 @@ def audit_autopilot_daily_caps_changes(date=None, error=Decimal("0.001")):
     return alarms
 
 
-@db_for_reads.use_read_replica()
+@db_router.use_read_replica()
 def audit_overspend(date, min_overspend=Decimal("0.1")):
     overspend_query = backtosql.generate_sql(
         "sql/monitor_overspend.sql",
@@ -212,7 +212,7 @@ def audit_overspend(date, min_overspend=Decimal("0.1")):
     return alarms
 
 
-@db_for_reads.use_read_replica()
+@db_router.use_read_replica()
 def audit_running_ad_groups(min_spend=Decimal("50.0"), account_types=None):
     """
     Alert how many ad groups had a very low spend
@@ -248,7 +248,7 @@ def audit_running_ad_groups(min_spend=Decimal("50.0"), account_types=None):
     return dash.models.AdGroup.objects.filter(pk__in=((running_ad_group_ids - spending_ad_group_ids) - api_ad_groups))
 
 
-@db_for_reads.use_read_replica()
+@db_router.use_read_replica()
 def audit_account_credits(date=None, days=14):
 
     if not date:
@@ -271,7 +271,7 @@ def audit_account_credits(date=None, days=14):
     return ending_credit_accounts - future_credit_accounts
 
 
-@db_for_reads.use_read_replica()
+@db_router.use_read_replica()
 def audit_click_discrepancy(date=None, days=30, threshold=20):
     if date is None:
         date = datetime.date.today() - datetime.timedelta(1)
@@ -323,7 +323,7 @@ def audit_click_discrepancy(date=None, days=30, threshold=20):
     return alarms
 
 
-@db_for_reads.use_read_replica()
+@db_router.use_read_replica()
 def audit_custom_hacks(minimal_spend=Decimal("0.0001")):
     alarms = []
     for unconfirmed_hack in dash.models.CustomHack.objects.filter(confirmed_by__isnull=True).filter_active(True):
@@ -345,7 +345,7 @@ def audit_custom_hacks(minimal_spend=Decimal("0.0001")):
     return alarms
 
 
-@db_for_reads.use_read_replica()
+@db_router.use_read_replica()
 def audit_bid_cpc_vs_ecpc(bid_cpc_threshold=2, yesterday_spend_threshold=20):
     yesterday = datetime.date.today() - datetime.timedelta(1)
     active_ad_groups = (

@@ -6,7 +6,7 @@ from django.http import Http404
 
 import dash.constants
 import dash.models
-from utils import db_for_reads
+from utils import db_router
 from utils import email_helper
 
 from .base import K1APIView
@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 
 
 class OutbrainPublishersBlacklistView(K1APIView):
-    @db_for_reads.use_read_replica()
+    @db_router.use_read_replica()
     def get(self, request):
         marketer_id = request.GET.get("marketer_id")
         account = {}

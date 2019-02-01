@@ -7,7 +7,7 @@ from django.core.cache import caches
 from django.db import connections
 from django.db import transaction
 
-import utils.db_for_reads
+import utils.db_router
 from utils import cache_helper
 
 from . import queries
@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 CACHE_MISS_FLAG = None
 
 
-stats_db_router = utils.db_for_reads.UseStatsReadReplicaRouter()
+stats_db_router = utils.db_router.UseStatsReadReplicaRouter()
 
 
 def get_stats_cursor(db_alias=None):

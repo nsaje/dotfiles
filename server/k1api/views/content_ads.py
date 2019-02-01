@@ -11,7 +11,7 @@ import dash.features.submission_filters
 import dash.models
 from dash import constants
 from utils import dates_helper
-from utils import db_for_reads
+from utils import db_router
 from utils import sspd_client
 from utils import threads
 
@@ -26,7 +26,7 @@ MSN_SOURCE_ID = 120
 
 
 class ContentAdsView(K1APIView):
-    @db_for_reads.use_read_replica()
+    @db_router.use_read_replica()
     def get(self, request):
         content_ad_ids = request.GET.get("content_ad_ids")
         ad_group_ids = request.GET.get("ad_group_ids")
@@ -124,7 +124,7 @@ class ContentAdsView(K1APIView):
 
 
 class ContentAdSourcesView(K1APIView):
-    @db_for_reads.use_read_replica()
+    @db_router.use_read_replica()
     def get(self, request):
         content_ad_ids = request.GET.get("content_ad_ids")
         ad_group_ids = request.GET.get("ad_group_ids")

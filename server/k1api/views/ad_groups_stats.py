@@ -11,7 +11,7 @@ import etl.s3
 import redshiftapi.api_quickstats
 import redshiftapi.internal_stats.content_ad_publishers
 import redshiftapi.internal_stats.conversions
-from utils import db_for_reads
+from utils import db_router
 
 from .base import K1APIView
 
@@ -23,7 +23,7 @@ class AdGroupStatsView(K1APIView):
     Returns quickstats for an adgroup (used for decision making based on whether the ad group has spent already)
     """
 
-    @db_for_reads.use_read_replica()
+    @db_router.use_read_replica()
     def get(self, request):
         ad_group_id = request.GET.get("ad_group_id")
         source_slug = request.GET.get("source_slug")

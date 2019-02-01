@@ -7,7 +7,7 @@ import dash.constants
 import dash.features.custom_flags
 import dash.models
 from core.features.publisher_groups import publisher_group_helpers
-from utils import db_for_reads
+from utils import db_router
 
 from .base import K1APIView
 
@@ -28,7 +28,7 @@ class AdGroupsView(K1APIView):
     Filterable by ad_group_ids, source_type and slug.
     """
 
-    @db_for_reads.use_read_replica()
+    @db_router.use_read_replica()
     def get(self, request):
         limit = int(request.GET.get("limit", 1000000))
         marker = request.GET.get("marker")

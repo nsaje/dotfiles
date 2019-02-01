@@ -8,7 +8,7 @@ import dash.features.custom_flags
 import dash.models
 from dash import constants
 from utils import converters
-from utils import db_for_reads
+from utils import db_router
 from utils import url_helper
 
 from .base import K1APIView
@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 
 
 class AdGroupSourcesView(K1APIView):
-    @db_for_reads.use_read_replica()
+    @db_router.use_read_replica()
     def get(self, request):
         """
         Returns a list of non-archived ad group sources together with their current source settings.

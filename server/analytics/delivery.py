@@ -15,7 +15,7 @@ import dash.constants
 import dash.infobox_helpers
 import dash.models
 import utils.csv_utils
-from utils import db_for_reads
+from utils import db_router
 
 logger = logging.getLogger(__name__)
 
@@ -54,7 +54,7 @@ UNBILLABLE_SEGMENT_PARTS = ("outbrain", "lr-", "lotame", "obs", "obi", "obl")
 MIN_B1_ACTIVE_SOURCES_FOR_INTEREST_TARGETING = 5
 
 
-@db_for_reads.use_read_replica()
+@db_router.use_read_replica()
 def generate_delivery_reports(account_types=[], skip_ok=True, generate_csv=True):
     today = datetime.date.today()
     yesterday = today - datetime.timedelta(1)

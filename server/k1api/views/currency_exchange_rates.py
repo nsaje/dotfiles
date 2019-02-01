@@ -1,12 +1,12 @@
 import core.features.multicurrency
 import dash.constants
-from utils import db_for_reads
+from utils import db_router
 
 from .base import K1APIView
 
 
 class CurrencyExchangeRateView(K1APIView):
-    @db_for_reads.use_read_replica()
+    @db_router.use_read_replica()
     def get(self, request):
         currencies = request.GET.get("currencies")
         if currencies:

@@ -5,7 +5,7 @@ from django.db.models import F
 import core.features.publisher_bid_modifiers
 import dash.constants
 import dash.models
-from utils import db_for_reads
+from utils import db_router
 
 from .base import K1APIView
 
@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 
 class PublisherGroupsView(K1APIView):
-    @db_for_reads.use_read_replica()
+    @db_router.use_read_replica()
     def get(self, request):
         account_id = request.GET.get("account_id")
 
@@ -25,7 +25,7 @@ class PublisherGroupsView(K1APIView):
 
 
 class PublisherGroupsEntriesView(K1APIView):
-    @db_for_reads.use_read_replica()
+    @db_router.use_read_replica()
     def get(self, request):
         account_id = request.GET.get("account_id")
         source_slug = request.GET.get("source_slug")

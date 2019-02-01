@@ -3,7 +3,7 @@ from functools import partial
 import stats.constants
 from utils import cache_helper
 from utils import dates_helper
-from utils import db_for_reads
+from utils import db_router
 from utils import sort_helper
 from utils import threads
 
@@ -86,7 +86,7 @@ def query(
 ):
     should_use_postgres = _should_use_postgres(breakdown, constraints, parents, use_publishers_view, is_reports)
 
-    with db_for_reads.use_stats_read_replica_postgres(should_use_postgres):
+    with db_router.use_stats_read_replica_postgres(should_use_postgres):
         orders = ["-media_cost"] + breakdown
         if order is not None:
             orders = [order] + orders

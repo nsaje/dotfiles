@@ -9,7 +9,7 @@ from dash import constants
 from dash import models
 from utils import api_common
 from utils import columns
-from utils import db_for_reads
+from utils import db_router
 from utils import exc
 
 from . import helpers
@@ -178,7 +178,7 @@ class AllAccountsAccountsDailyStats(AllAccountsDailyStatsView):
             params["filtered_accounts"] = self.selected_objects
         return params
 
-    @db_for_reads.use_stats_read_replica()
+    @db_router.use_stats_read_replica()
     def get(self, request):
         if not request.user.has_perm("zemauth.all_accounts_accounts_view"):
             raise exc.MissingDataError()
@@ -208,7 +208,7 @@ class AllAccountsSourcesDailyStats(AllAccountsDailyStatsView):
             )
         return params
 
-    @db_for_reads.use_stats_read_replica()
+    @db_router.use_stats_read_replica()
     def get(self, request):
         if not request.user.has_perm("zemauth.all_accounts_accounts_view"):
             raise exc.MissingDataError()
@@ -233,7 +233,7 @@ class AllAccountsPublishersDailyStats(AllAccountsDailyStatsView):
         )
         return params
 
-    @db_for_reads.use_stats_read_replica()
+    @db_router.use_stats_read_replica()
     @newrelic.agent.function_trace()
     def get(self, request):
         if not request.user.has_perm("zemauth.can_see_publishers"):
@@ -269,7 +269,7 @@ class AccountCampaignsDailyStats(AccountDailyStatsView):
             params["filtered_campaigns"] = self.selected_objects
         return params
 
-    @db_for_reads.use_stats_read_replica()
+    @db_router.use_stats_read_replica()
     def get(self, request, account_id):
         self.account = dash.views.helpers.get_account(request.user, account_id)
         pixels = self.account.conversionpixel_set.filter(archived=False)
@@ -292,7 +292,7 @@ class AccountSourcesDailyStats(AccountDailyStatsView):
             )
         return params
 
-    @db_for_reads.use_stats_read_replica()
+    @db_router.use_stats_read_replica()
     def get(self, request, account_id):
         self.account = dash.views.helpers.get_account(request.user, account_id)
         pixels = self.account.conversionpixel_set.filter(archived=False)
@@ -314,7 +314,7 @@ class AccountPublishersDailyStats(AccountDailyStatsView):
         )
         return params
 
-    @db_for_reads.use_stats_read_replica()
+    @db_router.use_stats_read_replica()
     def get(self, request, account_id):
         if not request.user.has_perm("zemauth.can_see_publishers"):
             raise exc.MissingDataError()
@@ -353,7 +353,7 @@ class CampaignAdGroupsDailyStats(CampaignDailyStatsView):
             params["filtered_ad_groups"] = self.selected_objects
         return params
 
-    @db_for_reads.use_stats_read_replica()
+    @db_router.use_stats_read_replica()
     def get(self, request, campaign_id):
         self.campaign = dash.views.helpers.get_campaign(request.user, campaign_id)
         conversion_goals = self.campaign.conversiongoal_set.all()
@@ -385,7 +385,7 @@ class CampaignSourcesDailyStats(CampaignDailyStatsView):
             )
         return params
 
-    @db_for_reads.use_stats_read_replica()
+    @db_router.use_stats_read_replica()
     def get(self, request, campaign_id):
         self.campaign = dash.views.helpers.get_campaign(request.user, campaign_id)
         conversion_goals = self.campaign.conversiongoal_set.all()
@@ -416,7 +416,7 @@ class CampaignPublishersDailyStats(CampaignDailyStatsView):
         )
         return params
 
-    @db_for_reads.use_stats_read_replica()
+    @db_router.use_stats_read_replica()
     def get(self, request, campaign_id):
         if not request.user.has_perm("zemauth.can_see_publishers"):
             raise exc.MissingDataError()
@@ -462,7 +462,7 @@ class AdGroupContentAdsDailyStats(AdGroupDailyStatsView):
             params["filtered_content_ads"] = self.selected_objects
         return params
 
-    @db_for_reads.use_stats_read_replica()
+    @db_router.use_stats_read_replica()
     def get(self, request, ad_group_id):
         self.ad_group = dash.views.helpers.get_ad_group(request.user, ad_group_id)
         conversion_goals = self.ad_group.campaign.conversiongoal_set.all()
@@ -496,7 +496,7 @@ class AdGroupSourcesDailyStats(AdGroupDailyStatsView):
             )
         return params
 
-    @db_for_reads.use_stats_read_replica()
+    @db_router.use_stats_read_replica()
     def get(self, request, ad_group_id):
         self.ad_group = dash.views.helpers.get_ad_group(request.user, ad_group_id)
         conversion_goals = self.ad_group.campaign.conversiongoal_set.all()
@@ -529,7 +529,7 @@ class AdGroupPublishersDailyStats(AdGroupDailyStatsView):
         )
         return params
 
-    @db_for_reads.use_stats_read_replica()
+    @db_router.use_stats_read_replica()
     def get(self, request, ad_group_id):
         if not request.user.has_perm("zemauth.can_see_publishers"):
             raise exc.MissingDataError()

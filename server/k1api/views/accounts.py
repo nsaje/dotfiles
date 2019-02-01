@@ -6,7 +6,7 @@ from django.db.models import Q
 
 import dash.constants
 import dash.models
-from utils import db_for_reads
+from utils import db_router
 
 from .base import K1APIView
 
@@ -17,7 +17,7 @@ OUTBRAIN_SOURCE_ID = 3
 
 
 class AccountsView(K1APIView):
-    @db_for_reads.use_read_replica()
+    @db_router.use_read_replica()
     def get(self, request):
         account_ids = request.GET.get("account_ids")
         accounts = (

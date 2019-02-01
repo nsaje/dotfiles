@@ -2,7 +2,7 @@ import logging
 
 import dash.constants
 import dash.models
-from utils import db_for_reads
+from utils import db_router
 
 from .base import K1APIView
 
@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 
 
 class R1MappingView(K1APIView):
-    @db_for_reads.use_read_replica()
+    @db_router.use_read_replica()
     def get(self, request):
         accounts = [int(account) for account in request.GET.getlist("account")]
 
