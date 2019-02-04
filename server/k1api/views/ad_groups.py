@@ -124,6 +124,7 @@ class AdGroupsView(K1APIView):
                 "demographic_targeting": ad_group.settings.bluekai_targeting,
                 "interest_targeting": ad_group.settings.interest_targeting,
                 "exclusion_interest_targeting": ad_group.settings.exclusion_interest_targeting,
+                "language_targeting_enabled": ad_group.settings.language_targeting_enabled,
                 "campaign_id": ad_group.campaign.id,
                 "campaign_name": ad_group.campaign.name,
                 "account_id": ad_group.campaign.account.id,

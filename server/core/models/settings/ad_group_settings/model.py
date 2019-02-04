@@ -103,6 +103,7 @@ class AdGroupSettings(
         "click_capping_daily_ad_group_max_clicks",
         "click_capping_daily_click_budget",
         "frequency_capping",
+        "language_targeting_enabled",
     ]
     _permissioned_fields = {
         "click_capping_daily_ad_group_max_clicks": "zemauth.can_set_click_capping",
@@ -112,6 +113,7 @@ class AdGroupSettings(
         "b1_sources_group_cpm": "zemauth.fea_can_use_cpm_buying",
         "local_b1_sources_group_cpm": "zemauth.fea_can_use_cpm_buying",
         "frequency_capping": "zemauth.can_set_frequency_capping",
+        "language_targeting_enabled": "zemauth.can_use_language_targeting",
     }
     multicurrency_fields = [
         "cpc_cc",
@@ -160,6 +162,8 @@ class AdGroupSettings(
     exclusion_interest_targeting = jsonfield.JSONField(blank=True, default=[], dump_kwargs=JSONFIELD_DUMP_KWARGS)
     audience_targeting = jsonfield.JSONField(blank=True, default=[], dump_kwargs=JSONFIELD_DUMP_KWARGS)
     exclusion_audience_targeting = jsonfield.JSONField(blank=True, default=[], dump_kwargs=JSONFIELD_DUMP_KWARGS)
+
+    language_targeting_enabled = models.BooleanField(default=False)
 
     whitelist_publisher_groups = ArrayField(models.PositiveIntegerField(), blank=True, default=list)
     blacklist_publisher_groups = ArrayField(models.PositiveIntegerField(), blank=True, default=list)
@@ -290,6 +294,7 @@ class AdGroupSettings(
             "exclusion_interest_targeting": "Exclusion interest targeting",
             "audience_targeting": "Custom audience targeting",
             "exclusion_audience_targeting": "Exclusion custom audience targeting",
+            "language_targeting_enabled": "Language targeting enabled",
             "redirect_pixel_urls": "Pixel retargeting tags",
             "redirect_javascript": "Pixel retargeting JavaScript",
             "notes": "Notes",
@@ -457,6 +462,9 @@ class AdGroupSettings(
 
         if user is not None and not user.has_perm("zemauth.can_set_advanced_device_targeting"):
             excluded_keys.update(["target_os", "target_placements"])
+
+        if user is not None and not user.has_perm("zemauth.can_use_language_targeting"):
+            excluded_keys.update("language_targeting_enabled")
 
         valid_changes = {key: value for key, value in changes.items() if key not in excluded_keys}
         return core.features.history.helpers.get_changes_text_from_dict(self, valid_changes, separator=separator)

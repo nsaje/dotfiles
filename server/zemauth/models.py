@@ -398,6 +398,7 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ("this_is_restapi_group", "MARKS THE GROUP THAT CONTAINS PUBLIC REST API PERMISSIONS."),
             ("can_use_advanced_inventory_planning_features", "Can use advanced inventory planning features."),
             ("can_set_export_delimiter_separator", "User can customize CSV export delimiter & decimal separator"),
+            ("can_use_language_targeting", "User can use language targeting"),
         )
 
     def get_full_name(self):

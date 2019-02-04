@@ -60,6 +60,12 @@ class AdGroupRetargetingSerializer(restapi.serializers.base.RESTAPIBaseSerialize
     )
 
 
+class AdGroupLanguageSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
+    matchingEnabled = rest_framework.serializers.BooleanField(
+        source="language_targeting_enabled", default=False, required=False
+    )
+
+
 class AdGroupDaypartingSerializer(
     restapi.serializers.serializers.NoneToDictSerializerMixin, restapi.serializers.base.RESTAPIBaseSerializer
 ):
@@ -86,7 +92,12 @@ class AdGroupDaypartingSerializer(
         return data
 
 
-class AdGroupTargetingSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
+class AdGroupTargetingSerializer(
+    restapi.serializers.serializers.PermissionedFieldsMixin, restapi.serializers.base.RESTAPIBaseSerializer
+):
+    class Meta:
+        permissioned_fields = {"language": "zemauth.can_use_language_targeting"}
+
     devices = restapi.serializers.targeting.DevicesSerializer(
         source="target_devices",
         allow_empty=False,
@@ -101,6 +112,7 @@ class AdGroupTargetingSerializer(restapi.serializers.base.RESTAPIBaseSerializer)
     publisher_groups = AdGroupPublisherGroupsSerializer(source="*", required=False)
     custom_audiences = AdGroupCustomAudiencesSerializer(source="*", required=False)
     retargeting_ad_groups = AdGroupRetargetingSerializer(source="*", required=False)
+    language = AdGroupLanguageSerializer(source="*", required=False)
 
 
 class AdGroupAutopilotSerializer(restapi.serializers.base.RESTAPIBaseSerializer):

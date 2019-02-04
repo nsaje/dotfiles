@@ -58,6 +58,7 @@ class AdGroupViewSetTest(RESTAPITest):
         click_capping_daily_ad_group_max_clicks=120,
         click_capping_daily_click_budget="12.0000",
         frequency_capping=None,
+        language_targeting_enabled=False,
     ):
         final_target_regions = {"countries": [], "regions": [], "dma": [], "cities": [], "postalCodes": []}
         final_target_regions.update(target_regions)
@@ -95,6 +96,7 @@ class AdGroupViewSetTest(RESTAPITest):
                 "publisherGroups": {"included": whitelist_publisher_groups, "excluded": blacklist_publisher_groups},
                 "customAudiences": {"included": audience_targeting, "excluded": exclusion_audience_targeting},
                 "retargetingAdGroups": {"included": retargeting_ad_groups, "excluded": exclusion_retargeting_ad_groups},
+                "language": {"matchingEnabled": language_targeting_enabled},
             },
             "autopilot": {
                 "state": constants.AdGroupSettingsAutopilotState.get_name(autopilot_state),
@@ -151,6 +153,7 @@ class AdGroupViewSetTest(RESTAPITest):
             interest_targeting=settings_db.interest_targeting,
             exclusion_interest_targeting=settings_db.exclusion_interest_targeting,
             demographic_targeting=settings_db.bluekai_targeting,
+            language_targeting_enabled=settings_db.language_targeting_enabled,
             autopilot_state=settings_db.autopilot_state,
             autopilot_daily_budget=settings_db.local_autopilot_daily_budget,
             dayparting=settings_db.dayparting,
@@ -471,16 +474,18 @@ class AdGroupViewSetTest(RESTAPITest):
 
     def test_adgroups_get_permissioned(self):
         utils.test_helper.remove_permissions(
-            self.user, permissions=["can_set_click_capping", "can_set_frequency_capping"]
+            self.user, permissions=["can_set_click_capping", "can_set_frequency_capping", "can_use_language_targeting"]
         )
         r = self.client.get(reverse("v1:adgroups_details", kwargs={"ad_group_id": 2040}))
         resp_json = self.assertResponseValid(r)
         self.assertFalse("clickCappingDailyAdGroupMaxClicks" in resp_json["data"])
         self.assertFalse("clickCappingDailyClickBudget" in resp_json["data"])
         self.assertFalse("frequencyCapping" in resp_json["data"])
+        self.assertFalse("language" in resp_json["data"]["targeting"])
         resp_json["data"]["clickCappingDailyAdGroupMaxClicks"] = self.expected_none_click_output
         resp_json["data"]["clickCappingDailyClickBudget"] = self.expected_none_click_output
         resp_json["data"]["frequencyCapping"] = self.expected_none_frequency_capping_output
+        resp_json["data"]["targeting"]["language"] = {"matchingEnabled": False}
         self.validate_against_db(resp_json["data"])
 
     def test_adgroups_put_blank_strings(self):

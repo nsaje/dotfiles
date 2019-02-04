@@ -68,6 +68,7 @@ class AdGroupSettingsTest(TestCase):
             "exclusion_interest_targeting": ["c", "d"],
             "audience_targeting": [1, 2],
             "exclusion_audience_targeting": [3, 4],
+            "language_targeting_enabled": False,
             "redirect_pixel_urls": ["http://a.com/b.jpg", "http://a.com/c.jpg"],
             "redirect_javascript": "alert('a')",
             "display_url": "example.com",
