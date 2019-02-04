@@ -781,7 +781,7 @@ class AdGroupSourceSettings(api_common.BaseApiView):
             form.cleaned_data["local_{}".format(field)] = form.cleaned_data.pop(field, None)
 
         data = {k: v for k, v in list(form.cleaned_data.items()) if v is not None}
-        data = native_server.transform_ad_group_source_settings(ad_group, data)
+        data = native_server.override_ad_group_source_settings_form_data(ad_group, data)
 
         response = self._update_ad_group_source(request, ad_group_source, data)
 

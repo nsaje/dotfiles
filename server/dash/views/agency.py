@@ -103,7 +103,7 @@ class AdGroupSettings(api_common.BaseApiView):
 
         for field in ad_group.settings.multicurrency_fields:
             form.cleaned_data["local_{}".format(field)] = form.cleaned_data.pop(field, None)
-        form_data = native_server.transform_ad_group_settings(ad_group, form.cleaned_data)
+        form_data = native_server.override_ad_group_settings_form_data(ad_group, form.cleaned_data)
 
         self._update_adgroup(request, ad_group, form_data)
 
@@ -600,7 +600,7 @@ class CampaignSettings(api_common.BaseApiView):
             errors["no_goals"] = "At least one goal must be defined"
             raise exc.ValidationError(errors=errors)
 
-        form_data = native_server.transform_campaign_settings(campaign, settings_form.cleaned_data)
+        form_data = native_server.override_campaign_settings_form_data(campaign, settings_form.cleaned_data)
 
         with transaction.atomic():
             try:

@@ -20,15 +20,22 @@ AD_GROUP_SETTINGS_CREATE_HACKS_PER_AGENCY = {
         "exclusion_target_regions": [],
     },
 }
-AD_GROUP_SETTINGS_HACKS_PER_AGENCY = {
+AD_GROUP_SETTINGS_HACKS_UPDATE_PER_AGENCY = {
     constants.AGENCY_RCS_ID: {"delivery_type": dash.constants.AdGroupDeliveryType.ACCELERATED},
     constants.AGENCY_NEWSCORP_ID: {"delivery_type": dash.constants.AdGroupDeliveryType.ACCELERATED},
 }
 
-CAMPAIGN_SETTINGS_HACKS_PER_AGENCY = {
+CAMPAIGN_SETTINGS_CREATE_HACKS_PER_AGENCY = {
+    constants.AGENCY_RCS_ID: {"language": "it", "autopilot": True},
+    constants.AGENCY_NEWSCORP_ID: {"language": "en", "autopilot": True},
+    constants.AGENCY_ROI_MARKETPLACE_ID: {"iab_category": dash.constants.IABCategory.IAB3_11},
+}
+
+CAMPAIGN_SETTINGS_UPDATE_HACKS_PER_AGENCY = {
     constants.AGENCY_RCS_ID: {"language": "it", "autopilot": True},
     constants.AGENCY_NEWSCORP_ID: {"language": "en", "autopilot": True},
 }
+
 FIXED_CAMPAIGN_TYPE_PER_AGENCY = {
     constants.AGENCY_RCS_ID: dash.constants.CampaignType.CONTENT,
     constants.AGENCY_NEWSCORP_ID: dash.constants.CampaignType.CONTENT,
@@ -51,9 +58,9 @@ def apply_ad_group_create_hacks(request, ad_group):
         _update_ad_group_sources_cpc(request, ad_group, goal_cpc_value.value)
 
 
-def transform_ad_group_settings(ad_group, form_data):
-    if ad_group.campaign.account.agency_id in AD_GROUP_SETTINGS_HACKS_PER_AGENCY:
-        form_data.update(AD_GROUP_SETTINGS_HACKS_PER_AGENCY[ad_group.campaign.account.agency_id])
+def override_ad_group_settings_form_data(ad_group, form_data):
+    if ad_group.campaign.account.agency_id in AD_GROUP_SETTINGS_HACKS_UPDATE_PER_AGENCY:
+        form_data.update(AD_GROUP_SETTINGS_HACKS_UPDATE_PER_AGENCY[ad_group.campaign.account.agency_id])
     return form_data
 
 
@@ -74,7 +81,7 @@ def _transform_bid_cpc_value_from_campaign_goal(ad_group, form_data):
     return form_data
 
 
-def transform_ad_group_source_settings(ad_group, form_data):
+def override_ad_group_source_settings_form_data(ad_group, form_data):
     if ad_group.campaign.account.agency_id in constants.CPC_GOAL_TO_BID_AGENCIES:
         return _transform_bid_cpc_value_from_campaign_goal(ad_group, form_data)
     return form_data
@@ -107,8 +114,8 @@ def apply_create_user_hacks(user, account):
 
 
 def apply_campaign_create_hacks(request, campaign):
-    if campaign.account.agency_id in CAMPAIGN_SETTINGS_HACKS_PER_AGENCY:
-        campaign.settings.update(request, **CAMPAIGN_SETTINGS_HACKS_PER_AGENCY[campaign.account.agency_id])
+    if campaign.account.agency_id in CAMPAIGN_SETTINGS_CREATE_HACKS_PER_AGENCY:
+        campaign.settings.update(request, **CAMPAIGN_SETTINGS_CREATE_HACKS_PER_AGENCY[campaign.account.agency_id])
     if campaign.account.agency_id in FIXED_CAMPAIGN_TYPE_PER_AGENCY:
         campaign.update_type(type=FIXED_CAMPAIGN_TYPE_PER_AGENCY[campaign.account.agency_id])
 
@@ -121,7 +128,7 @@ def apply_campaign_change_hacks(request, campaign, goal_changes):
             _update_ad_group_sources_cpc(request, ad_group, _get_cpc_goal_value(ad_group.campaign).value)
 
 
-def transform_campaign_settings(campaign, form_data):
-    if campaign.account.agency_id in CAMPAIGN_SETTINGS_HACKS_PER_AGENCY:
-        form_data.update(CAMPAIGN_SETTINGS_HACKS_PER_AGENCY[campaign.account.agency_id])
+def override_campaign_settings_form_data(campaign, form_data):
+    if campaign.account.agency_id in CAMPAIGN_SETTINGS_UPDATE_HACKS_PER_AGENCY:
+        form_data.update(CAMPAIGN_SETTINGS_UPDATE_HACKS_PER_AGENCY[campaign.account.agency_id])
     return form_data
