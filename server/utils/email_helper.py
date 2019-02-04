@@ -459,12 +459,6 @@ def should_send_notification_mail(campaign, user, request):
     return True
 
 
-def send_livestream_email(user, session_url):
-    send_internal_email(
-        **params_from_template(dash.constants.EmailTemplateType.LIVESTREAM_SESSION, user=user, session_url=session_url)
-    )
-
-
 def send_daily_management_report_email():
     send_internal_email(
         custom_html=analytics.management_report.get_daily_report_html(),

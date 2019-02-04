@@ -302,17 +302,6 @@ Zemanta
         self.assertEqual(mail.outbox[0].from_email, "Zemanta <{}>".format(settings.FROM_EMAIL))
         self.assertEqual(mail.outbox[0].to, ["asd@gmail.com"])
 
-    def test_send_livestream_email(self):
-        email_helper.send_livestream_email(self.user, "http://www.google.com")
-        self.assertEqual(len(mail.outbox), 1)
-        self.assertEqual(mail.outbox[0].subject, "Livestream session started")
-        self.assertEqual(
-            mail.outbox[0].body,
-            "User test@user.com started a new livestream session, accesssible on: http://www.google.com",
-        )
-        self.assertEqual(mail.outbox[0].from_email, "Zemanta <{}>".format(settings.FROM_EMAIL))
-        self.assertEqual(mail.outbox[0].bcc, ["zem-operations@outbrain.com", "ziga.stopinsek@zemanta.com"])
-
     def test_send_pacing_email_low(self):
         account = magic_mixer.blend(dash_models.Account, name="Test account")
 

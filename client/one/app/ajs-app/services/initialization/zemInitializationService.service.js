@@ -7,7 +7,6 @@ angular
         zemNavigationNewService,
         zemNavigationService,
         zemDataFilterService,
-        zemFullStoryService,
         zemIntercomService,
         zemSupportHeroService,
         zemDesignHelpersService,
@@ -43,7 +42,6 @@ angular
             return zemUserService.init().then(function() {
                 zemDataFilterService.init();
 
-                zemFullStoryService.identifyUser(zemUserService.current());
                 zemIntercomService.boot(zemUserService.current());
                 zemSupportHeroService.boot(zemUserService.current());
             });

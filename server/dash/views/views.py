@@ -1234,10 +1234,3 @@ def oauth_redirect(request, source_name):
         credentials.save()
 
     return redirect(reverse("admin:dash_sourcecredentials_change", args=(credentials.id,)))
-
-
-class LiveStreamAllow(api_common.BaseApiView):
-    def post(self, request):
-        data = json.loads(request.body)
-        email_helper.send_livestream_email(request.user, data["session_url"])
-        return self.create_api_response({})

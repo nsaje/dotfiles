@@ -482,11 +482,6 @@ urlpatterns += [
     ),
     url(r"^api/demov3/$", login_required(dash.views.views.Demo.as_view()), name="demov3"),
     url(
-        r"^api/live-stream/allow/$",
-        login_required(dash.views.views.LiveStreamAllow.as_view()),
-        name="live_stream_allow",
-    ),
-    url(
         r"^api/accounts/(?P<account_id>\d+)/audiences/(?P<audience_id>\d+)/archive/$",
         login_required(dash.views.audiences.AudienceArchive.as_view()),
         name="accounts_audience_archive",

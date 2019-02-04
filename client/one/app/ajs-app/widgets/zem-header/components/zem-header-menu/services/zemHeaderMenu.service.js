@@ -5,7 +5,6 @@ angular
         $state,
         $uibModal,
         zemPermissions,
-        zemFullStoryService,
         zemNavigationNewService
     ) {
         // eslint-disable-line max-len
@@ -21,11 +20,6 @@ angular
                 isInternalFeature: zemPermissions.isPermissionInternal(
                     'zemauth.can_request_demo_v3'
                 ),
-            },
-            {
-                text: 'Allow livestream',
-                callback: zemFullStoryService.allowLivestream,
-                isAvailable: isAllowLivestreamActionAvailable,
             },
             {
                 text: 'Sign out',
@@ -167,14 +161,6 @@ angular
                     level: constants.levelStateParam.ACCOUNTS,
                 });
             }
-        }
-
-        function isAllowLivestreamActionAvailable() {
-            return (
-                !zemFullStoryService.isLivestreamAllowed() &&
-                !zemPermissions.hasPermission('zemauth.disable_public_rcs') &&
-                !zemPermissions.hasPermission('zemauth.disable_public_newscorp')
-            );
         }
 
         function requestDemoAction() {
