@@ -236,6 +236,7 @@ class Currency(ConstantBase):
     BRL = "BRL"
     MYR = "MYR"
     CHF = "CHF"
+    ZAR = "ZAR"
 
     _VALUES = {
         USD: "US Dollar",
@@ -246,6 +247,7 @@ class Currency(ConstantBase):
         BRL: "Brazilian Real",
         MYR: "Malaysian Ringgit",
         CHF: "Swiss Franc",
+        ZAR: "South African Rand",
     }
 
 

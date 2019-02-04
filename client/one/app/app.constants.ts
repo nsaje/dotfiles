@@ -7,6 +7,7 @@ export const CURRENCY = {
     BRL: 'BRL',
     CHF: 'CHF',
     MYR: 'MYR',
+    ZAR: 'ZAR',
 };
 
 export const CURRENCY_SYMBOL = {
@@ -18,6 +19,7 @@ export const CURRENCY_SYMBOL = {
     [CURRENCY.BRL]: 'R$',
     [CURRENCY.MYR]: 'RM',
     [CURRENCY.CHF]: 'CHF',
+    [CURRENCY.ZAR]: 'R',
 };
 
 export const CAMPAIGN_TYPE = {

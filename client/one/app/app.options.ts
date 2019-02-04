@@ -3123,6 +3123,7 @@ export const APP_OPTIONS = {
         {name: 'Brazilian Real', value: APP_CONSTANTS.currency.BRL},
         {name: 'Malaysian Ringgit', value: APP_CONSTANTS.currency.MYR},
         {name: 'Swiss Franc', value: APP_CONSTANTS.currency.CHF},
+        {name: 'South African Rand', value: APP_CONSTANTS.currency.ZAR},
     ],
     adTypes: [
         {
