@@ -397,6 +397,7 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ("can_see_open_in_admin", "User can see Open in Admin link"),
             ("this_is_restapi_group", "MARKS THE GROUP THAT CONTAINS PUBLIC REST API PERMISSIONS."),
             ("can_use_advanced_inventory_planning_features", "Can use advanced inventory planning features."),
+            ("can_set_export_delimiter_separator", "User can customize CSV export delimiter & decimal separator"),
         )
 
     def get_full_name(self):

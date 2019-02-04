@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import tagulous
 from django.conf import settings
 from django.contrib.postgres.fields import JSONField
 from django.db import models
@@ -9,7 +10,6 @@ import core.features.deals
 import core.features.history
 import core.features.yahoo_accounts
 import core.models
-import tagulous
 from core.models import tags
 from dash import constants
 from utils import exc
@@ -79,6 +79,9 @@ class Agency(models.Model):
     yahoo_account = models.ForeignKey(
         core.features.yahoo_accounts.YahooAccount, on_delete=models.PROTECT, null=True, blank=True
     )
+
+    default_csv_separator = models.CharField(max_length=1, default=",")
+    default_csv_decimal_separator = models.CharField(max_length=1, default=".")
 
     settings = CachedOneToOneField(
         "AgencySettings", null=True, blank=True, on_delete=models.PROTECT, related_name="latest_for_entity"

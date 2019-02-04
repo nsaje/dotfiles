@@ -100,6 +100,8 @@ angular
                         queryConfig.includeItemsWithNoSpend || false,
                     allAccountsInLocalCurrency:
                         queryConfig.allAccountsInLocalCurrency || false,
+                    csvSeparator: queryConfig.csvSeparator,
+                    csvDecimalSeparator: queryConfig.csvDecimalSeparator,
                     showStatusDate: true,
                     order: getOrder(gridApi),
                 },

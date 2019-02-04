@@ -52,6 +52,8 @@ class ReportOptionsSerializer(serializers.Serializer):
     show_status_date = serializers.BooleanField(default=False)
     recipients = serializers.ListField(child=serializers.EmailField(), default=[])
     order = restapi.serializers.fields.PlainCharField(required=False)
+    csv_separator = restapi.serializers.fields.PlainCharField(required=False, max_length=2)
+    csv_decimal_separator = restapi.serializers.fields.PlainCharField(required=False, max_length=1)
 
 
 class ReportQuerySerializer(serializers.Serializer):

@@ -1,5 +1,6 @@
 import abc
 import datetime
+import decimal
 import ftplib
 import io
 import logging
@@ -186,6 +187,7 @@ class ReportJobExecutor(JobExecutor):
         all_accounts_in_local_currency = job.query["options"].get("all_accounts_in_local_currency") and user.has_perm(
             "zemauth.can_request_accounts_report_in_local_currencies"
         )
+        csv_separator, csv_decimal_separator = cls._get_csv_separators(job)
 
         constraints = stats.api_reports.prepare_constraints(
             user,
@@ -256,6 +258,8 @@ class ReportJobExecutor(JobExecutor):
                 header=offset == 0,
                 currency=currency,
                 account_currency_map=account_currency_map,
+                csv_decimal_separator=csv_decimal_separator,
+                csv_separator=csv_separator,
             )
 
             if len(rows) < BATCH_ROWS or job.query["options"]["include_items_with_no_spend"]:
@@ -287,9 +291,38 @@ class ReportJobExecutor(JobExecutor):
 
         return output.getvalue(), stats.api_reports.get_filename(breakdown, constraints)
 
+    @staticmethod
+    def _get_csv_separators(job):
+        csv_separator = None
+        csv_decimal_separator = None
+
+        agency = job.user.agency_set.first()
+        if agency:
+            csv_separator = agency.default_csv_separator
+            csv_decimal_separator = agency.default_csv_decimal_separator
+
+        option_csv_separator = job.query.get("options", {}).get("csv_separator")
+        option_csv_decimal_separator = job.query.get("options", {}).get("csv_decimal_separator")
+
+        if option_csv_separator:
+            csv_separator = option_csv_separator
+        if option_csv_decimal_separator:
+            csv_decimal_separator = option_csv_decimal_separator
+
+        return csv_separator, csv_decimal_separator
+
     @classmethod
     def convert_to_csv(
-        cls, job, data, field_name_mapping, output, header=True, currency=None, account_currency_map=None
+        cls,
+        job,
+        data,
+        field_name_mapping,
+        output,
+        header=True,
+        currency=None,
+        account_currency_map=None,
+        csv_decimal_separator=None,
+        csv_separator=None,
     ):
         requested_columns = cls._extract_column_names(job.query["fields"])
         requested_columns = cls._append_currency_column_if_necessary(requested_columns, field_name_mapping)
@@ -306,8 +339,9 @@ class ReportJobExecutor(JobExecutor):
             original_to_dated,
             currency=currency,
             account_currency_map=account_currency_map,
+            csv_decimal_separator=csv_decimal_separator,
         )
-        output.write(csv_utils.dictlist_to_csv(csv_column_names, rows, writeheader=header))
+        output.write(csv_utils.dictlist_to_csv(csv_column_names, rows, writeheader=header, delimiter=csv_separator))
 
     @staticmethod
     def _extract_column_names(fields_list):
@@ -335,9 +369,16 @@ class ReportJobExecutor(JobExecutor):
 
         return requested_columns
 
-    @staticmethod
+    @classmethod
     def _get_csv_rows(
-        data, field_name_mapping, requested_columns, original_to_dated, currency=None, account_currency_map=None
+        cls,
+        data,
+        field_name_mapping,
+        requested_columns,
+        original_to_dated,
+        currency=None,
+        account_currency_map=None,
+        csv_decimal_separator=None,
     ):
         for row in data:
             csv_row = {}
@@ -349,10 +390,16 @@ class ReportJobExecutor(JobExecutor):
                         row, currency=currency, account_currency_map=account_currency_map
                     )
                 elif field_name in row:
-                    csv_row[csv_column] = row[field_name]
+                    csv_row[csv_column] = cls._format_value(row[field_name], csv_decimal_separator)
                 else:
                     csv_row[csv_column] = ""
             yield csv_row
+
+    @staticmethod
+    def _format_value(value, csv_decimal_separator=None):
+        if csv_decimal_separator and isinstance(value, decimal.Decimal):
+            return str(value).replace(".", csv_decimal_separator)
+        return value
 
     @classmethod
     def save_to_s3(cls, csv, human_readable_filename):

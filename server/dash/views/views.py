@@ -170,6 +170,8 @@ class User(api_common.BaseApiView):
             .utcoffset(datetime.datetime.utcnow(), is_dst=True)
             .total_seconds(),
             "intercom_user_hash": intercom_user_hash,
+            "default_csv_separator": agency.default_csv_separator if agency else None,
+            "default_csv_decimal_separator": agency.default_csv_decimal_separator if agency else None,
         }
 
 

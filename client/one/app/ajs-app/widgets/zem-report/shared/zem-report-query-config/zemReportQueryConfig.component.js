@@ -12,6 +12,8 @@ angular.module('one.widgets').component('zemReportQueryConfig', {
         zemReportBreakdownService,
         zemReportFieldsService,
         zemCostModeService,
+        zemUserService,
+        zemLocalStorageService,
         zemPermissions
     ) {
         var $ctrl = this;
@@ -20,6 +22,9 @@ angular.module('one.widgets').component('zemReportQueryConfig', {
 
         var NR_SHORTLIST_ITEMS = 9;
         var SHORTLIST_LIMIT = 15;
+        var LOCAL_STORAGE_NAMESPACE = 'zemReportQueryConfig';
+        var KEY_CSV_SEPARATOR = 'csvSeparator';
+        var KEY_CSV_DECIMAL_SEPARATOR = 'csvDecimalSeparator';
         var refundColumns = [];
         var allColumns = [];
 
@@ -28,6 +33,7 @@ angular.module('one.widgets').component('zemReportQueryConfig', {
         //
         $ctrl.hasPermission = zemPermissions.hasPermission;
         $ctrl.isPermissionInternal = zemPermissions.isPermissionInternal;
+        $ctrl.onCsvSeparatorOtherChanged = onCsvSeparatorOtherChanged;
         $ctrl.onColumnToggled = onColumnToggled;
         $ctrl.onAllColumnsToggled = onAllColumnsToggled;
 
@@ -45,6 +51,8 @@ angular.module('one.widgets').component('zemReportQueryConfig', {
             includeItemsWithNoSpend: false,
             allAccountsInLocalCurrency: false,
             allAccountsIncludeCreditRefunds: false,
+            csvSeparator: null,
+            csvDecimalSeparator: null,
             selectedFields: [],
         };
         $ctrl.showTruncatedColsList = true;
@@ -56,6 +64,7 @@ angular.module('one.widgets').component('zemReportQueryConfig', {
         $ctrl.view = '';
         $ctrl.breakdown = [];
         $ctrl.availableBreakdowns = {};
+        $ctrl.csvSeparatorOther = '';
 
         $ctrl.categories = [];
         $ctrl.selectedColumns = [];
@@ -101,8 +110,40 @@ angular.module('one.widgets').component('zemReportQueryConfig', {
             $ctrl.categories = getCategories(allColumns);
             $ctrl.selectedColumns = getSelectedColumns();
 
+            initializeCsvOptions();
+
             update();
         };
+
+        function initializeCsvOptions() {
+            var user = zemUserService.current();
+            var localCsvSeparator = zemLocalStorageService.get(
+                KEY_CSV_SEPARATOR,
+                LOCAL_STORAGE_NAMESPACE
+            );
+            var localCsvDecimalSeparator = zemLocalStorageService.get(
+                KEY_CSV_DECIMAL_SEPARATOR,
+                LOCAL_STORAGE_NAMESPACE
+            );
+
+            $ctrl.config.csvSeparator =
+                localCsvSeparator || user.defaultCsvSeparator || ',';
+            $ctrl.config.csvDecimalSeparator =
+                localCsvDecimalSeparator ||
+                user.defaultCsvDecimalSeparator ||
+                '.';
+            if (
+                $ctrl.config.csvSeparator !== ',' &&
+                $ctrl.config.csvSeparator !== ';'
+            ) {
+                $ctrl.csvSeparatorOther = $ctrl.config.csvSeparator;
+            }
+        }
+
+        function onCsvSeparatorOtherChanged() {
+            $ctrl.config.csvSeparator = $ctrl.csvSeparatorOther;
+            update();
+        }
 
         function onColumnToggled(field) {
             var column =
@@ -190,6 +231,8 @@ angular.module('one.widgets').component('zemReportQueryConfig', {
                 $ctrl.breakdown,
                 $ctrl.gridApi.getMetaData()
             );
+
+            rememberCsvConfig();
         }
 
         function getAllColumns() {
@@ -299,6 +342,19 @@ angular.module('one.widgets').component('zemReportQueryConfig', {
 
         function getColumnName(column) {
             return column.data.name;
+        }
+
+        function rememberCsvConfig() {
+            zemLocalStorageService.set(
+                KEY_CSV_SEPARATOR,
+                $ctrl.config.csvSeparator,
+                LOCAL_STORAGE_NAMESPACE
+            );
+            zemLocalStorageService.set(
+                KEY_CSV_DECIMAL_SEPARATOR,
+                $ctrl.config.csvDecimalSeparator,
+                LOCAL_STORAGE_NAMESPACE
+            );
         }
     },
 });

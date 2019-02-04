@@ -1,6 +1,11 @@
 describe('component: zemReportQueryConfig', function() {
     var $componentController;
-    var $ctrl, zemPermissions;
+    var $ctrl,
+        zemPermissions,
+        zemUserService,
+        zemLocalStorageService,
+        zemReportFieldsService,
+        gridApi;
 
     beforeEach(angular.mock.module('one'));
     beforeEach(angular.mock.module('one.mocks.downgradedProviders'));
@@ -10,14 +15,25 @@ describe('component: zemReportQueryConfig', function() {
     beforeEach(inject(function($injector) {
         $componentController = $injector.get('$componentController');
         zemPermissions = $injector.get('zemPermissions');
+        zemUserService = $injector.get('zemUserService');
+        zemLocalStorageService = $injector.get('zemLocalStorageService');
+        zemReportFieldsService = $injector.get('zemReportFieldsService');
+        gridApi = $injector
+            .get('zemGridMocks')
+            .createApi(constants.level.CAMPAIGNS, constants.breakdown.AD_GROUP);
+
         zemPermissions.setMockedPermissions([
             'zemauth.can_view_breakdown_by_delivery',
             'zemauth.can_see_managers_in_campaigns_table',
         ]);
 
+        spyOn(gridApi, 'getBreakdown').and.returnValue(['test_breakdown']);
+        spyOn(zemReportFieldsService, 'getFields').and.returnValue([]);
+
         var element = angular.element('<div></div>');
         var locals = {$element: element};
-        $ctrl = $componentController('zemReportQueryConfig', locals);
+        var bindings = {gridApi: gridApi};
+        $ctrl = $componentController('zemReportQueryConfig', locals, bindings);
     }));
 
     it('unselects selected columns', function() {
@@ -56,6 +72,45 @@ describe('component: zemReportQueryConfig', function() {
         $ctrl.toggleColumns(selectedColumn, false);
 
         expect($ctrl.selectedColumns.length).toBe(3);
+    });
+
+    it('sets default csv config', function() {
+        spyOn(zemUserService, 'current').and.returnValue({
+            defaultCsvSeparator: null,
+            defaultCsvDecimalSeparator: null,
+        });
+        spyOn(zemLocalStorageService, 'get').and.returnValue(null);
+        $ctrl.$onInit();
+        expect($ctrl.config.csvSeparator).toBe(',');
+        expect($ctrl.config.csvDecimalSeparator).toBe('.');
+    });
+
+    it('sets agency csv config', function() {
+        spyOn(zemUserService, 'current').and.returnValue({
+            defaultCsvSeparator: 'a',
+            defaultCsvDecimalSeparator: 'b',
+        });
+        spyOn(zemLocalStorageService, 'get').and.returnValue(null);
+        $ctrl.$onInit();
+        expect($ctrl.config.csvSeparator).toBe('a');
+        expect($ctrl.config.csvDecimalSeparator).toBe('b');
+    });
+
+    it('sets localsettings csv config', function() {
+        spyOn(zemUserService, 'current').and.returnValue({
+            defaultCsvSeparator: 'a',
+            defaultCsvDecimalSeparator: 'b',
+        });
+        spyOn(zemLocalStorageService, 'get').and.callFake(function(key) {
+            if (key === 'csvSeparator') {
+                return 'c';
+            } else if (key === 'csvDecimalSeparator') {
+                return 'd';
+            }
+        });
+        $ctrl.$onInit();
+        expect($ctrl.config.csvSeparator).toBe('c');
+        expect($ctrl.config.csvDecimalSeparator).toBe('d');
     });
 
     function getSelectedColumns() {

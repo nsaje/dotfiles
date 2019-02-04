@@ -12,6 +12,7 @@ from utils.magic_mixer import magic_mixer
 from . import constants
 from . import reports
 from .reportjob import ReportJob
+from .reports import ReportJobExecutor
 
 
 class ReportsExecuteTest(TestCase):
@@ -211,3 +212,15 @@ class ReportsExecuteTest(TestCase):
         self.reportJob.refresh_from_db()
         self.assertNotEqual(constants.ReportJobStatus.DONE, self.reportJob.status)
         self.assertNotEqual("test-report-path", self.reportJob.result)
+
+    def test_get_csv_separator(self):
+        agency = magic_mixer.blend(core.models.Agency, default_csv_decimal_separator=",", default_csv_separator=";")
+        self.reportJob.user.agency_set.add(agency)
+
+        self.reportJob.query = {}
+        self.reportJob.query["options"] = {}
+        self.assertEqual(ReportJobExecutor._get_csv_separators(self.reportJob), (";", ","))
+
+        self.reportJob.query["options"]["csv_separator"] = "\t"
+        self.reportJob.query["options"]["csv_decimal_separator"] = "."
+        self.assertEqual(ReportJobExecutor._get_csv_separators(self.reportJob), ("\t", "."))
