@@ -187,6 +187,8 @@ class Command(ExceptionCommand):
 
         _deploykitty_prepare(snapshot_id)
 
+        pre_save.disconnect(_pre_save_handler)
+
 
 def _pre_save_handler(sender, instance, *args, **kwargs):
     raise Exception("Do not save inside the demo data dump command!")
