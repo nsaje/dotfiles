@@ -6,6 +6,7 @@ from collections import defaultdict
 from decimal import Decimal
 
 import unicodecsv as csv
+from django.contrib.postgres.aggregates import ArrayAgg
 from django.db.models import DateField
 from django.db.models import ExpressionWrapper
 from django.db.models import F
@@ -392,6 +393,11 @@ def _normalize_row(row):
     _normalize_array(row, "target_placements")
     _normalize_array(row, "target_devices")
 
+    row["agency_tags"] = _tags_to_string(row["agency_tags"])
+    row["account_tags"] = _tags_to_string(row["account_tags"])
+    row["campaign_tags"] = _tags_to_string(row["campaign_tags"])
+    row["adgroup_tags"] = _tags_to_string(row["adgroup_tags"])
+
 
 def _resolve_geo_targeting(row):
     geos = set()
@@ -421,9 +427,15 @@ def _resolve_geo_targeting(row):
     return list(geos), list(geo_targeting_types)
 
 
+def _tags_to_string(tags_list):
+    if tags_list:
+        return ", ".join(sorted(e for e in tags_list if e))
+
+    return ""
+
+
 def _normalize_array(row, field_name):
-    val = row[field_name]
-    row[field_name] = _normalize_array_value(val)
+    row[field_name] = _normalize_array_value(row[field_name])
 
 
 def _normalize_array_value(val):
@@ -529,6 +541,8 @@ def _get_account_data(campaign_ids, date=None):
         "accountsettings_whitelist_publisher_groups": F("settings__whitelist_publisher_groups"),
         "auto_add_new_sources": F("settings__auto_add_new_sources"),
         "frequency_capping": F("settings__frequency_capping"),
+        "agency_tags": ArrayAgg("agency__entity_tags__name", distinct=True),
+        "account_tags": ArrayAgg("entity_tags__name", distinct=True),
     }
     output_values = list(field_mapping.keys()) + ["agency_id", "currency", "credit_end_date", "remaining_credit"]
 
@@ -599,6 +613,7 @@ def _get_campaign_data(campaign_ids):
         "language": F("settings__language"),
         "autopilot": F("settings__autopilot"),
         "campaignsettings_frequency_capping": F("settings__frequency_capping"),
+        "campaign_tags": ArrayAgg("entity_tags__name", distinct=True),
     }
     output_values = list(field_mapping.keys()) + [
         "account_id",
@@ -744,6 +759,7 @@ def _get_ad_group_data(ad_group_ids=None, date=None):
         "adgroupsettings_frequency_capping": F("settings__frequency_capping"),
         "adgroupsettings_state": F("settings__state"),
         "adgroup_bidding_type": F("bidding_type"),
+        "adgroup_tags": ArrayAgg("entity_tags__name", distinct=True),
     }
 
     output_values = list(field_mapping.keys()) + ["campaign_id"]

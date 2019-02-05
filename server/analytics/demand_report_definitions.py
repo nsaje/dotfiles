@@ -74,6 +74,10 @@ OUTPUT_COLUMN_NAMES = [
     "credit_end_date",
     "remaining_credit",
     "remaining_budget",
+    "agency_tags",
+    "account_tags",
+    "campaign_tags",
+    "adgroup_tags",
 ]
 
 WORLD_REGIONS = {

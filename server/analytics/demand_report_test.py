@@ -2,9 +2,9 @@ import datetime
 import json
 from decimal import Decimal
 
+import mock
 import unicodecsv as csv
 from django import test
-from mock import patch
 
 import core.features.bcm
 import core.features.goals.campaign_goal
@@ -58,6 +58,8 @@ class DemandReportTestCase(test.TestCase):
         geo_targeting_type=None,
     ):
 
+        ad_group.refresh_from_db()
+
         target_regions = target_regions or []
         geo_targeting_type = geo_targeting_type or []
 
@@ -73,7 +75,7 @@ class DemandReportTestCase(test.TestCase):
             goal_type = ""
             goal_value = ""
 
-        with patch("utils.dates_helper.local_today") as mock_local_today:
+        with mock.patch("utils.dates_helper.local_today") as mock_local_today:
             mock_local_today.return_value = datetime.date.today() - datetime.timedelta(days=1)
             _, remaining_credit = calculate_allocated_and_available_credit(ad_group.campaign.account)
             remaining_credit = float(remaining_credit)
@@ -167,6 +169,16 @@ class DemandReportTestCase(test.TestCase):
             "credit_end_date": ad_group.campaign.account.credits.order_by("-end_date").first().end_date,
             "remaining_credit": remaining_credit,
             "remaining_budget": remaining_budget,
+            "agency_tags": demand_report._tags_to_string(
+                ad_group.campaign.account.agency.entity_tags.values_list("name", flat=True)
+            ),
+            "account_tags": demand_report._tags_to_string(
+                ad_group.campaign.account.entity_tags.values_list("name", flat=True)
+            ),
+            "campaign_tags": demand_report._tags_to_string(
+                ad_group.campaign.entity_tags.values_list("name", flat=True)
+            ),
+            "adgroup_tags": demand_report._tags_to_string(ad_group.entity_tags.values_list("name", flat=True)),
         }
 
         for column, value in checks.items():
@@ -185,8 +197,12 @@ class DemandReportTestCase(test.TestCase):
     def setUp(self):
         self._create_entities()
 
-    @patch("automation.autopilot.recalculate_budgets_ad_group")
+    @mock.patch("automation.autopilot.recalculate_budgets_ad_group")
     def _create_entities(self, mock_autopilot):
+        self.user = magic_mixer.blend(zemauth.models.User)
+        self.mock_request = mock.MagicMock()
+        self.mock_request.user = self.user
+
         self.source_type_outbrain = magic_mixer.blend(core.models.SourceType, type=constants.SourceType.OUTBRAIN)
         self.source_type_yahoo = magic_mixer.blend(core.models.SourceType, type=constants.SourceType.YAHOO)
         self.source_outbrain = magic_mixer.blend(core.models.Source, source_type=self.source_type_outbrain)
@@ -198,9 +214,13 @@ class DemandReportTestCase(test.TestCase):
         self.agency_1 = magic_mixer.blend(
             core.models.Agency, sales_representative=self.user_1, cs_representative=self.user_2
         )
+        self.agency_1.entity_tags = ["test/tag_1", "test/tag_2", "other/tag_3"]
+        self.agency_1.save(self.mock_request)
         self.agency_1.settings.update(None, whitelist_publisher_groups=[], blacklist_publisher_groups=[1, 2, 3])
 
         self.account_1 = magic_mixer.blend(core.models.Account, agency=self.agency_1)
+        self.account_1.entity_tags = ["test/tag_4", "sth/tag_5"]
+        self.account_1.save(self.mock_request)
         self.account_1.settings.update(
             None,
             account_type=constants.AccountType.ACTIVATED,
@@ -212,6 +232,8 @@ class DemandReportTestCase(test.TestCase):
         )
 
         self.campaign_1 = magic_mixer.blend(core.models.Campaign, account=self.account_1)
+        self.campaign_1.entity_tags = ["test/tag_6", "other/tag_7", "sth/tag_8"]
+        self.campaign_1.save(self.mock_request)
         self.campaign_1.settings.update(
             None,
             iab_category=constants.IABCategory.IAB1_2,
@@ -225,6 +247,8 @@ class DemandReportTestCase(test.TestCase):
         )
 
         self.campaign_2 = magic_mixer.blend(core.models.Campaign, account=self.account_1)
+        self.campaign_2.entity_tags = ["test/tag_9", "sth/tag_10"]
+        self.campaign_2.save(self.mock_request)
         self.campaign_2.settings.update(
             None,
             iab_category=constants.IABCategory.IAB2_8,
@@ -271,6 +295,8 @@ class DemandReportTestCase(test.TestCase):
         )
 
         self.ad_group_1_1 = magic_mixer.blend(core.models.AdGroup, campaign=self.campaign_1)
+        self.ad_group_1_1.entity_tags = ["test/tag_11", "other/tag_12"]
+        self.ad_group_1_1.save(self.mock_request)
         self.ad_group_1_1.settings.update(
             None,
             archived=False,
@@ -292,6 +318,8 @@ class DemandReportTestCase(test.TestCase):
         )
 
         self.ad_group_1_2 = magic_mixer.blend(core.models.AdGroup, campaign=self.campaign_1)
+        self.ad_group_1_2.entity_tags = ["sth/tag_13", "other/tag_14"]
+        self.ad_group_1_2.save(self.mock_request)
         self.ad_group_1_2.settings.update(
             None,
             archived=False,
@@ -352,6 +380,8 @@ class DemandReportTestCase(test.TestCase):
         )
 
         self.ad_group_2_2 = magic_mixer.blend(core.models.AdGroup, campaign=self.campaign_2)
+        self.ad_group_2_2.entity_tags = ["other/tag_15", "test/tag_16"]
+        self.ad_group_2_2.save(self.mock_request)
         self.ad_group_2_2.settings.update(
             None,
             archived=False,
@@ -382,10 +412,10 @@ class DemandReportTestCase(test.TestCase):
             self.budget_2_1, [datetime.date.today() - datetime.timedelta(days=n) for n in range(4)]
         )
 
-    @patch("analytics.demand_report._get_ad_group_spend")
-    @patch("utils.bigquery_helper.query")
-    @patch("utils.bigquery_helper.upload_csv_file")
-    @patch("redshiftapi.db.get_stats_cursor")
+    @mock.patch("analytics.demand_report._get_ad_group_spend")
+    @mock.patch("utils.bigquery_helper.query")
+    @mock.patch("utils.bigquery_helper.upload_csv_file")
+    @mock.patch("redshiftapi.db.get_stats_cursor")
     def test_create_report(self, mock_db, mock_upload, mock_query, mock_spend):
         spend_rows = [
             [self.ad_group_1_1.id, 318199, 75, 143754891637],
@@ -470,13 +500,13 @@ class DemandReportTestCase(test.TestCase):
             geo_targeting_type=["country"],
         )
 
-    @patch("analytics.demand_report._get_ad_group_spend")
-    @patch("utils.bigquery_helper.query")
-    @patch("utils.bigquery_helper.upload_csv_file")
-    @patch("redshiftapi.db.get_stats_cursor")
+    @mock.patch("analytics.demand_report._get_ad_group_spend")
+    @mock.patch("utils.bigquery_helper.query")
+    @mock.patch("utils.bigquery_helper.upload_csv_file")
+    @mock.patch("redshiftapi.db.get_stats_cursor")
     def test_create_report_missing_ad_group_ids(self, mock_db, mock_upload, mock_query, mock_spend):
 
-        with patch("automation.autopilot.recalculate_budgets_ad_group"):
+        with mock.patch("automation.autopilot.recalculate_budgets_ad_group"):
             self.ad_group_2_3 = magic_mixer.blend(core.models.AdGroup, campaign=self.campaign_2)
             self.ad_group_2_3.settings.update(
                 None,
@@ -696,3 +726,38 @@ class SourceIdMapTestCase(test.TestCase):
     def test_missing(self):
         with self.assertRaises(ValueError):
             demand_report._source_id_map(constants.SourceType.OUTBRAIN, constants.SourceType.YAHOO, "missing")
+
+
+class TagsToStringTestCase(test.TestCase):
+    def test_none(self):
+        self.assertEqual(demand_report._tags_to_string(None), "")
+
+    def test_no_tags(self):
+        self.assertEqual(demand_report._tags_to_string([]), "")
+
+    def test_tags(self):
+        tags = [
+            "sth/tag_13",
+            "other",
+            "other/tag_14",
+            "test/tag_16",
+            "sth/tag_15",
+            "test/tag_6",
+            "test/tag_11",
+            "other/tag_3",
+            "test",
+            "other/tag_7",
+            "test/tag_4",
+            "sth/tag_10",
+            "test/tag_2",
+            "other/tag_12",
+            "sth/tag_5",
+            "sth/tag_8",
+            "test/tag_1",
+            "sth",
+            "test/tag_9",
+        ]
+
+        expected = "other, other/tag_12, other/tag_14, other/tag_3, other/tag_7, sth, sth/tag_10, sth/tag_13, sth/tag_15, sth/tag_5, sth/tag_8, test, test/tag_1, test/tag_11, test/tag_16, test/tag_2, test/tag_4, test/tag_6, test/tag_9"
+
+        self.assertEqual(demand_report._tags_to_string(tags), expected)
