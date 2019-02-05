@@ -27,7 +27,10 @@
                     [dayparting-setting]="$container.entity.settings.dayparting"
                     [errors]="$container.errors"
                     (on-change)="
-                        $ctrl.updateDaypartingSettings($container, $event)
+                        $ctrl.updateDaypartingSettings(
+                            $container.entity,
+                            $event
+                        )
                     "
                 ></zem-dayparting-setting>
             </div>
@@ -39,12 +42,28 @@
             api="$container.childApi"
             ng-if="!$ctrl.hasPermission('zemauth.disable_public_rcs')"
         ></zem-device-targeting-settings>
-        <zem-geo-targeting
-            class="zem-settings-component"
-            entity="$container.entity"
-            errors="$container.errors"
-            api="$container.childApi"
-        ></zem-geo-targeting>
+        <div class="custom-panel zem-settings-component__container">
+            <h2 class="custom-panel__title">
+                Location targeting
+                <div
+                    class="zem-settings__different-than-default"
+                    ng-if="$ctrl.hasPermission('zemauth.settings_defaults_on_campaign_level') && $ctrl.isLocationTargetingDifferentFromDefault($container.entity)"
+                >
+                    Different than campaign default
+                </div>
+            </h2>
+            <div class="custom-panel__description">
+                The countries, states and DMA regions where your content ads
+                will be shown.
+            </div>
+            <zem-geo-targeting
+                class="zem-settings-component"
+                included-locations="$container.entity.settings.targetRegions"
+                excluded-locations="$container.entity.settings.exclusionTargetRegions"
+                errors="$container.errors"
+                on-update="$ctrl.updateGeoTargeting($container.entity, $event)"
+            ></zem-geo-targeting>
+        </div>
         <div
             class="custom-panel zem-settings-component__container"
             ng-if="$ctrl.hasPermission('zemauth.can_use_bluekai_targeting') && !$ctrl.hasPermission('zemauth.disable_public_rcs')"
@@ -59,7 +78,9 @@
                 class="zem-settings-component"
                 bluekai-targeting="$container.entity.settings.bluekaiTargeting"
                 entity-id="$container.entity.id"
-                on-update="$ctrl.updateBluekaiTargeting($container, $event)"
+                on-update="
+                    $ctrl.updateBluekaiTargeting($container.entity, $event)
+                "
             ></zem-demographic-targeting>
         </div>
         <zem-ad-group-targeting-settings

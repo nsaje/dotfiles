@@ -1,11 +1,12 @@
 angular.module('one.widgets').component('zemGeoTargeting', {
     bindings: {
-        entity: '<',
+        includedLocations: '<',
+        excludedLocations: '<',
         errors: '<',
-        api: '<?',
+        onUpdate: '&',
     },
     template: require('./zemGeoTargeting.component.html'),
-    controller: function($scope, zemGeoTargetingStateService, zemPermissions) {
+    controller: function(zemGeoTargetingStateService, zemPermissions) {
         var $ctrl = this;
         $ctrl.hasPermission = zemPermissions.hasPermission;
 
@@ -21,8 +22,6 @@ angular.module('one.widgets').component('zemGeoTargeting', {
             addAdditionalLocationTargeting: 'Add additional location targeting',
         };
 
-        $ctrl.isEqualToDefaultSettings = isEqualToDefaultSettings;
-
         $ctrl.texts = {
             selectedIncludedTitle: TEXTS.selectedIncludedTitle,
             selectedExcludedTitle: TEXTS.selectedExcludedTitle,
@@ -32,24 +31,30 @@ angular.module('one.widgets').component('zemGeoTargeting', {
             toggleTargetingEditSection: TEXTS.toggleTargetingEditSection,
         };
 
-        $ctrl.$onInit = function() {
-            if ($ctrl.api) {
-                $ctrl.api.register({});
-            }
-        };
+        $ctrl.$onInit = function() {};
 
         $ctrl.$onChanges = function(changes) {
-            if (changes.entity && $ctrl.entity) {
+            if (!$ctrl.stateService) {
                 $ctrl.stateService = zemGeoTargetingStateService.createInstance(
-                    $ctrl.entity
+                    propagateUpdate
                 );
                 $ctrl.state = $ctrl.stateService.getState();
-
-                $ctrl.stateService.init();
-                initializeWatches();
+            }
+            if (!$ctrl.includedLocations || !$ctrl.excludedLocations) {
+                return;
+            }
+            if (changes.includedLocations || changes.excludedLocations) {
+                $ctrl.stateService.updateTargeting(
+                    $ctrl.includedLocations,
+                    $ctrl.excludedLocations
+                );
                 setTexts();
             }
         };
+
+        function propagateUpdate(newTargeting) {
+            $ctrl.onUpdate({$event: newTargeting});
+        }
 
         $ctrl.isInclusionError = function() {
             return $ctrl.errors && !!($ctrl.errors.targetRegions || []).length;
@@ -63,31 +68,21 @@ angular.module('one.widgets').component('zemGeoTargeting', {
         };
 
         $ctrl.hasTargetingSet = function() {
-            if (!$ctrl.state) {
+            if (!$ctrl.state || !$ctrl.includedLocations) {
                 return false;
             }
-            if (
-                $ctrl.entity.settings.targetRegions.postalCodes.length ||
-                $ctrl.state.targetings.excluded.length ||
-                $ctrl.state.targetings.included.length
-            ) {
-                return true;
-            }
-            return false;
-        };
 
-        function initializeWatches() {
-            var watchExpressions = [
-                '$ctrl.entity.settings.targetRegions',
-                '$ctrl.entity.settings.exclusionTargetRegions',
-            ];
-            $scope.$watchGroup(watchExpressions, setTexts);
-        }
+            return (
+                $ctrl.includedLocations.postalCodes.length ||
+                $ctrl.state.locations.excluded.length ||
+                $ctrl.state.locations.included.length
+            );
+        };
 
         function setTexts() {
             var zipsPresent =
-                hasZips($ctrl.entity.settings.targetRegions) ||
-                hasZips($ctrl.entity.settings.exclusionTargetRegions);
+                hasZips($ctrl.includedLocations) ||
+                hasZips($ctrl.excludedLocations);
             if (zipsPresent) {
                 $ctrl.texts.defaultTargetingSelected =
                     TEXTS.postalCodeTargeting;
@@ -103,20 +98,6 @@ angular.module('one.widgets').component('zemGeoTargeting', {
 
         function hasZips(regions) {
             return regions[constants.geolocationType.ZIP];
-        }
-
-        function isEqualToDefaultSettings() {
-            if (!$ctrl.state || !$ctrl.entity || !$ctrl.entity.defaultSettings)
-                return true;
-            var isTargetRegionsEqual = angular.equals(
-                $ctrl.entity.settings.targetRegions,
-                $ctrl.entity.defaultSettings.targetRegions
-            );
-            var isExclusionTargetRegionsEqual = angular.equals(
-                $ctrl.entity.settings.exclusionTargetRegions,
-                $ctrl.entity.defaultSettings.exclusionTargetRegions
-            );
-            return isTargetRegionsEqual && isExclusionTargetRegionsEqual;
         }
     },
 });

@@ -57,59 +57,60 @@ describe('zemZipTargetingStateService', function() {
 
     it('should init country correctly', function() {
         var stateService = zemZipTargetingStateService.createInstance(
-            mockedEntity
+            angular.noop
         );
-        mockedEntity.settings.targetRegions = [];
-        mockedEntity.settings.exclusionTargetRegions = [];
-        stateService.init();
+        stateService.updateTargeting({}, {});
         expect(stateService.getState().selectedCountry.key).toEqual('US');
 
-        mockedEntity.settings.targetRegions = {postalCodes: ['SI:1', 'US:2']};
-        mockedEntity.settings.exclusionTargetRegions = {postalCodes: []};
-        stateService.init();
+        stateService.updateTargeting(
+            {postalCodes: ['SI:1', 'US:2']},
+            {postalCodes: []}
+        );
         expect(stateService.getState().selectedCountry.key).toEqual('SI');
     });
 
     it('should init textarea correctly', function() {
         var stateService = zemZipTargetingStateService.createInstance(
-            mockedEntity
+            angular.noop
         );
-        mockedEntity.settings.targetRegions = [];
-        mockedEntity.settings.exclusionTargetRegions = [];
-        stateService.init();
+        stateService.updateTargeting({}, {});
         expect(stateService.getState().textareaContent).toEqual('');
 
-        mockedEntity.settings.targetRegions = {postalCodes: ['US:1', 'US:2']};
-        mockedEntity.settings.exclusionTargetRegions = {postalCodes: []};
-        stateService.init();
+        stateService.updateTargeting(
+            {postalCodes: ['US:1', 'US:2']},
+            {postalCodes: []}
+        );
         expect(stateService.getState().textareaContent).toEqual('1, 2');
     });
 
     it('should init api only correctly', function() {
         var stateService = zemZipTargetingStateService.createInstance(
-            mockedEntity
+            angular.noop
         );
-        mockedEntity.settings.targetRegions = {postalCodes: ['US:1', 'SI:1']};
-        mockedEntity.settings.exclusionTargetRegions = {postalCodes: []};
-        stateService.init();
+        stateService.updateTargeting(
+            {postalCodes: ['US:1', 'SI:1']},
+            {postalCodes: []}
+        );
         expect(stateService.getState().blockers.apiOnlySettings).toEqual(true);
 
-        mockedEntity.settings.targetRegions = {postalCodes: ['US:1']};
-        mockedEntity.settings.exclusionTargetRegions = {postalCodes: ['US:2']};
-        stateService.init();
+        stateService.updateTargeting(
+            {postalCodes: ['US:1']},
+            {postalCodes: ['US:2']}
+        );
         expect(stateService.getState().blockers.apiOnlySettings).toEqual(true);
     });
 
     it('should detect country is included in general targeting', function() {
         var stateService = zemZipTargetingStateService.createInstance(
-            mockedEntity
+            angular.noop
         );
-        mockedEntity.settings.targetRegions = {
-            countries: ['US'],
-            postalCodes: ['US:1'],
-        };
-        mockedEntity.settings.exclusionTargetRegions = {postalCodes: []};
-        stateService.init();
+        stateService.updateTargeting(
+            {
+                countries: ['US'],
+                postalCodes: ['US:1'],
+            },
+            {postalCodes: []}
+        );
         expect(stateService.getState().blockers.countryIncluded).toEqual(true);
     });
 });

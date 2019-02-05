@@ -1,69 +1,53 @@
-<div class="custom-panel zem-settings-component__container">
-    <h2 class="custom-panel__title" is-internal="zemauth.fea_new_geo_targeting">
-        Location targeting
-        <div
-            class="zem-settings__different-than-default"
-            ng-if="$ctrl.hasPermission('settings_defaults_on_campaign_level') && !$ctrl.isEqualToDefaultSettings()"
-        >
-            Different than campaign default
-        </div>
-    </h2>
-    <div class="custom-panel__description">
-        The countries, states and DMA regions where your content ads will be
-        shown.
-    </div>
-    <div ng-if="!$ctrl.hasTargetingSet()" class="message block m-b">
-        {{ $ctrl.texts.defaultTargetingSelected }}
-    </div>
-
-    <zem-inclusion-targeting-list
-        texts="$ctrl.texts"
-        targetings="$ctrl.state.targetings"
-        add-included="$ctrl.stateService.addIncluded(targeting)"
-        add-excluded="$ctrl.stateService.addExcluded(targeting)"
-        remove-targeting="$ctrl.stateService.removeTargeting(targeting)"
-        refresh-targetings="$ctrl.stateService.refresh(searchTerm)"
-        display-sections="true"
-    ></zem-inclusion-targeting-list>
-
-    <div class="more-messages__container">
-        <div
-            ng-if="$ctrl.isInclusionError()"
-            class="message message--error message--with-icon"
-        >
-            <div ng-repeat="error in $ctrl.errors.targetRegions">
-                {{ error }}
-            </div>
-        </div>
-        <div
-            ng-if="$ctrl.isExclusionError()"
-            class="message message--error message--with-icon"
-        >
-            <div ng-repeat="error in $ctrl.errors.exclusionTargetRegions">
-                {{ error }}
-            </div>
-        </div>
-        <div
-            ng-if="$ctrl.state.messages.warnings.length"
-            class="message message--warning message--with-icon"
-        >
-            <div ng-repeat="warning in $ctrl.state.messages.warnings">
-                {{ warning }}
-            </div>
-        </div>
-        <div
-            ng-if="$ctrl.state.messages.infos.length"
-            class="message message--info message--with-icon"
-        >
-            <div ng-repeat="info in $ctrl.state.messages.infos">{{ info }}</div>
-        </div>
-    </div>
-
-    <hr />
-
-    <zem-zip-targeting
-        entity="$ctrl.entity"
-        api="$ctrl.api"
-        class="zem-zip-targeting"
-    ></zem-zip-targeting>
+<div ng-if="!$ctrl.hasTargetingSet()" class="message block m-b">
+    {{ $ctrl.texts.defaultTargetingSelected }}
 </div>
+
+<zem-inclusion-targeting-list
+    texts="$ctrl.texts"
+    targetings="$ctrl.state.locations"
+    add-included="$ctrl.stateService.addIncluded(targeting)"
+    add-excluded="$ctrl.stateService.addExcluded(targeting)"
+    remove-targeting="$ctrl.stateService.removeLocation(targeting)"
+    refresh-targetings="$ctrl.stateService.refresh(searchTerm)"
+    display-sections="true"
+></zem-inclusion-targeting-list>
+
+<div class="more-messages__container">
+    <div
+        ng-if="$ctrl.isInclusionError()"
+        class="message message--error message--with-icon"
+    >
+        <div ng-repeat="error in $ctrl.errors.targetRegions">{{ error }}</div>
+    </div>
+    <div
+        ng-if="$ctrl.isExclusionError()"
+        class="message message--error message--with-icon"
+    >
+        <div ng-repeat="error in $ctrl.errors.exclusionTargetRegions">
+            {{ error }}
+        </div>
+    </div>
+    <div
+        ng-if="$ctrl.state.messages.warnings.length"
+        class="message message--warning message--with-icon"
+    >
+        <div ng-repeat="warning in $ctrl.state.messages.warnings">
+            {{ warning }}
+        </div>
+    </div>
+    <div
+        ng-if="$ctrl.state.messages.infos.length"
+        class="message message--info message--with-icon"
+    >
+        <div ng-repeat="info in $ctrl.state.messages.infos">{{ info }}</div>
+    </div>
+</div>
+
+<hr />
+
+<zem-zip-targeting
+    class="zem-zip-targeting"
+    included-locations="$ctrl.includedLocations"
+    excluded-locations="$ctrl.excludedLocations"
+    on-update="$ctrl.onUpdate({$event: $event})"
+></zem-zip-targeting>

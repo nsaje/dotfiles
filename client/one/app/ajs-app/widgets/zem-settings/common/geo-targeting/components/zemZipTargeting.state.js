@@ -6,17 +6,15 @@ angular
         var FIELD_ZIP = 'postalCodes';
         var FIELD_COUNTRY = 'countries';
 
-        function createInstance(entity) {
-            return new zemZipTargetingStateService(entity);
+        function createInstance(propagateUpdate) {
+            return new zemZipTargetingStateService(propagateUpdate);
         }
 
-        function zemZipTargetingStateService(entity) {
+        function zemZipTargetingStateService(propagateUpdate) {
             this.getState = getState;
-            this.init = init;
-            this.updateState = updateState;
-            this.checkConstraints = checkConstraints;
+            this.updateTargeting = updateTargeting;
+            this.setTargeting = setTargeting;
             this.searchCountries = searchCountries;
-            this.cleanUserInput = cleanUserInput;
 
             var state = {
                 zipTargetingType: '',
@@ -29,12 +27,21 @@ angular
                 },
             };
 
+            var includedLocations;
+            var excludedLocations;
+
             function getState() {
                 return state;
             }
 
-            function init() {
-                var zipsToDisplay = initTypeAndZipsToDisplay();
+            function updateTargeting(included, excluded) {
+                includedLocations = included;
+                excludedLocations = excluded;
+
+                var zipsToDisplay = initTypeAndZipsToDisplay(
+                    includedLocations,
+                    excludedLocations
+                );
                 if (!zipsToDisplay) {
                     return;
                 }
@@ -42,12 +49,18 @@ angular
                 checkConstraints();
             }
 
-            function initTypeAndZipsToDisplay() {
-                var zipsToDisplay;
-                var inclusionZips =
-                    entity.settings.targetRegions[FIELD_ZIP] || [];
-                var exclusionZips =
-                    entity.settings.exclusionTargetRegions[FIELD_ZIP] || [];
+            function initTypeAndZipsToDisplay(
+                includedLocations,
+                excludedLocations
+            ) {
+                var zipsToDisplay = [];
+                var inclusionZips = includedLocations[FIELD_ZIP] || [];
+                var exclusionZips = excludedLocations[FIELD_ZIP] || [];
+
+                if (!state.zipTargetingType) {
+                    state.zipTargetingType = constants.zipTargetingType.INCLUDE;
+                }
+
                 if (exclusionZips.length) {
                     state.zipTargetingType = constants.zipTargetingType.EXCLUDE;
                     zipsToDisplay = exclusionZips;
@@ -55,7 +68,7 @@ angular
                         setAPIOnlySettingsBlocker();
                         return;
                     }
-                } else {
+                } else if (inclusionZips.length) {
                     state.zipTargetingType = constants.zipTargetingType.INCLUDE;
                     zipsToDisplay = inclusionZips;
                 }
@@ -64,7 +77,10 @@ angular
 
             function initCountryAndTextarea(zipsToDisplay) {
                 if (!zipsToDisplay.length) {
-                    setCountry('US');
+                    state.textareaContent = '';
+                    if (!state.selectedCountry) {
+                        setCountry('US');
+                    }
                 } else {
                     var countryCode = getCountryCode(zipsToDisplay[0]);
                     setCountry(countryCode);
@@ -99,61 +115,58 @@ angular
                     });
             }
 
-            function updateState() {
-                updateEntity();
-                checkConstraints();
-            }
-
-            function updateEntity() {
+            function setTargeting() {
                 var zipCodes = textToZipList(state.textareaContent);
                 var countryCode = state.selectedCountry.key;
                 var zipsWithCountries = zipCodes.map(function(zipCode) {
                     return countryCode + ':' + zipCode;
                 });
-                var newRegionsIncluded = angular.copy(
-                    entity.settings.targetRegions
-                );
-                newRegionsIncluded[FIELD_ZIP] = [];
-                var newRegionsExcluded = angular.copy(
-                    entity.settings.exclusionTargetRegions
-                );
-                newRegionsExcluded[FIELD_ZIP] = [];
+
+                var updatedIncludedLocations = angular.copy(includedLocations);
+                updatedIncludedLocations[FIELD_ZIP] = [];
+
+                var updatedExcludedLocations = angular.copy(excludedLocations);
+                updatedExcludedLocations[FIELD_ZIP] = [];
+
                 if (
                     state.zipTargetingType ===
                     constants.zipTargetingType.INCLUDE
                 ) {
-                    newRegionsIncluded[FIELD_ZIP] = zipsWithCountries;
+                    updatedIncludedLocations[FIELD_ZIP] = zipsWithCountries;
                 } else {
-                    newRegionsExcluded[FIELD_ZIP] = zipsWithCountries;
+                    updatedExcludedLocations[FIELD_ZIP] = zipsWithCountries;
                 }
-                entity.settings.targetRegions = newRegionsIncluded;
-                entity.settings.exclusionTargetRegions = newRegionsExcluded;
+
+                propagateUpdate({
+                    includedLocations: updatedIncludedLocations,
+                    excludedLocations: updatedExcludedLocations,
+                });
             }
 
             function checkConstraints() {
+                state.blockers.countryIncluded = false;
+
+                if (
+                    state.zipTargetingType ===
+                    constants.zipTargetingType.EXCLUDE
+                ) {
+                    return;
+                }
+
                 var isSelectedCountry = function(key) {
                     return key === state.selectedCountry.key;
                 };
-                var includedCountries =
-                    entity.settings.targetRegions[FIELD_COUNTRY] || [];
-                var excludedCountries =
-                    entity.settings.exclusionTargetRegions[FIELD_COUNTRY] || [];
+                var includedCountries = includedLocations[FIELD_COUNTRY] || [];
+                var excludedCountries = excludedLocations[FIELD_COUNTRY] || [];
                 var countryIncluded = includedCountries.filter(
                     isSelectedCountry
                 )[0];
                 var countryExcluded = excludedCountries.filter(
                     isSelectedCountry
                 )[0];
-                state.blockers.countryIncluded = false;
                 if (countryIncluded || countryExcluded) {
                     state.blockers.countryIncluded = true;
                 }
-            }
-
-            function cleanUserInput() {
-                state.textareaContent = textToZipList(
-                    state.textareaContent
-                ).join(', ');
             }
 
             function textToZipList(text) {
@@ -166,6 +179,12 @@ angular
             }
 
             function setCountry(key) {
+                if (
+                    state.selectedCountry &&
+                    state.selectedCountry.key === key
+                ) {
+                    return;
+                }
                 state.selectedCountry = {key: key}; // we set the key first and fill in the name asynchronously
                 zemGeoTargetingEndpoint.mapKey(key).then(function(result) {
                     state.selectedCountry = result;

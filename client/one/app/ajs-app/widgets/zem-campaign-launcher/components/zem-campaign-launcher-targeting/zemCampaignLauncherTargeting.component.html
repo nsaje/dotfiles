@@ -1,9 +1,17 @@
-<zem-geo-targeting
-    entity="$ctrl.entity"
-    errors="$ctrl.state.fieldsErrors"
-    class="zem-geo-targeting"
->
-</zem-geo-targeting>
+<div class="custom-panel zem-settings-component__container">
+    <h2 class="custom-panel__title">Location targeting</h2>
+    <div class="custom-panel__description">
+        The countries, states and DMA regions where your content ads will be
+        shown.
+    </div>
+    <zem-geo-targeting
+        class="zem-settings-component"
+        included-locations="$ctrl.state.fields.targetRegions"
+        excluded-locations="$ctrl.state.fields.exclusionTargetRegions"
+        errors="$ctrl.state.fieldsErrors"
+        on-update="$ctrl.updateGeoTargeting($event)"
+    ></zem-geo-targeting>
+</div>
 <zem-device-targeting-settings
     entity="$ctrl.entity"
     errors="$ctrl.state.fieldsErrors"

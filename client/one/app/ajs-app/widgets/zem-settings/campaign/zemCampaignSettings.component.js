@@ -8,7 +8,19 @@ angular.module('one.widgets').component('zemCampaignSettings', {
         $ctrl.constants = constants;
         $ctrl.hasPermission = zemPermissions.hasPermission;
         $ctrl.isPermissionInternal = zemPermissions.isPermissionInternal;
+        $ctrl.updateGeoTargeting = updateGeoTargeting;
 
         $ctrl.$onInit = function() {};
+
+        function updateGeoTargeting(entity, updatedGeoTargeting) {
+            if (updatedGeoTargeting.includedLocations) {
+                entity.settings.targetRegions =
+                    updatedGeoTargeting.includedLocations;
+            }
+            if (updatedGeoTargeting.excludedLocations) {
+                entity.settings.exclusionTargetRegions =
+                    updatedGeoTargeting.excludedLocations;
+            }
+        }
     },
 });

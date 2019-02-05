@@ -32,13 +32,6 @@ angular
             FIELD_DMA,
         ];
 
-        var TARGETING_REGIONS_TEMPLATE = {};
-        TARGETING_REGIONS_TEMPLATE[FIELD_COUNTRY] = [];
-        TARGETING_REGIONS_TEMPLATE[FIELD_REGION] = [];
-        TARGETING_REGIONS_TEMPLATE[FIELD_DMA] = [];
-        TARGETING_REGIONS_TEMPLATE[FIELD_CITY] = [];
-        TARGETING_REGIONS_TEMPLATE[FIELD_ZIP] = [];
-
         var TARGETING_SECTIONS_TEMPLATE = {};
         TARGETING_SECTIONS_TEMPLATE[constants.geolocationType.COUNTRY] = [];
         TARGETING_SECTIONS_TEMPLATE[constants.geolocationType.REGION] = [];
@@ -52,20 +45,20 @@ angular
         GEO_TYPE_TO_FIELD[constants.geolocationType.CITY] = FIELD_CITY;
         GEO_TYPE_TO_FIELD[constants.geolocationType.ZIP] = FIELD_ZIP;
 
-        function createInstance(entity) {
-            return new zemGeoTargetingStateService(entity);
+        function createInstance(propagateUpdate) {
+            return new zemGeoTargetingStateService(propagateUpdate);
         }
 
-        function zemGeoTargetingStateService(entity) {
+        function zemGeoTargetingStateService(propagateUpdate) {
             this.getState = getState;
-            this.init = init;
+            this.updateTargeting = updateTargeting;
             this.refresh = refresh;
             this.addIncluded = addIncluded;
             this.addExcluded = addExcluded;
-            this.removeTargeting = removeTargeting;
+            this.removeLocation = removeLocation;
 
             var state = {
-                targetings: {
+                locations: {
                     included: [],
                     excluded: [],
                     notSelected: [],
@@ -76,33 +69,66 @@ angular
                 },
             };
 
-            var geolocationMappings = {};
+            var includedLocations;
+            var excludedLocations;
+
+            var geolocationMappingsCache = {};
             var searchResults = [];
 
             function getState() {
                 return state;
             }
 
-            function init() {
-                if (!entity.settings.targetRegions) {
-                    entity.settings.targetRegions = angular.copy(
-                        TARGETING_REGIONS_TEMPLATE
-                    );
-                }
-                if (!entity.settings.exclusionTargetRegions) {
-                    entity.settings.exclusionTargetRegions = angular.copy(
-                        TARGETING_REGIONS_TEMPLATE
-                    );
-                }
+            function updateTargeting(included, excluded) {
+                includedLocations = included;
+                excludedLocations = excluded;
 
-                fetchMappings().then(function(mappings) {
-                    geolocationMappings = mappings;
-                    state.targetings = getTargetings();
-                    updateMessages();
+                fetchMappingsForUnmappedKeys(
+                    includedLocations,
+                    excludedLocations
+                ).then(function(fetchedMappings) {
+                    addMappingsToMappingsCache(fetchedMappings);
+                    state.locations = generateTargetedLocations(
+                        includedLocations,
+                        excludedLocations
+                    );
+                    updateMessages(includedLocations, excludedLocations);
                 });
             }
 
-            function getTargetings() {
+            function fetchMappingsForUnmappedKeys(
+                includedLocations,
+                excludedLocations
+            ) {
+                var deferred = $q.defer();
+                var unmappedKeys = getUnmappedKeys(
+                    includedLocations,
+                    excludedLocations
+                );
+
+                if (unmappedKeys.length > 0) {
+                    zemGeoTargetingEndpoint
+                        .map(unmappedKeys)
+                        .then(function(mappings) {
+                            deferred.resolve(mappings);
+                        });
+                } else {
+                    deferred.resolve([]);
+                }
+
+                return deferred.promise;
+            }
+
+            function addMappingsToMappingsCache(fetchedMappings) {
+                fetchedMappings.forEach(function(geolocation) {
+                    geolocationMappingsCache[geolocation.key] = geolocation;
+                });
+            }
+
+            function generateTargetedLocations(
+                includedLocations,
+                excludedLocations
+            ) {
                 var geolocation;
                 var alreadySelectedIds = [];
                 var included = angular.copy(TARGETING_SECTIONS_TEMPLATE);
@@ -110,28 +136,28 @@ angular
                 var notSelected = angular.copy(TARGETING_SECTIONS_TEMPLATE);
 
                 GEO_TYPE_FIELDS.forEach(function(geoTypeField) {
-                    entity.settings.targetRegions[geoTypeField].forEach(
-                        function(key) {
-                            geolocation = geolocationMappings[key];
+                    if (includedLocations) {
+                        includedLocations[geoTypeField].forEach(function(key) {
+                            geolocation = geolocationMappingsCache[key];
                             if (geolocation) {
                                 included[geolocation.type].push(
-                                    generateGeolocationObject(geolocation)
+                                    generateLocationObject(geolocation)
                                 );
                                 alreadySelectedIds.push(key);
                             }
-                        }
-                    );
-                    entity.settings.exclusionTargetRegions[
-                        geoTypeField
-                    ].forEach(function(key) {
-                        geolocation = geolocationMappings[key];
-                        if (geolocation) {
-                            excluded[geolocation.type].push(
-                                generateGeolocationObject(geolocation)
-                            );
-                            alreadySelectedIds.push(key);
-                        }
-                    });
+                        });
+                    }
+                    if (excludedLocations) {
+                        excludedLocations[geoTypeField].forEach(function(key) {
+                            geolocation = geolocationMappingsCache[key];
+                            if (geolocation) {
+                                excluded[geolocation.type].push(
+                                    generateLocationObject(geolocation)
+                                );
+                                alreadySelectedIds.push(key);
+                            }
+                        });
+                    }
                 });
 
                 var SECTION_RESULTS_SIZE = 10;
@@ -145,7 +171,7 @@ angular
                     if (sectionItems[geolocation.type] < SECTION_RESULTS_SIZE) {
                         sectionItems[geolocation.type]++;
                         notSelected[geolocation.type].push(
-                            generateGeolocationObject(geolocation)
+                            generateLocationObject(geolocation)
                         );
                     }
                 });
@@ -158,12 +184,12 @@ angular
                         .concat(sections[constants.geolocationType.CITY]);
                 }
 
-                var targetings = {};
-                targetings.included = flattenSections(included);
-                targetings.excluded = flattenSections(excluded);
-                targetings.notSelected = flattenSections(notSelected);
+                var locations = {};
+                locations.included = flattenSections(included);
+                locations.excluded = flattenSections(excluded);
+                locations.notSelected = flattenSections(notSelected);
 
-                return targetings;
+                return locations;
             }
 
             var lastSearchTerm;
@@ -171,82 +197,89 @@ angular
                 if (searchTerm.length < 2) {
                     lastSearchTerm = null;
                     searchResults = [];
-                    state.targetings = getTargetings();
+                    state.locations = generateTargetedLocations(
+                        includedLocations,
+                        excludedLocations
+                    );
                     return;
                 }
                 lastSearchTerm = searchTerm;
                 zemGeoTargetingEndpoint
                     .search(searchTerm)
                     .then(function(response) {
-                        if (searchTerm !== lastSearchTerm) return; // There is a more recent search in progress
-
+                        if (searchTerm !== lastSearchTerm) {
+                            // There is a more recent search in progress
+                            return;
+                        }
                         searchResults = response;
-                        state.targetings = getTargetings();
+                        state.locations = generateTargetedLocations(
+                            includedLocations,
+                            excludedLocations
+                        );
                         lastSearchTerm = null;
                     });
             }
 
-            function addIncluded(targeting) {
-                if (!entity.settings.targetRegions) {
-                    entity.settings.targetRegions = angular.copy(
-                        TARGETING_REGIONS_TEMPLATE
-                    );
-                }
-                var fieldName = GEO_TYPE_TO_FIELD[targeting.geolocation.type];
-                var newRegions = angular.copy(entity.settings.targetRegions);
-                newRegions[fieldName].push(targeting.id);
-                entity.settings.targetRegions = newRegions;
+            function addIncluded(location) {
+                geolocationMappingsCache[location.id] = location.geolocation;
 
-                geolocationMappings[targeting.id] = targeting.geolocation;
-                state.targetings = getTargetings();
-                updateMessages();
+                var fieldName = GEO_TYPE_TO_FIELD[location.geolocation.type];
+                var updatedIncludedLocations = angular.copy(includedLocations);
+                updatedIncludedLocations[fieldName].push(location.id);
+                propagateUpdate({
+                    includedLocations: updatedIncludedLocations,
+                });
             }
 
-            function addExcluded(targeting) {
-                if (!entity.settings.exclusionTargetRegions) {
-                    entity.settings.exclusionTargetRegions = angular.copy(
-                        TARGETING_REGIONS_TEMPLATE
-                    );
-                }
-                var fieldName = GEO_TYPE_TO_FIELD[targeting.geolocation.type];
-                var newRegions = angular.copy(
-                    entity.settings.exclusionTargetRegions
-                );
-                newRegions[fieldName].push(targeting.id);
-                entity.settings.exclusionTargetRegions = newRegions;
+            function addExcluded(location) {
+                geolocationMappingsCache[location.id] = location.geolocation;
 
-                geolocationMappings[targeting.id] = targeting.geolocation;
-                state.targetings = getTargetings();
-                updateMessages();
+                var fieldName = GEO_TYPE_TO_FIELD[location.geolocation.type];
+                var updatedExcludedLocations = angular.copy(excludedLocations);
+                updatedExcludedLocations[fieldName].push(location.id);
+                propagateUpdate({
+                    excludedLocations: updatedExcludedLocations,
+                });
             }
 
-            function removeTargeting(targeting) {
-                var fieldName = GEO_TYPE_TO_FIELD[targeting.geolocation.type];
-                var index = entity.settings.targetRegions[fieldName].indexOf(
-                    targeting.id
-                );
-                var newRegions;
+            function removeLocation(location) {
+                var updatedIncludedLocations;
+                var updatedExcludedLocations;
+
+                var fieldName = GEO_TYPE_TO_FIELD[location.geolocation.type];
+
+                var index = includedLocations[fieldName].indexOf(location.id);
                 if (index !== -1) {
-                    newRegions = angular.copy(entity.settings.targetRegions);
-                    newRegions[fieldName].splice(index, 1);
-                    entity.settings.targetRegions = newRegions;
+                    updatedIncludedLocations = angular.copy(includedLocations);
+                    updatedIncludedLocations[fieldName].splice(index, 1);
                 }
 
-                index = entity.settings.exclusionTargetRegions[
-                    fieldName
-                ].indexOf(targeting.id);
+                index = excludedLocations[fieldName].indexOf(location.id);
                 if (index !== -1) {
-                    newRegions = angular.copy(
-                        entity.settings.exclusionTargetRegions
-                    );
-                    newRegions[fieldName].splice(index, 1);
-                    entity.settings.exclusionTargetRegions = newRegions;
+                    updatedExcludedLocations = angular.copy(excludedLocations);
+                    updatedExcludedLocations[fieldName].splice(index, 1);
                 }
-                state.targetings = getTargetings();
-                updateMessages();
+
+                if (updatedIncludedLocations || updatedExcludedLocations) {
+                    propagateUpdate({
+                        includedLocations: updatedIncludedLocations,
+                        excludedLocations: updatedExcludedLocations,
+                    });
+                }
             }
 
-            function generateGeolocationObject(geolocation) {
+            function generateLocationObject(geolocation) {
+                return {
+                    id: geolocation.key,
+                    section: constants.geolocationTypeText[geolocation.type],
+                    name: geolocation.name,
+                    title: geolocation.name,
+                    badges: getLocationBadges(geolocation),
+                    geolocation: geolocation,
+                };
+            }
+
+            function getLocationBadges(geolocation) {
                 var badges = [];
                 if (!geolocation.outbrainId) {
                     badges.push({
@@ -260,64 +293,34 @@ angular
                         text: TOOLTIP_NOT_SUPPORTED_BY_YAHOO,
                     });
                 }
-                return {
-                    id: geolocation.key,
-                    section: constants.geolocationTypeText[geolocation.type],
-                    name: geolocation.name,
-                    title: geolocation.name,
-                    badges: badges,
-                    geolocation: geolocation,
-                };
+                return badges;
             }
 
-            function fetchMappings() {
-                var deferred = $q.defer();
-                var unmappedKeys = extractGeotargetingKeysWithoutZips(
-                    entity.settings.targetRegions
-                )
-                    .concat(
-                        extractGeotargetingKeysWithoutZips(
-                            entity.settings.exclusionTargetRegions
-                        )
-                    )
-                    .filter(function(id) {
-                        return !geolocationMappings[id];
+            function getUnmappedKeys(includedLocations, excludedLocations) {
+                return getLocationKeysWithoutZips(includedLocations)
+                    .concat(getLocationKeysWithoutZips(excludedLocations))
+                    .filter(function(key) {
+                        return !geolocationMappingsCache[key];
                     });
-
-                if (unmappedKeys.length > 0) {
-                    var mappings = {};
-                    zemGeoTargetingEndpoint
-                        .map(unmappedKeys)
-                        .then(function(response) {
-                            response.forEach(function(geolocation) {
-                                mappings[geolocation.key] = geolocation;
-                            });
-                            deferred.resolve(mappings);
-                        });
-                } else {
-                    deferred.resolve({});
-                }
-
-                return deferred.promise;
             }
 
             // prettier-ignore
-            function updateMessages() { // eslint-disable-line complexity
+            function updateMessages(includedLocations, excludedLocations) { // eslint-disable-line complexity
                 var warnings = [];
                 var infos = [];
-                var regionsWithoutZips = extractGeotargetingKeysWithoutZips(
-                    entity.settings.targetRegions
+                var includedLocationsWithoutZips = getLocationKeysWithoutZips(
+                    includedLocations
                 );
-                var exclusionRegionsWithoutZips = extractGeotargetingKeysWithoutZips(
-                    entity.settings.exclusionTargetRegions
+                var excludedLocationsWithoutZips = getLocationKeysWithoutZips(
+                    excludedLocations
                 );
 
                 var i,
                     geolocation,
                     hasCountry = false,
                     hasOther = false;
-                for (i = 0; i < regionsWithoutZips.length; i++) {
-                    geolocation = geolocationMappings[regionsWithoutZips[i]];
+                for (i = 0; i < includedLocationsWithoutZips.length; i++) {
+                    geolocation = geolocationMappingsCache[includedLocationsWithoutZips[i]];
                     if (
                         geolocation &&
                         geolocation.type === constants.geolocationType.COUNTRY
@@ -332,26 +335,26 @@ angular
                 }
 
                 var outbrainNotSupported = function(id) {
-                    var geolocation = geolocationMappings[id];
+                    var geolocation = geolocationMappingsCache[id];
                     return !(geolocation && geolocation.outbrainId);
                 };
-                if (exclusionRegionsWithoutZips.length > 0) {
+                if (excludedLocationsWithoutZips.length > 0) {
                     infos.push(INFO_OUTBRAIN_EXCLUDED);
                 } else if (
-                    regionsWithoutZips.length > 0 &&
-                    regionsWithoutZips.every(outbrainNotSupported)
+                    includedLocationsWithoutZips.length > 0 &&
+                    includedLocationsWithoutZips.every(outbrainNotSupported)
                 ) {
                     infos.push(INFO_OUTBRAIN_INCLUDED);
                 }
 
                 var yahooNotSupported = function(id) {
-                    return !geolocationMappings[id].woeid;
+                    return !geolocationMappingsCache[id].woeid;
                 };
-                if (exclusionRegionsWithoutZips.some(yahooNotSupported)) {
+                if (excludedLocationsWithoutZips.some(yahooNotSupported)) {
                     infos.push(INFO_YAHOO_EXCLUDED);
                 } else if (
-                    regionsWithoutZips.length > 0 &&
-                    regionsWithoutZips.every(yahooNotSupported)
+                    includedLocationsWithoutZips.length > 0 &&
+                    includedLocationsWithoutZips.every(yahooNotSupported)
                 ) {
                     infos.push(INFO_YAHOO_INCLUDED);
                 }
@@ -360,11 +363,11 @@ angular
                 state.messages.infos = infos;
             }
 
-            function extractGeotargetingKeysWithoutZips(targeting) {
+            function getLocationKeysWithoutZips(locations) {
                 var keys = [];
                 [FIELD_COUNTRY, FIELD_REGION, FIELD_CITY, FIELD_DMA].forEach(
                     function(geoTypeField) {
-                        targeting[geoTypeField].forEach(function(key) {
+                        locations[geoTypeField].forEach(function(key) {
                             keys.push(key);
                         });
                     }

@@ -19,7 +19,7 @@
             class="button button--dropdown-toggle-icon"
             ng-model="$ctrl.state.zipTargetingType"
             search-enabled="false"
-            ng-change="$ctrl.stateService.updateState()"
+            ng-change="$ctrl.stateService.setTargeting()"
         >
             <ui-select-match>{{ $select.selected.name }}</ui-select-match>
             <ui-select-choices
@@ -35,7 +35,7 @@
             theme="select2"
             class="button button--dropdown-toggle-icon zem-zip-targeting__country select2-mobile-fullscreen-dropdown"
             ng-model="$ctrl.state.selectedCountry"
-            ng-change="$ctrl.stateService.updateState()"
+            ng-change="$ctrl.stateService.setTargeting()"
         >
             <ui-select-match
                 class="ui-select-match"
@@ -65,10 +65,8 @@
         <textarea
             ng-if="$ctrl.state.selectedCountry && !$ctrl.state.blockers.countryIncluded"
             ng-model="$ctrl.state.textareaContent"
-            ng-model-options="{ updateOn: 'default blur', debounce: { default: 250, blur: 0 }}"
-            ng-change="$ctrl.stateService.updateState()"
-            ng-paste="$ctrl.stateService.updateState()"
-            ng-blur="$ctrl.stateService.cleanUserInput()"
+            ng-model-options="{ updateOn: 'paste blur', debounce: { paste: 1, blur: 0 }}"
+            ng-change="$ctrl.stateService.setTargeting()"
             class="textarea m-t-xs"
             placeholder="Enter comma-separated ZIP / postal codes"
         >

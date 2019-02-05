@@ -6,9 +6,10 @@ describe('component: zemGeoTargeting', function() {
     beforeEach(angular.mock.module('one.mocks.zemInitializationService'));
     beforeEach(inject(function($componentController) {
         var bindings = {
-            entity: {settings: {}},
+            includedLocations: {},
+            excludedLocations: {},
             errors: {},
-            api: {register: angular.noop},
+            onUpdate: function() {},
         };
         $ctrl = $componentController('zemGeoTargeting', {}, bindings);
     }));

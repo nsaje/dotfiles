@@ -1,47 +1,41 @@
 angular.module('one.widgets').component('zemZipTargeting', {
     bindings: {
-        entity: '<',
-        api: '<',
+        includedLocations: '<',
+        excludedLocations: '<',
+        onUpdate: '&',
     },
     template: require('./zemZipTargeting.component.html'), // eslint-disable-line max-len
-    controller: function($scope, zemZipTargetingStateService) {
+    controller: function(zemZipTargetingStateService) {
         var $ctrl = this;
         var zipTargetingEnabled = false;
 
         $ctrl.options = options;
 
-        // template functions
         $ctrl.enableZipTargeting = enableZipTargeting;
         $ctrl.isZipTargetingVisible = isZipTargetingVisible;
 
-        $ctrl.$onInit = function() {
-            if ($ctrl.api) {
-                $ctrl.api.register({});
-            }
-        };
+        $ctrl.$onInit = function() {};
 
         $ctrl.$onChanges = function(changes) {
-            if (changes.entity && $ctrl.entity) {
+            if (!$ctrl.stateService) {
                 $ctrl.stateService = zemZipTargetingStateService.createInstance(
-                    $ctrl.entity
+                    propagateUpdate
                 );
                 $ctrl.state = $ctrl.stateService.getState();
-                $ctrl.stateService.init();
-                initializeWatches();
+            }
+            if (!$ctrl.includedLocations || !$ctrl.excludedLocations) {
+                return;
+            }
+            if (changes.includedLocations || changes.excludedLocations) {
+                $ctrl.stateService.updateTargeting(
+                    $ctrl.includedLocations,
+                    $ctrl.excludedLocations
+                );
             }
         };
 
-        function initializeWatches() {
-            $scope.$watch('$ctrl.entity.settings.targetRegions', function() {
-                if (
-                    $ctrl.state.zipTargetingType ===
-                    constants.zipTargetingType.EXCLUDE
-                ) {
-                    $ctrl.state.blockers.countryIncluded = false;
-                    return;
-                }
-                $ctrl.stateService.checkConstraints();
-            });
+        function propagateUpdate(newTargeting) {
+            $ctrl.onUpdate({$event: newTargeting});
         }
 
         function enableZipTargeting() {

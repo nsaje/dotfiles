@@ -23,13 +23,23 @@
             api="$container.childApi"
             ng-if="$ctrl.hasPermission('zemauth.settings_defaults_on_campaign_level')"
         ></zem-device-targeting-settings>
-        <zem-geo-targeting
-            class="zem-settings-component"
-            entity="$container.entity"
-            errors="$container.errors"
-            api="$container.childApi"
+        <div
+            class="custom-panel zem-settings-component__container"
             ng-if="$ctrl.hasPermission('zemauth.settings_defaults_on_campaign_level')"
-        ></zem-geo-targeting>
+        >
+            <h2 class="custom-panel__title">Location targeting</h2>
+            <div class="custom-panel__description">
+                The countries, states and DMA regions where your content ads
+                will be shown.
+            </div>
+            <zem-geo-targeting
+                class="zem-settings-component"
+                included-locations="$container.entity.settings.targetRegions"
+                excluded-locations="$container.entity.settings.exclusionTargetRegions"
+                errors="$container.errors"
+                on-update="$ctrl.updateGeoTargeting($container.entity, $event)"
+            ></zem-geo-targeting>
+        </div>
         <zem-campaign-targeting-settings
             class="zem-settings-component"
             entity="$container.entity"
