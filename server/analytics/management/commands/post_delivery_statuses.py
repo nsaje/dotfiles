@@ -34,7 +34,7 @@ class Command(utils.command_helpers.ExceptionCommand):
                 issue=issue,
                 cs=cs.get_full_name().encode("ascii", errors="ignore").decode() if cs else "None",
                 cap=cap_to_category(cap),
-                retentionPolicy="3days",
+                retentionPolicy="1week",
                 monitoringPaused=monitoring_paused,
             )
 
@@ -47,6 +47,6 @@ class Command(utils.command_helpers.ExceptionCommand):
                 issue=issue,
                 cs=cs.get_full_name().encode("ascii", errors="ignore").decode() if cs else "None",
                 cap=cap_to_category(cap),
-                retentionPolicy="3days",
+                retentionPolicy="1week",
                 monitoringPaused=monitoring_paused,
             )
