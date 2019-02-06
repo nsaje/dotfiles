@@ -7,6 +7,7 @@ import newrelic.agent
 from django.core.management.base import BaseCommand
 
 import dash.models
+from dcron import helpers
 
 logger = logging.getLogger(__name__)
 
@@ -19,14 +20,16 @@ class ExceptionCommand(BaseCommand):
         if int(options["verbosity"]) > 1:
             root_logger = logging.getLogger("")
             root_logger.setLevel(logging.DEBUG)
+
         try:
             application = newrelic.agent.application()
-            with newrelic.agent.BackgroundTask(application, name=sys.argv[1]):
+            with newrelic.agent.BackgroundTask(application, name=helpers.get_command(sys.argv)):
                 return super(ExceptionCommand, self).execute(*args, **options)
         except SystemExit as err:
             raise err
-        except Exception:
+        except Exception as err:
             logging.getLogger(self.__class__.__module__).exception("Uncaught exception in command")
+            raise err
 
 
 def last_n_days(n):

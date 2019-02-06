@@ -2,6 +2,7 @@ import sys
 
 from django.core import management
 
+from dcron import helpers
 from dcron.commands import DCronCommand
 
 
@@ -9,7 +10,7 @@ class Command(DCronCommand):
     help = "DCronCommand launcher is a proxy to another management command that does not extend DCronCommand."
 
     def __init__(self, stdout=None, stderr=None, no_color=False):
-        self.proxy_command_name = sys.argv[2]
+        self.proxy_command_name = helpers.get_command(sys.argv)
         self._execute_recursion_check()
         super().__init__(stdout=stdout, stderr=stderr, no_color=no_color)
 
@@ -18,7 +19,7 @@ class Command(DCronCommand):
         self._add_proxy_command_arguments(parser)
 
     def _handle(self, *args, **options):
-        management.call_command(self.proxy_command_name, *sys.argv[3:])
+        management.call_command(self.proxy_command_name, *helpers.get_arguments(sys.argv))
 
     def _get_command_name(self):
         return self.proxy_command_name

@@ -10,6 +10,7 @@ from django.core import management
 from dcron import alerts
 from dcron import constants
 from dcron import exceptions
+from dcron import helpers
 from dcron import models
 from utils import dates_helper
 
@@ -90,7 +91,7 @@ class DCronCommand(management.base.BaseCommand):
         raise NotImplementedError("Not implemented.")
 
     def _get_command_name(self):
-        return sys.argv[1]
+        return helpers.get_command(sys.argv)
 
 
 def extract_management_command_name(command: str) -> str:  # typing (for mypy check)
