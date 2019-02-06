@@ -409,7 +409,7 @@ DCRON = {
     "default_warning_wait": 300,  # 5 min
     # Job warning wait overrides.
     "warning_waits": {
-        "monitor_adgroup_propagation": 3900,  # 1h 5 min
+        "monitor_adgroup_propagation": 3900,  # 1 h 5 min
         "campaignstop_simple": 1500,  # 25 min
         "campaignstop_handle_updates": 600,  # 10 min
         "refresh_etl": 600,  # 10 min
@@ -417,7 +417,13 @@ DCRON = {
     # Maximum duration of a job before alerting.
     "default_max_duration": 3600,  # 1h
     # Job maximum duration overrides.
-    "max_durations": {"monitor_adgroup_propagation": 23400, "refresh_etl": 9000},  # 6 h 30 min, 2 h 30 min
+    "max_durations": {
+        "campaignstop_main": 900,  # 15 min
+        "campaignstop_handle_updates": 1800,  # 30 min
+        "create_demand_report": 7200,  # 2 h
+        "monitor_adgroup_propagation": 23400,  # 6 h 30 min
+        "refresh_etl": 15000.0,  # 4 h 10 min
+    },
     # If the same job is run within this interval, the second should exit before doing anything.
     "default_min_separation": 30,
     "min_separations": {},
