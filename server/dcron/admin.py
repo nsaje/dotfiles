@@ -12,7 +12,7 @@ class DCronJobSettingsInline(admin.StackedInline):
 @admin.register(models.DCronJob)
 class DCronJobAdmin(admin.ModelAdmin):
     ordering = ["command_name"]
-    list_display = ("command_name", "host", "duration", "executed_dt", "completed_dt", "alert")
+    list_display = ("command_name", "enabled", "host", "duration", "executed_dt", "completed_dt", "alert")
     search_fields = ("command_name",)
     list_filter = (
         "alert",
@@ -21,6 +21,7 @@ class DCronJobAdmin(admin.ModelAdmin):
         "dcronjobsettings__manual_override",
     )
     readonly_fields = ("command_name", "host", "executed_dt", "completed_dt", "alert")
+    list_select_related = ["dcronjobsettings"]
     inlines = [DCronJobSettingsInline]
 
     def duration(self, obj):
@@ -30,6 +31,12 @@ class DCronJobAdmin(admin.ModelAdmin):
         return "-"
 
     duration.short_description = "Duration"
+
+    def enabled(self, obj):
+        return obj.dcronjobsettings.enabled
+
+    enabled.boolean = True
+    enabled.short_description = "Enabled"
 
 
 @admin.register(models.DCronJobSettings)
