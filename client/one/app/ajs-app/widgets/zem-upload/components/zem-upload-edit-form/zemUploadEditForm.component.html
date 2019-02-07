@@ -1476,7 +1476,8 @@
                         class="ad-preview__image-link"
                         ><img
                             ng-src="{{
-                                ctrl.selectedCandidate.hostedImageUrl ||
+                                ctrl.selectedCandidate
+                                    .landscapeHostedImageUrl ||
                                     ctrl.config.staticUrl +
                                         '/one/images/empty-pixel.png'
                             }}"

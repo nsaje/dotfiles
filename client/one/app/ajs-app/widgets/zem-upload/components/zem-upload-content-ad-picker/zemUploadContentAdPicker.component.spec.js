@@ -99,6 +99,7 @@ describe('zemUploadContentAdPicker', function() {
                 callToAction: 'Read more',
                 label: 'title1',
                 hostedImageUrl: 'http://zemanta.com/img1.jpg',
+                landscapeHostedImageUrl: 'http://zemanta.com/img1.jpg',
                 imageStatus: constants.asyncUploadJobStatus.OK,
                 urlStatus: constants.asyncUploadJobStatus.FAILED,
                 errors: {
@@ -121,6 +122,9 @@ describe('zemUploadContentAdPicker', function() {
                 constants.asyncUploadJobStatus.FAILED
             );
             expect($ctrl.candidates[0].hostedImageUrl).toBe(
+                'http://zemanta.com/img1.jpg'
+            );
+            expect($ctrl.candidates[0].landscapeHostedImageUrl).toBe(
                 'http://zemanta.com/img1.jpg'
             );
             expect($ctrl.candidates[0].errors.title).toEqual(['Invalid title']);

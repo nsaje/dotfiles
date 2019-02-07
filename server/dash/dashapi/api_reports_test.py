@@ -119,8 +119,8 @@ CONTENT_AD_1 = {
     "label": "",
     "image_hash": "100",
     "image_urls": {
-        "square": "/100.jpg?w=160&h=160&fit=crop&crop=center&fm=jpg",
-        "landscape": "/100.jpg?w=256&h=160&fit=crop&crop=center&fm=jpg",
+        "square": "/100.jpg?w=300&h=300&fit=crop&crop=center&fm=jpg",
+        "landscape": "/100.jpg?w=720&h=450&fit=crop&crop=center&fm=jpg",
         "image": "/100.jpg?w=200&h=300&fit=crop&crop=center&fm=jpg",
         "ad_tag": None,
     },
@@ -172,8 +172,8 @@ CONTENT_AD_2 = {
     "label": "",
     "image_hash": "200",
     "image_urls": {
-        "square": "/200.jpg?w=160&h=160&fit=crop&crop=center&fm=jpg",
-        "landscape": "/200.jpg?w=256&h=160&fit=crop&crop=center&fm=jpg",
+        "square": "/200.jpg?w=300&h=300&fit=crop&crop=center&fm=jpg",
+        "landscape": "/200.jpg?w=720&h=450&fit=crop&crop=center&fm=jpg",
         "image": "/200.jpg?w=200&h=300&fit=crop&crop=center&fm=jpg",
         "ad_tag": None,
     },

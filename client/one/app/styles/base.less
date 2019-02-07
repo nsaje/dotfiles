@@ -3587,23 +3587,22 @@ h4 {
 }
 
 .ad-preview__image-link {
+    position: relative;
     display: block;
     margin-bottom: 5px;
     background-color: tint(@secondary-color, 90%);
     border: 1px solid tint(@secondary-color, 80%);
-    position: relative;
 
     &::before,
     &::after {
         content: ' ';
         display: block;
         position: absolute;
-        height: 1px;
-        width: 100%;
-        left: 0;
-        right: 0;
-        top: 50%;
-        transform: rotate(45deg) translateY(-50%);
+        height: 100%;
+        width: 1px;
+        left: 50%;
+        top: 0;
+        transform: rotate(45deg);
         background-color: tint(@secondary-color, 80%);
         z-index: 1;
     }
@@ -3616,6 +3615,8 @@ h4 {
 .ad-preview__image {
     display: block;
     width: 100%;
+    max-width: 358px;
+    max-height: 224px;
     z-index: 2;
     position: relative;
 }

@@ -121,6 +121,7 @@ angular.module('one.widgets').service('zemUploadApiConverter', function() {
             adTag: candidate.ad_tag,
             videoAssetId: candidate.video_asset_id,
             hostedImageUrl: candidate.hosted_image_url,
+            landscapeHostedImageUrl: candidate.landscape_hosted_image_url,
             displayUrl: candidate.display_url,
             brandName: candidate.brand_name,
             description: candidate.description,

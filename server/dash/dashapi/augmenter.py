@@ -242,8 +242,8 @@ def augment_content_ad(row, loader, is_base_level=False):
                 "call_to_action": content_ad.call_to_action,
                 "label": content_ad.label,
                 "image_urls": {
-                    "square": content_ad.get_image_url(160, 160),
-                    "landscape": content_ad.get_image_url(256, 160),
+                    "square": content_ad.get_image_url(300, 300),
+                    "landscape": content_ad.get_image_url(720, 450),
                     "image": content_ad.get_image_url(),
                     "ad_tag": content_ad.ad_tag,
                 },

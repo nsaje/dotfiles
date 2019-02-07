@@ -706,6 +706,7 @@ class AddCandidateTestCase(TestCase):
                 "image_status": constants.AsyncUploadJobStatus.PENDING_START,
                 "url_status": constants.AsyncUploadJobStatus.PENDING_START,
                 "hosted_image_url": None,
+                "landscape_hosted_image_url": None,
                 "video_asset_id": None,
                 "ad_tag": None,
                 "additional_data": None,
@@ -749,6 +750,7 @@ class AddCandidateTestCase(TestCase):
                 "image_status": constants.AsyncUploadJobStatus.PENDING_START,
                 "url_status": constants.AsyncUploadJobStatus.PENDING_START,
                 "hosted_image_url": None,
+                "landscape_hosted_image_url": None,
                 "video_asset_id": None,
                 "ad_tag": None,
                 "additional_data": None,
@@ -787,6 +789,7 @@ class GetCandidatesWithErrorsTestCase(TestCase):
                     "primary_tracker_url": "https://example.com/px1.png",
                     "secondary_tracker_url": "https://example.com/px2.png",
                     "hosted_image_url": None,
+                    "landscape_hosted_image_url": None,
                     "image_hash": None,
                     "errors": {"__all__": ["Content ad still processing"]},
                     "image_width": None,
@@ -821,6 +824,7 @@ class GetCandidatesWithErrorsTestCase(TestCase):
             [
                 {
                     "hosted_image_url": None,
+                    "landscape_hosted_image_url": None,
                     "image_crop": "landscape",
                     "primary_tracker_url": "http://example.com/px1.png",
                     "image_hash": None,
@@ -891,6 +895,7 @@ class GetCandidatesWithErrorsTestCase(TestCase):
                     "primary_tracker_url": "https://example.com/px1.png",
                     "secondary_tracker_url": "https://example.com/px2.png",
                     "hosted_image_url": None,
+                    "landscape_hosted_image_url": None,
                     "image_hash": None,
                     "errors": {"__all__": ["Content ad still processing"]},
                     "image_width": None,
@@ -925,6 +930,7 @@ class GetCandidatesWithErrorsTestCase(TestCase):
             [
                 {
                     "hosted_image_url": None,
+                    "landscape_hosted_image_url": None,
                     "image_crop": "center",
                     "primary_tracker_url": "http://example.com/px1.png",
                     "image_hash": None,
@@ -990,6 +996,7 @@ class GetCandidatesWithErrorsTestCase(TestCase):
                     "primary_tracker_url": "https://example.com/px1.png",
                     "secondary_tracker_url": "https://example.com/px2.png",
                     "hosted_image_url": None,
+                    "landscape_hosted_image_url": None,
                     "image_hash": None,
                     "errors": {"__all__": ["Content ad still processing"]},
                     "image_width": 300,
@@ -1024,6 +1031,7 @@ class GetCandidatesWithErrorsTestCase(TestCase):
             [
                 {
                     "hosted_image_url": None,
+                    "landscape_hosted_image_url": None,
                     "image_crop": "center",
                     "primary_tracker_url": "http://example.com/px1.png",
                     "image_hash": None,
