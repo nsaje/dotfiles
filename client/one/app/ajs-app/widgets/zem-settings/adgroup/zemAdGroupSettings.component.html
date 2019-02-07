@@ -35,13 +35,33 @@
                 ></zem-dayparting-setting>
             </div>
         </div>
-        <zem-device-targeting-settings
-            class="zem-settings-component"
-            entity="$container.entity"
-            errors="$container.errors"
-            api="$container.childApi"
+        <div
+            class="custom-panel zem-settings-component__container"
             ng-if="!$ctrl.hasPermission('zemauth.disable_public_rcs')"
-        ></zem-device-targeting-settings>
+        >
+            <h2 class="custom-panel__title">
+                Device targeting
+                <div
+                    class="zem-settings__different-than-default"
+                    ng-if="$ctrl.hasPermission('zemauth.settings_defaults_on_campaign_level') && $ctrl.isDeviceTargetingDifferentFromDefault($container.entity)"
+                >
+                    Different than campaign default
+                </div>
+            </h2>
+            <div class="custom-panel__description">
+                The devices on which your content ads will be shown.
+            </div>
+            <zem-device-targeting-settings
+                class="zem-settings-component zem-device-targeting-settings"
+                target-devices="$container.entity.settings.targetDevices"
+                target-placements="$container.entity.settings.targetPlacements"
+                target-os="$container.entity.settings.targetOs"
+                errors="$container.errors.targetDevices"
+                on-update="
+                    $ctrl.updateDeviceTargeting($container.entity, $event)
+                "
+            ></zem-device-targeting-settings>
+        </div>
         <div class="custom-panel zem-settings-component__container">
             <h2 class="custom-panel__title">
                 Location targeting

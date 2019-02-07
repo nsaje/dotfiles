@@ -7,9 +7,11 @@ describe('component: zemDeviceTargetingSettings', function() {
 
     beforeEach(inject(function($rootScope, $componentController) {
         var bindings = {
-            entity: {settings: {}},
+            targetDevices: [],
+            targetPlacements: [],
+            targetOs: [],
             errors: {},
-            api: {register: angular.noop},
+            onUpdate: angular.noop,
         };
         $ctrl = $componentController(
             'zemDeviceTargetingSettings',

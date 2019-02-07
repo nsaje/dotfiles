@@ -12,6 +12,8 @@ angular.module('one.widgets').component('zemAdGroupSettings', {
         $ctrl.updateBluekaiTargeting = updateBluekaiTargeting;
         $ctrl.updateGeoTargeting = updateGeoTargeting;
         $ctrl.isLocationTargetingDifferentFromDefault = isLocationTargetingDifferentFromDefault;
+        $ctrl.updateDeviceTargeting = updateDeviceTargeting;
+        $ctrl.isDeviceTargetingDifferentFromDefault = isDeviceTargetingDifferentFromDefault;
 
         function updateDaypartingSettings(entity, $event) {
             entity.settings.dayparting = $event;
@@ -44,6 +46,36 @@ angular.module('one.widgets').component('zemAdGroupSettings', {
                 entity.defaultSettings.exclusionTargetRegions
             );
             return areIncludedRegionsDifferent || areExcludedRegionsDifferent;
+        }
+
+        function updateDeviceTargeting(entity, $event) {
+            entity.settings.targetDevices = $event.targetDevices;
+            entity.settings.targetPlacements = $event.targetPlacements;
+            entity.settings.targetOs = $event.targetOs;
+        }
+
+        function isDeviceTargetingDifferentFromDefault(entity) {
+            if (!entity || !entity.defaultSettings) {
+                return false;
+            }
+            var areTargetDevicesDifferent = !angular.equals(
+                entity.settings.targetDevices,
+                entity.defaultSettings.targetDevices
+            );
+            var areTargetOsDifferent = !angular.equals(
+                entity.settings.targetOs,
+                entity.defaultSettings.targetOs
+            );
+            var areTargetPlacementsDifferent = !angular.equals(
+                entity.settings.targetPlacements,
+                entity.defaultSettings.targetPlacements
+            );
+
+            return (
+                areTargetDevicesDifferent ||
+                areTargetOsDifferent ||
+                areTargetPlacementsDifferent
+            );
         }
     },
 });

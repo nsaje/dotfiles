@@ -1,101 +1,77 @@
+<div class="form">
+    <div
+        class="form__group"
+        ng-class="{'form--error': !!$ctrl.errors,
+                                        'zem-device-targeting__mobile': device.name == 'Mobile',
+                                        'zem-device-targeting__tablet': device.name == 'Tablet',
+                                        'zem-device-targeting__desktop': device.name == 'Desktop',
+                                        'zem-device-targeting__active': device.checked,
+                                        }"
+        ng-repeat="device in $ctrl.state.devices"
+    >
+        <label class="form__label" for="{{ device.name }}"></label>
+        <div class="form__checkbox">
+            <label>
+                <input
+                    class="input-checkbox"
+                    type="checkbox"
+                    id="{{ device.name }}"
+                    ng-model="device.checked"
+                    ng-change="$ctrl.stateService.update()"
+                />
+                <span class="checkbox-text">{{ device.name }}</span>
+            </label>
+        </div>
+    </div>
+</div>
+<div class="message message--error" ng-repeat="error in $ctrl.errors">
+    {{ error }}
+</div>
+<!-- TODO: Message should only be display if selected device is Tablet -->
+<div class="message message--info message--with-icon">
+    Yahoo doesn't support Tablet option.
+</div>
+
 <div
-    class="custom-panel zem-settings-component__container zem-device-targeting-settings"
+    ng-if="$ctrl.hasPermission('zemauth.can_set_advanced_device_targeting')"
+    is-internal="zemauth.can_set_advanced_device_targeting"
 >
-    <h2 class="custom-panel__title" ng-if="$ctrl.isDefault()">
-        Default device targeting
-    </h2>
-    <h2 class="custom-panel__title" ng-if="!$ctrl.isDefault()">
-        Device targeting
-        <div
-            class="zem-settings__different-than-default"
-            ng-if="$ctrl.hasPermission('settings_defaults_on_campaign_level') && !$ctrl.isEqualToDefault()"
-        >
-            Different than campaign default
-        </div>
-    </h2>
-    <div class="custom-panel__description">
-        The devices on which your content ads will be shown.
-        <span ng-if="$ctrl.isDefault()"
-            >Used for all newly created ad groups.</span
-        >
-    </div>
-    <!-- TODO: Device classes should be calculated in controler -->
-    <div class="form">
-        <div
-            class="form__group"
-            ng-class="{'form--error': !!$ctrl.errors.targetDevices,
-                                           'zem-device-targeting__mobile': device.name == 'Mobile',
-                                           'zem-device-targeting__tablet': device.name == 'Tablet',
-                                           'zem-device-targeting__desktop': device.name == 'Desktop',
-                                           'zem-device-targeting__active': device.checked,
-                                           }"
-            ng-repeat="device in $ctrl.state.devices"
-        >
-            <label class="form__label" for="{{ device.name }}"></label>
-            <div class="form__checkbox">
-                <label>
-                    <input
-                        class="input-checkbox"
-                        type="checkbox"
-                        id="{{ device.name }}"
-                        ng-model="device.checked"
-                        ng-change="$ctrl.stateService.update()"
-                    />
-                    <span class="checkbox-text">{{ device.name }}</span>
-                </label>
-            </div>
-        </div>
-    </div>
     <div
-        class="message message--error"
-        ng-repeat="error in $ctrl.errors.targetDevices"
+        class="collapsable zem-advanced-device-targeting__collapsable"
+        ng-show="$ctrl.showAdvanceGroup"
     >
-        {{ error }}
-    </div>
-    <!-- TODO: Message should only be display if selected device is Tablet -->
-    <div class="message message--info message--with-icon">
-        Yahoo doesn't support Tablet option.
+        <h3 class="custom-panel__sub-title">
+            Advanced device targeting options
+        </h3>
+        <div class="form">
+            <div class="form__label">Choose operating system</div>
+            <zem-os-device-targeting-settings
+                class="zem-os-device-targeting-settings"
+                target-os="$ctrl.state.operatingSystems"
+                target-devices="$ctrl.state.devices"
+                on-update="$ctrl.updateOperatingSystems($event)"
+            ></zem-os-device-targeting-settings>
+            <hr />
+            <div class="form__label">Choose placement:</div>
+            <zem-placement-device-targeting-settings
+                class="zem-placement-device-targeting-settings"
+                target-placements="$ctrl.state.placements"
+                on-update="$ctrl.updatePlacements($event)"
+            ></zem-placement-device-targeting-settings>
+        </div>
+        <!-- TODO: Message should only be display if those Media sources are selected -->
+        <div class="message message--info message--with-icon">
+            Outbrain and Yahoo don't support Advanced device targeting options.
+        </div>
     </div>
 
-    <div
-        ng-if="$ctrl.hasPermission('zemauth.can_set_advanced_device_targeting')"
-        is-internal="zemauth.can_set_advanced_device_targeting"
+    <a
+        href=""
+        ng-class="{ 'collapsable__show-collapsed': !$ctrl.showAdvanceGroup,
+                    'collapsable__hide-collapsed': $ctrl.showAdvanceGroup }"
+        ng-click="$ctrl.showAdvanceGroup = !$ctrl.showAdvanceGroup"
     >
-        <div
-            class="collapsable zem-advanced-device-targeting__collapsable"
-            ng-show="$ctrl.showAdvanceGroup"
-        >
-            <h3 class="custom-panel__sub-title">
-                Advanced device targeting options
-            </h3>
-            <div class="form">
-                <div class="form__label">Choose operating system</div>
-                <zem-os-device-targeting-settings
-                    class="zem-os-device-targeting-settings"
-                    state-service="$ctrl.stateService"
-                ></zem-os-device-targeting-settings>
-                <hr />
-                <div class="form__label">Choose placement:</div>
-                <zem-placement-device-targeting-settings
-                    class="zem-placement-device-targeting-settings"
-                    state-service="$ctrl.stateService"
-                ></zem-placement-device-targeting-settings>
-            </div>
-            <!-- TODO: Message should only be display if those Media sources are selected -->
-            <div class="message message--info message--with-icon">
-                Outbrain and Yahoo don't support Advanced device targeting
-                options.
-            </div>
-        </div>
-
-        <a
-            href=""
-            ng-class="{ 'collapsable__show-collapsed': !$ctrl.showAdvanceGroup,
-                       'collapsable__hide-collapsed': $ctrl.showAdvanceGroup }"
-            ng-click="$ctrl.showAdvanceGroup = !$ctrl.showAdvanceGroup"
-        >
-            {{ $ctrl.showAdvanceGroup ? 'Hide' : 'Show' }} advanced device
-            targeting options
-        </a>
-    </div>
+        {{ $ctrl.showAdvanceGroup ? 'Hide' : 'Show' }} advanced device targeting
+        options
+    </a>
 </div>

@@ -1,10 +1,10 @@
 <div>
-    <div class="message block" ng-hide="$ctrl.state.operatingSystems.length">
+    <div class="message block" ng-hide="$ctrl.operatingSystems.length">
         You are currently targeting all operating systems. To target only
         specific operating system add it by clicking button below.
     </div>
     <div
-        ng-repeat="operatingSystem in $ctrl.state.operatingSystems"
+        ng-repeat="operatingSystem in $ctrl.operatingSystems"
         class="zem-os-device-targeting__container clearfix"
         ng-class="{
             'zem-os-device-targeting--desktop': operatingSystem.devices.indexOf('DESKTOP') > -1,
@@ -29,7 +29,7 @@
                 theme="select2"
                 class="button button--plain button--full-width button--dropdown-toggle-icon"
                 ng-model="operatingSystem.version.min"
-                ng-change="$ctrl.stateService.update()"
+                ng-change="$ctrl.updateOperatingSystems()"
                 search-enabled="false"
             >
                 <ui-select-match>{{
@@ -52,7 +52,7 @@
                 theme="select2"
                 class="button button--plain button--full-width button--dropdown-toggle-icon"
                 ng-model="operatingSystem.version.max"
-                ng-change="$ctrl.stateService.update()"
+                ng-change="$ctrl.updateOperatingSystems()"
                 search-enabled="false"
             >
                 <ui-select-match>{{
@@ -68,7 +68,7 @@
         </div>
         <button
             class="button button--small button--with-icon button--only-icon remove-icon zem-os-device-targeting__remove"
-            ng-click="$ctrl.stateService.removeOperatingSystem(operatingSystem)"
+            ng-click="$ctrl.removeOperatingSystem(operatingSystem)"
         ></button>
     </div>
 
@@ -76,7 +76,7 @@
         theme="select2"
         ng-model="_model_"
         search-enabled="false"
-        on-select="$ctrl.stateService.addOperatingSystem($item)"
+        on-select="$ctrl.addOperatingSystem($item)"
         class="button button--with-icon add-icon button--dropdown-toggle-icon m-t-s"
     >
         <ui-select-match

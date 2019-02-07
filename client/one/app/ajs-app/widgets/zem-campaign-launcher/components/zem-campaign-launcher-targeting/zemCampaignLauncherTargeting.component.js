@@ -7,27 +7,26 @@ angular.module('one').component('zemCampaignLauncherTargeting', {
         var $ctrl = this;
 
         $ctrl.updateGeoTargeting = updateGeoTargeting;
+        $ctrl.updateDeviceTargeting = updateDeviceTargeting;
 
         $ctrl.$onInit = function() {
             $ctrl.state = $ctrl.stateService.getState();
-            initTargetingWidgets();
         };
 
-        function initTargetingWidgets() {
-            $ctrl.entity = {
-                settings: $ctrl.state.fields,
-            };
+        function updateGeoTargeting($event) {
+            if ($event.includedLocations) {
+                $ctrl.state.fields.targetRegions = $event.includedLocations;
+            }
+            if ($event.excludedLocations) {
+                $ctrl.state.fields.exclusionTargetRegions =
+                    $event.excludedLocations;
+            }
         }
 
-        function updateGeoTargeting(updatedGeoTargeting) {
-            if (updatedGeoTargeting.includedLocations) {
-                $ctrl.state.fields.targetRegions =
-                    updatedGeoTargeting.includedLocations;
-            }
-            if (updatedGeoTargeting.excludedLocations) {
-                $ctrl.state.fields.exclusionTargetRegions =
-                    updatedGeoTargeting.excludedLocations;
-            }
+        function updateDeviceTargeting($event) {
+            $ctrl.state.fields.targetDevices = $event.targetDevices;
+            $ctrl.state.fields.targetPlacements = $event.targetPlacements;
+            $ctrl.state.fields.targetOs = $event.targetOs;
         }
     },
 });

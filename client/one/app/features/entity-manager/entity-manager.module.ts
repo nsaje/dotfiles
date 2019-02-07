@@ -18,6 +18,7 @@ import {DateSettingComponent} from './components/date-setting/date-setting.compo
 import {SelectSettingComponent} from './components/select-setting/select-setting.component';
 import {DemographicTargetingComponent} from './components/demographic-targeting/demographic-targeting.component';
 import {GeoTargetingComponent} from './components/geo-targeting/geo-targeting.component';
+import {DeviceTargetingSettingsComponent} from './components/device-targeting-settings/device-targeting-settings.component';
 
 @NgModule({
     declarations: [
@@ -38,6 +39,7 @@ import {GeoTargetingComponent} from './components/geo-targeting/geo-targeting.co
         SelectSettingComponent,
         DemographicTargetingComponent,
         GeoTargetingComponent,
+        DeviceTargetingSettingsComponent,
     ],
     imports: [SharedModule],
     entryComponents: [

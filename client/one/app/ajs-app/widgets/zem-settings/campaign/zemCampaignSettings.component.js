@@ -9,18 +9,24 @@ angular.module('one.widgets').component('zemCampaignSettings', {
         $ctrl.hasPermission = zemPermissions.hasPermission;
         $ctrl.isPermissionInternal = zemPermissions.isPermissionInternal;
         $ctrl.updateGeoTargeting = updateGeoTargeting;
+        $ctrl.updateDeviceTargeting = updateDeviceTargeting;
 
         $ctrl.$onInit = function() {};
 
-        function updateGeoTargeting(entity, updatedGeoTargeting) {
-            if (updatedGeoTargeting.includedLocations) {
-                entity.settings.targetRegions =
-                    updatedGeoTargeting.includedLocations;
+        function updateGeoTargeting(entity, $event) {
+            if ($event.includedLocations) {
+                entity.settings.targetRegions = $event.includedLocations;
             }
-            if (updatedGeoTargeting.excludedLocations) {
+            if ($event.excludedLocations) {
                 entity.settings.exclusionTargetRegions =
-                    updatedGeoTargeting.excludedLocations;
+                    $event.excludedLocations;
             }
+        }
+
+        function updateDeviceTargeting(entity, $event) {
+            entity.settings.targetDevices = $event.targetDevices;
+            entity.settings.targetPlacements = $event.targetPlacements;
+            entity.settings.targetOs = $event.targetOs;
         }
     },
 });

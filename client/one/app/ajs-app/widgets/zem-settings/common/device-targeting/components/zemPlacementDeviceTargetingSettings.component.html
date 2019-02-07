@@ -1,5 +1,5 @@
 <div
-    ng-repeat="placement in $ctrl.state.placements"
+    ng-repeat="placement in $ctrl.placements"
     class="form__group zem-placement-device-targeting__option
             zem-placement-device-targeting__option--{{ placement.value }}"
     ng-class="{
@@ -15,7 +15,7 @@
                 type="checkbox"
                 id="{{ placement.value }}"
                 ng-model="placement.selected"
-                ng-change="$ctrl.stateService.update()"
+                ng-change="$ctrl.updatePlacements()"
             />
             <span class="checkbox-text">{{ placement.name }}</span>
         </label>

@@ -1,8 +1,10 @@
 angular.module('one.widgets').component('zemDeviceTargetingSettings', {
     bindings: {
-        entity: '<',
+        targetDevices: '<',
+        targetPlacements: '<',
+        targetOs: '<',
         errors: '<',
-        api: '<?',
+        onUpdate: '&',
     },
     template: require('./zemDeviceTargetingSettings.component.html'),
     controller: function(
@@ -16,26 +18,37 @@ angular.module('one.widgets').component('zemDeviceTargetingSettings', {
         $ctrl.config = config;
         $ctrl.hasPermission = zemPermissions.hasPermission;
         $ctrl.isPermissionInternal = zemPermissions.isPermissionInternal;
+        $ctrl.updateOperatingSystems = updateOperatingSystems;
+        $ctrl.updatePlacements = updatePlacements;
 
         $ctrl.showAdvanceGroup = false;
-        $ctrl.isEqualToDefault = isEqualToDefault;
-        $ctrl.isDefault = isDefault;
 
-        $ctrl.$onInit = function() {
-            if ($ctrl.api) {
-                $ctrl.api.register({});
-            }
-        };
+        $ctrl.$onInit = function() {};
 
         $ctrl.$onChanges = function(changes) {
-            if (changes.entity && $ctrl.entity) {
-                if ($ctrl.stateService) $ctrl.stateService.destroy();
-
+            if (!$ctrl.stateService) {
                 $ctrl.stateService = zemDeviceTargetingStateService.createInstance(
-                    $ctrl.entity
+                    propagateUpdate
                 );
-                $ctrl.stateService.initialize();
                 $ctrl.state = $ctrl.stateService.getState();
+            }
+            if (
+                !$ctrl.targetDevices ||
+                !$ctrl.targetPlacements ||
+                !$ctrl.targetOs
+            ) {
+                return;
+            }
+            if (
+                changes.targetDevices ||
+                changes.targetPlacements ||
+                changes.targetOs
+            ) {
+                $ctrl.stateService.initialize(
+                    $ctrl.targetDevices,
+                    $ctrl.targetPlacements,
+                    $ctrl.targetOs
+                );
                 $ctrl.showAdvanceGroup = isAdvanceGroupVisible();
             }
         };
@@ -43,6 +56,10 @@ angular.module('one.widgets').component('zemDeviceTargetingSettings', {
         $ctrl.$onDestroy = function() {
             if ($ctrl.stateService) $ctrl.stateService.destroy();
         };
+
+        function propagateUpdate(deviceTargetings) {
+            $ctrl.onUpdate({$event: deviceTargetings});
+        }
 
         function isAdvanceGroupVisible() {
             if ($ctrl.state.operatingSystems.length > 0) return true;
@@ -56,27 +73,14 @@ angular.module('one.widgets').component('zemDeviceTargetingSettings', {
             return false;
         }
 
-        function isDefault() {
-            if (!$ctrl.state) return false;
-            return !$ctrl.state.defaults.devices;
+        function updateOperatingSystems($event) {
+            $ctrl.state.operatingSystems = $event;
+            $ctrl.stateService.update();
         }
 
-        function isEqualToDefault() {
-            if (!$ctrl.state) return false;
-            return (
-                angular.equals(
-                    $ctrl.state.devices,
-                    $ctrl.state.defaults.devices
-                ) &&
-                angular.equals(
-                    $ctrl.state.operatingSystems,
-                    $ctrl.state.defaults.operatingSystems
-                ) &&
-                angular.equals(
-                    $ctrl.state.placements,
-                    $ctrl.state.defaults.placements
-                )
-            );
+        function updatePlacements($event) {
+            $ctrl.state.placements = $event;
+            $ctrl.stateService.update();
         }
     },
 });

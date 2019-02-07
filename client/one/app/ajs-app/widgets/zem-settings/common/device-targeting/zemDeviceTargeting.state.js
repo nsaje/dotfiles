@@ -11,21 +11,16 @@ angular
             ON_UPDATE: 'zemDeviceTargetingStateService_on-update',
         };
 
-        function StateService(entity) {
+        function StateService(updateCallback) {
             var pubSub = zemPubSubService.createInstance();
 
             //
             // State Object
             //
             var state = {
-                devices: null,
-                placements: null,
-                operatingSystems: null,
-                defaults: {
-                    devices: null,
-                    placements: null,
-                    operatingSystems: null,
-                },
+                devices: [],
+                placements: [],
+                operatingSystems: [],
             };
 
             //
@@ -36,42 +31,20 @@ angular
             this.getState = getState;
 
             this.update = update;
-            this.addOperatingSystem = addOperatingSystem;
-            this.removeOperatingSystem = removeOperatingSystem;
-
             this.onUpdate = onUpdate;
 
             ///////////////////////////////////////////////////////////////////////////////////////////////
             // Internals
             //
-            function initialize() {
-                angular.extend(state, convertFromApi(entity));
+            function initialize(targetDevices, targetPlacements, targetOs) {
+                angular.extend(
+                    state,
+                    convertFromApi(targetDevices, targetPlacements, targetOs)
+                );
             }
 
             function destroy() {
                 pubSub.destroy();
-            }
-
-            function addOperatingSystem(operatingSystemDefinition) {
-                var operatingSystem = angular.copy(operatingSystemDefinition);
-                if (operatingSystem.versions) {
-                    operatingSystem.versions.unshift({
-                        value: null,
-                        name: ' - ',
-                    });
-                    operatingSystem.version = {
-                        min: operatingSystem.versions[0],
-                        max: operatingSystem.versions[0],
-                    };
-                }
-                state.operatingSystems.push(operatingSystem);
-                update();
-            }
-
-            function removeOperatingSystem(operatingSystem) {
-                var idx = state.operatingSystems.indexOf(operatingSystem);
-                state.operatingSystems.splice(idx, 1);
-                update();
             }
 
             function getState() {
@@ -112,46 +85,18 @@ angular
             }
 
             function updateSettings() {
-                var newSettings = convertToApi(state);
-                entity.settings.targetDevices = newSettings.targetDevices;
-                entity.settings.targetOs = newSettings.targetOs;
-                entity.settings.targetPlacements = newSettings.targetPlacements;
+                updateCallback(convertToApi(state));
             }
 
             ///////////////////////////////////////////////////////////////////////////////////////////////
             // Converters
             //
-            function convertFromApi(entity) {
+            function convertFromApi(targetDevices, targetPlacements, targetOs) {
                 var data = {
-                    devices: convertTargetDevicesFromApi(
-                        entity.settings.targetDevices
-                    ),
-                    placements: convertPlacementsFromApi(
-                        entity.settings.targetPlacements
-                    ),
-                    operatingSystems: convertOperatingSystemsFromApi(
-                        entity.settings.targetOs
-                    ),
-                    defaults: {
-                        devices: null,
-                        operatingSystems: null,
-                        placements: null,
-                    },
+                    devices: convertTargetDevicesFromApi(targetDevices),
+                    placements: convertPlacementsFromApi(targetPlacements),
+                    operatingSystems: convertOperatingSystemsFromApi(targetOs),
                 };
-
-                if (entity.defaultSettings) {
-                    data.defaults = {
-                        devices: convertTargetDevicesFromApi(
-                            entity.defaultSettings.targetDevices
-                        ),
-                        placements: convertPlacementsFromApi(
-                            entity.defaultSettings.targetPlacements
-                        ),
-                        operatingSystems: convertOperatingSystemsFromApi(
-                            entity.defaultSettings.targetOs
-                        ),
-                    };
-                }
 
                 return data;
             }
@@ -285,8 +230,8 @@ angular
         }
 
         return {
-            createInstance: function(entity) {
-                return new StateService(entity);
+            createInstance: function(updateCallback) {
+                return new StateService(updateCallback);
             },
         };
     });

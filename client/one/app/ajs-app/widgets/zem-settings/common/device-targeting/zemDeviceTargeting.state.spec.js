@@ -1,7 +1,5 @@
 describe('state: zemDeviceTargetingStateService', function() {
-    var zemDeviceTargetingStateService,
-        zemPubSubService,
-        zemDeviceTargetingConstants;
+    var zemDeviceTargetingStateService, zemPubSubService;
 
     beforeEach(angular.mock.module('one'));
     beforeEach(angular.mock.module('one.mocks.downgradedProviders'));
@@ -10,38 +8,32 @@ describe('state: zemDeviceTargetingStateService', function() {
         zemDeviceTargetingStateService = $injector.get(
             'zemDeviceTargetingStateService'
         );
-        zemDeviceTargetingConstants = $injector.get(
-            'zemDeviceTargetingConstants'
-        );
         zemPubSubService = $injector.get('zemPubSubService');
     }));
 
     it('should prepare state object', function() {
-        var stateService = zemDeviceTargetingStateService.createInstance({});
+        var stateService = zemDeviceTargetingStateService.createInstance(
+            angular.noop
+        );
         expect(stateService.getState()).toEqual({
-            devices: null,
-            placements: null,
-            operatingSystems: null,
-            defaults: {
-                devices: null,
-                placements: null,
-                operatingSystems: null,
-            },
+            devices: [],
+            placements: [],
+            operatingSystems: [],
         });
     });
 
     it('should load the state on initalization', function() {
-        var stateService = zemDeviceTargetingStateService.createInstance({
-            settings: {
-                targetDevices: ['MOBILE'],
-                targetOs: [
-                    {name: 'IOS', version: {min: 'IOS_4_0', max: null}},
-                    {name: 'ANDROID', version: {min: 'ANDROID_2_1', max: null}},
-                ],
-                targetPlacements: ['SITE', 'APP'],
-            },
-        });
-        stateService.initialize();
+        var stateService = zemDeviceTargetingStateService.createInstance(
+            angular.noop
+        );
+        var targetDevices = ['MOBILE'];
+        var targetPlacements = ['SITE', 'APP'];
+        var targetOs = [
+            {name: 'IOS', version: {min: 'IOS_4_0', max: null}},
+            {name: 'ANDROID', version: {min: 'ANDROID_2_1', max: null}},
+        ];
+
+        stateService.initialize(targetDevices, targetPlacements, targetOs);
         expect(stateService.getState()).toEqual({
             devices: [
                 {name: 'Desktop', value: 'DESKTOP', checked: false},
@@ -84,73 +76,47 @@ describe('state: zemDeviceTargetingStateService', function() {
                     },
                 },
             ],
-            defaults: {
-                devices: null,
-                operatingSystems: null,
-                placements: null,
-            },
         });
     });
 
     it('should create pubsub', function() {
         spyOn(zemPubSubService, 'createInstance');
-        zemDeviceTargetingStateService.createInstance({});
+        zemDeviceTargetingStateService.createInstance(angular.noop);
         expect(zemPubSubService.createInstance).toHaveBeenCalled();
     });
 
     it('should notify updates to the state', function() {
-        var stateService = zemDeviceTargetingStateService.createInstance({
-            settings: {
-                targetDevices: ['MOBILE'],
-            },
-        });
+        var callbackSpy = jasmine.createSpy();
+        var stateService = zemDeviceTargetingStateService.createInstance(
+            callbackSpy
+        );
+        var targetDevices = ['MOBILE'];
+        var targetPlacements = ['SITE', 'APP'];
+        var targetOs = [
+            {name: 'IOS', version: {min: 'IOS_4_0', max: null}},
+            {name: 'ANDROID', version: {min: 'ANDROID_2_1', max: null}},
+        ];
 
-        stateService.initialize();
+        stateService.initialize(targetDevices, targetPlacements, targetOs);
 
         var spy = jasmine.createSpy();
         stateService.onUpdate(spy);
 
         stateService.update();
         expect(spy).toHaveBeenCalled();
-    });
-
-    it('should notify on operatingSystem updates', function() {
-        var stateService = zemDeviceTargetingStateService.createInstance({
-            settings: {
-                targetDevices: ['DESKTOP'],
-                targetOs: [],
-            },
-        });
-
-        stateService.initialize();
-        var spy = jasmine.createSpy();
-        stateService.onUpdate(spy);
-
-        stateService.addOperatingSystem(
-            zemDeviceTargetingConstants.OPERATING_SYSTEMS[0]
-        );
-        expect(spy).toHaveBeenCalled();
-        spy.calls.reset();
-
-        stateService.removeOperatingSystem(
-            stateService.getState().operatingSystems[0]
-        );
-        expect(spy).toHaveBeenCalled();
+        expect(callbackSpy).toHaveBeenCalled();
     });
 
     it('should update settings on state update', function() {
-        var entity = {
-            settings: {
-                targetDevices: ['MOBILE'],
-                targetOs: [{name: 'IOS', version: {min: 'IOS_4_0', max: null}}],
-                targetPlacements: ['SITE', 'APP'],
-            },
-        };
-
+        var callbackSpy = jasmine.createSpy();
         var stateService = zemDeviceTargetingStateService.createInstance(
-            entity
+            callbackSpy
         );
-        stateService.initialize();
+        var targetDevices = ['MOBILE'];
+        var targetPlacements = ['SITE', 'APP'];
+        var targetOs = [{name: 'IOS', version: {min: 'IOS_4_0', max: null}}];
+
+        stateService.initialize(targetDevices, targetPlacements, targetOs);
 
         var state = stateService.getState();
 
@@ -158,7 +124,7 @@ describe('state: zemDeviceTargetingStateService', function() {
         state.placements[0].selected = false;
         stateService.update();
 
-        expect(entity.settings).toEqual({
+        expect(callbackSpy).toHaveBeenCalledWith({
             targetDevices: ['DESKTOP', 'MOBILE'],
             targetOs: [{name: 'IOS', version: {min: 'IOS_4_0'}}],
             targetPlacements: ['APP'],
@@ -166,18 +132,14 @@ describe('state: zemDeviceTargetingStateService', function() {
     });
 
     it('should configure OS max version to be always greater than min', function() {
-        var entity = {
-            settings: {
-                targetOs: [
-                    {name: 'IOS', version: {min: 'IOS_4_0', max: 'IOS_7_0'}},
-                ],
-            },
-        };
-
         var stateService = zemDeviceTargetingStateService.createInstance(
-            entity
+            angular.noop
         );
-        stateService.initialize();
+        var targetOs = [
+            {name: 'IOS', version: {min: 'IOS_4_0', max: 'IOS_7_0'}},
+        ];
+
+        stateService.initialize(null, null, targetOs);
 
         var os = stateService.getState().operatingSystems[0];
         os.version.max = os.versions[1];
