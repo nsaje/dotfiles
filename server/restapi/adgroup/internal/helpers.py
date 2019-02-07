@@ -7,6 +7,8 @@ import dash.retargeting_helper
 
 
 def get_extra_data(user, ad_group):
+    default_settings = get_default_settings(ad_group)
+
     retargetable_adgroups = get_retargetable_adgroups(
         user, ad_group, ad_group.settings.retargeting_ad_groups + ad_group.settings.exclusion_retargeting_ad_groups
     )
@@ -21,6 +23,7 @@ def get_extra_data(user, ad_group):
         "action_is_waiting": False,
         "can_archive": ad_group.can_archive(),
         "can_restore": ad_group.can_restore(),
+        "default_settings": default_settings,
         "retargetable_adgroups": retargetable_adgroups,
         "audiences": audiences,
         "warnings": warnings,
@@ -30,6 +33,20 @@ def get_extra_data(user, ad_group):
         extra["hacks"] = get_hacks(ad_group)
 
     return extra
+
+
+def get_default_settings(ad_group):
+    settings = ad_group.campaign.settings
+
+    result = {
+        "target_regions": settings.target_regions,
+        "exclusion_target_regions": settings.exclusion_target_regions,
+        "target_devices": settings.target_devices,
+        "target_os": settings.target_os,
+        "target_placements": settings.target_placements,
+    }
+
+    return result
 
 
 def get_retargetable_adgroups(user, ad_group, existing_targetings):

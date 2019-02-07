@@ -2,6 +2,15 @@ import rest_framework.serializers
 
 import restapi.serializers.base
 import restapi.serializers.hack
+import restapi.serializers.targeting
+
+
+class ExtraDataDefaultSettingsSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
+    target_regions = restapi.serializers.targeting.TargetRegionsSerializer(required=False, allow_null=True)
+    exclusion_target_regions = restapi.serializers.targeting.TargetRegionsSerializer(required=False, allow_null=True)
+    target_devices = restapi.serializers.targeting.DevicesSerializer(required=False, allow_null=True)
+    target_os = restapi.serializers.targeting.OSsSerializer(required=False, allow_null=True)
+    target_placements = restapi.serializers.targeting.PlacementsSerializer(required=False, allow_null=True)
 
 
 class ExtraDataRetargetableAdGroupSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
@@ -29,6 +38,7 @@ class ExtraDataSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
     action_is_waiting = rest_framework.serializers.BooleanField(default=False, required=False)
     can_archive = rest_framework.serializers.BooleanField(default=False, required=False)
     can_restore = rest_framework.serializers.BooleanField(default=False, required=False)
+    default_settings = ExtraDataDefaultSettingsSerializer(default=False, required=False)
     retargetable_adgroups = rest_framework.serializers.ListField(
         child=ExtraDataRetargetableAdGroupSerializer(), allow_empty=True
     )
