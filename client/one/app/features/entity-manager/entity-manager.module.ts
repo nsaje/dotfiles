@@ -19,6 +19,8 @@ import {SelectSettingComponent} from './components/select-setting/select-setting
 import {DemographicTargetingComponent} from './components/demographic-targeting/demographic-targeting.component';
 import {GeoTargetingComponent} from './components/geo-targeting/geo-targeting.component';
 import {DeviceTargetingSettingsComponent} from './components/device-targeting-settings/device-targeting-settings.component';
+import {TrackingCodeSettingComponent} from './components/tracking-code-setting/tracking-code-setting.component';
+import {TrackingPixelSettingComponent} from './components/tracking-pixel-setting/tracking-pixel-setting.component';
 
 @NgModule({
     declarations: [
@@ -40,6 +42,8 @@ import {DeviceTargetingSettingsComponent} from './components/device-targeting-se
         DemographicTargetingComponent,
         GeoTargetingComponent,
         DeviceTargetingSettingsComponent,
+        TrackingCodeSettingComponent,
+        TrackingPixelSettingComponent,
     ],
     imports: [SharedModule],
     entryComponents: [

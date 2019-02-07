@@ -1,0 +1,21 @@
+<div class="zem-tracking-code-setting__item zem-settings__section-title">
+    Tracking codes
+</div>
+<div class="zem-tracking-code-setting__item zem-settings__section-description">
+    The tracking code / UTM to be appended to all URLs being promoted.
+</div>
+<textarea
+    class="zem-tracking-code-setting__item zem-input-textarea"
+    [ngClass]="{'zem-input-textarea--error': errors.length > 0}"
+    type="text"
+    rows="{{ rows }}"
+    [(ngModel)]="model"
+    (blur)="onBlur($event)"
+    [disabled]="isDisabled"
+></textarea>
+<div
+    class="zem-tracking-code-setting__item zem-message zem-message--error"
+    *ngFor="let error of errors"
+>
+    {{ error }}
+</div>

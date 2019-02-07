@@ -24,12 +24,15 @@
     &::-webkit-input-placeholder {
         color: @gray;
     }
+
     &::-moz-placeholder {
         color: @gray;
     }
+
     &:-ms-input-placeholder {
         color: @gray;
     }
+
     &:-moz-placeholder {
         color: @gray;
     }
@@ -39,6 +42,14 @@
         background-color: @very-light-gray;
         cursor: not-allowed;
         color: @dark-gray;
+    }
+}
+
+.zem-input-textarea--dashed {
+    border-style: dashed;
+
+    &:focus {
+        border-style: dashed;
     }
 }
 

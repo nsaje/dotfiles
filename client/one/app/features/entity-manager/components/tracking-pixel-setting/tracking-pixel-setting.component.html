@@ -1,0 +1,36 @@
+<div class="zem-tracking-pixel-setting__item zem-settings__section-title">
+    3rd party pixel tracking
+</div>
+<div class="zem-tracking-pixel-setting__item zem-settings__section-description">
+    3rd party pixels help you retarget people who clicked on Zemanta ads. This
+    is a read-only section. Please contact your Zemanta Customer Success Manager
+    if you want to set up or change 3rd party pixel tracking.
+</div>
+<ng-container *ngIf="pixelUrls && pixelUrls.length > 0">
+    <span
+        class="zem-tracking-pixel-setting__item zem-tracking-pixel-setting__title"
+        >Tags</span
+    >
+    <ul class="zem-tracking-pixel-setting__item">
+        <li *ngFor="let pixelUrl of pixelUrls">{{ pixelUrl }}</li>
+    </ul>
+</ng-container>
+<ng-container *ngIf="redirectJavaScript">
+    <span
+        class="zem-tracking-pixel-setting__item zem-tracking-pixel-setting__title"
+        >Javascript</span
+    >
+    <textarea
+        class="zem-tracking-pixel-setting__item zem-input-textarea zem-input-textarea--dashed"
+        type="text"
+        rows="4"
+        [ngModel]="redirectJavaScript"
+        [disabled]="true"
+    ></textarea>
+</ng-container>
+<div
+    class="zem-tracking-pixel-setting__item zem-message"
+    *ngIf="!pixelUrls && !redirectJavaScript"
+>
+    No 3rd party pixel tracking.
+</div>
