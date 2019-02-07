@@ -259,11 +259,27 @@ angular.module('one.widgets').component('zemReportQueryConfig', {
         function getSelectedColumns() {
             var selectedColumns = [];
             $ctrl.categories.forEach(function(category) {
-                selectedColumns = selectedColumns.concat(
-                    category.columns.filter(function(item) {
-                        return item.visible;
-                    })
-                );
+                category.columns.forEach(function(column) {
+                    if (column.visible) {
+                        selectedColumns = selectedColumns.concat(
+                            $ctrl.gridApi.getColumnsToToggle(column, allColumns)
+                        );
+                    }
+                });
+                if (category.subcategories) {
+                    category.subcategories.forEach(function(subcategory) {
+                        subcategory.columns.forEach(function(column) {
+                            if (column.visible) {
+                                selectedColumns = selectedColumns.concat(
+                                    $ctrl.gridApi.getColumnsToToggle(
+                                        column,
+                                        allColumns
+                                    )
+                                );
+                            }
+                        });
+                    });
+                }
             });
             return selectedColumns.map(getColumnName);
         }
