@@ -4,6 +4,7 @@
   ],
   "compileOnSave": false,
   "compilerOptions": {
+    "baseUrl": ".",
     "target": "es5",
     "sourceMap": true,
     "declaration": false,
@@ -23,6 +24,9 @@
     "typeRoots": [
       "node_modules/@types"
     ],
+    "paths": {
+      "moment": ["./lib/components/moment/moment"],
+    },
     "plugins": [
         {
             "name": "@angular/language-service"

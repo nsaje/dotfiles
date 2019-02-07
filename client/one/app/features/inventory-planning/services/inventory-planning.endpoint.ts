@@ -7,11 +7,10 @@ import {Filters} from '../types/filters';
 import {Inventory} from '../types/inventory';
 import {FilterOption} from '../types/filter-option';
 import {ApiResponse} from '../../../shared/types/api-response';
-import {RequestPayload} from '../../../shared/types/request-payload';
 import {INVENTORY_PLANNING_CONFIG} from '../inventory-planning.config';
 import * as endpointHelpers from '../../../shared/helpers/endpoint.helpers';
 import * as requestPayloadHelpers from '../helpers/request-payload.helpers';
-import {StoreRequestStateUpdater} from '../../../shared/types/store-request-state-updater';
+import {RequestStateUpdater} from '../../../shared/types/request-state-updater';
 
 @Injectable()
 export class InventoryPlanningEndpoint {
@@ -19,7 +18,7 @@ export class InventoryPlanningEndpoint {
 
     loadSummary(
         selectedFilters: Filters,
-        requestStateUpdater: StoreRequestStateUpdater
+        requestStateUpdater: RequestStateUpdater
     ): Observable<Inventory> {
         const request = INVENTORY_PLANNING_CONFIG.requests.loadSummary;
 
@@ -61,7 +60,7 @@ export class InventoryPlanningEndpoint {
 
     loadCountries(
         selectedFilters: Filters,
-        requestStateUpdater: StoreRequestStateUpdater
+        requestStateUpdater: RequestStateUpdater
     ): Observable<FilterOption[]> {
         const request = INVENTORY_PLANNING_CONFIG.requests.loadCountries;
 
@@ -104,7 +103,7 @@ export class InventoryPlanningEndpoint {
 
     loadPublishers(
         selectedFilters: Filters,
-        requestStateUpdater: StoreRequestStateUpdater
+        requestStateUpdater: RequestStateUpdater
     ): Observable<FilterOption[]> {
         const request = INVENTORY_PLANNING_CONFIG.requests.loadPublishers;
 
@@ -147,7 +146,7 @@ export class InventoryPlanningEndpoint {
 
     loadDevices(
         selectedFilters: Filters,
-        requestStateUpdater: StoreRequestStateUpdater
+        requestStateUpdater: RequestStateUpdater
     ): Observable<FilterOption[]> {
         const request = INVENTORY_PLANNING_CONFIG.requests.loadDevices;
 
@@ -190,7 +189,7 @@ export class InventoryPlanningEndpoint {
 
     loadSources(
         selectedFilters: Filters,
-        requestStateUpdater: StoreRequestStateUpdater
+        requestStateUpdater: RequestStateUpdater
     ): Observable<FilterOption[]> {
         const request = INVENTORY_PLANNING_CONFIG.requests.loadSources;
 

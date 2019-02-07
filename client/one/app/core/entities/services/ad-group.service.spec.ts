@@ -3,23 +3,27 @@ import * as clone from 'clone';
 import {AdGroupService} from './ad-group.service';
 import {AdGroupEndpoint} from './ad-group.endpoint';
 import {EntitiesUpdatesService} from './entities-updates.service';
-import {AdGroup} from '../types/ad-group';
-import {
-    AdGroupState,
-    EntityType,
-    EntityUpdateAction,
-} from '../../../app.constants';
+import {AdGroupWithExtras} from '../types/ad-group/ad-group-with-extras';
+import {EntityType, EntityUpdateAction} from '../../../app.constants';
 import {tick, fakeAsync} from '@angular/core/testing';
+import {AdGroup} from '../types/ad-group/ad-group';
+import {RequestStateUpdater} from '../../../shared/types/request-state-updater';
+import {AdGroupExtras} from '../types/ad-group/ad-group-extras';
 
 describe('AdGroupService', () => {
     let service: AdGroupService;
     let adGroupEndpointStub: jasmine.SpyObj<AdGroupEndpoint>;
     let entitiesUpdatesServiceStub: jasmine.SpyObj<EntitiesUpdatesService>;
+    let mockedAdGroupWithExtras: AdGroupWithExtras;
     let mockedAdGroup: AdGroup;
+    let mockedAdGroupExtras: AdGroupExtras;
+    let requestStateUpdater: RequestStateUpdater;
 
     beforeEach(() => {
         adGroupEndpointStub = jasmine.createSpyObj(AdGroupEndpoint.name, [
-            'query',
+            'defaults',
+            'get',
+            'validate',
             'create',
             'edit',
         ]);
@@ -31,27 +35,91 @@ describe('AdGroupService', () => {
 
         mockedAdGroup = {
             id: 12345,
-            state: AdGroupState.ACTIVE,
-            archived: false,
+            campaignId: 12345,
+            name: 'Test ad group',
+        };
+
+        mockedAdGroupExtras = {
+            actionIsWaiting: false,
+            canArchive: true,
+            canRestore: false,
+            defaultSettings: {
+                targetRegions: {
+                    countries: [],
+                    regions: [],
+                    dma: [],
+                    cities: [],
+                    postalCodes: [],
+                },
+                exclusionTargetRegions: {
+                    countries: [],
+                    regions: [],
+                    dma: [],
+                    cities: [],
+                    postalCodes: [],
+                },
+                targetDevices: [],
+                targetOs: [],
+                targetPlacements: [],
+            },
+            retargetableAdgroups: [],
+            audiences: [],
+            warnings: {},
+            hacks: [],
+        };
+
+        mockedAdGroupWithExtras = {
+            adGroup: mockedAdGroup,
+            extras: mockedAdGroupExtras,
         };
 
         service = new AdGroupService(
             adGroupEndpointStub,
             entitiesUpdatesServiceStub
         );
+
+        requestStateUpdater = (requestName, requestState) => {};
+    });
+
+    it('should get default ad group via endpoint', () => {
+        const mockedNewAdGroupWithExtras = clone(mockedAdGroupWithExtras);
+        mockedNewAdGroupWithExtras.adGroup.id = null;
+        mockedNewAdGroupWithExtras.adGroup.name = 'New ad group';
+
+        adGroupEndpointStub.defaults.and
+            .returnValue(of(mockedNewAdGroupWithExtras, asapScheduler))
+            .calls.reset();
+
+        service
+            .defaults(mockedAdGroup.campaignId, requestStateUpdater)
+            .subscribe(adGroupWithExtras => {
+                expect(adGroupWithExtras.adGroup).toEqual(
+                    mockedNewAdGroupWithExtras.adGroup
+                );
+                expect(adGroupWithExtras.extras).toEqual(mockedAdGroupExtras);
+            });
+        expect(adGroupEndpointStub.defaults).toHaveBeenCalledTimes(1);
+        expect(adGroupEndpointStub.defaults).toHaveBeenCalledWith(
+            mockedAdGroup.campaignId,
+            requestStateUpdater
+        );
     });
 
     it('should get the ad group via endpoint', () => {
-        adGroupEndpointStub.query.and
-            .returnValue(of(mockedAdGroup, asapScheduler))
+        adGroupEndpointStub.get.and
+            .returnValue(of(mockedAdGroupWithExtras, asapScheduler))
             .calls.reset();
 
-        service.get(mockedAdGroup.id).subscribe(adGroup => {
-            expect(adGroup).toEqual(mockedAdGroup);
-        });
-        expect(adGroupEndpointStub.query).toHaveBeenCalledTimes(1);
-        expect(adGroupEndpointStub.query).toHaveBeenCalledWith(
-            mockedAdGroup.id
+        service
+            .get(mockedAdGroup.id, requestStateUpdater)
+            .subscribe(adGroupWithExtras => {
+                expect(adGroupWithExtras.adGroup).toEqual(mockedAdGroup);
+                expect(adGroupWithExtras.extras).toEqual(mockedAdGroupExtras);
+            });
+        expect(adGroupEndpointStub.get).toHaveBeenCalledTimes(1);
+        expect(adGroupEndpointStub.get).toHaveBeenCalledWith(
+            mockedAdGroup.id,
+            requestStateUpdater
         );
     });
 
@@ -62,14 +130,17 @@ describe('AdGroupService', () => {
 
         const mockedNewAdGroup = clone(mockedAdGroup);
         mockedNewAdGroup.id = null;
-        service.save(mockedNewAdGroup).subscribe(adGroup => {
-            expect(adGroup).toEqual(mockedAdGroup);
-        });
+        service
+            .save(mockedNewAdGroup, requestStateUpdater)
+            .subscribe(adGroup => {
+                expect(adGroup).toEqual(mockedAdGroup);
+            });
         tick();
 
         expect(adGroupEndpointStub.create).toHaveBeenCalledTimes(1);
         expect(adGroupEndpointStub.create).toHaveBeenCalledWith(
-            mockedNewAdGroup
+            mockedNewAdGroup,
+            requestStateUpdater
         );
         expect(adGroupEndpointStub.edit).not.toHaveBeenCalled();
         expect(
@@ -86,13 +157,16 @@ describe('AdGroupService', () => {
             .returnValue(of(mockedAdGroup, asapScheduler))
             .calls.reset();
 
-        service.save(mockedAdGroup).subscribe(adGroup => {
+        service.save(mockedAdGroup, requestStateUpdater).subscribe(adGroup => {
             expect(adGroup).toEqual(mockedAdGroup);
         });
         tick();
 
         expect(adGroupEndpointStub.edit).toHaveBeenCalledTimes(1);
-        expect(adGroupEndpointStub.edit).toHaveBeenCalledWith(mockedAdGroup);
+        expect(adGroupEndpointStub.edit).toHaveBeenCalledWith(
+            mockedAdGroup,
+            requestStateUpdater
+        );
         expect(adGroupEndpointStub.create).not.toHaveBeenCalled();
         expect(
             entitiesUpdatesServiceStub.registerEntityUpdate
@@ -108,14 +182,17 @@ describe('AdGroupService', () => {
             .returnValue(of({...mockedAdGroup, archived: true}, asapScheduler))
             .calls.reset();
 
-        service.archive(mockedAdGroup.id).subscribe();
+        service.archive(mockedAdGroup.id, requestStateUpdater).subscribe();
         tick();
 
         expect(adGroupEndpointStub.edit).toHaveBeenCalledTimes(1);
-        expect(adGroupEndpointStub.edit).toHaveBeenCalledWith({
-            id: mockedAdGroup.id,
-            archived: true,
-        });
+        expect(adGroupEndpointStub.edit).toHaveBeenCalledWith(
+            {
+                id: mockedAdGroup.id,
+                archived: true,
+            },
+            requestStateUpdater
+        );
         expect(
             entitiesUpdatesServiceStub.registerEntityUpdate
         ).toHaveBeenCalledWith({

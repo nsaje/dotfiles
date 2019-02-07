@@ -5,6 +5,16 @@ import {GoogleAnalyticsService} from './google-analytics/google-analytics.servic
 import {MixpanelService} from './mixpanel/mixpanel.service';
 import {EntitiesModule} from './entities/entities.module';
 import {PostAsGetRequestService} from './post-as-get-request/post-as-get-request.service';
+import {HTTP_INTERCEPTORS} from '@angular/common/http';
+import {ApiConverterHttpInterceptor} from './interceptors/api-converter.interceptor';
+
+const HTTP_INTERCEPTOR_PROVIDERS = [
+    {
+        provide: HTTP_INTERCEPTORS,
+        useClass: ApiConverterHttpInterceptor,
+        multi: true,
+    },
+];
 
 @NgModule({
     imports: [EntitiesModule],
@@ -13,6 +23,7 @@ import {PostAsGetRequestService} from './post-as-get-request/post-as-get-request
         MulticurrencyService,
         MixpanelService,
         PostAsGetRequestService,
+        HTTP_INTERCEPTOR_PROVIDERS,
     ],
 })
 export class CoreModule {

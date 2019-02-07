@@ -4,7 +4,7 @@
     (closeRequest)="cancel()"
     class="zem-drawer"
 >
-    Settings for adgroup with id {{ store.state.adGroup.id }}
+    Settings for adgroup with id {{ store.state.entity.id }}
 
     <button (click)="saveSettings()">
         <ng-container *ngIf="isNewEntity">Create</ng-container>

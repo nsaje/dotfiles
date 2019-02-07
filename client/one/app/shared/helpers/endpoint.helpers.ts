@@ -2,7 +2,7 @@ import {HttpParams} from '@angular/common/http';
 import {APP_CONFIG} from '../../app.config';
 import {RequestPayload} from '../types/request-payload';
 import {RequestProperties} from '../types/request-properties';
-import {StoreRequestStateUpdater} from '../types/store-request-state-updater';
+import {RequestStateUpdater} from '../types/request-state-updater';
 
 export function buildRequestProperties(
     payload: RequestPayload
@@ -20,9 +20,7 @@ export function buildRequestProperties(
     }
 }
 
-export function getStoreRequestStateUpdater(
-    store: any
-): StoreRequestStateUpdater {
+export function getRequestStateUpdater(store: any): RequestStateUpdater {
     return (requestName, requestState) => {
         store.setState({
             ...store.state,

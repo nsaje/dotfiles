@@ -27,7 +27,11 @@ export class AdGroupSettingsDrawerView implements AfterViewInit {
 
     ngAfterViewInit() {
         this.isNewEntity = !this.entityId;
-        this.store.loadSettings(this.entityId);
+        if (this.isNewEntity) {
+            this.store.loadEntityDefaults(this.newEntityParentId);
+        } else {
+            this.store.loadEntity(this.entityId);
+        }
 
         setTimeout(() => {
             this.open();
@@ -56,7 +60,7 @@ export class AdGroupSettingsDrawerView implements AfterViewInit {
     }
 
     async saveSettings() {
-        const shouldCloseDrawer = await this.store.saveSettings();
+        const shouldCloseDrawer = await this.store.saveEntity();
         if (shouldCloseDrawer) {
             this.cancel();
         }

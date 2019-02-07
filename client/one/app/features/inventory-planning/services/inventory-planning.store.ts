@@ -15,21 +15,19 @@ import {InventoryPlanningEndpoint} from './inventory-planning.endpoint';
 import {Filters} from '../types/filters';
 import {Inventory} from '../types/inventory';
 import {FilterOption} from '../types/filter-option';
-import {StoreRequestStateUpdater} from '../../../shared/types/store-request-state-updater';
+import {RequestStateUpdater} from '../../../shared/types/request-state-updater';
 import * as endpointHelpers from '../../../shared/helpers/endpoint.helpers';
 
 @Injectable()
 export class InventoryPlanningStore extends Store<InventoryPlanningState> {
     private ngUnsubscribe$: Subject<undefined> = new Subject();
     private filters$: Subject<Filters> = new Subject();
-    private storeRequestStateUpdater: StoreRequestStateUpdater;
+    private requestStateUpdater: RequestStateUpdater;
 
     constructor(private endpoint: InventoryPlanningEndpoint) {
         super(new InventoryPlanningState());
 
-        this.storeRequestStateUpdater = endpointHelpers.getStoreRequestStateUpdater(
-            this
-        );
+        this.requestStateUpdater = endpointHelpers.getRequestStateUpdater(this);
     }
 
     init(): void {
@@ -147,7 +145,7 @@ export class InventoryPlanningStore extends Store<InventoryPlanningState> {
 
     private reloadSummary(filters: Filters): Observable<Inventory> {
         return this.endpoint
-            .loadSummary(filters, this.storeRequestStateUpdater)
+            .loadSummary(filters, this.requestStateUpdater)
             .pipe(
                 tap((response: any) => {
                     this.handleSummaryResponse(response);
@@ -157,7 +155,7 @@ export class InventoryPlanningStore extends Store<InventoryPlanningState> {
 
     private reloadCountries(filters: Filters): Observable<FilterOption[]> {
         return this.endpoint
-            .loadCountries(filters, this.storeRequestStateUpdater)
+            .loadCountries(filters, this.requestStateUpdater)
             .pipe(
                 tap((response: any) => {
                     this.handleBreakdownResponse('countries', response);
@@ -167,7 +165,7 @@ export class InventoryPlanningStore extends Store<InventoryPlanningState> {
 
     private reloadPublishers(filters: Filters): Observable<FilterOption[]> {
         return this.endpoint
-            .loadPublishers(filters, this.storeRequestStateUpdater)
+            .loadPublishers(filters, this.requestStateUpdater)
             .pipe(
                 tap((response: any) => {
                     this.handleBreakdownResponse('publishers', response);
@@ -177,7 +175,7 @@ export class InventoryPlanningStore extends Store<InventoryPlanningState> {
 
     private reloadDevices(filters: Filters): Observable<FilterOption[]> {
         return this.endpoint
-            .loadDevices(filters, this.storeRequestStateUpdater)
+            .loadDevices(filters, this.requestStateUpdater)
             .pipe(
                 tap((response: any) => {
                     this.handleBreakdownResponse('devices', response);
@@ -187,7 +185,7 @@ export class InventoryPlanningStore extends Store<InventoryPlanningState> {
 
     private reloadSources(filters: Filters): Observable<FilterOption[]> {
         return this.endpoint
-            .loadSources(filters, this.storeRequestStateUpdater)
+            .loadSources(filters, this.requestStateUpdater)
             .pipe(
                 tap((response: any) => {
                     this.handleBreakdownResponse('sources', response);

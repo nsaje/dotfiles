@@ -1,6 +1,6 @@
 import {RequestState} from './request-state';
 
-export type StoreRequestStateUpdater = (
+export type RequestStateUpdater = (
     requestName: string,
     requestState: RequestState
 ) => void;
