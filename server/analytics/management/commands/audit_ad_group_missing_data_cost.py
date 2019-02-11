@@ -38,7 +38,7 @@ class Command(utils.command_helpers.ExceptionCommand):
 
         if self.slack:
             try:
-                utils.slack.publish(text, username="audit Ad groups", channel="z1-monitor")
+                utils.slack.publish(text, username=utils.slack.USER_AD_GROUP, channel=utils.slack.ALERTS_RND_PRODOPS)
             except Exception as e:
                 logger.exception("Connection Error with Slack")
 

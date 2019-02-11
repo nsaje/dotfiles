@@ -28,4 +28,4 @@ class Command(utils.command_helpers.ExceptionCommand):
                 message = ALERT_MSG_ENTITY.format(hack.get_level(), entity.name, entity.pk, spend, hack)
             self._print(message)
             if options.get("slack"):
-                utils.slack.publish(message, msg_type=utils.slack.MESSAGE_TYPE_WARNING, username="Hacks")
+                utils.slack.publish(message, msg_type=utils.slack.MESSAGE_TYPE_WARNING, username=utils.slack.USER_HACKS)

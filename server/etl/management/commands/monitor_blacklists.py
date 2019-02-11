@@ -12,7 +12,6 @@ from dash import constants
 from dash import models
 from dash import publisher_helpers
 from utils import list_helper
-from utils import slack
 from utils.command_helpers import ExceptionCommand
 
 logger = logging.getLogger(__name__)
@@ -31,7 +30,6 @@ class Command(ExceptionCommand):
         parser.add_argument("--date_to", help="Iso formatted date. Date to which stats should be checked")
         parser.add_argument("--ad_group_ids", help="Comma separated ad group ids")
         parser.add_argument("--no-influx", action="store_true", help="Do not log to influx")
-        parser.add_argument("--no-slack", action="store_true", help="Do not log to slack")
         parser.add_argument("--include-oen", action="store_true", help="Include OEN")
 
     def handle(self, *args, **options):
@@ -61,10 +59,9 @@ class Command(ExceptionCommand):
             stats_map=stats_map,
             date_from=date_from,
             log_influx=not options["no_influx"],
-            log_slack=not options["no_slack"],
         )
 
-    def check_ad_groups(self, ad_groups, publishers_map, stats_map, date_from, log_influx=True, log_slack=True):
+    def check_ad_groups(self, ad_groups, publishers_map, stats_map, date_from, log_influx=True):
         # load necessary objects
         ad_groups = ad_groups.select_related("campaign", "campaign__account")
         campaigns = models.Campaign.objects.filter(pk__in=ad_groups.values_list("campaign_id", flat=True))
@@ -145,8 +142,6 @@ class Command(ExceptionCommand):
                         ad_group_id=ad_group.id, publisher_ids=", ".join(violator_publisher_ids)
                     )
                     logger.info(message)
-                    if log_slack:
-                        slack.publish(message, channel="z1-monitor-blacklist")
 
                     ad_group_violators |= violator_publisher_ids
 
@@ -163,8 +158,6 @@ class Command(ExceptionCommand):
                         ad_group_id=ad_group.id, publisher_ids=", ".join(violator_publisher_ids)
                     )
                     logger.info(message)
-                    if log_slack:
-                        slack.publish(message, channel="z1-monitor-blacklist")
 
                     ad_group_violators |= violator_publisher_ids
 
@@ -181,8 +174,6 @@ class Command(ExceptionCommand):
                             ad_group_id=ad_group.id, publisher_ids=", ".join(violator_publisher_ids)
                         )
                         logger.info(message)
-                        if log_slack:
-                            slack.publish(message, channel="z1-monitor-blacklist")
 
                         ad_group_violators |= violator_publisher_ids
 

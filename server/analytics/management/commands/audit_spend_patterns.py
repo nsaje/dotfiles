@@ -55,7 +55,7 @@ class Command(utils.command_helpers.ExceptionCommand):
                         td=str(date + datetime.timedelta(1)),
                     ),
                     msg_type=utils.slack.MESSAGE_TYPE_WARNING,
-                    username="Spend patterns",
+                    username=utils.slack.USER_SPEND_PATTERNS,
                 )
         else:
             self._print("OK")

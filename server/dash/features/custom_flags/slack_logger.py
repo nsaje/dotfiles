@@ -31,7 +31,7 @@ class SlackLoggerMixin(object):
 
         if text.strip():
             try:
-                slack.publish(text, channel="z1-hacks-logs")
+                slack.publish(text, channel=slack.CHANNEL_ZEM_FEED_HACKS)
             except Exception:
                 logger.exception("Connection Error with Slack")
 

@@ -76,5 +76,5 @@ class Command(utils.command_helpers.ExceptionCommand):
                         date=date.strftime("%b %d %Y"), err=converters.nano_to_decimal(err), tbl=table, col=key
                     ),
                     msg_type=utils.slack.MESSAGE_TYPE_CRITICAL,
-                    username="Spend patterns",
+                    username=utils.slack.USER_SPEND_PATTERNS,
                 )

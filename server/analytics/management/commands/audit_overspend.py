@@ -61,7 +61,7 @@ class Command(utils.command_helpers.ExceptionCommand):
             utils.slack.publish(
                 ALERT_MSG_OVERSPEND.format(date=self.date.strftime("%Y-%m-%d"), details=details),
                 msg_type=utils.slack.MESSAGE_TYPE_CRITICAL,
-                username="Overspend monitoring",
+                username=utils.slack.USER_OVERSPEND,
             )
         if influx_data and self.influx:
             self.influx_client.write_points(influx_data)

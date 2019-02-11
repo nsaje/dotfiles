@@ -9,14 +9,13 @@ from django.conf import settings
 from django.core.cache import caches
 
 import dash.models
+import utils.slack
 from etl import daily_statements
 from etl import maintenance
 from etl import materialization_run
 from etl import materialize
 from etl import redshift
-
 from utils import threads
-import utils.slack
 
 logger = logging.getLogger(__name__)
 
@@ -30,7 +29,7 @@ def _post_to_slack(status, update_since, account_id=None):
             str(update_since.date()), account_id and " for *account {}*".format(account_id) or "", status
         ),
         msg_type=utils.slack.MESSAGE_TYPE_INFO,
-        username="Refresh k1",
+        username=utils.slack.USER_REFRESH_K1,
     )
 
 

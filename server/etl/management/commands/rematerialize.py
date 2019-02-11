@@ -58,7 +58,7 @@ class Command(ExceptionCommand):
             utils.slack.publish(
                 "batch {}: {}/{}".format(batch, n_accounts_processed + 1, n_accounts_all),
                 msg_type=utils.slack.MESSAGE_TYPE_INFO,
-                username="Rematerialize",
+                username=utils.slack.USER_ETL_MATERIALIZE,
             )
             print("reprocessing", acc_id, "since", since)
             try:

@@ -3,10 +3,10 @@ import logging
 import typing
 import urllib.parse
 
+import croniter
 from django.conf import settings
 from django.urls import reverse
 
-import croniter
 from dcron import constants
 from dcron import models
 from utils import dates_helper
@@ -16,8 +16,8 @@ from utils import slack
 logger = logging.getLogger(__name__)
 
 SLACK_USERNAME = "Dcron Alert"
-SLACK_CHANNEL_LOW_SEVERITY = "z1-team-alerts-aux"
-SLACK_CHANNEL_HIGH_SEVERITY = "z1-team-alerts"
+SLACK_CHANNEL_LOW_SEVERITY = slack.CHANNEL_RND_Z1_ALERTS_AUX
+SLACK_CHANNEL_HIGH_SEVERITY = slack.CHANNEL_RND_Z1_ALERTS
 SLACK_SEVERITY_OK = "good"
 SLACK_SEVERITY_WARNING = "warning"
 SLACK_SEVERITY_DANGER = "danger"

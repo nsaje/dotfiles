@@ -36,6 +36,8 @@ class Command(ExceptionCommand):
         except Exception as exc:
             if not dry_run:
                 utils.slack.publish(
-                    ALERT_MSG.format(repr(exc)), msg_type=utils.slack.MESSAGE_TYPE_CRITICAL, username="Autopilot"
+                    ALERT_MSG.format(repr(exc)),
+                    msg_type=utils.slack.MESSAGE_TYPE_CRITICAL,
+                    username=utils.slack.USER_AUTOPILOT,
                 )
             raise

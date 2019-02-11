@@ -40,7 +40,10 @@ class Command(utils.command_helpers.ExceptionCommand):
         if self.slack:
             try:
                 utils.slack.publish(
-                    msg, channel="z1-monitor", username="Fraud alert", msg_type=utils.slack.MESSAGE_TYPE_WARNING
+                    msg,
+                    channel=utils.slack.CHANNEL_ALERTS_RND_PRODOPS,
+                    username=utils.slack.USER_FRAUD,
+                    msg_type=utils.slack.MESSAGE_TYPE_WARNING,
                 )
             except Exception as e:
                 raise e

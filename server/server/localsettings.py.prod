@@ -430,7 +430,7 @@ VAST_URL = "https://s3.amazonaws.com/zemvideos/vast/{filename}"
 # Slack hooks
 SLACK_INCOMING_HOOK_URL = (
     Secret(
-        "kms:region=us-east-1:AQECAHjdfiP9DHF52gr8mpTmZ/ZwRu2qZbRw8dV0ohsw+OhZewAAAK8wgawGCSqGSIb3DQEHBqCBnjCBmwIBADCBlQYJKoZIhvcNAQcBMB4GCWCGSAFlAwQBLjARBAy7uIydvn69NTLet/ICARCAaIEVbxdytOEy1elcsyvo56hsNHsmOXFPiBVvCbSjsYLr2rcRjjehxeYJR2kL0xTuLujyaRr2ACzkyH9/L8oRI+EytmZ0ELDeB2KyfQJWD3zX6GaMPcDUzeNdb26HMep3Qm+/Qo21tqAU"  # noqa
+        "kms:region=us-east-1:AQECAHjdfiP9DHF52gr8mpTmZ/ZwRu2qZbRw8dV0ohsw+OhZewAAAK8wgawGCSqGSIb3DQEHBqCBnjCBmwIBADCBlQYJKoZIhvcNAQcBMB4GCWCGSAFlAwQBLjARBAz4+a1DcIRBrHZBPskCARCAaPU0x3588xc9fS9kXb9ngIXyAogQqbaS8//n6Zttn9flzqED9rOS1xr6SGU+tnS10IJIho7m2wTdQNs8O4WCKYfrSXa2H9SEMYaQ/okjbpKv3ioOMuM9NzdS3GtE3yof+hJRUbwQUSdI"  # noqa
     )
     .get()
     .decode("utf-8")

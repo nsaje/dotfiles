@@ -33,14 +33,15 @@ class Command(ExceptionCommand):
         if self.slack:
             slack.publish(
                 self._get_message_body(campaigns, output_type="slack"),
+                channel=slack.CHANNEL_ALERTS_RND_PRODOPS,
                 msg_type=slack.MESSAGE_TYPE_INFO,
-                username="Real-time campaign stop monitor",
+                username=slack.USER_CAMPAIGN_STOP,
             )
             slack.publish(
                 self._get_message_body(campaigns, output_type="slack"),
                 msg_type=slack.MESSAGE_TYPE_INFO,
-                username="Real-time campaign stop monitor",
-                channel="z1-monitor-campstop",
+                username=slack.USER_CAMPAIGN_STOP,
+                channel=slack.CHANNEL_ZEM_FEED_CAMPSTOP,
             )
 
         if self.verbose:

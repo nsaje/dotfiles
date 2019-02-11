@@ -55,8 +55,8 @@ class Command(ExceptionCommand):
                 try:
                     utils.slack.publish(
                         text,
-                        channel="z1-monitor",
-                        username="NAS CPC billing",
+                        channel=utils.slack.CHANNEL_ALERTS_RND_PRODOPS,
+                        username=utils.slack.USER_NAS_CPC_BILLING,
                         msg_type=utils.slack.MESSAGE_TYPE_WARNING,
                     )
                 except Exception as e:
