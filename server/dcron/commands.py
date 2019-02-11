@@ -58,6 +58,7 @@ class DCronCommand(management.base.BaseCommand):
 
             try:
                 self._handle(*args, **options)
+                models.DCronJob.objects.filter(command_name=command_name).update(alert=constants.Alert.OK)
             except Exception:
                 logger.exception("Exception in DCronCommand %s", command_name)
 

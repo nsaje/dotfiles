@@ -317,6 +317,48 @@ class CheckAlertsTestCase(TestCase):
         self._assert_dcronjobalert(dcron_job_alerts[3], "command_08", constants.Alert.DURATION)
         self._assert_dcronjobalert(dcron_job_alerts[4], "command_09", constants.Alert.DURATION)
 
+    @mock.patch("utils.dates_helper.utc_now", return_value=_get_rounded_now(minute=17, second=3))
+    def test_failure_normal_execution(self, mock_now):
+        job_kwargs_dict = {
+            "executed_dt": dates_helper.utc_now() - datetime.timedelta(minutes=16),
+            "completed_dt": dates_helper.utc_now() - datetime.timedelta(minutes=15),
+            "alert": constants.Alert.FAILURE,
+        }
+        settings_kwargs_dict = {"schedule": "0 * * * *"}
+        _create_job("command_01", job_kwargs_dict, settings_kwargs_dict)
+
+        dcron_job_alerts = self._get_dcron_job_alerts()
+        self.assertEqual(len(dcron_job_alerts), 1)
+        self._assert_dcronjobalert(dcron_job_alerts[0], "command_01", constants.Alert.FAILURE)
+
+    @mock.patch("utils.dates_helper.utc_now", return_value=_get_rounded_now(minute=17, second=3))
+    def test_failure_late_execution(self, mock_now):
+        job_kwargs_dict = {
+            "executed_dt": dates_helper.utc_now() - datetime.timedelta(minutes=2),
+            "completed_dt": dates_helper.utc_now() - datetime.timedelta(minutes=1),
+            "alert": constants.Alert.FAILURE,
+        }
+        settings_kwargs_dict = {"schedule": "0 * * * *"}
+        _create_job("command_01", job_kwargs_dict, settings_kwargs_dict)
+
+        dcron_job_alerts = self._get_dcron_job_alerts()
+        self.assertEqual(len(dcron_job_alerts), 1)
+        self._assert_dcronjobalert(dcron_job_alerts[0], "command_01", constants.Alert.FAILURE)
+
+    @mock.patch("utils.dates_helper.utc_now", return_value=_get_rounded_now(minute=17, second=3))
+    def test_failure_missed_execution(self, mock_now):
+        job_kwargs_dict = {
+            "executed_dt": dates_helper.utc_now() - datetime.timedelta(hours=2, minutes=16),
+            "completed_dt": dates_helper.utc_now() - datetime.timedelta(hours=2, minutes=15),
+            "alert": constants.Alert.FAILURE,
+        }
+        settings_kwargs_dict = {"schedule": "0 * * * *"}
+        _create_job("command_01", job_kwargs_dict, settings_kwargs_dict)
+
+        dcron_job_alerts = self._get_dcron_job_alerts()
+        self.assertEqual(len(dcron_job_alerts), 1)
+        self._assert_dcronjobalert(dcron_job_alerts[0], "command_01", constants.Alert.EXECUTION)
+
 
 @override_settings(
     DCRON={

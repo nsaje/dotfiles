@@ -169,17 +169,19 @@ def _check_alert(dcron_job: models.DCronJob, current_date_time: typing.Optional[
         dcron_job.dcronjobsettings.schedule, date_time=current_date_time
     )
 
+    new_alert_value = constants.Alert.FAILURE if dcron_job.alert == constants.Alert.FAILURE else constants.Alert.OK
+
     if next_date_time - current_date_time < settings.DCRON["check_margin"]:
         # The next scheduled iteration is due - don't check this job right now.
-        return AlertId(constants.Alert.OK)
+        return AlertId(new_alert_value)
 
     if dcron_job.executed_dt > previous_date_time - settings.DCRON["check_margin"]:
         # The job has executed at previous scheduled iteration.
-        return AlertId(constants.Alert.OK)
+        return AlertId(new_alert_value)
 
     if current_date_time < previous_date_time + datetime.timedelta(seconds=dcron_job.dcronjobsettings.warning_wait):
         # Running a little late, wait for warning wait to expire.
-        return AlertId(constants.Alert.OK)
+        return AlertId(new_alert_value)
 
     # Execution of the job is too late.
     return AlertId(constants.Alert.EXECUTION)

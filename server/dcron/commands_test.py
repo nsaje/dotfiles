@@ -1,13 +1,13 @@
 import datetime
 import threading
 
+import django_pglocks
 import mock
 from django.conf import settings
 from django.test import TestCase
 from django.test import TransactionTestCase
 from django.utils import timezone
 
-import django_pglocks
 from dcron import alerts
 from dcron import commands
 from dcron import constants
@@ -202,7 +202,33 @@ class DCronCommandTestCase(TransactionTestCase):
         with self.assertNumQueries(1):
             dummy_command.execute(**{"no_color": None, "stdout": None, "stderr": None})
 
-        models.DCronJob.objects.filter(command_name=DUMMY_COMMAND)
-
         mock_influx_incr.assert_has_calls([])
         self.assertEqual(len(mock_influx_timing.call_args_list), 0)
+
+    @mock.patch("sys.argv", ["manage.py", DUMMY_COMMAND])
+    @mock.patch("influx.incr")
+    @mock.patch("influx.timing")
+    def test_recover_from_failure(self, mock_influx_timing, mock_influx_incr):
+        class DummyCommand(commands.DCronCommand):
+            def _handle(self, *args, **options):
+                pass
+
+        dummy_command = DummyCommand()
+
+        now_dt = timezone.now()
+        executed_dt = now_dt - datetime.timedelta(seconds=45)
+        completed_dt = now_dt - datetime.timedelta(seconds=42)
+        dcron_job = models.DCronJob.objects.create(
+            command_name=DUMMY_COMMAND,
+            executed_dt=executed_dt,
+            completed_dt=completed_dt,
+            alert=constants.Alert.FAILURE,
+        )
+        models.DCronJobSettings.objects.create(job=dcron_job, schedule="0 * * * *", full_command="")
+
+        dummy_command.execute(**{"no_color": None, "stdout": None, "stderr": None})
+
+        dcron_job.refresh_from_db()
+
+        alert = alerts._check_alert(dcron_job)
+        self.assertEqual(alert, constants.Alert.OK)
