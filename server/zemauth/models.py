@@ -399,6 +399,9 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ("can_use_advanced_inventory_planning_features", "Can use advanced inventory planning features."),
             ("can_set_export_delimiter_separator", "User can customize CSV export delimiter & decimal separator"),
             ("can_use_language_targeting", "User can use language targeting"),
+            ("can_see_top_level_delivery_breakdowns", "User can see top-level delivery breakdowns"),
+            ("can_set_bid_modifiers", "User can set bid modifiers"),
+            ("can_review_bid_modifiers", "User can review bid modifiers in settings"),
         )
 
     def get_full_name(self):
