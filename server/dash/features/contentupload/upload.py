@@ -1,3 +1,4 @@
+import concurrent.futures
 import logging
 
 from django.conf import settings
@@ -498,8 +499,8 @@ def handle_auto_save_batches(created_after):
         status=constants.UploadBatchStatus.IN_PROGRESS, auto_save=True, created_dt__gte=created_after
     )
 
-    for batch in batches:
-        _handle_auto_save(batch)
+    with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
+        executor.map(_handle_auto_save, batches)
 
 
 def clean_up_old_in_progress_batches(created_before):
