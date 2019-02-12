@@ -356,19 +356,22 @@ def audit_bid_cpc_vs_ecpc(bid_cpc_threshold=2, yesterday_spend_threshold=20):
         .select_related("settings", "campaign")
     )
 
-    per_ad_groups_audit = dash.models.AdGroup.objects.filter(
-        id__in=active_ad_groups.filter(settings__b1_sources_group_enabled=True).exclude(
-            campaign__in=dash.models.CampaignGoal.objects.filter(
-                primary=True, type=dash.constants.CampaignGoalKPI.CPA
-            ).values_list("campaign", flat=True)
-        )
-    ).values("id", "name", "settings__cpc_cc")
+    per_ad_groups_audit = dict(
+        dash.models.AdGroup.objects.filter(
+            id__in=active_ad_groups.filter(settings__b1_sources_group_enabled=True).exclude(
+                campaign__in=dash.models.CampaignGoal.objects.filter(
+                    primary=True, type=dash.constants.CampaignGoalKPI.CPA
+                ).values_list("campaign", flat=True)
+            )
+        ).values_list("id", "name")
+    )
 
     ad_group_cpc = dict(
         dash.models.AdGroupSource.objects.filter(
-            ad_group__in=per_ad_groups_audit.values_list("id", flat=True),
+            ad_group__in=per_ad_groups_audit,
             settings__state=dash.constants.AdGroupSourceSettingsState.ACTIVE,
             source__source_type__type=dash.constants.SourceType.B1,
+            settings__cpc_cc__isnull=False,
         )
         .values_list("ad_group__id", "settings__cpc_cc")
         .distinct()
@@ -376,8 +379,8 @@ def audit_bid_cpc_vs_ecpc(bid_cpc_threshold=2, yesterday_spend_threshold=20):
 
     per_adgs_audit = (
         dash.models.AdGroupSource.objects.filter(ad_group__in=active_ad_groups)
-        .filter(settings__state=dash.constants.AdGroupSourceSettingsState.ACTIVE)
-        .exclude(ad_group__in=per_ad_groups_audit.values_list("id", flat=True))  # Avoid duplicates
+        .filter(settings__state=dash.constants.AdGroupSourceSettingsState.ACTIVE, settings__cpc_cc__isnull=False)
+        .exclude(ad_group__in=per_ad_groups_audit)  # Avoid duplicates
         .values("ad_group_id", "source_id", "settings__cpc_cc", "source__name", "ad_group__name")
     )
 
@@ -392,16 +395,10 @@ def audit_bid_cpc_vs_ecpc(bid_cpc_threshold=2, yesterday_spend_threshold=20):
 
     # We add the CPC defined on the adgroup level
     if per_ad_groups_audit:
-        ad_group_sources_cpc.update(
-            {
-                (ad["id"], 0): {
-                    "cpc": round(ad_group_cpc.get(ad["id"]), 3),
-                    "source_name": "b1_rtb",
-                    "name": ad["name"],
-                }
-                for ad in per_ad_groups_audit
-            }
-        )
+        for k, v in ad_group_cpc.items():
+            ad_group_sources_cpc.update(
+                {(k, 0): {"cpc": round(v, 3), "source_name": "b1_rtb", "name": per_ad_groups_audit.get(k)}}
+            )
 
     with redshiftapi.db.get_stats_cursor() as c:
         yesterday_spend_query = backtosql.generate_sql(
@@ -410,7 +407,7 @@ def audit_bid_cpc_vs_ecpc(bid_cpc_threshold=2, yesterday_spend_threshold=20):
                 yesterday=yesterday.strftime("%Y-%m-%d"),
                 excluded_account_ids=API_ACCOUNTS,
                 yesterday_spend_threshold=yesterday_spend_threshold,
-                per_ad_groups=tuple(per_ad_groups_audit.values_list("id", flat=True)),
+                per_ad_groups=tuple(per_ad_groups_audit),
                 excluded_sources=(3, 4),  # Yahoo and Outbrain
             ),
         )
