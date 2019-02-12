@@ -1,59 +1,5 @@
-<div
-    class="form"
-    ng-if="!$ctrl.hasPermission('zemauth.can_set_interest_targeting')"
->
+<div class="form">
     <div class="form__title">Interest targeting</div>
-    <div class="form__text">
-        Interest targeting is based on publisher classification and user's
-        reading habits. This is a read-only section. Please contact your Zemanta
-        Customer Success Manager if you want to set up or change interest
-        targeting.
-    </div>
-    <div
-        class="two-columns-list"
-        ng-if="$ctrl.entity.settings.interestTargeting.length || $ctrl.entity.settings.exclusionInterestTargeting.length"
-    >
-        <div
-            class="two-columns-list__container"
-            ng-if="$ctrl.entity.settings.interestTargeting.length > 0"
-            ng-class="{'two-columns-list__container--half' : $ctrl.entity.settings.interestTargeting.length > 0 && $ctrl.entity.settings.exclusionInterestTargeting.length > 0 }"
-        >
-            <div class="two-columns-list__title text-green">Included</div>
-            <ul class="two-columns-list__list list-with-bullets">
-                <li
-                    ng-repeat="category in $ctrl.entity.settings.interestTargeting"
-                >
-                    {{ $ctrl.interestCategoryText[category] }}
-                </li>
-            </ul>
-        </div>
-        <div
-            class="two-columns-list__spacing"
-            ng-if="$ctrl.entity.settings.interestTargeting.length > 0 && $ctrl.entity.settings.exclusionInterestTargeting.length > 0"
-        ></div>
-        <div
-            class="two-columns-list__container"
-            ng-if="$ctrl.entity.settings.exclusionInterestTargeting.length > 0"
-            ng-class="{'two-columns-list__container--half' : $ctrl.entity.settings.interestTargeting.length > 0 && $ctrl.entity.settings.exclusionInterestTargeting.length > 0 }"
-        >
-            <div class="two-columns-list__title text-red">Excluded</div>
-            <ul class="two-columns-list__list list-with-bullets">
-                <li
-                    ng-repeat="category in $ctrl.entity.settings.exclusionInterestTargeting"
-                >
-                    {{ $ctrl.interestCategoryText[category] }}
-                </li>
-            </ul>
-        </div>
-    </div>
-</div>
-<div
-    class="form"
-    ng-if="$ctrl.hasPermission('zemauth.can_set_interest_targeting')"
->
-    <div class="form__title" is-internal="zemauth.can_set_interest_targeting">
-        Interest targeting
-    </div>
     <div class="form__text">
         Interest targeting is based on publisher classification and user's
         reading habits.
@@ -66,16 +12,7 @@
         remove-targeting="$ctrl.removeTargeting(targeting)"
     ></zem-inclusion-targeting-list>
     <div class="more-messages__container">
-        <div
-            class="message message--error"
-            ng-repeat="error in $ctrl.errors.interestTargeting"
-        >
-            {{ error }}
-        </div>
-        <div
-            class="message message--error"
-            ng-repeat="error in $ctrl.errors.exclusionInterestTargeting"
-        >
+        <div class="message message--error" ng-repeat="error in $ctrl.errors">
             {{ error }}
         </div>
     </div>

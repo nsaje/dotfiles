@@ -1,8 +1,10 @@
 angular.module('one.widgets').component('zemInterestTargeting', {
     bindings: {
-        entity: '<',
-        errors: '<',
-        api: '<',
+        includedInterests: '<',
+        excludedInterests: '<',
+        includedInterestsErrors: '<',
+        excludedInterestsErrors: '<',
+        onUpdate: '&',
     },
     template: require('./zemInterestTargeting.component.html'), // eslint-disable-line max-len
     controller: function(zemPermissions) {
@@ -10,7 +12,6 @@ angular.module('one.widgets').component('zemInterestTargeting', {
 
         $ctrl.hasPermission = zemPermissions.hasPermission;
         $ctrl.isPermissionInternal = zemPermissions.isPermissionInternal;
-        $ctrl.constants = constants;
 
         $ctrl.texts = {
             selectedIncludedTitle: 'Included Interests',
@@ -23,98 +24,117 @@ angular.module('one.widgets').component('zemInterestTargeting', {
         $ctrl.addExcluded = addExcluded;
         $ctrl.removeTargeting = removeTargeting;
 
-        $ctrl.interestCategoryText = [];
+        $ctrl.$onChanges = function(changes) {
+            if (changes.includedInterests || changes.excludedInterests) {
+                $ctrl.targetings = generateTargetings(
+                    $ctrl.includedInterests,
+                    $ctrl.excludedInterests
+                );
+            }
 
-        $ctrl.$onInit = function() {
-            $ctrl.api.register({});
-            options.interests.forEach(function(interest) {
-                $ctrl.interestCategoryText[interest.value] = interest.name;
-            });
-        };
-
-        $ctrl.$onChanges = function() {
-            $ctrl.targetings = getTargetings();
+            if (
+                changes.includedInterestsErrors ||
+                changes.excludedInterestsErrors
+            ) {
+                $ctrl.errors = generateErrors(
+                    $ctrl.includedInterestsErrors,
+                    $ctrl.excludedInterestsErrors
+                );
+            }
         };
 
         function addIncluded(targeting) {
-            if (!$ctrl.entity.settings.interestTargeting) {
-                $ctrl.entity.settings.interestTargeting = [];
-            }
-            $ctrl.entity.settings.interestTargeting.push(targeting.id);
-            $ctrl.targetings = getTargetings();
+            var updatedIncludedInterests = angular.copy(
+                $ctrl.includedInterests || []
+            );
+            updatedIncludedInterests.push(targeting.id);
+            propagateUpdate({
+                includedInterests: updatedIncludedInterests,
+            });
         }
 
         function addExcluded(targeting) {
-            if (!$ctrl.entity.settings.exclusionInterestTargeting) {
-                $ctrl.entity.settings.exclusionInterestTargeting = [];
-            }
-            $ctrl.entity.settings.exclusionInterestTargeting.push(targeting.id);
-            $ctrl.targetings = getTargetings();
+            var updatedExcludedInterests = angular.copy(
+                $ctrl.excludedInterests || []
+            );
+            updatedExcludedInterests.push(targeting.id);
+            propagateUpdate({
+                excludedInterests: updatedExcludedInterests,
+            });
         }
 
         function removeTargeting(targeting) {
-            var index = $ctrl.entity.settings.interestTargeting.indexOf(
-                targeting.id
-            );
+            var updatedIncludedInterests;
+            var updatedExcludedInterests;
+
+            var index = $ctrl.includedInterests.indexOf(targeting.id);
             if (index !== -1) {
-                $ctrl.entity.settings.interestTargeting = $ctrl.entity.settings.interestTargeting
-                    .slice(0, index)
-                    .concat(
-                        $ctrl.entity.settings.interestTargeting.slice(index + 1)
-                    );
+                updatedIncludedInterests = angular.copy(
+                    $ctrl.includedInterests
+                );
+                updatedIncludedInterests.splice(index, 1);
             }
 
-            index = $ctrl.entity.settings.exclusionInterestTargeting.indexOf(
-                targeting.id
-            );
+            index = $ctrl.excludedInterests.indexOf(targeting.id);
             if (index !== -1) {
-                $ctrl.entity.settings.exclusionInterestTargeting = $ctrl.entity.settings.exclusionInterestTargeting
-                    .slice(0, index)
-                    .concat(
-                        $ctrl.entity.settings.exclusionInterestTargeting.slice(
-                            index + 1
-                        )
-                    );
+                updatedExcludedInterests = angular.copy(
+                    $ctrl.excludedInterests
+                );
+                updatedExcludedInterests.splice(index, 1);
             }
 
-            $ctrl.targetings = getTargetings();
+            if (updatedIncludedInterests || updatedExcludedInterests) {
+                propagateUpdate({
+                    includedInterests: updatedIncludedInterests,
+                    excludedInterests: updatedExcludedInterests,
+                });
+            }
         }
 
-        function getTargetings() {
+        function propagateUpdate(newTargeting) {
+            $ctrl.onUpdate({
+                $event: newTargeting,
+            });
+        }
+
+        function generateTargetings(includedInterests, excludedInterests) {
             var targetings = {
                 included: [],
                 excluded: [],
                 notSelected: [],
             };
 
-            if (!$ctrl.entity) return targetings;
-
             var interests = options.interests.slice();
             interests.sort(function(opt1, opt2) {
                 return opt1.name.localeCompare(opt2.name);
             });
             interests.forEach(function(interest) {
-                if (
-                    $ctrl.entity.settings.interestTargeting.indexOf(
-                        interest.value
-                    ) !== -1
-                ) {
-                    targetings.included.push(getTargetingEntity(interest));
+                if ((includedInterests || []).indexOf(interest.value) !== -1) {
+                    targetings.included.push(generateInterestObject(interest));
                 } else if (
-                    $ctrl.entity.settings.exclusionInterestTargeting.indexOf(
-                        interest.value
-                    ) !== -1
+                    (excludedInterests || []).indexOf(interest.value) !== -1
                 ) {
-                    targetings.excluded.push(getTargetingEntity(interest));
+                    targetings.excluded.push(generateInterestObject(interest));
                 } else if (!interest.internal) {
-                    targetings.notSelected.push(getTargetingEntity(interest));
+                    targetings.notSelected.push(
+                        generateInterestObject(interest)
+                    );
                 }
             });
 
             return targetings;
         }
 
-        function getTargetingEntity(interest) {
+        function generateErrors(
+            includedInterestsErrors,
+            excludedInterestsErrors
+        ) {
+            return (includedInterestsErrors || []).concat(
+                excludedInterestsErrors || []
+            );
+        }
+
+        function generateInterestObject(interest) {
             return {
                 section: 'Interests',
                 id: interest.value,

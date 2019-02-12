@@ -14,6 +14,7 @@ angular.module('one.widgets').component('zemAdGroupSettings', {
         $ctrl.isLocationTargetingDifferentFromDefault = isLocationTargetingDifferentFromDefault;
         $ctrl.updateDeviceTargeting = updateDeviceTargeting;
         $ctrl.isDeviceTargetingDifferentFromDefault = isDeviceTargetingDifferentFromDefault;
+        $ctrl.updateInterestTargeting = updateInterestTargeting;
 
         function updateDaypartingSettings(entity, $event) {
             entity.settings.dayparting = $event;
@@ -76,6 +77,16 @@ angular.module('one.widgets').component('zemAdGroupSettings', {
                 areTargetOsDifferent ||
                 areTargetPlacementsDifferent
             );
+        }
+
+        function updateInterestTargeting(entity, $event) {
+            if ($event.includedInterests) {
+                entity.settings.interestTargeting = $event.includedInterests;
+            }
+            if ($event.excludedInterests) {
+                entity.settings.exclusionInterestTargeting =
+                    $event.excludedInterests;
+            }
         }
     },
 });

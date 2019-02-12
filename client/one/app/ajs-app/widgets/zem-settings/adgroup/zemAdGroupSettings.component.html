@@ -103,12 +103,62 @@
                 "
             ></zem-demographic-targeting>
         </div>
-        <zem-ad-group-targeting-settings
-            class="zem-settings-component"
-            entity="$container.entity"
-            errors="$container.errors"
-            api="$container.childApi"
-        ></zem-ad-group-targeting-settings>
+        <div
+            class="custom-panel zem-settings-component__container zem-account-targeting-settings"
+            is-internal="zemauth.can_target_custom_audiences"
+        >
+            <h2 class="custom-panel__title">Targeting</h2>
+            <zem-audience-targeting
+                entity="$container.entity"
+                errors="$container.errors"
+                api="$container.childApi"
+                class="zem-audience-targeting"
+                ng-if="!$ctrl.hasPermission('zemauth.disable_public_rcs')"
+            ></zem-audience-targeting>
+            <div
+                ng-if="$ctrl.hasPermission('zemauth.can_view_additional_targeting')"
+            >
+                <zem-interest-targeting
+                    class="zem-interest-targeting"
+                    ng-if="$ctrl.hasPermission('zemauth.can_set_interest_targeting') && !$ctrl.hasPermission('zemauth.disable_public_rcs')"
+                    included-interests="$container.entity.settings.interestTargeting"
+                    excluded-interests="$container.entity.settings.exclusionInterestTargeting"
+                    included-interests-errors="$container.errors.interestTargeting"
+                    excluded-interests-errors="$container.errors.exclusionInterestTargeting"
+                    on-update="
+                        $ctrl.updateInterestTargeting($container.entity, $event)
+                    "
+                ></zem-interest-targeting>
+                <zem-publisher-group-targeting
+                    class="zem-publisher-group-targeting"
+                    ng-if="$ctrl.hasPermission('zemauth.can_set_white_blacklist_publisher_groups') && $ctrl.hasPermission('zemauth.can_see_publisher_groups_ui')"
+                    entity="$container.entity"
+                    errors="$container.errors"
+                    api="$container.childApi"
+                ></zem-publisher-group-targeting>
+                <div class="form form--last">
+                    <div class="form__title">Special notes</div>
+                    <div class="form__text">
+                        Any additional targeting set on the backend will be
+                        described here. This is a read-only section. Please
+                        contact your Zemanta Customer Success Manager if you
+                        want to set up or change it.
+                    </div>
+                    <div
+                        class="textarea--dashed break-long-words m-t"
+                        ng-if="$container.entity.settings.notes"
+                    >
+                        {{ $container.entity.settings.notes }}
+                    </div>
+                    <div
+                        class="message m-t-s m-b-none"
+                        ng-if="!$container.entity.settings.notes"
+                    >
+                        No special notes.
+                    </div>
+                </div>
+            </div>
+        </div>
         <zem-ad-group-tracking-settings
             class="zem-settings-component"
             entity="$container.entity"
