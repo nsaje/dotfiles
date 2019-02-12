@@ -47,10 +47,27 @@ def handle_alerts() -> None:
             handle_slack_alert(dcron_job, alert)
 
 
+def update_alert_and_notify(command_name: str, alert: AlertId) -> None:
+    """
+    Update alert status and notify via PagerDuty and Slack if necessary.
+    :param command_name: cron management command name
+    :param alert: alert id from dcron.constants.Alert
+    """
+
+    dcron_job = models.DCronJob.objects.filter(command_name=command_name).first()
+    if dcron_job:
+        if dcron_job.alert != alert:
+            models.DCronJob.objects.filter(command_name=command_name).update(alert=alert)
+            handle_pagerduty_alert(dcron_job, alert)
+            handle_slack_alert(dcron_job, alert)
+    else:
+        logger.error("DCronCommand %s does not exist - could not set Failure alert.", command_name)
+
+
 def handle_pagerduty_alert(dcron_job: models.DCronJob, alert: AlertId) -> None:
     """
     Handle pagerduty alert - trigger or resolve pagerduty alert based on alert status.
-    :param dcron_job: cron management command name
+    :param dcron_job: DCronJob object
     :param alert: alert id from dcron.constants.Alert
     """
 
@@ -73,7 +90,7 @@ def handle_pagerduty_alert(dcron_job: models.DCronJob, alert: AlertId) -> None:
 def handle_slack_alert(dcron_job: models.DCronJob, alert: AlertId) -> None:
     """
     Handle slack alert - send a message based on alert status.
-    :param dcron_job: cron management command name
+    :param dcron_job: DCronJob object
     :param alert: alert id from dcron.constants.Alert
     """
 

@@ -208,7 +208,9 @@ class DCronCommandTestCase(TransactionTestCase):
     @mock.patch("sys.argv", ["manage.py", DUMMY_COMMAND])
     @mock.patch("influx.incr")
     @mock.patch("influx.timing")
-    def test_recover_from_failure(self, mock_influx_timing, mock_influx_incr):
+    @mock.patch("utils.pagerduty_helper._post_event")
+    @mock.patch("utils.slack.publish")
+    def test_recover_from_failure(self, mock_slack_publish, mock_post_event, mock_influx_timing, mock_influx_incr):
         class DummyCommand(commands.DCronCommand):
             def _handle(self, *args, **options):
                 pass
@@ -232,3 +234,20 @@ class DCronCommandTestCase(TransactionTestCase):
 
         alert = alerts._check_alert(dcron_job)
         self.assertEqual(alert, constants.Alert.OK)
+
+        mock_post_event.assert_has_calls(
+            [
+                mock.call(
+                    "resolve",
+                    pagerduty_helper.PagerDutyEventType.Z1,
+                    DUMMY_COMMAND,
+                    alerts._alert_message(DUMMY_COMMAND, constants.Alert.OK),
+                    event_severity=pagerduty_helper.PagerDutyEventSeverity.WARNING,
+                    details=None,
+                )
+            ]
+        )
+
+        mock_slack_publish.assert_has_calls(
+            [mock.call("", **alerts._create_slack_publish_params(dcron_job, constants.Alert.OK))]
+        )

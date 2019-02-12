@@ -1,5 +1,7 @@
 from django.contrib import admin
+from django.utils.html import format_html
 
+from dcron import constants
 from dcron import models
 
 
@@ -12,7 +14,7 @@ class DCronJobSettingsInline(admin.StackedInline):
 @admin.register(models.DCronJob)
 class DCronJobAdmin(admin.ModelAdmin):
     ordering = ["command_name"]
-    list_display = ("command_name", "enabled", "host", "duration", "executed_dt", "completed_dt", "alert")
+    list_display = ("command_name", "enabled", "host", "duration", "executed_dt", "completed_dt", "colored_alert")
     search_fields = ("command_name",)
     list_filter = (
         "alert",
@@ -20,7 +22,8 @@ class DCronJobAdmin(admin.ModelAdmin):
         "dcronjobsettings__severity",
         "dcronjobsettings__manual_override",
     )
-    readonly_fields = ("command_name", "host", "executed_dt", "completed_dt", "alert")
+    readonly_fields = ("command_name", "host", "executed_dt", "completed_dt", "colored_alert")
+    exclude = ("alert",)
     list_select_related = ["dcronjobsettings"]
     inlines = [DCronJobSettingsInline]
 
@@ -37,6 +40,17 @@ class DCronJobAdmin(admin.ModelAdmin):
 
     enabled.boolean = True
     enabled.short_description = "Enabled"
+
+    def colored_alert(self, obj):
+        if obj.alert in (constants.Alert.EXECUTION, constants.Alert.DURATION, constants.Alert.FAILURE):
+            color = "yellow" if obj.alert == constants.Alert.DURATION else "tomato"
+            return format_html(
+                '<span style="background-color: {};">{}</span>', color, constants.Alert.get_name(obj.alert)
+            )
+        else:
+            return constants.Alert.get_name(obj.alert)
+
+    colored_alert.short_description = "Alert"
 
 
 @admin.register(models.DCronJobSettings)

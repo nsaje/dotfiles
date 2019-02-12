@@ -58,18 +58,10 @@ class DCronCommand(management.base.BaseCommand):
 
             try:
                 self._handle(*args, **options)
-                models.DCronJob.objects.filter(command_name=command_name).update(alert=constants.Alert.OK)
+                alerts.update_alert_and_notify(command_name, constants.Alert.OK)
             except Exception:
                 logger.exception("Exception in DCronCommand %s", command_name)
-
-                dcron_job = models.DCronJob.objects.filter(command_name=command_name).first()
-                if dcron_job:
-                    if dcron_job.alert != constants.Alert.FAILURE:
-                        models.DCronJob.objects.filter(command_name=command_name).update(alert=constants.Alert.FAILURE)
-                        alerts.handle_pagerduty_alert(dcron_job, constants.Alert.FAILURE)
-                        alerts.handle_slack_alert(dcron_job, constants.Alert.FAILURE)
-                else:
-                    logger.error("DCronCommand %s does not exist - could not set Failure alert.", command_name)
+                alerts.update_alert_and_notify(command_name, constants.Alert.FAILURE)
 
             finally:
                 finish_dt = dates_helper.utc_now()
