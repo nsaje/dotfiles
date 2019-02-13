@@ -8,7 +8,7 @@ from core.models import *
 from core.models.settings import *
 from core.features.goals import *
 from core.features.history import *
-from core.features.publisher_bid_modifiers.publisher_bid_modifier import PublisherBidModifier
+from core.features.bid_modifiers import BidModifier
 from core.features.publisher_groups import *
 from core.features.multicurrency import *
 from core.features.yahoo_accounts.models import *

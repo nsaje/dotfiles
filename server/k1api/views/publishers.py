@@ -2,7 +2,7 @@ import logging
 
 from django.db.models import F
 
-import core.features.publisher_bid_modifiers
+import core.features.bid_modifiers
 import dash.constants
 import dash.models
 from utils import db_router
@@ -80,7 +80,7 @@ class PublisherBidModifiersView(K1APIView):
         source_type = request.GET.get("source_type")
 
         qs = (
-            core.features.publisher_bid_modifiers.PublisherBidModifier.objects.all()
+            core.features.bid_modifiers.BidModifier.objects.all()
             .select_related("source", "source__source_type")
             .order_by("pk")
         )

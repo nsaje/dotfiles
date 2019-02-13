@@ -3,7 +3,7 @@ from decimal import Decimal
 import mock
 from django.test import TestCase
 
-from core.features.publisher_bid_modifiers import PublisherBidModifier
+from core.features.bid_modifiers import BidModifier
 from dash import constants
 from dash import models
 from dash.dashapi import loaders
@@ -894,7 +894,7 @@ class PublisherBidModifierLoaderTest(TestCase):
     def setUp(self):
         ad_group = magic_mixer.blend(models.AdGroup, id=1)
         source = magic_mixer.blend(models.Source, id=1)
-        magic_mixer.blend(PublisherBidModifier, ad_group=ad_group, source=source, publisher="pub3.com", modifier=0.5)
+        magic_mixer.blend(BidModifier, ad_group=ad_group, source=source, publisher="pub3.com", modifier=0.5)
         user = magic_mixer.blend_user()
 
         self.loader = loaders.PublisherBidModifierLoader(

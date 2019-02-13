@@ -3,7 +3,7 @@ from django.db import models
 import core.models
 
 
-class PublisherBidModifier(models.Model):
+class BidModifier(models.Model):
     class Meta:
         app_label = "dash"
         unique_together = ("ad_group", "source", "publisher")

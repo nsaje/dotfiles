@@ -10,9 +10,8 @@ from rest_framework.parsers import MultiPartParser
 from rest_framework.response import Response
 
 import restapi
+from core.features import bid_modifiers
 from core.features import publisher_bid_modifiers
-from core.features.publisher_bid_modifiers import PublisherBidModifier
-from core.features.publisher_bid_modifiers import service
 from utils import csv_utils
 from utils import s3helpers
 
@@ -36,7 +35,7 @@ class PublisherBidModifiersDownload(restapi.common.views_base.RESTAPIBaseViewSet
     def download(self, request, ad_group_id):
         ad_group = restapi.access.get_ad_group(request.user, ad_group_id)
 
-        modifiers = PublisherBidModifier.objects.filter(ad_group=ad_group)
+        modifiers = bid_modifiers.BidModifier.objects.filter(ad_group=ad_group)
         modifiers = [(x.publisher, x.source.get_clean_slug(), x.modifier) for x in modifiers]
         modifiers.insert(0, ("Publisher", "Source Slug", "Bid Modifier"))
 
@@ -70,10 +69,10 @@ class PublisherBidModifiersUpload(restapi.common.views_base.RESTAPIBaseViewSet):
         error_csv_columns = csv_reader.fieldnames + ["Errors"]
 
         entries = list(csv_reader)
-        cleaned_entries, error = service.clean_entries(entries)
+        cleaned_entries, error = publisher_bid_modifiers.service.clean_entries(entries)
 
         if error:
-            csv_error_key = service.make_csv_error_file(entries, error_csv_columns, ad_group.id)
+            csv_error_key = publisher_bid_modifiers.service.make_csv_error_file(entries, error_csv_columns, ad_group.id)
 
             raise serializers.ValidationError({"file": "Errors in CSV file!", "errorFileUrl": csv_error_key})
         else:
@@ -101,5 +100,5 @@ class PublisherBidModifiersExampleCSVDownload(restapi.common.views_base.RESTAPIB
     permission_classes = (permissions.IsAuthenticated,)
 
     def download(self, request):
-        csv_example_file = service.make_csv_example_file()
+        csv_example_file = publisher_bid_modifiers.service.make_csv_example_file()
         return self.create_csv_response("example_bid_modifiers", content=csv_example_file)

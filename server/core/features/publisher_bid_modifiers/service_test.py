@@ -1,12 +1,12 @@
 from django.test import TestCase
 
 import core.models
+from core.features.bid_modifiers import BidModifier
 from dash import models
 from utils.magic_mixer import magic_mixer
 
 from . import exceptions
 from . import service
-from .publisher_bid_modifier import PublisherBidModifier
 
 
 class TestPublisherBidModifierService(TestCase):
@@ -15,9 +15,7 @@ class TestPublisherBidModifierService(TestCase):
         self.source = magic_mixer.blend(core.models.Source, bidder_slug="some_slug")
 
     def _create(self, modifier, publisher="testpub"):
-        PublisherBidModifier.objects.create(
-            ad_group=self.ad_group, source=self.source, publisher=publisher, modifier=modifier
-        )
+        BidModifier.objects.create(ad_group=self.ad_group, source=self.source, publisher=publisher, modifier=modifier)
 
     def test_get(self):
         self._create(0.5, "testpub1")
@@ -32,9 +30,7 @@ class TestPublisherBidModifierService(TestCase):
 
     def test_set_nonexisting(self):
         service.set(self.ad_group, "testpub", self.source, 1.2)
-        actual = PublisherBidModifier.objects.get(
-            ad_group=self.ad_group, source=self.source, publisher="testpub"
-        ).modifier
+        actual = BidModifier.objects.get(ad_group=self.ad_group, source=self.source, publisher="testpub").modifier
         self.assertEqual(1.2, actual)
 
     def test_set_existing(self):
@@ -42,9 +38,7 @@ class TestPublisherBidModifierService(TestCase):
 
         service.set(self.ad_group, "testpub", self.source, 1.2)
 
-        actual = PublisherBidModifier.objects.get(
-            ad_group=self.ad_group, source=self.source, publisher="testpub"
-        ).modifier
+        actual = BidModifier.objects.get(ad_group=self.ad_group, source=self.source, publisher="testpub").modifier
         self.assertEqual(1.2, actual)
 
     def test_set_none(self):
@@ -52,9 +46,7 @@ class TestPublisherBidModifierService(TestCase):
 
         service.set(self.ad_group, "testpub", self.source, None)
 
-        count = PublisherBidModifier.objects.filter(
-            ad_group=self.ad_group, source=self.source, publisher="testpub"
-        ).count()
+        count = BidModifier.objects.filter(ad_group=self.ad_group, source=self.source, publisher="testpub").count()
         self.assertEqual(0, count)
 
     def test_set_1(self):
@@ -62,9 +54,7 @@ class TestPublisherBidModifierService(TestCase):
 
         service.set(self.ad_group, "testpub", self.source, 1.0)
 
-        actual = PublisherBidModifier.objects.get(
-            ad_group=self.ad_group, source=self.source, publisher="testpub"
-        ).modifier
+        actual = BidModifier.objects.get(ad_group=self.ad_group, source=self.source, publisher="testpub").modifier
         self.assertEqual(1.0, actual)
 
     def test_set_invalid(self):
