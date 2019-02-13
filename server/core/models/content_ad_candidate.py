@@ -38,6 +38,13 @@ class ContentAdCandidate(core.common.FootprintModel):
     url_status = models.IntegerField(
         choices=constants.AsyncUploadJobStatus.get_choices(), default=constants.AsyncUploadJobStatus.PENDING_START
     )
+    primary_tracker_url_status = models.IntegerField(
+        choices=constants.AsyncUploadJobStatus.get_choices(), default=constants.AsyncUploadJobStatus.PENDING_START
+    )
+    secondary_tracker_url_status = models.IntegerField(
+        choices=constants.AsyncUploadJobStatus.get_choices(), default=constants.AsyncUploadJobStatus.PENDING_START
+    )
+    can_append_tracking_codes = models.BooleanField(default=False)
 
     image_id = models.CharField(max_length=256, null=True)
     image_width = models.PositiveIntegerField(null=True)
