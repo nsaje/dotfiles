@@ -80,7 +80,7 @@ class PublisherBidModifiersView(K1APIView):
         source_type = request.GET.get("source_type")
 
         qs = (
-            core.features.bid_modifiers.BidModifier.objects.all()
+            core.features.bid_modifiers.BidModifier.publisher_objects.all()
             .select_related("source", "source__source_type")
             .order_by("pk")
         )

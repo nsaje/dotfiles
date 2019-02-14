@@ -4,6 +4,7 @@ import logging
 from django.urls import reverse
 
 import core.features.bid_modifiers
+from core.features.publisher_bid_modifiers.service_test import add_non_publisher_bid_modifiers
 from utils.magic_mixer import magic_mixer
 
 from .base_test import K1APIBaseTest
@@ -174,6 +175,8 @@ class PublisherBidModifiersTest(K1APIBaseTest):
         self.source = magic_mixer.blend(core.models.Source, bidder_slug="test_source")
         super(PublisherBidModifiersTest, self).setUp()
 
+        add_non_publisher_bid_modifiers(source=self.source)
+
     def repr(self, obj):
         return {
             "id": obj.id,
@@ -184,7 +187,11 @@ class PublisherBidModifiersTest(K1APIBaseTest):
         }
 
     def test_get(self):
-        test_objs = magic_mixer.cycle(3).blend(core.features.bid_modifiers.BidModifier, source=self.source)
+        test_objs = magic_mixer.cycle(3).blend(
+            core.features.bid_modifiers.BidModifier,
+            source=self.source,
+            type=core.features.bid_modifiers.constants.BidModifierType.PUBLISHER,
+        )
         response = self.client.get(reverse("k1api.publisherbidmodifiers"))
         data = json.loads(response.content)
         self.assert_response_ok(response, data)
@@ -195,15 +202,27 @@ class PublisherBidModifiersTest(K1APIBaseTest):
         source2 = magic_mixer.blend(core.models.Source, source_type__type="cde")
         ad_groups = magic_mixer.cycle(6).blend(core.models.AdGroup)
         expected = magic_mixer.cycle(3).blend(
-            core.features.bid_modifiers.BidModifier, source=source1, modifier=1, ad_group=(ag for ag in ad_groups[:3])
+            core.features.bid_modifiers.BidModifier,
+            source=source1,
+            modifier=1,
+            ad_group=(ag for ag in ad_groups[:3]),
+            type=core.features.bid_modifiers.constants.BidModifierType.PUBLISHER,
         )
         # different souce
         magic_mixer.cycle(3).blend(
-            core.features.bid_modifiers.BidModifier, source=source2, modifier=2, ad_group=(ag for ag in ad_groups[:3])
+            core.features.bid_modifiers.BidModifier,
+            source=source2,
+            modifier=2,
+            ad_group=(ag for ag in ad_groups[:3]),
+            type=core.features.bid_modifiers.constants.BidModifierType.PUBLISHER,
         )
         # different_ags
         magic_mixer.cycle(3).blend(
-            core.features.bid_modifiers.BidModifier, source=source1, modifier=3, ad_group=(ag for ag in ad_groups[3:])
+            core.features.bid_modifiers.BidModifier,
+            source=source1,
+            modifier=3,
+            ad_group=(ag for ag in ad_groups[3:]),
+            type=core.features.bid_modifiers.constants.BidModifierType.PUBLISHER,
         )
         response = self.client.get(
             reverse("k1api.publisherbidmodifiers"),
@@ -215,7 +234,10 @@ class PublisherBidModifiersTest(K1APIBaseTest):
 
     def test_pagination(self):
         test_objs = magic_mixer.cycle(10).blend(
-            core.features.bid_modifiers.BidModifier, source=self.source, modifier=(id for id in range(1, 11))
+            core.features.bid_modifiers.BidModifier,
+            source=self.source,
+            modifier=(id for id in range(1, 11)),
+            type=core.features.bid_modifiers.constants.BidModifierType.PUBLISHER,
         )
         response = self.client.get(reverse("k1api.publisherbidmodifiers"), {"marker": test_objs[2].id, "limit": 5})
         data = json.loads(response.content)

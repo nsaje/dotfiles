@@ -8,7 +8,7 @@ import string
 from django.conf import settings
 from django.db import transaction
 
-from core.features.bid_modifiers import BidModifier
+from core.features import bid_modifiers
 from dash import models
 from utils import s3helpers
 
@@ -21,7 +21,9 @@ MODIFIER_MIN = 0.0
 def get(ad_group):
     return [
         {"publisher": item.publisher, "source": item.source, "modifier": item.modifier}
-        for item in BidModifier.objects.filter(ad_group=ad_group).select_related("source").order_by("pk")
+        for item in bid_modifiers.BidModifier.publisher_objects.filter(ad_group=ad_group)
+        .select_related("source")
+        .order_by("pk")
     ]
 
 
@@ -45,12 +47,17 @@ def set(ad_group, publisher, source, modifier, user=None, write_history=True):
 
 
 def _delete(ad_group, source, publisher):
-    return BidModifier.objects.filter(ad_group=ad_group, source=source, publisher=publisher).delete()
+    return bid_modifiers.BidModifier.publisher_objects.filter(
+        ad_group=ad_group, source=source, publisher=publisher
+    ).delete()
 
 
 def _update_or_create(ad_group, source, publisher, modifier):
-    return BidModifier.objects.update_or_create(
-        defaults={"modifier": modifier}, ad_group=ad_group, source=source, publisher=publisher
+    return bid_modifiers.BidModifier.publisher_objects.update_or_create(
+        defaults={"modifier": modifier, "type": bid_modifiers.constants.BidModifierType.PUBLISHER},
+        ad_group=ad_group,
+        source=source,
+        publisher=publisher,
     )
 
 

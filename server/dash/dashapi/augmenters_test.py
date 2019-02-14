@@ -2,7 +2,8 @@ from decimal import Decimal
 
 from django.test import TestCase
 
-from core.features.bid_modifiers import BidModifier
+from core.features import bid_modifiers
+from core.features.publisher_bid_modifiers.service_test import add_non_publisher_bid_modifiers
 from dash import models
 from dash.dashapi import augmenter
 from dash.dashapi import loaders
@@ -13,7 +14,15 @@ class PublisherAugmenterTest(TestCase):
     def setUp(self):
         ad_group = magic_mixer.blend(models.AdGroup, id=1)
         source = magic_mixer.blend(models.Source, id=1)
-        magic_mixer.blend(BidModifier, ad_group=ad_group, source=source, publisher="pub1.com", modifier=0.5)
+        add_non_publisher_bid_modifiers(ad_group=ad_group, source=source)
+        magic_mixer.blend(
+            bid_modifiers.BidModifier,
+            ad_group=ad_group,
+            source=source,
+            publisher="pub1.com",
+            modifier=0.5,
+            type=bid_modifiers.constants.BidModifierType.PUBLISHER,
+        )
         ad_group_source = magic_mixer.blend(models.AdGroupSource, source=source, ad_group=ad_group)
         ad_group_source.settings.update(None, cpc_cc=Decimal("1.5"), cpm=Decimal("2.5"), skip_validation=True)
         user = magic_mixer.blend_user()

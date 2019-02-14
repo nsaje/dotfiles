@@ -11,7 +11,7 @@ import core.features.bcm.calculations
 import core.features.multicurrency
 import stats.helpers
 from analytics.projections import BudgetProjections
-from core.features.bid_modifiers import BidModifier
+from core.features import bid_modifiers
 from dash import constants
 from dash import models
 from dash import publisher_helpers
@@ -930,7 +930,7 @@ class PublisherBidModifierLoader(PublisherBlacklistLoader):
 
     @cached_property
     def modifier_map(self):
-        modifiers = BidModifier.objects.filter(ad_group=self.ad_group)
+        modifiers = bid_modifiers.BidModifier.publisher_objects.filter(ad_group=self.ad_group)
         modifiers = modifiers.filter(source__in=self.filtered_sources_qs)
         return {(x.source_id, x.publisher): x.modifier for x in modifiers}
 

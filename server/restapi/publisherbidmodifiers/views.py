@@ -35,7 +35,7 @@ class PublisherBidModifiersDownload(restapi.common.views_base.RESTAPIBaseViewSet
     def download(self, request, ad_group_id):
         ad_group = restapi.access.get_ad_group(request.user, ad_group_id)
 
-        modifiers = bid_modifiers.BidModifier.objects.filter(ad_group=ad_group)
+        modifiers = bid_modifiers.BidModifier.publisher_objects.filter(ad_group=ad_group)
         modifiers = [(x.publisher, x.source.get_clean_slug(), x.modifier) for x in modifiers]
         modifiers.insert(0, ("Publisher", "Source Slug", "Bid Modifier"))
 

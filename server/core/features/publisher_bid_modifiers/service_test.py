@@ -1,7 +1,7 @@
 from django.test import TestCase
 
 import core.models
-from core.features.bid_modifiers import BidModifier
+from core.features import bid_modifiers
 from dash import models
 from utils.magic_mixer import magic_mixer
 
@@ -9,13 +9,45 @@ from . import exceptions
 from . import service
 
 
+def add_non_publisher_bid_modifiers(**kwargs):
+    """Add some non publisher bid modifiers that should not alter test results."""
+
+    blend_kwargs = {
+        "publisher": ("somerandompub%s.com" % i for i in range(7)),
+        "modifier": 0.5,
+        "type": (
+            t
+            for t in (
+                bid_modifiers.constants.BidModifierType.SOURCE,
+                bid_modifiers.constants.BidModifierType.DEVICE,
+                bid_modifiers.constants.BidModifierType.OPERATING_SYSTEM,
+                bid_modifiers.constants.BidModifierType.PLACEMENT,
+                bid_modifiers.constants.BidModifierType.COUNTRY,
+                bid_modifiers.constants.BidModifierType.STATE,
+                bid_modifiers.constants.BidModifierType.DMA,
+            )
+        ),
+    }
+    blend_kwargs.update(kwargs)
+
+    magic_mixer.cycle(7).blend(bid_modifiers.BidModifier, **blend_kwargs)
+
+
 class TestPublisherBidModifierService(TestCase):
     def setUp(self):
         self.ad_group = magic_mixer.blend(core.models.AdGroup)
         self.source = magic_mixer.blend(core.models.Source, bidder_slug="some_slug")
 
+        add_non_publisher_bid_modifiers(ad_group=self.ad_group, source=self.source)
+
     def _create(self, modifier, publisher="testpub"):
-        BidModifier.objects.create(ad_group=self.ad_group, source=self.source, publisher=publisher, modifier=modifier)
+        bid_modifiers.BidModifier.publisher_objects.create(
+            ad_group=self.ad_group,
+            source=self.source,
+            publisher=publisher,
+            modifier=modifier,
+            type=bid_modifiers.constants.BidModifierType.PUBLISHER,
+        )
 
     def test_get(self):
         self._create(0.5, "testpub1")
@@ -30,7 +62,9 @@ class TestPublisherBidModifierService(TestCase):
 
     def test_set_nonexisting(self):
         service.set(self.ad_group, "testpub", self.source, 1.2)
-        actual = BidModifier.objects.get(ad_group=self.ad_group, source=self.source, publisher="testpub").modifier
+        actual = bid_modifiers.BidModifier.publisher_objects.get(
+            ad_group=self.ad_group, source=self.source, publisher="testpub"
+        ).modifier
         self.assertEqual(1.2, actual)
 
     def test_set_existing(self):
@@ -38,7 +72,9 @@ class TestPublisherBidModifierService(TestCase):
 
         service.set(self.ad_group, "testpub", self.source, 1.2)
 
-        actual = BidModifier.objects.get(ad_group=self.ad_group, source=self.source, publisher="testpub").modifier
+        actual = bid_modifiers.BidModifier.publisher_objects.get(
+            ad_group=self.ad_group, source=self.source, publisher="testpub"
+        ).modifier
         self.assertEqual(1.2, actual)
 
     def test_set_none(self):
@@ -46,7 +82,9 @@ class TestPublisherBidModifierService(TestCase):
 
         service.set(self.ad_group, "testpub", self.source, None)
 
-        count = BidModifier.objects.filter(ad_group=self.ad_group, source=self.source, publisher="testpub").count()
+        count = bid_modifiers.BidModifier.publisher_objects.filter(
+            ad_group=self.ad_group, source=self.source, publisher="testpub"
+        ).count()
         self.assertEqual(0, count)
 
     def test_set_1(self):
@@ -54,7 +92,9 @@ class TestPublisherBidModifierService(TestCase):
 
         service.set(self.ad_group, "testpub", self.source, 1.0)
 
-        actual = BidModifier.objects.get(ad_group=self.ad_group, source=self.source, publisher="testpub").modifier
+        actual = bid_modifiers.BidModifier.publisher_objects.get(
+            ad_group=self.ad_group, source=self.source, publisher="testpub"
+        ).modifier
         self.assertEqual(1.0, actual)
 
     def test_set_invalid(self):
