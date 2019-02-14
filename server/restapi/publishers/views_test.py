@@ -128,13 +128,18 @@ class PublisherBlacklistTest(restapi.common.views_base_test.RESTAPITest):
 
     def test_modifiers_get(self):
         source = core.models.Source.objects.get(bidder_slug="gumgum")
+        publisher_group_helpers.blacklist_publishers(
+            self.test_request,
+            [{"publisher": "testpub1", "source": source, "include_subdomains": True}],
+            self.test_ad_group,
+        )
         core.features.publisher_bid_modifiers.set(self.test_ad_group, "testpub1", source, 0.5)
         core.features.publisher_bid_modifiers.set(self.test_ad_group, "testpub2", source, 4.6)
 
         self.assertEqual(
             self._get_resp_json(self.test_ad_group.id)["data"],
             [
-                {"level": "ADGROUP", "name": "testpub1", "source": "gumgum", "status": "ENABLED", "modifier": 0.5},
+                {"level": "ADGROUP", "name": "testpub1", "source": "gumgum", "status": "BLACKLISTED", "modifier": 0.5},
                 {"level": "ADGROUP", "name": "testpub2", "source": "gumgum", "status": "ENABLED", "modifier": 4.6},
             ],
         )

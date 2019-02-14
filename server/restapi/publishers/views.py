@@ -78,7 +78,7 @@ class PublishersViewSet(restapi.common.views_base.RESTAPIBaseViewSet):
             if not modifier or item["level"] != dash.constants.PublisherBlacklistLevel.ADGROUP:
                 continue
             item["modifier"] = modifier["modifier"]
-            remaining_modifiers_keys -= publisher_source_key
+            remaining_modifiers_keys.discard(publisher_source_key)
 
         for publisher_source_key in sorted(remaining_modifiers_keys, key=lambda x: (x[0], x[1].name)):
             modifier = modifiers_by_publisher_source[publisher_source_key]
