@@ -27,7 +27,7 @@ from . import bcm_slack
 from . import dailystatement
 from . import exceptions
 
-EXCLUDE_ACCOUNTS_LOW_AMOUNT_CHECK = (431, 305)
+EXCLUDE_ACCOUNTS_LOW_AMOUNT_CHECK = (431, 305, 490)
 
 SKIP_AMOUNT_VALIDATION_CREDIT_IDS = [1251]
 
