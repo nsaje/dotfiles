@@ -1,1 +1,1 @@
-from .ad_group_source import AdGroupSource
+from .model import AdGroupSource

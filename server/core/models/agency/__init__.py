@@ -1,1 +1,1 @@
-from .agency import Agency
+from .model import Agency

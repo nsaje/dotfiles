@@ -1,4 +1,5 @@
 # isort:skip_file
+from .tags import EntityTag
 from .source import Source
 from .source_credentials import SourceCredentials
 from .default_source_settings import DefaultSourceSettings
@@ -19,4 +20,3 @@ from .upload_batch import UploadBatch
 from .content_ad_candidate import ContentAdCandidate
 from .conversion_pixel import ConversionPixel
 from .source_type_pixel import SourceTypePixel
-from .tags import EntityTag

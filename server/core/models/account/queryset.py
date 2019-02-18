@@ -1,6 +1,7 @@
 from django.db import models
 
 import core.features.bcm
+import core.models.helpers
 
 
 class AccountQuerySet(models.QuerySet):

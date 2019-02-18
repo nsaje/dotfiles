@@ -56,7 +56,7 @@ class CampaignSettings(validation.CampaignSettingsValidatorMixin, instance.Campa
 
     id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=127, blank=False, null=False)
-    campaign = models.ForeignKey(core.models.Campaign, on_delete=models.PROTECT)
+    campaign = models.ForeignKey("Campaign", on_delete=models.PROTECT)
     system_user = models.PositiveSmallIntegerField(
         choices=constants.SystemUserType.get_choices(), null=True, blank=True
     )

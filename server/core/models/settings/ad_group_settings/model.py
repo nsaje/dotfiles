@@ -126,7 +126,7 @@ class AdGroupSettings(
     history_fields = list(set(_settings_fields) - set(multicurrency_fields))
 
     id = models.AutoField(primary_key=True)
-    ad_group = models.ForeignKey(core.models.AdGroup, on_delete=models.PROTECT)
+    ad_group = models.ForeignKey("dash.AdGroup", on_delete=models.PROTECT)
     system_user = models.PositiveSmallIntegerField(
         choices=constants.SystemUserType.get_choices(), null=True, blank=True
     )
