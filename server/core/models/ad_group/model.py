@@ -163,8 +163,6 @@ class AdGroup(validation.AdGroupValidatorMixin, models.Model, bcm_mixin.AdGroupB
 
     entity_tags = tagulous.models.TagField(to=tags.EntityTag, blank=True)
 
-    objects = AdGroupManager()
-
     def __str__(self):
         return self.name
 
@@ -524,3 +522,5 @@ class AdGroup(validation.AdGroupValidatorMixin, models.Model, bcm_mixin.AdGroupB
                 )
                 .distinct()
             )
+
+    objects = AdGroupManager.from_queryset(QuerySet)()
