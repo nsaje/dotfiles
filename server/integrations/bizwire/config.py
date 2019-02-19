@@ -8,7 +8,7 @@ START_DATE = datetime.date(2016, 12, 3)
 AUTOMATION_CAMPAIGN = 1096
 AUTOMATION_USER_EMAIL = "businesswire-user@zemanta.com"
 
-DEFAULT_CPC = Decimal("0.1")
+DEFAULT_CPC = Decimal("0.17")
 DAILY_BUDGET_RTB_INITIAL = 30
 DAILY_BUDGET_OB_INITIAL = 10
 DAILY_BUDGET_PER_ARTICLE = 3.375
@@ -48,4 +48,5 @@ NOTIFICATION_EMAILS = [
     "tadej.pavlic@zemanta.com",
     "prodops@outbrain.com",
     # 'bostjan@zemanta.com',
+    "tfischer@outbrain.com",
 ]
