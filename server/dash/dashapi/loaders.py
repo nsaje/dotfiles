@@ -932,7 +932,7 @@ class PublisherBidModifierLoader(PublisherBlacklistLoader):
     def modifier_map(self):
         modifiers = bid_modifiers.BidModifier.publisher_objects.filter(ad_group=self.ad_group)
         modifiers = modifiers.filter(source__in=self.filtered_sources_qs)
-        return {(x.source_id, x.publisher): x.modifier for x in modifiers}
+        return {(x.source_id, x.target): x.modifier for x in modifiers}
 
     @cached_property
     def bid_value_map(self):

@@ -181,7 +181,7 @@ class PublisherBidModifiersTest(K1APIBaseTest):
         return {
             "id": obj.id,
             "ad_group_id": obj.ad_group_id,
-            "publisher": obj.publisher,
+            "publisher": obj.target,
             "source": obj.source.bidder_slug,
             "modifier": obj.modifier,
         }
@@ -190,6 +190,7 @@ class PublisherBidModifiersTest(K1APIBaseTest):
         test_objs = magic_mixer.cycle(3).blend(
             core.features.bid_modifiers.BidModifier,
             source=self.source,
+            source_slug=self.source.tracking_slug,
             type=core.features.bid_modifiers.constants.BidModifierType.PUBLISHER,
         )
         response = self.client.get(reverse("k1api.publisherbidmodifiers"))
@@ -204,6 +205,7 @@ class PublisherBidModifiersTest(K1APIBaseTest):
         expected = magic_mixer.cycle(3).blend(
             core.features.bid_modifiers.BidModifier,
             source=source1,
+            source_slug=source1.tracking_slug,
             modifier=1,
             ad_group=(ag for ag in ad_groups[:3]),
             type=core.features.bid_modifiers.constants.BidModifierType.PUBLISHER,
@@ -212,6 +214,7 @@ class PublisherBidModifiersTest(K1APIBaseTest):
         magic_mixer.cycle(3).blend(
             core.features.bid_modifiers.BidModifier,
             source=source2,
+            source_slug=source2.tracking_slug,
             modifier=2,
             ad_group=(ag for ag in ad_groups[:3]),
             type=core.features.bid_modifiers.constants.BidModifierType.PUBLISHER,
@@ -220,6 +223,7 @@ class PublisherBidModifiersTest(K1APIBaseTest):
         magic_mixer.cycle(3).blend(
             core.features.bid_modifiers.BidModifier,
             source=source1,
+            source_slug=source1.tracking_slug,
             modifier=3,
             ad_group=(ag for ag in ad_groups[3:]),
             type=core.features.bid_modifiers.constants.BidModifierType.PUBLISHER,
@@ -236,6 +240,7 @@ class PublisherBidModifiersTest(K1APIBaseTest):
         test_objs = magic_mixer.cycle(10).blend(
             core.features.bid_modifiers.BidModifier,
             source=self.source,
+            source_slug=self.source.tracking_slug,
             modifier=(id for id in range(1, 11)),
             type=core.features.bid_modifiers.constants.BidModifierType.PUBLISHER,
         )

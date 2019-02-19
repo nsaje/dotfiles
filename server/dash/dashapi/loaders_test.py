@@ -900,7 +900,8 @@ class PublisherBidModifierLoaderTest(TestCase):
             bid_modifiers.BidModifier,
             ad_group=ad_group,
             source=source,
-            publisher="pub3.com",
+            source_slug=source.tracking_slug,
+            target="pub3.com",
             modifier=0.5,
             type=bid_modifiers.constants.BidModifierType.PUBLISHER,
         )

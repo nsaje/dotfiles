@@ -98,7 +98,7 @@ class PublisherBidModifiersView(K1APIView):
                 {
                     "id": item.id,
                     "ad_group_id": item.ad_group_id,
-                    "publisher": item.publisher,
+                    "publisher": item.target,
                     "source": item.source.bidder_slug,
                     "modifier": item.modifier,
                 }

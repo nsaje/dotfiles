@@ -36,7 +36,7 @@ class PublisherBidModifiersDownload(restapi.common.views_base.RESTAPIBaseViewSet
         ad_group = restapi.access.get_ad_group(request.user, ad_group_id)
 
         modifiers = bid_modifiers.BidModifier.publisher_objects.filter(ad_group=ad_group)
-        modifiers = [(x.publisher, x.source.get_clean_slug(), x.modifier) for x in modifiers]
+        modifiers = [(x.target, x.source.get_clean_slug(), x.modifier) for x in modifiers]
         modifiers.insert(0, ("Publisher", "Source Slug", "Bid Modifier"))
 
         csv_content = csv_utils.tuplelist_to_csv(modifiers)

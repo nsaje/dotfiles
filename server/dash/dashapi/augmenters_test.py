@@ -19,7 +19,8 @@ class PublisherAugmenterTest(TestCase):
             bid_modifiers.BidModifier,
             ad_group=ad_group,
             source=source,
-            publisher="pub1.com",
+            source_slug=source.tracking_slug,
+            target="pub1.com",
             modifier=0.5,
             type=bid_modifiers.constants.BidModifierType.PUBLISHER,
         )

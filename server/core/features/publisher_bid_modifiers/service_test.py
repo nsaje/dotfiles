@@ -29,6 +29,8 @@ def add_non_publisher_bid_modifiers(**kwargs):
         ),
     }
     blend_kwargs.update(kwargs)
+    if "source" in blend_kwargs:
+        blend_kwargs["source_slug"] = blend_kwargs["source"].tracking_slug
 
     magic_mixer.cycle(7).blend(bid_modifiers.BidModifier, **blend_kwargs)
 
@@ -44,7 +46,8 @@ class TestPublisherBidModifierService(TestCase):
         bid_modifiers.BidModifier.publisher_objects.create(
             ad_group=self.ad_group,
             source=self.source,
-            publisher=publisher,
+            source_slug=self.source.tracking_slug,
+            target=publisher,
             modifier=modifier,
             type=bid_modifiers.constants.BidModifierType.PUBLISHER,
         )
@@ -63,7 +66,7 @@ class TestPublisherBidModifierService(TestCase):
     def test_set_nonexisting(self):
         service.set(self.ad_group, "testpub", self.source, 1.2)
         actual = bid_modifiers.BidModifier.publisher_objects.get(
-            ad_group=self.ad_group, source=self.source, publisher="testpub"
+            ad_group=self.ad_group, source=self.source, target="testpub"
         ).modifier
         self.assertEqual(1.2, actual)
 
@@ -72,8 +75,15 @@ class TestPublisherBidModifierService(TestCase):
 
         service.set(self.ad_group, "testpub", self.source, 1.2)
 
+        self.assertEqual(
+            bid_modifiers.BidModifier.publisher_objects.filter(
+                ad_group=self.ad_group, source=self.source, target="testpub"
+            ).count(),
+            1,
+        )
+
         actual = bid_modifiers.BidModifier.publisher_objects.get(
-            ad_group=self.ad_group, source=self.source, publisher="testpub"
+            ad_group=self.ad_group, source=self.source, target="testpub"
         ).modifier
         self.assertEqual(1.2, actual)
 
@@ -83,7 +93,7 @@ class TestPublisherBidModifierService(TestCase):
         service.set(self.ad_group, "testpub", self.source, None)
 
         count = bid_modifiers.BidModifier.publisher_objects.filter(
-            ad_group=self.ad_group, source=self.source, publisher="testpub"
+            ad_group=self.ad_group, source=self.source, target="testpub"
         ).count()
         self.assertEqual(0, count)
 
@@ -93,7 +103,7 @@ class TestPublisherBidModifierService(TestCase):
         service.set(self.ad_group, "testpub", self.source, 1.0)
 
         actual = bid_modifiers.BidModifier.publisher_objects.get(
-            ad_group=self.ad_group, source=self.source, publisher="testpub"
+            ad_group=self.ad_group, source=self.source, target="testpub"
         ).modifier
         self.assertEqual(1.0, actual)
 
