@@ -7,7 +7,7 @@ DIFF=$(docker run --rm \
     -v $PWD:/src \
     --workdir=/src/ \
     --entrypoint=sh \
-    py3-tools -c "pip-compile server/requirements.in --no-annotate" | diff server/requirements.txt -)
+    py3-tools -c "pip-compile server/requirements.in --dry-run --no-annotate" | diff server/requirements.txt -)
 if [ "$DIFF" != "" ]; then
     echo "$DIFF"
     report_check_result 1 "requirements.in"
