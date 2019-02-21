@@ -360,31 +360,6 @@ Zemanta""",
         self.assertEqual(mail.outbox[0].from_email, "Zemanta <{}>".format(settings.FROM_EMAIL))
         self.assertEqual(mail.outbox[0].to, ["prodops@outbrain.com"])
 
-    def test_send_budget_notification_email(self):
-        campaign_manager = User.objects.create_user("manager@user.com")
-        account_manager = User.objects.create_user("accountmanager@user.com")
-
-        campaign = magic_mixer.blend(dash_models.Campaign, id=48, name="", account__name="")
-
-        campaign.settings.update(None, campaign_manager=campaign_manager)
-        campaign.account.settings.update(None, default_account_manager=account_manager)
-
-        email_helper.send_budget_notification_email(campaign, self.request, "Something changed, yo")
-
-        subject = "Settings change - campaign , account "
-        body = "Hi account manager of campaign \n\nWe'd like to notify you that test@user.com has made the following change in the budget of campaign , account :\n\n- Something changed, yo.\n\nPlease check https://testserver/v2/analytics/campaign/48?history for further details.\n\nYours truly,\nZemanta\n    "
-
-        self.assertEqual(len(mail.outbox), 1)
-        self.assertEqual(mail.outbox[0].subject, subject)
-        self.assertEqual(mail.outbox[0].body, body)
-        self.assertEqual(mail.outbox[0].from_email, "Zemanta <{}>".format(settings.FROM_EMAIL))
-        self.assertEqual(set(mail.outbox[0].to), set([campaign_manager.email]))
-
-        self.request.user = campaign_manager
-        email_helper.send_budget_notification_email(campaign, self.request, "Test")
-
-        self.assertEqual(len(mail.outbox), 1)
-
     @patch("utils.email_helper.send_account_notification_email")
     def test_send_obj_notification_email_account(self, mock_email):
         account = magic_mixer.blend(dash_models.Account, name="Test account")

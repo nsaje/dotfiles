@@ -1230,7 +1230,6 @@ class HistoryTest(TestCase):
             Created budget
             . Budget: #{budid}. Start Date set to "{sd}"
             , End Date set to "{ed}"
-            , Margin set to "0.00%"
             , Amount set to "$100.00"
             , Released amount set to "$0.00"
             , Comment set to ""

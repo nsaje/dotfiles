@@ -335,29 +335,6 @@ def send_account_notification_email(account, request, changes_text):
     )
 
 
-def send_budget_notification_email(campaign, request, changes_text):
-    if not should_send_notification_mail(campaign, request.user, request):
-        return
-
-    link_url = request.build_absolute_uri("/v2/analytics/campaign/{}?history".format(campaign.pk))
-    link_url = link_url.replace("http://", "https://")
-    args = {
-        "user": request.user,
-        "campaign": campaign,
-        "account": campaign.account,
-        "link_url": link_url,
-        "changes_text": _format_changes_text(changes_text),
-    }
-    emails = list(set(email_manager_list(campaign)) - set([request.user.email]))
-    if not emails:
-        return
-    send_official_email(
-        agency_or_user=campaign.account.agency,
-        recipient_list=emails,
-        **params_from_template(dash.constants.EmailTemplateType.BUDGET_CHANGE, **args)
-    )
-
-
 def send_account_pixel_notification(account, request):
     if not should_send_account_notification_mail(account, request.user, request):
         return

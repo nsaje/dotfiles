@@ -67,7 +67,7 @@ class BudgetLineItem(core.common.FootprintModel, core.features.history.HistoryMi
     class Meta:
         app_label = "dash"
 
-    history_fields = ["start_date", "end_date", "amount", "freed_cc", "margin", "comment"]
+    history_fields = ["start_date", "end_date", "amount", "freed_cc", "comment"]
 
     _demo_fields = {"comment": lambda: "Monthly budget"}
     campaign = models.ForeignKey("Campaign", related_name="budgets", on_delete=models.PROTECT)
@@ -174,7 +174,7 @@ class BudgetLineItem(core.common.FootprintModel, core.features.history.HistoryMi
             return None, ""
 
         if self.post_init_newly_created:
-            changes = model_to_dict(self)
+            changes = self.get_history_dict()
 
         changes, changes_text = self.construct_changes(
             "Created budget.", "Budget: #{}.".format(self.id) if self.id else None, changes
