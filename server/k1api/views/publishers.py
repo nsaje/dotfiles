@@ -1,6 +1,8 @@
 import logging
 
 from django.db.models import F
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import cache_page
 
 import core.features.bid_modifiers
 import dash.constants
@@ -14,6 +16,7 @@ logger = logging.getLogger(__name__)
 
 class PublisherGroupsView(K1APIView):
     @db_router.use_read_replica()
+    @method_decorator(cache_page(10 * 60, cache="dash_db_cache"))
     def get(self, request):
         account_id = request.GET.get("account_id")
 
