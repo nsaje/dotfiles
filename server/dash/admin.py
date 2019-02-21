@@ -305,7 +305,7 @@ class SourceForm(forms.ModelForm):
 
 # Default Sources Settings
 class DefaultSourceSettingsAdmin(admin.ModelAdmin):
-    search_fields = ("name",)
+    search_fields = ("source__name",)
     list_display = ("source", "credentials_")
     readonly_fields = ("default_cpc_cc", "mobile_cpc_cc", "daily_budget_cc")
     autocomplete_fields = ("source", "credentials")
