@@ -48,7 +48,7 @@ def set(ad_group, publisher, source, modifier, user=None, write_history=True):
 
 def _delete(ad_group, source, publisher):
     return bid_modifiers.BidModifier.publisher_objects.filter(
-        ad_group=ad_group, source_slug=source.tracking_slug, target=publisher
+        ad_group=ad_group, source_slug=source.bidder_slug, target=publisher
     ).delete()
 
 
@@ -56,7 +56,7 @@ def _update_or_create(ad_group, source, publisher, modifier):
     return bid_modifiers.BidModifier.publisher_objects.update_or_create(
         defaults={"modifier": modifier, "source": source, "type": bid_modifiers.constants.BidModifierType.PUBLISHER},
         ad_group=ad_group,
-        source_slug=source.tracking_slug,
+        source_slug=source.bidder_slug,
         target=publisher,
     )
 

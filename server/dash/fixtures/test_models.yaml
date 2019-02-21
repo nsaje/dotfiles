@@ -185,6 +185,7 @@
         name: Adiant
         source_type: 2
         tracking_slug: 'adiant'
+        bidder_slug: 'adiant'
         maintenance: false
         deprecated: false
         supports_retargeting: true

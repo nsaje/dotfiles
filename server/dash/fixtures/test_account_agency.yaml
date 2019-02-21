@@ -2,6 +2,7 @@
 
 -   fields:
         tracking_slug: Source_1
+        bidder_slug: Source_1
         name: Source 1
         deprecated: true
         released: true
@@ -13,6 +14,7 @@
 
 -   fields:
         tracking_slug: Source_2
+        bidder_slug: Source_2
         name: Source 2
         deprecated: false
         released: true
@@ -23,6 +25,7 @@
 
 -   fields:
         tracking_slug: Source_3
+        bidder_slug: Source_3
         name: Source 3
         deprecated: false
         released: false

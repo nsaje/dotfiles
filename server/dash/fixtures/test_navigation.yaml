@@ -28,6 +28,7 @@
         name: Adiant
         source_type: 2
         tracking_slug: 'adiant'
+        bidder_slug: 'adiant'
     model: dash.source
     pk: 2
 
@@ -37,6 +38,7 @@
         name: Connatix
         source_type: 2
         tracking_slug: 'connatix'
+        bidder_slug: 'connatix'
     model: dash.source
     pk: 3
 

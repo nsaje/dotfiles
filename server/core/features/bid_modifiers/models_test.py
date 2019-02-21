@@ -18,7 +18,7 @@ class BidModifierTestCase(TestCase):
             type=bid_modifiers.constants.BidModifierType.PUBLISHER,
             ad_group=self.ad_group,
             source=self.source,
-            source_slug=self.source.tracking_slug,
+            source_slug=self.source.bidder_slug,
             target=self.target,
         )
 
@@ -28,7 +28,7 @@ class BidModifierTestCase(TestCase):
                 type=bid_modifiers.constants.BidModifierType.PUBLISHER,
                 ad_group=self.ad_group,
                 source=self.source,
-                source_slug=self.source.tracking_slug,
+                source_slug=self.source.bidder_slug,
                 target=self.target,
             )
 
@@ -38,7 +38,7 @@ class BidModifierTestCase(TestCase):
             type=bid_modifiers.constants.BidModifierType.PUBLISHER,
             ad_group=self.ad_group,
             source=self.source,
-            source_slug=self.source.tracking_slug,
+            source_slug=self.source.bidder_slug,
             target=self.target,
         )
 
@@ -46,7 +46,7 @@ class BidModifierTestCase(TestCase):
             defaults={"modifier": 7, "source": self.source},
             type=bid_modifiers.constants.BidModifierType.PUBLISHER,
             ad_group=self.ad_group,
-            source_slug=self.source.tracking_slug,
+            source_slug=self.source.bidder_slug,
             target=self.target,
         )
 
@@ -118,7 +118,7 @@ class BidModifierTestCase(TestCase):
             type=bid_modifiers.constants.BidModifierType.PUBLISHER,
             ad_group=self.ad_group,
             source=self.source,
-            source_slug=self.source.tracking_slug,
+            source_slug=self.source.bidder_slug,
             target=self.target,
         )
         magic_mixer.blend(
@@ -126,14 +126,14 @@ class BidModifierTestCase(TestCase):
             type=bid_modifiers.constants.BidModifierType.OPERATING_SYSTEM,
             ad_group=self.ad_group,
             source=self.source,
-            source_slug=self.source.tracking_slug,
+            source_slug=self.source.bidder_slug,
             target=self.target,
         )
 
         bid_modifiers.models.BidModifier.publisher_objects.update_or_create(
             defaults={"modifier": 7, "type": bid_modifiers.constants.BidModifierType.PUBLISHER, "source": self.source},
             ad_group=self.ad_group,
-            source_slug=self.source.tracking_slug,
+            source_slug=self.source.bidder_slug,
             target=self.target,
         )
 
@@ -147,6 +147,6 @@ class BidModifierTestCase(TestCase):
                     "source": self.source,
                 },
                 ad_group=self.ad_group,
-                source_slug=self.source.tracking_slug,
+                source_slug=self.source.bidder_slug,
                 target=self.target,
             )

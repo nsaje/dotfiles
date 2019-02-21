@@ -303,6 +303,7 @@
         source_type: 1
         maintenance: false
         tracking_slug: '["slug1"]'
+        bidder_slug: '["slug1"]'
     model: dash.source
     pk: 1
 
@@ -312,6 +313,7 @@
         name: AdBanana
         source_type: 2
         tracking_slug: '["slug2"]'
+        bidder_slug: '["slug2"]'
         maintenance: false
     model: dash.source
     pk: 2

@@ -30,7 +30,7 @@ def add_non_publisher_bid_modifiers(**kwargs):
     }
     blend_kwargs.update(kwargs)
     if "source" in blend_kwargs:
-        blend_kwargs["source_slug"] = blend_kwargs["source"].tracking_slug
+        blend_kwargs["source_slug"] = blend_kwargs["source"].bidder_slug
 
     magic_mixer.cycle(7).blend(bid_modifiers.BidModifier, **blend_kwargs)
 
@@ -46,7 +46,7 @@ class TestPublisherBidModifierService(TestCase):
         bid_modifiers.BidModifier.publisher_objects.create(
             ad_group=self.ad_group,
             source=self.source,
-            source_slug=self.source.tracking_slug,
+            source_slug=self.source.bidder_slug,
             target=publisher,
             modifier=modifier,
             type=bid_modifiers.constants.BidModifierType.PUBLISHER,

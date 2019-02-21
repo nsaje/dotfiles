@@ -22,7 +22,7 @@ class Source(instance.SourceMixin, models.Model):
     source_type = models.ForeignKey("SourceType", null=True, on_delete=models.CASCADE)
     name = models.CharField(max_length=127, editable=True, blank=False, null=False)
     tracking_slug = models.CharField(max_length=50, null=False, blank=False, unique=True, verbose_name="Tracking slug")
-    bidder_slug = models.CharField(max_length=50, null=True, blank=True, unique=True, verbose_name="B1 Slug")
+    bidder_slug = models.CharField(max_length=50, null=False, blank=False, unique=True, verbose_name="B1 Slug")
     maintenance = models.BooleanField(default=True)
     deprecated = models.BooleanField(default=False, null=False)
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name="Created at")

@@ -276,6 +276,7 @@
         modified_dt: '2014-06-04T00:00:00'
         name: Gravity
         tracking_slug: 'gravity'
+        bidder_slug: 'gravity'
         source_type: 2
         maintenance: false
         default_cpc_cc: 0.18
@@ -289,6 +290,7 @@
         modified_dt: '2014-06-04T00:00:00'
         name: Outbrain
         tracking_slug: 'outbrain'
+        bidder_slug: 'outbrain'
         source_type: 3
         maintenance: false
         default_daily_budget_cc: 22
@@ -301,6 +303,7 @@
         modified_dt: '2014-06-04T00:00:00'
         name: Taboola
         tracking_slug: 'taboola'
+        bidder_slug: 'taboola'
         source_type: 4
         maintenance: false
         default_daily_budget_cc: 23
@@ -313,6 +316,7 @@
         modified_dt: '2014-06-04T00:00:00'
         name: Yahoo
         tracking_slug: 'yahoo'
+        bidder_slug: 'yahoo'
         source_type: 5
         maintenance: false
         default_mobile_cpc_cc: 0.24
@@ -324,6 +328,7 @@
         modified_dt: '2014-06-04T00:00:00'
         name: MaintenanceSource
         tracking_slug: 'maintenancesource'
+        bidder_slug: 'maintenancesource'
         source_type: 6
         maintenance: true
     model: dash.source
@@ -336,7 +341,7 @@
         tracking_slug: 'b1_adiant'
         source_type: 1
         maintenance: false
-        bidder_slug: 'adiant'
+        bidder_slug: 'b1_adiant'
         content_ad_submission_type: 2
     model: dash.source
     pk: 7

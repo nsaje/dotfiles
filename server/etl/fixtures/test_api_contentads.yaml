@@ -216,6 +216,7 @@
         modified_dt: '2014-06-04T00:00:00'
         name: Gravity
         tracking_slug: 'gravity'
+        bidder_slug: 'gravity'
         maintenance: false
     model: dash.source
     pk: 2
@@ -225,6 +226,7 @@
         modified_dt: '2014-06-04T00:00:00'
         name: Outbrain
         tracking_slug: 'outbrain'
+        bidder_slug: 'outbrain'
         maintenance: false
         source_type: 1
     model: dash.source

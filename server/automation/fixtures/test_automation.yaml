@@ -259,6 +259,7 @@
         name: AdBanana
         source_type: 2
         tracking_slug: '["fake"]'
+        bidder_slug: '["fake"]'
     model: dash.source
     pk: 2
 
@@ -268,6 +269,7 @@
         name: AdOrange
         source_type: 1
         tracking_slug: '["fake2"]'
+        bidder_slug: '["fake2"]'
     model: dash.source
     pk: 3
 
@@ -277,6 +279,7 @@
         name: Outbrain
         source_type: 4
         tracking_slug: '["fake3"]'
+        bidder_slug: '["fake3"]'
     model: dash.source
     pk: 4
 
