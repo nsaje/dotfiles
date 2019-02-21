@@ -1659,7 +1659,7 @@ class ConversionPixelTestCase(TestCase):
 
         hist = history_helpers.get_account_history(models.Account.objects.get(pk=1)).first()
         self.assertEqual(constants.HistoryActionType.CONVERSION_PIXEL_CREATE, hist.action_type)
-        self.assertEqual("Added conversion pixel named name.", hist.changes_text)
+        self.assertEqual("Created a conversion pixel named name.", hist.changes_text)
         hist = history_helpers.get_account_history(models.Account.objects.get(pk=1)).first()
         self.assertEqual(constants.HistoryActionType.CONVERSION_PIXEL_CREATE, hist.action_type)
 
@@ -1723,7 +1723,7 @@ class ConversionPixelTestCase(TestCase):
                     "error_code": "ValidationError",
                     "message": None,
                     "errors": {
-                        "audience_enabled": "This pixel cannot be used for building custom audiences because another pixel is already used: test."
+                        "audience_enabled": "This pixel can not be used for building custom audiences because another pixel is already used: test."
                     },
                     "data": None,
                 },
@@ -1770,7 +1770,7 @@ class ConversionPixelTestCase(TestCase):
 
         hist = history_helpers.get_account_history(models.Account.objects.get(pk=1)).first()
         self.assertEqual(constants.HistoryActionType.CONVERSION_PIXEL_CREATE, hist.action_type)
-        self.assertEqual("Added conversion pixel named name.", hist.changes_text)
+        self.assertEqual("Created a conversion pixel named name.", hist.changes_text)
         hist = history_helpers.get_account_history(models.Account.objects.get(pk=1)).first()
         self.assertEqual(constants.HistoryActionType.CONVERSION_PIXEL_CREATE, hist.action_type)
 
@@ -1779,7 +1779,7 @@ class ConversionPixelTestCase(TestCase):
 
         self.assertTrue(update_pixel_mock.called)
 
-    def test_post_redirect_url_inavlid(self):
+    def test_post_redirect_url_invalid(self):
         permission = authmodels.Permission.objects.get(codename="can_redirect_pixels")
         self.user.user_permissions.add(permission)
 
@@ -1855,7 +1855,7 @@ class ConversionPixelTestCase(TestCase):
 
         hist = history_helpers.get_account_history(models.Account.objects.get(pk=1)).first()
         self.assertEqual(constants.HistoryActionType.CONVERSION_PIXEL_CREATE, hist.action_type)
-        self.assertEqual("Added conversion pixel named name.", hist.changes_text)
+        self.assertEqual("Created a conversion pixel named name.", hist.changes_text)
         hist = history_helpers.get_account_history(models.Account.objects.get(pk=1)).first()
         self.assertEqual(constants.HistoryActionType.CONVERSION_PIXEL_CREATE, hist.action_type)
 
@@ -1924,7 +1924,7 @@ class ConversionPixelTestCase(TestCase):
                     "error_code": "ValidationError",
                     "message": None,
                     "errors": {
-                        "audience_enabled": "This pixel cannot be used for building custom audiences because another pixel is already used: test."
+                        "audience_enabled": "This pixel can not be used for building custom audiences because another pixel is already used: test."
                     },
                     "data": None,
                 },
@@ -1995,7 +1995,7 @@ class ConversionPixelTestCase(TestCase):
                 "data": {
                     "error_code": "ValidationError",
                     "message": None,
-                    "errors": {"audience_enabled": "Cannot archive pixel used for building custom audiences."},
+                    "errors": {"audience_enabled": "Can not archive pixel used for building custom audiences."},
                     "data": None,
                 },
                 "success": False,
@@ -2011,7 +2011,11 @@ class ConversionPixelTestCase(TestCase):
 
         conversion_pixel = models.ConversionPixel.objects.get(pk=1)
         conversion_pixel.additional_pixel = True
+        conversion_pixel.audience_enabled = False
         conversion_pixel.save()
+        models.ConversionPixel.objects.create(
+            None, conversion_pixel.account, skip_notification=True, name="Audience pixel", audience_enabled=True
+        )
 
         response = self.client.put(
             reverse("conversion_pixel", kwargs={"conversion_pixel_id": 1}),
@@ -2028,7 +2032,7 @@ class ConversionPixelTestCase(TestCase):
                 "data": {
                     "error_code": "ValidationError",
                     "message": None,
-                    "errors": {"audience_enabled": "Cannot archive pixel used for building custom audiences."},
+                    "errors": {"audience_enabled": "Can not archive pixel used for building custom audiences."},
                     "data": None,
                 },
                 "success": False,
@@ -2066,9 +2070,9 @@ class ConversionPixelTestCase(TestCase):
 
         hist = history_helpers.get_account_history(models.Account.objects.get(pk=1)).first()
         self.assertEqual(constants.HistoryActionType.CONVERSION_PIXEL_RENAME, hist.action_type)
-        self.assertEqual("Renamed conversion pixel named test to New name.", hist.changes_text)
+        self.assertEqual("Renamed conversion pixel with id 1 to New name.", hist.changes_text)
 
-        self.assertEqual(redirector_mock.call_count, 4)
+        self.assertFalse(redirector_mock.called)
 
     @patch("utils.redirector_helper.upsert_audience")
     def test_put_archive_no_permissions(self, redirector_mock):
@@ -2118,7 +2122,10 @@ class ConversionPixelTestCase(TestCase):
         self.assertEqual("Conversion pixel does not exist", decoded_response["data"]["message"])
 
     def test_put_invalid_account(self):
-        new_conversion_pixel = models.ConversionPixel.objects.create(account_id=4, name="abcd")
+        account = models.Account.objects.get(id=4)
+        new_conversion_pixel = models.ConversionPixel.objects.create(
+            None, account=account, skip_notification=True, name="abcd"
+        )
 
         add_permissions(self.user, ["archive_restore_entity"])
         response = self.client.put(
@@ -2312,7 +2319,13 @@ class ConversionPixelTestCase(TestCase):
     def test_put_set_additional_pixel(self, update_pixel_mock, upsert_audience_mock):
         add_permissions(self.user, ["can_promote_additional_pixel"])
         conversion_pixel = models.ConversionPixel.objects.get(id=1)
+        conversion_pixel.audience_enabled = False
+        conversion_pixel.save()
+        models.ConversionPixel.objects.create(
+            None, conversion_pixel.account, skip_notification=True, name="Audience pixel", audience_enabled=True
+        )
 
+        self.assertFalse(conversion_pixel.audience_enabled)
         self.assertFalse(conversion_pixel.additional_pixel)
 
         response = self.client.put(
@@ -2330,7 +2343,7 @@ class ConversionPixelTestCase(TestCase):
         hist = history_helpers.get_account_history(models.Account.objects.get(pk=1)).first()
         self.assertEqual(constants.HistoryActionType.CONVERSION_PIXEL_SET_ADDITIONAL_PIXEL, hist.action_type)
         self.assertEqual(
-            'Set pixel "{}" as an additional audience pixel.'.format(conversion_pixel.name), hist.changes_text
+            "Set pixel {} as an additional audience pixel.".format(conversion_pixel.name), hist.changes_text
         )
 
         self.assertEqual(upsert_audience_mock.call_count, 4)
@@ -2360,7 +2373,7 @@ class ConversionPixelTestCase(TestCase):
         self.assertFalse(hist)
 
         self.assertFalse(update_pixel_mock.called)
-        self.assertTrue(upsert_audience_mock.called)
+        self.assertFalse(upsert_audience_mock.called)
 
     @patch("utils.k1_helper.update_account")
     def test_post_additional_pixel_enabled(self, ping_mock):
@@ -2380,7 +2393,7 @@ class ConversionPixelTestCase(TestCase):
 
         hist = history_helpers.get_account_history(models.Account.objects.get(pk=1)).first()
         self.assertEqual(constants.HistoryActionType.CONVERSION_PIXEL_CREATE_AS_ADDITIONAL, hist.action_type)
-        self.assertEqual('Created a pixel named "name" as additional audience pixel.', hist.changes_text)
+        self.assertEqual("Created a conversion pixel named name as an additional audience pixel.", hist.changes_text)
 
         ping_mock.assert_called_with(models.Account.objects.get(pk=1), msg="conversion_pixel.create")
 
@@ -2392,17 +2405,24 @@ class ConversionPixelTestCase(TestCase):
             content_type="application/json",
             follow=True,
         )
-
-        self.assertEqual(401, response.status_code)
+        self.assertEqual(200, response.status_code)
         data = json.loads(response.content)["data"]
         self.assertEqual(
-            {"error_code": "AuthorizationError", "message": "Not authorized to set pixel to additional pixel."}, data
+            {
+                "id": data["id"],
+                "name": "name",
+                "url": settings.CONVERSION_PIXEL_PREFIX + "1/{}/".format(data["id"]),
+                "archived": False,
+                "audience_enabled": False,
+                "additional_pixel": False,
+            },
+            data,
         )
         pixel_created = models.ConversionPixel.objects.filter(name="name", additional_pixel=True).count()
         self.assertEqual(0, pixel_created)
 
         hist = history_helpers.get_account_history(models.Account.objects.get(pk=1)).first()
-        self.assertFalse(hist)
+        self.assertTrue(hist)
 
         self.assertFalse(ping_mock.called)
 
@@ -2458,7 +2478,7 @@ class ConversionPixelTestCase(TestCase):
         self.assertDictEqual(
             {
                 "additional_pixel": (
-                    ["Additional audience and custom audience " "cannot be enabled at the same time on the same pixel."]
+                    ["Custom audience and additional audience can not be enabled at the same time on the same pixel."]
                 )
             },
             error,
@@ -2491,7 +2511,7 @@ class ConversionPixelTestCase(TestCase):
         self.assertDictEqual(
             {
                 "additional_pixel": (
-                    ["Additional audience and custom audience " "cannot be enabled at the same time on the same pixel."]
+                    ["Custom audience and additional audience can not be enabled at the same time on the same pixel."]
                 )
             },
             error,
@@ -2929,7 +2949,9 @@ class CampaignSettingsTest(TestCase):
 
         add_permissions(self.user, ["can_see_campaign_goals"])
 
-        convpix = models.ConversionPixel.objects.create(account=ad_group.campaign.account, name="janez_name")
+        convpix = models.ConversionPixel.objects.create(
+            None, account=ad_group.campaign.account, name="janez_name", skip_notification=True
+        )
         convg = models.ConversionGoal.objects.create_unsafe(
             campaign=ad_group.campaign,
             type=constants.ConversionGoalType.PIXEL,

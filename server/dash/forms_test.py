@@ -652,10 +652,12 @@ class ConversionGoalFormTestCase(TestCase):
 
     def setUp(self):
         account = models.Account.objects.get(pk=1)
-        models.ConversionPixel.objects.create(id=1, account=account, slug="slug", name="Test pixel name")
+        self.pixel = models.ConversionPixel.objects.create(
+            None, account, slug="slug", name="Test pixel name", skip_notification=True
+        )
 
     def test_type(self):
-        data = {"goal_id": "1", "conversion_window": 168}
+        data = {"goal_id": self.pixel.id, "conversion_window": 168}
 
         form = forms.ConversionGoalForm(data, campaign_id=1)
         self.assertFalse(form.is_valid())
@@ -673,7 +675,7 @@ class ConversionGoalFormTestCase(TestCase):
         self.assertTrue(form.is_valid())
 
     def test_conversion_window(self):
-        data = {"goal_id": "1", "type": "1"}
+        data = {"goal_id": self.pixel.id, "type": "1"}
 
         form = forms.ConversionGoalForm(data, campaign_id=1)
         self.assertFalse(form.is_valid())
@@ -713,7 +715,7 @@ class ConversionGoalFormTestCase(TestCase):
             {"goal_id": ["The new pixel not successfuly created yet, please try again in a little while."]}, form.errors
         )
 
-        data["goal_id"] = "1"
+        data["goal_id"] = self.pixel.id
 
         form = forms.ConversionGoalForm(data, campaign_id=1)
         self.assertTrue(form.is_valid())
@@ -741,7 +743,7 @@ class ConversionGoalFormTestCase(TestCase):
         self.assertTrue(form.is_valid())
         self.assertEqual(form.cleaned_data["name"], "Test goal id")
 
-        data = {"type": 1, "goal_id": "1", "conversion_window": 168}
+        data = {"type": 1, "goal_id": self.pixel.id, "conversion_window": 168}
 
         form = forms.ConversionGoalForm(data, campaign_id=1)
         self.assertTrue(form.is_valid())

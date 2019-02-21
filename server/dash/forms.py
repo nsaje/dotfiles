@@ -574,14 +574,6 @@ class ConversionPixelForm(forms.Form):
     def __init__(self, *args, **kwargs):
         super(ConversionPixelForm, self).__init__(*args, **kwargs)
 
-    def clean(self):
-        cleaned_data = super(ConversionPixelForm, self).clean()
-        if cleaned_data.get("additional_pixel") and cleaned_data.get("audience_enabled"):
-            self.add_error(
-                "additional_pixel",
-                ("Additional audience and custom audience cannot " "be enabled at the same time on the same pixel."),
-            )
-
 
 class ConversionGoalForm(forms.Form):
     type = forms.TypedChoiceField(required=True, choices=constants.ConversionGoalType.get_choices(), coerce=int)

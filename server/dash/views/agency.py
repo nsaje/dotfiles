@@ -1,4 +1,5 @@
 import decimal
+import functools
 import json
 import logging
 import re
@@ -16,6 +17,7 @@ import core.features.goals.campaign_goal.exceptions
 import core.features.goals.conversion_goal.exceptions
 import core.features.multicurrency
 import core.models.ad_group.exceptions
+import core.models.conversion_pixel.exceptions
 import core.models.settings.ad_group_settings.exceptions
 import core.models.settings.ad_group_source_settings.exceptions
 import core.models.settings.campaign_settings.exceptions
@@ -39,8 +41,6 @@ from utils import dates_helper
 from utils import db_router
 from utils import email_helper
 from utils import exc
-from utils import k1_helper
-from utils import redirector_helper
 from utils import slack
 from zemauth.models import User as ZemUser
 
@@ -843,93 +843,8 @@ class ConversionPixel(api_common.BaseApiView):
         if not form.is_valid():
             raise exc.ValidationError(errors=dict(form.errors))
 
-        try:
-            models.ConversionPixel.objects.get(account_id=account_id, name=form.cleaned_data["name"])
-            form.add_error("name", "Conversion pixel with this name already exists.")
-            raise exc.ValidationError(errors=dict(form.errors))
-        except models.ConversionPixel.DoesNotExist:
-            pass
-
-        redirect_url = ""
-        if request.user.has_perm("zemauth.can_redirect_pixels"):
-            redirect_url = form.cleaned_data["redirect_url"]
-
-        notes = ""
-        if request.user.has_perm("zemauth.can_see_pixel_notes"):
-            notes = form.cleaned_data["notes"]
-
-        additional_pixel = False
-        if form.cleaned_data["additional_pixel"]:
-            if request.user.has_perm("zemauth.can_promote_additional_pixel"):
-                additional_pixel = form.cleaned_data["additional_pixel"]
-            else:
-                raise exc.AuthorizationError("Not authorized to set pixel to additional pixel.")
-
-        with transaction.atomic():
-            conversion_pixel = models.ConversionPixel.objects.create(
-                account_id=account_id,
-                name=form.cleaned_data["name"],
-                audience_enabled=form.cleaned_data["audience_enabled"] or False,
-                redirect_url=redirect_url,
-                notes=notes,
-                additional_pixel=additional_pixel,
-            )
-
-            # This check is done after insertion because we use READ COMMITED
-            # isolation level.
-            if conversion_pixel.audience_enabled:
-                audience_pixels = (
-                    models.ConversionPixel.objects.filter(account_id=account_id)
-                    .filter(audience_enabled=True)
-                    .exclude(pk=conversion_pixel.id)
-                )
-                if audience_pixels:
-                    msg = (
-                        "This pixel cannot be used for building custom audiences "
-                        "because another pixel is already used: {}."
-                    ).format(audience_pixels[0].name)
-                    raise exc.ValidationError(errors={"audience_enabled": msg})
-
-                k1_helper.update_account(account, msg="conversion_pixel.create")
-
-                changes_text = "Added conversion pixel with audience enabled named {}.".format(conversion_pixel.name)
-                account.write_history(
-                    changes_text,
-                    user=request.user,
-                    action_type=constants.HistoryActionType.CONVERSION_PIXEL_AUDIENCE_ENABLED,
-                )
-
-            elif conversion_pixel.additional_pixel:
-                audience_pixels = (
-                    models.ConversionPixel.objects.filter(account_id=account_id)
-                    .filter(audience_enabled=True)
-                    .exclude(pk=conversion_pixel.id)
-                )
-                if not audience_pixels:
-                    msg = (
-                        "The pixel's account has no audience pixel set. Set an audience pixel before setting an"
-                        " additional audience pixel."
-                    )
-                    form.add_error("additional_pixel", msg)
-                    raise exc.ValidationError(errors=dict(form.errors))
-
-                k1_helper.update_account(account, msg="conversion_pixel.create")
-                changes_text = 'Created a pixel named "{}" as additional audience pixel.'.format(conversion_pixel.name)
-                account.write_history(
-                    changes_text,
-                    user=request.user,
-                    action_type=constants.HistoryActionType.CONVERSION_PIXEL_CREATE_AS_ADDITIONAL,
-                )
-            else:
-                changes_text = "Added conversion pixel named {}.".format(conversion_pixel.name)
-                account.write_history(
-                    changes_text, user=request.user, action_type=constants.HistoryActionType.CONVERSION_PIXEL_CREATE
-                )
-
-        if redirect_url:
-            redirector_helper.update_pixel(conversion_pixel)
-
-        email_helper.send_account_pixel_notification(account, request)
+        pixel_create_fn = functools.partial(models.ConversionPixel.objects.create, request, account, **data)
+        conversion_pixel = self._update_pixel(pixel_create_fn)
 
         return self.create_api_response(self._format_pixel(conversion_pixel, request.user))
 
@@ -940,7 +855,7 @@ class ConversionPixel(api_common.BaseApiView):
             raise exc.MissingDataError("Conversion pixel does not exist")
 
         try:
-            account = helpers.get_account(request.user, conversion_pixel.account_id)  # check access to account
+            helpers.get_account(request.user, conversion_pixel.account_id)  # check access to account
         except exc.MissingDataError:
             raise exc.MissingDataError("Conversion pixel does not exist")
 
@@ -953,124 +868,29 @@ class ConversionPixel(api_common.BaseApiView):
         if not form.is_valid():
             raise exc.ValidationError(errors=dict(form.errors))
 
-        with transaction.atomic():
-            self._write_audience_enabled_change_to_history(request, account, conversion_pixel, form.cleaned_data)
-
-            if "audience_enabled" in form.cleaned_data and form.cleaned_data["audience_enabled"]:
-                conversion_pixel.audience_enabled = form.cleaned_data["audience_enabled"]
-
-            if "archived" in form.cleaned_data and request.user.has_perm("zemauth.archive_restore_entity"):
-                self._write_archived_change_to_history(request, account, conversion_pixel, form.cleaned_data)
-                conversion_pixel.archived = form.cleaned_data["archived"]
-
-                if conversion_pixel.archived and (
-                    conversion_pixel.audience_enabled or conversion_pixel.additional_pixel
-                ):
-                    raise exc.ValidationError(
-                        errors={"audience_enabled": ("Cannot archive pixel used for " "building custom audiences.")}
-                    )
-
-            if request.user.has_perm("zemauth.can_redirect_pixels"):
-                self._write_redirect_change_to_history(request, account, conversion_pixel, form.cleaned_data)
-                conversion_pixel.redirect_url = form.cleaned_data["redirect_url"]
-                redirector_helper.update_pixel(conversion_pixel)
-
-            if request.user.has_perm("zemauth.can_see_pixel_notes"):
-                conversion_pixel.notes = form.cleaned_data["notes"]
-
-            if form.cleaned_data["additional_pixel"] and request.user.has_perm("zemauth.can_promote_additional_pixel"):
-
-                if not conversion_pixel.account.conversionpixel_set.filter(audience_enabled=True).count():
-                    form.add_error(
-                        "additional_pixel",
-                        (
-                            "The pixel's account has no audience pixel set. Set an "
-                            "audience pixel before setting an additional audience pixel."
-                        ),
-                    )
-                    raise exc.ValidationError(errors=dict(form.errors))
-                self._write_additional_pixel_change_to_history(request, account, conversion_pixel, form.cleaned_data)
-                conversion_pixel.additional_pixel = form.cleaned_data["additional_pixel"]
-
-            self._write_name_change_to_history(request, account, conversion_pixel, form.cleaned_data)
-            conversion_pixel.name = form.cleaned_data["name"]
-            conversion_pixel.save()
-
-            # This check is done after insertion because we use READ COMMITED
-            # isolation level.
-            if conversion_pixel.audience_enabled or conversion_pixel.additional_pixel:
-                audience_pixels = (
-                    models.ConversionPixel.objects.filter(account_id=conversion_pixel.account_id)
-                    .filter(audience_enabled=True)
-                    .exclude(pk=conversion_pixel.id)
-                )
-                if audience_pixels and not conversion_pixel.additional_pixel:
-                    msg = "This pixel cannot be used for building custom audiences because another pixel is already used: {}.".format(
-                        audience_pixels[0].name
-                    )  # noqa
-                    raise exc.ValidationError(errors={"audience_enabled": msg})
-                k1_helper.update_account(conversion_pixel.account, msg="conversion_pixel.update")
-                self._r1_upsert_audiences(conversion_pixel)
+        pixel_update_fn = functools.partial(conversion_pixel.update, request, **data)
+        self._update_pixel(pixel_update_fn)
 
         return self.create_api_response(self._format_pixel(conversion_pixel, request.user))
 
-    def _r1_upsert_audiences(self, conversion_pixel):
-        audiences = models.Audience.objects.filter(pixel_id=conversion_pixel.id).filter(archived=False)
-        for audience in audiences:
-            redirector_helper.upsert_audience(audience)
+    def _update_pixel(self, pixel_update_fn):
+        try:
+            return pixel_update_fn()
 
-    def _write_archived_change_to_history(self, request, account, conversion_pixel, data):
-        if data["archived"] == conversion_pixel.archived:
-            return
+        except core.models.conversion_pixel.exceptions.DuplicatePixelName as err:
+            raise utils.exc.ValidationError(errors={"name": [str(err)]})
 
-        changes_text = "{} conversion pixel named {}.".format(
-            "Archived" if data["archived"] else "Restored", conversion_pixel.name
-        )
-        account.write_history(
-            changes_text, user=request.user, action_type=constants.HistoryActionType.CONVERSION_PIXEL_ARCHIVE_RESTORE
-        )
+        except core.models.conversion_pixel.exceptions.AudiencePixelAlreadyExists as err:
+            raise utils.exc.ValidationError(errors={"audience_enabled": str(err)})
 
-    def _write_name_change_to_history(self, request, account, conversion_pixel, data):
-        if data["name"] == conversion_pixel.name:
-            return
+        except core.models.conversion_pixel.exceptions.AudiencePixelCanNotBeArchived as err:
+            raise utils.exc.ValidationError(errors={"audience_enabled": str(err)})
 
-        changes_text = "Renamed conversion pixel named {} to {}.".format(conversion_pixel.name, data["name"])
-        account.write_history(
-            changes_text, user=request.user, action_type=constants.HistoryActionType.CONVERSION_PIXEL_RENAME
-        )
+        except core.models.conversion_pixel.exceptions.MutuallyExclusivePixelFlagsEnabled as err:
+            raise utils.exc.ValidationError(errors={"additional_pixel": [str(err)]})
 
-    def _write_additional_pixel_change_to_history(self, request, account, conversion_pixel, data):
-        if data["additional_pixel"] == conversion_pixel.additional_pixel:
-            return
-        elif data["additional_pixel"]:
-            account.write_history(
-                'Set pixel "{}" as an additional audience pixel.'.format(conversion_pixel.name),
-                user=request.user,
-                action_type=constants.HistoryActionType.CONVERSION_PIXEL_SET_ADDITIONAL_PIXEL,
-            )
-
-    def _write_audience_enabled_change_to_history(self, request, account, conversion_pixel, data):
-        if data["audience_enabled"] and not conversion_pixel.audience_enabled:
-            change_text = "Pixel {} enabled for building audiences".format(data["name"])
-            account.write_history(
-                change_text,
-                user=request.user,
-                action_type=constants.HistoryActionType.CONVERSION_PIXEL_AUDIENCE_ENABLED,
-            )
-
-    def _write_redirect_change_to_history(self, request, account, conversion_pixel, data):
-        if data["redirect_url"] == conversion_pixel.redirect_url:
-            return
-
-        if data["redirect_url"]:
-            changes_text = "Set redirect url of pixel named {} to {}.".format(
-                conversion_pixel.name, data["redirect_url"]
-            )
-        else:
-            changes_text = "Removed redirect url of pixel named {}.".format(conversion_pixel.name)
-        account.write_history(
-            changes_text, user=request.user, action_type=constants.HistoryActionType.CONVERSION_PIXEL_SET_REDIRECT_URL
-        )
+        except core.models.conversion_pixel.exceptions.AudiencePixelNotSet as err:
+            raise utils.exc.ValidationError(errors={"additional_pixel": [str(err)]})
 
     def _format_pixel(self, pixel, user, date=None):
         if date is None:

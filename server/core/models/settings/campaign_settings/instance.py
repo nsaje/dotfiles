@@ -15,7 +15,6 @@ class CampaignSettingsMixin(object):
         clean_updates = self._clean_updates(kwargs)
         changes = self.get_changes(clean_updates)
 
-        # FIXME clean method should be called automatically from CampaignSettings model
         self.clean(changes)
         self._validate_changes(changes)
 

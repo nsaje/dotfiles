@@ -1296,20 +1296,28 @@ class ConversionPixelTestCase(TestCase):
     fixtures = ["test_models.yaml"]
 
     def test_save(self):
-        pixel = models.ConversionPixel.objects.create(account_id=1, name="Pixel name", id=4)
-        self.assertEqual(pixel.slug, "4")
-        pixel = models.ConversionPixel.objects.create(account_id=1, name="Pixel name", id=5, slug="testslug")
-        self.assertEqual(pixel.slug, "testslug")
+        account = models.Account.objects.get(id=1)
+        pixel = models.ConversionPixel.objects.create(
+            None, account=account, name="Pixel name 1", skip_notification=True
+        )
+        self.assertEqual(pixel.slug, str(pixel.id))
+        pixel = models.ConversionPixel.objects.create(
+            None, account=account, name="Pixel name 2", slug="testslug", skip_notification=True
+        )
+        self.assertEqual(pixel.slug, str(pixel.id))
 
     def test_get_url(self):
         self.assertEqual(len(models.ConversionPixel.objects.all()), 3)
-        pixel = models.ConversionPixel.objects.create(account_id=1, name="Pixel name", id=4)
+        account = models.Account.objects.get(id=1)
+        pixel = models.ConversionPixel.objects.create(None, account, name="Pixel name 1", skip_notification=True)
 
-        self.assertEqual(pixel.get_url(), "test_prefix1/4/")
+        self.assertEqual(pixel.get_url(), "test_prefix1/{}/".format(pixel.id))
 
-        pixel = models.ConversionPixel.objects.create(account_id=1, name="Pixel name", slug="test_slug", id=5)
+        pixel = models.ConversionPixel.objects.create(
+            None, account, name="Pixel name 2", slug="test_slug", skip_notification=True
+        )
 
-        self.assertEqual(pixel.get_url(), "test_prefix1/test_slug/")
+        self.assertEqual(pixel.get_url(), "test_prefix1/{}/".format(pixel.id))
 
 
 class SourceTypeTestCase(TestCase):
