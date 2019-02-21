@@ -5,7 +5,7 @@ node('master') {
         env.CACHE_DIR = "${JENKINS_HOME}/workspace/_CACHE/${JOB_NAME}"
         sh 'mkdir -p ${CACHE_DIR}'
         env.PATH = "${JENKINS_HOME}/bin/:${env.PATH}"
-        env.AWS_DEFAULT_REGION="us-east-1"        
+        env.AWS_DEFAULT_REGION="us-east-1"
     }
 
     stage('Code checkout') {
@@ -15,18 +15,18 @@ node('master') {
 
         // Remove old lingering containsers and volumes
         sh 'docker-compose kill; docker-compose rm -v -f'
-    }    
+    }
 
     stage('Prepare containers') {
         sh 'make rebuild_if_differ'
         sh 'make build_utils'
-        sh 'make build'        
+        sh 'make build'
     }
 
     withCredentials([string(credentialsId: 'z1_sentry_token', variable: 'Z1_SENTRY_TOKEN')]) {
         stage('Parallel tasks') {
             // login to ECR
-            sh 'make login'        
+            sh 'make login'
 
             parallel(
                 'Server lint': {
@@ -51,7 +51,7 @@ node('master') {
                 },
                 'Client test': {
                     try {
-                        sh 'make test_client'                     
+                        sh 'make test_client'
                     } finally {
                         junit testResults: 'client/test-results.xml', allowEmptyResults: true
                     }
@@ -67,7 +67,7 @@ node('master') {
         }
     }
 
-    stage('Collect artifacts') {        
+    stage('Collect artifacts') {
         sh 'make collect_server_static'
         sh './scripts/push_static_to_s3.sh'
         // restapi docs
@@ -78,7 +78,12 @@ node('master') {
         sh './scripts/push_artifact_to_s3.sh "docker/docker-manage-py.sh"'
         // Server
         sh 'make push'
-    }   
+    }
+
+    // TODO (e2e-tests): Add e2e tests step
+    // stage('Testim e2e tests') {
+    //
+    // }
 
     stage('Cleanup workspace') {
         sh 'docker-compose kill; docker-compose rm -v -f'

@@ -218,7 +218,7 @@ then exec into server container:
 
 and run inside:
 
-`python restapi-test-server.py server:8124 --keepdb --autoreload`
+`python test-server.py server:8124 --keepdb --autoreload`
 
 Then you can run acceptance tests with
 

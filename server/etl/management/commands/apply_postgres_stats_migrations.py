@@ -2,17 +2,17 @@ import logging
 import os
 
 from django.conf import settings
+from django.core.management.base import BaseCommand
 from django.db import connections
 
 from etl import maintenance
 from etl import materialize
 from etl.materialize import MATERIALIZED_VIEWS
-from utils.command_helpers import ExceptionCommand
 
 logger = logging.getLogger(__name__)
 
 
-class Command(ExceptionCommand):
+class Command(BaseCommand):
     def handle(self, *args, **options):
         for db_name in settings.STATS_DB_WRITE_REPLICAS_POSTGRES:
             for mv_class in self._required_views():

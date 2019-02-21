@@ -14,13 +14,12 @@ services:
         expose:
           - "11211"
 
-    einsacceptance:
+    e2e_server:
         restart: always
-        hostname: einsacceptance
-        image: $ACCEPTANCE_IMAGE
+        hostname: e2e_server
+        image: $Z1_SERVER_IMAGE
         expose:
           - "8123"
-          - "8124"  # for testing
         links:
           - "postgres:db"
           - "statspostgres:statsdb"
@@ -31,15 +30,11 @@ services:
           - ".:/src:ro"
         working_dir: /app/z1/
         entrypoint: /src/docker/entrypoint_dev.sh
-        command: python test-server.py
+        command: python test-server.py --fixtures e2e
         tty: true
         stdin_open: true
 
-    dredd:
-        image: nsaje/dredd-python:2.2.5
-        links:
-          - "einsacceptance"
-        entrypoint: bash
-        volumes:
-          - "./server/:/app/z1/"
-        working_dir: /app/z1/
+    # TODO (e2e-tests): Setup e2e test runner container
+    # e2e_tests_runner:
+    #     image: testim/docker-cli
+    #     entrypoint: bash

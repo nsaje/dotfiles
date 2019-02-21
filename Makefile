@@ -4,7 +4,7 @@ ECR_BASE = 569683728510.dkr.ecr.us-east-1.amazonaws.com/zemanta
 GIT_HASH := $(shell git rev-parse --verify HEAD)
 TIMESTAMP := $(shell date +"Created_%Y-%m-%d_%H.%M")
 
-ifdef HUDSON_COOKIE # Jenkins	
+ifdef HUDSON_COOKIE # Jenkins
 	GIT_BRANCH := $(shell printf ${BRANCH_NAME} )# Jenkins
 	BUILD_NUM := $(shell printf ${BUILD_NUMBER} )# Jenkins
 	Z1_CLIENT_IMAGE := $(shell printf "$(ECR_BASE)/z1-client:$(GIT_BRANCH).$(BUILD_NUM)")
@@ -72,6 +72,10 @@ test_acceptance:	## runs tests against a running server in a container
 	[ -n "$(SKIP_TESTS)" ] && echo "Skipping tests due to skiptest in branch name" || \
 	./scripts/docker_test_acceptance.sh
 
+test_e2e:	## runs e2e tests against a running app in a container
+	[ -n "$(SKIP_TESTS)" ] && echo "Skipping tests due to skiptest in branch name" || \
+	./scripts/docker_test_e2e.sh
+
 lint_server:	## runs server linters
 	[ -n "$(SKIP_TESTS)" ] && echo "Skipping tests due to skiptest in branch name" || \
 	bash ./scripts/lint_check.sh
@@ -85,7 +89,7 @@ lint_client:	## runs client linters
 		   $(Z1_CLIENT_IMAGE) \
 		   bash -c "npm run lint"
 
-build_client:	## builds client app for production	
+build_client:	## builds client app for production
 	docker run \
 		   --rm \
 		   -v $(PWD)/client:/app/ \
@@ -188,4 +192,3 @@ help:	#### Support for help/self-documenting feature
 .PHONY: help
 
 .DEFAULT_GOAL := help
-
