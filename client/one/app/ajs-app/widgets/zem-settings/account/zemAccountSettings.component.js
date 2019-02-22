@@ -8,7 +8,19 @@ angular.module('one.widgets').component('zemAccountSettings', {
         $ctrl.constants = constants;
         $ctrl.hasPermission = zemPermissions.hasPermission;
         $ctrl.isPermissionInternal = zemPermissions.isPermissionInternal;
+        $ctrl.updatePublisherGroupsTargeting = updatePublisherGroupsTargeting;
 
         $ctrl.$onInit = function() {};
+
+        function updatePublisherGroupsTargeting(entity, $event) {
+            if ($event.whitelistedPublisherGroups) {
+                entity.settings.whitelistPublisherGroups =
+                    $event.whitelistedPublisherGroups;
+            }
+            if ($event.blacklistedPublisherGroups) {
+                entity.settings.blacklistPublisherGroups =
+                    $event.blacklistedPublisherGroups;
+            }
+        }
     },
 });

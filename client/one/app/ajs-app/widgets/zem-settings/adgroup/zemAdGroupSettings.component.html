@@ -132,9 +132,17 @@
                 <zem-publisher-group-targeting
                     class="zem-publisher-group-targeting"
                     ng-if="$ctrl.hasPermission('zemauth.can_set_white_blacklist_publisher_groups') && $ctrl.hasPermission('zemauth.can_see_publisher_groups_ui')"
-                    entity="$container.entity"
-                    errors="$container.errors"
-                    api="$container.childApi"
+                    account-id="$container.entity.parent.parent.id"
+                    whitelisted-publisher-groups="$container.entity.settings.whitelistPublisherGroups"
+                    blacklisted-publisher-groups="$container.entity.settings.blacklistPublisherGroups"
+                    whitelisted-publisher-groups-errors="$container.errors.whitelistPublisherGroups"
+                    blacklisted-publisher-groups-errors="$container.errors.blacklistPublisherGroups"
+                    on-update="
+                        $ctrl.updatePublisherGroupsTargeting(
+                            $container.entity,
+                            $event
+                        )
+                    "
                 ></zem-publisher-group-targeting>
                 <div class="form form--last">
                     <div class="form__title">Special notes</div>

@@ -53,13 +53,26 @@
                 on-update="$ctrl.updateGeoTargeting($container.entity, $event)"
             ></zem-geo-targeting>
         </div>
-        <zem-campaign-targeting-settings
-            class="zem-settings-component"
-            entity="$container.entity"
-            errors="$container.errors"
-            api="$container.childApi"
+        <div
+            class="custom-panel zem-settings-component__container zem-account-targeting-settings"
             ng-if="$ctrl.hasPermission('zemauth.can_set_white_blacklist_publisher_groups') && $ctrl.hasPermission('zemauth.can_see_publisher_groups_ui')"
-        ></zem-campaign-targeting-settings>
+        >
+            <h2 class="custom-panel__title">Targeting</h2>
+            <zem-publisher-group-targeting
+                class="zem-publisher-group-targeting"
+                account-id="$container.entity.parent.id"
+                whitelisted-publisher-groups="$container.entity.settings.whitelistPublisherGroups"
+                blacklisted-publisher-groups="$container.entity.settings.blacklistPublisherGroups"
+                whitelisted-publisher-groups-errors="$container.errors.whitelistPublisherGroups"
+                blacklisted-publisher-groups-errors="$container.errors.blacklistPublisherGroups"
+                on-update="
+                    $ctrl.updatePublisherGroupsTargeting(
+                        $container.entity,
+                        $event
+                    )
+                "
+            ></zem-publisher-group-targeting>
+        </div>
         <zem-performance-tracking-settings
             class="zem-settings-component"
             entity="$container.entity"

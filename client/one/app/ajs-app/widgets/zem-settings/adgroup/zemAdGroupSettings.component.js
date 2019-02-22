@@ -15,6 +15,7 @@ angular.module('one.widgets').component('zemAdGroupSettings', {
         $ctrl.updateDeviceTargeting = updateDeviceTargeting;
         $ctrl.isDeviceTargetingDifferentFromDefault = isDeviceTargetingDifferentFromDefault;
         $ctrl.updateInterestTargeting = updateInterestTargeting;
+        $ctrl.updatePublisherGroupsTargeting = updatePublisherGroupsTargeting;
 
         function updateDaypartingSettings(entity, $event) {
             entity.settings.dayparting = $event;
@@ -86,6 +87,17 @@ angular.module('one.widgets').component('zemAdGroupSettings', {
             if ($event.excludedInterests) {
                 entity.settings.exclusionInterestTargeting =
                     $event.excludedInterests;
+            }
+        }
+
+        function updatePublisherGroupsTargeting(entity, $event) {
+            if ($event.whitelistedPublisherGroups) {
+                entity.settings.whitelistPublisherGroups =
+                    $event.whitelistedPublisherGroups;
+            }
+            if ($event.blacklistedPublisherGroups) {
+                entity.settings.blacklistPublisherGroups =
+                    $event.blacklistedPublisherGroups;
             }
         }
     },

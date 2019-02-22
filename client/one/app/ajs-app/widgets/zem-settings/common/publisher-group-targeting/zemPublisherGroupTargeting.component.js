@@ -1,20 +1,15 @@
 angular.module('one.widgets').component('zemPublisherGroupTargeting', {
     bindings: {
-        entity: '<',
-        errors: '<',
-        api: '<',
+        accountId: '<',
+        whitelistedPublisherGroups: '<',
+        blacklistedPublisherGroups: '<',
+        whitelistedPublisherGroupsErrors: '<',
+        blacklistedPublisherGroupsErrors: '<',
+        onUpdate: '&',
     },
     template: require('./zemPublisherGroupTargeting.component.html'), // eslint-disable-line max-len
-    controller: function(
-        zemPermissions,
-        zemPublisherGroupsEndpoint,
-        zemPublisherGroupTargetingService
-    ) {
-        // eslint-disable-line max-len
+    controller: function(zemPublisherGroupsEndpoint) {
         var $ctrl = this;
-
-        $ctrl.hasPermission = zemPermissions.hasPermission;
-        $ctrl.isPermissionInternal = zemPermissions.isPermissionInternal;
 
         $ctrl.texts = {
             selectedIncludedTitle: 'Whitelisted publisher groups',
@@ -23,118 +18,142 @@ angular.module('one.widgets').component('zemPublisherGroupTargeting', {
             noChoice: 'No available publisher groups',
             toggleTargetingEditSection: 'Enable publisher targeting',
         };
-        $ctrl.publisherGroups = null;
+        $ctrl.accountPublisherGroups = null;
 
         $ctrl.addIncluded = addIncluded;
         $ctrl.addExcluded = addExcluded;
         $ctrl.removeTargeting = removeTargeting;
 
-        $ctrl.$onInit = function() {
-            $ctrl.api.register({});
-        };
+        $ctrl.$onChanges = function(changes) {
+            if (
+                changes.whitelistedPublisherGroups ||
+                changes.blacklistedPublisherGroups
+            ) {
+                $ctrl.targetings = generateTargetings(
+                    $ctrl.accountPublisherGroups,
+                    $ctrl.whitelistedPublisherGroups,
+                    $ctrl.blacklistedPublisherGroups
+                );
+            }
 
-        $ctrl.$onChanges = function() {
-            if ($ctrl.entity) {
-                if (
-                    $ctrl.publisherGroups &&
-                    $ctrl.previousEntityId === $ctrl.entity.id
-                ) {
-                    $ctrl.targetings = getPublisherGroups();
-                } else {
-                    $ctrl.publisherGroups = null;
-                    zemPublisherGroupTargetingService
-                        .getPublisherGroups($ctrl.entity)
+            if (changes.accountId) {
+                $ctrl.accountPublisherGroups = null;
+                if ($ctrl.accountId) {
+                    zemPublisherGroupsEndpoint
+                        .list($ctrl.accountId, true)
                         .then(function(data) {
-                            $ctrl.publisherGroups = data;
-                            $ctrl.targetings = getPublisherGroups();
+                            $ctrl.accountPublisherGroups = data;
+                            $ctrl.targetings = generateTargetings(
+                                $ctrl.accountPublisherGroups,
+                                $ctrl.whitelistedPublisherGroups,
+                                $ctrl.blacklistedPublisherGroups
+                            );
                         });
                 }
-                $ctrl.previousEntityId = $ctrl.entity.id;
             }
         };
 
         function addIncluded(targeting) {
-            if (!$ctrl.entity.settings.whitelistPublisherGroups) {
-                $ctrl.entity.settings.whitelistPublisherGroups = [];
-            }
-            $ctrl.entity.settings.whitelistPublisherGroups.push(targeting.id);
-            $ctrl.targetings = getPublisherGroups();
+            var updatedWhitelistedPublisherGroups = angular.copy(
+                $ctrl.whitelistedPublisherGroups || []
+            );
+            updatedWhitelistedPublisherGroups.push(targeting.id);
+            propagateUpdate({
+                whitelistedPublisherGroups: updatedWhitelistedPublisherGroups,
+            });
         }
 
         function addExcluded(targeting) {
-            if (!$ctrl.entity.settings.blacklistPublisherGroups) {
-                $ctrl.entity.settings.blacklistPublisherGroups = [];
-            }
-            $ctrl.entity.settings.blacklistPublisherGroups.push(targeting.id);
-            $ctrl.targetings = getPublisherGroups();
+            var updatedBlacklistedPublisherGroups = angular.copy(
+                $ctrl.blacklistedPublisherGroups || []
+            );
+            updatedBlacklistedPublisherGroups.push(targeting.id);
+            propagateUpdate({
+                blacklistedPublisherGroups: updatedBlacklistedPublisherGroups,
+            });
         }
 
         function removeTargeting(targeting) {
-            var index = $ctrl.entity.settings.whitelistPublisherGroups.indexOf(
-                targeting.id
-            );
+            var updatedWhitelistedPublisherGroups;
+            var updatedBlacklistedPublisherGroups;
+
+            var index = $ctrl.whitelistedPublisherGroups.indexOf(targeting.id);
             if (index !== -1) {
-                $ctrl.entity.settings.whitelistPublisherGroups = $ctrl.entity.settings.whitelistPublisherGroups
-                    .slice(0, index)
-                    .concat(
-                        $ctrl.entity.settings.whitelistPublisherGroups.slice(
-                            index + 1
-                        )
-                    );
+                updatedWhitelistedPublisherGroups = angular.copy(
+                    $ctrl.whitelistedPublisherGroups
+                );
+                updatedWhitelistedPublisherGroups.splice(index, 1);
             }
 
-            index = $ctrl.entity.settings.blacklistPublisherGroups.indexOf(
-                targeting.id
-            );
+            index = $ctrl.blacklistedPublisherGroups.indexOf(targeting.id);
             if (index !== -1) {
-                $ctrl.entity.settings.blacklistPublisherGroups = $ctrl.entity.settings.blacklistPublisherGroups
-                    .slice(0, index)
-                    .concat(
-                        $ctrl.entity.settings.blacklistPublisherGroups.slice(
-                            index + 1
-                        )
-                    );
+                updatedBlacklistedPublisherGroups = angular.copy(
+                    $ctrl.blacklistedPublisherGroups
+                );
+                updatedBlacklistedPublisherGroups.splice(index, 1);
             }
 
-            $ctrl.targetings = getPublisherGroups();
+            if (
+                updatedWhitelistedPublisherGroups ||
+                updatedBlacklistedPublisherGroups
+            ) {
+                propagateUpdate({
+                    whitelistedPublisherGroups: updatedWhitelistedPublisherGroups,
+                    blacklistedPublisherGroups: updatedBlacklistedPublisherGroups,
+                });
+            }
         }
 
-        function getPublisherGroups() {
+        function propagateUpdate(newTargeting) {
+            $ctrl.onUpdate({
+                $event: newTargeting,
+            });
+        }
+
+        function generateTargetings(
+            accountPublisherGroups,
+            whitelistedPublisherGroups,
+            blacklistedPublisherGroups
+        ) {
             var targetings = {
                 included: [],
                 excluded: [],
                 notSelected: [],
             };
-            if (!$ctrl.entity || $ctrl.publisherGroups === null)
+            if (accountPublisherGroups === null) {
                 return targetings;
+            }
 
-            var groups = $ctrl.publisherGroups.slice();
-            groups.sort(function(opt1, opt2) {
-                return opt1.name.localeCompare(opt2.name);
-            });
+            var sortedAccountPublisherGroups = accountPublisherGroups
+                .slice()
+                .sort(function(opt1, opt2) {
+                    return opt1.name.localeCompare(opt2.name);
+                });
 
-            groups.forEach(function(pg) {
+            sortedAccountPublisherGroups.forEach(function(group) {
                 if (
-                    $ctrl.entity.settings.whitelistPublisherGroups.indexOf(
-                        pg.id
-                    ) !== -1
+                    (whitelistedPublisherGroups || []).indexOf(group.id) !== -1
                 ) {
-                    targetings.included.push(getTargetingEntity(pg));
+                    targetings.included.push(
+                        generatePublisherGroupObject(group)
+                    );
                 } else if (
-                    $ctrl.entity.settings.blacklistPublisherGroups.indexOf(
-                        pg.id
-                    ) !== -1
+                    (blacklistedPublisherGroups || []).indexOf(group.id) !== -1
                 ) {
-                    targetings.excluded.push(getTargetingEntity(pg));
+                    targetings.excluded.push(
+                        generatePublisherGroupObject(group)
+                    );
                 } else {
-                    targetings.notSelected.push(getTargetingEntity(pg));
+                    targetings.notSelected.push(
+                        generatePublisherGroupObject(group)
+                    );
                 }
             });
 
             return targetings;
         }
 
-        function getTargetingEntity(pg) {
+        function generatePublisherGroupObject(pg) {
             return {
                 section: 'Publisher groups',
                 id: pg.id,

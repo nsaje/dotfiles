@@ -1,7 +1,4 @@
-<div
-    class="form"
-    ng-if="$ctrl.hasPermission('zemauth.can_set_white_blacklist_publisher_groups') && $ctrl.hasPermission('zemauth.can_see_publisher_groups_ui')"
->
+<div class="form">
     <div class="form__title" is-internal="zemauth.can_see_publisher_groups_ui">
         Publishers
     </div>
@@ -18,14 +15,14 @@
     ></zem-inclusion-targeting-list>
     <div class="more-messages__container">
         <div
-            class="message message--error"
-            ng-repeat="error in $ctrl.errors.whitelistPublisherGroups"
+            class="message message--error zem-publisher-group-targeting__error"
+            ng-repeat="error in $ctrl.whitelistedPublisherGroupsErrors"
         >
             {{ error }}
         </div>
         <div
-            class="message message--error"
-            ng-repeat="error in $ctrl.errors.blacklistPublisherGroups"
+            class="message message--error zem-publisher-group-targeting__error"
+            ng-repeat="error in $ctrl.blacklistedPublisherGroupsErrors"
         >
             {{ error }}
         </div>

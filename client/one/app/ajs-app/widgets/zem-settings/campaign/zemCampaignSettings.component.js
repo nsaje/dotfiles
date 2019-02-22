@@ -10,6 +10,7 @@ angular.module('one.widgets').component('zemCampaignSettings', {
         $ctrl.isPermissionInternal = zemPermissions.isPermissionInternal;
         $ctrl.updateGeoTargeting = updateGeoTargeting;
         $ctrl.updateDeviceTargeting = updateDeviceTargeting;
+        $ctrl.updatePublisherGroupsTargeting = updatePublisherGroupsTargeting;
 
         $ctrl.$onInit = function() {};
 
@@ -27,6 +28,17 @@ angular.module('one.widgets').component('zemCampaignSettings', {
             entity.settings.targetDevices = $event.targetDevices;
             entity.settings.targetPlacements = $event.targetPlacements;
             entity.settings.targetOs = $event.targetOs;
+        }
+
+        function updatePublisherGroupsTargeting(entity, $event) {
+            if ($event.whitelistedPublisherGroups) {
+                entity.settings.whitelistPublisherGroups =
+                    $event.whitelistedPublisherGroups;
+            }
+            if ($event.blacklistedPublisherGroups) {
+                entity.settings.blacklistPublisherGroups =
+                    $event.blacklistedPublisherGroups;
+            }
         }
     },
 });
