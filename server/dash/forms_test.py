@@ -1949,16 +1949,6 @@ class AudienceFormTestCase(TestCase):
         del (data["pixel_id"])
         self._expect_error("pixel_id", "Please select pixel.", data)
 
-    def test_pixel_id_no_permissions(self):
-        data = self._get_valid_data()
-        data["pixel_id"] = 3
-        self._expect_error("pixel_id", "Pixel does not exist.", data)
-
-    def test_pixel_id_archived(self):
-        data = self._get_valid_data()
-        data["pixel_id"] = 2
-        self._expect_error("pixel_id", "Pixel is archived.", data)
-
     def test_invalid_ttl(self):
         data = self._get_valid_data()
         data["ttl"] = None
@@ -2004,14 +1994,6 @@ class AudienceFormTestCase(TestCase):
         data["rules"] = [{"type": constants.AudienceRuleType.VISIT, "value": None}]
         f = forms.AudienceForm(self.account, self.user, data)
         self.assertTrue(f.is_valid())
-
-    def test_target_audience_exists(self):
-        data = self._get_valid_data()
-        data["rules"][0]["value"] = "http://test.com"
-        data["rules"][0]["type"] = constants.AudienceRuleType.STARTS_WITH
-        self._expect_error(
-            "pixel_id", 'Audience rule "test audience 1" with the same ttl and rule already exists.', data
-        )
 
 
 class PublisherTargetingFormTestCase(TestCase):

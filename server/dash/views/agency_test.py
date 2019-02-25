@@ -2070,7 +2070,7 @@ class ConversionPixelTestCase(TestCase):
 
         hist = history_helpers.get_account_history(models.Account.objects.get(pk=1)).first()
         self.assertEqual(constants.HistoryActionType.CONVERSION_PIXEL_RENAME, hist.action_type)
-        self.assertEqual("Renamed conversion pixel with id 1 to New name.", hist.changes_text)
+        self.assertEqual("Renamed conversion pixel with ID 1 to New name.", hist.changes_text)
 
         self.assertFalse(redirector_mock.called)
 

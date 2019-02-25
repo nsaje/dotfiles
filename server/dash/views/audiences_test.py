@@ -331,7 +331,7 @@ class AudiencesTest(TestCase):
         self.assertEqual(history[0].ad_group, None)
         self.assertEqual(history[0].level, constants.HistoryLevel.ACCOUNT)
         self.assertEqual(history[0].action_type, constants.HistoryActionType.AUDIENCE_UPDATE)
-        self.assertEqual(history[0].changes_text, 'Changed audience name from "test audience 1" to "New name".')
+        self.assertEqual(history[0].changes_text, "Changed name of audience with ID 1 to 'New name'.")
         self.assertEqual(history[0].changes, None)
         self.assertEqual(history[0].created_by_id, 1)
 
@@ -435,7 +435,7 @@ class AudienceArchiveTest(TestCase):
         self.assertEqual(history.ad_group, None)
         self.assertEqual(history.level, constants.HistoryLevel.ACCOUNT)
         self.assertEqual(history.action_type, constants.HistoryActionType.AUDIENCE_ARCHIVE)
-        self.assertEqual(history.changes_text, 'Archived audience "test audience 1".')
+        self.assertEqual(history.changes_text, "Archived audience 'test audience 1'.")
         self.assertEqual(history.changes, None)
         self.assertEqual(history.created_by_id, 1)
 
@@ -473,7 +473,7 @@ class AudienceArchiveTest(TestCase):
         )
 
         history_text = models.History.objects.all().first().changes_text
-        self.assertNotEqual('Archived audience "test audience 1".', history_text)
+        self.assertNotEqual("Archived audience 'test audience 1'.", history_text)
         redirector_upsert_audience_mock.assert_not_called()
 
 
@@ -532,7 +532,7 @@ class AudienceRestoreTest(TestCase):
         self.assertEqual(history[0].ad_group, None)
         self.assertEqual(history[0].level, constants.HistoryLevel.ACCOUNT)
         self.assertEqual(history[0].action_type, constants.HistoryActionType.AUDIENCE_RESTORE)
-        self.assertEqual(history[0].changes_text, 'Restored audience "test audience 3".')
+        self.assertEqual(history[0].changes_text, "Restored audience 'test audience 3'.")
         self.assertEqual(history[0].changes, None)
         self.assertEqual(history[0].created_by_id, 1)
 

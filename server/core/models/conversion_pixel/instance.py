@@ -94,7 +94,7 @@ class ConversionPixelInstanceMixin:
             )
 
         if "name" in changes:
-            changes_text = "Renamed conversion pixel with id {} to {}.".format(self.id, self.name)
+            changes_text = "Renamed conversion pixel with ID {} to {}.".format(self.id, self.name)
             self.account.write_history(
                 changes_text, user=request.user, action_type=dash.constants.HistoryActionType.CONVERSION_PIXEL_RENAME
             )

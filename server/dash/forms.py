@@ -1755,48 +1755,6 @@ class AudienceForm(forms.Form):
         self.account = account
         self.user = user
 
-    def clean_prefill_days(self):
-        value = self.cleaned_data.get("prefill_days")
-        return value if value is not None else 0
-
-    def clean_pixel_id(self):
-        pixel_id = self.cleaned_data.get("pixel_id")
-        pixel = models.ConversionPixel.objects.filter(pk=pixel_id, account=self.account)
-        if not pixel:
-            raise forms.ValidationError("Pixel does not exist.")
-
-        pixel = pixel[0]
-        if pixel.archived:
-            raise forms.ValidationError("Pixel is archived.")
-
-        return pixel_id
-
-    def clean(self):
-        if self.cleaned_data.get("rules") is None:
-            return self.cleaned_data
-
-        ttl = self.cleaned_data.get("ttl")
-        rules = [(rule["type"], rule["value"] or "") for rule in self.cleaned_data.get("rules")]
-        pixel_id = self.cleaned_data.get("pixel_id")
-        audience_ids = models.Audience.objects.filter(ttl=ttl, pixel_id=pixel_id, archived=False).values("id")
-        audience_ids = [a["id"] for a in audience_ids]
-
-        for rule in models.AudienceRule.objects.filter(audience_id__in=audience_ids).values(
-            "audience_id", "value", "type"
-        ):
-            row = (rule["type"], rule["value"])
-            if row in rules:
-                existing_audience_names = models.Audience.objects.filter(id=rule["audience_id"]).values("name")
-                if len(existing_audience_names) > 0:
-                    self.add_error(
-                        "pixel_id",
-                        'Audience rule "%s" with the same ttl and rule already exists.'
-                        % existing_audience_names[0]["name"],
-                    )
-                    break
-
-        return self.cleaned_data
-
 
 class AudienceUpdateForm(forms.Form):
     name = PlainCharField(

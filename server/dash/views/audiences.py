@@ -1,5 +1,6 @@
 import json
 
+import core.features.audiences.audience.exceptions
 import redshiftapi.api_audiences
 from dash import forms
 from dash import models
@@ -37,15 +38,26 @@ class AudiencesView(api_common.BaseApiView):
         if not audience_form.is_valid():
             raise exc.ValidationError(errors=dict(audience_form.errors))
 
-        pixel = models.ConversionPixel.objects.get(pk=audience_form.cleaned_data["pixel_id"], account=account)
-        audience = models.Audience.objects.create(
-            request,
-            audience_form.cleaned_data["name"],
-            pixel,
-            audience_form.cleaned_data["ttl"],
-            audience_form.cleaned_data["prefill_days"],
-            audience_form.cleaned_data["rules"],
-        )
+        try:
+            pixel = models.ConversionPixel.objects.get(pk=audience_form.cleaned_data["pixel_id"], account=account)
+        except models.ConversionPixel.DoesNotExist:
+            raise exc.MissingDataError("Pixel does not exist.")
+
+        try:
+            audience = models.Audience.objects.create(
+                request,
+                audience_form.cleaned_data["name"],
+                pixel,
+                audience_form.cleaned_data["ttl"],
+                audience_form.cleaned_data["prefill_days"],
+                audience_form.cleaned_data["rules"],
+            )
+
+        except (
+            core.features.audiences.audience.exceptions.PixelIsArchived,
+            core.features.audiences.audience.exceptions.RuleTtlCombinationAlreadyExists,
+        ) as err:
+            raise exc.ValidationError(errors={"pixel_id": [str(err)]})
 
         rules = models.AudienceRule.objects.filter(audience=audience)
         response = self._get_response_dict(audience, rules)
@@ -170,7 +182,11 @@ class AudienceArchive(api_common.BaseApiView):
         except models.Audience.DoesNotExist:
             raise exc.MissingDataError("Audience does not exist")
 
-        audience.update(request, archived=True)
+        try:
+            audience.update(request, archived=True)
+        except core.features.audiences.audience.exceptions.CanNotArchive as err:
+            raise exc.ValidationError(errors=str(err))
+
         return self.create_api_response()
 
 
