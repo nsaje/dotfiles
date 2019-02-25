@@ -3,6 +3,7 @@ from django.test import TestCase
 
 import core.features.audiences
 import core.models
+import dash.constants
 from utils.magic_mixer import magic_mixer
 
 
@@ -15,14 +16,21 @@ class InstanceTestCase(TestCase):
         account = magic_mixer.blend(core.models.Account, users=[request.user])
         pixel = magic_mixer.blend(core.models.ConversionPixel, account=account)
         audience = core.features.audiences.Audience.objects.create(
-            request, "test", pixel, 10, 20, [{"type": 2, "value": "test_rule"}]
+            request,
+            "test",
+            pixel,
+            10,
+            20,
+            [{"type": dash.constants.AudienceRuleType.STARTS_WITH, "value": " http://test.com,  https://test2.com   "}],
         )
         self.assertEqual("test", audience.name)
         self.assertEqual(pixel, audience.pixel)
         self.assertFalse(audience.archived)
         self.assertEqual(10, audience.ttl)
         self.assertEqual(10, audience.prefill_days)
-        self.assertEqual(1, core.features.audiences.AudienceRule.objects.filter(audience=audience).count())
+        rules = core.features.audiences.AudienceRule.objects.filter(audience=audience)
+        self.assertEqual(1, rules.count())
+        self.assertEqual("http://test.com,https://test2.com", rules[0].value)
 
         history_mock.assert_called_once()
         k1_update_account_mock.assert_called_once()

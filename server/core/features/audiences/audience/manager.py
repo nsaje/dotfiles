@@ -15,12 +15,12 @@ from . import model
 class AudienceManager(core.common.BaseManager):
     @transaction.atomic
     def create(self, request, name, pixel, ttl, prefill_days, rules):
+        rules = self._clean_rules(rules)
         self._validate_pixel(pixel)
         self._validate_rule_values(rules)
         self._validate_rules(rules, pixel, ttl)
 
         audience = None
-        refererRules = (constants.AudienceRuleType.CONTAINS, constants.AudienceRuleType.STARTS_WITH)
 
         with transaction.atomic():
             audience = model.Audience(
@@ -39,11 +39,9 @@ class AudienceManager(core.common.BaseManager):
             )
 
             for rule in rules:
-                value = rule.get("value") or ""
-                if rule["type"] in refererRules:
-                    value = ",".join([x.strip() for x in value.split(",") if x])
-
-                rule = core.features.audiences.AudienceRule(audience=audience, type=rule["type"], value=value)
+                rule = core.features.audiences.AudienceRule(
+                    audience=audience, type=rule["type"], value=rule.get("value") or ""
+                )
                 rule.save()
 
             redirector_helper.upsert_audience(audience)
@@ -55,6 +53,14 @@ class AudienceManager(core.common.BaseManager):
     def _validate_pixel(self, pixel):
         if pixel.archived:
             raise exceptions.PixelIsArchived("Pixel is archived.")
+
+    def _clean_rules(self, rules):
+        refererRules = (constants.AudienceRuleType.CONTAINS, constants.AudienceRuleType.STARTS_WITH)
+        for rule in rules:
+            value = rule.get("value") or ""
+            if int(rule.get("type")) in refererRules:
+                rule["value"] = ",".join([x.strip() for x in value.split(",") if x])
+        return rules
 
     def _validate_rule_values(self, rules):
         for rule in rules:

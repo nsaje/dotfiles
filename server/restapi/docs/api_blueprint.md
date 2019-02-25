@@ -436,7 +436,7 @@ impressions     | number          | number of times the pixel was triggered yest
                 "audienceEnabled": false,
                 "url": "https://p1.zemanta.com/p/186/123/",
                 "notes": "pixel used for testing",
-                "lastTriggered": "2019-01-01",
+                "lastTriggered": "2019-01-01T12:00:00",
                 "impressions": 100
             }
         }
@@ -468,7 +468,7 @@ impressions     | number          | number of times the pixel was triggered yest
                 "audienceEnabled": true,
                 "url": "https://p1.zemanta.com/p/186/123/",
                 "notes": "pixel used for audience testing",
-                "lastTriggered": "2019-01-01",
+                "lastTriggered": "2019-01-01T12:00:00",
                 "impressions": 100
             }
         }
@@ -490,7 +490,7 @@ impressions     | number          | number of times the pixel was triggered yest
                     "audienceEnabled": false,
                     "url": "https://p1.zemanta.com/p/186/123/",
                     "notes": "pixel used for testing",
-                    "lastTriggered": "2019-01-01",
+                    "lastTriggered": "2019-01-01T12:00:00",
                     "impressions": 100
                 }
             ]
@@ -544,12 +544,12 @@ createdDt       | date            | audience creation date                      
 <a name="audience-rule"></a>
 #### Audience Rules
 
-Choose how you want to add people to your audience. Include all of your website visitors or create rules that only add people visiting specific parts of your website. Audience can have multiple rules set. "CONTAINS" and "STARTS_WITH" rules can match multiple values separated by a comma.
+Choose how you want to add people to your audience. Include all of your website visitors or create rules that only add people visiting specific parts of your website. Audience can have multiple rules set. `CONTAINS` and `STARTS_WITH` rules can match multiple values separated by a comma. `STARTS_WITH` values need to be valid URLs.
 
-Property         | Type                          | Description                 | Create   | Update
------------------|-------------------------------|-----------------------------|----------|-----------|
-type             | [enum](#audience-rule-type)   | rule type                   | required | read only |
-value            | string                        | rule value                  | required | read only |
+Property         | Type                          | Description                 | Create    | Create (`VISIT`) | Update
+-----------------|-------------------------------|-----------------------------|-----------|------------------|------------
+type             | [enum](#audience-rule-type)   | rule type                   | required  | required         | read only
+value            | string                        | rule value                  | required  | N/A              | read only
 
 
 ### Get audience details [GET /rest/v1/accounts/{accountId}/audiences/{audienceId}]
@@ -576,7 +576,8 @@ value            | string                        | rule value                  |
                         "type": "CONTAINS",
                         "value": "test,tags"
                     }
-                ]
+                ],
+                "createdDt": "2019-01-01T12:00:00"
             }
         }
 
@@ -612,7 +613,8 @@ value            | string                        | rule value                  |
                         "type": "CONTAINS",
                         "value": "test,tags"
                     }
-                ]
+                ],
+                "createdDt": "2019-01-01T12:00:00"
             }
         }
 
@@ -626,17 +628,18 @@ value            | string                        | rule value                  |
         {
             "data": [
                 {
-                "id":"234",
-                "pixelId": "123",
-                "name": "test_audience",
-                "archived": false,
-                "ttl": 7,
-                "rules": [
-                    {
-                        "type": "STARTS_WITH",
-                        "value": "http://test.com,https://urls.com"
-                    }
-                ]
+                    "id":"234",
+                    "pixelId": "123",
+                    "name": "test_audience",
+                    "archived": false,
+                    "ttl": 7,
+                    "rules": [
+                        {
+                            "type": "STARTS_WITH",
+                            "value": "http://test.com,https://urls.com"
+                        }
+                    ],
+                    "createdDt": "2019-01-01T12:00:00"
                 }
             ]
         }
@@ -675,7 +678,8 @@ value            | string                        | rule value                  |
                         "type": "VISIT",
                         "value": ""
                     }
-                ]
+                ],
+                "createdDt": "2019-01-01T12:00:00"
             }
         }
 
@@ -2244,7 +2248,7 @@ Include traffic that meets the following conditions:
 
 ##### People who visited specific web pages
 
-- `STARTS_WITH` - URL equals specified value
+- `STARTS_WITH` - URL starts with specified value
 - `CONTAINS` - URL contains specified value
 
 ##### Anyone who visited your website

@@ -233,13 +233,19 @@ class AudiencesTest(RESTAPITest):
                 "name": "posty",
                 "ttl": 10,
                 "rules": [
-                    {"type": "STARTS_WITH", "value": "http://this.com,https://is.com,http://a.com,https://test.com"}
+                    {
+                        "type": "STARTS_WITH",
+                        "value": "http://this.com,   https://is.com,http://a.com, https://test.com ",
+                    }
                 ],
             },
             format="json",
         )
         resp_json = self.assertResponseValid(r, status_code=201)
         self.validate_against_db(resp_json["data"])
+        self.assertEqual(
+            "http://this.com,https://is.com,http://a.com,https://test.com", resp_json["data"]["rules"][0]["value"]
+        )
 
         r = self.client.post(
             reverse("audiences_list", kwargs={"account_id": account.id}),
