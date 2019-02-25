@@ -4,6 +4,8 @@ import datetime
 from django.conf import settings
 from django.db import models
 
+import utils.dates_helper
+
 from . import instance
 from . import manager
 from . import validation
@@ -24,6 +26,8 @@ class ConversionPixel(validation.ConversionPixelValidatorMixin, instance.Convers
         "redirect_url": "zemauth.can_redirect_pixels",
         "notes": "zemauth.can_see_pixel_notes",
     }
+
+    _SLUG_PLACEHOLDER = "temp_slug"
 
     id = models.AutoField(primary_key=True)
     name = models.CharField(blank=False, null=False, max_length=50)
@@ -47,3 +51,8 @@ class ConversionPixel(validation.ConversionPixelValidatorMixin, instance.Convers
 
     def get_view_key(self, conversion_window):
         return "{}_{}".format(self.get_prefix(), conversion_window)
+
+    def get_impressions(self, date=None):
+        if date is None:
+            date = utils.dates_helper.local_yesterday()
+        return self.impressions if self.last_triggered and self.last_triggered.date() >= date else 0

@@ -11,7 +11,9 @@ from . import model
 class ConversionPixelManager(core.common.BaseManager):
     @transaction.atomic
     def create(self, request, account, skip_notification=False, **settings):
-        pixel = model.ConversionPixel(account=account, redirect_url="", notes="")
+        pixel = model.ConversionPixel(
+            account=account, slug=model.ConversionPixel._SLUG_PLACEHOLDER, redirect_url="", notes=""
+        )
         pixel.update(request, skip_propagation=True, **settings)
 
         if pixel.audience_enabled:

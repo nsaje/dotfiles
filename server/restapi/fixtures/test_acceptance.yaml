@@ -36,6 +36,8 @@
       - ['can_manage_credit_refunds', 'zemauth', 'user']
       - ['can_set_frequency_capping', 'zemauth', 'user']
       - ['can_use_language_targeting', 'zemauth', 'user']
+      - ['can_see_pixel_notes', 'zemauth', 'user']
+      - ['can_see_pixel_traffic', 'zemauth', 'user']
 
 - model: oauth2_provider.application
   pk: 1
@@ -707,6 +709,23 @@
         name: 'My retargeting ad group 2'
     model: dash.adgroup
     pk: 2051
+
+
+# test pixels
+
+-   fields:
+        created_dt: '2014-06-04T09:58:21'
+        name: 'test_pixel'
+        account: 186
+        slug: "123"
+        archived: False
+        audience_enabled: False
+        additional_pixel: False
+        last_triggered: "2019-01-01T09:58:21"
+        impressions: 100
+        notes: "pixel used for testing"
+    model: dash.conversionpixel
+    pk: 123
 
 
 # test custom audiences

@@ -15,6 +15,7 @@ import restapi.campaigngoal.urls
 import restapi.campaignlauncher.urls
 import restapi.campaignstats.urls
 import restapi.contentad.urls
+import restapi.conversion_pixel.urls
 import restapi.geolocation.urls
 import restapi.inventory_planning.urls
 import restapi.publisherbidmodifiers.urls
@@ -41,6 +42,7 @@ urlpatterns += restapi.adgroupsource.urls.urlpatterns
 urlpatterns += restapi.adgroupsourcestats.urls.urlpatterns
 urlpatterns += restapi.adgroupsourcesrtb.urls.urlpatterns
 urlpatterns += restapi.contentad.urls.urlpatterns
+urlpatterns += restapi.conversion_pixel.urls.urlpatterns
 urlpatterns += restapi.report.urls.urlpatterns
 urlpatterns += restapi.geolocation.urls.urlpatterns
 urlpatterns += restapi.publishers.urls.urlpatterns

@@ -400,6 +400,133 @@ available | [money](#money) | amount still available for allocation
         }
 
 
+## Pixels [/rest/v1/accounts/{accountId}/pixels/]
+
+Zemanta's pixels allow you to report conversions, build audiences and get insights about how people use your website.
+Pixels need to be properly placed in order to measure goals effectively. We recommend placing your pixel on the confirmation page
+which is shown to a person after the desired action is performed. 
+
+Property        | Type            | Description                                                                           | Create    | Update  
+----------------|-----------------|---------------------------------------------------------------------------------------|-----------|-----------
+id              | string          | ID of the pixel                                                                       | N/A       | read only        
+accountId       | string          | ID of the account                                                                     | read only | read only       
+name            | string          | name of the pixel                                                                     | required  | optional        
+archived        | bool            | Is the pixel archived? Set to `true` to archive a pixel and to `false` to restore it. | optional  | optional        
+audienceEnabled | bool            | Is the pixel used for building custom audiences? Set to `true` to enable it. Can not be disabled once enabled. Only one pixel can be used for building custom audiences.  | optional  | optional        
+url             | string          | URL of the pixel                                                                      | read only | read only
+notes           | string          | a note describing where the pixel is placed on your website and what it tracks        | optional  | optional         
+lastTriggered   | date            | date of when the pixel was last triggered                                             | read only | read only        
+impressions     | number          | number of times the pixel was triggered yesterday                                     | read only | read only      
+
+
+### Get pixel details [GET /rest/v1/accounts/{accountId}/pixels/{pixelId}]
+
++ Parameters
+    + accountId: 186 (required)
+    + pixelId: 123 (required)
+
++ Response 200 (application/json)
+
+        {
+            "data": {
+                "id":"123",
+                "accountId": "186",
+                "name": "test_pixel",
+                "archived": false,
+                "audienceEnabled": false,
+                "url": "https://p1.zemanta.com/p/186/123/",
+                "notes": "pixel used for testing",
+                "lastTriggered": "2019-01-01",
+                "impressions": 100
+            }
+        }
+
+
+### Update pixel [PUT /rest/v1/accounts/{accountId}/pixels/{pixelId}]
+
++ Parameters
+    + accountId: 186 (required)
+    + pixelId: 123 (required)
+
++ Request (application/json)
+
+        {
+            "name": "audience_pixel",
+            "archived": false,
+            "audienceEnabled": true,
+            "notes": "pixel used for audience testing"
+        }
+
++ Response 200 (application/json)
+
+        {
+            "data": {
+                "id":"123",
+                "accountId": "186",
+                "name": "audience_pixel",
+                "archived": false,
+                "audienceEnabled": true,
+                "url": "https://p1.zemanta.com/p/186/123/",
+                "notes": "pixel used for audience testing",
+                "lastTriggered": "2019-01-01",
+                "impressions": 100
+            }
+        }
+
+### List pixels [GET /rest/v1/accounts/{accountId}/pixels/]
+
++ Parameters
+    + accountId: 186 (required)
+
++ Response 200 (application/json)
+
+        {
+            "data": [
+                {
+                    "id":"123",
+                    "accountId": "186",
+                    "name": "test_pixel",
+                    "archived": false,
+                    "audienceEnabled": false,
+                    "url": "https://p1.zemanta.com/p/186/123/",
+                    "notes": "pixel used for testing",
+                    "lastTriggered": "2019-01-01",
+                    "impressions": 100
+                }
+            ]
+        }
+
+### Create new pixel [POST /rest/v1/accounts/{accountId}/pixels/]
+
++ Parameters
+    + accountId: 186 (required)
+
++ Request (application/json)
+
+        {
+            "name": "test_pixel",
+            "archived": false,
+            "audienceEnabled": false,
+            "notes": "pixel used for testing"
+        }
+
++ Response 201 (application/json)
+
+        {
+            "data": {
+                "id":"124",
+                "accountId": "186",
+                "name": "test_pixel",
+                "archived": false,
+                "audienceEnabled": false,
+                "url": "https://p1.zemanta.com/p/186/124/",
+                "notes": "pixel used for testing",
+                "lastTriggered": null,
+                "impressions": 0
+            }
+        }
+
+
 # Group Campaign Management
 
 ## Campaigns [/rest/v1/campaigns/]

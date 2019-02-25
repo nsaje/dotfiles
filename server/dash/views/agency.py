@@ -893,8 +893,6 @@ class ConversionPixel(api_common.BaseApiView):
             raise utils.exc.ValidationError(errors={"additional_pixel": [str(err)]})
 
     def _format_pixel(self, pixel, user, date=None):
-        if date is None:
-            date = dates_helper.local_yesterday()
         data = {
             "id": pixel.id,
             "name": pixel.name,
@@ -905,9 +903,7 @@ class ConversionPixel(api_common.BaseApiView):
         }
         if user.has_perm("zemauth.can_see_pixel_traffic"):
             data["last_triggered"] = pixel.last_triggered
-            data["impressions"] = 0
-            if pixel.last_triggered and pixel.last_triggered.date() >= date:
-                data["impressions"] = pixel.impressions
+            data["impressions"] = pixel.get_impressions(date=date)
         if user.has_perm("zemauth.can_redirect_pixels"):
             data["redirect_url"] = pixel.redirect_url
         if user.has_perm("zemauth.can_see_pixel_notes"):

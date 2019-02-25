@@ -108,7 +108,7 @@ class ConversionPixelInstanceMixin:
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
 
-        if not self.slug:
+        if self.slug == self._SLUG_PLACEHOLDER or not self.slug:
             # if slug is not provided, id is used as a slug.
             # This is here for backwards compatibility. When
             # none of the pixels with actual string slugs are no
