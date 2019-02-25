@@ -436,7 +436,7 @@ impressions     | number          | number of times the pixel was triggered yest
                 "audienceEnabled": false,
                 "url": "https://p1.zemanta.com/p/186/123/",
                 "notes": "pixel used for testing",
-                "lastTriggered": "2019-01-01T12:00:00",
+                "lastTriggered": "2019-01-01T12:00:00.000000",
                 "impressions": 100
             }
         }
@@ -468,7 +468,7 @@ impressions     | number          | number of times the pixel was triggered yest
                 "audienceEnabled": true,
                 "url": "https://p1.zemanta.com/p/186/123/",
                 "notes": "pixel used for audience testing",
-                "lastTriggered": "2019-01-01T12:00:00",
+                "lastTriggered": "2019-01-01T12:00:00.000000",
                 "impressions": 100
             }
         }
@@ -490,7 +490,7 @@ impressions     | number          | number of times the pixel was triggered yest
                     "audienceEnabled": false,
                     "url": "https://p1.zemanta.com/p/186/123/",
                     "notes": "pixel used for testing",
-                    "lastTriggered": "2019-01-01T12:00:00",
+                    "lastTriggered": "2019-01-01T12:00:00.000000",
                     "impressions": 100
                 }
             ]
@@ -577,7 +577,7 @@ value            | string                        | rule value                  |
                         "value": "test,tags"
                     }
                 ],
-                "createdDt": "2019-01-01T12:00:00"
+                "createdDt": "2019-01-01T12:00:00.000000"
             }
         }
 
@@ -614,7 +614,7 @@ value            | string                        | rule value                  |
                         "value": "test,tags"
                     }
                 ],
-                "createdDt": "2019-01-01T12:00:00"
+                "createdDt": "2019-01-01T12:00:00.000000"
             }
         }
 
@@ -639,7 +639,7 @@ value            | string                        | rule value                  |
                             "value": "http://test.com,https://urls.com"
                         }
                     ],
-                    "createdDt": "2019-01-01T12:00:00"
+                    "createdDt": "2019-01-01T12:00:00.000000"
                 }
             ]
         }
@@ -679,7 +679,7 @@ value            | string                        | rule value                  |
                         "value": ""
                     }
                 ],
-                "createdDt": "2019-01-01T12:00:00"
+                "createdDt": "2019-01-01T12:00:00.000000"
             }
         }
 
