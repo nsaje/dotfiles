@@ -1878,17 +1878,9 @@ class FacebookAccountStatus(ConstantBase):
 class AudienceRuleType(ConstantBase):
     STARTS_WITH = 1
     CONTAINS = 2
-    NOT_STARTS_WITH = 3
-    NOT_CONTAINS = 4
     VISIT = 5
 
-    _VALUES = {
-        STARTS_WITH: "Starts with",
-        CONTAINS: "Contains",
-        NOT_STARTS_WITH: "Not starts with",
-        NOT_CONTAINS: "Not contains",
-        VISIT: "Visit",
-    }
+    _VALUES = {STARTS_WITH: "Starts with", CONTAINS: "Contains", VISIT: "Visit"}
 
 
 class Level(object):

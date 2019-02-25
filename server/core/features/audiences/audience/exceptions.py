@@ -11,3 +11,11 @@ class RuleTtlCombinationAlreadyExists(ValidationError):
 
 class CanNotArchive(ValidationError):
     pass
+
+
+class RuleValueMissing(ValidationError):
+    pass
+
+
+class RuleUrlInvalid(ValidationError):
+    pass

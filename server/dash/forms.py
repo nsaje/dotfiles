@@ -1740,9 +1740,13 @@ class AudienceForm(forms.Form):
             "max_length": "Name is too long (max %(limit_value)d characters)",
         },
     )
-    pixel_id = forms.IntegerField(error_messages={"required": "Please select pixel."})
+    pixel_id = forms.IntegerField(error_messages={"required": "Please select a pixel."})
     ttl = forms.IntegerField(
-        max_value=365, error_messages={"required": "Please select days.", "max_value": "Maximum number of days is 365."}
+        max_value=365,
+        error_messages={
+            "required": "Please specify the user retention in days.",
+            "max_value": "Maximum number of days is 365.",
+        },
     )
     prefill_days = forms.IntegerField(
         required=False, max_value=365, error_messages={"max_value": "Maximum number of days is 365."}

@@ -49,7 +49,7 @@ class AudiencesView(api_common.BaseApiView):
                 audience_form.cleaned_data["name"],
                 pixel,
                 audience_form.cleaned_data["ttl"],
-                audience_form.cleaned_data["prefill_days"],
+                audience_form.cleaned_data["ttl"],  # prefill days is an internal feature with isn't currently in use
                 audience_form.cleaned_data["rules"],
             )
 
@@ -58,6 +58,12 @@ class AudiencesView(api_common.BaseApiView):
             core.features.audiences.audience.exceptions.RuleTtlCombinationAlreadyExists,
         ) as err:
             raise exc.ValidationError(errors={"pixel_id": [str(err)]})
+
+        except (
+            core.features.audiences.audience.exceptions.RuleValueMissing,
+            core.features.audiences.audience.exceptions.RuleUrlInvalid,
+        ) as err:
+            raise exc.ValidationError(errors={"rules": [str(err)]})
 
         rules = models.AudienceRule.objects.filter(audience=audience)
         response = self._get_response_dict(audience, rules)

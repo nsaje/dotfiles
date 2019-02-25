@@ -9,12 +9,7 @@ from . import db
 def get_audience_sample_size(account_id, slug, ttl, rules, refresh_cache=False):
     timelimit = datetime.datetime.now().date() - datetime.timedelta(days=ttl)
 
-    valid_rule_types = [
-        constants.AudienceRuleType.STARTS_WITH,
-        constants.AudienceRuleType.CONTAINS,
-        constants.AudienceRuleType.NOT_STARTS_WITH,
-        constants.AudienceRuleType.NOT_CONTAINS,
-    ]
+    valid_rule_types = [constants.AudienceRuleType.STARTS_WITH, constants.AudienceRuleType.CONTAINS]
 
     query_rules = []
     params = [account_id, slug, timelimit.isoformat()]

@@ -1944,18 +1944,18 @@ class AudienceFormTestCase(TestCase):
     def test_invalid_pixel_id(self):
         data = self._get_valid_data()
         data["pixel_id"] = None
-        self._expect_error("pixel_id", "Please select pixel.", data)
+        self._expect_error("pixel_id", "Please select a pixel.", data)
 
         del (data["pixel_id"])
-        self._expect_error("pixel_id", "Please select pixel.", data)
+        self._expect_error("pixel_id", "Please select a pixel.", data)
 
     def test_invalid_ttl(self):
         data = self._get_valid_data()
         data["ttl"] = None
-        self._expect_error("ttl", "Please select days.", data)
+        self._expect_error("ttl", "Please specify the user retention in days.", data)
 
         del (data["ttl"])
-        self._expect_error("ttl", "Please select days.", data)
+        self._expect_error("ttl", "Please specify the user retention in days.", data)
 
         data["ttl"] = 366
         self._expect_error("ttl", "Maximum number of days is 365.", data)

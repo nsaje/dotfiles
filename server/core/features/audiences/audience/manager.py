@@ -1,3 +1,5 @@
+import django.core.exceptions
+from django.core import validators
 from django.db import transaction
 
 import core.common
@@ -14,10 +16,12 @@ class AudienceManager(core.common.BaseManager):
     @transaction.atomic
     def create(self, request, name, pixel, ttl, prefill_days, rules):
         self._validate_pixel(pixel)
+        self._validate_rule_values(rules)
         self._validate_rules(rules, pixel, ttl)
 
         audience = None
         refererRules = (constants.AudienceRuleType.CONTAINS, constants.AudienceRuleType.STARTS_WITH)
+
         with transaction.atomic():
             audience = model.Audience(
                 name=name,
@@ -35,7 +39,7 @@ class AudienceManager(core.common.BaseManager):
             )
 
             for rule in rules:
-                value = rule["value"] or ""
+                value = rule.get("value") or ""
                 if rule["type"] in refererRules:
                     value = ",".join([x.strip() for x in value.split(",") if x])
 
@@ -52,8 +56,21 @@ class AudienceManager(core.common.BaseManager):
         if pixel.archived:
             raise exceptions.PixelIsArchived("Pixel is archived.")
 
+    def _validate_rule_values(self, rules):
+        for rule in rules:
+            if not rule.get("value") and str(rule["type"]) != str(constants.AudienceRuleType.VISIT):
+                raise exceptions.RuleValueMissing("Please enter conditions for the audience.")
+
+            if str(rule["type"]) == str(constants.AudienceRuleType.STARTS_WITH):
+                for url in rule["value"].split(","):
+                    validate_url = validators.URLValidator(schemes=["http", "https"])
+                    try:
+                        validate_url(url)
+                    except django.core.exceptions.ValidationError:
+                        raise exceptions.RuleUrlInvalid("Please enter valid URLs.")
+
     def _validate_rules(self, rules, pixel, ttl):
-        rule_rows = [(rule["type"], rule["value"] or "") for rule in rules]
+        rule_rows = [(rule["type"], rule.get("value") or "") for rule in rules]
         audience_ids = core.features.audiences.Audience.objects.filter(pixel=pixel, ttl=ttl, archived=False).values(
             "id"
         )

@@ -38,6 +38,7 @@
       - ['can_use_language_targeting', 'zemauth', 'user']
       - ['can_see_pixel_notes', 'zemauth', 'user']
       - ['can_see_pixel_traffic', 'zemauth', 'user']
+      - ['account_custom_audiences_view', 'zemauth', 'user']
 
 - model: oauth2_provider.application
   pk: 1
@@ -756,3 +757,33 @@
         name: 'My custom audience 2'
     model: dash.audience
     pk: 124
+
+-   fields:
+        created_dt: '2014-06-04T09:58:21'
+        modified_dt: '2014-06-04T09:58:21'
+        created_by: 1
+        pixel: 123
+        name: "test_audience"
+        archived: False
+        ttl: 7
+        name: 'My custom audience 2'
+    model: dash.audience
+    pk: 234
+
+
+# test audience rules
+
+-   fields:
+        audience: 234
+        type: 2
+        value: "these,are,all"
+    model: dash.audiencerule
+    pk: 1
+
+
+-   fields:
+        audience: 234
+        type: 2
+        value: "test,tags"
+    model: dash.audiencerule
+    pk: 2

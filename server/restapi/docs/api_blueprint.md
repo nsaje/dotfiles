@@ -527,6 +527,159 @@ impressions     | number          | number of times the pixel was triggered yest
         }
 
 
+## Audiences [/rest/v1/accounts/{accountId}/audiences/]
+
+Custom audiences allow you to target your ads to a specific set of people with whom you have already established a relationship. Audiences can be defined by a combination of rules used to identify users who took specific actions on your website.
+
+Property        | Type            | Description                                                                           | Create    | Update  
+----------------|-----------------|---------------------------------------------------------------------------------------|-----------|-----------
+id              | string          | ID of the audience                                                                    | N/A       | read only        
+pixelId         | string          | ID of the pixel that is the source of this traffic                                    | required  | read only       
+name            | string          | name of the audience                                                                  | required  | optional        
+archived        | bool            | Is the audience archived? Set to `true` to archive an audience and to `false` to restore it. | optional  | optional        
+ttl             | number          | The number of days people will remain in your audience after they've visited your website. People will be removed from your audience after the set time period unless they visit your website again. | required | read only        
+rules           | [audience rule](#audience-rule) | Include traffic that meets the specified conditions.                  | required | read only        
+createdDt       | date            | audience creation date                                                                | read only | read only      
+
+<a name="audience-rule"></a>
+#### Audience Rules
+
+Choose how you want to add people to your audience. Include all of your website visitors or create rules that only add people visiting specific parts of your website. Audience can have multiple rules set. "CONTAINS" and "STARTS_WITH" rules can match multiple values separated by a comma.
+
+Property         | Type                          | Description                 | Create   | Update
+-----------------|-------------------------------|-----------------------------|----------|-----------|
+type             | [enum](#audience-rule-type)   | rule type                   | required | read only |
+value            | string                        | rule value                  | required | read only |
+
+
+### Get audience details [GET /rest/v1/accounts/{accountId}/audiences/{audienceId}]
+
++ Parameters
+    + accountId: 186 (required)
+    + audienceId: 234 (required)
+
++ Response 200 (application/json)
+
+        {
+            "data": {
+                "id":"234",
+                "pixelId": "123",
+                "name": "test_audience",
+                "archived": false,
+                "ttl": 7,
+                "rules": [
+                    {
+                        "type": "CONTAINS",
+                        "value": "these,are,all"
+                    },
+                    {
+                        "type": "CONTAINS",
+                        "value": "test,tags"
+                    }
+                ]
+            }
+        }
+
+
+### Update audience [PUT /rest/v1/accounts/{accountId}/audiences/{audienceId}]
+
++ Parameters
+    + accountId: 186 (required)
+    + audienceId: 234 (required)
+
++ Request (application/json)
+
+        {
+            "name": "new_audience",
+            "archived": false
+        }
+
++ Response 200 (application/json)
+
+        {
+            "data": {
+                "id":"234",
+                "pixelId": "123",
+                "name": "new_audience",
+                "archived": false,
+                "ttl": 7,
+                "rules": [
+                    {
+                        "type": "CONTAINS",
+                        "value": "these,are,all"
+                    },
+                    {
+                        "type": "CONTAINS",
+                        "value": "test,tags"
+                    }
+                ]
+            }
+        }
+
+### List audiences [GET /rest/v1/accounts/{accountId}/audiences/]
+
++ Parameters
+    + accountId: 186 (required)
+
++ Response 200 (application/json)
+
+        {
+            "data": [
+                {
+                "id":"234",
+                "pixelId": "123",
+                "name": "test_audience",
+                "archived": false,
+                "ttl": 7,
+                "rules": [
+                    {
+                        "type": "STARTS_WITH",
+                        "value": "http://test.com,https://urls.com"
+                    }
+                ]
+                }
+            ]
+        }
+
+### Create new audience [POST /rest/v1/accounts/{accountId}/audiences/]
+
++ Parameters
+    + accountId: 186 (required)
+
++ Request (application/json)
+
+        {
+            "pixelId": 123,
+            "name": "test_audience",
+            "archived": false,
+            "ttl": 7,
+            "rules": [
+                {
+                    "type": "VISIT"
+                }
+            ]
+
+        }
+
++ Response 201 (application/json)
+
+        {
+            "data": {
+                "id":"234",
+                "pixelId": "123",
+                "name": "new_audience",
+                "archived": false,
+                "ttl": 7,
+                "rules": [
+                    {
+                        "type": "VISIT",
+                        "value": ""
+                    }
+                ]
+            }
+        }
+
+
 # Group Campaign Management
 
 ## Campaigns [/rest/v1/campaigns/]
@@ -2083,6 +2236,20 @@ A string representing a decimal number. Example: `"15.48"`
 - `USD` - US Dollar
 - `EUR` - Euro
 - `GBP` - British Pound
+
+<a name=audience-rule-type></a>
+## Audience rule type
+
+Include traffic that meets the following conditions:
+
+##### People who visited specific web pages
+
+- `STARTS_WITH` - URL equals specified value
+- `CONTAINS` - URL contains specified value
+
+##### Anyone who visited your website
+
+- `VISIT`
 
 ## Ad group / Content ad State
 
