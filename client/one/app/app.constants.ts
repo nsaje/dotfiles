@@ -164,6 +164,22 @@ export enum InterestCategory {
     SHOPPING = 'shopping',
 }
 
+export enum Breakdown {
+    ACCOUNT = 'account',
+    CAMPAIGN = 'campaign',
+    AD_GROUP = 'ad_group',
+    CONTENT_AD = 'content_ad',
+    MEDIA_SOURCE = 'source',
+    PUBLISHER = 'publisher',
+    INSIGHTS = 'insights',
+    COUNTRY = 'country',
+    STATE = 'state',
+    DMA = 'dma',
+    DEVICE = 'device_type',
+    PLACEMENT = 'placement_medium',
+    OPERATING_SYSTEM = 'device_os',
+}
+
 export const APP_CONSTANTS = {
     /**
      * Max. selected media sources in on sources tabs.
@@ -1155,16 +1171,14 @@ export const APP_CONSTANTS = {
         SOURCES: 'sources',
         PUBLISHERS: 'publishers',
         INSIGHTS: 'insights',
+        COUNTRY: 'country',
+        STATE: 'state',
+        DMA: 'dma',
+        DEVICE: 'device',
+        PLACEMENT: 'placement',
+        OPERATING_SYSTEM: 'deviceos',
     },
-    breakdown: {
-        ACCOUNT: 'account',
-        CAMPAIGN: 'campaign',
-        AD_GROUP: 'ad_group',
-        CONTENT_AD: 'content_ad',
-        MEDIA_SOURCE: 'source',
-        PUBLISHER: 'publisher',
-        INSIGHTS: 'insights',
-    },
+    breakdown: Breakdown,
     contentAdApprovalStatus: {
         PENDING: 1,
         APPROVED: 2,
@@ -1345,6 +1359,24 @@ APP_CONSTANTS.breakdownStateParamToBreakdownMap[
     APP_CONSTANTS.breakdownStateParam.SOURCES
 ] = APP_CONSTANTS.breakdown.MEDIA_SOURCE;
 APP_CONSTANTS.breakdownStateParamToBreakdownMap[
+    APP_CONSTANTS.breakdownStateParam.COUNTRY
+] = APP_CONSTANTS.breakdown.COUNTRY;
+APP_CONSTANTS.breakdownStateParamToBreakdownMap[
+    APP_CONSTANTS.breakdownStateParam.STATE
+] = APP_CONSTANTS.breakdown.STATE;
+APP_CONSTANTS.breakdownStateParamToBreakdownMap[
+    APP_CONSTANTS.breakdownStateParam.DMA
+] = APP_CONSTANTS.breakdown.DMA;
+APP_CONSTANTS.breakdownStateParamToBreakdownMap[
+    APP_CONSTANTS.breakdownStateParam.DEVICE
+] = APP_CONSTANTS.breakdown.DEVICE;
+APP_CONSTANTS.breakdownStateParamToBreakdownMap[
+    APP_CONSTANTS.breakdownStateParam.PLACEMENT
+] = APP_CONSTANTS.breakdown.PLACEMENT;
+APP_CONSTANTS.breakdownStateParamToBreakdownMap[
+    APP_CONSTANTS.breakdownStateParam.OPERATING_SYSTEM
+] = APP_CONSTANTS.breakdown.OPERATING_SYSTEM;
+APP_CONSTANTS.breakdownStateParamToBreakdownMap[
     APP_CONSTANTS.breakdownStateParam.PUBLISHERS
 ] = APP_CONSTANTS.breakdown.PUBLISHER;
 APP_CONSTANTS.breakdownStateParamToBreakdownMap[
@@ -1354,6 +1386,22 @@ APP_CONSTANTS.breakdownStateParamToBreakdownMap[
 APP_CONSTANTS.breakdownToBreakdownStateParamMap[
     APP_CONSTANTS.breakdown.MEDIA_SOURCE
 ] = APP_CONSTANTS.breakdownStateParam.SOURCES;
+APP_CONSTANTS.breakdownToBreakdownStateParamMap[
+    APP_CONSTANTS.breakdown.COUNTRY
+] = APP_CONSTANTS.breakdownStateParam.COUNTRY;
+APP_CONSTANTS.breakdownToBreakdownStateParamMap[APP_CONSTANTS.breakdown.STATE] =
+    APP_CONSTANTS.breakdownStateParam.STATE;
+APP_CONSTANTS.breakdownToBreakdownStateParamMap[APP_CONSTANTS.breakdown.DMA] =
+    APP_CONSTANTS.breakdownStateParam.DMA;
+APP_CONSTANTS.breakdownToBreakdownStateParamMap[
+    APP_CONSTANTS.breakdown.DEVICE
+] = APP_CONSTANTS.breakdownStateParam.DEVICE;
+APP_CONSTANTS.breakdownToBreakdownStateParamMap[
+    APP_CONSTANTS.breakdown.PLACEMENT
+] = APP_CONSTANTS.breakdownStateParam.PLACEMENT;
+APP_CONSTANTS.breakdownToBreakdownStateParamMap[
+    APP_CONSTANTS.breakdown.OPERATING_SYSTEM
+] = APP_CONSTANTS.breakdownStateParam.OPERATING_SYSTEM;
 APP_CONSTANTS.breakdownToBreakdownStateParamMap[
     APP_CONSTANTS.breakdown.PUBLISHER
 ] = APP_CONSTANTS.breakdownStateParam.PUBLISHERS;

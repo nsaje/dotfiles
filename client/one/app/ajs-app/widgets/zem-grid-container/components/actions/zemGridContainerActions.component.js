@@ -18,11 +18,18 @@ angular.module('one.widgets').component('zemGridContainerActions', {
         $ctrl.isCreateAdGroupSourceActionVisible = isCreateAdGroupSourceActionVisible;
         $ctrl.isReportDropdownVisible = isReportDropdownVisible;
         $ctrl.canCreateNewAccount = canCreateNewAccount;
+        $ctrl.isBreakdownSelectorVisible = isBreakdownSelectorVisible;
 
         function isEntityBreakdown() {
             return (
                 $ctrl.breakdown !== constants.breakdown.MEDIA_SOURCE &&
-                $ctrl.breakdown !== constants.breakdown.PUBLISHER
+                $ctrl.breakdown !== constants.breakdown.PUBLISHER &&
+                $ctrl.breakdown !== constants.breakdown.COUNTRY &&
+                $ctrl.breakdown !== constants.breakdown.STATE &&
+                $ctrl.breakdown !== constants.breakdown.DMA &&
+                $ctrl.breakdown !== constants.breakdown.DEVICE &&
+                $ctrl.breakdown !== constants.breakdown.PLACEMENT &&
+                $ctrl.breakdown !== constants.breakdown.OPERATING_SYSTEM
             );
         }
 
@@ -81,6 +88,17 @@ angular.module('one.widgets').component('zemGridContainerActions', {
                     zemPermissions.hasPermission(
                         'zemauth.can_see_new_report_schedule'
                     ))
+            );
+        }
+
+        function isBreakdownSelectorVisible() {
+            return (
+                $ctrl.breakdown !== constants.breakdown.COUNTRY &&
+                $ctrl.breakdown !== constants.breakdown.STATE &&
+                $ctrl.breakdown !== constants.breakdown.DMA &&
+                $ctrl.breakdown !== constants.breakdown.DEVICE &&
+                $ctrl.breakdown !== constants.breakdown.PLACEMENT &&
+                $ctrl.breakdown !== constants.breakdown.OPERATING_SYSTEM
             );
         }
     },

@@ -1,11 +1,9 @@
-<div class="zem-grid-container__header">
-    <zem-grid-container-tabs
-        tabs="$ctrl.tabs"
-        entity="$ctrl.entity"
-        breakdown="$ctrl.breakdown"
-        class="zem-grid-container-tabs"
-    ></zem-grid-container-tabs>
-</div>
+<zem-grid-container-tabs
+    tabs="$ctrl.tabs"
+    entity="$ctrl.entity"
+    breakdown="$ctrl.breakdown"
+    class="zem-grid-container-tabs"
+></zem-grid-container-tabs>
 
 <div class="custom-panel zem-grid-container__body">
     <div ng-repeat="tab in $ctrl.tabs">

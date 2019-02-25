@@ -165,6 +165,12 @@ angular
         var BASE_LEVEL_BREAKDOWNS = ENTITY_BREAKDOWNS.concat([
             BREAKDOWNS.source,
             BREAKDOWNS.publisher,
+            BREAKDOWNS.country,
+            BREAKDOWNS.state,
+            BREAKDOWNS.dma,
+            BREAKDOWNS.device,
+            BREAKDOWNS.placementMedium,
+            BREAKDOWNS.deviceOs,
         ]);
 
         var DELIVERY_BREAKDOWNS = [
@@ -227,6 +233,12 @@ angular
                     ];
                     break;
                 case constants.breakdown.PUBLISHER:
+                case constants.breakdown.COUNTRY:
+                case constants.breakdown.STATE:
+                case constants.breakdown.DMA:
+                case constants.breakdown.DEVICE:
+                case constants.breakdown.PLACEMENT:
+                case constants.breakdown.OPERATING_SYSTEM:
                     break;
                 default:
                     structureBreakdowns = [
@@ -239,6 +251,34 @@ angular
             return structureBreakdowns.filter(function(structureBreakdown) {
                 return structureBreakdown !== undefined;
             });
+        }
+
+        function getDeliveryBreakdowns(breakdown) {
+            switch (breakdown) {
+                case constants.breakdown.COUNTRY:
+                case constants.breakdown.STATE:
+                case constants.breakdown.DMA:
+                case constants.breakdown.DEVICE:
+                case constants.breakdown.PLACEMENT:
+                case constants.breakdown.OPERATING_SYSTEM:
+                    return [];
+                default:
+                    return checkPermissions(DELIVERY_BREAKDOWNS);
+            }
+        }
+
+        function getTimeBreakdowns(breakdown) {
+            switch (breakdown) {
+                case constants.breakdown.COUNTRY:
+                case constants.breakdown.STATE:
+                case constants.breakdown.DMA:
+                case constants.breakdown.DEVICE:
+                case constants.breakdown.PLACEMENT:
+                case constants.breakdown.OPERATING_SYSTEM:
+                    return [];
+                default:
+                    return TIME_BREAKDOWNS;
+            }
         }
 
         function createBreakdownGroups(level, breakdown) {
@@ -267,13 +307,13 @@ angular
                     'zemauth.can_view_breakdown_by_delivery'
                 ),
                 name: DELIVERY_GROUP_NAME,
-                breakdowns: checkPermissions(DELIVERY_BREAKDOWNS),
+                breakdowns: getDeliveryBreakdowns(breakdown),
             };
 
             // Time breakdown group
             breakdownGroups.time = {
                 name: TIME_GROUP_NAME,
-                breakdowns: TIME_BREAKDOWNS,
+                breakdowns: getTimeBreakdowns(breakdown),
             };
 
             return angular.copy(breakdownGroups);

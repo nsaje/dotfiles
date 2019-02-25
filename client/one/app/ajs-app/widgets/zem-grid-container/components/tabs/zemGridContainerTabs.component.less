@@ -1,0 +1,114 @@
+@import 'variables';
+
+.zem-grid-container-tabs {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.zem-grid-container-tabs__tab {
+    width: 100%;
+    display: flex;
+    margin-bottom: 4px;
+}
+
+.zem-grid-container-tabs__tab:last-child {
+    margin-bottom: 0px;
+}
+
+.zem-grid-container-tabs__tab--active {
+    border-top: 2px solid @secondary-color;
+}
+
+.zem-grid-container-tabs__tab-content {
+    flex: 1 1 auto;
+    color: @text-color;
+    text-decoration: none;
+    cursor: pointer;
+    font-size: 14px;
+    background-color: darken(@light-gray, 4%);
+    padding: 6px @default-spacing;
+    transition: background-color @default-animation;
+    border-bottom: 1px solid darken(@light-gray, 4%);
+
+    &:hover {
+        color: @text-color;
+        text-decoration: none;
+        background-color: white;
+    }
+}
+
+.zem-grid-container-tabs__tab--active .zem-grid-container-tabs__tab-content {
+    color: @secondary-color;
+    font-weight: 500;
+    background: white;
+    padding: 8px @default-spacing;
+    border-bottom: 0;
+
+    &:hover {
+        color: @secondary-color;
+    }
+}
+
+.zem-grid-container-tabs__tab-dropdown {
+    cursor: pointer;
+    background-color: darken(@light-gray, 4%);
+    padding: 6px @default-spacing;
+    transition: background-color @default-animation;
+    border-bottom: 1px solid darken(@light-gray, 4%);
+
+    &:hover {
+        background-color: white;
+    }
+}
+
+.zem-grid-container-tabs__tab--active .zem-grid-container-tabs__tab-dropdown {
+    background: white;
+    padding: 8px @default-spacing;
+    border-bottom: 0;
+
+    &:hover {
+        background-color: darken(@light-gray, 4%);
+    }
+}
+
+.zem-grid-container-tabs__tab-dropdown .dropdown-menu {
+    padding: 0;
+    border-top-right-radius: 0;
+
+    .dropdown-menu__container {
+        max-height: 235px !important;
+        max-width: 200px;
+    }
+}
+
+.zem-grid-container-tabs__tab-dropdown-toggle-icon::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%) rotate(90deg);
+    right: 12px;
+    width: 6px;
+    height: 10px;
+    background-image: url('@{images-folder}/arrow-sec.svg');
+    background-repeat: no-repeat;
+}
+
+.zem-grid-container-tabs__tab-dropdown .dropdown-menu__container {
+    padding: 4px;
+}
+
+.zem-grid-container-tabs__tab-dropdown .dropdown-menu__list {
+    margin: 0;
+    padding: 0;
+}
+
+.zem-grid-container-tabs__tab-dropdown .dropdown-menu__list-item {
+    margin: 0;
+    padding: 7px 10px;
+    font-size: 13px;
+
+    &:hover {
+        background-color: rgba(63, 84, 127, 0.1);
+        border-radius: 4px;
+    }
+}

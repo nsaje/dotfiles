@@ -1,3 +1,6 @@
+require('./zemGridContainerTabs.component.less');
+var arrayHelpers = require('../../../../../shared/helpers/array.helpers');
+
 angular.module('one.widgets').component('zemGridContainerTabs', {
     template: require('./zemGridContainerTabs.component.html'),
     bindings: {
@@ -8,17 +11,20 @@ angular.module('one.widgets').component('zemGridContainerTabs', {
         var $ctrl = this;
 
         $ctrl.navigateTo = navigateTo;
+        $ctrl.hasOptions = hasOptions;
 
         $ctrl.$onInit = function() {};
 
-        function navigateTo(event, option) {
+        function navigateTo(event, tab, option) {
             var id = $ctrl.entity ? $ctrl.entity.id : null;
             var level = $ctrl.entity
                 ? constants.entityTypeToLevelMap[$ctrl.entity.type]
                 : constants.level.ALL_ACCOUNTS;
             var levelStateParam = constants.levelToLevelStateParamMap[level];
             var breakdownStateParam =
-                constants.breakdownToBreakdownStateParamMap[option.breakdown];
+                constants.breakdownToBreakdownStateParamMap[
+                    option ? option.breakdown : tab.breakdown
+                ];
             var params = {
                 id: id,
                 level: levelStateParam,
@@ -49,6 +55,10 @@ angular.module('one.widgets').component('zemGridContainerTabs', {
                 href += $location.url().slice(queryParamsIndex);
             }
             return href;
+        }
+
+        function hasOptions(tab) {
+            return !arrayHelpers.isEmpty(tab.options);
         }
     },
 });

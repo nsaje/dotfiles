@@ -1,11 +1,33 @@
-<!-- TODO -->
-<div class="clearfix">
-    <a
-        ng-repeat="tab in $ctrl.tabs"
-        class="zem-grid__tab pull-left"
-        ng-class="{'zem-grid__tab--active': tab.selected }"
+<div
+    ng-repeat="tab in $ctrl.tabs"
+    class="zem-grid-container-tabs__tab"
+    ng-class="{'zem-grid-container-tabs__tab--active': tab.selected}"
+>
+    <div
+        class="zem-grid-container-tabs__tab-content"
         ng-click="$ctrl.navigateTo($event, tab)"
     >
-        <span>{{ tab.name }}</span>
-    </a>
+        {{ tab.name }}
+    </div>
+    <div
+        class="zem-grid-container-tabs__tab-dropdown dropdown"
+        ng-if="$ctrl.hasOptions(tab)"
+        uib-dropdown
+        uib-dropdown-toggle
+    >
+        <div class="zem-grid-container-tabs__tab-dropdown-toggle-icon"></div>
+        <div class="dropdown-menu dropdown-menu-right" uib-dropdown-menu>
+            <div class="dropdown-menu__container custom-scroller">
+                <ul class="dropdown-menu__list">
+                    <li
+                        class="dropdown-menu__list-item"
+                        ng-repeat="option in tab.options"
+                        ng-click="$ctrl.navigateTo($event, tab, option)"
+                    >
+                        <span>{{ option.name }}</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
 </div>

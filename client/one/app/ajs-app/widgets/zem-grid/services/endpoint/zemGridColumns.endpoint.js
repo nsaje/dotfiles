@@ -1699,6 +1699,30 @@ angular
             name: 'Publisher',
             help: 'A publisher where your content is being promoted.',
         };
+        NAME_COLUMN_BRANDING[constants.breakdown.COUNTRY] = {
+            name: 'Country',
+            help: '',
+        };
+        NAME_COLUMN_BRANDING[constants.breakdown.STATE] = {
+            name: 'State',
+            help: '',
+        };
+        NAME_COLUMN_BRANDING[constants.breakdown.DMA] = {
+            name: 'DMA',
+            help: '',
+        };
+        NAME_COLUMN_BRANDING[constants.breakdown.DEVICE] = {
+            name: 'Device',
+            help: '',
+        };
+        NAME_COLUMN_BRANDING[constants.breakdown.PLACEMENT] = {
+            name: 'Placement',
+            help: '',
+        };
+        NAME_COLUMN_BRANDING[constants.breakdown.OPERATING_SYSTEM] = {
+            name: 'Operating System',
+            help: '',
+        };
 
         var STATUS_COLUMN_BRANDING = {};
         STATUS_COLUMN_BRANDING[constants.breakdown.ACCOUNT] = {
@@ -2034,6 +2058,12 @@ angular
             constants.breakdown.AD_GROUP,
             constants.breakdown.CONTENT_AD,
             constants.breakdown.PUBLISHER,
+            constants.breakdown.COUNTRY,
+            constants.breakdown.STATE,
+            constants.breakdown.DMA,
+            constants.breakdown.DEVICE,
+            constants.breakdown.PLACEMENT,
+            constants.breakdown.OPERATING_SYSTEM,
         ];
         COLUMNS.actions.exceptions.custom.push({
             level: constants.level.AD_GROUPS,
@@ -2085,6 +2115,15 @@ angular
         }); // eslint-disable-line max-len
 
         // Exceptions (media source status column - shown only on Ad Group level)
+        COLUMNS.status.exceptions.breakdowns = [
+            constants.breakdown.ACCOUNT,
+            constants.breakdown.CAMPAIGN,
+            constants.breakdown.AD_GROUP,
+            constants.breakdown.CONTENT_AD,
+            constants.breakdown.MEDIA_SOURCE,
+            constants.breakdown.MEDIA_SOURCE,
+            constants.breakdown.PUBLISHER,
+        ]; // eslint-disable-line max-len
         COLUMNS.status.exceptions.custom.push({
             level: constants.level.ALL_ACCOUNTS,
             breakdown: constants.breakdown.MEDIA_SOURCE,
@@ -2145,21 +2184,45 @@ angular
             constants.breakdown.CAMPAIGN,
             constants.breakdown.AD_GROUP,
             constants.breakdown.CONTENT_AD,
+            constants.breakdown.COUNTRY,
+            constants.breakdown.STATE,
+            constants.breakdown.DMA,
+            constants.breakdown.DEVICE,
+            constants.breakdown.PLACEMENT,
+            constants.breakdown.OPERATING_SYSTEM,
         ]; // eslint-disable-line max-len
         COLUMNS.accountId.exceptions.breakdowns = [
             constants.breakdown.ACCOUNT,
             constants.breakdown.CAMPAIGN,
             constants.breakdown.AD_GROUP,
             constants.breakdown.CONTENT_AD,
+            constants.breakdown.COUNTRY,
+            constants.breakdown.STATE,
+            constants.breakdown.DMA,
+            constants.breakdown.DEVICE,
+            constants.breakdown.PLACEMENT,
+            constants.breakdown.OPERATING_SYSTEM,
         ]; // eslint-disable-line max-len
         COLUMNS.campaignId.exceptions.breakdowns = [
             constants.breakdown.CAMPAIGN,
             constants.breakdown.AD_GROUP,
             constants.breakdown.CONTENT_AD,
+            constants.breakdown.COUNTRY,
+            constants.breakdown.STATE,
+            constants.breakdown.DMA,
+            constants.breakdown.DEVICE,
+            constants.breakdown.PLACEMENT,
+            constants.breakdown.OPERATING_SYSTEM,
         ]; // eslint-disable-line max-len
         COLUMNS.adGroupId.exceptions.breakdowns = [
             constants.breakdown.AD_GROUP,
             constants.breakdown.CONTENT_AD,
+            constants.breakdown.COUNTRY,
+            constants.breakdown.STATE,
+            constants.breakdown.DMA,
+            constants.breakdown.DEVICE,
+            constants.breakdown.PLACEMENT,
+            constants.breakdown.OPERATING_SYSTEM,
         ];
         COLUMNS.contentAdId.exceptions.breakdowns = [
             constants.breakdown.CONTENT_AD,
@@ -2171,6 +2234,12 @@ angular
         COLUMNS.sourceSlug.exceptions.breakdowns = [
             constants.breakdown.MEDIA_SOURCE,
             constants.breakdown.PUBLISHER,
+        ];
+        COLUMNS.sspdUrl.exceptions.breakdowns = [
+            constants.breakdown.ACCOUNT,
+            constants.breakdown.CAMPAIGN,
+            constants.breakdown.AD_GROUP,
+            constants.breakdown.CONTENT_AD,
         ];
 
         function configureBreakdownExceptions(columns, breakdowns) {

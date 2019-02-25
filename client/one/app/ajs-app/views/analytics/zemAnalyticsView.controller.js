@@ -1,9 +1,12 @@
+require('./zemAnalyticsView.partial.less');
+
 angular
     .module('one.views')
     .controller('zemAnalyticsView', function(
         $scope,
         $state,
-        zemNavigationNewService
+        zemNavigationNewService,
+        zemPermissions
     ) {
         var $ctrl = this;
 
@@ -51,16 +54,35 @@ angular
         }
 
         function getBreakdown(level, breakdownStateParam) {
-            return (
+            var breakdown =
                 constants.breakdownStateParamToBreakdownMap[
                     breakdownStateParam
-                ] || DEFAULT_BREAKDOWN[level]
-            );
+                ];
+            if (breakdown && canSeeBreakdown(breakdown)) {
+                return breakdown;
+            }
+            return DEFAULT_BREAKDOWN[level];
         }
 
         function getChartBreakdown(level, breakdown) {
             return breakdown === constants.breakdown.INSIGHTS
                 ? DEFAULT_BREAKDOWN[level]
                 : breakdown;
+        }
+
+        function canSeeBreakdown(breakdown) {
+            if (
+                breakdown === constants.breakdown.COUNTRY ||
+                breakdown === constants.breakdown.STATE ||
+                breakdown === constants.breakdown.DMA ||
+                breakdown === constants.breakdown.DEVICE ||
+                breakdown === constants.breakdown.PLACEMENT ||
+                breakdown === constants.breakdown.OPERATING_SYSTEM
+            ) {
+                return zemPermissions.hasPermission(
+                    'zemauth.can_see_top_level_delivery_breakdowns'
+                );
+            }
+            return true;
         }
     });
