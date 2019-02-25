@@ -16,7 +16,7 @@ DEFAULT_LIMITS = {
 ACCOUNT_EXCEPTIONS = defaultdict(
     dict,
     {
-        "Campaign": {305: 220000},  # OEN
+        "Campaign": {305: 2000000},  # OEN
         "AdGroup": {490: 1000, 512: 1000, 513: 1000, 293: 10000},  # inPowered  # inPowered  # inPowered  # Businesswire
         "ContentAd": {
             63: 10000,  # Allstate
