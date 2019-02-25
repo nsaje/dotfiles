@@ -9,6 +9,8 @@ from stats import permission_filter
 from utils import columns
 from utils import sort_helper
 
+from .format_helper import format_values
+
 
 def query(
     user,
@@ -19,6 +21,7 @@ def query(
     offset,
     limit,
     level,
+    columns,
     include_items_with_no_spend=False,
     dashapi_cache=None,
 ):
@@ -46,12 +49,14 @@ def query(
         rows = stats_rows
         dash.dashapi.api_reports.annotate(rows, user, breakdown, constraints, level, dashapi_cache)
 
+    format_values(rows, columns)
+
     permission_filter.filter_columns_by_permission(user, rows, goals, constraints, level)
 
     return rows
 
 
-def totals(user, breakdown, constraints, goals, level):
+def totals(user, breakdown, constraints, goals, level, columns):
     rows = redshiftapi.api_reports.query_totals(
         breakdown, constraints, goals, use_publishers_view=api_breakdowns.should_use_publishers_view(breakdown)
     )
@@ -59,6 +64,8 @@ def totals(user, breakdown, constraints, goals, level):
     assert len(rows) == 1
 
     dash.dashapi.api_reports.annotate_totals(rows[0], user, breakdown, constraints, level)
+
+    format_values(rows, columns)
 
     permission_filter.filter_columns_by_permission(user, rows, goals, constraints, level)
 

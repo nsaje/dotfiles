@@ -117,12 +117,12 @@ class ReportsExecuteTest(TestCase):
             recipients=["test@test.com"],
             start_date=datetime.date(2017, 8, 1),
             end_date=datetime.date(2017, 8, 1),
-            columns=["Content Ad", "Clicks"],
             filtered_sources=[],
             show_archived=False,
             show_blacklisted_publishers=False,
             view="Content Ad",
             breakdowns=[],
+            columns=["Content Ad", "Clicks"],
             include_totals=False,
             ad_group_name=ad_group.name,
             campaign_name=ad_group.campaign.name,
@@ -242,14 +242,7 @@ class ReportsGetReportCSVTest(TestCase):
         self.addCleanup(influx_incr_patcher.stop)
 
     @staticmethod
-    def build_query(
-        fields=[],
-        filters=[],
-        include_totals=False,
-        all_accounts_in_local_currency=False,
-        csv_separator=None,
-        csv_decimal_separator=None,
-    ):
+    def build_query(fields=[], filters=[], include_totals=False, all_accounts_in_local_currency=False):
         return {
             "fields": [{"field": field} for field in fields],
             "filters": [{"field": "Date", "operator": "=", "value": "2019-02-13"}] + filters,
@@ -261,8 +254,6 @@ class ReportsGetReportCSVTest(TestCase):
                 "show_status_date": False,
                 "include_totals": include_totals,
                 "all_accounts_in_local_currency": all_accounts_in_local_currency,
-                "csv_separator": csv_separator,
-                "csv_decimal_separator": csv_decimal_separator,
             },
         }
 
@@ -272,7 +263,7 @@ class ReportsGetReportCSVTest(TestCase):
         row = {"ad_group_id": 1, "etfm_cost": Decimal("12.3"), "clicks": 5}
         mock_query.return_value = [row]
         output, filename = ReportJobExecutor.get_report(self.reportJob)
-        expected = """"Ad Group Id","Total Spend","Clicks","Currency"\r\n"1","12.3000","5","USD"\r\n"""
+        expected = """"Ad Group Id","Total Spend","Clicks","Currency"\r\n"1","12.3","5","USD"\r\n"""
         self.assertEqual(expected, output)
 
     @mock.patch("stats.api_reports.totals")
@@ -283,7 +274,9 @@ class ReportsGetReportCSVTest(TestCase):
         mock_query.return_value = [row]
         mock_totals.return_value = row
         output, filename = ReportJobExecutor.get_report(self.reportJob)
-        expected = """"Ad Group Id","Total Spend","Clicks","Currency"\r\n"1","12.3000","5","USD"\r\n"1","12.3000","5","USD"\r\n"""
+        expected = (
+            """"Ad Group Id","Total Spend","Clicks","Currency"\r\n"1","12.3","5","USD"\r\n"1","12.3","5","USD"\r\n"""
+        )
         self.assertEqual(expected, output)
 
     @mock.patch("stats.api_reports.query")
@@ -307,7 +300,7 @@ class ReportsGetReportCSVTest(TestCase):
         row = {"ad_group_id": 1, "etfm_cost": Decimal("12.3"), "clicks": 5}
         mock_query.return_value = [row]
         output, filename = ReportJobExecutor.get_report(self.reportJob)
-        expected = """"Ad Group Id","Total Spend","Clicks","Currency"\r\n"1","12.3000","5","EUR"\r\n"""
+        expected = """"Ad Group Id","Total Spend","Clicks","Currency"\r\n"1","12.3","5","EUR"\r\n"""
         self.assertEqual(expected, output)
 
     @mock.patch("stats.api_reports.query")
@@ -324,18 +317,9 @@ class ReportsGetReportCSVTest(TestCase):
             {"account_id": 2, "etfm_cost": Decimal("13.4"), "local_etfm_cost": Decimal("16.4"), "clicks": 8},
         ]
         output, filename = ReportJobExecutor.get_report(self.reportJob)
-        expected = """"Account Id","Total Spend","Clicks","Currency"\r\n"1","15.4000","5","EUR"\r\n"2","16.4000","8","USD"\r\n"""
-        self.assertEqual(expected, output)
-
-    @mock.patch("stats.api_reports.query")
-    def test_csv_config(self, mock_query):
-        self.reportJob.query = self.build_query(
-            ["Ad Group Id", "Total Spend", "Clicks"], csv_separator=";", csv_decimal_separator=","
+        expected = (
+            """"Account Id","Total Spend","Clicks","Currency"\r\n"1","15.4","5","EUR"\r\n"2","16.4","8","USD"\r\n"""
         )
-        row = {"ad_group_id": 1, "etfm_cost": Decimal("12.3"), "clicks": 5}
-        mock_query.return_value = [row]
-        output, filename = ReportJobExecutor.get_report(self.reportJob)
-        expected = """"Ad Group Id";"Total Spend";"Clicks";"Currency"\r\n"1";"12,3000";"5";"USD"\r\n"""
         self.assertEqual(expected, output)
 
 
@@ -385,6 +369,7 @@ class ReportsImplementationTest(TestCase):
             offset=0,
             limit=10000,
             level="ad_groups",
+            columns=["publisher"],
             include_items_with_no_spend=False,
             dashapi_cache={},
         )
@@ -433,6 +418,7 @@ class ReportsImplementationTest(TestCase):
                     offset=0,
                     limit=10000,
                     level="ad_groups",
+                    columns=["publisher"],
                     include_items_with_no_spend=False,
                     dashapi_cache={},
                 ),
@@ -445,6 +431,7 @@ class ReportsImplementationTest(TestCase):
                     offset=10000,
                     limit=10000,
                     level="ad_groups",
+                    columns=["publisher"],
                     include_items_with_no_spend=False,
                     dashapi_cache={},
                 ),
@@ -500,6 +487,7 @@ class ReportsImplementationTest(TestCase):
             offset=0,
             limit=10000,
             level="ad_groups",
+            columns=["publisher"],
             include_items_with_no_spend=True,
             dashapi_cache={},
         )
@@ -549,6 +537,7 @@ class ReportsImplementationTest(TestCase):
             offset=0,
             limit=10000,
             level="all_accounts",
+            columns=["account", "campaign_id", "ad_group", "content_ad_id", "source", "day"],
             include_items_with_no_spend=False,
             dashapi_cache={},
         )
@@ -592,6 +581,7 @@ class ReportsImplementationTest(TestCase):
             offset=0,
             limit=10000,
             level="all_accounts",
+            columns=["account"],
             include_items_with_no_spend=False,
             dashapi_cache={},
         )
@@ -637,6 +627,7 @@ class ReportsImplementationTest(TestCase):
             offset=0,
             limit=10000,
             level="accounts",
+            columns=["campaign"],
             include_items_with_no_spend=False,
             dashapi_cache={},
         )
@@ -682,6 +673,7 @@ class ReportsImplementationTest(TestCase):
             offset=0,
             limit=10000,
             level="all_accounts",
+            columns=["campaign"],
             include_items_with_no_spend=False,
             dashapi_cache={},
         )
@@ -727,6 +719,7 @@ class ReportsImplementationTest(TestCase):
             offset=0,
             limit=10000,
             level="campaigns",
+            columns=["ad_group"],
             include_items_with_no_spend=False,
             dashapi_cache={},
         )
@@ -772,6 +765,7 @@ class ReportsImplementationTest(TestCase):
             offset=0,
             limit=10000,
             level="accounts",
+            columns=["ad_group"],
             include_items_with_no_spend=False,
             dashapi_cache={},
         )
@@ -817,6 +811,7 @@ class ReportsImplementationTest(TestCase):
             offset=0,
             limit=10000,
             level="ad_groups",
+            columns=["content_ad"],
             include_items_with_no_spend=False,
             dashapi_cache={},
         )
@@ -862,6 +857,7 @@ class ReportsImplementationTest(TestCase):
             offset=0,
             limit=10000,
             level="campaigns",
+            columns=["content_ad"],
             include_items_with_no_spend=False,
             dashapi_cache={},
         )
@@ -907,6 +903,7 @@ class ReportsImplementationTest(TestCase):
             offset=0,
             limit=10000,
             level="ad_groups",
+            columns=["content_ad"],
             include_items_with_no_spend=False,
             dashapi_cache={},
         )

@@ -134,8 +134,7 @@ angular.module('one.widgets').component('zemReportQueryConfig', {
                 '.';
             if (
                 $ctrl.config.csvSeparator !== ',' &&
-                $ctrl.config.csvSeparator !== ';' &&
-                $ctrl.config.csvSeparator !== '\t'
+                $ctrl.config.csvSeparator !== ';'
             ) {
                 $ctrl.csvSeparatorOther = $ctrl.config.csvSeparator;
             }

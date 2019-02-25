@@ -96,7 +96,7 @@ def get_dash_constant_formatter(constant_class):
     return format_
 
 
-def format_values(rows, columns, csv_decimal_separator):
+def format_values(rows, columns):
     if len(rows) <= 0:
         return rows
     for column in columns:
@@ -105,21 +105,10 @@ def format_values(rows, columns, csv_decimal_separator):
         else:
             formatter = formatters.get(column)
 
-        if not formatter:
-            sample_value = rows[0].get(column)
-            if sample_value and isinstance(sample_value, Decimal) or isinstance(sample_value, float):
-                formatter = format_4_decimal
-
         if column in FORMAT_EMPTY_TO_0:
             empty_value = 0
         else:
             empty_value = ""
-
-        if (
-            formatter in [format_1_decimal, format_2_decimal, format_3_decimal, format_4_decimal]
-            and csv_decimal_separator
-        ):
-            formatter = fix_decimal_separator(formatter, csv_decimal_separator)
 
         for row in rows:
             try:
@@ -166,13 +155,6 @@ def format_hash(value):
 
 def format_percentages(value):
     return "{:.4f}".format(value / 100)
-
-
-def fix_decimal_separator(formatter, csv_decimal_separator):
-    def format_(value):
-        return str(formatter(value)).replace(".", csv_decimal_separator)
-
-    return format_
 
 
 formatters[constants.TimeDimension.DAY] = format_date
