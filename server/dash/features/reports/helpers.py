@@ -128,3 +128,7 @@ def get_row_currency(row, currency=None, account_currency_map=None):
     if account_currency_map is None:
         return currency
     return account_currency_map.get(row["account_id"])
+
+
+def get_option(job, option, default=None):
+    return job.query.get("options", {}).get(option, default)
