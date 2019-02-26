@@ -9,10 +9,9 @@ from django.conf import settings
 from django.db import transaction
 
 from core.features import bid_modifiers
+from core.features.bid_modifiers import exceptions
 from dash import models
 from utils import s3helpers
-
-from . import exceptions
 
 MODIFIER_MAX = 11.0
 MODIFIER_MIN = 0.0

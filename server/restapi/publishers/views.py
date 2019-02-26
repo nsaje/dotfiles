@@ -1,8 +1,8 @@
 from django.db import transaction
 from rest_framework import permissions
 
+import core.features.bid_modifiers.exceptions
 import core.features.publisher_bid_modifiers
-import core.features.publisher_bid_modifiers.exceptions
 import core.features.publisher_groups.publisher_group_helpers
 import dash.constants
 import dash.views.helpers
@@ -121,7 +121,7 @@ class PublishersViewSet(restapi.common.views_base.RESTAPIBaseViewSet):
                     core.features.publisher_bid_modifiers.set(
                         ad_group, entry["name"], entry["source"], bid_modifier, user=request.user
                     )
-                except core.features.publisher_bid_modifiers.exceptions.BidModifierInvalid:
+                except core.features.bid_modifiers.exceptions.BidModifierInvalid:
                     raise serializers.ValidationError({"modifier": "Bid modifier invalid!"})
 
     @staticmethod

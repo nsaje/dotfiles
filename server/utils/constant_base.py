@@ -34,3 +34,7 @@ class ConstantBase(object):
     @classmethod
     def get_text(cls, cons):
         return cls._VALUES.get(cons)
+
+    @classmethod
+    def get_value(cls, name):
+        return {v: k for k, v in cls._VALUES.items()}.get(name)

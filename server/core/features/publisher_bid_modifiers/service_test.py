@@ -2,10 +2,10 @@ from django.test import TestCase
 
 import core.models
 from core.features import bid_modifiers
+from core.features.bid_modifiers import exceptions
 from dash import models
 from utils.magic_mixer import magic_mixer
 
-from . import exceptions
 from . import service
 
 

@@ -45,3 +45,8 @@ class ConstantsBaseTestCase(TestCase):
         self.assertEqual(TestConstant.get_text("cons2"), "Cons2")
         self.assertIs(TestConstant.get_text("cons100"), None)
         self.assertRaises(AttributeError, TestConstantNoValues.get_text, "cons1")
+
+    def test_get_value(self):
+        self.assertEqual(TestConstant.get_value("Cons2"), "cons2")
+        self.assertIs(TestConstant.get_value("Cons100"), None)
+        self.assertRaises(AttributeError, TestConstantNoValues.get_value, "Cons1")
