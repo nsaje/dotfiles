@@ -124,7 +124,16 @@ def limit_breakdown_to_level(breakdown, level):
     return stats.constants.get_child_breakdown_of_dimension(breakdown, constraint_dimension)
 
 
-def get_row_currency(row, currency=None, account_currency_map=None):
-    if account_currency_map is None:
-        return currency
-    return account_currency_map.get(row["account_id"])
+def fill_currency_column(rows, columns, currency, account_currency_map):
+    if "currency" not in columns:
+        return
+    if account_currency_map:
+        for row in rows:
+            row["currency"] = account_currency_map.get(row["account_id"])
+    else:
+        for row in rows:
+            row["currency"] = currency
+
+
+def get_option(job, option, default=None):
+    return job.query.get("options", {}).get(option, default)

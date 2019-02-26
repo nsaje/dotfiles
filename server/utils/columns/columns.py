@@ -370,7 +370,7 @@ def add_date_to_name(name):
 
 
 def is_cost_column(column_name, field_name_mapping):
-    field_name = get_field_name(column_name, field_name_mapping)
+    field_name = get_field_name(column_name, field_name_mapping, raise_exception=False)
     return field_name in _COST_FIELDS or field_name.startswith(_DYNAMIC_COST_FIELDS_PREFIXES)
 
 

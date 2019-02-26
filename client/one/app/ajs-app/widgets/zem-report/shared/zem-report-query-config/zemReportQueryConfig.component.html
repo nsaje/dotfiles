@@ -227,6 +227,20 @@
         <div class="form__radio">
             <label>
                 <input
+                    id="csv-delimiter-radio-tab"
+                    type="radio"
+                    ng-model="$ctrl.config.csvSeparator"
+                    value="{{ '\t' }}"
+                    ng-disabled="$ctrl.disabled"
+                    ng-change="$ctrl.update()"
+                    class="input-radio"
+                />
+                <span class="radio-text"> Tab </span>
+            </label>
+        </div>
+        <div class="form__radio">
+            <label>
+                <input
                     id="csv-delimiter-radio-other"
                     type="radio"
                     ng-model="$ctrl.config.csvSeparator"
@@ -244,7 +258,8 @@
                         ng-disabled="$ctrl.disabled"
                         ng-change="$ctrl.onCsvSeparatorOtherChanged()"
                         class="zem-report-query-config__csv-delimiter--other-text input-text"
-                        size="2"
+                        size="1"
+                        maxlength="1"
                     />
                 </span>
             </label>

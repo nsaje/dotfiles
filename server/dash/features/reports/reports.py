@@ -1,6 +1,5 @@
 import abc
 import datetime
-import decimal
 import ftplib
 import io
 import logging
@@ -31,6 +30,7 @@ from utils import csv_utils
 from utils import threads
 
 from . import constants
+from . import format_helper
 from . import helpers
 from .reportjob import ReportJob
 
@@ -134,7 +134,7 @@ class ReportJobExecutor(JobExecutor):
             logger.exception("Exception when sending fail notification for report job %s" % self.job.id)
 
     def _send_fail(self):
-        if len(self.job.query["options"]["recipients"]) <= 0:
+        if len(helpers.get_option(self.job, "recipients")) <= 0:
             return
 
         if self.job.scheduled_report:
@@ -153,16 +153,18 @@ class ReportJobExecutor(JobExecutor):
 
         utils.email_helper.send_async_report_fail(
             user=self.job.user,
-            recipients=self.job.query["options"]["recipients"],
+            recipients=helpers.get_option(self.job, "recipients"),
             start_date=filter_constraints["start_date"],
             end_date=filter_constraints["end_date"],
             filtered_sources=filtered_sources,
-            show_archived=self.job.query["options"]["show_archived"],
-            show_blacklisted_publishers=self.job.query["options"]["show_blacklisted_publishers"],
+            show_archived=helpers.get_option(self.job, "show_archived", False),
+            show_blacklisted_publishers=helpers.get_option(
+                self.job, "show_blacklisted_publishers", dash.constants.PublisherBlacklistFilter.SHOW_ALL
+            ),
             view=view,
             breakdowns=breakdowns,
             columns=self._extract_column_names(self.job.query["fields"]),
-            include_totals=self.job.query["options"]["include_totals"],
+            include_totals=helpers.get_option(self.job, "include_totals"),
             ad_group_name=ad_group_name,
             campaign_name=campaign_name,
             account_name=account_name,
@@ -184,7 +186,7 @@ class ReportJobExecutor(JobExecutor):
         level = helpers.get_level_from_constraints(filter_constraints)
         breakdown = list(helpers.get_breakdown_from_fields(job.query["fields"], level))
         structure_constraints = cls._extract_structure_constraints(filter_constraints)
-        all_accounts_in_local_currency = job.query["options"].get("all_accounts_in_local_currency") and user.has_perm(
+        all_accounts_in_local_currency = helpers.get_option(job, "all_accounts_in_local_currency") and user.has_perm(
             "zemauth.can_request_accounts_report_in_local_currencies"
         )
         csv_separator, csv_decimal_separator = cls._get_csv_separators(job)
@@ -195,8 +197,10 @@ class ReportJobExecutor(JobExecutor):
             start_date,
             end_date,
             filtered_sources,
-            show_archived=job.query["options"]["show_archived"],
-            show_blacklisted_publishers=job.query["options"]["show_blacklisted_publishers"],
+            show_archived=helpers.get_option(job, "show_archived", False),
+            show_blacklisted_publishers=helpers.get_option(
+                job, "show_blacklisted_publishers", dash.constants.PublisherBlacklistFilter.SHOW_ALL
+            ),
             filtered_account_types=filtered_account_types,
             filtered_agencies=filtered_agencies,
             only_used_sources=True,
@@ -213,6 +217,7 @@ class ReportJobExecutor(JobExecutor):
 
         order = cls._get_order(job, column_to_field_name_map)
         column_names = cls._extract_column_names(job.query["fields"])
+        cls._append_currency_column_if_necessary(column_names, column_to_field_name_map)
 
         currency = None
         account_currency_map = None
@@ -240,8 +245,7 @@ class ReportJobExecutor(JobExecutor):
                 offset=offset,
                 limit=BATCH_ROWS,
                 level=level,
-                columns=columns,
-                include_items_with_no_spend=job.query["options"]["include_items_with_no_spend"],
+                include_items_with_no_spend=helpers.get_option(job, "include_items_with_no_spend", False),
                 dashapi_cache=dashapi_cache,
             )
 
@@ -249,25 +253,26 @@ class ReportJobExecutor(JobExecutor):
                 stats.helpers.update_rows_to_contain_local_values(rows)
             else:
                 stats.helpers.update_rows_to_contain_values_in_currency(rows, currency)
+            helpers.fill_currency_column(rows, columns, currency, account_currency_map)
+            format_helper.format_values(rows, columns, csv_decimal_separator=csv_decimal_separator)
 
             cls.convert_to_csv(
                 job,
                 rows,
+                column_names,
                 column_to_field_name_map,
                 output,
                 header=offset == 0,
                 currency=currency,
-                account_currency_map=account_currency_map,
-                csv_decimal_separator=csv_decimal_separator,
                 csv_separator=csv_separator,
             )
 
-            if len(rows) < BATCH_ROWS or job.query["options"]["include_items_with_no_spend"]:
+            if len(rows) < BATCH_ROWS or helpers.get_option(job, "include_items_with_no_spend", False):
                 break
 
             offset += BATCH_ROWS
 
-        if job.query["options"]["include_totals"] and not all_accounts_in_local_currency:
+        if helpers.get_option(job, "include_totals") and not all_accounts_in_local_currency:
             totals_constraints = stats.api_reports.prepare_constraints(
                 user,
                 breakdown,
@@ -275,19 +280,25 @@ class ReportJobExecutor(JobExecutor):
                 end_date,
                 filtered_sources,
                 show_archived=True,
-                show_blacklisted_publishers=job.query["options"]["show_blacklisted_publishers"],
+                show_blacklisted_publishers=helpers.get_option(
+                    job, "show_blacklisted_publishers", dash.constants.PublisherBlacklistFilter.SHOW_ALL
+                ),
                 filtered_account_types=filtered_account_types,
                 filtered_agencies=filtered_agencies,
                 only_used_sources=True,
                 **structure_constraints
             )
             totals = stats.api_reports.totals(
-                user, helpers.limit_breakdown_to_level(breakdown, level), totals_constraints, goals, level, columns
+                user, helpers.limit_breakdown_to_level(breakdown, level), totals_constraints, goals, level
             )
 
             stats.helpers.update_rows_to_contain_values_in_currency([totals], currency)
+            helpers.fill_currency_column([totals], columns, currency, account_currency_map)
+            format_helper.format_values([totals], columns, csv_decimal_separator=csv_decimal_separator)
 
-            cls.convert_to_csv(job, [totals], column_to_field_name_map, output, header=False, currency=currency)
+            cls.convert_to_csv(
+                job, [totals], column_names, column_to_field_name_map, output, header=False, currency=currency
+            )
 
         return output.getvalue(), stats.api_reports.get_filename(breakdown, constraints)
 
@@ -301,8 +312,8 @@ class ReportJobExecutor(JobExecutor):
             csv_separator = agency.default_csv_separator
             csv_decimal_separator = agency.default_csv_decimal_separator
 
-        option_csv_separator = job.query.get("options", {}).get("csv_separator")
-        option_csv_decimal_separator = job.query.get("options", {}).get("csv_decimal_separator")
+        option_csv_separator = helpers.get_option(job, "csv_separator")
+        option_csv_decimal_separator = helpers.get_option(job, "csv_decimal_separator")
 
         if option_csv_separator:
             csv_separator = option_csv_separator
@@ -311,11 +322,26 @@ class ReportJobExecutor(JobExecutor):
 
         return csv_separator, csv_decimal_separator
 
+    @staticmethod
+    def _append_currency_column_if_necessary(requested_columns, field_name_mapping):
+        CURRENCY_COLUMN_NAME = "Currency"
+
+        if CURRENCY_COLUMN_NAME in requested_columns:
+            return requested_columns
+
+        for column_name in requested_columns:
+            if utils.columns.is_cost_column(column_name, field_name_mapping):
+                requested_columns.append(CURRENCY_COLUMN_NAME)
+                break
+
+        return requested_columns
+
     @classmethod
     def convert_to_csv(
         cls,
         job,
         data,
+        column_names,
         field_name_mapping,
         output,
         header=True,
@@ -324,18 +350,15 @@ class ReportJobExecutor(JobExecutor):
         csv_decimal_separator=None,
         csv_separator=None,
     ):
-        requested_columns = cls._extract_column_names(job.query["fields"])
-        requested_columns = cls._append_currency_column_if_necessary(requested_columns, field_name_mapping)
-
-        csv_column_names = requested_columns
-        original_to_dated = {k: k for k in requested_columns}
-        if job.query["options"]["show_status_date"]:
+        csv_column_names = column_names
+        original_to_dated = {k: k for k in column_names}
+        if helpers.get_option(job, "show_status_date"):
             csv_column_names, original_to_dated = cls._date_column_names(csv_column_names)
 
         rows = cls._get_csv_rows(
             data,
             field_name_mapping,
-            requested_columns,
+            column_names,
             original_to_dated,
             currency=currency,
             account_currency_map=account_currency_map,
@@ -355,20 +378,6 @@ class ReportJobExecutor(JobExecutor):
 
         return fieldnames
 
-    @staticmethod
-    def _append_currency_column_if_necessary(requested_columns, field_name_mapping):
-        CURRENCY_COLUMN_NAME = "Currency"
-
-        if CURRENCY_COLUMN_NAME in requested_columns:
-            return requested_columns
-
-        for column_name in requested_columns:
-            if utils.columns.is_cost_column(column_name, field_name_mapping):
-                requested_columns.append(CURRENCY_COLUMN_NAME)
-                break
-
-        return requested_columns
-
     @classmethod
     def _get_csv_rows(
         cls,
@@ -385,21 +394,11 @@ class ReportJobExecutor(JobExecutor):
             for column_name in requested_columns:
                 field_name = field_name_mapping[column_name]
                 csv_column = original_to_dated[column_name]
-                if field_name == "currency":
-                    csv_row[csv_column] = helpers.get_row_currency(
-                        row, currency=currency, account_currency_map=account_currency_map
-                    )
-                elif field_name in row:
-                    csv_row[csv_column] = cls._format_value(row[field_name], csv_decimal_separator)
+                if field_name in row:
+                    csv_row[csv_column] = row[field_name]
                 else:
                     csv_row[csv_column] = ""
             yield csv_row
-
-    @staticmethod
-    def _format_value(value, csv_decimal_separator=None):
-        if csv_decimal_separator and isinstance(value, decimal.Decimal):
-            return str(value).replace(".", csv_decimal_separator)
-        return value
 
     @classmethod
     def save_to_s3(cls, csv, human_readable_filename):
@@ -410,7 +409,7 @@ class ReportJobExecutor(JobExecutor):
 
     @classmethod
     def send_by_email(cls, job, report_path):
-        if len(job.query["options"]["recipients"]) <= 0:
+        if len(helpers.get_option(job, "recipients")) <= 0:
             return
 
         filter_constraints = helpers.get_filter_constraints(job.query["filters"])
@@ -428,7 +427,7 @@ class ReportJobExecutor(JobExecutor):
         if job.scheduled_report:
             utils.email_helper.send_async_scheduled_report(
                 job.user,
-                job.query["options"]["recipients"],
+                helpers.get_option(job, "recipients"),
                 job.scheduled_report.name,
                 dash.constants.ScheduledReportSendingFrequency.get_text(job.scheduled_report.sending_frequency),
                 report_path,
@@ -436,9 +435,11 @@ class ReportJobExecutor(JobExecutor):
                 filter_constraints["start_date"],
                 filter_constraints["end_date"],
                 filtered_sources,
-                job.query["options"]["show_archived"],
-                job.query["options"]["show_blacklisted_publishers"],
-                job.query["options"]["include_totals"],
+                helpers.get_option(job, "show_archived", False),
+                helpers.get_option(
+                    job, "show_blacklisted_publishers", dash.constants.PublisherBlacklistFilter.SHOW_ALL
+                ),
+                helpers.get_option(job, "include_totals"),
                 view,
                 breakdowns,
                 cls._extract_column_names(job.query["fields"]),
@@ -449,18 +450,20 @@ class ReportJobExecutor(JobExecutor):
         else:
             utils.email_helper.send_async_report(
                 job.user,
-                job.query["options"]["recipients"],
+                helpers.get_option(job, "recipients"),
                 report_path,
                 filter_constraints["start_date"],
                 filter_constraints["end_date"],
                 expiry_date,
                 filtered_sources,
-                job.query["options"]["show_archived"],
-                job.query["options"]["show_blacklisted_publishers"],
+                helpers.get_option(job, "show_archived", False),
+                helpers.get_option(
+                    job, "show_blacklisted_publishers", dash.constants.PublisherBlacklistFilter.SHOW_ALL
+                ),
                 view,
                 breakdowns,
                 cls._extract_column_names(job.query["fields"]),
-                job.query["options"]["include_totals"],
+                helpers.get_option(job, "include_totals"),
                 ad_group_name,
                 campaign_name,
                 account_name,
@@ -515,7 +518,7 @@ class ReportJobExecutor(JobExecutor):
 
     @staticmethod
     def _get_order(job, column_to_field_map):
-        order = job.query["options"].get("order")
+        order = helpers.get_option(job, "order")
         if not order:
             return constants.DEFAULT_ORDER
 

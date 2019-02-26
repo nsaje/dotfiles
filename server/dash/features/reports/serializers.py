@@ -52,7 +52,9 @@ class ReportOptionsSerializer(serializers.Serializer):
     show_status_date = serializers.BooleanField(default=False)
     recipients = serializers.ListField(child=serializers.EmailField(), default=[])
     order = restapi.serializers.fields.PlainCharField(required=False)
-    csv_separator = restapi.serializers.fields.PlainCharField(required=False, max_length=2)
+    csv_separator = restapi.serializers.fields.PlainCharField(
+        required=False, max_length=2, allow_blank=True, trim_whitespace=False
+    )
     csv_decimal_separator = restapi.serializers.fields.PlainCharField(required=False, max_length=1)
 
 
