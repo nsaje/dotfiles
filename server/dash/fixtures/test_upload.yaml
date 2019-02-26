@@ -588,6 +588,9 @@
     batch_id: 1
     image_status: 1  # pending
     url_status: 1  # pending
+    primary_tracker_url_status:  1 # pending
+    secondary_tracker_url_status: 1 # pending
+    can_append_tracking_codes: false
     created_dt: '2016-05-31T09:00:00'
     label: 'content ad 1'
     url: 'http://zemanta.com/blog'
@@ -636,6 +639,9 @@
     batch_id: 3
     image_status: 4  # failed
     url_status: 4  # failed
+    primary_tracker_url_status:  4 # ok
+    secondary_tracker_url_status: 4 # ok
+    can_append_tracking_codes: false
     created_dt: '2016-05-31T09:00:00'
     label: 'content ad 1'
     url: 'http://zemanta.com/blog'
@@ -671,8 +677,8 @@
     image_width: 500
     image_height: 500
     image_hash: '54321cba'
-    primary_tracker_url: 'https://t.zemanta.com/px1.png'
-    secondary_tracker_url: 'https://t.zemanta.com/px2.png'
+    primary_tracker_url: 'https://primaryTrackerUrl.com'
+    secondary_tracker_url: ''
     image_id: 'abc12345'
   model: dash.contentadcandidate
   pk: 4
@@ -734,6 +740,9 @@
     batch_id: 8
     image_status: 3  # ok
     url_status: 3  # ok
+    primary_tracker_url_status:  3 # ok
+    secondary_tracker_url_status: 3 # ok
+    can_append_tracking_codes: false
     created_dt: '2016-05-31T09:00:00'
     label: 'content ad 1'
     url: 'http://zemanta.com/blog'

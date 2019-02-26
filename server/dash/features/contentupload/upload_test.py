@@ -710,6 +710,9 @@ class AddCandidateTestCase(TestCase):
                 "video_asset_id": None,
                 "ad_tag": None,
                 "additional_data": None,
+                "primary_tracker_url_status": constants.AsyncUploadJobStatus.PENDING_START,
+                "secondary_tracker_url_status": constants.AsyncUploadJobStatus.PENDING_START,
+                "can_append_tracking_codes": False,
             },
             candidate.to_dict(),
         )
@@ -754,6 +757,9 @@ class AddCandidateTestCase(TestCase):
                 "video_asset_id": None,
                 "ad_tag": None,
                 "additional_data": None,
+                "primary_tracker_url_status": constants.AsyncUploadJobStatus.PENDING_START,
+                "secondary_tracker_url_status": constants.AsyncUploadJobStatus.PENDING_START,
+                "can_append_tracking_codes": False,
             },
             candidate.to_dict(),
         )
@@ -771,7 +777,6 @@ class GetCandidatesWithErrorsTestCase(TestCase):
         batch, candidates = contentupload.upload.insert_candidates(
             None, account, data, ad_group, "batch1", "test_upload.csv"
         )
-
         result = contentupload.upload.get_candidates_with_errors(candidates)
         self.assertEqual(
             [
@@ -803,6 +808,9 @@ class GetCandidatesWithErrorsTestCase(TestCase):
                     "video_asset_id": None,
                     "ad_tag": None,
                     "additional_data": {"a": 1},
+                    "primary_tracker_url_status": constants.AsyncUploadJobStatus.WAITING_RESPONSE,
+                    "secondary_tracker_url_status": constants.AsyncUploadJobStatus.WAITING_RESPONSE,
+                    "can_append_tracking_codes": False,
                 }
             ],
             result,
@@ -862,6 +870,9 @@ class GetCandidatesWithErrorsTestCase(TestCase):
                     "video_asset_id": None,
                     "ad_tag": None,
                     "additional_data": None,
+                    "primary_tracker_url_status": constants.AsyncUploadJobStatus.WAITING_RESPONSE,
+                    "secondary_tracker_url_status": constants.AsyncUploadJobStatus.WAITING_RESPONSE,
+                    "can_append_tracking_codes": False,
                 }
             ],
             result,
@@ -908,6 +919,9 @@ class GetCandidatesWithErrorsTestCase(TestCase):
                     "video_asset_id": None,
                     "ad_tag": None,
                     "additional_data": None,
+                    "primary_tracker_url_status": constants.AsyncUploadJobStatus.WAITING_RESPONSE,
+                    "secondary_tracker_url_status": constants.AsyncUploadJobStatus.WAITING_RESPONSE,
+                    "can_append_tracking_codes": False,
                 }
             ],
             result,
@@ -963,6 +977,9 @@ class GetCandidatesWithErrorsTestCase(TestCase):
                     "video_asset_id": None,
                     "ad_tag": None,
                     "additional_data": None,
+                    "primary_tracker_url_status": constants.AsyncUploadJobStatus.WAITING_RESPONSE,
+                    "secondary_tracker_url_status": constants.AsyncUploadJobStatus.WAITING_RESPONSE,
+                    "can_append_tracking_codes": False,
                 }
             ],
             result,
@@ -1009,6 +1026,9 @@ class GetCandidatesWithErrorsTestCase(TestCase):
                     "video_asset_id": None,
                     "ad_tag": "<body></body>",
                     "additional_data": None,
+                    "primary_tracker_url_status": constants.AsyncUploadJobStatus.WAITING_RESPONSE,
+                    "secondary_tracker_url_status": constants.AsyncUploadJobStatus.WAITING_RESPONSE,
+                    "can_append_tracking_codes": False,
                 }
             ],
             result,
@@ -1065,6 +1085,9 @@ class GetCandidatesWithErrorsTestCase(TestCase):
                     "video_asset_id": None,
                     "ad_tag": None,
                     "additional_data": None,
+                    "primary_tracker_url_status": constants.AsyncUploadJobStatus.WAITING_RESPONSE,
+                    "secondary_tracker_url_status": constants.AsyncUploadJobStatus.WAITING_RESPONSE,
+                    "can_append_tracking_codes": False,
                 }
             ],
             result,
@@ -1090,7 +1113,7 @@ class UpdateCandidateTest(TestCase):
             "brand_name": "New brand name",
             "description": "New description",
             "call_to_action": "New cta",
-            "primary_tracker_url": "",
+            "primary_tracker_url": "https://primaryTrackerUrl.com",
             "secondary_tracker_url": "",
         }
         self.defaults = ["image_crop", "display_url", "brand_name", "description", "call_to_action"]
@@ -1276,7 +1299,7 @@ class UpdateCandidateTest(TestCase):
             "description": "New description",
             "call_to_action": "New cta",
             "primary_tracker_url": "",
-            "secondary_tracker_url": "",
+            "secondary_tracker_url": "https://secondaryTrackerUrl.com",
         }
 
         contentupload.upload.update_candidate(new_candidate, [], self.candidate.batch)
@@ -1388,6 +1411,8 @@ class UploadTest(TestCase):
                 {
                     "url": "http://www.zemanta.com/insights/2016/5/23/fighting-the-ad-fraud-one-impression-at-a-time",
                     "image_url": "http://static1.squarespace.com/image.jpg",
+                    "primary_tracker_url": "https://someImpressionTracker.com",
+                    "secondary_tracker_url": None,
                 }
             ],
             ad_group,
@@ -1396,6 +1421,8 @@ class UploadTest(TestCase):
         )
         candidates[0].image_status = constants.AsyncUploadJobStatus.WAITING_RESPONSE
         candidates[0].url_status = constants.AsyncUploadJobStatus.WAITING_RESPONSE
+        candidates[0].primary_tracker_url_status = constants.AsyncUploadJobStatus.WAITING_RESPONSE
+        candidates[0].secondary_tracker_url_status = constants.AsyncUploadJobStatus.PENDING_START
         candidates[0].save()
 
         contentupload.upload.process_callback(
@@ -1404,7 +1431,6 @@ class UploadTest(TestCase):
                 "url": {
                     "originUrl": "http://www.zemanta.com/insights/2016/5/23/fighting-the-ad-fraud-one-impression-at-a-time",
                     "valid": True,
-                    "targetUrl": "http://www.zemanta.com/insights/2016/5/23/fighting-the-ad-fraud-one-impression-at-a-time",
                 },
                 "image": {
                     "valid": True,
@@ -1415,12 +1441,15 @@ class UploadTest(TestCase):
                     "height": 245,
                     "originUrl": "http://static1.squarespace.com/image.jpg",
                 },
+                "impressionTrackers": [{"valid": True, "originUrl": "https://someImpressionTracker.com"}],
             }
         )
 
         candidate = models.ContentAdCandidate.objects.get(pk=candidates[0].pk)
         self.assertEqual(candidate.url_status, constants.AsyncUploadJobStatus.OK)
         self.assertEqual(candidate.image_status, constants.AsyncUploadJobStatus.OK)
+        self.assertEqual(candidate.primary_tracker_url_status, constants.AsyncUploadJobStatus.OK)
+        self.assertEqual(candidate.secondary_tracker_url_status, constants.AsyncUploadJobStatus.PENDING_START)
 
     def test_process_ad_tag_callback(self, *mocks):
         account = models.Account.objects.get(id=1)
@@ -1448,8 +1477,8 @@ class UploadTest(TestCase):
                 "url": {
                     "originUrl": "http://www.zemanta.com/insights/2016/5/23/fighting-the-ad-fraud-one-impression-at-a-time",
                     "valid": True,
-                    "targetUrl": "http://www.zemanta.com/insights/2016/5/23/fighting-the-ad-fraud-one-impression-at-a-time",
                 },
+                "impressionTrackers": [],
             }
         )
 
@@ -1489,6 +1518,7 @@ class UploadTest(TestCase):
                     "height": 245,
                     "originUrl": "http://static1.squarespace.com/image.jpg",
                 },
+                "impressionTrackers": [],
             }
         )
 
@@ -1521,15 +1551,244 @@ class UploadTest(TestCase):
                 "url": {
                     "originUrl": "http://www.zemanta.com/insights/2016/5/23/fighting-the-ad-fraud-one-impression-at-a-time",
                     "valid": True,
-                    "targetUrl": "http://www.zemanta.com/insights/2016/5/23/fighting-the-ad-fraud-one-impression-at-a-time",
                 },
                 "image": {"valid": False, "originUrl": ""},
+                "impressionTrackers": [],
             }
         )
 
         candidate = models.ContentAdCandidate.objects.get(pk=candidates[0].pk)
         self.assertEqual(candidate.url_status, constants.AsyncUploadJobStatus.OK)
         self.assertEqual(candidate.image_status, constants.AsyncUploadJobStatus.WAITING_RESPONSE)
+
+    def test_process_callback_trackers_url_not_set(self, *mocks):
+        account = models.Account.objects.get(id=1)
+        ad_group = models.AdGroup.objects.get(pk=1)
+        _, candidates = contentupload.upload.insert_candidates(
+            None,
+            account,
+            [
+                {
+                    "url": "http://www.zemanta.com/insights/2016/5/23/fighting-the-ad-fraud-one-impression-at-a-time",
+                    "image_url": "http://static1.squarespace.com/image.jpg",
+                    "impressionTrackers": [],
+                }
+            ],
+            ad_group,
+            "Test batch",
+            "test_upload.csv",
+        )
+
+        candidates[0].url_status = constants.AsyncUploadJobStatus.WAITING_RESPONSE
+        candidates[0].image_url = constants.AsyncUploadJobStatus.WAITING_RESPONSE
+        candidates[0].primary_tracker_url_status = constants.AsyncUploadJobStatus.PENDING_START
+        candidates[0].secondary_tracker_url_status = constants.AsyncUploadJobStatus.PENDING_START
+        candidates[0].save()
+
+        contentupload.upload.process_callback(
+            {
+                "id": candidates[0].pk,
+                "url": {
+                    "originUrl": "http://www.zemanta.com/insights/2016/5/23/fighting-the-ad-fraud-one-impression-at-a-time",
+                    "valid": True,
+                },
+                "image": {"valid": False, "originUrl": ""},
+                "impressionTrackers": [],
+            }
+        )
+
+        candidate = models.ContentAdCandidate.objects.get(pk=candidates[0].pk)
+        self.assertEqual(candidate.url_status, constants.AsyncUploadJobStatus.OK)
+        self.assertEqual(candidate.image_status, constants.AsyncUploadJobStatus.WAITING_RESPONSE)
+        self.assertEqual(candidate.primary_tracker_url_status, constants.AsyncUploadJobStatus.PENDING_START)
+        self.assertEqual(candidate.secondary_tracker_url_status, constants.AsyncUploadJobStatus.PENDING_START)
+
+    def test_process_callback_trackers_url_valid(self, *mocks):
+        account = models.Account.objects.get(id=1)
+        ad_group = models.AdGroup.objects.get(pk=1)
+        _, candidates = contentupload.upload.insert_candidates(
+            None,
+            account,
+            [
+                {
+                    "url": "http://www.zemanta.com/insights/2016/5/23/fighting-the-ad-fraud-one-impression-at-a-time",
+                    "image_url": "http://static1.squarespace.com/image.jpg",
+                    "primary_tracker_url": "https://primaryTrackerUrl.com",
+                    "secondary_tracker_url": "https://secondaryTrackerUrl.com",
+                }
+            ],
+            ad_group,
+            "Test batch",
+            "test_upload.csv",
+        )
+
+        candidates[0].url_status = constants.AsyncUploadJobStatus.WAITING_RESPONSE
+        candidates[0].image_url = constants.AsyncUploadJobStatus.WAITING_RESPONSE
+        candidates[0].primary_tracker_url_status = constants.AsyncUploadJobStatus.WAITING_RESPONSE
+        candidates[0].secondary_tracker_url_status = constants.AsyncUploadJobStatus.WAITING_RESPONSE
+        candidates[0].save()
+
+        contentupload.upload.process_callback(
+            {
+                "id": candidates[0].pk,
+                "url": {
+                    "originUrl": "http://www.zemanta.com/insights/2016/5/23/fighting-the-ad-fraud-one-impression-at-a-time",
+                    "valid": True,
+                },
+                "image": {"valid": False, "originUrl": ""},
+                "impressionTrackers": [
+                    {"valid": True, "originUrl": "https://primaryTrackerUrl.com"},
+                    {"valid": True, "originUrl": "https://secondaryTrackerUrl.com"},
+                ],
+            }
+        )
+
+        candidate = models.ContentAdCandidate.objects.get(pk=candidates[0].pk)
+        self.assertEqual(candidate.url_status, constants.AsyncUploadJobStatus.OK)
+        self.assertEqual(candidate.image_status, constants.AsyncUploadJobStatus.WAITING_RESPONSE)
+        self.assertEqual(candidate.primary_tracker_url_status, constants.AsyncUploadJobStatus.OK)
+        self.assertEqual(candidate.secondary_tracker_url_status, constants.AsyncUploadJobStatus.OK)
+
+    def test_process_callback_trackers_url_invalid(self, *mocks):
+        account = models.Account.objects.get(id=1)
+        ad_group = models.AdGroup.objects.get(pk=1)
+        _, candidates = contentupload.upload.insert_candidates(
+            None,
+            account,
+            [
+                {
+                    "url": "http://www.zemanta.com/insights/2016/5/23/fighting-the-ad-fraud-one-impression-at-a-time",
+                    "image_url": "http://static1.squarespace.com/image.jpg",
+                    "primary_tracker_url": "https://primaryTrackerUrl.com",
+                    "secondary_tracker_url": "https://secondaryTrackerUrl.com",
+                }
+            ],
+            ad_group,
+            "Test batch",
+            "test_upload.csv",
+        )
+
+        candidates[0].url_status = constants.AsyncUploadJobStatus.WAITING_RESPONSE
+        candidates[0].image_url = constants.AsyncUploadJobStatus.WAITING_RESPONSE
+        candidates[0].primary_tracker_url_status = constants.AsyncUploadJobStatus.WAITING_RESPONSE
+        candidates[0].secondary_tracker_url_status = constants.AsyncUploadJobStatus.WAITING_RESPONSE
+        candidates[0].save()
+
+        contentupload.upload.process_callback(
+            {
+                "id": candidates[0].pk,
+                "url": {
+                    "originUrl": "http://www.zemanta.com/insights/2016/5/23/fighting-the-ad-fraud-one-impression-at-a-time",
+                    "valid": True,
+                },
+                "image": {"valid": False, "originUrl": ""},
+                "impressionTrackers": [
+                    {"valid": False, "originUrl": "https://primaryTrackerUrl.com"},
+                    {"valid": False, "originUrl": "https://secondaryTrackerUrl.com"},
+                ],
+            }
+        )
+
+        candidate = models.ContentAdCandidate.objects.get(pk=candidates[0].pk)
+        self.assertEqual(candidate.url_status, constants.AsyncUploadJobStatus.OK)
+        self.assertEqual(candidate.image_status, constants.AsyncUploadJobStatus.WAITING_RESPONSE)
+        self.assertEqual(candidate.primary_tracker_url_status, constants.AsyncUploadJobStatus.FAILED)
+        self.assertEqual(candidate.secondary_tracker_url_status, constants.AsyncUploadJobStatus.FAILED)
+
+    def test_process_callback_trackers_url_pending_start(self, *mocks):
+        account = models.Account.objects.get(id=1)
+        ad_group = models.AdGroup.objects.get(pk=1)
+        _, candidates = contentupload.upload.insert_candidates(
+            None,
+            account,
+            [
+                {
+                    "url": "http://www.zemanta.com/insights/2016/5/23/fighting-the-ad-fraud-one-impression-at-a-time",
+                    "image_url": "http://static1.squarespace.com/image.jpg",
+                    "primary_tracker_url": "https://primaryImpressionTracker.com",
+                    "secondary_tracker_url": "https://secondaryImpressionTracker.com",
+                }
+            ],
+            ad_group,
+            "Test batch",
+            "test_upload.csv",
+        )
+
+        candidates[0].url_status = constants.AsyncUploadJobStatus.WAITING_RESPONSE
+        candidates[0].image_url = constants.AsyncUploadJobStatus.WAITING_RESPONSE
+        candidates[0].primary_tracker_url_status = constants.AsyncUploadJobStatus.WAITING_RESPONSE
+        candidates[0].secondary_tracker_url_status = constants.AsyncUploadJobStatus.WAITING_RESPONSE
+        candidates[0].save()
+
+        contentupload.upload.process_callback(
+            {
+                "id": candidates[0].pk,
+                "url": {
+                    "originUrl": "http://www.zemanta.com/insights/2016/5/23/fighting-the-ad-fraud-one-impression-at-a-time",
+                    "valid": True,
+                },
+                "image": {"valid": False, "originUrl": ""},
+                "impressionTrackers": [
+                    {"originUrl": "https://primaryImpressionTracker.com", "valid": True},
+                    {"originUrl": "https://secondaryImpressionTracker.com", "valid": True},
+                ],
+            }
+        )
+
+        candidate = models.ContentAdCandidate.objects.get(pk=candidates[0].pk)
+        self.assertEqual(candidate.url_status, constants.AsyncUploadJobStatus.OK)
+        self.assertEqual(candidate.image_status, constants.AsyncUploadJobStatus.WAITING_RESPONSE)
+        self.assertEqual(candidate.primary_tracker_url_status, constants.AsyncUploadJobStatus.OK)
+        self.assertEqual(candidate.secondary_tracker_url_status, constants.AsyncUploadJobStatus.OK)
+
+    def test_process_callback_trackers_url_differs(self, *mocks):
+        account = models.Account.objects.get(id=1)
+        ad_group = models.AdGroup.objects.get(pk=1)
+        _, candidates = contentupload.upload.insert_candidates(
+            None,
+            account,
+            [
+                {
+                    "url": "http://www.zemanta.com/insights/2016/5/23/fighting-the-ad-fraud-one-impression-at-a-time",
+                    "image_url": "http://static1.squarespace.com/image.jpg",
+                    "primary_tracker_url": "https://primaryImpressionTracker.com",
+                    "secondary_tracker_url": "https://secondaryImpressionTracker.com",
+                }
+            ],
+            ad_group,
+            "Test batch",
+            "test_upload.csv",
+        )
+
+        candidates[0].url_status = constants.AsyncUploadJobStatus.WAITING_RESPONSE
+        candidates[0].image_url = constants.AsyncUploadJobStatus.WAITING_RESPONSE
+        candidates[0].primary_tracker_url_status = constants.AsyncUploadJobStatus.WAITING_RESPONSE
+        candidates[0].secondary_tracker_url_status = constants.AsyncUploadJobStatus.WAITING_RESPONSE
+        candidates[0].primary_tracker_url = "https://AnOtherImpressionTrackerUrl.com"
+        candidates[0].secondary_tracker_url = None
+        candidates[0].save()
+
+        contentupload.upload.process_callback(
+            {
+                "id": candidates[0].pk,
+                "url": {
+                    "originUrl": "http://www.zemanta.com/insights/2016/5/23/fighting-the-ad-fraud-one-impression-at-a-time",
+                    "valid": True,
+                },
+                "image": {"valid": True, "originUrl": "http://static1.squarespace.com/image.jpg"},
+                "impressionTrackers": [
+                    {"originUrl": "https://primaryImpressionTracker.com", "valid": True},
+                    {"originUrl": "https://secondaryImpressionTracker.com", "valid": True},
+                ],
+            }
+        )
+
+        candidate = models.ContentAdCandidate.objects.get(pk=candidates[0].pk)
+
+        self.assertEqual(candidate.url_status, constants.AsyncUploadJobStatus.OK)
+        self.assertEqual(candidate.image_status, constants.AsyncUploadJobStatus.WAITING_RESPONSE)
+        self.assertEqual(candidate.primary_tracker_url_status, constants.AsyncUploadJobStatus.WAITING_RESPONSE)
+        self.assertEqual(candidate.secondary_tracker_url_status, constants.AsyncUploadJobStatus.WAITING_RESPONSE)
 
 
 class AutoSaveTest(TestCase):

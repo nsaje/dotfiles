@@ -824,6 +824,9 @@ class CandidateTest(TestCase):
                             "video_asset_id": None,
                             "ad_tag": None,
                             "additional_data": None,
+                            "primary_tracker_url_status": constants.AsyncUploadJobStatus.PENDING_START,
+                            "secondary_tracker_url_status": constants.AsyncUploadJobStatus.PENDING_START,
+                            "can_append_tracking_codes": False,
                         }
                     ]
                 },
@@ -869,6 +872,9 @@ class CandidateTest(TestCase):
                         "video_asset_id": None,
                         "ad_tag": None,
                         "additional_data": None,
+                        "primary_tracker_url_status": constants.AsyncUploadJobStatus.PENDING_START,
+                        "secondary_tracker_url_status": constants.AsyncUploadJobStatus.PENDING_START,
+                        "can_append_tracking_codes": False,
                     }
                 },
                 "success": True,
@@ -947,8 +953,8 @@ class CandidateUpdateTest(TestCase):
                 "brand_name": "New brand name",
                 "description": "New description",
                 "call_to_action": "New cta",
-                "primary_tracker_url": "",
-                "secondary_tracker_url": "",
+                "primary_tracker_url": "https://Url.com",
+                "secondary_tracker_url": "https://OtherUrl.com",
             },
             "defaults": [],
         }
@@ -971,8 +977,8 @@ class CandidateUpdateTest(TestCase):
                     "image_crop": "center",
                     "image_url": "http://zemanta.com/img.jpg",
                     "label": "new label",
-                    "primary_tracker_url": "",
-                    "secondary_tracker_url": "",
+                    "primary_tracker_url": "https://Url.com",
+                    "secondary_tracker_url": "https://OtherUrl.com",
                     "title": "New title",
                     "url": "http://zemanta.com/blog",
                 },

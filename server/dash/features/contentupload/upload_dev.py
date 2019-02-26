@@ -45,6 +45,12 @@ class MockAsyncValidation(threading.Thread):
                 self.candidate.url_status = constants.AsyncUploadJobStatus.OK
             else:
                 self.candidate.url_status = constants.AsyncUploadJobStatus.FAILED
+        if self.candidate.primary_tracker_url_status != constants.AsyncUploadJobStatus.PENDING_START:
+            if rand > self.fail_probability:
+                self.candidate.primary_tracker_url_status = constants.AsyncUploadJobStatus.OK
+        if self.candidate.secondary_tracker_url_status != constants.AsyncUploadJobStatus.PENDING_START:
+            if rand > self.fail_probability:
+                self.candidate.secondary_tracker_url_status = constants.AsyncUploadJobStatus.OK
 
         self.candidate.save()
         self.batch_callback(self.candidate.batch)

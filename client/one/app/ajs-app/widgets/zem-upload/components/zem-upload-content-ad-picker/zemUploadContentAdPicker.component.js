@@ -106,6 +106,10 @@ angular.module('one.widgets').component('zemUploadContentAdPicker', {
                 candidate.imageStatus ===
                     constants.asyncUploadJobStatus.PENDING_START &&
                 candidate.urlStatus ===
+                    constants.asyncUploadJobStatus.PENDING_START &&
+                candidate.primaryTrackerUrlStatus ===
+                    constants.asyncUploadJobStatus.PENDING_START &&
+                candidate.secondaryTrackerUrlStatus ===
                     constants.asyncUploadJobStatus.PENDING_START
             ) {
                 // newly added candidate
@@ -116,6 +120,10 @@ angular.module('one.widgets').component('zemUploadContentAdPicker', {
                 candidate.imageStatus ===
                     constants.asyncUploadJobStatus.WAITING_RESPONSE ||
                 candidate.urlStatus ===
+                    constants.asyncUploadJobStatus.WAITING_RESPONSE ||
+                candidate.primaryTrackerUrlStatus ===
+                    constants.asyncUploadJobStatus.WAITING_RESPONSE ||
+                candidate.secondaryTrackerUrlStatus ===
                     constants.asyncUploadJobStatus.WAITING_RESPONSE
             ) {
                 return constants.contentAdCandidateStatus.LOADING;
@@ -130,6 +138,10 @@ angular.module('one.widgets').component('zemUploadContentAdPicker', {
                     constants.asyncUploadJobStatus.PENDING_START &&
                     candidate.adType !== constants.adType.AD_TAG) ||
                 candidate.urlStatus ===
+                    constants.asyncUploadJobStatus.PENDING_START ||
+                candidate.primaryTrackerUrlStatus ===
+                    constants.asyncUploadJobStatus.PENDING_START ||
+                candidate.secondaryTrackerUrlStatus ===
                     constants.asyncUploadJobStatus.PENDING_START
             ) {
                 // important to check this after checking for errors
@@ -262,46 +274,82 @@ angular.module('one.widgets').component('zemUploadContentAdPicker', {
         }
 
         function updateCandidatesStatuses(updatedCandidates) {
-            angular.forEach(updatedCandidates, function(updatedCandidate) {
-                var candidate = $ctrl.candidates.filter(function(candidate) {
-                    if (candidate.id === updatedCandidate.id) return true;
-                })[0];
+            angular.forEach(
+                updatedCandidates,
+                // eslint-disable-next-line complexity
+                function(updatedCandidate) {
+                    var candidate = $ctrl.candidates.find(function(candidate) {
+                        return candidate.id === updatedCandidate.id;
+                    });
 
-                if (!candidate) return;
+                    if (!candidate) return;
 
-                if (
-                    updatedCandidate.imageStatus !==
-                    constants.asyncUploadJobStatus.PENDING_START
-                ) {
-                    candidate.imageStatus = updatedCandidate.imageStatus;
-                    if (updatedCandidate.errors.hasOwnProperty('imageUrl')) {
-                        candidate.errors.imageUrl =
-                            updatedCandidate.errors.imageUrl;
+                    if (
+                        updatedCandidate.imageStatus !==
+                        constants.asyncUploadJobStatus.PENDING_START
+                    ) {
+                        candidate.imageStatus = updatedCandidate.imageStatus;
+                        if (
+                            updatedCandidate.errors.hasOwnProperty('imageUrl')
+                        ) {
+                            candidate.errors.imageUrl =
+                                updatedCandidate.errors.imageUrl;
+                        }
+                        if (updatedCandidate.hasOwnProperty('hostedImageUrl')) {
+                            candidate.hostedImageUrl =
+                                updatedCandidate.hostedImageUrl;
+                        }
+                        if (
+                            updatedCandidate.hasOwnProperty(
+                                'landscapeHostedImageUrl'
+                            )
+                        ) {
+                            candidate.landscapeHostedImageUrl =
+                                updatedCandidate.landscapeHostedImageUrl;
+                        }
                     }
-                    if (updatedCandidate.hasOwnProperty('hostedImageUrl')) {
-                        candidate.hostedImageUrl =
-                            updatedCandidate.hostedImageUrl;
+
+                    if (
+                        updatedCandidate.urlStatus !==
+                        constants.asyncUploadJobStatus.PENDING_START
+                    ) {
+                        candidate.urlStatus = updatedCandidate.urlStatus;
+                        if (updatedCandidate.errors.hasOwnProperty('url')) {
+                            candidate.errors.url = updatedCandidate.errors.url;
+                        }
                     }
                     if (
-                        updatedCandidate.hasOwnProperty(
-                            'landscapeHostedImageUrl'
-                        )
+                        updatedCandidate.primaryTrackerUrlStatus !==
+                        constants.asyncUploadJobStatus.PENDING_START
                     ) {
-                        candidate.landscapeHostedImageUrl =
-                            updatedCandidate.landscapeHostedImageUrl;
+                        candidate.primaryTrackerUrlStatus =
+                            updatedCandidate.primaryTrackerUrlStatus;
+                        if (
+                            updatedCandidate.errors.hasOwnProperty(
+                                'primaryTrackerUrl'
+                            )
+                        ) {
+                            candidate.errors.primaryTrackerUrl =
+                                updatedCandidate.errors.primaryTrackerUrl;
+                        }
+                    }
+                    if (
+                        updatedCandidate.secondaryTrackerUrlStatus !==
+                        constants.asyncUploadJobStatus.PENDING_START
+                    ) {
+                        candidate.secondaryTrackerUrlStatus =
+                            updatedCandidate.secondaryTrackerUrlStatus;
+                        if (
+                            updatedCandidate.errors.hasOwnProperty(
+                                'secondaryTrackerUrl'
+                            )
+                        ) {
+                            candidate.errors.secondaryTrackerUrl =
+                                updatedCandidate.errors.secondaryTrackerUrl;
+                        }
                     }
                 }
-
-                if (
-                    updatedCandidate.urlStatus !==
-                    constants.asyncUploadJobStatus.PENDING_START
-                ) {
-                    candidate.urlStatus = updatedCandidate.urlStatus;
-                    if (updatedCandidate.errors.hasOwnProperty('url')) {
-                        candidate.errors.url = updatedCandidate.errors.url;
-                    }
-                }
-            });
+            );
             if ($ctrl.statusUpdatedCallback) {
                 $ctrl.statusUpdatedCallback();
             }

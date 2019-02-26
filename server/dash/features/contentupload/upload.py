@@ -67,7 +67,10 @@ def insert_edit_candidates(user, content_ads, ad_group):
 def _reset_candidate_async_status(candidate):
     if candidate.url:
         candidate.url_status = constants.AsyncUploadJobStatus.WAITING_RESPONSE
-
+    if candidate.primary_tracker_url:
+        candidate.primary_tracker_url_status = constants.AsyncUploadJobStatus.WAITING_RESPONSE
+    if candidate.secondary_tracker_url:
+        candidate.secondary_tracker_url_status = constants.AsyncUploadJobStatus.WAITING_RESPONSE
     if candidate.type != constants.AdType.AD_TAG and candidate.image_url:
         candidate.image_status = constants.AsyncUploadJobStatus.WAITING_RESPONSE
         candidate.image_id = None
@@ -100,7 +103,9 @@ def _invoke_external_validation(candidate, batch):
         "callbackUrl": settings.LAMBDA_CONTENT_UPLOAD_CALLBACK_URL,
         "skipUrlValidation": skip_url_validation,
         "normalize": candidate.type not in [constants.AdType.IMAGE, constants.AdType.AD_TAG],
+        "impressionTrackers": [it for it in [candidate.primary_tracker_url, candidate.secondary_tracker_url] if it],
     }
+
     if candidate.type == constants.AdType.AD_TAG:
         del data["imageUrl"]
 
@@ -336,7 +341,12 @@ def _update_candidate(data, batch, files):
         candidate.image_url = None
         updated_fields["image_url"] = None
 
-    if candidate.has_changed("url") or candidate.has_changed("image_url"):
+    if (
+        candidate.has_changed("url")
+        or candidate.has_changed("image_url")
+        or candidate.has_changed("primary_tracker_url")
+        or candidate.has_changed("secondary_tracker_url")
+    ):
         _invoke_external_validation(candidate, batch)
 
     candidate.save()
@@ -403,7 +413,12 @@ def _get_cleaned_urls(candidate):
     form = _get_candidate_form(candidate)
     f = form(campaign, candidate.to_dict())
     f.is_valid()  # it doesn't matter if the form as a whole is valid or not
-    return {"url": f.cleaned_data.get("url"), "image_url": f.cleaned_data.get("image_url")}
+    return {
+        "url": f.cleaned_data.get("url"),
+        "image_url": f.cleaned_data.get("image_url"),
+        "primary_tracker_url": f.cleaned_data.get("primary_tracker_url"),
+        "secondary_tracker_url": f.cleaned_data.get("secondary_tracker_url"),
+    }
 
 
 def _process_image_url_update(candidate, image_url, callback_data):
@@ -436,17 +451,37 @@ def _process_url_update(candidate, url, callback_data):
     if "originUrl" not in callback_data["url"] or callback_data["url"]["originUrl"] != url:
         # prevent issues with concurrent jobs
         return
-
     if candidate.url_status == constants.AsyncUploadJobStatus.PENDING_START:
         # url hasn't been set yet
         return
 
-    candidate.url_status = constants.AsyncUploadJobStatus.FAILED
-    try:
-        if callback_data["url"]["valid"]:
-            candidate.url_status = constants.AsyncUploadJobStatus.OK
-    except KeyError:
-        logger.exception("Failed to parse callback data %s", str(callback_data))
+    candidate.url_status = (
+        constants.AsyncUploadJobStatus.OK if callback_data["url"]["valid"] else constants.AsyncUploadJobStatus.FAILED
+    )
+
+
+def _process_trackers_url(candidate, tracker_attr, tracker_data):
+    tracker_url_attr = getattr(candidate, tracker_attr)
+    if not tracker_url_attr:
+        return
+    status_attr = tracker_attr + "_status"
+    if getattr(candidate, status_attr) == constants.AsyncUploadJobStatus.PENDING_START:
+        # Url hasn't been set yet
+        return
+    new_status = constants.AsyncUploadJobStatus.OK if tracker_data["valid"] else constants.AsyncUploadJobStatus.FAILED
+    setattr(candidate, status_attr, new_status)
+
+
+def _process_impression_trackers(candidate, cleaned_urls, callback_data):
+
+    if not callback_data["impressionTrackers"]:
+        return
+
+    for imp_tracker in callback_data["impressionTrackers"]:
+        if imp_tracker["originUrl"] == cleaned_urls["primary_tracker_url"]:
+            _process_trackers_url(candidate, "primary_tracker_url", imp_tracker)
+        if imp_tracker["originUrl"] == cleaned_urls["secondary_tracker_url"]:
+            _process_trackers_url(candidate, "secondary_tracker_url", imp_tracker)
 
 
 def _handle_auto_save(batch):
@@ -490,7 +525,7 @@ def process_callback(callback_data):
         cleaned_urls = _get_cleaned_urls(candidate)
         _process_url_update(candidate, cleaned_urls["url"], callback_data)
         _process_image_url_update(candidate, cleaned_urls["image_url"], callback_data)
-
+        _process_impression_trackers(candidate, cleaned_urls, callback_data)
         candidate.save()
 
 

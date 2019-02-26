@@ -129,6 +129,8 @@ angular.module('one.widgets').service('zemUploadApiConverter', function() {
             trackerUrls: candidate.tracker_urls,
             primaryTrackerUrl: candidate.primary_tracker_url,
             secondaryTrackerUrl: candidate.secondary_tracker_url,
+            primaryTrackerUrlStatus: candidate.primary_tracker_url_status,
+            secondaryTrackerUrlStatus: candidate.secondary_tracker_url_status,
         });
     }
 

@@ -71,6 +71,10 @@ describe('zemUploadContentAdPicker', function() {
                     imageStatus:
                         constants.asyncUploadJobStatus.WAITING_RESPONSE,
                     urlStatus: constants.asyncUploadJobStatus.WAITING_RESPONSE,
+                    primaryTrackerUrlStatus:
+                        constants.asyncUploadJobStatus.WAITING_RESPONSE,
+                    secondaryTrackerUrlStatus:
+                        constants.asyncUploadJobStatus.WAITING_RESPONSE,
                     errors: {},
                 },
             ];
@@ -102,6 +106,10 @@ describe('zemUploadContentAdPicker', function() {
                 landscapeHostedImageUrl: 'http://zemanta.com/img1.jpg',
                 imageStatus: constants.asyncUploadJobStatus.OK,
                 urlStatus: constants.asyncUploadJobStatus.FAILED,
+                primaryTrackerUrlStatus:
+                    constants.asyncUploadJobStatus.WAITING_RESPONSE,
+                secondaryTrackerUrlStatus:
+                    constants.asyncUploadJobStatus.WAITING_RESPONSE,
                 errors: {
                     url: ['Invalid URL'],
                     description: ['Missing description'],
@@ -268,6 +276,10 @@ describe('zemUploadContentAdPicker', function() {
                 label: 'title1',
                 imageStatus: constants.asyncUploadJobStatus.WAITING_RESPONSE,
                 urlStatus: constants.asyncUploadJobStatus.WAITING_RESPONSE,
+                primaryTrackerUrlStatus:
+                    constants.asyncUploadJobStatus.WAITING_RESPONSE,
+                secondaryTrackerUrlStatus:
+                    constants.asyncUploadJobStatus.WAITING_RESPONSE,
             };
             deferred.resolve({
                 candidate: returnedCandidate,

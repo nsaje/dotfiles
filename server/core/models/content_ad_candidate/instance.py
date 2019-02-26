@@ -29,6 +29,9 @@ class ContentAdCandidateMixin:
             "primary_tracker_url": self.primary_tracker_url,
             "secondary_tracker_url": self.secondary_tracker_url,
             "additional_data": self.additional_data,
+            "primary_tracker_url_status": self.primary_tracker_url_status,
+            "secondary_tracker_url_status": self.secondary_tracker_url_status,
+            "can_append_tracking_codes": self.can_append_tracking_codes,
         }
 
     def get_image_url(self, width=None, height=None):
