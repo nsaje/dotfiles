@@ -639,14 +639,16 @@
     batch_id: 3
     image_status: 4  # failed
     url_status: 4  # failed
-    primary_tracker_url_status:  4 # ok
-    secondary_tracker_url_status: 4 # ok
+    primary_tracker_url_status:  4 # failed
+    secondary_tracker_url_status: 4 # failed
     can_append_tracking_codes: false
     created_dt: '2016-05-31T09:00:00'
     label: 'content ad 1'
     url: 'http://zemanta.com/blog'
     title: 'Zemanta blog čšž'
     image_url: 'http://zemanta.com/img.jpg'
+    primary_tracker_url: "https://primary.tracker.com"
+    secondary_tracker_url: "https://secondary.tracker.com"
     image_crop: 'entropy'
     display_url: 'zemanta.com'
     brand_name: 'Zemanta'

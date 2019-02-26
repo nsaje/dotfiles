@@ -1207,7 +1207,7 @@ class ContentAdFormTestCase(TestCase):
         data["url_status"] = constants.AsyncUploadJobStatus.FAILED
         f = forms.ContentAdForm(self.campaign, data)
         self.assertFalse(f.is_valid())
-        self.assertEqual({"url": ["Content unreachable"]}, f.errors)
+        self.assertEqual({"url": ["Content unreachable or invalid"]}, f.errors)
 
     def test_no_url_and_invalid_status(self):
         data = self._get_valid_data()
@@ -1292,7 +1292,7 @@ class ContentAdFormTestCase(TestCase):
         data["url_status"] = constants.AsyncUploadJobStatus.FAILED
         f = forms.ContentAdForm(self.campaign, data)
         self.assertFalse(f.is_valid())
-        self.assertEqual({"url": ["Content unreachable"]}, f.errors)
+        self.assertEqual({"url": ["Content unreachable or invalid"]}, f.errors)
 
     def test_label_too_long(self):
         data = self._get_valid_data()
@@ -1466,6 +1466,22 @@ class ContentAdFormTestCase(TestCase):
         self.assertFalse(f.is_valid())
         self.assertEqual({"secondary_tracker_url": ["Invalid impression tracker URL"]}, f.errors)
 
+    def test_invalid_primary_tracker(self):
+        data = self._get_valid_data()
+        data["primary_tracker_url"] = "https://zemanta.com/"
+        data["primary_tracker_url_status"] = 4
+        f = forms.ContentAdForm(self.campaign, data)
+        self.assertFalse(f.is_valid())
+        self.assertEqual({"primary_tracker_url": ["Invalid or unreachable tracker URL"]}, f.errors)
+
+    def test_invalid_secondary_tracker(self):
+        data = self._get_valid_data()
+        data["secondary_tracker_url"] = "https://zemanta.com/"
+        data["secondary_tracker_url_status"] = 4
+        f = forms.ContentAdForm(self.campaign, data)
+        self.assertFalse(f.is_valid())
+        self.assertEqual({"secondary_tracker_url": ["Invalid or unreachable tracker URL"]}, f.errors)
+
 
 class ImageAdFormTestCase(TestCase):
     def setUp(self):
@@ -1541,7 +1557,7 @@ class ImageAdFormTestCase(TestCase):
         data["url_status"] = constants.AsyncUploadJobStatus.FAILED
         f = forms.ImageAdForm(self.campaign, data)
         self.assertFalse(f.is_valid())
-        self.assertEqual({"url": ["Content unreachable"]}, f.errors)
+        self.assertEqual({"url": ["Content unreachable or invalid"]}, f.errors)
 
     def test_no_url_and_invalid_status(self):
         data = self._get_valid_data()
@@ -1616,7 +1632,7 @@ class ImageAdFormTestCase(TestCase):
         data["url_status"] = constants.AsyncUploadJobStatus.FAILED
         f = forms.ImageAdForm(self.campaign, data)
         self.assertFalse(f.is_valid())
-        self.assertEqual({"url": ["Content unreachable"]}, f.errors)
+        self.assertEqual({"url": ["Content unreachable or invalid"]}, f.errors)
 
     def test_label_too_long(self):
         data = self._get_valid_data()
@@ -1766,7 +1782,7 @@ class AdTagFormTestCase(TestCase):
         data["url_status"] = constants.AsyncUploadJobStatus.FAILED
         f = forms.AdTagForm(self.campaign, data)
         self.assertFalse(f.is_valid())
-        self.assertEqual({"url": ["Content unreachable"]}, f.errors)
+        self.assertEqual({"url": ["Content unreachable or invalid"]}, f.errors)
 
     def test_no_url_and_invalid_status(self):
         data = self._get_valid_data()
@@ -1813,7 +1829,7 @@ class AdTagFormTestCase(TestCase):
         data["url_status"] = constants.AsyncUploadJobStatus.FAILED
         f = forms.AdTagForm(self.campaign, data)
         self.assertFalse(f.is_valid())
-        self.assertEqual({"url": ["Content unreachable"]}, f.errors)
+        self.assertEqual({"url": ["Content unreachable or invalid"]}, f.errors)
 
     def test_label_too_long(self):
         data = self._get_valid_data()

@@ -1440,7 +1440,8 @@ class ContentAdForm(ContentAdCandidateForm):
 
     image_status = forms.IntegerField(required=False)
     url_status = forms.IntegerField(required=False)
-
+    primary_tracker_url_status = forms.IntegerField(required=False)
+    secondary_tracker_url_status = forms.IntegerField(required=False)
     MIN_IMAGE_SIZE = 300
     MAX_IMAGE_SIZE = 10000
 
@@ -1552,7 +1553,7 @@ class ContentAdForm(ContentAdCandidateForm):
     def _get_url_error_msg(self, cleaned_data):
         url_status = cleaned_data["url_status"]
         if url_status == constants.AsyncUploadJobStatus.FAILED:
-            return "Content unreachable"
+            return "Content unreachable or invalid"
 
     def _get_video_asset_id_error_msg(self, cleaned_data):
         if not self.campaign:
@@ -1563,6 +1564,11 @@ class ContentAdForm(ContentAdCandidateForm):
 
         if self.campaign.type != constants.CampaignType.VIDEO and video_asset_id:
             return "Video asset only allowed on video campaigns"
+
+    def _get_tracker_error_msg(self, cleaned_data, tracker):
+        tracker_status = cleaned_data[tracker + "_status"]
+        if tracker_status == constants.AsyncUploadJobStatus.FAILED:
+            return "Invalid or unreachable tracker URL"
 
     def _set_tracker_urls(self, cleaned_data):
         cleaned_data["tracker_urls"] = []
@@ -1593,6 +1599,22 @@ class ContentAdForm(ContentAdCandidateForm):
         video_asset_id_error_msg = self._get_video_asset_id_error_msg(cleaned_data)
         if "video_asset_id" in cleaned_data and video_asset_id_error_msg:
             self.add_error("video_asset_id", video_asset_id_error_msg)
+
+        primary_tracker_url_error_msg = self._get_tracker_error_msg(cleaned_data, "primary_tracker_url")
+        if (
+            "primary_tracker_url" in cleaned_data
+            and cleaned_data["primary_tracker_url"]
+            and primary_tracker_url_error_msg
+        ):
+            self.add_error("primary_tracker_url", primary_tracker_url_error_msg)
+
+        secondary_tracker_url_error_msg = self._get_tracker_error_msg(cleaned_data, "secondary_tracker_url")
+        if (
+            "secondary_tracker_url" in cleaned_data
+            and cleaned_data["secondary_tracker_url"]
+            and secondary_tracker_url_error_msg
+        ):
+            self.add_error("secondary_tracker_url", secondary_tracker_url_error_msg)
 
         return cleaned_data
 

@@ -386,10 +386,14 @@ class UploadStatusTestCase(TestCase):
     def test_failed(self):
         batch_id = 3
         ad_group_id = 4
-
         candidate = models.ContentAdCandidate.objects.get(ad_group_id=ad_group_id, batch_id=batch_id)
         expected_candidate = candidate.to_dict()
-        expected_candidate["errors"] = {"image_url": ["Image could not be processed"], "url": ["Content unreachable"]}
+        expected_candidate["errors"] = {
+            "image_url": ["Image could not be processed"],
+            "url": ["Content unreachable or invalid"],
+            "primary_tracker_url": ["Invalid or unreachable tracker URL"],
+            "secondary_tracker_url": ["Invalid or unreachable tracker URL"],
+        }
 
         response = _get_client().get(reverse("upload_status", kwargs={"batch_id": batch_id}), follow=True)
         self.assertEqual(200, response.status_code)
