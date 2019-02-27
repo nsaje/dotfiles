@@ -14,6 +14,7 @@ from .views import publishers
 from .views import r1_mapping
 from .views import sources
 from .views import yahoo
+from .views import bid_modifiers
 
 urlpatterns = [
     url(r"^ad_groups$", ad_groups.AdGroupsView.as_view(), name="k1api.ad_groups"),
@@ -59,6 +60,7 @@ urlpatterns = [
         name="k1api.publisher_groups_entries",
     ),
     url(r"^publisherbidmodifiers$", publishers.PublisherBidModifiersView.as_view(), name="k1api.publisherbidmodifiers"),
+    url(r"^bidmodifiers$", bid_modifiers.BidModifiersView.as_view(), name="k1api.bidmodifiers"),
     url(r"^geolocations$", geolocations.GeolocationsView.as_view(), name="k1api.geolocations"),
     url(r"^direct_deals$", direct_deals.DirectDealsView.as_view(), name="k1api.directdeals"),
     url(

@@ -1,5 +1,4 @@
 import json
-import logging
 
 from django.urls import reverse
 
@@ -8,9 +7,6 @@ from core.features.publisher_bid_modifiers.service_test import add_non_publisher
 from utils.magic_mixer import magic_mixer
 
 from .base_test import K1APIBaseTest
-
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
 
 
 class PublishersTest(K1APIBaseTest):

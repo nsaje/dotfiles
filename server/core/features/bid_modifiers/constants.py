@@ -10,6 +10,7 @@ class BidModifierType(ConstantBase):
     COUNTRY = 6
     STATE = 7
     DMA = 8
+    AD = 9
 
     _VALUES = {
         PUBLISHER: "Publisher",
@@ -20,4 +21,5 @@ class BidModifierType(ConstantBase):
         COUNTRY: "Country",
         STATE: "State",
         DMA: "DMA",
+        AD: "Ad",
     }
