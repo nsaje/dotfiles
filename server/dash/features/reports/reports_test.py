@@ -11,6 +11,7 @@ import dash.constants
 import utils.test_helper
 from dash.features import scheduled_reports
 from utils.magic_mixer import magic_mixer
+from utils import dates_helper
 
 from . import constants
 from . import reports
@@ -304,7 +305,10 @@ class ReportsGetReportCSVTest(TestCase):
         row = {"ad_group_id": 1, "etfm_cost": Decimal("12.3"), "clicks": 5, "status": "ACTIVE"}
         mock_query.return_value = [row]
         output, filename = ReportJobExecutor.get_report(self.reportJob)
-        expected = """"Ad Group Id","Total Spend","Clicks","Status (2019-02-26)","Currency"\r\n"1","12.3000","5","ACTIVE","USD"\r\n"""
+        today = dates_helper.local_today()
+        expected = """"Ad Group Id","Total Spend","Clicks","Status ({})","Currency"\r\n"1","12.3000","5","ACTIVE","USD"\r\n""".format(
+            today.isoformat()
+        )
         self.assertEqual(expected, output)
 
     @mock.patch("stats.api_reports.query")
