@@ -8,7 +8,7 @@ from . import constants
 
 AD_GROUP_SETTINGS_CREATE_HACKS_PER_AGENCY = {
     constants.AGENCY_RCS_ID: {
-        "target_regions": [],
+        "target_regions": ["IT"],
         "exclusion_target_regions": [],
         "delivery_type": dash.constants.AdGroupDeliveryType.ACCELERATED,
     },
