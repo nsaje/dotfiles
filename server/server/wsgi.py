@@ -11,6 +11,12 @@ import os
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "server.settings")
 
+import sys
+import cdecimal
+
+# Ensure any import of decimal gets cdecimal instead.
+sys.modules["decimal"] = cdecimal
+
 import gevent.socket
 import socket
 

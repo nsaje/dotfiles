@@ -12,6 +12,11 @@ import os
 import signal
 import sys
 
+import cdecimal
+
+# Ensure any import of decimal gets cdecimal instead.
+sys.modules["decimal"] = cdecimal  # noqa
+
 import django
 import django.db.backends.base.creation
 from django.db import connection
