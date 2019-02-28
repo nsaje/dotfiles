@@ -775,7 +775,7 @@ class AdGroupSettingsTest(TestCase):
             mock_now.return_value = datetime.date(2016, 1, 5)
 
             ad_group = models.AdGroup.objects.get(pk=1)
-            ad_group.settings.update_unsafe(None, cpc_cc=7.00)
+            ad_group.settings.update_unsafe(None, cpc_cc=7.00, local_cpc_cc=7.00)
             old_settings = ad_group.get_current_settings()
             self.assertIsNotNone(old_settings.pk)
 
@@ -811,7 +811,7 @@ class AdGroupSettingsTest(TestCase):
             ad_group = models.AdGroup.objects.get(pk=1)
             ad_group.bidding_type = constants.BiddingType.CPM
             ad_group.save(None)
-            ad_group.settings.update_unsafe(None, max_cpm=20.00)
+            ad_group.settings.update_unsafe(None, max_cpm=20.00, local_max_cpm=20.00)
 
             del self.settings_dict["settings"]["bidding_type"]
             del self.settings_dict["settings"]["b1_sources_group_cpc_cc"]

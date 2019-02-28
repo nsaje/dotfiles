@@ -108,14 +108,14 @@ def adjust_max_bid(proposed_bid, ad_group_settings):
 def _adjust_ad_group_source_bid_to_max(ad_group, ad_group_settings, proposed_bid):
     if (
         ad_group_settings.ad_group.bidding_type == constants.BiddingType.CPM
-        and ad_group_settings.max_cpm
-        and ad_group.settings.max_cpm != ad_group_settings.max_cpm
+        and ad_group_settings.local_max_cpm
+        and ad_group.settings.local_max_cpm != ad_group_settings.local_max_cpm
     ):
         return ad_group_settings.max_cpm
     elif (
         ad_group_settings.ad_group.bidding_type == constants.BiddingType.CPC
-        and ad_group_settings.cpc_cc
-        and ad_group.settings.cpc_cc != ad_group_settings.cpc_cc
+        and ad_group_settings.local_cpc_cc
+        and ad_group.settings.local_cpc_cc != ad_group_settings.local_cpc_cc
     ):
         return ad_group_settings.cpc_cc
     return proposed_bid

@@ -340,6 +340,39 @@ class InstanceTest(TestCase):
         self.ad_group.settings.update(None, autopilot_daily_budget=Decimal("10.0"), skip_automation=True)
         mock_autopilot.assert_not_called()
 
+    @patch("automation.autopilot.recalculate_budgets_ad_group")
+    @patch.object(core.features.multicurrency, "get_current_exchange_rate")
+    def test_max_cpc_change_changes_source_cpcs(self, mock_get_exchange_rate, mock_autopilot):
+        # setup
+        ad_group = magic_mixer.blend(core.models.AdGroup)
+        magic_mixer.cycle(3).blend(core.models.AdGroupSource, ad_group=ad_group)
+        mock_get_exchange_rate.return_value = Decimal("2.0")
+        ad_group.settings.update(None, cpc_cc=Decimal("0.20"))
+        for source in ad_group.adgroupsource_set.all():
+            source.settings.update(cpc_cc=Decimal("0.1"), state=1)
+
+        # updating usd value
+        ad_group.settings.update(None, cpc_cc=Decimal("0.50"))
+        for source in ad_group.adgroupsource_set.all():
+            self.assertEqual(source.settings.cpc_cc, Decimal("0.5"))
+            self.assertEqual(source.settings.local_cpc_cc, Decimal("1.0"))
+
+        # updating local value
+        ad_group.settings.update(None, local_cpc_cc=Decimal("1.20"))
+        for source in ad_group.adgroupsource_set.all():
+            self.assertEqual(source.settings.cpc_cc, Decimal("0.6"))
+            self.assertEqual(source.settings.local_cpc_cc, Decimal("1.2"))
+
+        # updating just exchange rate shouldn't reset source cpcs
+        for source in ad_group.adgroupsource_set.all():
+            source.settings.update(cpc_cc=Decimal("0.1"))
+        mock_get_exchange_rate.return_value = Decimal("3.0")
+        self.assertEqual(ad_group.settings.cpc_cc, Decimal("0.6"))
+        ad_group.settings.update(None, local_cpc_cc=Decimal("1.20"))
+        self.assertEqual(ad_group.settings.cpc_cc, Decimal("0.4"))
+        for source in ad_group.adgroupsource_set.all():
+            self.assertEqual(source.settings.cpc_cc, Decimal("0.1"))
+
 
 class MulticurrencyTest(TestCase):
     @patch.object(core.features.multicurrency, "get_current_exchange_rate")
