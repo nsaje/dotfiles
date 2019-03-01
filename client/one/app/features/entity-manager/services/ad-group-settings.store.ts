@@ -21,7 +21,9 @@ export class AdGroupSettingsStore extends Store<AdGroupSettingsStoreState>
         @Inject('zemNavigationNewService') private zemNavigationNewService: any
     ) {
         super(new AdGroupSettingsStoreState());
-        this.requestStateUpdater = endpointHelpers.getRequestStateUpdater(this);
+        this.requestStateUpdater = endpointHelpers.getStoreRequestStateUpdater(
+            this
+        );
     }
 
     loadEntityDefaults(campaignId: number): void {

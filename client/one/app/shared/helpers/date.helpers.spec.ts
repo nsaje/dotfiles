@@ -1,7 +1,7 @@
 import * as dateHelpers from './date.helpers';
 import * as moment from 'moment';
 
-describe('DateHelpers', () => {
+describe('dateHelpers', () => {
     it('should correctly check if string can be converted to date', () => {
         expect(dateHelpers.canConvertStringToDate(null)).toEqual(false);
         expect(dateHelpers.canConvertStringToDate(undefined)).toEqual(false);

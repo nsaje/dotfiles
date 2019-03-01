@@ -20,7 +20,7 @@ export function buildRequestProperties(
     }
 }
 
-export function getRequestStateUpdater(store: any): RequestStateUpdater {
+export function getStoreRequestStateUpdater(store: any): RequestStateUpdater {
     return (requestName, requestState) => {
         store.setState({
             ...store.state,

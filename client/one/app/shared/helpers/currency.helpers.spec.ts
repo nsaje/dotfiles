@@ -1,6 +1,6 @@
 import * as currencyHelpers from './currency.helpers';
 
-describe('CurrencyHelpers', () => {
+describe('currencyHelpers', () => {
     it('should prepend the number with a currency sign', () => {
         expect(
             currencyHelpers.formatCurrency('12.34', 2, 'en-US', '$')

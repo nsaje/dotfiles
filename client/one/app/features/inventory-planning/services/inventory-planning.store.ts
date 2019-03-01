@@ -27,7 +27,9 @@ export class InventoryPlanningStore extends Store<InventoryPlanningState> {
     constructor(private endpoint: InventoryPlanningEndpoint) {
         super(new InventoryPlanningState());
 
-        this.requestStateUpdater = endpointHelpers.getRequestStateUpdater(this);
+        this.requestStateUpdater = endpointHelpers.getStoreRequestStateUpdater(
+            this
+        );
     }
 
     init(): void {

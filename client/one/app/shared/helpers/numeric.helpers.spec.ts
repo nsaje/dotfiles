@@ -1,6 +1,6 @@
 import * as numericHelpers from './numeric.helpers';
 
-describe('NumericHelpers', () => {
+describe('numericHelpers', () => {
     it('should ignore all characters except digits', () => {
         expect(numericHelpers.parseInteger('abc234,.45')).toEqual('23445');
     });

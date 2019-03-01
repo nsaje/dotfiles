@@ -1,7 +1,7 @@
 import * as endpointHelpers from './endpoint.helpers';
 import {RequestPayload} from '../types/request-payload';
 
-describe('EndpointHelpers', () => {
+describe('endpointHelpers', () => {
     const payload: RequestPayload = {
         countries: ['SI', 'IT'],
         publishers: [],

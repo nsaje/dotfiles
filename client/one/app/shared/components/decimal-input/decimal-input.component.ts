@@ -11,6 +11,7 @@ import {
     OnInit,
 } from '@angular/core';
 import * as commonHelpers from '../../helpers/common.helpers';
+import * as stringHelpers from '../../helpers/string.helpers';
 import * as numericHelpers from '../../helpers/numeric.helpers';
 import {KeyCode} from '../../../app.constants';
 
@@ -92,7 +93,7 @@ export class DecimalInputComponent implements OnInit, OnChanges {
         indexToInsert: number,
         valueToInsert: string
     ): boolean {
-        const value = commonHelpers.insertStringAtIndex(
+        const value = stringHelpers.insertStringAtIndex(
             currentValue,
             indexToInsert,
             valueToInsert
