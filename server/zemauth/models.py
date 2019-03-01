@@ -152,7 +152,6 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ("all_accounts_accounts_add_account", "Can add accounts."),
             ("archive_restore_entity", "Can archive or restore an entity."),
             ("account_agency_access_permissions", "Can view and set account access permissions."),
-            ("group_new_user_add", "New users are added to this group."),
             ("campaign_ad_groups_detailed_report", "Can download detailed report on campaign level."),
             ("content_ads_postclick_acquisition", "Can view content ads postclick acq. metrics."),
             ("aggregate_postclick_acquisition", "Can view aggregate postclick acq. metrics."),
@@ -272,7 +271,6 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
                 "User can see agency managers under access permissions",
             ),
             ("can_promote_agency_managers", "User can promote agency managers on account settings tab"),
-            ("group_agency_manager_add", "Agency managers are added to this group when promoted"),
             ("can_set_agency_for_account", "User can set agency for account"),
             ("can_use_single_ad_upload", "User can use single content ad upload"),
             ("can_toggle_new_design", "User can toggle between old and new design"),
@@ -395,13 +393,16 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ("can_see_amplify_ad_id_column", "User can see Amplify ad id column in grid"),
             ("can_see_deals_in_ui", "User can see the deals on the entity settings"),
             ("can_see_open_in_admin", "User can see Open in Admin link"),
-            ("this_is_restapi_group", "MARKS THE GROUP THAT CONTAINS PUBLIC REST API PERMISSIONS."),
             ("can_use_advanced_inventory_planning_features", "Can use advanced inventory planning features."),
             ("can_set_export_delimiter_separator", "User can customize CSV export delimiter & decimal separator"),
             ("can_use_language_targeting", "User can use language targeting"),
             ("can_see_top_level_delivery_breakdowns", "User can see top-level delivery breakdowns"),
             ("can_set_bid_modifiers", "User can set bid modifiers"),
             ("can_review_bid_modifiers", "User can review bid modifiers in settings"),
+            ("this_is_restapi_group", "MARKS THE GROUP THAT CONTAINS PUBLIC REST API PERMISSIONS."),
+            ("this_is_agency_manager_group", "MARKS THE GROUP THAT CONTAINS AGENCY MANAGER PERMISSIONS."),
+            ("this_is_public_group", "MARKS THE GROUP THAT CONTAINS PUBLIC PERMISSIONS."),
+            ("this_is_lam_group", "MARKS THE GROUP THAT CONTAINS LAM USERS."),
         )
 
     def get_full_name(self):

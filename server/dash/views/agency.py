@@ -1429,10 +1429,9 @@ class AccountUsers(api_common.BaseApiView):
         return self.create_api_response({"user": self._get_user_dict(user)}, status_code=201 if created else 200)
 
     def _add_user_to_groups(self, user):
-        perm = authmodels.Permission.objects.get(codename="group_new_user_add")
-        groups = authmodels.Group.objects.filter(permissions=perm)
-        for group in groups:
-            group.user_set.add(user)
+        perm = authmodels.Permission.objects.get(codename="this_is_public_group")
+        group = authmodels.Group.objects.get(permissions=perm)
+        group.user_set.add(user)
 
     def _raise_validation_error(self, errors, message=None):
         raise exc.ValidationError(
@@ -1465,7 +1464,7 @@ class AccountUsers(api_common.BaseApiView):
 
         if is_agency_manager:
             groups = authmodels.Group.objects.filter(
-                permissions=authmodels.Permission.objects.get(codename="group_agency_manager_add")
+                permissions=authmodels.Permission.objects.get(codename="this_is_agency_manager_group")
             )
             user.groups.remove(*groups)
 
@@ -1537,23 +1536,23 @@ class AccountUserAction(api_common.BaseApiView):
         account.write_history(changes_text, user=request.user)
 
     def _promote(self, request, user, account):
-        groups = self._get_agency_manager_groups()
+        group = self._get_agency_manager_group()
 
         self._check_is_agency_account(account)
         self._check_if_already_agency_user(account, user)
 
         account.agency.users.add(user)
         account.users.remove(user)
-        user.groups.add(*groups)
+        user.groups.add(group)
 
     def _downgrade(self, request, user, account):
-        groups = self._get_agency_manager_groups()
+        group = self._get_agency_manager_group()
 
         self._check_is_agency_account(account)
 
         account.agency.users.remove(user)
         account.users.add(user)
-        user.groups.remove(*groups)
+        user.groups.remove(group)
 
     def _enable_api(self, request, user, account):
         perm = authmodels.Permission.objects.get(codename="this_is_restapi_group")
@@ -1574,9 +1573,9 @@ class AccountUserAction(api_common.BaseApiView):
         if agency and account.agency != agency:
             raise exc.ValidationError(pretty_message="Cannot promote user on more then one agency.")
 
-    def _get_agency_manager_groups(self):
-        perm = authmodels.Permission.objects.get(codename="group_agency_manager_add")
-        return authmodels.Group.objects.filter(permissions=perm)
+    def _get_agency_manager_group(self):
+        perm = authmodels.Permission.objects.get(codename="this_is_agency_manager_group")
+        return authmodels.Group.objects.get(permissions=perm)
 
 
 class CampaignContentInsights(api_common.BaseApiView):
