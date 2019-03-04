@@ -132,11 +132,11 @@ export class BidModifierCellStore extends Store<BidModifierCellStoreState>
     }
 
     private getBid(modifierPercent: number, bid: number): number {
-        if (!commonHelpers.isDefined(bid) && isNaN(bid)) {
+        if (!commonHelpers.isDefined(bid) || isNaN(bid)) {
             return 0.0;
         }
         if (
-            !commonHelpers.isDefined(modifierPercent) &&
+            !commonHelpers.isDefined(modifierPercent) ||
             isNaN(modifierPercent)
         ) {
             return bid;
