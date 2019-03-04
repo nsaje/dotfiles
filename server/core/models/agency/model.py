@@ -37,6 +37,10 @@ class Agency(instance.AgencyInstanceMixin, models.Model):
     whitelabel = models.CharField(
         max_length=255, choices=constants.Whitelabel.get_choices(), editable=True, unique=False, blank=True
     )
+    # temporary, to be replaced when deleting the whitelabel on agency
+    white_label = models.ForeignKey(
+        "Whitelabel", null=True, blank=True, related_name="agencies", on_delete=models.PROTECT
+    )
     custom_favicon_url = models.CharField(max_length=255, editable=True, blank=True, default="")
     custom_dashboard_title = models.CharField(max_length=255, editable=True, blank=True, default="")
     users = models.ManyToManyField(settings.AUTH_USER_MODEL, blank=True)
