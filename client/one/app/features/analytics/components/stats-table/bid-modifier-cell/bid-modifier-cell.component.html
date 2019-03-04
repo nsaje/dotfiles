@@ -1,0 +1,59 @@
+<ng-container *ngIf="isViewInitialized && (store.state$ | async) as state">
+    <zem-editable-cell
+        class="zem-editable-cell"
+        [isEditable]="isEditable"
+        [editMessage]="editMessage"
+        [mode]="mode"
+        [containerElement]="containerElement"
+        (modeChange)="onModeChange($event)"
+    >
+        <ng-container readMode>
+            <span>{{ state.previousModifierPercent }}%</span>
+        </ng-container>
+        <ng-container editMode>
+            <div class="zem-bid-modifier-cell__form">
+                <div class="zem-bid-modifier-cell__form-item">
+                    <zem-bid-modifier-input
+                        class="zem-bid-modifier-input zem-bid-modifier-cell__form-input"
+                        [value]="state.modifierPercent"
+                        [fractionSize]="fractionSize"
+                        [minValue]="-99"
+                        [maxValue]="1000"
+                        (valueChange)="onValueChange($event)"
+                    ></zem-bid-modifier-input>
+                </div>
+                <div class="zem-bid-modifier-cell__form-item">
+                    <span class="zem-bid-modifier-cell__form-message"
+                        >Bid: <strong>{{ state.computedBidMin }}</strong> -
+                        <strong>{{ state.computedBidMax }}</strong></span
+                    >
+                </div>
+                <div class="zem-bid-modifier-cell__form-item">
+                    <div class="zem-bid-modifier-cell__form-buttons">
+                        <button
+                            *ngIf="state.requests.save.inProgress"
+                            class="button button--highlight button--disabled zem-bid-modifier-cell__form-buttons-item"
+                            disabled
+                        >
+                            <span class="loader loader--white"></span>
+                        </button>
+                        <button
+                            *ngIf="!state.requests.save.inProgress"
+                            class="button button--highlight button--with-icon check-icon zem-bid-modifier-cell__form-buttons-item"
+                            (click)="save()"
+                        >
+                            Save
+                        </button>
+                        <button
+                            class="button button--outline zem-bid-modifier-cell__form-buttons-item"
+                            [disabled]="state.requests.save.inProgress"
+                            (click)="cancel()"
+                        >
+                            Cancel
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </ng-container>
+    </zem-editable-cell>
+</ng-container>

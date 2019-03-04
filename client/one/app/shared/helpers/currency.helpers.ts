@@ -1,5 +1,6 @@
 import {formatCurrency as angularFormatCurrency} from '@angular/common';
 import * as commonHelpers from './common.helpers';
+import {CURRENCY_SYMBOL, CURRENCY} from '../../app.constants';
 
 export function formatCurrency(
     value: string,
@@ -23,4 +24,11 @@ export function formatCurrency(
         currencyCode,
         digitInfo
     );
+}
+
+export function getCurrencySymbol(currency: string): string {
+    if (!commonHelpers.isDefined(currency)) {
+        return CURRENCY_SYMBOL[CURRENCY.USD];
+    }
+    return CURRENCY_SYMBOL[currency];
 }

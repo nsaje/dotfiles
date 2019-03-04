@@ -3,6 +3,7 @@ import {FormsModule} from '@angular/forms';
 import {DebugElement, SimpleChange} from '@angular/core';
 import {DecimalInputComponent} from './decimal-input.component';
 import {FilterKeydownEventDirective} from '../../directives/filter-keydown-event.directive';
+import {PrefixedInputComponent} from '../prefixed-input/prefixed-input.component';
 
 describe('DecimalInputComponent', () => {
     let component: DecimalInputComponent;
@@ -10,7 +11,11 @@ describe('DecimalInputComponent', () => {
 
     beforeEach(() => {
         TestBed.configureTestingModule({
-            declarations: [DecimalInputComponent, FilterKeydownEventDirective],
+            declarations: [
+                PrefixedInputComponent,
+                DecimalInputComponent,
+                FilterKeydownEventDirective,
+            ],
             imports: [FormsModule],
         });
     });

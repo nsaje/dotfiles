@@ -3,6 +3,7 @@ import {FormsModule} from '@angular/forms';
 import {SimpleChange} from '@angular/core';
 import {CurrencyInputComponent} from './currency-input.component';
 import {FilterKeydownEventDirective} from '../../directives/filter-keydown-event.directive';
+import {PrefixedInputComponent} from '../prefixed-input/prefixed-input.component';
 
 describe('CurrencyInputComponent', () => {
     let component: CurrencyInputComponent;
@@ -10,7 +11,11 @@ describe('CurrencyInputComponent', () => {
 
     beforeEach(() => {
         TestBed.configureTestingModule({
-            declarations: [CurrencyInputComponent, FilterKeydownEventDirective],
+            declarations: [
+                PrefixedInputComponent,
+                CurrencyInputComponent,
+                FilterKeydownEventDirective,
+            ],
             imports: [FormsModule],
         });
     });

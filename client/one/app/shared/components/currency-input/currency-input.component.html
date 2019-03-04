@@ -1,13 +1,10 @@
-<div class="zem-prefixed-input zem-prefixed-input--narrow">
-    <span
-        class="zem-prefixed-input__prefix"
-        [ngClass]="{'zem-prefixed-input__prefix--error': hasError}"
-    >
-        {{ currencySymbol }}
-    </span>
+<zem-prefixed-input
+    class="zem-prefixed-input zem-prefixed-input--narrow"
+    [prefix]="currencySymbol"
+    [hasError]="hasError"
+>
     <input
-        class="zem-input-text zem-prefixed-input__input"
-        [ngClass]="{'zem-prefixed-input__input--error': hasError}"
+        class="zem-input-text"
         type="text"
         placeholder="{{ placeholder }}"
         [(ngModel)]="model"
@@ -19,4 +16,4 @@
         [keyFilter]="keyFilter"
         (filteredKeydown)="onKeydown($event)"
     />
-</div>
+</zem-prefixed-input>

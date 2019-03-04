@@ -31,6 +31,10 @@ export class DecimalInputComponent implements OnInit, OnChanges {
     hasError: boolean;
     @Input()
     fractionSize: number;
+    @Input()
+    minValue: number;
+    @Input()
+    maxValue: number;
     @Output()
     valueChange = new EventEmitter<string>();
 
@@ -45,7 +49,9 @@ export class DecimalInputComponent implements OnInit, OnChanges {
             2
         );
         this.keyFilter = [KeyCode.ENTER, KeyCode.SPACE];
-        this.regExp = new RegExp(`^\\d+(\\.\\d{0,${this.fractionSize}})?$`);
+        this.regExp = new RegExp(
+            `^[-+]?(\\d+(\\.\\d{0,${this.fractionSize}})?)?$`
+        );
     }
 
     ngOnChanges(changes: SimpleChanges) {
@@ -57,7 +63,13 @@ export class DecimalInputComponent implements OnInit, OnChanges {
     onKeydown($event: KeyboardEvent) {
         const indexToInsert = Number((<any>$event.target).selectionStart);
         const valueToInsert = $event.key;
-        const isValid = this.validate(this.model, indexToInsert, valueToInsert);
+        const isValid = this.validate(
+            this.model,
+            indexToInsert,
+            valueToInsert,
+            this.minValue,
+            this.maxValue
+        );
         if (!isValid) {
             // prevent the execution of $event
             // the ngModel will not be updated
@@ -68,7 +80,13 @@ export class DecimalInputComponent implements OnInit, OnChanges {
     onPaste($event: ClipboardEvent) {
         const indexToInsert = Number((<any>$event.target).selectionStart);
         const valueToInsert = $event.clipboardData.getData('text/plain');
-        const isValid = this.validate(this.model, indexToInsert, valueToInsert);
+        const isValid = this.validate(
+            this.model,
+            indexToInsert,
+            valueToInsert,
+            this.minValue,
+            this.maxValue
+        );
         if (!isValid) {
             // prevent the execution of $event
             // the ngModel will not be updated
@@ -91,13 +109,22 @@ export class DecimalInputComponent implements OnInit, OnChanges {
     private validate(
         currentValue: string,
         indexToInsert: number,
-        valueToInsert: string
+        valueToInsert: string,
+        minValue: number,
+        maxValue: number
     ): boolean {
         const value = stringHelpers.insertStringAtIndex(
             currentValue,
             indexToInsert,
             valueToInsert
         );
-        return this.regExp.test(value);
+        if (!this.regExp.test(value)) {
+            return false;
+        }
+        return numericHelpers.validateMinMax(
+            parseFloat(value),
+            minValue,
+            maxValue
+        );
     }
 }

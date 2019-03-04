@@ -68,7 +68,9 @@
     }
 }
 
-.zem-prefixed-input__input {
+.zem-prefixed-input__input,
+.zem-prefixed-input__input > input,
+.zem-prefixed-input__input > * > input {
     border-left: none;
     border-top-left-radius: 0;
     border-bottom-left-radius: 0;
@@ -86,7 +88,8 @@
 }
 
 .zem-prefixed-input__prefix--error,
-.zem-prefixed-input__input--error,
+.zem-prefixed-input__input--error > input,
+.zem-prefixed-input__input--error > * > input,
 .zem-prefixed-input--error.zem-prefixed-input--with-icon::before {
     border-color: @red;
 }

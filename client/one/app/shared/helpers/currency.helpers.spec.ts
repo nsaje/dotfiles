@@ -1,4 +1,5 @@
 import * as currencyHelpers from './currency.helpers';
+import {CURRENCY, CURRENCY_SYMBOL} from '../../app.constants';
 
 describe('currencyHelpers', () => {
     it('should prepend the number with a currency sign', () => {
@@ -23,5 +24,14 @@ describe('currencyHelpers', () => {
 
     it('should return undefined in case of non-number', () => {
         expect(currencyHelpers.formatCurrency('abcd', 2)).toBe(undefined);
+    });
+
+    it('should correctly return currency symbol', () => {
+        expect(currencyHelpers.getCurrencySymbol(CURRENCY.USD)).toBe(
+            CURRENCY_SYMBOL[CURRENCY.USD]
+        );
+        expect(currencyHelpers.getCurrencySymbol(CURRENCY.EUR)).toBe(
+            CURRENCY_SYMBOL[CURRENCY.EUR]
+        );
     });
 });

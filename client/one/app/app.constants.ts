@@ -180,6 +180,24 @@ export enum Breakdown {
     OPERATING_SYSTEM = 'device_os',
 }
 
+export enum PublisherStatus {
+    ENABLED = 1,
+    BLACKLISTED = 2,
+    PENDING = 3,
+}
+
+export enum BidModifierType {
+    PUBLISHER = 1,
+    SOURCE = 2,
+    DEVICE = 3,
+    OPERATING_SYSTEM = 4,
+    PLACEMENT = 5,
+    COUNTRY = 6,
+    STATE = 7,
+    DMA = 8,
+    AD = 9,
+}
+
 export const APP_CONSTANTS = {
     /**
      * Max. selected media sources in on sources tabs.
@@ -208,6 +226,7 @@ export const APP_CONSTANTS = {
     campaignTypes: CAMPAIGN_TYPE,
     currency: CURRENCY,
     biddingType: BiddingType,
+    bidModifierType: BidModifierType,
     keyCode: KeyCode,
     deliveryType: DeliveryType,
     infoboxStatus: {
@@ -225,11 +244,7 @@ export const APP_CONSTANTS = {
         CAMPAIGNSTOP_PENDING_BUDGET_ACTIVE:
             'campaignstop-pending-budget-active',
     },
-    publisherStatus: {
-        ENABLED: 1,
-        BLACKLISTED: 2,
-        PENDING: 3,
-    },
+    publisherStatus: PublisherStatus,
     publisherTargetingStatus: {
         WHITELISTED: 1,
         BLACKLISTED: 2,

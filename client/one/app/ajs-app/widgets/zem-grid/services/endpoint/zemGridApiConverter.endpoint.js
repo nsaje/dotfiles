@@ -189,6 +189,13 @@ angular
                     return convertUrlValue(value);
                 case zemGridConstants.gridColumnTypes.ICON_LINK:
                     return convertUrlValue(value);
+                case zemGridConstants.gridColumnTypes.BID_MODIFIER_FIELD:
+                    return convertBidModifierValue(
+                        config,
+                        metaData,
+                        column,
+                        value
+                    );
                 default:
                     return convertValueToDefaultObject(
                         config,
@@ -262,6 +269,39 @@ angular
             return {
                 url: value,
             };
+        }
+
+        function convertBidModifierValue(config, metaData, column, value) {
+            if (value) {
+                if (metaData.breakdown === constants.breakdown.PUBLISHER) {
+                    return convertValueToDefaultObject(
+                        config,
+                        metaData,
+                        column,
+                        value
+                    );
+                }
+
+                var convertedValue = {};
+                convertedValue.id = value.id;
+                convertedValue.type = value.type;
+                convertedValue.sourceSlug = value.source_slug;
+                convertedValue.target = value.target;
+                convertedValue.bidMin = value.bid_min
+                    ? parseFloat(value.bid_min).toFixed(2)
+                    : null;
+                convertedValue.bidMax = value.bid_max
+                    ? parseFloat(value.bid_max).toFixed(2)
+                    : null;
+                convertedValue.modifier = value.modifier;
+
+                return convertValueToDefaultObject(
+                    config,
+                    metaData,
+                    column,
+                    convertedValue
+                );
+            }
         }
 
         function convertStatusValue(status) {

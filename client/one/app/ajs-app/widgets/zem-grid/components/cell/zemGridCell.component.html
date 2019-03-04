@@ -98,10 +98,22 @@
     ></zem-grid-cell-checkbox>
 
     <zem-grid-cell-bid-modifier-field
-        ng-if="ctrl.type === ctrl.gridColumnTypes.BID_MODIFIER_FIELD"
+        ng-if="ctrl.canSeePublisherBidModifierCell()"
         data="ctrl.data"
         row="ctrl.row"
         column="ctrl.col"
         grid="ctrl.grid"
     ></zem-grid-cell-bid-modifier-field>
+
+    <zem-bid-modifier-cell
+        class="zem-bid-modifier-cell"
+        ng-if="ctrl.canSeeBidModifierCell()"
+        [bid-modifier]="ctrl.data.value"
+        [entity-id]="ctrl.grid.meta.data.id"
+        [currency]="ctrl.grid.meta.data.ext.currency"
+        [is-editable]="ctrl.data.isEditable"
+        [edit-message]="ctrl.data.editMessage"
+        [container-element]="ctrl.gridBodyElement"
+        (value-change)="ctrl.updateBidModifier($event)"
+    ></zem-bid-modifier-cell>
 </div>

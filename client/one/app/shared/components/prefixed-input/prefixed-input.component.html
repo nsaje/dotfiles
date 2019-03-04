@@ -1,0 +1,12 @@
+<span
+    class="zem-prefixed-input__prefix"
+    [ngClass]="{'zem-prefixed-input__prefix--error': hasError}"
+>
+    {{ prefix }}
+</span>
+<div
+    class="zem-prefixed-input__input"
+    [ngClass]="{'zem-prefixed-input__input--error': hasError}"
+>
+    <ng-content></ng-content>
+</div>

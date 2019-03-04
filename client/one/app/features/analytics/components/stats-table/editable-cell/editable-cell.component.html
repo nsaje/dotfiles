@@ -1,0 +1,22 @@
+<span
+    class="zem-editable-cell__value"
+    [ngClass]="{'zem-editable-cell__value--editable': isEditable}"
+    (click)="switchToEditMode()"
+>
+    <ng-content select="[readMode]"></ng-content>
+</span>
+<ng-container *cdkPortal>
+    <div
+        class="zem-editable-cell__edit-mode-wrapper"
+        #portalContent
+        [style.top.px]="hostElementOffsetTop"
+        [style.left.px]="hostElementOffsetLeft"
+        [ngClass]="{
+            'zem-editable-cell__edit-mode-wrapper--fullsize ': shouldRenderAsModal
+        }"
+    >
+        <div class="zem-editable-cell__edit-mode-wrapper-content">
+            <ng-content select="[editMode]"></ng-content>
+        </div>
+    </div>
+</ng-container>

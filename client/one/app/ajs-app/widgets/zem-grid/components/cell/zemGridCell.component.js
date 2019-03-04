@@ -15,6 +15,10 @@ angular.module('one.widgets').directive('zemGridCell', function() {
             var ctrl = this;
             ctrl.gridColumnTypes = zemGridConstants.gridColumnTypes;
             ctrl.type = getFieldType();
+            ctrl.gridBodyElement = getGridBodyElement();
+            ctrl.canSeePublisherBidModifierCell = canSeePublisherBidModifierCell;
+            ctrl.canSeeBidModifierCell = canSeeBidModifierCell;
+            ctrl.updateBidModifier = updateBidModifier;
 
             $scope.$watch('ctrl.col', function() {
                 ctrl.type = getFieldType();
@@ -50,6 +54,47 @@ angular.module('one.widgets').directive('zemGridCell', function() {
                 }
 
                 return columnType;
+            }
+
+            function getGridBodyElement() {
+                if (ctrl.grid) {
+                    return ctrl.grid.body.ui.element[0];
+                }
+            }
+
+            function canSeePublisherBidModifierCell() {
+                if (
+                    !ctrl.row ||
+                    ctrl.row.level === zemGridConstants.gridRowLevel.FOOTER
+                ) {
+                    return false;
+                }
+                return (
+                    getFieldType() ===
+                        zemGridConstants.gridColumnTypes.BID_MODIFIER_FIELD &&
+                    ctrl.grid.meta.data.breakdown ===
+                        constants.breakdown.PUBLISHER
+                );
+            }
+
+            function canSeeBidModifierCell() {
+                if (
+                    !ctrl.row ||
+                    ctrl.row.level === zemGridConstants.gridRowLevel.FOOTER
+                ) {
+                    return false;
+                }
+
+                return (
+                    getFieldType() ===
+                        zemGridConstants.gridColumnTypes.BID_MODIFIER_FIELD &&
+                    ctrl.grid.meta.data.breakdown !==
+                        constants.breakdown.PUBLISHER
+                );
+            }
+
+            function updateBidModifier($event) {
+                ctrl.data.value = $event;
             }
         },
     };
