@@ -550,11 +550,10 @@ angular
                 type: zemGridConstants.gridColumnTypes.BID_MODIFIER_FIELD,
                 totalRow: false,
                 help:
-                    'Bid modifiers allow you to adjust the bid per publisher. The bid set on media source level is used as a starting point and adjusted on % basis.',
+                    'Bid modifiers allow you to adjust bid per selected breakdown.',
                 order: true,
                 initialOrder: zemGridConstants.gridColumnOrder.ASC,
-                shown: 'zemauth.can_use_publisher_bid_modifiers_in_ui',
-                internal: 'zemauth.can_use_publisher_bid_modifiers_in_ui',
+                shown: true,
                 editable: true,
             },
             amplifyLivePreview: {
@@ -1829,6 +1828,7 @@ angular
             COLUMNS.sourceId,
             COLUMNS.sourceSlug,
             COLUMNS.sspdUrl,
+            COLUMNS.bidModifier,
         ]
             .concat(ACCOUNT_MANAGEMENT_GROUP)
             .concat(CAMPAIGN_MANAGEMENT_GROUP);
@@ -1839,7 +1839,6 @@ angular
             COLUMNS.externalId,
             COLUMNS.domain,
             COLUMNS.domainLink,
-            COLUMNS.bidModifier,
         ];
 
         var CONTENT_GROUP = [
@@ -2173,6 +2172,13 @@ angular
         COLUMNS.dailyBudgetSetting.exceptions.breakdownBaseLevelOnly = true;
 
         COLUMNS.bidModifier.exceptions.breakdowns = [
+            constants.breakdown.CONTENT_AD,
+            constants.breakdown.COUNTRY,
+            constants.breakdown.STATE,
+            constants.breakdown.DMA,
+            constants.breakdown.DEVICE,
+            constants.breakdown.PLACEMENT,
+            constants.breakdown.OPERATING_SYSTEM,
             constants.breakdown.PUBLISHER,
         ];
         COLUMNS.bidModifier.exceptions.levels = [constants.level.AD_GROUPS];

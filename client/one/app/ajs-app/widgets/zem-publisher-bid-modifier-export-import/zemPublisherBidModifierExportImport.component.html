@@ -1,5 +1,5 @@
 <zem-dropdown-select
-    ng-if="$ctrl.hasPermission('zemauth.can_use_publisher_bid_modifiers_in_ui') && $ctrl.isAdGroupLevel()"
+    ng-if="$ctrl.isAdGroupLevel()"
     zem-placeholder="Bid Modifiers"
     zem-dropdown-select-options="$ctrl.actions"
     zem-on-select="$ctrl.execute(selected)"
