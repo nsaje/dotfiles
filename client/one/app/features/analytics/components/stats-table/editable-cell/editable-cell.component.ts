@@ -17,6 +17,7 @@ import {
     EventEmitter,
     OnInit,
     OnDestroy,
+    ChangeDetectorRef,
 } from '@angular/core';
 import {CdkPortal, DomPortalHost} from '@angular/cdk/portal';
 import {DOCUMENT} from '@angular/platform-browser';
@@ -65,6 +66,7 @@ export class EditableCellComponent
         private injector: Injector,
         private hostElement: ElementRef,
         private renderer: Renderer2,
+        private changeDetectorRef: ChangeDetectorRef,
         @Inject('ajs$rootScope') private ajs$rootScope: any
     ) {
         this.onWindowScrollCallback = this.switchToReadMode.bind(this);
@@ -144,9 +146,8 @@ export class EditableCellComponent
                 this.containerElement
             );
             if (this.shouldRenderAsModal) {
-                this.portalHost.detach();
-                this.portalHost.attach(this.portal);
                 this.renderer.addClass(this.document.body, 'modal-open');
+                this.changeDetectorRef.detectChanges();
             }
         });
     }

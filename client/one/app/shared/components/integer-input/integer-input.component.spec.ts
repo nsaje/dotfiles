@@ -3,6 +3,7 @@ import {FormsModule} from '@angular/forms';
 import {SimpleChange} from '@angular/core';
 import {IntegerInputComponent} from './integer-input.component';
 import {FilterKeydownEventDirective} from '../../directives/filter-keydown-event.directive';
+import {FocusDirective} from '../../directives/focus.directive';
 
 describe('IntegerInputComponent', () => {
     let component: IntegerInputComponent;
@@ -10,7 +11,11 @@ describe('IntegerInputComponent', () => {
 
     beforeEach(() => {
         TestBed.configureTestingModule({
-            declarations: [IntegerInputComponent, FilterKeydownEventDirective],
+            declarations: [
+                IntegerInputComponent,
+                FilterKeydownEventDirective,
+                FocusDirective,
+            ],
             imports: [FormsModule],
         });
     });

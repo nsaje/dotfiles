@@ -9,6 +9,7 @@ import {NgSelectModule} from '@ng-select/ng-select';
 
 import {BigNumberPipe} from './pipes/big-number.pipe';
 import {FilterKeydownEventDirective} from './directives/filter-keydown-event.directive';
+import {FocusDirective} from './directives/focus.directive';
 import {CategorizedSelectComponent} from './components/categorized-select/categorized-select.component';
 import {CategorizedTagsListComponent} from './components/categorized-tags-list/categorized-tags-list.component';
 import {DropdownDirective} from './components/dropdown/dropdown.directive';
@@ -27,6 +28,7 @@ import {BidModifierInputComponent} from './components/bid-modifier-input/bid-mod
 const EXPORTED_DECLARATIONS = [
     BigNumberPipe,
     FilterKeydownEventDirective,
+    FocusDirective,
     CategorizedSelectComponent,
     CategorizedTagsListComponent,
     DropdownDirective,

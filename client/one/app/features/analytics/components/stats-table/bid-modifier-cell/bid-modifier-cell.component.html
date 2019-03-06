@@ -1,4 +1,4 @@
-<ng-container *ngIf="isViewInitialized && (store.state$ | async) as state">
+<ng-container *ngIf="(store.state$ | async) as state">
     <zem-editable-cell
         class="zem-editable-cell"
         [isEditable]="isEditable"
@@ -11,7 +11,7 @@
             <span>{{ state.previousModifierPercent }}%</span>
         </ng-container>
         <ng-container editMode>
-            <div class="zem-bid-modifier-cell__form">
+            <div class="zem-bid-modifier-cell__form" *ngIf="isInEditMode()">
                 <div class="zem-bid-modifier-cell__form-item">
                     <zem-bid-modifier-input
                         class="zem-bid-modifier-input zem-bid-modifier-cell__form-input"
@@ -19,6 +19,7 @@
                         [fractionSize]="fractionSize"
                         [minValue]="-99"
                         [maxValue]="1000"
+                        [isFocused]="true"
                         (valueChange)="onValueChange($event)"
                     ></zem-bid-modifier-input>
                 </div>

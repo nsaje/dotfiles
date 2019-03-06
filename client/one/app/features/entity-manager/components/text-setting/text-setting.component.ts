@@ -29,7 +29,9 @@ export class TextSettingComponent implements OnChanges {
     @Input()
     maxLength: number;
     @Input()
-    isDisabled: boolean;
+    isDisabled: boolean = false;
+    @Input()
+    isFocused: boolean = false;
     @Input()
     errors: string[];
     @Output()

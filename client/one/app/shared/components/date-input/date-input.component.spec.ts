@@ -3,6 +3,7 @@ import {FormsModule} from '@angular/forms';
 import {NgbDatepickerModule, NgbDate} from '@ng-bootstrap/ng-bootstrap';
 import {DateInputComponent} from './date-input.component';
 import {SimpleChange} from '@angular/core';
+import {FocusDirective} from '../../directives/focus.directive';
 
 describe('DateInputComponent', () => {
     let component: DateInputComponent;
@@ -10,7 +11,7 @@ describe('DateInputComponent', () => {
 
     beforeEach(() => {
         TestBed.configureTestingModule({
-            declarations: [DateInputComponent],
+            declarations: [DateInputComponent, FocusDirective],
             imports: [FormsModule, NgbDatepickerModule],
         });
     });

@@ -33,7 +33,9 @@ export class TextAreaSettingComponent implements OnInit, OnChanges {
     @Input()
     rows: number;
     @Input()
-    isDisabled: boolean;
+    isDisabled: boolean = false;
+    @Input()
+    isFocused: boolean = false;
     @Input()
     errors: string[];
     @Output()

@@ -11,5 +11,5 @@ export class PrefixedInputComponent {
     @Input()
     prefix: string;
     @Input()
-    hasError: boolean;
+    hasError: boolean = false;
 }

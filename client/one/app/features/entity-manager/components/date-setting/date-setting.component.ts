@@ -27,7 +27,9 @@ export class DateSettingComponent implements OnChanges {
     @Input()
     minDate: Date;
     @Input()
-    isDisabled: boolean;
+    isDisabled: boolean = false;
+    @Input()
+    isFocused: boolean = false;
     @Input()
     errors: string[];
     @Output()

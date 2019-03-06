@@ -27,7 +27,9 @@ export class CurrencySettingComponent implements OnChanges {
     @Input()
     placeholder: string;
     @Input()
-    isDisabled: boolean;
+    isDisabled: boolean = false;
+    @Input()
+    isFocused: boolean = false;
     @Input()
     currencySymbol: string;
     @Input()

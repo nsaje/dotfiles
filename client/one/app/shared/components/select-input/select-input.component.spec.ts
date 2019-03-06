@@ -2,6 +2,7 @@ import {TestBed, ComponentFixture} from '@angular/core/testing';
 import {FormsModule} from '@angular/forms';
 import {NgSelectModule} from '@ng-select/ng-select';
 import {SelectInputComponent} from './select-input.component';
+import {FocusDirective} from '../../directives/focus.directive';
 
 describe('SelectInputComponent', () => {
     let component: SelectInputComponent;
@@ -9,7 +10,7 @@ describe('SelectInputComponent', () => {
 
     beforeEach(() => {
         TestBed.configureTestingModule({
-            declarations: [SelectInputComponent],
+            declarations: [SelectInputComponent, FocusDirective],
             imports: [FormsModule, NgSelectModule],
         });
     });

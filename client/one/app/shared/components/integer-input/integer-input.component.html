@@ -6,6 +6,7 @@
     [(ngModel)]="model"
     (ngModelChange)="onModelChange($event)"
     [disabled]="isDisabled"
+    [zemFocus]="isFocused"
     (paste)="onPaste($event)"
     (blur)="onBlur()"
     zemFilterKeydownEvent

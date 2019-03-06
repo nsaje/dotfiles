@@ -24,9 +24,11 @@ export class IntegerInputComponent implements OnInit, OnChanges {
     @Input()
     placeholder: string;
     @Input()
-    isDisabled: boolean;
+    isDisabled: boolean = false;
     @Input()
-    hasError: boolean;
+    isFocused: boolean = false;
+    @Input()
+    hasError: boolean = false;
     @Output()
     valueChange = new EventEmitter<string>();
     @Output()

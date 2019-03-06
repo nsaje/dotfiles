@@ -30,9 +30,9 @@ export class SelectInputComponent implements OnInit, OnChanges {
     @Input()
     placeholder: string;
     @Input()
-    isDisabled: boolean;
+    isDisabled: boolean = false;
     @Input()
-    hasError: boolean;
+    hasError: boolean = false;
     @Output()
     valueChange = new EventEmitter<string>();
 

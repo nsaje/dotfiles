@@ -27,9 +27,11 @@ export class CurrencyInputComponent implements OnInit, OnChanges {
     @Input()
     placeholder: string;
     @Input()
-    isDisabled: boolean;
+    isDisabled: boolean = false;
     @Input()
-    hasError: boolean;
+    isFocused: boolean = false;
+    @Input()
+    hasError: boolean = false;
     @Input()
     currencySymbol: string;
     @Input()

@@ -5,6 +5,7 @@ import {SimpleChange} from '@angular/core';
 import {PrefixedInputComponent} from '../prefixed-input/prefixed-input.component';
 import {DecimalInputComponent} from '../decimal-input/decimal-input.component';
 import {FilterKeydownEventDirective} from '../../directives/filter-keydown-event.directive';
+import {FocusDirective} from '../../directives/focus.directive';
 
 describe('BidModifierInputComponent', () => {
     let component: BidModifierInputComponent;
@@ -17,6 +18,7 @@ describe('BidModifierInputComponent', () => {
                 DecimalInputComponent,
                 BidModifierInputComponent,
                 FilterKeydownEventDirective,
+                FocusDirective,
             ],
             imports: [FormsModule],
         });

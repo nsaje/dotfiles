@@ -4,6 +4,7 @@ import {SimpleChange} from '@angular/core';
 import {CurrencyInputComponent} from './currency-input.component';
 import {FilterKeydownEventDirective} from '../../directives/filter-keydown-event.directive';
 import {PrefixedInputComponent} from '../prefixed-input/prefixed-input.component';
+import {FocusDirective} from '../../directives/focus.directive';
 
 describe('CurrencyInputComponent', () => {
     let component: CurrencyInputComponent;
@@ -15,6 +16,7 @@ describe('CurrencyInputComponent', () => {
                 PrefixedInputComponent,
                 CurrencyInputComponent,
                 FilterKeydownEventDirective,
+                FocusDirective,
             ],
             imports: [FormsModule],
         });

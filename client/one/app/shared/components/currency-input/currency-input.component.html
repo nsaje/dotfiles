@@ -9,6 +9,7 @@
         placeholder="{{ placeholder }}"
         [(ngModel)]="model"
         [disabled]="isDisabled"
+        [zemFocus]="isFocused"
         (paste)="onPaste($event)"
         (focus)="onFocus()"
         (blur)="onBlur()"

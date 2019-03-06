@@ -12,6 +12,7 @@
         [ngModel]="model"
         [minDate]="minDate"
         [disabled]="isDisabled"
+        [zemFocus]="isFocused"
         [dayTemplate]="zemDateInputDay"
         (dateSelect)="onDateSelect($event)"
         (click)="zemDatepicker.toggle()"

@@ -9,7 +9,6 @@ import {
     Output,
     EventEmitter,
     OnInit,
-    AfterViewInit,
 } from '@angular/core';
 import {downgradeComponent} from '@angular/upgrade/static';
 import * as clone from 'clone';
@@ -17,7 +16,6 @@ import {EditableCellMode} from '../editable-cell/editable-cell.constants';
 import {BidModifierCellStore} from './services/bid-modifier-cell.store';
 import {BidModifier} from '../../../../../core/bid-modifiers/types/bid-modifier';
 import {BidModifiersService} from '../../../../../core/bid-modifiers/services/bid-modifiers.service';
-import * as currencyHelpers from '../../../../../shared/helpers/currency.helpers';
 import {BID_MODIFIER_CELL_CONFIG} from './bid-modifier-cell.config';
 
 @Component({
@@ -26,8 +24,7 @@ import {BID_MODIFIER_CELL_CONFIG} from './bid-modifier-cell.config';
     changeDetection: ChangeDetectionStrategy.OnPush,
     providers: [BidModifierCellStore, BidModifiersService],
 })
-export class BidModifierCellComponent
-    implements OnInit, OnChanges, AfterViewInit {
+export class BidModifierCellComponent implements OnInit, OnChanges {
     @Input()
     bidModifier: BidModifier;
     @Input()
@@ -43,7 +40,6 @@ export class BidModifierCellComponent
     @Output()
     valueChange = new EventEmitter<BidModifier>();
 
-    isViewInitialized: boolean = false;
     mode: EditableCellMode;
     fractionSize: number;
 
@@ -62,14 +58,6 @@ export class BidModifierCellComponent
                 this.currency
             );
         }
-    }
-
-    ngAfterViewInit(): void {
-        // A lifecycle hook that is called after Angular
-        // has fully initialized a component's view. We are
-        // using this hook to make sure that all change listeners
-        // has been correctly configured in angular.js environment.
-        this.isViewInitialized = true;
     }
 
     onValueChange($event: string) {
@@ -98,6 +86,10 @@ export class BidModifierCellComponent
                 this.store.state.previousModifierPercent
             );
         }
+    }
+
+    isInEditMode(): boolean {
+        return this.mode === EditableCellMode.EDIT;
     }
 }
 

@@ -33,7 +33,7 @@ export class SelectSettingComponent implements OnChanges {
     @Input()
     placeholder: string;
     @Input()
-    isDisabled: boolean;
+    isDisabled: boolean = false;
     @Input()
     errors: string[];
     @Output()

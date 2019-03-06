@@ -25,6 +25,8 @@ export class BidModifierInputComponent implements OnChanges {
     minValue: number;
     @Input()
     maxValue: number;
+    @Input()
+    isFocused: boolean = false;
     @Output()
     valueChange = new EventEmitter<string>();
 
