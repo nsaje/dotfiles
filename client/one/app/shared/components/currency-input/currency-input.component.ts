@@ -35,7 +35,7 @@ export class CurrencyInputComponent implements OnInit, OnChanges {
     @Input()
     fractionSize: number;
     @Output()
-    valueChange = new EventEmitter<string>();
+    inputBlur = new EventEmitter<string>();
 
     keyFilter: number[];
     model: string;
@@ -47,7 +47,7 @@ export class CurrencyInputComponent implements OnInit, OnChanges {
             this.fractionSize,
             2
         );
-        this.keyFilter = [KeyCode.ENTER, KeyCode.SPACE];
+        this.keyFilter = [KeyCode.ENTER];
         this.regExp = new RegExp(`^\\d+(\\.\\d{0,${this.fractionSize}})?$`);
     }
 
@@ -92,7 +92,7 @@ export class CurrencyInputComponent implements OnInit, OnChanges {
             this.fractionSize
         );
         if (decimalValue !== this.value) {
-            this.valueChange.emit(decimalValue);
+            this.inputBlur.emit(decimalValue);
         } else {
             this.model = currencyHelpers.formatCurrency(
                 this.model,

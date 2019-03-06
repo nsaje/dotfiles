@@ -40,6 +40,10 @@ export class BidModifierInputComponent implements OnChanges {
         this.valueChange.emit($event);
     }
 
+    onInputBlur($event: string) {
+        this.valueChange.emit($event);
+    }
+
     addDeltaPercent(deltaPercent: number): void {
         let value = parseFloat(this.model);
         if (isNaN(value)) {

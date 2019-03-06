@@ -29,6 +29,8 @@ export class IntegerInputComponent implements OnInit, OnChanges {
     hasError: boolean;
     @Output()
     valueChange = new EventEmitter<string>();
+    @Output()
+    inputBlur = new EventEmitter<string>();
 
     keyFilter: number[];
     model: string;
@@ -36,7 +38,7 @@ export class IntegerInputComponent implements OnInit, OnChanges {
     private regExp: RegExp;
 
     ngOnInit() {
-        this.keyFilter = [KeyCode.ENTER, KeyCode.SPACE];
+        this.keyFilter = [KeyCode.ENTER];
         this.regExp = new RegExp('^\\d+$');
     }
 
@@ -68,9 +70,13 @@ export class IntegerInputComponent implements OnInit, OnChanges {
         }
     }
 
+    onModelChange($event: string) {
+        this.valueChange.emit($event);
+    }
+
     onBlur() {
         if (this.model !== this.value) {
-            this.valueChange.emit(this.model);
+            this.inputBlur.emit(this.model);
         }
     }
 

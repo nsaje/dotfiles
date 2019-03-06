@@ -4,6 +4,7 @@
     type="text"
     placeholder="{{ placeholder }}"
     [(ngModel)]="model"
+    (ngModelChange)="onModelChange($event)"
     [disabled]="isDisabled"
     (paste)="onPaste($event)"
     (blur)="onBlur()"

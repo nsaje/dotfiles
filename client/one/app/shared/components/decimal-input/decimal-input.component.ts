@@ -37,6 +37,8 @@ export class DecimalInputComponent implements OnInit, OnChanges {
     maxValue: number;
     @Output()
     valueChange = new EventEmitter<string>();
+    @Output()
+    inputBlur = new EventEmitter<string>();
 
     keyFilter: number[];
     model: string;
@@ -48,7 +50,7 @@ export class DecimalInputComponent implements OnInit, OnChanges {
             this.fractionSize,
             2
         );
-        this.keyFilter = [KeyCode.ENTER, KeyCode.SPACE];
+        this.keyFilter = [KeyCode.ENTER];
         this.regExp = new RegExp(
             `^[-+]?(\\d+(\\.\\d{0,${this.fractionSize}})?)?$`
         );
@@ -94,13 +96,17 @@ export class DecimalInputComponent implements OnInit, OnChanges {
         }
     }
 
+    onModelChange($event: string) {
+        this.valueChange.emit($event);
+    }
+
     onBlur() {
         const decimalValue = numericHelpers.parseDecimal(
             this.model,
             this.fractionSize
         );
         if (decimalValue !== this.value) {
-            this.valueChange.emit(decimalValue);
+            this.inputBlur.emit(decimalValue);
         } else {
             this.model = decimalValue;
         }

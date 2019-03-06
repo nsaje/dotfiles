@@ -15,7 +15,7 @@
             [isDisabled]="isDisabled"
             [fractionSize]="fractionSize"
             [hasError]="errors && errors.length > 0"
-            (valueChange)="onValueChange($event)"
+            (inputBlur)="onInputBlur($event)"
         ></zem-decimal-input>
         <div
             class="zem-form-group__content-item zem-message zem-message--error"

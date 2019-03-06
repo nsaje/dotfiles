@@ -79,7 +79,7 @@ describe('CurrencyInputComponent', () => {
     it('should correctly emit model on blur event', () => {
         component.ngOnInit();
 
-        spyOn(component.valueChange, 'emit').and.stub();
+        spyOn(component.inputBlur, 'emit').and.stub();
 
         const value = '1234.12';
         component.value = value;
@@ -94,13 +94,13 @@ describe('CurrencyInputComponent', () => {
         component.model = '7871234.1';
 
         component.onBlur();
-        expect(component.valueChange.emit).toHaveBeenCalledWith('7871234.10');
+        expect(component.inputBlur.emit).toHaveBeenCalledWith('7871234.10');
     });
 
     it('should not emit model on blur event if model did not change', () => {
         component.ngOnInit();
 
-        spyOn(component.valueChange, 'emit').and.stub();
+        spyOn(component.inputBlur, 'emit').and.stub();
 
         const value = '1234.12';
         component.value = value;
@@ -114,7 +114,7 @@ describe('CurrencyInputComponent', () => {
 
         component.onBlur();
         expect(component.model).toEqual('1,234.12');
-        expect(component.valueChange.emit).not.toHaveBeenCalled();
+        expect(component.inputBlur.emit).not.toHaveBeenCalled();
     });
 
     it('should prevent keydown event', () => {

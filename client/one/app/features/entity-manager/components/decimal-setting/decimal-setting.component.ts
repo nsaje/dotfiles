@@ -43,7 +43,7 @@ export class DecimalSettingComponent implements OnChanges {
         }
     }
 
-    onValueChange($event: string) {
+    onInputBlur($event: string) {
         this.valueChange.emit($event);
     }
 }

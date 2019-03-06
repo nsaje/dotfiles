@@ -1,6 +1,6 @@
 import {TestBed, ComponentFixture} from '@angular/core/testing';
 import {FormsModule} from '@angular/forms';
-import {DebugElement, SimpleChange} from '@angular/core';
+import {SimpleChange} from '@angular/core';
 import {DecimalInputComponent} from './decimal-input.component';
 import {FilterKeydownEventDirective} from '../../directives/filter-keydown-event.directive';
 import {PrefixedInputComponent} from '../prefixed-input/prefixed-input.component';
@@ -31,7 +31,7 @@ describe('DecimalInputComponent', () => {
     });
 
     it('should correctly emit model on blur event', () => {
-        spyOn(component.valueChange, 'emit').and.stub();
+        spyOn(component.inputBlur, 'emit').and.stub();
         component.ngOnInit();
 
         const value = '1234.12';
@@ -44,11 +44,11 @@ describe('DecimalInputComponent', () => {
         component.model = '7871234.1';
 
         component.onBlur();
-        expect(component.valueChange.emit).toHaveBeenCalledWith('7871234.10');
+        expect(component.inputBlur.emit).toHaveBeenCalledWith('7871234.10');
     });
 
     it('should not emit model on blur event if model did not change', () => {
-        spyOn(component.valueChange, 'emit').and.stub();
+        spyOn(component.inputBlur, 'emit').and.stub();
         component.ngOnInit();
 
         const value = '1234.12';
@@ -60,7 +60,7 @@ describe('DecimalInputComponent', () => {
 
         component.onBlur();
         expect(component.model).toEqual('1234.12');
-        expect(component.valueChange.emit).not.toHaveBeenCalled();
+        expect(component.inputBlur.emit).not.toHaveBeenCalled();
     });
 
     it('should prevent keydown event', () => {

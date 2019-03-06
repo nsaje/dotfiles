@@ -26,7 +26,7 @@ describe('IntegerInputComponent', () => {
     });
 
     it('should correctly emit model on blur event', () => {
-        spyOn(component.valueChange, 'emit').and.stub();
+        spyOn(component.inputBlur, 'emit').and.stub();
         component.ngOnInit();
 
         const value = '1234';
@@ -39,11 +39,11 @@ describe('IntegerInputComponent', () => {
         component.model = '7871234';
 
         component.onBlur();
-        expect(component.valueChange.emit).toHaveBeenCalledWith('7871234');
+        expect(component.inputBlur.emit).toHaveBeenCalledWith('7871234');
     });
 
     it('should not emit model on blur event if model did not change', () => {
-        spyOn(component.valueChange, 'emit').and.stub();
+        spyOn(component.inputBlur, 'emit').and.stub();
         component.ngOnInit();
 
         const value = '1234';
@@ -55,7 +55,7 @@ describe('IntegerInputComponent', () => {
 
         component.onBlur();
         expect(component.model).toEqual('1234');
-        expect(component.valueChange.emit).not.toHaveBeenCalled();
+        expect(component.inputBlur.emit).not.toHaveBeenCalled();
     });
 
     it('should prevent keydown event', () => {

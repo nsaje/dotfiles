@@ -45,7 +45,7 @@ export class CurrencySettingComponent implements OnChanges {
         }
     }
 
-    onValueChange($event: string) {
+    onInputBlur($event: string) {
         this.valueChange.emit($event);
     }
 }
