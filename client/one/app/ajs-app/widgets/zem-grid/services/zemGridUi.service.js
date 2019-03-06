@@ -460,82 +460,41 @@ angular
         function updateStickyElements(grid) {
             if (grid.ui.element.is(':hidden')) return;
 
-            var FIXED_HEADER_HEIGHT = 30; // MINIMIZED HEADER
-
-            if (!$state.includes('v2')) {
-                FIXED_HEADER_HEIGHT += 28; // OLD MINIMIZED HEADER WITH NAV TABS
-            }
-
-            var FIXED_DATA_FILTER_HEIGHT = 48;
-            var STICKY_FOOTER_HEIGHT =
-                zemGridConstants.gridBodyRendering.ROW_HEIGHT + 15; // SCROLL BAR
-
-            var stickyFooter = grid.ui.element.find('.zem-grid-sticky__footer');
-            var stickyHeader = grid.ui.element.find('.zem-grid-sticky__header');
-
-            var topOffset = getTopOffset();
+            var SCROLL_BAR_WIDTH = 15;
+            var MIN_VISIBLE_GRID_HEIGHT_NEEDED_TO_SHOW_STICKY_FOOTER =
+                2 * zemGridConstants.gridBodyRendering.ROW_HEIGHT;
+            var windowHeight = document.documentElement.clientHeight;
             var gridOffset = grid.ui.element.offset();
-            var gridViewportOffset =
-                window.pageYOffset - gridOffset.top + topOffset;
+            var viewportBottom = windowHeight + window.pageYOffset;
+            var spaceInViewportAvailableForGrid =
+                viewportBottom - gridOffset.top;
 
-            var isHeaderSticky = gridViewportOffset > 0;
-            var isFooterSticky =
-                isHeaderSticky &&
-                gridViewportOffset + document.documentElement.clientHeight <
-                    grid.ui.element.height() + STICKY_FOOTER_HEIGHT;
+            updateStickyHeaderPosition();
+            updateStickyFooterPosition();
+            updateStickyScroller();
 
-            stickyHeader.css(getHeaderStyle(isHeaderSticky));
-            stickyFooter.css(getFooterStyle(isFooterSticky));
-            updateStickyScroller(isFooterSticky);
-
-            function getTopOffset() {
-                var offset = 0;
-                if (
-                    $('body').hasClass('fixed-header') &&
-                    window.matchMedia('(min-width: 1024px)').matches
-                ) {
-                    offset += FIXED_HEADER_HEIGHT;
-                    if ($('body').hasClass('data-filter-enabled'))
-                        offset += FIXED_DATA_FILTER_HEIGHT;
-                }
-                return offset;
+            function updateStickyHeaderPosition() {
+                var stickyHeader = grid.ui.element.find(
+                    '.zem-grid-sticky__header'
+                );
+                stickyHeader.css(getHeaderStyle());
             }
 
-            function getHeaderStyle(sticky) {
-                var style = {
-                    position: 'static',
-                    width: grid.ui.element.width() + 'px',
-                };
-                if (sticky) {
-                    style.position = 'fixed';
-                    style.top = topOffset + 'px';
-                }
-                return style;
+            function updateStickyFooterPosition() {
+                var stickyFooter = grid.ui.element.find(
+                    '.zem-grid-sticky__footer'
+                );
+                stickyFooter.css(getFooterStyle());
             }
 
-            function getFooterStyle(sticky) {
-                var style = {
-                    position: 'static',
-                    width: grid.ui.element.width() + 'px',
-                };
-                if (sticky) {
-                    var bottom = Math.min(
-                        0,
-                        gridViewportOffset - STICKY_FOOTER_HEIGHT
-                    );
-                    style.position = 'fixed';
-                    style.bottom = bottom + 'px';
-                }
-                return style;
-            }
-
-            function updateStickyScroller(visible) {
+            function updateStickyScroller() {
+                var isVisible = isFooterSticky();
                 var scrollContainer = grid.ui.element.find(
                     '.zem-grid-sticky__scroller-container'
                 );
-                if (visible === scrollContainer.is(':visible')) return;
+                if (isVisible === scrollContainer.is(':visible')) return;
 
-                if (visible) {
+                if (isVisible) {
                     scrollContainer.show();
                     scrollContainer
                         .find('.zem-grid-sticky__scroller-content')
@@ -544,6 +503,73 @@ angular
                 } else {
                     scrollContainer.hide();
                 }
+            }
+
+            function getHeaderStyle() {
+                var contentTopOffset = getContentTopOffset();
+                var style = {
+                    position: 'static',
+                    width: grid.ui.element.width() + 'px',
+                };
+                var isSticky =
+                    window.pageYOffset + contentTopOffset > gridOffset.top;
+                if (isSticky) {
+                    style.position = 'fixed';
+                    style.top = contentTopOffset + 'px';
+                }
+                return style;
+            }
+
+            function getFooterStyle() {
+                var style = {
+                    position: 'static',
+                    width: grid.ui.element.width() + 'px',
+                };
+                if (isFooterSticky()) {
+                    var stickyFooterHeight =
+                        zemGridConstants.gridBodyRendering.ROW_HEIGHT +
+                        SCROLL_BAR_WIDTH;
+                    var spaceInViewportAvailableForStickyFooter =
+                        spaceInViewportAvailableForGrid -
+                        MIN_VISIBLE_GRID_HEIGHT_NEEDED_TO_SHOW_STICKY_FOOTER;
+
+                    var bottom =
+                        spaceInViewportAvailableForStickyFooter -
+                        stickyFooterHeight;
+                    bottom = Math.min(0, bottom);
+
+                    style.position = 'fixed';
+                    style.bottom = bottom + 'px';
+                }
+                return style;
+            }
+
+            function getContentTopOffset() {
+                var fixedHeaderHeight = 30; // MINIMIZED HEADER
+                if (!$state.includes('v2')) {
+                    fixedHeaderHeight += 28; // OLD MINIMIZED HEADER WITH NAV TABS
+                }
+                var fixedDataFilterHeight = 48;
+
+                var offset = 0;
+                if (
+                    $('body').hasClass('fixed-header') &&
+                    window.matchMedia('(min-width: 1024px)').matches
+                ) {
+                    offset += fixedHeaderHeight;
+                    if ($('body').hasClass('data-filter-enabled'))
+                        offset += fixedDataFilterHeight;
+                }
+                return offset;
+            }
+
+            function isFooterSticky() {
+                return (
+                    spaceInViewportAvailableForGrid <
+                        grid.ui.element.height() &&
+                    spaceInViewportAvailableForGrid >=
+                        MIN_VISIBLE_GRID_HEIGHT_NEEDED_TO_SHOW_STICKY_FOOTER
+                );
             }
         }
 

@@ -67,18 +67,19 @@ angular
                         // yet rendered causing resize to function on empty table. On the other hand call resize
                         // immediately to prevent flickering if table is already rendered (e.g. toggling columns)
                         zemGridUIService.resizeGridColumns(ctrl.grid);
+                        updateStickyElements();
                         $timeout(
                             function() {
                                 requestAnimationFrame(function() {
                                     zemGridUIService.resizeGridColumns(
                                         ctrl.grid
                                     );
+                                    updateStickyElements();
                                 });
                             },
                             0,
                             false
                         );
-                        updateStickyElements();
                     });
                 }
 
