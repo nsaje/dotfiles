@@ -1,5 +1,8 @@
 import logging
 
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import cache_page
+
 import dash.constants
 import dash.models
 from utils import db_router
@@ -11,6 +14,7 @@ logger = logging.getLogger(__name__)
 
 class R1MappingView(K1APIView):
     @db_router.use_read_replica()
+    @method_decorator(cache_page(10 * 60, cache="dash_db_cache"))
     def get(self, request):
         accounts = [int(account) for account in request.GET.getlist("account")]
 
