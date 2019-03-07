@@ -211,11 +211,21 @@ class DCronCommandTestCase(TransactionTestCase):
     @mock.patch("utils.pagerduty_helper._post_event")
     @mock.patch("utils.slack.publish")
     def test_recover_from_failure(self, mock_slack_publish, mock_post_event, mock_influx_timing, mock_influx_incr):
+        event_1 = threading.Event()
+        event_2 = threading.Event()
+
         class DummyCommand(commands.DCronCommand):
+            def handle(self, *args, **options):
+                super().handle(*args, **options)
+                event_2.set()
+
             def _handle(self, *args, **options):
-                pass
+                event_1.set()
 
         dummy_command = DummyCommand()
+
+        def run_command():
+            dummy_command.execute(**{"no_color": None, "stdout": None, "stderr": None})
 
         now_dt = timezone.now()
         executed_dt = now_dt - datetime.timedelta(seconds=45)
@@ -228,7 +238,19 @@ class DCronCommandTestCase(TransactionTestCase):
         )
         models.DCronJobSettings.objects.create(job=dcron_job, schedule="0 * * * *", full_command="")
 
-        dummy_command.execute(**{"no_color": None, "stdout": None, "stderr": None})
+        command_thread = threading.Thread(target=run_command)
+        command_thread.start()
+
+        # Wait for job _handle to start (completed_dt set to None)
+        event_1.wait()
+
+        dcron_job.refresh_from_db()
+
+        alert = alerts._check_alert(dcron_job)
+        self.assertEqual(alert, constants.Alert.FAILURE)
+
+        # Wait for job handle to complete (alert set to OK)
+        event_2.wait()
 
         dcron_job.refresh_from_db()
 

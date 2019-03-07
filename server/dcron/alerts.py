@@ -180,6 +180,9 @@ def _check_alert(dcron_job: models.DCronJob, current_date_time: typing.Optional[
             # The job is running for too long.
             return AlertId(constants.Alert.DURATION)
 
+        if dcron_job.alert == constants.Alert.FAILURE:
+            return AlertId(constants.Alert.FAILURE)
+
         return AlertId(constants.Alert.OK)
 
     previous_date_time, next_date_time = _calculate_scheduled_datetimes(
