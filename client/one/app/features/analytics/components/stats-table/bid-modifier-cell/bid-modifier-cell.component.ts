@@ -17,6 +17,7 @@ import {BidModifierCellStore} from './services/bid-modifier-cell.store';
 import {BidModifier} from '../../../../../core/bid-modifiers/types/bid-modifier';
 import {BidModifiersService} from '../../../../../core/bid-modifiers/services/bid-modifiers.service';
 import {BID_MODIFIER_CELL_CONFIG} from './bid-modifier-cell.config';
+import {KeyCode} from '../../../../../app.constants';
 
 @Component({
     selector: 'zem-bid-modifier-cell',
@@ -90,6 +91,12 @@ export class BidModifierCellComponent implements OnInit, OnChanges {
 
     isInEditMode(): boolean {
         return this.mode === EditableCellMode.EDIT;
+    }
+
+    onInputKeydown($event: KeyboardEvent) {
+        if ($event.keyCode === KeyCode.ENTER) {
+            this.save();
+        }
     }
 }
 

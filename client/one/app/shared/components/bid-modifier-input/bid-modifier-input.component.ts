@@ -29,6 +29,8 @@ export class BidModifierInputComponent implements OnChanges {
     isFocused: boolean = false;
     @Output()
     valueChange = new EventEmitter<string>();
+    @Output()
+    inputKeydown = new EventEmitter<KeyboardEvent>();
 
     model: string;
 
@@ -44,6 +46,10 @@ export class BidModifierInputComponent implements OnChanges {
 
     onInputBlur($event: string) {
         this.valueChange.emit($event);
+    }
+
+    onInputKeydown($event: KeyboardEvent) {
+        this.inputKeydown.emit($event);
     }
 
     addDeltaPercent(deltaPercent: number): void {

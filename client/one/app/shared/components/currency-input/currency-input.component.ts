@@ -14,7 +14,6 @@ import * as commonHelpers from '../../helpers/common.helpers';
 import * as stringHelpers from '../../helpers/string.helpers';
 import * as numericHelpers from '../../helpers/numeric.helpers';
 import * as currencyHelpers from '../../helpers/currency.helpers';
-import {KeyCode} from '../../../app.constants';
 
 @Component({
     selector: 'zem-currency-input',
@@ -38,8 +37,9 @@ export class CurrencyInputComponent implements OnInit, OnChanges {
     fractionSize: number;
     @Output()
     inputBlur = new EventEmitter<string>();
+    @Output()
+    inputKeydown = new EventEmitter<KeyboardEvent>();
 
-    keyFilter: number[];
     model: string;
 
     private regExp: RegExp;
@@ -49,7 +49,6 @@ export class CurrencyInputComponent implements OnInit, OnChanges {
             this.fractionSize,
             2
         );
-        this.keyFilter = [KeyCode.ENTER];
         this.regExp = new RegExp(`^\\d+(\\.\\d{0,${this.fractionSize}})?$`);
     }
 
@@ -63,6 +62,7 @@ export class CurrencyInputComponent implements OnInit, OnChanges {
     }
 
     onKeydown($event: KeyboardEvent) {
+        this.inputKeydown.emit($event);
         const indexToInsert = Number((<any>$event.target).selectionStart);
         const valueToInsert = $event.key;
         const isValid = this.validate(this.model, indexToInsert, valueToInsert);

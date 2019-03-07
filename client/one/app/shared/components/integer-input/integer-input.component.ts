@@ -11,7 +11,6 @@ import {
     OnInit,
 } from '@angular/core';
 import * as stringHelpers from '../../helpers/string.helpers';
-import {KeyCode} from '../../../app.constants';
 
 @Component({
     selector: 'zem-integer-input',
@@ -33,14 +32,14 @@ export class IntegerInputComponent implements OnInit, OnChanges {
     valueChange = new EventEmitter<string>();
     @Output()
     inputBlur = new EventEmitter<string>();
+    @Output()
+    inputKeydown = new EventEmitter<KeyboardEvent>();
 
-    keyFilter: number[];
     model: string;
 
     private regExp: RegExp;
 
     ngOnInit() {
-        this.keyFilter = [KeyCode.ENTER];
         this.regExp = new RegExp('^\\d+$');
     }
 
@@ -51,6 +50,7 @@ export class IntegerInputComponent implements OnInit, OnChanges {
     }
 
     onKeydown($event: KeyboardEvent) {
+        this.inputKeydown.emit($event);
         const indexToInsert = Number((<any>$event.target).selectionStart);
         const valueToInsert = $event.key;
         const isValid = this.validate(this.model, indexToInsert, valueToInsert);
