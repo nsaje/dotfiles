@@ -34,6 +34,13 @@ class ConstantsBaseTestCase(TestCase):
         self.assertTrue("cons2" in constants)
         self.assertTrue("cons3" in constants)
 
+    def test_get_all_names(self):
+        constants = TestConstant.get_all_names()
+        self.assertEqual(len(constants), 3)
+        self.assertTrue("CONS1" in constants)
+        self.assertTrue("CONS2" in constants)
+        self.assertTrue("CONS3" in constants)
+
     def test_get_choices(self):
         choices = tuple(TestConstant.get_choices())
         self.assertEqual(len(choices), 3)
@@ -41,12 +48,23 @@ class ConstantsBaseTestCase(TestCase):
         self.assertTrue(("cons2", "Cons2") in choices)
         self.assertTrue(("cons3", "Cons3") in choices)
 
+    def test_get_name(self):
+        self.assertEqual(TestConstant.get_name("cons2"), "CONS2")
+        self.assertRaises(KeyError, TestConstant.get_name, "cons100")
+        self.assertRaises(KeyError, TestConstantNoValues.get_name, "cons100")
+
     def test_get_text(self):
         self.assertEqual(TestConstant.get_text("cons2"), "Cons2")
-        self.assertIs(TestConstant.get_text("cons100"), None)
+        self.assertIsNone(TestConstant.get_text("cons100"))
         self.assertRaises(AttributeError, TestConstantNoValues.get_text, "cons1")
 
     def test_get_value(self):
         self.assertEqual(TestConstant.get_value("Cons2"), "cons2")
-        self.assertIs(TestConstant.get_value("Cons100"), None)
+        self.assertIsNone(TestConstant.get_value("Cons100"))
         self.assertRaises(AttributeError, TestConstantNoValues.get_value, "Cons1")
+
+    def test_get_value_from_name(self):
+        self.assertEqual(TestConstant.get_value_from_name("CONS2"), "cons2")
+        self.assertEqual(TestConstantNoValues.get_value_from_name("CONS1"), "cons1")
+        self.assertIsNone(TestConstant.get_value_from_name("CONS100"))
+        self.assertIsNone(TestConstantNoValues.get_value_from_name("CONS100"))

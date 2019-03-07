@@ -1,0 +1,145 @@
+from rest_framework import permissions
+from rest_framework import status
+
+import restapi.access
+import restapi.common.views_base
+from core.features.bid_modifiers import constants
+from core.features.bid_modifiers import exceptions
+from core.features.bid_modifiers import service
+from dash import models
+from restapi.common import pagination
+from restapi.common import permissions as restapi_permissions
+from utils import exc
+
+from . import serializers
+
+
+class BidModifierViewSet(restapi.common.views_base.RESTAPIBaseViewSet):
+    permission_classes = (permissions.IsAuthenticated, restapi_permissions.CanSetBidModifiersPermission)
+
+    def list(self, request, ad_group_id):
+        bid_modifiers = (
+            models.BidModifier.objects.filter_by_user(request.user)
+            .filter(ad_group__id=ad_group_id)
+            .select_related("source")
+            .order_by("pk")
+        )
+
+        if "type" in request.GET:
+            modifier_type = constants.BidModifierType.get_value_from_name(request.GET["type"])
+            if modifier_type:
+                bid_modifiers = bid_modifiers.filter(type=modifier_type)
+            else:
+                bid_modifiers = models.BidModifier.objects.none()
+
+        paginator = pagination.StandardPagination()
+        paginated_bid_modifiers = paginator.paginate_queryset(bid_modifiers, request)
+        return paginator.get_paginated_response(
+            serializers.BidModifierSerializer(paginated_bid_modifiers, many=True).data
+        )
+
+    def create(self, request, ad_group_id):
+        serializer = serializers.BidModifierSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        input_data = serializer.validated_data
+
+        try:
+            ad_group = models.AdGroup.objects.filter_by_user(request.user).get(id=ad_group_id)
+        except models.AdGroup.DoesNotExist:
+            raise exc.MissingDataError("Ad Group does not exist")
+
+        if "source_slug" in input_data and input_data["source_slug"]:
+            try:
+                source = models.Source.objects.get(bidder_slug=input_data["source_slug"])
+            except models.Source.DoesNotExist:
+                raise exc.MissingDataError("Source does not exist")
+        else:
+            source = None
+
+        try:
+            bid_modifier, _ = service.set(
+                ad_group, input_data["type"], input_data["target"], source, input_data["modifier"], user=request.user
+            )
+        except exceptions.BidModifierInvalid as e:
+            raise exc.ValidationError(str(e))
+
+        return self.response_ok(serializers.BidModifierSerializer(bid_modifier).data, status=status.HTTP_201_CREATED)
+
+    def retrieve(self, request, ad_group_id, pk=None):
+        try:
+            bid_modifier = (
+                models.BidModifier.objects.filter_by_user(request.user)
+                .filter(ad_group__id=ad_group_id)
+                .select_related("source")
+                .get(pk=pk)
+            )
+        except models.BidModifier.DoesNotExist:
+            raise exc.MissingDataError("Bid Modifier does not exist")
+
+        return self.response_ok(serializers.BidModifierSerializer(bid_modifier).data)
+
+    def update(self, request, ad_group_id, pk=None):
+        serializer = serializers.BidModifierSerializer(data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        input_data = serializer.validated_data
+
+        if any(e in input_data for e in ("type", "source_slug", "target")):
+            raise exc.ValidationError("Only modifier field can be updated")
+
+        try:
+            bid_modifier = (
+                models.BidModifier.objects.filter_by_user(request.user)
+                .filter(ad_group__id=ad_group_id)
+                .select_related("source")
+                .get(id=pk)
+            )
+        except models.BidModifier.DoesNotExist:
+            raise exc.MissingDataError("Bid Modifier does not exist")
+
+        bid_modifier, _ = service.set(
+            bid_modifier.ad_group,
+            bid_modifier.type,
+            bid_modifier.target,
+            bid_modifier.source,
+            input_data["modifier"],
+            user=request.user,
+        )
+
+        return self.response_ok(serializers.BidModifierSerializer(bid_modifier).data)
+
+    def destroy(self, request, ad_group_id, pk=None):
+
+        if pk is not None:
+            if request.data:
+                raise exc.ValidationError("Delete Bid Modifier requires no data")
+
+            number_of_deleted, _ = (
+                models.BidModifier.objects.filter_by_user(request.user)
+                .filter(ad_group__id=ad_group_id)
+                .filter(id=pk)
+                .delete()
+            )
+
+            if number_of_deleted > 0:
+                return self.response_ok({}, status=status.HTTP_204_NO_CONTENT)
+
+            raise exc.MissingDataError("Bid Modifier does not exist")
+
+        else:
+            bid_modifier_qs = models.BidModifier.objects.filter_by_user(request.user).filter(ad_group__id=ad_group_id)
+
+            if not isinstance(request.data, dict) or request.data:
+                # in case request data is not an empty dictionary validate it
+                serializer = serializers.BidModifierIdSerializer(data=request.data, many=True)
+                serializer.is_valid(raise_exception=True)
+                input_id_set = set(e["id"] for e in serializer.validated_data)
+
+                bid_modifier_ids = bid_modifier_qs.filter(id__in=input_id_set).values_list("id", flat=True)
+
+                if set(bid_modifier_ids).symmetric_difference(input_id_set):
+                    raise exc.ValidationError("Invalid Bid Modifier ids")
+
+                bid_modifier_qs = models.BidModifier.objects.filter(id__in=input_id_set)
+
+            bid_modifier_qs.delete()
+            return self.response_ok({}, status=status.HTTP_204_NO_CONTENT)

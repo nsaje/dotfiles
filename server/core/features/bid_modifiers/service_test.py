@@ -30,6 +30,7 @@ class TestBidModifierService(TestCase):
         service.set(self.ad_group, constants.BidModifierType.COUNTRY, "test_country", None, 2.9)
         service.set(self.ad_group, constants.BidModifierType.STATE, "test_state", None, 2.4)
         service.set(self.ad_group, constants.BidModifierType.DMA, "test_dma", None, 0.6)
+        service.set(self.ad_group, constants.BidModifierType.AD, "test_ad", None, 1.1)
         self.assertEqual(
             service.get(self.ad_group),
             [
@@ -56,6 +57,7 @@ class TestBidModifierService(TestCase):
                 {"type": constants.BidModifierType.COUNTRY, "target": "test_country", "source": None, "modifier": 2.9},
                 {"type": constants.BidModifierType.STATE, "target": "test_state", "source": None, "modifier": 2.4},
                 {"type": constants.BidModifierType.DMA, "target": "test_dma", "source": None, "modifier": 0.6},
+                {"type": constants.BidModifierType.AD, "target": "test_ad", "source": None, "modifier": 1.1},
             ],
         )
 
@@ -68,6 +70,7 @@ class TestBidModifierService(TestCase):
         service.set(self.ad_group, constants.BidModifierType.COUNTRY, "test_country", None, 2.9)
         service.set(self.ad_group, constants.BidModifierType.STATE, "test_state", None, 2.4)
         service.set(self.ad_group, constants.BidModifierType.DMA, "test_dma", None, 0.6)
+        service.set(self.ad_group, constants.BidModifierType.AD, "test_ad", None, 1.1)
         self.assertEqual(
             service.get(self.ad_group, include_types=[constants.BidModifierType.DEVICE, constants.BidModifierType.DMA]),
             [
@@ -85,6 +88,7 @@ class TestBidModifierService(TestCase):
         service.set(self.ad_group, constants.BidModifierType.COUNTRY, "test_country", None, 2.9)
         service.set(self.ad_group, constants.BidModifierType.STATE, "test_state", None, 2.4)
         service.set(self.ad_group, constants.BidModifierType.DMA, "test_dma", None, 0.6)
+        service.set(self.ad_group, constants.BidModifierType.AD, "test_ad", None, 1.1)
         self.assertEqual(
             service.get(
                 self.ad_group,
@@ -100,6 +104,7 @@ class TestBidModifierService(TestCase):
                 {"type": constants.BidModifierType.COUNTRY, "target": "test_country", "source": None, "modifier": 2.9},
                 {"type": constants.BidModifierType.STATE, "target": "test_state", "source": None, "modifier": 2.4},
                 {"type": constants.BidModifierType.DMA, "target": "test_dma", "source": None, "modifier": 0.6},
+                {"type": constants.BidModifierType.AD, "target": "test_ad", "source": None, "modifier": 1.1},
             ],
         )
 
@@ -161,22 +166,26 @@ class TestBidModifierService(TestCase):
     def test_clean_entries(self):
         entries = [
             {
-                "Type": constants.BidModifierType.get_text(constants.BidModifierType.PUBLISHER),
-                "Target": "all publishers",
+                constants.BidModifierType.get_text(constants.BidModifierType.PUBLISHER): "all publishers",
                 "Source Slug": "some_slug",
                 "Bid Modifier": "",
             },
             {
-                "Type": constants.BidModifierType.get_text(constants.BidModifierType.PUBLISHER),
-                "Target": "example1.com",
+                constants.BidModifierType.get_text(constants.BidModifierType.PUBLISHER): "example1.com",
                 "Source Slug": "some_slug",
                 "Bid Modifier": 1.0,
             },
             {
-                "Type": constants.BidModifierType.get_text(constants.BidModifierType.PUBLISHER),
-                "Target": "example2.com",
+                constants.BidModifierType.get_text(constants.BidModifierType.PUBLISHER): "example2.com",
                 "Source Slug": "some_slug",
                 "Bid Modifier": 2.1,
+            },
+            {
+                constants.BidModifierType.get_text(constants.BidModifierType.DEVICE): helpers.output_device_type_target(
+                    constants.BidModifierType.DEVICE
+                ),
+                "Source Slug": "",
+                "Bid Modifier": 1.6,
             },
         ]
         test_entries = entries.copy()
@@ -197,45 +206,56 @@ class TestBidModifierService(TestCase):
                     "modifier": 2.1,
                     "source": self.source,
                 },
+                {
+                    "type": constants.BidModifierType.DEVICE,
+                    "target": str(constants.BidModifierType.DEVICE),
+                    "modifier": 1.6,
+                    "source": None,
+                },
             ],
         )
         self.assertEqual(entries, test_entries)
 
         entries = [
             {
-                "Type": helpers.output_modifier_type(constants.BidModifierType.PUBLISHER),
-                "Target": "https://example.com",
+                helpers.output_modifier_type(constants.BidModifierType.PUBLISHER): "https://example.com",
                 "Source Slug": "bad_slug",
                 "Bid Modifier": 12.0,
             },
             {
-                "Type": helpers.output_modifier_type(constants.BidModifierType.PUBLISHER),
-                "Target": "example2.com/",
+                helpers.output_modifier_type(constants.BidModifierType.PUBLISHER): "example2.com/",
                 "Source Slug": "some_slug",
                 "Bid Modifier": 0.0,
             },
             {
-                "Type": helpers.output_modifier_type(constants.BidModifierType.PUBLISHER),
-                "Target": "example3.com",
+                helpers.output_modifier_type(constants.BidModifierType.PUBLISHER): "example3.com",
                 "Source Slug": "some_slug",
                 "Bid Modifier": "ASD",
             },
             {
-                "Type": helpers.output_modifier_type(constants.BidModifierType.PUBLISHER),
-                "Target": "all publishers",
+                helpers.output_modifier_type(constants.BidModifierType.PUBLISHER): "all publishers",
                 "Source Slug": "some_slug",
                 "Bid Modifier": 2.0,
+            },
+            {
+                constants.BidModifierType.get_text(constants.BidModifierType.DEVICE): "Illegal",
+                "Source Slug": "",
+                "Bid Modifier": 1.6,
             },
         ]
         cleaned_entries, has_error = service.clean_entries(entries)
         self.assertEqual(has_error, True)
         self.assertEqual(
             entries[0]["Errors"],
-            "Bid modifier too high (> 11.0); Invalid Source Slug; Remove the following prefixes: http, https",
+            "%s; Invalid Source Slug; Remove the following prefixes: http, https"
+            % helpers._get_modifier_bounds_error_message(12.0),
         )
-        self.assertEqual(entries[1]["Errors"], "Bid modifier too low (< 0.01); Publisher should not contain /")
+        self.assertEqual(
+            entries[1]["Errors"], "%s; Publisher should not contain /" % helpers._get_modifier_bounds_error_message(0.0)
+        )
         self.assertEqual(entries[2]["Errors"], "Invalid Bid Modifier")
         self.assertEqual(entries[3]["Errors"], "'all publishers' can not have a bid modifier set")
+        self.assertEqual(entries[4]["Errors"], "Invalid Device")
 
     def test_set_from_cleaned_entries(self):
         cleaned_entries = [
@@ -257,6 +277,7 @@ class TestBidModifierService(TestCase):
             {"type": constants.BidModifierType.COUNTRY, "target": "test_country", "source": None, "modifier": 2.9},
             {"type": constants.BidModifierType.STATE, "target": "test_state", "source": None, "modifier": 2.4},
             {"type": constants.BidModifierType.DMA, "target": "test_dma", "source": None, "modifier": 0.6},
+            {"type": constants.BidModifierType.AD, "target": "test_dma", "source": None, "modifier": 1.1},
         ]
         service.set_from_cleaned_entries(self.ad_group, cleaned_entries)
         self.assertEqual(
@@ -285,10 +306,11 @@ class TestBidModifierService(TestCase):
                 {"type": constants.BidModifierType.COUNTRY, "target": "test_country", "source": None, "modifier": 2.9},
                 {"type": constants.BidModifierType.STATE, "target": "test_state", "source": None, "modifier": 2.4},
                 {"type": constants.BidModifierType.DMA, "target": "test_dma", "source": None, "modifier": 0.6},
+                {"type": constants.BidModifierType.AD, "target": "test_dma", "source": None, "modifier": 1.1},
             ],
         )
 
-    def test_make_csv_file(self):
+    def test_make_and_parse_example_csv_file(self):
         magic_mixer.blend(dash_models.Source, name="Outbrain", bidder_slug="b1_outbrain")
         magic_mixer.blend(
             geolocation.Geolocation, key="US", type=dash_constants.LocationType.COUNTRY, name="United States"
@@ -299,190 +321,100 @@ class TestBidModifierService(TestCase):
         magic_mixer.blend(
             geolocation.Geolocation, key="765", type=dash_constants.LocationType.DMA, name="765 El Paso, TX"
         )
+        magic_mixer.blend(dash_models.ContentAd, id="1")
 
-        input_csv_file = service.make_csv_example_file()
+        for modifier_type in constants.BidModifierType.get_all():
+            input_csv_file = service.make_csv_example_file(modifier_type)
 
-        entries = service.parse_csv_file_entries(input_csv_file)
-        cleaned_entries, has_error = service.clean_entries(entries)
-        self.assertFalse(has_error)
+            entries = service.parse_csv_file_entries(input_csv_file)
+            cleaned_entries, has_error = service.clean_entries(entries)
+            self.assertFalse(has_error)
 
-        output_csv_file = service.make_csv_file(cleaned_entries)
+            # Because clean_entries changes 1.0 modifier value to None
+            for entry in cleaned_entries:
+                entry.update({"modifier": "1.0"})
 
-        input_csv_file.seek(0)
-        self.assertEqual(output_csv_file.read(), input_csv_file.read())
+            output_csv_file = service.make_csv_file(modifier_type, cleaned_entries)
 
-    def test_make_csv_example_file(self):
-        outbrain = magic_mixer.blend(dash_models.Source, name="Outbrain", bidder_slug="b1_outbrain")
-        magic_mixer.blend(
-            geolocation.Geolocation, key="US", type=dash_constants.LocationType.COUNTRY, name="United States"
-        )
-        magic_mixer.blend(
-            geolocation.Geolocation, key="US-TX", type=dash_constants.LocationType.REGION, name="Texas, United States"
-        )
-        magic_mixer.blend(
-            geolocation.Geolocation, key="765", type=dash_constants.LocationType.DMA, name="765 El Paso, TX"
-        )
+            input_csv_file.seek(0)
+            self.assertEqual(output_csv_file.read(), input_csv_file.read())
 
-        csv_file = service.make_csv_example_file()
-        entries = service.parse_csv_file_entries(csv_file)
-        cleaned_entries, has_error = service.clean_entries(entries)
-        self.assertFalse(has_error)
-        self.assertEqual(
-            cleaned_entries,
-            [
-                {
-                    "type": constants.BidModifierType.PUBLISHER,
-                    "target": "example.com",
-                    "modifier": 1.1,
-                    "source": self.source,
-                },
-                {"type": constants.BidModifierType.SOURCE, "target": str(outbrain.id), "modifier": 1.2, "source": None},
-                {
-                    "type": constants.BidModifierType.DEVICE,
-                    "target": str(dash_constants.DeviceType.MOBILE),
-                    "modifier": 1.3,
-                    "source": None,
-                },
-                {
-                    "type": constants.BidModifierType.OPERATING_SYSTEM,
-                    "target": str(dash_constants.OperatingSystem.ANDROID),
-                    "modifier": 1.4,
-                    "source": None,
-                },
-                {
-                    "type": constants.BidModifierType.PLACEMENT,
-                    "target": str(dash_constants.PlacementMedium.SITE),
-                    "modifier": 1.5,
-                    "source": None,
-                },
-                {"type": constants.BidModifierType.COUNTRY, "target": "US", "modifier": 1.6, "source": None},
-                {"type": constants.BidModifierType.STATE, "target": "US-TX", "modifier": 1.7, "source": None},
-                {"type": constants.BidModifierType.DMA, "target": "765", "modifier": 1.8, "source": None},
-            ],
-        )
-
-    def test_parse_invalid_bid_modifier_file(self):
-        csv_columns = ["Type", "Target", "Illegal", "Bid Modifier"]
-
-        csv_file = StringIO()
-        writer = csv.DictWriter(csv_file, csv_columns, extrasaction="ignore")
-        writer.writeheader()
-        csv_file.seek(0)
+    def test_parse_csv_file_entries_wrong_type(self):
+        input_csv_file = service.make_csv_example_file(constants.BidModifierType.PUBLISHER)
 
         with self.assertRaises(exceptions.InvalidBidModifierFile):
-            service.parse_csv_file_entries(csv_file)
+            service.parse_csv_file_entries(input_csv_file, modifier_type=constants.BidModifierType.SOURCE)
 
     @mock.patch("utils.s3helpers.S3Helper.put")
-    def test_make_csv_error_file(self, mock_s3_helper_put):
-        csv_columns = ["Type", "Target", "Source Slug", "Bid Modifier"]
-        entries = [
+    def test_make_and_store_csv_error_file(self, mock_s3_helper_put):
+        input_entries = [
             {
-                "Type": helpers.output_modifier_type(constants.BidModifierType.PUBLISHER),
-                "Target": "example.com",
+                helpers.output_modifier_type(constants.BidModifierType.PUBLISHER): "example.com",
                 "Source Slug": "some_slug",
                 "Bid Modifier": "foo",
             },
-            {"Type": "invalid", "Target": "Outbrain", "Source Slug": "", "Bid Modifier": "1.2"},
+            {helpers.output_modifier_type(constants.BidModifierType.DEVICE): "Illegal", "Bid Modifier": "1.3"},
             {
-                "Type": helpers.output_modifier_type(constants.BidModifierType.DEVICE),
-                "Target": "Illegal",
-                "Source Slug": "",
-                "Bid Modifier": "1.3",
-            },
-            {
-                "Type": helpers.output_modifier_type(constants.BidModifierType.OPERATING_SYSTEM),
-                "Target": "Android",
-                "Source Slug": "",
+                helpers.output_modifier_type(constants.BidModifierType.OPERATING_SYSTEM): "Android",
                 "Bid Modifier": "30.0",
             },
+            {helpers.output_modifier_type(constants.BidModifierType.PLACEMENT): "Website", "Bid Modifier": "-0.1"},
+            {helpers.output_modifier_type(constants.BidModifierType.PLACEMENT): "In-app", "Bid Modifier": "0.5"},
+            {helpers.output_modifier_type(constants.BidModifierType.COUNTRY): "US", "Bid Modifier": "1.6"},
+        ]
+
+        result_entires = [
             {
-                "Type": helpers.output_modifier_type(constants.BidModifierType.PLACEMENT),
-                "Target": "Website",
-                "Source Slug": "",
+                helpers.output_modifier_type(constants.BidModifierType.PUBLISHER): "example.com",
+                "Source Slug": "some_slug",
+                "Bid Modifier": "foo",
+                "Errors": "Invalid Bid Modifier",
+            },
+            {
+                helpers.output_modifier_type(constants.BidModifierType.DEVICE): "Illegal",
+                "Bid Modifier": "1.3",
+                "Errors": "Invalid Device",
+            },
+            {
+                helpers.output_modifier_type(constants.BidModifierType.OPERATING_SYSTEM): "Android",
+                "Bid Modifier": "30.0",
+                "Errors": helpers._get_modifier_bounds_error_message(30),
+            },
+            {
+                helpers.output_modifier_type(constants.BidModifierType.PLACEMENT): "Website",
                 "Bid Modifier": "-0.1",
+                "Errors": helpers._get_modifier_bounds_error_message(-0.1),
             },
             {
-                "Type": helpers.output_modifier_type(constants.BidModifierType.PLACEMENT),
-                "Target": "In-app",
-                "Source Slug": "",
+                helpers.output_modifier_type(constants.BidModifierType.PLACEMENT): "In-app",
                 "Bid Modifier": "0.5",
+                "Errors": "",
             },
             {
-                "Type": helpers.output_modifier_type(constants.BidModifierType.COUNTRY),
-                "Target": "US",
-                "Source Slug": "",
+                helpers.output_modifier_type(constants.BidModifierType.COUNTRY): "US",
                 "Bid Modifier": "1.6",
+                "Errors": "Invalid Geolocation",
             },
         ]
 
-        csv_file = StringIO()
-        writer = csv.DictWriter(csv_file, csv_columns, extrasaction="ignore")
-        writer.writeheader()
-        writer.writerows(entries)
-        csv_file.seek(0)
+        for idx, entry in enumerate(input_entries):
+            modifier_type, target_column_name = helpers.extract_modifier_type(entry.keys())
+            csv_columns = helpers.make_csv_file_columns(modifier_type)
 
-        entries = service.parse_csv_file_entries(csv_file)
-        cleaned_entries, has_error = service.clean_entries(entries)
-        self.assertTrue(has_error)
+            csv_file = StringIO()
+            writer = csv.DictWriter(csv_file, csv_columns, extrasaction="ignore")
+            writer.writeheader()
+            writer.writerows([entry])
+            csv_file.seek(0)
 
-        service.make_csv_error_file(entries, csv_columns + ["Errors"], self.ad_group.id)
+            entries = service.parse_csv_file_entries(csv_file)
+            cleaned_entries, has_error = service.clean_entries(entries)
+            self.assertEqual(has_error, result_entires[idx]["Errors"] != "")
 
-        mock_s3_helper_put.assert_called_once()
-        csv_error_content = mock_s3_helper_put.call_args_list[0][0][1]
+            service.make_and_store_csv_error_file(entries, csv_columns + ["Errors"], self.ad_group.id)
 
-        error_entires = service.parse_csv_file_entries(StringIO(csv_error_content))
+            csv_error_content = mock_s3_helper_put.call_args_list[idx][0][1]
 
-        self.assertEqual(
-            error_entires,
-            [
-                {
-                    "Type": helpers.output_modifier_type(constants.BidModifierType.PUBLISHER),
-                    "Target": "example.com",
-                    "Source Slug": "some_slug",
-                    "Bid Modifier": "foo",
-                    "Errors": "Invalid Bid Modifier",
-                },
-                {
-                    "Type": "invalid",
-                    "Target": "Outbrain",
-                    "Source Slug": "",
-                    "Bid Modifier": "1.2",
-                    "Errors": "Invalid Bid Modifier Type",
-                },
-                {
-                    "Type": helpers.output_modifier_type(constants.BidModifierType.DEVICE),
-                    "Target": "Illegal",
-                    "Source Slug": "",
-                    "Bid Modifier": "1.3",
-                    "Errors": "Invalid Device",
-                },
-                {
-                    "Type": helpers.output_modifier_type(constants.BidModifierType.OPERATING_SYSTEM),
-                    "Target": "Android",
-                    "Source Slug": "",
-                    "Bid Modifier": "30.0",
-                    "Errors": "Bid modifier too high (> 11.0)",
-                },
-                {
-                    "Type": helpers.output_modifier_type(constants.BidModifierType.PLACEMENT),
-                    "Target": "Website",
-                    "Source Slug": "",
-                    "Bid Modifier": "-0.1",
-                    "Errors": "Bid modifier too low (< 0.01)",
-                },
-                {
-                    "Type": helpers.output_modifier_type(constants.BidModifierType.PLACEMENT),
-                    "Target": "In-app",
-                    "Source Slug": "",
-                    "Bid Modifier": "0.5",
-                    "Errors": "",
-                },
-                {
-                    "Type": helpers.output_modifier_type(constants.BidModifierType.COUNTRY),
-                    "Target": "US",
-                    "Source Slug": "",
-                    "Bid Modifier": "1.6",
-                    "Errors": "Invalid Geolocation",
-                },
-            ],
-        )
+            error_entires = [row for row in csv.DictReader(StringIO(csv_error_content))]
+
+            self.assertEqual(error_entires, [result_entires[idx]])

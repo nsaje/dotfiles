@@ -1,9 +1,7 @@
 import csv
 import io as StringIO
-import numbers
 import os
-import random
-import string
+from collections import defaultdict
 
 from django.conf import settings
 from django.db import transaction
@@ -32,17 +30,40 @@ def get(ad_group, include_types=None, exclude_types=None):
 @transaction.atomic
 def set(ad_group, modifier_type, target, source, modifier, user=None, write_history=True):
     if not modifier:
-        num_deleted, result = _delete(ad_group, modifier_type, target, source)
-        if write_history and num_deleted > 0:
-            ad_group.write_history(
-                "Reset bid modifier: %s" % helpers.describe_bid_modifier(modifier_type, target, source), user=user
-            )
+        _delete(ad_group, modifier_type, target, source, user=user, write_history=write_history)
         return
 
-    if not isinstance(modifier, numbers.Number) or not helpers.modifier_bounds_ok(modifier):
-        raise exceptions.BidModifierValueInvalid
+    helpers.check_modifier_value(modifier)
 
-    _update_or_create(ad_group, modifier_type, target, source, modifier)
+    return _update_or_create(ad_group, modifier_type, target, source, modifier, user=user, write_history=write_history)
+
+
+def _delete(ad_group, modifier_type, target, source, user=None, write_history=True):
+    source_slug = helpers.get_source_slug(modifier_type, source)
+
+    num_deleted, deleted = models.BidModifier.objects.filter(
+        type=modifier_type, ad_group=ad_group, source_slug=source_slug, target=target
+    ).delete()
+
+    if write_history and num_deleted > 0:
+        ad_group.write_history(
+            "Reset bid modifier: %s" % helpers.describe_bid_modifier(modifier_type, target, source), user=user
+        )
+
+    return num_deleted, deleted
+
+
+def _update_or_create(ad_group, modifier_type, target, source, modifier, user=None, write_history=True):
+    source_slug = helpers.get_source_slug(modifier_type, source)
+
+    instance, created = models.BidModifier.objects.update_or_create(
+        defaults={"modifier": modifier, "source": source},
+        type=modifier_type,
+        ad_group=ad_group,
+        source_slug=source_slug,
+        target=target,
+    )
+
     if write_history:
         percentage = "{:.2%}".format(modifier - 1.0)
         ad_group.write_history(
@@ -50,23 +71,7 @@ def set(ad_group, modifier_type, target, source, modifier, user=None, write_hist
             user=user,
         )
 
-
-def _delete(ad_group, modifier_type, target, source):
-    source_slug = helpers.get_source_slug(modifier_type, source)
-    return models.BidModifier.objects.filter(
-        type=modifier_type, ad_group=ad_group, source_slug=source_slug, target=target
-    ).delete()
-
-
-def _update_or_create(ad_group, modifier_type, target, source, modifier):
-    source_slug = helpers.get_source_slug(modifier_type, source)
-    return models.BidModifier.objects.update_or_create(
-        defaults={"modifier": modifier, "source": source},
-        type=modifier_type,
-        ad_group=ad_group,
-        source_slug=source_slug,
-        target=target,
-    )
+    return instance, created
 
 
 def set_from_cleaned_entries(ad_group, cleaned_entries, user=None, write_history=True):
@@ -90,7 +95,7 @@ def clean_entries(entries):
     for entry in entries:
         errors = []
 
-        modifier_type = helpers.clean_bid_modifier_type_input(entry["Type"], errors)
+        modifier_type, target_column_name = helpers.extract_modifier_type(entry.keys())
         modifier = helpers.clean_bid_modifier_value_input(entry["Bid Modifier"], errors)
         if modifier_type is None:
             entry["Errors"] = "; ".join(errors)
@@ -99,80 +104,158 @@ def clean_entries(entries):
 
         if modifier_type == constants.BidModifierType.PUBLISHER:
             source = helpers.clean_source_bidder_slug_input(entry["Source Slug"], sources_by_slug, errors)
-            target = helpers.clean_publisher_input(entry["Target"], errors)
+            if entry[target_column_name] == "all publishers":
+                # We don't add 'all publishers' row to cleaned entries.
+                if modifier is not None:
+                    errors.append("'all publishers' can not have a bid modifier set")
+                else:
+                    continue
+            else:
+                target = helpers.clean_publisher_input(entry[target_column_name], errors)
         else:
             source = None
-            if entry["Source Slug"]:
-                errors.append("Source Slug must be empty for non-publisher bid modifier")
 
             if modifier_type == constants.BidModifierType.SOURCE:
-                target = helpers.clean_source_input(entry["Target"], errors)
+                target = helpers.clean_source_input(entry[target_column_name], errors)
             elif modifier_type == constants.BidModifierType.DEVICE:
-                target = helpers.clean_device_type_input(entry["Target"], errors)
+                target = helpers.clean_device_type_input(entry[target_column_name], errors)
             elif modifier_type == constants.BidModifierType.OPERATING_SYSTEM:
-                target = helpers.clean_operating_system_input(entry["Target"], errors)
+                target = helpers.clean_operating_system_input(entry[target_column_name], errors)
             elif modifier_type == constants.BidModifierType.PLACEMENT:
-                target = helpers.clean_placement_medium_input(entry["Target"], errors)
+                target = helpers.clean_placement_medium_input(entry[target_column_name], errors)
+            elif modifier_type == constants.BidModifierType.AD:
+                target = helpers.clean_ad_input(entry[target_column_name], errors)
             else:
-                target = helpers.clean_geolocation_input(entry["Target"], modifier_type, errors)
+                target = helpers.clean_geolocation_input(entry[target_column_name], modifier_type, errors)
 
-        # We don't add 'all publishers' row to cleaned entries.
-        if modifier_type == constants.BidModifierType.PUBLISHER and entry["Target"] == "all publishers":
-            if entry["Bid Modifier"] != "":
-                errors.append("'all publishers' can not have a bid modifier set")
-        elif not errors:
+        if not errors:
             cleaned_entries.append({"type": modifier_type, "modifier": modifier, "target": target, "source": source})
-
-        if errors:
+        else:
             entry["Errors"] = "; ".join(errors)
             has_error = True
 
     return cleaned_entries, has_error
 
 
-def parse_csv_file_entries(csv_file):
+def parse_csv_file_entries(csv_file, modifier_type=None):
     csv_reader = csv.DictReader(csv_file)
 
     if csv_reader.fieldnames is None:
         raise exceptions.InvalidBidModifierFile("The file is not a proper CSV file!")
 
-    if "Type" not in csv_reader.fieldnames:
-        raise exceptions.InvalidBidModifierFile("Type column missing in CSV file!")
+    detected_modifier_type, target_column_name = helpers.extract_modifier_type(csv_reader.fieldnames)
 
-    if "Target" not in csv_reader.fieldnames:
-        raise exceptions.InvalidBidModifierFile("Target column missing in CSV file!")
+    if modifier_type:
+        if modifier_type != detected_modifier_type:
+            raise exceptions.InvalidBidModifierFile("Input file does not match requested Bid Modifier type")
+    else:
+        modifier_type = detected_modifier_type
 
-    if "Source Slug" not in csv_reader.fieldnames:
-        raise exceptions.InvalidBidModifierFile("Source Slug column missing in CSV file!")
+    if modifier_type == constants.BidModifierType.PUBLISHER and "Source Slug" not in csv_reader.fieldnames:
+        raise exceptions.InvalidBidModifierFile("Source Slug column missing in CSV file")
+    elif modifier_type != constants.BidModifierType.PUBLISHER and "Source Slug" in csv_reader.fieldnames:
+        raise exceptions.InvalidBidModifierFile("Source Slug should exist only in publisher bid modifier CSV file")
 
     if "Bid Modifier" not in csv_reader.fieldnames:
-        raise exceptions.InvalidBidModifierFile("Bid Modifier column missing in CSV file!")
+        raise exceptions.InvalidBidModifierFile("Bid Modifier column missing in CSV file")
 
-    return list(csv_reader)
+    entries = []
+
+    for row in csv_reader:
+        entry = {target_column_name: row[target_column_name], "Bid Modifier": row["Bid Modifier"]}
+        if modifier_type == constants.BidModifierType.PUBLISHER:
+            entry.update({"Source Slug": row["Source Slug"]})
+
+        entries.append(entry)
+
+    return entries
 
 
-def make_csv_file(cleaned_entries):
-    csv_columns = ["Type", "Target", "Source Slug", "Bid Modifier"]
+def process_csv_file_upload(ad_group, csv_file, modifier_type=None, user=None):
+    entries = parse_csv_file_entries(csv_file, modifier_type=modifier_type)
+    cleaned_entries, error = clean_entries(entries)
+
+    if error:
+        modifier_type, target_column_name = helpers.extract_modifier_type(entries[0])
+        error_csv_columns = helpers.make_csv_file_columns(modifier_type) + ["Errors"]
+        return make_and_store_csv_error_file(entries, error_csv_columns, ad_group.id)
+
+    set_from_cleaned_entries(ad_group, cleaned_entries, user=user)
+    return None
+
+
+def process_bulk_csv_file_upload(ad_group, bulk_csv_file, user=None):
+    sub_files = helpers.split_bulk_csv_file(bulk_csv_file)
+    entries_list = []
+
+    for sub_file in sub_files:
+        try:
+            entries_list.append(parse_csv_file_entries(sub_file))
+        except exceptions.InvalidBidModifierFile as e:
+            entries_list.append(e)
+
+    overall_error = False
+    cleaned_entries_list = []
+
+    for entries in entries_list:
+        if isinstance(entries, exceptions.InvalidBidModifierFile):
+            overall_error = True
+        else:
+            cleaned_entries, error = clean_entries(entries)
+
+            if error:
+                overall_error = True
+
+            cleaned_entries_list.append(cleaned_entries)
+
+    if not overall_error:
+        set_from_cleaned_entries(
+            ad_group, [e for cleaned_entries in cleaned_entries_list for e in cleaned_entries], user=user
+        )
+        return None
+
+    def sub_file_generator(entries_list, sub_files):
+        for idx, entries in enumerate(entries_list):
+            if isinstance(entries, exceptions.InvalidBidModifierFile):
+                sub_file = sub_files[idx]
+                sub_file.seek(0)
+                message_buffer = StringIO.StringIO()
+                message_buffer.write(str(entries) + csv.excel.lineterminator)
+                message_buffer.write(sub_file.read())
+                message_buffer.seek(0)
+                yield message_buffer
+            else:
+                modifier_type, target_column_name = helpers.extract_modifier_type(entries[0])
+                error_csv_columns = helpers.make_csv_file_columns(modifier_type) + ["Errors"]
+                yield make_csv_error_file(entries, error_csv_columns)
+
+    csv_error_key = helpers.create_csv_error_key()
+
+    csv_error_content = helpers.create_bulk_csv_file(sub_file_generator(entries_list, sub_files))
+
+    s3_helper = s3helpers.S3Helper(settings.S3_BUCKET_PUBLISHER_GROUPS)
+    s3_helper.put(
+        os.path.join("bid_modifier_errors", "ad_group_{}".format(ad_group.id), csv_error_key + ".csv"),
+        csv_error_content,
+    )
+    return csv_error_key
+
+
+def make_csv_file(modifier_type, cleaned_entries):
+    target_column_name = helpers.output_modifier_type(modifier_type)
+    csv_columns = helpers.make_csv_file_columns(modifier_type)
 
     def rows(entries):
-        transformation_map = {
-            constants.BidModifierType.PUBLISHER: lambda x: x,
-            constants.BidModifierType.SOURCE: helpers.output_source_target,
-            constants.BidModifierType.DEVICE: helpers.output_device_type_target,
-            constants.BidModifierType.OPERATING_SYSTEM: helpers.output_operating_system_target,
-            constants.BidModifierType.PLACEMENT: helpers.output_placement_medium_target,
-            constants.BidModifierType.COUNTRY: lambda x: x,
-            constants.BidModifierType.STATE: lambda x: x,
-            constants.BidModifierType.DMA: lambda x: x,
-        }
-
         for entry in entries:
-            yield {
-                "Type": helpers.output_modifier_type(entry["type"]),
-                "Target": transformation_map[entry["type"]](entry["target"]),
-                "Source Slug": helpers.output_source_bidder_slug(entry["source"]),
+            row = {
+                target_column_name: helpers.transform_target(modifier_type, entry["target"]),
                 "Bid Modifier": str(entry["modifier"]),
             }
+
+            if modifier_type == constants.BidModifierType.PUBLISHER:
+                row.update({"Source Slug": helpers.output_source_bidder_slug(entry["source"])})
+
+            yield row
 
     csv_file = StringIO.StringIO()
     writer = csv.DictWriter(csv_file, csv_columns, extrasaction="ignore")
@@ -182,14 +265,27 @@ def make_csv_file(cleaned_entries):
     return csv_file
 
 
-def make_csv_error_file(entries, csv_columns, ad_group_id):
+def make_bulk_csv_file(cleaned_entries):
+    cleaned_entries.sort(key=lambda x: x["type"])
+    type_dict = defaultdict(list)
+    for entry in cleaned_entries:
+        type_dict[entry["type"]].append(entry)
+
+    def sub_file_generator(type_dict):
+        for modifier_type, entries in type_dict.items():
+            yield make_csv_file(modifier_type, entries)
+
+    return helpers.create_bulk_csv_file(sub_file_generator(type_dict))
+
+
+def make_and_store_csv_error_file(entries, csv_columns, ad_group_id):
     csv_error_file = StringIO.StringIO()
     csv_error_writer = csv.DictWriter(csv_error_file, csv_columns, extrasaction="ignore")
     csv_error_writer.writeheader()
     csv_error_writer.writerows(entries)
 
     csv_error_content = csv_error_file.getvalue()
-    csv_error_key = "".join(random.choice(string.ascii_letters + string.digits) for _ in range(64))
+    csv_error_key = helpers.create_csv_error_key()
 
     s3_helper = s3helpers.S3Helper(settings.S3_BUCKET_PUBLISHER_GROUPS)
     s3_helper.put(
@@ -200,62 +296,53 @@ def make_csv_error_file(entries, csv_columns, ad_group_id):
     return csv_error_key
 
 
-def make_csv_example_file():
-    csv_columns = ["Type", "Target", "Source Slug", "Bid Modifier"]
-    entries = [
-        {
-            "Type": helpers.output_modifier_type(constants.BidModifierType.PUBLISHER),
-            "Target": "example.com",
-            "Source Slug": "some_slug",
-            "Bid Modifier": "1.1",
+def make_csv_error_file(entries, csv_columns):
+    csv_error_file = StringIO.StringIO()
+    csv_error_writer = csv.DictWriter(csv_error_file, csv_columns, extrasaction="ignore")
+    csv_error_writer.writeheader()
+    csv_error_writer.writerows(entries)
+    csv_error_file.seek(0)
+
+    return csv_error_file
+
+
+def make_csv_example_file(modifier_type):
+    target_column_name = helpers.output_modifier_type(modifier_type)
+    csv_columns = helpers.make_csv_file_columns(modifier_type)
+
+    entry = {"Bid Modifier": "1.0"}
+
+    modifier_type_map = {
+        constants.BidModifierType.PUBLISHER: {target_column_name: "example.com", "Source Slug": "some_slug"},
+        constants.BidModifierType.SOURCE: {target_column_name: "b1_outbrain"},
+        constants.BidModifierType.DEVICE: {
+            target_column_name: dash_constants.DeviceType.get_text(dash_constants.DeviceType.MOBILE)
         },
-        {
-            "Type": helpers.output_modifier_type(constants.BidModifierType.SOURCE),
-            "Target": "b1_outbrain",
-            "Source Slug": "",
-            "Bid Modifier": "1.2",
+        constants.BidModifierType.OPERATING_SYSTEM: {
+            target_column_name: dash_constants.OperatingSystem.get_text(dash_constants.OperatingSystem.ANDROID)
         },
-        {
-            "Type": helpers.output_modifier_type(constants.BidModifierType.DEVICE),
-            "Target": dash_constants.DeviceType.get_text(dash_constants.DeviceType.MOBILE),
-            "Source Slug": "",
-            "Bid Modifier": "1.3",
+        constants.BidModifierType.PLACEMENT: {
+            target_column_name: dash_constants.PlacementMedium.get_text(dash_constants.PlacementMedium.SITE)
         },
-        {
-            "Type": helpers.output_modifier_type(constants.BidModifierType.OPERATING_SYSTEM),
-            "Target": dash_constants.OperatingSystem.get_text(dash_constants.OperatingSystem.ANDROID),
-            "Source Slug": "",
-            "Bid Modifier": "1.4",
-        },
-        {
-            "Type": helpers.output_modifier_type(constants.BidModifierType.PLACEMENT),
-            "Target": dash_constants.PlacementMedium.get_text(dash_constants.PlacementMedium.SITE),
-            "Source Slug": "",
-            "Bid Modifier": "1.5",
-        },
-        {
-            "Type": helpers.output_modifier_type(constants.BidModifierType.COUNTRY),
-            "Target": "US",
-            "Source Slug": "",
-            "Bid Modifier": "1.6",
-        },
-        {
-            "Type": helpers.output_modifier_type(constants.BidModifierType.STATE),
-            "Target": "US-TX",
-            "Source Slug": "",
-            "Bid Modifier": "1.7",
-        },
-        {
-            "Type": helpers.output_modifier_type(constants.BidModifierType.DMA),
-            "Target": "765",
-            "Source Slug": "",
-            "Bid Modifier": "1.8",
-        },
-    ]
+        constants.BidModifierType.COUNTRY: {target_column_name: "US"},
+        constants.BidModifierType.STATE: {target_column_name: "US-TX"},
+        constants.BidModifierType.DMA: {target_column_name: "765"},
+        constants.BidModifierType.AD: {target_column_name: "1"},
+    }
+
+    entry.update(modifier_type_map[modifier_type])
 
     csv_example_file = StringIO.StringIO()
     writer = csv.DictWriter(csv_example_file, csv_columns, extrasaction="ignore")
     writer.writeheader()
-    writer.writerows(entries)
+    writer.writerows([entry])
     csv_example_file.seek(0)
     return csv_example_file
+
+
+def make_bulk_csv_example_file():
+    def sub_file_generator():
+        for modifier_type in constants.BidModifierType.get_all():
+            yield make_csv_example_file(modifier_type)
+
+    return helpers.create_bulk_csv_file(sub_file_generator())

@@ -3,7 +3,6 @@ import csv
 import os
 
 from django.conf import settings
-from django.http import HttpResponse
 from rest_framework import permissions
 from rest_framework import serializers
 from rest_framework.parsers import MultiPartParser
@@ -16,20 +15,7 @@ from utils import csv_utils
 from utils import s3helpers
 
 
-class CSVMixin(object):
-    def _create_file_response(self, content_type, filename, status_code=200, content=""):
-        response = HttpResponse(content, content_type=content_type, status=status_code)
-        response["Content-Disposition"] = 'attachment; filename="%s"' % filename
-
-        return response
-
-    def create_csv_response(self, filename, status_code=200, content=""):
-        return self._create_file_response(
-            'text/csv; name="%s.csv"' % filename, "%s.csv" % filename, status_code, content
-        )
-
-
-class PublisherBidModifiersDownload(restapi.common.views_base.RESTAPIBaseViewSet, CSVMixin):
+class PublisherBidModifiersDownload(restapi.common.views_base.RESTAPIBaseViewSet):
     permission_classes = (permissions.IsAuthenticated,)
 
     def download(self, request, ad_group_id):
@@ -41,7 +27,7 @@ class PublisherBidModifiersDownload(restapi.common.views_base.RESTAPIBaseViewSet
 
         csv_content = csv_utils.tuplelist_to_csv(modifiers)
 
-        return self.create_csv_response("export", content=csv_content)
+        return csv_utils.create_csv_response(data=csv_content, filename="export")
 
 
 class PublisherBidModifiersUpload(restapi.common.views_base.RESTAPIBaseViewSet):
@@ -72,7 +58,9 @@ class PublisherBidModifiersUpload(restapi.common.views_base.RESTAPIBaseViewSet):
         cleaned_entries, error = publisher_bid_modifiers.service.clean_entries(entries)
 
         if error:
-            csv_error_key = publisher_bid_modifiers.service.make_csv_error_file(entries, error_csv_columns, ad_group.id)
+            csv_error_key = publisher_bid_modifiers.service.make_and_store_csv_error_file(
+                entries, error_csv_columns, ad_group.id
+            )
 
             raise serializers.ValidationError({"file": "Errors in CSV file!", "errorFileUrl": csv_error_key})
         else:
@@ -82,7 +70,7 @@ class PublisherBidModifiersUpload(restapi.common.views_base.RESTAPIBaseViewSet):
             return Response({}, status=200)
 
 
-class PublisherBidModifiersErrorDownload(restapi.common.views_base.RESTAPIBaseViewSet, CSVMixin):
+class PublisherBidModifiersErrorDownload(restapi.common.views_base.RESTAPIBaseViewSet):
     permission_classes = (permissions.IsAuthenticated,)
 
     def download(self, request, ad_group_id, csv_error_key):
@@ -93,12 +81,12 @@ class PublisherBidModifiersErrorDownload(restapi.common.views_base.RESTAPIBaseVi
             os.path.join("publisher_bid_modifier_errors", "ad_group_{}".format(ad_group.id), csv_error_key + ".csv")
         )
 
-        return self.create_csv_response("publisher_bid_modifier_errors", content=content)
+        return csv_utils.create_csv_response("publisher_bid_modifier_errors", content=content)
 
 
-class PublisherBidModifiersExampleCSVDownload(restapi.common.views_base.RESTAPIBaseViewSet, CSVMixin):
+class PublisherBidModifiersExampleCSVDownload(restapi.common.views_base.RESTAPIBaseViewSet):
     permission_classes = (permissions.IsAuthenticated,)
 
     def download(self, request):
         csv_example_file = publisher_bid_modifiers.service.make_csv_example_file()
-        return self.create_csv_response("example_bid_modifiers", content=csv_example_file)
+        return csv_utils.create_csv_response(data=csv_example_file, filename="example_bid_modifiers")

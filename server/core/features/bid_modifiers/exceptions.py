@@ -10,5 +10,9 @@ class BidModifierSourceInvalid(BidModifierInvalid):
     pass
 
 
+class BidModifierTypeInvalid(BidModifierInvalid):
+    pass
+
+
 class InvalidBidModifierFile(Exception):
     pass
