@@ -69,6 +69,11 @@ angular.module('one.widgets').directive('zemGridCell', function() {
                 ) {
                     return false;
                 }
+
+                if (!ctrl.data || !ctrl.data.value) {
+                    return false;
+                }
+
                 return (
                     getFieldType() ===
                         zemGridConstants.gridColumnTypes.BID_MODIFIER_FIELD &&
@@ -82,6 +87,10 @@ angular.module('one.widgets').directive('zemGridCell', function() {
                     !ctrl.row ||
                     ctrl.row.level === zemGridConstants.gridRowLevel.FOOTER
                 ) {
+                    return false;
+                }
+
+                if (!ctrl.data || !ctrl.data.value) {
                     return false;
                 }
 
