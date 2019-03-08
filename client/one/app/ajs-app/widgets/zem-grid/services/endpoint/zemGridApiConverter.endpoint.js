@@ -286,7 +286,9 @@ angular
                 convertedValue.id = value.id;
                 convertedValue.type = value.type;
                 convertedValue.sourceSlug = value.source_slug;
-                convertedValue.target = value.target;
+                convertedValue.target = value.target
+                    ? value.target.toString()
+                    : null;
                 convertedValue.bidMin = value.bid_min
                     ? parseFloat(value.bid_min).toFixed(2)
                     : null;
