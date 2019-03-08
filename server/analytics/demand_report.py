@@ -529,7 +529,7 @@ def _get_account_data(campaign_ids, date=None):
         "agency_created_dt": F("agency__created_dt"),
         "sales_representative_id": F("agency__sales_representative_id"),
         "cs_representative_id": F("agency__cs_representative_id"),
-        "whitelabel": F("agency__whitelabel"),
+        "whitelabel": F("agency__white_label__theme"),
         "agency_default_blacklist_id": F("agency__default_blacklist_id"),
         "whitelist_publisher_groups": F("agency__settings__whitelist_publisher_groups"),
         "blacklist_publisher_groups": F("agency__settings__blacklist_publisher_groups"),

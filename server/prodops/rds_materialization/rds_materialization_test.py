@@ -10,7 +10,7 @@ from . import rds_materialization
 
 
 class RDSAgencyTest(TestCase):
-    fixtures = ["test_models"]
+    fixtures = ["test_models.yaml"]
 
     def test_get_queryset(self):
         rds_agency = rds_materialization.RDSAgency()
@@ -25,7 +25,7 @@ class RDSAgencyTest(TestCase):
                 "name": "test agency 1",
                 "ob_representative": "supertestuser@test.com",
                 "sales_representative": "luka.silovinac@zemanta.com",
-                "whitelabel": "Green Park Content",
+                "whitelabel": "greenpark",
             },
         )
 
@@ -46,7 +46,7 @@ class RDSAgencyTest(TestCase):
         csv_open = os.open(local_path, os.O_RDONLY)
         self.assertEqual(
             os.read(csv_open, 500),
-            "1\ttest agency 1\tGreen Park Content\tUnknown\tluka.silovinac@zemanta.com\tmad.max@zemanta.com\tsupertestuser@test.com\r\n".encode(),  # noqa
+            "1\ttest agency 1\tgreenpark\tUnknown\tluka.silovinac@zemanta.com\tmad.max@zemanta.com\tsupertestuser@test.com\r\n".encode(),  # noqa
         )
 
     @patch("etl.redshift.prepare_copy_query")

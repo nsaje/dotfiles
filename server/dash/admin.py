@@ -90,20 +90,6 @@ class AgencyUserForm(AbstractUserForm):
     def __init__(self, *args, **kwargs):
         super(AgencyUserForm, self).__init__(*args, **kwargs)
 
-    def clean(self):
-        super(AgencyUserForm, self).clean()
-
-        if "user" not in self.cleaned_data:
-            return
-
-        agency = models.Agency.objects.filter(users=self.cleaned_data["user"]).first()
-        if agency is not None and agency != self.cleaned_data.get("agency"):
-            raise ValidationError(
-                "User {} is already part of another agency".format(
-                    self.cleaned_data["user"].get_full_name().encode("utf-8")
-                )
-            )
-
 
 class PreventEditInlineFormset(forms.BaseInlineFormSet):
     def clean(self):
@@ -190,9 +176,9 @@ class SourceCredentialsForm(forms.ModelForm):
 
         decrypted = instance.decrypt()
         if "client_id" not in decrypted or "client_secret" not in decrypted:
-            self.initial[
-                "oauth_refresh"
-            ] = "Credentials instance doesn't contain client_id or client_secret. " "Unable to refresh OAuth tokens."
+            self.initial["oauth_refresh"] = (
+                "Credentials instance doesn't contain client_id or client_secret. " "Unable to refresh OAuth tokens."
+            )
             return
 
         if "oauth_tokens" not in decrypted:
@@ -218,9 +204,12 @@ class SourceCredentialsForm(forms.ModelForm):
         super(SourceCredentialsForm, self).__init__(*args, **kwargs)
         self._set_oauth_refresh(kwargs.get("instance"))
         self.initial["credentials"] = ""
-        self.fields[
-            "credentials"
-        ].help_text = "The value in this field is automatically encrypted upon saving " "for security purposes and is hidden from the interface. The " "value can be changed and has to be in valid JSON format. " "Leaving the field empty won't change the stored value."
+        self.fields["credentials"].help_text = (
+            "The value in this field is automatically encrypted upon saving "
+            "for security purposes and is hidden from the interface. The "
+            "value can be changed and has to be in valid JSON format. "
+            "Leaving the field empty won't change the stored value."
+        )
 
     def clean_credentials(self):
         if self.cleaned_data["credentials"] != "" or not self.instance.id:
@@ -2086,6 +2075,10 @@ class EntityTagAdmin(admin.ModelAdmin):
     model = tags.EntityTag
 
 
+class WhiteLabelAdmin(admin.ModelAdmin):
+    model = models.WhiteLabel
+
+
 tagulous.admin.register(models.Agency, AgencyAdmin)
 tagulous.admin.register(models.Account, AccountAdmin)
 tagulous.admin.register(models.Campaign, CampaignAdmin)
@@ -2120,4 +2113,5 @@ admin.site.register(models.CustomFlag, CustomFlagAdmin)
 admin.site.register(models.SubmissionFilter, SubmissionFilterAdmin)
 admin.site.register(models.DirectDeal, DirectDealAdmin)
 admin.site.register(models.DirectDealConnection, DirectDealConnectionAdmin)
+admin.site.register(models.WhiteLabel, WhiteLabelAdmin)
 tagulous.admin.register(tags.EntityTag, EntityTagAdmin)

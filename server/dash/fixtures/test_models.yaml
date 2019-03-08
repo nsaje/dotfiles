@@ -58,7 +58,7 @@
         cs_representative: 2
         ob_representative: 3
         sales_representative: 1
-        whitelabel: "greenpark"
+        white_label: 1
 
     model: dash.agency
     pk: 1
@@ -659,4 +659,12 @@
         currency: 'EUR'
         exchange_rate: '1.2'
     model: dash.currencyexchangerate
+    pk: 1
+
+# Whitelabels
+-   fields:
+      theme: 'greenpark'
+      favicon_url: 'greenpark.png'
+      dashboard_title: 'Green Park'
+    model: dash.whitelabel
     pk: 1

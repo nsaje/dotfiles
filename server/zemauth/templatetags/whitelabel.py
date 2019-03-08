@@ -29,7 +29,7 @@ def _get_agency_from_host(context):
     whitelabel = _get_whitelabel_from_host(context)
     if not whitelabel:
         return None
-    return core.models.agency.Agency.objects.filter(whitelabel=whitelabel).first()
+    return core.models.agency.Agency.objects.filter(white_label__theme=whitelabel).first()
 
 
 @register.simple_tag(takes_context=True)
@@ -41,8 +41,8 @@ def whitelabel_from_host(context):
 def get_whitelabel_info(context):
     info = {"base": "zemanta", "favicon": None, "dashboard_title": None}
     agency = _get_agency_from_host(context) or _get_user_agency(context)
-    if agency and agency.whitelabel:
-        info["base"] = agency.whitelabel
-        info["favicon"] = agency.custom_favicon_url
-        info["dashboard_title"] = agency.custom_dashboard_title
+    if agency and agency.white_label:
+        info["base"] = agency.white_label.theme
+        info["favicon"] = agency.white_label.favicon_url
+        info["dashboard_title"] = agency.white_label.dashboard_title
     return info

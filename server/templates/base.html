@@ -3,8 +3,8 @@
     <head>
         {% load staticfiles %}
 
-        {% if whitelabel and custom_favicon_url %}
-            <link rel="shortcut icon" href="{{ custom_favicon_url }}" />
+        {% if whitelabel and favicon_url %}
+            <link rel="shortcut icon" href="{{ favicon_url }}" />
         {% else %}
             <link rel="shortcut icon" href="{% static "img/favicon.ico" %}" />
         {% endif %}
@@ -37,3 +37,4 @@
         {% endif %}
     </body>
 </html>
+

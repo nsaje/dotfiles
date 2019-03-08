@@ -98,7 +98,9 @@ class DemandReportTestCase(test.TestCase):
             "adgroup_id": ad_group.id,
             "adgroup_name": ad_group.name,
             "adgroup_created_dt": ad_group.created_dt,
-            "whitelabel": ad_group.campaign.account.agency.whitelabel,
+            "whitelabel": ad_group.campaign.account.agency.white_label.theme
+            if ad_group.campaign.account.agency.white_label
+            else "",
             "whitelist_publisher_groups": whitelist_publisher_groups,
             "blacklist_publisher_groups": blacklist_publisher_groups,
             "real_time_campaign_stop": demand_report._bool_repr(ad_group.campaign.real_time_campaign_stop),
@@ -212,7 +214,7 @@ class DemandReportTestCase(test.TestCase):
         self.user_2 = magic_mixer.blend(zemauth.models.User)
 
         self.agency_1 = magic_mixer.blend(
-            core.models.Agency, sales_representative=self.user_1, cs_representative=self.user_2
+            core.models.Agency, sales_representative=self.user_1, cs_representative=self.user_2, white_label=None
         )
         self.agency_1.entity_tags = ["test/tag_1", "test/tag_2", "other/tag_3"]
         self.agency_1.save(self.mock_request)

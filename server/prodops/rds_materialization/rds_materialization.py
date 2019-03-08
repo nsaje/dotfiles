@@ -77,7 +77,7 @@ class RDSAgency(RDSModelization):
     TABLE = "mv_rds_agency"
     FIELDS = OrderedDict(
         name="name",
-        whitelabel=RDSModelization.get_constant_value("whitelabel", dash.constants.Whitelabel),
+        whitelabel="white_label__theme",
         default_account_type=RDSModelization.get_constant_value("default_account_type", dash.constants.AccountType),
         sales_representative="sales_representative__email",
         cs_representative="cs_representative__email",

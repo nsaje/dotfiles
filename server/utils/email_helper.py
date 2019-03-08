@@ -191,7 +191,7 @@ def _lookup_whitelabel(agency_or_user):
         raise Exception("Incorrect agency or user for whitelabel purposes!")
 
     if agency:
-        return agency.whitelabel
+        return agency.white_label.theme if agency.white_label else ""
     return None
 
 
