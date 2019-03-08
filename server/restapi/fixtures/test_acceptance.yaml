@@ -33,6 +33,7 @@
       - ['can_set_advanced_device_targeting', 'zemauth', 'user']
       - ['can_use_bluekai_targeting', 'zemauth', 'user']
       - ['can_set_click_capping', 'zemauth', 'user']
+      - ['can_set_click_capping_daily_click_budget', 'zemauth', 'user']
       - ['can_manage_credit_refunds', 'zemauth', 'user']
       - ['can_set_frequency_capping', 'zemauth', 'user']
       - ['can_use_language_targeting', 'zemauth', 'user']

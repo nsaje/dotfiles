@@ -136,7 +136,7 @@ class AdGroupSerializer(
     class Meta:
         permissioned_fields = {
             "click_capping_daily_ad_group_max_clicks": "zemauth.can_set_click_capping",
-            "click_capping_daily_click_budget": "zemauth.can_set_click_capping",
+            "click_capping_daily_click_budget": "zemauth.can_set_click_capping_daily_click_budget",
             "frequency_capping": "zemauth.can_set_frequency_capping",
         }
 

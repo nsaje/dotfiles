@@ -474,7 +474,13 @@ class AdGroupViewSetTest(RESTAPITest):
 
     def test_adgroups_get_permissioned(self):
         utils.test_helper.remove_permissions(
-            self.user, permissions=["can_set_click_capping", "can_set_frequency_capping", "can_use_language_targeting"]
+            self.user,
+            permissions=[
+                "can_set_click_capping",
+                "can_set_click_capping_daily_click_budget",
+                "can_set_frequency_capping",
+                "can_use_language_targeting",
+            ],
         )
         r = self.client.get(reverse("v1:adgroups_details", kwargs={"ad_group_id": 2040}))
         resp_json = self.assertResponseValid(r)

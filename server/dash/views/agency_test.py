@@ -90,7 +90,7 @@ class AdGroupSettingsTest(TestCase):
         }
 
         self.user = User.objects.get(pk=1)
-        add_permissions(self.user, ["can_set_click_capping"])
+        add_permissions(self.user, ["can_set_click_capping", "can_set_click_capping_daily_click_budget"])
         add_permissions(self.user, ["can_set_frequency_capping"])
 
         self.assertFalse(self.user.is_superuser)
@@ -276,6 +276,7 @@ class AdGroupSettingsTest(TestCase):
                     "can_set_white_blacklist_publisher_groups",
                     "can_set_advanced_device_targeting",
                     "can_set_click_capping",
+                    "can_set_click_capping_daily_click_budget",
                     "can_set_frequency_capping",
                 ],
             )
@@ -399,6 +400,7 @@ class AdGroupSettingsTest(TestCase):
                     "can_set_white_blacklist_publisher_groups",
                     "can_set_advanced_device_targeting",
                     "can_set_click_capping",
+                    "can_set_click_capping_daily_click_budget",
                     "can_set_frequency_capping",
                 ],
             )

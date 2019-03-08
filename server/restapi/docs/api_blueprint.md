@@ -1154,7 +1154,9 @@ dayparting   | [dayparting](#dayparting) | dayparting settings                  
 trackingCode | string                    | tracking codes appended to all content ads URLs ([more](http://help.zemanta.com/article/show/12985-tracking-parameters--macros))   | optional | optional
 autopilot    | [autopilot](#autopilot)   | Zemanta Autopilot settings                                                                                                         | optional | optional
 deliveryType | [delivery](#delivery)     | Delivery Type. Set to `STANDARD` to deliver ads throughout the day and to `ACCELERATED` to deliver ads as soon as possible.        | optional | optional
-frequencyCapping | number | The maximum number of times ads from the ad group can be shown to a unique user in one day.                                                           | optional | optional
+frequencyCapping | number | The maximum number of times ads from the ad group can be shown to a unique user in one day.                                                       | optional | optional
+clickCappingDailyAdGroupMaxClicks | number | Limit number of clicks you want to reach daily within the ad group. Once Zemanta hits the maximum number of clicks you set it will stop spending for the rest of the day. | optional | optional
+
 
 <a name="targeting"></a>
 #### Targeting Settings
