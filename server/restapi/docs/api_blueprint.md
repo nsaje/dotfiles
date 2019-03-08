@@ -2687,14 +2687,17 @@ Include traffic that meets the following conditions:
 
 <a name="goal-type"></a>
 ## Campaign Goal KPIs
-- `TIME_ON_SITE` -  Time on Site - Seconds
-- `MAX_BOUNCE_RATE` -  Max Bounce Rate
-- `PAGES_PER_SESSION` -  Pageviews per Visit
-- `CPA` -  Cost per Acquisition
-- `CPC` -  Cost per Click
-- `NEW_UNIQUE_VISITORS` -  New Unique Visitors
-- `CPV` -  Cost per Visit
-- `CP_NON_BOUNCED_VISIT` -  Cost per Non-Bounced Visit
+- `TIME_ON_SITE` - Time on Site - Seconds
+- `MAX_BOUNCE_RATE` - Max Bounce Rate
+- `PAGES_PER_SESSION` - Pageviews per Visit
+- `CPA` - Cost per Acquisition
+- `CPC` - Cost per Click
+- `NEW_UNIQUE_VISITORS` - New Users
+- `CPV` - Cost per Visit
+- `CP_NON_BOUNCED_VISIT` - Cost per Non-Bounced Visit
+- `CP_NEW_VISITOR` - Cost per New Visitor
+- `CP_PAGE_VIEW` - Cost per Page View
+- `CPCV` - Cost per Completed Video View
 
 <a name="conversion-goal-type"></a>
 ### Conversion goal type
