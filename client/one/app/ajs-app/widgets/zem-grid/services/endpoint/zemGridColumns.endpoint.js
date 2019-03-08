@@ -2172,7 +2172,7 @@ angular
         COLUMNS.dailyBudgetSetting.exceptions.breakdownBaseLevelOnly = true;
 
         COLUMNS.bidModifier.exceptions.breakdowns = [
-            constants.breakdown.CONTENT_AD,
+            // constants.breakdown.CONTENT_AD,
             constants.breakdown.COUNTRY,
             constants.breakdown.STATE,
             constants.breakdown.DMA,
