@@ -26,6 +26,7 @@ class AccountCreditsTest(RESTAPITest):
         available="300.0",
         license_fee=None,
         status=dash.constants.CreditLineItemStatus.SIGNED,
+        currency=dash.constants.Currency.USD,
     ):
         resp = {
             "id": id,
@@ -36,6 +37,7 @@ class AccountCreditsTest(RESTAPITest):
             "allocated": allocated,
             "available": available,
             "status": dash.constants.CreditLineItemStatus.get_name(status),
+            "currency": currency,
         }
         if license_fee is not None:
             resp["licenseFee"] = license_fee
@@ -54,6 +56,7 @@ class AccountCreditsTest(RESTAPITest):
             available=credit_db.effective_amount() - credit_db.get_allocated_amount(),
             license_fee=license_fee,
             status=credit_db.status,
+            currency=credit_db.currency,
         )
         self.assertEqual(expected, credit)
 

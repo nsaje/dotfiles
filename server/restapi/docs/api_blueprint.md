@@ -355,6 +355,7 @@ endDate   | date            | end date of the credit
 total     | [money](#money) | total credit amount
 allocated | [money](#money) | amount already allocated to campaign budgets
 available | [money](#money) | amount still available for allocation
+currency  | [Currency](#currency) | the credit's currency
 
 
 ### Get credit item for account [GET /rest/v1/accounts/{accountId}/credits/{creditId}]
@@ -373,7 +374,8 @@ available | [money](#money) | amount still available for allocation
                 "createdOn": "2014-06-04",
                 "total": "1000.0000",
                 "allocated": "400.0000",
-                "available": "600.0000"
+                "available": "600.0000",
+                "currency": "EUR"
             }
         }
 
@@ -394,7 +396,8 @@ available | [money](#money) | amount still available for allocation
                     "createdOn": "2014-06-04",
                     "total": "1000.0000",
                     "allocated": "400.0000",
-                    "available": "600.0000"
+                    "available": "600.0000",
+                    "currency": "EUR"
                 }
             ]
         }
@@ -2240,6 +2243,12 @@ A string representing a decimal number. Example: `"15.48"`
 - `USD` - US Dollar
 - `EUR` - Euro
 - `GBP` - British Pound
+- `AUD` - Australian Dollar
+- `SGD` - Singapore Dollar
+- `BRL` - Brazilian Real
+- `MYR` - Malaysian Ringgit
+- `CHF` - Swiss Franc
+- `ZAR` - South African Rand
 
 <a name=audience-rule-type></a>
 ## Audience rule type

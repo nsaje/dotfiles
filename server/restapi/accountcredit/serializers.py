@@ -30,3 +30,6 @@ class AccountCreditSerializer(
         max_digits=5, decimal_places=4, read_only=True, rounding=decimal.ROUND_HALF_DOWN
     )
     status = restapi.serializers.fields.DashConstantField(dash.constants.CreditLineItemStatus, read_only=True)
+    currency = restapi.serializers.fields.DashConstantField(
+        dash.constants.Currency, default=dash.constants.Currency.USD, required=False
+    )
