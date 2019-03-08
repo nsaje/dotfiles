@@ -333,36 +333,6 @@ class AgencyUserInline(admin.TabularInline):
         return self.name
 
 
-class AgencyAccountInline(admin.TabularInline):
-    model = models.Account
-    fk_name = "agency"
-    extra = 0
-    can_delete = False
-
-    exclude = (
-        "allowed_sources",
-        "outbrain_marketer_id",
-        "users",
-        "groups",
-        "created_dt",
-        "modified_dt",
-        "modified_by",
-        "custom_flags",
-        "settings",
-    )
-
-    def get_queryset(self, request):
-        qs = super(AgencyAccountInline, self).get_queryset(request)
-        return qs.select_related("settings").prefetch_related("users")
-
-    def _cs_rep(self, obj):
-        return obj.settings.default_cs_representative.email
-
-    ordering = ("-created_dt",)
-    readonly_fields = ("admin_link", "uses_bcm_v2", "yahoo_account", "_cs_rep")
-    raw_id_fields = ("default_whitelist", "default_blacklist")
-
-
 class AgencyResource(resources.ModelResource):
     agency_managers = fields.Field(column_name="agency_managers")
     accounts = fields.Field(column_name="accounts")
@@ -423,8 +393,8 @@ class AgencyAdmin(SlackLoggerMixin, ExportMixin, admin.ModelAdmin):
     )
     exclude = ("users",)
     raw_id_fields = ("default_whitelist", "default_blacklist")
-    readonly_fields = ("id", "created_dt", "modified_dt", "modified_by")
-    inlines = (AgencyAccountInline, AgencyUserInline, DirectDealConnectionAgencyInline)
+    readonly_fields = ("id", "created_dt", "modified_dt", "modified_by", "settings", "_accounts_cs")
+    inlines = (AgencyUserInline, DirectDealConnectionAgencyInline)
     resource_class = AgencyResource
     search_fields = ("name", "id")
     autocomplete_fields = ("allowed_sources", "cs_representative", "sales_representative", "ob_representative")
@@ -448,20 +418,24 @@ class AgencyAdmin(SlackLoggerMixin, ExportMixin, admin.ModelAdmin):
             names.append(user.get_full_name())
         return ", ".join(names)
 
-    _users.short_description = "Agency Managers"
-
     def _accounts(self, obj):
         return ", ".join([str(account) for account in obj.account_set.all()])
 
-    _accounts.short_description = "Accounts"
+    def _accounts_cs(self, obj):
+        return ", ".join(
+            [
+                "{} {}".format(
+                    account.name,
+                    "({})".format(account.settings.default_cs_representative)
+                    if account.settings.default_cs_representative
+                    else "",
+                )
+                for account in obj.account_set.all()
+            ]
+        )
 
-    def save_formset(self, request, form, formset, change):
-        if formset.model == models.Account:
-            instances = formset.save(commit=False)
-            for instance in instances:
-                instance.save(request)
-        else:
-            formset.save()
+    _users.short_description = "Agency Managers"
+    _accounts.short_description = "Accounts"
 
     @pgdh.catch_and_report_exception(pgdh.PagerDutyEventType.PRODOPS)
     def save_model(self, request, obj, form, change):
