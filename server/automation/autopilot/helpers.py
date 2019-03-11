@@ -122,7 +122,7 @@ def _should_exclude_ad_group(ag, campaignstop_states, ad_group, campaign):
         return False
 
     # do not process adgroups stopped by campaign stop on daily runs
-    if not campaignstop_states[ag.campaign.id]["allowed_to_run"]:
+    if ag.campaign.id not in campaignstop_states or not campaignstop_states[ag.campaign.id]["allowed_to_run"]:
         return True
 
 
