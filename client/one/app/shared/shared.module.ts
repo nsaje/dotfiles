@@ -4,7 +4,10 @@ import {NgModule} from '@angular/core';
 import {FormsModule} from '@angular/forms';
 import {PortalModule} from '@angular/cdk/portal';
 import {ChartModule} from 'angular2-highcharts';
-import {NgbDatepickerModule} from '@ng-bootstrap/ng-bootstrap';
+import {
+    NgbDatepickerModule,
+    NgbPopoverModule,
+} from '@ng-bootstrap/ng-bootstrap';
 import {NgSelectModule} from '@ng-select/ng-select';
 
 import {BigNumberPipe} from './pipes/big-number.pipe';
@@ -24,6 +27,7 @@ import {DateInputComponent} from './components/date-input/date-input.component';
 import {SelectInputComponent} from './components/select-input/select-input.component';
 import {PrefixedInputComponent} from './components/prefixed-input/prefixed-input.component';
 import {BidModifierInputComponent} from './components/bid-modifier-input/bid-modifier-input.component';
+import {PopoverDirective} from './components/popover/popover.directive';
 
 const EXPORTED_DECLARATIONS = [
     BigNumberPipe,
@@ -42,6 +46,7 @@ const EXPORTED_DECLARATIONS = [
     SelectInputComponent,
     PrefixedInputComponent,
     BidModifierInputComponent,
+    PopoverDirective,
 
     // Upgraded AngularJS components/ directives
     HelpPopoverComponent,
@@ -56,6 +61,7 @@ const EXPORTED_DECLARATIONS = [
         ChartModule.forRoot(require('highcharts')),
         NgbDatepickerModule,
         NgSelectModule,
+        NgbPopoverModule,
     ],
     declarations: EXPORTED_DECLARATIONS,
     exports: [

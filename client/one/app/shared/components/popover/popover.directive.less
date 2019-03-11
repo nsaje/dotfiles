@@ -1,0 +1,101 @@
+@import 'variables';
+@import './_popover.directive.variables.less';
+
+//////////////////////////
+// NgbPopover overrides //
+//////////////////////////
+
+.zem-popover.popover {
+    display: block !important;
+    padding: @default-spacing;
+}
+
+////////////////////////////////
+// NgbPopover arrow overrides //
+////////////////////////////////
+
+.zem-popover.popover .arrow {
+    border-style: none;
+    border-width: @zem-popover__arrow-width;
+}
+
+.zem-popover.bs-popover-top,
+.zem-popover.bs-popover-auto[x-placement^='top'] {
+    margin-bottom: @zem-popover__arrow-width;
+}
+
+.zem-popover.bs-popover-top > .arrow,
+.zem-popover.bs-popover-auto[x-placement^='top'] > .arrow {
+    bottom: 0;
+    margin-left: -@zem-popover__arrow-width !important;
+}
+
+.zem-popover.bs-popover-top > .arrow::after,
+.zem-popover.bs-popover-auto[x-placement^='top'] > .arrow::after {
+    border-top-color: #fff;
+}
+
+.zem-popover.bs-popover-right,
+.zem-popover.bs-popover-auto[x-placement^='right'] {
+    margin-left: @zem-popover__arrow-width;
+}
+
+.zem-popover.bs-popover-right > .arrow,
+.zem-popover.bs-popover-auto[x-placement^='right'] > .arrow {
+    left: 0;
+    margin-top: -@zem-popover__arrow-width !important;
+}
+
+.zem-popover.bs-popover-right > .arrow::after,
+.zem-popover.bs-popover-auto[x-placement^='right'] > .arrow::after {
+    border-right-color: #fff;
+}
+
+.zem-popover.bs-popover-bottom,
+.zem-popover.bs-popover-auto[x-placement^='bottom'] {
+    margin-top: @zem-popover__arrow-width;
+}
+
+.zem-popover.bs-popover-bottom > .arrow,
+.zem-popover.bs-popover-auto[x-placement^='bottom'] > .arrow {
+    top: 0;
+    margin-left: -@zem-popover__arrow-width !important;
+}
+
+.zem-popover.bs-popover-bottom > .arrow::after,
+.zem-popover.bs-popover-auto[x-placement^='bottom'] > .arrow::after {
+    border-bottom-color: #fff;
+}
+
+.zem-popover.bs-popover-left,
+.zem-popover.bs-popover-auto[x-placement^='left'] {
+    margin-right: @zem-popover__arrow-width;
+}
+
+.zem-popover.bs-popover-left > .arrow,
+.zem-popover.bs-popover-auto[x-placement^='left'] > .arrow {
+    right: 0;
+    margin-top: -@zem-popover__arrow-width !important;
+}
+
+.zem-popover.bs-popover-left > .arrow::after,
+.zem-popover.bs-popover-auto[x-placement^='left'] > .arrow::after {
+    border-left-color: #fff;
+}
+
+/////////////////////////////////
+// NgbPopover header overrides //
+/////////////////////////////////
+
+.zem-popover .popover-header {
+    margin: -@default-spacing -@default-spacing @default-spacing -@default-spacing;
+    padding: @zem-popover__header-padding;
+    font-size: @zem-popover__header-font-size;
+    background-color: @very-light-gray;
+    border-bottom: 1px solid @light-gray;
+    border-radius: 5px 5px 0 0;
+}
+
+.zem-popover .popover-header:empty {
+    display: none;
+}
