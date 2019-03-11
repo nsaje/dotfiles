@@ -6,6 +6,7 @@ FROM
    FROM mv_master_pubs
    GROUP BY publisher, date ) ctr_query
 WHERE date = '{{ date }}'
-  AND clicks > {{ max_clicks }}
+  AND ((clicks > {{ max_clicks }}
   AND impressions > {{ max_impressions }}
-  AND ctr >= {{ ctr_threshold }};
+  AND ctr >= {{ ctr_threshold }}) 
+  OR (ctr >= 10 AND clicks > 45));

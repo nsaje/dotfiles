@@ -454,7 +454,7 @@ def audit_bid_cpc_vs_ecpc(bid_cpc_threshold=2, yesterday_spend_threshold=20):
         return alerts
 
 
-def publisher_high_ctr(ctr_threshold=5, date=None, max_clicks=100, max_impressions=100):
+def publisher_high_ctr(ctr_threshold=6, date=None, max_clicks=200, max_impressions=200):
     if not date:
         date = datetime.date.today() - datetime.timedelta(1)
 
