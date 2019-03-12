@@ -3,8 +3,8 @@
     <head>
         {% load staticfiles %}
 
-        {% if whitelabel and favicon_url %}
-            <link rel="shortcut icon" href="{{ favicon_url }}" />
+        {% if whitelabel and faviconUrl %}
+            <link rel="shortcut icon" href="{{ faviconUrl }}" />
         {% else %}
             <link rel="shortcut icon" href="{% static "img/favicon.ico" %}" />
         {% endif %}
