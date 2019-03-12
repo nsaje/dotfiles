@@ -105,13 +105,24 @@
             is-internal="zemauth.can_target_custom_audiences"
         >
             <h2 class="custom-panel__title">Targeting</h2>
-            <zem-audience-targeting
-                entity="$container.entity"
-                errors="$container.errors"
-                api="$container.childApi"
-                class="zem-audience-targeting"
+            <zem-retargeting
+                class="zem-retargeting"
                 ng-if="!$ctrl.hasPermission('zemauth.disable_public_rcs')"
-            ></zem-audience-targeting>
+                errors="$container.errors"
+                entity-id="$container.entity.settings.id"
+                retargetable-audiences="$container.entity.audiences"
+                retargetable-ad-groups="$container.entity.retargetableAdGroups"
+                included-audiences="$container.entity.settings.audienceTargeting"
+                excluded-audiences="$container.entity.settings.exclusionAudienceTargeting"
+                included-ad-groups="$container.entity.settings.retargetingAdGroups"
+                excluded-ad-groups="$container.entity.settings.exclusionRetargetingAdGroups"
+                included-audiences-errors="$container.errors.audienceTargeting"
+                excluded-audiences-errors="$container.errors.exclusionAudienceTargeting"
+                included-ad-groups-errors="$container.errors.retargetingAdGroups"
+                excluded-ad-groups-errors="$container.errors.exclusionRetargetingAdGroups"
+                warnings="$container.entity.warnings.retargeting"
+                on-update="$ctrl.updateRetargeting($container.entity, $event)"
+            ></zem-retargeting>
             <div
                 ng-if="$ctrl.hasPermission('zemauth.can_view_additional_targeting')"
             >

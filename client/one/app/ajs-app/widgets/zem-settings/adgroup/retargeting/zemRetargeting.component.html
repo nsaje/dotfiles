@@ -1,7 +1,7 @@
 <div
     class="form"
     ng-if="$ctrl.hasPermission('zemauth.can_target_custom_audiences')"
-    ng-class="{'form--error': !!$ctrl.errors.audienceTargeting || !!$ctrl.errors.exclusionAudienceTargeting || !!$ctrl.errors.retargetingAdGroups || !!$ctrl.errors.exclusionRetargetingAdGroups}"
+    ng-class="{'form--error': !!$ctrl.errors}"
 >
     <div class="form__title" is-internal="zemauth.can_target_custom_audiences">
         Retargeting
@@ -22,32 +22,11 @@
     </div>
     <div
         class="message message--info message--with-icon m-t"
-        ng-if="$ctrl.entity.warnings.retargeting"
+        ng-if="$ctrl.warningMessage"
     >
-        {{ $ctrl.getTargetingWarningMessage() }}
+        {{ $ctrl.warningMessage }}
     </div>
-    <div
-        class="message message--error"
-        ng-repeat="error in $ctrl.errors.retargetingAdGroups"
-    >
-        {{ error }}
-    </div>
-    <div
-        class="message message--error"
-        ng-repeat="error in $ctrl.errors.exclusionRetargetingAdGroups"
-    >
-        {{ error }}
-    </div>
-    <div
-        class="message message--error"
-        ng-repeat="error in $ctrl.errors.audienceTargeting"
-    >
-        {{ error }}
-    </div>
-    <div
-        class="message message--error"
-        ng-repeat="error in $ctrl.errors.exclusionAudienceTargeting"
-    >
+    <div class="message message--error" ng-repeat="error in $ctrl.errors">
         {{ error }}
     </div>
 </div>

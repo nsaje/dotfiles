@@ -23,6 +23,7 @@ import {TrackingCodeSettingComponent} from './components/tracking-code-setting/t
 import {TrackingPixelSettingComponent} from './components/tracking-pixel-setting/tracking-pixel-setting.component';
 import {InterestTargetingComponent} from './components/interest-targeting/interest-targeting.component';
 import {PublisherGroupTargetingComponent} from './components/publisher-groups-targeting/publisher-groups-targeting.component';
+import {RetargetingComponent} from './components/retargeting/retargeting.component';
 
 @NgModule({
     declarations: [
@@ -48,6 +49,7 @@ import {PublisherGroupTargetingComponent} from './components/publisher-groups-ta
         TrackingPixelSettingComponent,
         InterestTargetingComponent,
         PublisherGroupTargetingComponent,
+        RetargetingComponent,
     ],
     imports: [SharedModule],
     entryComponents: [
