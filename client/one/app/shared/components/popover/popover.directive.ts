@@ -21,6 +21,7 @@ import {
 import {NgbPopover, NgbPopoverConfig} from '@ng-bootstrap/ng-bootstrap';
 import {NgbPopoverWindow} from '@ng-bootstrap/ng-bootstrap/popover/popover';
 import {DOCUMENT} from '@angular/platform-browser';
+import * as commonHelpers from '../../helpers/common.helpers';
 
 @Directive({
     selector: '[zemPopover]',
@@ -36,8 +37,8 @@ export class PopoverDirective extends NgbPopover
 
     private triggerElementMouseoverListener: Function;
     private triggerElementMouseoutListener: Function;
-    private triggerPopoverElementMouseoverListener: Function;
-    private triggerPopoverElementMouseoutListener: Function;
+    private popoverElementMouseoverListener: Function;
+    private popoverElementMouseoutListener: Function;
 
     constructor(
         private elementRef: ElementRef,
@@ -98,18 +99,10 @@ export class PopoverDirective extends NgbPopover
     }
 
     ngOnDestroy() {
-        if (this.triggerElementMouseoverListener) {
-            this.triggerElementMouseoverListener();
-        }
-        if (this.triggerElementMouseoverListener) {
-            this.triggerElementMouseoutListener();
-        }
-        if (this.triggerPopoverElementMouseoverListener) {
-            this.triggerPopoverElementMouseoverListener();
-        }
-        if (this.triggerPopoverElementMouseoutListener) {
-            this.triggerPopoverElementMouseoutListener();
-        }
+        this.removeEventListener(this.triggerElementMouseoverListener);
+        this.removeEventListener(this.triggerElementMouseoutListener);
+        this.removeEventListener(this.popoverElementMouseoverListener);
+        this.removeEventListener(this.popoverElementMouseoutListener);
         super.ngOnDestroy();
     }
 
@@ -124,7 +117,8 @@ export class PopoverDirective extends NgbPopover
                 ._windowRef as ComponentRef<NgbPopoverWindow>).location
                 .nativeElement;
 
-            this.triggerPopoverElementMouseoverListener = this.renderer.listen(
+            this.removeEventListener(this.popoverElementMouseoverListener);
+            this.popoverElementMouseoverListener = this.renderer.listen(
                 popoverElement,
                 'mouseover',
                 () => {
@@ -132,7 +126,8 @@ export class PopoverDirective extends NgbPopover
                 }
             );
 
-            this.triggerPopoverElementMouseoutListener = this.renderer.listen(
+            this.removeEventListener(this.popoverElementMouseoutListener);
+            this.popoverElementMouseoutListener = this.renderer.listen(
                 popoverElement,
                 'mouseout',
                 () => {
@@ -152,5 +147,11 @@ export class PopoverDirective extends NgbPopover
                 super.close();
             }
         }, 0);
+    }
+
+    private removeEventListener(eventListener: Function): void {
+        if (commonHelpers.isDefined(eventListener)) {
+            eventListener();
+        }
     }
 }

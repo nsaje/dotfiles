@@ -2,16 +2,28 @@
     <zem-editable-cell
         class="zem-editable-cell"
         [isEditable]="isEditable"
-        [editMessage]="editMessage"
         [mode]="mode"
         [containerElement]="containerElement"
         (modeChange)="onModeChange($event)"
+        (placementChange)="onPlacementChange($event)"
     >
         <ng-container readMode>
-            <span>{{ state.previousModifierPercent }}%</span>
+            <span
+                [zemPopover]="editMessage"
+                [stayOpenOnHover]="true"
+                [disablePopover]="isEditable"
+                triggers="mouseenter:mouseleave"
+                container="body"
+                placement="left"
+            >
+                {{ state.previousModifierPercent }}%
+            </span>
         </ng-container>
         <ng-container editMode>
-            <div class="zem-bid-modifier-cell__form" *ngIf="isInEditMode()">
+            <div
+                class="zem-bid-modifier-cell__form"
+                *ngIf="mode === EditableCellMode.EDIT"
+            >
                 <div class="zem-bid-modifier-cell__form-item">
                     <zem-bid-modifier-input
                         class="zem-bid-modifier-input zem-bid-modifier-cell__form-input"
@@ -25,10 +37,72 @@
                     ></zem-bid-modifier-input>
                 </div>
                 <div class="zem-bid-modifier-cell__form-item">
-                    <span class="zem-bid-modifier-cell__form-message"
-                        >Bid: <strong>{{ state.computedBidMin }}</strong> -
-                        <strong>{{ state.computedBidMax }}</strong></span
-                    >
+                    <div class="zem-bid-modifier-cell__form-message">
+                        <ng-template #bidModifierMessageTemplate>
+                            <div
+                                class="zem-bid-modifier-cell__expanded-min-max-message"
+                            >
+                                <span
+                                    *ngIf="
+                                        state.computedBidMin ===
+                                        state.computedBidMax
+                                    "
+                                >
+                                    Based on all applied bid modifiers your bid
+                                    will be about
+                                    <strong>{{ state.computedBidMin }}</strong
+                                    >.
+                                </span>
+                                <span
+                                    *ngIf="
+                                        state.computedBidMin !==
+                                        state.computedBidMax
+                                    "
+                                >
+                                    Based on all applied bid modifiers your bid
+                                    will be between
+                                    <strong>{{ state.computedBidMin }}</strong>
+                                    and
+                                    <strong>{{ state.computedBidMax }}</strong
+                                    >.
+                                </span>
+                            </div>
+                        </ng-template>
+                        <span
+                            *ngIf="placement === EditableCellPlacement.IN_LINE"
+                            [zemPopover]="bidModifierMessageTemplate"
+                            [stayOpenOnHover]="true"
+                            triggers="mouseenter:mouseleave"
+                            container="body"
+                            placement="top"
+                        >
+                            <ng-container
+                                *ngIf="
+                                    state.computedBidMin ===
+                                    state.computedBidMax
+                                "
+                            >
+                                Bid: <strong>{{ state.computedBidMin }}</strong>
+                            </ng-container>
+                            <ng-container
+                                *ngIf="
+                                    state.computedBidMin !==
+                                    state.computedBidMax
+                                "
+                            >
+                                Bid:
+                                <strong>{{ state.computedBidMin }}</strong> -
+                                <strong>{{ state.computedBidMax }}</strong>
+                            </ng-container>
+                        </span>
+                        <ng-container
+                            *ngIf="placement === EditableCellPlacement.MODAL"
+                        >
+                            <ng-content
+                                *ngTemplateOutlet="bidModifierMessageTemplate"
+                            ></ng-content>
+                        </ng-container>
+                    </div>
                 </div>
                 <div class="zem-bid-modifier-cell__form-item">
                     <div class="zem-bid-modifier-cell__form-buttons">

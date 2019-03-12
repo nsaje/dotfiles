@@ -21,10 +21,12 @@ import {
 } from '@angular/core';
 import {CdkPortal, DomPortalHost} from '@angular/cdk/portal';
 import {DOCUMENT} from '@angular/platform-browser';
-import {EditableCellMode} from './editable-cell.constants';
+import {
+    EditableCellMode,
+    EditableCellPlacement,
+} from './editable-cell.constants';
 import {KeyCode} from '../../../../../app.constants';
 
-// TODO (msuber): handle editMessage in popover component
 @Component({
     selector: 'zem-editable-cell',
     templateUrl: './editable-cell.component.html',
@@ -35,13 +37,13 @@ export class EditableCellComponent
     @Input()
     isEditable: boolean;
     @Input()
-    editMessage: string;
-    @Input()
     mode: EditableCellMode;
     @Input()
     containerElement: HTMLElement;
     @Output()
     modeChange = new EventEmitter<EditableCellMode>();
+    @Output()
+    placementChange = new EventEmitter<EditableCellPlacement>();
 
     @ViewChild(CdkPortal)
     portal: CdkPortal;
@@ -127,6 +129,7 @@ export class EditableCellComponent
         );
 
         this.shouldRenderAsModal = false;
+        this.placementChange.emit(EditableCellPlacement.IN_LINE);
         this.hostElementOffsetTop = hostElementOffset.topOffset;
         this.hostElementOffsetLeft = hostElementOffset.leftOffset;
         this.portalHost.attach(this.portal);
@@ -146,6 +149,7 @@ export class EditableCellComponent
                 this.containerElement
             );
             if (this.shouldRenderAsModal) {
+                this.placementChange.emit(EditableCellPlacement.MODAL);
                 this.renderer.addClass(this.document.body, 'modal-open');
                 this.changeDetectorRef.detectChanges();
             }

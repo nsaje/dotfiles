@@ -12,7 +12,10 @@ import {
 } from '@angular/core';
 import {downgradeComponent} from '@angular/upgrade/static';
 import * as clone from 'clone';
-import {EditableCellMode} from '../editable-cell/editable-cell.constants';
+import {
+    EditableCellMode,
+    EditableCellPlacement,
+} from '../editable-cell/editable-cell.constants';
 import {BidModifierCellStore} from './services/bid-modifier-cell.store';
 import {BidModifier} from '../../../../../core/bid-modifiers/types/bid-modifier';
 import {BidModifiersService} from '../../../../../core/bid-modifiers/services/bid-modifiers.service';
@@ -42,12 +45,18 @@ export class BidModifierCellComponent implements OnInit, OnChanges {
     valueChange = new EventEmitter<BidModifier>();
 
     mode: EditableCellMode;
+    EditableCellMode = EditableCellMode;
+
+    placement: EditableCellPlacement;
+    EditableCellPlacement = EditableCellPlacement;
+
     fractionSize: number;
 
     constructor(public store: BidModifierCellStore) {}
 
     ngOnInit(): void {
         this.mode = EditableCellMode.READ;
+        this.placement = EditableCellPlacement.IN_LINE;
         this.fractionSize = BID_MODIFIER_CELL_CONFIG.fractionSize;
     }
 
@@ -89,8 +98,8 @@ export class BidModifierCellComponent implements OnInit, OnChanges {
         }
     }
 
-    isInEditMode(): boolean {
-        return this.mode === EditableCellMode.EDIT;
+    onPlacementChange($event: EditableCellPlacement) {
+        this.placement = $event;
     }
 
     onInputKeydown($event: KeyboardEvent) {
