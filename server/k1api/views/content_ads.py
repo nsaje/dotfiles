@@ -75,6 +75,7 @@ class ContentAdsView(K1APIView):
                 "campaign_id": item.ad_group.campaign_id,
                 "account_id": item.ad_group.campaign.account_id,
                 "agency_id": item.ad_group.campaign.account.agency_id,
+                "type": item.type,
                 "language": campaign_settings_map[item.ad_group.campaign_id].language,
                 "title": item.title,
                 "url": item.url,
@@ -94,6 +95,7 @@ class ContentAdsView(K1APIView):
                 "additional_data": item.additional_data,
                 "document_id": item.document_id,
                 "document_features": item.document_features,
+                "ad_tag": item.ad_tag,
             }
             response.append(content_ad)
 

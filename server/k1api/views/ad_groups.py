@@ -127,6 +127,7 @@ class AdGroupsView(K1APIView):
                 "language_targeting_enabled": ad_group.settings.language_targeting_enabled,
                 "campaign_id": ad_group.campaign.id,
                 "campaign_name": ad_group.campaign.name,
+                "campaign_type": ad_group.campaign.type,
                 "account_id": ad_group.campaign.account.id,
                 "account_name": ad_group.campaign.account.name,
                 "agency_id": ad_group.campaign.account.agency_id,

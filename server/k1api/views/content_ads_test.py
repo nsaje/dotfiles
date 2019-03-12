@@ -121,6 +121,7 @@ class ContentAdsTest(K1APIBaseTest):
                 "campaign_id": 1,
                 "account_id": 1,
                 "agency_id": 20,
+                "type": dash.constants.AdType.CONTENT,
                 "language": "en",
                 "call_to_action": "",
                 "url": "http://testurl.com",
@@ -138,6 +139,7 @@ class ContentAdsTest(K1APIBaseTest):
                 "additional_data": None,
                 "document_id": None,
                 "document_features": None,
+                "ad_tag": None,
             }
         ]
         self.assertEqual(data, expected)
