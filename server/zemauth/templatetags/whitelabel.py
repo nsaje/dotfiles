@@ -16,7 +16,7 @@ def _get_whitelabel_from_host(context=None):
     return None
 
 
-def _get_user_agency(context=None):
+def _get_user_agencies(context=None):
     if not context or "request" not in context:
         return None
     user = context["request"].user
@@ -40,7 +40,7 @@ def whitelabel_from_host(context):
 @register.simple_tag(takes_context=True)
 def get_whitelabel_info(context):
     info = {"base": "zemanta", "favicon": None, "dashboard_title": None}
-    agencies = _get_agency_from_host(context) or _get_user_agency(context)
+    agencies = _get_agency_from_host(context) or _get_user_agencies(context)
     if agencies:
         # As the case of an user with 2 agencies with a whitelabel should be very rare, we decided to take the first one
         # TODO: tfischer 08/03/2019 Have only 1 whitelabel per user. To avoid being on agency B with WL from agency A.
