@@ -44,7 +44,7 @@ def get_whitelabel_info(context):
     if agencies:
         # As the case of an user with 2 agencies with a whitelabel should be very rare, we decided to take the first one
         # TODO: tfischer 08/03/2019 Have only 1 whitelabel per user. To avoid being on agency B with WL from agency A.
-        agencies_w_whitelabel = [agency for agency in agencies if agency.white_label]
+        agencies_w_whitelabel = [agency for agency in agencies if agencies if agency.white_label]
         agency = agencies_w_whitelabel[0] if agencies_w_whitelabel else None
         if agency and agency.white_label:
             info["base"] = agency.white_label.theme
