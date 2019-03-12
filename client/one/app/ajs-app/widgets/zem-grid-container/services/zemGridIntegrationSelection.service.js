@@ -56,9 +56,8 @@ angular
                 if (row.level === zemGridConstants.gridRowLevel.FOOTER) {
                     selection.totalsUnselected = false;
                 } else if (row.level === zemGridConstants.gridRowLevel.BASE) {
-                    var id = parseInt(row.data.breakdownId);
-                    if (!isNaN(id)) {
-                        selection.selected.push(id);
+                    if (row.data.breakdownId) {
+                        selection.selected.push(row.data.breakdownId);
                     }
                 }
             });
@@ -67,9 +66,8 @@ angular
                 if (row.level === zemGridConstants.gridRowLevel.FOOTER) {
                     selection.totalsUnselected = true;
                 } else if (row.level === zemGridConstants.gridRowLevel.BASE) {
-                    var id = parseInt(row.data.breakdownId);
-                    if (!isNaN(id)) {
-                        selection.unselected.push(id);
+                    if (row.data.breakdownId) {
+                        selection.unselected.push(row.data.breakdownId);
                     }
                 }
             });

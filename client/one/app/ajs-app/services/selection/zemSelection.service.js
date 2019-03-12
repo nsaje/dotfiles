@@ -82,15 +82,17 @@ angular
 
         function isIdInSelected(id) {
             return (
+                id &&
                 isSelectedSet() &&
-                selection[SELECTED].indexOf(parseInt(id)) !== -1
+                selection[SELECTED].indexOf(id.toString()) !== -1
             );
         }
 
         function isIdInUnselected(id) {
             return (
+                id &&
                 isUnselectedSet() &&
-                selection[UNSELECTED].indexOf(parseInt(id)) !== -1
+                selection[UNSELECTED].indexOf(id.toString()) !== -1
             );
         }
 
@@ -107,13 +109,20 @@ angular
         }
 
         function setSelection(newSelection) {
-            newSelection = angular.extend(
+            var newSelectionCopy = angular.copy(newSelection);
+            newSelectionCopy[SELECTED] = convertIdsToArray(
+                newSelectionCopy[SELECTED]
+            );
+            newSelectionCopy[UNSELECTED] = convertIdsToArray(
+                newSelectionCopy[UNSELECTED]
+            );
+            newSelectionCopy = angular.extend(
                 {},
                 getDefaultSelection(),
-                newSelection
+                newSelectionCopy
             );
-            if (!angular.equals(selection, newSelection)) {
-                selection = newSelection;
+            if (!angular.equals(selection, newSelectionCopy)) {
+                selection = newSelectionCopy;
                 setUrlParams(selection);
                 pubSub.notify(EVENTS.ON_SELECTION_UPDATE, getSelection());
             }
@@ -219,11 +228,15 @@ angular
                 if (value && param.type === URL_PARAMS_TYPES.list) {
                     value = value
                         .split(',')
-                        .map(function(item) {
-                            return parseInt(item);
-                        })
                         .filter(function(item) {
-                            return !isNaN(item);
+                            return (
+                                item !== null &&
+                                item !== undefined &&
+                                item.toString() !== ''
+                            );
+                        })
+                        .map(function(item) {
+                            return item.toString();
                         });
                 } else if (value && param.type === URL_PARAMS_TYPES.number) {
                     value = parseInt(value);
@@ -261,13 +274,12 @@ angular
         function convertIdsToArray(ids) {
             if (ids instanceof Array) {
                 return ids.map(function(id) {
-                    return parseInt(id);
+                    return id.toString();
                 });
             }
 
-            ids = parseInt(ids);
             if (ids) {
-                return [ids];
+                return [ids.toString()];
             }
 
             return [];
