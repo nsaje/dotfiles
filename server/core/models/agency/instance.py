@@ -32,7 +32,7 @@ class AgencyInstanceMixin:
 
         return settings
 
-    def get_all_applied_deals(self):
+    def get_all_configured_deals(self):
         return core.features.deals.DirectDealConnection.objects.filter(
             models.Q(agency=self.id) | models.Q(agency=None, account=None, campaign=None, adgroup=None)
         )

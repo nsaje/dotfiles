@@ -751,3 +751,35 @@ def get_upload_batches_for_ad_group(ad_group):
 def all_accounts_uses_bcm_v2(user):
     accounts = models.Account.objects.all().filter_by_user(user).exclude_archived().filter(uses_bcm_v2=False)
     return not accounts.exists()
+
+
+def get_applied_deals_dict(configured_deals):
+    all_deals = []
+    for direct_deal in configured_deals:
+        for deal in direct_deal.deals.all():
+            all_deals.append(
+                {
+                    "level": direct_deal.level,
+                    "direct_deal_connection_id": direct_deal.id,
+                    "deal_id": deal.deal_id,
+                    "source": direct_deal.source.name,
+                    "exclusive": direct_deal.exclusive,
+                    "description": deal.description,
+                    "is_applied": True,
+                }
+            )
+
+    exclusive = []
+    non_exclusive = []
+    for deal in all_deals:
+        if deal["exclusive"]:
+            exclusive.append(deal)
+        else:
+            non_exclusive.append(deal)
+
+    for deal in exclusive:
+        for d in non_exclusive:
+            if deal["source"] == d["source"] and deal["deal_id"] == d["deal_id"]:
+                d.update({"is_applied": False})
+
+    return exclusive + non_exclusive

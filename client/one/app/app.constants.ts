@@ -198,6 +198,10 @@ export enum BidModifierType {
     AD = 9,
 }
 
+export enum HackLevel {
+    GLOBAL = 'Global',
+}
+
 export const APP_CONSTANTS = {
     /**
      * Max. selected media sources in on sources tabs.
@@ -1347,6 +1351,7 @@ export const APP_CONSTANTS = {
     automaticallyOptimizedKPIGoals: {},
     defaultAccountTypes: [{}],
     geolocationTypeText: [{}],
+    hackLevel: HackLevel,
 };
 
 APP_CONSTANTS.levelStateParamToLevelMap[

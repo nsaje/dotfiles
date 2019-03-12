@@ -100,7 +100,7 @@ class CampaignInstanceMixin:
             custom_flags.update({k: v for k, v in self.custom_flags.items() if v})
         return custom_flags
 
-    def get_all_applied_deals(self):
+    def get_all_configured_deals(self):
         return core.features.deals.DirectDealConnection.objects.filter(
             Q(campaign=self.id)
             | Q(account=self.account)

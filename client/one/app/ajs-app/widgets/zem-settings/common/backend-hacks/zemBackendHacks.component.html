@@ -8,6 +8,17 @@
     <div class="message" ng-if="!$ctrl.entity.hacks.length">
         No backend hacks set.
     </div>
+    <button
+        class="button button-bar"
+        ng-if="$ctrl.entity.hacks.length"
+        ng-click="$ctrl.filterNonGlobal()"
+    >
+        {{
+            $ctrl.showOnlyNonGlobal
+                ? 'Show all Hacks'
+                : 'Show only non-global Hacks'
+        }}
+    </button>
     <div class="custom-table__mobile-container">
         <table
             class="custom-table custom-table--base-color-strong"
@@ -22,9 +33,13 @@
                 </tr>
             </thead>
             <tbody>
-                <tr ng-repeat="hack in $ctrl.entity.hacks">
+                <tr
+                    ng-repeat="hack in $ctrl.entity.hacks"
+                    ng-hide="hack.level === $ctrl.constants.hackLevel.GLOBAL && $ctrl.showOnlyNonGlobal"
+                >
                     <td>{{ hack.level }}</td>
                     <td>{{ hack.source || 'all' }}</td>
+
                     <td>
                         <strong>{{ hack.summary }}</strong
                         ><span ng-if="hack.details.length"

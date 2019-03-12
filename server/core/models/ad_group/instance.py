@@ -257,7 +257,7 @@ class AdGroupInstanceMixin:
     def get_name_with_id(self):
         return "{} ({})".format(self.name, self.id)
 
-    def get_all_applied_deals(self):
+    def get_all_configured_deals(self):
         return core.features.deals.DirectDealConnection.objects.filter(
             Q(adgroup=self.id)
             | Q(campaign=self.campaign)
