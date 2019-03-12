@@ -15,7 +15,7 @@ angular.module('one.widgets').component('zemDeals', {
             $ctrl.api.register({});
         };
         $ctrl.$onChanges = function() {
-            $ctrl.deals = $ctrl.entity.deals || [];
+            $ctrl.deals = $ctrl.entity ? $ctrl.entity.deals : [];
         };
         function filterApplied() {
             $ctrl.showOnlyApplied = !$ctrl.showOnlyApplied;
