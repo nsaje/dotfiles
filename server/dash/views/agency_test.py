@@ -4164,6 +4164,11 @@ class AccountUsersTest(TestCase):
 
         agency.users.add(User.objects.get(pk=1))
 
+        permission = authmodels.Permission.objects.get(codename="this_is_agency_manager_group")
+        group = authmodels.Group()
+        group.save()
+        group.permissions.add(permission)
+
         user = User.objects.get(pk=2)
         acc1.users.add(user)
         acc2.users.add(user)
@@ -4189,6 +4194,11 @@ class AccountUsersTest(TestCase):
 
         agency.users.add(User.objects.get(pk=1))
 
+        permission = authmodels.Permission.objects.get(codename="this_is_agency_manager_group")
+        group = authmodels.Group()
+        group.save()
+        group.permissions.add(permission)
+
         user = User.objects.get(pk=2)
         user.first_name = "Someone"
         user.last_name = "Important"
@@ -4203,6 +4213,115 @@ class AccountUsersTest(TestCase):
         self.assertFalse(acc1.users.filter(pk=user.pk))
         self.assertFalse(acc2.users.filter(pk=user.pk))
         self.assertFalse(agency.users.filter(pk=user.pk))
+        self.assertEqual(
+            models.History.objects.filter(agency=agency, account=None).order_by("-created_dt").first().changes_text,
+            "Removed agency user Someone Important (user@test.com)",
+        )
+
+    def test_remove_multiagency_user(self):
+        client = self._get_client_with_permissions(["account_agency_access_permissions"])
+
+        acc1 = models.Account.objects.get(pk=1)
+        acc2 = models.Account.objects.get(pk=2)
+        acc3 = magic_mixer.blend(models.Account)
+        acc4 = magic_mixer.blend(models.Account)
+
+        agency = models.Agency.objects.get(pk=1)
+        acc1.agency = agency
+        acc1.save(fake_request(User.objects.get(pk=1)))
+        acc2.agency = agency
+        acc2.save(fake_request(User.objects.get(pk=1)))
+        agency.users.add(User.objects.get(pk=1))
+
+        agency2 = magic_mixer.blend(models.Agency)
+        acc3.agency = agency2
+        acc3.save(fake_request(User.objects.get(pk=1)))
+        acc4.agency = agency2
+        acc4.save(fake_request(User.objects.get(pk=1)))
+        agency.users.add(User.objects.get(pk=1))
+
+        permission = authmodels.Permission.objects.get(codename="this_is_agency_manager_group")
+        group = authmodels.Group()
+        group.save()
+        group.permissions.add(permission)
+
+        user = User.objects.get(pk=2)
+        user.first_name = "Someone"
+        user.last_name = "Important"
+        user.save()
+
+        acc1.users.add(user)
+        acc2.users.add(user)
+        acc3.users.add(user)
+        acc4.users.add(user)
+        agency.users.add(user)
+        agency2.users.add(user)
+
+        response = client.delete(reverse("account_users_manage", kwargs={"account_id": 1, "user_id": user.pk}))
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(acc1.users.filter(pk=user.pk))
+        self.assertFalse(acc2.users.filter(pk=user.pk))
+        self.assertFalse(agency.users.filter(pk=user.pk))
+        self.assertTrue(agency2.users.filter(pk=user.pk))
+        self.assertTrue(acc3.users.filter(pk=user.pk))
+        self.assertTrue(acc4.users.filter(pk=user.pk))
+        self.assertIn(permission, group.permissions.all())
+        self.assertEqual(
+            models.History.objects.filter(agency=agency, account=None).order_by("-created_dt").first().changes_text,
+            "Removed agency user Someone Important (user@test.com)",
+        )
+
+    def test_remove_multiagency_user_from_all_account(self):
+        client = self._get_client_with_permissions(["account_agency_access_permissions"])
+
+        acc1 = models.Account.objects.get(pk=1)
+        acc2 = models.Account.objects.get(pk=2)
+        acc3 = magic_mixer.blend(models.Account)
+        acc4 = magic_mixer.blend(models.Account)
+
+        agency = models.Agency.objects.get(pk=1)
+        acc1.agency = agency
+        acc1.save(fake_request(User.objects.get(pk=1)))
+        acc2.agency = agency
+        acc2.save(fake_request(User.objects.get(pk=1)))
+        agency.users.add(User.objects.get(pk=1))
+
+        agency2 = magic_mixer.blend(models.Agency)
+        acc3.agency = agency2
+        acc3.save(fake_request(User.objects.get(pk=1)))
+        acc4.agency = agency2
+        acc4.save(fake_request(User.objects.get(pk=1)))
+        agency.users.add(User.objects.get(pk=1))
+
+        permission = authmodels.Permission.objects.get(codename="this_is_agency_manager_group")
+        group = authmodels.Group()
+        group.save()
+        group.permissions.add(permission)
+
+        user = User.objects.get(pk=2)
+        user.first_name = "Someone"
+        user.last_name = "Important"
+        user.save()
+
+        acc1.users.add(user)
+        acc2.users.add(user)
+        acc3.users.add(user)
+        acc4.users.add(user)
+        agency.users.add(user)
+        agency2.users.add(user)
+
+        response = client.delete(
+            reverse("account_users_manage", kwargs={"account_id": 1, "user_id": user.pk})
+            + "?remove_from_all_accounts=1"
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(acc1.users.filter(pk=user.pk))
+        self.assertFalse(acc2.users.filter(pk=user.pk))
+        self.assertFalse(agency.users.filter(pk=user.pk))
+        self.assertTrue(agency2.users.filter(pk=user.pk))
+        self.assertTrue(acc3.users.filter(pk=user.pk))
+        self.assertTrue(acc4.users.filter(pk=user.pk))
+        self.assertIn(permission, group.permissions.all())
         self.assertEqual(
             models.History.objects.filter(agency=agency, account=None).order_by("-created_dt").first().changes_text,
             "Removed agency user Someone Important (user@test.com)",

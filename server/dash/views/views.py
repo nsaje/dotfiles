@@ -88,13 +88,9 @@ def index(request):
         {
             "staticUrl": settings.CLIENT_STATIC_URL,
             "debug": settings.DEBUG,
-            "whitelabel": associated_agency and associated_agency.white_label and associated_agency.white_label.theme,
-            "favicon_url": associated_agency
-            and associated_agency.white_label
-            and associated_agency.white_label.favicon_url,
-            "dashboard_title": associated_agency
-            and associated_agency.white_label
-            and associated_agency.white_label.dashboard_title,
+            "whitelabel": associated_agency and associated_agency.whitelabel,
+            "custom_favicon_url": associated_agency and associated_agency.custom_favicon_url,
+            "custom_dashboard_title": associated_agency and associated_agency.custom_dashboard_title,
         },
     )
 
@@ -159,23 +155,22 @@ class User(api_common.BaseApiView):
         if not user:
             return {}
 
-        agency = helpers.get_user_agency(user)
+        agencies = user.agency_set.all()
         intercom_user_hash = hmac.new(
             settings.INTERCOM_ID_VERIFICATION_SECRET, user.email.encode("utf-8"), digestmod=hashlib.sha256
         ).hexdigest()
-
         return {
             "id": str(user.pk),
             "email": user.email,
             "name": user.get_full_name(),
-            "agency": agency.id if agency else None,
+            "agencies": [agency.id for agency in agencies],
             "permissions": user.get_all_permissions_with_access_levels(),
             "timezone_offset": pytz.timezone(settings.DEFAULT_TIME_ZONE)
             .utcoffset(datetime.datetime.utcnow(), is_dst=True)
             .total_seconds(),
             "intercom_user_hash": intercom_user_hash,
-            "default_csv_separator": agency.default_csv_separator if agency else None,
-            "default_csv_decimal_separator": agency.default_csv_decimal_separator if agency else None,
+            "default_csv_separator": agencies[0].default_csv_separator if agencies else None,
+            "default_csv_decimal_separator": agencies[0].default_csv_decimal_separator if agencies else None,
         }
 
 

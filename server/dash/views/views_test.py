@@ -59,7 +59,7 @@ class UserTest(TestCase):
                     "user": {
                         "id": "2",
                         "email": "user@test.com",
-                        "agency": None,
+                        "agencies": [],
                         "default_csv_separator": None,
                         "default_csv_decimal_separator": None,
                         "name": "",
@@ -86,7 +86,7 @@ class UserTest(TestCase):
                     "user": {
                         "id": "2",
                         "email": "user@test.com",
-                        "agency": None,
+                        "agencies": [],
                         "default_csv_separator": None,
                         "default_csv_decimal_separator": None,
                         "name": "",
@@ -114,7 +114,7 @@ class UserTest(TestCase):
                     "user": {
                         "id": "2",
                         "email": "user@test.com",
-                        "agency": None,
+                        "agencies": [],
                         "default_csv_separator": None,
                         "default_csv_decimal_separator": None,
                         "name": "",

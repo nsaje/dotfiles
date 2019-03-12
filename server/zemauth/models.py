@@ -121,7 +121,7 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
                 models.Q(agency__id__in=agencies)
                 | models.Q(groups__permissions__codename="can_see_all_accounts")
                 | models.Q(user_permissions__codename="can_see_all_accounts")
-            ).distinct()
+            )
 
         def filter_selfmanaged(self):
             return self.filter(email__isnull=False).exclude(email__icontains="@zemanta").exclude(is_test_user=True)

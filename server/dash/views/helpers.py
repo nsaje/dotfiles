@@ -117,9 +117,9 @@ def get_filtered_agencies(agency_filter):
         return None
 
     filtered_ids = _split_to_ids(agency_filter)
-    if filtered_ids:
-        filtered_agencies = models.Agency.objects.all().filter(id__in=filtered_ids)
-    return filtered_agencies
+    if not filtered_ids:
+        return None
+    return models.Agency.objects.all().filter(id__in=filtered_ids)
 
 
 def get_filtered_account_types(account_type_filter):
@@ -157,19 +157,11 @@ def get_publisher_group(user, account_id, publisher_group_id):
         raise exc.MissingDataError("Publisher group does not exist")
 
 
-def get_user_agency(user):
-    try:
-        return user.agency_set.get()
-    except models.Agency.DoesNotExist:
-        pass
-    return None
-
-
 def is_agency_manager(user, account):
     if account.agency is None:
         return False
 
-    return get_user_agency(user) == account.agency
+    return user.agency_set.filter(id=account.agency.id).exists()
 
 
 def _get_adgroups_for(modelcls, modelobjects):

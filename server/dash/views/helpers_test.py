@@ -2,7 +2,6 @@
 import datetime
 import decimal
 
-from django.core.exceptions import MultipleObjectsReturned
 from django.http.request import HttpRequest
 from django.test import RequestFactory
 from django.test import TestCase
@@ -939,20 +938,17 @@ class UtilityHelpers(TestCase):
 
     def test_get_user_agency(self):
         u = User.objects.get(pk=1000)
-        self.assertIsNone(helpers.get_user_agency(u))
-
+        self.assertQuerysetEqual(u.agency_set.all(), [])
         # add user to agency
         agency = models.Agency.objects.get(pk=1)
         agency.users.add(u)
 
-        self.assertEqual(agency, helpers.get_user_agency(u))
+        self.assertEqual([agency], list(u.agency_set.all()))
 
         other_agency = models.Agency(name="Random agency")
         other_agency.save(fake_request(u))
         other_agency.users.add(u)
-
-        with self.assertRaises(MultipleObjectsReturned):
-            helpers.get_user_agency(u)
+        self.assertListEqual([other_agency, agency], list(u.agency_set.all()))
 
     def test_is_agency_manager(self):
         acc = models.Account.objects.get(pk=1000)

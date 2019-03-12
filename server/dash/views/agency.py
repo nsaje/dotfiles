@@ -1448,22 +1448,23 @@ class AccountUsers(api_common.BaseApiView):
         return self.create_api_response({"user_id": user.id})
 
     def _remove_user(self, request, account, user, remove_from_all_accounts=False):
-        self._remove_user_from_account(account, user, request.user)
-
         is_agency_manager = account.agency and account.agency.users.filter(pk=user.pk).exists()
-        if account.agency and (is_agency_manager or remove_from_all_accounts):
-            for other_account in account.agency.account_set.all().exclude(pk=account.pk):
-                self._remove_user_from_account(other_account, user, request.user)
 
-        if is_agency_manager:
-            groups = authmodels.Group.objects.filter(
-                permissions=authmodels.Permission.objects.get(codename="this_is_agency_manager_group")
-            )
-            user.groups.remove(*groups)
+        if account.agency and (is_agency_manager or remove_from_all_accounts):
+            all_agency_accounts = account.agency.account_set.all()
+            for account in all_agency_accounts:
+                self._remove_user_from_account(account, user, request.user)
 
             account.agency.users.remove(user)
             changes_text = "Removed agency user {} ({})".format(user.get_full_name(), user.email)
             account.agency.write_history(changes_text, user=request.user)
+            if user.agency_set.count() < 2:
+                group = authmodels.Group.objects.get(
+                    permissions=authmodels.Permission.objects.get(codename="this_is_agency_manager_group")
+                )
+                user.groups.remove(group)
+        else:
+            self._remove_user_from_account(account, user, request.user)
 
     def _remove_user_from_account(self, account, removed_user, request_user):
         if len(account.users.filter(pk=removed_user.pk)):
@@ -1532,7 +1533,6 @@ class AccountUserAction(api_common.BaseApiView):
         group = self._get_agency_manager_group()
 
         self._check_is_agency_account(account)
-        self._check_if_already_agency_user(account, user)
 
         account.agency.users.add(user)
         account.users.remove(user)
@@ -1542,6 +1542,7 @@ class AccountUserAction(api_common.BaseApiView):
         group = self._get_agency_manager_group()
 
         self._check_is_agency_account(account)
+        self._check_user_in_multiple_agencies(user)
 
         account.agency.users.remove(user)
         account.users.add(user)
@@ -1561,10 +1562,9 @@ class AccountUserAction(api_common.BaseApiView):
         if not account.is_agency():
             raise exc.ValidationError(pretty_message="Cannot promote user on account without agency.")
 
-    def _check_if_already_agency_user(self, account, user):
-        agency = helpers.get_user_agency(user)
-        if agency and account.agency != agency:
-            raise exc.ValidationError(pretty_message="Cannot promote user on more then one agency.")
+    def _check_user_in_multiple_agencies(self, user):
+        if user.agency_set.count() > 1:
+            raise exc.ValidationError(pretty_message="Cannot downgrade user set on multiple agencies.")
 
     def _get_agency_manager_group(self):
         perm = authmodels.Permission.objects.get(codename="this_is_agency_manager_group")
