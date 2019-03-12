@@ -12,6 +12,9 @@ INFLUX_MEASUREMENT = "z1_analytics_overspend"
 ALERT_MSG_OVERSPEND = """Overspend on {date} on accounts:
 {details}"""
 
+OUTBRAIN_MSN_ACCOUNT = 3277
+SKIP_ACCOUNTS = [OUTBRAIN_MSN_ACCOUNT]
+
 
 class Command(utils.command_helpers.ExceptionCommand):
     help = "Audit autopilot job for today"
@@ -47,6 +50,8 @@ class Command(utils.command_helpers.ExceptionCommand):
         details = ""
         influx_data = []
         for account, account_overspend in list(alarms.items()):
+            if account.id in SKIP_ACCOUNTS:
+                continue
             self._print("- {} {}: ${:.2f}".format(account.name, account.id, account_overspend))
             details += " - {}: ${:.2f}\n".format(utils.slack.account_url(account), account_overspend)
             influx_data.append(
