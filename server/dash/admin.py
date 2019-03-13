@@ -458,6 +458,10 @@ class AgencyAdmin(SlackLoggerMixin, ExportMixin, admin.ModelAdmin):
             )
         if "ob_representative" in form.changed_data:
             account_updates["ob_representative"] = ZemUser.objects.get(email=form.cleaned_data["ob_representative"])
+        if "sales_representative" in form.changed_data:
+            account_updates["default_sales_representative"] = ZemUser.objects.get(
+                email=form.cleaned_data["sales_representative"]
+            )
         if "account_type" in form.changed_data:
             account_updates["account_type"] = form.cleaned_data["default_account_type"]
 
