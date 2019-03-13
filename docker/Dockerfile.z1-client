@@ -1,9 +1,14 @@
 FROM node:8
 
-RUN apt-get update \
-    && apt-get install  -y --no-install-recommends \
+RUN apt-get update
+RUN apt-get install  -y --no-install-recommends \
         nano \
         xvfb
+
+# Update NPM
+RUN npm install npm
+RUN rm -rf /usr/local/lib/node_modules/npm
+RUN mv node_modules/npm /usr/local/lib/node_modules/npm
 
 # Install Chrome
 RUN test ! -x /opt/google/chrome/chrome \
@@ -20,5 +25,5 @@ WORKDIR /app
 RUN npm install -g bower
 
 ADD package.json /app/
-RUN npm cache clear --force && npm install
-
+ADD npm-shrinkwrap.json /app/
+RUN npm ci

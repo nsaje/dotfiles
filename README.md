@@ -324,3 +324,7 @@ docker run --rm \
 In case of conflicts passing the `-v` flag to the `pip-compile` call is useful for easier debugging.
 
 [1] https://github.com/jazzband/pip-tools
+
+## NPM dependencies
+
+In order to ensure reproducible builds we pin every npm package to the exact version. For this purpose we use `npm install --save-exact` command. Npm packages are specified in `client/package.json` file. After installing a new npm package or downgrading/upgrading an existing one run `npm shrinkwrap` command. The `npm shrinkwrap` command will update or generate an `npm-shrinkwrap.json` file, which stores the exact version tree of npm packages and their dependencies.

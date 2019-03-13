@@ -141,6 +141,7 @@ build:	## rebuilds a zemanta/z1 && zemanta/z1-client docker image
 				-f docker/Dockerfile.z1 . \
 	# You can't mount volume during build time because of docker version mismatch. This is workaround:
 	cp client/package.json docker/ \
+	&& cp client/npm-shrinkwrap.json docker/ \
 	&& docker build --rm=false \
 					-t $(ECR_BASE)/z1-client:$(GIT_HASH) \
 					-t $(ECR_BASE)/z1-client:$(GIT_BRANCH) \
@@ -149,7 +150,8 @@ build:	## rebuilds a zemanta/z1 && zemanta/z1-client docker image
 					-t $(ECR_BASE)/z1-client \
 					-t z1-client \
 					-f docker/Dockerfile.z1-client docker/ \
-	&& rm docker/package.json
+	&& rm docker/package.json \
+	&& rm docker/npm-shrinkwrap.json
 
 build_utils:	## builds utility images for CI
 	docker build -t py3-tools -f docker/Dockerfile.py3-tools  docker/
