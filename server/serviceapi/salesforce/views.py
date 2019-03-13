@@ -9,11 +9,15 @@ from . import serializers
 from . import service
 from .. import base
 
-SERVICE_NAME = "salesforce"
+SALESFORCE_SERVICE_NAME = "salesforce"
+LIGATUS_SERVICE_NAME = "outbrain-salesforce"
 
 
 class CreateClientView(base.ServiceAPIBaseView):
-    authentication_classes = (authentication.gen_oauth_authentication(SERVICE_NAME),)
+    authentication_classes = (
+        authentication.gen_oauth_authentication(SALESFORCE_SERVICE_NAME),
+        authentication.gen_oauth_authentication(LIGATUS_SERVICE_NAME),
+    )
 
     def put(self, request):
         serializer = serializers.ClientSerializer(data=request.data)
@@ -35,7 +39,10 @@ class CreateClientView(base.ServiceAPIBaseView):
 
 
 class CreateCreditLineView(base.ServiceAPIBaseView):
-    authentication_classes = (authentication.gen_oauth_authentication(SERVICE_NAME),)
+    authentication_classes = (
+        authentication.gen_oauth_authentication(SALESFORCE_SERVICE_NAME),
+        authentication.gen_oauth_authentication(LIGATUS_SERVICE_NAME),
+    )
 
     def put(self, request):
         serializer = serializers.CreditLineSerializer(data=request.data)
@@ -54,7 +61,10 @@ class CreateCreditLineView(base.ServiceAPIBaseView):
 
 
 class AgencyAccountsView(base.ServiceAPIBaseView):
-    authentication_classes = (authentication.gen_oauth_authentication(SERVICE_NAME),)
+    authentication_classes = (
+        authentication.gen_oauth_authentication(SALESFORCE_SERVICE_NAME),
+        authentication.gen_oauth_authentication(LIGATUS_SERVICE_NAME),
+    )
 
     def post(self, request):
         serializer = serializers.AgencyAccountsSerializer(data=request.data)
@@ -71,7 +81,10 @@ class AgencyAccountsView(base.ServiceAPIBaseView):
 
 
 class CreditsListView(base.ServiceAPIBaseView):
-    authentication_classes = (authentication.gen_oauth_authentication(SERVICE_NAME),)
+    authentication_classes = (
+        authentication.gen_oauth_authentication(SALESFORCE_SERVICE_NAME),
+        authentication.gen_oauth_authentication(LIGATUS_SERVICE_NAME),
+    )
 
     def post(self, request):
         serializer = serializers.Z1IdSerializer(data=request.data)

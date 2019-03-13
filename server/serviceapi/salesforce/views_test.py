@@ -23,7 +23,7 @@ class CreateClientTestCase(TestCase):
         magic_mixer.blend(User, email=service.DEFAULT_SALES_REPRESENTATIVE)
 
     def test_put_valid_agency(self):
-        data = {"salesforceAccountId": 1, "name": "Agency 1", "type": "agency"}
+        data = {"salesforceAccountId": 1, "name": "Agency 1", "type": "agency", "tags": ["some tags", "anOther"]}
         url = reverse("service.salesforce.client")
         r = self.client.put(url, data=data, format="json")
         client = core.models.agency.Agency.objects.all().order_by("-created_dt").first()
@@ -32,9 +32,10 @@ class CreateClientTestCase(TestCase):
         self.assertEqual(client.default_account_type, dash.constants.AccountType.PILOT)
         self.assertEqual(client.cs_representative.email, service.DEFAULT_CS_REPRESENTATIVE)
         self.assertEqual(client.sales_representative.email, service.DEFAULT_SALES_REPRESENTATIVE)
+        self.assertEqual(list(client.entity_tags.all()), ["some tags", "anOther"])
 
     def test_put_valid_account(self):
-        data = {"salesforceAccountId": 1, "name": "Brand 1", "type": "brand", "currency": "EUR"}
+        data = {"salesforceAccountId": 1, "name": "Brand 1", "type": "brand", "currency": "EUR", "tags": ["accountTag"]}
         url = reverse("service.salesforce.client")
         r = self.client.put(url, data=data, format="json")
         client = core.models.account.Account.objects.all().order_by("-created_dt").first()
@@ -45,6 +46,7 @@ class CreateClientTestCase(TestCase):
         self.assertEqual(sett.default_cs_representative.email, service.DEFAULT_CS_REPRESENTATIVE)
         self.assertEqual(sett.default_sales_representative.email, service.DEFAULT_SALES_REPRESENTATIVE)
         self.assertEqual(client.currency, dash.constants.Currency.EUR)
+        self.assertEqual(list(client.entity_tags.all()), ["accountTag"])
 
     def test_put_invalid(self):
         url = reverse("service.salesforce.client")

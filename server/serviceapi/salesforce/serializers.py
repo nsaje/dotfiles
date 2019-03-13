@@ -16,6 +16,7 @@ class ClientSerializer(serializers.Serializer):
     currency = restapi.serializers.fields.DashConstantField(
         dash.constants.Currency, required=False, default=dash.constants.Currency.USD
     )
+    tags = restapi.serializers.fields.NullListField(required=False)
 
 
 class CreditLineSerializer(serializers.Serializer):

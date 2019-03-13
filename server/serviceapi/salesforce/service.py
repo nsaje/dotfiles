@@ -102,11 +102,13 @@ def create_client(request, data):
         client.default_account_type = DEFAULT_ACCOUNT_TYPE
         client.sales_representative = sales
         client.cs_representative = cs
+        client.entity_tags.add(*data.get("tags", []))
         client.save(request)
     elif data["type"] == constants.CLIENT_TYPE_CLIENT_DIRECT:
         client.settings.update(
             request, account_type=DEFAULT_ACCOUNT_TYPE, default_sales_representative=sales, default_cs_representative=cs
         )
+        client.entity_tags.add(*data.get("tags", []))
         client.currency = data["currency"]
         client.save(request)
     return client
