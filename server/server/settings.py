@@ -396,7 +396,6 @@ DCRON = {
     # Job severity overrides.
     "severities": {
         "run_autopilot": dcron_constants.Severity.HIGH,
-        "refresh_etl": dcron_constants.Severity.HIGH,
         "campaignstop_main": dcron_constants.Severity.HIGH,
         "campaignstop_simple": dcron_constants.Severity.HIGH,
         "campaignstop_handle_updates": dcron_constants.Severity.HIGH,
