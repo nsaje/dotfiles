@@ -8,9 +8,10 @@ import core.features.bcm.calculations
 import dash.constants
 import dash.models
 import redshiftapi
-from etl import helpers
-from etl import redshift
-from utils import converters
+import utils.converters
+
+from . import helpers
+from . import redshift
 
 logger = logging.getLogger(__name__)
 
@@ -48,7 +49,7 @@ def check_discrepancy(from_date, to_date):
 
 def _calculate_cpc_micro(cpc_value, fee, margin=0):
     cpc_media = core.features.bcm.calculations.subtract_fee_and_margin(cpc_value, fee, margin)
-    return int(cpc_media * converters.CURRENCY_TO_MICRO)
+    return int(cpc_media * utils.converters.CURRENCY_TO_MICRO)
 
 
 def _update_mvh_ad_groups_cpc(ad_groups_cpc_micro):

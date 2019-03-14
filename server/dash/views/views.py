@@ -36,8 +36,8 @@ from dash import infobox_helpers
 from dash import models
 from dash import region_targeting_helper
 from dash import retargeting_helper
-from dash.features import native_server
 from dash.views import helpers
+from prodops import hacks
 from utils import api_common
 from utils import db_router
 from utils import email_helper
@@ -351,7 +351,7 @@ class CampaignAdGroups(api_common.BaseApiView):
         campaign = helpers.get_campaign(request.user, campaign_id)
         self._validate_campaign_ready(request, campaign)
         ad_group = core.models.AdGroup.objects.create(request, campaign, is_restapi=self.rest_proxy)
-        native_server.apply_ad_group_create_hacks(request, ad_group)
+        hacks.apply_ad_group_create_hacks(request, ad_group)
         return self.create_api_response({"name": ad_group.name, "id": ad_group.id})
 
     @staticmethod
@@ -755,7 +755,7 @@ class AccountCampaigns(api_common.BaseApiView):
         type = form.cleaned_data.get("campaign_type")
         language = constants.Language.ENGLISH if self.rest_proxy else None
         campaign = models.Campaign.objects.create(request, account, name, language=language, type=type, send_mail=True)
-        native_server.apply_campaign_create_hacks(request, campaign)
+        hacks.apply_campaign_create_hacks(request, campaign)
 
         response = {"name": campaign.name, "id": campaign.id}
 
@@ -781,7 +781,7 @@ class AdGroupSourceSettings(api_common.BaseApiView):
             form.cleaned_data["local_{}".format(field)] = form.cleaned_data.pop(field, None)
 
         data = {k: v for k, v in list(form.cleaned_data.items()) if v is not None}
-        data = native_server.override_ad_group_source_settings_form_data(ad_group, data)
+        data = hacks.override_ad_group_source_settings_form_data(ad_group, data)
 
         response = self._update_ad_group_source(request, ad_group_source, data)
 

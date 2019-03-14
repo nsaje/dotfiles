@@ -1,8 +1,8 @@
 import datetime
 
 import utils.slack
-from dash.features.native_server import constants
-from dash.features.native_server import native_server_billing
+from etl import nas_cpc_billing
+from prodops import hacks
 from utils.command_helpers import ExceptionCommand
 
 MESSAGE = "Adgroup #{ad_group_id} have its eCPC ({ecpc}) different from its CPC ({cpc})."
@@ -38,15 +38,15 @@ class Command(ExceptionCommand):
         if since > until:
             raise ValueError("Starting date '{}' must be before the end date '{}'".format(since, until))
         agency_id = options.get("agency_id")
-        if agency_id not in constants.CPC_GOAL_TO_BID_AGENCIES:
+        if agency_id not in hacks.CPC_GOAL_TO_BID_AGENCIES:
             raise ValueError(
                 "'{}' is not a Native Ad Server CPC billing customer. Valid IDs are : {}".format(
-                    agency_id, constants.CPC_GOAL_TO_BID_AGENCIES
+                    agency_id, hacks.CPC_GOAL_TO_BID_AGENCIES
                 )
             )
-        native_server_billing.process_cpc_billing(since, until, agency_id)
+        nas_cpc_billing.process_cpc_billing(since, until, agency_id)
 
-        discrepancies = native_server_billing.check_discrepancy(since, until)
+        discrepancies = nas_cpc_billing.check_discrepancy(since, until)
         if discrepancies:
             messages = [MESSAGE.format(**disc) for disc in discrepancies]
             text = "\n".join(messages)

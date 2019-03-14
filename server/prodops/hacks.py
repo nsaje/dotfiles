@@ -4,41 +4,47 @@ from django.contrib.auth import models as authmodels
 
 import dash.constants
 
-from . import constants
+AGENCY_RCS_ID = 220
+AGENCY_NEWSCORP_ID = 86
+CPC_GOAL_TO_BID_AGENCIES = (AGENCY_RCS_ID, AGENCY_NEWSCORP_ID)
+# Non NAS AGENCY
+AGENCY_MEDIAMOND_ID = 196
+AGENCY_AMMET_ID = 289
+AGENCY_ROI_MARKETPLACE_ID = 208
 
 AD_GROUP_SETTINGS_CREATE_HACKS_PER_AGENCY = {
-    constants.AGENCY_RCS_ID: {
+    AGENCY_RCS_ID: {
         "target_regions": ["IT"],
         "exclusion_target_regions": [],
         "delivery_type": dash.constants.AdGroupDeliveryType.ACCELERATED,
     },
-    constants.AGENCY_AMMET_ID: {"target_regions": ["AU"], "exclusion_target_regions": []},
-    constants.AGENCY_MEDIAMOND_ID: {"tracking_code": "utm_source=Mediamond&utm_medium=referral"},
-    constants.AGENCY_NEWSCORP_ID: {
+    AGENCY_AMMET_ID: {"target_regions": ["AU"], "exclusion_target_regions": []},
+    AGENCY_MEDIAMOND_ID: {"tracking_code": "utm_source=Mediamond&utm_medium=referral"},
+    AGENCY_NEWSCORP_ID: {
         "delivery_type": dash.constants.AdGroupDeliveryType.ACCELERATED,
         "target_regions": ["AU"],
         "exclusion_target_regions": [],
     },
 }
 AD_GROUP_SETTINGS_HACKS_UPDATE_PER_AGENCY = {
-    constants.AGENCY_RCS_ID: {"delivery_type": dash.constants.AdGroupDeliveryType.ACCELERATED},
-    constants.AGENCY_NEWSCORP_ID: {"delivery_type": dash.constants.AdGroupDeliveryType.ACCELERATED},
+    AGENCY_RCS_ID: {"delivery_type": dash.constants.AdGroupDeliveryType.ACCELERATED},
+    AGENCY_NEWSCORP_ID: {"delivery_type": dash.constants.AdGroupDeliveryType.ACCELERATED},
 }
 
 CAMPAIGN_SETTINGS_CREATE_HACKS_PER_AGENCY = {
-    constants.AGENCY_RCS_ID: {"language": "it", "autopilot": True},
-    constants.AGENCY_NEWSCORP_ID: {"language": "en", "autopilot": True},
-    constants.AGENCY_ROI_MARKETPLACE_ID: {"iab_category": dash.constants.IABCategory.IAB3_11},
+    AGENCY_RCS_ID: {"language": "it", "autopilot": True},
+    AGENCY_NEWSCORP_ID: {"language": "en", "autopilot": True},
+    AGENCY_ROI_MARKETPLACE_ID: {"iab_category": dash.constants.IABCategory.IAB3_11},
 }
 
 CAMPAIGN_SETTINGS_UPDATE_HACKS_PER_AGENCY = {
-    constants.AGENCY_RCS_ID: {"language": "it", "autopilot": True},
-    constants.AGENCY_NEWSCORP_ID: {"language": "en", "autopilot": True},
+    AGENCY_RCS_ID: {"language": "it", "autopilot": True},
+    AGENCY_NEWSCORP_ID: {"language": "en", "autopilot": True},
 }
 
 FIXED_CAMPAIGN_TYPE_PER_AGENCY = {
-    constants.AGENCY_RCS_ID: dash.constants.CampaignType.CONTENT,
-    constants.AGENCY_NEWSCORP_ID: dash.constants.CampaignType.CONTENT,
+    AGENCY_RCS_ID: dash.constants.CampaignType.CONTENT,
+    AGENCY_NEWSCORP_ID: dash.constants.CampaignType.CONTENT,
 }
 
 
@@ -53,7 +59,7 @@ def apply_ad_group_create_hacks(request, ad_group):
         ad_group.settings.update(
             request, **AD_GROUP_SETTINGS_CREATE_HACKS_PER_AGENCY[ad_group.campaign.account.agency_id]
         )
-    if ad_group.campaign.account.agency_id in constants.CPC_GOAL_TO_BID_AGENCIES:
+    if ad_group.campaign.account.agency_id in CPC_GOAL_TO_BID_AGENCIES:
         goal_cpc_value = _get_cpc_goal_value(ad_group.campaign)
         _update_ad_group_sources_cpc(request, ad_group, goal_cpc_value.value)
 
@@ -72,7 +78,7 @@ def _get_cpc_goal_value(campaign):
 
 
 def _transform_bid_cpc_value_from_campaign_goal(ad_group, form_data):
-    if ad_group.campaign.account.agency_id in constants.CPC_GOAL_TO_BID_AGENCIES:
+    if ad_group.campaign.account.agency_id in CPC_GOAL_TO_BID_AGENCIES:
         cpc_goal_value = _get_cpc_goal_value(ad_group.campaign)
         if form_data.get("local_cpc_cc"):
             form_data["local_cpc_cc"] = cpc_goal_value.local_value
@@ -82,13 +88,13 @@ def _transform_bid_cpc_value_from_campaign_goal(ad_group, form_data):
 
 
 def override_ad_group_source_settings_form_data(ad_group, form_data):
-    if ad_group.campaign.account.agency_id in constants.CPC_GOAL_TO_BID_AGENCIES:
+    if ad_group.campaign.account.agency_id in CPC_GOAL_TO_BID_AGENCIES:
         return _transform_bid_cpc_value_from_campaign_goal(ad_group, form_data)
     return form_data
 
 
 def apply_set_goals_hacks(campaign, goal_changes):
-    if campaign.account.agency_id in constants.CPC_GOAL_TO_BID_AGENCIES:
+    if campaign.account.agency_id in CPC_GOAL_TO_BID_AGENCIES:
         return {
             "added": list(
                 filter(lambda goal: goal["type"] == dash.constants.CampaignGoalKPI.CPC, goal_changes["added"])
@@ -101,12 +107,12 @@ def apply_set_goals_hacks(campaign, goal_changes):
 
 
 def apply_create_user_hacks(user, account):
-    if account.agency_id == constants.AGENCY_RCS_ID:
+    if account.agency_id == AGENCY_RCS_ID:
         for group in authmodels.Group.objects.filter(name__in=("Public - default for all new accounts",)):
             user.groups.remove(group)
         for group in authmodels.Group.objects.filter(name__in=("NAS - RCS",)):
             user.groups.add(group)
-    if account.agency_id == constants.AGENCY_NEWSCORP_ID:
+    if account.agency_id == AGENCY_NEWSCORP_ID:
         for group in authmodels.Group.objects.filter(name__in=("Public - default for all new accounts",)):
             user.groups.remove(group)
         for group in authmodels.Group.objects.filter(name__in=("NAS - Newscorp",)):
@@ -121,7 +127,7 @@ def apply_campaign_create_hacks(request, campaign):
 
 
 def apply_campaign_change_hacks(request, campaign, goal_changes):
-    if campaign.account.agency_id in constants.CPC_GOAL_TO_BID_AGENCIES:
+    if campaign.account.agency_id in CPC_GOAL_TO_BID_AGENCIES:
         if not (goal_changes["modified"] or goal_changes["added"]):
             return
         for ad_group in campaign.adgroup_set.all():

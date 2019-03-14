@@ -33,8 +33,8 @@ from dash import models
 from dash import retargeting_helper
 from dash.features import custom_flags
 from dash.features import ga
-from dash.features import native_server
 from dash.views import helpers
+from prodops import hacks
 from utils import api_common
 from utils import dates_helper
 from utils import db_router
@@ -100,7 +100,7 @@ class AdGroupSettings(api_common.BaseApiView):
 
         for field in ad_group.settings.multicurrency_fields:
             form.cleaned_data["local_{}".format(field)] = form.cleaned_data.pop(field, None)
-        form_data = native_server.override_ad_group_settings_form_data(ad_group, form.cleaned_data)
+        form_data = hacks.override_ad_group_settings_form_data(ad_group, form.cleaned_data)
 
         self._update_adgroup(request, ad_group, form_data)
 
@@ -586,7 +586,7 @@ class CampaignSettings(api_common.BaseApiView):
 
         current = models.CampaignGoal.objects.filter(campaign=campaign)
         changes = resource.get("goals", {"added": [], "removed": [], "primary": None, "modified": {}})
-        changes = native_server.apply_set_goals_hacks(campaign, changes)
+        changes = hacks.apply_set_goals_hacks(campaign, changes)
 
         # If the view is used via a REST API proxy, don't require goals to be already defined,
         # since that produces a chicken-and-egg problem. REST API combines POST and PUT calls into one
@@ -595,7 +595,7 @@ class CampaignSettings(api_common.BaseApiView):
             errors["no_goals"] = "At least one goal must be defined"
             raise exc.ValidationError(errors=errors)
 
-        form_data = native_server.override_campaign_settings_form_data(campaign, settings_form.cleaned_data)
+        form_data = hacks.override_campaign_settings_form_data(campaign, settings_form.cleaned_data)
 
         with transaction.atomic():
             try:
@@ -622,7 +622,7 @@ class CampaignSettings(api_common.BaseApiView):
             if errors:
                 raise exc.ValidationError(errors=errors)
 
-            native_server.apply_campaign_change_hacks(request, campaign, changes)
+            hacks.apply_campaign_change_hacks(request, campaign, changes)
 
         response = {
             "settings": self.get_dict(request, campaign.settings, campaign),
@@ -1403,7 +1403,7 @@ class AccountUsers(api_common.BaseApiView):
 
             user = ZemUser.objects.create_user(email, first_name=first_name, last_name=last_name)
             self._add_user_to_groups(user)
-            native_server.apply_create_user_hacks(user, account)
+            hacks.apply_create_user_hacks(user, account)
             email_helper.send_email_to_new_user(user, request, agency=account.agency)
 
             created = True
