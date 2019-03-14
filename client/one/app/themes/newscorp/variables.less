@@ -1,28 +1,15 @@
 @import '../default/variables.less';
 
-// GENERAL SETTINGS
-
 @images-folder: 'images/whitelabel/newscorp';
-@logo: url('@{images-folder}/newscorp-logo.svg') no-repeat center center;
+@logo__background: url('@{images-folder}/newscorp-logo.svg') no-repeat center
+    center;
 
-// GREENPARK COLORS
+@color--primary: #2cb9ca;
+@color--secondary: #040707;
+@color--danger: #ed4646;
+@color--warning: #fecb63;
 
-@primary-color: #2cb9ca;
-@secondary-color: #040707;
-@text-color: #040707;
+@text-color--default: #040707;
 
-// HEADER COLOR
-
-@header-left-color: #040707;
-@header-right-color: #040707;
-
-// BACKGROUND COLORS
-
-@background-light-gray: #eaeaea;
-
-// OTHER COLORS
-
-@red: #ed4646;
-@green: #99cc00;
-@orange: #fecb63;
-@blue: #007acf;
+@header__background-color--left: @color--secondary;
+@header__background-color--right: @color--secondary;

@@ -8,20 +8,20 @@
 
 .zem-categorized-tags-list__empty-text-container {
     padding-top: 6px;
-    margin-left: @default-spacing;
-    border-left: 1px solid darken(@light-gray, 10%);
-    padding-left: @default-spacing;
+    margin-left: @spacing--default;
+    border-left: 1px solid darken(@color--lighter-neutral, 10%);
+    padding-left: @spacing--default;
 }
 
 .zem-categorized-tags-list__category-container {
-    margin-left: @default-spacing;
-    border-left: 1px solid darken(@light-gray, 10%);
-    padding-left: @default-spacing;
+    margin-left: @spacing--default;
+    border-left: 1px solid darken(@color--lighter-neutral, 10%);
+    padding-left: @spacing--default;
 }
 
 .zem-categorized-tags-list__category-name {
     font-weight: 300;
-    color: @gray;
+    color: @text-color--lighter;
 }
 
 .zem-categorized-tags-list__items-list {
@@ -35,9 +35,9 @@
     position: relative;
     line-height: 16px;
     padding: 5px 25px 5px 10px;
-    color: @text-color;
-    background-color: @light-gray;
-    border-radius: @border-radius;
+    color: @text-color--default;
+    background-color: @color--lighter-neutral;
+    border-radius: @border-radius--default;
     margin: 2px 4px 2px 0;
 }
 
@@ -64,12 +64,12 @@
 @media only screen and (max-width: @tablet-breakpoint) {
     .zem-categorized-tags-list {
         display: block;
-        margin-top: @default-spacing;
-        border-top: 1px solid darken(@light-gray, 10%);
+        margin-top: @spacing--default;
+        border-top: 1px solid darken(@color--lighter-neutral, 10%);
     }
 
     .zem-categorized-tags-list__category-container {
-        padding-top: @default-spacing;
+        padding-top: @spacing--default;
         width: auto;
     }
 
@@ -81,6 +81,6 @@
     }
 
     .zem-categorized-tags-list__empty-text-container {
-        padding-top: @default-spacing;
+        padding-top: @spacing--default;
     }
 }

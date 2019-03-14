@@ -4,16 +4,16 @@
     position: relative;
 
     .input-text {
-        border: 1px solid @light-gray;
-        height: @default-button-input-height+10;
+        border: 1px solid @color--lighter-neutral;
+        height: @input__height--default+10;
         line-height: 20px;
         padding: 10px 10px;
         box-shadow: inset 3px 3px 3px 0px rgba(0, 0, 0, 0.05);
-        color: @text-color;
+        color: @text-color--default;
         border-radius: 0;
 
         &:focus {
-            border: 1px solid darken(@input-border-color, 20%);
+            border: 1px solid darken(@border-color--default, 20%);
             outline: none;
             box-shadow: 0px 0px 5px 0px rgba(0, 0, 0, 0.2);
         }
@@ -27,8 +27,8 @@
     background: white;
     width: 100%;
     max-height: 300px;
-    border-bottom-right-radius: @border-radius;
-    border-bottom-left-radius: @border-radius;
+    border-bottom-right-radius: @border-radius--default;
+    border-bottom-left-radius: @border-radius--default;
     box-shadow: 0px 2px 10px 0px rgba(0, 0, 0, 0.2);
     overflow: hidden;
     top: 29px;
@@ -69,11 +69,11 @@
 }
 
 .zem-select-dropdown-item--highlighted {
-    background: tint(@secondary-color, 96%);
+    background: tint(@color--secondary, 96%);
 }
 
 .zem-select-dropdown-item--selected {
-    color: @secondary-color;
+    color: @color--secondary;
     font-weight: 500;
 }
 
@@ -83,7 +83,7 @@
 
 .zem-select-dropdown-item__name {
     font-size: 13px;
-    color: @text-color;
+    color: @text-color--default;
     line-height: 30px;
     padding-left: 0px;
 }

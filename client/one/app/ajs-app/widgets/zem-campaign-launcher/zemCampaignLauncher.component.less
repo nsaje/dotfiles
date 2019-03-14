@@ -2,23 +2,23 @@
 
 .zem-campaign-launcher {
     display: block;
-    width: @desktop-breakpoint - 2 * @default-spacing;
+    width: @desktop-breakpoint - 2 * @spacing--default;
     margin: 0 auto;
 
     .loader {
-        margin: @default-spacing;
+        margin: @spacing--default;
     }
 
     .zem-campaign-launcher__title {
-        margin: 0 0 @default-spacing 0;
+        margin: 0 0 @spacing--default 0;
     }
 
     .zem-campaign-launcher__description {
-        font-size: @default-font-size + 1;
+        font-size: @font-size--default + 1;
 
         .list-with-bullets {
             li::before {
-                background-color: @gray;
+                background-color: @color--neutral;
                 top: 6px;
             }
         }
@@ -26,7 +26,7 @@
 
     .buttons-panel {
         position: relative;
-        margin: @default-spacing 0 2 * @default-spacing 0;
+        margin: @spacing--default 0 2 * @spacing--default 0;
     }
 
     .buttons-panel--right {
@@ -43,7 +43,7 @@
         display: table;
         width: 100%;
         padding: 0;
-        margin-bottom: 2 * @default-spacing;
+        margin-bottom: 2 * @spacing--default;
         margin-top: 10px;
     }
 
@@ -54,7 +54,7 @@
         padding-bottom: 10px;
 
         .zem-campaign-launcher__step-title {
-            color: @gray;
+            color: @text-color--lighter;
             position: absolute;
             bottom: 10px;
             transform: translateX(-50%);
@@ -70,7 +70,7 @@
             left: 0;
             height: 2px;
             bottom: 0px;
-            background-color: darken(@light-gray, 10%);
+            background-color: darken(@color--lighter-neutral, 10%);
         }
 
         &::after {
@@ -81,7 +81,7 @@
             bottom: -4px;
             width: 10px;
             height: 10px;
-            border: 1px solid darken(@light-gray, 10%);
+            border: 1px solid darken(@color--lighter-neutral, 10%);
             background-color: #f0f0f0;
             z-index: 3;
         }
@@ -112,24 +112,24 @@
 
     .zem-campaign-launcher__step-indicator--done {
         .zem-campaign-launcher__step-title {
-            color: @green;
+            color: @color--success;
         }
 
         &::after,
         &::before {
-            background-color: @green;
-            border-color: @green;
+            background-color: @color--success;
+            border-color: @color--success;
         }
     }
 
     .zem-campaign-launcher__step-indicator--current {
         .zem-campaign-launcher__step-title {
             font-weight: 500;
-            color: @text-color;
+            color: @text-color--default;
         }
 
         &::after {
-            background-color: darken(@light-gray, 10%);
+            background-color: darken(@color--lighter-neutral, 10%);
         }
     }
 }
@@ -144,7 +144,7 @@
         padding-top: 75px;
 
         .zem-campaign-launcher__step-indicator-container {
-            padding: 25px @default-spacing @default-spacing @default-spacing;
+            padding: 25px @spacing--default @spacing--default @spacing--default;
             background-color: fade(white, 50%);
             width: 100%;
             position: absolute;

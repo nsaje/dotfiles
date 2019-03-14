@@ -46,11 +46,11 @@
 
         &.select2-container-active {
             &.button--plain {
-                border-color: darken(@input-border-color, 20%);
+                border-color: darken(@border-color--default, 20%);
             }
 
             &.button--outline {
-                border-color: tint(@secondary-color, 80%);
+                border-color: tint(@color--secondary, 80%);
             }
         }
 
@@ -67,7 +67,7 @@
 
 .select2-drop,
 .select2-drop.select2-drop-above {
-    border: 1px solid @border-color;
+    border: 1px solid @color--lighter-neutral;
     box-shadow: 0px 0px 8px 0px rgba(0, 0, 0, 0.1);
     outline: none;
 
@@ -79,7 +79,7 @@
 
         .select2-result-label {
             padding: 7px 10px;
-            font-size: @default-font-size;
+            font-size: @font-size--default;
             line-height: 16px;
 
             div {
@@ -91,25 +91,25 @@
 
         li {
             &.ui-select-choices-row:hover {
-                background-color: @secondary-color;
-                border-radius: @border-radius;
+                background-color: @color--secondary;
+                border-radius: @border-radius--default;
                 color: white;
             }
 
             &.select2-highlighted {
-                background-color: fade(@secondary-color, 10%);
-                border-radius: @border-radius;
-                color: @text-color;
+                background-color: fade(@color--secondary, 10%);
+                border-radius: @border-radius--default;
+                color: @text-color--default;
 
                 &.ui-select-choices-row:hover {
-                    background-color: @secondary-color;
+                    background-color: @color--secondary;
                     color: white;
                 }
             }
         }
 
         .ui-select-choices-group-label {
-            color: @gray;
+            color: @text-color--lighter;
             font-weight: 400 !important;
         }
     }
@@ -129,15 +129,15 @@
                 center !important;
             background-size: 16px !important;
             box-sizing: border-box;
-            border: 1px solid @input-border-color;
-            height: @default-button-input-height;
+            border: 1px solid @border-color--default;
+            height: @input__height--default;
             line-height: 18px;
             padding: 5px 10px 5px 30px;
-            border-radius: @border-radius;
+            border-radius: @border-radius--default;
             box-shadow: inset 3px 3px 3px 0px rgba(0, 0, 0, 0.05);
 
             &:focus {
-                border: 1px solid darken(@input-border-color, 20%);
+                border: 1px solid darken(@border-color--default, 20%);
                 outline: none;
                 box-shadow: 0px 0px 5px 0px rgba(0, 0, 0, 0.2);
             }
@@ -146,7 +146,7 @@
 }
 
 .ui-select-bootstrap {
-    height: @default-button-input-height+10;
+    height: @input__height--default+10;
     min-height: initial;
     border: none !important;
     background: none !important;
@@ -154,14 +154,14 @@
 
     .btn-default-focus {
         background-color: white;
-        border: 1px solid darken(@input-border-color, 20%);
+        border: 1px solid darken(@border-color--default, 20%);
         outline: none;
         box-shadow: none;
 
         .ui-select-toggle,
         .ui-select-search {
             border: none;
-            height: @default-button-input-height+8;
+            height: @input__height--default+8;
         }
     }
 
@@ -169,18 +169,18 @@
     .ui-select-search {
         background-color: white !important;
         margin: 0;
-        border: 1px solid @light-gray;
-        height: @default-button-input-height+10;
+        border: 1px solid @color--lighter-neutral;
+        height: @input__height--default+10;
         line-height: 20px;
         padding: 10px 10px;
         width: 100% !important;
         box-sizing: border-box;
         box-shadow: inset 3px 3px 3px 0px rgba(0, 0, 0, 0.05);
-        color: @text-color;
+        color: @text-color--default;
         border-radius: 0;
 
         &:focus {
-            border: 1px solid darken(@input-border-color, 20%);
+            border: 1px solid darken(@border-color--default, 20%);
             outline: none;
             box-shadow: 0px 0px 5px 0px rgba(0, 0, 0, 0.2);
         }
@@ -202,16 +202,16 @@
         }
 
         &::-webkit-input-placeholder {
-            color: @gray;
+            color: @text-color--lighter;
         }
         &::-moz-placeholder {
-            color: @gray;
+            color: @text-color--lighter;
         }
         &:-ms-input-placeholder {
-            color: @gray;
+            color: @text-color--lighter;
         }
         &:-moz-placeholder {
-            color: @gray;
+            color: @text-color--lighter;
         }
     }
 
@@ -229,7 +229,7 @@
             }
 
             &.active > span {
-                background-color: @secondary-color;
+                background-color: @color--secondary;
             }
         }
     }
@@ -245,7 +245,7 @@
 
 .select2-container-multi {
     .select2-choices {
-        height: @default-button-input-height+10;
+        height: @input__height--default+10;
         min-height: initial;
         border: none !important;
         background: none !important;
@@ -257,32 +257,32 @@
             input {
                 background-color: transparent;
                 margin: 0;
-                border: 1px solid @light-gray;
-                height: @default-button-input-height+10;
+                border: 1px solid @color--lighter-neutral;
+                height: @input__height--default+10;
                 line-height: 20px;
                 padding: 10px 10px;
                 width: 100% !important;
                 box-sizing: border-box;
                 box-shadow: inset 3px 3px 3px 0px rgba(0, 0, 0, 0.05);
-                color: @text-color;
+                color: @text-color--default;
 
                 &:focus {
-                    border: 1px solid darken(@input-border-color, 20%);
+                    border: 1px solid darken(@border-color--default, 20%);
                     outline: none;
                     box-shadow: 0px 0px 5px 0px rgba(0, 0, 0, 0.2);
                 }
 
                 &::-webkit-input-placeholder {
-                    color: @gray;
+                    color: @text-color--lighter;
                 }
                 &::-moz-placeholder {
-                    color: @gray;
+                    color: @text-color--lighter;
                 }
                 &:-ms-input-placeholder {
-                    color: @gray;
+                    color: @text-color--lighter;
                 }
                 &:-moz-placeholder {
-                    color: @gray;
+                    color: @text-color--lighter;
                 }
             }
         }
@@ -306,7 +306,7 @@
         display: inline-block;
         position: relative;
         border-radius: 2px;
-        font-size: @default-font-size;
+        font-size: @font-size--default;
         border: 1px solid #d2d2d2;
 
         .multiselect-tag-label {
@@ -337,9 +337,9 @@
     .select2-mobile-fullscreen-dropdown.select2-dropdown-open {
         .select2-drop,
         .select2-drop.select2-drop-above {
-            border: 1px solid @border-color;
+            border: 1px solid @color--lighter-neutral;
             box-shadow: 0px 0px 8px 0px rgba(0, 0, 0, 0.1) !important;
-            border-radius: @border-radius !important;
+            border-radius: @border-radius--default !important;
             outline: none;
             width: 80%;
             height: 80%;
@@ -414,7 +414,7 @@ tags-input .host .tags {
         background: none;
         .input-tags__item();
         border: none;
-        color: @text-color;
+        color: @text-color--default;
         height: 26px;
         line-height: inherit;
         font: inherit;
@@ -437,8 +437,8 @@ tags-input .host .tags {
         }
 
         &.selected {
-            background-color: @red;
-            color: @white;
+            background-color: @color--danger;
+            color: #ffffff;
 
             .remove-button {
                 background-image: url('images/remove-white.svg');
@@ -544,7 +544,7 @@ tags-input .host .tags {
 .popover {
     font-family: 'Roboto', sans-serif;
     border: none;
-    border-radius: @border-radius;
+    border-radius: @border-radius--default;
     box-shadow: 0px 2px 10px 0px rgba(0, 0, 0, 0.2);
 
     .popover-content {
@@ -560,7 +560,7 @@ tags-input .host .tags {
             li {
                 padding: 8px 0 8px 25px;
                 position: relative;
-                border-bottom: 1px solid @line-color;
+                border-bottom: 1px solid #eeeeee;
 
                 .zem-icon {
                     width: 16px;
@@ -586,19 +586,19 @@ tags-input .host .tags {
     }
 
     &.top .arrow {
-        border-top-color: @white;
+        border-top-color: #ffffff;
     }
 
     &.right .arrow {
-        border-right-color: @white;
+        border-right-color: #ffffff;
     }
 
     &.bottom .arrow {
-        border-bottom-color: @white;
+        border-bottom-color: #ffffff;
     }
 
     &.left .arrow {
-        border-left-color: @white;
+        border-left-color: #ffffff;
     }
 
     // Hack to expand popover's box to make it easier to move cursor inside the popover without popover closing
@@ -644,7 +644,7 @@ tags-input .host .tags {
 .dropdown-menu {
     font-family: 'Roboto', sans-serif;
     border: none;
-    border-radius: @border-radius;
+    border-radius: @border-radius--default;
     box-shadow: 0px 2px 10px 0px rgba(0, 0, 0, 0.2);
 }
 
@@ -667,7 +667,7 @@ tags-input .host .tags {
             padding: 2px 12px;
             background-color: transparent;
             border: 1px solid transparent;
-            color: @secondary-color;
+            color: @color--secondary;
 
             &:last-child {
                 margin-bottom: 12px;
@@ -675,14 +675,14 @@ tags-input .host .tags {
 
             &:hover {
                 border: 1px solid transparent;
-                background-color: @secondary-color;
-                color: @white;
+                background-color: @color--secondary;
+                color: #ffffff;
             }
 
             &.active {
                 border: 1px solid transparent;
-                background-color: @secondary-color;
-                color: @white;
+                background-color: @color--secondary;
+                color: #ffffff;
             }
         }
 
@@ -712,22 +712,22 @@ tags-input .host .tags {
         td {
             &.available {
                 &.off.in-range {
-                    background-color: @very-light-gray;
+                    background-color: @color--lightest-neutral;
 
                     &:hover {
-                        color: @secondary-color;
+                        color: @color--secondary;
                     }
                 }
 
                 &:hover {
-                    background-color: @secondary-color;
-                    color: @white;
+                    background-color: @color--secondary;
+                    color: #ffffff;
                 }
             }
 
             &.active {
                 border: 1px solid transparent;
-                background-color: @secondary-color;
+                background-color: @color--secondary;
 
                 &.off.end-date,
                 &.off.start-date {
@@ -736,22 +736,22 @@ tags-input .host .tags {
             }
 
             &.in-range {
-                background-color: tint(@secondary-color, 80%);
+                background-color: tint(@color--secondary, 80%);
 
                 &.active {
-                    background-color: @secondary-color;
+                    background-color: @color--secondary;
                 }
             }
         }
 
         &.left {
             td.active.end-date:not(.start-date):not(.off) {
-                background-color: fade(@secondary-color, 50%);
+                background-color: fade(@color--secondary, 50%);
             }
         }
         &.right {
             td.active.start-date:not(.end-date):not(.off) {
-                background-color: fade(@secondary-color, 50%);
+                background-color: fade(@color--secondary, 50%);
             }
         }
     }
@@ -766,7 +766,7 @@ tags-input .host .tags {
 ///////////////////////////
 
 .uib-datepicker-popup.dropdown-menu {
-    border: 1px solid @border-color;
+    border: 1px solid @color--lighter-neutral;
     box-shadow: 0px 0px 8px 0px rgba(0, 0, 0, 0.1);
 
     .uib-datepicker {
@@ -782,39 +782,39 @@ tags-input .host .tags {
 
             &:hover {
                 background: none;
-                background-color: @secondary-color;
-                color: @white !important;
+                background-color: @color--secondary;
+                color: #ffffff !important;
 
                 span {
-                    color: @white !important;
+                    color: #ffffff !important;
                 }
             }
 
             &.active {
-                background-color: @secondary-color;
+                background-color: @color--secondary;
                 color: white;
 
                 .text-info {
-                    color: @white;
+                    color: #ffffff;
                 }
             }
 
             &:hover {
-                background-color: @secondary-color;
+                background-color: @color--secondary;
             }
 
             &[disabled] {
                 opacity: 1;
 
                 span {
-                    color: @light-gray;
+                    color: @color--lighter-neutral;
                 }
 
                 &:hover {
                     background-color: transparent;
 
                     span {
-                        color: @light-gray !important;
+                        color: @color--lighter-neutral !important;
                     }
                 }
             }
@@ -877,16 +877,16 @@ highchart {
     line-height: 18px;
 
     span {
-        font-family: @default-font-family !important;
+        font-family: @font-family--default !important;
         border: none;
-        border-radius: @border-radius;
+        border-radius: @border-radius--default;
         box-shadow: 0px 2px 10px 0px rgba(0, 0, 0, 0.2);
         background-color: fade(white, 90%);
         padding: 10px;
     }
 
     .tooltip-header {
-        color: @secondary-color;
+        color: @color--secondary;
         font-size: 16px;
         font-weight: 600;
         margin-bottom: 5px;
@@ -914,13 +914,13 @@ g.highcharts-tooltip {
         display: block;
         float: none;
         opacity: 1;
-        border-bottom-left-radius: @border-radius;
-        border-top-right-radius: @border-radius;
-        transition: background-color @default-animation;
+        border-bottom-left-radius: @border-radius--default;
+        border-top-right-radius: @border-radius--default;
+        transition: background-color @duration-and-timing-fn--default;
         outline: none;
 
         &:hover {
-            background-color: @red !important;
+            background-color: @color--danger !important;
         }
 
         &::before {
@@ -941,25 +941,25 @@ g.highcharts-tooltip {
 
     &.message--success-box {
         .close {
-            background-color: tint(@green, 85%);
+            background-color: tint(@color--success, 85%);
         }
     }
 
     &.message--error-box {
         .close {
-            background-color: tint(@red, 85%);
+            background-color: tint(@color--danger, 85%);
         }
     }
 
     &.message--warning {
         .close {
-            background-color: tint(@orange, 85%);
+            background-color: tint(@color--warning, 85%);
         }
     }
 
     &.message--info {
         .close {
-            background-color: tint(@blue, 85%);
+            background-color: tint(@color--info, 85%);
         }
     }
 }
@@ -1027,7 +1027,7 @@ g.highcharts-tooltip {
     left: 0;
     right: 0;
     font-size: 12px;
-    color: fade(@white, 50%);
+    color: fade(#ffffff, 50%);
     text-align: center;
     z-index: 9999;
     display: none;

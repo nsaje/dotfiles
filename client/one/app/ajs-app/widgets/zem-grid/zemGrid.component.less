@@ -8,7 +8,7 @@ zem-grid {
 }
 
 .button-bar {
-    margin-bottom: @default-spacing;
+    margin-bottom: @spacing--default;
 
     .button-bar-item {
         display: block;
@@ -47,14 +47,14 @@ zem-grid {
 
 .zem-grid {
     width: 100%;
-    font-size: @default-font-size;
-    color: @text-color;
+    font-size: @font-size--default;
+    color: @text-color--default;
     overflow: hidden;
     background-color: @zem-grid-bg-color;
     position: relative;
 
     a {
-        color: @secondary-color;
+        color: @color--secondary;
         font-weight: 500;
     }
 
@@ -74,12 +74,12 @@ zem-grid {
             vertical-align: middle;
             height: 45px;
             line-height: 45px;
-            border-bottom: 1px solid tint(@secondary-color, 90%);
+            border-bottom: 1px solid tint(@color--secondary, 90%);
             text-align: left;
             padding: 0 8px;
             overflow: hidden;
 
-            font-size: @default-font-size;
+            font-size: @font-size--default;
             white-space: nowrap;
             // TODO: Change to more sophisticated way of trimming long text in cells
             text-overflow: ellipsis;
@@ -149,30 +149,30 @@ zem-grid {
         }
 
         &.level-1 {
-            background-color: tint(@secondary-color, 95%);
+            background-color: tint(@color--secondary, 95%);
             &:hover {
-                background-color: tint(@secondary-color, 90%);
+                background-color: tint(@color--secondary, 90%);
             }
         }
 
         &.level-2 {
-            background-color: tint(@secondary-color, 95%);
+            background-color: tint(@color--secondary, 95%);
             &:hover {
-                background-color: tint(@secondary-color, 90%);
+                background-color: tint(@color--secondary, 90%);
             }
         }
 
         &.level-3 {
-            background-color: tint(@secondary-color, 95%);
+            background-color: tint(@color--secondary, 95%);
             &:hover {
-                background-color: tint(@secondary-color, 90%);
+                background-color: tint(@color--secondary, 90%);
             }
         }
 
         &.level-4 {
-            background-color: tint(@secondary-color, 95%);
+            background-color: tint(@color--secondary, 95%);
             &:hover {
-                background-color: tint(@secondary-color, 90%);
+                background-color: tint(@color--secondary, 90%);
             }
         }
 
@@ -180,7 +180,7 @@ zem-grid {
             background-color: @zem-grid-bg-color;
 
             &:hover {
-                background-color: tint(@secondary-color, 95%);
+                background-color: tint(@color--secondary, 95%);
             }
         }
     }
@@ -218,12 +218,12 @@ zem-grid {
     .zem-grid-header,
     .zem-grid-footer {
         height: 45px;
-        background-color: tint(@secondary-color, 90%);
-        color: @secondary-color;
+        background-color: tint(@color--secondary, 90%);
+        color: @color--secondary;
 
         .zem-grid-cell {
-            background-color: tint(@secondary-color, 90%);
-            border-color: fade(@secondary-color, 20%);
+            background-color: tint(@color--secondary, 90%);
+            border-color: fade(@color--secondary, 20%);
         }
     }
 
@@ -279,10 +279,10 @@ zem-grid {
             .dropdown {
                 margin: 0 0 0 -8px;
                 height: 100%;
-                transition: background @default-animation;
+                transition: background @duration-and-timing-fn--default;
 
                 &:hover {
-                    background: tint(@secondary-color, 80%);
+                    background: tint(@color--secondary, 80%);
                 }
 
                 .zem-grid-cell-checkbox {
@@ -393,7 +393,7 @@ zem-grid {
 
         .zem-grid-cell {
             border: none;
-            border-top: 1px solid fade(@secondary-color, 20%);
+            border-top: 1px solid fade(@color--secondary, 20%);
         }
     }
 
@@ -412,12 +412,12 @@ zem-grid {
             position: absolute;
 
             &.archived {
-                background-color: @very-light-gray;
-                border-color: @very-light-gray;
-                color: @gray;
+                background-color: @color--lightest-neutral;
+                border-color: @color--lightest-neutral;
+                color: @text-color--lighter;
 
                 a {
-                    color: @gray;
+                    color: @text-color--lighter;
                 }
             }
 
@@ -468,11 +468,11 @@ zem-grid {
 
         .zem-grid-cell-base-field {
             &.superperforming-goal {
-                color: @green;
+                color: @color--success;
             }
 
             &.underperforming-goal {
-                color: @red;
+                color: @color--danger;
             }
         }
 
@@ -490,7 +490,7 @@ zem-grid {
         }
 
         .zem-grid-cell-base-field__refund {
-            color: @gray;
+            color: @text-color--lighter;
         }
     }
 
@@ -521,7 +521,7 @@ zem-grid {
             padding: 3px 24px 3px 3px;
             border: 1px dashed transparent;
             border-radius: 2px;
-            transition: all @default-animation;
+            transition: all @duration-and-timing-fn--default;
 
             &:before {
                 content: '';
@@ -538,8 +538,8 @@ zem-grid {
 
             &:hover:not(.modal-open) {
                 cursor: pointer;
-                border-color: tint(@secondary-color, 60%);
-                background-color: tint(@secondary-color, 90%);
+                border-color: tint(@color--secondary, 60%);
+                background-color: tint(@color--secondary, 90%);
 
                 &:before {
                     opacity: 1;
@@ -552,7 +552,7 @@ zem-grid {
         font-size: 0; // Hide whitespaces between inline elements
 
         > * {
-            font-size: @default-font-size;
+            font-size: @font-size--default;
         }
 
         .zem-grid-cell-breakdown-collapse {
@@ -591,14 +591,14 @@ zem-grid {
         width: 35px;
         height: 35px;
         margin-top: 5px;
-        border: 1px solid tint(@secondary-color, 80%);
+        border: 1px solid tint(@color--secondary, 80%);
         background: #ffffff url('images/image-gray.svg') center center no-repeat;
         background-size: 20px;
     }
 
     .zem-grid-cell-status-field {
         &.important {
-            color: @red;
+            color: @color--danger;
         }
     }
 
@@ -673,46 +673,46 @@ zem-grid {
             height: 18px;
             line-height: 10px;
             text-align: center;
-            color: @green;
+            color: @color--success;
             font-size: 10px;
             padding: 4px 1px;
-            border: 1px solid @green;
+            border: 1px solid @color--success;
 
             &.one-field,
             &.no-submission {
                 width: 60px;
-                border-top-left-radius: @border-radius;
-                border-bottom-left-radius: @border-radius;
-                border-top-right-radius: @border-radius;
-                border-bottom-right-radius: @border-radius;
+                border-top-left-radius: @border-radius--default;
+                border-bottom-left-radius: @border-radius--default;
+                border-top-right-radius: @border-radius--default;
+                border-bottom-right-radius: @border-radius--default;
             }
 
             &.approved,
             &.non-approved.only-field {
-                border-top-left-radius: @border-radius;
-                border-bottom-left-radius: @border-radius;
+                border-top-left-radius: @border-radius--default;
+                border-bottom-left-radius: @border-radius--default;
             }
 
             &.non-approved,
             &.approved.only-field {
-                border-top-right-radius: @border-radius;
-                border-bottom-right-radius: @border-radius;
+                border-top-right-radius: @border-radius--default;
+                border-bottom-right-radius: @border-radius--default;
             }
 
             &.archived {
-                background-color: @very-light-gray;
-                border-color: @very-light-gray;
-                color: @gray;
+                background-color: @color--lightest-neutral;
+                border-color: @color--lightest-neutral;
+                color: @text-color--lighter;
             }
 
             &.approved {
-                background-color: @green;
+                background-color: @color--success;
                 color: @zem-grid-bg-color;
 
                 &.archived {
-                    background-color: @very-light-gray;
-                    border-color: @very-light-gray;
-                    color: @gray;
+                    background-color: @color--lightest-neutral;
+                    border-color: @color--lightest-neutral;
+                    color: @text-color--lighter;
                 }
             }
         }
@@ -723,7 +723,7 @@ zem-grid {
 .zem-grid-header-cell-checkbox-custom-filters-dropdown-menu {
     padding: 8px 10px;
     margin-top: 1px;
-    font-size: @default-font-size;
+    font-size: @font-size--default;
 
     .link {
         font-weight: 300;
@@ -752,7 +752,7 @@ zem-grid {
             line-height: 18px;
 
             &.no-submission-message {
-                font-size: @default-font-size;
+                font-size: @font-size--default;
             }
 
             &.submission-status-emphasis {
@@ -788,7 +788,7 @@ zem-grid {
             }
 
             .submission-status-label {
-                color: @text-color;
+                color: @text-color--default;
                 font-weight: normal;
                 padding-right: 50px;
             }
@@ -835,8 +835,8 @@ zem-grid {
     .ad-preview__iframe {
         display: block;
         margin-bottom: 5px;
-        background-color: tint(@secondary-color, 90%);
-        border: 1px solid tint(@secondary-color, 80%);
+        background-color: tint(@color--secondary, 90%);
+        border: 1px solid tint(@color--secondary, 80%);
     }
 
     .ad-preview__title {
@@ -978,10 +978,10 @@ zem-grid {
         &.state-selector-modal {
             width: auto;
             background-color: @zem-grid-bg-color;
-            border: 1px solid tint(@secondary-color, 80%);
-            border-top-right-radius: @border-radius;
-            border-bottom-left-radius: @border-radius;
-            border-bottom-right-radius: @border-radius;
+            border: 1px solid tint(@color--secondary, 80%);
+            border-top-right-radius: @border-radius--default;
+            border-bottom-left-radius: @border-radius--default;
+            border-bottom-right-radius: @border-radius--default;
             margin-top: 4px;
 
             .wait-message {
@@ -996,12 +996,13 @@ zem-grid {
                 .state-item {
                     display: block;
                     padding: 5px 10px;
-                    color: @text-color;
-                    transition: background-color @default-animation;
+                    color: @text-color--default;
+                    transition: background-color
+                        @duration-and-timing-fn--default;
                 }
 
                 .state-item:hover {
-                    background-color: tint(@secondary-color, 80%);
+                    background-color: tint(@color--secondary, 80%);
                     cursor: pointer;
                 }
 
@@ -1024,9 +1025,9 @@ zem-grid {
         &.editable-currency-field-modal {
             width: auto;
             padding: 8px;
-            background-color: tint(@secondary-color, 90%);
-            border: 1px dashed tint(@secondary-color, 60%);
-            font-size: @default-font-size;
+            background-color: tint(@color--secondary, 90%);
+            border: 1px dashed tint(@color--secondary, 60%);
+            font-size: @font-size--default;
             box-sizing: border-box;
             height: 46px;
             margin-top: 3px;
@@ -1067,9 +1068,9 @@ zem-grid {
         &.bid-modifier-field-modal {
             width: auto;
             padding: 8px;
-            background-color: tint(@secondary-color, 90%);
-            border: 1px dashed tint(@secondary-color, 60%);
-            font-size: @default-font-size;
+            background-color: tint(@color--secondary, 90%);
+            border: 1px dashed tint(@color--secondary, 60%);
+            font-size: @font-size--default;
             box-sizing: border-box;
             height: 46px;
             margin-top: 3px;
@@ -1124,14 +1125,14 @@ zem-grid {
         border-radius: 50%;
         width: 12px;
         height: 12px;
-        background-color: @green;
+        background-color: @color--success;
     }
 
     &.paused {
         border-radius: 50%;
         width: 12px;
         height: 12px;
-        background-color: @light-gray;
+        background-color: @color--lighter-neutral;
     }
 
     &.autopilot {
@@ -1145,7 +1146,7 @@ zem-grid {
 
 @media only screen and (max-width: @tablet-breakpoint) {
     .button-bar {
-        margin-bottom: @default-spacing - 5;
+        margin-bottom: @spacing--default - 5;
 
         .button-bar-item {
             display: block;

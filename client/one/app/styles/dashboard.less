@@ -23,14 +23,14 @@
 
 .zem-container {
     min-height: 100vh;
-    padding: @default-spacing*1.5+ @header-height @default-spacing 77px
-        @default-spacing;
+    padding: @spacing--default*1.5+ @header-height @spacing--default 77px
+        @spacing--default;
     position: relative;
-    transition: padding-top @default-animation;
+    transition: padding-top @duration-and-timing-fn--default;
 }
 
 .no-tabset.zem-container {
-    padding-top: @default-spacing*1.5+ @header-height;
+    padding-top: @spacing--default*1.5+ @header-height;
 }
 
 .content-container {
@@ -68,7 +68,7 @@
         position: relative;
         width: 100%;
         height: 375px;
-        padding: @default-spacing @default-spacing 0 @default-spacing;
+        padding: @spacing--default @spacing--default 0 @spacing--default;
         vertical-align: top;
         margin-top: 0;
     }
@@ -83,7 +83,7 @@
 
     .chart-infobox__spacing {
         display: table-cell;
-        width: @default-spacing*1.5;
+        width: @spacing--default*1.5;
     }
 }
 
@@ -99,7 +99,7 @@
         flex: 1;
         min-width: 0;
         position: relative;
-        padding: @default-spacing @default-spacing 0 @default-spacing;
+        padding: @spacing--default @spacing--default 0 @spacing--default;
         margin-top: 0;
     }
 
@@ -109,7 +109,7 @@
         position: relative;
         padding: 0;
         margin-top: 0;
-        margin-left: @default-spacing*1.5;
+        margin-left: @spacing--default*1.5;
     }
 
     .chart-infobox__spacing {
@@ -123,7 +123,7 @@
 
 @media only screen and (min-width: ((@desktop-breakpoint)+1)) {
     .fixed-header .zem-container {
-        padding-top: @default-spacing*1.5+ @header-height;
+        padding-top: @spacing--default*1.5+ @header-height;
     }
 }
 
@@ -134,7 +134,7 @@
     }
 
     .content-container {
-        padding: 40px @default-spacing 0 @default-spacing;
+        padding: 40px @spacing--default 0 @spacing--default;
     }
 
     @supports not (display: flex) {
@@ -196,7 +196,7 @@
             flex: 1;
             width: 100%;
             margin-left: 0;
-            margin-bottom: @default-spacing*1.5;
+            margin-bottom: @spacing--default*1.5;
         }
     }
 }

@@ -1,29 +1,15 @@
 @import '../default/variables.less';
 
-// GENERAL SETTINGS
-
 @images-folder: 'images/whitelabel/greenpark';
-@logo: url('@{images-folder}/greenpark-telescope-logo.svg') no-repeat center
-    center;
+@logo__background: url('@{images-folder}/greenpark-telescope-logo.svg')
+    no-repeat center center;
 
-// GREENPARK COLORS
+@color--primary: #1db2a3;
+@color--secondary: #182145;
+@color--danger: #ed4646;
+@color--warning: #fecb63;
 
-@primary-color: #1db2a3;
-@secondary-color: #182145;
-@text-color: #6c6f6f;
+@text-color--default: #6c6f6f;
 
-// HEADER COLOR
-
-@header-left-color: #1db2a3;
-@header-right-color: #1db2a3;
-
-// BACKGROUND COLORS
-
-@background-light-gray: #ebebeb;
-
-// OTHER COLORS
-
-@red: #ed4646;
-@green: #99cc00;
-@orange: #fecb63;
-@blue: #007acf;
+@header__background-color--left: @color--primary;
+@header__background-color--right: @color--primary;

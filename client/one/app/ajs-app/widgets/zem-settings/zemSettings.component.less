@@ -9,19 +9,19 @@
     position: absolute;
     display: flex;
     align-items: flex-end;
-    padding: 0 @default-spacing;
+    padding: 0 @spacing--default;
     top: 0;
     left: 0;
     width: 100%;
     height: 60px;
     z-index: 1000;
-    background: @light-gray;
-    border-bottom: 1px solid darken(@light-gray, 5%);
+    background: @color--lighter-neutral;
+    border-bottom: 1px solid darken(@color--lighter-neutral, 5%);
 }
 
 .zem-settings__header-title {
     flex: 1 1 auto;
-    color: @secondary-color;
+    color: @color--secondary;
     font-weight: 400;
     font-size: 24px;
     margin: 10px 0;
@@ -32,16 +32,16 @@
 
 .zem-settings__header-title--location {
     font-size: 12px;
-    color: @gray;
+    color: @text-color--lighter;
 }
 
 .zem-settings__admin-link {
     flex: 0 0 85px;
-    margin: 10px @default-spacing;
+    margin: 10px @spacing--default;
 }
 
 .zem-settings__body {
-    padding: @default-spacing+5 @default-spacing 0 @default-spacing;
+    padding: @spacing--default+5 @spacing--default 0 @spacing--default;
     position: absolute;
     top: 60px;
     left: 0;
@@ -57,16 +57,16 @@
     bottom: 0px;
     left: 10px;
     height: 60px;
-    padding: 0 @default-spacing;
+    padding: 0 @spacing--default;
     display: table;
-    background-color: tint(@secondary-color, 90%);
-    box-shadow: 0px 0px 3px 0px fade(@secondary-color, 40%);
+    background-color: tint(@color--secondary, 90%);
+    box-shadow: 0px 0px 3px 0px fade(@color--secondary, 40%);
 }
 
 .zem-settings__footer-cell {
     display: table-cell;
     white-space: nowrap;
-    padding-top: @default-spacing;
+    padding-top: @spacing--default;
     width: 310px;
 
     .zem-settings__archive-button-container {
@@ -101,7 +101,7 @@
 
 .zem-settings-component__container {
     margin-top: 0;
-    margin-bottom: @default-spacing+5;
+    margin-bottom: @spacing--default+5;
 
     .multiselect {
         height: 180px;
@@ -111,10 +111,10 @@
 
 .zem-settings__different-than-default {
     float: right;
-    color: @gray;
+    color: @text-color--lighter;
     font-weight: normal;
     line-height: 18px;
-    font-size: @default-font-size;
+    font-size: @font-size--default;
 }
 
 ///////////////////////////
@@ -134,7 +134,7 @@
 
                 &::after {
                     content: 'Archive';
-                    font-size: @default-font-size;
+                    font-size: @font-size--default;
                 }
             }
         }
@@ -159,15 +159,15 @@
         font-style: normal;
 
         &.connected {
-            color: @green;
+            color: @color--success;
         }
 
         &.pending {
-            color: @orange;
+            color: @color--warning;
         }
 
         &.error {
-            color: @red;
+            color: @color--danger;
         }
     }
 
@@ -232,7 +232,7 @@
 }
 
 .zem-campaign-goals__primary-goal {
-    color: @gray;
+    color: @text-color--lighter;
     float: right;
 
     &:before {
@@ -240,7 +240,7 @@
         height: 10px;
         width: 10px;
         display: inline-block;
-        background-color: @secondary-color;
+        background-color: @color--secondary;
         right: 5px;
         position: relative;
     }
@@ -251,8 +251,8 @@
 }
 
 .zem-campaign-goals__goal {
-    border: 1px solid @light-gray;
-    border-radius: @border-radius;
+    border: 1px solid @color--lighter-neutral;
+    border-radius: @border-radius--default;
     position: relative;
     margin-bottom: 10px;
     padding-right: 100px;
@@ -268,10 +268,10 @@
 
     &:not(.zem-campaign-goals__goal--primary):hover {
         cursor: pointer;
-        color: @secondary-color;
+        color: @color--secondary;
 
         .zem-campaign-goals__goal-number {
-            background-color: tint(@secondary-color, 90%);
+            background-color: tint(@color--secondary, 90%);
         }
     }
 }
@@ -282,10 +282,10 @@
     width: 50px;
     text-align: center;
     font-size: 22px;
-    color: @secondary-color;
-    border-right: 1px solid @light-gray;
-    border-top-left-radius: @border-radius;
-    border-bottom-left-radius: @border-radius;
+    color: @color--secondary;
+    border-right: 1px solid @color--lighter-neutral;
+    border-top-left-radius: @border-radius--default;
+    border-bottom-left-radius: @border-radius--default;
 }
 
 .zem-campaign-goals__goal-description {
@@ -304,13 +304,13 @@
 
 .zem-campaign-goals__goal--primary {
     .zem-campaign-goals__goal-number {
-        background-color: @secondary-color;
-        border-color: @secondary-color;
+        background-color: @color--secondary;
+        border-color: @color--secondary;
         color: white;
     }
 
     .zem-campaign-goals__goal-description {
-        color: @secondary-color;
+        color: @color--secondary;
     }
 }
 
@@ -421,7 +421,7 @@
         padding: 0;
         display: block;
         cursor: pointer;
-        transition: background-image @default-animation;
+        transition: background-image @duration-and-timing-fn--default;
     }
 
     .form__checkbox {
@@ -475,7 +475,7 @@
 }
 
 .zem-advanced-device-targeting__collapsable {
-    margin: 20px -@default-spacing 0 -@default-spacing;
+    margin: 20px -@spacing--default 0 -@spacing--default;
 
     .form > .form__label {
         height: auto;
@@ -488,8 +488,8 @@
 }
 
 .zem-os-device-targeting__container {
-    border-radius: @border-radius;
-    border: 1px solid @light-gray;
+    border-radius: @border-radius--default;
+    border: 1px solid @color--lighter-neutral;
     padding: 10px;
     background-color: white;
     margin-bottom: 5px;
@@ -742,7 +742,7 @@
                 padding: 0;
                 display: block;
                 cursor: pointer;
-                transition: background-image @default-animation;
+                transition: background-image @duration-and-timing-fn--default;
             }
         }
 
@@ -1005,8 +1005,8 @@
 .zem-demographic-targeting__overview {
     padding: 15px 0;
     margin-bottom: 15px;
-    border-top: 1px solid @light-gray;
-    border-bottom: 1px solid @light-gray;
+    border-top: 1px solid @color--lighter-neutral;
+    border-bottom: 1px solid @color--lighter-neutral;
     display: table;
     width: 100%;
     height: 85px;
@@ -1017,10 +1017,10 @@
     text-align: center;
     position: relative;
     vertical-align: middle;
-    color: @secondary-color;
+    color: @color--secondary;
 
     &:last-child {
-        padding-left: @default-spacing;
+        padding-left: @spacing--default;
     }
 
     .loader,
@@ -1035,7 +1035,7 @@
 }
 
 .zem-demographic-targeting-overview__box--price {
-    background-color: fade(@secondary-color, 10%);
+    background-color: fade(@color--secondary, 10%);
     width: 180px;
 }
 
@@ -1052,7 +1052,7 @@
 }
 
 .zem-demographic-targeting__group {
-    margin-top: @default-spacing;
+    margin-top: @spacing--default;
 }
 
 .zem-demographic-targeting__group-header {
@@ -1060,7 +1060,7 @@
     font-weight: 400;
 
     .alternative-link {
-        font-size: @default-font-size;
+        font-size: @font-size--default;
         font-weight: 400;
     }
 }
@@ -1084,9 +1084,9 @@
 
 .zem-account-targeting-settings {
     .form {
-        padding: 0 @default-spacing @default-spacing+5 @default-spacing;
-        margin: 0 -@default-spacing @default-spacing -@default-spacing;
-        border-bottom: 1px solid @light-gray;
+        padding: 0 @spacing--default @spacing--default+5 @spacing--default;
+        margin: 0 -@spacing--default @spacing--default -@spacing--default;
+        border-bottom: 1px solid @color--lighter-neutral;
     }
 
     .form--last {
@@ -1096,14 +1096,14 @@
     }
 
     .form--border-top {
-        border-top: 1px solid @light-gray;
-        margin-top: @default-spacing+5;
-        padding-top: @default-spacing;
+        border-top: 1px solid @color--lighter-neutral;
+        margin-top: @spacing--default+5;
+        padding-top: @spacing--default;
     }
 
     .form__title .internal-feature {
-        left: -@default-spacing;
-        top: -@default-spacing;
+        left: -@spacing--default;
+        top: -@spacing--default;
     }
 
     .form__text {
@@ -1125,53 +1125,17 @@
         width: 700px;
     }
 
-    .targeting-select-buttons {
-        float: right;
-        font-size: 13px;
-        line-height: 30px;
-        margin: -7px -10px;
-
-        a {
-            padding: 0 10px;
-            box-sizing: border-box;
-            display: block;
-            float: left;
-
-            &.targeting-select-buttons__include {
-                color: @green;
-                border-right: 1px solid @line-color;
-            }
-
-            &.targeting-select-buttons__exclude {
-                color: @red;
-            }
-        }
-    }
-
     .select2-highlighted {
         background-color: transparent !important;
         color: inherit !important;
 
         &:hover {
-            background-color: @secondary-color !important;
+            background-color: @color--secondary !important;
             color: white !important;
         }
     }
 
     .ui-select-choices-row:hover {
-        .targeting-select-buttons__include {
-            background-color: @green !important;
-            border-right: 1px solid @green;
-            color: white;
-        }
-
-        .targeting-select-buttons__exclude {
-            background-color: @red !important;
-            color: white;
-            border-top-right-radius: @border-radius;
-            border-bottom-right-radius: @border-radius;
-        }
-
         a:hover {
             text-decoration: underline !important;
             color: white !important;
@@ -1193,9 +1157,9 @@
 
 .zem-adgroup-tracking-settings {
     .form {
-        padding: 0 @default-spacing @default-spacing+5 @default-spacing;
-        margin: 0 -@default-spacing @default-spacing -@default-spacing;
-        border-bottom: 1px solid @light-gray;
+        padding: 0 @spacing--default @spacing--default+5 @spacing--default;
+        margin: 0 -@spacing--default @spacing--default -@spacing--default;
+        border-bottom: 1px solid @color--lighter-neutral;
     }
 
     .form--last {
@@ -1223,10 +1187,10 @@
 }
 
 .zem-campaign-budgets-settings__budget-overview {
-    padding: @default-spacing 0;
-    margin-bottom: @default-spacing;
-    border-top: 1px solid @light-gray;
-    border-bottom: 1px solid @light-gray;
+    padding: @spacing--default 0;
+    margin-bottom: @spacing--default;
+    border-top: 1px solid @color--lighter-neutral;
+    border-bottom: 1px solid @color--lighter-neutral;
     display: table;
     width: 100%;
 
@@ -1235,7 +1199,7 @@
 
 .zem-campaign-budgets-settings__budget-overview-box {
     display: table-cell;
-    border-right: 1px solid @light-gray;
+    border-right: 1px solid @color--lighter-neutral;
     text-align: center;
     position: relative;
     vertical-align: middle;
@@ -1246,7 +1210,7 @@
 }
 
 .zem-campaign-budgets-settings__budget-overview-name {
-    font-size: @default-font-size;
+    font-size: @font-size--default;
 }
 
 .zem-campaign-budgets-settings__budget-overview-value {
@@ -1254,7 +1218,7 @@
 }
 
 .zem-campaign-budgets-settings__budget-overview-box--exposed {
-    color: @secondary-color;
+    color: @color--secondary;
 
     .zem-campaign-budgets-settings__budget-overview-value {
         font-weight: 500;
@@ -1274,11 +1238,11 @@
 }
 
 .zem-campaign-budgets-settings__collapsable {
-    margin: 20px -@default-spacing -@default-spacing -@default-spacing;
+    margin: 20px -@spacing--default -@spacing--default -@spacing--default;
 
     .table {
         tr td {
-            border-bottom: 1px solid tint(@secondary-color, 80%);
+            border-bottom: 1px solid tint(@color--secondary, 80%);
         }
     }
 }

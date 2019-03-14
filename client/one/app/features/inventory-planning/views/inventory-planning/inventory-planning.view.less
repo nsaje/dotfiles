@@ -5,18 +5,18 @@
 
     .zem-inventory-planning-summary {
         height: 350px;
-        margin-top: @default-spacing*1.5;
+        margin-top: @spacing--default*1.5;
     }
 
     .zem-inventory-planning__action-container {
-        margin: @default-spacing*1.5 0;
+        margin: @spacing--default*1.5 0;
     }
 
     .zem-inventory-planning-breakdown {
         float: left;
         width: 23.5%;
         padding-left: 2%;
-        border-left: 1px solid @light-gray;
+        border-left: 1px solid @color--lighter-neutral;
         margin-left: 2%;
 
         &:first-child {
@@ -32,7 +32,7 @@
 }
 
 .zem-inventory-planning__breakdowns {
-    margin-bottom: @default-spacing*1.5;
+    margin-bottom: @spacing--default*1.5;
 }
 
 .zem-inventory-planning__action-container {
@@ -40,8 +40,8 @@
     flex-wrap: nowrap;
     justify-content: flex-start;
     align-content: flex-start;
-    padding: @default-spacing;
-    background-color: darken(@light-gray, 4%);
+    padding: @spacing--default;
+    background-color: darken(@color--lighter-neutral, 4%);
 }
 
 .zem-inventory-planning__filter {
@@ -50,10 +50,10 @@
 
 .zem-inventory-planning__export-container {
     flex: 0 0 50px;
-    padding: 0 @default-spacing;
-    margin-left: @default-spacing;
-    border-left: 1px solid darken(@light-gray, 10%);
-    background-color: darken(@light-gray, 4%);
+    padding: 0 @spacing--default;
+    margin-left: @spacing--default;
+    border-left: 1px solid darken(@color--lighter-neutral, 10%);
+    background-color: darken(@color--lighter-neutral, 4%);
 }
 
 ///////////////////////////
@@ -66,9 +66,9 @@
             float: none;
             width: 100%;
             border-left: none;
-            padding: 0 0 @default-spacing 0;
-            margin: 0 0 @default-spacing 0;
-            border-bottom: 1px solid @light-gray;
+            padding: 0 0 @spacing--default 0;
+            margin: 0 0 @spacing--default 0;
+            border-bottom: 1px solid @color--lighter-neutral;
 
             &:last-child {
                 margin-bottom: 0;

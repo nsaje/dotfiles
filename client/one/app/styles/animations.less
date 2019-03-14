@@ -4,49 +4,6 @@
 // Global animations styles //
 //////////////////////////////
 
-@keyframes show-updated {
-    0% {
-        background-color: @updated-color;
-    }
-    50% {
-        background-color: @updated-color;
-    }
-    100% {
-        background-color: white;
-    }
-}
-
-@keyframes show-canceled {
-    0% {
-        background-color: @canceled-color;
-    }
-    50% {
-        background-color: @canceled-color;
-    }
-    100% {
-        background-color: white;
-    }
-}
-
-@keyframes fadeOut {
-    from {
-        opacity: 1;
-    }
-    to {
-        opacity: 0;
-        display: none;
-    }
-}
-
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-    }
-    to {
-        opacity: 1;
-    }
-}
-
 @keyframes SupportHeroShow {
     from {
         opacity: 0;
@@ -105,22 +62,22 @@
 
 @keyframes update {
     0% {
-        color: @secondary-color;
+        color: @color--secondary;
         padding: 0 3px;
         margin: 0 -3px;
-        border-radius: @border-radius;
+        border-radius: @border-radius--default;
     }
     50% {
         color: white;
-        background-color: @secondary-color;
+        background-color: @color--secondary;
         padding: 0 3px;
         margin: 0 -3px;
-        border-radius: @border-radius;
+        border-radius: @border-radius--default;
     }
     100% {
-        color: @secondary-color;
+        color: @color--secondary;
         padding: 0 3px;
         margin: 0 -3px;
-        border-radius: @border-radius;
+        border-radius: @border-radius--default;
     }
 }

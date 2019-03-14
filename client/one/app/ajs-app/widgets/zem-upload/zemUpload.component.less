@@ -22,7 +22,7 @@
         float: left;
         margin-right: 2%;
         line-height: 28px;
-        padding-top: @default-spacing;
+        padding-top: @spacing--default;
 
         strong {
             display: block;
@@ -89,7 +89,7 @@
     .content-upload__ads-container,
     .content-upload__batch-name-container {
         width: 100% - @content-upload-ad-editing-width;
-        transition: all @default-animation;
+        transition: all @duration-and-timing-fn--default;
     }
 
     .content-upload__batch-name-container {
@@ -150,23 +150,23 @@
     .buttons-panel {
         background-color: transparent;
         box-shadow: none;
-        padding: @default-spacing;
+        padding: @spacing--default;
     }
 }
 
 .content-upload__batch-name-container {
-    border-bottom: 4px solid @primary-color;
+    border-bottom: 4px solid @color--primary;
     width: 100%;
     padding: 8px 60px 8px 15px;
     margin: 0;
-    color: @primary-color;
+    color: @color--primary;
     position: relative;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
     line-height: 30px;
     font-size: 18px;
-    transition: all @default-animation;
+    transition: all @duration-and-timing-fn--default;
 
     .button {
         position: absolute;
@@ -176,19 +176,19 @@
 
     .input-text {
         width: 88.2%;
-        color: @secondary-color;
+        color: @color--secondary;
         font-size: 18px;
         font-weight: 500;
     }
 }
 
 .content-upload__batch-name {
-    color: @text-color;
+    color: @text-color--default;
     font-weight: 300;
 }
 
 .content-upload__batch-title {
-    color: @secondary-color;
+    color: @color--secondary;
     font-weight: 500;
 }
 
@@ -210,16 +210,16 @@
     }
 
     tr:last-child td {
-        border-bottom: 1px solid tint(@secondary-color, 80%);
+        border-bottom: 1px solid tint(@color--secondary, 80%);
     }
 
     tr:hover td {
-        background: tint(@secondary-color, 96%);
+        background: tint(@color--secondary, 96%);
     }
 }
 
 .content-upload__selected-ad {
-    background: tint(@secondary-color, 96%);
+    background: tint(@color--secondary, 96%);
 }
 
 .content-upload__ad-status {
@@ -277,7 +277,7 @@
         transform: translateY(-50%);
         background: #ffffff url('images/image-gray.svg') center center no-repeat;
         background-size: 20px;
-        border: 1px solid @light-gray;
+        border: 1px solid @color--lighter-neutral;
     }
 }
 
@@ -314,7 +314,7 @@
 }
 
 .content-upload__ad-error {
-    color: @red;
+    color: @color--danger;
     position: relative;
     padding-left: 18px;
 
@@ -373,11 +373,11 @@
     top: 0;
     bottom: 0;
     right: -@content-upload-ad-editing-width - 1;
-    transition: all @default-animation;
+    transition: all @duration-and-timing-fn--default;
     padding: 0 15px 15px 15px;
-    background: tint(@secondary-color, 96%);
-    box-shadow: 0 0 10px 0 fade(@secondary-color, 25%);
-    border-top-right-radius: @border-radius;
+    background: tint(@color--secondary, 96%);
+    box-shadow: 0 0 10px 0 fade(@color--secondary, 25%);
+    border-top-right-radius: @border-radius--default;
 
     .form,
     .ad-preview__container {
@@ -386,9 +386,9 @@
         overflow-x: hidden;
         top: 49px;
         bottom: 0;
-        left: @default-spacing;
+        left: @spacing--default;
         right: 0;
-        padding-bottom: @default-spacing;
+        padding-bottom: @spacing--default;
     }
 
     .form__indented-group {
@@ -449,7 +449,7 @@
     width: @preview-width;
     left: 0;
     right: auto;
-    transition: all @default-animation;
+    transition: all @duration-and-timing-fn--default;
 }
 
 .content-upload__tabs {
@@ -476,7 +476,7 @@
         bottom: -14px;
         left: 50%;
         transform: translateX(-50%);
-        transition: all @default-animation;
+        transition: all @duration-and-timing-fn--default;
     }
 
     &::before {
@@ -488,7 +488,7 @@
     &::after {
         border-style: solid;
         border-width: 0 8px 8px 8px;
-        border-color: transparent transparent tint(@secondary-color, 96%)
+        border-color: transparent transparent tint(@color--secondary, 96%)
             transparent;
     }
 
@@ -511,20 +511,20 @@
     font-size: 18px;
     line-height: 22px;
     font-weight: 300;
-    color: @text-color;
+    color: @text-color--default;
     border-right: 1px solid #d2d2d2;
-    padding: 15px @default-spacing 11px @default-spacing;
+    padding: 15px @spacing--default 11px @spacing--default;
     cursor: pointer;
     position: relative;
-    transition: all @default-animation;
+    transition: all @duration-and-timing-fn--default;
 
     &:hover {
-        color: @text-color;
+        color: @text-color--default;
     }
 }
 
 .content-upload__edit-form-container--form {
-    box-shadow: 0 0 10px 0 fade(@secondary-color, 25%);
+    box-shadow: 0 0 10px 0 fade(@color--secondary, 25%);
 }
 
 .content-upload__edit-form-hide {
@@ -545,7 +545,7 @@
         position: absolute;
         width: 36px;
         height: 36px;
-        background: tint(@secondary-color, 90%)
+        background: tint(@color--secondary, 90%)
             url('@{images-folder}/arrow-sec.svg') 14px center no-repeat;
         background-size: 10px;
         border-radius: 50%;
@@ -556,14 +556,14 @@
 
     &:hover {
         &::after {
-            background-color: tint(@secondary-color, 80%);
+            background-color: tint(@color--secondary, 80%);
         }
     }
 }
 
 .content-upload__edit-form-title-container {
     border-bottom: 1px solid #d2d2d2;
-    padding: 15px 120px 11px @default-spacing;
+    padding: 15px 120px 11px @spacing--default;
     margin: 0 0 20px 0;
     font-size: 18px;
     line-height: 22px;
@@ -574,7 +574,7 @@
 
 .content-upload__edit-form-title-container--tabs {
     display: none;
-    padding: 0 0 0 @default-spacing;
+    padding: 0 0 0 @spacing--default;
     position: relative;
     z-index: 1;
     border-bottom: none;
@@ -586,12 +586,12 @@
 }
 
 .content-upload__edit-form-name {
-    color: @text-color;
+    color: @text-color--default;
     font-weight: 300;
 }
 
 .content-upload__edit-form-title {
-    color: @secondary-color;
+    color: @color--secondary;
     font-weight: 500;
 }
 
@@ -600,7 +600,7 @@
     width: @form-additional-info-width-content-upload;
     line-height: 30px;
     height: 30px;
-    color: @gray;
+    color: @text-color--lighter;
     font-size: 11px;
     padding-left: 10px;
 
@@ -671,7 +671,7 @@
 }
 
 .content-upload__uploading-completed-title {
-    color: @green;
+    color: @color--success;
     font-size: 24px;
 }
 
@@ -690,14 +690,14 @@
     position: relative;
     top: 50%;
     transform: translateY(-50%);
-    color: @gray;
+    color: @text-color--lighter;
 }
 
 .content-upload__video-uploader-processing {
     .loader {
         width: 20px;
         height: 10px;
-        margin: 2px @default-spacing 0 0;
+        margin: 2px @spacing--default 0 0;
     }
 }
 
@@ -743,7 +743,7 @@
         width: auto;
         left: auto;
         right: -@content-upload-ad-editing-width-above-breakpoint;
-        background: tint(@secondary-color, 96%);
+        background: tint(@color--secondary, 96%);
     }
 
     .content-upload__edit-form-title-container--tabs {
@@ -792,7 +792,7 @@
 
         .button--big {
             .small-text {
-                margin-top: @default-spacing;
+                margin-top: @spacing--default;
             }
 
             strong {
@@ -846,7 +846,7 @@
         top: 0;
         bottom: 0;
         right: -@content-upload-ad-editing-width-desktop-breakpoint - 1;
-        border-top-left-radius: @border-radius;
+        border-top-left-radius: @border-radius--default;
     }
 
     .content-upload__selected-ad,
@@ -932,7 +932,7 @@
             .content-upload__count-characters {
                 margin-left: 10px;
                 padding-left: 10px;
-                border-left: 1px solid @light-gray;
+                border-left: 1px solid @color--lighter-neutral;
             }
         }
 
@@ -970,7 +970,7 @@
         .button--big {
             width: 100%;
             float: none;
-            margin: 0 0 @default-spacing 0;
+            margin: 0 0 @spacing--default 0;
         }
     }
 
@@ -993,10 +993,10 @@
             tr {
                 position: relative;
                 display: block;
-                padding: @default-spacing;
+                padding: @spacing--default;
                 width: auto;
                 height: auto;
-                border-bottom: 1px solid tint(@secondary-color, 90%);
+                border-bottom: 1px solid tint(@color--secondary, 90%);
 
                 &:last-child {
                     border-bottom: none;
@@ -1011,14 +1011,14 @@
 
                     &.content-upload__ad-status {
                         position: absolute;
-                        top: @default-spacing;
-                        right: @default-spacing;
+                        top: @spacing--default;
+                        right: @spacing--default;
                     }
 
                     &.content-upload__ad-image-container {
                         position: absolute;
-                        top: @default-spacing;
-                        left: @default-spacing;
+                        top: @spacing--default;
+                        left: @spacing--default;
                         width: 40px;
                         height: 40px;
                     }
@@ -1045,7 +1045,7 @@
                     }
 
                     .content-upload__ad-error {
-                        font-size: @default-font-size;
+                        font-size: @font-size--default;
                         padding-left: 18px;
                         height: 18px;
                         width: auto;

@@ -7,10 +7,10 @@
 .ng-select.zem-ng-select {
     .ng-select-container {
         background: white;
-        border: 1px solid @input-border-color;
-        border-radius: @border-radius;
-        height: @default-button-input-height;
-        min-height: @default-button-input-height;
+        border: 1px solid @border-color--default;
+        border-radius: @border-radius--default;
+        height: @input__height--default;
+        min-height: @input__height--default;
         box-shadow: inset 3px 3px 3px 0px rgba(0, 0, 0, 0.05);
         align-items: center;
     }
@@ -18,7 +18,7 @@
     &.ng-select-opened {
         > .ng-select-container {
             background: white;
-            border: 1px solid @input-border-color;
+            border: 1px solid @border-color--default;
             &:hover {
                 box-shadow: inset 3px 3px 3px 0px rgba(0, 0, 0, 0.05);
             }
@@ -27,7 +27,7 @@
 
     &.ng-select-focused {
         &:not(.ng-select-opened) > .ng-select-container {
-            border: 1px solid darken(@input-border-color, 20%);
+            border: 1px solid darken(@border-color--default, 20%);
             outline: none;
             box-shadow: 0px 0px 5px 0px rgba(0, 0, 0, 0.2);
         }
@@ -35,8 +35,8 @@
 
     &.ng-select-disabled {
         > .ng-select-container {
-            background-color: @very-light-gray;
-            color: @dark-gray;
+            background-color: @color--lightest-neutral;
+            color: @text-color--light;
         }
 
         > .ng-select-container .ng-value-container .ng-input > input {
@@ -46,7 +46,7 @@
 
     &.ng-select-single {
         > .ng-select-container {
-            height: @default-button-input-height;
+            height: @input__height--default;
         }
 
         &:not(.ng-select-disabled)
@@ -60,7 +60,7 @@
         &:not(.ng-select-disabled)&:not(.ng-select-opened)
             > .ng-select-container {
             &:hover {
-                border: 1px solid darken(@input-border-color, 20%);
+                border: 1px solid darken(@border-color--default, 20%);
                 outline: none;
                 box-shadow: 0px 0px 5px 0px rgba(0, 0, 0, 0.2);
             }
@@ -69,25 +69,25 @@
 }
 
 .ng-select.zem-ng-select--error .ng-select-container {
-    border-color: @red;
+    border-color: @color--danger;
 }
 
 .ng-dropdown-panel.zem-ng-select {
     background: white;
-    border: 1px solid @input-border-color;
+    border: 1px solid @border-color--default;
     box-shadow: inset 3px 3px 3px 0px rgba(0, 0, 0, 0.05);
 
     .ng-dropdown-panel-items {
         margin-bottom: 0;
         .ng-option {
-            height: @default-button-input-height;
+            height: @input__height--default;
 
             &.ng-option-selected {
-                background-color: @very-light-gray;
+                background-color: @color--lightest-neutral;
             }
 
             &.ng-option-marked {
-                background-color: @very-light-gray;
+                background-color: @color--lightest-neutral;
             }
         }
     }

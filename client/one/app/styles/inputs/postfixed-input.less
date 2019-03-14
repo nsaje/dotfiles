@@ -6,19 +6,19 @@
 
 .zem-postfixed-input__postfix {
     background: white;
-    border: 1px solid @input-border-color;
-    height: @default-button-input-height;
+    border: 1px solid @border-color--default;
+    height: @input__height--default;
     line-height: 18px;
     padding: 5px 10px;
     box-sizing: border-box;
-    border-radius: @border-radius;
+    border-radius: @border-radius--default;
     box-shadow: inset 3px 3px 3px 0px rgba(0, 0, 0, 0.05);
-    color: @gray;
+    color: @text-color--lighter;
     font-style: normal;
     cursor: default;
     padding: 6px 10px 4px 10px;
     vertical-align: top;
-    background-color: @very-light-gray;
+    background-color: @color--lightest-neutral;
     white-space: nowrap;
     border-left: none;
     border-top-left-radius: 0;
@@ -26,48 +26,48 @@
     box-shadow: inset 0px 3px 3px 0px rgba(0, 0, 0, 0.05);
 
     &::-webkit-input-placeholder {
-        color: @gray;
+        color: @text-color--lighter;
     }
     &::-moz-placeholder {
-        color: @gray;
+        color: @text-color--lighter;
     }
     &:-ms-input-placeholder {
-        color: @gray;
+        color: @text-color--lighter;
     }
     &:-moz-placeholder {
-        color: @gray;
+        color: @text-color--lighter;
     }
 }
 
 .zem-postfixed-input--with-icon::after {
     background: white;
-    border: 1px solid @input-border-color;
-    height: @default-button-input-height;
+    border: 1px solid @border-color--default;
+    height: @input__height--default;
     line-height: 18px;
     padding: 5px 10px;
     box-sizing: border-box;
-    border-radius: @border-radius;
+    border-radius: @border-radius--default;
     box-shadow: inset 3px 3px 3px 0px rgba(0, 0, 0, 0.05);
     content: '';
     border-left: none;
     border-top-left-radius: 0;
     border-bottom-left-radius: 0;
-    background-color: @very-light-gray;
+    background-color: @color--lightest-neutral;
     background-repeat: no-repeat;
     background-position: center center;
-    background-size: @default-button-input-height - 6;
+    background-size: @input__height--default - 6;
 
     &::-webkit-input-placeholder {
-        color: @gray;
+        color: @text-color--lighter;
     }
     &::-moz-placeholder {
-        color: @gray;
+        color: @text-color--lighter;
     }
     &:-ms-input-placeholder {
-        color: @gray;
+        color: @text-color--lighter;
     }
     &:-moz-placeholder {
-        color: @gray;
+        color: @text-color--lighter;
     }
 }
 
@@ -81,16 +81,16 @@
 
     &:focus {
         box-shadow: 0px 0px 5px 0px rgba(0, 0, 0, 0.2);
-        border-right: 1px solid darken(@input-border-color, 20%);
+        border-right: 1px solid darken(@border-color--default, 20%);
     }
 }
 
 .zem-postfixed-input--narrow {
-    max-width: @smaller-field;
+    max-width: @input__width--narrow;
 }
 
 .zem-postfixed-input__postfix--error,
 .zem-postfixed-input__input--error,
 .zem-postfixed-input--error.zem-postfixed-input--with-icon::after {
-    border-color: @red;
+    border-color: @color--danger;
 }

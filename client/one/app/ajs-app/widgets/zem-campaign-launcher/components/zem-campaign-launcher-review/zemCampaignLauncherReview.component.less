@@ -3,9 +3,9 @@
 @creative-image-width: 180px;
 
 .zem-campaign-launcher-review__section:not(:last-child) {
-    margin-bottom: @default-spacing;
-    padding-bottom: @default-spacing;
-    border-bottom: 1px solid @light-gray;
+    margin-bottom: @spacing--default;
+    padding-bottom: @spacing--default;
+    border-bottom: 1px solid @color--lighter-neutral;
 }
 
 .zem-campaign-launcher-review__creatives-list {
@@ -18,7 +18,7 @@
 .zem-campaign-launcher-review__creatives-list-item,
 .zem-campaign-launcher-review__dummy-creatives-item {
     width: 22%;
-    padding: @default-spacing;
+    padding: @spacing--default;
     box-shadow: 0px 0px 3px 0px rgba(0, 0, 0, 0.1);
     min-height: 275px;
     margin: 2% 0;
@@ -30,8 +30,8 @@
 }
 
 .zem-campaign-launcher-review__dummy-creatives-item {
-    background: url('images/dummy-content.svg') no-repeat @default-spacing
-        @default-spacing;
+    background: url('images/dummy-content.svg') no-repeat @spacing--default
+        @spacing--default;
     background-size: 86%;
 }
 
@@ -43,13 +43,13 @@
 }
 
 .creative__brand-name {
-    color: @gray;
+    color: @text-color--lighter;
     font-size: 12px;
     margin-bottom: 4px;
 }
 
 .creative__description {
-    color: @gray;
+    color: @text-color--lighter;
     font-size: 12px;
     margin-bottom: 4px;
 }
@@ -57,10 +57,10 @@
 .creative__display-url {
     font-size: 12px;
     text-decoration: underline;
-    margin-bottom: @default-spacing;
+    margin-bottom: @spacing--default;
 
     a {
-        color: @blue;
+        color: @color--info;
     }
 }
 
@@ -80,6 +80,6 @@
 .creative__iframe {
     width: 100%;
     margin-bottom: 10px;
-    background-color: tint(@secondary-color, 90%);
-    border: 1px solid tint(@secondary-color, 80%);
+    background-color: tint(@color--secondary, 90%);
+    border: 1px solid tint(@color--secondary, 80%);
 }

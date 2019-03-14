@@ -29,7 +29,7 @@
     display: block;
     padding-right: @zem-infobox_spacing;
     padding-left: @zem-infobox_spacing;
-    border-bottom: 1px solid @light-gray;
+    border-bottom: 1px solid @color--lighter-neutral;
 }
 
 .zem-infobox-header__item {
@@ -62,7 +62,7 @@
     .zem-infobox-header__level {
         height: 36px;
         line-height: 36px;
-        color: @secondary-color;
+        color: @color--secondary;
         font-size: 16px;
         font-weight: 600;
     }
@@ -71,14 +71,14 @@
 .zem-infobox-header__level {
     height: 18px;
     line-height: 18px;
-    color: @gray;
+    color: @text-color--lighter;
     font-size: 12px;
 }
 
 .zem-infobox-header__entity-name {
     height: 18px;
     line-height: 18px;
-    color: @secondary-color;
+    color: @color--secondary;
     font-size: 16px;
     font-weight: 600;
     white-space: nowrap;
@@ -103,7 +103,7 @@
     opacity: 0;
     visibility: hidden;
     border-radius: 0;
-    transition: all @default-animation;
+    transition: all @duration-and-timing-fn--default;
     border-left: none;
     border-right: none;
 }
@@ -141,23 +141,23 @@
 }
 
 .zem-infobox__delivery--active .zem-infobox__delivery-icon::before {
-    background-color: @green;
+    background-color: @color--success;
     border-radius: 50%;
 }
 
 .zem-infobox__delivery--inactive {
     .zem-infobox__delivery-icon::before {
-        background-color: @red;
+        background-color: @color--danger;
         border-radius: 50%;
     }
 
     .zem-infobox__delivery-text {
-        color: @red;
+        color: @color--danger;
     }
 }
 
 .zem-infobox__delivery--paused .zem-infobox__delivery-icon::before {
-    background-color: @light-gray;
+    background-color: @color--lighter-neutral;
     border-radius: 50%;
 }
 
@@ -195,7 +195,7 @@
 
 .zem-infobox-data-row--exposed {
     .zem-infobox-data-row__value-and-details {
-        color: @secondary-color;
+        color: @color--secondary;
         font-size: 14px;
         font-weight: 600;
     }
@@ -208,7 +208,7 @@
 }
 
 .zem-infobox-data-row__value-label {
-    color: @gray;
+    color: @text-color--lighter;
     font-weight: 400;
 }
 

@@ -2,11 +2,11 @@
 
 .zem-input-textarea {
     background: white;
-    border: 1px solid @input-border-color;
+    border: 1px solid @border-color--default;
     line-height: 18px;
     padding: 5px 10px;
     box-sizing: border-box;
-    border-radius: @border-radius;
+    border-radius: @border-radius--default;
     box-shadow: inset 3px 3px 3px 0px rgba(0, 0, 0, 0.05);
     width: 100%;
     max-width: 100%;
@@ -16,32 +16,32 @@
     display: block;
 
     &:focus {
-        border: 1px solid darken(@input-border-color, 20%);
+        border: 1px solid darken(@border-color--default, 20%);
         outline: none;
         box-shadow: 0px 0px 5px 0px rgba(0, 0, 0, 0.2);
     }
 
     &::-webkit-input-placeholder {
-        color: @gray;
+        color: @text-color--lighter;
     }
 
     &::-moz-placeholder {
-        color: @gray;
+        color: @text-color--lighter;
     }
 
     &:-ms-input-placeholder {
-        color: @gray;
+        color: @text-color--lighter;
     }
 
     &:-moz-placeholder {
-        color: @gray;
+        color: @text-color--lighter;
     }
 
     &[readonly],
     &[disabled] {
-        background-color: @very-light-gray;
+        background-color: @color--lightest-neutral;
         cursor: not-allowed;
-        color: @dark-gray;
+        color: @text-color--light;
     }
 }
 
@@ -54,5 +54,5 @@
 }
 
 .zem-input-textarea--error {
-    border-color: @red;
+    border-color: @color--danger;
 }

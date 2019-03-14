@@ -13,26 +13,26 @@
 }
 
 .zem-message--error {
-    color: @red;
+    color: @color--danger;
 }
 
 .zem-message--error > a {
-    color: @red !important;
+    color: @color--danger !important;
 }
 
 .zem-message--error .list-with-bullets > li::before {
-    background-color: tint(@red, 50%);
+    background-color: tint(@color--danger, 50%);
 }
 
 .zem-message--info {
-    background-color: tint(@blue, 95%);
-    border: 1px solid tint(@blue, 85%);
+    background-color: tint(@color--info, 95%);
+    border: 1px solid tint(@color--info, 85%);
     padding: 8px 10px;
-    border-radius: @border-radius;
+    border-radius: @border-radius--default;
 }
 
 .zem-message--info .list-with-bullets > li::before {
-    background-color: tint(@blue, 50%);
+    background-color: tint(@color--info, 50%);
 }
 
 .zem-message--with-icon {

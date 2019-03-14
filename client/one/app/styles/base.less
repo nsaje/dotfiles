@@ -6,17 +6,17 @@
 ////////////////////////////
 body,
 html {
-    font-family: @default-font-family;
-    font-size: @default-font-size;
-    color: @text-color;
-    background-color: @light-gray;
+    font-family: @font-family--default;
+    font-size: @font-size--default;
+    color: @text-color--default;
+    background-color: @color--lighter-neutral;
     height: 100%;
 }
 
 a,
 a:hover,
 a:active {
-    color: @primary-color;
+    color: @color--primary;
     cursor: pointer;
     position: relative;
 
@@ -33,7 +33,7 @@ a:focus {
 a.alternative-link,
 a.alternative-link:hover,
 a.alternative-link:active {
-    color: @secondary-color;
+    color: @color--secondary;
 }
 
 a.link-with-icon {
@@ -53,38 +53,38 @@ a.link-with-icon {
 }
 
 h1 {
-    color: @secondary-color;
+    color: @color--secondary;
     font-weight: 400;
     font-size: 24px;
-    margin: 0 0 @default-spacing 0;
+    margin: 0 0 @spacing--default 0;
 }
 
 h2 {
-    color: @secondary-color;
+    color: @color--secondary;
     font-size: 18px;
     font-weight: 500;
-    margin: 0 0 @default-spacing 0;
+    margin: 0 0 @spacing--default 0;
 }
 
 h3 {
-    color: @secondary-color;
+    color: @color--secondary;
     font-size: 16px;
     font-weight: 500;
-    margin: 0 0 @default-spacing 0;
+    margin: 0 0 @spacing--default 0;
 }
 
 h4 {
-    color: @text-color;
+    color: @text-color--default;
     font-size: 14px;
     font-weight: 500;
-    margin: 0 0 @default-spacing 0;
+    margin: 0 0 @spacing--default 0;
 }
 
 .v-line {
     width: 1px;
-    height: @default-font-size;
-    margin: 0 @default-spacing;
-    background-color: @light-gray;
+    height: @font-size--default;
+    margin: 0 @spacing--default;
+    background-color: @color--lighter-neutral;
     display: inline-block;
     vertical-align: text-top;
 }
@@ -135,7 +135,7 @@ h4 {
     display: block;
     width: 100%;
     height: 16px;
-    color: @gray;
+    color: @text-color--lighter;
     font-size: 12px;
     text-align: center;
 }
@@ -152,7 +152,7 @@ h4 {
         top: 4px;
         width: 100%;
         height: 2px;
-        background-color: @light-gray;
+        background-color: @color--lighter-neutral;
     }
 }
 
@@ -161,7 +161,7 @@ h4 {
     position: absolute;
     top: 3px;
     height: 4px;
-    background-color: @primary-color;
+    background-color: @color--primary;
 }
 
 ////////////////////////////
@@ -179,26 +179,36 @@ h4 {
     right: 0;
     top: 0;
     bottom: 0;
-    background-color: @light-gray;
+    background-color: @color--lighter-neutral;
     height: 10px;
-    border-top-right-radius: @border-radius;
-    border-bottom-right-radius: @border-radius;
+    border-top-right-radius: @border-radius--default;
+    border-bottom-right-radius: @border-radius--default;
 }
 
 .zem-reach-bar__progress--background {
-    border-radius: @border-radius;
+    border-radius: @border-radius--default;
     position: absolute;
     .position-properties(0);
     height: 10px;
-    background: @green; /* Old browsers */
-    background: -moz-linear-gradient(left, @red 0%, @orange 50%, @green 100%);
+    background: @color--success; /* Old browsers */
+    background: -moz-linear-gradient(
+        left,
+        @color--danger 0%,
+        @color--warning 50%,
+        @color--success 100%
+    );
     background: -webkit-linear-gradient(
         left,
-        @red 0%,
-        @orange 50%,
-        @green 100%
+        @color--danger 0%,
+        @color--warning 50%,
+        @color--success 100%
     );
-    background: linear-gradient(to right, @red 0%, @orange 50%, @green 100%);
+    background: linear-gradient(
+        to right,
+        @color--danger 0%,
+        @color--warning 50%,
+        @color--success 100%
+    );
 }
 
 .zem-reach-bar__legend {
@@ -206,7 +216,7 @@ h4 {
     top: 12px;
     left: 0;
     font-size: 9px;
-    color: @gray;
+    color: @text-color--lighter;
 }
 
 .zem-reach-bar__legend--center {
@@ -227,12 +237,12 @@ h4 {
     position: fixed;
     width: 40px;
     height: 40px;
-    background-color: fade(@very-dark-gray, 40%);
+    background-color: fade(@color--darker-neutral, 40%);
     display: block;
     right: -40px;
     bottom: 100px;
     z-index: 999;
-    transition: all @default-animation;
+    transition: all @duration-and-timing-fn--default;
 
     &:hover {
         position: fixed;
@@ -265,7 +275,7 @@ h4 {
     height: 0px;
     border-style: solid;
     border-width: 6px 6px 0 0;
-    border-color: @internal-color transparent transparent transparent;
+    border-color: @color--internal transparent transparent transparent;
     position: absolute;
     left: 0;
     top: 0;
@@ -278,26 +288,26 @@ h4 {
 
 .button {
     position: relative;
-    height: @default-button-input-height;
-    line-height: @default-button-input-height;
+    height: @input__height--default;
+    line-height: @input__height--default;
     padding: 0 10px;
-    background: tint(@secondary-color, 90%);
+    background: tint(@color--secondary, 90%);
     border: none;
-    color: @secondary-color;
+    color: @color--secondary;
     font-size: 14px;
     font-weight: 400;
-    border-radius: @border-radius;
+    border-radius: @border-radius--default;
     box-shadow: none;
-    transition: all @default-animation;
+    transition: all @duration-and-timing-fn--default;
     display: inline-block;
     cursor: pointer;
     text-decoration: none;
     outline: none; // TODO: style for outline
 
     &:not(.button--disabled):not([disabled]):hover {
-        background-color: tint(@secondary-color, 80%);
-        border-color: tint(@secondary-color, 80%);
-        color: @secondary-color;
+        background-color: tint(@color--secondary, 80%);
+        border-color: tint(@color--secondary, 80%);
+        color: @color--secondary;
         text-decoration: none;
     }
 
@@ -306,7 +316,7 @@ h4 {
     &:active {
         text-decoration: none;
         outline: none;
-        color: @secondary-color;
+        color: @color--secondary;
     }
 
     .button__inline-arrow-icon {
@@ -318,13 +328,13 @@ h4 {
 }
 
 .button--highlight {
-    background-color: @primary-color;
+    background-color: @color--primary;
     color: white;
 
     &:not(.button--disabled):not([disabled]):hover {
-        background-color: darken(@primary-color, 8%);
-        color: @white;
-        box-shadow: 0px 0px 6px 0px fade(@primary-color, 60%);
+        background-color: darken(@color--primary, 8%);
+        color: #ffffff;
+        box-shadow: 0px 0px 6px 0px fade(@color--primary, 60%);
     }
 
     &:focus,
@@ -340,13 +350,13 @@ h4 {
 
 .button--outline {
     background: transparent;
-    border: 1px solid tint(@secondary-color, 80%);
-    line-height: (@default-button-input-height)-2;
-    color: @secondary-color;
+    border: 1px solid tint(@color--secondary, 80%);
+    line-height: (@input__height--default)-2;
+    color: @color--secondary;
 
     &:not(.button--disabled):not([disabled]):hover {
-        background-color: tint(@secondary-color, 80%);
-        box-shadow: 0px 0px 6px 0px fade(@secondary-color, 10%);
+        background-color: tint(@color--secondary, 80%);
+        box-shadow: 0px 0px 6px 0px fade(@color--secondary, 10%);
     }
 
     .button__inline-arrow-icon {
@@ -370,24 +380,24 @@ h4 {
 }
 
 .button--plain {
-    border: 1px solid @input-border-color;
-    line-height: (@default-button-input-height)-2;
-    color: @text-color;
+    border: 1px solid @border-color--default;
+    line-height: (@input__height--default)-2;
+    color: @text-color--default;
     background-color: white;
     box-shadow: inset 3px 3px 3px 0px rgba(0, 0, 0, 0.05);
 
     &:not(.button--disabled):not([disabled]):hover {
         background-color: white;
-        border: 1px solid darken(@input-border-color, 20%);
+        border: 1px solid darken(@border-color--default, 20%);
         outline: none;
         box-shadow: 0px 0px 5px 0px rgba(0, 0, 0, 0.2);
-        color: @text-color;
+        color: @text-color--default;
     }
 
     &:focus,
     &:visited,
     &:active {
-        color: @text-color;
+        color: @text-color--default;
     }
 }
 
@@ -533,11 +543,11 @@ h4 {
 .button__input-field {
     padding: 0 10px;
     width: 100%;
-    height: @default-button-input-height;
+    height: @input__height--default;
     border: none;
     background-color: transparent;
-    line-height: @default-button-input-height;
-    transition: all @default-animation;
+    line-height: @input__height--default;
+    transition: all @duration-and-timing-fn--default;
     outline: none;
 }
 
@@ -550,8 +560,8 @@ h4 {
 
     .small-text {
         display: block;
-        color: @gray;
-        font-size: @default-font-size;
+        color: @text-color--lighter;
+        font-size: @font-size--default;
         line-height: 16px;
         white-space: normal;
         margin-bottom: 20px;
@@ -615,13 +625,13 @@ h4 {
 }
 
 .button--narrow {
-    width: @smaller-field;
+    width: @input__width--narrow;
 }
 
 .button__inline-arrow-icon {
     display: inline-block;
-    height: @default-button-input-height;
-    width: @default-button-input-height;
+    height: @input__height--default;
+    width: @input__height--default;
     background-repeat: no-repeat;
     background-position: center center;
     background-size: 20px;
@@ -641,8 +651,8 @@ h4 {
 
 .button__search-input {
     outline: none;
-    height: @default-button-input-height - 2;
-    line-height: @default-button-input-height - 2;
+    height: @input__height--default - 2;
+    line-height: @input__height--default - 2;
     padding: 0;
     border: none;
     background-color: transparent;
@@ -677,8 +687,8 @@ h4 {
     height: auto;
     padding: 0;
     margin: 0;
-    color: @primary-color;
-    font-size: @default-font-size;
+    color: @color--primary;
+    font-size: @font-size--default;
 
     &:hover {
         text-decoration: underline;
@@ -690,7 +700,7 @@ h4 {
 }
 
 .button-as-link--secondary-color {
-    color: @secondary-color;
+    color: @color--secondary;
 }
 
 ////////////////////////////
@@ -753,8 +763,8 @@ h4 {
     }
 
     &.button:not(.button--disabled):not([disabled]):hover {
-        background-color: @red;
-        color: @white;
+        background-color: @color--danger;
+        color: #ffffff;
 
         &:before {
             background-image: url('images/remove-white.svg');
@@ -1059,7 +1069,7 @@ h4 {
 
     &.prefixed-field--with-icon::before {
         background-image: url('images/calendar-gray.svg');
-        background-size: @default-button-input-height - 12;
+        background-size: @input__height--default - 12;
         background-position: 8px 6px;
         width: 34px;
         height: auto;
@@ -1067,7 +1077,7 @@ h4 {
 
     .postfixed-field--with-icon::after {
         background-image: url('images/calendar-gray.svg');
-        background-size: @default-button-input-height - 12;
+        background-size: @input__height--default - 12;
         background-position: 8px 6px;
         width: 34px;
         height: auto;
@@ -1077,7 +1087,7 @@ h4 {
 .facebook-icon {
     &.prefixed-field--with-icon::before {
         background-image: url('images/facebook.svg');
-        background-size: @default-button-input-height - 4;
+        background-size: @input__height--default - 4;
         background-position: 1px center;
         width: 29px;
         height: auto;
@@ -1085,7 +1095,7 @@ h4 {
 
     &.postfixed-field--with-icon::after {
         background-image: url('images/facebook.svg');
-        background-size: @default-button-input-height - 6;
+        background-size: @input__height--default - 6;
         background-position: 4px center;
         width: 29px;
         height: auto;
@@ -1192,7 +1202,7 @@ h4 {
 
 .collapse-indicator {
     position: relative;
-    background-color: @light-gray;
+    background-color: @color--lighter-neutral;
     width: 15px;
     height: 15px;
     display: inline-block;
@@ -1203,8 +1213,8 @@ h4 {
         content: ' ';
         display: block;
         position: absolute;
-        background-color: @gray;
-        transition: all @default-animation;
+        background-color: @text-color--lighter;
+        transition: all @duration-and-timing-fn--default;
     }
 
     &::before {
@@ -1274,7 +1284,7 @@ h4 {
         display: block;
         width: 5px;
         height: 5px;
-        background-color: @light-gray;
+        background-color: @color--lighter-neutral;
         position: absolute;
         left: -15px;
         top: 4px;
@@ -1290,31 +1300,31 @@ h4 {
 
 .input-box() {
     background: white;
-    border: 1px solid @input-border-color;
-    height: @default-button-input-height;
+    border: 1px solid @border-color--default;
+    height: @input__height--default;
     line-height: 18px;
     padding: 5px 10px;
     box-sizing: border-box;
-    border-radius: @border-radius;
+    border-radius: @border-radius--default;
     box-shadow: inset 3px 3px 3px 0px rgba(0, 0, 0, 0.05);
 
     &:focus {
-        border: 1px solid darken(@input-border-color, 20%);
+        border: 1px solid darken(@border-color--default, 20%);
         outline: none;
         box-shadow: 0px 0px 5px 0px rgba(0, 0, 0, 0.2);
     }
 
     &::-webkit-input-placeholder {
-        color: @gray;
+        color: @text-color--lighter;
     }
     &::-moz-placeholder {
-        color: @gray;
+        color: @text-color--lighter;
     }
     &:-ms-input-placeholder {
-        color: @gray;
+        color: @text-color--lighter;
     }
     &:-moz-placeholder {
-        color: @gray;
+        color: @text-color--lighter;
     }
 }
 
@@ -1329,18 +1339,18 @@ h4 {
 }
 
 .form__text {
-    color: @gray;
-    margin-bottom: @default-spacing;
+    color: @text-color--lighter;
+    margin-bottom: @spacing--default;
 }
 
 .form__text--small {
-    color: @gray;
+    color: @text-color--lighter;
     font-size: 11px;
 }
 
 .form__title {
-    font-size: @default-font-size+4;
-    color: @secondary-color;
+    font-size: @font-size--default+4;
+    color: @color--secondary;
     margin-bottom: 2px;
     position: relative;
 }
@@ -1362,8 +1372,8 @@ h4 {
 
     &::after {
         content: ' (optional)';
-        color: @gray;
-        font-size: @default-font-size - 2;
+        color: @text-color--lighter;
+        font-size: @font-size--default - 2;
     }
 }
 
@@ -1381,16 +1391,16 @@ h4 {
 
     &[readonly],
     &[disabled] {
-        background-color: @very-light-gray;
+        background-color: @color--lightest-neutral;
         cursor: not-allowed;
-        color: @dark-gray;
+        color: @text-color--light;
     }
 }
 
 .input-text--narrow,
 .prefixed-field--narrow,
 .postfixed-field--narrow {
-    max-width: @smaller-field;
+    max-width: @input__width--narrow;
 }
 
 .prefixed-field,
@@ -1417,7 +1427,7 @@ h4 {
 
     &:focus {
         padding-left: 9px;
-        border-left: 1px solid darken(@input-border-color, 20%);
+        border-left: 1px solid darken(@border-color--default, 20%);
     }
 }
 
@@ -1427,7 +1437,7 @@ h4 {
     border-bottom-right-radius: 0;
 
     &:focus {
-        border-right: 1px solid darken(@input-border-color, 20%);
+        border-right: 1px solid darken(@border-color--default, 20%);
     }
 }
 
@@ -1435,13 +1445,13 @@ h4 {
 .postfixed-field__postfix {
     .input-box();
     display: table-cell;
-    color: @gray;
+    color: @text-color--lighter;
     font-style: normal;
     width: 1%;
     cursor: default;
     padding: 6px 10px 4px 10px;
     vertical-align: top;
-    background-color: @very-light-gray;
+    background-color: @color--lightest-neutral;
     white-space: nowrap;
 
     .button {
@@ -1470,10 +1480,10 @@ h4 {
         border-right: none;
         border-top-right-radius: 0;
         border-bottom-right-radius: 0;
-        background-color: @very-light-gray;
+        background-color: @color--lightest-neutral;
         background-repeat: no-repeat;
         background-position: center center;
-        background-size: @default-button-input-height - 6;
+        background-size: @input__height--default - 6;
     }
 }
 
@@ -1485,10 +1495,10 @@ h4 {
         border-left: none;
         border-top-left-radius: 0;
         border-bottom-left-radius: 0;
-        background-color: @very-light-gray;
+        background-color: @color--lightest-neutral;
         background-repeat: no-repeat;
         background-position: center center;
-        background-size: @default-button-input-height - 6;
+        background-size: @input__height--default - 6;
     }
 }
 
@@ -1504,7 +1514,7 @@ h4 {
 
 .textarea--dashed {
     .input-box();
-    border: 1px dashed @border-input-color;
+    border: 1px dashed @border-color--default;
     width: 100%;
     max-width: 100%;
     height: 100px;
@@ -1514,7 +1524,7 @@ h4 {
     text-overflow: clip;
 
     &:focus {
-        border: 1px dashed darken(@input-border-color, 20%);
+        border: 1px dashed darken(@border-color--default, 20%);
     }
 }
 
@@ -1540,10 +1550,10 @@ h4 {
         top: 0px;
         width: 14px;
         height: 14px;
-        border: 1px solid darken(@input-border-color, 10%);
+        border: 1px solid darken(@border-color--default, 10%);
         background: white;
-        border-radius: @border-radius;
-        transition: all @default-animation;
+        border-radius: @border-radius--default;
+        transition: all @duration-and-timing-fn--default;
     }
 
     + .checkbox-text::after {
@@ -1556,20 +1566,20 @@ h4 {
         width: 0px;
         height: 0px;
         background-size: 0px;
-        transition: all @default-animation;
+        transition: all @duration-and-timing-fn--default;
     }
 
     + .checkbox-text:hover {
-        color: @secondary-color;
+        color: @color--secondary;
 
         &::before {
-            border: 1px solid @secondary-color;
+            border: 1px solid @color--secondary;
         }
     }
 
     &:checked {
         + .checkbox-text {
-            color: @secondary-color;
+            color: @color--secondary;
             font-weight: 500;
 
             .form__text {
@@ -1579,7 +1589,7 @@ h4 {
 
         + .checkbox-text::before,
         &:hover + .checkbox-text::before {
-            border: 1px solid @secondary-color;
+            border: 1px solid @color--secondary;
         }
 
         + .checkbox-text::after {
@@ -1593,13 +1603,13 @@ h4 {
 
     &:disabled {
         + .checkbox-text {
-            color: @gray;
+            color: @text-color--lighter;
             cursor: not-allowed;
         }
 
         + .checkbox-text::before,
         &:hover + .checkbox-text::before {
-            border: 1px solid @light-gray;
+            border: 1px solid @color--lighter-neutral;
         }
 
         + .checkbox-text::after {
@@ -1629,36 +1639,36 @@ h4 {
         top: 0;
         width: 14px;
         height: 14px;
-        border: 1px solid darken(@input-border-color, 10%);
+        border: 1px solid darken(@border-color--default, 10%);
         background: white;
         border-radius: 50%;
-        transition: all @default-animation;
+        transition: all @duration-and-timing-fn--default;
     }
 
     + .radio-text::after {
         position: absolute;
         display: block;
         border-radius: 50%;
-        background-color: @secondary-color;
+        background-color: @color--secondary;
         content: ' ';
         top: 7px;
         left: 7px;
         width: 0px;
         height: 0px;
-        transition: all @default-animation;
+        transition: all @duration-and-timing-fn--default;
     }
 
     + .radio-text:hover {
-        color: @secondary-color;
+        color: @color--secondary;
 
         &::before {
-            border: 1px solid @secondary-color;
+            border: 1px solid @color--secondary;
         }
     }
 
     &:checked {
         + .radio-text {
-            color: @secondary-color;
+            color: @color--secondary;
             font-weight: 500;
 
             .form__text {
@@ -1668,7 +1678,7 @@ h4 {
 
         + .radio-text::before,
         &:hover + .radio-text::before {
-            border: 1px solid @secondary-color;
+            border: 1px solid @color--secondary;
         }
 
         + .radio-text::after {
@@ -1681,17 +1691,17 @@ h4 {
 
     &:disabled {
         + .radio-text {
-            color: @gray;
+            color: @text-color--lighter;
             cursor: not-allowed;
         }
 
         + .radio-text::before,
         &:hover + .radio-text::before {
-            border: 1px solid @light-gray;
+            border: 1px solid @color--lighter-neutral;
         }
 
         + .radio-text::after {
-            background-color: @gray;
+            background-color: @text-color--lighter;
         }
     }
 }
@@ -1723,17 +1733,21 @@ h4 {
 
     option {
         margin-bottom: 1px;
-        border-radius: @border-radius;
+        border-radius: @border-radius--default;
     }
 
     &:focus option:checked {
-        background: @secondary-color
-            linear-gradient(0deg, @secondary-color 0%, @secondary-color 100%);
+        background: @color--secondary
+            linear-gradient(0deg, @color--secondary 0%, @color--secondary 100%);
     }
 
     option:checked {
-        background: @very-light-gray
-            linear-gradient(0deg, @very-light-gray 0%, @very-light-gray 100%);
+        background: @color--lightest-neutral
+            linear-gradient(
+                0deg,
+                @color--lightest-neutral 0%,
+                @color--lightest-neutral 100%
+            );
     }
 }
 
@@ -1749,8 +1763,8 @@ h4 {
 }
 
 .input-tags__item {
-    background-color: @very-light-gray;
-    border-radius: @border-radius;
+    background-color: @color--lightest-neutral;
+    border-radius: @border-radius--default;
     display: inline-block;
     padding: 4px 10px;
     margin: 0 0 5px 5px;
@@ -1919,14 +1933,14 @@ h4 {
 
     &.form--error {
         .form__label {
-            color: @red;
+            color: @color--danger;
         }
     }
 }
 
 .form__indented {
     margin: 5px 0 20px 22px;
-    border-left: 3px solid @light-gray;
+    border-left: 3px solid @color--lighter-neutral;
     padding: 5px 0 5px 20px;
 
     .form__group:first-child {
@@ -1934,8 +1948,8 @@ h4 {
     }
 
     .form__title {
-        color: @text-color;
-        font-size: @default-font-size;
+        color: @text-color--default;
+        font-size: @font-size--default;
         font-weight: 500;
         margin-bottom: 5px;
     }
@@ -2012,25 +2026,25 @@ h4 {
     .postfixed-field--with-icon::after,
     .prefixed-field .input-text,
     .postfixed-field .input-text {
-        border-color: @red;
+        border-color: @color--danger;
     }
 
     &.form__checkbox {
         .checkbox-text {
-            color: @red;
+            color: @color--danger;
 
             &::before {
-                border-color: @red;
+                border-color: @color--danger;
             }
         }
     }
 
     &.form__radio {
         .radio-text {
-            color: @red;
+            color: @color--danger;
 
             &::before {
-                border-color: @red;
+                border-color: @color--danger;
             }
         }
     }
@@ -2196,24 +2210,24 @@ h4 {
 
 .custom-table {
     width: 100%;
-    margin-bottom: @default-spacing;
+    margin-bottom: @spacing--default;
 
     thead,
     tfoot {
         tr th {
             position: relative;
-            padding: @default-table-spacing;
-            background-color: tint(@secondary-color, 90%);
-            border-bottom: 1px solid tint(@secondary-color, 80%);
-            color: @secondary-color;
+            padding: 8px;
+            background-color: tint(@color--secondary, 90%);
+            border-bottom: 1px solid tint(@color--secondary, 80%);
+            color: @color--secondary;
             font-weight: 500;
-            font-size: (@default-font-size)-1;
-            line-height: (@default-font-size)+3;
+            font-size: (@font-size--default)-1;
+            line-height: (@font-size--default)+3;
 
             a {
-                color: @secondary-color;
+                color: @color--secondary;
                 font-weight: 500;
-                font-size: (@default-font-size)-1;
+                font-size: (@font-size--default)-1;
             }
         }
     }
@@ -2221,34 +2235,34 @@ h4 {
     tfoot {
         tr td {
             border: none;
-            background-color: tint(@secondary-color, 96%);
-            border-top: 1px solid tint(@secondary-color, 80%);
+            background-color: tint(@color--secondary, 96%);
+            border-top: 1px solid tint(@color--secondary, 80%);
         }
     }
 
     tbody {
-        border-bottom: 1px solid tint(@secondary-color, 90%);
+        border-bottom: 1px solid tint(@color--secondary, 90%);
 
         tr {
             td {
-                padding: @default-table-spacing;
-                border-bottom: 1px solid tint(@secondary-color, 90%);
+                padding: 8px;
+                border-bottom: 1px solid tint(@color--secondary, 90%);
                 vertical-align: middle;
                 position: relative;
 
                 a {
                     font-weight: 500;
-                    color: @secondary-color;
+                    color: @color--secondary;
                 }
 
                 strong {
-                    color: @secondary-color;
+                    color: @color--secondary;
                     font-weight: 500;
                 }
             }
 
             &:hover {
-                background-color: tint(@secondary-color, 96%);
+                background-color: tint(@color--secondary, 96%);
             }
         }
 
@@ -2265,7 +2279,7 @@ h4 {
 
     .custom-table__no-data {
         text-align: center;
-        color: @gray;
+        color: @text-color--lighter;
     }
 
     .custom-table__break-word {
@@ -2281,17 +2295,17 @@ h4 {
 
 .custom-table--base-color-strong {
     strong {
-        color: @text-color;
+        color: @text-color--default;
     }
 }
 
 .collapsable {
     tbody {
-        border-bottom: 1px solid tint(@secondary-color, 88%);
+        border-bottom: 1px solid tint(@color--secondary, 88%);
 
         tr {
             td {
-                border-bottom: 1px solid tint(@secondary-color, 88%);
+                border-bottom: 1px solid tint(@color--secondary, 88%);
             }
 
             &:hover {
@@ -2312,7 +2326,7 @@ h4 {
 @media only screen and (max-width: @desktop-breakpoint) {
     .custom-table__mobile-container {
         overflow: auto;
-        margin-bottom: @default-spacing;
+        margin-bottom: @spacing--default;
 
         .custom-table {
             margin-bottom: 0px;
@@ -2373,7 +2387,7 @@ h4 {
 .two-columns-list__container {
     width: 100%;
     display: table-cell;
-    border: 1px solid @light-gray;
+    border: 1px solid @color--lighter-neutral;
 
     h4 {
         margin: 0 0 0 10px;
@@ -2390,10 +2404,10 @@ h4 {
 }
 
 .two-columns-list__title {
-    font-size: @default-font-size+2;
+    font-size: @font-size--default+2;
     padding: 5px 10px;
     margin-bottom: 10px;
-    border-bottom: 1px solid @light-gray;
+    border-bottom: 1px solid @color--lighter-neutral;
 }
 
 .two-columns-list__section {
@@ -2401,7 +2415,7 @@ h4 {
 }
 
 .two-columns-list__section-name {
-    color: @gray;
+    color: @text-color--lighter;
     font-weight: 400;
 }
 
@@ -2429,7 +2443,7 @@ h4 {
 .two-columns-list--with-dropdown {
     .two-columns-list__container {
         position: relative;
-        padding-bottom: @default-button-input-height+10;
+        padding-bottom: @input__height--default+10;
     }
 }
 
@@ -2443,7 +2457,7 @@ h4 {
 
 .two-columns-list__empty {
     margin: 10px;
-    color: @gray;
+    color: @text-color--lighter;
 }
 
 ///////////////////////////
@@ -2483,14 +2497,14 @@ h4 {
 .zem-dropdown__content {
     display: none;
     position: absolute;
-    top: @default-button-input-height;
+    top: @input__height--default;
     left: 0;
     z-index: 1000;
     overflow: auto;
-    padding: 10px @default-spacing;
-    background-color: @white;
+    padding: 10px @spacing--default;
+    background-color: #ffffff;
     box-shadow: 0px 0px 8px 0px rgba(0, 0, 0, 0.1);
-    border-radius: @border-radius;
+    border-radius: @border-radius--default;
 }
 
 .zem-dropdown--open .zem-dropdown__content {
@@ -2516,7 +2530,7 @@ h4 {
             max-height: 80%;
             margin: auto;
             background-color: white;
-            border-radius: @border-radius;
+            border-radius: @border-radius--default;
             position: fixed;
             top: 10%;
             left: 10%;
@@ -2526,8 +2540,8 @@ h4 {
                 bottom: 10%;
                 left: 10%;
                 right: 10%;
-                border-bottom-right-radius: @border-radius;
-                border-bottom-left-radius: @border-radius;
+                border-bottom-right-radius: @border-radius--default;
+                border-bottom-left-radius: @border-radius--default;
             }
         }
 
@@ -2565,13 +2579,17 @@ h4 {
 ///////////////////////////
 
 .dropdown-menu__container {
-    padding: @default-spacing;
+    padding: @spacing--default;
     max-height: 400px;
     overflow: auto;
 }
 
 .dropdown-menu__shadow {
-    background: linear-gradient(to bottom, fade(@black, 20%), fade(@black, 0%));
+    background: linear-gradient(
+        to bottom,
+        fade(#000000, 20%),
+        fade(#000000, 0%)
+    );
     position: absolute;
     top: 0;
     width: 100%;
@@ -2581,7 +2599,7 @@ h4 {
 .dropdown-menu__category {
     margin-bottom: 10px;
     padding-bottom: 10px;
-    border-bottom: 1px solid @light-gray;
+    border-bottom: 1px solid @color--lighter-neutral;
     position: relative;
 
     .clearfix();
@@ -2599,7 +2617,7 @@ h4 {
 }
 
 .dropdown-menu__category-name {
-    color: @secondary-color;
+    color: @color--secondary;
     font-weight: 500;
     font-size: 16px;
     overflow-wrap: break-word;
@@ -2608,7 +2626,7 @@ h4 {
 }
 
 .dropdown-menu__category-description {
-    color: @gray;
+    color: @text-color--lighter;
 }
 
 .dropdown-menu__subcategory {
@@ -2631,7 +2649,7 @@ h4 {
 }
 
 .dropdown-menu__subcategory-name {
-    color: @secondary-color;
+    color: @color--secondary;
     font-weight: 500;
     overflow-wrap: break-word;
     word-wrap: break-word;
@@ -2685,10 +2703,10 @@ h4 {
     cursor: pointer;
     padding: 3px 5px 2px 5px;
     margin-left: -5px;
-    border-radius: @border-radius;
+    border-radius: @border-radius--default;
 
     &:hover {
-        background-color: @secondary-color;
+        background-color: @color--secondary;
         color: white;
     }
 
@@ -2699,7 +2717,7 @@ h4 {
 }
 
 .dropdown-menu__option--selected {
-    background-color: fade(@secondary-color, 10%);
+    background-color: fade(@color--secondary, 10%);
 }
 
 .dropdown-menu--only-buttons {
@@ -2708,7 +2726,7 @@ h4 {
 
     .button {
         background-color: transparent;
-        border-bottom: 1px solid tint(@secondary-color, 90%);
+        border-bottom: 1px solid tint(@color--secondary, 90%);
         border-radius: 0;
         text-align: left;
         display: block;
@@ -2717,13 +2735,13 @@ h4 {
 
         &:last-child {
             border-bottom: none;
-            border-bottom-right-radius: @border-radius;
-            border-bottom-left-radius: @border-radius;
+            border-bottom-right-radius: @border-radius--default;
+            border-bottom-left-radius: @border-radius--default;
         }
 
         &:first-child {
-            border-top-right-radius: @border-radius;
-            border-top-left-radius: @border-radius;
+            border-top-right-radius: @border-radius--default;
+            border-top-left-radius: @border-radius--default;
         }
     }
 }
@@ -2755,7 +2773,7 @@ h4 {
                     max-height: 80%;
                     margin: auto;
                     background-color: white;
-                    border-radius: @border-radius;
+                    border-radius: @border-radius--default;
                     position: fixed;
                     top: 10%;
                     right: 10%;
@@ -2768,8 +2786,8 @@ h4 {
                     bottom: 10%;
                     left: 10%;
                     right: 10%;
-                    border-bottom-right-radius: @border-radius;
-                    border-bottom-left-radius: @border-radius;
+                    border-bottom-right-radius: @border-radius--default;
+                    border-bottom-left-radius: @border-radius--default;
                 }
             }
 
@@ -2834,7 +2852,7 @@ h4 {
     }
 
     .modal-content {
-        border-radius: @border-radius;
+        border-radius: @border-radius--default;
     }
 }
 
@@ -2842,22 +2860,22 @@ h4 {
 }
 
 .modal__header {
-    border-bottom: 4px solid @primary-color;
+    border-bottom: 4px solid @color--primary;
     padding: 15px 15px 10px 15px;
 }
 
 .modal__title {
-    color: @primary-color;
+    color: @color--primary;
     font-size: 20px;
 }
 
 .modal__description {
-    color: @gray;
-    margin-bottom: @default-spacing;
+    color: @text-color--lighter;
+    margin-bottom: @spacing--default;
 }
 
 .modal__body {
-    padding: @default-spacing;
+    padding: @spacing--default;
 
     .form {
         .message--indented {
@@ -2925,11 +2943,11 @@ h4 {
 }
 
 .modal__footer {
-    border-bottom-right-radius: @border-radius;
-    border-bottom-left-radius: @border-radius;
-    padding: @default-spacing;
-    background-color: tint(@secondary-color, 90%);
-    box-shadow: 0px 0px 3px 0px fade(@secondary-color, 40%);
+    border-bottom-right-radius: @border-radius--default;
+    border-bottom-left-radius: @border-radius--default;
+    padding: @spacing--default;
+    background-color: tint(@color--secondary, 90%);
+    box-shadow: 0px 0px 3px 0px fade(@color--secondary, 40%);
 }
 
 ///////////////////////////
@@ -2944,12 +2962,12 @@ h4 {
         .modal-dialog {
             width: auto;
             position: fixed;
-            .position-properties(@default-spacing);
+            .position-properties(@spacing--default);
             margin: 0;
         }
 
         .modal-content {
-            border-radius: @border-radius;
+            border-radius: @border-radius--default;
             height: 100%;
             overflow: hidden;
         }
@@ -2974,8 +2992,8 @@ h4 {
     .modal__body {
         position: absolute;
         top: @modal-header-height-tablet-mobile;
-        left: @default-spacing;
-        right: @default-spacing;
+        left: @spacing--default;
+        right: @spacing--default;
         bottom: @modal-footer-height-tablet-mobile;
         padding: 0;
         overflow: auto;
@@ -3083,26 +3101,26 @@ h4 {
 
 .tag {
     padding: 2px 5px;
-    background-color: @very-light-gray;
-    font-size: @default-font-size;
+    background-color: @color--lightest-neutral;
+    font-size: @font-size--default;
     display: inline-block;
-    color: @text-color;
-    border-radius: @border-radius;
+    color: @text-color--default;
+    border-radius: @border-radius--default;
     margin: 0 3px 3px 0;
 }
 
 .tag--show-more {
-    color: @primary-color;
+    color: @color--primary;
 
     &:hover {
-        background: @primary-color;
+        background: @color--primary;
         color: white;
         text-decoration: none;
     }
 }
 
 .tag__explain {
-    color: @gray;
+    color: @text-color--lighter;
     margin-right: 3px;
 }
 
@@ -3136,8 +3154,8 @@ h4 {
 
 .sidenote {
     font-weight: 400;
-    font-size: @default-font-size;
-    color: @gray;
+    font-size: @font-size--default;
+    color: @text-color--lighter;
     font-style: italic;
 
     &.width-limit {
@@ -3156,7 +3174,7 @@ h4 {
     }
 
     .message:first-child {
-        margin-top: @default-spacing;
+        margin-top: @spacing--default;
     }
 
     .message:last-child {
@@ -3178,78 +3196,78 @@ h4 {
 }
 
 .message--success {
-    color: @green;
+    color: @color--success;
 
     a {
-        color: @green !important;
+        color: @color--success !important;
     }
 
     .list-with-bullets li::before {
-        background-color: tint(@green, 50%);
+        background-color: tint(@color--success, 50%);
     }
 }
 
 .message--success-box {
-    background-color: tint(@green, 95%);
-    border: 1px solid tint(@green, 85%);
+    background-color: tint(@color--success, 95%);
+    border: 1px solid tint(@color--success, 85%);
     padding: 8px 10px;
-    border-radius: @border-radius;
+    border-radius: @border-radius--default;
 
     .list-with-bullets li::before {
-        background-color: tint(@green, 50%);
+        background-color: tint(@color--success, 50%);
     }
 }
 
 .message--error {
-    color: @red;
+    color: @color--danger;
 
     a {
-        color: @red !important;
+        color: @color--danger !important;
     }
 
     .list-with-bullets li::before {
-        background-color: tint(@red, 50%);
+        background-color: tint(@color--danger, 50%);
     }
 }
 
 .message--error-box {
-    background-color: tint(@red, 95%);
-    border: 1px solid tint(@red, 85%);
+    background-color: tint(@color--danger, 95%);
+    border: 1px solid tint(@color--danger, 85%);
     padding: 8px 10px;
-    border-radius: @border-radius;
+    border-radius: @border-radius--default;
 
     .list-with-bullets li::before {
-        background-color: tint(@red, 50%);
+        background-color: tint(@color--danger, 50%);
     }
 }
 
 .message--warning {
-    background-color: tint(@orange, 95%);
-    border: 1px solid tint(@orange, 85%);
+    background-color: tint(@color--warning, 95%);
+    border: 1px solid tint(@color--warning, 85%);
     padding: 8px 10px;
-    border-radius: @border-radius;
+    border-radius: @border-radius--default;
 
     .list-with-bullets li::before {
-        background-color: tint(@orange, 50%);
+        background-color: tint(@color--warning, 50%);
     }
 }
 
 .message--info {
-    background-color: tint(@blue, 95%);
-    border: 1px solid tint(@blue, 85%);
+    background-color: tint(@color--info, 95%);
+    border: 1px solid tint(@color--info, 85%);
     padding: 8px 10px;
-    border-radius: @border-radius;
+    border-radius: @border-radius--default;
 
     .list-with-bullets li::before {
-        background-color: tint(@blue, 50%);
+        background-color: tint(@color--info, 50%);
     }
 }
 
 .message--help {
-    background-color: fade(@very-light-gray, 50%);
-    border: 1px solid @very-light-gray;
+    background-color: fade(@color--lightest-neutral, 50%);
+    border: 1px solid @color--lightest-neutral;
     padding: 8px 10px;
-    border-radius: @border-radius;
+    border-radius: @border-radius--default;
 }
 
 .message--with-icon {
@@ -3370,9 +3388,9 @@ h4 {
     height: 20px;
     padding: 2px;
     border-radius: 20px;
-    background-color: @background-light-gray;
+    background-color: #ebebeb;
     cursor: pointer;
-    transition: all @default-animation;
+    transition: all @duration-and-timing-fn--default;
 
     &::before {
         content: '';
@@ -3381,8 +3399,8 @@ h4 {
         width: 16px;
         height: 16px;
         border-radius: 50%;
-        background-color: @white;
-        transition: all @default-animation;
+        background-color: #ffffff;
+        transition: all @duration-and-timing-fn--default;
     }
 }
 
@@ -3399,7 +3417,7 @@ h4 {
 }
 
 .switch-button--checked {
-    background-color: @green;
+    background-color: @color--success;
 
     &::before {
         left: 22px;
@@ -3407,7 +3425,7 @@ h4 {
 }
 
 .switch-button--caution.switch-button--checked {
-    background-color: @red;
+    background-color: @color--danger;
 }
 
 .switch-button--small.switch-button--checked {
@@ -3440,7 +3458,7 @@ h4 {
 .help-popover:active,
 .help-popover:visited {
     display: inline-block;
-    background-color: fade(@secondary-color, 50%);
+    background-color: fade(@color--secondary, 50%);
     border-radius: 50%;
     vertical-align: middle;
     margin-bottom: 2px;
@@ -3480,21 +3498,21 @@ h4 {
 .custom-panel {
     background-color: white;
     box-shadow: 0px 0px 3px 0px rgba(0, 0, 0, 0.1);
-    padding: @default-spacing;
-    margin-top: @default-spacing*1.5;
+    padding: @spacing--default;
+    margin-top: @spacing--default*1.5;
     position: relative;
 }
 
 .custom-panel--disabled {
-    background-color: fade(@white, 30%);
+    background-color: fade(#ffffff, 30%);
     box-shadow: 0px 0px 5px 0px fade(black, 10%);
 }
 
 .custom-panel__title {
-    margin: -@default-spacing -@default-spacing @default-spacing -@default-spacing;
-    padding: (@default-spacing / 2)+6 @default-spacing (@default-spacing / 2)+4
-        @default-spacing;
-    border-bottom: 1px solid @border-color;
+    margin: -@spacing--default -@spacing--default @spacing--default -@spacing--default;
+    padding: (@spacing--default / 2)+6 @spacing--default (@spacing--default / 2)+4
+        @spacing--default;
+    border-bottom: 1px solid @color--lighter-neutral;
 
     .button {
         margin-top: -3px;
@@ -3508,8 +3526,8 @@ h4 {
 }
 
 .custom-panel__description {
-    margin-bottom: @default-spacing;
-    color: @gray;
+    margin-bottom: @spacing--default;
+    color: @text-color--lighter;
 }
 
 ////////////////////////////
@@ -3517,30 +3535,30 @@ h4 {
 ////////////////////////////
 
 .collapsable {
-    padding: @default-spacing @default-spacing 20px @default-spacing;
-    background-color: @very-light-gray;
+    padding: @spacing--default @spacing--default 20px @spacing--default;
+    background-color: @color--lightest-neutral;
 }
 
 .collapsable__show-collapsed {
     display: block;
     text-align: center;
-    margin: 20px -@default-spacing -@default-spacing -@default-spacing;
-    padding: 10px @default-spacing;
-    background-color: @very-light-gray;
-    color: @secondary-color;
+    margin: 20px -@spacing--default -@spacing--default -@spacing--default;
+    padding: 10px @spacing--default;
+    background-color: @color--lightest-neutral;
+    color: @color--secondary;
 
     &:hover {
-        color: @secondary-color;
+        color: @color--secondary;
     }
 }
 
 .collapsable__hide-collapsed {
     &:extend(.collapsable__show-collapsed);
     margin-top: 0;
-    background-color: darken(@very-light-gray, 3%);
+    background-color: darken(@color--lightest-neutral, 3%);
 
     &:hover {
-        color: @secondary-color;
+        color: @color--secondary;
     }
 }
 
@@ -3549,13 +3567,13 @@ h4 {
 ////////////////////////////
 
 .ad-preview__container {
-    padding: @default-spacing @default-spacing 0 0;
+    padding: @spacing--default @spacing--default 0 0;
 }
 
 .ad-preview__item {
-    margin-bottom: @default-spacing;
-    padding-bottom: @default-spacing;
-    border-bottom: 1px solid @light-gray;
+    margin-bottom: @spacing--default;
+    padding-bottom: @spacing--default;
+    border-bottom: 1px solid @color--lighter-neutral;
     max-width: 360px;
 }
 
@@ -3591,8 +3609,8 @@ h4 {
     position: relative;
     display: block;
     margin-bottom: 5px;
-    background-color: tint(@secondary-color, 90%);
-    border: 1px solid tint(@secondary-color, 80%);
+    background-color: tint(@color--secondary, 90%);
+    border: 1px solid tint(@color--secondary, 80%);
 
     &::before,
     &::after {
@@ -3604,7 +3622,7 @@ h4 {
         left: 50%;
         top: 0;
         transform: rotate(45deg);
-        background-color: tint(@secondary-color, 80%);
+        background-color: tint(@color--secondary, 80%);
         z-index: 1;
     }
 
@@ -3623,7 +3641,7 @@ h4 {
 }
 
 .ad-preview__title {
-    color: @secondary-color;
+    color: @color--secondary;
     font-size: 18px;
     line-height: 22px;
     font-weight: 500;
@@ -3648,7 +3666,7 @@ h4 {
 .ad-preview__iframe {
     display: block;
     margin-bottom: 5px;
-    background-color: tint(@secondary-color, 90%);
-    border: 1px solid tint(@secondary-color, 80%);
+    background-color: tint(@color--secondary, 90%);
+    border: 1px solid tint(@color--secondary, 80%);
     position: relative;
 }

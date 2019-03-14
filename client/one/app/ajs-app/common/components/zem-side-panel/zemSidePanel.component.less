@@ -8,16 +8,16 @@
 .zem-side-panel__drawer {
     position: fixed;
     z-index: 1000;
-    background: @light-gray;
+    background: @color--lighter-neutral;
 
     top: 0;
     bottom: 0;
-    width: @drawer-width;
+    width: 50%;
     min-width: 800px;
     left: 100%;
 
     transform: translateX(0);
-    transition: all @default-animation;
+    transition: all @duration-and-timing-fn--default;
     will-change: transform;
 }
 
@@ -41,7 +41,7 @@
     visibility: hidden;
     opacity: 0;
 
-    transition: all @default-animation;
+    transition: all @duration-and-timing-fn--default;
     will-change: opacity;
 }
 
@@ -61,19 +61,19 @@
     left: -30px;
     width: 30px;
     height: 50px;
-    border-top-left-radius: @border-radius;
-    border-bottom-left-radius: @border-radius;
-    background: fade(@white, 50%) url('images/arrow-white.svg') no-repeat 10px
+    border-top-left-radius: @border-radius--default;
+    border-bottom-left-radius: @border-radius--default;
+    background: fade(#ffffff, 50%) url('images/arrow-white.svg') no-repeat 10px
         center;
     background-size: 12px;
     opacity: 0;
     visibility: hidden;
-    transition: all @default-animation;
+    transition: all @duration-and-timing-fn--default;
     outline: none;
 
     &:hover {
         opacity: 1;
-        background-color: @light-gray;
+        background-color: @color--lighter-neutral;
         background-image: url('images/arrow-gray.svg');
     }
 }

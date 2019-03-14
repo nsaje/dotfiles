@@ -10,20 +10,20 @@
     left: 0;
     width: 100%;
     height: @header-height;
-    padding: 0 @default-spacing;
-    border-bottom: 1px solid darken(@light-gray, 5%);
+    padding: 0 @spacing--default;
+    border-bottom: 1px solid darken(@color--lighter-neutral, 5%);
 }
 
 .zem-history__header-title {
     line-height: 24px;
     margin: 18px 0;
-    color: @secondary-color;
+    color: @color--secondary;
     font-weight: 400;
     font-size: 24px;
 }
 
 .zem-history__body {
-    padding: @default-spacing+5 @default-spacing 0 @default-spacing;
+    padding: @spacing--default+5 @spacing--default 0 @spacing--default;
     position: absolute;
     top: 60px;
     left: 0;
@@ -39,9 +39,9 @@
     bottom: 0px;
     left: 10px;
     height: 60px;
-    padding: @default-spacing;
-    background-color: tint(@secondary-color, 90%);
-    box-shadow: 0px 0px 3px 0px fade(@secondary-color, 40%);
+    padding: @spacing--default;
+    background-color: tint(@color--secondary, 90%);
+    box-shadow: 0px 0px 3px 0px fade(@color--secondary, 40%);
 }
 
 .zem-side-panel__drawer--visible {
@@ -51,8 +51,8 @@
 }
 
 .zem-history__section {
-    padding: @default-spacing;
-    background-color: @white;
+    padding: @spacing--default;
+    background-color: #ffffff;
     box-shadow: 0px 0px 5px 0px fade(black, 10%);
-    margin-bottom: @default-spacing;
+    margin-bottom: @spacing--default;
 }

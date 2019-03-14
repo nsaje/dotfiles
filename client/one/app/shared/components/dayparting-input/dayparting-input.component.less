@@ -16,8 +16,8 @@
 .zem-dayparting-input__hour-label {
     flex: 1 0 26px;
     line-height: 35px;
-    border-right: 1px solid @light-gray;
-    color: @gray;
+    border-right: 1px solid @color--lighter-neutral;
+    color: @text-color--lighter;
     text-align: center;
 }
 
@@ -42,9 +42,9 @@
     flex: 0 0 73px;
     padding-right: 6px;
     line-height: 44px;
-    border-bottom: 1px solid @light-gray;
+    border-bottom: 1px solid @color--lighter-neutral;
     text-align: right;
-    color: @gray;
+    color: @text-color--lighter;
 }
 
 .zem-dayparting-input__day:last-of-type .zem-dayparting-input__day-label {
@@ -53,7 +53,7 @@
 
 .zem-dayparting-input__hour {
     flex: 1 0 26px;
-    background-color: @light-gray;
+    background-color: @color--lighter-neutral;
     border-right: 1px solid #ffffff;
     border-bottom: 1px solid #ffffff;
 }
@@ -68,7 +68,7 @@
 }
 
 .zem-dayparting-input__hour--active {
-    background-color: @secondary-color;
+    background-color: @color--secondary;
 }
 
 .zem-dayparting-input__legend {
@@ -81,8 +81,8 @@
     position: relative;
     flex: 0 0 auto;
     height: 16px;
-    margin-top: @default-spacing;
-    margin-right: @default-spacing;
+    margin-top: @spacing--default;
+    margin-right: @spacing--default;
     padding-left: 14px;
 
     &:last-child {
@@ -99,9 +99,9 @@
     transform: translateY(-50%);
     width: 10px;
     height: 10px;
-    background-color: @light-gray;
+    background-color: @color--lighter-neutral;
 }
 
 .zem-dayparting-input__legend-item--active::before {
-    background-color: @secondary-color;
+    background-color: @color--secondary;
 }

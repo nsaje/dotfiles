@@ -9,46 +9,46 @@
     display: block;
     height: @header-height;
 
-    background: @header-left-color;
+    background: @header__background-color--left;
     background: -moz-linear-gradient(
         -45deg,
-        @header-left-color 0%,
-        @header-right-color 100%
+        @header__background-color--left 0%,
+        @header__background-color--right 100%
     );
     background: -webkit-gradient(
         left top,
         right bottom,
-        color-stop(0%, @header-left-color),
-        color-stop(100%, @header-right-color)
+        color-stop(0%, @header__background-color--left),
+        color-stop(100%, @header__background-color--right)
     );
     background: -webkit-linear-gradient(
         -45deg,
-        @header-left-color 0%,
-        @header-right-color 100%
+        @header__background-color--left 0%,
+        @header__background-color--right 100%
     );
     background: -o-linear-gradient(
         -45deg,
-        @header-left-color 0%,
-        @header-right-color 100%
+        @header__background-color--left 0%,
+        @header__background-color--right 100%
     );
     background: -ms-linear-gradient(
         -45deg,
-        @header-left-color 0%,
-        @header-right-color 100%
+        @header__background-color--left 0%,
+        @header__background-color--right 100%
     );
     background: linear-gradient(
         135deg,
-        @header-left-color 0%,
-        @header-right-color 100%
+        @header__background-color--left 0%,
+        @header__background-color--right 100%
     );
-    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='@header-left-color', endColorstr='@header-right-color', GradientType=1 );
+    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='@header__background-color--left', endColorstr='@header__background-color--right', GradientType=1 );
 
     position: fixed;
     z-index: 999;
     top: 0;
     left: 0;
     width: 100%;
-    transition: all @default-animation;
+    transition: all @duration-and-timing-fn--default;
     transform: translateZ(0);
     will-change: transform;
 
@@ -66,7 +66,7 @@
         border-left: 1px solid fade(white, 0%);
         color: white !important;
         margin: 10px 0;
-        transition: all @default-animation;
+        transition: all @duration-and-timing-fn--default;
 
         &::before {
             top: 10px;
@@ -81,7 +81,7 @@
     }
 
     .button--zem-header-filter-active {
-        background-color: @very-dark-gray;
+        background-color: @color--darker-neutral;
         height: 50px;
         border-bottom-left-radius: 0px;
         border-bottom-right-radius: 0px;
@@ -89,7 +89,7 @@
         padding-bottom: 10px;
 
         &:not(.button--disabled):not([disabled]):hover {
-            background-color: @very-dark-gray;
+            background-color: @color--darker-neutral;
         }
 
         &::before {
@@ -110,7 +110,7 @@
             width: 22px;
             height: 22px;
             background-size: 22px;
-            transition: all @default-animation;
+            transition: all @duration-and-timing-fn--default;
         }
 
         .button__input-field {
@@ -145,17 +145,17 @@
     float: left;
     height: 60px;
     width: 200px;
-    padding: 12px 20px 8px @default-spacing;
+    padding: 12px 20px 8px @spacing--default;
     background: url(images/zemanta-logo-squares-white.svg) no-repeat top left;
     background-size: 20px;
-    transition: all @default-animation;
+    transition: all @duration-and-timing-fn--default;
 }
 
 .zem-header__logo {
     display: block;
     height: 40px;
-    background: @logo;
-    transition: all @default-animation;
+    background: @logo__background;
+    transition: all @duration-and-timing-fn--default;
     margin: 0 auto;
 }
 
@@ -164,7 +164,7 @@
     margin: 10px 0;
     height: 40px;
     padding: 10px 20px;
-    transition: all @default-animation;
+    transition: all @duration-and-timing-fn--default;
 
     &:hover {
         background-color: fade(white, 10%);
@@ -173,7 +173,7 @@
 
 .zem-header__dropdown-button-icon {
     width: 20px;
-    transition: all @default-animation;
+    transition: all @duration-and-timing-fn--default;
 }
 
 .zem-header__dropdown-button-icon--bigger {
@@ -197,9 +197,9 @@
     display: block;
     z-index: 999;
     border-radius: 0;
-    .border-bottom-radius (@border-radius);
+    .border-bottom-radius (@border-radius--default);
     box-shadow: 0px 0px 8px 0px rgba(0, 0, 0, 0.1);
-    transition: all @default-animation;
+    transition: all @duration-and-timing-fn--default;
     transform: translateZ(0);
 
     &::after {
@@ -228,7 +228,7 @@
     height: auto;
     min-width: 150px;
     max-width: 300px;
-    background-color: @header-right-color;
+    background-color: @header__background-color--right;
     right: 0;
     left: auto;
 }
@@ -245,7 +245,7 @@
     color: white;
     line-height: 16px;
     font-size: 12px;
-    transition: all @default-animation;
+    transition: all @duration-and-timing-fn--default;
 }
 
 .zem-header-breadcrumb__item {
@@ -254,7 +254,7 @@
     padding: 0;
     margin: 0;
     background-color: transparent;
-    transition: all @default-animation;
+    transition: all @duration-and-timing-fn--default;
 }
 
 .zem-header-breadcrumb__item--with-slash {
@@ -270,7 +270,7 @@
         background-color: fade(white, 20%);
         height: 30px;
         width: 1px;
-        transition: all @default-animation;
+        transition: all @duration-and-timing-fn--default;
         transform: rotate(-20deg);
     }
 }
@@ -285,13 +285,14 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    transition: padding @default-animation, background-color @default-animation;
+    transition: padding @duration-and-timing-fn--default,
+        background-color @duration-and-timing-fn--default;
 
     &:hover {
         color: white;
         background-color: fade(white, 10%);
         text-decoration: none;
-        border-radius: @border-radius;
+        border-radius: @border-radius--default;
     }
 
     &:active,
@@ -305,7 +306,7 @@
     display: block;
     font-size: 12px;
     height: 16px;
-    transition: all @default-animation;
+    transition: all @duration-and-timing-fn--default;
     transition-property: font-size, height, opacity;
 }
 
@@ -317,7 +318,7 @@
     background-color: fade(black, 10%);
     color: fade(white, 50%);
     margin: 0;
-    padding: @default-spacing;
+    padding: @spacing--default;
     border-bottom: none;
     line-height: 16px;
 }
@@ -335,8 +336,8 @@
 
 .zem-header-menu__link {
     color: white;
-    padding: 8px @default-spacing;
-    transition: background-color @default-animation;
+    padding: 8px @spacing--default;
+    transition: background-color @duration-and-timing-fn--default;
     display: block;
 
     .internal-feature {
@@ -360,7 +361,7 @@
     font-size: 10px;
     text-transform: uppercase;
     color: fade(white, 50%);
-    padding: 10px @default-spacing 2px @default-spacing;
+    padding: 10px @spacing--default 2px @spacing--default;
     border-bottom: 1px solid fade(black, 10%);
 }
 
@@ -368,7 +369,7 @@
     float: right;
     display: block;
     margin-right: 20px;
-    transition: all @default-animation;
+    transition: all @duration-and-timing-fn--default;
 }
 
 .zem-header-date-range-picker--desktop {
@@ -384,7 +385,7 @@
     float: right;
     display: block;
     margin-right: 20px;
-    transition: all @default-animation;
+    transition: all @duration-and-timing-fn--default;
 }
 
 .zem-header-date-range-picker-dropdown {
@@ -397,9 +398,9 @@
         visibility: hidden;
         display: block !important;
         border-radius: 0;
-        .border-bottom-radius (@border-radius);
+        .border-bottom-radius (@border-radius--default);
         box-shadow: 0px 0px 8px 0px rgba(0, 0, 0, 0.1);
-        transition: opacity @default-animation;
+        transition: opacity @duration-and-timing-fn--default;
 
         &.open {
             opacity: 1;
@@ -548,10 +549,10 @@
             }
 
             .button--zem-header-filter-active {
-                background-color: @very-dark-gray;
+                background-color: @color--darker-neutral;
 
                 &:not(.button--disabled):not([disabled]):hover {
-                    background-color: @very-dark-gray;
+                    background-color: @color--darker-neutral;
                 }
             }
 
@@ -588,7 +589,7 @@
 
         .zem-header__logo-container {
             height: 30px;
-            padding: 3px 20px 3px @default-spacing;
+            padding: 3px 20px 3px @spacing--default;
             background-size: 12px;
         }
 
@@ -679,7 +680,7 @@
         .button {
             background-color: transparent;
             margin: 0;
-            transition: all @default-animation;
+            transition: all @duration-and-timing-fn--default;
             border-radius: 0px;
             border-left: 1px solid fade(white, 20%);
 
@@ -758,9 +759,9 @@
 
     .zem-header-breadcrumb {
         position: absolute;
-        left: @default-spacing;
+        left: @spacing--default;
         top: @header-height-small-screen;
-        right: @default-spacing;
+        right: @spacing--default;
         margin: 10px 0;
         height: 26px;
         float: none;
@@ -778,18 +779,18 @@
         &::before {
             top: 2px;
             height: 12px;
-            background-color: @gray;
+            background-color: @color--neutral;
         }
     }
 
     .zem-header-breadcrumb__link {
         padding: 0;
-        color: @gray;
+        color: @text-color--lighter;
         max-width: inherit;
         display: inline;
 
         &:hover {
-            color: @text-color;
+            color: @text-color--default;
             background-color: transparent;
         }
     }

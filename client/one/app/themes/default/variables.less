@@ -1,29 +1,59 @@
-///////////////
-// Variables //
-///////////////
-
-// GENERAL SETTINGS
-
-@logo: url('images/zemanta-logo-white.svg') no-repeat center center;
 @images-folder: 'images';
-@default-spacing: 15px;
-@default-table-spacing: 8px;
-@border-radius: 4px;
-@default-font-family: 'Roboto', sans-serif;
-@default-font-size: 13px;
-@default-button-input-height: 30px;
-@default-animation: 200ms ease-in-out;
-@drawer-width: 50%;
+@logo__background: url('images/zemanta-logo-white.svg') no-repeat center center;
+
+@color--primary: #ef8421;
+@color--secondary: #3f547f;
+@color--danger: #cc0000;
+@color--success: #99cc00;
+@color--warning: #ff9900;
+@color--info: #007acf;
+@color--internal: #0ab00a;
+
+@header__background-color--left: @color--primary;
+@header__background-color--right: #e35325;
+
+@color--darkest-neutral: #222222;
+@color--darker-neutral: #333333;
+@color--dark-neutral: #666666;
+@color--neutral: #999999;
+@color--light-neutral: #cccccc;
+@color--lighter-neutral: #ebebeb;
+@color--lightest-neutral: #f5f5f5;
+
+@text-color--default: @color--darkest-neutral;
+@text-color--light: @color--dark-neutral;
+@text-color--lighter: @color--neutral;
+@text-color--lightest: @color--light-neutral;
+
+@border-color--default: #d2d2d2;
+
+@spacing--default: 15px;
+@spacing--small: 8px;
+
+@font-size--default: 13px;
+
+@font-family--default: 'Roboto', sans-serif;
+
+@z-index--drawer: 1000;
+@z-index--modal: 2000;
+
+@border-radius--default: 4px;
+
+@duration-and-timing-fn--default: 200ms ease-in-out;
+
+@input__width--narrow: 150px;
+@input__height--default: 30px;
+
+//////////////////////////////////////////////////////////////////////
+// Legacy variable definitions - DON'T USE IN NEWLY WRITTEN STYLES //
+/////////////////////////////////////////////////////////////////////
+
 @header-height: 60px;
 @tabset-height: 40px;
 @header-height-minimized: 30px; /* NOTE: On Change update Grid sticky style in JS! */
-@tabset-height-minimized: 28px; /* NOTE: On Change update Grid sticky style in JS! */
 @header-height-small-screen: 40px;
-@smaller-field: 150px;
 @form-input-width: 73%;
 @form-input-width-modal: 67%;
-
-// BREAKPOINTS
 
 @desktop-full-hd-breakpoint: 1800px;
 @desktop-above-breakpoint: 1600px;
@@ -31,70 +61,3 @@
 @desktop-breakpoint: 1024px;
 @tablet-breakpoint: 768px;
 @mobile-breakpoint: 500px;
-
-// ZEMANTA COLORS
-
-@primary-color: #ef8421;
-@secondary-color: #3f547f;
-@text-color: #222222;
-@header-left-color: #ef8421;
-@header-right-color: #e35325;
-
-// OTHER COLORS
-
-@black: #000;
-@white: #fff;
-@gray: #999999;
-@almost-gray: #cccccc;
-@light-gray: #ebebeb;
-@very-light-gray: #f5f5f5;
-@dark-gray: #666666;
-@very-dark-gray: #333333;
-@red: #cc0000;
-@green: #99cc00;
-@orange: #ff9900;
-@blue: #007acf;
-
-// BACKGROUND COLORS
-
-@background-light-gray: #ebebeb;
-
-// ELEMENTS COLORS
-
-@input-border-color: #d2d2d2;
-
-// OLD COLORS SPECIFIC COLORS
-
-@line-color: #eeeeee;
-@internal-color: #0ab00a;
-@add-color: #f68620;
-@add-color-hover: #dd771b;
-@add-filter-color: @primary-color;
-@border-color: #ebebeb;
-@border-input-color: #d2d2d2;
-@line-dark-color: #dadada;
-@border-gray-color: #d2d2d2;
-
-@updated-color: #dff0d8;
-@canceled-color: #414141;
-
-@infobox-black: #414141;
-@infobox-gray: #aaaaaa;
-@infobox-dark-gray: #888888;
-
-@insights-table-gray: #fafafa;
-@insights-table-header: #d7d7d7;
-@insights-text-green: #70c700;
-@insights-text-red: #cb0101;
-
-@sidebar-background-inactive: #f6f6f6;
-@sidebar-background-active: #ecf6f8;
-@sidebar-border-gray: #dddddd;
-@sidebar-border-highlight: #43a8c6;
-
-@status-green: #00cc00;
-@status-orange: #ff9900;
-@status-red: #ff0000;
-
-@z-index--drawer: 1000;
-@z-index--modal: 2000;

@@ -14,14 +14,14 @@
 .zem-filter-selector {
     display: block;
     height: 0px;
-    background-color: @very-dark-gray;
+    background-color: @color--darker-neutral;
     position: fixed;
     top: 60px;
     left: 0;
     z-index: 997;
     width: 100%;
     overflow: hidden;
-    transition: all @default-animation;
+    transition: all @duration-and-timing-fn--default;
 
     .applied-conditions {
         position: relative;
@@ -32,11 +32,11 @@
 
     .applied-conditions__title {
         position: absolute;
-        left: @default-spacing;
+        left: @spacing--default;
         top: 50%;
         transform: translateY(-50%);
         width: @applied-conditions__title_width;
-        color: @white;
+        color: #ffffff;
     }
 
     .applied-conditions__arrow {
@@ -52,19 +52,19 @@
     }
 
     .applied-conditions__arrow--left {
-        left: @default-spacing * 2 + @applied-conditions__title_width;
+        left: @spacing--default * 2 + @applied-conditions__title_width;
         transform: translateY(-50%) rotate(180deg);
     }
 
     .applied-conditions__arrow--right {
-        right: @default-spacing * 2 + @applied-conditions__clear-filter_width;
+        right: @spacing--default * 2 + @applied-conditions__clear-filter_width;
     }
 
     .applied-conditions__list-container {
         display: block;
-        margin-left: @default-spacing*2 + @applied-conditions__title_width +
+        margin-left: @spacing--default*2 + @applied-conditions__title_width +
             @applied-conditions__arrow_width;
-        margin-right: @default-spacing*2 +
+        margin-right: @spacing--default*2 +
             @applied-conditions__clear-filter_width +
             @applied-conditions__arrow_width;
         overflow: hidden;
@@ -73,7 +73,7 @@
     .applied-conditions__list {
         transform: translateX(0) translateZ(0);
         will-change: transform;
-        transition: transform @default-animation;
+        transition: transform @duration-and-timing-fn--default;
         white-space: nowrap;
     }
 
@@ -84,9 +84,9 @@
         max-width: 200px;
         height: 36px;
         padding: 2px 25px 3px 5px;
-        border: 1px solid @dark-gray;
-        border-radius: @border-radius;
-        transition: all @default-animation;
+        border: 1px solid @color--dark-neutral;
+        border-radius: @border-radius--default;
+        transition: all @duration-and-timing-fn--default;
 
         &:last-child {
             margin-right: 0;
@@ -99,7 +99,7 @@
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
-        color: @white;
+        color: #ffffff;
         line-height: 18px;
     }
 
@@ -108,8 +108,8 @@
         line-height: 12px;
         height: 12px;
         text-transform: uppercase;
-        color: fade(@white, 30%);
-        transition: all @default-animation;
+        color: fade(#ffffff, 30%);
+        transition: all @duration-and-timing-fn--default;
     }
 
     .applied-conditions__remove-condition {
@@ -125,7 +125,7 @@
 
     .applied-conditions__clear-filter {
         position: absolute;
-        right: @default-spacing;
+        right: @spacing--default;
         top: 50%;
         transform: translateY(-50%);
         width: @applied-conditions__clear-filter_width;
@@ -138,10 +138,10 @@
             @filter-sections__section-title_margin-bottom +
             @filter-sections__section-title_font-size +
             @filter-sections__section-options-container_max-height;
-        margin-bottom: @default-spacing;
+        margin-bottom: @spacing--default;
         padding-top: @filter-sections_padding-top;
-        padding-left: @default-spacing;
-        padding-right: @default-spacing;
+        padding-left: @spacing--default;
+        padding-right: @spacing--default;
     }
 
     .filter-sections__section {
@@ -149,9 +149,9 @@
         float: left;
         width: 25%;
         height: 100%;
-        padding: @filter-sections__section_vertical-padding @default-spacing*2;
+        padding: @filter-sections__section_vertical-padding @spacing--default*2;
         border-right: @filter-sections_border-width solid
-            lighten(@very-dark-gray, 5%);
+            lighten(@color--darker-neutral, 5%);
     }
 
     .filter-sections__section--sources {
@@ -183,12 +183,12 @@
 
     .filter-sections__select-all-toggle {
         float: right;
-        font-size: @default-font-size;
+        font-size: @font-size--default;
         font-weight: 400;
     }
 
     .filter-sections__select-all-toggle--select-none {
-        color: @light-gray;
+        color: @color--lighter-neutral;
     }
 
     .filter-sections__options-container {
@@ -209,8 +209,8 @@
 
     .input-checkbox {
         + .checkbox-text::before {
-            border: 1px solid lighten(@very-dark-gray, 20%);
-            background: @very-dark-gray;
+            border: 1px solid lighten(@color--darker-neutral, 20%);
+            background: @color--darker-neutral;
         }
 
         + .checkbox-text::after {
@@ -218,66 +218,66 @@
         }
 
         + .checkbox-text:hover {
-            color: @primary-color;
+            color: @color--primary;
 
             &::before {
-                border: 1px solid @primary-color;
+                border: 1px solid @color--primary;
             }
         }
 
         &:checked {
             + .checkbox-text {
-                color: @primary-color;
+                color: @color--primary;
             }
 
             + .checkbox-text::before,
             &:hover + .checkbox-text::before {
-                border: 1px solid @primary-color;
+                border: 1px solid @color--primary;
             }
         }
 
         &:disabled + .checkbox-text {
-            color: @dark-gray;
+            color: @text-color--light;
         }
     }
 
     .input-radio {
         + .radio-text::before {
-            border: 1px solid lighten(@very-dark-gray, 20%);
-            background: @very-dark-gray;
+            border: 1px solid lighten(@color--darker-neutral, 20%);
+            background: @color--darker-neutral;
         }
 
         + .radio-text::after {
-            background-color: @primary-color;
+            background-color: @color--primary;
         }
 
         + .radio-text:hover {
-            color: @primary-color;
+            color: @color--primary;
 
             &::before {
-                border: 1px solid @primary-color;
+                border: 1px solid @color--primary;
             }
         }
 
         &:checked {
             + .radio-text {
-                color: @primary-color;
+                color: @color--primary;
             }
 
             + .radio-text::before,
             &:hover + .radio-text::before {
-                border: 1px solid @primary-color;
+                border: 1px solid @color--primary;
             }
         }
 
         &:disabled + .radio-text {
-            color: @dark-gray;
+            color: @text-color--light;
         }
     }
 
     .checkbox-text,
     .radio-text {
-        color: @light-gray;
+        color: @color--lighter-neutral;
     }
 
     .filter-sections__option-text {
@@ -286,7 +286,7 @@
 
     .filter-sections__button-container {
         position: absolute;
-        right: @default-spacing;
+        right: @spacing--default;
         bottom: 0;
 
         .button {
@@ -302,7 +302,7 @@
 
             .filter-sections__options-list {
                 column-count: 2;
-                column-gap: @default-spacing;
+                column-gap: @spacing--default;
             }
         }
     }
@@ -313,7 +313,7 @@
 
             .filter-sections__options-list {
                 column-count: 4;
-                column-gap: 2 * @default-spacing;
+                column-gap: 2 * @spacing--default;
             }
         }
     }
@@ -327,7 +327,7 @@
             @filter-sections__section-title_margin-bottom +
             @filter-sections__section-title_font-size +
             @filter-sections__section-options-container_max-height +
-            @default-spacing;
+            @spacing--default;
     }
 
     .zem-container {
@@ -337,8 +337,8 @@
             @filter-sections__section-title_margin-bottom +
             @filter-sections__section-title_font-size +
             @filter-sections__section-options-container_max-height +
-            @default-spacing + @header-height + @tabset-height +
-            @default-spacing*1.5;
+            @spacing--default + @header-height + @tabset-height +
+            @spacing--default*1.5;
     }
 }
 
@@ -350,7 +350,7 @@
             @filter-sections__section-title_margin-bottom +
             @filter-sections__section-title_font-size +
             @filter-sections__section-options-container_max-height +
-            @default-spacing + @header-height + @default-spacing*1.5;
+            @spacing--default + @header-height + @spacing--default*1.5;
     }
 }
 
@@ -361,21 +361,21 @@
 
     .zem-container {
         padding-top: @applied-conditions_height + @header-height +
-            @tabset-height + @default-spacing*1.5;
+            @tabset-height + @spacing--default*1.5;
     }
 }
 
 .data-filter-enabled .no-tabset {
     &.zem-container {
         padding-top: @applied-conditions_height + @header-height +
-            @default-spacing*1.5;
+            @spacing--default*1.5;
     }
 }
 
 .data-filter-enabled.filter-selector-expanded {
     .filter-sections {
         border-top: @filter-sections_border-width solid
-            lighten(@very-dark-gray, 5%);
+            lighten(@color--darker-neutral, 5%);
     }
 
     .zem-filter-selector {
@@ -384,7 +384,7 @@
             @filter-sections__section-title_margin-bottom +
             @filter-sections__section-title_font-size +
             @filter-sections__section-options-container_max-height +
-            @default-spacing + @applied-conditions_height;
+            @spacing--default + @applied-conditions_height;
     }
 
     .zem-container {
@@ -394,8 +394,8 @@
             @filter-sections__section-title_margin-bottom +
             @filter-sections__section-title_font-size +
             @filter-sections__section-options-container_max-height +
-            @default-spacing + @applied-conditions_height + @header-height +
-            @tabset-height + @default-spacing*1.5;
+            @spacing--default + @applied-conditions_height + @header-height +
+            @tabset-height + @spacing--default*1.5;
     }
 }
 
@@ -407,8 +407,8 @@
             @filter-sections__section-title_margin-bottom +
             @filter-sections__section-title_font-size +
             @filter-sections__section-options-container_max-height +
-            @default-spacing + @applied-conditions_height + @header-height +
-            @default-spacing*1.5;
+            @spacing--default + @applied-conditions_height + @header-height +
+            @spacing--default*1.5;
     }
 }
 
@@ -421,20 +421,20 @@
     &.data-filter-enabled .no-tabset {
         &.zem-container {
             padding-top: @header-height + @applied-conditions_height +
-                @default-spacing*1.5;
+                @spacing--default*1.5;
         }
     }
 
     &.filter-selector-expanded {
         .zem-container.no-tabset {
-            padding-top: @header-height + @default-spacing*1.5;
+            padding-top: @header-height + @spacing--default*1.5;
         }
     }
 
     &.data-filter-enabled.filter-selector-expanded {
         .zem-container.no-tabset {
             padding-top: @header-height + @applied-conditions_height +
-                @default-spacing*1.5;
+                @spacing--default*1.5;
         }
     }
 }
@@ -471,13 +471,13 @@
         .filter-sections__section {
             width: 50%;
             height: auto;
-            padding: 10px @default-spacing;
+            padding: 10px @spacing--default;
             border-right: none;
 
             &:first-child {
                 padding-left: 0;
                 border-right: @filter-sections_border-width solid
-                    lighten(@very-dark-gray, 5%);
+                    lighten(@color--darker-neutral, 5%);
             }
         }
 
@@ -492,7 +492,7 @@
             right: 0;
             bottom: 0;
             left: 0;
-            padding: @default-spacing;
+            padding: @spacing--default;
 
             .button {
                 float: right;
@@ -507,7 +507,7 @@
         .filter-sections__section--sources {
             .filter-sections__options-list {
                 column-count: 2;
-                column-gap: 2 * @default-spacing;
+                column-gap: 2 * @spacing--default;
             }
         }
 
@@ -518,7 +518,7 @@
 
                 .filter-sections__options-list {
                     column-count: 2;
-                    column-gap: @default-spacing;
+                    column-gap: @spacing--default;
                 }
             }
         }
@@ -530,7 +530,7 @@
 
                 .filter-sections__options-list {
                     column-count: 4;
-                    column-gap: 2 * @default-spacing;
+                    column-gap: 2 * @spacing--default;
                 }
             }
         }
@@ -550,7 +550,7 @@
     }
 
     .filter-selector-expanded .zem-header-breadcrumb {
-        top: @header-height-small-screen + @default-spacing +
+        top: @header-height-small-screen + @spacing--default +
             @filter-sections_border-width + @filter-sections_padding-top +
             @filter-sections__section_vertical-padding*2 +
             @filter-sections__section-title_margin-bottom +
@@ -564,7 +564,7 @@
 
     .data-filter-enabled.filter-selector-expanded .zem-header-breadcrumb {
         top: @header-height-small-screen + @applied-conditions_height +
-            @default-spacing + @filter-sections_border-width +
+            @spacing--default + @filter-sections_border-width +
             @filter-sections_padding-top +
             @filter-sections__section_vertical-padding*2 +
             @filter-sections__section-title_margin-bottom +

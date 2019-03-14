@@ -1,7 +1,7 @@
 @import 'variables';
 
 .zem-date-input .zem-calendar-bg-icon::before {
-    background-size: @default-button-input-height - 12;
+    background-size: @input__height--default - 12;
     background-position: center;
     width: 34px;
 }
@@ -18,31 +18,31 @@
 .zem-date-input__day:not(.zem-date-input__day--disabled) {
     &:hover {
         opacity: 1;
-        color: @white;
-        background-color: @secondary-color;
-        border-color: @secondary-color;
+        color: #ffffff;
+        background-color: @color--secondary;
+        border-color: @color--secondary;
     }
 }
 
 .zem-date-input__day--focused {
-    color: @white;
-    background-color: @secondary-color;
-    border-color: @secondary-color;
+    color: #ffffff;
+    background-color: @color--secondary;
+    border-color: @color--secondary;
 }
 
 .zem-date-input__day--selected {
-    color: @white;
-    background-color: @secondary-color;
-    border-color: @secondary-color;
+    color: #ffffff;
+    background-color: @color--secondary;
+    border-color: @color--secondary;
 }
 
 .zem-date-input__day--muted {
-    color: @gray;
+    color: @text-color--lighter;
     opacity: 0.5;
 }
 
 .zem-date-input__day--disabled {
-    color: @gray;
+    color: @text-color--lighter;
     cursor: not-allowed;
 }
 

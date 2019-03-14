@@ -1,28 +1,15 @@
 @import '../default/variables.less';
 
-// GENERAL SETTINGS
-
 @images-folder: 'images/whitelabel/burda';
-@logo: url('@{images-folder}/burdaforward-logo.svg') no-repeat center center;
+@logo__background: url('@{images-folder}/burdaforward-logo.svg') no-repeat
+    center center;
 
-// GREENPARK COLORS
+@color--primary: #8ac53f;
+@color--secondary: #333333;
+@color--danger: #ed4646;
+@color--warning: #fecb63;
 
-@primary-color: #8ac53f;
-@secondary-color: #333333;
-@text-color: #333333;
+@text-color--default: #333333;
 
-// HEADER COLOR
-
-@header-left-color: #333333;
-@header-right-color: #333333;
-
-// BACKGROUND COLORS
-
-@background-light-gray: #eaeaea;
-
-// OTHER COLORS
-
-@red: #ed4646;
-@green: #99cc00;
-@orange: #fecb63;
-@blue: #007acf;
+@header__background-color--left: @color--secondary;
+@header__background-color--right: @color--secondary;

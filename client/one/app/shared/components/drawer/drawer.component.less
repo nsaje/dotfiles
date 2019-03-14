@@ -9,8 +9,8 @@
     left: 100%;
     width: calc(100% - 35px);
     transform: translateX(0);
-    background: @light-gray;
-    transition: transform @default-animation;
+    background: @color--lighter-neutral;
+    transition: transform @duration-and-timing-fn--default;
     will-change: transform;
 
     @media only screen and (min-width: 835px) {
@@ -32,17 +32,17 @@
     height: 50px;
     visibility: hidden;
     opacity: 0;
-    border-top-left-radius: @border-radius;
-    border-bottom-left-radius: @border-radius;
-    background: rgba(@light-gray, 0.6) url('images/arrow-white.svg') no-repeat
-        10px center;
+    border-top-left-radius: @border-radius--default;
+    border-bottom-left-radius: @border-radius--default;
+    background: rgba(@color--lighter-neutral, 0.6) url('images/arrow-white.svg')
+        no-repeat 10px center;
     background-size: 12px;
     border: 0;
     outline: 0;
-    transition: background-color @default-animation;
+    transition: background-color @duration-and-timing-fn--default;
 
     &:hover {
-        background-color: @light-gray;
+        background-color: @color--lighter-neutral;
         background-image: url('images/arrow-gray.svg');
     }
 }
@@ -63,7 +63,8 @@
     opacity: 0;
     background: black;
     background-clip: content-box;
-    transition: opacity @default-animation, visibility @default-animation;
+    transition: opacity @duration-and-timing-fn--default,
+        visibility @duration-and-timing-fn--default;
     will-change: opacity;
 }
 

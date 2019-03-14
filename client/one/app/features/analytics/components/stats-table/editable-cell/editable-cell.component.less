@@ -10,7 +10,7 @@
     padding: 3px 24px 3px 3px;
     border: 1px dashed transparent;
     border-radius: 2px;
-    transition: all @default-animation;
+    transition: all @duration-and-timing-fn--default;
 }
 
 .zem-editable-cell__value--editable::before {
@@ -27,8 +27,8 @@
 
 .zem-editable-cell__value--editable:hover {
     cursor: pointer;
-    border-color: tint(@secondary-color, 60%);
-    background-color: tint(@secondary-color, 90%);
+    border-color: tint(@color--secondary, 60%);
+    background-color: tint(@color--secondary, 90%);
 }
 
 .zem-editable-cell__value--editable:hover.zem-editable-cell__value--editable::before {
@@ -40,9 +40,9 @@
 }
 
 .zem-editable-cell__edit-mode-wrapper-content {
-    background-color: tint(@secondary-color, 90%);
-    border: 1px dashed tint(@secondary-color, 60%);
-    font-size: @default-font-size;
+    background-color: tint(@color--secondary, 90%);
+    border: 1px dashed tint(@color--secondary, 60%);
+    font-size: @font-size--default;
     box-sizing: border-box;
     margin-top: -1px;
     z-index: @z-index--modal;

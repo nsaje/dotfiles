@@ -1,5 +1,3 @@
-import './prefixed-input.component.less';
-
 import {Component, ChangeDetectionStrategy, Input} from '@angular/core';
 
 @Component({
