@@ -59,6 +59,9 @@ export class AdGroupSettingsStoreState {
                 included: [],
                 excluded: [],
             },
+            language: {
+                matchingEnabled: null,
+            },
         },
         autopilot: {
             state: null,

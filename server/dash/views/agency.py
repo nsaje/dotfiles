@@ -403,6 +403,8 @@ class AdGroupSettings(api_common.BaseApiView):
 
         if request.user.has_perm("zemauth.can_set_frequency_capping"):
             result["frequency_capping"] = settings.frequency_capping
+        if request.user.has_perm("zemauth.can_use_language_targeting"):
+            result["language_targeting_enabled"] = settings.language_targeting_enabled
 
         return result
 

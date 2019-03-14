@@ -86,12 +86,14 @@ class AdGroupSettingsTest(TestCase):
                 "click_capping_daily_ad_group_max_clicks": 15,
                 "click_capping_daily_click_budget": "7.5000",
                 "frequency_capping": 20,
+                "language_targeting_enabled": False,
             }
         }
 
         self.user = User.objects.get(pk=1)
         add_permissions(self.user, ["can_set_click_capping", "can_set_click_capping_daily_click_budget"])
         add_permissions(self.user, ["can_set_frequency_capping"])
+        add_permissions(self.user, ["can_use_language_targeting"])
 
         self.assertFalse(self.user.is_superuser)
 
@@ -195,6 +197,7 @@ class AdGroupSettingsTest(TestCase):
                         "click_capping_daily_ad_group_max_clicks": 10,
                         "click_capping_daily_click_budget": "5.0000",
                         "frequency_capping": 20,
+                        "language_targeting_enabled": False,
                     },
                     "warnings": {},
                 },
@@ -351,6 +354,7 @@ class AdGroupSettingsTest(TestCase):
                             "click_capping_daily_ad_group_max_clicks": 15,
                             "click_capping_daily_click_budget": "7.5000",
                             "frequency_capping": 20,
+                            "language_targeting_enabled": False,
                         },
                     },
                     "success": True,
@@ -475,6 +479,7 @@ class AdGroupSettingsTest(TestCase):
                             "click_capping_daily_ad_group_max_clicks": 15,
                             "click_capping_daily_click_budget": "7.5000",
                             "frequency_capping": 20,
+                            "language_targeting_enabled": False,
                         },
                     },
                     "success": True,
@@ -1297,6 +1302,26 @@ class AdGroupSettingsTest(TestCase):
         )
         json_data = json.loads(response.content)["data"]
         self.assertEqual(json_data["error_code"], "ValidationError")
+
+    def test_put_language_targeting_enabled(self):
+        ad_group = models.AdGroup.objects.get(pk=1)
+        add_permissions(self.user, ["settings_view"])
+        self.assertEqual(False, ad_group.settings.language_targeting_enabled)
+
+        self.settings_dict["settings"]["language_targeting_enabled"] = True
+
+        response = self.client.put(
+            reverse("ad_group_settings", kwargs={"ad_group_id": ad_group.id}),
+            json.dumps(self.settings_dict),
+            follow=True,
+        )
+
+        json_data = json.loads(response.content)["data"]
+        ad_group.refresh_from_db()
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(True, ad_group.settings.language_targeting_enabled)
+        self.assertEqual(True, json_data["settings"]["language_targeting_enabled"])
 
 
 class AdGroupSettingsRetargetableAdgroupsTest(TestCase):

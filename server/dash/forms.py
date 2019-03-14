@@ -256,6 +256,7 @@ class AdGroupSettingsForm(PublisherGroupsFormMixin, MulticurrencySettingsFormMix
     click_capping_daily_click_budget = forms.DecimalField(decimal_places=4, required=False)
 
     frequency_capping = forms.IntegerField(required=False)
+    language_targeting_enabled = forms.BooleanField(required=False)
 
     def __init__(self, ad_group, user, *args, **kwargs):
         self.ad_group = ad_group

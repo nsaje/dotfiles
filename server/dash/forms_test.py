@@ -450,6 +450,7 @@ class AdGroupSettingsFormTest(TestCase):
             "click_capping_daily_ad_group_max_clicks": 10,
             "click_capping_daily_click_budget": "5.0000",
             "frequency_capping": 20,
+            "language_targeting_enabled": False,
         }
 
     @patch("utils.dates_helper.local_today")
@@ -499,6 +500,7 @@ class AdGroupSettingsFormTest(TestCase):
                 "click_capping_daily_ad_group_max_clicks": 10,
                 "click_capping_daily_click_budget": Decimal("5.0000"),
                 "frequency_capping": 20,
+                "language_targeting_enabled": False,
             },
         )
 

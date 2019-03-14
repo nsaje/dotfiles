@@ -418,5 +418,35 @@
                 {{ $ctrl.MESSAGES.INFO_FREQUENCY_CAPPING }}
             </div>
         </div>
+
+        <div
+            class="form__group"
+            ng-if="$ctrl.hasPermission('zemauth.can_use_language_targeting')"
+        >
+            <label
+                class="form__label"
+                for="language-targeting-checkbox"
+                is-internal="zemauth.can_use_language_targeting"
+            >
+                Language matching:
+                <zem-help-popover
+                    content="Zemanta will show ads only when language of the page matches the language of your ads."
+                    placement="top"
+                ></zem-help-popover>
+            </label>
+            <div class="form__checkbox">
+                <label>
+                    <input
+                        id="language-targeting-checkbox"
+                        type="checkbox"
+                        class="input-checkbox"
+                        ng-model="$ctrl.entity.settings.languageTargetingEnabled"
+                    />
+                    <span class="checkbox-text">
+                        Enable language matching
+                    </span>
+                </label>
+            </div>
+        </div>
     </div>
 </div>

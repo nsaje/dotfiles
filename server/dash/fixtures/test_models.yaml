@@ -314,6 +314,7 @@
         click_capping_daily_ad_group_max_clicks: 10
         click_capping_daily_click_budget: '5.0000'
         frequency_capping: 20
+        language_targeting_enabled: False
     model: dash.adgroupsettings
     pk: 1
 
