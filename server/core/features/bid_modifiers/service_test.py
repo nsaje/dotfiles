@@ -16,6 +16,7 @@ from . import models
 from . import service
 
 
+@mock.patch("utils.k1_helper.update_ad_group", mock.MagicMock())
 class TestBidModifierService(TestCase):
     def setUp(self):
         self.ad_group = magic_mixer.blend(dash_models.AdGroup)

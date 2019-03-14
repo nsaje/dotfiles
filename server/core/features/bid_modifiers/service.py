@@ -9,6 +9,7 @@ from django.db import transaction
 from core.models.source import model as source_model
 from dash import constants as dash_constants
 from utils import s3helpers
+from utils import k1_helper
 
 from . import constants
 from . import exceptions
@@ -28,14 +29,21 @@ def get(ad_group, include_types=None, exclude_types=None):
 
 
 @transaction.atomic
-def set(ad_group, modifier_type, target, source, modifier, user=None, write_history=True):
+def set(ad_group, modifier_type, target, source, modifier, user=None, write_history=True, propagate_to_k1=True):
     if not modifier:
         _delete(ad_group, modifier_type, target, source, user=user, write_history=write_history)
+        if propagate_to_k1:
+            k1_helper.update_ad_group(ad_group, msg="bid_modifiers.set")
         return
 
     helpers.check_modifier_value(modifier)
+    instance, created = _update_or_create(
+        ad_group, modifier_type, target, source, modifier, user=user, write_history=write_history
+    )
 
-    return _update_or_create(ad_group, modifier_type, target, source, modifier, user=user, write_history=write_history)
+    if propagate_to_k1:
+        k1_helper.update_ad_group(ad_group, msg="bid_modifiers.set")
+    return instance, created
 
 
 def _delete(ad_group, modifier_type, target, source, user=None, write_history=True):
@@ -49,7 +57,6 @@ def _delete(ad_group, modifier_type, target, source, user=None, write_history=Tr
         ad_group.write_history(
             "Reset bid modifier: %s" % helpers.describe_bid_modifier(modifier_type, target, source), user=user
         )
-
     return num_deleted, deleted
 
 
@@ -84,7 +91,9 @@ def set_from_cleaned_entries(ad_group, cleaned_entries, user=None, write_history
             entry["modifier"],
             user=user,
             write_history=write_history,
+            propagate_to_k1=False,
         )
+    k1_helper.update_ad_group(ad_group, msg="bid_modifiers.set_from_cleaned_entries")
 
 
 def clean_entries(entries):

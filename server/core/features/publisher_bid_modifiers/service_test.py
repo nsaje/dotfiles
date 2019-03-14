@@ -1,3 +1,5 @@
+import mock
+
 from django.test import TestCase
 
 import core.models
@@ -35,6 +37,7 @@ def add_non_publisher_bid_modifiers(**kwargs):
     magic_mixer.cycle(7).blend(bid_modifiers.BidModifier, **blend_kwargs)
 
 
+@mock.patch("utils.k1_helper.update_ad_group", mock.MagicMock())
 class TestPublisherBidModifierService(TestCase):
     def setUp(self):
         self.ad_group = magic_mixer.blend(core.models.AdGroup)
