@@ -19,6 +19,7 @@ from mock import patch
 from requests import Response
 
 import core.features.multicurrency
+from core.features import history
 from dash import constants
 from dash import forms
 from dash import history_helpers
@@ -4884,7 +4885,7 @@ class TestHistoryMixin(TestCase):
             self.virtual_fields = virtual_fields
             self.many_to_many = []
 
-    class HistoryTest(models.HistoryMixinOld):
+    class HistoryTest(history.HistoryMixinOld):
 
         history_fields = ["test_field"]
 

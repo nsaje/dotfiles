@@ -7,7 +7,7 @@ from core.common import *
 from core.models import *
 from core.models.settings import *
 from core.features.goals import *
-from core.features.history import *
+from core.features.history.models import *
 from core.features.bid_modifiers import BidModifier
 from core.features.publisher_groups import *
 from core.features.multicurrency import *

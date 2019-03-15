@@ -6,8 +6,8 @@ from django.db import models
 from dash import constants
 from utils.json_helper import JSONFIELD_DUMP_KWARGS
 
-from .history_query_set import HistoryQuerySet
-from .history_query_set_manager import HistoryQuerySetManager
+from .manager import HistoryQuerySetManager
+from .queryset import HistoryQuerySet
 
 
 class History(models.Model):
