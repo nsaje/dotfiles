@@ -17,10 +17,18 @@ class BidModifierSerializer(serializers.Serializer):
 
     def validate(self, data):
         if self.partial:
-            if len(data) > 1 or (len(data) == 1 and "modifier" not in data):
-                raise exc.ValidationError("Only modifier field can be updated")
+            if not self.instance:
+                raise exc.ValidationError("Bid Modifier does not exist")
 
-            return data
+            for attr in ("id", "type", "source_slug", "target"):
+                if attr in data:
+                    if data[attr] != getattr(self.instance, attr):
+                        raise exc.ValidationError("Only modifier field can be updated")
+
+            if "modifier" not in data:
+                raise exc.ValidationError("Modifier field is required")
+
+            return {"modifier": data["modifier"]}
 
         try:
             data["target"] = converters.ApiConverter.to_target(data["type"], data["target"])
