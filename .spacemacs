@@ -384,7 +384,7 @@ you should place your code here."
     (simpleclip-mode 1)
 
     ;; ORG MODE CONFIG
-    (setq org-agenda-files '("~/Dropbox/org/TODOs.org"))
+    (setq org-agenda-files '("~/Dropbox/org/TODOs.org" "~/Dropbox/org/projects.org" "~/Dropbox/org/notes.org" "~/Dropbox/org/meetings.org"))
     (setq org-todo-keywords
           (quote ((sequence "TODO(t)" "NEXT(n)" "|" "DONE(d)")
                   (sequence "WAITING(w@/!)" "HOLD(h@/!)" "|" "CANCELLED(c@/!)" "PHONE" "MEETING"))))
@@ -405,7 +405,7 @@ you should place your code here."
     ;; Capture templates for: TODO tasks, Notes, appointments, phone calls, meetings, and org-protocol
     (setq org-capture-templates
           (quote (("i" "inbox" entry (file+headline "~/Dropbox/org/TODOs.org" "INBOX")
-                  "* TODO %?\n:PROPERTIES:\n:CREATED: %U\n:END:\n")
+                  "* TODO %?\n:PROPERTIES:\n:CREATED: %U\n:END:\n" :prepend t)
                   ("n" "note" entry (file+headline "~/Dropbox/org/TODOs.org" "INBOX")
                   "* %? :NOTE:\n%U\n")
                   ("m" "Meeting" entry (file+headline "~/Dropbox/org/TODOs.org" "INBOX")
@@ -418,6 +418,13 @@ you should place your code here."
     (setq org-refile-use-outline-path t)                  ; Show full paths for refiling
     (global-set-key (kbd "<f12>") 'org-agenda)
     (setq org-mu4e-link-query-in-headers-mode nil)
+
+    (advice-add 'org-refile :after
+        (lambda (&rest _)
+        (org-save-all-org-buffers)))
+    (advice-add 'org-archive-subtree :after
+        (lambda (&rest _)
+          (org-save-all-org-buffers)))
     ;; END ORG MODE
 
     ;; persp keybindings

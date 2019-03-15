@@ -75,12 +75,6 @@ export PATH="$PATH:~/arduino-1.6.12"
 # git completion
 source ~/.local/bin/git-completion.bash
 
-# The next line updates PATH for the Google Cloud SDK.
-source '/home/nsaje/Downloads/google-cloud-sdk/path.bash.inc'
-
-# The next line enables shell command completion for gcloud.
-source '/home/nsaje/Downloads/google-cloud-sdk/completion.bash.inc'
-
 __git ()
 {
   cmd=$1
@@ -101,3 +95,9 @@ export NVM_DIR="$HOME/.nvm"
 export PATH="/home/nsaje/.pyenv/bin:$PATH"
 eval "$(pyenv init -)"
 eval "$(pyenv virtualenv-init -)"
+
+# The next line updates PATH for the Google Cloud SDK.
+if [ -f '/home/nsaje/.go/src/r1/google-cloud-sdk/path.bash.inc' ]; then . '/home/nsaje/.go/src/r1/google-cloud-sdk/path.bash.inc'; fi
+
+# The next line enables shell command completion for gcloud.
+if [ -f '/home/nsaje/.go/src/r1/google-cloud-sdk/completion.bash.inc' ]; then . '/home/nsaje/.go/src/r1/google-cloud-sdk/completion.bash.inc'; fi

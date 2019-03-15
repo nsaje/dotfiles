@@ -30,7 +30,7 @@ exec ~/.local/bin/batt.sh
 exec ~/.local/bin/lowbattery.sh
 
 # vpn auto connect
-exec ~/.local/bin/vpnautoconnect.sh
+#exec ~/.local/bin/vpnautoconnect.sh
 
 #exec compton -bCG  # too much battery drain
 
