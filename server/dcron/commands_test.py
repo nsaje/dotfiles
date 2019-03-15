@@ -213,14 +213,17 @@ class DCronCommandTestCase(TransactionTestCase):
     def test_recover_from_failure(self, mock_slack_publish, mock_post_event, mock_influx_timing, mock_influx_incr):
         event_1 = threading.Event()
         event_2 = threading.Event()
+        event_3 = threading.Event()
 
         class DummyCommand(commands.DCronCommand):
             def handle(self, *args, **options):
                 super().handle(*args, **options)
-                event_2.set()
+                event_3.set()
 
             def _handle(self, *args, **options):
                 event_1.set()
+                # Wait for failure alert check
+                event_2.wait()
 
         dummy_command = DummyCommand()
 
@@ -249,8 +252,10 @@ class DCronCommandTestCase(TransactionTestCase):
         alert = alerts._check_alert(dcron_job)
         self.assertEqual(alert, constants.Alert.FAILURE)
 
+        event_2.set()
+
         # Wait for job handle to complete (alert set to OK)
-        event_2.wait()
+        event_3.wait()
 
         dcron_job.refresh_from_db()
 
