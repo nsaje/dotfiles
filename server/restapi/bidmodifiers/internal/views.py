@@ -21,7 +21,7 @@ class BidModifiersDownload(restapi.common.views_base.RESTAPIBaseViewSet):
         ad_group = restapi.access.get_ad_group(request.user, ad_group_id)
 
         if breakdown_name:
-            modifier_type = bid_modifiers.helpers.breakdown_name_modifier_name(breakdown_name)
+            modifier_type = bid_modifiers.helpers.breakdown_name_to_modifier_type(breakdown_name)
             cleaned_modifiers = bid_modifiers.service.get(ad_group, include_types=[modifier_type])
             csv_content = bid_modifiers.service.make_csv_file(modifier_type, cleaned_modifiers)
         else:
@@ -42,7 +42,7 @@ class BidModifiersUpload(restapi.common.views_base.RESTAPIBaseViewSet):
 
         try:
             if breakdown_name:
-                modifier_type = bid_modifiers.helpers.breakdown_name_modifier_name(breakdown_name)
+                modifier_type = bid_modifiers.helpers.breakdown_name_to_modifier_type(breakdown_name)
                 csv_error_key = bid_modifiers.service.process_csv_file_upload(
                     ad_group, csv_file, modifier_type=modifier_type, user=request.user
                 )
@@ -79,7 +79,7 @@ class BidModifiersExampleCSVDownload(restapi.common.views_base.RESTAPIBaseViewSe
 
     def download(self, request, breakdown_name=None):
         if breakdown_name:
-            modifier_type = bid_modifiers.helpers.breakdown_name_modifier_name(breakdown_name)
+            modifier_type = bid_modifiers.helpers.breakdown_name_to_modifier_type(breakdown_name)
             csv_example_file = bid_modifiers.service.make_csv_example_file(modifier_type)
         else:
             csv_example_file = bid_modifiers.service.make_bulk_csv_example_file()

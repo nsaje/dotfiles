@@ -35,11 +35,11 @@ def supported_breakdown_names():
     return _BREAKDOWN_NAME_MAP.keys()
 
 
-def breakdown_name_modifier_name(breakdown_name):
+def breakdown_name_to_modifier_type(breakdown_name):
     return _BREAKDOWN_NAME_MAP[breakdown_name]
 
 
-def modifier_name_to_breakdown_name(modifier_type):
+def modifier_type_to_breakdown_name(modifier_type):
     return {v: k for k, v in _BREAKDOWN_NAME_MAP.items()}[modifier_type]
 
 

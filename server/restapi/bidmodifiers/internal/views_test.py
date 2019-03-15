@@ -51,7 +51,7 @@ class BidModifierCSVTest(restapi.common.views_base_test.RESTAPITest):
                 "bid_modifiers_upload",
                 kwargs={
                     "ad_group_id": self.ad_group.id,
-                    "breakdown_name": bid_modifiers.helpers.modifier_name_to_breakdown_name(
+                    "breakdown_name": bid_modifiers.helpers.modifier_type_to_breakdown_name(
                         bid_modifiers.BidModifierType.PUBLISHER
                     ),
                 },
@@ -81,7 +81,7 @@ class BidModifierCSVTest(restapi.common.views_base_test.RESTAPITest):
                 "bid_modifiers_download",
                 kwargs={
                     "ad_group_id": self.ad_group.id,
-                    "breakdown_name": bid_modifiers.helpers.modifier_name_to_breakdown_name(
+                    "breakdown_name": bid_modifiers.helpers.modifier_type_to_breakdown_name(
                         bid_modifiers.BidModifierType.PUBLISHER
                     ),
                 },
@@ -103,7 +103,7 @@ class BidModifierCSVTest(restapi.common.views_base_test.RESTAPITest):
                 "bid_modifiers_upload",
                 kwargs={
                     "ad_group_id": self.ad_group.id,
-                    "breakdown_name": bid_modifiers.helpers.modifier_name_to_breakdown_name(
+                    "breakdown_name": bid_modifiers.helpers.modifier_type_to_breakdown_name(
                         bid_modifiers.BidModifierType.PUBLISHER
                     ),
                 },
@@ -139,7 +139,7 @@ class BidModifierCSVTest(restapi.common.views_base_test.RESTAPITest):
                 "bid_modifiers_upload",
                 kwargs={
                     "ad_group_id": self.ad_group.id,
-                    "breakdown_name": bid_modifiers.helpers.modifier_name_to_breakdown_name(
+                    "breakdown_name": bid_modifiers.helpers.modifier_type_to_breakdown_name(
                         bid_modifiers.BidModifierType.DEVICE
                     ),
                 },
@@ -178,7 +178,7 @@ class BidModifierCSVTest(restapi.common.views_base_test.RESTAPITest):
             reverse(
                 "bid_modifiers_example_download",
                 kwargs={
-                    "breakdown_name": bid_modifiers.helpers.modifier_name_to_breakdown_name(
+                    "breakdown_name": bid_modifiers.helpers.modifier_type_to_breakdown_name(
                         bid_modifiers.BidModifierType.PUBLISHER
                     )
                 },
@@ -451,7 +451,7 @@ class NoPermissionTest(restapi.common.views_base_test.RESTAPITest):
                 "bid_modifiers_download",
                 kwargs={
                     "ad_group_id": 1,
-                    "breakdown_name": bid_modifiers.helpers.modifier_name_to_breakdown_name(
+                    "breakdown_name": bid_modifiers.helpers.modifier_type_to_breakdown_name(
                         bid_modifiers.BidModifierType.PUBLISHER
                     ),
                 },
@@ -469,7 +469,7 @@ class NoPermissionTest(restapi.common.views_base_test.RESTAPITest):
                 "bid_modifiers_upload",
                 kwargs={
                     "ad_group_id": 1,
-                    "breakdown_name": bid_modifiers.helpers.modifier_name_to_breakdown_name(
+                    "breakdown_name": bid_modifiers.helpers.modifier_type_to_breakdown_name(
                         bid_modifiers.BidModifierType.PUBLISHER
                     ),
                 },
@@ -488,7 +488,7 @@ class NoPermissionTest(restapi.common.views_base_test.RESTAPITest):
             reverse(
                 "bid_modifiers_example_download",
                 kwargs={
-                    "breakdown_name": bid_modifiers.helpers.modifier_name_to_breakdown_name(
+                    "breakdown_name": bid_modifiers.helpers.modifier_type_to_breakdown_name(
                         bid_modifiers.BidModifierType.PUBLISHER
                     )
                 },
@@ -523,7 +523,7 @@ class NoPermissionTest(restapi.common.views_base_test.RESTAPITest):
             reverse(
                 "bid_modifiers_example_download",
                 kwargs={
-                    "breakdown_name": bid_modifiers.helpers.modifier_name_to_breakdown_name(
+                    "breakdown_name": bid_modifiers.helpers.modifier_type_to_breakdown_name(
                         bid_modifiers.BidModifierType.PUBLISHER
                     )
                 },
