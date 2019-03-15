@@ -89,13 +89,22 @@ class TimeLimits:
     MONTH = 12
 
 
+class DimensionIdentifier:
+    ACCOUNT = "account"
+    CAMPAIGN = "campaign"
+    AD_GROUP = "ad_group"
+    CONTENT_AD = "content_ad"
+    SOURCE = "source"
+    PUBLISHER = "publisher"
+
+
 DimensionIdentifierMapping = {
-    "account": "account_id",
-    "campaign": "campaign_id",
-    "ad_group": "ad_group_id",
-    "content_ad": "content_ad_id",
-    "source": "source_id",
-    "publisher": "publisher_id",
+    DimensionIdentifier.ACCOUNT: "account_id",
+    DimensionIdentifier.CAMPAIGN: "campaign_id",
+    DimensionIdentifier.AD_GROUP: "ad_group_id",
+    DimensionIdentifier.CONTENT_AD: "content_ad_id",
+    DimensionIdentifier.SOURCE: "source_id",
+    DimensionIdentifier.PUBLISHER: "publisher_id",
 }
 
 

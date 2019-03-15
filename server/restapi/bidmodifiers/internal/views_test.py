@@ -47,7 +47,15 @@ class BidModifierCSVTest(restapi.common.views_base_test.RESTAPITest):
         csv_file.seek(0)
 
         response = self.client.post(
-            reverse("bid_modifiers_upload", kwargs={"ad_group_id": self.ad_group.id, "modifier_type": "PUBLISHER"}),
+            reverse(
+                "bid_modifiers_upload",
+                kwargs={
+                    "ad_group_id": self.ad_group.id,
+                    "breakdown_name": bid_modifiers.helpers.modifier_name_to_breakdown_name(
+                        bid_modifiers.BidModifierType.PUBLISHER
+                    ),
+                },
+            ),
             {"file": csv_file},
             format="multipart",
         )
@@ -69,7 +77,15 @@ class BidModifierCSVTest(restapi.common.views_base_test.RESTAPITest):
         )
 
         response = self.client.get(
-            reverse("bid_modifiers_download", kwargs={"ad_group_id": self.ad_group.id, "modifier_type": "PUBLISHER"})
+            reverse(
+                "bid_modifiers_download",
+                kwargs={
+                    "ad_group_id": self.ad_group.id,
+                    "breakdown_name": bid_modifiers.helpers.modifier_name_to_breakdown_name(
+                        bid_modifiers.BidModifierType.PUBLISHER
+                    ),
+                },
+            )
         )
         self.assertEqual(response.status_code, 200)
 
@@ -83,7 +99,15 @@ class BidModifierCSVTest(restapi.common.views_base_test.RESTAPITest):
         csv_file.seek(0)
 
         response = self.client.post(
-            reverse("bid_modifiers_upload", kwargs={"ad_group_id": self.ad_group.id, "modifier_type": "PUBLISHER"}),
+            reverse(
+                "bid_modifiers_upload",
+                kwargs={
+                    "ad_group_id": self.ad_group.id,
+                    "breakdown_name": bid_modifiers.helpers.modifier_name_to_breakdown_name(
+                        bid_modifiers.BidModifierType.PUBLISHER
+                    ),
+                },
+            ),
             {"file": csv_file},
             format="multipart",
         )
@@ -114,7 +138,15 @@ class BidModifierCSVTest(restapi.common.views_base_test.RESTAPITest):
         csv_file.seek(0)
 
         response = self.client.post(
-            reverse("bid_modifiers_upload", kwargs={"ad_group_id": self.ad_group.id, "modifier_type": "DEVICE"}),
+            reverse(
+                "bid_modifiers_upload",
+                kwargs={
+                    "ad_group_id": self.ad_group.id,
+                    "breakdown_name": bid_modifiers.helpers.modifier_name_to_breakdown_name(
+                        bid_modifiers.BidModifierType.DEVICE
+                    ),
+                },
+            ),
             {"file": csv_file},
             format="multipart",
         )
@@ -145,7 +177,16 @@ class BidModifierCSVTest(restapi.common.views_base_test.RESTAPITest):
         )
 
     def test_download_example_file(self):
-        response = self.client.get(reverse("bid_modifiers_example_download", kwargs={"modifier_type": "PUBLISHER"}))
+        response = self.client.get(
+            reverse(
+                "bid_modifiers_example_download",
+                kwargs={
+                    "breakdown_name": bid_modifiers.helpers.modifier_name_to_breakdown_name(
+                        bid_modifiers.BidModifierType.PUBLISHER
+                    )
+                },
+            )
+        )
         self.assertEqual(response.status_code, 200)
         self.assertEqual(
             response.content.decode("utf8"),
@@ -407,7 +448,15 @@ class NoPermissionTest(restapi.common.views_base_test.RESTAPITest):
 
     def test_download_modifiers(self):
         response = self.client.get(
-            reverse("bid_modifiers_download", kwargs={"ad_group_id": 1, "modifier_type": "PUBLISHER"})
+            reverse(
+                "bid_modifiers_download",
+                kwargs={
+                    "ad_group_id": 1,
+                    "breakdown_name": bid_modifiers.helpers.modifier_name_to_breakdown_name(
+                        bid_modifiers.BidModifierType.PUBLISHER
+                    ),
+                },
+            )
         )
         self.assertEqual(response.status_code, 403)
         result = self.assertResponseError(response, "PermissionDenied")
@@ -417,7 +466,15 @@ class NoPermissionTest(restapi.common.views_base_test.RESTAPITest):
 
     def test_upload_modifiers(self):
         response = self.client.post(
-            reverse("bid_modifiers_upload", kwargs={"ad_group_id": 1, "modifier_type": "PUBLISHER"}),
+            reverse(
+                "bid_modifiers_upload",
+                kwargs={
+                    "ad_group_id": 1,
+                    "breakdown_name": bid_modifiers.helpers.modifier_name_to_breakdown_name(
+                        bid_modifiers.BidModifierType.PUBLISHER
+                    ),
+                },
+            ),
             {"file": io.StringIO()},
             format="multipart",
         )
@@ -428,7 +485,16 @@ class NoPermissionTest(restapi.common.views_base_test.RESTAPITest):
         )
 
     def test_download_example_file(self):
-        response = self.client.get(reverse("bid_modifiers_example_download", kwargs={"modifier_type": "PUBLISHER"}))
+        response = self.client.get(
+            reverse(
+                "bid_modifiers_example_download",
+                kwargs={
+                    "breakdown_name": bid_modifiers.helpers.modifier_name_to_breakdown_name(
+                        bid_modifiers.BidModifierType.PUBLISHER
+                    )
+                },
+            )
+        )
         self.assertEqual(response.status_code, 403)
         result = self.assertResponseError(response, "PermissionDenied")
         self.assertEqual(
@@ -454,7 +520,16 @@ class NoPermissionTest(restapi.common.views_base_test.RESTAPITest):
         )
 
     def test_download_bulk_example_file(self):
-        response = self.client.get(reverse("bid_modifiers_example_download", kwargs={"modifier_type": "PUBLISHER"}))
+        response = self.client.get(
+            reverse(
+                "bid_modifiers_example_download",
+                kwargs={
+                    "breakdown_name": bid_modifiers.helpers.modifier_name_to_breakdown_name(
+                        bid_modifiers.BidModifierType.PUBLISHER
+                    )
+                },
+            )
+        )
         self.assertEqual(response.status_code, 403)
         result = self.assertResponseError(response, "PermissionDenied")
         self.assertEqual(

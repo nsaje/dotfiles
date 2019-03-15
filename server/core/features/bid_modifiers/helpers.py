@@ -8,12 +8,38 @@ import string
 from core import models
 from dash import constants as dash_constants
 from dash.features import geolocation
+from stats import constants as stats_constants
 
 from . import constants
 from . import exceptions
 
 MODIFIER_MAX = decimal.Decimal("11.0")
 MODIFIER_MIN = decimal.Decimal("0.01")
+
+
+_BREAKDOWN_NAME_MAP = {
+    stats_constants.DimensionIdentifier.PUBLISHER: constants.BidModifierType.PUBLISHER,
+    stats_constants.DimensionIdentifier.SOURCE: constants.BidModifierType.SOURCE,
+    stats_constants.DeliveryDimension.DEVICE: constants.BidModifierType.DEVICE,
+    stats_constants.DeliveryDimension.DEVICE_OS: constants.BidModifierType.OPERATING_SYSTEM,
+    stats_constants.DeliveryDimension.PLACEMENT_MEDIUM: constants.BidModifierType.PLACEMENT,
+    stats_constants.DeliveryDimension.COUNTRY: constants.BidModifierType.COUNTRY,
+    stats_constants.DeliveryDimension.STATE: constants.BidModifierType.STATE,
+    stats_constants.DeliveryDimension.DMA: constants.BidModifierType.DMA,
+    stats_constants.DimensionIdentifier.CONTENT_AD: constants.BidModifierType.AD,
+}
+
+
+def supported_breakdown_names():
+    return _BREAKDOWN_NAME_MAP.keys()
+
+
+def breakdown_name_modifier_name(breakdown_name):
+    return _BREAKDOWN_NAME_MAP[breakdown_name]
+
+
+def modifier_name_to_breakdown_name(modifier_type):
+    return {v: k for k, v in _BREAKDOWN_NAME_MAP.items()}[modifier_type]
 
 
 def get_source_slug(modifier_type, source):

@@ -17,12 +17,11 @@ from utils import s3helpers
 class BidModifiersDownload(restapi.common.views_base.RESTAPIBaseViewSet):
     permission_classes = (permissions.IsAuthenticated, restapi_permissions.CanSetBidModifiersPermission)
 
-    def download(self, request, ad_group_id, modifier_type=None):
-        modifier_type = bid_modifiers.constants.BidModifierType.get_value_from_name(modifier_type)
-
+    def download(self, request, ad_group_id, breakdown_name=None):
         ad_group = restapi.access.get_ad_group(request.user, ad_group_id)
 
-        if modifier_type:
+        if breakdown_name:
+            modifier_type = bid_modifiers.helpers.breakdown_name_modifier_name(breakdown_name)
             cleaned_modifiers = bid_modifiers.service.get(ad_group, include_types=[modifier_type])
             csv_content = bid_modifiers.service.make_csv_file(modifier_type, cleaned_modifiers)
         else:
@@ -36,15 +35,14 @@ class BidModifiersUpload(restapi.common.views_base.RESTAPIBaseViewSet):
     permission_classes = (permissions.IsAuthenticated, restapi_permissions.CanSetBidModifiersPermission)
     parser_classes = (MultiPartParser,)
 
-    def upload(self, request, ad_group_id, modifier_type=None):
-        modifier_type = bid_modifiers.constants.BidModifierType.get_value_from_name(modifier_type)
-
+    def upload(self, request, ad_group_id, breakdown_name=None):
         ad_group = restapi.access.get_ad_group(request.user, ad_group_id)
 
         csv_file = codecs.iterdecode(request.data["file"], "utf-8")
 
         try:
-            if modifier_type:
+            if breakdown_name:
+                modifier_type = bid_modifiers.helpers.breakdown_name_modifier_name(breakdown_name)
                 csv_error_key = bid_modifiers.service.process_csv_file_upload(
                     ad_group, csv_file, modifier_type=modifier_type, user=request.user
                 )
@@ -79,10 +77,9 @@ class BidModifiersErrorDownload(restapi.common.views_base.RESTAPIBaseViewSet):
 class BidModifiersExampleCSVDownload(restapi.common.views_base.RESTAPIBaseViewSet):
     permission_classes = (permissions.IsAuthenticated, restapi_permissions.CanSetBidModifiersPermission)
 
-    def download(self, request, modifier_type=None):
-        modifier_type = bid_modifiers.constants.BidModifierType.get_value_from_name(modifier_type)
-
-        if modifier_type:
+    def download(self, request, breakdown_name=None):
+        if breakdown_name:
+            modifier_type = bid_modifiers.helpers.breakdown_name_modifier_name(breakdown_name)
             csv_example_file = bid_modifiers.service.make_csv_example_file(modifier_type)
         else:
             csv_example_file = bid_modifiers.service.make_bulk_csv_example_file()
