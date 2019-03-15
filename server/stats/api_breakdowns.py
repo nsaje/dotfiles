@@ -49,7 +49,7 @@ def query(level, user, breakdown, constraints, goals, parents, order, offset, li
     parents = helpers.decode_parents(breakdown, parents)
     stats_constraints = helpers.extract_stats_constraints(constraints, breakdown)
 
-    should_query_dashapi = helpers.should_query_dashapi(target_dimension)
+    should_query_dashapi = helpers.should_query_dashapi(breakdown, target_dimension)
     if should_query_dashapi:
         queries = dash.dashapi.api_breakdowns.query_async_start(level, user, breakdown, constraints, parents)
 

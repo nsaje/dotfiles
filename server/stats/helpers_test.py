@@ -189,6 +189,27 @@ class HelpersTest(TestCase):
             "performance_campaign_goal_" + str(primary_goal.id),
         )
 
+    def test_remap_delivery_stat_keys(self):
+        stat_rows = [
+            {"device_os": "WinPhone"},
+            {"device_os": "macOS"},
+            {"device_os": "Windows"},
+            {"device_os": "Other"},
+            {"device_os": "asdf"},
+        ]
+        target_dimension = "device_os"
+        helpers.remap_delivery_stat_keys(stat_rows, target_dimension)
+        self.assertEqual(
+            [
+                {"device_os": "winphone"},
+                {"device_os": "macosx"},
+                {"device_os": "windows"},
+                {"device_os": "Other"},
+                {"device_os": "asdf"},
+            ],
+            stat_rows,
+        )
+
     def test_extract_rs_order_field(self):
         self.assertEqual(helpers.extract_rs_order_field("name", "day"), "day")
         self.assertEqual(helpers.extract_rs_order_field("name", "week"), "week")
@@ -207,6 +228,15 @@ class HelpersTest(TestCase):
         self.assertEqual(helpers.extract_rs_order_field("-status", "gender"), "-clicks")
         self.assertEqual(helpers.extract_rs_order_field("-status", "country"), "-clicks")
         self.assertEqual(helpers.extract_rs_order_field("-status", "state"), "-clicks")
+
+    def test_should_query_dashapi(self):
+        for dimension in constants.StructureDimension._ALL:
+            self.assertTrue(helpers.should_query_dashapi([dimension], dimension))
+            self.assertTrue(helpers.should_query_dashapi([dimension, "country"], dimension))
+
+        for dimension in set(constants.DeliveryDimension._ALL) - set(constants.DeliveryDimension._EXTENDED):
+            self.assertTrue(helpers.should_query_dashapi([dimension], dimension))
+            self.assertFalse(helpers.should_query_dashapi([dimension, "day"], dimension))
 
     def test_should_query_dashapi_first(self):
         for dimension in ("account_id", "campaign_id", "ad_group_id", "content_ad_id", "source_id"):

@@ -27,13 +27,14 @@ def should_query_all(breakdown):
     if stats.constants.get_target_dimension(breakdown) in stats.constants.TimeDimension._ALL:
         return True
 
-    if stats.constants.get_target_dimension(breakdown) == stats.constants.DEVICE:
-        return True
+    if len(breakdown) == 1 and stats.constants.is_top_level_delivery_dimension(
+        stats.constants.get_target_dimension(breakdown)
+    ):
+        return False
 
     if len(breakdown) == 1:
         if stats.constants.PUBLISHER in breakdown:
             return False
-
         return True
 
     if len(breakdown) == 2:

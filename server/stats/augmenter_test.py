@@ -157,7 +157,6 @@ class AugmenterTestCase(TestCase):
         rows = [{"dma": 669, "clicks": 10}, {"dma": 547, "clicks": 20}, {"dma": None, "clicks": 30}]
 
         augmenter.augment(["dma"], rows)
-
         self.assertEqual(
             rows,
             [

@@ -1,3 +1,4 @@
+import stats.constants
 from utils.constant_base import ConstantBase
 
 
@@ -23,3 +24,15 @@ class BidModifierType(ConstantBase):
         DMA: "DMA",
         AD: "Ad",
     }
+
+
+BidModifierTypeToDeliveryDimensionMap = {
+    BidModifierType.DEVICE: stats.constants.DeliveryDimension.DEVICE,
+    BidModifierType.OPERATING_SYSTEM: stats.constants.DeliveryDimension.DEVICE_OS,
+    BidModifierType.PLACEMENT: stats.constants.DeliveryDimension.PLACEMENT_MEDIUM,
+    BidModifierType.COUNTRY: stats.constants.DeliveryDimension.COUNTRY,
+    BidModifierType.STATE: stats.constants.DeliveryDimension.STATE,
+    BidModifierType.DMA: stats.constants.DeliveryDimension.DMA,
+}
+
+DeliveryDimensionToBidModifierTypeMap = dict((reversed(item) for item in BidModifierTypeToDeliveryDimensionMap.items()))

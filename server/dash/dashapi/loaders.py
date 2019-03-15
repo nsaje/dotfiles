@@ -8,7 +8,9 @@ from django.utils.functional import cached_property
 
 import automation.campaignstop
 import core.features.bcm.calculations
+import core.features.bid_modifiers.constants
 import core.features.multicurrency
+import stats.constants
 import stats.helpers
 from analytics.projections import BudgetProjections
 from core.features import bid_modifiers
@@ -56,6 +58,8 @@ def get_loader_for_dimension(target_dimension, level):
         if level == constants.Level.AD_GROUPS:
             return PublisherBidModifierLoader
         return PublisherBlacklistLoader
+    elif stats.constants.is_top_level_delivery_dimension(target_dimension):
+        return DeliveryLoader
     return None
 
 
@@ -100,7 +104,7 @@ class AccountsLoader(Loader):
         self.user = user
 
     @classmethod
-    def from_constraints(cls, user, constraints):
+    def from_constraints(cls, user, constraints, **kwargs):
         return cls(
             constraints["allowed_accounts"],
             constraints["filtered_sources"],
@@ -265,7 +269,7 @@ class CampaignsLoader(Loader):
         self.user = user
 
     @classmethod
-    def from_constraints(cls, user, constraints):
+    def from_constraints(cls, user, constraints, **kwargs):
         return cls(
             constraints["allowed_campaigns"],
             constraints["filtered_sources"],
@@ -375,7 +379,7 @@ class AdGroupsLoader(Loader):
         self.filtered_sources_qs = filtered_sources_qs
 
     @classmethod
-    def from_constraints(cls, user, constraints):
+    def from_constraints(cls, user, constraints, **kwargs):
         return cls(
             constraints["allowed_ad_groups"],
             constraints["filtered_sources"],
@@ -440,7 +444,7 @@ class ContentAdsLoader(Loader):
         self.user = user
 
     @classmethod
-    def from_constraints(cls, user, constraints):
+    def from_constraints(cls, user, constraints, **kwargs):
         return cls(
             constraints["allowed_content_ads"],
             constraints["filtered_sources"],
@@ -644,7 +648,7 @@ class PublisherBlacklistLoader(Loader):
         return publisher_helpers.create_publisher_id(obj.publisher, obj.source_id)
 
     @classmethod
-    def from_constraints(cls, user, constraints):
+    def from_constraints(cls, user, constraints, **kwargs):
         return cls(
             constraints["publisher_blacklist"],
             constraints["publisher_whitelist"],
@@ -728,7 +732,7 @@ class PublisherBlacklistLoader(Loader):
 
 class SourcesLoader(Loader):
     @classmethod
-    def from_constraints(cls, user, constraints):
+    def from_constraints(cls, user, constraints, **kwargs):
         return cls(
             constraints["filtered_sources"],
             start_date=constraints.get("date__gte"),
@@ -756,7 +760,7 @@ class AdGroupSourcesLoader(Loader):
         self.user = user
 
     @classmethod
-    def from_constraints(cls, user, constraints):
+    def from_constraints(cls, user, constraints, **kwargs):
         return cls(
             constraints["filtered_sources"],
             constraints["ad_group"],
@@ -906,7 +910,7 @@ class PublisherBidModifierLoader(PublisherBlacklistLoader):
         filtered_sources_qs,
         user,
         account=None,
-        **kwargs
+        **kwargs,
     ):
         super(PublisherBidModifierLoader, self).__init__(
             blacklist_qs, whitelist_qs, publisher_group_targeting, filtered_sources_qs, user, account=None, **kwargs
@@ -915,7 +919,7 @@ class PublisherBidModifierLoader(PublisherBlacklistLoader):
         self.has_bid_modifiers = True
 
     @classmethod
-    def from_constraints(cls, user, constraints):
+    def from_constraints(cls, user, constraints, **kwargs):
         return cls(
             constraints["ad_group"],
             constraints["publisher_blacklist"],
@@ -945,3 +949,30 @@ class PublisherBidModifierLoader(PublisherBlacklistLoader):
             }
             for ags in ad_group_sources
         }
+
+
+class DeliveryLoader(Loader):
+    def __init__(self, ad_group, user, **kwargs):
+        breakdown = kwargs.pop("breakdown", None)
+        self.delivery_dimension = breakdown[0] if breakdown else None
+        self.ad_group = ad_group
+        self.user = user
+
+        bid_modifiers_qs = bid_modifiers.BidModifier.objects.filter(
+            type=core.features.bid_modifiers.constants.DeliveryDimensionToBidModifierTypeMap.get(
+                self.delivery_dimension
+            ),
+            ad_group=self.ad_group,
+        )
+
+        super().__init__(bid_modifiers_qs, **kwargs)
+
+    @classmethod
+    def from_constraints(cls, user, constraints, **kwargs):
+        return cls(
+            constraints.get("ad_group"),
+            user,
+            start_date=constraints.get("date__gte"),
+            end_date=constraints.get("date__lte"),
+            **kwargs,
+        )

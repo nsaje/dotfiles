@@ -1,3 +1,6 @@
+import dash.constants
+
+
 class StructureDimension:
     ACCOUNT = "account_id"
     CAMPAIGN = "campaign_id"
@@ -108,6 +111,13 @@ DimensionIdentifierMapping = {
 }
 
 
+DeliveryDimensionConstantClassMap = {
+    DeliveryDimension.DEVICE: dash.constants.DeviceType,
+    DeliveryDimension.DEVICE_OS: dash.constants.OperatingSystem,
+    DeliveryDimension.PLACEMENT_MEDIUM: dash.constants.PlacementMedium,
+}
+
+
 IntegerDimensions = [
     StructureDimension.ACCOUNT,
     StructureDimension.CAMPAIGN,
@@ -138,6 +148,10 @@ def get_delivery_dimension(breakdown):
     if len(dimension) == 0:
         return None
     return dimension.pop()
+
+
+def is_top_level_delivery_dimension(dimension):
+    return dimension in set(DeliveryDimension._ALL) - set(DeliveryDimension._EXTENDED)
 
 
 def get_time_dimension(breakdown):

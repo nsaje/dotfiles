@@ -1,9 +1,13 @@
+from functools import partial
+
 import newrelic.agent
 
 import dash.views.helpers
 import stats.api_breakdowns
 import stats.api_dailystats
+import stats.constants
 import stats.constraints_helper
+import stats.helpers
 from dash import campaign_goals
 from dash import constants
 from dash import models
@@ -29,7 +33,7 @@ class BaseDailyStatsView(api_common.BaseApiView):
             "only_used_sources": False,
         }
 
-    def get_stats(self, request, group_key, should_use_publishers_view=False):
+    def get_stats(self, request, group_key, should_use_publishers_view=False, object_mapping_fn=None):
         # FIXME (jurebajt): Totals are always requested because 'false' is truthy
         totals = request.GET.get("totals")
         metrics = request.GET.getlist("metrics")
@@ -44,13 +48,15 @@ class BaseDailyStatsView(api_common.BaseApiView):
             )
 
         if self.selected_objects:
+            are_all_ids = all(isinstance(obj, (int, str)) for obj in self.selected_objects)
             result += self.get_stats_selected(
                 request,
                 metrics,
                 currency,
                 group_key,
-                [obj.id for obj in self.selected_objects],
+                self.selected_objects if are_all_ids else [obj.id for obj in self.selected_objects],
                 should_use_publishers_view=should_use_publishers_view,
+                object_mapping_fn=object_mapping_fn if object_mapping_fn else helpers.get_object_mapping,
             )
 
         return {"chart_data": result, "currency": currency}
@@ -82,7 +88,9 @@ class BaseDailyStatsView(api_common.BaseApiView):
 
         return helpers.format_metrics(query_results, metrics, {"totals": "Totals"}, default_group="totals")
 
-    def get_stats_selected(self, request, metrics, currency, group_key, selected_ids, should_use_publishers_view):
+    def get_stats_selected(
+        self, request, metrics, currency, group_key, selected_ids, should_use_publishers_view, object_mapping_fn
+    ):
         join_selected = len(selected_ids) > MAX_DAILY_STATS_BREAKDOWNS
 
         breakdown = ["day"]
@@ -103,12 +111,14 @@ class BaseDailyStatsView(api_common.BaseApiView):
         )
 
         stats.helpers.update_rows_to_contain_values_in_currency(query_results, currency)
+        if stats.constants.is_top_level_delivery_dimension(group_key):
+            stats.helpers.remap_delivery_stat_keys(query_results, group_key)
 
         if join_selected:
             return helpers.format_metrics(query_results, metrics, {"selected": "Selected"}, default_group="selected")
         else:
             return helpers.format_metrics(
-                query_results, metrics, helpers.get_object_mapping(self.selected_objects), group_key=group_key
+                query_results, metrics, object_mapping_fn(self.selected_objects), group_key=group_key
             )
 
     def _get_selected_objects(self, request, objects):
@@ -249,6 +259,39 @@ class AllAccountsPublishersDailyStats(AllAccountsDailyStatsView):
         return self.create_api_response(self.get_stats(request, None, should_use_publishers_view=True))
 
 
+class AllAccountsDeliveryDailyStats(AllAccountsDailyStatsView):
+    @db_router.use_stats_read_replica()
+    @newrelic.agent.function_trace()
+    def get(self, request, delivery_dimension):
+        if not request.user.has_perm("zemauth.can_see_top_level_delivery_breakdowns"):
+            raise exc.MissingDataError()
+
+        self.view_filter = dash.views.helpers.ViewFilter(request=request)
+        uses_bcm_v2 = dash.views.helpers.all_accounts_uses_bcm_v2(request.user)
+
+        self.validate_metrics(request.GET.getlist("metrics"), uses_bcm_v2=uses_bcm_v2)
+
+        selected_ids = request.GET.getlist("selected_ids")
+        for i, id in enumerate(selected_ids):
+            try:
+                selected_ids[i] = int(id)
+            except ValueError:
+                pass
+
+        self.selected_objects = selected_ids
+
+        return self.create_api_response(
+            self.get_stats(
+                request,
+                delivery_dimension,
+                object_mapping_fn=partial(
+                    helpers.get_delivery_mapping,
+                    stats.constants.DeliveryDimensionConstantClassMap.get(delivery_dimension),
+                ),
+            )
+        )
+
+
 class AccountDailyStatsView(BaseDailyStatsView):
     level = constants.Level.ACCOUNTS
 
@@ -329,6 +372,41 @@ class AccountPublishersDailyStats(AccountDailyStatsView):
         return self.create_api_response(
             helpers.merge(
                 self.get_stats(request, None, should_use_publishers_view=True), self.get_goals(request, pixels=pixels)
+            )
+        )
+
+
+class AccountDeliveryDailyStats(AccountDailyStatsView):
+    @db_router.use_stats_read_replica()
+    def get(self, request, account_id, delivery_dimension):
+        if not request.user.has_perm("zemauth.can_see_top_level_delivery_breakdowns"):
+            raise exc.MissingDataError()
+
+        self.account = dash.views.helpers.get_account(request.user, account_id)
+
+        pixels = self.account.conversionpixel_set.filter(archived=False)
+        self.validate_metrics(request.GET.getlist("metrics"), pixels=pixels, uses_bcm_v2=self.account.uses_bcm_v2)
+
+        selected_ids = request.GET.getlist("selected_ids")
+        for i, id in enumerate(selected_ids):
+            try:
+                selected_ids[i] = int(id)
+            except ValueError:
+                pass
+
+        self.selected_objects = selected_ids
+
+        return self.create_api_response(
+            helpers.merge(
+                self.get_stats(
+                    request,
+                    delivery_dimension,
+                    object_mapping_fn=partial(
+                        helpers.get_delivery_mapping,
+                        stats.constants.DeliveryDimensionConstantClassMap.get(delivery_dimension),
+                    ),
+                ),
+                self.get_goals(request, pixels=pixels),
             )
         )
 
@@ -442,6 +520,47 @@ class CampaignPublishersDailyStats(CampaignDailyStatsView):
         )
 
 
+class CampaignDeliveryDailyStats(CampaignDailyStatsView):
+    @db_router.use_stats_read_replica()
+    def get(self, request, campaign_id, delivery_dimension):
+        if not request.user.has_perm("zemauth.can_see_top_level_delivery_breakdowns"):
+            raise exc.MissingDataError()
+
+        self.campaign = dash.views.helpers.get_campaign(request.user, campaign_id)
+
+        conversion_goals = self.campaign.conversiongoal_set.all()
+        pixels = self.campaign.account.conversionpixel_set.filter(archived=False)
+        self.validate_metrics(
+            request.GET.getlist("metrics"),
+            pixels=pixels,
+            conversion_goals=conversion_goals,
+            uses_bcm_v2=self.campaign.account.uses_bcm_v2,
+        )
+
+        selected_ids = request.GET.getlist("selected_ids")
+        for i, id in enumerate(selected_ids):
+            try:
+                selected_ids[i] = int(id)
+            except ValueError:
+                pass
+
+        self.selected_objects = selected_ids
+
+        return self.create_api_response(
+            helpers.merge(
+                self.get_stats(
+                    request,
+                    delivery_dimension,
+                    object_mapping_fn=partial(
+                        helpers.get_delivery_mapping,
+                        stats.constants.DeliveryDimensionConstantClassMap.get(delivery_dimension),
+                    ),
+                ),
+                self.get_goals(request, conversion_goals=conversion_goals, campaign=self.campaign, pixels=pixels),
+            )
+        )
+
+
 class AdGroupDailyStatsView(BaseDailyStatsView):
     level = constants.Level.AD_GROUPS
 
@@ -550,6 +669,49 @@ class AdGroupPublishersDailyStats(AdGroupDailyStatsView):
         return self.create_api_response(
             helpers.merge(
                 self.get_stats(request, None, should_use_publishers_view=True),
+                self.get_goals(
+                    request, conversion_goals=conversion_goals, campaign=self.ad_group.campaign, pixels=pixels
+                ),
+            )
+        )
+
+
+class AdGroupDeliveryDailyStats(AdGroupDailyStatsView):
+    @db_router.use_stats_read_replica()
+    def get(self, request, ad_group_id, delivery_dimension):
+        if not request.user.has_perm("zemauth.can_see_top_level_delivery_breakdowns"):
+            raise exc.MissingDataError()
+
+        self.ad_group = dash.views.helpers.get_ad_group(request.user, ad_group_id)
+
+        conversion_goals = self.ad_group.campaign.conversiongoal_set.all()
+        pixels = self.ad_group.campaign.account.conversionpixel_set.filter(archived=False)
+        self.validate_metrics(
+            request.GET.getlist("metrics"),
+            pixels=pixels,
+            conversion_goals=conversion_goals,
+            uses_bcm_v2=self.ad_group.campaign.account.uses_bcm_v2,
+        )
+
+        selected_ids = request.GET.getlist("selected_ids")
+        for i, id in enumerate(selected_ids):
+            try:
+                selected_ids[i] = int(id)
+            except ValueError:
+                pass
+
+        self.selected_objects = selected_ids
+
+        return self.create_api_response(
+            helpers.merge(
+                self.get_stats(
+                    request,
+                    delivery_dimension,
+                    object_mapping_fn=partial(
+                        helpers.get_delivery_mapping,
+                        stats.constants.DeliveryDimensionConstantClassMap.get(delivery_dimension),
+                    ),
+                ),
                 self.get_goals(
                     request, conversion_goals=conversion_goals, campaign=self.ad_group.campaign, pixels=pixels
                 ),

@@ -1,3 +1,5 @@
+import core.features.bid_modifiers
+import stats.constants
 from dash import constants
 from dash import publisher_helpers
 
@@ -22,6 +24,8 @@ def get_augmenter_for_dimension(target_dimension):
         return generate_loop_function(augment_source)
     elif target_dimension == "publisher_id":
         return generate_loop_function(augment_publisher)
+    elif stats.constants.is_top_level_delivery_dimension(target_dimension):
+        return generate_loop_function(augment_delivery)
 
 
 def get_report_augmenter_for_dimension(target_dimension, level):
@@ -37,6 +41,8 @@ def get_report_augmenter_for_dimension(target_dimension, level):
         return generate_loop_function(augment_source, augment_source_for_report)
     elif target_dimension == "publisher_id":
         return generate_loop_function(augment_publisher, augment_publisher_for_report)
+    elif stats.constants.is_top_level_delivery_dimension(target_dimension):
+        return generate_loop_function(augment_delivery, augment_delivery_for_report)
 
 
 def generate_loop_function(*augment_funcs):
@@ -453,6 +459,80 @@ def augment_publisher_for_report(row, loader, is_base_level=False):
         row.update({"bid_modifier": modifier})
 
 
+def augment_delivery(row, loader, is_base_level=True):
+    if not loader.ad_group:
+        return
+
+    delivery_dimension = loader.delivery_dimension
+    delivery_value = row.get(loader.delivery_dimension)
+    bid_modifier_id = row.get("bid_modifier_id")
+
+    if bid_modifier_id:
+        bid_modifier = loader.objs_map[bid_modifier_id]
+        delivery_dimension = core.features.bid_modifiers.constants.BidModifierTypeToDeliveryDimensionMap.get(
+            bid_modifier.type, bid_modifier.type
+        )
+        try:
+            delivery_value = int(bid_modifier.target)
+        except ValueError:
+            delivery_value = bid_modifier.target
+
+        row.update(
+            {
+                delivery_dimension: delivery_value,
+                "bid_modifier": _create_bid_modifier_dict(
+                    modifier_id=bid_modifier.id,
+                    modifier_type=core.features.bid_modifiers.BidModifierType.get_name(bid_modifier.type),
+                    source_slug=bid_modifier.source_slug,
+                    target=core.features.bid_modifiers.ApiConverter.from_target(
+                        core.features.bid_modifiers.constants.DeliveryDimensionToBidModifierTypeMap[delivery_dimension],
+                        bid_modifier.target,
+                    ),
+                    modifier=bid_modifier.modifier,
+                ),
+            }
+        )
+    elif delivery_value and delivery_value != "Other":
+        row.update(
+            {
+                "bid_modifier": _create_bid_modifier_dict(
+                    modifier_type=core.features.bid_modifiers.BidModifierType.get_name(
+                        core.features.bid_modifiers.constants.DeliveryDimensionToBidModifierTypeMap.get(
+                            delivery_dimension
+                        )
+                    ),
+                    target=core.features.bid_modifiers.ApiConverter.from_target(
+                        core.features.bid_modifiers.constants.DeliveryDimensionToBidModifierTypeMap[delivery_dimension],
+                        delivery_value,
+                    ),
+                )
+            }
+        )
+
+    row.update({"editable_fields": {"bid_modifier": {"enabled": True, "message": None}}})
+
+
+def _create_bid_modifier_dict(modifier_id=None, modifier_type=None, source_slug=None, target=None, modifier=None):
+    return {
+        "id": modifier_id,
+        "type": modifier_type,
+        "source_slug": source_slug,
+        "target": target,
+        "modifier": modifier,
+    }
+
+
+def augment_delivery_for_report(row, loader, is_base_level=True):
+    bid_modifier_id = row.get("bid_modifier_id")
+    modifier = None
+
+    if bid_modifier_id:
+        bid_modifier = loader.objs_map[bid_modifier_id]
+        modifier = bid_modifier.modifier
+
+    row.update({"bid_modifier": modifier})
+
+
 def augment_parent_ids(rows, loader_map, dimension):
     parent_dimensions = {"content_ad_id": "ad_group_id", "ad_group_id": "campaign_id", "campaign_id": "account_id"}
     parent_dimension = parent_dimensions.get(dimension)
@@ -472,6 +552,8 @@ def augment_parent_ids(rows, loader_map, dimension):
 def make_dash_rows(target_dimension, objs_ids, parent):
     if target_dimension == "publisher_id":
         return make_publisher_dash_rows(objs_ids, parent)
+    if stats.constants.is_top_level_delivery_dimension(target_dimension):
+        return make_delivery_dash_rows(target_dimension, objs_ids)
     return [make_row(target_dimension, obj_id, parent) for obj_id in objs_ids]
 
 
@@ -484,6 +566,13 @@ def make_publisher_dash_rows(objs_ids, parent):
         if source_id:
             rows.append({"publisher_id": obj_id, "publisher": publisher, "source_id": source_id})
 
+    return rows
+
+
+def make_delivery_dash_rows(target_dimension, objs_ids):
+    rows = []
+    for obj_id in objs_ids:
+        rows.append({"bid_modifier_id": obj_id})
     return rows
 
 

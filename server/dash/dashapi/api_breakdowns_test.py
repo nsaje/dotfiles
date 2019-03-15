@@ -7,15 +7,20 @@ from django.test import override_settings
 from mock import MagicMock
 from mock import patch
 
+import core.features.bid_modifiers
+import core.models
 from dash import models
 from dash.constants import CampaignType
+from dash.constants import DeviceType
 from dash.constants import Level
+from dash.constants import OperatingSystem
 from dash.constants import PublisherBlacklistLevel
 from dash.dashapi import api_breakdowns
 from dash.dashapi import augmenter
 from dash.dashapi import helpers
 from utils import threads
 from utils.dict_helper import dict_join
+from utils.magic_mixer import magic_mixer
 from zemauth.models import User
 
 """
@@ -1696,6 +1701,118 @@ class QueryForRowsTest(TestCase):
                 PUBLISHER_3__SOURCE_2,
                 PUBLISHER_4__SOURCE_2,
                 PUBLISHER_5__SOURCE_2,
+            ],
+        )
+
+    def test_query_for_rows_ad_groups_break_delivery(self):
+        user = User.objects.get(pk=1)
+        account = magic_mixer.blend(core.models.Account, users=[user])
+        campaign = magic_mixer.blend(core.models.Campaign, account=account)
+        ad_group = magic_mixer.blend(core.models.AdGroup, campaign=campaign)
+        bid_modifier = core.features.bid_modifiers.BidModifier.objects.create(
+            type=core.features.bid_modifiers.BidModifierType.DEVICE,
+            ad_group=ad_group,
+            target=str(DeviceType.DESKTOP),
+            modifier=2.0,
+        )
+        rows = api_breakdowns.query_for_rows(
+            [{"device_type": DeviceType.DESKTOP}],
+            Level.AD_GROUPS,
+            user,
+            ["device_type"],
+            {"ad_group": ad_group},
+            None,
+            "clicks",
+            0,
+            2,
+            [],
+        )
+        self.assertEqual(
+            rows,
+            [
+                {
+                    "bid_modifier_id": bid_modifier.id,
+                    "device_type": DeviceType.DESKTOP,
+                    "bid_modifier": {
+                        "id": bid_modifier.id,
+                        "type": "DEVICE",
+                        "source_slug": bid_modifier.source_slug,
+                        "target": "DESKTOP",
+                        "modifier": bid_modifier.modifier,
+                    },
+                    "editable_fields": {"bid_modifier": {"enabled": True, "message": None}},
+                }
+            ],
+        )
+
+    def test_query_for_rows_ad_groups_break_delivery_os(self):
+        user = User.objects.get(pk=1)
+        account = magic_mixer.blend(core.models.Account, users=[user])
+        campaign = magic_mixer.blend(core.models.Campaign, account=account)
+        ad_group = magic_mixer.blend(core.models.AdGroup, campaign=campaign)
+        bid_modifier = core.features.bid_modifiers.BidModifier.objects.create(
+            type=core.features.bid_modifiers.BidModifierType.OPERATING_SYSTEM,
+            ad_group=ad_group,
+            target=OperatingSystem.MACOSX,
+            modifier=2.0,
+        )
+        rows = api_breakdowns.query_for_rows(
+            [{"device_os": "macOS"}],
+            Level.AD_GROUPS,
+            user,
+            ["device_os"],
+            {"ad_group": ad_group},
+            None,
+            "clicks",
+            0,
+            2,
+            [],
+        )
+        self.assertEqual(
+            rows,
+            [
+                {
+                    "bid_modifier_id": bid_modifier.id,
+                    "device_os": OperatingSystem.MACOSX,
+                    "bid_modifier": {
+                        "id": bid_modifier.id,
+                        "type": "OPERATING_SYSTEM",
+                        "source_slug": bid_modifier.source_slug,
+                        "target": "MACOSX",
+                        "modifier": bid_modifier.modifier,
+                    },
+                    "editable_fields": {"bid_modifier": {"enabled": True, "message": None}},
+                }
+            ],
+        )
+
+    def test_query_for_rows_ad_groups_break_delivery_stats_only(self):
+        rows = api_breakdowns.query_for_rows(
+            [{"device_type": DeviceType.DESKTOP}],
+            Level.AD_GROUPS,
+            User.objects.get(pk=1),
+            ["device_type"],
+            {"ad_group": models.AdGroup.objects.get(pk=1)},
+            None,
+            "clicks",
+            0,
+            2,
+            [],
+        )
+        self.assertEqual(
+            rows,
+            [
+                {
+                    "device_type": DeviceType.DESKTOP,
+                    "bid_modifier": {
+                        "id": None,
+                        "type": "DEVICE",
+                        "source_slug": None,
+                        "target": "DESKTOP",
+                        "modifier": None,
+                    },
+                    "editable_fields": {"bid_modifier": {"enabled": True, "message": None}},
+                }
             ],
         )
 

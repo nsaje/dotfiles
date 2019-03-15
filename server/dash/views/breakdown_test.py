@@ -15,6 +15,7 @@ from dash.views import breakdown
 from dash.views import breakdown_helpers
 from stats.helpers import Goals
 from utils import test_helper
+from utils import threads
 from zemauth.models import User
 
 
@@ -404,6 +405,110 @@ class AccountBreakdownTestCase(TestCase):
             },
         )
 
+    @patch("stats.api_breakdowns.totals")
+    def test_post_base_level_delivery(self, mock_totals, mock_query):
+        test_helper.add_permissions(
+            self.user,
+            ["can_access_table_breakdowns_feature", "account_campaigns_view", "can_see_top_level_delivery_breakdowns"],
+        )
+
+        mock_query.return_value = [
+            {
+                "campaign_id": 198,
+                "breakdown_id": "198",
+                "breakdown_name": "Blog Campaign [Desktop]",
+                "parent_breakdown_id": None,
+                "archived": False,
+                "campaign_manager": "Ana Dejanovi\u0107",
+                "cost": 9196.1064,
+                "impressions": 9621740,
+                "name": "Blog Campaign [Desktop]",
+                "pageviews": 78853,
+                "status": 1,
+            },
+            {
+                "campaign_id": 413,
+                "breakdown_id": "413",
+                "breakdown_name": "Learning Center",
+                "parent_breakdown_id": None,
+                "archived": False,
+                "campaign_manager": "Ana Dejanovi\u0107",
+                "cost": 7726.1054,
+                "impressions": 10441143,
+                "name": "Learning Center",
+                "pageviews": 51896,
+                "status": 1,
+            },
+        ]
+
+        mock_totals.return_value = {"clicks": 123}
+
+        params = {
+            "limit": 2,
+            "offset": 1,
+            "order": "-clicks",
+            "start_date": "2016-01-01",
+            "end_date": "2016-02-03",
+            "filtered_sources": ["1", "3", "4"],
+            "show_archived": "true",
+            "parents": None,
+        }
+
+        response = self.client.post(
+            reverse("breakdown_accounts", kwargs={"account_id": 1, "breakdown": "/device_type"}),
+            data=json.dumps({"params": params}),
+            content_type="application/json",
+        )
+
+        self.assertEqual(response.status_code, 200)
+
+        result = json.loads(response.content)
+
+        self.assertDictEqual(
+            result,
+            {
+                "success": True,
+                "data": [
+                    {
+                        "breakdown_id": None,
+                        "currency": "USD",
+                        "pagination": {"count": 3, "limit": 2, "offset": 1},
+                        "rows": [
+                            {
+                                "campaign_id": 198,
+                                "breakdown_id": "198",
+                                "breakdown_name": "Blog Campaign [Desktop]",
+                                "parent_breakdown_id": None,
+                                "archived": False,
+                                "campaign_manager": "Ana Dejanovi\u0107",
+                                "cost": 9196.1064,
+                                "impressions": 9621740,
+                                "name": "Blog Campaign [Desktop]",
+                                "pageviews": 78853,
+                                "status": {"value": 1},
+                            },
+                            {
+                                "campaign_id": 413,
+                                "breakdown_id": "413",
+                                "breakdown_name": "Learning Center",
+                                "parent_breakdown_id": None,
+                                "archived": False,
+                                "campaign_manager": "Ana Dejanovi\u0107",
+                                "cost": 7726.1054,
+                                "impressions": 10441143,
+                                "name": "Learning Center",
+                                "pageviews": 51896,
+                                "status": {"value": 1},
+                            },
+                        ],
+                        "totals": {"clicks": 123},
+                        "pixels": [{"name": "test", "prefix": "pixel_1"}],
+                        "conversion_goals": [],
+                    }
+                ],
+            },
+        )
+
 
 @patch("stats.api_breakdowns.query")
 class CampaignBreakdownTestCase(TestCase):
@@ -483,6 +588,75 @@ class CampaignBreakdownTestCase(TestCase):
             5 + breakdown.REQUEST_LIMIT_OVERFLOW,  # [workaround] see implementation
         )
 
+    @patch("utils.threads.AsyncFunction", threads.MockAsyncFunction)
+    @patch("stats.api_breakdowns.totals")
+    def test_post_base_level_delivery(self, mock_totals, mock_query):
+        test_helper.add_permissions(
+            self.user,
+            [
+                "can_access_table_breakdowns_feature",
+                "can_view_breakdown_by_delivery",
+                "can_see_top_level_delivery_breakdowns",
+            ],
+        )
+
+        mock_query.return_value = {}
+        mock_totals.return_value = {}
+
+        params = {
+            "limit": 5,
+            "offset": 33,
+            "order": "-clicks",
+            "start_date": "2016-01-01",
+            "end_date": "2016-02-03",
+            "filtered_sources": ["1", "3", "4"],
+            "show_archived": "false",
+        }
+
+        response = self.client.post(
+            reverse("breakdown_campaigns", kwargs={"campaign_id": 1, "breakdown": "/device_type"}),
+            data=json.dumps({"params": params}),
+            content_type="application/json",
+        )
+
+        self.assertEqual(response.status_code, 200)
+        ad_groups = models.Campaign.objects.get(pk=1).adgroup_set.all().exclude_archived()
+        content_ads = models.ContentAd.objects.filter(ad_group__in=ad_groups).exclude_archived()
+
+        mock_query.assert_called_with(
+            Level.CAMPAIGNS,
+            self.user,
+            ["device_type"],
+            {
+                "campaign": models.Campaign.objects.get(pk=1),
+                "account": models.Account.objects.get(pk=1),
+                "allowed_ad_groups": test_helper.QuerySetMatcher(ad_groups),
+                "allowed_content_ads": test_helper.QuerySetMatcher(content_ads),
+                "date__gte": datetime.date(2016, 1, 1),
+                "date__lte": datetime.date(2016, 2, 3),
+                "filtered_sources": test_helper.QuerySetMatcher(models.Source.objects.filter(pk__in=[1, 3, 4])),
+                "show_archived": False,
+                "publisher_blacklist": test_helper.QuerySetMatcher(
+                    models.PublisherGroupEntry.objects.filter(publisher_group_id__in=[1])
+                ),
+                "publisher_whitelist": test_helper.QuerySetMatcher(
+                    models.PublisherGroupEntry.objects.filter(publisher_group_id__in=[1])
+                ),
+                "publisher_group_targeting": {
+                    "account": {"excluded": set([1]), "included": set([1])},
+                    "campaign": {"excluded": set([1]), "included": set([1])},
+                    "ad_group": {"excluded": set(), "included": set()},
+                    "global": {"excluded": set([1])},
+                },
+                "publisher_blacklist_filter": "all",
+            },
+            ANY,
+            [],
+            "-clicks",
+            33,
+            5 + breakdown.REQUEST_LIMIT_OVERFLOW,  # [workaround] see implementation
+        )
+
 
 @patch("stats.api_breakdowns.query")
 class AdGroupBreakdownTestCase(TestCase):
@@ -546,6 +720,63 @@ class AdGroupBreakdownTestCase(TestCase):
             },
             ANY,
             ["1-2-33", "1-2-34", "1-3-22"],
+            "-clicks",
+            33,
+            5 + breakdown.REQUEST_LIMIT_OVERFLOW,  # [workaround] see implementation
+        )
+
+    @patch("utils.threads.AsyncFunction", threads.MockAsyncFunction)
+    @patch("stats.api_breakdowns.totals")
+    def test_post_base_level_delivery(self, mock_totals, mock_query):
+        test_helper.add_permissions(
+            self.user,
+            [
+                "can_access_table_breakdowns_feature_on_ad_group_level",
+                "can_view_breakdown_by_delivery",
+                "can_see_top_level_delivery_breakdowns",
+            ],
+        )
+
+        mock_query.return_value = {}
+        mock_totals.return_value = {}
+
+        params = {
+            "limit": 5,
+            "offset": 33,
+            "order": "-clicks",
+            "start_date": "2016-01-01",
+            "end_date": "2016-02-03",
+            "filtered_sources": ["1", "3", "4"],
+            "show_archived": "true",
+        }
+
+        response = self.client.post(
+            reverse("breakdown_ad_groups", kwargs={"ad_group_id": 1, "breakdown": "/device_type"}),
+            data=json.dumps({"params": params}),
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 200)
+
+        mock_query.assert_called_with(
+            Level.AD_GROUPS,
+            self.user,
+            ["device_type"],
+            {
+                "allowed_content_ads": test_helper.QuerySetMatcher(models.ContentAd.objects.filter(ad_group_id=1)),
+                "ad_group": models.AdGroup.objects.get(pk=1),
+                "campaign": models.Campaign.objects.get(pk=1),
+                "account": models.Account.objects.get(pk=1),
+                "date__gte": datetime.date(2016, 1, 1),
+                "date__lte": datetime.date(2016, 2, 3),
+                "filtered_sources": test_helper.QuerySetMatcher(models.Source.objects.filter(pk__in=[1, 3, 4])),
+                "show_archived": True,
+                "publisher_blacklist_filter": constants.PublisherBlacklistFilter.SHOW_ALL,
+                "publisher_blacklist": test_helper.QuerySetMatcher(models.PublisherGroupEntry.objects.none()),
+                "publisher_whitelist": test_helper.QuerySetMatcher(models.PublisherGroupEntry.objects.none()),
+                "publisher_group_targeting": get_publisher_group_targeting_dict(),
+            },
+            ANY,
+            [],
             "-clicks",
             33,
             5 + breakdown.REQUEST_LIMIT_OVERFLOW,  # [workaround] see implementation

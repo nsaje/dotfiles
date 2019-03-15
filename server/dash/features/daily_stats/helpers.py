@@ -26,6 +26,16 @@ def get_object_mapping(objects):
     return {obj.id: getattr(obj, "name", None) or obj.title for obj in objects}
 
 
+def get_delivery_mapping(constant_cls, delivery_ids):
+    mapping = {}
+    for delivery_id in delivery_ids:
+        try:
+            mapping[delivery_id] = constant_cls.get_name(delivery_id) if constant_cls else delivery_id
+        except KeyError:
+            mapping[delivery_id] = delivery_id
+    return mapping
+
+
 def merge(*args):
     """
     Merge an arbitrary number of dictionaries

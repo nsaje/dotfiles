@@ -6,6 +6,7 @@ from stats import constants
 from stats import fields
 from stats.constants import DeliveryDimension
 from stats.constants import StructureDimension
+from stats.constants import is_top_level_delivery_dimension
 from stats.constraints_helper import get_uses_bcm_v2
 from utils import exc
 
@@ -324,6 +325,11 @@ def _get_allowed_pixels_fields(user, pixels, uses_bcm_v2):
 def validate_breakdown_by_permissions(level, user, breakdown):
     base_dimension = constants.get_base_dimension(breakdown)
 
+    if len(breakdown) == 1 and is_top_level_delivery_dimension(base_dimension):
+        if not user.has_perm("zemauth.can_see_top_level_delivery_breakdowns"):
+            raise exc.MissingDataError()
+        return
+
     if level == Level.ALL_ACCOUNTS:
         if base_dimension not in (StructureDimension.SOURCE, StructureDimension.ACCOUNT, StructureDimension.PUBLISHER):
             raise exc.MissingDataError()
@@ -370,6 +376,9 @@ def validate_breakdown_by_structure(breakdown):
     if not base:
         return
 
+    if len(breakdown) == 1 and is_top_level_delivery_dimension(base):
+        return
+
     clean_breakdown = [base]
     structure = constants.get_structure_dimension(breakdown)
     if structure:
@@ -386,9 +395,13 @@ def validate_breakdown_by_structure(breakdown):
     if "publisher_id" in breakdown and "source_id" in breakdown:
         raise exc.InvalidBreakdownError("Unsupported breakdown - publishers are broken down by source by default")
 
-    unsupperted_breakdowns = set(breakdown) - set(clean_breakdown)
-    if unsupperted_breakdowns:
-        raise exc.InvalidBreakdownError("Unsupported breakdowns: {}".format(", ".join(unsupperted_breakdowns)))
+    unsupported_breakdowns = set(breakdown) - set(clean_breakdown)
+    if unsupported_breakdowns:
+        raise exc.InvalidBreakdownError("Unsupported breakdowns: {}".format(", ".join(unsupported_breakdowns)))
+
+    for i in range(len(clean_breakdown) - 1):
+        if clean_breakdown[i] == clean_breakdown[i + 1]:
+            raise exc.InvalidBreakdownError("Wrong breakdown order")
 
     if breakdown != clean_breakdown:
         raise exc.InvalidBreakdownError("Wrong breakdown order")

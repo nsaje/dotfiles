@@ -3,6 +3,7 @@ from decimal import Decimal
 import mock
 from django.test import TestCase
 
+import stats.constants
 from core.features import bid_modifiers
 from core.features.publisher_bid_modifiers.service_test import add_non_publisher_bid_modifiers
 from dash import constants
@@ -919,3 +920,24 @@ class PublisherBidModifierLoaderTest(TestCase):
     def test_modifier_map(self):
         modifier_map = self.loader.modifier_map
         self.assertDictEqual(modifier_map, {(1, "pub3.com"): 0.5})
+
+
+class DeliveryLoaderTest(TestCase):
+    def setUp(self):
+        ad_group = magic_mixer.blend(models.AdGroup, id=1)
+        source = magic_mixer.blend(models.Source, id=1)
+        self.bid_modifier = magic_mixer.blend(
+            bid_modifiers.BidModifier,
+            ad_group=ad_group,
+            source=source,
+            source_slug=source.bidder_slug,
+            target=str(constants.DeviceType.DESKTOP),
+            modifier=0.5,
+            type=bid_modifiers.constants.BidModifierType.DEVICE,
+        )
+        self.user = magic_mixer.blend_user()
+
+    def test_modifier_map(self):
+        ad_group = models.AdGroup.objects.all().first()
+        loader = loaders.DeliveryLoader(ad_group, self.user, breakdown=[stats.constants.DeliveryDimension.DEVICE])
+        self.assertDictEqual(loader.objs_map, {self.bid_modifier.id: self.bid_modifier})

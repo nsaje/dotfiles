@@ -2,12 +2,12 @@ from functools import partial
 
 import newrelic.agent
 
+import stats.constants
 import stats.constraints_helper
 import stats.helpers
 from dash.dashapi import augmenter
 from dash.dashapi import helpers
 from dash.dashapi import loaders
-from stats.constants import get_target_dimension
 from utils import sort_helper
 from utils import threads
 
@@ -60,14 +60,11 @@ def query_async_get_results_for_rows(query_threads, rows, breakdown, parents, or
 
     rows_by_parent = sort_helper.group_rows_by_breakdown_key(parent_breakdown, rows)
     structure_by_parent = sort_helper.group_rows_by_breakdown_key(parent_breakdown, structure_w_stats)
-
     augment_fn = augmenter.get_augmenter_for_dimension(target_dimension)
-
     result = []
 
     for thread in query_threads:
         thread.join()
-
         thread_result = thread.get_result()
 
         parent = thread_result["parent"]
@@ -75,36 +72,42 @@ def query_async_get_results_for_rows(query_threads, rows, breakdown, parents, or
         dash_rows = thread_result["rows"]
 
         parent_key = sort_helper.get_breakdown_key(parent, parent_breakdown)
-
         stat_rows = rows_by_parent.get(parent_key, [])
 
-        rows_target_ids = [x[target_dimension] for x in stat_rows]
-        selected_rows = [x for x in dash_rows if x[target_dimension] in rows_target_ids]
+        if len(breakdown) == 1 and stats.constants.is_top_level_delivery_dimension(target_dimension):
+            stats.helpers.remap_delivery_stat_keys(stat_rows, target_dimension)
 
-        dash_rows_by_id = {x[target_dimension]: x for x in dash_rows}
+        stat_rows_target_ids = [x[target_dimension] for x in stat_rows]
+        dash_rows_by_id = {x[target_dimension]: x for x in dash_rows if target_dimension in x}
 
         selected_rows = []
         for row in stat_rows:
             if row[target_dimension] in dash_rows_by_id:
                 selected_rows.append(dash_rows_by_id[row[target_dimension]])
 
-            elif target_dimension == "publisher_id":
-                # when dealing with publishers create dash rows from stats rows - not everything can be queried out
-                # out dash database as in other dimensions that are augmented by dash.
+            elif target_dimension == "publisher_id" or stats.constants.is_top_level_delivery_dimension(
+                target_dimension
+            ):
+                # when dealing with publishers or delivery create dash rows from stats rows - not everything can be queried out
+                # of dash database as in other dimensions that are augmented by dash.
 
                 dash_row = augmenter.make_row(target_dimension, row[target_dimension], parent)
                 augment_fn([dash_row], loader, not bool(parent_breakdown))
                 selected_rows.append(dash_row)
 
-        # add dash rows that were not included in stats. publisher dimension is excluded here
+        # add dash rows that were not included in stats. publisher and delivery dimensions are excluded here
         # as we should not add those rows
-        if len(rows_target_ids) < limit and target_dimension != "publisher_id":
+        if (
+            len(stat_rows_target_ids) < limit
+            and target_dimension != "publisher_id"
+            and not stats.constants.is_top_level_delivery_dimension(target_dimension)
+        ):
             # select additional rows from
             structure_4p = structure_by_parent.get(parent_key, [])
             all_used_ids = [x[target_dimension] for x in structure_4p]
 
             new_offset, new_limit = helpers.get_adjusted_limits_for_additional_rows(
-                rows_target_ids, all_used_ids, offset, limit
+                stat_rows_target_ids, all_used_ids, offset, limit
             )
 
             extra_rows = [x for x in dash_rows if x[target_dimension] not in all_used_ids]
@@ -125,15 +128,14 @@ def query_section(level, user, breakdown, constraints, parent=None):
     is whole 1st level.
     """
 
-    target_dimension = get_target_dimension(breakdown)
-
+    target_dimension = stats.constants.get_target_dimension(breakdown)
     constraints = stats.constraints_helper.reduce_to_parent(breakdown, constraints, parent)
+
     loader_cls = loaders.get_loader_for_dimension(target_dimension, level)
-    loader = loader_cls.from_constraints(user, constraints)
+    loader = loader_cls.from_constraints(user, constraints, breakdown=breakdown)
 
     rows = augmenter.make_dash_rows(target_dimension, loader.objs_ids, parent)
     augmenter_fn = augmenter.get_augmenter_for_dimension(target_dimension)
-
     augmenter_fn(rows, loader, not bool(parent))
 
     return {"rows": rows, "loader": loader, "parent": parent}

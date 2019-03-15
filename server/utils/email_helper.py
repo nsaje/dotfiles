@@ -17,8 +17,6 @@ import dash.constants
 import dash.models
 import zemauth.models
 import analytics.management_report
-import analytics.client_report
-import analytics.statements
 
 from utils import dates_helper
 

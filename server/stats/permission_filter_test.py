@@ -607,6 +607,13 @@ class BreakdownAllowedTest(TestCase):
 
         self.add_permission_and_test(Level.AD_GROUPS, ["publisher_id"], ["can_see_publishers"])
 
+        user = User.objects.get(pk=1)
+        delivery_fields = ["device_type", "device_os", "placement_medium", "country", "state", "dma"]
+        for field in delivery_fields:
+            with self.assertRaises(exc.MissingDataError):
+                permission_filter.validate_breakdown_by_permissions(Level.CAMPAIGNS, user, [field])
+            self.add_permission_and_test(Level.AD_GROUPS, [field], ["can_see_top_level_delivery_breakdowns"])
+
     def test_breakdown_validate_by_delivery_permissions(self):
         user = User.objects.get(pk=1)
         test_helper.add_permissions(user, ["all_accounts_accounts_view"])
@@ -630,3 +637,16 @@ class BreakdownAllowedTest(TestCase):
 
         with self.assertRaisesMessage(exc.InvalidBreakdownError, "Wrong breakdown order"):
             permission_filter.validate_breakdown_by_structure(["account_id", "day", "device_type"])
+
+    def test_validate_first_level_placement_breakdown_structure(self):
+        delivery_fields = ["device_type", "device_os", "placement_medium", "country", "state", "dma"]
+        for field in delivery_fields:
+            permission_filter.validate_breakdown_by_structure([field])
+
+        for field in delivery_fields:
+            with self.assertRaisesMessage(exc.InvalidBreakdownError, "Wrong breakdown order"):
+                permission_filter.validate_breakdown_by_structure([field, "day"])
+
+        for field in delivery_fields:
+            with self.assertRaisesMessage(exc.InvalidBreakdownError, "Wrong breakdown order"):
+                permission_filter.validate_breakdown_by_structure([field, field])

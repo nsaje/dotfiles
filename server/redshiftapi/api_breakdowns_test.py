@@ -3,13 +3,13 @@ import datetime
 from django.test import TestCase
 from mock import patch
 
+import stats.constants
 from redshiftapi import api_breakdowns
 from stats.helpers import Goals
 
 
 class ApiTest(TestCase):
     def test_should_query_all(self):
-
         self.assertTrue(api_breakdowns.should_query_all([]))
         self.assertTrue(api_breakdowns.should_query_all(["publisher_id", "week"]))
 
@@ -22,6 +22,10 @@ class ApiTest(TestCase):
         self.assertTrue(api_breakdowns.should_query_all(["source_id", "ad_group_id"]))
         self.assertTrue(api_breakdowns.should_query_all(["campaign_id", "ad_group_id"]))
         self.assertTrue(api_breakdowns.should_query_all(["campaign_id", "source_id"]))
+
+        for field in set(stats.constants.DeliveryDimension._ALL) - set(stats.constants.DeliveryDimension._EXTENDED):
+            self.assertFalse(api_breakdowns.should_query_all([field]))
+            self.assertFalse(api_breakdowns.should_query_all([field, field]))
 
 
 class QueryTest(TestCase):

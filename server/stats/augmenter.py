@@ -59,11 +59,12 @@ def augment_row_delivery(row, target_dimension):
 
     mapping = {
         constants.DeliveryDimension.DEVICE: dash_constants.DeviceType,
+        constants.DeliveryDimension.DEVICE_OS: dash_constants.OperatingSystem,
         constants.DeliveryDimension.PLACEMENT_MEDIUM: dash_constants.PlacementMedium,
         constants.DeliveryDimension.PLACEMENT_TYPE: dash_constants.PlacementType,
         constants.DeliveryDimension.VIDEO_PLAYBACK_METHOD: dash_constants.VideoPlaybackMethod,
-        # constants.DeliveryDimension.COUNTRY: dash_constants.AdTargetLocation,
-        # constants.DeliveryDimension.STATE: dash_constants.AdTargetLocation,
+        constants.DeliveryDimension.COUNTRY: dash_constants.AdTargetLocation,
+        constants.DeliveryDimension.STATE: dash_constants.AdTargetLocation,
         constants.DeliveryDimension.DMA: dash_constants.AdTargetLocation,
         constants.DeliveryDimension.AGE: dash_constants.Age,
         constants.DeliveryDimension.GENDER: dash_constants.Gender,
@@ -72,10 +73,10 @@ def augment_row_delivery(row, target_dimension):
 
     if target_dimension in mapping:
         value = row[target_dimension]
-        if target_dimension == "dma":
-            value = str(value)
+        if target_dimension == constants.DeliveryDimension.DMA:
+            value = str(value) if value else None
 
-        row["name"] = mapping[target_dimension].get_text(value) or UNKNOWN
+        row["name"] = mapping[target_dimension].get_text(value) or value or UNKNOWN
 
     else:
         row["name"] = row.get(target_dimension) or UNKNOWN  # when we don't have a designated mapping

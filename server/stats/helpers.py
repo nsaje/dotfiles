@@ -5,6 +5,7 @@ import logging
 from django.db.models import Model
 from django.db.models import QuerySet
 
+import core.features.bid_modifiers
 import dash.constants
 import dash.models
 from stats import constants
@@ -387,8 +388,12 @@ def should_query_dashapi_first(order, target_dimension):
     return False
 
 
-def should_query_dashapi(target_dimension):
-    return target_dimension in constants.StructureDimension._ALL
+def should_query_dashapi(breakdown, target_dimension):
+    return (
+        target_dimension in constants.StructureDimension._ALL
+        or len(breakdown) == 1
+        and constants.is_top_level_delivery_dimension(target_dimension)
+    )
 
 
 def merge_rows(breakdown, dash_rows, stats_rows):
@@ -441,3 +446,24 @@ def log_user_query_request(user, breakdown, constraints, order, offset, limit):
             constraints["ad_group"].id if "ad_group" in constraints else "NULL",
         )
     )
+
+
+def remap_delivery_stat_keys(stat_rows, target_dimension):
+    for row in stat_rows:
+        bid_modifier_type = core.features.bid_modifiers.constants.DeliveryDimensionToBidModifierTypeMap.get(
+            target_dimension
+        )
+        if (
+            target_dimension in (constants.DeliveryDimension.DEVICE, constants.DeliveryDimension.DMA)
+            or not row[target_dimension]
+        ):
+            continue
+        try:
+            row[target_dimension] = core.features.bid_modifiers.StatsConverter.to_target(
+                bid_modifier_type, row[target_dimension]
+            )
+        except (
+            core.features.bid_modifiers.exceptions.BidModifierTargetInvalid,
+            core.features.bid_modifiers.exceptions.BidModifierUnsupportedTarget,
+        ):
+            pass

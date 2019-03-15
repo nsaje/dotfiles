@@ -10,6 +10,7 @@ from mock import patch
 
 from dash import constants
 from dash import models
+from utils.test_helper import add_permissions
 from utils.test_helper import fake_request
 from zemauth.models import User
 
@@ -257,6 +258,51 @@ class AccountsDailyStatsTest(BaseDailyStatsTest):
 
         self.assertEqual(200, response.status_code)
 
+    def test_get_by_delivery(self):
+        perm = authmodels.Permission.objects.get(codename="all_accounts_accounts_view")
+        self.user.user_permissions.add(perm)
+        add_permissions(self.user, ["can_see_top_level_delivery_breakdowns"])
+
+        device_id = constants.DeviceType.DESKTOP
+        self._prepare_mock("device_type", device_id)
+
+        response = self.client.get(
+            reverse("accounts_delivery_daily_stats", kwargs={"delivery_dimension": "device_type"}),
+            self._get_params(selected_ids=[device_id]),
+            follow=True,
+        )
+
+        self.assertEqual(200, response.status_code)
+        self._assert_response(
+            response,
+            device_id,
+            constants.DeviceType.get_name(device_id),
+            with_conversion_goals=False,
+            with_pixels=False,
+        )
+
+    def test_get_by_delivery_join_selected(self):
+        perm = authmodels.Permission.objects.get(codename="all_accounts_accounts_view")
+        self.user.user_permissions.add(perm)
+        add_permissions(self.user, ["can_see_top_level_delivery_breakdowns"])
+
+        device_ids = [
+            constants.DeviceType.DESKTOP,
+            constants.DeviceType.MOBILE,
+            constants.DeviceType.TABLET,
+            constants.DeviceType.TV,
+        ]
+        self._prepare_mock(None, None)
+
+        response = self.client.get(
+            reverse("accounts_delivery_daily_stats", kwargs={"delivery_dimension": "device_type"}),
+            self._get_params(selected_ids=device_ids),
+            follow=True,
+        )
+
+        self.assertEqual(200, response.status_code)
+        self._assert_response(response, "selected", "Selected", with_conversion_goals=False, with_pixels=False)
+
 
 class AccountDailyStatsTest(BaseDailyStatsTest):
     def test_get_by_source(self):
@@ -332,6 +378,45 @@ class AccountDailyStatsTest(BaseDailyStatsTest):
             response,
             campaign_id,
             campaign.name,
+            with_conversion_goals=False,
+            with_pixels=False,
+            currency=constants.Currency.EUR,
+        )
+
+    def test_get_by_delivery(self):
+        add_permissions(self.user, ["can_see_top_level_delivery_breakdowns"])
+
+        device_id = constants.DeviceType.DESKTOP
+        self._prepare_mock("device_type", device_id)
+
+        response = self.client.get(
+            reverse("account_delivery_daily_stats", kwargs={"account_id": 1, "delivery_dimension": "device_type"}),
+            self._get_params(selected_ids=[device_id]),
+            follow=True,
+        )
+
+        self.assertEqual(200, response.status_code)
+        self._assert_response(
+            response, device_id, constants.DeviceType.get_name(device_id), with_conversion_goals=False
+        )
+
+    def test_get_by_delivery_local_currency(self):
+        add_permissions(self.user, ["can_see_top_level_delivery_breakdowns"])
+
+        device_id = constants.DeviceType.DESKTOP
+        self._prepare_mock("device_type", device_id)
+
+        response = self.client.get(
+            reverse("account_delivery_daily_stats", kwargs={"account_id": 2, "delivery_dimension": "device_type"}),
+            self._get_params(selected_ids=[device_id]),
+            follow=True,
+        )
+
+        self.assertEqual(200, response.status_code)
+        self._assert_response(
+            response,
+            device_id,
+            constants.DeviceType.get_name(device_id),
             with_conversion_goals=False,
             with_pixels=False,
             currency=constants.Currency.EUR,
@@ -441,6 +526,43 @@ class CampaignDailyStatsTest(BaseDailyStatsTest):
         response_blob = json.loads(response.content)
         self.assertTrue("goal_fields" in response_blob["data"])
         self.assertTrue("campaign_goals" in response_blob["data"])
+
+    def test_get_by_delivery(self):
+        add_permissions(self.user, ["can_see_top_level_delivery_breakdowns"])
+
+        device_id = constants.DeviceType.DESKTOP
+        self._prepare_mock("device_type", device_id)
+
+        response = self.client.get(
+            reverse("campaign_delivery_daily_stats", kwargs={"campaign_id": 1, "delivery_dimension": "device_type"}),
+            self._get_params(selected_ids=[device_id]),
+            follow=True,
+        )
+
+        self.assertEqual(200, response.status_code)
+        self._assert_response(response, device_id, constants.DeviceType.get_name(device_id))
+
+    def test_get_by_delivery_local_currency(self):
+        add_permissions(self.user, ["can_see_top_level_delivery_breakdowns"])
+
+        device_id = constants.DeviceType.DESKTOP
+        self._prepare_mock("device_type", device_id)
+
+        response = self.client.get(
+            reverse("campaign_delivery_daily_stats", kwargs={"campaign_id": 87, "delivery_dimension": "device_type"}),
+            self._get_params(selected_ids=[device_id]),
+            follow=True,
+        )
+
+        self.assertEqual(200, response.status_code)
+        self._assert_response(
+            response,
+            device_id,
+            constants.DeviceType.get_name(device_id),
+            with_pixels=False,
+            conversion_goals=[],
+            currency=constants.Currency.EUR,
+        )
 
 
 class AdGroupDailyStatsTest(BaseDailyStatsTest):
@@ -706,6 +828,43 @@ class AdGroupDailyStatsTest(BaseDailyStatsTest):
                 },
                 "success": True,
             },
+        )
+
+    def test_get_by_delivery(self):
+        add_permissions(self.user, ["can_see_top_level_delivery_breakdowns"])
+
+        device_id = constants.DeviceType.DESKTOP
+        self._prepare_mock("device_type", device_id)
+
+        response = self.client.get(
+            reverse("ad_group_delivery_daily_stats", kwargs={"ad_group_id": 1, "delivery_dimension": "device_type"}),
+            self._get_params(selected_ids=[device_id]),
+            follow=True,
+        )
+
+        self.assertEqual(200, response.status_code)
+        self._assert_response(response, device_id, constants.DeviceType.get_name(device_id))
+
+    def test_get_by_delivery_local_currency(self):
+        add_permissions(self.user, ["can_see_top_level_delivery_breakdowns"])
+
+        device_id = constants.DeviceType.DESKTOP
+        self._prepare_mock("device_type", device_id)
+
+        response = self.client.get(
+            reverse("ad_group_delivery_daily_stats", kwargs={"ad_group_id": 876, "delivery_dimension": "device_type"}),
+            self._get_params(selected_ids=[device_id]),
+            follow=True,
+        )
+
+        self.assertEqual(200, response.status_code)
+        self._assert_response(
+            response,
+            device_id,
+            constants.DeviceType.get_name(device_id),
+            with_pixels=False,
+            conversion_goals=[],
+            currency=constants.Currency.EUR,
         )
 
 

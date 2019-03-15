@@ -26,6 +26,7 @@ import dash.views.publishers
 import dash.views.views
 import etl.crossvalidation.views
 import restapi.bcm.urls
+import stats.constants
 import zemauth.views
 from zemauth.forms import AuthenticationForm
 
@@ -316,6 +317,13 @@ urlpatterns += [
         name="ad_group_publishers_daily_stats",
     ),
     url(
+        r"^api/ad_groups/(?P<ad_group_id>\d+)/(?P<delivery_dimension>({}))/daily_stats/$".format(
+            "|".join(set(stats.constants.DeliveryDimension._ALL) - set(stats.constants.DeliveryDimension._EXTENDED))
+        ),
+        login_required(dash.features.daily_stats.views.AdGroupDeliveryDailyStats.as_view()),
+        name="ad_group_delivery_daily_stats",
+    ),
+    url(
         r"^api/campaigns/(?P<campaign_id>\d+)/ad_groups/daily_stats/$",
         login_required(dash.features.daily_stats.views.CampaignAdGroupsDailyStats.as_view()),
         name="campaign_ad_groups_daily_stats",
@@ -329,6 +337,13 @@ urlpatterns += [
         r"^api/campaigns/(?P<campaign_id>\d+)/publishers/daily_stats/$",
         login_required(dash.features.daily_stats.views.CampaignPublishersDailyStats.as_view()),
         name="campaign_publishers_daily_stats",
+    ),
+    url(
+        r"^api/campaigns/(?P<campaign_id>\d+)/(?P<delivery_dimension>({}))/daily_stats/$".format(
+            "|".join(set(stats.constants.DeliveryDimension._ALL) - set(stats.constants.DeliveryDimension._EXTENDED))
+        ),
+        login_required(dash.features.daily_stats.views.CampaignDeliveryDailyStats.as_view()),
+        name="campaign_delivery_daily_stats",
     ),
     url(
         r"^api/accounts/(?P<account_id>\d+)/campaigns/daily_stats/$",
@@ -346,6 +361,13 @@ urlpatterns += [
         name="account_publishers_daily_stats",
     ),
     url(
+        r"^api/accounts/(?P<account_id>\d+)/(?P<delivery_dimension>({}))/daily_stats/$".format(
+            "|".join(set(stats.constants.DeliveryDimension._ALL) - set(stats.constants.DeliveryDimension._EXTENDED))
+        ),
+        login_required(dash.features.daily_stats.views.AccountDeliveryDailyStats.as_view()),
+        name="account_delivery_daily_stats",
+    ),
+    url(
         r"^api/all_accounts/accounts/daily_stats/$",
         login_required(dash.features.daily_stats.views.AllAccountsAccountsDailyStats.as_view()),
         name="accounts_accounts_daily_stats",
@@ -359,6 +381,13 @@ urlpatterns += [
         r"^api/all_accounts/publishers/daily_stats/$",
         login_required(dash.features.daily_stats.views.AllAccountsPublishersDailyStats.as_view()),
         name="accounts_publishers_daily_stats",
+    ),
+    url(
+        r"^api/all_accounts/(?P<delivery_dimension>({}))/daily_stats/$".format(
+            "|".join(set(stats.constants.DeliveryDimension._ALL) - set(stats.constants.DeliveryDimension._EXTENDED))
+        ),
+        login_required(dash.features.daily_stats.views.AllAccountsDeliveryDailyStats.as_view()),
+        name="accounts_delivery_daily_stats",
     ),
     url(
         r"^api/campaigns/(?P<campaign_id>\d+)/ad_groups/$",
