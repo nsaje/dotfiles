@@ -26,7 +26,7 @@ class BidModifierViewSet(restapi.common.views_base.RESTAPIBaseViewSet):
         )
 
         if "type" in request.GET:
-            modifier_type = constants.BidModifierType.get_value_from_name(request.GET["type"])
+            modifier_type = constants.BidModifierType.get_constant_value(request.GET["type"])
             if modifier_type:
                 bid_modifiers = bid_modifiers.filter(type=modifier_type)
             else:
@@ -82,9 +82,6 @@ class BidModifierViewSet(restapi.common.views_base.RESTAPIBaseViewSet):
         serializer = serializers.BidModifierSerializer(data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         input_data = serializer.validated_data
-
-        if any(e in input_data for e in ("type", "source_slug", "target")):
-            raise exc.ValidationError("Only modifier field can be updated")
 
         try:
             bid_modifier = (

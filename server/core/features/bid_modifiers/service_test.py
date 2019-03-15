@@ -182,9 +182,9 @@ class TestBidModifierService(TestCase):
                 "Bid Modifier": 2.1,
             },
             {
-                constants.BidModifierType.get_text(constants.BidModifierType.DEVICE): helpers.output_device_type_target(
+                constants.BidModifierType.get_text(
                     constants.BidModifierType.DEVICE
-                ),
+                ): dash_constants.DeviceType.get_name(dash_constants.DeviceType.MOBILE),
                 "Source Slug": "",
                 "Bid Modifier": 1.6,
             },
@@ -209,7 +209,7 @@ class TestBidModifierService(TestCase):
                 },
                 {
                     "type": constants.BidModifierType.DEVICE,
-                    "target": str(constants.BidModifierType.DEVICE),
+                    "target": str(dash_constants.DeviceType.MOBILE),
                     "modifier": 1.6,
                     "source": None,
                 },
@@ -256,7 +256,7 @@ class TestBidModifierService(TestCase):
         )
         self.assertEqual(entries[2]["Errors"], "Invalid Bid Modifier")
         self.assertEqual(entries[3]["Errors"], "'all publishers' can not have a bid modifier set")
-        self.assertEqual(entries[4]["Errors"], "Invalid Device")
+        self.assertEqual(entries[4]["Errors"], "Invalid Device Type")
 
     def test_set_from_cleaned_entries(self):
         cleaned_entries = [
@@ -356,11 +356,23 @@ class TestBidModifierService(TestCase):
             },
             {helpers.output_modifier_type(constants.BidModifierType.DEVICE): "Illegal", "Bid Modifier": "1.3"},
             {
-                helpers.output_modifier_type(constants.BidModifierType.OPERATING_SYSTEM): "Android",
+                helpers.output_modifier_type(
+                    constants.BidModifierType.OPERATING_SYSTEM
+                ): dash_constants.OperatingSystem.get_text(dash_constants.OperatingSystem.ANDROID),
                 "Bid Modifier": "30.0",
             },
-            {helpers.output_modifier_type(constants.BidModifierType.PLACEMENT): "Website", "Bid Modifier": "-0.1"},
-            {helpers.output_modifier_type(constants.BidModifierType.PLACEMENT): "In-app", "Bid Modifier": "0.5"},
+            {
+                helpers.output_modifier_type(
+                    constants.BidModifierType.PLACEMENT
+                ): dash_constants.PlacementMedium.get_name(dash_constants.PlacementMedium.SITE),
+                "Bid Modifier": "-0.1",
+            },
+            {
+                helpers.output_modifier_type(
+                    constants.BidModifierType.PLACEMENT
+                ): dash_constants.PlacementMedium.get_name(dash_constants.PlacementMedium.APP),
+                "Bid Modifier": "0.5",
+            },
             {helpers.output_modifier_type(constants.BidModifierType.COUNTRY): "US", "Bid Modifier": "1.6"},
         ]
 
@@ -374,20 +386,26 @@ class TestBidModifierService(TestCase):
             {
                 helpers.output_modifier_type(constants.BidModifierType.DEVICE): "Illegal",
                 "Bid Modifier": "1.3",
-                "Errors": "Invalid Device",
+                "Errors": "Invalid Device Type",
             },
             {
-                helpers.output_modifier_type(constants.BidModifierType.OPERATING_SYSTEM): "Android",
+                helpers.output_modifier_type(
+                    constants.BidModifierType.OPERATING_SYSTEM
+                ): dash_constants.OperatingSystem.get_text(dash_constants.OperatingSystem.ANDROID),
                 "Bid Modifier": "30.0",
                 "Errors": helpers._get_modifier_bounds_error_message(30),
             },
             {
-                helpers.output_modifier_type(constants.BidModifierType.PLACEMENT): "Website",
+                helpers.output_modifier_type(
+                    constants.BidModifierType.PLACEMENT
+                ): dash_constants.PlacementMedium.get_name(dash_constants.PlacementMedium.SITE),
                 "Bid Modifier": "-0.1",
                 "Errors": helpers._get_modifier_bounds_error_message(-0.1),
             },
             {
-                helpers.output_modifier_type(constants.BidModifierType.PLACEMENT): "In-app",
+                helpers.output_modifier_type(
+                    constants.BidModifierType.PLACEMENT
+                ): dash_constants.PlacementMedium.get_name(dash_constants.PlacementMedium.APP),
                 "Bid Modifier": "0.5",
                 "Errors": "",
             },

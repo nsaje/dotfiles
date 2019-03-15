@@ -5,12 +5,13 @@ import numbers
 import random
 import string
 
-from core import models
-from dash import constants as dash_constants
-from dash.features import geolocation
+from django.core.exceptions import ValidationError
+
 from stats import constants as stats_constants
+from utils import validation_helper
 
 from . import constants
+from . import converters
 from . import exceptions
 
 MODIFIER_MAX = decimal.Decimal("11.0")
@@ -134,141 +135,45 @@ def clean_bid_modifier_value_input(modifier, errors):
     return modifier
 
 
-def clean_publisher_input(publisher, errors):
+def validate_publisher(publisher):
     if not publisher:
-        errors.append("Publisher should not be empty")
+        raise exceptions.BidModifierTargetInvalid("Publisher should not be empty")
+
+    errors = []
 
     publisher = publisher.strip()
     prefixes = ("http://", "https://")
     if any(publisher.startswith(x) for x in prefixes):
         errors.append("Remove the following prefixes: http, https")
 
-    for prefix in ("http://", "https://"):
-        publisher = publisher.replace(prefix, "")
+        for prefix in ("http://", "https://"):
+            publisher = publisher.replace(prefix, "")
 
     if "/" in publisher:
         errors.append("Publisher should not contain /")
-        publisher = publisher.strip("/")
 
-    return publisher
+    if errors:
+        raise exceptions.BidModifierTargetInvalid("; ".join(errors))
 
-
-def clean_source_input(source_input, errors):
-    source = models.Source.objects.filter(bidder_slug=source_input).only("id").first()
-    if source is None:
-        errors.append("Invalid Source")
-        return None
-
-    return str(source.id)
-
-
-def output_source_target(source_target):
-    source = models.Source.objects.filter(id=source_target).only("bidder_slug").first()
-    if source is None:
-        raise ValueError("Provided source target does not exist")
-
-    return source.bidder_slug
-
-
-def clean_device_type_input(device_type_input, errors):
-    device_type = dash_constants.DeviceType.get_value(device_type_input)
-    if device_type is None:
-        errors.append("Invalid Device")
-        return None
-
-    return str(device_type)
-
-
-def output_device_type_target(device_type_target):
-    device_type = dash_constants.DeviceType.get_text(int(device_type_target))
-    if device_type is None:
-        raise ValueError("Provided device type target does not exist")
-
-    return device_type
-
-
-def clean_operating_system_input(os_type_input, errors):
-    os = dash_constants.OperatingSystem.get_value(os_type_input)
-    if os is None:
-        errors.append("Invalid Operating System")
-        return None
-
-    return str(os)
-
-
-def output_operating_system_target(operating_system_target):
-    operating_system = dash_constants.OperatingSystem.get_text(operating_system_target)
-    if operating_system is None:
-        raise ValueError("Provided operating system target does not exist")
-
-    return operating_system
-
-
-def clean_placement_medium_input(placement_medium_input, errors):
-    placement_medium = dash_constants.PlacementMedium.get_value(placement_medium_input)
-    if placement_medium is None:
-        errors.append("Invalid Placement")
-        return None
-
-    return str(placement_medium)
-
-
-def output_placement_medium_target(placement_medium_target):
-    placement_medium = dash_constants.PlacementMedium.get_text(placement_medium_target)
-    if placement_medium is None:
-        raise ValueError("Provided placement medium target does not exist")
-
-    return placement_medium
-
-
-def clean_geolocation_input(geolocation_input, modifier_type, errors):
-    if modifier_type == constants.BidModifierType.COUNTRY:
-        geo_type = dash_constants.LocationType.COUNTRY
-    elif modifier_type == constants.BidModifierType.STATE:
-        geo_type = dash_constants.LocationType.REGION
-    elif modifier_type == constants.BidModifierType.DMA:
-        geo_type = dash_constants.LocationType.DMA
-    else:
-        raise ValueError("Illegal geolocation bid modifier type")
-
-    geo_location = geolocation.Geolocation.objects.filter(key=geolocation_input, type=geo_type).only("key").first()
-    if geo_location is None:
-        errors.append("Invalid Geolocation")
-        return None
-
-    return str(geo_location.key)
-
-
-def clean_ad_input(ad_input, errors):
     try:
-        ad_id = int(ad_input)
-    except ValueError:
-        errors.append("Invalid Ad")
-        return None
+        validation_helper.validate_domain_name(publisher)
+    except ValidationError as exc:
+        raise exceptions.BidModifierTargetInvalid(str(exc.message))
 
-    content_ad = models.ContentAd.objects.filter(id=ad_id).only("id").first()
-    if content_ad is None:
-        errors.append("Invalid Ad")
-        return None
-
-    return ad_input
+    return publisher.lower()
 
 
-_target_transformation_map = {
-    constants.BidModifierType.PUBLISHER: lambda x: x,
-    constants.BidModifierType.SOURCE: output_source_target,
-    constants.BidModifierType.DEVICE: output_device_type_target,
-    constants.BidModifierType.OPERATING_SYSTEM: output_operating_system_target,
-    constants.BidModifierType.PLACEMENT: output_placement_medium_target,
-    constants.BidModifierType.COUNTRY: lambda x: x,
-    constants.BidModifierType.STATE: lambda x: x,
-    constants.BidModifierType.DMA: lambda x: x,
-    constants.BidModifierType.AD: lambda x: x,
-}
+def clean_target_input(input_value, modifier_type, errors):
+    try:
+        return converters.FileConverter.to_target(modifier_type, input_value)
+    except exceptions.BidModifierInvalid as exc:
+        errors.append(str(exc))
+
+    return None
 
 
 def transform_target(modifier_type, target_value):
-    return _target_transformation_map[modifier_type](target_value)
+    return converters.FileConverter.from_target(modifier_type, target_value)
 
 
 def make_csv_file_columns(modifier_type):

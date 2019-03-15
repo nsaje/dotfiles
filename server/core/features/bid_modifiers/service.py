@@ -8,8 +8,8 @@ from django.db import transaction
 
 from core.models.source import model as source_model
 from dash import constants as dash_constants
-from utils import s3helpers
 from utils import k1_helper
+from utils import s3helpers
 
 from . import constants
 from . import exceptions
@@ -117,25 +117,14 @@ def clean_entries(entries):
                 # We don't add 'all publishers' row to cleaned entries.
                 if modifier is not None:
                     errors.append("'all publishers' can not have a bid modifier set")
-                else:
-                    continue
-            else:
-                target = helpers.clean_publisher_input(entry[target_column_name], errors)
+                    entry["Errors"] = "; ".join(errors)
+                    has_error = True
+
+                continue
         else:
             source = None
 
-            if modifier_type == constants.BidModifierType.SOURCE:
-                target = helpers.clean_source_input(entry[target_column_name], errors)
-            elif modifier_type == constants.BidModifierType.DEVICE:
-                target = helpers.clean_device_type_input(entry[target_column_name], errors)
-            elif modifier_type == constants.BidModifierType.OPERATING_SYSTEM:
-                target = helpers.clean_operating_system_input(entry[target_column_name], errors)
-            elif modifier_type == constants.BidModifierType.PLACEMENT:
-                target = helpers.clean_placement_medium_input(entry[target_column_name], errors)
-            elif modifier_type == constants.BidModifierType.AD:
-                target = helpers.clean_ad_input(entry[target_column_name], errors)
-            else:
-                target = helpers.clean_geolocation_input(entry[target_column_name], modifier_type, errors)
+        target = helpers.clean_target_input(entry[target_column_name], modifier_type, errors)
 
         if not errors:
             cleaned_entries.append({"type": modifier_type, "modifier": modifier, "target": target, "source": source})
@@ -325,13 +314,13 @@ def make_csv_example_file(modifier_type):
         constants.BidModifierType.PUBLISHER: {target_column_name: "example.com", "Source Slug": "some_slug"},
         constants.BidModifierType.SOURCE: {target_column_name: "b1_outbrain"},
         constants.BidModifierType.DEVICE: {
-            target_column_name: dash_constants.DeviceType.get_text(dash_constants.DeviceType.MOBILE)
+            target_column_name: dash_constants.DeviceType.get_name(dash_constants.DeviceType.MOBILE)
         },
         constants.BidModifierType.OPERATING_SYSTEM: {
             target_column_name: dash_constants.OperatingSystem.get_text(dash_constants.OperatingSystem.ANDROID)
         },
         constants.BidModifierType.PLACEMENT: {
-            target_column_name: dash_constants.PlacementMedium.get_text(dash_constants.PlacementMedium.SITE)
+            target_column_name: dash_constants.PlacementMedium.get_name(dash_constants.PlacementMedium.SITE)
         },
         constants.BidModifierType.COUNTRY: {target_column_name: "US"},
         constants.BidModifierType.STATE: {target_column_name: "US-TX"},

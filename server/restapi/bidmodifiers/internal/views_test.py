@@ -126,10 +126,7 @@ class BidModifierCSVTest(restapi.common.views_base_test.RESTAPITest):
         target_column_name = bid_modifiers.helpers.output_modifier_type(bid_modifiers.constants.BidModifierType.DEVICE)
         csv_columns = [target_column_name, "Bid Modifier"]
         entries = [
-            {
-                target_column_name: bid_modifiers.helpers.output_device_type_target(constants.DeviceType.MOBILE),
-                "Bid Modifier": "20.0",
-            }
+            {target_column_name: constants.DeviceType.get_name(constants.DeviceType.MOBILE), "Bid Modifier": "20.0"}
         ]
 
         csv_writer = csv.DictWriter(csv_file, csv_columns)
@@ -169,7 +166,7 @@ class BidModifierCSVTest(restapi.common.views_base_test.RESTAPITest):
             error_entires,
             [
                 {
-                    target_column_name: bid_modifiers.helpers.output_device_type_target(constants.DeviceType.MOBILE),
+                    target_column_name: constants.DeviceType.get_name(constants.DeviceType.MOBILE),
                     "Bid Modifier": "20.0",
                     "Errors": bid_modifiers.helpers._get_modifier_bounds_error_message(20.0),
                 }
@@ -211,25 +208,25 @@ class BidModifierCSVTest(restapi.common.views_base_test.RESTAPITest):
             {
                 bid_modifiers.helpers.output_modifier_type(
                     bid_modifiers.constants.BidModifierType.SOURCE
-                ): bid_modifiers.helpers.output_source_target(self.outbrain.id),
+                ): self.outbrain.bidder_slug,
                 "Bid Modifier": "1.2",
             },
             {
                 bid_modifiers.helpers.output_modifier_type(
                     bid_modifiers.constants.BidModifierType.DEVICE
-                ): bid_modifiers.helpers.output_device_type_target(constants.DeviceType.MOBILE),
+                ): constants.DeviceType.get_name(constants.DeviceType.MOBILE),
                 "Bid Modifier": "1.3",
             },
             {
                 bid_modifiers.helpers.output_modifier_type(
                     bid_modifiers.constants.BidModifierType.OPERATING_SYSTEM
-                ): bid_modifiers.helpers.output_operating_system_target(constants.OperatingSystem.ANDROID),
+                ): constants.OperatingSystem.get_text(constants.OperatingSystem.ANDROID),
                 "Bid Modifier": "1.4",
             },
             {
                 bid_modifiers.helpers.output_modifier_type(
                     bid_modifiers.constants.BidModifierType.PLACEMENT
-                ): bid_modifiers.helpers.output_placement_medium_target(constants.PlacementMedium.SITE),
+                ): constants.PlacementMedium.get_name(constants.PlacementMedium.SITE),
                 "Bid Modifier": "1.5",
             },
             {
@@ -293,13 +290,13 @@ class BidModifierCSVTest(restapi.common.views_base_test.RESTAPITest):
                 },
                 {
                     "type": bid_modifiers.constants.BidModifierType.OPERATING_SYSTEM,
-                    "target": str(constants.OperatingSystem.ANDROID),
+                    "target": constants.OperatingSystem.ANDROID,
                     "source": None,
                     "modifier": 1.4,
                 },
                 {
                     "type": bid_modifiers.constants.BidModifierType.PLACEMENT,
-                    "target": str(constants.PlacementMedium.SITE),
+                    "target": constants.PlacementMedium.SITE,
                     "source": None,
                     "modifier": 1.5,
                 },
@@ -352,20 +349,20 @@ class BidModifierCSVTest(restapi.common.views_base_test.RESTAPITest):
             {
                 bid_modifiers.helpers.output_modifier_type(
                     bid_modifiers.constants.BidModifierType.SOURCE
-                ): bid_modifiers.helpers.output_source_target(self.outbrain.id),
+                ): self.outbrain.bidder_slug,
                 "Source Slug": self.source.bidder_slug,
                 "Bid Modifier": "1.2",
             },
             {
                 bid_modifiers.helpers.output_modifier_type(
                     bid_modifiers.constants.BidModifierType.DEVICE
-                ): bid_modifiers.helpers.output_device_type_target(constants.DeviceType.MOBILE),
+                ): constants.DeviceType.get_name(constants.DeviceType.MOBILE),
                 "Bid Modifier": "11.3",
             },
             {
                 bid_modifiers.helpers.output_modifier_type(
                     bid_modifiers.constants.BidModifierType.OPERATING_SYSTEM
-                ): bid_modifiers.helpers.output_operating_system_target(constants.OperatingSystem.ANDROID),
+                ): constants.OperatingSystem.get_text(constants.OperatingSystem.ANDROID),
                 "Bid Modifier": "-0.1",
             },
             {
@@ -413,30 +410,32 @@ class BidModifierCSVTest(restapi.common.views_base_test.RESTAPITest):
 
         actual_contents = csv_error_content.read()
 
-        expected_contents = (
-            "Source Slug column missing in CSV file\r\n"
-            "Publisher,Bid Modifier\r\n"
-            "example.com,1.1\r\n"
-            "\r\n"
-            "Source Slug should exist only in publisher bid modifier CSV file\r\n"
-            "Source,Source Slug,Bid Modifier\r\n"
-            "b1_outbrain,source_slug,1.2\r\n"
-            "\r\n"
-            "Device,Bid Modifier,Errors\r\n"
-            "Mobile,11.3,Bid modifier too high (> 11.0)\r\n"
-            "\r\n"
-            "Operating System,Bid Modifier,Errors\r\n"
-            "Android,-0.1,Bid modifier too low (< 0.01)\r\n"
-            "\r\n"
-            "Placement,Bid Modifier,Errors\r\n"
-            "illegal,1.5,Invalid Placement\r\n"
-            "\r\n"
-            "Country,Bid Modifier,Errors\r\n"
-            "illegal,1.6,Invalid Geolocation\r\n"
-            "\r\n"
-            "Bid Modifier target column is missing\r\n"
-            "illegal,Bid Modifier\r\n"
-            "16807,-0.1\r\n"
+        expected_contents = "".join(
+            [
+                "Source Slug column missing in CSV file\r\n",
+                "Publisher,Bid Modifier\r\n",
+                "example.com,1.1\r\n",
+                "\r\n",
+                "Source Slug should exist only in publisher bid modifier CSV file\r\n",
+                "Source,Source Slug,Bid Modifier\r\n",
+                "{},{},1.2\r\n".format(self.outbrain.bidder_slug, self.source.bidder_slug),
+                "\r\n",
+                "Device,Bid Modifier,Errors\r\n",
+                "MOBILE,11.3,Bid modifier too high (> 11.0)\r\n",
+                "\r\n",
+                "Operating System,Bid Modifier,Errors\r\n",
+                "Android,-0.1,Bid modifier too low (< 0.01)\r\n",
+                "\r\n",
+                "Placement,Bid Modifier,Errors\r\n",
+                "illegal,1.5,Invalid Placement Medium\r\n",
+                "\r\n",
+                "Country,Bid Modifier,Errors\r\n",
+                "illegal,1.6,Invalid Geolocation\r\n",
+                "\r\n",
+                "Bid Modifier target column is missing\r\n",
+                "illegal,Bid Modifier\r\n",
+                "{},-0.1\r\n".format(self.ad.id),
+            ]
         )
 
         self.assertEqual(actual_contents, expected_contents)

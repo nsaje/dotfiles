@@ -16,3 +16,20 @@ class ValidatePlainTextTest(TestCase):
 
         with self.assertRaises(ValidationError):
             validation_helper.validate_plain_text('<a href="https://test.com">asdf')
+
+
+class ValidateDomainNameTest(TestCase):
+    def test_valid(self):
+        validation_helper.validate_domain_name("example.com")
+        validation_helper.validate_domain_name("app.example.com")
+        validation_helper.validate_domain_name("APP.EXAMPLE.COM")
+
+    def test_invalid(self):
+        with self.assertRaises(ValidationError):
+            validation_helper.validate_domain_name("https://example.com")
+
+        with self.assertRaises(ValidationError):
+            validation_helper.validate_domain_name("example.com/")
+
+        with self.assertRaises(ValidationError):
+            validation_helper.validate_domain_name("example")

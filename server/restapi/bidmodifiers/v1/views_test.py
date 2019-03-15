@@ -4,6 +4,8 @@ from rest_framework import status
 import core.models
 import restapi.common.views_base_test
 from core.features import bid_modifiers
+from dash import constants
+from dash.features import geolocation
 from utils import test_helper
 from utils.magic_mixer import get_request_mock
 from utils.magic_mixer import magic_mixer
@@ -15,117 +17,137 @@ class BidModifierViewSetTest(restapi.common.views_base_test.RESTAPITest):
         test_helper.add_permissions(self.user, ["can_set_bid_modifiers"])
         self.request = get_request_mock(self.user)
         self.source = magic_mixer.blend(core.models.Source, bidder_slug="test_slug")
+        self.content_ad = magic_mixer.blend(core.models.ContentAd)
         self.ad_group = magic_mixer.blend(core.models.AdGroup, campaign__account__users=[self.user])
         self.other_ad_group = magic_mixer.blend(core.models.AdGroup, campaign__account__users=[self.user])
         self.foreign_ad_group = magic_mixer.blend(core.models.AdGroup)
 
+        self.us = magic_mixer.blend(
+            geolocation.Geolocation, key="US", type=constants.LocationType.COUNTRY, name="United States"
+        )
+        self.us_tx = magic_mixer.blend(
+            geolocation.Geolocation, key="US-TX", type=constants.LocationType.REGION, name="Texas, United States"
+        )
+        self.ep_tx = magic_mixer.blend(
+            geolocation.Geolocation, key="765", type=constants.LocationType.DMA, name="765 El Paso, TX"
+        )
+
         self.bid_modifiers_list = [
             magic_mixer.blend(
-                bid_modifiers.models.BidModifier,
+                bid_modifiers.BidModifier,
                 ad_group=self.ad_group,
-                type=bid_modifiers.constants.BidModifierType.PUBLISHER,
-                target="test_publisher",
+                type=bid_modifiers.BidModifierType.PUBLISHER,
+                target="example.com",
                 source=self.source,
                 source_slug=self.source.bidder_slug,
                 modifier=0.5,
             ),
             magic_mixer.blend(
-                bid_modifiers.models.BidModifier,
+                bid_modifiers.BidModifier,
                 ad_group=self.ad_group,
-                type=bid_modifiers.constants.BidModifierType.SOURCE,
-                target="test_source",
+                type=bid_modifiers.BidModifierType.SOURCE,
+                target=str(self.source.id),
                 source=None,
                 source_slug="",
                 modifier=4.6,
             ),
             magic_mixer.blend(
-                bid_modifiers.models.BidModifier,
+                bid_modifiers.BidModifier,
                 ad_group=self.ad_group,
-                type=bid_modifiers.constants.BidModifierType.DEVICE,
-                target="test_device",
+                type=bid_modifiers.BidModifierType.DEVICE,
+                target=str(constants.DeviceType.DESKTOP),
                 source=None,
                 source_slug="",
                 modifier=1.3,
             ),
             magic_mixer.blend(
-                bid_modifiers.models.BidModifier,
+                bid_modifiers.BidModifier,
                 ad_group=self.ad_group,
-                type=bid_modifiers.constants.BidModifierType.OPERATING_SYSTEM,
-                target="test_operating_system",
+                type=bid_modifiers.BidModifierType.OPERATING_SYSTEM,
+                target=constants.OperatingSystem.LINUX,
                 source=None,
                 source_slug="",
                 modifier=1.7,
             ),
             magic_mixer.blend(
-                bid_modifiers.models.BidModifier,
+                bid_modifiers.BidModifier,
                 ad_group=self.ad_group,
-                type=bid_modifiers.constants.BidModifierType.PLACEMENT,
-                target="test_placement",
+                type=bid_modifiers.BidModifierType.PLACEMENT,
+                target=constants.PlacementMedium.APP,
                 source=None,
                 source_slug="",
                 modifier=3.6,
             ),
             magic_mixer.blend(
-                bid_modifiers.models.BidModifier,
+                bid_modifiers.BidModifier,
                 ad_group=self.ad_group,
-                type=bid_modifiers.constants.BidModifierType.COUNTRY,
-                target="test_country",
+                type=bid_modifiers.BidModifierType.COUNTRY,
+                target=self.us.key,
                 source=None,
                 source_slug="",
                 modifier=2.9,
             ),
             magic_mixer.blend(
-                bid_modifiers.models.BidModifier,
+                bid_modifiers.BidModifier,
                 ad_group=self.ad_group,
-                type=bid_modifiers.constants.BidModifierType.STATE,
-                target="test_state",
+                type=bid_modifiers.BidModifierType.STATE,
+                target=self.us_tx.key,
                 source=None,
                 source_slug="",
                 modifier=2.4,
             ),
             magic_mixer.blend(
-                bid_modifiers.models.BidModifier,
+                bid_modifiers.BidModifier,
                 ad_group=self.ad_group,
-                type=bid_modifiers.constants.BidModifierType.DMA,
-                target="test_dma",
+                type=bid_modifiers.BidModifierType.DMA,
+                target=self.ep_tx.key,
                 source=None,
                 source_slug="",
                 modifier=0.6,
             ),
+            magic_mixer.blend(
+                bid_modifiers.BidModifier,
+                ad_group=self.ad_group,
+                type=bid_modifiers.BidModifierType.AD,
+                target=str(self.content_ad.id),
+                source=None,
+                source_slug="",
+                modifier=1.1,
+            ),
         ]
 
         self.bid_modifiers_extra_1 = magic_mixer.blend(
-            bid_modifiers.models.BidModifier,
+            bid_modifiers.BidModifier,
             ad_group=self.other_ad_group,
-            type=bid_modifiers.constants.BidModifierType.PUBLISHER,
-            target="test_publisher",
+            type=bid_modifiers.BidModifierType.PUBLISHER,
+            target="example.com",
             source=self.source,
             source_slug=self.source.bidder_slug,
             modifier=3.5,
         )
         self.bid_modifiers_extra_2 = magic_mixer.blend(
-            bid_modifiers.models.BidModifier,
+            bid_modifiers.BidModifier,
             ad_group=self.other_ad_group,
-            type=bid_modifiers.constants.BidModifierType.SOURCE,
-            target="test_source",
+            type=bid_modifiers.BidModifierType.SOURCE,
+            target=str(self.source.id),
             source=None,
             source_slug="",
             modifier=1.1,
         )
         self.bid_modifiers_extra_3 = magic_mixer.blend(
-            bid_modifiers.models.BidModifier,
+            bid_modifiers.BidModifier,
             ad_group=self.foreign_ad_group,
-            type=bid_modifiers.constants.BidModifierType.DEVICE,
-            target="test_device",
+            type=bid_modifiers.BidModifierType.DEVICE,
+            target=str(constants.DeviceType.TV),
             source=None,
             source_slug="",
             modifier=2.1,
         )
         self.bid_modifiers_extra_4 = magic_mixer.blend(
-            bid_modifiers.models.BidModifier,
+            bid_modifiers.BidModifier,
             ad_group=self.foreign_ad_group,
-            type=bid_modifiers.constants.BidModifierType.OPERATING_SYSTEM,
-            target="test_operating_system",
+            type=bid_modifiers.BidModifierType.OPERATING_SYSTEM,
+            target=constants.OperatingSystem.WINDOWS,
             source=None,
             source_slug="",
             modifier=0.7,
@@ -142,9 +164,9 @@ class BidModifierViewSetTest(restapi.common.views_base_test.RESTAPITest):
                 "data": [
                     {
                         "id": str(bm.id),
-                        "type": bid_modifiers.constants.BidModifierType.get_name(bm.type),
+                        "type": bid_modifiers.BidModifierType.get_name(bm.type),
                         "sourceSlug": bm.source_slug,
-                        "target": bm.target,
+                        "target": bid_modifiers.converters.ApiConverter.from_target(bm.type, bm.target),
                         "modifier": bm.modifier,
                     }
                     for bm in self.bid_modifiers_list
@@ -170,9 +192,9 @@ class BidModifierViewSetTest(restapi.common.views_base_test.RESTAPITest):
                 "data": [
                     {
                         "id": str(bm.id),
-                        "type": bid_modifiers.constants.BidModifierType.get_name(bm.type),
+                        "type": bid_modifiers.BidModifierType.get_name(bm.type),
                         "sourceSlug": bm.source_slug,
-                        "target": bm.target,
+                        "target": bid_modifiers.converters.ApiConverter.from_target(bm.type, bm.target),
                         "modifier": bm.modifier,
                     }
                     for bm in self.bid_modifiers_list[4:6]
@@ -194,9 +216,9 @@ class BidModifierViewSetTest(restapi.common.views_base_test.RESTAPITest):
                 "data": [
                     {
                         "id": str(bm.id),
-                        "type": bid_modifiers.constants.BidModifierType.get_name(bm.type),
+                        "type": bid_modifiers.BidModifierType.get_name(bm.type),
                         "sourceSlug": bm.source_slug,
-                        "target": bm.target,
+                        "target": bid_modifiers.converters.ApiConverter.from_target(bm.type, bm.target),
                         "modifier": bm.modifier,
                     }
                 ],
@@ -225,9 +247,9 @@ class BidModifierViewSetTest(restapi.common.views_base_test.RESTAPITest):
             {
                 "data": {
                     "id": str(bm.id),
-                    "type": bid_modifiers.constants.BidModifierType.get_name(bm.type),
+                    "type": bid_modifiers.BidModifierType.get_name(bm.type),
                     "sourceSlug": bm.source_slug,
-                    "target": bm.target,
+                    "target": bid_modifiers.converters.ApiConverter.from_target(bm.type, bm.target),
                     "modifier": bm.modifier,
                 }
             },
@@ -248,7 +270,7 @@ class BidModifierViewSetTest(restapi.common.views_base_test.RESTAPITest):
 
     def test_create(self):
         bm = {
-            "type": bid_modifiers.constants.BidModifierType.get_name(bid_modifiers.constants.BidModifierType.PUBLISHER),
+            "type": bid_modifiers.BidModifierType.get_name(bid_modifiers.BidModifierType.PUBLISHER),
             "sourceSlug": self.source.bidder_slug,
             "target": "whatever.com",
             "modifier": 2.5,
@@ -292,7 +314,7 @@ class BidModifierViewSetTest(restapi.common.views_base_test.RESTAPITest):
     def test_create_existing(self):
         bm = self.bid_modifiers_list[0]
         data = {
-            "type": bid_modifiers.constants.BidModifierType.get_name(bm.type),
+            "type": bid_modifiers.BidModifierType.get_name(bm.type),
             "sourceSlug": bm.source_slug,
             "target": bm.target,
             "modifier": 2.5,
@@ -309,7 +331,7 @@ class BidModifierViewSetTest(restapi.common.views_base_test.RESTAPITest):
             {
                 "data": {
                     "id": str(bm.id),
-                    "type": bid_modifiers.constants.BidModifierType.get_name(bm.type),
+                    "type": bid_modifiers.BidModifierType.get_name(bm.type),
                     "sourceSlug": bm.source_slug,
                     "target": bm.target,
                     "modifier": 2.5,
@@ -319,7 +341,7 @@ class BidModifierViewSetTest(restapi.common.views_base_test.RESTAPITest):
 
     def test_create_foreign_ad_group(self):
         bm = {
-            "type": bid_modifiers.constants.BidModifierType.get_name(bid_modifiers.constants.BidModifierType.PUBLISHER),
+            "type": bid_modifiers.BidModifierType.get_name(bid_modifiers.BidModifierType.PUBLISHER),
             "sourceSlug": self.source.bidder_slug,
             "target": "whatever.com",
             "modifier": 2.5,
@@ -337,8 +359,8 @@ class BidModifierViewSetTest(restapi.common.views_base_test.RESTAPITest):
 
     def test_create_missing_slug(self):
         bm = {
-            "type": bid_modifiers.constants.BidModifierType.get_name(bid_modifiers.constants.BidModifierType.DEVICE),
-            "target": "1",
+            "type": bid_modifiers.BidModifierType.get_name(bid_modifiers.BidModifierType.DEVICE),
+            "target": constants.DeviceType.get_name(constants.DeviceType.DESKTOP),
             "modifier": 2.5,
         }
 
@@ -379,9 +401,9 @@ class BidModifierViewSetTest(restapi.common.views_base_test.RESTAPITest):
 
     def test_create_empty_slug(self):
         bm = {
-            "type": bid_modifiers.constants.BidModifierType.get_name(bid_modifiers.constants.BidModifierType.DEVICE),
+            "type": bid_modifiers.BidModifierType.get_name(bid_modifiers.BidModifierType.DEVICE),
             "sourceSlug": "",
-            "target": "1",
+            "target": constants.DeviceType.get_name(constants.DeviceType.DESKTOP),
             "modifier": 2.5,
         }
 
@@ -422,9 +444,9 @@ class BidModifierViewSetTest(restapi.common.views_base_test.RESTAPITest):
 
     def test_create_none_slug(self):
         bm = {
-            "type": bid_modifiers.constants.BidModifierType.get_name(bid_modifiers.constants.BidModifierType.DEVICE),
+            "type": bid_modifiers.BidModifierType.get_name(bid_modifiers.BidModifierType.DEVICE),
             "sourceSlug": None,
-            "target": "1",
+            "target": constants.DeviceType.get_name(constants.DeviceType.DESKTOP),
             "modifier": 2.5,
         }
 
@@ -463,7 +485,7 @@ class BidModifierViewSetTest(restapi.common.views_base_test.RESTAPITest):
             },
         )
 
-    def test_create_invalid_input(self):
+    def test_create_invalid_modifier_type(self):
         bm = {
             "type": "INVALID",
             "sourceSlug": self.source.bidder_slug,
@@ -492,10 +514,65 @@ class BidModifierViewSetTest(restapi.common.views_base_test.RESTAPITest):
             },
         )
 
+    def test_create_invalid_publisher_domain(self):
+        bm = {
+            "type": bid_modifiers.BidModifierType.get_name(bid_modifiers.BidModifierType.PUBLISHER),
+            "sourceSlug": self.source.bidder_slug,
+            "target": "examplecom",
+            "modifier": 2.5,
+        }
+
+        response = self.client.post(
+            reverse("adgroups_bidmodifiers_list", kwargs={"ad_group_id": self.ad_group.id}), data=bm, format="json"
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        result = self.assertResponseError(response, "ValidationError")
+        self.assertEqual(
+            result, {"errorCode": "ValidationError", "details": {"nonFieldErrors": ["Invalid domain name"]}}
+        )
+
+    def test_create_unsupported_operating_system(self):
+        bm = {
+            "type": bid_modifiers.BidModifierType.get_name(bid_modifiers.BidModifierType.OPERATING_SYSTEM),
+            "sourceSlug": "",
+            "target": constants.OperatingSystem.get_name(constants.OperatingSystem.UNKNOWN),
+            "modifier": 2.5,
+        }
+
+        response = self.client.post(
+            reverse("adgroups_bidmodifiers_list", kwargs={"ad_group_id": self.ad_group.id}), data=bm, format="json"
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        result = self.assertResponseError(response, "ValidationError")
+        self.assertEqual(
+            result,
+            {"errorCode": "ValidationError", "details": {"nonFieldErrors": ["Unsupported Operating System Traget"]}},
+        )
+
+    def test_create_invalid_operating_system(self):
+        bm = {
+            "type": bid_modifiers.BidModifierType.get_name(bid_modifiers.BidModifierType.OPERATING_SYSTEM),
+            "sourceSlug": "",
+            "target": "invalid",
+            "modifier": 2.5,
+        }
+
+        response = self.client.post(
+            reverse("adgroups_bidmodifiers_list", kwargs={"ad_group_id": self.ad_group.id}), data=bm, format="json"
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        result = self.assertResponseError(response, "ValidationError")
+        self.assertEqual(
+            result, {"errorCode": "ValidationError", "details": {"nonFieldErrors": ["Invalid Operating System"]}}
+        )
+
     def test_create_missing_required_slug(self):
 
         bm = {
-            "type": bid_modifiers.constants.BidModifierType.get_name(bid_modifiers.constants.BidModifierType.PUBLISHER),
+            "type": bid_modifiers.BidModifierType.get_name(bid_modifiers.BidModifierType.PUBLISHER),
             "sourceSlug": "",
             "target": "whatever.com",
             "modifier": 2.5,
@@ -527,7 +604,7 @@ class BidModifierViewSetTest(restapi.common.views_base_test.RESTAPITest):
             {
                 "data": {
                     "id": str(bm.id),
-                    "type": bid_modifiers.constants.BidModifierType.get_name(bm.type),
+                    "type": bid_modifiers.BidModifierType.get_name(bm.type),
                     "sourceSlug": bm.source_slug,
                     "target": bm.target,
                     "modifier": 1.5,
@@ -541,7 +618,7 @@ class BidModifierViewSetTest(restapi.common.views_base_test.RESTAPITest):
             {
                 "data": {
                     "id": str(bm.id),
-                    "type": bid_modifiers.constants.BidModifierType.get_name(bm.type),
+                    "type": bid_modifiers.BidModifierType.get_name(bm.type),
                     "sourceSlug": bm.source_slug,
                     "target": bm.target,
                     "modifier": 1.5,
@@ -646,7 +723,7 @@ class BidModifierViewSetTest(restapi.common.views_base_test.RESTAPITest):
                 "data": [
                     {
                         "id": str(bm.id),
-                        "type": bid_modifiers.constants.BidModifierType.get_name(bm.type),
+                        "type": bid_modifiers.BidModifierType.get_name(bm.type),
                         "sourceSlug": bm.source_slug,
                         "target": bm.target,
                         "modifier": bm.modifier,

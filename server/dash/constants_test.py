@@ -63,8 +63,8 @@ class ConstantsBaseTestCase(TestCase):
         self.assertIsNone(TestConstant.get_value("Cons100"))
         self.assertRaises(AttributeError, TestConstantNoValues.get_value, "Cons1")
 
-    def test_get_value_from_name(self):
-        self.assertEqual(TestConstant.get_value_from_name("CONS2"), "cons2")
-        self.assertEqual(TestConstantNoValues.get_value_from_name("CONS1"), "cons1")
-        self.assertIsNone(TestConstant.get_value_from_name("CONS100"))
-        self.assertIsNone(TestConstantNoValues.get_value_from_name("CONS100"))
+    def test_get_constant_value(self):
+        self.assertEqual(TestConstant.get_constant_value("CONS2"), "cons2")
+        self.assertEqual(TestConstantNoValues.get_constant_value("CONS1"), "cons1")
+        self.assertIsNone(TestConstant.get_constant_value("CONS100"))
+        self.assertIsNone(TestConstantNoValues.get_constant_value("CONS100"))

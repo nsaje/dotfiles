@@ -1962,6 +1962,7 @@ class OperatingSystem(ConstantBase):
     ANDROID = "android"
     IOS = "ios"
     WINPHONE = "winphone"
+    WINRT = "winrt"
     WINDOWS = "windows"
     MACOSX = "macosx"
     LINUX = "linux"
@@ -1972,6 +1973,7 @@ class OperatingSystem(ConstantBase):
         ANDROID: "Android",
         IOS: "iOS",
         WINPHONE: "Windows Phone",
+        WINRT: "WinRT",
         WINDOWS: "Windows",
         MACOSX: "macOS",
         LINUX: "Linux",

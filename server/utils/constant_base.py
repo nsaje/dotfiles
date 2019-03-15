@@ -32,9 +32,9 @@ class ConstantBase(object):
         return cls._VALUES.get(cons)
 
     @classmethod
-    def get_value(cls, name):
-        return {v: k for k, v in cls._VALUES.items()}.get(name)
+    def get_value(cls, text):
+        return {v: k for k, v in cls._VALUES.items()}.get(text)
 
     @classmethod
-    def get_value_from_name(cls, name):
-        return dict(cls._get_all_kv_pairs()).get(name)
+    def get_constant_value(cls, constant_name):
+        return dict(cls._get_all_kv_pairs()).get(constant_name)
