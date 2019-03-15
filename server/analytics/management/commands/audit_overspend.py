@@ -25,11 +25,6 @@ class Command(utils.command_helpers.ExceptionCommand):
         parser.add_argument("--slack", dest="slack", action="store_true", help="Notify via slack")
         parser.add_argument("--verbose", dest="verbose", action="store_true", help="Display output")
 
-    def _print(self, msg):
-        if not self.verbose:
-            return
-        self.stdout.write("{}\n".format(msg))
-
     def handle(self, *args, **options):
         self.verbose = options["verbose"]
         self.slack = options["slack"]
@@ -62,7 +57,7 @@ class Command(utils.command_helpers.ExceptionCommand):
                     "time": self.date.strftime("%Y-%m-%d") + "T12:00:00Z",
                 }
             )
-        if self.slack:
+        if self.slack and details:
             utils.slack.publish(
                 ALERT_MSG_OVERSPEND.format(date=self.date.strftime("%Y-%m-%d"), details=details),
                 msg_type=utils.slack.MESSAGE_TYPE_CRITICAL,
@@ -70,3 +65,7 @@ class Command(utils.command_helpers.ExceptionCommand):
             )
         if influx_data and self.influx:
             self.influx_client.write_points(influx_data)
+
+    def _print(self, msg):
+        if self.verbose:
+            self.stdout.write("{}\n".format(msg))
