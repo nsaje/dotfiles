@@ -626,6 +626,63 @@ class BidModifierViewSetTest(restapi.common.views_base_test.RESTAPITest):
             },
         )
 
+    def test_update_all_fields(self):
+        bm = self.bid_modifiers_list[0]
+
+        response = self.client.put(
+            reverse("adgroups_bidmodifiers_details", kwargs={"ad_group_id": self.ad_group.id, "pk": bm.id}),
+            data={
+                "id": str(bm.id),
+                "type": bid_modifiers.BidModifierType.get_name(bm.type),
+                "sourceSlug": bm.source_slug,
+                "target": bm.target,
+                "modifier": 1.5,
+            },
+            format="json",
+        )
+
+        result = self.assertResponseValid(response, status_code=status.HTTP_200_OK, data_type=dict)
+
+        self.assertEqual(
+            result,
+            {
+                "data": {
+                    "id": str(bm.id),
+                    "type": bid_modifiers.BidModifierType.get_name(bm.type),
+                    "sourceSlug": bm.source_slug,
+                    "target": bm.target,
+                    "modifier": 1.5,
+                }
+            },
+        )
+
+        self._assert_valid_get_response(
+            self.ad_group.id,
+            bm.id,
+            {
+                "data": {
+                    "id": str(bm.id),
+                    "type": bid_modifiers.BidModifierType.get_name(bm.type),
+                    "sourceSlug": bm.source_slug,
+                    "target": bm.target,
+                    "modifier": 1.5,
+                }
+            },
+        )
+
+    def test_update_empty(self):
+        bm = self.bid_modifiers_list[0]
+
+        response = self.client.put(
+            reverse("adgroups_bidmodifiers_details", kwargs={"ad_group_id": self.ad_group.id, "pk": bm.id}),
+            data={},
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        result = self.assertResponseError(response, "ValidationError")
+        self.assertEqual(result, {"errorCode": "ValidationError", "details": "Modifier field is required"})
+
     def test_update_invalid_input(self):
         bm = self.bid_modifiers_list[0]
 

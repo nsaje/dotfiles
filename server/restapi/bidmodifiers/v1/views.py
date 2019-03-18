@@ -79,7 +79,8 @@ class BidModifierViewSet(restapi.common.views_base.RESTAPIBaseViewSet):
         return self.response_ok(serializers.BidModifierSerializer(bid_modifier).data)
 
     def update(self, request, ad_group_id, pk=None):
-        serializer = serializers.BidModifierSerializer(data=request.data, partial=True)
+        bid_modifier = models.BidModifier.objects.filter(id=pk).first()
+        serializer = serializers.BidModifierSerializer(instance=bid_modifier, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         input_data = serializer.validated_data
 
