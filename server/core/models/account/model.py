@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
+import tagulous
 from django.conf import settings
 from django.contrib.postgres.fields import JSONField
 from django.db import models
 
 import core.features.yahoo_accounts
-import tagulous
 import utils.demo_anonymizer
 import utils.string_helper
 from core.models import tags
@@ -73,6 +73,7 @@ class Account(instance.AccountInstanceMixin, models.Model):
     )
 
     entity_tags = tagulous.models.TagField(to=tags.EntityTag, blank=True)
+    is_disabled = models.BooleanField(default=False, help_text="Agency can be disabled only if is externally managed.")
 
     objects = manager.AccountManager.from_queryset(queryset.AccountQuerySet)()
 
