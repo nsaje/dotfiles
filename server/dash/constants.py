@@ -1930,6 +1930,7 @@ class Whitelabel(ConstantBase):
     NEWSCORP = "newscorp"
     BURDA = "burda"
     MEDIAMOND = "mediamond"
+    AMPLIFY = "amplify"
 
     _VALUES = {
         GREENPARK: "Green Park Content",
@@ -1937,6 +1938,7 @@ class Whitelabel(ConstantBase):
         NEWSCORP: "Newscorp",
         BURDA: "Burda",
         MEDIAMOND: "Mediamond",
+        AMPLIFY: "Amplify",
     }
 
 
