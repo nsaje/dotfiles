@@ -940,4 +940,4 @@ class DeliveryLoaderTest(TestCase):
     def test_modifier_map(self):
         ad_group = models.AdGroup.objects.all().first()
         loader = loaders.DeliveryLoader(ad_group, self.user, breakdown=[stats.constants.DeliveryDimension.DEVICE])
-        self.assertDictEqual(loader.objs_map, {self.bid_modifier.id: self.bid_modifier})
+        self.assertDictEqual(loader.objs_map, {constants.DeviceType.DESKTOP: self.bid_modifier})

@@ -448,8 +448,11 @@ def log_user_query_request(user, breakdown, constraints, order, offset, limit):
     )
 
 
-def remap_delivery_stat_keys(stat_rows, target_dimension):
-    for row in stat_rows:
+def remap_delivery_stats_keys(stats_rows, target_dimension):
+    if not constants.is_top_level_delivery_dimension(target_dimension):
+        return
+
+    for row in stats_rows:
         bid_modifier_type = core.features.bid_modifiers.constants.DeliveryDimensionToBidModifierTypeMap.get(
             target_dimension
         )

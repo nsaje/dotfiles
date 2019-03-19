@@ -1,6 +1,7 @@
 import datetime
 from decimal import Decimal
 
+import mock
 from django.conf import settings
 from django.test import TestCase
 from django.test import override_settings
@@ -1731,7 +1732,6 @@ class QueryForRowsTest(TestCase):
             rows,
             [
                 {
-                    "bid_modifier_id": bid_modifier.id,
                     "device_type": DeviceType.DESKTOP,
                     "bid_modifier": {
                         "id": bid_modifier.id,
@@ -1772,7 +1772,6 @@ class QueryForRowsTest(TestCase):
             rows,
             [
                 {
-                    "bid_modifier_id": bid_modifier.id,
                     "device_os": OperatingSystem.MACOSX,
                     "bid_modifier": {
                         "id": bid_modifier.id,
@@ -1839,12 +1838,15 @@ class HelpersTest(TestCase):
         self.assertEqual(api_breakdowns.get_default_order("ad_group_id", "clicks"), ["name", "ad_group_id"])
 
     def test_make_rows(self):
+        loader = mock.MagicMock()
+        loader.objs_ids = [1, 2, 3]
+
         self.assertCountEqual(
-            augmenter.make_dash_rows("account_id", [1, 2, 3], None),
+            augmenter.make_dash_rows("account_id", loader, None),
             [{"account_id": 1}, {"account_id": 2}, {"account_id": 3}],
         )
 
         self.assertCountEqual(
-            augmenter.make_dash_rows("account_id", [1, 2, 3], {"source_id": 2}),
+            augmenter.make_dash_rows("account_id", loader, {"source_id": 2}),
             [{"account_id": 1, "source_id": 2}, {"account_id": 2, "source_id": 2}, {"account_id": 3, "source_id": 2}],
         )

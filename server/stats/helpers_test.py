@@ -189,8 +189,8 @@ class HelpersTest(TestCase):
             "performance_campaign_goal_" + str(primary_goal.id),
         )
 
-    def test_remap_delivery_stat_keys(self):
-        stat_rows = [
+    def test_remap_delivery_stats_keys(self):
+        stats_rows = [
             {"device_os": "WinPhone"},
             {"device_os": "macOS"},
             {"device_os": "Windows"},
@@ -198,7 +198,7 @@ class HelpersTest(TestCase):
             {"device_os": "asdf"},
         ]
         target_dimension = "device_os"
-        helpers.remap_delivery_stat_keys(stat_rows, target_dimension)
+        helpers.remap_delivery_stats_keys(stats_rows, target_dimension)
         self.assertEqual(
             [
                 {"device_os": "winphone"},
@@ -207,7 +207,28 @@ class HelpersTest(TestCase):
                 {"device_os": "Other"},
                 {"device_os": "asdf"},
             ],
-            stat_rows,
+            stats_rows,
+        )
+
+    def test_remap_delivery_stats_keys_wrong_dimension(self):
+        stats_rows = [
+            {"device_os": "WinPhone"},
+            {"device_os": "macOS"},
+            {"device_os": "Windows"},
+            {"device_os": "Other"},
+            {"device_os": "asdf"},
+        ]
+        target_dimension = "content_ad_id"
+        helpers.remap_delivery_stats_keys(stats_rows, target_dimension)
+        self.assertEqual(
+            [
+                {"device_os": "WinPhone"},
+                {"device_os": "macOS"},
+                {"device_os": "Windows"},
+                {"device_os": "Other"},
+                {"device_os": "asdf"},
+            ],
+            stats_rows,
         )
 
     def test_extract_rs_order_field(self):

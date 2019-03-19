@@ -89,12 +89,11 @@ class DeliveryAugmenterTest(TestCase):
         self.report_augmenter = augmenter.get_report_augmenter_for_dimension("device_type", None)
 
     def test_augmenter_bid_modifiers(self):
-        row = {"bid_modifier_id": self.bid_modifier.id}
+        row = {"device_type": dash.constants.DeviceType.DESKTOP}
         self.augmenter([row], self.delivery_loader)
         self.assertDictEqual(
             row,
             {
-                "bid_modifier_id": self.bid_modifier.id,
                 "device_type": dash.constants.DeviceType.DESKTOP,
                 "bid_modifier": {
                     "id": self.bid_modifier.id,
@@ -133,11 +132,11 @@ class DeliveryAugmenterTest(TestCase):
         )
 
     def test_report_augmenter_bid_modifiers(self):
-        row = {"bid_modifier_id": self.bid_modifier.id}
+        row = {"device_type": dash.constants.DeviceType.DESKTOP}
         self.report_augmenter([row], self.delivery_loader)
         self.assertEqual(0.5, row["bid_modifier"])
 
     def test_report_augmenter_no_bid_modifier_data(self):
-        row = row = {"device_type": dash.constants.DeviceType.MOBILE}
+        row = {"device_type": dash.constants.DeviceType.MOBILE}
         self.report_augmenter([row], self.delivery_loader)
         self.assertEqual(None, row["bid_modifier"])

@@ -111,8 +111,7 @@ class BaseDailyStatsView(api_common.BaseApiView):
         )
 
         stats.helpers.update_rows_to_contain_values_in_currency(query_results, currency)
-        if stats.constants.is_top_level_delivery_dimension(group_key):
-            stats.helpers.remap_delivery_stat_keys(query_results, group_key)
+        stats.helpers.remap_delivery_stats_keys(query_results, group_key)
 
         if join_selected:
             return helpers.format_metrics(query_results, metrics, {"selected": "Selected"}, default_group="selected")

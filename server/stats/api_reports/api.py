@@ -24,7 +24,6 @@ def query(
 ):
 
     order = extract_order(order)
-
     stats_rows = redshiftapi.api_reports.query(
         breakdown,
         constraints,
@@ -34,6 +33,8 @@ def query(
         limit,
         use_publishers_view=api_breakdowns.should_use_publishers_view(breakdown),
     )
+
+    helpers.remap_delivery_stats_keys(stats_rows, constants.get_target_dimension(breakdown))
 
     if include_items_with_no_spend:
         if len(stats_rows) == limit:
@@ -59,7 +60,6 @@ def totals(user, breakdown, constraints, goals, level):
     assert len(rows) == 1
 
     dash.dashapi.api_reports.annotate_totals(rows[0], user, breakdown, constraints, level)
-
     permission_filter.filter_columns_by_permission(user, rows, goals, constraints, level)
 
     return rows[0]

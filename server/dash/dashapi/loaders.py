@@ -968,6 +968,13 @@ class DeliveryLoader(Loader):
         super().__init__(bid_modifiers_qs, **kwargs)
 
     @classmethod
+    def _get_obj_id(cls, bid_modifier):
+        try:
+            return int(bid_modifier.target)
+        except ValueError:
+            return bid_modifier.target
+
+    @classmethod
     def from_constraints(cls, user, constraints, **kwargs):
         return cls(
             constraints.get("ad_group"),

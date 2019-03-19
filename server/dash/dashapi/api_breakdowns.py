@@ -72,16 +72,15 @@ def query_async_get_results_for_rows(query_threads, rows, breakdown, parents, or
         dash_rows = thread_result["rows"]
 
         parent_key = sort_helper.get_breakdown_key(parent, parent_breakdown)
-        stat_rows = rows_by_parent.get(parent_key, [])
+        stats_rows = rows_by_parent.get(parent_key, [])
 
-        if len(breakdown) == 1 and stats.constants.is_top_level_delivery_dimension(target_dimension):
-            stats.helpers.remap_delivery_stat_keys(stat_rows, target_dimension)
+        stats.helpers.remap_delivery_stats_keys(stats_rows, target_dimension)
 
-        stat_rows_target_ids = [x[target_dimension] for x in stat_rows]
+        stats_rows_target_ids = [x[target_dimension] for x in stats_rows]
         dash_rows_by_id = {x[target_dimension]: x for x in dash_rows if target_dimension in x}
 
         selected_rows = []
-        for row in stat_rows:
+        for row in stats_rows:
             if row[target_dimension] in dash_rows_by_id:
                 selected_rows.append(dash_rows_by_id[row[target_dimension]])
 
@@ -98,7 +97,7 @@ def query_async_get_results_for_rows(query_threads, rows, breakdown, parents, or
         # add dash rows that were not included in stats. publisher and delivery dimensions are excluded here
         # as we should not add those rows
         if (
-            len(stat_rows_target_ids) < limit
+            len(stats_rows_target_ids) < limit
             and target_dimension != "publisher_id"
             and not stats.constants.is_top_level_delivery_dimension(target_dimension)
         ):
@@ -107,7 +106,7 @@ def query_async_get_results_for_rows(query_threads, rows, breakdown, parents, or
             all_used_ids = [x[target_dimension] for x in structure_4p]
 
             new_offset, new_limit = helpers.get_adjusted_limits_for_additional_rows(
-                stat_rows_target_ids, all_used_ids, offset, limit
+                stats_rows_target_ids, all_used_ids, offset, limit
             )
 
             extra_rows = [x for x in dash_rows if x[target_dimension] not in all_used_ids]
@@ -134,7 +133,7 @@ def query_section(level, user, breakdown, constraints, parent=None):
     loader_cls = loaders.get_loader_for_dimension(target_dimension, level)
     loader = loader_cls.from_constraints(user, constraints, breakdown=breakdown)
 
-    rows = augmenter.make_dash_rows(target_dimension, loader.objs_ids, parent)
+    rows = augmenter.make_dash_rows(target_dimension, loader, parent)
     augmenter_fn = augmenter.get_augmenter_for_dimension(target_dimension)
     augmenter_fn(rows, loader, not bool(parent))
 
