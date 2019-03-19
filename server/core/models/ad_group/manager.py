@@ -12,7 +12,7 @@ from . import exceptions
 from . import model
 
 AMPLIFY_REVIEW_AGENCIES_DISABLED = {55}  # Outbrain
-AMPLIFY_REVIEW_ACCOUNTS_DISABLED = {490}  # inPowered
+AMPLIFY_REVIEW_ACCOUNTS_DISABLED = {490, 513}  # inPowered
 
 
 class AdGroupManager(core.common.BaseManager):
