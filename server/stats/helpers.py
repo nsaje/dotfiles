@@ -453,9 +453,7 @@ def remap_delivery_stats_keys(stats_rows, target_dimension):
         return
 
     for row in stats_rows:
-        bid_modifier_type = core.features.bid_modifiers.constants.DeliveryDimensionToBidModifierTypeMap.get(
-            target_dimension
-        )
+        bid_modifier_type = core.features.bid_modifiers.helpers.breakdown_name_to_modifier_type(target_dimension)
         if target_dimension in (constants.DeliveryDimension.DEVICE, constants.DeliveryDimension.DMA) or not row.get(
             target_dimension
         ):

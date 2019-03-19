@@ -959,9 +959,7 @@ class DeliveryLoader(Loader):
         self.user = user
 
         bid_modifiers_qs = bid_modifiers.BidModifier.objects.filter(
-            type=core.features.bid_modifiers.constants.DeliveryDimensionToBidModifierTypeMap.get(
-                self.delivery_dimension
-            ),
+            type=core.features.bid_modifiers.helpers.breakdown_name_to_modifier_type(self.delivery_dimension),
             ad_group=self.ad_group,
         )
 
@@ -983,3 +981,11 @@ class DeliveryLoader(Loader):
             end_date=constraints.get("date__lte"),
             **kwargs,
         )
+
+    @cached_property
+    def min_max_modifiers(self):
+        modifier_type = bid_modifiers.helpers.breakdown_name_to_modifier_type(self.delivery_dimension)
+        min_factor, max_factor = bid_modifiers.overview.get_min_max_factors(
+            self.ad_group.id, excluded_types=[modifier_type]
+        )
+        return min_factor, max_factor

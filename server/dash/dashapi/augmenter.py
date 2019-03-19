@@ -466,6 +466,7 @@ def augment_delivery(row, loader, is_base_level=True):
     delivery_dimension = loader.delivery_dimension
     delivery_value = row.get(loader.delivery_dimension)
     bid_modifier = loader.objs_map.get(delivery_value)
+    min_factor, max_factor = loader.min_max_modifiers
 
     if bid_modifier:
         row.update(
@@ -475,10 +476,12 @@ def augment_delivery(row, loader, is_base_level=True):
                     modifier_type=core.features.bid_modifiers.BidModifierType.get_name(bid_modifier.type),
                     source_slug=bid_modifier.source_slug,
                     target=core.features.bid_modifiers.ApiConverter.from_target(
-                        core.features.bid_modifiers.constants.DeliveryDimensionToBidModifierTypeMap[delivery_dimension],
+                        core.features.bid_modifiers.helpers.breakdown_name_to_modifier_type(delivery_dimension),
                         bid_modifier.target,
                     ),
                     modifier=bid_modifier.modifier,
+                    bid_min=min_factor,
+                    bid_max=max_factor,
                 )
             }
         )
@@ -487,14 +490,14 @@ def augment_delivery(row, loader, is_base_level=True):
             {
                 "bid_modifier": _create_bid_modifier_dict(
                     modifier_type=core.features.bid_modifiers.BidModifierType.get_name(
-                        core.features.bid_modifiers.constants.DeliveryDimensionToBidModifierTypeMap.get(
-                            delivery_dimension
-                        )
+                        core.features.bid_modifiers.helpers.breakdown_name_to_modifier_type(delivery_dimension)
                     ),
                     target=core.features.bid_modifiers.ApiConverter.from_target(
-                        core.features.bid_modifiers.constants.DeliveryDimensionToBidModifierTypeMap[delivery_dimension],
+                        core.features.bid_modifiers.helpers.breakdown_name_to_modifier_type(delivery_dimension),
                         delivery_value,
                     ),
+                    bid_min=min_factor,
+                    bid_max=max_factor,
                 )
             }
         )
@@ -502,13 +505,17 @@ def augment_delivery(row, loader, is_base_level=True):
     row.update({"editable_fields": {"bid_modifier": {"enabled": True, "message": None}}})
 
 
-def _create_bid_modifier_dict(modifier_id=None, modifier_type=None, source_slug=None, target=None, modifier=None):
+def _create_bid_modifier_dict(
+    modifier_id=None, modifier_type=None, source_slug=None, target=None, modifier=None, bid_min=None, bid_max=None
+):
     return {
         "id": modifier_id,
         "type": modifier_type,
         "source_slug": source_slug,
         "target": target,
         "modifier": modifier,
+        "bid_min": bid_min,
+        "bid_max": bid_max,
     }
 
 

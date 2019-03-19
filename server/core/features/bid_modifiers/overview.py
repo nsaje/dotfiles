@@ -20,10 +20,10 @@ def get_min_max_factors(ad_group_id, included_types=None, excluded_types=None):
         query_set.values("type")
         .distinct()
         .annotate(min_modifier=Min("modifier"), max_modifier=Max("modifier"))
-        .values("min_modifier", "max_modifier")
+        .values("type", "min_modifier", "max_modifier")
     )
 
-    min_factor = functools.reduce(operator.mul, [e["min_modifier"] for e in min_max_list], 1)
-    max_factor = functools.reduce(operator.mul, [e["max_modifier"] for e in min_max_list], 1)
+    min_factor = functools.reduce(operator.mul, [min(e["min_modifier"], 1.) for e in min_max_list], 1.)
+    max_factor = functools.reduce(operator.mul, [max(e["max_modifier"], 1.) for e in min_max_list], 1.)
 
     return min_factor, max_factor

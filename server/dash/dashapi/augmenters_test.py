@@ -88,6 +88,14 @@ class DeliveryAugmenterTest(TestCase):
         self.augmenter = augmenter.get_augmenter_for_dimension("device_type")
         self.report_augmenter = augmenter.get_report_augmenter_for_dimension("device_type", None)
 
+        self.expected_min = pow(
+            0.5,
+            bid_modifiers.BidModifier.objects.filter(ad_group=ad_group)
+            .exclude(type=bid_modifiers.BidModifierType.DEVICE)
+            .count(),
+        )
+        self.expected_max = 1.0
+
     def test_augmenter_bid_modifiers(self):
         row = {"device_type": dash.constants.DeviceType.DESKTOP}
         self.augmenter([row], self.delivery_loader)
@@ -101,6 +109,8 @@ class DeliveryAugmenterTest(TestCase):
                     "source_slug": self.bid_modifier.source_slug,
                     "target": "DESKTOP",
                     "modifier": self.bid_modifier.modifier,
+                    "bid_min": self.expected_min,
+                    "bid_max": self.expected_max,
                 },
                 "editable_fields": {"bid_modifier": {"enabled": True, "message": None}},
             },
@@ -119,6 +129,8 @@ class DeliveryAugmenterTest(TestCase):
                     "source_slug": None,
                     "target": "MOBILE",
                     "modifier": None,
+                    "bid_min": self.expected_min,
+                    "bid_max": self.expected_max,
                 },
                 "editable_fields": {"bid_modifier": {"enabled": True, "message": None}},
             },

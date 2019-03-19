@@ -153,7 +153,8 @@ class TestGetMinMaxFactors(TestCase):
         self.oag_test_ad_2, _ = service.set(self.other_ad_group, constants.BidModifierType.AD, "test_ad_2", None, 0.016)
 
     def test_all(self):
-        expected_min_factor = _mul_modifiers(
+        expected_min_factor = _multiply_modifiers(
+            min,
             self.ag_test_publisher_2,
             self.ag_test_source_1,
             self.ag_test_device_1,
@@ -164,7 +165,8 @@ class TestGetMinMaxFactors(TestCase):
             self.ag_test_dma_1,
             self.ag_test_ad_2,
         )
-        expected_max_factor = _mul_modifiers(
+        expected_max_factor = _multiply_modifiers(
+            max,
             self.ag_test_publisher_3,
             self.ag_test_source_4,
             self.ag_test_device_2,
@@ -182,11 +184,11 @@ class TestGetMinMaxFactors(TestCase):
         self.assertAlmostEqual(max_factor, expected_max_factor, places=13)
 
     def test_included_types(self):
-        expected_min_factor = _mul_modifiers(
-            self.ag_test_source_1, self.ag_test_operating_system_4, self.ag_test_country_4
+        expected_min_factor = _multiply_modifiers(
+            min, self.ag_test_source_1, self.ag_test_operating_system_4, self.ag_test_country_4
         )
-        expected_max_factor = _mul_modifiers(
-            self.ag_test_source_4, self.ag_test_operating_system_3, self.ag_test_country_2
+        expected_max_factor = _multiply_modifiers(
+            max, self.ag_test_source_4, self.ag_test_operating_system_3, self.ag_test_country_2
         )
 
         min_factor, max_factor = overview.get_min_max_factors(
@@ -202,7 +204,8 @@ class TestGetMinMaxFactors(TestCase):
         self.assertAlmostEqual(max_factor, expected_max_factor, places=13)
 
     def test_excluded_types(self):
-        expected_min_factor = _mul_modifiers(
+        expected_min_factor = _multiply_modifiers(
+            min,
             self.ag_test_publisher_2,
             self.ag_test_device_1,
             self.ag_test_placement_1,
@@ -210,7 +213,8 @@ class TestGetMinMaxFactors(TestCase):
             self.ag_test_dma_1,
             self.ag_test_ad_2,
         )
-        expected_max_factor = _mul_modifiers(
+        expected_max_factor = _multiply_modifiers(
+            max,
             self.ag_test_publisher_3,
             self.ag_test_device_2,
             self.ag_test_placement_4,
@@ -238,7 +242,8 @@ class TestGetMinMaxFactors(TestCase):
         self.assertAlmostEqual(max_factor, 1, places=13)
 
     def test_excluded_types_empty(self):
-        expected_min_factor = _mul_modifiers(
+        expected_min_factor = _multiply_modifiers(
+            min,
             self.ag_test_publisher_2,
             self.ag_test_source_1,
             self.ag_test_device_1,
@@ -249,7 +254,8 @@ class TestGetMinMaxFactors(TestCase):
             self.ag_test_dma_1,
             self.ag_test_ad_2,
         )
-        expected_max_factor = _mul_modifiers(
+        expected_max_factor = _multiply_modifiers(
+            max,
             self.ag_test_publisher_3,
             self.ag_test_source_4,
             self.ag_test_device_2,
@@ -275,5 +281,5 @@ class TestGetMinMaxFactors(TestCase):
         self.assertAlmostEqual(max_factor, 1, places=13)
 
 
-def _mul_modifiers(*bid_modifiers):
-    return functools.reduce(operator.mul, [e.modifier for e in bid_modifiers], 1)
+def _multiply_modifiers(min_max_fn, *bid_modifiers):
+    return functools.reduce(operator.mul, [min_max_fn(e.modifier, 1.) for e in bid_modifiers], 1.)

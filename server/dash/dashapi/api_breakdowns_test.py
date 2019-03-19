@@ -1739,6 +1739,8 @@ class QueryForRowsTest(TestCase):
                         "source_slug": bid_modifier.source_slug,
                         "target": "DESKTOP",
                         "modifier": bid_modifier.modifier,
+                        "bid_min": 1.0,
+                        "bid_max": 1.0,
                     },
                     "editable_fields": {"bid_modifier": {"enabled": True, "message": None}},
                 }
@@ -1779,6 +1781,8 @@ class QueryForRowsTest(TestCase):
                         "source_slug": bid_modifier.source_slug,
                         "target": "MACOSX",
                         "modifier": bid_modifier.modifier,
+                        "bid_min": 1.0,
+                        "bid_max": 1.0,
                     },
                     "editable_fields": {"bid_modifier": {"enabled": True, "message": None}},
                 }
@@ -1809,6 +1813,8 @@ class QueryForRowsTest(TestCase):
                         "source_slug": None,
                         "target": "DESKTOP",
                         "modifier": None,
+                        "bid_min": 1.0,
+                        "bid_max": 1.0,
                     },
                     "editable_fields": {"bid_modifier": {"enabled": True, "message": None}},
                 }
