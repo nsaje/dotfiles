@@ -8,6 +8,7 @@
 .zem-popover.popover {
     display: block !important;
     padding: @spacing--default;
+    border: 1px solid @border-color--default;
 }
 
 ////////////////////////////////
@@ -17,6 +18,15 @@
 .zem-popover.popover .arrow {
     border-style: none;
     border-width: @zem-popover__arrow-width;
+}
+
+.zem-popover.popover .arrow::before,
+.zem-popover.popover .arrow::after {
+    position: absolute;
+    display: block;
+    content: '';
+    border-color: transparent;
+    border-style: solid;
 }
 
 .zem-popover.bs-popover-top,
@@ -30,9 +40,18 @@
     margin-left: -@zem-popover__arrow-width !important;
 }
 
+.zem-popover.bs-popover-top > .arrow::before,
+.zem-popover.bs-popover-auto[x-placement^='top'] > .arrow::before {
+    bottom: -@zem-popover__arrow-width;
+    border-top-color: @border-color--default;
+    border-width: @zem-popover__arrow-width @zem-popover__arrow-width 0;
+}
+
 .zem-popover.bs-popover-top > .arrow::after,
 .zem-popover.bs-popover-auto[x-placement^='top'] > .arrow::after {
+    bottom: -(@zem-popover__arrow-width - 1);
     border-top-color: #fff;
+    border-width: @zem-popover__arrow-width @zem-popover__arrow-width 0;
 }
 
 .zem-popover.bs-popover-right,
@@ -46,9 +65,20 @@
     margin-top: -@zem-popover__arrow-width !important;
 }
 
+.zem-popover.bs-popover-right > .arrow::before,
+.zem-popover.bs-popover-auto[x-placement^='right'] > .arrow::before {
+    left: -@zem-popover__arrow-width;
+    border-right-color: @border-color--default;
+    border-width: @zem-popover__arrow-width @zem-popover__arrow-width
+        @zem-popover__arrow-width 0;
+}
+
 .zem-popover.bs-popover-right > .arrow::after,
 .zem-popover.bs-popover-auto[x-placement^='right'] > .arrow::after {
+    left: -(@zem-popover__arrow-width - 1);
     border-right-color: #fff;
+    border-width: @zem-popover__arrow-width @zem-popover__arrow-width
+        @zem-popover__arrow-width 0;
 }
 
 .zem-popover.bs-popover-bottom,
@@ -62,9 +92,20 @@
     margin-left: -@zem-popover__arrow-width !important;
 }
 
+.zem-popover.bs-popover-bottom > .arrow::before,
+.zem-popover.bs-popover-auto[x-placement^='bottom'] > .arrow::before {
+    top: -@zem-popover__arrow-width;
+    border-bottom-color: @border-color--default;
+    border-width: 0 @zem-popover__arrow-width @zem-popover__arrow-width
+        @zem-popover__arrow-width;
+}
+
 .zem-popover.bs-popover-bottom > .arrow::after,
 .zem-popover.bs-popover-auto[x-placement^='bottom'] > .arrow::after {
+    top: -(@zem-popover__arrow-width - 1);
     border-bottom-color: #fff;
+    border-width: 0 @zem-popover__arrow-width @zem-popover__arrow-width
+        @zem-popover__arrow-width;
 }
 
 .zem-popover.bs-popover-left,
@@ -78,9 +119,20 @@
     margin-top: -@zem-popover__arrow-width !important;
 }
 
+.zem-popover.bs-popover-left > .arrow::before,
+.zem-popover.bs-popover-auto[x-placement^='left'] > .arrow::before {
+    right: -@zem-popover__arrow-width;
+    border-left-color: @border-color--default;
+    border-width: @zem-popover__arrow-width 0 @zem-popover__arrow-width
+        @zem-popover__arrow-width;
+}
+
 .zem-popover.bs-popover-left > .arrow::after,
 .zem-popover.bs-popover-auto[x-placement^='left'] > .arrow::after {
+    right: -(@zem-popover__arrow-width - 1);
     border-left-color: #fff;
+    border-width: @zem-popover__arrow-width 0 @zem-popover__arrow-width
+        @zem-popover__arrow-width;
 }
 
 /////////////////////////////////
