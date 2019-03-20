@@ -128,6 +128,17 @@ export class AdGroupSettingsStore extends Store<AdGroupSettingsStoreState>
             );
     }
 
+    // TODO (jurebajt): Improve/Rethink
+    updateSetting(field: string, value: any) {
+        this.setState({
+            ...this.state,
+            entity: {
+                ...this.state.entity,
+                [field]: value,
+            },
+        });
+    }
+
     ngOnDestroy(): void {
         this.ngUnsubscribe$.next();
         this.ngUnsubscribe$.complete();

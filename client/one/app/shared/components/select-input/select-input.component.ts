@@ -51,6 +51,6 @@ export class SelectInputComponent implements OnInit, OnChanges {
     }
 
     onChange($event: any) {
-        this.valueChange.emit($event ? $event.value : null);
+        this.valueChange.emit($event ? $event[this.bindValue] : null);
     }
 }

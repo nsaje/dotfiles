@@ -4,12 +4,104 @@
     (closeRequest)="cancel()"
     class="zem-drawer"
 >
-    Settings for adgroup with id {{ store.state.entity.id }}
+    <ng-container *ngIf="(store.state$ | async) as state">
+        <div class="zem-settings__settings-container">
+            <div class="zem-panel">
+                <h2 class="zem-panel__title">Scheduling</h2>
+                <div class="zem-settings-section">
+                    <zem-date-setting
+                        class="zem-settings-section__item"
+                        label="Start date"
+                        helpMessage="The start date of the ad group. If the date is set in the future, the ad group will not run until that date."
+                        [value]="state.entity.startDate"
+                        [isDisabled]="state.extras.isCampaignAutopilotEnabled"
+                        [errors]="state.fieldsErrors.startDate"
+                        (valueChange)="store.updateSetting('startDate', $event)"
+                    ></zem-date-setting>
+                    <zem-date-setting
+                        class="zem-settings-section__item"
+                        label="End date"
+                        helpMessage="The end date of the ad group. Ad group will run until the end of stop date."
+                        [value]="state.entity.endDate"
+                        [isDisabled]="state.extras.isCampaignAutopilotEnabled"
+                        [minDate]="minEndDate"
+                        [allowManualOverride]="true"
+                        [errors]="state.fieldsErrors.endDate"
+                        (valueChange)="store.updateSetting('endDate', $event)"
+                    ></zem-date-setting>
+                    <div
+                        class="zem-settings-section__item zem-settings-section__item--indented"
+                        *ngIf="state.extras.isCampaignAutopilotEnabled"
+                    >
+                        <div
+                            class="zem-message zem-message--bubble zem-message--warning zem-message--with-icon zem-warning-bg-icon"
+                        >
+                            Flight time settings are disabled because campaign
+                            budget optimization is enabled. Budget flight time
+                            is used for running the ad group.
+                        </div>
+                    </div>
+                    <zem-delivery-type-setting
+                        class="zem-delivery-type-setting zem-settings-section__item"
+                        *ngIf="
+                            zemPermissions.hasPermission(
+                                'zemauth.can_set_delivery_type'
+                            )
+                        "
+                        [zemInternalFeature]="
+                            zemPermissions.isPermissionInternal(
+                                'zemauth.can_set_delivery_type'
+                            )
+                        "
+                        [value]="state.entity.deliveryType"
+                        [errors]="state.fieldsErrors.deliveryType"
+                        (valueChange)="
+                            store.updateSetting('deliveryType', $event)
+                        "
+                    ></zem-delivery-type-setting>
+                </div>
+                <div
+                    class="zem-settings-section"
+                    *ngIf="
+                        zemPermissions.hasPermission(
+                            'zemauth.can_manage_ad_group_dayparting'
+                        )
+                    "
+                >
+                    <div class="zem-settings-section__header">
+                        <div
+                            class="zem-settings-section__title"
+                            [zemInternalFeature]="
+                                zemPermissions.isPermissionInternal(
+                                    'zemauth.can_manage_ad_group_dayparting'
+                                )
+                            "
+                        >
+                            Dayparting
+                        </div>
+                        <div class="zem-settings-section__description">
+                            You can schedule your ads to be active for specific
+                            hours and days of the week. Ads will be shown in the
+                            viewer’s local time.
+                        </div>
+                    </div>
+                    <zem-dayparting-setting
+                        class="zem-dayparting-setting"
+                        [daypartingSetting]="state.entity.dayparting"
+                        [errors]="state.fieldsErrors.dayparting"
+                        (valueChange)="
+                            store.updateSetting('dayparting', $event)
+                        "
+                    ></zem-dayparting-setting>
+                </div>
+            </div>
+        </div>
 
-    <button (click)="saveSettings()">
-        <ng-container *ngIf="isNewEntity">Create</ng-container>
-        <ng-container *ngIf="!isNewEntity">Save</ng-container>
-    </button>
-    <button (click)="cancel()">Cancel</button>
-    <button *ngIf="!isNewEntity" (click)="archive()">Archive</button>
+        <button (click)="saveSettings()">
+            <ng-container *ngIf="isNewEntity">Create</ng-container>
+            <ng-container *ngIf="!isNewEntity">Save</ng-container>
+        </button>
+        <button (click)="cancel()">Cancel</button>
+        <button *ngIf="!isNewEntity" (click)="archive()">Archive</button>
+    </ng-container>
 </zem-drawer>

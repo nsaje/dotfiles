@@ -145,22 +145,22 @@ describe('DaypartingSettingComponent', () => {
     });
 
     it('should correctly generate dayparting setting on dayparting selection update', () => {
-        spyOn(component.onChange, 'emit').and.stub();
+        spyOn(component.valueChange, 'emit').and.stub();
         component.timezone = 'UTC';
         component.handleDaypartingSelectionUpdate(mockedDayparting);
-        expect(component.onChange.emit).toHaveBeenCalledWith({
+        expect(component.valueChange.emit).toHaveBeenCalledWith({
             ...mockedSetting,
             timezone: 'UTC',
         });
     });
 
     it('should return empty dayparting setting on dayparting selection update when every hour of every day is active', () => {
-        spyOn(component.onChange, 'emit').and.stub();
+        spyOn(component.valueChange, 'emit').and.stub();
         component.timezone = 'UTC';
         const allActiveDayparting = Array(7).fill({
             hours: Array(24).fill(true),
         });
         component.handleDaypartingSelectionUpdate(allActiveDayparting);
-        expect(component.onChange.emit).toHaveBeenCalledWith({});
+        expect(component.valueChange.emit).toHaveBeenCalledWith({});
     });
 });

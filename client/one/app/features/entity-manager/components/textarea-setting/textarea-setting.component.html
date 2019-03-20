@@ -1,15 +1,16 @@
-<div class="zem-form-group">
-    <label class="zem-form-group__label">
+<div class="zem-settings-form-group">
+    <label class="zem-settings-form-group__label">
         {{ label }}
         <zem-help-popover
+            class="zem-help-popover"
             *ngIf="helpMessage"
             content="{{ helpMessage }}"
             placement="top"
         ></zem-help-popover>
     </label>
-    <div class="zem-form-group__content">
+    <div class="zem-settings-form-group__content">
         <textarea
-            class="zem-form-group__content-item zem-input-textarea"
+            class="zem-settings-form-group__content-item zem-input-textarea"
             [ngClass]="{'zem-input-textarea--error': errors.length > 0}"
             type="text"
             placeholder="{{ placeholder }}"
@@ -21,16 +22,10 @@
             [zemFocus]="isFocused"
         ></textarea>
         <div
-            class="zem-form-group__content-item zem-message zem-message--error"
+            class="zem-settings-form-group__content-item zem-message zem-message--error"
             *ngFor="let error of errors"
         >
             {{ error }}
-        </div>
-        <div
-            class="zem-form-group__content-item zem-message zem-message--info zem-message--with-icon zem-info-bg-icon"
-            *ngIf="infoMessage"
-        >
-            {{ infoMessage }}
         </div>
     </div>
 </div>

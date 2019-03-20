@@ -1,33 +1,41 @@
-<div class="zem-form-group">
-    <label class="zem-form-group__label">
+<div class="zem-settings-form-group">
+    <label class="zem-settings-form-group__label">
         {{ label }}
         <zem-help-popover
+            class="zem-help-popover"
             *ngIf="helpMessage"
-            content="{{ helpMessage }}"
-            placement="top"
+            [content]="helpMessage"
+            placement="bottom"
         ></zem-help-popover>
     </label>
-    <div class="zem-form-group__content">
-        <zem-date-input
-            class="zem-form-group__content-item zem-date-input"
-            [value]="model"
-            [minDate]="minDate"
-            [isDisabled]="isDisabled"
-            [isFocused]="isFocused"
-            [hasError]="errors && errors.length > 0"
-            (valueChange)="onValueChange($event)"
-        ></zem-date-input>
+    <div class="zem-settings-form-group__content">
         <div
-            class="zem-form-group__content-item zem-message zem-message--error"
+            class="zem-settings-form-group__content-item zem-date-setting__inputs-container"
+        >
+            <zem-date-input
+                class="zem-date-input zem-date-setting__input"
+                [value]="model"
+                [minDate]="minDate"
+                [isDisabled]="isManualOverrideEnabled || isDisabled"
+                [isFocused]="isFocused"
+                [hasError]="errors && errors.length > 0"
+                (valueChange)="onValueChange($event)"
+            ></zem-date-input>
+            <zem-checkbox-input
+                class="zem-checkbox-input zem-date-setting__input"
+                *ngIf="allowManualOverride"
+                [isChecked]="isManualOverrideEnabled"
+                [isDisabled]="isDisabled"
+                (toggle)="onManualOverrideToggle($event)"
+            >
+                I'll stop it myself
+            </zem-checkbox-input>
+        </div>
+        <div
+            class="zem-settings-form-group__content-item zem-message zem-message--error"
             *ngFor="let error of errors"
         >
             {{ error }}
-        </div>
-        <div
-            class="zem-form-group__content-item zem-message zem-message--info zem-message--with-icon zem-info-bg-icon"
-            *ngIf="infoMessage"
-        >
-            {{ infoMessage }}
         </div>
     </div>
 </div>

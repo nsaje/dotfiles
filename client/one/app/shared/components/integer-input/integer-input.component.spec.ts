@@ -2,8 +2,8 @@ import {TestBed, ComponentFixture} from '@angular/core/testing';
 import {FormsModule} from '@angular/forms';
 import {SimpleChange} from '@angular/core';
 import {IntegerInputComponent} from './integer-input.component';
-import {FilterKeydownEventDirective} from '../../directives/filter-keydown-event.directive';
-import {FocusDirective} from '../../directives/focus.directive';
+import {FilterKeydownEventDirective} from '../../directives/filter-keydown-event/filter-keydown-event.directive';
+import {FocusDirective} from '../../directives/focus/focus.directive';
 
 describe('IntegerInputComponent', () => {
     let component: IntegerInputComponent;

@@ -9,7 +9,7 @@ import dash.retargeting_helper
 def get_extra_data(user, ad_group):
     default_settings = get_default_settings(ad_group)
 
-    retargetable_adgroups = get_retargetable_adgroups(
+    retargetable_ad_groups = get_retargetable_ad_groups(
         user, ad_group, ad_group.settings.retargeting_ad_groups + ad_group.settings.exclusion_retargeting_ad_groups
     )
 
@@ -24,7 +24,7 @@ def get_extra_data(user, ad_group):
         "can_archive": ad_group.can_archive(),
         "can_restore": ad_group.can_restore(),
         "default_settings": default_settings,
-        "retargetable_adgroups": retargetable_adgroups,
+        "retargetable_ad_groups": retargetable_ad_groups,
         "audiences": audiences,
         "warnings": warnings,
     }
@@ -49,7 +49,7 @@ def get_default_settings(ad_group):
     return result
 
 
-def get_retargetable_adgroups(user, ad_group, existing_targetings):
+def get_retargetable_ad_groups(user, ad_group, existing_targetings):
     if not user.has_perm("zemauth.can_view_retargeting_settings"):
         return []
 

@@ -8,8 +8,9 @@ export interface AdGroupExtras {
     actionIsWaiting: boolean;
     canArchive: boolean;
     canRestore: boolean;
+    isCampaignAutopilotEnabled: boolean;
     defaultSettings: AdGroupExtrasDefaultSettings;
-    retargetableAdgroups: AdGroupExtrasRetargetableAdGroup[];
+    retargetableAdGroups: AdGroupExtrasRetargetableAdGroup[];
     audiences: AdGroupExtrasAudience[];
     warnings: AdGroupExtrasWarnings;
     hacks: Hack[];

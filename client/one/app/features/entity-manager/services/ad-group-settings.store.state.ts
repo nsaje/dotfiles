@@ -92,7 +92,7 @@ export class AdGroupSettingsStoreState {
             targetOs: [],
             targetPlacements: [],
         },
-        retargetableAdgroups: [],
+        retargetableAdGroups: [],
         audiences: [],
         warnings: {
             retargeting: {
@@ -100,6 +100,7 @@ export class AdGroupSettingsStoreState {
             },
         },
         hacks: [],
+        isCampaignAutopilotEnabled: false,
     };
     fieldsErrors: FieldsErrors = {};
     requests: AdGroupRequests = {

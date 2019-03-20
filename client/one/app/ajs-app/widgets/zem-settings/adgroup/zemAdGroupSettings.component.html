@@ -25,8 +25,8 @@
                 <zem-dayparting-setting
                     class="zem-dayparting-setting"
                     [dayparting-setting]="$container.entity.settings.dayparting"
-                    [errors]="$container.errors"
-                    (on-change)="
+                    [errors]="$container.errors.dayparting"
+                    (value-change)="
                         $ctrl.updateDaypartingSettings(
                             $container.entity,
                             $event

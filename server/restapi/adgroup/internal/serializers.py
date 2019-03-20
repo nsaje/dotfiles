@@ -39,7 +39,7 @@ class ExtraDataSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
     can_archive = rest_framework.serializers.BooleanField(default=False, required=False)
     can_restore = rest_framework.serializers.BooleanField(default=False, required=False)
     default_settings = ExtraDataDefaultSettingsSerializer(default=False, required=False)
-    retargetable_adgroups = rest_framework.serializers.ListField(
+    retargetable_ad_groups = rest_framework.serializers.ListField(
         child=ExtraDataRetargetableAdGroupSerializer(), allow_empty=True
     )
     audiences = rest_framework.serializers.ListField(child=ExtraDataAudiencesSerializer(), allow_empty=True)

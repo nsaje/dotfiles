@@ -21,9 +21,9 @@ export class DateSettingComponent implements OnChanges {
     @Input()
     helpMessage: string;
     @Input()
-    infoMessage: string;
-    @Input()
     value: Date;
+    @Input()
+    allowManualOverride: boolean = false;
     @Input()
     minDate: Date;
     @Input()
@@ -36,14 +36,33 @@ export class DateSettingComponent implements OnChanges {
     valueChange = new EventEmitter<Date>();
 
     model: Date;
+    lastNonNullValue: Date;
+    isManualOverrideEnabled: boolean;
 
     ngOnChanges(changes: SimpleChanges) {
         if (changes.value) {
             this.model = this.value;
+
+            if (this.model) {
+                this.lastNonNullValue = this.model;
+                this.isManualOverrideEnabled = false;
+            } else {
+                this.isManualOverrideEnabled = true;
+            }
         }
     }
 
     onValueChange($event: Date) {
         this.valueChange.emit($event);
+    }
+
+    onManualOverrideToggle($event: boolean) {
+        if ($event) {
+            this.valueChange.emit(null);
+        } else {
+            this.valueChange.emit(
+                this.lastNonNullValue || this.minDate || new Date()
+            );
+        }
     }
 }

@@ -1,0 +1,17 @@
+<label
+    class="zem-radio-input__wrapper-label"
+    [ngClass]="{
+        'zem-radio-input__wrapper-label--checked': isChecked,
+        'zem-radio-input__wrapper-label--disabled': isDisabled
+    }"
+>
+    <input
+        class="zem-radio-input__input"
+        type="radio"
+        [checked]="isChecked"
+        [disabled]="isDisabled"
+        (change)="onChange($event)"
+    />
+    <span class="zem-radio-input__checkmark"></span>
+    <span class="zem-radio-input__label-text"><ng-content></ng-content></span>
+</label>

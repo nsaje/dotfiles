@@ -23,8 +23,6 @@ export class TextAreaSettingComponent implements OnInit, OnChanges {
     @Input()
     helpMessage: string;
     @Input()
-    infoMessage: string;
-    @Input()
     value: string;
     @Input()
     placeholder: string;

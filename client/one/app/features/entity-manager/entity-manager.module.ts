@@ -1,3 +1,7 @@
+import './styles/settings.less';
+import './styles/settings-form-group.less';
+import './styles/settings-section.less';
+
 import {NgModule} from '@angular/core';
 
 import {SharedModule} from '../../shared/shared.module';
@@ -16,6 +20,7 @@ import {DecimalSettingComponent} from './components/decimal-setting/decimal-sett
 import {CurrencySettingComponent} from './components/currency-setting/currency-setting.component';
 import {DateSettingComponent} from './components/date-setting/date-setting.component';
 import {SelectSettingComponent} from './components/select-setting/select-setting.component';
+import {DeliveryTypeSettingComponent} from './components/delivery-type-setting/delivery-type-setting.component';
 import {DemographicTargetingComponent} from './components/demographic-targeting/demographic-targeting.component';
 import {GeoTargetingComponent} from './components/geo-targeting/geo-targeting.component';
 import {DeviceTargetingSettingsComponent} from './components/device-targeting-settings/device-targeting-settings.component';
@@ -42,6 +47,7 @@ import {RetargetingComponent} from './components/retargeting/retargeting.compone
         CurrencySettingComponent,
         DateSettingComponent,
         SelectSettingComponent,
+        DeliveryTypeSettingComponent,
         DemographicTargetingComponent,
         GeoTargetingComponent,
         DeviceTargetingSettingsComponent,

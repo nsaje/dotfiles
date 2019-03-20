@@ -1,0 +1,44 @@
+<div class="zem-settings-form-group">
+    <label
+        class="zem-settings-form-group__label zem-settings-form-group__label--condensed"
+    >
+        Delivery type
+        <zem-help-popover
+            class="zem-help-popover"
+            content="Delivery type determines how your ads will be delivered throughout the day. Standard option is optimal in most cases as it makes sure that people from various timezones and with different browsing habits can be reached. Accelerated campaign will deliver ads within first hours of the day and stop once it reaches daily cap."
+            placement="bottom"
+        ></zem-help-popover>
+    </label>
+
+    <div class="zem-settings-form-group__content">
+        <zem-radio-input
+            class="zem-radio-input zem-settings-form-group__content-item zem-settings-form-group__content-item--condensed zem-settings-form-group__content-item--no-spacing"
+            [groupModel]="value"
+            [value]="DeliveryType.STANDARD"
+            (select)="onSelect($event)"
+        >
+            Standard
+            <span class="zem-radio-input__deemphasized-label-text"
+                >- Deliver ads throughout the day.</span
+            >
+        </zem-radio-input>
+        <zem-radio-input
+            class="zem-radio-input zem-settings-form-group__content-item zem-settings-form-group__content-item--condensed"
+            [groupModel]="value"
+            [value]="DeliveryType.ACCELERATED"
+            (select)="onSelect($event)"
+        >
+            Accelerated
+            <span class="zem-radio-input__deemphasized-label-text"
+                >- Deliver ads as soon as possible.</span
+            >
+        </zem-radio-input>
+
+        <div
+            class="zem-settings-form-group__content-item zem-message zem-message--error"
+            *ngFor="let error of errors"
+        >
+            {{ error }}
+        </div>
+    </div>
+</div>

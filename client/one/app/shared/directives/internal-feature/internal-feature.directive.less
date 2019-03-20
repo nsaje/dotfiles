@@ -1,0 +1,18 @@
+@import 'variables';
+
+.zem-internal-feature {
+    position: relative;
+}
+
+.zem-internal-feature__indicator {
+    display: block;
+    position: absolute;
+    top: 0;
+    left: -3px;
+    z-index: @z-index--internal-feature;
+    width: 0;
+    height: 0;
+    border-style: solid;
+    border-width: 6px 6px 0 0;
+    border-color: @color--internal transparent transparent transparent;
+}

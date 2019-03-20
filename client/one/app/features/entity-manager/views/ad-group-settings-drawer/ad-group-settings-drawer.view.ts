@@ -18,12 +18,16 @@ export class AdGroupSettingsDrawerView implements AfterViewInit {
 
     isOpen: boolean;
     isNewEntity: boolean;
+    minEndDate: Date;
 
     constructor(
         public store: AdGroupSettingsStore,
+        @Inject('zemPermissions') public zemPermissions: any,
         @Inject('ajs$state') private ajs$state: any,
         @Inject('ajs$location') private ajs$location: any
-    ) {}
+    ) {
+        this.minEndDate = new Date();
+    }
 
     ngAfterViewInit() {
         this.isNewEntity = !this.entityId;

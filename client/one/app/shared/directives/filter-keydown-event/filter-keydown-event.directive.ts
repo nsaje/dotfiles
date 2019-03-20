@@ -5,8 +5,8 @@ import {
     EventEmitter,
     Input,
 } from '@angular/core';
-import {KeyCode} from '../../app.constants';
-import * as commonHelpers from '../helpers/common.helpers';
+import {KeyCode} from '../../../app.constants';
+import * as commonHelpers from '../../helpers/common.helpers';
 
 @Directive({
     selector: '[zemFilterKeydownEvent]',

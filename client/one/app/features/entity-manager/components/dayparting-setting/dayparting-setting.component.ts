@@ -23,9 +23,9 @@ export class DaypartingSettingComponent implements OnChanges {
     @Input()
     daypartingSetting: DaypartingSetting;
     @Input()
-    errors: any;
+    errors: string[];
     @Output()
-    onChange = new EventEmitter<DaypartingSetting>();
+    valueChange = new EventEmitter<DaypartingSetting>();
 
     isDaypartingInputVisible: boolean;
     dayparting: DaypartingDay[];
@@ -46,7 +46,7 @@ export class DaypartingSettingComponent implements OnChanges {
     }
 
     handleDaypartingSelectionUpdate(dayparting: DaypartingDay[]) {
-        this.onChange.emit(this.generateSettings(dayparting, this.timezone));
+        this.valueChange.emit(this.generateSettings(dayparting, this.timezone));
     }
 
     enableDayparting() {

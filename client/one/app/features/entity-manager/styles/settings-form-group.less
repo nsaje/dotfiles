@@ -1,0 +1,35 @@
+@import 'variables';
+@import './_settings.variables.less';
+
+.zem-settings-form-group {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+}
+
+.zem-settings-form-group__label {
+    flex: 0 0 @zem-settings__label-width;
+    line-height: @input__height--default;
+}
+
+.zem-settings-form-group__label--condensed {
+    line-height: 20px;
+}
+
+.zem-settings-form-group__content {
+    flex: 1 1 @zem-settings__min-content-width;
+}
+
+.zem-settings-form-group__content-item {
+    line-height: @input__height--default;
+    margin-bottom: 5px;
+}
+
+.zem-settings-form-group__content-item--condensed {
+    line-height: 20px;
+}
+
+.zem-settings-form-group__content-item--no-spacing,
+.zem-settings-form-group__content-item:last-child {
+    margin-bottom: 0;
+}

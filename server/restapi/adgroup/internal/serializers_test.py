@@ -16,7 +16,7 @@ class ExtraDataSerializerTest(TestCase):
                 "target_os": [],
                 "target_placements": [],
             },
-            "retargetable_adgroups": [
+            "retargetable_ad_groups": [
                 {"id": 795, "name": "Pre-launch (desktop)", "campaign_name": "Plugin Magazin", "archived": False}
             ],
             "audiences": [{"id": 698, "name": "phase 1", "archived": False}],
@@ -48,7 +48,7 @@ class ExtraDataSerializerTest(TestCase):
                 "target_os": [],
                 "target_placements": [],
             },
-            "retargetable_adgroups": [
+            "retargetable_ad_groups": [
                 {"id": 795, "name": "Pre-launch (desktop)", "campaign_name": "Plugin Magazin", "archived": False}
             ],
             "audiences": [{"id": 698, "name": "phase 1", "archived": False}],

@@ -4,35 +4,10 @@
     position: relative;
 }
 
-.zem-message > p:last-child {
-    margin-bottom: 0;
-}
-
-.zem-message > ul:last-child {
-    margin-bottom: 0;
-}
-
-.zem-message--error {
-    color: @color--danger;
-}
-
-.zem-message--error > a {
-    color: @color--danger !important;
-}
-
-.zem-message--error .list-with-bullets > li::before {
-    background-color: tint(@color--danger, 50%);
-}
-
-.zem-message--info {
-    background-color: tint(@color--info, 95%);
-    border: 1px solid tint(@color--info, 85%);
+.zem-message--bubble {
     padding: 8px 10px;
+    border: 1px solid transparent;
     border-radius: @border-radius--default;
-}
-
-.zem-message--info .list-with-bullets > li::before {
-    background-color: tint(@color--info, 50%);
 }
 
 .zem-message--with-icon {
@@ -50,4 +25,53 @@
     left: 7px;
     top: 7px;
     opacity: 0.25;
+}
+
+.zem-message--error {
+    color: @color--danger;
+}
+
+.zem-message--bubble.zem-message--error {
+    background-color: tint(@color--danger, 95%);
+    border-color: tint(@color--danger, 85%);
+}
+
+.zem-message--error a {
+    color: @color--danger;
+}
+
+.zem-message--warning {
+    color: @color--warning;
+}
+
+.zem-message--bubble.zem-message--warning {
+    color: @text-color--default;
+    background-color: tint(@color--warning, 95%);
+    border-color: tint(@color--warning, 85%);
+}
+
+.zem-message--warning a {
+    color: @color--warning;
+}
+
+.zem-message--bubble.zem-message--info {
+    background-color: tint(@color--info, 95%);
+    border-color: tint(@color--info, 85%);
+}
+
+.zem-message--info a {
+    color: @color--info;
+}
+
+.zem-message--success {
+    color: @color--success;
+}
+
+.zem-message--bubble.zem-message--success {
+    background-color: tint(@color--success, 95%);
+    border-color: tint(@color--success, 85%);
+}
+
+.zem-message--success a {
+    color: @color--success;
 }

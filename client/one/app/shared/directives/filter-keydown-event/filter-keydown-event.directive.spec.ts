@@ -1,5 +1,5 @@
 import {FilterKeydownEventDirective} from './filter-keydown-event.directive';
-import {KeyCode} from '../../app.constants';
+import {KeyCode} from '../../../app.constants';
 
 describe('FilterKeydownEventDirective', () => {
     let directive: FilterKeydownEventDirective;

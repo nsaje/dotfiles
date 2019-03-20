@@ -107,8 +107,8 @@ export enum KeyCode {
 }
 
 export enum DeliveryType {
-    STANDARD = 1,
-    ACCELERATED = 2,
+    STANDARD = 'STANDARD',
+    ACCELERATED = 'ACCELERATED',
 }
 
 export enum AdGroupAutopilotState {
@@ -232,7 +232,6 @@ export const APP_CONSTANTS = {
     biddingType: BiddingType,
     bidModifierType: BidModifierType,
     keyCode: KeyCode,
-    deliveryType: DeliveryType,
     infoboxStatus: {
         ACTIVE: 'active',
         ACTIVE_PRICE_DISCOVERY: 'active-price-discovery',

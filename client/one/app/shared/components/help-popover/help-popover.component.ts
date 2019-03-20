@@ -1,45 +1,15 @@
-import {
-    Directive,
-    Input,
-    OnInit,
-    OnChanges,
-    DoCheck,
-    OnDestroy,
-    ElementRef,
-    Inject,
-    Injector,
-    SimpleChanges,
-} from '@angular/core';
-import {UpgradeComponent} from '@angular/upgrade/static';
+import './help-popover.component.less';
 
-@Directive({
-    selector: 'zem-help-popover', // tslint:disable-line directive-selector
+import {Component, Input, ChangeDetectionStrategy} from '@angular/core';
+
+@Component({
+    selector: 'zem-help-popover',
+    templateUrl: './help-popover.component.html',
+    changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class HelpPopoverComponent extends UpgradeComponent
-    implements OnInit, OnChanges, DoCheck, OnDestroy {
-    // tslint:disable-line directive-class-suffix max-line-length
+export class HelpPopoverComponent {
     @Input()
     content: string;
     @Input()
-    placement: string;
-
-    constructor(
-        @Inject(ElementRef) elementRef: ElementRef,
-        @Inject(Injector) injector: Injector
-    ) {
-        super('zemHelpPopover', elementRef, injector);
-    }
-
-    ngOnInit() {
-        super.ngOnInit();
-    }
-    ngOnChanges(changes: SimpleChanges) {
-        super.ngOnChanges(changes);
-    }
-    ngDoCheck() {
-        super.ngDoCheck();
-    }
-    ngOnDestroy() {
-        super.ngOnDestroy();
-    }
+    placement: string = 'top';
 }

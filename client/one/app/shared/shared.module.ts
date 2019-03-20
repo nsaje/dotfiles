@@ -11,8 +11,8 @@ import {
 import {NgSelectModule} from '@ng-select/ng-select';
 
 import {BigNumberPipe} from './pipes/big-number.pipe';
-import {FilterKeydownEventDirective} from './directives/filter-keydown-event.directive';
-import {FocusDirective} from './directives/focus.directive';
+import {FilterKeydownEventDirective} from './directives/filter-keydown-event/filter-keydown-event.directive';
+import {FocusDirective} from './directives/focus/focus.directive';
 import {CategorizedSelectComponent} from './components/categorized-select/categorized-select.component';
 import {CategorizedTagsListComponent} from './components/categorized-tags-list/categorized-tags-list.component';
 import {DropdownDirective} from './components/dropdown/dropdown.directive';
@@ -28,6 +28,9 @@ import {SelectInputComponent} from './components/select-input/select-input.compo
 import {PrefixedInputComponent} from './components/prefixed-input/prefixed-input.component';
 import {BidModifierInputComponent} from './components/bid-modifier-input/bid-modifier-input.component';
 import {PopoverDirective} from './components/popover/popover.directive';
+import {CheckboxInputComponent} from './components/checkbox-input/checkbox-input.component';
+import {RadioInputComponent} from './components/radio-input/radio-input.component';
+import {InternalFeatureDirective} from './directives/internal-feature/internal-feature.directive';
 
 const EXPORTED_DECLARATIONS = [
     BigNumberPipe,
@@ -39,6 +42,8 @@ const EXPORTED_DECLARATIONS = [
     DropdownToggleDirective,
     DrawerComponent,
     DaypartingInputComponent,
+    CheckboxInputComponent,
+    RadioInputComponent,
     IntegerInputComponent,
     DecimalInputComponent,
     CurrencyInputComponent,
@@ -47,9 +52,8 @@ const EXPORTED_DECLARATIONS = [
     PrefixedInputComponent,
     BidModifierInputComponent,
     PopoverDirective,
-
-    // Upgraded AngularJS components/ directives
     HelpPopoverComponent,
+    InternalFeatureDirective,
 ];
 
 @NgModule({

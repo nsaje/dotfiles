@@ -21,8 +21,6 @@ export class TextSettingComponent implements OnChanges {
     @Input()
     helpMessage: string;
     @Input()
-    infoMessage: string;
-    @Input()
     value: string;
     @Input()
     placeholder: string;

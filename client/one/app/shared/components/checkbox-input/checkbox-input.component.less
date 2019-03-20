@@ -1,0 +1,89 @@
+@import 'variables';
+
+.zem-checkbox-input {
+    display: block;
+}
+
+.zem-checkbox-input__input {
+    display: none;
+    visibility: hidden;
+}
+
+.zem-checkbox-input__wrapper-label {
+    display: flex;
+    align-items: center;
+    font-weight: 400;
+    transition: all @duration-and-timing-fn--default;
+}
+
+.zem-checkbox-input__wrapper-label:hover:not(.zem-checkbox-input__wrapper-label--disabled) {
+    cursor: pointer;
+    color: @color--secondary;
+}
+
+.zem-checkbox-input__wrapper-label--checked {
+    color: @color--secondary;
+    font-weight: 500;
+}
+
+.zem-checkbox-input__wrapper-label--disabled {
+    color: @text-color--lighter;
+    cursor: not-allowed;
+}
+
+.zem-checkbox-input__checkmark {
+    position: relative;
+    flex: 0 0 auto;
+    width: 14px;
+    height: 14px;
+    margin-right: 6px;
+    border: 1px solid darken(@border-color--default, 10%);
+    border-radius: @border-radius--default;
+    transition: all @duration-and-timing-fn--default;
+}
+
+.zem-checkbox-input__wrapper-label:hover:not(.zem-checkbox-input__wrapper-label--disabled)
+    .zem-checkbox-input__checkmark,
+.zem-checkbox-input__wrapper-label--checked .zem-checkbox-input__checkmark {
+    border-color: @color--secondary;
+}
+
+.zem-checkbox-input__wrapper-label--disabled .zem-checkbox-input__checkmark {
+    border-color: @color--lighter-neutral;
+}
+
+.zem-checkbox-input__checkmark::after {
+    background-image: url('@{images-folder}/checkbox-sec.svg');
+    position: absolute;
+    content: '';
+    display: block;
+    top: 6px;
+    left: 6px;
+    width: 0px;
+    height: 0px;
+    background-size: 0px;
+    transition: all @duration-and-timing-fn--default;
+}
+
+.zem-checkbox-input__wrapper-label--checked
+    .zem-checkbox-input__checkmark::after {
+    top: 1px;
+    left: 1px;
+    width: 10px;
+    height: 10px;
+    background-size: 10px;
+}
+
+.zem-checkbox-input__wrapper-label--disabled
+    .zem-checkbox-input__checkmark::after {
+    background-image: url('images/checkbox-gray.svg');
+}
+
+.zem-checkbox-input__label-text {
+    flex: 1 1 auto;
+}
+
+.zem-checkbox-input__deemphasized-label-text {
+    color: @text-color--lighter;
+    font-weight: initial;
+}

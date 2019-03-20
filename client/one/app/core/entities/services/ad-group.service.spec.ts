@@ -62,10 +62,11 @@ describe('AdGroupService', () => {
                 targetOs: [],
                 targetPlacements: [],
             },
-            retargetableAdgroups: [],
+            retargetableAdGroups: [],
             audiences: [],
             warnings: {},
             hacks: [],
+            isCampaignAutopilotEnabled: false,
         };
 
         mockedAdGroupWithExtras = {

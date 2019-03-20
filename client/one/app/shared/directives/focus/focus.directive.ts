@@ -6,7 +6,7 @@ import {
     OnChanges,
     SimpleChanges,
 } from '@angular/core';
-import * as commonHelpers from '../helpers/common.helpers';
+import * as commonHelpers from '../../helpers/common.helpers';
 
 @Directive({
     selector: '[zemFocus]',

@@ -4,8 +4,8 @@ import {BidModifierInputComponent} from './bid-modifier-input.component';
 import {SimpleChange} from '@angular/core';
 import {PrefixedInputComponent} from '../prefixed-input/prefixed-input.component';
 import {DecimalInputComponent} from '../decimal-input/decimal-input.component';
-import {FilterKeydownEventDirective} from '../../directives/filter-keydown-event.directive';
-import {FocusDirective} from '../../directives/focus.directive';
+import {FilterKeydownEventDirective} from '../../directives/filter-keydown-event/filter-keydown-event.directive';
+import {FocusDirective} from '../../directives/focus/focus.directive';
 
 describe('BidModifierInputComponent', () => {
     let component: BidModifierInputComponent;

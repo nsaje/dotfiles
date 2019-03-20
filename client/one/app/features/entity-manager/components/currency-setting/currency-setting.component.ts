@@ -21,8 +21,6 @@ export class CurrencySettingComponent implements OnChanges {
     @Input()
     helpMessage: string;
     @Input()
-    infoMessage: string;
-    @Input()
     value: string;
     @Input()
     placeholder: string;

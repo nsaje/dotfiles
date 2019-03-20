@@ -1,15 +1,16 @@
-<div class="zem-form-group">
-    <label class="zem-form-group__label">
+<div class="zem-settings-form-group">
+    <label class="zem-settings-form-group__label">
         {{ label }}
         <zem-help-popover
+            class="zem-help-popover"
             *ngIf="helpMessage"
             content="{{ helpMessage }}"
             placement="top"
         ></zem-help-popover>
     </label>
-    <div class="zem-form-group__content">
+    <div class="zem-settings-form-group__content">
         <zem-decimal-input
-            class="zem-form-group__content-item zem-decimal-input"
+            class="zem-settings-form-group__content-item zem-decimal-input"
             [value]="model"
             [placeholder]="placeholder"
             [isDisabled]="isDisabled"
@@ -19,16 +20,10 @@
             (inputBlur)="onInputBlur($event)"
         ></zem-decimal-input>
         <div
-            class="zem-form-group__content-item zem-message zem-message--error"
+            class="zem-settings-form-group__content-item zem-message zem-message--error"
             *ngFor="let error of errors"
         >
             {{ error }}
-        </div>
-        <div
-            class="zem-form-group__content-item zem-message zem-message--info zem-message--with-icon zem-info-bg-icon"
-            *ngIf="infoMessage"
-        >
-            {{ infoMessage }}
         </div>
     </div>
 </div>

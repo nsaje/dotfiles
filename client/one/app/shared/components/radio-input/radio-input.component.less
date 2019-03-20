@@ -1,0 +1,86 @@
+@import 'variables';
+
+.zem-radio-input {
+    display: block;
+}
+
+.zem-radio-input__input {
+    display: none;
+    visibility: hidden;
+}
+
+.zem-radio-input__wrapper-label {
+    display: flex;
+    align-items: center;
+    font-weight: 400;
+    transition: all @duration-and-timing-fn--default;
+}
+
+.zem-radio-input__wrapper-label:hover:not(.zem-radio-input__wrapper-label--disabled) {
+    cursor: pointer;
+    color: @color--secondary;
+}
+
+.zem-radio-input__wrapper-label--checked {
+    color: @color--secondary;
+    font-weight: 500;
+}
+
+.zem-radio-input__wrapper-label--disabled {
+    color: @text-color--lighter;
+    cursor: not-allowed;
+}
+
+.zem-radio-input__checkmark {
+    position: relative;
+    flex: 0 0 auto;
+    width: 14px;
+    height: 14px;
+    margin-right: 6px;
+    border: 1px solid darken(@border-color--default, 10%);
+    border-radius: 50%;
+    transition: all @duration-and-timing-fn--default;
+}
+
+.zem-radio-input__wrapper-label:hover:not(.zem-radio-input__wrapper-label--disabled)
+    .zem-radio-input__checkmark,
+.zem-radio-input__wrapper-label--checked .zem-radio-input__checkmark {
+    border-color: @color--secondary;
+}
+
+.zem-radio-input__wrapper-label--disabled .zem-radio-input__checkmark {
+    border-color: @color--lighter-neutral;
+}
+
+.zem-radio-input__checkmark::after {
+    position: absolute;
+    content: '';
+    display: block;
+    top: 6px;
+    left: 6px;
+    width: 0px;
+    height: 0px;
+    border-radius: 50%;
+    background-color: @color--secondary;
+    transition: all @duration-and-timing-fn--default;
+}
+
+.zem-radio-input__wrapper-label--checked .zem-radio-input__checkmark::after {
+    top: 2px;
+    left: 2px;
+    width: 8px;
+    height: 8px;
+}
+
+.zem-radio-input__wrapper-label--disabled .zem-radio-input__checkmark::after {
+    background-color: @color--lighter-neutral;
+}
+
+.zem-radio-input__label-text {
+    flex: 1 1 auto;
+}
+
+.zem-radio-input__deemphasized-label-text {
+    color: @text-color--lighter;
+    font-weight: initial;
+}

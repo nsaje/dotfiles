@@ -2,7 +2,7 @@ import {TestBed, ComponentFixture} from '@angular/core/testing';
 import {FormsModule} from '@angular/forms';
 import {NgSelectModule} from '@ng-select/ng-select';
 import {SelectInputComponent} from './select-input.component';
-import {FocusDirective} from '../../directives/focus.directive';
+import {FocusDirective} from '../../directives/focus/focus.directive';
 
 describe('SelectInputComponent', () => {
     let component: SelectInputComponent;
@@ -26,11 +26,12 @@ describe('SelectInputComponent', () => {
     });
 
     it('should correctly emit model on change event', () => {
+        component.bindValue = 'customValue';
         component.ngOnInit();
 
         spyOn(component.valueChange, 'emit').and.stub();
 
-        component.onChange({value: 'TEST'});
+        component.onChange({customValue: 'TEST'});
         expect(component.valueChange.emit).toHaveBeenCalledWith('TEST');
         (<any>component.valueChange.emit).calls.reset();
 

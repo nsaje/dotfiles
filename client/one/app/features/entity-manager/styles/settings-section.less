@@ -1,0 +1,51 @@
+@import 'variables';
+@import './_settings.variables.less';
+
+.zem-settings-section {
+    padding: @spacing--default;
+}
+
+.zem-settings-section:not(:last-child) {
+    border-bottom: 1px solid @color--lighter-neutral;
+}
+
+.zem-settings-section__header:not(:last-child) {
+    margin-bottom: @spacing--default;
+}
+
+.zem-settings-section__header > *:not(:first-child) {
+    margin-top: @spacing--small;
+}
+
+.zem-settings-section__title {
+    font-size: 17px;
+    color: @color--secondary;
+}
+
+.zem-settings-section__description {
+    color: @text-color--lighter;
+}
+
+.zem-settings-section__item {
+    display: block;
+    margin-top: @spacing--default;
+}
+
+.zem-settings-section__item:first-child {
+    margin-top: 0;
+}
+
+.zem-settings-section__item--indented {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.zem-settings-section__item--indented::before {
+    content: '';
+    display: block;
+    flex: 0 0 @zem-settings__label-width;
+}
+
+.zem-settings-section__item--indented > * {
+    flex: 1 1 @zem-settings__min-content-width;
+}
