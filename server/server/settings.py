@@ -420,7 +420,7 @@ DCRON = {
         "campaignstop_main": 900,  # 15 min
         "campaignstop_handle_updates": 1800,  # 30 min
         "create_demand_report": 7200,  # 2 h
-        "monitor_adgroup_propagation": 23400,  # 6 h 30 min
+        "monitor_adgroup_propagation": 86400,  # 24 h
         "refresh_etl": 15000.0,  # 4 h 10 min
     },
     # If the same job is run within this interval, the second should exit before doing anything.

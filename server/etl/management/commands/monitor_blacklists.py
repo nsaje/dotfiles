@@ -63,8 +63,8 @@ class Command(ExceptionCommand):
 
     def check_ad_groups(self, ad_groups, publishers_map, stats_map, date_from, log_influx=True):
         # load necessary objects
-        ad_groups = ad_groups.select_related("campaign", "campaign__account")
-        campaigns = models.Campaign.objects.filter(pk__in=ad_groups.values_list("campaign_id", flat=True))
+        ad_groups = list(ad_groups.select_related("campaign", "campaign__account"))
+        campaigns = models.Campaign.objects.filter(pk__in=[ag.campaign_id for ag in ad_groups])
         accounts = models.Account.objects.filter(pk__in=campaigns.values_list("account_id", flat=True))
         agencies = models.Agency.objects.filter(
             pk__in=accounts.filter(agency_id__isnull=False).values_list("agency_id", flat=True)
