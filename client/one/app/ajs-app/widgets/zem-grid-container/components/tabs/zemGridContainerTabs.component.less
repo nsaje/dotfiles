@@ -35,6 +35,12 @@
         text-decoration: none;
         background-color: white;
     }
+
+    &:focus,
+    &:active {
+        color: @text-color--default;
+        text-decoration: none;
+    }
 }
 
 .zem-grid-container-tabs__tab--active .zem-grid-container-tabs__tab-content {
@@ -43,10 +49,6 @@
     background: white;
     padding: 8px @spacing--default;
     border-bottom: 0;
-
-    &:hover {
-        color: @color--secondary;
-    }
 }
 
 .zem-grid-container-tabs__tab-dropdown {
@@ -103,12 +105,24 @@
 }
 
 .zem-grid-container-tabs__tab-dropdown .dropdown-menu__list-item {
+    display: block;
+    color: @text-color--default;
+    text-decoration: none;
     margin: 0;
     padding: 7px 10px;
     font-size: 13px;
+    width: 100%;
 
     &:hover {
+        color: @text-color--default;
+        text-decoration: none;
         background-color: rgba(63, 84, 127, 0.1);
         border-radius: 4px;
+    }
+
+    &:focus,
+    &:active {
+        color: @text-color--default;
+        text-decoration: none;
     }
 }

@@ -3,12 +3,13 @@
     class="zem-grid-container-tabs__tab"
     ng-class="{'zem-grid-container-tabs__tab--active': tab.selected}"
 >
-    <div
+    <a
         class="zem-grid-container-tabs__tab-content"
-        ng-click="$ctrl.navigateTo($event, tab)"
+        ng-click="$ctrl.navigateToStateWithQueryParams($event, tab)"
+        ng-href="{{ $ctrl.getStateHrefWithQueryParams(tab) }}"
     >
         {{ tab.name }}
-    </div>
+    </a>
     <div
         class="zem-grid-container-tabs__tab-dropdown dropdown"
         ng-if="$ctrl.hasOptions(tab)"
@@ -18,15 +19,18 @@
         <div class="zem-grid-container-tabs__tab-dropdown-toggle-icon"></div>
         <div class="dropdown-menu dropdown-menu-right" uib-dropdown-menu>
             <div class="dropdown-menu__container custom-scroller">
-                <ul class="dropdown-menu__list">
-                    <li
+                <div class="dropdown-menu__list">
+                    <a
                         class="dropdown-menu__list-item"
                         ng-repeat="option in tab.options"
-                        ng-click="$ctrl.navigateTo($event, tab, option)"
+                        ng-click="$ctrl.navigateToStateWithQueryParams($event, tab, option)"
+                        ng-href="{{
+                            $ctrl.getStateHrefWithQueryParams(tab, option)
+                        }}"
                     >
-                        <span>{{ option.name }}</span>
-                    </li>
-                </ul>
+                        {{ option.name }}
+                    </a>
+                </div>
             </div>
         </div>
     </div>

@@ -10,32 +10,23 @@ angular.module('one.widgets').component('zemGridContainerTabs', {
     controller: function($rootScope, $state, $location, $window, zemUtils) {
         var $ctrl = this;
 
-        $ctrl.navigateTo = navigateTo;
+        $ctrl.navigateToStateWithQueryParams = navigateToStateWithQueryParams;
+        $ctrl.getStateHrefWithQueryParams = getStateHrefWithQueryParams;
         $ctrl.hasOptions = hasOptions;
 
         $ctrl.$onInit = function() {};
 
-        function navigateTo(event, tab, option) {
-            var id = $ctrl.entity ? $ctrl.entity.id : null;
-            var level = $ctrl.entity
-                ? constants.entityTypeToLevelMap[$ctrl.entity.type]
-                : constants.level.ALL_ACCOUNTS;
-            var levelStateParam = constants.levelToLevelStateParamMap[level];
-            var breakdownStateParam =
-                constants.breakdownToBreakdownStateParamMap[
-                    option ? option.breakdown : tab.breakdown
-                ];
-            var params = {
-                id: id,
-                level: levelStateParam,
-                breakdown: breakdownStateParam,
-            };
-
-            if (zemUtils.shouldOpenInNewTab(event)) {
-                $window.open(getStateHrefWithQueryParams(params), '_blank');
+        function navigateToStateWithQueryParams($event, tab, option) {
+            $event.preventDefault();
+            if (zemUtils.shouldOpenInNewTab($event)) {
+                $window.open(
+                    getStateHrefWithQueryParams(tab, option),
+                    '_blank'
+                );
             } else {
                 // [WORKAROUND] Silently change state (notify: false) to avoid component reinitialization
                 // and notify directly with $zemStateChangeStart and $zemStateChangeSuccess
+                var params = getQueryParams(tab, option);
                 $rootScope.$broadcast('$zemStateChangeStart');
                 $state
                     .go('v2.analytics', params, {
@@ -48,13 +39,31 @@ angular.module('one.widgets').component('zemGridContainerTabs', {
             }
         }
 
-        function getStateHrefWithQueryParams(params) {
+        function getStateHrefWithQueryParams(tab, option) {
+            var params = getQueryParams(tab, option);
             var href = $state.href('v2.analytics', params);
             var queryParamsIndex = $location.url().indexOf('?');
             if (queryParamsIndex !== -1) {
                 href += $location.url().slice(queryParamsIndex);
             }
             return href;
+        }
+
+        function getQueryParams(tab, option) {
+            var id = $ctrl.entity ? $ctrl.entity.id : null;
+            var level = $ctrl.entity
+                ? constants.entityTypeToLevelMap[$ctrl.entity.type]
+                : constants.level.ALL_ACCOUNTS;
+            var levelStateParam = constants.levelToLevelStateParamMap[level];
+            var breakdownStateParam =
+                constants.breakdownToBreakdownStateParamMap[
+                    option ? option.breakdown : tab.breakdown
+                ];
+            return {
+                id: id,
+                level: levelStateParam,
+                breakdown: breakdownStateParam,
+            };
         }
 
         function hasOptions(tab) {

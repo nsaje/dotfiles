@@ -551,10 +551,26 @@ angular
                 totalRow: false,
                 help:
                     'Bid modifiers allow you to adjust bid per selected breakdown.',
-                order: true,
-                initialOrder: zemGridConstants.gridColumnOrder.ASC,
-                shown: true,
-                editable: true,
+                shown: [
+                    {
+                        permissions: ['zemauth.can_set_bid_modifiers'],
+                        breakdowns: [
+                            constants.breakdown.CONTENT_AD,
+                            constants.breakdown.COUNTRY,
+                            constants.breakdown.STATE,
+                            constants.breakdown.DMA,
+                            constants.breakdown.DEVICE,
+                            constants.breakdown.PLACEMENT,
+                            constants.breakdown.OPERATING_SYSTEM,
+                        ],
+                    },
+                    {
+                        permissions: [
+                            'zemauth.can_use_publisher_bid_modifiers_in_ui',
+                        ],
+                        breakdowns: [constants.breakdown.PUBLISHER],
+                    },
+                ],
             },
             amplifyLivePreview: {
                 name: 'Ad Preview',
@@ -2172,7 +2188,7 @@ angular
         COLUMNS.dailyBudgetSetting.exceptions.breakdownBaseLevelOnly = true;
 
         COLUMNS.bidModifier.exceptions.breakdowns = [
-            // constants.breakdown.CONTENT_AD,
+            constants.breakdown.CONTENT_AD,
             constants.breakdown.COUNTRY,
             constants.breakdown.STATE,
             constants.breakdown.DMA,
@@ -2322,7 +2338,7 @@ angular
         // Service functions
         //
 
-        function checkPermissions(columns) {
+        function checkPermissions(columns, breakdown) {
             // Go trough all columns and convert permissions to boolean, when needed
 
             var usesBCMv2 = zemNavigationNewService.getUsesBCMv2();
@@ -2342,13 +2358,27 @@ angular
             };
 
             columns.forEach(function(column) {
+                var columnPermissions = column.shown;
+                if (column.shown instanceof Array) {
+                    var item = column.shown.find(function(item) {
+                        return (
+                            typeof item === 'object' &&
+                            item.breakdowns &&
+                            item.breakdowns.indexOf(breakdown) >= 0
+                        );
+                    });
+                    if (item) {
+                        columnPermissions = item.permissions;
+                    }
+                }
+
                 column.internal = zemUtils.convertPermission(
                     column.internal,
                     isPermissionInternal
                 );
 
                 var shown = zemUtils.convertPermission(
-                    column.shown,
+                    columnPermissions,
                     hasPermission
                 );
                 if (shown) {
@@ -2375,10 +2405,7 @@ angular
             // status not orderable on publisher tabs
             if (breakdowns.indexOf(constants.breakdown.PUBLISHER) >= 0) {
                 columns.forEach(function(column) {
-                    if (
-                        column.field === COLUMNS.status.field ||
-                        column.field === COLUMNS.bidModifier.field
-                    ) {
+                    if (column.field === COLUMNS.status.field) {
                         column.order = false;
                     }
                 });
@@ -2451,7 +2478,7 @@ angular
             var columns = angular.copy(getColumns(level, breakdowns));
             addRefundColumns(columns);
             adjustOrder(columns, breakdowns);
-            checkPermissions(columns);
+            checkPermissions(columns, breakdowns[0]);
             brandColumns(columns, breakdowns[0]);
             return columns;
         }
