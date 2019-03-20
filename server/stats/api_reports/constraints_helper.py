@@ -39,12 +39,11 @@ def prepare_constraints(
         dash.models.Account.objects.all()
         .filter_by_agencies(filtered_agencies)
         .filter_by_account_types(filtered_account_types)
-        .exclude_archived(show_archived)
     )
 
-    allowed_campaigns = dash.models.Campaign.objects.all().exclude_archived(show_archived)
-    allowed_ad_groups = dash.models.AdGroup.objects.all().exclude_archived(show_archived)
-    allowed_content_ads = dash.models.ContentAd.objects.all().exclude_archived(show_archived)
+    allowed_campaigns = dash.models.Campaign.objects.all()
+    allowed_ad_groups = dash.models.AdGroup.objects.all()
+    allowed_content_ads = dash.models.ContentAd.objects.all()
 
     constrain_content_ads = stats.constants.CONTENT_AD in breakdown
     constrain_ad_group = constrain_content_ads or stats.constants.AD_GROUP in breakdown
@@ -130,6 +129,12 @@ def prepare_constraints(
     whitelisted_entries = dash.models.PublisherGroupEntry.objects.filter(
         publisher_group_id__in=whitelists
     ).filter_by_sources(filtered_sources, include_wo_source=True)
+
+    # apply show_archived (at the end because higher up we need all users's ad groups in the queryset)
+    allowed_content_ads = allowed_content_ads.exclude_archived(show_archived)
+    allowed_ad_groups = allowed_ad_groups.exclude_archived(show_archived)
+    allowed_campaigns = allowed_campaigns.exclude_archived(show_archived)
+    allowed_accounts = allowed_accounts.exclude_archived(show_archived)
 
     constraints = {
         "show_archived": show_archived,
