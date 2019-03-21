@@ -20,7 +20,7 @@ class SourceCredentialsMixin:
 
         if (not existing_instance) or (existing_instance and existing_instance.credentials != self.credentials):
             encrypted_credentials = encryption_helpers.aes_encrypt(
-                self.credentials, settings.CREDENTIALS_ENCRYPTION_KEY
+                self.credentials.encode("utf-8"), settings.CREDENTIALS_ENCRYPTION_KEY
             )
             self.credentials = binascii.b2a_base64(encrypted_credentials)
 
