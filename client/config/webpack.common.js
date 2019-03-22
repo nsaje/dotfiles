@@ -11,6 +11,7 @@ var THEMES = {
     newscorp: {name: 'newscorp'},
     burda: {name: 'burda'},
     mediamond: {name: 'mediamond'},
+    amplify: {name: 'amplify'},
 };
 
 module.exports.THEMES = THEMES;

@@ -43,6 +43,17 @@ export const APP_WHITELABEL = {
             ],
         },
     },
+    amplify: {
+        chartColors: {
+            TOTALS: ['#474f7c', '#bbbfca'],
+            GOALS: ['#99cc00', '#d6eb99'],
+            DATA: [
+                ['#333F48', '#a9ddf4'],
+                ['#474f7c', '#9ddfd9'],
+                ['#f15f74', '#f9bfc7'],
+            ],
+        },
+    },
 };
 
 // [Workaround - Webpack] Make overwrittes global

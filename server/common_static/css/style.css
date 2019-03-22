@@ -315,6 +315,35 @@ input[type="text"]:focus, input[type="password"]:focus {
     background-color: rgba(4, 7, 7, 0.8);
 }
 
+/* WHITELABEL - AMPLIFY */
+
+.amplify .button {
+    color: #333F48;
+}
+
+.amplify .container__right .button {
+    color: white;
+    background-color: #333F48;
+}
+
+.amplify .container__right .button:hover {
+    background-color: #474f7c;
+    text-decoration: none;
+    box-shadow: 0px 0px 15px 0px rgba(71, 79, 124, 0.6);
+}
+
+.amplify .container__left {
+    background-color: #474f7c;
+}
+
+.amplify .container {
+    background-color: rgba(71, 79, 124, 0.4);
+}
+
+.amplify .color-overlay {
+    background-color: rgba(71, 79, 124, 0.8);
+}
+
 /* RESPONSIVE */
 
 @media only screen and (max-width: 1024px) {
@@ -330,7 +359,7 @@ input[type="text"]:focus, input[type="password"]:focus {
         padding: 40px;
         display: block;
     }
-    
+
     .container__left--logo-on-top {
         height: 60px;
         padding: 40px;
@@ -359,7 +388,7 @@ input[type="text"]:focus, input[type="password"]:focus {
     .container__left--logo-on-top {
         padding: 30px 20px 20px 20px;
     }
-    
+
     .container__right {
         padding: 20px;
     }
