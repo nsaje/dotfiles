@@ -100,21 +100,3 @@ class CreditsListSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
     created_dt = serializers.DateTimeField()
     modified_dt = serializers.DateTimeField()
     created_by = serializers.EmailField()
-
-
-class AgencySerializer(serializers.Serializer):
-    name = restapi.serializers.fields.PlainCharField()
-    tags = restapi.serializers.fields.NullListField(required=False, source="entity_tags")
-    status = serializers.BooleanField(required=False, source="is_disabled")
-
-
-class AccountSerializer(serializers.Serializer):
-    id = serializers.IntegerField(required=False)
-    name = restapi.serializers.fields.PlainCharField()
-    agency_id = restapi.serializers.fields.IdField(source="agency")
-    salesforce_url = serializers.URLField(required=False)
-    currency = serializers.ChoiceField(choices=constants.OUTBRAIN_CURRENCIES, required=False)
-    sales_representative = serializers.EmailField(required=False)
-    account_manager = serializers.EmailField(required=False)
-    status = serializers.BooleanField(required=False, source="is_disabled")
-    tags = restapi.serializers.fields.NullListField(required=False, source="entity_tags")

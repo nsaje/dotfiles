@@ -44,12 +44,6 @@ class AccountInstanceMixin:
     def is_agency(self):
         return self.agency is not None
 
-    @property
-    def is_externally_managed(self):
-        if self.is_agency():
-            return self.agency.is_externally_managed
-        return False
-
     @transaction.atomic
     def archive(self, request):
         if not self.can_archive():
@@ -150,28 +144,3 @@ class AccountInstanceMixin:
         if request and not request.user.is_anonymous:
             self.modified_by = request.user
         super().save(*args, **kwargs)
-
-    def update(self, request, **kwargs):
-        updates = self._clean_updates(kwargs)
-        if not updates:
-            return
-        self._apply_updates_and_save(request, updates)
-
-    def _clean_updates(self, updates):
-        new_updates = {}
-
-        for field, value in list(updates.items()):
-            if field == "is_disabled":
-                if value is True and not self.is_externally_managed:
-                    raise exc.ValidationError("Disabling Account is allowed only on externally managed Agencies.")
-            if field in set(self._update_fields) and value != getattr(self, field):
-                new_updates[field] = value
-        return new_updates
-
-    def _apply_updates_and_save(self, request, updates):
-        for field, value in updates.items():
-            if field == "entity_tags":
-                self.entity_tags.add(*value)
-                continue
-            setattr(self, field, value)
-        self.save(request)

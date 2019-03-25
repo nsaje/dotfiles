@@ -5,7 +5,6 @@ from django.db import transaction
 import core.common
 import core.features.yahoo_accounts
 from dash import constants
-from utils import exc
 from utils import slack
 
 from . import model
@@ -18,7 +17,7 @@ EUR_AGENCIES = [196, 175, 179, 201]
 
 class AccountManager(core.common.BaseManager):
     @transaction.atomic()
-    def create(self, request, name, agency=None, currency=None, **kwargs):
+    def create(self, request, name, agency=None, currency=None):
         if agency is not None:
             core.common.entity_limits.enforce(model.Account.objects.filter(agency=agency).exclude_archived())
         account = model.Account(name=name, agency=agency)
@@ -36,14 +35,8 @@ class AccountManager(core.common.BaseManager):
             account.currency = currency
 
         account.yahoo_account = core.features.yahoo_accounts.get_default_account()
-        account.is_disabled = kwargs.get("is_disabled", False)
-        account.salesforce_url = kwargs.get("salesforce_url", None)
-        if account.is_disabled and not account.is_externally_managed:
-            raise exc.ValidationError("Disabling Account is allowed only on externally managed agencies.")
-
         account.save(request)
         account.write_history("Created account", user=request.user, action_type=constants.HistoryActionType.CREATE)
-        account.entity_tags.add(*kwargs.get("entity_tags", []))
 
         settings_updates = {}
         settings_updates["default_account_manager"] = request.user

@@ -7,9 +7,6 @@ from utils import json_helper
 
 
 class AgencyInstanceMixin:
-    def __str__(self):
-        return self.name
-
     def admin_link(self):
         if self.id:
             return '<a href="/admin/dash/agency/%d/">Edit</a>' % self.id
@@ -61,31 +58,5 @@ class AgencyInstanceMixin:
         self.modified_by = request.user
         super().save(*args, **kwargs)
 
-    def update(self, request, **kwargs):
-        updates = self._clean_updates(kwargs)
-        if not updates:
-            return
-        self._apply_updates_and_save(request, updates)
-
-    def _clean_updates(self, updates):
-        new_updates = {}
-
-        for field, value in list(updates.items()):
-            if field == "is_disabled":
-                self.is_externally_managed = updates.get("is_externally_managed", self.is_externally_managed)
-                if value is True and not self.is_externally_managed:
-                    raise exc.ValidationError("Agency can be disabled only if it is externally managed.")
-            if field in set(self._update_fields) and value != getattr(self, field):
-                new_updates[field] = value
-        return new_updates
-
-    def _apply_updates_and_save(self, request, updates):
-        for field, value in updates.items():
-            if field == "is_disabled":
-                for account in self.account_set.all():
-                    account.update(request, is_disabled=value)
-            if field == "entity_tags":
-                self.entity_tags.add(*value)
-                continue
-            setattr(self, field, value)
-        self.save(request)
+    def __str__(self):
+        return self.name

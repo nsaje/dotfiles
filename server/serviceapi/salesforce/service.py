@@ -8,9 +8,7 @@ import core.features.multicurrency
 import core.models.account
 import dash.constants
 import utils.converters
-import utils.exc
 import zemauth.models
-from zemauth.models import User as zemUser
 
 from . import constants
 
@@ -122,41 +120,3 @@ def get_agency_accounts(z1_account_id):
 
 def get_entity_credits(z1_account_id):
     return core.features.bcm.credit_line_item.CreditLineItem.objects.filter(**_get_client_lookup(z1_account_id))
-
-
-def create_agency(request, **params):
-    params.update({"is_externally_managed": True})
-    return core.models.Agency.objects.create(request, **params)
-
-
-def update_agency(request, agency, **kwargs):
-    agency.update(request, **kwargs)
-    return agency
-
-
-def create_account(request, **kwargs):
-    agency = core.models.Agency.objects.filter(id=kwargs.pop("agency", None), is_externally_managed=True).first()
-    if not agency:
-        raise utils.exc.ValidationError("Agency provided does not exists or is not externally manageable.")
-
-    settings_updates = {"default_sales_representative": None, "default_account_manager": None}
-    if "account_manager" in kwargs:
-        default_account_manager = zemUser.objects.filter(email=kwargs.get("account_manager")).first()
-        if not default_account_manager:
-            raise utils.exc.ValidationError("Account manager e-mail not found.")
-        settings_updates["default_account_manager"] = default_account_manager
-    if "sales_representative" in kwargs:
-        default_sales_representative = zemUser.objects.filter(email=kwargs.get("sales_representative")).first()
-        if not default_sales_representative:
-            raise utils.exc.ValidationError("Sales representative e-mail not found.")
-        settings_updates["default_sales_representative"] = default_sales_representative
-
-    new_account = core.models.Account.objects.create(request, agency=agency, **kwargs)
-    new_account.settings.update(request, **settings_updates)
-    return new_account
-
-
-def update_account(request, account, **kwargs):
-    account.update(request, **kwargs)
-    account.settings.update(request, **kwargs)
-    return account

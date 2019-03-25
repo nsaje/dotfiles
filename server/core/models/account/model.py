@@ -23,25 +23,6 @@ class Account(instance.AccountInstanceMixin, models.Model):
         app_label = "dash"
 
     _demo_fields = {"name": utils.demo_anonymizer.account_name_from_pool}
-    _update_fields = (
-        "name",
-        "users",
-        "auto_archiving_enabled",
-        "agency",
-        "allowed_sources",
-        "outbrain_marketer_id",
-        "salesforce_url",
-        "uses_bcm_v2",
-        "custom_flags",
-        "real_time_campaign_stop",
-        "currency",
-        "entity_tags",
-        "is_disabled",
-        "yahoo_account",
-        "default_whitelist",
-        "default_blacklist",
-        "agency",
-    )
 
     id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=127, editable=True, unique=False, blank=False, null=False)
