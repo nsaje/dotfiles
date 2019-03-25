@@ -577,7 +577,7 @@ class AccountAdmin(SlackLoggerMixin, SaveWithRequestMixin, admin.ModelAdmin):
         if formset.model == models.Campaign:
             instances = formset.save(commit=False)
             for instance in instances:
-                instance.save(request)
+                instance.update(request, **form.cleaned_data)
 
             for obj in formset.deleted_objects:
                 obj.delete()
@@ -587,7 +587,7 @@ class AccountAdmin(SlackLoggerMixin, SaveWithRequestMixin, admin.ModelAdmin):
     @pgdh.catch_and_report_exception(pgdh.PagerDutyEventType.PRODOPS)
     def save_model(self, request, obj, form, change):
         old_obj = models.Account.objects.get(id=obj.id)
-        obj.save(request)
+        obj.update(request, **form.cleaned_data)
         utils.k1_helper.update_ad_groups(
             models.AdGroup.objects.filter(campaign__account_id=obj.id)
             .select_related("campaign")
