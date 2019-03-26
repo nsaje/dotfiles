@@ -1,5 +1,5 @@
 import * as clone from 'clone';
-import {APP_CONSTANTS} from '../../../app.constants';
+import {APP_CONSTANTS, CampaignType} from '../../../app.constants';
 import {CAMPAIGN_GOALS_CONFIG} from '../campaign-goals.config';
 
 export function extendAvailableGoalsWithEditedGoal(
@@ -77,7 +77,7 @@ function isGoalAvailable(
 
     // Display campaigns do not support CPCV goals
     if (
-        campaignType === APP_CONSTANTS.campaignTypes.DISPLAY &&
+        campaignType === CampaignType.DISPLAY &&
         option.value === APP_CONSTANTS.campaignGoalKPI.CPCV
     ) {
         return false;

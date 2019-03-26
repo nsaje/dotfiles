@@ -29,6 +29,7 @@ import {TrackingPixelSettingComponent} from './components/tracking-pixel-setting
 import {InterestTargetingComponent} from './components/interest-targeting/interest-targeting.component';
 import {PublisherGroupTargetingComponent} from './components/publisher-groups-targeting/publisher-groups-targeting.component';
 import {RetargetingComponent} from './components/retargeting/retargeting.component';
+import {BiddingTypeSettingComponent} from './components/bidding-type-setting/bidding-type-setting.component';
 
 @NgModule({
     declarations: [
@@ -48,6 +49,7 @@ import {RetargetingComponent} from './components/retargeting/retargeting.compone
         DateSettingComponent,
         SelectSettingComponent,
         DeliveryTypeSettingComponent,
+        BiddingTypeSettingComponent,
         DemographicTargetingComponent,
         GeoTargetingComponent,
         DeviceTargetingSettingsComponent,

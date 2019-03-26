@@ -4,7 +4,8 @@ angular
         $window,
         zemChartMetricsService,
         zemNavigationNewService,
-        zemMulticurrencyService
+        zemMulticurrencyService,
+        config
     ) {
         // eslint-disable-line max-len
         var COMMON_Y_AXIS_METRICS = ['clicks', 'visits', 'pageviews'];
@@ -268,7 +269,7 @@ angular
                 fractionSize = format.fractionSize;
 
                 if (format.type === 'currency') {
-                    valuePrefix = constants.currencySymbol[currency];
+                    valuePrefix = config.currencySymbols[currency];
                 } else if (format.type === 'percent') {
                     valueSuffix = '%';
                 } else if (format.type === 'time') {
@@ -285,7 +286,7 @@ angular
             var format = null;
             var axisFormat = null;
             var currencySymbol =
-                constants.currencySymbol[chart.metrics.metaData.currency];
+                config.currencySymbols[chart.metrics.metaData.currency];
 
             metricIds.forEach(function(metricId, index) {
                 var metric = zemChartMetricsService.findMetricByValue(

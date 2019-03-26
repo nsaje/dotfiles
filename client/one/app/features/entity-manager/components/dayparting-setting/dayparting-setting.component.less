@@ -1,15 +1,21 @@
 @import 'variables';
+@import '../../styles/_settings.variables.less';
 
 .zem-dayparting-setting__disabled-message,
 .zem-dayparting-setting__timezone {
     margin-bottom: @spacing--default;
 }
 
-.zem-dayparting-setting__errors {
+.zem-dayparting-setting__error {
     display: block;
+    margin-top: @zem-settings__items-spacing--default;
+}
+
+.zem-dayparting-setting__error:first-of-type {
     margin-top: @spacing--default;
 }
 
 .zem-dayparting-setting__no-support-message {
+    display: inline-block;
     margin-top: @spacing--default;
 }

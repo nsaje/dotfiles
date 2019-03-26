@@ -6,9 +6,10 @@ import {AdGroupService} from '../../../core/entities/services/ad-group.service';
 import {HttpErrorResponse} from '@angular/common/http';
 import {AdGroup} from '../../../core/entities/types/ad-group/ad-group';
 import {RequestStateUpdater} from '../../../shared/types/request-state-updater';
-import * as endpointHelpers from '../../../shared/helpers/endpoint.helpers';
-import * as commonHelpers from '../../../shared/helpers/common.helpers';
+import * as storeHelpers from '../../../shared/helpers/store.helpers';
 import {AdGroupWithExtras} from '../../../core/entities/types/ad-group/ad-group-with-extras';
+import {AdGroupAutopilotState} from '../../../app.constants';
+import {AdGroupSettingsStoreFieldsErrorsState} from './ad-group-settings.store.fields-errors-state';
 
 @Injectable()
 export class AdGroupSettingsStore extends Store<AdGroupSettingsStoreState>
@@ -21,7 +22,7 @@ export class AdGroupSettingsStore extends Store<AdGroupSettingsStoreState>
         @Inject('zemNavigationNewService') private zemNavigationNewService: any
     ) {
         super(new AdGroupSettingsStoreState());
-        this.requestStateUpdater = endpointHelpers.getStoreRequestStateUpdater(
+        this.requestStateUpdater = storeHelpers.getStoreRequestStateUpdater(
             this
         );
     }
@@ -61,18 +62,16 @@ export class AdGroupSettingsStore extends Store<AdGroupSettingsStoreState>
                 () => {
                     this.setState({
                         ...this.state,
-                        fieldsErrors: {},
+                        fieldsErrors: new AdGroupSettingsStoreFieldsErrorsState(),
                     });
                 },
                 (error: HttpErrorResponse) => {
                     this.setState({
                         ...this.state,
-                        fieldsErrors: commonHelpers.isDefined(error.error)
-                            ? commonHelpers.getValueOrDefault(
-                                  error.error.details,
-                                  {}
-                              )
-                            : {},
+                        fieldsErrors: storeHelpers.getStoreFieldsErrorsState(
+                            new AdGroupSettingsStoreFieldsErrorsState(),
+                            error
+                        ),
                     });
                 }
             );
@@ -87,19 +86,17 @@ export class AdGroupSettingsStore extends Store<AdGroupSettingsStoreState>
                         this.setState({
                             ...this.state,
                             entity: adGroup,
-                            fieldsErrors: {},
+                            fieldsErrors: new AdGroupSettingsStoreFieldsErrorsState(),
                         });
                         resolve(true);
                     },
                     (error: HttpErrorResponse) => {
                         this.setState({
                             ...this.state,
-                            fieldsErrors: commonHelpers.isDefined(error.error)
-                                ? commonHelpers.getValueOrDefault(
-                                      error.error.details,
-                                      {}
-                                  )
-                                : {},
+                            fieldsErrors: storeHelpers.getStoreFieldsErrorsState(
+                                new AdGroupSettingsStoreFieldsErrorsState(),
+                                error
+                            ),
                         });
                         resolve(false);
                     }
@@ -117,18 +114,16 @@ export class AdGroupSettingsStore extends Store<AdGroupSettingsStoreState>
                 (error: HttpErrorResponse) => {
                     this.setState({
                         ...this.state,
-                        fieldsErrors: commonHelpers.isDefined(error.error)
-                            ? commonHelpers.getValueOrDefault(
-                                  error.error.details,
-                                  {}
-                              )
-                            : {},
+                        fieldsErrors: storeHelpers.getStoreFieldsErrorsState(
+                            new AdGroupSettingsStoreFieldsErrorsState(),
+                            error
+                        ),
                     });
                 }
             );
     }
 
-    // TODO (jurebajt): Improve/Rethink
+    // TODO (jurebajt): Refactor once Store is extended with updateState method
     updateSetting(field: string, value: any) {
         this.setState({
             ...this.state,
@@ -137,6 +132,19 @@ export class AdGroupSettingsStore extends Store<AdGroupSettingsStoreState>
                 [field]: value,
             },
         });
+    }
+
+    isAdGroupAutopilotEnabled() {
+        return (
+            !this.state.extras.isCampaignAutopilotEnabled &&
+            this.state.entity.autopilot &&
+            this.state.entity.autopilot.state ===
+                AdGroupAutopilotState.ACTIVE_CPC_BUDGET
+        );
+    }
+
+    updateAutopilotDailyBudget(dailyBudget: string) {
+        // TODO (jurebajt): Implement once Store is extended with updateState method
     }
 
     ngOnDestroy(): void {

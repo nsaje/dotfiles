@@ -16,7 +16,7 @@ import {Filters} from '../types/filters';
 import {Inventory} from '../types/inventory';
 import {FilterOption} from '../types/filter-option';
 import {RequestStateUpdater} from '../../../shared/types/request-state-updater';
-import * as endpointHelpers from '../../../shared/helpers/endpoint.helpers';
+import * as storeHelpers from '../../../shared/helpers/store.helpers';
 
 @Injectable()
 export class InventoryPlanningStore extends Store<InventoryPlanningState> {
@@ -27,7 +27,7 @@ export class InventoryPlanningStore extends Store<InventoryPlanningState> {
     constructor(private endpoint: InventoryPlanningEndpoint) {
         super(new InventoryPlanningState());
 
-        this.requestStateUpdater = endpointHelpers.getStoreRequestStateUpdater(
+        this.requestStateUpdater = storeHelpers.getStoreRequestStateUpdater(
             this
         );
     }

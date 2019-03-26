@@ -1,6 +1,7 @@
 import {formatCurrency as angularFormatCurrency} from '@angular/common';
 import * as commonHelpers from './common.helpers';
-import {CURRENCY_SYMBOL, CURRENCY} from '../../app.constants';
+import {Currency} from '../../app.constants';
+import {APP_CONFIG} from '../../app.config';
 
 export function formatCurrency(
     value: string,
@@ -28,7 +29,7 @@ export function formatCurrency(
 
 export function getCurrencySymbol(currency: string): string {
     if (!commonHelpers.isDefined(currency)) {
-        return CURRENCY_SYMBOL[CURRENCY.USD];
+        return APP_CONFIG.currencySymbols[Currency.USD];
     }
-    return CURRENCY_SYMBOL[currency];
+    return APP_CONFIG.currencySymbols[currency];
 }

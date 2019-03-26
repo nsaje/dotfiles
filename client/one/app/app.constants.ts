@@ -1,34 +1,14 @@
-export const CURRENCY = {
-    USD: 'USD',
-    EUR: 'EUR',
-    GBP: 'GBP',
-    AUD: 'AUD',
-    SGD: 'SGD',
-    BRL: 'BRL',
-    CHF: 'CHF',
-    MYR: 'MYR',
-    ZAR: 'ZAR',
-};
-
-export const CURRENCY_SYMBOL = {
-    [CURRENCY.USD]: '$',
-    [CURRENCY.EUR]: '€',
-    [CURRENCY.GBP]: '£',
-    [CURRENCY.AUD]: 'A$',
-    [CURRENCY.SGD]: 'S$',
-    [CURRENCY.BRL]: 'R$',
-    [CURRENCY.MYR]: 'RM',
-    [CURRENCY.CHF]: 'CHF',
-    [CURRENCY.ZAR]: 'R',
-};
-
-export const CAMPAIGN_TYPE = {
-    CONTENT: 1,
-    VIDEO: 2,
-    CONVERSION: 3,
-    MOBILE: 4,
-    DISPLAY: 5,
-};
+export enum Currency {
+    USD = 'USD',
+    EUR = 'EUR',
+    GBP = 'GBP',
+    AUD = 'AUD',
+    SGD = 'SGD',
+    BRL = 'BRL',
+    CHF = 'CHF',
+    MYR = 'MYR',
+    ZAR = 'ZAR',
+}
 
 export enum EntityType {
     CONTENT_AD = 'contentAd',
@@ -65,8 +45,8 @@ export enum Day {
 }
 
 export enum BiddingType {
-    CPC = 1,
-    CPM = 2,
+    CPC = 'CPC',
+    CPM = 'CPM',
 }
 
 export enum SpecialAccount {
@@ -112,9 +92,9 @@ export enum DeliveryType {
 }
 
 export enum AdGroupAutopilotState {
-    ACTIVE_CPC_BUDGET = 1,
-    INACTIVE = 2,
-    ACTIVE_CPC = 3,
+    ACTIVE_CPC_BUDGET = 'ACTIVE_CPC_BUDGET',
+    ACTIVE_CPC = 'ACTIVE_CPC',
+    INACTIVE = 'INACTIVE',
 }
 
 export enum InterestCategory {
@@ -202,13 +182,25 @@ export enum HackLevel {
     GLOBAL = 'Global',
 }
 
+export enum CampaignType {
+    CONTENT = 1,
+    VIDEO = 2,
+    CONVERSION = 3,
+    MOBILE = 4,
+    DISPLAY = 5,
+}
+
 export const APP_CONSTANTS = {
     /**
      * Max. selected media sources in on sources tabs.
      */
     maxSelectedSources: 3,
     settingsState: AdGroupState,
-    adGroupSettingsAutopilotState: AdGroupAutopilotState,
+    adGroupSettingsAutopilotState: {
+        ACTIVE_CPC_BUDGET: 1,
+        INACTIVE: 2,
+        ACTIVE_CPC: 3,
+    },
     adGroupRunningStatus: {
         ACTIVE: 1,
         INACTIVE: 2,
@@ -227,9 +219,12 @@ export const APP_CONSTANTS = {
         PAAS: 7,
     },
     specialAccount: SpecialAccount,
-    campaignTypes: CAMPAIGN_TYPE,
-    currency: CURRENCY,
-    biddingType: BiddingType,
+    campaignTypes: CampaignType,
+    currency: Currency,
+    biddingType: {
+        CPC: 1,
+        CPM: 2,
+    },
     bidModifierType: BidModifierType,
     keyCode: KeyCode,
     infoboxStatus: {
@@ -1345,7 +1340,6 @@ export const APP_CONSTANTS = {
     levelToEntityTypeMap: {},
     entityTypeToLevelMap: {},
     entityToParentTypeMap: {},
-    currencySymbol: CURRENCY_SYMBOL,
     campaignGoalValueText: {},
     automaticallyOptimizedKPIGoals: {},
     defaultAccountTypes: [{}],

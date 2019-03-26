@@ -1,15 +1,16 @@
 @import 'variables';
+@import '../../styles/_settings.variables.less';
 
 .zem-date-setting__inputs-container {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    margin-top: -@spacing--default / 2;
-    margin-left: -@spacing--default / 2;
+    margin-top: -@zem-settings__items-spacing--default;
+    margin-left: -@zem-settings__items-spacing--default;
 }
 
 .zem-date-setting__input {
-    margin-top: @spacing--default / 2;
-    margin-left: @spacing--default / 2;
+    margin-top: @zem-settings__items-spacing--default;
+    margin-left: @zem-settings__items-spacing--default;
     line-height: 1;
 }

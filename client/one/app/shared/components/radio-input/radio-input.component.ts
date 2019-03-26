@@ -22,6 +22,8 @@ export class RadioInputComponent implements OnChanges {
     value: any;
     @Input()
     isDisabled: boolean = false;
+    @Input()
+    hasError: boolean = false;
     @Output()
     select = new EventEmitter<any>();
 

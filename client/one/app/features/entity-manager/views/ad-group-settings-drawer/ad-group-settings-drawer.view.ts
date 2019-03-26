@@ -19,6 +19,8 @@ export class AdGroupSettingsDrawerView implements AfterViewInit {
     isOpen: boolean;
     isNewEntity: boolean;
     minEndDate: Date;
+    // TODO (jurebajt): Determine currency symbol from currency extras field
+    currencySymbol: string = '$';
 
     constructor(
         public store: AdGroupSettingsStore,

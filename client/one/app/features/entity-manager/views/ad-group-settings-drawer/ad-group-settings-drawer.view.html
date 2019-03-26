@@ -1,12 +1,17 @@
 <zem-drawer
+    class="zem-drawer"
     [isOpen]="isOpen"
     [isClosable]="!isNewEntity"
     (closeRequest)="cancel()"
-    class="zem-drawer"
 >
     <ng-container *ngIf="(store.state$ | async) as state">
-        <div class="zem-settings__settings-container">
-            <div class="zem-panel">
+        <div class="zem-drawer__header zem-settings__settings-header">
+            {{ state.entity.name }}
+        </div>
+        <div
+            class="zem-drawer__content custom-scroller zem-settings__settings-container"
+        >
+            <div class="zem-panel zem-settings__panel">
                 <h2 class="zem-panel__title">Scheduling</h2>
                 <div class="zem-settings-section">
                     <zem-date-setting
@@ -53,7 +58,7 @@
                                 'zemauth.can_set_delivery_type'
                             )
                         "
-                        [value]="state.entity.deliveryType"
+                        [deliveryType]="state.entity.deliveryType"
                         [errors]="state.fieldsErrors.deliveryType"
                         (valueChange)="
                             store.updateSetting('deliveryType', $event)
@@ -95,13 +100,122 @@
                     ></zem-dayparting-setting>
                 </div>
             </div>
-        </div>
 
-        <button (click)="saveSettings()">
-            <ng-container *ngIf="isNewEntity">Create</ng-container>
-            <ng-container *ngIf="!isNewEntity">Save</ng-container>
-        </button>
-        <button (click)="cancel()">Cancel</button>
-        <button *ngIf="!isNewEntity" (click)="archive()">Archive</button>
+            <div class="zem-panel zem-settings__panel">
+                <h2 class="zem-panel__title">Budgeting and daily limits</h2>
+                <div class="zem-settings-section">
+                    <zem-bidding-type-setting
+                        class="zem-bidding-type-setting zem-settings-section__item"
+                        *ngIf="
+                            zemPermissions.hasPermission(
+                                'zemauth.fea_can_use_cpm_buying'
+                            )
+                        "
+                        [zemInternalFeature]="
+                            zemPermissions.isPermissionInternal(
+                                'zemauth.fea_can_use_cpm_buying'
+                            )
+                        "
+                        [biddingType]="state.entity.biddingType"
+                        [maxCpc]="state.entity.maxCpc"
+                        [maxCpm]="state.entity.maxCpm"
+                        [currencySymbol]="currencySymbol"
+                        [biddingTypeErrors]="state.fieldsErrors.biddingType"
+                        [maxCpcErrors]="state.fieldsErrors.maxCpc"
+                        [maxCpmErrors]="state.fieldsErrors.maxCpm"
+                        (biddingTypeChange)="
+                            store.updateSetting('biddingType', $event)
+                        "
+                        (maxCpcChange)="store.updateSetting('maxCpc', $event)"
+                        (maxCpmChange)="store.updateSetting('maxCpm', $event)"
+                    ></zem-bidding-type-setting>
+                    <!-- PRTODO (jurebajt): Extract into component -->
+                    <div class="zem-settings-section__item">
+                        <div class="zem-settings-form-group">
+                            <label
+                                class="zem-settings-form-group__label zem-settings-form-group__label--match-input-height"
+                            >
+                                Ad group's daily spend cap
+                                <zem-help-popover
+                                    class="zem-help-popover"
+                                    content="Amount of budget autopilot can operate with on this ad group every day."
+                                    placement="bottom"
+                                ></zem-help-popover>
+                            </label>
+                            <div class="zem-settings-form-group__content">
+                                <div
+                                    class="zem-settings-form-group__content-item"
+                                >
+                                    <zem-currency-input
+                                        class="zem-currency-input"
+                                        [value]="
+                                            state.entity.autopilot.dailyBudget
+                                        "
+                                        [hasError]="
+                                            state.fieldsErrors.autopilot
+                                                .dailyBudget &&
+                                            state.fieldsErrors.autopilot
+                                                .dailyBudget.length > 0
+                                        "
+                                        [isDisabled]="
+                                            !store.isAdGroupAutopilotEnabled()
+                                        "
+                                        [currencySymbol]="currencySymbol"
+                                        fractionSize="0"
+                                        (inputBlur)="
+                                            store.updateAutopilotDailyBudget(
+                                                $event
+                                            )
+                                        "
+                                    ></zem-currency-input>
+                                </div>
+                                <div
+                                    class="zem-settings-form-group__content-item zem-message zem-message--error"
+                                    *ngFor="
+                                        let error of state.fieldsErrors
+                                            .autopilot.dailyBudget
+                                    "
+                                >
+                                    {{ error }}
+                                </div>
+                                <div
+                                    class="zem-settings-form-group__content-item zem-message zem-message--bubble zem-message--warning zem-message--with-icon zem-warning-bg-icon"
+                                    *ngIf="!store.isAdGroupAutopilotEnabled()"
+                                >
+                                    <ng-container
+                                        *ngIf="
+                                            state.extras
+                                                .isCampaignAutopilotEnabled
+                                        "
+                                    >
+                                        Ad group's daily spend cap setting is
+                                        disabled because autopilot is managed on
+                                        campaign level.
+                                    </ng-container>
+                                    <ng-container
+                                        *ngIf="
+                                            !state.extras
+                                                .isCampaignAutopilotEnabled
+                                        "
+                                    >
+                                        Ad group's daily spend cap setting is
+                                        disabled because autopilot is not
+                                        enabled on this ad group.
+                                    </ng-container>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="zem-drawer__footer zem-settings__settings-footer">
+            <button (click)="saveSettings()">
+                <ng-container *ngIf="isNewEntity">Create</ng-container>
+                <ng-container *ngIf="!isNewEntity">Save</ng-container>
+            </button>
+            <button (click)="cancel()">Cancel</button>
+            <button *ngIf="!isNewEntity" (click)="archive()">Archive</button>
+        </div>
     </ng-container>
 </zem-drawer>

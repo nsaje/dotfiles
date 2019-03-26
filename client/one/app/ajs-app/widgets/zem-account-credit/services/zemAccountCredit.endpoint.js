@@ -1,6 +1,6 @@
 angular
     .module('one.widgets')
-    .service('zemAccountCreditEndpoint', function($q, $http, zemUtils) {
+    .service('zemAccountCreditEndpoint', function($q, $http, zemUtils, config) {
         this.list = list;
         this.create = create;
         this.update = update;
@@ -127,7 +127,7 @@ angular
             item.endDate = item.endDate
                 ? moment(item.endDate, 'YYYY-MM-DD').format('MM/DD/YYYY')
                 : null;
-            item.currencySymbol = constants.currencySymbol[item.currency];
+            item.currencySymbol = config.currencySymbols[item.currency];
 
             item.budgets = (item.budgets || []).map(function(budget) {
                 budget.startDate = budget.startDate
@@ -138,8 +138,7 @@ angular
                 budget.endDate = budget.endDate
                     ? moment(budget.endDate, 'YYYY-MM-DD').format('MM/DD/YYYY')
                     : null;
-                budget.currencySymbol =
-                    constants.currencySymbol[budget.currency];
+                budget.currencySymbol = config.currencySymbols[budget.currency];
                 return budget;
             });
             item.numOfBudgets = (item.budgets || []).length;
@@ -148,7 +147,7 @@ angular
         }
 
         function convertCreditTotalsFromApi(totals) {
-            totals.currencySymbol = constants.currencySymbol[totals.currency];
+            totals.currencySymbol = config.currencySymbols[totals.currency];
             return totals;
         }
 

@@ -1,6 +1,10 @@
 angular
     .module('one.widgets')
-    .factory('zemGridDataFormatter', function($filter, zemGridConstants) {
+    .factory('zemGridDataFormatter', function(
+        $filter,
+        zemGridConstants,
+        config
+    ) {
         return {
             formatValue: formatValue,
             parseInputValue: parseInputValue,
@@ -128,9 +132,11 @@ angular
             } else {
                 fractionSize = options.fractionSize;
             }
-            return $filter(
-                'decimalCurrency'
-            )(value, getCurrencySymbol(options), fractionSize);
+            return $filter('decimalCurrency')(
+                value,
+                getCurrencySymbol(options),
+                fractionSize
+            );
         }
 
         function formatBidModifier(value, options) {
@@ -166,8 +172,8 @@ angular
 
         function getCurrencySymbol(options) {
             if (!options.currency) {
-                return constants.currencySymbol[constants.currency.USD];
+                return config.currencySymbols[constants.currency.USD];
             }
-            return constants.currencySymbol[options.currency];
+            return config.currencySymbols[options.currency];
         }
     });

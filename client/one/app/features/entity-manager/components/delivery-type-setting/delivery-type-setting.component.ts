@@ -16,7 +16,7 @@ import {DeliveryType} from '../../../../app.constants';
 })
 export class DeliveryTypeSettingComponent {
     @Input()
-    value: DeliveryType;
+    deliveryType: DeliveryType;
     @Input()
     errors: string[];
     @Output()
@@ -26,5 +26,21 @@ export class DeliveryTypeSettingComponent {
 
     onSelect($event: DeliveryType) {
         this.valueChange.emit($event);
+    }
+
+    hasStandardDeliveryTypeErrors(): boolean {
+        return (
+            this.deliveryType === DeliveryType.STANDARD &&
+            this.errors &&
+            this.errors.length > 0
+        );
+    }
+
+    hasAcceleratedDeliveryTypeErrors(): boolean {
+        return (
+            this.deliveryType === DeliveryType.ACCELERATED &&
+            this.errors &&
+            this.errors.length > 0
+        );
     }
 }

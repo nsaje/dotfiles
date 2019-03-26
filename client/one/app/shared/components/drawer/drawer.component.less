@@ -1,7 +1,8 @@
 @import 'variables';
 
 .zem-drawer__panel {
-    display: block;
+    display: flex;
+    flex-direction: column;
     position: fixed;
     z-index: @z-index--drawer;
     top: 0;
@@ -71,4 +72,18 @@
 .zem-drawer--open .zem-drawer__backdrop {
     visibility: visible;
     opacity: 0.5;
+}
+
+.zem-drawer__header {
+    flex: 0 0;
+    border-bottom: 1px solid @color--light-neutral;
+}
+
+.zem-drawer__content {
+    flex: 1 0;
+    overflow-y: auto;
+}
+
+.zem-drawer__footer {
+    flex: 0 0;
 }

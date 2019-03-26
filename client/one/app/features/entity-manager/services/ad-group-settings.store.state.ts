@@ -1,7 +1,7 @@
 import {AdGroup} from '../../../core/entities/types/ad-group/ad-group';
 import {AdGroupExtras} from '../../../core/entities/types/ad-group/ad-group-extras';
 import {AdGroupRequests} from '../../../core/entities/types/ad-group/ad-group-requests';
-import {FieldsErrors} from '../../../shared/types/fields-errors';
+import {AdGroupSettingsStoreFieldsErrorsState} from './ad-group-settings.store.fields-errors-state';
 
 export class AdGroupSettingsStoreState {
     entity: AdGroup = {
@@ -16,7 +16,6 @@ export class AdGroupSettingsStoreState {
         trackingCode: null,
         maxCpc: null,
         maxCpm: null,
-        dailyBudget: null,
         deliveryType: null,
         clickCappingDailyAdGroupMaxClicks: null,
         clickCappingDailyClickBudget: null,
@@ -102,7 +101,7 @@ export class AdGroupSettingsStoreState {
         hacks: [],
         isCampaignAutopilotEnabled: false,
     };
-    fieldsErrors: FieldsErrors = {};
+    fieldsErrors = new AdGroupSettingsStoreFieldsErrorsState();
     requests: AdGroupRequests = {
         defaults: {},
         get: {},

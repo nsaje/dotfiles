@@ -1,5 +1,6 @@
 import * as currencyHelpers from './currency.helpers';
-import {CURRENCY, CURRENCY_SYMBOL} from '../../app.constants';
+import {Currency} from '../../app.constants';
+import {APP_CONFIG} from '../../app.config';
 
 describe('currencyHelpers', () => {
     it('should prepend the number with a currency sign', () => {
@@ -27,11 +28,11 @@ describe('currencyHelpers', () => {
     });
 
     it('should correctly return currency symbol', () => {
-        expect(currencyHelpers.getCurrencySymbol(CURRENCY.USD)).toBe(
-            CURRENCY_SYMBOL[CURRENCY.USD]
+        expect(currencyHelpers.getCurrencySymbol(Currency.USD)).toBe(
+            APP_CONFIG.currencySymbols[Currency.USD]
         );
-        expect(currencyHelpers.getCurrencySymbol(CURRENCY.EUR)).toBe(
-            CURRENCY_SYMBOL[CURRENCY.EUR]
+        expect(currencyHelpers.getCurrencySymbol(Currency.EUR)).toBe(
+            APP_CONFIG.currencySymbols[Currency.EUR]
         );
     });
 });

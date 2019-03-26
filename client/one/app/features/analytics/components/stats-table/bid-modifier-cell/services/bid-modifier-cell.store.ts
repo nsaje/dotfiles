@@ -5,7 +5,7 @@ import {RequestStateUpdater} from '../../../../../../shared/types/request-state-
 import {Subject} from 'rxjs';
 import {takeUntil} from 'rxjs/operators';
 import {BidModifiersService} from '../../../../../../core/bid-modifiers/services/bid-modifiers.service';
-import * as endpointHelpers from '../../../../../../shared/helpers/endpoint.helpers';
+import * as storeHelpers from '../../../../../../shared/helpers/store.helpers';
 import {BidModifier} from '../../../../../../core/bid-modifiers/types/bid-modifier';
 import * as clone from 'clone';
 import * as commonHelpers from '../../../../../../shared/helpers/common.helpers';
@@ -20,7 +20,7 @@ export class BidModifierCellStore extends Store<BidModifierCellStoreState>
 
     constructor(private bidModifierService: BidModifiersService) {
         super(new BidModifierCellStoreState());
-        this.requestStateUpdater = endpointHelpers.getStoreRequestStateUpdater(
+        this.requestStateUpdater = storeHelpers.getStoreRequestStateUpdater(
             this
         );
     }

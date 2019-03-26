@@ -6,6 +6,7 @@ import {AdGroupService} from '../../../core/entities/services/ad-group.service';
 import {AdGroupWithExtras} from '../../../core/entities/types/ad-group/ad-group-with-extras';
 import {AdGroup} from '../../../core/entities/types/ad-group/ad-group';
 import {AdGroupExtras} from '../../../core/entities/types/ad-group/ad-group-extras';
+import {AdGroupSettingsStoreFieldsErrorsState} from './ad-group-settings.store.fields-errors-state';
 
 describe('AdGroupSettingsStore', () => {
     let serviceStub: jasmine.SpyObj<AdGroupService>;
@@ -50,7 +51,9 @@ describe('AdGroupSettingsStore', () => {
 
         expect(store.state.entity).toEqual(adGroup);
         expect(store.state.extras).toEqual(adGroupExtras);
-        expect(store.state.fieldsErrors).toEqual({});
+        expect(store.state.fieldsErrors).toEqual(
+            new AdGroupSettingsStoreFieldsErrorsState()
+        );
 
         const campaignId = 12345;
         store.loadEntityDefaults(campaignId);
@@ -58,7 +61,9 @@ describe('AdGroupSettingsStore', () => {
 
         expect(store.state.entity).toEqual(mockedAdGroupWithExtras.adGroup);
         expect(store.state.extras).toEqual(mockedAdGroupWithExtras.extras);
-        expect(store.state.fieldsErrors).toEqual({});
+        expect(store.state.fieldsErrors).toEqual(
+            new AdGroupSettingsStoreFieldsErrorsState()
+        );
 
         expect(serviceStub.defaults).toHaveBeenCalledTimes(1);
     }));
@@ -77,7 +82,9 @@ describe('AdGroupSettingsStore', () => {
 
         expect(store.state.entity).toEqual(adGroup);
         expect(store.state.extras).toEqual(adGroupExtras);
-        expect(store.state.fieldsErrors).toEqual({});
+        expect(store.state.fieldsErrors).toEqual(
+            new AdGroupSettingsStoreFieldsErrorsState()
+        );
 
         const id = 12345;
         store.loadEntity(id);
@@ -85,7 +92,9 @@ describe('AdGroupSettingsStore', () => {
 
         expect(store.state.entity).toEqual(mockedAdGroupWithExtras.adGroup);
         expect(store.state.extras).toEqual(mockedAdGroupWithExtras.extras);
-        expect(store.state.fieldsErrors).toEqual({});
+        expect(store.state.fieldsErrors).toEqual(
+            new AdGroupSettingsStoreFieldsErrorsState()
+        );
 
         expect(serviceStub.get).toHaveBeenCalledTimes(1);
     }));
@@ -116,9 +125,12 @@ describe('AdGroupSettingsStore', () => {
 
         expect(store.state.entity).toEqual(mockedAdGroupWithExtras.adGroup);
         expect(store.state.extras).toEqual(mockedAdGroupWithExtras.extras);
-        expect(store.state.fieldsErrors).toEqual({
-            name: ['Please specify ad group name.'],
-        });
+        expect(store.state.fieldsErrors).toEqual(
+            jasmine.objectContaining({
+                ...new AdGroupSettingsStoreFieldsErrorsState(),
+                name: ['Please specify ad group name.'],
+            })
+        );
 
         expect(serviceStub.validate).toHaveBeenCalledTimes(1);
 
@@ -131,7 +143,9 @@ describe('AdGroupSettingsStore', () => {
 
         expect(store.state.entity).toEqual(mockedAdGroupWithExtras.adGroup);
         expect(store.state.extras).toEqual(mockedAdGroupWithExtras.extras);
-        expect(store.state.fieldsErrors).toEqual({});
+        expect(store.state.fieldsErrors).toEqual(
+            new AdGroupSettingsStoreFieldsErrorsState()
+        );
 
         expect(serviceStub.validate).toHaveBeenCalledTimes(1);
     }));
@@ -152,7 +166,9 @@ describe('AdGroupSettingsStore', () => {
         tick();
 
         expect(store.state.entity).toEqual(mockedAdGroup);
-        expect(store.state.fieldsErrors).toEqual({});
+        expect(store.state.fieldsErrors).toEqual(
+            new AdGroupSettingsStoreFieldsErrorsState()
+        );
 
         expect(serviceStub.save).toHaveBeenCalledTimes(1);
     }));
@@ -179,9 +195,12 @@ describe('AdGroupSettingsStore', () => {
         tick();
 
         expect(store.state.entity).toEqual(mockedAdGroup);
-        expect(store.state.fieldsErrors).toEqual({
-            name: ['Please specify ad group name.'],
-        });
+        expect(store.state.fieldsErrors).toEqual(
+            jasmine.objectContaining({
+                ...new AdGroupSettingsStoreFieldsErrorsState(),
+                name: ['Please specify ad group name.'],
+            })
+        );
 
         expect(serviceStub.save).toHaveBeenCalledTimes(1);
     }));

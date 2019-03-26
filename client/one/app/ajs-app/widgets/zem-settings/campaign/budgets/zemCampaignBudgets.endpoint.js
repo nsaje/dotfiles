@@ -1,6 +1,6 @@
 angular
     .module('one.services')
-    .service('zemCampaignBudgetsEndpoint', function($http, $q) {
+    .service('zemCampaignBudgetsEndpoint', function($http, $q, config) {
         this.list = list;
         this.create = create;
         this.save = save;
@@ -30,7 +30,7 @@ angular
                                 data.totals.lifetime.license_fee,
                             lifetimeMargin: data.totals.lifetime.margin,
                             currencySymbol:
-                                constants.currencySymbol[data.totals.currency],
+                                config.currencySymbols[data.totals.currency],
                         },
                         credits: data.credits.map(function(obj) {
                             return {
@@ -46,7 +46,7 @@ angular
                                     'YYYY-MM-DD'
                                 ).format('MM/DD/YYYY'),
                                 currencySymbol:
-                                    constants.currencySymbol[obj.currency],
+                                    config.currencySymbols[obj.currency],
                                 id: obj.id,
                                 comment: obj.comment,
                                 isAvailable: obj.is_available,
@@ -97,7 +97,7 @@ angular
                 endDate: moment(obj.end_date, 'YYYY-MM-DD').format(
                     'MM/DD/YYYY'
                 ),
-                currencySymbol: constants.currencySymbol[obj.currency],
+                currencySymbol: config.currencySymbols[obj.currency],
                 total: obj.total || obj.amount,
                 licenseFee: obj.license_fee,
                 createdBy: obj.created_by,

@@ -1,10 +1,7 @@
 import {BidModifiersService} from '../../../../../../core/bid-modifiers/services/bid-modifiers.service';
 import {BidModifierCellStore} from './bid-modifier-cell.store';
-import {
-    BidModifierType,
-    CURRENCY,
-    CURRENCY_SYMBOL,
-} from '../../../../../../app.constants';
+import {BidModifierType, Currency} from '../../../../../../app.constants';
+import {APP_CONFIG} from '../../../../../../app.config';
 import {BidModifier} from '../../../../../../core/bid-modifiers/types/bid-modifier';
 import {of, asapScheduler} from 'rxjs';
 import * as clone from 'clone';
@@ -30,7 +27,7 @@ describe('BidModifierCellStore', () => {
             bidMax: '0.25',
             modifier: 1,
         };
-        mockedCurrency = CURRENCY.USD;
+        mockedCurrency = Currency.USD;
     });
 
     it('should be correctly initialized', () => {
@@ -44,10 +41,10 @@ describe('BidModifierCellStore', () => {
         expect(store.state.modifierPercent).toEqual('0.00');
         expect(store.state.previousModifierPercent).toEqual('0.00');
         expect(store.state.computedBidMin).toEqual(
-            `${CURRENCY_SYMBOL[mockedCurrency]}0.20`
+            `${APP_CONFIG.currencySymbols[mockedCurrency]}0.20`
         );
         expect(store.state.computedBidMax).toEqual(
-            `${CURRENCY_SYMBOL[mockedCurrency]}0.25`
+            `${APP_CONFIG.currencySymbols[mockedCurrency]}0.25`
         );
     });
 
@@ -61,10 +58,10 @@ describe('BidModifierCellStore', () => {
         expect(store.state.modifierPercent).toEqual('700.00');
         expect(store.state.previousModifierPercent).toEqual('0.00');
         expect(store.state.computedBidMin).toEqual(
-            `${CURRENCY_SYMBOL[mockedCurrency]}1.60`
+            `${APP_CONFIG.currencySymbols[mockedCurrency]}1.60`
         );
         expect(store.state.computedBidMax).toEqual(
-            `${CURRENCY_SYMBOL[mockedCurrency]}2.00`
+            `${APP_CONFIG.currencySymbols[mockedCurrency]}2.00`
         );
     });
 

@@ -1,6 +1,7 @@
 import {Injectable} from '@angular/core';
 import {downgradeInjectable} from '@angular/upgrade/static';
-import {CURRENCY, CURRENCY_SYMBOL} from '../../app.constants';
+import {Currency} from '../../app.constants';
+import {APP_CONFIG} from '../../app.config';
 
 @Injectable()
 export class MulticurrencyService {
@@ -15,14 +16,14 @@ export class MulticurrencyService {
 
     getAppropriateCurrencySymbol(account: any): string {
         const currency = this.getAppropriateCurrency(account);
-        return CURRENCY_SYMBOL[currency];
+        return APP_CONFIG.currencySymbols[currency];
     }
 
     getAppropriateCurrency(account: any): string {
         if (account && account.data) {
             return account.data.currency;
         }
-        return CURRENCY.USD;
+        return Currency.USD;
     }
 
     private getValueInCurrency(
@@ -30,7 +31,7 @@ export class MulticurrencyService {
         currency: string,
         fractionSize: number = 2
     ): string {
-        const currencySymbol: string = CURRENCY_SYMBOL[currency];
+        const currencySymbol: string = APP_CONFIG.currencySymbols[currency];
 
         value = parseFloat(value);
         if (!isNaN(value)) {

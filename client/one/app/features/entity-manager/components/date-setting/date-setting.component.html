@@ -1,5 +1,7 @@
 <div class="zem-settings-form-group">
-    <label class="zem-settings-form-group__label">
+    <label
+        class="zem-settings-form-group__label zem-settings-form-group__label--match-input-height"
+    >
         {{ label }}
         <zem-help-popover
             class="zem-help-popover"
@@ -9,27 +11,27 @@
         ></zem-help-popover>
     </label>
     <div class="zem-settings-form-group__content">
-        <div
-            class="zem-settings-form-group__content-item zem-date-setting__inputs-container"
-        >
-            <zem-date-input
-                class="zem-date-input zem-date-setting__input"
-                [value]="model"
-                [minDate]="minDate"
-                [isDisabled]="isManualOverrideEnabled || isDisabled"
-                [isFocused]="isFocused"
-                [hasError]="errors && errors.length > 0"
-                (valueChange)="onValueChange($event)"
-            ></zem-date-input>
-            <zem-checkbox-input
-                class="zem-checkbox-input zem-date-setting__input"
-                *ngIf="allowManualOverride"
-                [isChecked]="isManualOverrideEnabled"
-                [isDisabled]="isDisabled"
-                (toggle)="onManualOverrideToggle($event)"
-            >
-                I'll stop it myself
-            </zem-checkbox-input>
+        <div class="zem-settings-form-group__content-item">
+            <div class="zem-date-setting__inputs-container">
+                <zem-date-input
+                    class="zem-date-input zem-date-setting__input"
+                    [value]="model"
+                    [minDate]="minDate"
+                    [isDisabled]="isManualOverrideEnabled || isDisabled"
+                    [isFocused]="isFocused"
+                    [hasError]="errors && errors.length > 0"
+                    (valueChange)="onValueChange($event)"
+                ></zem-date-input>
+                <zem-checkbox-input
+                    class="zem-checkbox-input zem-date-setting__input"
+                    *ngIf="allowManualOverride"
+                    [isChecked]="isManualOverrideEnabled"
+                    [isDisabled]="isDisabled"
+                    (toggle)="onManualOverrideToggle($event)"
+                >
+                    I'll stop it myself
+                </zem-checkbox-input>
+            </div>
         </div>
         <div
             class="zem-settings-form-group__content-item zem-message zem-message--error"

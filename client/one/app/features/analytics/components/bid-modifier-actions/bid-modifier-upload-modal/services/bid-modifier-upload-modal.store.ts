@@ -6,7 +6,7 @@ import {BidModifiersService} from '../../../../../../core/bid-modifiers/services
 import {BidModifierUploadModalStoreState} from './bid-modifier-upload-modal.store.state';
 import {takeUntil} from 'rxjs/operators';
 import {HttpErrorResponse} from '@angular/common/http';
-import * as endpointHelpers from '../../../../../../shared/helpers/endpoint.helpers';
+import * as storeHelpers from '../../../../../../shared/helpers/store.helpers';
 import * as commonHelpers from '.././../../../../../shared/helpers/common.helpers';
 import {Breakdown} from '../../../../../../app.constants';
 
@@ -19,7 +19,7 @@ export class BidModifierUploadModalStore
 
     constructor(private bidModifierService: BidModifiersService) {
         super(new BidModifierUploadModalStoreState());
-        this.requestStateUpdater = endpointHelpers.getStoreRequestStateUpdater(
+        this.requestStateUpdater = storeHelpers.getStoreRequestStateUpdater(
             this
         );
     }

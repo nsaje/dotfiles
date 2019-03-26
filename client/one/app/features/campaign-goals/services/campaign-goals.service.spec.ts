@@ -1,5 +1,6 @@
 import {CampaignGoalsService} from './campaign-goals.service';
-import {APP_CONSTANTS, CURRENCY, CURRENCY_SYMBOL} from '../../../app.constants';
+import {APP_CONSTANTS, Currency, CampaignType} from '../../../app.constants';
+import {APP_CONFIG} from '../../../app.config';
 
 describe('CampaignGoalsService', () => {
     let service: CampaignGoalsService;
@@ -15,7 +16,7 @@ describe('CampaignGoalsService', () => {
             ['getActiveAccount']
         );
         multicurrencyServiceSpy.getAppropriateCurrencySymbol.and.returnValue(
-            CURRENCY_SYMBOL[CURRENCY.USD]
+            APP_CONFIG.currencySymbols[Currency.USD]
         );
         service = new CampaignGoalsService(
             multicurrencyServiceSpy,
@@ -36,7 +37,7 @@ describe('CampaignGoalsService', () => {
                     type: APP_CONSTANTS.campaignGoalKPI.PAGES_PER_SESSION,
                 },
             ],
-            APP_CONSTANTS.campaignTypes.DISPLAY,
+            CampaignType.DISPLAY,
             false
         );
 
@@ -44,12 +45,12 @@ describe('CampaignGoalsService', () => {
             {
                 name: 'Cost per Visit',
                 value: APP_CONSTANTS.campaignGoalKPI.CPV,
-                unit: CURRENCY_SYMBOL[CURRENCY.USD],
+                unit: APP_CONFIG.currencySymbols[Currency.USD],
             },
             {
                 name: 'CPC',
                 value: APP_CONSTANTS.campaignGoalKPI.CPC,
-                unit: CURRENCY_SYMBOL[CURRENCY.USD],
+                unit: APP_CONFIG.currencySymbols[Currency.USD],
             },
             {
                 name: 'New Users',
@@ -59,22 +60,22 @@ describe('CampaignGoalsService', () => {
             {
                 name: 'CPA - Setup Conversion Tracking',
                 value: APP_CONSTANTS.campaignGoalKPI.CPA,
-                unit: CURRENCY_SYMBOL[CURRENCY.USD],
+                unit: APP_CONFIG.currencySymbols[Currency.USD],
             },
             {
                 name: 'Cost per Non-Bounced Visit',
                 value: APP_CONSTANTS.campaignGoalKPI.CP_NON_BOUNCED_VISIT,
-                unit: CURRENCY_SYMBOL[CURRENCY.USD],
+                unit: APP_CONFIG.currencySymbols[Currency.USD],
             },
             {
                 name: 'Cost per New Visitor',
                 value: APP_CONSTANTS.campaignGoalKPI.CP_NEW_VISITOR,
-                unit: CURRENCY_SYMBOL[CURRENCY.USD],
+                unit: APP_CONFIG.currencySymbols[Currency.USD],
             },
             {
                 name: 'Cost per Pageview',
                 value: APP_CONSTANTS.campaignGoalKPI.CP_PAGE_VIEW,
-                unit: CURRENCY_SYMBOL[CURRENCY.USD],
+                unit: APP_CONFIG.currencySymbols[Currency.USD],
             },
         ]);
     });
@@ -82,7 +83,7 @@ describe('CampaignGoalsService', () => {
     it('should correctly filter available goals (onlyCpc)', () => {
         const availableGoals = service.getAvailableGoals(
             [],
-            APP_CONSTANTS.campaignTypes.DISPLAY,
+            CampaignType.DISPLAY,
             true
         );
 
@@ -90,7 +91,7 @@ describe('CampaignGoalsService', () => {
             {
                 name: 'CPC',
                 value: APP_CONSTANTS.campaignGoalKPI.CPC,
-                unit: CURRENCY_SYMBOL[CURRENCY.USD],
+                unit: APP_CONFIG.currencySymbols[Currency.USD],
             },
         ]);
     });

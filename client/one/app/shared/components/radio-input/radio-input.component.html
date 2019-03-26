@@ -13,5 +13,9 @@
         (change)="onChange($event)"
     />
     <span class="zem-radio-input__checkmark"></span>
-    <span class="zem-radio-input__label-text"><ng-content></ng-content></span>
+    <span
+        class="zem-radio-input__label-text"
+        [class.zem-radio-input__label-text--error]="hasError"
+        ><ng-content></ng-content
+    ></span>
 </label>

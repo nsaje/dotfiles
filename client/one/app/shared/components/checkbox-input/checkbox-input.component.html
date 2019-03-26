@@ -13,7 +13,9 @@
         (change)="onChange()"
     />
     <span class="zem-checkbox-input__checkmark"></span>
-    <span class="zem-checkbox-input__label-text"
+    <span
+        class="zem-checkbox-input__label-text"
+        [class.zem-checkbox-input__label-text--error]="hasError"
         ><ng-content></ng-content
     ></span>
 </label>

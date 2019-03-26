@@ -18,6 +18,8 @@ export class CheckboxInputComponent {
     isChecked: boolean = false;
     @Input()
     isDisabled: boolean = false;
+    @Input()
+    hasError: boolean = false;
     @Output()
     toggle = new EventEmitter<boolean>();
 

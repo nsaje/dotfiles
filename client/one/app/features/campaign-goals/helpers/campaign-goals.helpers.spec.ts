@@ -1,4 +1,5 @@
-import {APP_CONSTANTS, CURRENCY_SYMBOL, CURRENCY} from '../../../app.constants';
+import {APP_CONSTANTS, Currency, CampaignType} from '../../../app.constants';
+import {APP_CONFIG} from '../../../app.config';
 import {APP_OPTIONS} from '../../../app.options';
 import * as campaignGoalsHelpers from './campaign-goals.helpers';
 
@@ -97,7 +98,7 @@ describe('CampaignGoalsHelpers', () => {
                     type: APP_CONSTANTS.campaignGoalKPI.PAGES_PER_SESSION,
                 },
             ],
-            APP_CONSTANTS.campaignTypes.DISPLAY,
+            CampaignType.DISPLAY,
             false
         );
 
@@ -144,7 +145,7 @@ describe('CampaignGoalsHelpers', () => {
         const availableGoals = campaignGoalsHelpers.getAvailableGoals(
             APP_OPTIONS.campaignGoalKPIs,
             [],
-            APP_CONSTANTS.campaignTypes.CONTENT,
+            CampaignType.CONTENT,
             true
         );
 
@@ -178,19 +179,19 @@ describe('CampaignGoalsHelpers', () => {
 
         const newAvailableGoals = campaignGoalsHelpers.mapAvailableGoalsToCurrencySymbol(
             availableGoals,
-            CURRENCY_SYMBOL[CURRENCY.USD]
+            APP_CONFIG.currencySymbols[Currency.USD]
         );
 
         expect(newAvailableGoals).toEqual([
             {
                 name: 'Cost per Visit',
                 value: APP_CONSTANTS.campaignGoalKPI.CPV,
-                unit: CURRENCY_SYMBOL[CURRENCY.USD],
+                unit: APP_CONFIG.currencySymbols[Currency.USD],
             },
             {
                 name: 'CPC',
                 value: APP_CONSTANTS.campaignGoalKPI.CPC,
-                unit: CURRENCY_SYMBOL[CURRENCY.USD],
+                unit: APP_CONFIG.currencySymbols[Currency.USD],
             },
             {
                 name: 'New Users',

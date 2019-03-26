@@ -1,7 +1,5 @@
 <div class="zem-settings-form-group">
-    <label
-        class="zem-settings-form-group__label zem-settings-form-group__label--condensed"
-    >
+    <label class="zem-settings-form-group__label">
         Delivery type
         <zem-help-popover
             class="zem-help-popover"
@@ -12,9 +10,10 @@
 
     <div class="zem-settings-form-group__content">
         <zem-radio-input
-            class="zem-radio-input zem-settings-form-group__content-item zem-settings-form-group__content-item--condensed zem-settings-form-group__content-item--no-spacing"
-            [groupModel]="value"
+            class="zem-radio-input zem-settings-form-group__content-item"
+            [groupModel]="deliveryType"
             [value]="DeliveryType.STANDARD"
+            [hasError]="hasStandardDeliveryTypeErrors()"
             (select)="onSelect($event)"
         >
             Standard
@@ -23,9 +22,10 @@
             >
         </zem-radio-input>
         <zem-radio-input
-            class="zem-radio-input zem-settings-form-group__content-item zem-settings-form-group__content-item--condensed"
-            [groupModel]="value"
+            class="zem-radio-input zem-settings-form-group__content-item zem-settings-form-group__content-item--no-spacing"
+            [groupModel]="deliveryType"
             [value]="DeliveryType.ACCELERATED"
+            [hasError]="hasAcceleratedDeliveryTypeErrors()"
             (select)="onSelect($event)"
         >
             Accelerated
@@ -33,7 +33,6 @@
                 >- Deliver ads as soon as possible.</span
             >
         </zem-radio-input>
-
         <div
             class="zem-settings-form-group__content-item zem-message zem-message--error"
             *ngFor="let error of errors"
