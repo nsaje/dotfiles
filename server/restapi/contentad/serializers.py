@@ -66,7 +66,9 @@ class ContentAdSerializer(
     ad_tag = rest_framework.serializers.CharField(required=False)
 
 
-class ContentAdCandidateSerializer(rest_framework.serializers.ModelSerializer):
+class ContentAdCandidateSerializer(
+    restapi.serializers.serializers.PermissionedFieldsMixin, rest_framework.serializers.ModelSerializer
+):
     class Meta:
         model = dash.models.ContentAdCandidate
         fields = (
@@ -79,8 +81,10 @@ class ContentAdCandidateSerializer(rest_framework.serializers.ModelSerializer):
             "call_to_action",
             "label",
             "image_crop",
+            "additional_data",
         )
         extra_kwargs = {"primary_tracker_url": {"allow_empty": True}, "secondary_tracker_url": {"allow_empty": True}}
+        permissioned_fields = {"additional_data": "zemauth.can_use_ad_additional_data"}
 
     url = restapi.serializers.fields.PlainCharField(required=True)
     title = restapi.serializers.fields.PlainCharField(required=True)
@@ -106,11 +110,14 @@ class ContentAdCandidateSerializer(rest_framework.serializers.ModelSerializer):
         return internal_data
 
 
-class ImageAdCandidateSerializer(restapi.serializers.serializers.PermissionedFieldsMixin, ContentAdCandidateSerializer):
+class ImageAdCandidateSerializer(ContentAdCandidateSerializer):
     class Meta:
         model = dash.models.ContentAdCandidate
         fields = ("url", "title", "image_url", "label", "type")
-        permissioned_fields = {"type": "zemauth.fea_can_change_campaign_type_to_display"}
+        permissioned_fields = {
+            "additional_data": "zemauth.can_use_ad_additional_data",
+            "type": "zemauth.fea_can_change_campaign_type_to_display",
+        }
 
     type = restapi.serializers.fields.DashConstantField(dash.constants.AdType)
     url = restapi.serializers.fields.PlainCharField(required=True)
@@ -119,12 +126,13 @@ class ImageAdCandidateSerializer(restapi.serializers.serializers.PermissionedFie
     label = restapi.serializers.fields.PlainCharField(allow_blank=True, allow_null=True, required=False)
 
 
-class AdTagCandidateSerializer(restapi.serializers.serializers.PermissionedFieldsMixin, ContentAdCandidateSerializer):
+class AdTagCandidateSerializer(ContentAdCandidateSerializer):
     class Meta:
         model = dash.models.ContentAdCandidate
         fields = ("url", "title", "label", "type", "ad_tag", "ad_width", "ad_height")
         extra_kwargs = {"primary_tracker_url": {"allow_empty": True}, "secondary_tracker_url": {"allow_empty": True}}
         permissioned_fields = {
+            "additional_data": "zemauth.can_use_ad_additional_data",
             "type": "zemauth.fea_can_change_campaign_type_to_display",
             "ad_width": "zemauth.fea_can_change_campaign_type_to_display",
             "ad_height": "zemauth.fea_can_change_campaign_type_to_display",
