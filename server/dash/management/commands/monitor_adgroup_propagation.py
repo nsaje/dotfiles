@@ -46,6 +46,9 @@ class Command(ExceptionCommand):
         if ad_group_ids:
             logger.info("Narrowing to user defined ad group selection")
             ad_groups = ad_groups.filter(id__in=ad_group_ids)
+        else:
+            logger.info("Narrowing to running ad groups")
+            ad_groups = ad_groups.filter_running()
 
         nr_exceptions = 0
         nr_not_in_sync = 0
