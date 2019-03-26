@@ -18,9 +18,7 @@ describe('BidModifierCellStore', () => {
     let mockedCurrency: string;
 
     beforeEach(() => {
-        serviceStub = jasmine.createSpyObj(BidModifiersService.name, [
-            'saveModifier',
-        ]);
+        serviceStub = jasmine.createSpyObj(BidModifiersService.name, ['save']);
         store = new BidModifierCellStore(serviceStub);
         mockedAdGroupId = 1234;
         mockedBidModifier = {
@@ -80,7 +78,7 @@ describe('BidModifierCellStore', () => {
         const editBidModifier = clone(mockedBidModifier);
         editBidModifier.modifier = 8;
 
-        serviceStub.saveModifier.and
+        serviceStub.save.and
             .returnValue(of(editBidModifier, asapScheduler))
             .calls.reset();
 
@@ -88,8 +86,8 @@ describe('BidModifierCellStore', () => {
         store.saveBidModifier();
         tick();
 
-        expect(serviceStub.saveModifier).toHaveBeenCalledTimes(1);
-        expect(serviceStub.saveModifier).toHaveBeenCalledWith(
+        expect(serviceStub.save).toHaveBeenCalledTimes(1);
+        expect(serviceStub.save).toHaveBeenCalledWith(
             mockedAdGroupId,
             editBidModifier,
             jasmine.any(Function)

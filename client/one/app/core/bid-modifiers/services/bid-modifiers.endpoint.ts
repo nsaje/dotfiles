@@ -6,6 +6,7 @@ import {map, catchError} from 'rxjs/operators';
 import {BidModifier} from '../types/bid-modifier';
 import {RequestStateUpdater} from 'one/app/shared/types/request-state-updater';
 import {BID_MODIFIER_CONFIG} from '../bid-modifiers.config';
+import {Breakdown} from '../../../app.constants';
 
 @Injectable()
 export class BidModifiersEndpoint {
@@ -65,6 +66,42 @@ export class BidModifiersEndpoint {
                         inProgress: false,
                     });
                     return response.data;
+                }),
+                catchError((error: HttpErrorResponse) => {
+                    requestStateUpdater(request.name, {
+                        inProgress: false,
+                        error: true,
+                        errorMessage: error.message,
+                    });
+                    return throwError(error);
+                })
+            );
+    }
+
+    upload(
+        adGroupId: number,
+        breakdown: Breakdown,
+        file: File,
+        requestStateUpdater: RequestStateUpdater
+    ): Observable<void> {
+        const request = BID_MODIFIER_CONFIG.requests.import;
+        requestStateUpdater(request.name, {
+            inProgress: true,
+        });
+
+        const formData = new FormData();
+        formData.append('file', file);
+
+        return this.http
+            .post<ApiResponse<void>>(
+                `${request.url}${adGroupId}/bidmodifiers/upload/${breakdown}/`,
+                formData
+            )
+            .pipe(
+                map(() => {
+                    requestStateUpdater(request.name, {
+                        inProgress: false,
+                    });
                 }),
                 catchError((error: HttpErrorResponse) => {
                     requestStateUpdater(request.name, {

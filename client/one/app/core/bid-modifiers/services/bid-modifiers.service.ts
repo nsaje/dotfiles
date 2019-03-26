@@ -4,12 +4,13 @@ import {BidModifiersEndpoint} from './bid-modifiers.endpoint';
 import {BidModifier} from '../types/bid-modifier';
 import {RequestStateUpdater} from 'one/app/shared/types/request-state-updater';
 import * as commonHelpers from '../../../shared/helpers/common.helpers';
+import {Breakdown} from '../../../app.constants';
 
 @Injectable()
 export class BidModifiersService {
     constructor(private endpoint: BidModifiersEndpoint) {}
 
-    saveModifier(
+    save(
         adGroupId: number,
         bidModifier: BidModifier,
         requestStateUpdater: RequestStateUpdater
@@ -22,5 +23,19 @@ export class BidModifiersService {
             );
         }
         return this.endpoint.edit(adGroupId, bidModifier, requestStateUpdater);
+    }
+
+    importFromFile(
+        adGroupId: number,
+        breakdown: Breakdown,
+        file: File,
+        requestStateUpdater: RequestStateUpdater
+    ): Observable<void> {
+        return this.endpoint.upload(
+            adGroupId,
+            breakdown,
+            file,
+            requestStateUpdater
+        );
     }
 }

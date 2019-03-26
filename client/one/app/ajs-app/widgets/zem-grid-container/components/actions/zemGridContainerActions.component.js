@@ -6,7 +6,7 @@ angular.module('one.widgets').component('zemGridContainerActions', {
         level: '<',
         gridApi: '<',
     },
-    controller: function(zemPermissions) {
+    controller: function(zemPermissions, zemNavigationNewService) {
         var $ctrl = this;
         $ctrl.constants = constants;
 
@@ -19,6 +19,11 @@ angular.module('one.widgets').component('zemGridContainerActions', {
         $ctrl.isReportDropdownVisible = isReportDropdownVisible;
         $ctrl.canCreateNewAccount = canCreateNewAccount;
         $ctrl.isBreakdownSelectorVisible = isBreakdownSelectorVisible;
+        $ctrl.areBidModifierActionsVisible = areBidModifierActionsVisible;
+
+        $ctrl.$onInit = function() {
+            $ctrl.entity = zemNavigationNewService.getActiveEntity();
+        };
 
         function isEntityBreakdown() {
             return (
@@ -99,6 +104,21 @@ angular.module('one.widgets').component('zemGridContainerActions', {
                 $ctrl.breakdown !== constants.breakdown.DEVICE &&
                 $ctrl.breakdown !== constants.breakdown.PLACEMENT &&
                 $ctrl.breakdown !== constants.breakdown.OPERATING_SYSTEM
+            );
+        }
+
+        function areBidModifierActionsVisible() {
+            return (
+                $ctrl.entity &&
+                $ctrl.entity.type === constants.entityType.AD_GROUP &&
+                zemPermissions.hasPermission('zemauth.can_set_bid_modifiers') &&
+                ($ctrl.breakdown === constants.breakdown.CONTENT_AD ||
+                    $ctrl.breakdown === constants.breakdown.COUNTRY ||
+                    $ctrl.breakdown === constants.breakdown.STATE ||
+                    $ctrl.breakdown === constants.breakdown.DMA ||
+                    $ctrl.breakdown === constants.breakdown.DEVICE ||
+                    $ctrl.breakdown === constants.breakdown.PLACEMENT ||
+                    $ctrl.breakdown === constants.breakdown.OPERATING_SYSTEM)
             );
         }
     },

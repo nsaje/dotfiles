@@ -33,6 +33,7 @@
     "fast-deep-equal": "2.0.1",
     "highcharts": "6.2.0",
     "highcharts-ng": "1.2.1",
+    "ngx-file-drop": "6.0.0",
     "raven-js": "3.27.0",
     "rxjs": "6.3.3",
     "rxjs-observable-store": "1.0.1",

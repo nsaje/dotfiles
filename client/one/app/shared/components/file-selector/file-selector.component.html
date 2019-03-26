@@ -1,0 +1,42 @@
+<div
+    *ngIf="filesToUpload.length === 0"
+    class="zem-file-selector__drop-zone"
+    [class.zem-file-selector__drop-zone--dragging-over]="isDraggingOverDropZone"
+    (drop)="dropFiles($event)"
+    (dragover)="onDragOver($event)"
+    (dragleave)="onDragLeave($event)"
+>
+    <input
+        type="file"
+        #fileSelector
+        class="zem-file-selector__drop-zone-input"
+        [multiple]="isMultiple"
+        [accept]="accept"
+        (change)="uploadFiles($event)"
+    />
+    <div *ngIf="dropZoneLabel" class="zem-file-selector__drop-zone-item">
+        {{ dropZoneLabel }}
+    </div>
+    <div *ngIf="showBrowseButton" class="zem-file-selector__drop-zone-item">
+        <button
+            class="button button--outline"
+            (click)="onBrowseButtonClick($event)"
+        >
+            {{ browseButtonLabel }}
+        </button>
+    </div>
+</div>
+<div *ngIf="filesToUpload.length > 0" class="zem-file-selector__files">
+    <div
+        *ngFor="let fileToUpload of filesToUpload"
+        class="zem-file-selector__file"
+    >
+        <div
+            class="zem-file-selector__remove-file"
+            (click)="removeFile(fileToUpload)"
+        ></div>
+        <span class="zem-file-selector__file-name">{{
+            fileToUpload.relativePath
+        }}</span>
+    </div>
+</div>

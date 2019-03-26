@@ -8,7 +8,6 @@ import {
 } from '@angular/common/http';
 import {Observable} from 'rxjs';
 import {map} from 'rxjs/operators';
-import * as clone from 'clone';
 import * as commonHelpers from '../../shared/helpers/common.helpers';
 import * as dateHelpers from '../../shared/helpers/date.helpers';
 
@@ -19,13 +18,13 @@ export class ApiConverterHttpInterceptor implements HttpInterceptor {
         next: HttpHandler
     ): Observable<HttpEvent<any>> {
         request = request.clone({
-            body: this.convertBodyToServerFormat(clone(request.body)),
+            body: this.convertBodyToServerFormat(request.body),
         });
         return next.handle(request).pipe(
             map((event: HttpEvent<any>) => {
                 if (event instanceof HttpResponse) {
                     event = event.clone({
-                        body: this.convertBodyToClientFormat(clone(event.body)),
+                        body: this.convertBodyToClientFormat(event.body),
                     });
                 }
                 return event;

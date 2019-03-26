@@ -40,20 +40,20 @@ export class DateInputComponent implements OnInit, OnChanges {
     model: NgbDate;
 
     ngOnInit(): void {
-        this.minDate = this.fromDateToNgbDate(this.originalMinDate);
+        this.minDate = this.convertFromDateToNgbDate(this.originalMinDate);
     }
 
     ngOnChanges(changes: SimpleChanges) {
         if (changes.value) {
-            this.model = this.fromDateToNgbDate(this.value);
+            this.model = this.convertFromDateToNgbDate(this.value);
         }
     }
 
     onDateSelect($event: NgbDate) {
-        this.valueChange.emit(this.fromNgbDateToDate($event));
+        this.valueChange.emit(this.convertFromNgbDateToDate($event));
     }
 
-    private fromDateToNgbDate(value: Date): NgbDate {
+    private convertFromDateToNgbDate(value: Date): NgbDate {
         if (commonHelpers.isDefined(value)) {
             // JavaScript counts months from 0 to 11
             // Convert Date format to NgbDateStruct
@@ -64,7 +64,7 @@ export class DateInputComponent implements OnInit, OnChanges {
         return null;
     }
 
-    private fromNgbDateToDate(value: NgbDate): Date {
+    private convertFromNgbDateToDate(value: NgbDate): Date {
         if (commonHelpers.isDefined(value)) {
             // JavaScript counts months from 0 to 11
             // Convert Date format to NgbDateStruct

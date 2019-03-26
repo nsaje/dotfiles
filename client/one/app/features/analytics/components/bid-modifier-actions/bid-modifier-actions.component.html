@@ -1,0 +1,35 @@
+<div
+    zemDropdown
+    class="zem-dropdown zem-dropdown--no-mobile-style"
+    #bidModifierActionsDropdown="zemDropdown"
+>
+    <button class="button button--dropdown-toggle-icon" zemDropdownToggle>
+        Bid Modifiers
+    </button>
+    <div class="zem-dropdown__content">
+        <ul class="zem-bid-modifier-actions__list">
+            <li class="zem-bid-modifier-actions__list-item" (click)="export()">
+                Export
+            </li>
+            <li class="zem-bid-modifier-actions__list-item" (click)="import()">
+                Import
+            </li>
+        </ul>
+    </div>
+</div>
+
+<zem-modal
+    #bidModifierUploadModal
+    [canCloseOnBackdropClick]="false"
+    [canCloseOnEscapeKey]="true"
+    class="zem-modal"
+>
+    <zem-bid-modifier-upload-modal
+        *ngIf="bidModifierUploadModal.isOpen"
+        class="zem-bid-modifier-upload-modal"
+        [adGroupId]="adGroupId"
+        [breakdown]="breakdown"
+        (importSuccess)="onImportSuccess()"
+        (cancel)="onCancel()"
+    ></zem-bid-modifier-upload-modal>
+</zem-modal>

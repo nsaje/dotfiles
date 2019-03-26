@@ -68,10 +68,12 @@ angular.module('one').config(function($provide) {
             return function newLinkFn(scope, element, attrs, dropdownCtrl) {
                 originalLinkFn.apply(directive, arguments);
                 scope.$watch(dropdownCtrl.isOpen, function(isDropdownOpen) {
-                    if (isDropdownOpen) {
-                        $('body').addClass('no-scroll--mobile');
-                    } else {
-                        $('body').removeClass('no-scroll--mobile');
+                    if (!element.hasClass('dropdown-toggle--no-mobile-style')) {
+                        if (isDropdownOpen) {
+                            $('body').addClass('no-scroll--mobile');
+                        } else {
+                            $('body').removeClass('no-scroll--mobile');
+                        }
                     }
                 });
             };

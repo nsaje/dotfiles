@@ -1,0 +1,7 @@
+<div
+    class="zem-modal__backdrop"
+    *ngIf="isOpen"
+    (click)="closeOnBackdropClick($event)"
+>
+    <div class="zem-modal__content-container"><ng-content></ng-content></div>
+</div>

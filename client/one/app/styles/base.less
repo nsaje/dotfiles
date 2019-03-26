@@ -2502,6 +2502,7 @@ h4 {
     background-color: #ffffff;
     box-shadow: 0px 0px 8px 0px rgba(0, 0, 0, 0.1);
     border-radius: @border-radius--default;
+    min-width: 100%;
 }
 
 .zem-dropdown--open .zem-dropdown__content {
@@ -2518,7 +2519,7 @@ h4 {
 ///////////////////////////
 
 @media only screen and (max-width: @tablet-breakpoint) {
-    .zem-dropdown.zem-dropdown--open {
+    .zem-dropdown.zem-dropdown--open&:not(.zem-dropdown--no-mobile-style) {
         .zem-dropdown__content {
             z-index: 9999;
             margin: 0;
@@ -2757,9 +2758,8 @@ h4 {
 
 @media only screen and (max-width: @tablet-breakpoint) {
     .zem-grid-container-actions,
-    .zem-chart-metrics-selector,
-    .zem-grid-container-tabs {
-        .dropdown.open:not(.dropdown--with-split-button) {
+    .zem-chart-metrics-selector {
+        .dropdown.open:not(.dropdown--no-mobile-style) {
             .dropdown-menu {
                 z-index: 9999;
                 margin: 0;

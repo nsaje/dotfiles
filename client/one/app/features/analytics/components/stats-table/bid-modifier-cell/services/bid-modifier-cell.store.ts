@@ -100,7 +100,7 @@ export class BidModifierCellStore extends Store<BidModifierCellStoreState>
 
         return new Promise<any>((resolve, reject) => {
             this.bidModifierService
-                .saveModifier(adGroupId, value, this.requestStateUpdater)
+                .save(adGroupId, value, this.requestStateUpdater)
                 .pipe(takeUntil(this.ngUnsubscribe$))
                 .subscribe(
                     response => {

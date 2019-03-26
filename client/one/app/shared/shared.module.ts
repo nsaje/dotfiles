@@ -9,6 +9,7 @@ import {
     NgbPopoverModule,
 } from '@ng-bootstrap/ng-bootstrap';
 import {NgSelectModule} from '@ng-select/ng-select';
+import {FileDropModule} from 'ngx-file-drop';
 
 import {BigNumberPipe} from './pipes/big-number.pipe';
 import {FilterKeydownEventDirective} from './directives/filter-keydown-event/filter-keydown-event.directive';
@@ -28,14 +29,23 @@ import {SelectInputComponent} from './components/select-input/select-input.compo
 import {PrefixedInputComponent} from './components/prefixed-input/prefixed-input.component';
 import {BidModifierInputComponent} from './components/bid-modifier-input/bid-modifier-input.component';
 import {PopoverDirective} from './components/popover/popover.directive';
+import {ModalComponent} from './components/modal/modal.component';
 import {CheckboxInputComponent} from './components/checkbox-input/checkbox-input.component';
 import {RadioInputComponent} from './components/radio-input/radio-input.component';
 import {InternalFeatureDirective} from './directives/internal-feature/internal-feature.directive';
+import {FileSelectorComponent} from './components/file-selector/file-selector.component';
 
 const EXPORTED_DECLARATIONS = [
+    // Pipes
     BigNumberPipe,
+
+    // Directives
     FilterKeydownEventDirective,
     FocusDirective,
+    PopoverDirective,
+    InternalFeatureDirective,
+
+    // Components
     CategorizedSelectComponent,
     CategorizedTagsListComponent,
     DropdownDirective,
@@ -51,9 +61,9 @@ const EXPORTED_DECLARATIONS = [
     SelectInputComponent,
     PrefixedInputComponent,
     BidModifierInputComponent,
-    PopoverDirective,
+    ModalComponent,
     HelpPopoverComponent,
-    InternalFeatureDirective,
+    FileSelectorComponent,
 ];
 
 @NgModule({
@@ -66,6 +76,7 @@ const EXPORTED_DECLARATIONS = [
         NgbDatepickerModule,
         NgSelectModule,
         NgbPopoverModule,
+        FileDropModule,
     ],
     declarations: EXPORTED_DECLARATIONS,
     exports: [

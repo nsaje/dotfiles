@@ -1,0 +1,53 @@
+@import 'variables';
+@import './_modal.variables.less';
+
+.zem-modal-open {
+    overflow: hidden;
+}
+
+.zem-modal__backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    z-index: @z-index--modal;
+    padding: @spacing--default;
+    background: rgba(0, 0, 0, 0.3);
+
+    @media only screen and (min-height: @zem-modal__breakpoint--bigger-vertical-spacing) {
+        padding: @zem-modal__spacing--vertical @spacing--default;
+    }
+}
+
+.zem-modal__content-container {
+    max-width: @zem-modal__width;
+    max-height: 100%;
+    margin: 0 auto;
+    overflow: auto;
+    background: #ffffff;
+    box-shadow: 0 0 32px 0 rgba(0, 0, 0, 0.5);
+    border-radius: 3px;
+}
+
+.zem-modal__header {
+    border-bottom: 4px solid @color--primary;
+    padding: 15px 15px 10px 15px;
+}
+
+.zem-modal__title {
+    color: @color--primary;
+    font-size: 20px;
+}
+
+.zem-modal__body {
+    padding: @spacing--default;
+}
+
+.zem-modal__footer {
+    border-bottom-right-radius: @border-radius--default;
+    border-bottom-left-radius: @border-radius--default;
+    padding: @spacing--default;
+    background-color: tint(@color--secondary, 90%);
+    box-shadow: 0px 0px 3px 0px fade(@color--secondary, 40%);
+}

@@ -1,0 +1,63 @@
+@import 'variables';
+
+.zem-file-selector {
+    background-color: @color--lighter-neutral;
+    border: 2px dashed @border-color--default;
+    height: 150px;
+    border-radius: @border-radius--default;
+    overflow-y: auto;
+}
+
+.zem-file-selector__drop-zone {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+}
+
+.zem-file-selector__drop-zone--dragging-over {
+    background-color: @color--light-neutral;
+}
+
+.zem-file-selector__drop-zone-item {
+    margin: 3px;
+}
+
+.zem-file-selector__drop-zone-input {
+    display: none !important;
+    visibility: hidden !important;
+}
+
+.zem-file-selector__files {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.zem-file-selector__file {
+    display: flex;
+    flex: 1 1 200px;
+    height: 30px;
+    margin: 3px;
+    background-color: tint(@color--secondary, 70%);
+    color: @color--secondary;
+    align-items: center;
+}
+
+.zem-file-selector__remove-file {
+    flex: 0 0 30px;
+    height: 100%;
+    cursor: pointer;
+    margin-right: 5px;
+    background-color: @color--secondary;
+    background-image: url('images/remove-white.svg');
+    background-repeat: no-repeat;
+    background-position: center center;
+    background-size: 12px;
+}
+
+.zem-file-selector__file-name {
+    font-weight: 500;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
