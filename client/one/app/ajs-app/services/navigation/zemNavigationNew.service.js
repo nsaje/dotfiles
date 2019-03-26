@@ -73,9 +73,11 @@ angular
 
             if (hierarchyRoot && zemNavigationService.isFullyLoaded()) {
                 var entity = getEntityById(type, id);
+            }
+            if (entity) {
                 setActiveEntity(entity);
             } else {
-                // If hierarchy data not yet available use old workaround to get entity data
+                // If hierarchy data not available (not loaded yet or entity not in tree) use old workaround to get entity data
                 fetchAndConvertLegacyEntityData(type, id);
             }
         }

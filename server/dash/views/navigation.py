@@ -12,6 +12,9 @@ from utils import api_common
 logger = logging.getLogger(__name__)
 
 
+ACCOUNTS_EXCLUDED_FROM_SEARCH = [305]
+
+
 class UsesBCMV2View(api_common.BaseApiView):
     def get(self, request):
         """
@@ -191,6 +194,7 @@ class NavigationTreeView(api_common.BaseApiView):
             .filter_by_sources(view_filter.filtered_sources)
             .filter_by_agencies(view_filter.filtered_agencies)
             .filter_by_account_types(view_filter.filtered_account_types)
+            .exclude(pk__in=ACCOUNTS_EXCLUDED_FROM_SEARCH)
         )
         return accounts
 

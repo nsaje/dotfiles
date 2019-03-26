@@ -19,6 +19,8 @@ angular
         var accountsAccess;
 
         function findAccountInNavTree(id) {
+            if (!accountsLoaded) return;
+
             var strId = id.toString();
 
             for (var i = 0; i < accounts.length; i++) {
@@ -28,10 +30,11 @@ angular
                     };
                 }
             }
-            return undefined;
         }
 
         function findCampaignInNavTree(id) {
+            if (!accountsLoaded) return;
+
             var strId = id.toString();
             for (var i = 0; i < accounts.length; i++) {
                 for (var j = 0; j < accounts[i].campaigns.length; j++) {
@@ -43,10 +46,11 @@ angular
                     }
                 }
             }
-            return undefined;
         }
 
         function findAdGroupInNavTree(id) {
+            if (!accountsLoaded) return;
+
             var strId = id.toString();
             for (var i = 0; i < accounts.length; i++) {
                 for (var j = 0; j < accounts[i].campaigns.length; j++) {
@@ -69,33 +73,21 @@ angular
                     }
                 }
             }
-            return undefined;
         }
 
         function loadData(id, apiFunc, searchCacheFunc) {
             // Loads data from cache or calls api if data is not in cache
 
-            if (!accountsLoaded) {
-                return apiFunc(id).then(function(data) {
-                    // if in the meantime data arrived use that one
-                    // and discard fetched data
-                    if (accountsLoaded) {
-                        return searchCacheFunc(id);
-                    }
-
-                    return data;
-                });
+            var data = searchCacheFunc(id);
+            if (data) {
+                // simulate api call - return a promise, but resolve it
+                // beforehand just to preserve the api behaviour
+                return $q.resolve(data);
             }
 
-            // simulate api call - return a promise, but resolve it
-            // beforehand just to preserve the api behaviour
-            var deferred = $q.defer();
-
-            var data = searchCacheFunc(id);
-
-            deferred.resolve(data);
-
-            return deferred.promise;
+            return apiFunc(id).then(function(data) {
+                return data;
+            });
         }
 
         function getAccount(id) {
@@ -142,6 +134,7 @@ angular
         function updateModel(model, dataObjOrFunc) {
             // updates a model with provided function or replaces key-values pairs in it
             // if object is provided
+            if (!model) return;
             if (typeof dataObjOrFunc === 'function') {
                 dataObjOrFunc(model);
             } else {
