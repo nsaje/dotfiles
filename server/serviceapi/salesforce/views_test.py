@@ -26,7 +26,7 @@ class CreateClientTestCase(TestCase):
         data = {"salesforceAccountId": 1, "name": "Agency 1", "type": "agency", "tags": ["some tags", "anOther"]}
         url = reverse("service.salesforce.client")
         r = self.client.put(url, data=data, format="json")
-        client = core.models.agency.Agency.objects.all().order_by("-created_dt").first()
+        client = core.models.Agency.objects.all().order_by("-created_dt").first()
         self.assertEqual(r.json(), {"data": {"z1_accountId": client.get_salesforce_id(), "z1_data": "Agency 1"}})
         self.assertEqual(r.status_code, 200)
         self.assertEqual(client.default_account_type, dash.constants.AccountType.PILOT)
@@ -76,7 +76,7 @@ class CreateClientTestCase(TestCase):
             r.json(), {"details": {"type": ['"invalid-type" is not a valid choice.']}, "errorCode": "ValidationError"}
         )
 
-        magic_mixer.blend(core.models.agency.Agency, name="Name exists")
+        magic_mixer.blend(core.models.Agency, name="Name exists")
         data = {"salesforceAccountId": 1, "type": "agency", "name": "Name exists"}
         r = self.client.put(url, data=data, format="json")
         self.assertEqual(r.status_code, 400)
@@ -92,7 +92,7 @@ class CreateCreditTestCase(TestCase):
         self.client.force_authenticate(user=self.user)
 
         self.account = magic_mixer.blend(core.models.account.Account, id=1)
-        self.agency = magic_mixer.blend(core.models.agency.Agency, id=1)
+        self.agency = magic_mixer.blend(core.models.Agency, id=1)
 
     def test_missing_fields(self):
         url = reverse("service.salesforce.credit")
@@ -366,7 +366,7 @@ class AgencyAccountsTestCase(TestCase):
         self.request_mock.user = self.user
 
     def test_valid(self):
-        magic_mixer.blend(core.models.agency.Agency, id=1, name="Agency 1").save(self.request_mock)
+        magic_mixer.blend(core.models.Agency, id=1, name="Agency 1").save(self.request_mock)
         magic_mixer.blend(core.models.account.Account, agency_id=None, id=1, name="Acc 0").save(self.request_mock)
         magic_mixer.blend(core.models.account.Account, agency_id=1, id=2, name="Acc 1").save(self.request_mock)
         magic_mixer.blend(core.models.account.Account, agency_id=1, id=3, name="Acc 2").save(self.request_mock)
@@ -390,7 +390,6 @@ class AgencyAccountsTestCase(TestCase):
 
 class CreditsListTestCase(TestCase):
     def setUp(self):
-        self.maxDiff = 10000000
         self.client = APIClient()
         self.user = magic_mixer.blend(User, email="jonesjoseph@gmail.com")
         self.client.force_authenticate(user=self.user)
@@ -399,7 +398,7 @@ class CreditsListTestCase(TestCase):
         self.request_mock.user = self.user
 
     def test_valid_agency(self):
-        agency = magic_mixer.blend(core.models.agency.Agency, id=1, name="Agency 1")
+        agency = magic_mixer.blend(core.models.Agency, id=1, name="Agency 1")
         agency.save(self.request_mock)
         credit = magic_mixer.blend(
             core.features.bcm.credit_line_item.CreditLineItem,
@@ -489,3 +488,378 @@ class CreditsListTestCase(TestCase):
         r = self.client.post(url, data={"z1_accountId": "b1234466"}, format="json")
         self.assertEqual(r.json(), {"details": ["No credits found for this ID."], "errorCode": "ValidationError"})
         self.assertEqual(r.status_code, 400)
+
+
+class AgencyTestCase(TestCase):
+    def setUp(self):
+        self.client = APIClient()
+        self.user = magic_mixer.blend(User)
+        self.client.force_authenticate(user=self.user)
+        self.request_mock = RequestFactory()
+        self.request_mock.user = self.user
+
+    def test_get(self):
+        magic_mixer.blend(core.models.Agency, id=1, name="Agency 1", is_externally_managed=True)
+        url = reverse("service.salesforce.agency", kwargs={"agency_id": 1})
+        response = self.client.get(url)
+        self.assertEqual(response.data, {"data": {"id": 1, "status": False, "name": "Agency 1", "tags": []}})
+
+    def test_get_agency_does_not_exist(self):
+        url = reverse("service.salesforce.agency", kwargs={"agency_id": 1234})
+        response = self.client.get(url)
+        self.assertEqual(
+            response.data, {"errorCode": "DoesNotExist", "details": "Agency matching query does not exist."}
+        )
+
+    def test_get_agency_not_externally_managed(self):
+        magic_mixer.blend(core.models.Agency, id=1, name="Agency 1", is_externally_managed=False)
+        url = reverse("service.salesforce.agency", kwargs={"agency_id": 1})
+        response = self.client.get(url)
+        self.assertEqual(
+            response.data, {"errorCode": "DoesNotExist", "details": "Agency matching query does not exist."}
+        )
+
+    def test_post_valid(self):
+        url = reverse("service.salesforce.agency")
+        r = self.client.post(url, data={"name": "new Agency", "tags": ["first tags", "second new tag"]}, format="json")
+        self.assertEqual(r.status_code, 200)
+        new_agency = core.models.Agency.objects.filter(name="new Agency").first()
+        self.assertIsNotNone(new_agency)
+
+        self.assertEqual(
+            r.data,
+            {
+                "data": {
+                    "id": new_agency.id,
+                    "name": "new Agency",
+                    "status": False,
+                    "tags": ["first tags", "second new tag"],
+                }
+            },
+        )
+
+    def test_post_disabled(self):
+        url = reverse("service.salesforce.agency")
+        r = self.client.post(
+            url, data={"name": "new Agency", "status": True, "tags": ["first tags", "second new tag"]}, format="json"
+        )
+        self.assertEqual(r.status_code, 200)
+        new_agency = core.models.Agency.objects.filter(name="new Agency").first()
+        self.assertIsNotNone(new_agency)
+
+        self.assertEqual(
+            r.data,
+            {
+                "data": {
+                    "id": new_agency.id,
+                    "name": "new Agency",
+                    "status": True,
+                    "tags": ["first tags", "second new tag"],
+                }
+            },
+        )
+
+    def test_post_invalid(self):
+        url = reverse("service.salesforce.agency")
+        r = self.client.post(url, data={"name": "", "tags": ["first tags", "second new tag"]}, format="json")
+        self.assertEqual(r.status_code, 400)
+        new_agency = core.models.Agency.objects.filter(name="new Agency").first()
+        self.assertIsNone(new_agency)
+
+        self.assertEqual(
+            r.data, {"details": {"name": ["This field may not be blank."]}, "errorCode": "ValidationError"}
+        )
+
+    def test_put_valid(self):
+        magic_mixer.blend(core.models.Agency, id=2, name="Agency 1", is_externally_managed=True)
+        url = reverse("service.salesforce.agency", kwargs={"agency_id": 2})
+        r = self.client.put(url, data={"name": "New Name", "tags": ["New tags"]}, format="json")
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(r.data, {"data": {"id": 2, "name": "New Name", "status": False, "tags": ["New tags"]}})
+
+        url = reverse("service.salesforce.agency", kwargs={"agency_id": 2})
+        r = self.client.put(url, data={"tags": ["An Other"]}, format="json")
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(
+            r.data, {"data": {"id": 2, "name": "New Name", "status": False, "tags": ["New tags", "An Other"]}}
+        )
+
+    def test_put_disable(self):
+        agency = magic_mixer.blend(core.models.Agency, id=3, name="Agency 1", is_externally_managed=True)
+        magic_mixer.blend(
+            core.models.Account,
+            agency=agency,
+            id=1,
+            name="Account 1",
+            salesforce_url="http://salesforce.com",
+            is_disabled=False,
+        )
+        url = reverse("service.salesforce.agency", kwargs={"agency_id": 3})
+        r = self.client.put(url, data={"name": "New Name", "status": True, "tags": []}, format="json")
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(r.data, {"data": {"id": 3, "name": "New Name", "status": True, "tags": []}})
+        self.assertEqual(core.models.Account.objects.get(id=1).is_disabled, True)
+
+        r = self.client.put(url, data={"status": False}, format="json")
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(r.data, {"data": {"id": 3, "name": "New Name", "status": False, "tags": []}})
+        self.assertEqual(core.models.Account.objects.get(id=1).is_disabled, False)
+
+
+class AccountTestCase(TestCase):
+    def setUp(self):
+        self.client = APIClient()
+        self.user = magic_mixer.blend(User)
+        self.user2 = magic_mixer.blend(User)
+        self.client.force_authenticate(user=self.user)
+        self.request_mock = RequestFactory()
+        self.request_mock.user = self.user
+        self.agency = magic_mixer.blend(core.models.Agency, id=3, name="Agency 1", is_externally_managed=True)
+
+    def test_get(self):
+        magic_mixer.blend(
+            core.models.Account,
+            agency=self.agency,
+            id=1,
+            name="Account 1",
+            salesforce_url="http://salesforce.com",
+            is_disabled=True,
+        )
+
+        url = reverse("service.salesforce.account", kwargs={"account_id": 1})
+        response = self.client.get(url)
+        self.assertEqual(
+            response.data,
+            {
+                "data": {
+                    "id": 1,
+                    "agency_id": 3,
+                    "status": True,
+                    "name": "Account 1",
+                    "salesforce_url": "http://salesforce.com",
+                    "currency": "USD",
+                    "sales_representative": None,
+                    "account_manager": None,
+                    "tags": [],
+                }
+            },
+        )
+
+    def test_get_account_does_not_exist(self):
+        url = reverse("service.salesforce.account", kwargs={"account_id": 1234})
+        response = self.client.get(url)
+        self.assertEqual(
+            response.data, {"errorCode": "DoesNotExist", "details": "Account matching query does not exist."}
+        )
+
+    def test_get_account_not_externally_managed(self):
+        magic_mixer.blend(core.models.Agency, id=3, name="Agency 3", is_externally_managed=False)
+        url = reverse("service.salesforce.account", kwargs={"account_id": 1})
+        response = self.client.get(url)
+        self.assertEqual(
+            response.data, {"errorCode": "DoesNotExist", "details": "Account matching query does not exist."}
+        )
+
+    def test_post_valid(self):
+        url = reverse("service.salesforce.account")
+        r = self.client.post(
+            url,
+            data={
+                "agency_id": 3,
+                "status": True,
+                "name": "new Account",
+                "salesforce_url": "http://salesforce.com",
+                "currency": "CHF",
+                "sales_representative": self.user.email,
+                "account_manager": self.user2.email,
+                "tags": ["tag1", "tag2"],
+            },
+            format="json",
+        )
+        self.assertEqual(r.status_code, 200)
+        new_account = core.models.Account.objects.filter(name="new Account").first()
+        self.assertIsNotNone(new_account)
+
+        self.assertEqual(
+            r.data,
+            {
+                "data": {
+                    "id": new_account.id,
+                    "agency_id": 3,
+                    "status": True,
+                    "name": "new Account",
+                    "salesforce_url": "http://salesforce.com",
+                    "currency": "CHF",
+                    "sales_representative": self.user.email,
+                    "account_manager": self.user2.email,
+                    "tags": ["tag1", "tag2"],
+                }
+            },
+        )
+
+    def test_post_invalid(self):
+
+        url = reverse("service.salesforce.account")
+        r = self.client.post(
+            url,
+            data={
+                "agency_id": 1234,
+                "status": True,
+                "name": "new Account",
+                "salesforce_url": "http://salesforce.com",
+                "sales_representative": self.user.email,
+                "account_manager": self.user2.email,
+                "tags": ["tag1", "tag2"],
+            },
+            format="json",
+        )
+        self.assertEqual(r.status_code, 400)
+        new_account = core.models.Account.objects.filter(name="new Account").first()
+        self.assertIsNone(new_account)
+        self.assertEqual(
+            r.data,
+            {
+                "details": "Agency provided does not exists or is not externally manageable.",
+                "errorCode": "ValidationError",
+            },
+        )
+
+        url = reverse("service.salesforce.account")
+        r = self.client.post(
+            url,
+            data={
+                "agency_id": 123,
+                "status": True,
+                "name": "new Account",
+                "salesforce_url": "http://salesforce.com",
+                "currency": "CHF",
+                "sales_representative": self.user.email,
+                "account_manager": self.user2.email,
+                "tags": ["tag1", "tag2"],
+            },
+            format="json",
+        )
+        self.assertEqual(r.status_code, 400)
+        new_account = core.models.Account.objects.filter(name="new Account").first()
+        self.assertIsNone(new_account)
+        self.assertEqual(
+            r.data,
+            {
+                "details": "Agency provided does not exists or is not externally manageable.",
+                "errorCode": "ValidationError",
+            },
+        )
+        r = self.client.post(
+            url,
+            data={
+                "agency_id": 3,
+                "status": True,
+                "name": "new Account",
+                "salesforce_url": "http://salesforce.com",
+                "currency": "CHF",
+                "sales_representative": "someone@test.com",
+                "account_manager": self.user2.email,
+                "tags": ["tag1", "tag2"],
+            },
+            format="json",
+        )
+        self.assertEqual(r.status_code, 400)
+        new_account = core.models.Account.objects.filter(name="new Account").first()
+        self.assertIsNone(new_account)
+        self.assertEqual(r.data, {"details": "Sales representative e-mail not found.", "errorCode": "ValidationError"})
+
+        r = self.client.post(
+            url,
+            data={
+                "agency_id": 3,
+                "status": True,
+                "name": "new Account",
+                "salesforce_url": "http://salesforce.com",
+                "currency": "CHF",
+                "sales_representative": self.user.email,
+                "account_manager": "someoneelse@test.com",
+                "tags": ["tag1", "tag2"],
+            },
+            format="json",
+        )
+        self.assertEqual(r.status_code, 400)
+        new_account = core.models.Account.objects.filter(name="new Account").first()
+        self.assertIsNone(new_account)
+        self.assertEqual(r.data, {"details": "Account manager e-mail not found.", "errorCode": "ValidationError"})
+
+    def test_put_valid(self):
+        magic_mixer.blend(
+            core.models.Account,
+            agency=self.agency,
+            id=1,
+            name="Account 1",
+            salesforce_url="http://salesforce.com",
+            is_disabled=True,
+        )
+        url = reverse("service.salesforce.account", kwargs={"account_id": 1})
+        response = self.client.put(
+            url, data={"name": "Account 1", "status": False, "tags": ["tag1", "tag2"]}, format="json"
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            response.data,
+            {
+                "data": {
+                    "id": 1,
+                    "agency_id": 3,
+                    "status": False,
+                    "name": "Account 1",
+                    "salesforce_url": "http://salesforce.com",
+                    "currency": "USD",
+                    "sales_representative": None,
+                    "account_manager": None,
+                    "tags": ["tag1", "tag2"],
+                }
+            },
+        )
+
+    def test_put_disable(self):
+        magic_mixer.blend(core.models.Account, id=3, name="Account 1", agency=self.agency)
+        url = reverse("service.salesforce.account", kwargs={"account_id": 3})
+        response = self.client.put(
+            url,
+            data={
+                "status": True,
+                "currency": "EUR",
+                "tags": ["tag1"],
+                "salesforce_url": "http://newURL.com",
+                "name": "new Name",
+            },
+            format="json",
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            response.data,
+            {
+                "data": {
+                    "id": 3,
+                    "agency_id": 3,
+                    "status": True,
+                    "name": "new Name",
+                    "salesforce_url": "http://newURL.com",
+                    "currency": "EUR",
+                    "sales_representative": None,
+                    "account_manager": None,
+                    "tags": ["tag1"],
+                }
+            },
+        )
+
+    def test_put_invalid(self):
+        magic_mixer.blend(core.models.Account, id=3, name="Account 1")
+        url = reverse("service.salesforce.account", kwargs={"account_id": 3})
+        response = self.client.put(url, data={"currency": "EUR"}, format="json")
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(
+            response.data, {"errorCode": "DoesNotExist", "details": "Account matching query does not exist."}
+        )
+
+        magic_mixer.blend(core.models.Account, id=3, name="Account 1", agency=self.agency)
+        url = reverse("service.salesforce.account", kwargs={"account_id": 3})
+        response = self.client.put(url, data={"currency": "YEN"}, format="json")
+        self.assertEqual(response.status_code, 400)

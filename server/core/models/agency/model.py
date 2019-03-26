@@ -23,6 +23,26 @@ class Agency(instance.AgencyInstanceMixin, models.Model):
         verbose_name_plural = "Agencies"
         ordering = ("-created_dt",)
 
+    _update_fields = (
+        "name",
+        "sales_representative",
+        "cs_representative",
+        "cs_representative",
+        "ob_representative",
+        "white_label",
+        "users",
+        "new_accounts_use_bcm_v2",
+        "allowed_sources",
+        "custom_flags",
+        "default_whitelist",
+        "default_blacklist",
+        "yahoo_account",
+        "default_csv_separator",
+        "default_csv_decimal_separator",
+        "is_externally_managed",
+        "is_disabled",
+        "entity_tags",
+    )
     id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=127, editable=True, unique=True, blank=False, null=False)
     sales_representative = models.ForeignKey(
