@@ -4,6 +4,7 @@ import core.models
 import dash.features.custom_flags
 import dash.models
 import dash.retargeting_helper
+import restapi.common.helpers
 
 
 def get_extra_data(user, ad_group):
@@ -23,6 +24,9 @@ def get_extra_data(user, ad_group):
         "action_is_waiting": False,
         "can_archive": ad_group.can_archive(),
         "can_restore": ad_group.can_restore(),
+        "is_campaign_autopilot_enabled": ad_group.campaign.settings.autopilot,
+        "account_id": ad_group.campaign.account_id,
+        "currency": ad_group.campaign.account.currency,
         "default_settings": default_settings,
         "retargetable_ad_groups": retargetable_ad_groups,
         "audiences": audiences,
@@ -31,6 +35,9 @@ def get_extra_data(user, ad_group):
 
     if user.has_perm("zemauth.can_see_backend_hacks"):
         extra["hacks"] = get_hacks(ad_group)
+
+    if user.has_perm("zemauth.can_see_deals_in_ui"):
+        extra["deals"] = restapi.common.helpers.get_applied_deals_dict(ad_group.get_all_configured_deals())
 
     return extra
 

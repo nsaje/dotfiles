@@ -72,6 +72,9 @@ export class AdGroupSettingsStoreState {
         actionIsWaiting: null,
         canArchive: null,
         canRestore: null,
+        isCampaignAutopilotEnabled: false,
+        accountId: null,
+        currency: null,
         defaultSettings: {
             targetRegions: {
                 countries: [],
@@ -99,7 +102,6 @@ export class AdGroupSettingsStoreState {
             },
         },
         hacks: [],
-        isCampaignAutopilotEnabled: false,
     };
     fieldsErrors = new AdGroupSettingsStoreFieldsErrorsState();
     requests: AdGroupRequests = {

@@ -1,5 +1,7 @@
 from django.test import TestCase
 
+import dash.constants
+
 from . import serializers
 
 
@@ -9,6 +11,9 @@ class ExtraDataSerializerTest(TestCase):
             "action_is_waiting": False,
             "can_archive": False,
             "can_restore": False,
+            "is_campaign_autopilot_enabled": False,
+            "account_id": 12345,
+            "currency": dash.constants.Currency.USD,
             "default_settings": {
                 "target_regions": [],
                 "exclusion_target_regions": [],
@@ -30,11 +35,25 @@ class ExtraDataSerializerTest(TestCase):
                     "summary": "Implement pixel on all the ads",
                 }
             ],
+            "deals": [
+                {
+                    "level": "Global",
+                    "direct_deal_connection_id": 1234,
+                    "deal_id": 1234,
+                    "source": "SOURCE",
+                    "exclusive": True,
+                    "description": "DEAL FOR SOURCE",
+                    "is_applied": True,
+                }
+            ],
         }
         self.serialized = {
             "action_is_waiting": False,
             "can_archive": False,
             "can_restore": False,
+            "is_campaign_autopilot_enabled": False,
+            "account_id": 12345,
+            "currency": dash.constants.Currency.USD,
             "default_settings": {
                 "target_regions": {"countries": [], "regions": [], "dma": [], "cities": [], "postal_codes": []},
                 "exclusion_target_regions": {
@@ -60,6 +79,17 @@ class ExtraDataSerializerTest(TestCase):
                     "level": "Global",
                     "source": "RCS",
                     "summary": "Implement pixel on all the ads",
+                }
+            ],
+            "deals": [
+                {
+                    "level": "Global",
+                    "direct_deal_connection_id": 1234,
+                    "deal_id": 1234,
+                    "source": "SOURCE",
+                    "exclusive": True,
+                    "description": "DEAL FOR SOURCE",
+                    "is_applied": True,
                 }
             ],
         }

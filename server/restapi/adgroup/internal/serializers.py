@@ -1,5 +1,7 @@
 import rest_framework.serializers
 
+import dash.constants
+import restapi.adgroup.v1.serializers
 import restapi.serializers.base
 import restapi.serializers.hack
 import restapi.serializers.targeting
@@ -34,10 +36,25 @@ class ExtraDataWarningSerializer(restapi.serializers.base.RESTAPIBaseSerializer)
     retargeting = ExtraDataRetargetingSerializer(required=False, allow_null=True)
 
 
+class ExtraDataDealSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
+    level = rest_framework.serializers.CharField(required=False)
+    direct_deal_connection_id = rest_framework.serializers.IntegerField(required=False)
+    deal_id = rest_framework.serializers.IntegerField(required=False)
+    source = rest_framework.serializers.CharField(required=False)
+    exclusive = rest_framework.serializers.BooleanField(default=False, required=False)
+    description = rest_framework.serializers.CharField(required=False)
+    is_applied = rest_framework.serializers.BooleanField(default=False, required=False)
+
+
 class ExtraDataSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
     action_is_waiting = rest_framework.serializers.BooleanField(default=False, required=False)
     can_archive = rest_framework.serializers.BooleanField(default=False, required=False)
     can_restore = rest_framework.serializers.BooleanField(default=False, required=False)
+    is_campaign_autopilot_enabled = rest_framework.serializers.BooleanField(default=False, required=False)
+    account_id = rest_framework.serializers.IntegerField(required=False)
+    currency = restapi.serializers.fields.DashConstantField(
+        dash.constants.Currency, default=dash.constants.Currency.USD, required=False
+    )
     default_settings = ExtraDataDefaultSettingsSerializer(default=False, required=False)
     retargetable_ad_groups = rest_framework.serializers.ListField(
         child=ExtraDataRetargetableAdGroupSerializer(), allow_empty=True
@@ -45,3 +62,28 @@ class ExtraDataSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
     audiences = rest_framework.serializers.ListField(child=ExtraDataAudiencesSerializer(), allow_empty=True)
     warnings = ExtraDataWarningSerializer(required=False, allow_null=True)
     hacks = rest_framework.serializers.ListField(child=restapi.serializers.hack.HackSerializer(), allow_empty=True)
+    deals = rest_framework.serializers.ListField(child=ExtraDataDealSerializer(), allow_empty=True)
+
+
+class AdGroupSerializer(restapi.adgroup.v1.serializers.AdGroupSerializer):
+    class Meta(restapi.adgroup.v1.serializers.AdGroupSerializer.Meta):
+        fields = (
+            "id",
+            "campaign_id",
+            "name",
+            "bidding_type",
+            "state",
+            "archived",
+            "start_date",
+            "end_date",
+            "tracking_code",
+            "max_cpc",
+            "max_cpm",
+            "delivery_type",
+            "click_capping_daily_ad_group_max_clicks",
+            "click_capping_daily_click_budget",
+            "dayparting",
+            "targeting",
+            "autopilot",
+            "frequency_capping",
+        )

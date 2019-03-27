@@ -2,6 +2,7 @@ import mock
 from django.urls import reverse
 
 import core.models
+import dash.constants
 from restapi.common.views_base_test import RESTAPITest
 from utils.magic_mixer import magic_mixer
 
@@ -29,6 +30,9 @@ class AdGroupViewSetTest(RESTAPITest):
             "action_is_waiting": False,
             "can_archive": False,
             "can_restore": False,
+            "is_campaign_autopilot_enabled": False,
+            "account_id": 12345,
+            "currency": dash.constants.Currency.USD,
             "default_settings": {
                 "target_regions": [],
                 "exclusion_target_regions": [],
@@ -40,6 +44,7 @@ class AdGroupViewSetTest(RESTAPITest):
             "audiences": [],
             "warnings": {"retargeting": {"sources": []}},
             "hacks": [],
+            "deals": [],
         }
 
         agency = magic_mixer.blend(core.models.Agency)
@@ -50,12 +55,16 @@ class AdGroupViewSetTest(RESTAPITest):
         resp_json = self.assertResponseValid(r)
 
         self.assertEqual(resp_json["data"]["name"], "New ad group")
+        self.assertIsNone(resp_json["data"].get("dailyBudget"))
         self.assertEqual(
             resp_json["extra"],
             {
                 "actionIsWaiting": False,
                 "canArchive": False,
                 "canRestore": False,
+                "isCampaignAutopilotEnabled": False,
+                "accountId": 12345,
+                "currency": dash.constants.Currency.USD,
                 "defaultSettings": {
                     "targetRegions": {"countries": [], "regions": [], "dma": [], "cities": [], "postalCodes": []},
                     "exclusionTargetRegions": {
@@ -73,6 +82,7 @@ class AdGroupViewSetTest(RESTAPITest):
                 "audiences": [],
                 "warnings": {"retargeting": {"sources": []}},
                 "hacks": [],
+                "deals": [],
             },
         )
 
@@ -82,6 +92,9 @@ class AdGroupViewSetTest(RESTAPITest):
             "action_is_waiting": False,
             "can_archive": False,
             "can_restore": False,
+            "is_campaign_autopilot_enabled": False,
+            "account_id": 12345,
+            "currency": dash.constants.Currency.USD,
             "default_settings": {
                 "target_regions": [],
                 "exclusion_target_regions": [],
@@ -93,6 +106,7 @@ class AdGroupViewSetTest(RESTAPITest):
             "audiences": [],
             "warnings": {"retargeting": {"sources": []}},
             "hacks": [],
+            "deals": [],
         }
 
         agency = magic_mixer.blend(core.models.Agency)
@@ -103,12 +117,16 @@ class AdGroupViewSetTest(RESTAPITest):
         r = self.client.get(reverse("internal:adgroups_details", kwargs={"ad_group_id": ad_group.id}))
         resp_json = self.assertResponseValid(r)
 
+        self.assertIsNone(resp_json["data"].get("dailyBudget"))
         self.assertEqual(
             resp_json["extra"],
             {
                 "actionIsWaiting": False,
                 "canArchive": False,
                 "canRestore": False,
+                "isCampaignAutopilotEnabled": False,
+                "accountId": 12345,
+                "currency": dash.constants.Currency.USD,
                 "defaultSettings": {
                     "targetRegions": {"countries": [], "regions": [], "dma": [], "cities": [], "postalCodes": []},
                     "exclusionTargetRegions": {
@@ -126,5 +144,6 @@ class AdGroupViewSetTest(RESTAPITest):
                 "audiences": [],
                 "warnings": {"retargeting": {"sources": []}},
                 "hacks": [],
+                "deals": [],
             },
         )

@@ -3,6 +3,7 @@ import decimal
 import pytz
 import rest_framework.serializers
 
+import core.models.settings
 import restapi.serializers.base
 import restapi.serializers.fields
 import restapi.serializers.serializers
@@ -131,9 +132,33 @@ class AdGroupAutopilotSerializer(restapi.serializers.base.RESTAPIBaseSerializer)
 
 
 class AdGroupSerializer(
-    restapi.serializers.serializers.PermissionedFieldsMixin, restapi.serializers.base.RESTAPIBaseSerializer
+    restapi.serializers.serializers.PermissionedFieldsMixin,
+    restapi.serializers.base.RESTAPIBaseSerializer,
+    rest_framework.serializers.ModelSerializer,
 ):
     class Meta:
+        model = core.models.settings.AdGroupSettings
+        fields = (
+            "id",
+            "campaign_id",
+            "name",
+            "bidding_type",
+            "state",
+            "archived",
+            "start_date",
+            "end_date",
+            "tracking_code",
+            "max_cpc",
+            "max_cpm",
+            "daily_budget",
+            "delivery_type",
+            "click_capping_daily_ad_group_max_clicks",
+            "click_capping_daily_click_budget",
+            "dayparting",
+            "targeting",
+            "autopilot",
+            "frequency_capping",
+        )
         permissioned_fields = {
             "click_capping_daily_ad_group_max_clicks": "zemauth.can_set_click_capping",
             "click_capping_daily_click_budget": "zemauth.can_set_click_capping_daily_click_budget",
