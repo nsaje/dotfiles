@@ -43,6 +43,18 @@ def prepare_demo(snapshot_id=None):
     # create docker network if it does not exist
     conn.run("/usr/bin/docker network create -d bridge legacynet", warn=True)
 
+    # prepare z1 container
+    conn.run(
+        " && ".join(
+            [
+                "$(aws --region us-east-1 ecr get-login --no-include-email)",
+                "docker pull 569683728510.dkr.ecr.us-east-1.amazonaws.com/zemanta/z1:{build}",
+                "docker tag 569683728510.dkr.ecr.us-east-1.amazonaws.com/zemanta/z1:{build} z1-bundle:{build}",
+                "docker tag 569683728510.dkr.ecr.us-east-1.amazonaws.com/zemanta/z1:{build} z1-bundle:current",
+            ]
+        )
+    )
+
     # start postgres container
     postgres = conn.run(
         "/usr/bin/docker run -d "
