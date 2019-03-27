@@ -22,7 +22,6 @@ from core.features.history.helpers import *
 
 # Feature models
 from dash.features.custom_hacks import *
-from dash.features.demo import *
 from dash.features.emails import *
 from dash.features.exports import *
 from dash.features.geolocation import *

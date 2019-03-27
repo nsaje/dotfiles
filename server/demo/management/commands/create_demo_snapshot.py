@@ -7,9 +7,6 @@ import os
 import signal
 import sys
 import tarfile
-import urllib.error
-import urllib.parse
-import urllib.request
 
 import faker
 import influx
@@ -23,13 +20,14 @@ from django.template import Variable
 from django.template import VariableDoesNotExist
 
 import dash.models
+import demo
+import demo.models
 import zemauth.models
 from dash import constants
 from utils import db_router
 from utils import demo_anonymizer
 from utils import grouper
 from utils import json_helper
-from utils import request_signer
 from utils import s3helpers
 from utils import unique_ordered_list
 from utils.command_helpers import ExceptionCommand
@@ -137,7 +135,7 @@ class Command(ExceptionCommand):
 
         # perform inside transaction and rollback to be safe
         with transaction.atomic():
-            demo_mappings = dash.models.DemoMapping.objects.all()
+            demo_mappings = demo.models.DemoMapping.objects.all()
             demo_users_set = set(zemauth.models.User.objects.filter(email__endswith="+demo@zemanta.com"))
             demo_users_pks = set(demo_user.pk for demo_user in demo_users_set)
 
@@ -185,7 +183,7 @@ class Command(ExceptionCommand):
         s3_helper.put("latest.txt", snapshot_id)
         influx.incr("create_demo_dump_to_s3", 1, status="success")
 
-        _deploykitty_prepare(snapshot_id)
+        demo.prepare_demo(snapshot_id)
 
         pre_save.disconnect(_pre_save_handler)
 
@@ -196,13 +194,6 @@ def _pre_save_handler(sender, instance, *args, **kwargs):
 
 def _get_snapshot_id():
     return datetime.datetime.utcnow().strftime("%Y-%m-%d_%H%M")
-
-
-def _deploykitty_prepare(snapshot_id):
-    request = urllib.request.Request(
-        settings.DK_DEMO_PREPARE_ENDPOINT + "?" + urllib.parse.urlencode({"version": snapshot_id})
-    )
-    request_signer.urllib_secure_open(request, settings.DK_API_KEY)
 
 
 def _prepare_demo_objects(serialize_list, demo_mappings, demo_users_set):

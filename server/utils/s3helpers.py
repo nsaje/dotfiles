@@ -130,6 +130,15 @@ class S3Helper(object):
             for entry in manifest["entries"]:
                 yield entry["url"].lstrip("s3://%s/" % self.bucket.name)
 
+    def generate_url(self, key):
+        if self.use_s3:
+            k = Key(self.bucket)
+            k.key = key
+            return k.generate_url(3600)
+
+        if settings.FILE_STORAGE_DIR:
+            return "file://" + os.path.join(settings.FILE_STORAGE_DIR, os.path.basename(key))
+
 
 class FakeMultiPartUpload(object):
     def __init__(self, key):

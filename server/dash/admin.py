@@ -13,7 +13,6 @@ from django.contrib.postgres.forms import SimpleArrayField
 from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.http import HttpResponseRedirect
-from django.template.defaultfilters import truncatechars
 from django.urls import reverse
 from django.utils.html import format_html
 from django.utils.safestring import mark_safe
@@ -1035,29 +1034,6 @@ class AdGroupModelChoiceField(forms.ModelChoiceField):
         return "{} | {} | {}".format(obj.campaign.account.name, obj.campaign.name, obj.name)
 
 
-# Demo Mapping
-class DemoMappingAdminForm(forms.ModelForm):
-    real_account = forms.ModelChoiceField(queryset=models.Account.objects.order_by("name"))
-    demo_campaign_name_pool = SimpleArrayField(
-        forms.CharField(), delimiter="\n", widget=forms.Textarea, help_text="Put every demo name in a separate line"
-    )
-    demo_ad_group_name_pool = SimpleArrayField(
-        forms.CharField(), delimiter="\n", widget=forms.Textarea, help_text="Put every demo name in a separate line"
-    )
-
-
-class DemoMappingAdmin(admin.ModelAdmin):
-    list_display = ("real_account", "demo_account_name", "demo_campaign_name_pool_", "demo_ad_group_name_pool_")
-    form = DemoMappingAdminForm
-    autocomplete_fields = ("real_account",)
-
-    def demo_campaign_name_pool_(self, obj):
-        return truncatechars(", ".join(obj.demo_campaign_name_pool), 70)
-
-    def demo_ad_group_name_pool_(self, obj):
-        return truncatechars(", ".join(obj.demo_ad_group_name_pool), 70)
-
-
 # OutBrain Account
 class OutbrainAccountAdmin(admin.ModelAdmin):
     list_display = ("marketer_id", "marketer_name", "used", "created_dt", "modified_dt")
@@ -2069,7 +2045,6 @@ admin.site.register(models.AdGroupSourceSettings, AdGroupSourceSettingsAdmin)
 admin.site.register(models.SourceCredentials, SourceCredentialsAdmin)
 admin.site.register(models.SourceType, SourceTypeAdmin)
 admin.site.register(models.DefaultSourceSettings, DefaultSourceSettingsAdmin)
-admin.site.register(models.DemoMapping, DemoMappingAdmin)
 admin.site.register(models.OutbrainAccount, OutbrainAccountAdmin)
 admin.site.register(models.ContentAdSource, ContentAdSourceAdmin)
 admin.site.register(models.CreditLineItem, CreditLineItemAdmin)

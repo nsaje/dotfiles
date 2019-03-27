@@ -1,15 +1,11 @@
 import json
 import logging
 import time
-import urllib.error
-import urllib.parse
-import urllib.request
 
 import influx
 import requests
-from django.conf import settings
 
-from utils import request_signer
+import demo
 from utils.command_helpers import ExceptionCommand
 
 logger = logging.getLogger(__name__)
@@ -30,23 +26,9 @@ class Command(ExceptionCommand):
         influx.incr("demo.monitor", 1, status="ok")
 
     def _start_demo(self):
-        request = urllib.request.Request(settings.DK_DEMO_UP_ENDPOINT)
-        response = request_signer.urllib_secure_open(request, settings.DK_API_KEY)
+        instance_name, url, password = demo.request_demo()
 
-        status_code = response.getcode()
-        if status_code != 200:
-            raise Exception("Invalid response status code. status code: {}".format(status_code))
-
-        ret = json.loads(response.read())
-        if ret["status"] != "success":
-            raise Exception("Request not successful. status: {}".format(ret["status"]))
-
-        return {
-            "name": ret.get("instance_name"),
-            "url": ret.get("instance_url"),
-            "username": ret.get("instance_username"),
-            "password": ret.get("instance_password"),
-        }
+        return {"name": instance_name, "url": url, "username": "regular.user+demo@zemanta.com", "password": password}
 
     def _find_string_in_login_page(self, session, demo_instance):
         response = session.get(demo_instance["url"])
@@ -103,16 +85,4 @@ class Command(ExceptionCommand):
         raise error
 
     def _stop_demo(self, name):
-        url = settings.DK_DEMO_DOWN_ENDPOINT.format(instance=name)
-        request = urllib.request.Request(url)
-        response = request_signer.urllib_secure_open(request, settings.DK_API_KEY)
-
-        status_code = response.getcode()
-        if status_code != 200:
-            raise Exception(
-                "Invalid response status code. status code: {code} (name)".format(code=status_code, name=name)
-            )
-
-        ret = json.loads(response.read())
-        if ret["status"] != "pending":
-            raise Exception("Request not successful. status: {status} ({name})".format(status=ret["status"], name=name))
+        demo.terminate_demo(name)

@@ -28,6 +28,7 @@ import core.features.multicurrency
 import core.models.ad_group_source.exceptions
 import core.models.helpers
 import core.models.settings.ad_group_source_settings.exceptions
+import demo
 import stats.helpers
 from dash import campaign_goals
 from dash import constants
@@ -43,7 +44,6 @@ from utils import db_router
 from utils import email_helper
 from utils import exc
 from utils import lc_helper
-from utils import request_signer
 from utils import threads
 
 logger = logging.getLogger(__name__)
@@ -1133,29 +1133,15 @@ class Demo(api_common.BaseApiView):
         if not request.user.has_perm("zemauth.can_request_demo_v3"):
             raise Http404("Forbidden")
 
-        instance = self._start_instance()
+        _, url, password = demo.request_demo()
 
         email_helper.send_official_email(
             agency_or_user=request.user,
             recipient_list=[request.user.email],
-            **email_helper.params_from_template(constants.EmailTemplateType.DEMO_RUNNING, **instance)
+            **email_helper.params_from_template(constants.EmailTemplateType.DEMO_RUNNING, url=url, password=password)
         )
 
-        return self.create_api_response(instance)
-
-    def _start_instance(self):
-        request = urllib.request.Request(settings.DK_DEMO_UP_ENDPOINT)
-        response = request_signer.urllib_secure_open(request, settings.DK_API_KEY)
-
-        status_code = response.getcode()
-        if status_code != 200:
-            raise Exception("Invalid response status code. status code: {}".format(status_code))
-
-        ret = json.loads(response.read())
-        if ret["status"] != "success":
-            raise Exception("Request not successful. status: {}".format(ret["status"]))
-
-        return {"url": ret.get("instance_url"), "password": ret.get("instance_password")}
+        return self.create_api_response({"url": url, "password": password})
 
 
 def healthcheck(request):

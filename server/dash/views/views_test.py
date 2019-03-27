@@ -16,6 +16,7 @@ from mock import ANY
 from mock import patch
 
 import core.models.source_type.model
+import demo
 import zemauth.models
 from dash import constants
 from dash import history_helpers
@@ -1258,9 +1259,9 @@ class DemoTest(TestCase):
         client.login(username=user.username, password="secret")
         return client
 
-    @patch.object(views.Demo, "_start_instance")
+    @patch.object(demo, "request_demo")
     def test_get(self, start_instance_mock):
-        start_instance_mock.return_value = {"url": "test-url", "password": "test-password"}
+        start_instance_mock.return_value = "test-name", "test-url", "test-password"
 
         reversed_url = reverse("demov3")
         response = self._get_client().get(reversed_url, follow=True)
@@ -1284,16 +1285,3 @@ class DemoTest(TestCase):
         response = self._get_client(has_permission=False).get(reversed_url, follow=True)
         self.assertEqual(404, response.status_code)
         self.assertTemplateUsed(response, "404.html")
-
-    @override_settings(DK_DEMO_UP_ENDPOINT="http://example.com")
-    @patch("dash.views.views.request_signer")
-    def test_start_instance(self, request_signer_mock):
-        data = {"status": "success", "instance_url": "test-url", "instance_password": "test-password"}
-
-        request_signer_mock.urllib_secure_open.return_value.getcode.return_value = 200
-        request_signer_mock.urllib_secure_open.return_value.read.return_value = json.dumps(data)
-
-        demo = views.Demo()
-        instance = demo._start_instance()
-
-        self.assertEqual(instance, {"url": "test-url", "password": "test-password"})

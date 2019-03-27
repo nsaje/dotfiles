@@ -67,6 +67,7 @@ INSTALLED_APPS = [
     "integrations.bizwire",
     "dcron",
     "dev",
+    "demo",
 ]
 
 MIDDLEWARE = [

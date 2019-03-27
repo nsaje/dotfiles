@@ -154,6 +154,7 @@ RAVEN_CONFIG = {"dsn": "https://%s:%s@sentry.io/260920" % (_SENTRY_PUBLIC_KEY, _
 S3_BUCKET = ""
 S3_BUCKET_STATS = ""
 S3_BUCKET_DEMO = ""
+S3_BUCKET_ARTIFACTS = ""
 S3_BUCKET_THUMBNAILER = "zemthumbnailer"
 S3_BUCKET_CUSTOM_REPORTS = ""
 S3_BUCKET_PUBLISHER_GROUPS = ""
@@ -260,11 +261,11 @@ K1_CONSISTENCY_PING_AD_GROUP_QUEUE = "k1-consistency_ping_ad_group"
 K1_CONSISTENCY_PING_CONTENT_AD_QUEUE = "k1-consistency_ping_content_ad"
 K1_CONSISTENCY_PING_BLACKLIST_QUEUE = "k1-consistency_ping_blacklist"
 
-# DeployKitty
-DK_API_KEY = Secret("").get()
-DK_DEMO_PREPARE_ENDPOINT = ""
-DK_DEMO_UP_ENDPOINT = ""
-DK_DEMO_DOWN_ENDPOINT = ""
+DEMO_NODE_HOSTNAME = ""
+DEMO_NODE_SSH_KEY = ""
+DEMO_USERNAME = "regular.user+demo@zemanta.com"
+DEMO_PASSWORD = Secret().get().decode("utf-8")
+DEMO_URL = "https://{instance_name}.demo.zemanta.com"
 
 LAMBDA_REGION = "us-east-1"
 LAMBDA_CONTENT_UPLOAD_SIGN_KEY = Secret(

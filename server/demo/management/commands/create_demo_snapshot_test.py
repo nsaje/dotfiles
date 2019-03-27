@@ -7,9 +7,11 @@ from django.test import TransactionTestCase
 from django.test import override_settings
 from django.utils.six import StringIO
 
-from dash.management.commands import create_demo_snapshot
+import demo
 from utils import request_signer
 from utils import s3helpers
+
+from . import create_demo_snapshot
 
 
 class CreateDemoSnapshotTest(TransactionTestCase):
@@ -25,11 +27,12 @@ class CreateDemoSnapshotTest(TransactionTestCase):
     def mock_put(self, key, contents):
         self.mock_s3[key] = contents
 
-    @override_settings(BUILD_NUMBER=12345, BRANCH="master", DK_DEMO_PREPARE_ENDPOINT="http://dk")
+    @override_settings(BUILD_NUMBER=12345, BRANCH="master")
+    @mock.patch.object(demo, "prepare_demo")
     @mock.patch.object(create_demo_snapshot, "_get_snapshot_id")
     @mock.patch.object(s3helpers, "S3Helper")
     @mock.patch.object(request_signer, "urllib_secure_open")
-    def test_command(self, secure_open, s3_helper, mock_snapshot_id):
+    def test_command(self, secure_open, s3_helper, mock_snapshot_id, prepare_demo_mock):
         mock_snapshot_id.return_value = "2016-01-01_1200"
         mock_s3_helper = mock.MagicMock()
         mock_s3_helper.put.side_effect = self.mock_put
