@@ -22,8 +22,12 @@ class BidModifierSerializer(serializers.Serializer):
 
             for attr in ("id", "type", "source_slug", "target"):
                 if attr in data:
-                    if data[attr] != getattr(self.instance, attr):
-                        raise exc.ValidationError("Only modifier field can be updated")
+                    if attr == "target":
+                        if data[attr] != converters.ApiConverter.from_target(self.instance.type, self.instance.target):
+                            raise exc.ValidationError("Only modifier field can be updated")
+                    else:
+                        if data[attr] != getattr(self.instance, attr):
+                            raise exc.ValidationError("Only modifier field can be updated")
 
             if "modifier" not in data:
                 raise exc.ValidationError("Modifier field is required")

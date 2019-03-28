@@ -167,15 +167,15 @@ export enum PublisherStatus {
 }
 
 export enum BidModifierType {
-    PUBLISHER = 1,
-    SOURCE = 2,
-    DEVICE = 3,
-    OPERATING_SYSTEM = 4,
-    PLACEMENT = 5,
-    COUNTRY = 6,
-    STATE = 7,
-    DMA = 8,
-    AD = 9,
+    PUBLISHER = 'PUBLISHER',
+    SOURCE = 'SOURCE',
+    DEVICE = 'DEVICE',
+    OPERATING_SYSTEM = 'OPERATING_SYSTEM',
+    PLACEMENT = 'PLACEMENT',
+    COUNTRY = 'COUNTRY',
+    STATE = 'STATE',
+    DMA = 'DMA',
+    AD = 'AD',
 }
 
 export enum HackLevel {

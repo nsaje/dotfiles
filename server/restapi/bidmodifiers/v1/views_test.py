@@ -696,6 +696,32 @@ class BidModifierViewSetTest(restapi.common.views_base_test.RESTAPITest):
         result = self.assertResponseError(response, "ValidationError")
         self.assertEqual(result, {"errorCode": "ValidationError", "details": "Only modifier field can be updated"})
 
+    def test_update_operating_system_invalid_input_error(self):
+        bid_modifier = self.bid_modifiers_list[3]
+
+        response = self.client.put(
+            reverse("adgroups_bidmodifiers_details", kwargs={"ad_group_id": self.ad_group.id, "pk": bid_modifier.id}),
+            data={"target": "linux"},
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        result = self.assertResponseError(response, "ValidationError")
+        self.assertEqual(result, {"errorCode": "ValidationError", "details": "Only modifier field can be updated"})
+
+    def test_update_operating_system_missing_modifier_error(self):
+        bid_modifier = self.bid_modifiers_list[3]
+
+        response = self.client.put(
+            reverse("adgroups_bidmodifiers_details", kwargs={"ad_group_id": self.ad_group.id, "pk": bid_modifier.id}),
+            data={"target": "LINUX"},
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        result = self.assertResponseError(response, "ValidationError")
+        self.assertEqual(result, {"errorCode": "ValidationError", "details": "Modifier field is required"})
+
     def test_destroy(self):
         bm = self.bid_modifiers_list[3]
 
