@@ -58,7 +58,8 @@ class AgencyInstanceMixin:
         self.save(request)
 
     def save(self, request, *args, **kwargs):
-        self.modified_by = request.user
+        if request and not request.user.is_anonymous:
+            self.modified_by = request.user
         super().save(*args, **kwargs)
 
     def update(self, request, **kwargs):

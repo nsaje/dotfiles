@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import jsonfield
 import tagulous
 from django.conf import settings
 from django.contrib.postgres.fields import JSONField
@@ -10,6 +11,7 @@ import core.features.yahoo_accounts
 import core.models
 from core.models import tags
 from dash import constants
+from utils.json_helper import JSONFIELD_DUMP_KWARGS
 from utils.settings_fields import CachedOneToOneField
 
 from . import manager
@@ -62,7 +64,9 @@ class Agency(AgencyValidatorMixin, AgencyInstanceMixin, models.Model):
     users = models.ManyToManyField(settings.AUTH_USER_MODEL, blank=True)
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name="Created at")
     modified_dt = models.DateTimeField(auto_now=True, verbose_name="Modified at")
-    modified_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name="+", on_delete=models.PROTECT)
+    modified_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, related_name="+", on_delete=models.PROTECT, null=True, blank=True
+    )
     default_account_type = models.IntegerField(
         default=constants.AccountType.UNKNOWN, choices=constants.AccountType.get_choices()
     )
@@ -96,5 +100,11 @@ class Agency(AgencyValidatorMixin, AgencyInstanceMixin, models.Model):
     )
 
     entity_tags = tagulous.models.TagField(to=tags.EntityTag, blank=True)
+    custom_attributes = jsonfield.JSONField(
+        blank=True,
+        default=dict,
+        dump_kwargs=JSONFIELD_DUMP_KWARGS,
+        help_text="Used only by Outbrain Salesforce to store attributes non existant on Z1.",
+    )
 
     objects = manager.AgencyManager.from_queryset(queryset.AgencyQuerySet)()

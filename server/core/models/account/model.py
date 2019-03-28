@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import jsonfield.fields
 import tagulous
 from django.conf import settings
 from django.contrib.postgres.fields import JSONField
@@ -9,6 +10,7 @@ import utils.demo_anonymizer
 import utils.string_helper
 from core.models import tags
 from dash import constants
+from utils.json_helper import JSONFIELD_DUMP_KWARGS
 from utils.settings_fields import CachedOneToOneField
 
 from . import manager
@@ -70,6 +72,7 @@ class Account(AccountValidatorMixin, AccountInstanceMixin, models.Model):
     )
 
     salesforce_url = models.URLField(null=True, blank=True, max_length=255)
+    salesforce_id = models.IntegerField(null=True, help_text="Outbrain custom Salesforce ID.")
 
     # migration to the new system introduced by margings and fees project
     uses_bcm_v2 = models.BooleanField(
@@ -94,7 +97,12 @@ class Account(AccountValidatorMixin, AccountInstanceMixin, models.Model):
 
     entity_tags = tagulous.models.TagField(to=tags.EntityTag, blank=True)
     is_disabled = models.BooleanField(default=False, help_text="Agency can be disabled only if is externally managed.")
-
+    custom_attributes = jsonfield.JSONField(
+        blank=True,
+        default=dict,
+        dump_kwargs=JSONFIELD_DUMP_KWARGS,
+        help_text="Used only by Outbrain Salesforce to store attributes non existant on Z1.",
+    )
     objects = manager.AccountManager.from_queryset(queryset.AccountQuerySet)()
 
     def get_sspd_url(self):
