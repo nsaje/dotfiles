@@ -11,6 +11,7 @@ import * as clone from 'clone';
 import * as commonHelpers from '../../../../../../shared/helpers/common.helpers';
 import * as currencyHelpers from '../../../../../../shared/helpers/currency.helpers';
 import {BID_MODIFIER_CELL_CONFIG} from '../bid-modifier-cell.config';
+import {Currency} from '../../../../../../app.constants';
 
 @Injectable()
 export class BidModifierCellStore extends Store<BidModifierCellStoreState>
@@ -28,7 +29,7 @@ export class BidModifierCellStore extends Store<BidModifierCellStoreState>
     loadBidModifier(
         bidModifier: BidModifier,
         adGroupId: number,
-        currency: string
+        currency: Currency
     ): void {
         const modifierPercent = this.convertModifierToPercent(
             bidModifier.modifier

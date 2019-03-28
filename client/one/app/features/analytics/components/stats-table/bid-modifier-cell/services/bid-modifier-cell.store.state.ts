@@ -1,5 +1,6 @@
 import {BidModifier} from '../../../../../../core/bid-modifiers/types/bid-modifier';
-import {BidModifierRequests} from '../../../../../../core/bid-modifiers/types/bid-modifier-requests';
+import {RequestState} from '../../../../../../shared/types/request-state';
+import {Currency} from '../../../../../../app.constants';
 
 export class BidModifierCellStoreState {
     adGroupId: number = null;
@@ -12,12 +13,12 @@ export class BidModifierCellStoreState {
         bidMax: null,
         modifier: null,
     };
-    currency: string = null;
+    currency: Currency = null;
     modifierPercent: string = null;
     previousModifierPercent: string = null;
     computedBidMin: string = null;
     computedBidMax: string = null;
-    requests: BidModifierRequests = {
-        save: {},
+    requests = {
+        save: {} as RequestState,
     };
 }

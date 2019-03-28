@@ -1,4 +1,3 @@
-import {NestedFieldsErrors} from '../../../shared/types/nested-fields-errors';
 import {FieldErrors} from '../../../shared/types/field-errors';
 
 export class AdGroupSettingsStoreFieldsErrorsState {
@@ -13,9 +12,9 @@ export class AdGroupSettingsStoreFieldsErrorsState {
     clickCappingDailyAdGroupMaxClicks: FieldErrors = [];
     clickCappingDailyClickBudget: FieldErrors = [];
     dayparting: FieldErrors = [];
-    autopilot: NestedFieldsErrors = {
-        state: [],
-        dailyBudget: [],
+    autopilot = {
+        state: [] as FieldErrors,
+        dailyBudget: [] as FieldErrors,
     };
     frequencyCapping: FieldErrors = [];
 }

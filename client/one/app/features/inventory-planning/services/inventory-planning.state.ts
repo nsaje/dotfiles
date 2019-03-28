@@ -1,14 +1,14 @@
-import {Requests} from '../types/requests';
 import {Filters} from '../types/filters';
 import {Inventory} from '../types/inventory';
+import {RequestState} from '../../../shared/types/request-state';
 
 export class InventoryPlanningState {
-    requests: Requests = {
-        summary: {},
-        countries: {},
-        publishers: {},
-        devices: {},
-        sources: {},
+    requests = {
+        summary: {} as RequestState,
+        countries: {} as RequestState,
+        publishers: {} as RequestState,
+        devices: {} as RequestState,
+        sources: {} as RequestState,
     };
     selectedFilters: Filters = {
         countries: [],

@@ -20,7 +20,7 @@ import {BidModifierCellStore} from './services/bid-modifier-cell.store';
 import {BidModifier} from '../../../../../core/bid-modifiers/types/bid-modifier';
 import {BidModifiersService} from '../../../../../core/bid-modifiers/services/bid-modifiers.service';
 import {BID_MODIFIER_CELL_CONFIG} from './bid-modifier-cell.config';
-import {KeyCode} from '../../../../../app.constants';
+import {KeyCode, Currency} from '../../../../../app.constants';
 
 @Component({
     selector: 'zem-bid-modifier-cell',
@@ -34,7 +34,7 @@ export class BidModifierCellComponent implements OnInit, OnChanges {
     @Input()
     entityId: number;
     @Input()
-    currency: string;
+    currency: Currency;
     @Input()
     isEditable: boolean;
     @Input()

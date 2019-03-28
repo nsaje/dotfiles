@@ -12,7 +12,7 @@ describe('BidModifierCellStore', () => {
     let store: BidModifierCellStore;
     let mockedAdGroupId: number;
     let mockedBidModifier: BidModifier;
-    let mockedCurrency: string;
+    let mockedCurrency: Currency;
 
     beforeEach(() => {
         serviceStub = jasmine.createSpyObj(BidModifiersService.name, ['save']);

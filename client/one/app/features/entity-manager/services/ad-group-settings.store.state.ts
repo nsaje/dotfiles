@@ -1,7 +1,7 @@
 import {AdGroup} from '../../../core/entities/types/ad-group/ad-group';
 import {AdGroupExtras} from '../../../core/entities/types/ad-group/ad-group-extras';
-import {AdGroupRequests} from '../../../core/entities/types/ad-group/ad-group-requests';
 import {AdGroupSettingsStoreFieldsErrorsState} from './ad-group-settings.store.fields-errors-state';
+import {RequestState} from 'one/app/shared/types/request-state';
 
 export class AdGroupSettingsStoreState {
     entity: AdGroup = {
@@ -104,11 +104,11 @@ export class AdGroupSettingsStoreState {
         hacks: [],
     };
     fieldsErrors = new AdGroupSettingsStoreFieldsErrorsState();
-    requests: AdGroupRequests = {
-        defaults: {},
-        get: {},
-        validate: {},
-        create: {},
-        edit: {},
+    requests = {
+        defaults: {} as RequestState,
+        get: {} as RequestState,
+        validate: {} as RequestState,
+        create: {} as RequestState,
+        edit: {} as RequestState,
     };
 }
