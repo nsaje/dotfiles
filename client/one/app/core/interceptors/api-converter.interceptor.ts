@@ -8,6 +8,7 @@ import {
 } from '@angular/common/http';
 import {Observable} from 'rxjs';
 import {map} from 'rxjs/operators';
+import * as clone from 'clone';
 import * as commonHelpers from '../../shared/helpers/common.helpers';
 import * as dateHelpers from '../../shared/helpers/date.helpers';
 
@@ -17,14 +18,29 @@ export class ApiConverterHttpInterceptor implements HttpInterceptor {
         request: HttpRequest<any>,
         next: HttpHandler
     ): Observable<HttpEvent<any>> {
+        // In order to convert the request body to server format,
+        // we need to firstly clone the current body. By cloning
+        // the object we prevent to notify the possible subscribers.
+        // If the body is of type FormData, it means that it can include
+        // a File. In this case we should not modify the content in any way.
         request = request.clone({
-            body: this.convertBodyToServerFormat(request.body),
+            body:
+                commonHelpers.isDefined(request.body) &&
+                request.body instanceof FormData
+                    ? request.body
+                    : this.convertBodyToServerFormat(clone(request.body)),
         });
         return next.handle(request).pipe(
             map((event: HttpEvent<any>) => {
                 if (event instanceof HttpResponse) {
                     event = event.clone({
-                        body: this.convertBodyToClientFormat(event.body),
+                        body:
+                            commonHelpers.isDefined(event.body) &&
+                            event.body instanceof FormData
+                                ? event.body
+                                : this.convertBodyToClientFormat(
+                                      clone(event.body)
+                                  ),
                     });
                 }
                 return event;
