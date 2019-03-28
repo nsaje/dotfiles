@@ -2,11 +2,14 @@ import decimal
 
 from rest_framework import serializers
 
+import core.models
 import dash.constants
 import restapi.serializers.base
 import restapi.serializers.fields
+from zemauth.models import User as zemUser
 
 from . import constants
+from . import exceptions as exc
 
 
 class ClientSerializer(serializers.Serializer):
@@ -102,19 +105,58 @@ class CreditsListSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
     created_by = serializers.EmailField()
 
 
+class TagSerializer(serializers.BaseSerializer):
+    class Meta:
+        model = core.models.EntityTag
+        fields = ("label",)
+
+    def to_representation(self, instance):
+        return instance.label
+
+    def to_internal_value(self, data):
+        return data
+
+
 class AgencySerializer(serializers.Serializer):
+    id = serializers.IntegerField(required=False)
     name = restapi.serializers.fields.PlainCharField()
-    tags = restapi.serializers.fields.NullListField(required=False, source="entity_tags")
-    status = serializers.BooleanField(required=False, source="is_disabled")
+    tags = TagSerializer(source="entity_tags", many=True, required=False)
+    is_disabled = serializers.BooleanField(required=False)
+
+    def validate_name(self, value):
+        agency = core.models.Agency.objects.filter(name=value).first()
+        if agency:
+            raise exc.ValidationError("Agency with same name already exists.")
+        return value
 
 
 class AccountSerializer(serializers.Serializer):
     id = serializers.IntegerField(required=False)
     name = restapi.serializers.fields.PlainCharField()
-    agency_id = restapi.serializers.fields.IdField(source="agency")
+    agency_id = serializers.PrimaryKeyRelatedField(
+        source="agency", queryset=core.models.Agency.objects.filter(is_externally_managed=True)
+    )
     salesforce_url = serializers.URLField(required=False)
     currency = serializers.ChoiceField(choices=constants.OUTBRAIN_CURRENCIES, required=False)
-    sales_representative = serializers.EmailField(required=False)
-    account_manager = serializers.EmailField(required=False)
-    status = serializers.BooleanField(required=False, source="is_disabled")
-    tags = restapi.serializers.fields.NullListField(required=False, source="entity_tags")
+    sales_representative = serializers.EmailField(required=False, source="settings.default_sales_representative")
+    account_manager = serializers.EmailField(required=False, source="settings.default_account_manager")
+    is_disabled = serializers.BooleanField(required=False)
+    tags = TagSerializer(source="entity_tags", many=True, required=False)
+
+    def validate_agency_id(self, value):
+        agency = core.models.Agency.objects.filter(id=value.id, is_externally_managed=True).first()
+        if not agency:
+            raise exc.AgencyNotExternallyManaged("Agency provided does not exists or is not externally manageable.")
+        return agency
+
+    def validate_sales_representative(self, value):
+        sales_rep = zemUser.objects.filter(email=value).first()
+        if not sales_rep:
+            raise exc.SalesRepresentativeNotFound("Sales representative e-mail not found.")
+        return sales_rep
+
+    def validate_account_manager(self, value):
+        account_manager = zemUser.objects.filter(email=value).first()
+        if not account_manager:
+            raise exc.SalesRepresentativeNotFound("Account manager e-mail not found.")
+        return account_manager

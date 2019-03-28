@@ -24,14 +24,14 @@ class AccountManagerTestCase(TestCase):
         self.assertFalse(self.source_unreleased in account.allowed_sources.all())
 
     def test_create_currency(self):
-        account = Account.objects.create(self.request, name="Test", agency=None, currency=dash.constants.Currency.USD)
+        account = Account.objects.create(self.request, name="Test", agency=None, currency=dash.constants.Currency.EUR)
 
-        self.assertEqual(dash.constants.Currency.USD, account.currency)
+        self.assertEqual(dash.constants.Currency.EUR, account.currency)
 
     def test_create_no_currency(self):
         account = Account.objects.create(self.request, name="Test", agency=None)
 
-        self.assertEqual(None, account.currency)
+        self.assertEqual(dash.constants.Currency.USD, account.currency)
 
     def test_set_user_defaults_from_agency(self):
         sales_representative = magic_mixer.blend(zemauth.models.User)

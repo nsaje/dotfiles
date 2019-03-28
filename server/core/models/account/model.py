@@ -11,12 +11,13 @@ from core.models import tags
 from dash import constants
 from utils.settings_fields import CachedOneToOneField
 
-from . import instance
 from . import manager
 from . import queryset
+from .instance import AccountInstanceMixin
+from .validation import AccountValidatorMixin
 
 
-class Account(instance.AccountInstanceMixin, models.Model):
+class Account(AccountValidatorMixin, AccountInstanceMixin, models.Model):
     class Meta:
         ordering = ("-created_dt",)
 

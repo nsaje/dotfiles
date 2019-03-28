@@ -5,7 +5,6 @@ from django.db import transaction
 import core.common
 import core.features.yahoo_accounts
 from dash import constants
-from utils import exc
 from utils import slack
 
 from . import model
@@ -13,37 +12,23 @@ from . import model
 logger = logging.getLogger(__name__)
 
 
-EUR_AGENCIES = [196, 175, 179, 201]
-
-
 class AccountManager(core.common.BaseManager):
     @transaction.atomic()
-    def create(self, request, name, agency=None, currency=None, **kwargs):
+    def create(self, request, name, agency=None, **kwargs):
         if agency is not None:
             core.common.entity_limits.enforce(model.Account.objects.filter(agency=agency).exclude_archived())
         account = model.Account(name=name, agency=agency)
+        account.save(request)
         if agency is not None:
             account.uses_bcm_v2 = agency.new_accounts_use_bcm_v2
         else:
-            account.uses_bcm_v2 = (
-                True
-            )  # TODO: when all agencies are migrated, this can be moved into a db field default
-
-        # FIXME(nsaje): remove when multicurrency finished
-        if agency is not None and agency.id in EUR_AGENCIES:
-            account.currency = constants.Currency.EUR
-        else:
-            account.currency = currency
+            # TODO: when all agencies are migrated, this can be moved into a db field default
+            account.uses_bcm_v2 = True
 
         account.yahoo_account = core.features.yahoo_accounts.get_default_account()
-        account.is_disabled = kwargs.get("is_disabled", False)
-        account.salesforce_url = kwargs.get("salesforce_url", None)
-        if account.is_disabled and not account.is_externally_managed:
-            raise exc.ValidationError("Disabling Account is allowed only on externally managed agencies.")
+        account.update(request, **kwargs)
 
-        account.save(request)
         account.write_history("Created account", user=request.user, action_type=constants.HistoryActionType.CREATE)
-        account.entity_tags.add(*kwargs.get("entity_tags", []))
 
         settings_updates = {}
         settings_updates["default_account_manager"] = request.user

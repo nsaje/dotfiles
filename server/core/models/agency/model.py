@@ -12,12 +12,13 @@ from core.models import tags
 from dash import constants
 from utils.settings_fields import CachedOneToOneField
 
-from . import instance
 from . import manager
 from . import queryset
+from .instance import AgencyInstanceMixin
+from .validation import AgencyValidatorMixin
 
 
-class Agency(instance.AgencyInstanceMixin, models.Model):
+class Agency(AgencyValidatorMixin, AgencyInstanceMixin, models.Model):
     class Meta:
         app_label = "dash"
         verbose_name_plural = "Agencies"

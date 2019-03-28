@@ -502,7 +502,7 @@ class AgencyTestCase(TestCase):
         magic_mixer.blend(core.models.Agency, id=1, name="Agency 1", is_externally_managed=True)
         url = reverse("service.salesforce.agency", kwargs={"agency_id": 1})
         response = self.client.get(url)
-        self.assertEqual(response.data, {"data": {"id": 1, "status": False, "name": "Agency 1", "tags": []}})
+        self.assertEqual(response.data, {"data": {"id": 1, "is_disabled": False, "name": "Agency 1", "tags": []}})
 
     def test_get_agency_does_not_exist(self):
         url = reverse("service.salesforce.agency", kwargs={"agency_id": 1234})
@@ -532,7 +532,7 @@ class AgencyTestCase(TestCase):
                 "data": {
                     "id": new_agency.id,
                     "name": "new Agency",
-                    "status": False,
+                    "is_disabled": False,
                     "tags": ["first tags", "second new tag"],
                 }
             },
@@ -541,7 +541,9 @@ class AgencyTestCase(TestCase):
     def test_post_disabled(self):
         url = reverse("service.salesforce.agency")
         r = self.client.post(
-            url, data={"name": "new Agency", "status": True, "tags": ["first tags", "second new tag"]}, format="json"
+            url,
+            data={"name": "new Agency", "is_disabled": True, "tags": ["first tags", "second new tag"]},
+            format="json",
         )
         self.assertEqual(r.status_code, 200)
         new_agency = core.models.Agency.objects.filter(name="new Agency").first()
@@ -553,7 +555,7 @@ class AgencyTestCase(TestCase):
                 "data": {
                     "id": new_agency.id,
                     "name": "new Agency",
-                    "status": True,
+                    "is_disabled": True,
                     "tags": ["first tags", "second new tag"],
                 }
             },
@@ -570,19 +572,32 @@ class AgencyTestCase(TestCase):
             r.data, {"details": {"name": ["This field may not be blank."]}, "errorCode": "ValidationError"}
         )
 
+        core.models.Agency.objects.create(self.request_mock, name="new Agency")
+        self.assertTrue(core.models.Agency.objects.filter(name="new Agency").exists(), True)
+        r = self.client.post(url, data={"name": "new Agency", "tags": ["first tags", "second new tag"]}, format="json")
+        self.assertEqual(r.status_code, 400)
+        self.assertEqual(
+            r.json(), {"details": {"name": ["Agency with same name already exists."]}, "errorCode": "ValidationError"}
+        )
+
     def test_put_valid(self):
         magic_mixer.blend(core.models.Agency, id=2, name="Agency 1", is_externally_managed=True)
         url = reverse("service.salesforce.agency", kwargs={"agency_id": 2})
         r = self.client.put(url, data={"name": "New Name", "tags": ["New tags"]}, format="json")
         self.assertEqual(r.status_code, 200)
-        self.assertEqual(r.data, {"data": {"id": 2, "name": "New Name", "status": False, "tags": ["New tags"]}})
+        self.assertEqual(r.data, {"data": {"id": 2, "name": "New Name", "is_disabled": False, "tags": ["New tags"]}})
 
         url = reverse("service.salesforce.agency", kwargs={"agency_id": 2})
         r = self.client.put(url, data={"tags": ["An Other"]}, format="json")
         self.assertEqual(r.status_code, 200)
         self.assertEqual(
-            r.data, {"data": {"id": 2, "name": "New Name", "status": False, "tags": ["New tags", "An Other"]}}
+            r.data, {"data": {"id": 2, "name": "New Name", "is_disabled": False, "tags": ["New tags", "An Other"]}}
         )
+
+        url = reverse("service.salesforce.agency", kwargs={"agency_id": 2})
+        r = self.client.put(url, data={"tags": []}, format="json")
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(r.data, {"data": {"id": 2, "name": "New Name", "is_disabled": False, "tags": []}})
 
     def test_put_disable(self):
         agency = magic_mixer.blend(core.models.Agency, id=3, name="Agency 1", is_externally_managed=True)
@@ -595,14 +610,14 @@ class AgencyTestCase(TestCase):
             is_disabled=False,
         )
         url = reverse("service.salesforce.agency", kwargs={"agency_id": 3})
-        r = self.client.put(url, data={"name": "New Name", "status": True, "tags": []}, format="json")
+        r = self.client.put(url, data={"name": "New Name", "is_disabled": True, "tags": []}, format="json")
         self.assertEqual(r.status_code, 200)
-        self.assertEqual(r.data, {"data": {"id": 3, "name": "New Name", "status": True, "tags": []}})
+        self.assertEqual(r.data, {"data": {"id": 3, "name": "New Name", "is_disabled": True, "tags": []}})
         self.assertEqual(core.models.Account.objects.get(id=1).is_disabled, True)
 
-        r = self.client.put(url, data={"status": False}, format="json")
+        r = self.client.put(url, data={"is_disabled": False}, format="json")
         self.assertEqual(r.status_code, 200)
-        self.assertEqual(r.data, {"data": {"id": 3, "name": "New Name", "status": False, "tags": []}})
+        self.assertEqual(r.data, {"data": {"id": 3, "name": "New Name", "is_disabled": False, "tags": []}})
         self.assertEqual(core.models.Account.objects.get(id=1).is_disabled, False)
 
 
@@ -634,7 +649,7 @@ class AccountTestCase(TestCase):
                 "data": {
                     "id": 1,
                     "agency_id": 3,
-                    "status": True,
+                    "is_disabled": True,
                     "name": "Account 1",
                     "salesforce_url": "http://salesforce.com",
                     "currency": "USD",
@@ -666,7 +681,7 @@ class AccountTestCase(TestCase):
             url,
             data={
                 "agency_id": 3,
-                "status": True,
+                "is_disabled": True,
                 "name": "new Account",
                 "salesforce_url": "http://salesforce.com",
                 "currency": "CHF",
@@ -686,7 +701,7 @@ class AccountTestCase(TestCase):
                 "data": {
                     "id": new_account.id,
                     "agency_id": 3,
-                    "status": True,
+                    "is_disabled": True,
                     "name": "new Account",
                     "salesforce_url": "http://salesforce.com",
                     "currency": "CHF",
@@ -703,8 +718,7 @@ class AccountTestCase(TestCase):
         r = self.client.post(
             url,
             data={
-                "agency_id": 1234,
-                "status": True,
+                "is_disabled": True,
                 "name": "new Account",
                 "salesforce_url": "http://salesforce.com",
                 "sales_representative": self.user.email,
@@ -717,11 +731,7 @@ class AccountTestCase(TestCase):
         new_account = core.models.Account.objects.filter(name="new Account").first()
         self.assertIsNone(new_account)
         self.assertEqual(
-            r.data,
-            {
-                "details": "Agency provided does not exists or is not externally manageable.",
-                "errorCode": "ValidationError",
-            },
+            r.json(), {"details": {"agencyId": ["This field is required."]}, "errorCode": "ValidationError"}
         )
 
         url = reverse("service.salesforce.account")
@@ -729,7 +739,7 @@ class AccountTestCase(TestCase):
             url,
             data={
                 "agency_id": 123,
-                "status": True,
+                "is_disabled": True,
                 "name": "new Account",
                 "salesforce_url": "http://salesforce.com",
                 "currency": "CHF",
@@ -743,17 +753,15 @@ class AccountTestCase(TestCase):
         new_account = core.models.Account.objects.filter(name="new Account").first()
         self.assertIsNone(new_account)
         self.assertEqual(
-            r.data,
-            {
-                "details": "Agency provided does not exists or is not externally manageable.",
-                "errorCode": "ValidationError",
-            },
+            r.json(),
+            {"details": {"agencyId": ['Invalid pk "123" - object does not exist.']}, "errorCode": "ValidationError"},
         )
+
         r = self.client.post(
             url,
             data={
                 "agency_id": 3,
-                "status": True,
+                "is_disabled": True,
                 "name": "new Account",
                 "salesforce_url": "http://salesforce.com",
                 "currency": "CHF",
@@ -766,13 +774,19 @@ class AccountTestCase(TestCase):
         self.assertEqual(r.status_code, 400)
         new_account = core.models.Account.objects.filter(name="new Account").first()
         self.assertIsNone(new_account)
-        self.assertEqual(r.data, {"details": "Sales representative e-mail not found.", "errorCode": "ValidationError"})
+        self.assertEqual(
+            r.json(),
+            {
+                "details": {"salesRepresentative": ["Sales representative e-mail not found."]},
+                "errorCode": "ValidationError",
+            },
+        )
 
         r = self.client.post(
             url,
             data={
                 "agency_id": 3,
-                "status": True,
+                "is_disabled": True,
                 "name": "new Account",
                 "salesforce_url": "http://salesforce.com",
                 "currency": "CHF",
@@ -785,7 +799,10 @@ class AccountTestCase(TestCase):
         self.assertEqual(r.status_code, 400)
         new_account = core.models.Account.objects.filter(name="new Account").first()
         self.assertIsNone(new_account)
-        self.assertEqual(r.data, {"details": "Account manager e-mail not found.", "errorCode": "ValidationError"})
+        self.assertEqual(
+            r.json(),
+            {"details": {"accountManager": ["Account manager e-mail not found."]}, "errorCode": "ValidationError"},
+        )
 
     def test_put_valid(self):
         magic_mixer.blend(
@@ -798,7 +815,7 @@ class AccountTestCase(TestCase):
         )
         url = reverse("service.salesforce.account", kwargs={"account_id": 1})
         response = self.client.put(
-            url, data={"name": "Account 1", "status": False, "tags": ["tag1", "tag2"]}, format="json"
+            url, data={"name": "Account 1", "is_disabled": False, "tags": ["tag1", "tag2"]}, format="json"
         )
         self.assertEqual(response.status_code, 200)
         self.assertEqual(
@@ -807,7 +824,7 @@ class AccountTestCase(TestCase):
                 "data": {
                     "id": 1,
                     "agency_id": 3,
-                    "status": False,
+                    "is_disabled": False,
                     "name": "Account 1",
                     "salesforce_url": "http://salesforce.com",
                     "currency": "USD",
@@ -818,13 +835,33 @@ class AccountTestCase(TestCase):
             },
         )
 
+        url = reverse("service.salesforce.account", kwargs={"account_id": 1})
+        response = self.client.put(url, data={"name": "Account 1", "is_disabled": False, "tags": []}, format="json")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            response.data,
+            {
+                "data": {
+                    "id": 1,
+                    "agency_id": 3,
+                    "is_disabled": False,
+                    "name": "Account 1",
+                    "salesforce_url": "http://salesforce.com",
+                    "currency": "USD",
+                    "sales_representative": None,
+                    "account_manager": None,
+                    "tags": [],
+                }
+            },
+        )
+
     def test_put_disable(self):
         magic_mixer.blend(core.models.Account, id=3, name="Account 1", agency=self.agency)
         url = reverse("service.salesforce.account", kwargs={"account_id": 3})
         response = self.client.put(
             url,
             data={
-                "status": True,
+                "is_disabled": True,
                 "currency": "EUR",
                 "tags": ["tag1"],
                 "salesforce_url": "http://newURL.com",
@@ -839,7 +876,7 @@ class AccountTestCase(TestCase):
                 "data": {
                     "id": 3,
                     "agency_id": 3,
-                    "status": True,
+                    "is_disabled": True,
                     "name": "new Name",
                     "salesforce_url": "http://newURL.com",
                     "currency": "EUR",
