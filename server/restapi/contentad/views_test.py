@@ -211,6 +211,7 @@ class TestBatchUpload(TestCase):
             "title": title,
             "imageUrl": "http://example.com/p/srv/9018/e5d6adb68f1d404f82541e335c50bbd3.jpg?w=1024&h=768&fit=crop&crop=center&fm=jpg",
             "label": "",
+            "displayUrl": "kuhic.com",
             "trackerUrls": ["https://www.example.com/a", "https://www.example.com/b"],
             "type": constants.AdType.get_name(constants.AdType.IMAGE),
         }
@@ -225,6 +226,7 @@ class TestBatchUpload(TestCase):
             "ad_tag": "<body></body>",
             "adWidth": 300,
             "adHeight": 250,
+            "displayUrl": "kuhic.com",
             "trackerUrls": ["https://www.example.com/a", "https://www.example.com/b"],
             "type": constants.AdType.get_name(constants.AdType.AD_TAG),
         }
@@ -321,7 +323,7 @@ class TestBatchUpload(TestCase):
         self.assertEqual(len(to_upload), len(resp_json["data"]["approvedContentAds"]))
         self.assertEqual(len(to_upload), len(saved_display_ads))
         for i in range(len(to_upload)):
-            for field in ("state", "title", "label", "trackerUrls"):
+            for field in ("state", "title", "displayUrl", "label", "trackerUrls"):
                 self.assertEqual(to_upload[i][field], resp_json["data"]["approvedContentAds"][i][field])
             self.assertEqual(saved_display_ads[i].id, int(resp_json["data"]["approvedContentAds"][i]["id"]))
 

@@ -1496,6 +1496,7 @@ class ImageAdFormTestCase(TestCase):
             "title": "Title",
             "type": constants.AdType.IMAGE,
             "image_url": "http://zemanta.com/img.jpg",
+            "display_url": "http://zemanta.com",
             "primary_tracker_url": "https://zemanta.com/px1",
             "secondary_tracker_url": "https://zemanta.com/px2",
             "image_id": "id123",
@@ -1664,6 +1665,33 @@ class ImageAdFormTestCase(TestCase):
         self.assertFalse(f.is_valid())
         self.assertEqual({"url": ["Invalid URL"]}, f.errors)
 
+    def test_missing_display_url(self):
+        data = self._get_valid_data()
+        del data["display_url"]
+        f = forms.ImageAdForm(self.campaign, data)
+        self.assertFalse(f.is_valid())
+        self.assertEqual({"display_url": ["Missing display URL"]}, f.errors)
+
+    def test_display_url_too_long(self):
+        data = self._get_valid_data()
+        data["display_url"] = "repeat" * 8 + ".com"
+        f = forms.ImageAdForm(self.campaign, data)
+        self.assertFalse(f.is_valid())
+        self.assertEqual({"display_url": ["Display URL too long (max 35 characters)"]}, f.errors)
+
+    def test_display_url_invalid(self):
+        data = self._get_valid_data()
+        data["display_url"] = "test"
+        f = forms.ImageAdForm(self.campaign, data)
+        self.assertFalse(f.is_valid())
+        self.assertEqual({"display_url": ["Enter a valid URL."]}, f.errors)
+
+    def test_display_url_with_http(self):
+        data = self._get_valid_data()
+        data["display_url"] = "http://" + "repeat" * 3 + ".com/"
+        f = forms.ImageAdForm(self.campaign, data)
+        self.assertTrue(f.is_valid())
+
     def test_missing_title(self):
         data = self._get_valid_data()
         del data["title"]
@@ -1697,7 +1725,6 @@ class ImageAdFormTestCase(TestCase):
         f = forms.ImageAdForm(self.campaign, data)
         self.assertTrue(f.is_valid())
         self.assertEqual("center", f.cleaned_data["image_crop"])
-        self.assertEqual("", f.cleaned_data["display_url"])
         self.assertEqual("", f.cleaned_data["brand_name"])
         self.assertEqual("", f.cleaned_data["description"])
         self.assertEqual(constants.DEFAULT_CALL_TO_ACTION, f.cleaned_data["call_to_action"])
@@ -1706,7 +1733,6 @@ class ImageAdFormTestCase(TestCase):
     def test_empty_unneeded_fields(self):
         data = self._get_valid_data()
         data["image_crop"] = ""
-        data["display_url"] = ""
         data["brand_name"] = ""
         data["description"] = ""
         data["call_to_action"] = ""
@@ -1714,7 +1740,6 @@ class ImageAdFormTestCase(TestCase):
         f = forms.ImageAdForm(self.campaign, data)
         self.assertTrue(f.is_valid())
         self.assertEqual("center", f.cleaned_data["image_crop"])
-        self.assertEqual("", f.cleaned_data["display_url"])
         self.assertEqual("", f.cleaned_data["brand_name"])
         self.assertEqual("", f.cleaned_data["description"])
         self.assertEqual(constants.DEFAULT_CALL_TO_ACTION, f.cleaned_data["call_to_action"])
@@ -1758,6 +1783,7 @@ class AdTagFormTestCase(TestCase):
             "label": "label",
             "title": "Ad tag ad",
             "url": "http://zemanta.com",
+            "display_url": "http://zemanta.com",
             "type": constants.AdType.AD_TAG,
             "ad_tag": "<body></body>",
             "primary_tracker_url": "https://zemanta.com/px1",
@@ -1840,6 +1866,33 @@ class AdTagFormTestCase(TestCase):
         self.assertFalse(f.is_valid())
         self.assertEqual({"label": ["Label too long (max 256 characters)"]}, f.errors)
 
+    def test_missing_display_url(self):
+        data = self._get_valid_data()
+        del data["display_url"]
+        f = forms.AdTagForm(self.campaign, data)
+        self.assertFalse(f.is_valid())
+        self.assertEqual({"display_url": ["Missing display URL"]}, f.errors)
+
+    def test_display_url_too_long(self):
+        data = self._get_valid_data()
+        data["display_url"] = "repeat" * 8 + ".com"
+        f = forms.AdTagForm(self.campaign, data)
+        self.assertFalse(f.is_valid())
+        self.assertEqual({"display_url": ["Display URL too long (max 35 characters)"]}, f.errors)
+
+    def test_display_url_invalid(self):
+        data = self._get_valid_data()
+        data["display_url"] = "test"
+        f = forms.AdTagForm(self.campaign, data)
+        self.assertFalse(f.is_valid())
+        self.assertEqual({"display_url": ["Enter a valid URL."]}, f.errors)
+
+    def test_display_url_with_http(self):
+        data = self._get_valid_data()
+        data["display_url"] = "http://" + "repeat" * 3 + ".com/"
+        f = forms.AdTagForm(self.campaign, data)
+        self.assertTrue(f.is_valid())
+
     def test_missing_url(self):
         data = self._get_valid_data()
         del data["url"]
@@ -1866,7 +1919,6 @@ class AdTagFormTestCase(TestCase):
         f = forms.AdTagForm(self.campaign, data)
         self.assertTrue(f.is_valid())
         self.assertEqual("center", f.cleaned_data["image_crop"])
-        self.assertEqual("", f.cleaned_data["display_url"])
         self.assertEqual("", f.cleaned_data["brand_name"])
         self.assertEqual("", f.cleaned_data["description"])
         self.assertEqual(constants.DEFAULT_CALL_TO_ACTION, f.cleaned_data["call_to_action"])
@@ -1876,7 +1928,6 @@ class AdTagFormTestCase(TestCase):
         data = self._get_valid_data()
         data["image_url"] = ""
         data["image_crop"] = ""
-        data["display_url"] = ""
         data["brand_name"] = ""
         data["description"] = ""
         data["call_to_action"] = ""
@@ -1885,7 +1936,6 @@ class AdTagFormTestCase(TestCase):
         self.assertTrue(f.is_valid())
         self.assertEqual(None, f.cleaned_data["image_url"])
         self.assertEqual("center", f.cleaned_data["image_crop"])
-        self.assertEqual("", f.cleaned_data["display_url"])
         self.assertEqual("", f.cleaned_data["brand_name"])
         self.assertEqual("", f.cleaned_data["description"])
         self.assertEqual(constants.DEFAULT_CALL_TO_ACTION, f.cleaned_data["call_to_action"])

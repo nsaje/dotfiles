@@ -47,6 +47,7 @@ valid_display_candidate = {
     "url": "http://zemanta.com/test-content-ad",
     "title": "test content ad",
     "image_url": "http://zemanta.com/test-image.jpg",
+    "display_url": "zemanta.com",
     "primary_tracker_url": "https://example.com/px1.png",
     "secondary_tracker_url": "https://example.com/px2.png",
 }
@@ -68,6 +69,7 @@ valid_display_ad_tag_candidate = {
     "ad_tag": "<body></body>",
     "image_width": 300,
     "image_height": 250,
+    "display_url": "zemanta.com",
     "primary_tracker_url": "https://example.com/px1.png",
     "secondary_tracker_url": "https://example.com/px2.png",
 }
@@ -219,7 +221,7 @@ class InsertCandidatesTestCase(TestCase):
         self.assertEqual(valid_display_candidate["title"], candidate.title)
         self.assertEqual(valid_display_candidate["image_url"], candidate.image_url)
         self.assertEqual("center", candidate.image_crop)
-        self.assertEqual("", candidate.display_url)
+        self.assertEqual(valid_display_candidate["display_url"], candidate.display_url)
         self.assertEqual("", candidate.brand_name)
         self.assertEqual("", candidate.description)
         self.assertEqual("Read more", candidate.call_to_action)
@@ -254,7 +256,7 @@ class InsertCandidatesTestCase(TestCase):
         self.assertEqual(valid_display_ad_tag_candidate["title"], candidate.title)
         self.assertEqual("", candidate.image_url)
         self.assertEqual("center", candidate.image_crop)
-        self.assertEqual("", candidate.display_url)
+        self.assertEqual(valid_display_ad_tag_candidate["display_url"], candidate.display_url)
         self.assertEqual("", candidate.brand_name)
         self.assertEqual("", candidate.description)
         self.assertEqual("Read more", candidate.call_to_action)
@@ -899,7 +901,7 @@ class GetCandidatesWithErrorsTestCase(TestCase):
                     "type": constants.AdType.IMAGE,
                     "image_url": "http://zemanta.com/test-image.jpg",
                     "image_crop": "center",
-                    "display_url": "",
+                    "display_url": "zemanta.com",
                     "brand_name": "",
                     "description": "",
                     "call_to_action": "Read more",
@@ -959,6 +961,7 @@ class GetCandidatesWithErrorsTestCase(TestCase):
                         "url": ["Invalid URL"],
                         "label": ["Label too long (max 256 characters)"],
                         "image_url": ["Invalid image URL"],
+                        "display_url": ["Missing display URL"],
                         "primary_tracker_url": ["Impression tracker URLs have to be HTTPS"],
                         "secondary_tracker_url": ["Impression tracker URLs have to be HTTPS"],
                     },
@@ -1006,7 +1009,7 @@ class GetCandidatesWithErrorsTestCase(TestCase):
                     "type": constants.AdType.AD_TAG,
                     "image_url": "",
                     "image_crop": "center",
-                    "display_url": "",
+                    "display_url": "zemanta.com",
                     "brand_name": "",
                     "description": "",
                     "call_to_action": "Read more",
@@ -1067,6 +1070,7 @@ class GetCandidatesWithErrorsTestCase(TestCase):
                         "label": ["Label too long (max 256 characters)"],
                         "ad_tag": ["Missing ad tag"],
                         "image_width": ["Missing ad width"],
+                        "display_url": ["Missing display URL"],
                         "primary_tracker_url": ["Impression tracker URLs have to be HTTPS"],
                         "secondary_tracker_url": ["Impression tracker URLs have to be HTTPS"],
                     },

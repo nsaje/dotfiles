@@ -1116,6 +1116,7 @@
                             </div>
                         </div>
                     </div>
+
                     <div
                         ng-if="ctrl.selectedCandidate.adType === ctrl.adType.AD_TAG"
                     >
@@ -1237,6 +1238,65 @@
                             </div>
                         </div>
                     </div>
+
+                    <div
+                        class="form__group"
+                        ng-class="{'form--error': ctrl.fieldsHaveErrors('displayUrl')}"
+                    >
+                        <label class="form__label" for="display-url-input"
+                            >Display URL</label
+                        >
+                        <input
+                            class="input-text"
+                            type="text"
+                            id="display-url-input"
+                            ng-model="ctrl.selectedCandidate.displayUrl"
+                            ng-model-options="{ updateOn: 'default blur', debounce: { default: 1500, blur: 0 } }"
+                            ng-change="ctrl.updateField(ctrl.selectedCandidate, 'displayUrl')"
+                            ng-class="{'content-upload__change-status--visible': ctrl.fieldsLoading.displayUrl || ctrl.fieldsSaved.displayUrl && !ctrl.fieldsHaveErrors('displayUrl')}"
+                        />
+                        <div
+                            class="content-upload__field-additional-info content-upload__field-additional-info--with-link content-upload__change-status"
+                            ng-class="{
+                            'content-upload__change-status--loading': ctrl.fieldsLoading.displayUrl,
+                            'content-upload__change-status--successful': ctrl.fieldsSaved.displayUrl && !ctrl.fieldsHaveErrors('displayUrl')}"
+                        >
+                            <span class="content-upload__count-characters"
+                                >{{
+                                    ctrl.selectedCandidate.displayUrl.length
+                                }}/{{ ctrl.MAX_DISPLAY_URL_LENGTH }}</span
+                            >
+                            <a
+                                href
+                                class="alternative-link"
+                                ng-click="ctrl.updateField(ctrl.selectedCandidate, 'displayUrl', true)"
+                                tabindex="-1"
+                                ng-if="!ctrl.isEdit"
+                            >
+                                Use as default
+                            </a>
+                        </div>
+                        <div
+                            class="message message--error"
+                            for="display-url-input"
+                            ng-if="ctrl.fieldsApiErrors['displayUrl']"
+                        >
+                            Something went wrong.
+                            <a
+                                href
+                                ng-click="ctrl.updateField(ctrl.selectedCandidate, 'displayUrl')"
+                                tabindex="-1"
+                                >Try again</a
+                            >
+                        </div>
+                        <div
+                            class="message message--error"
+                            for="display-url-input"
+                            ng-repeat="error in ctrl.selectedCandidate.errors.displayUrl"
+                        >
+                            {{ error }}
+                        </div>
+                    </div>
                 </div>
 
                 <hr />
@@ -1298,165 +1358,171 @@
                 </div>
 
                 <div
-                    class="form__group"
-                    ng-if="!ctrl.selectedCandidate.usePrimaryTracker && !ctrl.selectedCandidate.primaryTrackerUrl"
+                    ng-if="ctrl.selectedCandidate.adType !== ctrl.adType.AD_TAG"
                 >
-                    <label class="form__label form__label--optional"
-                        >Tracking</label
+                    <div
+                        class="form__group"
+                        ng-if="!ctrl.selectedCandidate.usePrimaryTracker && !ctrl.selectedCandidate.primaryTrackerUrl"
                     >
-                    <div class="form__checkbox">
+                        <label class="form__label form__label--optional"
+                            >Tracking</label
+                        >
+                        <div class="form__checkbox">
+                            <a
+                                href
+                                class="inline-link"
+                                ng-click="ctrl.addPrimaryTracker(ctrl.selectedCandidate)"
+                                tabindex="-1"
+                            >
+                                Add primary tracker
+                            </a>
+                        </div>
+                    </div>
+
+                    <div
+                        class="form__group"
+                        ng-if="!!ctrl.selectedCandidate.usePrimaryTracker || !!ctrl.selectedCandidate.primaryTrackerUrl"
+                        ng-class="{'form--error': ctrl.fieldsHaveErrors('primaryTrackerUrl')}"
+                    >
+                        <label class="form__label" for="primary-tracker-input"
+                            >Primary tracker</label
+                        >
+                        <input
+                            type="text"
+                            class="input-text"
+                            id="primary-tracker-input"
+                            ng-model="ctrl.selectedCandidate.primaryTrackerUrl"
+                            ng-model-options="{ updateOn: 'default blur', debounce: { default: 1500, blur: 0 } }"
+                            ng-change="ctrl.updateField(ctrl.selectedCandidate, 'primaryTrackerUrl')"
+                            ng-class="{'content-upload__change-status--visible': ctrl.fieldsLoading.primaryTrackerUrl || ctrl.fieldsSaved.primaryTrackerUrl && !ctrl.fieldsHaveErrors('primaryTrackerUrl')}"
+                        />
+                        <div
+                            class="content-upload__field-additional-info content-upload__change-status"
+                            ng-class="{
+                            'content-upload__change-status--loading': ctrl.fieldsLoading.primaryTrackerUrl,
+                            'content-upload__change-status--successful': ctrl.fieldsSaved.primaryTrackerUrl && !ctrl.fieldsHaveErrors('primaryTrackerUrl')}"
+                        >
+                            <a
+                                href
+                                ng-click="ctrl.removePrimaryTracker(ctrl.selectedCandidate)"
+                                ng-if="!ctrl.selectedCandidate.useSecondaryTracker"
+                                tabindex="-1"
+                            >
+                                Remove
+                            </a>
+                        </div>
+                        <div class="form__text--small">
+                            Paste your impression tracker link to track
+                            impressions. Note: not all media sources support
+                            impression trackers. Please see the list of
+                            supported media sources
+                            <a
+                                href="http://help.zemanta.com/article/show/24879-media-sources-overview"
+                                target="_blank"
+                                tabindex="-1"
+                                >here</a
+                            >.
+                        </div>
+                        <div
+                            class="message message--error"
+                            for="primary-tracker-input"
+                            ng-if="ctrl.fieldsApiErrors['primaryTrackerUrl']"
+                        >
+                            Something went wrong.
+                            <a
+                                href
+                                ng-click="ctrl.updateField(ctrl.selectedCandidate, 'primaryTrackerUrl')"
+                                tabindex="-1"
+                                >Try again</a
+                            >
+                        </div>
+                        <div
+                            class="message message--error"
+                            for="primary-tracker-input"
+                            ng-repeat="error in ctrl.selectedCandidate.errors.primaryTrackerUrl"
+                        >
+                            {{ error }}
+                        </div>
+                    </div>
+
+                    <div
+                        class="form__group"
+                        ng-if="!!ctrl.selectedCandidate.useSecondaryTracker || !!ctrl.selectedCandidate.secondaryTrackerUrl"
+                        ng-class="{'form--error': ctrl.fieldsHaveErrors('secondaryTrackerUrl')}"
+                    >
+                        <label class="form__label" for="secondary-tracker-input"
+                            >Secondary tracker</label
+                        >
+                        <input
+                            type="text"
+                            class="input-text"
+                            id="secondary-tracker-input"
+                            ng-model="ctrl.selectedCandidate.secondaryTrackerUrl"
+                            ng-model-options="{ updateOn: 'default blur', debounce: { default: 1500, blur: 0 } }"
+                            ng-change="ctrl.updateField(ctrl.selectedCandidate, 'secondaryTrackerUrl')"
+                            ng-class="{'content-upload__change-status--visible': ctrl.fieldsLoading.secondaryTrackerUrl || ctrl.fieldsSaved.secondaryTrackerUrl && !ctrl.fieldsHaveErrors('secondaryTrackerUrl')}"
+                        />
+                        <div
+                            class="content-upload__field-additional-info content-upload__change-status"
+                            ng-class="{
+                            'content-upload__change-status--loading': ctrl.fieldsLoading.secondaryTrackerUrl,
+                            'content-upload__change-status--successful': ctrl.fieldsSaved.secondaryTrackerUrl && !ctrl.fieldsHaveErrors('secondaryTrackerUrl')}"
+                        >
+                            <a
+                                href
+                                ng-click="ctrl.removeSecondaryTracker(ctrl.selectedCandidate)"
+                                tabindex="-1"
+                            >
+                                Remove
+                            </a>
+                        </div>
+                        <div class="form__text--small">
+                            Paste your impression tracker link to track
+                            impressions. Note: not all media sources support
+                            impression trackers. Please see the list of
+                            supported media sources
+                            <a
+                                href="http://help.zemanta.com/article/show/24879-media-sources-overview"
+                                target="_blank"
+                                tabindex="-1"
+                                >here</a
+                            >.
+                        </div>
+                        <div
+                            class="message message--error"
+                            for="secondary-tracker-input"
+                            ng-if="ctrl.fieldsApiErrors['secondaryTrackerUrl']"
+                        >
+                            Something went wrong.
+                            <a
+                                href
+                                ng-click="ctrl.updateField(ctrl.selectedCandidate, 'secondaryTrackerUrl')"
+                                tabindex="-1"
+                                >Try again</a
+                            >
+                        </div>
+                        <div
+                            class="message message--error"
+                            for="secondary-tracker-input"
+                            ng-repeat="error in ctrl.selectedCandidate.errors.secondaryTrackerUrl"
+                        >
+                            {{ error }}
+                        </div>
+                    </div>
+
+                    <div
+                        class="form__indented-group"
+                        ng-if="!ctrl.selectedCandidate.useSecondaryTracker && !!ctrl.selectedCandidate.usePrimaryTracker && !ctrl.selectedCandidate.secondaryTrackerUrl"
+                    >
                         <a
                             href
                             class="inline-link"
-                            ng-click="ctrl.addPrimaryTracker(ctrl.selectedCandidate)"
+                            ng-click="ctrl.addSecondaryTracker(ctrl.selectedCandidate)"
                             tabindex="-1"
                         >
-                            Add primary tracker
+                            Add secondary tracker
                         </a>
                     </div>
-                </div>
-
-                <div
-                    class="form__group"
-                    ng-if="!!ctrl.selectedCandidate.usePrimaryTracker || !!ctrl.selectedCandidate.primaryTrackerUrl"
-                    ng-class="{'form--error': ctrl.fieldsHaveErrors('primaryTrackerUrl')}"
-                >
-                    <label class="form__label" for="primary-tracker-input"
-                        >Primary tracker</label
-                    >
-                    <input
-                        type="text"
-                        class="input-text"
-                        id="primary-tracker-input"
-                        ng-model="ctrl.selectedCandidate.primaryTrackerUrl"
-                        ng-model-options="{ updateOn: 'default blur', debounce: { default: 1500, blur: 0 } }"
-                        ng-change="ctrl.updateField(ctrl.selectedCandidate, 'primaryTrackerUrl')"
-                        ng-class="{'content-upload__change-status--visible': ctrl.fieldsLoading.primaryTrackerUrl || ctrl.fieldsSaved.primaryTrackerUrl && !ctrl.fieldsHaveErrors('primaryTrackerUrl')}"
-                    />
-                    <div
-                        class="content-upload__field-additional-info content-upload__change-status"
-                        ng-class="{
-                         'content-upload__change-status--loading': ctrl.fieldsLoading.primaryTrackerUrl,
-                         'content-upload__change-status--successful': ctrl.fieldsSaved.primaryTrackerUrl && !ctrl.fieldsHaveErrors('primaryTrackerUrl')}"
-                    >
-                        <a
-                            href
-                            ng-click="ctrl.removePrimaryTracker(ctrl.selectedCandidate)"
-                            ng-if="!ctrl.selectedCandidate.useSecondaryTracker"
-                            tabindex="-1"
-                        >
-                            Remove
-                        </a>
-                    </div>
-                    <div class="form__text--small">
-                        Paste your impression tracker link to track impressions.
-                        Note: not all media sources support impression trackers.
-                        Please see the list of supported media sources
-                        <a
-                            href="http://help.zemanta.com/article/show/24879-media-sources-overview"
-                            target="_blank"
-                            tabindex="-1"
-                            >here</a
-                        >.
-                    </div>
-                    <div
-                        class="message message--error"
-                        for="primary-tracker-input"
-                        ng-if="ctrl.fieldsApiErrors['primaryTrackerUrl']"
-                    >
-                        Something went wrong.
-                        <a
-                            href
-                            ng-click="ctrl.updateField(ctrl.selectedCandidate, 'primaryTrackerUrl')"
-                            tabindex="-1"
-                            >Try again</a
-                        >
-                    </div>
-                    <div
-                        class="message message--error"
-                        for="primary-tracker-input"
-                        ng-repeat="error in ctrl.selectedCandidate.errors.primaryTrackerUrl"
-                    >
-                        {{ error }}
-                    </div>
-                </div>
-
-                <div
-                    class="form__group"
-                    ng-if="!!ctrl.selectedCandidate.useSecondaryTracker || !!ctrl.selectedCandidate.secondaryTrackerUrl"
-                    ng-class="{'form--error': ctrl.fieldsHaveErrors('secondaryTrackerUrl')}"
-                >
-                    <label class="form__label" for="secondary-tracker-input"
-                        >Secondary tracker</label
-                    >
-                    <input
-                        type="text"
-                        class="input-text"
-                        id="secondary-tracker-input"
-                        ng-model="ctrl.selectedCandidate.secondaryTrackerUrl"
-                        ng-model-options="{ updateOn: 'default blur', debounce: { default: 1500, blur: 0 } }"
-                        ng-change="ctrl.updateField(ctrl.selectedCandidate, 'secondaryTrackerUrl')"
-                        ng-class="{'content-upload__change-status--visible': ctrl.fieldsLoading.secondaryTrackerUrl || ctrl.fieldsSaved.secondaryTrackerUrl && !ctrl.fieldsHaveErrors('secondaryTrackerUrl')}"
-                    />
-                    <div
-                        class="content-upload__field-additional-info content-upload__change-status"
-                        ng-class="{
-                         'content-upload__change-status--loading': ctrl.fieldsLoading.secondaryTrackerUrl,
-                         'content-upload__change-status--successful': ctrl.fieldsSaved.secondaryTrackerUrl && !ctrl.fieldsHaveErrors('secondaryTrackerUrl')}"
-                    >
-                        <a
-                            href
-                            ng-click="ctrl.removeSecondaryTracker(ctrl.selectedCandidate)"
-                            tabindex="-1"
-                        >
-                            Remove
-                        </a>
-                    </div>
-                    <div class="form__text--small">
-                        Paste your impression tracker link to track impressions.
-                        Note: not all media sources support impression trackers.
-                        Please see the list of supported media sources
-                        <a
-                            href="http://help.zemanta.com/article/show/24879-media-sources-overview"
-                            target="_blank"
-                            tabindex="-1"
-                            >here</a
-                        >.
-                    </div>
-                    <div
-                        class="message message--error"
-                        for="secondary-tracker-input"
-                        ng-if="ctrl.fieldsApiErrors['secondaryTrackerUrl']"
-                    >
-                        Something went wrong.
-                        <a
-                            href
-                            ng-click="ctrl.updateField(ctrl.selectedCandidate, 'secondaryTrackerUrl')"
-                            tabindex="-1"
-                            >Try again</a
-                        >
-                    </div>
-                    <div
-                        class="message message--error"
-                        for="secondary-tracker-input"
-                        ng-repeat="error in ctrl.selectedCandidate.errors.secondaryTrackerUrl"
-                    >
-                        {{ error }}
-                    </div>
-                </div>
-
-                <div
-                    class="form__indented-group"
-                    ng-if="!ctrl.selectedCandidate.useSecondaryTracker && !!ctrl.selectedCandidate.usePrimaryTracker && !ctrl.selectedCandidate.secondaryTrackerUrl"
-                >
-                    <a
-                        href
-                        class="inline-link"
-                        ng-click="ctrl.addSecondaryTracker(ctrl.selectedCandidate)"
-                        tabindex="-1"
-                    >
-                        Add secondary tracker
-                    </a>
                 </div>
             </div>
         </div>

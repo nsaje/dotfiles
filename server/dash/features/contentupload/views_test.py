@@ -85,9 +85,9 @@ class UploadCsvTestCase(TestCase):
         ad_group = magic_mixer.blend(models.AdGroup, campaign=campaign)
         mock_file = SimpleUploadedFile(
             "test_upload.csv",
-            b"URL,Name,Image URL,Label,Primary impression tracker url,Secondary impression tracker url\n"
+            b"URL,Name,Image URL,Display URL,Label,Primary impression tracker url,Secondary impression tracker url\n"
             b"http://zemanta.com/test-content-ad,test content ad,"
-            b"http://zemanta.com/test-image.jpg,test,https://t.zemanta.com/px1.png,"
+            b"http://zemanta.com/test-image.jpg,zemanta.com,test,https://t.zemanta.com/px1.png,"
             b"https://t.zemanta.com/px2.png",
         )
         response = _get_client().post(
@@ -121,7 +121,7 @@ class UploadCsvTestCase(TestCase):
         self.assertEqual("center", candidate.image_crop)
         self.assertEqual("https://t.zemanta.com/px1.png", candidate.primary_tracker_url)
         self.assertEqual("https://t.zemanta.com/px2.png", candidate.secondary_tracker_url)
-        self.assertEqual("", candidate.display_url)
+        self.assertEqual("zemanta.com", candidate.display_url)
         self.assertEqual("", candidate.brand_name)
         self.assertEqual("", candidate.description)
         self.assertEqual("Read more", candidate.call_to_action)
@@ -134,9 +134,9 @@ class UploadCsvTestCase(TestCase):
         ad_group = magic_mixer.blend(models.AdGroup, campaign=campaign)
         mock_file = SimpleUploadedFile(
             "test_upload.csv",
-            b"URL,Name,Image URL,Creative Size,Ad Tag,Label,Primary impression tracker url,Secondary impression tracker url\n"
+            b"URL,Name,Image URL,Creative Size,Ad Tag,Display URL,Label,Primary impression tracker url,Secondary impression tracker url\n"
             b"http://zemanta.com/test-content-ad,test content ad,"
-            b",  300 X  250 ,<body></body>,test,https://t.zemanta.com/px1.png,"
+            b",  300 X  250 ,<body></body>,zemanta.com,test,https://t.zemanta.com/px1.png,"
             b"https://t.zemanta.com/px2.png",
         )
         response = _get_client().post(
@@ -174,7 +174,7 @@ class UploadCsvTestCase(TestCase):
         self.assertEqual("center", candidate.image_crop)
         self.assertEqual("https://t.zemanta.com/px1.png", candidate.primary_tracker_url)
         self.assertEqual("https://t.zemanta.com/px2.png", candidate.secondary_tracker_url)
-        self.assertEqual("", candidate.display_url)
+        self.assertEqual("zemanta.com", candidate.display_url)
         self.assertEqual("", candidate.brand_name)
         self.assertEqual("", candidate.description)
         self.assertEqual("Read more", candidate.call_to_action)
@@ -276,9 +276,9 @@ class UploadCsvTestCase(TestCase):
         ad_group = magic_mixer.blend(models.AdGroup, campaign=campaign)
         mock_file = SimpleUploadedFile(
             "test_upload.csv",
-            b"URL,Name,Image URL,Label,Primary impression tracker url,Secondary impression tracker url\n"
+            b"URL,Name,Image URL,Display URL,Label,Primary impression tracker url,Secondary impression tracker url\n"
             b"ahttp://zemanta.com/test-content-ad,,"
-            b"ahttp://zemanta.com/test-image.jpg,,http://t.zemanta.com/px1.png,"
+            b"ahttp://zemanta.com/test-image.jpg,,,http://t.zemanta.com/px1.png,"
             b"https://t.zemanta.com/px2.png",
         )
         response = _get_client().post(
@@ -297,6 +297,7 @@ class UploadCsvTestCase(TestCase):
             "image_url": ["Invalid image URL"],
             "title": ["Missing ad name"],
             "url": ["Invalid URL"],
+            "display_url": ["Missing display URL"],
         }
 
         self.assertEqual(response.status_code, 200)
@@ -316,9 +317,9 @@ class UploadCsvTestCase(TestCase):
         ad_group = magic_mixer.blend(models.AdGroup, campaign=campaign)
         mock_file = SimpleUploadedFile(
             "test_upload.csv",
-            b"URL,Name,Image URL,Creative Size,Ad Tag,Label,Primary impression tracker url,Secondary impression tracker url\n"
+            b"URL,Name,Image URL,Creative Size,Ad Tag,Display URL,Label,Primary impression tracker url,Secondary impression tracker url\n"
             b"ahttp://zemanta.com/test-content-ad,,"
-            b",  350 X  200 ,<body></body>,test,http://t.zemanta.com/px1.png,"
+            b",  350 X  200 ,<body></body>,,test,http://t.zemanta.com/px1.png,"
             b"https://t.zemanta.com/px2.png",
         )
         response = _get_client().post(
@@ -337,6 +338,7 @@ class UploadCsvTestCase(TestCase):
             "title": ["Missing ad name"],
             "url": ["Invalid URL"],
             "image_url": ["Image size invalid. Supported sizes are (width x height): 300x250, 320x50"],
+            "display_url": ["Missing display URL"],
         }
 
         self.assertEqual(response.status_code, 200)

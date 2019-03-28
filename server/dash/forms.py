@@ -1634,9 +1634,6 @@ class ImageAdForm(ContentAdForm):
         coerce=int,
     )
     image_crop = forms.ChoiceField(choices=constants.ImageCrop.get_choices(), required=False)
-    display_url = DisplayURLField(
-        required=False, error_messages={"max_length": "Display URL too long (max %(limit_value)d characters)"}
-    )
     brand_name = PlainCharField(required=False)
     description = PlainCharField(required=False)
     call_to_action = PlainCharField(required=False)
@@ -1665,7 +1662,6 @@ class ImageAdForm(ContentAdForm):
             return "Image size invalid. Supported sizes are (width x height): {sizes}".format(sizes=sizes)
 
     def _set_defaults(self, cleaned_data):
-        self.cleaned_data["display_url"] = ""
         self.cleaned_data["brand_name"] = ""
         self.cleaned_data["description"] = ""
         self.cleaned_data["additional_data"] = None
@@ -1698,7 +1694,6 @@ class AdTagForm(ImageAdForm):
         return
 
     def _set_defaults(self, cleaned_data):
-        self.cleaned_data["display_url"] = ""
         self.cleaned_data["brand_name"] = ""
         self.cleaned_data["description"] = ""
         self.cleaned_data["additional_data"] = None

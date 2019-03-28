@@ -113,7 +113,7 @@ class ContentAdCandidateSerializer(
 class ImageAdCandidateSerializer(ContentAdCandidateSerializer):
     class Meta:
         model = dash.models.ContentAdCandidate
-        fields = ("url", "title", "image_url", "label", "type")
+        fields = ("url", "title", "image_url", "display_url", "label", "type")
         permissioned_fields = {
             "additional_data": "zemauth.can_use_ad_additional_data",
             "type": "zemauth.fea_can_change_campaign_type_to_display",
@@ -123,13 +123,14 @@ class ImageAdCandidateSerializer(ContentAdCandidateSerializer):
     url = restapi.serializers.fields.PlainCharField(required=True)
     title = restapi.serializers.fields.PlainCharField(required=True)
     image_url = restapi.serializers.fields.PlainCharField(required=True)
+    display_url = restapi.serializers.fields.PlainCharField(required=True)
     label = restapi.serializers.fields.PlainCharField(allow_blank=True, allow_null=True, required=False)
 
 
 class AdTagCandidateSerializer(ContentAdCandidateSerializer):
     class Meta:
         model = dash.models.ContentAdCandidate
-        fields = ("url", "title", "label", "type", "ad_tag", "ad_width", "ad_height")
+        fields = ("url", "title", "display_url", "label", "type", "ad_tag", "ad_width", "ad_height")
         extra_kwargs = {"primary_tracker_url": {"allow_empty": True}, "secondary_tracker_url": {"allow_empty": True}}
         permissioned_fields = {
             "additional_data": "zemauth.can_use_ad_additional_data",
@@ -142,6 +143,7 @@ class AdTagCandidateSerializer(ContentAdCandidateSerializer):
     type = restapi.serializers.fields.DashConstantField(dash.constants.AdType)
     url = restapi.serializers.fields.PlainCharField(required=True)
     title = restapi.serializers.fields.PlainCharField(required=True)
+    display_url = restapi.serializers.fields.PlainCharField(required=True)
     label = restapi.serializers.fields.PlainCharField(allow_blank=True, allow_null=True, required=False)
     ad_tag = rest_framework.serializers.CharField(required=True)
     ad_width = rest_framework.serializers.IntegerField(source="image_width", required=True)
