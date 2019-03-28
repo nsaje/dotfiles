@@ -69,9 +69,8 @@ class DevicesSerializer(rest_framework.serializers.ListSerializer):
 
 
 class AudienceSerializer(rest_framework.serializers.BaseSerializer):
-
     operators = ("and", "not", "or")
-    types = ("bluekai", "outbrain", "lotame", "obs", "obi", "obl", "videocdn")
+    types = ("bluekai", "outbrain", "lotame", "obs", "obi", "obl", "videocdn", "weborama")
 
     def __init__(self, *args, **kwargs):
         self.use_list_repr = kwargs.pop("use_list_repr", False)

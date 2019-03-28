@@ -49,7 +49,7 @@ DEFAULT_ACCOUNT_TYPES = (
     dash.constants.AccountType.MANAGED,
 )
 
-UNBILLABLE_SEGMENT_PARTS = ("outbrain", "lr-", "lotame", "obs", "obi", "obl")
+UNBILLABLE_SEGMENT_PARTS = ("outbrain", "lr-", "lotame", "obs", "obi", "obl", "weborama")
 MIN_B1_ACTIVE_SOURCES_FOR_INTEREST_TARGETING = 5
 
 
