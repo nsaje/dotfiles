@@ -132,60 +132,60 @@ class Command(ExceptionCommand):
 
         # prevent explicit model saves
         pre_save.connect(_pre_save_handler)
+        try:
+            # perform inside transaction and rollback to be safe
+            with transaction.atomic():
+                demo_mappings = demo.models.DemoMapping.objects.all()
+                demo_users_set = set(zemauth.models.User.objects.filter(email__endswith="+demo@zemanta.com"))
+                demo_users_pks = set(demo_user.pk for demo_user in demo_users_set)
 
-        # perform inside transaction and rollback to be safe
-        with transaction.atomic():
-            demo_mappings = demo.models.DemoMapping.objects.all()
-            demo_users_set = set(zemauth.models.User.objects.filter(email__endswith="+demo@zemanta.com"))
-            demo_users_pks = set(demo_user.pk for demo_user in demo_users_set)
+                serialize_list = unique_ordered_list.UniqueOrderedList()
+                _prepare_demo_objects(serialize_list, demo_mappings, demo_users_set)
 
-            serialize_list = unique_ordered_list.UniqueOrderedList()
-            _prepare_demo_objects(serialize_list, demo_mappings, demo_users_set)
+                # roll back any changes we might have made (shouldn't be any)
+                transaction.set_rollback(True)
 
-            # roll back any changes we might have made (shouldn't be any)
-            transaction.set_rollback(True)
+            snapshot_id = _get_snapshot_id()
 
-        snapshot_id = _get_snapshot_id()
+            tarbuffer = io.BytesIO()
+            tararchive = tarfile.open(mode="w", fileobj=tarbuffer)
 
-        tarbuffer = io.BytesIO()
-        tararchive = tarfile.open(mode="w", fileobj=tarbuffer)
+            filtered_reversed_list = [obj for obj in reversed(list(serialize_list)) if obj is not None]
+            grouped_list = grouper(MAX_PER_FILE, filtered_reversed_list)
 
-        filtered_reversed_list = [obj for obj in reversed(list(serialize_list)) if obj is not None]
-        grouped_list = grouper(MAX_PER_FILE, filtered_reversed_list)
+            for i, group_data in enumerate(grouped_list):
+                dump_group_data = serialize("python", group_data)
+                _attach_demo_users(dump_group_data, demo_users_pks)
+                _remove_entity_tags(dump_group_data)
 
-        for i, group_data in enumerate(grouped_list):
-            dump_group_data = serialize("python", group_data)
-            _attach_demo_users(dump_group_data, demo_users_pks)
-            _remove_entity_tags(dump_group_data)
+                group_json = json.dumps(dump_group_data, indent=4, cls=json_helper.JSONEncoder)
 
-            group_json = json.dumps(dump_group_data, indent=4, cls=json_helper.JSONEncoder)
+                dumpbuffer = io.BytesIO()
+                dumpbuffer.write(group_json.encode("utf-8"))
 
-            dumpbuffer = io.BytesIO()
-            dumpbuffer.write(group_json.encode("utf-8"))
+                info = tarfile.TarInfo("dump{i}.json".format(i=i))
+                info.size = dumpbuffer.tell()
 
-            info = tarfile.TarInfo("dump{i}.json".format(i=i))
-            info.size = dumpbuffer.tell()
+                dumpbuffer.seek(0)
 
-            dumpbuffer.seek(0)
+                tararchive.addfile(info, fileobj=dumpbuffer)
 
-            tararchive.addfile(info, fileobj=dumpbuffer)
+            tararchive.close()
 
-        tararchive.close()
+            build = str(settings.BUILD_NUMBER)
+            if settings.BRANCH:
+                build = settings.BRANCH + "/" + str(settings.BUILD_NUMBER)
 
-        build = str(settings.BUILD_NUMBER)
-        if settings.BRANCH:
-            build = settings.BRANCH + "/" + str(settings.BUILD_NUMBER)
+            s3_helper = s3helpers.S3Helper(settings.S3_BUCKET_DEMO)
+            s3_helper.put(os.path.join(snapshot_id, "dump.tar"), tarbuffer.getvalue())
+            s3_helper.put(os.path.join(snapshot_id, "build.txt"), build)
 
-        s3_helper = s3helpers.S3Helper(settings.S3_BUCKET_DEMO)
-        s3_helper.put(os.path.join(snapshot_id, "dump.tar"), tarbuffer.getvalue())
-        s3_helper.put(os.path.join(snapshot_id, "build.txt"), build)
+            s3_helper.put("latest.txt", snapshot_id)
+            influx.incr("create_demo_dump_to_s3", 1, status="success")
 
-        s3_helper.put("latest.txt", snapshot_id)
-        influx.incr("create_demo_dump_to_s3", 1, status="success")
-
-        demo.prepare_demo(snapshot_id)
-
-        pre_save.disconnect(_pre_save_handler)
+            demo.prepare_demo(snapshot_id)
+        finally:
+            pre_save.disconnect(_pre_save_handler)
 
 
 def _pre_save_handler(sender, instance, *args, **kwargs):
