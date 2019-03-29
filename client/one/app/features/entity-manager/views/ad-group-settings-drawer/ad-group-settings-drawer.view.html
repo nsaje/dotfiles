@@ -21,7 +21,7 @@
                         [value]="state.entity.startDate"
                         [isDisabled]="state.extras.isCampaignAutopilotEnabled"
                         [errors]="state.fieldsErrors.startDate"
-                        (valueChange)="store.updateSetting('startDate', $event)"
+                        (valueChange)="store.setStartDate($event)"
                     ></zem-date-setting>
                     <zem-date-setting
                         class="zem-settings-section__item"
@@ -32,7 +32,7 @@
                         [minDate]="minEndDate"
                         [allowManualOverride]="true"
                         [errors]="state.fieldsErrors.endDate"
-                        (valueChange)="store.updateSetting('endDate', $event)"
+                        (valueChange)="store.setEndDate($event)"
                     ></zem-date-setting>
                     <div
                         class="zem-settings-section__item zem-settings-section__item--indented"
@@ -60,9 +60,7 @@
                         "
                         [deliveryType]="state.entity.deliveryType"
                         [errors]="state.fieldsErrors.deliveryType"
-                        (valueChange)="
-                            store.updateSetting('deliveryType', $event)
-                        "
+                        (valueChange)="store.setDeliveryType($event)"
                     ></zem-delivery-type-setting>
                 </div>
                 <div
@@ -94,9 +92,7 @@
                         class="zem-dayparting-setting"
                         [daypartingSetting]="state.entity.dayparting"
                         [errors]="state.fieldsErrors.dayparting"
-                        (valueChange)="
-                            store.updateSetting('dayparting', $event)
-                        "
+                        (valueChange)="store.setDayparting($event)"
                     ></zem-dayparting-setting>
                 </div>
             </div>
@@ -123,89 +119,23 @@
                         [biddingTypeErrors]="state.fieldsErrors.biddingType"
                         [maxCpcErrors]="state.fieldsErrors.maxCpc"
                         [maxCpmErrors]="state.fieldsErrors.maxCpm"
-                        (biddingTypeChange)="
-                            store.updateSetting('biddingType', $event)
-                        "
-                        (maxCpcChange)="store.updateSetting('maxCpc', $event)"
-                        (maxCpmChange)="store.updateSetting('maxCpm', $event)"
+                        (biddingTypeChange)="store.setBiddingType($event)"
+                        (maxCpcChange)="store.setMaxCpc($event)"
+                        (maxCpmChange)="store.setMaxCpm($event)"
                     ></zem-bidding-type-setting>
-                    <!-- PRTODO (jurebajt): Extract into component -->
-                    <div class="zem-settings-section__item">
-                        <div class="zem-settings-form-group">
-                            <label
-                                class="zem-settings-form-group__label zem-settings-form-group__label--match-input-height"
-                            >
-                                Ad group's daily spend cap
-                                <zem-help-popover
-                                    class="zem-help-popover"
-                                    content="Amount of budget autopilot can operate with on this ad group every day."
-                                    placement="bottom"
-                                ></zem-help-popover>
-                            </label>
-                            <div class="zem-settings-form-group__content">
-                                <div
-                                    class="zem-settings-form-group__content-item"
-                                >
-                                    <zem-currency-input
-                                        class="zem-currency-input"
-                                        [value]="
-                                            state.entity.autopilot.dailyBudget
-                                        "
-                                        [hasError]="
-                                            state.fieldsErrors.autopilot
-                                                .dailyBudget &&
-                                            state.fieldsErrors.autopilot
-                                                .dailyBudget.length > 0
-                                        "
-                                        [isDisabled]="
-                                            !store.isAdGroupAutopilotEnabled()
-                                        "
-                                        [currencySymbol]="currencySymbol"
-                                        fractionSize="0"
-                                        (inputBlur)="
-                                            store.updateAutopilotDailyBudget(
-                                                $event
-                                            )
-                                        "
-                                    ></zem-currency-input>
-                                </div>
-                                <div
-                                    class="zem-settings-form-group__content-item zem-message zem-message--error"
-                                    *ngFor="
-                                        let error of state.fieldsErrors
-                                            .autopilot.dailyBudget
-                                    "
-                                >
-                                    {{ error }}
-                                </div>
-                                <div
-                                    class="zem-settings-form-group__content-item zem-message zem-message--bubble zem-message--warning zem-message--with-icon zem-warning-bg-icon"
-                                    *ngIf="!store.isAdGroupAutopilotEnabled()"
-                                >
-                                    <ng-container
-                                        *ngIf="
-                                            state.extras
-                                                .isCampaignAutopilotEnabled
-                                        "
-                                    >
-                                        Ad group's daily spend cap setting is
-                                        disabled because autopilot is managed on
-                                        campaign level.
-                                    </ng-container>
-                                    <ng-container
-                                        *ngIf="
-                                            !state.extras
-                                                .isCampaignAutopilotEnabled
-                                        "
-                                    >
-                                        Ad group's daily spend cap setting is
-                                        disabled because autopilot is not
-                                        enabled on this ad group.
-                                    </ng-container>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                    <zem-daily-budget-setting
+                        class="zem-daily-budget-setting zem-settings-section__item"
+                        [dailyBudget]="state.entity.autopilot.dailyBudget"
+                        [isAdGroupAutopilotEnabled]="
+                            store.isAdGroupAutopilotEnabled()
+                        "
+                        [isCampaignAutopilotEnabled]="
+                            state.extras.isCampaignAutopilotEnabled
+                        "
+                        [currencySymbol]="currencySymbol"
+                        [errors]="state.fieldsErrors.autopilot.dailyBudget"
+                        (valueChange)="store.setAutopilotDailyBudget($event)"
+                    ></zem-daily-budget-setting>
                 </div>
             </div>
         </div>

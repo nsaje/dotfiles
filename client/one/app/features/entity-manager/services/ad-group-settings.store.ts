@@ -8,13 +8,18 @@ import {AdGroup} from '../../../core/entities/types/ad-group/ad-group';
 import {RequestStateUpdater} from '../../../shared/types/request-state-updater';
 import * as storeHelpers from '../../../shared/helpers/store.helpers';
 import {AdGroupWithExtras} from '../../../core/entities/types/ad-group/ad-group-with-extras';
-import {AdGroupAutopilotState} from '../../../app.constants';
+import {
+    AdGroupAutopilotState,
+    DeliveryType,
+    BiddingType,
+} from '../../../app.constants';
 import {AdGroupSettingsStoreFieldsErrorsState} from './ad-group-settings.store.fields-errors-state';
+import {AdGroupDayparting} from '../../../core/entities/types/ad-group/ad-group-dayparting';
 
 @Injectable()
 export class AdGroupSettingsStore extends Store<AdGroupSettingsStoreState>
     implements OnDestroy {
-    private ngUnsubscribe$: Subject<undefined> = new Subject();
+    private ngUnsubscribe$: Subject<void> = new Subject();
     private requestStateUpdater: RequestStateUpdater;
 
     constructor(
@@ -60,19 +65,17 @@ export class AdGroupSettingsStore extends Store<AdGroupSettingsStoreState>
             .validate(this.state.entity, this.requestStateUpdater)
             .subscribe(
                 () => {
-                    this.setState({
-                        ...this.state,
-                        fieldsErrors: new AdGroupSettingsStoreFieldsErrorsState(),
-                    });
+                    this.updateState(
+                        new AdGroupSettingsStoreFieldsErrorsState(),
+                        'fieldsErrors'
+                    );
                 },
                 (error: HttpErrorResponse) => {
-                    this.setState({
-                        ...this.state,
-                        fieldsErrors: storeHelpers.getStoreFieldsErrorsState(
-                            new AdGroupSettingsStoreFieldsErrorsState(),
-                            error
-                        ),
-                    });
+                    const fieldsErrors = storeHelpers.getStoreFieldsErrorsState(
+                        new AdGroupSettingsStoreFieldsErrorsState(),
+                        error
+                    );
+                    this.updateState(fieldsErrors, 'fieldsErrors');
                 }
             );
     }
@@ -91,13 +94,11 @@ export class AdGroupSettingsStore extends Store<AdGroupSettingsStoreState>
                         resolve(true);
                     },
                     (error: HttpErrorResponse) => {
-                        this.setState({
-                            ...this.state,
-                            fieldsErrors: storeHelpers.getStoreFieldsErrorsState(
-                                new AdGroupSettingsStoreFieldsErrorsState(),
-                                error
-                            ),
-                        });
+                        const fieldsErrors = storeHelpers.getStoreFieldsErrorsState(
+                            new AdGroupSettingsStoreFieldsErrorsState(),
+                            error
+                        );
+                        this.updateState(fieldsErrors, 'fieldsErrors');
                         resolve(false);
                     }
                 );
@@ -112,26 +113,13 @@ export class AdGroupSettingsStore extends Store<AdGroupSettingsStoreState>
                     this.zemNavigationNewService.refreshState();
                 },
                 (error: HttpErrorResponse) => {
-                    this.setState({
-                        ...this.state,
-                        fieldsErrors: storeHelpers.getStoreFieldsErrorsState(
-                            new AdGroupSettingsStoreFieldsErrorsState(),
-                            error
-                        ),
-                    });
+                    const fieldsErrors = storeHelpers.getStoreFieldsErrorsState(
+                        new AdGroupSettingsStoreFieldsErrorsState(),
+                        error
+                    );
+                    this.updateState(fieldsErrors, 'fieldsErrors');
                 }
             );
-    }
-
-    // TODO (jurebajt): Refactor once Store is extended with updateState method
-    updateSetting(field: string, value: any) {
-        this.setState({
-            ...this.state,
-            entity: {
-                ...this.state.entity,
-                [field]: value,
-            },
-        });
     }
 
     isAdGroupAutopilotEnabled() {
@@ -143,8 +131,36 @@ export class AdGroupSettingsStore extends Store<AdGroupSettingsStoreState>
         );
     }
 
-    updateAutopilotDailyBudget(dailyBudget: string) {
-        // TODO (jurebajt): Implement once Store is extended with updateState method
+    setStartDate(startDate: Date) {
+        this.updateState(startDate, 'entity', 'startDate');
+    }
+
+    setEndDate(endDate: Date) {
+        this.updateState(endDate, 'entity', 'endDate');
+    }
+
+    setDeliveryType(deliveryType: DeliveryType) {
+        this.updateState(deliveryType, 'entity', 'deliveryType');
+    }
+
+    setDayparting(dayparting: AdGroupDayparting) {
+        this.updateState(dayparting, 'entity', 'dayparting');
+    }
+
+    setBiddingType(biddingType: BiddingType) {
+        this.updateState(biddingType, 'entity', 'biddingType');
+    }
+
+    setMaxCpc(maxCpc: string) {
+        this.updateState(maxCpc, 'entity', 'maxCpc');
+    }
+
+    setMaxCpm(maxCpm: string) {
+        this.updateState(maxCpm, 'entity', 'maxCpm');
+    }
+
+    setAutopilotDailyBudget(dailyBudget: string) {
+        this.updateState(dailyBudget, 'entity', 'autopilot', 'dailyBudget');
     }
 
     ngOnDestroy(): void {
