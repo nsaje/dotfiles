@@ -1,21 +1,21 @@
 import {TestBed, ComponentFixture} from '@angular/core/testing';
 import {FormsModule} from '@angular/forms';
 import {SharedModule} from '../../../../shared/shared.module';
-import {DailyBudgetSettingComponent} from './daily-budget-setting.component';
+import {AdvancedSettingsSectionComponent} from './advanced-settings-section.component';
 
-describe('DailyBudgetSettingComponent', () => {
-    let component: DailyBudgetSettingComponent;
-    let fixture: ComponentFixture<DailyBudgetSettingComponent>;
+describe('AdvancedSettingsSectionComponent', () => {
+    let component: AdvancedSettingsSectionComponent;
+    let fixture: ComponentFixture<AdvancedSettingsSectionComponent>;
 
     beforeEach(() => {
         TestBed.configureTestingModule({
-            declarations: [DailyBudgetSettingComponent],
+            declarations: [AdvancedSettingsSectionComponent],
             imports: [FormsModule, SharedModule],
         });
     });
 
     beforeEach(() => {
-        fixture = TestBed.createComponent(DailyBudgetSettingComponent);
+        fixture = TestBed.createComponent(AdvancedSettingsSectionComponent);
         component = fixture.componentInstance;
     });
 

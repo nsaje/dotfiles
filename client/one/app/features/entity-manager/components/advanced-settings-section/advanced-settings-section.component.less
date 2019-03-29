@@ -1,0 +1,27 @@
+@import 'variables';
+@import '../../styles/_settings.variables.less';
+
+.zem-advanced-settings-section__content {
+    background: @color--lightest-neutral;
+}
+
+.zem-advanced-settings-section__toggle {
+    width: 100%;
+    padding: 10px @spacing--default;
+    background: @color--lightest-neutral;
+    color: @color--secondary;
+    border: 0;
+    border-radius: 0;
+    box-shadow: 0;
+
+    &:hover,
+    &:active,
+    &:focus {
+        outline: none;
+        text-decoration: underline;
+    }
+}
+
+.zem-advanced-settings-section__toggle--section-expanded {
+    background: @color--lighter-neutral;
+}

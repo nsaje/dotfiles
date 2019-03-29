@@ -30,7 +30,7 @@ import {InterestTargetingComponent} from './components/interest-targeting/intere
 import {PublisherGroupTargetingComponent} from './components/publisher-groups-targeting/publisher-groups-targeting.component';
 import {RetargetingComponent} from './components/retargeting/retargeting.component';
 import {BiddingTypeSettingComponent} from './components/bidding-type-setting/bidding-type-setting.component';
-import {DailyBudgetSettingComponent} from './components/daily-budget-setting/daily-budget-setting.component';
+import {AdvancedSettingsSectionComponent} from './components/advanced-settings-section/advanced-settings-section.component';
 
 @NgModule({
     declarations: [
@@ -59,7 +59,7 @@ import {DailyBudgetSettingComponent} from './components/daily-budget-setting/dai
         InterestTargetingComponent,
         PublisherGroupTargetingComponent,
         RetargetingComponent,
-        DailyBudgetSettingComponent,
+        AdvancedSettingsSectionComponent,
     ],
     imports: [SharedModule],
     entryComponents: [

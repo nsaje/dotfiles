@@ -15,7 +15,7 @@
                 <h2 class="zem-panel__title">Scheduling</h2>
                 <div class="zem-settings-section">
                     <zem-date-setting
-                        class="zem-settings-section__item"
+                        class="zem-date-setting zem-settings-section__item"
                         label="Start date"
                         helpMessage="The start date of the ad group. If the date is set in the future, the ad group will not run until that date."
                         [value]="state.entity.startDate"
@@ -24,7 +24,7 @@
                         (valueChange)="store.setStartDate($event)"
                     ></zem-date-setting>
                     <zem-date-setting
-                        class="zem-settings-section__item"
+                        class="zem-date-setting zem-settings-section__item"
                         label="End date"
                         helpMessage="The end date of the ad group. Ad group will run until the end of stop date."
                         [value]="state.entity.endDate"
@@ -123,20 +123,122 @@
                         (maxCpcChange)="store.setMaxCpc($event)"
                         (maxCpmChange)="store.setMaxCpm($event)"
                     ></zem-bidding-type-setting>
-                    <zem-daily-budget-setting
-                        class="zem-daily-budget-setting zem-settings-section__item"
-                        [dailyBudget]="state.entity.autopilot.dailyBudget"
-                        [isAdGroupAutopilotEnabled]="
-                            store.isAdGroupAutopilotEnabled()
-                        "
-                        [isCampaignAutopilotEnabled]="
-                            state.extras.isCampaignAutopilotEnabled
-                        "
+                    <zem-currency-setting
+                        class="zem-currency-setting zem-settings-section__item"
+                        label="Ad group's daily spend cap"
+                        helpMessage="Amount of budget autopilot can operate with on this ad group every day."
+                        [value]="state.entity.autopilot.dailyBudget"
                         [currencySymbol]="currencySymbol"
+                        fractionSize="0"
+                        [isDisabled]="!store.isAdGroupAutopilotEnabled()"
                         [errors]="state.fieldsErrors.autopilot.dailyBudget"
                         (valueChange)="store.setAutopilotDailyBudget($event)"
-                    ></zem-daily-budget-setting>
+                    ></zem-currency-setting>
+                    <div
+                        class="zem-settings-section__item zem-settings-section__item--indented"
+                        *ngIf="!store.isAdGroupAutopilotEnabled()"
+                    >
+                        <div
+                            class="zem-message zem-message--bubble zem-message--warning zem-message--with-icon zem-warning-bg-icon"
+                        >
+                            <ng-container
+                                *ngIf="state.extras.isCampaignAutopilotEnabled"
+                            >
+                                Ad group's daily spend cap setting is disabled
+                                because autopilot is managed on campaign level.
+                            </ng-container>
+                            <ng-container
+                                *ngIf="!state.extras.isCampaignAutopilotEnabled"
+                            >
+                                Ad group's daily spend cap setting is disabled
+                                because autopilot is not enabled on this ad
+                                group.
+                            </ng-container>
+                        </div>
+                    </div>
                 </div>
+                <zem-advanced-settings-section
+                    class="zem-advanced-settings-section"
+                    *ngIf="
+                        zemPermissions.hasPermission(
+                            'zemauth.can_set_click_capping'
+                        ) ||
+                        zemPermissions.hasPermission(
+                            'zemauth.can_set_frequency_capping'
+                        )
+                    "
+                >
+                    <div class="zem-settings-section">
+                        <zem-integer-setting
+                            class="zem-integer-setting zem-settings-section__item"
+                            *ngIf="
+                                zemPermissions.hasPermission(
+                                    'zemauth.can_set_click_capping'
+                                )
+                            "
+                            [zemInternalFeature]="
+                                zemPermissions.isPermissionInternal(
+                                    'zemauth.can_set_click_capping'
+                                )
+                            "
+                            label="Daily click cap"
+                            helpMessage="Limit number of clicks you want to reach daily within the ad group. Zemanta will stop spending for the rest of the day once it hits the maximum number of clicks you set."
+                            [value]="
+                                store.state.entity
+                                    .clickCappingDailyAdGroupMaxClicks
+                            "
+                            [errors]="
+                                state.fieldsErrors
+                                    .clickCappingDailyAdGroupMaxClicks
+                            "
+                            placeholder="No limit"
+                            (valueChange)="store.setDailyClickCap($event)"
+                        ></zem-integer-setting>
+                        <div
+                            class="zem-settings-section__item zem-settings-section__item--indented"
+                        >
+                            <div
+                                class="zem-message zem-message--bubble zem-message--info zem-message--with-icon zem-info-bg-icon"
+                            >
+                                Outbrain and Yahoo don’t support click capping
+                                and will be automatically paused in this ad
+                                group if you enable this setting.
+                            </div>
+                        </div>
+                        <zem-integer-setting
+                            class="zem-integer-setting zem-settings-section__item"
+                            *ngIf="
+                                zemPermissions.hasPermission(
+                                    'zemauth.can_set_frequency_capping'
+                                )
+                            "
+                            [zemInternalFeature]="
+                                zemPermissions.isPermissionInternal(
+                                    'zemauth.can_set_frequency_capping'
+                                )
+                            "
+                            label="Daily impression frequency cap"
+                            helpMessage="This setting defines the maximum number of times your ads from this ad group will be shown to a unique user in one day."
+                            [value]="store.state.entity.frequencyCapping"
+                            [errors]="state.fieldsErrors.frequencyCapping"
+                            placeholder="No limit"
+                            (valueChange)="
+                                store.setImpressionFrequencyCap($event)
+                            "
+                        ></zem-integer-setting>
+                        <div
+                            class="zem-settings-section__item zem-settings-section__item--indented"
+                        >
+                            <div
+                                class="zem-message zem-message--bubble zem-message--info zem-message--with-icon zem-info-bg-icon"
+                            >
+                                Outbrain and Yahoo don’t support impression
+                                frequency capping. Ads will run with no
+                                limitations on these sources.
+                            </div>
+                        </div>
+                    </div>
+                </zem-advanced-settings-section>
             </div>
         </div>
         <div class="zem-drawer__footer zem-settings__settings-footer">

@@ -1,0 +1,11 @@
+<div class="zem-advanced-settings-section__content" *ngIf="expanded">
+    <ng-content></ng-content>
+</div>
+<button
+    class="zem-advanced-settings-section__toggle"
+    [class.zem-advanced-settings-section__toggle--section-expanded]="expanded"
+    (click)="toggle()"
+>
+    <ng-container *ngIf="!expanded">Show advanced settings</ng-container>
+    <ng-container *ngIf="expanded">Hide advanced settings</ng-container>
+</button>

@@ -163,6 +163,18 @@ export class AdGroupSettingsStore extends Store<AdGroupSettingsStoreState>
         this.updateState(dailyBudget, 'entity', 'autopilot', 'dailyBudget');
     }
 
+    setDailyClickCap(clickCap: string) {
+        this.updateState(
+            clickCap,
+            'entity',
+            'clickCappingDailyAdGroupMaxClicks'
+        );
+    }
+
+    setImpressionFrequencyCap(impressionFrequencyCap: string) {
+        this.updateState(impressionFrequencyCap, 'entity', 'frequencyCapping');
+    }
+
     ngOnDestroy(): void {
         this.ngUnsubscribe$.next();
         this.ngUnsubscribe$.complete();

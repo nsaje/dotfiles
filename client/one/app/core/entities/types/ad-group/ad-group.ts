@@ -21,10 +21,10 @@ export interface AdGroup {
     maxCpm?: string;
     dailyBudget?: string;
     deliveryType?: DeliveryType;
-    clickCappingDailyAdGroupMaxClicks?: number;
+    clickCappingDailyAdGroupMaxClicks?: string;
     clickCappingDailyClickBudget?: string;
     dayparting?: AdGroupDayparting;
     targeting?: AdGroupTargetings;
     autopilot?: AdGroupAutopilot;
-    frequencyCapping?: number;
+    frequencyCapping?: string;
 }

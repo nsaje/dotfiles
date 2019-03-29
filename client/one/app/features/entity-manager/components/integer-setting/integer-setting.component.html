@@ -7,12 +7,12 @@
             class="zem-help-popover"
             *ngIf="helpMessage"
             content="{{ helpMessage }}"
-            placement="top"
+            placement="bottom"
         ></zem-help-popover>
     </label>
     <div class="zem-settings-form-group__content">
         <zem-integer-input
-            class="zem-settings-form-group__content-item zem-integer-input"
+            class="zem-settings-form-group__content-item zem-settings-form-group__input zem-integer-input"
             [value]="model"
             [placeholder]="placeholder"
             [isDisabled]="isDisabled"
