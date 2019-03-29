@@ -480,15 +480,14 @@ class AgencyAdmin(SlackLoggerMixin, ExportMixin, admin.ModelAdmin):
 
         self.log_custom_flags_event_to_slack(old_obj, obj, user=request.user.email)
 
-
-def render_change_form(self, request, context, *args, **kwargs):
-    context["adminform"].form.fields["sales_representative"].queryset = ZemUser.objects.get_users_with_perm(
-        "campaign_settings_sales_rep"
-    ).filter(is_active=True)
-    context["adminform"].form.fields["cs_representative"].queryset = ZemUser.objects.get_users_with_perm(
-        "campaign_settings_cs_rep"
-    ).filter(is_active=True)
-    return super(AgencyAdmin, self).render_change_form(request, context, args, kwargs)
+    def render_change_form(self, request, context, *args, **kwargs):
+        context["adminform"].form.fields["sales_representative"].queryset = ZemUser.objects.get_users_with_perm(
+            "campaign_settings_sales_rep"
+        ).filter(is_active=True)
+        context["adminform"].form.fields["cs_representative"].queryset = ZemUser.objects.get_users_with_perm(
+            "campaign_settings_cs_rep"
+        ).filter(is_active=True)
+        return super(AgencyAdmin, self).render_change_form(request, context, args, kwargs)
 
 
 # Account

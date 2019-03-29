@@ -66,7 +66,7 @@ class AgencyInstanceMixin:
         updates = self._clean_updates(kwargs)
         if not updates:
             return
-        self.clean(updates)
+        self.clean()
         self._apply_updates_and_save(request, updates)
 
     def _clean_updates(self, updates):
