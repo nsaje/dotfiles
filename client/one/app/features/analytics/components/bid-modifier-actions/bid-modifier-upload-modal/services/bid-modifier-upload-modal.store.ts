@@ -7,8 +7,8 @@ import {BidModifierUploadModalStoreState} from './bid-modifier-upload-modal.stor
 import {takeUntil} from 'rxjs/operators';
 import {HttpErrorResponse} from '@angular/common/http';
 import * as storeHelpers from '../../../../../../shared/helpers/store.helpers';
-import * as commonHelpers from '.././../../../../../shared/helpers/common.helpers';
 import {Breakdown} from '../../../../../../app.constants';
+import {BidModifierUploadModalStoreFieldsErrorsState} from './bid-modifier-upload-modal.store.fields-errors';
 
 @Injectable()
 export class BidModifierUploadModalStore
@@ -41,7 +41,7 @@ export class BidModifierUploadModalStore
         this.setState({
             ...this.state,
             file: file,
-            fieldsErrors: {},
+            fieldsErrors: new BidModifierUploadModalStoreFieldsErrorsState(),
         });
     }
 
@@ -57,22 +57,18 @@ export class BidModifierUploadModalStore
                 .pipe(takeUntil(this.ngUnsubscribe$))
                 .subscribe(
                     () => {
-                        this.setState({
-                            ...this.state,
-                            fieldsErrors: {},
-                        });
+                        this.updateState(
+                            new BidModifierUploadModalStoreFieldsErrorsState(),
+                            'fieldsErrors'
+                        );
                         resolve();
                     },
                     (error: HttpErrorResponse) => {
-                        this.setState({
-                            ...this.state,
-                            fieldsErrors: commonHelpers.isDefined(error.error)
-                                ? commonHelpers.getValueOrDefault(
-                                      error.error.details,
-                                      {}
-                                  )
-                                : {},
-                        });
+                        const fieldsErrors = storeHelpers.getStoreFieldsErrorsState(
+                            new BidModifierUploadModalStoreFieldsErrorsState(),
+                            error
+                        );
+                        this.updateState(fieldsErrors, 'fieldsErrors');
                     }
                 );
         });

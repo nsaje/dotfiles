@@ -1,12 +1,12 @@
 import {Breakdown} from '../../../../../../app.constants';
-import {NestedFieldsErrors} from '../../../../../../shared/types/nested-fields-errors';
 import {RequestState} from '../../../../../../shared/types/request-state';
+import {BidModifierUploadModalStoreFieldsErrorsState} from './bid-modifier-upload-modal.store.fields-errors';
 
 export class BidModifierUploadModalStoreState {
     adGroupId: number = null;
     breakdown: Breakdown = null;
     file: File = null;
-    fieldsErrors: NestedFieldsErrors = {};
+    fieldsErrors = new BidModifierUploadModalStoreFieldsErrorsState();
     requests = {
         import: {} as RequestState,
     };

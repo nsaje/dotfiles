@@ -51,7 +51,7 @@ describe('BidModifierUploadModalStore', () => {
                     message: 'Error message',
                     error: {
                         details: {
-                            file: ['Errors in CSV file!'],
+                            file: 'Errors in CSV file!',
                         },
                     },
                 })
@@ -69,7 +69,8 @@ describe('BidModifierUploadModalStore', () => {
             jasmine.any(Function)
         );
         expect(store.state.fieldsErrors).toEqual({
-            file: ['Errors in CSV file!'],
+            errorFileUrl: null,
+            file: 'Errors in CSV file!',
         });
     }));
 });
