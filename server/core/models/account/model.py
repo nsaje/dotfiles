@@ -72,7 +72,7 @@ class Account(AccountValidatorMixin, AccountInstanceMixin, models.Model):
     )
 
     salesforce_url = models.URLField(null=True, blank=True, max_length=255)
-    salesforce_id = models.IntegerField(null=True, help_text="Outbrain custom Salesforce ID.")
+    salesforce_id = models.IntegerField(null=True, blank=True, help_text="Outbrain custom Salesforce ID.")
 
     # migration to the new system introduced by margings and fees project
     uses_bcm_v2 = models.BooleanField(
