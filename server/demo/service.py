@@ -52,7 +52,7 @@ def prepare_demo(snapshot_id=None):
                 "docker tag 569683728510.dkr.ecr.us-east-1.amazonaws.com/zemanta/z1:{build} z1-bundle:{build}",
                 "docker tag 569683728510.dkr.ecr.us-east-1.amazonaws.com/zemanta/z1:{build} z1-bundle:current",
             ]
-        )
+        ).format(build=build)
     )
 
     # start postgres container

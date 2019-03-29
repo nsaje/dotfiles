@@ -264,7 +264,7 @@ K1_CONSISTENCY_PING_BLACKLIST_QUEUE = "k1-consistency_ping_blacklist"
 DEMO_NODE_HOSTNAME = ""
 DEMO_NODE_SSH_KEY = ""
 DEMO_USERNAME = "regular.user+demo@zemanta.com"
-DEMO_PASSWORD = Secret().get().decode("utf-8")
+DEMO_PASSWORD = Secret("").get().decode("utf-8")
 DEMO_URL = "https://{instance_name}.demo.zemanta.com"
 
 LAMBDA_REGION = "us-east-1"

@@ -10,7 +10,7 @@ DB_HOST=${DB_PORT_5432_TCP_ADDR:-postgres}
 DB_PORT=${DB_PORT_5432_TCP_PORT:-5432}
 DB_NAME=$(echo 'from django.conf import settings; print(settings.DATABASES["default"]["NAME"])' | $DIR/manage.py shell 2>/dev/null)
 if [[ "$DB_NAME" != "demo-one" && "$DB_NAME" != "one-dev" ]]; then
-    echo "ERROR: Running prepare-demo in non-demo environment, which would drop the DB! Exiting."
+    echo "ERROR: Running prepare-demo in non-demo environment, which would drop the DB! Exiting. DB Name: $DB_NAME"
     exit 1
 fi
 
