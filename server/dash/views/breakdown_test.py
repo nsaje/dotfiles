@@ -1237,7 +1237,10 @@ class BreakdownHelperTest(TestCase):
                             "submission_errors": "Sumtingwoing",
                         },
                     },
-                    "editable_fields": {"state": {"message": None, "enabled": True}},
+                    "editable_fields": {
+                        "state": {"message": None, "enabled": True},
+                        "bid_modifier": {"message": None, "enabled": True},
+                    },
                 }
             ],
         )

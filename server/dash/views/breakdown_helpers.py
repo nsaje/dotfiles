@@ -136,7 +136,10 @@ def format_report_rows_content_ad_editable_fields(rows):
             {
                 "id": row["content_ad_id"],
                 "submission_status": submission_states,
-                "editable_fields": {"state": {"enabled": True, "message": None}},
+                "editable_fields": {
+                    "state": {"enabled": True, "message": None},
+                    "bid_modifier": {"enabled": True, "message": None},
+                },
             }
         )
 

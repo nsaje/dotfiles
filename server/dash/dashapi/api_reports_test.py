@@ -152,6 +152,16 @@ CONTENT_AD_1 = {
         },
     },
     "sspd_url": settings.SSPD_CONTENT_AD_REDIRECT_URL.format(id=1),
+    "bid_modifier": {
+        "bid_max": 1.0,
+        "bid_min": 1.0,
+        "id": None,
+        "modifier": None,
+        "source_slug": None,
+        "target": "1",
+        "type": "AD",
+    },
+    "editable_fields": {"bid_modifier": {"enabled": True, "message": None}},
 }
 CONTENT_AD_2 = {
     "content_ad_id": 2,
@@ -198,6 +208,16 @@ CONTENT_AD_2 = {
         }
     },
     "sspd_url": settings.SSPD_CONTENT_AD_REDIRECT_URL.format(id=2),
+    "bid_modifier": {
+        "bid_max": 1.0,
+        "bid_min": 1.0,
+        "id": None,
+        "modifier": None,
+        "source_slug": None,
+        "target": "2",
+        "type": "AD",
+    },
+    "editable_fields": {"bid_modifier": {"enabled": True, "message": None}},
 }
 
 SOURCE_1 = {
@@ -422,6 +442,7 @@ class AnnotateTest(TestCase):
             User.objects.get(pk=1),
             ["content_ad_id"],
             {
+                "ad_group": models.AdGroup.objects.get(pk=1),
                 "date__gte": datetime.date(2016, 7, 1),
                 "date__lte": datetime.date(2016, 7, 31),
                 "allowed_content_ads": models.ContentAd.objects.filter(ad_group_id=1),

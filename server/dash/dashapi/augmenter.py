@@ -263,6 +263,23 @@ def augment_content_ad(row, loader, is_base_level=False):
             }
         )
 
+        bid_modifier = loader.bid_modifiers_by_ad.get(content_ad_id)
+        min_factor, max_factor = loader.min_max_modifiers
+        row.update(
+            {
+                "bid_modifier": _create_bid_modifier_dict(
+                    modifier_id=bid_modifier.id if bid_modifier else None,
+                    modifier_type=core.features.bid_modifiers.BidModifierType.get_name(
+                        core.features.bid_modifiers.BidModifierType.AD
+                    ),
+                    target=str(content_ad_id),
+                    modifier=bid_modifier.modifier if bid_modifier else None,
+                    bid_min=min_factor,
+                    bid_max=max_factor,
+                )
+            }
+        )
+
         ad_group = loader.ad_group_map[content_ad_id]
         row.update({"url": content_ad.get_url(ad_group)})
 
@@ -278,6 +295,8 @@ def augment_content_ad(row, loader, is_base_level=False):
         amplify_internal_id = loader.amplify_internal_ids_map.get(content_ad_id)
         if loader.user.has_perm("zemauth.can_see_amplify_ad_id_column") and amplify_internal_id:
             row["amplify_promoted_link_id"] = amplify_internal_id
+
+        row.update({"editable_fields": {"bid_modifier": {"enabled": True, "message": None}}})
 
 
 def augment_content_ad_for_report(row, loader, is_base_level=False):

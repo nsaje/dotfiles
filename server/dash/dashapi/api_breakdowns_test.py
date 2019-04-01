@@ -182,6 +182,16 @@ CONTENT_AD_1 = {
     },
     "tracker_urls": ["http://testurl1.com", "http://testurl2.com"],
     "sspd_url": settings.SSPD_CONTENT_AD_REDIRECT_URL.format(id=1),
+    "bid_modifier": {
+        "bid_max": 1.0,
+        "bid_min": 1.0,
+        "id": None,
+        "modifier": None,
+        "source_slug": None,
+        "target": "1",
+        "type": "AD",
+    },
+    "editable_fields": {"bid_modifier": {"enabled": True, "message": None}},
 }
 
 CONTENT_AD_2 = {
@@ -226,6 +236,16 @@ CONTENT_AD_2 = {
     },
     "tracker_urls": [],
     "sspd_url": settings.SSPD_CONTENT_AD_REDIRECT_URL.format(id=2),
+    "bid_modifier": {
+        "bid_max": 1.0,
+        "bid_min": 1.0,
+        "id": None,
+        "modifier": None,
+        "source_slug": None,
+        "target": "2",
+        "type": "AD",
+    },
+    "editable_fields": {"bid_modifier": {"enabled": True, "message": None}},
 }
 
 # sources on ad group level
@@ -341,6 +361,16 @@ SOURCE_1__CONTENT_AD_1 = {
         }
     },
     "sspd_url": settings.SSPD_CONTENT_AD_REDIRECT_URL.format(id=1),
+    "bid_modifier": {
+        "bid_max": 1.0,
+        "bid_min": 1.0,
+        "id": None,
+        "modifier": None,
+        "source_slug": None,
+        "target": "1",
+        "type": "AD",
+    },
+    "editable_fields": {"bid_modifier": {"enabled": True, "message": None}},
 }
 
 PUBLISHER_1__SOURCE_1 = {

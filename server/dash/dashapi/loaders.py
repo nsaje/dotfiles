@@ -49,6 +49,8 @@ def get_loader_for_dimension(target_dimension, level):
     elif target_dimension == "ad_group_id":
         return AdGroupsLoader
     elif target_dimension == "content_ad_id":
+        if level == constants.Level.AD_GROUPS:
+            return ContentAdsOnAdGroupLevelLoader
         return ContentAdsLoader
     elif target_dimension == "source_id":
         if level == constants.Level.AD_GROUPS:
@@ -624,6 +626,39 @@ class ContentAdsLoader(Loader):
         except sspd_client.SSPDApiException:
             logger.exception("Failed to fetch sspd status")
             return None
+
+
+class ContentAdsOnAdGroupLevelLoader(ContentAdsLoader):
+    def __init__(self, ad_group, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.ad_group = ad_group
+
+    @classmethod
+    def from_constraints(cls, user, constraints, **kwargs):
+        return cls(
+            constraints["ad_group"],
+            constraints["allowed_content_ads"],
+            constraints["filtered_sources"],
+            user,
+            start_date=constraints.get("date__gte"),
+            end_date=constraints.get("date__lte"),
+        )
+
+    @cached_property
+    def bid_modifiers_by_ad(self):
+        bid_modifiers_qs = bid_modifiers.BidModifier.objects.filter(
+            type=bid_modifiers.BidModifierType.AD, target__in=map(str, self.objs_ids)
+        )
+        return {int(x.target): x for x in bid_modifiers_qs}
+
+    @cached_property
+    def min_max_modifiers(self):
+        if not self.ad_group:
+            return None, None
+        min_factor, max_factor = bid_modifiers.overview.get_min_max_factors(
+            self.ad_group.id, excluded_types=[bid_modifiers.BidModifierType.AD]
+        )
+        return min_factor, max_factor
 
 
 class PublisherBlacklistLoader(Loader):
