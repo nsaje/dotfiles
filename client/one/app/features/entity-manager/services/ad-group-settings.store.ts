@@ -1,6 +1,7 @@
 import {Injectable, OnDestroy, Inject} from '@angular/core';
 import {Store} from 'rxjs-observable-store';
 import {Subject} from 'rxjs';
+import * as equal from 'fast-deep-equal';
 import {AdGroupSettingsStoreState} from './ad-group-settings.store.state';
 import {AdGroupService} from '../../../core/entities/services/ad-group.service';
 import {HttpErrorResponse} from '@angular/common/http';
@@ -15,6 +16,7 @@ import {
 } from '../../../app.constants';
 import {AdGroupSettingsStoreFieldsErrorsState} from './ad-group-settings.store.fields-errors-state';
 import {AdGroupDayparting} from '../../../core/entities/types/ad-group/ad-group-dayparting';
+import {OperatingSystem} from 'one/app/core/entities/types/common/operating-system';
 
 @Injectable()
 export class AdGroupSettingsStore extends Store<AdGroupSettingsStoreState>
@@ -173,6 +175,46 @@ export class AdGroupSettingsStore extends Store<AdGroupSettingsStoreState>
 
     setImpressionFrequencyCap(impressionFrequencyCap: string) {
         this.updateState(impressionFrequencyCap, 'entity', 'frequencyCapping');
+    }
+
+    isDeviceTargetingDifferentFromDefault(): boolean {
+        const areTargetDevicesDifferent = !equal(
+            this.state.entity.targeting.devices,
+            this.state.extras.defaultSettings.targetDevices
+        );
+        const areTargetOsDifferent = !equal(
+            this.state.entity.targeting.os,
+            this.state.extras.defaultSettings.targetOs
+        );
+        const areTargetPlacementsDifferent = !equal(
+            this.state.entity.targeting.placements,
+            this.state.extras.defaultSettings.targetPlacements
+        );
+
+        return (
+            areTargetDevicesDifferent ||
+            areTargetOsDifferent ||
+            areTargetPlacementsDifferent
+        );
+    }
+
+    setDeviceTargeting(deviceTargeting: {
+        targetDevices?: string[];
+        targetPlacements?: string[];
+        targetOs?: OperatingSystem[];
+    }): void {
+        this.setState({
+            ...this.state,
+            entity: {
+                ...this.state.entity,
+                targeting: {
+                    ...this.state.entity.targeting,
+                    devices: deviceTargeting.targetDevices,
+                    placements: deviceTargeting.targetPlacements,
+                    os: deviceTargeting.targetOs,
+                },
+            },
+        });
     }
 
     ngOnDestroy(): void {

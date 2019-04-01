@@ -12,7 +12,9 @@
             class="zem-drawer__content custom-scroller zem-settings__settings-container"
         >
             <div class="zem-panel zem-settings__panel">
-                <h2 class="zem-panel__title">Scheduling</h2>
+                <div class="zem-panel__header">
+                    <h2 class="zem-settings__panel-header-title">Scheduling</h2>
+                </div>
                 <div class="zem-settings-section">
                     <zem-date-setting
                         class="zem-date-setting zem-settings-section__item"
@@ -98,7 +100,11 @@
             </div>
 
             <div class="zem-panel zem-settings__panel">
-                <h2 class="zem-panel__title">Budgeting and daily limits</h2>
+                <div class="zem-panel__header">
+                    <h2 class="zem-settings__panel-header-title">
+                        Budgeting and daily limits
+                    </h2>
+                </div>
                 <div class="zem-settings-section">
                     <zem-bidding-type-setting
                         class="zem-bidding-type-setting zem-settings-section__item"
@@ -239,6 +245,38 @@
                         </div>
                     </div>
                 </zem-advanced-settings-section>
+            </div>
+
+            <div class="zem-panel zem-settings__panel">
+                <div class="zem-panel__header zem-settings__panel-header">
+                    <h2 class="zem-settings__panel-header-title">
+                        Device targeting
+                    </h2>
+                    <div
+                        *ngIf="
+                            zemPermissions.hasPermission(
+                                'zemauth.settings_defaults_on_campaign_level'
+                            ) && store.isDeviceTargetingDifferentFromDefault()
+                        "
+                        class="zem-settings__panel-header-message"
+                    >
+                        Different than campaign default
+                    </div>
+                </div>
+                <div class="zem-settings-section">
+                    <div class="zem-settings-section__header">
+                        <div class="zem-settings-section__description">
+                            The devices on which your content ads will be shown.
+                        </div>
+                    </div>
+                    <zem-device-targeting-settings
+                        class="zem-device-targeting-settings"
+                        [targetDevices]="state.entity.targeting.devices"
+                        [targetPlacements]="state.entity.targeting.placements"
+                        [targetOs]="state.entity.targeting.os"
+                        (onUpdate)="store.setDeviceTargeting($event.$event)"
+                    ></zem-device-targeting-settings>
+                </div>
             </div>
         </div>
         <div class="zem-drawer__footer zem-settings__settings-footer">

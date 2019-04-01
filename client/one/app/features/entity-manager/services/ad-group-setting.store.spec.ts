@@ -258,4 +258,26 @@ describe('AdGroupSettingsStore', () => {
         expect(serviceStub.archive).toHaveBeenCalledTimes(1);
         expect(navigationNewServiceStub.refreshState).not.toHaveBeenCalled();
     }));
+
+    it('should correctly set device targeting', () => {
+        const $event: any = {
+            targetDevices: ['TABLE', 'MOBILE'],
+            targetPlacements: [],
+            targetOs: ['MACOSX', 'LINUX'],
+        };
+
+        expect(store.state.entity.targeting.devices).toEqual([]);
+        expect(store.state.entity.targeting.placements).toEqual([]);
+        expect(store.state.entity.targeting.os).toEqual([]);
+        expect(store.isDeviceTargetingDifferentFromDefault()).toEqual(false);
+        store.setDeviceTargeting($event);
+        expect(store.state.entity.targeting.devices).toEqual(
+            $event.targetDevices
+        );
+        expect(store.state.entity.targeting.placements).toEqual(
+            $event.targetPlacements
+        );
+        expect(store.state.entity.targeting.os).toEqual($event.targetOs);
+        expect(store.isDeviceTargetingDifferentFromDefault()).toEqual(true);
+    });
 });
