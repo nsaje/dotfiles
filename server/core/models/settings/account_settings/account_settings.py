@@ -77,6 +77,9 @@ class AccountSettings(validation.AccountSettingsValidatorMixin, SettingsBase):
         clean_updates = {field: value for field, value in kwargs.items() if field in self._settings_fields}
         changes = self.get_changes(clean_updates)
         self.clean(changes)
+        if "name" in changes:
+            self.account.name = changes["name"]
+            self.account.save(request)
         super().update(request, **changes)
 
     @classmethod

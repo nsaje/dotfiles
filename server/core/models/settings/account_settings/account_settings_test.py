@@ -25,3 +25,9 @@ class AccountSettingsTestCase(test.TestCase):
 
         with self.assertRaises(exceptions.PublisherBlacklistInvalid):
             self.account.settings.update(None, blacklist_publisher_groups=[2])
+
+    def test_update_name(self):
+        self.account.settings.update(None, name="TEST")
+        self.account.refresh_from_db()
+        self.assertEqual("TEST", self.account.settings.name)
+        self.assertEqual("TEST", self.account.name)

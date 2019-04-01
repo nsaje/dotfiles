@@ -40,7 +40,7 @@ class AccountManager(core.common.BaseManager):
             settings_updates["account_type"] = constants.AccountType.ACTIVATED
             settings_updates["auto_add_new_sources"] = True
 
-        account.settings = core.models.settings.AccountSettings(account=account)
+        account.settings = core.models.settings.AccountSettings(account=account, name=name)
         account.settings.update(request, **settings_updates)
 
         account.settings_id = account.settings.id

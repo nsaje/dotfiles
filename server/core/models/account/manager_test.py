@@ -17,6 +17,11 @@ class AccountManagerTestCase(TestCase):
         cls.source_released = magic_mixer.blend(core.models.Source, released=True)
         cls.source_unreleased = magic_mixer.blend(core.models.Source, released=False)
 
+    def test_create_name(self):
+        account = Account.objects.create(self.request, name="Test", agency=None)
+        self.assertEqual(account.name, "Test")
+        self.assertEqual(account.settings.name, "Test")
+
     def test_create_add_allowed_sources(self):
         account = Account.objects.create(self.request, name="Test", agency=None)
 
