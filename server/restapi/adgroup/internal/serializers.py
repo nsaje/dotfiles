@@ -81,9 +81,11 @@ class AdGroupSerializer(restapi.adgroup.v1.serializers.AdGroupSerializer):
             "max_cpm",
             "delivery_type",
             "click_capping_daily_ad_group_max_clicks",
-            "click_capping_daily_click_budget",
             "dayparting",
             "targeting",
             "autopilot",
             "frequency_capping",
+            "notes",
         )
+
+    notes = rest_framework.serializers.CharField(required=False)

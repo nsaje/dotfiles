@@ -1,5 +1,9 @@
+var interestTargetingConfig = require('../../../../../features/entity-manager/components/interest-targeting/interest-targeting.config')
+    .INTEREST_TARGETING_CONFIG;
+
 angular.module('one.widgets').component('zemInterestTargeting', {
     bindings: {
+        legacyOptions: '<',
         includedInterests: '<',
         excludedInterests: '<',
         includedInterestsErrors: '<',
@@ -104,7 +108,13 @@ angular.module('one.widgets').component('zemInterestTargeting', {
                 notSelected: [],
             };
 
-            var interests = options.interests.slice();
+            var interests;
+            if ($ctrl.legacyOptions) {
+                interests = $ctrl.legacyOptions.slice();
+            } else {
+                interests = interestTargetingConfig.interestCategories.slice();
+            }
+
             interests.sort(function(opt1, opt2) {
                 return opt1.name.localeCompare(opt2.name);
             });

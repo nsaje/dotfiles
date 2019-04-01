@@ -6,6 +6,7 @@ angular.module('one.widgets').component('zemAdGroupSettings', {
     controller: function(zemPermissions) {
         var $ctrl = this;
         $ctrl.constants = constants;
+        $ctrl.availableInterests = options.interests;
         $ctrl.hasPermission = zemPermissions.hasPermission;
         $ctrl.isPermissionInternal = zemPermissions.isPermissionInternal;
         $ctrl.updateDaypartingSettings = updateDaypartingSettings;

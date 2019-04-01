@@ -278,6 +278,185 @@
                     ></zem-device-targeting-settings>
                 </div>
             </div>
+
+            <div class="zem-panel zem-settings__panel">
+                <div class="zem-panel__header">
+                    <h2 class="zem-settings__panel-header-title">
+                        Audience targeting
+                    </h2>
+                </div>
+                <div
+                    class="zem-settings-section"
+                    *ngIf="
+                        zemPermissions.hasPermission(
+                            'zemauth.can_set_white_blacklist_publisher_groups'
+                        ) &&
+                        zemPermissions.hasPermission(
+                            'zemauth.can_see_publisher_groups_ui'
+                        )
+                    "
+                >
+                    <div class="zem-settings-section__header">
+                        <div
+                            class="zem-settings-section__title"
+                            [zemInternalFeature]="
+                                zemPermissions.isPermissionInternal(
+                                    'zemauth.can_see_publisher_groups_ui'
+                                )
+                            "
+                        >
+                            Publishers
+                        </div>
+                        <div class="zem-settings-section__description">
+                            Define your publisher targeting by whitelisting or
+                            blacklisting publisher groups.
+                        </div>
+                    </div>
+                    <zem-publisher-group-targeting
+                        class="zem-publisher-group-targeting"
+                        [accountId]="state.extras.accountId"
+                        [whitelistedPublisherGroups]="
+                            state.entity.targeting.publisherGroups.included
+                        "
+                        [blacklistedPublisherGroups]="
+                            state.entity.targeting.publisherGroups.excluded
+                        "
+                        (onUpdate)="
+                            store.setPublisherGroupsTargeting($event.$event)
+                        "
+                    ></zem-publisher-group-targeting>
+                </div>
+                <div
+                    class="zem-settings-section"
+                    *ngIf="
+                        zemPermissions.hasPermission(
+                            'zemauth.can_set_interest_targeting'
+                        ) &&
+                        !zemPermissions.hasPermission(
+                            'zemauth.disable_public_rcs'
+                        )
+                    "
+                >
+                    <div class="zem-settings-section__header">
+                        <div class="zem-settings-section__title">
+                            Interest targeting
+                        </div>
+                        <div class="zem-settings-section__description">
+                            Interest targeting is based on publisher
+                            classification and user's reading habits.
+                        </div>
+                    </div>
+                    <zem-interest-targeting
+                        class="zem-interest-targeting"
+                        [includedInterests]="
+                            state.entity.targeting.interest.included
+                        "
+                        [excludedInterests]="
+                            state.entity.targeting.interest.excluded
+                        "
+                        (onUpdate)="store.setInterestTargeting($event.$event)"
+                    ></zem-interest-targeting>
+                </div>
+                <div
+                    class="zem-settings-section"
+                    *ngIf="
+                        zemPermissions.hasPermission(
+                            'zemauth.can_target_custom_audiences'
+                        ) &&
+                        !zemPermissions.hasPermission(
+                            'zemauth.disable_public_rcs'
+                        )
+                    "
+                >
+                    <div class="zem-settings-section__header">
+                        <div
+                            class="zem-settings-section__title"
+                            [zemInternalFeature]="
+                                zemPermissions.isPermissionInternal(
+                                    'zemauth.can_target_custom_audiences'
+                                )
+                            "
+                        >
+                            Retargeting
+                        </div>
+                        <div class="zem-settings-section__description">
+                            Target people you have seen previously. Retargeting
+                            can be based on pixels you placed or on clicks to
+                            other ad groups.
+                        </div>
+                    </div>
+                    <zem-retargeting
+                        class="zem-retargeting"
+                        [entityId]="state.entity.id"
+                        [retargetableAudiences]="state.extras.audiences"
+                        [retargetableAdGroups]="
+                            state.extras.retargetableAdGroups
+                        "
+                        [includedAudiences]="
+                            state.entity.targeting.customAudiences.included
+                        "
+                        [excludedAudiences]="
+                            state.entity.targeting.customAudiences.excluded
+                        "
+                        [includedAdGroups]="
+                            state.entity.targeting.retargetingAdGroups.included
+                        "
+                        [excludedAdGroups]="
+                            state.entity.targeting.retargetingAdGroups.excluded
+                        "
+                        [warnings]="state.extras.warnings.retargeting"
+                        (onUpdate)="store.setRetargeting($event.$event)"
+                    ></zem-retargeting>
+                </div>
+                <div
+                    class="zem-settings-section"
+                    *ngIf="
+                        zemPermissions.hasPermission(
+                            'zemauth.can_use_bluekai_targeting'
+                        ) &&
+                        !zemPermissions.hasPermission(
+                            'zemauth.disable_public_rcs'
+                        )
+                    "
+                >
+                    <div class="zem-settings-section__header">
+                        <div class="zem-settings-section__title">
+                            BlueKai targeting
+                        </div>
+                        <div class="zem-settings-section__description">
+                            Setup audience targeting based on BlueKai audience
+                            segments. For setting up Bombora, Liveramp or Lotame
+                            targeting please contact your Customer Success
+                            Manager.
+                        </div>
+                    </div>
+                    <zem-demographic-targeting
+                        class="zem-demographic-targeting"
+                        [bluekaiTargeting]="state.entity.targeting.audience"
+                        [entityId]="state.entity.id"
+                        (onUpdate)="store.setBluekaiTargeting($event.$event)"
+                    ></zem-demographic-targeting>
+                </div>
+                <div class="zem-settings-section">
+                    <div class="zem-settings-section__header">
+                        <div class="zem-settings-section__title">
+                            Special notes
+                        </div>
+                        <div class="zem-settings-section__description">
+                            Any additional targeting set on the backend will be
+                            described here. This is a read-only section. Please
+                            contact your Zemanta Customer Success Manager if you
+                            want to set up or change it.
+                        </div>
+                    </div>
+                    <div class="zem-dashed-box" *ngIf="state.entity.notes">
+                        {{ state.entity.notes }}
+                    </div>
+                    <div class="zem-message" *ngIf="!state.entity.notes">
+                        No special notes.
+                    </div>
+                </div>
+            </div>
         </div>
         <div class="zem-drawer__footer zem-settings__settings-footer">
             <button (click)="saveSettings()">

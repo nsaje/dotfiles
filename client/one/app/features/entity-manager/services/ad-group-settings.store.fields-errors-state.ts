@@ -10,7 +10,6 @@ export class AdGroupSettingsStoreFieldsErrorsState {
     maxCpm: FieldErrors = [];
     deliveryType: FieldErrors = [];
     clickCappingDailyAdGroupMaxClicks: FieldErrors = [];
-    clickCappingDailyClickBudget: FieldErrors = [];
     dayparting: FieldErrors = [];
     autopilot = {
         state: [] as FieldErrors,

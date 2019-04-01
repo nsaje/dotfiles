@@ -7,6 +7,7 @@ import {AdGroupWithExtras} from '../../../core/entities/types/ad-group/ad-group-
 import {AdGroup} from '../../../core/entities/types/ad-group/ad-group';
 import {AdGroupExtras} from '../../../core/entities/types/ad-group/ad-group-extras';
 import {AdGroupSettingsStoreFieldsErrorsState} from './ad-group-settings.store.fields-errors-state';
+import {InterestCategory} from '../../../app.constants';
 
 describe('AdGroupSettingsStore', () => {
     let serviceStub: jasmine.SpyObj<AdGroupService>;
@@ -279,5 +280,91 @@ describe('AdGroupSettingsStore', () => {
         );
         expect(store.state.entity.targeting.os).toEqual($event.targetOs);
         expect(store.isDeviceTargetingDifferentFromDefault()).toEqual(true);
+    });
+
+    it('should correctly set publisher groups', () => {
+        const $event: any = {
+            whitelistedPublisherGroups: [123, 456, 789],
+            blacklistedPublisherGroups: [],
+        };
+
+        expect(store.state.entity.targeting.publisherGroups).toEqual({
+            included: [],
+            excluded: [],
+        });
+
+        store.setPublisherGroupsTargeting($event);
+
+        expect(store.state.entity.targeting.publisherGroups).toEqual({
+            included: $event.whitelistedPublisherGroups,
+            excluded: $event.blacklistedPublisherGroups,
+        });
+    });
+
+    it('should correctly set interests', () => {
+        const $event: any = {
+            includedInterests: [
+                InterestCategory.CAREER,
+                InterestCategory.COMMUNICATION,
+            ],
+            excludedInterests: [InterestCategory.EDUCATION],
+        };
+
+        expect(store.state.entity.targeting.interest).toEqual({
+            included: [],
+            excluded: [],
+        });
+
+        store.setInterestTargeting($event);
+
+        expect(store.state.entity.targeting.interest).toEqual({
+            included: $event.includedInterests,
+            excluded: $event.excludedInterests,
+        });
+    });
+
+    it('should correctly set retargeting', () => {
+        const $event: any = {
+            includedAudiences: [123, 456, 789],
+            excludedAudiences: [555, 666],
+            includedAdGroups: [222, 767, 898],
+            excludedAdGroups: [454],
+        };
+
+        expect(store.state.entity.targeting.customAudiences).toEqual({
+            included: [],
+            excluded: [],
+        });
+
+        expect(store.state.entity.targeting.retargetingAdGroups).toEqual({
+            included: [],
+            excluded: [],
+        });
+
+        store.setRetargeting($event);
+
+        expect(store.state.entity.targeting.customAudiences).toEqual({
+            included: $event.includedAudiences,
+            excluded: $event.excludedAudiences,
+        });
+
+        expect(store.state.entity.targeting.retargetingAdGroups).toEqual({
+            included: $event.includedAdGroups,
+            excluded: $event.excludedAdGroups,
+        });
+    });
+
+    it('should correctly set bluekai', () => {
+        const $event: any = {
+            and: [
+                {or: [{category: 'bluekai: 123'}, {category: 'bluekai: 234'}]},
+                {or: [{category: 'bluekai: 345'}]},
+                {not: [{or: [{category: 'bluekai: 432'}]}]},
+            ],
+        };
+
+        expect(store.state.entity.targeting.audience).toEqual(null);
+        store.setBluekaiTargeting($event);
+        expect(store.state.entity.targeting.audience).toEqual($event);
     });
 });

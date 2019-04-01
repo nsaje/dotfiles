@@ -1,19 +1,12 @@
-<div class="form">
-    <div class="form__title">Interest targeting</div>
-    <div class="form__text">
-        Interest targeting is based on publisher classification and user's
-        reading habits.
-    </div>
-    <zem-inclusion-targeting-list
-        texts="$ctrl.texts"
-        targetings="$ctrl.targetings"
-        add-included="$ctrl.addIncluded(targeting)"
-        add-excluded="$ctrl.addExcluded(targeting)"
-        remove-targeting="$ctrl.removeTargeting(targeting)"
-    ></zem-inclusion-targeting-list>
-    <div class="more-messages__container">
-        <div class="message message--error" ng-repeat="error in $ctrl.errors">
-            {{ error }}
-        </div>
+<zem-inclusion-targeting-list
+    texts="$ctrl.texts"
+    targetings="$ctrl.targetings"
+    add-included="$ctrl.addIncluded(targeting)"
+    add-excluded="$ctrl.addExcluded(targeting)"
+    remove-targeting="$ctrl.removeTargeting(targeting)"
+></zem-inclusion-targeting-list>
+<div class="more-messages__container">
+    <div class="message message--error" ng-repeat="error in $ctrl.errors">
+        {{ error }}
     </div>
 </div>

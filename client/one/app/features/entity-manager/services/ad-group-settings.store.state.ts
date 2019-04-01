@@ -18,7 +18,6 @@ export class AdGroupSettingsStoreState {
         maxCpm: null,
         deliveryType: null,
         clickCappingDailyAdGroupMaxClicks: null,
-        clickCappingDailyClickBudget: null,
         dayparting: null,
         targeting: {
             devices: [],
@@ -67,6 +66,7 @@ export class AdGroupSettingsStoreState {
             dailyBudget: null,
         },
         frequencyCapping: null,
+        notes: null,
     };
     extras: AdGroupExtras = {
         actionIsWaiting: null,

@@ -22,9 +22,9 @@ export interface AdGroup {
     dailyBudget?: string;
     deliveryType?: DeliveryType;
     clickCappingDailyAdGroupMaxClicks?: string;
-    clickCappingDailyClickBudget?: string;
     dayparting?: AdGroupDayparting;
     targeting?: AdGroupTargetings;
     autopilot?: AdGroupAutopilot;
     frequencyCapping?: string;
+    notes?: string;
 }

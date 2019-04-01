@@ -1,10 +1,11 @@
 import {Injectable, OnDestroy, Inject} from '@angular/core';
+import {HttpErrorResponse} from '@angular/common/http';
 import {Store} from 'rxjs-observable-store';
 import {Subject} from 'rxjs';
-import * as equal from 'fast-deep-equal';
+import * as deepEqual from 'fast-deep-equal';
+import * as clone from 'clone';
 import {AdGroupSettingsStoreState} from './ad-group-settings.store.state';
 import {AdGroupService} from '../../../core/entities/services/ad-group.service';
-import {HttpErrorResponse} from '@angular/common/http';
 import {AdGroup} from '../../../core/entities/types/ad-group/ad-group';
 import {RequestStateUpdater} from '../../../shared/types/request-state-updater';
 import * as storeHelpers from '../../../shared/helpers/store.helpers';
@@ -13,10 +14,12 @@ import {
     AdGroupAutopilotState,
     DeliveryType,
     BiddingType,
+    InterestCategory,
 } from '../../../app.constants';
 import {AdGroupSettingsStoreFieldsErrorsState} from './ad-group-settings.store.fields-errors-state';
 import {AdGroupDayparting} from '../../../core/entities/types/ad-group/ad-group-dayparting';
 import {OperatingSystem} from 'one/app/core/entities/types/common/operating-system';
+import {IncludedExcluded} from '../../../core/entities/types/common/included-excluded';
 
 @Injectable()
 export class AdGroupSettingsStore extends Store<AdGroupSettingsStoreState>
@@ -178,15 +181,15 @@ export class AdGroupSettingsStore extends Store<AdGroupSettingsStoreState>
     }
 
     isDeviceTargetingDifferentFromDefault(): boolean {
-        const areTargetDevicesDifferent = !equal(
+        const areTargetDevicesDifferent = !deepEqual(
             this.state.entity.targeting.devices,
             this.state.extras.defaultSettings.targetDevices
         );
-        const areTargetOsDifferent = !equal(
+        const areTargetOsDifferent = !deepEqual(
             this.state.entity.targeting.os,
             this.state.extras.defaultSettings.targetOs
         );
-        const areTargetPlacementsDifferent = !equal(
+        const areTargetPlacementsDifferent = !deepEqual(
             this.state.entity.targeting.placements,
             this.state.extras.defaultSettings.targetPlacements
         );
@@ -215,6 +218,89 @@ export class AdGroupSettingsStore extends Store<AdGroupSettingsStoreState>
                 },
             },
         });
+    }
+
+    setPublisherGroupsTargeting(publisherGroupsTargeting: {
+        whitelistedPublisherGroups?: number[];
+        blacklistedPublisherGroups?: number[];
+    }): void {
+        const newPublisherGroupsTargeting: IncludedExcluded<number[]> = {
+            included: publisherGroupsTargeting.whitelistedPublisherGroups
+                ? publisherGroupsTargeting.whitelistedPublisherGroups
+                : this.state.entity.targeting.publisherGroups.included,
+            excluded: publisherGroupsTargeting.blacklistedPublisherGroups
+                ? publisherGroupsTargeting.blacklistedPublisherGroups
+                : this.state.entity.targeting.publisherGroups.excluded,
+        };
+
+        this.updateState(
+            newPublisherGroupsTargeting,
+            'entity',
+            'targeting',
+            'publisherGroups'
+        );
+    }
+
+    setInterestTargeting(interestTargeting: {
+        includedInterests?: InterestCategory[];
+        excludedInterests?: InterestCategory[];
+    }): void {
+        const newInterestTargeting: IncludedExcluded<InterestCategory[]> = {
+            included: interestTargeting.includedInterests
+                ? interestTargeting.includedInterests
+                : this.state.entity.targeting.interest.included,
+            excluded: interestTargeting.excludedInterests
+                ? interestTargeting.excludedInterests
+                : this.state.entity.targeting.interest.excluded,
+        };
+
+        this.updateState(
+            newInterestTargeting,
+            'entity',
+            'targeting',
+            'interest'
+        );
+    }
+
+    setRetargeting(retargeting: {
+        includedAudiences?: number[];
+        excludedAudiences?: number[];
+        includedAdGroups?: number[];
+        excludedAdGroups?: number[];
+    }): void {
+        const customAudiences: IncludedExcluded<number[]> = {
+            included: retargeting.includedAudiences
+                ? retargeting.includedAudiences
+                : this.state.entity.targeting.customAudiences.included,
+            excluded: retargeting.excludedAudiences
+                ? retargeting.excludedAudiences
+                : this.state.entity.targeting.customAudiences.excluded,
+        };
+
+        const retargetingAdGroups: IncludedExcluded<number[]> = {
+            included: retargeting.includedAdGroups
+                ? retargeting.includedAdGroups
+                : this.state.entity.targeting.retargetingAdGroups.included,
+            excluded: retargeting.excludedAdGroups
+                ? retargeting.excludedAdGroups
+                : this.state.entity.targeting.retargetingAdGroups.excluded,
+        };
+
+        this.setState({
+            ...this.state,
+            entity: {
+                ...this.state.entity,
+                targeting: {
+                    ...this.state.entity.targeting,
+                    customAudiences: customAudiences,
+                    retargetingAdGroups: retargetingAdGroups,
+                },
+            },
+        });
+    }
+
+    setBluekaiTargeting(bluekaiTargeting: any): void {
+        this.updateState(bluekaiTargeting, 'entity', 'targeting', 'audience');
     }
 
     ngOnDestroy(): void {

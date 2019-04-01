@@ -1,33 +1,24 @@
-<div class="form">
-    <div class="form__title" is-internal="zemauth.can_see_publisher_groups_ui">
-        Publishers
+<zem-inclusion-targeting-list
+    texts="$ctrl.texts"
+    targetings="$ctrl.targetings"
+    add-included="$ctrl.addIncluded(targeting)"
+    add-excluded="$ctrl.addExcluded(targeting)"
+    remove-targeting="$ctrl.removeTargeting(targeting)"
+></zem-inclusion-targeting-list>
+<div class="more-messages__container">
+    <div
+        class="message message--error zem-publisher-group-targeting__error"
+        ng-repeat="error in $ctrl.whitelistedPublisherGroupsErrors"
+    >
+        {{ error }}
     </div>
-    <div class="form__text">
-        Define your publisher targeting by whitelisting or blacklisting
-        publisher groups.
+    <div
+        class="message message--error zem-publisher-group-targeting__error"
+        ng-repeat="error in $ctrl.blacklistedPublisherGroupsErrors"
+    >
+        {{ error }}
     </div>
-    <zem-inclusion-targeting-list
-        texts="$ctrl.texts"
-        targetings="$ctrl.targetings"
-        add-included="$ctrl.addIncluded(targeting)"
-        add-excluded="$ctrl.addExcluded(targeting)"
-        remove-targeting="$ctrl.removeTargeting(targeting)"
-    ></zem-inclusion-targeting-list>
-    <div class="more-messages__container">
-        <div
-            class="message message--error zem-publisher-group-targeting__error"
-            ng-repeat="error in $ctrl.whitelistedPublisherGroupsErrors"
-        >
-            {{ error }}
-        </div>
-        <div
-            class="message message--error zem-publisher-group-targeting__error"
-            ng-repeat="error in $ctrl.blacklistedPublisherGroupsErrors"
-        >
-            {{ error }}
-        </div>
-        <div class="message message--info message--with-icon m-b-none">
-            Outbrain and Yahoo don't support publisher targeting.
-        </div>
+    <div class="message message--info message--with-icon m-b-none">
+        Outbrain and Yahoo don't support publisher targeting.
     </div>
 </div>

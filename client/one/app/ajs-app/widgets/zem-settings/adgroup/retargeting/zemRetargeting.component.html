@@ -1,32 +1,17 @@
+<zem-inclusion-targeting-list
+    texts="$ctrl.texts"
+    targetings="$ctrl.targetings"
+    add-included="$ctrl.addIncluded(targeting)"
+    add-excluded="$ctrl.addExcluded(targeting)"
+    remove-targeting="$ctrl.removeTargeting(targeting)"
+    display-sections="true"
+></zem-inclusion-targeting-list>
 <div
-    class="form"
-    ng-if="$ctrl.hasPermission('zemauth.can_target_custom_audiences')"
-    ng-class="{'form--error': !!$ctrl.errors}"
+    class="message message--info message--with-icon m-t"
+    ng-if="$ctrl.warningMessage"
 >
-    <div class="form__title" is-internal="zemauth.can_target_custom_audiences">
-        Retargeting
-    </div>
-    <div class="form__text m-b">
-        Target people you have seen previously. Retargeting can be based on
-        pixels you placed or on clicks to other ad groups.
-    </div>
-    <div>
-        <zem-inclusion-targeting-list
-            texts="$ctrl.texts"
-            targetings="$ctrl.targetings"
-            add-included="$ctrl.addIncluded(targeting)"
-            add-excluded="$ctrl.addExcluded(targeting)"
-            remove-targeting="$ctrl.removeTargeting(targeting)"
-            display-sections="true"
-        ></zem-inclusion-targeting-list>
-    </div>
-    <div
-        class="message message--info message--with-icon m-t"
-        ng-if="$ctrl.warningMessage"
-    >
-        {{ $ctrl.warningMessage }}
-    </div>
-    <div class="message message--error" ng-repeat="error in $ctrl.errors">
-        {{ error }}
-    </div>
+    {{ $ctrl.warningMessage }}
+</div>
+<div class="message message--error" ng-repeat="error in $ctrl.errors">
+    {{ error }}
 </div>

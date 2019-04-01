@@ -105,53 +105,97 @@
             is-internal="zemauth.can_target_custom_audiences"
         >
             <h2 class="custom-panel__title">Targeting</h2>
-            <zem-retargeting
-                class="zem-retargeting"
-                ng-if="!$ctrl.hasPermission('zemauth.disable_public_rcs')"
-                errors="$container.errors"
-                entity-id="$container.entity.settings.id"
-                retargetable-audiences="$container.entity.audiences"
-                retargetable-ad-groups="$container.entity.retargetableAdGroups"
-                included-audiences="$container.entity.settings.audienceTargeting"
-                excluded-audiences="$container.entity.settings.exclusionAudienceTargeting"
-                included-ad-groups="$container.entity.settings.retargetingAdGroups"
-                excluded-ad-groups="$container.entity.settings.exclusionRetargetingAdGroups"
-                included-audiences-errors="$container.errors.audienceTargeting"
-                excluded-audiences-errors="$container.errors.exclusionAudienceTargeting"
-                included-ad-groups-errors="$container.errors.retargetingAdGroups"
-                excluded-ad-groups-errors="$container.errors.exclusionRetargetingAdGroups"
-                warnings="$container.entity.warnings.retargeting"
-                on-update="$ctrl.updateRetargeting($container.entity, $event)"
-            ></zem-retargeting>
+            <div
+                class="form"
+                ng-if="$ctrl.hasPermission('zemauth.can_target_custom_audiences') && !$ctrl.hasPermission('zemauth.disable_public_rcs')"
+                ng-class="{'form--error': !!$ctrl.errors}"
+            >
+                <div
+                    class="form__title"
+                    is-internal="zemauth.can_target_custom_audiences"
+                >
+                    Retargeting
+                </div>
+                <div class="form__text m-b">
+                    Target people you have seen previously. Retargeting can be
+                    based on pixels you placed or on clicks to other ad groups.
+                </div>
+                <zem-retargeting
+                    class="zem-retargeting"
+                    errors="$container.errors"
+                    entity-id="$container.entity.settings.id"
+                    retargetable-audiences="$container.entity.audiences"
+                    retargetable-ad-groups="$container.entity.retargetableAdGroups"
+                    included-audiences="$container.entity.settings.audienceTargeting"
+                    excluded-audiences="$container.entity.settings.exclusionAudienceTargeting"
+                    included-ad-groups="$container.entity.settings.retargetingAdGroups"
+                    excluded-ad-groups="$container.entity.settings.exclusionRetargetingAdGroups"
+                    included-audiences-errors="$container.errors.audienceTargeting"
+                    excluded-audiences-errors="$container.errors.exclusionAudienceTargeting"
+                    included-ad-groups-errors="$container.errors.retargetingAdGroups"
+                    excluded-ad-groups-errors="$container.errors.exclusionRetargetingAdGroups"
+                    warnings="$container.entity.warnings.retargeting"
+                    on-update="
+                        $ctrl.updateRetargeting($container.entity, $event)
+                    "
+                ></zem-retargeting>
+            </div>
             <div
                 ng-if="$ctrl.hasPermission('zemauth.can_view_additional_targeting')"
             >
-                <zem-interest-targeting
-                    class="zem-interest-targeting"
+                <div
+                    class="form"
                     ng-if="$ctrl.hasPermission('zemauth.can_set_interest_targeting') && !$ctrl.hasPermission('zemauth.disable_public_rcs')"
-                    included-interests="$container.entity.settings.interestTargeting"
-                    excluded-interests="$container.entity.settings.exclusionInterestTargeting"
-                    included-interests-errors="$container.errors.interestTargeting"
-                    excluded-interests-errors="$container.errors.exclusionInterestTargeting"
-                    on-update="
-                        $ctrl.updateInterestTargeting($container.entity, $event)
-                    "
-                ></zem-interest-targeting>
-                <zem-publisher-group-targeting
-                    class="zem-publisher-group-targeting"
+                >
+                    <div class="form__title">Interest targeting</div>
+                    <div class="form__text">
+                        Interest targeting is based on publisher classification
+                        and user's reading habits.
+                    </div>
+                    <zem-interest-targeting
+                        class="zem-interest-targeting"
+                        legacy-options="$ctrl.availableInterests"
+                        included-interests="$container.entity.settings.interestTargeting"
+                        excluded-interests="$container.entity.settings.exclusionInterestTargeting"
+                        included-interests-errors="$container.errors.interestTargeting"
+                        excluded-interests-errors="$container.errors.exclusionInterestTargeting"
+                        on-update="
+                            $ctrl.updateInterestTargeting(
+                                $container.entity,
+                                $event
+                            )
+                        "
+                    ></zem-interest-targeting>
+                </div>
+                <div
+                    class="form"
                     ng-if="$ctrl.hasPermission('zemauth.can_set_white_blacklist_publisher_groups') && $ctrl.hasPermission('zemauth.can_see_publisher_groups_ui')"
-                    account-id="$container.entity.parent.parent.id"
-                    whitelisted-publisher-groups="$container.entity.settings.whitelistPublisherGroups"
-                    blacklisted-publisher-groups="$container.entity.settings.blacklistPublisherGroups"
-                    whitelisted-publisher-groups-errors="$container.errors.whitelistPublisherGroups"
-                    blacklisted-publisher-groups-errors="$container.errors.blacklistPublisherGroups"
-                    on-update="
-                        $ctrl.updatePublisherGroupsTargeting(
-                            $container.entity,
-                            $event
-                        )
-                    "
-                ></zem-publisher-group-targeting>
+                >
+                    <div
+                        class="form__title"
+                        is-internal="zemauth.can_see_publisher_groups_ui"
+                    >
+                        Publishers
+                    </div>
+                    <div class="form__text">
+                        Define your publisher targeting by whitelisting or
+                        blacklisting publisher groups.
+                    </div>
+                    <zem-publisher-group-targeting
+                        class="zem-publisher-group-targeting"
+                        account-id="$container.entity.parent.parent.id"
+                        whitelisted-publisher-groups="$container.entity.settings.whitelistPublisherGroups"
+                        blacklisted-publisher-groups="$container.entity.settings.blacklistPublisherGroups"
+                        whitelisted-publisher-groups-errors="$container.errors.whitelistPublisherGroups"
+                        blacklisted-publisher-groups-errors="$container.errors.blacklistPublisherGroups"
+                        on-update="
+                            $ctrl.updatePublisherGroupsTargeting(
+                                $container.entity,
+                                $event
+                            )
+                        "
+                    ></zem-publisher-group-targeting>
+                </div>
                 <div class="form form--last">
                     <div class="form__title">Special notes</div>
                     <div class="form__text">

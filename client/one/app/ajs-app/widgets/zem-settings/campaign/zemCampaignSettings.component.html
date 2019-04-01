@@ -58,20 +58,32 @@
             ng-if="$ctrl.hasPermission('zemauth.can_set_white_blacklist_publisher_groups') && $ctrl.hasPermission('zemauth.can_see_publisher_groups_ui')"
         >
             <h2 class="custom-panel__title">Targeting</h2>
-            <zem-publisher-group-targeting
-                class="zem-publisher-group-targeting"
-                account-id="$container.entity.parent.id"
-                whitelisted-publisher-groups="$container.entity.settings.whitelistPublisherGroups"
-                blacklisted-publisher-groups="$container.entity.settings.blacklistPublisherGroups"
-                whitelisted-publisher-groups-errors="$container.errors.whitelistPublisherGroups"
-                blacklisted-publisher-groups-errors="$container.errors.blacklistPublisherGroups"
-                on-update="
-                    $ctrl.updatePublisherGroupsTargeting(
-                        $container.entity,
-                        $event
-                    )
-                "
-            ></zem-publisher-group-targeting>
+            <div class="form">
+                <div
+                    class="form__title"
+                    is-internal="zemauth.can_see_publisher_groups_ui"
+                >
+                    Publishers
+                </div>
+                <div class="form__text">
+                    Define your publisher targeting by whitelisting or
+                    blacklisting publisher groups.
+                </div>
+                <zem-publisher-group-targeting
+                    class="zem-publisher-group-targeting"
+                    account-id="$container.entity.parent.id"
+                    whitelisted-publisher-groups="$container.entity.settings.whitelistPublisherGroups"
+                    blacklisted-publisher-groups="$container.entity.settings.blacklistPublisherGroups"
+                    whitelisted-publisher-groups-errors="$container.errors.whitelistPublisherGroups"
+                    blacklisted-publisher-groups-errors="$container.errors.blacklistPublisherGroups"
+                    on-update="
+                        $ctrl.updatePublisherGroupsTargeting(
+                            $container.entity,
+                            $event
+                        )
+                    "
+                ></zem-publisher-group-targeting>
+            </div>
         </div>
         <zem-performance-tracking-settings
             class="zem-settings-component"
