@@ -392,7 +392,15 @@ class AgencyAdmin(SlackLoggerMixin, ExportMixin, admin.ModelAdmin):
     )
     exclude = ("users",)
     raw_id_fields = ("default_whitelist", "default_blacklist")
-    readonly_fields = ("id", "created_dt", "modified_dt", "modified_by", "settings", "_accounts_cs")
+    readonly_fields = (
+        "id",
+        "created_dt",
+        "modified_dt",
+        "modified_by",
+        "settings",
+        "_accounts_cs",
+        "custom_attributes",
+    )
     inlines = (AgencyUserInline, DirectDealConnectionAgencyInline)
     resource_class = AgencyResource
     search_fields = ("name", "id")
@@ -547,6 +555,9 @@ class AccountAdmin(SlackLoggerMixin, SaveWithRequestMixin, admin.ModelAdmin):
         "default_blacklist",
         "agency",
         "settings",
+        "salesforce_id",
+        "custom_attributes",
+        "is_externally_managed",
     )
     exclude = ("users", "settings")
     filter_horizontal = ("allowed_sources",)
@@ -585,7 +596,7 @@ class AccountAdmin(SlackLoggerMixin, SaveWithRequestMixin, admin.ModelAdmin):
     @pgdh.catch_and_report_exception(pgdh.PagerDutyEventType.PRODOPS)
     def save_model(self, request, obj, form, change):
         old_obj = models.Account.objects.get(id=obj.id)
-        obj.update(request, **form.cleaned_data)
+        old_obj.update(request, **form.cleaned_data)
         utils.k1_helper.update_ad_groups(
             models.AdGroup.objects.filter(campaign__account_id=obj.id)
             .select_related("campaign")
