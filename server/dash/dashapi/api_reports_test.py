@@ -451,8 +451,12 @@ class AnnotateTest(TestCase):
             },
             constants.Level.AD_GROUPS,
         )
+        content_ad_1 = CONTENT_AD_1.copy()
+        content_ad_2 = CONTENT_AD_2.copy()
+        content_ad_1.update({"bid_modifier": None})
+        content_ad_2.update({"bid_modifier": None})
 
-        self.assertEqual(rows, [CONTENT_AD_1, CONTENT_AD_2])
+        self.assertEqual(rows, [content_ad_1, content_ad_2])
 
     def test_annotate_source(self):
         rows = [{"source_id": 1}, {"source_id": 2}]
@@ -591,12 +595,14 @@ class AnnotateTest(TestCase):
         content_ad_1.update(AD_GROUP_1)
         content_ad_1.update(CONTENT_AD_1)
         content_ad_1.update(AD_GROUP_SOURCE_1)
+        content_ad_1.update({"bid_modifier": None})
 
         content_ad_2 = copy.copy(ACCOUNT_1)
         content_ad_2.update(CAMPAIGN_1)
         content_ad_2.update(AD_GROUP_1)
         content_ad_2.update(CONTENT_AD_2)
         content_ad_2.update(AD_GROUP_SOURCE_1)
+        content_ad_2.update({"bid_modifier": None})
 
         self.assertEqual(rows, [content_ad_1, content_ad_2])
 
