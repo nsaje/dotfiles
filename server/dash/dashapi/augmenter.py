@@ -314,6 +314,10 @@ def augment_content_ad_for_report(row, loader, is_base_level=False):
             }
         )
 
+        if hasattr(loader, "bid_modifiers_by_ad"):
+            bid_modifier = loader.bid_modifiers_by_ad.get(content_ad_id)
+            row.update({"bid_modifier": bid_modifier.modifier if bid_modifier else None})
+
 
 def augment_source(row, loader, is_base_level=False):
     source_id = row.get("source_id")

@@ -79,7 +79,7 @@ def _get_loaders(user, breakdown, constraints, level):
     for dimension in breakdown:
         loader_cls = loaders.get_loader_for_dimension(dimension, level)
         if loader_cls is not None:
-            loader_map[dimension] = loader_cls.from_constraints(user, constraints)
+            loader_map[dimension] = loader_cls.from_constraints(user, constraints, breakdown=[dimension])
         else:
             loader_map[dimension] = None
     return loader_map
