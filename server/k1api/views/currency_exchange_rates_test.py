@@ -60,6 +60,12 @@ class CurrencyExchangeRateViewTest(K1APIBaseTest):
             currency=dash.constants.Currency.ZAR,
             exchange_rate="13.326",
         )
+        magic_mixer.blend(
+            core.features.multicurrency.CurrencyExchangeRate,
+            date=dates_helper.local_today(),
+            currency=dash.constants.Currency.ILS,
+            exchange_rate="4.0513",
+        )
         super().setUp()
 
     def test_get(self):
@@ -77,6 +83,7 @@ class CurrencyExchangeRateViewTest(K1APIBaseTest):
                     "MYR": "0.2120",
                     "CHF": "0.8620",
                     "ZAR": "13.3260",
+                    "ILS": "4.0513",
                 },
                 "error": None,
             },

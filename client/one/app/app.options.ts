@@ -3124,6 +3124,7 @@ export const APP_OPTIONS = {
         {name: 'Malaysian Ringgit', value: APP_CONSTANTS.currency.MYR},
         {name: 'Swiss Franc', value: APP_CONSTANTS.currency.CHF},
         {name: 'South African Rand', value: APP_CONSTANTS.currency.ZAR},
+        {name: 'Israeli New Shekel', value: APP_CONSTANTS.currency.ILS},
     ],
     adTypes: [
         {

@@ -237,6 +237,7 @@ class Currency(ConstantBase):
     MYR = "MYR"
     CHF = "CHF"
     ZAR = "ZAR"
+    ILS = "ILS"
 
     _VALUES = {
         USD: "US Dollar",
@@ -248,6 +249,7 @@ class Currency(ConstantBase):
         MYR: "Malaysian Ringgit",
         CHF: "Swiss Franc",
         ZAR: "South African Rand",
+        ILS: "Israeli New Shekel",
     }
 
 

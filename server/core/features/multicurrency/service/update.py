@@ -11,6 +11,7 @@ from . import brl
 from . import chf
 from . import eur
 from . import gbp
+from . import ils
 from . import myr
 from . import sgd
 from . import zar
@@ -58,6 +59,8 @@ def _get_exchange_rate(currency):
         return chf.get_exchange_rate()
     if currency == dash.constants.Currency.ZAR:
         return zar.get_exchange_rate()
+    if currency == dash.constants.Currency.ILS:
+        return ils.get_exchange_rate()
     else:
         raise MissingExchangeRateMappingException()
 

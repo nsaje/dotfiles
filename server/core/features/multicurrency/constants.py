@@ -10,4 +10,5 @@ CurrencySymbol = {
     dash.constants.Currency.MYR: "RM",
     dash.constants.Currency.CHF: "CHF",
     dash.constants.Currency.ZAR: "R",
+    dash.constants.Currency.ILS: "₪",
 }

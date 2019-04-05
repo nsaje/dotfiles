@@ -8,6 +8,7 @@ export enum Currency {
     CHF = 'CHF',
     MYR = 'MYR',
     ZAR = 'ZAR',
+    ILS = 'ILS',
 }
 
 export enum EntityType {
