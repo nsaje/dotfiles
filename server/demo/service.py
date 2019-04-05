@@ -8,28 +8,38 @@ import haikunator
 import paramiko.rsakey
 from utils import s3helpers
 
+DEMO_TIMEOUT_DAYS = 7
+
 
 def request_demo():
     conn = _get_connection()
     instance_name = haikunator.Haikunator().haikunate()
     env = {"INSTANCE_NAME": instance_name}
-    with conn.cd("99_demo_instances/"):
+    with conn.cd("~/99_demo_instances/"):
         conn.run("mkdir {instance}".format(instance=instance_name))
         with conn.cd(instance_name):
             conn.run("ln -s ~/demo/demo.yml && docker-compose -f demo.yml up -d", env=env)
     return instance_name, settings.DEMO_URL.format(instance_name=instance_name), settings.DEMO_PASSWORD
 
 
-def terminate_demo(instance_name):
-    conn = _get_connection()
+def terminate_demo(instance_name, connection=None):
+    conn = connection or _get_connection()
     env = {"INSTANCE_NAME": instance_name}
-    with conn.cd("99_demo_instances/"):
+    with conn.cd("~/99_demo_instances/"):
         conn.run(
             "docker-compose -f {instance_name}/demo.yml down --rmi local --remove-orphans && rm -fr {instance_name}".format(
                 instance_name=instance_name
             ),
             env=env,
         )
+
+
+def terminate_old_instances():
+    conn = _get_connection()
+    with conn.cd("~/99_demo_instances/"):
+        instances = conn.run("find -mtime +{timeout} -type d".format(timeout=DEMO_TIMEOUT_DAYS)).stdout
+        for instance in instances.splitlines():
+            terminate_demo(instance, connection=conn)
 
 
 def prepare_demo(snapshot_id=None):
