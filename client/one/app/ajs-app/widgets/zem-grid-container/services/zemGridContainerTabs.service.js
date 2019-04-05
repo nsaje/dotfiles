@@ -36,7 +36,7 @@ angular
                         breakdown: constants.breakdown.COUNTRY,
                     },
                     {
-                        name: 'State',
+                        name: 'State / Region',
                         breakdown: constants.breakdown.STATE,
                     },
                     {

@@ -1951,7 +1951,7 @@ class LocationType(ConstantBase):
     DMA = "dma"
     ZIP = "zip"
 
-    _VALUES = {COUNTRY: "Country", REGION: "Region", CITY: "City", DMA: "DMA", ZIP: "Postal Code"}
+    _VALUES = {COUNTRY: "Country", REGION: "State / Region", CITY: "City", DMA: "DMA", ZIP: "Postal Code"}
 
 
 class Placement(ConstantBase):

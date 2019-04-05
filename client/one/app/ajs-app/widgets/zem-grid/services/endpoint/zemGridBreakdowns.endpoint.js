@@ -75,9 +75,9 @@ angular
                 internal: 'zemauth.can_view_breakdown_by_delivery',
             },
             state: {
-                name: 'State',
+                name: 'State / Region',
                 query: 'state',
-                report_query: 'State',
+                report_query: 'State / Region',
                 shown: 'zemauth.can_view_breakdown_by_delivery',
                 internal: 'zemauth.can_view_breakdown_by_delivery',
             },

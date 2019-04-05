@@ -3084,8 +3084,8 @@ Examples:
 - `CA` - Canada
 
 <a name="region"></a>
-### Region
-Regions are identified by the country's [ISO 3166-1 alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2)
+### State / Region
+States or Regions are identified by the country's [ISO 3166-1 alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2)
 code and the region's [ISO 3166-2](https://en.wikipedia.org/wiki/ISO_3166-2) code concatenated with a `-` sign.
 
 Examples:

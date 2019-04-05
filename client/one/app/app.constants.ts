@@ -1565,7 +1565,7 @@ APP_CONSTANTS.defaultAccountTypes = [
 APP_CONSTANTS.geolocationTypeText[APP_CONSTANTS.geolocationType.COUNTRY] =
     'Country';
 APP_CONSTANTS.geolocationTypeText[APP_CONSTANTS.geolocationType.REGION] =
-    'Region';
+    'State / Region';
 APP_CONSTANTS.geolocationTypeText[APP_CONSTANTS.geolocationType.DMA] = 'DMA®';
 APP_CONSTANTS.geolocationTypeText[APP_CONSTANTS.geolocationType.CITY] = 'City';
 APP_CONSTANTS.geolocationTypeText[APP_CONSTANTS.geolocationType.ZIP] =

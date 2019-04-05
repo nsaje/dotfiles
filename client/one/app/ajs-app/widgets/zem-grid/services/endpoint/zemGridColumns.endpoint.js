@@ -1719,7 +1719,7 @@ angular
             help: '',
         };
         NAME_COLUMN_BRANDING[constants.breakdown.STATE] = {
-            name: 'State',
+            name: 'State / Region',
             help: '',
         };
         NAME_COLUMN_BRANDING[constants.breakdown.DMA] = {
