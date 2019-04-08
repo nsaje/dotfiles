@@ -39,7 +39,7 @@ class ExtraDataSerializerTest(TestCase):
                 {
                     "level": "Global",
                     "direct_deal_connection_id": 1234,
-                    "deal_id": 1234,
+                    "deal_id": "1234_ABC",
                     "source": "SOURCE",
                     "exclusive": True,
                     "description": "DEAL FOR SOURCE",
@@ -85,7 +85,7 @@ class ExtraDataSerializerTest(TestCase):
                 {
                     "level": "Global",
                     "direct_deal_connection_id": 1234,
-                    "deal_id": 1234,
+                    "deal_id": "1234_ABC",
                     "source": "SOURCE",
                     "exclusive": True,
                     "description": "DEAL FOR SOURCE",

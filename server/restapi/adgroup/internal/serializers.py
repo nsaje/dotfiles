@@ -39,7 +39,7 @@ class ExtraDataWarningSerializer(restapi.serializers.base.RESTAPIBaseSerializer)
 class ExtraDataDealSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
     level = rest_framework.serializers.CharField(required=False)
     direct_deal_connection_id = rest_framework.serializers.IntegerField(required=False)
-    deal_id = rest_framework.serializers.IntegerField(required=False)
+    deal_id = rest_framework.serializers.CharField(required=False)
     source = rest_framework.serializers.CharField(required=False)
     exclusive = rest_framework.serializers.BooleanField(default=False, required=False)
     description = rest_framework.serializers.CharField(required=False)
@@ -61,8 +61,10 @@ class ExtraDataSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
     )
     audiences = rest_framework.serializers.ListField(child=ExtraDataAudiencesSerializer(), allow_empty=True)
     warnings = ExtraDataWarningSerializer(required=False, allow_null=True)
-    hacks = rest_framework.serializers.ListField(child=restapi.serializers.hack.HackSerializer(), allow_empty=True)
-    deals = rest_framework.serializers.ListField(child=ExtraDataDealSerializer(), allow_empty=True)
+    hacks = rest_framework.serializers.ListField(
+        child=restapi.serializers.hack.HackSerializer(), default=[], allow_empty=True
+    )
+    deals = rest_framework.serializers.ListField(child=ExtraDataDealSerializer(), default=[], allow_empty=True)
 
 
 class AdGroupSerializer(restapi.adgroup.v1.serializers.AdGroupSerializer):
