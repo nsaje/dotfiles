@@ -66,7 +66,7 @@ class AgencyInstanceMixin:
         updates = self._clean_updates(kwargs)
         if not updates:
             return
-        self.clean()
+        self.validate(updates, request=request)
         self._apply_updates_and_save(request, updates)
 
     def _clean_updates(self, updates):
@@ -78,15 +78,47 @@ class AgencyInstanceMixin:
         return new_updates
 
     def _apply_updates_and_save(self, request, updates):
+        sub_accounts_updates = dict()
+
         for field, value in updates.items():
-            if field == "is_disabled":
-                for account in self.account_set.all():
-                    account.update(request, is_disabled=value)
             if field == "entity_tags":
+                self.entity_tags.clear()
                 if value:
                     self.entity_tags.add(*value)
-                else:
-                    self.entity_tags.clear()
-                continue
-            setattr(self, field, value)
+            elif field == "allowed_sources":
+                self.allowed_sources.clear()
+                if value:
+                    self.allowed_sources.add(*value)
+            elif field == "users":
+                self.users.clear()
+                if value:
+                    self.users.add(*value)
+            elif field == "is_disabled":
+                self.is_disabled = value
+                sub_accounts_updates["is_disabled"] = value
+            elif field == "cs_representative":
+                self.cs_representative = value
+                sub_accounts_updates["default_cs_representative"] = value
+            elif field == "sales_representative":
+                self.sales_representative = value
+                sub_accounts_updates["default_sales_representative"] = value
+            elif field == "ob_representative":
+                self.ob_representative = value
+                sub_accounts_updates["ob_representative"] = value
+            elif field == "default_account_type":
+                self.default_account_type = value
+                sub_accounts_updates["account_type"] = value
+            elif field == "yahoo_account":
+                self.yahoo_account = value
+                sub_accounts_updates["yahoo_account"] = value
+            else:
+                setattr(self, field, value)
         self.save(request)
+        self._update_sub_accounts(request, **sub_accounts_updates)
+
+    def _update_sub_accounts(self, request, **updates):
+        if updates:
+            for account in self.account_set.all():
+
+                account.update(request, **updates)
+                account.settings.update(request, **updates)

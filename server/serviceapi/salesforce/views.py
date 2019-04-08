@@ -1,9 +1,11 @@
 import django.core.exceptions
 import django.db.utils
 import influx
+from rest_framework import generics
 from rest_framework.serializers import ValidationError
 
 import core.models
+import utils.exc
 from utils.rest_common import authentication
 
 from . import serializers
@@ -104,19 +106,43 @@ class AgencyView(base.ServiceAPIBaseView):
     def post(self, request):
         serializer = serializers.AgencySerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        new_agency = service.create_agency(request, **serializer.validated_data)
-        return self.response_ok(serializers.AgencySerializer(new_agency).data, status=200)
+        try:
+            new_agency = service.create_agency(request, **serializer.validated_data)
+            return self.response_ok(serializers.AgencySerializer(new_agency).data, status=200)
+        except utils.exc.ValidationError as e:
+            raise ValidationError(e)
 
     def put(self, request, agency_id):
         agency = core.models.Agency.objects.get(id=agency_id, is_externally_managed=True)
         serializer = serializers.AgencySerializer(data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
-        updated_agency = service.update_agency(request, agency, **serializer.validated_data)
-        return self.response_ok(serializers.AgencySerializer(updated_agency).data, status=200)
+        try:
+            updated_agency = service.update_agency(request, agency, **serializer.validated_data)
+            return self.response_ok(serializers.AgencySerializer(updated_agency).data, status=200)
+        except utils.exc.ValidationError as e:
+            raise ValidationError(e)
 
     def get(self, request, agency_id):
         agency = core.models.Agency.objects.get(id=agency_id, is_externally_managed=True)
         return self.response_ok(serializers.AgencySerializer(agency).data, status=200)
+
+
+class AgenciesView(base.ServiceAPIBaseView, generics.ListAPIView):
+    authentication_classes = (authentication.gen_oauth_authentication(OUTBRAIN_SERVICE_NAME),)
+    serializer_class = serializers.AgencySerializer
+
+    def get_queryset(self):
+        queryset = core.models.Agency.objects.filter(is_externally_managed=True)
+        date_range = serializers.DateRangeSerializer(data=self.request.query_params)
+        date_range.is_valid(raise_exception=True)
+
+        if date_range.validated_data.get("start_date"):
+            queryset = queryset.filter(modified_dt__gte=date_range.validated_data["start_date"])
+
+        if date_range.validated_data.get("end_date"):
+            queryset = queryset.filter(modified_dt__lte=date_range.validated_data["end_date"])
+
+        return set(queryset)
 
 
 class AccountView(base.ServiceAPIBaseView):
@@ -125,20 +151,53 @@ class AccountView(base.ServiceAPIBaseView):
     def post(self, request):
         serializer = serializers.AccountSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        new_account = service.create_account(request, **serializer.validated_data)
-        return self.response_ok(serializers.AccountSerializer(new_account).data, status=200)
+        try:
+            new_account = service.create_account(request, **serializer.validated_data)
+            return self.response_ok(serializers.AccountSerializer(new_account).data, status=200)
+        except utils.exc.ValidationError as e:
+            raise ValidationError(e)
 
     def put(self, request, account_id):
         account = core.models.Account.objects.get(
             id=account_id, agency__isnull=False, agency__is_externally_managed=True
         )
-        serializer = serializers.AccountSerializer(data=request.data, partial=True)
+        serializer = serializers.AccountSerializer(data=request.data, partial=True, context={"account_id": account_id})
         serializer.is_valid(raise_exception=True)
-        updated_account = service.update_account(request, account, **serializer.validated_data)
-        return self.response_ok(serializers.AccountSerializer(updated_account).data, status=200)
+        try:
+            updated_account = service.update_account(request, account, **serializer.validated_data)
+            return self.response_ok(serializers.AccountSerializer(updated_account).data, status=200)
+        except utils.exc.ValidationError as e:
+            raise ValidationError(e)
 
     def get(self, request, account_id):
         account = core.models.Account.objects.get(
             id=account_id, agency__isnull=False, agency__is_externally_managed=True
         )
+        return self.response_ok(serializers.AccountSerializer(account).data, status=200)
+
+
+class AccountsView(base.ServiceAPIBaseView, generics.ListAPIView):
+    authentication_classes = (authentication.gen_oauth_authentication(OUTBRAIN_SERVICE_NAME),)
+    serializer_class = serializers.AccountSerializer
+
+    def get_queryset(self):
+        queryset = core.models.Account.objects.filter(agency__is_externally_managed=True)
+        date_range = serializers.DateRangeSerializer(data=self.request.query_params)
+        date_range.is_valid(raise_exception=True)
+
+        if date_range.validated_data.get("start_date"):
+            queryset = queryset.filter(modified_dt__gte=date_range.validated_data["start_date"])
+
+        if date_range.validated_data.get("end_date"):
+            queryset = queryset.filter(modified_dt__lte=date_range.validated_data["end_date"])
+
+        return set(queryset)
+
+
+class AccountArchiveView(base.ServiceAPIBaseView):
+    authentication_classes = (authentication.gen_oauth_authentication(OUTBRAIN_SERVICE_NAME),)
+
+    def get(self, request, account_id):
+        account = core.models.Account.objects.get(id=account_id, agency__is_externally_managed=True)
+        account.archive(request)
         return self.response_ok(serializers.AccountSerializer(account).data, status=200)

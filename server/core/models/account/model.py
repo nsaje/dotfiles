@@ -28,22 +28,32 @@ class Account(AccountValidatorMixin, AccountInstanceMixin, models.Model):
     _demo_fields = {"name": utils.demo_anonymizer.account_name_from_pool}
     _update_fields = (
         "name",
-        "users",
         "auto_archiving_enabled",
         "agency",
-        "allowed_sources",
         "outbrain_marketer_id",
         "salesforce_url",
         "uses_bcm_v2",
         "custom_flags",
         "real_time_campaign_stop",
-        "currency",
         "entity_tags",
         "is_disabled",
         "yahoo_account",
         "default_whitelist",
         "default_blacklist",
         "agency",
+        "custom_attributes",
+        "salesforce_id",
+        "allowed_sources",
+        "users",
+    )
+    _externally_managed_fields = (
+        "id",
+        "name",
+        "salesforce_url",
+        "salesforce_id",
+        "is_disabled",
+        "custom_attributes",
+        "currency",
     )
 
     id = models.AutoField(primary_key=True)
