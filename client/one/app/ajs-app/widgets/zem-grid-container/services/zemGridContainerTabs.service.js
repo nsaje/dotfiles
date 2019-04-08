@@ -1,3 +1,5 @@
+var arrayHelpers = require('../../../../shared/helpers/array.helpers');
+
 angular
     .module('one.widgets')
     .service('zemGridContainerTabsService', function(zemPermissions) {
@@ -24,9 +26,14 @@ angular
             },
             additional_breakdowns: {
                 localStorageKey: 'tab.additional_breakdowns',
-                name: 'Media Sources',
-                breakdown: constants.breakdown.MEDIA_SOURCE,
+                name: null,
+                breakdown: null,
                 options: [
+                    {
+                        name: 'Publishers',
+                        breakdown: constants.breakdown.PUBLISHER,
+                        permissions: 'zemauth.can_see_publishers_all_levels',
+                    },
                     {
                         name: 'Media Sources',
                         breakdown: constants.breakdown.MEDIA_SOURCE,
@@ -34,33 +41,40 @@ angular
                     {
                         name: 'Country',
                         breakdown: constants.breakdown.COUNTRY,
+                        permissions:
+                            'zemauth.can_see_top_level_delivery_breakdowns',
                     },
                     {
                         name: 'State / Region',
                         breakdown: constants.breakdown.STATE,
+                        permissions:
+                            'zemauth.can_see_top_level_delivery_breakdowns',
                     },
                     {
                         name: 'DMA',
                         breakdown: constants.breakdown.DMA,
+                        permissions:
+                            'zemauth.can_see_top_level_delivery_breakdowns',
                     },
                     {
                         name: 'Device',
                         breakdown: constants.breakdown.DEVICE,
+                        permissions:
+                            'zemauth.can_see_top_level_delivery_breakdowns',
                     },
                     {
                         name: 'Placement',
                         breakdown: constants.breakdown.PLACEMENT,
+                        permissions:
+                            'zemauth.can_see_top_level_delivery_breakdowns',
                     },
                     {
                         name: 'Operating System',
                         breakdown: constants.breakdown.OPERATING_SYSTEM,
+                        permissions:
+                            'zemauth.can_see_top_level_delivery_breakdowns',
                     },
                 ],
-            },
-            publishers: {
-                localStorageKey: 'tab.publishers',
-                name: 'Publishers',
-                breakdown: constants.breakdown.PUBLISHER,
             },
             insights: {
                 localStorageKey: 'tab.insights',
@@ -77,54 +91,18 @@ angular
         function createTabOptions(entity) {
             var options = [];
             if (!entity) {
-                options = [
-                    angular.copy(TABS.accounts),
-                    angular.copy(getAdditionalBreakdownsTab()),
-                ];
-                if (
-                    zemPermissions.hasPermission(
-                        'zemauth.can_see_publishers_all_levels'
-                    )
-                ) {
-                    options.push(angular.copy(TABS.publishers));
-                }
+                addTab(options, TABS.accounts);
+                addTab(options, TABS.additional_breakdowns);
             } else if (entity.type === constants.entityType.ACCOUNT) {
-                options = [
-                    angular.copy(TABS.campaigns),
-                    angular.copy(getAdditionalBreakdownsTab()),
-                ];
-                if (
-                    zemPermissions.hasPermission(
-                        'zemauth.can_see_publishers_all_levels'
-                    )
-                ) {
-                    options.push(angular.copy(TABS.publishers));
-                }
-            } else if (
-                entity &&
-                entity.type === constants.entityType.CAMPAIGN
-            ) {
-                options = [
-                    angular.copy(TABS.ad_groups),
-                    angular.copy(getAdditionalBreakdownsTab()),
-                    angular.copy(TABS.insights),
-                ];
-                if (
-                    zemPermissions.hasPermission(
-                        'zemauth.can_see_publishers_all_levels'
-                    )
-                ) {
-                    options.splice(2, 0, angular.copy(TABS.publishers));
-                }
-            } else if (
-                entity &&
-                entity.type === constants.entityType.AD_GROUP
-            ) {
-                options = [
-                    angular.copy(TABS.content_ads),
-                    angular.copy(getAdditionalBreakdownsTab()),
-                    angular.copy(TABS.publishers),
-                ];
+                addTab(options, TABS.campaigns);
+                addTab(options, TABS.additional_breakdowns);
+            } else if (entity.type === constants.entityType.CAMPAIGN) {
+                addTab(options, TABS.ad_groups);
+                addTab(options, TABS.additional_breakdowns);
+                addTab(options, TABS.insights);
+            } else if (entity.type === constants.entityType.AD_GROUP) {
+                addTab(options, TABS.content_ads);
+                addTab(options, TABS.additional_breakdowns);
             }
             return options;
         }
@@ -132,16 +110,51 @@ angular
         //
         // Private methods
         //
-        function getAdditionalBreakdownsTab() {
-            if (
-                zemPermissions.hasPermission(
-                    'zemauth.can_see_top_level_delivery_breakdowns'
-                )
-            ) {
-                return TABS.additional_breakdowns;
+
+        function hasOptions(tab) {
+            return !arrayHelpers.isEmpty(tab.options);
+        }
+
+        function addTab(tabs, tab) {
+            if (hasOptions(tab)) {
+                addTabItemWithOptions(tabs, tab);
+            } else {
+                addTabItem(tabs, tab);
             }
-            var tab = angular.copy(TABS.additional_breakdowns);
-            tab.options = [];
-            return tab;
+        }
+
+        function addTabItemWithOptions(tabs, tab) {
+            var options = angular.copy(tab.options).filter(function(option) {
+                if (option.permissions) {
+                    var hasPermissions = zemPermissions.hasPermission(
+                        option.permissions
+                    );
+                    if (hasPermissions) {
+                        return option;
+                    }
+                } else {
+                    return option;
+                }
+            });
+            if (options && options.length > 0) {
+                var tabCopy = angular.copy(tab);
+                tabCopy.name = options[0].name;
+                tabCopy.breakdown = options[0].breakdown;
+                tabCopy.options = options.length > 1 ? options : null;
+                tabs.push(tabCopy);
+            }
+        }
+
+        function addTabItem(tabs, tab) {
+            if (tab.permissions) {
+                var hasPermissions = zemPermissions.hasPermission(
+                    tab.permissions
+                );
+                if (hasPermissions) {
+                    tabs.push(angular.copy(tab));
+                }
+            } else {
+                tabs.push(angular.copy(tab));
+            }
         }
     });
