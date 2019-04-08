@@ -156,7 +156,7 @@ class AccountInstanceMixin:
         updates = self._clean_updates(kwargs)
         if not updates:
             return
-        self.clean()
+        self.validate(updates, request=request)
         self._apply_updates_and_save(request, updates)
 
     def _clean_updates(self, updates):
@@ -170,10 +170,17 @@ class AccountInstanceMixin:
     def _apply_updates_and_save(self, request, updates):
         for field, value in updates.items():
             if field == "entity_tags":
+                self.entity_tags.clear()
                 if value:
                     self.entity_tags.add(*value)
-                else:
-                    self.entity_tags.clear()
-                continue
-            setattr(self, field, value)
+            elif field == "allowed_sources":
+                self.allowed_sources.clear()
+                if value:
+                    self.allowed_sources.add(*value)
+            elif field == "users":
+                self.users.clear()
+                if value:
+                    self.users.add(*value)
+            else:
+                setattr(self, field, value)
         self.save(request)

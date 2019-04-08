@@ -5,6 +5,7 @@ import dash.constants
 import zemauth.models
 from utils.magic_mixer import magic_mixer
 
+from . import exceptions
 from .model import Account
 
 
@@ -54,3 +55,17 @@ class AccountManagerTestCase(TestCase):
         self.assertEqual(sales_representative, account.settings.default_sales_representative)
         self.assertEqual(cs_representative, account.settings.default_cs_representative)
         self.assertEqual(ob_representative, account.settings.ob_representative)
+
+    def test_create_externally_managed_agency_invalid(self):
+        agency = magic_mixer.blend(core.models.Agency, id=1, name="Agency1", is_externally_managed=True)
+
+        with self.assertRaisesMessage(
+            exceptions.CreatingAccountNotAllowed, "Creating accounts for an externally managed agency is prohibited."
+        ):
+            Account.objects.create(self.request, name="Account 1", agency=agency)
+
+    def test_create_externally_managed_agency_valid(self):
+        agency = magic_mixer.blend(core.models.Agency, id=1, name="Agency1", is_externally_managed=True)
+        self.request.user.email = "outbrain-salesforce@service.zemanta.com"
+        Account.objects.create(self.request, name="Account 1", agency=agency)
+        self.assertIsNotNone(core.models.Account.objects.filter(name="Account 1").first())

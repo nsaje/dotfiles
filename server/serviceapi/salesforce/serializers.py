@@ -117,11 +117,14 @@ class TagSerializer(serializers.BaseSerializer):
         return data
 
 
-class AgencySerializer(serializers.Serializer):
-    id = serializers.IntegerField(required=False)
-    name = restapi.serializers.fields.PlainCharField()
+class AgencySerializer(serializers.ModelSerializer):
     tags = TagSerializer(source="entity_tags", many=True, required=False)
-    is_disabled = serializers.BooleanField(required=False)
+    custom_attributes = serializers.JSONField(required=False)
+    modified_dt = serializers.DateTimeField(format="%d-%m-%Y", read_only=True)
+
+    class Meta:
+        model = core.models.Agency
+        fields = core.models.Agency._externally_managed_fields + ("tags", "custom_attributes")
 
     def validate_name(self, value):
         agency = core.models.Agency.objects.filter(name=value).first()
@@ -130,23 +133,33 @@ class AgencySerializer(serializers.Serializer):
         return value
 
 
-class AccountSerializer(serializers.Serializer):
-    id = serializers.IntegerField(required=False)
-    name = restapi.serializers.fields.PlainCharField()
-    agency_id = serializers.PrimaryKeyRelatedField(
-        source="agency", queryset=core.models.Agency.objects.filter(is_externally_managed=True)
-    )
-    salesforce_url = serializers.URLField(required=False)
-    currency = serializers.ChoiceField(choices=constants.OUTBRAIN_CURRENCIES, required=False)
+class AccountSerializer(serializers.ModelSerializer):
+    agency_id = serializers.PrimaryKeyRelatedField(source="agency", queryset=core.models.Agency.objects.all())
     sales_representative = serializers.EmailField(required=False, source="settings.default_sales_representative")
     account_manager = serializers.EmailField(required=False, source="settings.default_account_manager")
-    is_disabled = serializers.BooleanField(required=False)
     tags = TagSerializer(source="entity_tags", many=True, required=False)
+    custom_attributes = serializers.JSONField(required=False)
+    is_archived = serializers.BooleanField(read_only=True)
+    modified_dt = serializers.DateTimeField(format="%d-%m-%Y", read_only=True)
+
+    class Meta:
+        model = core.models.Account
+        fields = core.models.Account._externally_managed_fields + (
+            "agency_id",
+            "sales_representative",
+            "account_manager",
+            "tags",
+            "custom_attributes",
+            "is_archived",
+            "modified_dt",
+        )
 
     def validate_agency_id(self, value):
         agency = core.models.Agency.objects.filter(id=value.id, is_externally_managed=True).first()
         if not agency:
             raise exc.AgencyNotExternallyManaged("Agency provided does not exists or is not externally manageable.")
+        if agency.is_disabled:
+            raise exc.CreatingAccountOnDisabledAgency("Creating account on a disabled agency is not allowed.")
         return agency
 
     def validate_sales_representative(self, value):
@@ -160,3 +173,8 @@ class AccountSerializer(serializers.Serializer):
         if not account_manager:
             raise exc.SalesRepresentativeNotFound("Account manager e-mail not found.")
         return account_manager
+
+
+class DateRangeSerializer(serializers.Serializer):
+    start_date = serializers.DateField(input_formats=["%d-%m-%Y"], format="%d-%m-%Y", required=False)
+    end_date = serializers.DateField(input_formats=["%d-%m-%Y"], format="%d-%m-%Y", required=False)
