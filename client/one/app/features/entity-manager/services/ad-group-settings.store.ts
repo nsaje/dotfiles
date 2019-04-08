@@ -26,6 +26,7 @@ export class AdGroupSettingsStore extends Store<AdGroupSettingsStoreState>
     implements OnDestroy {
     private ngUnsubscribe$: Subject<void> = new Subject();
     private requestStateUpdater: RequestStateUpdater;
+    private originalEntity: AdGroup;
 
     constructor(
         private adGroupService: AdGroupService,
@@ -55,6 +56,7 @@ export class AdGroupSettingsStore extends Store<AdGroupSettingsStoreState>
     loadEntity(id: number) {
         this.adGroupService.get(id, this.requestStateUpdater).subscribe(
             (adGroupWithExtras: AdGroupWithExtras) => {
+                this.originalEntity = clone(adGroupWithExtras.adGroup);
                 this.setState({
                     ...this.state,
                     entity: adGroupWithExtras.adGroup,
@@ -125,6 +127,13 @@ export class AdGroupSettingsStore extends Store<AdGroupSettingsStoreState>
                     this.updateState(fieldsErrors, 'fieldsErrors');
                 }
             );
+    }
+
+    doEntitySettingsHaveUnsavedChanges(): boolean {
+        if (!this.originalEntity) {
+            return false;
+        }
+        return !deepEqual(this.originalEntity, this.state.entity);
     }
 
     isAdGroupAutopilotEnabled() {

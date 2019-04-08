@@ -1,4 +1,4 @@
-import {EntityType, CampaignGoalKPI} from '../../app.constants';
+import {EntityType} from '../../app.constants';
 
 export const ENTITY_MANAGER_CONFIG = {
     settingsQueryParam: 'settings',

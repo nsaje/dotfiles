@@ -69,12 +69,6 @@ export class AdGroupSettingsDrawerView
     }
 
     close() {
-        if (this.isNewEntity) {
-            return this.redirectToNewEntityAnalyticsView(
-                this.store.state.entity.id
-            );
-        }
-
         this.isOpen = false;
         setTimeout(() => {
             this.ajs$location
@@ -84,17 +78,31 @@ export class AdGroupSettingsDrawerView
     }
 
     cancel() {
-        // TODO (jurebajt): Check if unsaved changes are present and show an alert
-        if (this.isNewEntity) {
-            return this.redirectToParentAnalyticsView(this.newEntityParentId);
+        let shouldCloseDrawer = true;
+        if (this.store.doEntitySettingsHaveUnsavedChanges()) {
+            shouldCloseDrawer = confirm(
+                'You have unsaved changes.\nAre you sure you want to close settings?'
+            );
         }
-        this.close();
+        if (shouldCloseDrawer) {
+            if (this.isNewEntity) {
+                this.redirectToParentAnalyticsView(this.newEntityParentId);
+            } else {
+                this.close();
+            }
+        }
     }
 
     async saveSettings() {
         const shouldCloseDrawer = await this.store.saveEntity();
         if (shouldCloseDrawer) {
-            this.close();
+            if (this.isNewEntity) {
+                this.redirectToNewEntityAnalyticsView(
+                    this.store.state.entity.id
+                );
+            } else {
+                this.close();
+            }
         }
     }
 

@@ -260,6 +260,24 @@ describe('AdGroupSettingsStore', () => {
         expect(navigationNewServiceStub.refreshState).not.toHaveBeenCalled();
     }));
 
+    it('should correctly determine if ad group settings have unsaved changes', fakeAsync(() => {
+        serviceStub.get.and
+            .returnValue(of(clone(adGroupWithExtras), asapScheduler))
+            .calls.reset();
+
+        expect(store.doEntitySettingsHaveUnsavedChanges()).toBe(false);
+
+        store.loadEntity(1);
+        tick();
+        expect(store.doEntitySettingsHaveUnsavedChanges()).toBe(false);
+
+        store.setState({
+            ...store.state,
+            entity: {...store.state.entity, name: 'Modified name'},
+        });
+        expect(store.doEntitySettingsHaveUnsavedChanges()).toBe(true);
+    }));
+
     it('should correctly determine if ad group autopilot is enabled', () => {
         store.updateState(
             AdGroupAutopilotState.ACTIVE_CPC_BUDGET,
