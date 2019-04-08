@@ -191,6 +191,21 @@ export enum CampaignType {
     DISPLAY = 5,
 }
 
+export enum CampaignGoalKPI {
+    TIME_ON_SITE = 'TIME_ON_SITE',
+    MAX_BOUNCE_RATE = 'MAX_BOUNCE_RATE',
+    PAGES_PER_SESSION = 'PAGES_PER_SESSION',
+    CPA = 'CPA',
+    CPC = 'CPC',
+    CPM = 'CPM',
+    NEW_UNIQUE_VISITORS = 'NEW_UNIQUE_VISITORS',
+    CPV = 'CPV',
+    CP_NON_BOUNCED_VISIT = 'CP_NON_BOUNCED_VISIT',
+    CP_NEW_VISITOR = 'CP_NEW_VISITOR',
+    CP_PAGE_VIEW = 'CP_PAGE_VIEW',
+    CPCV = 'CPCV',
+}
+
 export const APP_CONSTANTS = {
     /**
      * Max. selected media sources in on sources tabs.

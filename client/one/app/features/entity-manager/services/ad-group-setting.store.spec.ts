@@ -7,7 +7,7 @@ import {AdGroupWithExtras} from '../../../core/entities/types/ad-group/ad-group-
 import {AdGroup} from '../../../core/entities/types/ad-group/ad-group';
 import {AdGroupExtras} from '../../../core/entities/types/ad-group/ad-group-extras';
 import {AdGroupSettingsStoreFieldsErrorsState} from './ad-group-settings.store.fields-errors-state';
-import {InterestCategory} from '../../../app.constants';
+import {InterestCategory, AdGroupAutopilotState} from '../../../app.constants';
 
 describe('AdGroupSettingsStore', () => {
     let serviceStub: jasmine.SpyObj<AdGroupService>;
@@ -260,6 +260,35 @@ describe('AdGroupSettingsStore', () => {
         expect(navigationNewServiceStub.refreshState).not.toHaveBeenCalled();
     }));
 
+    it('should correctly determine if ad group autopilot is enabled', () => {
+        store.updateState(
+            AdGroupAutopilotState.ACTIVE_CPC_BUDGET,
+            'entity',
+            'autopilot',
+            'state'
+        );
+        expect(store.isAdGroupAutopilotEnabled()).toBe(true);
+
+        store.updateState(
+            AdGroupAutopilotState.ACTIVE_CPC,
+            'entity',
+            'autopilot',
+            'state'
+        );
+        expect(store.isAdGroupAutopilotEnabled()).toBe(false);
+    });
+
+    it('should correctly determine if ad group autopilot is enabled when campaign autopilot is enabled', () => {
+        store.updateState(true, 'extras', 'isCampaignAutopilotEnabled');
+        store.updateState(
+            AdGroupAutopilotState.ACTIVE_CPC_BUDGET,
+            'entity',
+            'autopilot',
+            'state'
+        );
+        expect(store.isAdGroupAutopilotEnabled()).toBe(false);
+    });
+
     it('should correctly set device targeting', () => {
         const $event: any = {
             targetDevices: ['TABLE', 'MOBILE'],
@@ -366,5 +395,23 @@ describe('AdGroupSettingsStore', () => {
         expect(store.state.entity.targeting.audience).toEqual(null);
         store.setBluekaiTargeting($event);
         expect(store.state.entity.targeting.audience).toEqual($event);
+    });
+
+    it('should correctly set state when ad group optimization is set to inactive', () => {
+        store.updateState(true, 'entity', 'manageRTBSourcesAsOne');
+        store.setAdGroupAutopilotState(AdGroupAutopilotState.INACTIVE);
+        expect(store.state.entity.autopilot.state).toEqual(
+            AdGroupAutopilotState.INACTIVE
+        );
+        expect(store.state.entity.manageRTBSourcesAsOne).toBe(true);
+    });
+
+    it('should correctly set state when ad group optimization is set to optimize towards campaign goal', () => {
+        store.updateState(false, 'entity', 'manageRTBSourcesAsOne');
+        store.setAdGroupAutopilotState(AdGroupAutopilotState.ACTIVE_CPC_BUDGET);
+        expect(store.state.entity.autopilot.state).toEqual(
+            AdGroupAutopilotState.ACTIVE_CPC_BUDGET
+        );
+        expect(store.state.entity.manageRTBSourcesAsOne).toBe(true);
     });
 });

@@ -1,0 +1,46 @@
+<div class="zem-settings-form-group">
+    <div class="zem-settings-form-group__content">
+        <zem-radio-input
+            class="zem-radio-input zem-settings-form-group__content-item"
+            [groupModel]="autopilotState"
+            [value]="AdGroupAutopilotState.ACTIVE_CPC_BUDGET"
+            (select)="autopilotStateChange.emit($event)"
+        >
+            Optimize towards your campaign goal
+        </zem-radio-input>
+        <div
+            class="zem-settings-form-group__subgroup"
+            *ngIf="autopilotState === AdGroupAutopilotState.ACTIVE_CPC_BUDGET"
+        >
+            <div class="message message--info message--with-icon">
+                Zemanta One will optimize for
+                <strong>{{ optimizationObjectiveText }}</strong> and try to hit
+                the ad group's daily spend cap. To change optimization objective
+                please change primary campaign goal in campaign settings.
+                <span
+                    class="zem-ad-group-autopilot-state-setting__cpa-optimization-note"
+                    *ngIf="cpaOptimizationNote"
+                >
+                    {{ cpaOptimizationNote }}
+                </span>
+            </div>
+        </div>
+        <zem-radio-input
+            class="zem-radio-input zem-settings-form-group__content-item zem-settings-form-group__content-item--no-spacing"
+            [groupModel]="autopilotState"
+            [value]="AdGroupAutopilotState.ACTIVE_CPC"
+            (select)="autopilotStateChange.emit($event)"
+        >
+            Optimize your bids (we’ll automatically lower the bids until the
+            daily caps are met, with respect to your CPC)
+        </zem-radio-input>
+        <zem-radio-input
+            class="zem-radio-input zem-settings-form-group__content-item zem-settings-form-group__content-item--no-spacing"
+            [groupModel]="autopilotState"
+            [value]="AdGroupAutopilotState.INACTIVE"
+            (select)="autopilotStateChange.emit($event)"
+        >
+            No optimization (full manual control)
+        </zem-radio-input>
+    </div>
+</div>

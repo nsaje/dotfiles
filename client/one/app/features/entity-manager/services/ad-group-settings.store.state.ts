@@ -65,6 +65,7 @@ export class AdGroupSettingsStoreState {
             state: null,
             dailyBudget: null,
         },
+        manageRTBSourcesAsOne: false,
         frequencyCapping: null,
         notes: null,
     };
@@ -75,6 +76,7 @@ export class AdGroupSettingsStoreState {
         isCampaignAutopilotEnabled: false,
         accountId: null,
         currency: null,
+        optimizationObjective: null,
         defaultSettings: {
             targetRegions: {
                 countries: [],

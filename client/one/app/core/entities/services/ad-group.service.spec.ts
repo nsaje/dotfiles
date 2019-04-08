@@ -4,7 +4,12 @@ import {AdGroupService} from './ad-group.service';
 import {AdGroupEndpoint} from './ad-group.endpoint';
 import {EntitiesUpdatesService} from './entities-updates.service';
 import {AdGroupWithExtras} from '../types/ad-group/ad-group-with-extras';
-import {EntityType, EntityUpdateAction, Currency} from '../../../app.constants';
+import {
+    EntityType,
+    EntityUpdateAction,
+    Currency,
+    CampaignGoalKPI,
+} from '../../../app.constants';
 import {tick, fakeAsync} from '@angular/core/testing';
 import {AdGroup} from '../types/ad-group/ad-group';
 import {RequestStateUpdater} from '../../../shared/types/request-state-updater';
@@ -46,6 +51,7 @@ describe('AdGroupService', () => {
             isCampaignAutopilotEnabled: false,
             accountId: 12345,
             currency: Currency.USD,
+            optimizationObjective: CampaignGoalKPI.CPC,
             defaultSettings: {
                 targetRegions: {
                     countries: [],

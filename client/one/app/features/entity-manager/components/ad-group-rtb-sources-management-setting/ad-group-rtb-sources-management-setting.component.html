@@ -1,0 +1,31 @@
+<div class="zem-settings-form-group">
+    <label class="zem-settings-form-group__label">Manage RTB sources</label>
+    <div class="zem-settings-form-group__content">
+        <zem-radio-input
+            class="zem-radio-input zem-settings-form-group__content-item"
+            [groupModel]="manageRTBSourcesAsOne"
+            [value]="true"
+            [isDisabled]="isDisabled"
+            (select)="manageRTBSourcesAsOneChange.emit($event)"
+        >
+            As a group
+            <span class="zem-radio-input__deemphasized-label-text"
+                >- Set one Bid and Daily Spend Cap for all RTB sources
+                together.</span
+            >
+        </zem-radio-input>
+        <zem-radio-input
+            class="zem-radio-input zem-settings-form-group__content-item zem-settings-form-group__content-item--no-spacing"
+            [groupModel]="manageRTBSourcesAsOne"
+            [value]="false"
+            [isDisabled]="isDisabled"
+            (select)="manageRTBSourcesAsOneChange.emit($event)"
+        >
+            Separately
+            <span class="zem-radio-input__deemphasized-label-text"
+                >- Set Bid and Daily Spend Cap for each of the RTB
+                sources.</span
+            >
+        </zem-radio-input>
+    </div>
+</div>

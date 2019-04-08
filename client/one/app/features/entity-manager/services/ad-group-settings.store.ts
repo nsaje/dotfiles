@@ -37,7 +37,7 @@ export class AdGroupSettingsStore extends Store<AdGroupSettingsStoreState>
         );
     }
 
-    loadEntityDefaults(campaignId: number): void {
+    loadEntityDefaults(campaignId: number) {
         this.adGroupService
             .defaults(campaignId, this.requestStateUpdater)
             .subscribe(
@@ -52,7 +52,7 @@ export class AdGroupSettingsStore extends Store<AdGroupSettingsStoreState>
             );
     }
 
-    loadEntity(id: number): void {
+    loadEntity(id: number) {
         this.adGroupService.get(id, this.requestStateUpdater).subscribe(
             (adGroupWithExtras: AdGroupWithExtras) => {
                 this.setState({
@@ -65,7 +65,7 @@ export class AdGroupSettingsStore extends Store<AdGroupSettingsStoreState>
         );
     }
 
-    validateEntity(): void {
+    validateEntity() {
         this.adGroupService
             .validate(this.state.entity, this.requestStateUpdater)
             .subscribe(
@@ -110,7 +110,7 @@ export class AdGroupSettingsStore extends Store<AdGroupSettingsStoreState>
         });
     }
 
-    archiveEntity(): void {
+    archiveEntity() {
         this.adGroupService
             .archive(this.state.entity.id, this.requestStateUpdater)
             .subscribe(
@@ -205,7 +205,7 @@ export class AdGroupSettingsStore extends Store<AdGroupSettingsStoreState>
         targetDevices?: string[];
         targetPlacements?: string[];
         targetOs?: OperatingSystem[];
-    }): void {
+    }) {
         this.setState({
             ...this.state,
             entity: {
@@ -223,7 +223,7 @@ export class AdGroupSettingsStore extends Store<AdGroupSettingsStoreState>
     setPublisherGroupsTargeting(publisherGroupsTargeting: {
         whitelistedPublisherGroups?: number[];
         blacklistedPublisherGroups?: number[];
-    }): void {
+    }) {
         const newPublisherGroupsTargeting: IncludedExcluded<number[]> = {
             included: publisherGroupsTargeting.whitelistedPublisherGroups
                 ? publisherGroupsTargeting.whitelistedPublisherGroups
@@ -244,7 +244,7 @@ export class AdGroupSettingsStore extends Store<AdGroupSettingsStoreState>
     setInterestTargeting(interestTargeting: {
         includedInterests?: InterestCategory[];
         excludedInterests?: InterestCategory[];
-    }): void {
+    }) {
         const newInterestTargeting: IncludedExcluded<InterestCategory[]> = {
             included: interestTargeting.includedInterests
                 ? interestTargeting.includedInterests
@@ -267,7 +267,7 @@ export class AdGroupSettingsStore extends Store<AdGroupSettingsStoreState>
         excludedAudiences?: number[];
         includedAdGroups?: number[];
         excludedAdGroups?: number[];
-    }): void {
+    }) {
         const customAudiences: IncludedExcluded<number[]> = {
             included: retargeting.includedAudiences
                 ? retargeting.includedAudiences
@@ -299,11 +299,36 @@ export class AdGroupSettingsStore extends Store<AdGroupSettingsStoreState>
         });
     }
 
-    setBluekaiTargeting(bluekaiTargeting: any): void {
+    setBluekaiTargeting(bluekaiTargeting: any) {
         this.updateState(bluekaiTargeting, 'entity', 'targeting', 'audience');
     }
 
-    ngOnDestroy(): void {
+    setAdGroupAutopilotState(autopilotState: AdGroupAutopilotState) {
+        const manageRTBSourcesAsOne =
+            autopilotState === AdGroupAutopilotState.ACTIVE_CPC_BUDGET ||
+            this.state.entity.manageRTBSourcesAsOne;
+        this.setState({
+            ...this.state,
+            entity: {
+                ...this.state.entity,
+                autopilot: {
+                    ...this.state.entity.autopilot,
+                    state: autopilotState,
+                },
+                manageRTBSourcesAsOne: manageRTBSourcesAsOne,
+            },
+        });
+    }
+
+    setManageRTBSourcesAsOne(manageRTBSourcesAsOne: boolean) {
+        this.updateState(
+            manageRTBSourcesAsOne,
+            'entity',
+            'manageRTBSourcesAsOne'
+        );
+    }
+
+    ngOnDestroy() {
         this.ngUnsubscribe$.next();
         this.ngUnsubscribe$.complete();
     }

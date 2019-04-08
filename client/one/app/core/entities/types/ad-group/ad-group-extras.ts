@@ -3,7 +3,7 @@ import {AdGroupExtrasWarnings} from './ad-group-extras-warnings';
 import {AdGroupExtrasAudience} from './ad-group-extras-audience';
 import {AdGroupExtrasRetargetableAdGroup} from './ad-group-extras-retargetable-ad-group';
 import {AdGroupExtrasDefaultSettings} from './ad-group-extras-default-settings';
-import {Currency} from '../../../../app.constants';
+import {Currency, CampaignGoalKPI} from '../../../../app.constants';
 
 export interface AdGroupExtras {
     actionIsWaiting: boolean;
@@ -12,6 +12,7 @@ export interface AdGroupExtras {
     isCampaignAutopilotEnabled: boolean;
     accountId: number;
     currency: Currency;
+    optimizationObjective: CampaignGoalKPI;
     defaultSettings: AdGroupExtrasDefaultSettings;
     retargetableAdGroups: AdGroupExtrasRetargetableAdGroup[];
     audiences: AdGroupExtrasAudience[];

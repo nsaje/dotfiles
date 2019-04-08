@@ -31,6 +31,8 @@ import {PublisherGroupTargetingComponent} from './components/publisher-groups-ta
 import {RetargetingComponent} from './components/retargeting/retargeting.component';
 import {BiddingTypeSettingComponent} from './components/bidding-type-setting/bidding-type-setting.component';
 import {AdvancedSettingsSectionComponent} from './components/advanced-settings-section/advanced-settings-section.component';
+import {AdGroupAutopilotStateSettingComponent} from './components/ad-group-autopilot-state-setting/ad-group-autopilot-state-setting.component';
+import {AdGroupRTBSourcesManagementSettingComponent} from './components/ad-group-rtb-sources-management-setting/ad-group-rtb-sources-management-setting.component';
 
 @NgModule({
     declarations: [
@@ -60,6 +62,8 @@ import {AdvancedSettingsSectionComponent} from './components/advanced-settings-s
         PublisherGroupTargetingComponent,
         RetargetingComponent,
         AdvancedSettingsSectionComponent,
+        AdGroupAutopilotStateSettingComponent,
+        AdGroupRTBSourcesManagementSettingComponent,
     ],
     imports: [SharedModule],
     entryComponents: [
