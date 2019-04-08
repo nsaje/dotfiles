@@ -15,7 +15,3 @@ class AccountManagerNotFound(ValidationError):
 
 class AgencyNameAlreadyExists(ValidationError):
     pass
-
-
-class CreatingAccountOnDisabledAgency(ValidationError):
-    pass

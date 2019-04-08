@@ -400,12 +400,11 @@ class AgencyAdmin(SlackLoggerMixin, ExportMixin, admin.ModelAdmin):
         "settings",
         "_accounts_cs",
         "custom_attributes",
-        "is_disabled",
     )
     inlines = (AgencyUserInline, DirectDealConnectionAgencyInline)
     resource_class = AgencyResource
     search_fields = ("name", "id")
-    autocomplete_fields = ("allowed_sources", "ob_representative")
+    autocomplete_fields = ("allowed_sources", "cs_representative", "sales_representative", "ob_representative")
 
     def __init__(self, model, admin_site):
         super(AgencyAdmin, self).__init__(model, admin_site)
@@ -418,9 +417,7 @@ class AgencyAdmin(SlackLoggerMixin, ExportMixin, admin.ModelAdmin):
 
     def get_queryset(self, request):
         qs = super(AgencyAdmin, self).get_queryset(request)
-        return qs.select_related("sales_representative", "ob_representative", "cs_representative").prefetch_related(
-            "users", "account_set"
-        )
+        return qs.select_related("sales_representative", "cs_representative").prefetch_related("users", "account_set")
 
     def _users(self, obj):
         names = []
@@ -450,16 +447,37 @@ class AgencyAdmin(SlackLoggerMixin, ExportMixin, admin.ModelAdmin):
     @pgdh.catch_and_report_exception(pgdh.PagerDutyEventType.PRODOPS)
     def save_model(self, request, obj, form, change):
         old_obj = models.Agency.objects.get(id=obj.id)
-        fields_to_update = {
-            k: v for k, v in form.cleaned_data.items() if k in old_obj._update_fields and v != getattr(old_obj, k)
-        }
-        old_obj.update(request, **fields_to_update)
-        settings_to_update = {
-            k: v
-            for k, v in form.cleaned_data.items()
-            if k in old_obj.settings._settings_fields and v != getattr(old_obj.settings, k)
-        }
-        old_obj.settings.update(request, **settings_to_update)
+        current_settings = obj.get_current_settings()
+        new_settings = current_settings.copy_settings()
+        for field in form.SETTINGS_FIELDS:
+            value = form.cleaned_data.get(field)
+            if getattr(new_settings, field) != value:
+                setattr(new_settings, field, value)
+        changes = current_settings.get_setting_changes(new_settings)
+        if changes:
+            new_settings.save(request)
+        obj.save(request)
+
+        account_updates = dict()
+        if "cs_representative" in form.changed_data:
+            account_updates["default_cs_representative"] = ZemUser.objects.get(
+                email=form.cleaned_data["cs_representative"]
+            )
+        if "ob_representative" in form.changed_data:
+            account_updates["ob_representative"] = ZemUser.objects.get(email=form.cleaned_data["ob_representative"])
+        if "sales_representative" in form.changed_data:
+            account_updates["default_sales_representative"] = ZemUser.objects.get(
+                email=form.cleaned_data["sales_representative"]
+            )
+        if "account_type" in form.changed_data:
+            account_updates["account_type"] = form.cleaned_data["default_account_type"]
+
+        for account in obj.account_set.all():
+            if account_updates:
+                account.settings.update(request, **account_updates)
+            if "yahoo_account" in form.changed_data:
+                account.yahoo_account = obj.yahoo_account
+                account.save(request)
 
         utils.k1_helper.update_ad_groups(
             models.AdGroup.objects.filter(campaign__account__agency_id=obj.id)
@@ -578,10 +596,7 @@ class AccountAdmin(SlackLoggerMixin, SaveWithRequestMixin, admin.ModelAdmin):
     @pgdh.catch_and_report_exception(pgdh.PagerDutyEventType.PRODOPS)
     def save_model(self, request, obj, form, change):
         old_obj = models.Account.objects.get(id=obj.id)
-        fields_to_update = {
-            k: v for k, v in form.cleaned_data.items() if k in old_obj._update_fields and v != getattr(old_obj, k)
-        }
-        old_obj.update(request, **fields_to_update)
+        old_obj.update(request, **form.cleaned_data)
         utils.k1_helper.update_ad_groups(
             models.AdGroup.objects.filter(campaign__account_id=obj.id)
             .select_related("campaign")

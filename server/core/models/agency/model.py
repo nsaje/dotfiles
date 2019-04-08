@@ -30,9 +30,12 @@ class Agency(AgencyValidatorMixin, AgencyInstanceMixin, models.Model):
         "name",
         "sales_representative",
         "cs_representative",
+        "cs_representative",
         "ob_representative",
         "white_label",
+        "users",
         "new_accounts_use_bcm_v2",
+        "allowed_sources",
         "custom_flags",
         "default_whitelist",
         "default_blacklist",
@@ -42,14 +45,7 @@ class Agency(AgencyValidatorMixin, AgencyInstanceMixin, models.Model):
         "is_externally_managed",
         "is_disabled",
         "entity_tags",
-        "custom_attributes",
-        "users",
-        "allowed_sources",
-        "default_account_type",
     )
-
-    _externally_managed_fields = ("id", "name", "is_disabled", "custom_attributes", "modified_dt")
-
     id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=127, editable=True, unique=True, blank=False, null=False)
     sales_representative = models.ForeignKey(

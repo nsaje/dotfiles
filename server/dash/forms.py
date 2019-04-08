@@ -717,12 +717,6 @@ class AgencyAdminForm(PublisherGroupsFormMixin, forms.ModelForm, CustomFlagsForm
         self.fields["cs_representative"].label_from_instance = lambda obj: "{} <{}>".format(
             obj.get_full_name(), obj.email or ""
         )
-        self.fields["ob_representative"].queryset = (
-            ZemUser.objects.all().exclude(first_name="").exclude(last_name="").order_by("first_name", "last_name")
-        )
-        self.fields["ob_representative"].label_from_instance = lambda obj: "{} <{}>".format(
-            obj.get_full_name(), obj.email or ""
-        )
 
 
 class CampaignSettingsForm(PublisherGroupsFormMixin, forms.Form):

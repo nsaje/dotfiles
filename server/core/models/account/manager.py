@@ -7,9 +7,7 @@ import core.features.yahoo_accounts
 from dash import constants
 from utils import slack
 
-from . import exceptions
 from . import model
-from .validation import OUTBRAIN_SALESFORCE_SERVICE_USER
 
 logger = logging.getLogger(__name__)
 
@@ -17,13 +15,9 @@ logger = logging.getLogger(__name__)
 class AccountManager(core.common.BaseManager):
     @transaction.atomic()
     def create(self, request, name, agency=None, **kwargs):
-        user = request.user if request else None
         if agency is not None:
             core.common.entity_limits.enforce(model.Account.objects.filter(agency=agency).exclude_archived())
-        self._validate_externally_managed(user, agency)
-
         account = model.Account(name=name, agency=agency)
-        account.currency = kwargs.pop("currency", account.currency)
         account.save(request)
         if agency is not None:
             account.uses_bcm_v2 = agency.new_accounts_use_bcm_v2
@@ -34,10 +28,10 @@ class AccountManager(core.common.BaseManager):
         account.yahoo_account = core.features.yahoo_accounts.get_default_account()
         account.update(request, **kwargs)
 
-        account.write_history("Created account", user=user, action_type=constants.HistoryActionType.CREATE)
+        account.write_history("Created account", user=request.user, action_type=constants.HistoryActionType.CREATE)
 
         settings_updates = {}
-        settings_updates["default_account_manager"] = user
+        settings_updates["default_account_manager"] = request.user
         # TODO: Seamless source release: set auto adding to true only when agency not a NAS
         if agency is not None:
             settings_updates["default_sales_representative"] = agency.sales_representative
@@ -71,10 +65,3 @@ class AccountManager(core.common.BaseManager):
             except Exception:
                 logger.exception("Connection error with Slack.")
         return account
-
-    def _validate_externally_managed(self, user, agency=None):
-        if user and agency:
-            if user.email != OUTBRAIN_SALESFORCE_SERVICE_USER and agency.is_externally_managed:
-                raise exceptions.CreatingAccountNotAllowed(
-                    "Creating accounts for an externally managed agency is prohibited."
-                )
