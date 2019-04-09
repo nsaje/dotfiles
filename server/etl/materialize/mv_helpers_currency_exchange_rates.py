@@ -33,7 +33,7 @@ class MVHelpersCurrencyExchangeRates(Materialize):
                 logger.info('Copied CSV to table "%s", job %s', self.TABLE_NAME, self.job_id)
 
     def generate_rows(self):
-        accounts = dash.models.Account.objects.filter(currency__isnull=False)
+        accounts = dash.models.Account.objects.filter(currency__isnull=False).order_by("pk")
 
         for account in accounts:
             for date in rrule.rrule(rrule.DAILY, dtstart=self.date_from, until=self.date_to):

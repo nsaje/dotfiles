@@ -432,7 +432,11 @@ class AdGroupSettings(
         if not value:
             value = ""
         else:
-            names = core.features.audiences.Audience.objects.filter(pk__in=value).values_list("name", flat=True)
+            names = (
+                core.features.audiences.Audience.objects.filter(pk__in=value)
+                .order_by("pk")
+                .values_list("name", flat=True)
+            )
             value = ", ".join(names)
         return value
 
