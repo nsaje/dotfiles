@@ -90,7 +90,7 @@ class AdGroupSourcesView(K1APIView):
                 ad_group.campaign.account, license_fee, margin
             )
 
-            if ad_group.is_blocked_by_custom_flag():
+            if ad_group.is_blocked_by_custom_flag() or ad_group.is_disabled:
                 source_state = constants.AdGroupSettingsState.INACTIVE
             source = {
                 "ad_group_id": ad_group_source.ad_group_id,

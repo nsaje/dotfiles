@@ -4875,7 +4875,9 @@ class AgenciesTest(TestCase):
 
         response = self.get_agencies()
         self.assertTrue(response["success"])
-        self.assertEqual({"agencies": [{"id": str(agency.id), "name": "test"}]}, response["data"])
+        self.assertEqual(
+            {"agencies": [{"id": str(agency.id), "name": "test", "is_externally_managed": False}]}, response["data"]
+        )
 
 
 class TestHistoryMixin(TestCase):

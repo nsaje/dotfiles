@@ -416,3 +416,17 @@ class AdGroupsSourcesTest(K1APIBaseTest):
         data = json.loads(response.content)["response"][0]
         self.assertEqual(data["ad_group_id"], ad_group.id)
         self.assertEqual(data["state"], dash.constants.AdGroupSourceSettingsState.INACTIVE)
+
+        # test block by is_disabled
+        ad_group.custom_flags = {}
+        ad_group.save(None)
+        account = ad_group.campaign.account
+        account.is_disabled = True
+        account.save(None)
+        self.assertTrue(account.is_disabled)
+        response = self.client.get(
+            reverse("k1api.ad_groups.sources"), {"ad_group_ids": ad_group.id, "source_types": "b1"}
+        )
+        data = json.loads(response.content)["response"][0]
+        self.assertEqual(data["ad_group_id"], ad_group.id)
+        self.assertEqual(data["state"], dash.constants.AdGroupSourceSettingsState.INACTIVE)

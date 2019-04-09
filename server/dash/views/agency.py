@@ -918,6 +918,7 @@ class AccountSettings(api_common.BaseApiView):
             "can_archive": account.can_archive(),
             "can_restore": account.can_restore(),
             "archived": account_settings.archived,
+            "is_externally_managed": account.is_externally_managed,
         }
 
         self._add_agencies(request, response)
@@ -1657,9 +1658,20 @@ class Agencies(api_common.BaseApiView):
         if not request.user.has_perm("zemauth.can_filter_by_agency"):
             raise exc.AuthorizationError()
 
-        agencies = list(models.Agency.objects.all().filter_by_user(request.user).values("id", "name"))
+        agencies = list(
+            models.Agency.objects.all().filter_by_user(request.user).values("id", "name", "is_externally_managed")
+        )
         return self.create_api_response(
-            {"agencies": [{"id": str(agency["id"]), "name": agency["name"]} for agency in agencies]}
+            {
+                "agencies": [
+                    {
+                        "id": str(agency["id"]),
+                        "name": agency["name"],
+                        "is_externally_managed": agency["is_externally_managed"],
+                    }
+                    for agency in agencies
+                ]
+            }
         )
 
 

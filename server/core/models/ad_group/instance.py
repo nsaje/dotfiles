@@ -79,6 +79,10 @@ class AdGroupInstanceMixin:
     def is_blocked_by_custom_flag(self):
         return bool(self.get_all_custom_flags().get(dash.features.custom_flags.constants.CUSTOMER_BLOCKED))
 
+    @property
+    def is_disabled(self):
+        return self.campaign.account.is_disabled
+
     @classmethod
     def get_running_status(cls, ad_group_settings):
         """
