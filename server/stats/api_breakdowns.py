@@ -1,6 +1,8 @@
 # isort:skip_file
 from functools import partial
 
+import newrelic.agent
+
 from utils import threads
 
 import dash.models
@@ -31,6 +33,7 @@ def should_use_publishers_view(breakdown):
     return "publisher_id" in breakdown and "content_ad_id" not in breakdown
 
 
+@newrelic.agent.function_trace()
 def query(level, user, breakdown, constraints, goals, parents, order, offset, limit):
     """
     Get a breakdown report. Data is sourced from dash models and redshift.
@@ -84,7 +87,7 @@ def query(level, user, breakdown, constraints, goals, parents, order, offset, li
             if offset == 0:
                 str_w_stats = stats_rows
             else:
-                structure_thread.join()
+                _join_structure_thread(structure_thread)
                 str_w_stats = structure_thread.get_result()
 
             dash_rows = dash.dashapi.api_breakdowns.query_async_get_results_for_rows(
@@ -100,6 +103,12 @@ def query(level, user, breakdown, constraints, goals, parents, order, offset, li
     permission_filter.filter_columns_by_permission(user, rows, goals, constraints, level)
 
     return rows
+
+
+@newrelic.agent.function_trace()
+def _join_structure_thread(structure_thread):
+    # separate function for instrumentation sake
+    structure_thread.join()
 
 
 def totals(user, level, breakdown, constraints, goals):
