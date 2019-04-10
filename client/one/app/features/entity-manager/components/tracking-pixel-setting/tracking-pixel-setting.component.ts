@@ -9,7 +9,7 @@ import {Component, ChangeDetectionStrategy, Input} from '@angular/core';
 })
 export class TrackingPixelSettingComponent {
     @Input()
-    pixelUrls: string[];
+    redirectPixelUrls: string[];
     @Input()
-    redirectJavaScript: string;
+    redirectJavascript: string;
 }

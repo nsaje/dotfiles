@@ -6,16 +6,18 @@
     is a read-only section. Please contact your Zemanta Customer Success Manager
     if you want to set up or change 3rd party pixel tracking.
 </div>
-<ng-container *ngIf="pixelUrls && pixelUrls.length > 0">
+<ng-container *ngIf="redirectPixelUrls.length > 0">
     <span
         class="zem-tracking-pixel-setting__item zem-tracking-pixel-setting__title"
         >Tags</span
     >
     <ul class="zem-tracking-pixel-setting__item">
-        <li *ngFor="let pixelUrl of pixelUrls">{{ pixelUrl }}</li>
+        <li *ngFor="let redirectPixelUrl of redirectPixelUrls">
+            {{ redirectPixelUrl }}
+        </li>
     </ul>
 </ng-container>
-<ng-container *ngIf="redirectJavaScript">
+<ng-container *ngIf="redirectJavascript">
     <span
         class="zem-tracking-pixel-setting__item zem-tracking-pixel-setting__title"
         >Javascript</span
@@ -24,13 +26,13 @@
         class="zem-tracking-pixel-setting__item zem-input-textarea zem-input-textarea--dashed"
         type="text"
         rows="4"
-        [ngModel]="redirectJavaScript"
+        [ngModel]="redirectJavascript"
         [disabled]="true"
     ></textarea>
 </ng-container>
 <div
     class="zem-tracking-pixel-setting__item zem-message"
-    *ngIf="!pixelUrls && !redirectJavaScript"
+    *ngIf="redirectPixelUrls.length === 0 && !redirectJavascript"
 >
     No 3rd party pixel tracking.
 </div>

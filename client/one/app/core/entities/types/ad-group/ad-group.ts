@@ -16,6 +16,8 @@ export interface AdGroup {
     archived?: boolean;
     startDate?: Date;
     endDate?: Date;
+    redirectPixelUrls?: string[];
+    redirectJavascript?: string;
     trackingCode?: string;
     maxCpc?: string;
     maxCpm?: string;

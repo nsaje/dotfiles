@@ -3,6 +3,7 @@ import rest_framework.serializers
 import dash.constants
 import restapi.adgroup.v1.serializers
 import restapi.serializers.base
+import restapi.serializers.fields
 import restapi.serializers.hack
 import restapi.serializers.targeting
 
@@ -78,6 +79,8 @@ class AdGroupSerializer(restapi.adgroup.v1.serializers.AdGroupSerializer):
             "archived",
             "start_date",
             "end_date",
+            "redirect_pixel_urls",
+            "redirect_javascript",
             "tracking_code",
             "max_cpc",
             "max_cpm",
@@ -90,4 +93,8 @@ class AdGroupSerializer(restapi.adgroup.v1.serializers.AdGroupSerializer):
             "notes",
         )
 
+    redirect_pixel_urls = restapi.serializers.fields.NullListField(
+        child=rest_framework.serializers.CharField(), required=False
+    )
+    redirect_javascript = rest_framework.serializers.CharField(required=False)
     notes = rest_framework.serializers.CharField(required=False)

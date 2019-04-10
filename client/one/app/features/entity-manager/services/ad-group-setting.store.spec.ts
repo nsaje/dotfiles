@@ -432,4 +432,12 @@ describe('AdGroupSettingsStore', () => {
         );
         expect(store.state.entity.manageRTBSourcesAsOne).toBe(true);
     });
+
+    it('should correctly set trackingCode', () => {
+        const $event = 'New tracking code';
+
+        expect(store.state.entity.trackingCode).toEqual(null);
+        store.setTrackingCode($event);
+        expect(store.state.entity.trackingCode).toEqual($event);
+    });
 });

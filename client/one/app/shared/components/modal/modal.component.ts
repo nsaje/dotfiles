@@ -36,7 +36,7 @@ export class ModalComponent {
 
     open(): void {
         this.isOpen = true;
-        document.body.classList.add('zem-modal-open');
+        document.body.classList.add('body--modal-open');
         document.addEventListener(
             'keydown',
             (this.closeOnEscapeKeyHandler = this.closeOnEscapeKey.bind(this)),
@@ -46,7 +46,7 @@ export class ModalComponent {
 
     close(): void {
         this.isOpen = false;
-        document.body.classList.remove('zem-modal-open');
+        document.body.classList.remove('body--modal-open');
         document.removeEventListener(
             'keydown',
             this.closeOnEscapeKeyHandler,

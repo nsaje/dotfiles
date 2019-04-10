@@ -337,7 +337,11 @@ export class AdGroupSettingsStore extends Store<AdGroupSettingsStoreState>
         );
     }
 
-    ngOnDestroy() {
+    setTrackingCode(trackingCode: string): void {
+        this.updateState(trackingCode, 'entity', 'trackingCode');
+    }
+
+    ngOnDestroy(): void {
         this.ngUnsubscribe$.next();
         this.ngUnsubscribe$.complete();
     }

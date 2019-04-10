@@ -57,6 +57,8 @@ class AdGroupViewSetTest(RESTAPITest):
         self.assertEqual(resp_json["data"]["name"], "New ad group")
         self.assertIsNone(resp_json["data"].get("dailyBudget"))
         self.assertEqual(resp_json["data"]["notes"], "")
+        self.assertEqual(resp_json["data"]["redirectPixelUrls"], [])
+        self.assertEqual(resp_json["data"]["redirectJavascript"], "")
         self.assertEqual(
             resp_json["extra"],
             {
@@ -117,13 +119,17 @@ class AdGroupViewSetTest(RESTAPITest):
 
         settings = ad_group.get_current_settings().copy_settings()
         settings.notes = "adgroups notes"
+        settings.redirect_pixel_urls = ["http://a.com/b.jpg", "http://a.com/c.jpg"]
+        settings.redirect_javascript = "alert('a')"
         settings.save(None)
 
         r = self.client.get(reverse("internal:adgroups_details", kwargs={"ad_group_id": ad_group.id}))
         resp_json = self.assertResponseValid(r)
 
         self.assertIsNone(resp_json["data"].get("dailyBudget"))
-        self.assertEqual(resp_json["data"]["notes"], "adgroups notes")
+        self.assertEqual(resp_json["data"]["notes"], settings.notes)
+        self.assertEqual(resp_json["data"]["redirectPixelUrls"], settings.redirect_pixel_urls)
+        self.assertEqual(resp_json["data"]["redirectJavascript"], settings.redirect_javascript)
         self.assertEqual(
             resp_json["extra"],
             {

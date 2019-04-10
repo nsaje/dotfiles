@@ -13,6 +13,8 @@ export class AdGroupSettingsStoreState {
         archived: null,
         startDate: null,
         endDate: null,
+        redirectPixelUrls: [],
+        redirectJavascript: null,
         trackingCode: null,
         maxCpc: null,
         maxCpm: null,
