@@ -42,12 +42,3 @@
         <div ng-repeat="info in $ctrl.state.messages.infos">{{ info }}</div>
     </div>
 </div>
-
-<hr />
-
-<zem-zip-targeting
-    class="zem-zip-targeting"
-    included-locations="$ctrl.includedLocations"
-    excluded-locations="$ctrl.excludedLocations"
-    on-update="$ctrl.onUpdate({$event: $event})"
-></zem-zip-targeting>

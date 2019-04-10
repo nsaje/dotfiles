@@ -2,6 +2,7 @@ angular.module('one.widgets').component('zemZipTargeting', {
     bindings: {
         includedLocations: '<',
         excludedLocations: '<',
+        isLegacy: '=',
         onUpdate: '&',
     },
     template: require('./zemZipTargeting.component.html'), // eslint-disable-line max-len
@@ -47,6 +48,7 @@ angular.module('one.widgets').component('zemZipTargeting', {
                 return false;
             }
             return (
+                !$ctrl.isLegacy ||
                 zipTargetingEnabled ||
                 $ctrl.state.textareaContent.length ||
                 $ctrl.state.blockers.apiOnlySettings

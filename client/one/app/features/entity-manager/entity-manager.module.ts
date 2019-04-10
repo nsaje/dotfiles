@@ -23,6 +23,7 @@ import {SelectSettingComponent} from './components/select-setting/select-setting
 import {DeliveryTypeSettingComponent} from './components/delivery-type-setting/delivery-type-setting.component';
 import {DemographicTargetingComponent} from './components/demographic-targeting/demographic-targeting.component';
 import {GeoTargetingComponent} from './components/geo-targeting/geo-targeting.component';
+import {ZipTargetingComponent} from './components/zip-targeting/zip-targeting.component';
 import {DeviceTargetingSettingsComponent} from './components/device-targeting-settings/device-targeting-settings.component';
 import {TrackingCodeSettingComponent} from './components/tracking-code-setting/tracking-code-setting.component';
 import {TrackingPixelSettingComponent} from './components/tracking-pixel-setting/tracking-pixel-setting.component';
@@ -55,6 +56,7 @@ import {AdGroupRTBSourcesManagementSettingComponent} from './components/ad-group
         BiddingTypeSettingComponent,
         DemographicTargetingComponent,
         GeoTargetingComponent,
+        ZipTargetingComponent,
         DeviceTargetingSettingsComponent,
         TrackingCodeSettingComponent,
         TrackingPixelSettingComponent,

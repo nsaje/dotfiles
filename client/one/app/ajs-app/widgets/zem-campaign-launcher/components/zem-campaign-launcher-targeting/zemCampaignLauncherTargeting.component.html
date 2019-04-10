@@ -11,6 +11,14 @@
         errors="$ctrl.state.fieldsErrors"
         on-update="$ctrl.updateGeoTargeting($event)"
     ></zem-geo-targeting>
+    <hr />
+    <zem-zip-targeting
+        class="zem-zip-targeting"
+        included-locations="$ctrl.state.fields.targetRegions"
+        excluded-locations="$ctrl.state.fields.exclusionTargetRegions"
+        is-legacy="true"
+        on-update="$ctrl.updateGeoTargeting($event)"
+    ></zem-zip-targeting>
 </div>
 <div class="custom-panel zem-settings-component__container">
     <h2 class="custom-panel__title">Default device targeting</h2>

@@ -52,6 +52,14 @@
                 errors="$container.errors"
                 on-update="$ctrl.updateGeoTargeting($container.entity, $event)"
             ></zem-geo-targeting>
+            <hr />
+            <zem-zip-targeting
+                class="zem-zip-targeting"
+                included-locations="$container.entity.settings.targetRegions"
+                excluded-locations="$container.entity.settings.exclusionTargetRegions"
+                is-legacy="true"
+                on-update="$ctrl.updateGeoTargeting($container.entity, $event)"
+            ></zem-zip-targeting>
         </div>
         <div
             class="custom-panel zem-settings-component__container zem-account-targeting-settings"

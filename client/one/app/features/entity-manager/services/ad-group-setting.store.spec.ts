@@ -440,4 +440,55 @@ describe('AdGroupSettingsStore', () => {
         store.setTrackingCode($event);
         expect(store.state.entity.trackingCode).toEqual($event);
     });
+
+    it('should correctly set location targeting', () => {
+        const $event: any = {
+            includedLocations: {
+                countries: [],
+                regions: [],
+                dma: [],
+                cities: [],
+                postalCodes: ['CO:123'],
+            },
+            excludedLocations: {
+                countries: [],
+                regions: [],
+                dma: [],
+                cities: [],
+                postalCodes: ['CO:345'],
+            },
+        };
+
+        expect(store.state.entity.targeting.geo.included).toEqual({
+            countries: [],
+            regions: [],
+            dma: [],
+            cities: [],
+            postalCodes: [],
+        });
+        expect(store.state.entity.targeting.geo.excluded).toEqual({
+            countries: [],
+            regions: [],
+            dma: [],
+            cities: [],
+            postalCodes: [],
+        });
+        expect(store.isLocationTargetingDifferentFromDefault()).toEqual(false);
+        store.setLocationTargeting($event);
+        expect(store.state.entity.targeting.geo.included).toEqual({
+            countries: [],
+            regions: [],
+            dma: [],
+            cities: [],
+            postalCodes: ['CO:123'],
+        });
+        expect(store.state.entity.targeting.geo.excluded).toEqual({
+            countries: [],
+            regions: [],
+            dma: [],
+            cities: [],
+            postalCodes: ['CO:345'],
+        });
+        expect(store.isLocationTargetingDifferentFromDefault()).toEqual(true);
+    });
 });

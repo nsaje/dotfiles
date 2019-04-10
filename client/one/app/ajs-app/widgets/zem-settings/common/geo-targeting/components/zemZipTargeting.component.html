@@ -2,10 +2,10 @@
     href=""
     class="button button--with-icon check-icon"
     ng-click="$ctrl.enableZipTargeting()"
+    ng-if="$ctrl.isLegacy"
     ng-hide="$ctrl.isZipTargetingVisible()"
     >Enable ZIP / postal code targeting</a
 >
-
 <div ng-if="$ctrl.isZipTargetingVisible()">
     <h3>ZIP / Postal code targeting</h3>
 

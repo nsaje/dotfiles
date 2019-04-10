@@ -18,8 +18,9 @@ import {
 } from '../../../app.constants';
 import {AdGroupSettingsStoreFieldsErrorsState} from './ad-group-settings.store.fields-errors-state';
 import {AdGroupDayparting} from '../../../core/entities/types/ad-group/ad-group-dayparting';
-import {OperatingSystem} from 'one/app/core/entities/types/common/operating-system';
+import {OperatingSystem} from '../../../core/entities/types/common/operating-system';
 import {IncludedExcluded} from '../../../core/entities/types/common/included-excluded';
+import {TargetRegions} from '../../../core/entities/types/common/target-regions';
 
 @Injectable()
 export class AdGroupSettingsStore extends Store<AdGroupSettingsStoreState>
@@ -341,7 +342,35 @@ export class AdGroupSettingsStore extends Store<AdGroupSettingsStoreState>
         this.updateState(trackingCode, 'entity', 'trackingCode');
     }
 
-    ngOnDestroy(): void {
+    isLocationTargetingDifferentFromDefault(): boolean {
+        const areIncludedLocationsDifferent = !deepEqual(
+            this.state.entity.targeting.geo.included,
+            this.state.extras.defaultSettings.targetRegions
+        );
+        const areExcludedLocationsDifferent = !deepEqual(
+            this.state.entity.targeting.geo.excluded,
+            this.state.extras.defaultSettings.exclusionTargetRegions
+        );
+        return areIncludedLocationsDifferent || areExcludedLocationsDifferent;
+    }
+
+    setLocationTargeting(locationTargeting: {
+        includedLocations: TargetRegions;
+        excludedLocations: TargetRegions;
+    }) {
+        const geoTargeting: IncludedExcluded<TargetRegions> = {
+            included: locationTargeting.includedLocations
+                ? locationTargeting.includedLocations
+                : this.state.entity.targeting.geo.included,
+            excluded: locationTargeting.excludedLocations
+                ? locationTargeting.excludedLocations
+                : this.state.entity.targeting.geo.excluded,
+        };
+
+        this.updateState(geoTargeting, 'entity', 'targeting', 'geo');
+    }
+
+    ngOnDestroy() {
         this.ngUnsubscribe$.next();
         this.ngUnsubscribe$.complete();
     }

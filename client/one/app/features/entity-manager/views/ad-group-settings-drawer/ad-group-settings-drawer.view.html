@@ -282,6 +282,60 @@
                 </div>
             </div>
 
+            <div class="zem-panel zem-settings__panel">
+                <div class="zem-panel__header zem-settings__panel-header">
+                    <h2 class="zem-settings__panel-header-title">
+                        Location targeting
+                    </h2>
+                    <div
+                        *ngIf="
+                            zemPermissions.hasPermission(
+                                'zemauth.settings_defaults_on_campaign_level'
+                            ) && store.isLocationTargetingDifferentFromDefault()
+                        "
+                        class="zem-settings__panel-header-message"
+                    >
+                        Different than campaign default
+                    </div>
+                </div>
+                <div class="zem-settings-section">
+                    <div class="zem-settings-section__header">
+                        <div class="zem-settings-section__description">
+                            The countries, states and DMA regions where your
+                            content ads will be shown.
+                        </div>
+                    </div>
+                    <zem-geo-targeting
+                        class="zem-geo-targeting"
+                        [includedLocations]="
+                            state.entity.targeting.geo.included
+                        "
+                        [excludedLocations]="
+                            state.entity.targeting.geo.excluded
+                        "
+                        (onUpdate)="store.setLocationTargeting($event.$event)"
+                    ></zem-geo-targeting>
+                </div>
+                <zem-advanced-settings-section
+                    class="zem-advanced-settings-section"
+                >
+                    <div class="zem-settings-section">
+                        <zem-zip-targeting
+                            class="zem-zip-targeting"
+                            [includedLocations]="
+                                state.entity.targeting.geo.included
+                            "
+                            [excludedLocations]="
+                                state.entity.targeting.geo.excluded
+                            "
+                            (onUpdate)="
+                                store.setLocationTargeting($event.$event)
+                            "
+                        ></zem-zip-targeting>
+                    </div>
+                </zem-advanced-settings-section>
+            </div>
+
             <div
                 class="zem-panel zem-settings__panel"
                 *ngIf="
