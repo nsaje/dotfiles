@@ -24,6 +24,7 @@ class AdGroupSettingsMixin(object):
         skip_validation=False,
         skip_automation=False,
         skip_permission_check=False,
+        skip_notification=False,
         system_user=None,
         **updates
     ):
@@ -36,10 +37,10 @@ class AdGroupSettingsMixin(object):
             if not skip_validation and not is_pause:
                 self._validate_changes(new_settings)
                 self.clean(new_settings)
-            self._handle_and_set_change_consequences(new_settings)
+            self._handle_and_set_change_consequences(new_settings, skip_notification=skip_notification)
             changes = self.get_setting_changes(new_settings)
             if changes:
-                self._save_and_propagate(request, new_settings, system_user)
+                self._save_and_propagate(request, new_settings, system_user, skip_notification=skip_notification)
                 # autopilot reloads settings so changes have to be saved when it is called
                 if not skip_automation:
                     self._handle_budget_autopilot(changes)
@@ -114,9 +115,9 @@ class AdGroupSettingsMixin(object):
                         "Account and campaign must not be archived in order to restore an ad group."
                     )
 
-    def _handle_and_set_change_consequences(self, new_settings):
+    def _handle_and_set_change_consequences(self, new_settings, skip_notification=False):
         self._handle_b1_sources_group_adjustments(new_settings)
-        self._handle_bid_autopilot_initial_bids(new_settings)
+        self._handle_bid_autopilot_initial_bids(new_settings, skip_notification=skip_notification)
         self._handle_bid_constraints(new_settings)
 
     def _handle_b1_sources_group_adjustments(self, new_settings):
@@ -162,7 +163,7 @@ class AdGroupSettingsMixin(object):
             if new_settings.b1_sources_group_cpc_cc != adjusted_b1_sources_group_cpc_cc:
                 new_settings.b1_sources_group_cpc_cc = adjusted_b1_sources_group_cpc_cc
 
-    def _handle_bid_autopilot_initial_bids(self, new_settings):
+    def _handle_bid_autopilot_initial_bids(self, new_settings, skip_notification=False):
         if not self._should_set_bid_autopilot_initial_bids(new_settings):
             return
 
@@ -183,10 +184,14 @@ class AdGroupSettingsMixin(object):
 
         if self.ad_group.bidding_type == constants.BiddingType.CPM:
             new_settings.b1_sources_group_cpm = avg_bid
-            helpers.set_ad_group_sources_cpms(new_ad_group_sources_bids, self.ad_group, new_settings)
+            helpers.set_ad_group_sources_cpms(
+                new_ad_group_sources_bids, self.ad_group, new_settings, skip_notification=skip_notification
+            )
         else:
             new_settings.b1_sources_group_cpc_cc = avg_bid
-            helpers.set_ad_group_sources_cpcs(new_ad_group_sources_bids, self.ad_group, new_settings)
+            helpers.set_ad_group_sources_cpcs(
+                new_ad_group_sources_bids, self.ad_group, new_settings, skip_notification=skip_notification
+            )
 
     def _should_set_bid_autopilot_initial_bids(self, new_settings):
         return (
@@ -195,24 +200,36 @@ class AdGroupSettingsMixin(object):
             and new_settings.b1_sources_group_enabled
         )
 
-    def _handle_bid_constraints(self, new_settings):
+    def _handle_bid_constraints(self, new_settings, skip_notification=False):
         ad_group_sources_bids = helpers.get_adjusted_ad_group_sources_bids(self.ad_group, new_settings)
         if self.ad_group.bidding_type == constants.BiddingType.CPM:
-            self._handle_cpm_constraints(new_settings, ad_group_sources_bids)
+            self._handle_cpm_constraints(new_settings, ad_group_sources_bids, skip_notification=skip_notification)
         else:
-            self._handle_cpc_constraints(new_settings, ad_group_sources_bids)
+            self._handle_cpc_constraints(new_settings, ad_group_sources_bids, skip_notification=skip_notification)
 
-    def _handle_cpm_constraints(self, new_settings, ad_group_sources_cpms):
-        helpers.set_ad_group_sources_cpms(ad_group_sources_cpms, self.ad_group, new_settings, skip_validation=True)
+    def _handle_cpm_constraints(self, new_settings, ad_group_sources_cpms, skip_notification=False):
+        helpers.set_ad_group_sources_cpms(
+            ad_group_sources_cpms,
+            self.ad_group,
+            new_settings,
+            skip_validation=True,
+            skip_notification=skip_notification,
+        )
 
-    def _handle_cpc_constraints(self, new_settings, ad_group_sources_cpcs):
+    def _handle_cpc_constraints(self, new_settings, ad_group_sources_cpcs, skip_notification=False):
         if self.b1_sources_group_cpc_cc != new_settings.b1_sources_group_cpc_cc:
             bcm_modifiers = self.ad_group.campaign.get_bcm_modifiers()
             try:
                 helpers.validate_ad_group_sources_cpc_constraints(bcm_modifiers, ad_group_sources_cpcs, self.ad_group)
             except dash.cpc_constraints.ValidationError as err:
                 raise exc.ValidationError(errors={"b1_sources_group_cpc_cc": list(set(err))})
-        helpers.set_ad_group_sources_cpcs(ad_group_sources_cpcs, self.ad_group, new_settings, skip_validation=True)
+        helpers.set_ad_group_sources_cpcs(
+            ad_group_sources_cpcs,
+            self.ad_group,
+            new_settings,
+            skip_validation=True,
+            skip_notification=skip_notification,
+        )
 
     def _should_recalculate_budget_autopilot(self, changes):
         ap_ad_group_budget_fields = ["autopilot_daily_budget", "autopilot_state", "b1_sources_group_state"]
@@ -224,12 +241,6 @@ class AdGroupSettingsMixin(object):
             self.ad_group.campaign.settings.autopilot and any(field in changes for field in ap_campaign_budget_fields)
         )
 
-    def _should_send_autopilot_mail(self, changes):
-        if self.ad_group.campaign.settings.autopilot:
-            return False
-        ap_send_mail_fields = ["autopilot_daily_budget", "autopilot_state", "state"]
-        return any(field in changes for field in ap_send_mail_fields)
-
     def _handle_budget_autopilot(self, changes):
         if not self._should_recalculate_budget_autopilot(changes):
             return
@@ -238,7 +249,7 @@ class AdGroupSettingsMixin(object):
 
         autopilot.recalculate_budgets_ad_group(self.ad_group)
 
-    def _save_and_propagate(self, request, new_settings, system_user):
+    def _save_and_propagate(self, request, new_settings, system_user, skip_notification=False):
         changes = self.get_setting_changes(new_settings)
         new_settings.save(request, system_user=system_user)
 
@@ -250,7 +261,8 @@ class AdGroupSettingsMixin(object):
             redirector_helper.insert_adgroup(self.ad_group)
         k1_helper.update_ad_group(self.ad_group, msg="AdGroupSettings.put")
 
-        self._send_notification_email(request, new_settings)
+        if not skip_notification:
+            self._send_notification_email(request, new_settings)
 
     def _send_notification_email(self, request, new_settings):
         if not request:

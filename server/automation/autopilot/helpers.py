@@ -5,7 +5,6 @@ from collections import defaultdict
 from django.db.models import Q
 
 import core.features.bcm
-
 import dash
 import dash.constants
 import dash.models
@@ -178,7 +177,12 @@ def ad_group_source_is_synced(ad_group_source):
 
 def update_ad_group_source_values(ad_group_source, changes, system_user=None):
     ad_group_source.settings.update(
-        system_user=system_user, k1_sync=False, skip_automation=True, skip_validation=True, **changes
+        system_user=system_user,
+        k1_sync=False,
+        skip_automation=True,
+        skip_validation=True,
+        skip_notification=True,
+        **changes
     )
 
 
@@ -197,7 +201,7 @@ def update_ad_group_b1_sources_group_values(ad_group, changes, system_user=None)
     if not kwargs:
         return
 
-    ad_group.settings.update(None, skip_validation=True, system_user=system_user, **kwargs)
+    ad_group.settings.update(None, skip_validation=True, skip_notification=True, system_user=system_user, **kwargs)
 
 
 def get_ad_group_sources_minimum_bid(ad_group_source, bcm_modifiers):

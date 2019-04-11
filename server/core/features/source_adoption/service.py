@@ -1,4 +1,5 @@
 import logging
+import time
 
 from django.db import transaction
 from django.db.models import Q
@@ -11,6 +12,7 @@ from . import exceptions
 
 logger = logging.getLogger(__name__)
 LOGGER_UPDATE_BATCH_SIZE = 512
+PAUSE_INTERVAL = 30
 
 
 def deprecate_shell(source_ids):
@@ -22,21 +24,40 @@ def deprecate_shell(source_ids):
         if source.deprecated:
             continue
 
-        ad_group_sources = core.models.AdGroupSource.objects.filter(source=source).select_related("settings")
+        ad_group_sources = (
+            core.models.AdGroupSource.objects.exclude(ad_group__campaign__account__id=305)
+            .filter(source=source, settings__state=dash.constants.AdGroupSourceSettingsState.ACTIVE)
+            .select_related("settings")
+        )
+        total_ags_count = ad_group_sources.count()
+        total_ags_paused = 0
 
         with transaction.atomic():
-            for ags in ad_group_sources:
-                ags.settings.update(state=dash.constants.AdGroupSourceSettingsState.INACTIVE)
-                ad_group_sources_paused.add(ags.id)
-
             source.deprecated = True
             source.save()
             sources_deprecated.append(source.pk)
 
+            for ags in ad_group_sources:
+                ags.settings.update(state=dash.constants.AdGroupSourceSettingsState.INACTIVE, skip_notification=True)
+                ad_group_sources_paused.add(ags.id)
+                total_ags_paused += 1
+
+                if total_ags_paused % LOGGER_UPDATE_BATCH_SIZE == 0:
+                    logger.info(
+                        "Ad group source pausing of source {} (id={}) {}%% done.".format(
+                            source.name, source.id, (total_ags_paused / total_ags_count) * 100
+                        )
+                    )
+
+                if total_ags_paused % PAUSE_INTERVAL == 0:
+                    time.sleep(1)
+
         logger.info("{} deprecated successfully".format(source.name))
 
     logger.info("Sources deprecated ({}): {}".format(len(sources_deprecated), sources_deprecated))
-    logger.info("Ad group sources paused ({}): {}".format(len(ad_group_sources_paused), ad_group_sources_paused))
+    logger.info("{} ad group sources paused".format(len(ad_group_sources_paused)))
+
+    return ad_group_sources_paused
 
 
 def complete_release_shell(source_ids):
@@ -61,7 +82,7 @@ def complete_release(sources):
 
 
 def auto_add_new_ad_group_sources(source):
-    ad_groups = core.models.AdGroup.objects.filter(
+    ad_groups = core.models.AdGroup.objects.exclude(campaign__account__id=305).filter(
         Q(campaign__account__settings__auto_add_new_sources=True)
         & Q(settings__archived=False)
         & (
