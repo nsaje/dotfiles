@@ -1,5 +1,5 @@
 <zem-drawer
-    class="zem-drawer"
+    class="zem-drawer zem-ad-group-settings-drawer"
     [isOpen]="isOpen"
     [isClosable]="!isNewEntity"
     (closeRequest)="cancel()"
@@ -609,6 +609,60 @@
                     <div class="zem-message" *ngIf="!state.entity.notes">
                         No special notes.
                     </div>
+                </div>
+            </div>
+
+            <div
+                class="zem-panel zem-settings__panel"
+                *ngIf="
+                    zemPermissions.hasPermission(
+                        'zemauth.can_see_backend_hacks'
+                    )
+                "
+            >
+                <div class="zem-panel__header">
+                    <h2
+                        class="zem-settings__panel-header-title"
+                        [zemInternalFeature]="
+                            zemPermissions.isPermissionInternal(
+                                'zemauth.can_see_backend_hacks'
+                            )
+                        "
+                    >
+                        Backend hacks
+                    </h2>
+                </div>
+                <div class="zem-settings-section">
+                    <zem-hacks
+                        class="zem-hacks"
+                        [hacks]="state.extras.hacks"
+                    ></zem-hacks>
+                </div>
+            </div>
+
+            <div
+                class="zem-panel zem-settings__panel"
+                *ngIf="
+                    zemPermissions.hasPermission('zemauth.can_see_deals_in_ui')
+                "
+            >
+                <div class="zem-panel__header">
+                    <h2
+                        class="zem-settings__panel-header-title"
+                        [zemInternalFeature]="
+                            zemPermissions.isPermissionInternal(
+                                'zemauth.can_see_deals_in_ui'
+                            )
+                        "
+                    >
+                        Deals
+                    </h2>
+                </div>
+                <div class="zem-settings-section">
+                    <zem-deals
+                        class="zem-deals"
+                        [deals]="state.extras.deals"
+                    ></zem-deals>
                 </div>
             </div>
         </div>

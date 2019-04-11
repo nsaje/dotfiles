@@ -4,6 +4,7 @@ import {AdGroupExtrasAudience} from './ad-group-extras-audience';
 import {AdGroupExtrasRetargetableAdGroup} from './ad-group-extras-retargetable-ad-group';
 import {AdGroupExtrasDefaultSettings} from './ad-group-extras-default-settings';
 import {Currency, CampaignGoalKPI} from '../../../../app.constants';
+import {Deal} from '../common/deal';
 
 export interface AdGroupExtras {
     actionIsWaiting: boolean;
@@ -18,4 +19,5 @@ export interface AdGroupExtras {
     audiences: AdGroupExtrasAudience[];
     warnings: AdGroupExtrasWarnings;
     hacks: Hack[];
+    deals: Deal[];
 }

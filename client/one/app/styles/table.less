@@ -1,0 +1,65 @@
+@import 'variables';
+
+.zem-table {
+    width: 100%;
+
+    thead,
+    tfoot {
+        tr th {
+            position: relative;
+            padding: 8px;
+            background-color: tint(@color--secondary, 90%);
+            border-bottom: 1px solid tint(@color--secondary, 80%);
+            color: @color--secondary;
+            font-weight: 500;
+            font-size: (@font-size--default)-1;
+            line-height: (@font-size--default)+3;
+            white-space: nowrap;
+
+            a {
+                color: @color--secondary;
+                font-weight: 500;
+                font-size: (@font-size--default)-1;
+            }
+        }
+    }
+
+    tfoot {
+        tr td {
+            border: none;
+            background-color: tint(@color--secondary, 96%);
+            border-top: 1px solid tint(@color--secondary, 80%);
+        }
+    }
+
+    tbody {
+        border-bottom: 1px solid tint(@color--secondary, 90%);
+
+        tr {
+            td {
+                padding: 8px;
+                border-bottom: 1px solid tint(@color--secondary, 90%);
+                vertical-align: middle;
+                position: relative;
+
+                a {
+                    font-weight: 500;
+                    color: @color--secondary;
+                }
+
+                strong {
+                    color: @color--secondary;
+                    font-weight: 500;
+                }
+            }
+
+            &:hover {
+                background-color: tint(@color--secondary, 96%);
+            }
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+    }
+}

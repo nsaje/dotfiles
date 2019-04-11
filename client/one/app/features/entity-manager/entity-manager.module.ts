@@ -34,6 +34,8 @@ import {BiddingTypeSettingComponent} from './components/bidding-type-setting/bid
 import {AdvancedSettingsSectionComponent} from './components/advanced-settings-section/advanced-settings-section.component';
 import {AdGroupAutopilotStateSettingComponent} from './components/ad-group-autopilot-state-setting/ad-group-autopilot-state-setting.component';
 import {AdGroupRTBSourcesManagementSettingComponent} from './components/ad-group-rtb-sources-management-setting/ad-group-rtb-sources-management-setting.component';
+import {HacksComponent} from './components/hacks/hacks.component';
+import {DealsComponent} from './components/deals/deals.component';
 
 @NgModule({
     declarations: [
@@ -66,6 +68,8 @@ import {AdGroupRTBSourcesManagementSettingComponent} from './components/ad-group
         AdvancedSettingsSectionComponent,
         AdGroupAutopilotStateSettingComponent,
         AdGroupRTBSourcesManagementSettingComponent,
+        HacksComponent,
+        DealsComponent,
     ],
     imports: [SharedModule],
     entryComponents: [

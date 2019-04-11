@@ -1,0 +1,51 @@
+<div class="zem-message" *ngIf="hacks.length === 0">No backend hacks set.</div>
+<ng-container *ngIf="hacks.length > 0">
+    <button
+        class="button button-bar"
+        (click)="showOnlyNonGlobal = !showOnlyNonGlobal"
+    >
+        <ng-container [ngSwitch]="showOnlyNonGlobal">
+            <span *ngSwitchCase="true">Show all hacks</span>
+            <span *ngSwitchCase="false">Show only non-global hacks</span>
+        </ng-container>
+    </button>
+    <div class="zem-horizontally-scrollable-container">
+        <table class="zem-table zem-settings__table">
+            <thead>
+                <tr>
+                    <th>Level</th>
+                    <th>Source</th>
+                    <th>Description</th>
+                    <th class="text-right">Confirmed</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr
+                    *ngFor="let hack of hacks"
+                    [hidden]="
+                        showOnlyNonGlobal && hack.level === HackLevel.GLOBAL
+                    "
+                >
+                    <td>{{ hack.level }}</td>
+                    <td>{{ hack.source || 'all' }}</td>
+                    <td>
+                        <strong>{{ hack.summary }}</strong
+                        ><ng-container *ngIf="hack.details"
+                            ><strong>:</strong> {{ hack.details }}</ng-container
+                        >
+                    </td>
+                    <td class="text-right">
+                        <span
+                            class="icon check-icon"
+                            *ngIf="hack.confirmed"
+                        ></span>
+                        <span
+                            class="icon remove-icon"
+                            *ngIf="!hack.confirmed"
+                        ></span>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</ng-container>

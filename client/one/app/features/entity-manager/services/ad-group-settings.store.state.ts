@@ -106,6 +106,7 @@ export class AdGroupSettingsStoreState {
             },
         },
         hacks: [],
+        deals: [],
     };
     fieldsErrors = new AdGroupSettingsStoreFieldsErrorsState();
     requests = {

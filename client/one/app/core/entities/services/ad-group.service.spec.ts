@@ -75,6 +75,7 @@ describe('AdGroupService', () => {
             audiences: [],
             warnings: {},
             hacks: [],
+            deals: [],
         };
 
         mockedAdGroupWithExtras = {

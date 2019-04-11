@@ -1,0 +1,60 @@
+<div class="zem-message" *ngIf="deals.length === 0">No deals set.</div>
+<ng-container *ngIf="deals.length > 0">
+    <button
+        class="button button-bar"
+        (click)="showOnlyApplied = !showOnlyApplied"
+    >
+        <ng-container [ngSwitch]="showOnlyApplied">
+            <span *ngSwitchCase="true">Show all deals</span>
+            <span *ngSwitchCase="false">Show only applied deals</span>
+        </ng-container>
+    </button>
+    <div class="zem-horizontally-scrollable-container">
+        <table class="zem-table zem-settings__table">
+            <thead>
+                <tr>
+                    <th>Level</th>
+                    <th>Source</th>
+                    <th>Direct deal Connection ID</th>
+                    <th>Deal ID</th>
+                    <th>Description</th>
+                    <th class="text-right">Exclusive</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr
+                    *ngFor="let deal of deals"
+                    [hidden]="showOnlyApplied && !deal.isApplied"
+                >
+                    <td>{{ deal.level }}</td>
+                    <td>{{ deal.source }}</td>
+                    <td>
+                        <a
+                            [href]="
+                                'http://one.zemanta.com/admin/dash/directdealconnection/' +
+                                deal.directDealConnectionId +
+                                '/change/'
+                            "
+                        >
+                            {{ deal.directDealConnectionId }}
+                        </a>
+                    </td>
+                    <td>{{ deal.dealId }}</td>
+                    <td>
+                        <strong>{{ deal.description }}</strong>
+                    </td>
+                    <td class="text-right">
+                        <span
+                            class="icon check-icon"
+                            *ngIf="deal.exclusive"
+                        ></span>
+                        <span
+                            class="icon remove-icon"
+                            *ngIf="!deal.exclusive"
+                        ></span>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</ng-container>
