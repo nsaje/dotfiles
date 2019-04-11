@@ -9,4 +9,4 @@ WHERE date = '{{ date }}'
   AND ((clicks > {{ max_clicks }}
   AND impressions > {{ max_impressions }}
   AND ctr >= {{ ctr_threshold }}) 
-  OR (ctr >= 10 AND clicks > 45));
+  OR (ctr >= 15 AND clicks > 45));
