@@ -1,5 +1,7 @@
+import datetime
 import logging
 
+import analytics.management_report
 import utils.email_helper
 from utils.command_helpers import ExceptionCommand
 from utils.command_helpers import set_logger_verbosity
@@ -13,4 +15,14 @@ class Command(ExceptionCommand):
 
     def handle(self, *args, **options):
         set_logger_verbosity(logger, options)
-        utils.email_helper.send_daily_management_report_email()
+
+        data = analytics.management_report.get_query_results()
+        if data:
+            yesterday = datetime.date.today() - datetime.timedelta(1)
+            html = analytics.management_report.get_daily_report_html(data)
+            attachment = {
+                "filename": "report-{}.csv".format(yesterday),
+                "mimetype": "text/csv",
+                "content": analytics.management_report.prepare_report_as_csv(data),
+            }
+            utils.email_helper.send_daily_management_report_email(html, attachment)

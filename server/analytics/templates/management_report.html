@@ -1,28 +1,43 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
-	<head>
-		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-		<title>Daily Management Report</title>
-		<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-	</head>
-	<body>
-		<div class="section">{% autoescape off %}{{ table }}{% endautoescape %}</div>
-		<div class="section">
-			* self-managed and pilot accounts are counted into projection only after they start spending
-		</div>
-		<div class="section">
-			{% for list in lists %}
-			<h4>{{ list.title }}</h4>
-			{% if list.elements %}
-			<ul class="list">
-				{% for elt in list.elements %}
-				<li>{% autoescape off %}{{ elt }}{% endautoescape %}</li>
-				{% endfor %}
-			</ul>
-			{% else %}
-			No changes.
-			{% endif %}
-			{% endfor %}
-		</div>
-	</body>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <title>Daily Management Report </title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+</head>
+<body>
+<div class="section">
+    {% autoescape off %}
+        <table style="width:100%" cellspacing="5px" cellpading="2px">
+            <caption><h2>Daily Management Report</h2> </caption>
+            <thead>
+            <tr>
+                <th>Customer type</th>
+                <th>Client size</th>
+                <th>Region</th>
+                <th>MtD media</th>
+                <th>MtD fee</th>
+                <th>Yesterday media</th>
+                <th>Yesterday fee</th>
+                <th>Yesterday run rate media</th>
+                <th>Yesterday run rate fee</th>
+                <th>Average run rate media</th>
+                <th>Average run rate fee</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for obj in data %}
+                <tr>
+                    {% for v in obj.values %}
+                        <td>{{ v }}</td>
+
+                    {% endfor %}
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    {% endautoescape %}
+</div>
+</body>
 </html>

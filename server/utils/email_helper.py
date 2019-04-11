@@ -16,10 +16,8 @@ from django.template import Context, Template
 import dash.constants
 import dash.models
 import zemauth.models
-import analytics.management_report
 
 from utils import dates_helper
-
 
 logger = logging.getLogger(__name__)
 
@@ -84,6 +82,7 @@ def send_internal_email(
     tags=None,
     from_email=None,
     custom_html=None,
+    attachment=None,
 ):
     email = create_internal_email(
         recipient_list=recipient_list,
@@ -94,6 +93,8 @@ def send_internal_email(
         from_email=from_email,
         custom_html=custom_html,
     )
+    if attachment:
+        email.attach(**attachment)
     _send_email(email)
 
 
@@ -434,9 +435,10 @@ def should_send_notification_mail(campaign, user, request):
     return True
 
 
-def send_daily_management_report_email():
+def send_daily_management_report_email(html, attachment):
     send_internal_email(
-        custom_html=analytics.management_report.get_daily_report_html(),
+        custom_html=html,
+        attachment=attachment,
         **params_from_template(dash.constants.EmailTemplateType.DAILY_MANAGEMENT_REPORT)
     )
 
