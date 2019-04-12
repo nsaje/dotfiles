@@ -1,3 +1,4 @@
+import dash.constants
 import dash.image_helper
 
 
@@ -26,6 +27,7 @@ class ContentAdCandidateMixin:
             "url_status": self.url_status,
             "hosted_image_url": self.get_image_url(300, 300),
             "landscape_hosted_image_url": self.get_image_url(720, 450),
+            "display_hosted_image_url": self.get_image_url(),
             "primary_tracker_url": self.primary_tracker_url,
             "secondary_tracker_url": self.secondary_tracker_url,
             "additional_data": self.additional_data,

@@ -16,7 +16,7 @@
             <td class="content-upload__ad-image-container">
                 <img
                     class="content-upload__ad-image"
-                    ng-if="candidate.hostedImageUrl || candidate.imageUrl"
+                    ng-show="candidate.hostedImageUrl"
                     ng-src="{{ candidate.hostedImageUrl }}"
                 />
             </td>

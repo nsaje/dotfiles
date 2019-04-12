@@ -122,6 +122,7 @@ angular.module('one.widgets').service('zemUploadApiConverter', function() {
             videoAssetId: candidate.video_asset_id,
             hostedImageUrl: candidate.hosted_image_url,
             landscapeHostedImageUrl: candidate.landscape_hosted_image_url,
+            displayHostedImageUrl: candidate.display_hosted_image_url,
             displayUrl: candidate.display_url,
             brandName: candidate.brand_name,
             description: candidate.description,
@@ -157,8 +158,8 @@ angular.module('one.widgets').service('zemUploadApiConverter', function() {
 
     function convertStatusFromApi(candidates) {
         var result = [];
-        angular.forEach(candidates, function(candidate, candidateId) {
-            result[candidateId] = convertCandidateFromApi(candidate);
+        angular.forEach(candidates, function(candidate) {
+            result.push(convertCandidateFromApi(candidate));
         });
         return result;
     }
