@@ -14,6 +14,7 @@ import {LevelStateParam} from '../../../../app.constants';
 import {Subject} from 'rxjs';
 import {takeUntil, map, distinctUntilChanged} from 'rxjs/operators';
 import {APP_CONFIG} from '../../../../app.config';
+import * as messagesHelpers from '../../helpers/messages.helpers';
 
 @Component({
     selector: 'zem-ad-group-settings-drawer',
@@ -81,7 +82,7 @@ export class AdGroupSettingsDrawerView
         let shouldCloseDrawer = true;
         if (this.store.doEntitySettingsHaveUnsavedChanges()) {
             shouldCloseDrawer = confirm(
-                'You have unsaved changes.\nAre you sure you want to close settings?'
+                messagesHelpers.getClosingUnsavedChangesConfirmMessage()
             );
         }
         if (shouldCloseDrawer) {

@@ -152,35 +152,64 @@ describe('AdGroupSettingsStore', () => {
     }));
 
     it('should successfully save ad group via service', fakeAsync(() => {
-        const mockedAdGroup = clone(adGroup);
-        mockedAdGroup.id = 12345;
-        mockedAdGroup.name = 'Test ad group 1';
-        mockedAdGroup.campaignId = 12345;
-
-        store.state.entity = mockedAdGroup;
-
-        serviceStub.save.and
-            .returnValue(of(mockedAdGroup, asapScheduler))
+        const mockedAdGroupWithExtras = clone(adGroupWithExtras);
+        mockedAdGroupWithExtras.adGroup.id = 12345;
+        mockedAdGroupWithExtras.adGroup.name = 'Test ad group 1';
+        mockedAdGroupWithExtras.adGroup.campaignId = 12345;
+        serviceStub.get.and
+            .returnValue(of(mockedAdGroupWithExtras, asapScheduler))
             .calls.reset();
+        serviceStub.save.and
+            .returnValue(of(mockedAdGroupWithExtras.adGroup, asapScheduler))
+            .calls.reset();
+
+        store.loadEntity(12345);
+        tick();
 
         store.saveEntity();
         tick();
 
-        expect(store.state.entity).toEqual(mockedAdGroup);
+        expect(store.state.entity).toEqual(mockedAdGroupWithExtras.adGroup);
         expect(store.state.fieldsErrors).toEqual(
             new AdGroupSettingsStoreFieldsErrorsState()
         );
+        expect(serviceStub.save).toHaveBeenCalledTimes(1);
+    }));
 
+    it('should save ad group only if user confirmed the changes', fakeAsync(() => {
+        const confirmSpy = spyOn(window, 'confirm');
+        const mockedAdGroupWithExtras = clone(adGroupWithExtras);
+        mockedAdGroupWithExtras.adGroup.manageRtbSourcesAsOne = true;
+        serviceStub.get.and
+            .returnValue(of(clone(mockedAdGroupWithExtras), asapScheduler))
+            .calls.reset();
+        serviceStub.save.and
+            .returnValue(of(clone(adGroup), asapScheduler))
+            .calls.reset();
+
+        store.loadEntity(1);
+        tick();
+
+        store.updateState(false, 'entity', 'manageRtbSourcesAsOne');
+
+        confirmSpy.and.returnValue(false);
+        store.saveEntity();
+        tick();
+        expect(serviceStub.save).not.toHaveBeenCalled();
+
+        confirmSpy.and.returnValue(true);
+        store.saveEntity();
+        tick();
         expect(serviceStub.save).toHaveBeenCalledTimes(1);
     }));
 
     it('should correctly handle errors when saving ad group via service', fakeAsync(() => {
-        const mockedAdGroup = clone(adGroup);
-        mockedAdGroup.id = 12345;
-        mockedAdGroup.campaignId = 12345;
-
-        store.state.entity = mockedAdGroup;
-
+        const mockedAdGroupWithExtras = clone(adGroupWithExtras);
+        mockedAdGroupWithExtras.adGroup.id = 12345;
+        mockedAdGroupWithExtras.adGroup.campaignId = 12345;
+        serviceStub.get.and
+            .returnValue(of(mockedAdGroupWithExtras, asapScheduler))
+            .calls.reset();
         serviceStub.save.and
             .returnValue(
                 throwError({
@@ -192,17 +221,19 @@ describe('AdGroupSettingsStore', () => {
             )
             .calls.reset();
 
+        store.loadEntity(12345);
+        tick();
+
         store.saveEntity();
         tick();
 
-        expect(store.state.entity).toEqual(mockedAdGroup);
+        expect(store.state.entity).toEqual(mockedAdGroupWithExtras.adGroup);
         expect(store.state.fieldsErrors).toEqual(
             jasmine.objectContaining({
                 ...new AdGroupSettingsStoreFieldsErrorsState(),
                 name: ['Please specify ad group name.'],
             })
         );
-
         expect(serviceStub.save).toHaveBeenCalledTimes(1);
     }));
 
@@ -416,21 +447,21 @@ describe('AdGroupSettingsStore', () => {
     });
 
     it('should correctly set state when ad group optimization is set to inactive', () => {
-        store.updateState(true, 'entity', 'manageRTBSourcesAsOne');
+        store.updateState(true, 'entity', 'manageRtbSourcesAsOne');
         store.setAdGroupAutopilotState(AdGroupAutopilotState.INACTIVE);
         expect(store.state.entity.autopilot.state).toEqual(
             AdGroupAutopilotState.INACTIVE
         );
-        expect(store.state.entity.manageRTBSourcesAsOne).toBe(true);
+        expect(store.state.entity.manageRtbSourcesAsOne).toBe(true);
     });
 
     it('should correctly set state when ad group optimization is set to optimize towards campaign goal', () => {
-        store.updateState(false, 'entity', 'manageRTBSourcesAsOne');
+        store.updateState(false, 'entity', 'manageRtbSourcesAsOne');
         store.setAdGroupAutopilotState(AdGroupAutopilotState.ACTIVE_CPC_BUDGET);
         expect(store.state.entity.autopilot.state).toEqual(
             AdGroupAutopilotState.ACTIVE_CPC_BUDGET
         );
-        expect(store.state.entity.manageRTBSourcesAsOne).toBe(true);
+        expect(store.state.entity.manageRtbSourcesAsOne).toBe(true);
     });
 
     it('should correctly set trackingCode', () => {

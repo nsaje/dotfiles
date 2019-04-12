@@ -3,10 +3,10 @@
     <div class="zem-settings-form-group__content">
         <zem-radio-input
             class="zem-radio-input zem-settings-form-group__content-item"
-            [groupModel]="manageRTBSourcesAsOne"
+            [groupModel]="manageRtbSourcesAsOne"
             [value]="true"
             [isDisabled]="isDisabled"
-            (select)="manageRTBSourcesAsOneChange.emit($event)"
+            (select)="manageRtbSourcesAsOneChange.emit($event)"
         >
             As a group
             <span class="zem-radio-input__deemphasized-label-text"
@@ -16,10 +16,10 @@
         </zem-radio-input>
         <zem-radio-input
             class="zem-radio-input zem-settings-form-group__content-item zem-settings-form-group__content-item--no-spacing"
-            [groupModel]="manageRTBSourcesAsOne"
+            [groupModel]="manageRtbSourcesAsOne"
             [value]="false"
             [isDisabled]="isDisabled"
-            (select)="manageRTBSourcesAsOneChange.emit($event)"
+            (select)="manageRtbSourcesAsOneChange.emit($event)"
         >
             Separately
             <span class="zem-radio-input__deemphasized-label-text"

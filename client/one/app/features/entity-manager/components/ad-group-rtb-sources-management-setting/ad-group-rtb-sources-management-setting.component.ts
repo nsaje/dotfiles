@@ -15,9 +15,9 @@ import {
 })
 export class AdGroupRTBSourcesManagementSettingComponent {
     @Input()
-    manageRTBSourcesAsOne: boolean;
+    manageRtbSourcesAsOne: boolean;
     @Input()
     isDisabled: boolean;
     @Output()
-    manageRTBSourcesAsOneChange = new EventEmitter<boolean>();
+    manageRtbSourcesAsOneChange = new EventEmitter<boolean>();
 }

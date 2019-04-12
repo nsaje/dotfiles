@@ -439,12 +439,12 @@
                         <div class="zem-settings-section">
                             <zem-ad-group-rtb-sources-management-setting
                                 class="zem-ad-group-rtb-sources-management-setting zem-settings-section__item"
-                                [manageRTBSourcesAsOne]="
-                                    state.entity.manageRTBSourcesAsOne
+                                [manageRtbSourcesAsOne]="
+                                    state.entity.manageRtbSourcesAsOne
                                 "
                                 [isDisabled]="store.isAdGroupAutopilotEnabled()"
-                                (manageRTBSourcesAsOneChange)="
-                                    store.setManageRTBSourcesAsOne($event)
+                                (manageRtbSourcesAsOneChange)="
+                                    store.setManageRtbSourcesAsOne($event)
                                 "
                             ></zem-ad-group-rtb-sources-management-setting>
                             <div

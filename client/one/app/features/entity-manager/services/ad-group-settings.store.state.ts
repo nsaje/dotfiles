@@ -67,7 +67,7 @@ export class AdGroupSettingsStoreState {
             state: null,
             dailyBudget: null,
         },
-        manageRTBSourcesAsOne: false,
+        manageRtbSourcesAsOne: false,
         frequencyCapping: null,
         notes: null,
     };

@@ -1,6 +1,7 @@
 import core.models
 import restapi.access
 import restapi.adgroup.v1.views
+from dash import constants
 
 from . import helpers
 from . import serializers
@@ -31,3 +32,16 @@ class AdGroupViewSet(restapi.adgroup.v1.views.AdGroupViewSet):
             data=serializers.AdGroupSerializer(ad_group.settings, context={"request": request}).data,
             extra=serializers.ExtraDataSerializer(extra_data, context={"request": request}).data,
         )
+
+    def put(self, request, ad_group_id):
+        ad_group = restapi.access.get_ad_group(request.user, ad_group_id)
+        if ad_group.settings.b1_sources_group_enabled != request.data.get(
+            "manage_rtb_sources_as_one", ad_group.settings.b1_sources_group_enabled
+        ):
+            request.data.update(
+                {"state": constants.AdGroupSettingsState.get_name(constants.AdGroupSettingsState.INACTIVE)}
+            )
+        serializer = serializers.AdGroupSerializer(data=request.data, partial=True, context={"request": request})
+        serializer.is_valid(raise_exception=True)
+        self._update_settings(request, ad_group, serializer.validated_data)
+        return self.response_ok(serializers.AdGroupSerializer(ad_group.settings, context={"request": request}).data)

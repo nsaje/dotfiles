@@ -92,6 +92,7 @@ class AdGroupSerializer(restapi.adgroup.v1.serializers.AdGroupSerializer):
             "dayparting",
             "targeting",
             "autopilot",
+            "manage_rtb_sources_as_one",
             "frequency_capping",
             "notes",
         )
@@ -100,4 +101,5 @@ class AdGroupSerializer(restapi.adgroup.v1.serializers.AdGroupSerializer):
         child=rest_framework.serializers.CharField(), required=False
     )
     redirect_javascript = rest_framework.serializers.CharField(required=False)
-    notes = rest_framework.serializers.CharField(required=False)
+    manage_rtb_sources_as_one = rest_framework.serializers.BooleanField(source="b1_sources_group_enabled")
+    notes = rest_framework.serializers.CharField(read_only=True)

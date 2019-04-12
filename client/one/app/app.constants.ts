@@ -67,8 +67,8 @@ export enum AdSize {
 }
 
 export enum AdGroupState {
-    ACTIVE = 1,
-    INACTIVE = 2,
+    ACTIVE = 'ACTIVE',
+    INACTIVE = 'INACTIVE',
 }
 
 export enum KeyCode {
@@ -211,7 +211,10 @@ export const APP_CONSTANTS = {
      * Max. selected media sources in on sources tabs.
      */
     maxSelectedSources: 3,
-    settingsState: AdGroupState,
+    settingsState: {
+        ACTIVE: 1,
+        INACTIVE: 2,
+    },
     adGroupSettingsAutopilotState: {
         ACTIVE_CPC_BUDGET: 1,
         INACTIVE: 2,

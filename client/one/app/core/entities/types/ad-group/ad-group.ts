@@ -27,7 +27,7 @@ export interface AdGroup {
     dayparting?: AdGroupDayparting;
     targeting?: AdGroupTargetings;
     autopilot?: AdGroupAutopilot;
-    manageRTBSourcesAsOne?: boolean;
+    manageRtbSourcesAsOne?: boolean;
     frequencyCapping?: string;
     notes?: string;
 }

@@ -163,3 +163,24 @@ class AdGroupViewSetTest(RESTAPITest):
                 "deals": [],
             },
         )
+
+    @mock.patch.object(core.models.settings.AdGroupSettings, "update")
+    def test_ad_group_state_set_to_inactive_on_b1_sources_group_enabled_update(self, mock_ad_group_settings_update):
+        agency = magic_mixer.blend(core.models.Agency)
+        account = magic_mixer.blend(core.models.Account, agency=agency, users=[self.user])
+        campaign = magic_mixer.blend(core.models.Campaign, account=account)
+        ad_group = magic_mixer.blend(core.models.AdGroup, campaign=campaign)
+
+        settings = ad_group.get_current_settings().copy_settings()
+        settings.b1_sources_group_enabled = False
+        settings.save(None)
+
+        self.client.put(
+            reverse("internal:adgroups_details", kwargs={"ad_group_id": ad_group.id}),
+            data={"manage_rtb_sources_as_one": True},
+            format="json",
+        )
+
+        args, kwargs = mock_ad_group_settings_update.call_args
+        self.assertEqual(kwargs.get("state"), dash.constants.AdGroupSettingsState.INACTIVE)
+        self.assertEqual(kwargs.get("b1_sources_group_enabled"), True)

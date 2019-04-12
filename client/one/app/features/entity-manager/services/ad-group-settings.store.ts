@@ -15,12 +15,14 @@ import {
     DeliveryType,
     BiddingType,
     InterestCategory,
+    AdGroupState,
 } from '../../../app.constants';
 import {AdGroupSettingsStoreFieldsErrorsState} from './ad-group-settings.store.fields-errors-state';
 import {AdGroupDayparting} from '../../../core/entities/types/ad-group/ad-group-dayparting';
 import {OperatingSystem} from '../../../core/entities/types/common/operating-system';
 import {IncludedExcluded} from '../../../core/entities/types/common/included-excluded';
 import {TargetRegions} from '../../../core/entities/types/common/target-regions';
+import * as messagesHelpers from '../helpers/messages.helpers';
 
 @Injectable()
 export class AdGroupSettingsStore extends Store<AdGroupSettingsStoreState>
@@ -90,6 +92,10 @@ export class AdGroupSettingsStore extends Store<AdGroupSettingsStoreState>
 
     saveEntity(): Promise<boolean> {
         return new Promise<boolean>(resolve => {
+            if (!this.isManageRtbSourcesAsOneChangeConfirmed()) {
+                resolve(false);
+                return;
+            }
             this.adGroupService
                 .save(this.state.entity, this.requestStateUpdater)
                 .subscribe(
@@ -328,9 +334,9 @@ export class AdGroupSettingsStore extends Store<AdGroupSettingsStoreState>
     }
 
     setAdGroupAutopilotState(autopilotState: AdGroupAutopilotState) {
-        const manageRTBSourcesAsOne =
+        const manageRtbSourcesAsOne =
             autopilotState === AdGroupAutopilotState.ACTIVE_CPC_BUDGET ||
-            this.state.entity.manageRTBSourcesAsOne;
+            this.state.entity.manageRtbSourcesAsOne;
         this.setState({
             ...this.state,
             entity: {
@@ -339,16 +345,16 @@ export class AdGroupSettingsStore extends Store<AdGroupSettingsStoreState>
                     ...this.state.entity.autopilot,
                     state: autopilotState,
                 },
-                manageRTBSourcesAsOne: manageRTBSourcesAsOne,
+                manageRtbSourcesAsOne: manageRtbSourcesAsOne,
             },
         });
     }
 
-    setManageRTBSourcesAsOne(manageRTBSourcesAsOne: boolean) {
+    setManageRtbSourcesAsOne(manageRtbSourcesAsOne: boolean) {
         this.updateState(
-            manageRTBSourcesAsOne,
+            manageRtbSourcesAsOne,
             'entity',
-            'manageRTBSourcesAsOne'
+            'manageRtbSourcesAsOne'
         );
     }
 
@@ -387,5 +393,20 @@ export class AdGroupSettingsStore extends Store<AdGroupSettingsStoreState>
     ngOnDestroy() {
         this.ngUnsubscribe$.next();
         this.ngUnsubscribe$.complete();
+    }
+
+    private isManageRtbSourcesAsOneChangeConfirmed(): boolean {
+        if (
+            this.state.entity.manageRtbSourcesAsOne ===
+            this.originalEntity.manageRtbSourcesAsOne
+        ) {
+            return true;
+        }
+        return confirm(
+            messagesHelpers.getManageRtbSourcesAsOneChangeConfirmMessage(
+                this.state.entity.state,
+                this.state.entity.manageRtbSourcesAsOne
+            )
+        );
     }
 }
