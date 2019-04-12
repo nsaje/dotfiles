@@ -14,6 +14,7 @@ class ExtraDataSerializerTest(TestCase):
             "is_campaign_autopilot_enabled": False,
             "account_id": 12345,
             "currency": dash.constants.Currency.USD,
+            "optimization_objective": dash.constants.CampaignGoalKPI.CPC,
             "default_settings": {
                 "target_regions": [],
                 "exclusion_target_regions": [],
@@ -54,6 +55,7 @@ class ExtraDataSerializerTest(TestCase):
             "is_campaign_autopilot_enabled": False,
             "account_id": 12345,
             "currency": dash.constants.Currency.USD,
+            "optimization_objective": dash.constants.CampaignGoalKPI.get_name(dash.constants.CampaignGoalKPI.CPC),
             "default_settings": {
                 "target_regions": {"countries": [], "regions": [], "dma": [], "cities": [], "postal_codes": []},
                 "exclusion_target_regions": {

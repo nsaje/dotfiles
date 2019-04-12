@@ -33,6 +33,7 @@ class AdGroupViewSetTest(RESTAPITest):
             "is_campaign_autopilot_enabled": False,
             "account_id": 12345,
             "currency": dash.constants.Currency.USD,
+            "optimization_objective": None,
             "default_settings": {
                 "target_regions": [],
                 "exclusion_target_regions": [],
@@ -68,6 +69,7 @@ class AdGroupViewSetTest(RESTAPITest):
                 "isCampaignAutopilotEnabled": False,
                 "accountId": 12345,
                 "currency": dash.constants.Currency.USD,
+                "optimizationObjective": "",
                 "defaultSettings": {
                     "targetRegions": {"countries": [], "regions": [], "dma": [], "cities": [], "postalCodes": []},
                     "exclusionTargetRegions": {
@@ -98,6 +100,7 @@ class AdGroupViewSetTest(RESTAPITest):
             "is_campaign_autopilot_enabled": False,
             "account_id": 12345,
             "currency": dash.constants.Currency.USD,
+            "optimization_objective": dash.constants.CampaignGoalKPI.CPC,
             "default_settings": {
                 "target_regions": [],
                 "exclusion_target_regions": [],
@@ -139,6 +142,7 @@ class AdGroupViewSetTest(RESTAPITest):
                 "isCampaignAutopilotEnabled": False,
                 "accountId": 12345,
                 "currency": dash.constants.Currency.USD,
+                "optimizationObjective": dash.constants.CampaignGoalKPI.get_name(dash.constants.CampaignGoalKPI.CPC),
                 "defaultSettings": {
                     "targetRegions": {"countries": [], "regions": [], "dma": [], "cities": [], "postalCodes": []},
                     "exclusionTargetRegions": {

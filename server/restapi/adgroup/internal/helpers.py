@@ -1,6 +1,7 @@
 from django.db.models import Q
 
 import core.models
+import dash.campaign_goals
 import dash.features.custom_flags
 import dash.models
 import dash.retargeting_helper
@@ -8,6 +9,8 @@ import restapi.common.helpers
 
 
 def get_extra_data(user, ad_group):
+    primary_campaign_goal = dash.campaign_goals.get_primary_campaign_goal(ad_group.campaign)
+
     default_settings = get_default_settings(ad_group)
 
     retargetable_ad_groups = get_retargetable_ad_groups(
@@ -27,6 +30,7 @@ def get_extra_data(user, ad_group):
         "is_campaign_autopilot_enabled": ad_group.campaign.settings.autopilot,
         "account_id": ad_group.campaign.account_id,
         "currency": ad_group.campaign.account.currency,
+        "optimization_objective": primary_campaign_goal.type if primary_campaign_goal else None,
         "default_settings": default_settings,
         "retargetable_ad_groups": retargetable_ad_groups,
         "audiences": audiences,

@@ -56,6 +56,9 @@ class ExtraDataSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
     currency = restapi.serializers.fields.DashConstantField(
         dash.constants.Currency, default=dash.constants.Currency.USD, required=False
     )
+    optimization_objective = restapi.serializers.fields.DashConstantField(
+        dash.constants.CampaignGoalKPI, required=False
+    )
     default_settings = ExtraDataDefaultSettingsSerializer(default=False, required=False)
     retargetable_ad_groups = rest_framework.serializers.ListField(
         child=ExtraDataRetargetableAdGroupSerializer(), allow_empty=True
