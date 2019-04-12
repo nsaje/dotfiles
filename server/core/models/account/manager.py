@@ -4,6 +4,7 @@ from django.db import transaction
 
 import core.common
 import core.features.yahoo_accounts
+import dash.features.custom_flags.constants
 from dash import constants
 from utils import slack
 
@@ -23,7 +24,11 @@ class AccountManager(core.common.BaseManager):
         self._validate_externally_managed(user, agency)
 
         account = model.Account(name=name, agency=agency)
-        account.currency = kwargs.pop("currency", account.currency)
+        account.currency = kwargs.pop("currency", None)
+        if agency and agency.custom_flags:
+            account.currency = (
+                agency.custom_flags.get(dash.features.custom_flags.constants.DEFAULT_CURRENCY) or account.currency
+            )
         account.save(request)
         if agency is not None:
             account.uses_bcm_v2 = agency.new_accounts_use_bcm_v2

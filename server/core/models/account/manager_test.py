@@ -37,7 +37,7 @@ class AccountManagerTestCase(TestCase):
     def test_create_no_currency(self):
         account = Account.objects.create(self.request, name="Test", agency=None)
 
-        self.assertEqual(dash.constants.Currency.USD, account.currency)
+        self.assertEqual(None, account.currency)
 
     def test_set_user_defaults_from_agency(self):
         sales_representative = magic_mixer.blend(zemauth.models.User)
