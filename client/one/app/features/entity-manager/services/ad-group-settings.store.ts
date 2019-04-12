@@ -146,6 +146,20 @@ export class AdGroupSettingsStore extends Store<AdGroupSettingsStoreState>
         );
     }
 
+    setName(name: string) {
+        this.updateState(name, 'entity', 'name');
+    }
+
+    setLanguageMatching(matchingEnabled: boolean) {
+        this.updateState(
+            matchingEnabled,
+            'entity',
+            'targeting',
+            'language',
+            'matchingEnabled'
+        );
+    }
+
     setStartDate(startDate: Date) {
         this.updateState(startDate, 'entity', 'startDate');
     }

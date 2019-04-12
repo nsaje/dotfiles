@@ -20,6 +20,7 @@ import {DecimalSettingComponent} from './components/decimal-setting/decimal-sett
 import {CurrencySettingComponent} from './components/currency-setting/currency-setting.component';
 import {DateSettingComponent} from './components/date-setting/date-setting.component';
 import {SelectSettingComponent} from './components/select-setting/select-setting.component';
+import {CheckboxSettingComponent} from './components/checkbox-setting/checkbox-setting.component';
 import {DeliveryTypeSettingComponent} from './components/delivery-type-setting/delivery-type-setting.component';
 import {DemographicTargetingComponent} from './components/demographic-targeting/demographic-targeting.component';
 import {GeoTargetingComponent} from './components/geo-targeting/geo-targeting.component';
@@ -54,6 +55,7 @@ import {DealsComponent} from './components/deals/deals.component';
         CurrencySettingComponent,
         DateSettingComponent,
         SelectSettingComponent,
+        CheckboxSettingComponent,
         DeliveryTypeSettingComponent,
         BiddingTypeSettingComponent,
         DemographicTargetingComponent,

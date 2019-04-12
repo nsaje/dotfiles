@@ -13,6 +13,37 @@
         >
             <div class="zem-panel zem-settings__panel">
                 <div class="zem-panel__header">
+                    <h2 class="zem-settings__panel-header-title">General</h2>
+                </div>
+                <div class="zem-settings-section">
+                    <zem-text-setting
+                        class="zem-text-setting zem-settings-section__item"
+                        label="Name"
+                        [value]="state.entity.name"
+                        [errors]="state.fieldsErrors.name"
+                        (valueChange)="store.setName($event)"
+                    ></zem-text-setting>
+                    <zem-checkbox-setting
+                        class="zem-checkbox-setting zem-settings-section__item"
+                        *ngIf="
+                            zemPermissions.hasPermission(
+                                'zemauth.can_use_language_targeting'
+                            )
+                        "
+                        label="Language matching"
+                        helpMessage="Zemanta will show ads only when language of the page matches the language of your ads."
+                        [value]="
+                            state.entity.targeting.language.matchingEnabled
+                        "
+                        (valueChange)="store.setLanguageMatching($event)"
+                    >
+                        Enable language matching
+                    </zem-checkbox-setting>
+                </div>
+            </div>
+
+            <div class="zem-panel zem-settings__panel">
+                <div class="zem-panel__header">
                     <h2 class="zem-settings__panel-header-title">Scheduling</h2>
                 </div>
                 <div class="zem-settings-section">
