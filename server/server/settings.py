@@ -404,6 +404,7 @@ DCRON = {
         "campaignstop_midnight_refresh": dcron_constants.Severity.HIGH,
         "campaignstop_midnight": dcron_constants.Severity.HIGH,
         "campaignstop_monitor": dcron_constants.Severity.HIGH,
+        "monitor_dailystatement_holes": dcron_constants.Severity.HIGH,
     },
     # How long to wait before warning alert if job execution is late.
     "default_warning_wait": 300,  # 5 min
