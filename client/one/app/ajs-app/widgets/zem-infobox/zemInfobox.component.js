@@ -25,7 +25,7 @@ angular.module('one.widgets').component('zemInfobox', {
         var actionExecutedHandler;
         var dateRangeUpdateHandler;
         var dataFilterUpdateHandler;
-        var hierarchyUpdateHandler;
+        var activeEntityChangeHandler;
 
         var legacyActiveEntityUpdateHandler;
         var legacyEntityUpdateHandler;
@@ -38,7 +38,7 @@ angular.module('one.widgets').component('zemInfobox', {
             dataFilterUpdateHandler = zemDataFilterService.onDataFilterUpdate(
                 reloadInfoboxData
             );
-            hierarchyUpdateHandler = zemNavigationNewService.onHierarchyUpdate(
+            activeEntityChangeHandler = zemNavigationNewService.onActiveEntityChange(
                 onEntityUpdated
             );
         };
@@ -65,7 +65,7 @@ angular.module('one.widgets').component('zemInfobox', {
             if (actionExecutedHandler) actionExecutedHandler();
             if (dateRangeUpdateHandler) dateRangeUpdateHandler();
             if (dataFilterUpdateHandler) dataFilterUpdateHandler();
-            if (hierarchyUpdateHandler) hierarchyUpdateHandler();
+            if (activeEntityChangeHandler) activeEntityChangeHandler();
 
             if (legacyActiveEntityUpdateHandler)
                 legacyActiveEntityUpdateHandler();

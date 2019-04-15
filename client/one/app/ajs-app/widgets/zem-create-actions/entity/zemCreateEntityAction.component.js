@@ -28,7 +28,7 @@ angular.module('one.widgets').component('zemCreateEntityAction', {
             callback: function() {
                 if (
                     zemPermissions.hasPermission(
-                        'zemauth.can_use_new_entity_settings_drawers'
+                        'zemauth.can_use_new_account_settings_drawer'
                     )
                 ) {
                     navigateToEntityCreation();
@@ -42,7 +42,7 @@ angular.module('one.widgets').component('zemCreateEntityAction', {
             callback: function() {
                 if (
                     zemPermissions.hasPermission(
-                        'zemauth.can_use_new_entity_settings_drawers'
+                        'zemauth.can_use_new_campaign_settings_drawer'
                     )
                 ) {
                     navigateToEntityCreation();
@@ -56,7 +56,7 @@ angular.module('one.widgets').component('zemCreateEntityAction', {
             callback: function() {
                 if (
                     zemPermissions.hasPermission(
-                        'zemauth.can_use_new_entity_settings_drawers'
+                        'zemauth.can_use_new_ad_group_settings_drawer'
                     )
                 ) {
                     navigateToEntityCreation();

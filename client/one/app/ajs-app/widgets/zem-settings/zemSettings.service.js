@@ -29,14 +29,6 @@ angular
         this.onClose = onClose;
 
         function init() {
-            if (
-                zemPermissions.hasPermission(
-                    'zemauth.can_use_new_entity_settings_drawers'
-                )
-            ) {
-                return;
-            }
-
             handleStateChange();
             handleLocationChange();
 
@@ -81,10 +73,28 @@ angular
             }
         }
 
+        // eslint-disable-next-line complexity
         function open(entity, scrollToComponent) {
             if (!$state.includes('v2.analytics')) return;
 
             entity = entity || zemNavigationNewService.getActiveEntity();
+
+            if (
+                (zemPermissions.hasPermission(
+                    'zemauth.can_use_new_account_settings_drawer'
+                ) &&
+                    entity.type === constants.entityType.ACCOUNT) ||
+                (zemPermissions.hasPermission(
+                    'zemauth.can_use_new_campaign_settings_drawer'
+                ) &&
+                    entity.type === constants.entityType.CAMPAIGN) ||
+                (zemPermissions.hasPermission(
+                    'zemauth.can_use_new_ad_group_settings_drawer'
+                ) &&
+                    entity.type === constants.entityType.AD_GROUP)
+            ) {
+                return;
+            }
 
             if (entity !== null && currentEntity !== entity) {
                 currentEntity = entity;

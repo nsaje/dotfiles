@@ -27,18 +27,12 @@ angular.module('one.widgets').component('zemSettings', {
         $ctrl.$onInit = function() {
             zemSettingsService.init();
 
-            if (
-                !zemPermissions.hasPermission(
-                    'zemauth.can_use_new_entity_settings_drawers'
-                )
-            ) {
-                hotkeys.add({
-                    combo: 's',
-                    callback: function() {
-                        zemSettingsService.open();
-                    },
-                });
-            }
+            hotkeys.add({
+                combo: 's',
+                callback: function() {
+                    zemSettingsService.open();
+                },
+            });
 
             $ctrl.onRequestClose = zemSettingsService.close;
             openSettingsHandler = zemSettingsService.onOpen(open);

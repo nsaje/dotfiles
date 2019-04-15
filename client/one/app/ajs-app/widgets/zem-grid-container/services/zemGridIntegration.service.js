@@ -39,25 +39,33 @@ angular
                 $scope.$on('$destroy', onDataFilterUpdateHandler);
 
                 if (
-                    zemPermissions.hasPermission(
-                        'zemauth.can_use_new_entity_settings_drawers'
-                    )
+                    entity &&
+                    ((zemPermissions.hasPermission(
+                        'zemauth.can_use_new_account_settings_drawer'
+                    ) &&
+                        entity.type === constants.entityType.ACCOUNT) ||
+                        (zemPermissions.hasPermission(
+                            'zemauth.can_use_new_campaign_settings_drawer'
+                        ) &&
+                            entity.type === constants.entityType.CAMPAIGN) ||
+                        (zemPermissions.hasPermission(
+                            'zemauth.can_use_new_ad_group_settings_drawer'
+                        ) &&
+                            entity.type === constants.entityType.AD_GROUP))
                 ) {
-                    if (entity) {
-                        var entitiesUpdates$ = zemEntitiesUpdatesService
-                            .getUpdatesOfEntity$(entity.id, entity.type)
-                            .subscribe(function(entityUpdate) {
-                                if (
-                                    entityUpdate.action ===
-                                    constants.entityAction.EDIT
-                                ) {
-                                    reload();
-                                }
-                            });
-                        $scope.$on('$destroy', function() {
-                            entitiesUpdates$.unsubscribe();
+                    var entitiesUpdates$ = zemEntitiesUpdatesService
+                        .getUpdatesOfEntity$(entity.id, entity.type)
+                        .subscribe(function(entityUpdate) {
+                            if (
+                                entityUpdate.action ===
+                                constants.entityAction.EDIT
+                            ) {
+                                reload();
+                            }
                         });
-                    }
+                    $scope.$on('$destroy', function() {
+                        entitiesUpdates$.unsubscribe();
+                    });
                 } else {
                     var onEntityUpdatedHandler = zemAdGroupService.onEntityUpdated(
                         reload
