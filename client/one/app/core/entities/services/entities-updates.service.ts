@@ -20,12 +20,15 @@ export class EntitiesUpdatesService {
     }
 
     getUpdatesOfEntity$(
-        id: number,
+        id: string,
         type: EntityType
     ): Observable<EntityUpdate> {
         return this.updates$.pipe(
             filter(entityUpdate => {
-                return entityUpdate.id === id && entityUpdate.type === type;
+                return (
+                    entityUpdate.id === id.toString() &&
+                    entityUpdate.type === type
+                );
             })
         );
     }

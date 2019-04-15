@@ -8,7 +8,7 @@ describe('EntitiesUpdatesService', () => {
 
     beforeEach(() => {
         mockedEntityUpdate = {
-            id: 1,
+            id: '1',
             type: EntityType.AD_GROUP,
             action: EntityUpdateAction.EDIT,
         };
@@ -31,7 +31,7 @@ describe('EntitiesUpdatesService', () => {
             .getUpdatesOfEntity$(mockedEntityUpdate.id, mockedEntityUpdate.type)
             .subscribe(callbackSpy);
 
-        service.registerEntityUpdate({...mockedEntityUpdate, id: 2});
+        service.registerEntityUpdate({...mockedEntityUpdate, id: '2'});
         expect(callbackSpy).not.toHaveBeenCalled();
 
         service.registerEntityUpdate({

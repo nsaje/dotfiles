@@ -8,8 +8,8 @@ import {AdGroupAutopilot} from './ad-group-autopilot';
 import {AdGroupTargetings} from './ad-group-targetings';
 
 export interface AdGroup {
-    id: number;
-    campaignId: number;
+    id: string;
+    campaignId: string;
     name: string;
     biddingType?: BiddingType;
     state?: AdGroupState;

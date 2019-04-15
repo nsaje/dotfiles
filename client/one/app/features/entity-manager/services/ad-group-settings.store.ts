@@ -2,6 +2,7 @@ import {Injectable, OnDestroy, Inject} from '@angular/core';
 import {HttpErrorResponse} from '@angular/common/http';
 import {Store} from 'rxjs-observable-store';
 import {Subject} from 'rxjs';
+import {takeUntil} from 'rxjs/operators';
 import * as deepEqual from 'fast-deep-equal';
 import * as clone from 'clone';
 import {AdGroupSettingsStoreState} from './ad-group-settings.store.state';
@@ -15,7 +16,6 @@ import {
     DeliveryType,
     BiddingType,
     InterestCategory,
-    AdGroupState,
 } from '../../../app.constants';
 import {AdGroupSettingsStoreFieldsErrorsState} from './ad-group-settings.store.fields-errors-state';
 import {AdGroupDayparting} from '../../../core/entities/types/ad-group/ad-group-dayparting';
@@ -41,9 +41,10 @@ export class AdGroupSettingsStore extends Store<AdGroupSettingsStoreState>
         );
     }
 
-    loadEntityDefaults(campaignId: number) {
+    loadEntityDefaults(campaignId: string) {
         this.adGroupService
             .defaults(campaignId, this.requestStateUpdater)
+            .pipe(takeUntil(this.ngUnsubscribe$))
             .subscribe(
                 (adGroupWithExtras: AdGroupWithExtras) => {
                     this.setState({
@@ -56,23 +57,27 @@ export class AdGroupSettingsStore extends Store<AdGroupSettingsStoreState>
             );
     }
 
-    loadEntity(id: number) {
-        this.adGroupService.get(id, this.requestStateUpdater).subscribe(
-            (adGroupWithExtras: AdGroupWithExtras) => {
-                this.originalEntity = clone(adGroupWithExtras.adGroup);
-                this.setState({
-                    ...this.state,
-                    entity: adGroupWithExtras.adGroup,
-                    extras: adGroupWithExtras.extras,
-                });
-            },
-            error => {}
-        );
+    loadEntity(id: string) {
+        this.adGroupService
+            .get(id, this.requestStateUpdater)
+            .pipe(takeUntil(this.ngUnsubscribe$))
+            .subscribe(
+                (adGroupWithExtras: AdGroupWithExtras) => {
+                    this.originalEntity = clone(adGroupWithExtras.adGroup);
+                    this.setState({
+                        ...this.state,
+                        entity: adGroupWithExtras.adGroup,
+                        extras: adGroupWithExtras.extras,
+                    });
+                },
+                error => {}
+            );
     }
 
     validateEntity() {
         this.adGroupService
             .validate(this.state.entity, this.requestStateUpdater)
+            .pipe(takeUntil(this.ngUnsubscribe$))
             .subscribe(
                 () => {
                     this.updateState(
@@ -98,6 +103,7 @@ export class AdGroupSettingsStore extends Store<AdGroupSettingsStoreState>
             }
             this.adGroupService
                 .save(this.state.entity, this.requestStateUpdater)
+                .pipe(takeUntil(this.ngUnsubscribe$))
                 .subscribe(
                     (adGroup: AdGroup) => {
                         this.setState({
@@ -122,6 +128,7 @@ export class AdGroupSettingsStore extends Store<AdGroupSettingsStoreState>
     archiveEntity() {
         this.adGroupService
             .archive(this.state.entity.id, this.requestStateUpdater)
+            .pipe(takeUntil(this.ngUnsubscribe$))
             .subscribe(
                 () => {
                     this.zemNavigationNewService.refreshState();
@@ -154,6 +161,7 @@ export class AdGroupSettingsStore extends Store<AdGroupSettingsStoreState>
 
     setName(name: string) {
         this.updateState(name, 'entity', 'name');
+        this.validateEntity();
     }
 
     setLanguageMatching(matchingEnabled: boolean) {
@@ -164,38 +172,47 @@ export class AdGroupSettingsStore extends Store<AdGroupSettingsStoreState>
             'language',
             'matchingEnabled'
         );
+        this.validateEntity();
     }
 
     setStartDate(startDate: Date) {
         this.updateState(startDate, 'entity', 'startDate');
+        this.validateEntity();
     }
 
     setEndDate(endDate: Date) {
         this.updateState(endDate, 'entity', 'endDate');
+        this.validateEntity();
     }
 
     setDeliveryType(deliveryType: DeliveryType) {
         this.updateState(deliveryType, 'entity', 'deliveryType');
+        this.validateEntity();
     }
 
     setDayparting(dayparting: AdGroupDayparting) {
         this.updateState(dayparting, 'entity', 'dayparting');
+        this.validateEntity();
     }
 
     setBiddingType(biddingType: BiddingType) {
         this.updateState(biddingType, 'entity', 'biddingType');
+        this.validateEntity();
     }
 
     setMaxCpc(maxCpc: string) {
         this.updateState(maxCpc, 'entity', 'maxCpc');
+        this.validateEntity();
     }
 
     setMaxCpm(maxCpm: string) {
         this.updateState(maxCpm, 'entity', 'maxCpm');
+        this.validateEntity();
     }
 
     setAutopilotDailyBudget(dailyBudget: string) {
         this.updateState(dailyBudget, 'entity', 'autopilot', 'dailyBudget');
+        this.validateEntity();
     }
 
     setDailyClickCap(clickCap: string) {
@@ -204,10 +221,12 @@ export class AdGroupSettingsStore extends Store<AdGroupSettingsStoreState>
             'entity',
             'clickCappingDailyAdGroupMaxClicks'
         );
+        this.validateEntity();
     }
 
     setImpressionFrequencyCap(impressionFrequencyCap: string) {
         this.updateState(impressionFrequencyCap, 'entity', 'frequencyCapping');
+        this.validateEntity();
     }
 
     isDeviceTargetingDifferentFromDefault(): boolean {
@@ -248,6 +267,7 @@ export class AdGroupSettingsStore extends Store<AdGroupSettingsStoreState>
                 },
             },
         });
+        this.validateEntity();
     }
 
     setPublisherGroupsTargeting(publisherGroupsTargeting: {
@@ -269,6 +289,7 @@ export class AdGroupSettingsStore extends Store<AdGroupSettingsStoreState>
             'targeting',
             'publisherGroups'
         );
+        this.validateEntity();
     }
 
     setInterestTargeting(interestTargeting: {
@@ -290,6 +311,7 @@ export class AdGroupSettingsStore extends Store<AdGroupSettingsStoreState>
             'targeting',
             'interest'
         );
+        this.validateEntity();
     }
 
     setRetargeting(retargeting: {
@@ -327,10 +349,12 @@ export class AdGroupSettingsStore extends Store<AdGroupSettingsStoreState>
                 },
             },
         });
+        this.validateEntity();
     }
 
     setBluekaiTargeting(bluekaiTargeting: any) {
         this.updateState(bluekaiTargeting, 'entity', 'targeting', 'audience');
+        this.validateEntity();
     }
 
     setAdGroupAutopilotState(autopilotState: AdGroupAutopilotState) {
@@ -348,6 +372,7 @@ export class AdGroupSettingsStore extends Store<AdGroupSettingsStoreState>
                 manageRtbSourcesAsOne: manageRtbSourcesAsOne,
             },
         });
+        this.validateEntity();
     }
 
     setManageRtbSourcesAsOne(manageRtbSourcesAsOne: boolean) {
@@ -356,10 +381,12 @@ export class AdGroupSettingsStore extends Store<AdGroupSettingsStoreState>
             'entity',
             'manageRtbSourcesAsOne'
         );
+        this.validateEntity();
     }
 
     setTrackingCode(trackingCode: string): void {
         this.updateState(trackingCode, 'entity', 'trackingCode');
+        this.validateEntity();
     }
 
     isLocationTargetingDifferentFromDefault(): boolean {
@@ -388,6 +415,7 @@ export class AdGroupSettingsStore extends Store<AdGroupSettingsStoreState>
         };
 
         this.updateState(geoTargeting, 'entity', 'targeting', 'geo');
+        this.validateEntity();
     }
 
     ngOnDestroy() {
@@ -397,8 +425,9 @@ export class AdGroupSettingsStore extends Store<AdGroupSettingsStoreState>
 
     private isManageRtbSourcesAsOneChangeConfirmed(): boolean {
         if (
+            !this.originalEntity ||
             this.state.entity.manageRtbSourcesAsOne ===
-            this.originalEntity.manageRtbSourcesAsOne
+                this.originalEntity.manageRtbSourcesAsOne
         ) {
             return true;
         }

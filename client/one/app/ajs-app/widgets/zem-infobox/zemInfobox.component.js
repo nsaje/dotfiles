@@ -15,18 +15,17 @@ angular.module('one.widgets').component('zemInfobox', {
         zemUtils,
         $state,
         $location,
-        $window,
-        zemEntitiesUpdatesService
+        $window
     ) {
         var $ctrl = this;
         $ctrl.hasPermission = zemPermissions.hasPermission;
         $ctrl.openHistory = openHistory;
 
         var entityUpdateHandler;
-        var entitiesUpdates$;
         var actionExecutedHandler;
         var dateRangeUpdateHandler;
         var dataFilterUpdateHandler;
+        var hierarchyUpdateHandler;
 
         var legacyActiveEntityUpdateHandler;
         var legacyEntityUpdateHandler;
@@ -38,6 +37,9 @@ angular.module('one.widgets').component('zemInfobox', {
             );
             dataFilterUpdateHandler = zemDataFilterService.onDataFilterUpdate(
                 reloadInfoboxData
+            );
+            hierarchyUpdateHandler = zemNavigationNewService.onHierarchyUpdate(
+                onEntityUpdated
             );
         };
 
@@ -56,37 +58,14 @@ angular.module('one.widgets').component('zemInfobox', {
                     .getEntityService(entity.type)
                     .onActionExecuted(onActionExecuted);
             }
-
-            if (
-                zemPermissions.hasPermission(
-                    'zemauth.can_use_new_entity_settings_drawers'
-                )
-            ) {
-                if (entitiesUpdates$) {
-                    entitiesUpdates$.unsubscribe();
-                }
-
-                if (entity) {
-                    entitiesUpdates$ = zemEntitiesUpdatesService
-                        .getUpdatesOfEntity$(entity.id, entity.type)
-                        .subscribe(function(entityUpdate) {
-                            if (
-                                entityUpdate.action ===
-                                constants.entityAction.EDIT
-                            ) {
-                                onEntityUpdated();
-                            }
-                        });
-                }
-            }
         };
 
         $ctrl.$onDestroy = function() {
             if (entityUpdateHandler) entityUpdateHandler();
             if (actionExecutedHandler) actionExecutedHandler();
-            if (entitiesUpdates$) entitiesUpdates$.unsubscribe();
             if (dateRangeUpdateHandler) dateRangeUpdateHandler();
             if (dataFilterUpdateHandler) dataFilterUpdateHandler();
+            if (hierarchyUpdateHandler) hierarchyUpdateHandler();
 
             if (legacyActiveEntityUpdateHandler)
                 legacyActiveEntityUpdateHandler();

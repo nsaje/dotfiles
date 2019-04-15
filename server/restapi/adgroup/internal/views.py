@@ -1,3 +1,5 @@
+from django.db import transaction
+
 import core.models
 import restapi.access
 import restapi.adgroup.v1.views
@@ -45,3 +47,19 @@ class AdGroupViewSet(restapi.adgroup.v1.views.AdGroupViewSet):
         serializer.is_valid(raise_exception=True)
         self._update_settings(request, ad_group, serializer.validated_data)
         return self.response_ok(serializers.AdGroupSerializer(ad_group.settings, context={"request": request}).data)
+
+    def create(self, request):
+        serializer = serializers.AdGroupSerializer(data=request.data, context={"request": request})
+        serializer.is_valid(raise_exception=True)
+        settings = serializer.validated_data
+        campaign = restapi.access.get_campaign(request.user, settings.get("ad_group", {}).get("campaign_id"))
+
+        with transaction.atomic():
+            new_ad_group = core.models.AdGroup.objects.create(
+                request, campaign=campaign, name=settings.get("ad_group_name", None), is_restapi=True
+            )
+            self._update_settings(request, new_ad_group, settings)
+
+        return self.response_ok(
+            serializers.AdGroupSerializer(new_ad_group.settings, context={"request": request}).data, status=201
+        )

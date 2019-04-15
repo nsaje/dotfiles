@@ -100,6 +100,6 @@ class AdGroupSerializer(restapi.adgroup.v1.serializers.AdGroupSerializer):
     redirect_pixel_urls = restapi.serializers.fields.NullListField(
         child=rest_framework.serializers.CharField(), required=False
     )
-    redirect_javascript = rest_framework.serializers.CharField(required=False)
+    redirect_javascript = rest_framework.serializers.CharField(required=False, allow_blank=True)
     manage_rtb_sources_as_one = rest_framework.serializers.BooleanField(source="b1_sources_group_enabled")
     notes = rest_framework.serializers.CharField(read_only=True)

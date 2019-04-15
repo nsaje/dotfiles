@@ -24,9 +24,9 @@ import * as messagesHelpers from '../../helpers/messages.helpers';
 export class AdGroupSettingsDrawerView
     implements OnInit, AfterViewInit, OnDestroy {
     @Input()
-    entityId: number;
+    entityId: string;
     @Input()
-    newEntityParentId: number;
+    newEntityParentId: string;
 
     isOpen = false;
     isNewEntity = false;
@@ -123,15 +123,15 @@ export class AdGroupSettingsDrawerView
             });
     }
 
-    private redirectToNewEntityAnalyticsView(newEntityId: number) {
+    private redirectToNewEntityAnalyticsView(newEntityId: string) {
         this.redirectToEntityView(LevelStateParam.AD_GROUP, newEntityId);
     }
 
-    private redirectToParentAnalyticsView(parentId: number) {
+    private redirectToParentAnalyticsView(parentId: string) {
         this.redirectToEntityView(LevelStateParam.CAMPAIGN, parentId);
     }
 
-    private redirectToEntityView(level: LevelStateParam, entityId: number) {
+    private redirectToEntityView(level: LevelStateParam, entityId: string) {
         const url = this.ajs$state.href('v2.analytics', {
             level: level,
             id: entityId,

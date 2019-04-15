@@ -42,7 +42,7 @@ describe('AdGroupSettingsStore', () => {
     it('should get default ad group via service', fakeAsync(() => {
         const mockedAdGroupWithExtras = clone(adGroupWithExtras);
         mockedAdGroupWithExtras.adGroup.name = 'New ad group';
-        mockedAdGroupWithExtras.adGroup.campaignId = 12345;
+        mockedAdGroupWithExtras.adGroup.campaignId = '12345';
         mockedAdGroupWithExtras.adGroup.startDate = new Date(2019, 0, 5);
         mockedAdGroupWithExtras.adGroup.endDate = new Date(2019, 1, 5);
 
@@ -56,8 +56,7 @@ describe('AdGroupSettingsStore', () => {
             new AdGroupSettingsStoreFieldsErrorsState()
         );
 
-        const campaignId = 12345;
-        store.loadEntityDefaults(campaignId);
+        store.loadEntityDefaults('12345');
         tick();
 
         expect(store.state.entity).toEqual(mockedAdGroupWithExtras.adGroup);
@@ -71,9 +70,9 @@ describe('AdGroupSettingsStore', () => {
 
     it('should get ad group via service', fakeAsync(() => {
         const mockedAdGroupWithExtras = clone(adGroupWithExtras);
-        mockedAdGroupWithExtras.adGroup.id = 12345;
+        mockedAdGroupWithExtras.adGroup.id = '12345';
         mockedAdGroupWithExtras.adGroup.name = 'Test ad group 1';
-        mockedAdGroupWithExtras.adGroup.campaignId = 12345;
+        mockedAdGroupWithExtras.adGroup.campaignId = '12345';
         mockedAdGroupWithExtras.adGroup.startDate = new Date(2019, 0, 5);
         mockedAdGroupWithExtras.adGroup.endDate = new Date(2019, 1, 5);
 
@@ -87,8 +86,7 @@ describe('AdGroupSettingsStore', () => {
             new AdGroupSettingsStoreFieldsErrorsState()
         );
 
-        const id = 12345;
-        store.loadEntity(id);
+        store.loadEntity('12345');
         tick();
 
         expect(store.state.entity).toEqual(mockedAdGroupWithExtras.adGroup);
@@ -102,8 +100,8 @@ describe('AdGroupSettingsStore', () => {
 
     it('should correctly handle errors when validating ad group via service', fakeAsync(() => {
         const mockedAdGroupWithExtras = clone(adGroupWithExtras);
-        mockedAdGroupWithExtras.adGroup.id = 12345;
-        mockedAdGroupWithExtras.adGroup.campaignId = 12345;
+        mockedAdGroupWithExtras.adGroup.id = '12345';
+        mockedAdGroupWithExtras.adGroup.campaignId = '12345';
         mockedAdGroupWithExtras.adGroup.startDate = new Date(2019, 0, 5);
         mockedAdGroupWithExtras.adGroup.endDate = new Date(2019, 1, 5);
 
@@ -153,9 +151,9 @@ describe('AdGroupSettingsStore', () => {
 
     it('should successfully save ad group via service', fakeAsync(() => {
         const mockedAdGroupWithExtras = clone(adGroupWithExtras);
-        mockedAdGroupWithExtras.adGroup.id = 12345;
+        mockedAdGroupWithExtras.adGroup.id = '12345';
         mockedAdGroupWithExtras.adGroup.name = 'Test ad group 1';
-        mockedAdGroupWithExtras.adGroup.campaignId = 12345;
+        mockedAdGroupWithExtras.adGroup.campaignId = '12345';
         serviceStub.get.and
             .returnValue(of(mockedAdGroupWithExtras, asapScheduler))
             .calls.reset();
@@ -163,7 +161,7 @@ describe('AdGroupSettingsStore', () => {
             .returnValue(of(mockedAdGroupWithExtras.adGroup, asapScheduler))
             .calls.reset();
 
-        store.loadEntity(12345);
+        store.loadEntity('12345');
         tick();
 
         store.saveEntity();
@@ -187,7 +185,7 @@ describe('AdGroupSettingsStore', () => {
             .returnValue(of(clone(adGroup), asapScheduler))
             .calls.reset();
 
-        store.loadEntity(1);
+        store.loadEntity('1');
         tick();
 
         store.updateState(false, 'entity', 'manageRtbSourcesAsOne');
@@ -205,8 +203,8 @@ describe('AdGroupSettingsStore', () => {
 
     it('should correctly handle errors when saving ad group via service', fakeAsync(() => {
         const mockedAdGroupWithExtras = clone(adGroupWithExtras);
-        mockedAdGroupWithExtras.adGroup.id = 12345;
-        mockedAdGroupWithExtras.adGroup.campaignId = 12345;
+        mockedAdGroupWithExtras.adGroup.id = '12345';
+        mockedAdGroupWithExtras.adGroup.campaignId = '12345';
         serviceStub.get.and
             .returnValue(of(mockedAdGroupWithExtras, asapScheduler))
             .calls.reset();
@@ -221,7 +219,7 @@ describe('AdGroupSettingsStore', () => {
             )
             .calls.reset();
 
-        store.loadEntity(12345);
+        store.loadEntity('12345');
         tick();
 
         store.saveEntity();
@@ -239,9 +237,9 @@ describe('AdGroupSettingsStore', () => {
 
     it('should successfully archive ad group via service', fakeAsync(() => {
         const mockedAdGroup = clone(adGroup);
-        mockedAdGroup.id = 12345;
+        mockedAdGroup.id = '12345';
         mockedAdGroup.name = 'Test ad group 1';
-        mockedAdGroup.campaignId = 12345;
+        mockedAdGroup.campaignId = '12345';
         mockedAdGroup.archived = false;
 
         store.state.entity = mockedAdGroup;
@@ -265,9 +263,9 @@ describe('AdGroupSettingsStore', () => {
 
     it('should successfully handle errors when archiving ad group via service', fakeAsync(() => {
         const mockedAdGroup = clone(adGroup);
-        mockedAdGroup.id = 12345;
+        mockedAdGroup.id = '12345';
         mockedAdGroup.name = 'Test ad group 1';
-        mockedAdGroup.campaignId = 12345;
+        mockedAdGroup.campaignId = '12345';
         mockedAdGroup.archived = false;
 
         store.state.entity = mockedAdGroup;
@@ -298,7 +296,7 @@ describe('AdGroupSettingsStore', () => {
 
         expect(store.doEntitySettingsHaveUnsavedChanges()).toBe(false);
 
-        store.loadEntity(1);
+        store.loadEntity('1');
         tick();
         expect(store.doEntitySettingsHaveUnsavedChanges()).toBe(false);
 
@@ -339,6 +337,9 @@ describe('AdGroupSettingsStore', () => {
     });
 
     it('should correctly set device targeting', () => {
+        spyOn(store, 'validateEntity')
+            .and.returnValue(of())
+            .calls.reset();
         const $event: any = {
             targetDevices: ['TABLE', 'MOBILE'],
             targetPlacements: [],
@@ -361,6 +362,9 @@ describe('AdGroupSettingsStore', () => {
     });
 
     it('should correctly set publisher groups', () => {
+        spyOn(store, 'validateEntity')
+            .and.returnValue(of())
+            .calls.reset();
         const $event: any = {
             whitelistedPublisherGroups: [123, 456, 789],
             blacklistedPublisherGroups: [],
@@ -380,6 +384,9 @@ describe('AdGroupSettingsStore', () => {
     });
 
     it('should correctly set interests', () => {
+        spyOn(store, 'validateEntity')
+            .and.returnValue(of())
+            .calls.reset();
         const $event: any = {
             includedInterests: [
                 InterestCategory.CAREER,
@@ -402,6 +409,9 @@ describe('AdGroupSettingsStore', () => {
     });
 
     it('should correctly set retargeting', () => {
+        spyOn(store, 'validateEntity')
+            .and.returnValue(of())
+            .calls.reset();
         const $event: any = {
             includedAudiences: [123, 456, 789],
             excludedAudiences: [555, 666],
@@ -433,6 +443,9 @@ describe('AdGroupSettingsStore', () => {
     });
 
     it('should correctly set bluekai', () => {
+        spyOn(store, 'validateEntity')
+            .and.returnValue(of())
+            .calls.reset();
         const $event: any = {
             and: [
                 {or: [{category: 'bluekai: 123'}, {category: 'bluekai: 234'}]},
@@ -447,6 +460,9 @@ describe('AdGroupSettingsStore', () => {
     });
 
     it('should correctly set state when ad group optimization is set to inactive', () => {
+        spyOn(store, 'validateEntity')
+            .and.returnValue(of())
+            .calls.reset();
         store.updateState(true, 'entity', 'manageRtbSourcesAsOne');
         store.setAdGroupAutopilotState(AdGroupAutopilotState.INACTIVE);
         expect(store.state.entity.autopilot.state).toEqual(
@@ -456,6 +472,9 @@ describe('AdGroupSettingsStore', () => {
     });
 
     it('should correctly set state when ad group optimization is set to optimize towards campaign goal', () => {
+        spyOn(store, 'validateEntity')
+            .and.returnValue(of())
+            .calls.reset();
         store.updateState(false, 'entity', 'manageRtbSourcesAsOne');
         store.setAdGroupAutopilotState(AdGroupAutopilotState.ACTIVE_CPC_BUDGET);
         expect(store.state.entity.autopilot.state).toEqual(
@@ -465,6 +484,9 @@ describe('AdGroupSettingsStore', () => {
     });
 
     it('should correctly set trackingCode', () => {
+        spyOn(store, 'validateEntity')
+            .and.returnValue(of())
+            .calls.reset();
         const $event = 'New tracking code';
 
         expect(store.state.entity.trackingCode).toEqual(null);
@@ -473,6 +495,9 @@ describe('AdGroupSettingsStore', () => {
     });
 
     it('should correctly set location targeting', () => {
+        spyOn(store, 'validateEntity')
+            .and.returnValue(of())
+            .calls.reset();
         const $event: any = {
             includedLocations: {
                 countries: [],

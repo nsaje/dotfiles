@@ -14,14 +14,11 @@ export class AdGroupEndpoint {
     constructor(private http: HttpClient) {}
 
     defaults(
-        campaignId: number,
+        campaignId: string,
         requestStateUpdater: RequestStateUpdater
     ): Observable<AdGroupWithExtras> {
         const request = ENTITY_CONFIG.requests.adGroup.defaults;
-        const params = new HttpParams().set(
-            'campaignId',
-            campaignId.toString()
-        );
+        const params = new HttpParams().set('campaignId', campaignId);
 
         requestStateUpdater(request.name, {
             inProgress: true,
@@ -53,7 +50,7 @@ export class AdGroupEndpoint {
     }
 
     get(
-        id: number,
+        id: string,
         requestStateUpdater: RequestStateUpdater
     ): Observable<AdGroupWithExtras> {
         const request = ENTITY_CONFIG.requests.adGroup.get;

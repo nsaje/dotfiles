@@ -39,8 +39,8 @@ describe('AdGroupService', () => {
         );
 
         mockedAdGroup = {
-            id: 12345,
-            campaignId: 12345,
+            id: '12345',
+            campaignId: '12345',
             name: 'Test ad group',
         };
 

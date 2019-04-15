@@ -16,21 +16,21 @@ export class AdGroupService {
     ) {}
 
     defaults(
-        campaignId: number,
+        campaignId: string,
         requestStateUpdater: RequestStateUpdater
     ): Observable<AdGroupWithExtras> {
         return this.endpoint.defaults(campaignId, requestStateUpdater);
     }
 
     get(
-        id: number,
+        id: string,
         requestStateUpdater: RequestStateUpdater
     ): Observable<AdGroupWithExtras> {
         return this.endpoint.get(id, requestStateUpdater);
     }
 
     validate(
-        adGroup: AdGroup,
+        adGroup: Partial<AdGroup>,
         requestStateUpdater: RequestStateUpdater
     ): Observable<void> {
         return this.endpoint.validate(adGroup, requestStateUpdater);
@@ -47,7 +47,7 @@ export class AdGroupService {
     }
 
     archive(
-        id: number,
+        id: string,
         requestStateUpdater: RequestStateUpdater
     ): Observable<AdGroup> {
         return this.endpoint
