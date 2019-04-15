@@ -230,7 +230,7 @@ angular
         }
 
         function getEntityById(type, id) {
-            if (type === null) return $q.resolve(null);
+            if (!type) return $q.resolve(null);
 
             if (hierarchyRoot) {
                 var entity;
