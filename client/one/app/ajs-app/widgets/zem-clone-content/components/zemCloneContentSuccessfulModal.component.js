@@ -12,12 +12,12 @@ angular.module('one.widgets').component('zemCloneContentSuccessfulModal', {
         function navigateTo() {
             $ctrl.modalInstance.close();
 
-            var navigationEntity = zemNavigationNewService.getEntityById(
-                constants.entityType.AD_GROUP,
-                $ctrl.resolve.destinationBatch.adGroup.id
-            );
             return zemNavigationNewService
-                .navigateTo(navigationEntity)
+                .getEntityById(
+                    constants.entityType.AD_GROUP,
+                    $ctrl.resolve.destinationBatch.adGroup.id
+                )
+                .then(zemNavigationNewService.navigateTo)
                 .then(function() {
                     zemSelectionService.setSelection({
                         batch: parseInt($ctrl.resolve.destinationBatch.id),

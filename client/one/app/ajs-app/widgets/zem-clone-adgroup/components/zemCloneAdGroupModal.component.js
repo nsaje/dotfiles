@@ -42,14 +42,20 @@ angular.module('one.widgets').component('zemCloneAdGroupModal', {
             var promise = zemNavigationNewService
                 .getNavigationHierarchyPromise()
                 .then(function() {
-                    $ctrl.campaign = zemNavigationNewService.getEntityById(
-                        constants.entityType.CAMPAIGN,
-                        $ctrl.resolve.campaignId
-                    );
-                    $ctrl.adGroup = zemNavigationNewService.getEntityById(
-                        constants.entityType.AD_GROUP,
-                        $ctrl.resolve.adGroupId
-                    );
+                    return $q.all({
+                        campaign: zemNavigationNewService.getEntityById(
+                            constants.entityType.CAMPAIGN,
+                            $ctrl.resolve.campaignId
+                        ),
+                        adGroup: zemNavigationNewService.getEntityById(
+                            constants.entityType.AD_GROUP,
+                            $ctrl.resolve.adGroupId
+                        ),
+                    });
+                })
+                .then(function(entities) {
+                    $ctrl.campaign = entities.campaign;
+                    $ctrl.adGroup = entities.adGroup;
                     $ctrl.destinationAdGroupName =
                         $ctrl.adGroup.name + ' (Copy)';
 
@@ -74,17 +80,20 @@ angular.module('one.widgets').component('zemCloneAdGroupModal', {
                 )
                 .then(
                     function(data) {
-                        reloadCache($ctrl.destinationCampaignId, data);
+                        reloadCache(data);
 
-                        var destinationCampaign = zemNavigationNewService.getEntityById(
-                            constants.entityType.CAMPAIGN,
-                            $ctrl.destinationCampaignId
-                        );
-                        zemCloneAdGroupService.openResultsModal(
-                            $ctrl.adGroup,
-                            destinationCampaign,
-                            data
-                        );
+                        zemNavigationNewService
+                            .getEntityById(
+                                constants.entityType.CAMPAIGN,
+                                $ctrl.destinationCampaignId
+                            )
+                            .then(function(destinationCampaign) {
+                                zemCloneAdGroupService.openResultsModal(
+                                    $ctrl.adGroup,
+                                    destinationCampaign,
+                                    data
+                                );
+                            });
 
                         $ctrl.modalInstance.close();
                     },
@@ -124,16 +133,10 @@ angular.module('one.widgets').component('zemCloneAdGroupModal', {
             $ctrl.destinationCampaignId = item ? item.id : null;
         }
 
-        function reloadCache(destinationCampaignId, entity) {
+        function reloadCache(entity) {
             // FIXME: Legacy workaround - When navigation service will be completely removed
             // this should be done automatically by listening entity services
-            zemNavigationService.addAdGroupToCache(destinationCampaignId, {
-                id: entity.id,
-                name: entity.name,
-                status: entity.status,
-                state: entity.state,
-                active: entity.active,
-            });
+            zemNavigationService.reloadAdGroup(entity.id);
         }
     },
 });

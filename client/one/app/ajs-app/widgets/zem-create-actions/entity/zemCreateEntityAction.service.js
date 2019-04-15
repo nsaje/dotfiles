@@ -39,26 +39,13 @@ angular
             // FIXME: Legacy workaround - When navigation service will be completely removed
             // this should be done automatically by listening entity services
             if (entity.type === constants.entityType.ACCOUNT) {
-                zemNavigationService.addAccountToCache({
-                    name: entity.name,
-                    id: entity.id,
-                    campaigns: [],
-                });
+                zemNavigationService.reloadAccount(entity.id);
             }
             if (entity.type === constants.entityType.CAMPAIGN) {
-                zemNavigationService.addCampaignToCache(parentEntity.id, {
-                    id: entity.id,
-                    name: entity.name,
-                    adGroups: [],
-                });
+                zemNavigationService.reloadCampaign(entity.id);
             }
             if (entity.type === constants.entityType.AD_GROUP) {
-                zemNavigationService.addAdGroupToCache(parentEntity.id, {
-                    id: entity.id,
-                    name: entity.name,
-                    status: constants.settingsState.INACTIVE,
-                    state: constants.adGroupRunningStatus.INACTIVE,
-                });
+                zemNavigationService.reloadAdGroup(entity.id);
             }
         }
     });

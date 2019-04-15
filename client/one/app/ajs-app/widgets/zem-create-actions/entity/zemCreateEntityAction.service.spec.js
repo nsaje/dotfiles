@@ -81,14 +81,14 @@ describe('zemCreateEntityActionService', function() {
         }));
 
         it('should reload zemNavigationCache', function() {
-            spyOn(zemNavigationService, 'addAccountToCache');
+            spyOn(zemNavigationService, 'reloadAccount');
 
             zemCreateEntityActionService.createEntity({
                 type: constants.entityType.ACCOUNT,
                 parent: undefined,
             });
             $rootScope.$apply();
-            expect(zemNavigationService.addAccountToCache).toHaveBeenCalled();
+            expect(zemNavigationService.reloadAccount).toHaveBeenCalled();
         });
 
         it('should navigate to newly created entity', function() {

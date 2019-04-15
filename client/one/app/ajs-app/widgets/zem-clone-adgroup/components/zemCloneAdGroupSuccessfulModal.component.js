@@ -10,15 +10,17 @@ angular.module('one.widgets').component('zemCloneAdGroupSuccessfulModal', {
         $ctrl.navigateTo = navigateTo;
 
         function navigateTo() {
-            var navigationEntity = zemNavigationNewService.getEntityById(
-                constants.entityType.AD_GROUP,
-                $ctrl.resolve.destinationAdGroup.id
-            );
-
             $ctrl.modalInstance.close();
-            return zemNavigationNewService.navigateTo(navigationEntity, {
-                settings: 'create',
-            });
+            return zemNavigationNewService
+                .getEntityById(
+                    constants.entityType.AD_GROUP,
+                    $ctrl.resolve.destinationAdGroup.id
+                )
+                .then(function(navigationEntity) {
+                    zemNavigationNewService.navigateTo(navigationEntity, {
+                        settings: 'create',
+                    });
+                });
         }
     },
 });

@@ -41,10 +41,13 @@ angular.module('one.widgets').component('zemCloneContentModal', {
             var promise = zemNavigationNewService
                 .getNavigationHierarchyPromise()
                 .then(function() {
-                    $ctrl.adGroup = zemNavigationNewService.getEntityById(
+                    return zemNavigationNewService.getEntityById(
                         constants.entityType.AD_GROUP,
                         $ctrl.resolve.adGroupId
                     );
+                })
+                .then(function(adGroup) {
+                    $ctrl.adGroup = adGroup;
                     var user = zemUserService.current(),
                         time = moment()
                             .utc()

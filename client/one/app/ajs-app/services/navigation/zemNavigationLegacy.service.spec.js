@@ -136,12 +136,14 @@ describe('zemNavigationService', function() {
                     $scope,
                     $scope.controllerMock.update
                 );
-
-                zemNavigationService.updateAdGroupCache(3, {
-                    name: 'ad updated',
+                zemNavigationLegacyEndpoint.getAccount.and.callFake(function() {
+                    return $q.resolve({account: account1});
                 });
 
-                expect($scope.controllerMock.update).toHaveBeenCalled();
+                zemNavigationService.reloadAccount(1).then(function() {
+                    expect($scope.controllerMock.update).toHaveBeenCalled();
+                });
+                $scope.$digest();
             });
 
             it('notifies onLoading subscribers when navigation is being fetched', function() {
@@ -197,65 +199,6 @@ describe('zemNavigationService', function() {
                 });
 
                 $scope.$digest();
-            });
-        });
-
-        describe('Cache is being updated correctly', function() {
-            it('updates ad group correctly', function() {
-                zemNavigationService.updateAdGroupCache(3, {
-                    name: 'Changed name',
-                });
-
-                zemNavigationService.getAdGroup(3).then(function(data) {
-                    expect(data.adGroup.name).toEqual('Changed name');
-                });
-                $scope.$digest();
-            });
-
-            it('updates campaign correctly', function() {
-                zemNavigationService.updateCampaignCache(2, {
-                    name: 'Changed name',
-                });
-
-                zemNavigationService.getCampaign(2).then(function(data) {
-                    expect(data.campaign.name).toEqual('Changed name');
-                });
-                $scope.$digest();
-            });
-
-            it('updates account correctly', function() {
-                zemNavigationService.updateAccountCache(1, {
-                    name: 'Changed name',
-                });
-
-                zemNavigationService.getAccount(1).then(function(data) {
-                    expect(data.account.name).toEqual('Changed name');
-                });
-                $scope.$digest();
-            });
-
-            it('adds ad group successfully', function() {
-                var adGroup = {id: 9, name: 'ad 9'};
-                zemNavigationService.addAdGroupToCache(2, adGroup);
-                zemNavigationService.getCampaign(2).then(function(data) {
-                    expect(data.campaign.adGroups[2]).toBe(adGroup);
-                });
-                $scope.$digest();
-            });
-
-            it('adds campaign successfully', function() {
-                var campaign = {id: 9, name: 'ca 9'};
-                zemNavigationService.addCampaignToCache(1, campaign);
-                zemNavigationService.getAccount(1).then(function(data) {
-                    expect(data.account.campaigns[1]).toBe(campaign);
-                });
-                $scope.$digest();
-            });
-
-            it('adds account successfully', function() {
-                var account = {id: 9, name: 'acc 9'};
-                zemNavigationService.addAccountToCache(account);
-                expect(zemNavigationService.getAccounts()[2]).toBe(account);
             });
         });
     });

@@ -53,9 +53,8 @@ angular
             hierarchyRoot = convertLegacyAccountsData(legacyAccounts);
             if (activeEntity) {
                 // Update entity with new object
-                activeEntity = getEntityById(
-                    activeEntity.type,
-                    activeEntity.id
+                getEntityById(activeEntity.type, activeEntity.id).then(
+                    setActiveEntity
                 );
             }
             notifyListeners(EVENTS.ON_HIERARCHY_UPDATE, hierarchyRoot);
@@ -71,15 +70,7 @@ angular
                 type = constants.entityToParentTypeMap[type];
             }
 
-            if (hierarchyRoot && zemNavigationService.isFullyLoaded()) {
-                var entity = getEntityById(type, id);
-            }
-            if (entity) {
-                setActiveEntity(entity);
-            } else {
-                // If hierarchy data not available (not loaded yet or entity not in tree) use old workaround to get entity data
-                fetchAndConvertLegacyEntityData(type, id);
-            }
+            getEntityById(type, id).then(setActiveEntity);
         }
 
         function initUsesBCMv2() {
@@ -87,48 +78,6 @@ angular
                 allAccountsUsesBCMv2 = data.usesBCMv2;
                 notifyListeners(EVENTS.ON_USES_BCMV2_UPDATE);
             });
-        }
-
-        function fetchAndConvertLegacyEntityData(type, id) {
-            if (type === null) return setActiveEntity(null); // On all accounts level
-            if (type === constants.entityType.ACCOUNT)
-                return zemNavigationService.getAccount(id).then(convertData);
-            if (type === constants.entityType.CAMPAIGN)
-                return zemNavigationService.getCampaign(id).then(convertData);
-            if (type === constants.entityType.AD_GROUP)
-                return zemNavigationService.getAdGroup(id).then(convertData);
-
-            function convertData(data) {
-                var entity;
-                if (data && data.hasOwnProperty('account')) {
-                    entity = createEntity(
-                        constants.entityType.ACCOUNT,
-                        null,
-                        data.account
-                    );
-                }
-
-                if (data && data.hasOwnProperty('campaign')) {
-                    var campaign = createEntity(
-                        constants.entityType.CAMPAIGN,
-                        entity,
-                        data.campaign
-                    );
-                    if (entity) entity.children = [campaign];
-                    entity = campaign;
-                }
-
-                if (data && data.hasOwnProperty('adGroup')) {
-                    var adGroup = createEntity(
-                        constants.entityType.AD_GROUP,
-                        entity,
-                        data.adGroup
-                    );
-                    if (entity) entity.children = [adGroup];
-                    entity = adGroup;
-                }
-                setActiveEntity(entity);
-            }
         }
 
         function convertLegacyAccountsData(legacyAccounts) {
@@ -281,15 +230,60 @@ angular
         }
 
         function getEntityById(type, id) {
-            if (!hierarchyRoot) return;
-            if (type === constants.entityType.ACCOUNT)
-                return hierarchyRoot.ids.accounts[id];
-            if (type === constants.entityType.CAMPAIGN)
-                return hierarchyRoot.ids.campaigns[id];
-            if (type === constants.entityType.AD_GROUP)
-                return hierarchyRoot.ids.adGroups[id];
+            if (type === null) return $q.resolve(null);
 
-            return null;
+            if (hierarchyRoot) {
+                var entity;
+                if (type === constants.entityType.ACCOUNT)
+                    entity = hierarchyRoot.ids.accounts[id];
+                if (type === constants.entityType.CAMPAIGN)
+                    entity = hierarchyRoot.ids.campaigns[id];
+                if (type === constants.entityType.AD_GROUP)
+                    entity = hierarchyRoot.ids.adGroups[id];
+
+                if (entity) {
+                    return $q.resolve(entity);
+                }
+            }
+
+            if (type === constants.entityType.ACCOUNT)
+                return zemNavigationService.getAccount(id).then(convertData);
+            if (type === constants.entityType.CAMPAIGN)
+                return zemNavigationService.getCampaign(id).then(convertData);
+            if (type === constants.entityType.AD_GROUP)
+                return zemNavigationService.getAdGroup(id).then(convertData);
+
+            function convertData(data) {
+                var entity;
+                if (data && data.hasOwnProperty('account')) {
+                    entity = createEntity(
+                        constants.entityType.ACCOUNT,
+                        null,
+                        data.account
+                    );
+                }
+
+                if (data && data.hasOwnProperty('campaign')) {
+                    var campaign = createEntity(
+                        constants.entityType.CAMPAIGN,
+                        entity,
+                        data.campaign
+                    );
+                    if (entity) entity.children = [campaign];
+                    entity = campaign;
+                }
+
+                if (data && data.hasOwnProperty('adGroup')) {
+                    var adGroup = createEntity(
+                        constants.entityType.AD_GROUP,
+                        entity,
+                        data.adGroup
+                    );
+                    if (entity) entity.children = [adGroup];
+                    entity = adGroup;
+                }
+                return entity;
+            }
         }
 
         function setActiveEntity(entity) {

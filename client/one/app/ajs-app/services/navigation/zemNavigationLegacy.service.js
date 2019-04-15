@@ -158,52 +158,6 @@ angular
             }
         }
 
-        // TODO (jurebajt): Unused - remove
-        function updateAllAccountsCache(data) {
-            Object.keys(data).forEach(function(key) {
-                accounts[key] = data[key];
-            });
-            notifyCacheUpdate();
-        }
-
-        // TODO (jurebajt): Unused - remove
-        function updateAccountCache(id, data) {
-            var fromCache = findAccountInNavTree(id);
-            updateModel(fromCache.account, data);
-            notifyCacheUpdate();
-        }
-
-        // TODO (jurebajt): Unused - remove
-        function updateCampaignCache(id, data) {
-            var fromCache = findCampaignInNavTree(id);
-            updateModel(fromCache.campaign, data);
-            notifyCacheUpdate();
-        }
-
-        // TODO (jurebajt): Unused - remove
-        function updateAdGroupCache(id, data) {
-            var fromCache = findAdGroupInNavTree(id);
-            updateModel(fromCache.adGroup, data);
-            notifyCacheUpdate();
-        }
-
-        function addAccountToCache(data) {
-            accounts.push(data);
-            notifyCacheUpdate();
-        }
-
-        function addCampaignToCache(id, data) {
-            var fromCache = findAccountInNavTree(id);
-            fromCache.account.campaigns.push(data);
-            notifyCacheUpdate();
-        }
-
-        function addAdGroupToCache(id, data) {
-            var fromCache = findCampaignInNavTree(id);
-            fromCache.campaign.adGroups.push(data);
-            notifyCacheUpdate();
-        }
-
         function init() {
             zemEntitiesUpdatesService
                 .getAllUpdates$()
@@ -297,29 +251,35 @@ angular
         function reloadAccount(id) {
             return zemNavigationLegacyEndpoint
                 .getAccount(id)
-                .then(function(accountData) {
+                .then(function(data) {
                     var accountCached = findAccountInNavTree(id);
-                    if (!accountsLoaded) {
-                        postponeDataUpdate(accountData);
-                        return accountData;
+                    if (accountCached) {
+                        updateModel(accountCached.account, data.account);
+                    } else {
+                        accountCached = addAccountToCache(data);
                     }
-                    updateModel(accountCached.account, accountData.account);
+                    if (!accountsLoaded) {
+                        postponeDataUpdate(data);
+                    }
                     notifyCacheUpdate();
-                    return accountData;
+                    return accountCached;
                 });
         }
 
         function reloadCampaign(id) {
             return zemNavigationLegacyEndpoint
                 .getCampaign(id)
-                .then(function(campaignData) {
-                    if (!accountsLoaded) {
-                        postponeDataUpdate(campaignData);
-                        return campaignData;
-                    }
+                .then(function(data) {
                     var campaignCached = findCampaignInNavTree(id);
-                    updateModel(campaignCached.account, campaignData.account);
-                    updateModel(campaignCached.campaign, campaignData.campaign);
+                    if (campaignCached) {
+                        updateModel(campaignCached.account, data.account);
+                        updateModel(campaignCached.campaign, data.campaign);
+                    } else {
+                        campaignCached = addCampaignToCache(data);
+                    }
+                    if (!accountsLoaded) {
+                        postponeDataUpdate(data);
+                    }
                     notifyCacheUpdate();
                     return campaignCached;
                 });
@@ -330,20 +290,56 @@ angular
 
             return zemNavigationLegacyEndpoint
                 .getAdGroup(id)
-                .then(function(adGroupData) {
-                    if (!accountsLoaded) {
-                        postponeDataUpdate(adGroupData);
-                        return adGroupData;
-                    }
+                .then(function(data) {
                     var adGroupCached = findAdGroupInNavTree(id);
-                    updateModel(adGroupCached.account, adGroupData.account);
-                    updateModel(adGroupCached.campaign, adGroupData.campaign);
-                    updateModel(adGroupCached.adGroup, adGroupData.adGroup);
+                    if (adGroupCached) {
+                        updateModel(adGroupCached.account, data.account);
+                        updateModel(adGroupCached.campaign, data.campaign);
+                        updateModel(adGroupCached.adGroup, data.adGroup);
+                    } else {
+                        adGroupCached = addAdGroupToCache(data);
+                    }
+                    if (!accountsLoaded) {
+                        postponeDataUpdate(data);
+                    }
                     notifyAdGroupReloading(id, false);
-
                     notifyCacheUpdate();
                     return adGroupCached;
                 });
+        }
+
+        function addAccountToCache(data) {
+            data.account.campaigns = [];
+            accounts.push(data.account);
+            return {
+                account: data.account,
+            };
+        }
+
+        function addCampaignToCache(data) {
+            var accountCached = findAccountInNavTree(data.account.id);
+            if (!accountCached) {
+                accountCached = addAccountToCache(data);
+            }
+            data.campaign.adGroups = [];
+            accountCached.account.campaigns.push(data.campaign);
+            return {
+                account: data.account,
+                campaign: data.campaign,
+            };
+        }
+
+        function addAdGroupToCache(data) {
+            var campaignCached = findCampaignInNavTree(data.campaign.id);
+            if (!campaignCached) {
+                campaignCached = addCampaignToCache(data);
+            }
+            campaignCached.campaign.adGroups.push(data.adGroup);
+            return {
+                account: data.account,
+                campaign: data.campaign,
+                adGroup: data.adGroup,
+            };
         }
 
         return {
@@ -362,15 +358,6 @@ angular
             reloadAdGroup: reloadAdGroup,
 
             notifyAdGroupReloading: notifyAdGroupReloading,
-
-            updateAllAccountsCache: updateAllAccountsCache,
-            updateAdGroupCache: updateAdGroupCache,
-            updateCampaignCache: updateCampaignCache,
-            updateAccountCache: updateAccountCache,
-
-            addAdGroupToCache: addAdGroupToCache,
-            addCampaignToCache: addCampaignToCache,
-            addAccountToCache: addAccountToCache,
 
             onUpdate: function(scope, callback) {
                 var handler = $rootScope.$on('navigation-updated', callback);
