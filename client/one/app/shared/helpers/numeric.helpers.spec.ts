@@ -20,7 +20,7 @@ describe('numericHelpers', () => {
 
     it('should correctly handle null, undefined and empty input parameter', () => {
         expect(numericHelpers.parseDecimal(null)).toEqual(null);
-        expect(numericHelpers.parseDecimal(undefined)).toEqual(undefined);
+        expect(numericHelpers.parseDecimal(undefined)).toEqual(null);
         expect(numericHelpers.parseDecimal('')).toEqual('');
     });
 

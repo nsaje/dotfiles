@@ -23,8 +23,8 @@ describe('currencyHelpers', () => {
         );
     });
 
-    it('should return undefined in case of non-number', () => {
-        expect(currencyHelpers.formatCurrency('abcd', 2)).toBe(undefined);
+    it('should return null in case of non-number', () => {
+        expect(currencyHelpers.formatCurrency('abcd', 2)).toBe(null);
     });
 
     it('should correctly return currency symbol', () => {

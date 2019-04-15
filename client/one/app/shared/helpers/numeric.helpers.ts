@@ -2,14 +2,14 @@ import * as commonHelpers from './common.helpers';
 
 export function parseInteger(value: string): string {
     if (!commonHelpers.isDefined(value)) {
-        return value;
+        return null;
     }
     return value.replace(/[^\d]+/g, '');
 }
 
 export function parseDecimal(value: string, fractionSize: number = 2): string {
     if (!commonHelpers.isDefined(value)) {
-        return value;
+        return null;
     }
 
     const holder = value.replace(/[^-+\d.]+/g, '');

@@ -11,10 +11,10 @@ export function formatCurrency(
     currencyCode: string = ''
 ): string {
     if (!commonHelpers.isDefined(value)) {
-        return value;
+        return null;
     }
     if (isNaN(Number.parseFloat(value))) {
-        return;
+        return null;
     }
     const digitInfo = `1.${fractionSize}-${fractionSize}`;
     // https://angular.io/api/common/formatCurrency
