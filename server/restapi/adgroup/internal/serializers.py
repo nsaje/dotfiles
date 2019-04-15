@@ -1,3 +1,5 @@
+import decimal
+
 import rest_framework.serializers
 
 import dash.constants
@@ -71,6 +73,20 @@ class ExtraDataSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
     deals = rest_framework.serializers.ListField(child=ExtraDataDealSerializer(), default=[], allow_empty=True)
 
 
+class AdGroupAutopilotSerializer(restapi.adgroup.v1.serializers.AdGroupAutopilotSerializer):
+    # NOTE: extend daily_budget v1 field serializer to reject
+    # None or empty values and values lower than zero.
+    daily_budget = restapi.serializers.fields.TwoWayBlankDecimalField(
+        source="local_autopilot_daily_budget",
+        max_digits=10,
+        decimal_places=4,
+        output_precision=2,
+        rounding=decimal.ROUND_HALF_DOWN,
+        required=False,
+        min_value=0,
+    )
+
+
 class AdGroupSerializer(restapi.adgroup.v1.serializers.AdGroupSerializer):
     class Meta(restapi.adgroup.v1.serializers.AdGroupSerializer.Meta):
         fields = (
@@ -103,3 +119,4 @@ class AdGroupSerializer(restapi.adgroup.v1.serializers.AdGroupSerializer):
     redirect_javascript = rest_framework.serializers.CharField(required=False, allow_blank=True)
     manage_rtb_sources_as_one = rest_framework.serializers.BooleanField(source="b1_sources_group_enabled")
     notes = rest_framework.serializers.CharField(read_only=True)
+    autopilot = AdGroupAutopilotSerializer(source="*", required=False)
