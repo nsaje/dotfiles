@@ -1,0 +1,26 @@
+<div class="zem-settings-drawer-header__content">
+    <div class="zem-settings-drawer-header__entity-details">
+        <div class="zem-settings-drawer-header__entity-type">
+            <ng-container *ngIf="entityType === EntityType.ACCOUNT">
+                Account settings
+            </ng-container>
+            <ng-container *ngIf="entityType === EntityType.CAMPAIGN">
+                Campaign settings
+            </ng-container>
+            <ng-container *ngIf="entityType === EntityType.AD_GROUP">
+                Ad group settings
+            </ng-container>
+        </div>
+        <h2 class="zem-settings-drawer-header__entity-name">
+            {{ entityName }}
+        </h2>
+    </div>
+    <a
+        class="zem-settings-drawer-header__entity-admin-link"
+        *ngIf="adminLink && showAdminLink"
+        [zemInternalFeature]="isAdminLinkAnInternalFeature"
+        [href]="adminLink"
+        target="_blank"
+        >Open in admin</a
+    >
+</div>

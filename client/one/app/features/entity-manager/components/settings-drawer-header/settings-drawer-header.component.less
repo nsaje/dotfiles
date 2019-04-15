@@ -1,0 +1,53 @@
+@import 'variables';
+@import '../../styles/_settings.variables.less';
+
+.zem-settings-drawer-header {
+    padding: 10px @spacing--default;
+}
+
+.zem-settings-drawer-header__content {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    margin: -@zem-settings__items-spacing--default / 2;
+}
+
+.zem-settings-drawer-header__entity-details {
+    flex-grow: 1;
+    max-width: 100%;
+    max-width: calc(100% - @zem-settings__items-spacing--default);
+    margin: @zem-settings__items-spacing--default / 2;
+}
+
+.zem-settings-drawer-header__entity-type {
+    font-size: 12px;
+    color: @text-color--lighter;
+}
+
+.zem-settings-drawer-header__entity-name {
+    margin: 0;
+    height: 26px;
+    line-height: 26px;
+    color: @color--secondary;
+    font-size: 24px;
+    font-weight: 400;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.zem-settings-drawer-header__entity-admin-link {
+    margin: @zem-settings__items-spacing--default / 2;
+    color: @color--secondary;
+
+    &:hover,
+    &:focus,
+    &:active {
+        color: @color--secondary;
+    }
+}
+
+.zem-settings-drawer-header__entity-admin-link
+    .zem-internal-feature__indicator {
+    left: -3px;
+}

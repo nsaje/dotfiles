@@ -37,6 +37,8 @@ import {AdGroupAutopilotStateSettingComponent} from './components/ad-group-autop
 import {AdGroupRTBSourcesManagementSettingComponent} from './components/ad-group-rtb-sources-management-setting/ad-group-rtb-sources-management-setting.component';
 import {HacksComponent} from './components/hacks/hacks.component';
 import {DealsComponent} from './components/deals/deals.component';
+import {SettingsDrawerFooterComponent} from './components/settings-drawer-footer/settings-drawer-footer.component';
+import {SettingsDrawerHeaderComponent} from './components/settings-drawer-header/settings-drawer-header.component';
 
 @NgModule({
     declarations: [
@@ -44,6 +46,8 @@ import {DealsComponent} from './components/deals/deals.component';
         AccountSettingsDrawerView,
         CampaignSettingsDrawerView,
         AdGroupSettingsDrawerView,
+        SettingsDrawerHeaderComponent,
+        SettingsDrawerFooterComponent,
         CampaignCreatorComponent,
         CampaignCreatorModalComponent,
         CampaignTypeSelectorComponent,

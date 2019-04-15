@@ -5,9 +5,20 @@
     (closeRequest)="cancel()"
 >
     <ng-container *ngIf="(store.state$ | async) as state">
-        <div class="zem-drawer__header zem-settings__settings-header">
-            {{ state.entity.name }}
-        </div>
+        <zem-settings-drawer-header
+            class="zem-settings-drawer-header zem-drawer__header"
+            [entityId]="state.entity.id"
+            [entityType]="EntityType.AD_GROUP"
+            [entityName]="state.entity.name"
+            [showAdminLink]="
+                zemPermissions.hasPermission('zemauth.can_see_open_in_admin')
+            "
+            [isAdminLinkAnInternalFeature]="
+                zemPermissions.isPermissionInternal(
+                    'zemauth.can_see_open_in_admin'
+                )
+            "
+        ></zem-settings-drawer-header>
         <div
             class="zem-drawer__content custom-scroller zem-settings__settings-container"
         >
@@ -72,7 +83,7 @@
                         *ngIf="state.extras.isCampaignAutopilotEnabled"
                     >
                         <div
-                            class="zem-message zem-message--bubble zem-message--warning zem-message--with-icon zem-warning-bg-icon"
+                            class="zem-message zem-message--bubble zem-message--warning zem-message--with-icon"
                         >
                             Flight time settings aren't available because
                             campaign budget optimization is enabled. Budget
@@ -178,7 +189,7 @@
                         *ngIf="!store.isAdGroupAutopilotEnabled()"
                     >
                         <div
-                            class="zem-message zem-message--bubble zem-message--warning zem-message--with-icon zem-warning-bg-icon"
+                            class="zem-message zem-message--bubble zem-message--warning zem-message--with-icon"
                         >
                             <ng-container
                                 *ngIf="state.extras.isCampaignAutopilotEnabled"
@@ -238,7 +249,7 @@
                             class="zem-settings-section__item zem-settings-section__item--indented"
                         >
                             <div
-                                class="zem-message zem-message--bubble zem-message--info zem-message--with-icon zem-info-bg-icon"
+                                class="zem-message zem-message--bubble zem-message--info zem-message--with-icon"
                             >
                                 Outbrain and Yahoo don’t support click capping
                                 and will be automatically paused in this ad
@@ -270,7 +281,7 @@
                             class="zem-settings-section__item zem-settings-section__item--indented"
                         >
                             <div
-                                class="zem-message zem-message--bubble zem-message--info zem-message--with-icon zem-info-bg-icon"
+                                class="zem-message zem-message--bubble zem-message--info zem-message--with-icon"
                             >
                                 Outbrain and Yahoo don’t support impression
                                 frequency capping. Ads will run with no
@@ -415,7 +426,7 @@
                     *ngIf="state.extras.isCampaignAutopilotEnabled"
                 >
                     <div
-                        class="zem-message zem-message--bubble zem-message--info zem-message--with-icon zem-info-bg-icon"
+                        class="zem-message zem-message--bubble zem-message--info zem-message--with-icon"
                     >
                         Optimizations are managed on campaign level.
                     </div>
@@ -452,7 +463,7 @@
                                 *ngIf="store.isAdGroupAutopilotEnabled()"
                             >
                                 <div
-                                    class="zem-message zem-message--bubble zem-message--warning zem-message--with-icon zem-warning-bg-icon"
+                                    class="zem-message zem-message--bubble zem-message--warning zem-message--with-icon"
                                 >
                                     You can't manage RTB sources while
                                     optimization towards your campaign goal is
@@ -650,16 +661,14 @@
                         'zemauth.can_see_backend_hacks'
                     )
                 "
+                [zemInternalFeature]="
+                    zemPermissions.isPermissionInternal(
+                        'zemauth.can_see_backend_hacks'
+                    )
+                "
             >
                 <div class="zem-panel__header">
-                    <h2
-                        class="zem-settings__panel-header-title"
-                        [zemInternalFeature]="
-                            zemPermissions.isPermissionInternal(
-                                'zemauth.can_see_backend_hacks'
-                            )
-                        "
-                    >
+                    <h2 class="zem-settings__panel-header-title">
                         Backend hacks
                     </h2>
                 </div>
@@ -676,18 +685,14 @@
                 *ngIf="
                     zemPermissions.hasPermission('zemauth.can_see_deals_in_ui')
                 "
+                [zemInternalFeature]="
+                    zemPermissions.isPermissionInternal(
+                        'zemauth.can_see_deals_in_ui'
+                    )
+                "
             >
                 <div class="zem-panel__header">
-                    <h2
-                        class="zem-settings__panel-header-title"
-                        [zemInternalFeature]="
-                            zemPermissions.isPermissionInternal(
-                                'zemauth.can_see_deals_in_ui'
-                            )
-                        "
-                    >
-                        Deals
-                    </h2>
+                    <h2 class="zem-settings__panel-header-title">Deals</h2>
                 </div>
                 <div class="zem-settings-section">
                     <zem-deals
@@ -697,13 +702,30 @@
                 </div>
             </div>
         </div>
-        <div class="zem-drawer__footer zem-settings__settings-footer">
-            <button (click)="saveSettings()">
-                <ng-container *ngIf="isNewEntity">Create</ng-container>
-                <ng-container *ngIf="!isNewEntity">Save</ng-container>
-            </button>
-            <button (click)="cancel()">Cancel</button>
-            <button *ngIf="!isNewEntity" (click)="archive()">Archive</button>
-        </div>
+
+        <zem-settings-drawer-footer
+            class="zem-settings-drawer-footer zem-drawer__footer zem-settings__settings-footer"
+            [isNewEntity]="isNewEntity"
+            [entityType]="EntityType.AD_GROUP"
+            [userHasPermissionToArchive]="
+                zemPermissions.hasPermission('zemauth.archive_restore_entity')
+            "
+            [isArchiveActionInternal]="
+                zemPermissions.isPermissionInternal(
+                    'zemauth.archive_restore_entity'
+                )
+            "
+            [isArchiveActionDisabled]="!state.extras.canArchive"
+            [isLoading]="
+                state.requests.create.inProgress ||
+                state.requests.edit.inProgress
+            "
+            [hasError]="
+                state.requests.create.error || state.requests.edit.error
+            "
+            (save)="saveSettings()"
+            (cancel)="cancel()"
+            (archive)="archive()"
+        ></zem-settings-drawer-footer>
     </ng-container>
 </zem-drawer>

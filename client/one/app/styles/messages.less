@@ -10,23 +10,6 @@
     border-radius: @border-radius--default;
 }
 
-.zem-message--with-icon {
-    padding-left: 34px;
-}
-
-.zem-message--with-icon::before {
-    content: '';
-    background-size: 18px;
-    background-repeat: no-repeat;
-    background-position: center center;
-    width: 18px;
-    height: 18px;
-    position: absolute;
-    left: 7px;
-    top: 7px;
-    opacity: 0.25;
-}
-
 .zem-message--error {
     color: @color--danger;
 }
@@ -83,4 +66,41 @@
 .zem-message--bubble.zem-message--help {
     background-color: tint(@color--lightest-neutral, 50%);
     border-color: @color--lightest-neutral;
+}
+
+.zem-message--with-icon {
+    padding-left: 34px;
+
+    &::before {
+        content: '';
+        background-size: 18px;
+        background-repeat: no-repeat;
+        background-position: center center;
+        width: 18px;
+        height: 18px;
+        position: absolute;
+        left: 7px;
+        top: 7px;
+        opacity: 0.25;
+    }
+}
+
+.zem-message--with-icon.zem-message--error::before {
+    background-image: url('images/error-red.svg');
+}
+
+.zem-message--with-icon.zem-message--warning::before {
+    background-image: url('images/exclamation-orange.svg');
+}
+
+.zem-message--with-icon.zem-message--info::before {
+    background-image: url('images/info-blue.svg');
+}
+
+.zem-message--with-icon.zem-message--success::before {
+    background-image: url('images/success-green.svg');
+}
+
+.zem-message--with-icon.zem-message--help::before {
+    background-image: url('images/help-dark-gray.svg');
 }

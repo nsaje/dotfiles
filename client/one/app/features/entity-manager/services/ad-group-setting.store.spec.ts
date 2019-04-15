@@ -12,7 +12,6 @@ import {InterestCategory, AdGroupAutopilotState} from '../../../app.constants';
 describe('AdGroupSettingsStore', () => {
     let serviceStub: jasmine.SpyObj<AdGroupService>;
     let store: AdGroupSettingsStore;
-    let navigationNewServiceStub: jasmine.SpyObj<any>;
     let adGroupWithExtras: AdGroupWithExtras;
     let adGroup: AdGroup;
     let adGroupExtras: AdGroupExtras;
@@ -25,12 +24,8 @@ describe('AdGroupSettingsStore', () => {
             'save',
             'archive',
         ]);
-        navigationNewServiceStub = jasmine.createSpyObj(
-            'zemNavigationNewService',
-            ['refreshState']
-        );
 
-        store = new AdGroupSettingsStore(serviceStub, navigationNewServiceStub);
+        store = new AdGroupSettingsStore(serviceStub);
         adGroup = clone(store.state.entity);
         adGroupExtras = clone(store.state.extras);
         adGroupWithExtras = {
@@ -235,7 +230,7 @@ describe('AdGroupSettingsStore', () => {
         expect(serviceStub.save).toHaveBeenCalledTimes(1);
     }));
 
-    it('should successfully archive ad group via service', fakeAsync(() => {
+    it('should successfully archive ad group via service', async () => {
         const mockedAdGroup = clone(adGroup);
         mockedAdGroup.id = '12345';
         mockedAdGroup.name = 'Test ad group 1';
@@ -250,18 +245,13 @@ describe('AdGroupSettingsStore', () => {
             .returnValue(of(archivedAdGroup, asapScheduler))
             .calls.reset();
 
-        navigationNewServiceStub.refreshState.and
-            .returnValue(null)
-            .calls.reset();
-
-        store.archiveEntity();
-        tick();
+        const shouldReload = await store.archiveEntity();
 
         expect(serviceStub.archive).toHaveBeenCalledTimes(1);
-        expect(navigationNewServiceStub.refreshState).toHaveBeenCalledTimes(1);
-    }));
+        expect(shouldReload).toBe(true);
+    });
 
-    it('should successfully handle errors when archiving ad group via service', fakeAsync(() => {
+    it('should successfully handle errors when archiving ad group via service', async () => {
         const mockedAdGroup = clone(adGroup);
         mockedAdGroup.id = '12345';
         mockedAdGroup.name = 'Test ad group 1';
@@ -278,16 +268,11 @@ describe('AdGroupSettingsStore', () => {
             )
             .calls.reset();
 
-        navigationNewServiceStub.refreshState.and
-            .returnValue(null)
-            .calls.reset();
-
-        store.archiveEntity();
-        tick();
+        const shouldReload = await store.archiveEntity();
 
         expect(serviceStub.archive).toHaveBeenCalledTimes(1);
-        expect(navigationNewServiceStub.refreshState).not.toHaveBeenCalled();
-    }));
+        expect(shouldReload).toBe(false);
+    });
 
     it('should correctly determine if ad group settings have unsaved changes', fakeAsync(() => {
         serviceStub.get.and

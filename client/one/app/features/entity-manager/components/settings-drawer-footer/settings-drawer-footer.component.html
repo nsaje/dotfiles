@@ -1,0 +1,50 @@
+<div class="zem-settings-drawer-footer__content">
+    <div class="zem-settings-drawer-footer__actions-container">
+        <div class="zem-buttons-panel">
+            <button
+                class="zem-button zem-button--highlighted zem-button--with-icon zem-button--check-icon"
+                (click)="save.emit()"
+            >
+                <ng-container *ngIf="isNewEntity">Create</ng-container>
+                <ng-container *ngIf="!isNewEntity">Save</ng-container>
+            </button>
+            <button
+                class="zem-button zem-button--outlined"
+                (click)="cancel.emit()"
+            >
+                Cancel
+            </button>
+            <div
+                *ngIf="!isNewEntity && userHasPermissionToArchive"
+                [zemInternalFeature]="isArchiveActionInternal"
+                [zemPopover]="disabledArchiveActionText"
+                [disablePopover]="!isArchiveActionDisabled"
+                placement="top"
+                triggers="mouseenter:mouseleave"
+            >
+                <button
+                    class="zem-button zem-button--outlined"
+                    [disabled]="isArchiveActionDisabled"
+                    (click)="archive.emit()"
+                >
+                    <ng-container *ngIf="entityType === EntityType.ACCOUNT">
+                        Archive account
+                    </ng-container>
+                    <ng-container *ngIf="entityType === EntityType.CAMPAIGN">
+                        Archive campaign
+                    </ng-container>
+                    <ng-container *ngIf="entityType === EntityType.AD_GROUP">
+                        Archive ad group
+                    </ng-container>
+                </button>
+            </div>
+        </div>
+    </div>
+    <div class="zem-settings-drawer-footer__status-display">
+        <span class="loader loader--small" *ngIf="isLoading"></span>
+        <span class="zem-message zem-message--error" *ngIf="hasError">
+            An error occurred while saving. Please correct the marked fields and
+            save again.
+        </span>
+    </div>
+</div>

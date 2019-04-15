@@ -21,7 +21,7 @@
             (filesChange)="onFilesChange($event)"
         ></zem-file-selector>
         <div
-            class="zem-message zem-message--bubble zem-message--error zem-message--with-icon zem-error-bg-icon zem-bid-modifier-upload-modal__item"
+            class="zem-message zem-message--bubble zem-message--error zem-message--with-icon zem-bid-modifier-upload-modal__item"
             *ngIf="state.fieldsErrors.errorFileUrl || state.fieldsErrors.file"
         >
             <ng-container *ngIf="state.fieldsErrors.errorFileUrl">
@@ -33,7 +33,7 @@
             </ng-container>
         </div>
         <div
-            class="zem-message zem-message--bubble zem-message--help zem-message--with-icon zem-help-bg-icon zem-bid-modifier-upload-modal__item"
+            class="zem-message zem-message--bubble zem-message--help zem-message--with-icon zem-bid-modifier-upload-modal__item"
         >
             <p>You can download our example file here.</p>
             <a (click)="downloadExample()">Download CSV example file</a>

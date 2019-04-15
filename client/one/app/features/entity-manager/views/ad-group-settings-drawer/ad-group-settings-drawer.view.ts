@@ -10,10 +10,11 @@ import {
 } from '@angular/core';
 import {ENTITY_MANAGER_CONFIG} from '../../entity-manager.config';
 import {AdGroupSettingsStore} from '../../services/ad-group-settings.store';
-import {LevelStateParam} from '../../../../app.constants';
-import {Subject} from 'rxjs';
-import {takeUntil, map, distinctUntilChanged} from 'rxjs/operators';
+import {LevelStateParam, EntityType, Currency} from '../../../../app.constants';
+import {Subject, merge, Observable} from 'rxjs';
+import {takeUntil, map, distinctUntilChanged, tap} from 'rxjs/operators';
 import {APP_CONFIG} from '../../../../app.config';
+import * as entityHelpers from '../../helpers/entity.helpers';
 import * as messagesHelpers from '../../helpers/messages.helpers';
 
 @Component({
@@ -27,6 +28,8 @@ export class AdGroupSettingsDrawerView
     entityId: string;
     @Input()
     newEntityParentId: string;
+
+    EntityType = EntityType;
 
     isOpen = false;
     isNewEntity = false;
@@ -45,7 +48,7 @@ export class AdGroupSettingsDrawerView
     ngOnInit() {
         this.isNewEntity = !this.entityId;
 
-        this.subscribeToCurrencyUpdates();
+        this.subscribeToStateUpdates();
     }
 
     ngAfterViewInit() {
@@ -107,31 +110,44 @@ export class AdGroupSettingsDrawerView
         }
     }
 
-    archive() {
-        this.store.archiveEntity();
+    async archive() {
+        const shouldReload = await this.store.archiveEntity();
+        if (shouldReload) {
+            location.reload();
+        }
     }
 
-    private subscribeToCurrencyUpdates() {
-        this.store.state$
-            .pipe(
-                map(state => state.extras.currency),
-                distinctUntilChanged(),
-                takeUntil(this.ngUnsubscribe$)
-            )
-            .subscribe(currency => {
+    private subscribeToStateUpdates() {
+        merge(this.createCurrencySymbolUpdater$())
+            .pipe(takeUntil(this.ngUnsubscribe$))
+            .subscribe();
+    }
+
+    private createCurrencySymbolUpdater$(): Observable<Currency> {
+        return this.store.state$.pipe(
+            map(state => state.extras.currency),
+            distinctUntilChanged(),
+            tap(currency => {
                 this.currencySymbol = APP_CONFIG.currencySymbols[currency];
-            });
+            })
+        );
     }
 
     private redirectToNewEntityAnalyticsView(newEntityId: string) {
-        this.redirectToEntityView(LevelStateParam.AD_GROUP, newEntityId);
+        this.redirectToEntityAnalyticsView(
+            LevelStateParam.AD_GROUP,
+            newEntityId
+        );
     }
 
     private redirectToParentAnalyticsView(parentId: string) {
-        this.redirectToEntityView(LevelStateParam.CAMPAIGN, parentId);
+        this.redirectToEntityAnalyticsView(LevelStateParam.CAMPAIGN, parentId);
     }
 
-    private redirectToEntityView(level: LevelStateParam, entityId: string) {
+    private redirectToEntityAnalyticsView(
+        level: LevelStateParam,
+        entityId: string
+    ) {
         const url = this.ajs$state.href('v2.analytics', {
             level: level,
             id: entityId,

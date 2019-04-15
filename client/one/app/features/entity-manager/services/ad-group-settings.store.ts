@@ -31,10 +31,7 @@ export class AdGroupSettingsStore extends Store<AdGroupSettingsStoreState>
     private requestStateUpdater: RequestStateUpdater;
     private originalEntity: AdGroup;
 
-    constructor(
-        private adGroupService: AdGroupService,
-        @Inject('zemNavigationNewService') private zemNavigationNewService: any
-    ) {
+    constructor(private adGroupService: AdGroupService) {
         super(new AdGroupSettingsStoreState());
         this.requestStateUpdater = storeHelpers.getStoreRequestStateUpdater(
             this
@@ -125,22 +122,24 @@ export class AdGroupSettingsStore extends Store<AdGroupSettingsStoreState>
         });
     }
 
-    archiveEntity() {
-        this.adGroupService
-            .archive(this.state.entity.id, this.requestStateUpdater)
-            .pipe(takeUntil(this.ngUnsubscribe$))
-            .subscribe(
-                () => {
-                    this.zemNavigationNewService.refreshState();
-                },
-                (error: HttpErrorResponse) => {
-                    const fieldsErrors = storeHelpers.getStoreFieldsErrorsState(
-                        new AdGroupSettingsStoreFieldsErrorsState(),
-                        error
-                    );
-                    this.updateState(fieldsErrors, 'fieldsErrors');
-                }
-            );
+    archiveEntity(): Promise<boolean> {
+        return new Promise<boolean>(resolve => {
+            this.adGroupService
+                .archive(this.state.entity.id, this.requestStateUpdater)
+                .subscribe(
+                    () => {
+                        resolve(true);
+                    },
+                    (error: HttpErrorResponse) => {
+                        const fieldsErrors = storeHelpers.getStoreFieldsErrorsState(
+                            new AdGroupSettingsStoreFieldsErrorsState(),
+                            error
+                        );
+                        this.updateState(fieldsErrors, 'fieldsErrors');
+                        resolve(false);
+                    }
+                );
+        });
     }
 
     doEntitySettingsHaveUnsavedChanges(): boolean {
