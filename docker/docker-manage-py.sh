@@ -24,6 +24,7 @@ exec /usr/bin/docker run --rm -h $(hostname) \
     -e "NEW_RELIC_PROCESS_HOST_DISPLAY_NAME=$(hostname)-docker" \
     -e "NEW_RELIC_STARTUP_TIMEOUT=10.0" \
     -e "NEW_RELIC_SHUTDOWN_TIMEOUT=10.0" \
+    -e "DB_STATEMENT_TIMEOUT=3600000" \
     --network legacynet \
     --label "traefik.enable=false" \
     z1-bundle:current /usr/local/bin/newrelic-admin run-program python manage.py dcron_launcher "${TASK}" $TASK_PARAMS 2>&1 | sudo tee -a "/mnt/logs/eins/cron-${TASK}.log" > /dev/null

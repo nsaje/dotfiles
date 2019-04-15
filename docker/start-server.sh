@@ -31,6 +31,8 @@ GUNICORN_ARGS=(
     server.wsgi:application
 )
 
+export USE_PG_POOLING=True
+
 msg "booting container. ETCD: $ETCD"
 python manage.py collectstatic --noinput
 if [ -z "$NEW_RELIC_LICENSE_KEY" ]; then

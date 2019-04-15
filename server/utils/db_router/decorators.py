@@ -38,14 +38,3 @@ class use_stats_read_replica_postgres(_database_router_base):
 
     def __exit__(self, exc_type, exc_value, traceback):
         utils.request_context.set("USE_STATS_READ_REPLICA_POSTGRES", None)
-
-
-class use_explicit_database(_database_router_base):
-    def __init__(self, database_name):
-        self.database_name = database_name
-
-    def __enter__(self):
-        utils.request_context.set("USE_EXPLICIT_DATABASE", self.database_name)
-
-    def __exit__(self, exc_type, exc_value, traceback):
-        utils.request_context.set("USE_EXPLICIT_DATABASE", None)

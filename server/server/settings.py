@@ -165,7 +165,7 @@ CACHES = {
     },
 }
 
-DATABASE_ROUTERS = ["utils.db_router.routers.UseExplicitDatabaseRouter", "utils.db_router.routers.UseReadReplicaRouter"]
+DATABASE_ROUTERS = ["utils.db_router.routers.UseReadReplicaRouter"]
 
 try:
     import qinspect

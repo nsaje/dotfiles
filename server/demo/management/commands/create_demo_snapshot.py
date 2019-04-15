@@ -24,7 +24,6 @@ import demo
 import demo.models
 import zemauth.models
 from dash import constants
-from utils import db_router
 from utils import demo_anonymizer
 from utils import grouper
 from utils import json_helper
@@ -85,13 +84,11 @@ def alarm_handler(*args, **kwargs):
     raise Exception("Create demo snapshot timed out!")
 
 
-def _postgres_read_only(using="eins-direct"):
+def _postgres_read_only(using="default"):
     def decorator(func):
         @functools.wraps(func)
         def f(*args, **kwargs):
-            database_name = _get_database_name()
-            logger.info("Using database: %s", database_name)
-            db_settings = settings.DATABASES[database_name]
+            db_settings = settings.DATABASES[using]
             db_options = db_settings.setdefault("OPTIONS", {})
             old_pg_options = db_options.setdefault("options", "")
             readonly_option = "-c default_transaction_read_only=on"
@@ -109,17 +106,11 @@ def _postgres_read_only(using="eins-direct"):
     return decorator
 
 
-def _get_database_name():
-    db_name = "eins-direct"
-    return db_name if db_name in settings.DATABASES else "default"
-
-
 class Command(ExceptionCommand):
     help = """ Create a DB snapshot for demo deploys. """
 
     # put connection in read-only mode
-    @_postgres_read_only(using=_get_database_name())
-    @db_router.use_explicit_database(_get_database_name())
+    @_postgres_read_only(using="default")
     def handle(self, *args, **options):
         if options.get("verbosity", 0) > 1:
             logger.setLevel(logging.DEBUG)

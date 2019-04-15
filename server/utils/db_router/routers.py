@@ -24,22 +24,6 @@ stats_read_replicas = _get_read_replicas_generator("STATS_DB_READ_REPLICAS", DEF
 stats_read_replicas_postgres = _get_read_replicas_generator("STATS_DB_READ_REPLICAS_POSTGRES", DEFAULT_STATS_DB_ALIAS)
 
 
-class UseExplicitDatabaseRouter(object):
-    def db_for_read(self, model, **hints):
-        explicit_database_name = utils.request_context.get("USE_EXPLICIT_DATABASE", None)
-        if explicit_database_name:
-            return explicit_database_name
-
-        return None
-
-    def db_for_write(self, model, **hints):
-        explicit_database_name = utils.request_context.get("USE_EXPLICIT_DATABASE", None)
-        if explicit_database_name:
-            return explicit_database_name
-
-        return None
-
-
 class UseReadReplicaRouter(object):
     def db_for_read(self, model, **hints):
         use_read_replica = utils.request_context.get("USE_READ_REPLICA", False)
