@@ -232,15 +232,8 @@ angular
         function getEntityById(type, id) {
             if (!type) return $q.resolve(null);
 
-            if (hierarchyRoot) {
-                var entity;
-                if (type === constants.entityType.ACCOUNT)
-                    entity = hierarchyRoot.ids.accounts[id];
-                if (type === constants.entityType.CAMPAIGN)
-                    entity = hierarchyRoot.ids.campaigns[id];
-                if (type === constants.entityType.AD_GROUP)
-                    entity = hierarchyRoot.ids.adGroups[id];
-
+            if (hierarchyRoot && zemNavigationService.isFullyLoaded()) {
+                var entity = findEntityInHierarchyRoot(type, id);
                 if (entity) {
                     return $q.resolve(entity);
                 }
@@ -252,6 +245,15 @@ angular
                 return zemNavigationService.getCampaign(id).then(convertData);
             if (type === constants.entityType.AD_GROUP)
                 return zemNavigationService.getAdGroup(id).then(convertData);
+
+            function findEntityInHierarchyRoot(type, id) {
+                if (type === constants.entityType.ACCOUNT)
+                    return hierarchyRoot.ids.accounts[id];
+                if (type === constants.entityType.CAMPAIGN)
+                    return hierarchyRoot.ids.campaigns[id];
+                if (type === constants.entityType.AD_GROUP)
+                    return hierarchyRoot.ids.adGroups[id];
+            }
 
             function convertData(data) {
                 var entity;
