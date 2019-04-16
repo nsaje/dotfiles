@@ -2,6 +2,8 @@ from django.db import transaction
 
 import core.models
 from core.models.account.exceptions import AccountDoesNotMatch
+from utils import k1_helper
+from utils import sspd_client
 
 
 @transaction.atomic
@@ -17,6 +19,9 @@ def clone(
     core.models.ContentAd.objects.bulk_clone(
         request, content_ads, destination_ad_group, destination_batch, overridden_state
     )
+
+    sspd_client.sync_batch(destination_batch)
+    k1_helper.update_ad_group(destination_batch.ad_group, msg="clonecontent.clone")
 
     return destination_batch
 

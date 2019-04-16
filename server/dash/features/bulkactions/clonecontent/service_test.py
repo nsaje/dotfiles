@@ -20,7 +20,9 @@ class Clone(TestCase):
         self.source_content_ads = magic_mixer.cycle(5).blend(core.models.ContentAd, ad_group=self.source_ad_group)
         self.request = magic_mixer.blend_request_user()
 
-    def test_clone(self, _):
+    @patch("utils.sspd_client.sync_batch", autospec=True)
+    @patch("utils.k1_helper.update_ad_group", autospec=True)
+    def test_clone(self, mock_update_ad_group, mock_sspd_sync, _):
         batch = service.clone(self.request, self.source_ad_group, self.source_content_ads, self.ad_group)
 
         self.assertCountEqual(
@@ -29,6 +31,8 @@ class Clone(TestCase):
         )
 
         self.assertEqual(batch.ad_group, self.ad_group)
+        mock_update_ad_group.assert_called_with(batch.ad_group, msg="clonecontent.clone")
+        mock_sspd_sync.assert_called_with(batch)
 
     def test_clone_type_mismatch(self, _):
         self.ad_group.campaign.type = dash.constants.CampaignType.VIDEO
