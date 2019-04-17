@@ -14,13 +14,23 @@ class DCronJobSettingsInline(admin.StackedInline):
 @admin.register(models.DCronJob)
 class DCronJobAdmin(admin.ModelAdmin):
     ordering = ["command_name"]
-    list_display = ("command_name", "enabled", "host", "duration", "executed_dt", "completed_dt", "colored_alert")
+    list_display = (
+        "command_name",
+        "enabled",
+        "host",
+        "duration",
+        "executed_dt",
+        "completed_dt",
+        "colored_alert",
+        "paused",
+    )
     search_fields = ("command_name",)
     list_filter = (
         "alert",
         "dcronjobsettings__enabled",
         "dcronjobsettings__severity",
         "dcronjobsettings__manual_override",
+        "dcronjobsettings__pause_execution",
     )
     readonly_fields = ("command_name", "host", "executed_dt", "completed_dt", "colored_alert")
     exclude = ("alert",)
@@ -40,6 +50,12 @@ class DCronJobAdmin(admin.ModelAdmin):
 
     enabled.boolean = True
     enabled.short_description = "Enabled"
+
+    def paused(self, obj):
+        return obj.dcronjobsettings.pause_execution
+
+    paused.boolean = True
+    paused.short_description = "Paused"
 
     def colored_alert(self, obj):
         if obj.alert in (constants.Alert.EXECUTION, constants.Alert.DURATION, constants.Alert.FAILURE):
@@ -67,7 +83,8 @@ class DCronJobSettingsAdmin(admin.ModelAdmin):
         "max_duration",
         "min_separation",
         "manual_override",
+        "pause_execution",
     )
     search_fields = ("job__command_name",)
-    list_filter = ("job__alert", "enabled", "severity", "manual_override")
+    list_filter = ("job__alert", "enabled", "severity", "manual_override", "pause_execution")
     readonly_fields = ("job", "schedule", "full_command", "enabled")

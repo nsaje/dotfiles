@@ -37,6 +37,7 @@ class DCronJobSettings(models.Model):
     max_duration = models.FloatField(default=settings.DCRON["default_max_duration"])
     min_separation = models.FloatField(default=settings.DCRON["default_min_separation"])
     manual_override = models.BooleanField(default=False)
+    pause_execution = models.BooleanField(default=False)
 
     class Meta:
         verbose_name = "Distributed Cron Job Settings"

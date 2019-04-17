@@ -34,6 +34,10 @@ class DCronCommand(management.base.BaseCommand):
             .select_related("dcronjobsettings")
             .first()
         )
+        if dcron_job and dcron_job.dcronjobsettings.pause_execution:
+            logger.info("Cron job %s will not run since its execution temporarily paused", command_name)
+            return
+
         if (
             dcron_job
             and dcron_job.executed_dt

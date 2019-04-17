@@ -182,6 +182,37 @@ class DCronCommandTestCase(TransactionTestCase):
         )
 
     @mock.patch("sys.argv", ["manage.py", DUMMY_COMMAND])
+    def test_pause_execution(self):
+        class DummyCommand(commands.DCronCommand):
+            called_1 = False
+            called_2 = False
+
+            def handle(self, *args, **options):
+                self.called_1 = True
+                super().handle(*args, **options)
+
+            def _handle(self, *args, **options):
+                self.called_2 = True
+
+        dcron_job = models.DCronJob.objects.create(command_name=DUMMY_COMMAND)
+        models.DCronJobSettings.objects.create(job=dcron_job, pause_execution=False, schedule="", full_command="")
+
+        dummy_command = DummyCommand()
+        dummy_command.execute(**{"no_color": None, "stdout": None, "stderr": None})
+
+        self.assertTrue(dummy_command.called_1)
+        self.assertTrue(dummy_command.called_2)
+
+        dcron_job.dcronjobsettings.pause_execution = True
+        dcron_job.dcronjobsettings.save()
+
+        dummy_command = DummyCommand()
+        dummy_command.execute(**{"no_color": None, "stdout": None, "stderr": None})
+
+        self.assertTrue(dummy_command.called_1)
+        self.assertFalse(dummy_command.called_2)
+
+    @mock.patch("sys.argv", ["manage.py", DUMMY_COMMAND])
     @mock.patch("influx.incr")
     @mock.patch("influx.timing")
     def test_min_separation(self, mock_influx_timing, mock_influx_incr):
