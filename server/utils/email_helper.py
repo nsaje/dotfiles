@@ -1,4 +1,5 @@
 # isort:skip_file
+import html
 import logging
 import traceback
 import re
@@ -138,8 +139,8 @@ def _create_email(
         recipient_list = []
 
     email = EmailMultiAlternatives(
-        subject=subject,
-        body=body,
+        subject=html.unescape(subject),
+        body=html.unescape(body),
         from_email="Zemanta <{}>".format(from_email),
         to=recipient_list,
         bcc=additional_recipients,

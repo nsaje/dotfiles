@@ -166,6 +166,35 @@ No campaigns to list.
             },
         )
 
+    @patch("dash.constants.EmailTemplateType.get_name", return_value="")
+    @patch("dash.models.EmailTemplate.objects.get")
+    @patch("utils.email_helper.render_to_string")
+    def test_create_email_html_unescape(self, mock_render, mock_template, mock_type):
+        account = magic_mixer.blend(dash.models.Account, name="Paul's test (Amnet)")
+
+        mock_template.return_value = mock_template
+        mock_template.subject = "Settings change - account {{account.name}}"
+        mock_template.recipients = "test@test.com,"
+        mock_template.body = "Change were done in the settings of the account {{account.name}}"
+
+        params = email_helper.params_from_template(None, account=account)
+
+        email = email_helper._create_email(**params, recipient_list=["test@test.com"])
+
+        self.assertEqual(email.from_email, "Zemanta <{}>".format(settings.FROM_EMAIL))
+        self.assertEqual(email.to, ["test@test.com"])
+        self.assertEqual(email.subject, "Settings change - account Paul's test (Amnet)")
+        self.assertEqual(email.body, "Change were done in the settings of the account Paul's test (Amnet)")
+        self.assertEqual(len(email.alternatives), 1)
+        self.assertEqual(email.alternatives[0][1], "text/html")
+        mock_render.assert_called_with(
+            "email.html",
+            {
+                "content": "<p>Change were done in the settings of the account Paul&#39;s test (Amnet)</p>",
+                "subject": "Settings change - account Paul&#39;s test (Amnet)",
+            },
+        )
+
 
 @override_settings(SEND_NOTIFICATION_MAIL=True)
 class EmailHelperTestCase(TestCase):
