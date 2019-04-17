@@ -23,9 +23,9 @@ angular.module('one.widgets').component('zemAdGroupAutopilotSettings', {
             'Bids and Daily Spend Caps of all RTB sources will be ' +
             'reset. Please check Daily Spend Caps in the Media Sources tab before you enable the ad group.';
         var MSG_ALL_RTB_DISABLED_AD_GROUP_ACTIVE =
-            'This ad group will be automatically paused to reset the Bids ' +
-            'and Daily Spend Caps of all RTB sources. Please check Daily Spend Caps in the Media Sources tab before ' +
-            'you enable the ad group.';
+            'This ad group will be automatically paused to allow you to review the bids ' +
+            'and daily spend caps of all RTB sources. Please check the bids and daily spend ' +
+            'caps on the media sources tab before you enable the ad group.';
 
         var $ctrl = this;
         $ctrl.constants = constants;

@@ -18,7 +18,7 @@ export function getManageRtbSourcesAsOneChangeConfirmMessage(
     ) {
         return 'Bids and Daily Spend Caps of all RTB sources will be reset. Please check Daily Spend Caps in the Media Sources tab before you enable the ad group.';
     } else if (!manageRtbSourcesAsOne && adGroupState === AdGroupState.ACTIVE) {
-        return 'This ad group will be automatically paused to reset the Bids and Daily Spend Caps of all RTB sources. Please check Daily Spend Caps in the Media Sources tab before you enable the ad group.';
+        return 'This ad group will be automatically paused to allow you to review the bids and daily spend caps of all RTB sources. Please check the bids and daily spend caps on the media sources tab before you enable the ad group.';
     }
 }
 
