@@ -402,51 +402,6 @@ def _active_user_ids():
     return active_user_ids
 
 
-def get_weekly_active_users(filtered_agencies, filtered_account_types):
-    # NOTE: data returned by this function might be a bit old, because cache is invalidated after
-    # a certain time and not when data actually changes. This behaviour is by design - currently
-    # it is ok if this data is a bit dated - confirmed by product
-
-    # users = zemauth.models.User.objects.all().filter(pk__in=_active_user_ids()).filter_by_agencies(filtered_agencies)
-
-    # users = _filter_user_by_account_type(users, filtered_account_types)
-    # return users
-    return []
-
-
-def count_weekly_selfmanaged_actions(filtered_agencies, filtered_account_types):
-    # NOTE: data returned by this function might be a bit old, because cache is invalidated after
-    # a certain time and not when data actually changes. This behaviour is by design - currently
-    # it is ok if this data is a bit dated - confirmed by product
-
-    # cache = caches['dash_db_cache']
-    # cache_key = utils.cache_helper.get_cache_key(
-    #     'selfmanaged_actions', filtered_agencies, filtered_account_types)
-    # count = cache.get(cache_key, None)
-
-    # if count is not None:
-    #     influx.incr('infobox.cache', 1, method='count_weekly_selfmanaged_actions', outcome='hit')
-    #     return count
-
-    # influx.incr('infobox.cache', 1, method='count_weekly_selfmanaged_actions', outcome='miss')
-    # actions = dash.models.History.objects\
-    #     .filter(
-    #         created_dt__gte=_one_week_ago(),
-    #         created_dt__lte=_until_today())\
-    #     .filter_selfmanaged()
-
-    # users = zemauth.models.User.objects.all().filter(
-    #     pk__in=actions.values_list('created_by_id', flat=True))\
-    #     .filter_by_agencies(filtered_agencies)
-    # filtered_users = _filter_user_by_account_type(users, filtered_account_types)
-
-    # count = actions.filter(created_by__in=filtered_users).count()
-    # cache.set(cache_key, count)
-
-    # return count
-    return 0
-
-
 def _one_week_ago():
     now = utils.dates_helper.local_midnight_to_utc_time()
     return now - datetime.timedelta(days=7)

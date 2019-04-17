@@ -1041,31 +1041,6 @@ class AllAccountsOverview(api_common.BaseApiView):
             )
         )
 
-        weekly_active_users = infobox_helpers.get_weekly_active_users(
-            view_filter.filtered_agencies, view_filter.filtered_account_types
-        )
-        weekly_active_user_emails = [u.email for u in weekly_active_users]
-        email_list_setting = infobox_helpers.OverviewSetting(
-            "Active users:",
-            "{}".format(len(weekly_active_users)),
-            tooltip="Users who made self-managed actions in the past 7 days",
-        )
-
-        if weekly_active_user_emails != []:
-            email_list_setting = email_list_setting.comment("Show more", "<br />".join(weekly_active_user_emails))
-        settings.append(email_list_setting)
-
-        weekly_sf_actions = infobox_helpers.count_weekly_selfmanaged_actions(
-            view_filter.filtered_agencies, view_filter.filtered_account_types
-        )
-        settings.append(
-            infobox_helpers.OverviewSetting(
-                "Self-managed actions:",
-                weekly_sf_actions,
-                tooltip="Number of actions taken by self-managed users " "in the past 7 days",
-            )
-        )
-
         return [setting.as_dict() for setting in settings]
 
     def _append_performance_agency_settings(self, overview_settings, user, view_filter):
