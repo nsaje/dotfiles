@@ -1720,7 +1720,7 @@ and create new ones via the API.
 <a name='publisher-groups'></a>
 
 Publisher Groups are named collections of publishers that can be referenced in Ad Group's `publisherGroups`
-targeting section as whitelists.
+targeting section as whitelists or blacklists.
 Publishers are represented as publisher domain (or name) and source pairs in the same manner as in publisher reports and blacklist management.
 
 Property     | Type                | Description
@@ -1792,7 +1792,7 @@ name         | string              | name of the publisher group
 + Request (application/json)
 
         {
-            "name": "Mobile campaigns whitelist"
+            "name": "Mobile campaigns blacklist"
         }
 
 + Response 200 (application/json)
@@ -1801,7 +1801,7 @@ name         | string              | name of the publisher group
             "data": {
                   "id": "153",
                   "accountId": "186",
-                  "name": "Mobile campaigns whitelist"
+                  "name": "Mobile campaigns blacklist"
             }
         }
 
