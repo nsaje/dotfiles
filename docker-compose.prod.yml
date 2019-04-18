@@ -6,14 +6,11 @@ services:
         image: z1-bundle:current
         restart: unless-stopped
         hostname: ${HOSTNAME}
-        ports:
-          - "8000"
         volumes:
           - "/mnt/logs/eins:/app/logs"
         command: /start-server.sh
         environment:
           CONF_ENV: "prod"
-          VIRTUAL_HOST: "one.zemanta.com"
           NEW_RELIC_LICENSE_KEY: "1dfbd7b07a5cbf7bcc6eb18db5003808a058d16f"
           NEW_RELIC_APP_NAME: "Zemanta One"
           NEW_RELIC_PROCESS_HOST_DISPLAY_NAME: "${HOSTNAME}-docker"
@@ -26,6 +23,11 @@ services:
           traefik.backend: "one.zemanta.com"
           traefik.frontend.rule: "Host:one.zemanta.com"
           traefik.frontend.passHostHeader: "true"
+          SERVICE_NAME: z1
+          SERVICE_CHECK_TCP: "true"
+          SERVICE_CHECK_INTERVAL: 5s
+          SERVICE_TAGS: "zemantaone,z1"
+          SERVICE_CHECK_DEREGISTER_AFTER: 10s
         logging:
           driver: json-file
           options:
@@ -47,12 +49,15 @@ services:
         mem_limit: 128m
         labels:
           traefik.enable: "false"
+          SERVICE_IGNORE: "true"
         networks:
           - legacynet
 
     # for local callback from K1 and BusinessWire integration
     eins-api-callback:
         extends: eins
+        ports:
+          - "8000"
         environment:
           VIRTUAL_HOST: "one-cb.zemanta.com"
           NEW_RELIC_APP_NAME: "Zemanta One (callback API)"
@@ -63,6 +68,7 @@ services:
         #   default cpu.cfs_period_us is 100000. That is 100% of one CPU core
         cpu_quota: 400000
         labels:
+          SERVICE_NAME: one-cb
           traefik.backend: "one-cb.zemanta.com"
           traefik.frontend.rule: "Host:one-cb.zemanta.com"
 
@@ -75,12 +81,15 @@ services:
         mem_limit: 128m
         labels:
           traefik.enable: "false"
+          SERVICE_IGNORE: "true"
         networks:
           - legacynet
 
     # for REST API
     eins-rest-api:
         extends: eins
+        ports:
+          - "8000"
         environment:
           VIRTUAL_HOST: "oneapi.zemanta.com"
           NEW_RELIC_APP_NAME: "Zemanta One (REST API)"
@@ -92,6 +101,7 @@ services:
         #   default cpu.cfs_period_us is 100000. That is 100% of one CPU core
         cpus: 8
         labels:
+          SERVICE_NAME: oneapi
           traefik.backend: "oneapi.zemanta.com"
           traefik.frontend.rule: "Host:oneapi.zemanta.com"
 
@@ -104,6 +114,7 @@ services:
         mem_limit: 128m
         labels:
           traefik.enable: "false"
+          SERVICE_IGNORE: "true"
         networks:
           - legacynet
 
@@ -111,7 +122,6 @@ services:
         extends: eins
         scale: 5
         environment:
-          VIRTUAL_HOST: "onereports.zemanta.com"
           NEW_RELIC_APP_NAME: "Zemanta One (Reports)"
         mem_limit: 4g
         labels:
@@ -122,7 +132,6 @@ services:
     einsworker_redshift_background_cache:
         extends: eins
         environment:
-          VIRTUAL_HOST: "oneredshiftbackgroundcache.zemanta.com"
           NEW_RELIC_APP_NAME: "Zemanta One (Redshift Background Cache)"
         mem_limit: 512m
         labels:
@@ -132,7 +141,6 @@ services:
 
     einsworker_upload_lambda:
         environment:
-          VIRTUAL_HOST: "onelambda.zemanta.com"
           NEW_RELIC_APP_NAME: "Zemanta One (Lambda)"
         extends: eins
         mem_limit: 256m
@@ -148,7 +156,6 @@ services:
         labels:
           traefik.enable: "false"
         environment:
-          VIRTUAL_HOST: "oneconvapi.zemanta.com"
           NEW_RELIC_APP_NAME: "Zemanta One (ConvAPI)"
         entrypoint: ""
         cpu_quota: 50000
@@ -166,10 +173,13 @@ services:
     # ONE Whitelabel
     eins-newscorp:
         extends: eins
+        ports:
+          - "8000"
         environment:
           VIRTUAL_HOST: "newscorp.zemanta.com"
           NEW_RELIC_APP_NAME: "Zemanta One Whitelabel (Newscorp)"
         labels:
+          SERVICE_NAME: one-newscorp
           traefik.backend: "newscorp.zemanta.com"
           traefik.frontend.rule: "Host:newscorp.zemanta.com"
 
