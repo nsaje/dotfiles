@@ -1,4 +1,5 @@
 from django.db import transaction
+from rest_framework import permissions
 
 import core.models
 import restapi.access
@@ -10,6 +11,8 @@ from . import serializers
 
 
 class AdGroupViewSet(restapi.adgroup.v1.views.AdGroupViewSet):
+    permission_classes = (permissions.IsAuthenticated,)
+
     def validate(self, request):
         serializer = serializers.AdGroupSerializer(data=request.data, partial=True, context={"request": request})
         serializer.is_valid(raise_exception=True)
