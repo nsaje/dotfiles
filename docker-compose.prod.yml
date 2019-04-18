@@ -10,6 +10,7 @@ services:
           - "/mnt/logs/eins:/app/logs"
         command: /start-server.sh
         environment:
+          VIRTUAL_HOST: "one.zemanta.com"
           CONF_ENV: "prod"
           NEW_RELIC_LICENSE_KEY: "1dfbd7b07a5cbf7bcc6eb18db5003808a058d16f"
           NEW_RELIC_APP_NAME: "Zemanta One"
