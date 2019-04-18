@@ -53,9 +53,11 @@
                 zem-lazy-popover-placement="left"
                 zem-lazy-popover-animation-class="fade"
                 zem-lazy-popover-append-to-body="true"
-                is-internal="{{ column.internal }}"
+                is-internal="{{ column.data.internal }}"
             >
-                <label ng-click="$ctrl.onColumnToggled({field: column.field})">
+                <label
+                    ng-click="!column.disabled && $ctrl.onColumnToggled({field: column.field})"
+                >
                     <input
                         class="input-checkbox"
                         ng-disabled="column.disabled"
@@ -84,18 +86,23 @@
                 <li
                     class="dropdown-menu__list-item"
                     ng-repeat="subColumn in subcategory.columns"
+                    is-internal="{{ subColumn.data.internal }}"
                 >
                     <label
-                        ng-click="$ctrl.onColumnToggled({field: subColumn.field})"
+                        ng-click="!subColumn.disabled && $ctrl.onColumnToggled({field: subColumn.field})"
                     >
                         <input
                             class="input-checkbox"
+                            ng-disabled="subColumn.disabled"
                             type="checkbox"
                             ng-checked="subColumn.visible"
                         />
-                        <span class="checkbox-text">{{
-                            subColumn.data.shortName
-                        }}</span>
+                        <span
+                            class="checkbox-text"
+                            ng-class="{disabled: subColumn.disabled}"
+                        >
+                            {{ subColumn.data.shortName }}
+                        </span>
                     </label>
                 </li>
             </ul>
