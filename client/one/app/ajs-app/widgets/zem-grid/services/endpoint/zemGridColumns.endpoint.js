@@ -29,7 +29,7 @@ angular
                     'zemauth.can_see_id_columns_in_table',
                     'zemauth.can_view_account_agency_information',
                 ],
-                order: true,
+                order: false,
                 initialOrder: zemGridConstants.gridColumnOrder.ASC,
                 name: 'Agency ID',
                 field: 'agency_id',
