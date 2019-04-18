@@ -141,7 +141,6 @@
                 </ui-select-choices>
             </ui-select>
         </div>
-
         <div class="form__indented-group" ng-if="$ctrl.showRefererRules()">
             <label class="form__label"
                 >Include traffic that meets the following conditions:</label
@@ -170,7 +169,7 @@
         </div>
         <div
             class="form__indented-group"
-            ng-if="$ctrl.selectedRefererRuleId=='startsWith'"
+            ng-if="$ctrl.showRefererRules() && $ctrl.selectedRefererRuleId=='startsWith'"
         >
             <tags-input
                 placeholder="Add URLs"
@@ -189,7 +188,7 @@
         </div>
         <div
             class="form__indented-group"
-            ng-if="$ctrl.selectedRefererRuleId=='contains'"
+            ng-if="$ctrl.showRefererRules() && $ctrl.selectedRefererRuleId=='contains'"
         >
             <tags-input
                 placeholder="Add tags"
@@ -212,6 +211,7 @@
         >
             {{ error }}
         </div>
+
         <div
             class="form__group"
             ng-class="{'form--error': !!$ctrl.getRequest().validationErrors.ttl}"
