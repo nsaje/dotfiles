@@ -1,4 +1,4 @@
 export interface OperatingSystemVersion {
-    min?: string;
-    max?: string;
+    min: string;
+    max: string;
 }

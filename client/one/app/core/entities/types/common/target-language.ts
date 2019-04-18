@@ -1,3 +1,3 @@
 export interface TargetLanguage {
-    matchingEnabled?: boolean;
+    matchingEnabled: boolean;
 }

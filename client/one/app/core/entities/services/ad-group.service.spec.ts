@@ -4,16 +4,12 @@ import {AdGroupService} from './ad-group.service';
 import {AdGroupEndpoint} from './ad-group.endpoint';
 import {EntitiesUpdatesService} from './entities-updates.service';
 import {AdGroupWithExtras} from '../types/ad-group/ad-group-with-extras';
-import {
-    EntityType,
-    EntityUpdateAction,
-    Currency,
-    CampaignGoalKPI,
-} from '../../../app.constants';
+import {EntityType, EntityUpdateAction} from '../../../app.constants';
 import {tick, fakeAsync} from '@angular/core/testing';
 import {AdGroup} from '../types/ad-group/ad-group';
 import {RequestStateUpdater} from '../../../shared/types/request-state-updater';
 import {AdGroupExtras} from '../types/ad-group/ad-group-extras';
+import * as mockHelpers from '../../../testing/mock.helpers';
 
 describe('AdGroupService', () => {
     let service: AdGroupService;
@@ -38,45 +34,12 @@ describe('AdGroupService', () => {
             ['registerEntityUpdate']
         );
 
-        mockedAdGroup = {
-            id: '12345',
-            campaignId: '12345',
-            name: 'Test ad group',
-        };
+        mockedAdGroup = mockHelpers.getMockedAdGroup();
+        mockedAdGroup.id = '12345';
+        mockedAdGroup.campaignId = '12345';
+        mockedAdGroup.name = 'Test ad group';
 
-        mockedAdGroupExtras = {
-            actionIsWaiting: false,
-            canArchive: true,
-            canRestore: false,
-            isCampaignAutopilotEnabled: false,
-            accountId: 12345,
-            currency: Currency.USD,
-            optimizationObjective: CampaignGoalKPI.CPC,
-            defaultSettings: {
-                targetRegions: {
-                    countries: [],
-                    regions: [],
-                    dma: [],
-                    cities: [],
-                    postalCodes: [],
-                },
-                exclusionTargetRegions: {
-                    countries: [],
-                    regions: [],
-                    dma: [],
-                    cities: [],
-                    postalCodes: [],
-                },
-                targetDevices: [],
-                targetOs: [],
-                targetPlacements: [],
-            },
-            retargetableAdGroups: [],
-            audiences: [],
-            warnings: {},
-            hacks: [],
-            deals: [],
-        };
+        mockedAdGroupExtras = mockHelpers.getMockedAdGroupExtras();
 
         mockedAdGroupWithExtras = {
             adGroup: mockedAdGroup,

@@ -1,4 +1,4 @@
 export interface IncludedExcluded<T> {
-    included?: T;
-    excluded?: T;
+    included: T;
+    excluded: T;
 }
