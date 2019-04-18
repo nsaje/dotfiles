@@ -261,7 +261,7 @@ angular.module('one.widgets').component('zemReportQueryConfig', {
             var selectedColumns = [];
             $ctrl.categories.forEach(function(category) {
                 category.columns.forEach(function(column) {
-                    if (column.visible) {
+                    if (column.visible && !column.disabled) {
                         selectedColumns = selectedColumns.concat(
                             $ctrl.gridApi.getColumnsToToggle(column, allColumns)
                         );
@@ -270,7 +270,7 @@ angular.module('one.widgets').component('zemReportQueryConfig', {
                 if (category.subcategories) {
                     category.subcategories.forEach(function(subcategory) {
                         subcategory.columns.forEach(function(column) {
-                            if (column.visible) {
+                            if (column.visible && !column.disabled) {
                                 selectedColumns = selectedColumns.concat(
                                     $ctrl.gridApi.getColumnsToToggle(
                                         column,
