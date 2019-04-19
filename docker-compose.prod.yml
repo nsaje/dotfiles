@@ -9,6 +9,8 @@ services:
         volumes:
           - "/mnt/logs/eins:/app/logs"
         command: /start-server.sh
+        expose:
+          - "8000"
         environment:
           VIRTUAL_HOST: "one.zemanta.com"
           CONF_ENV: "prod"
@@ -25,9 +27,9 @@ services:
           traefik.frontend.rule: "Host:one.zemanta.com"
           traefik.frontend.passHostHeader: "true"
           SERVICE_NAME: z1
+          SERVICE_TAGS: "z1"
           SERVICE_CHECK_TCP: "true"
           SERVICE_CHECK_INTERVAL: 5s
-          SERVICE_TAGS: "zemantaone,z1"
           SERVICE_CHECK_DEREGISTER_AFTER: 10s
         logging:
           driver: json-file
@@ -53,11 +55,14 @@ services:
           SERVICE_IGNORE: "true"
         networks:
           - legacynet
+        depends_on:
+          - eins
+
 
     # for local callback from K1 and BusinessWire integration
     eins-api-callback:
         extends: eins
-        ports:
+        expose:
           - "8000"
         environment:
           VIRTUAL_HOST: "one-cb.zemanta.com"
@@ -85,11 +90,13 @@ services:
           SERVICE_IGNORE: "true"
         networks:
           - legacynet
+        depends_on:
+          - eins-api-callback
 
     # for REST API
     eins-rest-api:
         extends: eins
-        ports:
+        expose:
           - "8000"
         environment:
           VIRTUAL_HOST: "oneapi.zemanta.com"
@@ -118,6 +125,8 @@ services:
           SERVICE_IGNORE: "true"
         networks:
           - legacynet
+        depends_on:
+          - eins-rest-api
 
     einsworker_reports:
         extends: eins
@@ -127,6 +136,7 @@ services:
         mem_limit: 4g
         labels:
           traefik.enable: "false"
+          SERVICE_IGNORE: "true"
         entrypoint: ""
         command: "/usr/local/bin/newrelic-admin run-program celery worker -A server -c 1 -Q z1-reports -l INFO -f /app/logs/eins_celery_reports.log --prefetch-multiplier 0 -P prefork"
 
@@ -137,6 +147,7 @@ services:
         mem_limit: 512m
         labels:
           traefik.enable: "false"
+          SERVICE_IGNORE: "true"
         entrypoint: ""
         command: "/usr/local/bin/newrelic-admin run-program celery worker -A server -c 1 -Q redshift-background-cache -l INFO -f /app/logs/eins_celery_redshift_background_cache.log --prefetch-multiplier 0 -P solo"
 
@@ -147,6 +158,7 @@ services:
         mem_limit: 256m
         labels:
           traefik.enable: "false"
+          SERVICE_IGNORE: "true"
         cpu_quota: 50000
         entrypoint: ""
         command: "/usr/local/bin/newrelic-admin run-program celery worker -A server -c 15 -Q z1-upload-lambda -l INFO -f /app/logs/eins_celery_upload_lambda.log --prefetch-multiplier 0 -P gevent"
@@ -156,6 +168,7 @@ services:
         mem_limit: 512m
         labels:
           traefik.enable: "false"
+          SERVICE_IGNORE: "true"
         environment:
           NEW_RELIC_APP_NAME: "Zemanta One (ConvAPI)"
         entrypoint: ""
