@@ -396,6 +396,12 @@ label {
 // Tags //
 ///////////////////////////
 
+tags-input .tags .tag-list {
+    margin: 0;
+    padding: 0 5px 0 0;
+    list-style-type: none;
+}
+
 tags-input .host .tags {
     .input-tags();
     margin-bottom: 0;
@@ -420,6 +426,10 @@ tags-input .host .tags {
         font: inherit;
         position: relative;
         padding-right: 25px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 100%;
 
         .remove-button {
             font-size: 0;
