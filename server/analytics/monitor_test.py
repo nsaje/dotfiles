@@ -97,7 +97,7 @@ class TestAuditSpendPatterns(TestCase):
 
         self.assertTrue(alarms)
         self.assertEqual(
-            [row[:3] for row in alarms], [(1, Decimal("209.0164"), "high"), (2, Decimal("307.6923"), "high")]
+            [row[:3] for row in alarms], [(1, Decimal("470.2869"), "high"), (2, Decimal("807.6923"), "high")]
         )
 
     def test_low_pacing(self):
@@ -107,7 +107,7 @@ class TestAuditSpendPatterns(TestCase):
         alarms = monitor.audit_pacing(start_date + datetime.timedelta(5))
 
         self.assertTrue(alarms)
-        self.assertEqual([row[:3] for row in alarms], [(1, Decimal("2.2992"), "low"), (2, Decimal("3.3846"), "low")])
+        self.assertEqual([row[:3] for row in alarms], [(1, Decimal("5.1732"), "low"), (2, Decimal("8.8846"), "low")])
 
 
 class AuditSpendIntegrity(TestCase):

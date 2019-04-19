@@ -53,11 +53,11 @@ class ProjectionsTestCase(test.TestCase):
                 "total_fee_projection": Decimal("5892.1569"),
                 "ideal_media_spend": Decimal("535.6209"),
                 "ideal_daily_media_spend": Decimal("535.6209"),
-                "attributed_media_spend": Decimal("4000.0000"),
+                "attributed_media_spend": Decimal("4400.0000"),
                 "allocated_media_budget": Decimal("16068.6275"),
-                "pacing": Decimal("746.7968"),
+                "pacing": Decimal("821.4765"),
                 "total_fee": Decimal("400.0000"),
-                "flat_fee": Decimal("0.0000"),
+                "flat_fee": Decimal("0.0"),
                 "media_spend_projection": Decimal("16068.6275"),
                 "allocated_total_budget": Decimal("21960.7843"),
                 "license_fee_projection": Decimal("5892.1569"),
@@ -78,12 +78,12 @@ class ProjectionsTestCase(test.TestCase):
                 "total_fee_projection": Decimal("3999.9990"),
                 "ideal_media_spend": Decimal("8034.3137"),
                 "ideal_daily_media_spend": Decimal("535.6209"),
-                "attributed_media_spend": Decimal("20000.0000"),
+                "attributed_media_spend": Decimal("22000.0000"),
                 "allocated_media_budget": Decimal("16068.6275"),
-                "pacing": Decimal("248.9323"),
+                "pacing": Decimal("273.8255"),
                 "total_fee": Decimal("2000.0000"),
                 "flat_fee": Decimal("0.0"),
-                "media_spend_projection": Decimal("20000.0000"),
+                "media_spend_projection": Decimal("22000.0000"),
                 "allocated_total_budget": Decimal("21960.7843"),
                 "license_fee_projection": Decimal("3999.9990"),
                 "attributed_license_fee": Decimal("2000.0000"),
@@ -101,10 +101,10 @@ class ProjectionsTestCase(test.TestCase):
             {
                 "ideal_media_spend": Decimal("4784.3137"),
                 "ideal_daily_media_spend": Decimal("318.9542"),
-                "attributed_media_spend": Decimal("10000.0000"),
+                "attributed_media_spend": Decimal("11000.0000"),
                 "allocated_media_budget": Decimal("9568.6275"),
-                "pacing": Decimal("209.0164"),
-                "media_spend_projection": Decimal("10000.0000"),
+                "pacing": Decimal("229.9180"),
+                "media_spend_projection": Decimal("11000.0000"),
                 "allocated_total_budget": Decimal("11960.7843"),
                 "license_fee_projection": Decimal("2000.0010"),
             },
@@ -115,10 +115,10 @@ class ProjectionsTestCase(test.TestCase):
             {
                 "ideal_media_spend": Decimal("3250.0000"),
                 "ideal_daily_media_spend": Decimal("216.6667"),
-                "attributed_media_spend": Decimal("10000.0000"),
+                "attributed_media_spend": Decimal("11000.0000"),
                 "allocated_media_budget": Decimal("6500.0000"),
-                "pacing": Decimal("307.6923"),
-                "media_spend_projection": Decimal("10000.0000"),
+                "pacing": Decimal("338.4615"),
+                "media_spend_projection": Decimal("11000.0000"),
                 "allocated_total_budget": Decimal("10000.0000"),
                 "license_fee_projection": Decimal("2000.0010"),
             },
@@ -294,12 +294,12 @@ class ProjectionsTestCase(test.TestCase):
                 "total_fee_projection": Decimal("4365.6863"),
                 "ideal_media_spend": Decimal("3489.3557"),
                 "ideal_daily_media_spend": Decimal("581.5593"),
-                "attributed_media_spend": Decimal("20000.0000"),
+                "attributed_media_spend": Decimal("22000.0000"),
                 "allocated_media_budget": Decimal("12212.7451"),
-                "pacing": Decimal("573.1717"),
+                "pacing": Decimal("630.4889"),
                 "total_fee": Decimal("2000.0000"),
-                "flat_fee": Decimal("0.0000"),
-                "media_spend_projection": Decimal("20000.0000"),
+                "flat_fee": Decimal("0.0"),
+                "media_spend_projection": Decimal("22000.0000"),
                 "allocated_total_budget": Decimal("16578.4314"),
                 "license_fee_projection": Decimal("4365.6863"),
                 "attributed_license_fee": Decimal("2000.0000"),
@@ -317,10 +317,10 @@ class ProjectionsTestCase(test.TestCase):
             {
                 "ideal_media_spend": Decimal("2189.3557"),
                 "ideal_daily_media_spend": Decimal("364.8926"),
-                "attributed_media_spend": Decimal("10000.0000"),
+                "attributed_media_spend": Decimal("11000.0000"),
                 "allocated_media_budget": Decimal("7662.7451"),
-                "pacing": Decimal("456.7554"),
-                "media_spend_projection": Decimal("10000.0000"),
+                "pacing": Decimal("502.4309"),
+                "media_spend_projection": Decimal("11000.0000"),
                 "allocated_total_budget": Decimal("9578.4314"),
                 "license_fee_projection": Decimal("1915.6863"),
             },
@@ -331,10 +331,10 @@ class ProjectionsTestCase(test.TestCase):
             {
                 "ideal_media_spend": Decimal("1300.0000"),
                 "ideal_daily_media_spend": Decimal("216.6667"),
-                "attributed_media_spend": Decimal("10000.0000"),
+                "attributed_media_spend": Decimal("11000.0000"),
                 "allocated_media_budget": Decimal("4550.0000"),
-                "pacing": Decimal("769.2308"),
-                "media_spend_projection": Decimal("10000.0000"),
+                "pacing": Decimal("846.1538"),
+                "media_spend_projection": Decimal("11000.0000"),
                 "allocated_total_budget": Decimal("7000.0000"),
                 "license_fee_projection": Decimal("2450.0000"),
             },
@@ -351,10 +351,10 @@ class ProjectionsTestCase(test.TestCase):
 
         self.assertEqual(stats.total("ideal_media_spend"), Decimal("8034.3137"))
         self.assertEqual(stats.total("ideal_daily_media_spend"), Decimal("535.6209"))
-        self.assertEqual(stats.total("attributed_media_spend"), Decimal("20000.0000"))
+        self.assertEqual(stats.total("attributed_media_spend"), Decimal("22000.0000"))
         self.assertEqual(stats.total("allocated_media_budget"), Decimal("16068.6275"))
-        self.assertEqual(stats.total("pacing"), Decimal("248.9323"))
-        self.assertEqual(stats.total("media_spend_projection"), Decimal("20000.0000"))
+        self.assertEqual(stats.total("pacing"), Decimal("273.8255"))
+        self.assertEqual(stats.total("media_spend_projection"), Decimal("22000.0000"))
         self.assertEqual(stats.total("allocated_total_budget"), Decimal("21960.7843"))
         self.assertEqual(stats.total("license_fee_projection"), Decimal("4000.0020"))
 
@@ -375,7 +375,7 @@ class ProjectionsTestCase(test.TestCase):
             row["license_fee_projection"].quantize(Decimal(".01")),
             (row["allocated_total_budget"] - row["allocated_media_budget"]).quantize(Decimal(".01")),
         )
-        self.assertEqual(row["media_spend_projection"], Decimal("25000.0000"))
+        self.assertEqual(row["media_spend_projection"], Decimal("27500.0000"))
 
     def test_future_projections(self):
         self._create_batch_statements(

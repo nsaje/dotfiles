@@ -248,7 +248,10 @@ class BudgetProjections(object):
 
         row["attributed_media_spend"] = converters.nano_to_decimal(
             sum(
-                statement.local_media_spend_nano + statement.local_data_spend_nano
+                statement.local_media_spend_nano
+                + statement.local_data_spend_nano
+                + statement.local_license_fee_nano
+                + statement.local_margin_nano
                 for budget in budgets
                 for statement in budget.statements.all()
                 if statement.date >= self.start_date and statement.date <= self.projection_date
