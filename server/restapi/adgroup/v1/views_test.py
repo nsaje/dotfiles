@@ -604,3 +604,17 @@ class AdGroupViewSetTest(RESTAPITest):
         adgroup = self.adgroup_repr(blacklist_publisher_groups=[2])
         r = self.client.put(reverse("v1:adgroups_details", kwargs={"ad_group_id": 2040}), data=adgroup, format="json")
         self.assertResponseError(r, "ValidationError")
+
+    def test_adgroups_custom_audiences(self):
+        adgroup = self.adgroup_repr(audience_targeting=[123], exclusion_audience_targeting=[124])
+        r = self.client.put(reverse("v1:adgroups_details", kwargs={"ad_group_id": 2040}), data=adgroup, format="json")
+        resp_json = self.assertResponseValid(r)
+        self.validate_against_db(resp_json["data"])
+
+        adgroup = self.adgroup_repr(audience_targeting=[1])
+        r = self.client.put(reverse("v1:adgroups_details", kwargs={"ad_group_id": 2040}), data=adgroup, format="json")
+        self.assertResponseError(r, "ValidationError")
+
+        adgroup = self.adgroup_repr(exclusion_audience_targeting=[2])
+        r = self.client.put(reverse("v1:adgroups_details", kwargs={"ad_group_id": 2040}), data=adgroup, format="json")
+        self.assertResponseError(r, "ValidationError")

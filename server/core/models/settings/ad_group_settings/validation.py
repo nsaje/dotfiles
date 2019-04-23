@@ -3,6 +3,7 @@ import re
 
 import rfc3987
 
+import core.features.audiences
 import core.features.multicurrency
 import core.features.publisher_groups.publisher_group
 import core.models.settings.ad_group_source_settings.validation_helpers
@@ -33,7 +34,8 @@ class AdGroupSettingsValidatorMixin(object):
         self._validate_all_rtb_state(new_settings)
         self._validate_yahoo_desktop_targeting(new_settings)
         self._validate_bluekai_targeting_change(new_settings)
-        self._validate_publisher_groups(new_settings),
+        self._validate_publisher_groups(new_settings)
+        self._validate_custom_audiences(new_settings)
         self._validate_b1_sources_group_cpc_cc(new_settings)
         self._validate_b1_sources_group_cpm(new_settings)
         self._validate_b1_sources_group_daily_budget(new_settings)
@@ -243,6 +245,23 @@ class AdGroupSettingsValidatorMixin(object):
             )
             if blacklist_count != len(new_settings.blacklist_publisher_groups):
                 raise exceptions.PublisherBlacklistInvalid("Invalid blacklist publisher group selection.")
+
+    def _validate_custom_audiences(self, new_settings):
+        if self.audience_targeting != new_settings.audience_targeting:
+            audience_targeting_count = core.features.audiences.Audience.objects.filter(
+                pixel__account=self.ad_group.campaign.account, id__in=new_settings.audience_targeting
+            ).count()
+            if audience_targeting_count != len(new_settings.audience_targeting):
+                raise exceptions.AudienceTargetingInvalid("Invalid included custom audience targeting selection.")
+
+        if self.exclusion_audience_targeting != new_settings.exclusion_audience_targeting:
+            exclusion_audience_targeting_count = core.features.audiences.Audience.objects.filter(
+                pixel__account=self.ad_group.campaign.account, id__in=new_settings.exclusion_audience_targeting
+            ).count()
+            if exclusion_audience_targeting_count != len(new_settings.exclusion_audience_targeting):
+                raise exceptions.ExclusionAudienceTargetingInvalid(
+                    "Invalid excluded custom audience targeting selection."
+                )
 
     def _validate_b1_sources_group_cpc_cc(self, new_settings):
         is_cpm_buying = self.ad_group.bidding_type == constants.BiddingType.CPM

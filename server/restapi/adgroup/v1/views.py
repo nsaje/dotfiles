@@ -119,3 +119,9 @@ class AdGroupViewSet(RESTAPIBaseViewSet):
 
         except exceptions.PublisherBlacklistInvalid as err:
             raise utils.exc.ValidationError(errors={"targeting": {"publisherGroups": {"excluded": [str(err)]}}})
+
+        except exceptions.AudienceTargetingInvalid as err:
+            raise utils.exc.ValidationError(errors={"targeting": {"customAudiences": {"included": [str(err)]}}})
+
+        except exceptions.ExclusionAudienceTargetingInvalid as err:
+            raise utils.exc.ValidationError(errors={"targeting": {"customAudiences": {"excluded": [str(err)]}}})

@@ -99,3 +99,11 @@ class PublisherWhitelistInvalid(ValidationError):
 
 class PublisherBlacklistInvalid(ValidationError):
     pass
+
+
+class AudienceTargetingInvalid(ValidationError):
+    pass
+
+
+class ExclusionAudienceTargetingInvalid(ValidationError):
+    pass

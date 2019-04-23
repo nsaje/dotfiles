@@ -1072,6 +1072,25 @@ class AdGroupSettingsTest(TestCase):
         self.assertIn("blacklist_publisher_groups", response_dict["data"]["errors"])
 
     @patch("utils.redirector_helper.insert_adgroup")
+    def test_put_invalid_custom_audiences(self, _):
+        ad_group = models.AdGroup.objects.get(pk=1)
+
+        self.settings_dict["settings"]["audience_targeting"] = [900]
+        self.settings_dict["settings"]["exclusion_audience_targeting"] = [900]
+
+        add_permissions(self.user, ["settings_view"])
+        response = self.client.put(
+            reverse("ad_group_settings", kwargs={"ad_group_id": ad_group.id}),
+            json.dumps(self.settings_dict),
+            follow=True,
+        )
+
+        response_dict = json.loads(response.content)
+        self.assertFalse(response_dict["success"])
+        self.assertIn("audience_targeting", response_dict["data"]["errors"])
+        self.assertIn("exclusion_audience_targeting", response_dict["data"]["errors"])
+
+    @patch("utils.redirector_helper.insert_adgroup")
     def test_end_date_in_the_past(self, mock_redirector_insert_adgroup):
         with patch("utils.dates_helper.local_today") as mock_now:
             # mock datetime so that budget is always valid

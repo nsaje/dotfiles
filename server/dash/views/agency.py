@@ -177,6 +177,12 @@ class AdGroupSettings(api_common.BaseApiView):
         except core.models.settings.ad_group_settings.exceptions.PublisherBlacklistInvalid as err:
             raise utils.exc.ValidationError(errors={"blacklist_publisher_groups": [str(err)]})
 
+        except core.models.settings.ad_group_settings.exceptions.AudienceTargetingInvalid as err:
+            raise utils.exc.ValidationError(errors={"audience_targeting": [str(err)]})
+
+        except core.models.settings.ad_group_settings.exceptions.ExclusionAudienceTargetingInvalid as err:
+            raise utils.exc.ValidationError(errors={"exclusion_audience_targeting": [str(err)]})
+
         except core.models.settings.ad_group_source_settings.exceptions.CPCPrecisionExceeded as err:
             raise utils.exc.ValidationError(
                 errors={

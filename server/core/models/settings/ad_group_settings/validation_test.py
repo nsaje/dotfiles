@@ -4,6 +4,7 @@ from decimal import Decimal
 import mock
 from django.test import TestCase
 
+import core.features.audiences
 import core.models
 import core.models.settings.ad_group_source_settings.exceptions
 from dash import constants
@@ -285,3 +286,35 @@ class ValidationTest(TestCase):
         current_settings.b1_sources_group_enabled = True
         new_settings.b1_sources_group_enabled = True
         current_settings._validate_all_rtb_state(new_settings)
+
+    def test_validate_audience_targeting(self):
+        request = magic_mixer.blend_request_user()
+        account = magic_mixer.blend(core.models.Account)
+        ad_group = magic_mixer.blend(core.models.AdGroup, campaign__account=account)
+        pixel = magic_mixer.blend(core.models.ConversionPixel, account=account)
+        audience = core.features.audiences.Audience.objects.create(request, "test", pixel, 1, 1, [])
+
+        new_settings = model.AdGroupSettings()
+
+        new_settings.audience_targeting = [audience.id + 1]
+        with self.assertRaises(exceptions.AudienceTargetingInvalid):
+            ad_group.settings._validate_custom_audiences(new_settings)
+
+        new_settings.audience_targeting = [audience.id]
+        ad_group.settings._validate_custom_audiences(new_settings)
+
+    def test_validate_exclusion_audience_targeting(self):
+        request = magic_mixer.blend_request_user()
+        account = magic_mixer.blend(core.models.Account)
+        ad_group = magic_mixer.blend(core.models.AdGroup, campaign__account=account)
+        pixel = magic_mixer.blend(core.models.ConversionPixel, account=account)
+        audience = core.features.audiences.Audience.objects.create(request, "test", pixel, 1, 1, [])
+
+        new_settings = model.AdGroupSettings()
+
+        new_settings.exclusion_audience_targeting = [audience.id + 1]
+        with self.assertRaises(exceptions.ExclusionAudienceTargetingInvalid):
+            ad_group.settings._validate_custom_audiences(new_settings)
+
+        new_settings.exclusion_audience_targeting = [audience.id]
+        ad_group.settings._validate_custom_audiences(new_settings)
