@@ -912,7 +912,7 @@ class AdGroupBreakdownTestCase(TestCase):
             [],
             "-clicks",
             33,
-            5 + breakdown.REQUEST_LIMIT_OVERFLOW,  # [workaround] see implementation
+            breakdown.LIMIT_SOURCE + breakdown.REQUEST_LIMIT_OVERFLOW,  # [workaround] see implementation
         )
 
         self.assertDictEqual(

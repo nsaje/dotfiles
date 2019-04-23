@@ -22,6 +22,7 @@ from utils import threads
 DEFAULT_OFFSET = 0
 DEFAULT_LIMIT = 10
 REQUEST_LIMIT_OVERFLOW = 1  # [workaround] Request additional rows to check if more data is available
+LIMIT_SOURCE = 1000
 
 
 def get_constraints_kwargs(form_data, **overrides):
@@ -119,6 +120,14 @@ def _get_page_and_size(offset, limit):
     return page, size
 
 
+def _get_limit(breakdown, limit):
+    target_dimension = stats.constants.get_target_dimension(breakdown)
+    if target_dimension == stats.constants.DimensionIdentifierMapping.get(stats.constants.DimensionIdentifier.SOURCE):
+        # NOTE: override limit for source breakdown
+        return LIMIT_SOURCE
+    return limit
+
+
 class AllAccountsBreakdown(api_common.BaseApiView):
     @db_router.use_stats_read_replica()
     @newrelic.agent.function_trace()
@@ -132,8 +141,8 @@ class AllAccountsBreakdown(api_common.BaseApiView):
             raise exc.ValidationError(errors=dict(form.errors))
 
         offset = form.cleaned_data.get("offset", DEFAULT_OFFSET)
-        limit = form.cleaned_data.get("limit", DEFAULT_LIMIT)
         breakdown = form.cleaned_data.get("breakdown")
+        limit = _get_limit(breakdown, form.cleaned_data.get("limit", DEFAULT_LIMIT))
         parents = form.cleaned_data.get("parents", None)
         level = constants.Level.ALL_ACCOUNTS
         target_dim = stats.constants.get_target_dimension(breakdown)
@@ -203,8 +212,8 @@ class AccountBreakdown(api_common.BaseApiView):
             raise exc.ValidationError(errors=dict(form.errors))
 
         offset = form.cleaned_data.get("offset", DEFAULT_OFFSET)
-        limit = form.cleaned_data.get("limit", DEFAULT_LIMIT)
         breakdown = form.cleaned_data.get("breakdown")
+        limit = _get_limit(breakdown, form.cleaned_data.get("limit", DEFAULT_LIMIT))
         parents = form.cleaned_data.get("parents", None)
         level = constants.Level.ACCOUNTS
         target_dim = stats.constants.get_target_dimension(breakdown)
@@ -282,8 +291,8 @@ class CampaignBreakdown(api_common.BaseApiView):
             raise exc.ValidationError(errors=dict(form.errors))
 
         offset = form.cleaned_data.get("offset", DEFAULT_OFFSET)
-        limit = form.cleaned_data.get("limit", DEFAULT_LIMIT)
         breakdown = form.cleaned_data.get("breakdown")
+        limit = _get_limit(breakdown, form.cleaned_data.get("limit", DEFAULT_LIMIT))
         parents = form.cleaned_data.get("parents", None)
         level = constants.Level.CAMPAIGNS
         target_dim = stats.constants.get_target_dimension(breakdown)
@@ -371,8 +380,8 @@ class AdGroupBreakdown(api_common.BaseApiView):
             raise exc.ValidationError(errors=dict(form.errors))
 
         offset = form.cleaned_data.get("offset", DEFAULT_OFFSET)
-        limit = form.cleaned_data.get("limit", DEFAULT_LIMIT)
         breakdown = form.cleaned_data.get("breakdown")
+        limit = _get_limit(breakdown, form.cleaned_data.get("limit", DEFAULT_LIMIT))
         parents = form.cleaned_data.get("parents", None)
         level = constants.Level.AD_GROUPS
         target_dim = stats.constants.get_target_dimension(breakdown)
