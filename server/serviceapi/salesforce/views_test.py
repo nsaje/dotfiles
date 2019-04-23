@@ -516,6 +516,7 @@ class AgencyTestCase(TestCase):
                     "tags": [],
                     "modified_dt": "02-03-2019",
                     "custom_attributes": {},
+                    "is_externally_managed": True,
                 }
             },
         )
@@ -560,6 +561,7 @@ class AgencyTestCase(TestCase):
                     "tags": ["first tags", "second new tag"],
                     "custom_attributes": {"country": "SI"},
                     "modified_dt": "02-03-2019",
+                    "is_externally_managed": True,
                 }
             },
         )
@@ -580,6 +582,7 @@ class AgencyTestCase(TestCase):
                     "name": "new Agency",
                     "tags": [],
                     "modifiedDt": "02-03-2019",
+                    "isExternallyManaged": True,
                 }
             },
         )
@@ -605,6 +608,7 @@ class AgencyTestCase(TestCase):
                     "tags": ["first tags", "second new tag"],
                     "custom_attributes": {},
                     "modified_dt": "02-03-2019",
+                    "is_externally_managed": True,
                 }
             },
         )
@@ -644,6 +648,7 @@ class AgencyTestCase(TestCase):
                     "tags": ["New tags"],
                     "custom_attributes": {},
                     "modified_dt": "02-03-2019",
+                    "is_externally_managed": True,
                 }
             },
         )
@@ -666,6 +671,7 @@ class AgencyTestCase(TestCase):
                     "tags": ["An Other"],
                     "custom_attributes": {},
                     "modified_dt": "02-03-2019",
+                    "is_externally_managed": True,
                 }
             },
         )
@@ -685,6 +691,7 @@ class AgencyTestCase(TestCase):
                     "tags": [],
                     "custom_attributes": {},
                     "modified_dt": "02-03-2019",
+                    "is_externally_managed": True,
                 }
             },
         )
@@ -696,70 +703,22 @@ class AgencyTestCase(TestCase):
         # Set custom attributes
         r = self.client.put(url, data={"custom_attributes": {"country": "SI"}}, format="json")
         self.assertEqual(r.status_code, 200)
-        self.assertEqual(
-            r.data,
-            {
-                "data": {
-                    "id": 2,
-                    "name": "Agency 1",
-                    "is_disabled": False,
-                    "tags": [],
-                    "custom_attributes": {"country": "SI"},
-                    "modified_dt": "02-03-2019",
-                }
-            },
-        )
+        self.assertEqual(r.data["data"]["custom_attributes"], {"country": "SI"})
 
         # Unset custom attributes
         r = self.client.put(url, data={"custom_attributes": {}}, format="json")
         self.assertEqual(r.status_code, 200)
-        self.assertEqual(
-            r.data,
-            {
-                "data": {
-                    "id": 2,
-                    "name": "Agency 1",
-                    "is_disabled": False,
-                    "tags": [],
-                    "modified_dt": "02-03-2019",
-                    "custom_attributes": {},
-                }
-            },
-        )
+        self.assertEqual(r.data["data"]["custom_attributes"], {})
 
         # Set custom attributes as array
         r = self.client.put(url, data={"custom_attributes": ["country"]}, format="json")
         self.assertEqual(r.status_code, 200)
-        self.assertEqual(
-            r.data,
-            {
-                "data": {
-                    "id": 2,
-                    "name": "Agency 1",
-                    "is_disabled": False,
-                    "tags": [],
-                    "modified_dt": "02-03-2019",
-                    "custom_attributes": ["country"],
-                }
-            },
-        )
+        self.assertEqual(r.data["data"]["custom_attributes"], ["country"])
 
         # UnSet custom attributes as array
         r = self.client.put(url, data={"custom_attributes": []}, format="json")
         self.assertEqual(r.status_code, 200)
-        self.assertEqual(
-            r.data,
-            {
-                "data": {
-                    "id": 2,
-                    "name": "Agency 1",
-                    "is_disabled": False,
-                    "tags": [],
-                    "modified_dt": "02-03-2019",
-                    "custom_attributes": [],
-                }
-            },
-        )
+        self.assertEqual(r.data["data"]["custom_attributes"], [])
 
     def test_put_disable(self, mock_modified_dt):
         agency = magic_mixer.blend(core.models.Agency, id=3, name="Agency 1", is_externally_managed=True)
@@ -788,6 +747,7 @@ class AgencyTestCase(TestCase):
                     "tags": [],
                     "custom_attributes": {"country": "SI"},
                     "modified_dt": "02-03-2019",
+                    "is_externally_managed": True,
                 }
             },
         )
@@ -805,10 +765,33 @@ class AgencyTestCase(TestCase):
                     "tags": [],
                     "custom_attributes": {"country": "SI"},
                     "modified_dt": "02-03-2019",
+                    "is_externally_managed": True,
                 }
             },
         )
         self.assertEqual(core.models.Account.objects.get(id=1).is_disabled, False)
+
+    def test_put_invalid_change_is_externally_managed(self, mock_modified_dt):
+        # Set New Name, new tags
+        ag = magic_mixer.blend(core.models.Agency, id=2, name="Agency 1", is_externally_managed=True)
+        url = reverse("service.salesforce.agency", kwargs={"agency_id": 2})
+        r = self.client.put(url, data={"is_externally_managed": False}, format="json")
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(
+            r.data,
+            {
+                "data": {
+                    "id": 2,
+                    "name": "Agency 1",
+                    "is_disabled": False,
+                    "tags": [],
+                    "custom_attributes": {},
+                    "modified_dt": "02-03-2019",
+                    "is_externally_managed": True,
+                }
+            },
+        )
+        self.assertEqual(ag.is_externally_managed, True)
 
     def test_list_all_valid(self, mock_modified_dt):
         magic_mixer.blend(core.models.Agency, id=1, name="ag1", is_externally_managed=True)
@@ -829,6 +812,7 @@ class AgencyTestCase(TestCase):
                     "customAttributes": {},
                     "modifiedDt": "02-03-2019",
                     "tags": [],
+                    "isExternallyManaged": True,
                 },
                 {
                     "id": 2,
@@ -837,6 +821,7 @@ class AgencyTestCase(TestCase):
                     "customAttributes": {},
                     "modifiedDt": "02-03-2019",
                     "tags": [],
+                    "isExternallyManaged": True,
                 },
                 {
                     "id": 3,
@@ -845,6 +830,7 @@ class AgencyTestCase(TestCase):
                     "customAttributes": {},
                     "modifiedDt": "02-03-2019",
                     "tags": [],
+                    "isExternallyManaged": True,
                 },
                 {
                     "id": 4,
@@ -853,6 +839,7 @@ class AgencyTestCase(TestCase):
                     "customAttributes": {},
                     "modifiedDt": "02-03-2019",
                     "tags": [],
+                    "isExternallyManaged": True,
                 },
             ],
         )
@@ -864,7 +851,7 @@ class AgencyTestCase(TestCase):
         r = self.client.get(url, data={"start_date": "01-03-2019", "end_date": "31-03-2019"})
         self.assertEqual(r.status_code, 200)
         self.assertEqual(
-            r.data,
+            r.json(),
             [
                 {
                     "id": 2,
@@ -873,6 +860,7 @@ class AgencyTestCase(TestCase):
                     "modifiedDt": "02-03-2019",
                     "isDisabled": False,
                     "customAttributes": {},
+                    "isExternallyManaged": True,
                 }
             ],
         )
@@ -902,10 +890,14 @@ class AccountTestCase(TestCase):
         self.service_user = magic_mixer.blend(User, email="outbrain-salesforce@service.zemanta.com")
         self.user = magic_mixer.blend(User, email="salesRep@test.com")
         self.user2 = magic_mixer.blend(User, email="accountManager@test.com")
+        self.aguser = magic_mixer.blend(User, email="agencysalesrep@test.com")
+        self.aguser2 = magic_mixer.blend(User, email="agencyaccountmgr@test.com")
         self.client.force_authenticate(user=self.service_user)
         self.request_mock = RequestFactory()
         self.request_mock.user = self.user
-        self.agency = magic_mixer.blend(core.models.Agency, id=3, name="Agency 1", is_externally_managed=True)
+        self.agency = magic_mixer.blend(
+            core.models.Agency, id=3, name="Agency 1", is_externally_managed=True, sales_representative=self.aguser
+        )
 
     def test_get(self, mock_modified_dt):
         magic_mixer.blend(
@@ -937,6 +929,7 @@ class AccountTestCase(TestCase):
                     "salesforce_id": 123,
                     "modified_dt": "02-03-2019",
                     "is_archived": False,
+                    "is_externally_managed": True,
                 }
             },
         )
@@ -995,6 +988,93 @@ class AccountTestCase(TestCase):
                     "salesforce_id": 123,
                     "modified_dt": "02-03-2019",
                     "is_archived": False,
+                    "is_externally_managed": True,
+                }
+            },
+        )
+
+    def test_post_valid_no_sales_representative(self, mock_modified_dt):
+        # If no sales rep set on account, the one from the agency must be set as default
+        url = reverse("service.salesforce.account")
+        r = self.client.post(
+            url,
+            data={
+                "agency_id": 3,
+                "is_disabled": True,
+                "name": "new Account",
+                "salesforce_url": "http://salesforce.com",
+                "currency": "CHF",
+                "account_manager": "accountManager@test.com",
+                "tags": ["tag1", "tag2"],
+                "custom_attributes": {"country": "SI"},
+                "salesforce_id": 123,
+            },
+            format="json",
+        )
+        self.assertEqual(r.status_code, 200)
+        new_account = core.models.Account.objects.filter(name="new Account").first()
+        self.assertIsNotNone(new_account)
+        self.assertEqual(
+            r.data,
+            {
+                "data": {
+                    "id": new_account.id,
+                    "agency_id": 3,
+                    "is_disabled": True,
+                    "name": "new Account",
+                    "salesforce_url": "http://salesforce.com",
+                    "currency": "CHF",
+                    "sales_representative": "agencysalesrep@test.com",
+                    "account_manager": "accountManager@test.com",
+                    "tags": ["tag1", "tag2"],
+                    "custom_attributes": {"country": "SI"},
+                    "salesforce_id": 123,
+                    "modified_dt": "02-03-2019",
+                    "is_archived": False,
+                    "is_externally_managed": True,
+                }
+            },
+        )
+
+    def test_post_valid_no_account_manager(self, mock_modified_dt):
+        # If no account manager set on account, the one from the agency must be set as default
+        url = reverse("service.salesforce.account")
+        r = self.client.post(
+            url,
+            data={
+                "agency_id": 3,
+                "is_disabled": True,
+                "name": "new Account",
+                "salesforce_url": "http://salesforce.com",
+                "currency": "CHF",
+                "sales_representative": "agencysalesrep@test.com",
+                "tags": ["tag1", "tag2"],
+                "custom_attributes": {"country": "SI"},
+                "salesforce_id": 123,
+            },
+            format="json",
+        )
+        self.assertEqual(r.status_code, 200)
+        new_account = core.models.Account.objects.filter(name="new Account").first()
+        self.assertIsNotNone(new_account)
+        self.assertEqual(
+            r.data,
+            {
+                "data": {
+                    "id": new_account.id,
+                    "agency_id": 3,
+                    "is_disabled": True,
+                    "name": "new Account",
+                    "salesforce_url": "http://salesforce.com",
+                    "currency": "CHF",
+                    "sales_representative": "agencysalesrep@test.com",
+                    "account_manager": "outbrain-salesforce@service.zemanta.com",
+                    "tags": ["tag1", "tag2"],
+                    "custom_attributes": {"country": "SI"},
+                    "salesforce_id": 123,
+                    "modified_dt": "02-03-2019",
+                    "is_archived": False,
+                    "is_externally_managed": True,
                 }
             },
         )
@@ -1192,6 +1272,7 @@ class AccountTestCase(TestCase):
                     "salesforce_id": 456,
                     "modified_dt": "02-03-2019",
                     "is_archived": False,
+                    "is_externally_managed": True,
                 }
             },
         )
@@ -1211,26 +1292,7 @@ class AccountTestCase(TestCase):
 
         r = self.client.put(url, data={"tags": ["An Other"]}, format="json")
         self.assertEqual(r.status_code, 200)
-        self.assertEqual(
-            r.data,
-            {
-                "data": {
-                    "id": 1,
-                    "agency_id": 3,
-                    "is_disabled": False,
-                    "name": "Account 1",
-                    "salesforce_url": "http://salesforce.com",
-                    "currency": "USD",
-                    "sales_representative": None,
-                    "account_manager": None,
-                    "tags": ["An Other"],
-                    "custom_attributes": {},
-                    "salesforce_id": 123,
-                    "modified_dt": "02-03-2019",
-                    "is_archived": False,
-                }
-            },
-        )
+        self.assertEqual(r.data["data"]["tags"], ["An Other"])
 
     def test_put_valid_unset_tags(self, mock_modified_dt):
         magic_mixer.blend(
@@ -1243,30 +1305,9 @@ class AccountTestCase(TestCase):
             salesforce_id=123,
         )
         url = reverse("service.salesforce.account", kwargs={"account_id": 1})
-        response = self.client.put(
-            url, data={"name": "Account 1", "is_disabled": False, "tags": [], "custom_attributes": {}}, format="json"
-        )
+        response = self.client.put(url, data={"tags": []}, format="json")
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(
-            response.data,
-            {
-                "data": {
-                    "id": 1,
-                    "agency_id": 3,
-                    "is_disabled": False,
-                    "name": "Account 1",
-                    "salesforce_url": "http://salesforce.com",
-                    "currency": "USD",
-                    "sales_representative": None,
-                    "account_manager": None,
-                    "tags": [],
-                    "custom_attributes": {},
-                    "salesforce_id": 123,
-                    "modified_dt": "02-03-2019",
-                    "is_archived": False,
-                }
-            },
-        )
+        self.assertEqual(response.data["data"]["tags"], [])
 
     def test_put_valid_custom_attributes(self, mock_modified_dt):
         # Set custom attributes
@@ -1280,84 +1321,33 @@ class AccountTestCase(TestCase):
             salesforce_id=123,
         )
         url = reverse("service.salesforce.account", kwargs={"account_id": 1})
-        response = self.client.put(
-            url,
-            data={"name": "Account 1", "is_disabled": False, "tags": [], "custom_attributes": {"country": "SI"}},
-            format="json",
-        )
+        response = self.client.put(url, data={"custom_attributes": {"country": "SI"}}, format="json")
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(
-            response.data,
-            {
-                "data": {
-                    "id": 1,
-                    "agency_id": 3,
-                    "is_disabled": False,
-                    "name": "Account 1",
-                    "salesforce_url": "http://salesforce.com",
-                    "currency": "USD",
-                    "sales_representative": None,
-                    "account_manager": None,
-                    "tags": [],
-                    "custom_attributes": {"country": "SI"},
-                    "salesforce_id": 123,
-                    "modified_dt": "02-03-2019",
-                    "is_archived": False,
-                }
-            },
-        )
+        self.assertEqual(response.data["data"]["custom_attributes"], {"country": "SI"})
 
+    def test_put_valid_unset_custom_attributes(self, mock_modified_dt):
         # Unset custom attributes
-        response = self.client.put(
-            url, data={"name": "Account 1", "is_disabled": False, "tags": [], "custom_attributes": {}}, format="json"
+        magic_mixer.blend(
+            core.models.Account,
+            agency=self.agency,
+            id=1,
+            name="Account 1",
+            salesforce_url="http://salesforce.com",
+            is_disabled=True,
+            salesforce_id=123,
+            custom_attributes={"country": "SI"},
         )
+        url = reverse("service.salesforce.account", kwargs={"account_id": 1})
+        response = self.client.put(url, data={"custom_attributes": {}}, format="json")
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(
-            response.data,
-            {
-                "data": {
-                    "id": 1,
-                    "agency_id": 3,
-                    "is_disabled": False,
-                    "name": "Account 1",
-                    "salesforce_url": "http://salesforce.com",
-                    "currency": "USD",
-                    "sales_representative": None,
-                    "account_manager": None,
-                    "tags": [],
-                    "custom_attributes": {},
-                    "salesforce_id": 123,
-                    "modified_dt": "02-03-2019",
-                    "is_archived": False,
-                }
-            },
-        )
+        self.assertEqual(response.data["data"]["custom_attributes"], {})
 
     def test_put_valid_disable(self, mock_modified_dt):
         magic_mixer.blend(core.models.Account, id=3, name="Account 1", agency=self.agency, salesforce_id=123)
         url = reverse("service.salesforce.account", kwargs={"account_id": 3})
         response = self.client.put(url, data={"is_disabled": True}, format="json")
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(
-            response.data,
-            {
-                "data": {
-                    "id": 3,
-                    "agency_id": 3,
-                    "is_disabled": True,
-                    "name": "Account 1",
-                    "salesforce_url": None,
-                    "currency": "USD",
-                    "sales_representative": None,
-                    "account_manager": None,
-                    "tags": [],
-                    "custom_attributes": {},
-                    "salesforce_id": 123,
-                    "modified_dt": "02-03-2019",
-                    "is_archived": False,
-                }
-            },
-        )
+        self.assertEqual(response.data["data"]["is_disabled"], True)
 
     def test_put_invalid_account_not_exists(self, mock_modified_dt):
         magic_mixer.blend(core.models.Account, id=3, name="No agency Account")
@@ -1390,6 +1380,7 @@ class AccountTestCase(TestCase):
                     "tags": [],
                     "isArchived": False,
                     "modifiedDt": "02-03-2019",
+                    "isExternallyManaged": True,
                 }
             },
         )
@@ -1452,6 +1443,7 @@ class AccountTestCase(TestCase):
                     "customAttributes": {},
                     "modifiedDt": "02-03-2019",
                     "isArchived": False,
+                    "isExternallyManaged": True,
                 },
                 {
                     "id": 2,
@@ -1467,6 +1459,7 @@ class AccountTestCase(TestCase):
                     "customAttributes": {},
                     "modifiedDt": "02-03-2019",
                     "isArchived": False,
+                    "isExternallyManaged": True,
                 },
                 {
                     "id": 3,
@@ -1482,6 +1475,7 @@ class AccountTestCase(TestCase):
                     "customAttributes": {},
                     "modifiedDt": "02-03-2019",
                     "isArchived": False,
+                    "isExternallyManaged": True,
                 },
                 {
                     "id": 4,
@@ -1497,6 +1491,7 @@ class AccountTestCase(TestCase):
                     "customAttributes": {},
                     "modifiedDt": "02-03-2019",
                     "isArchived": False,
+                    "isExternallyManaged": True,
                 },
             ],
         )
@@ -1531,6 +1526,7 @@ class AccountTestCase(TestCase):
                     "customAttributes": {},
                     "modifiedDt": "02-03-2019",
                     "isArchived": False,
+                    "isExternallyManaged": True,
                 }
             ],
         )
@@ -1597,6 +1593,7 @@ class AccountTestCase(TestCase):
                     "customAttributes": {},
                     "modifiedDt": "02-03-2019",
                     "isArchived": True,
+                    "isExternallyManaged": True,
                 }
             },
         )

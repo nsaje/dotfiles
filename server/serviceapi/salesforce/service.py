@@ -134,9 +134,9 @@ def update_agency(request, agency, **kwargs):
 
 
 def create_account(request, **kwargs):
-    settings_updates = kwargs.pop("settings")
+    settings_updates = kwargs.pop("settings", {})
     new_account = core.models.Account.objects.create(request, agency=kwargs.pop("agency"), **kwargs)
-    new_account.settings.update(request, **settings_updates)
+    new_account.settings.update(request, account_type=dash.constants.AccountType.MANAGED, **settings_updates)
     return new_account
 
 

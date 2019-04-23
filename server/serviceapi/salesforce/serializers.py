@@ -119,12 +119,13 @@ class TagSerializer(serializers.BaseSerializer):
 
 class AgencySerializer(serializers.ModelSerializer):
     tags = TagSerializer(source="entity_tags", many=True, required=False)
-    custom_attributes = serializers.JSONField(required=False)
+    custom_attributes = serializers.JSONField(required=False)  # Without this GET would serialize it as a string
     modified_dt = serializers.DateTimeField(format="%d-%m-%Y", read_only=True)
+    is_externally_managed = serializers.BooleanField(read_only=True)
 
     class Meta:
         model = core.models.Agency
-        fields = core.models.Agency._externally_managed_fields + ("tags", "custom_attributes")
+        fields = core.models.Agency._externally_managed_fields + ("tags", "is_externally_managed")
 
     def validate_name(self, value):
         agency = core.models.Agency.objects.filter(name=value).first()
@@ -141,6 +142,7 @@ class AccountSerializer(serializers.ModelSerializer):
     custom_attributes = serializers.JSONField(required=False)
     is_archived = serializers.BooleanField(read_only=True)
     modified_dt = serializers.DateTimeField(format="%d-%m-%Y", read_only=True)
+    is_externally_managed = serializers.BooleanField(read_only=True)
 
     class Meta:
         model = core.models.Account
@@ -152,6 +154,7 @@ class AccountSerializer(serializers.ModelSerializer):
             "custom_attributes",
             "is_archived",
             "modified_dt",
+            "is_externally_managed",
         )
 
     def validate_agency_id(self, value):
