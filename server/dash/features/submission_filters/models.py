@@ -9,9 +9,10 @@ from . import exceptions
 
 
 class SubmissionFilterManager(core.common.BaseManager):
-    def _validate(self, source, state, entities):
+    @staticmethod
+    def validate(source, state, entities, check_existing=True):
         if len(entities) != 1:
-            raise exceptions.MultipleFilterEntitiesException()
+            raise exceptions.MultipleFilterEntitiesException("Multiple level entities not allowed.")
         if (source.content_ad_submission_policy, state) not in (
             (dash.constants.SourceSubmissionPolicy.AUTOMATIC, constants.SubmissionFilterState.BLOCK),
             (
@@ -20,18 +21,18 @@ class SubmissionFilterManager(core.common.BaseManager):
             ),
             (dash.constants.SourceSubmissionPolicy.MANUAL, constants.SubmissionFilterState.ALLOW),
         ):
-            raise exceptions.SourcePolicyException()
-        if SubmissionFilter.objects.filter(source=source, **entities).exists():
-            raise exceptions.SubmissionFilterExistsException()
+            raise exceptions.SourcePolicyException('State "{}" not allowed on this source'.format(state))
+        if check_existing and SubmissionFilter.objects.filter(source=source, **entities).exists():
+            raise exceptions.SubmissionFilterExistsException("Similar filter already exists.")
 
     def create(self, source, state, **entities):
-        self._validate(source, state, entities)
+        self.validate(source, state, entities)
         sf = SubmissionFilter(source=source, state=state, **entities)
         sf.save()
         return sf
 
     def bulk_create(self, source, state, lookup_level, lookup_ids):
-        self._validate(source, state, {lookup_level + "_id__in": lookup_ids})
+        self.validate(source, state, {lookup_level + "_id__in": lookup_ids})
         values = [
             SubmissionFilter(source=source, state=state, **{lookup_level + "_id": lookup_id})
             for lookup_id in set(lookup_ids)

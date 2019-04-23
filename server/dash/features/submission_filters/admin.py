@@ -1,14 +1,10 @@
 from django.contrib import admin
-from django.core.exceptions import ValidationError
 
-from .constants import SubmissionFilterState
-from .exceptions import MultipleFilterEntitiesException
-from .exceptions import SourcePolicyException
-from .exceptions import SubmissionFilterExistsException
-from .models import SubmissionFilter
+from . import forms
 
 
 class SubmissionFilterAdmin(admin.ModelAdmin):
+    form = forms.SubmissionFilterForm
     raw_id_fields = ("content_ad", "ad_group", "campaign", "account", "agency")
     list_display = ("state", "source", "_agency", "_account", "_campaign", "_ad_group", "_content_ad")
     list_filter = ("state", "source")
@@ -28,22 +24,6 @@ class SubmissionFilterAdmin(admin.ModelAdmin):
     )
     readonly_fields = ("created_dt",)
     autocomplete_fields = ("source", "agency", "account")
-
-    def save_model(self, request, obj, form, change):
-        possible_keys = [obj.agency_id, obj.account_id, obj.campaign_id, obj.ad_group_id, obj.content_ad_id]
-        if len([key for key in possible_keys if key is not None]) != 1:
-            raise ValidationError("Multiple level entities not allowed.")
-        try:
-            _, level, level_id = obj.get_lookup_key()
-            SubmissionFilter.objects.create(obj.source, obj.state, **{level + "_id": level_id})
-        except SourcePolicyException:
-            raise ValidationError(
-                'State "{}" not allowed on this source'.format(SubmissionFilterState.get_text(obj.state))
-            )
-        except SubmissionFilterExistsException:
-            raise ValidationError("Similar filter already exists.")
-        except MultipleFilterEntitiesException:
-            raise ValidationError("Multiple level entities not allowed.")
 
     def get_queryset(self, request):
         qs = super(SubmissionFilterAdmin, self).get_queryset(request)
