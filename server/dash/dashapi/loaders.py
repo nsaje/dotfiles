@@ -847,22 +847,19 @@ class AdGroupSourcesLoader(Loader):
 
             # MVP for all-RTB-sources-as-one
             if self.ad_group_settings.b1_sources_group_enabled and source.source_type.type == constants.SourceType.B1:
-                can_edit_bid = not self.user.has_perm("zemauth.can_set_rtb_sources_as_one_cpc")
-                bid_message = None
-                if self.campaign_settings.autopilot:
-                    bid_message = "This value cannot be edited because the campaign is on Autopilot."
-                elif self.ad_group_settings.autopilot_state != constants.AdGroupSettingsAutopilotState.INACTIVE:
-                    bid_message = "This value cannot be edited because the ad group is on Autopilot."
-                elif not can_edit_bid:
-                    bid_message = "Please edit RTB Sources' Bid {}."
+                # daily_budget
                 result[source_id]["daily_budget"] = None
                 result[source_id]["local_daily_budget"] = None
                 result[source_id]["editable_fields"]["daily_budget"]["enabled"] = False
                 result[source_id]["editable_fields"]["daily_budget"]["message"] = None
-                result[source_id]["editable_fields"]["bid_cpc"]["enabled"] = can_edit_bid
-                result[source_id]["editable_fields"]["bid_cpc"]["message"] = bid_message.format("CPC")
-                result[source_id]["editable_fields"]["bid_cpm"]["enabled"] = can_edit_bid
-                result[source_id]["editable_fields"]["bid_cpm"]["message"] = bid_message.format("CPM")
+                # bid_cpc
+                result[source_id]["bid_cpc"] = None
+                result[source_id]["editable_fields"]["bid_cpc"]["enabled"] = False
+                result[source_id]["editable_fields"]["bid_cpc"]["message"] = None
+                # bid_cpm
+                result[source_id]["bid_cpm"] = None
+                result[source_id]["editable_fields"]["bid_cpm"]["enabled"] = False
+                result[source_id]["editable_fields"]["bid_cpm"]["message"] = None
                 if (
                     self.ad_group_settings.b1_sources_group_state == constants.AdGroupSourceSettingsState.INACTIVE
                     and result[source_id]["status"] == constants.AdGroupSourceSettingsState.ACTIVE
