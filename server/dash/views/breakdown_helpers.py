@@ -261,12 +261,6 @@ def create_all_rtb_source_row_data(request, ad_group, ad_group_settings, show_rt
         bid_edit_enabled = False
         bid_edit_message = "This value cannot be edited because the campaign is on Autopilot."
 
-    if (
-        ad_group_settings.autopilot_state == constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET
-        or campaign_settings.autopilot
-    ):
-        show_rtb_group_bid = False
-
     return {
         "breakdown_name": all_rtb.AllRTBSource.name,
         "breakdown_id": all_rtb.AllRTBSource.id,
