@@ -404,7 +404,7 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ("this_is_restapi_group", "MARKS THE GROUP THAT CONTAINS PUBLIC REST API PERMISSIONS."),
             ("this_is_agency_manager_group", "MARKS THE GROUP THAT CONTAINS AGENCY MANAGER PERMISSIONS."),
             ("this_is_public_group", "MARKS THE GROUP THAT CONTAINS PUBLIC PERMISSIONS."),
-            ("this_is_lam_group", "MARKS THE GROUP THAT CONTAINS LAM USERS."),
+            ("this_is_amplify_group", "MARKS THE GROUP THAT CONTAINS AMPLIFY USERS."),
             ("sspd_can_filter_by_account", "SSPD: User can filter by account"),
             ("sspd_can_filter_by_agency", "SSPD: User can filter by agency"),
             ("sspd_can_block_agency", "SSPD: User can block agency"),
