@@ -1,5 +1,22 @@
 #!groovy
+import hudson.model.Run
+
 node('master') {
+    stage('Kill previous builds') {
+        if (env.BRANCH_NAME != 'master') {
+            Run previousBuild = currentBuild.rawBuild.getPreviousBuildInProgress()
+
+            while (previousBuild != null) {
+                if (previousBuild.isInProgress()) {
+                    echo ">> Aborting older build #${previousBuild.number}"
+                    previousBuild.doTerm()
+                }
+
+                previousBuild = previousBuild.getPreviousBuildInProgress()
+            }
+        }
+    }
+
     stage('Setup') {
         sh 'export' // for debug purposes
         env.CACHE_DIR = "${JENKINS_HOME}/workspace/_CACHE/${JOB_NAME}"
