@@ -971,6 +971,7 @@ class AccountSettings(api_common.BaseApiView):
                     "name", "sales_representative", "cs_representative", "ob_representative", "default_account_type"
                 )
             )
+        hacks.filter_amplify_agencies(request.user, response)
 
     def save_settings(self, request, account, form):
         old_name = account.name
