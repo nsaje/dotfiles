@@ -15,6 +15,7 @@ class AdGroupSourceSettingsMixin(object):
         skip_automation=False,
         skip_validation=False,
         skip_notification=False,
+        write_history=True,
         **updates
     ):
         result = {"autopilot_changed_sources_text": ""}
@@ -43,7 +44,7 @@ class AdGroupSourceSettingsMixin(object):
 
         old_settings = self.get_settings_dict()
         changes = self.get_setting_changes(new_settings)
-        new_settings.save(request, system_user=system_user)
+        new_settings.save(request, system_user=system_user, write_history=write_history)
 
         if not skip_automation:
             # autopilot reloads settings so changes have to be saved when it is called

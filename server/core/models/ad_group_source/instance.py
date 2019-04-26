@@ -14,7 +14,7 @@ import utils.numbers
 
 
 class AdGroupSourceInstanceMixin:
-    def set_initial_settings(self, request, ad_group, skip_notification=False, **updates):
+    def set_initial_settings(self, request, ad_group, skip_notification=False, write_history=True, **updates):
         from dash.views import helpers
 
         if "cpc_cc" not in updates:
@@ -59,6 +59,7 @@ class AdGroupSourceInstanceMixin:
             skip_automation=True,
             skip_validation=True,
             skip_notification=skip_notification,
+            write_history=write_history,
             **updates
         )
 

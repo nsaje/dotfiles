@@ -506,7 +506,7 @@ class FacebookStopMediaSourcesTest(TestCase):
         account = models.Account.objects.get(pk=100)
         facebook_helper.stop_facebook_media_sources(account)
 
-        save_mock.assert_called_once_with(None, state=2, system_user=None)
+        save_mock.assert_called_once_with(None, state=2, system_user=None, write_history=True)
         k1_update_mock.assert_called_once_with({models.AdGroup.objects.get(pk=100)}, msg="facebook.stop_media_source")
 
     @patch("utils.k1_helper.update_ad_groups")

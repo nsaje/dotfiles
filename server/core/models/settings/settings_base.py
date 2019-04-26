@@ -49,7 +49,7 @@ class SettingsBase(models.Model, core.features.history.HistoryMixin):
 
     # Unsafe update without validation and notification of other systems
     @transaction.atomic()
-    def update_unsafe(self, request, system_user=None, **kwargs):
+    def update_unsafe(self, request, system_user=None, write_history=True, **kwargs):
         user = request.user if request else None
         history_changes_text = kwargs.pop("history_changes_text", None)
         changes = self.get_changes(kwargs)
@@ -71,12 +71,13 @@ class SettingsBase(models.Model, core.features.history.HistoryMixin):
                 update_fields.append("system_user")
 
         history_changes = self.get_model_state_changes(kwargs)
-        if history_changes_text:
-            self.add_to_history(
-                user, constants.HistoryActionType.SETTINGS_CHANGE, history_changes, history_changes_text
-            )
-        else:
-            self.add_to_history(user, constants.HistoryActionType.SETTINGS_CHANGE, history_changes)
+        if write_history:
+            if history_changes_text:
+                self.add_to_history(
+                    user, constants.HistoryActionType.SETTINGS_CHANGE, history_changes, history_changes_text
+                )
+            else:
+                self.add_to_history(user, constants.HistoryActionType.SETTINGS_CHANGE, history_changes)
 
         for k, v in changes.items():
             setattr(self, k, v)

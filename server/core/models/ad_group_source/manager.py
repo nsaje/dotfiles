@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 
 
 class AdGroupSourceManager(core.common.BaseManager):
-    def _create(self, ad_group, source, ad_review_only=False):
+    def _create(self, ad_group, source, ad_review_only=False, write_history=True):
         default_settings = source.get_default_settings()
         ad_group_source = model.AdGroupSource(
             source=source,
@@ -29,7 +29,7 @@ class AdGroupSourceManager(core.common.BaseManager):
         ad_group_source.save(None)
 
         ad_group_source.settings = core.models.settings.AdGroupSourceSettings(ad_group_source=ad_group_source)
-        ad_group_source.settings.update_unsafe(None)
+        ad_group_source.settings.update_unsafe(None, write_history=write_history)
         ad_group_source.settings_id = ad_group_source.settings.id
         ad_group_source.save(None)
 
@@ -92,8 +92,12 @@ class AdGroupSourceManager(core.common.BaseManager):
             )
 
         if not ad_group_source:
-            ad_group_source = self._create(ad_group, source, ad_review_only=ad_review_only)
-            ad_group_source.set_initial_settings(request, ad_group, skip_notification=skip_notification, **updates)
+            ad_group_source = self._create(
+                ad_group, source, ad_review_only=ad_review_only, write_history=not ad_review_only
+            )
+            ad_group_source.set_initial_settings(
+                request, ad_group, skip_notification=skip_notification, write_history=not ad_review_only, **updates
+            )
         elif ad_group_source.ad_review_only and not ad_review_only:
             self._handle_ad_review_only(ad_group_source, skip_notification)
         else:
