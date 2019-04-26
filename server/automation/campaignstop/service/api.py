@@ -1,3 +1,5 @@
+import newrelic.agent
+
 from utils import dates_helper
 
 from .. import CampaignStopState
@@ -8,6 +10,7 @@ def get_campaignstop_state(campaign):
     return get_campaignstop_states([campaign])[campaign.id]
 
 
+@newrelic.agent.function_trace()
 def get_campaignstop_states(campaigns):
     states_map = _get_states_map(campaigns)
     return {campaign.id: _get_campaign_stop_state(campaign, states_map) for campaign in campaigns}
