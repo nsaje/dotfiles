@@ -11,7 +11,15 @@ import utils.redirector_helper
 from . import exceptions
 from . import model
 
-AMPLIFY_REVIEW_AGENCIES_DISABLED = {55}  # Outbrain
+AMPLIFY_REVIEW_AGENCIES_DISABLED = {
+    55,
+    179,
+    201,
+    357,
+    407,
+    175,
+    206,
+}  # Outbrain, Publicis / Independence Media / Precision Guaranteed, iProspect France, GroupM / PBU, OMD France, PHD Media: Remind, Gamned SAS
 AMPLIFY_REVIEW_ACCOUNTS_DISABLED = {490, 513}  # inPowered
 
 
