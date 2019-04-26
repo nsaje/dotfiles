@@ -18,9 +18,7 @@ class ConversionPixelSerializer(
 
     id = restapi.serializers.fields.IdField(read_only=True)
     account_id = restapi.serializers.fields.IdField(read_only=True)
-    name = restapi.serializers.fields.PlainCharField(
-        max_length=50, error_messages={"required": "Please specify a name."}
-    )
+    name = restapi.serializers.fields.PlainCharField(read_only=True)
     archived = rest_framework.serializers.BooleanField(required=False)
     audience_enabled = rest_framework.serializers.BooleanField(required=False)
     additional_pixel = rest_framework.serializers.BooleanField(required=False)
@@ -31,3 +29,9 @@ class ConversionPixelSerializer(
     notes = restapi.serializers.fields.PlainCharField(required=False, allow_blank=True)
     last_triggered = rest_framework.serializers.DateTimeField(read_only=True)
     impressions = rest_framework.serializers.IntegerField(source="get_impressions", read_only=True)
+
+
+class ConversionPixelCreateSerializer(ConversionPixelSerializer):
+    name = restapi.serializers.fields.PlainCharField(
+        max_length=50, error_messages={"required": "Please specify a name."}
+    )

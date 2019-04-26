@@ -5,6 +5,10 @@ class DuplicatePixelName(ValidationError):
     pass
 
 
+class PixelNameNotEditable(ValidationError):
+    pass
+
+
 class MutuallyExclusivePixelFlagsEnabled(ValidationError):
     pass
 

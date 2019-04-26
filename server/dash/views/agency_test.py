@@ -1922,7 +1922,7 @@ class ConversionPixelTestCase(TestCase):
 
         response = self.client.put(
             reverse("conversion_pixel", kwargs={"conversion_pixel_id": existing_audience_enabled_pixels[0].id}),
-            json.dumps({"name": "name", "audience_enabled": True}),
+            json.dumps({"audience_enabled": True}),
             content_type="application/json",
             follow=True,
         )
@@ -1936,7 +1936,7 @@ class ConversionPixelTestCase(TestCase):
             {
                 "data": {
                     "id": audience_enabled_pixels[0].id,
-                    "name": "name",
+                    "name": "test",
                     "archived": False,
                     "audience_enabled": True,
                     "additional_pixel": False,
@@ -2090,38 +2090,6 @@ class ConversionPixelTestCase(TestCase):
         self.assertFalse(redirector_mock.called)
 
     @patch("utils.redirector_helper.upsert_audience")
-    def test_put_name(self, redirector_mock):
-        add_permissions(self.user, ["archive_restore_entity"])
-        conversion_pixel = models.ConversionPixel.objects.get(pk=1)
-        response = self.client.put(
-            reverse("conversion_pixel", kwargs={"conversion_pixel_id": 1}),
-            json.dumps({"name": "New name", "audience_enabled": True}),
-            content_type="application/json",
-            follow=True,
-        )
-
-        self.assertEqual(200, response.status_code)
-
-        decoded_response = json.loads(response.content)
-        self.assertEqual(
-            {
-                "id": 1,
-                "archived": conversion_pixel.archived,
-                "name": "New name",
-                "url": settings.CONVERSION_PIXEL_PREFIX + "1/test/",
-                "audience_enabled": True,
-                "additional_pixel": False,
-            },
-            decoded_response["data"],
-        )
-
-        hist = history_helpers.get_account_history(models.Account.objects.get(pk=1)).first()
-        self.assertEqual(constants.HistoryActionType.CONVERSION_PIXEL_RENAME, hist.action_type)
-        self.assertEqual("Renamed conversion pixel with ID 1 to New name.", hist.changes_text)
-
-        self.assertFalse(redirector_mock.called)
-
-    @patch("utils.redirector_helper.upsert_audience")
     def test_put_archive_no_permissions(self, redirector_mock):
         conversion_pixel = models.ConversionPixel.objects.get(pk=1)
         conversion_pixel.audience_enabled = False
@@ -2186,32 +2154,6 @@ class ConversionPixelTestCase(TestCase):
         decoded_response = json.loads(response.content)
 
         self.assertEqual("Conversion pixel does not exist", decoded_response["data"]["message"])
-
-    def test_empty_name(self):
-        response = self.client.put(
-            reverse("conversion_pixel", kwargs={"conversion_pixel_id": 1}),
-            json.dumps({"name": ""}),
-            content_type="application/json",
-            follow=True,
-        )
-
-        self.assertEqual(400, response.status_code)
-        decoded_response = json.loads(response.content)
-
-        self.assertEqual(["Please specify a name."], decoded_response["data"]["errors"]["name"])
-
-    def test_name_too_long(self):
-        response = self.client.put(
-            reverse("conversion_pixel", kwargs={"conversion_pixel_id": 1}),
-            json.dumps({"name": "aaaaaaaaaabbbbbbbbbbccccccccccddddddddddeeeeeeeeeefffff"}),
-            content_type="application/json",
-            follow=True,
-        )
-
-        self.assertEqual(400, response.status_code)
-        decoded_response = json.loads(response.content)
-
-        self.assertEqual(["Name is too long (55/50)."], decoded_response["data"]["errors"]["name"])
 
     @patch("utils.redirector_helper.upsert_audience")
     @patch("utils.redirector_helper.update_pixel")

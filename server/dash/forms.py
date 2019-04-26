@@ -559,6 +559,16 @@ class AccountSettingsForm(PublisherGroupsFormMixin, forms.Form):
 
 class ConversionPixelForm(forms.Form):
     archived = forms.BooleanField(required=False)
+    audience_enabled = forms.BooleanField(required=False)
+    redirect_url = forms.URLField(max_length=2048, required=False)
+    notes = PlainCharField(required=False)
+    additional_pixel = forms.BooleanField(required=False)
+
+    def __init__(self, *args, **kwargs):
+        super(ConversionPixelForm, self).__init__(*args, **kwargs)
+
+
+class ConversionPixelCreateForm(ConversionPixelForm):
     name = PlainCharField(
         max_length=50,
         required=True,
@@ -567,13 +577,9 @@ class ConversionPixelForm(forms.Form):
             "max_length": "Name is too long (%(show_value)d/%(limit_value)d).",
         },
     )
-    audience_enabled = forms.BooleanField(required=False)
-    redirect_url = forms.URLField(max_length=2048, required=False)
-    notes = PlainCharField(required=False)
-    additional_pixel = forms.BooleanField(required=False)
 
     def __init__(self, *args, **kwargs):
-        super(ConversionPixelForm, self).__init__(*args, **kwargs)
+        super(ConversionPixelCreateForm, self).__init__(*args, **kwargs)
 
 
 class ConversionGoalForm(forms.Form):

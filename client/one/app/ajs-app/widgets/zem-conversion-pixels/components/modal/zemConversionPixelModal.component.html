@@ -15,6 +15,7 @@
                 id="name-input"
                 ng-model="$ctrl.pixel.name"
                 ng-change="$ctrl.clearError()"
+                ng-disabled="!$ctrl.isCreationMode"
             />
             <div
                 class="message message--error"

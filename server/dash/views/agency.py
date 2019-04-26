@@ -842,7 +842,7 @@ class ConversionPixel(api_common.BaseApiView):
         except ValueError:
             raise exc.ValidationError()
 
-        form = forms.ConversionPixelForm(data)
+        form = forms.ConversionPixelCreateForm(data)
         if not form.is_valid():
             raise exc.ValidationError(errors=dict(form.errors))
 

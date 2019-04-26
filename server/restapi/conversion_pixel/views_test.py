@@ -156,12 +156,11 @@ class ConversionPixelsTest(RESTAPITest):
         self.assertFalse(pixel.archived)
         r = self.client.put(
             reverse("pixels_details", kwargs={"account_id": account.id, "pixel_id": pixel.id}),
-            data={"name": "putty", "audienceEnabled": True, "redirectUrl": "https://test.com", "notes": "putty notes"},
+            data={"audienceEnabled": True, "redirectUrl": "https://test.com", "notes": "putty notes"},
             format="json",
         )
         resp_json = self.assertResponseValid(r)
         self.validate_against_db(resp_json["data"])
-        self.assertEqual("putty", resp_json["data"]["name"])
         self.assertTrue(resp_json["data"]["audienceEnabled"])
         self.assertEqual("https://test.com", resp_json["data"]["redirectUrl"])
         self.assertEqual("putty notes", resp_json["data"]["notes"])
@@ -238,13 +237,6 @@ class ConversionPixelsTest(RESTAPITest):
         )
         r = self.client.put(
             reverse("pixels_details", kwargs={"account_id": account.id, "pixel_id": pixel.id}),
-            data={"name": "", "redirect_url": "", "notes": ""},
-            format="json",
-        )
-        resp_json = self.assertResponseError(r, "ValidationError")
-        self.assertEqual(["This field may not be blank."], resp_json["details"]["name"])
-        r = self.client.put(
-            reverse("pixels_details", kwargs={"account_id": account.id, "pixel_id": pixel.id}),
             data={"redirect_url": "", "notes": ""},
             format="json",
         )
@@ -264,11 +256,10 @@ class ConversionPixelsTest(RESTAPITest):
         )
         r = self.client.put(
             reverse("pixels_details", kwargs={"account_id": account.id, "pixel_id": pixel.id}),
-            data={"name": None, "redirect_url": None, "notes": None},
+            data={"redirect_url": None, "notes": None},
             format="json",
         )
         resp_json = self.assertResponseError(r, "ValidationError")
-        self.assertEqual(["This field may not be null."], resp_json["details"]["name"])
         self.assertEqual(["This field may not be null."], resp_json["details"]["notes"])
         r = self.client.put(
             reverse("pixels_details", kwargs={"account_id": account.id, "pixel_id": pixel.id}),

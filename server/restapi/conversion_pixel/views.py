@@ -38,7 +38,7 @@ class ConversionPixelViewSet(RESTAPIBaseViewSet):
 
     def create(self, request, account_id):
         account = restapi.access.get_account(request.user, account_id)
-        serializer = serializers.ConversionPixelSerializer(data=request.data, context={"request": request})
+        serializer = serializers.ConversionPixelCreateSerializer(data=request.data, context={"request": request})
         serializer.is_valid(raise_exception=True)
         pixel_create_fn = functools.partial(
             core.models.ConversionPixel.objects.create, request, account, **serializer.validated_data

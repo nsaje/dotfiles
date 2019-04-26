@@ -717,7 +717,7 @@
 
 -   fields:
         created_dt: '2014-06-04T09:58:21'
-        name: 'test_pixel'
+        name: 'audience_pixel'
         account: 186
         slug: "123"
         archived: False

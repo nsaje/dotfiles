@@ -119,6 +119,9 @@ angular
 
             function update(pixel) {
                 state.requests.update[pixel.id] = {inProgress: true};
+                pixel = angular.copy(pixel);
+                delete pixel.name;
+
                 return zemConversionPixelsEndpoint
                     .put(pixel.id, pixel)
                     .then(

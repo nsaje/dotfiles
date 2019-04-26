@@ -40,6 +40,10 @@ class ConversionPixelValidatorMixin(object):
         if "name" not in changes:
             return
 
+        if self.pk:
+            # NOTE: intentional since name is copied into goal name and changing it would result in inconsistencies
+            raise exceptions.PixelNameNotEditable("Pixel name can't be updated")
+
         if model.ConversionPixel.objects.filter(account=self.account, name=changes["name"]).exists():
             raise exceptions.DuplicatePixelName("Conversion pixel with name {} already exists.".format(changes["name"]))
 

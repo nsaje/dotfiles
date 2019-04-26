@@ -4,6 +4,8 @@ from django.test import TestCase
 import core.models
 from utils.magic_mixer import magic_mixer
 
+from . import exceptions
+
 
 class InstanceTestCase(TestCase):
     @mock.patch("utils.redirector_helper.upsert_audience")
@@ -52,7 +54,6 @@ class InstanceTestCase(TestCase):
             request,
             id=old_id + 1000,
             account=account2,
-            name="test2",
             slug="test_slug",
             additional_pixel=True,
             redirect_url="test_url",
@@ -64,7 +65,6 @@ class InstanceTestCase(TestCase):
         )
         self.assertEqual(old_id, pixel.id)
         self.assertEqual(account, pixel.account)
-        self.assertEqual("test2", pixel.name)
         self.assertEqual(str(pixel.id), pixel.slug)
         self.assertTrue(pixel.additional_pixel)
         self.assertEqual("test_url", pixel.redirect_url)
@@ -75,9 +75,30 @@ class InstanceTestCase(TestCase):
         self.assertNotEqual("2018-01-01", pixel.created_dt)
 
         redirector_pixel_mock.assert_called_once()
-        self.assertEqual(8, history_mock.call_count)
+        self.assertEqual(7, history_mock.call_count)
         self.assertEqual(3, k1_update_account_mock.call_count)
         self.assertEqual(2, redirector_audience_mock.call_count)
+
+    @mock.patch("utils.redirector_helper.upsert_audience")
+    @mock.patch("utils.k1_helper.update_account")
+    @mock.patch("core.models.Account.write_history")
+    @mock.patch("utils.redirector_helper.update_pixel")
+    def test_update_name(self, redirector_pixel_mock, history_mock, k1_update_account_mock, redirector_audience_mock):
+        request = magic_mixer.blend_request_user(
+            permissions=[
+                "archive_restore_entity",
+                "can_promote_additional_pixel",
+                "can_redirect_pixels",
+                "can_see_pixel_notes",
+            ]
+        )
+        account = magic_mixer.blend(core.models.Account)
+        core.models.ConversionPixel.objects.create(request, account, name="test_audience", audience_enabled=True)
+        pixel = core.models.ConversionPixel.objects.create(request, account, name="test")
+        core.features.audiences.Audience.objects.create(request, "test_audience", pixel, 0, 0, [])
+
+        with self.assertRaises(exceptions.PixelNameNotEditable):
+            pixel.update(request, name="test2")
 
     def test_archived(self):
         request = magic_mixer.blend_request_user()

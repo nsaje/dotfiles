@@ -413,7 +413,7 @@ Property        | Type            | Description                                 
 ----------------|-----------------|---------------------------------------------------------------------------------------|-----------|-----------
 id              | string          | ID of the pixel                                                                       | N/A       | read only        
 accountId       | string          | ID of the account                                                                     | read only | read only       
-name            | string          | name of the pixel                                                                     | required  | optional        
+name            | string          | name of the pixel                                                                     | required  | read only        
 archived        | bool            | Is the pixel archived? Set to `true` to archive a pixel and to `false` to restore it. | optional  | optional        
 audienceEnabled | bool            | Is the pixel used for building custom audiences? Set to `true` to enable it. Can not be disabled once enabled. Only one pixel can be used for building custom audiences.  | optional  | optional        
 url             | string          | URL of the pixel                                                                      | read only | read only
@@ -434,7 +434,7 @@ impressions     | number          | number of times the pixel was triggered yest
             "data": {
                 "id":"123",
                 "accountId": "186",
-                "name": "test_pixel",
+                "name": "audience_pixel",
                 "archived": false,
                 "audienceEnabled": false,
                 "url": "https://p1.zemanta.com/p/186/123/",
@@ -454,7 +454,6 @@ impressions     | number          | number of times the pixel was triggered yest
 + Request (application/json)
 
         {
-            "name": "audience_pixel",
             "archived": false,
             "audienceEnabled": true,
             "notes": "pixel used for audience testing"
