@@ -20,9 +20,3 @@ OUTBRAIN_CURRENCIES = [
     dash.constants.Currency.MYR,
     dash.constants.Currency.CHF,
 ]
-SALESFORCE_SERVICE_NAME = "salesforce"
-OUTBRAIN_SERVICE_NAME = "outbrain-salesforce"
-
-MANAGED_BY_AMPLIFY_TAG = "outbrain/sales/OutbrainSalesforce"
-AMPLIFY_GROUP_PERMISSION_CODENAME = "this_is_amplify_group"
-AMPLIFY_SOURCES_SLUG = ["outbrainrtb", "ligatus"]

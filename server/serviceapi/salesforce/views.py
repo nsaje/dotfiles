@@ -8,16 +8,18 @@ import core.models
 import utils.exc
 from utils.rest_common import authentication
 
-from . import constants
 from . import serializers
 from . import service
 from .. import base
 
+SALESFORCE_SERVICE_NAME = "salesforce"
+OUTBRAIN_SERVICE_NAME = "outbrain-salesforce"
+
 
 class CreateClientView(base.ServiceAPIBaseView):
     authentication_classes = (
-        authentication.gen_oauth_authentication(constants.SALESFORCE_SERVICE_NAME),
-        authentication.gen_oauth_authentication(constants.OUTBRAIN_SERVICE_NAME),
+        authentication.gen_oauth_authentication(SALESFORCE_SERVICE_NAME),
+        authentication.gen_oauth_authentication(OUTBRAIN_SERVICE_NAME),
     )
 
     def put(self, request):
@@ -41,8 +43,8 @@ class CreateClientView(base.ServiceAPIBaseView):
 
 class CreateCreditLineView(base.ServiceAPIBaseView):
     authentication_classes = (
-        authentication.gen_oauth_authentication(constants.SALESFORCE_SERVICE_NAME),
-        authentication.gen_oauth_authentication(constants.OUTBRAIN_SERVICE_NAME),
+        authentication.gen_oauth_authentication(SALESFORCE_SERVICE_NAME),
+        authentication.gen_oauth_authentication(OUTBRAIN_SERVICE_NAME),
     )
 
     def put(self, request):
@@ -63,8 +65,8 @@ class CreateCreditLineView(base.ServiceAPIBaseView):
 
 class AgencyAccountsView(base.ServiceAPIBaseView):
     authentication_classes = (
-        authentication.gen_oauth_authentication(constants.SALESFORCE_SERVICE_NAME),
-        authentication.gen_oauth_authentication(constants.OUTBRAIN_SERVICE_NAME),
+        authentication.gen_oauth_authentication(SALESFORCE_SERVICE_NAME),
+        authentication.gen_oauth_authentication(OUTBRAIN_SERVICE_NAME),
     )
 
     def post(self, request):
@@ -83,8 +85,8 @@ class AgencyAccountsView(base.ServiceAPIBaseView):
 
 class CreditsListView(base.ServiceAPIBaseView):
     authentication_classes = (
-        authentication.gen_oauth_authentication(constants.SALESFORCE_SERVICE_NAME),
-        authentication.gen_oauth_authentication(constants.OUTBRAIN_SERVICE_NAME),
+        authentication.gen_oauth_authentication(SALESFORCE_SERVICE_NAME),
+        authentication.gen_oauth_authentication(OUTBRAIN_SERVICE_NAME),
     )
 
     def post(self, request):
@@ -99,7 +101,7 @@ class CreditsListView(base.ServiceAPIBaseView):
 
 # Outbrain Salesforce
 class AgencyView(base.ServiceAPIBaseView):
-    authentication_classes = (authentication.gen_oauth_authentication(constants.OUTBRAIN_SERVICE_NAME),)
+    authentication_classes = (authentication.gen_oauth_authentication(OUTBRAIN_SERVICE_NAME),)
 
     def post(self, request):
         serializer = serializers.AgencySerializer(data=request.data)
@@ -126,7 +128,7 @@ class AgencyView(base.ServiceAPIBaseView):
 
 
 class AgenciesView(base.ServiceAPIBaseView, generics.ListAPIView):
-    authentication_classes = (authentication.gen_oauth_authentication(constants.OUTBRAIN_SERVICE_NAME),)
+    authentication_classes = (authentication.gen_oauth_authentication(OUTBRAIN_SERVICE_NAME),)
     serializer_class = serializers.AgencySerializer
 
     def get_queryset(self):
@@ -144,7 +146,7 @@ class AgenciesView(base.ServiceAPIBaseView, generics.ListAPIView):
 
 
 class AccountView(base.ServiceAPIBaseView):
-    authentication_classes = (authentication.gen_oauth_authentication(constants.OUTBRAIN_SERVICE_NAME),)
+    authentication_classes = (authentication.gen_oauth_authentication(OUTBRAIN_SERVICE_NAME),)
 
     def post(self, request):
         serializer = serializers.AccountSerializer(data=request.data)
@@ -175,7 +177,7 @@ class AccountView(base.ServiceAPIBaseView):
 
 
 class AccountsView(base.ServiceAPIBaseView, generics.ListAPIView):
-    authentication_classes = (authentication.gen_oauth_authentication(constants.OUTBRAIN_SERVICE_NAME),)
+    authentication_classes = (authentication.gen_oauth_authentication(OUTBRAIN_SERVICE_NAME),)
     serializer_class = serializers.AccountSerializer
 
     def get_queryset(self):
@@ -193,7 +195,7 @@ class AccountsView(base.ServiceAPIBaseView, generics.ListAPIView):
 
 
 class AccountArchiveView(base.ServiceAPIBaseView):
-    authentication_classes = (authentication.gen_oauth_authentication(constants.OUTBRAIN_SERVICE_NAME),)
+    authentication_classes = (authentication.gen_oauth_authentication(OUTBRAIN_SERVICE_NAME),)
 
     def get(self, request, account_id):
         account = core.models.Account.objects.get(id=account_id, agency__is_externally_managed=True)
