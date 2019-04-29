@@ -26,6 +26,7 @@ angular
             ON_LOAD: 'zem-data-source-on-load',
             ON_STATS_UPDATED: 'zem-data-source-on-stats-updated',
             ON_DATA_UPDATED: 'zem-data-source-on-data-updated',
+            ON_ROW_UPDATED: 'zem-data-source-on-row-updated',
         };
 
         var FILTER = {
@@ -89,6 +90,7 @@ angular
             this.onLoad = onLoad;
             this.onStatsUpdated = onStatsUpdated;
             this.onDataUpdated = onDataUpdated;
+            this.onRowUpdated = onRowUpdated;
 
             //
             // Definitions
@@ -207,9 +209,9 @@ angular
                         saveRequestInProgress = false;
                         deferred.resolve(breakdown);
                     },
-                    function(err) {
+                    function(error) {
                         saveRequestInProgress = false;
-                        deferred.reject(err);
+                        deferred.reject(error);
                     }
                 );
                 return deferred.promise;
@@ -231,6 +233,7 @@ angular
                         if (updatedRow.stats) {
                             updateStats(row.stats, updatedRow.stats);
                             updatedStats.push(row.stats);
+                            notifyListeners(EVENTS.ON_ROW_UPDATED, row);
                         }
                     }
                 });
@@ -618,6 +621,10 @@ angular
                     scope,
                     callback
                 );
+            }
+
+            function onRowUpdated(scope, callback) {
+                return registerListener(EVENTS.ON_ROW_UPDATED, scope, callback);
             }
 
             function registerListener(event, scope, callback) {

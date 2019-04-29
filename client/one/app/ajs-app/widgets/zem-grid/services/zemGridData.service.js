@@ -1,3 +1,5 @@
+var Queue = require('promise-queue');
+
 angular
     .module('one.widgets')
     .factory('zemGridDataService', function(
@@ -18,6 +20,9 @@ angular
 
             var onStatsUpdatedHandler;
             var onDataUpdatedHandler;
+            var onRowUpdatedHandler;
+
+            var promiseQueue = null;
 
             //
             // Public API
@@ -27,6 +32,7 @@ angular
             this.loadData = loadData;
             this.loadMetaData = loadMetaData;
             this.saveData = saveData;
+            this.saveDataQueued = saveDataQueued;
             this.editRow = editRow;
             this.replaceDataSource = replaceDataSource;
 
@@ -73,6 +79,7 @@ angular
 
             function initialize() {
                 initializeData();
+                promiseQueue = new Queue(1, Infinity);
                 onStatsUpdatedHandler = dataSource.onStatsUpdated(
                     grid.meta.scope,
                     handleSourceStatsUpdate
@@ -80,6 +87,10 @@ angular
                 onDataUpdatedHandler = dataSource.onDataUpdated(
                     grid.meta.scope,
                     handleSourceDataUpdate
+                );
+                onRowUpdatedHandler = dataSource.onRowUpdated(
+                    grid.meta.scope,
+                    handleSourceRowUpdate
                 );
             }
 
@@ -99,6 +110,7 @@ angular
                 // Rewire DataSource listeners
                 onStatsUpdatedHandler();
                 onDataUpdatedHandler();
+                onRowUpdatedHandler();
                 onStatsUpdatedHandler = dataSource.onStatsUpdated(
                     grid.meta.scope,
                     handleSourceStatsUpdate
@@ -106,6 +118,10 @@ angular
                 onDataUpdatedHandler = dataSource.onDataUpdated(
                     grid.meta.scope,
                     handleSourceDataUpdate
+                );
+                onRowUpdatedHandler = dataSource.onRowUpdated(
+                    grid.meta.scope,
+                    handleSourceRowUpdate
                 );
 
                 zemGridParser.clear(grid);
@@ -196,6 +212,36 @@ angular
                 return deferred.promise;
             }
 
+            function saveDataQueued(value, row, column) {
+                promiseQueue
+                    .add(function() {
+                        return dataSource.saveData(
+                            value,
+                            row.data,
+                            column.data
+                        );
+                    })
+                    .then(function(data) {
+                        if (data.notification) {
+                            if (lastNotification) lastNotification.close();
+                            lastNotification = zemAlertsService.notify(
+                                data.notification.type,
+                                data.notification.msg,
+                                true
+                            );
+                        }
+                    })
+                    .catch(function(error) {
+                        grid.meta.pubsub.notify(
+                            grid.meta.pubsub.EVENTS.ROW_UPDATED_ERROR,
+                            {
+                                row: row,
+                                error: error,
+                            }
+                        );
+                    });
+            }
+
             function editRow(row) {
                 return dataSource.editRow(row);
             }
@@ -208,6 +254,13 @@ angular
                 if (!delayInitialDataUpdate(data)) {
                     doHandleSourceDataUpdate(data);
                 }
+            }
+
+            function handleSourceRowUpdate(event, data) {
+                grid.meta.pubsub.notify(
+                    grid.meta.pubsub.EVENTS.ROW_UPDATED,
+                    data
+                );
             }
 
             function doHandleSourceDataUpdate(data) {

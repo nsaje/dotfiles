@@ -11,6 +11,8 @@ angular.module('one.widgets').factory('zemGridPubSub', function(NgZone) {
         BODY_ROWS_UPDATED: 'zem-grid-pubsub-bodyRowsUpdated',
         METADATA_UPDATED: 'zem-grid-pubsub-metadataUpdated',
         DATA_UPDATED: 'zem-grid-pubsub-dataUpdated',
+        ROW_UPDATED: 'zem-grid-pubsub-rowUpdated',
+        ROW_UPDATED_ERROR: 'zem-grid-pubsub-rowUpdated-error',
 
         EXT_SELECTION_UPDATED: 'zem-grid-ext-selection-updated',
         EXT_COLLAPSE_UPDATED: 'zem-grid-ext-collapse-updated',

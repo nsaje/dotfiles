@@ -26,11 +26,17 @@ angular.module('one.widgets').directive('zemGridCellStatusField', function() {
             var vm = this;
             var pubsub = vm.grid.meta.pubsub;
 
-            $scope.$watch('ctrl.row', update);
-            $scope.$watch('ctrl.data', update);
-            pubsub.register(pubsub.EVENTS.DATA_UPDATED, $scope, update);
+            $scope.$watch('ctrl.row', updateState);
+            $scope.$watch('ctrl.data', updateState);
+            pubsub.register(pubsub.EVENTS.ROW_UPDATED, $scope, onRowUpdated);
 
-            function update() {
+            function onRowUpdated($scope, row) {
+                if (row && row.breakdownId === vm.row.data.breakdownId) {
+                    updateState();
+                }
+            }
+
+            function updateState() {
                 vm.statusText = '';
 
                 if (vm.row && vm.data) {

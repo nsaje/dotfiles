@@ -173,6 +173,10 @@ describe('zemGridDataService', function() {
         expect(grid.meta.pubsub.notify).toHaveBeenCalledWith(
             grid.meta.pubsub.EVENTS.DATA_UPDATED
         );
+        expect(grid.meta.pubsub.notify).toHaveBeenCalledWith(
+            grid.meta.pubsub.EVENTS.ROW_UPDATED,
+            jasmine.any(Object)
+        );
         expect(grid.body.rows[0].data.stats[column.field].value).toBe(
             'new value'
         );
