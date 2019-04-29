@@ -26,6 +26,7 @@ class AdGroupSettingsMixin(object):
         skip_permission_check=False,
         skip_notification=False,
         system_user=None,
+        write_source_history=True,
         **updates
     ):
         updates = self._filter_and_remap_input(request, updates, skip_permission_check)
@@ -37,7 +38,9 @@ class AdGroupSettingsMixin(object):
             if not skip_validation and not is_pause:
                 self._validate_changes(new_settings)
                 self.clean(new_settings)
-            self._handle_and_set_change_consequences(new_settings, skip_notification=skip_notification)
+            self._handle_and_set_change_consequences(
+                new_settings, skip_notification=skip_notification, write_source_history=write_source_history
+            )
             changes = self.get_setting_changes(new_settings)
             if changes:
                 self._save_and_propagate(request, new_settings, system_user, skip_notification=skip_notification)
@@ -115,10 +118,12 @@ class AdGroupSettingsMixin(object):
                         "Account and campaign must not be archived in order to restore an ad group."
                     )
 
-    def _handle_and_set_change_consequences(self, new_settings, skip_notification=False):
+    def _handle_and_set_change_consequences(self, new_settings, skip_notification=False, write_source_history=True):
         self._handle_b1_sources_group_adjustments(new_settings)
-        self._handle_bid_autopilot_initial_bids(new_settings, skip_notification=skip_notification)
-        self._handle_bid_constraints(new_settings)
+        self._handle_bid_autopilot_initial_bids(
+            new_settings, skip_notification=skip_notification, write_source_history=write_source_history
+        )
+        self._handle_bid_constraints(new_settings, write_source_history=write_source_history)
 
     def _handle_b1_sources_group_adjustments(self, new_settings):
         changes = self.get_setting_changes(new_settings)
@@ -163,7 +168,7 @@ class AdGroupSettingsMixin(object):
             if new_settings.b1_sources_group_cpc_cc != adjusted_b1_sources_group_cpc_cc:
                 new_settings.b1_sources_group_cpc_cc = adjusted_b1_sources_group_cpc_cc
 
-    def _handle_bid_autopilot_initial_bids(self, new_settings, skip_notification=False):
+    def _handle_bid_autopilot_initial_bids(self, new_settings, skip_notification=False, write_source_history=True):
         if not self._should_set_bid_autopilot_initial_bids(new_settings):
             return
 
@@ -185,12 +190,20 @@ class AdGroupSettingsMixin(object):
         if self.ad_group.bidding_type == constants.BiddingType.CPM:
             new_settings.b1_sources_group_cpm = avg_bid
             helpers.set_ad_group_sources_cpms(
-                new_ad_group_sources_bids, self.ad_group, new_settings, skip_notification=skip_notification
+                new_ad_group_sources_bids,
+                self.ad_group,
+                new_settings,
+                skip_notification=skip_notification,
+                write_source_history=write_source_history,
             )
         else:
             new_settings.b1_sources_group_cpc_cc = avg_bid
             helpers.set_ad_group_sources_cpcs(
-                new_ad_group_sources_bids, self.ad_group, new_settings, skip_notification=skip_notification
+                new_ad_group_sources_bids,
+                self.ad_group,
+                new_settings,
+                skip_notification=skip_notification,
+                write_source_history=write_source_history,
             )
 
     def _should_set_bid_autopilot_initial_bids(self, new_settings):
@@ -200,23 +213,38 @@ class AdGroupSettingsMixin(object):
             and new_settings.b1_sources_group_enabled
         )
 
-    def _handle_bid_constraints(self, new_settings, skip_notification=False):
+    def _handle_bid_constraints(self, new_settings, skip_notification=False, write_source_history=True):
         ad_group_sources_bids = helpers.get_adjusted_ad_group_sources_bids(self.ad_group, new_settings)
         if self.ad_group.bidding_type == constants.BiddingType.CPM:
-            self._handle_cpm_constraints(new_settings, ad_group_sources_bids, skip_notification=skip_notification)
+            self._handle_cpm_constraints(
+                new_settings,
+                ad_group_sources_bids,
+                skip_notification=skip_notification,
+                write_source_history=write_source_history,
+            )
         else:
-            self._handle_cpc_constraints(new_settings, ad_group_sources_bids, skip_notification=skip_notification)
+            self._handle_cpc_constraints(
+                new_settings,
+                ad_group_sources_bids,
+                skip_notification=skip_notification,
+                write_source_history=write_source_history,
+            )
 
-    def _handle_cpm_constraints(self, new_settings, ad_group_sources_cpms, skip_notification=False):
+    def _handle_cpm_constraints(
+        self, new_settings, ad_group_sources_cpms, skip_notification=False, write_source_history=True
+    ):
         helpers.set_ad_group_sources_cpms(
             ad_group_sources_cpms,
             self.ad_group,
             new_settings,
             skip_validation=True,
             skip_notification=skip_notification,
+            write_source_history=write_source_history,
         )
 
-    def _handle_cpc_constraints(self, new_settings, ad_group_sources_cpcs, skip_notification=False):
+    def _handle_cpc_constraints(
+        self, new_settings, ad_group_sources_cpcs, skip_notification=False, write_source_history=True
+    ):
         if self.b1_sources_group_cpc_cc != new_settings.b1_sources_group_cpc_cc:
             bcm_modifiers = self.ad_group.campaign.get_bcm_modifiers()
             try:
@@ -229,6 +257,7 @@ class AdGroupSettingsMixin(object):
             new_settings,
             skip_validation=True,
             skip_notification=skip_notification,
+            write_source_history=write_source_history,
         )
 
     def _should_recalculate_budget_autopilot(self, changes):

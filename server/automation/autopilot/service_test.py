@@ -10,6 +10,7 @@ from mock import patch
 import dash.constants
 import dash.models
 from automation import models
+from core.features.goals import campaign_goal
 from utils import pagerduty_helper
 from utils.magic_mixer import magic_mixer
 
@@ -448,6 +449,83 @@ class AutopilotPlusTestCase(test.TestCase):
         mock_update_values.assert_called_once()
         mock_update_rtb.assert_called_with(ag, {"cpm": Decimal("0.22"), "daily_budget_cc": Decimal("20")}, ap)
         mock_update_rtb.assert_called_once()
+
+    def test_set_autopilot_changes_rtb_as_one_history(self):
+        campaign = magic_mixer.blend(dash.models.Campaign)
+        campaign_goal.CampaignGoal.objects.create_unsafe(
+            campaign=campaign, type=dash.constants.CampaignGoalKPI.CPC, primary=True
+        )
+        ad_group = magic_mixer.blend(dash.models.AdGroup, campaign=campaign)
+        ad_group.settings.update(
+            None,
+            b1_sources_group_enabled=True,
+            b1_sources_group_cpc_cc=Decimal("0.11"),
+            b1_sources_group_daily_budget=Decimal("10"),
+            autopilot_state=dash.constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET,
+            skip_validation=True,
+        )
+        b1_source_type = dash.models.SourceType.objects.get(id=3)
+        b1_source = magic_mixer.blend(dash.models.Source, name="Outbrain RTB", source_type=b1_source_type)
+        ad_group_source_b1 = magic_mixer.blend(dash.models.AdGroupSource, ad_group=ad_group, source=b1_source)
+        ad_group_source_b1.settings.update(
+            None,
+            cpc_cc=Decimal("0.11"),
+            daily_budget_cc=Decimal("10"),
+            state=dash.constants.AdGroupSourceSettingsState.ACTIVE,
+            skip_automation=True,
+            k1_sync=False,
+            skip_validation=True,
+            skip_notification=True,
+        )
+        outbrain_source = dash.models.Source.objects.get(id=4)
+        ad_group_source = magic_mixer.blend(dash.models.AdGroupSource, ad_group=ad_group, source=outbrain_source)
+        ad_group_source.settings.update(
+            None,
+            cpc_cc=Decimal("0.1"),
+            daily_budget_cc=Decimal("100"),
+            state=dash.constants.AdGroupSourceSettingsState.ACTIVE,
+            skip_automation=True,
+            k1_sync=False,
+            skip_validation=True,
+            skip_notification=True,
+        )
+
+        ag_source_rtb = dash.models.AllRTBAdGroupSource(ad_group)
+
+        initial_history_records_count = dash.models.History.objects.filter(ad_group=ad_group).count()
+
+        budget_changes = {
+            ad_group_source: {"old_budget": Decimal("100"), "new_budget": Decimal("200")},
+            ag_source_rtb: {"old_budget": Decimal("10"), "new_budget": Decimal("20")},
+        }
+        cpc_changes = {
+            ad_group_source: {"old_bid": Decimal("0.1"), "new_bid": Decimal("0.2")},
+            ag_source_rtb: {"old_bid": Decimal("0.11"), "new_bid": Decimal("0.22")},
+        }
+
+        service.set_autopilot_changes(bid_changes=cpc_changes, budget_changes=budget_changes, ad_group=ad_group)
+
+        self.assertEqual(
+            dash.models.History.objects.filter(ad_group=ad_group).count(), initial_history_records_count + 2
+        )
+
+        history_records = dash.models.History.objects.filter(ad_group=ad_group).order_by("created_dt")[
+            initial_history_records_count:
+        ]
+
+        self.assertCountEqual(
+            [(h.system_user, h.changes) for h in history_records],
+            [
+                (
+                    dash.constants.SystemUserType.AUTOPILOT,
+                    {"local_cpc_cc": "0.2000", "local_daily_budget_cc": "200.0000"},
+                ),
+                (
+                    dash.constants.SystemUserType.AUTOPILOT,
+                    {"local_b1_sources_group_cpc_cc": "0.2200", "local_b1_sources_group_daily_budget": "20.0000"},
+                ),
+            ],
+        )
 
     @patch("automation.autopilot.settings.BUDGET_AP_MIN_SOURCE_BUDGET", Decimal("0.3"))
     def test_set_paused_ad_group_sources_to_minimum_values(self):

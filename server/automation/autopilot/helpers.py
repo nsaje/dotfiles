@@ -201,7 +201,14 @@ def update_ad_group_b1_sources_group_values(ad_group, changes, system_user=None)
     if not kwargs:
         return
 
-    ad_group.settings.update(None, skip_validation=True, skip_notification=True, system_user=system_user, **kwargs)
+    ad_group.settings.update(
+        None,
+        skip_validation=True,
+        skip_notification=True,
+        system_user=system_user,
+        write_source_history=False,
+        **kwargs
+    )
 
 
 def get_ad_group_sources_minimum_bid(ad_group_source, bcm_modifiers):

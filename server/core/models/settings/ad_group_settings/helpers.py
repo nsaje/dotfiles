@@ -42,7 +42,12 @@ def validate_ad_group_sources_cpc_constraints(bcm_modifiers, ad_group_sources_cp
 
 @transaction.atomic
 def set_ad_group_sources_cpcs(
-    ad_group_sources_cpcs, ad_group, ad_group_settings, skip_validation=False, skip_notification=False
+    ad_group_sources_cpcs,
+    ad_group,
+    ad_group_settings,
+    skip_validation=False,
+    skip_notification=False,
+    write_source_history=True,
 ):
     rules_per_source = cpc_constraints.get_rules_per_source(ad_group)
     for ad_group_source, proposed_cpc in list(ad_group_sources_cpcs.items()):
@@ -56,13 +61,22 @@ def set_ad_group_sources_cpcs(
         if ad_group_source_settings.cpc_cc == adjusted_cpc:
             continue
         ad_group_source.settings.update(
-            cpc_cc=adjusted_cpc, k1_sync=False, skip_validation=skip_validation, skip_notification=skip_notification
+            cpc_cc=adjusted_cpc,
+            k1_sync=False,
+            skip_validation=skip_validation,
+            skip_notification=skip_notification,
+            write_history=write_source_history,
         )
 
 
 @transaction.atomic
 def set_ad_group_sources_cpms(
-    ad_group_sources_cpms, ad_group, ad_group_settings, skip_validation=False, skip_notification=False
+    ad_group_sources_cpms,
+    ad_group,
+    ad_group_settings,
+    skip_validation=False,
+    skip_notification=False,
+    write_source_history=True,
 ):
     for ad_group_source, proposed_cpm in list(ad_group_sources_cpms.items()):
         adjusted_cpm = _get_adjusted_ad_group_source_bid(
@@ -72,7 +86,11 @@ def set_ad_group_sources_cpms(
         if ad_group_source_settings.cpm == adjusted_cpm:
             continue
         ad_group_source.settings.update(
-            cpm=adjusted_cpm, k1_sync=False, skip_validation=skip_validation, skip_notification=skip_notification
+            cpm=adjusted_cpm,
+            k1_sync=False,
+            skip_validation=skip_validation,
+            skip_notification=skip_notification,
+            write_history=write_source_history,
         )
 
 
