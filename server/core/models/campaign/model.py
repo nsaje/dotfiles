@@ -41,7 +41,7 @@ class Campaign(
         null=True,
     )
     account = models.ForeignKey("Account", on_delete=models.PROTECT)
-    archived = models.BooleanField(null=True, blank=True, default=False)  # materialized field
+    archived = models.BooleanField(default=False)  # materialized field
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name="Created at")
     modified_dt = models.DateTimeField(auto_now=True, verbose_name="Modified at")
     modified_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name="+", on_delete=models.PROTECT, null=True)

@@ -31,7 +31,7 @@ class AdGroup(validation.AdGroupValidatorMixin, instance.AdGroupInstanceMixin, b
     campaign = models.ForeignKey("Campaign", on_delete=models.PROTECT)
     sources = models.ManyToManyField("Source", through="AdGroupSource")
     bidding_type = models.IntegerField(default=constants.BiddingType.CPC, choices=constants.BiddingType.get_choices())
-    archived = models.BooleanField(null=True, blank=True, default=False)  # materialized field
+    archived = models.BooleanField(default=False)  # materialized field
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name="Created at")
     modified_dt = models.DateTimeField(auto_now=True, verbose_name="Modified at")
     modified_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, related_name="+", on_delete=models.PROTECT)
