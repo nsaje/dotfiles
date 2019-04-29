@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-import tagulous
 from django.conf import settings
 from django.contrib.postgres.fields import JSONField
 from django.db import models
@@ -8,6 +7,7 @@ from django.db import models
 import core.common
 import core.models
 import dash.constants
+import tagulous
 import utils.demo_anonymizer
 import utils.string_helper
 from core.models import tags
@@ -41,7 +41,6 @@ class Campaign(
         null=True,
     )
     account = models.ForeignKey("Account", on_delete=models.PROTECT)
-    archived = models.BooleanField(default=False)  # materialized field
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name="Created at")
     modified_dt = models.DateTimeField(auto_now=True, verbose_name="Modified at")
     modified_by = models.ForeignKey(settings.AUTH_USER_MODEL, related_name="+", on_delete=models.PROTECT, null=True)
