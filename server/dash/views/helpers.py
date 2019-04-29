@@ -571,8 +571,6 @@ def _get_editable_fields_status_setting(
     # error message is output - this is why this is a separate loop
     if message is None and not check_facebook_source(ad_group_source):
         message = "Please connect your Facebook page to add Facebook as media source."
-    elif message is None and not check_yahoo_min_cpc(ad_group_settings, ad_group_source, ad_group_source_settings):
-        message = "This source can not be enabled with the current settings - CPC too low for desktop targeting."
     elif message is None and not check_yahoo_min_cpm(ad_group_settings, ad_group_source, ad_group_source_settings):
         message = "This source can not be enabled with the current settings - CPM too low."
 
@@ -595,21 +593,6 @@ def check_facebook_source(ad_group_source):
         return facebook_account_status == constants.FacebookPageRequestType.CONNECTED
     except models.FacebookAccount.DoesNotExist:
         return False
-
-
-def check_yahoo_min_cpc(ad_group_settings, ad_group_source, ad_group_source_settings):
-    source_type = ad_group_source.source.source_type
-    if (
-        source_type.type != constants.SourceType.YAHOO
-        or ad_group_settings.ad_group.bidding_type != constants.BiddingType.CPC
-    ):
-        return True
-
-    min_cpc = source_type.get_min_cpc(ad_group_settings)
-    if min_cpc and ad_group_source_settings.cpc_cc < min_cpc:
-        return False
-
-    return True
 
 
 def check_yahoo_min_cpm(ad_group_settings, ad_group_source, ad_group_source_settings):

@@ -227,8 +227,5 @@ class AdGroupSourceViewSet(RESTAPIBaseViewSet):
         except exceptions.MediaSourceNotConnectedToFacebook as err:
             raise utils.exc.ValidationError(errors={"state": [str(err)]})
 
-        except exceptions.YahooCPCTooLow as err:
-            raise utils.exc.ValidationError(errors={"state": [str(err)]})
-
         except exceptions.AutopilotDailySpendCapTooLow as err:
             raise utils.exc.ValidationError(errors={"state": [str(err)]})

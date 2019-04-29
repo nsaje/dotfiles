@@ -17,12 +17,6 @@ def get_adjusted_ad_group_sources_bids(ad_group, ad_group_settings):
         "ad_group__campaign__settings",
         "ad_group__campaign__account__agency",
     ):
-        if (
-            ad_group_source.source.source_type.type != constants.SourceType.B1
-            and ad_group_source.get_current_settings().state == constants.AdGroupSourceSettingsState.INACTIVE
-        ):
-            continue
-
         ags_settings = ad_group_source.get_current_settings()
         proposed_bid = ags_settings.cpm if ad_group.bidding_type == constants.BiddingType.CPM else ags_settings.cpc_cc
         adjusted_bid = _get_adjusted_ad_group_source_bid(

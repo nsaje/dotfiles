@@ -70,9 +70,5 @@ class MediaSourceNotConnectedToFacebook(ValidationError):
     pass
 
 
-class YahooCPCTooLow(ValidationError):
-    pass
-
-
 class AutopilotDailySpendCapTooLow(ValidationError):
     pass

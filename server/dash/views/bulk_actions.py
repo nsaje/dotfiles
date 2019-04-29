@@ -188,7 +188,6 @@ class AdGroupSourceState(BaseBulkActionView):
             core.models.settings.ad_group_source_settings.exceptions.CannotSetCPM,
             core.models.settings.ad_group_source_settings.exceptions.CPCInvalid,
             core.models.settings.ad_group_source_settings.exceptions.MediaSourceNotConnectedToFacebook,
-            core.models.settings.ad_group_source_settings.exceptions.YahooCPCTooLow,
             core.models.settings.ad_group_source_settings.exceptions.AutopilotDailySpendCapTooLow,
         ) as err:
             raise exc.ValidationError("{}: {}".format(ad_group_source.source.name, str(err)))
@@ -544,7 +543,6 @@ class CampaignAdGroupState(BaseBulkActionView):
             core.models.settings.ad_group_settings.exceptions.CannotChangeAdGroupState,
             core.models.settings.ad_group_settings.exceptions.AutopilotDailyBudgetTooLow,
             core.models.settings.ad_group_settings.exceptions.AutopilotDailyBudgetTooHigh,
-            core.models.settings.ad_group_settings.exceptions.YahooDesktopCPCTooLow,
         ) as err:
             raise exc.ValidationError("{}: {}".format(ad_group.settings.ad_group_name, str(err)))
 

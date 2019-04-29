@@ -341,13 +341,7 @@ class AdGroupSourceTableEditableFieldsTest(TestCase):
             ad_group_source.ad_group, ad_group_source, ad_group_settings, ad_group_source_settings, allowed_sources
         )
 
-        self.assertEqual(
-            result,
-            {
-                "enabled": False,
-                "message": "This source can not be enabled with the current settings - CPC too low for desktop targeting.",
-            },
-        )
+        self.assertEqual(result, {"enabled": True, "message": None})
 
     def test_get_editable_fields_status_setting_yahoo_cpm_too_low(self):
         req = RequestFactory().get("/")

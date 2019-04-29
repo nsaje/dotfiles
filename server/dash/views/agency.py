@@ -168,9 +168,6 @@ class AdGroupSettings(api_common.BaseApiView):
         except core.models.settings.ad_group_settings.exceptions.BluekaiCategoryInvalid as err:
             raise utils.exc.ValidationError(str(err))
 
-        except core.models.settings.ad_group_settings.exceptions.YahooDesktopCPCTooLow as err:
-            raise utils.exc.ValidationError(errors={"target_devices": [str(err)]})
-
         except core.models.settings.ad_group_settings.exceptions.PublisherWhitelistInvalid as err:
             raise utils.exc.ValidationError(errors={"whitelist_publisher_groups": [str(err)]})
 

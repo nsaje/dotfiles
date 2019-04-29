@@ -53,10 +53,6 @@ class BluekaiCategoryInvalid(ValidationError):
     pass
 
 
-class YahooDesktopCPCTooLow(ValidationError):
-    pass
-
-
 class CannotSetCPC(ValidationError):
     pass
 

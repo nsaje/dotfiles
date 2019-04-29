@@ -56,14 +56,9 @@ class AdGroupSourceSettingsValidatorMixin(object):
         from dash.views import helpers
 
         if self.state != new_settings.state and new_settings.state == constants.AdGroupSettingsState.ACTIVE:
-            ad_group_settings = self.ad_group_source.ad_group.settings
             if not helpers.check_facebook_source(self.ad_group_source):
                 raise exceptions.MediaSourceNotConnectedToFacebook(
                     "Cannot enable Facebook media source that isn't connected to a Facebook page."
-                )
-            elif not helpers.check_yahoo_min_cpc(ad_group_settings, self.ad_group_source, self):
-                raise exceptions.YahooCPCTooLow(
-                    "Cannot enable Yahoo media source with the current settings - CPC too low"
                 )
 
     def validate_ad_group_source_autopilot(self, new_settings):

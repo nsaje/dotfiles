@@ -111,9 +111,6 @@ class AdGroupViewSet(RESTAPIBaseViewSet):
         except exceptions.BluekaiCategoryInvalid as err:
             raise utils.exc.ValidationError(errors={"targeting": {"audience": [str(err)]}})
 
-        except exceptions.YahooDesktopCPCTooLow as err:
-            raise utils.exc.ValidationError(errors={"targeting": {"devices": [str(err)]}})
-
         except exceptions.PublisherWhitelistInvalid as err:
             raise utils.exc.ValidationError(errors={"targeting": {"publisherGroups": {"included": [str(err)]}}})
 
