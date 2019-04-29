@@ -907,7 +907,10 @@ class AdGroupAdmin(SlackLoggerMixin, admin.ModelAdmin):
             None,
             {"fields": ("name", "campaign", "created_dt", "modified_dt", "modified_by", "entity_tags", "custom_flags")},
         ),
-        ("Additional targeting", {"classes": ("collapse",), "fields": dash_forms.AdGroupAdminForm.SETTINGS_FIELDS}),
+        (
+            "Additional targeting",
+            {"classes": ("collapse",), "fields": dash_forms.AdGroupAdminForm.ADDITIONAL_TARGETING_FIELDS},
+        ),
     )
 
     def get_form(self, request, obj=None, **kwargs):

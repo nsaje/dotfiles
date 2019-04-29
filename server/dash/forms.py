@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 # isort:skip_file
+import dash.features.bluekai.service
 import magic
 import decimal
 import mimetypes
@@ -127,10 +128,22 @@ class MulticurrencySettingsFormMixin(forms.Form):
 
 class AdGroupAdminForm(forms.ModelForm, CustomFlagsFormMixin):
     SETTINGS_FIELDS = ["notes", "bluekai_targeting", "redirect_pixel_urls", "redirect_javascript"]
+    ADDITIONAL_TARGETING_FIELDS = [
+        "notes",
+        "bluekai_campaign_id",
+        "bluekai_targeting",
+        "redirect_pixel_urls",
+        "redirect_javascript",
+    ]
     notes = PlainCharField(
         required=False,
         widget=forms.Textarea,
         help_text="Describe what kind of additional targeting was setup on the backend.",
+    )
+    bluekai_campaign_id = forms.IntegerField(
+        required=False,
+        widget=forms.TextInput,
+        help_text="<font color='red'>If a BlueKai campaign ID is entered here, the Bluekai Targeting field will be overwritten with the targeting expression representing that BlueKai campaign's audience.</font>",
     )
     bluekai_targeting = postgres_forms.JSONField(
         required=False,
@@ -163,6 +176,12 @@ class AdGroupAdminForm(forms.ModelForm, CustomFlagsFormMixin):
     class Meta:
         model = models.AdGroup
         fields = "__all__"
+
+    def clean_bluekai_targeting(self):
+        bluekai_campaign_id = self.cleaned_data.get("bluekai_campaign_id")
+        if bluekai_campaign_id:
+            return dash.features.bluekai.service.get_expression_from_campaign(bluekai_campaign_id)
+        return self.cleaned_data.get("bluekai_targeting")
 
 
 class AdGroupSettingsForm(PublisherGroupsFormMixin, MulticurrencySettingsFormMixin, forms.Form):

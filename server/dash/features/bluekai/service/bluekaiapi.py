@@ -126,6 +126,42 @@ def update_audience(audience_id, data):
     return json.loads(response.content)
 
 
+def get_expression_from_campaign(campaign_id):
+    campaign = get_campaign(campaign_id)
+    audience_id = campaign["audience"]["id"]
+    audience = get_audience(audience_id)
+    return _transform_object_to_expression(audience["segments"])
+
+
+def _transform_object_to_expression(segments_object):
+    if not segments_object:
+        return []
+    keys = segments_object.keys()
+    if len(keys) == 1 and list(keys)[0] in {"AND", "OR", "NOT"}:
+        operator = list(keys)[0]
+        child = segments_object[operator]
+        if isinstance(child, dict):  # NOT
+            child_expression = [_transform_object_to_expression(segments_object[operator])]
+        elif isinstance(child, list):  # AND, OR
+            child_expression = _transform_list_to_expression(segments_object[operator])
+        else:
+            raise Exception("Bluekai audience format not recognized")
+        if operator == "AND" and len(child) == 1:  # simplification only
+            return child_expression
+        return [operator.lower()] + child_expression
+    else:
+        return "bluekai:%s" % segments_object["cat"]
+
+
+def _transform_list_to_expression(segments_list):
+    expression = []
+    for item in segments_list:
+        expression.append(_transform_object_to_expression(item))
+    if len(expression) == 1 and isinstance(expression[0], list):  # simplification only
+        return expression[0]
+    return expression
+
+
 def _get_signed_params(method, url, params, data):
     path = urllib.parse.urlparse(url).path
     params_vals = "".join(urllib.parse.quote(val) for val in list(params.values()))

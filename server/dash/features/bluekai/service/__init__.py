@@ -1,3 +1,4 @@
+from .bluekaiapi import get_expression_from_campaign
 from .maintenance import cross_check_audience_categories
 from .maintenance import refresh_bluekai_categories
 from .reach import get_reach
