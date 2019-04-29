@@ -4,7 +4,7 @@ if [ -n "$CIRCLE_BUILD_NUM" ]; then
   BRANCH=""
 else
 	BUILD_NUM=${BUILD_NUMBER:-manual}
-  BRANCH=${BRANCH_NAME:0:20}
+  BRANCH=$BRANCH_NAME
   if [ "$BRANCH_NAME" == "master" ]; then
       BRANCH=""
   fi

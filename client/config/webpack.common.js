@@ -215,7 +215,7 @@ function getStaticUrl(config) {
     }
 
     if (config.env.prod) {
-        var branchName = config.branchName.substring(0, 20);
+        var branchName = config.branchName;
         if (branchName === 'master') {
             branchName = '';
         }
