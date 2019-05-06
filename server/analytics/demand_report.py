@@ -463,10 +463,18 @@ def _normalize_value(val):
         result = val
     elif _is_number(val):
         result = val > 0
-    elif isinstance(val, list):
+    elif isinstance(val, list) or isinstance(val, dict):
         result = len(val) > 0
+    elif isinstance(val, str):
+        if len(val) == 0:
+            return False
+
+        try:
+            result = len(json.loads(val)) > 0
+        except Exception:
+            logger.error("Can not parse json from: %s", val)
     else:
-        result = len(json.loads(val)) > 0
+        raise ValueError("Can not normalize value: %s" % val)
 
     return result
 

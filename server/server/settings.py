@@ -404,6 +404,7 @@ DCRON = {
         "campaignstop_midnight_refresh": dcron_constants.Severity.HIGH,
         "campaignstop_midnight": dcron_constants.Severity.HIGH,
         "campaignstop_monitor": dcron_constants.Severity.HIGH,
+        "create_demand_report": dcron_constants.Severity.HIGH,
         "monitor_dailystatement_holes": dcron_constants.Severity.HIGH,
     },
     # How long to wait before warning alert if job execution is late.
@@ -421,7 +422,7 @@ DCRON = {
     "max_durations": {
         "campaignstop_main": 900,  # 15 min
         "campaignstop_handle_updates": 1800,  # 30 min
-        "create_demand_report": 7200,  # 2 h
+        "create_demand_report": 10800,  # 3 h
         "monitor_adgroup_propagation": 86400,  # 24 h
         "refresh_etl": 15000.0,  # 4 h 10 min
     },
