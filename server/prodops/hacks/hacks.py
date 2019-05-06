@@ -87,10 +87,12 @@ def apply_create_user_hacks(user, account):
         amplify_group = authmodels.Group.objects.get(
             permissions__codename=serviceapi.salesforce.constants.AMPLIFY_GROUP_PERMISSION_CODENAME
         )
-        user.groups.add(amplify_group)
+        am_group = authmodels.Group.objects.get(permissions__codename="this_is_agency_manager_group")
+        user.groups.add(amplify_group, am_group)
 
-        for ag in core.models.Agency.objects.filter(entity_tags=serviceapi.salesforce.constants.MANAGED_BY_AMPLIFY_TAG):
-            ag.users.add(user)
+        for ay in core.models.Agency.objects.filter(entity_tags=serviceapi.salesforce.constants.MANAGED_BY_AMPLIFY_TAG):
+            ay.users.add(user)
+        account.users.remove(user)
 
 
 def apply_campaign_create_hacks(request, campaign):
@@ -116,10 +118,11 @@ def override_campaign_settings_form_data(campaign, form_data):
     return form_data
 
 
-def add_agency_default_amplify_settings(user, settings):
+def add_agency_default_amplify_settings(user, agency):
     if user.has_perm("zemauth.{}".format(serviceapi.salesforce.constants.AMPLIFY_GROUP_PERMISSION_CODENAME)):
-        settings.update(
-            {
+        agency.update(
+            None,
+            **{
                 "white_label": dash.features.whitelabels.WhiteLabel.objects.get(
                     theme=dash.constants.Whitelabel.AMPLIFY
                 ),
@@ -133,7 +136,7 @@ def add_agency_default_amplify_settings(user, settings):
                 ),
             }
         )
-        return settings
+        return agency
 
 
 def filter_amplify_agencies(user, response):
@@ -143,3 +146,8 @@ def filter_amplify_agencies(user, response):
                 entity_tags=serviceapi.salesforce.constants.MANAGED_BY_AMPLIFY_TAG
             ).values("name", "sales_representative", "cs_representative", "ob_representative", "default_account_type")
         )
+
+
+def apply_create_agency_hacks(agency, user):
+    if user.has_perm("zemauth.{}".format(serviceapi.salesforce.constants.AMPLIFY_GROUP_PERMISSION_CODENAME)):
+        add_agency_default_amplify_settings(user, agency)
