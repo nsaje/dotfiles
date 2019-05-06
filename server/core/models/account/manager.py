@@ -62,6 +62,17 @@ class AccountManager(core.common.BaseManager):
         else:
             account.allowed_sources.add(*core.models.Source.objects.filter(released=True, deprecated=False))
 
+        self._log_new_account_to_slack(account)
+        return account
+
+    def _validate_externally_managed(self, user, agency=None):
+        if user and agency:
+            if user.email != OUTBRAIN_SALESFORCE_SERVICE_USER and agency.is_externally_managed:
+                raise exceptions.CreatingAccountNotAllowed(
+                    "Creating accounts for an externally managed agency is prohibited."
+                )
+
+    def _log_new_account_to_slack(self, account):
         if "New account" not in account.name:
             slack_msg = (
                 "Account #<https://one.zemanta.com/v2/analytics/account/{id}|{id}> {name} was created"
@@ -75,11 +86,3 @@ class AccountManager(core.common.BaseManager):
                 slack.publish(text=slack_msg, channel=slack.CHANNEL_ZEM_FEED_NEW_ACCOUNTS)
             except Exception:
                 logger.exception("Connection error with Slack.")
-        return account
-
-    def _validate_externally_managed(self, user, agency=None):
-        if user and agency:
-            if user.email != OUTBRAIN_SALESFORCE_SERVICE_USER and agency.is_externally_managed:
-                raise exceptions.CreatingAccountNotAllowed(
-                    "Creating accounts for an externally managed agency is prohibited."
-                )
