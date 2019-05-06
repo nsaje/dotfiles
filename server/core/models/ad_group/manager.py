@@ -54,9 +54,9 @@ class AdGroupManager(core.common.BaseManager):
         utils.redirector_helper.insert_adgroup(ad_group)
 
     def create(self, request, campaign, is_restapi=False, name=None, **kwargs):
-        core.common.entity_limits.enforce(
-            model.AdGroup.objects.filter(campaign=campaign).exclude_archived(), campaign.account_id
-        )
+        self._validate_archived(campaign)
+        self._validate_entity_limits(campaign)
+
         with transaction.atomic():
             if name is None:
                 name = self._create_default_name(campaign)
@@ -79,6 +79,15 @@ class AdGroupManager(core.common.BaseManager):
         self._post_create(ad_group)
         ad_group.write_history_created(request)
         return ad_group
+
+    def _validate_archived(self, campaign):
+        if campaign.is_archived():
+            raise exceptions.CampaignIsArchived("Can not create an ad group on an archived campaign.")
+
+    def _validate_entity_limits(self, campaign):
+        core.common.entity_limits.enforce(
+            model.AdGroup.objects.filter(campaign=campaign).exclude_archived(), campaign.account_id
+        )
 
     def clone(self, request, source_ad_group, campaign, new_name):
         if (

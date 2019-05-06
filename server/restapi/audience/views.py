@@ -3,6 +3,7 @@ from rest_framework import permissions
 import core.features.audiences
 import core.models
 import restapi.access
+import utils.converters
 import utils.exc
 from restapi.common.views_base import RESTAPIBaseViewSet
 
@@ -30,7 +31,7 @@ class AudienceViewSet(RESTAPIBaseViewSet):
             .select_related("pixel__account")
             .order_by("name")
         )
-        if request.GET.get("include_archived", "") != "1":
+        if not utils.converters.x_to_bool(request.GET.get("includeArchived")):
             audiences = audiences.filter(archived=False)
         return self.response_ok(serializers.AudienceSerializer(audiences, many=True).data)
 

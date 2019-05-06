@@ -8,6 +8,8 @@ import dash.history_helpers
 import utils.exc
 from utils.magic_mixer import magic_mixer
 
+# from . import exceptions
+
 
 @patch("core.models.AdGroupSource.objects.bulk_create_on_allowed_sources")
 @patch("utils.redirector_helper.insert_adgroup", autospec=True)
@@ -34,6 +36,11 @@ class AdGroupCreate(TestCase):
         history = dash.history_helpers.get_ad_group_history(ad_group)
         self.assertEqual(len(history), 1)
         self.assertEqual(history[0].action_type, dash.constants.HistoryActionType.SETTINGS_CHANGE)
+
+    # def test_create_campaign_archived(self, mock_autopilot_init, mock_k1_ping, mock_insert_adgroup, mock_bulk_create):  # TODO: ARCHIVING
+    #     self.campaign.archived = True
+    #     with self.assertRaises(exceptions.CampaignIsArchived):
+    #         core.models.AdGroup.objects.create(self.request, self.campaign, name="test")
 
     @patch("django.conf.settings.AMPLIFY_REVIEW", True)
     @patch("core.models.AdGroupSource.objects.create")

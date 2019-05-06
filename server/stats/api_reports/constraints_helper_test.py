@@ -57,9 +57,9 @@ class TestReportsConstraints(TestCase):
         content_ads = magic_mixer.cycle(2).blend(core.models.ContentAd, ad_group=ad_groups[1])
         content_ads[0].archived = True
         content_ads[0].save()
-        ad_groups[0].settings.update_unsafe(None, archived=True)
-        campaigns[0].settings.update_unsafe(None, archived=True)
-        accounts[0].settings.update_unsafe(None, archived=True)
+        ad_groups[0].settings.update(None, archived=True)
+        campaigns[0].settings.update(None, archived=True)
+        accounts[0].settings.update(None, archived=True)
 
         self.assertDictEqual(
             constraints_helper.prepare_constraints(
@@ -88,7 +88,7 @@ class TestReportsConstraints(TestCase):
         start_date = datetime.date(2016, 1, 1)
         end_date = datetime.date(2016, 2, 1)
         ad_group = magic_mixer.blend(core.models.AdGroup, campaign__account__users=[self.user])
-        ad_group.settings.update_unsafe(None, archived=True)
+        ad_group.settings.update(None, archived=True)
 
         self.assertDictEqual(
             constraints_helper.prepare_constraints(

@@ -3,6 +3,7 @@ from django.db import transaction
 import core.models
 import core.models.ad_group.exceptions
 import restapi.access
+import utils.converters
 import utils.exc
 from core.models.settings.ad_group_settings import exceptions
 from restapi.common.pagination import StandardPagination
@@ -31,6 +32,9 @@ class AdGroupViewSet(RESTAPIBaseViewSet):
         else:
             ad_groups = core.models.AdGroup.objects.all().filter_by_user(request.user)
 
+        if not utils.converters.x_to_bool(request.GET.get("includeArchived")):
+            ad_groups = ad_groups.exclude_archived()
+
         ad_groups = ad_groups.select_related("settings").order_by("pk")
         paginator = StandardPagination()
         ad_groups_paginated = paginator.paginate_queryset(ad_groups, request)
@@ -46,9 +50,14 @@ class AdGroupViewSet(RESTAPIBaseViewSet):
         campaign = restapi.access.get_campaign(request.user, settings.get("ad_group", {}).get("campaign_id"))
 
         with transaction.atomic():
-            new_ad_group = core.models.AdGroup.objects.create(
-                request, campaign=campaign, name=settings.get("ad_group_name", None), is_restapi=True
-            )
+            try:
+                new_ad_group = core.models.AdGroup.objects.create(
+                    request, campaign=campaign, name=settings.get("ad_group_name", None), is_restapi=True
+                )
+
+            except core.models.ad_group.exceptions.CampaignIsArchived as err:
+                raise utils.exc.ValidationError(errors={"campaign_id": [str(err)]})
+
             self._update_settings(request, new_ad_group, settings)
 
         return self.response_ok(

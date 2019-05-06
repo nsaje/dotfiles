@@ -217,6 +217,27 @@ class AdGroupViewSetTest(RESTAPITest):
         resp_json_paginated = self.assertResponseValid(r_paginated, data_type=list)
         self.assertEqual(resp_json["data"][5:7], resp_json_paginated["data"])
 
+    # def test_adgroups_list_exclude_archived(self):  # TODO: ARCHIVING
+    #     campaign = magic_mixer.blend(dash.models.Campaign, account__users=[self.user])
+    #     magic_mixer.cycle(3).blend(dash.models.AdGroup, campaign=campaign, archived=False)
+    #     magic_mixer.cycle(2).blend(dash.models.AdGroup, campaign=campaign, archived=True)
+    #     r = self.client.get(reverse("v1:adgroups_list"), {"campaignId": campaign.id})
+    #     resp_json = self.assertResponseValid(r, data_type=list)
+    #     self.assertEqual(3, len(resp_json["data"]))
+    #     for item in resp_json["data"]:
+    #         self.validate_against_db(item)
+    #         self.assertFalse(item["archived"])
+
+    # def test_adgroups_list_include_archived(self):  # TODO: ARCHIVING
+    #     campaign = magic_mixer.blend(dash.models.Campaign, account__users=[self.user])
+    #     magic_mixer.cycle(3).blend(dash.models.AdGroup, campaign=campaign, archived=False)
+    #     magic_mixer.cycle(2).blend(dash.models.AdGroup, campaign=campaign, archived=True)
+    #     r = self.client.get(reverse("v1:adgroups_list"), {"campaignId": campaign.id, "includeArchived": 1})
+    #     resp_json = self.assertResponseValid(r, data_type=list)
+    #     self.assertEqual(5, len(resp_json["data"]))
+    #     for item in resp_json["data"]:
+    #         self.validate_against_db(item)
+
     def test_adgroups_list_campaign_filter(self):
         # TODO(nsaje): create a prettier test, this one is urgent and hackish
         account1 = magic_mixer.blend(dash.models.Account, users=[self.user])
@@ -260,6 +281,17 @@ class AdGroupViewSetTest(RESTAPITest):
         self.assertEqual(resp_json["data"], new_ad_group)
         self.assertFalse(resp_json["data"]["maxCpc"])
         self.assertTrue(resp_json["data"]["maxCpm"])
+
+    # def test_adgroups_post_campaign_archived(self):  # TODO: ARCHIVING
+    #     account = magic_mixer.blend(dash.models.Account, users=[self.user])
+    #     campaign = magic_mixer.blend(dash.models.Campaign, account=account, archived=True)
+    #     new_ad_group = self.adgroup_repr(campaign_id=campaign.id, name="Test Group")
+    #     del new_ad_group["id"]
+    #     r = self.client.post(reverse("v1:adgroups_list"), data=new_ad_group, format="json")
+    #     self.assertResponseError(r, "ValidationError")
+    #     self.assertEqual(
+    #         ["Can not create an ad group on an archived campaign."], json.loads(r.content)["details"]["campaignId"]
+    #     )
 
     def test_adgroups_post_no_campaign_id(self):
         new_ad_group = self.adgroup_repr(campaign_id=608, name="Test Group")

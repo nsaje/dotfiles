@@ -123,6 +123,7 @@ class NavigationTreeView(api_common.BaseApiView):
             models.AdGroup.objects.all()
             .filter_by_sources(view_filter.filtered_sources)
             .filter(campaign__in=campaigns)
+            .exclude_archived()
             .order_by("name")
         )
 
@@ -160,6 +161,7 @@ class NavigationTreeView(api_common.BaseApiView):
             models.Campaign.objects.all()
             .filter_by_sources(view_filter.filtered_sources)
             .filter(account__in=accounts)
+            .exclude_archived()
             .order_by("name")
         )
 
@@ -195,6 +197,7 @@ class NavigationTreeView(api_common.BaseApiView):
             .filter_by_agencies(view_filter.filtered_agencies)
             .filter_by_account_types(view_filter.filtered_account_types)
             .exclude(pk__in=ACCOUNTS_EXCLUDED_FROM_SEARCH)
+            .exclude_archived()
         )
         return accounts
 

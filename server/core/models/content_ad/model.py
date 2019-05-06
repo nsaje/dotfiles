@@ -16,13 +16,22 @@ import utils.string_helper
 from dash import constants
 from dash import image_helper
 
+from . import exceptions
 from . import instance
 from . import prodops_mixin
 from . import validation
 
 
 class ContentAdManager(models.Manager):
+    @transaction.atomic
+    def create(self, batch, sources, r1_resolve=True, **kwargs):
+        content_ad = self._create(batch, sources, **kwargs)
+        self.insert_redirects([content_ad], clickthrough_resolve=r1_resolve)
+        return content_ad
+
     def _create(self, batch, sources, **kwargs):
+        self._validate_archived(batch)
+
         content_ad = ContentAd(
             ad_group=batch.ad_group,
             batch=batch,
@@ -44,11 +53,9 @@ class ContentAdManager(models.Manager):
 
         return content_ad
 
-    @transaction.atomic
-    def create(self, batch, sources, r1_resolve=True, **kwargs):
-        content_ad = self._create(batch, sources, **kwargs)
-        self.insert_redirects([content_ad], clickthrough_resolve=r1_resolve)
-        return content_ad
+    def _validate_archived(self, batch):
+        if batch.ad_group.is_archived():
+            raise exceptions.AdGroupIsArchived("Can not create a content ad on an archived ad group.")
 
     @transaction.atomic
     def bulk_create_from_candidates(self, candidate_dicts, batch, r1_resolve=True):

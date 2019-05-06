@@ -108,7 +108,7 @@ class ConversionPixelsTest(RESTAPITest):
         magic_mixer.cycle(1).blend(
             core.models.ConversionPixel, account=account, audience_enabled=False, additional_pixel=True
         )
-        r = self.client.get(reverse("pixels_list", kwargs={"account_id": account.id}) + "?audienceEnabledOnly=1")
+        r = self.client.get(reverse("pixels_list", kwargs={"account_id": account.id}), {"audienceEnabledOnly": True})
         resp_json = self.assertResponseValid(r, data_type=list)
         for item in resp_json["data"]:
             self.validate_against_db(item)

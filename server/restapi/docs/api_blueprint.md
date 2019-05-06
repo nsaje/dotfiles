@@ -283,6 +283,7 @@ Property  | Type                  | Description                                |
 id        | string                | the account's id                           | N/A      | read only
 agencyId  | string                | the agency's id                            | required | read only
 name      | string                | the name of the account                    | required | optional
+archived  | bool                  | Is the account archived? Set to `true` to archive an account and to `false` to restore it. | optional  | optional
 targeting | [targeting](#account-targeting) | account targeting settings       | optional | optional
 currency  | [Currency](#currency) | the account's currency (default is USD)    | optional | N\A
 frequencyCapping | number | The maximum number of times ads from the account can be shown to a unique user in one day. | optional | optional
@@ -320,7 +321,11 @@ publisherGroups  |          |           |                                       
 
     + Attributes (AccountResponse)
 
-### List accounts [GET /rest/v1/accounts/]
+### List accounts [GET /rest/v1/accounts/{?includeArchived}]
+
++ Parameters
+    + includeArchived (bool, optional) - Set to true to retrieve archived accounts.
+        + Default: false
 
 + Response 200 (application/json)
 
@@ -620,10 +625,12 @@ value            | string                        | rule value                  |
             }
         }
 
-### List audiences [GET /rest/v1/accounts/{accountId}/audiences/]
+### List audiences [GET /rest/v1/accounts/{accountId}/audiences/{?includeArchived}]
 
 + Parameters
     + accountId: 186 (required)
+    + includeArchived (bool, optional) - Set to true to retrieve archived audiences.
+        + Default: false
 
 + Response 200 (application/json)
 
@@ -758,7 +765,11 @@ publisherGroups  |          |           |                                       
 
     + Attributes (CampaignResponse)
 
-### List campaigns [GET /rest/v1/campaigns/]
+### List campaigns [GET /rest/v1/campaigns/{?includeArchived}]
+
++ Parameters
+    + includeArchived (bool, optional) - Set to true to retrieve archived campaigns.
+        + Default: false
 
 + Response 200 (application/json)
 
@@ -1302,10 +1313,12 @@ dailyBudget | dailyBudget                         | autopilot daily budget
 
     + Attributes (AdGroupResponse)
 
-### List ad groups [GET /rest/v1/adgroups/{?campaignId}]
+### List ad groups [GET /rest/v1/adgroups/{?campaignId,includeArchived}]
 
 + Parameters
-    + campaignId: 608 (number) - Optional campaign ID
+    + campaignId: 608 (number, optional) - Optional campaign ID.
+    + includeArchived (bool, optional) - Set to true to retrieve archived ad groups.
+        + Default: false
 
 + Response 200 (application/json)
 

@@ -4,6 +4,7 @@ from django.db import transaction
 from django.http import Http404
 
 import core.models.content_ad.exceptions
+import core.models.content_ad_candidate.exceptions
 import utils.exc
 from dash import constants
 from dash import forms
@@ -60,9 +61,13 @@ class UploadCsv(api_common.BaseApiView):
         candidates_data = form.cleaned_data["candidates"]
         filename = request.FILES["candidates"].name
 
-        batch, candidates = upload.insert_candidates(
-            request.user, account, candidates_data, ad_group, batch_name, filename
-        )
+        try:
+            batch, candidates = upload.insert_candidates(
+                request.user, account, candidates_data, ad_group, batch_name, filename
+            )
+
+        except core.models.content_ad_candidate.exceptions.AdGroupIsArchived as err:
+            raise utils.exc.ValidationError(message=str(err))
 
         candidates_result = upload.get_candidates_with_errors(candidates)
         return self.create_api_response(
@@ -103,8 +108,9 @@ class UploadSave(api_common.BaseApiView):
                 exc.InvalidBatchStatus,
                 exc.CandidateErrorsRemaining,
                 core.models.content_ad.exceptions.CampaignAdTypeMismatch,
-            ) as e:
-                raise utils.exc.ValidationError(message=str(e))
+                core.models.content_ad.exceptions.AdGroupIsArchived,
+            ) as err:
+                raise utils.exc.ValidationError(message=str(err))
 
         return content_ads
 

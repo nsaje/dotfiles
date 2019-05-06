@@ -5,6 +5,7 @@ import utils.exc
 from dash import constants
 from utils import email_helper
 
+from . import exceptions
 from . import model
 
 # These agencies should have campaign stop turned off
@@ -28,15 +29,10 @@ class CampaignManager(core.common.BaseManager):
         type=constants.CampaignType.CONTENT,
         send_mail=False,
     ):
-        core.common.entity_limits.enforce(model.Campaign.objects.filter(account=account).exclude_archived(), account.id)
-        if not account.currency:
-            url = request.build_absolute_uri("/v2/analytics/account/{}?settings".format(account.id))
-            raise utils.exc.ValidationError(
-                data={
-                    "message": "You are not able to add a campaign because currency is not defined.",
-                    "action": {"text": "Configure the currency", "url": url},
-                }
-            )
+        self._validate_archived(account)
+        self._validate_entity_limits(account)
+        self._validate_currency(request, account)
+
         campaign = model.Campaign(name=name, account=account, type=type)
 
         campaign.real_time_campaign_stop = True
@@ -64,3 +60,20 @@ class CampaignManager(core.common.BaseManager):
             email_helper.send_campaign_created_email(request, campaign)
 
         return campaign
+
+    def _validate_archived(self, account):
+        if account.is_archived():
+            raise exceptions.AccountIsArchived("Can not create a campaign on an archived account.")
+
+    def _validate_entity_limits(self, account):
+        core.common.entity_limits.enforce(model.Campaign.objects.filter(account=account).exclude_archived(), account.id)
+
+    def _validate_currency(self, request, account):
+        if not account.currency:
+            url = request.build_absolute_uri("/v2/analytics/account/{}?settings".format(account.id))
+            raise utils.exc.ValidationError(
+                data={
+                    "message": "You are not able to add a campaign because currency is not defined.",
+                    "action": {"text": "Configure the currency", "url": url},
+                }
+            )

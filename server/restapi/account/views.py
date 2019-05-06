@@ -2,12 +2,19 @@ from django.db import transaction
 
 import core.models
 import restapi.access
+import utils.converters
 import utils.exc
 from restapi.common.views_base import RESTAPIBaseViewSet
 
 from . import serializers
 
-UPDATABLE_SETTINGS_FIELDS = ("name", "whitelist_publisher_groups", "blacklist_publisher_groups", "frequency_capping")
+UPDATABLE_SETTINGS_FIELDS = (
+    "name",
+    "archived",
+    "whitelist_publisher_groups",
+    "blacklist_publisher_groups",
+    "frequency_capping",
+)
 
 
 class AccountViewSet(RESTAPIBaseViewSet):
@@ -27,6 +34,8 @@ class AccountViewSet(RESTAPIBaseViewSet):
 
     def list(self, request):
         accounts = core.models.Account.objects.all().filter_by_user(request.user)
+        if not utils.converters.x_to_bool(request.GET.get("includeArchived")):
+            accounts = accounts.exclude_archived()
         return self.response_ok(serializers.AccountSerializer(accounts, many=True, context={"request": request}).data)
 
     def create(self, request):

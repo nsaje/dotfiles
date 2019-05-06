@@ -517,7 +517,9 @@ class ArchiveRestoreTestCase(TestCase):
         ag2 = models.AdGroup.objects.get(id=2)
 
         self.assertFalse(ag1.get_current_settings().archived)
+        self.assertFalse(ag1.archived)
         self.assertFalse(ag2.get_current_settings().archived)
+        self.assertFalse(ag2.archived)
 
         self.assertFalse(ag1.can_archive())
         self.assertTrue(ag2.can_archive())
@@ -527,6 +529,7 @@ class ArchiveRestoreTestCase(TestCase):
 
         ag2.archive(self.request)
         self.assertTrue(ag2.get_current_settings().archived)
+        self.assertTrue(ag2.archived)
 
     def test_archive_campaign(self):
         c1 = models.Campaign.objects.get(id=1)
@@ -541,8 +544,11 @@ class ArchiveRestoreTestCase(TestCase):
         )
 
         self.assertFalse(c1.get_current_settings().archived)
+        self.assertFalse(c1.archived)
         self.assertFalse(c2.get_current_settings().archived)
+        self.assertFalse(c2.archived)
         self.assertFalse(c3.get_current_settings().archived)
+        self.assertFalse(c3.archived)
 
         self.assertFalse(c1.can_archive())
         self.assertTrue(c2.can_archive())
@@ -556,9 +562,11 @@ class ArchiveRestoreTestCase(TestCase):
 
         c2.archive(self.request)
         self.assertTrue(c2.get_current_settings().archived)
+        self.assertTrue(c2.archived)
 
         ag = c2.adgroup_set.all()[0]
         self.assertTrue(ag.get_current_settings().archived)
+        self.assertTrue(ag.archived)
 
     def test_archive_account(self):
         a1 = models.Account.objects.get(id=1)
@@ -575,12 +583,15 @@ class ArchiveRestoreTestCase(TestCase):
 
         a2.archive(self.request)
         self.assertTrue(a2.get_current_settings().archived)
+        self.assertTrue(a2.archived)
 
         c = a2.campaign_set.all()[0]
         self.assertTrue(c.get_current_settings().archived)
+        self.assertTrue(c.archived)
 
         ag = c.adgroup_set.all()[0]
         self.assertTrue(ag.get_current_settings().archived)
+        self.assertTrue(ag.archived)
 
     def test_restore_account(self):
         a = models.Account.objects.get(id=2)
@@ -592,12 +603,15 @@ class ArchiveRestoreTestCase(TestCase):
         a.restore(self.request)
 
         self.assertFalse(a.get_current_settings().archived)
+        self.assertFalse(a.archived)
 
         c = a.campaign_set.all()[0]
         self.assertTrue(c.get_current_settings().archived)
+        self.assertTrue(c.archived)
 
         ag = c.adgroup_set.all()[0]
         self.assertTrue(ag.get_current_settings().archived)
+        self.assertTrue(ag.archived)
 
     def test_restore_campaign(self):
         c = models.Campaign.objects.get(id=2)
@@ -609,9 +623,11 @@ class ArchiveRestoreTestCase(TestCase):
         c.restore(self.request)
 
         self.assertFalse(c.get_current_settings().archived)
+        self.assertFalse(c.archived)
 
         ag = c.adgroup_set.all()[0]
         self.assertTrue(ag.get_current_settings().archived)
+        self.assertTrue(ag.archived)
 
     def test_restore_ad_group(self):
         ag = models.AdGroup.objects.get(id=2)
@@ -623,6 +639,7 @@ class ArchiveRestoreTestCase(TestCase):
         ag.restore(self.request)
 
         self.assertFalse(ag.get_current_settings().archived)
+        self.assertFalse(ag.archived)
 
     def test_restore_campaign_fail(self):
         a = models.Account.objects.get(id=2)
@@ -631,6 +648,7 @@ class ArchiveRestoreTestCase(TestCase):
 
         c = a.campaign_set.all()[0]
         self.assertTrue(c.get_current_settings().archived)
+        self.assertTrue(c.archived)
         self.assertFalse(c.can_restore())
 
         with self.assertRaises(exc.ForbiddenError):
@@ -638,10 +656,12 @@ class ArchiveRestoreTestCase(TestCase):
 
         a.restore(self.request)
         self.assertTrue(c.get_current_settings().archived)
+        self.assertTrue(c.archived)
         self.assertTrue(c.can_restore())
 
         c.restore(self.request)
         self.assertFalse(c.get_current_settings().archived)
+        self.assertFalse(c.archived)
 
     def test_restore_ad_group_fail(self):
         c = models.Campaign.objects.get(id=2)
@@ -650,6 +670,7 @@ class ArchiveRestoreTestCase(TestCase):
 
         ag = c.adgroup_set.all()[0]
         self.assertTrue(ag.get_current_settings().archived)
+        self.assertTrue(ag.archived)
         self.assertFalse(ag.can_restore())
 
         with self.assertRaises(exc.ForbiddenError):
@@ -657,16 +678,19 @@ class ArchiveRestoreTestCase(TestCase):
 
         c.restore(self.request)
         self.assertTrue(ag.get_current_settings().archived)
+        self.assertTrue(ag.archived)
         self.assertTrue(ag.can_restore())
 
         ag.restore(self.request)
         self.assertFalse(ag.get_current_settings().archived)
+        self.assertFalse(ag.archived)
 
     def test_cannot_archive_ad_group_dates(self):
         ag = models.AdGroup.objects.get(id=2)
 
         cs = ag.get_current_settings()
         self.assertFalse(cs.archived)
+        self.assertFalse(ag.archived)
         self.assertTrue(ag.can_archive())
 
         with test_helper.disable_auto_now_add(models.AdGroupSettings, "created_dt"):
@@ -688,6 +712,7 @@ class ArchiveRestoreTestCase(TestCase):
 
         cs = ag.get_current_settings()
         self.assertFalse(cs.archived)
+        self.assertFalse(ag.archived)
         self.assertTrue(ag.can_archive())
 
         with test_helper.disable_auto_now_add(models.AdGroupSettings, "created_dt"):
@@ -710,6 +735,7 @@ class ArchiveRestoreTestCase(TestCase):
 
         cs = ag.get_current_settings()
         self.assertFalse(cs.archived)
+        self.assertFalse(ag.archived)
         self.assertTrue(ag.can_archive())
         self.assertEqual(
             [x for x in ag.adgroupsettings_set.all() if x.state == constants.AdGroupSettingsState.ACTIVE], []

@@ -1,3 +1,5 @@
+# import json
+
 import mock
 from django.urls import reverse
 
@@ -169,6 +171,27 @@ class CampaignsTest(RESTAPITest):
         resp_json_paginated = self.assertResponseValid(r_paginated, data_type=list)
         self.assertEqual(resp_json["data"][5:7], resp_json_paginated["data"])
 
+    # def test_campaigns_list_exclude_archived(self):  # TODO: ARCHIVING
+    #     account = magic_mixer.blend(dash.models.Account, users=[self.user])
+    #     magic_mixer.cycle(3).blend(dash.models.Campaign, account=account, archived=False)
+    #     magic_mixer.cycle(2).blend(dash.models.Campaign, account=account, archived=True)
+    #     r = self.client.get(reverse("campaigns_list"), {"accountId": account.id})
+    #     resp_json = self.assertResponseValid(r, data_type=list)
+    #     self.assertEqual(3, len(resp_json["data"]))
+    #     for item in resp_json["data"]:
+    #         self.validate_against_db(item)
+    #         self.assertFalse(item["archived"])
+
+    def test_campaigns_list_include_archived(self):
+        account = magic_mixer.blend(dash.models.Account, users=[self.user])
+        magic_mixer.cycle(3).blend(dash.models.Campaign, account=account, archived=False)
+        magic_mixer.cycle(2).blend(dash.models.Campaign, account=account, archived=True)
+        r = self.client.get(reverse("campaigns_list"), {"accountId": account.id, "includeArchived": "true"})
+        resp_json = self.assertResponseValid(r, data_type=list)
+        self.assertEqual(5, len(resp_json["data"]))
+        for item in resp_json["data"]:
+            self.validate_against_db(item)
+
     @mock.patch("automation.autopilot.recalculate_budgets_campaign")
     @mock.patch("utils.email_helper.send_campaign_created_email")
     def test_campaigns_post(self, mock_send, mock_autopilot):
@@ -188,6 +211,26 @@ class CampaignsTest(RESTAPITest):
         self.assertEqual(resp_json["data"], new_campaign)
         self.assertEqual(resp_json["data"]["type"], constants.CampaignType.get_name(constants.CampaignType.VIDEO))
         mock_send.assert_not_called()
+
+    # @mock.patch("automation.autopilot.recalculate_budgets_campaign")
+    # @mock.patch("utils.email_helper.send_campaign_created_email")
+    # def test_campaigns_post_account_archived(self, mock_send, mock_autopilot):  # TODO: ARCHIVING
+    #     account = magic_mixer.blend(dash.models.Account, users=[self.user], archived=True)
+    #     new_campaign = self.campaign_repr(
+    #         account_id=account.id,
+    #         name="All About Testing",
+    #         type=constants.CampaignType.VIDEO,
+    #         whitelist_publisher_groups=[153, 154],
+    #         blacklist_publisher_groups=[],
+    #         frequency_capping=33,
+    #     )
+    #     del new_campaign["id"]
+    #     r = self.client.post(reverse("campaigns_list"), data=new_campaign, format="json")
+    #     self.assertResponseError(r, "ValidationError")
+    #     self.assertEqual(
+    #         ["Can not create a campaign on an archived account."], json.loads(r.content)["details"]["accountId"]
+    #     )
+    #     mock_send.assert_not_called()
 
     @mock.patch("automation.autopilot.recalculate_budgets_campaign")
     def test_campaigns_post_no_type(self, mock_autopilot):

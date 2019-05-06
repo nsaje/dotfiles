@@ -425,25 +425,14 @@ class NavigationTreeViewTest(TestCase):
         self.assertCountEqual(response["data"], expected_response)
 
     @patch("datetime.datetime", MockDatetime)
-    def test_get_archived_flag(self):
+    def test_get_archived_ad_group_excluded(self):
         response = self._get(2)
 
         expected_response = [
             {
                 "campaigns": [
                     {
-                        "adGroups": [
-                            {
-                                "archived": True,
-                                "id": 4,
-                                "name": "test adgroup 4",
-                                "state": 2,
-                                "status": 2,
-                                "autopilot_state": 2,
-                                "active": "stopped",
-                                "bidding_type": 2,
-                            }
-                        ],
+                        "adGroups": [],
                         "id": 2,
                         "name": "test campaign 2",
                         "archived": False,
@@ -458,8 +447,31 @@ class NavigationTreeViewTest(TestCase):
                 "usesBCMv2": False,
             }
         ]
-
         self.assertCountEqual(response["data"], expected_response)
+
+    @patch("datetime.datetime", MockDatetime)
+    def test_get_archived_campaign_excluded(self):
+        response = self._get(7)
+
+        expected_response = [
+            {
+                "campaigns": [],
+                "id": 4,
+                "name": "test account 4",
+                "archived": False,
+                "agency": None,
+                "currency": constants.Currency.USD,
+                "usesBCMv2": False,
+            }
+        ]
+        self.assertCountEqual(response["data"], expected_response)
+
+    @patch("datetime.datetime", MockDatetime)
+    def test_get_archived_account_excluded(self):
+        response = self._get(3)
+
+        expected_response = {"success": True}
+        self.assertCountEqual(response, expected_response)
 
     def test_get_no_data(self):
         self.assertDictEqual(self._get(4), {"success": True})

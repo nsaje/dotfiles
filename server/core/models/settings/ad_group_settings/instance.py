@@ -30,7 +30,6 @@ class AdGroupSettingsMixin(object):
         **updates
     ):
         updates = self._filter_and_remap_input(request, updates, skip_permission_check)
-        self._update_ad_group(request, updates)
         if updates:
             new_settings = self.copy_settings()
             self._apply_updates(new_settings, updates)
@@ -44,14 +43,18 @@ class AdGroupSettingsMixin(object):
             changes = self.get_setting_changes(new_settings)
             if changes:
                 self._save_and_propagate(request, new_settings, system_user, skip_notification=skip_notification)
+                self._update_ad_group(request, changes)
                 # autopilot reloads settings so changes have to be saved when it is called
                 if not skip_automation:
                     self._handle_budget_autopilot(changes)
 
-    def _update_ad_group(self, request, updates):
-        if "ad_group_name" in updates:
-            self.ad_group.name = updates["ad_group_name"]
-        self.ad_group.save(request)
+    def _update_ad_group(self, request, changes):
+        if any(field in changes for field in ["ad_group_name", "archived"]):
+            if "ad_group_name" in changes:
+                self.ad_group.name = changes["ad_group_name"]
+            if "archived" in changes:
+                self.ad_group.archived = changes["archived"]
+            self.ad_group.save(request)
 
     def _filter_and_remap_input(self, request, updates, skip_permission_check):
         updates = self._remove_unsupported_fields(updates)

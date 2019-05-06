@@ -1,6 +1,7 @@
 import rest_framework.serializers
 
 import core.models.content_ad.exceptions
+import core.models.content_ad_candidate.exceptions
 import dash.models
 from dash.features import contentupload
 from dash.views import helpers
@@ -79,9 +80,13 @@ class ContentAdBatchViewList(RESTAPIBaseView):
         batch_name = self._generate_batch_name("API Upload")
         filename = None
 
-        batch, candidates = contentupload.upload.insert_candidates(
-            request.user, ad_group.campaign.account, candidates_data, ad_group, batch_name, filename, auto_save=True
-        )
+        try:
+            batch, candidates = contentupload.upload.insert_candidates(
+                request.user, ad_group.campaign.account, candidates_data, ad_group, batch_name, filename, auto_save=True
+            )
+
+        except core.models.content_ad_candidate.exceptions.AdGroupIsArchived as err:
+            raise exc.ValidationError(str(err))
 
         batch_serializer = serializers.UploadBatchSerializer(batch, context={"request": request})
         return self.response_ok(batch_serializer.data, status=201)

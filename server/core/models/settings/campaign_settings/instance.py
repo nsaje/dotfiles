@@ -37,8 +37,11 @@ class CampaignSettingsMixin(object):
         return cleaned_updates
 
     def _update_campaign(self, changes):
-        if "name" in changes:
-            self.campaign.name = changes["name"]
+        if any(field in changes for field in ["name", "archived"]):
+            if "name" in changes:
+                self.campaign.name = changes["name"]
+            if "archived" in changes:
+                self.campaign.archived = changes["archived"]
             self.campaign.save()
 
     def _log_and_notify_changes(self, request, changes):

@@ -2,6 +2,7 @@ from django.db import transaction
 
 import core.models
 import restapi.access
+import utils.converters
 import utils.exc
 from restapi.common.pagination import StandardPagination
 from restapi.common.views_base import RESTAPIBaseViewSet
@@ -29,6 +30,9 @@ class CampaignViewSet(RESTAPIBaseViewSet):
         else:
             campaigns = core.models.Campaign.objects.all().filter_by_user(request.user)
 
+        if not utils.converters.x_to_bool(request.GET.get("includeArchived")):
+            campaigns = campaigns.exclude_archived()
+
         campaigns = campaigns.select_related("settings").order_by("pk")
         paginator = StandardPagination()
         campaigns_paginated = paginator.paginate_queryset(campaigns, request)
@@ -44,9 +48,14 @@ class CampaignViewSet(RESTAPIBaseViewSet):
         account = restapi.access.get_account(request.user, settings.get("campaign", {}).get("account_id"))
 
         with transaction.atomic():
-            new_campaign = core.models.Campaign.objects.create(
-                request, account=account, name=settings.get("name"), type=settings.get("campaign", {}).get("type")
-            )
+            try:
+                new_campaign = core.models.Campaign.objects.create(
+                    request, account=account, name=settings.get("name"), type=settings.get("campaign", {}).get("type")
+                )
+
+            except core.models.campaign.exceptions.AccountIsArchived as err:
+                raise utils.exc.ValidationError(errors={"account_id": [str(err)]})
+
             self._update_campaign(request, new_campaign, settings)
 
         return self.response_ok(

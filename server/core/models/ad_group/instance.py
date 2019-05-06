@@ -73,6 +73,7 @@ class AdGroupInstanceMixin:
         return True
 
     def is_archived(self):
+        # return self.archived  # TODO: ARCHIVING
         current_settings = self.get_current_settings()
         return current_settings.archived
 

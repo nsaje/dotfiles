@@ -89,7 +89,7 @@ class AudiencesTest(RESTAPITest):
             self.validate_against_db(item)
         self.assertEqual(2, len(resp_json["data"]))
 
-    def test_audiences_list_include_archived(self):
+    def test_audiences_list_exclude_archived(self):
         request = magic_mixer.blend_request_user()
         account = magic_mixer.blend(core.models.Account, users=[self.user])
         pixel = magic_mixer.blend(core.models.ConversionPixel, account=account, name="test pixel")
@@ -108,6 +108,26 @@ class AudiencesTest(RESTAPITest):
         for item in resp_json["data"]:
             self.validate_against_db(item)
         self.assertEqual(2, len(resp_json["data"]))
+
+    def test_audiences_list_include_archived(self):
+        request = magic_mixer.blend_request_user()
+        account = magic_mixer.blend(core.models.Account, users=[self.user])
+        pixel = magic_mixer.blend(core.models.ConversionPixel, account=account, name="test pixel")
+        core.features.audiences.Audience.objects.create(
+            request, "test1", pixel, 10, 20, [{"type": 2, "value": "test_rule1"}]
+        )
+        core.features.audiences.Audience.objects.create(
+            request, "test2", pixel, 30, 40, [{"type": 2, "value": "test_rule2"}]
+        )
+        audience = core.features.audiences.Audience.objects.create(
+            request, "test2", pixel, 30, 40, [{"type": 2, "value": "test_rule3"}]
+        )
+        audience.update(request, archived=True)
+        r = self.client.get(reverse("audiences_list", kwargs={"account_id": account.id}), {"includeArchived": "T"})
+        resp_json = self.assertResponseValid(r, data_type=list)
+        for item in resp_json["data"]:
+            self.validate_against_db(item)
+        self.assertEqual(3, len(resp_json["data"]))
 
     def test_post(self):
         account = magic_mixer.blend(core.models.Account, users=[self.user])

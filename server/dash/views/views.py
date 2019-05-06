@@ -26,6 +26,7 @@ from django.urls import reverse
 import analytics.projections
 import core.features.multicurrency
 import core.models.ad_group_source.exceptions
+import core.models.campaign.exceptions
 import core.models.helpers
 import core.models.settings.ad_group_source_settings.exceptions
 import demo
@@ -350,7 +351,13 @@ class CampaignAdGroups(api_common.BaseApiView):
     def put(self, request, campaign_id):
         campaign = helpers.get_campaign(request.user, campaign_id)
         self._validate_campaign_ready(request, campaign)
-        ad_group = core.models.AdGroup.objects.create(request, campaign, is_restapi=self.rest_proxy)
+
+        try:
+            ad_group = core.models.AdGroup.objects.create(request, campaign, is_restapi=self.rest_proxy)
+
+        except core.models.ad_group.exceptions.CampaignIsArchived as err:
+            raise exc.ValidationError(str(err))
+
         hacks.apply_ad_group_create_hacks(request, ad_group)
         return self.create_api_response({"name": ad_group.name, "id": ad_group.id})
 
@@ -754,7 +761,15 @@ class AccountCampaigns(api_common.BaseApiView):
         name = core.models.helpers.create_default_name(models.Campaign.objects.filter(account=account), "New campaign")
         type = form.cleaned_data.get("campaign_type")
         language = constants.Language.ENGLISH if self.rest_proxy else None
-        campaign = models.Campaign.objects.create(request, account, name, language=language, type=type, send_mail=True)
+
+        try:
+            campaign = models.Campaign.objects.create(
+                request, account, name, language=language, type=type, send_mail=True
+            )
+
+        except core.models.campaign.exceptions.AccountIsArchived as err:
+            raise exc.ValidationError(str(err))
+
         hacks.apply_campaign_create_hacks(request, campaign)
 
         response = {"name": campaign.name, "id": campaign.id}

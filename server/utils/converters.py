@@ -30,3 +30,9 @@ def cc_to_decimal(val_cc):
     if val_cc is None:
         return None
     return Decimal(val_cc) / 10000
+
+
+def x_to_bool(x):
+    if isinstance(x, str):
+        return x.lower() in ["true", "t", "1"]
+    return bool(x)

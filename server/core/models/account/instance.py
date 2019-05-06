@@ -7,7 +7,6 @@ import core.features.deals
 import core.features.history
 import core.models
 from dash import constants
-from utils import exc
 from utils import json_helper
 
 
@@ -38,6 +37,7 @@ class AccountInstanceMixin:
         return True
 
     def is_archived(self):
+        # return self.archived  # TODO: ARCHIVING
         current_settings = self.get_current_settings()
         return current_settings.archived
 
@@ -52,28 +52,11 @@ class AccountInstanceMixin:
 
     @transaction.atomic
     def archive(self, request):
-        if not self.can_archive():
-            raise exc.ForbiddenError("Account can't be archived.")
-
-        if not self.is_archived():
-            current_settings = self.get_current_settings()
-            for campaign in self.campaign_set.all():
-                campaign.archive(request)
-
-            new_settings = current_settings.copy_settings()
-            new_settings.archived = True
-            new_settings.save(request, action_type=constants.HistoryActionType.ARCHIVE_RESTORE)
+        self.settings.update(request, archived=True)
 
     @transaction.atomic
     def restore(self, request):
-        if not self.can_restore():
-            raise exc.ForbiddenError("Account can't be restored.")
-
-        if self.is_archived():
-            current_settings = self.get_current_settings()
-            new_settings = current_settings.copy_settings()
-            new_settings.archived = False
-            new_settings.save(request, action_type=constants.HistoryActionType.ARCHIVE_RESTORE)
+        self.settings.update(request, archived=False)
 
     def admin_link(self):
         if self.id:

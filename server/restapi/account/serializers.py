@@ -23,6 +23,7 @@ class AccountSerializer(restapi.serializers.serializers.PermissionedFieldsMixin,
     name = restapi.serializers.fields.PlainCharField(
         max_length=127, error_messages={"required": "Please specify account name."}, source="settings.name"
     )
+    archived = serializers.BooleanField(default=False, required=False, source="settings.archived")
     currency = restapi.serializers.fields.DashConstantField(
         constants.Currency, default=constants.Currency.USD, required=False
     )

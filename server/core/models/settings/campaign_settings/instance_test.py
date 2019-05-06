@@ -40,10 +40,18 @@ class InstanceTestCase(TestCase):
     def test_archiving(self, mock_adgroup_archive):
         campaign = magic_mixer.blend(core.models.Campaign)
         magic_mixer.cycle(10).blend(core.models.AdGroup, campaign=campaign)
+        self.assertFalse(campaign.archived)
+        self.assertFalse(campaign.settings.archived)
+
         campaign.settings.update(None, archived=True)
+        self.assertTrue(campaign.archived)
+        self.assertTrue(campaign.settings.archived)
         self.assertEqual(mock_adgroup_archive.call_count, 10)
+
         mock_adgroup_archive.reset_mock()
         campaign.settings.update(None, archived=False)
+        self.assertFalse(campaign.archived)
+        self.assertFalse(campaign.settings.archived)
         self.assertEqual(mock_adgroup_archive.call_count, 0)
 
     @patch.object(core.models.AdGroup, "can_archive", return_value=False)

@@ -5,6 +5,8 @@ import core.models
 from dash import constants
 from utils.magic_mixer import magic_mixer
 
+# from . import exceptions
+
 
 @patch("core.models.ContentAd.objects.insert_redirects")
 class CreateContentAd(TestCase):
@@ -21,6 +23,14 @@ class CreateContentAd(TestCase):
 
         self.assertEqual(content_ad.contentadsource_set.all().count(), 5)
         mock_insert_redirects.assert_called_with([content_ad], clickthrough_resolve=True)
+
+    # def test_create_ad_group_archived(self, mock_insert_redirects):  # TODO: ARCHIVING
+    #     ad_group = magic_mixer.blend(core.models.AdGroup, archived=True)
+    #     batch = magic_mixer.blend(core.models.UploadBatch, ad_group=ad_group)
+    #     sources = magic_mixer.cycle(5).blend(core.models.Source)
+    #     with self.assertRaises(exceptions.AdGroupIsArchived):
+    #         core.models.ContentAd.objects.create(batch, sources, url="zemanta.com", brand_name="Zemanta")
+    #     mock_insert_redirects.assert_not_called()
 
     def _blend_a_batch(self):
         ad_group = magic_mixer.blend(core.models.AdGroup)

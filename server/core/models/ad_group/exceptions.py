@@ -7,3 +7,7 @@ class CampaignTypesDoNotMatch(ValidationError):
 
 class CannotChangeBiddingType(ValidationError):
     pass
+
+
+class CampaignIsArchived(ValidationError):
+    pass

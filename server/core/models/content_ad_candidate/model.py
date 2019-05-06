@@ -5,11 +5,14 @@ import core.common
 import dash.constants
 
 from . import instance
+from . import manager
 
 
 class ContentAdCandidate(instance.ContentAdCandidateMixin, core.common.FootprintModel):
     class Meta:
         app_label = "dash"
+
+    objects = manager.ContentAdCandidateManager()
 
     label = models.TextField(null=True, blank=True, default="")
     url = models.TextField(null=True, blank=True, default="")

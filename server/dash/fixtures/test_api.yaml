@@ -121,6 +121,7 @@
         settings: 3
         name: 'test account 3'
         yahoo_account: 1
+        archived: True
     model: dash.account
     pk: 3
 
@@ -191,6 +192,7 @@
         modified_by: 1
         account: 3 # test account 3
         settings: 4
+        archived: True
         name: 'test campaign 4'
     model: dash.campaign
     pk: 4
@@ -201,6 +203,7 @@
         modified_by: 1
         account: 3 # test account 4
         settings: 5
+        archived: True
         name: 'test campaign 5'
     model: dash.campaign
     pk: 5
@@ -560,6 +563,7 @@
         campaign: 4
         settings: 2
         name: 'test adgroup 5'
+        archived: True
     model: dash.adgroup
     pk: 5
 
@@ -569,6 +573,7 @@
         modified_by: 1
         campaign: 5
         settings: 4
+        archived: True
         name: 'test adgroup 6'
     model: dash.adgroup
     pk: 6
@@ -579,6 +584,7 @@
         modified_by: 1
         campaign: 4
         settings: 5
+        archived: True
         name: 'test adgroup 7'
     model: dash.adgroup
     pk: 7

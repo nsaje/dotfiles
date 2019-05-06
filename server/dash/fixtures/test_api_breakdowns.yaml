@@ -161,6 +161,7 @@
         modified_by: 1
         account: 1 # test account 1
         settings: 2
+        archived: True
         name: 'test campaign 2'
     model: dash.campaign
     pk: 2
@@ -222,6 +223,7 @@
         modified_by: 1
         campaign: 2
         settings: 3
+        archived: True
         name: 'test adgroup 3'
     model: dash.adgroup
     pk: 3
