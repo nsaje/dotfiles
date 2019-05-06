@@ -73,9 +73,7 @@ class AdGroupInstanceMixin:
         return True
 
     def is_archived(self):
-        # return self.archived  # TODO: ARCHIVING
-        current_settings = self.get_current_settings()
-        return current_settings.archived
+        return self.archived
 
     def is_blocked_by_custom_flag(self):
         return bool(self.get_all_custom_flags().get(dash.features.custom_flags.constants.CUSTOMER_BLOCKED))

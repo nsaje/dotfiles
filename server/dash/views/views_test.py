@@ -288,27 +288,27 @@ class AccountCampaignsTest(TestCase):
 
         mock_send.assert_called_once_with(ANY, campaign)
 
-    # @patch("automation.autopilot.recalculate_budgets_campaign")
-    # @patch("utils.email_helper.send_campaign_created_email")
-    # def test_put_account_archived(self, mock_send, mock_autopilot):  # TODO: ARCHIVING
-    #     account = magic_mixer.blend(models.Account, archived=True)
-    #     response = self.client.put(
-    #         reverse("account_campaigns", kwargs={"account_id": account.id}), data=json.dumps({"campaign_type": "1"})
-    #     )
-    #     self.assertEqual(400, response.status_code)
-    #     self.assertEqual(
-    #         {
-    #             "success": False,
-    #             "data": {
-    #                 "error_code": "ValidationError",
-    #                 "message": "Can not create a campaign on an archived account.",
-    #                 "errors": None,
-    #                 "data": None,
-    #             },
-    #         },
-    #         json.loads(response.content),
-    #     )
-    #     mock_send.assert_not_called()
+    @patch("automation.autopilot.recalculate_budgets_campaign")
+    @patch("utils.email_helper.send_campaign_created_email")
+    def test_put_account_archived(self, mock_send, mock_autopilot):
+        account = magic_mixer.blend(models.Account, archived=True)
+        response = self.client.put(
+            reverse("account_campaigns", kwargs={"account_id": account.id}), data=json.dumps({"campaign_type": "1"})
+        )
+        self.assertEqual(400, response.status_code)
+        self.assertEqual(
+            {
+                "success": False,
+                "data": {
+                    "error_code": "ValidationError",
+                    "message": "Can not create a campaign on an archived account.",
+                    "errors": None,
+                    "data": None,
+                },
+            },
+            json.loads(response.content),
+        )
+        mock_send.assert_not_called()
 
 
 class AdGroupSourceSettingsTest(TestCase):
@@ -567,30 +567,30 @@ class CampaignAdGroups(TestCase):
         response_dict = json.loads(response.content)
         self.assertDictContainsSubset({"name": "New ad group"}, response_dict["data"])
 
-    # @patch("utils.redirector_helper.insert_adgroup", autospec=True)
-    # @patch("automation.autopilot.recalculate_budgets_ad_group", autospec=True)
-    # def test_put_campaign_archived(self, mock_autopilot_init, mock_r1):  # TODO: ARCHIVING
-    #     campaign = models.Campaign.objects.get(pk=1)
-    #     campaign.archived = True
-    #     campaign.save()
-    #     goal = magic_mixer.blend(
-    #         models.CampaignGoal, type=constants.CampaignGoalKPI.TIME_ON_SITE, campaign=campaign, primary=True
-    #     )
-    #     magic_mixer.blend(models.CampaignGoalValue, campaign_goal=goal)
-    #     response = self.client.put(reverse("campaign_ad_groups", kwargs={"campaign_id": campaign.id}))
-    #     self.assertEqual(400, response.status_code)
-    #     self.assertEqual(
-    #         {
-    #             "success": False,
-    #             "data": {
-    #                 "error_code": "ValidationError",
-    #                 "message": "Can not create an ad group on an archived campaign.",
-    #                 "errors": None,
-    #                 "data": None,
-    #             },
-    #         },
-    #         json.loads(response.content),
-    #     )
+    @patch("utils.redirector_helper.insert_adgroup", autospec=True)
+    @patch("automation.autopilot.recalculate_budgets_ad_group", autospec=True)
+    def test_put_campaign_archived(self, mock_autopilot_init, mock_r1):
+        campaign = models.Campaign.objects.get(pk=1)
+        campaign.archived = True
+        campaign.save()
+        goal = magic_mixer.blend(
+            models.CampaignGoal, type=constants.CampaignGoalKPI.TIME_ON_SITE, campaign=campaign, primary=True
+        )
+        magic_mixer.blend(models.CampaignGoalValue, campaign_goal=goal)
+        response = self.client.put(reverse("campaign_ad_groups", kwargs={"campaign_id": campaign.id}))
+        self.assertEqual(400, response.status_code)
+        self.assertEqual(
+            {
+                "success": False,
+                "data": {
+                    "error_code": "ValidationError",
+                    "message": "Can not create an ad group on an archived campaign.",
+                    "errors": None,
+                    "data": None,
+                },
+            },
+            json.loads(response.content),
+        )
 
     def test_add_media_sources_with_retargeting(self):
         ad_group = models.AdGroup.objects.get(pk=2)

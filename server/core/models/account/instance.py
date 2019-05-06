@@ -37,9 +37,7 @@ class AccountInstanceMixin:
         return True
 
     def is_archived(self):
-        # return self.archived  # TODO: ARCHIVING
-        current_settings = self.get_current_settings()
-        return current_settings.archived
+        return self.archived
 
     def is_agency(self):
         return self.agency is not None

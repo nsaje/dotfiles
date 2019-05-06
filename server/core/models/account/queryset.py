@@ -28,8 +28,7 @@ class AccountQuerySet(models.QuerySet):
     def exclude_archived(self, show_archived=False):
         if show_archived:
             return self
-        # return self.exclude(archived=True)  # TODO: ARCHIVING
-        return self.exclude(settings__archived=True)
+        return self.exclude(archived=True)
 
     def filter_with_spend(self):
         return self.filter(

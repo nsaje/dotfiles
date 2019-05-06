@@ -11,8 +11,7 @@ import utils.test_helper
 from dash import constants
 from dash.features import contentupload
 from restapi.common.views_base_test import RESTAPITest
-
-# from utils.magic_mixer import magic_mixer
+from utils.magic_mixer import magic_mixer
 from zemauth.models import User
 
 from . import views
@@ -329,14 +328,14 @@ class TestBatchUpload(TestCase):
                 self.assertEqual(to_upload[i][field], resp_json["data"]["approvedContentAds"][i][field])
             self.assertEqual(saved_display_ads[i].id, int(resp_json["data"]["approvedContentAds"][i]["id"]))
 
-    # def test_display_batch_upload_ad_group_archived(self):  # TODO: ARCHIVING
-    #     ad_group = magic_mixer.blend(dash.models.AdGroup, archived=True)
-    #     to_upload = [self._mock_content_ad("test1"), self._mock_content_ad("test2")]
-    #     resp = self.client.post(
-    #         reverse("contentads_batch_list") + "?adGroupId={}".format(ad_group.id), to_upload, format="json"
-    #     )
-    #     self.assertEqual(400, resp.status_code)
-    #     self.assertEqual("Can not create a content ad on an archived ad group.", json.loads(resp.content)["details"])
+    def test_display_batch_upload_ad_group_archived(self):
+        ad_group = magic_mixer.blend(dash.models.AdGroup, archived=True)
+        to_upload = [self._mock_content_ad("test1"), self._mock_content_ad("test2")]
+        resp = self.client.post(
+            reverse("contentads_batch_list") + "?adGroupId={}".format(ad_group.id), to_upload, format="json"
+        )
+        self.assertEqual(400, resp.status_code)
+        self.assertEqual("Can not create a content ad on an archived ad group.", json.loads(resp.content)["details"])
 
     @staticmethod
     def _reject_candidates(batch):

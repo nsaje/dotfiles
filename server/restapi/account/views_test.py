@@ -54,17 +54,17 @@ class AccountsTest(RESTAPITest):
         for item in resp_json["data"]:
             self.validate_against_db(item)
 
-    # def test_accounts_list_exclude_archived(self):  # TODO: ARCHIVING
-    #     self.user = magic_mixer.blend_request_user(permissions=["can_use_restapi", "can_set_frequency_capping"]).user
-    #     self.client.force_authenticate(user=self.user)
-    #     magic_mixer.cycle(3).blend(dash.models.Account, archived=False, users=[self.user])
-    #     magic_mixer.cycle(2).blend(dash.models.Account, archived=True, users=[self.user])
-    #     r = self.client.get(reverse("accounts_list"))
-    #     resp_json = self.assertResponseValid(r, data_type=list)
-    #     self.assertEqual(3, len(resp_json["data"]))
-    #     for item in resp_json["data"]:
-    #         self.validate_against_db(item)
-    #         self.assertFalse(item["archived"])
+    def test_accounts_list_exclude_archived(self):
+        self.user = magic_mixer.blend_request_user(permissions=["can_use_restapi", "can_set_frequency_capping"]).user
+        self.client.force_authenticate(user=self.user)
+        magic_mixer.cycle(3).blend(dash.models.Account, archived=False, users=[self.user])
+        magic_mixer.cycle(2).blend(dash.models.Account, archived=True, users=[self.user])
+        r = self.client.get(reverse("accounts_list"))
+        resp_json = self.assertResponseValid(r, data_type=list)
+        self.assertEqual(3, len(resp_json["data"]))
+        for item in resp_json["data"]:
+            self.validate_against_db(item)
+            self.assertFalse(item["archived"])
 
     def test_accounts_list_include_archived(self):
         self.user = magic_mixer.blend_request_user(permissions=["can_use_restapi", "can_set_frequency_capping"]).user

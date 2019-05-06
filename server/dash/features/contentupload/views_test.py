@@ -77,36 +77,36 @@ class UploadCsvTestCase(TestCase):
         self.assertEqual("description", candidate.description)
         self.assertEqual("Click for more", candidate.call_to_action)
 
-    # @patch("utils.lambda_helper.invoke_lambda", MagicMock())
-    # def test_post_content_ad_ad_group_archived(self):  # TODO: ARCHIVING
-    #     account = magic_mixer.blend(models.Account, users=[User.objects.get(pk=2)])
-    #     campaign = magic_mixer.blend(models.Campaign, account=account)
-    #     ad_group = magic_mixer.blend(models.AdGroup, campaign=campaign, archived=True)
-    #     mock_file = SimpleUploadedFile(
-    #         "test_upload.csv",
-    #         b"URL,Title,Image URL,Label,Image Crop,Primary impression tracker url,Secondary impression tracker url,Brand name,Display URL,"
-    #         b"Call to Action,Description\nhttp://zemanta.com/test-content-ad,test content ad,"
-    #         b"http://zemanta.com/test-image.jpg,test,entropy,https://t.zemanta.com/px1.png,"
-    #         b"https://t.zemanta.com/px2.png,Zemanta,zemanta.com,Click for more,description",
-    #     )
-    #     response = _get_client().post(
-    #         reverse("upload_csv", kwargs={}),
-    #         {"candidates": mock_file, "batch_name": "batch 1", "ad_group_id": ad_group.id, "account_id": account.id},
-    #         follow=True,
-    #     )
-    #     self.assertEqual(400, response.status_code)
-    #     self.assertEqual(
-    #         {
-    #             "success": False,
-    #             "data": {
-    #                 "error_code": "ValidationError",
-    #                 "message": "Can not create a content ad on an archived ad group.",
-    #                 "errors": None,
-    #                 "data": None,
-    #             },
-    #         },
-    #         json.loads(response.content),
-    #     )
+    @patch("utils.lambda_helper.invoke_lambda", MagicMock())
+    def test_post_content_ad_ad_group_archived(self):
+        account = magic_mixer.blend(models.Account, users=[User.objects.get(pk=2)])
+        campaign = magic_mixer.blend(models.Campaign, account=account)
+        ad_group = magic_mixer.blend(models.AdGroup, campaign=campaign, archived=True)
+        mock_file = SimpleUploadedFile(
+            "test_upload.csv",
+            b"URL,Title,Image URL,Label,Image Crop,Primary impression tracker url,Secondary impression tracker url,Brand name,Display URL,"
+            b"Call to Action,Description\nhttp://zemanta.com/test-content-ad,test content ad,"
+            b"http://zemanta.com/test-image.jpg,test,entropy,https://t.zemanta.com/px1.png,"
+            b"https://t.zemanta.com/px2.png,Zemanta,zemanta.com,Click for more,description",
+        )
+        response = _get_client().post(
+            reverse("upload_csv", kwargs={}),
+            {"candidates": mock_file, "batch_name": "batch 1", "ad_group_id": ad_group.id, "account_id": account.id},
+            follow=True,
+        )
+        self.assertEqual(400, response.status_code)
+        self.assertEqual(
+            {
+                "success": False,
+                "data": {
+                    "error_code": "ValidationError",
+                    "message": "Can not create a content ad on an archived ad group.",
+                    "errors": None,
+                    "data": None,
+                },
+            },
+            json.loads(response.content),
+        )
 
     @patch("utils.lambda_helper.invoke_lambda", MagicMock())
     def test_post_image_ad(self):
@@ -470,34 +470,34 @@ class UploadSaveTestCase(TestCase):
             'Imported batch "batch 2" with 1 content ad.',
         )
 
-    # @patch("utils.redirector_helper.insert_redirects")
-    # def test_ad_group_archived(self, mock_insert_batch):  # TODO: ARCHIVING
-    #     mock_insert_batch.side_effect = self._mock_insert_redirects
-    #     batch_id = 8
-    #     models.ContentAdCandidate.objects.filter(id=7).update(type=constants.AdType.VIDEO)
-    #     ad_group = models.AdGroup.objects.get(id=7)
-    #     ad_group.archived = True
-    #     ad_group.save(None)
+    @patch("utils.redirector_helper.insert_redirects")
+    def test_ad_group_archived(self, mock_insert_batch):
+        mock_insert_batch.side_effect = self._mock_insert_redirects
+        batch_id = 8
+        models.ContentAdCandidate.objects.filter(id=7).update(type=constants.AdType.VIDEO)
+        ad_group = models.AdGroup.objects.get(id=7)
+        ad_group.archived = True
+        ad_group.save(None)
 
-    #     response = _get_client().post(
-    #         reverse("upload_save", kwargs={"batch_id": batch_id}),
-    #         json.dumps({}),
-    #         content_type="application/json",
-    #         follow=True,
-    #     )
-    #     self.assertEqual(400, response.status_code)
-    #     self.assertEqual(
-    #         {
-    #             "success": False,
-    #             "data": {
-    #                 "error_code": "ValidationError",
-    #                 "message": "Can not create a content ad on an archived ad group.",
-    #                 "errors": None,
-    #                 "data": None,
-    #             },
-    #         },
-    #         json.loads(response.content),
-    #     )
+        response = _get_client().post(
+            reverse("upload_save", kwargs={"batch_id": batch_id}),
+            json.dumps({}),
+            content_type="application/json",
+            follow=True,
+        )
+        self.assertEqual(400, response.status_code)
+        self.assertEqual(
+            {
+                "success": False,
+                "data": {
+                    "error_code": "ValidationError",
+                    "message": "Can not create a content ad on an archived ad group.",
+                    "errors": None,
+                    "data": None,
+                },
+            },
+            json.loads(response.content),
+        )
 
     @patch("utils.redirector_helper.insert_redirects")
     def test_type_mismatch(self, mock_insert_batch):
