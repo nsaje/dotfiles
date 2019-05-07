@@ -458,25 +458,27 @@ def _normalize_field(row, field_name):
 
 def _normalize_value(val):
     if val is None:
-        result = False
-    elif isinstance(val, bool):
-        result = val
-    elif _is_number(val):
-        result = val > 0
-    elif isinstance(val, list) or isinstance(val, dict):
-        result = len(val) > 0
-    elif isinstance(val, str):
-        if len(val) == 0:
+        return False
+
+    if isinstance(val, bool):
+        return val
+
+    if _is_number(val):
+        return val > 0
+
+    if isinstance(val, list) or isinstance(val, dict):
+        return len(val) > 0
+
+    if isinstance(val, str):
+        if len(val) == 0 or val == "null":
             return False
 
         try:
-            result = len(json.loads(val)) > 0
+            return len(json.loads(val)) > 0
         except Exception:
-            logger.error("Can not parse json from: %s", val)
-    else:
-        raise ValueError("Can not normalize value: %s" % val)
+            raise ValueError("Can not parse json from: %s", val)
 
-    return result
+    raise ValueError("Can not normalize value: %s" % val)
 
 
 def _normalize_list_to_bool(row, target_field, source_fields_list):
