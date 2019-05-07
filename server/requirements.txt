@@ -5,7 +5,6 @@
 #    pip-compile --no-annotate server/requirements.in
 #
 -e git+https://github.com/Zemanta/django-statsd-influx.git@v0.1.7#egg=django-statsd-influx
--e git+https://github.com/dubirajara/django-tagulous.git@ea13f2aa7773eca99446cb7e0fedc4056ae3916a#egg=django-tagulous
 amqp==2.4.2
 asn1crypto==0.24.0
 autopep8==1.4
@@ -37,6 +36,7 @@ django-queryinspect==1.0.0
 django-ratelimit==1.1.0
 django-redis==4.10.0
 django-silk==3.0.1
+django-tagulous==0.14.0
 django-timezone-field==3.0
 django==2.1.2
 djangorestframework-camel-case==0.2.0

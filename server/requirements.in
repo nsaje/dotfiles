@@ -73,7 +73,7 @@ dredd-hooks==0.2.0
 django-ratelimit==1.1.0
 
 # Django tagging
--e git+https://github.com/dubirajara/django-tagulous.git@ea13f2aa7773eca99446cb7e0fedc4056ae3916a#egg=django-tagulous
+django-tagulous==0.14.0
 
 # Traceback support for running tests in parallel
 tblib==1.3.2
