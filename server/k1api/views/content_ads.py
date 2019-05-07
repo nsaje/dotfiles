@@ -33,7 +33,7 @@ class ContentAdsView(K1APIView):
         include_archived = request.GET.get("include_archived") == "True"
         exclude_display = request.GET.get("exclude_display", "false").lower() == "true"
 
-        content_ads = dash.models.ContentAd.objects.all()
+        content_ads = dash.models.ContentAd.objects.all().filter(image_present=True)
         if not include_archived:
             content_ads = content_ads.exclude_archived()
             nonarchived_ad_groups = dash.models.AdGroup.objects.all().exclude_archived()

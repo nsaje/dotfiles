@@ -132,6 +132,7 @@ class ContentAd(
     image_file_size = models.PositiveIntegerField(null=True)
     crop_areas = models.CharField(max_length=128, null=True)
     image_crop = models.CharField(max_length=25, default=constants.ImageCrop.CENTER)
+    image_present = models.BooleanField(default=True)
 
     video_asset = models.ForeignKey("VideoAsset", blank=True, null=True, on_delete=models.PROTECT)
     ad_tag = models.TextField(null=True, blank=True)
@@ -249,6 +250,7 @@ class ContentAd(
             "image_hash",
             "crop_areas",
             "image_crop",
+            "image_present",
             "state",
             "tracker_urls",
             "video_asset_id",
