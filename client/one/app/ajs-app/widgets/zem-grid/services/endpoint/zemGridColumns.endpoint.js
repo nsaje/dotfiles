@@ -1801,6 +1801,7 @@ angular
             COLUMNS.bidCpcSetting,
             COLUMNS.bidCpmSetting,
             COLUMNS.dailyBudgetSetting,
+            COLUMNS.bidModifier,
         ];
 
         // Default columns - columns present by default (non permanent can be hidden)
@@ -1844,7 +1845,6 @@ angular
             COLUMNS.sourceId,
             COLUMNS.sourceSlug,
             COLUMNS.sspdUrl,
-            COLUMNS.bidModifier,
         ]
             .concat(ACCOUNT_MANAGEMENT_GROUP)
             .concat(CAMPAIGN_MANAGEMENT_GROUP);
