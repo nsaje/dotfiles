@@ -6,6 +6,7 @@ from django.test import override_settings
 from django.urls import reverse
 from rest_framework.test import APIClient
 
+import core.features.videoassets
 import dash.models
 import utils.test_helper
 from dash import constants
@@ -85,6 +86,18 @@ class ContentAdsTest(RESTAPITest):
         r = self.client.get(reverse("contentads_details", kwargs={"content_ad_id": 16805}))
         resp_json = self.assertResponseValid(r)
         self.validate_against_db(resp_json["data"])
+        self.assertNotIn("videoAssetId", resp_json["data"])
+
+    def test_contentads_get_video_ad(self):
+        video_asset = magic_mixer.blend(core.features.videoassets.models.VideoAsset)
+        content_ad = dash.models.ContentAd.objects.get(id=16805)
+        content_ad.video_asset = video_asset
+        content_ad.save()
+        content_ad.ad_group.campaign.type = dash.constants.CampaignType.VIDEO
+        content_ad.ad_group.campaign.save(None)
+        r = self.client.get(reverse("contentads_details", kwargs={"content_ad_id": 16805}))
+        resp_json = self.assertResponseValid(r)
+        self.assertEqual(str(video_asset.id), resp_json["data"]["videoAssetId"])
 
     def test_contentads_get_permissioned(self):
         utils.test_helper.add_permissions(self.user, ["can_use_ad_additional_data"])
@@ -291,6 +304,63 @@ class TestBatchUpload(TestCase):
                 self.assertEqual(to_upload[i][field], resp_json["data"]["approvedContentAds"][i][field])
             self.assertEqual(saved_display_ads[i].id, int(resp_json["data"]["approvedContentAds"][i]["id"]))
 
+    @mock.patch("dash.features.contentupload.upload._invoke_external_validation", mock.Mock())
+    def test_video_batch_upload_success(self):
+        ad_group = dash.models.AdGroup.objects.get(id=987)
+        ad_group.campaign.type = dash.constants.CampaignType.VIDEO
+        ad_group.campaign.save(None)
+        video_asset_1 = magic_mixer.blend(core.features.videoassets.models.VideoAsset)
+        video_asset_2 = magic_mixer.blend(core.features.videoassets.models.VideoAsset)
+        ad1 = self._mock_content_ad("test1")
+        ad2 = self._mock_content_ad("test2")
+        ad1.update({"videoAssetId": str(video_asset_1.id)})
+        ad2.update({"videoAssetId": str(video_asset_2.id)})
+        to_upload = [ad1, ad2]
+
+        r = self.client.post(reverse("contentads_batch_list") + "?adGroupId=987", to_upload, format="json")
+        self.assertEqual(r.status_code, 201)
+        resp_json = json.loads(r.content)
+        self.assertIsInstance(resp_json["data"], dict)
+        self.assertEqual(resp_json["data"]["status"], "IN_PROGRESS")
+        self.assertIn("id", resp_json["data"])
+
+        batch_id = int(resp_json["data"]["id"])
+        batch = dash.models.UploadBatch.objects.get(pk=batch_id)
+
+        r = self.client.get(reverse("contentads_batch_details", kwargs={"batch_id": batch_id}))
+        self.assertEqual(r.status_code, 200)
+        resp_json = json.loads(r.content)
+        self.assertIsInstance(resp_json["data"], dict)
+        self.assertEqual(resp_json["data"]["status"], "IN_PROGRESS")
+        self.assertEqual(batch_id, int(resp_json["data"]["id"]))
+
+        self._approve_candidates(batch)
+
+        r = self.client.get(reverse("contentads_batch_details", kwargs={"batch_id": batch_id}))
+        self.assertEqual(r.status_code, 200)
+        resp_json = json.loads(r.content)
+        self.assertIsInstance(resp_json["data"], dict)
+        self.assertEqual(resp_json["data"]["status"], "DONE")
+        self.assertEqual(batch_id, int(resp_json["data"]["id"]))
+
+        saved_video_ads = batch.contentad_set.all().order_by("pk")
+        self.assertEqual(len(to_upload), len(resp_json["data"]["approvedContentAds"]))
+        self.assertEqual(len(to_upload), len(saved_video_ads))
+        for i in range(len(to_upload)):
+            for field in (
+                "state",
+                "title",
+                "displayUrl",
+                "brandName",
+                "description",
+                "callToAction",
+                "label",
+                "trackerUrls",
+                "videoAssetId",
+            ):
+                self.assertEqual(to_upload[i][field], resp_json["data"]["approvedContentAds"][i][field])
+            self.assertEqual(saved_video_ads[i].id, int(resp_json["data"]["approvedContentAds"][i]["id"]))
+
     def test_display_batch_upload_success(self):
         dash.models.Campaign.objects.filter(adgroup__id=987).update(type=dash.constants.CampaignType.DISPLAY)
         to_upload = [self._mock_image_ad("image"), self._mock_ad_tag("ad_tag")]
@@ -374,6 +444,44 @@ class TestBatchUpload(TestCase):
         self.assertEqual(resp_json["data"]["status"], "FAILED")
         self.assertEqual(resp_json["data"]["approvedContentAds"], [])
         self.assertEqual(batch_id, int(resp_json["data"]["id"]))
+
+    @mock.patch("dash.features.contentupload.upload._invoke_external_validation", mock.Mock())
+    def test_video_batch_upload_failure(self):
+        ad_group = dash.models.AdGroup.objects.get(id=987)
+        ad_group.campaign.type = dash.constants.CampaignType.VIDEO
+        ad_group.campaign.save(None)
+
+        to_upload = [self._mock_content_ad("test1"), self._mock_content_ad("test2")]
+        r = self.client.post(reverse("contentads_batch_list") + "?adGroupId=987", to_upload, format="json")
+        self.assertEqual(r.status_code, 201)
+        resp_json = json.loads(r.content)
+        self.assertIsInstance(resp_json["data"], dict)
+        self.assertEqual(resp_json["data"]["status"], "IN_PROGRESS")
+        self.assertIn("id", resp_json["data"])
+        for status in resp_json["data"]["validationStatus"]:
+            self.assertEqual(status["videoAssetId"], ["Video asset required on video campaigns"])
+
+        batch_id = int(resp_json["data"]["id"])
+        batch = dash.models.UploadBatch.objects.get(pk=batch_id)
+
+        r = self.client.get(reverse("contentads_batch_details", kwargs={"batch_id": batch_id}))
+        self.assertEqual(r.status_code, 200)
+        resp_json = json.loads(r.content)
+        self.assertIsInstance(resp_json["data"], dict)
+        self.assertEqual(resp_json["data"]["status"], "IN_PROGRESS")
+        self.assertEqual(batch_id, int(resp_json["data"]["id"]))
+
+        self._approve_candidates(batch)
+
+        r = self.client.get(reverse("contentads_batch_details", kwargs={"batch_id": batch_id}))
+        self.assertEqual(r.status_code, 200)
+        resp_json = json.loads(r.content)
+        self.assertIsInstance(resp_json["data"], dict)
+        self.assertEqual(resp_json["data"]["status"], "FAILED")
+        self.assertEqual(resp_json["data"]["approvedContentAds"], [])
+        self.assertEqual(batch_id, int(resp_json["data"]["id"]))
+        for status in resp_json["data"]["validationStatus"]:
+            self.assertEqual(status["videoAssetId"], ["Video asset required on video campaigns"])
 
     @mock.patch("dash.features.contentupload.upload._invoke_external_validation", mock.Mock())
     def test_display_batch_upload_failure(self):

@@ -31,6 +31,7 @@ class ContentAdSerializer(
             "ad_width",
             "ad_height",
             "ad_tag",
+            "video_asset_id",
         )
         read_only_fields = tuple(
             set(fields) - set(("state", "url", "tracker_urls", "label", "additional_data", "brand_name"))
@@ -45,11 +46,15 @@ class ContentAdSerializer(
 
     def to_representation(self, ad):
         ret = super().to_representation(ad)
+
         if ad.ad_group.campaign.type != dash.constants.CampaignType.DISPLAY:
             ret.pop("type", None)
             ret.pop("ad_width", None)
             ret.pop("ad_height", None)
             ret.pop("ad_tag", None)
+
+        if ad.ad_group.campaign.type != dash.constants.CampaignType.VIDEO:
+            ret.pop("video_asset_id", None)
 
         return ret
 
@@ -64,6 +69,7 @@ class ContentAdSerializer(
     ad_width = rest_framework.serializers.IntegerField(source="image_width", required=False)
     ad_height = rest_framework.serializers.IntegerField(source="image_height", required=False)
     ad_tag = rest_framework.serializers.CharField(required=False)
+    video_asset_id = rest_framework.serializers.UUIDField(source="video_asset.id", required=False)
 
 
 class ContentAdCandidateSerializer(
@@ -82,6 +88,7 @@ class ContentAdCandidateSerializer(
             "label",
             "image_crop",
             "additional_data",
+            "video_asset_id",
         )
         extra_kwargs = {"primary_tracker_url": {"allow_empty": True}, "secondary_tracker_url": {"allow_empty": True}}
         permissioned_fields = {"additional_data": "zemauth.can_use_ad_additional_data"}
@@ -95,6 +102,7 @@ class ContentAdCandidateSerializer(
     call_to_action = restapi.serializers.fields.PlainCharField(required=True)
     image_crop = restapi.serializers.fields.PlainCharField(required=True)
     label = restapi.serializers.fields.PlainCharField(allow_blank=True, allow_null=True, required=False)
+    video_asset_id = rest_framework.serializers.UUIDField(required=False)
 
     def to_internal_value(self, external_data):
         internal_data = super(ContentAdCandidateSerializer, self).to_internal_value(external_data)
