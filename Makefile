@@ -120,7 +120,7 @@ else
 endif
 
 build_baseimage:	## rebuilds a zemanta/z1-base docker image
-	docker pull python:3.6-slim
+	docker pull python:3.7-slim
 	docker build 	-t $(ECR_BASE)/z1-base:$(GIT_HASH) \
 					-t $(ECR_BASE)/z1-base:$(GIT_BRANCH) \
 					-t $(ECR_BASE)/z1-base:$(TIMESTAMP) \
