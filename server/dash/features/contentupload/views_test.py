@@ -342,6 +342,7 @@ class UploadCsvTestCase(TestCase):
 
     @patch("utils.lambda_helper.invoke_lambda", MagicMock())
     def test_post_ad_tag_errors(self):
+        self.maxDiff = None
         user = User.objects.get(pk=2)
         account = magic_mixer.blend(models.Account, users=[user])
         campaign = magic_mixer.blend(models.Campaign, account=account, type=constants.CampaignType.DISPLAY)
@@ -368,7 +369,16 @@ class UploadCsvTestCase(TestCase):
             "primary_tracker_url": ["Impression tracker URLs have to be HTTPS"],
             "title": ["Missing ad name"],
             "url": ["Invalid URL"],
-            "image_url": ["Image size invalid. Supported sizes are (width x height): 300x250, 320x50"],
+            "image_url": [
+                "Image size invalid. "
+                "Supported sizes are (width "
+                "x height): 300x250, "
+                "320x50, 728x90, 336x280, "
+                "300x600, 120x600, 320x100, "
+                "468x60, 300x1050, 970x90, "
+                "970x250, 250x250, 200x200, "
+                "180x150, 125x125"
+            ],
             "display_url": ["Missing display URL"],
         }
 

@@ -64,6 +64,19 @@ export enum AdType {
 export enum AdSize {
     MOBILE_LEADERBOARD = 1,
     INLINE_RECTANGLE = 2,
+    LEADERBOARD = 3,
+    LARGE_RECTANGLE = 4,
+    HALF_PAGE = 5,
+    WIDESKYSCRAPER = 6,
+    LARGE_MOBILE_BANNER = 7,
+    BANNER = 8,
+    PORTRAIT = 9,
+    LARGE_LEADERBOARD = 10,
+    BILLBOARD = 11,
+    SQUARE = 12,
+    SMALL_SQUARE = 13,
+    SMALL_RECTANGLE = 14,
+    BUTTON = 15,
 }
 
 export enum AdGroupState {

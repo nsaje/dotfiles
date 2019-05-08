@@ -1618,7 +1618,19 @@ class ImageAdFormTestCase(TestCase):
         f = forms.ImageAdForm(self.campaign, data)
         self.assertFalse(f.is_valid())
         self.assertEqual(
-            {"image_url": ["Image size invalid. Supported sizes are (width x height): 300x250, 320x50"]}, f.errors
+            {
+                "image_url": [
+                    "Image size invalid. "
+                    "Supported sizes are (width "
+                    "x height): 300x250, "
+                    "320x50, 728x90, 336x280, "
+                    "300x600, 120x600, 320x100, "
+                    "468x60, 300x1050, 970x90, "
+                    "970x250, 250x250, 200x200, "
+                    "180x150, 125x125"
+                ]
+            },
+            f.errors,
         )
 
     def test_image_supported_height(self):
@@ -1627,7 +1639,19 @@ class ImageAdFormTestCase(TestCase):
         f = forms.ImageAdForm(self.campaign, data)
         self.assertFalse(f.is_valid())
         self.assertEqual(
-            {"image_url": ["Image size invalid. Supported sizes are (width x height): 300x250, 320x50"]}, f.errors
+            {
+                "image_url": [
+                    "Image size invalid. "
+                    "Supported sizes are (width "
+                    "x height): 300x250, "
+                    "320x50, 728x90, 336x280, "
+                    "300x600, 120x600, 320x100, "
+                    "468x60, 300x1050, 970x90, "
+                    "970x250, 250x250, 200x200, "
+                    "180x150, 125x125"
+                ]
+            },
+            f.errors,
         )
 
     def test_invalid_url_status(self):
@@ -1840,7 +1864,19 @@ class AdTagFormTestCase(TestCase):
         f = forms.AdTagForm(self.campaign, data)
         self.assertFalse(f.is_valid())
         self.assertEqual(
-            {"image_url": ["Image size invalid. Supported sizes are (width x height): 300x250, 320x50"]}, f.errors
+            {
+                "image_url": [
+                    "Image size invalid. "
+                    "Supported sizes are (width "
+                    "x height): 300x250, "
+                    "320x50, 728x90, 336x280, "
+                    "300x600, 120x600, 320x100, "
+                    "468x60, 300x1050, 970x90, "
+                    "970x250, 250x250, 200x200, "
+                    "180x150, 125x125"
+                ]
+            },
+            f.errors,
         )
 
     def test_image_supported_height(self):
@@ -1849,7 +1885,19 @@ class AdTagFormTestCase(TestCase):
         f = forms.AdTagForm(self.campaign, data)
         self.assertFalse(f.is_valid())
         self.assertEqual(
-            {"image_url": ["Image size invalid. Supported sizes are (width x height): 300x250, 320x50"]}, f.errors
+            {
+                "image_url": [
+                    "Image size invalid. "
+                    "Supported sizes are (width "
+                    "x height): 300x250, "
+                    "320x50, 728x90, 336x280, "
+                    "300x600, 120x600, 320x100, "
+                    "468x60, 300x1050, 970x90, "
+                    "970x250, 250x250, 200x200, "
+                    "180x150, 125x125"
+                ]
+            },
+            f.errors,
         )
 
     def test_invalid_url_status(self):

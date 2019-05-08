@@ -133,8 +133,38 @@ class AdType(ConstantBase):
 class DisplayAdSize(ConstantBase):
     INLINE_RECTANGLE = (300, 250)  # width, height
     MOBILE_LEADERBOARD = (320, 50)
+    LEADERBOARD = (728, 90)
+    LARGE_RECTANGLE = (336, 280)
+    HALF_PAGE = (300, 600)
+    WIDESKYSCRAPER = (120, 600)
+    LARGE_MOBILE_BANNER = (320, 100)
+    BANNER = (468, 60)
+    PORTRAIT = (300, 1050)
+    LARGE_LEADERBOARD = (970, 90)
+    BILLBOARD = (970, 250)
+    SQUARE = (250, 250)
+    SMALL_SQUARE = (200, 200)
+    SMALL_RECTANGLE = (180, 150)
+    BUTTON = (125, 125)
 
-    _VALUES = {INLINE_RECTANGLE: "Inline rectangle", MOBILE_LEADERBOARD: "Mobile leaderboard"}
+    _VALUES = {
+        INLINE_RECTANGLE: "Inline rectangle",
+        MOBILE_LEADERBOARD: "Mobile leaderboard",
+        LEADERBOARD: "Leaderboard",
+        LARGE_RECTANGLE: "Large rectangle",
+        HALF_PAGE: "Half page",
+        WIDESKYSCRAPER: "Wideskyscraper",
+        WIDESKYSCRAPER: "Wideskyscraper",
+        LARGE_MOBILE_BANNER: "Large mobile banner",
+        BANNER: "Banner",
+        PORTRAIT: "Portrait",
+        LARGE_LEADERBOARD: "Large leaderboard",
+        BILLBOARD: "Billboard",
+        SQUARE: "Square",
+        SMALL_SQUARE: "Small square",
+        SMALL_RECTANGLE: "Small rectangle",
+        BUTTON: "Button",
+    }
 
 
 class PublisherStatus(ConstantBase):
