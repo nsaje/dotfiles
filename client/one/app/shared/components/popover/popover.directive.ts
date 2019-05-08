@@ -17,6 +17,7 @@ import {
     Inject,
     SimpleChange,
     OnDestroy,
+    ChangeDetectorRef,
 } from '@angular/core';
 import {NgbPopover, NgbPopoverConfig} from '@ng-bootstrap/ng-bootstrap';
 import {NgbPopoverWindow} from '@ng-bootstrap/ng-bootstrap/popover/popover';
@@ -48,7 +49,8 @@ export class PopoverDirective extends NgbPopover
         viewContainerRef: ViewContainerRef,
         config: NgbPopoverConfig,
         ngZone: NgZone,
-        @Inject(DOCUMENT) document: Document
+        @Inject(DOCUMENT) document: Document,
+        changeDetectorRef: ChangeDetectorRef
     ) {
         super(
             elementRef,
@@ -58,7 +60,8 @@ export class PopoverDirective extends NgbPopover
             viewContainerRef,
             config,
             ngZone,
-            document
+            document,
+            changeDetectorRef
         );
     }
 
