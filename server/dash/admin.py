@@ -328,6 +328,9 @@ class AgencyUserInline(admin.TabularInline):
     verbose_name = "Agency Manager"
     verbose_name_plural = "Agency Managers"
 
+    def has_change_permission(self, *args):
+        return True
+
     def __str__(self):
         return self.name
 
@@ -488,6 +491,9 @@ class AccountUserInline(admin.TabularInline):
     max_num = 0
     can_delete = False
     readonly_fields = ("user",)
+
+    def has_change_permission(self, *args):
+        return True
 
     def __str__(self):
         return self.name
