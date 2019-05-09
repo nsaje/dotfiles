@@ -101,7 +101,7 @@ services:
         environment:
           VIRTUAL_HOST: "oneapi.zemanta.com"
           NEW_RELIC_APP_NAME: "Zemanta One (REST API)"
-          GUNICORN_WORKERS: "6"
+          GUNICORN_WORKERS: "32"
           GUNICORN_THREADS: "1"
           GUNICORN_WORKER_CLASS: "gevent"
           GUNICORN_LOG_LEVEL: "warn"
