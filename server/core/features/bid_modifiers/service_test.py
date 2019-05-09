@@ -373,7 +373,7 @@ class TestBidModifierService(TestCase):
                 ): dash_constants.PlacementMedium.get_name(dash_constants.PlacementMedium.APP),
                 "Bid Modifier": "0.5",
             },
-            {helpers.output_modifier_type(constants.BidModifierType.COUNTRY): "US", "Bid Modifier": "1.6"},
+            {helpers.output_modifier_type(constants.BidModifierType.COUNTRY): "XY", "Bid Modifier": "1.6"},
         ]
 
         result_entires = [
@@ -410,7 +410,7 @@ class TestBidModifierService(TestCase):
                 "Errors": "",
             },
             {
-                helpers.output_modifier_type(constants.BidModifierType.COUNTRY): "US",
+                helpers.output_modifier_type(constants.BidModifierType.COUNTRY): "XY",
                 "Bid Modifier": "1.6",
                 "Errors": "Invalid Geolocation",
             },

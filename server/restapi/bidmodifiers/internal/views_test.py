@@ -17,7 +17,6 @@ from utils.magic_mixer import magic_mixer
 class BidModifierCSVTest(restapi.common.views_base_test.RESTAPITest):
     def setUp(self):
         super(BidModifierCSVTest, self).setUp()
-        test_helper.add_permissions(self.user, ["can_set_bid_modifiers"])
         self.ad_group = magic_mixer.blend(core.models.AdGroup, campaign__account__users=[self.user])
         self.source = magic_mixer.blend(core.models.Source, bidder_slug="source_slug")
 
@@ -444,6 +443,7 @@ class BidModifierCSVTest(restapi.common.views_base_test.RESTAPITest):
 class NoPermissionTest(restapi.common.views_base_test.RESTAPITest):
     def setUp(self):
         super(NoPermissionTest, self).setUp()
+        test_helper.remove_permissions(self.user, ["can_set_bid_modifiers"])
 
     def test_download_modifiers(self):
         response = self.client.get(

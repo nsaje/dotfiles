@@ -40,6 +40,7 @@
       - ['can_see_pixel_notes', 'zemauth', 'user']
       - ['can_see_pixel_traffic', 'zemauth', 'user']
       - ['account_custom_audiences_view', 'zemauth', 'user']
+      - ['can_set_bid_modifiers', 'zemauth', 'user']
 
 - model: oauth2_provider.application
   pk: 1
@@ -788,3 +789,41 @@
         value: "test,tags"
     model: dash.audiencerule
     pk: 2
+
+# test bid modifiers
+
+-   fields:
+        type: 1
+        ad_group: 2040
+        source: 2
+        source_slug: triplelift
+        target: www.slader.com
+        modifier: 1.01
+        created_dt: 2019-02-14 14:30:33.176603
+        modified_dt: 2019-03-04 15:36:35.437905
+    model: dash.bidmodifier
+    pk: 1234
+
+-   fields:
+        type: 3
+        ad_group: 2040
+        source: null
+        source_slug: ""
+        target: "4"
+        modifier: 0.99
+        created_dt: 2019-02-14 14:30:33.176603
+        modified_dt: 2019-03-04 15:36:35.437905
+    model: dash.bidmodifier
+    pk: 1235
+
+-   fields:
+        type: 9
+        ad_group: 2040
+        source: null
+        source_slug: ""
+        target: "16805"
+        modifier: 1.20
+        created_dt: 2019-02-14 14:30:33.176603
+        modified_dt: 2019-03-04 15:36:35.437905
+    model: dash.bidmodifier
+    pk: 1236

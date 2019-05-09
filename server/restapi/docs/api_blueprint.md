@@ -1524,6 +1524,171 @@ dailyBudget  | [money](#money)     | daily budget shared among all RTB sources
             }
         }
 
+## Bid Modifiers [/rest/v1/adgroups/{adGroupId}/bidmodifiers/]
+<a name="bid-modifiers"></a>
+
+| Property   | Type   | Description                                                                                                                                                            | Create   | Update    |
+|-----------|-------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------|----------|
+| id         | string | the id of bid modifier                                                                                                                                                 | N/A      | read only |
+| type       | string | the [type](#bid-modifier-types) of bid modifier                                                                                                                        | required | optional  |
+| sourceSlug | string | this value is always an empty string, except for the `PUBLISHER` type bid modifiers where it contains the source slug of the source it targets (for a given publisher) | optional | optional  |
+| target     | string | a string representing the target of bid modifier                                                                                                                       | required | optional  |
+| modifier   | number | a floating point factor for bidding price calculation                                                                                                                  | required | required  |
+
+Bid modifiers enable modifying the bidding price for an ad group according to the desired parameters. The modified CPC or CPM bid value is calculated in the following way: `modifiedBidValue = bidValue * modifier`. A bid request can match multiple bid modifiers with different types (for example `DEVICE`, `OPERATING_SYSTEM` and `COUNTRY`). In that case the modified bid value is calculated by multiplying all matching bid modifier values: `modifiedBidValue = bidValue * modifier1 * modifier2 * modifier3`. The allowed `modifier` values are limited to the interval between `0.01` and `11.0`.
+
+<a name="bid-modifier-types"></a>
+#### Bid Modifier Types
+
+The following bid modifier types are supported:
+
+| Type             | Description                                                               | Allowed Values                        |
+|-----------------|--------------------------------------------------------------------------|--------------------------------------|
+| PUBLISHER        | Modifies the bidding price for a specific source at a specific publisher. | the domain name of the publisher      |
+| SOURCE           | Modifies the bidding price for a specific source.                         | the ID of the source as a string      |
+| DEVICE           | Modifies the bidding price for a specific device type.                    | see [Device targeting](#device)       |
+| OPERATING_SYSTEM | Modifies the bidding price for a specific operating system.               | see [Operating system targeting](#os) |
+| PLACEMENT        | Modifies the bidding price for a specific add placement.                  | see [Placement targeting](#placement) |
+| COUNTRY          | Modifies the bidding price for a specific country.                        | see [Country](#country)               |
+| STATE            | Modifies the bidding price for a specific state or region.                | see [State / Region](#region)         |
+| DMA              | Modifies the bidding price for a specific DMA.                            | see [DMA](#dma)                       |
+| AD               | Modifies the bidding price for a specific content ad.                     | the ID of the content ad as a string  |
+
+**A note on `SOURCE` bid modifiers**: API already supports `SOURCE` bid modifiers, but setting them currently has no effect in the system. Full support for `SOURCE` bid modifiers will be added shortly.
+
+### Get bid modifiers for an ad group [GET /rest/v1/adgroups/{adGroupId}/bidmodifiers/{?type}]
+
++ Parameters
+    + adGroupId: 2040 (required)
+    + type (string, optional)
+        + filter results by [bid modifier type](#bid-modifier-types)
+
++ Response 200 (application/json)
+
+        {
+            "data": [
+                {
+                    "id": "1234",
+                    "type": "PUBLISHER",
+                    "sourceSlug": "triplelift",
+                    "target": "www.slader.com",
+                    "modifier": 1.01
+                },
+                {
+                    "id": "1235",
+                    "type": "DEVICE",
+                    "sourceSlug": "",
+                    "target": "MOBILE",
+                    "modifier": 0.99
+                },  
+                {
+                    "id": "1236",
+                    "type": "AD",
+                    "sourceSlug": "",
+                    "target": "16805",
+                    "modifier": 1.20
+                }
+            ]
+        }
+
+### Add bid modifier for an ad group [POST /rest/v1/adgroups/{adGroupId}/bidmodifiers/]
+
++ Parameters
+    + adGroupId: 2040 (required)
+
++ Request (application/json)
+
+        {
+            "type": "COUNTRY",
+            "sourceSlug": "",
+            "target": "US",
+            "modifier": 1.5
+        }
+
++ Response 201 (application/json)
+
+        {
+            "data": {
+                "id": "1237",
+                "type": "COUNTRY",
+                "sourceSlug": "",
+                "target": "US",
+                "modifier": 1.5
+            }
+        }
+
+### Delete bid modifiers for an ad group [DELETE /rest/v1/adgroups/{adGroupId}/bidmodifiers/]
+
+Optionally a list of Bid Modifier IDs can be included in request body to delete only certain Bid Modifiers instead of all belonging to the Ad Group:
+
+```
+[
+    {"id": 1234},
+    {"id": 1235}
+]
+```
+
++ Parameters
+    + adGroupId: 2050 (required)
+
++ Response 204 (application/json)
+
+        {}
+
+### Get a bid modifier for an ad group [GET /rest/v1/adgroups/{adGroupId}/bidmodifiers/{bidModifierId}]
+
++ Parameters
+    + adGroupId: 2040 (required)
+    + bidModifierId: 1235 (required)
+
++ Response 200 (application/json)
+
+        {
+            "data": {
+                "id": "1235",
+                "type": "DEVICE",
+                "sourceSlug": "",
+                "target": "MOBILE",
+                "modifier": 0.99
+            }
+        }
+
+### Update a bid modifier for an ad group [PUT /rest/v1/adgroups/{adGroupId}/bidmodifiers/{bidModifierId}]
+
+Only the `modifier` value can be changed for an existing Bid Modifier. It is not allowed to change the `type`, `sourceSlug` and `target` of an existing Bid Modifier, instead one can delete the existing Bid Modifier and create a new one with the desired values for these three attributes. However if `type`, `sourceSlug` and `target` values did not change, they can be provided along with the modified `modifier` value and will not cause a validation error.
+
++ Parameters
+    + adGroupId: 2040 (required)
+    + bidModifierId: 1235 (required)
+
++ Request (application/json)
+
+        {
+            "modifier": 0.98
+        }
+
++ Response 200 (application/json)
+
+        {
+            "data": {
+                "id": "1235",
+                "type": "DEVICE",
+                "sourceSlug": "",
+                "target": "MOBILE",
+                "modifier": 0.98
+            }
+        }
+
+### Delete a bid modifier for an ad group [DELETE /rest/v1/adgroups/{adGroupId}/bidmodifiers/{bidModifierId}]
+
++ Parameters
+    + adGroupId: 2040 (required)
+    + bidModifierId: 1235 (required)
+
++ Response 204 (application/json)
+
+        {}
+
 # Group Content Ad management
 
 ## Upload Content Ads [/rest/v1/contentads/batch/]
