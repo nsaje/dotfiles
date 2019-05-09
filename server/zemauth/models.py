@@ -413,6 +413,7 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ("sspd_can_block_ad_group", "SSPD: User can block ad group"),
             ("sspd_can_see_link_to_entity_in_z1", "SSPD: User can see link to entity in Z1"),
             ("can_set_click_capping_daily_click_budget", "User can set click capping daily click budget"),
+            ("can_see_viewthrough_conversions", "User can see view-through conversions"),
         )
 
     def get_full_name(self):
