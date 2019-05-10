@@ -19,7 +19,8 @@ AMPLIFY_REVIEW_AGENCIES_DISABLED = {
     407,
     175,
     206,
-}  # Outbrain, Publicis / Independence Media / Precision Guaranteed, iProspect France, GroupM / PBU, OMD France, PHD Media: Remind, Gamned SAS
+    469,
+}  # Outbrain, Publicis / Independence Media / Precision Guaranteed, iProspect France, GroupM / PBU, OMD France, PHD Media: Remind, Gamned SAS, KR Wavemaker
 AMPLIFY_REVIEW_ACCOUNTS_DISABLED = {490, 513}  # inPowered
 
 
