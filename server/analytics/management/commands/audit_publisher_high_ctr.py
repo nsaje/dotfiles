@@ -11,7 +11,7 @@ HELPER_LINKS = "Those links might help you in your investigation : <http://redas
 class Command(utils.command_helpers.ExceptionCommand):
     def add_arguments(self, parser):
         parser.add_argument("--date", dest="date", help="Date %Y-%m-%d")
-        parser.add_argument("--ctr", dest="ctr", default=5, help="CTR threshold")
+        parser.add_argument("--ctr", dest="ctr", default=10, help="CTR threshold")
         parser.add_argument("--max_clicks", dest="max_clicks", default=100, help="Clicks threshold")
         parser.add_argument("--max_impressions", dest="max_impressions", default=100, help="Impressions threshold")
         parser.add_argument("--slack", dest="slack", help="Post alert on Slack", action="store_true")
