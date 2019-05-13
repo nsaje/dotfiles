@@ -79,33 +79,38 @@
             <div class="dropdown-menu__subcategory-name">
                 {{ subcategory.name }}
             </div>
-            <ul
-                ng-if="subcategory.type === 'condensed'"
-                class="dropdown-menu__list dropdown-menu__list--condensed"
+            <div
+                class="dropdown-menu__subsubcategory"
+                ng-repeat="subsubcategory in subcategory.subcategories"
             >
-                <li
-                    class="dropdown-menu__list-item"
-                    ng-repeat="subColumn in subcategory.columns"
-                    is-internal="{{ subColumn.data.internal }}"
+                <div
+                    class="dropdown-menu__subsubcategory-name"
+                    ng-if="$ctrl.hasPermission('zemauth.can_see_viewthrough_conversions')"
                 >
-                    <label
-                        ng-click="!subColumn.disabled && $ctrl.onColumnToggled({field: subColumn.field})"
+                    {{ subsubcategory.name }}
+                </div>
+                <ul class="dropdown-menu__subsubcategory-items">
+                    <li
+                        class="dropdown-menu__subsubcategory-item"
+                        ng-repeat="subsubColumn in subsubcategory.columns"
+                        is-internal="{{ subsubColumn.data.internal }}"
                     >
-                        <input
-                            class="input-checkbox"
-                            ng-disabled="subColumn.disabled"
-                            type="checkbox"
-                            ng-checked="subColumn.visible"
-                        />
-                        <span
-                            class="checkbox-text"
-                            ng-class="{disabled: subColumn.disabled}"
+                        <label
+                            ng-click="!subsubColumn.disabled && $ctrl.onColumnToggled({field: subsubColumn.field})"
                         >
-                            {{ subColumn.data.shortName }}
-                        </span>
-                    </label>
-                </li>
-            </ul>
+                            <input
+                                class="input-checkbox"
+                                ng-disabled="subsubColumn.disabled"
+                                type="checkbox"
+                                ng-checked="subsubColumn.visible"
+                            />
+                            <span class="checkbox-text">{{
+                                subsubColumn.data.shortName
+                            }}</span>
+                        </label>
+                    </li>
+                </ul>
+            </div>
         </div>
     </div>
 </div>

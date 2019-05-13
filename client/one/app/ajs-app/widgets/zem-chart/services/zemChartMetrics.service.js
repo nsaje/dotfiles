@@ -663,93 +663,146 @@ angular
 
         function insertPixelCategory(categories, pixels) {
             if (!pixels || pixels.length === 0) return;
+
             var pixelSubcategories = [];
             angular.forEach(pixels, function(pixel) {
-                var pixelMetrics = [];
-                var pixelGoalMetrics = [];
-                angular.forEach(options.conversionWindows, function(
-                    conversionWindow
-                ) {
-                    var metricValue =
-                        pixel.prefix + '_' + conversionWindow.value;
-                    pixelMetrics.push({
-                        value: metricValue,
-                        shortName: conversionWindow.value / 24,
-                        name: pixel.name + ' ' + conversionWindow.name,
-                        shown: true,
-                    });
-
-                    pixelGoalMetrics.push({
-                        value: 'avg_cost_per_' + metricValue,
-                        shortName: conversionWindow.value / 24,
-                        name:
-                            'CPA (' +
-                            pixel.name +
-                            ' ' +
-                            conversionWindow.name +
-                            ')',
-                        type: TYPE_CURRENCY,
-                        fractionSize: 2,
-                        shown: true,
-                        costMode: constants.costMode.LEGACY,
-                    });
-
-                    pixelGoalMetrics.push({
-                        value: 'avg_et_cost_per_' + metricValue,
-                        shortName: conversionWindow.value / 24 + '(P)',
-                        name:
-                            'Platform CPA (' +
-                            pixel.name +
-                            ' ' +
-                            conversionWindow.name +
-                            ')',
-                        type: TYPE_CURRENCY,
-                        fractionSize: 2,
-                        shown:
-                            'zemauth.can_view_platform_cost_breakdown_derived',
-                        costMode: constants.costMode.PLATFORM,
-                        fieldGroup: 'avg_cost_per_' + metricValue,
-                    });
-
-                    pixelGoalMetrics.push({
-                        value: 'avg_etfm_cost_per_' + metricValue,
-                        shortName: conversionWindow.value / 24,
-                        name:
-                            'CPA (' +
-                            pixel.name +
-                            ' ' +
-                            conversionWindow.name +
-                            ')',
-                        type: TYPE_CURRENCY,
-                        fractionSize: 2,
-                        shown: 'zemauth.can_view_end_user_cost_breakdown',
-                        costMode: constants.costMode.PUBLIC,
-                        fieldGroup: 'avg_cost_per_' + metricValue,
-                    });
-                });
-
-                checkPermissions(pixelMetrics);
-                checkPermissions(pixelGoalMetrics);
-
-                pixelSubcategories.push({
+                var pixelSubCategory = {
                     name: pixel.name,
-                    metrics: pixelMetrics.filter(function(metric) {
-                        return metric.shown;
-                    }),
-                });
-
-                pixelSubcategories.push({
+                    metrics: [],
+                    subcategories: [],
+                };
+                var pixelGoalSubCategory = {
                     name: 'CPA (' + pixel.name + ')',
-                    metrics: pixelGoalMetrics.filter(function(metric) {
-                        return metric.shown;
-                    }),
-                });
+                    metrics: [],
+                    subcategories: [],
+                };
+
+                generatePixelCategories(
+                    pixelSubCategory,
+                    pixelGoalSubCategory,
+                    pixel,
+                    '',
+                    ' - Click attr.',
+                    'Click attr.:'
+                );
+                if (
+                    zemPermissions.hasPermission(
+                        'zemauth.can_see_viewthrough_conversions'
+                    )
+                ) {
+                    generatePixelCategories(
+                        pixelSubCategory,
+                        pixelGoalSubCategory,
+                        pixel,
+                        '_view',
+                        ' - View attr.',
+                        'View attr.:'
+                    );
+                }
+                pixelSubcategories.push(pixelSubCategory, pixelGoalSubCategory);
             });
+
             categories.push({
                 name: PIXELS_CATEGORY_NAME,
                 description: 'Choose conversion window in days.',
                 metrics: [],
                 subcategories: pixelSubcategories,
+            });
+        }
+
+        function generatePixelCategories(
+            pixelSubCategory,
+            pixelGoalSubCategory,
+            pixel,
+            fieldSuffix,
+            columnSuffix,
+            subRowName
+        ) {
+            var pixelMetrics = [];
+            var pixelGoalMetrics = [];
+
+            angular.forEach(options.conversionWindows, function(
+                conversionWindow
+            ) {
+                var metricValue =
+                    pixel.prefix + '_' + conversionWindow.value + fieldSuffix;
+
+                pixelMetrics.push({
+                    value: metricValue,
+                    shortName: conversionWindow.value / 24,
+                    name:
+                        pixel.name + ' ' + conversionWindow.name + columnSuffix,
+                    shown: true,
+                });
+
+                pixelGoalMetrics.push({
+                    value: 'avg_cost_per_' + metricValue,
+                    shortName: conversionWindow.value / 24,
+                    name:
+                        'CPA (' +
+                        pixel.name +
+                        ' ' +
+                        conversionWindow.name +
+                        columnSuffix +
+                        ')',
+                    type: TYPE_CURRENCY,
+                    fractionSize: 2,
+                    shown: true,
+                    costMode: constants.costMode.LEGACY,
+                });
+
+                pixelGoalMetrics.push({
+                    value: 'avg_et_cost_per_' + metricValue,
+                    shortName: conversionWindow.value / 24 + '(P)',
+                    name:
+                        'Platform CPA (' +
+                        pixel.name +
+                        ' ' +
+                        conversionWindow.name +
+                        columnSuffix +
+                        ')',
+                    type: TYPE_CURRENCY,
+                    fractionSize: 2,
+                    shown: 'zemauth.can_view_platform_cost_breakdown_derived',
+                    costMode: constants.costMode.PLATFORM,
+                    fieldGroup: 'avg_cost_per_' + metricValue,
+                });
+
+                pixelGoalMetrics.push({
+                    value: 'avg_etfm_cost_per_' + metricValue,
+                    shortName: conversionWindow.value / 24,
+                    name:
+                        'CPA (' +
+                        pixel.name +
+                        ' ' +
+                        conversionWindow.name +
+                        columnSuffix +
+                        ')',
+                    type: TYPE_CURRENCY,
+                    fractionSize: 2,
+                    shown: 'zemauth.can_view_end_user_cost_breakdown',
+                    costMode: constants.costMode.PUBLIC,
+                    fieldGroup: 'avg_cost_per_' + metricValue,
+                });
+            });
+
+            checkPermissions(pixelMetrics);
+            checkPermissions(pixelGoalMetrics);
+
+            pixelSubCategory.subcategories.push({
+                name: subRowName,
+                metrics: pixelMetrics.filter(function(metric) {
+                    return metric.shown;
+                }),
+                subcategories: [],
+            });
+
+            pixelGoalSubCategory.subcategories.push({
+                name: subRowName,
+                metrics: pixelGoalMetrics.filter(function(metric) {
+                    return metric.shown;
+                }),
+                subcategories: [],
             });
         }
 
@@ -819,18 +872,13 @@ angular
             for (var i = 0; i < categories.length; ++i) {
                 var category = categories[i];
                 metric = findMetricInCategoryByValue(category, metricValue);
-                if (metric) return metric;
-
-                if (category.subcategories) {
-                    for (var j = 0; j < category.subcategories.length; ++j) {
-                        var subcategory = category.subcategories[j];
-                        metric = findMetricInCategoryByValue(
-                            subcategory,
-                            metricValue
-                        );
-                        if (metric) return metric;
-                    }
+                if (!metric && category.subcategories) {
+                    metric = findMetricByValue(
+                        category.subcategories,
+                        metricValue
+                    );
                 }
+                if (metric) return metric;
             }
             return null;
         }

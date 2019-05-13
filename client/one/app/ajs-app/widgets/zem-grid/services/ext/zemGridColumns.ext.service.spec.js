@@ -259,7 +259,7 @@ describe('zemGridColumnsService', function() {
             categories,
             'does not exist'
         );
-        expect(foundField).toBe(undefined);
+        expect(foundField).toBe(null);
     });
 
     function generateCategories() {
@@ -284,6 +284,7 @@ describe('zemGridColumnsService', function() {
                             {field: 'subField2'},
                             {field: 'subField3'},
                         ],
+                        subcategories: [],
                     },
                 ],
                 columns: [

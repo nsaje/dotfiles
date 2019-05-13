@@ -129,14 +129,22 @@ angular.module('one.widgets').factory('zemGridApi', function(zemGridUIService) {
                     category,
                     columns
                 );
-                if (
-                    newCategory.columns.length > 0 ||
-                    newCategory.subcategories.length > 0
-                ) {
+                if (isNotEmptyCategory(newCategory)) {
                     categories.push(newCategory);
                 }
             });
             return categories;
+        }
+
+        function isNotEmptyCategory(category) {
+            if (category.subcategories) {
+                for (var i = 0; i < category.subcategories.length; i++) {
+                    if (isNotEmptyCategory(category.subcategories[i])) {
+                        return true;
+                    }
+                }
+            }
+            return category.columns.length > 0;
         }
 
         function refreshUI() {

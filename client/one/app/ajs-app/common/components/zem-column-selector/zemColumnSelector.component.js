@@ -7,12 +7,13 @@ angular.module('one.widgets').component('zemColumnSelector', {
         onAllColumnsToggled: '&',
     },
     template: require('./zemColumnSelector.component.html'),
-    controller: function() {
+    controller: function(zemPermissions) {
         var MSG_DISABLED_COLUMN =
             'Column is available when corresponding breakdown is visible.';
 
         var $ctrl = this;
 
+        $ctrl.hasPermission = zemPermissions.hasPermission;
         $ctrl.searchQuery = '';
         $ctrl.getTooltip = getTooltip;
         $ctrl.onSearch = onSearch;
@@ -58,13 +59,12 @@ angular.module('one.widgets').component('zemColumnSelector', {
         }
 
         function removeEmptyCategories(category) {
-            if (category.columns.length > 0) {
-                return true;
-            }
-
-            return (category.subcategories || []).some(function(subCategory) {
-                return subCategory.columns.length > 0;
-            });
+            return (
+                category.columns.length > 0 ||
+                (category.subcategories || []).some(function(subCategory) {
+                    return removeEmptyCategories(subCategory);
+                })
+            );
         }
 
         function getTooltip(column) {

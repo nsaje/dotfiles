@@ -46,22 +46,31 @@
                     <div class="dropdown-menu__subcategory-name">
                         {{ subcategory.name }}
                     </div>
-                    <ul
-                        class="dropdown-menu__list dropdown-menu__list--condensed"
+                    <div
+                        class="dropdown-menu__subsubcategory"
+                        ng-repeat="subsubcategory in subcategory.subcategories"
                     >
-                        <li
-                            class="dropdown-menu__list-item dropdown-menu__list-item--option"
-                            ng-repeat="metric in subcategory.metrics"
+                        <div
+                            class="dropdown-menu__subsubcategory-name"
+                            ng-if="$ctrl.hasPermission('zemauth.can_see_viewthrough_conversions')"
                         >
-                            <div
-                                class="dropdown-menu__option"
-                                ng-click="$ctrl.onChanged(metric)"
-                                ng-class="{'dropdown-menu__option--selected': metric === $ctrl.metric}"
+                            {{ subsubcategory.name }}
+                        </div>
+                        <ul class="dropdown-menu__subsubcategory-items">
+                            <li
+                                class="dropdown-menu__subsubcategory-item"
+                                ng-repeat="metric in subsubcategory.metrics"
                             >
-                                {{ metric.shortName }}
-                            </div>
-                        </li>
-                    </ul>
+                                <div
+                                    class="dropdown-menu__option"
+                                    ng-click="$ctrl.onChanged(metric)"
+                                    ng-class="{'dropdown-menu__option--selected': metric === $ctrl.metric}"
+                                >
+                                    {{ metric.shortName }}
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
                 </div>
             </div>
             <div ng-if="$ctrl.nullable" class="dropdown-menu__list">

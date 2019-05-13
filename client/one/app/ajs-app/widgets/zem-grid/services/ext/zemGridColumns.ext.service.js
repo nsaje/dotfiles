@@ -241,34 +241,19 @@ angular
 
             function findColumnInCategories(categories, columnField) {
                 var currentColumn;
-                categories.some(function(category) {
-                    currentColumn = category.columns.find(function(column) {
-                        return columnField === column.field;
-                    });
-                    return currentColumn;
-                });
-                return (
-                    currentColumn ||
-                    findColumnInSubCategories(categories, columnField)
-                );
-            }
-
-            function findColumnInSubCategories(categories, columnField) {
-                var column;
-                categories.some(function(category) {
-                    if (category.subcategories.length > 0) {
-                        category.subcategories.some(function(subCategory) {
-                            column = subCategory.columns.find(function(
-                                subColumn
-                            ) {
-                                return subColumn.field === columnField;
-                            });
-                            return column;
-                        });
-                        return column;
-                    }
-                });
-                return column;
+                for (var i = 0; i < categories.length; ++i) {
+                    var category = categories[i];
+                    currentColumn =
+                        category.columns.find(function(column) {
+                            return columnField === column.field;
+                        }) ||
+                        findColumnInCategories(
+                            category.subcategories,
+                            columnField
+                        );
+                    if (currentColumn) return currentColumn;
+                }
+                return null;
             }
         }
 

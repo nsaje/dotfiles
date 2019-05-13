@@ -2573,100 +2573,141 @@ angular
                 var subcategory = {
                     name: pixel.name,
                     fields: [],
-                    type: 'condensed',
+                    subcategories: [],
                 };
-                category.subcategories.push(subcategory);
-                angular.forEach(options.conversionWindowsLegacy, function(
-                    window
+                generatePixelColumns(
+                    orderedColumns,
+                    subcategory,
+                    pixel,
+                    options.conversionWindows,
+                    '',
+                    ' - Click attr.',
+                    'Click attr.:'
+                );
+                if (
+                    zemPermissions.hasPermission(
+                        'zemauth.can_see_viewthrough_conversions'
+                    )
                 ) {
-                    var name = pixel.name + ' ' + window.name;
-                    var conversionsField = pixel.prefix + '_' + window.value;
-                    var conversionsCol = angular.copy(COLUMNS.conversionCount);
-                    conversionsCol.name = name;
-                    conversionsCol.shortName = window.value / 24;
-                    conversionsCol.field = conversionsField;
-                    conversionsCol.shown = true;
-
-                    var cpaField = AVG_COST_PREFIX + conversionsField;
-                    var cpaCol = angular.copy(COLUMNS.conversionCpa);
-                    cpaCol.name = 'CPA (' + name + ')';
-                    cpaCol.field = cpaField;
-                    cpaCol.shown = true;
-                    cpaCol.autoSelect = conversionsField;
-                    cpaCol.goal = true;
-                    cpaCol.costMode = constants.costMode.LEGACY;
-
-                    var etCpaCol = angular.copy(COLUMNS.conversionCpa);
-                    etCpaCol.name = 'Platform CPA (' + name + ')';
-                    etCpaCol.field = AVG_ET_COST_PREFIX + conversionsField;
-                    etCpaCol.autoSelect = conversionsField;
-                    etCpaCol.goal = true;
-                    etCpaCol.costMode = constants.costMode.PLATFORM;
-                    etCpaCol.internal =
-                        'zemauth.can_view_platform_cost_breakdown_derived';
-                    etCpaCol.shown =
-                        'zemauth.can_view_platform_cost_breakdown_derived';
-                    etCpaCol.fieldGroup = cpaField;
-
-                    var etfmCpaCol = angular.copy(COLUMNS.conversionCpa);
-                    etfmCpaCol.name = 'CPA (' + name + ')';
-                    etfmCpaCol.field = AVG_ETFM_COST_PREFIX + conversionsField;
-                    etfmCpaCol.autoSelect = conversionsField;
-                    etfmCpaCol.goal = true;
-                    etfmCpaCol.internal =
-                        'zemauth.can_view_end_user_cost_breakdown';
-                    etfmCpaCol.shown =
-                        'zemauth.can_view_end_user_cost_breakdown';
-                    etfmCpaCol.costMode = constants.costMode.PUBLIC;
-                    etfmCpaCol.fieldGroup = cpaField;
-
-                    var roasField = ROAS_PREFIX + conversionsField;
-                    var roasCol = angular.copy(COLUMNS.conversionRoas);
-                    roasCol.name = 'ROAS (' + name + ')';
-                    roasCol.field = roasField;
-                    roasCol.autoSelect = conversionsField;
-                    roasCol.internal = 'zemauth.fea_can_see_roas';
-                    roasCol.shown = 'zemauth.fea_can_see_roas';
-                    roasCol.costMode = constants.costMode.LEGACY;
-
-                    var etRoasCol = angular.copy(COLUMNS.conversionRoas);
-                    etRoasCol.name = 'Platform ROAS (' + name + ')';
-                    etRoasCol.field = ROAS_PREFIX + conversionsField;
-                    etRoasCol.autoSelect = conversionsField;
-                    roasCol.internal = 'zemauth.fea_can_see_roas';
-                    roasCol.shown = [
-                        'zemauth.fea_can_see_roas',
-                        'zemauth.can_view_platform_cost_breakdown_derived',
-                    ];
-                    etRoasCol.costMode = constants.costMode.PLATFORM;
-                    etRoasCol.fieldGroup = roasField;
-
-                    var etfmRoasCol = angular.copy(COLUMNS.conversionRoas);
-                    etfmRoasCol.name = 'ROAS (' + name + ')';
-                    etfmRoasCol.field = ETFM_ROAS_PREFIX + conversionsField;
-                    etfmRoasCol.autoSelect = conversionsField;
-                    roasCol.internal = 'zemauth.fea_can_see_roas';
-                    roasCol.shown = [
-                        'zemauth.fea_can_see_roas',
-                        'zemauth.can_view_end_user_cost_breakdown',
-                    ];
-                    etfmRoasCol.costMode = constants.costMode.PUBLIC;
-                    etfmRoasCol.fieldGroup = roasField;
-
-                    subcategory.fields.push(conversionsField);
-                    orderedColumns.push(conversionsCol);
-                    orderedColumns.push(cpaCol);
-                    orderedColumns.push(etCpaCol);
-                    orderedColumns.push(etfmCpaCol);
-
-                    orderedColumns.push(roasCol);
-                    orderedColumns.push(etRoasCol);
-                    orderedColumns.push(etfmRoasCol);
-                });
+                    generatePixelColumns(
+                        orderedColumns,
+                        subcategory,
+                        pixel,
+                        options.conversionWindows,
+                        '_view',
+                        ' - View attr.',
+                        'View attr.:'
+                    );
+                }
+                category.subcategories.push(subcategory);
             });
 
             checkPermissions(orderedColumns);
             insertIntoColumns(columns, orderedColumns, PIXELS_PLACEHOLDER);
+        }
+
+        function generatePixelColumns(
+            orderedColumns,
+            subcategory,
+            pixel,
+            conversionWindows,
+            fieldSuffix,
+            columnSuffix,
+            subRowName
+        ) {
+            var subsubCategory = {
+                name: subRowName,
+                fields: [],
+                subcategories: [],
+            };
+
+            angular.forEach(conversionWindows, function(window) {
+                var name = pixel.name + ' ' + window.name + columnSuffix;
+                var conversionsField =
+                    pixel.prefix + '_' + window.value + fieldSuffix;
+                var conversionsCol = angular.copy(COLUMNS.conversionCount);
+                conversionsCol.name = name;
+                conversionsCol.shortName = window.value / 24;
+                conversionsCol.field = conversionsField;
+                conversionsCol.shown = true;
+
+                var cpaField = AVG_COST_PREFIX + conversionsField;
+                var cpaCol = angular.copy(COLUMNS.conversionCpa);
+                cpaCol.name = 'CPA (' + name + ')';
+                cpaCol.field = cpaField;
+                cpaCol.shown = true;
+                cpaCol.autoSelect = conversionsField;
+                cpaCol.goal = true;
+                cpaCol.costMode = constants.costMode.LEGACY;
+
+                var etCpaCol = angular.copy(COLUMNS.conversionCpa);
+                etCpaCol.name = 'Platform CPA (' + name + ')';
+                etCpaCol.field = AVG_ET_COST_PREFIX + conversionsField;
+                etCpaCol.autoSelect = conversionsField;
+                etCpaCol.goal = true;
+                etCpaCol.costMode = constants.costMode.PLATFORM;
+                etCpaCol.internal =
+                    'zemauth.can_view_platform_cost_breakdown_derived';
+                etCpaCol.shown =
+                    'zemauth.can_view_platform_cost_breakdown_derived';
+                etCpaCol.fieldGroup = cpaField;
+
+                var etfmCpaCol = angular.copy(COLUMNS.conversionCpa);
+                etfmCpaCol.name = 'CPA (' + name + ')';
+                etfmCpaCol.field = AVG_ETFM_COST_PREFIX + conversionsField;
+                etfmCpaCol.autoSelect = conversionsField;
+                etfmCpaCol.goal = true;
+                etfmCpaCol.internal =
+                    'zemauth.can_view_end_user_cost_breakdown';
+                etfmCpaCol.shown = 'zemauth.can_view_end_user_cost_breakdown';
+                etfmCpaCol.costMode = constants.costMode.PUBLIC;
+                etfmCpaCol.fieldGroup = cpaField;
+
+                var roasField = ROAS_PREFIX + conversionsField;
+                var roasCol = angular.copy(COLUMNS.conversionRoas);
+                roasCol.name = 'ROAS (' + name + ')';
+                roasCol.field = roasField;
+                roasCol.autoSelect = conversionsField;
+                roasCol.internal = 'zemauth.fea_can_see_roas';
+                roasCol.shown = 'zemauth.fea_can_see_roas';
+                roasCol.costMode = constants.costMode.LEGACY;
+
+                var etRoasCol = angular.copy(COLUMNS.conversionRoas);
+                etRoasCol.name = 'Platform ROAS (' + name + ')';
+                etRoasCol.field = ROAS_PREFIX + conversionsField;
+                etRoasCol.autoSelect = conversionsField;
+                roasCol.internal = 'zemauth.fea_can_see_roas';
+                roasCol.shown = [
+                    'zemauth.fea_can_see_roas',
+                    'zemauth.can_view_platform_cost_breakdown_derived',
+                ];
+                etRoasCol.costMode = constants.costMode.PLATFORM;
+                etRoasCol.fieldGroup = roasField;
+
+                var etfmRoasCol = angular.copy(COLUMNS.conversionRoas);
+                etfmRoasCol.name = 'ROAS (' + name + ')';
+                etfmRoasCol.field = ETFM_ROAS_PREFIX + conversionsField;
+                etfmRoasCol.autoSelect = conversionsField;
+                roasCol.internal = 'zemauth.fea_can_see_roas';
+                roasCol.shown = [
+                    'zemauth.fea_can_see_roas',
+                    'zemauth.can_view_end_user_cost_breakdown',
+                ];
+                etfmRoasCol.costMode = constants.costMode.PUBLIC;
+                etfmRoasCol.fieldGroup = roasField;
+
+                orderedColumns.push(conversionsCol);
+                orderedColumns.push(cpaCol);
+                orderedColumns.push(etCpaCol);
+                orderedColumns.push(etfmCpaCol);
+
+                orderedColumns.push(roasCol);
+                orderedColumns.push(etRoasCol);
+                orderedColumns.push(etfmRoasCol);
+
+                subsubCategory.fields.push(conversionsField);
+            });
+            subcategory.subcategories.push(subsubCategory);
         }
 
         function setConversionGoalColumns(
