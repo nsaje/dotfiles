@@ -400,36 +400,60 @@ class MVMasterConversionsTest(TestCase, backtosql.TestSQLMixin):
             [x.column_as_alias("a") for x in touchpoint_columns],
             [
                 backtosql.SQLMatcher(
-                    """SUM(CASE WHEN a.slug='test' AND a.account_id=1 AND a.conversion_window<=24
+                    """SUM(CASE WHEN a.slug='test' AND a.account_id=1 AND a.conversion_window<=24 AND a.type=1
             THEN conversion_count ELSE 0 END) pixel_1_24"""
                 ),
                 backtosql.SQLMatcher(
-                    """SUM(CASE WHEN a.slug='test' AND a.account_id=1 AND a.conversion_window<=24
+                    """SUM(CASE WHEN a.slug='test' AND a.account_id=1 AND a.conversion_window<=24 AND a.type=1
             THEN conversion_value_nano ELSE 0 END)/1000000000.0 total_conversion_value_pixel_1_24"""
                 ),
                 backtosql.SQLMatcher(
-                    """SUM(CASE WHEN a.slug='test' AND a.account_id=1 AND a.conversion_window<=168
+                    """SUM(CASE WHEN a.slug='test' AND a.account_id=1 AND a.conversion_window<=168 AND a.type=1
             THEN conversion_count ELSE 0 END) pixel_1_168"""
                 ),
                 backtosql.SQLMatcher(
-                    """SUM(CASE WHEN a.slug='test' AND a.account_id=1 AND a.conversion_window<=168
+                    """SUM(CASE WHEN a.slug='test' AND a.account_id=1 AND a.conversion_window<=168 AND a.type=1
             THEN conversion_value_nano ELSE 0 END)/1000000000.0 total_conversion_value_pixel_1_168"""
                 ),
                 backtosql.SQLMatcher(
-                    """SUM(CASE WHEN a.slug='test' AND a.account_id=1 AND a.conversion_window<=720
+                    """SUM(CASE WHEN a.slug='test' AND a.account_id=1 AND a.conversion_window<=720 AND a.type=1
             THEN conversion_count ELSE 0 END) pixel_1_720"""
                 ),
                 backtosql.SQLMatcher(
-                    """SUM(CASE WHEN a.slug='test' AND a.account_id=1 AND a.conversion_window<=720
+                    """SUM(CASE WHEN a.slug='test' AND a.account_id=1 AND a.conversion_window<=720 AND a.type=1
             THEN conversion_value_nano ELSE 0 END)/1000000000.0 total_conversion_value_pixel_1_720"""
                 ),
                 backtosql.SQLMatcher(
-                    """SUM(CASE WHEN a.slug='test' AND a.account_id=1 AND a.conversion_window<=2160
+                    """SUM(CASE WHEN a.slug='test' AND a.account_id=1 AND a.conversion_window<=2160 AND a.type=1
             THEN conversion_count ELSE 0 END) pixel_1_2160"""
                 ),
                 backtosql.SQLMatcher(
-                    """SUM(CASE WHEN a.slug='test' AND a.account_id=1 AND a.conversion_window<=2160
+                    """SUM(CASE WHEN a.slug='test' AND a.account_id=1 AND a.conversion_window<=2160 AND a.type=1
             THEN conversion_value_nano ELSE 0 END)/1000000000.0 total_conversion_value_pixel_1_2160"""
+                ),
+                backtosql.SQLMatcher(
+                    """SUM(CASE WHEN a.slug='test' AND a.account_id=1 AND a.conversion_window<=24 AND a.type=2
+            THEN conversion_count ELSE 0 END) pixel_1_24_view"""
+                ),
+                backtosql.SQLMatcher(
+                    """SUM(CASE WHEN a.slug='test' AND a.account_id=1 AND a.conversion_window<=24 AND a.type=2
+            THEN conversion_value_nano ELSE 0 END)/1000000000.0 total_conversion_value_pixel_1_24_view"""
+                ),
+                backtosql.SQLMatcher(
+                    """SUM(CASE WHEN a.slug='test' AND a.account_id=1 AND a.conversion_window<=168 AND a.type=2
+            THEN conversion_count ELSE 0 END) pixel_1_168_view"""
+                ),
+                backtosql.SQLMatcher(
+                    """SUM(CASE WHEN a.slug='test' AND a.account_id=1 AND a.conversion_window<=168 AND a.type=2
+            THEN conversion_value_nano ELSE 0 END)/1000000000.0 total_conversion_value_pixel_1_168_view"""
+                ),
+                backtosql.SQLMatcher(
+                    """SUM(CASE WHEN a.slug='test' AND a.account_id=1 AND a.conversion_window<=720 AND a.type=2
+            THEN conversion_count ELSE 0 END) pixel_1_720_view"""
+                ),
+                backtosql.SQLMatcher(
+                    """SUM(CASE WHEN a.slug='test' AND a.account_id=1 AND a.conversion_window<=720 AND a.type=2
+            THEN conversion_value_nano ELSE 0 END)/1000000000.0 total_conversion_value_pixel_1_720_view"""
                 ),
             ],
         )
@@ -546,6 +570,69 @@ class MVMasterConversionsTest(TestCase, backtosql.TestSQLMixin):
                 backtosql.SQLMatcher(
                     "COALESCE(total_conversion_value_pixel_1_2160, 0) - COALESCE(local_etfm_cost, 0) etfm_roas_pixel_1_2160"
                 ),  # noqa
+                backtosql.SQLMatcher("e_media_cost / NULLIF(pixel_1_24_view, 0) avg_cost_per_pixel_1_24_view"),
+                backtosql.SQLMatcher(
+                    "local_e_media_cost / NULLIF(pixel_1_24_view, 0) local_avg_cost_per_pixel_1_24_view"
+                ),
+                backtosql.SQLMatcher("et_cost / NULLIF(pixel_1_24_view, 0) avg_et_cost_per_pixel_1_24_view"),
+                backtosql.SQLMatcher(
+                    "local_et_cost / NULLIF(pixel_1_24_view, 0) local_avg_et_cost_per_pixel_1_24_view"
+                ),
+                backtosql.SQLMatcher("etfm_cost / NULLIF(pixel_1_24_view, 0) avg_etfm_cost_per_pixel_1_24_view"),
+                backtosql.SQLMatcher(
+                    "local_etfm_cost / NULLIF(pixel_1_24_view, 0) local_avg_etfm_cost_per_pixel_1_24_view"
+                ),
+                backtosql.SQLMatcher(
+                    "COALESCE(total_conversion_value_pixel_1_24_view, 0) - COALESCE(local_e_media_cost, 0) roas_pixel_1_24_view"
+                ),  # noqa
+                backtosql.SQLMatcher(
+                    "COALESCE(total_conversion_value_pixel_1_24_view, 0) - COALESCE(local_et_cost, 0) et_roas_pixel_1_24_view"
+                ),  # noqa
+                backtosql.SQLMatcher(
+                    "COALESCE(total_conversion_value_pixel_1_24_view, 0) - COALESCE(local_etfm_cost, 0) etfm_roas_pixel_1_24_view"
+                ),  # noqa
+                backtosql.SQLMatcher("e_media_cost / NULLIF(pixel_1_168_view, 0) avg_cost_per_pixel_1_168_view"),
+                backtosql.SQLMatcher(
+                    "local_e_media_cost / NULLIF(pixel_1_168_view, 0) local_avg_cost_per_pixel_1_168_view"
+                ),
+                backtosql.SQLMatcher("et_cost / NULLIF(pixel_1_168_view, 0) avg_et_cost_per_pixel_1_168_view"),
+                backtosql.SQLMatcher(
+                    "local_et_cost / NULLIF(pixel_1_168_view, 0) local_avg_et_cost_per_pixel_1_168_view"
+                ),
+                backtosql.SQLMatcher("etfm_cost / NULLIF(pixel_1_168_view, 0) avg_etfm_cost_per_pixel_1_168_view"),
+                backtosql.SQLMatcher(
+                    "local_etfm_cost / NULLIF(pixel_1_168_view, 0) local_avg_etfm_cost_per_pixel_1_168_view"
+                ),
+                backtosql.SQLMatcher(
+                    "COALESCE(total_conversion_value_pixel_1_168_view, 0) - COALESCE(local_e_media_cost, 0) roas_pixel_1_168_view"
+                ),  # noqa
+                backtosql.SQLMatcher(
+                    "COALESCE(total_conversion_value_pixel_1_168_view, 0) - COALESCE(local_et_cost, 0) et_roas_pixel_1_168_view"
+                ),  # noqa
+                backtosql.SQLMatcher(
+                    "COALESCE(total_conversion_value_pixel_1_168_view, 0) - COALESCE(local_etfm_cost, 0) etfm_roas_pixel_1_168_view"
+                ),  # noqa
+                backtosql.SQLMatcher("e_media_cost / NULLIF(pixel_1_720_view, 0) avg_cost_per_pixel_1_720_view"),
+                backtosql.SQLMatcher(
+                    "local_e_media_cost / NULLIF(pixel_1_720_view, 0) local_avg_cost_per_pixel_1_720_view"
+                ),
+                backtosql.SQLMatcher("et_cost / NULLIF(pixel_1_720_view, 0) avg_et_cost_per_pixel_1_720_view"),
+                backtosql.SQLMatcher(
+                    "local_et_cost / NULLIF(pixel_1_720_view, 0) local_avg_et_cost_per_pixel_1_720_view"
+                ),
+                backtosql.SQLMatcher("etfm_cost / NULLIF(pixel_1_720_view, 0) avg_etfm_cost_per_pixel_1_720_view"),
+                backtosql.SQLMatcher(
+                    "local_etfm_cost / NULLIF(pixel_1_720_view, 0) local_avg_etfm_cost_per_pixel_1_720_view"
+                ),
+                backtosql.SQLMatcher(
+                    "COALESCE(total_conversion_value_pixel_1_720_view, 0) - COALESCE(local_e_media_cost, 0) roas_pixel_1_720_view"
+                ),  # noqa
+                backtosql.SQLMatcher(
+                    "COALESCE(total_conversion_value_pixel_1_720_view, 0) - COALESCE(local_et_cost, 0) et_roas_pixel_1_720_view"
+                ),  # noqa
+                backtosql.SQLMatcher(
+                    "COALESCE(total_conversion_value_pixel_1_720_view, 0) - COALESCE(local_etfm_cost, 0) etfm_roas_pixel_1_720_view"
+                ),  # noqa
             ],
         )
 
@@ -606,6 +693,12 @@ class MVMasterConversionsTest(TestCase, backtosql.TestSQLMixin):
                     "total_conversion_value_pixel_1_720",
                     "pixel_1_2160",
                     "total_conversion_value_pixel_1_2160",
+                    "pixel_1_24_view",
+                    "total_conversion_value_pixel_1_24_view",
+                    "pixel_1_168_view",
+                    "total_conversion_value_pixel_1_168_view",
+                    "pixel_1_720_view",
+                    "total_conversion_value_pixel_1_720_view",
                 ]
             ),
         )
@@ -674,6 +767,33 @@ class MVMasterConversionsTest(TestCase, backtosql.TestSQLMixin):
                     "roas_pixel_1_2160",
                     "et_roas_pixel_1_2160",
                     "etfm_roas_pixel_1_2160",
+                    "avg_cost_per_pixel_1_24_view",
+                    "local_avg_cost_per_pixel_1_24_view",
+                    "avg_et_cost_per_pixel_1_24_view",
+                    "local_avg_et_cost_per_pixel_1_24_view",
+                    "avg_etfm_cost_per_pixel_1_24_view",
+                    "local_avg_etfm_cost_per_pixel_1_24_view",
+                    "roas_pixel_1_24_view",
+                    "et_roas_pixel_1_24_view",
+                    "etfm_roas_pixel_1_24_view",
+                    "avg_cost_per_pixel_1_168_view",
+                    "local_avg_cost_per_pixel_1_168_view",
+                    "avg_et_cost_per_pixel_1_168_view",
+                    "local_avg_et_cost_per_pixel_1_168_view",
+                    "avg_etfm_cost_per_pixel_1_168_view",
+                    "local_avg_etfm_cost_per_pixel_1_168_view",
+                    "roas_pixel_1_168_view",
+                    "et_roas_pixel_1_168_view",
+                    "etfm_roas_pixel_1_168_view",
+                    "avg_cost_per_pixel_1_720_view",
+                    "local_avg_cost_per_pixel_1_720_view",
+                    "avg_et_cost_per_pixel_1_720_view",
+                    "local_avg_et_cost_per_pixel_1_720_view",
+                    "avg_etfm_cost_per_pixel_1_720_view",
+                    "local_avg_etfm_cost_per_pixel_1_720_view",
+                    "roas_pixel_1_720_view",
+                    "et_roas_pixel_1_720_view",
+                    "etfm_roas_pixel_1_720_view",
                 ]
             ),
         )

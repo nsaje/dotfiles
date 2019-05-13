@@ -1679,6 +1679,13 @@ class AgeGender(ConstantBase):
     }
 
 
+class ConversionType(ConstantBase):
+    CLICK = 1
+    VIEW = 2
+
+    _VALUES = {CLICK: "Click-through conversions", VIEW: "View-through conversions"}
+
+
 class ConversionWindows(ConstantBase):
     LEQ_1_DAY = 24
     LEQ_7_DAYS = 168

@@ -295,13 +295,27 @@ def _get_allowed_pixels_fields(user, pixels, uses_bcm_v2):
     Returns pixel column names and average costs column names that should be kept for all users.
     """
 
+    click_conversion_windows = dash.constants.ConversionWindowsLegacy.get_all()
+    view_conversion_windows = dash.constants.ConversionWindows.get_all()
+
+    allowed_pixel_fields = _generate_allowed_pixel_fields(user, pixels, click_conversion_windows, uses_bcm_v2)
+    if user.has_perm("zemauth.can_see_viewthrough_conversions"):
+        allowed_pixel_fields = allowed_pixel_fields.union(
+            _generate_allowed_pixel_fields(user, pixels, view_conversion_windows, uses_bcm_v2, suffix="_view")
+        )
+
+    return allowed_pixel_fields
+
+
+def _generate_allowed_pixel_fields(user, pixels, conversion_windows, uses_bcm_v2, suffix=None):
     can_add_et_fields = has_perm_bcm_v2(user, "zemauth.can_view_platform_cost_breakdown", uses_bcm_v2)
     can_add_etfm_fields = has_perm_bcm_v2(user, "zemauth.can_view_end_user_cost_breakdown", uses_bcm_v2)
 
     allowed = set()
+
     for pixel in pixels:
-        for conversion_window in dash.constants.ConversionWindowsLegacy.get_all():
-            view_key = pixel.get_view_key(conversion_window)
+        for conversion_window in conversion_windows:
+            view_key = pixel.get_view_key(conversion_window) + (suffix or "")
             allowed.add(view_key)
 
             if not uses_bcm_v2:
