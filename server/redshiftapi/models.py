@@ -604,28 +604,15 @@ class MVJointMaster(MVMaster):
         if not pixels:
             return
 
-        click_conversion_windows = sorted(dash.constants.ConversionWindowsLegacy.get_all())
-        view_conversion_windows = sorted(dash.constants.ConversionWindows.get_all())
-
-        self._generate_pixel_columns(pixels, click_conversion_windows, dash.constants.ConversionType.CLICK)
-        self._generate_pixel_columns(
-            pixels, view_conversion_windows, dash.constants.ConversionType.VIEW, suffix="_view"
-        )
-
-    def _generate_pixel_columns(self, pixels, conversion_windows, conversion_type, suffix=None):
+        conversion_windows = sorted(dash.constants.ConversionWindowsLegacy.get_all())
         for pixel in pixels:
             for conversion_window in conversion_windows:
-                pixel_key = pixel.get_view_key(conversion_window) + (suffix or "")
+                pixel_key = pixel.get_view_key(conversion_window)
 
                 self.add_column(
                     backtosql.TemplateColumn(
                         "part_touchpointconversion_goal.sql",
-                        {
-                            "account_id": pixel.account_id,
-                            "slug": pixel.slug,
-                            "window": conversion_window,
-                            "type": conversion_type,
-                        },
+                        {"account_id": pixel.account_id, "slug": pixel.slug, "window": conversion_window},
                         alias=pixel_key,
                         group=TOUCHPOINTS_AGGREGATES,
                     )
@@ -634,12 +621,7 @@ class MVJointMaster(MVMaster):
                 self.add_column(
                     backtosql.TemplateColumn(
                         "part_total_conversion_value.sql",
-                        {
-                            "account_id": pixel.account_id,
-                            "slug": pixel.slug,
-                            "window": conversion_window,
-                            "type": conversion_type,
-                        },
+                        {"account_id": pixel.account_id, "slug": pixel.slug, "window": conversion_window},
                         alias="total_conversion_value_" + pixel_key,
                         group=TOUCHPOINTS_AGGREGATES,
                     )
