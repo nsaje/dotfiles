@@ -457,6 +457,7 @@ class AgencyAdmin(SlackLoggerMixin, ExportMixin, admin.ModelAdmin):
             k: v for k, v in form.cleaned_data.items() if k in old_obj._update_fields and v != getattr(old_obj, k)
         }
         old_obj.update(request, **fields_to_update)
+        self._handle_history(request, obj, fields_to_update)
         settings_to_update = {
             k: v
             for k, v in form.cleaned_data.items()
@@ -472,6 +473,12 @@ class AgencyAdmin(SlackLoggerMixin, ExportMixin, admin.ModelAdmin):
         )
 
         self.log_custom_flags_event_to_slack(old_obj, obj, user=request.user.email)
+
+    def _handle_history(self, request, agency, changes):
+        if "is_disabled" in changes:
+            agency.write_history(
+                "Account {}.".format("disabled" if changes["is_disabled"] else "enabled"), user=request.user
+            )
 
     def render_change_form(self, request, context, *args, **kwargs):
         context["adminform"].form.fields["sales_representative"].queryset = ZemUser.objects.get_users_with_perm(
@@ -588,6 +595,7 @@ class AccountAdmin(SlackLoggerMixin, SaveWithRequestMixin, admin.ModelAdmin):
             k: v for k, v in form.cleaned_data.items() if k in old_obj._update_fields and v != getattr(old_obj, k)
         }
         old_obj.update(request, **fields_to_update)
+        self._handle_history(request, obj, fields_to_update)
         utils.k1_helper.update_ad_groups(
             models.AdGroup.objects.filter(campaign__account_id=obj.id)
             .select_related("campaign")
@@ -595,6 +603,12 @@ class AccountAdmin(SlackLoggerMixin, SaveWithRequestMixin, admin.ModelAdmin):
             "AccountAdmin.save_model",
         )
         self.log_custom_flags_event_to_slack(old_obj, obj, user=request.user.email)
+
+    def _handle_history(self, request, account, changes):
+        if "is_disabled" in changes:
+            account.write_history(
+                "Account {}.".format("disabled" if changes["is_disabled"] else "enabled"), user=request.user
+            )
 
     def view_on_site(self, obj):
         return "/v2/analytics/account/{}?settings".format(obj.id)

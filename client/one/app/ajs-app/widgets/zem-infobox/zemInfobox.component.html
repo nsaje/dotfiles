@@ -19,10 +19,11 @@
             'zem-infobox__delivery--autopilot': 
                 $ctrl.delivery.status === 'autopilot' || 
                 $ctrl.delivery.status === 'campaignstop-pending-budget-autopilot',
-            'zem-infobox__delivery--inactive': 
+            'zem-infobox__delivery--inactive':
+                $ctrl.delivery.status === 'disabled' ||
                 $ctrl.delivery.status === 'inactive',
             'zem-infobox__delivery--paused': 
-                $ctrl.delivery.status === 'stopped' || 
+                $ctrl.delivery.status === 'stopped' ||
                 $ctrl.delivery.status === 'campaignstop-stopped' || 
                 $ctrl.delivery.status === 'campaignstop-pending-budget-updates',
             'zem-infobox__delivery--landing-mode': 

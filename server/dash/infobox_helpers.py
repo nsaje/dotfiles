@@ -421,6 +421,8 @@ def _retrieve_active_budgetlineitems(campaign, date):
 
 
 def get_adgroup_running_status(user, ad_group, filtered_sources=None):
+    if not ad_group.campaign.account.is_enabled():
+        return dash.constants.InfoboxStatus.DISABLED
     running_status = dash.models.AdGroup.get_running_status(ad_group.settings)
 
     return get_adgroup_running_status_class(
@@ -473,6 +475,8 @@ def get_adgroup_running_status_class(
 
 
 def get_campaign_running_status(campaign):
+    if not campaign.account.is_enabled():
+        return dash.constants.InfoboxStatus.DISABLED
     if campaign.real_time_campaign_stop:
         campaignstop_state = automation.campaignstop.get_campaignstop_state(campaign)
         campaignstop_state_status = _get_campaignstop_state_status(
@@ -506,6 +510,8 @@ def _get_campaignstop_state_status(campaignstop_state, autopilot=False, price_di
 
 
 def get_account_running_status(account):
+    if not account.is_enabled():
+        return dash.constants.InfoboxStatus.DISABLED
     running_exists = dash.models.AdGroup.objects.filter(campaign__account=account).filter_current_and_active().exists()
     if running_exists:
         return dash.constants.InfoboxStatus.ACTIVE
@@ -515,6 +521,8 @@ def get_account_running_status(account):
 
 
 def get_entity_delivery_text(status):
+    if status == dash.constants.InfoboxStatus.DISABLED:
+        return "Disabled - Contact Zemanta CSM"
     if status in (dash.constants.InfoboxStatus.ACTIVE, dash.constants.InfoboxStatus.CAMPAIGNSTOP_PENDING_BUDGET_ACTIVE):
         return "Active"
     if status in (

@@ -30,15 +30,6 @@ class ValidationTestCase(TestCase):
                 self.request, name="New Name", is_externally_managed=True, custom_attributes={"something": "else"}
             )
 
-    def test_update_is_disabled_invalid(self):
-        self.agency.update(self.request, is_externally_managed=False)
-
-        with self.assertRaisesMessage(
-            exceptions.DisablingAgencyNotAllowed, "Agency can be disabled only if it is externally managed."
-        ):
-            self.agency.update(self.request, is_disabled=True)
-        self.assertFalse(core.models.Agency.objects.get(id=1).is_disabled)
-
     def test_update_is_disabled_valid(self):
         self.account.update(self.request, agency=self.agency)
         self.request.user.email = "outbrain-salesforce@service.zemanta.com"

@@ -286,6 +286,7 @@ export const APP_CONSTANTS = {
             'campaignstop-pending-budget-active-price-discovery',
         CAMPAIGNSTOP_PENDING_BUDGET_ACTIVE:
             'campaignstop-pending-budget-active',
+        DISABLED: 'disabled',
     },
     publisherStatus: PublisherStatus,
     publisherTargetingStatus: {

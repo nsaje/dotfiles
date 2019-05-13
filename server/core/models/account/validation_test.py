@@ -63,17 +63,6 @@ class ValidationTestCase(TestCase):
                 salesforce_id=1234,
             )
 
-    def test_update_is_disabled_invalid(self):
-        self.agency.update(self.request, is_externally_managed=False)
-        self.account.agency = self.agency
-        self.account.save(None)
-
-        with self.assertRaisesMessage(
-            exceptions.DisablingAccountNotAllowed, "Disabling Account is allowed only on externally managed Agencies."
-        ):
-            self.account.update(self.request, is_disabled=True)
-        self.assertFalse(core.models.Account.objects.get(id=1).is_disabled)
-
     def test_update_is_disabled_valid(self):
         self.request.user.email = "outbrain-salesforce@service.zemanta.com"
         self.agency.update(self.request, is_externally_managed=True)

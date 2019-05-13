@@ -42,6 +42,11 @@ class AccountInstanceMixin:
     def is_agency(self):
         return self.agency is not None
 
+    def is_enabled(self):
+        if self.is_disabled or (self.agency and self.agency.is_disabled):
+            return False
+        return True
+
     @property
     def is_externally_managed(self):
         if self.is_agency():

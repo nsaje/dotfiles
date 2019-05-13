@@ -5,10 +5,6 @@ class AccountDoesNotMatch(ValidationError):
     pass
 
 
-class DisablingAccountNotAllowed(ValidationError):
-    pass
-
-
 class CreatingAccountNotAllowed(ValidationError):
     pass
 

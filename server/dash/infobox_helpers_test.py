@@ -572,6 +572,45 @@ class InfoBoxAccountHelpersTest(TestCase):
         john.save()
         self.assertEqual(1, dash.infobox_helpers.count_weekly_logged_in_users(None, None))
 
+    def test_get_disabled_running_status_account(self):
+        # adgroup is inactive and no active sources
+        ad_group = dash.models.AdGroup.objects.get(pk=1)
+        ad_group.campaign.account.is_disabled = True
+        ad_group.campaign.account.save(None)
+        normal_user = zemauth.models.User.objects.get(id=2)
+
+        self.assertEqual(
+            dash.constants.InfoboxStatus.DISABLED,
+            dash.infobox_helpers.get_adgroup_running_status(normal_user, ad_group),
+        )
+        self.assertEqual(
+            dash.constants.InfoboxStatus.DISABLED, dash.infobox_helpers.get_campaign_running_status(ad_group.campaign)
+        )
+        self.assertEqual(
+            dash.constants.InfoboxStatus.DISABLED,
+            dash.infobox_helpers.get_account_running_status(ad_group.campaign.account),
+        )
+
+    def test_get_disabled_running_status_agency(self):
+        # adgroup is inactive and no active sources
+        ad_group = dash.models.AdGroup.objects.get(pk=1)
+        ad_group.campaign.account.agency = dash.models.Agency()
+        ad_group.campaign.account.agency.is_disabled = True
+        ad_group.campaign.account.agency.save(None)
+        normal_user = zemauth.models.User.objects.get(id=2)
+
+        self.assertEqual(
+            dash.constants.InfoboxStatus.DISABLED,
+            dash.infobox_helpers.get_adgroup_running_status(normal_user, ad_group),
+        )
+        self.assertEqual(
+            dash.constants.InfoboxStatus.DISABLED, dash.infobox_helpers.get_campaign_running_status(ad_group.campaign)
+        )
+        self.assertEqual(
+            dash.constants.InfoboxStatus.DISABLED,
+            dash.infobox_helpers.get_account_running_status(ad_group.campaign.account),
+        )
+
     def test_get_adgroup_running_status(self):
         # adgroup is inactive and no active sources
         ad_group = dash.models.AdGroup.objects.get(pk=1)
