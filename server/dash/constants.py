@@ -1685,7 +1685,7 @@ class ConversionType(ConstantBase):
     CLICK = 1
     VIEW = 2
 
-    _VALUES = {CLICK: "Click-through conversion", VIEW: "View-through conversion"}
+    _VALUES = {CLICK: "Click-through conversions", VIEW: "View-through conversions"}
 
 
 class ConversionWindows(ConstantBase):
