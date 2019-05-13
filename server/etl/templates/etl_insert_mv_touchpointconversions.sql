@@ -73,11 +73,12 @@ INSERT INTO mv_touchpointconversions (
         END AS conversion_window,
 
         a.conversion_label as conversion_label,
-        a.type as type,
 
         COUNT(a.touchpoint_id) as touchpoint_count,
         SUM(CASE WHEN a.conversion_id_ranked = 1 THEN 1 ELSE 0 END) AS conversion_count,
-        SUM(a.conversion_value_nano) as conversion_value_nano
+        SUM(a.conversion_value_nano) as conversion_value_nano,
+
+        a.type as type        
     FROM (
         SELECT
               c.date as date,
