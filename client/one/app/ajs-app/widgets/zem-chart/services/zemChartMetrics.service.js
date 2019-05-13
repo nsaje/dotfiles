@@ -682,7 +682,7 @@ angular
                     pixelGoalSubCategory,
                     pixel,
                     '',
-                    ' - Click attr.',
+                    '', // ' - Click attr.', TODO: VTC: Uncomment when reports merged
                     'Click attr.:'
                 );
                 if (
