@@ -2003,7 +2003,7 @@ class OperatingSystem(ConstantBase):
     CHROMEOS = "chromeos"
 
     _VALUES = {
-        UNKNOWN: "Not Reported",
+        UNKNOWN: "Not reported",
         ANDROID: "Android",
         IOS: "iOS",
         WINPHONE: "Windows Phone",

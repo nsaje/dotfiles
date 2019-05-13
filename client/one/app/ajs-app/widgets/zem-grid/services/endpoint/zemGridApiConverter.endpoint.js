@@ -1,5 +1,7 @@
 /* eslint-disable camelcase*/
 
+var commonHelpers = require('../../../../../shared/helpers/common.helpers');
+
 angular
     .module('one.widgets')
     .factory('zemGridEndpointApiConverter', function(
@@ -341,7 +343,8 @@ angular
                 }
             } else if (
                 column.type === zemGridConstants.gridColumnTypes.BREAKDOWN &&
-                value === 'Not reported'
+                commonHelpers.isDefined(value) &&
+                value.toLowerCase() === 'not reported'
             ) {
                 return 'Due to technical and supply source limitations we are not able to report breakdowns for all your data.'; // eslint-disable-line max-len
             }

@@ -19,17 +19,17 @@
     >
         TOTALS
     </span>
-    <span
+    <div
         ng-show="ctrl.fieldType === ctrl.types.BASE_FIELD"
         class="zem-grid-cell-base-breakdown-field"
-        ng-bind="ctrl.data.value"
-        title="{{ ctrl.data.value }}"
-        zem-lazy-popover-html-unsafe="{{ ctrl.data.popoverMessage }}"
-        zem-lazy-popover-placement="right"
-        zem-lazy-popover-animation-class="fade"
-        zem-lazy-popover-append-to-body="true"
     >
-    </span>
+        <span ng-bind="ctrl.data.value" title="{{ ctrl.data.value }}"> </span>
+        <zem-help-popover
+            ng-show="ctrl.data.popoverMessage"
+            content="{{ ctrl.data.popoverMessage }}"
+            placement="right"
+        ></zem-help-popover>
+    </div>
     <zem-grid-cell-internal-link
         ng-show="ctrl.fieldType === ctrl.types.INTERNAL_LINK"
         data="ctrl.data"
