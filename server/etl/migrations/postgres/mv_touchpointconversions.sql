@@ -27,7 +27,10 @@ CREATE TABLE IF NOT EXISTS mv_touchpointconversions (
       -- kw::aggregates
       touchpoint_count integer,
       conversion_count integer,
-      conversion_value_nano bigint
+      conversion_value_nano bigint,
+
+      -- kw::dimensions
+      type int2
       -- kw::end
 );
 CREATE INDEX IF NOT EXISTS mv_touchpointconversions_main_idx ON mv_touchpointconversions (source_id, account_id, campaign_id, ad_group_id, content_ad_id, slug, conversion_window, date);
