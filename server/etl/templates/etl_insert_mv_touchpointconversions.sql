@@ -63,7 +63,7 @@ INSERT INTO mv_touchpointconversions (
         END AS dma,
 
         a.slug as slug,
-        a.type as type,
+
         -- shorter conversion lags are not counted towards longer ones
         -- eg. lag 24 is not counted in the 720
         CASE
@@ -73,6 +73,7 @@ INSERT INTO mv_touchpointconversions (
         END AS conversion_window,
 
         a.conversion_label as conversion_label,
+        a.type as type,
 
         COUNT(a.touchpoint_id) as touchpoint_count,
         SUM(CASE WHEN a.conversion_id_ranked = 1 THEN 1 ELSE 0 END) AS conversion_count,
@@ -96,7 +97,6 @@ INSERT INTO mv_touchpointconversions (
               c.dma as dma,
 
               c.slug as slug,
-              c.type as type,
 
               c.conversion_lag as conversion_lag,
 
@@ -105,7 +105,8 @@ INSERT INTO mv_touchpointconversions (
                   (PARTITION BY c.conversion_id, c.ad_group_id ORDER BY c.touchpoint_timestamp DESC) AS conversion_id_ranked,
 
               c.value_nano as conversion_value_nano,
-              c.label as conversion_label
+              c.label as conversion_label,
+              c.type as type
         FROM conversions c
         WHERE c.conversion_lag <= 720 AND c.date BETWEEN %(date_from)s AND %(date_to)s
               {% if account_id %}
