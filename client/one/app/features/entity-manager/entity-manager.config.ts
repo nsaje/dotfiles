@@ -9,4 +9,5 @@ export const ENTITY_MANAGER_CONFIG = {
         campaign: EntityType.CAMPAIGN,
         adgroup: EntityType.AD_GROUP,
     },
+    maxCampaignConversionGoals: 15,
 };

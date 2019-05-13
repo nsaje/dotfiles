@@ -224,14 +224,14 @@
 // Campaign goals //
 ///////////////////////////
 
-.zem-campaign-goals-settings {
+.zem-legacy-campaign-goals-settings {
     :not(.message--info).message {
         display: block;
         margin-bottom: 15px;
     }
 }
 
-.zem-campaign-goals__primary-goal {
+.zem-legacy-campaign-goals__primary-goal {
     color: @text-color--lighter;
     float: right;
 
@@ -246,11 +246,11 @@
     }
 }
 
-.zem-campaign-goals__optimization {
+.zem-legacy-campaign-goals__optimization {
     margin: 10px 0;
 }
 
-.zem-campaign-goals__goal {
+.zem-legacy-campaign-goals__goal {
     border: 1px solid @color--lighter-neutral;
     border-radius: @border-radius--default;
     position: relative;
@@ -266,17 +266,17 @@
         transform: translateY(-50%);
     }
 
-    &:not(.zem-campaign-goals__goal--primary):hover {
+    &:not(.zem-legacy-campaign-goals__goal--primary):hover {
         cursor: pointer;
         color: @color--secondary;
 
-        .zem-campaign-goals__goal-number {
+        .zem-legacy-campaign-goals__goal-number {
             background-color: tint(@color--secondary, 90%);
         }
     }
 }
 
-.zem-campaign-goals__goal-number {
+.zem-legacy-campaign-goals__goal-number {
     display: table-cell;
     vertical-align: middle;
     width: 50px;
@@ -288,28 +288,28 @@
     border-bottom-left-radius: @border-radius--default;
 }
 
-.zem-campaign-goals__goal-description {
+.zem-legacy-campaign-goals__goal-description {
     padding: 6px 10px;
     display: table-cell;
     vertical-align: middle;
 }
 
-.zem-campaign-goals__edit-button {
+.zem-legacy-campaign-goals__edit-button {
     right: 55px;
 }
 
-.zem-campaign-goals__delete-button {
+.zem-legacy-campaign-goals__delete-button {
     right: 9px;
 }
 
-.zem-campaign-goals__goal--primary {
-    .zem-campaign-goals__goal-number {
+.zem-legacy-campaign-goals__goal--primary {
+    .zem-legacy-campaign-goals__goal-number {
         background-color: @color--secondary;
         border-color: @color--secondary;
         color: white;
     }
 
-    .zem-campaign-goals__goal-description {
+    .zem-legacy-campaign-goals__goal-description {
         color: @color--secondary;
     }
 }
@@ -337,7 +337,7 @@
 ///////////////////////////
 
 @media only screen and (max-width: @tablet-breakpoint) {
-    .zem-campaign-goals__primary-goal {
+    .zem-legacy-campaign-goals__primary-goal {
         float: none;
         display: block;
         text-align: right;
@@ -345,7 +345,7 @@
     }
 
     .modal__body .form__group--meet-or-beat-goal {
-        .zem-campaign-goal-edit-form__goal-value {
+        .zem-legacy-campaign-goal-edit-form__goal-value {
             width: 30%;
             float: left;
             margin-right: 2%;
@@ -370,22 +370,22 @@
 }
 
 @media only screen and (max-width: @mobile-breakpoint) {
-    .zem-campaign-goals__goal-number {
+    .zem-legacy-campaign-goals__goal-number {
         width: 30px;
         font-size: 18px;
     }
 
-    .zem-campaign-goals__goal {
+    .zem-legacy-campaign-goals__goal {
         padding-right: 54px;
         height: 84px;
 
-        .zem-campaign-goals__edit-button {
+        .zem-legacy-campaign-goals__edit-button {
             right: 9px;
             top: 9px;
             transform: translateY(0);
         }
 
-        .zem-campaign-goals__delete-button {
+        .zem-legacy-campaign-goals__delete-button {
             right: 9px;
             top: 43px;
             transform: translateY(0);

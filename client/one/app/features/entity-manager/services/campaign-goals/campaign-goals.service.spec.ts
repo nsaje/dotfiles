@@ -1,6 +1,6 @@
 import {CampaignGoalsService} from './campaign-goals.service';
-import {APP_CONSTANTS, Currency, CampaignType} from '../../../app.constants';
-import {APP_CONFIG} from '../../../app.config';
+import {APP_CONSTANTS, Currency, CampaignType} from '../../../../app.constants';
+import {APP_CONFIG} from '../../../../app.config';
 
 describe('CampaignGoalsService', () => {
     let service: CampaignGoalsService;

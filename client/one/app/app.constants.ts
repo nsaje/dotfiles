@@ -219,6 +219,19 @@ export enum CampaignGoalKPI {
     CPCV = 'CPCV',
 }
 
+export enum CampaignConversionGoalType {
+    PIXEL = 'PIXEL',
+    GA = 'GA',
+    OMNITURE = 'OMNITURE',
+}
+
+export enum ConversionWindow {
+    LEQ_1_DAY = 'LEQ_1_DAY',
+    LEQ_7_DAYS = 'LEQ_7_DAYS',
+    LEQ_30_DAYS = 'LEQ_30_DAYS',
+    LEQ_90_DAYS = 'LEQ_90_DAYS',
+}
+
 export const APP_CONSTANTS = {
     /**
      * Max. selected media sources in on sources tabs.

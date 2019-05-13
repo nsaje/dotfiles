@@ -1,8 +1,8 @@
 import {Injectable, Inject} from '@angular/core';
 import {downgradeInjectable} from '@angular/upgrade/static';
-import {MulticurrencyService} from '../../../core/multicurrency/multicurrency.service';
-import * as campaignGoalsHelpers from '../helpers/campaign-goals.helpers';
-import {APP_OPTIONS} from '../../../app.options';
+import {MulticurrencyService} from '../../../../core/multicurrency/multicurrency.service';
+import * as campaignGoalsHelpers from '../../helpers/campaign-goals.helpers';
+import {APP_OPTIONS} from '../../../../app.options';
 
 @Injectable()
 export class CampaignGoalsService {

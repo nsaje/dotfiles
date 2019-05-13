@@ -1,8 +1,8 @@
 <div
-    class="form__group--meet-or-beat-goal zem-campaign-goal-edit-form__goal-value-and-type"
+    class="form__group--meet-or-beat-goal zem-legacy-campaign-goal-edit-form__goal-value-and-type"
     ng-class="{'form--error': !!$ctrl.state.fieldsErrors.campaignGoal}"
 >
-    <zem-campaign-goal-edit-form
+    <zem-legacy-campaign-goal-edit-form
         campaign-goal="$ctrl.newCampaignGoal"
         available-goals="$ctrl.availableGoals"
         goals-defaults="$ctrl.goalsDefaults"
@@ -10,5 +10,5 @@
         errors="$ctrl.state.fieldsErrors.campaignGoal"
         on-change="$ctrl.updateCampaignGoal(goal)"
     >
-    </zem-campaign-goal-edit-form>
+    </zem-legacy-campaign-goal-edit-form>
 </div>

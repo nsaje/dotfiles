@@ -1,6 +1,6 @@
 import * as clone from 'clone';
 import {APP_CONSTANTS, CampaignType} from '../../../app.constants';
-import {CAMPAIGN_GOALS_CONFIG} from '../campaign-goals.config';
+import {ENTITY_MANAGER_CONFIG} from '../entity-manager.config';
 
 export function extendAvailableGoalsWithEditedGoal(
     editedCampaignGoal: any,
@@ -70,7 +70,7 @@ function isGoalAvailable(
 
     if (
         option.value === APP_CONSTANTS.campaignGoalKPI.CPA &&
-        countConversionGoals < CAMPAIGN_GOALS_CONFIG.maxConversionGoals
+        countConversionGoals < ENTITY_MANAGER_CONFIG.maxCampaignConversionGoals
     ) {
         return true;
     }

@@ -64,7 +64,7 @@ CAMPAIGN_NOT_CONFIGURED_SCENARIOS = {
     "goal_missing": {
         "message": "You are not able to add an ad group because campaign goal is not defined.",
         "action_text": "Configure the campaign goal",
-        "url_postfix": "&settingsScrollTo=zemCampaignGoalsSettings",
+        "url_postfix": "&settingsScrollTo=zemLegacyCampaignGoalsSettings",
     },
     "language_missing": {
         "message": "You are not able to add an ad group because campaign language is not defined.",

@@ -1,7 +1,7 @@
-import {AdGroup} from '../../../core/entities/types/ad-group/ad-group';
-import {AdGroupExtras} from '../../../core/entities/types/ad-group/ad-group-extras';
+import {AdGroup} from '../../../../core/entities/types/ad-group/ad-group';
+import {AdGroupExtras} from '../../../../core/entities/types/ad-group/ad-group-extras';
 import {AdGroupSettingsStoreFieldsErrorsState} from './ad-group-settings.store.fields-errors-state';
-import {RequestState} from 'one/app/shared/types/request-state';
+import {RequestState} from '../../../../shared/types/request-state';
 
 export class AdGroupSettingsStoreState {
     entity: AdGroup = {

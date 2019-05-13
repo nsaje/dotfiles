@@ -10,12 +10,12 @@
             errors="$container.errors"
             api="$container.childApi"
         ></zem-campaign-general-settings>
-        <zem-campaign-goals-settings
+        <zem-legacy-campaign-goals-settings
             class="zem-settings-component"
             entity="$container.entity"
             errors="$container.errors"
             api="$container.childApi"
-        ></zem-campaign-goals-settings>
+        ></zem-legacy-campaign-goals-settings>
         <div
             class="custom-panel zem-settings-component__container"
             ng-if="$ctrl.hasPermission('zemauth.settings_defaults_on_campaign_level')"

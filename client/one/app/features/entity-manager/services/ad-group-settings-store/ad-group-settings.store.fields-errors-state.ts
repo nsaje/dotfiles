@@ -1,4 +1,4 @@
-import {FieldErrors} from '../../../shared/types/field-errors';
+import {FieldErrors} from '../../../../shared/types/field-errors';
 
 export class AdGroupSettingsStoreFieldsErrorsState {
     name: FieldErrors = [];

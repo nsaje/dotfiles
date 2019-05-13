@@ -9,7 +9,7 @@ import {
     OnInit,
 } from '@angular/core';
 import {ENTITY_MANAGER_CONFIG} from '../../entity-manager.config';
-import {AdGroupSettingsStore} from '../../services/ad-group-settings.store';
+import {AdGroupSettingsStore} from '../../services/ad-group-settings-store/ad-group-settings.store';
 import {LevelStateParam, EntityType, Currency} from '../../../../app.constants';
 import {Subject, merge, Observable} from 'rxjs';
 import {takeUntil, map, distinctUntilChanged, tap} from 'rxjs/operators';

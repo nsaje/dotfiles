@@ -39,8 +39,10 @@ import {HacksComponent} from './components/hacks/hacks.component';
 import {DealsComponent} from './components/deals/deals.component';
 import {SettingsDrawerFooterComponent} from './components/settings-drawer-footer/settings-drawer-footer.component';
 import {SettingsDrawerHeaderComponent} from './components/settings-drawer-header/settings-drawer-header.component';
+import {CampaignGoalsService} from './services/campaign-goals/campaign-goals.service';
 
 @NgModule({
+    providers: [CampaignGoalsService],
     declarations: [
         EntitySettingsRouterOutlet,
         AccountSettingsDrawerView,

@@ -1,5 +1,5 @@
 <div
-    class="custom-panel zem-settings-component__container zem-campaign-goals-settings"
+    class="custom-panel zem-settings-component__container zem-legacy-campaign-goals-settings"
 >
     <h2 class="custom-panel__title">Campaign goals</h2>
     <div class="custom-panel__description">
@@ -9,20 +9,20 @@
         ng-if="$ctrl.hasPermission('zemauth.can_see_campaign_goals')"
         is-internal="zemauth.can_see_campaign_goals"
     >
-        <div class="zem-campaign-goals">
+        <div class="zem-legacy-campaign-goals">
             <div
                 class="message message--error"
                 ng-show="!!$ctrl.errors.noGoals"
             >
                 {{ $ctrl.errors.noGoals }}
             </div>
-            <zem-campaign-goals
+            <zem-legacy-campaign-goals
                 account="$ctrl.account"
                 campaign="$ctrl.entity.settings"
                 goals="$ctrl.entity.goals"
                 goals-defaults="$ctrl.entity.goalsDefaults"
                 model="$ctrl.entityGoalsDiff"
-            ></zem-campaign-goals>
+            ></zem-legacy-campaign-goals>
             <div
                 class="message message--error"
                 ng-show="!!$ctrl.errors.goals"

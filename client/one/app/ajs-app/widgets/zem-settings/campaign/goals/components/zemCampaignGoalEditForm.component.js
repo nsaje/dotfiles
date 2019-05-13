@@ -1,6 +1,6 @@
 var constantsHelpers = require('../../../../../../shared/helpers/constants.helpers');
 
-angular.module('one.widgets').component('zemCampaignGoalEditForm', {
+angular.module('one.widgets').component('zemLegacyCampaignGoalEditForm', {
     bindings: {
         campaignGoal: '=',
         availableGoals: '=',
@@ -78,6 +78,8 @@ angular.module('one.widgets').component('zemCampaignGoalEditForm', {
         }
 
         function prepareName(option) {
+            // When editing a CPA goal, show CPA + conversion goal name instead
+            // of just "CPA - Setup Conversion Tracking"
             if (!$ctrl.isEdit) return (option && option.name) || null;
 
             if (

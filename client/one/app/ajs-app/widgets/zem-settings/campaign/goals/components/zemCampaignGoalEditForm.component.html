@@ -1,12 +1,12 @@
 <!-- TODO: When opening modal and clicking Add goal without entering and selecting anything nothing happens, no errors -->
 <div
-    class="form__group form__group--meet-or-beat-goal zem-campaign-goal-edit-form__goal-value-and-type"
+    class="form__group form__group--meet-or-beat-goal zem-legacy-campaign-goal-edit-form__goal-value-and-type"
 >
     <label class="form__label" for="goal-type-select"
         >Meet or beat the goal of</label
     >
     <div
-        class="zem-campaign-goal-edit-form__goal-value"
+        class="zem-legacy-campaign-goal-edit-form__goal-value"
         ng-class="{'postfixed-field': !!$ctrl.goalUnit, 'form--error': $ctrl.errors.type}"
     >
         <input
@@ -25,7 +25,7 @@
     </div>
     <ui-select
         theme="select2"
-        class="button button--plain button--full-width button--dropdown-toggle-icon zem-campaign-goal-edit-form__goal-type"
+        class="button button--plain button--full-width button--dropdown-toggle-icon zem-legacy-campaign-goal-edit-form__goal-type"
         ng-class="{'form--error': $ctrl.errors.value}"
         id="goal-type-select"
         search-enabled="false"
@@ -64,7 +64,7 @@
 
 <div ng-if="$ctrl.isConversionGoalFormVisible()">
     <div
-        class="form__group zem-campaign-goal-edit-form__conversion-type"
+        class="form__group zem-legacy-campaign-goal-edit-form__conversion-type"
         ng-class="{'form--error': !!$ctrl.errors.conversionGoal.type}"
     >
         <label class="form__label" for="conversion-type-select">
@@ -76,7 +76,7 @@
         </label>
         <ui-select
             theme="select2"
-            class="button button--plain button--full-width button--dropdown-toggle-icon zem-campaign-goal-edit-form__conversion-goal-type"
+            class="button button--plain button--full-width button--dropdown-toggle-icon zem-legacy-campaign-goal-edit-form__conversion-goal-type"
             id="conversion-type-select"
             search-enabled="false"
             ng-model="$ctrl.campaignGoal.conversionGoal.type"
@@ -105,7 +105,7 @@
     </div>
 
     <div
-        class="form__group zem-campaign-goal-edit-form__pixels"
+        class="form__group zem-legacy-campaign-goal-edit-form__pixels"
         ng-if="$ctrl.isConversionPixelFormVisible()"
     >
         <label class="form__label" for="pixel-name-select">
@@ -119,7 +119,7 @@
         <ui-select
             theme="select2"
             id="pixel-name-select"
-            class="button button--plain button--full-width button--dropdown-toggle-icon zem-campaign-goal-edit-form__pixel"
+            class="button button--plain button--full-width button--dropdown-toggle-icon zem-legacy-campaign-goal-edit-form__pixel"
             search-enabled="false"
             ng-model="$ctrl.campaignGoal.conversionGoal.goalId"
             on-select="
@@ -144,7 +144,7 @@
     </div>
 
     <div
-        class="form__group zem-campaign-goal-edit-form__new-pixel"
+        class="form__group zem-legacy-campaign-goal-edit-form__new-pixel"
         ng-if="$ctrl.campaignGoal.conversionGoal.goalId === '___new___'"
         ng-class="{'form--error': !!$ctrl.errors.conversionGoal.pixel}"
     >
@@ -168,7 +168,7 @@
 
     <!-- TODO: When selecting CPA - Setup Conversion Tracking and then choosing one pixel and set conversion window for instance 90 days twice you don't get error ... nothing happens when you click on button ... i guess this error below is not working -->
     <div
-        class="form__group zem-campaign-goal-edit-form__conversion-windows"
+        class="form__group zem-legacy-campaign-goal-edit-form__conversion-windows"
         ng-if="$ctrl.isConversionPixelFormVisible()"
         ng-class="{'form--error': !!$ctrl.errors.conversionGoal.conversionWindow}"
     >
@@ -181,7 +181,7 @@
         </label>
         <ui-select
             theme="select2"
-            class="button button--plain button--full-width button--dropdown-toggle-icon zem-campaign-goal-edit-form__conversion-windows"
+            class="button button--plain button--full-width button--dropdown-toggle-icon zem-legacy-campaign-goal-edit-form__conversion-windows"
             id="pixel-conversion-window-select"
             search-enabled="false"
             ng-model="$ctrl.campaignGoal.conversionGoal.conversionWindow"
@@ -219,7 +219,7 @@
     </div>
 
     <div
-        class="form__group zem-campaign-goal-edit-form__ga"
+        class="form__group zem-legacy-campaign-goal-edit-form__ga"
         ng-if="$ctrl.isGAFormVisible()"
         ng-class="{'form--error': !!$ctrl.errors.conversionGoal.goalId}"
     >
@@ -231,7 +231,7 @@
             ></zem-help-popover>
         </label>
         <input
-            class="input-text zem-campaign-goal-edit-form__ga-input"
+            class="input-text zem-legacy-campaign-goal-edit-form__ga-input"
             id="ga-goal-input"
             type="text"
             placeholder="Goal name"
@@ -250,7 +250,7 @@
     </div>
 
     <div
-        class="form__group zem-campaign-goal-edit-form__omniture"
+        class="form__group zem-legacy-campaign-goal-edit-form__omniture"
         ng-if="$ctrl.isOmnitureFormVisible()"
         ng-class="{'form--error': !!$ctrl.errors.conversionGoal.goalId}"
     >
@@ -262,7 +262,7 @@
             ></zem-help-popover>
         </label>
         <input
-            class="input-text zem-campaign-goal-edit-form__omniture-input"
+            class="input-text zem-legacy-campaign-goal-edit-form__omniture-input"
             id="omniture-event-input"
             type="text"
             placeholder="Event name"

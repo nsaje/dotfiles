@@ -1,4 +1,4 @@
-angular.module('one.widgets').component('zemCampaignGoalsSettings', {
+angular.module('one.widgets').component('zemLegacyCampaignGoalsSettings', {
     bindings: {
         entity: '<',
         errors: '<',

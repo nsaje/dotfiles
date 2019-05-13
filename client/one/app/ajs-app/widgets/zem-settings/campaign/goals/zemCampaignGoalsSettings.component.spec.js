@@ -1,4 +1,4 @@
-describe('component: zemCampaignGoalsSettings', function() {
+describe('component: zemLegacyCampaignGoalsSettings', function() {
     var $ctrl;
 
     beforeEach(angular.mock.module('one'));
@@ -11,7 +11,11 @@ describe('component: zemCampaignGoalsSettings', function() {
             errors: {},
             api: {register: angular.noop},
         };
-        $ctrl = $componentController('zemCampaignGoalsSettings', {}, bindings);
+        $ctrl = $componentController(
+            'zemLegacyCampaignGoalsSettings',
+            {},
+            bindings
+        );
     }));
 
     it('should initialize without errors', function() {

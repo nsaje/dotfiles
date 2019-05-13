@@ -1,4 +1,4 @@
-describe('zemCampaignGoals', function() {
+describe('zemLegacyCampaignGoals', function() {
     var $scope, element, isolate;
 
     beforeEach(angular.mock.module('one'));
@@ -7,10 +7,10 @@ describe('zemCampaignGoals', function() {
 
     beforeEach(inject(function($compile, $rootScope) {
         var template =
-            '<zem-campaign-goals account="account" ' +
+            '<zem-legacy-campaign-goals account="account" ' +
             'campaign="campaign" goals="campaignGoals"' +
             'model="campaignGoalsDiff">' +
-            '</zem-campaign-goals>';
+            '</zem-legacy-campaign-goals>';
 
         $scope = $rootScope.$new();
         $scope.isPermissionInternal = function() {

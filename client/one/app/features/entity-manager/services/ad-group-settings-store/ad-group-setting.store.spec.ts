@@ -2,12 +2,15 @@ import {of, asapScheduler, throwError} from 'rxjs';
 import {tick, fakeAsync} from '@angular/core/testing';
 import * as clone from 'clone';
 import {AdGroupSettingsStore} from './ad-group-settings.store';
-import {AdGroupService} from '../../../core/entities/services/ad-group.service';
-import {AdGroupWithExtras} from '../../../core/entities/types/ad-group/ad-group-with-extras';
-import {AdGroup} from '../../../core/entities/types/ad-group/ad-group';
-import {AdGroupExtras} from '../../../core/entities/types/ad-group/ad-group-extras';
+import {AdGroupService} from '../../../../core/entities/services/ad-group.service';
+import {AdGroupWithExtras} from '../../../../core/entities/types/ad-group/ad-group-with-extras';
+import {AdGroup} from '../../../../core/entities/types/ad-group/ad-group';
+import {AdGroupExtras} from '../../../../core/entities/types/ad-group/ad-group-extras';
 import {AdGroupSettingsStoreFieldsErrorsState} from './ad-group-settings.store.fields-errors-state';
-import {InterestCategory, AdGroupAutopilotState} from '../../../app.constants';
+import {
+    InterestCategory,
+    AdGroupAutopilotState,
+} from '../../../../app.constants';
 
 describe('AdGroupSettingsStore', () => {
     let serviceStub: jasmine.SpyObj<AdGroupService>;
