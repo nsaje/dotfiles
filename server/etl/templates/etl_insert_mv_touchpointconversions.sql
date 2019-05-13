@@ -75,9 +75,7 @@ INSERT INTO mv_touchpointconversions (
 
         COUNT(a.touchpoint_id) as touchpoint_count,
         SUM(CASE WHEN a.conversion_id_ranked = 1 THEN 1 ELSE 0 END) AS conversion_count,
-        SUM(a.conversion_value_nano) as conversion_value_nano,
-
-        a.type as type        
+        SUM(a.conversion_value_nano) as conversion_value_nano
     FROM (
         SELECT
               c.date as date,
@@ -105,8 +103,7 @@ INSERT INTO mv_touchpointconversions (
                   (PARTITION BY c.conversion_id, c.ad_group_id ORDER BY c.touchpoint_timestamp DESC) AS conversion_id_ranked,
 
               c.value_nano as conversion_value_nano,
-              c.label as conversion_label,
-              c.type as type
+              c.label as conversion_label
         FROM conversions c
         WHERE c.conversion_lag <= 2160 AND c.date BETWEEN %(date_from)s AND %(date_to)s
               {% if account_id %}
