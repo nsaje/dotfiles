@@ -3475,7 +3475,7 @@ class AccountSettingsTest(TestCase):
 
     def test_put_new_agency(self):
         client = self._get_client_with_permissions(
-            ["can_modify_account_name", "can_modify_account_manager", "can_set_agency_for_account"]
+            ["can_modify_account_name", "can_modify_account_manager", "can_set_agency_for_account", "can_create_agency"]
         )
 
         basic_settings = {
@@ -3492,6 +3492,22 @@ class AccountSettingsTest(TestCase):
         account = models.Account.objects.select_related("agency").get(pk=1)
         self.assertEqual("New agency", account.agency.name)
         self.assertEqual(2, account.agency_id)
+
+    def test_put_new_agency_no_permission(self):
+        client = self._get_client_with_permissions(
+            ["can_modify_account_name", "can_modify_account_manager", "can_set_agency_for_account"]
+        )
+
+        basic_settings = {
+            "id": 1,
+            "name": "changed name",
+            "default_account_manager": "3",
+            "agency": "New agency",
+            "currency": "USD",
+        }
+
+        response, _ = self._put_account_agency(client, basic_settings, 1)
+        self.assertEqual(response.status_code, 401)
 
     def test_get_account_manager_users_no_permission(self):
         client = self._get_client_with_permissions([])

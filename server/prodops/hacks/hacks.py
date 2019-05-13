@@ -139,15 +139,6 @@ def add_agency_default_amplify_settings(user, agency):
         return agency
 
 
-def filter_amplify_agencies(user, response):
-    if user.has_perm("zemauth.{}".format(serviceapi.salesforce.constants.AMPLIFY_GROUP_PERMISSION_CODENAME)):
-        response["agencies"] = list(
-            core.models.Agency.objects.filter(
-                entity_tags=serviceapi.salesforce.constants.MANAGED_BY_AMPLIFY_TAG
-            ).values("name", "sales_representative", "cs_representative", "ob_representative", "default_account_type")
-        )
-
-
 def apply_create_agency_hacks(agency, user):
     if user.has_perm("zemauth.{}".format(serviceapi.salesforce.constants.AMPLIFY_GROUP_PERMISSION_CODENAME)):
         add_agency_default_amplify_settings(user, agency)

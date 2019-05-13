@@ -963,12 +963,14 @@ class AccountSettings(api_common.BaseApiView):
 
     def _add_agencies(self, request, response):
         if request.user.has_perm("zemauth.can_set_agency_for_account"):
+            agencies = models.Agency.objects.filter(users__in=[request.user])
+            if request.user.has_perm("zemauth.can_see_all_accounts"):
+                agencies = models.Agency.objects.all()
             response["agencies"] = list(
-                models.Agency.objects.all().values(
+                agencies.values(
                     "name", "sales_representative", "cs_representative", "ob_representative", "default_account_type"
                 )
             )
-        hacks.filter_amplify_agencies(request.user, response)
 
     def save_settings(self, request, account, form):
         old_name = account.name
@@ -1115,6 +1117,8 @@ class AccountSettings(api_common.BaseApiView):
                 if not account.yahoo_account:
                     account.yahoo_account = agency.yahoo_account
             except models.Agency.DoesNotExist:
+                if not request.user.has_perm("zemauth.can_create_agency"):
+                    raise exc.AuthorizationError()
                 agency = models.Agency.objects.create(
                     request,
                     name=resource["agency"],

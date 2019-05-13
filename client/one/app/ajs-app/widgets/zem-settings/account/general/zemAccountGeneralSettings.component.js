@@ -23,6 +23,9 @@ angular.module('one.widgets').component('zemAccountGeneralSettings', {
             // TODO: Refactor
             dropdownCssClass: 'service-fee-select2',
             createSearchChoice: function(term, data) {
+                if (!$ctrl.hasPermission('zemauth.can_create_agency')) {
+                    return;
+                }
                 if (
                     $(data).filter(function() {
                         return this.text.localeCompare(term) === 0;
