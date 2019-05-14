@@ -1,4 +1,5 @@
 from collections import OrderedDict
+from decimal import Decimal
 
 from django.template.loader import render_to_string
 
@@ -22,5 +23,11 @@ def prepare_report_as_csv(data):
 def get_daily_report_html(data):
     context = {}
     if data:
+        for row in data:
+            for k, v in row.items():
+                if type(v) == Decimal:
+                    row[k] = "${}".format(round(v))
+
         context["data"] = [OrderedDict(d) for d in data]
+
     return render_to_string("management_report.html", context)
