@@ -374,7 +374,7 @@ class FilterTestCase(TestCase):
     def test_filter_columns_by_permission_platform_cost_bcm_v2(self):
         uses_bcm_v2 = True
         rows = generate_rows(permission_filter._get_fields_to_keep(self.superuser, self.goals, uses_bcm_v2))
-        user = magic_mixer.blend_user(["can_view_platform_cost_breakdown"])
+        user = magic_mixer.blend_user(["can_view_platform_cost_breakdown", "can_see_viewthrough_conversions"])
 
         permission_filter.filter_columns_by_permission(
             user, rows, self.goals, self._mock_constraints(uses_bcm_v2), Level.ACCOUNTS
@@ -414,6 +414,18 @@ class FilterTestCase(TestCase):
                 "license_fee_projection",
                 "pacing",
                 "spend_projection",
+                "pixel_1_24_view",
+                "pixel_1_168_view",
+                "pixel_1_720_view",
+                "avg_et_cost_per_pixel_1_168_view",
+                "local_avg_et_cost_per_pixel_1_168_view",
+                "avg_et_cost_per_pixel_1_24_view",
+                "local_avg_et_cost_per_pixel_1_24_view",
+                "avg_et_cost_per_pixel_1_720_view",
+                "local_avg_et_cost_per_pixel_1_720_view",
+                "et_roas_pixel_1_168_view",
+                "et_roas_pixel_1_24_view",
+                "et_roas_pixel_1_720_view",
             ],
         )
 
@@ -581,6 +593,54 @@ class FilterTestCase(TestCase):
         )
 
         self.assertEqual(rows[0]["status_per_source"], {1: {"source_id": 1, "source_status": 1}})
+
+    def test_filter_columns_by_permission_viewthrough(self):
+        uses_bcm_v2 = False
+        rows = generate_rows(permission_filter._get_fields_to_keep(self.superuser, self.goals, uses_bcm_v2))
+        user = magic_mixer.blend_user(["can_see_viewthrough_conversions"])
+
+        permission_filter.filter_columns_by_permission(
+            user, rows, self.goals, self._mock_constraints(uses_bcm_v2), Level.ACCOUNTS
+        )
+        self.assertCountEqual(
+            set(rows[0].keys()) - self.public_fields,
+            [
+                "pixel_1_24_view",
+                "pixel_1_168_view",
+                "pixel_1_720_view",
+                "avg_cost_per_pixel_1_168_view",
+                "local_avg_cost_per_pixel_1_168_view",
+                "avg_cost_per_pixel_1_24_view",
+                "local_avg_cost_per_pixel_1_24_view",
+                "avg_cost_per_pixel_1_720_view",
+                "local_avg_cost_per_pixel_1_720_view",
+                "roas_pixel_1_168_view",
+                "roas_pixel_1_24_view",
+                "roas_pixel_1_720_view",
+                "avg_et_cost_per_pixel_1_168_view",
+                "local_avg_et_cost_per_pixel_1_168_view",
+                "avg_et_cost_per_pixel_1_24_view",
+                "local_avg_et_cost_per_pixel_1_24_view",
+                "avg_et_cost_per_pixel_1_720_view",
+                "local_avg_et_cost_per_pixel_1_720_view",
+                "et_roas_pixel_1_168_view",
+                "et_roas_pixel_1_24_view",
+                "et_roas_pixel_1_720_view",
+            ],
+        )
+
+    def test_filter_columns_by_permission_viewthrough_bcm_v2(self):
+        uses_bcm_v2 = True
+        rows = generate_rows(permission_filter._get_fields_to_keep(self.superuser, self.goals, uses_bcm_v2))
+        user = magic_mixer.blend_user(["can_see_viewthrough_conversions"])
+
+        permission_filter.filter_columns_by_permission(
+            user, rows, self.goals, self._mock_constraints(uses_bcm_v2), Level.ACCOUNTS
+        )
+        self.assertCountEqual(
+            set(rows[0].keys()) - self.public_fields_uses_bcm_v2,
+            ["pixel_1_24_view", "pixel_1_168_view", "pixel_1_720_view"],
+        )
 
 
 class BreakdownAllowedTest(TestCase):
