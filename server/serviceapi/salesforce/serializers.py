@@ -108,10 +108,10 @@ class CreditsListSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
 class TagSerializer(serializers.BaseSerializer):
     class Meta:
         model = core.models.EntityTag
-        fields = ("label",)
+        fields = ("name",)
 
     def to_representation(self, instance):
-        return instance.label
+        return instance.name
 
     def to_internal_value(self, data):
         return data
