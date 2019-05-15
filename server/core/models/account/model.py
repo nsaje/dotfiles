@@ -45,6 +45,7 @@ class Account(AccountValidatorMixin, AccountInstanceMixin, models.Model):
         "salesforce_id",
         "allowed_sources",
         "users",
+        "amplify_review",
     )
     _externally_managed_fields = (
         "id",
@@ -114,6 +115,8 @@ class Account(AccountValidatorMixin, AccountInstanceMixin, models.Model):
         dump_kwargs=JSONFIELD_DUMP_KWARGS,
         help_text="Used only by Outbrain Salesforce to store attributes non existant on Z1.",
     )
+    amplify_review = models.NullBooleanField(default=True)
+
     objects = manager.AccountManager.from_queryset(queryset.AccountQuerySet)()
 
     def get_sspd_url(self):

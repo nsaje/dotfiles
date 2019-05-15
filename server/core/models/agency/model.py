@@ -46,6 +46,7 @@ class Agency(AgencyValidatorMixin, AgencyInstanceMixin, models.Model):
         "users",
         "allowed_sources",
         "default_account_type",
+        "amplify_review",
     )
 
     _externally_managed_fields = ("id", "name", "is_disabled", "custom_attributes", "modified_dt")
@@ -104,6 +105,8 @@ class Agency(AgencyValidatorMixin, AgencyInstanceMixin, models.Model):
     )
 
     entity_tags = tagulous.models.TagField(to=tags.EntityTag, blank=True)
+    amplify_review = models.NullBooleanField(default=True)
+
     custom_attributes = jsonfield.JSONField(
         blank=True,
         default=dict,

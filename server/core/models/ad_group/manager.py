@@ -11,18 +11,6 @@ import utils.redirector_helper
 from . import exceptions
 from . import model
 
-AMPLIFY_REVIEW_AGENCIES_DISABLED = {
-    55,
-    179,
-    201,
-    357,
-    407,
-    175,
-    206,
-    469,
-}  # Outbrain, Publicis / Independence Media / Precision Guaranteed, iProspect France, GroupM / PBU, OMD France, PHD Media: Remind, Gamned SAS, KR Wavemaker
-AMPLIFY_REVIEW_ACCOUNTS_DISABLED = {490, 513}  # inPowered
-
 
 class AdGroupManager(core.common.BaseManager):
     def _create_default_name(self, campaign):
@@ -32,12 +20,15 @@ class AdGroupManager(core.common.BaseManager):
         ad_group = model.AdGroup(campaign=campaign, name=name, **kwargs)
         if (
             settings.AMPLIFY_REVIEW
-            and campaign.account_id not in AMPLIFY_REVIEW_ACCOUNTS_DISABLED
-            and campaign.account.agency_id not in AMPLIFY_REVIEW_AGENCIES_DISABLED
+            and (
+                campaign.account.amplify_review
+                and (campaign.account.agency and campaign.account.agency.amplify_review or True)
+            )
             and campaign.type != dash.constants.CampaignType.VIDEO
             and campaign.type != dash.constants.CampaignType.DISPLAY
         ):
             ad_group.amplify_review = True
+
         if do_save:
             ad_group.save(request)
         return ad_group

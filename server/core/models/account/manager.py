@@ -32,6 +32,7 @@ class AccountManager(core.common.BaseManager):
         account.save(request)
         if agency is not None:
             account.uses_bcm_v2 = agency.new_accounts_use_bcm_v2
+            account.amplify_review = agency.amplify_review
         else:
             # TODO: when all agencies are migrated, this can be moved into a db field default
             account.uses_bcm_v2 = True
