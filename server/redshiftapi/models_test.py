@@ -332,12 +332,12 @@ class MVTouchpointConversionsTest(TestCase, backtosql.TestSQLMixin):
     def test_get_aggregates(self):
         self.assertCountEqual(
             [x.alias for x in self.model.get_aggregates(["account_id"], "mv_account_touch")],
-            ["count", "conversion_value"],
+            ["count", "conversion_value", "count_view", "conversion_value_view"],
         )
 
         self.assertCountEqual(
             [x.alias for x in self.model.get_aggregates(["account_id", "publisher_id"], "mv_touchpointconversions")],
-            ["publisher_id", "count", "conversion_value"],
+            ["publisher_id", "count", "conversion_value", "count_view", "conversion_value_view"],
         )
 
 

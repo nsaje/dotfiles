@@ -495,9 +495,25 @@ class MVTouchpointConversions(BreakdownsBase):
     slug = backtosql.Column("slug", BREAKDOWN)
     window = backtosql.Column("conversion_window", BREAKDOWN, alias='"window"')  # window is reserved word in PostgreSQL
 
-    count = backtosql.TemplateColumn("part_sum.sql", {"column_name": "conversion_count"}, AGGREGATE)
+    count = backtosql.TemplateColumn(
+        "part_sum_conversion_type.sql",
+        {"column_name": "conversion_count", "conversion_type": dash.constants.ConversionType.CLICK},
+        AGGREGATE,
+    )
     conversion_value = backtosql.TemplateColumn(
-        "part_sum_nano.sql", {"column_name": "conversion_value_nano"}, AGGREGATE
+        "part_sum_nano_conversion_type.sql",
+        {"column_name": "conversion_value_nano", "conversion_type": dash.constants.ConversionType.CLICK},
+        AGGREGATE,
+    )  # noqa
+    count_view = backtosql.TemplateColumn(
+        "part_sum_conversion_type.sql",
+        {"column_name": "conversion_count", "conversion_type": dash.constants.ConversionType.VIEW},
+        AGGREGATE,
+    )
+    conversion_value_view = backtosql.TemplateColumn(
+        "part_sum_nano_conversion_type.sql",
+        {"column_name": "conversion_value_nano", "conversion_type": dash.constants.ConversionType.VIEW},
+        AGGREGATE,
     )  # noqa
 
 

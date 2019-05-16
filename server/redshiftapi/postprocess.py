@@ -251,8 +251,14 @@ def apply_pixel_columns(breakdown, rows, pixels, touchpoint_rows):
     pixel_breakdown = breakdown + ["slug"]
     pixel_rows_map = sort_helper.group_rows_by_breakdown_key(pixel_breakdown, touchpoint_rows, max_1=False)
 
-    conversion_windows = sorted(dash.constants.ConversionWindowsLegacy.get_all())
+    conversion_windows_click = sorted(dash.constants.ConversionWindowsLegacy.get_all())
+    conversion_windows_view = sorted(dash.constants.ConversionWindows.get_all())
 
+    _generate_pixel_columns(breakdown, rows, pixels, pixel_rows_map, conversion_windows_click)
+    _generate_pixel_columns(breakdown, rows, pixels, pixel_rows_map, conversion_windows_view, suffix="_view")
+
+
+def _generate_pixel_columns(breakdown, rows, pixels, pixel_rows_map, conversion_windows, suffix=None):
     for row in rows:
         cost = row["e_media_cost"] or 0
         local_cost = row["local_e_media_cost"] or 0
@@ -269,7 +275,7 @@ def apply_pixel_columns(breakdown, rows, pixels, touchpoint_rows):
 
             for conversion_window in conversion_windows:
                 if pixel_rows:
-                    count = sum(x["count"] for x in pixel_rows if x["window"] <= conversion_window)
+                    count = sum(x["count" + (suffix or "")] for x in pixel_rows if x["window"] <= conversion_window)
 
                     avg_cost = float(cost) / count if count else None
                     local_avg_cost = float(local_cost) / count if count else None
@@ -280,7 +286,7 @@ def apply_pixel_columns(breakdown, rows, pixels, touchpoint_rows):
 
                     value = float(
                         sum(
-                            x["conversion_value"]
+                            x["conversion_value" + (suffix or "")]
                             for x in pixel_rows
                             if x["window"] <= conversion_window
                             if x["conversion_value"]
@@ -299,7 +305,7 @@ def apply_pixel_columns(breakdown, rows, pixels, touchpoint_rows):
                     roas = None
                     etfm_roas = None
 
-                pixel_key = pixel.get_view_key(conversion_window)
+                pixel_key = pixel.get_view_key(conversion_window) + (suffix or "")
 
                 row.update(
                     {

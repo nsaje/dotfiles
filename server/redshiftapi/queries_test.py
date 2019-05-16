@@ -229,8 +229,10 @@ class PrepareQueryAllTest(TestCase, backtosql.TestSQLMixin):
             base_table.source_id AS source_id,
             base_table.slug AS slug,
             base_table.conversion_window AS "window",
-            SUM(base_table.conversion_value_nano)/1000000000.0 conversion_value,
-            SUM(base_table.conversion_count) count
+            SUM(CASE WHEN 1=1 AND (type=1 OR type IS NULL) OR 1=2 AND type=2 THEN base_table.conversion_value_nano ELSE 0 END)/1000000000.0 conversion_value,
+            SUM(CASE WHEN 2=1 AND (type=1 OR type IS NULL) OR 2=2 AND type=2 THEN base_table.conversion_value_nano ELSE 0 END)/1000000000.0 conversion_value_view,
+            SUM(CASE WHEN 1=1 AND (type=1 OR type IS NULL) OR 1=2 AND type=2 THEN base_table.conversion_count ELSE 0 END) count,
+            SUM(CASE WHEN 2=1 AND (type=1 OR type IS NULL) OR 2=2 AND type=2 THEN base_table.conversion_count ELSE 0 END) count_view
         FROM mv_account_touch base_table
         WHERE (( base_table.date >=%s AND base_table.date <=%s)
                AND (( base_table.account_id =%s AND base_table.source_id =%s)))
@@ -257,8 +259,10 @@ class PrepareQueryAllTest(TestCase, backtosql.TestSQLMixin):
             base_table.date AS day,
             base_table.slug AS slug,
             base_table.conversion_window AS "window",
-            SUM(base_table.conversion_value_nano)/1000000000.0 conversion_value,
-            SUM(base_table.conversion_count) count,
+            SUM(CASE WHEN 1=1 AND (type=1 OR type IS NULL) OR 1=2 AND type=2 THEN base_table.conversion_value_nano ELSE 0 END)/1000000000.0 conversion_value,
+            SUM(CASE WHEN 2=1 AND (type=1 OR type IS NULL) OR 2=2 AND type=2 THEN base_table.conversion_value_nano ELSE 0 END)/1000000000.0 conversion_value_view,
+            SUM(CASE WHEN 1=1 AND (type=1 OR type IS NULL) OR 1=2 AND type=2 THEN base_table.conversion_count ELSE 0 END) count,
+            SUM(CASE WHEN 2=1 AND (type=1 OR type IS NULL) OR 2=2 AND type=2 THEN base_table.conversion_count ELSE 0 END) count_view,
             MAX(base_table.publisher_source_id) publisher_id
         FROM mv_touchpointconversions base_table
         WHERE (( base_table.date >=%s AND base_table.date <=%s)
