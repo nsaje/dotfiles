@@ -9,6 +9,7 @@ import dash
 import dash.constants
 import dash.models
 from automation import campaignstop
+from automation import models
 
 from . import settings
 
@@ -49,7 +50,16 @@ def get_active_ad_groups_on_autopilot(autopilot_state=None):
     return ad_groups_on_autopilot, ad_group_settings_on_autopilot
 
 
-def get_autopilot_entities(ad_group=None, campaign=None):
+def get_processed_autopilot_ad_group_ids(from_date_time):
+    return set(
+        models.AutopilotLog.objects.filter(created_dt__gte=from_date_time)
+        .filter(is_autopilot_job_run=True)
+        .values_list("ad_group", flat=True)
+        .distinct()
+    )
+
+
+def get_autopilot_entities(ad_group=None, campaign=None, excluded_ad_group_ids=None):
     states = [
         dash.constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET,
         dash.constants.AdGroupSettingsAutopilotState.ACTIVE_CPC,
@@ -60,6 +70,9 @@ def get_autopilot_entities(ad_group=None, campaign=None):
         .select_related("settings", "campaign__settings", "campaign__account")
         .distinct()
     )
+    if excluded_ad_group_ids:
+        ad_groups = ad_groups.exclude(id__in=excluded_ad_group_ids)
+
     if ad_group is not None:
         ad_groups = ad_groups.filter(id=ad_group.id)
     elif campaign is not None:

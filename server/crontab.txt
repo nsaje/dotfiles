@@ -31,13 +31,12 @@
 30 7 1 * *       /home/ubuntu/docker-manage-py.sh refresh_inventory_data
 #0 8 * * *        /home/ubuntu/docker-manage-py.sh auto_archive_inactive_entities
 0 8 * * *        /home/ubuntu/docker-manage-py.sh create_demo_snapshot
-15 9 * * *       /home/ubuntu/docker-manage-py.sh run_autopilot --daily-run
+15 9-12 * * *    /home/ubuntu/docker-manage-py.sh run_autopilot --daily-run
 15 9 * * 1       /home/ubuntu/docker-manage-py.sh audit_credits --send-emails
 0 10 * * *       /home/ubuntu/docker-manage-py.sh campaignstop_monitor --slack
 0 10 5,15,25 * * /home/ubuntu/docker-manage-py.sh audit_pacing --send-emails
 10 10 * * *      /home/ubuntu/docker-manage-py.sh generate_hack_report -n 14 -i
 10 10-20 * * *    /home/ubuntu/docker-manage-py.sh send_scheduled_reports
-15 10 * * *      /home/ubuntu/docker-manage-py.sh audit_autopilot --slack
 15 10 * * *      /home/ubuntu/docker-manage-py.sh post_delivery_statuses
 20 10 * * *      /home/ubuntu/docker-manage-py.sh daily_audit --send-emails
 45 10 * * *      /home/ubuntu/docker-manage-py.sh audit_cpc_vs_ecpc --slack # must run after autopilot imported data.
@@ -48,6 +47,7 @@
 0 12 * * *       /home/ubuntu/docker-manage-py.sh free_inactive_allocated_assets
 0 12 * * *       /home/ubuntu/docker-manage-py.sh monitor_dailystatement_holes
 0 12 * * *       /home/ubuntu/docker-manage-py.sh send_outbrain_manual_actions_email
+0 13 * * *       /home/ubuntu/docker-manage-py.sh audit_autopilot --slack
 0 13 * * *       /home/ubuntu/docker-manage-py.sh audit_publisher_high_ctr --slack
 0 14 * * *       /home/ubuntu/docker-manage-py.sh audit_overspend --slack --influx
 30 16 * * *      /home/ubuntu/docker-manage-py.sh send_supply_report_emails

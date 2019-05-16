@@ -11,9 +11,11 @@ import dash.constants
 import dash.models
 import redshiftapi.api_breakdowns
 from automation import models
+from etl import models as etl_models
 from utils import dates_helper
 from utils import k1_helper
 from utils import pagerduty_helper
+from utils import slack
 
 from . import bid
 from . import budgets
@@ -38,7 +40,23 @@ def run_autopilot(
     dry_run=False,
     daily_run=False,
 ):
-    entities = helpers.get_autopilot_entities(ad_group=ad_group, campaign=campaign)
+    processed_ad_group_ids = None
+    if daily_run:
+        # after EST midnight wait 2h for data to be available + 3h for refresh_etl to complete
+        from_date_time = dates_helper.local_midnight_to_utc_time().replace(tzinfo=None) + datetime.timedelta(hours=5)
+
+        if not etl_models.MaterializationRun.objects.filter(finished_dt__gte=from_date_time).exists():
+            logger.info("Autopilot daily run was aborted since materialized data is not yet available.")
+            return
+
+        processed_ad_group_ids = helpers.get_processed_autopilot_ad_group_ids(from_date_time)
+
+        if processed_ad_group_ids:
+            logger.info("Excluding %s processed ad groups", len(processed_ad_group_ids))
+
+    entities = helpers.get_autopilot_entities(
+        ad_group=ad_group, campaign=campaign, excluded_ad_group_ids=processed_ad_group_ids
+    )
     if ad_group is None:  # do not calculate campaign budgets when run for one ad_group only
         campaign_daily_budgets = calculate_campaigns_daily_budget(campaign=campaign)
 
@@ -47,57 +65,98 @@ def run_autopilot(
         return {}
     changes_data = {}
 
+    failed_campaigns = []
+    failed_ad_groups = []
+
     for campaign, ad_groups in entities.items():
-        ad_groups = _filter_adgroups_with_data(ad_groups, data)
-        if campaign.settings.autopilot:
-            budget_changes_map = _get_budget_predictions_for_campaign(
-                campaign,
-                ad_groups,
-                campaign_daily_budgets[campaign],
-                data,
-                bcm_modifiers_map.get(campaign),
-                campaign_goals.get(campaign, {}),
-                campaign.account.uses_bcm_v2,
-                adjust_budgets,
-            )
-            bid_changes_map = {}
-            for ad_group in ad_groups:
-                bid_changes_map[ad_group] = _get_bid_predictions(
-                    ad_group,
-                    budget_changes_map[ad_group],
-                    data[ad_group],
-                    bcm_modifiers_map.get(campaign),
-                    adjust_bids,
-                    campaign_goals.get(campaign, {}),
-                    is_budget_ap_enabled=True,
-                )
-                changes_data = _get_autopilot_campaign_changes_data(
-                    ad_group, changes_data, bid_changes_map[ad_group], budget_changes_map[ad_group]
-                )
-            _save_changes_campaign(
-                campaign, ad_groups, data, campaign_goals, budget_changes_map, bid_changes_map, dry_run, daily_run
-            )
-        else:
-            for ad_group in ad_groups:
-                budget_changes = _get_budget_predictions_for_adgroup(
-                    ad_group,
-                    data[ad_group],
+        try:
+            ad_groups = _filter_adgroups_with_data(ad_groups, data)
+            if campaign.settings.autopilot:
+                budget_changes_map = _get_budget_predictions_for_campaign(
+                    campaign,
+                    ad_groups,
+                    campaign_daily_budgets[campaign],
+                    data,
                     bcm_modifiers_map.get(campaign),
                     campaign_goals.get(campaign, {}),
                     campaign.account.uses_bcm_v2,
                     adjust_budgets,
-                    daily_run,
                 )
-                bid_changes = _get_bid_predictions(
-                    ad_group,
-                    budget_changes,
-                    data[ad_group],
-                    bcm_modifiers_map.get(campaign),
-                    adjust_bids,
-                    campaign_goals.get(campaign, {}),
+                bid_changes_map = {}
+                for ad_group in ad_groups:
+                    try:
+                        bid_changes_map[ad_group] = _get_bid_predictions(
+                            ad_group,
+                            budget_changes_map[ad_group],
+                            data[ad_group],
+                            bcm_modifiers_map.get(campaign),
+                            adjust_bids,
+                            campaign_goals.get(campaign, {}),
+                            is_budget_ap_enabled=True,
+                        )
+                        changes_data = _get_autopilot_campaign_changes_data(
+                            ad_group, changes_data, bid_changes_map[ad_group], budget_changes_map[ad_group]
+                        )
+                    except Exception:
+                        logger.exception(
+                            "Autopilot failed operating on autopilot campaign's ad group %s", str(ad_group)
+                        )
+                        failed_ad_groups.append(ad_group)
+
+                campaign_failed_ad_groups = _save_changes_campaign(
+                    campaign, ad_groups, data, campaign_goals, budget_changes_map, bid_changes_map, dry_run, daily_run
                 )
-                _save_changes(data, campaign_goals, ad_group, budget_changes, bid_changes, dry_run, daily_run)
-                changes_data = _get_autopilot_campaign_changes_data(ad_group, changes_data, bid_changes, budget_changes)
+
+                if campaign_failed_ad_groups:
+                    failed_ad_groups.extend(campaign_failed_ad_groups)
+
+            else:
+                for ad_group in ad_groups:
+                    try:
+                        budget_changes = _get_budget_predictions_for_adgroup(
+                            ad_group,
+                            data[ad_group],
+                            bcm_modifiers_map.get(campaign),
+                            campaign_goals.get(campaign, {}),
+                            campaign.account.uses_bcm_v2,
+                            adjust_budgets,
+                            daily_run,
+                        )
+                        bid_changes = _get_bid_predictions(
+                            ad_group,
+                            budget_changes,
+                            data[ad_group],
+                            bcm_modifiers_map.get(campaign),
+                            adjust_bids,
+                            campaign_goals.get(campaign, {}),
+                        )
+                        _save_changes(data, campaign_goals, ad_group, budget_changes, bid_changes, dry_run, daily_run)
+                        changes_data = _get_autopilot_campaign_changes_data(
+                            ad_group, changes_data, bid_changes, budget_changes
+                        )
+                    except Exception:
+                        logger.exception("Autopilot failed operating on ad group %s", str(ad_group))
+                        failed_ad_groups.append(ad_group)
+
+        except Exception:
+            logger.exception("Autopilot failed operating on campaign %s", str(campaign))
+            failed_campaigns.append(campaign)
+
+    if failed_campaigns:
+        details = "\n".join(["- {}".format(slack.campaign_url(campaign)) for campaign in failed_campaigns])
+        slack.publish(
+            "Autopilot run failed for the following campaigns:\n{}".format(details),
+            msg_type=slack.MESSAGE_TYPE_CRITICAL,
+            username=slack.USER_AUTOPILOT,
+        )
+
+    if failed_ad_groups:
+        details = "\n".join(["- {}".format(slack.ad_group_url(ad_group)) for ad_group in failed_ad_groups])
+        slack.publish(
+            "Autopilot run failed for the following ad groups:\n{}".format(details),
+            msg_type=slack.MESSAGE_TYPE_CRITICAL,
+            username=slack.USER_AUTOPILOT,
+        )
 
     if report_to_influx:
         # refresh entities from db so we report new data, always report data for all entities
@@ -113,38 +172,44 @@ def _save_changes_campaign(
 ):
     if dry_run:
         return
+
+    failed_ad_groups = []
     for ad_group in ad_groups:
-        _save_changes(
-            data,
-            campaign_goals,
-            ad_group,
-            budget_changes_map[ad_group],
-            bid_changes_map[ad_group],
-            dry_run,
-            daily_run,
-            campaign=campaign,
-        )
+        try:
+            _save_changes(
+                data,
+                campaign_goals,
+                ad_group,
+                budget_changes_map[ad_group],
+                bid_changes_map[ad_group],
+                dry_run,
+                daily_run,
+                campaign=campaign,
+            )
+        except Exception as e:
+            logger.exception("Autopilot failed saving changes on autopilot campaign's ad group %s", str(ad_group))
+            failed_ad_groups.append(ad_group)
+
+    return failed_ad_groups
 
 
 def _save_changes(data, campaign_goals, ad_group, budget_changes, bid_changes, dry_run, daily_run, campaign=None):
     if dry_run:
         return
-    try:
-        with transaction.atomic():
-            set_autopilot_changes(bid_changes, budget_changes, ad_group, dry_run=dry_run)
-            persist_autopilot_changes_to_log(
-                ad_group,
-                bid_changes,
-                budget_changes,
-                data[ad_group],
-                ad_group.settings.autopilot_state,
-                campaign_goals.get(ad_group.campaign),
-                is_autopilot_job_run=daily_run,
-                campaign=campaign,
-            )
-        k1_helper.update_ad_group(ad_group, "run_autopilot")
-    except Exception as e:
-        _report_autopilot_exception(ad_group, e)
+
+    with transaction.atomic():
+        set_autopilot_changes(bid_changes, budget_changes, ad_group, dry_run=dry_run)
+        persist_autopilot_changes_to_log(
+            ad_group,
+            bid_changes,
+            budget_changes,
+            data[ad_group],
+            ad_group.settings.autopilot_state,
+            campaign_goals.get(ad_group.campaign),
+            is_autopilot_job_run=daily_run,
+            campaign=campaign,
+        )
+    k1_helper.update_ad_group(ad_group, "run_autopilot")
 
 
 def _filter_adgroups_with_data(ad_groups, data):

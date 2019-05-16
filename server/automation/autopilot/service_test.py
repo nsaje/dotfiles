@@ -11,6 +11,8 @@ import dash.constants
 import dash.models
 from automation import models
 from core.features.goals import campaign_goal
+from etl import models as etl_models
+from utils import dates_helper
 from utils import pagerduty_helper
 from utils.magic_mixer import magic_mixer
 
@@ -119,6 +121,10 @@ class AutopilotPlusTestCase(test.TestCase):
             for ad_group in dash.models.AdGroup.objects.all()
         }
 
+    @patch(
+        "django.utils.timezone.now",
+        return_value=dates_helper.local_midnight_to_utc_time().replace(tzinfo=None) + datetime.timedelta(hours=5),
+    )
     @patch("automation.autopilot.service._report_new_budgets_on_ap_to_influx")
     @patch("automation.autopilot.service._report_adgroups_data_to_influx")
     @patch("automation.autopilot.helpers.update_ad_group_b1_sources_group_values")
@@ -135,10 +141,13 @@ class AutopilotPlusTestCase(test.TestCase):
         mock_update_allrtb,
         mock_influx_adgroups,
         mock_influx_budgets,
+        mock_timezone_now,
     ):
         mock_budgets.side_effect = self.mock_budget_recommender
         mock_bid.side_effect = self.mock_bid_recommender
         mock_prefetch.return_value = (self.data, {}, {})
+
+        etl_models.MaterializationRun.objects.create()
 
         service.run_autopilot(daily_run=True, report_to_influx=True)
 
@@ -177,6 +186,130 @@ class AutopilotPlusTestCase(test.TestCase):
         self.assertLogExists(ad_group=4, source=None)
         mock_influx_adgroups.assert_called_once_with(*self._influx_input())
         mock_influx_budgets.assert_called_once_with(self._influx_input()[0])
+
+    @patch(
+        "django.utils.timezone.now",
+        return_value=dates_helper.local_midnight_to_utc_time().replace(tzinfo=None) + datetime.timedelta(hours=5),
+    )
+    @patch("automation.autopilot.helpers.update_ad_group_b1_sources_group_values")
+    @patch("automation.autopilot.helpers.update_ad_group_source_values")
+    @patch("automation.autopilot.prefetch.prefetch_autopilot_data")
+    @patch("automation.autopilot.bid.get_autopilot_bid_recommendations")
+    @patch("automation.autopilot.budgets.get_autopilot_daily_budget_recommendations")
+    @patch("utils.slack.publish")
+    def test_run_autopilot_daily_run_exceptions(
+        self, mock_slack, mock_budgets, mock_bid, mock_prefetch, mock_update, mock_update_allrtb, mock_timezone_now
+    ):
+        mock_budgets.side_effect = self.mock_budget_recommender
+        mock_bid.side_effect = self.mock_bid_recommender
+        mock_prefetch.return_value = (self.data, {}, {})
+
+        etl_models.MaterializationRun.objects.create()
+
+        original_save_changes = service._save_changes
+        original_get_budget_predictions_for_campaign = service._get_budget_predictions_for_campaign
+
+        def _failing_save_changes(*args, **kwargs):
+            ad_group = args[2]
+            campaign = kwargs.get("campaign")
+
+            if (campaign and campaign.id == 2) or (ad_group and ad_group.id == 4):
+                raise Exception()
+            else:
+                return original_save_changes(*args, **kwargs)
+
+        def _failing_get_budget_predictions_for_campaign(*args, **kwargs):
+            campaign = args[0]
+
+            if campaign and campaign.id == 2:
+                raise Exception()
+            else:
+                return original_get_budget_predictions_for_campaign(*args, **kwargs)
+
+        with patch("automation.autopilot.service._save_changes", side_effect=_failing_save_changes):
+            with patch(
+                "automation.autopilot.service._get_budget_predictions_for_campaign",
+                side_effect=_failing_get_budget_predictions_for_campaign,
+            ):
+                service.run_autopilot(daily_run=True, report_to_influx=False)
+
+        self.assertCountEqual(
+            mock_update.call_args_list,
+            [self._update_call(ad_group=1, source=1), self._update_call(ad_group=3, source=1, budget=False)],
+        )
+        self.assertCountEqual(
+            mock_update_allrtb.call_args_list,
+            [self._update_allrtb_call(ad_group=1), self._update_allrtb_call(ad_group=3, budget=False)],
+        )
+        self.assertLogExists(ad_group=1, source=1)
+        self.assertLogExists(ad_group=3, source=1)
+        self.assertLogExists(ad_group=1, source=None)
+        self.assertLogExists(ad_group=3, source=None)
+
+        mock_slack.assert_has_calls(
+            [
+                call(
+                    "Autopilot run failed for the following campaigns:\n- <https://one.zemanta.com/v2/analytics/campaign/2/|Test Campaign 2>",
+                    msg_type=":rage:",
+                    username="Autopilot",
+                ),
+                call(
+                    "Autopilot run failed for the following ad groups:\n- <https://one.zemanta.com/v2/analytics/adgroup/4/sources|Test AdGroup 4>",
+                    msg_type=":rage:",
+                    username="Autopilot",
+                ),
+            ]
+        )
+
+    @patch(
+        "django.utils.timezone.now",
+        return_value=dates_helper.local_midnight_to_utc_time().replace(tzinfo=None) + datetime.timedelta(hours=5),
+    )
+    @patch(
+        "utils.dates_helper.utc_now",
+        return_value=dates_helper.local_midnight_to_utc_time().replace(tzinfo=None) + datetime.timedelta(hours=5),
+    )
+    @patch("automation.autopilot.helpers.update_ad_group_b1_sources_group_values")
+    @patch("automation.autopilot.helpers.update_ad_group_source_values")
+    @patch("automation.autopilot.prefetch.prefetch_autopilot_data")
+    @patch("automation.autopilot.bid.get_autopilot_bid_recommendations")
+    @patch("automation.autopilot.budgets.get_autopilot_daily_budget_recommendations")
+    def test_run_autopilot_daily_run_exclude_processed_entities(
+        self, mock_budgets, mock_bid, mock_prefetch, mock_update, mock_update_allrtb, mock_utc_now, mock_timezone_now
+    ):
+        mock_budgets.side_effect = self.mock_budget_recommender
+        mock_bid.side_effect = self.mock_bid_recommender
+        mock_prefetch.return_value = (self.data, {}, {})
+
+        etl_models.MaterializationRun.objects.create()
+        models.AutopilotLog(
+            campaign=dash.models.Campaign.objects.get(id=3),
+            ad_group=dash.models.AdGroup.objects.get(id=3),
+            is_autopilot_job_run=True,
+        ).save()
+        models.AutopilotLog(ad_group=dash.models.AdGroup.objects.get(id=4), is_autopilot_job_run=True).save()
+
+        service.run_autopilot(daily_run=True, report_to_influx=False)
+
+        self.assertCountEqual(
+            mock_update.call_args_list,
+            [self._update_call(ad_group=1, source=1), self._update_call(ad_group=2, source=1)],
+        )
+        self.assertCountEqual(
+            mock_update_allrtb.call_args_list,
+            [self._update_allrtb_call(ad_group=1), self._update_allrtb_call(ad_group=2)],
+        )
+        self.assertLogExists(ad_group=1, source=1)
+        self.assertLogExists(campaign=2, ad_group=2, source=1)
+        self.assertLogExists(ad_group=1, source=None)
+        self.assertLogExists(campaign=2, ad_group=2, source=None)
+
+    @patch("automation.autopilot.service.logger.info")
+    def test_run_autopilot_daily_run_late_materialization(self, mock_logger_info):
+        service.run_autopilot(daily_run=True, report_to_influx=False)
+        mock_logger_info.assert_called_once_with(
+            "Autopilot daily run was aborted since materialized data is not yet available."
+        )
 
     @patch("automation.autopilot.helpers.update_ad_group_b1_sources_group_values")
     @patch("automation.autopilot.helpers.update_ad_group_source_values")
