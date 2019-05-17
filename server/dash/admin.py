@@ -917,7 +917,16 @@ class AdGroupAdmin(SlackLoggerMixin, admin.ModelAdmin):
     list_filter = [IsArchivedFilter]
 
     raw_id_fields = ("settings", "default_blacklist", "default_whitelist")
-    readonly_fields = ("id", "name", "campaign", "created_dt", "modified_dt", "modified_by")
+    readonly_fields = (
+        "id",
+        "name",
+        "campaign",
+        "created_dt",
+        "modified_dt",
+        "modified_by",
+        "reset_approved_submission_statuses",
+        "reset_rejected_submission_statuses",
+    )
     exclude = ("settings",)
     form = dash_forms.AdGroupAdminForm
     inlines = (DirectDealConnectionAdGroupsInline,)
@@ -926,6 +935,10 @@ class AdGroupAdmin(SlackLoggerMixin, admin.ModelAdmin):
         (
             None,
             {"fields": ("name", "campaign", "created_dt", "modified_dt", "modified_by", "entity_tags", "custom_flags")},
+        ),
+        (
+            "Content ads submission statuses",
+            {"fields": ("reset_approved_submission_statuses", "reset_rejected_submission_statuses")},
         ),
         (
             "Additional targeting",
@@ -995,6 +1008,59 @@ class AdGroupAdmin(SlackLoggerMixin, admin.ModelAdmin):
         )
 
     campaign_.admin_order_field = "campaign"
+
+    def reset_rejected(self, request, ad_group_id, *args, **kwargs):
+        for cas in core.models.ContentAdSource.objects.filter(
+            content_ad__ad_group=ad_group_id,
+            submission_status=constants.ContentAdSubmissionStatus.REJECTED,
+            source__name=constants.SourceType.OUTBRAIN,
+        ):
+            cas.submission_status = constants.ContentAdSubmissionStatus.PENDING
+            cas.save()
+
+        url = reverse("admin:dash_adgroup_change", args=[ad_group_id], current_app=self.admin_site.name)
+        return HttpResponseRedirect(url)
+
+    def reset_approved(self, request, ad_group_id, *args, **kwargs):
+        for cas in core.models.ContentAdSource.objects.filter(
+            content_ad__ad_group=ad_group_id,
+            submission_status=constants.ContentAdSubmissionStatus.APPROVED,
+            source__name=constants.SourceType.OUTBRAIN,
+        ):
+            cas.submission_status = constants.ContentAdSubmissionStatus.PENDING
+            cas.save()
+
+        url = reverse("admin:dash_adgroup_change", args=[ad_group_id], current_app=self.admin_site.name)
+        return HttpResponseRedirect(url)
+
+    def get_urls(self):
+        urls = super().get_urls()
+        custom_urls = [
+            url(
+                r"^(?P<ad_group_id>.+)/reset-rejected/$",
+                self.admin_site.admin_view(self.reset_rejected),
+                name="reset-rejected",
+            ),
+            url(
+                r"^(?P<ad_group_id>.+)/reset-approved/$",
+                self.admin_site.admin_view(self.reset_approved),
+                name="reset-approved",
+            ),
+        ]
+        return custom_urls + urls
+
+    def reset_approved_submission_statuses(self, ad_group):
+        return format_html(
+            '<a class="button" href="{}">Reset all approved</a>', reverse("admin:reset-approved", args=[ad_group.id])
+        )
+
+    def reset_rejected_submission_statuses(self, ad_group):
+        return format_html(
+            '<a class="button" href="{}">Reset all rejected</a>', reverse("admin:reset-rejected", args=[ad_group.id])
+        )
+
+    reset_approved_submission_statuses.short_description = "Reset approved content ads submission status to pending"
+    reset_rejected_submission_statuses.short_description = "Reset rejected content ads submission status to pending"
 
 
 # Ad Group Source
