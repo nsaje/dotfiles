@@ -445,24 +445,25 @@ class MVMasterConversionsTest(TestCase, backtosql.TestSQLMixin):
             (a.type=1 OR a.type IS NULL) OR 2=2 AND a.type=2)
             THEN conversion_value_nano ELSE 0 END)/1000000000.0 total_conversion_value_pixel_1_24_view"""
                 ),
-                backtosql.SQLMatcher(
-                    """SUM(CASE WHEN a.slug='test' AND a.account_id=1 AND a.conversion_window<=168 AND (2=1 AND
-            (a.type=1 OR a.type IS NULL) OR 2=2 AND a.type=2) THEN conversion_count ELSE 0 END) pixel_1_168_view"""
-                ),
-                backtosql.SQLMatcher(
-                    """SUM(CASE WHEN a.slug='test' AND a.account_id=1 AND a.conversion_window<=168 AND (2=1 AND
-            (a.type=1 OR a.type IS NULL) OR 2=2 AND a.type=2) THEN conversion_value_nano ELSE 0 END
-            )/1000000000.0 total_conversion_value_pixel_1_168_view"""
-                ),
-                backtosql.SQLMatcher(
-                    """SUM(CASE WHEN a.slug='test' AND a.account_id=1 AND a.conversion_window<=720 AND (2=1 AND
-            (a.type=1 OR a.type IS NULL) OR 2=2 AND a.type=2) THEN conversion_count ELSE 0 END) pixel_1_720_view"""
-                ),
-                backtosql.SQLMatcher(
-                    """SUM(CASE WHEN a.slug='test' AND a.account_id=1 AND a.conversion_window<=720 AND (2=1 AND
-            (a.type=1 OR a.type IS NULL) OR 2=2 AND a.type=2) THEN conversion_value_nano ELSE 0 END
-            )/1000000000.0 total_conversion_value_pixel_1_720_view"""
-                ),
+                # TODO: VIEWTHROUGH: solve the issue of surpassing 1664 entries
+                #     backtosql.SQLMatcher(
+                #         """SUM(CASE WHEN a.slug='test' AND a.account_id=1 AND a.conversion_window<=168 AND (2=1 AND
+                # (a.type=1 OR a.type IS NULL) OR 2=2 AND a.type=2) THEN conversion_count ELSE 0 END) pixel_1_168_view"""
+                #     ),
+                #     backtosql.SQLMatcher(
+                #         """SUM(CASE WHEN a.slug='test' AND a.account_id=1 AND a.conversion_window<=168 AND (2=1 AND
+                # (a.type=1 OR a.type IS NULL) OR 2=2 AND a.type=2) THEN conversion_value_nano ELSE 0 END
+                # )/1000000000.0 total_conversion_value_pixel_1_168_view"""
+                #     ),
+                #     backtosql.SQLMatcher(
+                #         """SUM(CASE WHEN a.slug='test' AND a.account_id=1 AND a.conversion_window<=720 AND (2=1 AND
+                # (a.type=1 OR a.type IS NULL) OR 2=2 AND a.type=2) THEN conversion_count ELSE 0 END) pixel_1_720_view"""
+                #     ),
+                #     backtosql.SQLMatcher(
+                #         """SUM(CASE WHEN a.slug='test' AND a.account_id=1 AND a.conversion_window<=720 AND (2=1 AND
+                # (a.type=1 OR a.type IS NULL) OR 2=2 AND a.type=2) THEN conversion_value_nano ELSE 0 END
+                # )/1000000000.0 total_conversion_value_pixel_1_720_view"""
+                #     ),
             ],
         )
 
@@ -599,48 +600,49 @@ class MVMasterConversionsTest(TestCase, backtosql.TestSQLMixin):
                 backtosql.SQLMatcher(
                     "COALESCE(total_conversion_value_pixel_1_24_view, 0) - COALESCE(local_etfm_cost, 0) etfm_roas_pixel_1_24_view"
                 ),  # noqa
-                backtosql.SQLMatcher("e_media_cost / NULLIF(pixel_1_168_view, 0) avg_cost_per_pixel_1_168_view"),
-                backtosql.SQLMatcher(
-                    "local_e_media_cost / NULLIF(pixel_1_168_view, 0) local_avg_cost_per_pixel_1_168_view"
-                ),
-                backtosql.SQLMatcher("et_cost / NULLIF(pixel_1_168_view, 0) avg_et_cost_per_pixel_1_168_view"),
-                backtosql.SQLMatcher(
-                    "local_et_cost / NULLIF(pixel_1_168_view, 0) local_avg_et_cost_per_pixel_1_168_view"
-                ),
-                backtosql.SQLMatcher("etfm_cost / NULLIF(pixel_1_168_view, 0) avg_etfm_cost_per_pixel_1_168_view"),
-                backtosql.SQLMatcher(
-                    "local_etfm_cost / NULLIF(pixel_1_168_view, 0) local_avg_etfm_cost_per_pixel_1_168_view"
-                ),
-                backtosql.SQLMatcher(
-                    "COALESCE(total_conversion_value_pixel_1_168_view, 0) - COALESCE(local_e_media_cost, 0) roas_pixel_1_168_view"
-                ),  # noqa
-                backtosql.SQLMatcher(
-                    "COALESCE(total_conversion_value_pixel_1_168_view, 0) - COALESCE(local_et_cost, 0) et_roas_pixel_1_168_view"
-                ),  # noqa
-                backtosql.SQLMatcher(
-                    "COALESCE(total_conversion_value_pixel_1_168_view, 0) - COALESCE(local_etfm_cost, 0) etfm_roas_pixel_1_168_view"
-                ),  # noqa
-                backtosql.SQLMatcher("e_media_cost / NULLIF(pixel_1_720_view, 0) avg_cost_per_pixel_1_720_view"),
-                backtosql.SQLMatcher(
-                    "local_e_media_cost / NULLIF(pixel_1_720_view, 0) local_avg_cost_per_pixel_1_720_view"
-                ),
-                backtosql.SQLMatcher("et_cost / NULLIF(pixel_1_720_view, 0) avg_et_cost_per_pixel_1_720_view"),
-                backtosql.SQLMatcher(
-                    "local_et_cost / NULLIF(pixel_1_720_view, 0) local_avg_et_cost_per_pixel_1_720_view"
-                ),
-                backtosql.SQLMatcher("etfm_cost / NULLIF(pixel_1_720_view, 0) avg_etfm_cost_per_pixel_1_720_view"),
-                backtosql.SQLMatcher(
-                    "local_etfm_cost / NULLIF(pixel_1_720_view, 0) local_avg_etfm_cost_per_pixel_1_720_view"
-                ),
-                backtosql.SQLMatcher(
-                    "COALESCE(total_conversion_value_pixel_1_720_view, 0) - COALESCE(local_e_media_cost, 0) roas_pixel_1_720_view"
-                ),  # noqa
-                backtosql.SQLMatcher(
-                    "COALESCE(total_conversion_value_pixel_1_720_view, 0) - COALESCE(local_et_cost, 0) et_roas_pixel_1_720_view"
-                ),  # noqa
-                backtosql.SQLMatcher(
-                    "COALESCE(total_conversion_value_pixel_1_720_view, 0) - COALESCE(local_etfm_cost, 0) etfm_roas_pixel_1_720_view"
-                ),  # noqa
+                # TODO: VIEWTHROUGH: solve the issue of surpassing 1664 entries
+                # backtosql.SQLMatcher("e_media_cost / NULLIF(pixel_1_168_view, 0) avg_cost_per_pixel_1_168_view"),
+                # backtosql.SQLMatcher(
+                #     "local_e_media_cost / NULLIF(pixel_1_168_view, 0) local_avg_cost_per_pixel_1_168_view"
+                # ),
+                # backtosql.SQLMatcher("et_cost / NULLIF(pixel_1_168_view, 0) avg_et_cost_per_pixel_1_168_view"),
+                # backtosql.SQLMatcher(
+                #     "local_et_cost / NULLIF(pixel_1_168_view, 0) local_avg_et_cost_per_pixel_1_168_view"
+                # ),
+                # backtosql.SQLMatcher("etfm_cost / NULLIF(pixel_1_168_view, 0) avg_etfm_cost_per_pixel_1_168_view"),
+                # backtosql.SQLMatcher(
+                #     "local_etfm_cost / NULLIF(pixel_1_168_view, 0) local_avg_etfm_cost_per_pixel_1_168_view"
+                # ),
+                # backtosql.SQLMatcher(
+                #     "COALESCE(total_conversion_value_pixel_1_168_view, 0) - COALESCE(local_e_media_cost, 0) roas_pixel_1_168_view"
+                # ),  # noqa
+                # backtosql.SQLMatcher(
+                #     "COALESCE(total_conversion_value_pixel_1_168_view, 0) - COALESCE(local_et_cost, 0) et_roas_pixel_1_168_view"
+                # ),  # noqa
+                # backtosql.SQLMatcher(
+                #     "COALESCE(total_conversion_value_pixel_1_168_view, 0) - COALESCE(local_etfm_cost, 0) etfm_roas_pixel_1_168_view"
+                # ),  # noqa
+                # backtosql.SQLMatcher("e_media_cost / NULLIF(pixel_1_720_view, 0) avg_cost_per_pixel_1_720_view"),
+                # backtosql.SQLMatcher(
+                #     "local_e_media_cost / NULLIF(pixel_1_720_view, 0) local_avg_cost_per_pixel_1_720_view"
+                # ),
+                # backtosql.SQLMatcher("et_cost / NULLIF(pixel_1_720_view, 0) avg_et_cost_per_pixel_1_720_view"),
+                # backtosql.SQLMatcher(
+                #     "local_et_cost / NULLIF(pixel_1_720_view, 0) local_avg_et_cost_per_pixel_1_720_view"
+                # ),
+                # backtosql.SQLMatcher("etfm_cost / NULLIF(pixel_1_720_view, 0) avg_etfm_cost_per_pixel_1_720_view"),
+                # backtosql.SQLMatcher(
+                #     "local_etfm_cost / NULLIF(pixel_1_720_view, 0) local_avg_etfm_cost_per_pixel_1_720_view"
+                # ),
+                # backtosql.SQLMatcher(
+                #     "COALESCE(total_conversion_value_pixel_1_720_view, 0) - COALESCE(local_e_media_cost, 0) roas_pixel_1_720_view"
+                # ),  # noqa
+                # backtosql.SQLMatcher(
+                #     "COALESCE(total_conversion_value_pixel_1_720_view, 0) - COALESCE(local_et_cost, 0) et_roas_pixel_1_720_view"
+                # ),  # noqa
+                # backtosql.SQLMatcher(
+                #     "COALESCE(total_conversion_value_pixel_1_720_view, 0) - COALESCE(local_etfm_cost, 0) etfm_roas_pixel_1_720_view"
+                # ),  # noqa
             ],
         )
 
@@ -703,10 +705,11 @@ class MVMasterConversionsTest(TestCase, backtosql.TestSQLMixin):
                     "total_conversion_value_pixel_1_2160",
                     "pixel_1_24_view",
                     "total_conversion_value_pixel_1_24_view",
-                    "pixel_1_168_view",
-                    "total_conversion_value_pixel_1_168_view",
-                    "pixel_1_720_view",
-                    "total_conversion_value_pixel_1_720_view",
+                    # TODO: VIEWTHROUGH: solve the issue of surpassing 1664 entries
+                    # "pixel_1_168_view",
+                    # "total_conversion_value_pixel_1_168_view",
+                    # "pixel_1_720_view",
+                    # "total_conversion_value_pixel_1_720_view",
                 ]
             ),
         )
@@ -784,24 +787,25 @@ class MVMasterConversionsTest(TestCase, backtosql.TestSQLMixin):
                     "roas_pixel_1_24_view",
                     "et_roas_pixel_1_24_view",
                     "etfm_roas_pixel_1_24_view",
-                    "avg_cost_per_pixel_1_168_view",
-                    "local_avg_cost_per_pixel_1_168_view",
-                    "avg_et_cost_per_pixel_1_168_view",
-                    "local_avg_et_cost_per_pixel_1_168_view",
-                    "avg_etfm_cost_per_pixel_1_168_view",
-                    "local_avg_etfm_cost_per_pixel_1_168_view",
-                    "roas_pixel_1_168_view",
-                    "et_roas_pixel_1_168_view",
-                    "etfm_roas_pixel_1_168_view",
-                    "avg_cost_per_pixel_1_720_view",
-                    "local_avg_cost_per_pixel_1_720_view",
-                    "avg_et_cost_per_pixel_1_720_view",
-                    "local_avg_et_cost_per_pixel_1_720_view",
-                    "avg_etfm_cost_per_pixel_1_720_view",
-                    "local_avg_etfm_cost_per_pixel_1_720_view",
-                    "roas_pixel_1_720_view",
-                    "et_roas_pixel_1_720_view",
-                    "etfm_roas_pixel_1_720_view",
+                    # TODO: VIEWTHROUGH: solve the issue of surpassing 1664 entries
+                    # "avg_cost_per_pixel_1_168_view",
+                    # "local_avg_cost_per_pixel_1_168_view",
+                    # "avg_et_cost_per_pixel_1_168_view",
+                    # "local_avg_et_cost_per_pixel_1_168_view",
+                    # "avg_etfm_cost_per_pixel_1_168_view",
+                    # "local_avg_etfm_cost_per_pixel_1_168_view",
+                    # "roas_pixel_1_168_view",
+                    # "et_roas_pixel_1_168_view",
+                    # "etfm_roas_pixel_1_168_view",
+                    # "avg_cost_per_pixel_1_720_view",
+                    # "local_avg_cost_per_pixel_1_720_view",
+                    # "avg_et_cost_per_pixel_1_720_view",
+                    # "local_avg_et_cost_per_pixel_1_720_view",
+                    # "avg_etfm_cost_per_pixel_1_720_view",
+                    # "local_avg_etfm_cost_per_pixel_1_720_view",
+                    # "roas_pixel_1_720_view",
+                    # "et_roas_pixel_1_720_view",
+                    # "etfm_roas_pixel_1_720_view",
                 ]
             ),
         )
