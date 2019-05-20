@@ -49,7 +49,7 @@
 0 12 * * *       /home/ubuntu/docker-manage-py.sh send_outbrain_manual_actions_email
 0 13 * * *       /home/ubuntu/docker-manage-py.sh audit_autopilot --slack
 0 13 * * *       /home/ubuntu/docker-manage-py.sh audit_publisher_high_ctr --slack
-0 14 * * *       /home/ubuntu/docker-manage-py.sh audit_overspend --slack --influx
+0 14 * * *       /home/ubuntu/docker-manage-py.sh audit_overspend --slack
 30 16 * * *      /home/ubuntu/docker-manage-py.sh send_supply_report_emails
 0 22 * * *       /home/ubuntu/docker-manage-py.sh clean_up_postgres_stats
 0 22 * * *       /home/ubuntu/docker-manage-py.sh clean_up_supply_stats  # has to run before vacuum_stats

@@ -320,18 +320,6 @@ BIZWIRE_API_SIGN_KEY = Secret("plain::aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa").get()
 # path for S3 mock
 FILE_STORAGE_DIR = "/tmp"
 
-INFLUX_DATABASES = {
-    "default": {
-        "database": "",
-        "username": "",
-        "password": "",
-        "host": "",
-        "port": 8086,
-        "ssl": True,
-        "verify_ssl": True,
-    }
-}
-
 BLUEKAI_API_PARTNER_ID = "2661"
 BLUEKAI_API_USER_KEY = ""
 BLUEKAI_API_SECRET_KEY = Secret("").get().decode("utf-8")

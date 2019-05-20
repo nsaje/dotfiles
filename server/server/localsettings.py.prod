@@ -499,22 +499,6 @@ BIZWIRE_API_SIGN_KEY = Secret(
 # path for S3 mock
 FILE_STORAGE_DIR = ""
 
-INFLUX_DATABASES = {
-    "default": {
-        "database": "bi",
-        "username": "bi",
-        "password": Secret(
-            "kms:region=us-east-1:AQECAHjdfiP9DHF52gr8mpTmZ/ZwRu2qZbRw8dV0ohsw+OhZewAAAHkwdwYJKoZIhvcNAQcGoGowaAIBADBjBgkqhkiG9w0BBwEwHgYJYIZIAWUDBAEuMBEEDArQ5KyU5tGC3LI8hgIBEIA2HwXsw6l3dA2GQ4QmurQYw5Nfr9r28XFxJ0/j2jdKKdRvmcSmfhnNe5wB09T2cIDQZ8spRXe5"  # noqa
-        )
-        .get()
-        .decode("utf-8"),
-        "host": "marty.zemanta.com",
-        "port": 8086,
-        "ssl": True,
-        "verify_ssl": True,
-    }
-}
-
 BLUEKAI_API_PARTNER_ID = "2661"
 BLUEKAI_API_USER_KEY = "3956332bd95021a9ad6f9ed4029cd7fb4d6e8354"
 BLUEKAI_API_SECRET_KEY = (
