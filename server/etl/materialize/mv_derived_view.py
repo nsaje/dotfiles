@@ -162,3 +162,33 @@ class TouchpointConversionsDerivedView(MasterDerivedView):
     @cached_property
     def model(self):
         return models.MVTouchpointConversions()
+
+    # TODO: VIEWTHROUGH DERIVED VIEWS: temp fix
+    def prepare_insert_query(self, date_from, date_to):
+        constraints = {}
+        if date_from:
+            constraints["date__gte"] = date_from
+
+        if date_to:
+            constraints["date__lte"] = date_to
+
+        # if date range is not defined reprocess for all accounts as the table was just created
+        if date_from and date_to:
+            constraints = self._add_account_id_param(constraints)
+
+        constraints["type"] = 1
+        constraints = backtosql.Q(self.model, **constraints)
+
+        sql = backtosql.generate_sql(
+            "etl_select_insert.sql",
+            {
+                "breakdown": self.model.get_breakdown(self.BREAKDOWN),
+                "aggregates": self.model.get_ordered_aggregates(),
+                "destination_table": self.TABLE_NAME,
+                "source_table": self.SOURCE_VIEW,
+                "constraints": constraints,
+                "order": self.model.select_columns(subset=self.SORTKEY),
+            },
+        )
+
+        return sql, constraints.get_params()
