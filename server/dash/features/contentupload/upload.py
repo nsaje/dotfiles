@@ -528,6 +528,18 @@ def process_callback(callback_data):
         _process_impression_trackers(candidate, cleaned_urls, callback_data)
         candidate.save()
 
+    # HACK(nsaje): mark all ads with same image as having image present, if not already
+    _mark_ads_images_present(callback_data)
+
+
+def _mark_ads_images_present(callback_data):
+    image_id = callback_data.get("image", {}).get("id")
+    if not image_id:
+        return
+    updated = models.ContentAd.objects.filter(image_present=False, image_id=image_id).update(image_present=True)
+    if updated:
+        logger.warning("Marked additional %s ads as having an image present after lambda upload!" % updated)
+
 
 def handle_auto_save_batches(created_after):
     batches = models.UploadBatch.objects.filter(
