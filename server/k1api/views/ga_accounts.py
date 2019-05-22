@@ -54,6 +54,7 @@ class GAAccountsView(K1APIView):
                 )
                 .exclude(pk__in=set(s.pk for s in all_current_settings) | set(s.pk for s in valid_previous_settings))
                 .exclude(ga_property_id__in=set(ga_property_id for _, _, ga_property_id in ga_accounts))
+                .select_related("campaign")
             )
             for previous_settings in all_intermediate_settings:
                 self._extract_ga_settings(ga_accounts, previous_settings)
