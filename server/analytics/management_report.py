@@ -23,11 +23,21 @@ def prepare_report_as_csv(data):
 def get_daily_report_html(data):
     context = {}
     if data:
+        totals = dict.fromkeys(data[0].keys(), 0)
         for row in data:
             for k, v in row.items():
                 if type(v) == Decimal:
-                    row[k] = "${}".format(round(v))
+                    totals[k] = sum([totals[k], v])
+                    row[k] = "${:,.0f}".format(v)
+                else:
+                    totals[k] = ""
 
         context["data"] = [OrderedDict(d) for d in data]
+
+        for k, v in totals.items():
+            if type(v) == Decimal:
+                totals[k] = "${:,.0f}".format(v)
+
+        context["totals"] = totals
 
     return render_to_string("management_report.html", context)

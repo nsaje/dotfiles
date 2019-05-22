@@ -35,6 +35,11 @@
                     {% endfor %}
                 </tr>
             {% endfor %}
+            <tr>
+                {% for total in totals.values %}
+                    <th style="text-align: left">{{ total }}</th>
+                {% endfor %}
+            </tr>
             </tbody>
         </table>
     {% endautoescape %}
