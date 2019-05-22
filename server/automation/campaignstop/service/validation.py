@@ -41,7 +41,10 @@ def _calculate_minimum_budget_amount(log, budget_line_item):
     log.add_context(
         {"spend_estimates": {budget.id: spend for budget, spend in spend_estimates.items()}, "min_amount_raw": amount}
     )
-    return _round(amount)
+    rounded_amount = _round(amount)
+    return min(
+        rounded_amount, budget_line_item.amount
+    )  # even if the calculation is off increasing the amount should be safe
 
 
 def _get_budgets_active_today(campaign):
