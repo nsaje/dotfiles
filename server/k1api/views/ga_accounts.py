@@ -30,9 +30,11 @@ class GAAccountsView(K1APIView):
         )
         if "campaigns" in request.GET:
             all_active_campaign_ids = set(request.GET.get("campaigns", "").split(","))
-        all_current_settings = dash.models.CampaignSettings.objects.filter(
-            campaign_id__in=all_active_campaign_ids
-        ).group_current_settings()
+        all_current_settings = (
+            dash.models.CampaignSettings.objects.filter(campaign_id__in=all_active_campaign_ids)
+            .group_current_settings()
+            .select_related("campaign")
+        )
         ga_accounts = set()
         for current_settings in all_current_settings:
             self._extract_ga_settings(ga_accounts, current_settings)
@@ -43,6 +45,7 @@ class GAAccountsView(K1APIView):
                     created_dt__lte=datetime.datetime.strptime(date_since, "%Y-%m-%d").date(),
                 )
                 .order_by("campaign_id", "-created_dt")
+                .select_related("campaign")
                 .distinct("campaign")
             )
             for previous_settings in valid_previous_settings:
