@@ -53,11 +53,10 @@ class GAAccountsTest(K1APIBaseTest):
         self.assert_response_ok(response, data)
         data = data["response"]
 
-        self.assertEqual(len(data["ga_accounts"]), 5)
+        self.assertEqual(len(data["ga_accounts"]), 4)
         self.assertEqual(
             list(sorted(data["ga_accounts"], key=lambda x: x["ga_web_property_id"])),
             [
-                {"ga_web_property_id": "UA-123-0", "account_id": 2, "ga_account_id": "123"},
                 {"ga_web_property_id": "UA-123-1", "account_id": 2, "ga_account_id": "123"},
                 {"ga_web_property_id": "UA-123-2", "account_id": 1, "ga_account_id": "123"},
                 {"ga_web_property_id": "UA-123-3", "account_id": 2, "ga_account_id": "123"},
