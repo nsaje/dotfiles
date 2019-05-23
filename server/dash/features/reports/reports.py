@@ -54,11 +54,11 @@ def create_job(user, query, scheduled_report=None):
 
 
 @celery.app.task(acks_late=True, name="reports_execute", soft_time_limit=9 * 60)
-def execute(job_id):
+def execute(job_id, **kwargs):
     logger.info("Start job executor for report id: %d", job_id)
     job = ReportJob.objects.get(pk=job_id)
     executor = ReportJobExecutor(job)
-    executor.execute()
+    executor.execute(**kwargs)
     logger.info("Done job executor for report id: %d", job_id)
 
 
@@ -78,7 +78,7 @@ class MockJobExecutor(JobExecutor):
 
 class ReportJobExecutor(JobExecutor):
     @influx.timer("dash.reports.execute")
-    def execute(self):
+    def execute(self, **kwargs):
         if self.job.status != constants.ReportJobStatus.IN_PROGRESS:
             logger.info("Running report job in incorrect state: %s" % self.job.status)
             influx.incr("dash.reports", 1, status="incorrect_state")
@@ -108,7 +108,7 @@ class ReportJobExecutor(JobExecutor):
                     ),
                     csv_report,
                 )
-            self.send_by_email(self.job, report_path)
+            self.send_by_email(self.job, report_path, **kwargs)
             self.job.result = report_path
             self.job.status = constants.ReportJobStatus.DONE
             influx.incr("dash.reports", 1, status="success")
@@ -204,7 +204,7 @@ class ReportJobExecutor(JobExecutor):
             filtered_account_types=filtered_account_types,
             filtered_agencies=filtered_agencies,
             only_used_sources=True,
-            **structure_constraints
+            **structure_constraints,
         )
         goals = stats.api_reports.get_goals(constraints, breakdown)
 
@@ -286,7 +286,7 @@ class ReportJobExecutor(JobExecutor):
                 filtered_account_types=filtered_account_types,
                 filtered_agencies=filtered_agencies,
                 only_used_sources=True,
-                **structure_constraints
+                **structure_constraints,
             )
             totals = stats.api_reports.totals(
                 user, helpers.limit_breakdown_to_level(breakdown, level), totals_constraints, goals, level
@@ -408,7 +408,7 @@ class ReportJobExecutor(JobExecutor):
         return os.path.join(settings.RESTAPI_REPORTS_URL, filename)
 
     @classmethod
-    def send_by_email(cls, job, report_path):
+    def send_by_email(cls, job, report_path, **kwargs):
         if len(helpers.get_option(job, "recipients")) <= 0:
             return
 
@@ -446,6 +446,7 @@ class ReportJobExecutor(JobExecutor):
                 ad_group_name,
                 campaign_name,
                 account_name,
+                **kwargs,
             )
         else:
             utils.email_helper.send_async_report(
@@ -467,6 +468,7 @@ class ReportJobExecutor(JobExecutor):
                 ad_group_name,
                 campaign_name,
                 account_name,
+                **kwargs,
             )
 
     @staticmethod

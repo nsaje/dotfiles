@@ -249,7 +249,7 @@ def send_pacing_notification_email(campaign, emails, pacing, alert, projections)
             pacing=pacing.quantize(Decimal(".01")),
             alert=alert == "low" and "underpacing" or "overpacing",
             daily_ideal=projections["ideal_daily_media_spend"].quantize(Decimal(".01")),
-        )
+        ),
     )
 
 
@@ -285,7 +285,7 @@ def send_ad_group_notification_email(ad_group, request, changes_text):
     send_official_email(
         agency_or_user=ad_group.campaign.account.agency,
         recipient_list=emails,
-        **params_from_template(dash.constants.EmailTemplateType.ADGROUP_CHANGE, **args)
+        **params_from_template(dash.constants.EmailTemplateType.ADGROUP_CHANGE, **args),
     )
 
 
@@ -310,7 +310,7 @@ def send_campaign_notification_email(campaign, request, changes_text):
     send_official_email(
         agency_or_user=campaign.account.agency,
         recipient_list=emails,
-        **params_from_template(dash.constants.EmailTemplateType.CAMPAIGN_CHANGE, **args)
+        **params_from_template(dash.constants.EmailTemplateType.CAMPAIGN_CHANGE, **args),
     )
 
 
@@ -331,7 +331,7 @@ def send_account_notification_email(account, request, changes_text):
     send_official_email(
         agency_or_user=account.agency,
         recipient_list=[account.get_current_settings().default_account_manager.email],
-        **params_from_template(dash.constants.EmailTemplateType.ACCOUNT_CHANGE, **args)
+        **params_from_template(dash.constants.EmailTemplateType.ACCOUNT_CHANGE, **args),
     )
 
 
@@ -346,7 +346,7 @@ def send_account_pixel_notification(account, request):
     send_official_email(
         agency_or_user=account.agency,
         recipient_list=[account_settings.default_account_manager.email],
-        **params_from_template(dash.constants.EmailTemplateType.PIXEL_ADD, **args)
+        **params_from_template(dash.constants.EmailTemplateType.PIXEL_ADD, **args),
     )
 
 
@@ -356,7 +356,7 @@ def send_password_reset_email(user, request):
     send_official_email(
         agency_or_user=user,
         recipient_list=[user.email],
-        **params_from_template(dash.constants.EmailTemplateType.PASSWORD_RESET, **args)
+        **params_from_template(dash.constants.EmailTemplateType.PASSWORD_RESET, **args),
     )
 
 
@@ -365,7 +365,7 @@ def send_email_to_new_user(user, request, agency=None):
     send_official_email(
         agency_or_user=agency,
         recipient_list=[user.email],
-        **params_from_template(dash.constants.EmailTemplateType.USER_NEW, **args)
+        **params_from_template(dash.constants.EmailTemplateType.USER_NEW, **args),
     )
 
 
@@ -440,7 +440,7 @@ def send_daily_management_report_email(html, attachment):
     send_internal_email(
         custom_html=html,
         attachment=attachment,
-        **params_from_template(dash.constants.EmailTemplateType.DAILY_MANAGEMENT_REPORT)
+        **params_from_template(dash.constants.EmailTemplateType.DAILY_MANAGEMENT_REPORT),
     )
 
 
@@ -456,7 +456,7 @@ def send_new_user_device_email(request, browser, os, city, country):
             city=city,
             country=country,
             reset_password_url=request.build_absolute_uri(("password_reset")),
-        )
+        ),
     )
 
 
@@ -468,7 +468,7 @@ def send_ga_setup_instructions(user):
     send_official_email(
         agency_or_user=user,
         recipient_list=[user.email],
-        **params_from_template(dash.constants.EmailTemplateType.GA_SETUP_INSTRUCTIONS)
+        **params_from_template(dash.constants.EmailTemplateType.GA_SETUP_INSTRUCTIONS),
     )
 
 
@@ -504,6 +504,7 @@ def send_async_report(
     ad_group_name,
     campaign_name,
     account_name,
+    **kwargs,
 ):
 
     filters = _format_report_filters(show_archived, show_blacklisted_publishers, filtered_sources)
@@ -525,7 +526,9 @@ def send_async_report(
             columns=", ".join(columns),
             filters=", ".join(filters) if filters else "/",
             include_totals="Yes" if include_totals else "No",
-        )
+            reprocess_title_prefix=kwargs.get("reprocess_title_prefix", ""),
+            reprocess_reason=kwargs.get("reprocess_reason", ""),
+        ),
     )
 
 
@@ -563,7 +566,7 @@ def send_async_report_fail(
             columns=", ".join(columns),
             filters=", ".join(filters) if filters else "/",
             include_totals="Yes" if include_totals else "No",
-        )
+        ),
     )
 
 
@@ -586,6 +589,7 @@ def send_async_scheduled_report(
     ad_group_name,
     campaign_name,
     account_name,
+    **kwargs,
 ):
 
     filters = _format_report_filters(show_archived, show_blacklisted_publishers, filtered_sources)
@@ -611,7 +615,9 @@ def send_async_scheduled_report(
             columns=", ".join(columns),
             filters=", ".join(filters) if filters else "/",
             include_totals="Yes" if include_totals else "No",
-        )
+            reprocess_title_prefix=kwargs.get("reprocess_title_prefix", ""),
+            reprocess_reason=kwargs.get("reprocess_reason", ""),
+        ),
     )
 
 
@@ -625,7 +631,7 @@ def send_depleting_credits_email(user, accounts):
     send_official_email(
         recipient_list=[user.email],
         agency_or_user=user,
-        **params_from_template(dash.constants.EmailTemplateType.DEPLETING_CREDITS, accounts_list=accounts_list)
+        **params_from_template(dash.constants.EmailTemplateType.DEPLETING_CREDITS, accounts_list=accounts_list),
     )
 
 
@@ -662,7 +668,7 @@ def send_restapi_access_enabled_notification(user):
     send_official_email(
         agency_or_user=user,
         recipient_list=[user.email],
-        **params_from_template(dash.constants.EmailTemplateType.USER_ENABLE_RESTAPI, user=user)
+        **params_from_template(dash.constants.EmailTemplateType.USER_ENABLE_RESTAPI, user=user),
     )
 
 
@@ -707,5 +713,5 @@ def send_campaign_created_email(request, campaign):
     send_official_email(
         agency_or_user=campaign.account.agency,
         recipient_list=emails,
-        **params_from_template(dash.constants.EmailTemplateType.CAMPAIGN_CREATED, **args)
+        **params_from_template(dash.constants.EmailTemplateType.CAMPAIGN_CREATED, **args),
     )
