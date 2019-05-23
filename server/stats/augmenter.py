@@ -64,7 +64,7 @@ def augment_row_delivery(row, target_dimension):
         constants.DeliveryDimension.PLACEMENT_TYPE: dash_constants.PlacementType,
         constants.DeliveryDimension.VIDEO_PLAYBACK_METHOD: dash_constants.VideoPlaybackMethod,
         constants.DeliveryDimension.COUNTRY: dash_constants.AdTargetLocation,
-        constants.DeliveryDimension.STATE: dash_constants.AdTargetLocation,
+        constants.DeliveryDimension.REGION: dash_constants.AdTargetLocation,
         constants.DeliveryDimension.DMA: dash_constants.AdTargetLocation,
         constants.DeliveryDimension.AGE: dash_constants.Age,
         constants.DeliveryDimension.GENDER: dash_constants.Gender,

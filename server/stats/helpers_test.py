@@ -241,14 +241,14 @@ class HelpersTest(TestCase):
         self.assertEqual(helpers.extract_rs_order_field("name", "dma"), "dma")
         self.assertEqual(helpers.extract_rs_order_field("name", "gender"), "gender")
         self.assertEqual(helpers.extract_rs_order_field("name", "country"), "country")
-        self.assertEqual(helpers.extract_rs_order_field("name", "state"), "state")
+        self.assertEqual(helpers.extract_rs_order_field("name", "region"), "region")
 
         self.assertEqual(helpers.extract_rs_order_field("-status", "publisher_id"), "-status")
 
         self.assertEqual(helpers.extract_rs_order_field("-status", "dma"), "-clicks")
         self.assertEqual(helpers.extract_rs_order_field("-status", "gender"), "-clicks")
         self.assertEqual(helpers.extract_rs_order_field("-status", "country"), "-clicks")
-        self.assertEqual(helpers.extract_rs_order_field("-status", "state"), "-clicks")
+        self.assertEqual(helpers.extract_rs_order_field("-status", "region"), "-clicks")
 
     def test_should_query_dashapi(self):
         for dimension in constants.StructureDimension._ALL:

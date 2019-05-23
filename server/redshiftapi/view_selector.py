@@ -2,7 +2,7 @@ import stats.constants as sc
 
 DEVICE = {sc.DEVICE, sc.DEVICE_OS}
 PLACEMENT = {sc.PLACEMENT_MEDIUM, sc.PLACEMENT_TYPE, sc.VIDEO_PLAYBACK_METHOD}
-GEO = {sc.COUNTRY, sc.STATE, sc.DMA}
+GEO = {sc.COUNTRY, sc.REGION, sc.DMA}
 DEMO = {sc.AGE, sc.GENDER, sc.AGE_GENDER}
 OTHER = {"device_os_version"}
 
@@ -52,7 +52,7 @@ CONVERSION_VIEWS = [
 
 TOUCH_DEVICE = {sc.DEVICE, sc.DEVICE_OS}
 TOUCH_PLACEMENT = {sc.PLACEMENT_MEDIUM}
-TOUCH_GEO = {sc.COUNTRY, sc.STATE, sc.DMA}
+TOUCH_GEO = {sc.COUNTRY, sc.REGION, sc.DMA}
 
 TOUCHPOINT_VIEWS = [
     ["mv_account_touch", ACCOUNT],

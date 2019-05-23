@@ -128,7 +128,7 @@ angular
         breakdownUrlMap[constants.breakdown.MEDIA_SOURCE] = 'sources';
         breakdownUrlMap[constants.breakdown.PUBLISHER] = 'publishers';
         breakdownUrlMap[constants.breakdown.COUNTRY] = 'country';
-        breakdownUrlMap[constants.breakdown.STATE] = 'state';
+        breakdownUrlMap[constants.breakdown.STATE] = 'region';
         breakdownUrlMap[constants.breakdown.DMA] = 'dma';
         breakdownUrlMap[constants.breakdown.DEVICE] = 'device_type';
         breakdownUrlMap[constants.breakdown.PLACEMENT] = 'placement_medium';

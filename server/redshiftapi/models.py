@@ -234,7 +234,7 @@ class MVMaster(BreakdownsBase):
     video_playback_method = backtosql.Column("video_playback_method", BREAKDOWN, null=True)
 
     country = backtosql.Column("country", BREAKDOWN, null=True)
-    state = backtosql.Column("state", BREAKDOWN, null=True)
+    region = backtosql.Column("state", BREAKDOWN, null=True)
     dma = backtosql.Column("dma", BREAKDOWN, null=True)
 
     age = backtosql.Column("age", BREAKDOWN, null=True)
@@ -489,7 +489,7 @@ class MVTouchpointConversions(BreakdownsBase):
     placement_medium = backtosql.Column("placement_medium", BREAKDOWN)
 
     country = backtosql.Column("country", BREAKDOWN)
-    state = backtosql.Column("state", BREAKDOWN)
+    region = backtosql.Column("state", BREAKDOWN)
     dma = backtosql.Column("dma", BREAKDOWN)
 
     slug = backtosql.Column("slug", BREAKDOWN)

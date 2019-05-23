@@ -22,7 +22,7 @@ class DeliveryDimension:
     VIDEO_PLAYBACK_METHOD = "video_playback_method"
 
     COUNTRY = "country"
-    STATE = "state"
+    REGION = "region"
     DMA = "dma"
 
     AGE = "age"
@@ -37,7 +37,7 @@ class DeliveryDimension:
         PLACEMENT_TYPE,
         VIDEO_PLAYBACK_METHOD,
         COUNTRY,
-        STATE,
+        REGION,
         DMA,
         AGE,
         GENDER,
@@ -73,7 +73,7 @@ PLACEMENT_TYPE = DeliveryDimension.PLACEMENT_TYPE
 VIDEO_PLAYBACK_METHOD = DeliveryDimension.VIDEO_PLAYBACK_METHOD
 
 COUNTRY = DeliveryDimension.COUNTRY
-STATE = DeliveryDimension.STATE
+REGION = DeliveryDimension.REGION
 DMA = DeliveryDimension.DMA
 
 AGE = DeliveryDimension.AGE

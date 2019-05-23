@@ -65,7 +65,7 @@ _FIELD_MAPPING = {
     "gender": ("Gender",),
     "age_gender": ("Age and Gender",),
     "country": ("Country",),
-    "state": ("State", "State / Region"),
+    "region": ("State", "State / Region"),
     "dma": ("DMA",),
     "device_type": ("Device",),
     "device_os": ("Operating System",),

@@ -74,9 +74,9 @@ angular
                 shown: 'zemauth.can_view_breakdown_by_delivery',
                 internal: 'zemauth.can_view_breakdown_by_delivery',
             },
-            state: {
+            region: {
                 name: 'State / Region',
-                query: 'state',
+                query: 'region',
                 report_query: 'State / Region',
                 shown: 'zemauth.can_view_breakdown_by_delivery',
                 internal: 'zemauth.can_view_breakdown_by_delivery',
@@ -166,7 +166,7 @@ angular
             BREAKDOWNS.source,
             BREAKDOWNS.publisher,
             BREAKDOWNS.country,
-            BREAKDOWNS.state,
+            BREAKDOWNS.region,
             BREAKDOWNS.dma,
             BREAKDOWNS.device,
             BREAKDOWNS.placementMedium,
@@ -179,7 +179,7 @@ angular
             BREAKDOWNS.ageGender,
 
             BREAKDOWNS.country,
-            BREAKDOWNS.state,
+            BREAKDOWNS.region,
             BREAKDOWNS.dma,
 
             BREAKDOWNS.device,

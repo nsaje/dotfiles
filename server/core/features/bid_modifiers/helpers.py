@@ -25,7 +25,7 @@ _BREAKDOWN_NAME_MAP = {
     stats_constants.DeliveryDimension.DEVICE_OS: constants.BidModifierType.OPERATING_SYSTEM,
     stats_constants.DeliveryDimension.PLACEMENT_MEDIUM: constants.BidModifierType.PLACEMENT,
     stats_constants.DeliveryDimension.COUNTRY: constants.BidModifierType.COUNTRY,
-    stats_constants.DeliveryDimension.STATE: constants.BidModifierType.STATE,
+    stats_constants.DeliveryDimension.REGION: constants.BidModifierType.STATE,
     stats_constants.DeliveryDimension.DMA: constants.BidModifierType.DMA,
     stats_constants.DimensionIdentifier.CONTENT_AD: constants.BidModifierType.AD,
 }
