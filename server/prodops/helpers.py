@@ -70,5 +70,5 @@ def reprocess_report_jobs_async(job_ids, reprocess_title_prefix, reprocess_reaso
         new_job = reprocess_report_job_async(
             jid, reprocess_title_prefix=reprocess_title_prefix, reprocess_reason=reprocess_reason
         )
-        new_job.append(new_job)
+        new_jobs.append(new_job)
     return new_jobs
