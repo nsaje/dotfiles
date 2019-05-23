@@ -50,17 +50,17 @@ class GAAccountsView(K1APIView):
             )
             for previous_settings in valid_previous_settings:
                 self._extract_ga_settings(ga_accounts, previous_settings)
-            all_intermediate_settings = (
-                dash.models.CampaignSettings.objects.filter(
-                    campaign_id__in=all_active_campaign_ids,
-                    created_dt__gte=datetime.datetime.strptime(date_since, "%Y-%m-%d").date(),
-                )
-                .exclude(pk__in=set(s.pk for s in all_current_settings) | set(s.pk for s in valid_previous_settings))
-                .exclude(ga_property_id__in=set(ga_property_id for _, _, ga_property_id in ga_accounts))
-                .select_related("campaign")
-            )
-            for previous_settings in all_intermediate_settings:
-                self._extract_ga_settings(ga_accounts, previous_settings)
+            # all_intermediate_settings = (
+            #     dash.models.CampaignSettings.objects.filter(
+            #         campaign_id__in=all_active_campaign_ids,
+            #         created_dt__gte=datetime.datetime.strptime(date_since, "%Y-%m-%d").date(),
+            #     )
+            #     .exclude(pk__in=set(s.pk for s in all_current_settings) | set(s.pk for s in valid_previous_settings))
+            #     .exclude(ga_property_id__in=set(ga_property_id for _, _, ga_property_id in ga_accounts))
+            #     .select_related("campaign")
+            # )
+            # for previous_settings in all_intermediate_settings:
+            #     self._extract_ga_settings(ga_accounts, previous_settings)
         ga_accounts_dicts = [
             {"account_id": account_id, "ga_account_id": ga_account_id, "ga_web_property_id": ga_web_property_id}
             for account_id, ga_account_id, ga_web_property_id in sorted(ga_accounts)
