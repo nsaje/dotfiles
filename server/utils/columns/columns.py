@@ -311,16 +311,30 @@ def get_column_name(field_name, mapping=None, raise_exception=True):
 
 
 def _get_pixel_field_names_mapping(pixels, uses_bcm_v2):
+    click_conversion_windows = list(dash.constants.ConversionWindowsLegacy.get_choices())
+    view_conversion_windows = list(dash.constants.ConversionWindows.get_choices())
+
+    mapping = collections.OrderedDict()
+    mapping.update(_generate_pixel_fields(pixels, click_conversion_windows, uses_bcm_v2, ["", " - Click attr."]))
+    mapping.update(
+        _generate_pixel_fields(pixels, view_conversion_windows, uses_bcm_v2, [" - View attr."], field_suffix="_view")
+    )
+
+    return mapping
+
+
+def _generate_pixel_fields(pixels, conversion_windows, uses_bcm_v2, column_suffixes, field_suffix=None):
     mapping = collections.OrderedDict()
     for pixel in sorted(pixels, key=lambda x: x.name.lower()):
         prefix = pixel.get_prefix()
 
-        for window, window_title in dash.constants.ConversionWindowsLegacy.get_choices():
-            field_name = "{}_{}".format(prefix, window)
-            column_name = "{} {}".format(pixel.name, window_title)
-            mapping[column_name] = field_name
-            mapping.update(_get_cpa_field_names_mapping(field_name, column_name, uses_bcm_v2))
-            mapping.update(_get_roas_field_names_mapping(field_name, column_name, uses_bcm_v2))
+        for window, window_title in conversion_windows:
+            field_name = "{}_{}".format(prefix, window) + (field_suffix or "")
+            for column_suffix in column_suffixes:
+                column_name = "{} {}".format(pixel.name, window_title) + column_suffix
+                mapping[column_name] = field_name
+                mapping.update(_get_cpa_field_names_mapping(field_name, column_name, uses_bcm_v2))
+                mapping.update(_get_roas_field_names_mapping(field_name, column_name, uses_bcm_v2))
 
     return mapping
 

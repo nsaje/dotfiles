@@ -682,7 +682,11 @@ angular
                     pixelGoalSubCategory,
                     pixel,
                     '',
-                    '', // ' - Click attr.', TODO: VTC: Uncomment when reports merged
+                    zemPermissions.hasPermission(
+                        'zemauth.can_see_viewthrough_conversions'
+                    )
+                        ? ' - Click attr.'
+                        : '',
                     'Click attr.:'
                 );
                 if (
