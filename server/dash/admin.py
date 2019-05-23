@@ -1013,7 +1013,7 @@ class AdGroupAdmin(SlackLoggerMixin, admin.ModelAdmin):
         for cas in core.models.ContentAdSource.objects.filter(
             content_ad__ad_group=ad_group_id,
             submission_status=constants.ContentAdSubmissionStatus.REJECTED,
-            source__name=constants.SourceType.OUTBRAIN,
+            source__source_type__type=constants.SourceType.OUTBRAIN,
         ):
             cas.submission_status = constants.ContentAdSubmissionStatus.PENDING
             cas.save()
@@ -1025,7 +1025,7 @@ class AdGroupAdmin(SlackLoggerMixin, admin.ModelAdmin):
         for cas in core.models.ContentAdSource.objects.filter(
             content_ad__ad_group=ad_group_id,
             submission_status=constants.ContentAdSubmissionStatus.APPROVED,
-            source__name=constants.SourceType.OUTBRAIN,
+            source__source_type__type=constants.SourceType.OUTBRAIN,
         ):
             cas.submission_status = constants.ContentAdSubmissionStatus.PENDING
             cas.save()
@@ -1059,8 +1059,8 @@ class AdGroupAdmin(SlackLoggerMixin, admin.ModelAdmin):
             '<a class="button" href="{}">Reset all rejected</a>', reverse("admin:reset-rejected", args=[ad_group.id])
         )
 
-    reset_approved_submission_statuses.short_description = "Reset approved content ads submission status to pending"
-    reset_rejected_submission_statuses.short_description = "Reset rejected content ads submission status to pending"
+    reset_approved_submission_statuses.short_description = "Reset approved content ads to pending on Amplify"
+    reset_rejected_submission_statuses.short_description = "Reset rejected content ads to pending on Amplify"
 
 
 # Ad Group Source
