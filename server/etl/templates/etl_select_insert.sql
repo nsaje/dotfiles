@@ -3,6 +3,10 @@
 
 INSERT INTO {{ destination_table }}
 (
+    {{ breakdown|only_alias }},
+    {{ aggregates|only_alias }}
+)
+(
     SELECT
         {{ breakdown|column_as_alias }},
         {{ aggregates|column_as_alias }}

@@ -59,25 +59,29 @@ MATERIALIZED_VIEWS = [
     ),
     TouchpointConversionsDerivedView.create(
         table_name="mv_contentad_touch",
-        breakdown=AD_BREAKDOWN + ["slug", "conversion_window", "conversion_label"],
+        breakdown=AD_BREAKDOWN + ["slug", "conversion_window", "conversion_label", "type"],
         sortkey=AD_BREAKDOWN + ["slug", "conversion_window", "conversion_label"],
         distkey="content_ad_id",
     ),
     TouchpointConversionsDerivedView.create(
         table_name="mv_contentad_touch_device",
-        breakdown=AD_BREAKDOWN + ["device_type", "device_os"] + ["slug", "conversion_window", "conversion_label"],
+        breakdown=AD_BREAKDOWN
+        + ["device_type", "device_os"]
+        + ["slug", "conversion_window", "conversion_label", "type"],
         sortkey=AD_BREAKDOWN + ["device_type", "device_os"] + ["slug", "conversion_window", "conversion_label"],
         distkey="content_ad_id",
     ),
     TouchpointConversionsDerivedView.create(
         table_name="mv_contentad_touch_placement",
-        breakdown=AD_BREAKDOWN + ["placement_medium"] + ["slug", "conversion_window", "conversion_label"],
+        breakdown=AD_BREAKDOWN + ["placement_medium"] + ["slug", "conversion_window", "conversion_label", "type"],
         sortkey=AD_BREAKDOWN + ["placement_medium"] + ["slug", "conversion_window", "conversion_label"],
         distkey="content_ad_id",
     ),
     TouchpointConversionsDerivedView.create(
         table_name="mv_contentad_touch_geo",
-        breakdown=AD_BREAKDOWN + ["country", "state", "dma"] + ["slug", "conversion_window", "conversion_label"],
+        breakdown=AD_BREAKDOWN
+        + ["country", "state", "dma"]
+        + ["slug", "conversion_window", "conversion_label", "type"],
         sortkey=AD_BREAKDOWN + ["country", "state", "dma"] + ["slug", "conversion_window", "conversion_label"],
         distkey="content_ad_id",
     ),
@@ -112,25 +116,29 @@ MATERIALIZED_VIEWS = [
     ),
     TouchpointConversionsDerivedView.create(
         table_name="mv_adgroup_touch",
-        breakdown=AD_GROUP_BREAKDOWN + ["slug", "conversion_window", "conversion_label"],
+        breakdown=AD_GROUP_BREAKDOWN + ["slug", "conversion_window", "conversion_label", "type"],
         sortkey=AD_GROUP_BREAKDOWN + ["slug", "conversion_window", "conversion_label"],
         distkey="ad_group_id",
     ),
     TouchpointConversionsDerivedView.create(
         table_name="mv_adgroup_touch_device",
-        breakdown=AD_GROUP_BREAKDOWN + ["device_type", "device_os"] + ["slug", "conversion_window", "conversion_label"],
+        breakdown=AD_GROUP_BREAKDOWN
+        + ["device_type", "device_os"]
+        + ["slug", "conversion_window", "conversion_label", "type"],
         sortkey=AD_GROUP_BREAKDOWN + ["device_type", "device_os"] + ["slug", "conversion_window", "conversion_label"],
         distkey="ad_group_id",
     ),
     TouchpointConversionsDerivedView.create(
         table_name="mv_adgroup_touch_placement",
-        breakdown=AD_GROUP_BREAKDOWN + ["placement_medium"] + ["slug", "conversion_window", "conversion_label"],
+        breakdown=AD_GROUP_BREAKDOWN + ["placement_medium"] + ["slug", "conversion_window", "conversion_label", "type"],
         sortkey=AD_GROUP_BREAKDOWN + ["placement_medium"] + ["slug", "conversion_window", "conversion_label"],
         distkey="ad_group_id",
     ),
     TouchpointConversionsDerivedView.create(
         table_name="mv_adgroup_touch_geo",
-        breakdown=AD_GROUP_BREAKDOWN + ["country", "state", "dma"] + ["slug", "conversion_window", "conversion_label"],
+        breakdown=AD_GROUP_BREAKDOWN
+        + ["country", "state", "dma"]
+        + ["slug", "conversion_window", "conversion_label", "type"],
         sortkey=AD_GROUP_BREAKDOWN + ["country", "state", "dma"] + ["slug", "conversion_window", "conversion_label"],
         distkey="ad_group_id",
     ),
@@ -165,25 +173,29 @@ MATERIALIZED_VIEWS = [
     ),
     TouchpointConversionsDerivedView.create(
         table_name="mv_campaign_touch",
-        breakdown=CAMPAIGN_BREAKDOWN + ["slug", "conversion_window", "conversion_label"],
+        breakdown=CAMPAIGN_BREAKDOWN + ["slug", "conversion_window", "conversion_label", "type"],
         sortkey=CAMPAIGN_BREAKDOWN + ["slug", "conversion_window", "conversion_label"],
         distkey="campaign_id",
     ),
     TouchpointConversionsDerivedView.create(
         table_name="mv_campaign_touch_device",
-        breakdown=CAMPAIGN_BREAKDOWN + ["device_type", "device_os"] + ["slug", "conversion_window", "conversion_label"],
+        breakdown=CAMPAIGN_BREAKDOWN
+        + ["device_type", "device_os"]
+        + ["slug", "conversion_window", "conversion_label", "type"],
         sortkey=CAMPAIGN_BREAKDOWN + ["device_type", "device_os"] + ["slug", "conversion_window", "conversion_label"],
         distkey="campaign_id",
     ),
     TouchpointConversionsDerivedView.create(
         table_name="mv_campaign_touch_placement",
-        breakdown=CAMPAIGN_BREAKDOWN + ["placement_medium"] + ["slug", "conversion_window", "conversion_label"],
+        breakdown=CAMPAIGN_BREAKDOWN + ["placement_medium"] + ["slug", "conversion_window", "conversion_label", "type"],
         sortkey=CAMPAIGN_BREAKDOWN + ["placement_medium"] + ["slug", "conversion_window", "conversion_label"],
         distkey="campaign_id",
     ),
     TouchpointConversionsDerivedView.create(
         table_name="mv_campaign_touch_geo",
-        breakdown=CAMPAIGN_BREAKDOWN + ["country", "state", "dma"] + ["slug", "conversion_window", "conversion_label"],
+        breakdown=CAMPAIGN_BREAKDOWN
+        + ["country", "state", "dma"]
+        + ["slug", "conversion_window", "conversion_label", "type"],
         sortkey=CAMPAIGN_BREAKDOWN + ["country", "state", "dma"] + ["slug", "conversion_window", "conversion_label"],
         distkey="campaign_id",
     ),
@@ -219,25 +231,29 @@ MATERIALIZED_VIEWS = [
     ),
     TouchpointConversionsDerivedView.create(
         table_name="mv_account_touch",
-        breakdown=ACCOUNT_BREAKDOWN + ["slug", "conversion_window", "conversion_label"],
+        breakdown=ACCOUNT_BREAKDOWN + ["slug", "conversion_window", "conversion_label", "type"],
         sortkey=ACCOUNT_BREAKDOWN + ["slug", "conversion_window", "conversion_label"],
         distkey="account_id",
     ),
     TouchpointConversionsDerivedView.create(
         table_name="mv_account_touch_device",
-        breakdown=ACCOUNT_BREAKDOWN + ["device_type", "device_os"] + ["slug", "conversion_window", "conversion_label"],
+        breakdown=ACCOUNT_BREAKDOWN
+        + ["device_type", "device_os"]
+        + ["slug", "conversion_window", "conversion_label", "type"],
         sortkey=ACCOUNT_BREAKDOWN + ["device_type", "device_os"] + ["slug", "conversion_window", "conversion_label"],
         distkey="account_id",
     ),
     TouchpointConversionsDerivedView.create(
         table_name="mv_account_touch_placement",
-        breakdown=ACCOUNT_BREAKDOWN + ["placement_medium"] + ["slug", "conversion_window", "conversion_label"],
+        breakdown=ACCOUNT_BREAKDOWN + ["placement_medium"] + ["slug", "conversion_window", "conversion_label", "type"],
         sortkey=ACCOUNT_BREAKDOWN + ["placement_medium"] + ["slug", "conversion_window", "conversion_label"],
         distkey="account_id",
     ),
     TouchpointConversionsDerivedView.create(
         table_name="mv_account_touch_geo",
-        breakdown=ACCOUNT_BREAKDOWN + ["country", "state", "dma"] + ["slug", "conversion_window", "conversion_label"],
+        breakdown=ACCOUNT_BREAKDOWN
+        + ["country", "state", "dma"]
+        + ["slug", "conversion_window", "conversion_label", "type"],
         sortkey=ACCOUNT_BREAKDOWN + ["country", "state", "dma"] + ["slug", "conversion_window", "conversion_label"],
         distkey="account_id",
     ),

@@ -6,6 +6,7 @@ from django.test import TestCase
 import backtosql
 
 from .mv_derived_view import MasterDerivedView
+from .mv_derived_view import TouchpointConversionsDerivedView
 
 
 @mock.patch("redshiftapi.db.get_write_stats_cursor")
@@ -75,7 +76,41 @@ class DerivedMaterializedViewTest(TestCase, backtosql.TestSQLMixin):
                 mock.call(
                     backtosql.SQLMatcher(
                         """
-                INSERT INTO newtable (SELECT
+                INSERT INTO newtable
+                (
+                    date,
+                    source_id,
+                    account_id,
+
+                    impressions,
+                    clicks,
+                    cost_nano,
+                    data_cost_nano,
+                    visits,
+                    new_visits,
+                    bounced_visits,
+                    pageviews,
+                    total_time_on_site,
+                    effective_cost_nano,
+                    effective_data_cost_nano,
+                    license_fee_nano,
+                    margin_nano,
+                    users,
+                    returning_users,
+                    video_start,
+                    video_first_quartile,
+                    video_midpoint,
+                    video_third_quartile,
+                    video_complete,
+                    video_progress_3s,
+                    local_cost_nano,
+                    local_data_cost_nano,
+                    local_effective_cost_nano,
+                    local_effective_data_cost_nano,
+                    local_license_fee_nano,
+                    local_margin_nano
+                )
+                (SELECT
                     date AS date,
                     source_id AS source_id,
                     account_id AS account_id,
@@ -146,7 +181,41 @@ class DerivedMaterializedViewTest(TestCase, backtosql.TestSQLMixin):
                 mock.call(
                     backtosql.SQLMatcher(
                         """
-                INSERT INTO newtable (SELECT
+                INSERT INTO newtable
+                (
+                    date,
+                    source_id,
+                    account_id,
+
+                    impressions,
+                    clicks,
+                    cost_nano,
+                    data_cost_nano,
+                    visits,
+                    new_visits,
+                    bounced_visits,
+                    pageviews,
+                    total_time_on_site,
+                    effective_cost_nano,
+                    effective_data_cost_nano,
+                    license_fee_nano,
+                    margin_nano,
+                    users,
+                    returning_users,
+                    video_start,
+                    video_first_quartile,
+                    video_midpoint,
+                    video_third_quartile,
+                    video_complete,
+                    video_progress_3s,
+                    local_cost_nano,
+                    local_data_cost_nano,
+                    local_effective_cost_nano,
+                    local_effective_data_cost_nano,
+                    local_license_fee_nano,
+                    local_margin_nano
+                )
+                (SELECT
                     date AS date,
                     source_id AS source_id,
                     account_id AS account_id,
@@ -206,3 +275,32 @@ class DerivedMaterializedViewTest(TestCase, backtosql.TestSQLMixin):
         mock_cursor().__enter__().execute.assert_has_calls(
             [mock.call(mock.ANY), mock.call(mock.ANY), mock.call(mock.ANY, [])]
         )
+
+    def test_prepare_insert_query(self, mock_transaction, mock_cursor):
+        touchpoint_view = TouchpointConversionsDerivedView.create(
+            table_name="mv_derived", breakdown=["slug", "type"], sortkey=["slug"], distkey="content_ad_id"
+        )
+        touchpoint_view = touchpoint_view(123, "2019-05-19", "2019-05-22", account_id=1234)
+        sql, params = touchpoint_view.prepare_insert_query("2019-05-19", "2019-05-22")
+        self.assertEqual(
+            sql,
+            """INSERT INTO mv_derived
+(
+    slug, type,
+    touchpoint_count, conversion_count, conversion_value_nano
+)
+(
+    SELECT
+        slug AS slug, type AS type,
+        SUM(touchpoint_count) touchpoint_count, SUM(conversion_count) conversion_count, SUM(conversion_value_nano) conversion_value_nano
+    FROM
+        mv_touchpointconversions
+    WHERE
+        (account_id=%s AND date>=%s AND date<=%s)
+    GROUP BY
+        slug, type
+    ORDER BY
+        slug
+);""",
+        )
+        self.assertEqual(params, [1234, "2019-05-19", "2019-05-22"])

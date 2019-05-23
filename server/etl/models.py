@@ -217,6 +217,8 @@ class MVTouchpointConversions(backtosql.Model, RSBreakdownMixin):
         "part_sum.sql", {"column_name": "conversion_value_nano"}, AGGREGATES
     )  # noqa
 
+    type = backtosql.Column("type", BREAKDOWN)
+
     def get_ordered_aggregates(self):
         """
         Returns aggregates in order as it is used in materialized view table definitions.
