@@ -83,10 +83,11 @@
         </div>
         <div class="ad-preview__container" ng-if="ctrl.isAdTag()">
             <div class="ad-preview__item ad-preview__item--display">
-                <iframe class="ad-preview__iframe"
-                        src="{{ctrl.getIframeSrc(ctrl.data.ad_tag)}}"
+                <iframe id="ad-preview__iframe"
+                        class="ad-preview__iframe"
                         width="{{ctrl.getCreativeWidth()}}"
-                        height="{{ctrl.getCreativeHeight()}}">
+                        height="{{ctrl.getCreativeHeight()}}"
+                        ng-init="ctrl.renderAdTagInIframe(ctrl.data.ad_tag)">
                 </iframe>
             </div>
         </div>

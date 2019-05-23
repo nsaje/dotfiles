@@ -1,7 +1,5 @@
 var callToAction = require('../../zemUpload.config').callToAction;
-var creativesManagerHelpers = require('../../../../../features/creatives-manager/helpers/creatives-manager.helpers');
-var creativesManagerConfig = require('../../../../../features/creatives-manager/creatives-manager.config')
-    .CREATIVES_MANAGER_CONFIG;
+var iframeHelpers = require('../../../../../shared/helpers/iframe.helpers');
 
 angular.module('one.widgets').directive('zemUploadEditForm', function() {
     // eslint-disable-line max-len
@@ -44,7 +42,6 @@ angular
         $q,
         $timeout,
         $scope,
-        $sce,
         zemPermissions
     ) {
         // eslint-disable-line max-len
@@ -251,6 +248,9 @@ angular
                         );
                         vm.fieldsSaved[field] = true;
                         vm.fieldsLoading[field] = false;
+                        if (field === 'adTag') {
+                            vm.renderAdTagInIframe(vm.selectedCandidate[field]);
+                        }
                     })
                     .catch(function() {
                         if (++retries === vm.NUM_PARTIAL_UPDATE_RETRIES) {
@@ -320,14 +320,9 @@ angular
             vm.showImageUpload = !vm.showImageUpload;
         };
 
-        vm.getIframeSrc = function(adTag) {
-            var iframeSrc = creativesManagerHelpers.getPreviewIframeSrc(
-                creativesManagerConfig.previewIframeSrcPrefix,
-                adTag
-            );
-            // Use $sce (Strict Contextual Escaping) to render trusted values
-            // https://docs.angularjs.org/api/ng/service/$sce
-            return $sce.trustAsResourceUrl(iframeSrc);
+        vm.renderAdTagInIframe = function(adTag) {
+            var iframe = document.getElementById('ad-preview__iframe');
+            iframeHelpers.renderContentInIframe(iframe, adTag);
         };
 
         vm.callToActionSelect2Config = {

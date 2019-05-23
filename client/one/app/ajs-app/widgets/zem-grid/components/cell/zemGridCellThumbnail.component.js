@@ -1,6 +1,4 @@
-var creativesManagerHelpers = require('../../../../../features/creatives-manager/helpers/creatives-manager.helpers');
-var creativesManagerConfig = require('../../../../../features/creatives-manager/creatives-manager.config')
-    .CREATIVES_MANAGER_CONFIG;
+var iframeHelpers = require('../../../../../shared/helpers/iframe.helpers');
 
 angular.module('one.widgets').directive('zemGridCellThumbnail', function() {
     return {
@@ -15,7 +13,7 @@ angular.module('one.widgets').directive('zemGridCellThumbnail', function() {
             grid: '=',
         },
         template: require('./zemGridCellThumbnail.component.html'),
-        controller: function($sce) {
+        controller: function() {
             var vm = this;
 
             vm.isNative = function() {
@@ -58,14 +56,9 @@ angular.module('one.widgets').directive('zemGridCellThumbnail', function() {
                 return 250;
             };
 
-            vm.getIframeSrc = function(adTag) {
-                var iframeSrc = creativesManagerHelpers.getPreviewIframeSrc(
-                    creativesManagerConfig.previewIframeSrcPrefix,
-                    adTag
-                );
-                // Use $sce (Strict Contextual Escaping) to render trusted values
-                // https://docs.angularjs.org/api/ng/service/$sce
-                return $sce.trustAsResourceUrl(iframeSrc);
+            vm.renderAdTagInIframe = function(adTag) {
+                var iframe = document.getElementById('ad-preview__iframe');
+                iframeHelpers.renderContentInIframe(iframe, adTag);
             };
 
             function parseSize(value) {

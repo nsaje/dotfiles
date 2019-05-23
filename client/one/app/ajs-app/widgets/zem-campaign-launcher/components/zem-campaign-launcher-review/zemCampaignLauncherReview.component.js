@@ -1,8 +1,6 @@
 require('./zemCampaignLauncherReview.component.less');
 var constantsHelpers = require('../../../../../shared/helpers/constants.helpers');
-var creativesManagerHelpers = require('../../../../../features/creatives-manager/helpers/creatives-manager.helpers');
-var creativesManagerConfig = require('../../../../../features/creatives-manager/creatives-manager.config')
-    .CREATIVES_MANAGER_CONFIG;
+var iframeHelpers = require('../../../../../shared/helpers/iframe.helpers');
 
 angular.module('one').component('zemCampaignLauncherReview', {
     bindings: {
@@ -14,8 +12,7 @@ angular.module('one').component('zemCampaignLauncherReview', {
         zemDeviceTargetingConstants,
         zemPermissions,
         zemMulticurrencyService,
-        $filter,
-        $sce
+        $filter
     ) {
         var $ctrl = this;
 
@@ -56,14 +53,9 @@ angular.module('one').component('zemCampaignLauncherReview', {
             updateDeviceTargetingReview();
         };
 
-        $ctrl.getIframeSrc = function(adTag) {
-            var iframeSrc = creativesManagerHelpers.getPreviewIframeSrc(
-                creativesManagerConfig.previewIframeSrcPrefix,
-                adTag
-            );
-            // Use $sce (Strict Contextual Escaping) to render trusted values
-            // https://docs.angularjs.org/api/ng/service/$sce
-            return $sce.trustAsResourceUrl(iframeSrc);
+        $ctrl.renderAdTagInIframe = function(adTag) {
+            var iframe = document.getElementById('creative__iframe');
+            iframeHelpers.renderContentInIframe(iframe, adTag);
         };
 
         function getIabCategoryName(iabCategory) {

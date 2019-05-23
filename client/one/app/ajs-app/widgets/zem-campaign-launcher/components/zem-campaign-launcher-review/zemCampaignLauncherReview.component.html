@@ -205,8 +205,9 @@
                 />
                 <iframe
                     ng-if="creative.adType === $ctrl.adType.AD_TAG"
+                    id="creative__iframe"
                     class="creative__iframe"
-                    src="{{ $ctrl.getIframeSrc(creative.adTag) }}"
+                    ng-init="$ctrl.renderAdTagInIframe(creative.adTag)"
                 >
                 </iframe>
             </div>

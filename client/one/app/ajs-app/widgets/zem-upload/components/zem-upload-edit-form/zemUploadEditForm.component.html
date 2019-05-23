@@ -1662,12 +1662,11 @@
                     </a>
                     <iframe
                         ng-if="ctrl.selectedCandidate.adType === ctrl.adType.AD_TAG"
+                        id="ad-preview__iframe"
                         class="ad-preview__iframe"
-                        src="{{
-                            ctrl.getIframeSrc(ctrl.selectedCandidate.adTag)
-                        }}"
                         width="{{ ctrl.selectedCandidate.imageWidth || 300 }}"
                         height="{{ ctrl.selectedCandidate.imageHeight || 250 }}"
+                        ng-init="ctrl.renderAdTagInIframe(ctrl.selectedCandidate.adTag)"
                     >
                     </iframe>
                 </div>
