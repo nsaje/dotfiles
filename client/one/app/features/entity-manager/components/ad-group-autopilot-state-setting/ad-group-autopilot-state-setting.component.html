@@ -6,7 +6,13 @@
             [value]="AdGroupAutopilotState.ACTIVE_CPC_BUDGET"
             (select)="autopilotStateChange.emit($event)"
         >
-            Optimize towards your campaign goal
+            <strong>Autopilot goal optimization</strong> - let autopilot
+            automatically optimize towards your campaign goal
+            <zem-help-popover
+                class="zem-help-popover"
+                content="Autopilot will automatically move budgets between media sources and adjust bids in order to hit daily spend caps and your campaign goals."
+                placement="bottom"
+            ></zem-help-popover>
         </zem-radio-input>
         <div
             class="zem-settings-form-group__subgroup"
@@ -31,8 +37,13 @@
             [value]="AdGroupAutopilotState.ACTIVE_CPC"
             (select)="autopilotStateChange.emit($event)"
         >
-            Optimize your bids (we’ll automatically lower the bids until the
-            daily caps are met, with respect to your CPC)
+            <strong>Autopilot price discovery</strong> - let autopilot
+            automatically discover the bids
+            <zem-help-popover
+                class="zem-help-popover"
+                content="You will control the media source daily caps and autopilot will find the best bid for each media source so that the daily cap is reached."
+                placement="bottom"
+            ></zem-help-popover>
         </zem-radio-input>
         <zem-radio-input
             class="zem-radio-input zem-settings-form-group__content-item zem-settings-form-group__content-item--no-spacing"
@@ -40,7 +51,7 @@
             [value]="AdGroupAutopilotState.INACTIVE"
             (select)="autopilotStateChange.emit($event)"
         >
-            No optimization (full manual control)
+            <strong>Autopilot off</strong> (full manual control)
         </zem-radio-input>
     </div>
 </div>

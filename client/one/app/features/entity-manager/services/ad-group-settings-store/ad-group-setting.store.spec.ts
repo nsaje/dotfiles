@@ -442,7 +442,7 @@ describe('AdGroupSettingsStore', () => {
             ],
         };
 
-        expect(store.state.entity.targeting.audience).toEqual(null);
+        expect(store.state.entity.targeting.audience).toEqual({});
         store.setBluekaiTargeting($event);
         expect(store.state.entity.targeting.audience).toEqual($event);
     });

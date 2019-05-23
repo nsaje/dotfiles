@@ -1,6 +1,8 @@
 <div class="zem-settings-drawer-header__content">
     <div class="zem-settings-drawer-header__entity-details">
-        <div class="zem-settings-drawer-header__entity-type">
+        <div
+            class="zem-settings-drawer-header__entity-details-item zem-settings-drawer-header__entity-type"
+        >
             <ng-container *ngIf="entityType === EntityType.ACCOUNT">
                 Account settings
             </ng-container>
@@ -11,9 +13,39 @@
                 Ad group settings
             </ng-container>
         </div>
-        <h2 class="zem-settings-drawer-header__entity-name">
-            {{ entityName }}
-        </h2>
+        <div
+            class="zem-settings-drawer-header__entity-details-item zem-settings-drawer-header__entity-name"
+        >
+            <h2
+                class="entity-name__read-value"
+                *ngIf="mode === SettingsDrawerHeaderMode.READ"
+                (click)="switchToEditMode()"
+            >
+                {{ entityNameModel }}
+            </h2>
+            <div
+                class="entity-name__edit-value"
+                *ngIf="mode === SettingsDrawerHeaderMode.EDIT"
+            >
+                <input
+                    class="zem-input-text zem-settings-drawer-header__input-text"
+                    [ngClass]="{
+                        'zem-input-text--error': entityNameErrors.length > 0
+                    }"
+                    type="text"
+                    [(ngModel)]="entityNameModel"
+                    (blur)="onEntityNameChange()"
+                    (keydown.enter)="onEntityNameChange()"
+                    [zemFocus]="true"
+                />
+                <div
+                    class="zem-message zem-message--error zem-settings-drawer-header__error"
+                    *ngFor="let error of entityNameErrors"
+                >
+                    {{ error }}
+                </div>
+            </div>
+        </div>
     </div>
     <a
         class="zem-settings-drawer-header__entity-admin-link"

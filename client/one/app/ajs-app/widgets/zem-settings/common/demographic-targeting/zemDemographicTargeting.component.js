@@ -13,8 +13,6 @@ angular.module('one.widgets').component('zemDemographicTargeting', {
         var $ctrl = this;
 
         $ctrl.isEnabled = isEnabled;
-        $ctrl.enable = enable;
-
         $ctrl.addInclusion = addInclusion;
         $ctrl.addExclusion = addExclusion;
         $ctrl.canAddExclusion = canAddExclusion;
@@ -35,20 +33,33 @@ angular.module('one.widgets').component('zemDemographicTargeting', {
         function initialize() {
             $ctrl.stateService.initialize($ctrl.bluekaiTargeting);
             $ctrl.state = $ctrl.stateService.getState();
+            if (
+                $ctrl.bluekaiTargeting &&
+                Object.keys($ctrl.bluekaiTargeting).length === 0
+            ) {
+                // Workaround to initialize bluekai targeting state
+                var root = $ctrl.stateService.createNode(
+                    zemDemographicTargetingConstants.EXPRESSION_TYPE.AND,
+                    null,
+                    true
+                );
+                $ctrl.stateService.createNode(
+                    zemDemographicTargetingConstants.EXPRESSION_TYPE.OR,
+                    root,
+                    true
+                );
+            }
+        }
+
+        function isEnabled() {
+            if ($ctrl.state && $ctrl.state.expressionTree) {
+                return $ctrl.state.expressionTree.childNodes.length > 0;
+            }
+            return false;
         }
 
         function onUpdate(bluekaiTargeting) {
             $ctrl.onUpdate({$event: bluekaiTargeting});
-        }
-
-        function enable() {
-            var root = $ctrl.stateService.createNode(
-                zemDemographicTargetingConstants.EXPRESSION_TYPE.AND
-            );
-            $ctrl.stateService.createNode(
-                zemDemographicTargetingConstants.EXPRESSION_TYPE.OR,
-                root
-            );
         }
 
         function addExclusion() {
@@ -69,13 +80,6 @@ angular.module('one.widgets').component('zemDemographicTargeting', {
             );
         }
 
-        function isEnabled() {
-            if ($ctrl.state && $ctrl.state.expressionTree) {
-                return $ctrl.state.expressionTree.childNodes.length > 0;
-            }
-
-            return false;
-        }
         function canAddExclusion() {
             var tree = $ctrl.state.expressionTree;
             if (!tree) return false;

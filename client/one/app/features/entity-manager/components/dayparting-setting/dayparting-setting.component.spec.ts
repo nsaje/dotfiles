@@ -98,25 +98,25 @@ describe('DaypartingSettingComponent', () => {
         ];
     });
 
-    it('should generate dayparting and show dayparting input on dayparting setting input change when dayparting is enabled', () => {
+    it('should generate dayparting on dayparting setting input change', () => {
         component.daypartingSetting = mockedSetting;
         component.ngOnChanges({
             daypartingSetting: new SimpleChange(null, mockedSetting, false),
         });
         expect(component.dayparting).toEqual(mockedDayparting);
-        expect(component.isDaypartingInputVisible).toBe(true);
     });
 
-    it('should not generate dayparting and should hide dayparting input on dayparting setting input change when dayparting is disabled', () => {
+    it('should generate dayparting with all hours active if dayparting setting is empty', () => {
         const mockedSetting: DaypartingSetting = {};
-        component.isDaypartingInputVisible = true;
         component.daypartingSetting = mockedSetting;
         component.ngOnChanges({
             daypartingSetting: new SimpleChange(null, mockedSetting, false),
         });
         expect(component.timezone).not.toBeDefined();
-        expect(component.dayparting).not.toBeDefined();
-        expect(component.isDaypartingInputVisible).toBe(false);
+        expect(component.dayparting).toBeDefined();
+        component.dayparting.forEach(day => {
+            expect(day.hours).toEqual(Array(24).fill(true));
+        });
     });
 
     it('should set timezone on dayparting setting input change', () => {
@@ -133,15 +133,6 @@ describe('DaypartingSettingComponent', () => {
             daypartingSetting: new SimpleChange(null, mockedSetting, false),
         });
         expect(component.timezone).toBe('UTC');
-    });
-
-    it('should generate dayparting with all hours active and show dayparting input when user enables dayparting', () => {
-        expect(component.isDaypartingInputVisible).not.toBeDefined();
-        component.enableDayparting();
-        component.dayparting.forEach(day => {
-            expect(day.hours).toEqual(Array(24).fill(true));
-        });
-        expect(component.isDaypartingInputVisible).toBe(true);
     });
 
     it('should correctly generate dayparting setting on dayparting selection update', () => {

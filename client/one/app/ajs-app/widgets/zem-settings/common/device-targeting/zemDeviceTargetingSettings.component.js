@@ -49,7 +49,8 @@ angular.module('one.widgets').component('zemDeviceTargetingSettings', {
                     $ctrl.targetPlacements,
                     $ctrl.targetOs
                 );
-                $ctrl.showAdvanceGroup = isAdvanceGroupVisible();
+                $ctrl.showAdvanceGroup =
+                    $ctrl.showAdvanceGroup || isAdvanceGroupVisible();
             }
         };
 

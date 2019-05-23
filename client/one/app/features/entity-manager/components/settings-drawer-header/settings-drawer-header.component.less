@@ -19,14 +19,26 @@
     margin: @zem-settings__items-spacing--default / 2;
 }
 
+.zem-settings-drawer-header__entity-details-item {
+    margin-bottom: 5px;
+}
+
+.zem-settings-drawer-header__entity-details-item:last-child {
+    margin-bottom: 0;
+}
+
 .zem-settings-drawer-header__entity-type {
     font-size: 12px;
     color: @text-color--lighter;
 }
 
-.zem-settings-drawer-header__entity-name {
-    margin: 0;
-    height: 26px;
+.entity-name__read-value {
+    display: inline-block;
+    vertical-align: top;
+    max-width: 100%;
+    position: relative;
+    margin: 0 0 0 -5px;
+    padding: 3px 35px 3px 3px;
     line-height: 26px;
     color: @color--secondary;
     font-size: 24px;
@@ -34,6 +46,31 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    border: 1px dashed transparent;
+    border-radius: 2px;
+    transition: all @duration-and-timing-fn--default;
+}
+
+.entity-name__read-value::after {
+    content: '';
+    position: absolute;
+    top: 6px;
+    right: 5px;
+    width: 20px;
+    height: 20px;
+    background-size: 12px;
+    background: url('@{images-folder}/edit-sec.svg') no-repeat center;
+    opacity: 0.4;
+}
+
+.entity-name__read-value:hover {
+    cursor: pointer;
+    border-color: tint(@color--secondary, 60%);
+    background-color: tint(@color--secondary, 90%);
+}
+
+.entity-name__read-value:hover.entity-name__read-value::after {
+    opacity: 1;
 }
 
 .zem-settings-drawer-header__entity-admin-link {
@@ -50,4 +87,13 @@
 .zem-settings-drawer-header__entity-admin-link
     .zem-internal-feature__indicator {
     left: -3px;
+}
+
+.zem-settings-drawer-header__input-text {
+    height: 35px;
+    border-style: dashed !important;
+}
+
+.zem-settings-drawer-header__error {
+    margin-top: 5px;
 }

@@ -232,7 +232,7 @@ angular
                 type: zemGridConstants.gridColumnTypes.TEXT,
                 totalRow: false,
                 help:
-                    'Customer Success Manager responsible for the campaign and the communication with the client.',
+                    'Customer success manager responsible for the campaign and the communication with the client.',
                 order: true,
                 initialOrder: zemGridConstants.gridColumnOrder.DESC,
                 internal: 'zemauth.can_see_managers_in_accounts_table',

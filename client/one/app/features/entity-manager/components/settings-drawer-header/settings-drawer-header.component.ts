@@ -6,9 +6,12 @@ import {
     Input,
     SimpleChanges,
     OnChanges,
+    Output,
+    EventEmitter,
 } from '@angular/core';
 import {EntityType} from '../../../../app.constants';
 import * as entityHelpers from '../../helpers/entity.helpers';
+import {SettingsDrawerHeaderMode} from './settings-drawer-header.constants';
 
 @Component({
     selector: 'zem-settings-drawer-header',
@@ -26,17 +29,43 @@ export class SettingsDrawerHeaderComponent implements OnChanges {
     showAdminLink: boolean;
     @Input()
     isAdminLinkAnInternalFeature: boolean;
+    @Input()
+    entityNameErrors: string[];
+    @Output()
+    entityNameChange = new EventEmitter<string>();
 
     EntityType = EntityType;
+    SettingsDrawerHeaderMode = SettingsDrawerHeaderMode;
 
+    entityNameModel: string;
     adminLink: string;
+    mode: SettingsDrawerHeaderMode = SettingsDrawerHeaderMode.READ;
 
     ngOnChanges(changes: SimpleChanges) {
+        if (changes.entityName) {
+            this.entityNameModel = this.entityName;
+        }
+        if (changes.entityNameErrors && this.entityNameErrors.length > 0) {
+            this.switchToEditMode();
+        }
         if (changes.entityId) {
             this.adminLink = entityHelpers.getAdminLink(
                 EntityType.AD_GROUP,
                 this.entityId
             );
         }
+    }
+
+    switchToReadMode() {
+        this.mode = SettingsDrawerHeaderMode.READ;
+    }
+
+    switchToEditMode() {
+        this.mode = SettingsDrawerHeaderMode.EDIT;
+    }
+
+    onEntityNameChange() {
+        this.switchToReadMode();
+        this.entityNameChange.emit(this.entityNameModel);
     }
 }

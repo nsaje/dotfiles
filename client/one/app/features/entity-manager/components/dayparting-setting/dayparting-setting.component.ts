@@ -27,7 +27,6 @@ export class DaypartingSettingComponent implements OnChanges {
     @Output()
     valueChange = new EventEmitter<DaypartingSetting>();
 
-    isDaypartingInputVisible: boolean;
     dayparting: DaypartingDay[];
     timezone: string;
 
@@ -38,26 +37,19 @@ export class DaypartingSettingComponent implements OnChanges {
                 this.dayparting = this.generateDaypartingFromSettings(
                     this.daypartingSetting
                 );
-                this.isDaypartingInputVisible = true;
             } else {
-                this.isDaypartingInputVisible = false;
+                // Generate dayparting with all hours active since we want to
+                // show every hour in dayparting input as active.
+                this.dayparting = this.generateDaypartingFromSettings(
+                    this.daypartingSetting || {},
+                    true
+                );
             }
         }
     }
 
     handleDaypartingSelectionUpdate(dayparting: DaypartingDay[]) {
         this.valueChange.emit(this.generateSettings(dayparting, this.timezone));
-    }
-
-    enableDayparting() {
-        // Dayparting was previously disabled. When enabling, generate
-        // dayparting with all hours active since we want to show every hour in
-        // dayparting input as active.
-        this.dayparting = this.generateDaypartingFromSettings(
-            this.daypartingSetting || {},
-            true
-        );
-        this.isDaypartingInputVisible = true;
     }
 
     private isDaypartingEnabled(daypartingSetting: DaypartingSetting): boolean {

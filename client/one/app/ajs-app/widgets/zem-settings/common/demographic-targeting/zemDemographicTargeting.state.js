@@ -49,7 +49,7 @@ angular
                 return state;
             }
 
-            function createNode(type, parent) {
+            function createNode(type, parent, doNotExecuteCallback) {
                 var node = {type: type};
                 if (
                     type !==
@@ -62,7 +62,7 @@ angular
                     state.expressionTree = node;
                 }
 
-                update();
+                update(doNotExecuteCallback);
                 return node;
             }
 
@@ -109,11 +109,13 @@ angular
                 update();
             }
 
-            function update() {
+            function update(doNotExecuteCallback) {
                 var newBluekaiTargeting = zemDemographicTargetingConverter.convertToApi(
                     state.expressionTree
                 );
-                updateCallback(newBluekaiTargeting);
+                if (!doNotExecuteCallback) {
+                    updateCallback(newBluekaiTargeting);
+                }
                 updateInfo(newBluekaiTargeting);
             }
 

@@ -1,16 +1,4 @@
-<div ng-show="!$ctrl.isTargetingEditSectionVisible()">
-    <button
-        class="button button--with-icon check-icon"
-        ng-click="$ctrl.enableTargetingEditSection()"
-    >
-        {{ $ctrl.texts.toggleTargetingEditSection }}
-    </button>
-</div>
-
-<div
-    ng-show="$ctrl.isTargetingEditSectionVisible()"
-    class="two-columns-list two-columns-list--with-dropdown m-b-s clearfix"
->
+<div class="two-columns-list two-columns-list--with-dropdown m-b-s clearfix">
     <div
         class="two-columns-list__container"
         ng-class="{'two-columns-list__container--half': $ctrl.targetings.excluded.length || $ctrl.showExcludedSection}"
@@ -64,7 +52,7 @@
 <a
     ng-click="$ctrl.showExcludedSection = !$ctrl.showExcludedSection"
     class="alternative-link"
-    ng-show="$ctrl.isTargetingEditSectionVisible() && !$ctrl.targetings.excluded.length && !$ctrl.showExcludedSection"
+    ng-show="!$ctrl.targetings.excluded.length && !$ctrl.showExcludedSection"
     href
 >
     Add excluded list

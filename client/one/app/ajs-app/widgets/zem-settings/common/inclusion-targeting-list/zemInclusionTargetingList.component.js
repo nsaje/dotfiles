@@ -11,30 +11,14 @@ angular.module('one.widgets').component('zemInclusionTargetingList', {
     template: require('./zemInclusionTargetingList.component.html'),
     controller: function() {
         var $ctrl = this;
-        var showTargetingEditSection;
 
         $ctrl.include = include;
         $ctrl.exclude = exclude;
         $ctrl.remove = remove;
 
         // template functions
-        $ctrl.enableTargetingEditSection = enableTargetingEditSection;
-        $ctrl.isTargetingEditSectionVisible = isTargetingEditSectionVisible;
         $ctrl.groupBySection = groupBySection;
         $ctrl.onRefresh = onRefresh;
-
-        function enableTargetingEditSection() {
-            showTargetingEditSection = true;
-        }
-
-        function isTargetingEditSectionVisible() {
-            if (!$ctrl.targetings) return;
-            return (
-                showTargetingEditSection ||
-                $ctrl.targetings.included.length ||
-                $ctrl.targetings.excluded.length
-            );
-        }
 
         function groupBySection(targeting) {
             return $ctrl.displaySections && targeting.section;

@@ -1,36 +1,19 @@
-<ng-container *ngIf="!isDaypartingInputVisible">
-    <div class="zem-dayparting-setting__disabled-message">
-        Your ads are currently set to be running all the time.
-    </div>
+<div class="zem-dayparting-setting__timezone" *ngIf="timezone">
+    Timezone: <strong>{{ timezone }}</strong>
+</div>
 
-    <div>
-        <button
-            class="button button--with-icon check-icon"
-            (click)="enableDayparting()"
-        >
-            Enable dayparting
-        </button>
-    </div>
-</ng-container>
+<zem-dayparting-input
+    class="zem-dayparting-input"
+    [dayparting]="dayparting"
+    (onSelection)="handleDaypartingSelectionUpdate($event)"
+></zem-dayparting-input>
 
-<ng-container *ngIf="isDaypartingInputVisible">
-    <div class="zem-dayparting-setting__timezone" *ngIf="timezone">
-        Timezone: <strong>{{ timezone }}</strong>
-    </div>
-
-    <zem-dayparting-input
-        class="zem-dayparting-input"
-        [dayparting]="dayparting"
-        (onSelection)="handleDaypartingSelectionUpdate($event)"
-    ></zem-dayparting-input>
-
-    <div
-        class="zem-message zem-message--error zem-dayparting-setting__error"
-        *ngFor="let error of errors"
-    >
-        {{ error }}
-    </div>
-</ng-container>
+<div
+    class="zem-message zem-message--error zem-dayparting-setting__error"
+    *ngFor="let error of errors"
+>
+    {{ error }}
+</div>
 
 <div
     class="zem-message zem-message--bubble zem-message--info zem-message--with-icon zem-dayparting-setting__no-support-message"

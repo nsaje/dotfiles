@@ -6,12 +6,14 @@
     remove-targeting="$ctrl.removeTargeting(targeting)"
     display-sections="true"
 ></zem-inclusion-targeting-list>
-<div
-    class="message message--info message--with-icon m-t"
-    ng-if="$ctrl.warningMessage"
->
-    {{ $ctrl.warningMessage }}
-</div>
-<div class="message message--error" ng-repeat="error in $ctrl.errors">
-    {{ error }}
+<div class="more-messages__container">
+    <div
+        class="message message--info message--with-icon m-t"
+        ng-if="$ctrl.warningMessage"
+    >
+        {{ $ctrl.warningMessage }}
+    </div>
+    <div class="message message--error" ng-repeat="error in $ctrl.errors">
+        {{ error }}
+    </div>
 </div>

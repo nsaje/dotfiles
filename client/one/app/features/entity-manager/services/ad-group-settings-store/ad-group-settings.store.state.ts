@@ -26,7 +26,7 @@ export class AdGroupSettingsStoreState {
             placements: [],
             os: [],
             browsers: [],
-            audience: null,
+            audience: {},
             geo: {
                 included: {
                     countries: [],
