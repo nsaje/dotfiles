@@ -9,7 +9,6 @@ from core.features.publisher_bid_modifiers.service_test import add_non_publisher
 from dash import constants
 from dash import models
 from dash.dashapi import loaders
-from utils import sspd_client
 from utils.magic_mixer import magic_mixer
 from zemauth.models import User
 
@@ -476,73 +475,73 @@ class ContentAdLoaderTest(TestCase):
             },
         )
 
-    @mock.patch("utils.sspd_client.get_content_ad_status", mock.MagicMock())
-    def test_sspd_status_rejected(self):
-        content_ads = models.ContentAd.objects.all()
-        sources = models.Source.objects.filter(pk=1)
+    # @mock.patch("utils.sspd_client.get_content_ad_status", mock.MagicMock())
+    # def test_sspd_status_rejected(self):
+    #     content_ads = models.ContentAd.objects.all()
+    #     sources = models.Source.objects.filter(pk=1)
 
-        sspd_client.get_content_ad_status.return_value = {
-            1: {1: {"status": constants.ContentAdSubmissionStatus.REJECTED, "reason": "Inappropriate content"}}
-        }
-        loader = loaders.ContentAdsLoader(content_ads, sources, self.user)
-        self.assertDictEqual(
-            loader.per_source_status_map,
-            {
-                1: {
-                    1: {
-                        "source_id": 1,
-                        "submission_status": 3,
-                        "source_name": "AdsNative",
-                        "source_status": 1,
-                        "submission_errors": "Inappropriate content",
-                    }
-                }
-            },
-        )
+    #     sspd_client.get_content_ad_status.return_value = {
+    #         1: {1: {"status": constants.ContentAdSubmissionStatus.REJECTED, "reason": "Inappropriate content"}}
+    #     }
+    #     loader = loaders.ContentAdsLoader(content_ads, sources, self.user)
+    #     self.assertDictEqual(
+    #         loader.per_source_status_map,
+    #         {
+    #             1: {
+    #                 1: {
+    #                     "source_id": 1,
+    #                     "submission_status": 3,
+    #                     "source_name": "AdsNative",
+    #                     "source_status": 1,
+    #                     "submission_errors": "Inappropriate content",
+    #                 }
+    #             }
+    #         },
+    #     )
 
-    @mock.patch("utils.sspd_client.get_content_ad_status", mock.MagicMock())
-    def test_sspd_status_not_available(self):
-        content_ads = models.ContentAd.objects.all()
-        sources = models.Source.objects.filter(pk=1)
+    # @mock.patch("utils.sspd_client.get_content_ad_status", mock.MagicMock())
+    # def test_sspd_status_not_available(self):
+    #     content_ads = models.ContentAd.objects.all()
+    #     sources = models.Source.objects.filter(pk=1)
 
-        sspd_client.get_content_ad_status.return_value = None
-        loader = loaders.ContentAdsLoader(content_ads, sources, self.user)
-        self.assertDictEqual(
-            loader.per_source_status_map,
-            {
-                1: {
-                    1: {
-                        "source_id": 1,
-                        "submission_status": 5,
-                        "source_name": "AdsNative",
-                        "source_status": 1,
-                        "submission_errors": "",
-                    }
-                }
-            },
-        )
+    #     sspd_client.get_content_ad_status.return_value = None
+    #     loader = loaders.ContentAdsLoader(content_ads, sources, self.user)
+    #     self.assertDictEqual(
+    #         loader.per_source_status_map,
+    #         {
+    #             1: {
+    #                 1: {
+    #                     "source_id": 1,
+    #                     "submission_status": 5,
+    #                     "source_name": "AdsNative",
+    #                     "source_status": 1,
+    #                     "submission_errors": "",
+    #                 }
+    #             }
+    #         },
+    #     )
 
-    @mock.patch("utils.sspd_client.get_content_ad_status", mock.MagicMock())
-    def test_sspd_status_pending(self):
-        content_ads = models.ContentAd.objects.all()
-        sources = models.Source.objects.filter(pk=1)
+    # @mock.patch("utils.sspd_client.get_content_ad_status", mock.MagicMock())
+    # def test_sspd_status_pending(self):
+    #     content_ads = models.ContentAd.objects.all()
+    #     sources = models.Source.objects.filter(pk=1)
 
-        sspd_client.get_content_ad_status.return_value = {}
-        loader = loaders.ContentAdsLoader(content_ads, sources, self.user)
-        self.assertDictEqual(
-            loader.per_source_status_map,
-            {
-                1: {
-                    1: {
-                        "source_id": 1,
-                        "submission_status": 1,
-                        "source_name": "AdsNative",
-                        "source_status": 1,
-                        "submission_errors": "",
-                    }
-                }
-            },
-        )
+    #     sspd_client.get_content_ad_status.return_value = {}
+    #     loader = loaders.ContentAdsLoader(content_ads, sources, self.user)
+    #     self.assertDictEqual(
+    #         loader.per_source_status_map,
+    #         {
+    #             1: {
+    #                 1: {
+    #                     "source_id": 1,
+    #                     "submission_status": 1,
+    #                     "source_name": "AdsNative",
+    #                     "source_status": 1,
+    #                     "submission_errors": "",
+    #                 }
+    #             }
+    #         },
+    #     )
 
 
 class SourcesLoaderTest(TestCase):
