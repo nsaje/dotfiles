@@ -5,7 +5,7 @@ from django.db import migrations
 
 class Migration(migrations.Migration):
 
-    dependencies = [("zemauth", "0215_auto_20190509_1752")]
+    dependencies = [("zemauth", "0216_auto_20190513_1427")]
 
     operations = [
         migrations.AlterModelOptions(
