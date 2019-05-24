@@ -251,63 +251,62 @@ class ContentAdsTest(K1APIBaseTest):
 
         self.assertEqual(data, expected)
 
-    # TODO(nsaje): disabled to test if it improves full_check performance
-    # def test_get_content_ads_sources_sspd_rejected(self):
-    #     content_ad_source = dash.models.ContentAdSource.objects.get(source_id=1, content_ad_id=1)
-    #     sspd_client.get_approval_status.return_value = {
-    #         content_ad_source.id: dash.constants.ContentAdSspdStatus.BLOCKED
-    #     }
+    def test_get_content_ads_sources_sspd_rejected(self):
+        content_ad_source = dash.models.ContentAdSource.objects.get(source_id=1, content_ad_id=1)
+        sspd_client.get_approval_status.return_value = {
+            content_ad_source.id: dash.constants.ContentAdSspdStatus.BLOCKED
+        }
 
-    #     response = self.client.get(
-    #         reverse("k1api.content_ads.sources"), {"content_ad_ids": 1, "ad_group_ids": 1, "source_slugs": "adblade"}
-    #     )
+        response = self.client.get(
+            reverse("k1api.content_ads.sources"), {"content_ad_ids": 1, "ad_group_ids": 1, "source_slugs": "adblade"}
+        )
 
-    #     data = json.loads(response.content)
-    #     self.assert_response_ok(response, data)
-    #     data = data["response"]
+        data = json.loads(response.content)
+        self.assert_response_ok(response, data)
+        data = data["response"]
 
-    #     expected = [
-    #         {
-    #             "id": 1,
-    #             "content_ad_id": 1,
-    #             "ad_group_id": 1,
-    #             "source_id": 1,
-    #             "submission_status": 1,
-    #             "source_content_ad_id": "987654321",
-    #             "tracking_slug": "adblade",
-    #             "state": 2,
-    #             "source_slug": "adblade",
-    #         }
-    #     ]
+        expected = [
+            {
+                "id": 1,
+                "content_ad_id": 1,
+                "ad_group_id": 1,
+                "source_id": 1,
+                "submission_status": 1,
+                "source_content_ad_id": "987654321",
+                "tracking_slug": "adblade",
+                "state": 2,
+                "source_slug": "adblade",
+            }
+        ]
 
-    #     self.assertEqual(data, expected)
+        self.assertEqual(data, expected)
 
-    # def test_get_content_ads_sources_sspd_rejected_status_none(self):
-    #     sspd_client.get_approval_status.return_value = {}
+    def test_get_content_ads_sources_sspd_rejected_status_none(self):
+        sspd_client.get_approval_status.return_value = {}
 
-    #     response = self.client.get(
-    #         reverse("k1api.content_ads.sources"), {"content_ad_ids": 1, "ad_group_ids": 1, "source_slugs": "adblade"}
-    #     )
+        response = self.client.get(
+            reverse("k1api.content_ads.sources"), {"content_ad_ids": 1, "ad_group_ids": 1, "source_slugs": "adblade"}
+        )
 
-    #     data = json.loads(response.content)
-    #     self.assert_response_ok(response, data)
-    #     data = data["response"]
+        data = json.loads(response.content)
+        self.assert_response_ok(response, data)
+        data = data["response"]
 
-    #     expected = [
-    #         {
-    #             "id": 1,
-    #             "content_ad_id": 1,
-    #             "ad_group_id": 1,
-    #             "source_id": 1,
-    #             "submission_status": 1,
-    #             "source_content_ad_id": "987654321",
-    #             "tracking_slug": "adblade",
-    #             "state": 2,
-    #             "source_slug": "adblade",
-    #         }
-    #     ]
+        expected = [
+            {
+                "id": 1,
+                "content_ad_id": 1,
+                "ad_group_id": 1,
+                "source_id": 1,
+                "submission_status": 1,
+                "source_content_ad_id": "987654321",
+                "tracking_slug": "adblade",
+                "state": 2,
+                "source_slug": "adblade",
+            }
+        ]
 
-    #     self.assertEqual(data, expected)
+        self.assertEqual(data, expected)
 
     def test_get_content_ads_sources_with_modified_dt(self):
         with test_helper.disable_auto_now_add(dash.models.ContentAdSource, "created_dt"):
