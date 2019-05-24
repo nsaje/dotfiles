@@ -21,7 +21,7 @@ CONTENT_AD_URL = "/service/contentad"
 CONTENT_AD_SOURCE_URL = "/service/contentadsource"
 
 MAX_REQUEST_IDS = 500
-TIMEOUT = (30, 30)  # TIMEOUT IN SECONDS (CONNECT TIME, READ TIME)
+TIMEOUT = (10, 10)  # TIMEOUT IN SECONDS (CONNECT TIME, READ TIME)
 
 
 class SSPDApiException(Exception):
