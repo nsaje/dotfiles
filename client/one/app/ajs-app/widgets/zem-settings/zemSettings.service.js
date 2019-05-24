@@ -80,18 +80,19 @@ angular
             entity = entity || zemNavigationNewService.getActiveEntity();
 
             if (
-                (zemPermissions.hasPermission(
+                entity &&
+                ((zemPermissions.hasPermission(
                     'zemauth.can_use_new_account_settings_drawer'
                 ) &&
                     entity.type === constants.entityType.ACCOUNT) ||
-                (zemPermissions.hasPermission(
-                    'zemauth.can_use_new_campaign_settings_drawer'
-                ) &&
-                    entity.type === constants.entityType.CAMPAIGN) ||
-                (zemPermissions.hasPermission(
-                    'zemauth.can_use_new_ad_group_settings_drawer'
-                ) &&
-                    entity.type === constants.entityType.AD_GROUP)
+                    (zemPermissions.hasPermission(
+                        'zemauth.can_use_new_campaign_settings_drawer'
+                    ) &&
+                        entity.type === constants.entityType.CAMPAIGN) ||
+                    (zemPermissions.hasPermission(
+                        'zemauth.can_use_new_ad_group_settings_drawer'
+                    ) &&
+                        entity.type === constants.entityType.AD_GROUP))
             ) {
                 return;
             }

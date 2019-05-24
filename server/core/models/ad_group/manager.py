@@ -13,38 +13,6 @@ from . import model
 
 
 class AdGroupManager(core.common.BaseManager):
-    def _create_default_name(self, campaign):
-        return core.models.helpers.create_default_name(model.AdGroup.objects.filter(campaign=campaign), "New ad group")
-
-    def _create(self, request, campaign, name, do_save=True, **kwargs):
-        ad_group = model.AdGroup(campaign=campaign, name=name, **kwargs)
-        if (
-            settings.AMPLIFY_REVIEW
-            and (
-                campaign.account.amplify_review
-                and (campaign.account.agency and campaign.account.agency.amplify_review or True)
-            )
-            and campaign.type != dash.constants.CampaignType.VIDEO
-            and campaign.type != dash.constants.CampaignType.DISPLAY
-        ):
-            ad_group.amplify_review = True
-
-        if do_save:
-            ad_group.save(request)
-        return ad_group
-
-    def _post_create(self, ad_group):
-        if (
-            ad_group.settings.autopilot_state == dash.constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET
-            or ad_group.campaign.settings.autopilot
-        ):
-            from automation import autopilot
-
-            autopilot.recalculate_budgets_ad_group(ad_group)
-
-        utils.k1_helper.update_ad_group(ad_group, msg="Campaignmodel.AdGroups.put")
-        utils.redirector_helper.insert_adgroup(ad_group)
-
     def create(self, request, campaign, is_restapi=False, name=None, **kwargs):
         self._validate_archived(campaign)
         self._validate_entity_limits(campaign)
@@ -52,7 +20,8 @@ class AdGroupManager(core.common.BaseManager):
         with transaction.atomic():
             if name is None:
                 name = self._create_default_name(campaign)
-            ad_group = self._create(request, campaign, name=name)
+            ad_group = self._create(campaign, name=name)
+            ad_group.save(request)
 
             if is_restapi:
                 ad_group.settings = core.models.settings.AdGroupSettings.objects.create_restapi_default(
@@ -72,15 +41,6 @@ class AdGroupManager(core.common.BaseManager):
         ad_group.write_history_created(request)
         return ad_group
 
-    def _validate_archived(self, campaign):
-        if campaign.is_archived():
-            raise exceptions.CampaignIsArchived("Can not create an ad group on an archived campaign.")
-
-    def _validate_entity_limits(self, campaign):
-        core.common.entity_limits.enforce(
-            model.AdGroup.objects.filter(campaign=campaign).exclude_archived(), campaign.account_id
-        )
-
     def clone(self, request, source_ad_group, campaign, new_name):
         if (
             source_ad_group.campaign.type == dash.constants.CampaignType.VIDEO
@@ -95,7 +55,8 @@ class AdGroupManager(core.common.BaseManager):
         )
 
         with transaction.atomic():
-            ad_group = self._create(request, campaign, name=new_name)
+            ad_group = self._create(campaign, name=new_name)
+            ad_group.save(request)
             ad_group.settings = core.models.settings.AdGroupSettings.objects.clone(
                 request, ad_group, source_ad_group.get_current_settings()
             )
@@ -114,6 +75,44 @@ class AdGroupManager(core.common.BaseManager):
 
     def get_restapi_default(self, request, campaign):
         name = self._create_default_name(campaign)
-        ad_group = self._create(request, campaign, name=name, do_save=False)
+        ad_group = self._create(campaign, name=name)
         ad_group.settings = core.models.settings.AdGroupSettings.objects.get_restapi_default(ad_group, name=name)
         return ad_group
+
+    def _create_default_name(self, campaign):
+        return core.models.helpers.create_default_name(model.AdGroup.objects.filter(campaign=campaign), "New ad group")
+
+    def _create(self, campaign, name, **kwargs):
+        ad_group = model.AdGroup(campaign=campaign, name=name, **kwargs)
+        if (
+            settings.AMPLIFY_REVIEW
+            and (
+                campaign.account.amplify_review
+                and (campaign.account.agency and campaign.account.agency.amplify_review or True)
+            )
+            and campaign.type != dash.constants.CampaignType.VIDEO
+            and campaign.type != dash.constants.CampaignType.DISPLAY
+        ):
+            ad_group.amplify_review = True
+        return ad_group
+
+    def _post_create(self, ad_group):
+        if (
+            ad_group.settings.autopilot_state == dash.constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET
+            or ad_group.campaign.settings.autopilot
+        ):
+            from automation import autopilot
+
+            autopilot.recalculate_budgets_ad_group(ad_group)
+
+        utils.k1_helper.update_ad_group(ad_group, msg="Campaignmodel.AdGroups.put")
+        utils.redirector_helper.insert_adgroup(ad_group)
+
+    def _validate_archived(self, campaign):
+        if campaign.is_archived():
+            raise exceptions.CampaignIsArchived("Can not create an ad group on an archived campaign.")
+
+    def _validate_entity_limits(self, campaign):
+        core.common.entity_limits.enforce(
+            model.AdGroup.objects.filter(campaign=campaign).exclude_archived(), campaign.account_id
+        )

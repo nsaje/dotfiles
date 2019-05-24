@@ -1,12 +1,10 @@
+from django.conf.urls import include
 from django.conf.urls import url
 
-from . import views
+import restapi.campaign.internal.urls
+import restapi.campaign.v1.urls
 
 urlpatterns = [
-    url(
-        r"^v1/campaigns/(?P<campaign_id>\d+)$",
-        views.CampaignViewSet.as_view({"get": "get", "put": "put"}),
-        name="campaigns_details",
-    ),
-    url(r"^v1/campaigns/$", views.CampaignViewSet.as_view({"get": "list", "post": "create"}), name="campaigns_list"),
+    url(r"^v1/campaigns/", include(restapi.campaign.v1.urls, namespace="restapi.campaign.v1")),
+    url(r"^internal/campaigns/", include(restapi.campaign.internal.urls, namespace="restapi.campaign.internal")),
 ]

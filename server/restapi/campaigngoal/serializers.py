@@ -51,18 +51,15 @@ class ConversionGoalSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
 
 
 class CampaignGoalSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
-    @property
-    def fields(self):
-        fields = super().fields
-        if self.instance:
-            fields["value"] = rest_framework.serializers.SerializerMethodField()
-        return fields
-
-    id = restapi.serializers.fields.OutIntIdField(read_only=True)
+    id = restapi.serializers.fields.OutIntIdField(required=False, allow_null=True)
     type = restapi.serializers.fields.DashConstantField(constants.CampaignGoalKPI)
     primary = rest_framework.serializers.BooleanField()
     value = rest_framework.serializers.DecimalField(max_digits=20, decimal_places=5, rounding=decimal.ROUND_HALF_DOWN)
     conversion_goal = ConversionGoalSerializer(source="*", allow_null=True, required=False)
+
+    def to_representation(self, instance):
+        self.fields["value"] = rest_framework.serializers.SerializerMethodField()
+        return super().to_representation(instance)
 
     def get_value(self, goal):
         value = goal.get_current_value()

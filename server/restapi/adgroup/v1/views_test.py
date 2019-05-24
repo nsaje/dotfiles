@@ -174,7 +174,7 @@ class AdGroupViewSetTest(RESTAPITest):
         self.assertEqual(expected, adgroup)
 
     def test_adgroups_get_cpc(self):
-        r = self.client.get(reverse("v1:adgroups_details", kwargs={"ad_group_id": 2040}))
+        r = self.client.get(reverse("restapi.adgroup.v1:adgroups_details", kwargs={"ad_group_id": 2040}))
         resp_json = self.assertResponseValid(r)
         self.validate_against_db(resp_json["data"])
         self.assertTrue(resp_json["data"]["maxCpc"])
@@ -184,35 +184,37 @@ class AdGroupViewSetTest(RESTAPITest):
         ad_group = dash.models.AdGroup.objects.get(id=2040)
         ad_group.bidding_type = constants.BiddingType.CPM
         ad_group.save(None)
-        r = self.client.get(reverse("v1:adgroups_details", kwargs={"ad_group_id": 2040}))
+        r = self.client.get(reverse("restapi.adgroup.v1:adgroups_details", kwargs={"ad_group_id": 2040}))
         resp_json = self.assertResponseValid(r)
         self.validate_against_db(resp_json["data"])
         self.assertFalse(resp_json["data"]["maxCpc"])
         self.assertTrue(resp_json["data"]["maxCpm"])
 
     def test_adgroups_list(self):
-        r = self.client.get(reverse("v1:adgroups_list"))
+        r = self.client.get(reverse("restapi.adgroup.v1:adgroups_list"))
         resp_json = self.assertResponseValid(r, data_type=list)
         for item in resp_json["data"]:
             self.validate_against_db(item)
 
     def test_adgroups_list_campaign_id(self):
         campaign_id = 608
-        r = self.client.get(reverse("v1:adgroups_list"), data={"campaignId": campaign_id})
+        r = self.client.get(reverse("restapi.adgroup.v1:adgroups_list"), data={"campaignId": campaign_id})
         resp_json = self.assertResponseValid(r, data_type=list)
         for item in resp_json["data"]:
             self.validate_against_db(item)
             self.assertEqual(int(item["campaignId"]), campaign_id)
 
     def test_adgroups_list_campaign_id_invalid(self):
-        r = self.client.get(reverse("v1:adgroups_list"), data={"campaignId": 1000})
+        r = self.client.get(reverse("restapi.adgroup.v1:adgroups_list"), data={"campaignId": 1000})
         self.assertResponseError(r, "MissingDataError")
 
     def test_adgroups_list_pagination(self):
         campaign = magic_mixer.blend(dash.models.Campaign, account__users=[self.user])
         magic_mixer.cycle(10).blend(dash.models.AdGroup, campaign=campaign)
-        r = self.client.get(reverse("v1:adgroups_list"), {"campaignId": campaign.id})
-        r_paginated = self.client.get(reverse("v1:adgroups_list"), {"campaignId": campaign.id, "limit": 2, "offset": 5})
+        r = self.client.get(reverse("restapi.adgroup.v1:adgroups_list"), {"campaignId": campaign.id})
+        r_paginated = self.client.get(
+            reverse("restapi.adgroup.v1:adgroups_list"), {"campaignId": campaign.id, "limit": 2, "offset": 5}
+        )
         resp_json = self.assertResponseValid(r, data_type=list)
         resp_json_paginated = self.assertResponseValid(r_paginated, data_type=list)
         self.assertEqual(resp_json["data"][5:7], resp_json_paginated["data"])
@@ -221,7 +223,7 @@ class AdGroupViewSetTest(RESTAPITest):
         campaign = magic_mixer.blend(dash.models.Campaign, account__users=[self.user])
         magic_mixer.cycle(3).blend(dash.models.AdGroup, campaign=campaign, archived=False)
         magic_mixer.cycle(2).blend(dash.models.AdGroup, campaign=campaign, archived=True)
-        r = self.client.get(reverse("v1:adgroups_list"), {"campaignId": campaign.id})
+        r = self.client.get(reverse("restapi.adgroup.v1:adgroups_list"), {"campaignId": campaign.id})
         resp_json = self.assertResponseValid(r, data_type=list)
         self.assertEqual(3, len(resp_json["data"]))
         for item in resp_json["data"]:
@@ -232,7 +234,9 @@ class AdGroupViewSetTest(RESTAPITest):
         campaign = magic_mixer.blend(dash.models.Campaign, account__users=[self.user])
         magic_mixer.cycle(3).blend(dash.models.AdGroup, campaign=campaign, archived=False)
         magic_mixer.cycle(2).blend(dash.models.AdGroup, campaign=campaign, archived=True)
-        r = self.client.get(reverse("v1:adgroups_list"), {"campaignId": campaign.id, "includeArchived": 1})
+        r = self.client.get(
+            reverse("restapi.adgroup.v1:adgroups_list"), {"campaignId": campaign.id, "includeArchived": 1}
+        )
         resp_json = self.assertResponseValid(r, data_type=list)
         self.assertEqual(5, len(resp_json["data"]))
         for item in resp_json["data"]:
@@ -249,7 +253,7 @@ class AdGroupViewSetTest(RESTAPITest):
         adgroup1_account2 = magic_mixer.blend(dash.models.AdGroup, campaign__account=account2)
         adgroup1_account2.get_current_settings().copy_settings().save(None)
 
-        r = self.client.get(reverse("v1:adgroups_list"), {"campaignId": adgroup1_account1.campaign_id})
+        r = self.client.get(reverse("restapi.adgroup.v1:adgroups_list"), {"campaignId": adgroup1_account1.campaign_id})
         resp_json = self.assertResponseValid(r, data_type=list)
         for item in resp_json["data"]:
             self.validate_against_db(item)
@@ -259,7 +263,7 @@ class AdGroupViewSetTest(RESTAPITest):
     def test_adgroups_post_cpc(self):
         new_ad_group = self.adgroup_repr(campaign_id=608, name="Test Group")
         del new_ad_group["id"]
-        r = self.client.post(reverse("v1:adgroups_list"), data=new_ad_group, format="json")
+        r = self.client.post(reverse("restapi.adgroup.v1:adgroups_list"), data=new_ad_group, format="json")
         resp_json = self.assertResponseValid(r, data_type=dict, status_code=201)
         self.validate_against_db(resp_json["data"])
         new_ad_group["id"] = resp_json["data"]["id"]
@@ -274,7 +278,7 @@ class AdGroupViewSetTest(RESTAPITest):
             campaign_id=608, name="Test Group", bidding_type=constants.BiddingType.CPM, max_cpm="3.100"
         )
         del new_ad_group["id"]
-        r = self.client.post(reverse("v1:adgroups_list"), data=new_ad_group, format="json")
+        r = self.client.post(reverse("restapi.adgroup.v1:adgroups_list"), data=new_ad_group, format="json")
         resp_json = self.assertResponseValid(r, data_type=dict, status_code=201)
         self.validate_against_db(resp_json["data"])
         new_ad_group["id"] = resp_json["data"]["id"]
@@ -287,7 +291,7 @@ class AdGroupViewSetTest(RESTAPITest):
         campaign = magic_mixer.blend(dash.models.Campaign, account=account, archived=True)
         new_ad_group = self.adgroup_repr(campaign_id=campaign.id, name="Test Group")
         del new_ad_group["id"]
-        r = self.client.post(reverse("v1:adgroups_list"), data=new_ad_group, format="json")
+        r = self.client.post(reverse("restapi.adgroup.v1:adgroups_list"), data=new_ad_group, format="json")
         self.assertResponseError(r, "ValidationError")
         self.assertEqual(
             ["Can not create an ad group on an archived campaign."], json.loads(r.content)["details"]["campaignId"]
@@ -297,14 +301,14 @@ class AdGroupViewSetTest(RESTAPITest):
         new_ad_group = self.adgroup_repr(campaign_id=608, name="Test Group")
         del new_ad_group["id"]
         del new_ad_group["campaignId"]
-        r = self.client.post(reverse("v1:adgroups_list"), data=new_ad_group, format="json")
+        r = self.client.post(reverse("restapi.adgroup.v1:adgroups_list"), data=new_ad_group, format="json")
         self.assertResponseError(r, "ValidationError")
 
     def test_adgroups_post_no_state(self):
         new_ad_group = self.adgroup_repr(campaign_id=608, name="Test Group")
         del new_ad_group["id"]
         del new_ad_group["state"]
-        r = self.client.post(reverse("v1:adgroups_list"), data=new_ad_group, format="json")
+        r = self.client.post(reverse("restapi.adgroup.v1:adgroups_list"), data=new_ad_group, format="json")
         resp_json = self.assertResponseValid(r, data_type=dict, status_code=201)
         self.validate_against_db(resp_json["data"])
         self.assertEqual(resp_json["data"]["state"], "INACTIVE")
@@ -312,20 +316,22 @@ class AdGroupViewSetTest(RESTAPITest):
     def test_adgroups_post_wrong_campaign_id(self):
         new_ad_group = self.adgroup_repr(campaign_id=1000, name="Test Group")
         del new_ad_group["id"]
-        r = self.client.post(reverse("v1:adgroups_list"), data=new_ad_group, format="json")
+        r = self.client.post(reverse("restapi.adgroup.v1:adgroups_list"), data=new_ad_group, format="json")
         self.assertResponseError(r, "MissingDataError")
 
     def test_adgroups_post_no_name(self):
         new_ad_group = self.adgroup_repr(campaign_id=608)
         del new_ad_group["id"]
         del new_ad_group["name"]
-        r = self.client.post(reverse("v1:adgroups_list"), data=new_ad_group, format="json")
+        r = self.client.post(reverse("restapi.adgroup.v1:adgroups_list"), data=new_ad_group, format="json")
         self.assertResponseError(r, "ValidationError")
 
     def test_adgroups_put_cpc(self):
         test_adgroup = self.adgroup_repr(id=2040, campaign_id=608)
         r = self.client.put(
-            reverse("v1:adgroups_details", kwargs={"ad_group_id": 2040}), data=test_adgroup, format="json"
+            reverse("restapi.adgroup.v1:adgroups_details", kwargs={"ad_group_id": 2040}),
+            data=test_adgroup,
+            format="json",
         )
         resp_json = self.assertResponseValid(r)
         self.validate_against_db(resp_json["data"])
@@ -339,7 +345,9 @@ class AdGroupViewSetTest(RESTAPITest):
             id=2040, campaign_id=608, bidding_type=constants.BiddingType.CPM, max_cpm="3.100"
         )
         r = self.client.put(
-            reverse("v1:adgroups_details", kwargs={"ad_group_id": 2040}), data=test_adgroup, format="json"
+            reverse("restapi.adgroup.v1:adgroups_details", kwargs={"ad_group_id": 2040}),
+            data=test_adgroup,
+            format="json",
         )
         resp_json = self.assertResponseValid(r)
         self.validate_against_db(resp_json["data"])
@@ -349,7 +357,9 @@ class AdGroupViewSetTest(RESTAPITest):
 
     def test_adgroups_put_name(self):
         adgroup = self.adgroup_repr(name="New Name")
-        r = self.client.put(reverse("v1:adgroups_details", kwargs={"ad_group_id": 2040}), data=adgroup, format="json")
+        r = self.client.put(
+            reverse("restapi.adgroup.v1:adgroups_details", kwargs={"ad_group_id": 2040}), data=adgroup, format="json"
+        )
         resp_json = self.assertResponseValid(r)
         self.validate_against_db(resp_json["data"])
         adgroup_db = dash.models.AdGroup.objects.get(pk=2040)
@@ -357,7 +367,9 @@ class AdGroupViewSetTest(RESTAPITest):
 
     def test_adgroups_put_frequency_capping(self):
         adgroup = self.adgroup_repr(frequency_capping=33)
-        r = self.client.put(reverse("v1:adgroups_details", kwargs={"ad_group_id": 2040}), data=adgroup, format="json")
+        r = self.client.put(
+            reverse("restapi.adgroup.v1:adgroups_details", kwargs={"ad_group_id": 2040}), data=adgroup, format="json"
+        )
         resp_json = self.assertResponseValid(r)
         self.validate_against_db(resp_json["data"])
         self.assertEqual(resp_json["data"]["frequencyCapping"], 33)
@@ -365,34 +377,44 @@ class AdGroupViewSetTest(RESTAPITest):
     def test_adgroups_put_empty(self):
         put_data = {}
         settings_count = dash.models.AdGroupSettings.objects.filter(ad_group_id=2040).count()
-        r = self.client.put(reverse("v1:adgroups_details", kwargs={"ad_group_id": 2040}), data=put_data, format="json")
+        r = self.client.put(
+            reverse("restapi.adgroup.v1:adgroups_details", kwargs={"ad_group_id": 2040}), data=put_data, format="json"
+        )
         resp_json = self.assertResponseValid(r)
         self.validate_against_db(resp_json["data"])
         self.assertEqual(settings_count, dash.models.CampaignSettings.objects.filter(campaign_id=608).count())
 
     def test_adgroups_put_state(self):
         adgroup = self.adgroup_repr(state=constants.AdGroupSettingsState.INACTIVE)
-        r = self.client.put(reverse("v1:adgroups_details", kwargs={"ad_group_id": 2040}), data=adgroup, format="json")
+        r = self.client.put(
+            reverse("restapi.adgroup.v1:adgroups_details", kwargs={"ad_group_id": 2040}), data=adgroup, format="json"
+        )
         resp_json = self.assertResponseValid(r)
         self.validate_against_db(resp_json["data"])
         self.assertEqual(resp_json["data"]["state"], "INACTIVE")
 
     def test_adgroups_put_invalid_state(self):
         r = self.client.put(
-            reverse("v1:adgroups_details", kwargs={"ad_group_id": 2040}), data={"state": "NOTVALID"}, format="json"
+            reverse("restapi.adgroup.v1:adgroups_details", kwargs={"ad_group_id": 2040}),
+            data={"state": "NOTVALID"},
+            format="json",
         )
         self.assertResponseError(r, "ValidationError")
 
     def test_adgroups_put_archive_restore(self):
         r = self.client.put(
-            reverse("v1:adgroups_details", kwargs={"ad_group_id": 2040}), data={"archived": True}, format="json"
+            reverse("restapi.adgroup.v1:adgroups_details", kwargs={"ad_group_id": 2040}),
+            data={"archived": True},
+            format="json",
         )
         resp_json = self.assertResponseValid(r)
         self.validate_against_db(resp_json["data"])
         self.assertEqual(resp_json["data"]["archived"], True)
 
         r = self.client.put(
-            reverse("v1:adgroups_details", kwargs={"ad_group_id": 2040}), data={"archived": False}, format="json"
+            reverse("restapi.adgroup.v1:adgroups_details", kwargs={"ad_group_id": 2040}),
+            data={"archived": False},
+            format="json",
         )
         resp_json = self.assertResponseValid(r)
         self.validate_against_db(resp_json["data"])
@@ -411,7 +433,9 @@ class AdGroupViewSetTest(RESTAPITest):
             autopilot_daily_budget="20.00",
         )
         r = self.client.put(
-            reverse("v1:adgroups_details", kwargs={"ad_group_id": 2040}), data=test_adgroup, format="json"
+            reverse("restapi.adgroup.v1:adgroups_details", kwargs={"ad_group_id": 2040}),
+            data=test_adgroup,
+            format="json",
         )
         resp_json = self.assertResponseValid(r)
         self.validate_against_db(resp_json["data"])
@@ -426,19 +450,23 @@ class AdGroupViewSetTest(RESTAPITest):
             id=2040, campaign_id=608, autopilot_state=constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET
         )
         r = self.client.put(
-            reverse("v1:adgroups_details", kwargs={"ad_group_id": 2040}), data=test_adgroup, format="json"
+            reverse("restapi.adgroup.v1:adgroups_details", kwargs={"ad_group_id": 2040}),
+            data=test_adgroup,
+            format="json",
         )
         self.assertResponseError(r, "ValidationError")
 
     def test_adgroups_post_high_cpc(self):
         new_ad_group = self.adgroup_repr(campaign_id=608, name="Test Group", max_cpc=Decimal("9000"))
         del new_ad_group["id"]
-        r = self.client.post(reverse("v1:adgroups_list"), data=new_ad_group, format="json")
+        r = self.client.post(reverse("restapi.adgroup.v1:adgroups_list"), data=new_ad_group, format="json")
         self.assertResponseError(r, "ValidationError")
 
     def test_adgroups_put_low_cpc(self):
         adgroup = self.adgroup_repr(max_cpc="0.0")
-        r = self.client.put(reverse("v1:adgroups_details", kwargs={"ad_group_id": 2040}), data=adgroup, format="json")
+        r = self.client.put(
+            reverse("restapi.adgroup.v1:adgroups_details", kwargs={"ad_group_id": 2040}), data=adgroup, format="json"
+        )
         self.assertResponseError(r, "ValidationError")
 
     def test_adgroups_post_high_cpm(self):
@@ -446,14 +474,16 @@ class AdGroupViewSetTest(RESTAPITest):
             campaign_id=608, name="Test Group", max_cpm=Decimal("9000"), bidding_type=constants.BiddingType.CPM
         )
         del new_ad_group["id"]
-        r = self.client.post(reverse("v1:adgroups_list"), data=new_ad_group, format="json")
+        r = self.client.post(reverse("restapi.adgroup.v1:adgroups_list"), data=new_ad_group, format="json")
         resp_json = json.loads(r.content)
         self.assertResponseError(r, "ValidationError")
         self.assertTrue("25" in resp_json["details"]["maxCpm"][0])
 
     def test_adgroups_put_low_cpm(self):
         adgroup = self.adgroup_repr(bidding_type=constants.BiddingType.CPM, max_cpm="0.0")
-        r = self.client.put(reverse("v1:adgroups_details", kwargs={"ad_group_id": 2040}), data=adgroup, format="json")
+        r = self.client.put(
+            reverse("restapi.adgroup.v1:adgroups_details", kwargs={"ad_group_id": 2040}), data=adgroup, format="json"
+        )
         resp_json = json.loads(r.content)
         self.assertResponseError(r, "ValidationError")
         self.assertTrue("0.05" in resp_json["details"]["maxCpm"][0])
@@ -463,7 +493,9 @@ class AdGroupViewSetTest(RESTAPITest):
             start_date=datetime.date.today() + datetime.timedelta(days=10),
             end_date=datetime.date.today() + datetime.timedelta(days=7),
         )
-        r = self.client.put(reverse("v1:adgroups_details", kwargs={"ad_group_id": 2040}), data=adgroup, format="json")
+        r = self.client.put(
+            reverse("restapi.adgroup.v1:adgroups_details", kwargs={"ad_group_id": 2040}), data=adgroup, format="json"
+        )
         self.assertResponseError(r, "ValidationError")
 
     def test_adgroups_put_end_date_in_the_past(self):
@@ -472,28 +504,36 @@ class AdGroupViewSetTest(RESTAPITest):
             end_date=datetime.date.today() + datetime.timedelta(days=7),
             state=constants.AdGroupSettingsState.ACTIVE,
         )
-        r = self.client.put(reverse("v1:adgroups_details", kwargs={"ad_group_id": 2040}), data=adgroup, format="json")
+        r = self.client.put(
+            reverse("restapi.adgroup.v1:adgroups_details", kwargs={"ad_group_id": 2040}), data=adgroup, format="json"
+        )
         self.assertResponseError(r, "ValidationError")
 
     def test_adgroups_put_invalid_tracking_code(self):
         adgroup = self.adgroup_repr(tracking_code="_[]...")
-        r = self.client.put(reverse("v1:adgroups_details", kwargs={"ad_group_id": 2040}), data=adgroup, format="json")
+        r = self.client.put(
+            reverse("restapi.adgroup.v1:adgroups_details", kwargs={"ad_group_id": 2040}), data=adgroup, format="json"
+        )
         self.assertResponseError(r, "ValidationError")
 
     def test_adgroups_post_no_targets(self):
         new_ad_group = self.adgroup_repr(campaign_id=608, name="Test Group", target_devices=[])
         del new_ad_group["id"]
-        r = self.client.post(reverse("v1:adgroups_list"), data=new_ad_group, format="json")
+        r = self.client.post(reverse("restapi.adgroup.v1:adgroups_list"), data=new_ad_group, format="json")
         self.assertResponseError(r, "ValidationError")
 
     def test_adgroups_put_invalid_timezone(self):
         adgroup = self.adgroup_repr(dayparting={"timezone": "incorrectzone"})
-        r = self.client.put(reverse("v1:adgroups_details", kwargs={"ad_group_id": 2040}), data=adgroup, format="json")
+        r = self.client.put(
+            reverse("restapi.adgroup.v1:adgroups_details", kwargs={"ad_group_id": 2040}), data=adgroup, format="json"
+        )
         self.assertResponseError(r, "ValidationError")
 
     def test_adgroups_put_invalid_hour(self):
         adgroup = self.adgroup_repr(dayparting={"friday": [0, 1, 25]})
-        r = self.client.put(reverse("v1:adgroups_details", kwargs={"ad_group_id": 2040}), data=adgroup, format="json")
+        r = self.client.put(
+            reverse("restapi.adgroup.v1:adgroups_details", kwargs={"ad_group_id": 2040}), data=adgroup, format="json"
+        )
         self.assertResponseError(r, "ValidationError")
 
     def test_adgroups_invalid_bluekai_targeting(self):
@@ -501,7 +541,9 @@ class AdGroupViewSetTest(RESTAPITest):
         adgroup = self.adgroup_repr(
             audience_targeting=restapi.serializers.targeting.AudienceSerializer(demographic_targeting).data
         )
-        r = self.client.put(reverse("v1:adgroups_details", kwargs={"ad_group_id": 2040}), data=adgroup, format="json")
+        r = self.client.put(
+            reverse("restapi.adgroup.v1:adgroups_details", kwargs={"ad_group_id": 2040}), data=adgroup, format="json"
+        )
         self.assertResponseError(r, "ValidationError")
 
     def test_adgroups_get_permissioned(self):
@@ -514,7 +556,7 @@ class AdGroupViewSetTest(RESTAPITest):
                 "can_use_language_targeting",
             ],
         )
-        r = self.client.get(reverse("v1:adgroups_details", kwargs={"ad_group_id": 2040}))
+        r = self.client.get(reverse("restapi.adgroup.v1:adgroups_details", kwargs={"ad_group_id": 2040}))
         resp_json = self.assertResponseValid(r)
         self.assertFalse("clickCappingDailyAdGroupMaxClicks" in resp_json["data"])
         self.assertFalse("clickCappingDailyClickBudget" in resp_json["data"])
@@ -541,7 +583,9 @@ class AdGroupViewSetTest(RESTAPITest):
             dayparting={"timezone": ""},
             frequency_capping="",
         )
-        r = self.client.put(reverse("v1:adgroups_details", kwargs={"ad_group_id": 2040}), data=adgroup, format="json")
+        r = self.client.put(
+            reverse("restapi.adgroup.v1:adgroups_details", kwargs={"ad_group_id": 2040}), data=adgroup, format="json"
+        )
         resp_json = self.assertResponseValid(r)
         self.validate_against_db(resp_json["data"])
         self.assertEqual(resp_json["data"]["endDate"], self.expected_none_date_output)
@@ -565,7 +609,9 @@ class AdGroupViewSetTest(RESTAPITest):
         self.assertEqual(Decimal("3.1000"), ad_group.settings.max_cpm)
 
         data = self.adgroup_repr(max_cpc="", max_cpm="")
-        r = self.client.put(reverse("v1:adgroups_details", kwargs={"ad_group_id": 2040}), data=data, format="json")
+        r = self.client.put(
+            reverse("restapi.adgroup.v1:adgroups_details", kwargs={"ad_group_id": 2040}), data=data, format="json"
+        )
         resp_json = self.assertResponseValid(r)
         self.validate_against_db(resp_json["data"])
         self.assertEqual(resp_json["data"]["maxCpm"], self.expected_none_decimal_output)
@@ -579,7 +625,9 @@ class AdGroupViewSetTest(RESTAPITest):
         self.assertEqual(Decimal("3.1000"), ad_group.settings.max_cpm)
 
         data["biddingType"] = "CPM"
-        r = self.client.put(reverse("v1:adgroups_details", kwargs={"ad_group_id": 2040}), data=data, format="json")
+        r = self.client.put(
+            reverse("restapi.adgroup.v1:adgroups_details", kwargs={"ad_group_id": 2040}), data=data, format="json"
+        )
         resp_json = self.assertResponseValid(r)
         self.validate_against_db(resp_json["data"])
         self.assertEqual(resp_json["data"]["maxCpm"], self.expected_none_decimal_output)
@@ -603,7 +651,9 @@ class AdGroupViewSetTest(RESTAPITest):
             target_regions={},
             frequency_capping=None,
         )
-        r = self.client.put(reverse("v1:adgroups_details", kwargs={"ad_group_id": 2040}), data=adgroup, format="json")
+        r = self.client.put(
+            reverse("restapi.adgroup.v1:adgroups_details", kwargs={"ad_group_id": 2040}), data=adgroup, format="json"
+        )
         resp_json = self.assertResponseValid(r)
         self.validate_against_db(resp_json["data"])
         self.assertEqual(resp_json["data"]["endDate"], self.expected_none_date_output)
@@ -625,28 +675,40 @@ class AdGroupViewSetTest(RESTAPITest):
 
     def test_adgroups_publisher_groups(self):
         adgroup = self.adgroup_repr(whitelist_publisher_groups=[153], blacklist_publisher_groups=[154])
-        r = self.client.put(reverse("v1:adgroups_details", kwargs={"ad_group_id": 2040}), data=adgroup, format="json")
+        r = self.client.put(
+            reverse("restapi.adgroup.v1:adgroups_details", kwargs={"ad_group_id": 2040}), data=adgroup, format="json"
+        )
         resp_json = self.assertResponseValid(r)
         self.validate_against_db(resp_json["data"])
 
         adgroup = self.adgroup_repr(whitelist_publisher_groups=[1])
-        r = self.client.put(reverse("v1:adgroups_details", kwargs={"ad_group_id": 2040}), data=adgroup, format="json")
+        r = self.client.put(
+            reverse("restapi.adgroup.v1:adgroups_details", kwargs={"ad_group_id": 2040}), data=adgroup, format="json"
+        )
         self.assertResponseError(r, "ValidationError")
 
         adgroup = self.adgroup_repr(blacklist_publisher_groups=[2])
-        r = self.client.put(reverse("v1:adgroups_details", kwargs={"ad_group_id": 2040}), data=adgroup, format="json")
+        r = self.client.put(
+            reverse("restapi.adgroup.v1:adgroups_details", kwargs={"ad_group_id": 2040}), data=adgroup, format="json"
+        )
         self.assertResponseError(r, "ValidationError")
 
     def test_adgroups_custom_audiences(self):
         adgroup = self.adgroup_repr(audience_targeting=[123], exclusion_audience_targeting=[124])
-        r = self.client.put(reverse("v1:adgroups_details", kwargs={"ad_group_id": 2040}), data=adgroup, format="json")
+        r = self.client.put(
+            reverse("restapi.adgroup.v1:adgroups_details", kwargs={"ad_group_id": 2040}), data=adgroup, format="json"
+        )
         resp_json = self.assertResponseValid(r)
         self.validate_against_db(resp_json["data"])
 
         adgroup = self.adgroup_repr(audience_targeting=[1])
-        r = self.client.put(reverse("v1:adgroups_details", kwargs={"ad_group_id": 2040}), data=adgroup, format="json")
+        r = self.client.put(
+            reverse("restapi.adgroup.v1:adgroups_details", kwargs={"ad_group_id": 2040}), data=adgroup, format="json"
+        )
         self.assertResponseError(r, "ValidationError")
 
         adgroup = self.adgroup_repr(exclusion_audience_targeting=[2])
-        r = self.client.put(reverse("v1:adgroups_details", kwargs={"ad_group_id": 2040}), data=adgroup, format="json")
+        r = self.client.put(
+            reverse("restapi.adgroup.v1:adgroups_details", kwargs={"ad_group_id": 2040}), data=adgroup, format="json"
+        )
         self.assertResponseError(r, "ValidationError")

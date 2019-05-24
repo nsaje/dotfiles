@@ -12,7 +12,7 @@ from restapi.common.views_base_test import RESTAPITest
 from utils.magic_mixer import magic_mixer
 
 
-class CampaignsTest(RESTAPITest):
+class CampaignViewSetTest(RESTAPITest):
     @classmethod
     def campaign_repr(
         cls,
@@ -90,14 +90,16 @@ class CampaignsTest(RESTAPITest):
         self.assertEqual(expected, campaign)
 
     def test_campaigns_get(self):
-        r = self.client.get(reverse("campaigns_details", kwargs={"campaign_id": 308}))
+        r = self.client.get(reverse("restapi.campaign.v1:campaigns_details", kwargs={"campaign_id": 308}))
         resp_json = self.assertResponseValid(r)
         self.validate_against_db(resp_json["data"])
 
     def test_campaigns_put(self):
         test_campaign = self.campaign_repr(id=608, account_id=186, name="My test campaign!", frequency_capping=33)
         r = self.client.put(
-            reverse("campaigns_details", kwargs={"campaign_id": 608}), data=test_campaign, format="json"
+            reverse("restapi.campaign.v1:campaigns_details", kwargs={"campaign_id": 608}),
+            data=test_campaign,
+            format="json",
         )
         resp_json = self.assertResponseValid(r)
         self.validate_against_db(resp_json["data"])
@@ -106,7 +108,9 @@ class CampaignsTest(RESTAPITest):
     def test_campaigns_put_empty(self):
         put_data = {}
         settings_count = dash.models.CampaignSettings.objects.filter(campaign_id=608).count()
-        r = self.client.put(reverse("campaigns_details", kwargs={"campaign_id": 608}), data=put_data, format="json")
+        r = self.client.put(
+            reverse("restapi.campaign.v1:campaigns_details", kwargs={"campaign_id": 608}), data=put_data, format="json"
+        )
         resp_json = self.assertResponseValid(r)
         self.validate_against_db(resp_json["data"])
         self.assertEqual(settings_count, dash.models.CampaignSettings.objects.filter(campaign_id=608).count())
@@ -114,7 +118,9 @@ class CampaignsTest(RESTAPITest):
     @mock.patch.object(autopilot, "recalculate_budgets_campaign", autospec=True)
     def test_campaigns_put_autopilot(self, mock_autopilot):
         r = self.client.put(
-            reverse("campaigns_details", kwargs={"campaign_id": 608}), data={"autopilot": True}, format="json"
+            reverse("restapi.campaign.v1:campaigns_details", kwargs={"campaign_id": 608}),
+            data={"autopilot": True},
+            format="json",
         )
         resp_json = self.assertResponseValid(r)
         self.validate_against_db(resp_json["data"])
@@ -122,28 +128,32 @@ class CampaignsTest(RESTAPITest):
 
     def test_campaigns_put_archive_restore(self):
         r = self.client.put(
-            reverse("campaigns_details", kwargs={"campaign_id": 308}), data={"archived": True}, format="json"
+            reverse("restapi.campaign.v1:campaigns_details", kwargs={"campaign_id": 308}),
+            data={"archived": True},
+            format="json",
         )
         resp_json = self.assertResponseValid(r)
         self.validate_against_db(resp_json["data"])
         self.assertEqual(resp_json["data"]["archived"], True)
 
         r = self.client.put(
-            reverse("campaigns_details", kwargs={"campaign_id": 308}), data={"archived": False}, format="json"
+            reverse("restapi.campaign.v1:campaigns_details", kwargs={"campaign_id": 308}),
+            data={"archived": False},
+            format="json",
         )
         resp_json = self.assertResponseValid(r)
         self.validate_against_db(resp_json["data"])
         self.assertEqual(resp_json["data"]["archived"], False)
 
     def test_campaigns_list(self):
-        r = self.client.get(reverse("campaigns_list"))
+        r = self.client.get(reverse("restapi.campaign.v1:campaigns_list"))
         resp_json = self.assertResponseValid(r, data_type=list)
         for item in resp_json["data"]:
             self.validate_against_db(item)
 
     def test_campaigns_list_permissionless(self):
         utils.test_helper.remove_permissions(self.user, permissions=["can_set_frequency_capping"])
-        r = self.client.get(reverse("campaigns_list"))
+        r = self.client.get(reverse("restapi.campaign.v1:campaigns_list"))
         resp_json = self.assertResponseValid(r, data_type=list)
         for item in resp_json["data"]:
             self.assertFalse("frequencyCapping" in item)
@@ -152,21 +162,23 @@ class CampaignsTest(RESTAPITest):
 
     def test_campaigns_list_account_id(self):
         account_id = 186
-        r = self.client.get(reverse("campaigns_list"), data={"accountId": account_id})
+        r = self.client.get(reverse("restapi.campaign.v1:campaigns_list"), data={"accountId": account_id})
         resp_json = self.assertResponseValid(r, data_type=list)
         for item in resp_json["data"]:
             self.validate_against_db(item)
             self.assertEqual(int(item["accountId"]), account_id)
 
     def test_campaigns_list_account_id_invalid(self):
-        r = self.client.get(reverse("campaigns_list"), data={"accountId": 1000})
+        r = self.client.get(reverse("restapi.campaign.v1:campaigns_list"), data={"accountId": 1000})
         self.assertResponseError(r, "MissingDataError")
 
     def test_campaigns_list_pagination(self):
         account = magic_mixer.blend(dash.models.Account, users=[self.user])
         magic_mixer.cycle(10).blend(dash.models.Campaign, account=account)
-        r = self.client.get(reverse("campaigns_list"), {"accountId": account.id})
-        r_paginated = self.client.get(reverse("campaigns_list"), {"accountId": account.id, "limit": 2, "offset": 5})
+        r = self.client.get(reverse("restapi.campaign.v1:campaigns_list"), {"accountId": account.id})
+        r_paginated = self.client.get(
+            reverse("restapi.campaign.v1:campaigns_list"), {"accountId": account.id, "limit": 2, "offset": 5}
+        )
         resp_json = self.assertResponseValid(r, data_type=list)
         resp_json_paginated = self.assertResponseValid(r_paginated, data_type=list)
         self.assertEqual(resp_json["data"][5:7], resp_json_paginated["data"])
@@ -175,7 +187,7 @@ class CampaignsTest(RESTAPITest):
         account = magic_mixer.blend(dash.models.Account, users=[self.user])
         magic_mixer.cycle(3).blend(dash.models.Campaign, account=account, archived=False)
         magic_mixer.cycle(2).blend(dash.models.Campaign, account=account, archived=True)
-        r = self.client.get(reverse("campaigns_list"), {"accountId": account.id})
+        r = self.client.get(reverse("restapi.campaign.v1:campaigns_list"), {"accountId": account.id})
         resp_json = self.assertResponseValid(r, data_type=list)
         self.assertEqual(3, len(resp_json["data"]))
         for item in resp_json["data"]:
@@ -186,7 +198,9 @@ class CampaignsTest(RESTAPITest):
         account = magic_mixer.blend(dash.models.Account, users=[self.user])
         magic_mixer.cycle(3).blend(dash.models.Campaign, account=account, archived=False)
         magic_mixer.cycle(2).blend(dash.models.Campaign, account=account, archived=True)
-        r = self.client.get(reverse("campaigns_list"), {"accountId": account.id, "includeArchived": "true"})
+        r = self.client.get(
+            reverse("restapi.campaign.v1:campaigns_list"), {"accountId": account.id, "includeArchived": "true"}
+        )
         resp_json = self.assertResponseValid(r, data_type=list)
         self.assertEqual(5, len(resp_json["data"]))
         for item in resp_json["data"]:
@@ -204,7 +218,7 @@ class CampaignsTest(RESTAPITest):
             frequency_capping=33,
         )
         del new_campaign["id"]
-        r = self.client.post(reverse("campaigns_list"), data=new_campaign, format="json")
+        r = self.client.post(reverse("restapi.campaign.v1:campaigns_list"), data=new_campaign, format="json")
         resp_json = self.assertResponseValid(r, data_type=dict, status_code=201)
         self.validate_against_db(resp_json["data"])
         new_campaign["id"] = resp_json["data"]["id"]
@@ -225,7 +239,7 @@ class CampaignsTest(RESTAPITest):
             frequency_capping=33,
         )
         del new_campaign["id"]
-        r = self.client.post(reverse("campaigns_list"), data=new_campaign, format="json")
+        r = self.client.post(reverse("restapi.campaign.v1:campaigns_list"), data=new_campaign, format="json")
         self.assertResponseError(r, "ValidationError")
         self.assertEqual(
             ["Can not create a campaign on an archived account."], json.loads(r.content)["details"]["accountId"]
@@ -237,7 +251,7 @@ class CampaignsTest(RESTAPITest):
         new_campaign = self.campaign_repr(account_id=186, name="All About Testing", frequency_capping=33)
         del new_campaign["id"]
         del new_campaign["type"]
-        r = self.client.post(reverse("campaigns_list"), data=new_campaign, format="json")
+        r = self.client.post(reverse("restapi.campaign.v1:campaigns_list"), data=new_campaign, format="json")
         resp_json = self.assertResponseValid(r, data_type=dict, status_code=201)
         self.validate_against_db(resp_json["data"])
         new_campaign["id"] = resp_json["data"]["id"]
@@ -251,7 +265,7 @@ class CampaignsTest(RESTAPITest):
         )
         del new_campaign["id"]
         del new_campaign["accountId"]
-        r = self.client.post(reverse("campaigns_list"), data=new_campaign, format="json")
+        r = self.client.post(reverse("restapi.campaign.v1:campaigns_list"), data=new_campaign, format="json")
         self.assertResponseError(r, "ValidationError")
 
     def test_campaigns_post_wrong_account_id(self):
@@ -259,7 +273,7 @@ class CampaignsTest(RESTAPITest):
             account_id=1000, name="Over 9000", whitelist_publisher_groups=[153, 154], blacklist_publisher_groups=[]
         )
         del new_campaign["id"]
-        r = self.client.post(reverse("campaigns_list"), data=new_campaign, format="json")
+        r = self.client.post(reverse("restapi.campaign.v1:campaigns_list"), data=new_campaign, format="json")
         self.assertResponseError(r, "MissingDataError")
 
     def test_iab_tier_1(self):
@@ -267,14 +281,18 @@ class CampaignsTest(RESTAPITest):
             id=608, account_id=186, name="My test campaign!", iab_category=constants.IABCategory.IAB21
         )
         r = self.client.put(
-            reverse("campaigns_details", kwargs={"campaign_id": 608}), data=test_campaign, format="json"
+            reverse("restapi.campaign.v1:campaigns_details", kwargs={"campaign_id": 608}),
+            data=test_campaign,
+            format="json",
         )
         self.assertResponseError(r, "ValidationError")
 
     def test_ga_property_id_validation(self):
         test_campaign = self.campaign_repr(id=608, account_id=186, name="My test campaign!", ga_property_id="PID")
         r = self.client.put(
-            reverse("campaigns_details", kwargs={"campaign_id": 608}), data=test_campaign, format="json"
+            reverse("restapi.campaign.v1:campaigns_details", kwargs={"campaign_id": 608}),
+            data=test_campaign,
+            format="json",
         )
         self.assertResponseError(r, "ValidationError")
 
@@ -283,7 +301,9 @@ class CampaignsTest(RESTAPITest):
             id=608, account_id=186, name="My test campaign!", language=constants.Language.ARABIC
         )
         r = self.client.put(
-            reverse("campaigns_details", kwargs={"campaign_id": 608}), data=test_campaign, format="json"
+            reverse("restapi.campaign.v1:campaigns_details", kwargs={"campaign_id": 608}),
+            data=test_campaign,
+            format="json",
         )
         self.assertResponseError(r, "ValidationError")
 
@@ -292,7 +312,9 @@ class CampaignsTest(RESTAPITest):
             id=608, account_id=186, name="Adobe tracking campaign", adobe_tracking_param=""
         )
         r = self.client.put(
-            reverse("campaigns_details", kwargs={"campaign_id": 608}), data=test_campaign, format="json"
+            reverse("restapi.campaign.v1:campaigns_details", kwargs={"campaign_id": 608}),
+            data=test_campaign,
+            format="json",
         )
         resp_json = self.assertResponseValid(r)
         self.validate_against_db(resp_json["data"])
@@ -302,20 +324,26 @@ class CampaignsTest(RESTAPITest):
             id=608, account_id=186, whitelist_publisher_groups=[153], blacklist_publisher_groups=[154]
         )
         r = self.client.put(
-            reverse("campaigns_details", kwargs={"campaign_id": 608}), data=test_campaign, format="json"
+            reverse("restapi.campaign.v1:campaigns_details", kwargs={"campaign_id": 608}),
+            data=test_campaign,
+            format="json",
         )
         resp_json = self.assertResponseValid(r)
         self.validate_against_db(resp_json["data"])
 
         test_campaign = self.campaign_repr(id=608, account_id=186, whitelist_publisher_groups=[1])
         r = self.client.put(
-            reverse("campaigns_details", kwargs={"campaign_id": 608}), data=test_campaign, format="json"
+            reverse("restapi.campaign.v1:campaigns_details", kwargs={"campaign_id": 608}),
+            data=test_campaign,
+            format="json",
         )
         self.assertResponseError(r, "ValidationError")
 
         test_campaign = self.campaign_repr(id=608, account_id=186, blacklist_publisher_groups=[2])
         r = self.client.put(
-            reverse("campaigns_details", kwargs={"campaign_id": 608}), data=test_campaign, format="json"
+            reverse("restapi.campaign.v1:campaigns_details", kwargs={"campaign_id": 608}),
+            data=test_campaign,
+            format="json",
         )
         self.assertResponseError(r, "ValidationError")
 
@@ -324,6 +352,8 @@ class CampaignsTest(RESTAPITest):
         magic_mixer.blend(dash.models.AdGroup, campaign=campaign)
         test_campaign = self.campaign_repr(id=608, account_id=186, type=constants.CampaignType.DISPLAY)
         r = self.client.put(
-            reverse("campaigns_details", kwargs={"campaign_id": 608}), data=test_campaign, format="json"
+            reverse("restapi.campaign.v1:campaigns_details", kwargs={"campaign_id": 608}),
+            data=test_campaign,
+            format="json",
         )
         self.assertResponseError(r, "ValidationError")

@@ -1,5 +1,6 @@
 import rest_framework.serializers
 
+import restapi.serializers.base
 import restapi.serializers.fields
 from core.features.deals import DirectDeal
 from core.features.deals import DirectDealConnection
@@ -24,3 +25,13 @@ class DirectDealConnectionSerializer(rest_framework.serializers.Serializer):
     adgroup = restapi.serializers.fields.IdField(source="adgroup.id", allow_null=True)
     deals = DirectDealSerializer(many=True, required=True)
     level = rest_framework.serializers.CharField()
+
+
+class DealSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
+    level = rest_framework.serializers.CharField(required=False)
+    direct_deal_connection_id = rest_framework.serializers.IntegerField(required=False)
+    deal_id = rest_framework.serializers.CharField(required=False)
+    source = rest_framework.serializers.CharField(required=False)
+    exclusive = rest_framework.serializers.BooleanField(default=False, required=False)
+    description = rest_framework.serializers.CharField(required=False)
+    is_applied = rest_framework.serializers.BooleanField(default=False, required=False)

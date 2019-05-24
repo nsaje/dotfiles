@@ -17,6 +17,7 @@ from dash import constants
 from utils.json_helper import JSONFIELD_DUMP_KWARGS
 
 from . import instance
+from . import manager
 from . import validation
 from .. import helpers
 from ..settings_base import SettingsBase
@@ -27,6 +28,8 @@ class CampaignSettings(validation.CampaignSettingsValidatorMixin, instance.Campa
     class Meta:
         app_label = "dash"
         ordering = ("-created_dt",)
+
+    objects = manager.CampaignSettingsManager()
 
     _demo_fields = {"name": utils.demo_anonymizer.campaign_name_from_pool}
     _settings_fields = [
@@ -105,8 +108,6 @@ class CampaignSettings(validation.CampaignSettingsValidatorMixin, instance.Campa
     changes_text = models.TextField(blank=True, null=True)
 
     frequency_capping = models.PositiveIntegerField(blank=True, null=True)
-
-    objects = core.common.QuerySetManager()
 
     def add_to_history(self, user, action_type, changes, history_changes_text=None):
         changes_text = history_changes_text or self.get_changes_text_from_dict(changes)

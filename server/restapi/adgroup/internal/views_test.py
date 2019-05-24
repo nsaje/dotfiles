@@ -9,17 +9,17 @@ from utils.magic_mixer import magic_mixer
 
 class AdGroupViewSetTest(RESTAPITest):
     def test_validate_empty(self):
-        r = self.client.post(reverse("internal:adgroups_validate"))
+        r = self.client.post(reverse("restapi.adgroup.internal:adgroups_validate"))
         self.assertResponseValid(r, data_type=type(None))
 
     def test_validate(self):
         data = {"name": "My ad group 1", "campaignId": "123"}
-        r = self.client.post(reverse("internal:adgroups_validate"), data=data, format="json")
+        r = self.client.post(reverse("restapi.adgroup.internal:adgroups_validate"), data=data, format="json")
         self.assertResponseValid(r, data_type=type(None))
 
     def test_validate_error(self):
         data = {"name": None, "campaignId": None}
-        r = self.client.post(reverse("internal:adgroups_validate"), data=data, format="json")
+        r = self.client.post(reverse("restapi.adgroup.internal:adgroups_validate"), data=data, format="json")
         r = self.assertResponseError(r, "ValidationError")
         self.assertIn("This field may not be null.", r["details"]["name"][0])
         self.assertIn("This field may not be null.", r["details"]["campaignId"][0])
@@ -52,7 +52,7 @@ class AdGroupViewSetTest(RESTAPITest):
         account = magic_mixer.blend(core.models.Account, agency=agency, users=[self.user])
         campaign = magic_mixer.blend(core.models.Campaign, account=account)
 
-        r = self.client.get(reverse("internal:adgroups_defaults"), {"campaignId": campaign.id})
+        r = self.client.get(reverse("restapi.adgroup.internal:adgroups_defaults"), {"campaignId": campaign.id})
         resp_json = self.assertResponseValid(r)
 
         self.assertEqual(resp_json["data"]["name"], "New ad group")
@@ -68,7 +68,7 @@ class AdGroupViewSetTest(RESTAPITest):
                 "canRestore": False,
                 "isCampaignAutopilotEnabled": False,
                 "accountId": 12345,
-                "currency": dash.constants.Currency.USD,
+                "currency": dash.constants.Currency.get_name(dash.constants.Currency.USD),
                 "optimizationObjective": "",
                 "defaultSettings": {
                     "targetRegions": {"countries": [], "regions": [], "dma": [], "cities": [], "postalCodes": []},
@@ -126,7 +126,7 @@ class AdGroupViewSetTest(RESTAPITest):
         settings.redirect_javascript = "alert('a')"
         settings.save(None)
 
-        r = self.client.get(reverse("internal:adgroups_details", kwargs={"ad_group_id": ad_group.id}))
+        r = self.client.get(reverse("restapi.adgroup.internal:adgroups_details", kwargs={"ad_group_id": ad_group.id}))
         resp_json = self.assertResponseValid(r)
 
         self.assertIsNone(resp_json["data"].get("dailyBudget"))
@@ -141,7 +141,7 @@ class AdGroupViewSetTest(RESTAPITest):
                 "canRestore": False,
                 "isCampaignAutopilotEnabled": False,
                 "accountId": 12345,
-                "currency": dash.constants.Currency.USD,
+                "currency": dash.constants.Currency.get_name(dash.constants.Currency.USD),
                 "optimizationObjective": dash.constants.CampaignGoalKPI.get_name(dash.constants.CampaignGoalKPI.CPC),
                 "defaultSettings": {
                     "targetRegions": {"countries": [], "regions": [], "dma": [], "cities": [], "postalCodes": []},
@@ -176,7 +176,7 @@ class AdGroupViewSetTest(RESTAPITest):
         settings.save(None)
 
         self.client.put(
-            reverse("internal:adgroups_details", kwargs={"ad_group_id": ad_group.id}),
+            reverse("restapi.adgroup.internal:adgroups_details", kwargs={"ad_group_id": ad_group.id}),
             data={"manage_rtb_sources_as_one": True},
             format="json",
         )

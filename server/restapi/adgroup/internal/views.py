@@ -1,5 +1,6 @@
+import rest_framework.permissions
+import rest_framework.serializers
 from django.db import transaction
-from rest_framework import permissions
 
 import core.models
 import restapi.access
@@ -11,7 +12,7 @@ from . import serializers
 
 
 class AdGroupViewSet(restapi.adgroup.v1.views.AdGroupViewSet):
-    permission_classes = (permissions.IsAuthenticated,)
+    permission_classes = (rest_framework.permissions.IsAuthenticated,)
 
     def validate(self, request):
         serializer = serializers.AdGroupSerializer(data=request.data, partial=True, context={"request": request})
@@ -21,7 +22,7 @@ class AdGroupViewSet(restapi.adgroup.v1.views.AdGroupViewSet):
     def defaults(self, request):
         campaign_id = request.query_params.get("campaignId", None)
         if not campaign_id:
-            raise serializers.ValidationError("Must pass campaignId parameter")
+            raise rest_framework.serializers.ValidationError("Must pass campaignId parameter")
         campaign = restapi.access.get_campaign(request.user, campaign_id)
         ad_group = core.models.AdGroup.objects.get_restapi_default(request, campaign)
         extra_data = helpers.get_extra_data(request.user, ad_group)
@@ -48,7 +49,11 @@ class AdGroupViewSet(restapi.adgroup.v1.views.AdGroupViewSet):
             )
         serializer = serializers.AdGroupSerializer(data=request.data, partial=True, context={"request": request})
         serializer.is_valid(raise_exception=True)
-        self._update_settings(request, ad_group, serializer.validated_data)
+
+        with transaction.atomic():
+            # TODO: hacks.override_ad_group_settings_form_data
+            self._update_settings(request, ad_group, serializer.validated_data)
+
         return self.response_ok(serializers.AdGroupSerializer(ad_group.settings, context={"request": request}).data)
 
     def create(self, request):
@@ -61,6 +66,7 @@ class AdGroupViewSet(restapi.adgroup.v1.views.AdGroupViewSet):
             new_ad_group = core.models.AdGroup.objects.create(
                 request, campaign=campaign, name=settings.get("ad_group_name", None), is_restapi=True
             )
+            # TODO: hacks.override_ad_group_settings_form_data
             self._update_settings(request, new_ad_group, settings)
 
         return self.response_ok(
