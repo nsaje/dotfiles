@@ -66,11 +66,12 @@ def get_loader_for_dimension(target_dimension, level):
 
 
 class Loader(object):
-    def __init__(self, objs_qs, start_date=None, end_date=None):
+    def __init__(self, objs_qs, start_date=None, end_date=None, include_entity_tags=None):
         self.objs_qs = objs_qs
 
         self._start_date = start_date
         self._end_date = end_date
+        self._include_entity_tags = include_entity_tags if include_entity_tags is not None else False
 
     @classmethod
     def _get_obj_id(cls, obj):
@@ -96,6 +97,10 @@ class Loader(object):
             raise Exception("End date not set")
         return self._end_date
 
+    @property
+    def include_entity_tags(self):
+        return self._include_entity_tags
+
 
 class AccountsLoader(Loader):
     def __init__(self, accounts_qs, filtered_sources_qs, user, **kwargs):
@@ -113,6 +118,7 @@ class AccountsLoader(Loader):
             user,
             start_date=constraints.get("date__gte"),
             end_date=constraints.get("date__lte"),
+            include_entity_tags=constraints.get("include_entity_tags"),
         )
 
     @cached_property
@@ -278,6 +284,7 @@ class CampaignsLoader(Loader):
             user,
             start_date=constraints.get("date__gte"),
             end_date=constraints.get("date__lte"),
+            include_entity_tags=constraints.get("include_entity_tags"),
         )
 
     @cached_property
@@ -376,17 +383,20 @@ class CampaignsLoader(Loader):
 
 
 class AdGroupsLoader(Loader):
-    def __init__(self, ad_groups_qs, filtered_sources_qs, **kwargs):
+    def __init__(self, ad_groups_qs, filtered_sources_qs, user, **kwargs):
         super(AdGroupsLoader, self).__init__(ad_groups_qs.select_related("campaign__account", "settings"), **kwargs)
         self.filtered_sources_qs = filtered_sources_qs
+        self.user = user
 
     @classmethod
     def from_constraints(cls, user, constraints, **kwargs):
         return cls(
             constraints["allowed_ad_groups"],
             constraints["filtered_sources"],
+            user,
             start_date=constraints.get("date__gte"),
             end_date=constraints.get("date__lte"),
+            include_entity_tags=constraints.get("include_entity_tags"),
         )
 
     @cached_property
@@ -463,7 +473,7 @@ class ContentAdsLoader(Loader):
     def ad_group_loader(self):
         ad_groups_qs = models.AdGroup.objects.filter(pk__in=set(x.ad_group_id for x in self.objs_qs))
 
-        return AdGroupsLoader(ad_groups_qs, self.filtered_sources_qs)
+        return AdGroupsLoader(ad_groups_qs, self.filtered_sources_qs, self.user)
 
     @cached_property
     def ad_group_map(self):
@@ -772,6 +782,7 @@ class SourcesLoader(Loader):
             constraints["filtered_sources"],
             start_date=constraints.get("date__gte"),
             end_date=constraints.get("date__lte"),
+            include_entity_tags=constraints.get("include_entity_tags"),
         )
 
     @cached_property

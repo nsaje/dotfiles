@@ -24,6 +24,7 @@ from core import models
 from core.features import bcm
 from core.features.goals import campaign_goal
 from core.features.goals import campaign_goal_value
+from core.models.tags import helpers as tag_helpers
 from dash import constants
 from redshiftapi import db
 from utils import bigquery_helper
@@ -393,10 +394,10 @@ def _normalize_row(row):
     _normalize_array(row, "target_placements")
     _normalize_array(row, "target_devices")
 
-    row["agency_tags"] = _tags_to_string(row["agency_tags"])
-    row["account_tags"] = _tags_to_string(row["account_tags"])
-    row["campaign_tags"] = _tags_to_string(row["campaign_tags"])
-    row["adgroup_tags"] = _tags_to_string(row["adgroup_tags"])
+    row["agency_tags"] = tag_helpers.entity_tag_names_to_string(row["agency_tags"])
+    row["account_tags"] = tag_helpers.entity_tag_names_to_string(row["account_tags"])
+    row["campaign_tags"] = tag_helpers.entity_tag_names_to_string(row["campaign_tags"])
+    row["adgroup_tags"] = tag_helpers.entity_tag_names_to_string(row["adgroup_tags"])
 
 
 def _resolve_geo_targeting(row):
@@ -425,13 +426,6 @@ def _resolve_geo_targeting(row):
             geo_targeting_types.add("country")
 
     return list(geos), list(geo_targeting_types)
-
-
-def _tags_to_string(tags_list):
-    if tags_list:
-        return ", ".join(sorted(e for e in tags_list if e))
-
-    return ""
 
 
 def _normalize_array(row, field_name):

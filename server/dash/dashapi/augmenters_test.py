@@ -1,3 +1,4 @@
+from datetime import date
 from decimal import Decimal
 
 from django.test import TestCase
@@ -9,6 +10,7 @@ from core.features.publisher_bid_modifiers.service_test import add_non_publisher
 from dash import models
 from dash.dashapi import augmenter
 from dash.dashapi import loaders
+from utils import test_helper
 from utils.magic_mixer import magic_mixer
 
 
@@ -152,3 +154,100 @@ class DeliveryAugmenterTest(TestCase):
         row = {"device_type": dash.constants.DeviceType.MOBILE}
         self.report_augmenter([row], self.delivery_loader)
         self.assertEqual(None, row["bid_modifier"])
+
+
+class IncludeEntityTagsAugmentersTestCase(TestCase):
+    def setUp(self):
+        self.account = magic_mixer.blend(models.Account)
+        self.account.entity_tags.add("some/account", "another/account")
+        self.campaign = magic_mixer.blend(models.Campaign)
+        self.campaign.entity_tags.add("some/campaign", "another/campaign")
+        self.ad_group = magic_mixer.blend(models.AdGroup)
+        self.ad_group.entity_tags.add("some/ad_group", "another/ad_group")
+        self.source = magic_mixer.blend(models.Source)
+        self.source.entity_tags.add("some/source", "another/source")
+
+        self.user_with_permission = magic_mixer.blend_user()
+        test_helper.add_permissions(self.user_with_permission, ["can_include_tags_in_reports"])
+        self.user_without_permission = magic_mixer.blend_user()
+
+    def test_account_augmenter_with_none_kwarg(self):
+        row = {"account_id": self.account.id}
+        the_loader = loaders.AccountsLoader(
+            models.Account.objects.filter(id=self.account.id),
+            models.Source.objects.none(),
+            self.user_with_permission,
+            start_date=date.today(),
+            end_date=date.today(),
+            include_entity_tags=None,
+        )
+        augmenter.augment_account(row, the_loader)
+        self.assertFalse("account_tags" in row)
+
+    def test_account_augmenter_with_false_kwarg(self):
+        row = {"account_id": self.account.id}
+        the_loader = loaders.AccountsLoader(
+            models.Account.objects.filter(id=self.account.id),
+            models.Source.objects.none(),
+            self.user_with_permission,
+            start_date=date.today(),
+            end_date=date.today(),
+            include_entity_tags=False,
+        )
+        augmenter.augment_account(row, the_loader)
+        self.assertFalse("account_tags" in row)
+
+    def test_account_augmenter_without_permission(self):
+        row = {"account_id": self.account.id}
+        the_loader = loaders.AccountsLoader(
+            models.Account.objects.filter(id=self.account.id),
+            models.Source.objects.none(),
+            self.user_without_permission,
+            start_date=date.today(),
+            end_date=date.today(),
+            include_entity_tags=False,
+        )
+        augmenter.augment_account(row, the_loader)
+        self.assertFalse("entity_tags" in row)
+
+    def test_account_augmenter(self):
+        row = {"account_id": self.account.id}
+        the_loader = loaders.AccountsLoader(
+            models.Account.objects.filter(id=self.account.id),
+            models.Source.objects.none(),
+            self.user_with_permission,
+            start_date=date.today(),
+            end_date=date.today(),
+            include_entity_tags=True,
+        )
+        augmenter.augment_account(row, the_loader)
+        self.assertTrue("account_tags" in row)
+        self.assertEqual(row["account_tags"], "another/account, some/account")
+
+    def test_campaign_augmenter(self):
+        row = {"campaign_id": self.campaign.id}
+        the_loader = loaders.CampaignsLoader(
+            models.Campaign.objects.filter(id=self.campaign.id),
+            models.Source.objects.none(),
+            self.user_with_permission,
+            start_date=date.today(),
+            end_date=date.today(),
+            include_entity_tags=True,
+        )
+        augmenter.augment_campaign(row, the_loader)
+        self.assertTrue("campaign_tags" in row)
+        self.assertEqual(row["campaign_tags"], "another/campaign, some/campaign")
+
+    def test_ad_group_augmenter(self):
+        row = {"ad_group_id": self.ad_group.id}
+        the_loader = loaders.AdGroupsLoader(
+            models.AdGroup.objects.filter(id=self.ad_group.id),
+            models.Source.objects.none(),
+            self.user_with_permission,
+            start_date=date.today(),
+            end_date=date.today(),
+            include_entity_tags=True,
+        )
+        augmenter.augment_ad_group(row, the_loader)
+        self.assertTrue("ad_group_tags" in row)
+        self.assertEqual(row["ad_group_tags"], "another/ad_group, some/ad_group")

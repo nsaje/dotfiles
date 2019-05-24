@@ -98,6 +98,7 @@ angular
                     includeTotals: queryConfig.includeTotals || false,
                     includeItemsWithNoSpend:
                         queryConfig.includeItemsWithNoSpend || false,
+                    includeEntityTags: queryConfig.includeEntityTags || false,
                     allAccountsInLocalCurrency:
                         queryConfig.allAccountsInLocalCurrency || false,
                     csvSeparator: queryConfig.csvSeparator,

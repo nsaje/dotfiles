@@ -206,8 +206,9 @@ class AdGroupsLoaderTest(TestCase):
     def setUp(self):
         ad_groups = models.AdGroup.objects.all()
         sources = models.Source.objects.all()
+        self.user = User.objects.get(pk=1)
 
-        self.loader = loaders.AdGroupsLoader(ad_groups, sources)
+        self.loader = loaders.AdGroupsLoader(ad_groups, sources, self.user)
 
     def test_from_constraints(self):
         loader = loaders.AdGroupsLoader.from_constraints(
@@ -268,7 +269,7 @@ class AdGroupsLoaderTest(TestCase):
         ad_groups = models.AdGroup.objects.all()
         sources = models.Source.objects.filter(pk=2)
 
-        loader = loaders.AdGroupsLoader(ad_groups, sources)
+        loader = loaders.AdGroupsLoader(ad_groups, sources, self.user)
 
         self.assertDictEqual(
             loader.settings_map,
@@ -301,7 +302,7 @@ class AdGroupsLoaderTest(TestCase):
         ad_groups = models.AdGroup.objects.all()
         sources = models.Source.objects.all()
 
-        loader = loaders.AdGroupsLoader(ad_groups, sources)
+        loader = loaders.AdGroupsLoader(ad_groups, sources, self.user)
         self.assertDictEqual(
             loader.settings_map,
             {

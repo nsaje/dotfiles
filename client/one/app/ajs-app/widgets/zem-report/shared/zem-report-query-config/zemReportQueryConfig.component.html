@@ -192,6 +192,23 @@
         </label>
     </div>
 </div>
+<div ng-if="$ctrl.showIncludeEntityTags" class="form__group">
+    <label class="form__label" for="include-tags-checkbox" is-internal="true">
+        Include tags
+    </label>
+    <div class="form__checkbox">
+        <label>
+            <input
+                id="include-tags-checkbox"
+                type="checkbox"
+                ng-model="$ctrl.config.includeEntityTags"
+                ng-disabled="$ctrl.disabled"
+                class="input-checkbox"
+            />
+            <span class="checkbox-text" for="include-tags-checkbox"></span>
+        </label>
+    </div>
+</div>
 <div ng-if="$ctrl.hasPermission('zemauth.can_set_export_delimiter_separator')">
     <hr />
     <div class="form__group">

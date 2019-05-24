@@ -51,6 +51,7 @@ angular.module('one.widgets').component('zemReportQueryConfig', {
             includeItemsWithNoSpend: false,
             allAccountsInLocalCurrency: false,
             allAccountsIncludeCreditRefunds: false,
+            includeEntityTags: false,
             csvSeparator: null,
             csvDecimalSeparator: null,
             selectedFields: [],
@@ -59,6 +60,7 @@ angular.module('one.widgets').component('zemReportQueryConfig', {
         $ctrl.showIncludeItemsWithNoSpend = true;
         $ctrl.showAllAccountsInLocalCurrencyCheckbox = false;
         $ctrl.showAllAccountsCreditRefunds = false;
+        $ctrl.showIncludeEntityTags = false;
         $ctrl.shownSelectedFields = [];
         $ctrl.appliedFilterConditions = [];
         $ctrl.view = '';
@@ -103,6 +105,14 @@ angular.module('one.widgets').component('zemReportQueryConfig', {
                 )
             ) {
                 $ctrl.showAllAccountsCreditRefunds = true;
+            }
+
+            if (
+                zemPermissions.hasPermission(
+                    'zemauth.can_include_tags_in_reports'
+                )
+            ) {
+                $ctrl.showIncludeEntityTags = true;
             }
 
             allColumns = getAllColumns();

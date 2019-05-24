@@ -415,6 +415,7 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ("can_set_click_capping_daily_click_budget", "User can set click capping daily click budget"),
             ("can_create_agency", "User can create a new agency"),
             ("can_see_viewthrough_conversions", "User can see view-through conversions"),
+            ("can_include_tags_in_reports", "Can include tags in reports"),
         )
 
     def get_full_name(self):

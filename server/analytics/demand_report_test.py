@@ -14,6 +14,7 @@ import zemauth.models
 from analytics import demand_report
 from automation import campaignstop
 from automation.campaignstop import constants as campaignstop_constants
+from core.models.tags import helpers as tag_helpers
 from dash import constants
 from dash.infobox_helpers import calculate_allocated_and_available_credit
 from dash.infobox_helpers import calculate_available_campaign_budget
@@ -171,16 +172,16 @@ class DemandReportTestCase(test.TestCase):
             "credit_end_date": ad_group.campaign.account.credits.order_by("-end_date").first().end_date,
             "remaining_credit": remaining_credit,
             "remaining_budget": remaining_budget,
-            "agency_tags": demand_report._tags_to_string(
+            "agency_tags": tag_helpers.entity_tag_names_to_string(
                 ad_group.campaign.account.agency.entity_tags.values_list("name", flat=True)
             ),
-            "account_tags": demand_report._tags_to_string(
+            "account_tags": tag_helpers.entity_tag_names_to_string(
                 ad_group.campaign.account.entity_tags.values_list("name", flat=True)
             ),
-            "campaign_tags": demand_report._tags_to_string(
+            "campaign_tags": tag_helpers.entity_tag_names_to_string(
                 ad_group.campaign.entity_tags.values_list("name", flat=True)
             ),
-            "adgroup_tags": demand_report._tags_to_string(ad_group.entity_tags.values_list("name", flat=True)),
+            "adgroup_tags": tag_helpers.entity_tag_names_to_string(ad_group.entity_tags.values_list("name", flat=True)),
         }
 
         for column, value in checks.items():
@@ -728,38 +729,3 @@ class SourceIdMapTestCase(test.TestCase):
     def test_missing(self):
         with self.assertRaises(ValueError):
             demand_report._source_id_map(constants.SourceType.OUTBRAIN, constants.SourceType.YAHOO, "missing")
-
-
-class TagsToStringTestCase(test.TestCase):
-    def test_none(self):
-        self.assertEqual(demand_report._tags_to_string(None), "")
-
-    def test_no_tags(self):
-        self.assertEqual(demand_report._tags_to_string([]), "")
-
-    def test_tags(self):
-        tags = [
-            "sth/tag_13",
-            "other",
-            "other/tag_14",
-            "test/tag_16",
-            "sth/tag_15",
-            "test/tag_6",
-            "test/tag_11",
-            "other/tag_3",
-            "test",
-            "other/tag_7",
-            "test/tag_4",
-            "sth/tag_10",
-            "test/tag_2",
-            "other/tag_12",
-            "sth/tag_5",
-            "sth/tag_8",
-            "test/tag_1",
-            "sth",
-            "test/tag_9",
-        ]
-
-        expected = "other, other/tag_12, other/tag_14, other/tag_3, other/tag_7, sth, sth/tag_10, sth/tag_13, sth/tag_15, sth/tag_5, sth/tag_8, test, test/tag_1, test/tag_11, test/tag_16, test/tag_2, test/tag_4, test/tag_6, test/tag_9"
-
-        self.assertEqual(demand_report._tags_to_string(tags), expected)

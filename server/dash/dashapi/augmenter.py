@@ -1,5 +1,6 @@
 import core.features.bid_modifiers
 import stats.constants
+from core.models.tags import helpers as tag_helpers
 from dash import constants
 from dash import publisher_helpers
 
@@ -98,6 +99,10 @@ def augment_account(row, loader, is_base_level=False):
 
         projections = loader.projections_map.get(account_id)
         refunds = loader.refunds_map.get(account_id)
+
+        if loader.include_entity_tags:
+            row.update({"account_tags": tag_helpers.entity_tag_query_set_to_string(account.entity_tags.all())})
+
     else:
         projections = loader.projections_totals
         refunds = loader.refunds_totals
@@ -155,6 +160,10 @@ def augment_campaign(row, loader, is_base_level=False):
         copy_fields_if_exists(["status", "archived", "campaign_manager"], settings, row)
 
         projections = loader.projections_map.get(campaign_id)
+
+        if loader.include_entity_tags:
+            row.update({"campaign_tags": tag_helpers.entity_tag_query_set_to_string(campaign.entity_tags.all())})
+
     else:
         projections = loader.projections_totals
         refunds = loader.refunds_totals
@@ -209,6 +218,9 @@ def augment_ad_group(row, loader, is_base_level=False):
         if is_base_level:
             base_level_settings = loader.base_level_settings_map[ad_group_id]
             copy_fields_if_exists(["campaign_has_available_budget"], base_level_settings, row)
+
+        if loader.include_entity_tags:
+            row.update({"ad_group_tags": tag_helpers.entity_tag_query_set_to_string(ad_group.entity_tags.all())})
 
 
 def augment_ad_group_for_report(row, loader, is_base_level=False):
@@ -333,6 +345,9 @@ def augment_source(row, loader, is_base_level=False):
                 "maintenance": source.maintenance,
             }
         )
+
+        if loader.include_entity_tags:
+            row.update({"source_tags": tag_helpers.entity_tag_query_set_to_string(source.entity_tags.all())})
 
         settings = loader.settings_map[source_id]
     else:

@@ -129,6 +129,10 @@ _FIELD_MAPPING = {
     "bid_modifier": ("Bid Modifier",),
     "sspd_url": ("SSPD Link",),
     "campaign_type": ("Campaign Type",),
+    "account_tags": ("Account Tags",),
+    "campaign_tags": ("Campaign Tags",),
+    "ad_group_tags": ("Ad Group Tags",),
+    "source_tags": ("Source Tags",),
 }
 
 _FIELD_MAPPING_BCMV2_OVERRIDES = {

@@ -48,6 +48,7 @@ class ReportOptionsSerializer(serializers.Serializer):
     )
     include_totals = serializers.BooleanField(default=False)
     include_items_with_no_spend = serializers.BooleanField(default=False)
+    include_entity_tags = serializers.BooleanField(required=False)
     all_accounts_in_local_currency = serializers.BooleanField(default=False)
     show_status_date = serializers.BooleanField(default=False)
     recipients = serializers.ListField(child=serializers.EmailField(), default=[])

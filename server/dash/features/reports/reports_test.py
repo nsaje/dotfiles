@@ -10,8 +10,8 @@ import core.models
 import dash.constants
 import utils.test_helper
 from dash.features import scheduled_reports
-from utils.magic_mixer import magic_mixer
 from utils import dates_helper
+from utils.magic_mixer import magic_mixer
 
 from . import constants
 from . import reports
@@ -352,6 +352,110 @@ class ReportsGetReportCSVTest(TestCase):
         mock_query.return_value = [row]
         output, filename = ReportJobExecutor.get_report(self.reportJob)
         expected = """"Ad Group Id";"Total Spend";"Clicks";"Currency"\r\n"1";"12,3000";"5";"USD"\r\n"""
+        self.assertEqual(expected, output)
+
+
+class IncludeEntityTagsReportTestCase(TestCase):
+    def setUp(self):
+        self.user = magic_mixer.blend_user()
+        self.account = magic_mixer.blend(core.models.Account)
+        self.account.entity_tags.add("some/account", "another/account")
+        self.account.users.add(self.user)
+        self.campaign = magic_mixer.blend(core.models.Campaign, account=self.account)
+        self.campaign.entity_tags.add("some/campaign", "another/campaign")
+        self.ad_group = magic_mixer.blend(core.models.AdGroup, campaign=self.campaign)
+        self.ad_group.entity_tags.add("some/ad_group", "another/ad_group")
+        self.source = magic_mixer.blend(core.models.Source)
+        self.source.entity_tags.add("some/source", "another/source")
+        self.ad_group_source = magic_mixer.blend(core.models.AdGroupSource, ad_group=self.ad_group, source=self.source)
+        magic_mixer.blend(core.features.publisher_groups.PublisherGroup, id=settings.GLOBAL_BLACKLIST_ID)
+        self.reportJob = ReportJob(status=constants.ReportJobStatus.IN_PROGRESS)
+        self.reportJob.user = self.user
+        self.reportJob.save()
+        utils.test_helper.add_permissions(self.reportJob.user, ["can_include_tags_in_reports"])
+
+        influx_incr_patcher = mock.patch("influx.incr")
+        self.mock_influx_incr = influx_incr_patcher.start()
+        self.addCleanup(influx_incr_patcher.stop)
+
+    @staticmethod
+    def build_query(fields=[], include_entity_tags=None):
+        return {
+            "fields": [{"field": field} for field in fields],
+            "filters": [{"field": "Date", "operator": "=", "value": "2019-02-13"}],
+            "options": {
+                "show_archived": False,
+                "show_blacklisted_publishers": False,
+                "recipients": [],
+                "include_items_with_no_spend": False,
+                "show_status_date": False,
+                "include_totals": False,
+                "all_accounts_in_local_currency": False,
+                "csv_separator": None,
+                "csv_decimal_separator": None,
+                "include_entity_tags": include_entity_tags,
+            },
+        }
+
+    @mock.patch("redshiftapi.api_reports.query")
+    def test_all(self, mock_query):
+        self.reportJob.query = self.build_query(
+            ["Account Id", "Campaign Id", "Ad Group Id", "Media Source Id"], include_entity_tags=True
+        )
+        row = {
+            "account_id": self.account.id,
+            "campaign_id": self.campaign.id,
+            "ad_group_id": self.ad_group.id,
+            "source_id": self.source.id,
+        }
+        mock_query.return_value = [row]
+        output, filename = ReportJobExecutor.get_report(self.reportJob)
+        expected = (
+            """"Account Id","Campaign Id","Ad Group Id","Media Source Id","Account Tags","Campaign Tags","Ad Group Tags","Source Tags"\r\n"%s","%s","%s","%s","another/account, some/account","another/campaign, some/campaign","another/ad_group, some/ad_group","another/source, some/source"\r\n"""
+            % (self.account.id, self.campaign.id, self.ad_group.id, self.source.id)
+        )
+        self.assertEqual(expected, output)
+
+    @mock.patch("redshiftapi.api_reports.query")
+    def test_account(self, mock_query):
+        self.reportJob.query = self.build_query(["Account Id"], include_entity_tags=True)
+        row = {"account_id": self.account.id}
+        mock_query.return_value = [row]
+        output, filename = ReportJobExecutor.get_report(self.reportJob)
+        expected = """"Account Id","Account Tags"\r\n"%s","another/account, some/account"\r\n""" % self.account.id
+        self.assertEqual(expected, output)
+
+    @mock.patch("redshiftapi.api_reports.query")
+    def test_campaign(self, mock_query):
+        self.reportJob.query = self.build_query(["Campaign Id"], include_entity_tags=True)
+        row = {"campaign_id": self.campaign.id}
+        mock_query.return_value = [row]
+        output, filename = ReportJobExecutor.get_report(self.reportJob)
+        expected = (
+            """"Campaign Id","Account Tags","Campaign Tags"\r\n"%s","another/account, some/account","another/campaign, some/campaign"\r\n"""
+            % self.campaign.id
+        )
+        self.assertEqual(expected, output)
+
+    @mock.patch("redshiftapi.api_reports.query")
+    def test_ad_group(self, mock_query):
+        self.reportJob.query = self.build_query(["Ad Group Id"], include_entity_tags=True)
+        row = {"ad_group_id": self.ad_group.id}
+        mock_query.return_value = [row]
+        output, filename = ReportJobExecutor.get_report(self.reportJob)
+        expected = (
+            """"Ad Group Id","Account Tags","Campaign Tags","Ad Group Tags"\r\n"%s","another/account, some/account","another/campaign, some/campaign","another/ad_group, some/ad_group"\r\n"""
+            % self.ad_group.id
+        )
+        self.assertEqual(expected, output)
+
+    @mock.patch("redshiftapi.api_reports.query")
+    def test_source(self, mock_query):
+        self.reportJob.query = self.build_query(["Media Source Id"], include_entity_tags=True)
+        row = {"source_id": self.source.id}
+        mock_query.return_value = [row]
+        output, filename = ReportJobExecutor.get_report(self.reportJob)
+        expected = """"Media Source Id","Source Tags"\r\n"%s","another/source, some/source"\r\n""" % self.source.id
         self.assertEqual(expected, output)
 
 

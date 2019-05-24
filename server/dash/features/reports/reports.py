@@ -206,6 +206,7 @@ class ReportJobExecutor(JobExecutor):
             only_used_sources=True,
             **structure_constraints,
         )
+        cls._add_include_entity_tags_constraints_if_necessary(job, constraints)
         goals = stats.api_reports.get_goals(constraints, breakdown)
 
         column_to_field_name_map = utils.columns.custom_column_to_field_name_mapping(
@@ -218,6 +219,7 @@ class ReportJobExecutor(JobExecutor):
         order = cls._get_order(job, column_to_field_name_map)
         column_names = cls._extract_column_names(job.query["fields"])
         cls._append_currency_column_if_necessary(column_names, column_to_field_name_map)
+        cls._append_entity_tag_columns_if_necessary(user, constraints, breakdown, column_names)
 
         currency = None
         account_currency_map = None
@@ -335,6 +337,24 @@ class ReportJobExecutor(JobExecutor):
                 break
 
         return requested_columns
+
+    @staticmethod
+    def _add_include_entity_tags_constraints_if_necessary(job, constraints):
+        include_entity_tags = helpers.get_option(job, "include_entity_tags", None)
+        if job.user.has_perm("zemauth.can_include_tags_in_reports"):
+            constraints.update({"include_entity_tags": include_entity_tags})
+
+    @staticmethod
+    def _append_entity_tag_columns_if_necessary(user, constraints, breakdown, requested_columns):
+        if constraints.get("include_entity_tags") is True and user.has_perm("zemauth.can_include_tags_in_reports"):
+            if stats.constants.DimensionIdentifierMapping[stats.constants.DimensionIdentifier.ACCOUNT] in breakdown:
+                requested_columns.append("Account Tags")
+            if stats.constants.DimensionIdentifierMapping[stats.constants.DimensionIdentifier.CAMPAIGN] in breakdown:
+                requested_columns.append("Campaign Tags")
+            if stats.constants.DimensionIdentifierMapping[stats.constants.DimensionIdentifier.AD_GROUP] in breakdown:
+                requested_columns.append("Ad Group Tags")
+            if stats.constants.DimensionIdentifierMapping[stats.constants.DimensionIdentifier.SOURCE] in breakdown:
+                requested_columns.append("Source Tags")
 
     @classmethod
     def convert_to_csv(
