@@ -24,6 +24,8 @@ export class AdGroupAutopilotStateSettingComponent implements OnChanges {
     autopilotState: AdGroupAutopilotState;
     @Input()
     optimizationObjective: CampaignGoalKPI;
+    @Input()
+    isDisabled: boolean;
     @Output()
     autopilotStateChange = new EventEmitter<AdGroupAutopilotState>();
 

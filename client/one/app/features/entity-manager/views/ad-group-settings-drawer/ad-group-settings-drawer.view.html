@@ -54,7 +54,7 @@
                         *ngIf="state.extras.isCampaignAutopilotEnabled"
                     >
                         <div
-                            class="zem-message zem-message--bubble zem-message--warning zem-message--with-icon"
+                            class="zem-message zem-message--bubble zem-message--info zem-message--with-icon"
                         >
                             Flight time settings aren't available because
                             campaign budget optimization is enabled. Budget
@@ -160,7 +160,7 @@
                         *ngIf="!store.isAdGroupAutopilotEnabled()"
                     >
                         <div
-                            class="zem-message zem-message--bubble zem-message--warning zem-message--with-icon"
+                            class="zem-message zem-message--bubble zem-message--info zem-message--with-icon"
                         >
                             <ng-container
                                 *ngIf="state.extras.isCampaignAutopilotEnabled"
@@ -274,57 +274,59 @@
                         Optimization
                     </h2>
                 </div>
-                <div
-                    class="zem-settings-section"
-                    *ngIf="state.extras.isCampaignAutopilotEnabled"
-                >
+                <div class="zem-settings-section">
+                    <zem-ad-group-autopilot-state-setting
+                        class="zem-ad-group-autopilot-state-setting zem-settings-section__item"
+                        [autopilotState]="state.entity.autopilot.state"
+                        [optimizationObjective]="
+                            state.extras.optimizationObjective
+                        "
+                        [isDisabled]="state.extras.isCampaignAutopilotEnabled"
+                        (autopilotStateChange)="
+                            store.setAdGroupAutopilotState($event)
+                        "
+                    ></zem-ad-group-autopilot-state-setting>
                     <div
-                        class="zem-message zem-message--bubble zem-message--info zem-message--with-icon"
+                        class="zem-settings-section__item"
+                        *ngIf="state.extras.isCampaignAutopilotEnabled"
                     >
-                        Optimizations are managed on campaign level.
+                        <div
+                            class="zem-message zem-message--bubble zem-message--info zem-message--with-icon zem-settings__inline-message"
+                        >
+                            Optimizations are managed on campaign level.
+                        </div>
                     </div>
                 </div>
-                <ng-container *ngIf="!state.extras.isCampaignAutopilotEnabled">
+                <zem-advanced-settings-section
+                    class="zem-advanced-settings-section"
+                >
                     <div class="zem-settings-section">
-                        <zem-ad-group-autopilot-state-setting
-                            class="zem-ad-group-autopilot-state-setting zem-settings-section__item"
-                            [autopilotState]="state.entity.autopilot.state"
-                            [optimizationObjective]="
-                                state.extras.optimizationObjective
+                        <zem-ad-group-rtb-sources-management-setting
+                            class="zem-ad-group-rtb-sources-management-setting zem-settings-section__item"
+                            [manageRtbSourcesAsOne]="
+                                state.entity.manageRtbSourcesAsOne
                             "
-                            (autopilotStateChange)="
-                                store.setAdGroupAutopilotState($event)
+                            [isDisabled]="
+                                state.extras.isCampaignAutopilotEnabled ||
+                                store.isAdGroupAutopilotEnabled()
                             "
-                        ></zem-ad-group-autopilot-state-setting>
-                    </div>
-                    <zem-advanced-settings-section
-                        class="zem-advanced-settings-section"
-                    >
-                        <div class="zem-settings-section">
-                            <zem-ad-group-rtb-sources-management-setting
-                                class="zem-ad-group-rtb-sources-management-setting zem-settings-section__item"
-                                [manageRtbSourcesAsOne]="
-                                    state.entity.manageRtbSourcesAsOne
-                                "
-                                [isDisabled]="store.isAdGroupAutopilotEnabled()"
-                                (manageRtbSourcesAsOneChange)="
-                                    store.setManageRtbSourcesAsOne($event)
-                                "
-                            ></zem-ad-group-rtb-sources-management-setting>
+                            (manageRtbSourcesAsOneChange)="
+                                store.setManageRtbSourcesAsOne($event)
+                            "
+                        ></zem-ad-group-rtb-sources-management-setting>
+                        <div
+                            class="zem-settings-section__item zem-settings-section__item--indented"
+                            *ngIf="store.isAdGroupAutopilotEnabled()"
+                        >
                             <div
-                                class="zem-settings-section__item zem-settings-section__item--indented"
-                                *ngIf="store.isAdGroupAutopilotEnabled()"
+                                class="zem-message zem-message--bubble zem-message--warning zem-message--with-icon"
                             >
-                                <div
-                                    class="zem-message zem-message--bubble zem-message--warning zem-message--with-icon"
-                                >
-                                    You can't manage RTB sources while autopilot
-                                    goal optimization is enabled.
-                                </div>
+                                You can't manage RTB sources while autopilot
+                                goal optimization is enabled.
                             </div>
                         </div>
-                    </zem-advanced-settings-section>
-                </ng-container>
+                    </div>
+                </zem-advanced-settings-section>
             </div>
 
             <div class="zem-panel zem-settings__panel">

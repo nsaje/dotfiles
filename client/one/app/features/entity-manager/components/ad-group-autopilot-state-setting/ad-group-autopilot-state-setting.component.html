@@ -4,6 +4,7 @@
             class="zem-radio-input zem-settings-form-group__content-item"
             [groupModel]="autopilotState"
             [value]="AdGroupAutopilotState.ACTIVE_CPC_BUDGET"
+            [isDisabled]="isDisabled"
             (select)="autopilotStateChange.emit($event)"
         >
             <strong>Autopilot goal optimization</strong> - let autopilot
@@ -35,6 +36,7 @@
             class="zem-radio-input zem-settings-form-group__content-item zem-settings-form-group__content-item--no-spacing"
             [groupModel]="autopilotState"
             [value]="AdGroupAutopilotState.ACTIVE_CPC"
+            [isDisabled]="isDisabled"
             (select)="autopilotStateChange.emit($event)"
         >
             <strong>Autopilot price discovery</strong> - let autopilot
@@ -49,6 +51,7 @@
             class="zem-radio-input zem-settings-form-group__content-item zem-settings-form-group__content-item--no-spacing"
             [groupModel]="autopilotState"
             [value]="AdGroupAutopilotState.INACTIVE"
+            [isDisabled]="isDisabled"
             (select)="autopilotStateChange.emit($event)"
         >
             <strong>Autopilot off</strong> (full manual control)
