@@ -112,6 +112,10 @@ def _update_rtb_source_row(ad_group_settings, ad_group_source, rows, notificatio
     if ad_group_settings.b1_sources_group_enabled:
         del row["daily_budget"]
         del row["current_daily_budget"]
+        del row["bid_cpc"]
+        del row["current_bid_cpc"]
+        del row["bid_cpm"]
+        del row["current_bid_cpm"]
 
         if (
             ad_group_settings.b1_sources_group_state == constants.AdGroupSourceSettingsState.INACTIVE

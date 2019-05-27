@@ -66,14 +66,7 @@ class AdGroupSourcesTableUpdatesTest(TestCase):
             "notifications": {},
             "in_progress": False,
             "rows": {
-                1: {
-                    "status": 1,
-                    "status_setting": 1,
-                    "bid_cpc": Decimal("0.5010"),
-                    "current_bid_cpc": Decimal("0.5010"),
-                    "bid_cpm": Decimal("0.4010"),
-                    "current_bid_cpm": Decimal("0.4010"),
-                },
+                1: {"status": 1, "status_setting": 1},
                 2: {
                     "status": 2,
                     "status_setting": 2,
@@ -146,14 +139,7 @@ class AdGroupSourcesTableUpdatesTest(TestCase):
             "bid_cpm": Decimal("0.4020"),
             "current_bid_cpm": Decimal("0.4020"),
         }
-        expected = {
-            "status": 1,
-            "status_setting": 1,
-            "bid_cpc": Decimal("0.5020"),
-            "current_bid_cpc": Decimal("0.5020"),
-            "bid_cpm": Decimal("0.4020"),
-            "current_bid_cpm": Decimal("0.4020"),
-        }
+        expected = {"status": 1, "status_setting": 1}
 
         notifications = {}
         rows = {ad_group_source.source_id: row}
@@ -176,14 +162,7 @@ class AdGroupSourcesTableUpdatesTest(TestCase):
             "bid_cpm": Decimal("0.4020"),
             "current_bid_cpm": Decimal("0.4020"),
         }
-        expected = {
-            "status": 2,
-            "status_setting": 1,
-            "bid_cpc": Decimal("0.5020"),
-            "current_bid_cpc": Decimal("0.5020"),
-            "bid_cpm": Decimal("0.4020"),
-            "current_bid_cpm": Decimal("0.4020"),
-        }
+        expected = {"status": 2, "status_setting": 1}
 
         notifications = {}
         rows = {ad_group_source.source_id: row}
