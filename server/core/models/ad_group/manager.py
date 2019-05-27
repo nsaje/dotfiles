@@ -94,6 +94,10 @@ class AdGroupManager(core.common.BaseManager):
             and campaign.type != dash.constants.CampaignType.DISPLAY
         ):
             ad_group.amplify_review = True
+
+        if campaign.type == dash.constants.CampaignType.VIDEO:
+            ad_group.bidding_type = dash.constants.BiddingType.CPM
+
         return ad_group
 
     def _post_create(self, ad_group):
