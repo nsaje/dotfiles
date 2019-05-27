@@ -88,7 +88,7 @@ class AdGroupManager(core.common.BaseManager):
             settings.AMPLIFY_REVIEW
             and (
                 campaign.account.amplify_review
-                and (campaign.account.agency and campaign.account.agency.amplify_review or True)
+                and (campaign.account.agency.amplify_review if campaign.account.agency else True)
             )
             and campaign.type != dash.constants.CampaignType.VIDEO
             and campaign.type != dash.constants.CampaignType.DISPLAY
