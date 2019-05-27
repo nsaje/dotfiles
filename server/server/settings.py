@@ -422,7 +422,8 @@ DCRON = {
     "max_durations": {
         "campaignstop_main": 900,  # 15 min
         "campaignstop_handle_updates": 1800,  # 30 min
-        "create_demand_report": 10800,  # 3 h
+        "clean_up_postgres_stats": 7200,  # 2h
+        "create_demand_report": 16200,  # 4.5 h
         "monitor_adgroup_propagation": 86400,  # 24 h
         "refresh_etl": 15000.0,  # 4 h 10 min
     },

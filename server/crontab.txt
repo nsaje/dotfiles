@@ -56,7 +56,7 @@
 0 23 * * *       /home/ubuntu/docker-manage-py.sh vacuum_stats
 50 3,4 * * *     /home/ubuntu/docker-manage-py.sh campaignstop_midnight_refresh --check-time
 0 4,5 * * *      /home/ubuntu/docker-manage-py.sh campaignstop_midnight --check-time
-30 6,9 * * *     /home/ubuntu/docker-manage-py.sh create_demand_report
+30 5,9 * * *     /home/ubuntu/docker-manage-py.sh create_demand_report
 0 9,12,15 * * *  /home/ubuntu/docker-manage-py.sh monitor_blacklists
 0 8 * * *        /home/ubuntu/docker-manage-py.sh demo_cleanup
 0 5 * * *        /home/ubuntu/docker-manage-py.sh recheck_image_present
