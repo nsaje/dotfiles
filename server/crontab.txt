@@ -29,7 +29,7 @@
 0 15 * * *        /home/ubuntu/docker-manage-py.sh send_daily_management_report
 15 7 * * *       /home/ubuntu/docker-manage-py.sh audit_spend_patterns
 30 7 1 * *       /home/ubuntu/docker-manage-py.sh refresh_inventory_data
-0 8 * * *        /home/ubuntu/docker-manage-py.sh auto_archive_inactive_entities
+#0 8 * * *        /home/ubuntu/docker-manage-py.sh auto_archive_inactive_entities
 0 8 * * *        /home/ubuntu/docker-manage-py.sh create_demo_snapshot
 15 9-12 * * *    /home/ubuntu/docker-manage-py.sh run_autopilot --daily-run
 15 9 * * 1       /home/ubuntu/docker-manage-py.sh audit_credits --send-emails
