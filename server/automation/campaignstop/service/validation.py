@@ -2,6 +2,7 @@ import decimal
 
 import newrelic.agent
 
+import core.features.bcm
 from utils import dates_helper
 
 from . import refresh
@@ -42,9 +43,10 @@ def _calculate_minimum_budget_amount(log, budget_line_item):
         {"spend_estimates": {budget.id: spend for budget, spend in spend_estimates.items()}, "min_amount_raw": amount}
     )
     rounded_amount = _round(amount)
-    return min(
-        rounded_amount, budget_line_item.previous_value("amount")
-    )  # even if the calculation is off increasing the amount should be safe
+    prev_amount = core.features.bcm.BudgetLineItem.objects.filter(id=budget_line_item.id).values_list(
+        "amount", flat=True
+    )[0]
+    return min(rounded_amount, prev_amount)  # even if the calculation is off increasing the amount should be safe
 
 
 def _get_budgets_active_today(campaign):
