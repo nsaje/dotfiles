@@ -43,7 +43,7 @@ def _calculate_minimum_budget_amount(log, budget_line_item):
     )
     rounded_amount = _round(amount)
     return min(
-        rounded_amount, budget_line_item.amount
+        rounded_amount, budget_line_item.previous_value("amount")
     )  # even if the calculation is off increasing the amount should be safe
 
 
