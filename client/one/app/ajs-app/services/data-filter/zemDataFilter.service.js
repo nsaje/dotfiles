@@ -18,6 +18,7 @@ angular
         this.getFilteredSources = getFilteredSources;
         this.getFilteredAgencies = getFilteredAgencies;
         this.getFilteredAccountTypes = getFilteredAccountTypes;
+        this.getFilteredBusinesses = getFilteredBusinesses;
         this.getFilteredStatuses = getFilteredStatuses;
         this.getFilteredPublisherStatus = getFilteredPublisherStatus;
         this.getShowArchived = getShowArchived;
@@ -42,6 +43,8 @@ angular
                 'zem-data-filter-service-on-filtered-agencies-update',
             ON_FILTERED_ACCOUNT_TYPES_UPDATE:
                 'zem-data-filter-service-on-filtered-account-types-update',
+            ON_FILTERED_BUSINESSES_UPDATE:
+                'zem-data-filter-service-on-filtered-businesses-update',
             ON_FILTERED_STATUSES_UPDATE:
                 'zem-data-filter-service-on-filtered-statuses-update',
             ON_FILTERED_PUBLISHER_STATUS_UPDATE:
@@ -86,6 +89,13 @@ angular
                 urlParam: 'filtered_account_types',
                 event: EVENTS.ON_FILTERED_ACCOUNT_TYPES_UPDATE,
                 permissions: ['zemauth.can_filter_by_account_type'],
+            },
+            businesses: {
+                name: 'businesses',
+                type: CONDITION_TYPES.list,
+                urlParam: 'filtered_businesses',
+                event: EVENTS.ON_FILTERED_BUSINESSES_UPDATE,
+                permissions: ['zemauth.can_filter_by_business'],
             },
             statuses: {
                 name: 'statuses',
@@ -275,6 +285,10 @@ angular
 
         function getFilteredAccountTypes() {
             return getAppliedCondition(CONDITIONS.accountTypes);
+        }
+
+        function getFilteredBusinesses() {
+            return getAppliedCondition(CONDITIONS.businesses);
         }
 
         function getFilteredStatuses() {

@@ -75,6 +75,20 @@ angular
                 },
             },
             {
+                condition: zemDataFilterService.CONDITIONS.businesses,
+                title: 'Filter by Business',
+                appliedConditionName: 'Business',
+                cssClass: 'businesses',
+                getOptions: getBusinessesOptions,
+                permissions: ['zemauth.can_filter_by_business'],
+                isVisible: function() {
+                    return (
+                        $state.params.level ===
+                        constants.levelStateParam.ACCOUNTS
+                    );
+                },
+            },
+            {
                 condition: zemDataFilterService.CONDITIONS.statuses,
                 title: 'Filter by Status',
                 appliedConditionName: 'Status',
@@ -371,6 +385,22 @@ angular
                 });
             });
             return availableAccountTypes;
+        }
+
+        function getBusinessesOptions() {
+            var availableBusinesses = [];
+            options.businesses.forEach(function(business) {
+                var businessId = String(business.value);
+                availableBusinesses.push({
+                    value: businessId,
+                    text: business.name,
+                    enabled:
+                        zemDataFilterService
+                            .getFilteredBusinesses()
+                            .indexOf(businessId) !== -1,
+                });
+            });
+            return availableBusinesses;
         }
 
         function getStatusesOptions() {

@@ -73,6 +73,11 @@ angular
                         ','
                     );
                 }
+
+                var filteredBusinesses = zemDataFilterService.getFilteredBusinesses();
+                if (filteredBusinesses.length > 0) {
+                    params.filtered_businesses = filteredBusinesses;
+                }
             }
 
             return params;

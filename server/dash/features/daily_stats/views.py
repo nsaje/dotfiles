@@ -27,7 +27,7 @@ class BaseDailyStatsView(api_common.BaseApiView):
         view_filter = forms.ViewFilterForm(request.GET)
         if not view_filter.is_valid():
             raise exc.ValidationError(errors=dict(view_filter.errors))
-        return {
+        params = {
             "user": request.user,
             "start_date": view_filter.cleaned_data.get("start_date"),
             "end_date": view_filter.cleaned_data.get("end_date"),
@@ -35,6 +35,11 @@ class BaseDailyStatsView(api_common.BaseApiView):
             "show_archived": view_filter.cleaned_data.get("show_archived"),
             "only_used_sources": False,
         }
+
+        if view_filter.cleaned_data.get("filtered_businesses"):
+            params["filtered_businesses"] = view_filter.cleaned_data.get("filtered_businesses")
+
+        return params
 
     def get_stats(self, request, group_key, should_use_publishers_view=False, object_mapping_fn=None):
         # FIXME (jurebajt): Totals are always requested because 'false' is truthy

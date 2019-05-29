@@ -39,6 +39,9 @@ def get_constraints_kwargs(form_data, **overrides):
     if form_data.get("filtered_account_types"):
         kwargs["filtered_account_types"] = form_data.get("filtered_account_types")
 
+    if form_data.get("filtered_businesses"):
+        kwargs["filtered_businesses"] = form_data.get("filtered_businesses")
+
     if form_data.get("show_blacklisted_publishers"):
         kwargs["show_blacklisted_publishers"] = form_data["show_blacklisted_publishers"]
 

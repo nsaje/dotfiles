@@ -25,6 +25,7 @@ describe('zemInfoboxEndpoint', function() {
         };
         var filteredAgencies = [1, 2, 3];
         var filteredAccountTypes = [4, 5, 6];
+        var filteredBusinesses = [7, 8];
 
         spyOn($http, 'get').and.callFake(mockedAsyncFunction);
         spyOn(zemDataFilterService, 'getDateRange').and.returnValue(dateRange);
@@ -34,6 +35,9 @@ describe('zemInfoboxEndpoint', function() {
         spyOn(zemDataFilterService, 'getFilteredAccountTypes').and.returnValue(
             filteredAccountTypes
         );
+        spyOn(zemDataFilterService, 'getFilteredBusinesses').and.returnValue(
+            filteredBusinesses
+        );
 
         zemInfoboxEndpoint.getInfoboxData(entity);
         expect($http.get).toHaveBeenCalledWith('/api/accounts/overview/', {
@@ -42,6 +46,7 @@ describe('zemInfoboxEndpoint', function() {
                 end_date: dateRange.endDate.format('YYYY-MM-DD'),
                 filtered_agencies: filteredAgencies.join(','),
                 filtered_account_types: filteredAccountTypes.join(','),
+                filtered_businesses: filteredBusinesses,
             },
         });
     });

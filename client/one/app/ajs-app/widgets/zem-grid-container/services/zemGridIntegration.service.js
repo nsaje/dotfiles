@@ -187,6 +187,7 @@ angular
                 var filteredSources = zemDataFilterService.getFilteredSources();
                 var filteredAgencies = zemDataFilterService.getFilteredAgencies();
                 var filteredAccountTypes = zemDataFilterService.getFilteredAccountTypes();
+                var filteredBusinesses = zemDataFilterService.getFilteredBusinesses();
                 var filteredPublisherStatus = zemDataFilterService.getFilteredPublisherStatus();
 
                 grid.dataSource.setFilter(
@@ -206,6 +207,10 @@ angular
                     grid.dataSource.setFilter(
                         FILTER.FILTERED_ACCOUNT_TYPES,
                         filteredAccountTypes
+                    );
+                    grid.dataSource.setFilter(
+                        FILTER.FILTERED_BUSINESSES,
+                        filteredBusinesses
                     );
                 }
 

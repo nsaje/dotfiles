@@ -2353,3 +2353,11 @@ class Customflags(ConstantBase):
     BOOL = "boolean"
 
     _VALUES = {INT: "number", FLOAT: "decimal number", STRING: "text", BOOL: "boolean"}
+
+
+class Business(ConstantBase):
+    Z1 = "z1"
+    OEN = "oen"
+    LIGATUS = "ligatus"
+
+    _VALUES = {Z1: "Zemanta One", OEN: "Outbrain Extended Network", LIGATUS: "Ligatus"}

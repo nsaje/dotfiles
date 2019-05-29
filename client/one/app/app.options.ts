@@ -16,6 +16,11 @@ export const APP_OPTIONS = {
         {name: 'Managed', value: APP_CONSTANTS.accountTypes.MANAGED},
         {name: 'PAAS', value: APP_CONSTANTS.accountTypes.PAAS},
     ],
+    businesses: [
+        {name: 'Z1', value: APP_CONSTANTS.businesses.Z1},
+        {name: 'OEN', value: APP_CONSTANTS.businesses.OEN},
+        {name: 'Ligatus', value: APP_CONSTANTS.businesses.LIGATUS},
+    ],
     adGroupSettingsStates: [
         {name: 'Paused', value: APP_CONSTANTS.settingsState.INACTIVE},
         {name: 'Enabled', value: APP_CONSTANTS.settingsState.ACTIVE},

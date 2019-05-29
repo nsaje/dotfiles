@@ -120,6 +120,7 @@ angular
                 show_blacklisted_publishers: config.showBlacklistedPublishers,
                 filtered_sources: config.filteredSources,
                 filtered_account_types: config.filteredAccountTypes,
+                filtered_businesses: config.filteredBusinesses,
                 filtered_agencies: config.filteredAgencies,
                 level: config.level,
                 limit: config.limit,

@@ -263,6 +263,11 @@ export const APP_CONSTANTS = {
         MANAGED: 6,
         PAAS: 7,
     },
+    businesses: {
+        Z1: 'z1',
+        OEN: 'oen',
+        LIGATUS: 'ligatus',
+    },
     specialAccount: SpecialAccount,
     campaignTypes: CampaignType,
     currency: Currency,

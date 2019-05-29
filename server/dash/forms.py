@@ -1298,6 +1298,7 @@ class ViewFilterForm(forms.Form):
     filtered_sources = TypedMultipleAnyChoiceField(required=False, coerce=str)
     filtered_agencies = TypedMultipleAnyChoiceField(required=False, coerce=str)
     filtered_account_types = TypedMultipleAnyChoiceField(required=False, coerce=str)
+    filtered_businesses = forms.MultipleChoiceField(choices=constants.Business.get_choices(), required=False)
 
     def clean_filtered_sources(self):
         return helpers.get_filtered_sources(self.cleaned_data.get("filtered_sources"))

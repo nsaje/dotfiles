@@ -35,8 +35,10 @@ def prepare_all_accounts_constraints(
     filtered_agencies=None,
     filtered_account_types=None,
     filtered_accounts=None,
+    filtered_businesses=None,
     only_used_sources=True,
     show_blacklisted_publishers=dash.constants.PublisherBlacklistFilter.SHOW_ALL,
+    **kwargs,
 ):
 
     allowed_accounts = (
@@ -46,6 +48,9 @@ def prepare_all_accounts_constraints(
         .filter_by_agencies(filtered_agencies)
         .filter_by_account_types(filtered_account_types)
     )
+
+    if filtered_businesses:
+        allowed_accounts = allowed_accounts.filter_by_business(filtered_businesses)
 
     if filtered_accounts:
         allowed_accounts = allowed_accounts.filter(id__in=filtered_accounts.values_list("id", flat=True))
@@ -81,6 +86,7 @@ def prepare_account_constraints(
     show_archived=False,
     only_used_sources=True,
     show_blacklisted_publishers=dash.constants.PublisherBlacklistFilter.SHOW_ALL,
+    **kwargs,
 ):
     allowed_campaigns = account.campaign_set.all().filter_by_user(user).filter_by_sources(filtered_sources)
 
@@ -124,6 +130,7 @@ def prepare_campaign_constraints(
     show_archived=False,
     only_used_sources=True,
     show_blacklisted_publishers=dash.constants.PublisherBlacklistFilter.SHOW_ALL,
+    **kwargs,
 ):
     allowed_ad_groups = campaign.adgroup_set.all().exclude_archived(show_archived)
     if filtered_ad_groups:
@@ -173,6 +180,7 @@ def prepare_ad_group_constraints(
     show_archived=False,
     only_used_sources=True,
     show_blacklisted_publishers=dash.constants.PublisherBlacklistFilter.SHOW_ALL,
+    **kwargs,
 ):
     allowed_content_ads = models.ContentAd.objects.filter(ad_group=ad_group).exclude_archived(show_archived)
     if filtered_content_ads:

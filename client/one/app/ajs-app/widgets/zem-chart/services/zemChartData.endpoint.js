@@ -116,6 +116,7 @@ angular
                 converted.filtered_account_types = config.filteredAccountTypes
                     ? config.filteredAccountTypes.join(',')
                     : undefined;
+                converted.filtered_businesses = config.filteredBusinesses;
                 converted.show_blacklisted_publishers =
                     config.filteredPublisherStatus;
                 converted.show_archived = config.showArchived;

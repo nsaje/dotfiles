@@ -68,6 +68,7 @@ angular
                     filteredSources: zemDataFilterService.getFilteredSources(),
                     filteredAgencies: zemDataFilterService.getFilteredAgencies(),
                     filteredAccountTypes: zemDataFilterService.getFilteredAccountTypes(),
+                    filteredBusinesses: zemDataFilterService.getFilteredBusinesses(),
                     filteredPublisherStatus: zemDataFilterService.getFilteredPublisherStatus(),
                     showArchived: zemDataFilterService.getShowArchived(),
                     selection: selection,

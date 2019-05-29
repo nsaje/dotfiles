@@ -35,6 +35,7 @@ angular
             FILTERED_MEDIA_SOURCES: 3,
             SHOW_ARCHIVED_SOURCES: 4,
             SHOW_BLACKLISTED_PUBLISHERS: 5,
+            FILTERED_BUSINESSES: 6,
         };
 
         function DataSource(endpoint, $scope) {
@@ -450,6 +451,9 @@ angular
                     case FILTER.FILTERED_ACCOUNT_TYPES:
                         config.filteredAccountTypes = value;
                         break;
+                    case FILTER.FILTERED_BUSINESSES:
+                        config.filteredBusinesses = value;
+                        break;
                     case FILTER.FILTERED_MEDIA_SOURCES:
                         config.filteredSources = value;
                         break;
@@ -568,6 +572,8 @@ angular
                         return config.filteredAgencies;
                     case FILTER.FILTERED_ACCOUNT_TYPES:
                         return config.filteredAccountTypes;
+                    case FILTER.FILTERED_BUSINESSES:
+                        return config.filteredBusinesses;
                     case FILTER.FILTERED_MEDIA_SOURCES:
                         return config.filteredSources;
                     case FILTER.SHOW_ARCHIVED_SOURCES:

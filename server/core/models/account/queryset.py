@@ -2,6 +2,9 @@ from django.db import models
 
 import core.features.bcm
 import core.models.helpers
+import dash.constants
+
+OEN_ACCOUNT_ID = 305
 
 
 class AccountQuerySet(models.QuerySet):
@@ -24,6 +27,23 @@ class AccountQuerySet(models.QuerySet):
         if not account_types:
             return self
         return self.filter(settings__account_type__in=account_types)
+
+    def filter_by_business(self, business_types):
+        if not business_types:
+            return self
+        predicate = models.Q()
+        if dash.constants.Business.Z1 in business_types:
+            if dash.constants.Business.OEN not in business_types:
+                predicate = predicate | models.Q(id=OEN_ACCOUNT_ID)
+            if dash.constants.Business.LIGATUS not in business_types:
+                predicate = predicate | models.Q(entity_tags__name__icontains="biz/ligatus")
+            return self.exclude(predicate)
+        else:
+            if dash.constants.Business.OEN in business_types:
+                predicate = predicate | models.Q(id=OEN_ACCOUNT_ID)
+            if dash.constants.Business.LIGATUS in business_types:
+                predicate = predicate | models.Q(entity_tags__name__icontains="biz/ligatus")
+            return self.filter(predicate)
 
     def exclude_archived(self, show_archived=False):
         if show_archived:
