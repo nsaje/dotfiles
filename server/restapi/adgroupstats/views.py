@@ -10,6 +10,8 @@ REALTIME_STATS_AGENCIES = [
     55,  # Outbrain, nsaje, 7.12.2016
     78,  # Adtechnacity, nsaje, 12.5.2017
     33,  # inPowered, nsaje, 12.6.2017
+    56,  # Feature Forward, nsaje, 29.5.2019
+    448,  # ReigNN, nsaje, 29.5.2019
 ]
 
 
