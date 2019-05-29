@@ -4,10 +4,12 @@ import logging
 import influx
 
 import automation.campaignstop
+from dash import forms
 from dash import models
 from dash.views import helpers
 from dash.views import navigation_helpers
 from utils import api_common
+from utils import exc
 
 logger = logging.getLogger(__name__)
 
@@ -29,7 +31,7 @@ class UsesBCMV2View(api_common.BaseApiView):
 
 class NavigationDataView(api_common.BaseApiView):
     def get(self, request, level_, id_):
-        filtered_sources = helpers.get_filtered_sources(request.user, request.GET.get("filtered_sources"))
+        filtered_sources = helpers.get_filtered_sources(request.GET.get("filtered_sources"))
 
         account, campaign, ad_group = None, None, None
         response = {}
@@ -71,7 +73,7 @@ class NavigationDataView(api_common.BaseApiView):
 
 class NavigationAllAccountsDataView(api_common.BaseApiView):
     def get(self, request):
-        filtered_sources = helpers.get_filtered_sources(request.user, request.GET.get("filtered_sources"))
+        filtered_sources = helpers.get_filtered_sources(request.GET.get("filtered_sources"))
 
         accounts = models.Account.objects.all().filter_by_user(request.user).filter_by_sources(filtered_sources)
         accounts_count = accounts.count()
@@ -100,7 +102,9 @@ class NavigationTreeView(api_common.BaseApiView):
             return self._get(request)
 
     def _get(self, request):
-        view_filter = helpers.ViewFilter(request=request)
+        view_filter = forms.ViewFilterForm(request.GET)
+        if not view_filter.is_valid():
+            raise exc.ValidationError(errors=dict(view_filter.errors))
         user = request.user
         load_settings = request.GET.get("loadStatuses") != "false"
 
@@ -121,7 +125,7 @@ class NavigationTreeView(api_common.BaseApiView):
         # load necessary objects
         ad_groups = (
             models.AdGroup.objects.all()
-            .filter_by_sources(view_filter.filtered_sources)
+            .filter_by_sources(view_filter.cleaned_data.get("filtered_sources"))
             .filter(campaign__in=campaigns)
             .exclude_archived()
             .order_by("name")
@@ -159,7 +163,7 @@ class NavigationTreeView(api_common.BaseApiView):
     def _fetch_campaign_data_from_db(self, user, view_filter, accounts, load_settings=True):
         campaigns = (
             models.Campaign.objects.all()
-            .filter_by_sources(view_filter.filtered_sources)
+            .filter_by_sources(view_filter.cleaned_data.get("filtered_sources"))
             .filter(account__in=accounts)
             .exclude_archived()
             .order_by("name")
@@ -193,9 +197,9 @@ class NavigationTreeView(api_common.BaseApiView):
         accounts = (
             models.Account.objects.all()
             .filter_by_user(user)
-            .filter_by_sources(view_filter.filtered_sources)
-            .filter_by_agencies(view_filter.filtered_agencies)
-            .filter_by_account_types(view_filter.filtered_account_types)
+            .filter_by_sources(view_filter.cleaned_data.get("filtered_sources"))
+            .filter_by_agencies(view_filter.cleaned_data.get("filtered_agencies"))
+            .filter_by_account_types(view_filter.cleaned_data.get("filtered_account_types"))
             .exclude(pk__in=ACCOUNTS_EXCLUDED_FROM_SEARCH)
             .exclude_archived()
         )

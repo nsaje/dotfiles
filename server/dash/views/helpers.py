@@ -1,5 +1,4 @@
 import datetime
-import json
 import logging
 from decimal import Decimal
 
@@ -8,7 +7,6 @@ import pytz
 from django.conf import settings
 from django.db.models import Max
 from django.db.models import Q
-from django.utils.functional import cached_property
 
 import automation
 import automation.autopilot
@@ -64,43 +62,7 @@ def get_stats_end_date(end_time):
     return date.date()
 
 
-class ViewFilter(object):
-    """Convenience class for extracting filters from requests"""
-
-    def __init__(self, request=None):
-        self.request = request
-        self.data = None
-        if request.method == "GET":
-            self.data = request.GET
-        elif request.method == "PUT":
-            self.data = json.loads(request.body)
-
-        self.show_archived = self.data.get("show_archived") == "true"
-
-    @cached_property
-    def start_date(self):
-        return get_stats_start_date(self.data.get("start_date"))
-
-    @cached_property
-    def end_date(self):
-        return get_stats_end_date(self.data.get("end_date"))
-
-    @cached_property
-    def filtered_sources(self):
-        if self.request.user is not None:
-            return get_filtered_sources(self.request.user, self.data.get("filtered_sources"))
-        return None
-
-    @cached_property
-    def filtered_agencies(self):
-        return get_filtered_agencies(self.data.get("filtered_agencies"))
-
-    @cached_property
-    def filtered_account_types(self):
-        return get_filtered_account_types(self.data.get("filtered_account_types"))
-
-
-def get_filtered_sources(user, sources_filter):
+def get_filtered_sources(sources_filter):
     filtered_sources = models.Source.objects.all()
     if not sources_filter:
         return filtered_sources

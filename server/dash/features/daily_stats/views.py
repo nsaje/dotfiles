@@ -10,6 +10,7 @@ import stats.constraints_helper
 import stats.helpers
 from dash import campaign_goals
 from dash import constants
+from dash import forms
 from dash import models
 from utils import api_common
 from utils import columns
@@ -23,13 +24,15 @@ MAX_DAILY_STATS_BREAKDOWNS = 3
 
 class BaseDailyStatsView(api_common.BaseApiView):
     def extract_params(self, request, selected_only):
-        view_filter = dash.views.helpers.ViewFilter(request)
+        view_filter = forms.ViewFilterForm(request.GET)
+        if not view_filter.is_valid():
+            raise exc.ValidationError(errors=dict(view_filter.errors))
         return {
             "user": request.user,
-            "start_date": view_filter.start_date,
-            "end_date": view_filter.end_date,
-            "filtered_sources": view_filter.filtered_sources,
-            "show_archived": view_filter.show_archived,
+            "start_date": view_filter.cleaned_data.get("start_date"),
+            "end_date": view_filter.cleaned_data.get("end_date"),
+            "filtered_sources": view_filter.cleaned_data.get("filtered_sources"),
+            "show_archived": view_filter.cleaned_data.get("show_archived"),
             "only_used_sources": False,
         }
 
@@ -131,10 +134,11 @@ class BaseDailyStatsView(api_common.BaseApiView):
 
     def get_goals(self, request, conversion_goals=None, campaign=None, pixels=None):
         user = request.user
-        view_filter = dash.views.helpers.ViewFilter(request)
-        start_date = view_filter.start_date
-        end_date = view_filter.end_date
-
+        view_filter = forms.ViewFilterForm(request.GET)
+        if not view_filter.is_valid():
+            raise exc.ValidationError(errors=dict(view_filter.errors))
+        start_date = view_filter.cleaned_data.get("start_date")
+        end_date = view_filter.cleaned_data.get("end_date")
         result = {}
         if conversion_goals is not None:
             result["conversion_goals"] = dash.views.helpers.get_conversion_goals_wo_pixels(conversion_goals)
@@ -175,8 +179,8 @@ class AllAccountsDailyStatsView(BaseDailyStatsView):
 
     def extract_params(self, request, selected_only):
         params = super(AllAccountsDailyStatsView, self).extract_params(request, selected_only)
-        params["filtered_agencies"] = self.view_filter.filtered_agencies
-        params["filtered_account_types"] = self.view_filter.filtered_account_types
+        params["filtered_agencies"] = self.view_filter.cleaned_data.get("filtered_agencies")
+        params["filtered_account_types"] = self.view_filter.cleaned_data.get("filtered_account_types")
         return params
 
 
@@ -192,12 +196,14 @@ class AllAccountsAccountsDailyStats(AllAccountsDailyStatsView):
         if not request.user.has_perm("zemauth.all_accounts_accounts_view"):
             raise exc.MissingDataError()
 
-        self.view_filter = dash.views.helpers.ViewFilter(request=request)
+        self.view_filter = forms.ViewFilterForm(request.GET)
+        if not self.view_filter.is_valid():
+            raise exc.ValidationError(errors=dict(self.view_filter.errors))
         accounts = (
             models.Account.objects.all()
             .filter_by_user(request.user)
-            .filter_by_agencies(self.view_filter.filtered_agencies)
-            .filter_by_account_types(self.view_filter.filtered_account_types)
+            .filter_by_agencies(self.view_filter.cleaned_data.get("filtered_agencies"))
+            .filter_by_account_types(self.view_filter.cleaned_data.get("filtered_account_types"))
         )
         uses_bcm_v2 = dash.views.helpers.all_accounts_uses_bcm_v2(request.user)
 
@@ -222,7 +228,9 @@ class AllAccountsSourcesDailyStats(AllAccountsDailyStatsView):
         if not request.user.has_perm("zemauth.all_accounts_accounts_view"):
             raise exc.MissingDataError()
 
-        self.view_filter = dash.views.helpers.ViewFilter(request=request)
+        self.view_filter = forms.ViewFilterForm(request.GET)
+        if not self.view_filter.is_valid():
+            raise exc.ValidationError(errors=dict(self.view_filter.errors))
         uses_bcm_v2 = dash.views.helpers.all_accounts_uses_bcm_v2(request.user)
 
         self.validate_metrics(request.GET.getlist("metrics"), uses_bcm_v2=uses_bcm_v2)
@@ -248,7 +256,9 @@ class AllAccountsPublishersDailyStats(AllAccountsDailyStatsView):
         if not request.user.has_perm("zemauth.can_see_publishers"):
             raise exc.MissingDataError()
 
-        self.view_filter = dash.views.helpers.ViewFilter(request=request)
+        self.view_filter = forms.ViewFilterForm(request.GET)
+        if not self.view_filter.is_valid():
+            raise exc.ValidationError(errors=dict(self.view_filter.errors))
         uses_bcm_v2 = dash.views.helpers.all_accounts_uses_bcm_v2(request.user)
 
         self.validate_metrics(request.GET.getlist("metrics"), uses_bcm_v2=uses_bcm_v2)
@@ -265,7 +275,9 @@ class AllAccountsDeliveryDailyStats(AllAccountsDailyStatsView):
         if not request.user.has_perm("zemauth.can_see_top_level_delivery_breakdowns"):
             raise exc.MissingDataError()
 
-        self.view_filter = dash.views.helpers.ViewFilter(request=request)
+        self.view_filter = forms.ViewFilterForm(request.GET)
+        if not self.view_filter.is_valid():
+            raise exc.ValidationError(errors=dict(self.view_filter.errors))
         uses_bcm_v2 = dash.views.helpers.all_accounts_uses_bcm_v2(request.user)
 
         self.validate_metrics(request.GET.getlist("metrics"), uses_bcm_v2=uses_bcm_v2)

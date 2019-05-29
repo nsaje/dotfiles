@@ -38,8 +38,8 @@ describe('zemInfoboxEndpoint', function() {
         zemInfoboxEndpoint.getInfoboxData(entity);
         expect($http.get).toHaveBeenCalledWith('/api/accounts/overview/', {
             params: {
-                start_date: dateRange.startDate.format(),
-                end_date: dateRange.endDate.format(),
+                start_date: dateRange.startDate.format('YYYY-MM-DD'),
+                end_date: dateRange.endDate.format('YYYY-MM-DD'),
                 filtered_agencies: filteredAgencies.join(','),
                 filtered_account_types: filteredAccountTypes.join(','),
             },
@@ -65,8 +65,8 @@ describe('zemInfoboxEndpoint', function() {
         zemInfoboxEndpoint.getInfoboxData(entity);
         expect($http.get).toHaveBeenCalledWith('/api/accounts/999/overview/', {
             params: {
-                start_date: dateRange.startDate.format(),
-                end_date: dateRange.endDate.format(),
+                start_date: dateRange.startDate.format('YYYY-MM-DD'),
+                end_date: dateRange.endDate.format('YYYY-MM-DD'),
             },
         });
     });
@@ -90,8 +90,8 @@ describe('zemInfoboxEndpoint', function() {
         zemInfoboxEndpoint.getInfoboxData(entity);
         expect($http.get).toHaveBeenCalledWith('/api/campaigns/999/overview/', {
             params: {
-                start_date: dateRange.startDate.format(),
-                end_date: dateRange.endDate.format(),
+                start_date: dateRange.startDate.format('YYYY-MM-DD'),
+                end_date: dateRange.endDate.format('YYYY-MM-DD'),
             },
         });
     });
@@ -119,8 +119,8 @@ describe('zemInfoboxEndpoint', function() {
         zemInfoboxEndpoint.getInfoboxData(entity);
         expect($http.get).toHaveBeenCalledWith('/api/ad_groups/999/overview/', {
             params: {
-                start_date: dateRange.startDate.format(),
-                end_date: dateRange.endDate.format(),
+                start_date: dateRange.startDate.format('YYYY-MM-DD'),
+                end_date: dateRange.endDate.format('YYYY-MM-DD'),
                 filtered_sources: filteredSources.join(','),
             },
         });

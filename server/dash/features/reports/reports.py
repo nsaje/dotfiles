@@ -144,9 +144,7 @@ class ReportJobExecutor(JobExecutor):
 
         filtered_sources = []
         if filter_constraints.get("sources"):
-            filtered_sources = dash.views.helpers.get_filtered_sources(
-                self.job.user, filter_constraints.get("sources", [])
-            )
+            filtered_sources = dash.views.helpers.get_filtered_sources(filter_constraints.get("sources", []))
 
         view, breakdowns = self._extract_view_breakdown(self.job)
         ad_group_name, campaign_name, account_name = self._extract_entity_names(self.job.user, filter_constraints)
@@ -177,7 +175,7 @@ class ReportJobExecutor(JobExecutor):
         filter_constraints = helpers.get_filter_constraints(job.query["filters"])
         start_date = filter_constraints["start_date"]
         end_date = filter_constraints["end_date"]
-        filtered_sources = dash.views.helpers.get_filtered_sources(user, filter_constraints.get("sources", []))
+        filtered_sources = dash.views.helpers.get_filtered_sources(filter_constraints.get("sources", []))
         filtered_account_types = dash.views.helpers.get_filtered_account_types(
             filter_constraints.get("account_types", [])
         )
@@ -436,7 +434,7 @@ class ReportJobExecutor(JobExecutor):
 
         filtered_sources = []
         if filter_constraints.get("sources"):
-            filtered_sources = dash.views.helpers.get_filtered_sources(job.user, filter_constraints.get("sources", []))
+            filtered_sources = dash.views.helpers.get_filtered_sources(filter_constraints.get("sources", []))
 
         today = utils.dates_helper.local_today()
         expiry_date = today + datetime.timedelta(days=3)

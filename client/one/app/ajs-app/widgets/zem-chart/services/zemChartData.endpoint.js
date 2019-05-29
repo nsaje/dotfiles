@@ -88,8 +88,12 @@ angular
                 var converted = {};
 
                 converted.metrics = config.metrics;
-                converted.start_date = config.dateRange.startDate.format();
-                converted.end_date = config.dateRange.endDate.format();
+                converted.start_date = config.dateRange.startDate.format(
+                    'YYYY-MM-DD'
+                );
+                converted.end_date = config.dateRange.endDate.format(
+                    'YYYY-MM-DD'
+                );
 
                 converted.totals = config.totals;
                 converted.select_all = config.selection.selectAll

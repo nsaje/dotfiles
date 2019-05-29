@@ -32,26 +32,26 @@ class BreakdownFormTest(TestCase):
             "order": "-clicks",
         }
 
-        form = forms.BreakdownForm(self.user, breakdown, request_body)
+        form = forms.BreakdownForm(breakdown, request_body)
 
         self.assertTrue(form.is_valid())
-        self.assertDictEqual(
-            form.cleaned_data,
-            {
-                "breakdown": ["account_id", "source_id", "dma", "day"],
-                "start_date": datetime.date(2016, 1, 1),
-                "end_date": datetime.date(2016, 2, 3),
-                "filtered_sources": test_helper.QuerySetMatcher(models.Source.objects.filter(pk__in=[1, 3, 4])),
-                "filtered_agencies": test_helper.QuerySetMatcher(models.Agency.objects.filter(pk=1)),
-                "filtered_account_types": test_helper.ListMatcher([1, 3, 2]),
-                "show_archived": True,
-                "parents": ["123-7", "23-33", "23-24"],
-                "offset": 12,
-                "limit": 20,
-                "order": "-clicks",
-                "show_blacklisted_publishers": "all",
-            },
+        self.assertEqual(form.cleaned_data["breakdown"], ["account_id", "source_id", "dma", "day"])
+        self.assertEqual(form.cleaned_data["start_date"], datetime.date(2016, 1, 1))
+        self.assertEqual(form.cleaned_data["end_date"], datetime.date(2016, 2, 3))
+        self.assertEqual(
+            form.cleaned_data["filtered_sources"],
+            test_helper.QuerySetMatcher(models.Source.objects.filter(pk__in=[1, 3, 4])),
         )
+        self.assertEqual(
+            form.cleaned_data["filtered_agencies"], test_helper.QuerySetMatcher(models.Agency.objects.filter(pk=1))
+        )
+        self.assertEqual(form.cleaned_data["filtered_account_types"], test_helper.ListMatcher([1, 3, 2]))
+        self.assertEqual(form.cleaned_data["show_archived"], True)
+        self.assertEqual(form.cleaned_data["parents"], ["123-7", "23-33", "23-24"])
+        self.assertEqual(form.cleaned_data["offset"], 12)
+        self.assertEqual(form.cleaned_data["limit"], 20)
+        self.assertEqual(form.cleaned_data["order"], "-clicks")
+        self.assertEqual(form.cleaned_data["show_blacklisted_publishers"], "all")
 
     def test_funky_parents(self):
         request_body = {
@@ -62,7 +62,7 @@ class BreakdownFormTest(TestCase):
             "parents": [None],
         }
 
-        form = forms.BreakdownForm(self.user, "/account", copy.copy(request_body))
+        form = forms.BreakdownForm("/account", copy.copy(request_body))
         self.assertTrue(form.is_valid())
         self.assertEqual([], form.cleaned_data["parents"])
 
@@ -74,12 +74,12 @@ class BreakdownFormTest(TestCase):
             "parents": [None, "mekani ć", 1],
         }
 
-        form = forms.BreakdownForm(self.user, "/account", copy.copy(request_body))
+        form = forms.BreakdownForm("/account", copy.copy(request_body))
         self.assertTrue(form.is_valid())
         self.assertEqual(["mekani ć", "1"], form.cleaned_data["parents"])
 
     def test_required_fields(self):
-        form = forms.BreakdownForm(self.user, "", {})
+        form = forms.BreakdownForm("", {})
 
         self.assertFalse(form.is_valid())
 
@@ -97,20 +97,20 @@ class BreakdownFormTest(TestCase):
     def test_clean_breakdown(self):
         request_body = {"start_date": "2016-01-01", "end_date": "2016-02-03", "limit": 10, "offset": 20}
 
-        form = forms.BreakdownForm(self.user, "/account/source/dma/day", copy.copy(request_body))
+        form = forms.BreakdownForm("/account/source/dma/day", copy.copy(request_body))
         self.assertTrue(form.is_valid())
 
         self.assertEqual(["account_id", "source_id", "dma", "day"], form.cleaned_data["breakdown"])
 
-        form = forms.BreakdownForm(self.user, "/account/", copy.copy(request_body))
+        form = forms.BreakdownForm("/account/", copy.copy(request_body))
         self.assertTrue(form.is_valid())
 
         self.assertEqual(["account_id"], form.cleaned_data["breakdown"])
 
-        form = forms.BreakdownForm(self.user, "/account/asd/", copy.copy(request_body))
+        form = forms.BreakdownForm("/account/asd/", copy.copy(request_body))
         self.assertTrue(form.is_valid())
 
         self.assertEqual(["account_id", "asd"], form.cleaned_data["breakdown"])
 
-        form = forms.BreakdownForm(self.user, "", copy.copy(request_body))
+        form = forms.BreakdownForm("", copy.copy(request_body))
         self.assertFalse(form.is_valid(), "Breakdown path should be specified")

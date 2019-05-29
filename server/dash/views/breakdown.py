@@ -136,7 +136,7 @@ class AllAccountsBreakdown(api_common.BaseApiView):
             raise exc.MissingDataError()
 
         request_body = json.loads(request.body).get("params")
-        form = forms.BreakdownForm(request.user, breakdown, request_body)
+        form = forms.BreakdownForm(breakdown, request_body)
         if not form.is_valid():
             raise exc.ValidationError(errors=dict(form.errors))
 
@@ -207,7 +207,7 @@ class AccountBreakdown(api_common.BaseApiView):
         currency = stats.helpers.get_report_currency(request.user, [account])
 
         request_body = json.loads(request.body).get("params")
-        form = forms.BreakdownForm(request.user, breakdown, request_body)
+        form = forms.BreakdownForm(breakdown, request_body)
         if not form.is_valid():
             raise exc.ValidationError(errors=dict(form.errors))
 
@@ -286,7 +286,7 @@ class CampaignBreakdown(api_common.BaseApiView):
         campaign = helpers.get_campaign(request.user, campaign_id, select_related=True)
 
         request_body = json.loads(request.body).get("params")
-        form = forms.BreakdownForm(request.user, breakdown, request_body)
+        form = forms.BreakdownForm(breakdown, request_body)
         if not form.is_valid():
             raise exc.ValidationError(errors=dict(form.errors))
 
@@ -375,7 +375,7 @@ class AdGroupBreakdown(api_common.BaseApiView):
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
 
         request_body = json.loads(request.body).get("params")
-        form = forms.BreakdownForm(request.user, breakdown, request_body)
+        form = forms.BreakdownForm(breakdown, request_body)
         if not form.is_valid():
             raise exc.ValidationError(errors=dict(form.errors))
 

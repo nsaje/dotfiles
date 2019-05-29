@@ -15,8 +15,8 @@ angular
             var dateRange = zemDataFilterService.getDateRange();
 
             var params = {
-                start_date: dateRange.startDate.format(),
-                end_date: dateRange.endDate.format(),
+                start_date: dateRange.startDate.format('YYYY-MM-DD'),
+                end_date: dateRange.endDate.format('YYYY-MM-DD'),
             };
 
             params = setGetInfoboxDataParams(entityType, params);

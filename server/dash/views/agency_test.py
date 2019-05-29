@@ -4554,7 +4554,9 @@ class CampaignContentInsightsTest(TestCase):
             cis.get(fake_request(self.user()), 1)
 
         add_permissions(self.user(), ["can_view_campaign_content_insights_side_tab"])
-        response = cis.get(fake_request(self.user()), 1)
+        request = fake_request(self.user())
+        request.GET = {"start_date": "2019-01-01", "end_date": "2019-02-01"}
+        response = cis.get(request, 1)
         self.assertEqual(http.client.OK, response.status_code)
         self.assertDictEqual(
             {
@@ -4580,7 +4582,9 @@ class CampaignContentInsightsTest(TestCase):
         cad.save()
 
         mock_query.return_value = [{"content_ad_id": cad.id, "clicks": 1000, "impressions": 10000}]
-        response = cis.get(fake_request(self.user()), 1)
+        request = fake_request(self.user())
+        request.GET = {"start_date": "2019-01-01", "end_date": "2019-02-01"}
+        response = cis.get(request, 1)
         self.assertEqual(http.client.OK, response.status_code)
         self.assertDictEqual(
             {
@@ -4602,7 +4606,10 @@ class CampaignContentInsightsTest(TestCase):
         cad.save()
 
         mock_query.return_value = [{"content_ad_id": cad.id, "clicks": 1000, "impressions": 10000}]
-        response = cis.get(fake_request(self.user()), 1)
+
+        request = fake_request(self.user())
+        request.GET = {"start_date": "2019-01-01", "end_date": "2019-02-01"}
+        response = cis.get(request, 1)
         self.assertEqual(http.client.OK, response.status_code)
         self.assertDictEqual(
             {
@@ -4638,7 +4645,9 @@ class CampaignContentInsightsTest(TestCase):
             {"content_ad_id": cad2.id, "clicks": 9000, "impressions": 10000},
         ]
 
-        response = cis.get(fake_request(self.user()), 1)
+        request = fake_request(self.user())
+        request.GET = {"start_date": "2019-01-01", "end_date": "2019-02-01"}
+        response = cis.get(request, 1)
         self.assertEqual(http.client.OK, response.status_code)
         self.assertDictEqual(
             {
@@ -4674,7 +4683,9 @@ class CampaignContentInsightsTest(TestCase):
             {"content_ad_id": cad2.id, "clicks": 1000, "impressions": 100000},
         ]
 
-        response = cis.get(fake_request(self.user()), 1)
+        request = fake_request(self.user())
+        request.GET = {"start_date": "2019-01-01", "end_date": "2019-02-01"}
+        response = cis.get(request, 1)
         self.assertEqual(http.client.OK, response.status_code)
         self.assertDictEqual(
             {

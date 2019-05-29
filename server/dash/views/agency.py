@@ -1590,9 +1590,11 @@ class CampaignContentInsights(api_common.BaseApiView):
             raise exc.AuthorizationError()
 
         campaign = helpers.get_campaign(request.user, campaign_id)
-        view_filter = helpers.ViewFilter(request)
-        start_date = view_filter.start_date
-        end_date = view_filter.end_date
+        view_filter = forms.ViewFilterForm(request.GET)
+        if not view_filter.is_valid():
+            raise exc.ValidationError(errors=dict(view_filter.errors))
+        start_date = view_filter.cleaned_data.get("start_date")
+        end_date = view_filter.cleaned_data.get("end_date")
 
         best_performer_rows, worst_performer_rows = content_insights_helper.fetch_campaign_content_ad_metrics(
             request.user, campaign, start_date, end_date

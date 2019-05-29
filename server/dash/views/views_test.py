@@ -888,7 +888,7 @@ class AdGroupOverviewTest(TestCase):
         self.client.login(username=self.user.username, password="norris")
         reversed_url = reverse("ad_group_overview", kwargs={"ad_group_id": ad_group_id})
 
-        response = self.client.get(reversed_url, follow=True)
+        response = self.client.get(reversed_url, {"start_date": "2019-01-01", "end_date": "2019-02-01"}, follow=True)
         return json.loads(response.content)
 
     def _get_setting(self, settings, name):
@@ -1064,7 +1064,7 @@ class CampaignOverviewTest(TestCase):
     def _get_campaign_overview(self, campaign_id, user_id=2, with_status=False):
         self.client.login(username=self.user.username, password="norris")
         reversed_url = reverse("campaign_overview", kwargs={"campaign_id": campaign_id})
-        response = self.client.get(reversed_url, follow=True)
+        response = self.client.get(reversed_url, {"start_date": "2019-01-01", "end_date": "2019-02-01"}, follow=True)
         return json.loads(response.content)
 
     def _get_setting(self, settings, name):
@@ -1159,7 +1159,7 @@ class AccountOverviewTest(TestCase):
         user = User.objects.get(pk=user_id)
         self.client.login(username=user.username, password="secret")
         reversed_url = reverse("account_overview", kwargs={"account_id": account_id})
-        response = self.client.get(reversed_url, follow=True)
+        response = self.client.get(reversed_url, {"start_date": "2019-01-01", "end_date": "2019-02-01"}, follow=True)
         return json.loads(response.content)
 
     def _get_setting(self, settings, name):
@@ -1252,7 +1252,7 @@ class AllAccountsOverviewTest(TestCase):
         user = User.objects.get(pk=user_id)
         self.client.login(username=user.username, password="secret")
         reversed_url = reverse("all_accounts_overview", kwargs={})
-        response = self.client.get(reversed_url, follow=True)
+        response = self.client.get(reversed_url, {"start_date": "2019-01-01", "end_date": "2019-02-01"}, follow=True)
         return json.loads(response.content)
 
     @patch("dash.infobox_helpers.get_mtd_accounts_spend")

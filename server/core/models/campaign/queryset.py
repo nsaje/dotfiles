@@ -31,3 +31,14 @@ class CampaignQuerySet(models.QuerySet):
         if show_archived:
             return self
         return self.exclude(archived=True)
+
+    def filter_active(self):
+        import automation.campaignstop
+
+        # NOTE: has to be at the end because it has to do a separate query and thus evaluates the queryset
+        campaignstop_states = automation.campaignstop.get_campaignstop_states(self)
+        active_ids = []
+        for campaign_id, campaignstop_state in campaignstop_states.items():
+            if campaignstop_state["allowed_to_run"]:
+                active_ids.append(campaign_id)
+        return self.filter(id__in=active_ids)

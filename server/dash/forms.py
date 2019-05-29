@@ -1288,18 +1288,35 @@ class BudgetLineItemAdminForm(forms.ModelForm):
         fields = ["campaign", "credit", "start_date", "end_date", "amount", "comment"]
 
 
-class BreakdownForm(forms.Form):
-    def __init__(self, user, breakdown, request_body, *args, **kwargs):
-        request_body["breakdown"] = breakdown
-        self.user = user
+class ViewFilterForm(forms.Form):
 
-        super(BreakdownForm, self).__init__(request_body, *args, **kwargs)
-
-    start_date = forms.DateField(error_messages={"required": "Please provide start date."})
-
-    end_date = forms.DateField(error_messages={"required": "Please provide end date."})
+    start_date = forms.DateField(required=False)
+    end_date = forms.DateField(required=False)
 
     show_archived = forms.BooleanField(required=False)
+
+    filtered_sources = TypedMultipleAnyChoiceField(required=False, coerce=str)
+    filtered_agencies = TypedMultipleAnyChoiceField(required=False, coerce=str)
+    filtered_account_types = TypedMultipleAnyChoiceField(required=False, coerce=str)
+
+    def clean_filtered_sources(self):
+        return helpers.get_filtered_sources(self.cleaned_data.get("filtered_sources"))
+
+    def clean_filtered_agencies(self):
+        return helpers.get_filtered_agencies(self.cleaned_data.get("filtered_agencies"))
+
+    def clean_filtered_account_types(self):
+        return helpers.get_filtered_account_types(self.cleaned_data.get("filtered_account_types"))
+
+
+class BreakdownForm(ViewFilterForm):
+    def __init__(self, breakdown, request_body, *args, **kwargs):
+        request_body["breakdown"] = breakdown
+        super().__init__(request_body, *args, **kwargs)
+
+    start_date = forms.DateField(error_messages={"required": "Please provide start date."})
+    end_date = forms.DateField(error_messages={"required": "Please provide end date."})
+
     show_blacklisted_publishers = forms.TypedChoiceField(
         required=False, choices=constants.PublisherBlacklistFilter.get_choices(), coerce=str, empty_value=None
     )
@@ -1309,22 +1326,9 @@ class BreakdownForm(forms.Form):
 
     parents = TypedMultipleAnyChoiceField(required=False, coerce=str)
 
-    filtered_sources = TypedMultipleAnyChoiceField(required=False, coerce=str)
-    filtered_agencies = TypedMultipleAnyChoiceField(required=False, coerce=str)
-    filtered_account_types = TypedMultipleAnyChoiceField(required=False, coerce=str)
-
     order = PlainCharField(required=False)
 
     breakdown = PlainCharField(required=True)
-
-    def clean_filtered_sources(self):
-        return helpers.get_filtered_sources(self.user, self.cleaned_data.get("filtered_sources"))
-
-    def clean_filtered_agencies(self):
-        return helpers.get_filtered_agencies(self.cleaned_data.get("filtered_agencies"))
-
-    def clean_filtered_account_types(self):
-        return helpers.get_filtered_account_types(self.cleaned_data.get("filtered_account_types"))
 
     def clean_breakdown(self):
         return [stats.constants.get_dimension_identifier(x) for x in self.cleaned_data["breakdown"].split("/") if x]
@@ -1845,8 +1849,6 @@ class PublisherTargetingForm(forms.Form):
 
     def __init__(self, user, *args, **kwargs):
         super(PublisherTargetingForm, self).__init__(*args, **kwargs)
-        self.user = user
-
         self.fields["ad_group"].queryset = models.AdGroup.objects.all().filter_by_user(user)
         self.fields["campaign"].queryset = models.Campaign.objects.all().filter_by_user(user)
         self.fields["account"].queryset = models.Account.objects.all().filter_by_user(user)
@@ -1913,7 +1915,7 @@ class PublisherTargetingForm(forms.Form):
         return None
 
     def clean_filtered_sources(self):
-        return helpers.get_filtered_sources(self.user, self.cleaned_data.get("filtered_sources"))
+        return helpers.get_filtered_sources(self.cleaned_data.get("filtered_sources"))
 
 
 class PublisherGroupUploadForm(forms.Form, ParseCSVExcelFile):

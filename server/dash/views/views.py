@@ -225,15 +225,16 @@ class AdGroupOverview(api_common.BaseApiView):
     @db_router.use_stats_read_replica()
     def get(self, request, ad_group_id):
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
-        view_filter = helpers.ViewFilter(request)
+        view_filter = forms.ViewFilterForm(request.GET)
+        if not view_filter.is_valid():
+            raise exc.ValidationError(errors=dict(view_filter.errors))
 
-        start_date = view_filter.start_date
-        end_date = view_filter.end_date
-
+        start_date = view_filter.cleaned_data.get("start_date")
+        end_date = view_filter.cleaned_data.get("end_date")
         async_perf_query = threads.AsyncFunction(partial(infobox_helpers.get_yesterday_adgroup_spend, ad_group))
         async_perf_query.start()
 
-        filtered_sources = view_filter.filtered_sources
+        filtered_sources = view_filter.cleaned_data.get("filtered_sources")
         ad_group_settings = ad_group.get_current_settings()
 
         ad_group_running_status = infobox_helpers.get_adgroup_running_status(request.user, ad_group, filtered_sources)
@@ -395,9 +396,11 @@ class CampaignOverview(api_common.BaseApiView):
         campaign = helpers.get_campaign(request.user, campaign_id)
         campaign_settings = campaign.get_current_settings()
 
-        view_filter = helpers.ViewFilter(request)
-        start_date = view_filter.start_date
-        end_date = view_filter.end_date
+        view_filter = forms.ViewFilterForm(request.GET)
+        if not view_filter.is_valid():
+            raise exc.ValidationError(errors=dict(view_filter.errors))
+        start_date = view_filter.cleaned_data.get("start_date")
+        end_date = view_filter.cleaned_data.get("end_date")
 
         campaign_running_status = infobox_helpers.get_campaign_running_status(campaign)
 
@@ -672,7 +675,7 @@ class AdGroupSources(api_common.BaseApiView):
 
         allowed_sources = ad_group.campaign.account.allowed_sources.all()
         existing_ad_group_sources = ad_group.adgroupsource_set.exclude(ad_review_only=True)
-        filtered_sources = helpers.get_filtered_sources(request.user, request.GET.get("filtered_sources"))
+        filtered_sources = helpers.get_filtered_sources(request.GET.get("filtered_sources"))
         sources_with_credentials = models.DefaultSourceSettings.objects.all().with_credentials().values("source")
         available_sources = (
             allowed_sources.exclude(pk__in=existing_ad_group_sources.values_list("source_id"))
@@ -968,10 +971,11 @@ class AllAccountsOverview(api_common.BaseApiView):
     @db_router.use_stats_read_replica()
     def get(self, request):
         # infobox only filters by agency and account type
-        view_filter = helpers.ViewFilter(request=request)
-        start_date = view_filter.start_date
-        end_date = view_filter.end_date
-
+        view_filter = forms.ViewFilterForm(request.GET)
+        if not view_filter.is_valid():
+            raise exc.ValidationError(errors=dict(view_filter.errors))
+        start_date = view_filter.cleaned_data.get("start_date")
+        end_date = view_filter.cleaned_data.get("end_date")
         header = {
             "title": None,
             "level": constants.InfoboxLevel.ALL_ACCOUNTS,
@@ -1020,20 +1024,20 @@ class AllAccountsOverview(api_common.BaseApiView):
         settings = []
 
         constraints = {}
-        if view_filter.filtered_agencies:
-            constraints["campaign__account__agency__in"] = view_filter.filtered_agencies
-        if view_filter.filtered_account_types:
+        if view_filter.cleaned_data.get("filtered_agencies"):
+            constraints["campaign__account__agency__in"] = view_filter.cleaned_data.get("filtered_agencies")
+        if view_filter.cleaned_data.get("filtered_account_types"):
             latest_accset = models.AccountSettings.objects.all().group_current_settings()
             latest_typed_accset = (
                 models.AccountSettings.objects.all()
                 .filter(id__in=latest_accset)
-                .filter(account_type__in=view_filter.filtered_account_types)
+                .filter(account_type__in=view_filter.cleaned_data.get("filtered_account_types"))
                 .values_list("account__id", flat=True)
             )
             constraints["campaign__account__id__in"] = latest_typed_accset
 
         count_active_accounts = infobox_helpers.count_active_accounts(
-            view_filter.filtered_agencies, view_filter.filtered_account_types
+            view_filter.cleaned_data.get("filtered_agencies"), view_filter.cleaned_data.get("filtered_account_types")
         )
         settings.append(
             infobox_helpers.OverviewSetting(
@@ -1045,7 +1049,7 @@ class AllAccountsOverview(api_common.BaseApiView):
         )
 
         weekly_logged_users = infobox_helpers.count_weekly_logged_in_users(
-            view_filter.filtered_agencies, view_filter.filtered_account_types
+            view_filter.cleaned_data.get("filtered_agencies"), view_filter.cleaned_data.get("filtered_account_types")
         )
         settings.append(
             infobox_helpers.OverviewSetting(
@@ -1056,7 +1060,11 @@ class AllAccountsOverview(api_common.BaseApiView):
         return [setting.as_dict() for setting in settings]
 
     def _append_performance_agency_settings(self, overview_settings, user, view_filter):
-        accounts = models.Account.objects.all().filter_by_user(user).exclude_archived(view_filter.show_archived)
+        accounts = (
+            models.Account.objects.all()
+            .filter_by_user(user)
+            .exclude_archived(view_filter.cleaned_data.get("show_archived"))
+        )
         currency = stats.helpers.get_report_currency(user, accounts)
 
         uses_bcm_v2 = accounts.all_use_bcm_v2()
@@ -1085,9 +1093,9 @@ class AllAccountsOverview(api_common.BaseApiView):
     def _append_performance_all_accounts_settings(self, overview_settings, user, view_filter):
         accounts = (
             models.Account.objects.filter_by_user(user)
-            .filter_by_agencies(view_filter.filtered_agencies)
-            .filter_by_account_types(view_filter.filtered_account_types)
-            .exclude_archived(view_filter.show_archived)
+            .filter_by_agencies(view_filter.cleaned_data.get("filtered_agencies"))
+            .filter_by_account_types(view_filter.cleaned_data.get("filtered_account_types"))
+            .exclude_archived(view_filter.cleaned_data.get("show_archived"))
         )
         currency = stats.helpers.get_report_currency(user, accounts)
 
