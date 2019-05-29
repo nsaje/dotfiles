@@ -101,6 +101,13 @@ def augment_account(row, loader, is_base_level=False):
         refunds = loader.refunds_map.get(account_id)
 
         if loader.include_entity_tags:
+            if account.agency:
+                row.update(
+                    {"agency_tags": tag_helpers.entity_tag_query_set_to_string(account.agency.entity_tags.all())}
+                )
+            else:
+                row.update({"agency_tags": ""})
+
             row.update({"account_tags": tag_helpers.entity_tag_query_set_to_string(account.entity_tags.all())})
 
     else:

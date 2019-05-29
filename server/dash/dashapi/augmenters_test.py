@@ -158,7 +158,9 @@ class DeliveryAugmenterTest(TestCase):
 
 class IncludeEntityTagsAugmentersTestCase(TestCase):
     def setUp(self):
-        self.account = magic_mixer.blend(models.Account)
+        self.agency = magic_mixer.blend(models.Agency)
+        self.agency.entity_tags.add("some/agency", "another/agency")
+        self.account = magic_mixer.blend(models.Account, agency=self.agency)
         self.account.entity_tags.add("some/account", "another/account")
         self.campaign = magic_mixer.blend(models.Campaign)
         self.campaign.entity_tags.add("some/campaign", "another/campaign")
@@ -182,6 +184,7 @@ class IncludeEntityTagsAugmentersTestCase(TestCase):
             include_entity_tags=None,
         )
         augmenter.augment_account(row, the_loader)
+        self.assertFalse("agency_tags" in row)
         self.assertFalse("account_tags" in row)
 
     def test_account_augmenter_with_false_kwarg(self):
@@ -208,7 +211,8 @@ class IncludeEntityTagsAugmentersTestCase(TestCase):
             include_entity_tags=False,
         )
         augmenter.augment_account(row, the_loader)
-        self.assertFalse("entity_tags" in row)
+        self.assertFalse("agency_tags" in row)
+        self.assertFalse("account_tags" in row)
 
     def test_account_augmenter(self):
         row = {"account_id": self.account.id}
@@ -221,8 +225,28 @@ class IncludeEntityTagsAugmentersTestCase(TestCase):
             include_entity_tags=True,
         )
         augmenter.augment_account(row, the_loader)
+        self.assertTrue("agency_tags" in row)
+        self.assertEqual(row["agency_tags"], "another/agency,some/agency")
         self.assertTrue("account_tags" in row)
-        self.assertEqual(row["account_tags"], "another/account, some/account")
+        self.assertEqual(row["account_tags"], "another/account,some/account")
+
+    def test_account_augmenter_without_agency(self):
+        account = magic_mixer.blend(models.Account)
+        account.entity_tags.add("other/account", "foreign/account")
+        row = {"account_id": account.id}
+        the_loader = loaders.AccountsLoader(
+            models.Account.objects.filter(id=account.id),
+            models.Source.objects.none(),
+            self.user_with_permission,
+            start_date=date.today(),
+            end_date=date.today(),
+            include_entity_tags=True,
+        )
+        augmenter.augment_account(row, the_loader)
+        self.assertTrue("agency_tags" in row)
+        self.assertEqual(row["agency_tags"], "")
+        self.assertTrue("account_tags" in row)
+        self.assertEqual(row["account_tags"], "foreign/account,other/account")
 
     def test_campaign_augmenter(self):
         row = {"campaign_id": self.campaign.id}
@@ -236,7 +260,7 @@ class IncludeEntityTagsAugmentersTestCase(TestCase):
         )
         augmenter.augment_campaign(row, the_loader)
         self.assertTrue("campaign_tags" in row)
-        self.assertEqual(row["campaign_tags"], "another/campaign, some/campaign")
+        self.assertEqual(row["campaign_tags"], "another/campaign,some/campaign")
 
     def test_ad_group_augmenter(self):
         row = {"ad_group_id": self.ad_group.id}
@@ -250,4 +274,4 @@ class IncludeEntityTagsAugmentersTestCase(TestCase):
         )
         augmenter.augment_ad_group(row, the_loader)
         self.assertTrue("ad_group_tags" in row)
-        self.assertEqual(row["ad_group_tags"], "another/ad_group, some/ad_group")
+        self.assertEqual(row["ad_group_tags"], "another/ad_group,some/ad_group")

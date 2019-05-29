@@ -346,6 +346,7 @@ class ReportJobExecutor(JobExecutor):
     def _append_entity_tag_columns_if_necessary(user, constraints, breakdown, requested_columns):
         if constraints.get("include_entity_tags") is True and user.has_perm("zemauth.can_include_tags_in_reports"):
             if stats.constants.DimensionIdentifierMapping[stats.constants.DimensionIdentifier.ACCOUNT] in breakdown:
+                requested_columns.append("Agency Tags")
                 requested_columns.append("Account Tags")
             if stats.constants.DimensionIdentifierMapping[stats.constants.DimensionIdentifier.CAMPAIGN] in breakdown:
                 requested_columns.append("Campaign Tags")

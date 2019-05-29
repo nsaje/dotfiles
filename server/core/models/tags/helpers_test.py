@@ -29,7 +29,7 @@ class EntityTagHelpersTestCase(test.TestCase):
             "test/tag_1",
             "test/tag_9",
         ]
-        self.expected_string = "other, other/tag_12, other/tag_14, other/tag_3, other/tag_7, sth, sth/tag_10, sth/tag_13, sth/tag_15, sth/tag_5, sth/tag_8, test, test/tag_1, test/tag_11, test/tag_16, test/tag_2, test/tag_4, test/tag_6, test/tag_9"
+        self.expected_string = "other,other/tag_12,other/tag_14,other/tag_3,other/tag_7,sth,sth/tag_10,sth/tag_13,sth/tag_15,sth/tag_5,sth/tag_8,test,test/tag_1,test/tag_11,test/tag_16,test/tag_2,test/tag_4,test/tag_6,test/tag_9"
         magic_mixer.cycle(len(self.tag_names)).blend(model.EntityTag, name=(name for name in self.tag_names))
 
     def test_entity_tag_names_to_string_none(self):

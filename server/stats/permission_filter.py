@@ -158,6 +158,7 @@ FIELD_PERMISSION_MAPPING = {
     "sspd_url": ("zemauth.can_see_sspd_url",),
     "campaign_type": ("zemauth.can_see_campaign_type_in_breakdowns",),
     # entity tags
+    "agency_tags": ("zemauth.can_include_tags_in_reports",),
     "account_tags": ("zemauth.can_include_tags_in_reports",),
     "campaign_tags": ("zemauth.can_include_tags_in_reports",),
     "ad_group_tags": ("zemauth.can_include_tags_in_reports",),

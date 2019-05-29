@@ -358,9 +358,14 @@ class ReportsGetReportCSVTest(TestCase):
 class IncludeEntityTagsReportTestCase(TestCase):
     def setUp(self):
         self.user = magic_mixer.blend_user()
-        self.account = magic_mixer.blend(core.models.Account)
+        self.agency = magic_mixer.blend(core.models.Agency)
+        self.agency.entity_tags.add("some/agency", "another/agency")
+        self.account = magic_mixer.blend(core.models.Account, agency=self.agency)
         self.account.entity_tags.add("some/account", "another/account")
         self.account.users.add(self.user)
+        self.another_account = magic_mixer.blend(core.models.Account)
+        self.another_account.entity_tags.add("other/account", "foreign/account")
+        self.another_account.users.add(self.user)
         self.campaign = magic_mixer.blend(core.models.Campaign, account=self.account)
         self.campaign.entity_tags.add("some/campaign", "another/campaign")
         self.ad_group = magic_mixer.blend(core.models.AdGroup, campaign=self.campaign)
@@ -411,7 +416,7 @@ class IncludeEntityTagsReportTestCase(TestCase):
         mock_query.return_value = [row]
         output, filename = ReportJobExecutor.get_report(self.reportJob)
         expected = (
-            """"Account Id","Campaign Id","Ad Group Id","Media Source Id","Account Tags","Campaign Tags","Ad Group Tags","Source Tags"\r\n"%s","%s","%s","%s","another/account, some/account","another/campaign, some/campaign","another/ad_group, some/ad_group","another/source, some/source"\r\n"""
+            """"Account Id","Campaign Id","Ad Group Id","Media Source Id","Agency Tags","Account Tags","Campaign Tags","Ad Group Tags","Source Tags"\r\n"%s","%s","%s","%s","another/agency,some/agency","another/account,some/account","another/campaign,some/campaign","another/ad_group,some/ad_group","another/source,some/source"\r\n"""
             % (self.account.id, self.campaign.id, self.ad_group.id, self.source.id)
         )
         self.assertEqual(expected, output)
@@ -422,7 +427,31 @@ class IncludeEntityTagsReportTestCase(TestCase):
         row = {"account_id": self.account.id}
         mock_query.return_value = [row]
         output, filename = ReportJobExecutor.get_report(self.reportJob)
-        expected = """"Account Id","Account Tags"\r\n"%s","another/account, some/account"\r\n""" % self.account.id
+        expected = (
+            """"Account Id","Agency Tags","Account Tags"\r\n"%s","another/agency,some/agency","another/account,some/account"\r\n"""
+            % self.account.id
+        )
+        self.assertEqual(expected, output)
+
+    @mock.patch("redshiftapi.api_reports.query")
+    def test_account_without_agency(self, mock_query):
+        self.reportJob.query = self.build_query(["Account Id"], include_entity_tags=True)
+
+        row = {"account_id": self.another_account.id}
+        mock_query.return_value = [row]
+        output, filename = ReportJobExecutor.get_report(self.reportJob)
+        expected = (
+            """"Account Id","Agency Tags","Account Tags"\r\n"%s","","foreign/account,other/account"\r\n"""
+            % self.another_account.id
+        )
+        self.assertEqual(expected, output)
+
+        mock_query.return_value = [{"account_id": self.account.id}, {"account_id": self.another_account.id}]
+        output, filename = ReportJobExecutor.get_report(self.reportJob)
+        expected = (
+            """"Account Id","Agency Tags","Account Tags"\r\n"%s","another/agency,some/agency","another/account,some/account"\r\n"%s","","foreign/account,other/account"\r\n"""
+            % (self.account.id, self.another_account.id)
+        )
         self.assertEqual(expected, output)
 
     @mock.patch("redshiftapi.api_reports.query")
@@ -432,7 +461,7 @@ class IncludeEntityTagsReportTestCase(TestCase):
         mock_query.return_value = [row]
         output, filename = ReportJobExecutor.get_report(self.reportJob)
         expected = (
-            """"Campaign Id","Account Tags","Campaign Tags"\r\n"%s","another/account, some/account","another/campaign, some/campaign"\r\n"""
+            """"Campaign Id","Agency Tags","Account Tags","Campaign Tags"\r\n"%s","another/agency,some/agency","another/account,some/account","another/campaign,some/campaign"\r\n"""
             % self.campaign.id
         )
         self.assertEqual(expected, output)
@@ -444,7 +473,7 @@ class IncludeEntityTagsReportTestCase(TestCase):
         mock_query.return_value = [row]
         output, filename = ReportJobExecutor.get_report(self.reportJob)
         expected = (
-            """"Ad Group Id","Account Tags","Campaign Tags","Ad Group Tags"\r\n"%s","another/account, some/account","another/campaign, some/campaign","another/ad_group, some/ad_group"\r\n"""
+            """"Ad Group Id","Agency Tags","Account Tags","Campaign Tags","Ad Group Tags"\r\n"%s","another/agency,some/agency","another/account,some/account","another/campaign,some/campaign","another/ad_group,some/ad_group"\r\n"""
             % self.ad_group.id
         )
         self.assertEqual(expected, output)
@@ -455,7 +484,7 @@ class IncludeEntityTagsReportTestCase(TestCase):
         row = {"source_id": self.source.id}
         mock_query.return_value = [row]
         output, filename = ReportJobExecutor.get_report(self.reportJob)
-        expected = """"Media Source Id","Source Tags"\r\n"%s","another/source, some/source"\r\n""" % self.source.id
+        expected = """"Media Source Id","Source Tags"\r\n"%s","another/source,some/source"\r\n""" % self.source.id
         self.assertEqual(expected, output)
 
 
