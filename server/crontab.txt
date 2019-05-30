@@ -39,7 +39,7 @@
 10 10-20 * * *    /home/ubuntu/docker-manage-py.sh send_scheduled_reports
 15 10 * * *      /home/ubuntu/docker-manage-py.sh post_delivery_statuses
 20 10 * * *      /home/ubuntu/docker-manage-py.sh daily_audit --send-emails
-45 10 * * *      /home/ubuntu/docker-manage-py.sh audit_cpc_vs_ecpc --slack # must run after autopilot imported data.
+#45 10 * * *      /home/ubuntu/docker-manage-py.sh audit_cpc_vs_ecpc --slack # must run after autopilot imported data.
 0 11 * * *       /home/ubuntu/docker-manage-py.sh nas_cpc_billing 220 --slack
 20 11 * * *      /home/ubuntu/docker-manage-py.sh audit_hacks --slack
 30 11 * * *      /home/ubuntu/docker-manage-py.sh audit_ad_group_missing_data_cost --slack
