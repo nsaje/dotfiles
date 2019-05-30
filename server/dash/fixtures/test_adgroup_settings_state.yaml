@@ -59,26 +59,6 @@
 #
 # AdGroupSource
 #
--   fields:
-        ad_group: 1
-        source: 1
-        settings: 11
-        source_campaign_key: '["fake"]'
-        source_credentials: 1
-        last_successful_sync_dt: '2014-06-10T09:58:21'
-        can_manage_content_ads: true
-    model: dash.adgroupsource
-    pk: 11
-
--   fields:
-        ad_group: 1
-        source: 2
-        settings: 12
-        source_campaign_key: '["fake"]'
-        source_credentials: 1
-        last_successful_sync_dt: '2014-06-10T09:58:21'
-    model: dash.adgroupsource
-    pk: 12
 
 -   fields:
         ad_group: 2
@@ -104,23 +84,6 @@
 #
 # AdGroupSourceSettings
 #
--   fields:
-        created_dt: '2014-06-04T09:58:21'
-        ad_group_source: 11
-        cpc_cc: '0.12'
-        daily_budget_cc: '50.'
-        state: 1
-    model: dash.adgroupsourcesettings
-    pk: 11
-
--   fields:
-        created_dt: '2014-06-04T09:58:21'
-        ad_group_source: 12
-        cpc_cc: '0.12'
-        daily_budget_cc: '50.'
-        state: 2
-    model: dash.adgroupsourcesettings
-    pk: 12
 
 -   fields:
         created_dt: '2014-06-04T09:58:21'

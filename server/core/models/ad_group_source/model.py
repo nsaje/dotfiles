@@ -14,6 +14,7 @@ from . import queryset
 class AdGroupSource(instance.AdGroupSourceInstanceMixin, models.Model):
     class Meta:
         app_label = "dash"
+        unique_together = ("source", "ad_group")
 
     source = models.ForeignKey("Source", on_delete=models.PROTECT)
     ad_group = models.ForeignKey("AdGroup", on_delete=models.PROTECT)

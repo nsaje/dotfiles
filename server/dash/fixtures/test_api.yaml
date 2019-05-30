@@ -693,16 +693,6 @@
     pk: 7
 
 -   fields:
-        source: 1
-        ad_group: 2
-        settings: 8
-        source_campaign_key: {}
-        source_credentials: 3
-        last_successful_sync_dt: '2014-06-10T09:58:21'
-    model: dash.adgroupsource
-    pk: 8
-
--   fields:
         source: 6
         ad_group: 1
         settings: 9
@@ -794,44 +784,6 @@
         last_successful_sync_dt: '2014-06-10T09:58:21'
     model: dash.adgroupsource
     pk: 18
-
--   fields:
-        source: 3
-        ad_group: 4
-        settings: 19
-        source_campaign_key: '["fake"]'
-        source_credentials: 3
-    model: dash.adgroupsource
-    pk: 19
-
--   fields:
-        source: 3
-        ad_group: 6
-        settings: 20
-        source_campaign_key: '"PENDING"'
-        source_credentials: 3
-        last_successful_sync_dt: '2014-06-10T09:58:21'
-    model: dash.adgroupsource
-    pk: 20
-
--   fields:
-        source: 3
-        ad_group: 7
-        settings: 21
-        source_campaign_key: '["fake"]'
-        source_credentials: 3
-        last_successful_sync_dt: '2014-06-10T09:58:21'
-    model: dash.adgroupsource
-    pk: 21
-
--   fields:
-        source: 4
-        ad_group: 5
-        settings: 22
-        source_campaign_key: '["fake"]'
-        source_credentials: 3
-    model: dash.adgroupsource
-    pk: 22
 
 -   fields:
         source: 7
@@ -1297,15 +1249,6 @@
 
 - fields:
     created_dt: '2014-06-01T09:58:21'
-    ad_group_source: 8
-    cpc_cc: '0.12'
-    daily_budget_cc: '50.'
-    state: 2
-  model: dash.adgroupsourcesettings
-  pk: 8
-
-- fields:
-    created_dt: '2014-06-01T09:58:21'
     ad_group_source: 9
     cpc_cc: '0.12'
     daily_budget_cc: '50.'
@@ -1393,42 +1336,6 @@
     state: 2
   model: dash.adgroupsourcesettings
   pk: 18
-
-- fields:
-    created_dt: '2014-06-01T09:58:21'
-    ad_group_source: 19
-    cpc_cc: '0.12'
-    daily_budget_cc: '50.'
-    state: 2
-  model: dash.adgroupsourcesettings
-  pk: 19
-
-- fields:
-    created_dt: '2014-06-01T09:58:21'
-    ad_group_source: 20
-    cpc_cc: '0.12'
-    daily_budget_cc: '50.'
-    state: 2
-  model: dash.adgroupsourcesettings
-  pk: 20
-
-- fields:
-    created_dt: '2014-06-01T09:58:21'
-    ad_group_source: 21
-    cpc_cc: '0.12'
-    daily_budget_cc: '50.'
-    state: 2
-  model: dash.adgroupsourcesettings
-  pk: 21
-
-- fields:
-    created_dt: '2014-06-01T09:58:21'
-    ad_group_source: 22
-    cpc_cc: '0.12'
-    daily_budget_cc: '50.'
-    state: 2
-  model: dash.adgroupsourcesettings
-  pk: 22
 
 - fields:
     created_dt: '2014-06-01T09:58:21'
