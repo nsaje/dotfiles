@@ -226,7 +226,7 @@
                     <button class="button button--highlight" ng-click="ctrl.onButtonMinus()">−1</button>
                     <button class="button button--highlight" ng-click="ctrl.onButtonPlus()">+1</button>
                 </div>
-                <span class="message message--middle">{{ctrl.currencySymbol}}{{ctrl.sourceBidCpc}} {{ctrl.sign}} {{ctrl.currencySymbol}}<b>{{ctrl.delta}}</b> = {{ctrl.currencySymbol}}{{ctrl.newCpc}}</span>
+                <span class="message message--middle">{{ctrl.currencySymbol}}{{ctrl.sourceBidValue}} {{ctrl.sign}} {{ctrl.currencySymbol}}<b>{{ctrl.delta}}</b> = {{ctrl.currencySymbol}}{{ctrl.newBidValue}}</span>
                 <div class="button-wrapper">
                     <button ng-show="ctrl.showLoader" class="button button--highlight button--disabled"><span class="loader loader--white"></span></button>
                     <button ng-show="!ctrl.showLoader" class="button button--highlight button--with-icon check-icon" ng-click="ctrl.save()">Save</button>

@@ -389,14 +389,7 @@ PUBLISHER_1__SOURCE_1 = {
     "blacklisted_level_description": "Blacklisted globally",
     "can_blacklist_publisher": True,
     "notifications": {"message": "Blacklisted globally"},
-    "bid_modifier": {
-        "modifier": 1.0,
-        "source_bid_value": {
-            "bid_cpc_value": Decimal("0.5010"),
-            "bid_cpm_value": Decimal("0.4010"),
-            "currency_symbol": "$",
-        },
-    },
+    "bid_modifier": {"modifier": 1.0, "source_bid_value": {"bid_value": Decimal("0.5010"), "currency_symbol": "$"}},
     "editable_fields": {"bid_modifier": {"message": None, "enabled": True}},
 }
 PUBLISHER_2__SOURCE_1 = {
@@ -412,14 +405,7 @@ PUBLISHER_2__SOURCE_1 = {
     "status": 3,
     "blacklisted": "Active",
     "can_blacklist_publisher": True,
-    "bid_modifier": {
-        "modifier": 1.0,
-        "source_bid_value": {
-            "bid_cpc_value": Decimal("0.5010"),
-            "bid_cpm_value": Decimal("0.4010"),
-            "currency_symbol": "$",
-        },
-    },
+    "bid_modifier": {"modifier": 1.0, "source_bid_value": {"bid_value": Decimal("0.5010"), "currency_symbol": "$"}},
     "editable_fields": {"bid_modifier": {"message": None, "enabled": True}},
 }
 PUBLISHER_2__SOURCE_2 = {
@@ -438,14 +424,7 @@ PUBLISHER_2__SOURCE_2 = {
     "blacklisted_level_description": "Whitelisted in this ad group",
     "can_blacklist_publisher": False,
     "notifications": {"message": "Whitelisted in this ad group"},
-    "bid_modifier": {
-        "modifier": 1.0,
-        "source_bid_value": {
-            "bid_cpc_value": Decimal("0.5020"),
-            "bid_cpm_value": Decimal("0.4020"),
-            "currency_symbol": "$",
-        },
-    },
+    "bid_modifier": {"modifier": 1.0, "source_bid_value": {"bid_value": Decimal("0.5020"), "currency_symbol": "$"}},
     "editable_fields": {"bid_modifier": {"message": None, "enabled": True}},
 }
 PUBLISHER_3__SOURCE_2 = {
@@ -464,14 +443,7 @@ PUBLISHER_3__SOURCE_2 = {
     "blacklisted_level_description": "Blacklisted in this ad group",
     "can_blacklist_publisher": False,
     "notifications": {"message": "Blacklisted in this ad group"},
-    "bid_modifier": {
-        "modifier": 1.0,
-        "source_bid_value": {
-            "bid_cpc_value": Decimal("0.5020"),
-            "bid_cpm_value": Decimal("0.4020"),
-            "currency_symbol": "$",
-        },
-    },
+    "bid_modifier": {"modifier": 1.0, "source_bid_value": {"bid_value": Decimal("0.5020"), "currency_symbol": "$"}},
     "editable_fields": {"bid_modifier": {"message": None, "enabled": True}},
 }
 PUBLISHER_4__SOURCE_2 = {
@@ -490,14 +462,7 @@ PUBLISHER_4__SOURCE_2 = {
     "blacklisted_level_description": "Whitelisted in this campaign",
     "can_blacklist_publisher": False,
     "notifications": {"message": "Whitelisted in this campaign"},
-    "bid_modifier": {
-        "modifier": 1.0,
-        "source_bid_value": {
-            "bid_cpc_value": Decimal("0.5020"),
-            "bid_cpm_value": Decimal("0.4020"),
-            "currency_symbol": "$",
-        },
-    },
+    "bid_modifier": {"modifier": 1.0, "source_bid_value": {"bid_value": Decimal("0.5020"), "currency_symbol": "$"}},
     "editable_fields": {"bid_modifier": {"message": None, "enabled": True}},
 }
 PUBLISHER_5__SOURCE_2 = {
@@ -516,14 +481,7 @@ PUBLISHER_5__SOURCE_2 = {
     "blacklisted_level_description": "Blacklisted in this account",
     "can_blacklist_publisher": False,
     "notifications": {"message": "Blacklisted in this account"},
-    "bid_modifier": {
-        "modifier": 1.0,
-        "source_bid_value": {
-            "bid_cpc_value": Decimal("0.5020"),
-            "bid_cpm_value": Decimal("0.4020"),
-            "currency_symbol": "$",
-        },
-    },
+    "bid_modifier": {"modifier": 1.0, "source_bid_value": {"bid_value": Decimal("0.5020"), "currency_symbol": "$"}},
     "editable_fields": {"bid_modifier": {"message": None, "enabled": True}},
 }
 

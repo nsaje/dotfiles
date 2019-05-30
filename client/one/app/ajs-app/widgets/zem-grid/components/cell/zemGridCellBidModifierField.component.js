@@ -36,7 +36,7 @@ angular
 
                 vm.sign = '+';
                 vm.delta = '0';
-                vm.newCpc = '0';
+                vm.newBidValue = '0';
 
                 $scope.$watch('ctrl.row', update);
                 $scope.$watch('ctrl.data', update, true);
@@ -75,11 +75,11 @@ angular
                     }
 
                     if (!vm.data || !vm.data.value) {
-                        vm.sourceBidCpc = undefined;
+                        vm.sourceBidValue = undefined;
                         value = undefined;
                     } else {
-                        vm.sourceBidCpc = vm.data.value.source_bid_value
-                            ? vm.data.value.source_bid_value.bid_cpc_value
+                        vm.sourceBidValue = vm.data.value.source_bid_value
+                            ? vm.data.value.source_bid_value.bid_value
                             : undefined;
 
                         var value = vm.data.value.modifier
@@ -120,7 +120,7 @@ angular
                     if (['', '+', '-'].indexOf(prevValidInputValue) + 1) {
                         vm.sign = '+';
                         vm.delta = (0.0).toFixed(2);
-                        vm.newCpc = vm.sourceBidCpc;
+                        vm.newBidValue = vm.sourceBidValue;
                     } else {
                         var validValue = parseFloat(prevValidInputValue);
                         if (validValue < 0) {
@@ -130,11 +130,11 @@ angular
                         }
                         vm.delta = (
                             Math.abs(validValue / 100.0) *
-                            parseFloat(vm.sourceBidCpc)
+                            parseFloat(vm.sourceBidValue)
                         ).toFixed(2);
-                        vm.newCpc = (
-                            parseFloat(vm.sourceBidCpc) +
-                            (validValue / 100.0) * parseFloat(vm.sourceBidCpc)
+                        vm.newBidValue = (
+                            parseFloat(vm.sourceBidValue) +
+                            (validValue / 100.0) * parseFloat(vm.sourceBidValue)
                         ).toFixed(2);
                     }
                 }

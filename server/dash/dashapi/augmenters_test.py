@@ -49,14 +49,7 @@ class PublisherAugmenterTest(TestCase):
         self.augmenter([row], self.bid_modifier_loader)
         self.assertDictEqual(
             row["bid_modifier"],
-            {
-                "modifier": 0.5,
-                "source_bid_value": {
-                    "bid_cpc_value": Decimal("1.5000"),
-                    "bid_cpm_value": Decimal("2.5000"),
-                    "currency_symbol": "$",
-                },
-            },
+            {"modifier": 0.5, "source_bid_value": {"bid_value": Decimal("1.5000"), "currency_symbol": "$"}},
         )
 
     def test_report_augmenter_bid_modifiers(self):

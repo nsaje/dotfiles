@@ -986,8 +986,9 @@ class PublisherBidModifierLoader(PublisherBlacklistLoader):
         ad_group_sources = models.AdGroupSource.objects.filter(ad_group_id=self.ad_group.id).select_related("settings")
         return {
             ags.source_id: {
-                "bid_cpc_value": ags.settings.local_cpc_cc,
-                "bid_cpm_value": ags.settings.local_cpm,
+                "bid_value": ags.settings.local_cpc_cc
+                if ags.ad_group.bidding_type == constants.BiddingType.CPC
+                else ags.settings.local_cpm,
                 "currency_symbol": core.features.multicurrency.get_currency_symbol(ags.settings.get_currency()),
             }
             for ags in ad_group_sources
