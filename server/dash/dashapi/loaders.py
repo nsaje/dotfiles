@@ -195,7 +195,7 @@ class AccountsLoader(Loader):
 
         status_map = collections.defaultdict(lambda: constants.AdGroupRunningStatus.INACTIVE)
         for campaign_id, account_id in account_ids_state:
-            if campaignstop_states[campaign_id]["allowed_to_run"]:
+            if campaignstop_states.get(campaign_id, {}).get("allowed_to_run", False):
                 status_map[account_id] = constants.AdGroupRunningStatus.ACTIVE
 
         return status_map
@@ -333,7 +333,9 @@ class CampaignsLoader(Loader):
 
         status_map = collections.defaultdict(lambda: constants.AdGroupRunningStatus.INACTIVE)
         for campaign_id, state in campaign_ids_state:
-            if state == constants.AdGroupRunningStatus.ACTIVE and campaignstop_states[campaign_id]["allowed_to_run"]:
+            if state == constants.AdGroupRunningStatus.ACTIVE and campaignstop_states.get(campaign_id, {}).get(
+                "allowed_to_run", False
+            ):
                 status_map[campaign_id] = state
 
         return status_map
@@ -417,10 +419,9 @@ class AdGroupsLoader(Loader):
         campaignstop_states = automation.campaignstop.get_campaignstop_states(list(self._campaign_ad_groups_map.keys()))
         status_map = collections.defaultdict(lambda: constants.AdGroupRunningStatus.INACTIVE)
         for ad_group_id, ad_group in self.objs_map.items():
-            if (
-                ad_group.settings.state == constants.AdGroupRunningStatus.ACTIVE
-                and campaignstop_states[ad_group.campaign_id]["allowed_to_run"]
-            ):
+            if ad_group.settings.state == constants.AdGroupRunningStatus.ACTIVE and campaignstop_states.get(
+                ad_group.campaign_id, {}
+            ).get("allowed_to_run", False):
                 status_map[ad_group_id] = ad_group.settings.state
 
         return status_map
