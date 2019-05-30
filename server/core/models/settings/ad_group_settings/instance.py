@@ -48,6 +48,19 @@ class AdGroupSettingsMixin(object):
                 if not skip_automation:
                     self._handle_budget_autopilot(changes)
 
+    def update_unsafe(self, request, system_user=None, write_history=True, **kwargs):
+        # TEMP(tkusterle) keep the new fields up-to-date with the old ones.
+        if "cpc_cc" in kwargs:
+            kwargs["cpc"] = kwargs["cpc_cc"]
+        if "local_cpc_cc" in kwargs:
+            kwargs["local_cpc"] = kwargs["local_cpc_cc"]
+        if "max_cpm" in kwargs:
+            kwargs["cpm"] = kwargs["max_cpm"]
+        if "local_max_cpm" in kwargs:
+            kwargs["local_cpm"] = kwargs["local_max_cpm"]
+
+        super().update_unsafe(request, system_user=system_user, write_history=write_history, **kwargs)
+
     def _update_ad_group(self, request, changes):
         if any(field in changes for field in ["ad_group_name", "archived"]):
             if "ad_group_name" in changes:
@@ -304,6 +317,12 @@ class AdGroupSettingsMixin(object):
         email_helper.send_ad_group_notification_email(self.ad_group, request, changes_text)
 
     def add_to_history(self, user, action_type, changes, history_changes_text=None):
+        # TEMP(tkusterle) remove the new fields from histroy
+        changes.pop("cpc", None)
+        changes.pop("local_cpc", None)
+        changes.pop("cpm", None)
+        changes.pop("local_cpm", None)
+
         changes_text = history_changes_text or self.get_changes_text_from_dict(changes)
         self.ad_group.write_history(
             self.changes_text or changes_text,

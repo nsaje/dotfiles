@@ -58,6 +58,10 @@ class AdGroupSettings(
         "state",
         "start_date",
         "end_date",
+        "cpc",
+        "local_cpc",
+        "cpm",
+        "local_cpm",
         "cpc_cc",
         "local_cpc_cc",
         "daily_budget_cc",
@@ -135,6 +139,10 @@ class AdGroupSettings(
     )
     start_date = models.DateField(null=True, blank=True)
     end_date = models.DateField(null=True, blank=True)
+    cpc = models.DecimalField(max_digits=10, decimal_places=4, blank=True, null=True, verbose_name="CPC")
+    local_cpc = models.DecimalField(max_digits=10, decimal_places=4, blank=True, null=True, verbose_name="CPC")
+    cpm = models.DecimalField(max_digits=10, decimal_places=4, blank=True, null=True, verbose_name="CPM")
+    local_cpm = models.DecimalField(max_digits=10, decimal_places=4, blank=True, null=True, verbose_name="CPM")
     cpc_cc = models.DecimalField(
         max_digits=10, decimal_places=4, blank=True, null=True, verbose_name="Maximum CPC"
     )  # max CPC
@@ -274,6 +282,10 @@ class AdGroupSettings(
         NAMES = {
             "start_date": "Start date",
             "end_date": "End date",
+            "cpc": "Bid CPC",
+            "local_cpc": "Bid CPC",
+            "cpm": "Bid CPM",
+            "local_cpm": "Bid CPM",
             "cpc_cc": "Max CPC bid",
             "local_cpc_cc": "Max CPC bid",
             "max_cpm": "Max CPM bid",

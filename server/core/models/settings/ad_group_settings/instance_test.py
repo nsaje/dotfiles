@@ -432,3 +432,26 @@ class AdGroupArchiveRestoreTest(TestCase):
         ad_group.refresh_from_db()
         self.assertTrue(ad_group.archived)
         self.assertTrue(ad_group.settings.archived)
+
+
+class UpdateNewFieldsTest(TestCase):
+    # TEMP(tkusterle) test that the new fields are kept up-to-date with the old ones
+    def setUp(self):
+        self.ad_group = magic_mixer.blend(core.models.AdGroup)
+
+    @patch.object(core.features.multicurrency, "get_current_exchange_rate")
+    def test_cpc(self, mock_get_exchange_rate):
+        mock_get_exchange_rate.return_value = Decimal("2.0")
+        self.ad_group.settings.update(None, cpc_cc=Decimal("0.20"))
+        self.assertEqual(self.ad_group.settings.cpc_cc, self.ad_group.settings.cpc)
+        self.assertEqual(self.ad_group.settings.local_cpc_cc, self.ad_group.settings.local_cpc)
+        self.assertEqual(self.ad_group.settings.cpc * Decimal("2.0"), self.ad_group.settings.local_cpc)
+
+    @patch.object(core.features.multicurrency, "get_current_exchange_rate")
+    def test_cpm(self, mock_get_exchange_rate):
+        self.ad_group.bidding_type = constants.BiddingType.CPM
+        mock_get_exchange_rate.return_value = Decimal("2.0")
+        self.ad_group.settings.update(None, max_cpm=Decimal("0.20"))
+        self.assertEqual(self.ad_group.settings.max_cpm, self.ad_group.settings.cpm)
+        self.assertEqual(self.ad_group.settings.local_max_cpm, self.ad_group.settings.local_cpm)
+        self.assertEqual(self.ad_group.settings.cpm * Decimal("2.0"), self.ad_group.settings.local_cpm)
