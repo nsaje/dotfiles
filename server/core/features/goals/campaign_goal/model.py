@@ -8,6 +8,7 @@ from django.db import transaction
 
 import core.common
 import core.features.multicurrency
+import utils.k1_helper
 import utils.lc_helper
 from dash import constants
 
@@ -64,6 +65,7 @@ class CampaignGoalManager(core.common.BaseManager):
             user=request.user,
         )
 
+        utils.k1_helper.update_ad_groups(campaign.adgroup_set.all(), "campaign_goal.create")
         return goal
 
     def _validate_goal_count(self, campaign, goal_type):
@@ -154,6 +156,7 @@ class CampaignGoal(models.Model, bcm_mixin.CampaignGoalBCMMixin):
         primary = updates.get("primary")
         if primary:
             self.set_primary(request)
+        utils.k1_helper.update_ad_groups(self.campaign.adgroup_set.all(), "campaign_goal.update")
 
     def get_view_key(self):
         return "campaign_goal_" + str(self.id)
@@ -170,6 +173,7 @@ class CampaignGoal(models.Model, bcm_mixin.CampaignGoalBCMMixin):
         self._add_value(request, value, local_value, skip_history)
         return value
 
+    @transaction.atomic
     def add_local_value(self, request, local_value, skip_history=False):
         local_value = Decimal(local_value)
         value = local_value
@@ -180,6 +184,7 @@ class CampaignGoal(models.Model, bcm_mixin.CampaignGoalBCMMixin):
             value = local_value / self._get_exchange_rate()
 
         self._add_value(request, value, local_value, skip_history)
+        utils.k1_helper.update_ad_groups(self.campaign.adgroup_set.all(), "campaign_goal.add_local_value")
         return local_value
 
     def _add_value(self, request, value, local_value, skip_history=False):
@@ -218,6 +223,7 @@ class CampaignGoal(models.Model, bcm_mixin.CampaignGoalBCMMixin):
             action_type=constants.HistoryActionType.GOAL_CHANGE,
             user=request.user,
         )
+        utils.k1_helper.update_ad_groups(self.campaign.adgroup_set.all(), "campaign_goal.set_primary")
 
     def _get_exchange_rate(self):
         currency = self.campaign.account.currency

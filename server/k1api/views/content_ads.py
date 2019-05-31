@@ -108,19 +108,16 @@ class ContentAdsView(K1APIView):
             logger.exception("update_content_ad: content_ad does not exist. content ad id: %d", content_ad_id)
             raise Http404
 
+        updates = {}
         data = request.data
-        modified = False
-
         if "document_id" in data and content_ad.document_id != data["document_id"]:
-            content_ad.document_id = data["document_id"]
-            modified = True
+            updates["document_id"] = data["document_id"]
 
         if "document_features" in data and content_ad.document_features != data["document_features"]:
-            content_ad.document_features = data["document_features"]
-            modified = True
+            updates["document_features"] = data["document_features"]
 
-        if modified:
-            content_ad.save()
+        if updates:
+            content_ad.update(None, write_history=False, **updates)
 
         return self.response_ok(data)
 

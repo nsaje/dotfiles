@@ -217,6 +217,7 @@ def format_campaign_goal(goal_type, value, conversion_goal, currency):
     return description
 
 
+@transaction.atomic
 def delete_campaign_goal(request, goal_id, campaign):
     goal = models.CampaignGoal.objects.all().select_related("campaign").get(pk=goal_id)
 
@@ -233,6 +234,7 @@ def delete_campaign_goal(request, goal_id, campaign):
         constants.HistoryActionType.GOAL_CHANGE,
         'Deleted campaign goal "{}"'.format(constants.CampaignGoalKPI.get_text(goal.type)),
     )
+    utils.k1_helper.update_ad_groups(campaign.adgroup_set.all(), "campaign_goals.delete_campaign_goal")
 
 
 def get_primary_campaign_goal(campaign):
