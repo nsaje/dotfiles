@@ -1,0 +1,92 @@
+<ng-container *ngIf="(store.state$ | async) as state">
+    <div class="zem-rule-form__section">
+        <div class="zem-rule-form__section-title">
+            Run rule on:
+            <span class="zem-rule-form__section-title--variable">{{
+                title
+            }}</span
+            >&nbsp;<a>(edit)</a>
+        </div>
+        <div class="zem-rule-form__section-description">
+            Determines the set of accounts, campaigns or ad groups on which the
+            rule will run.<br />
+            Only active entities are considered.
+        </div>
+    </div>
+    <div class="zem-rule-form__section">
+        <zem-text-setting
+            class="zem-rule-form__section-item zem-text-setting"
+            [label]="'Rule name:'"
+            [value]="state.rule.name"
+            (valueChange)="store.setName($event)"
+        >
+        </zem-text-setting>
+        <zem-select-setting
+            class="zem-rule-form__section-item zem-select-setting"
+            [label]="'Apply rule action on:'"
+            [value]="state.rule.dimension"
+            [bindLabel]="'name'"
+            [bindValue]="'value'"
+            [items]="availableDimensions"
+            (valueChange)="store.setDimension($event)"
+        ></zem-select-setting>
+        <div
+            class="zem-rule-form__section-item zem-rule-form__section-description"
+        >
+            Rule can perform an action on ad group, ad or ad group / breakdown
+            combination.
+        </div>
+    </div>
+    <div class="zem-rule-form__section">
+        <div class="zem-rule-form__section-title">Action:</div>
+        <div class="zem-rule-form__section-content">
+            <zem-rule-form-action
+                class="zem-rule-form__section-item zem-rule-form-action"
+                [value]="state.rule.action"
+                (valueChange)="store.setAction($event)"
+            ></zem-rule-form-action>
+        </div>
+    </div>
+    <div class="zem-rule-form__section">
+        <div class="zem-rule-form__section-title">Conditions:</div>
+        <div class="zem-rule-form__section-description">
+            All of the following conditions must match.
+        </div>
+        <div class="zem-rule-form__section-content">
+            <zem-rule-form-conditions
+                class="zem-rule-form__section-item zem-rule-form-conditions"
+                [conditions]="state.rule.conditions"
+                (conditionsChange)="store.setConditions($event)"
+            >
+            </zem-rule-form-conditions>
+            <zem-select-setting
+                class="zem-rule-form__section-item zem-select-setting"
+                [label]="'Time range:'"
+                [value]="state.rule.timeRange"
+                [bindLabel]="'name'"
+                [bindValue]="'value'"
+                [items]="availableTimeRanges"
+                (valueChange)="store.setTimeRange($event)"
+            ></zem-select-setting>
+            <div
+                class="zem-rule-form__section-item zem-rule-form__section-description"
+            >
+                The number of days in the past for which to aggregate the data.
+            </div>
+        </div>
+    </div>
+    <div
+        class="zem-rule-form__section"
+        *ngIf="state.rule.action.type !== RuleActionType.SendEmail"
+    >
+        <div class="zem-rule-form__section-title">Notification:</div>
+        <div class="zem-rule-form__section-content">
+            <zem-rule-form-notification
+                class="zem-rule-form__section-item zem-rule-form-notification"
+                [value]="state.rule.notification"
+                (valueChange)="store.setNotification($event)"
+            >
+            </zem-rule-form-notification>
+        </div>
+    </div>
+</ng-container>

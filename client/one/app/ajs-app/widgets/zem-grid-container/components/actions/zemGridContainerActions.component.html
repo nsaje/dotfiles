@@ -37,6 +37,13 @@
         (import-success)="$ctrl.gridApi.reload()"
     ></zem-bid-modifier-actions>
 
+    <zem-rule-actions
+        ng-if="$ctrl.areRuleActionsVisible()"
+        class="zem-rule-actions button-bar-item"
+        [entity-id]="$ctrl.entity.id"
+        [entity-type]="$ctrl.entity.type"
+    ></zem-rule-actions>
+
     <zem-grid-export
         ng-if="$ctrl.isGridExportVisible()"
         api="$ctrl.gridApi"

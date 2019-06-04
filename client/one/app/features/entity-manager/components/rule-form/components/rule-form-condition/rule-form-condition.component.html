@@ -1,0 +1,92 @@
+<div class="zem-rule-form__section-item zem-rule-form-condition__container">
+    <div class="zem-rule-form-condition__group">
+        <zem-decimal-input
+            class="zem-rule-form-condition__group-item zem-decimal-input"
+            *ngIf="
+                model.firstOperand.property ===
+                RuleConditionProperty.AbsoluteValue
+            "
+            [value]="model.firstOperand.value"
+            (inputBlur)="onFirstOperandValueChange($event)"
+        >
+        </zem-decimal-input>
+        <zem-select-input
+            class="zem-rule-form-condition__group-item zem-select-input"
+            [value]="model.firstOperand.property"
+            [bindLabel]="'name'"
+            [bindValue]="'value'"
+            [items]="availableConditionProperties"
+            (valueChange)="onFirstOperandPropertyChange($event)"
+        ></zem-select-input>
+        <ng-template #firstOperandModifierTemplate>
+            <zem-rule-form-condition-modifier
+                class="zem-rule-form-condition-modifier"
+                [value]="model.firstOperand.value"
+                [property]="model.firstOperand.property"
+                [modifier]="model.firstOperand.modifier"
+                (modifierChange)="onFirstOperandModifierChange($event)"
+            >
+            </zem-rule-form-condition-modifier>
+        </ng-template>
+        <button
+            #firstOperandModifierPopover
+            class="zem-rule-form-condition__group-button button button--plain button--with-icon button--only-icon dots-icon"
+            [disabled]="!model.firstOperand.property"
+            [zemPopover]="firstOperandModifierTemplate"
+            [autoClose]="'outside'"
+            placement="bottom"
+        ></button>
+    </div>
+    <zem-select-input
+        class="zem-rule-form-condition__item zem-select-input"
+        [value]="model.operator"
+        [bindLabel]="'name'"
+        [bindValue]="'value'"
+        [items]="availableConditionOperators"
+        [isDisabled]="!model.firstOperand.property"
+        (valueChange)="onOperatorChange($event)"
+    ></zem-select-input>
+    <div class="zem-rule-form-condition__group">
+        <zem-decimal-input
+            class="zem-rule-form-condition__group-item zem-decimal-input"
+            *ngIf="
+                model.secondOperand.property ===
+                RuleConditionProperty.AbsoluteValue
+            "
+            [value]="model.secondOperand.value"
+            (inputBlur)="onSecondOperandValueChange($event)"
+        >
+        </zem-decimal-input>
+        <zem-select-input
+            class="zem-rule-form-condition__group-item zem-select-input"
+            [value]="model.secondOperand.property"
+            [bindLabel]="'name'"
+            [bindValue]="'value'"
+            [items]="availableConditionProperties"
+            [isDisabled]="!model.firstOperand.property || !model.operator"
+            (valueChange)="onSecondOperandPropertyChange($event)"
+        ></zem-select-input>
+        <ng-template #secondOperandModifierTemplate>
+            <zem-rule-form-condition-modifier
+                class="zem-rule-form-condition-modifier"
+                [value]="model.secondOperand.value"
+                [property]="model.secondOperand.property"
+                [modifier]="model.secondOperand.modifier"
+                (modifierChange)="onSecondOperandModifierChange($event)"
+            >
+            </zem-rule-form-condition-modifier>
+        </ng-template>
+        <button
+            #secondOperandModifierPopover
+            class="zem-rule-form-condition__group-button button button--plain button--with-icon button--only-icon dots-icon"
+            [zemPopover]="secondOperandModifierTemplate"
+            [disabled]="!model.secondOperand.property"
+            [autoClose]="'outside'"
+            placement="bottom"
+        ></button>
+    </div>
+    <button
+        class="zem-rule-form-condition__button button button--with-icon button--only-icon remove-icon"
+        (click)="removeCondition()"
+    ></button>
+</div>

@@ -1,0 +1,53 @@
+@import 'variables';
+@import '../../styles/_settings.variables.less';
+
+.zem-rule-form__section {
+    margin-top: 10px;
+}
+
+.zem-rule-form__section:first-child {
+    margin-top: 0;
+}
+
+.zem-rule-form__section-title {
+    font-size: 17px;
+    color: @color--secondary;
+}
+
+.zem-rule-form__section-title--variable {
+    text-decoration: underline;
+}
+
+.zem-rule-form__section-description {
+    color: @text-color--lighter;
+}
+
+.zem-rule-form__section-content {
+    margin: 0 0 0 15px;
+    padding: 6px 0 6px 15px;
+    border-left: 3px solid @color--lighter-neutral;
+}
+
+.zem-rule-form__section-item {
+    display: block;
+    margin-top: 5px;
+}
+
+.zem-rule-form__section-item:first-child {
+    margin-top: 0;
+}
+
+.zem-rule-form__section-item--indented {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.zem-rule-form__section-item--indented::before {
+    content: '';
+    display: block;
+    flex: 0 0 @zem-settings__label-width;
+}
+
+.zem-rule-form__section-item--indented > * {
+    flex: 1 1 @zem-settings__min-content-width;
+}

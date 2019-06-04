@@ -1,0 +1,74 @@
+<div class="zem-rule-form__section" *ngIf="model.valueModifier">
+    <div class="zem-rule-form__section-title">Value modifier:</div>
+    <div class="zem-rule-form-condition-modifier__modifier-container">
+        <zem-select-input
+            class="zem-rule-form-condition-modifier__modifier-item zem-select-input"
+            [value]="model.valueModifier.type"
+            [bindLabel]="'name'"
+            [bindValue]="'value'"
+            [items]="availableModifierTypes"
+            (valueChange)="onTypeChange($event)"
+        ></zem-select-input>
+        <input
+            class="zem-rule-form-condition-modifier__modifier-item zem-input-text"
+            type="text"
+            [ngModel]="propertyText"
+            disabled
+        />
+        <zem-currency-input
+            class="zem-rule-form-condition-modifier__modifier-item zem-currency-input"
+            [value]="model.valueModifier.value"
+            [currencySymbol]="'%'"
+            (inputBlur)="onValueChange($event)"
+        ></zem-currency-input>
+    </div>
+</div>
+<div class="zem-rule-form__section">
+    <div class="zem-rule-form__section-title">Time range:</div>
+    <zem-radio-input
+        class="zem-rule-form__section-item zem-radio-input"
+        [groupModel]="model.timeRange"
+        [value]="TimeRange.Yesterday"
+        (select)="setTimeRange($event)"
+    >
+        <strong>Yesterday</strong>
+    </zem-radio-input>
+    <zem-radio-input
+        class="zem-rule-form__section-item zem-radio-input"
+        [groupModel]="model.timeRange"
+        [value]="TimeRange.LastThreeDays"
+        (select)="setTimeRange($event)"
+    >
+        <strong>Last 3 days</strong>
+    </zem-radio-input>
+    <zem-radio-input
+        class="zem-rule-form__section-item zem-radio-input"
+        [groupModel]="model.timeRange"
+        [value]="TimeRange.LastSevenDays"
+        (select)="setTimeRange($event)"
+    >
+        <strong>Last 7 days</strong>
+    </zem-radio-input>
+    <zem-radio-input
+        class="zem-rule-form__section-item zem-radio-input"
+        [groupModel]="model.timeRange"
+        [value]="TimeRange.Lifetime"
+        (select)="setTimeRange($event)"
+    >
+        <strong>Lifetime</strong>
+    </zem-radio-input>
+    <div class="zem-rule-form-condition-modifier__buttons">
+        <button
+            class="zem-rule-form-condition-modifier__button  button button--highlight button--with-icon check-icon"
+            (click)="save()"
+        >
+            Save
+        </button>
+        <button
+            class="zem-rule-form-condition-modifier__button  button button--outline"
+            (click)="cancel()"
+        >
+            Cancel
+        </button>
+    </div>
+</div>

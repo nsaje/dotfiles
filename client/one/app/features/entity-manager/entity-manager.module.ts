@@ -41,6 +41,15 @@ import {SettingsDrawerFooterComponent} from './components/settings-drawer-footer
 import {SettingsDrawerHeaderComponent} from './components/settings-drawer-header/settings-drawer-header.component';
 import {CampaignGoalsService} from './services/campaign-goals/campaign-goals.service';
 
+// DEMO
+import {RuleActionsComponent} from './components/rule-actions/rule-actions.component';
+import {RuleFormComponent} from './components/rule-form/rule-form.component';
+import {RuleFormActionComponent} from './components/rule-form/components/rule-form-action/rule-form-action.component';
+import {RuleFormNotificationComponent} from './components/rule-form/components/rule-form-notification/rule-form-notification.component';
+import {RuleFormConditionsComponent} from './components/rule-form/components/rule-form-conditions/rule-form-conditions.component';
+import {RuleFormConditionComponent} from './components/rule-form/components/rule-form-condition/rule-form-condition.component';
+import {RuleFormConditionModifierComponent} from './components/rule-form/components/rule-form-condition-modifier/rule-form-condition-modifier.component';
+
 @NgModule({
     providers: [CampaignGoalsService],
     declarations: [
@@ -78,6 +87,14 @@ import {CampaignGoalsService} from './services/campaign-goals/campaign-goals.ser
         AdGroupRTBSourcesManagementSettingComponent,
         HacksComponent,
         DealsComponent,
+        // DEMO
+        RuleActionsComponent,
+        RuleFormComponent,
+        RuleFormActionComponent,
+        RuleFormNotificationComponent,
+        RuleFormConditionsComponent,
+        RuleFormConditionComponent,
+        RuleFormConditionModifierComponent,
     ],
     imports: [SharedModule],
     entryComponents: [
@@ -85,6 +102,7 @@ import {CampaignGoalsService} from './services/campaign-goals/campaign-goals.ser
         CampaignCreatorModalComponent,
         CampaignTypeSelectorComponent,
         DaypartingSettingComponent,
+        RuleActionsComponent,
     ],
 })
 export class EntityManagerModule {}

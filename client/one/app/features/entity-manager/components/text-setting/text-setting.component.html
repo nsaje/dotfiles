@@ -13,7 +13,7 @@
     <div class="zem-settings-form-group__content">
         <input
             class="zem-settings-form-group__content-item zem-input-text"
-            [ngClass]="{'zem-input-text--error': errors.length > 0}"
+            [ngClass]="{'zem-input-text--error': errors && errors.length > 0}"
             type="text"
             placeholder="{{ placeholder }}"
             maxlength="{{ maxLength }}"

@@ -417,6 +417,7 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ("can_see_viewthrough_conversions", "User can see view-through conversions"),
             ("can_include_tags_in_reports", "Can include tags in reports"),
             ("can_filter_by_business", "User can filter by business"),
+            ("fea_can_create_automation_rules", "User can create automation rules."),
         )
 
     def get_full_name(self):

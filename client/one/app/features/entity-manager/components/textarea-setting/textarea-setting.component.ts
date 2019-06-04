@@ -52,8 +52,6 @@ export class TextAreaSettingComponent implements OnInit, OnChanges {
     }
 
     onBlur($event: FocusEvent) {
-        if (this.model !== this.value) {
-            this.valueChange.emit(this.model);
-        }
+        this.valueChange.emit(this.model);
     }
 }

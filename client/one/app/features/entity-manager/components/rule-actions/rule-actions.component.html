@@ -1,0 +1,60 @@
+<div
+    zemDropdown
+    class="zem-dropdown zem-dropdown--no-mobile-style"
+    #ruleActionsDropdown="zemDropdown"
+>
+    <button class="button button--dropdown-toggle-icon" zemDropdownToggle>
+        Rules
+    </button>
+    <div class="zem-dropdown__content">
+        <ul class="zem-rule-actions__list">
+            <li class="zem-rule-actions__list-item" (click)="openModal()">
+                Create rule
+            </li>
+            <li class="zem-rule-actions__list-item">Manage rules</li>
+        </ul>
+    </div>
+</div>
+
+<zem-modal
+    #ruleModal
+    [canCloseOnBackdropClick]="false"
+    [canCloseOnEscapeKey]="true"
+    class="zem-modal zem-rule-actions__modal"
+>
+    <ng-container *ngIf="ruleModal.isOpen">
+        <div class="zem-modal__header">
+            <div class="zem-modal__title">Create Rule</div>
+        </div>
+        <div class="zem-modal__body">
+            <zem-rule-form
+                class="zem-rule-form"
+                [entityId]="entityId"
+                [entityType]="entityType"
+            ></zem-rule-form>
+        </div>
+        <div class="zem-modal__footer buttons-panel">
+            <button
+                *ngIf="isSaveInProgress"
+                class="button button--highlight button--disabled"
+                disabled
+            >
+                <span class="loader loader--white"></span>
+            </button>
+            <button
+                *ngIf="!isSaveInProgress"
+                class="button button--highlight button--with-icon check-icon"
+                (click)="save()"
+            >
+                Save
+            </button>
+            <button
+                class="button button--outline"
+                [disabled]="isSaveInProgress"
+                (click)="cancel()"
+            >
+                Cancel
+            </button>
+        </div>
+    </ng-container>
+</zem-modal>

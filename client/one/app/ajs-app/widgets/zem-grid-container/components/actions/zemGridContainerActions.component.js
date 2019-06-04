@@ -20,6 +20,7 @@ angular.module('one.widgets').component('zemGridContainerActions', {
         $ctrl.canCreateNewAccount = canCreateNewAccount;
         $ctrl.isBreakdownSelectorVisible = isBreakdownSelectorVisible;
         $ctrl.areBidModifierActionsVisible = areBidModifierActionsVisible;
+        $ctrl.areRuleActionsVisible = areRuleActionsVisible;
 
         $ctrl.$onInit = function() {
             $ctrl.entity = zemNavigationNewService.getActiveEntity();
@@ -119,6 +120,17 @@ angular.module('one.widgets').component('zemGridContainerActions', {
                     $ctrl.breakdown === constants.breakdown.DEVICE ||
                     $ctrl.breakdown === constants.breakdown.PLACEMENT ||
                     $ctrl.breakdown === constants.breakdown.OPERATING_SYSTEM)
+            );
+        }
+
+        function areRuleActionsVisible() {
+            return (
+                $ctrl.entity &&
+                zemPermissions.hasPermission(
+                    'zemauth.fea_can_create_automation_rules'
+                ) &&
+                ($ctrl.entity.type === constants.entityType.AD_GROUP ||
+                    $ctrl.entity.type === constants.entityType.CAMPAIGN)
             );
         }
     },

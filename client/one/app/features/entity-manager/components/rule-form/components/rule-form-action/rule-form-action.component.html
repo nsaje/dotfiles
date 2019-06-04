@@ -1,0 +1,99 @@
+<zem-select-setting
+    class="zem-rule-form__section-item zem-select-setting"
+    [label]="'Type:'"
+    [value]="model.type"
+    [bindLabel]="'name'"
+    [bindValue]="'value'"
+    [items]="availableActionTypes"
+    (valueChange)="setType($event)"
+></zem-select-setting>
+<ng-container *ngIf="model.type">
+    <ng-container
+        *ngIf="
+            model.type === RuleActionType.IncreaseBudget ||
+            model.type === RuleActionType.DecreaseBudget
+        "
+    >
+        <zem-currency-setting
+            class="zem-rule-form__section-item zem-currency-setting"
+            [label]="'Value:'"
+            [value]="model.value"
+            [currencySymbol]="'%'"
+            (valueChange)="setValue($event)"
+        ></zem-currency-setting>
+        <zem-currency-setting
+            class="zem-rule-form__section-item zem-currency-setting"
+            [label]="ruleActionConfig.limitLabel"
+            [value]="model.limit"
+            [currencySymbol]="ruleActionConfig.limitUnit"
+            (valueChange)="setLimit($event)"
+        ></zem-currency-setting>
+        <div
+            class="zem-rule-form__section-item zem-rule-form__section-item--indented"
+        >
+            <div
+                class="zem-message zem-message--bubble zem-message--info zem-message--with-icon"
+            >
+                {{ ruleActionConfig.limitDescription }}
+            </div>
+        </div>
+    </ng-container>
+    <ng-container *ngIf="model.type === RuleActionType.SendEmail">
+        <div
+            class="zem-rule-form__section-item zem-rule-form-action__email-container"
+        >
+            <div class="zem-rule-form-action__email">
+                <zem-textarea-setting
+                    class="zem-rule-form__section-item zem-textarea-setting"
+                    [label]="'Email subject:'"
+                    [value]="model.emailSubject"
+                    [rows]="'1'"
+                    (valueChange)="setEmailSubject($event)"
+                ></zem-textarea-setting>
+                <zem-textarea-setting
+                    class="zem-rule-form__section-item zem-textarea-setting"
+                    [label]="'Email body:'"
+                    [value]="model.emailBody"
+                    [rows]="'5'"
+                    (valueChange)="setEmailBody($event)"
+                ></zem-textarea-setting>
+            </div>
+            <div class="zem-rule-form-action__macro">
+                <zem-select-setting
+                    class="zem-rule-form__section-item zem-select-setting"
+                    [label]="'Macro:'"
+                    [value]="macro"
+                    [bindLabel]="'name'"
+                    [bindValue]="'value'"
+                    [items]="availableMacros"
+                    (valueChange)="setMacro($event)"
+                ></zem-select-setting>
+                <button
+                    class="zem-rule-form__section-item button button--highlight button--with-icon add-icon"
+                    [disabled]="!macro"
+                    (click)="addMacro()"
+                >
+                    Add
+                </button>
+            </div>
+        </div>
+    </ng-container>
+    <zem-select-setting
+        class="zem-rule-form__section-item zem-select-setting"
+        [label]="'Action frequency:'"
+        [value]="model.frequency"
+        [bindLabel]="'name'"
+        [bindValue]="'value'"
+        [items]="ruleActionConfig.frequencies"
+        (valueChange)="setFrequency($event)"
+    ></zem-select-setting>
+    <div
+        class="zem-rule-form__section-item zem-rule-form__section-item--indented"
+    >
+        <div
+            class="zem-message zem-message--bubble zem-message--info zem-message--with-icon"
+        >
+            The minimum amount of time that needs to pass since the last action.
+        </div>
+    </div>
+</ng-container>

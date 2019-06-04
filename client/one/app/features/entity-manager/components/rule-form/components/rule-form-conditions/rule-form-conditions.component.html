@@ -1,0 +1,14 @@
+<zem-rule-form-condition
+    class="zem-rule-form__section-item zem-rule-form-condition"
+    *ngFor="let item of items; index as index; trackBy: trackById"
+    [condition]="item"
+    (conditionChange)="onConditionChange($event, index)"
+    (conditionRemove)="onConditionRemove(index)"
+>
+</zem-rule-form-condition>
+<button
+    class="zem-rule-form__section-item button button--highlight button--with-icon add-icon"
+    (click)="addCondition()"
+>
+    Add condition
+</button>
