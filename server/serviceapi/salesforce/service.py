@@ -141,6 +141,7 @@ def create_account(request, **kwargs):
 
 
 def update_account(request, account, **kwargs):
+    settings_updates = kwargs.pop("settings", {})
     account.update(request, **kwargs)
-    account.settings.update(request, **kwargs)
+    account.settings.update(request, **settings_updates)
     return account

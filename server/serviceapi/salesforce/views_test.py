@@ -1233,7 +1233,7 @@ class AccountTestCase(TestCase):
         )
 
     def test_put_valid(self, mock_modified_dt):
-        magic_mixer.blend(
+        acc = magic_mixer.blend(
             core.models.Account,
             agency=self.agency,
             id=1,
@@ -1242,6 +1242,8 @@ class AccountTestCase(TestCase):
             is_disabled=True,
             salesforce_id=123,
         )
+        acc.save(None)
+        acc.settings.update(None, default_account_manager=self.user2, default_sales_representative=self.user)
         url = reverse("service.salesforce.account", kwargs={"account_id": 1})
         response = self.client.put(
             url,
@@ -1251,6 +1253,8 @@ class AccountTestCase(TestCase):
                 "tags": ["tag1", "tag2"],
                 "custom_attributes": {"country": "SI"},
                 "salesforce_id": 456,
+                "sales_representative": "agencysalesrep@test.com",
+                "account_manager": "agencyaccountmgr@test.com",
             },
             format="json",
         )
@@ -1265,8 +1269,8 @@ class AccountTestCase(TestCase):
                     "name": "Account 1",
                     "salesforce_url": "http://salesforce.com",
                     "currency": "USD",
-                    "sales_representative": None,
-                    "account_manager": None,
+                    "sales_representative": "agencysalesrep@test.com",
+                    "account_manager": "agencyaccountmgr@test.com",
                     "tags": ["tag1", "tag2"],
                     "custom_attributes": {"country": "SI"},
                     "salesforce_id": 456,
