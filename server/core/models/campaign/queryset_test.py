@@ -16,4 +16,4 @@ class CampaignQuerysetTest(TestCase):
             campaigns[1].id: {"allowed_to_run": True},
             campaigns[2].id: {"allowed_to_run": False},
         }
-        self.assertEqual(list(model.Campaign.objects.filter_active()), campaigns[0:2])
+        self.assertEqual(set(model.Campaign.objects.filter_active()), set(campaigns[0:2]))
