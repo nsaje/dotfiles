@@ -17,8 +17,8 @@ angular
             };
 
             var dateRange = zemDataFilterService.getDateRange();
-            config.params.start_date = dateRange.startDate.format();
-            config.params.end_date = dateRange.endDate.format();
+            config.params.start_date = dateRange.startDate.format('YYYY-MM-DD');
+            config.params.end_date = dateRange.endDate.format('YYYY-MM-DD');
 
             $http
                 .get(url, config)
