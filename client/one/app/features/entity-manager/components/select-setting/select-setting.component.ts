@@ -37,6 +37,8 @@ export class SelectSettingComponent implements OnChanges {
     @Input()
     groupByValue: string;
     @Input()
+    isClearable: boolean = true;
+    @Input()
     errors: string[];
     @Output()
     valueChange = new EventEmitter<string>();

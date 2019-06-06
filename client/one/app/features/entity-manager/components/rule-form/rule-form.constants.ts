@@ -77,6 +77,7 @@ export enum RuleConditionProperty {
     CampaignName = 'CAMPAIGN_NAME',
     CampaignCreatedDate = 'CAMPAIGN_CREATED_DATE',
     CampaignType = 'CAMPAIGN_TYPE',
+    CampaignBudget = 'CAMPAIGN_BUDGET',
     AdGroupName = 'ADGROUP_NAME',
     AdGroupCreatedDate = 'ADGROUP_CREATED_DATE',
     DailyBudget = 'DAILY_BUDGET',
@@ -85,6 +86,7 @@ export enum RuleConditionProperty {
     DaysUntilBudgetEnd = 'DAYS_UNTIL_BUDGET_END',
     BudgetEndDate = 'BUDGET_END_DATE',
     DaysSinceBudgetStart = 'DAYS_SINCE_BUDGET_START',
+    RemainingBudget = 'REMAINING_BUDGET',
 
     FixedValue = 'FIXED_VALUE',
 }

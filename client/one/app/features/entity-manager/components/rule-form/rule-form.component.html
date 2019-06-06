@@ -37,6 +37,7 @@
             [bindValue]="'value'"
             [items]="availableDimensions"
             [isSearchable]="false"
+            [isClearable]="false"
             (valueChange)="store.setDimension($event)"
         ></zem-select-setting>
         <div
@@ -77,6 +78,7 @@
                 [bindValue]="'value'"
                 [items]="availableTimeRanges"
                 [isSearchable]="false"
+                [isClearable]="false"
                 (valueChange)="store.setTimeRange($event)"
             ></zem-select-setting>
             <div

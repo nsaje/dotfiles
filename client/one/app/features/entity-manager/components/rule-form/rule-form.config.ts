@@ -119,6 +119,8 @@ export const RULE_CONDITION_PROPERTIES = [
         ],
         rightOperandProperties: [
             RuleConditionProperty.FixedValue,
+            RuleConditionProperty.CampaignBudget,
+            RuleConditionProperty.RemainingBudget,
             RuleConditionProperty.DailyBudget,
         ],
     },
@@ -515,6 +517,32 @@ export const RULE_CONDITION_PROPERTIES = [
         rightOperandProperties: [RuleConditionProperty.FixedValue],
     },
     {
+        name: 'Campaign budget',
+        value: RuleConditionProperty.CampaignBudget,
+        group: RuleConditionPropertyGroup.Settings,
+        hasTimeRangeModifier: false,
+        hasValueModifier: true,
+        operators: [
+            {
+                name: 'is less than',
+                value: RuleConditionOperator.LessThan,
+            },
+            {
+                name: 'is greater Than',
+                value: RuleConditionOperator.GreaterThan,
+            },
+            {
+                name: 'equals',
+                value: RuleConditionOperator.Equals,
+            },
+            {
+                name: 'not equals',
+                value: RuleConditionOperator.NotEquals,
+            },
+        ],
+        rightOperandProperties: [RuleConditionProperty.FixedValue],
+    },
+    {
         name: 'Campaign type',
         value: RuleConditionProperty.CampaignType,
         group: RuleConditionPropertyGroup.Settings,
@@ -722,5 +750,34 @@ export const RULE_CONDITION_PROPERTIES = [
             },
         ],
         rightOperandProperties: [RuleConditionProperty.FixedValue],
+    },
+    {
+        name: 'Remaining budget',
+        value: RuleConditionProperty.RemainingBudget,
+        group: RuleConditionPropertyGroup.Budget,
+        hasTimeRangeModifier: false,
+        hasValueModifier: true,
+        operators: [
+            {
+                name: 'is less than',
+                value: RuleConditionOperator.LessThan,
+            },
+            {
+                name: 'is greater Than',
+                value: RuleConditionOperator.GreaterThan,
+            },
+            {
+                name: 'equals',
+                value: RuleConditionOperator.Equals,
+            },
+            {
+                name: 'not equals',
+                value: RuleConditionOperator.NotEquals,
+            },
+        ],
+        rightOperandProperties: [
+            RuleConditionProperty.FixedValue,
+            RuleConditionProperty.TotalSpend,
+        ],
     },
 ];

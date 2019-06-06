@@ -7,6 +7,7 @@
     [bindValue]="'value'"
     [items]="availableActionTypes"
     [isSearchable]="false"
+    [isClearable]="false"
     (valueChange)="setType($event)"
 ></zem-select-setting>
 <zem-select-setting
@@ -19,6 +20,7 @@
     [isDisabled]="!ruleActionConfig"
     [items]="ruleActionConfig ? ruleActionConfig.frequencies : []"
     [isSearchable]="false"
+    [isClearable]="false"
     (valueChange)="setFrequency($event)"
 ></zem-select-setting>
 <div class="zem-rule-form__section-description">
@@ -89,6 +91,7 @@
                     [bindValue]="'value'"
                     [items]="availableMacros"
                     [isSearchable]="false"
+                    [isClearable]="false"
                     (valueChange)="setMacro($event)"
                 ></zem-select-setting>
                 <button
