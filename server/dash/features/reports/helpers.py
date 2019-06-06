@@ -92,6 +92,8 @@ def get_filter_constraints(filters):
             filter_constraints["agencies"] = f["values"]
         if field_name == utils.columns.FieldNames.account_type and f["operator"] == constants.IN:
             filter_constraints["account_types"] = f["values"]
+        if field_name == utils.columns.FieldNames.business and f["operator"] == constants.IN:
+            filter_constraints["businesses"] = f["values"]
     return filter_constraints
 
 

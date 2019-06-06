@@ -30,6 +30,7 @@ def prepare_constraints(
     content_ad_ids=None,
     filtered_agencies=None,
     filtered_account_types=None,
+    filtered_businesses=None,
     only_used_sources=False,
     show_blacklisted_publishers=dash.constants.PublisherBlacklistFilter.SHOW_ALL,
 ):
@@ -39,6 +40,7 @@ def prepare_constraints(
         dash.models.Account.objects.all()
         .filter_by_agencies(filtered_agencies)
         .filter_by_account_types(filtered_account_types)
+        .filter_by_business(filtered_businesses)
     )
 
     allowed_campaigns = dash.models.Campaign.objects.all()

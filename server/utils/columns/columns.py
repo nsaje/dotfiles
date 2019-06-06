@@ -56,6 +56,7 @@ _FIELD_MAPPING = {
     "publisher_status": ("Publisher Status",),
     "campaign_manager": ("Campaign Manager",),
     "account_type": ("Account Type",),
+    "business": ("Business",),
     "default_sales_representative": ("Sales Representative",),
     "default_cs_representative": ("CS Representative",),
     "ob_representative": ("OB Representative",),

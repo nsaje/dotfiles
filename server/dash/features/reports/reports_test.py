@@ -522,6 +522,7 @@ class ReportsImplementationTest(TestCase):
             only_used_sources=True,
             filtered_agencies=None,
             filtered_account_types=None,
+            filtered_businesses=None,
             ad_group_ids=[1],
         )
 
@@ -534,6 +535,52 @@ class ReportsImplementationTest(TestCase):
             offset=0,
             limit=10000,
             level="ad_groups",
+            include_items_with_no_spend=False,
+            dashapi_cache={},
+        )
+
+        self.assertFalse(mock_totals.called)
+
+    @mock.patch("stats.api_reports.get_filename", return_value="")
+    @mock.patch("stats.api_reports.totals", return_value={})
+    @mock.patch("stats.api_reports.query", return_value=[])
+    @mock.patch("stats.api_reports.prepare_constraints")
+    def test_raw_new_report_data_filters(self, mock_prepare_constraints, mock_query, mock_totals, mock_filename):
+        query = {
+            "fields": [{"field": "Account Id"}],
+            "filters": [
+                {"field": "Date", "operator": "=", "value": "2016-10-10"},
+                {"field": "Account Type", "operator": "IN", "values": ["1"]},
+                {"field": "Agency", "operator": "IN", "values": ["1"]},
+                {"field": "Business", "operator": "IN", "values": ["z1", "oen"]},
+            ],
+        }
+        self.report_job.query = query
+        ReportJobExecutor.get_report(self.report_job)
+
+        mock_prepare_constraints.assert_called_with(
+            self.user,
+            ["account_id"],
+            datetime.date(2016, 10, 10),
+            datetime.date(2016, 10, 10),
+            utils.test_helper.QuerySetMatcher(core.models.Source.objects.filter(pk__in=[1])),
+            show_archived=False,
+            show_blacklisted_publishers=dash.constants.PublisherBlacklistFilter.SHOW_ALL,
+            only_used_sources=True,
+            filtered_agencies=utils.test_helper.QuerySetMatcher(core.models.Agency.objects.filter(pk__in=[1])),
+            filtered_account_types=[1],
+            filtered_businesses=["z1", "oen"],
+        )
+
+        mock_query.assert_called_with(
+            user=self.user,
+            breakdown=["account_id"],
+            constraints=mock.ANY,
+            goals=mock.ANY,
+            order="-e_media_cost",
+            offset=0,
+            limit=10000,
+            level="all_accounts",
             include_items_with_no_spend=False,
             dashapi_cache={},
         )
@@ -568,6 +615,7 @@ class ReportsImplementationTest(TestCase):
             only_used_sources=True,
             filtered_agencies=None,
             filtered_account_types=None,
+            filtered_businesses=None,
             ad_group_ids=[1],
         )
 
@@ -637,6 +685,7 @@ class ReportsImplementationTest(TestCase):
             only_used_sources=True,
             filtered_agencies=None,
             filtered_account_types=None,
+            filtered_businesses=None,
             ad_group_ids=[1],
         )
 
@@ -687,6 +736,7 @@ class ReportsImplementationTest(TestCase):
             only_used_sources=True,
             filtered_agencies=None,
             filtered_account_types=None,
+            filtered_businesses=None,
         )
 
         mock_query.assert_called_with(
@@ -730,6 +780,7 @@ class ReportsImplementationTest(TestCase):
             only_used_sources=True,
             filtered_agencies=None,
             filtered_account_types=None,
+            filtered_businesses=None,
         )
 
         mock_query.assert_called_with(
@@ -774,6 +825,7 @@ class ReportsImplementationTest(TestCase):
             only_used_sources=True,
             filtered_agencies=None,
             filtered_account_types=None,
+            filtered_businesses=None,
             account_ids=[1],
         )
 
@@ -819,6 +871,7 @@ class ReportsImplementationTest(TestCase):
             only_used_sources=True,
             filtered_agencies=None,
             filtered_account_types=None,
+            filtered_businesses=None,
             account_ids=[1, 2, 3],
         )
 
@@ -864,6 +917,7 @@ class ReportsImplementationTest(TestCase):
             only_used_sources=True,
             filtered_agencies=None,
             filtered_account_types=None,
+            filtered_businesses=None,
             campaign_ids=[1],
         )
 
@@ -909,6 +963,7 @@ class ReportsImplementationTest(TestCase):
             only_used_sources=True,
             filtered_agencies=None,
             filtered_account_types=None,
+            filtered_businesses=None,
             campaign_ids=[1, 2, 3],
         )
 
@@ -954,6 +1009,7 @@ class ReportsImplementationTest(TestCase):
             only_used_sources=True,
             filtered_agencies=None,
             filtered_account_types=None,
+            filtered_businesses=None,
             ad_group_ids=[1],
         )
 
@@ -999,6 +1055,7 @@ class ReportsImplementationTest(TestCase):
             only_used_sources=True,
             filtered_agencies=None,
             filtered_account_types=None,
+            filtered_businesses=None,
             ad_group_ids=[1, 2, 3],
         )
 
@@ -1044,6 +1101,7 @@ class ReportsImplementationTest(TestCase):
             only_used_sources=True,
             filtered_agencies=None,
             filtered_account_types=None,
+            filtered_businesses=None,
             content_ad_ids=[1, 2, 3],
         )
 

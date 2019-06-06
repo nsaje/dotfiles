@@ -113,6 +113,12 @@ angular
                 config.filters.push(levelFilter);
             }
 
+            config = addDataFiltersToConfig(config);
+
+            return config;
+        }
+
+        function addDataFiltersToConfig(config) {
             var filteredSources = zemDataFilterService.getFilteredSources();
             if (filteredSources) {
                 config.filters.push({
@@ -128,6 +134,15 @@ angular
                     field: 'Account Type',
                     operator: 'IN',
                     values: filteredAccountTypes,
+                });
+            }
+
+            var filteredBusinesses = zemDataFilterService.getFilteredBusinesses();
+            if (filteredBusinesses) {
+                config.filters.push({
+                    field: 'Business',
+                    operator: 'IN',
+                    values: filteredBusinesses,
                 });
             }
 

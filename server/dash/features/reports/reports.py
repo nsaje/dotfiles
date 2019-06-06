@@ -180,6 +180,7 @@ class ReportJobExecutor(JobExecutor):
             filter_constraints.get("account_types", [])
         )
         filtered_agencies = dash.views.helpers.get_filtered_agencies(filter_constraints.get("agencies", []))
+        filtered_businesses = filter_constraints.get("businesses", None)
 
         level = helpers.get_level_from_constraints(filter_constraints)
         breakdown = list(helpers.get_breakdown_from_fields(job.query["fields"], level))
@@ -201,6 +202,7 @@ class ReportJobExecutor(JobExecutor):
             ),
             filtered_account_types=filtered_account_types,
             filtered_agencies=filtered_agencies,
+            filtered_businesses=filtered_businesses,
             only_used_sources=True,
             **structure_constraints,
         )
@@ -285,6 +287,7 @@ class ReportJobExecutor(JobExecutor):
                 ),
                 filtered_account_types=filtered_account_types,
                 filtered_agencies=filtered_agencies,
+                filtered_businesses=filtered_businesses,
                 only_used_sources=True,
                 **structure_constraints,
             )
