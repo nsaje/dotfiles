@@ -423,7 +423,7 @@ DCRON = {
         "campaignstop_main": 900,  # 15 min
         "campaignstop_handle_updates": 1800,  # 30 min
         "clean_up_postgres_stats": 7200,  # 2h
-        "create_demand_report": 18000,  # 5 h
+        "create_demand_report": 21600,  # 6 h
         "monitor_adgroup_propagation": 86400,  # 24 h
         "refresh_etl": 15000.0,  # 4 h 10 min
     },
