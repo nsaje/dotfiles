@@ -582,6 +582,7 @@ FTP_REPORTS = {
     833: {"destination": "USCoastGuardAcademy", "config": TAPCLICK_FTP_CONFIG},
     834: {"destination": "PointParkUniversity", "config": TAPCLICK_FTP_CONFIG},
     900: {"destination": "Quest_HIV", "config": TAPCLICK_FTP_CONFIG},
+    1039: {"destination": "Oklahoma_City_Business_School", "config": TAPCLICK_FTP_CONFIG},
     # Amnet - Datorama FTP
     786: {"destination": "", "config": AMMET_FTP_CONFIG},
 }
