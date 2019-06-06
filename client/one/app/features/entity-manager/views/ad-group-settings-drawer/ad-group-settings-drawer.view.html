@@ -148,7 +148,11 @@
                         class="zem-currency-setting zem-settings-section__item"
                         label="Ad group's daily spend cap"
                         helpMessage="Amount of budget autopilot can operate with on this ad group every day."
-                        [value]="state.entity.autopilot.dailyBudget"
+                        [value]="
+                            store.isAdGroupAutopilotEnabled()
+                                ? state.entity.autopilot.dailyBudget
+                                : ''
+                        "
                         [currencySymbol]="currencySymbol"
                         fractionSize="0"
                         [isDisabled]="!store.isAdGroupAutopilotEnabled()"
