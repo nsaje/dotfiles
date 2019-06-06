@@ -6,6 +6,7 @@ import {
     TimeRange,
     RuleDimension,
 } from '../rule-form.constants';
+import * as ruleFormHelpers from '../helpers/rule-form.helpers';
 
 export class RuleFormStoreState {
     rule: Rule = {
@@ -18,8 +19,30 @@ export class RuleFormStoreState {
             frequency: null,
             emailSubject: null,
             emailBody: null,
+            emailRecipients: null,
         },
-        conditions: [] = [],
+        conditions: [] = [
+            {
+                id: ruleFormHelpers.uuid(),
+                firstOperand: {
+                    property: null,
+                    value: null,
+                    modifier: {
+                        timeRangeModifier: null,
+                        valueModifier: null,
+                    },
+                },
+                operator: null,
+                secondOperand: {
+                    property: null,
+                    value: null,
+                    modifier: {
+                        timeRangeModifier: null,
+                        valueModifier: null,
+                    },
+                },
+            },
+        ],
         timeRange: TimeRange.LastThreeDays,
         notification: {
             type: RuleNotificationType.Disable,

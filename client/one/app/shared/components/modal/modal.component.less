@@ -21,10 +21,11 @@
 }
 
 .zem-modal__content-container {
+    display: flex;
+    flex-direction: column;
     max-width: @zem-modal__width;
     max-height: 100%;
     margin: 0 auto;
-    overflow: auto;
     background: #ffffff;
     box-shadow: 0 0 32px 0 rgba(0, 0, 0, 0.5);
     border-radius: 3px;
@@ -42,6 +43,7 @@
 
 .zem-modal__body {
     padding: @spacing--default;
+    overflow: auto;
 }
 
 .zem-modal__footer {

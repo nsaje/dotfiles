@@ -32,6 +32,7 @@ export enum RuleActionType {
 export enum RuleActionFrequency {
     Day1 = '1_DAY',
     Days3 = '3_DAYS',
+    Days7 = '7_DAYS',
 }
 
 export enum Unit {
@@ -40,9 +41,14 @@ export enum Unit {
 }
 
 export enum RuleActionMacro {
+    AccountName = 'ACCOUNT_NAME',
+    CampaignName = 'CAMPAIGN_NAME',
     AdGroupName = 'AD_GROUP_NAME',
     AdGroupDailyCap = 'AD_GROUP_DAILY_CAP',
     TotalSpendLastDay = 'TOTAL_SPEND_LAST_1_DAY',
+    TotalSpendLastThreeDays = 'TOTAL_SPEND_LAST_3_DAY',
+    TotalSpendLastSevenDays = 'TOTAL_SPEND_LAST_7_DAY',
+    TotalSpendLifetime = 'TOTAL_SPEND_LIFETIME',
 }
 
 export enum RuleNotificationType {
@@ -54,13 +60,41 @@ export enum RuleNotificationType {
 export enum RuleConditionProperty {
     TotalSpend = 'TOTAL_SPEND',
     Impressions = 'IMPRESSIONS',
+    Clicks = 'CLICKS',
     Ctr = 'CTR',
-    TimeOnSite = 'TIME_ON_SITE',
+    Cpc = 'CPC',
+    Cpm = 'CPM',
+
+    Visits = 'VISITS',
+    UniqueUsers = 'UNIQUE_USERS',
+    NewUsers = 'NEW_USERS',
+    ReturningUsers = 'RETURNING_USERS',
+    ShareOfNewUsers = 'SHARE_OF_NEW_USERS',
+    ClickDiscrepancy = 'CLICK_DISCREPANCY',
+
+    AccountName = 'ACCOUNT_NAME',
+    AccountCreatedDate = 'ACCOUNT_CREATED_DATE',
     CampaignName = 'CAMPAIGN_NAME',
-    PrimaryCampaignGoal = 'PRIMARY_CAMPAIGN_GOAL',
-    Status = 'STATUS',
+    CampaignCreatedDate = 'CAMPAIGN_CREATED_DATE',
+    CampaignType = 'CAMPAIGN_TYPE',
+    AdGroupName = 'ADGROUP_NAME',
+    AdGroupCreatedDate = 'ADGROUP_CREATED_DATE',
     DailyBudget = 'DAILY_BUDGET',
-    AbsoluteValue = 'ABSOLUTE_VALUE',
+
+    BudgetStartDate = 'BUDGET_START_DATE',
+    DaysUntilBudgetEnd = 'DAYS_UNTIL_BUDGET_END',
+    BudgetEndDate = 'BUDGET_END_DATE',
+    DaysSinceBudgetStart = 'DAYS_SINCE_BUDGET_START',
+
+    FixedValue = 'FIXED_VALUE',
+}
+
+export enum RuleConditionPropertyGroup {
+    TrafficAcquisition = 'Traffic acquisition',
+    AudienceMetrics = 'Audience metrics',
+    Settings = 'Settings',
+    Budget = 'Budget',
+    FixedValue = 'Fixed value',
 }
 
 export enum RuleConditionOperator {
@@ -68,6 +102,8 @@ export enum RuleConditionOperator {
     GreaterThan = 'GREATER_THAN',
     Contains = 'CONTAINS',
     NotContains = 'NOT_CONTAINS',
+    Equals = 'EQUALS',
+    NotEquals = 'NOT_EQUALS',
 }
 
 export enum TimeRange {

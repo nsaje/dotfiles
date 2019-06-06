@@ -1,7 +1,7 @@
-import {TimeRange} from '../rule-form.constants';
 import {ValueModifier} from './value-modifier';
+import {TimeRangeModifier} from './time-range-modifier';
 
 export interface RuleConditionOperandModifier {
-    timeRange?: TimeRange;
+    timeRangeModifier?: TimeRangeModifier;
     valueModifier?: ValueModifier;
 }

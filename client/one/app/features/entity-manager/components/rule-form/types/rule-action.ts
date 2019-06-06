@@ -12,4 +12,5 @@ export interface RuleAction {
     frequency?: RuleActionFrequency;
     emailSubject?: string;
     emailBody?: string;
+    emailRecipients?: string;
 }

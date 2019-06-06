@@ -9,13 +9,21 @@
     margin-top: 0;
 }
 
+.zem-rule-form__section-header {
+    display: flex;
+}
+
 .zem-rule-form__section-title {
     font-size: 17px;
     color: @color--secondary;
 }
 
-.zem-rule-form__section-title--variable {
+.zem-rule-form__section-title--underline {
     text-decoration: underline;
+}
+
+.zem-rule-form__section-header-actions {
+    margin-left: 5px;
 }
 
 .zem-rule-form__section-description {
@@ -50,4 +58,34 @@
 
 .zem-rule-form__section-item--indented > * {
     flex: 1 1 @zem-settings__min-content-width;
+}
+
+.zem-rule-form__text-setting
+    .zem-settings-form-group
+    .zem-settings-form-group__label {
+    flex: 0 0 180px;
+}
+
+.zem-rule-form__select-setting
+    .zem-settings-form-group
+    .zem-settings-form-group__label {
+    flex: 0 0 180px;
+}
+
+.zem-rule-form__select-setting
+    .zem-settings-form-group
+    .zem-settings-form-group__content {
+    flex: 0 0 225px;
+}
+
+.zem-rule-form__currency-setting
+    .zem-settings-form-group
+    .zem-settings-form-group__label {
+    flex: 0 0 180px;
+}
+
+.zem-rule-form__currency-setting
+    .zem-settings-form-group
+    .zem-settings-form-group__content {
+    flex: 0 0 225px;
 }

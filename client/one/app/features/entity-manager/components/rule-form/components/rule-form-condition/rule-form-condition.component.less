@@ -1,7 +1,8 @@
 @import 'variables';
 
-.zem-rule-form-condition__container {
+.zem-rule-form-condition {
     display: flex;
+    flex-wrap: wrap;
     padding: 5px;
     border: 1px solid @color--lighter-neutral;
     border-radius: 4px;
@@ -9,42 +10,28 @@
 
 .zem-rule-form-condition__group {
     display: flex;
-    flex: 1 1 250px;
-    width: min-content;
+    width: 200px;
     margin-right: 5px;
 }
 
-.zem-rule-form-condition__group-item {
+.zem-rule-form-condition__group-value {
     flex: 1 1 auto;
-    width: min-content;
+    min-width: 80px;
+    margin-right: 2px;
+}
+
+.zem-rule-form-condition__group-property {
+    flex: 1 1 auto;
     min-width: 60px;
     margin-right: 2px;
 }
 
-.zem-rule-form-condition__group-item:last-child {
-    margin-right: 0;
-}
-
-.zem-rule-form-condition__group-button {
-    flex: 0;
-}
-
-.zem-rule-form-condition__item {
-    flex: 1 1 250px;
+.zem-rule-form-condition__property {
+    flex: 1 1 auto;
     min-width: 60px;
-    width: min-content;
     margin-right: 5px;
 }
 
 .zem-rule-form-condition__button {
     flex: 0;
-    margin-right: 2px;
-}
-
-.zem-rule-form-condition__button:last-child {
-    margin-right: 0;
-}
-
-.zem-rule-form-condition__popover {
-    min-width: 600px;
 }

@@ -16,6 +16,7 @@ import {
     ValueModifierType,
     RuleConditionProperty,
 } from '../../rule-form.constants';
+import {RULE_CONDITION_PROPERTIES} from '../../rule-form.config';
 
 @Component({
     selector: 'zem-rule-form-condition-modifier',
@@ -54,7 +55,7 @@ export class RuleFormConditionModifierComponent implements OnChanges {
     }
 
     setTimeRange($event: TimeRange) {
-        this.model.timeRange = $event;
+        this.model.timeRangeModifier.value = $event;
     }
 
     save() {
@@ -73,14 +74,16 @@ export class RuleFormConditionModifierComponent implements OnChanges {
         this.model.valueModifier.value = $event;
     }
 
-    getPropertyText() {
-        if (this.property === RuleConditionProperty.TotalSpend) {
-            return 'total spend by';
-        } else if (this.property === RuleConditionProperty.Impressions) {
-            return 'impressions by';
-        } else if (this.property === RuleConditionProperty.DailyBudget) {
-            return 'daily budget by';
+    private getPropertyText() {
+        if (this.property === RuleConditionProperty.FixedValue) {
+            return `${this.value} by`;
+        } else {
+            const propertyConfig = RULE_CONDITION_PROPERTIES.find(
+                (property: any) => {
+                    return property.value === this.property;
+                }
+            );
+            return `${propertyConfig.name} by`;
         }
-        return `${this.value} by`;
     }
 }

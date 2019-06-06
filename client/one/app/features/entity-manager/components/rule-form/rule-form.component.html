@@ -1,12 +1,19 @@
 <ng-container *ngIf="(store.state$ | async) as state">
     <div class="zem-rule-form__section">
-        <div class="zem-rule-form__section-title">
-            Run rule on:
-            <span class="zem-rule-form__section-title--variable">{{
-                title
-            }}</span
-            >&nbsp;<a>(edit)</a>
+        <div class="zem-rule-form__section-header">
+            <div class="zem-rule-form__section-title">
+                Run rule on:
+                <span class="zem-rule-form__section-title--underline">{{
+                    title
+                }}</span>
+            </div>
+            <div class="zem-rule-form__section-header-actions">
+                <button
+                    class="button button--outline button--small button--with-icon button--only-icon edit-icon"
+                ></button>
+            </div>
         </div>
+
         <div class="zem-rule-form__section-description">
             Determines the set of accounts, campaigns or ad groups on which the
             rule will run.<br />
@@ -15,19 +22,21 @@
     </div>
     <div class="zem-rule-form__section">
         <zem-text-setting
-            class="zem-rule-form__section-item zem-text-setting"
+            class="zem-rule-form__section-item zem-text-setting zem-rule-form__text-setting"
             [label]="'Rule name:'"
             [value]="state.rule.name"
             (valueChange)="store.setName($event)"
         >
         </zem-text-setting>
         <zem-select-setting
-            class="zem-rule-form__section-item zem-select-setting"
+            class="zem-rule-form__section-item zem-select-setting zem-rule-form__select-setting"
             [label]="'Apply rule action on:'"
             [value]="state.rule.dimension"
+            [helpMessage]="'Rule action on...'"
             [bindLabel]="'name'"
             [bindValue]="'value'"
             [items]="availableDimensions"
+            [isSearchable]="false"
             (valueChange)="store.setDimension($event)"
         ></zem-select-setting>
         <div
@@ -60,12 +69,14 @@
             >
             </zem-rule-form-conditions>
             <zem-select-setting
-                class="zem-rule-form__section-item zem-select-setting"
+                class="zem-rule-form__section-item zem-select-setting zem-rule-form__select-setting"
                 [label]="'Time range:'"
                 [value]="state.rule.timeRange"
+                [helpMessage]="'Time range...'"
                 [bindLabel]="'name'"
                 [bindValue]="'value'"
                 [items]="availableTimeRanges"
+                [isSearchable]="false"
                 (valueChange)="store.setTimeRange($event)"
             ></zem-select-setting>
             <div

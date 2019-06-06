@@ -33,6 +33,10 @@ export class SelectSettingComponent implements OnChanges {
     @Input()
     isDisabled: boolean = false;
     @Input()
+    isSearchable: boolean = false;
+    @Input()
+    groupByValue: string;
+    @Input()
     errors: string[];
     @Output()
     valueChange = new EventEmitter<string>();

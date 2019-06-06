@@ -44,7 +44,7 @@ export class RuleActionsComponent {
             this.isSaveInProgress = false;
             this.ruleModal.close();
             this.changeDetectorRef.detectChanges();
-        }, 500);
+        }, 1000);
     }
 
     cancel(): void {

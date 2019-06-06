@@ -1,12 +1,29 @@
 <zem-select-setting
-    class="zem-rule-form__section-item zem-select-setting"
+    class="zem-rule-form__section-item zem-select-setting zem-rule-form__select-setting"
     [label]="'Type:'"
     [value]="model.type"
+    [helpMessage]="'Type ...'"
     [bindLabel]="'name'"
     [bindValue]="'value'"
     [items]="availableActionTypes"
+    [isSearchable]="false"
     (valueChange)="setType($event)"
 ></zem-select-setting>
+<zem-select-setting
+    class="zem-rule-form__section-item zem-select-setting zem-rule-form__select-setting"
+    [label]="'Action frequency:'"
+    [value]="model.frequency"
+    [helpMessage]="'Action frequency ...'"
+    [bindLabel]="'name'"
+    [bindValue]="'value'"
+    [isDisabled]="!ruleActionConfig"
+    [items]="ruleActionConfig ? ruleActionConfig.frequencies : []"
+    [isSearchable]="false"
+    (valueChange)="setFrequency($event)"
+></zem-select-setting>
+<div class="zem-rule-form__section-description">
+    The minimum amount of time that needs to pass since the last action.
+</div>
 <ng-container *ngIf="model.type">
     <ng-container
         *ngIf="
@@ -15,27 +32,23 @@
         "
     >
         <zem-currency-setting
-            class="zem-rule-form__section-item zem-currency-setting"
+            class="zem-rule-form__section-item zem-currency-setting zem-rule-form__currency-setting"
             [label]="'Value:'"
             [value]="model.value"
+            [helpMessage]="'Value ...'"
             [currencySymbol]="'%'"
             (valueChange)="setValue($event)"
         ></zem-currency-setting>
         <zem-currency-setting
-            class="zem-rule-form__section-item zem-currency-setting"
+            class="zem-rule-form__section-item zem-currency-setting zem-rule-form__currency-setting"
             [label]="ruleActionConfig.limitLabel"
             [value]="model.limit"
+            [helpMessage]="'Limit ...'"
             [currencySymbol]="ruleActionConfig.limitUnit"
             (valueChange)="setLimit($event)"
         ></zem-currency-setting>
-        <div
-            class="zem-rule-form__section-item zem-rule-form__section-item--indented"
-        >
-            <div
-                class="zem-message zem-message--bubble zem-message--info zem-message--with-icon"
-            >
-                {{ ruleActionConfig.limitDescription }}
-            </div>
+        <div class="zem-rule-form__section-description">
+            {{ ruleActionConfig.limitDescription }}
         </div>
     </ng-container>
     <ng-container *ngIf="model.type === RuleActionType.SendEmail">
@@ -57,6 +70,15 @@
                     [rows]="'5'"
                     (valueChange)="setEmailBody($event)"
                 ></zem-textarea-setting>
+                <zem-text-setting
+                    class="zem-rule-form__section-item zem-textarea-setting"
+                    [label]="'Email recipients:'"
+                    [value]="model.emailRecipients"
+                    (valueChange)="setEmailRecipients($event)"
+                ></zem-text-setting>
+                <div class="zem-rule-form__section-description">
+                    Comma separated list of recipient's emails.
+                </div>
             </div>
             <div class="zem-rule-form-action__macro">
                 <zem-select-setting
@@ -66,6 +88,7 @@
                     [bindLabel]="'name'"
                     [bindValue]="'value'"
                     [items]="availableMacros"
+                    [isSearchable]="false"
                     (valueChange)="setMacro($event)"
                 ></zem-select-setting>
                 <button
@@ -78,22 +101,4 @@
             </div>
         </div>
     </ng-container>
-    <zem-select-setting
-        class="zem-rule-form__section-item zem-select-setting"
-        [label]="'Action frequency:'"
-        [value]="model.frequency"
-        [bindLabel]="'name'"
-        [bindValue]="'value'"
-        [items]="ruleActionConfig.frequencies"
-        (valueChange)="setFrequency($event)"
-    ></zem-select-setting>
-    <div
-        class="zem-rule-form__section-item zem-rule-form__section-item--indented"
-    >
-        <div
-            class="zem-message zem-message--bubble zem-message--info zem-message--with-icon"
-        >
-            The minimum amount of time that needs to pass since the last action.
-        </div>
-    </div>
 </ng-container>

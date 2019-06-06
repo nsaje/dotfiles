@@ -52,16 +52,36 @@ export class RuleFormActionComponent implements OnChanges {
     ];
     availableMacros: any[] = [
         {
-            name: RuleActionMacro.AdGroupName,
+            name: 'Account name',
+            value: RuleActionMacro.AccountName,
+        },
+        {
+            name: 'Campaign name',
+            value: RuleActionMacro.CampaignName,
+        },
+        {
+            name: 'Ad group name',
             value: RuleActionMacro.AdGroupName,
         },
         {
-            name: RuleActionMacro.AdGroupDailyCap,
+            name: 'Ad group daily cap',
             value: RuleActionMacro.AdGroupDailyCap,
         },
         {
-            name: RuleActionMacro.TotalSpendLastDay,
+            name: 'Total spend (last 1 day)',
             value: RuleActionMacro.TotalSpendLastDay,
+        },
+        {
+            name: 'Total spend (last 3 day)',
+            value: RuleActionMacro.TotalSpendLastThreeDays,
+        },
+        {
+            name: 'Total spend (last 7 day)',
+            value: RuleActionMacro.TotalSpendLastSevenDays,
+        },
+        {
+            name: 'Total spend (lifetime)',
+            value: RuleActionMacro.TotalSpendLifetime,
         },
     ];
 
@@ -74,6 +94,14 @@ export class RuleFormActionComponent implements OnChanges {
 
     setType(type: RuleActionType) {
         this.model.type = type;
+        if (!this.model.type) {
+            this.model.frequency = null;
+        }
+        this.valueChange.emit(clone(this.model));
+    }
+
+    setValue(value: number) {
+        this.model.value = value;
         this.valueChange.emit(clone(this.model));
     }
 
@@ -101,6 +129,11 @@ export class RuleFormActionComponent implements OnChanges {
     setEmailBody(emailBody: string) {
         this.addMacroToSubject = false;
         this.model.emailBody = emailBody;
+        this.valueChange.emit(clone(this.model));
+    }
+
+    setEmailRecipients(emailRecipients: string) {
+        this.model.emailRecipients = emailRecipients;
         this.valueChange.emit(clone(this.model));
     }
 

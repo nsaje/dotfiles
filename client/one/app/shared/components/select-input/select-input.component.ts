@@ -32,6 +32,10 @@ export class SelectInputComponent implements OnInit, OnChanges {
     @Input()
     isDisabled: boolean = false;
     @Input()
+    isSearchable: boolean = false;
+    @Input()
+    groupByValue: string;
+    @Input()
     hasError: boolean = false;
     @Output()
     valueChange = new EventEmitter<string>();

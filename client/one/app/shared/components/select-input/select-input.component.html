@@ -7,5 +7,11 @@
     [items]="items"
     [ngModel]="model"
     [disabled]="isDisabled"
+    [searchable]="isSearchable"
+    [groupBy]="groupByValue"
     (change)="onChange($event)"
-></ng-select>
+>
+    <ng-template ng-optgroup-tmp let-item="item">
+        {{ item[groupByValue] }}
+    </ng-template>
+</ng-select>

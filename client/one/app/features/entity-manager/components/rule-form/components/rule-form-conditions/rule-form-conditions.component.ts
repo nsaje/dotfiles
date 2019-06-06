@@ -11,6 +11,7 @@ import {
 } from '@angular/core';
 import {RuleCondition} from '../../types/rule-condition';
 import * as clone from 'clone';
+import * as ruleFormHelpers from '../../helpers/rule-form.helpers';
 
 @Component({
     selector: 'zem-rule-form-conditions',
@@ -51,12 +52,12 @@ export class RuleFormConditionsComponent implements OnChanges {
 
     private getNewCondition(): RuleCondition {
         const condition: RuleCondition = {
-            id: this.uuid(),
+            id: ruleFormHelpers.uuid(),
             firstOperand: {
                 property: null,
                 value: null,
                 modifier: {
-                    timeRange: null,
+                    timeRangeModifier: null,
                     valueModifier: null,
                 },
             },
@@ -65,17 +66,11 @@ export class RuleFormConditionsComponent implements OnChanges {
                 property: null,
                 value: null,
                 modifier: {
-                    timeRange: null,
-                    valueModifier: {},
+                    timeRangeModifier: null,
+                    valueModifier: null,
                 },
             },
         };
         return condition;
-    }
-
-    private uuid(): string {
-        return Math.floor((1 + Math.random()) * 0x10000)
-            .toString(16)
-            .substring(1);
     }
 }
