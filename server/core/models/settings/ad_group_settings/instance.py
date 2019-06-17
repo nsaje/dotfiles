@@ -124,22 +124,20 @@ class AdGroupSettingsMixin(object):
             setattr(new_settings, key, value)
 
     def _validate_changes(self, new_settings):
-        if "archived" in new_settings.get_updates():
-            if new_settings.archived:
-                if not self.ad_group.can_archive():
-                    raise exc.ForbiddenError("An ad group has to be paused for 3 days in order to archive it.")
-            else:
-                if not self.ad_group.can_restore():
-                    raise exc.ForbiddenError(
-                        "Account and campaign must not be archived in order to restore an ad group."
-                    )
+        if "archived" in new_settings.get_updates() and not new_settings.archived and not self.ad_group.can_restore():
+            raise exc.ForbiddenError("Account and campaign must not be archived in order to restore an ad group.")
 
     def _handle_and_set_change_consequences(self, new_settings, skip_notification=False, write_source_history=True):
+        self._handle_archived(new_settings)
         self._handle_b1_sources_group_adjustments(new_settings)
         self._handle_bid_autopilot_initial_bids(
             new_settings, skip_notification=skip_notification, write_source_history=write_source_history
         )
         self._handle_bid_constraints(new_settings, write_source_history=write_source_history)
+
+    def _handle_archived(self, new_settings):
+        if new_settings.archived:
+            new_settings.state = constants.AdGroupSettingsState.INACTIVE
 
     def _handle_b1_sources_group_adjustments(self, new_settings):
         changes = self.get_setting_changes(new_settings)

@@ -412,15 +412,17 @@ class AdGroupArchiveRestoreTest(TestCase):
         self.assertFalse(ad_group.settings.archived)
 
     @patch.object(core.models.AdGroup, "is_ad_group_active", return_value=True)
-    def test_cant_archive_paused_fail(self, mock_adgroup_is_active):
+    def test_archive_active(self, mock_adgroup_is_active):
         ad_group = magic_mixer.blend(core.models.AdGroup)
+        ad_group.settings.update_unsafe(None, state=constants.AdGroupSettingsState.ACTIVE)
+        self.assertEqual(constants.AdGroupSettingsState.ACTIVE, ad_group.settings.state)
         self.assertFalse(ad_group.archived)
         self.assertFalse(ad_group.settings.archived)
-        with self.assertRaises(utils.exc.ForbiddenError):
-            ad_group.settings.update(None, archived=True)
+        ad_group.settings.update(None, archived=True)
         ad_group.refresh_from_db()
-        self.assertFalse(ad_group.archived)
-        self.assertFalse(ad_group.settings.archived)
+        self.assertEqual(constants.AdGroupSettingsState.INACTIVE, ad_group.settings.state)
+        self.assertTrue(ad_group.archived)
+        self.assertTrue(ad_group.settings.archived)
 
     @patch.object(core.models.Campaign, "is_archived", return_value=True)
     def test_cant_restore_campaign_fail(self, mock_campaign_is_archived):

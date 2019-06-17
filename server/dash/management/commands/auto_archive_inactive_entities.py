@@ -1,8 +1,11 @@
 import datetime
 import logging
 
+from django.db import transaction
+
 import automation.campaignstop
 import redshiftapi.api_breakdowns
+import utils.exc
 from dash import constants
 from dash import models
 from utils import dates_helper
@@ -20,8 +23,7 @@ class Command(ExceptionCommand):
 
     def handle(self, *args, **options):
         adgroups, campaigns = _auto_archive_inactive_entities(
-            inactive_since=dates_helper.local_today() - datetime.timedelta(days=DAYS_INACTIVE),
-            whitelist=WHITELISTED_ACCOUNTS,
+            inactive_since=dates_helper.local_today() - datetime.timedelta(days=DAYS_INACTIVE)
         )
         logger.info("Archived {} ad groups and {} campaigns.".format(adgroups, campaigns))
 
@@ -41,7 +43,7 @@ def _auto_archive_inactive_entities(inactive_since, whitelist=None):
     ).select_related("settings", "campaign")
 
     if whitelist:
-        ad_groups.filter(campaign__account__id__in=whitelist)
+        ad_groups = ad_groups.filter(campaign__account__id__in=whitelist)
 
     data = redshiftapi.api_breakdowns.query(
         ["ad_group_id"],
@@ -65,13 +67,10 @@ def _auto_archive_inactive_entities(inactive_since, whitelist=None):
             or ag.settings.end_date
             and ag.settings.end_date < dates_helper.local_today()
         ):
+            with transaction.atomic():
+                ag.archive(None)
+                ag.write_history(changes_text="Automated archiving.")
 
-            ag.settings.update_unsafe(
-                None,
-                archived=True,
-                state=constants.AdGroupSettingsState.INACTIVE,
-                history_changes_text="Automated archiving.",
-            )
             logger.info("Auto-archived ad group with id {}.".format(ag.id))
             ad_group_count += 1
 
@@ -84,23 +83,19 @@ def _auto_archive_inactive_entities(inactive_since, whitelist=None):
     )
 
     if whitelist:
-        campaigns.filter(account__id__in=whitelist)
-
-    class CampaignHasActiveBudgets(Exception):
-        pass
+        campaigns = campaigns.filter(account__id__in=whitelist)
 
     campaign_count = 0
     for c in campaigns:
-        try:
-            for budget in c.budgets.all().annotate_spend_data():
-                if budget.state() in (constants.BudgetLineItemState.ACTIVE, constants.BudgetLineItemState.PENDING):
-                    raise CampaignHasActiveBudgets()
+        with transaction.atomic():
+            try:
+                c.archive(None)
+                c.write_history(changes_text="Automated archiving.")
 
-            c.settings.update_unsafe(None, archived=True, history_changes_text="Automated archiving.")
-            logger.info("Auto-archived campaign with id {}.".format(c.id))
-            campaign_count += 1
+                logger.info("Auto-archived campaign with id {}.".format(c.id))
+                campaign_count += 1
 
-        except CampaignHasActiveBudgets:
-            continue
+            except utils.exc.ForbiddenError:
+                continue
 
     return ad_group_count, campaign_count

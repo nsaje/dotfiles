@@ -342,6 +342,7 @@
         cpc_cc: '1.00'
         daily_budget_cc: '50.'
         autopilot_state: 1
+        b1_sources_group_enabled: True
         autopilot_daily_budget: '200.'
         tracking_code: ''
         archived: false

@@ -1,7 +1,8 @@
 from django.test import TestCase
 
 import core.models
-from dash import history_helpers
+import dash.constants
+import dash.history_helpers
 from utils.magic_mixer import magic_mixer
 
 
@@ -13,7 +14,7 @@ class AdGroupInstanceTest(TestCase):
 
         ad_group.write_history_created(request)
 
-        history = history_helpers.get_ad_group_history(ad_group)
+        history = dash.history_helpers.get_ad_group_history(ad_group)
 
         self.assertEqual(len(history), 7)
         self.assertRegex(
@@ -23,11 +24,15 @@ class AdGroupInstanceTest(TestCase):
     def test_archive_restore(self):
         request = magic_mixer.blend_request_user()
         ad_group = magic_mixer.blend(core.models.AdGroup)
+        ad_group.settings.update_unsafe(None, state=dash.constants.AdGroupSettingsState.ACTIVE)
         self.assertFalse(ad_group.archived)
         self.assertFalse(ad_group.settings.archived)
+        self.assertEqual(dash.constants.AdGroupSettingsState.ACTIVE, ad_group.settings.state)
         ad_group.archive(request)
         self.assertTrue(ad_group.archived)
         self.assertTrue(ad_group.settings.archived)
+        self.assertEqual(dash.constants.AdGroupSettingsState.INACTIVE, ad_group.settings.state)
         ad_group.restore(request)
         self.assertFalse(ad_group.archived)
         self.assertFalse(ad_group.settings.archived)
+        self.assertEqual(dash.constants.AdGroupSettingsState.INACTIVE, ad_group.settings.state)

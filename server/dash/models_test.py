@@ -525,11 +525,12 @@ class ArchiveRestoreTestCase(TestCase):
         self.assertFalse(ag2.get_current_settings().archived)
         self.assertFalse(ag2.archived)
 
-        self.assertFalse(ag1.can_archive())
+        self.assertTrue(ag1.can_archive())
         self.assertTrue(ag2.can_archive())
 
-        with self.assertRaises(exc.ForbiddenError):
-            ag1.archive(self.request)
+        ag1.archive(self.request)
+        self.assertTrue(ag1.get_current_settings().archived)
+        self.assertTrue(ag1.archived)
 
         ag2.archive(self.request)
         self.assertTrue(ag2.get_current_settings().archived)
@@ -554,27 +555,54 @@ class ArchiveRestoreTestCase(TestCase):
         self.assertFalse(c3.get_current_settings().archived)
         self.assertFalse(c3.archived)
 
-        self.assertFalse(c1.can_archive())
+        self.assertTrue(c1.can_archive())
         self.assertTrue(c2.can_archive())
         self.assertFalse(c3.can_archive())
 
         with self.assertRaises(exc.ForbiddenError):
-            c1.archive(self.request)
-
-        with self.assertRaises(exc.ForbiddenError):
             c3.archive(self.request)
+
+        c1.archive(self.request)
+        self.assertTrue(c1.get_current_settings().archived)
+        self.assertTrue(c1.archived)
+
+        ag1 = c1.adgroup_set.all()[0]
+        self.assertTrue(ag1.get_current_settings().archived)
+        self.assertTrue(ag1.archived)
 
         c2.archive(self.request)
         self.assertTrue(c2.get_current_settings().archived)
         self.assertTrue(c2.archived)
 
-        ag = c2.adgroup_set.all()[0]
-        self.assertTrue(ag.get_current_settings().archived)
-        self.assertTrue(ag.archived)
+        ag2 = c2.adgroup_set.all()[0]
+        self.assertTrue(ag2.get_current_settings().archived)
+        self.assertTrue(ag2.archived)
 
+    @patch("dash.forms.dates_helper.local_today", lambda: datetime.datetime(2015, 12, 1).date())
     def test_archive_account(self):
         a1 = models.Account.objects.get(id=1)
         a2 = models.Account.objects.get(id=2)
+
+        campaign = magic_mixer.blend(models.Campaign, account=a1)
+        credit = magic_mixer.blend(
+            models.CreditLineItem,
+            account=a1,
+            start_date=datetime.date(2016, 12, 1),
+            end_date=datetime.date(2017, 3, 3),
+            status=constants.CreditLineItemStatus.SIGNED,
+            amount=500,
+            license_fee=Decimal("0.10"),
+        )
+        models.BudgetLineItem.objects.create(
+            magic_mixer.blend_request_user(),
+            campaign,
+            credit,
+            datetime.date(2017, 1, 1),
+            datetime.date(2017, 1, 2),
+            100,
+            Decimal("0.15"),
+            "test",
+        )
 
         self.assertFalse(a1.get_current_settings().archived)
         self.assertFalse(a2.get_current_settings().archived)
@@ -688,28 +716,6 @@ class ArchiveRestoreTestCase(TestCase):
         ag.restore(self.request)
         self.assertFalse(ag.get_current_settings().archived)
         self.assertFalse(ag.archived)
-
-    def test_cannot_archive_ad_group_dates(self):
-        ag = models.AdGroup.objects.get(id=2)
-
-        cs = ag.get_current_settings()
-        self.assertFalse(cs.archived)
-        self.assertFalse(ag.archived)
-        self.assertTrue(ag.can_archive())
-
-        with test_helper.disable_auto_now_add(models.AdGroupSettings, "created_dt"):
-            # enable it before
-            cs = cs.copy_settings()
-            cs.state = constants.AdGroupSettingsState.ACTIVE
-            cs.created_dt = datetime.date.today() - datetime.timedelta(days=models.NR_OF_DAYS_INACTIVE_FOR_ARCHIVAL + 1)
-            cs.save(self.request)
-
-            cs = cs.copy_settings()
-            cs.state = constants.AdGroupSettingsState.INACTIVE
-            cs.created_dt = datetime.date.today() - datetime.timedelta(days=models.NR_OF_DAYS_INACTIVE_FOR_ARCHIVAL)
-            cs.save(self.request)
-
-        self.assertFalse(ag.can_archive())
 
     def test_can_archive_ad_group_dates(self):
         ag = models.AdGroup.objects.get(id=2)

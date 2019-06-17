@@ -1,5 +1,3 @@
-import datetime
-
 import newrelic.agent
 from django.conf import settings
 from django.db import transaction
@@ -42,29 +40,7 @@ class AdGroupInstanceMixin:
         return self.settings
 
     def can_archive(self):
-        # FIXME:circular dependency
-        import core.models.settings
-
-        current_settings = self.get_current_settings()
-
-        # can not archive when ad group is active
-        if self.is_ad_group_active(current_settings):
-            return False
-
-        if not core.models.settings.AdGroupSettings.objects.filter(
-            ad_group_id=self.id, state=dash.constants.AdGroupSettingsState.ACTIVE
-        ).exists():
-            # if it was never turned on than it can be archived
-            return True
-
-        # can not archive if ad group was turned off in the last 3 days
-        today = utils.dates_helper.local_today()
-        activated_settings = core.models.settings.AdGroupSettings.objects.filter(
-            ad_group_id=self.id,
-            created_dt__gte=today - datetime.timedelta(days=core.models.helpers.NR_OF_DAYS_INACTIVE_FOR_ARCHIVAL),
-            state=dash.constants.AdGroupSettingsState.INACTIVE,
-        )
-        return not activated_settings.exists()
+        return True
 
     def can_restore(self):
         if self.campaign.is_archived():
@@ -74,6 +50,14 @@ class AdGroupInstanceMixin:
 
     def is_archived(self):
         return self.archived
+
+    @transaction.atomic
+    def archive(self, request):
+        self.settings.update(request, archived=True)
+
+    @transaction.atomic
+    def restore(self, request):
+        self.settings.update(request, archived=False)
 
     def is_blocked_by_custom_flag(self):
         return bool(self.get_all_custom_flags().get(dash.features.custom_flags.constants.CUSTOMER_BLOCKED))
@@ -165,14 +149,6 @@ class AdGroupInstanceMixin:
         if ad_group_settings and ad_group_settings.state == dash.constants.AdGroupSettingsState.ACTIVE:
             return True
         return False
-
-    @transaction.atomic
-    def archive(self, request):
-        self.settings.update(request, archived=True)
-
-    @transaction.atomic
-    def restore(self, request):
-        self.settings.update(request, archived=False)
 
     def get_default_blacklist_name(self):
         return "Default blacklist for ad group {}({})".format(self.name, self.id)
