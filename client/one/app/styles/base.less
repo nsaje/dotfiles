@@ -3621,6 +3621,7 @@ h4 {
     position: relative;
     display: block;
     margin-bottom: 5px;
+    overflow: hidden;
     background-color: tint(@color--secondary, 90%);
     border: 1px solid tint(@color--secondary, 80%);
 
@@ -3643,11 +3644,14 @@ h4 {
     }
 }
 
+.ad-preview__image-link--max-size {
+    max-width: 358px;
+    max-height: 250px;
+}
+
 .ad-preview__image {
     display: block;
     width: 100%;
-    max-width: 358px;
-    max-height: 250px;
     z-index: 2;
     position: relative;
 }
