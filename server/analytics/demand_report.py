@@ -50,7 +50,9 @@ def create_report():
 
     ad_group_spend_dict = {e["ad_group_id"]: e for e in _get_ad_group_spend()}
 
-    output_stream = _generate_bq_csv_file(ad_group_spend_dict, yesterday)
+    account_data_dict = _get_account_data_dict()
+
+    output_stream = _generate_bq_csv_file(account_data_dict, ad_group_spend_dict, yesterday)
     _update_big_query(output_stream, yesterday)
 
     logger.info("Demand report done.")
@@ -73,7 +75,7 @@ def _delete_big_query_records(date):
     bigquery_helper.query(delete_query, timeout=BIGQUERY_TIMEOUT, use_legacy_sql=False)
 
 
-def _generate_bq_csv_file(ad_group_spend_dict, date):
+def _generate_bq_csv_file(account_data_dict, ad_group_spend_dict, date):
     logger.info("Generating CSV file.")
     output_stream = io.BytesIO()
 
@@ -82,7 +84,7 @@ def _generate_bq_csv_file(ad_group_spend_dict, date):
     )
     csv_writer.writeheader()
 
-    for row in _csv_rows_generator(ad_group_spend_dict, date):
+    for row in _csv_rows_generator(account_data_dict, ad_group_spend_dict, date):
         csv_writer.writerow(row)
 
     output_stream.seek(0)
@@ -90,25 +92,25 @@ def _generate_bq_csv_file(ad_group_spend_dict, date):
     return output_stream
 
 
-def _csv_rows_generator(ad_group_spend_dict, date):
+def _csv_rows_generator(account_data_dict, ad_group_spend_dict, date):
     date_string = date.strftime("%Y-%m-%d")
     source_id_map = _source_id_map(constants.SourceType.OUTBRAIN, constants.SourceType.YAHOO)
 
     missing_ad_group_ids = set(ad_group_spend_dict.keys())
 
-    for row in _ad_group_rows_generator(_get_ad_group_data(), ad_group_spend_dict, source_id_map):
+    for row in _ad_group_rows_generator(_get_ad_group_data(), account_data_dict, ad_group_spend_dict, source_id_map):
         row["date"] = date_string
         missing_ad_group_ids.discard(row["adgroup_id"])
         yield row
 
     for row in _ad_group_rows_generator(
-        _get_ad_group_data(ad_group_ids=missing_ad_group_ids), ad_group_spend_dict, source_id_map
+        _get_ad_group_data(ad_group_ids=missing_ad_group_ids), account_data_dict, ad_group_spend_dict, source_id_map
     ):
         row["date"] = date_string
         yield row
 
 
-def _ad_group_rows_generator(ad_group_query_set, ad_group_spend_dict, source_id_map):
+def _ad_group_rows_generator(ad_group_query_set, account_data_dict, ad_group_spend_dict, source_id_map):
     chunk_id = 0
 
     for ad_group_data_chunk in queryset_helper.chunk_iterator(ad_group_query_set, chunk_size=AD_GROUP_CHUNK_SIZE):
@@ -119,9 +121,6 @@ def _ad_group_rows_generator(ad_group_query_set, ad_group_spend_dict, source_id_
 
         campaign_data_dict = {e["campaign_id"]: e for e in _get_campaign_data(campaign_ids)}
         logger.info("Fetched %s campaign data rows for chunk #%s", len(campaign_data_dict), chunk_id)
-
-        account_data_dict = {e["campaign_id"]: e for e in _get_account_data(campaign_ids)}
-        logger.info("Fetched %s account data rows for chunk #%s", len(account_data_dict), chunk_id)
 
         user_email_dict = _get_user_email_dict(account_data_dict.values())
         logger.info("Fetched %s user data rows for chunk #%s", len(user_email_dict), chunk_id)
@@ -143,7 +142,7 @@ def _ad_group_rows_generator(ad_group_query_set, ad_group_spend_dict, source_id_
         for ad_group_data_row in ad_group_data_chunk:
             row = ad_group_data_row.copy()
             row.update(campaign_data_dict[row["campaign_id"]])
-            row.update(account_data_dict[row["campaign_id"]])
+            row.update(account_data_dict[campaign_data_dict[row["campaign_id"]]["account_id"]])
             row.update(remaining_budget_dict.get(row["campaign_id"], {"remaining_budget": Decimal(0.0)}))
             row.update(ad_group_stats_dict[row["adgroup_id"]])
 
@@ -162,6 +161,8 @@ def _ad_group_rows_generator(ad_group_query_set, ad_group_spend_dict, source_id_
 
             _normalize_row(row)
             yield row
+
+        logger.info("Done processing ad group chunk #%s", chunk_id)
 
 
 def _get_budget_data_dict(campaign_ids):
@@ -523,12 +524,18 @@ def _get_user_email_dict(account_data):
     return dict(User.objects.filter(id__in=user_ids).values_list("id", "email"))
 
 
-def _get_account_data(campaign_ids, date=None):
+def _get_account_data_dict(account_ids=None, date=None):
+    account_data_dict = {e["account_id"]: e for e in _get_account_data(account_ids=account_ids, date=date)}
+    logger.info("Fetched %s account data entries", len(account_data_dict))
+    return account_data_dict
+
+
+def _get_account_data(account_ids=None, date=None):
     if date is None:
         date = datetime.date.today() - datetime.timedelta(days=1)
 
     field_mapping = {
-        "campaign_id": F("campaign__id"),
+        "account_id": F("id"),
         "agency_name": F("agency__name"),
         "agency_created_dt": F("agency__created_dt"),
         "sales_representative_id": F("agency__sales_representative_id"),
@@ -584,9 +591,12 @@ def _get_account_data(campaign_ids, date=None):
         .values("remaining_credit")
     )
 
+    qs = models.Account.objects.all()
+    if account_ids is not None:
+        qs = qs.filter(id__in=account_ids)
+
     return (
-        models.Account.objects.filter(campaign__id__in=campaign_ids)
-        .select_related("agency", "agency__settings", "settings")
+        qs.select_related("agency", "agency__settings", "settings")
         .annotate(remaining_credit=Subquery(remaining_credit_query, output_field=FloatField()))
         .annotate(
             credit_end_date=Subquery(

@@ -540,7 +540,7 @@ class DemandReportTestCase(test.TestCase):
 
         mock_spend.return_value = [dict(zip(columns, row)) for row in spend_rows]
 
-        with self.assertNumQueries(15):
+        with self.assertNumQueries(14):
             demand_report.create_report()
 
         calls = mock_upload.call_args_list
