@@ -138,7 +138,7 @@ services:
           traefik.enable: "false"
           SERVICE_IGNORE: "true"
         entrypoint: ""
-        command: "/usr/local/bin/newrelic-admin run-program celery worker -A server -c 1 -Q z1-reports -l INFO -f /app/logs/eins_celery_reports.log --prefetch-multiplier 0 -P prefork"
+        command: "/usr/local/bin/newrelic-admin run-program celery worker -A server -c 1 -Q z1-reports -l INFO -f /app/logs/eins_celery_reports.log --prefetch-multiplier 0 -P prefork --max-tasks-per-child 10"
 
     einsworker_redshift_background_cache:
         extends: eins
