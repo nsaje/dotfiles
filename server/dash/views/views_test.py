@@ -279,7 +279,7 @@ class AccountCampaignsTest(TestCase):
         settings = models.CampaignSettings.objects.get(campaign_id=campaign_id)
 
         self.assertEqual(settings.target_devices, constants.AdTargetDevice.get_all())
-        self.assertEqual(settings.target_regions, ["US"])
+        self.assertEqual(settings.target_regions, [])
         self.assertEqual(settings.name, campaign_name)
         self.assertEqual(settings.campaign_manager.id, 1)
 

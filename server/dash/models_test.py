@@ -846,7 +846,7 @@ class CampaignTestCase(TestCase):
         self.assertEqual(settings.name, "")
         self.assertEqual(settings.iab_category, "IAB24")
         self.assertEqual(set(settings.target_devices), set(["tablet", "mobile", "desktop"]))
-        self.assertEqual(settings.target_regions, ["US"])
+        self.assertEqual(settings.target_regions, [])
 
     def test_filter_by_agencies(self):
         agencies = models.Agency.objects.filter(pk=1)
@@ -1297,7 +1297,6 @@ class HistoryTest(TestCase):
             . Name set to "test"
             , Campaign Manager set to "luka.silovinac@zemanta.com"
             , Device targeting set to "Desktop, Tablet, Mobile"
-            , Locations set to "United States"
             , Budget Optimization Autopilot set to "True"
             """
             ).replace("\n", ""),

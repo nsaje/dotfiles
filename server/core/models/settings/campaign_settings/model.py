@@ -127,7 +127,7 @@ class CampaignSettings(validation.CampaignSettingsValidatorMixin, instance.Campa
 
     @classmethod
     def get_defaults_dict(cls):
-        return OrderedDict([("target_devices", constants.AdTargetDevice.get_all()), ("target_regions", ["US"])])
+        return OrderedDict([("target_devices", constants.AdTargetDevice.get_all())])
 
     @classmethod
     def get_human_prop_name(cls, prop_name):

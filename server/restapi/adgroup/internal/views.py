@@ -24,7 +24,7 @@ class AdGroupViewSet(restapi.adgroup.v1.views.AdGroupViewSet):
         if not campaign_id:
             raise rest_framework.serializers.ValidationError("Must pass campaignId parameter")
         campaign = restapi.access.get_campaign(request.user, campaign_id)
-        ad_group = core.models.AdGroup.objects.get_restapi_default(request, campaign)
+        ad_group = core.models.AdGroup.objects.get_default(request, campaign)
         extra_data = helpers.get_extra_data(request.user, ad_group)
         return self.response_ok(
             data=serializers.AdGroupSerializer(ad_group.settings, context={"request": request}).data,
@@ -64,7 +64,7 @@ class AdGroupViewSet(restapi.adgroup.v1.views.AdGroupViewSet):
 
         with transaction.atomic():
             new_ad_group = core.models.AdGroup.objects.create(
-                request, campaign=campaign, name=settings.get("ad_group_name", None), is_restapi=True
+                request, campaign=campaign, name=settings.get("ad_group_name", None)
             )
             # TODO: hacks.override_ad_group_settings_form_data
             self._update_settings(request, new_ad_group, settings)

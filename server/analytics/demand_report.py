@@ -152,9 +152,9 @@ def _ad_group_rows_generator(ad_group_query_set, ad_group_spend_dict, source_id_
             row["geo_targeting_type"] = geo_targeting_types
 
             row["world_region"] = (
-                demand_report_definitions.WORLD_REGIONS.get(row["target_regions"][0], "N/A")
+                demand_report_definitions.WORLD_REGIONS.get(row["target_regions"][0], "World")
                 if row["target_regions"]
-                else "N/A"
+                else "World"
             )
             row["type"] = constants.CampaignType.get_name(row["type"])
             row["cs_email"] = user_email_dict.get(row["cs_representative_id"], "N/A")

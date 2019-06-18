@@ -28,7 +28,7 @@ class CampaignViewSet(restapi.campaign.v1.views.CampaignViewSet):
         if not account_id:
             raise rest_framework.serializers.ValidationError("Must pass accountId parameter")
         account = restapi.access.get_account(request.user, account_id)
-        campaign = core.models.Campaign.objects.get_restapi_default(request, account)
+        campaign = core.models.Campaign.objects.get_default(request, account)
         self._augment_campaign(request, campaign)
         extra_data = helpers.get_extra_data(request.user, campaign)
         return self.response_ok(

@@ -456,9 +456,9 @@ class DemandReportTestCase(test.TestCase):
             spend="143.754891637",
             calculated_daily_budget="168.7548916369999858488881728",
             calculated_cpc="",
-            target_regions=["US"],
-            world_region="North America",
-            geo_targeting_type=["country"],
+            target_regions=[""],
+            world_region="World",
+            geo_targeting_type=[""],
         )
 
         self._assert_row_data(
@@ -470,9 +470,9 @@ class DemandReportTestCase(test.TestCase):
             spend="152.348436441",
             calculated_daily_budget="277.3484364409999898271053098",
             calculated_cpc="0.4500",
-            target_regions=["US"],
-            world_region="North America",
-            geo_targeting_type=["country"],
+            target_regions=[""],
+            world_region="World",
+            geo_targeting_type=[""],
         )
 
         self._assert_row_data(
@@ -484,9 +484,9 @@ class DemandReportTestCase(test.TestCase):
             spend="143.785991637",
             calculated_daily_budget="100.0000",
             calculated_cpc="",
-            target_regions=["US"],
-            world_region="North America",
-            geo_targeting_type=["country"],
+            target_regions=[""],
+            world_region="World",
+            geo_targeting_type=[""],
         )
 
         self._assert_row_data(
@@ -498,9 +498,9 @@ class DemandReportTestCase(test.TestCase):
             spend="0",
             calculated_daily_budget="50.0000",
             calculated_cpc="",
-            target_regions=["US"],
-            world_region="North America",
-            geo_targeting_type=["country"],
+            target_regions=[""],
+            world_region="World",
+            geo_targeting_type=[""],
         )
 
     @mock.patch("analytics.demand_report._get_ad_group_spend")
@@ -566,9 +566,9 @@ class DemandReportTestCase(test.TestCase):
             spend="143.754891637",
             calculated_daily_budget="168.7548916369999858488881728",
             calculated_cpc="",
-            target_regions=["US"],
-            world_region="North America",
-            geo_targeting_type=["country"],
+            target_regions=[""],
+            world_region="World",
+            geo_targeting_type=[""],
         )
 
         self._assert_row_data(
@@ -580,9 +580,9 @@ class DemandReportTestCase(test.TestCase):
             spend="152.348436441",
             calculated_daily_budget="277.3484364409999898271053098",
             calculated_cpc="0.4500",
-            target_regions=["US"],
-            world_region="North America",
-            geo_targeting_type=["country"],
+            target_regions=[""],
+            world_region="World",
+            geo_targeting_type=[""],
         )
 
         self._assert_row_data(
@@ -594,9 +594,9 @@ class DemandReportTestCase(test.TestCase):
             spend="143.785991637",
             calculated_daily_budget="100.0000",
             calculated_cpc="",
-            target_regions=["US"],
-            world_region="North America",
-            geo_targeting_type=["country"],
+            target_regions=[""],
+            world_region="World",
+            geo_targeting_type=[""],
         )
 
         self._assert_row_data(
@@ -608,9 +608,9 @@ class DemandReportTestCase(test.TestCase):
             spend="0",
             calculated_daily_budget="50.0000",
             calculated_cpc="",
-            target_regions=["US"],
-            world_region="North America",
-            geo_targeting_type=["country"],
+            target_regions=[""],
+            world_region="World",
+            geo_targeting_type=[""],
         )
 
         self._assert_row_data(
@@ -622,9 +622,9 @@ class DemandReportTestCase(test.TestCase):
             spend="0.0",
             calculated_daily_budget="10.0000",
             calculated_cpc="",
-            target_regions=["US"],
-            world_region="North America",
-            geo_targeting_type=["country"],
+            target_regions=[""],
+            world_region="World",
+            geo_targeting_type=[""],
         )
 
 

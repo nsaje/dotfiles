@@ -255,7 +255,7 @@ class AdGroupSettings(
                 ("max_cpm", None),
                 ("daily_budget_cc", 10.0000),
                 ("target_devices", constants.AdTargetDevice.get_all()),
-                ("target_regions", ["US"]),
+                ("target_regions", []),
                 ("exclusion_target_regions", []),
                 ("autopilot_state", constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET),
                 ("autopilot_daily_budget", Decimal("100.00")),
