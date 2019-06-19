@@ -7,6 +7,7 @@ import slugify
 from django.db import transaction
 
 import core.features.multicurrency
+import core.models.content_ad_candidate.exceptions
 import core.models.settings.ad_group_source_settings.exceptions
 from automation import autopilot
 from dash import api
@@ -271,7 +272,12 @@ class AdGroupContentAdEdit(BaseBulkActionView):
             models.ContentAd.objects, json.loads(request.body), ad_group_id=ad_group.id
         )
 
-        batch, candidates = contentupload.upload.insert_edit_candidates(request.user, content_ads, ad_group)
+        try:
+            batch, candidates = contentupload.upload.insert_edit_candidates(request.user, content_ads, ad_group)
+
+        except core.models.content_ad_candidate.exceptions.AdGroupIsArchived as err:
+            raise exc.ValidationError(str(err))
+
         return self.create_api_response(
             {"batch_id": batch.id, "candidates": contentupload.upload.get_candidates_with_errors(candidates)}
         )

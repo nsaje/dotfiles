@@ -9,6 +9,7 @@ TODO when we move base level:
 import datetime
 import json
 
+import core.models.content_ad_candidate.exceptions
 import stats.helpers
 from core.models import all_rtb
 from dash import constants
@@ -71,7 +72,14 @@ class ContentAdEdit(api_common.BaseApiView):
     def post(self, request, content_ad_id):
         content_ad = views.helpers.get_content_ad(request.user, content_ad_id)
 
-        batch, candidates = contentupload.upload.insert_edit_candidates(request.user, [content_ad], content_ad.ad_group)
+        try:
+            batch, candidates = contentupload.upload.insert_edit_candidates(
+                request.user, [content_ad], content_ad.ad_group
+            )
+
+        except core.models.content_ad_candidate.exceptions.AdGroupIsArchived as err:
+            raise exc.ValidationError(str(err))
+
         return self.create_api_response(
             {"batch_id": batch.id, "candidates": contentupload.upload.get_candidates_with_errors(candidates)}
         )
