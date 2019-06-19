@@ -9,6 +9,7 @@ export enum Currency {
     MYR = 'MYR',
     ZAR = 'ZAR',
     ILS = 'ILS',
+    INR = 'INR',
 }
 
 export enum EntityType {
