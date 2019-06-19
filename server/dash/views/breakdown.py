@@ -157,7 +157,7 @@ class AllAccountsBreakdown(api_common.BaseApiView):
         # only used sources by filtering by allowed_sources? Downside is it would hide sources that used to be allowed but aren't anymore. Maybe we could keep track per account.
         only_used_sources = only_used_sources and not request.user.has_perm("zemauth.can_see_all_accounts")
         constraints = stats.constraints_helper.prepare_all_accounts_constraints(
-            request.user, only_used_sources=target_dim == "source_id", **get_constraints_kwargs(form.cleaned_data)
+            request.user, only_used_sources=only_used_sources, **get_constraints_kwargs(form.cleaned_data)
         )
 
         goals = stats.api_breakdowns.get_goals(constraints, breakdown)
