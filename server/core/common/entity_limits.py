@@ -11,6 +11,7 @@ DEFAULT_LIMITS = {
     "BudgetLineItem": 100,
     "PublisherGroup": 500,
     "PublisherGroupEntry": 100000,
+    "ConversionPixel": 20,
 }
 
 ACCOUNT_EXCEPTIONS = defaultdict(

@@ -11,6 +11,9 @@ from . import model
 class ConversionPixelManager(core.common.BaseManager):
     @transaction.atomic
     def create(self, request, account, skip_notification=False, **settings):
+        core.common.entity_limits.enforce(
+            model.ConversionPixel.objects.filter(account=account, archived=False), account.id
+        )
         pixel = model.ConversionPixel(
             account=account, slug=model.ConversionPixel._SLUG_PLACEHOLDER, redirect_url="", notes=""
         )
