@@ -5,7 +5,7 @@ import core.models.helpers
 import dash.constants
 
 OEN_ACCOUNT_ID = 305
-LIGATUS_TAG = "outbrain/ligatus"
+ZMS_TAG = "outbrain/sales/OutbrainSalesforce"
 
 
 class AccountQuerySet(models.QuerySet):
@@ -36,14 +36,14 @@ class AccountQuerySet(models.QuerySet):
         if dash.constants.Business.Z1 in business_types:
             if dash.constants.Business.OEN not in business_types:
                 predicate = predicate | models.Q(id=OEN_ACCOUNT_ID)
-            if dash.constants.Business.LIGATUS not in business_types:
-                predicate = predicate | models.Q(entity_tags__name__icontains=LIGATUS_TAG)
+            if dash.constants.Business.ZMS not in business_types:
+                predicate = predicate | models.Q(entity_tags__name__icontains=ZMS_TAG)
             return self.exclude(predicate)
         else:
             if dash.constants.Business.OEN in business_types:
                 predicate = predicate | models.Q(id=OEN_ACCOUNT_ID)
-            if dash.constants.Business.LIGATUS in business_types:
-                predicate = predicate | models.Q(entity_tags__name__icontains=LIGATUS_TAG)
+            if dash.constants.Business.ZMS in business_types:
+                predicate = predicate | models.Q(entity_tags__name__icontains=ZMS_TAG)
             return self.filter(predicate)
 
     def exclude_archived(self, show_archived=False):

@@ -267,7 +267,7 @@ export const APP_CONSTANTS = {
     businesses: {
         Z1: 'z1',
         OEN: 'oen',
-        LIGATUS: 'ligatus',
+        ZMS: 'zms',
     },
     specialAccount: SpecialAccount,
     campaignTypes: CampaignType,

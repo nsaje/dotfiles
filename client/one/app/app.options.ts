@@ -19,7 +19,7 @@ export const APP_OPTIONS = {
     businesses: [
         {name: 'Z1', value: APP_CONSTANTS.businesses.Z1},
         {name: 'OEN', value: APP_CONSTANTS.businesses.OEN},
-        {name: 'Ligatus', value: APP_CONSTANTS.businesses.LIGATUS},
+        {name: 'ZMS', value: APP_CONSTANTS.businesses.ZMS},
     ],
     adGroupSettingsStates: [
         {name: 'Paused', value: APP_CONSTANTS.settingsState.INACTIVE},

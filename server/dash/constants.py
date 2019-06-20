@@ -2360,6 +2360,6 @@ class Customflags(ConstantBase):
 class Business(ConstantBase):
     Z1 = "z1"
     OEN = "oen"
-    LIGATUS = "ligatus"
+    ZMS = "zms"
 
-    _VALUES = {Z1: "Zemanta One", OEN: "Outbrain Extended Network", LIGATUS: "Ligatus"}
+    _VALUES = {Z1: "Zemanta One", OEN: "Outbrain Extended Network", ZMS: "Zemanta Managed Service"}
