@@ -5,6 +5,7 @@ import core.models.ad_group
 import core.models.campaign
 import dash.constants
 
+from .campaign_automation.models import *  # noqa
 from .campaignstop.campaignstop_state import *  # noqa
 from .campaignstop.real_time_campaign_stop_log import *  # noqa
 from .campaignstop.real_time_data_history import *  # noqa
