@@ -9,11 +9,12 @@ from . import queryset
 
 class AccountQuerysetTestCase(TestCase):
     def test_filter_by_business(self):
+        ay_zms = magic_mixer.blend(core.models.Agency)
+        ay_zms.entity_tags.add(queryset.ZMS_TAG)
+
         acc_z1 = magic_mixer.blend(core.models.Account)
-        acc_zms = magic_mixer.blend(core.models.Account)
+        acc_zms = magic_mixer.blend(core.models.Account, agency=ay_zms)
         acc_oen = magic_mixer.blend(core.models.Account, id=305)
-        acc_zms.entity_tags.add(queryset.ZMS_TAG)
-        acc_zms.save(None)
 
         self.assertEqual(set(core.models.Account.objects.filter_by_business([])), set([acc_z1, acc_zms, acc_oen]))
         self.assertEqual(

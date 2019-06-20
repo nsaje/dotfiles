@@ -37,13 +37,13 @@ class AccountQuerySet(models.QuerySet):
             if dash.constants.Business.OEN not in business_types:
                 predicate = predicate | models.Q(id=OEN_ACCOUNT_ID)
             if dash.constants.Business.ZMS not in business_types:
-                predicate = predicate | models.Q(entity_tags__name__icontains=ZMS_TAG)
+                predicate = predicate | models.Q(agency__entity_tags__name__icontains=ZMS_TAG)
             return self.exclude(predicate)
         else:
             if dash.constants.Business.OEN in business_types:
                 predicate = predicate | models.Q(id=OEN_ACCOUNT_ID)
             if dash.constants.Business.ZMS in business_types:
-                predicate = predicate | models.Q(entity_tags__name__icontains=ZMS_TAG)
+                predicate = predicate | models.Q(agency__entity_tags__name__icontains=ZMS_TAG)
             return self.filter(predicate)
 
     def exclude_archived(self, show_archived=False):
