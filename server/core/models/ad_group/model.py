@@ -26,6 +26,8 @@ class AdGroup(validation.AdGroupValidatorMixin, instance.AdGroupInstanceMixin, b
 
     _demo_fields = {"name": utils.demo_anonymizer.ad_group_name_from_pool}
 
+    _clone_fields = ["bidding_type"]
+
     id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=127, editable=True, blank=False, null=False)
     campaign = models.ForeignKey("Campaign", on_delete=models.PROTECT)

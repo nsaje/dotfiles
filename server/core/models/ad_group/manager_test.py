@@ -70,14 +70,19 @@ class AdGroupClone(TestCase):
         request = magic_mixer.blend_request_user()
 
         source_campaign = magic_mixer.blend(core.models.Campaign, type=dash.constants.CampaignType.CONVERSION)
-        source_ad_group = magic_mixer.blend(core.models.AdGroup, campaign=source_campaign)
+        source_ad_group = magic_mixer.blend(
+            core.models.AdGroup, campaign=source_campaign, bidding_type=dash.constants.BiddingType.CPM
+        )
 
         campaign = magic_mixer.blend(core.models.Campaign, type=dash.constants.CampaignType.MOBILE)
-        ad_group = core.models.AdGroup.objects.clone(request, source_ad_group, campaign, "asd")
+
+        ad_group_name = "Ad Group (Clone)"
+        ad_group = core.models.AdGroup.objects.clone(request, source_ad_group, campaign, ad_group_name)
 
         self.assertNotEqual(ad_group.pk, source_ad_group.pk)
         self.assertEqual(ad_group.campaign, campaign)
-        self.assertEqual(ad_group.name, "asd")
+        self.assertEqual(ad_group.name, ad_group_name)
+        self.assertEqual(ad_group.bidding_type, source_ad_group.bidding_type)
 
         self.assertTrue(mock_bulk_clone.called)
         self.assertTrue(mock_insert_adgroup.called)

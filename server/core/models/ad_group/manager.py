@@ -56,7 +56,10 @@ class AdGroupManager(core.common.BaseManager):
 
         with transaction.atomic():
             ad_group = self._create(campaign, name=new_name)
+            for field in set(self.model._clone_fields):
+                setattr(ad_group, field, getattr(source_ad_group, field))
             ad_group.save(request)
+
             ad_group.settings = core.models.settings.AdGroupSettings.objects.clone(
                 request, ad_group, source_ad_group.get_current_settings()
             )
