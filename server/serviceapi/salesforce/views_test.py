@@ -930,6 +930,8 @@ class AccountTestCase(TestCase):
                     "modified_dt": "02-03-2019",
                     "is_archived": False,
                     "is_externally_managed": True,
+                    "internal_marketer_id": None,
+                    "external_marketer_id": None,
                 }
             },
         )
@@ -964,13 +966,15 @@ class AccountTestCase(TestCase):
                 "tags": ["tag1", "tag2"],
                 "custom_attributes": {"country": "SI"},
                 "salesforce_id": 123,
+                "internal_marketer_id": "INTERNAL ID",
+                "external_marketer_id": "EXTERNAL ID",
             },
             format="json",
         )
+
         self.assertEqual(r.status_code, 200)
         new_account = core.models.Account.objects.filter(name="new Account").first()
         self.assertIsNotNone(new_account)
-
         self.assertEqual(
             r.data,
             {
@@ -989,6 +993,8 @@ class AccountTestCase(TestCase):
                     "modified_dt": "02-03-2019",
                     "is_archived": False,
                     "is_externally_managed": True,
+                    "internal_marketer_id": "INTERNAL ID",
+                    "external_marketer_id": "EXTERNAL ID",
                 }
             },
         )
@@ -1032,6 +1038,8 @@ class AccountTestCase(TestCase):
                     "modified_dt": "02-03-2019",
                     "is_archived": False,
                     "is_externally_managed": True,
+                    "internal_marketer_id": None,
+                    "external_marketer_id": None,
                 }
             },
         )
@@ -1075,6 +1083,8 @@ class AccountTestCase(TestCase):
                     "modified_dt": "02-03-2019",
                     "is_archived": False,
                     "is_externally_managed": True,
+                    "internal_marketer_id": None,
+                    "external_marketer_id": None,
                 }
             },
         )
@@ -1241,6 +1251,8 @@ class AccountTestCase(TestCase):
             salesforce_url="http://salesforce.com",
             is_disabled=True,
             salesforce_id=123,
+            outbrain_marketer_id="marketer 1234",
+            outbrain_internal_marketer_id="marketer 0987",
         )
         acc.save(None)
         acc.settings.update(None, default_account_manager=self.user2, default_sales_representative=self.user)
@@ -1255,6 +1267,8 @@ class AccountTestCase(TestCase):
                 "salesforce_id": 456,
                 "sales_representative": "agencysalesrep@test.com",
                 "account_manager": "agencyaccountmgr@test.com",
+                "external_marketer_id": "new external marketer",
+                "internal_marketer_id": "new internal marketer",
             },
             format="json",
         )
@@ -1277,6 +1291,8 @@ class AccountTestCase(TestCase):
                     "modified_dt": "02-03-2019",
                     "is_archived": False,
                     "is_externally_managed": True,
+                    "external_marketer_id": "new external marketer",
+                    "internal_marketer_id": "new internal marketer",
                 }
             },
         )
@@ -1385,6 +1401,8 @@ class AccountTestCase(TestCase):
                     "isArchived": False,
                     "modifiedDt": "02-03-2019",
                     "isExternallyManaged": True,
+                    "externalMarketerId": None,
+                    "internalMarketerId": None,
                 }
             },
         )
@@ -1448,6 +1466,8 @@ class AccountTestCase(TestCase):
                     "modifiedDt": "02-03-2019",
                     "isArchived": False,
                     "isExternallyManaged": True,
+                    "externalMarketerId": None,
+                    "internalMarketerId": None,
                 },
                 {
                     "id": 2,
@@ -1464,6 +1484,8 @@ class AccountTestCase(TestCase):
                     "modifiedDt": "02-03-2019",
                     "isArchived": False,
                     "isExternallyManaged": True,
+                    "externalMarketerId": None,
+                    "internalMarketerId": None,
                 },
                 {
                     "id": 3,
@@ -1480,6 +1502,8 @@ class AccountTestCase(TestCase):
                     "modifiedDt": "02-03-2019",
                     "isArchived": False,
                     "isExternallyManaged": True,
+                    "externalMarketerId": None,
+                    "internalMarketerId": None,
                 },
                 {
                     "id": 4,
@@ -1496,6 +1520,8 @@ class AccountTestCase(TestCase):
                     "modifiedDt": "02-03-2019",
                     "isArchived": False,
                     "isExternallyManaged": True,
+                    "externalMarketerId": None,
+                    "internalMarketerId": None,
                 },
             ],
         )
@@ -1531,6 +1557,8 @@ class AccountTestCase(TestCase):
                     "modifiedDt": "02-03-2019",
                     "isArchived": False,
                     "isExternallyManaged": True,
+                    "externalMarketerId": None,
+                    "internalMarketerId": None,
                 }
             ],
         )
@@ -1598,6 +1626,8 @@ class AccountTestCase(TestCase):
                     "modifiedDt": "02-03-2019",
                     "isArchived": True,
                     "isExternallyManaged": True,
+                    "externalMarketerId": None,
+                    "internalMarketerId": None,
                 }
             },
         )

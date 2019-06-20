@@ -143,6 +143,8 @@ class AccountSerializer(serializers.ModelSerializer):
     is_archived = serializers.BooleanField(read_only=True)
     modified_dt = serializers.DateTimeField(format="%d-%m-%Y", read_only=True)
     is_externally_managed = serializers.BooleanField(read_only=True)
+    external_marketer_id = serializers.CharField(required=False, max_length=255, source="outbrain_marketer_id")
+    internal_marketer_id = serializers.CharField(required=False, max_length=255, source="outbrain_internal_marketer_id")
 
     class Meta:
         model = core.models.Account
@@ -155,6 +157,8 @@ class AccountSerializer(serializers.ModelSerializer):
             "is_archived",
             "modified_dt",
             "is_externally_managed",
+            "external_marketer_id",
+            "internal_marketer_id",
         )
 
     def validate_agency_id(self, value):
