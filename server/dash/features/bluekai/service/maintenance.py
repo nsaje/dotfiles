@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 
 
 AUDIENCE_ID = 202305
-CAMPAIGN_ID = 151750
+CAMPAIGN_ID = 383218
 STATUS_ACTIVE = "active"
 
 
