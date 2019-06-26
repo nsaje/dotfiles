@@ -1,5 +1,7 @@
+from django.conf import settings
 from django.contrib import admin
 from django.utils.html import format_html
+from django.utils.safestring import mark_safe
 
 from dcron import constants
 from dcron import models
@@ -19,6 +21,8 @@ class DCronJobAdmin(admin.ModelAdmin):
         "enabled",
         "host",
         "duration",
+        "live_logs",
+        "logs",
         "executed_dt",
         "completed_dt",
         "colored_alert",
@@ -44,6 +48,16 @@ class DCronJobAdmin(admin.ModelAdmin):
         return "-"
 
     duration.short_description = "Duration"
+
+    def logs(self, obj):
+        log_viewer_link = settings.DCRON.get("log_viewer_link", "{command_name}").format(command_name=obj.command_name)
+        return mark_safe('<a href="%s">%s</a>' % (log_viewer_link, "Logs"))
+
+    def live_logs(self, obj):
+        log_viewer_link = settings.DCRON.get("log_viewer_link_live", "{command_name},{host}").format(
+            command_name=obj.command_name, host=obj.host
+        )
+        return mark_safe('<a href="%s">%s</a>' % (log_viewer_link, "Current execution logs"))
 
     def enabled(self, obj):
         return obj.dcronjobsettings.enabled

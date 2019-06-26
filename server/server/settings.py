@@ -438,4 +438,6 @@ DCRON = {
     # If the same job is run within this interval, the second should exit before doing anything.
     "default_min_separation": 30,
     "min_separations": {},
+    "log_viewer_link": "https://app.logdna.com/92b58769bf/logs/view?apps={command_name}",
+    "log_viewer_link_live": "https://app.logdna.com/92b58769bf/logs/view?apps={command_name}&q=host:{host}",
 }

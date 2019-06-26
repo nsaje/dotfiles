@@ -138,6 +138,10 @@ def _create_slack_publish_params(dcron_job: models.DCronJob, alert: AlertId) -> 
         slack_severity = SLACK_SEVERITY_OK
         summary = "The problem with a command run by cron has been resolved"
 
+    log_viewer_link = settings.DCRON.get("log_viewer_link", "{command_name}").format(
+        command_name=dcron_job.command_name
+    )
+
     return {
         "channel": channel_name,
         "msg_type": None,
@@ -155,7 +159,10 @@ def _create_slack_publish_params(dcron_job: models.DCronJob, alert: AlertId) -> 
                 "color": slack_severity,
                 "fallback": fallback_message,
                 "text": summary,
-                "fields": [{"title": dcron_job.command_name, "value": constants.Alert.get_description(alert)}],
+                "fields": [
+                    {"title": dcron_job.command_name, "value": constants.Alert.get_description(alert)},
+                    {"title": "Log viewer link", "value": log_viewer_link, "short": False},
+                ],
             }
         ],
     }
