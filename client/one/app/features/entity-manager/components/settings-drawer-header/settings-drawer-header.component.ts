@@ -8,6 +8,7 @@ import {
     OnChanges,
     Output,
     EventEmitter,
+    OnInit,
 } from '@angular/core';
 import {EntityType} from '../../../../app.constants';
 import * as entityHelpers from '../../helpers/entity.helpers';
@@ -18,7 +19,7 @@ import {SettingsDrawerHeaderMode} from './settings-drawer-header.constants';
     templateUrl: './settings-drawer-header.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class SettingsDrawerHeaderComponent implements OnChanges {
+export class SettingsDrawerHeaderComponent implements OnInit, OnChanges {
     @Input()
     entityId: string;
     @Input()
@@ -40,6 +41,12 @@ export class SettingsDrawerHeaderComponent implements OnChanges {
     entityNameModel: string;
     adminLink: string;
     mode: SettingsDrawerHeaderMode = SettingsDrawerHeaderMode.READ;
+
+    ngOnInit(): void {
+        if (!this.entityId) {
+            this.switchToEditMode();
+        }
+    }
 
     ngOnChanges(changes: SimpleChanges) {
         if (changes.entityName) {

@@ -7,7 +7,7 @@
     <ng-container *ngIf="(store.state$ | async) as state">
         <zem-settings-drawer-header
             class="zem-settings-drawer-header zem-drawer__header"
-            [entityId]="state.entity.id"
+            [entityId]="entityId"
             [entityType]="EntityType.AD_GROUP"
             [entityName]="state.entity.name"
             [showAdminLink]="

@@ -71,7 +71,7 @@ angular.module('one.widgets').component('zemRetargeting', {
         };
 
         function getTargetingWarningMessage(warnings) {
-            if (warnings) {
+            if (warnings && warnings.sources && warnings.sources.length > 0) {
                 var text =
                     "The following sources don't support retargeting and will be " +
                     'automatically paused in this ad group if you enable this setting:';
