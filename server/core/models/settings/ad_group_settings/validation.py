@@ -152,20 +152,19 @@ class AdGroupSettingsValidatorMixin(object):
                 msg = "Autopilot has to be disabled in order to manage group CPM of RTB Sources"
                 raise exceptions.CPMAutopilotNotDisabled(msg)
 
-        min_autopilot_daily_budget = autopilot.get_adgroup_minimum_daily_budget(self.ad_group, new_settings)
-        if (
-            new_settings.autopilot_state == constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET
-            and new_settings.autopilot_daily_budget < min_autopilot_daily_budget
-        ):
-            msg = "Total Daily Spend Cap must be at least {symbol}{min_budget:.2f}. Autopilot " "requires {symbol}{min_per_source:.2f} or more per active media source."
-            exchange_rate = self._get_exchange_rate()
-            raise exceptions.AutopilotDailyBudgetTooLow(
-                msg.format(
-                    symbol=self._get_currency_symbol(),
-                    min_budget=min_autopilot_daily_budget * exchange_rate,
-                    min_per_source=autopilot.settings.BUDGET_AUTOPILOT_MIN_DAILY_BUDGET_PER_SOURCE_CALC * exchange_rate,
+        if new_settings.autopilot_state == constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET:
+            min_autopilot_daily_budget = autopilot.get_adgroup_minimum_daily_budget(self.ad_group, new_settings)
+            if new_settings.autopilot_daily_budget < min_autopilot_daily_budget:
+                msg = "Total Daily Spend Cap must be at least {symbol}{min_budget:.2f}. Autopilot " "requires {symbol}{min_per_source:.2f} or more per active media source."
+                exchange_rate = self._get_exchange_rate()
+                raise exceptions.AutopilotDailyBudgetTooLow(
+                    msg.format(
+                        symbol=self._get_currency_symbol(),
+                        min_budget=min_autopilot_daily_budget * exchange_rate,
+                        min_per_source=autopilot.settings.BUDGET_AUTOPILOT_MIN_DAILY_BUDGET_PER_SOURCE_CALC
+                        * exchange_rate,
+                    )
                 )
-            )
 
     def _validate_all_rtb_state(self, new_settings):
         # MVP for all-RTB-sources-as-one

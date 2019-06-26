@@ -10,6 +10,7 @@ logger = logging.getLogger(__name__)
 
 def get_adjusted_ad_group_sources_bids(ad_group, ad_group_settings):
     adjusted_bids = {}
+    campaign_goal = _get_campaign_goal(ad_group)
     for ad_group_source in ad_group.adgroupsource_set.all().select_related(
         "source__source_type",
         "settings",
@@ -20,11 +21,24 @@ def get_adjusted_ad_group_sources_bids(ad_group, ad_group_settings):
         ags_settings = ad_group_source.get_current_settings()
         proposed_bid = ags_settings.cpm if ad_group.bidding_type == constants.BiddingType.CPM else ags_settings.cpc_cc
         adjusted_bid = _get_adjusted_ad_group_source_bid(
-            proposed_bid, ad_group_source, ad_group_settings, ad_group.campaign, ad_group.campaign.settings
+            proposed_bid,
+            ad_group_source,
+            ad_group_settings,
+            ad_group.campaign,
+            ad_group.campaign.settings,
+            campaign_goal,
         )
         adjusted_bid = _adjust_ad_group_source_bid_to_max(ad_group, ad_group_settings, adjusted_bid)
         adjusted_bids[ad_group_source] = adjusted_bid
     return adjusted_bids
+
+
+def _get_campaign_goal(ad_group):
+    try:
+        campaign_goal = ad_group.campaign.campaigngoal_set.get(primary=True)
+    except Exception:
+        campaign_goal = None
+    return campaign_goal
 
 
 def validate_ad_group_sources_cpc_constraints(bcm_modifiers, ad_group_sources_cpcs, ad_group):
@@ -44,9 +58,15 @@ def set_ad_group_sources_cpcs(
     write_source_history=True,
 ):
     rules_per_source = cpc_constraints.get_rules_per_source(ad_group)
+    campaign_goal = _get_campaign_goal(ad_group)
     for ad_group_source, proposed_cpc in list(ad_group_sources_cpcs.items()):
         adjusted_cpc = _get_adjusted_ad_group_source_bid(
-            proposed_cpc, ad_group_source, ad_group_settings, ad_group.campaign, ad_group.campaign.settings
+            proposed_cpc,
+            ad_group_source,
+            ad_group_settings,
+            ad_group.campaign,
+            ad_group.campaign.settings,
+            campaign_goal,
         )
         if adjusted_cpc:
             adjusted_cpc = cpc_constraints.adjust_cpc(adjusted_cpc, rules=rules_per_source[ad_group_source.source])
@@ -72,9 +92,15 @@ def set_ad_group_sources_cpms(
     skip_notification=False,
     write_source_history=True,
 ):
+    campaign_goal = _get_campaign_goal(ad_group)
     for ad_group_source, proposed_cpm in list(ad_group_sources_cpms.items()):
         adjusted_cpm = _get_adjusted_ad_group_source_bid(
-            proposed_cpm, ad_group_source, ad_group_settings, ad_group.campaign, ad_group.campaign.settings
+            proposed_cpm,
+            ad_group_source,
+            ad_group_settings,
+            ad_group.campaign,
+            ad_group.campaign.settings,
+            campaign_goal,
         )
         ad_group_source_settings = ad_group_source.get_current_settings()
         if ad_group_source_settings.cpm == adjusted_cpm:
@@ -88,11 +114,9 @@ def set_ad_group_sources_cpms(
         )
 
 
-def _get_adjusted_ad_group_source_bid(proposed_bid, ad_group_source, ad_group_settings, campaign, campaign_settings):
-    try:
-        campaign_goal = campaign.campaigngoal_set.get(primary=True)
-    except Exception:
-        campaign_goal = None
+def _get_adjusted_ad_group_source_bid(
+    proposed_bid, ad_group_source, ad_group_settings, campaign, campaign_settings, campaign_goal
+):
     if (
         ad_group_settings.b1_sources_group_enabled
         and ad_group_source.source.source_type.type == constants.SourceType.B1

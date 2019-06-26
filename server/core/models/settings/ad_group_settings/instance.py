@@ -160,27 +160,29 @@ class AdGroupSettingsMixin(object):
             if changes.get("max_cpm") and new_settings.b1_sources_group_enabled:
                 new_settings.b1_sources_group_cpm = min(changes.get("max_cpm"), new_settings.b1_sources_group_cpm)
 
-            adjusted_b1_sources_group_cpm = helpers.adjust_max_bid(new_settings.b1_sources_group_cpm, new_settings)
-            adjusted_b1_sources_group_cpm = helpers._adjust_ad_group_source_bid_to_max(
-                self.ad_group, new_settings, adjusted_b1_sources_group_cpm
-            )
+            if self.b1_sources_group_cpm != new_settings.b1_sources_group_cpm:
+                adjusted_b1_sources_group_cpm = helpers.adjust_max_bid(new_settings.b1_sources_group_cpm, new_settings)
+                adjusted_b1_sources_group_cpm = helpers._adjust_ad_group_source_bid_to_max(
+                    self.ad_group, new_settings, adjusted_b1_sources_group_cpm
+                )
 
-            if new_settings.b1_sources_group_cpm != adjusted_b1_sources_group_cpm:
-                new_settings.b1_sources_group_cpm = adjusted_b1_sources_group_cpm
+                if new_settings.b1_sources_group_cpm != adjusted_b1_sources_group_cpm:
+                    new_settings.b1_sources_group_cpm = adjusted_b1_sources_group_cpm
         else:
             # Changing adgroup max cpc
             if changes.get("cpc_cc") and new_settings.b1_sources_group_enabled:
                 new_settings.b1_sources_group_cpc_cc = min(changes.get("cpc_cc"), new_settings.b1_sources_group_cpc_cc)
 
-            adjusted_b1_sources_group_cpc_cc = helpers.adjust_max_bid(
-                new_settings.b1_sources_group_cpc_cc, new_settings
-            )
-            adjusted_b1_sources_group_cpc_cc = helpers._adjust_ad_group_source_bid_to_max(
-                self.ad_group, new_settings, adjusted_b1_sources_group_cpc_cc
-            )
+            if self.b1_sources_group_cpc_cc != new_settings.b1_sources_group_cpc_cc:
+                adjusted_b1_sources_group_cpc_cc = helpers.adjust_max_bid(
+                    new_settings.b1_sources_group_cpc_cc, new_settings
+                )
+                adjusted_b1_sources_group_cpc_cc = helpers._adjust_ad_group_source_bid_to_max(
+                    self.ad_group, new_settings, adjusted_b1_sources_group_cpc_cc
+                )
 
-            if new_settings.b1_sources_group_cpc_cc != adjusted_b1_sources_group_cpc_cc:
-                new_settings.b1_sources_group_cpc_cc = adjusted_b1_sources_group_cpc_cc
+                if new_settings.b1_sources_group_cpc_cc != adjusted_b1_sources_group_cpc_cc:
+                    new_settings.b1_sources_group_cpc_cc = adjusted_b1_sources_group_cpc_cc
 
     def _handle_bid_autopilot_initial_bids(self, new_settings, skip_notification=False, write_source_history=True):
         if not self._should_set_bid_autopilot_initial_bids(new_settings):
