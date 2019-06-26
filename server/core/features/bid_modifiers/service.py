@@ -33,7 +33,7 @@ def set(ad_group, modifier_type, target, source, modifier, user=None, write_hist
     if not modifier:
         _delete(ad_group, modifier_type, target, source, user=user, write_history=write_history)
         if propagate_to_k1:
-            k1_helper.update_ad_group(ad_group, msg="bid_modifiers.set")
+            k1_helper.update_ad_group(ad_group, msg="bid_modifiers.set", priority=True)
         return
 
     helpers.check_modifier_value(modifier)
@@ -42,7 +42,7 @@ def set(ad_group, modifier_type, target, source, modifier, user=None, write_hist
     )
 
     if propagate_to_k1:
-        k1_helper.update_ad_group(ad_group, msg="bid_modifiers.set")
+        k1_helper.update_ad_group(ad_group, msg="bid_modifiers.set", priority=True)
     return instance, created
 
 

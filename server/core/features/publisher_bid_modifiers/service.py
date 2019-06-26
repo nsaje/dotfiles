@@ -11,8 +11,8 @@ from django.db import transaction
 from core.features import bid_modifiers
 from core.features.bid_modifiers import exceptions
 from dash import models
-from utils import s3helpers
 from utils import k1_helper
+from utils import s3helpers
 
 MODIFIER_MAX = 11.0
 MODIFIER_MIN = 0.0
@@ -31,7 +31,7 @@ def get(ad_group):
 def set(ad_group, publisher, source, modifier, user=None, write_history=True):
     if not modifier:
         num_deleted, result = _delete(ad_group, source, publisher)
-        k1_helper.update_ad_group(ad_group, msg="publisher_bid_modifiers.set")
+        k1_helper.update_ad_group(ad_group, msg="publisher_bid_modifiers.set", priority=True)
         if write_history and num_deleted > 0:
             ad_group.write_history("Publisher: %s (%s). Bid modifier reset." % (publisher, source.name), user=user)
         return
@@ -40,7 +40,7 @@ def set(ad_group, publisher, source, modifier, user=None, write_history=True):
         raise exceptions.BidModifierInvalid
 
     _update_or_create(ad_group, source, publisher, modifier)
-    k1_helper.update_ad_group(ad_group, msg="publisher_bid_modifiers.set")
+    k1_helper.update_ad_group(ad_group, msg="publisher_bid_modifiers.set", priority=True)
     if write_history:
         percentage = "{:.2%}".format(modifier - 1.0)
         ad_group.write_history(

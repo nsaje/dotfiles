@@ -1,5 +1,6 @@
 from decimal import Decimal
 
+import mock
 from django.test import TestCase
 from mock import patch
 
@@ -372,6 +373,27 @@ class InstanceTest(TestCase):
         self.assertEqual(ad_group.settings.cpc_cc, Decimal("0.4"))
         for source in ad_group.adgroupsource_set.all():
             self.assertEqual(source.settings.cpc_cc, Decimal("0.1"))
+
+    @patch("utils.redirector_helper.insert_adgroup")
+    def test_redirector_update(self, mock_insert_adgroup):
+        ad_group = magic_mixer.blend(core.models.AdGroup)
+        ad_group.settings.update(None, name="test")
+        mock_insert_adgroup.assert_not_called()
+
+        ad_group.settings.update(None, tracking_code="123")
+        mock_insert_adgroup.assert_called_once_with(ad_group)
+
+    @patch("utils.k1_helper.update_ad_group")
+    def test_k1_priority(self, mock_update_ad_group):
+        ad_group = magic_mixer.blend(core.models.AdGroup)
+        ad_group.settings.update_unsafe(None, autopilot_state=constants.AdGroupSettingsAutopilotState.INACTIVE)
+
+        ad_group.settings.update(None, name="test")
+        mock_update_ad_group.assert_called_once_with(ad_group, msg=mock.ANY, priority=False)
+        mock_update_ad_group.reset_mock()
+
+        ad_group.settings.update(None, b1_sources_group_cpc_cc=Decimal("0.6"))
+        mock_update_ad_group.assert_called_once_with(ad_group, msg=mock.ANY, priority=True)
 
 
 class MulticurrencyTest(TestCase):

@@ -15,6 +15,9 @@ from utils import redirector_helper
 
 from . import helpers
 
+REDIRECTOR_UPDATE_FIELDS = ("tracking_code", "click_capping_daily_ad_group_max_clicks")
+PRIORITY_UPDATE_FIELDS = ("state", "cpm", "cpc", "b1_sources_group_cpc_cc", "b1_sources_group_cpm")
+
 
 class AdGroupSettingsMixin(object):
     @transaction.atomic
@@ -302,9 +305,11 @@ class AdGroupSettingsMixin(object):
             sender=self.__class__, request=request, instance=new_settings, changes=changes
         )
 
-        if "tracking_code" in changes or "click_capping_daily_ad_group_max_clicks" in changes:
+        if any(field in changes for field in REDIRECTOR_UPDATE_FIELDS):
             redirector_helper.insert_adgroup(self.ad_group)
-        k1_helper.update_ad_group(self.ad_group, msg="AdGroupSettings.put")
+
+        priority = any(field in changes for field in PRIORITY_UPDATE_FIELDS)
+        k1_helper.update_ad_group(self.ad_group, msg="AdGroupSettings.put", priority=priority)
 
         if not skip_notification:
             self._send_notification_email(request, new_settings)
