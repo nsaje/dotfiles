@@ -10,7 +10,7 @@ from utils.command_helpers import ExceptionCommand
 logger = logging.getLogger(__name__)
 
 
-DAYS_TO_CHECK = 90
+DAYS_TO_CHECK = 7
 
 
 class Command(ExceptionCommand):
