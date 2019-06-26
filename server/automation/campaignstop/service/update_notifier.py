@@ -50,7 +50,7 @@ def notify_budget_line_item_change(campaign):
 def notify(campaign, type_):
     if not campaign.real_time_campaign_stop:
         return
-    logger.info("Notify campaign update: campaign_id=%s, type=%s", campaign.id, type_)
+    logger.debug("Notify campaign update: campaign_id=%s, type=%s", campaign.id, type_)
     sqs_helper.write_message_json(
         settings.CAMPAIGN_STOP_UPDATE_HANDLER_QUEUE, {"campaign_id": campaign.id, "type": type_}
     )

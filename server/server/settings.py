@@ -71,7 +71,8 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
-    "server.influx_middleware.queries_to_influx",
+    "server.middleware.trace_id_middleware.trace_id_middleware",
+    "server.middleware.influx_middleware.queries_to_influx",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -259,32 +260,39 @@ LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
     "formatters": {
-        "standard": {"format": "%(asctime)s [%(levelname)s] %(name)s PID=%(process)d: %(message)s"},
+        "standard": {
+            "format": "%(asctime)s [%(levelname)s] %(name)s PID=%(process)d trace_id=%(trace_id)s: %(message)s"
+        },
         "timestamp": {"format": "%(asctime)s: %(message)s"},
     },
+    "filters": {"trace_id": {"()": "server.logging.trace_id_filter.TraceIdFilter"}},
     "handlers": {
         "file": {
             "level": "DEBUG",
             "class": "logging.handlers.WatchedFileHandler",
             "filename": LOG_FILE,
             "formatter": "standard",
+            "filters": ["trace_id"],
         },
-        "console": {"level": "DEBUG", "class": "logging.StreamHandler", "formatter": "timestamp"},
+        "console": {"level": "DEBUG", "class": "logging.StreamHandler", "formatter": "standard"},
         "db_handler": {
             "level": "INFO",
             "class": "logging.handlers.WatchedFileHandler",
             "filename": LOG_FILE,
             "formatter": "standard",
+            "filters": ["trace_id"],
         },
         "sentry": {
             "level": "WARNING",
             "class": "raven.contrib.django.raven_compat.handlers.SentryHandler",
             "formatter": "standard",
+            "filters": ["trace_id"],
         },
         "sentry-error": {
             "level": "ERROR",
             "class": "raven.contrib.django.raven_compat.handlers.SentryHandler",
             "formatter": "standard",
+            "filters": ["trace_id"],
         },
     },
     "loggers": {

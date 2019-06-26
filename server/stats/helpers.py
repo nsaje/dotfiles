@@ -431,7 +431,7 @@ def merge_row(row_a, row_b):
 
 
 def log_user_query_request(user, breakdown, constraints, order, offset, limit):
-    logger.info(
+    logger.debug(
         "Stats query request: user_id {}, breakdown {}, order {}, offset {}, limit {}, date range {}/{}, age {}, account_id {}, campaign_id {}, ad_group_id {}".format(
             user.id,
             "__".join(breakdown),

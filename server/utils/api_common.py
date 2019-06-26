@@ -24,10 +24,8 @@ class BaseApiView(View):
         super(BaseApiView, self).__init__(*args, **kwargs)
 
     def log_error(self, request):
-        logger.error(
-            "API exception",
-            exc_info=True,
-            extra={"data": {"path": request.path, "GET": request.GET, "POST": dict(request.POST)}},
+        logger.exception(
+            "API exception", extra={"data": {"path": request.path, "GET": request.GET, "POST": dict(request.POST)}}
         )
 
     def _set_default_reponse_headers(self, response):

@@ -78,7 +78,7 @@ def sync_batch(batch):
 
     success = sync_ad_groups({ad_group})
     if not success:
-        logger.info("Fail to sync ad_groups to SSPD for batch %s.", batch.id)
+        logger.warning("Fail to sync ad_groups to SSPD for batch %s.", batch.id)
         return
 
     content_ads = _get_content_ads(batch)
@@ -87,17 +87,17 @@ def sync_batch(batch):
 
     success = sync_sources(sources)
     if not success:
-        logger.info("Fail to sync sources to SSPD for batch %s.", batch.id)
+        logger.warning("Fail to sync sources to SSPD for batch %s.", batch.id)
         return
 
     success = sync_content_ads(content_ads)
     if not success:
-        logger.info("Fail to sync content_ads to SSPD for batch %s.", batch.id)
+        logger.warning("Fail to sync content_ads to SSPD for batch %s.", batch.id)
         return
 
     success = sync_content_ad_sources(content_ad_sources)
     if not success:
-        logger.info("Fail to sync content_ad_sources to SSPD for batch %s.", batch.id)
+        logger.warning("Fail to sync content_ad_sources to SSPD for batch %s.", batch.id)
 
 
 def _get_content_ads(batch):

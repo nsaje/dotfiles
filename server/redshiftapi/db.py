@@ -93,7 +93,7 @@ def execute_query(sql, params, query_name, cache_name="breakdowns_rs", refresh_c
 
     if results is CACHE_MISS_FLAG or refresh_cache:
         influx.incr("redshiftapi.cache", 1, outcome="miss")
-        logger.info("Cache miss %s (%s)", cache_key, query_name)
+        logger.debug("Cache miss %s (%s)", cache_key, query_name)
 
         with get_stats_cursor() as cursor:
             with influx.block_timer("redshiftapi.api_breakdowns.query", breakdown=query_name, db_alias=cursor.db.alias):
@@ -105,6 +105,6 @@ def execute_query(sql, params, query_name, cache_name="breakdowns_rs", refresh_c
             cache.set(cache_key, results)
     else:
         influx.incr("redshiftapi.cache", 1, outcome="hit")
-        logger.info("Cache hit %s (%s)", cache_key, query_name)
+        logger.debug("Cache hit %s (%s)", cache_key, query_name)
 
     return results

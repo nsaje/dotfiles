@@ -83,7 +83,7 @@ class BaseApiViewTestCase(test.TestCase):
         response = api_common.BaseApiView().get_exception_response(request, error)
 
         expected_content = {"data": {"message": "An error occurred.", "error_code": "ServerError"}, "success": False}
-        self.assertTrue(logger_mock.error.called)
+        self.assertTrue(logger_mock.exception.called)
         self.assertEqual(response.status_code, 500)
         self.assertEqual(json.loads(response.content), expected_content)
 
@@ -92,10 +92,8 @@ class BaseApiViewTestCase(test.TestCase):
         request = http.HttpRequest()
 
         api_common.BaseApiView().log_error(request)
-        logger_mock.error.assert_called_with(
-            "API exception",
-            exc_info=True,
-            extra={"data": {"path": request.path, "GET": request.GET, "POST": dict(request.POST)}},
+        logger_mock.exception.assert_called_with(
+            "API exception", extra={"data": {"path": request.path, "GET": request.GET, "POST": dict(request.POST)}}
         )
 
     @mock.patch("utils.api_common.logger")
@@ -105,8 +103,6 @@ class BaseApiViewTestCase(test.TestCase):
         request.POST = {"test_post": "test_post_value"}
 
         api_common.BaseApiView().log_error(request)
-        logger_mock.error.assert_called_with(
-            "API exception",
-            exc_info=True,
-            extra={"data": {"path": request.path, "GET": request.GET, "POST": dict(request.POST)}},
+        logger_mock.exception.assert_called_with(
+            "API exception", extra={"data": {"path": request.path, "GET": request.GET, "POST": dict(request.POST)}}
         )
