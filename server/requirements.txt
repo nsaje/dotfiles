@@ -4,6 +4,7 @@
 #
 #    pip-compile --no-annotate server/requirements.in
 #
+-e git+https://github.com/sqweak/django-debug-panel@1ddb2c7c69b9444f00996ce16549c6500b503028#egg=django-debug-panel
 -e git+https://github.com/Zemanta/django-statsd-influx.git@v0.1.7#egg=django-statsd-influx
 amqp==2.4.2
 asn1crypto==0.24.0
@@ -25,7 +26,6 @@ cryptography==2.6.1
 decorator==4.0.11
 defusedxml==0.5.0
 diff-match-patch==20181111
-django-debug-panel==0.8.3
 django-debug-toolbar-template-profiler==1.0.2
 django-debug-toolbar==1.10.1
 django-extensions==2.1.3

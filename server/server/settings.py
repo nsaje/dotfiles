@@ -148,7 +148,7 @@ COVERAGE_ENABLED = "COVERAGE_ENABLED" in os.environ
 DEFAULT_FROM_EMAIL = ""
 
 ENABLE_DJANGO_EXTENSIONS = False
-ENABLE_DEBUG_TOOLBAR = False
+ENABLE_DEBUG_TOOLBAR = True  # so that static is collected for it, disabled in prod config
 ENABLE_SILK = False
 
 # cache settings

@@ -51,7 +51,7 @@ def oauth2_permission_wrap(view):
 
 urlpatterns = []
 
-if settings.DEBUG and settings.ENABLE_DEBUG_TOOLBAR:
+if settings.ENABLE_DEBUG_TOOLBAR:
     import debug_toolbar
 
     urlpatterns += [url(r"^__debug__/", include(debug_toolbar.urls))]
