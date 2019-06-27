@@ -3583,20 +3583,20 @@ h4 {
 }
 
 .ad-preview__item {
-    margin-bottom: @spacing--default;
-    padding-bottom: @spacing--default;
-    border-bottom: 1px solid @color--lighter-neutral;
     max-width: 360px;
 }
 
 .ad-preview__item--display {
-    border-bottom: none;
+    max-width: none;
+}
+
+.ad-preview__item--desktop {
+    margin-bottom: @spacing--default;
+    padding-bottom: @spacing--default;
+    border-bottom: 1px solid @color--lighter-neutral;
 }
 
 .ad-preview__item--mobile {
-    margin-bottom: 0;
-    padding-bottom: 0;
-    border-bottom: none;
     position: relative;
     min-height: 150px;
 
