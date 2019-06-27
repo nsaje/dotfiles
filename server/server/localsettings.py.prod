@@ -54,6 +54,18 @@ DATABASES = {
         "HOST": "z1db-replica",
         "PORT": 5432,
     },
+    "read-replica-2": {
+        "ENGINE": "django.db.backends.postgresql_psycopg2",
+        "NAME": "one",
+        "USER": "eins23",
+        "PASSWORD": Secret(
+            "kms:region=us-east-1:AQECAHjdfiP9DHF52gr8mpTmZ/ZwRu2qZbRw8dV0ohsw+OhZewAAAJowgZcGCSqGSIb3DQEHBqCBiTCBhgIBADCBgAYJKoZIhvcNAQcBMB4GCWCGSAFlAwQBLjARBAy/sg1ZhDOsF81umbQCARCAU7Stgh5ErF6/k8czOokzRCpB4R+B0alAdbi5EDr8tt/ubGK8SK8Lasq1yDo3cFjw4O6FO5nvOnuRgcrHWeatpPTlKuZwdxOEW2aBY7BhCMRvkL8f"  # noqa
+        )
+        .get()
+        .decode("utf-8"),
+        "HOST": "eins-replica-2.cmkkg7ghktp5.us-east-1.rds.amazonaws.com",
+        "PORT": 5432,
+    },
     STATS_DB_NAME: {
         "ENGINE": "django.db.backends.postgresql_psycopg2",
         "NAME": "k1",
@@ -91,7 +103,7 @@ DATABASES = {
         "PORT": 5432,
     },
 }
-DATABASE_READ_REPLICAS = ["read-replica"]
+DATABASE_READ_REPLICAS = ["read-replica", "read-replica-2"]
 
 if distutils.util.strtobool(os.environ.get("USE_PG_POOLING", "False")):
     print("Requested use of PG pooling, modifying some settings. Check localsettings.py.prod for details.")
