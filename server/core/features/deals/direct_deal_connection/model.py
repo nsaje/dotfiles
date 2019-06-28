@@ -13,7 +13,7 @@ class DirectDealConnection(validation.DirectDealsConnectionMixin, models.Model):
     id = models.AutoField(primary_key=True)
     source = models.ForeignKey("Source", null=False, blank=False, on_delete=models.PROTECT)
     exclusive = models.BooleanField(
-        default=False, help_text="If the deal is exclusive, we will only respond to requests that have this deal."
+        default=True, help_text="If the deal is exclusive, we will only respond to requests that have this deal."
     )
     agency = models.ForeignKey("Agency", null=True, blank=True, on_delete=models.PROTECT)
     account = models.ForeignKey("Account", null=True, blank=True, on_delete=models.PROTECT)
