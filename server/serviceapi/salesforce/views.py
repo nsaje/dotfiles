@@ -1,6 +1,7 @@
 import django.core.exceptions
 import django.db.utils
 import influx
+from django.db.models import F
 from rest_framework import generics
 from rest_framework.serializers import ValidationError
 
@@ -9,6 +10,7 @@ import utils.exc
 from utils.rest_common import authentication
 
 from . import constants
+from . import exceptions
 from . import serializers
 from . import service
 from .. import base
@@ -134,11 +136,23 @@ class AgenciesView(base.ServiceAPIBaseView, generics.ListAPIView):
         date_range = serializers.DateRangeSerializer(data=self.request.query_params)
         date_range.is_valid(raise_exception=True)
 
-        if date_range.validated_data.get("start_date"):
-            queryset = queryset.filter(modified_dt__gte=date_range.validated_data["start_date"])
+        if not date_range.validated_data:
+            raise exceptions.ListNoParametersProvided("Query parameters must be provided.")
+        if date_range.validated_data.get("modified_dt_start"):
+            queryset = queryset.filter(modified_dt__gte=date_range.validated_data["modified_dt_start"]).exclude(
+                modified_dt=F("created_dt")
+            )
 
-        if date_range.validated_data.get("end_date"):
-            queryset = queryset.filter(modified_dt__lte=date_range.validated_data["end_date"])
+        if date_range.validated_data.get("modified_dt_end"):
+            queryset = queryset.filter(modified_dt__lte=date_range.validated_data["modified_dt_end"]).exclude(
+                modified_dt=F("created_dt")
+            )
+
+        if date_range.validated_data.get("created_dt_start"):
+            queryset = queryset.filter(created_dt__gte=date_range.validated_data["created_dt_start"])
+
+        if date_range.validated_data.get("created_dt_end"):
+            queryset = queryset.filter(created_dt__lte=date_range.validated_data["created_dt_end"])
 
         return set(queryset)
 
@@ -183,11 +197,23 @@ class AccountsView(base.ServiceAPIBaseView, generics.ListAPIView):
         date_range = serializers.DateRangeSerializer(data=self.request.query_params)
         date_range.is_valid(raise_exception=True)
 
-        if date_range.validated_data.get("start_date"):
-            queryset = queryset.filter(modified_dt__gte=date_range.validated_data["start_date"])
+        if not date_range.validated_data:
+            raise exceptions.ListNoParametersProvided("Query parameters must be provided.")
+        if date_range.validated_data.get("modified_dt_start"):
+            queryset = queryset.filter(modified_dt__gte=date_range.validated_data["modified_dt_start"]).exclude(
+                modified_dt=F("created_dt")
+            )
 
-        if date_range.validated_data.get("end_date"):
-            queryset = queryset.filter(modified_dt__lte=date_range.validated_data["end_date"])
+        if date_range.validated_data.get("modified_dt_end"):
+            queryset = queryset.filter(modified_dt__lte=date_range.validated_data["modified_dt_end"]).exclude(
+                modified_dt=F("created_dt")
+            )
+
+        if date_range.validated_data.get("created_dt_start"):
+            queryset = queryset.filter(created_dt__gte=date_range.validated_data["created_dt_start"])
+
+        if date_range.validated_data.get("created_dt_end"):
+            queryset = queryset.filter(created_dt__lte=date_range.validated_data["created_dt_end"])
 
         return set(queryset)
 

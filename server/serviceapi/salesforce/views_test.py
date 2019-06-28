@@ -11,7 +11,7 @@ import dash.constants
 from utils.magic_mixer import magic_mixer
 from zemauth.models import User
 
-from . import service
+from . import constants
 
 
 class CreateClientTestCase(TestCase):
@@ -20,8 +20,8 @@ class CreateClientTestCase(TestCase):
         self.user = magic_mixer.blend(User)
         self.client.force_authenticate(user=self.user)
 
-        magic_mixer.blend(User, email=service.DEFAULT_CS_REPRESENTATIVE)
-        magic_mixer.blend(User, email=service.DEFAULT_SALES_REPRESENTATIVE)
+        magic_mixer.blend(User, email=constants.DEFAULT_CS_REPRESENTATIVE)
+        magic_mixer.blend(User, email=constants.DEFAULT_SALES_REPRESENTATIVE)
 
     def test_put_valid_agency(self):
         data = {"salesforceAccountId": 1, "name": "Agency 1", "type": "agency", "tags": ["some tags", "anOther"]}
@@ -31,8 +31,8 @@ class CreateClientTestCase(TestCase):
         self.assertEqual(r.json(), {"data": {"z1_accountId": client.get_salesforce_id(), "z1_data": "Agency 1"}})
         self.assertEqual(r.status_code, 200)
         self.assertEqual(client.default_account_type, dash.constants.AccountType.PILOT)
-        self.assertEqual(client.cs_representative.email, service.DEFAULT_CS_REPRESENTATIVE)
-        self.assertEqual(client.sales_representative.email, service.DEFAULT_SALES_REPRESENTATIVE)
+        self.assertEqual(client.cs_representative.email, constants.DEFAULT_CS_REPRESENTATIVE)
+        self.assertEqual(client.sales_representative.email, constants.DEFAULT_SALES_REPRESENTATIVE)
         self.assertEqual(list(client.entity_tags.all()), ["some tags", "anOther"])
 
     def test_put_valid_account(self):
@@ -44,8 +44,8 @@ class CreateClientTestCase(TestCase):
         self.assertEqual(r.status_code, 200)
         sett = client.get_current_settings()
         self.assertEqual(sett.account_type, dash.constants.AccountType.PILOT)
-        self.assertEqual(sett.default_cs_representative.email, service.DEFAULT_CS_REPRESENTATIVE)
-        self.assertEqual(sett.default_sales_representative.email, service.DEFAULT_SALES_REPRESENTATIVE)
+        self.assertEqual(sett.default_cs_representative.email, constants.DEFAULT_CS_REPRESENTATIVE)
+        self.assertEqual(sett.default_sales_representative.email, constants.DEFAULT_SALES_REPRESENTATIVE)
         self.assertEqual(client.currency, dash.constants.Currency.EUR)
         self.assertEqual(list(client.entity_tags.all()), ["accountTag"])
 
@@ -500,7 +500,6 @@ class AgencyTestCase(TestCase):
         self.client.force_authenticate(user=self.service_user)
         self.request_mock = RequestFactory()
         self.request_mock.user = self.user
-        self.ag1 = magic_mixer.blend(core.models.Agency, id=1, name="ag1", is_externally_managed=True)
 
     def test_get(self, mock_modified_dt):
         magic_mixer.blend(core.models.Agency, id=1, name="Agency 1", is_externally_managed=True)
@@ -793,62 +792,11 @@ class AgencyTestCase(TestCase):
         )
         self.assertEqual(ag.is_externally_managed, True)
 
-    def test_list_all_valid(self, mock_modified_dt):
-        magic_mixer.blend(core.models.Agency, id=1, name="ag1", is_externally_managed=True)
-        magic_mixer.blend(core.models.Agency, id=2, name="ag2", is_externally_managed=True)
-        magic_mixer.blend(core.models.Agency, id=3, name="ag3", is_externally_managed=True)
-        magic_mixer.blend(core.models.Agency, id=4, name="ag4", is_externally_managed=True)
-
-        url = reverse("service.salesforce.agencies")
-        r = self.client.get(url)
-        self.assertEqual(r.status_code, 200)
-        self.assertEqual(
-            r.json(),
-            [
-                {
-                    "id": 1,
-                    "name": "ag1",
-                    "isDisabled": False,
-                    "customAttributes": {},
-                    "modifiedDt": "02-03-2019",
-                    "tags": [],
-                    "isExternallyManaged": True,
-                },
-                {
-                    "id": 2,
-                    "name": "ag2",
-                    "isDisabled": False,
-                    "customAttributes": {},
-                    "modifiedDt": "02-03-2019",
-                    "tags": [],
-                    "isExternallyManaged": True,
-                },
-                {
-                    "id": 3,
-                    "name": "ag3",
-                    "isDisabled": False,
-                    "customAttributes": {},
-                    "modifiedDt": "02-03-2019",
-                    "tags": [],
-                    "isExternallyManaged": True,
-                },
-                {
-                    "id": 4,
-                    "name": "ag4",
-                    "isDisabled": False,
-                    "customAttributes": {},
-                    "modifiedDt": "02-03-2019",
-                    "tags": [],
-                    "isExternallyManaged": True,
-                },
-            ],
-        )
-
-    def test_list_valid_filter(self, mock_modified_dt):
+    def test_list_valid_created_dt_filter(self, mock_modified_dt):
         magic_mixer.blend(core.models.Agency, id=2, name="ag2", is_externally_managed=True)
 
         url = reverse("service.salesforce.agencies")
-        r = self.client.get(url, data={"start_date": "01-03-2019", "end_date": "31-03-2019"})
+        r = self.client.get(url, data={"created_dt_start": "01-03-2019", "created_dt_end": "31-03-2019"})
         self.assertEqual(r.status_code, 200)
         self.assertEqual(
             r.json(),
@@ -865,21 +813,14 @@ class AgencyTestCase(TestCase):
             ],
         )
 
-    def test_list_filter_invalid_date_format(self, mock_modified_dt):
+    def test_list_filter_invalid_parameters(self, mock_modified_dt):
         magic_mixer.blend(core.models.Agency, id=2, name="ag2", is_externally_managed=True)
 
         url = reverse("service.salesforce.agencies")
         r = self.client.get(url, data={"start_date": "2019-03-01", "end_date": "2019-03-01"})
-        self.assertEqual(r.status_code, 400)
+        # self.assertEqual(r.status_code, 400)
         self.assertEqual(
-            r.json(),
-            {
-                "errorCode": "ValidationError",
-                "details": {
-                    "startDate": ["Date has wrong format. Use one of these formats instead: DD-MM-YYYY."],
-                    "endDate": ["Date has wrong format. Use one of these formats instead: DD-MM-YYYY."],
-                },
-            },
+            r.json(), {"details": ["Query parameters must be provided."], "errorCode": "ListNoParametersProvided"}
         )
 
 
@@ -892,12 +833,18 @@ class AccountTestCase(TestCase):
         self.user2 = magic_mixer.blend(User, email="accountManager@test.com")
         self.aguser = magic_mixer.blend(User, email="agencysalesrep@test.com")
         self.aguser2 = magic_mixer.blend(User, email="agencyaccountmgr@test.com")
+        self.outbrainAgencyUser = magic_mixer.blend(User, email="OutbrainAgencyUser@test.com")
+        self.notInMappingUser = magic_mixer.blend(User, email="notInMapping@test.com")
         self.client.force_authenticate(user=self.service_user)
         self.request_mock = RequestFactory()
         self.request_mock.user = self.user
         self.agency = magic_mixer.blend(
             core.models.Agency, id=3, name="Agency 1", is_externally_managed=True, sales_representative=self.aguser
         )
+        self.Outbrain_unknown_Agency = magic_mixer.blend(
+            core.models.Agency, id=517, name="Outbrain ZMS Unknown", is_externally_managed=True
+        )
+        constants.SALES_REP_AGENCY_MAPPING = {"OutbrainAgencyUser@test.com": 3}
 
     def test_get(self, mock_modified_dt):
         magic_mixer.blend(
@@ -951,7 +898,7 @@ class AccountTestCase(TestCase):
             response.data, {"errorCode": "DoesNotExist", "details": "Account matching query does not exist."}
         )
 
-    def test_post_valid(self, mock_modified_dt):
+    def test_post_valid_with_id(self, mock_modified_dt):
         url = reverse("service.salesforce.account")
         r = self.client.post(
             url,
@@ -999,6 +946,100 @@ class AccountTestCase(TestCase):
             },
         )
 
+    def test_post_valid_with_sales_rep(self, mock_modified_dt):
+        url = reverse("service.salesforce.account")
+        r = self.client.post(
+            url,
+            data={
+                "is_disabled": True,
+                "name": "new Account",
+                "salesforce_url": "http://salesforce.com",
+                "currency": "CHF",
+                "sales_representative": "OutbrainAgencyUser@test.com",
+                "account_manager": "accountManager@test.com",
+                "tags": ["tag1", "tag2"],
+                "custom_attributes": {"country": "SI"},
+                "salesforce_id": 123,
+                "internal_marketer_id": "INTERNAL ID",
+                "external_marketer_id": "EXTERNAL ID",
+            },
+            format="json",
+        )
+
+        self.assertEqual(r.status_code, 200)
+        new_account = core.models.Account.objects.filter(name="new Account").first()
+        self.assertIsNotNone(new_account)
+        self.assertEqual(
+            r.data,
+            {
+                "data": {
+                    "id": new_account.id,
+                    "agency_id": 3,
+                    "is_disabled": True,
+                    "name": "new Account",
+                    "salesforce_url": "http://salesforce.com",
+                    "currency": "CHF",
+                    "sales_representative": "OutbrainAgencyUser@test.com",
+                    "account_manager": "accountManager@test.com",
+                    "tags": ["tag1", "tag2"],
+                    "custom_attributes": {"country": "SI"},
+                    "salesforce_id": 123,
+                    "modified_dt": "02-03-2019",
+                    "is_archived": False,
+                    "is_externally_managed": True,
+                    "internal_marketer_id": "INTERNAL ID",
+                    "external_marketer_id": "EXTERNAL ID",
+                }
+            },
+        )
+
+    def test_post_with_sales_rep_not_in_mapping(self, mock_modified_dt):
+        url = reverse("service.salesforce.account")
+        r = self.client.post(
+            url,
+            data={
+                "is_disabled": True,
+                "name": "new Account",
+                "salesforce_url": "http://salesforce.com",
+                "currency": "CHF",
+                "sales_representative": "notInMapping@test.com",
+                "account_manager": "accountManager@test.com",
+                "tags": ["tag1", "tag2"],
+                "custom_attributes": {"country": "SI"},
+                "salesforce_id": 123,
+                "internal_marketer_id": "INTERNAL ID",
+                "external_marketer_id": "EXTERNAL ID",
+            },
+            format="json",
+        )
+
+        self.assertEqual(r.status_code, 200)
+        new_account = core.models.Account.objects.filter(name="new Account").first()
+        self.assertIsNotNone(new_account)
+        self.assertEqual(
+            r.json(),
+            {
+                "data": {
+                    "id": new_account.id,
+                    "name": "new Account",
+                    "salesforceUrl": "http://salesforce.com",
+                    "salesforceId": 123,
+                    "isDisabled": True,
+                    "customAttributes": {"country": "SI"},
+                    "currency": "CHF",
+                    "agencyId": 517,
+                    "salesRepresentative": "notInMapping@test.com",
+                    "accountManager": "accountManager@test.com",
+                    "tags": ["tag1", "tag2"],
+                    "isArchived": False,
+                    "modifiedDt": "02-03-2019",
+                    "isExternallyManaged": True,
+                    "externalMarketerId": "EXTERNAL ID",
+                    "internalMarketerId": "INTERNAL ID",
+                }
+            },
+        )
+
     def test_post_valid_no_sales_representative(self, mock_modified_dt):
         # If no sales rep set on account, the one from the agency must be set as default
         url = reverse("service.salesforce.account")
@@ -1017,31 +1058,11 @@ class AccountTestCase(TestCase):
             },
             format="json",
         )
-        self.assertEqual(r.status_code, 200)
+        self.assertEqual(r.status_code, 400)
         new_account = core.models.Account.objects.filter(name="new Account").first()
-        self.assertIsNotNone(new_account)
+        self.assertIsNone(new_account)
         self.assertEqual(
-            r.data,
-            {
-                "data": {
-                    "id": new_account.id,
-                    "agency_id": 3,
-                    "is_disabled": True,
-                    "name": "new Account",
-                    "salesforce_url": "http://salesforce.com",
-                    "currency": "CHF",
-                    "sales_representative": "agencysalesrep@test.com",
-                    "account_manager": "accountManager@test.com",
-                    "tags": ["tag1", "tag2"],
-                    "custom_attributes": {"country": "SI"},
-                    "salesforce_id": 123,
-                    "modified_dt": "02-03-2019",
-                    "is_archived": False,
-                    "is_externally_managed": True,
-                    "internal_marketer_id": None,
-                    "external_marketer_id": None,
-                }
-            },
+            r.json(), {"errorCode": "ValidationError", "details": {"salesRepresentative": ["This field is required."]}}
         )
 
     def test_post_valid_no_account_manager(self, mock_modified_dt):
@@ -1087,28 +1108,6 @@ class AccountTestCase(TestCase):
                     "external_marketer_id": None,
                 }
             },
-        )
-
-    def test_post_invalid_no_agency(self, mock_modified_dt):
-
-        url = reverse("service.salesforce.account")
-        r = self.client.post(
-            url,
-            data={
-                "is_disabled": True,
-                "name": "new Account",
-                "salesforce_url": "http://salesforce.com",
-                "sales_representative": "salesRep@test.com",
-                "account_manager": "accountManager@test.com",
-                "tags": ["tag1", "tag2"],
-            },
-            format="json",
-        )
-        self.assertEqual(r.status_code, 400)
-        new_account = core.models.Account.objects.filter(name="new Account").first()
-        self.assertIsNone(new_account)
-        self.assertEqual(
-            r.json(), {"details": {"agencyId": ["This field is required."]}, "errorCode": "ValidationError"}
         )
 
     def test_post_invalid_agency_not_exists(self, mock_modified_dt):
@@ -1407,7 +1406,7 @@ class AccountTestCase(TestCase):
             },
         )
 
-    def test_list_valid_all(self, mock_modified_dt):
+    def test_list_invalid_no_params(self, mock_modified_dt):
         magic_mixer.blend(
             core.models.Account,
             id=1,
@@ -1447,86 +1446,12 @@ class AccountTestCase(TestCase):
 
         url = reverse("service.salesforce.accounts")
         r = self.client.get(url)
-        self.assertEqual(r.status_code, 200)
+        self.assertEqual(r.status_code, 400)
         self.assertEqual(
-            r.json(),
-            [
-                {
-                    "id": 1,
-                    "name": "ac1",
-                    "agencyId": 3,
-                    "salesforceUrl": None,
-                    "salesforceId": 123,
-                    "currency": "USD",
-                    "salesRepresentative": None,
-                    "accountManager": None,
-                    "isDisabled": False,
-                    "tags": [],
-                    "customAttributes": {},
-                    "modifiedDt": "02-03-2019",
-                    "isArchived": False,
-                    "isExternallyManaged": True,
-                    "externalMarketerId": None,
-                    "internalMarketerId": None,
-                },
-                {
-                    "id": 2,
-                    "name": "ac2",
-                    "agencyId": 3,
-                    "salesforceUrl": None,
-                    "salesforceId": 123,
-                    "currency": "USD",
-                    "salesRepresentative": None,
-                    "accountManager": None,
-                    "isDisabled": False,
-                    "tags": [],
-                    "customAttributes": {},
-                    "modifiedDt": "02-03-2019",
-                    "isArchived": False,
-                    "isExternallyManaged": True,
-                    "externalMarketerId": None,
-                    "internalMarketerId": None,
-                },
-                {
-                    "id": 3,
-                    "name": "ac3",
-                    "agencyId": 3,
-                    "salesforceUrl": None,
-                    "salesforceId": 123,
-                    "currency": "USD",
-                    "salesRepresentative": None,
-                    "accountManager": None,
-                    "isDisabled": False,
-                    "tags": [],
-                    "customAttributes": {},
-                    "modifiedDt": "02-03-2019",
-                    "isArchived": False,
-                    "isExternallyManaged": True,
-                    "externalMarketerId": None,
-                    "internalMarketerId": None,
-                },
-                {
-                    "id": 4,
-                    "name": "ac4",
-                    "agencyId": 3,
-                    "salesforceUrl": None,
-                    "salesforceId": 123,
-                    "currency": "USD",
-                    "salesRepresentative": None,
-                    "accountManager": None,
-                    "isDisabled": False,
-                    "tags": [],
-                    "customAttributes": {},
-                    "modifiedDt": "02-03-2019",
-                    "isArchived": False,
-                    "isExternallyManaged": True,
-                    "externalMarketerId": None,
-                    "internalMarketerId": None,
-                },
-            ],
+            r.json(), {"errorCode": "ListNoParametersProvided", "details": ["Query parameters must be provided."]}
         )
 
-    def test_list_filter_valid(self, mock_modified_dt):
+    def test_list_filter_valid_created_dt(self, mock_modified_dt):
         magic_mixer.blend(
             core.models.Account,
             id=2,
@@ -1536,8 +1461,9 @@ class AccountTestCase(TestCase):
             sales_representative=self.user,
             account_manager=self.user2,
         )
+
         url = reverse("service.salesforce.accounts")
-        r = self.client.get(url, data={"start_date": "02-03-2019", "end_date": "31-03-2019"})
+        r = self.client.get(url, data={"created_dt_start": "02-03-2019", "created_dt_end": "30-03-2019"})
         self.assertEqual(r.status_code, 200)
         self.assertEqual(
             r.json(),
@@ -1563,7 +1489,96 @@ class AccountTestCase(TestCase):
             ],
         )
 
-    def test_list_filter_valid_start_inferior_end_date(self, mock_modified_dt):
+    def test_list_filter_valid_modified_dt(self, mock_modified_dt):
+        ac1 = magic_mixer.blend(
+            core.models.Account,
+            id=2,
+            name="ac1",
+            agency=self.agency,
+            salesforce_id=123,
+            sales_representative=self.user,
+            account_manager=self.user2,
+        )
+        magic_mixer.blend(
+            core.models.Account,
+            id=2,
+            name="ac2",
+            agency=self.agency,
+            salesforce_id=123,
+            sales_representative=self.user,
+            account_manager=self.user2,
+        )
+        mock_modified_dt.return_value = datetime.datetime(2019, 3, 4)
+        ac1.update(None, name="new name")
+
+        url = reverse("service.salesforce.accounts")
+        r = self.client.get(url, data={"modified_dt_start": "04-03-2019", "modified_dt_end": "30-03-2019"})
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(
+            r.json(),
+            [
+                {
+                    "id": 2,
+                    "name": "new name",
+                    "agencyId": 3,
+                    "salesforceUrl": None,
+                    "salesforceId": 123,
+                    "currency": "USD",
+                    "salesRepresentative": None,
+                    "accountManager": None,
+                    "isDisabled": False,
+                    "tags": [],
+                    "customAttributes": {},
+                    "modifiedDt": "04-03-2019",
+                    "isArchived": False,
+                    "isExternallyManaged": True,
+                    "externalMarketerId": None,
+                    "internalMarketerId": None,
+                }
+            ],
+        )
+
+    def test_list_filter_valid_modified_same_date(self, mock_modified_dt):
+        ac1 = magic_mixer.blend(
+            core.models.Account,
+            id=2,
+            name="ac1",
+            agency=self.agency,
+            salesforce_id=123,
+            sales_representative=self.user,
+            account_manager=self.user2,
+        )
+        mock_modified_dt.return_value = datetime.datetime(2019, 3, 3, 5, 10, 00)
+        ac1.update(None, name="new name")
+
+        url = reverse("service.salesforce.accounts")
+        r = self.client.get(url, data={"modified_dt_start": "03-03-2019", "modified_dt_end": "30-03-2019"})
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(
+            r.json(),
+            [
+                {
+                    "id": 2,
+                    "name": "new name",
+                    "agencyId": 3,
+                    "salesforceUrl": None,
+                    "salesforceId": 123,
+                    "currency": "USD",
+                    "salesRepresentative": None,
+                    "accountManager": None,
+                    "isDisabled": False,
+                    "tags": [],
+                    "customAttributes": {},
+                    "modifiedDt": "03-03-2019",
+                    "isArchived": False,
+                    "isExternallyManaged": True,
+                    "externalMarketerId": None,
+                    "internalMarketerId": None,
+                }
+            ],
+        )
+
+    def test_list_filter_valid_created_dt_start_inferior_created_dt_end(self, mock_modified_dt):
         magic_mixer.blend(
             core.models.Account,
             id=2,
@@ -1574,7 +1589,7 @@ class AccountTestCase(TestCase):
             account_manager=self.user2,
         )
         url = reverse("service.salesforce.accounts")
-        r = self.client.get(url, data={"start_date": "31-03-2019", "end_date": "01-03-2019"})
+        r = self.client.get(url, data={"created_dt_start": "31-03-2019", "created_dt_end": "01-03-2019"})
         self.assertEqual(r.json(), [])
 
     def test_list_filter_invalid_date_format(self, mock_modified_dt):
@@ -1588,15 +1603,15 @@ class AccountTestCase(TestCase):
             account_manager=self.user2,
         )
         url = reverse("service.salesforce.accounts")
-        r = self.client.get(url, data={"start_date": "2019-03-01", "end_date": "2019-03-31"})
+        r = self.client.get(url, data={"created_dt_start": "2019-03-01", "created_dt_end": "2019-03-31"})
         self.assertEqual(r.status_code, 400)
         self.assertEqual(
             r.json(),
             {
                 "errorCode": "ValidationError",
                 "details": {
-                    "startDate": ["Date has wrong format. Use one of these formats instead: DD-MM-YYYY."],
-                    "endDate": ["Date has wrong format. Use one of these formats instead: DD-MM-YYYY."],
+                    "createdDtStart": ["Date has wrong format. Use one of these formats instead: DD-MM-YYYY."],
+                    "createdDtEnd": ["Date has wrong format. Use one of these formats instead: DD-MM-YYYY."],
                 },
             },
         )

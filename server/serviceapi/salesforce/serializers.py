@@ -92,7 +92,7 @@ class CreditsListSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
     contract_id = restapi.serializers.fields.NullPlainCharField()
     contract_number = restapi.serializers.fields.PlainCharField()
     status = restapi.serializers.fields.DashConstantField(
-        dash.constants.CreditLineItemStatus  # , default=dash.constants.CreditLineItemStatus.PENDING
+        dash.constants.CreditLineItemStatus, default=dash.constants.CreditLineItemStatus.PENDING
     )
     refund = serializers.BooleanField()
     comment = restapi.serializers.fields.PlainCharField()
@@ -135,8 +135,10 @@ class AgencySerializer(serializers.ModelSerializer):
 
 
 class AccountSerializer(serializers.ModelSerializer):
-    agency_id = serializers.PrimaryKeyRelatedField(source="agency", queryset=core.models.Agency.objects.all())
-    sales_representative = serializers.EmailField(required=False, source="settings.default_sales_representative")
+    agency_id = serializers.PrimaryKeyRelatedField(
+        required=False, source="agency", queryset=core.models.Agency.objects.all()
+    )
+    sales_representative = serializers.EmailField(required=True, source="settings.default_sales_representative")
     account_manager = serializers.EmailField(required=False, source="settings.default_account_manager")
     tags = TagSerializer(source="entity_tags", many=True, required=False)
     custom_attributes = serializers.JSONField(required=False)
@@ -183,5 +185,7 @@ class AccountSerializer(serializers.ModelSerializer):
 
 
 class DateRangeSerializer(serializers.Serializer):
-    start_date = serializers.DateField(input_formats=["%d-%m-%Y"], format="%d-%m-%Y", required=False)
-    end_date = serializers.DateField(input_formats=["%d-%m-%Y"], format="%d-%m-%Y", required=False)
+    modified_dt_start = serializers.DateField(input_formats=["%d-%m-%Y"], format="%d-%m-%Y", required=False)
+    modified_dt_end = serializers.DateField(input_formats=["%d-%m-%Y"], format="%d-%m-%Y", required=False)
+    created_dt_start = serializers.DateField(input_formats=["%d-%m-%Y"], format="%d-%m-%Y", required=False)
+    created_dt_end = serializers.DateField(input_formats=["%d-%m-%Y"], format="%d-%m-%Y", required=False)

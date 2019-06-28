@@ -19,3 +19,11 @@ class AgencyNameAlreadyExists(ValidationError):
 
 class CreatingAccountOnDisabledAgency(ValidationError):
     pass
+
+
+class ListAllAndDateFilters(ValidationError):
+    pass
+
+
+class ListNoParametersProvided(ValidationError):
+    pass

@@ -18,12 +18,6 @@ CLIENT_TYPE_OBJECT_MAP = {
     constants.CLIENT_TYPE_CLIENT_DIRECT: core.models.account.Account,
 }
 
-DEFAULT_ACCOUNT_TYPE = dash.constants.AccountType.PILOT
-
-# TODO: handle properly via SF
-DEFAULT_CS_REPRESENTATIVE = "tadej.pavlic@zemanta.com"
-DEFAULT_SALES_REPRESENTATIVE = "david.kaplan@zemanta.com"
-
 
 def _get_client_lookup(z1_account_id):
     client_type, client_id = z1_account_id[0], int(z1_account_id[1:])
@@ -95,19 +89,22 @@ def create_credit_line_item(request, data):
 
 
 def create_client(request, data):
-    cs = zemauth.models.User.objects.get(email=DEFAULT_CS_REPRESENTATIVE)
-    sales = zemauth.models.User.objects.get(email=DEFAULT_SALES_REPRESENTATIVE)
+    cs = zemauth.models.User.objects.get(email=constants.DEFAULT_CS_REPRESENTATIVE)
+    sales = zemauth.models.User.objects.get(email=constants.DEFAULT_SALES_REPRESENTATIVE)
 
     client = CLIENT_TYPE_OBJECT_MAP[data["type"]].objects.create(request, data["name"])
     if data["type"] == constants.CLIENT_TYPE_AGENCY:
-        client.default_account_type = DEFAULT_ACCOUNT_TYPE
+        client.default_account_type = constants.DEFAULT_ACCOUNT_TYPE
         client.sales_representative = sales
         client.cs_representative = cs
         client.entity_tags.add(*data.get("tags", []))
         client.save(request)
     elif data["type"] == constants.CLIENT_TYPE_CLIENT_DIRECT:
         client.settings.update(
-            request, account_type=DEFAULT_ACCOUNT_TYPE, default_sales_representative=sales, default_cs_representative=cs
+            request,
+            account_type=constants.DEFAULT_ACCOUNT_TYPE,
+            default_sales_representative=sales,
+            default_cs_representative=cs,
         )
         client.entity_tags.add(*data.get("tags", []))
         client.currency = data["currency"]
@@ -134,8 +131,14 @@ def update_agency(request, agency, **kwargs):
 
 
 def create_account(request, **kwargs):
+    agency = kwargs.pop("agency", None)
+    if not agency:
+        sales_rep_email = kwargs["settings"].get("default_sales_representative").email
+        agency_id = constants.SALES_REP_AGENCY_MAPPING.get(sales_rep_email, constants.OUTBRAIN_UNKNOWN_AGENCY_ID)
+        agency = core.models.Agency.objects.get(id=agency_id)
+
     settings_updates = kwargs.pop("settings", {})
-    new_account = core.models.Account.objects.create(request, agency=kwargs.pop("agency"), **kwargs)
+    new_account = core.models.Account.objects.create(request, agency=agency, **kwargs)
     new_account.settings.update(request, account_type=dash.constants.AccountType.MANAGED, **settings_updates)
     return new_account
 
