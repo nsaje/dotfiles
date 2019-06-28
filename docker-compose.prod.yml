@@ -18,7 +18,7 @@ services:
           NEW_RELIC_APP_NAME: "Zemanta One"
           NEW_RELIC_PROCESS_HOST_DISPLAY_NAME: "${HOSTNAME}-docker"
           GUNICORN_TIMEOUT: "180"
-          GUNICORN_WORKERS: "1"
+          GUNICORN_WORKERS: "8"
           GUNICORN_THREADS: "1"
           GUNICORN_WORKER_CLASS: "gevent"
           GUNICORN_LOG_LEVEL: "warn"
@@ -37,12 +37,11 @@ services:
             max-size: "50m"
             max-file: "3"
             labels: "eins"
-        mem_limit: 1g
+        mem_limit: 8g
         sysctls:
           net.core.somaxconn: 2048
         networks:
           - legacynet
-        scale: 8
 
     one_ambassador:
         image: verb/socat
@@ -73,7 +72,7 @@ services:
           GUNICORN_WORKER_CLASS: "gevent"
         mem_limit: 1g
         #   default cpu.cfs_period_us is 100000. That is 100% of one CPU core
-        cpu_quota: 100000
+        cpu_quota: 400000
         labels:
           SERVICE_NAME: one-cb
           traefik.backend: "one-cb.zemanta.com"
@@ -103,18 +102,17 @@ services:
         environment:
           VIRTUAL_HOST: "oneapi.zemanta.com"
           NEW_RELIC_APP_NAME: "Zemanta One (REST API)"
-          GUNICORN_WORKERS: "1"
+          GUNICORN_WORKERS: "12"
           GUNICORN_THREADS: "1"
           GUNICORN_WORKER_CLASS: "gevent"
           GUNICORN_LOG_LEVEL: "warn"
-        mem_limit: 500m
+        mem_limit: 6g
         #   default cpu.cfs_period_us is 100000. That is 100% of one CPU core
-        cpus: 1
+        cpus: 8
         labels:
           SERVICE_NAME: oneapi
           traefik.backend: "oneapi.zemanta.com"
           traefik.frontend.rule: "Host:oneapi.zemanta.com"
-        scale: 15
 
     oneapi_ambassador:
         image: verb/socat
@@ -164,8 +162,7 @@ services:
           SERVICE_IGNORE: "true"
         cpu_quota: 50000
         entrypoint: ""
-        command: "/usr/local/bin/newrelic-admin run-program celery worker -A server -c 1 -Q z1-upload-lambda -l INFO -f /app/logs/eins_celery_upload_lambda.log --prefetch-multiplier 0 -P gevent"
-        scale: 15
+        command: "/usr/local/bin/newrelic-admin run-program celery worker -A server -c 15 -Q z1-upload-lambda -l INFO -f /app/logs/eins_celery_upload_lambda.log --prefetch-multiplier 0 -P gevent"
 
     einsworker_convapi:
         extends: eins
@@ -177,8 +174,7 @@ services:
           NEW_RELIC_APP_NAME: "Zemanta One (ConvAPI)"
         entrypoint: ""
         cpu_quota: 50000
-        command: "/usr/local/bin/newrelic-admin run-program celery worker -A server -c 1 -Q prod-convapi -l INFO -f /app/logs/eins_celery_convapi.log"
-        scale: 3
+        command: "/usr/local/bin/newrelic-admin run-program celery worker -A server -c 3 -Q prod-convapi -l INFO -f /app/logs/eins_celery_convapi.log"
 
     # einsworker_convapi_v2:
     #     extends: eins
