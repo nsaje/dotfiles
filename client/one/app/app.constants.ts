@@ -1578,7 +1578,6 @@ APP_CONSTANTS.automaticallyOptimizedKPIGoals = [
     APP_CONSTANTS.campaignGoalKPI.CP_NON_BOUNCED_VISIT,
     APP_CONSTANTS.campaignGoalKPI.CP_NEW_VISITOR,
     APP_CONSTANTS.campaignGoalKPI.CP_PAGE_VIEW,
-    APP_CONSTANTS.campaignGoalKPI.CPCV,
 ];
 
 APP_CONSTANTS.defaultAccountTypes = [
