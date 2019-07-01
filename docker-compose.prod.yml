@@ -177,9 +177,9 @@ services:
     eins-jobs-pushgateway:
       image: prom/pushgateway
       restart: always
-      entrypoint: ["/bin/pushgateway", "--web.telemetry-path=/internal/metrics"]
+      entrypoint: ["/bin/pushgateway", "--web.listen-address=:8000", "--web.telemetry-path=/internal/metrics"]
       ports:
-        - "8000:9091"
+        - "8000:8000"
       networks:
         - legacynet
       mem_limit: 512m
