@@ -441,3 +441,6 @@ DCRON = {
     "log_viewer_link": "https://app.logdna.com/92b58769bf/logs/view?apps={command_name}",
     "log_viewer_link_live": "https://app.logdna.com/92b58769bf/logs/view?apps={command_name}&q=host:{host}",
 }
+
+METRICS_PUSH_GATEWAY = "eins-jobs-pushgateway:8000"
+METRICS_PUSH_PERIOD_SECONDS = 20

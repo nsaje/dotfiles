@@ -5,13 +5,13 @@ import redshiftapi.db
 import utils.slack
 from core.models.account import Account
 from etl import refresh
-from utils.command_helpers import ExceptionCommand
+from utils.command_helpers import Z1Command
 
 logger = logging.getLogger(__name__)
 NUM_OF_BATCHES = 4
 
 
-class Command(ExceptionCommand):
+class Command(Z1Command):
 
     help = "Rematerialize agency stats per batch"
 

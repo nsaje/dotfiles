@@ -5,12 +5,12 @@ import influx
 from dash import models
 from dash.features import scheduled_reports
 from dash.features.reports import reports
-from utils.command_helpers import ExceptionCommand
+from utils.command_helpers import Z1Command
 
 logger = logging.getLogger(__name__)
 
 
-class Command(ExceptionCommand):
+class Command(Z1Command):
     @influx.timer("dash.scheduled_reports.send_scheduled_reports_job")
     def handle(self, *args, **options):
         logger.info("Sending Scheduled Reports")

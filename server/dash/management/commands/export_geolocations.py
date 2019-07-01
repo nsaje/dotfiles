@@ -3,12 +3,12 @@ import logging
 
 import dash.features.geolocation
 import dash.regions
-from utils.command_helpers import ExceptionCommand
+from utils.command_helpers import Z1Command
 
 logger = logging.getLogger(__name__)
 
 
-class Command(ExceptionCommand):
+class Command(Z1Command):
 
     help = "Export Eins supported geolocations into a CSV file"
 

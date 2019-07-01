@@ -9,7 +9,7 @@ class Req:
     pass
 
 
-class Command(utils.command_helpers.ExceptionCommand):
+class Command(utils.command_helpers.Z1Command):
     help = """Change the CS representative on multiple accounts."""
 
     def add_arguments(self, parser):

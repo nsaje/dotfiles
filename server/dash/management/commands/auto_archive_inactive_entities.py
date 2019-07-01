@@ -9,7 +9,7 @@ import utils.exc
 from dash import constants
 from dash import models
 from utils import dates_helper
-from utils.command_helpers import ExceptionCommand
+from utils.command_helpers import Z1Command
 
 logger = logging.getLogger(__name__)
 
@@ -18,7 +18,7 @@ DAYS_INACTIVE = 90
 WHITELISTED_ACCOUNTS = [305, 490, 512, 513, 293]  # OEN  # InPowered  # -  # -  # BusinessWire
 
 
-class Command(ExceptionCommand):
+class Command(Z1Command):
     help = "Auto-archive ad groups and campaigns that weren't active in the last 3 months."
 
     def handle(self, *args, **options):

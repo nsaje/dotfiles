@@ -1,5 +1,7 @@
 import prometheus_client
 
+from . import registry
+
 _project_name = None
 
 
@@ -25,7 +27,7 @@ def new_gauge(name, documentation=None, labelnames=None):
 
 
 def _new_metric(cls, name, documentation, labelnames):
-    return cls(_build_name(name), documentation or "", labelnames=labelnames)
+    return cls(_build_name(name), documentation or "", labelnames=labelnames, registry=registry.get_registry())
 
 
 def _build_name(name):

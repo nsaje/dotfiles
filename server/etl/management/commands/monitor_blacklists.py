@@ -12,14 +12,14 @@ from dash import constants
 from dash import models
 from dash import publisher_helpers
 from utils import list_helper
-from utils.command_helpers import ExceptionCommand
+from utils.command_helpers import Z1Command
 
 logger = logging.getLogger(__name__)
 
 OEN = 305
 
 
-class Command(ExceptionCommand):
+class Command(Z1Command):
 
     help = "Monitor whitelisted and blacklisted publishers by checking for publisher statistics in Redshift that should not exist."
 

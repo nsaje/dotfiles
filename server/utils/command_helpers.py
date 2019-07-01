@@ -4,15 +4,17 @@ import sys
 
 import dateutil.parser
 import newrelic.agent
+from django.conf import settings
 from django.core.management.base import BaseCommand
 
 import dash.models
+import swinfra.metrics
 from dcron import helpers
 
 logger = logging.getLogger(__name__)
 
 
-class ExceptionCommand(BaseCommand):
+class Z1Command(BaseCommand):
     # execute in BaseCommand calls handle()
     # this is extended here to catch exceptions
 
@@ -21,15 +23,24 @@ class ExceptionCommand(BaseCommand):
             root_logger = logging.getLogger("")
             root_logger.setLevel(logging.DEBUG)
 
+        job_name = helpers.get_command(sys.argv)
+        swinfra.metrics.start_push_mode(
+            gateway_addr=settings.METRICS_PUSH_GATEWAY,
+            push_period_seconds=settings.METRICS_PUSH_PERIOD_SECONDS,
+            job=job_name,
+        )
+
         try:
             application = newrelic.agent.application()
-            with newrelic.agent.BackgroundTask(application, name=helpers.get_command(sys.argv)):
-                return super(ExceptionCommand, self).execute(*args, **options)
+            with newrelic.agent.BackgroundTask(application, name=job_name):
+                return super(Z1Command, self).execute(*args, **options)
         except SystemExit as err:
             raise err
         except Exception as err:
             logging.getLogger(self.__class__.__module__).exception("Uncaught exception in command")
             raise err
+        finally:
+            swinfra.metrics.flush_push_metrics()
 
 
 def last_n_days(n):

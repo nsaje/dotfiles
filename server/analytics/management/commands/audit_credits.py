@@ -5,7 +5,7 @@ import utils.command_helpers
 import utils.email_helper
 
 
-class Command(utils.command_helpers.ExceptionCommand):
+class Command(utils.command_helpers.Z1Command):
     help = "Audit credits"
 
     def add_arguments(self, parser):

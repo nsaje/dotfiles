@@ -8,7 +8,7 @@ import prodops.helpers
 import utils.command_helpers
 
 
-class Command(utils.command_helpers.ExceptionCommand):
+class Command(utils.command_helpers.Z1Command):
     help = "Create inventory report"
 
     def add_arguments(self, parser):

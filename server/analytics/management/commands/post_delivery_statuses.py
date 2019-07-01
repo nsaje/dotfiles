@@ -19,7 +19,7 @@ def cap_to_category(cap):
     return "1000-inf"
 
 
-class Command(utils.command_helpers.ExceptionCommand):
+class Command(utils.command_helpers.Z1Command):
     help = "Post delivery statuses to influx"
 
     def handle(*args, **kwargs):

@@ -2,12 +2,12 @@ import logging
 
 import utils.slack
 from dash.features.bluekai.service import maintenance
-from utils.command_helpers import ExceptionCommand
+from utils.command_helpers import Z1Command
 
 logger = logging.getLogger(__name__)
 
 
-class Command(ExceptionCommand):
+class Command(Z1Command):
     help = "Refresh and cross check BlueKai categories"
 
     def add_arguments(self, parser):

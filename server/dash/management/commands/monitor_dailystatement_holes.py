@@ -5,7 +5,7 @@ import influx
 from django.db import connection
 
 from etl import daily_statements
-from utils.command_helpers import ExceptionCommand
+from utils.command_helpers import Z1Command
 
 logger = logging.getLogger(__name__)
 
@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 DAYS_TO_CHECK = 7
 
 
-class Command(ExceptionCommand):
+class Command(Z1Command):
 
     help = "Checks that all budgets have daily statements for all their valid dates"
 

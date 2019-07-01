@@ -29,7 +29,7 @@ TRIPLELIFT_SOURCE_ID = 34
 OEN = 305
 
 
-class Command(utils.command_helpers.ExceptionCommand):
+class Command(utils.command_helpers.Z1Command):
     help = "Daily audits"
 
     def add_arguments(self, parser):

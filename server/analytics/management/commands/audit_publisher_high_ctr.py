@@ -8,7 +8,7 @@ MESSAGE = "Publisher <http://redash.zemanta.com:8123/dashboard/publisher-view-da
 HELPER_LINKS = "Those links might help you in your investigation : <http://redash.zemanta.com:8123/queries/575#table|Publisher CTR past 7 days> <http://redash.zemanta.com:8123/queries/576?p_date_compact={compact_date}| Publishers CTR by date>."  # noqa
 
 
-class Command(utils.command_helpers.ExceptionCommand):
+class Command(utils.command_helpers.Z1Command):
     def add_arguments(self, parser):
         parser.add_argument("--date", dest="date", help="Date %Y-%m-%d")
         parser.add_argument("--ctr", dest="ctr", default=10, help="CTR threshold")

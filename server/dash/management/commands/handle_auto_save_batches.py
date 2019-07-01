@@ -3,7 +3,7 @@ import logging
 
 from dash.features.contentupload import upload
 from utils import dates_helper
-from utils.command_helpers import ExceptionCommand
+from utils.command_helpers import Z1Command
 
 logger = logging.getLogger(__name__)
 
@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 AUTO_SAVE_HOURS = 2
 
 
-class Command(ExceptionCommand):
+class Command(Z1Command):
     help = "Handle auto_save batches in progress"
 
     def handle(self, *args, **options):

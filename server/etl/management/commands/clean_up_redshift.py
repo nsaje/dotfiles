@@ -7,7 +7,7 @@ import utils.dates_helper
 from etl import maintenance
 from etl import redshift
 from redshiftapi import db
-from utils.command_helpers import ExceptionCommand
+from utils.command_helpers import Z1Command
 
 logger = logging.getLogger(__name__)
 
@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 CONFIG = [{"table_name": "supply_stats", "keep_days": 31}, {"table_name": "stats", "keep_days": 93}]
 
 
-class Command(ExceptionCommand):
+class Command(Z1Command):
     @influx.timer("etl.clean_up_redshift")
     def handle(self, *args, **options):
         for config in CONFIG:

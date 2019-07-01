@@ -4,12 +4,12 @@ import logging
 import etl.redshift
 from etl import refresh
 from utils import dates_helper
-from utils.command_helpers import ExceptionCommand
+from utils.command_helpers import Z1Command
 
 logger = logging.getLogger(__name__)
 
 
-class Command(ExceptionCommand):
+class Command(Z1Command):
     help = (
         "Copy raw tables to a specified Redshift cluster. NOTE: audience_report and pixie_sample tables are not copied."
     )

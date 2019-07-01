@@ -4,13 +4,13 @@ from django.db.models import QuerySet
 from django.utils.six.moves import input
 
 import core.features.history
-from utils.command_helpers import ExceptionCommand
+from utils.command_helpers import Z1Command
 from zemauth import models
 
 DELETED_USER_ID = 1553
 
 
-class Command(ExceptionCommand):
+class Command(Z1Command):
 
     help = "Deletes user and all references permanently from db"
 

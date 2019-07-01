@@ -4,14 +4,14 @@ import influx
 
 import automation.autopilot
 import utils.slack
-from utils.command_helpers import ExceptionCommand
+from utils.command_helpers import Z1Command
 
 logger = logging.getLogger(__name__)
 
 ALERT_MSG = """Autopilot terminated with an exception today ({}). PagerDuty alert might not have been sent. Check <https://sentry.io/zemanta/eins-1/|sentry>."""
 
 
-class Command(ExceptionCommand):
+class Command(Z1Command):
     help = "Autopilot rearranges daily spend caps and bid CPCs of all active media sources in participating ad groups."
 
     def add_arguments(self, parser):

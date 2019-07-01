@@ -3,12 +3,12 @@ import datetime
 import utils.slack
 from etl import nas_cpc_billing
 from prodops import hacks
-from utils.command_helpers import ExceptionCommand
+from utils.command_helpers import Z1Command
 
 MESSAGE = "Adgroup #{ad_group_id} have its eCPC ({ecpc}) different from its CPC ({cpc})."
 
 
-class Command(ExceptionCommand):
+class Command(Z1Command):
     help = "Calculate billing cost for CPC goal bidding agencies."
 
     def add_arguments(self, parser):

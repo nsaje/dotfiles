@@ -1,10 +1,10 @@
 import argparse
 
 from dash.features import publisher_classification
-from utils.command_helpers import ExceptionCommand
+from utils.command_helpers import Z1Command
 
 
-class Command(ExceptionCommand):
+class Command(Z1Command):
 
     help = """
     Update data to Publisher Classification table, either from OEN or from a csv file. Can also dump table to S3.

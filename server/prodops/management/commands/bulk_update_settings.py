@@ -4,7 +4,7 @@ import utils.command_helpers
 from dash import models
 
 
-class Command(utils.command_helpers.ExceptionCommand):
+class Command(utils.command_helpers.Z1Command):
     help = """Bulk update adgroup settings for the entity provided."""
 
     def add_arguments(self, parser):

@@ -3,13 +3,13 @@ import logging
 
 import analytics.management_report
 import utils.email_helper
-from utils.command_helpers import ExceptionCommand
+from utils.command_helpers import Z1Command
 from utils.command_helpers import set_logger_verbosity
 
 logger = logging.getLogger(__name__)
 
 
-class Command(ExceptionCommand):
+class Command(Z1Command):
 
     help = "Sends daily management report email"
 

@@ -4,7 +4,7 @@ import utils.command_helpers
 import utils.slack
 
 
-class Command(utils.command_helpers.ExceptionCommand):
+class Command(utils.command_helpers.Z1Command):
     help = "Post on slack"
 
     def add_arguments(self, parser):

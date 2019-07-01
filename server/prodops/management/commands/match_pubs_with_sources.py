@@ -19,7 +19,7 @@ def chunks(l, n):
     return (l[i : i + n] for i in range(0, len(l), n))
 
 
-class Command(utils.command_helpers.ExceptionCommand):
+class Command(utils.command_helpers.Z1Command):
     help = "Match publishers with media sources"
 
     def add_arguments(self, parser):

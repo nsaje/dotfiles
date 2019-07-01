@@ -5,7 +5,7 @@ import dash.models
 import utils.command_helpers
 
 
-class Command(utils.command_helpers.ExceptionCommand):
+class Command(utils.command_helpers.Z1Command):
     help = "Check history"
 
     def add_arguments(self, parser):

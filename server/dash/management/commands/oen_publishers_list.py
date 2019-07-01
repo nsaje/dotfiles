@@ -1,7 +1,7 @@
 import redshiftapi
 from utils import dates_helper
 from utils import s3helpers
-from utils.command_helpers import ExceptionCommand
+from utils.command_helpers import Z1Command
 
 select_query = """
 SELECT publisher, exchange, sum(bid_reqs) AS bid_reqs, sum(slots) AS slots, sum(zuid_reqs) AS zuid_reqs
@@ -31,7 +31,7 @@ min_bid_req = 100
 num_days = 7
 
 
-class Command(ExceptionCommand):
+class Command(Z1Command):
     def handle(self, *args, **options):
         today = dates_helper.utc_today()
         date_from = dates_helper.days_before(today, num_days)

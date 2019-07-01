@@ -4,10 +4,10 @@ import automation.campaignstop
 import automation.campaignstop.constants
 import core.models
 from utils import dates_helper
-from utils.command_helpers import ExceptionCommand
+from utils.command_helpers import Z1Command
 
 
-class Command(ExceptionCommand):
+class Command(Z1Command):
     @influx.timer("campaignstop.job_run", job="selection")
     def handle(self, *args, **options):
         campaigns = core.models.Campaign.objects.filter(

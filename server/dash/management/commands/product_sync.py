@@ -13,7 +13,7 @@ from dash import constants
 from dash import forms
 from dash.features import contentupload
 from utils import dates_helper
-from utils.command_helpers import ExceptionCommand
+from utils.command_helpers import Z1Command
 
 configuration = [
     #  {
@@ -28,7 +28,7 @@ Request = collections.namedtuple("Request", ["user"])
 SHOPIFY_RE = re.compile(r"/products/[^?]+")
 
 
-class Command(ExceptionCommand):
+class Command(Z1Command):
     def handle(self, *args, **options):
         self.user = None
         self.request = Request(self.user)

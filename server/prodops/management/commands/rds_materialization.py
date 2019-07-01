@@ -4,12 +4,12 @@ import influx
 
 from etl.redshift import get_last_stl_load_error
 from prodops.rds_materialization import rds_materialization
-from utils.command_helpers import ExceptionCommand
+from utils.command_helpers import Z1Command
 
 logger = logging.getLogger(__name__)
 
 
-class Command(ExceptionCommand):
+class Command(Z1Command):
 
     ALL_ENTITIES = {i.TABLE: i for i in rds_materialization.RDS_MATERIALIAZED_VIEW}
     help = """

@@ -12,12 +12,12 @@ import utils.pagerduty_helper as pgdh
 from etl import helpers
 from utils import converters
 from utils import csv_utils
-from utils.command_helpers import ExceptionCommand
+from utils.command_helpers import Z1Command
 
 logger = logging.getLogger(__name__)
 
 
-class Command(ExceptionCommand):
+class Command(Z1Command):
     @pgdh.catch_and_report_exception(pgdh.PagerDutyEventType.PRODOPS)
     def handle(self, *args, **options):
         today_utc = pytz.UTC.localize(datetime.datetime.utcnow())

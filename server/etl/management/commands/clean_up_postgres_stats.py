@@ -9,7 +9,7 @@ from etl import maintenance
 from etl import redshift
 from etl import refresh
 from redshiftapi import db
-from utils.command_helpers import ExceptionCommand
+from utils.command_helpers import Z1Command
 
 logger = logging.getLogger(__name__)
 
@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 POSTGRES_KEEP_DAYS = 64
 
 
-class Command(ExceptionCommand):
+class Command(Z1Command):
     @influx.timer("etl.clean_up_postgres_stats")
     def handle(self, *args, **options):
         for db_name in settings.STATS_DB_WRITE_REPLICAS_POSTGRES:

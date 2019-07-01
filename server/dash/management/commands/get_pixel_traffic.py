@@ -2,12 +2,12 @@ import logging
 
 from dash import models
 from utils import redirector_helper
-from utils.command_helpers import ExceptionCommand
+from utils.command_helpers import Z1Command
 
 logger = logging.getLogger(__name__)
 
 
-class Command(ExceptionCommand):
+class Command(Z1Command):
     def handle(self, *args, **options):
         for pixel_traffic in redirector_helper.get_pixel_traffic():
             logger.info("Updating pixel: slug: %s, account: %s", pixel_traffic["slug"], pixel_traffic["accountid"])

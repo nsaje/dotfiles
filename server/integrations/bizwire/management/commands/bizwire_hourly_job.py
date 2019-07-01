@@ -2,12 +2,12 @@ import logging
 
 from integrations.bizwire.internal import actions
 from utils import pagerduty_helper
-from utils.command_helpers import ExceptionCommand
+from utils.command_helpers import Z1Command
 
 logger = logging.getLogger(__name__)
 
 
-class Command(ExceptionCommand):
+class Command(Z1Command):
     def handle(self, *args, **options):
         try:
             # actions.check_pacific_noon_and_stop_ads()

@@ -7,7 +7,7 @@ import utils.slack
 ALERT_MSG = """Spend on {d2} is {change}% lower than on {d1} (below threshold {thr}%). Check <https://one.zemanta.com/all_accounts/accounts?start_date={fd}&end_date={td}&page=1|Zemanta one>."""
 
 
-class Command(utils.command_helpers.ExceptionCommand):
+class Command(utils.command_helpers.Z1Command):
     help = "Audit spend pattern"
 
     def add_arguments(self, parser):

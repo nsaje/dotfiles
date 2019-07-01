@@ -2,10 +2,10 @@ import influx
 
 import core.features.multicurrency
 import dash.constants
-from utils.command_helpers import ExceptionCommand
+from utils.command_helpers import Z1Command
 
 
-class Command(ExceptionCommand):
+class Command(Z1Command):
 
     help = "Updates currency exchange rates"
 

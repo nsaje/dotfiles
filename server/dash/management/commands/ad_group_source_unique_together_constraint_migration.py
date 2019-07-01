@@ -1,13 +1,13 @@
 from django.db import connections
 
-from utils.command_helpers import ExceptionCommand
+from utils.command_helpers import Z1Command
 
 TABLE_NAME = "dash_adgroupsource"
 INDEX_NAME = "dash_adgroupsource_source_id_ad_group_id_0feb89f6_uniq"
 CONSTRAINT_NAME = "dash_adgroupsource_source_id_ad_group_id_0feb89f6_uniq"
 
 
-class Command(ExceptionCommand):
+class Command(Z1Command):
     help = "Performs custom DB migration instead of 0410_ad_group_source_unique_together_constraint that does not lock DB table"
 
     def add_arguments(self, parser):

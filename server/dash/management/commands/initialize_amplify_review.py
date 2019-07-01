@@ -3,12 +3,12 @@ import logging
 from django.db import transaction
 
 from dash import models
-from utils.command_helpers import ExceptionCommand
+from utils.command_helpers import Z1Command
 
 logger = logging.getLogger(__name__)
 
 
-class Command(ExceptionCommand):
+class Command(Z1Command):
     help = "Initialize Amplify review on an ad group"
 
     def add_arguments(self, parser):

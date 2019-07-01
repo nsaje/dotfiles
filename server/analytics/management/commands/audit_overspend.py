@@ -12,7 +12,7 @@ OUTBRAIN_MSN_ACCOUNT = 3277
 SKIP_ACCOUNTS = [OUTBRAIN_MSN_ACCOUNT]
 
 
-class Command(utils.command_helpers.ExceptionCommand):
+class Command(utils.command_helpers.Z1Command):
     help = "Audit autopilot job for today"
 
     def add_arguments(self, parser):

@@ -11,7 +11,7 @@ from dash.models import AdGroupSource
 from dash.models import OutbrainAccount
 from dash.models import Source
 from redshiftapi import db
-from utils.command_helpers import ExceptionCommand
+from utils.command_helpers import Z1Command
 
 logger = logging.getLogger(__name__)
 OB = Source.objects.get(source_type__type=SourceType.OUTBRAIN)
@@ -25,7 +25,7 @@ ARCHIVED_AT_LEAST_DAYS = 30
 MAX_AD_GROUP_COUNT_LIMIT = 50
 
 
-class Command(ExceptionCommand):
+class Command(Z1Command):
     help = """Release OB accounts on account list"""
 
     def add_arguments(self, parser):

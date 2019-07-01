@@ -14,7 +14,7 @@ VALID_PACING_ACCOUNT_TYPES = (
 )
 
 
-class Command(utils.command_helpers.ExceptionCommand):
+class Command(utils.command_helpers.Z1Command):
     help = "Audit pacing"
 
     def add_arguments(self, parser):

@@ -1,10 +1,10 @@
 import influx
 
 from etl import maintenance
-from utils.command_helpers import ExceptionCommand
+from utils.command_helpers import Z1Command
 
 
-class Command(ExceptionCommand):
+class Command(Z1Command):
     def add_arguments(self, parser):
         parser.add_argument("--interactive", help="Output the values to stdout", action="store_true")
 

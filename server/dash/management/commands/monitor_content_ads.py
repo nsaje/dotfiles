@@ -4,12 +4,12 @@ import logging
 
 import dash.constants
 import dash.models
-from utils.command_helpers import ExceptionCommand
+from utils.command_helpers import Z1Command
 
 logger = logging.getLogger(__name__)
 
 
-class Command(ExceptionCommand):
+class Command(Z1Command):
     def handle(self, *args, **options):
         logger.info("Pushing content ad metrics.")
 

@@ -16,7 +16,7 @@ WHERE date >= '{start_date}' AND date <= '{end_date}'
 GROUP BY {entity}_id"""
 
 
-class Command(utils.command_helpers.ExceptionCommand):
+class Command(utils.command_helpers.Z1Command):
     help = "Hack report"
 
     def add_arguments(self, parser):

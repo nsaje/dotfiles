@@ -7,6 +7,7 @@ import influx
 from django.conf import settings
 from django.core import management
 
+import swinfra.metrics
 from dcron import alerts
 from dcron import constants
 from dcron import exceptions
@@ -22,6 +23,18 @@ class DCronCommand(management.base.BaseCommand):
     Base class for management commands scheduled with distributed cron.
     It takes care of advisory locking, updating DCronJob records, sending metrics and logging.
     """
+
+    def execute(self, *args, **kwargs):
+        command_name = self._get_command_name()
+        swinfra.metrics.start_push_mode(
+            gateway_addr=settings.METRICS_PUSH_GATEWAY,
+            push_period_seconds=settings.METRICS_PUSH_PERIOD_SECONDS,
+            job=command_name,
+        )
+        try:
+            super().execute(*args, **kwargs)
+        finally:
+            swinfra.metrics.flush_push_metrics()
 
     def handle(self, *args, **options):
         command_name = self._get_command_name()

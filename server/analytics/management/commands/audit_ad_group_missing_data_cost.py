@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 MESSAGE = "Adgroup #{id} is missing some data cost"
 
 
-class Command(utils.command_helpers.ExceptionCommand):
+class Command(utils.command_helpers.Z1Command):
     help = "Audit credits"
 
     def add_arguments(self, parser):
@@ -39,7 +39,7 @@ class Command(utils.command_helpers.ExceptionCommand):
         if self.slack:
             try:
                 utils.slack.publish(text, username=utils.slack.USER_AD_GROUP, channel=utils.slack.ALERTS_RND_PRODOPS)
-            except Exception as e:
+            except Exception:
                 logger.exception("Connection Error with Slack")
 
         self._print(text)

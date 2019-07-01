@@ -3,13 +3,13 @@ import logging
 from django.conf import settings
 from django.db import connections
 
-from utils.command_helpers import ExceptionCommand
+from utils.command_helpers import Z1Command
 from utils.command_helpers import set_logger_verbosity
 
 logger = logging.getLogger(__name__)
 
 
-class Command(ExceptionCommand):
+class Command(Z1Command):
 
     help = "Copies schema and data of the current database into a new database"
 

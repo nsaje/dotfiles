@@ -7,12 +7,12 @@ from django.core.management import CommandError
 from dash import constants
 from dash import facebook_helper
 from dash import models
-from utils.command_helpers import ExceptionCommand
+from utils.command_helpers import Z1Command
 
 logger = logging.getLogger(__name__)
 
 
-class Command(ExceptionCommand):
+class Command(Z1Command):
     def handle(self, *args, **options):
         # TODO matijav 07.07.2017 facebook disabled
         if settings.DISABLE_FACEBOOK:

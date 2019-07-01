@@ -6,7 +6,7 @@ ALERT_MSG_ENTITY = """{} {} ({}) is spending ({}) with an unconfirmed hack - *{}
 ALERT_MSG_GLOBAL = """Unconfirmed global hack *{}* is spending"""
 
 
-class Command(utils.command_helpers.ExceptionCommand):
+class Command(utils.command_helpers.Z1Command):
     help = "Audit custom hacks"
 
     def add_arguments(self, parser):

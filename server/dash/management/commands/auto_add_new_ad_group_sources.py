@@ -3,12 +3,12 @@ import logging
 import core.models
 import utils.exc
 from core.features.source_adoption import auto_add_new_ad_group_sources
-from utils.command_helpers import ExceptionCommand
+from utils.command_helpers import Z1Command
 
 logger = logging.getLogger(__name__)
 
 
-class Command(ExceptionCommand):
+class Command(Z1Command):
     help = "Add source to ad groups of accounts which have automatic addition of newly released sources turned on."
 
     def add_arguments(self, parser):

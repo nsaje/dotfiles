@@ -11,7 +11,7 @@ OEN = 305
 HEADER = ("Ad ID", "Brand / Agency", "Image URL", "Landing page", "Title", "Display URL", "Brand name", "Description")
 
 
-class Command(utils.command_helpers.ExceptionCommand):
+class Command(utils.command_helpers.Z1Command):
     help = "Create ad submission report"
 
     def add_arguments(self, parser):

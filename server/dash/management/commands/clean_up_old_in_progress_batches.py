@@ -3,14 +3,14 @@ import logging
 
 from dash.features.contentupload.upload import clean_up_old_in_progress_batches
 from utils import dates_helper
-from utils.command_helpers import ExceptionCommand
+from utils.command_helpers import Z1Command
 
 logger = logging.getLogger(__name__)
 
 IN_PROGRESS_MINUTES = 15
 
 
-class Command(ExceptionCommand):
+class Command(Z1Command):
     help = "Set old unprocessed batches to FAILED."
 
     def handle(self, *args, **options):

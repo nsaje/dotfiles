@@ -10,7 +10,7 @@ ALERT_MSG_BUDGET_CHANGES = """Autopilot made irregular budget adjustments on the
 {}"""
 
 
-class Command(utils.command_helpers.ExceptionCommand):
+class Command(utils.command_helpers.Z1Command):
     help = "Audit autopilot job for today"
 
     def add_arguments(self, parser):

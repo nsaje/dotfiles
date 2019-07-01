@@ -6,10 +6,10 @@ from django.db.models import Q
 
 from automation import models as automation_models
 from dash import models
-from utils.command_helpers import ExceptionCommand
+from utils.command_helpers import Z1Command
 
 
-class Command(ExceptionCommand):
+class Command(Z1Command):
     help = "Find and delete AdGroupSource duplicates (before introducing DB constraints)"
 
     def add_arguments(self, parser):

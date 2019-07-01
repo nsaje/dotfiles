@@ -2,12 +2,12 @@ import datetime
 import logging
 
 from etl import consistency_check
-from utils.command_helpers import ExceptionCommand
+from utils.command_helpers import Z1Command
 
 logger = logging.getLogger(__name__)
 
 
-class Command(ExceptionCommand):
+class Command(Z1Command):
 
     help = "Refreshes daily statements and materialized views"
 

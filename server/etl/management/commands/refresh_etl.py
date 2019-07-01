@@ -5,12 +5,12 @@ from analytics import monitor
 from etl import materialize
 from etl import refresh
 from utils import dates_helper
-from utils.command_helpers import ExceptionCommand
+from utils.command_helpers import Z1Command
 
 logger = logging.getLogger(__name__)
 
 
-class Command(ExceptionCommand):
+class Command(Z1Command):
 
     help = "Refreshes daily statements and materialized views"
 

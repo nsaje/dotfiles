@@ -5,12 +5,12 @@ import unicodecsv
 from django.core.management.base import CommandError
 
 from dash.models import ContentAd
-from utils.command_helpers import ExceptionCommand
+from utils.command_helpers import Z1Command
 
 logger = logging.getLogger(__name__)
 
 
-class Command(ExceptionCommand):
+class Command(Z1Command):
     help = """Replaces Labels for a given account.
 
     Takes an id of the account and a .csv file of the following format:

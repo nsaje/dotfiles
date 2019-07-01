@@ -6,7 +6,7 @@ import boto3
 
 import botocore.exceptions
 import core.models
-from utils.command_helpers import ExceptionCommand
+from utils.command_helpers import Z1Command
 
 logger = logging.getLogger(__name__)
 
@@ -16,7 +16,7 @@ config = botocore.config.Config(max_pool_connections=NUM_WORKERS)
 s3 = boto3.resource("s3", config=config)
 
 
-class Command(ExceptionCommand):
+class Command(Z1Command):
     help = "Re-check that ads have images present"
 
     def add_arguments(self, parser):

@@ -3,15 +3,14 @@ import logging
 
 import influx
 
-from dash import models
 from dash import constants
-from utils.command_helpers import ExceptionCommand
-
+from dash import models
+from utils.command_helpers import Z1Command
 
 logger = logging.getLogger(__name__)
 
 
-class Command(ExceptionCommand):
+class Command(Z1Command):
     def add_arguments(self, parser):
         parser.add_argument("--emit-metrics", action="store_true", default=False, help="Emit metrics")
 

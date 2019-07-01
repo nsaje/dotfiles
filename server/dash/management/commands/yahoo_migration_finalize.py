@@ -1,12 +1,12 @@
 import logging
 
 import core.features.yahoo_accounts
-from utils.command_helpers import ExceptionCommand
+from utils.command_helpers import Z1Command
 
 logger = logging.getLogger(__name__)
 
 
-class Command(ExceptionCommand):
+class Command(Z1Command):
     help = "Finalize yahoo account migration by changing all external source ids"
 
     def add_arguments(self, parser):

@@ -6,7 +6,7 @@ import utils.command_helpers
 LOOKUP_KEYS = ("service", "summary", "source", "source_id", "rtb_only")
 
 
-class Command(utils.command_helpers.ExceptionCommand):
+class Command(utils.command_helpers.Z1Command):
     help = "Store hack"
 
     def add_arguments(self, parser):

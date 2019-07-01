@@ -29,7 +29,7 @@ from utils import grouper
 from utils import json_helper
 from utils import s3helpers
 from utils import unique_ordered_list
-from utils.command_helpers import ExceptionCommand
+from utils.command_helpers import Z1Command
 
 logger = logging.getLogger(__name__)
 
@@ -106,7 +106,7 @@ def _postgres_read_only(using="default"):
     return decorator
 
 
-class Command(ExceptionCommand):
+class Command(Z1Command):
     help = """ Create a DB snapshot for demo deploys. """
 
     # put connection in read-only mode

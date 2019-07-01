@@ -4,7 +4,7 @@ import influx
 
 from dash import models
 from utils import redirector_helper
-from utils.command_helpers import ExceptionCommand
+from utils.command_helpers import Z1Command
 from utils.command_helpers import set_logger_verbosity
 
 logger = logging.getLogger(__name__)
@@ -14,7 +14,7 @@ KEYS_TO_CHECK_ADGROUP = "tracking_code"
 KEYS_TO_CHECK_CAMPAIGN = ("enable_ga_tracking", "enable_adobe_tracking", "adobe_tracking_param")
 
 
-class Command(ExceptionCommand):
+class Command(Z1Command):
 
     help = "Checks and posts ad group propagation consistency between R1 and Z1."
 

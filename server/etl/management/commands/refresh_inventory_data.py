@@ -3,10 +3,10 @@ import datetime
 import dateutil.parser
 
 from etl.inventory.service import refresh_inventory_data
-from utils.command_helpers import ExceptionCommand
+from utils.command_helpers import Z1Command
 
 
-class Command(ExceptionCommand):
+class Command(Z1Command):
     help = (
         "Aggregate inventory data for last 30 days from supply_stats table and save processed data to inventory table"
     )

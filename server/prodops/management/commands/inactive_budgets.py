@@ -9,7 +9,7 @@ import utils.command_helpers
 QUERY = "SELECT campaign_id, SUM(impressions) FROM mv_campaign WHERE date >= '{}' AND campaign_id IN ({}) GROUP BY campaign_id"
 
 
-class Command(utils.command_helpers.ExceptionCommand):
+class Command(utils.command_helpers.Z1Command):
     help = "Generate report of depleted budgets"
 
     def add_arguments(self, parser):

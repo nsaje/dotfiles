@@ -1,16 +1,17 @@
-import influx
 import logging
+
+import influx
 from django.db.models import Q
 
 import automation.campaignstop
 import core.models
 from utils import dates_helper
-from utils.command_helpers import ExceptionCommand
+from utils.command_helpers import Z1Command
 
 logger = logging.getLogger(__name__)
 
 
-class Command(ExceptionCommand):
+class Command(Z1Command):
     def add_arguments(self, parser):
         parser.add_argument(
             "--check-time", dest="check_time", action="store_true", help="Check if it's local midnight."

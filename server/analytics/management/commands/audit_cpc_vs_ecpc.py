@@ -7,7 +7,7 @@ spent ${total_spend} with too high eCPC (${ecpc}) compared to its bid CPC (${cpc
 """
 
 
-class Command(utils.command_helpers.ExceptionCommand):
+class Command(utils.command_helpers.Z1Command):
     help = "Alert about the differences between CPC and ECPC an all ad group sources" "of all active ad groups"
 
     def add_arguments(self, parser):

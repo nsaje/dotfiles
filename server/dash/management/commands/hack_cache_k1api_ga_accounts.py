@@ -2,7 +2,7 @@ import datetime
 import logging
 
 from k1api.views import ga_accounts
-from utils.command_helpers import ExceptionCommand
+from utils.command_helpers import Z1Command
 
 logger = logging.getLogger(__name__)
 
@@ -11,7 +11,7 @@ class Request:
     GET = {}
 
 
-class Command(ExceptionCommand):
+class Command(Z1Command):
     help = "Load k1api ga accounts into cache"
 
     def handle(self, *args, **options):

@@ -4,10 +4,10 @@ import sys
 import automation.campaignstop
 from utils import dates_helper
 from utils import slack
-from utils.command_helpers import ExceptionCommand
+from utils.command_helpers import Z1Command
 
 
-class Command(ExceptionCommand):
+class Command(Z1Command):
     def add_arguments(self, parser):
         parser.add_argument("--date", "-d", dest="date", default=None, help="Date checked (default yesterday)")
         parser.add_argument("--slack", dest="slack", action="store_true", help="Notify via slack")
