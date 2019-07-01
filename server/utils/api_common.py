@@ -2,7 +2,6 @@ import json
 import logging
 import time
 
-import influx
 from django.conf import settings
 from django.http import Http404
 from django.http import HttpResponse
@@ -10,6 +9,7 @@ from django.views.generic import View
 
 from utils import influx_helper
 from utils import json_helper
+from utils import metrics_compat
 
 from . import exc
 
@@ -98,7 +98,7 @@ class BaseApiView(View):
         start_time = time.time()
         try:
             response = super(BaseApiView, self).dispatch(request, *args, **kwargs)
-            influx.timing(
+            metrics_compat.timing(
                 "dash.request",
                 (time.time() - start_time),
                 endpoint=self.__class__.__name__,

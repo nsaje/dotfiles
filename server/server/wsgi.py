@@ -13,6 +13,7 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "server.settings")
 
 import gevent.socket
 import socket
+import swinfra.wsgi
 
 if socket.socket is gevent.socket.socket:  # if running in gevent
     import psycogreen.gevent
@@ -21,4 +22,5 @@ if socket.socket is gevent.socket.socket:  # if running in gevent
 
 from django.core.wsgi import get_wsgi_application
 
-application = get_wsgi_application()
+
+application = swinfra.wsgi.OutbrainWSGI(get_wsgi_application())
