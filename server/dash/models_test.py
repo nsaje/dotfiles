@@ -469,10 +469,10 @@ class ContentAdTest(TestCase):
     def test_get_image_url(self):
         content_ad = models.ContentAd(image_id="foo", image_width=100, image_height=200)
         image_url = content_ad.get_image_url(500, 600)
-        self.assertEqual(image_url, "http://test.com/foo.jpg?w=500&h=600&fit=crop&crop=center&fm=jpg")
+        self.assertEqual(image_url, "http://test.com/foo.jpg?w=500&h=600&fit=crop&crop=center")
 
         image_url = content_ad.get_image_url()
-        self.assertEqual(image_url, "http://test.com/foo.jpg?w=100&h=200&fit=crop&crop=center&fm=jpg")
+        self.assertEqual(image_url, "http://test.com/foo.jpg?w=100&h=200&fit=crop&crop=center")
 
         content_ad = models.ContentAd(image_id=None, image_width=100, image_height=200)
         image_url = content_ad.get_image_url()

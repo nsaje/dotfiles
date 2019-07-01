@@ -12,7 +12,7 @@ from dash import image_helper
 class GetImageUrlTest(TestCase):
     def test_get_image_url(self):
         image_url = image_helper.get_image_url("foo", 500, 600, "center")
-        self.assertEqual(image_url, "http://test.com/foo.jpg?w=500&h=600&fit=crop&crop=center&fm=jpg")
+        self.assertEqual(image_url, "http://test.com/foo.jpg?w=500&h=600&fit=crop&crop=center")
 
         image_url = image_helper.get_image_url(None, 500, 600, "center")
         self.assertEqual(image_url, None)
