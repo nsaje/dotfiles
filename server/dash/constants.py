@@ -1708,6 +1708,12 @@ class ConversionWindowsLegacy(ConversionWindows):
     _VALUES.update({LEQ_90_DAYS: "90 days"})
 
 
+class ConversionWindowsViewthrough(ConstantBase):
+    LEQ_1_DAY = 24
+
+    _VALUES = {LEQ_1_DAY: "1 day"}
+
+
 class EmailTemplateType(ConstantBase):
 
     ADGROUP_CHANGE = 1

@@ -416,18 +416,9 @@ class FilterTestCase(TestCase):
                 "pacing",
                 "spend_projection",
                 "pixel_1_24_view",
-                # TODO: VIEWTHROUGH: solve the issue of surpassing 1664 entries
-                # "pixel_1_168_view",
-                # "pixel_1_720_view",
-                # "avg_et_cost_per_pixel_1_168_view",
-                # "local_avg_et_cost_per_pixel_1_168_view",
                 "avg_et_cost_per_pixel_1_24_view",
                 "local_avg_et_cost_per_pixel_1_24_view",
-                # "avg_et_cost_per_pixel_1_720_view",
-                # "local_avg_et_cost_per_pixel_1_720_view",
-                # "et_roas_pixel_1_168_view",
                 "et_roas_pixel_1_24_view",
-                # "et_roas_pixel_1_720_view",
             ],
         )
 
@@ -608,27 +599,12 @@ class FilterTestCase(TestCase):
             set(rows[0].keys()) - self.public_fields,
             [
                 "pixel_1_24_view",
-                # TODO: VIEWTHROUGH: solve the issue of surpassing 1664 entries
-                # "pixel_1_168_view",
-                # "pixel_1_720_view",
-                # "avg_cost_per_pixel_1_168_view",
-                # "local_avg_cost_per_pixel_1_168_view",
                 "avg_cost_per_pixel_1_24_view",
                 "local_avg_cost_per_pixel_1_24_view",
-                # "avg_cost_per_pixel_1_720_view",
-                # "local_avg_cost_per_pixel_1_720_view",
-                # "roas_pixel_1_168_view",
                 "roas_pixel_1_24_view",
-                # "roas_pixel_1_720_view",
-                # "avg_et_cost_per_pixel_1_168_view",
-                # "local_avg_et_cost_per_pixel_1_168_view",
                 "avg_et_cost_per_pixel_1_24_view",
                 "local_avg_et_cost_per_pixel_1_24_view",
-                # "avg_et_cost_per_pixel_1_720_view",
-                # "local_avg_et_cost_per_pixel_1_720_view",
-                # "et_roas_pixel_1_168_view",
                 "et_roas_pixel_1_24_view",
-                # "et_roas_pixel_1_720_view",
             ],
         )
 
@@ -640,15 +616,7 @@ class FilterTestCase(TestCase):
         permission_filter.filter_columns_by_permission(
             user, rows, self.goals, self._mock_constraints(uses_bcm_v2), Level.ACCOUNTS
         )
-        self.assertCountEqual(
-            set(rows[0].keys()) - self.public_fields_uses_bcm_v2,
-            [
-                "pixel_1_24_view",
-                # TODO: VIEWTHROUGH: solve the issue of surpassing 1664 entries
-                # "pixel_1_168_view",
-                # "pixel_1_720_view",
-            ],
-        )
+        self.assertCountEqual(set(rows[0].keys()) - self.public_fields_uses_bcm_v2, ["pixel_1_24_view"])
 
 
 class BreakdownAllowedTest(TestCase):

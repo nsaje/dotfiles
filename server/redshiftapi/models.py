@@ -621,10 +621,9 @@ class MVJointMaster(MVMaster):
             return
 
         click_conversion_windows = sorted(dash.constants.ConversionWindowsLegacy.get_all())
-        view_conversion_windows = [dash.constants.ConversionWindows.LEQ_1_DAY]
+        view_conversion_windows = sorted(dash.constants.ConversionWindowsViewthrough.get_all())
 
         self._generate_pixel_columns(pixels, click_conversion_windows, dash.constants.ConversionType.CLICK)
-        # TODO: VIEWTHROUGH: solve the issue of surpassing 1664 entries
         self._generate_pixel_columns(
             pixels, view_conversion_windows, dash.constants.ConversionType.VIEW, suffix="_view"
         )

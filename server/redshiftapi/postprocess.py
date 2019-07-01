@@ -252,8 +252,7 @@ def apply_pixel_columns(breakdown, rows, pixels, touchpoint_rows):
     pixel_rows_map = sort_helper.group_rows_by_breakdown_key(pixel_breakdown, touchpoint_rows, max_1=False)
 
     conversion_windows_click = sorted(dash.constants.ConversionWindowsLegacy.get_all())
-    # TODO: VIEWTHROUGH: solve the issue of surpassing 1664 entries
-    conversion_windows_view = [dash.constants.ConversionWindows.LEQ_1_DAY]
+    conversion_windows_view = sorted(dash.constants.ConversionWindowsViewthrough.get_all())
 
     _generate_pixel_columns(breakdown, rows, pixels, pixel_rows_map, conversion_windows_click)
     _generate_pixel_columns(breakdown, rows, pixels, pixel_rows_map, conversion_windows_view, suffix="_view")

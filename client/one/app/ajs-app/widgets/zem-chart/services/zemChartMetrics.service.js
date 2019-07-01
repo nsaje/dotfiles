@@ -681,6 +681,7 @@ angular
                     pixelSubCategory,
                     pixelGoalSubCategory,
                     pixel,
+                    options.conversionWindows,
                     '',
                     zemPermissions.hasPermission(
                         'zemauth.can_see_viewthrough_conversions'
@@ -698,6 +699,7 @@ angular
                         pixelSubCategory,
                         pixelGoalSubCategory,
                         pixel,
+                        options.conversionWindowsViewthrough,
                         '_view',
                         ' - View attr.',
                         'View attr.:'
@@ -718,6 +720,7 @@ angular
             pixelSubCategory,
             pixelGoalSubCategory,
             pixel,
+            conversionWindows,
             fieldSuffix,
             columnSuffix,
             subRowName
@@ -725,9 +728,7 @@ angular
             var pixelMetrics = [];
             var pixelGoalMetrics = [];
 
-            angular.forEach(options.conversionWindows, function(
-                conversionWindow
-            ) {
+            angular.forEach(conversionWindows, function(conversionWindow) {
                 var metricValue =
                     pixel.prefix + '_' + conversionWindow.value + fieldSuffix;
 

@@ -2924,6 +2924,9 @@ export const APP_OPTIONS = {
         {name: '30 days', value: APP_CONSTANTS.conversionWindow.LEQ_30_DAYS},
         {name: '90 days', value: APP_CONSTANTS.conversionWindow.LEQ_90_DAYS},
     ],
+    conversionWindowsViewthrough: [
+        {name: '1 day', value: APP_CONSTANTS.conversionWindow.LEQ_1_DAY},
+    ],
     exportFrequency: [
         {name: 'Daily', value: APP_CONSTANTS.exportFrequency.DAILY},
         {name: 'Weekly', value: APP_CONSTANTS.exportFrequency.WEEKLY},

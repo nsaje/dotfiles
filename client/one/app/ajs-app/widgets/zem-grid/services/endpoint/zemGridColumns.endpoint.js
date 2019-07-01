@@ -2597,7 +2597,7 @@ angular
                         orderedColumns,
                         subcategory,
                         pixel,
-                        options.conversionWindows,
+                        options.conversionWindowsViewthrough,
                         '_view',
                         ' - View attr.',
                         'View attr.:'

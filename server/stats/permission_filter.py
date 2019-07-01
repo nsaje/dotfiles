@@ -302,7 +302,7 @@ def _get_allowed_pixels_fields(user, pixels, uses_bcm_v2):
     """
 
     click_conversion_windows = dash.constants.ConversionWindowsLegacy.get_all()
-    view_conversion_windows = [dash.constants.ConversionWindows.LEQ_1_DAY]
+    view_conversion_windows = dash.constants.ConversionWindowsViewthrough.get_all()
 
     allowed_pixel_fields = _generate_allowed_pixel_fields(user, pixels, click_conversion_windows, uses_bcm_v2)
     if user.has_perm("zemauth.can_see_viewthrough_conversions"):
