@@ -1,0 +1,18 @@
+version: '2'
+
+services:
+    postgres:
+        volumes:
+          - "./fixtures/:/docker-entrypoint-initdb.d/"
+
+    server:
+        image: $Z1_SERVER_IMAGE
+        volumes:
+          - "./server/:/app/z1/"
+          - "./server/.junit_xml/:/app/z1/.junit_xml/"
+          - "./server/static/:/app/z1/static/"
+        links:
+          - "postgres:db"
+          - "statspostgres:statsdb"
+          - "memcached:memcached"
+          - "telegraf"

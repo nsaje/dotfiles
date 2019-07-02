@@ -5,7 +5,6 @@ services:
         ports:
           - "5432:5432"
 
-    # this is fake telegraf that only prints stats on stdout
     telegraf:
         ports:
           - "8135:8135/udp"
@@ -13,6 +12,7 @@ services:
     memcached:
         ports:
           - "11211:11211"
+
     client:
         image: $Z1_CLIENT_IMAGE
         ports:
@@ -27,6 +27,5 @@ services:
         tty: true
 
     statspostgres:
-        extends: postgres
         ports:
         - "3254:5432"

@@ -83,7 +83,7 @@ if os.environ.get("DB") == "pg01":
 
 DATABASE_READ_REPLICAS = []
 
-ALLOWED_HOSTS = ["eins", "einsacceptance", "localhost"]
+ALLOWED_HOSTS = ["eins", "server", "localhost"]
 
 BASE_URL = "https://one.zemanta.com"
 
@@ -135,21 +135,19 @@ GOOGLE_OAUTH_CLIENT_ID = ""
 GOOGLE_OAUTH_CLIENT_SECRET = Secret("").get().decode("utf-8")
 
 # Static files
-BUILD_NUMBER = None
-
-if BUILD_NUMBER:
-    ROOT_STATIC_URL = "https://s3.amazonaws.com/z1-static/build-{}".format(BUILD_NUMBER)
-    _SERVER_STATIC_URL = ROOT_STATIC_URL + "/server"
-    _CLIENT_STATIC_URL = ROOT_STATIC_URL + "/client"
-else:
-    _SERVER_STATIC_URL = "/static"
-    _CLIENT_STATIC_URL = "http://localhost:9999"
-SERVER_STATIC_URL = _SERVER_STATIC_URL
-CLIENT_STATIC_URL = _CLIENT_STATIC_URL
-
 BRANCH = None
 if os.environ.get("BRANCH"):
     BRANCH = os.environ.get("BRANCH")
+
+BUILD_NUMBER = None
+if os.environ.get("BUILD"):
+    BUILD_NUMBER = os.environ.get("BUILD")
+elif os.path.isfile("build_number.txt"):
+    with open("build_number.txt", "r") as build_number:
+        BUILD_NUMBER = build_number.read().strip()
+
+SERVER_STATIC_URL = "/static"
+CLIENT_STATIC_URL = "http://localhost:9999"
 
 # K1 API
 K1_API_SIGN_KEY = [Secret("plain::aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa").get()]

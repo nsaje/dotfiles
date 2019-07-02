@@ -4,7 +4,7 @@
 
 DIR="$(dirname $(readlink -f $0))"
 
-SERVER_ENDPOINT=${1:-"einsacceptance:8123"}
+SERVER_ENDPOINT=${1:-"server:8123"}
 BLUEPRINT="$DIR/restapi/docs/api_blueprint.md"
 HOOKFILES="$DIR/restapi/acceptance_tests/hooks.py"
 

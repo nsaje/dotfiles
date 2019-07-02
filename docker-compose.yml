@@ -7,11 +7,11 @@ services:
           - POSTGRES_PASSWORD=devpwd
           - POSTGRES_DB=one-dev
           - POSTGRES_USER=eins
-        command: "-c fsync=off -c full_page_writes=off -c synchronous_commit=off"    
+        command: "-c fsync=off -c full_page_writes=off -c synchronous_commit=off"
 
     statspostgres:
-        extends: postgres
         image: postgres:10.0
+        extends: postgres
 
     # this is fake telegraf that only prints stats on stdout
     telegraf:

@@ -59,7 +59,6 @@ services:
         depends_on:
           - eins
 
-
     # for local callback from K1 and BusinessWire integration
     eins-api-callback:
         extends: eins
@@ -191,7 +190,6 @@ services:
     #       traefik.enable: "false"
     #     entrypoint: ""
     #     command: "celery worker -A server -c 3 -Q prod-convapi_v2 -l INFO -f /app/logs/eins_celery_convapi_v2.log"
-
 
     # ONE Whitelabel
     eins-newscorp:

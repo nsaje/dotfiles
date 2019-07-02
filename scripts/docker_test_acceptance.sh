@@ -8,6 +8,7 @@ clean_up () {
 	exit $ARG
 }
 trap clean_up EXIT
+
 if [ -z "${ACCEPTANCE_IMAGE}" ]; then
 	export ACCEPTANCE_IMAGE="569683728510.dkr.ecr.us-east-1.amazonaws.com/zemanta/z1:current"
 fi

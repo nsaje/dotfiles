@@ -24,10 +24,11 @@ endif
 export Z1_CLIENT_IMAGE
 export Z1_SERVER_IMAGE
 export ACCEPTANCE_IMAGE
+export TESTIM_TOKEN
 
 run:	## runs whole stack with docker-compose
 	docker-compose up --force-recreate -d
-
+	
 run_devenv:	## runs only development environment (i.e. services that are needed by z1)
 	docker-compose -f docker-compose.yml -f docker-compose.devenv.yml up --force-recreate -d
 
@@ -40,6 +41,18 @@ kill:	## kills the whole stack
 remove:	## removes all containers belonging to the stack
 	docker-compose rm
 
+run_e2e_creator:	## runs whole e2e stack with docker-compose
+	docker-compose -p e2e-creator-zemanta-eins -f docker-compose.yml -f docker-compose.e2e-creator.yml up --force-recreate -d
+
+stop_e2e_creator:	## stops the whole e2e stack
+	docker-compose -p e2e-creator-zemanta-eins -f docker-compose.yml -f docker-compose.e2e-creator.yml stop
+
+kill_e2e_creator:	## kills the whole e2e stack
+	docker-compose -p e2e-creator-zemanta-eins -f docker-compose.yml -f docker-compose.e2e-creator.yml kill
+
+remove_e2e_creator:	## removes all containers belonging to the e2e stack
+	docker-compose -p e2e-creator-zemanta-eins -f docker-compose.yml -f docker-compose.e2e-creator.yml rm
+
 reset_local_database:	## loads latest demo dump to local postgres
 	./scripts/reset_local_database.sh
 
@@ -51,7 +64,7 @@ test_server:	## runs server tests
 	[ -n "$(SKIP_TESTS)" ] && echo "Skipping tests due to skiptest in branch name, PASSED" || \
 	docker-compose \
 			-f docker-compose.yml \
-			-f docker-compose.jenkins.yml \
+			-f docker-compose.server-test.yml \
 			run \
 			--rm \
 			-e CI_TEST=true --entrypoint=/entrypoint_dev.sh \
@@ -99,13 +112,13 @@ build_client:	## builds client app for production
 
 collect_server_static:	## collects static files for production build
 	rm -rf server/static && mkdir server/static && chmod 777 server/static
-	docker-compose \
-                -f docker-compose.yml \
-                -f docker-compose.jenkins.yml \
-                run \
-                --rm \
-                --entrypoint=/entrypoint_dev.sh \
-                server python manage.py collectstatic --noinput
+	docker run \
+		--rm \
+		-v $(PWD)/server/:/app/z1/ \
+		-v $(PWD)/server/.junit_xml/:/app/z1/.junit_xml/ \
+		-v $(PWD)/server/static/:/app/z1/static/ \
+		$(Z1_SERVER_IMAGE) \
+		bash -c "python manage.py collectstatic --noinput"
 
 ####################
 # image management #

@@ -3,7 +3,7 @@
 """
 Run a test server used for REST API acceptance testing or E2E testing.
 
-Creates a separate test database and loads tests fixtures. Then it runs a server
+Creates a separate test database and loads acceptance or E2E tests fixtures. Then it runs a server
 against that database.
 """
 # isort:skip_file
@@ -30,6 +30,8 @@ parser.add_argument("addrport", nargs="?", default="0.0.0.0:8123")
 parser.add_argument("--keepdb", dest="keepdb", action="store_true")
 parser.add_argument("--autoreload", dest="autoreload", action="store_true")
 parser.add_argument("--fixtures", dest="fixtures", default=FixturesSource.ACCEPTANCE)
+parser.add_argument("--threading", dest="threading", default=False)
+parser.add_argument("--use-local-static", dest="use_local_static", default=False)
 args = parser.parse_args()
 
 # OVERRIDE SETTINGS
@@ -42,19 +44,28 @@ settings.R1_DEMO_MODE = True
 settings.LAMBDA_CONTENT_UPLOAD_FUNCTION_NAME = "mock"
 settings.DISABLE_SIGNALS = True
 
+BRANCH = None
+if os.environ.get("BRANCH"):
+    BRANCH = os.environ.get("BRANCH")
+
 BUILD_NUMBER = None
 if os.environ.get("BUILD"):
     BUILD_NUMBER = os.environ.get("BUILD")
-    branch = os.environ.get("BRANCH")
-    if branch and branch != "master":
-        BUILD_NUMBER = branch[:20] + BUILD_NUMBER
 elif os.path.isfile("build_number.txt"):
     with open("build_number.txt", "r") as build_number:
         BUILD_NUMBER = build_number.read().strip()
 
-_ROOT_STATIC_URL = "https://one-static.zemanta.com/build-{}".format(BUILD_NUMBER)
-settings.SERVER_STATIC_URL = _ROOT_STATIC_URL + "/server"
-settings.CLIENT_STATIC_URL = _ROOT_STATIC_URL + "/client"
+if args.use_local_static:
+    settings.SERVER_STATIC_URL = "/static"
+    settings.CLIENT_STATIC_URL = "http://localhost:9898"
+    print("Using local static...")
+else:
+    _ROOT_STATIC_URL = "https://one-static.zemanta.com/build-{}".format(
+        (BRANCH if BRANCH != "master" else "") + BUILD_NUMBER
+    )
+    settings.SERVER_STATIC_URL = _ROOT_STATIC_URL + "/server"
+    settings.CLIENT_STATIC_URL = _ROOT_STATIC_URL + "/client"
+    print("Using S3 static...")
 
 print("Setting up django")
 django.setup()
@@ -80,8 +91,7 @@ signal.signal(signal.SIGINT, sigterm_handler)
 
 print("Loading fixtures")
 if args.fixtures == FixturesSource.E2E:
-    # TODO (e2e-tests): Create fixtures for e2e tests
-    # call_command("loaddata", *["test_e2e"])
+    call_command("loaddata", *["test_e2e", "test_geolocations"])
     pass
 elif args.fixtures == FixturesSource.ACCEPTANCE:
     call_command("loaddata", *["test_acceptance", "test_geolocations"])
@@ -90,4 +100,4 @@ print("Applying migrations to stats database")
 call_command("apply_postgres_stats_migrations")
 
 print("Running the server on %s" % args.addrport)
-call_command("runserver", addrport=args.addrport, use_reloader=args.autoreload, use_threading=False)
+call_command("runserver", addrport=args.addrport, use_reloader=args.autoreload, use_threading=args.threading)

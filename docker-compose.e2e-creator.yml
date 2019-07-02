@@ -10,18 +10,13 @@ services:
           - "8135/udp"
 
     memcached:
-        command: memcached -I 5m
         expose:
           - "11211"
 
     server:
         image: $Z1_SERVER_IMAGE
-        networks:
-          default:
-            aliases:
-              - eins
         ports:
-          - "8000:8000"
+          - "8123:8123"
         links:
           - "postgres:db"
           - "statspostgres:statsdb"
@@ -31,20 +26,16 @@ services:
         volumes:
           - "./server/:/app/z1/"
           - ".:/src:ro"
-          - "${HOME}/.aws:/home/ubuntu/.aws:ro"
-        environment:
-          - AWS_PROFILE
-          - DB
         working_dir: /app/z1/
         entrypoint: /src/docker/entrypoint_dev.sh
-        command: python manage.py runserver 0.0.0.0:8000
+        command: python test-server.py --fixtures e2e --threading True --use-local-static True
         tty: true
         stdin_open: true
 
     client:
         image: $Z1_CLIENT_IMAGE
         ports:
-          - "9999:9999"
+          - "9898:9999"
         environment:
           - CLIENT_SKIP_RUN
         volumes:
@@ -53,8 +44,3 @@ services:
         entrypoint: /bin/bash
         command: -c "npm prune && npm install && bower install --dev; [[ -z \"$$CLIENT_SKIP_RUN\" ]] && npm run dev || bash"
         tty: true
-
-networks:
-    default:
-        external:
-            name: zemanta

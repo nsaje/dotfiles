@@ -5,7 +5,6 @@ services:
         expose:
           - "5432"
 
-    # this is fake telegraf that only prints stats on stdout
     telegraf:
         expose:
           - "8135/udp"
@@ -14,9 +13,7 @@ services:
         expose:
           - "11211"
 
-    einsacceptance:
-        restart: always
-        hostname: einsacceptance
+    server:
         image: $ACCEPTANCE_IMAGE
         expose:
           - "8123"
@@ -38,7 +35,7 @@ services:
     dredd:
         image: nsaje/dredd-python:2.2.5
         links:
-          - "einsacceptance"
+          - "server"
         entrypoint: bash
         volumes:
           - "./server/:/app/z1/"

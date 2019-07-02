@@ -1,0 +1,61 @@
+version: '2'
+
+services:
+    postgres:
+        expose:
+          - "5432"
+
+    telegraf:
+        expose:
+          - "8135/udp"
+
+    memcached:
+        expose:
+          - "11211"
+
+    server:
+        image: $Z1_SERVER_IMAGE
+        ports:
+          - "8123:8123"
+        links:
+          - "postgres:db"
+          - "statspostgres:statsdb"
+          - "memcached:memcached"
+          - "telegraf"
+        volumes:
+          - "./server/:/app/z1/"
+          - ".:/src:ro"
+        working_dir: /app/z1/
+        entrypoint: /src/docker/entrypoint_dev.sh
+        command: python test-server.py --fixtures e2e --threading True
+        tty: true
+        stdin_open: true
+
+    testim-runner:
+        image: "testim/docker-cli"
+        hostname: testim-runner
+        links:
+          - "server"
+          - "zalenium"
+        entrypoint: bash
+        volumes:
+          - "./scripts/run_e2e_tests.sh:/app/z1/run_e2e_tests.sh"
+        working_dir: /app/z1/
+        environment:
+          - TESTIM_TOKEN=${TESTIM_TOKEN}
+
+    zalenium:
+        image: "dosel/zalenium"
+        hostname: zalenium
+        volumes:
+          - /tmp/videos:/home/seluser/videos
+          - /var/run/docker.sock:/var/run/docker.sock
+        ports:
+          - "4444:4444"
+        command: >
+          start --desiredContainers 1
+                --maxDockerSeleniumContainers 1
+                --videoRecordingEnabled false
+        environment:
+          - PULL_SELENIUM_IMAGE=true
+        tty: true

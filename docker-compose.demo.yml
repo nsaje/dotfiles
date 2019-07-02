@@ -1,27 +1,27 @@
 server:
-  image: z1-bundle:current
-  entrypoint: /bin/bash
-  command: /start-server.sh
-  links:
-    - postgres:db
-  expose:
-    - 8000
-  extra_hosts:
-    - "gemini.yahoo.com:0.0.0.0"
-    - "my.outbrain.com:0.0.0.0"
-    - "api.outbrain.com:0.0.0.0"
-    - "p1.zemanta.com:0.0.0.0"
-  mem_limit: 256m
-  labels:
-    traefik.backend: ${INSTANCE_NAME}
-    traefik.frontend.rule: "Host:${INSTANCE_NAME}.demo.zemanta.com"
-  environment:
-    - "INSTANCE_NAME=${INSTANCE_NAME}"
-    - "CONF_ENV=demo"
-    - "GUNICORN_WORKERS=1"
-    - "TELEGRAF_PORT_8135_UDP_ADDR=localhost"
+    image: z1-bundle:current
+    entrypoint: /bin/bash
+    command: /start-server.sh
+    links:
+      - postgres:db
+    expose:
+      - 8000
+    extra_hosts:
+      - "gemini.yahoo.com:0.0.0.0"
+      - "my.outbrain.com:0.0.0.0"
+      - "api.outbrain.com:0.0.0.0"
+      - "p1.zemanta.com:0.0.0.0"
+    mem_limit: 256m
+    labels:
+      traefik.backend: ${INSTANCE_NAME}
+      traefik.frontend.rule: "Host:${INSTANCE_NAME}.demo.zemanta.com"
+    environment:
+      - "INSTANCE_NAME=${INSTANCE_NAME}"
+      - "CONF_ENV=demo"
+      - "GUNICORN_WORKERS=1"
+      - "TELEGRAF_PORT_8135_UDP_ADDR=localhost"
 
 postgres:
-  image: demopostgres:current
-  labels:
+    image: demopostgres:current
+    labels:
       traefik.enable: "false"
