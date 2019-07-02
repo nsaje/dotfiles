@@ -1344,6 +1344,28 @@ class AccountTestCase(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data["data"]["custom_attributes"], {"country": "SI"})
 
+    def test_put_marketer_ids(self, mock_modified_dt):
+        # Set custom attributes
+        magic_mixer.blend(
+            core.models.Account,
+            agency=self.agency,
+            id=1,
+            name="Account 1",
+            salesforce_url="http://salesforce.com",
+            is_disabled=True,
+            salesforce_id=123,
+            outbrain_mareketer_id="1234",
+            outbrain_external_marketer_id="0987",
+        )
+        url = reverse("service.salesforce.account", kwargs={"account_id": 1})
+        response = self.client.put(
+            url, data={"internal_marketer_id": "NEW INTERNAL", "external_marketer_id": "NEW EXTERNAL"}, format="json"
+        )
+        self.assertEqual(response.status_code, 200)
+        self.maxDiff = None
+        self.assertEqual(response.data["data"]["internal_marketer_id"], "NEW INTERNAL")
+        self.assertEqual(response.data["data"]["external_marketer_id"], "NEW EXTERNAL")
+
     def test_put_valid_unset_custom_attributes(self, mock_modified_dt):
         # Unset custom attributes
         magic_mixer.blend(
