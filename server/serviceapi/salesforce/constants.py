@@ -20,6 +20,7 @@ AMPLIFY_GROUP_PERMISSION_CODENAME = "this_is_amplify_group"
 AMPLIFY_SOURCES_SLUG = ["outbrainrtb", "ligatus"]
 OUTBRAIN_UNKNOWN_AGENCY_ID = 517
 SALES_REP_AGENCY_MAPPING = {
+    "null4@outbrain.com": 221,
     "czulli@outbrain.com": 505,
     "rweh@outbrain.com": 505,
     "cloison@outbrain.com": 505,
