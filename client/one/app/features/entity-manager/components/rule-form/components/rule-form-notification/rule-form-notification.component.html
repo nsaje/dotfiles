@@ -1,32 +1,32 @@
 <zem-radio-input
     class="zem-radio-input"
-    [groupModel]="model.type"
-    [value]="RuleNotificationType.Disable"
-    (select)="setType($event)"
+    [groupModel]="ruleNotification.policy"
+    [value]="RuleNotificationPolicy.DisableNotifications"
+    (select)="updateRuleNotificationPolicy($event)"
 >
     <strong>Never send an email.</strong>
 </zem-radio-input>
 <zem-radio-input
     class="zem-radio-input"
-    [groupModel]="model.type"
-    [value]="RuleNotificationType.EnableOnRuleRun"
-    (select)="setType($event)"
+    [groupModel]="ruleNotification.policy"
+    [value]="RuleNotificationPolicy.NotifyRuleRan"
+    (select)="updateRuleNotificationPolicy($event)"
 >
     <strong>Send an email whenever the rule runs.</strong>
 </zem-radio-input>
 <zem-radio-input
     class="zem-radio-input"
-    [groupModel]="model.type"
-    [value]="RuleNotificationType.EnableOnRulePerform"
-    (select)="setType($event)"
+    [groupModel]="ruleNotification.policy"
+    [value]="RuleNotificationPolicy.NotifyActionExecuted"
+    (select)="updateRuleNotificationPolicy($event)"
 >
     <strong>Send an email whenever the rule performs an action.</strong>
 </zem-radio-input>
 <zem-text-setting
     class="zem-rule-form__section-item zem-text-setting zem-rule-form__text-setting"
-    [label]="'Recipients:'"
-    [value]="model.recipients"
-    (valueChange)="setRecipients($event)"
+    label="Recipients"
+    [value]="ruleNotification.recipients"
+    (valueChange)="updateRecipients($event)"
 >
 </zem-text-setting>
 <div class="zem-rule-form__section-item zem-rule-form__section-description">

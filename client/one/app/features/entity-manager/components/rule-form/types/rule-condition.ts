@@ -1,9 +1,16 @@
-import {RuleConditionOperator} from '../rule-form.constants';
-import {RuleConditionOperand} from './rule-condition-operand';
+import {
+    RuleConditionOperator,
+    RuleConditionOperandType,
+    TimeRange,
+} from '../rule-form.constants';
 
 export interface RuleCondition {
-    id?: string;
-    firstOperand?: RuleConditionOperand;
-    operator?: RuleConditionOperator;
-    secondOperand?: RuleConditionOperand;
+    id: string;
+    firstOperand: RuleConditionOperandType;
+    firstOperandValue: string;
+    firstOperandTimeRange: TimeRange;
+    operator: RuleConditionOperator;
+    secondOperand: RuleConditionOperandType;
+    secondOperandValue: string;
+    secondOperandTimeRange: TimeRange;
 }

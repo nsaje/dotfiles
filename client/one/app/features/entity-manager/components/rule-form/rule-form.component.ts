@@ -10,8 +10,8 @@ import {
 } from '@angular/core';
 import {RuleFormStore} from './services/rule-form.store';
 import {EntityType} from '../../../../app.constants';
-import {RuleActionType, TimeRange} from './rule-form.constants';
-import {RULE_DIMENSIONS} from './rule-form.config';
+import {RuleActionType} from './rule-form.constants';
+import {RULE_DIMENSIONS, TIME_RANGES} from './rule-form.config';
 
 @Component({
     selector: 'zem-rule-form',
@@ -24,34 +24,16 @@ export class RuleFormComponent implements OnInit {
     entityId: string;
     @Input()
     entityType: EntityType;
-    @Output()
-    ruleChange = new EventEmitter<any>();
 
     title: string = '';
     RuleActionType = RuleActionType;
     availableDimensions = RULE_DIMENSIONS;
-    availableTimeRanges: any[] = [
-        {
-            name: 'Yesterday',
-            value: TimeRange.Yesterday,
-        },
-        {
-            name: 'Last 3 days',
-            value: TimeRange.LastThreeDays,
-        },
-        {
-            name: 'Last 7 days',
-            value: TimeRange.LastSevenDays,
-        },
-        {
-            name: 'Lifetime',
-            value: TimeRange.Lifetime,
-        },
-    ];
+    availableTimeRanges = TIME_RANGES;
 
     constructor(public store: RuleFormStore) {}
 
     ngOnInit(): void {
+        // PRTODO (jurebajt): Remove when entity selector gets implemented
         this.title = this.getTitle(this.entityId, this.entityType);
     }
 

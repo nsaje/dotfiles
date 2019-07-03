@@ -10,14 +10,14 @@ import {
     SimpleChanges,
 } from '@angular/core';
 import {RuleAction} from '../../types/rule-action';
-import * as clone from 'clone';
 import {
     RuleActionType,
     RuleActionFrequency,
-    Unit,
-    RuleActionMacro,
+    Macro,
 } from '../../rule-form.constants';
-import {RULE_ACTIONS} from '../../rule-form.config';
+import {EMAIL_MACROS} from '../../rule-form.config';
+import {RuleActionConfig} from '../../types/rule-action-config';
+import * as ruleFormHelpers from '../../helpers/rule-form.helpers';
 
 @Component({
     selector: 'zem-rule-form-action',
@@ -26,138 +26,116 @@ import {RULE_ACTIONS} from '../../rule-form.config';
 })
 export class RuleFormActionComponent implements OnChanges {
     @Input()
-    value: RuleAction;
+    ruleAction: RuleAction;
+    @Input()
+    availableActions: RuleActionConfig[];
     @Output()
-    valueChange = new EventEmitter<RuleAction>();
+    ruleActionChange = new EventEmitter<RuleAction>();
 
-    model: RuleAction = {};
-    ruleActionConfig: any = {};
+    selectedActionConfig: RuleActionConfig;
+    selectedMacro: Macro;
+    shouldAppendMacroToSubject = true;
+    availableActionFrequencies: {label: string; value: RuleActionFrequency}[];
     RuleActionType = RuleActionType;
+    EMAIL_MACROS = EMAIL_MACROS;
 
-    macro: RuleActionMacro = null;
-    addMacroToSubject: boolean = true;
-    availableActionTypes: any[] = [
-        {
-            name: RULE_ACTIONS[RuleActionType.IncreaseBudget].name,
-            value: RULE_ACTIONS[RuleActionType.IncreaseBudget].type,
-        },
-        {
-            name: RULE_ACTIONS[RuleActionType.DecreaseBudget].name,
-            value: RULE_ACTIONS[RuleActionType.DecreaseBudget].type,
-        },
-        {
-            name: RULE_ACTIONS[RuleActionType.SendEmail].name,
-            value: RULE_ACTIONS[RuleActionType.SendEmail].type,
-        },
-    ];
-    availableMacros: any[] = [
-        {
-            name: 'Account name',
-            value: RuleActionMacro.AccountName,
-        },
-        {
-            name: 'Campaign name',
-            value: RuleActionMacro.CampaignName,
-        },
-        {
-            name: 'Ad group name',
-            value: RuleActionMacro.AdGroupName,
-        },
-        {
-            name: 'Ad group daily cap',
-            value: RuleActionMacro.AdGroupDailyCap,
-        },
-        {
-            name: 'Total spend (last 1 day)',
-            value: RuleActionMacro.TotalSpendLastDay,
-        },
-        {
-            name: 'Total spend (last 3 day)',
-            value: RuleActionMacro.TotalSpendLastThreeDays,
-        },
-        {
-            name: 'Total spend (last 7 day)',
-            value: RuleActionMacro.TotalSpendLastSevenDays,
-        },
-        {
-            name: 'Total spend (lifetime)',
-            value: RuleActionMacro.TotalSpendLifetime,
-        },
-    ];
+    getUnitText = ruleFormHelpers.getUnitText;
 
-    ngOnChanges(changes: SimpleChanges): void {
-        if (changes.value) {
-            this.model = clone(this.value);
-            this.ruleActionConfig = this.getRuleActionConfig(this.model.type);
+    ngOnChanges(changes: SimpleChanges) {
+        if (changes.ruleAction) {
+            this.selectedActionConfig = this.getSelectedActionConfig();
+            this.availableActionFrequencies = this.getAvailableActionFrequencies();
         }
     }
 
-    setType(type: RuleActionType) {
-        this.model.type = type;
-        if (!this.model.type) {
-            this.model.frequency = null;
+    selectType(type: RuleActionType) {
+        const updatedAction: RuleAction = {
+            ...this.ruleAction,
+            type: type,
+        };
+        if (!updatedAction.type) {
+            updatedAction.frequency = null;
         }
-        this.valueChange.emit(clone(this.model));
+        // PRTODO (jurebajt): Should we reset email fields too? Maybe reset it on "Save" if ruleAction.type !== "SEND_EMAIL"
+        this.ruleActionChange.emit(updatedAction);
     }
 
-    setValue(value: number) {
-        this.model.value = value;
-        this.valueChange.emit(clone(this.model));
+    updateValue(value: number) {
+        this.ruleActionChange.emit({...this.ruleAction, value: value});
     }
 
-    setUnit(unit: Unit) {
-        this.model.unit = unit;
-        this.valueChange.emit(clone(this.model));
+    updateLimit(limit: number) {
+        this.ruleActionChange.emit({...this.ruleAction, limit: limit});
     }
 
-    setLimit(limit: number) {
-        this.model.limit = limit;
-        this.valueChange.emit(clone(this.model));
+    selectFrequency(frequency: RuleActionFrequency) {
+        this.ruleActionChange.emit({...this.ruleAction, frequency: frequency});
     }
 
-    setFrequency(frequency: RuleActionFrequency) {
-        this.model.frequency = frequency;
-        this.valueChange.emit(clone(this.model));
+    updateEmailSubject(emailSubject: string) {
+        this.shouldAppendMacroToSubject = true;
+        this.ruleActionChange.emit({
+            ...this.ruleAction,
+            emailSubject: emailSubject,
+        });
     }
 
-    setEmailSubject(emailSubject: string) {
-        this.addMacroToSubject = true;
-        this.model.emailSubject = emailSubject;
-        this.valueChange.emit(clone(this.model));
+    updateEmailBody(emailBody: string) {
+        this.shouldAppendMacroToSubject = false;
+        this.ruleActionChange.emit({
+            ...this.ruleAction,
+            emailBody: emailBody,
+        });
     }
 
-    setEmailBody(emailBody: string) {
-        this.addMacroToSubject = false;
-        this.model.emailBody = emailBody;
-        this.valueChange.emit(clone(this.model));
+    updateEmailRecipients(emailRecipients: string) {
+        this.ruleActionChange.emit({
+            ...this.ruleAction,
+            emailRecipients: emailRecipients,
+        });
     }
 
-    setEmailRecipients(emailRecipients: string) {
-        this.model.emailRecipients = emailRecipients;
-        this.valueChange.emit(clone(this.model));
+    selectMacro(macro: Macro) {
+        this.selectedMacro = macro;
     }
 
-    setMacro($event: RuleActionMacro) {
-        this.macro = $event;
-    }
-
-    addMacro() {
-        if (this.addMacroToSubject) {
-            this.model.emailSubject = `${this.model.emailSubject || ''} {${
-                this.macro
-            }}`;
+    appendSelectedMacro() {
+        if (this.shouldAppendMacroToSubject) {
+            this.updateEmailSubject(
+                `${this.ruleAction.emailSubject || ''}${this.selectedMacro}`
+            );
         } else {
-            this.model.emailBody = `${this.model.emailBody || ''} {${
-                this.macro
-            }}`;
+            this.updateEmailBody(
+                `${this.ruleAction.emailBody || ''}${this.selectedMacro}`
+            );
         }
-        this.valueChange.emit(clone(this.model));
     }
 
-    private getRuleActionConfig(type: RuleActionType) {
-        if (!type) {
-            return null;
+    getSelectedActionConfig() {
+        return (
+            this.availableActions.find(action => {
+                return action.type === this.ruleAction.type;
+            }) || {label: null, type: null, frequencies: []}
+        );
+    }
+
+    getAvailableActionFrequencies(): {
+        label: string;
+        value: RuleActionFrequency;
+    }[] {
+        return this.selectedActionConfig.frequencies.map(frequency => {
+            return {value: frequency, label: this.getFrequencyLabel(frequency)};
+        });
+    }
+
+    getFrequencyLabel(frequency: RuleActionFrequency): string {
+        switch (frequency) {
+            case RuleActionFrequency.Day1:
+                return '1 day';
+            case RuleActionFrequency.Days3:
+                return '3 days';
+            case RuleActionFrequency.Days7:
+                return '7 days';
         }
-        return RULE_ACTIONS[type];
     }
 }

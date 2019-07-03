@@ -1,43 +1,39 @@
+import './rule-form-notification.component.less';
+
 import {
     Component,
     ChangeDetectionStrategy,
     Input,
     Output,
     EventEmitter,
-    OnChanges,
-    SimpleChanges,
 } from '@angular/core';
-import * as clone from 'clone';
 import {RuleNotification} from '../../types/rule-notification';
-import {RuleNotificationType} from '../../rule-form.constants';
+import {RuleNotificationPolicy} from '../../rule-form.constants';
 
 @Component({
     selector: 'zem-rule-form-notification',
     templateUrl: './rule-form-notification.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class RuleFormNotificationComponent implements OnChanges {
+export class RuleFormNotificationComponent {
     @Input()
-    value: RuleNotification;
+    ruleNotification: RuleNotification;
     @Output()
-    valueChange = new EventEmitter<RuleNotification>();
+    ruleNotificationChange = new EventEmitter<RuleNotification>();
 
-    model: RuleNotification = {};
-    RuleNotificationType = RuleNotificationType;
+    RuleNotificationPolicy = RuleNotificationPolicy;
 
-    ngOnChanges(changes: SimpleChanges): void {
-        if (changes.value) {
-            this.model = clone(this.value);
-        }
+    updateRuleNotificationPolicy(policy: RuleNotificationPolicy) {
+        this.ruleNotificationChange.emit({
+            ...this.ruleNotification,
+            policy: policy,
+        });
     }
 
-    setType(type: RuleNotificationType) {
-        this.model.type = type;
-        this.valueChange.emit(clone(this.model));
-    }
-
-    setRecipients(recipients: string) {
-        this.model.recipients = recipients;
-        this.valueChange.emit(clone(this.model));
+    updateRecipients(recipients: string) {
+        this.ruleNotificationChange.emit({
+            ...this.ruleNotification,
+            recipients: recipients,
+        });
     }
 }

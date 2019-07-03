@@ -1,15 +1,10 @@
-import {
-    RuleActionType,
-    Unit,
-    RuleActionFrequency,
-} from '../rule-form.constants';
+import {RuleActionType, RuleActionFrequency} from '../rule-form.constants';
 
 export interface RuleAction {
-    type?: RuleActionType;
+    type: RuleActionType;
+    frequency: RuleActionFrequency;
     value?: number;
-    unit?: Unit;
     limit?: number;
-    frequency?: RuleActionFrequency;
     emailSubject?: string;
     emailBody?: string;
     emailRecipients?: string;

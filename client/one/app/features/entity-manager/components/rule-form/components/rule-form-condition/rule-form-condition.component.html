@@ -1,100 +1,117 @@
 <div class="zem-rule-form-condition__group">
-    <zem-currency-input
-        class="zem-rule-form-condition__group-value zem-currency-input"
-        *ngIf="model.firstOperand.property === RuleConditionProperty.FixedValue"
-        [value]="model.firstOperand.value"
-        [currencySymbol]="'$'"
-        (inputBlur)="onFirstOperandValueChange($event)"
-    >
-    </zem-currency-input>
     <zem-select-input
         class="zem-rule-form-condition__group-property zem-select-input"
-        [value]="model.firstOperand.property"
-        [bindLabel]="'name'"
-        [bindValue]="'value'"
-        [items]="firstOperandProperties"
+        [value]="ruleCondition.firstOperand"
+        bindLabel="label"
+        bindValue="type"
+        [items]="availableFirstOperands"
         [isSearchable]="false"
-        [groupByValue]="'group'"
+        groupByValue="group"
         [isClearable]="false"
-        (valueChange)="onFirstOperandPropertyChange($event)"
+        (valueChange)="selectFirstOperand($event)"
     ></zem-select-input>
-    <ng-template #firstOperandModifierTemplate>
+    <ng-template #firstOperandModifierPopoverTemplate>
         <zem-rule-form-condition-modifier
             class="zem-rule-form-condition-modifier"
-            [value]="model.firstOperand.value"
-            [property]="model.firstOperand.property"
-            [modifier]="model.firstOperand.modifier"
-            (modifierChange)="onFirstOperandModifierChange($event)"
+            [value]="ruleCondition.firstOperandValue"
+            [valueLabel]="selectedFirstOperandConfig.label"
+            [timeRange]="ruleCondition.firstOperandTimeRange"
+            [hasTimeRangeModifier]="
+                selectedFirstOperandConfig.hasTimeRangeModifier
+            "
+            [valueModifier]="selectedFirstOperandConfig.valueModifier"
+            (valueChange)="updateFirstOperandValue($event)"
+            (timeRangeChange)="updateFirstOperandTimeRange($event)"
         >
         </zem-rule-form-condition-modifier>
     </ng-template>
     <button
-        #firstOperandModifierPopover
         class="zem-rule-form-condition__button button button--plain button--with-icon button--only-icon dots-icon"
-        [disabled]="
-            !model.firstOperand.property ||
-            (!model.firstOperand.modifier.timeRangeModifier &&
-                !model.firstOperand.modifier.valueModifier)
-        "
-        [zemPopover]="firstOperandModifierTemplate"
-        [autoClose]="'outside'"
+        [zemPopover]="firstOperandModifierPopoverTemplate"
+        [disabled]="!areModifiersAvailable(selectedFirstOperandConfig)"
+        autoClose="outside"
         placement="bottom"
     ></button>
 </div>
 <zem-select-input
     class="zem-rule-form-condition__property zem-select-input"
-    [value]="model.operator"
-    [bindLabel]="'name'"
-    [bindValue]="'value'"
-    [items]="operators"
-    [isDisabled]="!model.firstOperand.property"
+    [value]="ruleCondition.operator"
+    bindLabel="label"
+    bindValue="operator"
+    [items]="availableOperators"
+    [isDisabled]="availableOperators.length === 0"
     [isSearchable]="false"
     [isClearable]="false"
-    (valueChange)="onOperatorChange($event)"
+    (valueChange)="selectOperator($event)"
 ></zem-select-input>
 <div class="zem-rule-form-condition__group">
-    <zem-currency-input
-        class="zem-rule-form-condition__group-value zem-currency-input"
+    <zem-decimal-input
+        class="zem-decimal-input zem-rule-form-condition__group-value"
         *ngIf="
-            model.secondOperand.property === RuleConditionProperty.FixedValue
+            selectedSecondOperandConfig &&
+            selectedSecondOperandConfig.hasValue &&
+            selectedSecondOperandConfig.unit === Unit.None
         "
-        [value]="model.secondOperand.value"
-        [currencySymbol]="'$'"
-        (inputBlur)="onSecondOperandValueChange($event)"
-    >
-    </zem-currency-input>
+        [value]="ruleCondition.secondOperandValue"
+        [fractionSize]="selectedSecondOperandConfig.fractionSize"
+        (inputBlur)="updateSecondOperandValue($event)"
+    ></zem-decimal-input>
+    <!-- PRTODO (jurebajt): Create percentage prefixed input component -->
+    <zem-currency-input
+        class="zem-currency-input zem-rule-form-condition__group-value"
+        *ngIf="
+            selectedSecondOperandConfig &&
+            selectedSecondOperandConfig.hasValue &&
+            (selectedSecondOperandConfig.unit === Unit.Currency ||
+                selectedSecondOperandConfig.unit === Unit.Percentage)
+        "
+        [value]="ruleCondition.secondOperandValue"
+        [fractionSize]="selectedSecondOperandConfig.fractionSize"
+        [currencySymbol]="getUnitText(selectedSecondOperandConfig.unit)"
+        (inputBlur)="updateSecondOperandValue($event)"
+    ></zem-currency-input>
+    <zem-date-input
+        class="zem-date-input zem-rule-form-condition__group-value"
+        *ngIf="
+            selectedSecondOperandConfig &&
+            selectedSecondOperandConfig.hasValue &&
+            selectedSecondOperandConfig.unit === Unit.Date
+        "
+        [value]="ruleCondition.secondOperandValue"
+        (valueChange)="updateSecondOperandValue($event)"
+    ></zem-date-input>
     <zem-select-input
         class="zem-rule-form-condition__group-property zem-select-input"
-        [value]="model.secondOperand.property"
-        [bindLabel]="'name'"
-        [bindValue]="'value'"
-        [items]="secondOperandProperties"
-        [isDisabled]="!model.firstOperand.property || !model.operator"
+        [value]="ruleCondition.secondOperand"
+        bindLabel="label"
+        bindValue="type"
+        [items]="availableSecondOperands"
+        [isDisabled]="availableSecondOperands.length === 0"
         [isSearchable]="false"
-        [groupByValue]="'group'"
+        groupByValue="group"
         [isClearable]="false"
-        (valueChange)="onSecondOperandPropertyChange($event)"
+        (valueChange)="selectSecondOperand($event)"
     ></zem-select-input>
     <ng-template #secondOperandModifierTemplate>
         <zem-rule-form-condition-modifier
             class="zem-rule-form-condition-modifier"
-            [value]="model.secondOperand.value"
-            [property]="model.secondOperand.property"
-            [modifier]="model.secondOperand.modifier"
-            (modifierChange)="onSecondOperandModifierChange($event)"
+            [value]="ruleCondition.secondOperandValue"
+            [valueLabel]="selectedSecondOperandConfig.label"
+            [timeRange]="ruleCondition.secondOperandTimeRange"
+            [hasTimeRangeModifier]="
+                selectedSecondOperandConfig.hasTimeRangeModifier
+            "
+            [valueModifier]="selectedSecondOperandConfig.valueModifier"
+            (valueChange)="updateSecondOperandValue($event)"
+            (timeRangeChange)="updateSecondOperandTimeRange($event)"
         >
         </zem-rule-form-condition-modifier>
     </ng-template>
     <button
-        #secondOperandModifierPopover
         class="zem-rule-form-condition__button button button--plain button--with-icon button--only-icon dots-icon"
         [zemPopover]="secondOperandModifierTemplate"
-        [disabled]="
-            !model.secondOperand.property ||
-            (!model.secondOperand.modifier.timeRangeModifier &&
-                !model.secondOperand.modifier.valueModifier)
-        "
-        [autoClose]="'outside'"
+        [disabled]="!areModifiersAvailable(selectedSecondOperandConfig)"
+        autoClose="outside"
         placement="bottom"
     ></button>
 </div>

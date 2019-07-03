@@ -6,71 +6,64 @@ import {
     Input,
     Output,
     EventEmitter,
-    OnChanges,
-    SimpleChanges,
 } from '@angular/core';
 import {RuleCondition} from '../../types/rule-condition';
-import * as clone from 'clone';
 import * as ruleFormHelpers from '../../helpers/rule-form.helpers';
+import {RuleConditionConfig} from '../../types/rule-condition-config';
+import {TimeRange} from '../../rule-form.constants';
 
 @Component({
     selector: 'zem-rule-form-conditions',
     templateUrl: './rule-form-conditions.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class RuleFormConditionsComponent implements OnChanges {
+export class RuleFormConditionsComponent {
     @Input()
-    conditions: RuleCondition[];
+    ruleConditions: RuleCondition[];
+    @Input()
+    availableConditions: RuleConditionConfig[];
     @Output()
-    conditionsChange = new EventEmitter<RuleCondition[]>();
-
-    items: RuleCondition[];
-
-    ngOnChanges(changes: SimpleChanges): void {
-        if (changes.conditions) {
-            this.items = clone(this.conditions);
-        }
-    }
+    ruleConditionsChange = new EventEmitter<RuleCondition[]>();
 
     addCondition() {
-        this.items.push(this.getNewCondition());
+        this.ruleConditionsChange.emit([
+            ...this.ruleConditions,
+            this.generateNewCondition(),
+        ]);
     }
 
-    onConditionChange($event: RuleCondition, index: number) {
-        this.items[index] = $event;
-        this.conditionsChange.emit(clone(this.items));
+    onConditionChange(changedCondition: RuleCondition) {
+        const changedConditions = this.ruleConditions.map(condition => {
+            if (condition.id === changedCondition.id) {
+                return changedCondition;
+            }
+            return condition;
+        });
+        this.ruleConditionsChange.emit(changedConditions);
     }
 
-    onConditionRemove(index: number) {
-        this.items.splice(index, 1);
-        this.conditionsChange.emit(clone(this.items));
+    onConditionRemove(removedCondition: RuleCondition) {
+        const changedConditions = this.ruleConditions.filter(condition => {
+            return condition.id !== removedCondition.id;
+        });
+        this.ruleConditionsChange.emit(changedConditions);
     }
 
     trackById(index: number, item: RuleCondition): string {
         return item.id;
     }
 
-    private getNewCondition(): RuleCondition {
-        const condition: RuleCondition = {
+    // PRTODO (jurebajt): Try to remove id (needed by *ngFor?) since this implementation breaks when editing existing rules
+    private generateNewCondition(): RuleCondition {
+        return {
             id: ruleFormHelpers.uuid(),
-            firstOperand: {
-                property: null,
-                value: null,
-                modifier: {
-                    timeRangeModifier: null,
-                    valueModifier: null,
-                },
-            },
+            firstOperand: null,
+            firstOperandValue: null,
+            firstOperandTimeRange: TimeRange.Lifetime,
             operator: null,
-            secondOperand: {
-                property: null,
-                value: null,
-                modifier: {
-                    timeRangeModifier: null,
-                    valueModifier: null,
-                },
-            },
+            secondOperand: null,
+            secondOperandValue: null,
+            secondOperandTimeRange: TimeRange.Lifetime,
         };
-        return condition;
     }
 }

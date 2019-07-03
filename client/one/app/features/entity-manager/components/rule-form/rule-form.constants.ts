@@ -1,11 +1,3 @@
-export enum EntityType {
-    Ad = 'AD',
-    AdGroup = 'AD_GROUP',
-    Campaign = 'CAMPAIGN',
-    Account = 'ACCOUNT',
-    AllAccounts = 'ALL_ACCOUNTS',
-}
-
 export enum RuleDimension {
     Ad = 'AD',
     AdGroup = 'AD_GROUP',
@@ -24,8 +16,11 @@ export enum RuleActionType {
     DecreaseCpc = 'DECREASE_CPC',
     IncreaseCpm = 'INCREASE_CPM',
     DecreaseCpm = 'DECREASE_CPM',
-    IncreaseBudget = 'INCREASE_BUDGET',
-    DecreaseBudget = 'DECREASE_BUDGET',
+    IncreaseBidModifier = 'INCREASE_BID_MODIFIER',
+    DecreaseBidModifier = 'DECREASE_BID_MODIFIER',
+    IncreaseDailyBudget = 'INCREASE_BUDGET',
+    DecreaseDailyBudget = 'DECREASE_BUDGET',
+    TurnOff = 'TURN_OFF',
     SendEmail = 'SEND_EMAIL',
 }
 
@@ -36,67 +31,48 @@ export enum RuleActionFrequency {
 }
 
 export enum Unit {
+    None = 'None',
     Currency = 'CURRENCY',
     Percentage = 'PERCENTAGE',
+    Date = 'DATE',
 }
 
-export enum RuleActionMacro {
+export enum Macro {
     AccountName = 'ACCOUNT_NAME',
     CampaignName = 'CAMPAIGN_NAME',
     AdGroupName = 'AD_GROUP_NAME',
     AdGroupDailyCap = 'AD_GROUP_DAILY_CAP',
     TotalSpendLastDay = 'TOTAL_SPEND_LAST_1_DAY',
-    TotalSpendLastThreeDays = 'TOTAL_SPEND_LAST_3_DAY',
-    TotalSpendLastSevenDays = 'TOTAL_SPEND_LAST_7_DAY',
+    TotalSpendLastThreeDays = 'TOTAL_SPEND_LAST_3_DAYS',
+    TotalSpendLastSevenDays = 'TOTAL_SPEND_LAST_7_DAYS',
     TotalSpendLifetime = 'TOTAL_SPEND_LIFETIME',
 }
 
-export enum RuleNotificationType {
-    Disable = 'DISABLE',
-    EnableOnRuleRun = 'ENABLE_ON_RULE_RULE',
-    EnableOnRulePerform = 'ENABLE_ON_RULE_PERFORM',
-}
-
-export enum RuleConditionProperty {
+export enum RuleConditionOperandType {
+    AbsoluteValue = 'ABSOLUTE_VALUE',
+    CurrentDate = 'CURRENT_DATE',
     TotalSpend = 'TOTAL_SPEND',
     Impressions = 'IMPRESSIONS',
     Clicks = 'CLICKS',
-    Ctr = 'CTR',
-    Cpc = 'CPC',
-    Cpm = 'CPM',
-
-    Visits = 'VISITS',
-    UniqueUsers = 'UNIQUE_USERS',
-    NewUsers = 'NEW_USERS',
-    ReturningUsers = 'RETURNING_USERS',
-    ShareOfNewUsers = 'SHARE_OF_NEW_USERS',
-    ClickDiscrepancy = 'CLICK_DISCREPANCY',
-
-    AccountName = 'ACCOUNT_NAME',
-    AccountCreatedDate = 'ACCOUNT_CREATED_DATE',
-    CampaignName = 'CAMPAIGN_NAME',
-    CampaignCreatedDate = 'CAMPAIGN_CREATED_DATE',
-    CampaignType = 'CAMPAIGN_TYPE',
+    AdGroupDailyClickCap = 'AD_GROUP_DAILY_CLICK_CAP',
+    AdGroupStartDate = 'AD_GROUP_START_DATE',
     CampaignBudget = 'CAMPAIGN_BUDGET',
-    AdGroupName = 'ADGROUP_NAME',
-    AdGroupCreatedDate = 'ADGROUP_CREATED_DATE',
-    DailyBudget = 'DAILY_BUDGET',
-
-    BudgetStartDate = 'BUDGET_START_DATE',
-    DaysUntilBudgetEnd = 'DAYS_UNTIL_BUDGET_END',
-    BudgetEndDate = 'BUDGET_END_DATE',
-    DaysSinceBudgetStart = 'DAYS_SINCE_BUDGET_START',
-    RemainingBudget = 'REMAINING_BUDGET',
-
-    FixedValue = 'FIXED_VALUE',
+    RemainingCampaignBudget = 'REMAINING_CAMPAIGN_BUDGET',
+    AdGroupDailyBudget = 'AD_GROUP_DAILY_BUDGET',
 }
 
-export enum RuleConditionPropertyGroup {
+export enum RuleConditionOperandGroup {
     TrafficAcquisition = 'Traffic acquisition',
     AudienceMetrics = 'Audience metrics',
     Settings = 'Settings',
     Budget = 'Budget',
     FixedValue = 'Fixed value',
+}
+
+export enum RuleNotificationPolicy {
+    DisableNotifications = 'DISABLE_NOTIFICATIONS',
+    NotifyRuleRan = 'NOTIFY_RULE_RAN',
+    NotifyActionExecuted = 'NOTIFY_ACTION_EXECUTED',
 }
 
 export enum RuleConditionOperator {
@@ -113,9 +89,4 @@ export enum TimeRange {
     LastThreeDays = 'LAST_THREE_DAYS',
     LastSevenDays = 'LAST_SEVEN_DAYS',
     Lifetime = 'LIFETIME',
-}
-
-export enum ValueModifierType {
-    IncreaseValue = 'INCREASE_VALUE',
-    DecreaseValue = 'DECREASE_VALUE',
 }

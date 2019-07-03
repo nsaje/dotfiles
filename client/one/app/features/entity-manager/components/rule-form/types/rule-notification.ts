@@ -1,6 +1,6 @@
-import {RuleNotificationType} from '../rule-form.constants';
+import {RuleNotificationPolicy} from '../rule-form.constants';
 
 export interface RuleNotification {
-    type?: RuleNotificationType;
-    recipients?: string;
+    policy: RuleNotificationPolicy;
+    recipients: string;
 }

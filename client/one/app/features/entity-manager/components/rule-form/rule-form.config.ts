@@ -3,781 +3,388 @@ import {
     RuleActionType,
     Unit,
     RuleActionFrequency,
-    RuleConditionProperty,
-    RuleConditionPropertyGroup,
     RuleConditionOperator,
+    Macro,
+    RuleConditionOperandType,
+    RuleConditionOperandGroup,
+    TimeRange,
 } from './rule-form.constants';
 
 export const RULE_DIMENSIONS = [
-    {name: 'Content Ad', value: RuleDimension.Ad},
-    {name: 'Ad group', value: RuleDimension.AdGroup},
+    {label: 'Ad', value: RuleDimension.Ad},
+    {label: 'Ad group', value: RuleDimension.AdGroup},
     {
-        name: 'Ad group / publishers',
+        label: 'Ad group / publishers',
         value: RuleDimension.AdGroupPublisher,
     },
     {
-        name: 'Ad group / devices',
+        label: 'Ad group / devices',
         value: RuleDimension.AdGroupDevice,
     },
     {
-        name: 'Ad group / countries',
+        label: 'Ad group / countries',
         value: RuleDimension.AdGroupCountry,
     },
     {
-        name: 'Ad group / regions',
+        label: 'Ad group / regions',
         value: RuleDimension.AdGroupRegion,
     },
     {
-        name: 'Ad group / DMAs',
+        label: 'Ad group / DMAs',
         value: RuleDimension.AdGroupDma,
     },
     {
-        name: 'Ad group / OS',
+        label: 'Ad group / OS',
         value: RuleDimension.AdGroupOs,
     },
     {
-        name: 'Ad group / placements',
+        label: 'Ad group / placements',
         value: RuleDimension.AdGroupPlacement,
     },
     {
-        name: 'Ad group / sources',
+        label: 'Ad group / sources',
         value: RuleDimension.AdGroupSource,
     },
 ];
 
-export const RULE_ACTIONS = {
-    [RuleActionType.IncreaseBudget]: {
-        name: 'Increase daily budget',
-        type: RuleActionType.IncreaseBudget,
+export const RULE_ACTIONS_OPTIONS = {
+    [RuleActionType.IncreaseCpc]: {
+        label: 'Increase bid CPC',
+        type: RuleActionType.IncreaseCpc,
         frequencies: [
-            {value: RuleActionFrequency.Day1, name: '24 hours (1 day)'},
-            {value: RuleActionFrequency.Days3, name: '72 hours (3 days)'},
-            {value: RuleActionFrequency.Days7, name: '168 hours (7 days)'},
+            RuleActionFrequency.Day1,
+            RuleActionFrequency.Days3,
+            RuleActionFrequency.Days7,
         ],
         hasValue: true,
-        valueUnits: [
-            {value: Unit.Percentage, name: '%'},
-            {value: Unit.Currency, name: '$'},
-        ],
-        limitLabel: 'Maximum daily budget:',
-        limitDescription: 'Daily budget will not increase past this value',
-        limitUnit: '$',
+        unit: Unit.Currency,
+        hasLimit: true,
+        limitLabel: 'Maximum bid CPC',
+        limitDescription: 'Bid CPC will not increase past this value',
     },
-    [RuleActionType.DecreaseBudget]: {
-        name: 'Decrease daily budget',
-        type: RuleActionType.DecreaseBudget,
+    [RuleActionType.DecreaseCpc]: {
+        label: 'Decrease bid CPC',
+        type: RuleActionType.DecreaseCpc,
         frequencies: [
-            {value: RuleActionFrequency.Day1, name: '24 hours (1 day)'},
-            {value: RuleActionFrequency.Days3, name: '72 hours (3 days)'},
-            {value: RuleActionFrequency.Days7, name: '168 hours (7 days)'},
+            RuleActionFrequency.Day1,
+            RuleActionFrequency.Days3,
+            RuleActionFrequency.Days7,
         ],
         hasValue: true,
-        valueUnits: [
-            {value: Unit.Percentage, name: '%'},
-            {value: Unit.Currency, name: '$'},
+        unit: Unit.Currency,
+        hasLimit: true,
+        limitLabel: 'Minimum bid CPC',
+        limitDescription: 'Bid CPC will not decrease past this value',
+    },
+    [RuleActionType.IncreaseCpm]: {
+        label: 'Increase bid CPM',
+        type: RuleActionType.IncreaseCpm,
+        frequencies: [
+            RuleActionFrequency.Day1,
+            RuleActionFrequency.Days3,
+            RuleActionFrequency.Days7,
         ],
-        limitLabel: 'Minimum daily budget:',
+        hasValue: true,
+        unit: Unit.Currency,
+        hasLimit: true,
+        limitLabel: 'Maximum bid CPM',
+        limitDescription: 'Bid CPM will not increase past this value',
+    },
+    [RuleActionType.DecreaseCpm]: {
+        label: 'Decrease bid CPM',
+        type: RuleActionType.DecreaseCpm,
+        frequencies: [
+            RuleActionFrequency.Day1,
+            RuleActionFrequency.Days3,
+            RuleActionFrequency.Days7,
+        ],
+        hasValue: true,
+        unit: Unit.Currency,
+        hasLimit: true,
+        limitLabel: 'Minimum bid CPM',
+        limitDescription: 'Bid CPM will not decrease past this value',
+    },
+    [RuleActionType.IncreaseBidModifier]: {
+        label: 'Increase bid modifier',
+        type: RuleActionType.IncreaseBidModifier,
+        frequencies: [
+            RuleActionFrequency.Day1,
+            RuleActionFrequency.Days3,
+            RuleActionFrequency.Days7,
+        ],
+        hasValue: true,
+        unit: Unit.Percentage,
+        hasLimit: true,
+        limitLabel: 'Maximum bid modifier',
+        limitDescription: 'Bid modifier will not increase past this value',
+    },
+    [RuleActionType.DecreaseBidModifier]: {
+        label: 'Decrease bid modifier',
+        type: RuleActionType.DecreaseBidModifier,
+        frequencies: [
+            RuleActionFrequency.Day1,
+            RuleActionFrequency.Days3,
+            RuleActionFrequency.Days7,
+        ],
+        hasValue: true,
+        unit: Unit.Percentage,
+        hasLimit: true,
+        limitLabel: 'Minimum bid modifier',
+        limitDescription: 'Bid modifier will not decrease past this value',
+    },
+    [RuleActionType.IncreaseDailyBudget]: {
+        label: 'Increase daily budget',
+        type: RuleActionType.IncreaseDailyBudget,
+        frequencies: [
+            RuleActionFrequency.Day1,
+            RuleActionFrequency.Days3,
+            RuleActionFrequency.Days7,
+        ],
+        hasValue: true,
+        unit: Unit.Currency,
+        hasLimit: true,
+        limitLabel: 'Maximum daily budget',
+        limitDescription: 'Daily budget will not increase past this value',
+    },
+    [RuleActionType.DecreaseDailyBudget]: {
+        label: 'Decrease daily budget',
+        type: RuleActionType.DecreaseDailyBudget,
+        frequencies: [
+            RuleActionFrequency.Day1,
+            RuleActionFrequency.Days3,
+            RuleActionFrequency.Days7,
+        ],
+        hasValue: true,
+        unit: Unit.Currency,
+        hasLimit: true,
+        limitLabel: 'Minimum daily budget',
         limitDescription: 'Daily budget will not decrease past this value',
-        limitUnit: '$',
+    },
+    [RuleActionType.TurnOff]: {
+        label: 'Turn off / blacklist',
+        type: RuleActionType.TurnOff,
+        frequencies: [
+            RuleActionFrequency.Day1,
+            RuleActionFrequency.Days3,
+            RuleActionFrequency.Days7,
+        ],
     },
     [RuleActionType.SendEmail]: {
-        name: 'Send an email',
+        label: 'Send an email',
         type: RuleActionType.SendEmail,
         frequencies: [
-            {value: RuleActionFrequency.Day1, name: '24 hours (1 day)'},
-            {value: RuleActionFrequency.Days3, name: '72 hours (3 days)'},
-            {value: RuleActionFrequency.Days7, name: '168 hours (7 days)'},
+            RuleActionFrequency.Day1,
+            RuleActionFrequency.Days3,
+            RuleActionFrequency.Days7,
         ],
     },
 };
 
-export const RULE_CONDITION_PROPERTIES = [
-    // TrafficAcquisition
+export const TIME_RANGES = [
     {
-        name: 'Total spend',
-        value: RuleConditionProperty.TotalSpend,
-        group: RuleConditionPropertyGroup.TrafficAcquisition,
-        hasTimeRangeModifier: true,
-        hasValueModifier: false,
-        operators: [
-            {
-                name: 'is less than',
-                value: RuleConditionOperator.LessThan,
-            },
-            {
-                name: 'is greater Than',
-                value: RuleConditionOperator.GreaterThan,
-            },
-            {
-                name: 'equals',
-                value: RuleConditionOperator.Equals,
-            },
-            {
-                name: 'not equals',
-                value: RuleConditionOperator.NotEquals,
-            },
-        ],
-        rightOperandProperties: [
-            RuleConditionProperty.FixedValue,
-            RuleConditionProperty.CampaignBudget,
-            RuleConditionProperty.RemainingBudget,
-            RuleConditionProperty.DailyBudget,
-        ],
+        label: 'Yesterday',
+        value: TimeRange.Yesterday,
     },
     {
-        name: 'Impressions',
-        value: RuleConditionProperty.Impressions,
-        group: RuleConditionPropertyGroup.TrafficAcquisition,
-        hasTimeRangeModifier: true,
-        hasValueModifier: false,
-        operators: [
-            {
-                name: 'is less than',
-                value: RuleConditionOperator.LessThan,
-            },
-            {
-                name: 'is greater Than',
-                value: RuleConditionOperator.GreaterThan,
-            },
-            {
-                name: 'equals',
-                value: RuleConditionOperator.Equals,
-            },
-            {
-                name: 'not equals',
-                value: RuleConditionOperator.NotEquals,
-            },
-        ],
-        rightOperandProperties: [RuleConditionProperty.FixedValue],
+        label: 'Last 3 days',
+        value: TimeRange.LastThreeDays,
     },
     {
-        name: 'Clicks',
-        value: RuleConditionProperty.Clicks,
-        group: RuleConditionPropertyGroup.TrafficAcquisition,
-        hasTimeRangeModifier: true,
-        hasValueModifier: false,
-        operators: [
-            {
-                name: 'is less than',
-                value: RuleConditionOperator.LessThan,
-            },
-            {
-                name: 'is greater Than',
-                value: RuleConditionOperator.GreaterThan,
-            },
-            {
-                name: 'equals',
-                value: RuleConditionOperator.Equals,
-            },
-            {
-                name: 'not equals',
-                value: RuleConditionOperator.NotEquals,
-            },
-        ],
-        rightOperandProperties: [RuleConditionProperty.FixedValue],
+        label: 'Last 7 days',
+        value: TimeRange.LastSevenDays,
     },
     {
-        name: 'CTR',
-        value: RuleConditionProperty.Ctr,
-        group: RuleConditionPropertyGroup.TrafficAcquisition,
-        hasTimeRangeModifier: true,
-        hasValueModifier: false,
-        operators: [
-            {
-                name: 'is less than',
-                value: RuleConditionOperator.LessThan,
-            },
-            {
-                name: 'is greater Than',
-                value: RuleConditionOperator.GreaterThan,
-            },
-            {
-                name: 'equals',
-                value: RuleConditionOperator.Equals,
-            },
-            {
-                name: 'not equals',
-                value: RuleConditionOperator.NotEquals,
-            },
-        ],
-        rightOperandProperties: [RuleConditionProperty.FixedValue],
-    },
-    {
-        name: 'CPC',
-        value: RuleConditionProperty.Cpc,
-        group: RuleConditionPropertyGroup.TrafficAcquisition,
-        hasTimeRangeModifier: true,
-        hasValueModifier: false,
-        operators: [
-            {
-                name: 'is less than',
-                value: RuleConditionOperator.LessThan,
-            },
-            {
-                name: 'is greater Than',
-                value: RuleConditionOperator.GreaterThan,
-            },
-            {
-                name: 'equals',
-                value: RuleConditionOperator.Equals,
-            },
-            {
-                name: 'not equals',
-                value: RuleConditionOperator.NotEquals,
-            },
-        ],
-        rightOperandProperties: [RuleConditionProperty.FixedValue],
-    },
-    {
-        name: 'CPM',
-        value: RuleConditionProperty.Cpm,
-        group: RuleConditionPropertyGroup.TrafficAcquisition,
-        hasTimeRangeModifier: true,
-        hasValueModifier: false,
-        operators: [
-            {
-                name: 'is less than',
-                value: RuleConditionOperator.LessThan,
-            },
-            {
-                name: 'is greater Than',
-                value: RuleConditionOperator.GreaterThan,
-            },
-            {
-                name: 'equals',
-                value: RuleConditionOperator.Equals,
-            },
-            {
-                name: 'not equals',
-                value: RuleConditionOperator.NotEquals,
-            },
-        ],
-        rightOperandProperties: [RuleConditionProperty.FixedValue],
-    },
-    // AudienceMetrics
-    {
-        name: 'Visits',
-        value: RuleConditionProperty.Visits,
-        group: RuleConditionPropertyGroup.AudienceMetrics,
-        hasTimeRangeModifier: true,
-        hasValueModifier: false,
-        operators: [
-            {
-                name: 'is less than',
-                value: RuleConditionOperator.LessThan,
-            },
-            {
-                name: 'is greater Than',
-                value: RuleConditionOperator.GreaterThan,
-            },
-            {
-                name: 'equals',
-                value: RuleConditionOperator.Equals,
-            },
-            {
-                name: 'not equals',
-                value: RuleConditionOperator.NotEquals,
-            },
-        ],
-        rightOperandProperties: [RuleConditionProperty.FixedValue],
-    },
-    {
-        name: 'Unique users',
-        value: RuleConditionProperty.UniqueUsers,
-        group: RuleConditionPropertyGroup.AudienceMetrics,
-        hasTimeRangeModifier: true,
-        hasValueModifier: false,
-        operators: [
-            {
-                name: 'is less than',
-                value: RuleConditionOperator.LessThan,
-            },
-            {
-                name: 'is greater Than',
-                value: RuleConditionOperator.GreaterThan,
-            },
-            {
-                name: 'equals',
-                value: RuleConditionOperator.Equals,
-            },
-            {
-                name: 'not equals',
-                value: RuleConditionOperator.NotEquals,
-            },
-        ],
-        rightOperandProperties: [RuleConditionProperty.FixedValue],
-    },
-    {
-        name: 'New users',
-        value: RuleConditionProperty.NewUsers,
-        group: RuleConditionPropertyGroup.AudienceMetrics,
-        hasTimeRangeModifier: true,
-        hasValueModifier: false,
-        operators: [
-            {
-                name: 'is less than',
-                value: RuleConditionOperator.LessThan,
-            },
-            {
-                name: 'is greater Than',
-                value: RuleConditionOperator.GreaterThan,
-            },
-            {
-                name: 'equals',
-                value: RuleConditionOperator.Equals,
-            },
-            {
-                name: 'not equals',
-                value: RuleConditionOperator.NotEquals,
-            },
-        ],
-        rightOperandProperties: [RuleConditionProperty.FixedValue],
-    },
-    {
-        name: 'Returning users',
-        value: RuleConditionProperty.ReturningUsers,
-        group: RuleConditionPropertyGroup.AudienceMetrics,
-        hasTimeRangeModifier: true,
-        hasValueModifier: false,
-        operators: [
-            {
-                name: 'is less than',
-                value: RuleConditionOperator.LessThan,
-            },
-            {
-                name: 'is greater Than',
-                value: RuleConditionOperator.GreaterThan,
-            },
-            {
-                name: 'equals',
-                value: RuleConditionOperator.Equals,
-            },
-            {
-                name: 'not equals',
-                value: RuleConditionOperator.NotEquals,
-            },
-        ],
-        rightOperandProperties: [RuleConditionProperty.FixedValue],
-    },
-    {
-        name: '% of new users',
-        value: RuleConditionProperty.ShareOfNewUsers,
-        group: RuleConditionPropertyGroup.AudienceMetrics,
-        hasTimeRangeModifier: true,
-        hasValueModifier: false,
-        operators: [
-            {
-                name: 'is less than',
-                value: RuleConditionOperator.LessThan,
-            },
-            {
-                name: 'is greater Than',
-                value: RuleConditionOperator.GreaterThan,
-            },
-            {
-                name: 'equals',
-                value: RuleConditionOperator.Equals,
-            },
-            {
-                name: 'not equals',
-                value: RuleConditionOperator.NotEquals,
-            },
-        ],
-        rightOperandProperties: [RuleConditionProperty.FixedValue],
-    },
-    {
-        name: 'Click discrepancy',
-        value: RuleConditionProperty.ClickDiscrepancy,
-        group: RuleConditionPropertyGroup.AudienceMetrics,
-        hasTimeRangeModifier: true,
-        hasValueModifier: false,
-        operators: [
-            {
-                name: 'is less than',
-                value: RuleConditionOperator.LessThan,
-            },
-            {
-                name: 'is greater Than',
-                value: RuleConditionOperator.GreaterThan,
-            },
-            {
-                name: 'equals',
-                value: RuleConditionOperator.Equals,
-            },
-            {
-                name: 'not equals',
-                value: RuleConditionOperator.NotEquals,
-            },
-        ],
-        rightOperandProperties: [RuleConditionProperty.FixedValue],
-    },
-    // Settings
-    {
-        name: 'Account name',
-        value: RuleConditionProperty.AccountName,
-        group: RuleConditionPropertyGroup.Settings,
-        hasTimeRangeModifier: false,
-        hasValueModifier: false,
-        operators: [
-            {
-                name: 'contains',
-                value: RuleConditionOperator.Contains,
-            },
-            {
-                name: 'not contains',
-                value: RuleConditionOperator.NotContains,
-            },
-            {
-                name: 'equals',
-                value: RuleConditionOperator.Equals,
-            },
-            {
-                name: 'not equals',
-                value: RuleConditionOperator.NotEquals,
-            },
-        ],
-        rightOperandProperties: [RuleConditionProperty.FixedValue],
-    },
-    {
-        name: 'Account created date',
-        value: RuleConditionProperty.AccountCreatedDate,
-        group: RuleConditionPropertyGroup.Settings,
-        hasTimeRangeModifier: false,
-        hasValueModifier: false,
-        operators: [
-            {
-                name: 'is less than',
-                value: RuleConditionOperator.LessThan,
-            },
-            {
-                name: 'is greater Than',
-                value: RuleConditionOperator.GreaterThan,
-            },
-            {
-                name: 'equals',
-                value: RuleConditionOperator.Equals,
-            },
-            {
-                name: 'not equals',
-                value: RuleConditionOperator.NotEquals,
-            },
-        ],
-        rightOperandProperties: [RuleConditionProperty.FixedValue],
-    },
-    {
-        name: 'Campaign name',
-        value: RuleConditionProperty.CampaignName,
-        group: RuleConditionPropertyGroup.Settings,
-        hasTimeRangeModifier: false,
-        hasValueModifier: false,
-        operators: [
-            {
-                name: 'contains',
-                value: RuleConditionOperator.Contains,
-            },
-            {
-                name: 'not contains',
-                value: RuleConditionOperator.NotContains,
-            },
-            {
-                name: 'equals',
-                value: RuleConditionOperator.Equals,
-            },
-            {
-                name: 'not equals',
-                value: RuleConditionOperator.NotEquals,
-            },
-        ],
-        rightOperandProperties: [RuleConditionProperty.FixedValue],
-    },
-    {
-        name: 'Campaign created date',
-        value: RuleConditionProperty.CampaignCreatedDate,
-        group: RuleConditionPropertyGroup.Settings,
-        hasTimeRangeModifier: false,
-        hasValueModifier: false,
-        operators: [
-            {
-                name: 'is less than',
-                value: RuleConditionOperator.LessThan,
-            },
-            {
-                name: 'is greater Than',
-                value: RuleConditionOperator.GreaterThan,
-            },
-            {
-                name: 'equals',
-                value: RuleConditionOperator.Equals,
-            },
-            {
-                name: 'not equals',
-                value: RuleConditionOperator.NotEquals,
-            },
-        ],
-        rightOperandProperties: [RuleConditionProperty.FixedValue],
-    },
-    {
-        name: 'Campaign budget',
-        value: RuleConditionProperty.CampaignBudget,
-        group: RuleConditionPropertyGroup.Settings,
-        hasTimeRangeModifier: false,
-        hasValueModifier: true,
-        operators: [
-            {
-                name: 'is less than',
-                value: RuleConditionOperator.LessThan,
-            },
-            {
-                name: 'is greater Than',
-                value: RuleConditionOperator.GreaterThan,
-            },
-            {
-                name: 'equals',
-                value: RuleConditionOperator.Equals,
-            },
-            {
-                name: 'not equals',
-                value: RuleConditionOperator.NotEquals,
-            },
-        ],
-        rightOperandProperties: [RuleConditionProperty.FixedValue],
-    },
-    {
-        name: 'Campaign type',
-        value: RuleConditionProperty.CampaignType,
-        group: RuleConditionPropertyGroup.Settings,
-        hasTimeRangeModifier: false,
-        hasValueModifier: false,
-        operators: [
-            {
-                name: 'contains',
-                value: RuleConditionOperator.Contains,
-            },
-            {
-                name: 'not contains',
-                value: RuleConditionOperator.NotContains,
-            },
-            {
-                name: 'equals',
-                value: RuleConditionOperator.Equals,
-            },
-            {
-                name: 'not equals',
-                value: RuleConditionOperator.NotEquals,
-            },
-        ],
-        rightOperandProperties: [RuleConditionProperty.FixedValue],
-    },
-    {
-        name: 'Ad group name',
-        value: RuleConditionProperty.AdGroupName,
-        group: RuleConditionPropertyGroup.Settings,
-        hasTimeRangeModifier: false,
-        hasValueModifier: false,
-        operators: [
-            {
-                name: 'contains',
-                value: RuleConditionOperator.Contains,
-            },
-            {
-                name: 'not contains',
-                value: RuleConditionOperator.NotContains,
-            },
-            {
-                name: 'equals',
-                value: RuleConditionOperator.Equals,
-            },
-            {
-                name: 'not equals',
-                value: RuleConditionOperator.NotEquals,
-            },
-        ],
-        rightOperandProperties: [RuleConditionProperty.FixedValue],
-    },
-    {
-        name: 'Ad group created date',
-        value: RuleConditionProperty.AdGroupCreatedDate,
-        group: RuleConditionPropertyGroup.Settings,
-        hasTimeRangeModifier: false,
-        hasValueModifier: false,
-        operators: [
-            {
-                name: 'is less than',
-                value: RuleConditionOperator.LessThan,
-            },
-            {
-                name: 'is greater Than',
-                value: RuleConditionOperator.GreaterThan,
-            },
-            {
-                name: 'equals',
-                value: RuleConditionOperator.Equals,
-            },
-            {
-                name: 'not equals',
-                value: RuleConditionOperator.NotEquals,
-            },
-        ],
-        rightOperandProperties: [RuleConditionProperty.FixedValue],
-    },
-    {
-        name: 'Daily budget',
-        value: RuleConditionProperty.DailyBudget,
-        group: RuleConditionPropertyGroup.Settings,
-        hasTimeRangeModifier: false,
-        hasValueModifier: true,
-        operators: [
-            {
-                name: 'is less than',
-                value: RuleConditionOperator.LessThan,
-            },
-            {
-                name: 'is greater Than',
-                value: RuleConditionOperator.GreaterThan,
-            },
-            {
-                name: 'equals',
-                value: RuleConditionOperator.Equals,
-            },
-            {
-                name: 'not equals',
-                value: RuleConditionOperator.NotEquals,
-            },
-        ],
-        rightOperandProperties: [RuleConditionProperty.FixedValue],
-    },
-    // Budget
-    {
-        name: 'Budget start date',
-        value: RuleConditionProperty.BudgetStartDate,
-        group: RuleConditionPropertyGroup.Budget,
-        hasTimeRangeModifier: false,
-        hasValueModifier: true,
-        operators: [
-            {
-                name: 'is less than',
-                value: RuleConditionOperator.LessThan,
-            },
-            {
-                name: 'is greater Than',
-                value: RuleConditionOperator.GreaterThan,
-            },
-            {
-                name: 'equals',
-                value: RuleConditionOperator.Equals,
-            },
-            {
-                name: 'not equals',
-                value: RuleConditionOperator.NotEquals,
-            },
-        ],
-        rightOperandProperties: [RuleConditionProperty.FixedValue],
-    },
-    {
-        name: 'Days until budget end',
-        value: RuleConditionProperty.DaysUntilBudgetEnd,
-        group: RuleConditionPropertyGroup.Budget,
-        hasTimeRangeModifier: false,
-        hasValueModifier: false,
-        operators: [
-            {
-                name: 'is less than',
-                value: RuleConditionOperator.LessThan,
-            },
-            {
-                name: 'is greater Than',
-                value: RuleConditionOperator.GreaterThan,
-            },
-            {
-                name: 'equals',
-                value: RuleConditionOperator.Equals,
-            },
-            {
-                name: 'not equals',
-                value: RuleConditionOperator.NotEquals,
-            },
-        ],
-        rightOperandProperties: [RuleConditionProperty.FixedValue],
-    },
-    {
-        name: 'Budget end date',
-        value: RuleConditionProperty.BudgetEndDate,
-        group: RuleConditionPropertyGroup.Budget,
-        hasTimeRangeModifier: false,
-        hasValueModifier: false,
-        operators: [
-            {
-                name: 'is less than',
-                value: RuleConditionOperator.LessThan,
-            },
-            {
-                name: 'is greater Than',
-                value: RuleConditionOperator.GreaterThan,
-            },
-            {
-                name: 'equals',
-                value: RuleConditionOperator.Equals,
-            },
-            {
-                name: 'not equals',
-                value: RuleConditionOperator.NotEquals,
-            },
-        ],
-        rightOperandProperties: [RuleConditionProperty.FixedValue],
-    },
-    {
-        name: 'Days since budget start',
-        value: RuleConditionProperty.DaysSinceBudgetStart,
-        group: RuleConditionPropertyGroup.Budget,
-        hasTimeRangeModifier: false,
-        hasValueModifier: false,
-        operators: [
-            {
-                name: 'is less than',
-                value: RuleConditionOperator.LessThan,
-            },
-            {
-                name: 'is greater Than',
-                value: RuleConditionOperator.GreaterThan,
-            },
-            {
-                name: 'equals',
-                value: RuleConditionOperator.Equals,
-            },
-            {
-                name: 'not equals',
-                value: RuleConditionOperator.NotEquals,
-            },
-        ],
-        rightOperandProperties: [RuleConditionProperty.FixedValue],
-    },
-    {
-        name: 'Remaining budget',
-        value: RuleConditionProperty.RemainingBudget,
-        group: RuleConditionPropertyGroup.Budget,
-        hasTimeRangeModifier: false,
-        hasValueModifier: true,
-        operators: [
-            {
-                name: 'is less than',
-                value: RuleConditionOperator.LessThan,
-            },
-            {
-                name: 'is greater Than',
-                value: RuleConditionOperator.GreaterThan,
-            },
-            {
-                name: 'equals',
-                value: RuleConditionOperator.Equals,
-            },
-            {
-                name: 'not equals',
-                value: RuleConditionOperator.NotEquals,
-            },
-        ],
-        rightOperandProperties: [
-            RuleConditionProperty.FixedValue,
-            RuleConditionProperty.TotalSpend,
-        ],
+        label: 'Lifetime',
+        value: TimeRange.Lifetime,
     },
 ];
+
+export const EMAIL_MACROS = [
+    {
+        label: 'Account name',
+        value: Macro.AccountName,
+    },
+    {
+        label: 'Campaign name',
+        value: Macro.CampaignName,
+    },
+    {
+        label: 'Ad group name',
+        value: Macro.AdGroupName,
+    },
+    {
+        label: 'Ad group daily cap',
+        value: Macro.AdGroupDailyCap,
+    },
+    {
+        label: 'Total spend (last 1 day)',
+        value: Macro.TotalSpendLastDay,
+    },
+    {
+        label: 'Total spend (last 3 day)',
+        value: Macro.TotalSpendLastThreeDays,
+    },
+    {
+        label: 'Total spend (last 7 day)',
+        value: Macro.TotalSpendLastSevenDays,
+    },
+    {
+        label: 'Total spend (lifetime)',
+        value: Macro.TotalSpendLifetime,
+    },
+];
+
+export const RULE_CONDITION_OPERANDS_OPTIONS = {
+    [RuleConditionOperandType.AbsoluteValue]: {
+        type: RuleConditionOperandType.AbsoluteValue,
+        label: 'Absolute value',
+        hasValue: true,
+    },
+    [RuleConditionOperandType.CurrentDate]: {
+        type: RuleConditionOperandType.CurrentDate,
+        label: 'Current date',
+        valueModifier: {unit: Unit.Date},
+    },
+    [RuleConditionOperandType.TotalSpend]: {
+        type: RuleConditionOperandType.TotalSpend,
+        label: 'Total spend',
+        group: RuleConditionOperandGroup.TrafficAcquisition,
+        hasTimeRangeModifier: true,
+        valueModifier: {unit: Unit.Percentage},
+    },
+    [RuleConditionOperandType.Impressions]: {
+        type: RuleConditionOperandType.Impressions,
+        label: 'Impressions',
+        group: RuleConditionOperandGroup.TrafficAcquisition,
+        hasTimeRangeModifier: true,
+        valueModifier: {unit: Unit.Percentage},
+    },
+    [RuleConditionOperandType.Clicks]: {
+        type: RuleConditionOperandType.Clicks,
+        label: 'Clicks',
+        group: RuleConditionOperandGroup.TrafficAcquisition,
+        hasTimeRangeModifier: true,
+        valueModifier: {unit: Unit.Percentage},
+    },
+    [RuleConditionOperandType.AdGroupDailyClickCap]: {
+        type: RuleConditionOperandType.AdGroupDailyClickCap,
+        label: 'Ad group daily click cap',
+        group: RuleConditionOperandGroup.Settings,
+        valueModifier: {unit: Unit.Percentage},
+    },
+    [RuleConditionOperandType.AdGroupStartDate]: {
+        type: RuleConditionOperandType.AdGroupStartDate,
+        label: 'Ad group start date',
+        group: RuleConditionOperandGroup.Settings,
+        valueModifier: {unit: Unit.Date},
+    },
+    [RuleConditionOperandType.CampaignBudget]: {
+        type: RuleConditionOperandType.CampaignBudget,
+        label: 'Campaign budget',
+        group: RuleConditionOperandGroup.Budget,
+        valueModifier: {unit: Unit.Percentage},
+    },
+    [RuleConditionOperandType.RemainingCampaignBudget]: {
+        type: RuleConditionOperandType.RemainingCampaignBudget,
+        label: 'Remaining campaign budget',
+        group: RuleConditionOperandGroup.Budget,
+        valueModifier: {unit: Unit.Percentage},
+    },
+    [RuleConditionOperandType.AdGroupDailyBudget]: {
+        type: RuleConditionOperandType.AdGroupDailyBudget,
+        label: 'Ad group daily budget',
+        group: RuleConditionOperandGroup.Budget,
+        valueModifier: {unit: Unit.Percentage},
+    },
+};
+
+export const RULE_CONDITIONS_OPTIONS = {
+    [RuleConditionOperandType.TotalSpend]: {
+        firstOperand:
+            RULE_CONDITION_OPERANDS_OPTIONS[
+                RuleConditionOperandType.TotalSpend
+            ],
+        availableOperators: [
+            RuleConditionOperator.LessThan,
+            RuleConditionOperator.GreaterThan,
+        ],
+        availableSecondOperands: [
+            {
+                ...RULE_CONDITION_OPERANDS_OPTIONS[
+                    RuleConditionOperandType.AbsoluteValue
+                ],
+                unit: Unit.Currency,
+                fractionSize: 2,
+            },
+            RULE_CONDITION_OPERANDS_OPTIONS[
+                RuleConditionOperandType.CampaignBudget
+            ],
+            RULE_CONDITION_OPERANDS_OPTIONS[
+                RuleConditionOperandType.RemainingCampaignBudget
+            ],
+            RULE_CONDITION_OPERANDS_OPTIONS[
+                RuleConditionOperandType.AdGroupDailyBudget
+            ],
+        ],
+    },
+    [RuleConditionOperandType.Impressions]: {
+        firstOperand:
+            RULE_CONDITION_OPERANDS_OPTIONS[
+                RuleConditionOperandType.Impressions
+            ],
+        availableOperators: [
+            RuleConditionOperator.LessThan,
+            RuleConditionOperator.GreaterThan,
+        ],
+        availableSecondOperands: [
+            {
+                ...RULE_CONDITION_OPERANDS_OPTIONS[
+                    RuleConditionOperandType.AbsoluteValue
+                ],
+                unit: Unit.None,
+                fractionSize: 0,
+            },
+        ],
+    },
+    [RuleConditionOperandType.Clicks]: {
+        firstOperand:
+            RULE_CONDITION_OPERANDS_OPTIONS[RuleConditionOperandType.Clicks],
+        availableOperators: [
+            RuleConditionOperator.LessThan,
+            RuleConditionOperator.GreaterThan,
+        ],
+        availableSecondOperands: [
+            {
+                ...RULE_CONDITION_OPERANDS_OPTIONS[
+                    RuleConditionOperandType.AbsoluteValue
+                ],
+                unit: Unit.None,
+                fractionSize: 0,
+            },
+            RULE_CONDITION_OPERANDS_OPTIONS[
+                RuleConditionOperandType.AdGroupDailyClickCap
+            ],
+        ],
+    },
+    [RuleConditionOperandType.AdGroupStartDate]: {
+        firstOperand:
+            RULE_CONDITION_OPERANDS_OPTIONS[
+                RuleConditionOperandType.AdGroupStartDate
+            ],
+        availableOperators: [
+            RuleConditionOperator.LessThan,
+            RuleConditionOperator.GreaterThan,
+        ],
+        availableSecondOperands: [
+            {
+                ...RULE_CONDITION_OPERANDS_OPTIONS[
+                    RuleConditionOperandType.AbsoluteValue
+                ],
+                unit: Unit.Date,
+            },
+            RULE_CONDITION_OPERANDS_OPTIONS[
+                RuleConditionOperandType.CurrentDate
+            ],
+        ],
+    },
+};
