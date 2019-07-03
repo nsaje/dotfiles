@@ -1,32 +1,21 @@
 version: "2.2"
 
 services:
-    # Main dashboard instance
-    eins:
+    # base definition for eins containers, not run
+    eins-base:
         image: z1-bundle:current
         restart: unless-stopped
         hostname: ${HOSTNAME}
         volumes:
           - "/mnt/logs/eins:/app/logs"
-        command: /start-server.sh
-        expose:
-          - "8000"
+        command: /bin/sleep 100000000
         environment:
-          VIRTUAL_HOST: "one.zemanta.com"
           CONF_ENV: "prod"
           NEW_RELIC_LICENSE_KEY: "1dfbd7b07a5cbf7bcc6eb18db5003808a058d16f"
-          NEW_RELIC_APP_NAME: "Zemanta One"
           NEW_RELIC_PROCESS_HOST_DISPLAY_NAME: "${HOSTNAME}-docker"
-          GUNICORN_TIMEOUT: "180"
-          GUNICORN_WORKERS: "1"
-          GUNICORN_THREADS: "1"
-          GUNICORN_WORKER_CLASS: "gevent"
-          GUNICORN_LOG_LEVEL: "warn"
         labels:
-          traefik.backend: "one.zemanta.com"
-          traefik.frontend.rule: "Host:one.zemanta.com"
-          traefik.frontend.passHostHeader: "true"
-          SERVICE_NAME: z1
+          SERVICE_NAME: z1-base
+          SERVICE_IGNORE: "true"
           SERVICE_TAGS: "z1"
           SERVICE_CHECK_TCP: "true"
           SERVICE_CHECK_INTERVAL: 5s
@@ -37,11 +26,28 @@ services:
             max-size: "50m"
             max-file: "3"
             labels: "eins"
-        mem_limit: 2g
         sysctls:
           net.core.somaxconn: 2048
         networks:
           - legacynet
+
+    # Main dashboard instance
+    eins:
+        extends: eins-base
+        command: /start-server.sh
+        environment:
+          VIRTUAL_HOST: "one.zemanta.com"
+          NEW_RELIC_APP_NAME: "Zemanta One"
+          GUNICORN_TIMEOUT: "180"
+          GUNICORN_WORKERS: "1"
+          GUNICORN_THREADS: "1"
+          GUNICORN_WORKER_CLASS: "gevent"
+        expose:
+          - "8000"
+        mem_limit: 2g
+        labels:
+          SERVICE_NAME: z1
+          SERVICE_IGNORE: "false"
         scale: 8
 
     one_ambassador:
@@ -52,7 +58,6 @@ services:
           - "8001:8000"
         mem_limit: 128m
         labels:
-          traefik.enable: "false"
           SERVICE_IGNORE: "true"
         networks:
           - legacynet
@@ -61,7 +66,8 @@ services:
 
     # for local callback from K1 and BusinessWire integration
     eins-api-callback:
-        extends: eins
+        extends: eins-base
+        command: /start-server.sh
         expose:
           - "8000"
         environment:
@@ -73,8 +79,7 @@ services:
         mem_limit: 1g
         labels:
           SERVICE_NAME: one-cb
-          traefik.backend: "one-cb.zemanta.com"
-          traefik.frontend.rule: "Host:one-cb.zemanta.com"
+          SERVICE_IGNORE: "false"
         scale: 6
 
     one-cb_ambassador:
@@ -85,7 +90,6 @@ services:
           - "8002:8000"
         mem_limit: 128m
         labels:
-          traefik.enable: "false"
           SERVICE_IGNORE: "true"
         networks:
           - legacynet
@@ -94,7 +98,8 @@ services:
 
     # for REST API
     eins-rest-api:
-        extends: eins
+        extends: eins-base
+        command: /start-server.sh
         expose:
           - "8000"
         environment:
@@ -103,12 +108,10 @@ services:
           GUNICORN_WORKERS: "1"
           GUNICORN_THREADS: "1"
           GUNICORN_WORKER_CLASS: "gevent"
-          GUNICORN_LOG_LEVEL: "warn"
         mem_limit: 1g
         labels:
           SERVICE_NAME: oneapi
-          traefik.backend: "oneapi.zemanta.com"
-          traefik.frontend.rule: "Host:oneapi.zemanta.com"
+          SERVICE_IGNORE: "false"
         scale: 15
 
     oneapi_ambassador:
@@ -119,7 +122,6 @@ services:
           - "8004:8000"
         mem_limit: 128m
         labels:
-          traefik.enable: "false"
           SERVICE_IGNORE: "true"
         networks:
           - legacynet
@@ -127,24 +129,22 @@ services:
           - eins-rest-api
 
     einsworker_reports:
-        extends: eins
+        extends: eins-base
         scale: 5
         environment:
           NEW_RELIC_APP_NAME: "Zemanta One (Reports)"
         mem_limit: 4g
         labels:
-          traefik.enable: "false"
           SERVICE_IGNORE: "true"
         entrypoint: ""
         command: "/usr/local/bin/newrelic-admin run-program celery worker -A server -c 1 -Q z1-reports -l INFO -f /app/logs/eins_celery_reports.log --prefetch-multiplier 0 -P prefork"
 
     einsworker_redshift_background_cache:
-        extends: eins
+        extends: eins-base
         environment:
           NEW_RELIC_APP_NAME: "Zemanta One (Redshift Background Cache)"
         mem_limit: 512m
         labels:
-          traefik.enable: "false"
           SERVICE_IGNORE: "true"
         entrypoint: ""
         command: "/usr/local/bin/newrelic-admin run-program celery worker -A server -c 1 -Q redshift-background-cache -l INFO -f /app/logs/eins_celery_redshift_background_cache.log --prefetch-multiplier 0 -P solo"
@@ -152,20 +152,18 @@ services:
     einsworker_upload_lambda:
         environment:
           NEW_RELIC_APP_NAME: "Zemanta One (Lambda)"
-        extends: eins
+        extends: eins-base
         mem_limit: 256m
         labels:
-          traefik.enable: "false"
           SERVICE_IGNORE: "true"
         entrypoint: ""
         command: "/usr/local/bin/newrelic-admin run-program celery worker -A server -c 1 -Q z1-upload-lambda -l INFO -f /app/logs/eins_celery_upload_lambda.log --prefetch-multiplier 0 -P gevent"
         scale: 15
 
     einsworker_convapi:
-        extends: eins
+        extends: eins-base
         mem_limit: 512m
         labels:
-          traefik.enable: "false"
           SERVICE_IGNORE: "true"
         environment:
           NEW_RELIC_APP_NAME: "Zemanta One (ConvAPI)"
@@ -184,7 +182,7 @@ services:
       mem_limit: 512m
 
     # einsworker_convapi_v2:
-    #     extends: eins
+    #     extends: eins-base
     #     mem_limit: 256m
     #     labels:
     #       traefik.enable: "false"
@@ -193,7 +191,8 @@ services:
 
     # ONE Whitelabel
     eins-newscorp:
-        extends: eins
+        extends: eins-base
+        command: /start-server.sh
         ports:
           - "8000"
         environment:
@@ -201,8 +200,7 @@ services:
           NEW_RELIC_APP_NAME: "Zemanta One Whitelabel (Newscorp)"
         labels:
           SERVICE_NAME: one-newscorp
-          traefik.backend: "newscorp.zemanta.com"
-          traefik.frontend.rule: "Host:newscorp.zemanta.com"
+          SERVICE_IGNORE: "false"
 
 # created with CLI: docker network create -d bridge legacynet
 networks:
