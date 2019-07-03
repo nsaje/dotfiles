@@ -3,6 +3,7 @@ import dash.features.geolocation
 import redshiftapi.api_inventory
 
 from . import constants
+from . import nas
 
 ZERO_ROW = {"bids": 0, "bid_reqs": 0, "win_notices": 0, "total_win_price": 0, "slots": 0, "redirects": 0}
 MIN_AUCTIONS = 1000
@@ -34,45 +35,9 @@ def get_filtered_sources_map(request):
     sources_map = {
         source.id: source.name
         for source in _get_sources_cache()
-        if (
-            source.released
-            or has_mediamond_credentials(request)
-            and source.id == constants.NativeAdServerSourceId.MEDIAMOND
-            or has_rcs_credentials(request)
-            and source.id == constants.NativeAdServerSourceId.RCS
-            or has_newscorp_credentials(request)
-            and source.id in [constants.NativeAdServerSourceId.NEWSCORP, constants.NativeAdServerSourceId.NEWSCORP_TEST]
-        )
+        if (source.released or nas.should_show_nas_source(source, request))
     }
     return sources_map
-
-
-def has_mediamond_credentials(request):
-    return (
-        request is None
-        or request.user.has_perm("zemauth.can_see_mediamond_publishers")
-        or request.user.agency_set.filter(
-            id__in=[constants.NativeAdServerAgencyId.MEDIAMOND, constants.NativeAdServerAgencyId.MEDIAMOND_SELF_MANAGED]
-        ).exists()
-    )
-
-
-def has_rcs_credentials(request):
-    return (
-        request is None
-        or request.user.has_perm("zemauth.can_see_rcs_publishers")
-        or request.user.agency_set.filter(
-            id__in=[constants.NativeAdServerAgencyId.RCS_MEDIAGROUP, constants.NativeAdServerAgencyId.RCS]
-        ).exists()
-    )
-
-
-def has_newscorp_credentials(request):
-    return (
-        request is None
-        or request.user.has_perm("zemauth.can_see_newscorp_publishers")
-        or request.user.agency_set.filter(id=constants.NativeAdServerAgencyId.NEWSCORP).exists()
-    )
 
 
 def _update_filters(request, filters):

@@ -418,6 +418,7 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ("can_include_tags_in_reports", "Can include tags in reports"),
             ("can_filter_by_business", "User can filter by business"),
             ("fea_can_create_automation_rules", "User can create automation rules."),
+            ("can_see_all_nas_in_inventory_planning", "User can see all NAS sources in Inventory Planning."),
         )
 
     def get_full_name(self):
