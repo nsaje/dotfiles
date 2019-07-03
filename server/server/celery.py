@@ -1,7 +1,6 @@
 # isort:skip_file
 import os
-
-# import swinfra.celery
+import swinfra.celery
 
 from celery import Celery  # noqa
 
@@ -17,4 +16,4 @@ app = Celery("eins")
 app.config_from_object("django.conf:settings")
 app.autodiscover_tasks(lambda: settings.INSTALLED_APPS)
 
-# swinfra.celery.outbrain_celery_setup()
+swinfra.celery.outbrain_celery_setup()
