@@ -6,6 +6,7 @@ import core.features.bcm.bcm_slack
 import core.features.bcm.credit_line_item
 import core.features.multicurrency
 import core.models.account
+import core.models.outbrain_account
 import dash.constants
 import utils.converters
 import utils.exc
@@ -140,6 +141,9 @@ def create_account(request, **kwargs):
     settings_updates = kwargs.pop("settings", {})
     new_account = core.models.Account.objects.create(request, agency=agency, **kwargs)
     new_account.settings.update(request, account_type=dash.constants.AccountType.MANAGED, **settings_updates)
+    marketer_id = kwargs.get("outbrain_marketer_id")
+    if marketer_id and not core.models.OutbrainAccount.objects.filter(marketer_id=marketer_id).exists():
+        core.models.OutbrainAccount.objects.create(marketer_id=marketer_id, used=True)
     return new_account
 
 

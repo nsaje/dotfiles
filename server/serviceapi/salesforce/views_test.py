@@ -922,6 +922,8 @@ class AccountTestCase(TestCase):
         self.assertEqual(r.status_code, 200)
         new_account = core.models.Account.objects.filter(name="new Account").first()
         self.assertIsNotNone(new_account)
+        new_ob_account = core.models.OutbrainAccount.objects.filter(marketer_id="EXTERNAL ID", used=True).first()
+        self.assertIsNotNone(new_ob_account)
         self.assertEqual(
             r.data,
             {
