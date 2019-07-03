@@ -712,3 +712,12 @@ class AdGroupViewSetTest(RESTAPITest):
             reverse("restapi.adgroup.v1:adgroups_details", kwargs={"ad_group_id": 2040}), data=adgroup, format="json"
         )
         self.assertResponseError(r, "ValidationError")
+
+    def test_adgroups_put_language_matching(self):
+        adgroup = self.adgroup_repr(language_targeting_enabled=True)
+        r = self.client.put(
+            reverse("restapi.adgroup.v1:adgroups_details", kwargs={"ad_group_id": 2040}), data=adgroup, format="json"
+        )
+        resp_json = self.assertResponseValid(r)
+        self.assertEqual(resp_json["data"]["targeting"]["language"]["matchingEnabled"], True)
+        self.validate_against_db(resp_json["data"])

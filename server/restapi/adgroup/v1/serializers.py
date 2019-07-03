@@ -62,7 +62,7 @@ class AdGroupRetargetingSerializer(restapi.serializers.base.RESTAPIBaseSerialize
 
 
 class AdGroupLanguageSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
-    matchingEnabled = rest_framework.serializers.BooleanField(
+    matching_enabled = rest_framework.serializers.BooleanField(
         source="language_targeting_enabled", default=False, required=False
     )
 
