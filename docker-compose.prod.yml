@@ -175,8 +175,8 @@ services:
       image: prom/pushgateway
       restart: always
       entrypoint: ["/bin/pushgateway", "--web.listen-address=:8000", "--web.telemetry-path=/internal/metrics"]
-      ports:
-        - "8000:8000"
+      expose:
+        - "8000"
       networks:
         - legacynet
       mem_limit: 512m
