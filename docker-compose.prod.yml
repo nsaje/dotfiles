@@ -171,16 +171,6 @@ services:
         command: "/usr/local/bin/newrelic-admin run-program celery worker -A server -c 1 -Q prod-convapi -l INFO -f /app/logs/eins_celery_convapi.log"
         scale: 3
 
-    eins-jobs-pushgateway:
-      image: prom/pushgateway
-      restart: always
-      entrypoint: ["/bin/pushgateway", "--web.listen-address=:8000", "--web.telemetry-path=/internal/metrics"]
-      expose:
-        - "8000"
-      networks:
-        - legacynet
-      mem_limit: 512m
-
     # einsworker_convapi_v2:
     #     extends: eins-base
     #     mem_limit: 256m
