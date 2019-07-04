@@ -7,6 +7,8 @@ NAS_MAPPING = {  # source id to a list of agency ids whose users have access to 
     127: [275],  # pop tv
     163: [440],  # prisa
     162: [443],  # adria media
+    171: [408],  # rossel
+    172: [525],  # friday media group
 }
 
 
