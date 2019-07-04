@@ -31,7 +31,7 @@
 30 7 1 * *       /home/ubuntu/docker-manage-py.sh refresh_inventory_data
 #0 8 * * *        /home/ubuntu/docker-manage-py.sh auto_archive_inactive_entities
 0 8 * * *        /home/ubuntu/docker-manage-py.sh create_demo_snapshot
-15 9-12 * * *    /home/ubuntu/docker-manage-py.sh run_autopilot --daily-run
+15 9-14 * * *    /home/ubuntu/docker-manage-py.sh run_autopilot --daily-run
 15 9 * * 1       /home/ubuntu/docker-manage-py.sh audit_credits --send-emails
 0 10 * * *       /home/ubuntu/docker-manage-py.sh campaignstop_monitor --slack
 0 10 5,15,25 * * /home/ubuntu/docker-manage-py.sh audit_pacing --send-emails
@@ -47,9 +47,9 @@
 0 12 * * *       /home/ubuntu/docker-manage-py.sh free_inactive_allocated_assets
 0 12 * * *       /home/ubuntu/docker-manage-py.sh monitor_dailystatement_holes
 0 12 * * *       /home/ubuntu/docker-manage-py.sh send_outbrain_manual_actions_email
-0 13 * * *       /home/ubuntu/docker-manage-py.sh audit_autopilot --slack
 0 13 * * *       /home/ubuntu/docker-manage-py.sh audit_publisher_high_ctr --slack
 0 14 * * *       /home/ubuntu/docker-manage-py.sh audit_overspend --slack
+0 15 * * *       /home/ubuntu/docker-manage-py.sh audit_autopilot --slack
 30 16 * * *      /home/ubuntu/docker-manage-py.sh send_supply_report_emails
 0 22 * * *       /home/ubuntu/docker-manage-py.sh clean_up_postgres_stats
 0 21 * * *       /home/ubuntu/docker-manage-py.sh clean_up_redshift  # has to run before vacuum_stats
