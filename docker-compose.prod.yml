@@ -160,25 +160,6 @@ services:
         command: "/usr/local/bin/newrelic-admin run-program celery worker -A server -c 1 -Q z1-upload-lambda -l INFO -f /app/logs/eins_celery_upload_lambda.log --prefetch-multiplier 0 -P gevent"
         scale: 15
 
-    einsworker_convapi:
-        extends: eins-base
-        mem_limit: 512m
-        labels:
-          SERVICE_IGNORE: "true"
-        environment:
-          NEW_RELIC_APP_NAME: "Zemanta One (ConvAPI)"
-        entrypoint: ""
-        command: "/usr/local/bin/newrelic-admin run-program celery worker -A server -c 1 -Q prod-convapi -l INFO -f /app/logs/eins_celery_convapi.log"
-        scale: 3
-
-    # einsworker_convapi_v2:
-    #     extends: eins-base
-    #     mem_limit: 256m
-    #     labels:
-    #       traefik.enable: "false"
-    #     entrypoint: ""
-    #     command: "celery worker -A server -c 3 -Q prod-convapi_v2 -l INFO -f /app/logs/eins_celery_convapi_v2.log"
-
     # ONE Whitelabel
     eins-newscorp:
         extends: eins-base
