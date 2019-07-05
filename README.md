@@ -214,7 +214,7 @@ docker-compose -f docker-compose.yml -f docker-compose.acceptance.yml up --force
 
 then exec into server container:
 
-`docker exec -it server bash`
+`docker exec -it zemanta-eins_server_1 bash`
 
 and run inside:
 
@@ -318,7 +318,7 @@ docker run --rm \
     -v $PWD:/src \
     --workdir=/src/ \
     --entrypoint=sh \
-    py3-tools -c "pip-compile --output-file server/requirements.txt server/requirements.in --no-annotate"
+    py3-tools -c "pip-compile --no-annotate server/requirements.in"
 ```
 
 In case of conflicts passing the `-v` flag to the `pip-compile` call is useful for easier debugging.
