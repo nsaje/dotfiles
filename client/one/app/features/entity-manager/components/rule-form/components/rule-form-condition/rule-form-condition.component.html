@@ -1,6 +1,6 @@
-<div class="zem-rule-form-condition__group">
+<div class="zem-rule-form-condition__operand-container">
     <zem-select-input
-        class="zem-rule-form-condition__group-property zem-select-input"
+        class="zem-rule-form-condition__operand-select zem-select-input"
         [value]="ruleCondition.firstOperand"
         bindLabel="label"
         bindValue="type"
@@ -26,7 +26,7 @@
         </zem-rule-form-condition-modifier>
     </ng-template>
     <button
-        class="zem-rule-form-condition__button button button--plain button--with-icon button--only-icon dots-icon"
+        class="zem-rule-form-condition__modifiers-toggle button button--plain button--with-icon button--only-icon dots-icon"
         [zemPopover]="firstOperandModifierPopoverTemplate"
         [disabled]="!areModifiersAvailable(selectedFirstOperandConfig)"
         autoClose="outside"
@@ -34,7 +34,7 @@
     ></button>
 </div>
 <zem-select-input
-    class="zem-rule-form-condition__property zem-select-input"
+    class="zem-rule-form-condition__operator zem-select-input"
     [value]="ruleCondition.operator"
     bindLabel="label"
     bindValue="operator"
@@ -44,26 +44,66 @@
     [isClearable]="false"
     (valueChange)="selectOperator($event)"
 ></zem-select-input>
-<div class="zem-rule-form-condition__group">
-    <zem-decimal-input
-        class="zem-decimal-input zem-rule-form-condition__group-value"
+<div class="zem-rule-form-condition__operand-container">
+    <zem-integer-input
+        class="zem-decimal-input zem-rule-form-condition__absolute-value-input"
         *ngIf="
             selectedSecondOperandConfig &&
             selectedSecondOperandConfig.hasValue &&
-            selectedSecondOperandConfig.unit === Unit.None
+            !selectedSecondOperandConfig.unit &&
+            selectedSecondOperandConfig.dataType === DataType.Integer
+        "
+        [value]="ruleCondition.secondOperandValue"
+        (inputBlur)="updateSecondOperandValue($event)"
+    ></zem-integer-input>
+    <zem-decimal-input
+        class="zem-decimal-input zem-rule-form-condition__absolute-value-input"
+        *ngIf="
+            selectedSecondOperandConfig &&
+            selectedSecondOperandConfig.hasValue &&
+            !selectedSecondOperandConfig.unit &&
+            selectedSecondOperandConfig.dataType === DataType.Decimal
         "
         [value]="ruleCondition.secondOperandValue"
         [fractionSize]="selectedSecondOperandConfig.fractionSize"
         (inputBlur)="updateSecondOperandValue($event)"
     ></zem-decimal-input>
-    <!-- PRTODO (jurebajt): Create percentage prefixed input component -->
-    <zem-currency-input
-        class="zem-currency-input zem-rule-form-condition__group-value"
+    <!-- TODO (automation-rules): Use zem-text-input component -->
+    <input
+        #secondOperandStringValue
+        class="zem-input-text zem-rule-form-condition__absolute-value-input"
+        type="text"
         *ngIf="
             selectedSecondOperandConfig &&
             selectedSecondOperandConfig.hasValue &&
-            (selectedSecondOperandConfig.unit === Unit.Currency ||
-                selectedSecondOperandConfig.unit === Unit.Percentage)
+            selectedSecondOperandConfig.dataType === DataType.String
+        "
+        [ngModel]="ruleCondition.secondOperandValue"
+        (blur)="updateSecondOperandValue(secondOperandStringValue.value)"
+    />
+    <zem-prefixed-input
+        class="zem-prefixed-input zem-rule-form-condition__absolute-value-input"
+        *ngIf="
+            selectedSecondOperandConfig &&
+            selectedSecondOperandConfig.hasValue &&
+            selectedSecondOperandConfig.unit &&
+            selectedSecondOperandConfig.dataType === DataType.Decimal
+        "
+        [prefix]="getUnitText(selectedSecondOperandConfig.unit)"
+    >
+        <zem-decimal-input
+            class="zem-decimal-input"
+            [value]="ruleCondition.secondOperandValue"
+            [fractionSize]="selectedSecondOperandConfig.fractionSize"
+            (inputBlur)="updateSecondOperandValue($event)"
+        ></zem-decimal-input>
+    </zem-prefixed-input>
+    <zem-currency-input
+        class="zem-currency-input zem-rule-form-condition__absolute-value-input"
+        *ngIf="
+            selectedSecondOperandConfig &&
+            selectedSecondOperandConfig.hasValue &&
+            selectedSecondOperandConfig.dataType === DataType.Currency
         "
         [value]="ruleCondition.secondOperandValue"
         [fractionSize]="selectedSecondOperandConfig.fractionSize"
@@ -71,17 +111,17 @@
         (inputBlur)="updateSecondOperandValue($event)"
     ></zem-currency-input>
     <zem-date-input
-        class="zem-date-input zem-rule-form-condition__group-value"
+        class="zem-date-input zem-rule-form-condition__absolute-value-input"
         *ngIf="
             selectedSecondOperandConfig &&
             selectedSecondOperandConfig.hasValue &&
-            selectedSecondOperandConfig.unit === Unit.Date
+            selectedSecondOperandConfig.dataType === DataType.Date
         "
         [value]="ruleCondition.secondOperandValue"
         (valueChange)="updateSecondOperandValue($event)"
     ></zem-date-input>
     <zem-select-input
-        class="zem-rule-form-condition__group-property zem-select-input"
+        class="zem-rule-form-condition__operand-select zem-select-input"
         [value]="ruleCondition.secondOperand"
         bindLabel="label"
         bindValue="type"
@@ -108,7 +148,7 @@
         </zem-rule-form-condition-modifier>
     </ng-template>
     <button
-        class="zem-rule-form-condition__button button button--plain button--with-icon button--only-icon dots-icon"
+        class="zem-rule-form-condition__modifiers-toggle button button--plain button--with-icon button--only-icon dots-icon"
         [zemPopover]="secondOperandModifierTemplate"
         [disabled]="!areModifiersAvailable(selectedSecondOperandConfig)"
         autoClose="outside"
@@ -116,6 +156,6 @@
     ></button>
 </div>
 <button
-    class="zem-rule-form-condition__button button button--with-icon button--only-icon remove-icon"
+    class="zem-rule-form-condition__remove-button button button--with-icon button--only-icon remove-icon"
     (click)="removeCondition()"
 ></button>

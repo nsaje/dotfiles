@@ -53,7 +53,7 @@ export class RuleFormConditionsComponent {
         return item.id;
     }
 
-    // PRTODO (jurebajt): Try to remove id (needed by *ngFor?) since this implementation breaks when editing existing rules
+    // TODO (automation-rules): Try to remove id (needed by *ngFor?) since this implementation breaks when editing existing rules
     private generateNewCondition(): RuleCondition {
         return {
             id: ruleFormHelpers.uuid(),

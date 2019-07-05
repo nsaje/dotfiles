@@ -17,6 +17,7 @@ import {
     RuleConditionOperandType,
     RuleConditionOperandGroup,
     Unit,
+    DataType,
 } from '../../rule-form.constants';
 import {RuleConditionConfig} from '../../types/rule-condition-config';
 import {RuleConditionOperandConfig} from '../../types/rule-condition-operand-config';
@@ -54,9 +55,10 @@ export class RuleFormConditionComponent implements OnChanges {
 
     RuleConditionOperandType = RuleConditionOperandType;
     Unit = Unit;
+    DataType = DataType;
     getUnitText = ruleFormHelpers.getUnitText;
 
-    // PRTODO (jurebajt): When unit === Date, operand value must be converted from/to string
+    // TODO (automation-rules): When unit === Date, operand value must be converted from/to string
     ngOnChanges(changes: SimpleChanges): void {
         if (changes.availableConditions) {
             this.availableFirstOperands = this.getAvailableFirstOperands();
@@ -281,9 +283,9 @@ export class RuleFormConditionComponent implements OnChanges {
         unit: Unit
     ): string {
         switch (unit) {
-            case Unit.Percentage:
+            case Unit.Percent:
                 return `${value}% of ${label}`;
-            case Unit.Date:
+            case Unit.Day:
                 return this.getLabelForModifiedDateValue(value, label);
             default:
                 return label;

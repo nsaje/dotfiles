@@ -8,10 +8,12 @@ export function uuid(): string {
 
 export function getUnitText(unit: Unit): string {
     switch (unit) {
-        case Unit.Percentage:
+        case Unit.Percent:
             return '%';
-        case Unit.Currency:
-            // PRTODO (jurebajt): Return correct currency symbol
+        case Unit.Second:
+            return 's';
+        case Unit.CurrencySign:
+            // TODO (automation-rules): Return correct currency symbol
             return '$';
         default:
             return '';

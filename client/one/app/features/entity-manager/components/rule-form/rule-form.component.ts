@@ -33,7 +33,7 @@ export class RuleFormComponent implements OnInit {
     constructor(public store: RuleFormStore) {}
 
     ngOnInit(): void {
-        // PRTODO (jurebajt): Remove when entity selector gets implemented
+        // TODO (automation-rules): Remove when entity selector gets implemented
         this.title = this.getTitle(this.entityId, this.entityType);
     }
 

@@ -1,5 +1,6 @@
-import {Unit} from '../rule-form.constants';
+import {Unit, DataType} from '../rule-form.constants';
 
 export interface RuleConditionOperandValueModifier {
-    unit: Unit;
+    dataType: DataType;
+    unit?: Unit;
 }

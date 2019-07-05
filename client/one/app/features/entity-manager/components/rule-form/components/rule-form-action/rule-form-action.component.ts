@@ -56,7 +56,7 @@ export class RuleFormActionComponent implements OnChanges {
         if (!updatedAction.type) {
             updatedAction.frequency = null;
         }
-        // PRTODO (jurebajt): Should we reset email fields too? Maybe reset it on "Save" if ruleAction.type !== "SEND_EMAIL"
+        // TODO (automation-rules): Should we reset email fields too? Maybe reset it on "Save" if ruleAction.type !== "SEND_EMAIL"
         this.ruleActionChange.emit(updatedAction);
     }
 

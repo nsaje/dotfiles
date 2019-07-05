@@ -9,7 +9,7 @@ import {
     SimpleChanges,
     OnChanges,
 } from '@angular/core';
-import {TimeRange, Unit} from '../../rule-form.constants';
+import {TimeRange, Unit, DataType} from '../../rule-form.constants';
 import {TIME_RANGES} from '../../rule-form.config';
 import {RuleConditionOperandValueModifier} from '../../types/rule-condition-operand-value-modifier';
 
@@ -35,6 +35,7 @@ export class RuleFormConditionModifierComponent implements OnChanges {
     timeRangeChange = new EventEmitter<TimeRange>();
 
     Unit = Unit;
+    DataType = DataType;
     availableTimeRanges = TIME_RANGES;
     availableValueSigns = [
         {label: 'plus', value: ''},
@@ -47,7 +48,8 @@ export class RuleFormConditionModifierComponent implements OnChanges {
         if (changes.value) {
             this.valueSign = '';
             if (
-                this.valueModifier.unit === Unit.Date &&
+                this.valueModifier &&
+                this.valueModifier.unit === Unit.Day &&
                 this.value &&
                 this.value.startsWith('-')
             ) {

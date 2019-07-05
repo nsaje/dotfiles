@@ -113,11 +113,80 @@ export class RuleFormStore extends Store<RuleFormStoreState> {
     private getConditionsForDimension(
         dimension: RuleDimension
     ): RuleConditionConfig[] {
+        // TODO (automation-rules): Return filtered list of conditions based on dimension
         return [
             RULE_CONDITIONS_OPTIONS[RuleConditionOperandType.TotalSpend],
             RULE_CONDITIONS_OPTIONS[RuleConditionOperandType.Impressions],
             RULE_CONDITIONS_OPTIONS[RuleConditionOperandType.Clicks],
+            RULE_CONDITIONS_OPTIONS[RuleConditionOperandType.Ctr],
+            RULE_CONDITIONS_OPTIONS[RuleConditionOperandType.Cpc],
+            RULE_CONDITIONS_OPTIONS[RuleConditionOperandType.Cpm],
+            RULE_CONDITIONS_OPTIONS[RuleConditionOperandType.Visits],
+            RULE_CONDITIONS_OPTIONS[RuleConditionOperandType.UniqueUsers],
+            RULE_CONDITIONS_OPTIONS[RuleConditionOperandType.NewUsers],
+            RULE_CONDITIONS_OPTIONS[RuleConditionOperandType.ReturningUsers],
+            RULE_CONDITIONS_OPTIONS[RuleConditionOperandType.PercentNewUsers],
+            RULE_CONDITIONS_OPTIONS[RuleConditionOperandType.ClickDiscrepancy],
+            RULE_CONDITIONS_OPTIONS[RuleConditionOperandType.Pageviews],
+            RULE_CONDITIONS_OPTIONS[RuleConditionOperandType.PageviewsPerVisit],
+            RULE_CONDITIONS_OPTIONS[RuleConditionOperandType.BouncedVisits],
+            RULE_CONDITIONS_OPTIONS[RuleConditionOperandType.NonBouncedVisits],
+            RULE_CONDITIONS_OPTIONS[RuleConditionOperandType.BounceRate],
+            RULE_CONDITIONS_OPTIONS[RuleConditionOperandType.TotalSeconds],
+            RULE_CONDITIONS_OPTIONS[RuleConditionOperandType.TimeOnSite],
+            RULE_CONDITIONS_OPTIONS[
+                RuleConditionOperandType.RemainingCampaignBudget
+            ],
+            RULE_CONDITIONS_OPTIONS[
+                RuleConditionOperandType.CampaignBudgetMargin
+            ],
+            RULE_CONDITIONS_OPTIONS[
+                RuleConditionOperandType.CampaignBudgetStartDate
+            ],
+            RULE_CONDITIONS_OPTIONS[
+                RuleConditionOperandType.CampaignBudgetEndDate
+            ],
+            RULE_CONDITIONS_OPTIONS[
+                RuleConditionOperandType.DaysSinceCampaignBudgetStart
+            ],
+            RULE_CONDITIONS_OPTIONS[
+                RuleConditionOperandType.DaysUntilCampaignBudgetEnd
+            ],
+            RULE_CONDITIONS_OPTIONS[RuleConditionOperandType.AccountName],
+            RULE_CONDITIONS_OPTIONS[
+                RuleConditionOperandType.AccountCreationDate
+            ],
+            RULE_CONDITIONS_OPTIONS[
+                RuleConditionOperandType.DaysSinceAccountCreation
+            ],
+            RULE_CONDITIONS_OPTIONS[RuleConditionOperandType.CampaignName],
+            RULE_CONDITIONS_OPTIONS[
+                RuleConditionOperandType.CampaignCreationDate
+            ],
+            RULE_CONDITIONS_OPTIONS[
+                RuleConditionOperandType.DaysSinceCampaignCreation
+            ],
+            RULE_CONDITIONS_OPTIONS[RuleConditionOperandType.CampaignManager],
+            RULE_CONDITIONS_OPTIONS[RuleConditionOperandType.AdGroupName],
+            RULE_CONDITIONS_OPTIONS[
+                RuleConditionOperandType.AdGroupCreationDate
+            ],
+            RULE_CONDITIONS_OPTIONS[
+                RuleConditionOperandType.DaysSinceAdGroupCreation
+            ],
             RULE_CONDITIONS_OPTIONS[RuleConditionOperandType.AdGroupStartDate],
+            RULE_CONDITIONS_OPTIONS[RuleConditionOperandType.AdGroupEndDate],
+            RULE_CONDITIONS_OPTIONS[
+                RuleConditionOperandType.AdGroupDailyBudget
+            ],
+            RULE_CONDITIONS_OPTIONS[RuleConditionOperandType.CreativeName],
+            RULE_CONDITIONS_OPTIONS[RuleConditionOperandType.CreativeLabel],
+            RULE_CONDITIONS_OPTIONS[
+                RuleConditionOperandType.CreativeCreationDate
+            ],
+            RULE_CONDITIONS_OPTIONS[
+                RuleConditionOperandType.DaysSinceCreativeCreation
+            ],
         ];
     }
 }

@@ -1,37 +1,42 @@
 @import 'variables';
+@import '../../../../styles/_settings.variables.less';
 
 .zem-rule-form-condition {
     display: flex;
     flex-wrap: wrap;
-    padding: 5px;
+    align-items: center;
     border: 1px solid @color--lighter-neutral;
     border-radius: 4px;
 }
 
-.zem-rule-form-condition__group {
+.zem-rule-form-condition__operand-container {
     display: flex;
-    width: 200px;
-    margin-right: 5px;
+    align-items: center;
+    flex: 1 0 360px;
+    margin: @zem-settings__items-spacing--default / 2;
 }
 
-.zem-rule-form-condition__group-value {
-    flex: 1 1 auto;
-    min-width: 80px;
+.zem-rule-form-condition__operand-select {
+    flex: 1 0 200px;
     margin-right: 2px;
 }
 
-.zem-rule-form-condition__group-property {
-    flex: 1 1 auto;
-    min-width: 60px;
-    margin-right: 2px;
-}
-
-.zem-rule-form-condition__property {
-    flex: 1 1 auto;
-    min-width: 60px;
-    margin-right: 5px;
-}
-
-.zem-rule-form-condition__button {
+.zem-rule-form-condition__modifiers-toggle {
     flex: 0;
+    margin: 0 !important;
+}
+
+.zem-rule-form-condition__absolute-value-input {
+    flex: 0 1 140px;
+    margin-right: 2px;
+}
+
+.zem-rule-form-condition__operator {
+    flex: 1 0 120px;
+    margin: @zem-settings__items-spacing--default / 2;
+}
+
+.zem-rule-form-condition__remove-button {
+    flex: 0;
+    margin: @zem-settings__items-spacing--default / 2 !important;
 }
