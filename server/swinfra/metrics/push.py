@@ -22,9 +22,13 @@ def start_push_mode(gateway_addr: str, push_period_seconds: float, job: str = No
 
     _params = {"gateway_addr": gateway_addr, "push_period_seconds": push_period_seconds, "job": job}
     registry.set_registry(prometheus_client.CollectorRegistry())
-    if push_periodically:
-        _start_push_thread()
     IN_PUSH_MODE = True
+
+    if not gateway_addr:
+        logger.warning("Gateway for push metrics not set up! Prometheus metrics won't be published.")
+
+    if push_periodically and gateway_addr:
+        _start_push_thread()
 
 
 def flush_push_metrics():
@@ -42,7 +46,7 @@ def _push_to_gateway_periodically():
     while True:
         next_ts = time.time() + push_period_seconds
         _push_to_gateway()
-        time.sleep(min(0, next_ts - time.time()))
+        time.sleep(max(0, next_ts - time.time()))
 
 
 def _push_to_gateway():

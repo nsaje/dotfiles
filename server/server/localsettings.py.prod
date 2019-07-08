@@ -639,6 +639,8 @@ RECAPTCHA_SECRET_KEY = (
     .decode("utf-8")
 )  # noqa
 
+METRICS_PUSH_GATEWAY = "pushgateway:8000"
+
 if os.environ.get("IS_RUNSSH"):
     print("Detected running in runssh, modifying some settings. Check localsettings.py.prod for details.")
 

@@ -389,6 +389,8 @@ BIGQUERY_CREDENTIALS = {
 RECAPTCHA_URL = ""
 RECAPTCHA_SECRET_KEY = ""
 
+METRICS_PUSH_GATEWAY = ""
+
 try:
     from server.localsettings_docker_override import *  # noqa
 except ImportError:

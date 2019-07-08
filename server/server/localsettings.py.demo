@@ -390,3 +390,5 @@ RECAPTCHA_SECRET_KEY = (
     .get()
     .decode("utf-8")
 )  # noqa
+
+METRICS_PUSH_GATEWAY = ""
