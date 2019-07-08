@@ -10,6 +10,7 @@
             [entityId]="entityId"
             [entityType]="EntityType.AD_GROUP"
             [entityName]="state.entity.name"
+            [entityNamePlaceholder]="'Ad group name'"
             [showAdminLink]="
                 zemPermissions.hasPermission('zemauth.can_see_open_in_admin')
             "
@@ -85,6 +86,10 @@
                             'zemauth.can_manage_ad_group_dayparting'
                         )
                     "
+                    [expandedByDefault]="
+                        doesAnySettingHaveValue(state.entity.dayparting)
+                    "
+                    [overviewText]="'Dayparting'"
                 >
                     <div class="zem-settings-section">
                         <div class="zem-settings-section__header">
@@ -192,6 +197,16 @@
                         zemPermissions.hasPermission(
                             'zemauth.can_set_frequency_capping'
                         )
+                    "
+                    [expandedByDefault]="
+                        doesAnySettingHaveValue(
+                            store.state.entity
+                                .clickCappingDailyAdGroupMaxClicks,
+                            store.state.entity.frequencyCapping
+                        )
+                    "
+                    [overviewText]="
+                        'Daily click cap, Daily impression frequency cap'
                     "
                 >
                     <div class="zem-settings-section">
@@ -303,6 +318,7 @@
                 </div>
                 <zem-advanced-settings-section
                     class="zem-advanced-settings-section"
+                    [overviewText]="'Manage RTB sources'"
                 >
                     <div class="zem-settings-section">
                         <zem-ad-group-rtb-sources-management-setting
@@ -422,6 +438,13 @@
                 </div>
                 <zem-advanced-settings-section
                     class="zem-advanced-settings-section"
+                    [expandedByDefault]="
+                        doesAnySettingHaveValue(
+                            state.entity.targeting.geo.included.postalCodes,
+                            state.entity.targeting.geo.excluded.postalCodes
+                        )
+                    "
+                    [overviewText]="'ZIP / Postal code targeting'"
                 >
                     <div class="zem-settings-section">
                         <zem-zip-targeting
@@ -459,6 +482,13 @@
                 </div>
                 <zem-advanced-settings-section
                     class="zem-advanced-settings-section"
+                    [expandedByDefault]="
+                        doesAnySettingHaveValue(
+                            state.entity.redirectPixelUrls,
+                            state.entity.redirectJavascript
+                        )
+                    "
+                    [overviewText]="'3rd party pixel tracking'"
                 >
                     <div class="zem-settings-section">
                         <zem-tracking-pixel-setting
@@ -572,6 +602,27 @@
                 </div>
                 <zem-advanced-settings-section
                     class="zem-advanced-settings-section"
+                    *ngIf="
+                        (zemPermissions.hasPermission(
+                            'zemauth.can_target_custom_audiences'
+                        ) ||
+                            zemPermissions.hasPermission(
+                                'can_use_bluekai_targeting'
+                            )) &&
+                        !zemPermissions.hasPermission(
+                            'zemauth.disable_public_rcs'
+                        )
+                    "
+                    [expandedByDefault]="
+                        doesAnySettingHaveValue(
+                            state.entity.targeting.customAudiences.included,
+                            state.entity.targeting.customAudiences.excluded,
+                            state.entity.targeting.retargetingAdGroups.included,
+                            state.entity.targeting.retargetingAdGroups.included,
+                            state.entity.targeting.audience
+                        )
+                    "
+                    [overviewText]="'Retargeting, BlueKai targeting'"
                 >
                     <div
                         class="zem-settings-section"

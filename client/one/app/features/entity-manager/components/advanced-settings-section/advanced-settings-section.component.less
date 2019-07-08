@@ -23,6 +23,28 @@
     }
 }
 
+.zem-advanced-settings-section__toggle-text {
+    position: relative;
+    max-width: 200px;
+    padding-left: 15px;
+}
+
+.zem-advanced-settings-section__toggle-text::before {
+    content: '';
+    position: absolute;
+    transform: translateY(-50%) rotate(90deg);
+    width: 6px;
+    height: 10px;
+    background-image: url('@{images-folder}/arrow.svg');
+    background-repeat: no-repeat;
+    top: 50%;
+    left: 0;
+}
+
+.zem-advanced-settings-section__toggle-text--section-expanded::before {
+    transform: translateY(-50%) rotate(-90deg);
+}
+
 .zem-advanced-settings-section__toggle--section-expanded {
     background: @color--lighter-neutral;
 }

@@ -33,6 +33,7 @@
                         'zem-input-text--error': entityNameErrors.length > 0
                     }"
                     type="text"
+                    placeholder="{{ entityNamePlaceholder }}"
                     [(ngModel)]="entityNameModel"
                     (blur)="onEntityNameChange()"
                     (keydown.enter)="onEntityNameChange()"

@@ -77,9 +77,8 @@ class AdGroupManager(core.common.BaseManager):
         return ad_group
 
     def get_default(self, request, campaign):
-        name = self._create_default_name(campaign)
-        ad_group = self._create(campaign, name=name)
-        ad_group.settings = core.models.settings.AdGroupSettings.objects.get_default(ad_group, name=name)
+        ad_group = self._create(campaign, name="")
+        ad_group.settings = core.models.settings.AdGroupSettings.objects.get_default(ad_group, name="")
         return ad_group
 
     def _create_default_name(self, campaign):

@@ -1,14 +1,31 @@
 import './advanced-settings-section.component.less';
 
-import {Component, ChangeDetectionStrategy} from '@angular/core';
+import {
+    Component,
+    ChangeDetectionStrategy,
+    Input,
+    OnChanges,
+    SimpleChanges,
+} from '@angular/core';
 
 @Component({
     selector: 'zem-advanced-settings-section',
     templateUrl: './advanced-settings-section.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class AdvancedSettingsSectionComponent {
+export class AdvancedSettingsSectionComponent implements OnChanges {
+    @Input()
+    expandedByDefault: boolean;
+    @Input()
+    overviewText: string;
+
     expanded = false;
+
+    ngOnChanges(changes: SimpleChanges): void {
+        if (changes.expandedByDefault) {
+            this.expanded = this.expandedByDefault || this.expanded;
+        }
+    }
 
     toggle() {
         this.expanded = !this.expanded;

@@ -1,0 +1,24 @@
+@import 'variables';
+
+.zem-device-targeting-settings__advance-settings-text {
+    position: relative;
+    max-width: 200px;
+    padding-left: 15px;
+    font-weight: bold;
+}
+
+.zem-device-targeting-settings__advance-settings-text::before {
+    content: '';
+    position: absolute;
+    transform: translateY(-50%) rotate(90deg);
+    width: 6px;
+    height: 10px;
+    background-image: url('@{images-folder}/arrow.svg');
+    background-repeat: no-repeat;
+    top: 50%;
+    left: 0;
+}
+
+.zem-device-targeting-settings__advance-settings-text--expanded::before {
+    transform: translateY(-50%) rotate(-90deg);
+}

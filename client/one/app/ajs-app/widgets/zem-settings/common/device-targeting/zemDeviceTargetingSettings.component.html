@@ -67,13 +67,15 @@
 
     <a
         href=""
-        ng-class="{ 'collapsable__show-collapsed': !$ctrl.showAdvanceGroup,
-                    'collapsable__hide-collapsed': $ctrl.showAdvanceGroup }"
+        ng-class="{'collapsable__show-collapsed': !$ctrl.showAdvanceGroup, 'collapsable__hide-collapsed': $ctrl.showAdvanceGroup}"
         ng-click="$ctrl.showAdvanceGroup = !$ctrl.showAdvanceGroup"
     >
-        <strong
-            >{{ $ctrl.showAdvanceGroup ? 'Hide' : 'Show' }} advanced
-            settings</strong
+        <span
+            class="zem-device-targeting-settings__advance-settings-text"
+            ng-class="{'zem-device-targeting-settings__advance-settings-text--expanded': $ctrl.showAdvanceGroup}"
         >
+            {{ $ctrl.showAdvanceGroup ? 'Hide' : 'Show' }} advanced settings
+            (Advanced device targeting options)
+        </span>
     </a>
 </div>

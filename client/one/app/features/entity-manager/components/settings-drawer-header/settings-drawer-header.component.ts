@@ -27,6 +27,8 @@ export class SettingsDrawerHeaderComponent implements OnInit, OnChanges {
     @Input()
     entityName: string;
     @Input()
+    entityNamePlaceholder: string;
+    @Input()
     showAdminLink: boolean;
     @Input()
     isAdminLinkAnInternalFeature: boolean;

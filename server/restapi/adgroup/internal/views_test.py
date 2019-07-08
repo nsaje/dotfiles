@@ -55,7 +55,7 @@ class AdGroupViewSetTest(RESTAPITest):
         r = self.client.get(reverse("restapi.adgroup.internal:adgroups_defaults"), {"campaignId": campaign.id})
         resp_json = self.assertResponseValid(r)
 
-        self.assertEqual(resp_json["data"]["name"], "New ad group")
+        self.assertEqual(resp_json["data"]["name"], "")
         self.assertIsNone(resp_json["data"].get("dailyBudget"))
         self.assertEqual(resp_json["data"]["notes"], "")
         self.assertEqual(resp_json["data"]["redirectPixelUrls"], [])

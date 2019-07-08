@@ -14,7 +14,7 @@ import {LevelStateParam, EntityType, Currency} from '../../../../app.constants';
 import {Subject, merge, Observable} from 'rxjs';
 import {takeUntil, map, distinctUntilChanged, tap} from 'rxjs/operators';
 import {APP_CONFIG} from '../../../../app.config';
-import * as entityHelpers from '../../helpers/entity.helpers';
+import * as commonHelpers from '../../../../shared/helpers/common.helpers';
 import * as messagesHelpers from '../../helpers/messages.helpers';
 
 @Component({
@@ -95,6 +95,20 @@ export class AdGroupSettingsDrawerView
                 this.close();
             }
         }
+    }
+
+    doesAnySettingHaveValue(...values: any[]): boolean {
+        if (!commonHelpers.isDefined(values) || values.length < 1) {
+            return false;
+        }
+        let settingHasValue = false;
+        for (const value of values) {
+            if (commonHelpers.isNotEmpty(value)) {
+                settingHasValue = true;
+                break;
+            }
+        }
+        return settingHasValue;
     }
 
     async saveSettings() {

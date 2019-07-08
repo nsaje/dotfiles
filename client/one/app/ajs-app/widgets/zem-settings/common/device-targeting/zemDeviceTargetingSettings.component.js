@@ -1,3 +1,5 @@
+require('./zemDeviceTargetingSettings.component.less');
+
 angular.module('one.widgets').component('zemDeviceTargetingSettings', {
     bindings: {
         targetDevices: '<',

@@ -18,4 +18,27 @@ describe('commonHelpers', () => {
             'Default'
         );
     });
+
+    it('should correctly check if value is defined and has value', () => {
+        expect(commonHelpers.isNotEmpty(null)).toEqual(false);
+        expect(commonHelpers.isNotEmpty(undefined)).toEqual(false);
+
+        expect(commonHelpers.isNotEmpty('')).toEqual(false);
+        expect(commonHelpers.isNotEmpty('Test')).toEqual(true);
+        expect(commonHelpers.isNotEmpty(123)).toEqual(true);
+
+        expect(commonHelpers.isNotEmpty({})).toEqual(false);
+        expect(
+            commonHelpers.isNotEmpty({
+                name: 'Test',
+            })
+        ).toEqual(true);
+
+        expect(commonHelpers.isNotEmpty([])).toEqual(false);
+        expect(commonHelpers.isNotEmpty(['Test1', 'Test2'])).toEqual(true);
+
+        expect(commonHelpers.isNotEmpty(-1)).toEqual(true);
+        expect(commonHelpers.isNotEmpty(0)).toEqual(true);
+        expect(commonHelpers.isNotEmpty(1)).toEqual(true);
+    });
 });
