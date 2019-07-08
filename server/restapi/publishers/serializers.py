@@ -13,8 +13,9 @@ class PublisherListSerializer(serializers.ListSerializer):
         sources = dash.models.Source.objects.filter(bidder_slug__in=source_slugs)
         sources_by_slug = {s.bidder_slug: s for s in sources}
         for item in data:
-            source = sources_by_slug.get(item.get("source"))
-            if not source:
+            source_slug = item.get("source")
+            source = sources_by_slug.get(source_slug)
+            if source_slug and not source:
                 raise serializers.ValidationError("Invalid source in object '%s'!" % item)
             item["source"] = source
         ret = super().to_internal_value(data)
