@@ -186,7 +186,7 @@ def _save_changes_campaign(
                 daily_run,
                 campaign=campaign,
             )
-        except Exception as e:
+        except Exception:
             logger.exception("Autopilot failed saving changes on autopilot campaign's ad group %s", str(ad_group))
             failed_ad_groups.append(ad_group)
 

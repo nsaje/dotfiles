@@ -1,25 +1,33 @@
+import collections
+
 import backtosql
+from dataclasses import dataclass
 
 KW_DIMENSIONS = "kw::dimensions"
 KW_AGGREGATES = "kw::aggregates"
 KW_END = "kw::end"
 
 
+@dataclass
+class ColumnDefinition:
+    definition: str
+    is_dimension: bool
+
+    def __str__(self):
+        return self.definition
+
+
 def generate_table_definition(
     table_name, table_definition_stream, breakdown, sortkey, distkey=None, diststyle="key", breakdown_overrides=None
 ):
-    dimensions, aggregates = parse_table_definition(table_definition_stream)
-
-    if breakdown_overrides:
-        for column_name, definition in list(breakdown_overrides.items()):
-            dimensions[column_name] = definition
+    column_definitions = parse_table_definition(table_definition_stream)
+    columns_to_include = _narrow_to_breakdown(column_definitions, breakdown, breakdown_overrides)
 
     return backtosql.generate_sql(
         "etl_create_table.sql",
         dict(
             table_name=table_name,
-            dimensions=[dimensions[x] for x in breakdown],
-            aggregates=aggregates,
+            column_definitions=columns_to_include,
             sortkey=sortkey,
             distkey=distkey,
             diststyle=diststyle,
@@ -30,26 +38,17 @@ def generate_table_definition(
 def generate_table_definition_postgres(
     table_name, table_definition_stream, breakdown, index, dependencies, breakdown_overrides=None
 ):
-    dimensions, aggregates = parse_table_definition(table_definition_stream)
-
-    if breakdown_overrides:
-        for column_name, definition in list(breakdown_overrides.items()):
-            dimensions[column_name] = definition
+    column_definitions = parse_table_definition(table_definition_stream)
+    columns_to_include = _narrow_to_breakdown(column_definitions, breakdown, breakdown_overrides)
 
     return backtosql.generate_sql(
         "etl_create_table_postgres.sql",
-        dict(
-            table_name=table_name,
-            dimensions=[dimensions[x] for x in breakdown],
-            aggregates=aggregates,
-            index=index,
-            dependencies=dependencies,
-        ),
+        dict(table_name=table_name, column_definitions=columns_to_include, index=index, dependencies=dependencies),
     )
 
 
 def parse_table_definition(stream):
-    dimensions, aggregates = {}, []
+    column_definitions = collections.OrderedDict()
 
     dimensions_follow = False
     aggregates_follow = False
@@ -73,10 +72,15 @@ def parse_table_definition(stream):
         if not line:
             continue
 
-        if dimensions_follow:
-            dimension = line.split(" ")[0]
-            dimensions[dimension] = line
-        if aggregates_follow:
-            aggregates.append(line)
+        name = line.split(" ")[0]
+        column_definitions[name] = ColumnDefinition(definition=line, is_dimension=dimensions_follow)
 
-    return dimensions, aggregates
+    return column_definitions
+
+
+def _narrow_to_breakdown(column_definitions, breakdown, breakdown_overrides=None):
+    if breakdown_overrides:
+        for column_name, definition in list(breakdown_overrides.items()):
+            column_definitions[column_name].definition = definition
+
+    return [col for col_name, col in column_definitions.items() if not col.is_dimension or col_name in breakdown]

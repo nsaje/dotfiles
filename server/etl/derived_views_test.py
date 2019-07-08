@@ -1,3 +1,4 @@
+import collections
 import io
 
 from django.test import TestCase
@@ -19,6 +20,9 @@ class GenerateTableTestCase(TestCase):
             -- kw::aggregates
             impressions integer encode zstd,
             clicks integer encode zstd
+
+            -- kw::dimensions
+            type int2 encode zstd
             -- kw::end
         )
         sortkey(date)
@@ -26,7 +30,9 @@ class GenerateTableTestCase(TestCase):
         )
 
     def test_generate_table_definition(self):
-        table_definition = derived_views.generate_table_definition("test2", self.stream, ["date"], ["date"], "date")
+        table_definition = derived_views.generate_table_definition(
+            "test2", self.stream, ["date", "type"], ["date"], "date"
+        )
         backtosql.assert_sql_equals(
             table_definition,
             """
@@ -34,7 +40,9 @@ class GenerateTableTestCase(TestCase):
             date date not null encode delta,
 
             impressions integer encode zstd,
-            clicks integer encode zstd
+            clicks integer encode zstd,
+
+            type int2 encode zstd
         ) diststyle key distkey(date) sortkey(date)
         """,
         )
@@ -56,10 +64,17 @@ class GenerateTableTestCase(TestCase):
         )
 
     def test_parse_table_definition(self):
-        dimensions, aggregates = derived_views.parse_table_definition(self.stream)
+        column_definitions = derived_views.parse_table_definition(self.stream)
 
         self.assertEqual(
-            dimensions, {"date": "date date not null encode delta", "source_id": "source_id int2 encode zstd"}
+            column_definitions,
+            collections.OrderedDict(
+                [
+                    ("date", derived_views.ColumnDefinition("date date not null encode delta", True)),
+                    ("source_id", derived_views.ColumnDefinition("source_id int2 encode zstd", True)),
+                    ("impressions", derived_views.ColumnDefinition("impressions integer encode zstd", False)),
+                    ("clicks", derived_views.ColumnDefinition("clicks integer encode zstd", False)),
+                    ("type", derived_views.ColumnDefinition("type int2 encode zstd", True)),
+                ]
+            ),
         )
-
-        self.assertEqual(aggregates, ["impressions integer encode zstd", "clicks integer encode zstd"])
