@@ -11,8 +11,8 @@ import dash.constants
 from utils import dates_helper
 from utils.magic_mixer import magic_mixer
 
-from .. import RealTimeCampaignDataHistory
 from . import validation
+from .. import RealTimeCampaignDataHistory
 
 
 class ValidateMinimumBudgetAmountTest(TestCase):

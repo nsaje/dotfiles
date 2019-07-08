@@ -1,4 +1,5 @@
 from django.conf import settings
+
 from google.cloud import bigquery
 from google.oauth2 import service_account
 

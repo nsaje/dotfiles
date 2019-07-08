@@ -12,9 +12,9 @@ import utils.k1_helper
 import utils.lc_helper
 from dash import constants
 
-from ..campaign_goal_value import CampaignGoalValue
 from . import bcm_mixin
 from . import exceptions
+from ..campaign_goal_value import CampaignGoalValue
 
 # FIXME: the same dict is in dash/campaign_goals
 CAMPAIGN_GOAL_NAME_FORMAT = {

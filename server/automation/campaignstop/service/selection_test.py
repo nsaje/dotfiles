@@ -11,12 +11,12 @@ from core.models.settings.ad_group_source_settings import AdGroupSourceSettings
 from utils import dates_helper
 from utils.magic_mixer import magic_mixer
 
+from . import config
+from . import selection
 from .. import CampaignStopState
 from .. import RealTimeCampaignStopLog
 from .. import RealTimeDataHistory
 from .. import constants
-from . import config
-from . import selection
 
 
 class UpdateAlmostDepletedTestCase(TestCase):

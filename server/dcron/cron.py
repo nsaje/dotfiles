@@ -1,9 +1,9 @@
 import logging
 import typing
 
-import crontab
 from django.conf import settings
 
+import crontab
 from dcron import commands
 from dcron import constants
 from dcron import exceptions

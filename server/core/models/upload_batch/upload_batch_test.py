@@ -4,8 +4,8 @@ from django.test import TestCase
 import dash.constants
 from utils.magic_mixer import magic_mixer
 
-from .. import ad_group
 from . import model
+from .. import ad_group
 
 
 class UploadBatchCreate(TestCase):

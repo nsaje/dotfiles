@@ -7,10 +7,10 @@ import core.models
 from utils import dates_helper
 from utils.magic_mixer import magic_mixer
 
-from .. import CampaignStopState
-from .. import constants
 from . import config
 from . import main
+from .. import CampaignStopState
+from .. import constants
 
 
 class UpdateCampaignStopStateTest(TestCase):

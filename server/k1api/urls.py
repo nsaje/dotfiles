@@ -4,7 +4,6 @@ from .views import accounts
 from .views import ad_groups
 from .views import ad_groups_sources
 from .views import ad_groups_stats
-from .views import bid_modifiers
 from .views import content_ads
 from .views import currency_exchange_rates
 from .views import direct_deals
@@ -15,6 +14,7 @@ from .views import publishers
 from .views import r1_mapping
 from .views import sources
 from .views import yahoo
+from .views import bid_modifiers
 
 urlpatterns = [
     url(r"^ad_groups$", ad_groups.AdGroupsView.as_view(), name="k1api.ad_groups"),

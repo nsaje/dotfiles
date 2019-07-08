@@ -1,11 +1,11 @@
 import io
 import os
 
+from django.conf import settings
+
 import fabric.connection
 import haikunator
 import paramiko.rsakey
-from django.conf import settings
-
 from utils import s3helpers
 
 DEMO_TIMEOUT_DAYS = 7

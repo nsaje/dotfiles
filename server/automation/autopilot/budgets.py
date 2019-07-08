@@ -7,6 +7,7 @@ from random import betavariate
 from random import random
 
 import core.features.bcm
+
 import dash
 import dash.constants
 import dash.views.helpers

@@ -1,6 +1,5 @@
 import concurrent.futures
 from functools import partial
-
 from django.db import transaction
 
 import core.features.bcm
@@ -8,12 +7,12 @@ import core.models
 import dash.constants
 from utils import dates_helper
 
+from . import config
+from . import refresh_realtime_data
 from .. import CampaignStopState
 from .. import RealTimeCampaignStopLog
 from .. import RealTimeDataHistory
 from .. import constants
-from . import config
-from . import refresh_realtime_data
 
 
 def mark_almost_depleted_campaigns(campaigns=None):

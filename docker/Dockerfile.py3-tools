@@ -7,4 +7,4 @@ RUN apt-get install -y \
     libpq-dev \
     python-dev \
     libcurl4-openssl-dev
-RUN pip install -U flake8==3.7.7 xenon pip-tools==3.6.1 black==18.6b4 mypy isort==4.3.21
+RUN pip install -U flake8==3.7.7 xenon pip-tools==3.6.1 black==18.6b4 mypy isort==4.3.4

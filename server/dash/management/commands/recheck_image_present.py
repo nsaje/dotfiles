@@ -10,7 +10,6 @@ from utils.command_helpers import Z1Command
 
 logger = logging.getLogger(__name__)
 
-
 NUM_WORKERS = 20
 
 config = botocore.config.Config(max_pool_connections=NUM_WORKERS)
