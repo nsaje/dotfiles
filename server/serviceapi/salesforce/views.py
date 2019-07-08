@@ -9,11 +9,11 @@ import core.models
 import utils.exc
 from utils.rest_common import authentication
 
+from .. import base
 from . import constants
 from . import exceptions
 from . import serializers
 from . import service
-from .. import base
 
 
 class CreateClientView(base.ServiceAPIBaseView):

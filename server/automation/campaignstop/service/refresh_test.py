@@ -14,9 +14,9 @@ from utils import dates_helper
 from utils import test_helper
 from utils.magic_mixer import magic_mixer
 
-from . import refresh
 from .. import RealTimeCampaignDataHistory
 from .. import RealTimeDataHistory
+from . import refresh
 
 
 class RefreshRealtimeDataTest(TestCase):

@@ -8,9 +8,9 @@ import dash.constants
 from utils import dates_helper
 from utils.magic_mixer import magic_mixer
 
+from .. import CampaignStopState
 from . import config
 from . import start_date_check
-from .. import CampaignStopState
 
 
 class UpdateCampaignsStartDateTestCase(TestCase):

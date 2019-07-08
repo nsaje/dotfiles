@@ -5,8 +5,8 @@ import core.models
 import core.models.settings
 from utils.magic_mixer import magic_mixer
 
-from . import update_notifier
 from .. import constants
+from . import update_notifier
 
 
 class AdGroupSettingsNotifyTest(TestCase):

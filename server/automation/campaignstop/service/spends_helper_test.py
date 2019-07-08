@@ -12,9 +12,9 @@ from utils import dates_helper
 from utils.magic_mixer import magic_mixer
 from utils.test_helper import disable_auto_now_add
 
+from .. import RealTimeCampaignDataHistory
 from . import config
 from . import spends_helper
-from .. import RealTimeCampaignDataHistory
 
 
 class LogMock(object):

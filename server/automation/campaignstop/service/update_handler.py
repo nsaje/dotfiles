@@ -1,6 +1,6 @@
-from collections import defaultdict
 import logging
 import time
+from collections import defaultdict
 
 from django.conf import settings
 

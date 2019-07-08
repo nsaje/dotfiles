@@ -1,14 +1,15 @@
-from django.test import TestCase
-from mock import patch
-from mock import call
 import time
+
+from django.test import TestCase
+from mock import call
+from mock import patch
 
 import core.models
 from utils.magic_mixer import magic_mixer
 
-from . import update_handler
-from .. import constants
 from .. import CampaignStopState
+from .. import constants
+from . import update_handler
 
 
 class HandleUpdatesTest(TestCase):

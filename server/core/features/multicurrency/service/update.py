@@ -6,6 +6,7 @@ import core.models
 import dash.constants
 from utils import dates_helper
 
+from ..currency_exchange_rate import CurrencyExchangeRate
 from . import aud
 from . import brl
 from . import chf
@@ -16,7 +17,6 @@ from . import inr
 from . import myr
 from . import sgd
 from . import zar
-from ..currency_exchange_rate import CurrencyExchangeRate
 
 logger = logging.getLogger(__name__)
 

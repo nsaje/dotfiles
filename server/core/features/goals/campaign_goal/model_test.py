@@ -9,8 +9,8 @@ import dash.constants
 import dash.history_helpers
 from utils.magic_mixer import magic_mixer
 
-from . import exceptions
 from ..campaign_goal_value import CampaignGoalValue
+from . import exceptions
 from .model import CampaignGoal
 
 
