@@ -1,6 +1,7 @@
 import urllib.error
 import urllib.parse
 import urllib.request
+from unittest import mock
 
 from django.test import TestCase
 from django.test.client import RequestFactory
@@ -38,6 +39,26 @@ class TestServiceAuthentication(TestCase):
         wsgi_request = urllib2_to_wsgi_request(request)
         ret = auth.authenticate(wsgi_request)
         self.assertEqual(ret, (user, None))
+
+    def test_gen_service_authentication_invalid(self):
+        request = urllib.request.Request(url="https://www.example.com/test?my=q")
+        request_signer.sign_urllib_request(request, b"aaaaaaaaaaaaaaab")
+        auth = authentication.gen_service_authentication("test-service", [b"aaaaaaaaaaaaaaaa"])()
+
+        wsgi_request = urllib2_to_wsgi_request(request)
+        ret = auth.authenticate(wsgi_request)
+        self.assertEqual(ret, None)
+
+    @mock.patch.object(request_signer, "verify_wsgi_request")
+    def test_gen_service_authentication_error(self, mock_verify):
+        request = urllib.request.Request(url="https://www.example.com/test?my=q")
+        request_signer.sign_urllib_request(request, b"aaaaaaaaaaaaaaaa")
+        auth = authentication.gen_service_authentication("test-service", [b"aaaaaaaaaaaaaaaa"])()
+        mock_verify.side_effect = Exception
+
+        wsgi_request = urllib2_to_wsgi_request(request)
+        with self.assertRaises(Exception):
+            auth.authenticate(wsgi_request)
 
 
 class TestOAuthServiceAuthentication(TestCase):

@@ -13,6 +13,7 @@ import dash.constants
 import dash.features.ga
 import dash.features.geolocation
 import dash.models
+from utils import request_signer
 
 from .. import urls
 
@@ -28,7 +29,9 @@ class K1APIBaseTest(TestCase):
         self.test_signature = True
         self.verify_patcher = patch("utils.request_signer.verify_wsgi_request")
         self.mock_verify_wsgi_request = self.verify_patcher.start()
-        self.mock_verify_wsgi_request.side_effect = cycle([Exception, Exception])
+        self.mock_verify_wsgi_request.side_effect = cycle(
+            [request_signer.SignatureError, request_signer.SignatureError]
+        )
 
         oauth_result = Mock()
         oauth_result.user.email = "sspd@service.zemanta.com"
