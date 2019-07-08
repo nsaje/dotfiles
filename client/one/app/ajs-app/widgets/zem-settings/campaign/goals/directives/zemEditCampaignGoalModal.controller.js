@@ -1,3 +1,6 @@
+var currencyHelpers = require('../../../../../../shared/helpers/currency.helpers');
+var campaignGoalsHelpers = require('../../../../../../features/entity-manager/helpers/campaign-goals.helpers');
+
 //
 // TODO: On major update, refactor to component
 //
@@ -7,8 +10,8 @@ angular
         $scope,
         zemConversionPixelsEndpoint,
         zemCampaignGoalValidationEndpoint,
-        zemCampaignGoalsService,
-        zemPermissions
+        zemPermissions,
+        zemNavigationNewService
     ) {
         // eslint-disable-line max-len
         $scope.addConversionGoalInProgress = false;
@@ -51,10 +54,20 @@ angular
             var onlyCpc =
                 zemPermissions.hasPermission('zemauth.disable_public_rcs') ||
                 zemPermissions.hasPermission('zemauth.disable_public_newscorp');
-            return zemCampaignGoalsService.getAvailableGoals(
+            var availableGoals = campaignGoalsHelpers.getAvailableGoals(
+                options.campaignGoalKPIs,
                 $scope.campaignGoals,
                 parseInt($scope.campaign.type),
                 onlyCpc
+            );
+            var activeAccount = zemNavigationNewService.getActiveAccount();
+            return campaignGoalsHelpers.mapAvailableGoalsToCurrencySymbol(
+                availableGoals,
+                currencyHelpers.getCurrencySymbol(
+                    activeAccount && activeAccount.data
+                        ? activeAccount.data.currency
+                        : null
+                )
             );
         }
 

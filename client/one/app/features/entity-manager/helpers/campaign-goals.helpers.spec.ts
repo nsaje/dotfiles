@@ -1,23 +1,29 @@
-import {APP_CONSTANTS, Currency, CampaignType} from '../../../app.constants';
+import {Currency, CampaignType, CampaignGoalKPI} from '../../../app.constants';
 import {APP_CONFIG} from '../../../app.config';
-import {APP_OPTIONS} from '../../../app.options';
 import * as campaignGoalsHelpers from './campaign-goals.helpers';
+import {CAMPAIGN_GOAL_KPIS} from '../entity-manager.config';
+import {CampaignGoal} from '../../../core/entities/types/campaign/campaign-goal';
+import {CampaignGoalKPIConfig} from '../types/campaign-goal-kpi-config';
 
 describe('CampaignGoalsHelpers', () => {
     it('should correctly extend available goals with edited campaign goal', () => {
-        const editedCampaignGoal = {
-            type: APP_CONSTANTS.campaignGoalKPI.PAGES_PER_SESSION,
+        const editedCampaignGoal: CampaignGoal = {
+            id: null,
+            type: CampaignGoalKPI.PAGES_PER_SESSION,
+            value: null,
+            primary: false,
+            conversionGoal: null,
         };
 
-        const availableGoals: any[] = [
+        const availableGoals: CampaignGoalKPIConfig[] = [
             {
                 name: 'Time on Site - Seconds',
-                value: APP_CONSTANTS.campaignGoalKPI.TIME_ON_SITE,
+                value: CampaignGoalKPI.TIME_ON_SITE,
                 unit: 's',
             },
             {
                 name: 'Max Bounce Rate',
-                value: APP_CONSTANTS.campaignGoalKPI.MAX_BOUNCE_RATE,
+                value: CampaignGoalKPI.MAX_BOUNCE_RATE,
                 unit: '%',
             },
         ];
@@ -25,41 +31,45 @@ describe('CampaignGoalsHelpers', () => {
         const newAvailableGoals = campaignGoalsHelpers.extendAvailableGoalsWithEditedGoal(
             editedCampaignGoal,
             availableGoals,
-            APP_OPTIONS.campaignGoalKPIs
+            CAMPAIGN_GOAL_KPIS
         );
 
         expect(newAvailableGoals).toEqual([
             {
                 name: 'Time on Site - Seconds',
-                value: APP_CONSTANTS.campaignGoalKPI.TIME_ON_SITE,
+                value: CampaignGoalKPI.TIME_ON_SITE,
                 unit: 's',
             },
             {
                 name: 'Max Bounce Rate',
-                value: APP_CONSTANTS.campaignGoalKPI.MAX_BOUNCE_RATE,
+                value: CampaignGoalKPI.MAX_BOUNCE_RATE,
                 unit: '%',
             },
             {
                 name: 'Pageviews per Visit',
-                value: APP_CONSTANTS.campaignGoalKPI.PAGES_PER_SESSION,
+                value: CampaignGoalKPI.PAGES_PER_SESSION,
             },
         ]);
     });
 
     it('should not extend available goals with existing edited campaign goal', () => {
-        const editedCampaignGoal = {
-            type: APP_CONSTANTS.campaignGoalKPI.TIME_ON_SITE,
+        const editedCampaignGoal: CampaignGoal = {
+            id: null,
+            type: CampaignGoalKPI.TIME_ON_SITE,
+            value: null,
+            primary: false,
+            conversionGoal: null,
         };
 
-        const availableGoals: any[] = [
+        const availableGoals: CampaignGoalKPIConfig[] = [
             {
                 name: 'Time on Site - Seconds',
-                value: APP_CONSTANTS.campaignGoalKPI.TIME_ON_SITE,
+                value: CampaignGoalKPI.TIME_ON_SITE,
                 unit: 's',
             },
             {
                 name: 'Max Bounce Rate',
-                value: APP_CONSTANTS.campaignGoalKPI.MAX_BOUNCE_RATE,
+                value: CampaignGoalKPI.MAX_BOUNCE_RATE,
                 unit: '%',
             },
         ];
@@ -67,18 +77,18 @@ describe('CampaignGoalsHelpers', () => {
         const newAvailableGoals = campaignGoalsHelpers.extendAvailableGoalsWithEditedGoal(
             editedCampaignGoal,
             availableGoals,
-            APP_OPTIONS.campaignGoalKPIs
+            CAMPAIGN_GOAL_KPIS
         );
 
         expect(newAvailableGoals).toEqual([
             {
                 name: 'Time on Site - Seconds',
-                value: APP_CONSTANTS.campaignGoalKPI.TIME_ON_SITE,
+                value: CampaignGoalKPI.TIME_ON_SITE,
                 unit: 's',
             },
             {
                 name: 'Max Bounce Rate',
-                value: APP_CONSTANTS.campaignGoalKPI.MAX_BOUNCE_RATE,
+                value: CampaignGoalKPI.MAX_BOUNCE_RATE,
                 unit: '%',
             },
         ]);
@@ -86,16 +96,28 @@ describe('CampaignGoalsHelpers', () => {
 
     it('should correctly filter available goals for display campaign', () => {
         const availableGoals = campaignGoalsHelpers.getAvailableGoals(
-            APP_OPTIONS.campaignGoalKPIs,
+            CAMPAIGN_GOAL_KPIS,
             [
                 {
-                    type: APP_CONSTANTS.campaignGoalKPI.TIME_ON_SITE,
+                    id: null,
+                    type: CampaignGoalKPI.TIME_ON_SITE,
+                    value: null,
+                    primary: false,
+                    conversionGoal: null,
                 },
                 {
-                    type: APP_CONSTANTS.campaignGoalKPI.MAX_BOUNCE_RATE,
+                    id: null,
+                    type: CampaignGoalKPI.MAX_BOUNCE_RATE,
+                    value: null,
+                    primary: false,
+                    conversionGoal: null,
                 },
                 {
-                    type: APP_CONSTANTS.campaignGoalKPI.PAGES_PER_SESSION,
+                    id: null,
+                    type: CampaignGoalKPI.PAGES_PER_SESSION,
+                    value: null,
+                    primary: false,
+                    conversionGoal: null,
                 },
             ],
             CampaignType.DISPLAY,
@@ -105,45 +127,45 @@ describe('CampaignGoalsHelpers', () => {
         expect(availableGoals).toEqual([
             {
                 name: 'Cost per Visit',
-                value: APP_CONSTANTS.campaignGoalKPI.CPV,
-                unit: '__CURRENCY__',
+                value: CampaignGoalKPI.CPV,
+                isCurrency: true,
             },
             {
                 name: 'CPC',
-                value: APP_CONSTANTS.campaignGoalKPI.CPC,
-                unit: '__CURRENCY__',
+                value: CampaignGoalKPI.CPC,
+                isCurrency: true,
             },
             {
                 name: 'New Users',
-                value: APP_CONSTANTS.campaignGoalKPI.NEW_UNIQUE_VISITORS,
+                value: CampaignGoalKPI.NEW_UNIQUE_VISITORS,
                 unit: '%',
             },
             {
                 name: 'CPA - Setup Conversion Tracking',
-                value: APP_CONSTANTS.campaignGoalKPI.CPA,
-                unit: '__CURRENCY__',
+                value: CampaignGoalKPI.CPA,
+                isCurrency: true,
             },
             {
                 name: 'Cost per Non-Bounced Visit',
-                value: APP_CONSTANTS.campaignGoalKPI.CP_NON_BOUNCED_VISIT,
-                unit: '__CURRENCY__',
+                value: CampaignGoalKPI.CP_NON_BOUNCED_VISIT,
+                isCurrency: true,
             },
             {
                 name: 'Cost per New Visitor',
-                value: APP_CONSTANTS.campaignGoalKPI.CP_NEW_VISITOR,
-                unit: '__CURRENCY__',
+                value: CampaignGoalKPI.CP_NEW_VISITOR,
+                isCurrency: true,
             },
             {
                 name: 'Cost per Pageview',
-                value: APP_CONSTANTS.campaignGoalKPI.CP_PAGE_VIEW,
-                unit: '__CURRENCY__',
+                value: CampaignGoalKPI.CP_PAGE_VIEW,
+                isCurrency: true,
             },
         ]);
     });
 
     it('should correctly filter available goals (onlyCpc)', () => {
         const availableGoals = campaignGoalsHelpers.getAvailableGoals(
-            APP_OPTIONS.campaignGoalKPIs,
+            CAMPAIGN_GOAL_KPIS,
             [],
             CampaignType.CONTENT,
             true
@@ -152,8 +174,8 @@ describe('CampaignGoalsHelpers', () => {
         expect(availableGoals).toEqual([
             {
                 name: 'CPC',
-                value: APP_CONSTANTS.campaignGoalKPI.CPC,
-                unit: '__CURRENCY__',
+                value: CampaignGoalKPI.CPC,
+                isCurrency: true,
             },
         ]);
     });
@@ -162,17 +184,17 @@ describe('CampaignGoalsHelpers', () => {
         const availableGoals = [
             {
                 name: 'Cost per Visit',
-                value: APP_CONSTANTS.campaignGoalKPI.CPV,
-                unit: '__CURRENCY__',
+                value: CampaignGoalKPI.CPV,
+                isCurrency: true,
             },
             {
                 name: 'CPC',
-                value: APP_CONSTANTS.campaignGoalKPI.CPC,
-                unit: '__CURRENCY__',
+                value: CampaignGoalKPI.CPC,
+                isCurrency: true,
             },
             {
                 name: 'New Users',
-                value: APP_CONSTANTS.campaignGoalKPI.NEW_UNIQUE_VISITORS,
+                value: CampaignGoalKPI.NEW_UNIQUE_VISITORS,
                 unit: '%',
             },
         ];
@@ -185,17 +207,19 @@ describe('CampaignGoalsHelpers', () => {
         expect(newAvailableGoals).toEqual([
             {
                 name: 'Cost per Visit',
-                value: APP_CONSTANTS.campaignGoalKPI.CPV,
+                value: CampaignGoalKPI.CPV,
                 unit: APP_CONFIG.currencySymbols[Currency.USD],
+                isCurrency: true,
             },
             {
                 name: 'CPC',
-                value: APP_CONSTANTS.campaignGoalKPI.CPC,
+                value: CampaignGoalKPI.CPC,
                 unit: APP_CONFIG.currencySymbols[Currency.USD],
+                isCurrency: true,
             },
             {
                 name: 'New Users',
-                value: APP_CONSTANTS.campaignGoalKPI.NEW_UNIQUE_VISITORS,
+                value: CampaignGoalKPI.NEW_UNIQUE_VISITORS,
                 unit: '%',
             },
         ]);

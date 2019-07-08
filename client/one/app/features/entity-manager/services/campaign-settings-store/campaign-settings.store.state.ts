@@ -3,15 +3,20 @@ import {Campaign} from '../../../../core/entities/types/campaign/campaign';
 import {CampaignExtras} from '../../../../core/entities/types/campaign/campaign-extras';
 import {CampaignSettingsStoreFieldsErrorsState} from './campaign-settings.store.fields-errors-state';
 import {CampaignGoalKPI} from '../../../../app.constants';
+import {ConversionPixel} from '../../../../core/conversion-pixels/types/conversion-pixel';
 
 export class CampaignSettingsStoreState {
     entity: Campaign = {
         id: null,
+        accountId: null,
+        name: null,
+        type: null,
+        archived: null,
         goals: [],
     };
     extras: CampaignExtras = {
         currency: null,
-        campaignGoalsDefaults: {
+        goalsDefaults: {
             [CampaignGoalKPI.TIME_ON_SITE]: null,
             [CampaignGoalKPI.MAX_BOUNCE_RATE]: null,
             [CampaignGoalKPI.PAGES_PER_SESSION]: null,
@@ -33,5 +38,7 @@ export class CampaignSettingsStoreState {
         validate: {} as RequestState,
         create: {} as RequestState,
         edit: {} as RequestState,
+        list: {} as RequestState,
     };
+    conversionPixels: ConversionPixel[] = [];
 }

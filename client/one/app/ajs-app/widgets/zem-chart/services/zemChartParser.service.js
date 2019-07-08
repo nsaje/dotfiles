@@ -1,10 +1,11 @@
+var currencyHelpers = require('../../../../shared/helpers/currency.helpers');
+
 angular
     .module('one.widgets')
     .service('zemChartParser', function(
         $window,
         zemChartMetricsService,
         zemNavigationNewService,
-        zemMulticurrencyService,
         config
     ) {
         // eslint-disable-line max-len
@@ -126,8 +127,11 @@ angular
         }
 
         function updateCampaignGoals(chart, goals, campaignGoals) {
-            var currency = zemMulticurrencyService.getAppropriateCurrency(
-                zemNavigationNewService.getActiveAccount()
+            var activeAccount = zemNavigationNewService.getActiveAccount();
+            var currency = currencyHelpers.getCurrencySymbol(
+                activeAccount && activeAccount.data
+                    ? activeAccount.data.currency
+                    : null
             );
             var commonYAxis = true;
             goals.forEach(function(goal) {

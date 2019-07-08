@@ -1,0 +1,75 @@
+@import 'variables';
+
+.zem-campaign-goal {
+    display: block;
+    border: 1px solid @color--lighter-neutral;
+    border-radius: @border-radius--default;
+}
+
+.zem-campaign-goal--error {
+    border: 1px solid @color--danger;
+}
+
+.zem-campaign-goal__summary {
+    display: flex;
+    min-height: 46px;
+
+    &:not(.zem-campaign-goal__summary--primary):hover {
+        cursor: pointer;
+        color: @color--secondary;
+
+        .zem-campaign-goal__number {
+            background-color: tint(@color--secondary, 90%);
+        }
+    }
+}
+
+.zem-campaign-goal__summary--primary .zem-campaign-goal__number {
+    background-color: @color--secondary;
+    border-color: @color--secondary;
+    color: white;
+}
+
+.zem-campaign-goal__summary--primary .zem-campaign-goal__description {
+    color: @color--secondary;
+}
+
+.zem-campaign-goal__summary--expanded .zem-campaign-goal__number {
+    border-bottom-left-radius: 0;
+}
+
+.zem-campaign-goal__edit {
+    border-bottom-right-radius: @border-radius--default;
+    border-bottom-left-radius: @border-radius--default;
+    border-top: 1px solid @color--lighter-neutral;
+    background: @color--lightest-neutral;
+    padding: 10px;
+}
+
+.zem-campaign-goal__number {
+    display: flex;
+    flex: 0 0 50px;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    color: @color--secondary;
+    border-right: 1px solid @color--lighter-neutral;
+    border-top-left-radius: @border-radius--default - 1;
+    border-bottom-left-radius: @border-radius--default - 1;
+}
+
+.zem-campaign-goal__description {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    justify-content: center;
+    padding: 6px 10px;
+}
+
+.zem-campaign-goal__action {
+    display: flex;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: center;
+    padding-right: 5px;
+}

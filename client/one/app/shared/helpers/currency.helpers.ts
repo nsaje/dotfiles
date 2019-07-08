@@ -5,10 +5,8 @@ import {APP_CONFIG} from '../../app.config';
 
 export function formatCurrency(
     value: string,
-    fractionSize: number = 2,
-    locale: string = 'en-US',
-    currency: string = '',
-    currencyCode: string = ''
+    currency: Currency,
+    fractionSize: number = 2
 ): string {
     if (!commonHelpers.isDefined(value)) {
         return null;
@@ -17,19 +15,37 @@ export function formatCurrency(
         return null;
     }
     const digitInfo = `1.${fractionSize}-${fractionSize}`;
+    const currencySymbol = commonHelpers.isDefined(currency)
+        ? getCurrencySymbol(currency)
+        : '';
     // https://angular.io/api/common/formatCurrency
     return angularFormatCurrency(
         Number.parseFloat(value),
-        locale,
-        currency,
-        currencyCode,
+        'en-US', // locale
+        currencySymbol,
+        '', // currencyCode: USD, EUR, ...
         digitInfo
     );
 }
 
-export function getCurrencySymbol(currency: string): string {
+export function getCurrencySymbol(currency: Currency): string {
     if (!commonHelpers.isDefined(currency)) {
         return APP_CONFIG.currencySymbols[Currency.USD];
     }
     return APP_CONFIG.currencySymbols[currency];
+}
+
+export function getValueInCurrency(
+    value: string,
+    currency: Currency,
+    fractionSize: number = 2
+): string {
+    const formattedValue = formatCurrency(value, currency, fractionSize);
+    if (formattedValue) {
+        return formattedValue;
+    }
+    const currencySymbol = commonHelpers.isDefined(currency)
+        ? getCurrencySymbol(currency)
+        : '';
+    return `${currencySymbol}--`;
 }

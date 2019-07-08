@@ -43,11 +43,21 @@ class ConversionGoalSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
     )
     type = restapi.serializers.fields.DashConstantField(constants.ConversionGoalType, source="conversion_goal.type")
     conversion_window = restapi.serializers.fields.OutNullDashConstantField(
-        constants.ConversionWindows, source="conversion_goal.conversion_window"
+        constants.ConversionWindows, source="conversion_goal.conversion_window", allow_null=True
     )
     pixel_url = restapi.serializers.fields.OutNullURLField(
         source="conversion_goal.pixel.get_url", max_length=2048, allow_blank=True, allow_null=True, read_only=True
     )
+
+    def validate(self, data):
+        if (
+            data["conversion_goal"]["type"] == constants.ConversionGoalType.PIXEL
+            and data["conversion_goal"]["conversion_window"] is None
+        ):
+            raise rest_framework.serializers.ValidationError(
+                {"conversion_window": "Conversion window should not be empty."}
+            )
+        return data
 
 
 class CampaignGoalSerializer(restapi.serializers.base.RESTAPIBaseSerializer):

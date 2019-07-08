@@ -1,5 +1,7 @@
 require('./zemCampaignLauncherGoal.component.less');
 var constantsHelpers = require('../../../../../../shared/helpers/constants.helpers');
+var currencyHelpers = require('../../../../../../shared/helpers/currency.helpers');
+var campaignGoalsHelpers = require('../../../../../../features/entity-manager/helpers/campaign-goals.helpers');
 
 angular.module('one.widgets').component('zemCampaignLauncherGoal', {
     bindings: {
@@ -10,7 +12,7 @@ angular.module('one.widgets').component('zemCampaignLauncherGoal', {
     controller: function(
         $filter,
         zemConversionPixelsEndpoint,
-        zemCampaignGoalsService
+        zemNavigationNewService
     ) {
         var $ctrl = this;
 
@@ -23,10 +25,20 @@ angular.module('one.widgets').component('zemCampaignLauncherGoal', {
                     constants.campaignTypes
                 )
             );
-            return zemCampaignGoalsService.getAvailableGoals(
+            var availableGoals = campaignGoalsHelpers.getAvailableGoals(
+                options.campaignGoalKPIs,
                 [],
                 campaignType,
                 false
+            );
+            var activeAccount = zemNavigationNewService.getActiveAccount();
+            return campaignGoalsHelpers.mapAvailableGoalsToCurrencySymbol(
+                availableGoals,
+                currencyHelpers.getCurrencySymbol(
+                    activeAccount && activeAccount.data
+                        ? activeAccount.data.currency
+                        : null
+                )
             );
         }
 

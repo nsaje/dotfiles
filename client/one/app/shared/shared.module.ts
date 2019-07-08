@@ -27,6 +27,7 @@ import {CurrencyInputComponent} from './components/currency-input/currency-input
 import {DateInputComponent} from './components/date-input/date-input.component';
 import {SelectInputComponent} from './components/select-input/select-input.component';
 import {PrefixedInputComponent} from './components/prefixed-input/prefixed-input.component';
+import {TextInputComponent} from './components/text-input/text-input.component';
 import {BidModifierInputComponent} from './components/bid-modifier-input/bid-modifier-input.component';
 import {PopoverDirective} from './components/popover/popover.directive';
 import {ModalComponent} from './components/modal/modal.component';
@@ -60,6 +61,7 @@ const EXPORTED_DECLARATIONS = [
     DateInputComponent,
     SelectInputComponent,
     PrefixedInputComponent,
+    TextInputComponent,
     BidModifierInputComponent,
     ModalComponent,
     HelpPopoverComponent,

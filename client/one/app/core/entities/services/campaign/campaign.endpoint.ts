@@ -1,31 +1,31 @@
 import {Injectable} from '@angular/core';
 import {HttpClient, HttpParams, HttpErrorResponse} from '@angular/common/http';
+import {RequestStateUpdater} from '../../../../shared/types/request-state-updater';
 import {Observable, throwError} from 'rxjs';
+import {CampaignWithExtras} from '../../types/campaign/campaign-with-extras';
+import {ENTITY_CONFIG} from '../../entities.config';
+import {ApiResponse} from '../../../../shared/types/api-response';
+import {Campaign} from '../../types/campaign/campaign';
+import {CampaignExtras} from '../../types/campaign/campaign-extras';
 import {map, catchError} from 'rxjs/operators';
-import {ApiResponse} from '../../../shared/types/api-response';
-import {ENTITY_CONFIG} from '../entities.config';
-import {AdGroupWithExtras} from '../types/ad-group/ad-group-with-extras';
-import {AdGroup} from '../types/ad-group/ad-group';
-import {RequestStateUpdater} from '../../../shared/types/request-state-updater';
-import {AdGroupExtras} from '../types/ad-group/ad-group-extras';
 
 @Injectable()
-export class AdGroupEndpoint {
+export class CampaignEndpoint {
     constructor(private http: HttpClient) {}
 
     defaults(
-        campaignId: string,
+        accountId: string,
         requestStateUpdater: RequestStateUpdater
-    ): Observable<AdGroupWithExtras> {
-        const request = ENTITY_CONFIG.requests.adGroup.defaults;
-        const params = new HttpParams().set('campaignId', campaignId);
+    ): Observable<CampaignWithExtras> {
+        const request = ENTITY_CONFIG.requests.campaign.defaults;
+        const params = new HttpParams().set('accountId', accountId);
 
         requestStateUpdater(request.name, {
             inProgress: true,
         });
 
         return this.http
-            .get<ApiResponse<AdGroup, AdGroupExtras>>(request.url, {
+            .get<ApiResponse<Campaign, CampaignExtras>>(request.url, {
                 params: params,
             })
             .pipe(
@@ -34,7 +34,7 @@ export class AdGroupEndpoint {
                         inProgress: false,
                     });
                     return {
-                        adGroup: response.data,
+                        campaign: response.data,
                         extras: response.extra,
                     };
                 }),
@@ -52,21 +52,21 @@ export class AdGroupEndpoint {
     get(
         id: string,
         requestStateUpdater: RequestStateUpdater
-    ): Observable<AdGroupWithExtras> {
-        const request = ENTITY_CONFIG.requests.adGroup.get;
+    ): Observable<CampaignWithExtras> {
+        const request = ENTITY_CONFIG.requests.campaign.get;
         requestStateUpdater(request.name, {
             inProgress: true,
         });
 
         return this.http
-            .get<ApiResponse<AdGroup, AdGroupExtras>>(`${request.url}${id}`)
+            .get<ApiResponse<Campaign, CampaignExtras>>(`${request.url}${id}`)
             .pipe(
                 map(response => {
                     requestStateUpdater(request.name, {
                         inProgress: false,
                     });
                     return {
-                        adGroup: response.data,
+                        campaign: response.data,
                         extras: response.extra,
                     };
                 }),
@@ -82,15 +82,15 @@ export class AdGroupEndpoint {
     }
 
     validate(
-        adGroup: Partial<AdGroup>,
+        campaign: Partial<Campaign>,
         requestStateUpdater: RequestStateUpdater
     ): Observable<void> {
-        const request = ENTITY_CONFIG.requests.adGroup.validate;
+        const request = ENTITY_CONFIG.requests.campaign.validate;
         requestStateUpdater(request.name, {
             inProgress: true,
         });
 
-        return this.http.post<ApiResponse<void>>(request.url, adGroup).pipe(
+        return this.http.post<ApiResponse<void>>(request.url, campaign).pipe(
             map(response => {
                 requestStateUpdater(request.name, {
                     inProgress: false,
@@ -108,43 +108,48 @@ export class AdGroupEndpoint {
     }
 
     create(
-        adGroup: AdGroup,
+        campaign: Campaign,
         requestStateUpdater: RequestStateUpdater
-    ): Observable<AdGroup> {
-        const request = ENTITY_CONFIG.requests.adGroup.create;
-        requestStateUpdater(request.name, {
-            inProgress: true,
-        });
-
-        return this.http.post<ApiResponse<AdGroup>>(request.url, adGroup).pipe(
-            map(response => {
-                requestStateUpdater(request.name, {
-                    inProgress: false,
-                });
-                return response.data;
-            }),
-            catchError((error: HttpErrorResponse) => {
-                requestStateUpdater(request.name, {
-                    inProgress: false,
-                    error: true,
-                    errorMessage: error.message,
-                });
-                return throwError(error);
-            })
-        );
-    }
-
-    edit(
-        adGroup: Partial<AdGroup>,
-        requestStateUpdater: RequestStateUpdater
-    ): Observable<AdGroup> {
-        const request = ENTITY_CONFIG.requests.adGroup.edit;
+    ): Observable<Campaign> {
+        const request = ENTITY_CONFIG.requests.campaign.create;
         requestStateUpdater(request.name, {
             inProgress: true,
         });
 
         return this.http
-            .put<ApiResponse<AdGroup>>(`${request.url}${adGroup.id}`, adGroup)
+            .post<ApiResponse<Campaign>>(request.url, campaign)
+            .pipe(
+                map(response => {
+                    requestStateUpdater(request.name, {
+                        inProgress: false,
+                    });
+                    return response.data;
+                }),
+                catchError((error: HttpErrorResponse) => {
+                    requestStateUpdater(request.name, {
+                        inProgress: false,
+                        error: true,
+                        errorMessage: error.message,
+                    });
+                    return throwError(error);
+                })
+            );
+    }
+
+    edit(
+        campaign: Partial<Campaign>,
+        requestStateUpdater: RequestStateUpdater
+    ): Observable<Campaign> {
+        const request = ENTITY_CONFIG.requests.campaign.edit;
+        requestStateUpdater(request.name, {
+            inProgress: true,
+        });
+
+        return this.http
+            .put<ApiResponse<Campaign>>(
+                `${request.url}${campaign.id}`,
+                campaign
+            )
             .pipe(
                 map(response => {
                     requestStateUpdater(request.name, {

@@ -1,4 +1,6 @@
 var constantsHelpers = require('../../../../../../shared/helpers/constants.helpers');
+var currencyHelpers = require('../../../../../../shared/helpers/currency.helpers');
+var campaignGoalsHelpers = require('../../../../../../features/entity-manager/helpers/campaign-goals.helpers');
 
 angular.module('one.widgets').component('zemLegacyCampaignGoalEditForm', {
     bindings: {
@@ -12,7 +14,7 @@ angular.module('one.widgets').component('zemLegacyCampaignGoalEditForm', {
         onChange: '&?',
     },
     template: require('./zemCampaignGoalEditForm.component.html'),
-    controller: function(zemCampaignGoalsService) {
+    controller: function(zemNavigationNewService) {
         var $ctrl = this;
 
         $ctrl.updateTypeChange = updateTypeChange;
@@ -29,9 +31,19 @@ angular.module('one.widgets').component('zemLegacyCampaignGoalEditForm', {
             $ctrl.campaignGoal = $ctrl.campaignGoal || {};
             $ctrl.conversionGoalTypes = options.conversionGoalTypes;
             $ctrl.conversionWindows = options.conversionWindows;
-            $ctrl.availableGoals = zemCampaignGoalsService.extendAvailableGoalsWithEditedGoal(
+            $ctrl.availableGoals = campaignGoalsHelpers.extendAvailableGoalsWithEditedGoal(
                 $ctrl.campaignGoal,
-                $ctrl.availableGoals
+                $ctrl.availableGoals,
+                options.campaignGoalKPIs
+            );
+            var activeAccount = zemNavigationNewService.getActiveAccount();
+            $ctrl.availableGoals = campaignGoalsHelpers.mapAvailableGoalsToCurrencySymbol(
+                $ctrl.availableGoals,
+                currencyHelpers.getCurrencySymbol(
+                    activeAccount && activeAccount.data
+                        ? activeAccount.data.currency
+                        : null
+                )
             );
             $ctrl.goalUnit = getGoalUnit(
                 $ctrl.campaignGoal,

@@ -6,7 +6,7 @@ import {takeUntil} from 'rxjs/operators';
 import * as deepEqual from 'fast-deep-equal';
 import * as clone from 'clone';
 import {AdGroupSettingsStoreState} from './ad-group-settings.store.state';
-import {AdGroupService} from '../../../../core/entities/services/ad-group.service';
+import {AdGroupService} from '../../../../core/entities/services/ad-group/ad-group.service';
 import {AdGroup} from '../../../../core/entities/types/ad-group/ad-group';
 import {RequestStateUpdater} from '../../../../shared/types/request-state-updater';
 import * as storeHelpers from '../../../../shared/helpers/store.helpers';

@@ -1,0 +1,12 @@
+<input
+    class="zem-input-text"
+    [ngClass]="{'zem-input-text--error': hasError}"
+    type="text"
+    placeholder="{{ placeholder }}"
+    maxlength="{{ maxLength }}"
+    [(ngModel)]="model"
+    (ngModelChange)="onModelChange($event)"
+    (blur)="onBlur($event)"
+    [disabled]="isDisabled"
+    [zemFocus]="isFocused"
+/>

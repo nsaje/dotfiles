@@ -1,5 +1,6 @@
 require('./zemCampaignLauncherGeneralSettings.component.less');
 var constantsHelpers = require('../../../../../shared/helpers/constants.helpers');
+var currencyHelpers = require('../../../../../shared/helpers/currency.helpers');
 
 angular.module('one').component('zemCampaignLauncherGeneralSettings', {
     bindings: {
@@ -7,7 +8,7 @@ angular.module('one').component('zemCampaignLauncherGeneralSettings', {
         account: '<',
     },
     template: require('./zemCampaignLauncherGeneralSettings.component.html'),
-    controller: function(zemPermissions, zemMulticurrencyService) {
+    controller: function(zemPermissions) {
         var $ctrl = this;
 
         $ctrl.onFieldChange = onFieldChange;
@@ -30,8 +31,8 @@ angular.module('one').component('zemCampaignLauncherGeneralSettings', {
                     constants.language
                 );
             }
-            $ctrl.currencySymbol = zemMulticurrencyService.getAppropriateCurrencySymbol(
-                $ctrl.account
+            $ctrl.currencySymbol = currencyHelpers.getCurrencySymbol(
+                $ctrl.account.currency
             );
         };
 

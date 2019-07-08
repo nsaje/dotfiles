@@ -2830,12 +2830,12 @@ export const APP_OPTIONS = {
         {
             name: 'Cost per Visit',
             value: APP_CONSTANTS.campaignGoalKPI.CPV,
-            unit: '__CURRENCY__',
+            isCurrency: true,
         },
         {
             name: 'CPC',
             value: APP_CONSTANTS.campaignGoalKPI.CPC,
-            unit: '__CURRENCY__',
+            isCurrency: true,
         },
         {
             name: 'New Users',
@@ -2845,27 +2845,27 @@ export const APP_OPTIONS = {
         {
             name: 'CPA - Setup Conversion Tracking',
             value: APP_CONSTANTS.campaignGoalKPI.CPA,
-            unit: '__CURRENCY__',
+            isCurrency: true,
         },
         {
             name: 'Cost per Non-Bounced Visit',
             value: APP_CONSTANTS.campaignGoalKPI.CP_NON_BOUNCED_VISIT,
-            unit: '__CURRENCY__',
+            isCurrency: true,
         }, // eslint-disable-line max-len
         {
             name: 'Cost per New Visitor',
             value: APP_CONSTANTS.campaignGoalKPI.CP_NEW_VISITOR,
-            unit: '__CURRENCY__',
+            isCurrency: true,
         },
         {
             name: 'Cost per Pageview',
             value: APP_CONSTANTS.campaignGoalKPI.CP_PAGE_VIEW,
-            unit: '__CURRENCY__',
+            isCurrency: true,
         },
         {
             name: 'Cost per Completed Video View',
             value: APP_CONSTANTS.campaignGoalKPI.CPCV,
-            unit: '__CURRENCY__',
+            isCurrency: true,
         },
     ],
     budgetAutomationGoals: [

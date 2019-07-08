@@ -11,17 +11,16 @@
         ></zem-help-popover>
     </label>
     <div class="zem-settings-form-group__content">
-        <input
-            class="zem-settings-form-group__content-item zem-input-text"
-            [ngClass]="{'zem-input-text--error': errors && errors.length > 0}"
-            type="text"
-            placeholder="{{ placeholder }}"
-            maxlength="{{ maxLength }}"
-            [(ngModel)]="model"
-            (blur)="onBlur($event)"
-            [disabled]="isDisabled"
-            [zemFocus]="isFocused"
-        />
+        <zem-text-input
+            class="zem-settings-form-group__content-item zem-text-input"
+            [value]="model"
+            [maxLength]="maxLength"
+            [placeholder]="placeholder"
+            [isDisabled]="isDisabled"
+            [isFocused]="isFocused"
+            [hasError]="errors && errors.length > 0"
+            (inputBlur)="onInputBlur($event)"
+        ></zem-text-input>
         <div
             class="zem-settings-form-group__content-item zem-message zem-message--error"
             *ngFor="let error of errors"

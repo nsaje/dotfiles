@@ -89,24 +89,24 @@ class CampaignViewSet(restapi.campaign.v1.views.CampaignViewSet):
             campaign.settings.goals = self._get_campaign_goals(campaign)
 
     def _handle_goals(self, request, campaign, data):
-        campaign_goals = self._get_campaign_goals(campaign)
-        if len(campaign_goals) <= 0 and len(data) <= 0:
-            raise utils.exc.ValidationError(errors={"goals": ["At least one goal must be defined."]})
+        if len(data) <= 0:
+            raise utils.exc.ValidationError(errors={"goals_missing": ["At least one goal must be defined."]})
 
+        campaign_goals = self._get_campaign_goals(campaign)
         data_to_create = [x for x in data if x.get("id") is None]
         data_to_update = [x for x in data if x.get("id") is not None]
         goal_ids_to_delete = [x.id for x in campaign_goals if x.id not in [y.get("id") for y in data_to_update]]
 
-        for item in data_to_create:
-            self._create_goal(request, campaign, item)
+        for goal_id in goal_ids_to_delete:
+            # TODO: should be refactored to core.features.goals.service
+            dash.campaign_goals.delete_campaign_goal(request, goal_id, campaign)
 
         for item in data_to_update:
             campaign_goal = self._get_campaign_goal(campaign_goals, item.get("id"))
             campaign_goal.update(request, **item)
 
-        for goal_id in goal_ids_to_delete:
-            # TODO: should be refactored to core.features.goals.service
-            dash.campaign_goals.delete_campaign_goal(request, goal_id, campaign)
+        for item in data_to_create:
+            self._create_goal(request, campaign, item)
 
     @staticmethod
     def _get_campaign_goal(campaign_goals, goal_id):

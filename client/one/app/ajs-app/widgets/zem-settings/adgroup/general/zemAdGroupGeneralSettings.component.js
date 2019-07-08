@@ -1,3 +1,5 @@
+var currencyHelpers = require('../../../../../shared/helpers/currency.helpers');
+
 angular.module('one.widgets').component('zemAdGroupGeneralSettings', {
     bindings: {
         entity: '<',
@@ -9,8 +11,7 @@ angular.module('one.widgets').component('zemAdGroupGeneralSettings', {
         $scope,
         $state,
         zemPermissions,
-        zemNavigationNewService,
-        zemMulticurrencyService
+        zemNavigationNewService
     ) {
         var $ctrl = this;
         $ctrl.options = options;
@@ -48,8 +49,11 @@ angular.module('one.widgets').component('zemAdGroupGeneralSettings', {
                 // Not needed (placeholder)
             });
 
-            $ctrl.currencySymbol = zemMulticurrencyService.getAppropriateCurrencySymbol(
-                zemNavigationNewService.getActiveAccount()
+            var activeAccount = zemNavigationNewService.getActiveAccount();
+            $ctrl.currencySymbol = currencyHelpers.getCurrencySymbol(
+                activeAccount && activeAccount.data
+                    ? activeAccount.data.currency
+                    : null
             );
         };
 

@@ -1,15 +1,12 @@
+var currencyHelpers = require('../../../../shared/helpers/currency.helpers');
+
 angular.module('one').component('zemAccountCreditItemModal', {
     bindings: {
         close: '&',
         resolve: '<',
     },
     template: require('./zemAccountCreditItemModal.component.html'),
-    controller: function(
-        zemUserService,
-        $filter,
-        $timeout,
-        zemMulticurrencyService
-    ) {
+    controller: function(zemUserService, $filter, $timeout) {
         var $ctrl = this;
 
         $ctrl.$onInit = function() {
@@ -33,8 +30,8 @@ angular.module('one').component('zemAccountCreditItemModal', {
             var currentMoment = moment();
             $ctrl.createMode = $ctrl.resolve.id ? false : true;
             $ctrl.account = $ctrl.resolve.account;
-            $ctrl.newCreditCurrencySymbol = zemMulticurrencyService.getAppropriateCurrencySymbol(
-                $ctrl.account
+            $ctrl.newCreditCurrencySymbol = currencyHelpers.getCurrencySymbol(
+                $ctrl.account.currency
             );
             $ctrl.startDatePickerOptions = {minDate: currentMoment.toDate()};
             $ctrl.endDatePickerOptions = {minDate: currentMoment.toDate()};

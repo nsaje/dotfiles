@@ -1,75 +1,80 @@
 import * as clone from 'clone';
-import {APP_CONSTANTS, CampaignType} from '../../../app.constants';
-import {ENTITY_MANAGER_CONFIG} from '../entity-manager.config';
+import {
+    CampaignGoalKPI,
+    CampaignType,
+    Currency,
+    ConversionWindow,
+} from '../../../app.constants';
+import {
+    ENTITY_MANAGER_CONFIG,
+    CONVERSION_WINDOWS,
+    CAMPAIGN_GOAL_VALUE_TEXT,
+} from '../entity-manager.config';
+import {ConversionPixel} from '../../../core/conversion-pixels/types/conversion-pixel';
+import {CampaignGoal} from '../../../core/entities/types/campaign/campaign-goal';
+import * as commonHelpers from '../../../shared/helpers/common.helpers';
+import * as numericHelpers from '../../../shared/helpers/numeric.helpers';
+import * as currencyHelpers from '../../../shared/helpers/currency.helpers';
+import {CampaignGoalKPIConfig} from '../types/campaign-goal-kpi-config';
+import {ConversionWindowConfig} from '../../../core/conversion-pixels/types/conversion-windows-config';
 
 export function extendAvailableGoalsWithEditedGoal(
-    editedCampaignGoal: any,
-    availableGoals: any[],
-    allGoals: any[]
-): any[] {
-    const newAvailableGoals = clone(availableGoals);
+    editedCampaignGoal: CampaignGoal,
+    availableGoals: CampaignGoalKPIConfig[],
+    allGoals: CampaignGoalKPIConfig[]
+): CampaignGoalKPIConfig[] {
+    const newAvailableGoals = clone(availableGoals) || [];
     if (editedCampaignGoal && editedCampaignGoal.type) {
-        const item = newAvailableGoals.find((goal: any) => {
+        let item = newAvailableGoals.find(goal => {
             return goal.value === editedCampaignGoal.type;
         });
-        if (!item) {
-            newAvailableGoals.push(
-                allGoals.find((goal: any) => {
-                    return goal.value === editedCampaignGoal.type;
-                })
-            );
+        if (!item && allGoals.length > 0) {
+            item = allGoals.find(goal => {
+                return goal.value === editedCampaignGoal.type;
+            });
+            if (item) {
+                newAvailableGoals.push(item);
+            }
         }
     }
     return newAvailableGoals;
 }
 
 export function getAvailableGoals(
-    allGoals: any[],
-    enabledCampaignGoals: any[],
-    campaignType: Number,
+    allGoals: CampaignGoalKPIConfig[],
+    enabledCampaignGoals: CampaignGoal[],
+    campaignType: CampaignType,
     onlyCpc: boolean
-): any[] {
-    return clone(allGoals).filter((goal: any) =>
+): CampaignGoalKPIConfig[] {
+    return clone(allGoals).filter(goal =>
         isGoalAvailable(goal, enabledCampaignGoals, campaignType, onlyCpc)
     );
 }
 
-export function mapAvailableGoalsToCurrencySymbol(
-    availableGoals: any[],
-    currencySymbol: any
-): any[] {
-    return availableGoals.map((goal: any) => {
-        if (goal.unit === '__CURRENCY__') {
-            goal.unit = currencySymbol;
-        }
-        return goal;
-    });
-}
-
 function isGoalAvailable(
-    option: any,
-    enabledCampaignGoals: any[],
-    campaignType: Number,
+    option: CampaignGoalKPIConfig,
+    enabledCampaignGoals: CampaignGoal[],
+    campaignType: CampaignType,
     onlyCpc: boolean
 ): boolean {
     let isAvailable = true;
     let countConversionGoals = 0;
 
-    if (onlyCpc && option.value !== APP_CONSTANTS.campaignGoalKPI.CPC) {
+    if (onlyCpc && option.value !== CampaignGoalKPI.CPC) {
         return false;
     }
 
-    enabledCampaignGoals.forEach((goal: any) => {
+    enabledCampaignGoals.forEach(goal => {
         if (goal.type === option.value) {
             isAvailable = false;
         }
-        if (goal.type === APP_CONSTANTS.campaignGoalKPI.CPA) {
+        if (goal.type === CampaignGoalKPI.CPA) {
             countConversionGoals++;
         }
     });
 
     if (
-        option.value === APP_CONSTANTS.campaignGoalKPI.CPA &&
+        option.value === CampaignGoalKPI.CPA &&
         countConversionGoals < ENTITY_MANAGER_CONFIG.maxCampaignConversionGoals
     ) {
         return true;
@@ -78,10 +83,138 @@ function isGoalAvailable(
     // Display campaigns do not support CPCV goals
     if (
         campaignType === CampaignType.DISPLAY &&
-        option.value === APP_CONSTANTS.campaignGoalKPI.CPCV
+        option.value === CampaignGoalKPI.CPCV
     ) {
         return false;
     }
 
     return isAvailable;
+}
+
+export function mapAvailableGoalsToCurrencySymbol(
+    availableGoals: CampaignGoalKPIConfig[],
+    currencySymbol: string
+): CampaignGoalKPIConfig[] {
+    return availableGoals.map(goal => {
+        if (goal.isCurrency) {
+            goal.unit = currencySymbol;
+        }
+        return goal;
+    });
+}
+
+export function getConversionPixelsWithAvailableConversionWindows(
+    campaignGoals: CampaignGoal[],
+    conversionPixels: ConversionPixel[]
+): ConversionPixel[] {
+    const newConversionPixels: ConversionPixel[] = [];
+    clone(conversionPixels).forEach(conversionPixel => {
+        if (conversionPixel.archived) {
+            return;
+        }
+        conversionPixel.conversionWindows = [];
+        const counts = {};
+        campaignGoals.forEach(campaignGoal => {
+            if (campaignGoal.type !== CampaignGoalKPI.CPA) {
+                return;
+            }
+            if (
+                campaignGoal.conversionGoal.goalId === conversionPixel.id &&
+                !counts[campaignGoal.conversionGoal.conversionWindow]
+            ) {
+                counts[campaignGoal.conversionGoal.conversionWindow] =
+                    campaignGoal.conversionGoal.conversionWindow;
+            }
+        });
+        CONVERSION_WINDOWS.forEach(conversionWindow => {
+            if (!counts[conversionWindow.value]) {
+                conversionPixel.conversionWindows.push(conversionWindow);
+            }
+        });
+        if (conversionPixel.conversionWindows.length > 0) {
+            newConversionPixels.push(conversionPixel);
+        }
+    });
+    return newConversionPixels;
+}
+
+export function extendAvailableConversionPixelsWithEditedConversionPixel(
+    goalId: string,
+    availableConversionPixels: ConversionPixel[],
+    allConversionPixels: ConversionPixel[]
+): ConversionPixel[] {
+    const newAvailableConversionPixels = clone(availableConversionPixels) || [];
+    if (goalId) {
+        let item = newAvailableConversionPixels.find(conversionPixel => {
+            return conversionPixel.id === goalId;
+        });
+        if (!item && allConversionPixels.length > 0) {
+            item = allConversionPixels.find(conversionPixel => {
+                return conversionPixel.id === goalId;
+            });
+            if (item) {
+                newAvailableConversionPixels.push(item);
+            }
+        }
+    }
+    return newAvailableConversionPixels;
+}
+
+export function extendAvailableConversionWindowsWithEditedConversionWindow(
+    editedConversionWindow: ConversionWindow,
+    availableConversionWindows: ConversionWindowConfig[],
+    allConversionWindows: ConversionWindowConfig[]
+): ConversionWindowConfig[] {
+    const newAvailableConversionWindows =
+        clone(availableConversionWindows) || [];
+    if (editedConversionWindow) {
+        let item = newAvailableConversionWindows.find(conversionWindow => {
+            return conversionWindow.value === editedConversionWindow;
+        });
+        if (!item && allConversionWindows.length > 0) {
+            item = allConversionWindows.find(conversionWindow => {
+                return conversionWindow.value === editedConversionWindow;
+            });
+            if (item) {
+                newAvailableConversionWindows.push(item);
+            }
+        }
+    }
+    return newAvailableConversionWindows;
+}
+
+export function getCampaignGoalDescription(
+    campaignGoal: CampaignGoal,
+    currency: Currency,
+    currencyGoalKPIs: CampaignGoalKPI[],
+    nonCurrencyGoalKPIs: CampaignGoalKPI[]
+): string {
+    if (!commonHelpers.isDefined(campaignGoal)) {
+        return '';
+    }
+
+    if (currencyGoalKPIs.indexOf(campaignGoal.type) > -1) {
+        let fractionSize = 2;
+        if (campaignGoal.type === CampaignGoalKPI.CPC) {
+            fractionSize = 3;
+        }
+        const formattedValue = currencyHelpers.getValueInCurrency(
+            campaignGoal.value,
+            currency,
+            fractionSize
+        );
+        return `${formattedValue} ${
+            CAMPAIGN_GOAL_VALUE_TEXT[campaignGoal.type]
+        }`;
+    } else if (nonCurrencyGoalKPIs.indexOf(campaignGoal.type) > -1) {
+        const formattedValue = numericHelpers.parseDecimal(
+            campaignGoal.value,
+            2
+        );
+        return `${formattedValue} ${
+            CAMPAIGN_GOAL_VALUE_TEXT[campaignGoal.type]
+        }`;
+    } else {
+        return '';
+    }
 }

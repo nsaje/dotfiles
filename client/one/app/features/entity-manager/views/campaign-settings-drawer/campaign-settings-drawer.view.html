@@ -4,5 +4,123 @@
     [isClosable]="!isNewEntity"
     (closeRequest)="cancel()"
 >
-    Settings for campaign with id {{ entityId }}
+    <ng-container *ngIf="(store.state$ | async) as state">
+        <zem-settings-drawer-header
+            class="zem-settings-drawer-header zem-drawer__header"
+            [entityId]="entityId"
+            [entityType]="EntityType.CAMPAIGN"
+            [entityName]="state.entity.name"
+            [showAdminLink]="
+                zemPermissions.hasPermission('zemauth.can_see_open_in_admin')
+            "
+            [isAdminLinkAnInternalFeature]="
+                zemPermissions.isPermissionInternal(
+                    'zemauth.can_see_open_in_admin'
+                )
+            "
+            [entityNameErrors]="state.fieldsErrors.name"
+            (entityNameChange)="store.setName($event)"
+        ></zem-settings-drawer-header>
+        <div
+            class="zem-drawer__content custom-scroller zem-settings__settings-container"
+        >
+            <div
+                class="zem-panel zem-settings__panel"
+                *ngIf="
+                    zemPermissions.hasPermission(
+                        'zemauth.can_see_campaign_goals'
+                    )
+                "
+                [zemInternalFeature]="
+                    zemPermissions.isPermissionInternal(
+                        'zemauth.can_see_campaign_goals'
+                    )
+                "
+            >
+                <div class="zem-panel__header">
+                    <h2 class="zem-settings__panel-header-title">
+                        Campaign goals
+                    </h2>
+                </div>
+                <div class="zem-settings-section">
+                    <div class="zem-settings-section__header">
+                        <div class="zem-settings-section__description">
+                            Define your marketing objectives by adding campaign
+                            goals.
+                        </div>
+                    </div>
+                    <div
+                        class="zem-message zem-message--bubble zem-message--error zem-message--with-icon zem-campaign-goals__item"
+                        *ngIf="
+                            state.entity.goals.length === 0 &&
+                            state.fieldsErrors.goalsMissing.length > 0
+                        "
+                    >
+                        <span
+                            *ngFor="
+                                let error of state.fieldsErrors.goalsMissing
+                            "
+                        >
+                            {{ error }}
+                        </span>
+                    </div>
+                    <div
+                        class="zem-message zem-message--bubble zem-message--warning zem-message--with-icon zem-campaign-goals__item"
+                        *ngIf="
+                            state.entity.goals.length === 0 &&
+                            state.fieldsErrors.goalsMissing.length === 0
+                        "
+                    >
+                        Currently there are no defined campaign goals.
+                    </div>
+                    <zem-campaign-goals
+                        class="zem-campaign-goals"
+                        [campaignType]="campaignType"
+                        [onlyCpc]="
+                            zemPermissions.hasPermission(
+                                'zemauth.disable_public_rcs'
+                            ) ||
+                            zemPermissions.hasPermission(
+                                'zemauth.disable_public_newscorp'
+                            )
+                        "
+                        [currency]="state.extras.currency"
+                        [campaignGoals]="state.entity.goals"
+                        [conversionPixels]="state.conversionPixels"
+                        [campaignGoalsErrors]="state.fieldsErrors.goals"
+                        (campaignGoalCreate)="store.createGoal()"
+                        (campaignGoalPrimaryChange)="
+                            store.setPrimaryGoal($event)
+                        "
+                        (campaignGoalChange)="store.changeGoal($event)"
+                        (campaignGoalDelete)="store.deleteGoal($event)"
+                    ></zem-campaign-goals>
+                </div>
+            </div>
+        </div>
+        <zem-settings-drawer-footer
+            class="zem-settings-drawer-footer zem-drawer__footer zem-settings__settings-footer"
+            [isNewEntity]="isNewEntity"
+            [entityType]="EntityType.CAMPAIGN"
+            [userHasPermissionToArchive]="
+                zemPermissions.hasPermission('zemauth.archive_restore_entity')
+            "
+            [isArchiveActionInternal]="
+                zemPermissions.isPermissionInternal(
+                    'zemauth.archive_restore_entity'
+                )
+            "
+            [isArchiveActionDisabled]="!state.extras.canArchive"
+            [isLoading]="
+                state.requests.create.inProgress ||
+                state.requests.edit.inProgress
+            "
+            [hasError]="
+                state.requests.create.error || state.requests.edit.error
+            "
+            (save)="saveSettings()"
+            (cancel)="cancel()"
+            (archive)="archive()"
+        ></zem-settings-drawer-footer>
+    </ng-container>
 </zem-drawer>

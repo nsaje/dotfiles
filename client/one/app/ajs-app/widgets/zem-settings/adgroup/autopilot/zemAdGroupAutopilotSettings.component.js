@@ -1,3 +1,5 @@
+var currencyHelpers = require('../../../../../shared/helpers/currency.helpers');
+
 angular.module('one.widgets').component('zemAdGroupAutopilotSettings', {
     bindings: {
         entity: '<',
@@ -5,13 +7,7 @@ angular.module('one.widgets').component('zemAdGroupAutopilotSettings', {
         api: '<',
     },
     template: require('./zemAdGroupAutopilotSettings.component.html'),
-    controller: function(
-        $q,
-        $state,
-        config,
-        zemNavigationNewService,
-        zemMulticurrencyService
-    ) {
+    controller: function($q, $state, config, zemNavigationNewService) {
         var MSG_ALL_RTB_ENABLED_AD_GROUP_INACTIVE =
             'One joint Bid and Daily Spend Cap will be set for all ' +
             'RTB sources. Please check the Daily Spend Cap in the Media Sources tab before enabling the ad group.';
@@ -49,9 +45,11 @@ angular.module('one.widgets').component('zemAdGroupAutopilotSettings', {
             $ctrl.api.register({
                 validate: validate,
             });
-
-            $ctrl.currencySymbol = zemMulticurrencyService.getAppropriateCurrencySymbol(
-                zemNavigationNewService.getActiveAccount()
+            var activeAccount = zemNavigationNewService.getActiveAccount();
+            $ctrl.currencySymbol = currencyHelpers.getCurrencySymbol(
+                activeAccount && activeAccount.data
+                    ? activeAccount.data.currency
+                    : null
             );
         };
 

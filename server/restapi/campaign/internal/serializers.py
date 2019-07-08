@@ -21,6 +21,9 @@ class ExtraDataSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
     language = restapi.serializers.fields.DashConstantField(dash.constants.Language, required=False)
     can_archive = rest_framework.serializers.BooleanField(default=False, required=False)
     can_restore = rest_framework.serializers.BooleanField(default=False, required=False)
+    currency = restapi.serializers.fields.DashConstantField(
+        dash.constants.Currency, default=dash.constants.Currency.USD, required=False
+    )
     goals_defaults = restapi.campaigngoal.serializers.CampaignGoalsDefaultsSerializer()
     campaign_managers = rest_framework.serializers.ListField(
         child=ExtraDataCampaignManagerSerializer(), default=[], allow_empty=True
@@ -46,6 +49,13 @@ class CampaignSerializer(restapi.campaign.v1.serializers.CampaignSerializer):
         child=restapi.campaigngoal.serializers.CampaignGoalSerializer(), default=[], allow_empty=True
     )
 
+    def validate_campaign_manager(self, value):
+        if value is None:
+            return value
+        if not zemauth.models.User.objects.filter(pk=value).exists():
+            raise rest_framework.serializers.ValidationError(["Invalid campaign manager."])
+        return value
+
     def to_internal_value(self, data):
         value = super().to_internal_value(data)
         value["campaign_manager"] = self.to_internal_value_campaign_manager(data.get("campaign_manager"))
@@ -54,8 +64,4 @@ class CampaignSerializer(restapi.campaign.v1.serializers.CampaignSerializer):
     def to_internal_value_campaign_manager(self, data):
         if data is None:
             return data
-        try:
-            value = zemauth.models.User.objects.get(pk=data)
-        except zemauth.models.User.DoesNotExist:
-            raise rest_framework.serializers.ValidationError({"campaign_manager": ["Invalid campaign manager."]})
-        return value
+        return zemauth.models.User.objects.get(pk=data)

@@ -1,0 +1,36 @@
+@import 'variables';
+
+.zem-campaign-goals__item {
+    margin-bottom: 10px;
+}
+
+.zem-campaign-goals__item:last-child {
+    margin-bottom: 0;
+}
+
+.zem-campaign-goals__footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+}
+
+.zem-campaign-goals__primary-goal-legend {
+    color: @text-color--lighter;
+
+    &:before {
+        content: '';
+        height: 10px;
+        width: 10px;
+        display: inline-block;
+        background-color: @color--secondary;
+        right: 5px;
+        position: relative;
+    }
+}
+
+.zem-campaign-goals__button {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-right: 15px;
+}

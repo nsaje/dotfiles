@@ -4,15 +4,30 @@ import {Subject} from 'rxjs';
 import {CampaignSettingsStoreState} from './campaign-settings.store.state';
 import {RequestStateUpdater} from '../../../../shared/types/request-state-updater';
 import * as storeHelpers from '../../../../shared/helpers/store.helpers';
+import {CampaignService} from '../../../../core/entities/services/campaign/campaign.service';
+import {ConversionPixelsService} from '../../../../core/conversion-pixels/services/conversion-pixels.service';
+import {takeUntil} from 'rxjs/operators';
+import {CampaignWithExtras} from '../../../../core/entities/types/campaign/campaign-with-extras';
+import * as clone from 'clone';
 import {Campaign} from '../../../../core/entities/types/campaign/campaign';
+import {HttpErrorResponse} from '@angular/common/http';
+import {CampaignSettingsStoreFieldsErrorsState} from './campaign-settings.store.fields-errors-state';
+import * as deepEqual from 'fast-deep-equal';
+import {CampaignGoal} from '../../../../core/entities/types/campaign/campaign-goal';
+import {ChangeEvent} from '../../../../shared/types/change-event';
+import {CampaignGoalKPI} from '../../../../app.constants';
 
 @Injectable()
 export class CampaignSettingsStore extends Store<CampaignSettingsStoreState>
     implements OnDestroy {
     private ngUnsubscribe$: Subject<void> = new Subject();
     private requestStateUpdater: RequestStateUpdater;
+    private originalEntity: Campaign;
 
-    constructor() {
+    constructor(
+        private campaignService: CampaignService,
+        private conversionPixelsService: ConversionPixelsService
+    ) {
         super(new CampaignSettingsStoreState());
         this.requestStateUpdater = storeHelpers.getStoreRequestStateUpdater(
             this
@@ -20,18 +35,226 @@ export class CampaignSettingsStore extends Store<CampaignSettingsStoreState>
     }
 
     loadEntityDefaults(accountId: string) {
-        this.setState({
-            ...this.state,
-            entity: {id: '12345', goals: []},
-        });
+        this.campaignService
+            .defaults(accountId, this.requestStateUpdater)
+            .pipe(takeUntil(this.ngUnsubscribe$))
+            .subscribe(
+                campaignWithExtras => {
+                    this.setState({
+                        ...this.state,
+                        entity: campaignWithExtras.campaign,
+                        extras: campaignWithExtras.extras,
+                    });
+                    this.loadConversionPixelsForAccount(
+                        this.state.entity.accountId
+                    );
+                },
+                error => {}
+            );
     }
 
     loadEntity(id: string) {
-        this.setState({
-            ...this.state,
-            entity: {id: id, goals: []},
+        this.campaignService
+            .get(id, this.requestStateUpdater)
+            .pipe(takeUntil(this.ngUnsubscribe$))
+            .subscribe(
+                (campaignWithExtras: CampaignWithExtras) => {
+                    this.originalEntity = clone(campaignWithExtras.campaign);
+                    this.setState({
+                        ...this.state,
+                        entity: campaignWithExtras.campaign,
+                        extras: campaignWithExtras.extras,
+                    });
+                    this.loadConversionPixelsForAccount(
+                        this.state.entity.accountId
+                    );
+                },
+                error => {}
+            );
+    }
+
+    validateEntity() {
+        this.campaignService
+            .validate(this.state.entity, this.requestStateUpdater)
+            .pipe(takeUntil(this.ngUnsubscribe$))
+            .subscribe(
+                () => {
+                    this.updateState(
+                        new CampaignSettingsStoreFieldsErrorsState(),
+                        'fieldsErrors'
+                    );
+                },
+                (error: HttpErrorResponse) => {
+                    const fieldsErrors = storeHelpers.getStoreFieldsErrorsState(
+                        new CampaignSettingsStoreFieldsErrorsState(),
+                        error
+                    );
+                    this.updateState(fieldsErrors, 'fieldsErrors');
+                }
+            );
+    }
+
+    saveEntity(): Promise<boolean> {
+        return new Promise<boolean>(resolve => {
+            this.campaignService
+                .save(this.state.entity, this.requestStateUpdater)
+                .pipe(takeUntil(this.ngUnsubscribe$))
+                .subscribe(
+                    (campaign: Campaign) => {
+                        this.setState({
+                            ...this.state,
+                            entity: campaign,
+                            fieldsErrors: new CampaignSettingsStoreFieldsErrorsState(),
+                        });
+                        resolve(true);
+                    },
+                    (error: HttpErrorResponse) => {
+                        const fieldsErrors = storeHelpers.getStoreFieldsErrorsState(
+                            new CampaignSettingsStoreFieldsErrorsState(),
+                            error
+                        );
+                        this.updateState(fieldsErrors, 'fieldsErrors');
+                        resolve(false);
+                    }
+                );
         });
     }
+
+    archiveEntity(): Promise<boolean> {
+        return new Promise<boolean>(resolve => {
+            this.campaignService
+                .archive(this.state.entity.id, this.requestStateUpdater)
+                .subscribe(
+                    () => {
+                        resolve(true);
+                    },
+                    (error: HttpErrorResponse) => {
+                        const fieldsErrors = storeHelpers.getStoreFieldsErrorsState(
+                            new CampaignSettingsStoreFieldsErrorsState(),
+                            error
+                        );
+                        this.updateState(fieldsErrors, 'fieldsErrors');
+                        resolve(false);
+                    }
+                );
+        });
+    }
+
+    doEntitySettingsHaveUnsavedChanges(): boolean {
+        if (!this.originalEntity) {
+            return false;
+        }
+        return !deepEqual(this.originalEntity, this.state.entity);
+    }
+
+    setName(name: string) {
+        this.updateState(name, 'entity', 'name');
+        this.validateEntity();
+    }
+
+    /**
+     * Start: Conversion Pixels
+     */
+
+    loadConversionPixelsForAccount(accountId: string) {
+        this.conversionPixelsService
+            .list(accountId, this.requestStateUpdater)
+            .pipe(takeUntil(this.ngUnsubscribe$))
+            .subscribe(
+                conversionPixels => {
+                    this.updateState(conversionPixels, 'conversionPixels');
+                },
+                error => {}
+            );
+    }
+
+    /**
+     * End: Conversion Pixels
+     */
+
+    /**
+     * Start: Campaign Goals
+     */
+
+    createGoal() {
+        const goals = this.state.entity.goals.map(item => {
+            return {
+                ...item,
+                primary: false,
+            };
+        });
+        goals.push({
+            id: null,
+            type: null,
+            value: null,
+            primary: true,
+            conversionGoal: null,
+        });
+        this.updateState(goals, 'entity', 'goals');
+    }
+
+    setPrimaryGoal($event: CampaignGoal) {
+        const goals = this.state.entity.goals.map(item => {
+            return {
+                ...item,
+                primary: item === $event,
+            };
+        });
+        this.updateState(goals, 'entity', 'goals');
+        this.validateEntity();
+    }
+
+    changeGoal($event: ChangeEvent<CampaignGoal>) {
+        const goals = this.state.entity.goals.map(item => {
+            if (item === $event.target) {
+                if ($event.changes.type) {
+                    let conversionGoal = null;
+                    if ($event.changes.type === CampaignGoalKPI.CPA) {
+                        conversionGoal = {
+                            type: null,
+                            conversionWindow: null,
+                            goalId: null,
+                            pixelUrl: null,
+                            name: null,
+                        };
+                    }
+                    return {
+                        ...item,
+                        value: this.state.extras.goalsDefaults[
+                            $event.changes.type
+                        ],
+                        type: $event.changes.type,
+                        conversionGoal: conversionGoal,
+                    };
+                }
+                return {
+                    ...item,
+                    ...$event.changes,
+                };
+            }
+            return item;
+        });
+        this.updateState(goals, 'entity', 'goals');
+        this.validateEntity();
+    }
+
+    deleteGoal(campaignGoal: CampaignGoal) {
+        const goals = this.state.entity.goals.filter(item => {
+            return item !== campaignGoal;
+        });
+        if (campaignGoal.primary && goals.length > 0) {
+            goals[0] = {
+                ...goals[0],
+                primary: true,
+            };
+        }
+        this.updateState(goals, 'entity', 'goals');
+        this.validateEntity();
+    }
+
+    /**
+     * End: Campaign Goals
+     */
 
     ngOnDestroy() {
         this.ngUnsubscribe$.next();

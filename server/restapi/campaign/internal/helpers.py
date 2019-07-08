@@ -12,6 +12,7 @@ def get_extra_data(user, campaign):
         "language": campaign.settings.language,
         "can_archive": campaign.can_archive(),
         "can_restore": campaign.can_restore(),
+        "currency": campaign.account.currency,
     }
 
     if user.has_perm("zemauth.can_see_campaign_goals"):

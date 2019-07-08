@@ -1,6 +1,7 @@
 import {APP_CONFIG} from '../../app.config';
 
 const adGroupApiUrl = `${APP_CONFIG.apiRestInternalUrl}/adgroups`;
+const campaignApiUrl = `${APP_CONFIG.apiRestInternalUrl}/campaigns`;
 
 export const ENTITY_CONFIG = {
     requests: {
@@ -24,6 +25,28 @@ export const ENTITY_CONFIG = {
             defaults: {
                 name: 'defaults',
                 url: `${adGroupApiUrl}/defaults/`,
+            },
+        },
+        campaign: {
+            get: {
+                name: 'get',
+                url: `${campaignApiUrl}/`,
+            },
+            create: {
+                name: 'create',
+                url: `${campaignApiUrl}/`,
+            },
+            edit: {
+                name: 'edit',
+                url: `${campaignApiUrl}/`,
+            },
+            validate: {
+                name: 'validate',
+                url: `${campaignApiUrl}/validate/`,
+            },
+            defaults: {
+                name: 'defaults',
+                url: `${campaignApiUrl}/defaults/`,
             },
         },
     },

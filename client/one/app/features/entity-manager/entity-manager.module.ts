@@ -39,7 +39,9 @@ import {HacksComponent} from './components/hacks/hacks.component';
 import {DealsComponent} from './components/deals/deals.component';
 import {SettingsDrawerFooterComponent} from './components/settings-drawer-footer/settings-drawer-footer.component';
 import {SettingsDrawerHeaderComponent} from './components/settings-drawer-header/settings-drawer-header.component';
-import {CampaignGoalsService} from './services/campaign-goals/campaign-goals.service';
+import {CampaignGoalsComponent} from './components/campaign-goals/campaign-goals.component';
+import {CampaignGoalComponent} from './components/campaign-goal/campaign-goal.component';
+import {CampaignGoalEditComponent} from './components/campaign-goal-edit/campaign-goal-edit.component';
 
 // DEMO
 import {RuleActionsComponent} from './components/rule-actions/rule-actions.component';
@@ -51,7 +53,6 @@ import {RuleFormConditionComponent} from './components/rule-form/components/rule
 import {RuleFormConditionModifierComponent} from './components/rule-form/components/rule-form-condition-modifier/rule-form-condition-modifier.component';
 
 @NgModule({
-    providers: [CampaignGoalsService],
     declarations: [
         EntitySettingsRouterOutlet,
         AccountSettingsDrawerView,
@@ -87,6 +88,10 @@ import {RuleFormConditionModifierComponent} from './components/rule-form/compone
         AdGroupRTBSourcesManagementSettingComponent,
         HacksComponent,
         DealsComponent,
+        CampaignGoalsComponent,
+        CampaignGoalComponent,
+        CampaignGoalEditComponent,
+
         // DEMO
         RuleActionsComponent,
         RuleFormComponent,

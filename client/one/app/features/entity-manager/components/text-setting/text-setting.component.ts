@@ -43,9 +43,7 @@ export class TextSettingComponent implements OnChanges {
         }
     }
 
-    onBlur($event: FocusEvent) {
-        if (this.model !== this.value) {
-            this.valueChange.emit(this.model);
-        }
+    onInputBlur($event: string) {
+        this.valueChange.emit($event);
     }
 }

@@ -1,6 +1,5 @@
 import {NgModule, Optional, SkipSelf} from '@angular/core';
 import {throwIfAlreadyLoaded} from './core.module.guard';
-import {MulticurrencyService} from './multicurrency/multicurrency.service';
 import {GoogleAnalyticsService} from './google-analytics/google-analytics.service';
 import {MixpanelService} from './mixpanel/mixpanel.service';
 import {EntitiesModule} from './entities/entities.module';
@@ -8,6 +7,7 @@ import {PostAsGetRequestService} from './post-as-get-request/post-as-get-request
 import {HTTP_INTERCEPTORS} from '@angular/common/http';
 import {ApiConverterHttpInterceptor} from './interceptors/api-converter.interceptor';
 import {BidModifiersModule} from './bid-modifiers/bid-modifiers.module';
+import {ConversionPixelsModule} from './conversion-pixels/conversion-pixels.module';
 
 const HTTP_INTERCEPTOR_PROVIDERS = [
     {
@@ -18,10 +18,9 @@ const HTTP_INTERCEPTOR_PROVIDERS = [
 ];
 
 @NgModule({
-    imports: [EntitiesModule, BidModifiersModule],
+    imports: [EntitiesModule, BidModifiersModule, ConversionPixelsModule],
     providers: [
         GoogleAnalyticsService,
-        MulticurrencyService,
         MixpanelService,
         PostAsGetRequestService,
         HTTP_INTERCEPTOR_PROVIDERS,

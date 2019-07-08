@@ -2,14 +2,14 @@ import {asapScheduler, of} from 'rxjs';
 import * as clone from 'clone';
 import {AdGroupService} from './ad-group.service';
 import {AdGroupEndpoint} from './ad-group.endpoint';
-import {EntitiesUpdatesService} from './entities-updates.service';
-import {AdGroupWithExtras} from '../types/ad-group/ad-group-with-extras';
-import {EntityType, EntityUpdateAction} from '../../../app.constants';
+import {EntitiesUpdatesService} from '../entities-updates.service';
+import {AdGroupWithExtras} from '../../types/ad-group/ad-group-with-extras';
+import {EntityType, EntityUpdateAction} from '../../../../app.constants';
 import {tick, fakeAsync} from '@angular/core/testing';
-import {AdGroup} from '../types/ad-group/ad-group';
-import {RequestStateUpdater} from '../../../shared/types/request-state-updater';
-import {AdGroupExtras} from '../types/ad-group/ad-group-extras';
-import * as mockHelpers from '../../../testing/mock.helpers';
+import {AdGroup} from '../../types/ad-group/ad-group';
+import {RequestStateUpdater} from '../../../../shared/types/request-state-updater';
+import {AdGroupExtras} from '../../types/ad-group/ad-group-extras';
+import * as mockHelpers from '../../../../testing/mock.helpers';
 
 describe('AdGroupService', () => {
     let service: AdGroupService;

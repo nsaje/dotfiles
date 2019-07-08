@@ -148,13 +148,12 @@ export class BidModifierCellStore extends Store<BidModifierCellStoreState>
     private formatBid(
         bid: number,
         fractionSize: number,
-        currency: string
+        currency: Currency
     ): string {
         return currencyHelpers.formatCurrency(
             bid.toString(),
-            fractionSize,
-            'en-US',
-            currencyHelpers.getCurrencySymbol(currency)
+            currency,
+            fractionSize
         );
     }
 }

@@ -1,5 +1,6 @@
 require('./zemCampaignLauncherReview.component.less');
 var constantsHelpers = require('../../../../../shared/helpers/constants.helpers');
+var currencyHelpers = require('../../../../../shared/helpers/currency.helpers');
 var iframeHelpers = require('../../../../../shared/helpers/iframe.helpers');
 
 angular.module('one').component('zemCampaignLauncherReview', {
@@ -8,12 +9,7 @@ angular.module('one').component('zemCampaignLauncherReview', {
         account: '<',
     },
     template: require('./zemCampaignLauncherReview.component.html'),
-    controller: function(
-        zemDeviceTargetingConstants,
-        zemPermissions,
-        zemMulticurrencyService,
-        $filter
-    ) {
+    controller: function(zemDeviceTargetingConstants, zemPermissions, $filter) {
         var $ctrl = this;
 
         $ctrl.hasPermission = zemPermissions.hasPermission;
@@ -31,8 +27,8 @@ angular.module('one').component('zemCampaignLauncherReview', {
                 $ctrl.state.fields.iabCategory
             );
             $ctrl.language = getLanguageName($ctrl.state.fields.language);
-            $ctrl.currencySymbol = zemMulticurrencyService.getAppropriateCurrencySymbol(
-                $ctrl.account
+            $ctrl.currencySymbol = currencyHelpers.getCurrencySymbol(
+                $ctrl.account.currency
             );
             $ctrl.campaignGoalText = $filter('campaignGoalText')(
                 $ctrl.state.fields.campaignGoal

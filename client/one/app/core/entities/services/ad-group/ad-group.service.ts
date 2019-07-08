@@ -2,11 +2,12 @@ import {Injectable} from '@angular/core';
 import {Observable} from 'rxjs';
 import {AdGroupEndpoint} from './ad-group.endpoint';
 import {tap} from 'rxjs/operators';
-import {EntitiesUpdatesService} from './entities-updates.service';
-import {EntityType, EntityUpdateAction} from '../../../app.constants';
-import {AdGroupWithExtras} from '../types/ad-group/ad-group-with-extras';
-import {AdGroup} from '../types/ad-group/ad-group';
-import {RequestStateUpdater} from '../../../shared/types/request-state-updater';
+import {EntitiesUpdatesService} from '../entities-updates.service';
+import {EntityType, EntityUpdateAction} from '../../../../app.constants';
+import {AdGroupWithExtras} from '../../types/ad-group/ad-group-with-extras';
+import {AdGroup} from '../../types/ad-group/ad-group';
+import {RequestStateUpdater} from '../../../../shared/types/request-state-updater';
+import * as commonHelpers from '../../../../shared/helpers/common.helpers';
 
 @Injectable()
 export class AdGroupService {
@@ -40,7 +41,7 @@ export class AdGroupService {
         adGroup: AdGroup,
         requestStateUpdater: RequestStateUpdater
     ): Observable<AdGroup> {
-        if (adGroup.id === null) {
+        if (!commonHelpers.isDefined(adGroup.id)) {
             return this.create(adGroup, requestStateUpdater);
         }
         return this.edit(adGroup, requestStateUpdater);

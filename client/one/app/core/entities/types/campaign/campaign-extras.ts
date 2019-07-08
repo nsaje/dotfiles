@@ -5,5 +5,5 @@ import {CampaignGoalsDefaults} from '../../../../features/entity-manager/types/c
 
 export interface CampaignExtras {
     currency: Currency;
-    campaignGoalsDefaults: CampaignGoalsDefaults;
+    goalsDefaults: CampaignGoalsDefaults;
 }

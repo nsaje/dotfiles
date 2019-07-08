@@ -1,10 +1,8 @@
+var currencyHelpers = require('../../../shared/helpers/currency.helpers');
+
 angular
     .module('one.common')
-    .filter('campaignGoalText', function(
-        $filter,
-        zemNavigationNewService,
-        zemMulticurrencyService
-    ) {
+    .filter('campaignGoalText', function($filter, zemNavigationNewService) {
         // eslint-disable-line max-len
         return function(goal) {
             if (!goal) {
@@ -23,14 +21,18 @@ angular
                     constants.campaignGoalKPI.CPCV,
                 ].indexOf(goal.type) > -1
             ) {
-                var account = zemNavigationNewService.getActiveAccount();
                 var fractionSize = 2;
                 if (goal.type === constants.campaignGoalKPI.CPC) {
                     fractionSize = 3;
                 }
-                var formattedValue = zemMulticurrencyService.getValueInAppropriateCurrency(
+                var activeAccount = zemNavigationNewService.getActiveAccount();
+                var currency =
+                    activeAccount && activeAccount.data
+                        ? activeAccount.data.currency
+                        : null;
+                var formattedValue = currencyHelpers.getValueInCurrency(
                     goal.value,
-                    account,
+                    currency,
                     fractionSize
                 );
                 return (

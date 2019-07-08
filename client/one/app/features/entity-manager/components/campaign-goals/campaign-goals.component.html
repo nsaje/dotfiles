@@ -1,0 +1,50 @@
+<zem-campaign-goal
+    class="zem-campaign-goal zem-campaign-goals__item"
+    [ngClass]="{'zem-campaign-goal--error': hasError(index)}"
+    *ngFor="
+        let campaignGoal of campaignGoals;
+        index as index;
+        trackBy: trackByIndex
+    "
+    [index]="index"
+    [campaignGoal]="campaignGoal"
+    [currency]="currency"
+    (campaignGoalPrimaryChange)="onCampaignGoalPrimaryChange(campaignGoal)"
+    (campaignGoalDelete)="onCampaignGoalDelete(campaignGoal)"
+>
+    <zem-campaign-goal-edit
+        class="zem-campaign-goal-edit"
+        [campaignGoal]="campaignGoal"
+        [currency]="currency"
+        [availableCampaignGoals]="availableCampaignGoals"
+        [conversionPixels]="conversionPixels"
+        [availableConversionPixels]="availableConversionPixels"
+        [campaignGoalError]="campaignGoalsErrors[index]"
+        (campaignGoalChange)="onCampaignGoalChange($event)"
+    ></zem-campaign-goal-edit>
+</zem-campaign-goal>
+<div
+    *ngIf="getKPIOptimizationLabel()"
+    class="zem-message zem-message--bubble zem-message--info zem-message--with-icon zem-campaign-goals__item"
+>
+    {{ getKPIOptimizationLabel() }}
+</div>
+<div class="zem-campaign-goals__footer zem-campaign-goals__item">
+    <button
+        type="button"
+        class="button button--with-icon add-icon zem-campaign-goals__button"
+        (click)="createGoal()"
+    >
+        Add new goal
+    </button>
+    <div
+        class="zem-campaign-goals__primary-goal-legend"
+        [hidden]="campaignGoals.length === 0"
+    >
+        Click on a goal to set it as primary
+        <zem-help-popover
+            content="Primary goal will be used for auto-optimizing your campaign."
+            placement="left"
+        ></zem-help-popover>
+    </div>
+</div>

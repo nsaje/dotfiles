@@ -8,4 +8,5 @@ export interface CampaignConversionGoal {
     conversionWindow: ConversionWindow;
     goalId: string;
     pixelUrl?: string;
+    name?: string;
 }

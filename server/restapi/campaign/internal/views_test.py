@@ -107,6 +107,7 @@ class CampaignViewSetTest(RESTAPITest):
             "language": dash.constants.Language.ENGLISH,
             "can_archive": True,
             "can_restore": True,
+            "currency": dash.constants.Currency.USD,
             "goals_defaults": {
                 dash.constants.CampaignGoalKPI.TIME_ON_SITE: "30.00",
                 dash.constants.CampaignGoalKPI.MAX_BOUNCE_RATE: "75.00",
@@ -146,6 +147,7 @@ class CampaignViewSetTest(RESTAPITest):
                 "language": dash.constants.Language.get_name(dash.constants.Language.ENGLISH),
                 "canArchive": True,
                 "canRestore": True,
+                "currency": dash.constants.Currency.get_name(dash.constants.Currency.USD),
                 "goalsDefaults": {
                     dash.constants.CampaignGoalKPI.get_name(dash.constants.CampaignGoalKPI.TIME_ON_SITE): "30.00",
                     dash.constants.CampaignGoalKPI.get_name(dash.constants.CampaignGoalKPI.MAX_BOUNCE_RATE): "75.00",
@@ -166,6 +168,7 @@ class CampaignViewSetTest(RESTAPITest):
             "language": dash.constants.Language.ENGLISH,
             "can_archive": True,
             "can_restore": True,
+            "currency": dash.constants.Currency.USD,
             "goals_defaults": {
                 dash.constants.CampaignGoalKPI.TIME_ON_SITE: "30.00",
                 dash.constants.CampaignGoalKPI.MAX_BOUNCE_RATE: "75.00",
@@ -253,6 +256,7 @@ class CampaignViewSetTest(RESTAPITest):
                 "language": dash.constants.Language.get_name(dash.constants.Language.ENGLISH),
                 "canArchive": True,
                 "canRestore": True,
+                "currency": dash.constants.Currency.get_name(dash.constants.Currency.USD),
                 "goalsDefaults": {
                     dash.constants.CampaignGoalKPI.get_name(dash.constants.CampaignGoalKPI.TIME_ON_SITE): "30.00",
                     dash.constants.CampaignGoalKPI.get_name(dash.constants.CampaignGoalKPI.MAX_BOUNCE_RATE): "75.00",
@@ -330,7 +334,7 @@ class CampaignViewSetTest(RESTAPITest):
         r = self.client.post(reverse("restapi.campaign.internal:campaigns_list"), data=new_campaign, format="json")
         r = self.assertResponseError(r, "ValidationError")
 
-        self.assertIn("At least one goal must be defined.", r["details"]["goals"][0])
+        self.assertIn("At least one goal must be defined.", r["details"]["goalsMissing"][0])
 
     @mock.patch("automation.autopilot.recalculate_budgets_campaign")
     @mock.patch("utils.email_helper.send_campaign_created_email")

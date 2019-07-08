@@ -1,10 +1,11 @@
+var currencyHelpers = require('../../../../../shared/helpers/currency.helpers');
+
 angular.module('one.widgets').component('zemInfoboxRealtimestats', {
     bindings: {},
     template: require('./zemInfoboxRealtimestats.component.html'),
     controller: function(
         zemNavigationNewService,
         zemRealtimestatsService,
-        zemMulticurrencyService,
         $filter,
         $interval,
         $timeout
@@ -65,11 +66,12 @@ angular.module('one.widgets').component('zemInfoboxRealtimestats', {
         }
 
         function formatSpend(spend) {
-            return zemMulticurrencyService.getValueInAppropriateCurrency(
-                spend,
-                zemNavigationNewService.getActiveAccount(),
-                4
-            );
+            var activeAccount = zemNavigationNewService.getActiveAccount();
+            var currency =
+                activeAccount && activeAccount.data
+                    ? activeAccount.data.currency
+                    : null;
+            return currencyHelpers.getValueInCurrency(spend, currency, 4);
         }
     },
 });
