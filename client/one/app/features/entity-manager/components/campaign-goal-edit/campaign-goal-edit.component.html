@@ -11,22 +11,22 @@
             <div
                 class="zem-campaign-goal-edit__content-item zem-campaign-goal-edit__goal-value"
             >
-                <ng-container *ngIf="!!goalUnit">
+                <ng-container *ngIf="editedGoalConfig.unit">
                     <zem-currency-input
-                        *ngIf="isGoalUnitCurrency(campaignGoal.type)"
+                        *ngIf="editedGoalConfig.dataType === DataType.Currency"
                         class="zem-campaign-goal-edit__goal-value-item zem-currency-input"
                         [value]="campaignGoal.value"
                         [placeholder]="'0.00'"
-                        [currencySymbol]="goalUnit"
+                        [currencySymbol]="getGoalUnitText()"
                         [fractionSize]="2"
                         [isFocused]="true"
                         [hasError]="!!campaignGoalError?.value"
                         (inputBlur)="onGoalValueChange($event)"
                     ></zem-currency-input>
                     <zem-prefixed-input
-                        *ngIf="!isGoalUnitCurrency(campaignGoal.type)"
+                        *ngIf="editedGoalConfig.dataType === DataType.Decimal"
                         class="zem-prefixed-input"
-                        [prefix]="goalUnit"
+                        [prefix]="getGoalUnitText()"
                         [hasError]="!!campaignGoalError?.value"
                     >
                         <zem-decimal-input
@@ -40,9 +40,10 @@
                         ></zem-decimal-input>
                     </zem-prefixed-input>
                 </ng-container>
-                <ng-container *ngIf="!goalUnit">
+                <ng-container *ngIf="!editedGoalConfig.unit">
                     <zem-decimal-input
                         class="zem-campaign-goal-edit__goal-value-item zem-decimal-input"
+                        *ngIf="editedGoalConfig.dataType === DataType.Decimal"
                         [value]="campaignGoal.value"
                         [placeholder]="'0.00'"
                         [fractionSize]="2"

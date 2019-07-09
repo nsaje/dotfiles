@@ -1,15 +1,14 @@
 import {
     RuleDimension,
     RuleActionType,
-    Unit,
     RuleActionFrequency,
     RuleConditionOperator,
     Macro,
     RuleConditionOperandType,
     RuleConditionOperandGroup,
     TimeRange,
-    DataType,
 } from './rule-form.constants';
+import {DataType, Unit} from '../../../../app.constants';
 
 export const RULE_DIMENSIONS = [
     {label: 'Ad', value: RuleDimension.Ad},

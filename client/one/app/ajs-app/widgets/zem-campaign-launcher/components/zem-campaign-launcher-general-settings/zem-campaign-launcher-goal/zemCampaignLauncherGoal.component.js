@@ -32,7 +32,7 @@ angular.module('one.widgets').component('zemCampaignLauncherGoal', {
                 false
             );
             var activeAccount = zemNavigationNewService.getActiveAccount();
-            return campaignGoalsHelpers.mapAvailableGoalsToCurrencySymbol(
+            return mapAvailableGoalsToCurrencySymbol(
                 availableGoals,
                 currencyHelpers.getCurrencySymbol(
                     activeAccount && activeAccount.data
@@ -40,6 +40,18 @@ angular.module('one.widgets').component('zemCampaignLauncherGoal', {
                         : null
                 )
             );
+        }
+
+        function mapAvailableGoalsToCurrencySymbol(
+            availableGoals,
+            currencySymbol
+        ) {
+            return availableGoals.map(function(goal) {
+                if (goal.isCurrency) {
+                    goal.unit = currencySymbol;
+                }
+                return goal;
+            });
         }
 
         $ctrl.$onInit = function() {

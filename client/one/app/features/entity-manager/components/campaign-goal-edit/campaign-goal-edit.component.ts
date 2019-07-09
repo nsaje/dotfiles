@@ -29,6 +29,8 @@ import {ChangeEvent} from '../../../../shared/types/change-event';
 import {CampaignGoalKPIConfig} from '../../types/campaign-goal-kpi-config';
 import {ConversionWindowConfig} from '../../../../core/conversion-pixels/types/conversion-windows-config';
 import {CampaignGoalError} from '../../types/campaign-goal-error';
+import {DataType, Unit} from '../../../../app.constants';
+import * as unitsHelpers from '../../../../shared/helpers/units.helpers';
 
 @Component({
     selector: 'zem-campaign-goal-edit',
@@ -51,26 +53,24 @@ export class CampaignGoalEditComponent implements OnChanges {
     @Output()
     campaignGoalChange = new EventEmitter<ChangeEvent<CampaignGoal>>();
 
-    goalUnit: string;
     availableGoals: CampaignGoalKPIConfig[] = [];
     availablePixels: ConversionPixel[] = [];
     availableWindows: ConversionWindowConfig[] = [];
+    editedGoalConfig: CampaignGoalKPIConfig;
 
     // options
     CAMPAIGN_CONVERSION_GOAL_TYPES = CAMPAIGN_CONVERSION_GOAL_TYPES;
 
     // enums
+    DataType = DataType;
     CampaignConversionGoalType = CampaignConversionGoalType;
 
     ngOnChanges(changes: SimpleChanges): void {
         if (changes.availableCampaignGoals) {
-            this.availableGoals = campaignGoalsHelpers.mapAvailableGoalsToCurrencySymbol(
-                campaignGoalsHelpers.extendAvailableGoalsWithEditedGoal(
-                    this.campaignGoal,
-                    this.availableCampaignGoals,
-                    CAMPAIGN_GOAL_KPIS
-                ),
-                currencyHelpers.getCurrencySymbol(this.currency)
+            this.availableGoals = campaignGoalsHelpers.extendAvailableGoalsWithEditedGoal(
+                this.campaignGoal,
+                this.availableCampaignGoals,
+                CAMPAIGN_GOAL_KPIS
             );
         }
         if (changes.availableConversionPixels) {
@@ -87,8 +87,8 @@ export class CampaignGoalEditComponent implements OnChanges {
             );
         }
         if (changes.campaignGoal) {
-            this.goalUnit = this.getGoalUnit(
-                this.campaignGoal.type,
+            this.editedGoalConfig = campaignGoalsHelpers.findCampaignGoalConfig(
+                this.campaignGoal,
                 this.availableGoals
             );
         }
@@ -152,10 +152,11 @@ export class CampaignGoalEditComponent implements OnChanges {
         });
     }
 
-    isGoalUnitCurrency(campaignGoalType: CampaignGoalKPI): boolean {
-        return ((this.availableCampaignGoals.find(item => {
-            return item.value === campaignGoalType;
-        }) || {}) as any).isCurrency;
+    getGoalUnitText(): string {
+        return unitsHelpers.getUnitText(
+            this.editedGoalConfig.unit,
+            this.currency
+        );
     }
 
     private getAvailableWindows(
@@ -182,14 +183,5 @@ export class CampaignGoalEditComponent implements OnChanges {
             }
         }
         return availableWindows;
-    }
-
-    private getGoalUnit(
-        campaignGoalType: CampaignGoalKPI,
-        availableCampaignGoals: CampaignGoalKPIConfig[]
-    ): string {
-        return ((availableCampaignGoals.find(item => {
-            return item.value === campaignGoalType;
-        }) || {}) as any).unit;
     }
 }

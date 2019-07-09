@@ -9,7 +9,8 @@ import {
     SimpleChanges,
     OnChanges,
 } from '@angular/core';
-import {TimeRange, Unit, DataType} from '../../rule-form.constants';
+import {TimeRange} from '../../rule-form.constants';
+import {DataType, Unit} from '../../../../../../app.constants';
 import {TIME_RANGES} from '../../rule-form.config';
 import {RuleConditionOperandValueModifier} from '../../types/rule-condition-operand-value-modifier';
 

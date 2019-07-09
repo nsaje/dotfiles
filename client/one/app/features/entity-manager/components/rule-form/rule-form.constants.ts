@@ -30,21 +30,6 @@ export enum RuleActionFrequency {
     Days7 = '7_DAYS',
 }
 
-export enum Unit {
-    Percent = 'PERCENT',
-    CurrencySign = 'CURRENCY',
-    Day = 'DAY',
-    Second = 'SECOND',
-}
-
-export enum DataType {
-    Integer = 'INTEGER',
-    Decimal = 'DECIMAL',
-    String = 'STRING',
-    Currency = 'CURRENCY',
-    Date = 'DATE',
-}
-
 export enum Macro {
     AccountName = 'ACCOUNT_NAME',
     CampaignName = 'CAMPAIGN_NAME',

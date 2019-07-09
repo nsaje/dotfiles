@@ -61,7 +61,7 @@ angular
                 onlyCpc
             );
             var activeAccount = zemNavigationNewService.getActiveAccount();
-            return campaignGoalsHelpers.mapAvailableGoalsToCurrencySymbol(
+            return mapAvailableGoalsToCurrencySymbol(
                 availableGoals,
                 currencyHelpers.getCurrencySymbol(
                     activeAccount && activeAccount.data
@@ -69,6 +69,18 @@ angular
                         : null
                 )
             );
+        }
+
+        function mapAvailableGoalsToCurrencySymbol(
+            availableGoals,
+            currencySymbol
+        ) {
+            return availableGoals.map(function(goal) {
+                if (goal.isCurrency) {
+                    goal.unit = currencySymbol;
+                }
+                return goal;
+            });
         }
 
         $scope.validate = function(newGoal, allErrors) {

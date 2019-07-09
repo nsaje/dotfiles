@@ -1,9 +1,8 @@
 import {
-    Unit,
     RuleConditionOperandType,
     RuleConditionOperandGroup,
-    DataType,
 } from '../rule-form.constants';
+import {DataType, Unit} from '../../../../../app.constants';
 import {RuleConditionOperandValueModifier} from './rule-condition-operand-value-modifier';
 
 export interface RuleConditionOperandConfig {

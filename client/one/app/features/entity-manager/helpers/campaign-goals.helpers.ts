@@ -4,11 +4,14 @@ import {
     CampaignType,
     Currency,
     ConversionWindow,
+    Unit,
+    DataType,
 } from '../../../app.constants';
 import {
     ENTITY_MANAGER_CONFIG,
     CONVERSION_WINDOWS,
     CAMPAIGN_GOAL_VALUE_TEXT,
+    CAMPAIGN_GOAL_KPIS,
 } from '../entity-manager.config';
 import {ConversionPixel} from '../../../core/conversion-pixels/types/conversion-pixel';
 import {CampaignGoal} from '../../../core/entities/types/campaign/campaign-goal';
@@ -17,6 +20,17 @@ import * as numericHelpers from '../../../shared/helpers/numeric.helpers';
 import * as currencyHelpers from '../../../shared/helpers/currency.helpers';
 import {CampaignGoalKPIConfig} from '../types/campaign-goal-kpi-config';
 import {ConversionWindowConfig} from '../../../core/conversion-pixels/types/conversion-windows-config';
+
+export function findCampaignGoalConfig(
+    campaignGoal: CampaignGoal,
+    availableConfigs: CampaignGoalKPIConfig[]
+): CampaignGoalKPIConfig {
+    return (
+        availableConfigs.find(goalConfig => {
+            return goalConfig.value === campaignGoal.type;
+        }) || {name: null, value: null, dataType: null}
+    );
+}
 
 export function extendAvailableGoalsWithEditedGoal(
     editedCampaignGoal: CampaignGoal,
@@ -89,18 +103,6 @@ function isGoalAvailable(
     }
 
     return isAvailable;
-}
-
-export function mapAvailableGoalsToCurrencySymbol(
-    availableGoals: CampaignGoalKPIConfig[],
-    currencySymbol: string
-): CampaignGoalKPIConfig[] {
-    return availableGoals.map(goal => {
-        if (goal.isCurrency) {
-            goal.unit = currencySymbol;
-        }
-        return goal;
-    });
 }
 
 export function getConversionPixelsWithAvailableConversionWindows(
@@ -185,36 +187,52 @@ export function extendAvailableConversionWindowsWithEditedConversionWindow(
 
 export function getCampaignGoalDescription(
     campaignGoal: CampaignGoal,
-    currency: Currency,
-    currencyGoalKPIs: CampaignGoalKPI[],
-    nonCurrencyGoalKPIs: CampaignGoalKPI[]
+    currency: Currency
 ): string {
     if (!commonHelpers.isDefined(campaignGoal)) {
         return '';
     }
 
-    if (currencyGoalKPIs.indexOf(campaignGoal.type) > -1) {
-        let fractionSize = 2;
-        if (campaignGoal.type === CampaignGoalKPI.CPC) {
-            fractionSize = 3;
-        }
-        const formattedValue = currencyHelpers.getValueInCurrency(
-            campaignGoal.value,
-            currency,
-            fractionSize
+    const campaignGoalConfig = findCampaignGoalConfig(
+        campaignGoal,
+        CAMPAIGN_GOAL_KPIS
+    );
+
+    if (campaignGoalConfig.dataType === DataType.Currency) {
+        return getDescriptionForCurrencyGoalValue(campaignGoal, currency);
+    } else if (campaignGoalConfig.dataType === DataType.Decimal) {
+        return getDescriptionForDecimalGoalValue(
+            campaignGoal,
+            campaignGoalConfig.unit
         );
-        return `${formattedValue} ${
-            CAMPAIGN_GOAL_VALUE_TEXT[campaignGoal.type]
-        }`;
-    } else if (nonCurrencyGoalKPIs.indexOf(campaignGoal.type) > -1) {
-        const formattedValue = numericHelpers.parseDecimal(
-            campaignGoal.value,
-            2
-        );
-        return `${formattedValue} ${
-            CAMPAIGN_GOAL_VALUE_TEXT[campaignGoal.type]
-        }`;
     } else {
         return '';
     }
+}
+
+function getDescriptionForCurrencyGoalValue(
+    campaignGoal: CampaignGoal,
+    currency: Currency
+): string {
+    let fractionSize = 2;
+    if (campaignGoal.type === CampaignGoalKPI.CPC) {
+        fractionSize = 3;
+    }
+    const formattedValue = currencyHelpers.getValueInCurrency(
+        campaignGoal.value,
+        currency,
+        fractionSize
+    );
+    return `${formattedValue} ${CAMPAIGN_GOAL_VALUE_TEXT[campaignGoal.type]}`;
+}
+
+function getDescriptionForDecimalGoalValue(
+    campaignGoal: CampaignGoal,
+    unit: Unit
+): string {
+    const formattedValue = numericHelpers.parseDecimal(campaignGoal.value, 2);
+    const unitWhitespace = unit === Unit.Percent ? '' : ' '; // Omit whitespace before percentage unit sign
+    return `${formattedValue}${unitWhitespace}${
+        CAMPAIGN_GOAL_VALUE_TEXT[campaignGoal.type]
+    }`;
 }

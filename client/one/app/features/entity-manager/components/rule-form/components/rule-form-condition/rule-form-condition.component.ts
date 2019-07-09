@@ -16,12 +16,11 @@ import {
     TimeRange,
     RuleConditionOperandType,
     RuleConditionOperandGroup,
-    Unit,
-    DataType,
 } from '../../rule-form.constants';
+import {DataType, Unit} from '../../../../../../app.constants';
 import {RuleConditionConfig} from '../../types/rule-condition-config';
 import {RuleConditionOperandConfig} from '../../types/rule-condition-operand-config';
-import * as ruleFormHelpers from '../../helpers/rule-form.helpers';
+import * as unitsHelpers from '../../../../../../shared/helpers/units.helpers';
 
 @Component({
     selector: 'zem-rule-form-condition',
@@ -56,7 +55,9 @@ export class RuleFormConditionComponent implements OnChanges {
     RuleConditionOperandType = RuleConditionOperandType;
     Unit = Unit;
     DataType = DataType;
-    getUnitText = ruleFormHelpers.getUnitText;
+
+    // TODO (automation-rules): Return correct currency symbol
+    getUnitText = unitsHelpers.getUnitText;
 
     // TODO (automation-rules): When unit === Date, operand value must be converted from/to string
     ngOnChanges(changes: SimpleChanges): void {

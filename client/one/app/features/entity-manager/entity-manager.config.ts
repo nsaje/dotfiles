@@ -2,6 +2,8 @@ import {
     EntityType,
     CampaignConversionGoalType,
     ConversionWindow,
+    Unit,
+    DataType,
 } from '../../app.constants';
 import {CampaignGoalKPI} from '../../app.constants';
 import {CampaignGoalKPIConfig} from './types/campaign-goal-kpi-config';
@@ -32,7 +34,7 @@ export const AUTOMATICALLY_OPTIMIZED_KPI_GOALS = [
 ];
 
 export const CAMPAIGN_GOAL_VALUE_TEXT = {
-    [CampaignGoalKPI.MAX_BOUNCE_RATE]: 'Bounce Rate',
+    [CampaignGoalKPI.MAX_BOUNCE_RATE]: '% Bounce Rate',
     [CampaignGoalKPI.NEW_UNIQUE_VISITORS]: '% New Users',
     [CampaignGoalKPI.TIME_ON_SITE]: 'seconds Time on Site',
     [CampaignGoalKPI.PAGES_PER_SESSION]: 'Pageviews per Visit',
@@ -50,56 +52,67 @@ export const CAMPAIGN_GOAL_KPIS: CampaignGoalKPIConfig[] = [
     {
         name: 'Time on Site - Seconds',
         value: CampaignGoalKPI.TIME_ON_SITE,
-        unit: 's',
+        dataType: DataType.Decimal,
+        unit: Unit.Second,
     },
     {
         name: 'Max Bounce Rate',
         value: CampaignGoalKPI.MAX_BOUNCE_RATE,
-        unit: '%',
+        dataType: DataType.Decimal,
+        unit: Unit.Percent,
     },
     {
         name: 'Pageviews per Visit',
         value: CampaignGoalKPI.PAGES_PER_SESSION,
+        dataType: DataType.Decimal,
     },
     {
         name: 'Cost per Visit',
         value: CampaignGoalKPI.CPV,
-        isCurrency: true,
+        dataType: DataType.Currency,
+        unit: Unit.CurrencySign,
     },
     {
         name: 'CPC',
         value: CampaignGoalKPI.CPC,
-        isCurrency: true,
+        dataType: DataType.Currency,
+        unit: Unit.CurrencySign,
     },
     {
         name: 'New Users',
         value: CampaignGoalKPI.NEW_UNIQUE_VISITORS,
-        unit: '%',
+        dataType: DataType.Decimal,
+        unit: Unit.Percent,
     },
     {
         name: 'CPA - Setup Conversion Tracking',
         value: CampaignGoalKPI.CPA,
-        isCurrency: true,
+        dataType: DataType.Currency,
+        unit: Unit.CurrencySign,
     },
     {
         name: 'Cost per Non-Bounced Visit',
         value: CampaignGoalKPI.CP_NON_BOUNCED_VISIT,
-        isCurrency: true,
+        dataType: DataType.Currency,
+        unit: Unit.CurrencySign,
     },
     {
         name: 'Cost per New Visitor',
         value: CampaignGoalKPI.CP_NEW_VISITOR,
-        isCurrency: true,
+        dataType: DataType.Currency,
+        unit: Unit.CurrencySign,
     },
     {
         name: 'Cost per Pageview',
         value: CampaignGoalKPI.CP_PAGE_VIEW,
-        isCurrency: true,
+        dataType: DataType.Currency,
+        unit: Unit.CurrencySign,
     },
     {
         name: 'Cost per Completed Video View',
         value: CampaignGoalKPI.CPCV,
-        isCurrency: true,
+        dataType: DataType.Currency,
+        unit: Unit.CurrencySign,
     },
 ];
 

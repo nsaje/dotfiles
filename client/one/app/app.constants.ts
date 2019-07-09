@@ -1,3 +1,18 @@
+export enum Unit {
+    Percent = 'PERCENT',
+    CurrencySign = 'CURRENCY',
+    Day = 'DAY',
+    Second = 'SECOND',
+}
+
+export enum DataType {
+    Integer = 'INTEGER',
+    Decimal = 'DECIMAL',
+    String = 'STRING',
+    Currency = 'CURRENCY',
+    Date = 'DATE',
+}
+
 export enum Currency {
     USD = 'USD',
     EUR = 'EUR',

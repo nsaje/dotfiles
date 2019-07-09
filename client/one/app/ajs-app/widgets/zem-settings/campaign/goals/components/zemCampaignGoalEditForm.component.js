@@ -37,7 +37,7 @@ angular.module('one.widgets').component('zemLegacyCampaignGoalEditForm', {
                 options.campaignGoalKPIs
             );
             var activeAccount = zemNavigationNewService.getActiveAccount();
-            $ctrl.availableGoals = campaignGoalsHelpers.mapAvailableGoalsToCurrencySymbol(
+            $ctrl.availableGoals = mapAvailableGoalsToCurrencySymbol(
                 $ctrl.availableGoals,
                 currencyHelpers.getCurrencySymbol(
                     activeAccount && activeAccount.data
@@ -50,6 +50,18 @@ angular.module('one.widgets').component('zemLegacyCampaignGoalEditForm', {
                 $ctrl.availableGoals
             );
         };
+
+        function mapAvailableGoalsToCurrencySymbol(
+            availableGoals,
+            currencySymbol
+        ) {
+            return availableGoals.map(function(goal) {
+                if (goal.isCurrency) {
+                    goal.unit = currencySymbol;
+                }
+                return goal;
+            });
+        }
 
         function updateTypeChange(goalUnit) {
             if ($ctrl.campaignGoal.type === constants.campaignGoalKPI.CPA) {

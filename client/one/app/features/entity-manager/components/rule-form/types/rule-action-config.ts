@@ -1,8 +1,5 @@
-import {
-    RuleActionType,
-    RuleActionFrequency,
-    Unit,
-} from '../rule-form.constants';
+import {RuleActionType, RuleActionFrequency} from '../rule-form.constants';
+import {Unit} from '../../../../../app.constants';
 
 export interface RuleActionConfig {
     label: string;

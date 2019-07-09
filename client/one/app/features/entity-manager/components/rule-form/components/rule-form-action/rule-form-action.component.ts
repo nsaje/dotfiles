@@ -17,7 +17,7 @@ import {
 } from '../../rule-form.constants';
 import {EMAIL_MACROS} from '../../rule-form.config';
 import {RuleActionConfig} from '../../types/rule-action-config';
-import * as ruleFormHelpers from '../../helpers/rule-form.helpers';
+import * as unitsHelpers from '../../../../../../shared/helpers/units.helpers';
 
 @Component({
     selector: 'zem-rule-form-action',
@@ -39,7 +39,8 @@ export class RuleFormActionComponent implements OnChanges {
     RuleActionType = RuleActionType;
     EMAIL_MACROS = EMAIL_MACROS;
 
-    getUnitText = ruleFormHelpers.getUnitText;
+    // TODO (automation-rules): Return correct currency symbol
+    getUnitText = unitsHelpers.getUnitText;
 
     ngOnChanges(changes: SimpleChanges) {
         if (changes.ruleAction) {

@@ -8,6 +8,8 @@ import {
     EventEmitter,
     ViewChild,
     OnInit,
+    OnChanges,
+    SimpleChanges,
 } from '@angular/core';
 import {CampaignGoal} from '../../../../core/entities/types/campaign/campaign-goal';
 import {CampaignGoalKPI, Currency} from '../../../../app.constants';
@@ -19,7 +21,7 @@ import * as campaignGoalsHelpers from '../../helpers/campaign-goals.helpers';
     templateUrl: './campaign-goal.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class CampaignGoalComponent implements OnInit {
+export class CampaignGoalComponent implements OnInit, OnChanges {
     @Input()
     index: number;
     @Input()
@@ -34,30 +36,22 @@ export class CampaignGoalComponent implements OnInit {
     @ViewChild(ModalComponent)
     pixelTagModal: ModalComponent;
 
+    campaignGoalDescription: string;
     pixelTag: string;
     CampaignGoalKPI = CampaignGoalKPI;
     isExpanded: boolean = false;
 
-    private currencyGoalKPIs: CampaignGoalKPI[] = [
-        CampaignGoalKPI.CPA,
-        CampaignGoalKPI.CPC,
-        CampaignGoalKPI.CPM,
-        CampaignGoalKPI.CPV,
-        CampaignGoalKPI.CP_NON_BOUNCED_VISIT,
-        CampaignGoalKPI.CP_NEW_VISITOR,
-        CampaignGoalKPI.CP_PAGE_VIEW,
-        CampaignGoalKPI.CPCV,
-    ];
-
-    private nonCurrencyGoalKPIs: CampaignGoalKPI[] = [
-        CampaignGoalKPI.TIME_ON_SITE,
-        CampaignGoalKPI.MAX_BOUNCE_RATE,
-        CampaignGoalKPI.PAGES_PER_SESSION,
-        CampaignGoalKPI.NEW_UNIQUE_VISITORS,
-    ];
-
     ngOnInit(): void {
         this.isExpanded = !this.campaignGoal.id;
+    }
+
+    ngOnChanges(changes: SimpleChanges): void {
+        if (changes.campaignGoal) {
+            this.campaignGoalDescription = campaignGoalsHelpers.getCampaignGoalDescription(
+                this.campaignGoal,
+                this.currency
+            );
+        }
     }
 
     setPrimary() {
@@ -85,15 +79,6 @@ export class CampaignGoalComponent implements OnInit {
 
     closePixelTagModal() {
         this.pixelTagModal.close();
-    }
-
-    getCampaignGoalDescription(campaignGoal: CampaignGoal): string {
-        return campaignGoalsHelpers.getCampaignGoalDescription(
-            campaignGoal,
-            this.currency,
-            this.currencyGoalKPIs,
-            this.nonCurrencyGoalKPIs
-        );
     }
 
     private getPixelTag(name: string, pixelUrl: string) {
