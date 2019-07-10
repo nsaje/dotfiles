@@ -1,0 +1,51 @@
+@import 'variables';
+
+.zem-campaign-budgets-overview {
+    display: block;
+    padding: @spacing--default 0;
+    border-top: 1px solid @color--lighter-neutral;
+    border-bottom: 1px solid @color--lighter-neutral;
+}
+
+.zem-campaign-budgets-overview__container {
+    position: relative;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: stretch;
+    margin: -4px (-(@spacing--default - 1px));
+}
+
+// Used to hide left borders of items in the far left position in each row
+.zem-campaign-budgets-overview__container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    background-color: #ffffff;
+    width: 1px;
+}
+
+.zem-campaign-budgets-overview__section {
+    flex: 1 0 150px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 4px 0;
+    padding: 2px (@spacing--default - 1px);
+    border-left: 1px solid @color--lighter-neutral;
+}
+
+.zem-campaign-budgets-overview__section-value {
+    line-height: 18px;
+}
+
+.zem-campaign-budgets-overview__section--highlighted {
+    color: @color--secondary;
+}
+
+.zem-campaign-budgets-overview__section--highlighted
+    .zem-campaign-budgets-overview__section-value {
+    font-weight: 500;
+    font-size: 18px;
+}

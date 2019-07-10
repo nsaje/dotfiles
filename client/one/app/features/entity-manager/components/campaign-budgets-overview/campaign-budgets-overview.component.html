@@ -1,0 +1,60 @@
+<div class="zem-campaign-budgets-overview__container">
+    <div class="zem-campaign-budgets-overview__section">
+        <div class="zem-campaign-budgets-overview__section-name">
+            Campaign Spend
+        </div>
+        <div class="zem-campaign-budgets-overview__section-value">
+            {{ formattedOverview.campaignSpend }}
+        </div>
+    </div>
+    <div class="zem-campaign-budgets-overview__section">
+        <div class="zem-campaign-budgets-overview__section-name">
+            Media Spend
+        </div>
+        <div class="zem-campaign-budgets-overview__section-value">
+            {{ formattedOverview.mediaSpend }}
+        </div>
+    </div>
+    <div class="zem-campaign-budgets-overview__section">
+        <div class="zem-campaign-budgets-overview__section-name">
+            Data Spend
+        </div>
+        <div class="zem-campaign-budgets-overview__section-value">
+            {{ formattedOverview.dataSpend }}
+        </div>
+    </div>
+    <div class="zem-campaign-budgets-overview__section">
+        <div class="zem-campaign-budgets-overview__section-name">
+            License Fee
+        </div>
+        <div class="zem-campaign-budgets-overview__section-value">
+            {{ formattedOverview.licenseFee }}
+        </div>
+    </div>
+    <div class="zem-campaign-budgets-overview__section">
+        <div class="zem-campaign-budgets-overview__section-name">Margin</div>
+        <div class="zem-campaign-budgets-overview__section-value">
+            {{ formattedOverview.margin }}
+        </div>
+    </div>
+    <div
+        class="zem-campaign-budgets-overview__section zem-campaign-budgets-overview__section--highlighted"
+    >
+        <div class="zem-campaign-budgets-overview__section-name">
+            Available Budget
+        </div>
+        <div class="zem-campaign-budgets-overview__section-value">
+            {{ formattedOverview.availableBudgetsSum }}
+        </div>
+    </div>
+    <div
+        class="zem-campaign-budgets-overview__section zem-campaign-budgets-overview__section--highlighted"
+    >
+        <div class="zem-campaign-budgets-overview__section-name">
+            Unallocated Credit
+        </div>
+        <div class="zem-campaign-budgets-overview__section-value">
+            {{ formattedOverview.unallocatedCredit }}
+        </div>
+    </div>
+</div>

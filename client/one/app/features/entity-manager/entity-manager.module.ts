@@ -51,6 +51,7 @@ import {RuleFormNotificationComponent} from './components/rule-form/components/r
 import {RuleFormConditionsComponent} from './components/rule-form/components/rule-form-conditions/rule-form-conditions.component';
 import {RuleFormConditionComponent} from './components/rule-form/components/rule-form-condition/rule-form-condition.component';
 import {RuleFormConditionModifierComponent} from './components/rule-form/components/rule-form-condition-modifier/rule-form-condition-modifier.component';
+import {CampaignBudgetsOverviewComponent} from './components/campaign-budgets-overview/campaign-budgets-overview.component';
 
 @NgModule({
     declarations: [
@@ -91,6 +92,7 @@ import {RuleFormConditionModifierComponent} from './components/rule-form/compone
         CampaignGoalsComponent,
         CampaignGoalComponent,
         CampaignGoalEditComponent,
+        CampaignBudgetsOverviewComponent,
 
         // DEMO
         RuleActionsComponent,

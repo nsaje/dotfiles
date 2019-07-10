@@ -30,6 +30,15 @@ export class CampaignSettingsStoreState {
             [CampaignGoalKPI.CP_PAGE_VIEW]: null,
             [CampaignGoalKPI.CPCV]: null,
         },
+        budgetsOverview: {
+            campaignSpend: null,
+            mediaSpend: null,
+            dataSpend: null,
+            licenseFee: null,
+            margin: null,
+            availableBudgetsSum: null,
+            unallocatedCredit: null,
+        },
     };
     fieldsErrors = new CampaignSettingsStoreFieldsErrorsState();
     requests = {

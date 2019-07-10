@@ -1,5 +1,5 @@
 <zem-drawer
-    class="zem-drawer"
+    class="zem-drawer zem-campaign-settings-drawer"
     [isOpen]="isOpen"
     [isClosable]="!isNewEntity"
     (closeRequest)="cancel()"
@@ -95,6 +95,41 @@
                         (campaignGoalChange)="store.changeGoal($event)"
                         (campaignGoalDelete)="store.deleteGoal($event)"
                     ></zem-campaign-goals>
+                </div>
+            </div>
+
+            <div
+                class="zem-panel zem-settings__panel"
+                *ngIf="
+                    zemPermissions.hasPermission('zemauth.can_see_new_budgets')
+                "
+                [zemInternalFeature]="
+                    zemPermissions.isPermissionInternal(
+                        'zemauth.can_see_new_budgets'
+                    )
+                "
+            >
+                <div class="zem-panel__header">
+                    <h2 class="zem-settings__panel-header-title">Budget</h2>
+                </div>
+                <div class="zem-settings-section">
+                    <div class="zem-settings-section__header">
+                        <div class="zem-settings-section__description">
+                            Once Zemanta's Customer Success team assigns a
+                            credit line to your account you have the ability to
+                            create budget items and associate them with
+                            campaigns you're planning. Budget represents the
+                            amount of money you're willing to pay to have ads
+                            from your campaign shown over the period you set it
+                            to run. You set a budget for each campaign you
+                            create.
+                        </div>
+                    </div>
+                    <zem-campaign-budgets-overview
+                        class="zem-campaign-budgets-overview"
+                        [overview]="state.extras.budgetsOverview"
+                        [currency]="state.extras.currency"
+                    ></zem-campaign-budgets-overview>
                 </div>
             </div>
         </div>
