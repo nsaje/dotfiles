@@ -118,6 +118,12 @@ class CampaignViewSetTest(RESTAPITest):
             ],
             "hacks": [],
             "deals": [],
+            "budgets_overview": {
+                "available_budgets_sum": decimal.Decimal("0.0000"),
+                "unallocated_credit": decimal.Decimal("0.0000"),
+                "campaign_spend": decimal.Decimal("0.0000"),
+                "margin": decimal.Decimal("0.0000"),
+            },
         }
 
         agency = magic_mixer.blend(core.models.Agency)
@@ -158,6 +164,12 @@ class CampaignViewSetTest(RESTAPITest):
                 ],
                 "hacks": [],
                 "deals": [],
+                "budgetsOverview": {
+                    "availableBudgetsSum": "0.0000",
+                    "unallocatedCredit": "0.0000",
+                    "campaignSpend": "0.0000",
+                    "margin": "0.0000",
+                },
             },
         )
 
@@ -179,6 +191,15 @@ class CampaignViewSetTest(RESTAPITest):
             ],
             "hacks": [],
             "deals": [],
+            "budgets_overview": {
+                "available_budgets_sum": decimal.Decimal("10.0000"),
+                "unallocated_credit": decimal.Decimal("10.0000"),
+                "campaign_spend": decimal.Decimal("10.0000"),
+                "media_spend": decimal.Decimal("220.0000"),
+                "data_spend": decimal.Decimal("100.0000"),
+                "license_fee": decimal.Decimal("5.0000"),
+                "margin": decimal.Decimal("2.0000"),
+            },
         }
 
         agency = magic_mixer.blend(core.models.Agency)
@@ -267,6 +288,15 @@ class CampaignViewSetTest(RESTAPITest):
                 ],
                 "hacks": [],
                 "deals": [],
+                "budgetsOverview": {
+                    "availableBudgetsSum": "10.0000",
+                    "unallocatedCredit": "10.0000",
+                    "campaignSpend": "10.0000",
+                    "mediaSpend": "220.0000",
+                    "dataSpend": "100.0000",
+                    "licenseFee": "5.0000",
+                    "margin": "2.0000",
+                },
             },
         )
 

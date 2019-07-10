@@ -3,6 +3,7 @@ import rest_framework.serializers
 from django.db import transaction
 from django.db.models import Prefetch
 
+import core.features.bcm
 import core.features.goals
 import core.models
 import dash.campaign_goals
@@ -37,7 +38,7 @@ class CampaignViewSet(restapi.campaign.v1.views.CampaignViewSet):
         )
 
     def get(self, request, campaign_id):
-        campaign = restapi.access.get_campaign(request.user, campaign_id)
+        campaign = restapi.access.get_campaign(request.user, campaign_id, select_related=True)
         self._augment_campaign(request, campaign)
         extra_data = helpers.get_extra_data(request.user, campaign)
         return self.response_ok(
@@ -82,11 +83,13 @@ class CampaignViewSet(restapi.campaign.v1.views.CampaignViewSet):
             serializers.CampaignSerializer(new_campaign.settings, context={"request": request}).data, status=201
         )
 
-    # TODO: augment with campaign budgets
     def _augment_campaign(self, request, campaign):
         campaign.settings.goals = []
         if request.user.has_perm("zemauth.can_see_campaign_goals"):
             campaign.settings.goals = self._get_campaign_goals(campaign)
+        campaign.settings.budgets = []
+        if request.user.has_perm("zemauth.can_see_new_budgets"):
+            campaign.settings.budgets = self._get_active_budgets(campaign)
 
     def _handle_goals(self, request, campaign, data):
         if len(data) <= 0:
@@ -178,3 +181,17 @@ class CampaignViewSet(restapi.campaign.v1.views.CampaignViewSet):
             raise utils.exc.ValidationError(errors={"conversionGoal": [str(err)]})
 
         return new_goal
+
+    @staticmethod
+    def _get_active_budgets(campaign):
+        budgets = (
+            core.features.bcm.BudgetLineItem.objects.filter(campaign_id=campaign.id)
+            .select_related("credit")
+            .order_by("-created_dt")
+            .annotate_spend_data()
+        )
+        return [
+            budget
+            for budget in budgets
+            if budget.state() in (dash.constants.BudgetLineItemState.PENDING, dash.constants.BudgetLineItemState.ACTIVE)
+        ]

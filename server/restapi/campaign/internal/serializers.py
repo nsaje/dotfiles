@@ -1,3 +1,5 @@
+import decimal
+
 import rest_framework.serializers
 
 import dash.constants
@@ -8,6 +10,30 @@ import restapi.serializers.deals
 import restapi.serializers.fields
 import restapi.serializers.hack
 import zemauth.models
+
+
+class ExtraDataBudgetsOverviewSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
+    available_budgets_sum = rest_framework.serializers.DecimalField(
+        max_digits=20, decimal_places=4, read_only=True, rounding=decimal.ROUND_HALF_DOWN
+    )
+    unallocated_credit = rest_framework.serializers.DecimalField(
+        max_digits=20, decimal_places=4, read_only=True, rounding=decimal.ROUND_HALF_DOWN
+    )
+    campaign_spend = rest_framework.serializers.DecimalField(
+        max_digits=20, decimal_places=4, read_only=True, rounding=decimal.ROUND_HALF_DOWN
+    )
+    media_spend = rest_framework.serializers.DecimalField(
+        max_digits=20, decimal_places=4, read_only=True, rounding=decimal.ROUND_HALF_DOWN
+    )
+    data_spend = rest_framework.serializers.DecimalField(
+        max_digits=20, decimal_places=4, read_only=True, rounding=decimal.ROUND_HALF_DOWN
+    )
+    license_fee = rest_framework.serializers.DecimalField(
+        max_digits=20, decimal_places=4, read_only=True, rounding=decimal.ROUND_HALF_DOWN
+    )
+    margin = rest_framework.serializers.DecimalField(
+        max_digits=20, decimal_places=4, read_only=True, rounding=decimal.ROUND_HALF_DOWN
+    )
 
 
 # TODO: refactor to common serializer if necessary
@@ -34,6 +60,7 @@ class ExtraDataSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
     deals = rest_framework.serializers.ListField(
         child=restapi.serializers.deals.DealSerializer(), default=[], allow_empty=True
     )
+    budgets_overview = ExtraDataBudgetsOverviewSerializer(required=False)
 
 
 class CampaignSerializer(restapi.campaign.v1.serializers.CampaignSerializer):
