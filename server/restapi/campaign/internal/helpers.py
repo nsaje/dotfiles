@@ -38,6 +38,7 @@ def get_extra_data(user, campaign):
         extra["budgets_overview"] = get_budgets_overview(
             user, campaign, active_budget_items, budget_items, credit_items
         )
+        extra["budgets_depleted"] = get_depleted_budgets(budget_items)
 
     return extra
 
@@ -116,6 +117,14 @@ def should_add_platform_costs(user, campaign):
 
 def should_add_agency_costs(user):
     return user.has_perm("zemauth.can_manage_agency_margin")
+
+
+def get_depleted_budgets(budget_items):
+    return [
+        item
+        for item in budget_items
+        if item.state() in (dash.constants.BudgetLineItemState.DEPLETED, dash.constants.BudgetLineItemState.INACTIVE)
+    ]
 
 
 def get_campaign_managers(user, campaign):

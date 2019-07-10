@@ -4,6 +4,7 @@ import rest_framework.serializers
 
 import dash.constants
 import restapi.campaign.v1.serializers
+import restapi.campaignbudget.internal.serializers
 import restapi.campaigngoal.serializers
 import restapi.serializers.base
 import restapi.serializers.deals
@@ -61,6 +62,9 @@ class ExtraDataSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
         child=restapi.serializers.deals.DealSerializer(), default=[], allow_empty=True
     )
     budgets_overview = ExtraDataBudgetsOverviewSerializer(required=False)
+    budgets_depleted = rest_framework.serializers.ListSerializer(
+        child=restapi.campaignbudget.internal.serializers.CampaignBudgetSerializer(), default=[], allow_empty=True
+    )
 
 
 class CampaignSerializer(restapi.campaign.v1.serializers.CampaignSerializer):

@@ -1,3 +1,4 @@
+import datetime
 import decimal
 
 import mock
@@ -84,6 +85,31 @@ class CampaignViewSetTest(RESTAPITest):
         }
         return cls.normalize(representation)
 
+    @classmethod
+    def campaign_budget_repr(cls, budget=None):
+        if budget is None:
+            return None
+
+        representation = {
+            "id": str(budget.id),
+            "creditId": str(budget.credit.id),
+            "amount": str(budget.amount),
+            "margin": str(budget.margin),
+            "comment": budget.comment,
+            "startDate": budget.start_date,
+            "endDate": budget.end_date,
+            "state": dash.constants.BudgetLineItemState.get_name(budget.state()),
+            "spend": budget.get_local_spend_data_bcm(),
+            "available": budget.get_local_available_data_bcm(),
+            "canEditStartDate": budget.can_edit_start_date(),
+            "canEditEndDate": budget.can_edit_end_date(),
+            "canEditAmount": budget.can_edit_amount(),
+            "createdBy": str(budget.created_by),
+            "createdDt": budget.created_dt,
+            "licenseFee": budget.credit.license_fee,
+        }
+        return cls.normalize(representation)
+
     def test_validate_empty(self):
         r = self.client.post(reverse("restapi.campaign.internal:campaigns_validate"))
         self.assertResponseValid(r, data_type=type(None))
@@ -124,6 +150,7 @@ class CampaignViewSetTest(RESTAPITest):
                 "campaign_spend": decimal.Decimal("0.0000"),
                 "margin": decimal.Decimal("0.0000"),
             },
+            "budgets_depleted": [],
         }
 
         agency = magic_mixer.blend(core.models.Agency)
@@ -170,38 +197,12 @@ class CampaignViewSetTest(RESTAPITest):
                     "campaignSpend": "0.0000",
                     "margin": "0.0000",
                 },
+                "budgetsDepleted": [],
             },
         )
 
     @mock.patch("restapi.campaign.internal.helpers.get_extra_data")
     def test_get(self, mock_get_extra_data):
-        mock_get_extra_data.return_value = {
-            "archived": False,
-            "language": dash.constants.Language.ENGLISH,
-            "can_archive": True,
-            "can_restore": True,
-            "currency": dash.constants.Currency.USD,
-            "goals_defaults": {
-                dash.constants.CampaignGoalKPI.TIME_ON_SITE: "30.00",
-                dash.constants.CampaignGoalKPI.MAX_BOUNCE_RATE: "75.00",
-            },
-            "campaign_managers": [
-                {"id": 123, "name": "manager1@outbrain.com"},
-                {"id": 123, "name": "manager2@outbrain.com"},
-            ],
-            "hacks": [],
-            "deals": [],
-            "budgets_overview": {
-                "available_budgets_sum": decimal.Decimal("10.0000"),
-                "unallocated_credit": decimal.Decimal("10.0000"),
-                "campaign_spend": decimal.Decimal("10.0000"),
-                "media_spend": decimal.Decimal("220.0000"),
-                "data_spend": decimal.Decimal("100.0000"),
-                "license_fee": decimal.Decimal("5.0000"),
-                "margin": decimal.Decimal("2.0000"),
-            },
-        }
-
         agency = magic_mixer.blend(core.models.Agency)
         account = magic_mixer.blend(core.models.Account, agency=agency, users=[self.user])
         campaign = magic_mixer.blend(
@@ -233,6 +234,54 @@ class CampaignViewSetTest(RESTAPITest):
             primary=True,
         )
         campaign_goal.add_local_value(None, decimal.Decimal("0.15"), skip_history=True)
+
+        credit = magic_mixer.blend(
+            dash.models.CreditLineItem,
+            account=account,
+            start_date=datetime.date.today() - datetime.timedelta(30),
+            end_date=datetime.date.today() + datetime.timedelta(30),
+            amount=200000,
+            currency=dash.constants.Currency.USD,
+            status=dash.constants.CreditLineItemStatus.SIGNED,
+        )
+        inactive_budget = magic_mixer.blend(
+            dash.models.BudgetLineItem,
+            campaign=campaign,
+            credit=credit,
+            start_date=datetime.date.today() - datetime.timedelta(20),
+            end_date=datetime.date.today() - datetime.timedelta(5),
+            created_by=self.user,
+            amount=10000,
+            margin=decimal.Decimal("0.2500"),
+        )
+
+        mock_get_extra_data.return_value = {
+            "archived": False,
+            "language": dash.constants.Language.ENGLISH,
+            "can_archive": True,
+            "can_restore": True,
+            "currency": dash.constants.Currency.USD,
+            "goals_defaults": {
+                dash.constants.CampaignGoalKPI.TIME_ON_SITE: "30.00",
+                dash.constants.CampaignGoalKPI.MAX_BOUNCE_RATE: "75.00",
+            },
+            "campaign_managers": [
+                {"id": 123, "name": "manager1@outbrain.com"},
+                {"id": 123, "name": "manager2@outbrain.com"},
+            ],
+            "hacks": [],
+            "deals": [],
+            "budgets_overview": {
+                "available_budgets_sum": decimal.Decimal("10.0000"),
+                "unallocated_credit": decimal.Decimal("10.0000"),
+                "campaign_spend": decimal.Decimal("10.0000"),
+                "media_spend": decimal.Decimal("220.0000"),
+                "data_spend": decimal.Decimal("100.0000"),
+                "license_fee": decimal.Decimal("5.0000"),
+                "margin": decimal.Decimal("2.0000"),
+            },
+            "budgets_depleted": [inactive_budget],
+        }
 
         r = self.client.get(reverse("restapi.campaign.internal:campaigns_details", kwargs={"campaign_id": campaign.id}))
         resp_json = self.assertResponseValid(r)
@@ -297,6 +346,7 @@ class CampaignViewSetTest(RESTAPITest):
                     "licenseFee": "5.0000",
                     "margin": "2.0000",
                 },
+                "budgetsDepleted": [self.campaign_budget_repr(inactive_budget)],
             },
         )
 
