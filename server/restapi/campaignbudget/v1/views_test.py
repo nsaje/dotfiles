@@ -9,7 +9,7 @@ from dash import constants
 from restapi.common.views_base_test import RESTAPITest
 
 
-class CampaignBudgetsTest(RESTAPITest):
+class CampaignBudgetViewSetTest(RESTAPITest):
     @classmethod
     def budget_repr(
         cls,
@@ -57,17 +57,27 @@ class CampaignBudgetsTest(RESTAPITest):
         self.assertEqual(expected, budget)
 
     def test_campaigns_budgets_get(self):
-        r = self.client.get(reverse("campaign_budgets_details", kwargs={"campaign_id": 608, "budget_id": 1910}))
+        r = self.client.get(
+            reverse(
+                "restapi.campaignbudget.v1:campaign_budgets_details", kwargs={"campaign_id": 608, "budget_id": 1910}
+            )
+        )
         resp_json = self.assertResponseValid(r)
         self.validate_against_db(resp_json["data"])
 
     def test_campaigns_budgets_get_invalid(self):
-        r = self.client.get(reverse("campaign_budgets_details", kwargs={"campaign_id": 608, "budget_id": 1234}))
+        r = self.client.get(
+            reverse(
+                "restapi.campaignbudget.v1:campaign_budgets_details", kwargs={"campaign_id": 608, "budget_id": 1234}
+            )
+        )
         self.assertResponseError(r, "MissingDataError")
 
     def test_campaigns_budgets_put(self):
         r = self.client.put(
-            reverse("campaign_budgets_details", kwargs={"campaign_id": 608, "budget_id": 1910}),
+            reverse(
+                "restapi.campaignbudget.v1:campaign_budgets_details", kwargs={"campaign_id": 608, "budget_id": 1910}
+            ),
             data={"amount": "900"},
             format="json",
         )
@@ -77,7 +87,7 @@ class CampaignBudgetsTest(RESTAPITest):
 
     @mock.patch("dash.forms.dates_helper.local_today", lambda: datetime.datetime(2016, 1, 15).date())
     def test_campaigns_budgets_list(self):
-        r = self.client.get(reverse("campaign_budgets_list", kwargs={"campaign_id": 608}))
+        r = self.client.get(reverse("restapi.campaignbudget.v1:campaign_budgets_list", kwargs={"campaign_id": 608}))
         resp_json = self.assertResponseValid(r, data_type=list)
         for item in resp_json["data"]:
             self.validate_against_db(item)
@@ -91,7 +101,9 @@ class CampaignBudgetsTest(RESTAPITest):
             endDate=datetime.date.today() + datetime.timedelta(days=7),
         )
         r = self.client.post(
-            reverse("campaign_budgets_list", kwargs={"campaign_id": 608}), data=test_budget, format="json"
+            reverse("restapi.campaignbudget.v1:campaign_budgets_list", kwargs={"campaign_id": 608}),
+            data=test_budget,
+            format="json",
         )
         resp_json = self.assertResponseValid(r, data_type=dict, status_code=201)
         self.validate_against_db(resp_json["data"])
@@ -106,7 +118,9 @@ class CampaignBudgetsTest(RESTAPITest):
         del test_budget["startDate"]
         del test_budget["endDate"]
         r = self.client.post(
-            reverse("campaign_budgets_list", kwargs={"campaign_id": 608}), data=test_budget, format="json"
+            reverse("restapi.campaignbudget.v1:campaign_budgets_list", kwargs={"campaign_id": 608}),
+            data=test_budget,
+            format="json",
         )
         self.assertResponseError(r, "ValidationError")
         test_budget = self.budget_repr(id=1, creditId=861)
@@ -114,14 +128,18 @@ class CampaignBudgetsTest(RESTAPITest):
         del test_budget["startDate"]
         del test_budget["endDate"]
         r = self.client.post(
-            reverse("campaign_budgets_list", kwargs={"campaign_id": 608}), data=test_budget, format="json"
+            reverse("restapi.campaignbudget.v1:campaign_budgets_list", kwargs={"campaign_id": 608}),
+            data=test_budget,
+            format="json",
         )
         self.assertResponseError(r, "ValidationError")
         test_budget = self.budget_repr(id=1, creditId=861, amount=decimal.Decimal("500.0000"))
         del test_budget["startDate"]
         del test_budget["endDate"]
         r = self.client.post(
-            reverse("campaign_budgets_list", kwargs={"campaign_id": 608}), data=test_budget, format="json"
+            reverse("restapi.campaignbudget.v1:campaign_budgets_list", kwargs={"campaign_id": 608}),
+            data=test_budget,
+            format="json",
         )
         self.assertResponseError(r, "ValidationError")
         test_budget = self.budget_repr(
@@ -132,7 +150,9 @@ class CampaignBudgetsTest(RESTAPITest):
         )
         del test_budget["endDate"]
         r = self.client.post(
-            reverse("campaign_budgets_list", kwargs={"campaign_id": 608}), data=test_budget, format="json"
+            reverse("restapi.campaignbudget.v1:campaign_budgets_list", kwargs={"campaign_id": 608}),
+            data=test_budget,
+            format="json",
         )
         self.assertResponseError(r, "ValidationError")
         test_budget = self.budget_repr(
@@ -143,7 +163,9 @@ class CampaignBudgetsTest(RESTAPITest):
             endDate=datetime.date.today() + datetime.timedelta(days=7),
         )
         r = self.client.post(
-            reverse("campaign_budgets_list", kwargs={"campaign_id": 608}), data=test_budget, format="json"
+            reverse("restapi.campaignbudget.v1:campaign_budgets_list", kwargs={"campaign_id": 608}),
+            data=test_budget,
+            format="json",
         )
         resp_json = self.assertResponseValid(r, data_type=dict, status_code=201)
         self.validate_against_db(resp_json["data"])
@@ -153,7 +175,9 @@ class CampaignBudgetsTest(RESTAPITest):
 
         test_end_date = datetime.date.today() - datetime.timedelta(days=9)
         r = self.client.put(
-            reverse("campaign_budgets_details", kwargs={"campaign_id": 608, "budget_id": 1910}),
+            reverse(
+                "restapi.campaignbudget.v1:campaign_budgets_details", kwargs={"campaign_id": 608, "budget_id": 1910}
+            ),
             data={"endDate": test_end_date},
             format="json",
         )
@@ -168,7 +192,9 @@ class CampaignBudgetsTest(RESTAPITest):
             endDate=datetime.date.today() + datetime.timedelta(days=7),
         )
         r = self.client.post(
-            reverse("campaign_budgets_list", kwargs={"campaign_id": 608}), data=test_budget, format="json"
+            reverse("restapi.campaignbudget.v1:campaign_budgets_list", kwargs={"campaign_id": 608}),
+            data=test_budget,
+            format="json",
         )
         self.assertResponseError(r, "ValidationError")
         test_budget = self.budget_repr(
@@ -179,6 +205,8 @@ class CampaignBudgetsTest(RESTAPITest):
             endDate=datetime.date.today() - datetime.timedelta(days=1),
         )
         r = self.client.post(
-            reverse("campaign_budgets_list", kwargs={"campaign_id": 608}), data=test_budget, format="json"
+            reverse("restapi.campaignbudget.v1:campaign_budgets_list", kwargs={"campaign_id": 608}),
+            data=test_budget,
+            format="json",
         )
         self.assertResponseError(r, "ValidationError")

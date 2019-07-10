@@ -15,18 +15,18 @@ class CampaignBudgetViewSet(RESTAPIBaseViewSet):
     def get(self, request, campaign_id, budget_id):
         campaign = restapi.access.get_campaign(request.user, campaign_id, select_related=True)
         budget = self._get_budget(campaign, budget_id)
-        return self.response_ok(serializers.CampaignBudgetSerializer(budget).data)
+        return self.response_ok(self.serializer(budget).data)
 
     def put(self, request, campaign_id, budget_id):
         if request.user.has_perm("zemauth.disable_budget_management"):
             raise utils.exc.AuthorizationError()
 
         campaign = restapi.access.get_campaign(request.user, campaign_id, select_related=True)
-        serializer = serializers.CampaignBudgetSerializer(data=request.data, partial=True)
+        serializer = self.serializer(data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         budget = self._get_budget(campaign, budget_id)
         self._update_budget(budget.update, request=request, **serializer.validated_data)
-        return self.response_ok(serializers.CampaignBudgetSerializer(budget).data)
+        return self.response_ok(self.serializer(budget).data)
 
     def list(self, request, campaign_id):
         campaign = restapi.access.get_campaign(request.user, campaign_id, select_related=True)
@@ -42,14 +42,14 @@ class CampaignBudgetViewSet(RESTAPIBaseViewSet):
         ]
         paginator = StandardPagination()
         budgets_paginated = paginator.paginate_queryset(active_budgets, request)
-        return paginator.get_paginated_response(serializers.CampaignBudgetSerializer(budgets_paginated, many=True).data)
+        return paginator.get_paginated_response(self.serializer(budgets_paginated, many=True).data)
 
     def create(self, request, campaign_id):
         if request.user.has_perm("zemauth.disable_budget_management"):
             raise utils.exc.AuthorizationError()
 
         campaign = restapi.access.get_campaign(request.user, campaign_id, select_related=True)
-        serializer = serializers.CampaignBudgetSerializer(data=request.data)
+        serializer = self.serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         new_budget_data = serializer.validated_data
         credit = self._get_credit(campaign, new_budget_data.get("credit", {}).get("id"))
@@ -64,7 +64,11 @@ class CampaignBudgetViewSet(RESTAPIBaseViewSet):
             margin=new_budget_data.get("margin"),
             comment=new_budget_data.get("comment"),
         )
-        return self.response_ok(serializers.CampaignBudgetSerializer(new_budget).data, status=201)
+        return self.response_ok(self.serializer(new_budget).data, status=201)
+
+    @property
+    def serializer(self):
+        return serializers.CampaignBudgetSerializer
 
     @staticmethod
     def _get_budget(campaign, budget_id):

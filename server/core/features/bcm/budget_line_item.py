@@ -256,6 +256,21 @@ class BudgetLineItem(core.common.FootprintModel, core.features.history.HistoryMi
     def is_updatable(self):
         return self.state() == constants.BudgetLineItemState.ACTIVE
 
+    def can_edit_start_date(self):
+        return self.state() == constants.BudgetLineItemState.PENDING
+
+    def can_edit_end_date(self):
+        return (
+            self.state() == constants.BudgetLineItemState.PENDING
+            or self.state() == constants.BudgetLineItemState.ACTIVE
+        )
+
+    def can_edit_amount(self):
+        return (
+            self.state() == constants.BudgetLineItemState.PENDING
+            or self.state() == constants.BudgetLineItemState.ACTIVE
+        )
+
     def free_inactive_allocated_assets(self):
         if self.state() != constants.BudgetLineItemState.INACTIVE:
             raise AssertionError("Budget has to be inactive to be freed.")
