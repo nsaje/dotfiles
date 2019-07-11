@@ -13,6 +13,14 @@ if [ "$DIFF" != "" ]; then
     report_check_result 1 "requirements.in"
 fi
 
+
+# Isort ------------------------------------------------------------------------
+blue "Isort lint in progress ..."
+docker run --rm -v $PWD:/src --workdir=/src/ --entrypoint=isort py3-tools --check-only -sp /src/setup.cfg\
+
+EXITCODE=$?
+report_check_result $EXITCODE "Isort"
+
 # Black ------------------------------------------------------------------------
 blue "Black lint in progress ..."
 docker run --rm -v $PWD:/src --workdir=/src/ --entrypoint=black py3-tools -l 120 --exclude="build/|buck-out/|dist/|_build/|\.git/|\.hg/|\.mypy_cache/|\.tox/|\.venv/|.*\/migrations\/.*" --fast --check ./server/

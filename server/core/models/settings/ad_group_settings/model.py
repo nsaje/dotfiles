@@ -24,13 +24,13 @@ from utils import dates_helper
 from utils import lc_helper
 from utils.json_helper import JSONFIELD_DUMP_KWARGS
 
+from .. import helpers
+from .. import multicurrency_mixin
+from ..settings_base import SettingsBase
 from . import instance
 from . import manager
 from . import queryset
 from . import validation
-from .. import helpers
-from .. import multicurrency_mixin
-from ..settings_base import SettingsBase
 
 
 class AdGroupSettings(

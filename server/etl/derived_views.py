@@ -1,7 +1,7 @@
 import collections
+from dataclasses import dataclass
 
 import backtosql
-from dataclasses import dataclass
 
 KW_DIMENSIONS = "kw::dimensions"
 KW_AGGREGATES = "kw::aggregates"

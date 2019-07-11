@@ -6,8 +6,8 @@ import core.features.multicurrency
 from utils import dates_helper
 from utils import numbers
 
-from . import config
 from .. import RealTimeCampaignDataHistory
+from . import config
 
 logger = logging.getLogger(__name__)
 

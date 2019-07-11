@@ -13,9 +13,9 @@ import utils.exc
 import utils.string_helper
 from dash import constants
 
-from . import validation
 from ..settings_base import SettingsBase
 from ..settings_query_set import SettingsQuerySet
+from . import validation
 
 
 class AccountSettings(validation.AccountSettingsValidatorMixin, SettingsBase):

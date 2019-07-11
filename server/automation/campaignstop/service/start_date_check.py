@@ -2,11 +2,11 @@ import core.features.bcm
 import core.models
 from utils import dates_helper
 
-from . import config
-from . import spends_helper
 from .. import CampaignStopState
 from .. import RealTimeCampaignStopLog
 from .. import constants
+from . import config
+from . import spends_helper
 
 
 def update_campaigns_start_date(campaigns=None):

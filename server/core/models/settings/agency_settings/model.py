@@ -6,9 +6,9 @@ from django.db import models
 import core.common
 import core.models
 
-from . import instance
 from ..settings_base import SettingsBase
 from ..settings_query_set import SettingsQuerySet
+from . import instance
 
 
 class AgencySettings(instance.AgencySettingsMixin, SettingsBase):

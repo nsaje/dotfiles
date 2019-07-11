@@ -1,5 +1,4 @@
 import mock
-
 from django.test import TestCase
 
 import core.models

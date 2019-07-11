@@ -16,12 +16,12 @@ import utils.string_helper
 from dash import constants
 from utils.json_helper import JSONFIELD_DUMP_KWARGS
 
-from . import instance
-from . import manager
-from . import validation
 from .. import helpers
 from ..settings_base import SettingsBase
 from ..settings_query_set import SettingsQuerySet
+from . import instance
+from . import manager
+from . import validation
 
 
 class CampaignSettings(validation.CampaignSettingsValidatorMixin, instance.CampaignSettingsMixin, SettingsBase):
