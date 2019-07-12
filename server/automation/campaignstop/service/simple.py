@@ -220,17 +220,14 @@ def _get_active_ad_groups(campaign):
 
 
 def _get_active_campaigns_subset(campaigns):
-    ad_groups = dash.models.AdGroup.objects.filter(campaign__in=campaigns)
-    return list(set(ad_group.campaign for ad_group in _filter_active_ad_groups(ad_groups).select_related("campaign")))
+    ad_groups = _filter_active_ad_groups(dash.models.AdGroup.objects.filter(campaign__in=campaigns)).select_related(
+        "campaign"
+    )
+    return list(set(ad_group.campaign for ad_group in ad_groups))
 
 
 def _filter_active_ad_groups(ad_groups_qs):
-    today = utils.dates_helper.local_today()
-    return ad_groups_qs.filter(
-        Q(settings__state=dash.constants.AdGroupSettingsState.ACTIVE)
-        & Q(settings__archived=False)
-        & (Q(settings__end_date=None) | Q(settings__end_date__gt=today))
-    )
+    return ad_groups_qs.filter_current_and_active().filter_allowed_to_run().distinct()
 
 
 def _get_active_ad_group_sources_settings(adgroup):

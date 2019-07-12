@@ -1,13 +1,15 @@
 import decimal
 from datetime import datetime
 
+import mock
 from django import test
 from django.core import mail
 from django.http.request import HttpRequest
-from mock import patch
 
+import dash.constants
 from automation import models as automationmodels
 from dash import models
+from utils.magic_mixer import magic_mixer
 from zemauth.models import User
 
 from . import simple
@@ -32,13 +34,13 @@ class BudgetDepletionTestCase(test.TestCase):
         self.assertEqual(len([c for c in actives if c.pk == 1]), 1)
         self.assertEqual(len([c for c in actives if c.pk == 2]), 0)
 
-    @patch("automation.campaignstop.service.simple.DEPLETING_AVAILABLE_BUDGET_SCALAR", 1.0)
+    @mock.patch("automation.campaignstop.service.simple.DEPLETING_AVAILABLE_BUDGET_SCALAR", 1.0)
     def test_budget_is_depleting(self):
         self.assertEqual(simple._budget_is_depleting(100, 5), False)
         self.assertEqual(simple._budget_is_depleting(100, 500), True)
         self.assertEqual(simple._budget_is_depleting(-100, 5), True)
 
-    @patch("automation.campaignstop.service.simple._send_depleting_budget_notification_email")
+    @mock.patch("automation.campaignstop.service.simple._send_depleting_budget_notification_email")
     def test_notify_campaign_with_depleting_budget(self, mock):
         campaign = models.Campaign.objects.get(pk=1)
         simple._notify_campaign_with_depleting_budget(campaign, 100, 150)
@@ -57,7 +59,7 @@ class BudgetDepletionTestCase(test.TestCase):
             decimal.Decimal("60.0000"),
         )
 
-    @patch("automation.campaignstop.service.simple._send_depleting_budget_notification_email")
+    @mock.patch("automation.campaignstop.service.simple._send_depleting_budget_notification_email")
     def test_manager_has_been_notified(self, _):
         camp = models.Campaign.objects.get(pk=1)
         self.assertEqual(simple._manager_has_been_notified(camp), False)
@@ -91,6 +93,24 @@ class BudgetDepletionTestCase(test.TestCase):
         actives = simple._get_active_ad_groups(campaign2)
         self.assertEqual(len(actives), 0)
 
+    @mock.patch("utils.k1_helper.update_ad_groups", mock.MagicMock())
+    @mock.patch("automation.campaignstop.service.update_notifier.notify_campaignstopstate_change", mock.MagicMock())
+    def test_get_active_ad_groups_campaignstop_enabled(self):
+        campaign = magic_mixer.blend(models.Campaign, real_time_campaign_stop=True)
+        campaignstop_state = magic_mixer.blend(automationmodels.CampaignStopState, campaign=campaign)
+        campaignstop_state.set_allowed_to_run(True)
+
+        ad_group = magic_mixer.blend(models.AdGroup, campaign=campaign)
+        ad_group.settings.update_unsafe(None, state=dash.constants.AdGroupSettingsState.ACTIVE)
+
+        actives = simple._get_active_ad_groups(campaign)
+        self.assertEqual([ad_group], actives)
+
+        campaignstop_state.set_allowed_to_run(False)
+
+        actives = simple._get_active_ad_groups(campaign)
+        self.assertEqual([], actives)
+
     def test_get_active_ad_group_sources_settings(self):
         adg1 = models.AdGroup.objects.get(id=1)
         actives = simple._get_active_ad_group_sources_settings(adg1)
@@ -123,7 +143,7 @@ class BCMDepletionTestCase(test.TestCase):
         self.request = HttpRequest()
         self.request.user = User.objects.get(pk=1)
 
-    @patch("datetime.datetime", DatetimeMock)
+    @mock.patch("datetime.datetime", DatetimeMock)
     def test_get_yesterdays_spends(self):
         self.assertEqual(
             simple._get_yesterdays_spends(self.campaigns),
@@ -135,7 +155,7 @@ class BCMDepletionTestCase(test.TestCase):
             },
         )
 
-    @patch("datetime.datetime", DatetimeMock)
+    @mock.patch("datetime.datetime", DatetimeMock)
     def test_get_available_budgets(self):
         self.assertEqual(
             simple._get_available_budgets(self.campaigns),

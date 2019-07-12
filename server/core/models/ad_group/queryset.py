@@ -65,23 +65,28 @@ class AdGroupQuerySet(models.QuerySet):
         """
         Return only running ad groups.
         """
+        return (
+            self.filter_current_and_active(date=date)
+            .filter_at_least_one_source_running()
+            .filter_allowed_to_run()
+            .distinct()
+        )
 
+    def filter_allowed_to_run(self):
         # FIXME:circular dependency
         from automation.campaignstop import constants as campaignstop_constants
 
-        return (
-            self.filter_current_and_active(date=date)
-            .filter(
-                adgroupsource__settings__state=dash.constants.AdGroupSourceSettingsState.ACTIVE,
-                settings__archived=False,
-                campaign__settings__archived=False,
+        return self.filter(
+            models.Q(
+                campaign__real_time_campaign_stop=True,
+                campaign__campaignstopstate__state=campaignstop_constants.CampaignStopState.ACTIVE,
             )
-            .filter(
-                models.Q(
-                    campaign__real_time_campaign_stop=True,
-                    campaign__campaignstopstate__state=campaignstop_constants.CampaignStopState.ACTIVE,
-                )
-                | models.Q(campaign__real_time_campaign_stop=False)
-            )
-            .distinct()
+            | models.Q(campaign__real_time_campaign_stop=False)
+        )
+
+    def filter_at_least_one_source_running(self):
+        return self.filter(
+            adgroupsource__settings__state=dash.constants.AdGroupSourceSettingsState.ACTIVE,
+            settings__archived=False,
+            campaign__settings__archived=False,
         )
