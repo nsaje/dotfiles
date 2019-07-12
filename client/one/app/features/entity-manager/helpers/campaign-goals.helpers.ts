@@ -6,6 +6,7 @@ import {
     ConversionWindow,
     Unit,
     DataType,
+    APP_CONSTANTS,
 } from '../../../app.constants';
 import {
     ENTITY_MANAGER_CONFIG,
@@ -65,16 +66,27 @@ export function getAvailableGoals(
     );
 }
 
+// tslint:disable-next-line:cyclomatic-complexity
 function isGoalAvailable(
     option: CampaignGoalKPIConfig,
     enabledCampaignGoals: CampaignGoal[],
     campaignType: CampaignType,
     onlyCpc: boolean
 ): boolean {
+    // TODO (msuber): simplify when legacy ajs components will no longer
+    // use this helper function
+
     let isAvailable = true;
     let countConversionGoals = 0;
 
-    if (onlyCpc && option.value !== CampaignGoalKPI.CPC) {
+    if (
+        onlyCpc &&
+        !isEqualToAnyParameter(
+            option.value,
+            CampaignGoalKPI.CPC,
+            APP_CONSTANTS.campaignGoalKPI.CPC
+        )
+    ) {
         return false;
     }
 
@@ -82,13 +94,24 @@ function isGoalAvailable(
         if (goal.type === option.value) {
             isAvailable = false;
         }
-        if (goal.type === CampaignGoalKPI.CPA) {
+
+        if (
+            isEqualToAnyParameter(
+                goal.type,
+                CampaignGoalKPI.CPA,
+                APP_CONSTANTS.campaignGoalKPI.CPA
+            )
+        ) {
             countConversionGoals++;
         }
     });
 
     if (
-        option.value === CampaignGoalKPI.CPA &&
+        isEqualToAnyParameter(
+            option.value,
+            CampaignGoalKPI.CPA,
+            APP_CONSTANTS.campaignGoalKPI.CPA
+        ) &&
         countConversionGoals < ENTITY_MANAGER_CONFIG.maxCampaignConversionGoals
     ) {
         return true;
@@ -97,12 +120,26 @@ function isGoalAvailable(
     // Display campaigns do not support CPCV goals
     if (
         campaignType === CampaignType.DISPLAY &&
-        option.value === CampaignGoalKPI.CPCV
+        isEqualToAnyParameter(
+            option.value,
+            CampaignGoalKPI.CPCV,
+            APP_CONSTANTS.campaignGoalKPI.CPCV
+        )
     ) {
         return false;
     }
 
     return isAvailable;
+}
+
+// TODO (msuber): remove this function when ajs components will no longer
+// use this helper function
+function isEqualToAnyParameter(
+    value: any,
+    parameterOne: any,
+    parameterTwo: any
+): boolean {
+    return value === parameterOne || value === parameterTwo;
 }
 
 export function getConversionPixelsWithAvailableConversionWindows(
