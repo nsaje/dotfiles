@@ -203,6 +203,9 @@ DISABLE_FACEBOOK = True
 SLACK_LOG_ENABLE = True
 DISABLE_SIGNALS = False
 
+METRICS_PUSH_GATEWAY = ""
+METRICS_PUSH_PERIOD_SECONDS = 20
+
 from .localsettings import *
 
 if ENABLE_DJANGO_EXTENSIONS:
@@ -441,6 +444,3 @@ DCRON = {
     "log_viewer_link": "https://app.logdna.com/92b58769bf/logs/view?apps={command_name}",
     "log_viewer_link_live": "https://app.logdna.com/92b58769bf/logs/view?apps={command_name}&q=host:{host}",
 }
-
-METRICS_PUSH_GATEWAY = ""
-METRICS_PUSH_PERIOD_SECONDS = 20
