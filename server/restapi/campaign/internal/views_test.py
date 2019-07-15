@@ -110,6 +110,28 @@ class CampaignViewSetTest(RESTAPITest):
         }
         return cls.normalize(representation)
 
+    @classmethod
+    def credit_item_repr(cls, credit_item=None):
+        if credit_item is None:
+            return None
+
+        representation = {
+            "id": str(credit_item.pk),
+            "total": str(credit_item.effective_amount()),
+            "allocated": str(credit_item.get_allocated_amount()),
+            "available": str(credit_item.get_available_amount()),
+            "createdOn": credit_item.get_creation_date(),
+            "startDate": credit_item.start_date,
+            "endDate": credit_item.end_date,
+            "comment": credit_item.comment,
+            "status": dash.constants.CreditLineItemStatus.get_name(credit_item.status),
+            "currency": dash.constants.Currency.get_name(credit_item.currency),
+            "isAvailable": credit_item.is_available(),
+            "isAgency": credit_item.is_agency(),
+            "licenseFee": str(credit_item.license_fee),
+        }
+        return cls.normalize(representation)
+
     def test_validate_empty(self):
         r = self.client.post(reverse("restapi.campaign.internal:campaigns_validate"))
         self.assertResponseValid(r, data_type=type(None))
@@ -151,6 +173,7 @@ class CampaignViewSetTest(RESTAPITest):
                 "margin": decimal.Decimal("0.0000"),
             },
             "budgets_depleted": [],
+            "available_credits": [],
         }
 
         agency = magic_mixer.blend(core.models.Agency)
@@ -198,6 +221,7 @@ class CampaignViewSetTest(RESTAPITest):
                     "margin": "0.0000",
                 },
                 "budgetsDepleted": [],
+                "availableCredits": [],
             },
         )
 
@@ -281,6 +305,7 @@ class CampaignViewSetTest(RESTAPITest):
                 "margin": decimal.Decimal("2.0000"),
             },
             "budgets_depleted": [inactive_budget],
+            "available_credits": [credit],
         }
 
         r = self.client.get(reverse("restapi.campaign.internal:campaigns_details", kwargs={"campaign_id": campaign.id}))
@@ -347,6 +372,7 @@ class CampaignViewSetTest(RESTAPITest):
                     "margin": "2.0000",
                 },
                 "budgetsDepleted": [self.campaign_budget_repr(inactive_budget)],
+                "availableCredits": [self.credit_item_repr(credit)],
             },
         )
 

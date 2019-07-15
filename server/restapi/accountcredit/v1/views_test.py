@@ -9,7 +9,7 @@ from restapi.common.views_base_test import RESTAPITest
 from utils.magic_mixer import magic_mixer
 
 
-class AccountCreditsTest(RESTAPITest):
+class AccountCreditViewSetTest(RESTAPITest):
     def setUp(self):
         super().setUp()
         utils.test_helper.remove_permissions(self.user, ["can_view_platform_cost_breakdown"])
@@ -61,20 +61,26 @@ class AccountCreditsTest(RESTAPITest):
         self.assertEqual(expected, credit)
 
     def test_account_credits_get(self):
-        r = self.client.get(reverse("accounts_credits_details", kwargs={"account_id": 186, "credit_id": 861}))
+        r = self.client.get(
+            reverse("restapi.accountcredit.v1:accounts_credits_details", kwargs={"account_id": 186, "credit_id": 861})
+        )
         resp_json = self.assertResponseValid(r)
         self.validate_against_db(resp_json["data"])
 
     def test_account_credits_get_credit_doesnt_exist(self):
-        r = self.client.get(reverse("accounts_credits_details", kwargs={"account_id": 186, "credit_id": 1234}))
+        r = self.client.get(
+            reverse("restapi.accountcredit.v1:accounts_credits_details", kwargs={"account_id": 186, "credit_id": 1234})
+        )
         self.assertResponseError(r, "DoesNotExist")
 
     def test_account_credits_get_account_doesnt_exist(self):
-        r = self.client.get(reverse("accounts_credits_details", kwargs={"account_id": 123, "credit_id": 861}))
+        r = self.client.get(
+            reverse("restapi.accountcredit.v1:accounts_credits_details", kwargs={"account_id": 123, "credit_id": 861})
+        )
         self.assertResponseError(r, "MissingDataError")
 
     def test_account_credits_list(self):
-        r = self.client.get(reverse("accounts_credits_list", kwargs={"account_id": 186}))
+        r = self.client.get(reverse("restapi.accountcredit.v1:accounts_credits_list", kwargs={"account_id": 186}))
         resp_json = self.assertResponseValid(r, data_type=list)
         for item in resp_json["data"]:
             self.validate_against_db(item)
@@ -82,17 +88,22 @@ class AccountCreditsTest(RESTAPITest):
     def test_account_credits_pagination(self):
         account = magic_mixer.blend(dash.models.Account, users=[self.user])
         magic_mixer.cycle(10).blend(dash.models.CreditLineItem, account=account, end_date=datetime.date.today())
-        r = self.client.get(reverse("accounts_credits_list", kwargs={"account_id": account.id}))
+        r = self.client.get(
+            reverse("restapi.accountcredit.v1:accounts_credits_list", kwargs={"account_id": account.id})
+        )
         resp_json = self.assertResponseValid(r, data_type=list)
         marker_id = int(resp_json["data"][5]["id"]) - 1
         r_paginated = self.client.get(
-            reverse("accounts_credits_list", kwargs={"account_id": account.id}), {"limit": 2, "marker": marker_id}
+            reverse("restapi.accountcredit.v1:accounts_credits_list", kwargs={"account_id": account.id}),
+            {"limit": 2, "marker": marker_id},
         )
         resp_json_paginated = self.assertResponseValid(r_paginated, data_type=list)
         self.assertEqual(resp_json["data"][5:7], resp_json_paginated["data"])
 
     def test_license_fee_permissioned(self):
         utils.test_helper.add_permissions(self.user, ["can_view_platform_cost_breakdown"])
-        r = self.client.get(reverse("accounts_credits_details", kwargs={"account_id": 186, "credit_id": 861}))
+        r = self.client.get(
+            reverse("restapi.accountcredit.v1:accounts_credits_details", kwargs={"account_id": 186, "credit_id": 861})
+        )
         resp_json = self.assertResponseValid(r)
         self.validate_against_db(resp_json["data"], with_license_fee=True)

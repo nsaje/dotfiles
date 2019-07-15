@@ -1,16 +1,12 @@
+from django.conf.urls import include
 from django.conf.urls import url
 
-from . import views
+import restapi.accountcredit.internal.urls
+import restapi.accountcredit.v1.urls
 
 urlpatterns = [
+    url(r"^v1/accounts/", include(restapi.accountcredit.v1.urls, namespace="restapi.accountcredit.v1")),
     url(
-        r"^v1/accounts/(?P<account_id>\d+)/credits/(?P<credit_id>\d+)$",
-        views.AccountCreditViewSet.as_view({"get": "get"}),
-        name="accounts_credits_details",
-    ),
-    url(
-        r"^v1/accounts/(?P<account_id>\d+)/credits/$",
-        views.AccountCreditViewSet.as_view({"get": "list"}),
-        name="accounts_credits_list",
+        r"^internal/accounts/", include(restapi.accountcredit.internal.urls, namespace="restapi.accountcredit.internal")
     ),
 ]

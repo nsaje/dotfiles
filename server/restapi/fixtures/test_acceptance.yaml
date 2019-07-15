@@ -42,6 +42,7 @@
       - ['account_custom_audiences_view', 'zemauth', 'user']
       - ['can_set_bid_modifiers', 'zemauth', 'user']
       - ['can_modify_campaign_manager', 'zemauth', 'user']
+      - ['can_view_platform_cost_breakdown', 'zemauth', 'user']
 
 - model: oauth2_provider.application
   pk: 1
