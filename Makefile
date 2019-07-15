@@ -28,7 +28,7 @@ export TESTIM_TOKEN
 
 run:	## runs whole stack with docker-compose
 	docker-compose up --force-recreate -d
-	
+
 run_devenv:	## runs only development environment (i.e. services that are needed by z1)
 	docker-compose -f docker-compose.yml -f docker-compose.devenv.yml up --force-recreate -d
 
@@ -119,6 +119,13 @@ collect_server_static:	## collects static files for production build
 		-v $(PWD)/server/static/:/app/z1/static/ \
 		$(Z1_SERVER_IMAGE) \
 		bash -c "python manage.py collectstatic --noinput"
+
+refresh_requirements: login build_utils
+	docker run --rm \
+    -v $$PWD:/src \
+    --workdir=/src/ \
+    --entrypoint=sh \
+    py3-tools -c "pip-compile -v --no-annotate server/requirements.in"
 
 ####################
 # image management #

@@ -310,18 +310,11 @@ To combat that, adding field with a default value should be done in multiple ste
 
 ## Python dependencies
 
-In order to ensure reproducible builds we pin every dependency to exact version, including transitive dependencies. For this purpose we use `pip-tools` library [1]. App dependecies are specified in `server/requirements.in` and `pip-tools` is then used to generate `server/requirements.txt` file that contains all dependecies pinned to specific versions. To generate this file run the following command (it can take a little while):
+In order to ensure reproducible builds we pin every dependency to exact version, including transitive dependencies. For this purpose we use `pip-tools` library [1]. App dependecies are specified in `server/requirements.in` and `pip-tools` is then used to generate `server/requirements.txt` file that contains all dependecies pinned to specific versions. To generate this file run the following `make` command (it can take a little while):
 
 ```bash
-docker build -t py3-tools -f docker/Dockerfile.py3-tools  docker/
-docker run --rm \
-    -v $PWD:/src \
-    --workdir=/src/ \
-    --entrypoint=sh \
-    py3-tools -c "pip-compile --no-annotate server/requirements.in"
+make refresh_requirements
 ```
-
-In case of conflicts passing the `-v` flag to the `pip-compile` call is useful for easier debugging.
 
 [1] https://github.com/jazzband/pip-tools
 
