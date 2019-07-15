@@ -43,6 +43,7 @@
       - ['can_set_bid_modifiers', 'zemauth', 'user']
       - ['can_modify_campaign_manager', 'zemauth', 'user']
       - ['can_view_platform_cost_breakdown', 'zemauth', 'user']
+      - ['can_see_new_budgets', 'zemauth', 'user']
 
 - model: oauth2_provider.application
   pk: 1

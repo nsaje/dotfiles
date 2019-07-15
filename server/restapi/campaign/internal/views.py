@@ -4,6 +4,7 @@ from django.db import transaction
 from django.db.models import Prefetch
 
 import core.features.bcm
+import core.features.bcm.exceptions
 import core.features.goals
 import core.models
 import dash.campaign_goals
@@ -56,7 +57,8 @@ class CampaignViewSet(restapi.campaign.v1.views.CampaignViewSet):
             # TODO: hacks.apply_set_goals_hacks
             # TODO: hacks.override_campaign_settings_form_data
             self._update_campaign(request, campaign, settings)
-            self._handle_goals(request, campaign, settings.get("goals", []))
+            self._handle_campaign_goals(request, campaign, settings.get("goals", []))
+            self._handle_campaign_budgets(request, campaign, settings.get("budgets", []))
             # TODO: hacks.apply_campaign_change_hacks
 
         self._augment_campaign(request, campaign)
@@ -75,7 +77,8 @@ class CampaignViewSet(restapi.campaign.v1.views.CampaignViewSet):
             # TODO: hacks.apply_set_goals_hacks
             # TODO: hacks.override_campaign_settings_form_data
             self._update_campaign(request, new_campaign, settings)
-            self._handle_goals(request, new_campaign, settings.get("goals", []))
+            self._handle_campaign_goals(request, new_campaign, settings.get("goals", []))
+            self._handle_campaign_budgets(request, new_campaign, settings.get("budgets", []))
             # TODO: hacks.apply_campaign_change_hacks
 
         self._augment_campaign(request, new_campaign)
@@ -89,9 +92,9 @@ class CampaignViewSet(restapi.campaign.v1.views.CampaignViewSet):
             campaign.settings.goals = self._get_campaign_goals(campaign)
         campaign.settings.budgets = []
         if request.user.has_perm("zemauth.can_see_new_budgets"):
-            campaign.settings.budgets = self._get_active_budgets(campaign)
+            campaign.settings.budgets = self._get_campaign_budgets(campaign)
 
-    def _handle_goals(self, request, campaign, data):
+    def _handle_campaign_goals(self, request, campaign, data):
         if len(data) <= 0:
             raise utils.exc.ValidationError(errors={"goals_missing": ["At least one goal must be defined."]})
 
@@ -109,7 +112,33 @@ class CampaignViewSet(restapi.campaign.v1.views.CampaignViewSet):
             campaign_goal.update(request, **item)
 
         for item in data_to_create:
-            self._create_goal(request, campaign, item)
+            self._create_campaign_goal(request, campaign, item)
+
+    def _handle_campaign_budgets(self, request, campaign, data):
+        if request.user.has_perm("zemauth.disable_budget_management"):
+            raise utils.exc.AuthorizationError()
+
+        campaign_budgets = self._get_campaign_budgets(campaign)
+        data_to_create = [x for x in data if x.get("id") is None]
+        data_to_update = [x for x in data if x.get("id") is not None]
+
+        for item in data_to_update:
+            campaign_budget = self._get_campaign_budget(campaign_budgets, item.get("id"))
+            self._update_campaign_budget(campaign_budget.update, request=request, **item)
+
+        for item in data_to_create:
+            credit = self._get_credit(campaign, item.get("credit", {}).get("id"))
+            self._update_campaign_budget(
+                core.features.bcm.BudgetLineItem.objects.create,
+                request=request,
+                campaign=campaign,
+                credit=credit,
+                start_date=item.get("start_date"),
+                end_date=item.get("end_date"),
+                amount=item.get("amount"),
+                margin=item.get("margin"),
+                comment=item.get("comment"),
+            )
 
     @staticmethod
     def _get_campaign_goal(campaign_goals, goal_id):
@@ -134,7 +163,7 @@ class CampaignViewSet(restapi.campaign.v1.views.CampaignViewSet):
     # TODO: should be added to core.features.goals.service
     @staticmethod
     @transaction.atomic
-    def _create_goal(request, campaign, data):
+    def _create_campaign_goal(request, campaign, data):
         conversion_goal = data.get("conversion_goal")
         if conversion_goal:
             try:
@@ -183,7 +212,7 @@ class CampaignViewSet(restapi.campaign.v1.views.CampaignViewSet):
         return new_goal
 
     @staticmethod
-    def _get_active_budgets(campaign):
+    def _get_campaign_budgets(campaign):
         budgets = (
             core.features.bcm.BudgetLineItem.objects.filter(campaign_id=campaign.id)
             .select_related("credit")
@@ -195,3 +224,93 @@ class CampaignViewSet(restapi.campaign.v1.views.CampaignViewSet):
             for budget in budgets
             if budget.state() in (dash.constants.BudgetLineItemState.PENDING, dash.constants.BudgetLineItemState.ACTIVE)
         ]
+
+    @staticmethod
+    def _get_campaign_budget(budgets, budget_id):
+        budget = next((x for x in budgets if x.id == budget_id), None)
+        if budget is None:
+            raise utils.exc.MissingDataError("Campaign budget does not exist!")
+        return budget
+
+    @staticmethod
+    def _get_credit(campaign, credit_id):
+        try:
+            credit = core.features.bcm.CreditLineItem.objects.filter_by_account(account=campaign.account).get(
+                id=credit_id
+            )
+        except core.features.bcm.CreditLineItem.DoesNotExist:
+            raise utils.exc.MissingDataError("Credit does not exist!")
+        return credit
+
+    @staticmethod
+    @transaction.atomic
+    def _update_campaign_budget(budget_update, **kwargs):
+        try:
+            new_budget = budget_update(**kwargs)
+
+        except utils.exc.MultipleValidationError as err:
+            errors = {}
+            for e in err.errors:
+                if isinstance(e, core.features.bcm.exceptions.StartDateInvalid):
+                    errors.setdefault("start_date", []).append(str(e))
+
+                elif isinstance(e, core.features.bcm.exceptions.EndDateInvalid):
+                    errors.setdefault("end_date", []).append(str(e))
+
+                elif isinstance(e, core.features.bcm.exceptions.StartDateBiggerThanEndDate):
+                    errors.setdefault("end_date", []).append(str(e))
+
+                elif isinstance(e, core.features.bcm.exceptions.BudgetAmountCannotChange):
+                    errors.setdefault("amount", []).append(str(e))
+
+                elif isinstance(e, core.features.bcm.exceptions.BudgetAmountNegative):
+                    errors.setdefault("amount", []).append(str(e))
+
+                elif isinstance(e, core.features.bcm.exceptions.BudgetAmountExceededCreditAmount):
+                    errors.setdefault("amount", []).append(str(e))
+
+                elif isinstance(e, core.features.bcm.exceptions.BudgetAmountTooLow):
+                    errors.setdefault("amount", []).append(str(e))
+
+                elif isinstance(e, core.features.bcm.exceptions.CampaignStopDisabled):
+                    errors.setdefault("amount", []).append(str(e))
+
+                elif isinstance(e, core.features.bcm.exceptions.CanNotChangeCredit):
+                    errors.setdefault("credit_id", []).append(str(e))
+
+                elif isinstance(e, core.features.bcm.exceptions.CreditPending):
+                    errors.setdefault("credit_id", []).append(str(e))
+
+                elif isinstance(e, core.features.bcm.exceptions.CurrencyInconsistent):
+                    errors.setdefault("credit_id", []).append(str(e))
+
+                elif isinstance(e, core.features.bcm.exceptions.OverlappingBudgets):
+                    errors.setdefault("credit_id", []).append(str(e))
+
+                elif isinstance(e, core.features.bcm.exceptions.CampaignHasNoCredit):
+                    errors.setdefault("credit_id", []).append(str(e))
+
+                elif isinstance(e, core.features.bcm.exceptions.MarginRangeInvalid):
+                    errors.setdefault("margin", []).append(str(e))
+
+                elif isinstance(e, core.features.bcm.exceptions.OverlappingBudgetMarginInvalid):
+                    errors.setdefault("margin", []).append(str(e))
+
+            raise utils.exc.ValidationError(errors=errors)
+
+        except core.features.bcm.exceptions.CanNotChangeStartDate as err:
+            raise utils.exc.ValidationError(errors={"start_date": [str(err)]})
+
+        except core.features.bcm.exceptions.CanNotChangeBudget as err:
+            raise utils.exc.ValidationError(str(err))
+
+        except core.features.bcm.exceptions.CreditCanceled as err:
+            raise utils.exc.ValidationError(errors={"credit_id": [str(err)]})
+
+        except core.features.bcm.exceptions.StartDateInThePast as err:
+            raise utils.exc.ValidationError(errors={"start_date": [str(err)]})
+
+        except core.features.bcm.exceptions.EndDateInThePast as err:
+            raise utils.exc.ValidationError(errors={"end_date": [str(err)]})
+
+        return new_budget

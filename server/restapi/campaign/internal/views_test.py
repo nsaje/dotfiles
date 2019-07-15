@@ -37,6 +37,7 @@ class CampaignViewSetTest(RESTAPITest):
         frequency_capping=None,
         campaign_manager=None,
         goals=[],
+        budgets=[],
     ):
         representation = {
             "id": str(id) if id is not None else None,
@@ -64,6 +65,7 @@ class CampaignViewSetTest(RESTAPITest):
             "frequencyCapping": frequency_capping,
             "campaignManager": campaign_manager,
             "goals": goals,
+            "budgets": budgets,
         }
         return cls.normalize(representation)
 
@@ -77,7 +79,7 @@ class CampaignViewSetTest(RESTAPITest):
         value="30.0000",
     ):
         representation = {
-            "id": id,
+            "id": id if id is not None else None,
             "primary": primary,
             "type": dash.constants.CampaignGoalKPI.get_name(type),
             "conversionGoal": conversion_goal,
@@ -86,49 +88,76 @@ class CampaignViewSetTest(RESTAPITest):
         return cls.normalize(representation)
 
     @classmethod
-    def campaign_budget_repr(cls, budget=None):
-        if budget is None:
-            return None
-
+    def campaign_budget_repr(
+        cls,
+        id=None,
+        creditId=None,
+        amount=None,
+        margin=None,
+        comment=None,
+        startDate=None,
+        endDate=None,
+        state=dash.constants.BudgetLineItemState.PENDING,
+        spend=None,
+        available=None,
+        canEditStartDate=None,
+        canEditEndDate=None,
+        canEditAmount=None,
+        createdBy=None,
+        createdDt=None,
+        licenseFee=None,
+    ):
         representation = {
-            "id": str(budget.id),
-            "creditId": str(budget.credit.id),
-            "amount": str(budget.amount),
-            "margin": str(budget.margin),
-            "comment": budget.comment,
-            "startDate": budget.start_date,
-            "endDate": budget.end_date,
-            "state": dash.constants.BudgetLineItemState.get_name(budget.state()),
-            "spend": budget.get_local_spend_data_bcm(),
-            "available": budget.get_local_available_data_bcm(),
-            "canEditStartDate": budget.can_edit_start_date(),
-            "canEditEndDate": budget.can_edit_end_date(),
-            "canEditAmount": budget.can_edit_amount(),
-            "createdBy": str(budget.created_by),
-            "createdDt": budget.created_dt,
-            "licenseFee": budget.credit.license_fee,
+            "id": str(id) if id is not None else None,
+            "creditId": str(creditId) if creditId is not None else None,
+            "amount": str(amount) if amount is not None else None,
+            "margin": str(margin) if margin is not None else None,
+            "comment": comment,
+            "startDate": startDate,
+            "endDate": endDate,
+            "state": dash.constants.BudgetLineItemState.get_name(state),
+            "spend": str(spend),
+            "available": str(available),
+            "canEditStartDate": canEditStartDate,
+            "canEditEndDate": canEditEndDate,
+            "canEditAmount": canEditAmount,
+            "createdBy": str(createdBy),
+            "createdDt": createdDt,
+            "licenseFee": licenseFee,
         }
         return cls.normalize(representation)
 
     @classmethod
-    def credit_item_repr(cls, credit_item=None):
-        if credit_item is None:
-            return None
-
+    def credit_item_repr(
+        cls,
+        id=None,
+        totalAmount=None,
+        allocatedAmount=None,
+        availableAmount=None,
+        createdOn=None,
+        startDate=None,
+        endDate=None,
+        comment=None,
+        status=None,
+        currency=dash.constants.Currency.USD,
+        isAvailable=None,
+        isAgency=None,
+        licenseFee=None,
+    ):
         representation = {
-            "id": str(credit_item.pk),
-            "total": str(credit_item.effective_amount()),
-            "allocated": str(credit_item.get_allocated_amount()),
-            "available": str(credit_item.get_available_amount()),
-            "createdOn": credit_item.get_creation_date(),
-            "startDate": credit_item.start_date,
-            "endDate": credit_item.end_date,
-            "comment": credit_item.comment,
-            "status": dash.constants.CreditLineItemStatus.get_name(credit_item.status),
-            "currency": dash.constants.Currency.get_name(credit_item.currency),
-            "isAvailable": credit_item.is_available(),
-            "isAgency": credit_item.is_agency(),
-            "licenseFee": str(credit_item.license_fee),
+            "id": str(id) if id is not None else None,
+            "total": str(totalAmount),
+            "allocated": str(allocatedAmount),
+            "available": str(availableAmount),
+            "createdOn": createdOn,
+            "startDate": startDate,
+            "endDate": endDate,
+            "comment": comment,
+            "status": dash.constants.CreditLineItemStatus.get_name(status),
+            "currency": dash.constants.Currency.get_name(currency),
+            "isAvailable": isAvailable,
+            "isAgency": isAgency,
+            "licenseFee": str(licenseFee),
         }
         return cls.normalize(representation)
 
@@ -196,6 +225,7 @@ class CampaignViewSetTest(RESTAPITest):
         )
         self.assertEqual(resp_json["data"]["campaignManager"], self.user.id)
         self.assertEqual(resp_json["data"]["goals"], [])
+        self.assertEqual(resp_json["data"]["budgets"], [])
         self.assertEqual(
             resp_json["extra"],
             {
@@ -278,6 +308,16 @@ class CampaignViewSetTest(RESTAPITest):
             amount=10000,
             margin=decimal.Decimal("0.2500"),
         )
+        active_budget = magic_mixer.blend(
+            dash.models.BudgetLineItem,
+            campaign=campaign,
+            credit=credit,
+            start_date=datetime.date.today() - datetime.timedelta(1),
+            end_date=datetime.date.today() + datetime.timedelta(5),
+            created_by=self.user,
+            amount=10000,
+            margin=decimal.Decimal("0.2500"),
+        )
 
         mock_get_extra_data.return_value = {
             "archived": False,
@@ -345,6 +385,29 @@ class CampaignViewSetTest(RESTAPITest):
             ],
         )
         self.assertEqual(
+            resp_json["data"]["budgets"],
+            [
+                self.campaign_budget_repr(
+                    id=active_budget.id,
+                    creditId=active_budget.credit.id,
+                    amount=active_budget.amount,
+                    margin=active_budget.margin,
+                    comment=active_budget.comment,
+                    startDate=active_budget.start_date,
+                    endDate=active_budget.end_date,
+                    state=active_budget.state(),
+                    spend=active_budget.get_local_spend_data_bcm(),
+                    available=active_budget.get_local_available_data_bcm(),
+                    canEditStartDate=active_budget.can_edit_start_date(),
+                    canEditEndDate=active_budget.can_edit_end_date(),
+                    canEditAmount=active_budget.can_edit_amount(),
+                    createdBy=active_budget.created_by,
+                    createdDt=active_budget.created_dt,
+                    licenseFee=active_budget.credit.license_fee,
+                )
+            ],
+        )
+        self.assertEqual(
             resp_json["extra"],
             {
                 "archived": False,
@@ -371,8 +434,43 @@ class CampaignViewSetTest(RESTAPITest):
                     "licenseFee": "5.0000",
                     "margin": "2.0000",
                 },
-                "budgetsDepleted": [self.campaign_budget_repr(inactive_budget)],
-                "availableCredits": [self.credit_item_repr(credit)],
+                "budgetsDepleted": [
+                    self.campaign_budget_repr(
+                        id=inactive_budget.id,
+                        creditId=inactive_budget.credit.id,
+                        amount=inactive_budget.amount,
+                        margin=inactive_budget.margin,
+                        comment=inactive_budget.comment,
+                        startDate=inactive_budget.start_date,
+                        endDate=inactive_budget.end_date,
+                        state=inactive_budget.state(),
+                        spend=inactive_budget.get_local_spend_data_bcm(),
+                        available=inactive_budget.get_local_available_data_bcm(),
+                        canEditStartDate=inactive_budget.can_edit_start_date(),
+                        canEditEndDate=inactive_budget.can_edit_end_date(),
+                        canEditAmount=inactive_budget.can_edit_amount(),
+                        createdBy=inactive_budget.created_by,
+                        createdDt=inactive_budget.created_dt,
+                        licenseFee=inactive_budget.credit.license_fee,
+                    )
+                ],
+                "availableCredits": [
+                    self.credit_item_repr(
+                        id=credit.pk,
+                        totalAmount=credit.effective_amount(),
+                        allocatedAmount=credit.get_allocated_amount(),
+                        availableAmount=credit.get_available_amount(),
+                        createdOn=credit.get_creation_date(),
+                        startDate=credit.start_date,
+                        endDate=credit.end_date,
+                        comment=credit.comment,
+                        status=credit.status,
+                        currency=credit.currency,
+                        isAvailable=credit.is_available(),
+                        isAgency=credit.is_agency(),
+                        licenseFee=credit.license_fee,
+                    )
+                ],
             },
         )
 
@@ -381,6 +479,15 @@ class CampaignViewSetTest(RESTAPITest):
     def test_post(self, mock_send, mock_autopilot):
         agency = magic_mixer.blend(core.models.Agency)
         account = magic_mixer.blend(core.models.Account, agency=agency, users=[self.user])
+        credit = magic_mixer.blend(
+            dash.models.CreditLineItem,
+            account=account,
+            start_date=datetime.date.today() - datetime.timedelta(30),
+            end_date=datetime.date.today() + datetime.timedelta(30),
+            amount=200000,
+            currency=dash.constants.Currency.USD,
+            status=dash.constants.CreditLineItemStatus.SIGNED,
+        )
 
         campaign_goal_time_on_site = self.campaign_goal_repr(
             type=dash.constants.CampaignGoalKPI.TIME_ON_SITE, primary=True
@@ -389,10 +496,20 @@ class CampaignViewSetTest(RESTAPITest):
             type=dash.constants.CampaignGoalKPI.NEW_UNIQUE_VISITORS, primary=False
         )
 
+        campaign_budget = self.campaign_budget_repr(
+            creditId=credit.id,
+            amount="1000",
+            margin="0.2500",
+            comment="POST Campaign Budget",
+            startDate=datetime.date.today(),
+            endDate=datetime.date.today() + datetime.timedelta(5),
+        )
+
         new_campaign = self.campaign_repr(
             account_id=account.id,
             campaign_manager=self.user.id,
             goals=[campaign_goal_time_on_site, campaign_goal_new_unique_visitors],
+            budgets=[campaign_budget],
         )
 
         r = self.client.post(reverse("restapi.campaign.internal:campaigns_list"), data=new_campaign, format="json")
@@ -417,6 +534,11 @@ class CampaignViewSetTest(RESTAPITest):
             resp_json["data"]["goals"][1]["type"],
             dash.constants.CampaignGoalKPI.get_name(dash.constants.CampaignGoalKPI.NEW_UNIQUE_VISITORS),
         )
+        self.assertEqual(len(resp_json["data"]["budgets"]), 1)
+        self.assertIsNotNone(resp_json["data"]["budgets"][0]["id"])
+        self.assertEqual(resp_json["data"]["budgets"][0]["creditId"], campaign_budget["creditId"])
+        self.assertEqual(resp_json["data"]["budgets"][0]["amount"], campaign_budget["amount"])
+        self.assertEqual(resp_json["data"]["budgets"][0]["comment"], campaign_budget["comment"])
 
     def test_post_campaign_manager_error(self):
         agency = magic_mixer.blend(core.models.Agency)
@@ -477,10 +599,33 @@ class CampaignViewSetTest(RESTAPITest):
         )
         campaign_goal.add_local_value(None, decimal.Decimal("0.15"), skip_history=True)
 
+        credit = magic_mixer.blend(
+            dash.models.CreditLineItem,
+            account=account,
+            start_date=datetime.date.today() - datetime.timedelta(30),
+            end_date=datetime.date.today() + datetime.timedelta(30),
+            amount=200000,
+            currency=dash.constants.Currency.USD,
+            status=dash.constants.CreditLineItemStatus.SIGNED,
+        )
+
+        active_budget = magic_mixer.blend(
+            dash.models.BudgetLineItem,
+            campaign=campaign,
+            credit=credit,
+            start_date=datetime.date.today() - datetime.timedelta(1),
+            end_date=datetime.date.today() + datetime.timedelta(5),
+            created_by=self.user,
+            amount=10000,
+            margin=decimal.Decimal("0.2500"),
+            comment="PUT Campaign Budget",
+        )
+
         r = self.client.get(reverse("restapi.campaign.internal:campaigns_details", kwargs={"campaign_id": campaign.id}))
         resp_json = self.assertResponseValid(r)
 
         self.assertEqual(len(resp_json["data"]["goals"]), 1)
+        self.assertEqual(len(resp_json["data"]["budgets"]), 1)
 
         put_data = resp_json["data"].copy()
 
@@ -496,6 +641,9 @@ class CampaignViewSetTest(RESTAPITest):
 
         put_data["goals"].append(campaign_goal_time_on_site)
         put_data["goals"].append(campaign_goal_new_unique_visitors)
+
+        updated_amount = active_budget.amount + 100
+        put_data["budgets"][0]["amount"] = str(updated_amount)
 
         r = self.client.put(
             reverse("restapi.campaign.internal:campaigns_details", kwargs={"campaign_id": campaign.id}),
@@ -526,3 +674,5 @@ class CampaignViewSetTest(RESTAPITest):
             dash.constants.CampaignGoalKPI.get_name(dash.constants.CampaignGoalKPI.NEW_UNIQUE_VISITORS),
         )
         self.assertEqual(resp_json["data"]["goals"][2]["primary"], False)
+
+        self.assertEqual(resp_json["data"]["budgets"][0]["amount"], str(updated_amount))

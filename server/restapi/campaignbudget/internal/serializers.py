@@ -3,10 +3,11 @@ import decimal
 import rest_framework.serializers
 
 import restapi.campaignbudget.v1.serializers
+import restapi.serializers.fields
 
 
 class CampaignBudgetSerializer(restapi.campaignbudget.v1.serializers.CampaignBudgetSerializer):
-
+    id = restapi.serializers.fields.IdField(required=False, allow_null=True)
     can_edit_start_date = rest_framework.serializers.BooleanField(read_only=True)
     can_edit_end_date = rest_framework.serializers.BooleanField(read_only=True)
     can_edit_amount = rest_framework.serializers.BooleanField(read_only=True)

@@ -83,6 +83,9 @@ class CampaignSerializer(restapi.campaign.v1.serializers.CampaignSerializer):
     goals = rest_framework.serializers.ListSerializer(
         child=restapi.campaigngoal.serializers.CampaignGoalSerializer(), default=[], allow_empty=True
     )
+    budgets = rest_framework.serializers.ListSerializer(
+        child=restapi.campaignbudget.internal.serializers.CampaignBudgetSerializer(), default=[], allow_empty=True
+    )
 
     def validate_campaign_manager(self, value):
         if value is None:

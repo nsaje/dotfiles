@@ -42,6 +42,7 @@ class CampaignBudgetViewSetTest(RESTAPITest):
         )
         resp_json = self.assertResponseValid(r)
 
+        self.assertEqual(resp_json["data"]["id"], str(budget.id))
         self.assertEqual(resp_json["data"]["canEditStartDate"], budget.can_edit_start_date())
         self.assertEqual(resp_json["data"]["canEditEndDate"], budget.can_edit_end_date())
         self.assertEqual(resp_json["data"]["canEditAmount"], budget.can_edit_amount())
