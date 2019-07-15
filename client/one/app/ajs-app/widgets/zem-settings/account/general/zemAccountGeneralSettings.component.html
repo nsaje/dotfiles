@@ -219,7 +219,7 @@
 
         <div
             class="form__group"
-            ng-if="$ctrl.hasPermission('zemauth.can_set_agency_for_account') && !$ctrl.entity.isExternallyManaged"
+            ng-if="$ctrl.hasPermission('zemauth.can_set_agency_for_account')"
             ng-class="{'form--error': !!$ctrl.errors.agency}"
         >
             <label
