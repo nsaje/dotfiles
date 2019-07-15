@@ -5,6 +5,7 @@ import string
 from functools import partial
 
 import influx
+import newrelic.agent
 from django.conf import settings
 from django.core.cache import caches
 
@@ -61,6 +62,7 @@ def refresh(
     materialization_run.create_done()
 
 
+@newrelic.agent.function_trace()
 def _refresh(
     update_since,
     views,
