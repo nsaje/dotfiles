@@ -22,6 +22,10 @@ CONTENT_AD_SOURCE_URL = "/service/contentadsource"
 
 MAX_REQUEST_IDS = 500
 TIMEOUT = (10, 10)  # TIMEOUT IN SECONDS (CONNECT TIME, READ TIME)
+TIMEOUT_SYNC_SOURCES = (30, 60)
+TIMEOUT_SYNC_AD_GROUPS = (30, 60)
+TIMEOUT_SYNC_CONTENT_ADS = (30, 60)
+TIMEOUT_SYNC_CONTENT_AD_SOURCES = (30, 60)
 
 
 class SSPDApiException(Exception):
@@ -134,7 +138,7 @@ def sync_sources(sources):
             }
             request.append(item_dict)
 
-        response = _make_request("post", url, data=json.dumps(request), timeout=TIMEOUT)
+        response = _make_request("post", url, data=json.dumps(request), timeout=TIMEOUT_SYNC_SOURCES)
         return response["data"]
     except SSPDApiException:
         return False
@@ -161,7 +165,7 @@ def sync_ad_groups(ad_groups):
             }
             request.append(item_dict)
 
-        response = _make_request("post", url, data=json.dumps(request), timeout=TIMEOUT)
+        response = _make_request("post", url, data=json.dumps(request), timeout=TIMEOUT_SYNC_AD_GROUPS)
         return response["data"]
     except SSPDApiException:
         return False
@@ -186,7 +190,7 @@ def sync_content_ads(content_ads):
             }
             request.append(item_dict)
 
-        response = _make_request("post", url, data=json.dumps(request), timeout=TIMEOUT)
+        response = _make_request("post", url, data=json.dumps(request), timeout=TIMEOUT_SYNC_CONTENT_ADS)
         return response["data"]
     except SSPDApiException:
         return False
@@ -209,7 +213,7 @@ def sync_content_ad_sources(content_ad_sources):
             }
             request.append(item_dict)
 
-        response = _make_request("post", url, data=json.dumps(request), timeout=TIMEOUT)
+        response = _make_request("post", url, data=json.dumps(request), timeout=TIMEOUT_SYNC_CONTENT_AD_SOURCES)
         return response["data"]
     except SSPDApiException:
         return False

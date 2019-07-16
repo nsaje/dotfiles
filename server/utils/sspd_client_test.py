@@ -210,7 +210,10 @@ class SSPDClientTestCase(TestCase):
         ]
 
         mock_request.assert_called_once_with(
-            "post", "http://testssp.zemanta.com/service/source", data=json.dumps(data), timeout=sspd_client.TIMEOUT
+            "post",
+            "http://testssp.zemanta.com/service/source",
+            data=json.dumps(data),
+            timeout=sspd_client.TIMEOUT_SYNC_SOURCES,
         )
 
     @patch("utils.sspd_client._make_request")
@@ -236,7 +239,10 @@ class SSPDClientTestCase(TestCase):
         ]
 
         mock_request.assert_called_once_with(
-            "post", "http://testssp.zemanta.com/service/adgroup", data=json.dumps(data), timeout=sspd_client.TIMEOUT
+            "post",
+            "http://testssp.zemanta.com/service/adgroup",
+            data=json.dumps(data),
+            timeout=sspd_client.TIMEOUT_SYNC_AD_GROUPS,
         )
 
     @patch("utils.sspd_client._make_request")
@@ -261,7 +267,10 @@ class SSPDClientTestCase(TestCase):
         ]
 
         mock_request.assert_called_once_with(
-            "post", "http://testssp.zemanta.com/service/contentad", data=json.dumps(data), timeout=sspd_client.TIMEOUT
+            "post",
+            "http://testssp.zemanta.com/service/contentad",
+            data=json.dumps(data),
+            timeout=sspd_client.TIMEOUT_SYNC_CONTENT_ADS,
         )
 
     @patch("utils.sspd_client._make_request")
@@ -295,5 +304,5 @@ class SSPDClientTestCase(TestCase):
             "post",
             "http://testssp.zemanta.com/service/contentadsource",
             data=json.dumps(data),
-            timeout=sspd_client.TIMEOUT,
+            timeout=sspd_client.TIMEOUT_SYNC_CONTENT_AD_SOURCES,
         )
