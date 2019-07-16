@@ -19,6 +19,7 @@ repos:
       name: black
       entry: black -l 120
       language: python
+      language_version: python3.7
       types: [python]
 - repo: https://github.com/pre-commit/pre-commit-hooks
   rev: "v1.4.0"
