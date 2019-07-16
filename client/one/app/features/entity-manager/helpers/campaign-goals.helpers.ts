@@ -66,7 +66,6 @@ export function getAvailableGoals(
     );
 }
 
-// tslint:disable-next-line:cyclomatic-complexity
 function isGoalAvailable(
     option: CampaignGoalKPIConfig,
     enabledCampaignGoals: CampaignGoal[],

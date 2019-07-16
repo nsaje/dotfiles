@@ -3,7 +3,6 @@ import {ConversionPixelsEndpoint} from './conversion-pixels.endpoint';
 import {ConversionPixel} from '../types/conversion-pixel';
 import {RequestStateUpdater} from '../../../shared/types/request-state-updater';
 import {Observable} from 'rxjs';
-import * as commonHelpers from '../../../shared/helpers/common.helpers';
 
 @Injectable()
 export class ConversionPixelsService {

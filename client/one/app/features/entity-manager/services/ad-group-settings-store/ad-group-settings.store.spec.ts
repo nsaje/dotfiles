@@ -177,13 +177,21 @@ describe('AdGroupSettingsStore', () => {
         const mockedAdGroupWithExtras = clone(adGroupWithExtras);
         mockedAdGroupWithExtras.adGroup.manageRtbSourcesAsOne = true;
         serviceStub.get.and
-            .returnValue(of(clone(mockedAdGroupWithExtras), asapScheduler))
+            .returnValue(of(mockedAdGroupWithExtras, asapScheduler))
             .calls.reset();
         serviceStub.save.and
-            .returnValue(of(clone(adGroup), asapScheduler))
+            .returnValue(
+                of(
+                    {
+                        ...mockedAdGroupWithExtras.adGroup,
+                        manageRtbSourcesAsOne: false,
+                    },
+                    asapScheduler
+                )
+            )
             .calls.reset();
 
-        store.loadEntity('1');
+        store.loadEntity('12345');
         tick();
 
         store.updateState(false, 'entity', 'manageRtbSourcesAsOne');

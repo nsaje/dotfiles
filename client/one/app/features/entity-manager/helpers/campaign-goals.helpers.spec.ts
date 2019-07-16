@@ -5,7 +5,6 @@ import {
     Unit,
     DataType,
 } from '../../../app.constants';
-import {APP_CONFIG} from '../../../app.config';
 import * as campaignGoalsHelpers from './campaign-goals.helpers';
 import {CAMPAIGN_GOAL_KPIS} from '../entity-manager.config';
 import {CampaignGoal} from '../../../core/entities/types/campaign/campaign-goal';
