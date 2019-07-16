@@ -41,7 +41,7 @@ import {SettingsDrawerFooterComponent} from './components/settings-drawer-footer
 import {SettingsDrawerHeaderComponent} from './components/settings-drawer-header/settings-drawer-header.component';
 import {CampaignGoalsComponent} from './components/campaign-goals/campaign-goals.component';
 import {CampaignGoalComponent} from './components/campaign-goal/campaign-goal.component';
-import {CampaignGoalEditComponent} from './components/campaign-goal-edit/campaign-goal-edit.component';
+import {CampaignGoalEditFormComponent} from './components/campaign-goal-edit-form/campaign-goal-edit-form.component';
 
 // DEMO
 import {RuleActionsComponent} from './components/rule-actions/rule-actions.component';
@@ -91,7 +91,7 @@ import {CampaignBudgetsOverviewComponent} from './components/campaign-budgets-ov
         DealsComponent,
         CampaignGoalsComponent,
         CampaignGoalComponent,
-        CampaignGoalEditComponent,
+        CampaignGoalEditFormComponent,
         CampaignBudgetsOverviewComponent,
 
         // DEMO

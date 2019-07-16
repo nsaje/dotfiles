@@ -44,7 +44,8 @@ export class ConversionPixelsEndpoint {
     }
 
     create(
-        conversionPixel: ConversionPixel,
+        accountId: string,
+        conversionPixelName: string,
         requestStateUpdater: RequestStateUpdater
     ): Observable<ConversionPixel> {
         const request =
@@ -55,8 +56,8 @@ export class ConversionPixelsEndpoint {
 
         return this.http
             .post<ApiResponse<ConversionPixel>>(
-                `${request.url}${conversionPixel.accountId}/pixels/`,
-                conversionPixel
+                `${request.url}${accountId}/pixels/`,
+                {name: conversionPixelName}
             )
             .pipe(
                 map(response => {

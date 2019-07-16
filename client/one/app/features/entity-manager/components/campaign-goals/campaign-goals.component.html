@@ -12,16 +12,22 @@
     (campaignGoalPrimaryChange)="onCampaignGoalPrimaryChange(campaignGoal)"
     (campaignGoalDelete)="onCampaignGoalDelete(campaignGoal)"
 >
-    <zem-campaign-goal-edit
-        class="zem-campaign-goal-edit"
+    <zem-campaign-goal-edit-form
+        class="zem-campaign-goal-edit-form"
         [campaignGoal]="campaignGoal"
         [currency]="currency"
         [availableCampaignGoals]="availableCampaignGoals"
         [conversionPixels]="conversionPixels"
         [availableConversionPixels]="availableConversionPixels"
-        [campaignGoalError]="campaignGoalsErrors[index]"
+        [campaignGoalErrors]="campaignGoalsErrors[index]"
+        [conversionPixelErrors]="conversionPixelsErrors[index]"
+        [conversionPixelIsLoading]="
+            conversionPixelsRequests[index]?.create?.inProgress
+        "
         (campaignGoalChange)="onCampaignGoalChange($event)"
-    ></zem-campaign-goal-edit>
+        (conversionPixelCreate)="onConversionPixelCreate($event, index)"
+        (conversionPixelCancel)="onConversionPixelCancel(index)"
+    ></zem-campaign-goal-edit-form>
 </zem-campaign-goal>
 <div
     *ngIf="getKPIOptimizationLabel()"

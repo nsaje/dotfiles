@@ -16,6 +16,8 @@ import * as deepEqual from 'fast-deep-equal';
 import {CampaignGoal} from '../../../../core/entities/types/campaign/campaign-goal';
 import {ChangeEvent} from '../../../../shared/types/change-event';
 import {CampaignGoalKPI} from '../../../../app.constants';
+import {ConversionPixelChangeEvent} from '../../types/conversion-pixel-change-event';
+import * as commonHelpers from '../../../../shared/helpers/common.helpers';
 
 @Injectable()
 export class CampaignSettingsStore extends Store<CampaignSettingsStoreState>
@@ -168,6 +170,98 @@ export class CampaignSettingsStore extends Store<CampaignSettingsStoreState>
             );
     }
 
+    createConversionPixel($event: ConversionPixelChangeEvent) {
+        const index = this.state.entity.goals.indexOf($event.campaignGoal);
+        const requestStateUpdater = this.getConversionPixelsRequestStateUpdater(
+            index
+        );
+
+        this.conversionPixelsService
+            .create(
+                this.state.entity.accountId,
+                $event.conversionPixelName,
+                requestStateUpdater
+            )
+            .pipe(takeUntil(this.ngUnsubscribe$))
+            .subscribe(
+                conversionPixel => {
+                    const goals = this.state.entity.goals.map(item => {
+                        if (item === $event.campaignGoal) {
+                            return {
+                                ...item,
+                                conversionGoal: {
+                                    ...$event.campaignGoal.conversionGoal,
+                                    conversionWindow: null,
+                                    goalId: conversionPixel.id,
+                                    pixelUrl: null,
+                                    name: null,
+                                },
+                            };
+                        }
+                        return item;
+                    });
+                    const conversionPixels = [
+                        ...this.state.conversionPixels,
+                        conversionPixel,
+                    ];
+                    const conversionPixelsErrors = this.state.conversionPixelsErrors.filter(
+                        error => {
+                            return (
+                                this.state.conversionPixelsErrors.indexOf(
+                                    error
+                                ) !== index
+                            );
+                        }
+                    );
+
+                    this.setState({
+                        ...this.state,
+                        entity: {
+                            ...this.state.entity,
+                            goals: goals,
+                        },
+                        conversionPixels: conversionPixels,
+                        conversionPixelsErrors: conversionPixelsErrors,
+                    });
+                },
+                (error: HttpErrorResponse) => {
+                    const index = this.state.entity.goals.indexOf(
+                        $event.campaignGoal
+                    );
+                    const nameError =
+                        commonHelpers.isDefined(error.error) &&
+                        commonHelpers.isDefined(error.error.details)
+                            ? error.error.details.name
+                            : null;
+
+                    const conversionPixelsErrors = clone(
+                        this.state.conversionPixelsErrors
+                    );
+                    conversionPixelsErrors[index] = {
+                        name: nameError,
+                    };
+
+                    this.updateState(
+                        conversionPixelsErrors,
+                        'conversionPixelsErrors'
+                    );
+                }
+            );
+    }
+
+    cancelConversionPixelCreation($event: ConversionPixelChangeEvent) {
+        const index = this.state.entity.goals.indexOf($event.campaignGoal);
+        const conversionPixelsErrors = this.state.conversionPixelsErrors.filter(
+            error => {
+                return (
+                    this.state.conversionPixelsErrors.indexOf(error) !== index
+                );
+            }
+        );
+
+        this.updateState(conversionPixelsErrors, 'conversionPixelsErrors');
+    }
+
     /**
      * End: Conversion Pixels
      */
@@ -259,5 +353,23 @@ export class CampaignSettingsStore extends Store<CampaignSettingsStoreState>
     ngOnDestroy() {
         this.ngUnsubscribe$.next();
         this.ngUnsubscribe$.complete();
+    }
+
+    private getConversionPixelsRequestStateUpdater(
+        index: number
+    ): RequestStateUpdater {
+        return (requestName, requestState) => {
+            const conversionPixelsRequests = clone(
+                this.state.conversionPixelsRequests
+            );
+            conversionPixelsRequests[index] = {
+                ...conversionPixelsRequests[index],
+                [requestName]: requestState,
+            };
+            this.updateState(
+                conversionPixelsRequests,
+                'conversionPixelsRequests'
+            );
+        };
     }
 }

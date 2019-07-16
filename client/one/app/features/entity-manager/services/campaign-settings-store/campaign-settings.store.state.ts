@@ -4,6 +4,7 @@ import {CampaignExtras} from '../../../../core/entities/types/campaign/campaign-
 import {CampaignSettingsStoreFieldsErrorsState} from './campaign-settings.store.fields-errors-state';
 import {CampaignGoalKPI} from '../../../../app.constants';
 import {ConversionPixel} from '../../../../core/conversion-pixels/types/conversion-pixel';
+import {ConversionPixelErrors} from '../../types/conversion-pixel-errors';
 
 export class CampaignSettingsStoreState {
     entity: Campaign = {
@@ -41,6 +42,11 @@ export class CampaignSettingsStoreState {
         },
     };
     fieldsErrors = new CampaignSettingsStoreFieldsErrorsState();
+    conversionPixelsErrors: ConversionPixelErrors[] = [];
+    conversionPixelsRequests: {
+        create: RequestState;
+        edit: RequestState;
+    }[] = [];
     requests = {
         defaults: {} as RequestState,
         get: {} as RequestState,

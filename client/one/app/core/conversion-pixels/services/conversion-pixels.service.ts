@@ -16,24 +16,19 @@ export class ConversionPixelsService {
         return this.endpoint.list(accountId, requestStateUpdater);
     }
 
-    save(
-        conversionPixel: ConversionPixel,
+    create(
+        accountId: string,
+        conversionPixelName: string,
         requestStateUpdater: RequestStateUpdater
     ): Observable<ConversionPixel> {
-        if (!commonHelpers.isDefined(conversionPixel.id)) {
-            return this.create(conversionPixel, requestStateUpdater);
-        }
-        return this.edit(conversionPixel, requestStateUpdater);
+        return this.endpoint.create(
+            accountId,
+            conversionPixelName,
+            requestStateUpdater
+        );
     }
 
-    private create(
-        conversionPixel: ConversionPixel,
-        requestStateUpdater: RequestStateUpdater
-    ): Observable<ConversionPixel> {
-        return this.endpoint.create(conversionPixel, requestStateUpdater);
-    }
-
-    private edit(
+    edit(
         conversionPixel: ConversionPixel,
         requestStateUpdater: RequestStateUpdater
     ): Observable<ConversionPixel> {

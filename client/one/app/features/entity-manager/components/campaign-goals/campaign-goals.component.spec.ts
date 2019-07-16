@@ -3,7 +3,7 @@ import {FormsModule} from '@angular/forms';
 import {SharedModule} from '../../../../shared/shared.module';
 import {CampaignGoalsComponent} from './campaign-goals.component';
 import {CampaignGoalComponent} from '../campaign-goal/campaign-goal.component';
-import {CampaignGoalEditComponent} from '../campaign-goal-edit/campaign-goal-edit.component';
+import {CampaignGoalEditFormComponent} from '../campaign-goal-edit-form/campaign-goal-edit-form.component';
 import {SelectSettingComponent} from '../select-setting/select-setting.component';
 import {TextSettingComponent} from '../text-setting/text-setting.component';
 
@@ -16,7 +16,7 @@ describe('CampaignGoalsComponent', () => {
             declarations: [
                 CampaignGoalsComponent,
                 CampaignGoalComponent,
-                CampaignGoalEditComponent,
+                CampaignGoalEditFormComponent,
                 SelectSettingComponent,
                 TextSettingComponent,
             ],

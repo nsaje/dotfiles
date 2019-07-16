@@ -86,14 +86,24 @@
                         "
                         [currency]="state.extras.currency"
                         [campaignGoals]="state.entity.goals"
-                        [conversionPixels]="state.conversionPixels"
                         [campaignGoalsErrors]="state.fieldsErrors.goals"
+                        [conversionPixels]="state.conversionPixels"
+                        [conversionPixelsErrors]="state.conversionPixelsErrors"
+                        [conversionPixelsRequests]="
+                            state.conversionPixelsRequests
+                        "
                         (campaignGoalCreate)="store.createGoal()"
                         (campaignGoalPrimaryChange)="
                             store.setPrimaryGoal($event)
                         "
                         (campaignGoalChange)="store.changeGoal($event)"
                         (campaignGoalDelete)="store.deleteGoal($event)"
+                        (conversionPixelCreate)="
+                            store.createConversionPixel($event)
+                        "
+                        (conversionPixelCancel)="
+                            store.cancelConversionPixelCreation($event)
+                        "
                     ></zem-campaign-goals>
                 </div>
             </div>

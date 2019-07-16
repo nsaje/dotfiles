@@ -76,6 +76,14 @@
     background-image: url('images/check-white.svg');
 }
 
+.zem-button--add-icon:not(.zem-button--loading)::before {
+    background-image: url('@{images-folder}/add-sec.svg');
+}
+
+.zem-button--highlighted.zem-button--add-icon:not(.zem-button--loading)::before {
+    background-image: url('images/add-white.svg');
+}
+
 .zem-button--loading {
     padding-left: 32px;
 

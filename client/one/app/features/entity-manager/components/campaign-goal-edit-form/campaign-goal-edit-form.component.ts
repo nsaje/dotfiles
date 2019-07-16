@@ -1,4 +1,4 @@
-import './campaign-goal-edit.component.less';
+import './campaign-goal-edit-form.component.less';
 
 import {
     Component,
@@ -23,23 +23,25 @@ import {
 } from '../../../../app.constants';
 import {CampaignConversionGoal} from 'one/app/core/entities/types/campaign/campaign-conversion-goal';
 import {ConversionPixel} from '../../../../core/conversion-pixels/types/conversion-pixel';
-import * as currencyHelpers from '../../../../shared/helpers/currency.helpers';
 import * as campaignGoalsHelpers from '../../helpers/campaign-goals.helpers';
 import {ChangeEvent} from '../../../../shared/types/change-event';
 import {CampaignGoalKPIConfig} from '../../types/campaign-goal-kpi-config';
 import {ConversionWindowConfig} from '../../../../core/conversion-pixels/types/conversion-windows-config';
-import {CampaignGoalError} from '../../types/campaign-goal-error';
-import {DataType, Unit} from '../../../../app.constants';
+import {CampaignGoalErrors} from '../../types/campaign-goal-errors';
+import {DataType} from '../../../../app.constants';
 import * as unitsHelpers from '../../../../shared/helpers/units.helpers';
+import {ConversionPixelErrors} from '../../types/conversion-pixel-errors';
 
 @Component({
-    selector: 'zem-campaign-goal-edit',
-    templateUrl: './campaign-goal-edit.component.html',
+    selector: 'zem-campaign-goal-edit-form',
+    templateUrl: './campaign-goal-edit-form.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class CampaignGoalEditComponent implements OnChanges {
+export class CampaignGoalEditFormComponent implements OnChanges {
     @Input()
     campaignGoal: CampaignGoal;
+    @Input()
+    campaignGoalErrors: CampaignGoalErrors;
     @Input()
     currency: Currency;
     @Input()
@@ -49,14 +51,23 @@ export class CampaignGoalEditComponent implements OnChanges {
     @Input()
     availableConversionPixels: ConversionPixel[];
     @Input()
-    campaignGoalError: CampaignGoalError;
+    conversionPixelErrors: ConversionPixelErrors;
+    @Input()
+    conversionPixelIsLoading: boolean;
     @Output()
     campaignGoalChange = new EventEmitter<ChangeEvent<CampaignGoal>>();
+    @Output()
+    conversionPixelCreate = new EventEmitter<string>();
+    @Output()
+    conversionPixelCancel = new EventEmitter();
 
     availableGoals: CampaignGoalKPIConfig[] = [];
     availablePixels: ConversionPixel[] = [];
     availableWindows: ConversionWindowConfig[] = [];
     editedGoalConfig: CampaignGoalKPIConfig;
+
+    isConversionPixelNameVisible: boolean;
+    conversionPixelName: string;
 
     // options
     CAMPAIGN_CONVERSION_GOAL_TYPES = CAMPAIGN_CONVERSION_GOAL_TYPES;
@@ -87,6 +98,8 @@ export class CampaignGoalEditComponent implements OnChanges {
             );
         }
         if (changes.campaignGoal) {
+            this.conversionPixelName = null;
+            this.isConversionPixelNameVisible = false;
             this.editedGoalConfig = campaignGoalsHelpers.findCampaignGoalConfig(
                 this.campaignGoal,
                 this.availableGoals
@@ -135,6 +148,7 @@ export class CampaignGoalEditComponent implements OnChanges {
                 conversionGoal: {
                     ...this.campaignGoal.conversionGoal,
                     goalId: $event,
+                    conversionWindow: null,
                 },
             },
         });
@@ -158,6 +172,32 @@ export class CampaignGoalEditComponent implements OnChanges {
             this.currency
         );
     }
+
+    /**
+     * Start: Conversion Pixels
+     */
+
+    onConversionPixelNameChange($event: string) {
+        this.conversionPixelName = $event;
+    }
+
+    addConversionPixel() {
+        this.isConversionPixelNameVisible = true;
+    }
+
+    createConversionPixel() {
+        this.conversionPixelCreate.emit(this.conversionPixelName);
+    }
+
+    cancelConversionPixel() {
+        this.isConversionPixelNameVisible = false;
+        this.conversionPixelName = null;
+        this.conversionPixelCancel.emit();
+    }
+
+    /**
+     * End: Conversion Pixels
+     */
 
     private getAvailableWindows(
         campaignGoal: CampaignGoal,

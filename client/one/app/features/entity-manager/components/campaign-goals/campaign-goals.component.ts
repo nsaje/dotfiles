@@ -21,7 +21,10 @@ import {CampaignType, Currency} from '../../../../app.constants';
 import {ChangeEvent} from '../../../../shared/types/change-event';
 import {ConversionPixel} from '../../../../core/conversion-pixels/types/conversion-pixel';
 import {CampaignGoalKPIConfig} from '../../types/campaign-goal-kpi-config';
-import {CampaignGoalError} from '../../types/campaign-goal-error';
+import {CampaignGoalErrors} from '../../types/campaign-goal-errors';
+import {ConversionPixelChangeEvent} from '../../types/conversion-pixel-change-event';
+import {ConversionPixelErrors} from '../../types/conversion-pixel-errors';
+import {RequestState} from '../../../../shared/types/request-state';
 
 @Component({
     selector: 'zem-campaign-goals',
@@ -38,9 +41,16 @@ export class CampaignGoalsComponent implements OnChanges {
     @Input()
     campaignGoals: CampaignGoal[];
     @Input()
+    campaignGoalsErrors: CampaignGoalErrors[];
+    @Input()
     conversionPixels: ConversionPixel[];
     @Input()
-    campaignGoalsErrors: CampaignGoalError[];
+    conversionPixelsErrors: ConversionPixelErrors[];
+    @Input()
+    conversionPixelsRequests: {
+        create: RequestState;
+        edit: RequestState;
+    }[];
     @Output()
     campaignGoalCreate = new EventEmitter<void>();
     @Output()
@@ -49,6 +59,10 @@ export class CampaignGoalsComponent implements OnChanges {
     campaignGoalChange = new EventEmitter<ChangeEvent<CampaignGoal>>();
     @Output()
     campaignGoalDelete = new EventEmitter<CampaignGoal>();
+    @Output()
+    conversionPixelCreate = new EventEmitter<ConversionPixelChangeEvent>();
+    @Output()
+    conversionPixelCancel = new EventEmitter<ConversionPixelChangeEvent>();
 
     availableCampaignGoals: CampaignGoalKPIConfig[] = [];
     availableConversionPixels: ConversionPixel[] = [];
@@ -108,6 +122,19 @@ export class CampaignGoalsComponent implements OnChanges {
 
     createGoal(): void {
         this.campaignGoalCreate.emit();
+    }
+
+    onConversionPixelCreate($event: string, index: number) {
+        this.conversionPixelCreate.emit({
+            campaignGoal: this.campaignGoals[index],
+            conversionPixelName: $event,
+        });
+    }
+
+    onConversionPixelCancel(index: number) {
+        this.conversionPixelCancel.emit({
+            campaignGoal: this.campaignGoals[index],
+        });
     }
 
     hasError(index: number): boolean {
