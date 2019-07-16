@@ -102,8 +102,10 @@ INSERT INTO mv_touchpointconversions (
               c.conversion_lag as conversion_lag,
 
               c.touchpoint_id as touchpoint_id,
+
+              -- rank is used so we can only take the last conversion of the highest priority type (click is higher priority than view) in the main query
               RANK() OVER
-                  (PARTITION BY c.conversion_id, c.ad_group_id ORDER BY c.touchpoint_timestamp DESC) AS conversion_id_ranked,
+                  (PARTITION BY c.conversion_id, c.ad_group_id, c.type ORDER BY c.touchpoint_timestamp DESC, c.type ASC) AS conversion_id_ranked,
 
               c.value_nano as conversion_value_nano,
               c.label as conversion_label,
