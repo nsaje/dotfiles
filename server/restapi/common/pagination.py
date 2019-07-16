@@ -28,9 +28,6 @@ class StandardPagination(pagination.BasePagination):
         return self.selected_pagination.paginate_queryset(queryset, request, view=view)
 
     def get_paginated_response(self, data):
-        if "data" in data:
-            data = data["data"]
-
         return self.selected_pagination.get_paginated_response(data)
 
     def _select_pagination(self, request):
@@ -49,6 +46,9 @@ class StandardLimitOffsetPagination(pagination.LimitOffsetPagination):
     default_limit = 100
 
     def get_paginated_response(self, data):
+        if "data" in data:
+            data = data["data"]
+
         return Response(
             collections.OrderedDict(
                 [
@@ -104,6 +104,9 @@ class MarkerOffsetPagination(pagination.BasePagination):
         return page
 
     def get_paginated_response(self, data):
+        if "data" in data:
+            data = data["data"]
+
         return Response(
             collections.OrderedDict([("count", self.count), ("next", self.get_next_link()), ("data", data)])
         )
