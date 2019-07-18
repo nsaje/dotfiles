@@ -34,7 +34,11 @@ class CloneContentAds(restapi.common.views_base.RESTAPIBaseView):
                 form.validated_data["destination_batch_name"],
                 form.validated_data.get("state"),
             )
+
         except core.models.content_ad.exceptions.CampaignAdTypeMismatch as err:
             raise utils.exc.ValidationError(errors={"type": [str(err)]})
+
+        except core.models.content_ad.exceptions.AdGroupIsArchived as err:
+            raise utils.exc.ValidationError(errors={"destination_ad_group_id": [str(err)]})
 
         return self.response_ok(serializers.UploadBatchSerializer(destination_batch).data)

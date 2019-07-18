@@ -69,3 +69,19 @@ class CloneContentViewTest(restapi.common.views_base_test.RESTAPITest):
             {"errorCode": "ValidationError", "details": {"type": ["Creative type does not match the campaign type."]}},
             json.loads(r.content),
         )
+
+    @mock.patch.object(core.models.AdGroup, "is_archived", return_value=True)
+    def test_post_ad_group_archived_fail(self, mock_archived):
+        campaign = magic_mixer.blend(core.models.Campaign, account=self.account)
+        ad_group = magic_mixer.blend(core.models.AdGroup, campaign=campaign)
+
+        data = self.clone_repr(self.ad_group, ad_group, self.content_ads)
+
+        r = self.client.post(reverse("content_ad_clone"), data=data, format="json")
+        r = self.assertEqual(
+            {
+                "errorCode": "ValidationError",
+                "details": {"destinationAdGroupId": ["Can not create a content ad on an archived ad group."]},
+            },
+            json.loads(r.content),
+        )

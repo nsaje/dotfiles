@@ -113,3 +113,17 @@ class CreateContentAd(TestCase):
         # check redirector sync
         self.assertEqual(mock_insert_redirects.call_count, 1)
         mock_insert_redirects.assert_called_with(content_ads, clickthrough_resolve=False)
+
+    @patch.object(core.models.AdGroup, "is_archived", return_value=True)
+    def test_bulk_clone_archived_ad_group_fail(self, mock_archived, mock_insert_redirects):
+        request = magic_mixer.blend_request_user()
+        batch = self._blend_a_batch()
+        source_content_ads = magic_mixer.cycle(3).blend(
+            core.models.ContentAd, state=constants.ContentAdSourceState.INACTIVE
+        )
+
+        with self.assertRaises(exceptions.AdGroupIsArchived):
+            core.models.ContentAd.objects.bulk_clone(request, source_content_ads, batch.ad_group, batch)
+
+        # check redirector sync
+        mock_insert_redirects.assert_not_called()
