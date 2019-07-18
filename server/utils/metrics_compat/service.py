@@ -1,9 +1,8 @@
 import time
 from contextlib import contextmanager
 
-import influx
-
 import decorator
+import influx
 
 from . import prometheus
 

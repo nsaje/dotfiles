@@ -39,7 +39,7 @@ django-redis==4.10.0
 django-silk==3.0.1
 django-tagulous==0.14.0
 django-timezone-field==3.0
-django==2.1.8
+django==2.1.10
 djangorestframework-camel-case==0.2.0
 djangorestframework-recursive==0.1.2
 djangorestframework==3.8.2

@@ -3,8 +3,8 @@ import logging
 from concurrent.futures import ThreadPoolExecutor
 
 import boto3
-
 import botocore.exceptions
+
 import core.models
 from utils.command_helpers import Z1Command
 
