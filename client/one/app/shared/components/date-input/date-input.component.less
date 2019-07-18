@@ -50,6 +50,43 @@
 // NgbDatepicker overrides //
 /////////////////////////////
 
+.ngb-dp-navigation-select {
+    position: relative;
+    &::before,
+    &::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%) rotate(90deg);
+        width: 6px;
+        height: 10px;
+        background-image: url('@{images-folder}/arrow-sec.svg');
+        background-repeat: no-repeat;
+    }
+    &::before {
+        left: 55px;
+    }
+    &::after {
+        right: 10px;
+    }
+}
+
+.zem-date-input .ngb-dp-navigation-select .custom-select {
+    border-radius: @border-radius--default;
+    margin: 0 4px;
+    background-color: #ffffff;
+    appearance: none;
+    border-color: @color--secondary;
+    color: @color--secondary;
+    &:focus {
+        outline: 0;
+    }
+}
+
+.zem-date-input .ngb-dp-arrow-btn {
+    color: @color--secondary;
+}
+
 .zem-date-input .ngb-dp-day {
     width: 2.8rem;
     height: 2.3rem;
