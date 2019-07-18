@@ -14,6 +14,7 @@ export class CampaignSettingsStoreState {
         type: null,
         archived: null,
         goals: [],
+        budgets: [],
     };
     extras: CampaignExtras = {
         currency: null,
@@ -40,6 +41,7 @@ export class CampaignSettingsStoreState {
             availableBudgetsSum: null,
             unallocatedCredit: null,
         },
+        budgetsDepleted: [],
     };
     fieldsErrors = new CampaignSettingsStoreFieldsErrorsState();
     conversionPixelsErrors: ConversionPixelErrors[] = [];

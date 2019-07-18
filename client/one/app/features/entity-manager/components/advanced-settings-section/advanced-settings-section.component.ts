@@ -18,6 +18,10 @@ export class AdvancedSettingsSectionComponent implements OnChanges {
     expandedByDefault: boolean;
     @Input()
     overviewText: string;
+    @Input()
+    customLabelCollapsed: string;
+    @Input()
+    customLabelExpanded: string;
 
     expanded = false;
 

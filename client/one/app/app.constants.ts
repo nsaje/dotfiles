@@ -127,6 +127,13 @@ export enum AdGroupAutopilotState {
     INACTIVE = 'INACTIVE',
 }
 
+export enum CampaignBudgetState {
+    ACTIVE = 'ACTIVE',
+    PENDING = 'PENDING',
+    INACTIVE = 'INACTIVE',
+    DEPLETED = 'DEPLETED',
+}
+
 export enum InterestCategory {
     ENTERTAINMENT = 'ENTERTAINMENT',
     FUN_QUIZZES = 'FUN_QUIZZES',

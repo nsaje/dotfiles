@@ -43,7 +43,8 @@ export class CampaignSettingsDrawerView
         public store: CampaignSettingsStore,
         @Inject('zemPermissions') public zemPermissions: any,
         @Inject('ajs$state') private ajs$state: any,
-        @Inject('ajs$location') private ajs$location: any
+        @Inject('ajs$location') private ajs$location: any,
+        @Inject('zemNavigationNewService') private zemNavigationNewService: any
     ) {}
 
     ngOnInit() {
@@ -116,6 +117,18 @@ export class CampaignSettingsDrawerView
         if (shouldReload) {
             location.reload();
         }
+    }
+
+    canAccessPlatformCosts(): boolean {
+        return this.zemPermissions.canAccessPlatformCosts(
+            this.zemNavigationNewService.getActiveAccount()
+        );
+    }
+
+    canAccessAgencyCosts(): boolean {
+        return this.zemPermissions.canAccessAgencyCosts(
+            this.zemNavigationNewService.getActiveAccount()
+        );
     }
 
     private subscribeToStateUpdates() {

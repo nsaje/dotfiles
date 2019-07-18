@@ -7,4 +7,5 @@ export const campaignMock: Campaign = {
     type: null,
     archived: null,
     goals: [],
+    budgets: [],
 };

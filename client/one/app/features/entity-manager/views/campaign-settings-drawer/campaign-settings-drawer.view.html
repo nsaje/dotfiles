@@ -122,7 +122,9 @@
                 <div class="zem-panel__header">
                     <h2 class="zem-settings__panel-header-title">Budget</h2>
                 </div>
-                <div class="zem-settings-section">
+                <div
+                    class="zem-settings-section zem-campaign-settings-drawer__budgets-overview-section"
+                >
                     <div class="zem-settings-section__header">
                         <div class="zem-settings-section__description">
                             Once Zemanta's Customer Success team assigns a
@@ -141,6 +143,58 @@
                         [currency]="state.extras.currency"
                     ></zem-campaign-budgets-overview>
                 </div>
+                <div class="zem-settings-section">
+                    <div class="zem-settings-section__header">
+                        <div class="zem-settings-section__title">
+                            Active budget items
+                        </div>
+                    </div>
+                    <div
+                        class="zem-campaign-settings-drawer__budgets-list-container custom-scroller"
+                    >
+                        <zem-campaign-budgets-list
+                            class="zem-campaign-budgets-list"
+                            [budgets]="state.entity.budgets"
+                            [currency]="state.extras.currency"
+                            [showLicenseFee]="canAccessPlatformCosts()"
+                            [showMargin]="canAccessAgencyCosts()"
+                            [isEditingEnabled]="
+                                !zemPermissions.hasPermission(
+                                    'zemauth.disable_budget_management'
+                                )
+                            "
+                        ></zem-campaign-budgets-list>
+                    </div>
+                </div>
+                <zem-advanced-settings-section
+                    class="zem-advanced-settings-section"
+                    [customLabelCollapsed]="'Show depleted budget items'"
+                    [customLabelExpanded]="'Hide depleted budget items'"
+                >
+                    <div class="zem-settings-section">
+                        <div class="zem-settings-section__header">
+                            <div class="zem-settings-section__title">
+                                Depleted budget items
+                            </div>
+                        </div>
+                        <div
+                            class="zem-campaign-settings-drawer__budgets-list-container custom-scroller"
+                        >
+                            <zem-campaign-budgets-list
+                                class="zem-campaign-budgets-list"
+                                [budgets]="state.extras.budgetsDepleted"
+                                [currency]="state.extras.currency"
+                                [showLicenseFee]="canAccessPlatformCosts()"
+                                [showMargin]="canAccessAgencyCosts()"
+                                [isEditingEnabled]="
+                                    !zemPermissions.hasPermission(
+                                        'zemauth.disable_budget_management'
+                                    )
+                                "
+                            ></zem-campaign-budgets-list>
+                        </div>
+                    </div>
+                </zem-advanced-settings-section>
             </div>
         </div>
         <zem-settings-drawer-footer

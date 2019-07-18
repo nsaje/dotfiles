@@ -29,13 +29,13 @@
     </div>
     <div class="zem-campaign-goal__action">
         <button
-            class="button button--with-icon button--only-icon edit-icon"
+            class="zem-button zem-button--icon-only zem-button--edit-icon"
             (click)="toggleEditCampaignGoal($event)"
         ></button>
     </div>
     <div class="zem-campaign-goal__action">
         <button
-            class="button button--with-icon button--only-icon remove-icon"
+            class="zem-button zem-button--danger zem-button--icon-only zem-button--remove-icon"
             (click)="deleteCampaignGoal($event)"
         ></button>
     </div>
@@ -62,7 +62,10 @@
         ></textarea>
     </div>
     <div class="zem-modal__footer buttons-panel">
-        <button class="button button--outline" (click)="closePixelTagModal()">
+        <button
+            class="zem-button zem-button--outlined"
+            (click)="closePixelTagModal()"
+        >
             Close
         </button>
     </div>

@@ -35,6 +35,7 @@ import {CheckboxInputComponent} from './components/checkbox-input/checkbox-input
 import {RadioInputComponent} from './components/radio-input/radio-input.component';
 import {InternalFeatureDirective} from './directives/internal-feature/internal-feature.directive';
 import {FileSelectorComponent} from './components/file-selector/file-selector.component';
+import {CommentPopoverComponent} from './components/comment-popover/comment-popover.component';
 
 const EXPORTED_DECLARATIONS = [
     // Pipes
@@ -65,6 +66,7 @@ const EXPORTED_DECLARATIONS = [
     BidModifierInputComponent,
     ModalComponent,
     HelpPopoverComponent,
+    CommentPopoverComponent,
     FileSelectorComponent,
 ];
 

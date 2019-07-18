@@ -13,10 +13,23 @@
         "
     >
         <ng-container *ngIf="!expanded"
-            >Show advanced settings ({{ overviewText }})</ng-container
-        >
+            ><ng-container *ngIf="!customLabelCollapsed"
+                >Show advanced settings<ng-container *ngIf="overviewText">
+                    ({{ overviewText }})</ng-container
+                ></ng-container
+            ><ng-container *ngIf="customLabelCollapsed">{{
+                customLabelCollapsed
+            }}</ng-container>
+        </ng-container>
+
         <ng-container *ngIf="expanded"
-            >Hide advanced settings ({{ overviewText }})</ng-container
-        >
+            ><ng-container *ngIf="!customLabelExpanded"
+                >Hide advanced settings<ng-container *ngIf="overviewText">
+                    ({{ overviewText }})</ng-container
+                ></ng-container
+            ><ng-container *ngIf="customLabelExpanded">{{
+                customLabelExpanded
+            }}</ng-container>
+        </ng-container>
     </span>
 </button>

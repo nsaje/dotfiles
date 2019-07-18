@@ -7,7 +7,7 @@ import {
     SimpleChanges,
     OnChanges,
 } from '@angular/core';
-import {CampaignBudgetsOverview} from '../../types/campaign-budgets-overview';
+import {CampaignBudgetsOverview} from '../../../../core/entities/types/campaign/campaign-budgets-overview';
 import {Currency} from '../../../../app.constants';
 import * as currencyHelpers from '../../../../shared/helpers/currency.helpers';
 

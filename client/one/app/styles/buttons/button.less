@@ -52,20 +52,68 @@
     }
 }
 
-.zem-button--with-icon {
-    padding-left: 32px;
-
-    &::before {
-        content: '';
-        position: absolute;
-        top: 50%;
-        transform: translateY(-50%);
-        left: 8px;
-        width: 16px;
-        height: 16px;
-        background-size: 16px;
-        background-repeat: no-repeat;
+.zem-button--danger {
+    &:not([disabled]) {
+        &:hover,
+        &:focus,
+        &:active {
+            background-color: @color--danger;
+            box-shadow: 0px 0px 6px 0px fade(@color--danger, 40%);
+            color: white;
+        }
     }
+}
+
+.zem-button--small {
+    height: 24px;
+    line-height: 24px;
+    padding: 0 8px;
+    font-size: 12px;
+}
+
+.zem-button--with-icon::before,
+.zem-button--icon-only::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    left: 10px;
+    width: 16px;
+    height: 16px;
+    background-size: 16px;
+    background-repeat: no-repeat;
+}
+
+.zem-button--small.zem-button--with-icon::before,
+.zem-button--small.zem-button--icon-only::before {
+    left: 8px;
+    width: 12px;
+    height: 12px;
+    background-size: 12px;
+}
+
+.zem-button--with-icon {
+    padding-left: 34px; // 10px icon left (button left padding) + 16px icon width + 8px spacing before text
+}
+
+.zem-button--small.zem-button--with-icon {
+    padding-left: 26px; // 8px icon left (button left padding) + 12px icon width + 6px spacing before text
+}
+
+.zem-button--icon-only {
+    padding-left: 26px; // 10px icon left (button left padding) + 16px icon width
+}
+
+.zem-button--small.zem-button--icon-only {
+    padding-left: 20px; // 8px icon left (button left padding) + 12px icon width
+}
+
+.zem-button--edit-icon:not(.zem-button--loading)::before {
+    background-image: url('@{images-folder}/edit-sec.svg');
+}
+
+.zem-button--highlighted.zem-button--edit-icon:not(.zem-button--loading)::before {
+    background-image: url('images/edit-white.svg');
 }
 
 .zem-button--check-icon:not(.zem-button--loading)::before {
@@ -82,6 +130,15 @@
 
 .zem-button--highlighted.zem-button--add-icon:not(.zem-button--loading)::before {
     background-image: url('images/add-white.svg');
+}
+
+.zem-button--remove-icon:not(.zem-button--loading)::before {
+    background-image: url('@{images-folder}/remove-sec.svg');
+}
+
+.zem-button--highlighted.zem-button--remove-icon:not(.zem-button--loading)::before,
+.zem-button--danger.zem-button--remove-icon:not(.zem-button--loading):hover::before {
+    background-image: url('images/remove-white.svg');
 }
 
 .zem-button--loading {
