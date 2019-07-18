@@ -22,9 +22,9 @@ SECRET_KEY = (
 
 STATS_DB_NAME = "stats"
 STATS_DB_WRITE_REPLICAS = []
-STATS_DB_WRITE_REPLICAS_POSTGRES = ["stats-postgres-1", "stats-postgres-2"]
+STATS_DB_WRITE_REPLICAS_POSTGRES = ["stats-postgres-1"]
 STATS_DB_READ_REPLICAS = []
-STATS_DB_READ_REPLICAS_POSTGRES = ["stats-postgres-1", "stats-postgres-2"]
+STATS_DB_READ_REPLICAS_POSTGRES = ["stats-postgres-1"]
 
 # Database
 # https://docs.djangoproject.com/en/1.7/ref/settings/#databases
@@ -90,17 +90,17 @@ DATABASES = {
         "HOST": "ec2-18-209-193-186.compute-1.amazonaws.com",
         "PORT": 5432,
     },
-    "stats-postgres-2": {
-        "ENGINE": "django.db.backends.postgresql_psycopg2",
-        "NAME": "stats",
-        "USER": "eins",
-        "PASSWORD": Secret(
-            "kms:region=us-east-1:AQECAHjdfiP9DHF52gr8mpTmZ/ZwRu2qZbRw8dV0ohsw+OhZewAAAHcwdQYJKoZIhvcNAQcGoGgwZgIBADBhBgkqhkiG9w0BBwEwHgYJYIZIAWUDBAEuMBEEDK3IqgDoSl1V4mFwogIBEIA0F2w720RQ0wEwhyDG0xbYXxETXTW/JcIONIBJEY4mxTuODNV4BLQwuM+JvdQkjpORFtf2Wg=="  # noqa
-        )
-        .get()
-        .decode("utf-8"),
-        "HOST": "ec2-18-209-135-192.compute-1.amazonaws.com",
-        "PORT": 5432,
+    # "stats-postgres-2": {
+    #     "ENGINE": "django.db.backends.postgresql_psycopg2",
+    #     "NAME": "stats",
+    #     "USER": "eins",
+    #     "PASSWORD": Secret(
+    #         "kms:region=us-east-1:AQECAHjdfiP9DHF52gr8mpTmZ/ZwRu2qZbRw8dV0ohsw+OhZewAAAHcwdQYJKoZIhvcNAQcGoGgwZgIBADBhBgkqhkiG9w0BBwEwHgYJYIZIAWUDBAEuMBEEDK3IqgDoSl1V4mFwogIBEIA0F2w720RQ0wEwhyDG0xbYXxETXTW/JcIONIBJEY4mxTuODNV4BLQwuM+JvdQkjpORFtf2Wg=="  # noqa
+    #     )
+    #     .get()
+    #     .decode("utf-8"),
+    #     "HOST": "ec2-18-209-135-192.compute-1.amazonaws.com",
+    #     "PORT": 5432,
     },
 }
 DATABASE_READ_REPLICAS = ["read-replica", "read-replica-2"]
