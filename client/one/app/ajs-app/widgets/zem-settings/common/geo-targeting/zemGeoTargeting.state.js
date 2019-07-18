@@ -11,14 +11,6 @@ angular
 
         var WARNING_DIFFERENT_LOCATION_LEVELS =
             'You are using different geographical features (city, country, ...). Note that if for example both the country United States and the city of New York are included, the whole US will be targeted.'; // eslint-disable-line max-len
-        var INFO_OUTBRAIN_EXCLUDED =
-            "Outbrain media source will be paused because it doesn't support excluded locations."; // eslint-disable-line max-len
-        var INFO_OUTBRAIN_INCLUDED =
-            "Outbrain media source will be paused because it doesn't support any of the included locations."; // eslint-disable-line max-len
-        var INFO_YAHOO_EXCLUDED =
-            "Yahoo media source will be paused because it doesn't support all the excluded locations."; // eslint-disable-line max-len
-        var INFO_YAHOO_INCLUDED =
-            "Yahoo media source will be paused because it doesn't support any of the included locations."; // eslint-disable-line max-len
 
         var FIELD_COUNTRY = 'countries';
         var FIELD_CITY = 'cities';
@@ -65,7 +57,6 @@ angular
                 },
                 messages: {
                     warnings: [],
-                    infos: [],
                 },
             };
 
@@ -92,7 +83,7 @@ angular
                         includedLocations,
                         excludedLocations
                     );
-                    updateMessages(includedLocations, excludedLocations);
+                    updateMessages(includedLocations);
                 });
             }
 
@@ -305,14 +296,10 @@ angular
             }
 
             // prettier-ignore
-            function updateMessages(includedLocations, excludedLocations) { // eslint-disable-line complexity
+            function updateMessages(includedLocations) { // eslint-disable-line complexity
                 var warnings = [];
-                var infos = [];
                 var includedLocationsWithoutZips = getLocationKeysWithoutZips(
                     includedLocations
-                );
-                var excludedLocationsWithoutZips = getLocationKeysWithoutZips(
-                    excludedLocations
                 );
 
                 var i,
@@ -334,33 +321,7 @@ angular
                     warnings.push(WARNING_DIFFERENT_LOCATION_LEVELS);
                 }
 
-                var outbrainNotSupported = function(id) {
-                    var geolocation = geolocationMappingsCache[id];
-                    return !(geolocation && geolocation.outbrainId);
-                };
-                if (excludedLocationsWithoutZips.length > 0) {
-                    infos.push(INFO_OUTBRAIN_EXCLUDED);
-                } else if (
-                    includedLocationsWithoutZips.length > 0 &&
-                    includedLocationsWithoutZips.every(outbrainNotSupported)
-                ) {
-                    infos.push(INFO_OUTBRAIN_INCLUDED);
-                }
-
-                var yahooNotSupported = function(id) {
-                    return !geolocationMappingsCache[id].woeid;
-                };
-                if (excludedLocationsWithoutZips.some(yahooNotSupported)) {
-                    infos.push(INFO_YAHOO_EXCLUDED);
-                } else if (
-                    includedLocationsWithoutZips.length > 0 &&
-                    includedLocationsWithoutZips.every(yahooNotSupported)
-                ) {
-                    infos.push(INFO_YAHOO_INCLUDED);
-                }
-
                 state.messages.warnings = warnings;
-                state.messages.infos = infos;
             }
 
             function getLocationKeysWithoutZips(locations) {

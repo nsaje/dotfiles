@@ -235,17 +235,6 @@
                             placeholder="No limit"
                             (valueChange)="store.setDailyClickCap($event)"
                         ></zem-integer-setting>
-                        <div
-                            class="zem-settings-section__item zem-settings-section__item--indented"
-                        >
-                            <div
-                                class="zem-message zem-message--bubble zem-message--info zem-message--with-icon"
-                            >
-                                Outbrain and Yahoo don’t support click capping
-                                and will be automatically paused in this ad
-                                group if you enable this setting.
-                            </div>
-                        </div>
                         <zem-integer-setting
                             class="zem-integer-setting zem-settings-section__item"
                             *ngIf="
@@ -267,17 +256,6 @@
                                 store.setImpressionFrequencyCap($event)
                             "
                         ></zem-integer-setting>
-                        <div
-                            class="zem-settings-section__item zem-settings-section__item--indented"
-                        >
-                            <div
-                                class="zem-message zem-message--bubble zem-message--info zem-message--with-icon"
-                            >
-                                Outbrain and Yahoo don’t support impression
-                                frequency capping. Ads will run with no
-                                limitations on these sources.
-                            </div>
-                        </div>
                     </div>
                 </zem-advanced-settings-section>
             </div>

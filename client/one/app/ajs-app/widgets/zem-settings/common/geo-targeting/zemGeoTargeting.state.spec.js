@@ -128,7 +128,6 @@ describe('zemGeoTargetingStateService', function() {
             },
             messages: {
                 warnings: [],
-                infos: [],
             },
         });
     });
@@ -146,7 +145,6 @@ describe('zemGeoTargetingStateService', function() {
         expect(stateService.getState().locations.excluded.length).toEqual(2);
         expect(stateService.getState().locations.notSelected.length).toEqual(0);
         expect(stateService.getState().messages.warnings.length).toEqual(1);
-        expect(stateService.getState().messages.infos.length).toEqual(1);
     });
 
     it('should update state targetings with enabled targetings and search results', function() {
