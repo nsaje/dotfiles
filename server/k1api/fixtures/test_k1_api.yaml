@@ -199,7 +199,7 @@
         iab_category: IAB25
         enable_ga_tracking: true
         ga_tracking_type: 2
-        ga_property_id: 'UA-124-1'
+        ga_property_id: 'UA-123-1'
     model: dash.campaignsettings
     pk: 2
 
@@ -210,7 +210,7 @@
         iab_category: IAB25
         enable_ga_tracking: true
         ga_tracking_type: 2
-        ga_property_id: 'UA-124-0'
+        ga_property_id: 'UA-123-0'
     model: dash.campaignsettings
     pk: 3
 
@@ -221,7 +221,7 @@
         iab_category: IAB25
         enable_ga_tracking: true
         ga_tracking_type: 2
-        ga_property_id: 'UA-124-3'
+        ga_property_id: 'UA-123-3'
     model: dash.campaignsettings
     pk: 4
 
