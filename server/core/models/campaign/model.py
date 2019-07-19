@@ -29,6 +29,7 @@ class Campaign(
 ):
     class Meta:
         app_label = "dash"
+        indexes = [models.Index(fields=["created_dt"])]
 
     _demo_fields = {"name": utils.demo_anonymizer.campaign_name_from_pool}
 
