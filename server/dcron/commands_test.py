@@ -85,23 +85,13 @@ class DCronCommandTestCase(TransactionTestCase):
         self.assertEqual(dcron_job_qs.count(), 0)
 
         command_thread = threading.Thread(target=run_command)
-        command_thread.start()
-
-        event_1.wait()  # Wait until DummyCommand._handle starts running.
-
-        mock_influx_incr.assert_has_calls([mock.call("dcron_command_count", 1, command_name=DUMMY_COMMAND)])
-
-        self.assertEqual(dcron_job_qs.count(), 1)
-
-        dcron_job = dcron_job_qs.get()
-        self.assertIsNotNone(dcron_job.executed_dt)
-        self.assertIsNone(dcron_job.completed_dt)
-        self.assertEqual(dcron_job.host, settings.HOSTNAME)
-        self.assertEqual(dcron_job.alert, constants.Alert.OK)
 
         try:
-            with django_pglocks.advisory_lock(DUMMY_COMMAND, wait=False) as acquired:
-                self.assertFalse(acquired)
+            command_thread.start()
+
+            event_1.wait()  # Wait until DummyCommand._handle starts running.
+
+            mock_influx_incr.assert_has_calls([mock.call("dcron_command_count", 1, command_name=DUMMY_COMMAND)])
 
             self.assertEqual(dcron_job_qs.count(), 1)
 
@@ -111,27 +101,41 @@ class DCronCommandTestCase(TransactionTestCase):
             self.assertEqual(dcron_job.host, settings.HOSTNAME)
             self.assertEqual(dcron_job.alert, constants.Alert.OK)
 
+            try:
+                with django_pglocks.advisory_lock(DUMMY_COMMAND, wait=False) as acquired:
+                    self.assertFalse(acquired)
+
+                self.assertEqual(dcron_job_qs.count(), 1)
+
+                dcron_job = dcron_job_qs.get()
+                self.assertIsNotNone(dcron_job.executed_dt)
+                self.assertIsNone(dcron_job.completed_dt)
+                self.assertEqual(dcron_job.host, settings.HOSTNAME)
+                self.assertEqual(dcron_job.alert, constants.Alert.OK)
+
+            finally:
+                event_2.set()  # Signal DummyCommand._handle that it can finish.
+
+            event_3.wait()  # Wait until DummyCommand.handle completes.
+
+            call_args_list = mock_influx_timing.call_args_list
+            self.assertEqual(len(call_args_list), 1)
+            self.assertEqual(call_args_list[0][0][0], "dcron_command_duration")
+            self.assertDictEqual(call_args_list[0][1], {"command_name": DUMMY_COMMAND})
+
+            self.assertEqual(dcron_job_qs.count(), 1)
+
+            dcron_job = dcron_job_qs.get()
+            self.assertIsNotNone(dcron_job.executed_dt)
+            self.assertIsNotNone(dcron_job.completed_dt)
+            self.assertTrue(dcron_job.completed_dt > dcron_job.executed_dt)
+            self.assertEqual(dcron_job.host, settings.HOSTNAME)
+            self.assertEqual(dcron_job.alert, constants.Alert.OK)
+
+            with django_pglocks.advisory_lock(DUMMY_COMMAND, wait=False) as acquired:
+                self.assertTrue(acquired)
         finally:
-            event_2.set()  # Signal DummyCommand._handle that it can finish.
-
-        event_3.wait()  # Wait until DummyCommand.handle completes.
-
-        call_args_list = mock_influx_timing.call_args_list
-        self.assertEqual(len(call_args_list), 1)
-        self.assertEqual(call_args_list[0][0][0], "dcron_command_duration")
-        self.assertDictEqual(call_args_list[0][1], {"command_name": DUMMY_COMMAND})
-
-        self.assertEqual(dcron_job_qs.count(), 1)
-
-        dcron_job = dcron_job_qs.get()
-        self.assertIsNotNone(dcron_job.executed_dt)
-        self.assertIsNotNone(dcron_job.completed_dt)
-        self.assertTrue(dcron_job.completed_dt > dcron_job.executed_dt)
-        self.assertEqual(dcron_job.host, settings.HOSTNAME)
-        self.assertEqual(dcron_job.alert, constants.Alert.OK)
-
-        with django_pglocks.advisory_lock(DUMMY_COMMAND, wait=False) as acquired:
-            self.assertTrue(acquired)
+            event_2.set()
 
     @mock.patch("sys.argv", ["manage.py", DUMMY_COMMAND])
     @mock.patch("influx.incr")
@@ -273,39 +277,43 @@ class DCronCommandTestCase(TransactionTestCase):
         models.DCronJobSettings.objects.create(job=dcron_job, schedule="0 * * * *", full_command="")
 
         command_thread = threading.Thread(target=run_command)
-        command_thread.start()
 
-        # Wait for job _handle to start (completed_dt set to None)
-        event_1.wait()
+        try:
+            command_thread.start()
 
-        dcron_job.refresh_from_db()
+            # Wait for job _handle to start (completed_dt set to None)
+            event_1.wait()
 
-        alert = alerts._check_alert(dcron_job)
-        self.assertEqual(alert, constants.Alert.FAILURE)
+            dcron_job.refresh_from_db()
 
-        event_2.set()
+            alert = alerts._check_alert(dcron_job)
+            self.assertEqual(alert, constants.Alert.FAILURE)
 
-        # Wait for job handle to complete (alert set to OK)
-        event_3.wait()
+            event_2.set()
 
-        dcron_job.refresh_from_db()
+            # Wait for job handle to complete (alert set to OK)
+            event_3.wait()
 
-        alert = alerts._check_alert(dcron_job)
-        self.assertEqual(alert, constants.Alert.OK)
+            dcron_job.refresh_from_db()
 
-        mock_post_event.assert_has_calls(
-            [
-                mock.call(
-                    "resolve",
-                    pagerduty_helper.PagerDutyEventType.Z1,
-                    DUMMY_COMMAND,
-                    alerts._alert_message(DUMMY_COMMAND, constants.Alert.OK),
-                    event_severity=pagerduty_helper.PagerDutyEventSeverity.WARNING,
-                    details=None,
-                )
-            ]
-        )
+            alert = alerts._check_alert(dcron_job)
+            self.assertEqual(alert, constants.Alert.OK)
 
-        mock_slack_publish.assert_has_calls(
-            [mock.call("", **alerts._create_slack_publish_params(dcron_job, constants.Alert.OK))]
-        )
+            mock_post_event.assert_has_calls(
+                [
+                    mock.call(
+                        "resolve",
+                        pagerduty_helper.PagerDutyEventType.Z1,
+                        DUMMY_COMMAND,
+                        alerts._alert_message(DUMMY_COMMAND, constants.Alert.OK),
+                        event_severity=pagerduty_helper.PagerDutyEventSeverity.WARNING,
+                        details=None,
+                    )
+                ]
+            )
+
+            mock_slack_publish.assert_has_calls(
+                [mock.call("", **alerts._create_slack_publish_params(dcron_job, constants.Alert.OK))]
+            )
+        finally:
+            event_2.set()

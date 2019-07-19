@@ -357,7 +357,76 @@ class CheckAlertsTestCase(TestCase):
 
         dcron_job_alerts = self._get_dcron_job_alerts()
         self.assertEqual(len(dcron_job_alerts), 1)
+        self._assert_dcronjobalert(dcron_job_alerts[0], "command_01", constants.Alert.FAILURE)
+
+    @mock.patch("utils.dates_helper.utc_now", return_value=_get_rounded_now(minute=17, second=3))
+    def test_execution_missed_execution(self, mock_now):
+        job_kwargs_dict = {
+            "executed_dt": dates_helper.utc_now() - datetime.timedelta(hours=2, minutes=16),
+            "completed_dt": dates_helper.utc_now() - datetime.timedelta(hours=2, minutes=15),
+            "alert": constants.Alert.EXECUTION,
+        }
+        settings_kwargs_dict = {"schedule": "0 * * * *"}
+        _create_job("command_01", job_kwargs_dict, settings_kwargs_dict)
+
+        dcron_job_alerts = self._get_dcron_job_alerts()
+        self.assertEqual(len(dcron_job_alerts), 1)
         self._assert_dcronjobalert(dcron_job_alerts[0], "command_01", constants.Alert.EXECUTION)
+
+    @mock.patch("utils.dates_helper.utc_now", return_value=_get_rounded_now(minute=17, second=3))
+    def test_duration_missed_execution(self, mock_now):
+        job_kwargs_dict = {
+            "executed_dt": dates_helper.utc_now() - datetime.timedelta(hours=2, minutes=16),
+            "completed_dt": None,
+            "alert": constants.Alert.DURATION,
+        }
+        settings_kwargs_dict = {"schedule": "0 * * * *"}
+        _create_job("command_01", job_kwargs_dict, settings_kwargs_dict)
+
+        dcron_job_alerts = self._get_dcron_job_alerts()
+        self.assertEqual(len(dcron_job_alerts), 1)
+        self._assert_dcronjobalert(dcron_job_alerts[0], "command_01", constants.Alert.DURATION)
+
+    @mock.patch("utils.dates_helper.utc_now", return_value=_get_rounded_now(minute=17, second=3))
+    def test_execution_in_progress(self, mock_now):
+        job_kwargs_dict = {
+            "executed_dt": dates_helper.utc_now() - datetime.timedelta(minutes=1),
+            "completed_dt": None,
+            "alert": constants.Alert.EXECUTION,
+        }
+        settings_kwargs_dict = {"schedule": "0 * * * *"}
+        _create_job("command_01", job_kwargs_dict, settings_kwargs_dict)
+
+        dcron_job_alerts = self._get_dcron_job_alerts()
+        self.assertEqual(len(dcron_job_alerts), 0)
+
+    @mock.patch("utils.dates_helper.utc_now", return_value=_get_rounded_now(minute=0, second=5))
+    def test_execution_missed_execution_at_schedule(self, mock_now):
+        job_kwargs_dict = {
+            "executed_dt": dates_helper.utc_now() - datetime.timedelta(hours=2),
+            "completed_dt": dates_helper.utc_now() - datetime.timedelta(hours=2),
+            "alert": constants.Alert.EXECUTION,
+        }
+        settings_kwargs_dict = {"schedule": "0 * * * *"}
+        _create_job("command_01", job_kwargs_dict, settings_kwargs_dict)
+
+        dcron_job_alerts = self._get_dcron_job_alerts()
+        self.assertEqual(len(dcron_job_alerts), 1)
+        self._assert_dcronjobalert(dcron_job_alerts[0], "command_01", constants.Alert.EXECUTION)
+
+    @mock.patch("utils.dates_helper.utc_now", return_value=_get_rounded_now(minute=0, second=5))
+    def test_duration_missed_execution_at_schedule(self, mock_now):
+        job_kwargs_dict = {
+            "executed_dt": dates_helper.utc_now() - datetime.timedelta(hours=3),
+            "completed_dt": None,
+            "alert": constants.Alert.DURATION,
+        }
+        settings_kwargs_dict = {"schedule": "0 * * * *"}
+        _create_job("command_01", job_kwargs_dict, settings_kwargs_dict)
+
+        dcron_job_alerts = self._get_dcron_job_alerts()
+        self.assertEqual(len(dcron_job_alerts), 1)
+        self._assert_dcronjobalert(dcron_job_alerts[0], "command_01", constants.Alert.DURATION)
 
 
 @override_settings(
@@ -387,7 +456,7 @@ class HandleAlertsTestCase(TestCase):
         settings_kwargs_dict = {"schedule": "0 * * * *"}
         _create_job("command_01", job_kwargs_dict, settings_kwargs_dict)
 
-        # Executed in time, alerting already.
+        # Executed in time, alerting already (alert should not change since it is only updated by  run).
         job_kwargs_dict = {
             "executed_dt": dates_helper.utc_now() - datetime.timedelta(minutes=15),
             "completed_dt": dates_helper.utc_now() - datetime.timedelta(minutes=14, seconds=57),
@@ -441,12 +510,12 @@ class HandleAlertsTestCase(TestCase):
         settings_kwargs_dict = {"schedule": "0 * * * *"}
         _create_job("command_07", job_kwargs_dict, settings_kwargs_dict)
 
-        with self.assertNumQueries(6):
+        with self.assertNumQueries(5):
             # Two DB queries for initial filters, others for updates.
             alerts.handle_alerts()
 
         self.assertEqual(models.DCronJob.objects.get(command_name="command_01").alert, constants.Alert.OK)
-        self.assertEqual(models.DCronJob.objects.get(command_name="command_02").alert, constants.Alert.OK)
+        self.assertEqual(models.DCronJob.objects.get(command_name="command_02").alert, constants.Alert.DURATION)
         self.assertEqual(models.DCronJob.objects.get(command_name="command_03").alert, constants.Alert.EXECUTION)
         self.assertEqual(models.DCronJob.objects.get(command_name="command_04").alert, constants.Alert.EXECUTION)
         self.assertEqual(models.DCronJob.objects.get(command_name="command_05").alert, constants.Alert.DURATION)
@@ -455,14 +524,6 @@ class HandleAlertsTestCase(TestCase):
 
         mock_post_event.assert_has_calls(
             [
-                mock.call(
-                    "resolve",
-                    pagerduty_helper.PagerDutyEventType.Z1,
-                    "command_02",
-                    alerts._alert_message("command_02", constants.Alert.OK),
-                    event_severity=pagerduty_helper.PagerDutyEventSeverity.WARNING,
-                    details=None,
-                ),
                 mock.call(
                     "trigger",
                     pagerduty_helper.PagerDutyEventType.Z1,
@@ -492,12 +553,6 @@ class HandleAlertsTestCase(TestCase):
 
         mock_slack_publish.assert_has_calls(
             [
-                mock.call(
-                    "",
-                    **alerts._create_slack_publish_params(
-                        models.DCronJob.objects.get(command_name="command_02"), constants.Alert.OK
-                    )
-                ),
                 mock.call(
                     "",
                     **alerts._create_slack_publish_params(
@@ -587,6 +642,27 @@ class SlackAlertTestCase(TestCase):
             ),
         )
 
+    def test_create_slack_publish_params_danger_low(self):
+        dcron_job = _create_job("some_command", {}, {})
+
+        params = alerts._create_slack_publish_params(dcron_job, constants.Alert.FAILURE)
+
+        self.assertDictEqual(
+            params,
+            self.generate_params(
+                command_name="some_command",
+                channel=alerts.SLACK_CHANNEL_LOW_SEVERITY,
+                username=alerts.SLACK_USERNAME,
+                title="[Alerting] Cron Command Alert",
+                title_link=settings.BASE_URL + "/admin/dcron/dcronjob/%s/change/" % dcron_job.pk,
+                color="danger",
+                fallback=alerts._alert_message("some_command", constants.Alert.FAILURE),
+                text="There is a problem with a command run by cron",
+                field_title=dcron_job.command_name,
+                field_value=constants.Alert.get_description(constants.Alert.FAILURE),
+            ),
+        )
+
     def test_create_slack_publish_params_ok_high(self):
         dcron_job = _create_job("some_command", {}, {"severity": constants.Severity.HIGH})
 
@@ -621,10 +697,31 @@ class SlackAlertTestCase(TestCase):
                 username=alerts.SLACK_USERNAME,
                 title="[Alerting] Cron Command Alert",
                 title_link=settings.BASE_URL + "/admin/dcron/dcronjob/%s/change/" % dcron_job.pk,
-                color="danger",
+                color="warning",
                 fallback=alerts._alert_message("some_command", constants.Alert.DURATION),
                 text="There is a problem with a command run by cron",
                 field_title=dcron_job.command_name,
                 field_value=constants.Alert.get_description(constants.Alert.DURATION),
+            ),
+        )
+
+    def test_create_slack_publish_params_danger_high(self):
+        dcron_job = _create_job("some_command", {}, {"severity": constants.Severity.HIGH})
+
+        params = alerts._create_slack_publish_params(dcron_job, constants.Alert.FAILURE)
+
+        self.assertDictEqual(
+            params,
+            self.generate_params(
+                command_name="some_command",
+                channel=alerts.SLACK_CHANNEL_HIGH_SEVERITY,
+                username=alerts.SLACK_USERNAME,
+                title="[Alerting] Cron Command Alert",
+                title_link=settings.BASE_URL + "/admin/dcron/dcronjob/%s/change/" % dcron_job.pk,
+                color="danger",
+                fallback=alerts._alert_message("some_command", constants.Alert.FAILURE),
+                text="There is a problem with a command run by cron",
+                field_title=dcron_job.command_name,
+                field_value=constants.Alert.get_description(constants.Alert.FAILURE),
             ),
         )

@@ -18,9 +18,9 @@ logger = logging.getLogger(__name__)
 SLACK_USERNAME = "Dcron Alert"
 SLACK_CHANNEL_LOW_SEVERITY = slack.CHANNEL_RND_Z1_ALERTS_AUX
 SLACK_CHANNEL_HIGH_SEVERITY = slack.CHANNEL_RND_Z1_ALERTS
-SLACK_SEVERITY_OK = "good"
-SLACK_SEVERITY_WARNING = "warning"
-SLACK_SEVERITY_DANGER = "danger"
+SLACK_COLOR_OK = "good"
+SLACK_COLOR_WARNING = "warning"
+SLACK_COLOR_DANGER = "danger"
 
 
 AlertId = typing.NewType("AlertId", int)
@@ -110,32 +110,31 @@ def _to_pagerduty_severity(severity: int) -> str:
     return pagerduty_helper.PagerDutyEventSeverity.WARNING
 
 
-def _to_slack_severity(severity: int) -> str:
-    if severity is constants.Severity.HIGH:
-        return SLACK_SEVERITY_DANGER
+def _to_slack_color(alert: AlertId) -> str:
+    if alert == constants.Alert.OK:
+        return SLACK_COLOR_OK
 
-    return SLACK_SEVERITY_WARNING
+    if alert == constants.Alert.DURATION:
+        return SLACK_COLOR_WARNING
+
+    return SLACK_COLOR_DANGER
 
 
 def _create_slack_publish_params(dcron_job: models.DCronJob, alert: AlertId) -> dict:
     summary = "There is a problem with a command run by cron"
     fallback_message = _alert_message(dcron_job.command_name, alert)
 
-    # determine severity
-    if hasattr(dcron_job, "dcronjobsettings"):
-        slack_severity = _to_slack_severity(dcron_job.dcronjobsettings.severity)
-    else:
-        slack_severity = SLACK_SEVERITY_WARNING
+    # determine message color
+    slack_color = _to_slack_color(alert)
 
     # determine channel name based on severity
-    if slack_severity == SLACK_SEVERITY_DANGER:
+    if hasattr(dcron_job, "dcronjobsettings") and dcron_job.dcronjobsettings.severity == constants.Severity.HIGH:
         channel_name = SLACK_CHANNEL_HIGH_SEVERITY
     else:
         channel_name = SLACK_CHANNEL_LOW_SEVERITY
 
     if alert is constants.Alert.OK:
         # in case of OK, override severity and summary
-        slack_severity = SLACK_SEVERITY_OK
         summary = "The problem with a command run by cron has been resolved"
 
     log_viewer_link = settings.DCRON.get("log_viewer_link", "{command_name}").format(
@@ -156,7 +155,7 @@ def _create_slack_publish_params(dcron_job: models.DCronJob, alert: AlertId) -> 
                         args=(dcron_job.pk,),
                     ),
                 ),
-                "color": slack_severity,
+                "color": slack_color,
                 "fallback": fallback_message,
                 "text": summary,
                 "fields": [
@@ -174,6 +173,10 @@ def _check_alert(dcron_job: models.DCronJob, current_date_time: typing.Optional[
     if not dcron_job.executed_dt:
         return AlertId(constants.Alert.OK)
 
+    if dcron_job.alert == constants.Alert.FAILURE:
+        # Only a successful execution can clear failure.
+        return AlertId(constants.Alert.FAILURE)
+
     if not hasattr(dcron_job, "dcronjobsettings"):
         # Further checks can not be done in this case.
         return AlertId(constants.Alert.OK)
@@ -184,33 +187,29 @@ def _check_alert(dcron_job: models.DCronJob, current_date_time: typing.Optional[
         if current_date_time > dcron_job.executed_dt + datetime.timedelta(
             seconds=dcron_job.dcronjobsettings.max_duration
         ):
-            # The job is running for too long.
+            # The job has been running for too long.
             return AlertId(constants.Alert.DURATION)
 
-        if dcron_job.alert == constants.Alert.FAILURE:
-            return AlertId(constants.Alert.FAILURE)
-
+        # To clear execution alert.
         return AlertId(constants.Alert.OK)
 
     previous_date_time, next_date_time = _calculate_scheduled_datetimes(
         dcron_job.dcronjobsettings.schedule, date_time=current_date_time
     )
 
-    new_alert_value = constants.Alert.FAILURE if dcron_job.alert == constants.Alert.FAILURE else constants.Alert.OK
-
     if next_date_time - current_date_time < settings.DCRON["check_margin"]:
         # The next scheduled iteration is due - don't check this job right now.
-        return AlertId(new_alert_value)
+        return AlertId(dcron_job.alert)
 
     if dcron_job.executed_dt > previous_date_time - settings.DCRON["check_margin"]:
         # The job has executed at previous scheduled iteration.
-        return AlertId(new_alert_value)
+        return AlertId(dcron_job.alert)
 
     if current_date_time < previous_date_time + datetime.timedelta(seconds=dcron_job.dcronjobsettings.warning_wait):
         # Running a little late, wait for warning wait to expire.
-        return AlertId(new_alert_value)
+        return AlertId(dcron_job.alert)
 
-    # Execution of the job is too late.
+    # Running late, alert execution.
     return AlertId(constants.Alert.EXECUTION)
 
 
