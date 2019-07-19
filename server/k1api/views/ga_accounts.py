@@ -15,6 +15,9 @@ from .base import K1APIView
 logger = logging.getLogger(__name__)
 
 
+OEN_ACCOUNT_ID = [305]
+
+
 class GAAccountsView(K1APIView):
     @db_router.use_read_replica()
     def get(self, request):
@@ -28,7 +31,7 @@ class GAAccountsView(K1APIView):
         if response is not None:
             return self.response_ok(response)
 
-        accounts = dash.models.Account.objects.all().exclude_archived().order_by("id")
+        accounts = dash.models.Account.objects.all().exclude_archived().exclude(id__in=[OEN_ACCOUNT_ID]).order_by("id")
         if marker:
             accounts = accounts.filter(pk__gt=int(marker))
         accounts = accounts[:limit]
