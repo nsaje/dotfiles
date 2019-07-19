@@ -15,7 +15,7 @@ from .base import K1APIView
 logger = logging.getLogger(__name__)
 
 
-OEN_ACCOUNT_ID = [305]
+OEN_ACCOUNT_ID = 305
 
 
 class GAAccountsView(K1APIView):
