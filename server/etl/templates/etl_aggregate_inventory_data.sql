@@ -52,7 +52,38 @@ INSERT INTO mv_inventory (
               {% endif %}
             {% endfor %}
           )
-          AND NOT adstxt_status = 'HasAdstxt'
+          AND (exchange IN (   -- remove exchange condition after supply_stats has correct adstxt_status
+              'outbrainrtb',
+              'anmsn',
+              'msn',
+              'rubicon_display',
+              'appnexus_display',
+              'bsadmixer',
+              'bscomet',
+              'bswordpress',
+              'bsnexage',
+              'bsadmedia',
+              'bssortable',
+              'bsadmatic',
+              'bsnetsprint',
+              'bsyieldlab',
+              'bsoutbrain',
+              'bsbrightroll',
+              'bskargo',
+              'bsmozoo',
+              'bstenmax',
+              'bsyengo',
+              'bsexelbid',
+              'bsadview',
+              'bsadmax',
+              'bsslimcut',
+              'adiant',
+              'ligatus',
+              'smaato',
+              'playtem',
+              'ividence',
+              'livenetlife'
+          ) OR NOT adstxt_status = 'HasAdstxt')
 
     GROUP BY 1, 2, 3, 4
 
