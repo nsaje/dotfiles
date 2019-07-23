@@ -89,7 +89,7 @@ DATABASES = {
         )
         .get()
         .decode("utf-8"),
-        "HOST": "ec2-18-209-193-186.compute-1.amazonaws.com",
+        "HOST": "ec2-52-0-3-253.compute-1.amazonaws.com",
         "PORT": 5432,
     },
     "stats-postgres-2": {
@@ -101,7 +101,7 @@ DATABASES = {
         )
         .get()
         .decode("utf-8"),
-        "HOST": "ec2-18-209-135-192.compute-1.amazonaws.com",
+        "HOST": "ec2-3-220-89-215.compute-1.amazonaws.com",
         "PORT": 5432,
     },
 }
