@@ -17,3 +17,4 @@ class Command(Z1Command):
         )
         automation.campaignstop.mark_almost_depleted_campaigns(campaigns)
         influx.gauge("campaignstop.selection_job_campaigns", len(campaigns))
+        influx.incr("campaignstop.job_completed", job="selection")

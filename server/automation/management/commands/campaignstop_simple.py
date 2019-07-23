@@ -18,3 +18,4 @@ class Command(Z1Command):
         logger.info("Start: Notifying campaigns with depleting budget.")
         automation.campaignstop.notify_depleting_budget_campaigns()
         logger.info("Finish: Notifying campaigns with depleting budget.")
+        influx.incr("campaignstop.job_completed", job="simple")

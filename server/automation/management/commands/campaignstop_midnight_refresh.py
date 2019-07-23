@@ -21,6 +21,7 @@ class Command(Z1Command):
             return
 
         self._run_job()
+        influx.incr("campaignstop.job_completed", job="midnight_refresh")
 
     @influx.timer("campaignstop.job_run", job="midnight_refresh")
     def _run_job(self):

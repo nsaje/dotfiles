@@ -18,6 +18,7 @@ class Command(Z1Command):
         automation.campaignstop.update_campaigns_state(campaigns)
 
         self._monitor(campaigns)
+        influx.incr("campaignstop.job_completed", job="main")
 
     def _monitor(self, campaigns):
         campaigns = list(campaigns)
