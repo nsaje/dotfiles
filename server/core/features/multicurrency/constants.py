@@ -12,4 +12,5 @@ CurrencySymbol = {
     dash.constants.Currency.ZAR: "R",
     dash.constants.Currency.ILS: "₪",
     dash.constants.Currency.INR: "₹",
+    dash.constants.Currency.JPY: "¥",
 }

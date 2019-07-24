@@ -269,6 +269,7 @@ class Currency(ConstantBase):
     ZAR = "ZAR"
     ILS = "ILS"
     INR = "INR"
+    JPY = "JPY"
 
     _VALUES = {
         USD: "US Dollar",
@@ -282,6 +283,7 @@ class Currency(ConstantBase):
         ZAR: "South African Rand",
         ILS: "Israeli New Shekel",
         INR: "Indian Rupee",
+        JPY: "Japanese Yen",
     }
 
 
