@@ -264,9 +264,9 @@ class ReportJobExecutor(JobExecutor):
                 column_names,
                 column_to_field_name_map,
                 output,
+                csv_separator,
                 header=offset == 0,
                 currency=currency,
-                csv_separator=csv_separator,
             )
 
             if len(rows) < BATCH_ROWS or helpers.get_option(job, "include_items_with_no_spend", False):
@@ -300,7 +300,14 @@ class ReportJobExecutor(JobExecutor):
             format_helper.format_values([totals], columns, csv_decimal_separator=csv_decimal_separator)
 
             cls.convert_to_csv(
-                job, [totals], column_names, column_to_field_name_map, output, header=False, currency=currency
+                job,
+                [totals],
+                column_names,
+                column_to_field_name_map,
+                output,
+                csv_separator,
+                header=False,
+                currency=currency,
             )
 
         return output.getvalue(), stats.api_reports.get_filename(breakdown, constraints)
@@ -366,11 +373,10 @@ class ReportJobExecutor(JobExecutor):
         column_names,
         field_name_mapping,
         output,
+        csv_separator,
         header=True,
         currency=None,
         account_currency_map=None,
-        csv_decimal_separator=None,
-        csv_separator=None,
     ):
         csv_column_names = column_names
         original_to_dated = {k: k for k in column_names}
@@ -384,7 +390,6 @@ class ReportJobExecutor(JobExecutor):
             original_to_dated,
             currency=currency,
             account_currency_map=account_currency_map,
-            csv_decimal_separator=csv_decimal_separator,
         )
         output.write(csv_utils.dictlist_to_csv(csv_column_names, rows, writeheader=header, delimiter=csv_separator))
 
@@ -402,14 +407,7 @@ class ReportJobExecutor(JobExecutor):
 
     @classmethod
     def _get_csv_rows(
-        cls,
-        data,
-        field_name_mapping,
-        requested_columns,
-        original_to_dated,
-        currency=None,
-        account_currency_map=None,
-        csv_decimal_separator=None,
+        cls, data, field_name_mapping, requested_columns, original_to_dated, currency=None, account_currency_map=None
     ):
         for row in data:
             csv_row = {}

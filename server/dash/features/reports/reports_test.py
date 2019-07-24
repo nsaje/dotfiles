@@ -343,15 +343,17 @@ class ReportsGetReportCSVTest(TestCase):
         expected = """"Account Id","Total Spend","Clicks","Currency"\r\n"1","15.4000","5","EUR"\r\n"2","16.4000","8","USD"\r\n"""
         self.assertEqual(expected, output)
 
+    @mock.patch("stats.api_reports.totals")
     @mock.patch("stats.api_reports.query")
-    def test_csv_config(self, mock_query):
+    def test_csv_config(self, mock_query, mock_totals):
         self.reportJob.query = self.build_query(
-            ["Ad Group Id", "Total Spend", "Clicks"], csv_separator=";", csv_decimal_separator=","
+            ["Ad Group Id", "Total Spend", "Clicks"], include_totals=True, csv_separator=";", csv_decimal_separator=","
         )
         row = {"ad_group_id": 1, "etfm_cost": Decimal("12.3"), "clicks": 5}
-        mock_query.return_value = [row]
+        mock_query.return_value = [row.copy()]
+        mock_totals.return_value = row.copy()
         output, filename = ReportJobExecutor.get_report(self.reportJob)
-        expected = """"Ad Group Id";"Total Spend";"Clicks";"Currency"\r\n"1";"12,3000";"5";"USD"\r\n"""
+        expected = """"Ad Group Id";"Total Spend";"Clicks";"Currency"\r\n"1";"12,3000";"5";"USD"\r\n"1";"12,3000";"5";"USD"\r\n"""
         self.assertEqual(expected, output)
 
 
