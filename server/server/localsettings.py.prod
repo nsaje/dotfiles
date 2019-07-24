@@ -22,11 +22,9 @@ SECRET_KEY = (
 
 STATS_DB_NAME = "stats"
 STATS_DB_WRITE_REPLICAS = []
-# STATS_DB_WRITE_REPLICAS_POSTGRES = ["stats-postgres-1", "stats-postgres-2"]
-STATS_DB_WRITE_REPLICAS_POSTGRES = ["stats-postgres-2"]
+STATS_DB_WRITE_REPLICAS_POSTGRES = ["stats-postgres-1", "stats-postgres-2"]
 STATS_DB_READ_REPLICAS = []
-# STATS_DB_READ_REPLICAS_POSTGRES = ["stats-postgres-1", "stats-postgres-2"]
-STATS_DB_READ_REPLICAS_POSTGRES = ["stats-postgres-2"]
+STATS_DB_READ_REPLICAS_POSTGRES = ["stats-postgres-1", "stats-postgres-2"]
 
 # Database
 # https://docs.djangoproject.com/en/1.7/ref/settings/#databases
@@ -89,7 +87,7 @@ DATABASES = {
         )
         .get()
         .decode("utf-8"),
-        "HOST": "ec2-18-209-193-186.compute-1.amazonaws.com",
+        "HOST": "ec2-3-220-89-215.compute-1.amazonaws.com",
         "PORT": 5432,
     },
     "stats-postgres-2": {
@@ -101,7 +99,7 @@ DATABASES = {
         )
         .get()
         .decode("utf-8"),
-        "HOST": "ec2-18-209-135-192.compute-1.amazonaws.com",
+        "HOST": "ec2-52-0-3-253.compute-1.amazonaws.com",
         "PORT": 5432,
     },
 }
