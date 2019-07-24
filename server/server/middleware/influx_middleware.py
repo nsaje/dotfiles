@@ -47,7 +47,12 @@ def queries_to_influx(get_response):
                     "queries.timer", total_time, path=path, method=request.method, status=str(response.status_code)
                 )
                 metrics_compat.timing(
-                    "queries.count", total_queries, path=path, method=request.method, status=str(response.status_code)
+                    "queries.count",
+                    total_queries,
+                    verb=None,
+                    path=path,
+                    method=request.method,
+                    status=str(response.status_code),
                 )
                 for verb, count in list(queries_per_verb.items()):
                     metrics_compat.timing(
