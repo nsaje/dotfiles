@@ -1,6 +1,5 @@
 import pickle
 
-import influx
 from django.conf import settings
 from django.core.cache import caches
 
@@ -8,23 +7,24 @@ from etl import materialization_run
 from server import celery
 from utils import dates_helper
 from utils import db_router
+from utils import metrics_compat
 
 from . import api_breakdowns
 
 cache = caches["redshift_background"]
 
 
-@influx.timer("redshift_background_cache.get_overhead")
+@metrics_compat.timer("redshift_background_cache.get_overhead")
 def get(key):
     if not settings.USE_REDSHIFT_BACKGROUND_CACHE:
         return None
 
     cached_data, is_latest = _get(key)
-    influx.incr("redshift_background_cache", 1, hit=str(cached_data is not None), latest=str(is_latest))
+    metrics_compat.incr("redshift_background_cache", 1, hit=str(cached_data is not None), latest=str(is_latest))
 
     rows = None
     if cached_data is not None:
-        influx.timing(
+        metrics_compat.timing(
             "redshift_background_cache.data_delay",
             (dates_helper.utc_now() - cached_data["created_dt"]).total_seconds(),
             latest=str(is_latest),
@@ -46,7 +46,7 @@ def _get(key):
     return cached_data, is_latest
 
 
-@influx.timer("redshift_background_cache.set_overhead")
+@metrics_compat.timer("redshift_background_cache.set_overhead")
 def set(key, rows, args, kwargs):
     if not settings.USE_REDSHIFT_BACKGROUND_CACHE:
         return
@@ -69,6 +69,6 @@ def update(key):
 
     args, kwargs = pickle.loads(cached_data["pickled_args"])
 
-    influx.incr("redshift_background_cache.background_update", 1)
+    metrics_compat.incr("redshift_background_cache.background_update", 1)
     rows = api_breakdowns.query(*args, **kwargs)
     _set(key, rows, cached_data["pickled_args"])

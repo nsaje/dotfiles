@@ -2,13 +2,13 @@ import datetime
 from collections import Counter
 from decimal import Decimal
 
-import influx
 from django.db.models import Count
 from django.db.models import Min
 
 import dash.models
 import redshiftapi.db
 import utils.command_helpers
+from utils import metrics_compat
 
 RS_QUERY = """SELECT {entity}_id, (COALESCE(SUM(effective_cost_nano), 0) / 1000000000.0 / {n})::decimal
 FROM mv_master
@@ -193,7 +193,7 @@ class Command(utils.command_helpers.Z1Command):
         for stats in self.stats_by_removed:
             if stats["summary"] in self.ignore:
                 continue
-            influx.gauge(
+            metrics_compat.gauge(
                 "backendhack_status_count",
                 stats["id__count"],
                 status="removed",
@@ -204,7 +204,7 @@ class Command(utils.command_helpers.Z1Command):
             if stats["summary"] in self.ignore:
                 continue
             if stats["created_dt__min"].date() < self.n_days_before:
-                influx.gauge(
+                metrics_compat.gauge(
                     "backendhack_status_count",
                     stats["id__count"],
                     status="existing",
@@ -212,7 +212,7 @@ class Command(utils.command_helpers.Z1Command):
                     retentionPolicy="1week",
                 )
             else:
-                influx.gauge(
+                metrics_compat.gauge(
                     "backendhack_status_count",
                     stats["id__count"],
                     status="fresh",
@@ -223,14 +223,14 @@ class Command(utils.command_helpers.Z1Command):
         for stats in self.stats_by_implemented:
             hacks = self.hacks_per_summary.get(stats["summary"], [])
             media = self._calc_media_from_hacks(self.spend_data, hacks)
-            influx.gauge(
+            metrics_compat.gauge(
                 "backendhack_service_spd",
                 media,
                 summary=stats["summary"],
                 service=stats["service"],
                 retentionPolicy="1week",
             )
-            influx.gauge(
+            metrics_compat.gauge(
                 "backendhack_service_count",
                 stats["id__count"],
                 summary=stats["summary"],
@@ -240,16 +240,16 @@ class Command(utils.command_helpers.Z1Command):
 
         for account, cnt in self.stats_by_client["account"].most_common(10):
             media = self.spend_data["account"].get(account.pk, Decimal(0))
-            influx.gauge("backendhack_account_spd", media, client=account.name, retentionPolicy="1week")
-            influx.gauge("backendhack_account_count", cnt, client=account.name, retentionPolicy="1week")
+            metrics_compat.gauge("backendhack_account_spd", media, client=account.name, retentionPolicy="1week")
+            metrics_compat.gauge("backendhack_account_count", cnt, client=account.name, retentionPolicy="1week")
 
         for agency, cnt in self.stats_by_client["agency"].most_common(10):
             media = self.spend_data["agency"].get(agency.pk, Decimal(0))
-            influx.gauge("backendhack_agency_spd", media, client=agency.name, retentionPolicy="1week")
-            influx.gauge("backendhack_agency_count", cnt, client=agency.name, retentionPolicy="1week")
+            metrics_compat.gauge("backendhack_agency_spd", media, client=agency.name, retentionPolicy="1week")
+            metrics_compat.gauge("backendhack_agency_count", cnt, client=agency.name, retentionPolicy="1week")
 
         for source, cnt in self.stats_by_source.items():
-            influx.gauge("backendhack_source_count", cnt, source=source, retentionPolicy="1week")
+            metrics_compat.gauge("backendhack_source_count", cnt, source=source, retentionPolicy="1week")
 
     def _print(self, msg):
         line = "{}\n".format(msg)

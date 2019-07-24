@@ -2,7 +2,6 @@ import urllib.error
 import urllib.parse
 import urllib.request
 
-import influx
 from django.conf import settings
 from django.contrib import auth
 from django.contrib.auth import tokens as auth_tokens
@@ -20,6 +19,7 @@ from rest_framework.views import APIView
 
 import utils.rest_common.authentication
 from utils import email_helper
+from utils import metrics_compat
 from utils import recaptcha_helper
 from zemauth import devices
 from zemauth import forms
@@ -40,7 +40,7 @@ class UserView(APIView):
         return Response(serializers.UserSerializer(request.user).data)
 
 
-@influx.timer("auth.signin_response_time")
+@metrics_compat.timer("auth.signin_response_time")
 @ratelimit(key="ip", rate="20/m", method="POST")
 def login(request, *args, **kwargs):
     """Wraps login view and injects certain query string values into

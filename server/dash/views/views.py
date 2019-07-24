@@ -12,7 +12,6 @@ import urllib.parse
 import urllib.request
 from functools import partial
 
-import influx
 import newrelic.agent
 import pytz
 from django.conf import settings
@@ -45,6 +44,7 @@ from utils import db_router
 from utils import email_helper
 from utils import exc
 from utils import lc_helper
+from utils import metrics_compat
 from utils import threads
 
 logger = logging.getLogger(__name__)
@@ -144,7 +144,7 @@ def supply_dash_redirect(request):
 
 
 class User(api_common.BaseApiView):
-    @influx.timer("dash.api")
+    @metrics_compat.timer("dash.api")
     def get(self, request, user_id):
         response = {}
 
@@ -177,7 +177,7 @@ class User(api_common.BaseApiView):
 
 
 class AccountArchive(api_common.BaseApiView):
-    @influx.timer("dash.api")
+    @metrics_compat.timer("dash.api")
     def post(self, request, account_id):
         if not request.user.has_perm("zemauth.archive_restore_entity"):
             raise exc.AuthorizationError()
@@ -187,7 +187,7 @@ class AccountArchive(api_common.BaseApiView):
 
 
 class AccountRestore(api_common.BaseApiView):
-    @influx.timer("dash.api")
+    @metrics_compat.timer("dash.api")
     def post(self, request, account_id):
         if not request.user.has_perm("zemauth.archive_restore_entity"):
             raise exc.AuthorizationError()
@@ -198,7 +198,7 @@ class AccountRestore(api_common.BaseApiView):
 
 
 class CampaignArchive(api_common.BaseApiView):
-    @influx.timer("dash.api")
+    @metrics_compat.timer("dash.api")
     def post(self, request, campaign_id):
         if not request.user.has_perm("zemauth.archive_restore_entity"):
             raise exc.AuthorizationError()
@@ -209,7 +209,7 @@ class CampaignArchive(api_common.BaseApiView):
 
 
 class CampaignRestore(api_common.BaseApiView):
-    @influx.timer("dash.api")
+    @metrics_compat.timer("dash.api")
     def post(self, request, campaign_id):
         if not request.user.has_perm("zemauth.archive_restore_entity"):
             raise exc.AuthorizationError()
@@ -221,7 +221,7 @@ class CampaignRestore(api_common.BaseApiView):
 
 
 class AdGroupOverview(api_common.BaseApiView):
-    @influx.timer("dash.api")
+    @metrics_compat.timer("dash.api")
     @db_router.use_stats_read_replica()
     def get(self, request, ad_group_id):
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
@@ -324,7 +324,7 @@ class AdGroupOverview(api_common.BaseApiView):
 
 
 class AdGroupArchive(api_common.BaseApiView):
-    @influx.timer("dash.api")
+    @metrics_compat.timer("dash.api")
     def post(self, request, ad_group_id):
         if not request.user.has_perm("zemauth.archive_restore_entity"):
             raise exc.AuthorizationError()
@@ -335,7 +335,7 @@ class AdGroupArchive(api_common.BaseApiView):
 
 
 class AdGroupRestore(api_common.BaseApiView):
-    @influx.timer("dash.api")
+    @metrics_compat.timer("dash.api")
     def post(self, request, ad_group_id):
         if not request.user.has_perm("zemauth.archive_restore_entity"):
             raise exc.AuthorizationError()
@@ -347,7 +347,7 @@ class AdGroupRestore(api_common.BaseApiView):
 
 
 class CampaignAdGroups(api_common.BaseApiView):
-    @influx.timer("dash.api")
+    @metrics_compat.timer("dash.api")
     @newrelic.agent.function_trace()
     def put(self, request, campaign_id):
         campaign = helpers.get_campaign(request.user, campaign_id)
@@ -390,7 +390,7 @@ class CampaignAdGroups(api_common.BaseApiView):
 
 
 class CampaignOverview(api_common.BaseApiView):
-    @influx.timer("dash.api")
+    @metrics_compat.timer("dash.api")
     @db_router.use_stats_read_replica()
     def get(self, request, campaign_id):
         campaign = helpers.get_campaign(request.user, campaign_id)
@@ -433,7 +433,7 @@ class CampaignOverview(api_common.BaseApiView):
         }
         return self.create_api_response(response)
 
-    @influx.timer("dash.api")
+    @metrics_compat.timer("dash.api")
     def _basic_settings(self, user, campaign, campaign_settings):
         settings = []
 
@@ -470,7 +470,7 @@ class CampaignOverview(api_common.BaseApiView):
         settings.append(campaign_budget_setting.as_dict())
         return settings
 
-    @influx.timer("dash.api")
+    @metrics_compat.timer("dash.api")
     def _performance_settings(self, campaign, user, campaign_settings, start_date, end_date):
         settings = []
 
@@ -554,7 +554,7 @@ class CampaignOverview(api_common.BaseApiView):
 
 
 class AccountOverview(api_common.BaseApiView):
-    @influx.timer("dash.api")
+    @metrics_compat.timer("dash.api")
     @db_router.use_stats_read_replica()
     def get(self, request, account_id):
         account = helpers.get_account(request.user, account_id, select_related_users=True)
@@ -647,7 +647,7 @@ class AccountOverview(api_common.BaseApiView):
 
 
 class AvailableSources(api_common.BaseApiView):
-    @influx.timer("dash.api")
+    @metrics_compat.timer("dash.api")
     def get(self, request):
         user_accounts = models.Account.objects.all().filter_by_user(request.user)
         user_sources = (
@@ -665,7 +665,7 @@ class AvailableSources(api_common.BaseApiView):
 
 
 class AdGroupSources(api_common.BaseApiView):
-    @influx.timer("dash.api")
+    @metrics_compat.timer("dash.api")
     def get(self, request, ad_group_id):
         if not request.user.has_perm("zemauth.ad_group_sources_add_source"):
             raise exc.MissingDataError()
@@ -707,7 +707,7 @@ class AdGroupSources(api_common.BaseApiView):
             {"sources": sorted(sources, key=lambda source: source["name"]), "sources_waiting": []}
         )
 
-    @influx.timer("dash.api")
+    @metrics_compat.timer("dash.api")
     def put(self, request, ad_group_id):
         if not request.user.has_perm("zemauth.ad_group_sources_add_source"):
             raise exc.MissingDataError()
@@ -733,7 +733,7 @@ class AdGroupSources(api_common.BaseApiView):
 
 
 class Account(api_common.BaseApiView):
-    @influx.timer("dash.api")
+    @metrics_compat.timer("dash.api")
     def put(self, request):
         if not request.user.has_perm("zemauth.all_accounts_accounts_add_account"):
             raise exc.MissingDataError()
@@ -750,7 +750,7 @@ class Account(api_common.BaseApiView):
 
 
 class AccountCampaigns(api_common.BaseApiView):
-    @influx.timer("dash.api")
+    @metrics_compat.timer("dash.api")
     def put(self, request, account_id):
         if not request.user.has_perm("zemauth.account_campaigns_view"):
             raise exc.MissingDataError()
@@ -781,7 +781,7 @@ class AccountCampaigns(api_common.BaseApiView):
 
 
 class AdGroupSourceSettings(api_common.BaseApiView):
-    @influx.timer("dash.api")
+    @metrics_compat.timer("dash.api")
     def put(self, request, ad_group_id, source_id):
         resource = json.loads(request.body)
         ad_group = helpers.get_ad_group(request.user, ad_group_id)
@@ -967,7 +967,7 @@ class AdGroupSourceSettings(api_common.BaseApiView):
 
 
 class AllAccountsOverview(api_common.BaseApiView):
-    @influx.timer("dash.api")
+    @metrics_compat.timer("dash.api")
     @db_router.use_stats_read_replica()
     def get(self, request):
         # infobox only filters by agency and account type

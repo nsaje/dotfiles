@@ -1,6 +1,5 @@
-import influx
-
 from etl import maintenance
+from utils import metrics_compat
 from utils.command_helpers import Z1Command
 
 
@@ -26,9 +25,9 @@ class Command(Z1Command):
             print(100 * "-")
 
         else:
-            influx.gauge("etl.cluster.disk_capacity", usage.capacity_gbytes)
-            influx.gauge("etl.cluster.disk_used", usage.used_gbytes)
-            influx.gauge("etl.cluster.disk_free", usage.free_gbytes)
+            metrics_compat.gauge("etl.cluster.disk_capacity", usage.capacity_gbytes)
+            metrics_compat.gauge("etl.cluster.disk_used", usage.used_gbytes)
+            metrics_compat.gauge("etl.cluster.disk_free", usage.free_gbytes)
 
         for t in maintenance.cluster_tables_disk_usage():
             if interactive:
@@ -41,10 +40,16 @@ class Command(Z1Command):
                     str(t.unsorted_mbytes),
                 )
             else:
-                influx.gauge("etl.cluster.table_disk_usage_mbytes", t.mbytes, table=t.table, database=t.database)
-                influx.gauge("etl.cluster.table_disk_usage_pct", t.pct_of_total, table=t.table, database=t.database)
-                influx.gauge("etl.cluster.table_unsorted_mbytes", t.unsorted_mbytes, table=t.table, database=t.database)
-                influx.gauge("etl.cluster.table_rows", t.rows, table=t.table, database=t.database)
+                metrics_compat.gauge(
+                    "etl.cluster.table_disk_usage_mbytes", t.mbytes, table=t.table, database=t.database
+                )
+                metrics_compat.gauge(
+                    "etl.cluster.table_disk_usage_pct", t.pct_of_total, table=t.table, database=t.database
+                )
+                metrics_compat.gauge(
+                    "etl.cluster.table_unsorted_mbytes", t.unsorted_mbytes, table=t.table, database=t.database
+                )
+                metrics_compat.gauge("etl.cluster.table_rows", t.rows, table=t.table, database=t.database)
 
 
 def print_row(*values):

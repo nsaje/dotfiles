@@ -9,7 +9,6 @@ import sys
 import tarfile
 
 import faker
-import influx
 from django.conf import settings
 from django.core.serializers import serialize
 from django.db import connections
@@ -27,6 +26,7 @@ from dash import constants
 from utils import demo_anonymizer
 from utils import grouper
 from utils import json_helper
+from utils import metrics_compat
 from utils import s3helpers
 from utils import unique_ordered_list
 from utils.command_helpers import Z1Command
@@ -172,7 +172,7 @@ class Command(Z1Command):
             s3_helper.put(os.path.join(snapshot_id, "build.txt"), build)
 
             s3_helper.put("latest.txt", snapshot_id)
-            influx.incr("create_demo_dump_to_s3", 1, status="success")
+            metrics_compat.incr("create_demo_dump_to_s3", 1, status="success")
 
             demo.prepare_demo(snapshot_id)
         finally:

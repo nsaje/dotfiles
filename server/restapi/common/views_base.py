@@ -2,7 +2,6 @@ import logging
 import time
 
 import djangorestframework_camel_case.util
-import influx
 import ipware.ip
 import rest_framework.renderers
 from djangorestframework_camel_case.parser import CamelCaseJSONParser
@@ -13,6 +12,7 @@ from rest_framework.viewsets import ViewSetMixin
 
 import utils.rest_common.authentication
 from utils import json_helper
+from utils import metrics_compat
 
 logger = logging.getLogger(__name__)
 
@@ -54,7 +54,7 @@ class RESTAPIBaseView(APIView):
         drf_response = super(RESTAPIBaseView, self).finalize_response(request, response, *args, **kwargs)
         user = getattr(request, "user", None)
         user_email = getattr(user, "email", "unknown")
-        influx.timing(
+        metrics_compat.timing(
             "restapi.request",
             (time.time() - request.start_time),
             endpoint=self.__class__.__name__,

@@ -4,7 +4,6 @@ import random
 import string
 from functools import partial
 
-import influx
 import newrelic.agent
 from django.conf import settings
 from django.core.cache import caches
@@ -16,6 +15,7 @@ from etl import maintenance
 from etl import materialization_run
 from etl import materialize
 from etl import redshift
+from utils import metrics_compat
 from utils import threads
 
 logger = logging.getLogger(__name__)
@@ -34,7 +34,7 @@ def _post_to_slack(status, update_since, account_id=None):
     )
 
 
-@influx.timer("etl.refresh_k1.refresh_k1_timer", type="all")
+@metrics_compat.timer("etl.refresh_k1.refresh_k1_timer", type="all")
 def refresh(
     update_since,
     account_id=None,
@@ -73,7 +73,7 @@ def _refresh(
     dump_and_abort=None,
     update_to=None,
 ):
-    influx.incr("etl.refresh_k1.refresh_k1_reports", 1)
+    metrics_compat.incr("etl.refresh_k1.refresh_k1_reports", 1)
 
     if account_id:
         validate_can_reprocess_account(account_id)
@@ -97,7 +97,7 @@ def _refresh(
     )
 
     extra_dayspan = (update_since.date() - date_from).days
-    influx.gauge("etl.refresh_k1.extra_dayspan", extra_dayspan)
+    metrics_compat.gauge("etl.refresh_k1.extra_dayspan", extra_dayspan)
     if extra_dayspan:
         logger.warning(
             "Refresh is processing older statements than requested (requested update since %s,"
@@ -143,14 +143,14 @@ def _refresh(
     # so might as well leave cache until refresh finishes
     invalidate_breakdowns_rs_cache()
 
-    influx.incr("etl.refresh_k1.refresh_k1_reports_finished", 1)
+    metrics_compat.incr("etl.refresh_k1.refresh_k1_reports_finished", 1)
 
 
 def _materialize_view(
     mv_class, job_id, date_from, date_to, dump_and_abort, effective_spend_factors, skip_vacuum, skip_analyze, account_id
 ):
     mv = mv_class(job_id, date_from, date_to, account_id=account_id)
-    with influx.block_timer("etl.refresh_k1.generate_table", table=mv_class.TABLE_NAME):
+    with metrics_compat.block_timer("etl.refresh_k1.generate_table", table=mv_class.TABLE_NAME):
         mv.generate(campaign_factors=effective_spend_factors)
 
         if mv_class.TABLE_NAME == dump_and_abort:

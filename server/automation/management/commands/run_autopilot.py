@@ -1,9 +1,8 @@
 import logging
 
-import influx
-
 import automation.autopilot
 import utils.slack
+from utils import metrics_compat
 from utils.command_helpers import Z1Command
 
 logger = logging.getLogger(__name__)
@@ -26,7 +25,7 @@ class Command(Z1Command):
             "landing mode to overspend. Only to be used manually in rare events.",
         )
 
-    @influx.timer("automation.autopilot_plus.run_autopilot_job")
+    @metrics_compat.timer("automation.autopilot_plus.run_autopilot_job")
     def handle(self, *args, **options):
         logger.info("Running Ad Group Autopilot.")
         dry_run = options.get("dry_run", False)

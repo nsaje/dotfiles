@@ -25,7 +25,7 @@ class ReportsExecuteTest(TestCase):
         self.reportJob.user = magic_mixer.blend_user()
         self.reportJob.save()
 
-        influx_incr_patcher = mock.patch("influx.incr")
+        influx_incr_patcher = mock.patch("utils.metrics_compat.incr")
         self.mock_influx_incr = influx_incr_patcher.start()
         self.addCleanup(influx_incr_patcher.stop)
 
@@ -238,7 +238,7 @@ class ReportsGetReportCSVTest(TestCase):
         self.reportJob.save()
         utils.test_helper.add_permissions(self.reportJob.user, ["can_request_accounts_report_in_local_currencies"])
 
-        influx_incr_patcher = mock.patch("influx.incr")
+        influx_incr_patcher = mock.patch("utils.metrics_compat.incr")
         self.mock_influx_incr = influx_incr_patcher.start()
         self.addCleanup(influx_incr_patcher.stop)
 
@@ -379,7 +379,7 @@ class IncludeEntityTagsReportTestCase(TestCase):
         self.reportJob.save()
         utils.test_helper.add_permissions(self.reportJob.user, ["can_include_tags_in_reports"])
 
-        influx_incr_patcher = mock.patch("influx.incr")
+        influx_incr_patcher = mock.patch("utils.metrics_compat.incr")
         self.mock_influx_incr = influx_incr_patcher.start()
         self.addCleanup(influx_incr_patcher.stop)
 

@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 import logging
 
-import influx
-
 import automation.campaignstop
 from dash import forms
 from dash import models
@@ -10,6 +8,7 @@ from dash.views import helpers
 from dash.views import navigation_helpers
 from utils import api_common
 from utils import exc
+from utils import metrics_compat
 
 logger = logging.getLogger(__name__)
 
@@ -94,7 +93,7 @@ class NavigationAllAccountsDataView(api_common.BaseApiView):
 
 class NavigationTreeView(api_common.BaseApiView):
     def get(self, request):
-        with influx.block_timer(
+        with metrics_compat.block_timer(
             "navigation",
             load_statuses=str(request.GET.get("loadStatuses") != "false"),
             all_accounts=str(request.user.has_perm("zemauth.can_see_all_accounts")),

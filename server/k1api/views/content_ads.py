@@ -2,7 +2,6 @@ import logging
 from datetime import datetime
 from functools import partial
 
-import influx
 import newrelic.agent
 from django.http import Http404
 
@@ -12,6 +11,7 @@ import dash.models
 from dash import constants
 from utils import dates_helper
 from utils import db_router
+from utils import metrics_compat
 from utils import sspd_client
 from utils import threads
 
@@ -292,7 +292,7 @@ class ContentAdSourcesView(K1APIView):
         sspd_status = sspd_statuses.get(content_ad_source["id"])
 
         if not sspd_status:
-            influx.incr("content_ads_source.missing_sspd_status", 1)
+            metrics_compat.incr("content_ads_source.missing_sspd_status", 1)
             return True
 
         return sspd_status == dash.constants.ContentAdSubmissionStatus.REJECTED
@@ -321,7 +321,7 @@ class ContentAdSourcesView(K1APIView):
                 "submission_status"
             ] in [constants.ContentAdSubmissionStatus.REJECTED, constants.ContentAdSubmissionStatus.APPROVED]:
                 time_delta = dates_helper.utc_now() - content_ad_source.modified_dt
-                influx.timing(
+                metrics_compat.timing(
                     "content_ads_source.submission_processing_time", time_delta.total_seconds(), exchange=source_slug
                 )
 

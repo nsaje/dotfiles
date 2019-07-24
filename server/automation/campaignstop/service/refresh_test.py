@@ -52,10 +52,10 @@ class RefreshRealtimeDataTest(TestCase):
         self.assertEqual(dates_helper.utc_today(), campaign_history.date)
         self.assertEqual(self.data["stats"][0]["spend"], campaign_history.etfm_spend)
 
-    @mock.patch("automation.campaignstop.service.refresh.influx")
+    @mock.patch("automation.campaignstop.service.refresh.metrics_compat")
     @mock.patch("automation.campaignstop.service.refresh.logger")
     @mock.patch("dash.features.realtimestats.get_ad_group_sources_stats_without_caching")
-    def test_refresh_realtime_data_exception(self, mock_get_realtime_data, mock_logger, mock_influx):
+    def test_refresh_realtime_data_exception(self, mock_get_realtime_data, mock_logger, mock_metrics_compat):
         mock_get_realtime_data.side_effect = Exception()
 
         self.assertFalse(RealTimeDataHistory.objects.exists())
@@ -64,12 +64,12 @@ class RefreshRealtimeDataTest(TestCase):
         refresh.refresh_realtime_data()
         self.assertFalse(RealTimeDataHistory.objects.exists())
 
-        mock_influx.incr.assert_called_once_with("campaignstop.refresh.error", 1, level="adgroup")
+        mock_metrics_compat.incr.assert_called_once_with("campaignstop.refresh.error", 1, level="adgroup")
         mock_logger.exception.assert_called_once()
 
-    @mock.patch("automation.campaignstop.service.refresh.influx")
+    @mock.patch("automation.campaignstop.service.refresh.metrics_compat")
     @mock.patch("dash.features.realtimestats.get_ad_group_sources_stats_without_caching")
-    def test_refresh_realtime_data_source_error(self, mock_get_realtime_data, mock_influx):
+    def test_refresh_realtime_data_source_error(self, mock_get_realtime_data, mock_metrics_compat):
         source_1 = self.source
         source_2 = magic_mixer.blend(core.models.Source, source_type__budgets_tz=pytz.utc, bidder_slug="s_2")
         RealTimeDataHistory.objects.create(
@@ -93,7 +93,7 @@ class RefreshRealtimeDataTest(TestCase):
         self.assertEqual(decimal.Decimal("5.0"), current_source_2.etfm_spend)
         self.assertEqual(decimal.Decimal("17.0"), campaign_data.etfm_spend)
 
-        mock_influx.incr.assert_called_once_with(
+        mock_metrics_compat.incr.assert_called_once_with(
             "campaignstop.refresh.error", 1, level="source", source=source_2.bidder_slug
         )
 

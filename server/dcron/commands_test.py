@@ -58,8 +58,8 @@ class DCronCommandTestCase(TransactionTestCase):
     """
 
     @mock.patch("sys.argv", ["manage.py", DUMMY_COMMAND])
-    @mock.patch("influx.incr")
-    @mock.patch("influx.timing")
+    @mock.patch("utils.metrics_compat.incr")
+    @mock.patch("utils.metrics_compat.timing")
     def test_handle(self, mock_influx_timing, mock_influx_incr):
 
         event_1 = threading.Event()
@@ -138,8 +138,8 @@ class DCronCommandTestCase(TransactionTestCase):
             event_2.set()
 
     @mock.patch("sys.argv", ["manage.py", DUMMY_COMMAND])
-    @mock.patch("influx.incr")
-    @mock.patch("influx.timing")
+    @mock.patch("utils.metrics_compat.incr")
+    @mock.patch("utils.metrics_compat.timing")
     @mock.patch("utils.pagerduty_helper._post_event")
     @mock.patch("utils.slack.publish")
     def test_failure(self, mock_slack_publish, mock_post_event, mock_influx_timing, mock_influx_incr):
@@ -217,8 +217,8 @@ class DCronCommandTestCase(TransactionTestCase):
         self.assertFalse(dummy_command.called_2)
 
     @mock.patch("sys.argv", ["manage.py", DUMMY_COMMAND])
-    @mock.patch("influx.incr")
-    @mock.patch("influx.timing")
+    @mock.patch("utils.metrics_compat.incr")
+    @mock.patch("utils.metrics_compat.timing")
     def test_min_separation(self, mock_influx_timing, mock_influx_incr):
         class DummyCommand(commands.DCronCommand):
             def _handle(self, *args, **options):
@@ -241,8 +241,8 @@ class DCronCommandTestCase(TransactionTestCase):
         self.assertEqual(len(mock_influx_timing.call_args_list), 0)
 
     @mock.patch("sys.argv", ["manage.py", DUMMY_COMMAND])
-    @mock.patch("influx.incr")
-    @mock.patch("influx.timing")
+    @mock.patch("utils.metrics_compat.incr")
+    @mock.patch("utils.metrics_compat.timing")
     @mock.patch("utils.pagerduty_helper._post_event")
     @mock.patch("utils.slack.publish")
     def test_recover_from_failure(self, mock_slack_publish, mock_post_event, mock_influx_timing, mock_influx_incr):

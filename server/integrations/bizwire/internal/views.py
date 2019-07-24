@@ -3,7 +3,6 @@ import logging
 import random
 from collections import defaultdict
 
-import influx
 from django.conf import settings
 from django.http import Http404
 from django.http import JsonResponse
@@ -17,13 +16,14 @@ from integrations.bizwire import config
 from integrations.bizwire.internal import actions
 from integrations.bizwire.internal import helpers
 from utils import k1_helper
+from utils import metrics_compat
 from utils import request_signer
 
 logger = logging.getLogger(__name__)
 
 
 @csrf_exempt
-@influx.timer("integrations.bizwire.internal.views.click_capping")
+@metrics_compat.timer("integrations.bizwire.internal.views.click_capping")
 def click_capping(request):
     try:
         request_signer.verify_wsgi_request(request, settings.R1_API_SIGN_KEY)
@@ -75,7 +75,7 @@ def _distribute_articles(articles_data):
 
 
 @csrf_exempt
-@influx.timer("integrations.bizwire.internal.views.article_upload")
+@metrics_compat.timer("integrations.bizwire.internal.views.article_upload")
 def article_upload(request):
     try:
         request_signer.verify_wsgi_request(request, settings.LAMBDA_CONTENT_UPLOAD_SIGN_KEY)

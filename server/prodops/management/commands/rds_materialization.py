@@ -1,9 +1,8 @@
 import logging
 
-import influx
-
 from etl.redshift import get_last_stl_load_error
 from prodops.rds_materialization import rds_materialization
+from utils import metrics_compat
 from utils.command_helpers import Z1Command
 
 logger = logging.getLogger(__name__)
@@ -24,7 +23,7 @@ class Command(Z1Command):
     def add_arguments(self, parser):
         parser.add_argument("--specific-table", type=str, choices=self.ALL_ENTITIES.keys())
 
-    @influx.timer("etl.rds_materialization")
+    @metrics_compat.timer("etl.rds_materialization")
     def handle(self, *args, **options):
         print(options)
         specific_table = options.get("specific_table", False)
@@ -46,7 +45,7 @@ class Command(Z1Command):
         try:
             instance = entity()
             instance.extract_load_data()
-            influx.incr("etl.rds_materialization", 1)
+            metrics_compat.incr("etl.rds_materialization", 1)
         except Exception:
             redshift_error = get_last_stl_load_error()
             redshift_msg = """

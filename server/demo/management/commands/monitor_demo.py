@@ -2,10 +2,10 @@ import json
 import logging
 import time
 
-import influx
 import requests
 
 import demo
+from utils import metrics_compat
 from utils.command_helpers import Z1Command
 
 logger = logging.getLogger(__name__)
@@ -19,11 +19,11 @@ class Command(Z1Command):
         try:
             self._check_demo_url(demo)
         except Exception as err:
-            influx.incr("demo.monitor", 1, status="error")
+            metrics_compat.incr("demo.monitor", 1, status="error")
             raise (err)
         finally:
             self._stop_demo(demo["name"])
-        influx.incr("demo.monitor", 1, status="ok")
+        metrics_compat.incr("demo.monitor", 1, status="ok")
 
     def _start_demo(self):
         instance_name, url, password = demo.request_demo()

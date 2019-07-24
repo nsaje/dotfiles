@@ -8,7 +8,6 @@ import random
 import string
 import traceback
 
-import influx
 from celery.exceptions import SoftTimeLimitExceeded
 from django.conf import settings
 
@@ -27,6 +26,7 @@ import utils.s3helpers
 import utils.sort_helper
 from server import celery
 from utils import csv_utils
+from utils import metrics_compat
 from utils import threads
 
 from . import constants
@@ -77,11 +77,11 @@ class MockJobExecutor(JobExecutor):
 
 
 class ReportJobExecutor(JobExecutor):
-    @influx.timer("dash.reports.execute")
+    @metrics_compat.timer("dash.reports.execute")
     def execute(self, **kwargs):
         if self.job.status != constants.ReportJobStatus.IN_PROGRESS:
             logger.info("Running report job in incorrect state: %s" % self.job.status)
-            influx.incr("dash.reports", 1, status="incorrect_state")
+            metrics_compat.incr("dash.reports", 1, status="incorrect_state")
             return
 
         job_age = utils.dates_helper.utc_now() - self.job.created_dt
@@ -111,7 +111,7 @@ class ReportJobExecutor(JobExecutor):
             self.send_by_email(self.job, report_path, **kwargs)
             self.job.result = report_path
             self.job.status = constants.ReportJobStatus.DONE
-            influx.incr("dash.reports", 1, status="success")
+            metrics_compat.incr("dash.reports", 1, status="success")
             self.job.save()
         except utils.exc.BaseError as e:
             self._fail("user_error", str(e), e)
@@ -126,7 +126,7 @@ class ReportJobExecutor(JobExecutor):
         self.job.result = result.format(id=self.job.id)
         if exception is not None:
             self.job.exception = traceback.format_exc()
-        influx.incr("dash.reports", 1, status=status)
+        metrics_compat.incr("dash.reports", 1, status=status)
         self.job.save()
         try:
             self._send_fail()

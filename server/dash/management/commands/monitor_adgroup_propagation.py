@@ -1,8 +1,7 @@
 import logging
 
-import influx
-
 from dash import models
+from utils import metrics_compat
 from utils import redirector_helper
 from utils.command_helpers import Z1Command
 from utils.command_helpers import set_logger_verbosity
@@ -126,5 +125,5 @@ class Command(Z1Command):
         )
 
         if not options["no_statsd"]:
-            influx.gauge("propagation_consistency.ad_group_r1", nr_exceptions, state="exceptions")
-            influx.gauge("propagation_consistency.ad_group_r1", nr_not_in_sync, state="out_of_sync")
+            metrics_compat.gauge("propagation_consistency.ad_group_r1", nr_exceptions, state="exceptions")
+            metrics_compat.gauge("propagation_consistency.ad_group_r1", nr_not_in_sync, state="out_of_sync")

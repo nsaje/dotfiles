@@ -1,12 +1,11 @@
 import logging
 
-import influx
-
 import core.features.yahoo_accounts
 import core.models
 import dash.constants
 import dash.features.realtimestats
 from utils import dates_helper
+from utils import metrics_compat
 
 from .. import RealTimeCampaignDataHistory
 from .. import RealTimeDataHistory
@@ -58,7 +57,7 @@ def _refresh_ad_groups_realtime_data(campaign):
             stats = dash.features.realtimestats.get_ad_group_sources_stats_without_caching(ad_group, use_source_tz=True)
         except Exception:
             logger.exception("Failed refreshing realtime data for ad group: %s", ad_group.id)
-            influx.incr("campaignstop.refresh.error", 1, level="adgroup")
+            metrics_compat.incr("campaignstop.refresh.error", 1, level="adgroup")
             continue
 
         _add_ad_group_history_stats(ad_group, stats)
@@ -77,7 +76,7 @@ def _log_source_errors(stats):
         return
 
     for source, error in errors.items():
-        influx.incr("campaignstop.refresh.error", 1, level="source", source=source)
+        metrics_compat.incr("campaignstop.refresh.error", 1, level="source", source=source)
 
 
 def _add_source_stat(ad_group, source, spend):

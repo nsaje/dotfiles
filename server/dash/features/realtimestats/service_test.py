@@ -277,10 +277,10 @@ class RealtimestatsServiceTest(TestCase):
         expected_params = dict(self.expected_params, **{"no_cache": True})
         mock_k1_get.assert_called_once_with(self.ad_group.id, expected_params)
 
-    @mock.patch("dash.features.realtimestats.service.influx")
+    @mock.patch("dash.features.realtimestats.service.metrics_compat")
     @mock.patch("dash.features.realtimestats.service.logger")
     @mock.patch("utils.k1_helper.get_adgroup_realtimestats")
-    def test_k1_exception(self, mock_k1_get, mock_logger, mock_influx):
+    def test_k1_exception(self, mock_k1_get, mock_logger, mock_metrics_compat):
         e = Exception("test")
         mock_k1_get.side_effect = e
 
@@ -288,7 +288,7 @@ class RealtimestatsServiceTest(TestCase):
         self.assertEqual([], result)
 
         mock_logger.exception.assert_called_once_with(e)
-        mock_influx.incr.assert_called_once_with("dash.realtimestats.error", 1, type="exception")
+        mock_metrics_compat.incr.assert_called_once_with("dash.realtimestats.error", 1, type="exception")
 
     @mock.patch("utils.k1_helper.get_adgroup_realtimestats")
     def test_k1_exception_without_caching(self, mock_k1_get):
@@ -299,10 +299,10 @@ class RealtimestatsServiceTest(TestCase):
             service.get_ad_group_sources_stats_without_caching(self.ad_group)
             self.assertIs(e, cm.exception)
 
-    @mock.patch("dash.features.realtimestats.service.influx")
+    @mock.patch("dash.features.realtimestats.service.metrics_compat")
     @mock.patch("dash.features.realtimestats.service.logger")
     @mock.patch("utils.k1_helper.get_adgroup_realtimestats")
-    def test_k1_http_exception(self, mock_k1_get, mock_logger, mock_influx):
+    def test_k1_http_exception(self, mock_k1_get, mock_logger, mock_metrics_compat):
         e = urllib.error.HTTPError("url", 400, "msg", None, None)
         mock_k1_get.side_effect = e
 
@@ -310,7 +310,7 @@ class RealtimestatsServiceTest(TestCase):
         self.assertEqual([], result)
 
         mock_logger.exception.assert_not_called()
-        mock_influx.incr.assert_called_once_with("dash.realtimestats.error", 1, type="http", status="400")
+        mock_metrics_compat.incr.assert_called_once_with("dash.realtimestats.error", 1, type="http", status="400")
 
     @mock.patch("utils.k1_helper.get_adgroup_realtimestats")
     def test_k1_http_exception_without_caching(self, mock_k1_get):
@@ -321,10 +321,10 @@ class RealtimestatsServiceTest(TestCase):
             service.get_ad_group_sources_stats_without_caching(self.ad_group)
             self.assertEqual(e, cm.exception)
 
-    @mock.patch("dash.features.realtimestats.service.influx")
+    @mock.patch("dash.features.realtimestats.service.metrics_compat")
     @mock.patch("dash.features.realtimestats.service.logger")
     @mock.patch("utils.k1_helper.get_adgroup_realtimestats")
-    def test_k1_ioerror_exception(self, mock_k1_get, mock_logger, mock_influx):
+    def test_k1_ioerror_exception(self, mock_k1_get, mock_logger, mock_metrics_compat):
         e = IOError()
         mock_k1_get.side_effect = e
 
@@ -332,7 +332,7 @@ class RealtimestatsServiceTest(TestCase):
         self.assertEqual([], result)
 
         mock_logger.exception.assert_not_called()
-        mock_influx.incr.assert_called_once_with("dash.realtimestats.error", 1, type="ioerror")
+        mock_metrics_compat.incr.assert_called_once_with("dash.realtimestats.error", 1, type="ioerror")
 
     @mock.patch("utils.k1_helper.get_adgroup_realtimestats")
     def test_k1_ioerror_exception_without_caching(self, mock_k1_get):

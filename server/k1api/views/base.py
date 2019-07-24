@@ -1,7 +1,6 @@
 import logging
 import time
 
-import influx
 from django.conf import settings
 from django.http import JsonResponse
 from django.utils.decorators import method_decorator
@@ -10,6 +9,7 @@ from rest_framework import permissions
 from rest_framework.views import APIView
 
 from utils import influx_helper
+from utils import metrics_compat
 from utils.rest_common import authentication
 
 logger = logging.getLogger(__name__)
@@ -27,7 +27,7 @@ class K1APIView(APIView):
     def dispatch(self, request, *args, **kwargs):
         start_time = time.time()
         response = super(K1APIView, self).dispatch(request, *args, **kwargs)
-        influx.timing(
+        metrics_compat.timing(
             "k1api.request",
             (time.time() - start_time),
             endpoint=self.__class__.__name__,

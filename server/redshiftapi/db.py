@@ -2,13 +2,13 @@ import contextlib
 import logging
 from collections import namedtuple
 
-import influx
 from django.core.cache import caches
 from django.db import connections
 from django.db import transaction
 
 import utils.db_router
 from utils import cache_helper
+from utils import metrics_compat
 
 from . import queries
 
@@ -23,14 +23,14 @@ stats_db_router = utils.db_router.UseStatsReadReplicaRouter()
 def get_stats_cursor(db_alias=None):
     if not db_alias:
         db_alias = stats_db_router.db_for_read(None)
-    influx.incr("redshiftapi.cursor", 1, db_alias=db_alias, type="read")
+    metrics_compat.incr("redshiftapi.cursor", 1, db_alias=db_alias, type="read")
     return connections[db_alias].cursor()
 
 
 def get_write_stats_cursor(db_alias=None):
     if not db_alias:
         db_alias = stats_db_router.db_for_write(None)
-    influx.incr("redshiftapi.cursor", 1, db_alias=db_alias, type="write")
+    metrics_compat.incr("redshiftapi.cursor", 1, db_alias=db_alias, type="write")
     return connections[db_alias].cursor()
 
 
@@ -92,19 +92,21 @@ def execute_query(sql, params, query_name, cache_name="breakdowns_rs", refresh_c
     results = cache.get(cache_key, CACHE_MISS_FLAG)
 
     if results is CACHE_MISS_FLAG or refresh_cache:
-        influx.incr("redshiftapi.cache", 1, outcome="miss")
+        metrics_compat.incr("redshiftapi.cache", 1, outcome="miss")
         logger.debug("Cache miss %s (%s)", cache_key, query_name)
 
         with get_stats_cursor() as cursor:
-            with influx.block_timer("redshiftapi.api_breakdowns.query", breakdown=query_name, db_alias=cursor.db.alias):
+            with metrics_compat.block_timer(
+                "redshiftapi.api_breakdowns.query", breakdown=query_name, db_alias=cursor.db.alias
+            ):
                 with create_temp_tables(cursor, temp_tables):
                     cursor.execute(sql, params)
                     results = dictfetchall(cursor)
 
-        with influx.block_timer("redshiftapi.api_breakdowns.set_cache_value_overhead"):
+        with metrics_compat.block_timer("redshiftapi.api_breakdowns.set_cache_value_overhead"):
             cache.set(cache_key, results)
     else:
-        influx.incr("redshiftapi.cache", 1, outcome="hit")
+        metrics_compat.incr("redshiftapi.cache", 1, outcome="hit")
         logger.debug("Cache hit %s (%s)", cache_key, query_name)
 
     return results

@@ -7,7 +7,6 @@ import urllib.request
 from collections import OrderedDict
 from functools import partial
 
-import influx
 from django.conf import settings
 from django.core.cache import caches
 from django.http import Http404
@@ -20,6 +19,7 @@ from ratelimit.mixins import RatelimitMixin
 import backtosql
 import dash.models
 from redshiftapi import db
+from utils import metrics_compat
 from utils import request_signer
 from utils import threads
 
@@ -191,7 +191,7 @@ class PromotionExport(RatelimitMixin, BizwireView):
             "geo_headline_impressions": geo_impressions,
         }
 
-    @influx.timer("integrations.bizwire.views.promotion_export")
+    @metrics_compat.timer("integrations.bizwire.views.promotion_export")
     def get(self, request):
         article_id = request.GET.get("article_id")
         article_url = request.GET.get("article_url")

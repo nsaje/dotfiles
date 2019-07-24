@@ -3,7 +3,6 @@ import datetime
 import logging
 
 import dateutil.parser
-import influx
 
 import backtosql
 import redshiftapi.db
@@ -12,6 +11,7 @@ from dash import constants
 from dash import models
 from dash import publisher_helpers
 from utils import list_helper
+from utils import metrics_compat
 from utils.command_helpers import Z1Command
 
 logger = logging.getLogger(__name__)
@@ -183,14 +183,20 @@ class Command(Z1Command):
         logger.info("Blacklisted publisher group entries count %s", len(overall_blacklisted_entry_ids))
         logger.info("Whitelisted publisher group entries count %s", len(overall_whitelisted_entry_ids))
         if log_influx:
-            influx.gauge("dash.blacklisted_publisher.status", len(overall_blacklisted_entry_ids), status="blacklisted")
-            influx.gauge("dash.blacklisted_publisher.status", len(overall_whitelisted_entry_ids), status="whitelisted")
+            metrics_compat.gauge(
+                "dash.blacklisted_publisher.status", len(overall_blacklisted_entry_ids), status="blacklisted"
+            )
+            metrics_compat.gauge(
+                "dash.blacklisted_publisher.status", len(overall_whitelisted_entry_ids), status="whitelisted"
+            )
 
         logger.info("Overall clicks for violator publishers: %s", overall_vialotors_stats["clicks"])
         logger.info("Overall impressions for violator publishers: %s", overall_vialotors_stats["impressions"])
         if log_influx:
-            influx.gauge("dash.blacklisted_publisher.stats", overall_vialotors_stats["clicks"], type="clicks")
-            influx.gauge("dash.blacklisted_publisher.stats", overall_vialotors_stats["impressions"], type="impressions")
+            metrics_compat.gauge("dash.blacklisted_publisher.stats", overall_vialotors_stats["clicks"], type="clicks")
+            metrics_compat.gauge(
+                "dash.blacklisted_publisher.stats", overall_vialotors_stats["impressions"], type="impressions"
+            )
 
     def get_whitelist_violators(self, publisher_ids, whitelisted_publishers, blacklisted_publishers):
         whitelist = whitelisted_publishers - blacklisted_publishers

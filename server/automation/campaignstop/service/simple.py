@@ -2,7 +2,6 @@ import datetime
 import decimal
 import logging
 
-import influx
 import pytz
 from django.conf import settings
 from django.db.models import Q
@@ -13,6 +12,7 @@ import utils.dates_helper
 import utils.email_helper
 import utils.k1_helper
 import utils.url_helper
+from utils import metrics_compat
 
 logger = logging.getLogger(__name__)
 
@@ -21,7 +21,7 @@ DEPLETING_CAMPAIGN_BUDGET_EMAIL = "help@zemanta.com"
 OEN_ACCOUNT_ID = 305
 
 
-@influx.timer("automation.campaignstop.simple.budget_campaigns", operation="notify_depleting")
+@metrics_compat.timer("automation.campaignstop.simple.budget_campaigns", operation="notify_depleting")
 def notify_depleting_budget_campaigns():
     campaigns = _get_active_campaigns()
     available_budgets = _get_available_budgets(campaigns)
@@ -78,7 +78,7 @@ def _manager_has_been_notified(campaign):
     )
 
 
-@influx.timer("automation.campaignstop.simple.budget_campaigns", operation="stop_and_notify_depleted")
+@metrics_compat.timer("automation.campaignstop.simple.budget_campaigns", operation="stop_and_notify_depleted")
 def stop_and_notify_depleted_budget_campaigns():
     campaigns = _get_active_campaigns()
     available_budgets = _get_available_budgets(campaigns)

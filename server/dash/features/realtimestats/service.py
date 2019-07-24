@@ -5,14 +5,13 @@ import urllib.parse
 import urllib.request
 from operator import itemgetter
 
-import influx
-
 import core.features.bcm.calculations
 import core.features.yahoo_accounts
 from dash import constants
 from dash import models
 from utils import dates_helper
 from utils import k1_helper
+from utils import metrics_compat
 from utils import redirector_helper
 
 logger = logging.getLogger(__name__)
@@ -105,11 +104,11 @@ def _get_k1_source_stats_with_error_handling(ad_group, use_source_tz=False):
     try:
         return _try_get_k1_source_stats(ad_group, use_source_tz=use_source_tz)
     except urllib.error.HTTPError as e:
-        influx.incr("dash.realtimestats.error", 1, type="http", status=str(e.code))
+        metrics_compat.incr("dash.realtimestats.error", 1, type="http", status=str(e.code))
     except IOError:
-        influx.incr("dash.realtimestats.error", 1, type="ioerror")
+        metrics_compat.incr("dash.realtimestats.error", 1, type="ioerror")
     except Exception as e:
-        influx.incr("dash.realtimestats.error", 1, type="exception")
+        metrics_compat.incr("dash.realtimestats.error", 1, type="exception")
         logger.exception(e)
     return {"stats": []}
 

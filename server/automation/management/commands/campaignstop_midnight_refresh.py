@@ -1,12 +1,12 @@
 import concurrent.futures
 
-import influx
 from django.db.models import Q
 
 import automation.campaignstop
 import core.models
 from automation.campaignstop.service import config
 from utils import dates_helper
+from utils import metrics_compat
 from utils.command_helpers import Z1Command
 
 
@@ -21,9 +21,9 @@ class Command(Z1Command):
             return
 
         self._run_job()
-        influx.incr("campaignstop.job_completed", 1, job="midnight_refresh")
+        metrics_compat.incr("campaignstop.job_completed", 1, job="midnight_refresh")
 
-    @influx.timer("campaignstop.job_run", job="midnight_refresh")
+    @metrics_compat.timer("campaignstop.job_run", job="midnight_refresh")
     def _run_job(self):
         local_tomorrow = dates_helper.day_after(dates_helper.local_today())
         rechecked_campaigns = core.models.Campaign.objects.filter(

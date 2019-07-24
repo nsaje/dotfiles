@@ -1,10 +1,10 @@
-import influx
 from django.conf import settings
 from django.contrib.auth import backends
 from django.core.validators import validate_email
 from django.forms import ValidationError
 from oauth2_provider.oauth2_backends import get_oauthlib_core
 
+from utils import metrics_compat
 from zemauth import models
 
 OAuthLibCore = get_oauthlib_core()
@@ -12,7 +12,7 @@ OAuthLibCore = get_oauthlib_core()
 
 class EmailOrUsernameModelBackend(backends.ModelBackend):
     def authenticate(self, request, username=None, password=None, oauth_data=None):
-        influx.incr("signin_request", 1, stage="try")
+        metrics_compat.incr("signin_request", 1, stage="try")
 
         if oauth_data:
             kwargs = {"email__iexact": oauth_data["email"]}
@@ -32,12 +32,12 @@ class EmailOrUsernameModelBackend(backends.ModelBackend):
                 user.email.endswith("@zemanta.com") or user.email.endswith("@outbrain.com")
             ):
                 if oauth_data and oauth_data["verified_email"]:
-                    influx.incr("signin_request", 1, stage="success")
+                    metrics_compat.incr("signin_request", 1, stage="success")
                     return user
                 else:
                     return None
             elif user.check_password(password):
-                influx.incr("signin_request", 1, stage="success")
+                metrics_compat.incr("signin_request", 1, stage="success")
                 return user
 
             return None

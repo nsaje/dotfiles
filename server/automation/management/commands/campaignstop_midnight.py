@@ -1,11 +1,11 @@
 import logging
 
-import influx
 from django.db.models import Q
 
 import automation.campaignstop
 import core.models
 from utils import dates_helper
+from utils import metrics_compat
 from utils.command_helpers import Z1Command
 
 logger = logging.getLogger(__name__)
@@ -22,9 +22,9 @@ class Command(Z1Command):
             return
 
         self._run_midnight_job()
-        influx.incr("campaignstop.job_completed", 1, job="midnight")
+        metrics_compat.incr("campaignstop.job_completed", 1, job="midnight")
 
-    @influx.timer("campaignstop.job_run", job="midnight")
+    @metrics_compat.timer("campaignstop.job_run", job="midnight")
     def _run_midnight_job(self):
         logger.info("Updating end dates for every campaign")
         automation.campaignstop.update_campaigns_end_date()

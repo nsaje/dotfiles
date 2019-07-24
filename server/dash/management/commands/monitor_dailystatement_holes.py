@@ -1,10 +1,10 @@
 import datetime
 import logging
 
-import influx
 from django.db import connection
 
 from etl import daily_statements
+from utils import metrics_compat
 from utils.command_helpers import Z1Command
 
 logger = logging.getLogger(__name__)
@@ -21,7 +21,7 @@ class Command(Z1Command):
         date_since = datetime.date.today() - datetime.timedelta(days=DAYS_TO_CHECK)
         first_unprocessed_dates = self.get_first_unprocessed_dates(date_since)
         if first_unprocessed_dates:
-            influx.gauge("dailystatement.holes", len(first_unprocessed_dates))
+            metrics_compat.gauge("dailystatement.holes", len(first_unprocessed_dates))
             for campaign_id, date in first_unprocessed_dates.items():
                 logger.info("Campaign %s has daily statement hole starting on %s" % (campaign_id, date))
             raise Exception("Daily statement holes found! Has to be looked at immediately!")

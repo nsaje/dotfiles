@@ -1,12 +1,11 @@
 import datetime
 import logging
 
-import influx
-
 import utils.dates_helper
 from etl import maintenance
 from etl import redshift
 from redshiftapi import db
+from utils import metrics_compat
 from utils.command_helpers import Z1Command
 
 logger = logging.getLogger(__name__)
@@ -16,7 +15,7 @@ CONFIG = [{"table_name": "supply_stats", "keep_days": 31}, {"table_name": "stats
 
 
 class Command(Z1Command):
-    @influx.timer("etl.clean_up_redshift")
+    @metrics_compat.timer("etl.clean_up_redshift")
     def handle(self, *args, **options):
         for config in CONFIG:
             table_name = config["table_name"]

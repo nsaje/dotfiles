@@ -1,3 +1,4 @@
+import logging
 import time
 from contextlib import contextmanager
 
@@ -6,26 +7,37 @@ import influx
 
 from . import prometheus
 
+logger = logging.getLogger(__name__)
+
 
 def gauge(name, value, **tags):
     try:
         influx.gauge(name, value, **tags)
     finally:
-        prometheus.gauge(name, value, **tags)
+        try:
+            prometheus.gauge(name, value, **tags)
+        except Exception:
+            logger.exception("Prometheus exception")
 
 
 def incr(name, count, **tags):
     try:
         influx.incr(name, count, **tags)
     finally:
-        prometheus.incr(name, count, **tags)
+        try:
+            prometheus.incr(name, count, **tags)
+        except Exception:
+            logger.exception("Prometheus exception")
 
 
 def timing(name, seconds, **tags):
     try:
         influx.timing(name, seconds, **tags)
     finally:
-        prometheus.timing(name, seconds, **tags)
+        try:
+            prometheus.timing(name, seconds, **tags)
+        except Exception:
+            logger.exception("Prometheus exception")
 
 
 @contextmanager

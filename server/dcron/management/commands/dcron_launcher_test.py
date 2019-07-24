@@ -32,8 +32,8 @@ class DCronLauncherTestCase(TransactionTestCase):
     @mock.patch("sys.argv", ["manage.py", "dcron_launcher", "othercommand", "foo", "--arg1=5", "--arg2"])
     @mock.patch("django.core.management.get_commands", return_value={"othercommand": "test.foo"})
     @mock.patch("django.core.management.load_command_class", return_value=other_command)
-    @mock.patch("influx.incr")
-    @mock.patch("influx.timing")
+    @mock.patch("utils.metrics_compat.incr")
+    @mock.patch("utils.metrics_compat.timing")
     def test_launcher(self, mock_influx_timing, mock_influx_incr, mock_load_command_class, mock_get_commands):
         launcher_command = dcron_launcher.Command()
 

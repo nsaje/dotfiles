@@ -34,12 +34,21 @@ _summary_store = CompatMetricStore(swinfra.metrics.new_summary)
 
 
 def gauge(name, value, **tags):
-    _gauge_store.get_metric(name, tags).labels(**tags).set(value)
+    metric = _gauge_store.get_metric(name, tags)
+    if tags:
+        metric = metric.labels(**tags)
+    metric.set(value)
 
 
 def incr(name, count, **tags):
-    _counter_store.get_metric(name, tags).labels(**tags).inc(count)
+    metric = _counter_store.get_metric(name, tags)
+    if tags:
+        metric = metric.labels(**tags)
+    metric.inc(count)
 
 
 def timing(name, seconds, **tags):
-    _summary_store.get_metric(name, tags).labels(**tags).observe(seconds)
+    metric = _summary_store.get_metric(name, tags)
+    if tags:
+        metric = metric.labels(**tags)
+    metric.observe(seconds)

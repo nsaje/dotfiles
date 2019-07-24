@@ -3,7 +3,6 @@ import datetime
 import gzip
 import logging
 
-import influx
 from django.conf import settings
 from django.db import IntegrityError
 from django.db.models import Case
@@ -13,6 +12,7 @@ from django.db.models import When
 
 from dash import models
 from utils import csv_utils
+from utils import metrics_compat
 from utils import s3helpers
 
 from . import constants
@@ -80,7 +80,7 @@ def upload_publisher_classifications_to_s3():
             ),
             archive,
         )
-        influx.incr("publisher_classifications_to_s3", 1, status="success")
+        metrics_compat.incr("publisher_classifications_to_s3", 1, status="success")
     except Exception as e:
-        influx.incr("publisher_classifications_to_s3", 1, status="failed")
+        metrics_compat.incr("publisher_classifications_to_s3", 1, status="failed")
         logger.exception(e)

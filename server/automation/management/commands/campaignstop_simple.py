@@ -1,15 +1,14 @@
 import logging
 
-import influx
-
 import automation.campaignstop
+from utils import metrics_compat
 from utils.command_helpers import Z1Command
 
 logger = logging.getLogger(__name__)
 
 
 class Command(Z1Command):
-    @influx.timer("campaignstop.job_run", job="simple")
+    @metrics_compat.timer("campaignstop.job_run", job="simple")
     def handle(self, *args, **options):
         logger.info("Start: Stopping and notifying depleted budget campaigns.")
         automation.campaignstop.stop_and_notify_depleted_budget_campaigns()
@@ -18,4 +17,4 @@ class Command(Z1Command):
         logger.info("Start: Notifying campaigns with depleting budget.")
         automation.campaignstop.notify_depleting_budget_campaigns()
         logger.info("Finish: Notifying campaigns with depleting budget.")
-        influx.incr("campaignstop.job_completed", 1, job="simple")
+        metrics_compat.incr("campaignstop.job_completed", 1, job="simple")

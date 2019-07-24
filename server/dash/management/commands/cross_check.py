@@ -1,10 +1,9 @@
 import collections
 import logging
 
-import influx
-
 from dash import constants
 from dash import models
+from utils import metrics_compat
 from utils.command_helpers import Z1Command
 
 logger = logging.getLogger(__name__)
@@ -83,23 +82,23 @@ class Command(Z1Command):
                 num_running_ads,
             )
         if options.get("emit-metrics"):
-            influx.gauge("consistency_cross_check.running_ad_groups", num_running_ad_groups, account=account.id)
-            influx.gauge(
+            metrics_compat.gauge("consistency_cross_check.running_ad_groups", num_running_ad_groups, account=account.id)
+            metrics_compat.gauge(
                 "consistency_cross_check.running_ad_group_sources",
                 num_running_b1_sources,
                 account=account.id,
                 source=constants.SourceType.B1,
             )
-            influx.gauge(
+            metrics_compat.gauge(
                 "consistency_cross_check.running_ad_group_sources",
                 num_running_ob_sources,
                 account=account.id,
                 source=constants.SourceType.OUTBRAIN,
             )
-            influx.gauge(
+            metrics_compat.gauge(
                 "consistency_cross_check.running_ad_group_sources",
                 num_running_y_sources,
                 account=account.id,
                 source=constants.SourceType.YAHOO,
             )
-            influx.gauge("consistency_cross_check.running_ads", num_running_ads, account=account.id)
+            metrics_compat.gauge("consistency_cross_check.running_ads", num_running_ads, account=account.id)

@@ -798,8 +798,8 @@ class AutopilotPlusTestCase(test.TestCase):
         self.assertFalse(mock_set_paused.called)
 
     @patch("redshiftapi.api_breakdowns.query")
-    @patch("influx.gauge")
-    def test_report_adgroups_data_to_influx(self, mock_influx, mock_query):
+    @patch("utils.metrics_compat.gauge")
+    def test_report_adgroups_data_to_influx(self, mock_metrics_compat, mock_query):
         mock_query.return_value = [
             {"ad_group_id": 1, "et_cost": Decimal("15"), "etfm_cost": Decimal("15")},
             {"ad_group_id": 2, "et_cost": Decimal("12"), "etfm_cost": Decimal("12")},
@@ -814,7 +814,7 @@ class AutopilotPlusTestCase(test.TestCase):
         campaign_daily_budgets = {dash.models.Campaign.objects.get(pk=2): Decimal("13")}
         service._report_adgroups_data_to_influx(entities, campaign_daily_budgets)
 
-        mock_influx.assert_has_calls(
+        mock_metrics_compat.assert_has_calls(
             [
                 call("automation.autopilot_plus.adgroups_on", 2, autopilot="budget_autopilot"),
                 call("automation.autopilot_plus.adgroups_on", 1, autopilot="bid_autopilot"),
@@ -831,8 +831,8 @@ class AutopilotPlusTestCase(test.TestCase):
         )
 
     @patch("redshiftapi.api_breakdowns.query")
-    @patch("influx.gauge")
-    def test_report_new_budgets_on_ap_to_influx(self, mock_influx, mock_query):
+    @patch("utils.metrics_compat.gauge")
+    def test_report_new_budgets_on_ap_to_influx(self, mock_metrics_compat, mock_query):
         mock_query.return_value = [
             {"ad_group_id": 1, "billing_cost": Decimal("15")},
             {"ad_group_id": 3, "billing_cost": Decimal("10")},
@@ -853,7 +853,7 @@ class AutopilotPlusTestCase(test.TestCase):
         }
         service._report_new_budgets_on_ap_to_influx(entities)
 
-        mock_influx.assert_has_calls(
+        mock_metrics_compat.assert_has_calls(
             [
                 call("automation.autopilot_plus.spend", Decimal("50"), autopilot="bid_autopilot", type="actual"),
                 call("automation.autopilot_plus.spend", Decimal("210"), autopilot="budget_autopilot", type="actual"),

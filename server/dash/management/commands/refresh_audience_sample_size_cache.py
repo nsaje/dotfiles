@@ -1,10 +1,9 @@
 import logging
 
-import influx
-
 import core.features.audiences
 import core.models
 import redshiftapi
+from utils import metrics_compat
 from utils.command_helpers import Z1Command
 
 logger = logging.getLogger(__name__)
@@ -17,7 +16,7 @@ class Command(Z1Command):
     def add_arguments(self, parser):
         parser.add_argument("--account_id", type=int)
 
-    @influx.timer("audiences.sample_size.cache_refresh_time")
+    @metrics_compat.timer("audiences.sample_size.cache_refresh_time")
     def handle(self, *args, **options):
         audiences = core.features.audiences.Audience.objects.all()
 

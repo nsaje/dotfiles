@@ -1,10 +1,9 @@
 from decimal import Decimal
 
-import influx
-
 import analytics.constants
 import analytics.delivery
 import utils.command_helpers
+from utils import metrics_compat
 
 
 def cap_to_category(cap):
@@ -26,7 +25,7 @@ class Command(utils.command_helpers.Z1Command):
         reports = analytics.delivery.generate_delivery_reports(skip_ok=True, generate_csv=False)
 
         for account, camp_id, url, cs, spend, cap, issue, monitoring_paused in reports["campaign"]:
-            influx.gauge(
+            metrics_compat.gauge(
                 "campaign_delivery",
                 int(spend * 100 / cap) if cap else 0,
                 account=account.encode("ascii", errors="ignore").decode(),
@@ -39,7 +38,7 @@ class Command(utils.command_helpers.Z1Command):
             )
 
         for account, adgroup_id, url, cs, end_date, spend, cap, issue, monitoring_paused in reports["ad_group"]:
-            influx.gauge(
+            metrics_compat.gauge(
                 "adgroup_delivery",
                 int(spend * 100 / cap) if cap else 0,
                 account=account.encode("ascii", errors="ignore").decode(),

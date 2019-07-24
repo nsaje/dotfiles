@@ -4,7 +4,6 @@ import traceback
 from collections import defaultdict
 from decimal import Decimal
 
-import influx
 from django.db import transaction
 
 import dash.constants
@@ -14,6 +13,7 @@ from automation import models
 from etl import models as etl_models
 from utils import dates_helper
 from utils import k1_helper
+from utils import metrics_compat
 from utils import pagerduty_helper
 from utils import slack
 
@@ -29,7 +29,7 @@ logger = logging.getLogger(__name__)
 SKIP_CAMPAIGN_BID_AUTOPILOT_AGENCIES = (220,)
 
 
-@influx.timer("automation.autopilot_plus.run_autopilot")
+@metrics_compat.timer("automation.autopilot_plus.run_autopilot")
 def run_autopilot(
     ad_group=None,
     campaign=None,
@@ -554,28 +554,32 @@ def _report_adgroups_data_to_influx(entities, campaign_daily_budgets):
                     num_on_bid_ap += 1
                     yesterday_spend_on_bid_ap += yesterday_spend
 
-    influx.gauge("automation.autopilot_plus.adgroups_on", num_on_budget_ap, autopilot="budget_autopilot")
-    influx.gauge("automation.autopilot_plus.adgroups_on", num_on_bid_ap, autopilot="bid_autopilot")
-    influx.gauge("automation.autopilot_plus.adgroups_on", num_ad_groups_on_campaign_ap, autopilot="campaign_autopilot")
-    influx.gauge("automation.autopilot_plus.campaigns_on", num_campaigns_on_campaign_ap, autopilot="campaign_autopilot")
+    metrics_compat.gauge("automation.autopilot_plus.adgroups_on", num_on_budget_ap, autopilot="budget_autopilot")
+    metrics_compat.gauge("automation.autopilot_plus.adgroups_on", num_on_bid_ap, autopilot="bid_autopilot")
+    metrics_compat.gauge(
+        "automation.autopilot_plus.adgroups_on", num_ad_groups_on_campaign_ap, autopilot="campaign_autopilot"
+    )
+    metrics_compat.gauge(
+        "automation.autopilot_plus.campaigns_on", num_campaigns_on_campaign_ap, autopilot="campaign_autopilot"
+    )
 
-    influx.gauge(
+    metrics_compat.gauge(
         "automation.autopilot_plus.spend", total_budget_on_budget_ap, autopilot="budget_autopilot", type="expected"
     )
-    influx.gauge(
+    metrics_compat.gauge(
         "automation.autopilot_plus.spend", total_budget_on_campaign_ap, autopilot="campaign_autopilot", type="expected"
     )
 
-    influx.gauge(
+    metrics_compat.gauge(
         "automation.autopilot_plus.spend",
         yesterday_spend_on_campaign_ap,
         autopilot="campaign_autopilot",
         type="yesterday",
     )
-    influx.gauge(
+    metrics_compat.gauge(
         "automation.autopilot_plus.spend", yesterday_spend_on_budget_ap, autopilot="budget_autopilot", type="yesterday"
     )
-    influx.gauge(
+    metrics_compat.gauge(
         "automation.autopilot_plus.spend", yesterday_spend_on_bid_ap, autopilot="bid_autopilot", type="yesterday"
     )
 
@@ -616,17 +620,21 @@ def _report_new_budgets_on_ap_to_influx(entities):
                     total_budget_on_bid_ap += daily_budget
                     num_sources_on_bid_ap += 1
 
-    influx.gauge("automation.autopilot_plus.spend", total_budget_on_bid_ap, autopilot="bid_autopilot", type="actual")
-    influx.gauge(
+    metrics_compat.gauge(
+        "automation.autopilot_plus.spend", total_budget_on_bid_ap, autopilot="bid_autopilot", type="actual"
+    )
+    metrics_compat.gauge(
         "automation.autopilot_plus.spend", total_budget_on_budget_ap, autopilot="budget_autopilot", type="actual"
     )
-    influx.gauge(
+    metrics_compat.gauge(
         "automation.autopilot_plus.spend", total_budget_on_campaign_ap, autopilot="campaign_autopilot", type="actual"
     )
 
-    influx.gauge("automation.autopilot_plus.sources_on", num_sources_on_bid_ap, autopilot="bid_autopilot")
-    influx.gauge("automation.autopilot_plus.sources_on", num_sources_on_budget_ap, autopilot="budget_autopilot")
-    influx.gauge("automation.autopilot_plus.sources_on", num_sources_on_campaign_ap, autopilot="campaign_autopilot")
+    metrics_compat.gauge("automation.autopilot_plus.sources_on", num_sources_on_bid_ap, autopilot="bid_autopilot")
+    metrics_compat.gauge("automation.autopilot_plus.sources_on", num_sources_on_budget_ap, autopilot="budget_autopilot")
+    metrics_compat.gauge(
+        "automation.autopilot_plus.sources_on", num_sources_on_campaign_ap, autopilot="campaign_autopilot"
+    )
 
 
 def adjust_ad_groups_flight_times_on_campaign_budget_autopilot_enabled(campaign):

@@ -1,12 +1,12 @@
 import datetime
 import logging
 
-import influx
 from django.db.models import Q
 
 from dash import constants
 from dash import models
 from utils import dates_helper
+from utils import metrics_compat
 from utils.command_helpers import Z1Command
 
 logger = logging.getLogger(__name__)
@@ -38,5 +38,5 @@ class Command(Z1Command):
             print("Number of candidates pending start: {}".format(num_pending))
             print("Number of candidates waiting response: {}".format(num_waiting))
         else:
-            influx.gauge("upload.candidates_num", num_pending, status="pending")
-            influx.gauge("upload.candidates_num", num_waiting, status="waiting")
+            metrics_compat.gauge("upload.candidates_num", num_pending, status="pending")
+            metrics_compat.gauge("upload.candidates_num", num_waiting, status="waiting")

@@ -1,10 +1,10 @@
 import logging
 
-import influx
 from django.conf import settings
 from django.db import connections
 
 from utils import influx_helper
+from utils import metrics_compat
 
 logger = logging.getLogger(__name__)
 
@@ -43,14 +43,14 @@ def queries_to_influx(get_response):
             path = influx_helper.clean_path(request.path)
 
             if total_queries > 0:
-                influx.timing(
+                metrics_compat.timing(
                     "queries.timer", total_time, path=path, method=request.method, status=str(response.status_code)
                 )
-                influx.timing(
+                metrics_compat.timing(
                     "queries.count", total_queries, path=path, method=request.method, status=str(response.status_code)
                 )
                 for verb, count in list(queries_per_verb.items()):
-                    influx.timing(
+                    metrics_compat.timing(
                         "queries.count",
                         count,
                         verb=verb,

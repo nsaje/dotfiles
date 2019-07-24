@@ -1,11 +1,10 @@
-import influx
-
 from etl import maintenance
+from utils import metrics_compat
 from utils.command_helpers import Z1Command
 
 
 class Command(Z1Command):
-    @influx.timer("etl.vacuum_other_tables")
+    @metrics_compat.timer("etl.vacuum_other_tables")
     def handle(self, *args, **options):
         tables = ["stats", "conversions", "postclickstats", "outbrainpublisherstats", "audience_report", "pixie_sample"]
 

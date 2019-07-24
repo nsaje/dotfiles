@@ -1,7 +1,6 @@
 import datetime
 import logging
 
-import influx
 import pytz
 from dateutil import rrule
 
@@ -13,6 +12,7 @@ from integrations.bizwire.internal import helpers
 from redshiftapi import db
 from utils import dates_helper
 from utils import email_helper
+from utils import metrics_compat
 
 logger = logging.getLogger(__name__)
 
@@ -60,9 +60,9 @@ def monitor_num_ingested_articles():
     db_count = len(content_ad_labels)
     diff_count = len(unique_labels - content_ad_labels)
 
-    influx.gauge("integrations.bizwire.article_count", s3_count, source="s3")
-    influx.gauge("integrations.bizwire.article_count", db_count, source="db")
-    influx.gauge("integrations.bizwire.article_count", diff_count, source="diff")
+    metrics_compat.gauge("integrations.bizwire.article_count", s3_count, source="s3")
+    metrics_compat.gauge("integrations.bizwire.article_count", db_count, source="db")
+    metrics_compat.gauge("integrations.bizwire.article_count", diff_count, source="diff")
 
 
 def monitor_remaining_budget():
@@ -111,8 +111,8 @@ def monitor_past_n_days_clicks(num_days, should_send_emails=False):
 
 def _post_missing_clicks_metric(ad_group, date, missing_clicks):
     ad_group_tag = str(ad_group.id) + " ({})".format(date.isoformat())
-    influx.gauge("integrations.bizwire.7_days_missing_clicks", missing_clicks, adgroup=ad_group_tag)
-    influx.gauge("integrations.bizwire.n_days_missing_clicks", missing_clicks, adgroup=ad_group_tag)
+    metrics_compat.gauge("integrations.bizwire.7_days_missing_clicks", missing_clicks, adgroup=ad_group_tag)
+    metrics_compat.gauge("integrations.bizwire.n_days_missing_clicks", missing_clicks, adgroup=ad_group_tag)
 
 
 def _get_missing_clicks(content_ad_ids):
@@ -176,8 +176,8 @@ def monitor_yesterday_spend(should_send_emails=False):
 
     expected_spend = len(content_ad_ids) * config.DAILY_BUDGET_PER_ARTICLE
 
-    influx.gauge("integrations.bizwire.yesterday_spend", actual_spend, type="actual")
-    influx.gauge("integrations.bizwire.yesterday_spend", expected_spend, type="expected")
+    metrics_compat.gauge("integrations.bizwire.yesterday_spend", actual_spend, type="actual")
+    metrics_compat.gauge("integrations.bizwire.yesterday_spend", expected_spend, type="expected")
     if _should_send_unexpected_spend_email_alert(should_send_emails, expected_spend, actual_spend):
         _send_unexpected_spend_email_alert(expected_spend, actual_spend)
 
@@ -227,9 +227,9 @@ def monitor_duplicate_articles():
 
     num_duplicate = abs(num_labels - num_distinct)
 
-    influx.gauge("integrations.bizwire.labels", num_labels, type="all")
-    influx.gauge("integrations.bizwire.labels", num_distinct, type="distinct")
-    influx.gauge("integrations.bizwire.labels", num_duplicate, type="duplicate")
+    metrics_compat.gauge("integrations.bizwire.labels", num_labels, type="all")
+    metrics_compat.gauge("integrations.bizwire.labels", num_distinct, type="distinct")
+    metrics_compat.gauge("integrations.bizwire.labels", num_duplicate, type="duplicate")
 
     _monitor_duplicate_articles_30d()
 
@@ -249,4 +249,4 @@ def _monitor_duplicate_articles_30d():
     )
 
     num_duplicate = abs(num_labels - num_distinct)
-    influx.gauge("integrations.bizwire.labels", num_duplicate, type="duplicate_30d")
+    metrics_compat.gauge("integrations.bizwire.labels", num_duplicate, type="duplicate_30d")

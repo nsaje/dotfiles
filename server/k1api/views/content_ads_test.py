@@ -580,7 +580,7 @@ class ContentAdsTest(K1APIBaseTest):
         self.assertEqual(response.status_code, 400)
         self.assertIn("Cannot change", data["error"])
 
-    @mock.patch("influx.timing")
+    @mock.patch("utils.metrics_compat.timing")
     @mock.patch("utils.dates_helper.utc_now")
     def test_update_content_ad_status_influx(self, mock_now, mock_influx_timing):
 

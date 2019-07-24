@@ -3,7 +3,6 @@ import shlex
 import sys
 
 import django_pglocks
-import influx
 from django.conf import settings
 from django.core import management
 
@@ -14,6 +13,7 @@ from dcron import exceptions
 from dcron import helpers
 from dcron import models
 from utils import dates_helper
+from utils import metrics_compat
 
 logger = logging.getLogger(__name__)
 
@@ -71,7 +71,7 @@ class DCronCommand(management.base.BaseCommand):
 
             logger.info("Started cron job %s on host %s", command_name, host_name)
 
-            influx.incr("dcron_command_count", 1, command_name=command_name)
+            metrics_compat.incr("dcron_command_count", 1, command_name=command_name)
 
             try:
                 self._handle(*args, **options)
@@ -93,7 +93,7 @@ class DCronCommand(management.base.BaseCommand):
                     (finish_dt - start_dt).total_seconds(),
                 )
 
-                influx.timing(
+                metrics_compat.timing(
                     "dcron_command_duration", (finish_dt - start_dt).total_seconds(), command_name=command_name
                 )
 

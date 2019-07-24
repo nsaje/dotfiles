@@ -1,12 +1,12 @@
 import django.core.exceptions
 import django.db.utils
-import influx
 from django.db.models import F
 from rest_framework import generics
 from rest_framework.serializers import ValidationError
 
 import core.models
 import utils.exc
+from utils import metrics_compat
 from utils.rest_common import authentication
 
 from .. import base
@@ -26,15 +26,15 @@ class CreateClientView(base.ServiceAPIBaseView):
         try:
             client = service.create_client(request, serializer.validated_data)
         except django.core.exceptions.ValidationError as err:
-            influx.incr("serviceapi.salesforce.create_client", 1, status="validation-error")
+            metrics_compat.incr("serviceapi.salesforce.create_client", 1, status="validation-error", client_type=None)
             raise ValidationError(err)
         except django.db.utils.IntegrityError:
-            influx.incr("serviceapi.salesforce.create_client", 1, status="name-error")
+            metrics_compat.incr("serviceapi.salesforce.create_client", 1, status="name-error", client_type=None)
             raise ValidationError({"name": "Name is not unique for this account type."})
         except Exception as err:
-            influx.incr("serviceapi.salesforce.create_client", 1, status="server-error")
+            metrics_compat.incr("serviceapi.salesforce.create_client", 1, status="server-error", client_type=None)
             raise err
-        influx.incr("serviceapi.salesforce.create_client", 1, status="ok", client_type=request.data["type"])
+        metrics_compat.incr("serviceapi.salesforce.create_client", 1, status="ok", client_type=request.data["type"])
         return self.response_ok({"z1_account_id": client.get_salesforce_id(), "z1_data": client.name})
 
 
@@ -48,12 +48,12 @@ class CreateCreditLineView(base.ServiceAPIBaseView):
         try:
             cli = service.create_credit_line_item(request, serializer.validated_data)
         except django.core.exceptions.ValidationError as err:
-            influx.incr("serviceapi.salesforce.create_credit", 1, status="validation-error")
+            metrics_compat.incr("serviceapi.salesforce.create_credit", 1, status="validation-error")
             raise ValidationError(err)
         except Exception as err:
-            influx.incr("serviceapi.salesforce.create_credit", 1, status="server-error")
+            metrics_compat.incr("serviceapi.salesforce.create_credit", 1, status="server-error")
             raise err
-        influx.incr("serviceapi.salesforce.create_credit", 1, status="ok")
+        metrics_compat.incr("serviceapi.salesforce.create_credit", 1, status="ok")
         return self.response_ok({"z1_cli_id": cli.pk, "z1_data": cli.get_settings_dict()})
 
 
@@ -96,10 +96,10 @@ class AgencyView(base.ServiceAPIBaseView):
         serializer.is_valid(raise_exception=True)
         try:
             new_agency = service.create_agency(request, **serializer.validated_data)
-            influx.incr("serviceapi.salesforce.create_agency", 1, status="ok")
+            metrics_compat.incr("serviceapi.salesforce.create_agency", 1, status="ok")
             return self.response_ok(serializers.AgencySerializer(new_agency).data, status=200)
         except utils.exc.ValidationError as e:
-            influx.incr("serviceapi.salesforce.create_agency", 1, status="validation-error")
+            metrics_compat.incr("serviceapi.salesforce.create_agency", 1, status="validation-error")
             raise ValidationError(e)
 
     def put(self, request, agency_id):
@@ -108,10 +108,10 @@ class AgencyView(base.ServiceAPIBaseView):
         serializer.is_valid(raise_exception=True)
         try:
             updated_agency = service.update_agency(request, agency, **serializer.validated_data)
-            influx.incr("serviceapi.salesforce.modify_agency", 1, status="ok")
+            metrics_compat.incr("serviceapi.salesforce.modify_agency", 1, status="ok")
             return self.response_ok(serializers.AgencySerializer(updated_agency).data, status=200)
         except utils.exc.ValidationError as e:
-            influx.incr("serviceapi.salesforce.modify_agency", 1, status="validation-error")
+            metrics_compat.incr("serviceapi.salesforce.modify_agency", 1, status="validation-error")
             raise ValidationError(e)
 
     def get(self, request, agency_id):
@@ -157,10 +157,10 @@ class AccountView(base.ServiceAPIBaseView):
         serializer.is_valid(raise_exception=True)
         try:
             new_account = service.create_account(request, **serializer.validated_data)
-            influx.incr("serviceapi.salesforce.create_account", 1, status="ok")
+            metrics_compat.incr("serviceapi.salesforce.create_account", 1, status="ok")
             return self.response_ok(serializers.AccountSerializer(new_account).data, status=200)
         except utils.exc.ValidationError as e:
-            influx.incr("serviceapi.salesforce.create_account", 1, status="validation-error")
+            metrics_compat.incr("serviceapi.salesforce.create_account", 1, status="validation-error")
             raise ValidationError(e)
 
     def put(self, request, account_id):
@@ -171,10 +171,10 @@ class AccountView(base.ServiceAPIBaseView):
         serializer.is_valid(raise_exception=True)
         try:
             updated_account = service.update_account(request, account, **serializer.validated_data)
-            influx.incr("serviceapi.salesforce.modify_account", 1, status="ok")
+            metrics_compat.incr("serviceapi.salesforce.modify_account", 1, status="ok")
             return self.response_ok(serializers.AccountSerializer(updated_account).data, status=200)
         except utils.exc.ValidationError as e:
-            influx.incr("serviceapi.salesforce.modify_account", 1, status="validation-error")
+            metrics_compat.incr("serviceapi.salesforce.modify_account", 1, status="validation-error")
             raise ValidationError(e)
 
     def get(self, request, account_id):
@@ -220,5 +220,5 @@ class AccountArchiveView(base.ServiceAPIBaseView):
     def get(self, request, account_id):
         account = core.models.Account.objects.get(id=account_id, agency__is_externally_managed=True)
         account.archive(request)
-        influx.incr("archive_account", 1, status="ok")
+        metrics_compat.incr("archive_account", 1, status="ok")
         return self.response_ok(serializers.AccountSerializer(account).data, status=200)
