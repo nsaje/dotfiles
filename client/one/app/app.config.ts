@@ -25,5 +25,6 @@ export const APP_CONFIG = {
         [Currency.ZAR]: 'R',
         [Currency.ILS]: '₪',
         [Currency.INR]: '₹',
+        [Currency.JPY]: '¥',
     },
 };
