@@ -23,7 +23,7 @@ class Command(Z1Command):
     def add_arguments(self, parser):
         parser.add_argument("--specific-table", type=str, choices=self.ALL_ENTITIES.keys())
 
-    @metrics_compat.timer("etl.rds_materialization")
+    @metrics_compat.timer("etl.rds_materialization_time")
     def handle(self, *args, **options):
         print(options)
         specific_table = options.get("specific_table", False)
