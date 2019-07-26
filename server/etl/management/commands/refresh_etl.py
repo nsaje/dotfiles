@@ -43,7 +43,7 @@ class Command(Z1Command):
                 raise Exception("dump-and-abort should specify a valid table name to dump")
 
         hour = dates_helper.local_now().hour
-        if 0 <= hour <= 8:
+        if 4 <= hour <= 12:
             skip_vacuum = True
             skip_analyze = True
 
