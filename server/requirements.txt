@@ -68,6 +68,7 @@ httplib2==0.11.3
 idna==2.8
 influxdb==5.2.0
 invoke==1.2.0
+ipdb==0.12
 ipython-genutils==0.2.0
 ipython==7.0.1
 jdcal==1.4.1

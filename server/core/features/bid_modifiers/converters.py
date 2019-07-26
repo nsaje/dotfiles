@@ -211,7 +211,7 @@ class ApiConverter(TargetConverter):
         return dash_constants.OperatingSystem.get_name(target)
 
 
-class StatsConverter(TargetConverter):
+class DashboardConverter(TargetConverter):
     @classmethod
     def _to_device_type_target(cls, value):
         if value == dash_constants.DeviceType.get_text(dash_constants.DeviceType.UNKNOWN):
@@ -279,3 +279,16 @@ class StatsConverter(TargetConverter):
     @classmethod
     def _from_dma_target(cls, target):
         return int(target)
+
+    @classmethod
+    def _to_source_target(cls, value):
+        try:
+            return str(models.Source.objects.filter(name=value).only("id").get().id)
+        except models.Source.DoesNotExist:
+            raise exceptions.BidModifierTargetInvalid("Invalid Source")
+        except models.Source.MultipleObjectsReturned:
+            raise exceptions.BidModifierTargetInvalid("Invalid Source")
+
+    @classmethod
+    def _from_source_target(cls, target):
+        return models.Source.objects.filter(id=int(target)).only("name").get().name

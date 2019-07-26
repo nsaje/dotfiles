@@ -810,6 +810,7 @@ class AdGroupSourceSettings(api_common.BaseApiView):
         return self.create_api_response(
             {
                 "editable_fields": helpers.get_editable_fields(
+                    request.user,
                     ad_group,
                     ad_group_source,
                     ad_group_settings,

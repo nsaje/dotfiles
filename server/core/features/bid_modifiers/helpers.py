@@ -82,7 +82,7 @@ def _get_modifier_bounds_error_message(modifier):
 def describe_bid_modifier(modifier_type, target, source):
     return "%s, %s%s" % (
         constants.BidModifierType.get_text(modifier_type),
-        target,
+        converters.DashboardConverter.from_target(modifier_type, target),
         ", " + source.name if source else "",
     )
 

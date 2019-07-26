@@ -276,10 +276,23 @@ AD_GROUP_SOURCE_1 = {
         "state": {"message": "This source must be managed manually.", "enabled": False},
         "bid_cpc": {"message": "This value cannot be edited because the ad group is on Autopilot.", "enabled": False},
         "bid_cpm": {"message": "This value cannot be edited because the ad group is on Autopilot.", "enabled": False},
+        "bid_modifier": {
+            "message": "This value cannot be edited because the ad group is on Autopilot.",
+            "enabled": False,
+        },
         "daily_budget": {
             "message": "This value cannot be edited because the ad group is on Autopilot.",
             "enabled": False,
         },
+    },
+    "bid_modifier": {
+        "bid_max": 1.0,
+        "bid_min": 1.0,
+        "id": None,
+        "modifier": None,
+        "source_slug": None,
+        "target": 1,
+        "type": "SOURCE",
     },
     "notifications": {},
 }
@@ -310,10 +323,23 @@ AD_GROUP_SOURCE_2 = {
         "state": {"message": None, "enabled": True},
         "bid_cpc": {"message": "This value cannot be edited because the ad group is on Autopilot.", "enabled": False},
         "bid_cpm": {"message": "This value cannot be edited because the ad group is on Autopilot.", "enabled": False},
+        "bid_modifier": {
+            "message": "This value cannot be edited because the ad group is on Autopilot.",
+            "enabled": False,
+        },
         "daily_budget": {
             "message": "This value cannot be edited because the ad group is on Autopilot.",
             "enabled": False,
         },
+    },
+    "bid_modifier": {
+        "bid_max": 1.0,
+        "bid_min": 1.0,
+        "id": None,
+        "modifier": None,
+        "source_slug": None,
+        "target": 2,
+        "type": "SOURCE",
     },
     "notifications": {},
 }

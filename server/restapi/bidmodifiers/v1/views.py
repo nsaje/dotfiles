@@ -1,11 +1,9 @@
 from rest_framework import permissions
 from rest_framework import status
 
+import core.features.bid_modifiers
 import restapi.access
 import restapi.common.views_base
-from core.features.bid_modifiers import constants
-from core.features.bid_modifiers import exceptions
-from core.features.bid_modifiers import service
 from dash import models
 from restapi.common import pagination
 from restapi.common import permissions as restapi_permissions
@@ -26,7 +24,7 @@ class BidModifierViewSet(restapi.common.views_base.RESTAPIBaseViewSet):
         )
 
         if "type" in request.GET:
-            modifier_type = constants.BidModifierType.get_constant_value(request.GET["type"])
+            modifier_type = core.features.bid_modifiers.BidModifierType.get_constant_value(request.GET["type"])
             if modifier_type:
                 bid_modifiers = bid_modifiers.filter(type=modifier_type)
             else:
@@ -57,10 +55,10 @@ class BidModifierViewSet(restapi.common.views_base.RESTAPIBaseViewSet):
             source = None
 
         try:
-            bid_modifier, _ = service.set(
+            bid_modifier, _ = core.features.bid_modifiers.set(
                 ad_group, input_data["type"], input_data["target"], source, input_data["modifier"], user=request.user
             )
-        except exceptions.BidModifierInvalid as e:
+        except core.features.bid_modifiers.BidModifierInvalid as e:
             raise exc.ValidationError(str(e))
 
         return self.response_ok(serializers.BidModifierSerializer(bid_modifier).data, status=status.HTTP_201_CREATED)
@@ -94,7 +92,7 @@ class BidModifierViewSet(restapi.common.views_base.RESTAPIBaseViewSet):
         except models.BidModifier.DoesNotExist:
             raise exc.MissingDataError("Bid Modifier does not exist")
 
-        bid_modifier, _ = service.set(
+        bid_modifier, _ = core.features.bid_modifiers.set(
             bid_modifier.ad_group,
             bid_modifier.type,
             bid_modifier.target,

@@ -826,6 +826,7 @@ class AdGroupSourcesLoader(Loader):
             source_settings = self._ad_group_source_settings_map[source_id]
 
             editable_fields = view_helpers.get_editable_fields(
+                self.user,
                 ad_group_source.ad_group,
                 ad_group_source,
                 self.ad_group_settings,
@@ -907,6 +908,22 @@ class AdGroupSourcesLoader(Loader):
             .select_related("ad_group_source")
         )
         return {x.ad_group_source.source_id: x for x in source_settings}
+
+    @cached_property
+    def bid_modifiers_by_source(self):
+        if not self.user.has_perm("zemauth.can_set_source_bid_modifiers"):
+            return {}
+        bid_modifiers_qs = bid_modifiers.BidModifier.objects.filter(
+            type=bid_modifiers.BidModifierType.SOURCE, ad_group=self.ad_group
+        )
+        return {int(bid_modifier.target): bid_modifier for bid_modifier in bid_modifiers_qs}
+
+    @cached_property
+    def min_max_modifiers(self):
+        min_factor, max_factor = bid_modifiers.overview.get_min_max_factors(
+            self.ad_group.id, excluded_types=[bid_modifiers.BidModifierType.SOURCE]
+        )
+        return min_factor, max_factor
 
     @cached_property
     def totals(self):

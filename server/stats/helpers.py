@@ -459,7 +459,7 @@ def remap_delivery_stats_keys(stats_rows, target_dimension):
         ):
             continue
         try:
-            row[target_dimension] = core.features.bid_modifiers.StatsConverter.to_target(
+            row[target_dimension] = core.features.bid_modifiers.DashboardConverter.to_target(
                 bid_modifier_type, row[target_dimension]
             )
         except (

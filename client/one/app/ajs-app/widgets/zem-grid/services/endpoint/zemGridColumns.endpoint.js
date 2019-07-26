@@ -570,6 +570,10 @@ angular
                         ],
                         breakdowns: [constants.breakdown.PUBLISHER],
                     },
+                    {
+                        permissions: ['zemauth.can_set_source_bid_modifiers'],
+                        breakdowns: [constants.breakdown.MEDIA_SOURCE],
+                    },
                 ],
             },
             amplifyLivePreview: {
@@ -1800,8 +1804,8 @@ angular
             COLUMNS.performance,
             COLUMNS.bidCpcSetting,
             COLUMNS.bidCpmSetting,
-            COLUMNS.dailyBudgetSetting,
             COLUMNS.bidModifier,
+            COLUMNS.dailyBudgetSetting,
         ];
 
         // Default columns - columns present by default (non permanent can be hidden)
@@ -2196,6 +2200,7 @@ angular
             constants.breakdown.PLACEMENT,
             constants.breakdown.OPERATING_SYSTEM,
             constants.breakdown.PUBLISHER,
+            constants.breakdown.MEDIA_SOURCE,
         ];
         COLUMNS.bidModifier.exceptions.levels = [constants.level.AD_GROUPS];
         COLUMNS.bidModifier.exceptions.breakdownBaseLevelOnly = true;

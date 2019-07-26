@@ -3,6 +3,7 @@ import operator
 
 from django.test import TestCase
 
+from dash import constants as dash_constants
 from dash import models as dash_models
 from utils.magic_mixer import magic_mixer
 
@@ -15,65 +16,70 @@ class TestGetMinMaxFactors(TestCase):
     def setUp(self):
         self.ad_group = magic_mixer.blend(dash_models.AdGroup)
         self.other_ad_group = magic_mixer.blend(dash_models.AdGroup)
-        self.source = magic_mixer.blend(dash_models.Source, bidder_slug="some_slug")
+        self.source_1 = magic_mixer.blend(dash_models.Source, bidder_slug="some_slug_1")
+        self.source_2 = magic_mixer.blend(dash_models.Source, bidder_slug="some_slug_2")
+        self.source_3 = magic_mixer.blend(dash_models.Source, bidder_slug="some_slug_3")
+        self.source_4 = magic_mixer.blend(dash_models.Source, bidder_slug="some_slug_4")
 
         self.ag_test_publisher_1, _ = service.set(
-            self.ad_group, constants.BidModifierType.PUBLISHER, "test_publisher_1", self.source, 0.53
+            self.ad_group, constants.BidModifierType.PUBLISHER, "test_publisher_1", self.source_1, 0.53
         )
         self.ag_test_publisher_2, _ = service.set(
-            self.ad_group, constants.BidModifierType.PUBLISHER, "test_publisher_2", self.source, 0.11
+            self.ad_group, constants.BidModifierType.PUBLISHER, "test_publisher_2", self.source_1, 0.11
         )
         self.ag_test_publisher_3, _ = service.set(
-            self.ad_group, constants.BidModifierType.PUBLISHER, "test_publisher_3", self.source, 1.15
+            self.ad_group, constants.BidModifierType.PUBLISHER, "test_publisher_3", self.source_1, 1.15
         )
 
         self.ag_test_source_1, _ = service.set(
-            self.ad_group, constants.BidModifierType.SOURCE, "test_source_1", None, 0.61
+            self.ad_group, constants.BidModifierType.SOURCE, str(self.source_1.id), None, 0.61
         )
         self.ag_test_source_2, _ = service.set(
-            self.ad_group, constants.BidModifierType.SOURCE, "test_source_2", None, 1.16
+            self.ad_group, constants.BidModifierType.SOURCE, str(self.source_2.id), None, 1.16
         )
         self.ag_test_source_3, _ = service.set(
-            self.ad_group, constants.BidModifierType.SOURCE, "test_source_3", None, 0.96
+            self.ad_group, constants.BidModifierType.SOURCE, str(self.source_3.id), None, 0.96
         )
         self.ag_test_source_4, _ = service.set(
-            self.ad_group, constants.BidModifierType.SOURCE, "test_source_4", None, 2.1
+            self.ad_group, constants.BidModifierType.SOURCE, str(self.source_4.id), None, 2.1
         )
 
         self.ag_test_device_1, _ = service.set(
-            self.ad_group, constants.BidModifierType.DEVICE, "test_device_1", None, 0.13
+            self.ad_group, constants.BidModifierType.DEVICE, str(dash_constants.DeviceType.DESKTOP), None, 0.13
         )
         self.ag_test_device_2, _ = service.set(
-            self.ad_group, constants.BidModifierType.DEVICE, "test_device_2", None, 1.32
+            self.ad_group, constants.BidModifierType.DEVICE, str(dash_constants.DeviceType.MOBILE), None, 1.32
         )
 
         self.ag_test_operating_system_1, _ = service.set(
-            self.ad_group, constants.BidModifierType.OPERATING_SYSTEM, "test_operating_system_1", None, 0.74
+            self.ad_group,
+            constants.BidModifierType.OPERATING_SYSTEM,
+            dash_constants.OperatingSystem.ANDROID,
+            None,
+            0.74,
         )
         self.ag_test_operating_system_2, _ = service.set(
-            self.ad_group, constants.BidModifierType.OPERATING_SYSTEM, "test_operating_system_2", None, 1.22
+            self.ad_group, constants.BidModifierType.OPERATING_SYSTEM, dash_constants.OperatingSystem.IOS, None, 1.22
         )
         self.ag_test_operating_system_3, _ = service.set(
-            self.ad_group, constants.BidModifierType.OPERATING_SYSTEM, "test_operating_system_3", None, 2.10
+            self.ad_group,
+            constants.BidModifierType.OPERATING_SYSTEM,
+            dash_constants.OperatingSystem.WINDOWS,
+            None,
+            2.10,
         )
         self.ag_test_operating_system_4, _ = service.set(
-            self.ad_group, constants.BidModifierType.OPERATING_SYSTEM, "test_operating_system_4", None, 0.02
+            self.ad_group, constants.BidModifierType.OPERATING_SYSTEM, dash_constants.OperatingSystem.MACOSX, None, 0.02
         )
         self.ag_test_operating_system_5, _ = service.set(
-            self.ad_group, constants.BidModifierType.OPERATING_SYSTEM, "test_operating_system_5", None, 2.01
+            self.ad_group, constants.BidModifierType.OPERATING_SYSTEM, dash_constants.OperatingSystem.LINUX, None, 2.01
         )
 
         self.ag_test_placement_1, _ = service.set(
-            self.ad_group, constants.BidModifierType.PLACEMENT, "test_placement_1", None, 0.36
+            self.ad_group, constants.BidModifierType.PLACEMENT, dash_constants.PlacementMedium.APP, None, 0.36
         )
         self.ag_test_placement_2, _ = service.set(
-            self.ad_group, constants.BidModifierType.PLACEMENT, "test_placement_2", None, 1.76
-        )
-        self.ag_test_placement_3, _ = service.set(
-            self.ad_group, constants.BidModifierType.PLACEMENT, "test_placement_3", None, 0.78
-        )
-        self.ag_test_placement_4, _ = service.set(
-            self.ad_group, constants.BidModifierType.PLACEMENT, "test_placement_4", None, 1.99
+            self.ad_group, constants.BidModifierType.PLACEMENT, dash_constants.PlacementMedium.SITE, None, 1.76
         )
 
         self.ag_test_country_1, _ = service.set(
@@ -96,43 +102,51 @@ class TestGetMinMaxFactors(TestCase):
             self.ad_group, constants.BidModifierType.STATE, "test_state_1", None, 0.73
         )
 
-        self.ag_test_dma_1, _ = service.set(self.ad_group, constants.BidModifierType.DMA, "test_dma_1", None, 0.26)
-        self.ag_test_dma_2, _ = service.set(self.ad_group, constants.BidModifierType.DMA, "test_dma_2", None, 1.61)
+        self.ag_test_dma_1, _ = service.set(self.ad_group, constants.BidModifierType.DMA, "100", None, 0.26)
+        self.ag_test_dma_2, _ = service.set(self.ad_group, constants.BidModifierType.DMA, "101", None, 1.61)
 
         self.ag_test_ad_1, _ = service.set(self.ad_group, constants.BidModifierType.AD, "test_ad_1", None, 1.71)
         self.ag_test_ad_2, _ = service.set(self.ad_group, constants.BidModifierType.AD, "test_ad_2", None, 0.81)
         self.ag_test_ad_3, _ = service.set(self.ad_group, constants.BidModifierType.AD, "test_ad_3", None, 1.5)
 
         self.oag_test_publisher_1, _ = service.set(
-            self.other_ad_group, constants.BidModifierType.PUBLISHER, "test_publisher_1", self.source, 10.35
+            self.other_ad_group, constants.BidModifierType.PUBLISHER, "test_publisher_1", self.source_1, 10.35
         )
         self.oag_test_publisher_2, _ = service.set(
-            self.other_ad_group, constants.BidModifierType.PUBLISHER, "test_publisher_2", self.source, 0.011
+            self.other_ad_group, constants.BidModifierType.PUBLISHER, "test_publisher_2", self.source_1, 0.011
         )
 
         self.oag_test_source_1, _ = service.set(
-            self.other_ad_group, constants.BidModifierType.SOURCE, "test_source_1", None, 10.46
+            self.other_ad_group, constants.BidModifierType.SOURCE, str(self.source_1.id), None, 10.46
         )
 
         self.oag_test_device_1, _ = service.set(
-            self.other_ad_group, constants.BidModifierType.DEVICE, "test_device_1", None, 10.37
+            self.other_ad_group, constants.BidModifierType.DEVICE, dash_constants.DeviceType.DESKTOP, None, 10.37
         )
         self.oag_test_device_2, _ = service.set(
-            self.other_ad_group, constants.BidModifierType.DEVICE, "test_device_2", None, 0.012
+            self.other_ad_group, constants.BidModifierType.DEVICE, dash_constants.DeviceType.MOBILE, None, 0.012
         )
 
         self.oag_test_operating_system_1, _ = service.set(
-            self.other_ad_group, constants.BidModifierType.OPERATING_SYSTEM, "test_operating_system_1", None, 10.43
+            self.other_ad_group,
+            constants.BidModifierType.OPERATING_SYSTEM,
+            dash_constants.OperatingSystem.ANDROID,
+            None,
+            10.43,
         )
         self.oag_test_operating_system_2, _ = service.set(
-            self.other_ad_group, constants.BidModifierType.OPERATING_SYSTEM, "test_operating_system_2", None, 0.013
+            self.other_ad_group,
+            constants.BidModifierType.OPERATING_SYSTEM,
+            dash_constants.OperatingSystem.IOS,
+            None,
+            0.013,
         )
 
         self.oag_test_placement_1, _ = service.set(
-            self.other_ad_group, constants.BidModifierType.PLACEMENT, "test_placement_1", None, 10.62
+            self.other_ad_group, constants.BidModifierType.PLACEMENT, dash_constants.PlacementMedium.APP, None, 10.62
         )
         self.oag_test_placement_2, _ = service.set(
-            self.other_ad_group, constants.BidModifierType.PLACEMENT, "test_placement_2", None, 0.014
+            self.other_ad_group, constants.BidModifierType.PLACEMENT, dash_constants.PlacementMedium.SITE, None, 0.014
         )
 
         self.oag_test_country_1, _ = service.set(
@@ -171,7 +185,7 @@ class TestGetMinMaxFactors(TestCase):
             self.ag_test_source_4,
             self.ag_test_device_2,
             self.ag_test_operating_system_3,
-            self.ag_test_placement_4,
+            self.ag_test_placement_2,
             self.ag_test_country_2,
             self.ag_test_state_1,
             self.ag_test_dma_2,
@@ -217,7 +231,7 @@ class TestGetMinMaxFactors(TestCase):
             max,
             self.ag_test_publisher_3,
             self.ag_test_device_2,
-            self.ag_test_placement_4,
+            self.ag_test_placement_2,
             self.ag_test_state_1,
             self.ag_test_dma_2,
             self.ag_test_ad_1,
@@ -260,7 +274,7 @@ class TestGetMinMaxFactors(TestCase):
             self.ag_test_source_4,
             self.ag_test_device_2,
             self.ag_test_operating_system_3,
-            self.ag_test_placement_4,
+            self.ag_test_placement_2,
             self.ag_test_country_2,
             self.ag_test_state_1,
             self.ag_test_dma_2,

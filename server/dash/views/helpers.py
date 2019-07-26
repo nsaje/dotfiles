@@ -445,7 +445,7 @@ def copy_stats_to_row(stat, row):
 
 
 def get_editable_fields(
-    ad_group, ad_group_source, ad_group_settings, ad_group_source_settings, campaign_settings, allowed_sources
+    user, ad_group, ad_group_source, ad_group_settings, ad_group_source_settings, campaign_settings, allowed_sources
 ):
     editable_fields = {}
     editable_fields["status_setting"] = _get_editable_fields_status_setting(
@@ -464,7 +464,26 @@ def get_editable_fields(
         ad_group, ad_group_source, ad_group_settings, campaign_settings
     )
 
+    if user.has_perm("zemauth.can_set_source_bid_modifiers"):
+        editable_fields["bid_modifier"] = _get_editable_fields_bid_modifier(
+            ad_group, ad_group_source, ad_group_settings, campaign_settings
+        )
+
     return editable_fields
+
+
+def _get_editable_fields_bid_modifier(ad_group, ad_group_source, ad_group_settings, campaign_settings):
+    message = None
+
+    if (
+        ad_group_settings.autopilot_state != constants.AdGroupSettingsAutopilotState.INACTIVE
+        or campaign_settings.autopilot
+    ):
+        message = _get_bid_value_daily_budget_disabled_message(
+            ad_group, ad_group_source, ad_group_settings, campaign_settings
+        )
+
+    return {"enabled": message is None, "message": message}
 
 
 def _get_editable_fields_bid_cpc(ad_group, ad_group_source, ad_group_settings, campaign_settings):

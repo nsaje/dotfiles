@@ -295,9 +295,9 @@ class TestApiConverter(TestCase):
         self.assertEqual(str(ctx.exception), "Invalid Operating System")
 
 
-class TestStatsConverter(TestCase):
+class TestDashboardConverter(TestCase):
     def setUp(self):
-        self.converter = converters.StatsConverter
+        self.converter = converters.DashboardConverter
 
     def test_device_type(self):
         # full circle test
@@ -430,3 +430,22 @@ class TestStatsConverter(TestCase):
         with self.assertRaises(exceptions.BidModifierTargetInvalid) as ctx:
             self.converter.to_target(constants.BidModifierType.DMA, "invalid")
         self.assertEqual(str(ctx.exception), "Invalid Geolocation")
+
+    def test_source(self):
+        test_source_name = "Test Source"
+        source = magic_mixer.blend(core.models.Source, name=test_source_name)
+
+        output_value = self.converter.from_target(constants.BidModifierType.SOURCE, source.id)
+        self.assertEqual(source.name, output_value)
+
+        target_value = self.converter.to_target(constants.BidModifierType.SOURCE, test_source_name)
+        self.assertEqual(str(source.id), target_value)
+
+        with self.assertRaises(exceptions.BidModifierTargetInvalid) as ctx:
+            self.converter.to_target(constants.BidModifierType.SOURCE, "Non existing source")
+        self.assertEqual(str(ctx.exception), "Invalid Source")
+
+        magic_mixer.blend(core.models.Source, name=test_source_name)
+        with self.assertRaises(exceptions.BidModifierTargetInvalid) as ctx:
+            self.converter.to_target(constants.BidModifierType.SOURCE, test_source_name)
+        self.assertEqual(str(ctx.exception), "Invalid Source")

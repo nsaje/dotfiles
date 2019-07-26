@@ -664,6 +664,10 @@ class AdGroupSourcesLoaderTest(TestCase):
                             "message": "This value cannot be edited because the ad group is on Autopilot.",
                             "enabled": False,
                         },
+                        "bid_modifier": {
+                            "message": "This value cannot be edited because the ad group is on Autopilot.",
+                            "enabled": False,
+                        },
                         "daily_budget": {
                             "message": "This value cannot be edited because the ad group is on Autopilot.",
                             "enabled": False,
@@ -692,6 +696,10 @@ class AdGroupSourcesLoaderTest(TestCase):
                             "message": "This value cannot be edited because the ad group is on Autopilot.",
                             "enabled": False,
                         },
+                        "bid_modifier": {
+                            "message": "This value cannot be edited because the ad group is on Autopilot.",
+                            "enabled": False,
+                        },
                         "daily_budget": {
                             "message": "This value cannot be edited because the ad group is on Autopilot.",
                             "enabled": False,
@@ -713,6 +721,10 @@ class AdGroupSourcesLoaderTest(TestCase):
         )
         self.assertEqual(
             ap_source["editable_fields"]["bid_cpm"],
+            {"message": "This value cannot be edited because the campaign is on Autopilot.", "enabled": False},
+        )
+        self.assertEqual(
+            ap_source["editable_fields"]["bid_modifier"],
             {"message": "This value cannot be edited because the campaign is on Autopilot.", "enabled": False},
         )
         self.assertEqual(

@@ -20,7 +20,6 @@ newrelic==4.4.1.104
 raven==6.9.0
 boto==2.49.0
 celery==4.3.0
-ipython==7.0.1
 requests==2.21.0
 django-timezone-field==3.0
 uWSGI==2.0.17.1
@@ -118,3 +117,7 @@ PyJWT==1.6.4
 # demo
 Fabric==2.4.0
 haikunator==2.1.0
+
+# devx
+ipython==7.0.1
+ipdb==0.12

@@ -269,6 +269,10 @@ AD_GROUP_SOURCE_1 = {
         "state": {"message": "This source must be managed manually.", "enabled": False},
         "bid_cpc": {"message": "This value cannot be edited because the ad group is on Autopilot.", "enabled": False},
         "bid_cpm": {"message": "This value cannot be edited because the ad group is on Autopilot.", "enabled": False},
+        "bid_modifier": {
+            "message": "This value cannot be edited because the ad group is on Autopilot.",
+            "enabled": False,
+        },
         "daily_budget": {
             "message": "This value cannot be edited because the ad group is on Autopilot.",
             "enabled": False,
@@ -305,6 +309,10 @@ AD_GROUP_SOURCE_2 = {
         "state": {"message": None, "enabled": True},
         "bid_cpc": {"message": "This value cannot be edited because the ad group is on Autopilot.", "enabled": False},
         "bid_cpm": {"message": "This value cannot be edited because the ad group is on Autopilot.", "enabled": False},
+        "bid_modifier": {
+            "message": "This value cannot be edited because the ad group is on Autopilot.",
+            "enabled": False,
+        },
         "daily_budget": {
             "message": "This value cannot be edited because the ad group is on Autopilot.",
             "enabled": False,
@@ -491,7 +499,12 @@ class AnnotateTest(TestCase):
             constants.Level.AD_GROUPS,
         )
 
-        self.assertEqual(rows, [AD_GROUP_SOURCE_1, AD_GROUP_SOURCE_2])
+        ad_group_source_1 = AD_GROUP_SOURCE_1.copy()
+        ad_group_source_2 = AD_GROUP_SOURCE_2.copy()
+        ad_group_source_1.update({"bid_modifier": None})
+        ad_group_source_2.update({"bid_modifier": None})
+
+        self.assertEqual(rows, [ad_group_source_1, ad_group_source_2])
 
     def test_annotate_publisher(self):
         rows = [

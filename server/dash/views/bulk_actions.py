@@ -81,7 +81,9 @@ class AdGroupSourceState(BaseBulkActionView):
 
         k1_helper.update_ad_group(ad_group, msg="AdGroupSourceState.post")
 
-        editable_fields = self._get_editable_fields(ad_group, ad_group_settings, campaign_settings, ad_group_sources)
+        editable_fields = self._get_editable_fields(
+            request.user, ad_group, ad_group_settings, campaign_settings, ad_group_sources
+        )
         response = {
             "rows": [
                 self.create_row(
@@ -193,7 +195,7 @@ class AdGroupSourceState(BaseBulkActionView):
         ) as err:
             raise exc.ValidationError("{}: {}".format(ad_group_source.source.name, str(err)))
 
-    def _get_editable_fields(self, ad_group, ad_group_settings, campaign_settings, ad_group_sources):
+    def _get_editable_fields(self, user, ad_group, ad_group_settings, campaign_settings, ad_group_sources):
         allowed_sources = ad_group.campaign.account.allowed_sources.all().values_list("pk", flat=True)
         ad_group_source_settings = {
             agss.ad_group_source_id: agss
@@ -203,6 +205,7 @@ class AdGroupSourceState(BaseBulkActionView):
         }
         return {
             ad_group_source.id: helpers.get_editable_fields(
+                user,
                 ad_group,
                 ad_group_source,
                 ad_group_settings,
