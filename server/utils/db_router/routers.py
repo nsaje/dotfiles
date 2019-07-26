@@ -27,7 +27,7 @@ stats_read_replicas_postgres = _get_read_replicas_generator("STATS_DB_READ_REPLI
 class UseReadReplicaRouter(object):
     def db_for_read(self, model, **hints):
         use_read_replica = utils.request_context.get("USE_READ_REPLICA", False)
-        return next(read_replicas) if use_read_replica else DEFAULT_DB_ALIAS
+        return _get_replica_for_current_request(read_replicas) if use_read_replica else DEFAULT_DB_ALIAS
 
     def db_for_write(self, model, **hints):
         return DEFAULT_DB_ALIAS
@@ -43,9 +43,9 @@ class UseStatsReadReplicaRouter(object):
     def db_for_read(self, model, **hints):
         use_read_replica_postgres = utils.request_context.get("USE_STATS_READ_REPLICA_POSTGRES", False)
         if use_read_replica_postgres:
-            return next(stats_read_replicas_postgres)
+            return _get_replica_for_current_request(stats_read_replicas_postgres)
         use_read_replica = utils.request_context.get("USE_STATS_READ_REPLICA", False)
-        return next(stats_read_replicas) if use_read_replica else DEFAULT_STATS_DB_ALIAS
+        return _get_replica_for_current_request(stats_read_replicas) if use_read_replica else DEFAULT_STATS_DB_ALIAS
 
     def db_for_write(self, model, **hints):
         return DEFAULT_STATS_DB_ALIAS
@@ -55,3 +55,13 @@ class UseStatsReadReplicaRouter(object):
 
     def allow_migrate(self, db, app_label, model_name=None, **hints):
         return False
+
+
+def _get_replica_for_current_request(replica_generator):
+    """ pins to one replica for the duration of the request """
+    replica_key = f"_request_replica_{replica_generator}"
+    request_replica = utils.request_context.get(replica_key)
+    if not request_replica:
+        request_replica = next(replica_generator)
+        utils.request_context.set(replica_key, request_replica)
+    return request_replica
