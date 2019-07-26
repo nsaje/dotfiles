@@ -1,4 +1,3 @@
-from django.core.cache import cache
 from oauth2_provider.oauth2_backends import get_oauthlib_core
 from rest_framework.authentication import BaseAuthentication
 from rest_framework.authentication import SessionAuthentication  # noqa
@@ -50,7 +49,7 @@ def gen_service_authentication(service_name, keys):
         def authenticate(self, request):
             try:
                 request_signer.verify_wsgi_request(request, keys)
-                user = _get_or_create_service_user(service_name)
+                user = User.objects.get_or_create_service_user(service_name)
                 return (user, None)
             except request_signer.SignatureError:
                 return None
@@ -59,15 +58,6 @@ def gen_service_authentication(service_name, keys):
             return 'Bearer realm="api"'
 
     return RequestSignerAuthentication
-
-
-def _get_or_create_service_user(service_name):
-    cache_key = f"service_user__{service_name}"
-    user = cache.get(cache_key)
-    if not user:
-        user = User.objects.get_or_create_service_user(service_name)
-        cache.set(cache_key, user, 60)
-    return user
 
 
 def gen_oauth_authentication(service_name):
