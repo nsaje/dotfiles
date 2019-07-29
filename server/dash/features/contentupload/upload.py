@@ -143,7 +143,8 @@ def persist_batch(batch):
 
         _save_history(batch, content_ads)
 
-    sspd_client.sync_batch(batch)
+    if batch.ad_group and batch.ad_group.campaign.account_id != 305:  # OEN
+        sspd_client.sync_batch(batch)
 
     k1_helper.update_content_ads(
         batch.contentad_set.all().select_related("ad_group__campaign"), msg="upload.process_async.insert"
@@ -544,7 +545,7 @@ def _mark_ads_images_present(callback_data):
 def handle_auto_save_batches(created_after):
     batches = models.UploadBatch.objects.filter(
         status=constants.UploadBatchStatus.IN_PROGRESS, auto_save=True, created_dt__gte=created_after
-    )
+    ).select_related("ad_group__campaign")
 
     with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
         executor.map(_handle_auto_save, batches)
@@ -555,11 +556,7 @@ def clean_up_old_in_progress_batches(created_before):
         status=constants.UploadBatchStatus.IN_PROGRESS, auto_save=True, created_dt__lte=created_before
     )
 
-    for batch in batches:
-        batch.status = constants.UploadBatchStatus.FAILED
-        batch.save()
-
-    return batches.count()
+    return batches.update(status=constants.UploadBatchStatus.FAILED)
 
 
 def _create_candidates(content_ads_data, ad_group, batch):
