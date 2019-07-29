@@ -1,5 +1,3 @@
-var currencyHelpers = require('../../../../shared/helpers/currency.helpers');
-
 angular
     .module('one.widgets')
     .service('zemChartParser', function(
@@ -128,11 +126,10 @@ angular
 
         function updateCampaignGoals(chart, goals, campaignGoals) {
             var activeAccount = zemNavigationNewService.getActiveAccount();
-            var currency = currencyHelpers.getCurrencySymbol(
+            var currency =
                 activeAccount && activeAccount.data
                     ? activeAccount.data.currency
-                    : null
-            );
+                    : null;
             var commonYAxis = true;
             goals.forEach(function(goal) {
                 var metric = goal.metric;
@@ -366,7 +363,12 @@ angular
             });
 
             for (groupId in chart.legend.usedColors) {
-                if (!chart.legend.usedColors.hasOwnProperty(groupId)) {
+                if (
+                    !Object.prototype.hasOwnProperty.call(
+                        chart.legend.usedColors,
+                        groupId
+                    )
+                ) {
                     continue;
                 }
 
