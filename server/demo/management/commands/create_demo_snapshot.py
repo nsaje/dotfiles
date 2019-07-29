@@ -35,7 +35,7 @@ logger = logging.getLogger(__name__)
 
 demo_anonymizer.set_fake_factory(faker.Faker())
 
-TIMEOUT = 30 * 60
+TIMEOUT = 60 * 60
 
 # due to cyclical foreign key dependency, we want to ignore some fields
 IGNORE_FIELDS = {
