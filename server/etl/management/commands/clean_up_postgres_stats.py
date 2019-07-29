@@ -15,6 +15,7 @@ logger = logging.getLogger(__name__)
 
 
 POSTGRES_KEEP_DAYS = 64
+SKIP_TABLES = ["mv_master", "mv_master_pubs"]  # not on postgres
 
 
 class Command(Z1Command):
@@ -22,6 +23,8 @@ class Command(Z1Command):
     def handle(self, *args, **options):
         for db_name in settings.STATS_DB_WRITE_REPLICAS_POSTGRES:
             for table in refresh.get_all_views_table_names():
+                if table in SKIP_TABLES:
+                    continue
                 self._delete_old_data(table, db_name)
                 maintenance.vacuum(table, db_name=db_name)
                 maintenance.analyze(table, db_name=db_name)
