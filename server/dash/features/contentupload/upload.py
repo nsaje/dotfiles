@@ -543,9 +543,13 @@ def _mark_ads_images_present(callback_data):
 
 
 def handle_auto_save_batches(created_after):
-    batches = models.UploadBatch.objects.filter(
-        status=constants.UploadBatchStatus.IN_PROGRESS, auto_save=True, created_dt__gte=created_after
-    ).select_related("ad_group__campaign")
+    batches = (
+        models.UploadBatch.objects.filter(
+            status=constants.UploadBatchStatus.IN_PROGRESS, auto_save=True, created_dt__gte=created_after
+        )
+        .select_related("ad_group__campaign")
+        .order_by("-pk")[:1000]
+    )
 
     with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
         executor.map(_handle_auto_save, batches)
