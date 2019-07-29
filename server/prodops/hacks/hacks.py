@@ -8,25 +8,30 @@ from . import constants
 
 
 def _update_ad_group_sources_cpc(request, ad_group, cpc_cc):
-    ad_group.settings.update(request, b1_sources_group_cpc_cc=cpc_cc, skip_validation=True)
     for ad_group_source in ad_group.adgroupsource_set.all().select_related("settings"):
         ad_group_source.settings.update(request, cpc_cc=cpc_cc)
 
 
 def apply_ad_group_create_hacks(request, ad_group):
     if ad_group.campaign.account.agency_id in constants.AD_GROUP_SETTINGS_CREATE_HACKS_PER_AGENCY:
-        ad_group.settings.update(
-            request, **constants.AD_GROUP_SETTINGS_CREATE_HACKS_PER_AGENCY[ad_group.campaign.account.agency_id]
-        )
-    if ad_group.campaign.account.agency_id in constants.CPC_GOAL_TO_BID_AGENCIES:
-        goal_cpc_value = _get_cpc_goal_value(ad_group.campaign)
-        _update_ad_group_sources_cpc(request, ad_group, goal_cpc_value.value)
+        data = constants.AD_GROUP_SETTINGS_CREATE_HACKS_PER_AGENCY[ad_group.campaign.account.agency_id]
+        if ad_group.campaign.account.agency_id in constants.CPC_GOAL_TO_BID_AGENCIES:
+            goal_cpc_value = _get_cpc_goal_value(ad_group.campaign)
+            data.update({"b1_sources_group_cpc_cc": goal_cpc_value.value})
+            _update_ad_group_sources_cpc(request, ad_group, goal_cpc_value.value)
+        ad_group.settings.update(request, skip_validation=True, **data)
 
 
 def override_ad_group_settings_form_data(ad_group, form_data):
     if ad_group.campaign.account.agency_id in constants.AD_GROUP_SETTINGS_HACKS_UPDATE_PER_AGENCY:
         form_data.update(constants.AD_GROUP_SETTINGS_HACKS_UPDATE_PER_AGENCY[ad_group.campaign.account.agency_id])
     return form_data
+
+
+def override_ad_group_settings(ad_group, updates):
+    if ad_group.campaign.account.agency_id in constants.AD_GROUP_SETTINGS_HACKS_UPDATE_PER_AGENCY:
+        updates.update(constants.AD_GROUP_SETTINGS_HACKS_UPDATE_PER_AGENCY[ad_group.campaign.account.agency_id])
+    return updates
 
 
 def _get_cpc_goal_value(campaign):

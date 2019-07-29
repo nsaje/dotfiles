@@ -6,6 +6,7 @@ import restapi.access
 import utils.converters
 import utils.exc
 from core.models.settings.ad_group_settings import exceptions
+from prodops import hacks
 from restapi.common.pagination import StandardPagination
 from restapi.common.views_base import RESTAPIBaseViewSet
 
@@ -59,6 +60,7 @@ class AdGroupViewSet(RESTAPIBaseViewSet):
                 raise utils.exc.ValidationError(errors={"campaign_id": [str(err)]})
 
             self._update_settings(request, new_ad_group, settings)
+            hacks.apply_ad_group_create_hacks(request, new_ad_group)
 
         return self.response_ok(
             serializers.AdGroupSerializer(new_ad_group.settings, context={"request": request}).data, status=201
@@ -68,6 +70,7 @@ class AdGroupViewSet(RESTAPIBaseViewSet):
     def _update_settings(request, ad_group, settings):
         try:
             ad_group.update_bidding_type(request, settings.get("ad_group", {}).get("bidding_type"))
+            settings = hacks.override_ad_group_settings(ad_group, settings)
             ad_group.settings.update(request, **settings)
 
         except core.models.ad_group.exceptions.CannotChangeBiddingType as err:

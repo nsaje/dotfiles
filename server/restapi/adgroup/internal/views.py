@@ -6,6 +6,7 @@ import core.models
 import restapi.access
 import restapi.adgroup.v1.views
 from dash import constants
+from prodops import hacks
 
 from . import helpers
 from . import serializers
@@ -51,7 +52,6 @@ class AdGroupViewSet(restapi.adgroup.v1.views.AdGroupViewSet):
         serializer.is_valid(raise_exception=True)
 
         with transaction.atomic():
-            # TODO: hacks.override_ad_group_settings_form_data
             self._update_settings(request, ad_group, serializer.validated_data)
 
         return self.response_ok(serializers.AdGroupSerializer(ad_group.settings, context={"request": request}).data)
@@ -66,8 +66,8 @@ class AdGroupViewSet(restapi.adgroup.v1.views.AdGroupViewSet):
             new_ad_group = core.models.AdGroup.objects.create(
                 request, campaign=campaign, name=settings.get("ad_group_name", None)
             )
-            # TODO: hacks.override_ad_group_settings_form_data
             self._update_settings(request, new_ad_group, settings)
+            hacks.apply_ad_group_create_hacks(request, new_ad_group)
 
         return self.response_ok(
             serializers.AdGroupSerializer(new_ad_group.settings, context={"request": request}).data, status=201
