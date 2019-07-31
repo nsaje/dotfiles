@@ -5,7 +5,7 @@ import {
     Unit,
     DataType,
 } from '../../app.constants';
-import {CampaignGoalKPI} from '../../app.constants';
+import {CampaignGoalKPI, GaTrackingType} from '../../app.constants';
 import {CampaignGoalKPIConfig} from './types/campaign-goal-kpi-config';
 import {CampaignConversionGoalTypeConfig} from './types/campaign-conversion-goal-type-config';
 import {ConversionWindowConfig} from '../../core/conversion-pixels/types/conversion-windows-config';
@@ -136,3 +136,8 @@ export const CONVERSION_WINDOWS: ConversionWindowConfig[] = [
     {name: '7 days', value: ConversionWindow.LEQ_7_DAYS},
     {name: '30 days', value: ConversionWindow.LEQ_30_DAYS},
 ];
+
+export const CAMPAIGN_TRACKING_VALUE_TEXT = {
+    [GaTrackingType.EMAIL]: 'Email',
+    [GaTrackingType.API]: 'API',
+};

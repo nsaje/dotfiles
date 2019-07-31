@@ -13,6 +13,17 @@ export class CampaignSettingsStoreState {
         name: null,
         type: null,
         archived: null,
+        tracking: {
+            ga: {
+                enabled: null,
+                type: null,
+                webPropertyId: null,
+            },
+            adobe: {
+                enabled: null,
+                trackingParameter: null,
+            },
+        },
         goals: [],
         budgets: [],
     };

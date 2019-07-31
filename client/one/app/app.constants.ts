@@ -256,6 +256,11 @@ export enum ConversionWindow {
     LEQ_90_DAYS = 'LEQ_90_DAYS',
 }
 
+export enum GaTrackingType {
+    EMAIL = 'EMAIL',
+    API = 'API',
+}
+
 export enum AccountCreditStatus {
     SIGNED = 'SIGNED',
     PENDING = 'PENDING',

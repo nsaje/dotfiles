@@ -111,6 +111,36 @@
             <div
                 class="zem-panel zem-settings__panel"
                 *ngIf="
+                    !zemPermissions.hasPermission('zemauth.disable_public_rcs')
+                "
+            >
+                <div class="zem-panel__header">
+                    <h2 class="zem-settings__panel-header-title">
+                        Performance tracking
+                    </h2>
+                </div>
+                <div class="zem-settings-section">
+                    <div class="zem-settings-section__header">
+                        <div class="zem-settings-section__description">
+                            Connect your Google/Adobe Analytics account to
+                            better track your campaign performance.
+                        </div>
+                    </div>
+                    <zem-campaign-performance-tracking
+                        class="zem-campaign-performance-tracking"
+                        [campaignTracking]="state.entity.tracking"
+                        [campaignTrackingErrors]="state.fieldsErrors.tracking"
+                        (campaignTrackingChange)="
+                            store.changeCampaignTracking($event)
+                        "
+                    >
+                    </zem-campaign-performance-tracking>
+                </div>
+            </div>
+
+            <div
+                class="zem-panel zem-settings__panel"
+                *ngIf="
                     zemPermissions.hasPermission('zemauth.can_see_new_budgets')
                 "
                 [zemInternalFeature]="

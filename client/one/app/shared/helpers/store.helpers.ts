@@ -1,6 +1,7 @@
 import {HttpErrorResponse} from '@angular/common/http';
 import {RequestStateUpdater} from '../types/request-state-updater';
 import * as commonHelpers from './common.helpers';
+import * as deepmerge from 'deepmerge';
 
 export function getStoreRequestStateUpdater(store: any): RequestStateUpdater {
     return (requestName, requestState) => {
@@ -25,10 +26,5 @@ export function getStoreFieldsErrorsState<T>(
     ) {
         return initialFieldsErrorsState;
     }
-    // tslint:disable-next-line prefer-object-spread
-    return Object.assign(
-        {},
-        initialFieldsErrorsState,
-        errorResponse.error.details
-    );
+    return deepmerge(initialFieldsErrorsState, errorResponse.error.details);
 }

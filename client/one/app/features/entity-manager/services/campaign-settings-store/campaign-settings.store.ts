@@ -17,6 +17,7 @@ import {CampaignGoal} from '../../../../core/entities/types/campaign/campaign-go
 import {ChangeEvent} from '../../../../shared/types/change-event';
 import {CampaignGoalKPI} from '../../../../app.constants';
 import {ConversionPixelChangeEvent} from '../../types/conversion-pixel-change-event';
+import {CampaignTracking} from '../../../../core/entities/types/campaign/campaign-tracking';
 import * as commonHelpers from '../../../../shared/helpers/common.helpers';
 import {CampaignBudget} from '../../../../core/entities/types/campaign/campaign-budget';
 import * as moment from 'moment';
@@ -350,6 +351,23 @@ export class CampaignSettingsStore extends Store<CampaignSettingsStoreState>
 
     /**
      * End: Campaign Goals
+     */
+
+    /**
+     * Start: Performance Tracking
+     */
+
+    changeCampaignTracking($event: ChangeEvent<CampaignTracking>) {
+        const tracking = {
+            ...$event.target,
+            ...$event.changes,
+        };
+        this.updateState(tracking, 'entity', 'tracking');
+        this.validateEntity();
+    }
+
+    /**
+     * End: Performance Tracking
      */
 
     isAnyAccountCreditAvailable(): boolean {

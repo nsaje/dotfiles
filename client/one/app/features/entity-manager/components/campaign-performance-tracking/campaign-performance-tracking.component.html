@@ -1,0 +1,127 @@
+<zem-checkbox-input
+    class="zem-checkbox-input"
+    [isChecked]="campaignTracking.ga.enabled"
+    (toggle)="onGaToggle($event)"
+>
+    Enable Google Analytics performance tracking
+    <zem-help-popover
+        class="zem-help-popover"
+        content="This adds performance tracking codes (_z1_msid, _z1_adgid, _z1_caid) to all URLs."
+        placement="right"
+    ></zem-help-popover>
+</zem-checkbox-input>
+<div
+    class="zem-settings-form-group__subgroup"
+    *ngIf="campaignTracking.ga.enabled"
+>
+    <div class="zem-settings-form-group__subgroup-item">
+        <zem-select-setting
+            class="zem-select-setting"
+            [label]="'Reporting type'"
+            [helpMessage]="'Google Analytics reporting type.'"
+            [value]="campaignTracking.ga.type"
+            [bindLabel]="'label'"
+            [bindValue]="'value'"
+            [items]="availableGaTypes"
+            (valueChange)="onGaTypeChange($event)"
+        >
+        </zem-select-setting>
+        <div
+            class="zem-settings-section__item zem-settings-section__item--indented"
+        >
+            <div
+                *ngIf="campaignTracking.ga.type === GaTrackingType.EMAIL"
+                class="zem-message zem-message--bubble zem-message--info zem-message--with-icon"
+            >
+                Email reporting relies on automated daily reports sent from
+                Google Analytics to us. It does not require additional
+                permissions on your Google Analytics account or property, but it
+                is less reliable than API reporting. Please see instructions
+                below. <br />
+                <a
+                    href="http://help.zemanta.com/article/show/12522-setting-up-automated-google-analytics-reports"
+                    target="_blank"
+                    class="alternative-link"
+                >
+                    Download a guide to setting up Automated Google Analytics
+                    Report via email
+                </a>
+            </div>
+            <div
+                *ngIf="campaignTracking.ga.type === GaTrackingType.API"
+                class="zem-message zem-message--bubble zem-message--info zem-message--with-icon"
+            >
+                API reporting allows the system to automatically download
+                reports from your Google Analytics account or property. It
+                requires that you add a user to your Google Analytics account or
+                property with the read & analyze permission. Please see
+                instructions below. <br />
+                <a
+                    href="http://help.zemanta.com/article/show/10814-realtime-google-analytics-reports_1"
+                    target="_blank"
+                    class="alternative-link"
+                >
+                    Download a guide to setting up Automated Google Analytics
+                    Report via API
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="zem-settings-form-group__subgroup-item">
+        <zem-text-setting
+            class="zem-text-setting"
+            [label]="'Web property ID'"
+            [helpMessage]="'Google Analytics web property ID.'"
+            [value]="campaignTracking.ga.webPropertyId"
+            [placeholder]="'UA-xxxxxxx-yy'"
+            [errors]="campaignTrackingErrors.ga.webPropertyId"
+            (valueChange)="onGaPropertyIdChange($event)"
+        >
+        </zem-text-setting>
+    </div>
+</div>
+
+<zem-checkbox-input
+    [isChecked]="campaignTracking.adobe.enabled"
+    (toggle)="onAdobeToggle($event)"
+>
+    Enable Adobe Analytics performance tracking
+    <zem-help-popover
+        content="This adds performance tracking codes to all URLs."
+        placement="right"
+    ></zem-help-popover>
+</zem-checkbox-input>
+<div
+    class="zem-settings-form-group__subgroup"
+    *ngIf="campaignTracking.adobe.enabled"
+>
+    <div class="zem-settings-form-group__subgroup-item">
+        <zem-text-setting
+            class="zem-text-setting"
+            [label]="'Adobe tracking parameter'"
+            [helpMessage]="
+                'Name of the tracking parameter used for Adobe Analytics.'
+            "
+            [value]="campaignTracking.adobe.trackingParameter"
+            [maxLength]="10"
+            [errors]="campaignTrackingErrors.adobe.trackingParameter"
+            (valueChange)="onAdobeTrackingParameterChange($event)"
+        >
+        </zem-text-setting>
+        <div
+            class="zem-settings-section__item zem-settings-section__item--indented"
+        >
+            <div
+                class="zem-message zem-message--bubble zem-message--info zem-message--with-icon"
+            >
+                <a
+                    href="http://help.zemanta.com/article/show/12524-setting-up-automated-adobe-analytics-reports"
+                    target="_blank"
+                    class="alternative-link"
+                    >Download a guide to setting up Automated Adobe Analytics
+                    Report</a
+                >
+            </div>
+        </div>
+    </div>
+</div>
