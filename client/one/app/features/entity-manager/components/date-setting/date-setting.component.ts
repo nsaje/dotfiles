@@ -25,7 +25,11 @@ export class DateSettingComponent implements OnChanges {
     @Input()
     allowManualOverride: boolean = false;
     @Input()
+    manualOverrideLabel: string;
+    @Input()
     minDate: Date;
+    @Input()
+    maxDate: Date;
     @Input()
     isDisabled: boolean = false;
     @Input()
@@ -47,7 +51,7 @@ export class DateSettingComponent implements OnChanges {
                 this.lastNonNullValue = this.model;
                 this.isManualOverrideEnabled = false;
             } else {
-                this.isManualOverrideEnabled = true;
+                this.isManualOverrideEnabled = this.allowManualOverride;
             }
         }
     }

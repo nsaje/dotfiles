@@ -27,6 +27,8 @@ export class DateInputComponent implements OnInit, OnChanges {
     value: Date;
     @Input('minDate')
     originalMinDate: Date;
+    @Input('maxDate')
+    originalMaxDate: Date;
     @Input()
     isDisabled: boolean = false;
     @Input()
@@ -37,10 +39,12 @@ export class DateInputComponent implements OnInit, OnChanges {
     valueChange = new EventEmitter<Date>();
 
     minDate: NgbDate;
+    maxDate: NgbDate;
     model: NgbDate;
 
     ngOnInit(): void {
         this.minDate = this.convertFromDateToNgbDate(this.originalMinDate);
+        this.maxDate = this.convertFromDateToNgbDate(this.originalMaxDate);
     }
 
     ngOnChanges(changes: SimpleChanges) {

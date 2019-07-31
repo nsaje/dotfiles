@@ -256,6 +256,12 @@ export enum ConversionWindow {
     LEQ_90_DAYS = 'LEQ_90_DAYS',
 }
 
+export enum AccountCreditStatus {
+    SIGNED = 'SIGNED',
+    PENDING = 'PENDING',
+    CANCELED = 'CANCELED',
+}
+
 export const APP_CONSTANTS = {
     /**
      * Max. selected media sources in on sources tabs.

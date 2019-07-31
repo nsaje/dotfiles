@@ -2,7 +2,7 @@
     class="zem-campaign-goal__summary"
     [ngClass]="{
         'zem-campaign-goal__summary--primary': campaignGoal.primary,
-        'zem-campaign-goal__summary--expanded': isExpanded
+        'zem-campaign-goal__summary--expanded': isEditFormVisible
     }"
     (click)="setPrimary()"
 >
@@ -40,7 +40,7 @@
         ></button>
     </div>
 </div>
-<div class="zem-campaign-goal__edit" *ngIf="isExpanded">
+<div class="zem-campaign-goal__edit-form" *ngIf="isEditFormVisible">
     <ng-content></ng-content>
 </div>
 

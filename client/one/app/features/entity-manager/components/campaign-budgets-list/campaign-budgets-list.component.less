@@ -4,12 +4,36 @@
     display: block;
 }
 
-.zem-campaign-budgets-list__edit-button-container-cell {
+.zem-campaign-budgets-list__cell-buttons {
     padding-top: 0 !important;
     padding-bottom: 0 !important;
     text-align: right;
+    min-width: 75px;
 }
 
-.zem-campaign-budgets-list__edit-button {
+.zem-campaign-budgets-list__cell-button {
     vertical-align: middle;
+    margin-right: 3px;
+}
+
+.zem-campaign-budgets-list__cell-button:last-child {
+    margin-right: 0;
+}
+
+.zem-campaign-budgets-list__edit-form {
+    background: @color--lightest-neutral;
+    padding: 10px;
+}
+
+.zem-campaign-budgets-list__row--error > td {
+    background-color: tint(@color--danger, 95%) !important;
+    border-bottom: 1px solid @color--danger !important;
+}
+
+.zem-campaign-budgets-list__row--expanded > td {
+    padding: 0px !important;
+
+    &:hover {
+        background-color: none !important;
+    }
 }

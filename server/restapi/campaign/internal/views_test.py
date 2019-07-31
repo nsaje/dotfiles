@@ -202,7 +202,7 @@ class CampaignViewSetTest(RESTAPITest):
                 "margin": decimal.Decimal("0.0000"),
             },
             "budgets_depleted": [],
-            "available_credits": [],
+            "account_credits": [],
         }
 
         agency = magic_mixer.blend(core.models.Agency)
@@ -251,7 +251,7 @@ class CampaignViewSetTest(RESTAPITest):
                     "margin": "0.0000",
                 },
                 "budgetsDepleted": [],
-                "availableCredits": [],
+                "accountCredits": [],
             },
         )
 
@@ -345,7 +345,7 @@ class CampaignViewSetTest(RESTAPITest):
                 "margin": decimal.Decimal("2.0000"),
             },
             "budgets_depleted": [inactive_budget],
-            "available_credits": [credit],
+            "account_credits": [credit],
         }
 
         r = self.client.get(reverse("restapi.campaign.internal:campaigns_details", kwargs={"campaign_id": campaign.id}))
@@ -454,7 +454,7 @@ class CampaignViewSetTest(RESTAPITest):
                         licenseFee=inactive_budget.credit.license_fee,
                     )
                 ],
-                "availableCredits": [
+                "accountCredits": [
                     self.credit_item_repr(
                         id=credit.pk,
                         totalAmount=credit.effective_amount(),

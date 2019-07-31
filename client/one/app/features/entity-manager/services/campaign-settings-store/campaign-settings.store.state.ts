@@ -42,6 +42,7 @@ export class CampaignSettingsStoreState {
             unallocatedCredit: null,
         },
         budgetsDepleted: [],
+        accountCredits: [],
     };
     fieldsErrors = new CampaignSettingsStoreFieldsErrorsState();
     conversionPixelsErrors: ConversionPixelErrors[] = [];

@@ -15,7 +15,7 @@ import {
     CAMPAIGN_GOAL_VALUE_TEXT,
     CAMPAIGN_GOAL_KPIS,
 } from '../../entity-manager.config';
-import * as commonHelper from '../../../../shared/helpers/common.helpers';
+import * as commonHelpers from '../../../../shared/helpers/common.helpers';
 import * as campaignGoalsHelpers from '../../helpers/campaign-goals.helpers';
 import {CampaignType, Currency} from '../../../../app.constants';
 import {ChangeEvent} from '../../../../shared/types/change-event';
@@ -100,7 +100,7 @@ export class CampaignGoalsComponent implements OnChanges {
                     -1
             );
         });
-        if (commonHelper.isDefined(campaignGoal)) {
+        if (commonHelpers.isDefined(campaignGoal)) {
             return `Goal ${
                 CAMPAIGN_GOAL_VALUE_TEXT[campaignGoal.type]
             } is automatically optimized when data from Google Analytics/Adobe Analytics is available and there are enough clicks for the data to be statistically significant.`;
@@ -141,7 +141,7 @@ export class CampaignGoalsComponent implements OnChanges {
         if (this.campaignGoalsErrors.length > 0) {
             const campaignGoalErrors = (this.campaignGoalsErrors || [])[index];
             if (
-                commonHelper.isDefined(campaignGoalErrors) &&
+                commonHelpers.isDefined(campaignGoalErrors) &&
                 Object.keys(campaignGoalErrors).length > 0
             ) {
                 return true;

@@ -1,6 +1,11 @@
 import './comment-popover.component.less';
 
-import {Component, Input, ChangeDetectionStrategy} from '@angular/core';
+import {
+    Component,
+    Input,
+    ChangeDetectionStrategy,
+    TemplateRef,
+} from '@angular/core';
 
 @Component({
     selector: 'zem-comment-popover',
@@ -9,7 +14,9 @@ import {Component, Input, ChangeDetectionStrategy} from '@angular/core';
 })
 export class CommentPopoverComponent {
     @Input()
-    content: string;
+    content: string | TemplateRef<any>;
+    @Input()
+    stayOpenOnHover: boolean = false;
     @Input()
     placement: string = 'top';
 }

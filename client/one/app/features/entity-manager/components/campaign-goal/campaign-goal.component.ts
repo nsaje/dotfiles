@@ -39,10 +39,10 @@ export class CampaignGoalComponent implements OnInit, OnChanges {
     campaignGoalDescription: string;
     pixelTag: string;
     CampaignGoalKPI = CampaignGoalKPI;
-    isExpanded: boolean = false;
+    isEditFormVisible: boolean = false;
 
     ngOnInit(): void {
-        this.isExpanded = !this.campaignGoal.id;
+        this.isEditFormVisible = !this.campaignGoal.id;
     }
 
     ngOnChanges(changes: SimpleChanges): void {
@@ -60,7 +60,7 @@ export class CampaignGoalComponent implements OnInit, OnChanges {
 
     toggleEditCampaignGoal($event: any) {
         $event.stopPropagation();
-        this.isExpanded = !this.isExpanded;
+        this.isEditFormVisible = !this.isEditFormVisible;
     }
 
     deleteCampaignGoal($event: any) {

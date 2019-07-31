@@ -21,6 +21,10 @@ describe('CampaignBudgetsOverviewComponent', () => {
         component = fixture.componentInstance;
     });
 
+    it('should be correctly initialized', () => {
+        expect(component).toBeDefined();
+    });
+
     it('should correctly format overview data on change', () => {
         const mockedOverview = {
             campaignSpend: '123.456',

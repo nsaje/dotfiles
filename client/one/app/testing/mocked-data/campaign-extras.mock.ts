@@ -27,4 +27,5 @@ export const campaignExtrasMock: CampaignExtras = {
         unallocatedCredit: null,
     },
     budgetsDepleted: [],
+    accountCredits: [],
 };

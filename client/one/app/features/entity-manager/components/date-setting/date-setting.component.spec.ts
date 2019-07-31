@@ -31,7 +31,7 @@ describe('DateSettingComponent', () => {
         expect(component.isManualOverrideEnabled).toBe(false);
     });
 
-    it('should be correctly initialized when value input is defined', () => {
+    it('should be correctly initialized when value input is not defined', () => {
         const mockedDate: Date = null;
         component.value = mockedDate;
         component.ngOnChanges({
@@ -39,7 +39,7 @@ describe('DateSettingComponent', () => {
         });
         expect(component.model).toEqual(null);
         expect(component.lastNonNullValue).toBe(undefined);
-        expect(component.isManualOverrideEnabled).toBe(true);
+        expect(component.isManualOverrideEnabled).toBe(false);
     });
 
     it('should emit null in valueChange output when manual override is toggled on', () => {

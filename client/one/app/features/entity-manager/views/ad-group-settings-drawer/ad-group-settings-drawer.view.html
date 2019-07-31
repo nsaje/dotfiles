@@ -47,6 +47,7 @@
                         [isDisabled]="state.extras.isCampaignAutopilotEnabled"
                         [minDate]="minEndDate"
                         [allowManualOverride]="true"
+                        [manualOverrideLabel]="'Use campaign budget end date'"
                         [errors]="state.fieldsErrors.endDate"
                         (valueChange)="store.setEndDate($event)"
                     ></zem-date-setting>

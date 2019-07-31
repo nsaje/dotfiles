@@ -17,6 +17,7 @@
                     class="zem-date-input zem-settings-form-group__input zem-date-setting__input"
                     [value]="model"
                     [minDate]="minDate"
+                    [maxDate]="maxDate"
                     [isDisabled]="isManualOverrideEnabled || isDisabled"
                     [isFocused]="isFocused"
                     [hasError]="errors && errors.length > 0"
@@ -29,7 +30,7 @@
                     [isDisabled]="isDisabled"
                     (toggle)="onManualOverrideToggle($event)"
                 >
-                    Use campaign budget end date
+                    {{ manualOverrideLabel }}
                 </zem-checkbox-input>
             </div>
         </div>

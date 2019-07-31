@@ -41,6 +41,10 @@ describe('CampaignBudgetsListComponent', () => {
         component = fixture.componentInstance;
     });
 
+    it('should be correctly initialized', () => {
+        expect(component).toBeDefined();
+    });
+
     it("should correctly format budgets' data on change", () => {
         component.currency = Currency.EUR;
         component.budgets = mockedBudgets;

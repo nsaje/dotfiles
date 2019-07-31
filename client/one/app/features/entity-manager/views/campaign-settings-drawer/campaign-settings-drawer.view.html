@@ -156,6 +156,7 @@
                             class="zem-campaign-budgets-list"
                             [budgets]="state.entity.budgets"
                             [currency]="state.extras.currency"
+                            [budgetsErrors]="state.fieldsErrors.budgets"
                             [showLicenseFee]="canAccessPlatformCosts()"
                             [showMargin]="canAccessAgencyCosts()"
                             [isEditingEnabled]="
@@ -163,7 +164,46 @@
                                     'zemauth.disable_budget_management'
                                 )
                             "
-                        ></zem-campaign-budgets-list>
+                            [accountCredits]="state.extras.accountCredits"
+                            [editFormTemplate]="campaignBudgetEditFormTemplate"
+                            (budgetDelete)="store.deleteBudget($event)"
+                        >
+                        </zem-campaign-budgets-list>
+                    </div>
+                    <ng-template
+                        #campaignBudgetEditFormTemplate
+                        let-budget="budget"
+                        let-currency="currency"
+                        let-budgetErrors="budgetErrors"
+                        let-showLicenseFee="showLicenseFee"
+                        let-accountCredits="accountCredits"
+                    >
+                        <zem-campaign-budget-edit-form
+                            class="zem-campaign-budget-edit-form"
+                            [budget]="budget"
+                            [currency]="currency"
+                            [budgetErrors]="budgetErrors"
+                            [showLicenseFee]="showLicenseFee"
+                            [accountCredits]="accountCredits"
+                            (budgetChange)="store.updateBudget($event)"
+                        ></zem-campaign-budget-edit-form>
+                    </ng-template>
+                    <div
+                        class="zem-settings-section__item"
+                        *ngIf="
+                            !zemPermissions.hasPermission(
+                                'zemauth.disable_budget_management'
+                            )
+                        "
+                    >
+                        <button
+                            type="button"
+                            class="zem-button zem-button--with-icon zem-button--add-icon zem-campaign-goals__button"
+                            (click)="store.createBudget()"
+                            [disabled]="!store.isAnyAccountCreditAvailable()"
+                        >
+                            Add new budget item
+                        </button>
                     </div>
                 </div>
                 <zem-advanced-settings-section
@@ -186,11 +226,6 @@
                                 [currency]="state.extras.currency"
                                 [showLicenseFee]="canAccessPlatformCosts()"
                                 [showMargin]="canAccessAgencyCosts()"
-                                [isEditingEnabled]="
-                                    !zemPermissions.hasPermission(
-                                        'zemauth.disable_budget_management'
-                                    )
-                                "
                             ></zem-campaign-budgets-list>
                         </div>
                     </div>

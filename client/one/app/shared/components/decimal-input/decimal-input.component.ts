@@ -59,7 +59,10 @@ export class DecimalInputComponent implements OnInit, OnChanges {
 
     ngOnChanges(changes: SimpleChanges) {
         if (changes.value) {
-            this.model = this.value;
+            this.model = numericHelpers.parseDecimal(
+                this.value,
+                this.fractionSize
+            );
         }
     }
 

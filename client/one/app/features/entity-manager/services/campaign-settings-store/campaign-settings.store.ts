@@ -18,6 +18,8 @@ import {ChangeEvent} from '../../../../shared/types/change-event';
 import {CampaignGoalKPI} from '../../../../app.constants';
 import {ConversionPixelChangeEvent} from '../../types/conversion-pixel-change-event';
 import * as commonHelpers from '../../../../shared/helpers/common.helpers';
+import {CampaignBudget} from '../../../../core/entities/types/campaign/campaign-budget';
+import * as moment from 'moment';
 
 @Injectable()
 export class CampaignSettingsStore extends Store<CampaignSettingsStoreState>
@@ -349,6 +351,66 @@ export class CampaignSettingsStore extends Store<CampaignSettingsStoreState>
     /**
      * End: Campaign Goals
      */
+
+    isAnyAccountCreditAvailable(): boolean {
+        return (
+            this.state.extras.accountCredits.filter(item => {
+                return item.isAvailable;
+            }).length > 0
+        );
+    }
+
+    createBudget() {
+        const availableCredits =
+            this.state.extras.accountCredits.filter(item => {
+                return item.isAvailable;
+            }) || [];
+        if (availableCredits.length === 0) {
+            return;
+        }
+        const todayDate = moment().toDate();
+        const budgets: CampaignBudget[] = [
+            ...this.state.entity.budgets,
+            {
+                id: null,
+                creditId: availableCredits[0].id,
+                startDate:
+                    availableCredits[0].startDate > todayDate
+                        ? availableCredits[0].startDate
+                        : todayDate,
+                endDate: null,
+                amount: null,
+                margin: null,
+                comment: null,
+                canEditStartDate: true,
+                canEditEndDate: true,
+                canEditAmount: true,
+            },
+        ];
+        this.updateState(budgets, 'entity', 'budgets');
+    }
+
+    updateBudget($event: ChangeEvent<CampaignBudget>) {
+        const budgets = this.state.entity.budgets.map(budget => {
+            if (budget === $event.target) {
+                return {
+                    ...budget,
+                    ...$event.changes,
+                };
+            }
+            return budget;
+        });
+        this.updateState(budgets, 'entity', 'budgets');
+        this.validateEntity();
+    }
+
+    deleteBudget(campaignBudget: CampaignBudget) {
+        const budgets = this.state.entity.budgets.filter(item => {
+            return item !== campaignBudget;
+        });
+        this.updateState(budgets, 'entity', 'budgets');
+        this.validateEntity();
+    }
 
     ngOnDestroy() {
         this.ngUnsubscribe$.next();

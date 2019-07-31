@@ -6,12 +6,18 @@ import {
     Input,
     OnChanges,
     SimpleChanges,
+    TemplateRef,
+    Output,
+    EventEmitter,
 } from '@angular/core';
 import * as moment from 'moment';
 import {CampaignBudget} from '../../../../core/entities/types/campaign/campaign-budget';
 import {Currency} from '../../../../app.constants';
 import * as currencyHelpers from '../../../../shared/helpers/currency.helpers';
+import * as commonHelpers from '../../../../shared/helpers/common.helpers';
 import {FormattedCampaignBudget} from '../../types/formatted-campaign-budget';
+import {CampaignBudgetErrors} from '../../types/campaign-budget-errors';
+import {AccountCredit} from '../../../../core/entities/types/account/account-credit';
 
 @Component({
     selector: 'zem-campaign-budgets-list',
@@ -22,13 +28,21 @@ export class CampaignBudgetsListComponent implements OnChanges {
     @Input()
     budgets: CampaignBudget[];
     @Input()
+    budgetsErrors: CampaignBudgetErrors[] = [];
+    @Input()
     currency: Currency;
     @Input()
     showLicenseFee: boolean;
     @Input()
     showMargin: boolean;
     @Input()
-    isEditingEnabled: boolean;
+    isEditingEnabled: boolean = false;
+    @Input()
+    accountCredits: AccountCredit[];
+    @Input()
+    editFormTemplate: TemplateRef<any>;
+    @Output()
+    budgetDelete = new EventEmitter<CampaignBudget>();
 
     formattedBudgets: FormattedCampaignBudget[];
     isAnyBudgetEditable: boolean;
@@ -36,39 +50,12 @@ export class CampaignBudgetsListComponent implements OnChanges {
     ngOnChanges(changes: SimpleChanges) {
         if (changes.budgets || changes.currency) {
             this.isAnyBudgetEditable = false;
-            this.formattedBudgets = [];
-            this.budgets.forEach(budget => {
-                if (this.isBudgetEditable(budget)) {
-                    this.isAnyBudgetEditable = true;
-                }
-                this.formattedBudgets.push({
-                    ...budget,
-                    startDate: moment(budget.startDate).format('MM/DD/YYYY'),
-                    endDate: moment(budget.endDate).format('MM/DD/YYYY'),
-                    createdDt: moment(budget.createdDt).format('MM/DD/YYYY'),
-                    amount: currencyHelpers.getValueInCurrency(
-                        budget.amount,
-                        this.currency
-                    ),
-                    available: currencyHelpers.getValueInCurrency(
-                        budget.available,
-                        this.currency
-                    ),
-                    spend: currencyHelpers.getValueInCurrency(
-                        budget.spend,
-                        this.currency
-                    ),
-                    margin: currencyHelpers.getValueInCurrency(
-                        budget.margin,
-                        this.currency
-                    ),
-                    licenseFee: currencyHelpers.getValueInCurrency(
-                        budget.licenseFee,
-                        this.currency
-                    ),
-                });
-            });
+            this.formattedBudgets = this.getFormattedBudgets(this.budgets);
         }
+    }
+
+    trackByIndex(index: number): string {
+        return index.toString();
     }
 
     isBudgetEditable(
@@ -80,5 +67,76 @@ export class CampaignBudgetsListComponent implements OnChanges {
                 budget.canEditEndDate ||
                 budget.canEditAmount)
         );
+    }
+
+    hasError(index: number): boolean {
+        if (this.budgetsErrors.length > 0) {
+            const budgetErrors = (this.budgetsErrors || [])[index];
+            if (
+                commonHelpers.isDefined(budgetErrors) &&
+                Object.keys(budgetErrors).length > 0
+            ) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    deleteBudget(index: number) {
+        this.budgetDelete.emit(this.budgets[index]);
+    }
+
+    private getFormattedBudgets(
+        budgets: CampaignBudget[]
+    ): FormattedCampaignBudget[] {
+        const formattedBudgets: FormattedCampaignBudget[] = [];
+        budgets.forEach(budget => {
+            if (this.isBudgetEditable(budget)) {
+                this.isAnyBudgetEditable = true;
+            }
+            formattedBudgets.push({
+                ...budget,
+                startDate: commonHelpers.isDefined(budget.startDate)
+                    ? moment(budget.startDate).format('MM/DD/YYYY')
+                    : 'N/A',
+                endDate: commonHelpers.isDefined(budget.endDate)
+                    ? moment(budget.endDate).format('MM/DD/YYYY')
+                    : 'N/A',
+                createdDt: commonHelpers.isDefined(budget.createdDt)
+                    ? moment(budget.createdDt).format('MM/DD/YYYY')
+                    : 'N/A',
+                amount: commonHelpers.isDefined(budget.amount)
+                    ? currencyHelpers.getValueInCurrency(
+                          budget.amount,
+                          this.currency
+                      )
+                    : 'N/A',
+                available: commonHelpers.isDefined(budget.available)
+                    ? currencyHelpers.getValueInCurrency(
+                          budget.available,
+                          this.currency
+                      )
+                    : 'N/A',
+                spend: commonHelpers.isDefined(budget.spend)
+                    ? currencyHelpers.getValueInCurrency(
+                          budget.spend,
+                          this.currency
+                      )
+                    : 'N/A',
+                margin: commonHelpers.isDefined(budget.margin)
+                    ? currencyHelpers.getValueInCurrency(
+                          budget.margin,
+                          this.currency
+                      )
+                    : 'N/A',
+                licenseFee: commonHelpers.isDefined(budget.licenseFee)
+                    ? currencyHelpers.getValueInCurrency(
+                          budget.licenseFee,
+                          this.currency
+                      )
+                    : 'N/A',
+            });
+        });
+        return formattedBudgets;
     }
 }

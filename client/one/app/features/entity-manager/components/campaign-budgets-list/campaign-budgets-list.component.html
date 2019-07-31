@@ -10,36 +10,80 @@
             <th>Total spend</th>
             <th>Available budget</th>
             <th>Notes</th>
-            <th *ngIf="isAnyBudgetEditable"><!-- Empty edit column th --></th>
+            <th *ngIf="isAnyBudgetEditable"></th>
         </tr>
     </thead>
     <tbody>
-        <tr *ngFor="let budget of formattedBudgets">
-            <td>{{ budget.id }}</td>
-            <td>{{ budget.startDate }}</td>
-            <td>{{ budget.endDate }}</td>
-            <td>{{ budget.amount }}</td>
-            <td *ngIf="showLicenseFee">{{ budget.licenseFee }}</td>
-            <td *ngIf="showMargin">{{ budget.margin }}</td>
-            <td>{{ budget.spend }}</td>
-            <td>{{ budget.available }}</td>
-            <td>
-                <zem-comment-popover
-                    class="zem-comment-popover"
-                    *ngIf="budget.comment"
-                    [content]="budget.comment"
-                    [placement]="'left'"
-                ></zem-comment-popover>
-            </td>
-            <td
-                class="zem-campaign-budgets-list__edit-button-container-cell"
-                *ngIf="isBudgetEditable(budget)"
-            >
-                <button
-                    class="zem-campaign-budgets-list__edit-button zem-button zem-button--small zem-button--icon-only zem-button--edit-icon"
-                ></button>
-            </td>
-        </tr>
+        <ng-container
+            *ngFor="
+                let budget of formattedBudgets;
+                let index = index;
+                trackBy: trackByIndex
+            "
+        >
+            <ng-container *ngIf="{isExpanded: !budget.id} as budgetRow">
+                <tr
+                    [class.zem-campaign-budgets-list__row--error]="
+                        hasError(index)
+                    "
+                >
+                    <td>{{ budget.id || 'N/A' }}</td>
+                    <td>{{ budget.startDate }}</td>
+                    <td>{{ budget.endDate }}</td>
+                    <td>{{ budget.amount }}</td>
+                    <td *ngIf="showLicenseFee">{{ budget.licenseFee }}</td>
+                    <td *ngIf="showMargin">{{ budget.margin }}</td>
+                    <td>{{ budget.spend }}</td>
+                    <td>{{ budget.available }}</td>
+                    <td>
+                        <zem-comment-popover
+                            class="zem-comment-popover"
+                            *ngIf="budget.comment"
+                            [content]="budget.comment"
+                            [placement]="'left'"
+                        ></zem-comment-popover>
+                    </td>
+                    <td
+                        class="zem-campaign-budgets-list__cell-buttons"
+                        *ngIf="isAnyBudgetEditable"
+                    >
+                        <button
+                            class="zem-campaign-budgets-list__cell-button zem-button zem-button--small zem-button--icon-only zem-button--edit-icon"
+                            [disabled]="!isBudgetEditable(budget)"
+                            (click)="
+                                budgetRow.isExpanded = !budgetRow.isExpanded
+                            "
+                        ></button>
+                        <button
+                            class="zem-campaign-budgets-list__cell-button zem-button zem-button--danger zem-button--small zem-button--icon-only zem-button--remove-icon"
+                            [disabled]="!isBudgetEditable(budget) || budget.id"
+                            (click)="deleteBudget(index)"
+                        ></button>
+                    </td>
+                </tr>
+                <tr
+                    *ngIf="budgetRow.isExpanded"
+                    class="zem-campaign-budgets-list__row--expanded"
+                >
+                    <td colspan="10">
+                        <div class="zem-campaign-budgets-list__edit-form">
+                            <ng-container
+                                *ngTemplateOutlet="
+                                    editFormTemplate;
+                                    context: {
+                                        budget: budgets[index],
+                                        currency: currency,
+                                        budgetErrors: budgetsErrors[index],
+                                        showLicenseFee: showLicenseFee,
+                                        accountCredits: accountCredits
+                                    }
+                                "
+                            ></ng-container>
+                        </div>
+                    </td>
+                </tr>
+            </ng-container>
+        </ng-container>
         <tr *ngIf="formattedBudgets.length === 0">
             <td colspan="10" class="zem-table__no-data">No budget items.</td>
         </tr>

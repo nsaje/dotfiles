@@ -8,6 +8,8 @@ import {CampaignGoal} from '../../../../core/entities/types/campaign/campaign-go
 import {
     CampaignGoalKPI,
     CampaignConversionGoalType,
+    AccountCreditStatus,
+    Currency,
 } from '../../../../app.constants';
 import {ChangeEvent} from '../../../../shared/types/change-event';
 import {of, asapScheduler, throwError} from 'rxjs';
@@ -15,6 +17,9 @@ import {ConversionPixelsService} from '../../../../core/conversion-pixels/servic
 import {fakeAsync, tick} from '@angular/core/testing';
 import {CampaignSettingsStoreFieldsErrorsState} from './campaign-settings.store.fields-errors-state';
 import {ConversionPixel} from '../../../../core/conversion-pixels/types/conversion-pixel';
+import {AccountCredit} from '../../../../core/entities/types/account/account-credit';
+import * as moment from 'moment';
+import {CampaignBudget} from '../../../../core/entities/types/campaign/campaign-budget';
 
 describe('CampaignSettingsStore', () => {
     let campaignServiceStub: jasmine.SpyObj<CampaignService>;
@@ -623,5 +628,126 @@ describe('CampaignSettingsStore', () => {
         expect(store.state.entity.goals).toEqual(goals);
         expect(store.state.conversionPixels).toEqual([]);
         expect(store.state.conversionPixelsErrors).toEqual([]);
+    });
+
+    it('should correctly check if any account credit is available', () => {
+        const accountCredits: AccountCredit[] = [
+            {
+                id: '100',
+                createdOn: new Date(1970, 1, 21),
+                startDate: new Date(1970, 2, 21),
+                endDate: new Date(1970, 3, 21),
+                total: '5000000',
+                allocated: '3000000',
+                available: '2000000',
+                licenseFee: '200',
+                status: AccountCreditStatus.SIGNED,
+                currency: Currency.USD,
+                comment: 'A generic credit',
+                isAvailable: true,
+                isAgency: true,
+            },
+        ];
+
+        store.updateState(accountCredits, 'extras', 'accountCredits');
+        expect(store.isAnyAccountCreditAvailable()).toEqual(true);
+
+        accountCredits[0].isAvailable = false;
+        store.updateState(accountCredits, 'extras', 'accountCredits');
+        expect(store.isAnyAccountCreditAvailable()).toEqual(false);
+    });
+
+    it('should correctly create campaign budget', () => {
+        const accountCredits: AccountCredit[] = [
+            {
+                id: '100',
+                createdOn: new Date(1970, 1, 21),
+                startDate: new Date(1970, 2, 21),
+                endDate: new Date(1970, 3, 21),
+                total: '5000000',
+                allocated: '3000000',
+                available: '2000000',
+                licenseFee: '200',
+                status: AccountCreditStatus.SIGNED,
+                currency: Currency.USD,
+                comment: 'A generic credit',
+                isAvailable: true,
+                isAgency: true,
+            },
+        ];
+
+        expect(store.state.entity.budgets).toEqual([]);
+
+        store.updateState(accountCredits, 'extras', 'accountCredits');
+        store.createBudget();
+
+        expect(store.state.entity.budgets.length).toEqual(1);
+        expect(store.state.entity.budgets[0].creditId).toEqual(
+            accountCredits[0].id
+        );
+    });
+
+    it('should correctly update campaign budget', () => {
+        spyOn(store, 'validateEntity')
+            .and.returnValue(of())
+            .calls.reset();
+
+        const comment = 'A generic comment';
+        const budgets: CampaignBudget[] = [
+            {
+                id: '123',
+                creditId: '100',
+                startDate: new Date(1970, 2, 23),
+                endDate: new Date(1970, 3, 10),
+                amount: '1000000',
+                margin: '200',
+                comment: comment,
+                canEditStartDate: true,
+                canEditEndDate: false,
+                canEditAmount: true,
+            },
+        ];
+
+        store.updateState(budgets, 'entity', 'budgets');
+        expect(store.state.entity.budgets[0].comment).toEqual(comment);
+
+        const updatedComment = 'A new generic comment';
+        const changeEvent: ChangeEvent<CampaignBudget> = {
+            target: budgets[0],
+            changes: {
+                comment: updatedComment,
+            },
+        };
+
+        store.updateBudget(changeEvent);
+        expect(store.state.entity.budgets[0].comment).toEqual(updatedComment);
+    });
+
+    it('should correctly delete campaign budget', () => {
+        spyOn(store, 'validateEntity')
+            .and.returnValue(of())
+            .calls.reset();
+
+        const budgets: CampaignBudget[] = [
+            {
+                id: '123',
+                creditId: '100',
+                startDate: new Date(1970, 2, 23),
+                endDate: new Date(1970, 3, 10),
+                amount: '1000000',
+                margin: '200',
+                comment: 'A generic comment',
+                canEditStartDate: true,
+                canEditEndDate: false,
+                canEditAmount: true,
+            },
+        ];
+
+        store.updateState(budgets, 'entity', 'budgets');
+        expect(store.state.entity.budgets.length).toEqual(1);
+
+        store.deleteBudget(budgets[0]);
+
+        expect(store.state.entity.budgets.length).toEqual(0);
     });
 });
