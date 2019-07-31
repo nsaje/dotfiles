@@ -1834,24 +1834,19 @@ angular
             COLUMNS.salesforceUrl,
         ];
 
-        var CAMPAIGN_MANAGEMENT_GROUP = [
-            COLUMNS.campaignManager,
-            COLUMNS.campaignType,
-        ];
-
         var MANAGEMENT_GROUP = [
             COLUMNS.agencyId,
             COLUMNS.accountId,
             COLUMNS.campaignId,
+            COLUMNS.campaignType,
+            COLUMNS.campaignManager,
             COLUMNS.adGroupId,
             COLUMNS.contentAdId,
             COLUMNS.amplifyAdId,
             COLUMNS.sourceId,
             COLUMNS.sourceSlug,
             COLUMNS.sspdUrl,
-        ]
-            .concat(ACCOUNT_MANAGEMENT_GROUP)
-            .concat(CAMPAIGN_MANAGEMENT_GROUP);
+        ].concat(ACCOUNT_MANAGEMENT_GROUP);
 
         var SOURCE_GROUP = [COLUMNS.supplyDashUrl];
 
@@ -2016,9 +2011,10 @@ angular
         configureBreakdownExceptions(ACCOUNT_MANAGEMENT_GROUP, [
             constants.breakdown.ACCOUNT,
         ]);
-        configureBreakdownExceptions(CAMPAIGN_MANAGEMENT_GROUP, [
-            constants.breakdown.CAMPAIGN,
-        ]);
+        configureBreakdownExceptions(
+            [COLUMNS.campaignType, COLUMNS.campaignManager],
+            [constants.breakdown.CAMPAIGN]
+        );
         configureBreakdownExceptions(CONTENT_GROUP, [
             constants.breakdown.CONTENT_AD,
         ]);
