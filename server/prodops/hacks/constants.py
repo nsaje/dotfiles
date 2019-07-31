@@ -24,6 +24,7 @@ AD_GROUP_SETTINGS_CREATE_HACKS_PER_AGENCY = {
         "target_regions": ["AU"],
         "exclusion_target_regions": [],
     },
+    AGENCY_ROI_MARKETPLACE_ID: {"target_regions": ["US"]},
 }
 AD_GROUP_SETTINGS_HACKS_UPDATE_PER_AGENCY = {
     AGENCY_RCS_ID: {"delivery_type": dash.constants.AdGroupDeliveryType.ACCELERATED},
