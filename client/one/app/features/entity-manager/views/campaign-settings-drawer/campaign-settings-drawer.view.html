@@ -443,6 +443,54 @@
                     ></zem-campaign-budget-optimization>
                 </div>
             </div>
+
+            <div
+                class="zem-panel zem-settings__panel"
+                *ngIf="
+                    zemPermissions.hasPermission(
+                        'zemauth.can_see_backend_hacks'
+                    )
+                "
+                [zemInternalFeature]="
+                    zemPermissions.isPermissionInternal(
+                        'zemauth.can_see_backend_hacks'
+                    )
+                "
+            >
+                <div class="zem-panel__header">
+                    <h2 class="zem-settings__panel-header-title">
+                        Backend hacks
+                    </h2>
+                </div>
+                <div class="zem-settings-section">
+                    <zem-hacks
+                        class="zem-hacks zem-settings-section__item"
+                        [hacks]="state.extras.hacks"
+                    ></zem-hacks>
+                </div>
+            </div>
+
+            <div
+                class="zem-panel zem-settings__panel"
+                *ngIf="
+                    zemPermissions.hasPermission('zemauth.can_see_deals_in_ui')
+                "
+                [zemInternalFeature]="
+                    zemPermissions.isPermissionInternal(
+                        'zemauth.can_see_deals_in_ui'
+                    )
+                "
+            >
+                <div class="zem-panel__header">
+                    <h2 class="zem-settings__panel-header-title">Deals</h2>
+                </div>
+                <div class="zem-settings-section">
+                    <zem-deals
+                        class="zem-deals zem-settings-section__item"
+                        [deals]="state.extras.deals"
+                    ></zem-deals>
+                </div>
+            </div>
         </div>
         <zem-settings-drawer-footer
             class="zem-settings-drawer-footer zem-drawer__footer zem-settings__settings-footer"

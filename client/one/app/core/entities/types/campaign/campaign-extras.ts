@@ -12,4 +12,6 @@ export interface CampaignExtras {
     budgetsOverview: CampaignBudgetsOverview;
     budgetsDepleted: CampaignBudget[];
     accountCredits: AccountCredit[];
+    hacks: Hack[];
+    deals: Deal[];
 }

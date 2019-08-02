@@ -28,4 +28,6 @@ export const campaignExtrasMock: CampaignExtras = {
     },
     budgetsDepleted: [],
     accountCredits: [],
+    hacks: [],
+    deals: [],
 };
