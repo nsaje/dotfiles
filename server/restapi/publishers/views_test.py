@@ -1,4 +1,5 @@
 import json
+from unittest import mock
 
 from django.urls import reverse
 
@@ -57,7 +58,8 @@ class PublisherBlacklistTest(restapi.common.views_base_test.RESTAPITest):
             ],
         )
 
-    def test_adgroups_publishers_put(self):
+    @mock.patch("utils.k1_helper.update_ad_group")
+    def test_adgroups_publishers_put(self, mock_k1_update):
         test_blacklist = [
             {"name": "cnn2.com", "source": "gumgum", "status": "BLACKLISTED", "level": "ADGROUP", "modifier": None},
             {"name": "cnn3.com", "source": "gumgum", "status": "BLACKLISTED", "level": "CAMPAIGN", "modifier": None},
@@ -70,6 +72,8 @@ class PublisherBlacklistTest(restapi.common.views_base_test.RESTAPITest):
         )
         resp_json = self.assertResponseValid(r, data_type=list)
         self.assertEqual(resp_json["data"], test_blacklist)
+
+        mock_k1_update.assert_called_once_with(mock.ANY, msg="restapi.publishers.set", priority=True)
 
         self.assertEqual(self._get_resp_json(self.test_ad_group.id)["data"], test_blacklist)
 

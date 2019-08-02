@@ -8,6 +8,7 @@ import dash.constants
 import dash.views.helpers
 import restapi.access
 import restapi.common.views_base
+from utils import k1_helper
 
 from . import serializers
 
@@ -99,6 +100,7 @@ class PublishersViewSet(restapi.common.views_base.RESTAPIBaseViewSet):
         serializer = serializers.PublisherSerializer(data=request.data, many=True)
         serializer.is_valid(raise_exception=True)
         self._put_handle_entries(request, ad_group, serializer.validated_data)
+        k1_helper.update_ad_group(ad_group, msg="restapi.publishers.set", priority=True)
         return self.response_ok(serializer.data)
 
     @transaction.atomic()
@@ -119,7 +121,7 @@ class PublishersViewSet(restapi.common.views_base.RESTAPIBaseViewSet):
                 bid_modifier = entry.get("modifier")
                 try:
                     core.features.publisher_bid_modifiers.set(
-                        ad_group, entry["name"], entry["source"], bid_modifier, user=request.user
+                        ad_group, entry["name"], entry["source"], bid_modifier, user=request.user, propagate_to_k1=False
                     )
                 except core.features.bid_modifiers.exceptions.BidModifierInvalid:
                     raise serializers.ValidationError({"modifier": "Bid modifier invalid!"})
