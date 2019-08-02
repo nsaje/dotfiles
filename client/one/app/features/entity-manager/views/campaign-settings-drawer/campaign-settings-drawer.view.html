@@ -261,6 +261,36 @@
                     </div>
                 </zem-advanced-settings-section>
             </div>
+
+            <div
+                class="zem-panel zem-settings__panel"
+                *ngIf="
+                    zemPermissions.hasPermission(
+                        'zemauth.can_see_budget_optimization'
+                    )
+                "
+            >
+                <div class="zem-panel__header">
+                    <h2 class="zem-settings__panel-header-title">
+                        Budget optimization
+                    </h2>
+                </div>
+                <div class="zem-settings-section">
+                    <div class="zem-settings-section__header">
+                        <div class="zem-settings-section__description">
+                            Zemanta One will optimize your campaign budget
+                            across ad groups in order to hit your campaign goal.
+                            Budget will be paced evenly throughout the flight
+                            time of the campaign.
+                        </div>
+                    </div>
+                    <zem-campaign-budget-optimization
+                        class="zem-campaign-budget-optimization"
+                        [autopilot]="state.entity.autopilot"
+                        (autopilotChange)="store.setAutopilot($event)"
+                    ></zem-campaign-budget-optimization>
+                </div>
+            </div>
         </div>
         <zem-settings-drawer-footer
             class="zem-settings-drawer-footer zem-drawer__footer zem-settings__settings-footer"

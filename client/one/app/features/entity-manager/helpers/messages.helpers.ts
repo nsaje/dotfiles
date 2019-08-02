@@ -34,3 +34,24 @@ export function getDisabledArchiveActionText(entityType: EntityType) {
     }
     return null;
 }
+
+export function getAutopilotChangeConfirmMessage(
+    autopilotState: boolean
+): string {
+    if (autopilotState) {
+        return (
+            "Once campaign budget optimization is enabled, ad groups' " +
+            "flight time settings will be reset and won't be respected " +
+            'anymore. Budget flight time will be used for running ' +
+            "campaign's ad groups. Additionally, daily spend caps and " +
+            'bids settings will be disabled.\n\nAre you sure you want to ' +
+            'enable campaign budget optimization?'
+        );
+    }
+    return (
+        'You are about to disable campaign budget optimization. ' +
+        "Please check ad groups' flight times, daily spend caps and " +
+        'bids settings after settings are saved.\n\nAre you ' +
+        'sure you want to disable campaign budget optimization?'
+    );
+}

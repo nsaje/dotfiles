@@ -21,6 +21,7 @@ import {CampaignTracking} from '../../../../core/entities/types/campaign/campaig
 import * as commonHelpers from '../../../../shared/helpers/common.helpers';
 import {CampaignBudget} from '../../../../core/entities/types/campaign/campaign-budget';
 import * as moment from 'moment';
+import * as messagesHelpers from '../../helpers/messages.helpers';
 
 @Injectable()
 export class CampaignSettingsStore extends Store<CampaignSettingsStoreState>
@@ -101,6 +102,10 @@ export class CampaignSettingsStore extends Store<CampaignSettingsStoreState>
 
     saveEntity(): Promise<boolean> {
         return new Promise<boolean>(resolve => {
+            if (!this.isAutopilotChangeConfirmed()) {
+                resolve(false);
+                return;
+            }
             this.campaignService
                 .save(this.state.entity, this.requestStateUpdater)
                 .pipe(takeUntil(this.ngUnsubscribe$))
@@ -154,6 +159,20 @@ export class CampaignSettingsStore extends Store<CampaignSettingsStoreState>
 
     setName(name: string) {
         this.updateState(name, 'entity', 'name');
+        this.validateEntity();
+    }
+
+    setAutopilot(autopilot: boolean) {
+        this.updateState(autopilot, 'entity', 'autopilot');
+        this.validateEntity();
+    }
+
+    changeCampaignTracking($event: ChangeEvent<CampaignTracking>) {
+        const tracking = {
+            ...$event.target,
+            ...$event.changes,
+        };
+        this.updateState(tracking, 'entity', 'tracking');
         this.validateEntity();
     }
 
@@ -354,20 +373,7 @@ export class CampaignSettingsStore extends Store<CampaignSettingsStoreState>
      */
 
     /**
-     * Start: Performance Tracking
-     */
-
-    changeCampaignTracking($event: ChangeEvent<CampaignTracking>) {
-        const tracking = {
-            ...$event.target,
-            ...$event.changes,
-        };
-        this.updateState(tracking, 'entity', 'tracking');
-        this.validateEntity();
-    }
-
-    /**
-     * End: Performance Tracking
+     * Start: Campaign budget
      */
 
     isAnyAccountCreditAvailable(): boolean {
@@ -430,6 +436,10 @@ export class CampaignSettingsStore extends Store<CampaignSettingsStoreState>
         this.validateEntity();
     }
 
+    /**
+     * End: Campaign budget
+     */
+
     ngOnDestroy() {
         this.ngUnsubscribe$.next();
         this.ngUnsubscribe$.complete();
@@ -451,5 +461,19 @@ export class CampaignSettingsStore extends Store<CampaignSettingsStoreState>
                 'conversionPixelsRequests'
             );
         };
+    }
+
+    private isAutopilotChangeConfirmed(): boolean {
+        if (
+            !this.originalEntity ||
+            this.state.entity.autopilot === this.originalEntity.autopilot
+        ) {
+            return true;
+        }
+        return confirm(
+            messagesHelpers.getAutopilotChangeConfirmMessage(
+                this.state.entity.autopilot
+            )
+        );
     }
 }

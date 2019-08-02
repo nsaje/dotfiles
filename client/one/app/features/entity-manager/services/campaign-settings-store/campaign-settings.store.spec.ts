@@ -750,4 +750,15 @@ describe('CampaignSettingsStore', () => {
 
         expect(store.state.entity.budgets.length).toEqual(0);
     });
+
+    it('should correctly change campaign autopilot', () => {
+        spyOn(store, 'validateEntity')
+            .and.returnValue(of())
+            .calls.reset();
+
+        store.updateState(false, 'entity', 'autopilot');
+        expect(store.state.entity.autopilot).toEqual(false);
+        store.setAutopilot(true);
+        expect(store.state.entity.autopilot).toEqual(true);
+    });
 });

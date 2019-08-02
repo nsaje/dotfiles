@@ -1,0 +1,16 @@
+<zem-checkbox-input
+    class="zem-checkbox-input zem-campaign-budget-optimization__item"
+    [isChecked]="autopilot"
+    (toggle)="onAutopilotToggle($event)"
+>
+    Enable budget optimization
+</zem-checkbox-input>
+<div
+    class="zem-message zem-message--bubble zem-message--info zem-message--with-icon zem-campaign-budget-optimization__item"
+>
+    If you want to run on all available media sources, each ad group requires
+    minimum $30 (or equivalent in your currency) daily spend cap. Make sure your
+    campaign has enough budget to be paced evenly throughout the flight time or
+    use less media sources to prevent your campaign to run out of budget before
+    the end date.
+</div>

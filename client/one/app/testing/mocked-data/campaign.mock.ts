@@ -5,6 +5,7 @@ export const campaignMock: Campaign = {
     accountId: null,
     name: null,
     type: null,
+    autopilot: null,
     archived: null,
     tracking: {
         ga: {

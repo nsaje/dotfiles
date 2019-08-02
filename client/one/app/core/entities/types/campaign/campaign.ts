@@ -7,6 +7,7 @@ export interface Campaign {
     accountId: string;
     name: string;
     type: string;
+    autopilot: boolean;
     archived: boolean;
     tracking?: CampaignTracking;
     goals: CampaignGoal[];
