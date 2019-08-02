@@ -810,6 +810,28 @@ describe('CampaignSettingsStore', () => {
         expect(store.state.entity.frequencyCapping).toEqual(30);
     });
 
+    it('should correctly set publisher groups', () => {
+        spyOn(store, 'validateEntity')
+            .and.returnValue(of())
+            .calls.reset();
+        const $event: any = {
+            whitelistedPublisherGroups: [123, 456, 789],
+            blacklistedPublisherGroups: [],
+        };
+
+        expect(store.state.entity.targeting.publisherGroups).toEqual({
+            included: [],
+            excluded: [],
+        });
+
+        store.setPublisherGroupsTargeting($event);
+
+        expect(store.state.entity.targeting.publisherGroups).toEqual({
+            included: $event.whitelistedPublisherGroups,
+            excluded: $event.blacklistedPublisherGroups,
+        });
+    });
+
     it('should correctly change campaign autopilot', () => {
         spyOn(store, 'validateEntity')
             .and.returnValue(of())

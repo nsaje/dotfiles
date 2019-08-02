@@ -24,4 +24,10 @@ export const campaignMock: Campaign = {
     },
     goals: [],
     budgets: [],
+    targeting: {
+        publisherGroups: {
+            included: [],
+            excluded: [],
+        },
+    },
 };

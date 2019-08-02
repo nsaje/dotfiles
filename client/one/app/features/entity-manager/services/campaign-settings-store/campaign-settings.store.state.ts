@@ -31,6 +31,12 @@ export class CampaignSettingsStoreState {
         },
         goals: [],
         budgets: [],
+        targeting: {
+            publisherGroups: {
+                included: [],
+                excluded: [],
+            },
+        },
     };
     extras: CampaignExtras = {
         currency: null,

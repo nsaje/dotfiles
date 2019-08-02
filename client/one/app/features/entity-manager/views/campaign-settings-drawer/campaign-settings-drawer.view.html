@@ -214,6 +214,55 @@
             <div
                 class="zem-panel zem-settings__panel"
                 *ngIf="
+                    zemPermissions.hasPermission(
+                        'zemauth.can_set_white_blacklist_publisher_groups'
+                    ) &&
+                    zemPermissions.hasPermission(
+                        'zemauth.can_see_publisher_groups_ui'
+                    )
+                "
+            >
+                <div class="zem-panel__header">
+                    <h2 class="zem-settings__panel-header-title">
+                        Audience targeting
+                    </h2>
+                </div>
+                <div class="zem-settings-section">
+                    <div class="zem-settings-section__header">
+                        <div
+                            class="zem-settings-section__title"
+                            [zemInternalFeature]="
+                                zemPermissions.isPermissionInternal(
+                                    'zemauth.can_see_publisher_groups_ui'
+                                )
+                            "
+                        >
+                            Publishers
+                        </div>
+                        <div class="zem-settings-section__description">
+                            Define your publisher targeting by whitelisting or
+                            blacklisting publisher groups.
+                        </div>
+                    </div>
+                    <zem-publisher-group-targeting
+                        class="zem-publisher-group-targeting zem-settings-section__item"
+                        [accountId]="state.extras.accountId"
+                        [whitelistedPublisherGroups]="
+                            state.entity.targeting.publisherGroups.included
+                        "
+                        [blacklistedPublisherGroups]="
+                            state.entity.targeting.publisherGroups.excluded
+                        "
+                        (onUpdate)="
+                            store.setPublisherGroupsTargeting($event.$event)
+                        "
+                    ></zem-publisher-group-targeting>
+                </div>
+            </div>
+
+            <div
+                class="zem-panel zem-settings__panel"
+                *ngIf="
                     !zemPermissions.hasPermission('zemauth.disable_public_rcs')
                 "
             >

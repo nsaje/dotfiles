@@ -27,6 +27,7 @@ import * as commonHelpers from '../../../../shared/helpers/common.helpers';
 import {CampaignBudget} from '../../../../core/entities/types/campaign/campaign-budget';
 import * as moment from 'moment';
 import * as messagesHelpers from '../../helpers/messages.helpers';
+import {IncludedExcluded} from '../../../../core/entities/types/common/included-excluded';
 
 @Injectable()
 export class CampaignSettingsStore extends Store<CampaignSettingsStoreState>
@@ -194,6 +195,28 @@ export class CampaignSettingsStore extends Store<CampaignSettingsStoreState>
 
     setAutopilot(autopilot: boolean) {
         this.updateState(autopilot, 'entity', 'autopilot');
+        this.validateEntity();
+    }
+
+    setPublisherGroupsTargeting(publisherGroupsTargeting: {
+        whitelistedPublisherGroups?: number[];
+        blacklistedPublisherGroups?: number[];
+    }) {
+        const newPublisherGroupsTargeting: IncludedExcluded<number[]> = {
+            included: publisherGroupsTargeting.whitelistedPublisherGroups
+                ? publisherGroupsTargeting.whitelistedPublisherGroups
+                : this.state.entity.targeting.publisherGroups.included,
+            excluded: publisherGroupsTargeting.blacklistedPublisherGroups
+                ? publisherGroupsTargeting.blacklistedPublisherGroups
+                : this.state.entity.targeting.publisherGroups.excluded,
+        };
+
+        this.updateState(
+            newPublisherGroupsTargeting,
+            'entity',
+            'targeting',
+            'publisherGroups'
+        );
         this.validateEntity();
     }
 
