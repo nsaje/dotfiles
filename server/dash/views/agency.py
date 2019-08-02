@@ -591,7 +591,7 @@ class CampaignSettings(api_common.BaseApiView):
 
         current = models.CampaignGoal.objects.filter(campaign=campaign)
         changes = resource.get("goals", {"added": [], "removed": [], "primary": None, "modified": {}})
-        changes = hacks.apply_set_goals_hacks(campaign, changes)
+        changes = hacks.filter_campaign_goals_form_data(campaign, changes)
 
         # If the view is used via a REST API proxy, don't require goals to be already defined,
         # since that produces a chicken-and-egg problem. REST API combines POST and PUT calls into one
@@ -627,7 +627,7 @@ class CampaignSettings(api_common.BaseApiView):
             if errors:
                 raise exc.ValidationError(errors=errors)
 
-            hacks.apply_campaign_change_hacks(request, campaign, changes)
+            hacks.apply_campaign_change_hacks_form_data(request, campaign, changes)
 
         response = {
             "settings": self.get_dict(request, campaign.settings, campaign),

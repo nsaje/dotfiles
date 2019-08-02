@@ -149,14 +149,20 @@ class CampaignGoal(models.Model, bcm_mixin.CampaignGoalBCMMixin):
         return campaign_goal
 
     @transaction.atomic
-    def update(self, request, **updates):
+    def update(self, request, **updates) -> bool:
+        has_changes = False
         value = updates.get("value")
-        if value:
+        current_value = self.get_current_value()
+        if value and (current_value is None or current_value.local_value != value):
             self.add_local_value(request, value)
+            has_changes = True
         primary = updates.get("primary")
-        if primary:
+        if primary and self.primary != primary:
             self.set_primary(request)
-        utils.k1_helper.update_ad_groups(self.campaign.adgroup_set.all(), "campaign_goal.update")
+            has_changes = True
+        if has_changes:
+            utils.k1_helper.update_ad_groups(self.campaign.adgroup_set.all(), "campaign_goal.update")
+        return has_changes
 
     def get_view_key(self):
         return "campaign_goal_" + str(self.id)

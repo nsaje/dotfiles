@@ -28,8 +28,8 @@ from . import dailystatement
 from . import exceptions
 
 EXCLUDE_ACCOUNTS_LOW_AMOUNT_CHECK = (431, 305, 490)
-
 SKIP_AMOUNT_VALIDATION_CREDIT_IDS = [1251]
+UPDATABLE_FIELDS = ("start_date", "end_date", "amount", "comment")
 
 
 class BudgetLineItemManager(core.common.QuerySetManager):
@@ -138,19 +138,21 @@ class BudgetLineItem(core.common.FootprintModel, core.features.history.HistoryMi
         return {history_key: getattr(self, history_key) for history_key in self.history_fields}
 
     @transaction.atomic
-    def update(self, request, **updates):
-        start_date = updates.get("start_date")
-        if start_date:
-            self.start_date = start_date
-            self.clean_start_date()
-        end_date = updates.get("end_date")
-        if end_date:
-            self.end_date = end_date
-            self.clean_end_date()
-        amount = updates.get("amount")
-        if amount:
-            self.amount = amount
-        self.save(request=request, action_type=constants.HistoryActionType.BUDGET_CHANGE)
+    def update(self, request, **updates) -> bool:
+        has_changes = False
+        for field, new_value in updates.items():
+            if field not in UPDATABLE_FIELDS:
+                continue
+            if new_value != getattr(self, field):
+                has_changes = True
+                setattr(self, field, new_value)
+                if field == "start_date":
+                    self.clean_start_date()
+                elif field == "end_date":
+                    self.clean_end_date()
+        if has_changes:
+            self.save(request=request, action_type=constants.HistoryActionType.BUDGET_CHANGE)
+        return has_changes
 
     @transaction.atomic
     def save(self, request=None, user=None, action_type=None, *args, **kwargs):

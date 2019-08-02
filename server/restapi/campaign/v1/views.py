@@ -1,6 +1,7 @@
 from django.db import transaction
 
 import core.models
+import prodops.hacks
 import restapi.access
 import utils.converters
 import utils.exc
@@ -57,15 +58,17 @@ class CampaignViewSet(RESTAPIBaseViewSet):
                 raise utils.exc.ValidationError(errors={"account_id": [str(err)]})
 
             self._update_campaign(request, new_campaign, settings)
+            prodops.hacks.apply_campaign_create_hacks(request, new_campaign)
 
         return self.response_ok(
             serializers.CampaignSerializer(new_campaign.settings, context={"request": request}).data, status=201
         )
 
-    def _update_campaign(self, request, campaign, data):
+    def _update_campaign(self, request, campaign, settings):
         try:
-            campaign.update_type(data.get("campaign", {}).get("type"))
-            campaign.settings.update(request, **data)
+            settings = prodops.hacks.override_campaign_settings(campaign, settings)
+            campaign.update_type(settings.get("campaign", {}).get("type"))
+            campaign.settings.update(request, **settings)
 
         except core.models.settings.campaign_settings.exceptions.CannotChangeLanguage as err:
             raise utils.exc.ValidationError(errors={"language": [str(err)]})

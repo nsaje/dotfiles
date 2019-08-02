@@ -6,10 +6,20 @@ import dash.constants
 
 from . import constants
 
+######################
+# AdGroupSource hacks
+######################
 
-def _update_ad_group_sources_cpc(request, ad_group, cpc_cc):
-    for ad_group_source in ad_group.adgroupsource_set.all().select_related("settings"):
-        ad_group_source.settings.update(request, cpc_cc=cpc_cc)
+
+def override_ad_group_source_settings_form_data(ad_group, form_data):
+    if ad_group.campaign.account.agency_id in constants.CPC_GOAL_TO_BID_AGENCIES:
+        return _transform_bid_cpc_value_from_campaign_goal(ad_group, form_data)
+    return form_data
+
+
+######################
+# AdGroup hacks
+######################
 
 
 def apply_ad_group_create_hacks(request, ad_group):
@@ -34,30 +44,35 @@ def override_ad_group_settings(ad_group, updates):
     return updates
 
 
-def _get_cpc_goal_value(campaign):
-    cpc_goal = campaign.campaigngoal_set.filter(type=dash.constants.CampaignGoalKPI.CPC).first()
-    if not cpc_goal:
-        raise Exception("No CPC goal on the RCS campaign.")
-    return cpc_goal.get_current_value()
+######################
+# Campaign hacks
+######################
 
 
-def _transform_bid_cpc_value_from_campaign_goal(ad_group, form_data):
-    if ad_group.campaign.account.agency_id in constants.CPC_GOAL_TO_BID_AGENCIES:
-        cpc_goal_value = _get_cpc_goal_value(ad_group.campaign)
-        if form_data.get("local_cpc_cc"):
-            form_data["local_cpc_cc"] = cpc_goal_value.local_value
-        else:
-            form_data["cpc_cc"] = cpc_goal_value.value
-    return form_data
+def apply_campaign_create_hacks(request, campaign):
+    if campaign.account.agency_id in constants.CAMPAIGN_SETTINGS_CREATE_HACKS_PER_AGENCY:
+        campaign.settings.update(
+            request, **constants.CAMPAIGN_SETTINGS_CREATE_HACKS_PER_AGENCY[campaign.account.agency_id]
+        )
+    if campaign.account.agency_id in constants.FIXED_CAMPAIGN_TYPE_PER_AGENCY:
+        campaign.update_type(type=constants.FIXED_CAMPAIGN_TYPE_PER_AGENCY[campaign.account.agency_id])
 
 
-def override_ad_group_source_settings_form_data(ad_group, form_data):
-    if ad_group.campaign.account.agency_id in constants.CPC_GOAL_TO_BID_AGENCIES:
-        return _transform_bid_cpc_value_from_campaign_goal(ad_group, form_data)
-    return form_data
+def apply_campaign_change_hacks_form_data(request, campaign, goal_changes):
+    if campaign.account.agency_id in constants.CPC_GOAL_TO_BID_AGENCIES:
+        if not (goal_changes["modified"] or goal_changes["added"]):
+            return
+        for ad_group in campaign.adgroup_set.all():
+            _update_ad_group_sources_cpc(request, ad_group, _get_cpc_goal_value(ad_group.campaign).value)
 
 
-def apply_set_goals_hacks(campaign, goal_changes):
+def apply_campaign_goals_change_hacks(request, campaign):
+    if campaign.account.agency_id in constants.CPC_GOAL_TO_BID_AGENCIES:
+        for ad_group in campaign.adgroup_set.all():
+            _update_ad_group_sources_cpc(request, ad_group, _get_cpc_goal_value(ad_group.campaign).value)
+
+
+def filter_campaign_goals_form_data(campaign, goal_changes):
     if campaign.account.agency_id in constants.CPC_GOAL_TO_BID_AGENCIES:
         return {
             "added": list(
@@ -68,6 +83,29 @@ def apply_set_goals_hacks(campaign, goal_changes):
             "modified": goal_changes["modified"],
         }
     return goal_changes
+
+
+def filter_campaign_goals(campaign, goals):
+    if campaign.account.agency_id in constants.CPC_GOAL_TO_BID_AGENCIES:
+        return list(filter(lambda goal: goal["type"] == dash.constants.CampaignGoalKPI.CPC, goals))
+    return goals
+
+
+def override_campaign_settings_form_data(campaign, form_data):
+    if campaign.account.agency_id in constants.CAMPAIGN_SETTINGS_UPDATE_HACKS_PER_AGENCY:
+        form_data.update(constants.CAMPAIGN_SETTINGS_UPDATE_HACKS_PER_AGENCY[campaign.account.agency_id])
+    return form_data
+
+
+def override_campaign_settings(campaign, updates):
+    if campaign.account.agency_id in constants.CAMPAIGN_SETTINGS_UPDATE_HACKS_PER_AGENCY:
+        updates.update(constants.CAMPAIGN_SETTINGS_UPDATE_HACKS_PER_AGENCY[campaign.account.agency_id])
+    return updates
+
+
+######################
+# User hacks
+######################
 
 
 def apply_create_user_hacks(user, account):
@@ -83,24 +121,28 @@ def apply_create_user_hacks(user, account):
             user.groups.add(group)
 
 
-def apply_campaign_create_hacks(request, campaign):
-    if campaign.account.agency_id in constants.CAMPAIGN_SETTINGS_CREATE_HACKS_PER_AGENCY:
-        campaign.settings.update(
-            request, **constants.CAMPAIGN_SETTINGS_CREATE_HACKS_PER_AGENCY[campaign.account.agency_id]
-        )
-    if campaign.account.agency_id in constants.FIXED_CAMPAIGN_TYPE_PER_AGENCY:
-        campaign.update_type(type=constants.FIXED_CAMPAIGN_TYPE_PER_AGENCY[campaign.account.agency_id])
+######################
+# Private functions
+######################
 
 
-def apply_campaign_change_hacks(request, campaign, goal_changes):
-    if campaign.account.agency_id in constants.CPC_GOAL_TO_BID_AGENCIES:
-        if not (goal_changes["modified"] or goal_changes["added"]):
-            return
-        for ad_group in campaign.adgroup_set.all():
-            _update_ad_group_sources_cpc(request, ad_group, _get_cpc_goal_value(ad_group.campaign).value)
+def _update_ad_group_sources_cpc(request, ad_group, cpc_cc):
+    for ad_group_source in ad_group.adgroupsource_set.all().select_related("settings"):
+        ad_group_source.settings.update(request, cpc_cc=cpc_cc)
 
 
-def override_campaign_settings_form_data(campaign, form_data):
-    if campaign.account.agency_id in constants.CAMPAIGN_SETTINGS_UPDATE_HACKS_PER_AGENCY:
-        form_data.update(constants.CAMPAIGN_SETTINGS_UPDATE_HACKS_PER_AGENCY[campaign.account.agency_id])
+def _get_cpc_goal_value(campaign):
+    cpc_goal = campaign.campaigngoal_set.filter(type=dash.constants.CampaignGoalKPI.CPC).first()
+    if not cpc_goal:
+        raise Exception("No CPC goal on the RCS campaign.")
+    return cpc_goal.get_current_value()
+
+
+def _transform_bid_cpc_value_from_campaign_goal(ad_group, form_data):
+    if ad_group.campaign.account.agency_id in constants.CPC_GOAL_TO_BID_AGENCIES:
+        cpc_goal_value = _get_cpc_goal_value(ad_group.campaign)
+        if form_data.get("local_cpc_cc"):
+            form_data["local_cpc_cc"] = cpc_goal_value.local_value
+        else:
+            form_data["cpc_cc"] = cpc_goal_value.value
     return form_data

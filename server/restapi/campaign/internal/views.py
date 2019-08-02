@@ -9,6 +9,7 @@ import core.features.goals
 import core.models
 import dash.campaign_goals
 import dash.constants
+import prodops.hacks
 import restapi.access
 import restapi.campaign.v1.views
 import utils.exc
@@ -54,12 +55,9 @@ class CampaignViewSet(restapi.campaign.v1.views.CampaignViewSet):
         settings = serializer.validated_data
 
         with transaction.atomic():
-            # TODO: hacks.apply_set_goals_hacks
-            # TODO: hacks.override_campaign_settings_form_data
             self._update_campaign(request, campaign, settings)
             self._handle_campaign_goals(request, campaign, settings.get("goals", []))
             self._handle_campaign_budgets(request, campaign, settings.get("budgets", []))
-            # TODO: hacks.apply_campaign_change_hacks
 
         self._augment_campaign(request, campaign)
         return self.response_ok(serializers.CampaignSerializer(campaign.settings, context={"request": request}).data)
@@ -74,12 +72,11 @@ class CampaignViewSet(restapi.campaign.v1.views.CampaignViewSet):
             new_campaign = core.models.Campaign.objects.create(
                 request, account=account, name=settings.get("name"), type=settings.get("campaign", {}).get("type")
             )
-            # TODO: hacks.apply_set_goals_hacks
-            # TODO: hacks.override_campaign_settings_form_data
             self._update_campaign(request, new_campaign, settings)
             self._handle_campaign_goals(request, new_campaign, settings.get("goals", []))
             self._handle_campaign_budgets(request, new_campaign, settings.get("budgets", []))
-            # TODO: hacks.apply_campaign_change_hacks
+
+            prodops.hacks.apply_campaign_create_hacks(request, new_campaign)
 
         self._augment_campaign(request, new_campaign)
         return self.response_ok(
@@ -99,49 +96,64 @@ class CampaignViewSet(restapi.campaign.v1.views.CampaignViewSet):
             raise utils.exc.ValidationError(errors={"goals_missing": ["At least one goal must be defined."]})
 
         campaign_goals = self._get_campaign_goals(campaign)
-        data_to_create = [x for x in data if x.get("id") is None]
-        data_to_update = [x for x in data if x.get("id") is not None]
-        goal_ids_to_delete = [x.id for x in campaign_goals if x.id not in [y.get("id") for y in data_to_update]]
 
+        goal_ids_to_delete = [x.id for x in campaign_goals if x.id not in [y.get("id") for y in data]]
         for goal_id in goal_ids_to_delete:
-            # TODO: should be refactored to core.features.goals.service
             dash.campaign_goals.delete_campaign_goal(request, goal_id, campaign)
 
-        for item in data_to_update:
-            campaign_goal = self._get_campaign_goal(campaign_goals, item.get("id"))
-            campaign_goal.update(request, **item)
+        errors = []
+        campaign_goals_change = False
+        for item in data:
+            if item.get("id") is not None:
+                campaign_goal = self._get_campaign_goal(campaign_goals, item.get("id"))
+                campaign_goal_updated = campaign_goal.update(request, **item)
+                if campaign_goal_updated:
+                    campaign_goals_change = True
+                # Updating campaign goal do not
+                # raise any validation errors.
+                errors.append(None)
+            elif len(prodops.hacks.filter_campaign_goals(campaign, [item])) == 1:
+                campaign_goals_change = True
+                errors.append(self._create_campaign_goal(request, campaign, item))
 
-        for item in data_to_create:
-            self._create_campaign_goal(request, campaign, item)
+        if any([error is not None for error in errors]):
+            raise utils.exc.ValidationError(errors={"goals": errors})
+
+        if campaign_goals_change:
+            prodops.hacks.apply_campaign_goals_change_hacks(request, campaign)
 
     def _handle_campaign_budgets(self, request, campaign, data):
         if request.user.has_perm("zemauth.disable_budget_management"):
             raise utils.exc.AuthorizationError()
 
         campaign_budgets = self._get_campaign_budgets(campaign)
-        data_to_create = [x for x in data if x.get("id") is None]
-        data_to_update = [x for x in data if x.get("id") is not None]
 
-        for item in data_to_update:
-            campaign_budget = self._get_campaign_budget(campaign_budgets, item.get("id"))
-            self._update_campaign_budget(campaign_budget.update, request=request, **item)
+        errors = []
+        for item in data:
+            if item.get("id") is not None:
+                campaign_budget = self._get_campaign_budget(campaign_budgets, item.get("id"))
+                errors.append(self._handle_campaign_budget(campaign_budget.update, request=request, **item))
+            else:
+                credit = self._get_credit(campaign, item.get("credit", {}).get("id"))
+                errors.append(
+                    self._handle_campaign_budget(
+                        core.features.bcm.BudgetLineItem.objects.create,
+                        request=request,
+                        campaign=campaign,
+                        credit=credit,
+                        start_date=item.get("start_date"),
+                        end_date=item.get("end_date"),
+                        amount=item.get("amount"),
+                        margin=item.get("margin"),
+                        comment=item.get("comment"),
+                    )
+                )
 
-        for item in data_to_create:
-            credit = self._get_credit(campaign, item.get("credit", {}).get("id"))
-            self._update_campaign_budget(
-                core.features.bcm.BudgetLineItem.objects.create,
-                request=request,
-                campaign=campaign,
-                credit=credit,
-                start_date=item.get("start_date"),
-                end_date=item.get("end_date"),
-                amount=item.get("amount"),
-                margin=item.get("margin"),
-                comment=item.get("comment"),
-            )
+        if any([error is not None for error in errors]):
+            raise utils.exc.ValidationError(errors={"budgets": errors})
 
     @staticmethod
-    def _get_campaign_goal(campaign_goals, goal_id):
+    def _get_campaign_goal(campaign_goals, goal_id) -> core.features.goals.CampaignGoal:
         campaign_goal = next((x for x in campaign_goals if x.id == goal_id), None)
         if campaign_goal is None:
             raise utils.exc.MissingDataError("Campaign goal does not exist!")
@@ -160,7 +172,6 @@ class CampaignViewSet(restapi.campaign.v1.views.CampaignViewSet):
         )
         return goals
 
-    # TODO: should be added to core.features.goals.service
     @staticmethod
     @transaction.atomic
     def _create_campaign_goal(request, campaign, data):
@@ -176,22 +187,22 @@ class CampaignViewSet(restapi.campaign.v1.views.CampaignViewSet):
                 )
 
             except core.features.goals.conversion_goal.exceptions.ConversionGoalLimitExceeded as err:
-                raise utils.exc.ValidationError(errors={"conversionGoal": [str(err)]})
-
-            except core.features.goals.conversion_goal.exceptions.ConversionWindowRequired as err:
-                raise utils.exc.ValidationError(errors={"conversionGoal": {"conversionWindow": [str(err)]}})
-
-            except core.features.goals.conversion_goal.exceptions.ConversionPixelInvalid as err:
-                raise utils.exc.ValidationError(errors={"conversionGoal": {"goalId": [str(err)]}})
+                return {"conversion_goal": [str(err)]}
 
             except core.features.goals.conversion_goal.exceptions.ConversionGoalNotUnique as err:
-                raise utils.exc.ValidationError(errors={"conversionGoal": [str(err)]})
+                return {"conversion_goal": [str(err)]}
+
+            except core.features.goals.conversion_goal.exceptions.ConversionWindowRequired as err:
+                return {"conversion_goal": {"conversion_window": [str(err)]}}
+
+            except core.features.goals.conversion_goal.exceptions.ConversionPixelInvalid as err:
+                return {"conversion_goal": {"goal_id": [str(err)]}}
 
             except core.features.goals.conversion_goal.exceptions.GoalIDInvalid as err:
-                raise utils.exc.ValidationError(errors={"conversionGoal": {"goalId": [str(err)]}})
+                return {"conversion_goal": {"goal_id": [str(err)]}}
 
         try:
-            new_goal = core.features.goals.CampaignGoal.objects.create(
+            core.features.goals.CampaignGoal.objects.create(
                 request,
                 campaign,
                 goal_type=dash.constants.CampaignGoalKPI.CPA if conversion_goal else data.get("type"),
@@ -201,15 +212,13 @@ class CampaignViewSet(restapi.campaign.v1.views.CampaignViewSet):
             )
 
         except core.features.goals.campaign_goal.exceptions.ConversionGoalLimitExceeded as err:
-            raise utils.exc.ValidationError(str(err))
-
-        except core.features.goals.campaign_goal.exceptions.MultipleSameTypeGoals as err:
-            raise utils.exc.ValidationError(errors={"type": [str(err)]})
+            return {"conversion_goal": [str(err)]}
 
         except core.features.goals.campaign_goal.exceptions.ConversionGoalRequired as err:
-            raise utils.exc.ValidationError(errors={"conversionGoal": [str(err)]})
+            return {"conversion_goal": [str(err)]}
 
-        return new_goal
+        except core.features.goals.campaign_goal.exceptions.MultipleSameTypeGoals as err:
+            return {"type": [str(err)]}
 
     @staticmethod
     def _get_campaign_budgets(campaign):
@@ -226,7 +235,7 @@ class CampaignViewSet(restapi.campaign.v1.views.CampaignViewSet):
         ]
 
     @staticmethod
-    def _get_campaign_budget(budgets, budget_id):
+    def _get_campaign_budget(budgets, budget_id) -> core.features.bcm.BudgetLineItem:
         budget = next((x for x in budgets if x.id == budget_id), None)
         if budget is None:
             raise utils.exc.MissingDataError("Campaign budget does not exist!")
@@ -244,9 +253,9 @@ class CampaignViewSet(restapi.campaign.v1.views.CampaignViewSet):
 
     @staticmethod
     @transaction.atomic
-    def _update_campaign_budget(budget_update, **kwargs):
+    def _handle_campaign_budget(budget_update, **kwargs):
         try:
-            new_budget = budget_update(**kwargs)
+            budget_update(**kwargs)
 
         except utils.exc.MultipleValidationError as err:
             errors = {}
@@ -296,21 +305,19 @@ class CampaignViewSet(restapi.campaign.v1.views.CampaignViewSet):
                 elif isinstance(e, core.features.bcm.exceptions.OverlappingBudgetMarginInvalid):
                     errors.setdefault("margin", []).append(str(e))
 
-            raise utils.exc.ValidationError(errors=errors)
+            return errors
 
         except core.features.bcm.exceptions.CanNotChangeStartDate as err:
-            raise utils.exc.ValidationError(errors={"start_date": [str(err)]})
-
-        except core.features.bcm.exceptions.CanNotChangeBudget as err:
-            raise utils.exc.ValidationError(str(err))
+            return {"start_date": [str(err)]}
 
         except core.features.bcm.exceptions.CreditCanceled as err:
-            raise utils.exc.ValidationError(errors={"credit_id": [str(err)]})
+            return {"credit_id": [str(err)]}
 
         except core.features.bcm.exceptions.StartDateInThePast as err:
-            raise utils.exc.ValidationError(errors={"start_date": [str(err)]})
+            return {"start_date": [str(err)]}
 
         except core.features.bcm.exceptions.EndDateInThePast as err:
-            raise utils.exc.ValidationError(errors={"end_date": [str(err)]})
+            return {"end_date": [str(err)]}
 
-        return new_budget
+        except core.features.bcm.exceptions.CanNotChangeBudget as err:
+            return {"state": [str(err)]}

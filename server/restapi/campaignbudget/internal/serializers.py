@@ -8,6 +8,9 @@ import restapi.serializers.fields
 
 class CampaignBudgetSerializer(restapi.campaignbudget.v1.serializers.CampaignBudgetSerializer):
     id = restapi.serializers.fields.IdField(required=False, allow_null=True)
+    comment = restapi.serializers.fields.PlainCharField(
+        required=False, max_length=256, allow_null=True, allow_blank=True
+    )
     can_edit_start_date = rest_framework.serializers.BooleanField(read_only=True)
     can_edit_end_date = rest_framework.serializers.BooleanField(read_only=True)
     can_edit_amount = rest_framework.serializers.BooleanField(read_only=True)
