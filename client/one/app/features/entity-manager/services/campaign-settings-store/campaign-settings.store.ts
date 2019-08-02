@@ -15,7 +15,12 @@ import {CampaignSettingsStoreFieldsErrorsState} from './campaign-settings.store.
 import * as deepEqual from 'fast-deep-equal';
 import {CampaignGoal} from '../../../../core/entities/types/campaign/campaign-goal';
 import {ChangeEvent} from '../../../../shared/types/change-event';
-import {CampaignGoalKPI} from '../../../../app.constants';
+import {
+    CampaignGoalKPI,
+    CampaignType,
+    IabCategory,
+    Language,
+} from '../../../../app.constants';
 import {ConversionPixelChangeEvent} from '../../types/conversion-pixel-change-event';
 import {CampaignTracking} from '../../../../core/entities/types/campaign/campaign-tracking';
 import * as commonHelpers from '../../../../shared/helpers/common.helpers';
@@ -159,6 +164,31 @@ export class CampaignSettingsStore extends Store<CampaignSettingsStoreState>
 
     setName(name: string) {
         this.updateState(name, 'entity', 'name');
+        this.validateEntity();
+    }
+
+    setType(type: CampaignType) {
+        this.updateState(type, 'entity', 'type');
+        this.validateEntity();
+    }
+
+    setCampaignManager(campaignManager: number) {
+        this.updateState(campaignManager, 'entity', 'campaignManager');
+        this.validateEntity();
+    }
+
+    setIabCategory(iabCategory: IabCategory) {
+        this.updateState(iabCategory, 'entity', 'iabCategory');
+        this.validateEntity();
+    }
+
+    setLanguage(language: Language) {
+        this.updateState(language, 'entity', 'language');
+        this.validateEntity();
+    }
+
+    setFrequencyCapping(frequencyCapping: number) {
+        this.updateState(frequencyCapping, 'entity', 'frequencyCapping');
         this.validateEntity();
     }
 

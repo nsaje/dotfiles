@@ -24,6 +24,109 @@
         <div
             class="zem-drawer__content custom-scroller zem-settings__settings-container"
         >
+            <div class="zem-panel zem-settings__panel">
+                <div class="zem-panel__header">
+                    <h2 class="zem-settings__panel-header-title">
+                        General settings
+                    </h2>
+                </div>
+                <div class="zem-settings-section">
+                    <zem-select-setting
+                        class="zem-select-setting zem-settings-section__item"
+                        *ngIf="
+                            zemPermissions.hasPermission(
+                                'zemauth.fea_can_change_campaign_type'
+                            )
+                        "
+                        [label]="'Campaign Type'"
+                        [helpMessage]="
+                            'Campaign type determines the creative requirements and enables certain features. Campaign type can be changed until you create the first ad group.'
+                        "
+                        [value]="state.entity.type"
+                        [bindLabel]="'name'"
+                        [bindValue]="'value'"
+                        [items]="CAMPAIGN_TYPES"
+                        [placeholder]="'Choose type'"
+                        [isSearchable]="false"
+                        [isClearable]="false"
+                        [errors]="state.fieldsErrors.type"
+                        (valueChange)="store.setType($event)"
+                    ></zem-select-setting>
+                    <zem-select-setting
+                        class="zem-select-setting zem-settings-section__item"
+                        *ngIf="
+                            zemPermissions.hasPermission(
+                                'zemauth.can_modify_campaign_manager'
+                            )
+                        "
+                        [label]="'Campaign Manager'"
+                        [helpMessage]="
+                            'Campaign manager responsible for the campaign and the communication with the client.'
+                        "
+                        [value]="state.entity.campaignManager"
+                        [bindLabel]="'name'"
+                        [bindValue]="'id'"
+                        [items]="state.extras.campaignManagers"
+                        [placeholder]="'Choose manager'"
+                        [isSearchable]="true"
+                        [isClearable]="false"
+                        [errors]="state.fieldsErrors.campaignManager"
+                        (valueChange)="store.setCampaignManager($event)"
+                    ></zem-select-setting>
+                    <zem-select-setting
+                        class="zem-select-setting zem-settings-section__item"
+                        *ngIf="
+                            zemPermissions.hasPermission(
+                                'zemauth.can_modify_campaign_iab_category'
+                            )
+                        "
+                        [label]="'Campaign Category'"
+                        helpMessage="Specify campaign's content category. All campaigns must list one top-level category. If you are using mixed content consider splitting your campaign."
+                        [value]="state.entity.iabCategory"
+                        [bindLabel]="'name'"
+                        [bindValue]="'value'"
+                        [items]="IAB_CATEGORIES"
+                        [placeholder]="'Choose category'"
+                        [isSearchable]="true"
+                        [isClearable]="false"
+                        [errors]="state.fieldsErrors.iabCategory"
+                        (valueChange)="store.setIabCategory($event)"
+                    ></zem-select-setting>
+                    <zem-select-setting
+                        class="zem-select-setting zem-settings-section__item"
+                        *ngIf="
+                            zemPermissions.hasPermission(
+                                'zemauth.can_see_campaign_language_choices'
+                            )
+                        "
+                        [label]="'Campaign Language'"
+                        helpMessage="Language can be updated only if Campaign has no Ad Groups yet."
+                        [value]="state.entity.language"
+                        [bindLabel]="'name'"
+                        [bindValue]="'value'"
+                        [items]="LANGUAGES"
+                        [placeholder]="'Choose language'"
+                        [isSearchable]="false"
+                        [isClearable]="false"
+                        [errors]="state.fieldsErrors.language"
+                        (valueChange)="store.setLanguage($event)"
+                    ></zem-select-setting>
+                    <zem-integer-setting
+                        class="zem-integer-setting zem-settings-section__item"
+                        *ngIf="
+                            zemPermissions.hasPermission(
+                                'zemauth.can_set_frequency_capping'
+                            )
+                        "
+                        [label]="'Daily impression frequency cap'"
+                        helpMessage="This setting defines the maximum number of times your ads from this campaign will be shown to a unique user in one day."
+                        [value]="state.entity.frequencyCapping"
+                        [errors]="state.fieldsErrors.frequencyCapping"
+                        (valueChange)="store.setFrequencyCapping($event)"
+                    ></zem-integer-setting>
+                </div>
+            </div>
+
             <div
                 class="zem-panel zem-settings__panel"
                 *ngIf="
@@ -50,7 +153,7 @@
                         </div>
                     </div>
                     <div
-                        class="zem-message zem-message--bubble zem-message--error zem-message--with-icon zem-campaign-goals__item"
+                        class="zem-message zem-message--bubble zem-message--error zem-message--with-icon zem-settings-section__item"
                         *ngIf="
                             state.entity.goals.length === 0 &&
                             state.fieldsErrors.goalsMissing.length > 0
@@ -65,7 +168,7 @@
                         </span>
                     </div>
                     <div
-                        class="zem-message zem-message--bubble zem-message--warning zem-message--with-icon zem-campaign-goals__item"
+                        class="zem-message zem-message--bubble zem-message--warning zem-message--with-icon zem-settings-section__item"
                         *ngIf="
                             state.entity.goals.length === 0 &&
                             state.fieldsErrors.goalsMissing.length === 0
@@ -74,8 +177,8 @@
                         Currently there are no defined campaign goals.
                     </div>
                     <zem-campaign-goals
-                        class="zem-campaign-goals"
-                        [campaignType]="campaignType"
+                        class="zem-campaign-goals zem-settings-section__item"
+                        [campaignType]="state.entity.type"
                         [onlyCpc]="
                             zemPermissions.hasPermission(
                                 'zemauth.disable_public_rcs'
@@ -127,7 +230,7 @@
                         </div>
                     </div>
                     <zem-campaign-performance-tracking
-                        class="zem-campaign-performance-tracking"
+                        class="zem-campaign-performance-tracking zem-settings-section__item"
                         [campaignTracking]="state.entity.tracking"
                         [campaignTrackingErrors]="state.fieldsErrors.tracking"
                         (campaignTrackingChange)="
@@ -168,7 +271,7 @@
                         </div>
                     </div>
                     <zem-campaign-budgets-overview
-                        class="zem-campaign-budgets-overview"
+                        class="zem-campaign-budgets-overview zem-settings-section__item"
                         [overview]="state.extras.budgetsOverview"
                         [currency]="state.extras.currency"
                     ></zem-campaign-budgets-overview>
@@ -180,7 +283,7 @@
                         </div>
                     </div>
                     <div
-                        class="zem-campaign-settings-drawer__budgets-list-container custom-scroller"
+                        class="zem-campaign-settings-drawer__budgets-list-container custom-scroller zem-settings-section__item"
                     >
                         <zem-campaign-budgets-list
                             class="zem-campaign-budgets-list"
@@ -248,7 +351,7 @@
                             </div>
                         </div>
                         <div
-                            class="zem-campaign-settings-drawer__budgets-list-container custom-scroller"
+                            class="zem-campaign-settings-drawer__budgets-list-container custom-scroller zem-settings-section__item"
                         >
                             <zem-campaign-budgets-list
                                 class="zem-campaign-budgets-list"

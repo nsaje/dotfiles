@@ -111,7 +111,7 @@
                             </div>
                         </div>
                         <zem-dayparting-setting
-                            class="zem-dayparting-setting"
+                            class="zem-dayparting-setting zem-settings-section__item"
                             [daypartingSetting]="state.entity.dayparting"
                             [errors]="state.fieldsErrors.dayparting"
                             (valueChange)="store.setDayparting($event)"
@@ -351,7 +351,7 @@
                         </div>
                     </div>
                     <zem-device-targeting-settings
-                        class="zem-device-targeting-settings"
+                        class="zem-device-targeting-settings zem-settings-section__item"
                         [targetDevices]="state.entity.targeting.devices"
                         [targetPlacements]="state.entity.targeting.placements"
                         [targetOs]="state.entity.targeting.os"
@@ -405,7 +405,7 @@
                         </div>
                     </div>
                     <zem-geo-targeting
-                        class="zem-geo-targeting"
+                        class="zem-geo-targeting zem-settings-section__item"
                         [includedLocations]="
                             state.entity.targeting.geo.included
                         "
@@ -427,7 +427,7 @@
                 >
                     <div class="zem-settings-section">
                         <zem-zip-targeting
-                            class="zem-zip-targeting"
+                            class="zem-zip-targeting zem-settings-section__item"
                             [includedLocations]="
                                 state.entity.targeting.geo.included
                             "
@@ -453,7 +453,7 @@
                 </div>
                 <div class="zem-settings-section">
                     <zem-tracking-code-setting
-                        class="zem-tracking-code-setting"
+                        class="zem-tracking-code-setting zem-settings-section__item"
                         [value]="state.entity.trackingCode"
                         [errors]="state.fieldsErrors.trackingCode"
                         (valueChange)="store.setTrackingCode($event)"
@@ -471,7 +471,7 @@
                 >
                     <div class="zem-settings-section">
                         <zem-tracking-pixel-setting
-                            class="zem-tracking-pixel-setting"
+                            class="zem-tracking-pixel-setting zem-settings-section__item"
                             [redirectPixelUrls]="state.entity.redirectPixelUrls"
                             [redirectJavascript]="
                                 state.entity.redirectJavascript
@@ -515,7 +515,7 @@
                         </div>
                     </div>
                     <zem-publisher-group-targeting
-                        class="zem-publisher-group-targeting"
+                        class="zem-publisher-group-targeting zem-settings-section__item"
                         [accountId]="state.extras.accountId"
                         [whitelistedPublisherGroups]="
                             state.entity.targeting.publisherGroups.included
@@ -546,7 +546,7 @@
                         </div>
                     </div>
                     <zem-interest-targeting
-                        class="zem-interest-targeting"
+                        class="zem-interest-targeting zem-settings-section__item"
                         [includedInterests]="
                             state.entity.targeting.interest.included
                         "
@@ -707,7 +707,7 @@
                 </div>
                 <div class="zem-settings-section">
                     <zem-hacks
-                        class="zem-hacks"
+                        class="zem-hacks zem-settings-section__item"
                         [hacks]="state.extras.hacks"
                     ></zem-hacks>
                 </div>
@@ -729,7 +729,7 @@
                 </div>
                 <div class="zem-settings-section">
                     <zem-deals
-                        class="zem-deals"
+                        class="zem-deals zem-settings-section__item"
                         [deals]="state.extras.deals"
                     ></zem-deals>
                 </div>

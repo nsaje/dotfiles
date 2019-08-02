@@ -116,6 +116,48 @@
     background-image: url('images/edit-white.svg');
 }
 
+.zem-button--expand-icon:not(.zem-button--loading)::before {
+    background-image: url('@{images-folder}/arrow-wide-sec.svg');
+    transition: all @duration-and-timing-fn--default;
+}
+
+.zem-button--highlighted.zem-button--expand-icon:not(.zem-button--loading)::before {
+    background-image: url('images/arrow-wide-white.svg');
+    transition: all @duration-and-timing-fn--default;
+}
+
+.zem-button--expand-icon.zem-button--with-icon::before,
+.zem-button--expand-icon.zem-button--icon-only::before {
+    height: 9px;
+}
+
+.zem-button--expand-icon.zem-button--small.zem-button--with-icon::before,
+.zem-button--expand-icon.zem-button--small.zem-button--icon-only::before {
+    height: 8px;
+}
+
+.zem-button--collapse-icon:not(.zem-button--loading)::before {
+    background-image: url('@{images-folder}/arrow-wide-sec.svg');
+    transform: translateY(-50%) rotate(-180deg);
+    transition: all @duration-and-timing-fn--default;
+}
+
+.zem-button--highlighted.zem-button--collapse-icon:not(.zem-button--loading)::before {
+    background-image: url('images/arrow-wide-white.svg');
+    transform: translateY(-50%) rotate(-180deg);
+    transition: all @duration-and-timing-fn--default;
+}
+
+.zem-button--collapse-icon.zem-button--with-icon::before,
+.zem-button--collapse-icon.zem-button--icon-only::before {
+    height: 9px;
+}
+
+.zem-button--collapse-icon.zem-button--small.zem-button--with-icon::before,
+.zem-button--collapse-icon.zem-button--small.zem-button--icon-only::before {
+    height: 8px;
+}
+
 .zem-button--check-icon:not(.zem-button--loading)::before {
     background-image: url('@{images-folder}/check-sec.svg');
 }

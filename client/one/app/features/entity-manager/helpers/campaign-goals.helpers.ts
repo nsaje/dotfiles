@@ -118,7 +118,11 @@ function isGoalAvailable(
 
     // Display campaigns do not support CPCV goals
     if (
-        campaignType === CampaignType.DISPLAY &&
+        isEqualToAnyParameter(
+            campaignType,
+            CampaignType.DISPLAY,
+            APP_CONSTANTS.campaignTypes.DISPLAY
+        ) &&
         isEqualToAnyParameter(
             option.value,
             CampaignGoalKPI.CPCV,

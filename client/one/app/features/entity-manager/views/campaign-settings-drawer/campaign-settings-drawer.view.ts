@@ -8,16 +8,16 @@ import {
     OnInit,
     OnDestroy,
 } from '@angular/core';
-import {ENTITY_MANAGER_CONFIG} from '../../entity-manager.config';
-import {CampaignSettingsStore} from '../../services/campaign-settings-store/campaign-settings.store';
 import {
-    LevelStateParam,
-    EntityType,
-    CampaignType,
-} from '../../../../app.constants';
+    ENTITY_MANAGER_CONFIG,
+    CAMPAIGN_TYPES,
+    IAB_CATEGORIES,
+    LANGUAGES,
+} from '../../entity-manager.config';
+import {CampaignSettingsStore} from '../../services/campaign-settings-store/campaign-settings.store';
+import {LevelStateParam, EntityType} from '../../../../app.constants';
 import * as messagesHelpers from '../../helpers/messages.helpers';
-import {Subject, Observable, merge} from 'rxjs';
-import {takeUntil, distinctUntilChanged, map, tap} from 'rxjs/operators';
+import {Subject} from 'rxjs';
 
 @Component({
     selector: 'zem-campaign-settings-drawer',
@@ -32,10 +32,12 @@ export class CampaignSettingsDrawerView
     newEntityParentId: string;
 
     EntityType = EntityType;
+    CAMPAIGN_TYPES = CAMPAIGN_TYPES;
+    IAB_CATEGORIES = IAB_CATEGORIES;
+    LANGUAGES = LANGUAGES;
 
     isOpen: boolean;
     isNewEntity: boolean;
-    campaignType: CampaignType;
 
     private ngUnsubscribe$: Subject<void> = new Subject();
 
@@ -49,8 +51,6 @@ export class CampaignSettingsDrawerView
 
     ngOnInit() {
         this.isNewEntity = !this.entityId;
-
-        this.subscribeToStateUpdates();
     }
 
     ngAfterViewInit() {
@@ -128,22 +128,6 @@ export class CampaignSettingsDrawerView
     canAccessAgencyCosts(): boolean {
         return this.zemPermissions.canAccessAgencyCosts(
             this.zemNavigationNewService.getActiveAccount()
-        );
-    }
-
-    private subscribeToStateUpdates() {
-        merge(this.createCampaignTypeUpdater$())
-            .pipe(takeUntil(this.ngUnsubscribe$))
-            .subscribe();
-    }
-
-    private createCampaignTypeUpdater$(): Observable<string> {
-        return this.store.state$.pipe(
-            map(state => state.entity.type),
-            distinctUntilChanged(),
-            tap(type => {
-                this.campaignType = CampaignType[type];
-            })
         );
     }
 

@@ -29,7 +29,8 @@
     </div>
     <div class="zem-campaign-goal__action">
         <button
-            class="zem-button zem-button--icon-only zem-button--edit-icon"
+            class="zem-button zem-button--icon-only zem-button--expand-icon"
+            [class.zem-button--collapse-icon]="isEditFormVisible"
             (click)="toggleEditCampaignGoal($event)"
         ></button>
     </div>

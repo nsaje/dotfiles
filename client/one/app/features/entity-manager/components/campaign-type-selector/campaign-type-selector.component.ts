@@ -9,7 +9,7 @@ import {
     Inject,
 } from '@angular/core';
 import {downgradeComponent} from '@angular/upgrade/static';
-import {CampaignType} from '../../../../app.constants';
+import {APP_CONSTANTS} from '../../../../app.constants';
 import {GoogleAnalyticsService} from '../../../../core/google-analytics/google-analytics.service';
 import {MixpanelService} from '../../../../core/mixpanel/mixpanel.service';
 
@@ -27,7 +27,7 @@ export class CampaignTypeSelectorComponent {
     onSelect = new EventEmitter<number>();
 
     isDisplayDemoRequestVisible = false;
-    CampaignType = CampaignType;
+    campaignTypes = APP_CONSTANTS.campaignTypes;
 
     constructor(
         private googleAnalyticsService: GoogleAnalyticsService,
@@ -41,7 +41,7 @@ export class CampaignTypeSelectorComponent {
             this.mixpanelService.logCampaignTypeSelection(campaignType);
         }
         if (
-            campaignType === CampaignType.DISPLAY &&
+            campaignType === APP_CONSTANTS.campaignTypes.DISPLAY &&
             !this.zemPermissions.hasPermission(
                 'zemauth.fea_can_change_campaign_type_to_display'
             )

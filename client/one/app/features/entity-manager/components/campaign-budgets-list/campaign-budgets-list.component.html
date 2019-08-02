@@ -48,7 +48,10 @@
                         *ngIf="isAnyBudgetEditable"
                     >
                         <button
-                            class="zem-campaign-budgets-list__cell-button zem-button zem-button--small zem-button--icon-only zem-button--edit-icon"
+                            class="zem-campaign-budgets-list__cell-button zem-button zem-button--small zem-button--icon-only zem-button--expand-icon"
+                            [class.zem-button--collapse-icon]="
+                                budgetRow.isExpanded
+                            "
                             [disabled]="!isBudgetEditable(budget)"
                             (click)="
                                 budgetRow.isExpanded = !budgetRow.isExpanded

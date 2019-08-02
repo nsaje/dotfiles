@@ -1,7 +1,7 @@
 import {Injectable, Inject} from '@angular/core';
 import {downgradeInjectable} from '@angular/upgrade/static';
 
-import {CampaignType} from '../../app.constants';
+import {APP_CONSTANTS} from '../../app.constants';
 import {APP_CONFIG} from '../../app.config';
 
 @Injectable()
@@ -29,19 +29,19 @@ export class MixpanelService {
 
         let type = 'unknown';
         switch (campaignType) {
-            case CampaignType.CONTENT:
+            case APP_CONSTANTS.campaignTypes.CONTENT:
                 type = 'content';
                 break;
-            case CampaignType.VIDEO:
+            case APP_CONSTANTS.campaignTypes.VIDEO:
                 type = 'video';
                 break;
-            case CampaignType.CONVERSION:
+            case APP_CONSTANTS.campaignTypes.CONVERSION:
                 type = 'conversion';
                 break;
-            case CampaignType.MOBILE:
+            case APP_CONSTANTS.campaignTypes.MOBILE:
                 type = 'mobile';
                 break;
-            case CampaignType.DISPLAY:
+            case APP_CONSTANTS.campaignTypes.DISPLAY:
                 type = 'display';
                 break;
         }

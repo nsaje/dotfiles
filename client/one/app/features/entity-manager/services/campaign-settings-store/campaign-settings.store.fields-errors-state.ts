@@ -5,6 +5,11 @@ import {CampaignBudgetErrors} from '../../types/campaign-budget-errors';
 
 export class CampaignSettingsStoreFieldsErrorsState {
     name: FieldErrors = [];
+    type: FieldErrors = [];
+    campaignManager: FieldErrors = [];
+    iabCategory: FieldErrors = [];
+    language: FieldErrors = [];
+    frequencyCapping: FieldErrors[];
     goalsMissing: FieldErrors = [];
     goals: CampaignGoalErrors[] = [];
     tracking: CampaignTrackingErrors = {

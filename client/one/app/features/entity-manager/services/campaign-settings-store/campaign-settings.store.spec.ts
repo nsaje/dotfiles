@@ -10,6 +10,10 @@ import {
     CampaignConversionGoalType,
     AccountCreditStatus,
     Currency,
+    CampaignType,
+    IabCategory,
+    Language,
+    GaTrackingType,
 } from '../../../../app.constants';
 import {ChangeEvent} from '../../../../shared/types/change-event';
 import {of, asapScheduler, throwError} from 'rxjs';
@@ -18,8 +22,8 @@ import {fakeAsync, tick} from '@angular/core/testing';
 import {CampaignSettingsStoreFieldsErrorsState} from './campaign-settings.store.fields-errors-state';
 import {ConversionPixel} from '../../../../core/conversion-pixels/types/conversion-pixel';
 import {AccountCredit} from '../../../../core/entities/types/account/account-credit';
-import * as moment from 'moment';
 import {CampaignBudget} from '../../../../core/entities/types/campaign/campaign-budget';
+import {CampaignTracking} from '../../../../core/entities/types/campaign/campaign-tracking';
 
 describe('CampaignSettingsStore', () => {
     let campaignServiceStub: jasmine.SpyObj<CampaignService>;
@@ -751,6 +755,61 @@ describe('CampaignSettingsStore', () => {
         expect(store.state.entity.budgets.length).toEqual(0);
     });
 
+    it('should correctly change campaign type', () => {
+        spyOn(store, 'validateEntity')
+            .and.returnValue(of())
+            .calls.reset();
+
+        store.updateState(CampaignType.CONTENT, 'entity', 'type');
+        expect(store.state.entity.type).toEqual(CampaignType.CONTENT);
+        store.setType(CampaignType.DISPLAY);
+        expect(store.state.entity.type).toEqual(CampaignType.DISPLAY);
+    });
+
+    it('should correctly change campaign manager', () => {
+        spyOn(store, 'validateEntity')
+            .and.returnValue(of())
+            .calls.reset();
+
+        store.updateState(11, 'entity', 'campaignManager');
+        expect(store.state.entity.campaignManager).toEqual(11);
+        store.setCampaignManager(12);
+        expect(store.state.entity.campaignManager).toEqual(12);
+    });
+
+    it('should correctly change iab-category', () => {
+        spyOn(store, 'validateEntity')
+            .and.returnValue(of())
+            .calls.reset();
+
+        store.updateState(IabCategory.IAB1, 'entity', 'iabCategory');
+        expect(store.state.entity.iabCategory).toEqual(IabCategory.IAB1);
+        store.setIabCategory(IabCategory.IAB10_1);
+        expect(store.state.entity.iabCategory).toEqual(IabCategory.IAB10_1);
+    });
+
+    it('should correctly change language', () => {
+        spyOn(store, 'validateEntity')
+            .and.returnValue(of())
+            .calls.reset();
+
+        store.updateState(Language.ENGLISH, 'entity', 'language');
+        expect(store.state.entity.language).toEqual(Language.ENGLISH);
+        store.setLanguage(Language.ITALIAN);
+        expect(store.state.entity.language).toEqual(Language.ITALIAN);
+    });
+
+    it('should correctly change frequency capping', () => {
+        spyOn(store, 'validateEntity')
+            .and.returnValue(of())
+            .calls.reset();
+
+        store.updateState(22, 'entity', 'frequencyCapping');
+        expect(store.state.entity.frequencyCapping).toEqual(22);
+        store.setFrequencyCapping(30);
+        expect(store.state.entity.frequencyCapping).toEqual(30);
+    });
+
     it('should correctly change campaign autopilot', () => {
         spyOn(store, 'validateEntity')
             .and.returnValue(of())
@@ -760,5 +819,39 @@ describe('CampaignSettingsStore', () => {
         expect(store.state.entity.autopilot).toEqual(false);
         store.setAutopilot(true);
         expect(store.state.entity.autopilot).toEqual(true);
+    });
+
+    it('should correctly change campaign tracking', () => {
+        spyOn(store, 'validateEntity')
+            .and.returnValue(of())
+            .calls.reset();
+
+        const tracking: CampaignTracking = {
+            ga: {
+                enabled: true,
+                type: GaTrackingType.EMAIL,
+                webPropertyId: 'Generic web id',
+            },
+            adobe: {
+                enabled: false,
+                trackingParameter: null,
+            },
+        };
+
+        store.updateState(tracking, 'entity', 'tracking');
+        expect(store.state.entity.tracking).toEqual(tracking);
+
+        const changeEvent: ChangeEvent<CampaignTracking> = {
+            target: tracking,
+            changes: {
+                ga: {
+                    ...tracking.ga,
+                    enabled: false,
+                },
+            },
+        };
+
+        store.changeCampaignTracking(changeEvent);
+        expect(store.state.entity.tracking.ga.enabled).toEqual(false);
     });
 });

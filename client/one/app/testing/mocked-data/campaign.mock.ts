@@ -5,6 +5,10 @@ export const campaignMock: Campaign = {
     accountId: null,
     name: null,
     type: null,
+    campaignManager: null,
+    iabCategory: null,
+    language: null,
+    frequencyCapping: null,
     autopilot: null,
     archived: null,
     tracking: {
