@@ -1,4 +1,5 @@
 import * as clone from 'clone';
+import * as deepEqual from 'fast-deep-equal';
 
 export function getValueOrDefault<T>(value: T, defaultValue: T): T {
     if (isDefined(value)) {
@@ -25,4 +26,15 @@ export function isNotEmpty(value: any): boolean {
         }
     }
     return false;
+}
+
+export function isEqualToAnyItem(value: any, items: any[]): boolean {
+    if (!isDefined(items)) {
+        return false;
+    }
+    if (!Array.isArray(items)) {
+        return false;
+    }
+
+    return items.some(item => deepEqual(value, item));
 }

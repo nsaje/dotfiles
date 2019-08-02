@@ -80,11 +80,10 @@ function isGoalAvailable(
 
     if (
         onlyCpc &&
-        !isEqualToAnyParameter(
-            option.value,
+        !commonHelpers.isEqualToAnyItem(option.value, [
             CampaignGoalKPI.CPC,
-            APP_CONSTANTS.campaignGoalKPI.CPC
-        )
+            APP_CONSTANTS.campaignGoalKPI.CPC,
+        ])
     ) {
         return false;
     }
@@ -95,22 +94,20 @@ function isGoalAvailable(
         }
 
         if (
-            isEqualToAnyParameter(
-                goal.type,
+            commonHelpers.isEqualToAnyItem(goal.type, [
                 CampaignGoalKPI.CPA,
-                APP_CONSTANTS.campaignGoalKPI.CPA
-            )
+                APP_CONSTANTS.campaignGoalKPI.CPA,
+            ])
         ) {
             countConversionGoals++;
         }
     });
 
     if (
-        isEqualToAnyParameter(
-            option.value,
+        commonHelpers.isEqualToAnyItem(option.value, [
             CampaignGoalKPI.CPA,
-            APP_CONSTANTS.campaignGoalKPI.CPA
-        ) &&
+            APP_CONSTANTS.campaignGoalKPI.CPA,
+        ]) &&
         countConversionGoals < ENTITY_MANAGER_CONFIG.maxCampaignConversionGoals
     ) {
         return true;
@@ -118,31 +115,19 @@ function isGoalAvailable(
 
     // Display campaigns do not support CPCV goals
     if (
-        isEqualToAnyParameter(
-            campaignType,
+        commonHelpers.isEqualToAnyItem(campaignType, [
             CampaignType.DISPLAY,
-            APP_CONSTANTS.campaignTypes.DISPLAY
-        ) &&
-        isEqualToAnyParameter(
-            option.value,
+            APP_CONSTANTS.campaignTypes.DISPLAY,
+        ]) &&
+        commonHelpers.isEqualToAnyItem(option.value, [
             CampaignGoalKPI.CPCV,
-            APP_CONSTANTS.campaignGoalKPI.CPCV
-        )
+            APP_CONSTANTS.campaignGoalKPI.CPCV,
+        ])
     ) {
         return false;
     }
 
     return isAvailable;
-}
-
-// TODO (msuber): remove this function when ajs components will no longer
-// use this helper function
-function isEqualToAnyParameter(
-    value: any,
-    parameterOne: any,
-    parameterTwo: any
-): boolean {
-    return value === parameterOne || value === parameterTwo;
 }
 
 export function getConversionPixelsWithAvailableConversionWindows(

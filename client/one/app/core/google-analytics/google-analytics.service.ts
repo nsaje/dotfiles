@@ -1,7 +1,7 @@
 import {Injectable, Inject} from '@angular/core';
 import {downgradeInjectable} from '@angular/upgrade/static';
 
-import {APP_CONSTANTS} from '../../app.constants';
+import {APP_CONSTANTS, CampaignType} from '../../app.constants';
 import {APP_CONFIG} from '../../app.config';
 
 @Injectable()
@@ -25,7 +25,7 @@ export class GoogleAnalyticsService {
         });
     }
 
-    logCampaignTypeSelection(campaignType: number) {
+    logCampaignTypeSelection(campaignType: number | CampaignType) {
         if (!(<any>window).ga) {
             return;
         }
@@ -40,18 +40,23 @@ export class GoogleAnalyticsService {
         let eventAction = 'unknown';
         switch (campaignType) {
             case APP_CONSTANTS.campaignTypes.CONTENT:
+            case CampaignType.CONTENT:
                 eventAction = 'content';
                 break;
             case APP_CONSTANTS.campaignTypes.VIDEO:
+            case CampaignType.VIDEO:
                 eventAction = 'video';
                 break;
             case APP_CONSTANTS.campaignTypes.CONVERSION:
+            case CampaignType.CONVERSION:
                 eventAction = 'conversion';
                 break;
             case APP_CONSTANTS.campaignTypes.MOBILE:
+            case CampaignType.MOBILE:
                 eventAction = 'mobile';
                 break;
             case APP_CONSTANTS.campaignTypes.DISPLAY:
+            case CampaignType.DISPLAY:
                 eventAction = 'display';
                 break;
         }
