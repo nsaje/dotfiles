@@ -41,7 +41,7 @@ def get_extra_data(user, ad_group):
         extra["hacks"] = get_hacks(ad_group)
 
     if user.has_perm("zemauth.can_see_deals_in_ui"):
-        extra["deals"] = restapi.common.helpers.get_applied_deals_dict(ad_group.get_all_configured_deals())
+        extra["deals"] = get_deals(ad_group)
 
     return extra
 
@@ -116,7 +116,15 @@ def get_warnings(ad_group):
     return warnings
 
 
+def get_deals(ad_group):
+    if ad_group.id is None:
+        return []
+    return restapi.common.helpers.get_applied_deals_dict(ad_group.get_all_configured_deals())
+
+
 def get_hacks(ad_group):
+    if ad_group.id is None:
+        return []
     return dash.models.CustomHack.objects.all().filter_applied(ad_group=ad_group).filter_active(
         True
     ).to_dict_list() + dash.features.custom_flags.helpers.get_all_custom_flags_on_ad_group(ad_group)

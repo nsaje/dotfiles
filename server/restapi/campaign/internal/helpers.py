@@ -28,7 +28,7 @@ def get_extra_data(user, campaign):
         extra["hacks"] = get_hacks(campaign)
 
     if user.has_perm("zemauth.can_see_deals_in_ui"):
-        extra["deals"] = restapi.common.helpers.get_applied_deals_dict(campaign.get_all_configured_deals())
+        extra["deals"] = get_deals(campaign)
 
     if user.has_perm("zemauth.can_see_new_budgets"):
         active_budget_items = campaign.settings.budgets
@@ -133,7 +133,15 @@ def get_campaign_managers(user, campaign):
     return [{"id": user.id, "name": restapi.common.helpers.get_user_full_name_or_email(user)} for user in users]
 
 
+def get_deals(campaign):
+    if campaign.id is None:
+        return []
+    return restapi.common.helpers.get_applied_deals_dict(campaign.get_all_configured_deals())
+
+
 def get_hacks(campaign):
+    if campaign.id is None:
+        return []
     return dash.models.CustomHack.objects.all().filter_applied(campaign=campaign).filter_active(
         True
     ).to_dict_list() + dash.features.custom_flags.helpers.get_all_custom_flags_on_campaign(campaign)

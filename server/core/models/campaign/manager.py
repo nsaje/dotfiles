@@ -58,11 +58,10 @@ class CampaignManager(core.common.BaseManager):
         return campaign
 
     def get_default(self, request, account):
-        name = self._create_default_name(account)
         autopilot = False
         if account.id not in ACCOUNTS_WITH_AUTOPILOT_DISABLED:
             autopilot = CAMPAIGN_AUTOPILOT_ENABLED_VALUE
-        campaign = self._create(account, name, constants.CampaignType.CONTENT)
+        campaign = self._create(account, "", constants.CampaignType.CONTENT)
         campaign.settings = core.models.settings.CampaignSettings.objects.get_default(request, campaign, autopilot)
         return campaign
 

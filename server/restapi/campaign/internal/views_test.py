@@ -211,7 +211,7 @@ class CampaignViewSetTest(RESTAPITest):
         r = self.client.get(reverse("restapi.campaign.internal:campaigns_defaults"), {"accountId": account.id})
         resp_json = self.assertResponseValid(r)
 
-        self.assertEqual(resp_json["data"]["name"], "New campaign")
+        self.assertEqual(resp_json["data"]["name"], "")
         self.assertEqual(resp_json["data"]["accountId"], str(account.id))
         self.assertEqual(
             resp_json["data"]["type"], dash.constants.CampaignType.get_name(dash.constants.CampaignType.CONTENT)
