@@ -115,24 +115,37 @@ class PublisherGroup(models.Model):
                         ids.add(item)
 
     def can_delete(self):
-        # Check all ad group settings of the corresponding account/agency if they reference the publisher group
+        # Check if any of the ad group, campaign and account settings of the corresponding account/agency reference the publisher group
         if self.agency:
             ad_groups_settings = core.models.settings.AdGroupSettings.objects.filter(
                 ad_group__campaign__account__agency=self.agency
             )
+            campaigns_settings = core.models.settings.CampaignSettings.objects.filter(
+                campaign__account__agency=self.agency
+            )
+            accounts_settings = core.models.settings.AccountSettings.objects.filter(account__agency=self.agency)
         else:
             ad_groups_settings = core.models.settings.AdGroupSettings.objects.filter(
                 ad_group__campaign__account=self.account
             )
+            campaigns_settings = core.models.settings.CampaignSettings.objects.filter(campaign__account=self.account)
+            accounts_settings = core.models.settings.AccountSettings.objects.filter(account=self.account)
 
+        return not (
+            self._is_publisher_group_in_use(ad_groups_settings)
+            or self._is_publisher_group_in_use(campaigns_settings)
+            or self._is_publisher_group_in_use(accounts_settings)
+        )
+
+    def _is_publisher_group_in_use(self, settings_queryset):
         # use `only` instead of `values` so that JSON fields get converted to arrays
-        ad_group_settings = ad_groups_settings.group_current_settings().only(
+        settings = settings_queryset.group_current_settings().only(
             "whitelist_publisher_groups", "blacklist_publisher_groups"
         )
 
         # flatten the list a bit (1 level still remains)
-        publisher_groups = [x.whitelist_publisher_groups + x.blacklist_publisher_groups for x in ad_group_settings]
-        return not any(self.id in x for x in publisher_groups)
+        publisher_groups = [x.whitelist_publisher_groups + x.blacklist_publisher_groups for x in settings]
+        return any(self.id in x for x in publisher_groups)
 
     def write_history(self, changes_text, changes, action_type, user=None, system_user=None):
 

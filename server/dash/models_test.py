@@ -1374,16 +1374,41 @@ class PublisherGroupTest(TestCase):
 
     def test_can_delete(self):
         pg = models.PublisherGroup.objects.get(pk=1)
-        ags = models.AdGroup.objects.get(pk=1).get_current_settings()
+        ad_group_settings = models.AdGroup.objects.get(pk=1).get_current_settings()
+        campaign_settings = ad_group_settings.ad_group.campaign.get_current_settings()
+        account_settings = campaign_settings.campaign.account.get_current_settings()
 
-        ags = ags.copy_settings()
+        ags = ad_group_settings.copy_settings()
         ags.whitelist_publisher_groups = [pg.id]
+        ags.blacklist_publisher_groups = []
+        ags.save(None)
+
+        cs = campaign_settings.copy_settings()
+        cs.whitelist_publisher_groups = [pg.id]
+        cs.blacklist_publisher_groups = []
+        cs.save(None)
+
+        accs = account_settings.copy_settings()
+        accs.whitelist_publisher_groups = [pg.id]
+        accs.blacklist_publisher_groups = []
+        accs.save(None)
+
+        self.assertFalse(pg.can_delete())
+
+        ags = ad_group_settings.copy_settings()
+        ags.whitelist_publisher_groups = []
         ags.blacklist_publisher_groups = []
         ags.save(None)
         self.assertFalse(pg.can_delete())
 
-        ags = ags.copy_settings()
-        ags.whitelist_publisher_groups = []
-        ags.blacklist_publisher_groups = []
-        ags.save(None)
+        cs = campaign_settings.copy_settings()
+        cs.whitelist_publisher_groups = []
+        cs.blacklist_publisher_groups = []
+        cs.save(None)
+        self.assertFalse(pg.can_delete())
+
+        accs = account_settings.copy_settings()
+        accs.whitelist_publisher_groups = []
+        accs.blacklist_publisher_groups = []
+        accs.save(None)
         self.assertTrue(pg.can_delete())
