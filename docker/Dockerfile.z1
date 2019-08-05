@@ -35,6 +35,7 @@ ARG BRANCH
 ENV BRANCH ${BRANCH:-master}
 
 # collect static files
+RUN pwd && export
 RUN python manage.py collectstatic --noinput --clear
 
 CMD [ "python", "manage.py", "shell" ]
