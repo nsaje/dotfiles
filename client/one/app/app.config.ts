@@ -26,5 +26,6 @@ export const APP_CONFIG = {
         [Currency.ILS]: '₪',
         [Currency.INR]: '₹',
         [Currency.JPY]: '¥',
+        [Currency.CAD]: 'C$',
     },
 };

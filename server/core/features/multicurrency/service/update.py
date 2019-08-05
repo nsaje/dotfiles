@@ -9,6 +9,7 @@ from utils import dates_helper
 from ..currency_exchange_rate import CurrencyExchangeRate
 from . import aud
 from . import brl
+from . import cad
 from . import chf
 from . import eur
 from . import gbp
@@ -67,6 +68,8 @@ def _get_exchange_rate(currency):
         return inr.get_exchange_rate()
     if currency == dash.constants.Currency.JPY:
         return jpy.get_exchange_rate()
+    if currency == dash.constants.Currency.CAD:
+        return cad.get_exchange_rate()
     else:
         raise MissingExchangeRateMappingException()
 

@@ -3135,6 +3135,7 @@ export const APP_OPTIONS = {
         {name: 'Israeli New Shekel', value: APP_CONSTANTS.currency.ILS},
         {name: 'Indian Rupee', value: APP_CONSTANTS.currency.INR},
         {name: 'Japanese Yen', value: APP_CONSTANTS.currency.JPY},
+        {name: 'Canadian Dollar', value: APP_CONSTANTS.currency.CAD},
     ],
     adTypes: [
         {

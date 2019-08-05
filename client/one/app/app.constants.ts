@@ -26,6 +26,7 @@ export enum Currency {
     ILS = 'ILS',
     INR = 'INR',
     JPY = 'JPY',
+    CAD = 'CAD',
 }
 
 export enum EntityType {
