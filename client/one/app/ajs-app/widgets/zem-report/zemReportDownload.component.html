@@ -121,9 +121,9 @@
     <span
         class="message message--error"
         ng-if="$ctrl.hasError && !$ctrl.errors && !$ctrl.errorMsg"
-        >An error has occured. Please contact support at
-        <a href="mailto:help@zemanta.com">help@zemanta.com</a> if the error
-        persists.</span
+        >An error has occured. If the error persists, please contact support at
+        <a href="mailto:help@zemanta.com">help@zemanta.com</a> with the report
+        job ID {{ $ctrl.reportJobID }}.</span
     >
     <span
         class="message message--error"

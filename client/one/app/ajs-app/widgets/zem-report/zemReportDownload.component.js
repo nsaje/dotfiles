@@ -67,6 +67,7 @@ angular.module('one.widgets').component('zemReportDownload', {
                     .catch(function(data) {
                         $ctrl.jobDone = true;
                         $ctrl.hasError = true;
+                        $ctrl.reportJobID = id;
                         if (data) {
                             $ctrl.errors = data.data;
                         }
