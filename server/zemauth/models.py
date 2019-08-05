@@ -420,6 +420,10 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ("fea_can_create_automation_rules", "User can create automation rules."),
             ("can_see_all_nas_in_inventory_planning", "User can see all NAS sources in Inventory Planning."),
             ("can_set_source_bid_modifiers", "User can set source bid modifiers"),
+            (
+                "disable_ad_group_sources_bid",
+                "User can NOT set bid cpc/cpm on ad group sources level (negated permission).",
+            ),
         )
 
     def get_full_name(self):
