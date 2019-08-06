@@ -13,7 +13,8 @@ PF_SCHEDULE_UPFRONT = "upon execution of this agreement"  # flat
 PF_SCHEDULE_PCT_FEE = "monthly as used"  # %
 PF_SCHEDULE_FLAT_FEE = "monthly in installments"
 
-
+VIDEO_AGENCY_ID = 221
+VIDEO_ADVERTISER_TYPE = "VIDEO_AD_NETWORK"
 OUTBRAIN_SERVICE_NAME = "outbrain-salesforce"
 MANAGED_BY_AMPLIFY_TAG = "outbrain/sales/OutbrainSalesforce"
 AMPLIFY_GROUP_PERMISSION_CODENAME = "this_is_amplify_group"

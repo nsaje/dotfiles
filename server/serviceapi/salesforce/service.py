@@ -138,12 +138,24 @@ def create_account(request, **kwargs):
         agency_id = constants.SALES_REP_AGENCY_MAPPING.get(sales_rep_email, constants.OUTBRAIN_UNKNOWN_AGENCY_ID)
         agency = core.models.Agency.objects.get(id=agency_id)
 
+    if (
+        "custom_attributes" in kwargs
+        and kwargs["custom_attributes"].get("advertiser_account_type", "") == constants.VIDEO_ADVERTISER_TYPE
+    ):
+        agency = core.models.Agency.objects.get(id=constants.VIDEO_AGENCY_ID)
+
     settings_updates = kwargs.pop("settings", {})
     new_account = core.models.Account.objects.create(request, agency=agency, **kwargs)
     new_account.settings.update(request, account_type=dash.constants.AccountType.MANAGED, **settings_updates)
+
     marketer_id = kwargs.get("outbrain_marketer_id")
-    if marketer_id and not core.models.OutbrainAccount.objects.filter(marketer_id=marketer_id).exists():
+    marketer = core.models.OutbrainAccount.objects.filter(marketer_id=marketer_id).first()
+    if marketer_id and not marketer:
         core.models.OutbrainAccount.objects.create(marketer_id=marketer_id, used=True)
+    elif marketer_id and marketer and marketer.used is False:
+        marketer.used = True
+        marketer.save()
+
     return new_account
 
 

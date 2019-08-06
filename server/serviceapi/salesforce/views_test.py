@@ -841,6 +841,9 @@ class AccountTestCase(TestCase):
         self.agency = magic_mixer.blend(
             core.models.Agency, id=3, name="Agency 1", is_externally_managed=True, sales_representative=self.aguser
         )
+        self.video_agency = magic_mixer.blend(
+            core.models.Agency, id=221, name="video Agency", is_externally_managed=True
+        )
         self.Outbrain_unknown_Agency = magic_mixer.blend(
             core.models.Agency, id=517, name="Outbrain ZMS Unknown", is_externally_managed=True
         )
@@ -899,6 +902,9 @@ class AccountTestCase(TestCase):
         )
 
     def test_post_valid_with_id(self, mock_modified_dt):
+        new_ob_account = core.models.OutbrainAccount(marketer_id="EXTERNAL ID", used=False)
+        new_ob_account.save()
+
         url = reverse("service.salesforce.account")
         r = self.client.post(
             url,
@@ -922,8 +928,7 @@ class AccountTestCase(TestCase):
         self.assertEqual(r.status_code, 200)
         new_account = core.models.Account.objects.filter(name="new Account").first()
         self.assertIsNotNone(new_account)
-        new_ob_account = core.models.OutbrainAccount.objects.filter(marketer_id="EXTERNAL ID", used=True).first()
-        self.assertIsNotNone(new_ob_account)
+        self.assertTrue(core.models.OutbrainAccount.objects.filter(marketer_id="EXTERNAL ID", used=True).exists())
         self.assertEqual(
             r.data,
             {
@@ -985,6 +990,56 @@ class AccountTestCase(TestCase):
                     "account_manager": "accountManager@test.com",
                     "tags": ["tag1", "tag2"],
                     "custom_attributes": {"country": "SI"},
+                    "salesforce_id": 123,
+                    "modified_dt": "02-03-2019",
+                    "is_archived": False,
+                    "is_externally_managed": True,
+                    "internal_marketer_id": "INTERNAL ID",
+                    "external_marketer_id": "EXTERNAL ID",
+                }
+            },
+        )
+
+    def test_post_valid_with_advertiserAccountType(self, mock_modified_dt):
+        self.maxDiff = None
+        url = reverse("service.salesforce.account")
+        r = self.client.post(
+            url,
+            data={
+                "agency_id": 3,
+                "is_disabled": True,
+                "name": "new Account",
+                "salesforce_url": "http://salesforce.com",
+                "currency": "CHF",
+                "sales_representative": "salesRep@test.com",
+                "account_manager": "accountManager@test.com",
+                "tags": ["tag1", "tag2"],
+                "custom_attributes": {"country": "SI", "advertiserAccountType": constants.VIDEO_ADVERTISER_TYPE},
+                "salesforce_id": 123,
+                "internal_marketer_id": "INTERNAL ID",
+                "external_marketer_id": "EXTERNAL ID",
+            },
+            format="json",
+        )
+
+        self.assertEqual(r.status_code, 200)
+        new_account = core.models.Account.objects.filter(name="new Account").first()
+        self.assertIsNotNone(new_account)
+
+        self.assertEqual(
+            r.data,
+            {
+                "data": {
+                    "id": new_account.id,
+                    "agency_id": 221,
+                    "is_disabled": True,
+                    "name": "new Account",
+                    "salesforce_url": "http://salesforce.com",
+                    "currency": "CHF",
+                    "sales_representative": "salesRep@test.com",
+                    "account_manager": "accountManager@test.com",
+                    "tags": ["tag1", "tag2"],
+                    "custom_attributes": {"country": "SI", "advertiser_account_type": constants.VIDEO_ADVERTISER_TYPE},
                     "salesforce_id": 123,
                     "modified_dt": "02-03-2019",
                     "is_archived": False,
