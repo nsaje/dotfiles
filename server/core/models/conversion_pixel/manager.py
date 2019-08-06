@@ -18,6 +18,7 @@ class ConversionPixelManager(core.common.BaseManager):
             account=account, slug=model.ConversionPixel._SLUG_PLACEHOLDER, redirect_url="", notes=""
         )
         pixel.update(request, skip_propagation=True, **settings)
+        utils.redirector_helper.update_pixel(pixel)
 
         if pixel.audience_enabled:
             changes_text = "Created a conversion pixel with audience enabled named {}.".format(pixel.name)

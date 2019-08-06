@@ -26,7 +26,7 @@ class InstanceTestCase(TestCase):
         )
         self.assertEqual(str(pixel.id), pixel.slug)
 
-        redirector_pixel_mock.assert_not_called()
+        self.assertEqual(2, redirector_pixel_mock.call_count)
         self.assertEqual(3, history_mock.call_count)
         k1_update_account_mock.assert_not_called()
         redirector_audience_mock.assert_not_called()
@@ -74,7 +74,7 @@ class InstanceTestCase(TestCase):
         self.assertNotEqual("2018-01-01", pixel.last_sync_dt)
         self.assertNotEqual("2018-01-01", pixel.created_dt)
 
-        redirector_pixel_mock.assert_called_once()
+        self.assertEqual(3, redirector_pixel_mock.call_count)
         self.assertEqual(7, history_mock.call_count)
         self.assertEqual(3, k1_update_account_mock.call_count)
         self.assertEqual(2, redirector_audience_mock.call_count)
@@ -128,7 +128,7 @@ class InstanceTestCase(TestCase):
         self.assertNotEqual("test_url", pixel.redirect_url)
         self.assertNotEqual("test_notes", pixel.notes)
 
-        redirector_pixel_mock.assert_not_called()
+        self.assertEqual(2, redirector_pixel_mock.call_count)
         self.assertEqual(4, history_mock.call_count)
         self.assertEqual(2, k1_update_account_mock.call_count)
         redirector_audience_mock.assert_called_once()
@@ -146,7 +146,7 @@ class InstanceTestCase(TestCase):
         self.assertEqual("test_url", pixel.redirect_url)
         self.assertEqual("test_notes", pixel.notes)
 
-        redirector_pixel_mock.assert_called_once()
+        self.assertEqual(3, redirector_pixel_mock.call_count)
         self.assertEqual(6, history_mock.call_count)
         self.assertEqual(3, k1_update_account_mock.call_count)
         self.assertEqual(2, redirector_audience_mock.call_count)

@@ -31,7 +31,7 @@ class ConversionPixelInstanceMixin:
             utils.k1_helper.update_account(self.account, msg="conversion_pixel.update")
             self._r1_upsert_audiences()
 
-        if "redirect_url" in changes:
+        if not skip_propagation and "redirect_url" in changes:
             utils.redirector_helper.update_pixel(self)
 
     def _clean_updates(self, request, updates, skip_permission_check):

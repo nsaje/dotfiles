@@ -1908,7 +1908,7 @@ class ConversionPixelTestCase(TestCase):
 
         self.assertFalse(ping_mock.called)
         self.assertFalse(redirector_mock.called)
-        self.assertFalse(update_pixel_mock.called)
+        self.assertTrue(update_pixel_mock.called)
 
     @patch("utils.redirector_helper.upsert_audience")
     @patch("utils.k1_helper.update_account")
@@ -2336,7 +2336,7 @@ class ConversionPixelTestCase(TestCase):
         )
 
         self.assertEqual(upsert_audience_mock.call_count, 4)
-        self.assertEqual(update_pixel_mock.call_count, 0)
+        self.assertEqual(update_pixel_mock.call_count, 1)
 
     @patch("utils.redirector_helper.upsert_audience")
     @patch("utils.redirector_helper.update_pixel")
