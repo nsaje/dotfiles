@@ -6,10 +6,7 @@
         zem-lazy-popover-placement="right"
         zem-lazy-popover-animation-class="fade"
     >
-        <span
-            ng-show="ctrl.isAutopilotIconShown()"
-            class="auto-pilot-icon"
-        ></span>
+        <span ng-show="ctrl.showAutopilotIcon" class="auto-pilot-icon"></span>
         {{ ctrl.formattedValue }}
     </span>
     <span

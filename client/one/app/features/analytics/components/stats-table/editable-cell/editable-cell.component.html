@@ -1,4 +1,8 @@
 <span
+    [hidden]="showAutopilotIcon"
+    [ngClass]="'zem-editable-cell__autopilot-icon'"
+></span>
+<span
     class="zem-editable-cell__value"
     [ngClass]="{'zem-editable-cell__value--editable': isEditable}"
     (click)="switchToEditMode()"

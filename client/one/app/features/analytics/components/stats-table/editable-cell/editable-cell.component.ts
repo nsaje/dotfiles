@@ -37,6 +37,8 @@ export class EditableCellComponent
     @Input()
     isEditable: boolean;
     @Input()
+    showAutopilotIcon: boolean;
+    @Input()
     mode: EditableCellMode;
     @Input()
     containerElement: HTMLElement;

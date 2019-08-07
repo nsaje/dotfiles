@@ -107,21 +107,18 @@ describe('zemGridCellEditableBaseField', function() {
         expect(element.isolateScope().ctrl.isEditable).toBe(true);
     });
 
-    it('should display autopilot icon if autopilot is on and row is active', function() {
+    it('should display autopilot icon if autopilot is on', function() {
         mockDirective('zemGridModal');
+        var template =
+            '<zem-grid-cell-editable-base-field ' +
+            'data="ctrl.data" column="ctrl.col" row="ctrl.row" grid="ctrl.grid" show-autopilot-icon="true">' +
+            '</zem-grid-cell-editable-base-field>';
 
         scope.ctrl.grid.meta.data = {
             level: 'ad_groups',
             breakdown: 'source',
             adGroupAutopilotState: 1,
             ext: {},
-        };
-        scope.ctrl.row.data = {
-            stats: {
-                state: {
-                    value: 1,
-                },
-            },
         };
         element = $compile(template)(scope);
         scope.$digest();

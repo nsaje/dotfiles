@@ -40,6 +40,8 @@ export class BidModifierCellComponent implements OnInit, OnChanges {
     @Input()
     editMessage: string;
     @Input()
+    showAutopilotIcon: boolean;
+    @Input()
     containerElement: HTMLElement;
     @Output()
     valueChange = new EventEmitter<BidModifier>();

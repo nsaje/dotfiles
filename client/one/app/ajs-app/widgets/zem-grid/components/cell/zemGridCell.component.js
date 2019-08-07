@@ -11,17 +11,32 @@ angular.module('one.widgets').directive('zemGridCell', function() {
             grid: '=',
         },
         template: require('./zemGridCell.component.html'),
-        controller: function($scope, zemGridConstants) {
+        controller: function(
+            $scope,
+            zemGridConstants,
+            zemGridEndpointColumns,
+            zemGridStateAndStatusHelpers
+        ) {
             var ctrl = this;
             ctrl.gridColumnTypes = zemGridConstants.gridColumnTypes;
             ctrl.type = getFieldType();
             ctrl.gridBodyElement = getGridBodyElement();
+            ctrl.showAutopilotIcon = isAutopilotIconShown();
             ctrl.canSeePublisherBidModifierCell = canSeePublisherBidModifierCell;
             ctrl.canSeeBidModifierCell = canSeeBidModifierCell;
             ctrl.updateBidModifier = updateBidModifier;
+            var stateValues = zemGridStateAndStatusHelpers.getStateValues(
+                ctrl.grid.meta.data.level,
+                ctrl.grid.meta.data.breakdown
+            );
 
             $scope.$watch('ctrl.col', function() {
                 ctrl.type = getFieldType();
+                ctrl.showAutopilotIcon = isAutopilotIconShown();
+            });
+
+            $scope.$watch('ctrl.data', function() {
+                ctrl.showAutopilotIcon = isAutopilotIconShown();
             });
 
             function getFieldType() {
@@ -95,11 +110,56 @@ angular.module('one.widgets').directive('zemGridCell', function() {
                 }
 
                 return (
-                    getFieldType() ===
+                    ctrl.type ===
                         zemGridConstants.gridColumnTypes.BID_MODIFIER_FIELD &&
                     ctrl.grid.meta.data.breakdown !==
                         constants.breakdown.PUBLISHER
                 );
+            }
+
+            function isAutopilotIconShown() {
+                if (ctrl.data && !ctrl.data.value) {
+                    return false;
+                }
+                if (ctrl.grid.meta.data.campaignAutopilot) {
+                    return isRowActive();
+                }
+                if (
+                    ctrl.grid.meta.data.adGroupAutopilotState ===
+                    constants.adGroupSettingsAutopilotState.INACTIVE
+                ) {
+                    return false;
+                }
+                if (
+                    ctrl.grid.meta.data.adGroupAutopilotState ===
+                        constants.adGroupSettingsAutopilotState.ACTIVE_CPC &&
+                    ctrl.col.field ===
+                        zemGridEndpointColumns.COLUMNS.dailyBudgetSetting.field
+                ) {
+                    return false;
+                }
+                return isRowActive();
+            }
+
+            function isRowActive() {
+                if (!ctrl.row || ctrl.row.archived) {
+                    return false;
+                }
+
+                var rowState;
+                if (
+                    ctrl.row.data &&
+                    ctrl.row.data.stats &&
+                    ctrl.row.data.stats.state
+                ) {
+                    rowState = ctrl.row.data.stats.state.value;
+                }
+
+                if (!stateValues || rowState !== stateValues.enabled) {
+                    return false;
+                }
+
+                return true;
             }
 
             function updateBidModifier($event) {

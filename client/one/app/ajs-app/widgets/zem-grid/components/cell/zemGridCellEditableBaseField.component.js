@@ -11,28 +11,22 @@ angular
                 column: '=',
                 row: '=',
                 grid: '=',
+                showAutopilotIcon: '=',
             },
             template: require('./zemGridCellEditableBaseField.component.html'),
             controller: function(
                 $scope,
                 zemGridConstants,
                 zemGridDataFormatter,
-                zemGridDataValidator,
-                zemGridStateAndStatusHelpers,
-                zemGridEndpointColumns
+                zemGridDataValidator
             ) {
                 // eslint-disable-line max-len
                 var vm = this;
                 var initialValue;
                 var prevValidInputValue;
-                var stateValues = zemGridStateAndStatusHelpers.getStateValues(
-                    vm.grid.meta.data.level,
-                    vm.grid.meta.data.breakdown
-                );
 
                 vm.isSaveRequestInProgress =
                     vm.grid.meta.dataService.isSaveRequestInProgress;
-                vm.isAutopilotIconShown = isAutopilotIconShown;
                 vm.filterInput = filterInput;
                 vm.onKeyDown = onKeyDown;
                 vm.save = save;
@@ -87,53 +81,6 @@ angular
                     ) {
                         return false;
                     }
-                    return true;
-                }
-
-                function isAutopilotIconShown() {
-                    if (vm.data && !vm.data.value) {
-                        return false;
-                    }
-                    if (vm.grid.meta.data.campaignAutopilot) {
-                        return isRowActive();
-                    }
-                    if (
-                        vm.grid.meta.data.adGroupAutopilotState ===
-                        constants.adGroupSettingsAutopilotState.INACTIVE
-                    ) {
-                        return false;
-                    }
-                    if (
-                        vm.grid.meta.data.adGroupAutopilotState ===
-                            constants.adGroupSettingsAutopilotState
-                                .ACTIVE_CPC &&
-                        vm.column.field ===
-                            zemGridEndpointColumns.COLUMNS.dailyBudgetSetting
-                                .field
-                    ) {
-                        return false;
-                    }
-                    return isRowActive();
-                }
-
-                function isRowActive() {
-                    if (!vm.row || vm.row.archived) {
-                        return false;
-                    }
-
-                    var rowState;
-                    if (
-                        vm.row.data &&
-                        vm.row.data.stats &&
-                        vm.row.data.stats.state
-                    ) {
-                        rowState = vm.row.data.stats.state.value;
-                    }
-
-                    if (!stateValues || rowState !== stateValues.enabled) {
-                        return false;
-                    }
-
                     return true;
                 }
 
