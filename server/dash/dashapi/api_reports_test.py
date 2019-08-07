@@ -135,22 +135,6 @@ CONTENT_AD_1 = {
     "state": 1,
     "status": "ENABLED",
     "content_ad_status": "ENABLED",
-    "status_per_source": {
-        1: {
-            "source_id": 1,
-            "submission_status": 1,
-            "source_name": "AdsNative",
-            "source_status": 1,
-            "submission_errors": None,
-        },
-        2: {
-            "source_id": 2,
-            "submission_status": 2,
-            "source_name": "Gravity",
-            "source_status": 2,
-            "submission_errors": None,
-        },
-    },
     "sspd_url": settings.SSPD_CONTENT_AD_REDIRECT_URL.format(id=1),
     "bid_modifier": {
         "bid_max": 1.0,
@@ -198,15 +182,6 @@ CONTENT_AD_2 = {
     "state": 2,
     "status": "PAUSED",
     "content_ad_status": "PAUSED",
-    "status_per_source": {
-        2: {
-            "source_id": 2,
-            "submission_status": 2,
-            "source_name": "Gravity",
-            "source_status": 2,
-            "submission_errors": None,
-        }
-    },
     "sspd_url": settings.SSPD_CONTENT_AD_REDIRECT_URL.format(id=2),
     "bid_modifier": {
         "bid_max": 1.0,

@@ -20,7 +20,7 @@ def get_augmenter_for_dimension(target_dimension):
     elif target_dimension == "ad_group_id":
         return generate_loop_function(augment_ad_group)
     elif target_dimension == "content_ad_id":
-        return generate_loop_function(augment_content_ad)
+        return generate_loop_function(augment_content_ad, augment_content_ad_for_breakdowns)
     elif target_dimension == "source_id":
         return generate_loop_function(augment_source)
     elif target_dimension == "publisher_id":
@@ -305,9 +305,6 @@ def augment_content_ad(row, loader, is_base_level=False):
         batch = loader.batch_map[content_ad_id]
         row.update({"batch_id": batch.id, "batch_name": batch.name, "upload_time": batch.created_dt})
 
-        status_per_source = loader.per_source_status_map[content_ad_id]
-        row["status_per_source"] = status_per_source
-
         if loader.user.has_perm("zemauth.can_see_amplify_live_preview"):
             row["amplify_live_preview_link"] = NEWSCORP_LIVE_PREVIEW_URL.format(ad_group_id=ad_group.id)
 
@@ -316,6 +313,14 @@ def augment_content_ad(row, loader, is_base_level=False):
             row["amplify_promoted_link_id"] = amplify_internal_id
 
         row.update({"editable_fields": {"bid_modifier": {"enabled": True, "message": None}}})
+
+
+def augment_content_ad_for_breakdowns(row, loader, is_base_level=False):
+    content_ad_id = row.get("content_ad_id")
+
+    if content_ad_id:
+        status_per_source = loader.per_source_status_map[content_ad_id]
+        row["status_per_source"] = status_per_source
 
 
 def augment_content_ad_for_report(row, loader, is_base_level=False):
