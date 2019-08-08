@@ -53,6 +53,8 @@
       - ['can_set_account_ob_representative', 'zemauth', 'user']
       - ['can_set_auto_add_new_sources', 'zemauth', 'user']
       - ['can_see_salesforce_url', 'zemauth', 'user']
+      - ['can_modify_allowed_sources', 'zemauth', 'user']
+      - ['can_see_all_available_sources', 'zemauth', 'user']
 
 - model: oauth2_provider.application
   pk: 1

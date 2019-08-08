@@ -47,6 +47,14 @@ class ExtraDataSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
     )
 
 
+class AccountMediaSourceSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
+    id = restapi.serializers.fields.IdField()
+    name = restapi.serializers.fields.PlainCharField()
+    released = rest_framework.serializers.BooleanField(default=False)
+    deprecated = rest_framework.serializers.BooleanField(default=False)
+    allowed = rest_framework.serializers.BooleanField(default=False)
+
+
 class AccountSerializer(restapi.account.v1.serializers.AccountSerializer):
     class Meta:
         permissioned_fields = {
@@ -58,6 +66,7 @@ class AccountSerializer(restapi.account.v1.serializers.AccountSerializer):
             "ob_representative": "zemauth.can_set_account_ob_representative",
             "auto_add_new_sources": "zemauth.can_set_auto_add_new_sources",
             "salesforce_url": "zemauth.can_see_salesforce_url",
+            "media_sources": "zemauth.can_modify_allowed_sources",
         }
 
     account_type = restapi.serializers.fields.DashConstantField(
@@ -83,6 +92,9 @@ class AccountSerializer(restapi.account.v1.serializers.AccountSerializer):
     )
     salesforce_url = restapi.serializers.fields.PlainCharField(
         source="settings.salesforce_url", max_length=255, required=False, allow_null=True
+    )
+    media_sources = rest_framework.serializers.ListField(
+        child=AccountMediaSourceSerializer(), default=[], allow_empty=True
     )
 
     def validate_default_account_manager(self, value):

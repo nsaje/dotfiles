@@ -24,6 +24,7 @@ class AccountViewSetTest(RESTAPITest):
         obRepresentative=None,
         autoAddNewSources=None,
         salesforceUrl=None,
+        mediaSources=[],
     ):
         representation = {
             "id": str(accountId) if accountId is not None else None,
@@ -42,6 +43,7 @@ class AccountViewSetTest(RESTAPITest):
             "obRepresentative": str(obRepresentative) if obRepresentative is not None else None,
             "autoAddNewSources": autoAddNewSources,
             "salesforceUrl": salesforceUrl,
+            "mediaSources": mediaSources,
         }
         return cls.normalize(representation)
 
@@ -92,6 +94,8 @@ class AccountViewSetTest(RESTAPITest):
         }
 
         agency = magic_mixer.blend(core.models.Agency, users=[self.user])
+        sources = magic_mixer.cycle(5).blend(core.models.Source, released=True, deprecated=False)
+        agency.allowed_sources.add(*list([sources[0], sources[1], sources[2]]))
 
         r = self.client.get(reverse("restapi.account.internal:accounts_defaults"))
         resp_json = self.assertResponseValid(r)
@@ -117,6 +121,10 @@ class AccountViewSetTest(RESTAPITest):
         )
         self.assertEqual(resp_json["data"]["autoAddNewSources"], True)
         self.assertEqual(resp_json["data"]["salesforceUrl"], "")
+
+        self.assertEqual(resp_json["data"]["mediaSources"][0]["allowed"], False)
+        self.assertEqual(resp_json["data"]["mediaSources"][1]["allowed"], False)
+        self.assertEqual(resp_json["data"]["mediaSources"][2]["allowed"], False)
 
         self.assertEqual(
             resp_json["extra"],
@@ -201,6 +209,10 @@ class AccountViewSetTest(RESTAPITest):
             salesforce_url="Generic URL",
         )
 
+        sources = magic_mixer.cycle(5).blend(core.models.Source, released=True, deprecated=False)
+        agency.allowed_sources.add(*list(sources))
+        account.allowed_sources.add(*list([sources[0], sources[1], sources[2]]))
+
         r = self.client.get(reverse("restapi.account.internal:accounts_details", kwargs={"account_id": account.id}))
         resp_json = self.assertResponseValid(r)
 
@@ -234,6 +246,46 @@ class AccountViewSetTest(RESTAPITest):
         )
         self.assertEqual(resp_json["data"]["autoAddNewSources"], account.settings.auto_add_new_sources)
         self.assertEqual(resp_json["data"]["salesforceUrl"], account.settings.salesforce_url)
+        self.assertEqual(
+            resp_json["data"]["mediaSources"],
+            [
+                {
+                    "id": str(sources[0].id),
+                    "name": sources[0].name,
+                    "released": True,
+                    "deprecated": False,
+                    "allowed": True,
+                },
+                {
+                    "id": str(sources[1].id),
+                    "name": sources[1].name,
+                    "released": True,
+                    "deprecated": False,
+                    "allowed": True,
+                },
+                {
+                    "id": str(sources[2].id),
+                    "name": sources[2].name,
+                    "released": True,
+                    "deprecated": False,
+                    "allowed": True,
+                },
+                {
+                    "id": str(sources[3].id),
+                    "name": sources[3].name,
+                    "released": True,
+                    "deprecated": False,
+                    "allowed": False,
+                },
+                {
+                    "id": str(sources[4].id),
+                    "name": sources[4].name,
+                    "released": True,
+                    "deprecated": False,
+                    "allowed": False,
+                },
+            ],
+        )
 
         self.assertEqual(
             resp_json["extra"],
@@ -289,14 +341,28 @@ class AccountViewSetTest(RESTAPITest):
             salesforce_url="http://salesforce.com",
         )
 
+        sources = magic_mixer.cycle(5).blend(core.models.Source, released=True, deprecated=False)
+        agency.allowed_sources.add(*list(sources))
+        account.allowed_sources.add(*list([sources[0], sources[1], sources[2]]))
+
         r = self.client.get(reverse("restapi.account.internal:accounts_details", kwargs={"account_id": account.id}))
         resp_json = self.assertResponseValid(r)
+
+        self.assertEqual(resp_json["data"]["mediaSources"][0]["allowed"], True)
+        self.assertEqual(resp_json["data"]["mediaSources"][1]["allowed"], True)
+        self.assertEqual(resp_json["data"]["mediaSources"][2]["allowed"], True)
+        self.assertEqual(resp_json["data"]["mediaSources"][3]["allowed"], False)
+        self.assertEqual(resp_json["data"]["mediaSources"][4]["allowed"], False)
 
         put_data = resp_json["data"].copy()
 
         put_data["name"] = "New generic account"
         put_data["salesforceUrl"] = "http://salesforce2.com"
         put_data["autoAddNewSources"] = False
+
+        put_data["mediaSources"][0]["allowed"] = False
+        put_data["mediaSources"][3]["allowed"] = True
+        put_data["mediaSources"][4]["allowed"] = True
 
         r = self.client.put(
             reverse("restapi.account.internal:accounts_details", kwargs={"account_id": account.id}),
@@ -309,9 +375,17 @@ class AccountViewSetTest(RESTAPITest):
         self.assertEqual(resp_json["data"]["autoAddNewSources"], put_data["autoAddNewSources"])
         self.assertEqual(resp_json["data"]["salesforceUrl"], put_data["salesforceUrl"])
 
+        self.assertEqual(resp_json["data"]["mediaSources"][0]["allowed"], False)
+        self.assertEqual(resp_json["data"]["mediaSources"][1]["allowed"], True)
+        self.assertEqual(resp_json["data"]["mediaSources"][2]["allowed"], True)
+        self.assertEqual(resp_json["data"]["mediaSources"][3]["allowed"], True)
+        self.assertEqual(resp_json["data"]["mediaSources"][4]["allowed"], True)
+
     @mock.patch("utils.slack.publish")
     def test_post(self, mock_slack_publish):
         agency = magic_mixer.blend(core.models.Agency, users=[self.user])
+        sources = magic_mixer.cycle(5).blend(core.models.Source, released=True, deprecated=False)
+        agency.allowed_sources.add(*list([sources[0], sources[1], sources[2]]))
 
         new_account = self.account_repr(
             agencyId=agency.id,
@@ -320,6 +394,7 @@ class AccountViewSetTest(RESTAPITest):
             defaultAccountManager=self.user.id,
             autoAddNewSources=True,
             salesforceUrl="http://salesforce.com",
+            mediaSources=[],
         )
 
         r = self.client.post(reverse("restapi.account.internal:accounts_list"), data=new_account, format="json")
@@ -335,3 +410,59 @@ class AccountViewSetTest(RESTAPITest):
         self.assertIsNone(resp_json["data"]["obRepresentative"])
         self.assertEqual(resp_json["data"]["autoAddNewSources"], new_account["autoAddNewSources"])
         self.assertEqual(resp_json["data"]["salesforceUrl"], new_account["salesforceUrl"])
+
+        self.assertEqual(len(resp_json["data"]["mediaSources"]), 3)
+        self.assertEqual(resp_json["data"]["mediaSources"][0]["allowed"], True)
+        self.assertEqual(resp_json["data"]["mediaSources"][1]["allowed"], True)
+        self.assertEqual(resp_json["data"]["mediaSources"][2]["allowed"], True)
+
+    @mock.patch("restapi.account.internal.helpers.get_non_removable_sources_ids")
+    @mock.patch("utils.slack.publish")
+    def test_put_media_sources_error(self, mock_slack_publish, mock_get_non_removable_sources_ids):
+        agency = magic_mixer.blend(core.models.Agency, users=[self.user])
+        account = magic_mixer.blend(core.models.Account, agency=agency, name="Generic account", users=[self.user])
+        account.settings.update_unsafe(
+            None,
+            name=account.name,
+            account_type=dash.constants.AccountType.ACTIVATED,
+            default_account_manager=self.user,
+            default_sales_representative=None,
+            default_cs_representative=None,
+            ob_representative=None,
+            auto_add_new_sources=True,
+            salesforce_url="http://salesforce.com",
+        )
+
+        sources = magic_mixer.cycle(5).blend(core.models.Source, released=True, deprecated=False)
+        agency.allowed_sources.add(*list(sources))
+        account.allowed_sources.add(*list([sources[0], sources[1], sources[2]]))
+
+        mock_get_non_removable_sources_ids.return_value = [sources[0].id, sources[1].id]
+
+        r = self.client.get(reverse("restapi.account.internal:accounts_details", kwargs={"account_id": account.id}))
+        resp_json = self.assertResponseValid(r)
+
+        self.assertEqual(resp_json["data"]["mediaSources"][0]["allowed"], True)
+        self.assertEqual(resp_json["data"]["mediaSources"][1]["allowed"], True)
+        self.assertEqual(resp_json["data"]["mediaSources"][2]["allowed"], True)
+        self.assertEqual(resp_json["data"]["mediaSources"][3]["allowed"], False)
+        self.assertEqual(resp_json["data"]["mediaSources"][4]["allowed"], False)
+
+        put_data = resp_json["data"].copy()
+
+        put_data["mediaSources"][0]["allowed"] = False
+        put_data["mediaSources"][1]["allowed"] = False
+
+        r = self.client.put(
+            reverse("restapi.account.internal:accounts_details", kwargs={"account_id": account.id}),
+            data=put_data,
+            format="json",
+        )
+        r = self.assertResponseError(r, "ValidationError")
+
+        self.assertIn(
+            "Can't save changes because media sources {} are still used on this account.".format(
+                ", ".join([sources[0].name, sources[1].name])
+            ),
+            r["details"]["mediaSources"][0],
+        )
