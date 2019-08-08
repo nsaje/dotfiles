@@ -11,7 +11,7 @@ export interface AdGroupExtras {
     canArchive: boolean;
     canRestore: boolean;
     isCampaignAutopilotEnabled: boolean;
-    accountId: number;
+    accountId: string;
     currency: Currency;
     optimizationObjective: CampaignGoalKPI;
     defaultSettings: AdGroupExtrasDefaultSettings;

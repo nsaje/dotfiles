@@ -4,9 +4,8 @@ import core.models
 import restapi.access
 import utils.converters
 import utils.exc
+from restapi.account.v1 import serializers
 from restapi.common.views_base import RESTAPIBaseViewSet
-
-from . import serializers
 
 UPDATABLE_SETTINGS_FIELDS = (
     "name",
@@ -18,28 +17,32 @@ UPDATABLE_SETTINGS_FIELDS = (
 
 
 class AccountViewSet(RESTAPIBaseViewSet):
+    serializer = serializers.AccountSerializer
+
     def get(self, request, account_id):
         account = restapi.access.get_account(request.user, account_id)
-        return self.response_ok(serializers.AccountSerializer(account, context={"request": request}).data)
+        return self.response_ok(self.serializer(account, context={"request": request}).data)
 
     def put(self, request, account_id):
         account = restapi.access.get_account(request.user, account_id)
-        serializer = serializers.AccountSerializer(data=request.data, partial=True, context={"request": request})
+        serializer = self.serializer(data=request.data, partial=True, context={"request": request})
         serializer.is_valid(raise_exception=True)
-        settings_updates = serializer.validated_data.get("settings")
-        if settings_updates:
-            update = {key: value for key, value in list(settings_updates.items()) if key in UPDATABLE_SETTINGS_FIELDS}
-            self._update_account(request, account, update)
-        return self.response_ok(serializers.AccountSerializer(account, context={"request": request}).data)
+        settings = serializer.validated_data.get("settings")
+
+        with transaction.atomic():
+            settings_valid = {key: value for key, value in list(settings.items()) if key in UPDATABLE_SETTINGS_FIELDS}
+            self._update_account(request, account, settings_valid)
+
+        return self.response_ok(self.serializer(account, context={"request": request}).data)
 
     def list(self, request):
         accounts = core.models.Account.objects.all().filter_by_user(request.user)
         if not utils.converters.x_to_bool(request.GET.get("includeArchived")):
             accounts = accounts.exclude_archived()
-        return self.response_ok(serializers.AccountSerializer(accounts, many=True, context={"request": request}).data)
+        return self.response_ok(self.serializer(accounts, many=True, context={"request": request}).data)
 
     def create(self, request):
-        serializer = serializers.AccountSerializer(data=request.data, context={"request": request})
+        serializer = self.serializer(data=request.data, context={"request": request})
         serializer.is_valid(raise_exception=True)
         agency = None
         agency_id = serializer.validated_data.get("agency_id")
@@ -53,18 +56,14 @@ class AccountViewSet(RESTAPIBaseViewSet):
                 agency=agency,
                 currency=serializer.validated_data.get("currency"),
             )
-            settings_updates = serializer.validated_data.get("settings")
-            if settings_updates:
-                update = {
-                    key: value for key, value in list(settings_updates.items()) if key in UPDATABLE_SETTINGS_FIELDS
-                }
-                self._update_account(request, new_account, update)
+            settings = serializer.validated_data.get("settings")
+            settings_valid = {key: value for key, value in list(settings.items()) if key in UPDATABLE_SETTINGS_FIELDS}
+            self._update_account(request, new_account, settings_valid)
 
-        return self.response_ok(
-            serializers.AccountSerializer(new_account, context={"request": request}).data, status=201
-        )
+        return self.response_ok(self.serializer(new_account, context={"request": request}).data, status=201)
 
-    def _update_account(self, request, account, data):
+    @staticmethod
+    def _update_account(request, account, data):
         try:
             account.settings.update(request, **data)
 

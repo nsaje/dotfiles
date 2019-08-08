@@ -6,7 +6,7 @@ from restapi.common.views_base_test import RESTAPITest
 from utils.magic_mixer import magic_mixer
 
 
-class AccountsTest(RESTAPITest):
+class AccountViewSetTest(RESTAPITest):
     @classmethod
     def account_repr(
         cls,
@@ -48,7 +48,7 @@ class AccountsTest(RESTAPITest):
         self.assertEqual(expected, account)
 
     def test_accounts_list(self):
-        r = self.client.get(reverse("accounts_list"))
+        r = self.client.get(reverse("restapi.account.v1:accounts_list"))
         resp_json = self.assertResponseValid(r, data_type=list)
         self.assertGreater(len(resp_json["data"]), 0)
         for item in resp_json["data"]:
@@ -59,7 +59,7 @@ class AccountsTest(RESTAPITest):
         self.client.force_authenticate(user=self.user)
         magic_mixer.cycle(3).blend(dash.models.Account, archived=False, users=[self.user])
         magic_mixer.cycle(2).blend(dash.models.Account, archived=True, users=[self.user])
-        r = self.client.get(reverse("accounts_list"))
+        r = self.client.get(reverse("restapi.account.v1:accounts_list"))
         resp_json = self.assertResponseValid(r, data_type=list)
         self.assertEqual(3, len(resp_json["data"]))
         for item in resp_json["data"]:
@@ -71,7 +71,7 @@ class AccountsTest(RESTAPITest):
         self.client.force_authenticate(user=self.user)
         magic_mixer.cycle(3).blend(dash.models.Account, archived=False, users=[self.user])
         magic_mixer.cycle(2).blend(dash.models.Account, archived=True, users=[self.user])
-        r = self.client.get(reverse("accounts_list"), {"includeArchived": "TRUE"})
+        r = self.client.get(reverse("restapi.account.v1:accounts_list"), {"includeArchived": "TRUE"})
         resp_json = self.assertResponseValid(r, data_type=list)
         self.assertEqual(5, len(resp_json["data"]))
         for item in resp_json["data"]:
@@ -100,31 +100,31 @@ class AccountsTest(RESTAPITest):
             name="mytest", agency_id=None, whitelist_publisher_groups=[153, 154], blacklist_publisher_groups=[]
         )
         del new_account["id"]
-        r = self.client.post(reverse("accounts_list"), data=new_account, format="json")
+        r = self.client.post(reverse("restapi.account.v1:accounts_list"), data=new_account, format="json")
         self.assertResponseError(r, "ValidationError")
 
         new_account = self.account_repr(
             name="mytest", agency_id=None, whitelist_publisher_groups=[], blacklist_publisher_groups=[153, 154]
         )
         del new_account["id"]
-        r = self.client.post(reverse("accounts_list"), data=new_account, format="json")
+        r = self.client.post(reverse("restapi.account.v1:accounts_list"), data=new_account, format="json")
         self.assertResponseError(r, "ValidationError")
 
     def _test_accounts_post(self, new_account):
-        r = self.client.post(reverse("accounts_list"), data=new_account, format="json")
+        r = self.client.post(reverse("restapi.account.v1:accounts_list"), data=new_account, format="json")
         resp_json = self.assertResponseValid(r, data_type=dict, status_code=201)
         self.validate_against_db(resp_json["data"])
         new_account["id"] = resp_json["data"]["id"]
         self.assertEqual(resp_json["data"], new_account)
 
     def test_accounts_get(self):
-        r = self.client.get(reverse("accounts_details", kwargs={"account_id": 186}))
+        r = self.client.get(reverse("restapi.account.v1:accounts_details", kwargs={"account_id": 186}))
         resp_json = self.assertResponseValid(r)
         self.validate_against_db(resp_json["data"])
 
     def test_account_get_permissionless(self):
         utils.test_helper.remove_permissions(self.user, permissions=["can_set_frequency_capping"])
-        r = self.client.get(reverse("accounts_details", kwargs={"account_id": 186}))
+        r = self.client.get(reverse("restapi.account.v1:accounts_details", kwargs={"account_id": 186}))
         resp_json = self.assertResponseValid(r)
         self.assertFalse("frequencyCapping" in resp_json["data"])
         resp_json["data"]["frequencyCapping"] = None
@@ -134,7 +134,9 @@ class AccountsTest(RESTAPITest):
         test_account = self.account_repr(
             id=186, whitelist_publisher_groups=[153, 154], blacklist_publisher_groups=[153, 154]
         )
-        r = self.client.put(reverse("accounts_details", kwargs={"account_id": 186}), data=test_account, format="json")
+        r = self.client.put(
+            reverse("restapi.account.v1:accounts_details", kwargs={"account_id": 186}), data=test_account, format="json"
+        )
         resp_json = self.assertResponseValid(r)
         self.validate_against_db(resp_json["data"])
         self.assertEqual(resp_json["data"], test_account)
@@ -151,7 +153,9 @@ class AccountsTest(RESTAPITest):
             agency_id=None, id=account.id, archived=True, whitelist_publisher_groups=[], blacklist_publisher_groups=[]
         )
         r = self.client.put(
-            reverse("accounts_details", kwargs={"account_id": account.id}), data=test_account, format="json"
+            reverse("restapi.account.v1:accounts_details", kwargs={"account_id": account.id}),
+            data=test_account,
+            format="json",
         )
         resp_json = self.assertResponseValid(r)
         self.validate_against_db(resp_json["data"])
@@ -163,7 +167,9 @@ class AccountsTest(RESTAPITest):
 
         test_account["archived"] = False
         r = self.client.put(
-            reverse("accounts_details", kwargs={"account_id": account.id}), data=test_account, format="json"
+            reverse("restapi.account.v1:accounts_details", kwargs={"account_id": account.id}),
+            data=test_account,
+            format="json",
         )
         resp_json = self.assertResponseValid(r)
         self.validate_against_db(resp_json["data"])
@@ -175,22 +181,28 @@ class AccountsTest(RESTAPITest):
 
     def test_account_publisher_groups(self):
         test_account = self.account_repr(id=186, whitelist_publisher_groups=[153], blacklist_publisher_groups=[154])
-        r = self.client.put(reverse("accounts_details", kwargs={"account_id": 186}), data=test_account, format="json")
+        r = self.client.put(
+            reverse("restapi.account.v1:accounts_details", kwargs={"account_id": 186}), data=test_account, format="json"
+        )
         resp_json = self.assertResponseValid(r)
         self.validate_against_db(resp_json["data"])
 
         test_account = self.account_repr(id=186, whitelist_publisher_groups=[1])
-        r = self.client.put(reverse("accounts_details", kwargs={"account_id": 186}), data=test_account, format="json")
+        r = self.client.put(
+            reverse("restapi.account.v1:accounts_details", kwargs={"account_id": 186}), data=test_account, format="json"
+        )
         self.assertResponseError(r, "ValidationError")
 
         test_account = self.account_repr(id=186, blacklist_publisher_groups=[2])
-        r = self.client.put(reverse("accounts_details", kwargs={"account_id": 186}), data=test_account, format="json")
+        r = self.client.put(
+            reverse("restapi.account.v1:accounts_details", kwargs={"account_id": 186}), data=test_account, format="json"
+        )
         self.assertResponseError(r, "ValidationError")
 
     def test_accounts_post_currency(self):
         new_account = self.account_repr(name="mytest", agency_id=1, currency=dash.constants.Currency.EUR)
         del new_account["id"]
-        r = self.client.post(reverse("accounts_list"), data=new_account, format="json")
+        r = self.client.post(reverse("restapi.account.v1:accounts_list"), data=new_account, format="json")
         resp_json = self.assertResponseValid(r, data_type=dict, status_code=201)
         self.validate_against_db(resp_json["data"])
         new_account["id"] = resp_json["data"]["id"]
@@ -200,7 +212,7 @@ class AccountsTest(RESTAPITest):
         new_account = self.account_repr(name="mytest", agency_id=1)
         del new_account["id"]
         del new_account["currency"]
-        r = self.client.post(reverse("accounts_list"), data=new_account, format="json")
+        r = self.client.post(reverse("restapi.account.v1:accounts_list"), data=new_account, format="json")
         resp_json = self.assertResponseValid(r, data_type=dict, status_code=201)
         self.validate_against_db(resp_json["data"])
         new_account["id"] = resp_json["data"]["id"]
@@ -208,15 +220,15 @@ class AccountsTest(RESTAPITest):
 
         new_account = self.account_repr(name="mytest", agency_id=1, currency=None)
         del new_account["id"]
-        r = self.client.post(reverse("accounts_list"), data=new_account, format="json")
+        r = self.client.post(reverse("restapi.account.v1:accounts_list"), data=new_account, format="json")
         self.assertResponseError(r, "ValidationError")
 
         new_account = self.account_repr(name="mytest", agency_id=1, currency="")
         del new_account["id"]
-        r = self.client.post(reverse("accounts_list"), data=new_account, format="json")
+        r = self.client.post(reverse("restapi.account.v1:accounts_list"), data=new_account, format="json")
         self.assertResponseError(r, "ValidationError")
 
         new_account = self.account_repr(name="mytest", agency_id=1, currency=None)
         del new_account["id"]
-        r = self.client.post(reverse("accounts_list"), data=new_account, format="json")
+        r = self.client.post(reverse("restapi.account.v1:accounts_list"), data=new_account, format="json")
         self.assertResponseError(r, "ValidationError")

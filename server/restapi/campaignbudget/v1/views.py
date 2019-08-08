@@ -12,6 +12,8 @@ from . import serializers
 
 
 class CampaignBudgetViewSet(RESTAPIBaseViewSet):
+    serializer = serializers.CampaignBudgetSerializer
+
     def get(self, request, campaign_id, budget_id):
         campaign = restapi.access.get_campaign(request.user, campaign_id, select_related=True)
         budget = self._get_budget(campaign, budget_id)
@@ -65,10 +67,6 @@ class CampaignBudgetViewSet(RESTAPIBaseViewSet):
             comment=new_budget_data.get("comment"),
         )
         return self.response_ok(self.serializer(new_budget).data, status=201)
-
-    @property
-    def serializer(self):
-        return serializers.CampaignBudgetSerializer
 
     @staticmethod
     def _get_budget(campaign, budget_id):

@@ -20,9 +20,10 @@ from . import serializers
 
 class CampaignViewSet(restapi.campaign.v1.views.CampaignViewSet):
     permission_classes = (rest_framework.permissions.IsAuthenticated,)
+    serializer = serializers.CampaignSerializer
 
     def validate(self, request):
-        serializer = serializers.CampaignSerializer(data=request.data, partial=True, context={"request": request})
+        serializer = self.serializer(data=request.data, partial=True, context={"request": request})
         serializer.is_valid(raise_exception=True)
         return self.response_ok(None)
 
@@ -35,7 +36,7 @@ class CampaignViewSet(restapi.campaign.v1.views.CampaignViewSet):
         self._augment_campaign(request, campaign)
         extra_data = helpers.get_extra_data(request.user, campaign)
         return self.response_ok(
-            data=serializers.CampaignSerializer(campaign.settings, context={"request": request}).data,
+            data=self.serializer(campaign.settings, context={"request": request}).data,
             extra=serializers.ExtraDataSerializer(extra_data, context={"request": request}).data,
         )
 
@@ -44,13 +45,13 @@ class CampaignViewSet(restapi.campaign.v1.views.CampaignViewSet):
         self._augment_campaign(request, campaign)
         extra_data = helpers.get_extra_data(request.user, campaign)
         return self.response_ok(
-            data=serializers.CampaignSerializer(campaign.settings, context={"request": request}).data,
+            data=self.serializer(campaign.settings, context={"request": request}).data,
             extra=serializers.ExtraDataSerializer(extra_data, context={"request": request}).data,
         )
 
     def put(self, request, campaign_id):
         campaign = restapi.access.get_campaign(request.user, campaign_id)
-        serializer = serializers.CampaignSerializer(data=request.data, partial=True, context={"request": request})
+        serializer = self.serializer(data=request.data, partial=True, context={"request": request})
         serializer.is_valid(raise_exception=True)
         settings = serializer.validated_data
 
@@ -60,10 +61,10 @@ class CampaignViewSet(restapi.campaign.v1.views.CampaignViewSet):
             self._handle_campaign_budgets(request, campaign, settings.get("budgets", []))
 
         self._augment_campaign(request, campaign)
-        return self.response_ok(serializers.CampaignSerializer(campaign.settings, context={"request": request}).data)
+        return self.response_ok(self.serializer(campaign.settings, context={"request": request}).data)
 
     def create(self, request):
-        serializer = serializers.CampaignSerializer(data=request.data, context={"request": request})
+        serializer = self.serializer(data=request.data, context={"request": request})
         serializer.is_valid(raise_exception=True)
         settings = serializer.validated_data
         account = restapi.access.get_account(request.user, settings.get("campaign", {}).get("account_id"))
@@ -79,9 +80,11 @@ class CampaignViewSet(restapi.campaign.v1.views.CampaignViewSet):
             prodops.hacks.apply_campaign_create_hacks(request, new_campaign)
 
         self._augment_campaign(request, new_campaign)
-        return self.response_ok(
-            serializers.CampaignSerializer(new_campaign.settings, context={"request": request}).data, status=201
-        )
+        return self.response_ok(self.serializer(new_campaign.settings, context={"request": request}).data, status=201)
+
+    @property
+    def serializer(self):
+        return serializers.CampaignSerializer
 
     def _augment_campaign(self, request, campaign):
         campaign.settings.goals = []

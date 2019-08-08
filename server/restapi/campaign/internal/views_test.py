@@ -191,7 +191,7 @@ class CampaignViewSetTest(RESTAPITest):
             },
             "campaign_managers": [
                 {"id": 123, "name": "manager1@outbrain.com"},
-                {"id": 123, "name": "manager2@outbrain.com"},
+                {"id": 456, "name": "manager2@outbrain.com"},
             ],
             "hacks": [],
             "deals": [],
@@ -211,6 +211,7 @@ class CampaignViewSetTest(RESTAPITest):
         r = self.client.get(reverse("restapi.campaign.internal:campaigns_defaults"), {"accountId": account.id})
         resp_json = self.assertResponseValid(r)
 
+        self.assertIsNone(resp_json["data"]["id"])
         self.assertEqual(resp_json["data"]["name"], "")
         self.assertEqual(resp_json["data"]["accountId"], str(account.id))
         self.assertEqual(
@@ -223,7 +224,7 @@ class CampaignViewSetTest(RESTAPITest):
         self.assertEqual(
             resp_json["data"]["iabCategory"], dash.constants.IABCategory.get_name(dash.constants.IABCategory.IAB24)
         )
-        self.assertEqual(resp_json["data"]["campaignManager"], self.user.id)
+        self.assertEqual(resp_json["data"]["campaignManager"], str(self.user.id))
         self.assertEqual(resp_json["data"]["goals"], [])
         self.assertEqual(resp_json["data"]["budgets"], [])
         self.assertEqual(
@@ -239,8 +240,8 @@ class CampaignViewSetTest(RESTAPITest):
                     dash.constants.CampaignGoalKPI.get_name(dash.constants.CampaignGoalKPI.MAX_BOUNCE_RATE): "75.00",
                 },
                 "campaignManagers": [
-                    {"id": 123, "name": "manager1@outbrain.com"},
-                    {"id": 123, "name": "manager2@outbrain.com"},
+                    {"id": "123", "name": "manager1@outbrain.com"},
+                    {"id": "456", "name": "manager2@outbrain.com"},
                 ],
                 "hacks": [],
                 "deals": [],
@@ -331,7 +332,7 @@ class CampaignViewSetTest(RESTAPITest):
             },
             "campaign_managers": [
                 {"id": 123, "name": "manager1@outbrain.com"},
-                {"id": 123, "name": "manager2@outbrain.com"},
+                {"id": 456, "name": "manager2@outbrain.com"},
             ],
             "hacks": [],
             "deals": [],
@@ -362,7 +363,7 @@ class CampaignViewSetTest(RESTAPITest):
             resp_json["data"]["iabCategory"],
             dash.constants.IABCategory.get_name(campaign.get_current_settings().iab_category),
         )
-        self.assertEqual(resp_json["data"]["campaignManager"], campaign.get_current_settings().campaign_manager.id)
+        self.assertEqual(resp_json["data"]["campaignManager"], str(campaign.get_current_settings().campaign_manager.id))
         self.assertEqual(len(resp_json["data"]["goals"]), 1)
         self.assertEqual(
             resp_json["data"]["goals"],
@@ -420,8 +421,8 @@ class CampaignViewSetTest(RESTAPITest):
                     dash.constants.CampaignGoalKPI.get_name(dash.constants.CampaignGoalKPI.MAX_BOUNCE_RATE): "75.00",
                 },
                 "campaignManagers": [
-                    {"id": 123, "name": "manager1@outbrain.com"},
-                    {"id": 123, "name": "manager2@outbrain.com"},
+                    {"id": "123", "name": "manager1@outbrain.com"},
+                    {"id": "456", "name": "manager2@outbrain.com"},
                 ],
                 "hacks": [],
                 "deals": [],
@@ -520,7 +521,7 @@ class CampaignViewSetTest(RESTAPITest):
         self.assertEqual(resp_json["data"]["type"], new_campaign["type"])
         self.assertEqual(resp_json["data"]["language"], new_campaign["language"])
         self.assertEqual(resp_json["data"]["iabCategory"], new_campaign["iabCategory"])
-        self.assertEqual(resp_json["data"]["campaignManager"], new_campaign["campaignManager"])
+        self.assertEqual(resp_json["data"]["campaignManager"], str(new_campaign["campaignManager"]))
         self.assertEqual(len(resp_json["data"]["goals"]), 2)
         self.assertIsNotNone(resp_json["data"]["goals"][0]["id"])
         self.assertEqual(
@@ -652,7 +653,7 @@ class CampaignViewSetTest(RESTAPITest):
         )
         resp_json = self.assertResponseValid(r)
 
-        self.assertEqual(resp_json["data"]["campaignManager"], self.user.id)
+        self.assertEqual(resp_json["data"]["campaignManager"], str(self.user.id))
         self.assertEqual(len(resp_json["data"]["goals"]), 3)
 
         self.assertIsNotNone(resp_json["data"]["goals"][0]["id"])

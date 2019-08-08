@@ -20,7 +20,7 @@ class AdGroupManager(core.common.BaseManager):
         with transaction.atomic():
             if name is None:
                 name = self._create_default_name(campaign)
-            ad_group = self._create(campaign, name=name)
+            ad_group = self._prepare(campaign, name=name)
             ad_group.save(request)
 
             if is_restapi:
@@ -55,7 +55,7 @@ class AdGroupManager(core.common.BaseManager):
         )
 
         with transaction.atomic():
-            ad_group = self._create(campaign, name=new_name)
+            ad_group = self._prepare(campaign, name=new_name)
             for field in set(self.model._clone_fields):
                 setattr(ad_group, field, getattr(source_ad_group, field))
             ad_group.save(request)
@@ -77,14 +77,14 @@ class AdGroupManager(core.common.BaseManager):
         return ad_group
 
     def get_default(self, request, campaign):
-        ad_group = self._create(campaign, name="")
+        ad_group = self._prepare(campaign, name="")
         ad_group.settings = core.models.settings.AdGroupSettings.objects.get_default(ad_group, name="")
         return ad_group
 
     def _create_default_name(self, campaign):
         return core.models.helpers.create_default_name(model.AdGroup.objects.filter(campaign=campaign), "New ad group")
 
-    def _create(self, campaign, name, **kwargs):
+    def _prepare(self, campaign, name, **kwargs):
         ad_group = model.AdGroup(campaign=campaign, name=name, **kwargs)
         if (
             settings.AMPLIFY_REVIEW

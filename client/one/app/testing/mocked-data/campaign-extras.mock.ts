@@ -2,6 +2,11 @@ import {CampaignExtras} from '../../core/entities/types/campaign/campaign-extras
 import {CampaignGoalKPI} from '../../app.constants';
 
 export const campaignExtrasMock: CampaignExtras = {
+    archived: null,
+    language: null,
+    canArchive: null,
+    canRestore: null,
+    campaignManagers: [],
     currency: null,
     goalsDefaults: {
         [CampaignGoalKPI.TIME_ON_SITE]: null,

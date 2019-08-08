@@ -20,14 +20,14 @@ class ExtraDataDefaultSettingsSerializer(restapi.serializers.base.RESTAPIBaseSer
 
 
 class ExtraDataRetargetableAdGroupSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
-    id = rest_framework.serializers.IntegerField(required=False)
+    id = restapi.serializers.fields.IdField(required=False)
     archived = rest_framework.serializers.BooleanField(default=False, required=False)
     campaign_name = rest_framework.serializers.CharField(required=False)
     name = rest_framework.serializers.CharField(required=False)
 
 
 class ExtraDataAudiencesSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
-    id = rest_framework.serializers.IntegerField(required=False)
+    id = restapi.serializers.fields.IdField(required=False)
     archived = rest_framework.serializers.BooleanField(default=False, required=False)
     name = rest_framework.serializers.CharField(required=False)
 
@@ -45,7 +45,7 @@ class ExtraDataSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
     can_archive = rest_framework.serializers.BooleanField(default=False, required=False)
     can_restore = rest_framework.serializers.BooleanField(default=False, required=False)
     is_campaign_autopilot_enabled = rest_framework.serializers.BooleanField(default=False, required=False)
-    account_id = rest_framework.serializers.IntegerField(required=False)
+    account_id = restapi.serializers.fields.IdField(required=False)
     currency = restapi.serializers.fields.DashConstantField(
         dash.constants.Currency, default=dash.constants.Currency.USD, required=False
     )

@@ -15,6 +15,7 @@ from dash import constants
 
 from ..settings_base import SettingsBase
 from ..settings_query_set import SettingsQuerySet
+from . import manager
 from . import validation
 
 
@@ -22,6 +23,8 @@ class AccountSettings(validation.AccountSettingsValidatorMixin, SettingsBase):
     class Meta:
         app_label = "dash"
         ordering = ("-created_dt",)
+
+    objects = manager.AccountSettingsManager()
 
     _demo_fields = {"name": utils.demo_anonymizer.account_name_from_pool}
     _settings_fields = [
@@ -70,8 +73,6 @@ class AccountSettings(validation.AccountSettingsValidatorMixin, SettingsBase):
     changes_text = models.TextField(blank=True, null=True)
 
     frequency_capping = models.PositiveIntegerField(blank=True, null=True)
-
-    objects = core.common.QuerySetManager()
 
     @transaction.atomic
     def update(self, request, **kwargs):

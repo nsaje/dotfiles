@@ -55,6 +55,7 @@ class AdGroupViewSetTest(RESTAPITest):
         r = self.client.get(reverse("restapi.adgroup.internal:adgroups_defaults"), {"campaignId": campaign.id})
         resp_json = self.assertResponseValid(r)
 
+        self.assertIsNone(resp_json["data"]["id"])
         self.assertEqual(resp_json["data"]["name"], "")
         self.assertIsNone(resp_json["data"].get("dailyBudget"))
         self.assertEqual(resp_json["data"]["notes"], "")
@@ -67,7 +68,7 @@ class AdGroupViewSetTest(RESTAPITest):
                 "canArchive": False,
                 "canRestore": False,
                 "isCampaignAutopilotEnabled": False,
-                "accountId": 12345,
+                "accountId": "12345",
                 "currency": dash.constants.Currency.get_name(dash.constants.Currency.USD),
                 "optimizationObjective": "",
                 "defaultSettings": {
@@ -140,7 +141,7 @@ class AdGroupViewSetTest(RESTAPITest):
                 "canArchive": False,
                 "canRestore": False,
                 "isCampaignAutopilotEnabled": False,
-                "accountId": 12345,
+                "accountId": "12345",
                 "currency": dash.constants.Currency.get_name(dash.constants.Currency.USD),
                 "optimizationObjective": dash.constants.CampaignGoalKPI.get_name(dash.constants.CampaignGoalKPI.CPC),
                 "defaultSettings": {

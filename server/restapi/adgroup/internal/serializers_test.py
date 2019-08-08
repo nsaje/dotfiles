@@ -53,7 +53,7 @@ class ExtraDataSerializerTest(TestCase):
             "can_archive": False,
             "can_restore": False,
             "is_campaign_autopilot_enabled": False,
-            "account_id": 12345,
+            "account_id": "12345",
             "currency": dash.constants.Currency.USD,
             "optimization_objective": dash.constants.CampaignGoalKPI.get_name(dash.constants.CampaignGoalKPI.CPC),
             "default_settings": {
@@ -70,9 +70,9 @@ class ExtraDataSerializerTest(TestCase):
                 "target_placements": [],
             },
             "retargetable_ad_groups": [
-                {"id": 795, "name": "Pre-launch (desktop)", "campaign_name": "Plugin Magazin", "archived": False}
+                {"id": "795", "name": "Pre-launch (desktop)", "campaign_name": "Plugin Magazin", "archived": False}
             ],
-            "audiences": [{"id": 698, "name": "phase 1", "archived": False}],
+            "audiences": [{"id": "698", "name": "phase 1", "archived": False}],
             "warnings": {"retargeting": {"sources": ["AdZerk", "Rubicon Display"]}},
             "hacks": [
                 {
@@ -86,7 +86,7 @@ class ExtraDataSerializerTest(TestCase):
             "deals": [
                 {
                     "level": "Global",
-                    "direct_deal_connection_id": 1234,
+                    "direct_deal_connection_id": "1234",
                     "deal_id": "1234_ABC",
                     "source": "SOURCE",
                     "exclusive": True,

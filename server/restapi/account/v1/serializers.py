@@ -1,19 +1,23 @@
 from rest_framework import serializers
 
+import restapi.serializers.base
 import restapi.serializers.fields
+import restapi.serializers.serializers
 from dash import constants
 
 
-class TargetingIncludeExcludeSerializer(serializers.Serializer):
+class TargetingIncludeExcludeSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
     included = serializers.ListField(child=serializers.IntegerField(), source="whitelist_publisher_groups")
     excluded = serializers.ListField(child=serializers.IntegerField(), source="blacklist_publisher_groups")
 
 
-class AccountTargetingSerializer(serializers.Serializer):
+class AccountTargetingSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
     publisher_groups = TargetingIncludeExcludeSerializer(source="*")
 
 
-class AccountSerializer(restapi.serializers.serializers.PermissionedFieldsMixin, serializers.Serializer):
+class AccountSerializer(
+    restapi.serializers.serializers.PermissionedFieldsMixin, restapi.serializers.base.RESTAPIBaseSerializer
+):
     class Meta:
         permissioned_fields = {"frequency_capping": "zemauth.can_set_frequency_capping"}
 

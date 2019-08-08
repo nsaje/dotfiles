@@ -1,5 +1,5 @@
 export interface AdGroupExtrasAudience {
-    id: number;
+    id: string;
     archived: boolean;
     name: string;
 }

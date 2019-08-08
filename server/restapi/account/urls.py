@@ -1,12 +1,10 @@
+from django.conf.urls import include
 from django.conf.urls import url
 
-from . import views
+import restapi.account.internal.urls
+import restapi.account.v1.urls
 
 urlpatterns = [
-    url(
-        r"^v1/accounts/(?P<account_id>\d+)$",
-        views.AccountViewSet.as_view({"get": "get", "put": "put"}),
-        name="accounts_details",
-    ),
-    url(r"^v1/accounts/$", views.AccountViewSet.as_view({"get": "list", "post": "create"}), name="accounts_list"),
+    url(r"^v1/accounts/", include(restapi.account.v1.urls, namespace="restapi.account.v1")),
+    url(r"^internal/accounts/", include(restapi.account.internal.urls, namespace="restapi.account.internal")),
 ]

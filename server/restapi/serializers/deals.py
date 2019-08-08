@@ -29,7 +29,7 @@ class DirectDealConnectionSerializer(rest_framework.serializers.Serializer):
 
 class DealSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
     level = rest_framework.serializers.CharField(required=False)
-    direct_deal_connection_id = rest_framework.serializers.IntegerField(required=False)
+    direct_deal_connection_id = restapi.serializers.fields.IdField(required=False)
     deal_id = rest_framework.serializers.CharField(required=False)
     source = rest_framework.serializers.CharField(required=False)
     exclusive = rest_framework.serializers.BooleanField(default=False, required=False)

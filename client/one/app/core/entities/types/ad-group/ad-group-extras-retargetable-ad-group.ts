@@ -1,5 +1,5 @@
 export interface AdGroupExtrasRetargetableAdGroup {
-    id: number;
+    id: string;
     archived: boolean;
     campaignName: string;
     name: string;

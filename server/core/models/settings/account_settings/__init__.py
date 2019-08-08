@@ -1,1 +1,1 @@
-from .account_settings import AccountSettings
+from .model import AccountSettings

@@ -6,7 +6,6 @@ import core.models
 import restapi.access
 import restapi.adgroup.v1.views
 from dash import constants
-from prodops import hacks
 
 from . import helpers
 from . import serializers
@@ -14,9 +13,10 @@ from . import serializers
 
 class AdGroupViewSet(restapi.adgroup.v1.views.AdGroupViewSet):
     permission_classes = (rest_framework.permissions.IsAuthenticated,)
+    serializer = serializers.AdGroupSerializer
 
     def validate(self, request):
-        serializer = serializers.AdGroupSerializer(data=request.data, partial=True, context={"request": request})
+        serializer = self.serializer(data=request.data, partial=True, context={"request": request})
         serializer.is_valid(raise_exception=True)
         return self.response_ok(None)
 
@@ -28,7 +28,7 @@ class AdGroupViewSet(restapi.adgroup.v1.views.AdGroupViewSet):
         ad_group = core.models.AdGroup.objects.get_default(request, campaign)
         extra_data = helpers.get_extra_data(request.user, ad_group)
         return self.response_ok(
-            data=serializers.AdGroupSerializer(ad_group.settings, context={"request": request}).data,
+            data=self.serializer(ad_group.settings, context={"request": request}).data,
             extra=serializers.ExtraDataSerializer(extra_data, context={"request": request}).data,
         )
 
@@ -36,7 +36,7 @@ class AdGroupViewSet(restapi.adgroup.v1.views.AdGroupViewSet):
         ad_group = restapi.access.get_ad_group(request.user, ad_group_id)
         extra_data = helpers.get_extra_data(request.user, ad_group)
         return self.response_ok(
-            data=serializers.AdGroupSerializer(ad_group.settings, context={"request": request}).data,
+            data=self.serializer(ad_group.settings, context={"request": request}).data,
             extra=serializers.ExtraDataSerializer(extra_data, context={"request": request}).data,
         )
 
@@ -48,27 +48,10 @@ class AdGroupViewSet(restapi.adgroup.v1.views.AdGroupViewSet):
             request.data.update(
                 {"state": constants.AdGroupSettingsState.get_name(constants.AdGroupSettingsState.INACTIVE)}
             )
-        serializer = serializers.AdGroupSerializer(data=request.data, partial=True, context={"request": request})
+        serializer = self.serializer(data=request.data, partial=True, context={"request": request})
         serializer.is_valid(raise_exception=True)
 
         with transaction.atomic():
             self._update_settings(request, ad_group, serializer.validated_data)
 
-        return self.response_ok(serializers.AdGroupSerializer(ad_group.settings, context={"request": request}).data)
-
-    def create(self, request):
-        serializer = serializers.AdGroupSerializer(data=request.data, context={"request": request})
-        serializer.is_valid(raise_exception=True)
-        settings = serializer.validated_data
-        campaign = restapi.access.get_campaign(request.user, settings.get("ad_group", {}).get("campaign_id"))
-
-        with transaction.atomic():
-            new_ad_group = core.models.AdGroup.objects.create(
-                request, campaign=campaign, name=settings.get("ad_group_name", None)
-            )
-            self._update_settings(request, new_ad_group, settings)
-            hacks.apply_ad_group_create_hacks(request, new_ad_group)
-
-        return self.response_ok(
-            serializers.AdGroupSerializer(new_ad_group.settings, context={"request": request}).data, status=201
-        )
+        return self.response_ok(self.serializer(ad_group.settings, context={"request": request}).data)

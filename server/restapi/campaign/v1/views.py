@@ -12,16 +12,21 @@ from . import serializers
 
 
 class CampaignViewSet(RESTAPIBaseViewSet):
+    serializer = serializers.CampaignSerializer
+
     def get(self, request, campaign_id):
         campaign = restapi.access.get_campaign(request.user, campaign_id)
-        return self.response_ok(serializers.CampaignSerializer(campaign.settings, context={"request": request}).data)
+        return self.response_ok(self.serializer(campaign.settings, context={"request": request}).data)
 
     def put(self, request, campaign_id):
         campaign = restapi.access.get_campaign(request.user, campaign_id)
-        serializer = serializers.CampaignSerializer(data=request.data, partial=True, context={"request": request})
+        serializer = self.serializer(data=request.data, partial=True, context={"request": request})
         serializer.is_valid(raise_exception=True)
-        self._update_campaign(request, campaign, serializer.validated_data)
-        return self.response_ok(serializers.CampaignSerializer(campaign.settings, context={"request": request}).data)
+
+        with transaction.atomic():
+            self._update_campaign(request, campaign, serializer.validated_data)
+
+        return self.response_ok(self.serializer(campaign.settings, context={"request": request}).data)
 
     def list(self, request):
         account_id = request.query_params.get("accountId", None)
@@ -39,11 +44,11 @@ class CampaignViewSet(RESTAPIBaseViewSet):
         campaigns_paginated = paginator.paginate_queryset(campaigns, request)
         paginated_settings = [c.settings for c in campaigns_paginated]
         return paginator.get_paginated_response(
-            serializers.CampaignSerializer(paginated_settings, many=True, context={"request": request}).data
+            self.serializer(paginated_settings, many=True, context={"request": request}).data
         )
 
     def create(self, request):
-        serializer = serializers.CampaignSerializer(data=request.data, context={"request": request})
+        serializer = self.serializer(data=request.data, context={"request": request})
         serializer.is_valid(raise_exception=True)
         settings = serializer.validated_data
         account = restapi.access.get_account(request.user, settings.get("campaign", {}).get("account_id"))
@@ -60,11 +65,10 @@ class CampaignViewSet(RESTAPIBaseViewSet):
             self._update_campaign(request, new_campaign, settings)
             prodops.hacks.apply_campaign_create_hacks(request, new_campaign)
 
-        return self.response_ok(
-            serializers.CampaignSerializer(new_campaign.settings, context={"request": request}).data, status=201
-        )
+        return self.response_ok(self.serializer(new_campaign.settings, context={"request": request}).data, status=201)
 
-    def _update_campaign(self, request, campaign, settings):
+    @staticmethod
+    def _update_campaign(request, campaign, settings):
         try:
             settings = prodops.hacks.override_campaign_settings(campaign, settings)
             campaign.update_type(settings.get("campaign", {}).get("type"))

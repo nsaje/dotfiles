@@ -14,16 +14,21 @@ from . import serializers
 
 
 class AdGroupViewSet(RESTAPIBaseViewSet):
+    serializer = serializers.AdGroupSerializer
+
     def get(self, request, ad_group_id):
         ad_group = restapi.access.get_ad_group(request.user, ad_group_id)
-        return self.response_ok(serializers.AdGroupSerializer(ad_group.settings, context={"request": request}).data)
+        return self.response_ok(self.serializer(ad_group.settings, context={"request": request}).data)
 
     def put(self, request, ad_group_id):
         ad_group = restapi.access.get_ad_group(request.user, ad_group_id)
-        serializer = serializers.AdGroupSerializer(data=request.data, partial=True, context={"request": request})
+        serializer = self.serializer(data=request.data, partial=True, context={"request": request})
         serializer.is_valid(raise_exception=True)
-        self._update_settings(request, ad_group, serializer.validated_data)
-        return self.response_ok(serializers.AdGroupSerializer(ad_group.settings, context={"request": request}).data)
+
+        with transaction.atomic():
+            self._update_settings(request, ad_group, serializer.validated_data)
+
+        return self.response_ok(self.serializer(ad_group.settings, context={"request": request}).data)
 
     def list(self, request):
         campaign_id = request.query_params.get("campaignId", None)
@@ -41,11 +46,11 @@ class AdGroupViewSet(RESTAPIBaseViewSet):
         ad_groups_paginated = paginator.paginate_queryset(ad_groups, request)
         paginated_settings = [ad.settings for ad in ad_groups_paginated]
         return paginator.get_paginated_response(
-            serializers.AdGroupSerializer(paginated_settings, many=True, context={"request": request}).data
+            self.serializer(paginated_settings, many=True, context={"request": request}).data
         )
 
     def create(self, request):
-        serializer = serializers.AdGroupSerializer(data=request.data, context={"request": request})
+        serializer = self.serializer(data=request.data, context={"request": request})
         serializer.is_valid(raise_exception=True)
         settings = serializer.validated_data
         campaign = restapi.access.get_campaign(request.user, settings.get("ad_group", {}).get("campaign_id"))
@@ -62,9 +67,7 @@ class AdGroupViewSet(RESTAPIBaseViewSet):
             self._update_settings(request, new_ad_group, settings)
             prodops.hacks.apply_ad_group_create_hacks(request, new_ad_group)
 
-        return self.response_ok(
-            serializers.AdGroupSerializer(new_ad_group.settings, context={"request": request}).data, status=201
-        )
+        return self.response_ok(self.serializer(new_ad_group.settings, context={"request": request}).data, status=201)
 
     @staticmethod
     def _update_settings(request, ad_group, settings):

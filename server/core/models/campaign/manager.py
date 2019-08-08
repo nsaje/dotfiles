@@ -1,6 +1,7 @@
 from django.db import transaction
 
 import core.common
+import core.models
 import core.models.helpers
 import utils.exc
 from dash import constants
@@ -34,7 +35,7 @@ class CampaignManager(core.common.BaseManager):
         self._validate_entity_limits(account)
         self._validate_currency(request, account)
 
-        campaign = self._create(account, name, type)
+        campaign = self._prepare(account, name, type)
         campaign.save(request=request)
 
         settings_updates = core.models.settings.CampaignSettings.get_defaults_dict()
@@ -61,14 +62,14 @@ class CampaignManager(core.common.BaseManager):
         autopilot = False
         if account.id not in ACCOUNTS_WITH_AUTOPILOT_DISABLED:
             autopilot = CAMPAIGN_AUTOPILOT_ENABLED_VALUE
-        campaign = self._create(account, "", constants.CampaignType.CONTENT)
+        campaign = self._prepare(account, "", constants.CampaignType.CONTENT)
         campaign.settings = core.models.settings.CampaignSettings.objects.get_default(request, campaign, autopilot)
         return campaign
 
     def _create_default_name(self, account):
         return core.models.helpers.create_default_name(model.Campaign.objects.filter(account=account), "New campaign")
 
-    def _create(self, account, name, type):
+    def _prepare(self, account, name, type):
         campaign = model.Campaign(name=name, account=account, type=type)
         campaign.real_time_campaign_stop = True
         if account.id in ACCOUNTS_WITHOUT_CAMPAIGN_STOP or account.agency_id in AGENCIES_WITHOUT_CAMPAIGN_STOP:
