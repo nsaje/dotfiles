@@ -680,11 +680,16 @@ class AdGroupPublishersDailyStats(AdGroupDailyStatsView):
             uses_bcm_v2=self.ad_group.campaign.account.uses_bcm_v2,
         )
 
-        self.selected_objects = None
+        self.selected_objects = request.GET.getlist("selected_ids")
 
         return self.create_api_response(
             helpers.merge(
-                self.get_stats(request, None, should_use_publishers_view=True),
+                self.get_stats(
+                    request,
+                    "publisher",
+                    object_mapping_fn=helpers.get_publisher_mapping,
+                    should_use_publishers_view=True,
+                ),
                 self.get_goals(
                     request, conversion_goals=conversion_goals, campaign=self.ad_group.campaign, pixels=pixels
                 ),

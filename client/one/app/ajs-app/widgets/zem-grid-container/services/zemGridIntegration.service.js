@@ -255,9 +255,6 @@ angular
             }
 
             function updateSelection() {
-                // Publisher selection is needed only internally and should not be synchronized with zemSelectionService
-                if (breakdown === constants.breakdown.PUBLISHER) return;
-
                 var selection = zemGridIntegrationSelectionService.createCoreSelection(
                     grid.api
                 );

@@ -36,6 +36,14 @@ def get_delivery_mapping(constant_cls, delivery_ids):
     return mapping
 
 
+def get_publisher_mapping(publisher_ids):
+    mapping = {}
+    for pid in publisher_ids:
+        name = pid.split("__")[0]
+        mapping[name] = name
+    return mapping
+
+
 def merge(*args):
     """
     Merge an arbitrary number of dictionaries
