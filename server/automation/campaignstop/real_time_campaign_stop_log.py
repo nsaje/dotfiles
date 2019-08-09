@@ -8,7 +8,7 @@ from . import constants
 
 
 class RealTimeCampaignStopLog(models.Model):
-    event = models.IntegerField(choices=constants.CampaignStopEvent.get_choices())
+    event = models.IntegerField(choices=constants.CampaignStopEvent.get_choices(), db_index=True)
     campaign = models.ForeignKey(core.models.Campaign, on_delete=models.CASCADE)
     context = JSONField(encoder=json_helper.JSONEncoder)
 
