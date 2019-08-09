@@ -118,10 +118,16 @@
                                 'zemauth.can_set_frequency_capping'
                             )
                         "
+                        [zemInternalFeature]="
+                            zemPermissions.isPermissionInternal(
+                                'zemauth.can_set_frequency_capping'
+                            )
+                        "
                         [label]="'Daily impression frequency cap'"
                         helpMessage="This setting defines the maximum number of times your ads from this campaign will be shown to a unique user in one day."
                         [value]="state.entity.frequencyCapping"
                         [errors]="state.fieldsErrors.frequencyCapping"
+                        [placeholder]="'No limit'"
                         (valueChange)="store.setFrequencyCapping($event)"
                     ></zem-integer-setting>
                 </div>

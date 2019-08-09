@@ -7,6 +7,7 @@ import * as clone from 'clone';
 import {fakeAsync, tick} from '@angular/core/testing';
 import {asapScheduler, of, throwError} from 'rxjs';
 import {AccountSettingsStoreFieldsErrorsState} from './account-settings.store.fields-errors-state';
+import {AccountType, Currency} from '../../../../app.constants';
 
 describe('AccountSettingsStore', () => {
     let accountServiceStub: jasmine.SpyObj<AccountService>;
@@ -262,4 +263,140 @@ describe('AccountSettingsStore', () => {
         });
         expect(store.doEntitySettingsHaveUnsavedChanges()).toBe(true);
     }));
+
+    it('should correctly change account name', () => {
+        spyOn(store, 'validateEntity')
+            .and.returnValue(of())
+            .calls.reset();
+
+        store.updateState('Generic name', 'entity', 'name');
+        expect(store.state.entity.name).toEqual('Generic name');
+        store.setName('Generic name 2');
+        expect(store.state.entity.name).toEqual('Generic name 2');
+    });
+
+    it('should correctly change account manager', () => {
+        spyOn(store, 'validateEntity')
+            .and.returnValue(of())
+            .calls.reset();
+
+        store.updateState('22', 'entity', 'defaultAccountManager');
+        expect(store.state.entity.defaultAccountManager).toEqual('22');
+        store.setAccountManager('11');
+        expect(store.state.entity.defaultAccountManager).toEqual('11');
+    });
+
+    it('should correctly change sales representative', () => {
+        spyOn(store, 'validateEntity')
+            .and.returnValue(of())
+            .calls.reset();
+
+        store.updateState('22', 'entity', 'defaultSalesRepresentative');
+        expect(store.state.entity.defaultSalesRepresentative).toEqual('22');
+        store.setSalesRepresentative('11');
+        expect(store.state.entity.defaultSalesRepresentative).toEqual('11');
+    });
+
+    it('should correctly change cs representative', () => {
+        spyOn(store, 'validateEntity')
+            .and.returnValue(of())
+            .calls.reset();
+
+        store.updateState('22', 'entity', 'defaultCsRepresentative');
+        expect(store.state.entity.defaultCsRepresentative).toEqual('22');
+        store.setCustomerSuccessRepresentative('11');
+        expect(store.state.entity.defaultCsRepresentative).toEqual('11');
+    });
+
+    it('should correctly change ob representative', () => {
+        spyOn(store, 'validateEntity')
+            .and.returnValue(of())
+            .calls.reset();
+
+        store.updateState('22', 'entity', 'obRepresentative');
+        expect(store.state.entity.obRepresentative).toEqual('22');
+        store.setOutbrainRepresentative('11');
+        expect(store.state.entity.obRepresentative).toEqual('11');
+    });
+
+    it('should correctly change account type', () => {
+        spyOn(store, 'validateEntity')
+            .and.returnValue(of())
+            .calls.reset();
+
+        store.updateState(AccountType.UNKNOWN, 'entity', 'accountType');
+        expect(store.state.entity.accountType).toEqual(AccountType.UNKNOWN);
+        store.setAccountType(AccountType.PILOT);
+        expect(store.state.entity.accountType).toEqual(AccountType.PILOT);
+    });
+
+    it('should correctly change agency id', () => {
+        spyOn(store, 'validateEntity')
+            .and.returnValue(of())
+            .calls.reset();
+
+        store.updateState('22', 'entity', 'agencyId');
+        expect(store.state.entity.agencyId).toEqual('22');
+        store.setAgency('11');
+        expect(store.state.entity.agencyId).toEqual('11');
+    });
+
+    it('should correctly change salesforce url', () => {
+        spyOn(store, 'validateEntity')
+            .and.returnValue(of())
+            .calls.reset();
+
+        store.updateState('http://salesforce.com', 'entity', 'salesforceUrl');
+        expect(store.state.entity.salesforceUrl).toEqual(
+            'http://salesforce.com'
+        );
+        store.setSalesforceUrl('http://salesforce2.com');
+        expect(store.state.entity.salesforceUrl).toEqual(
+            'http://salesforce2.com'
+        );
+    });
+
+    it('should correctly change currency', () => {
+        spyOn(store, 'validateEntity')
+            .and.returnValue(of())
+            .calls.reset();
+
+        store.updateState(Currency.USD, 'entity', 'currency');
+        expect(store.state.entity.currency).toEqual(Currency.USD);
+        store.setCurrency(Currency.EUR);
+        expect(store.state.entity.currency).toEqual(Currency.EUR);
+    });
+
+    it('should correctly change frequency capping', () => {
+        spyOn(store, 'validateEntity')
+            .and.returnValue(of())
+            .calls.reset();
+
+        store.updateState(22, 'entity', 'frequencyCapping');
+        expect(store.state.entity.frequencyCapping).toEqual(22);
+        store.setFrequencyCapping('30');
+        expect(store.state.entity.frequencyCapping).toEqual(30);
+    });
+
+    it('should correctly set publisher groups', () => {
+        spyOn(store, 'validateEntity')
+            .and.returnValue(of())
+            .calls.reset();
+        const $event: any = {
+            whitelistedPublisherGroups: [123, 456, 789],
+            blacklistedPublisherGroups: [],
+        };
+
+        expect(store.state.entity.targeting.publisherGroups).toEqual({
+            included: [],
+            excluded: [],
+        });
+
+        store.setPublisherGroupsTargeting($event);
+
+        expect(store.state.entity.targeting.publisherGroups).toEqual({
+            included: $event.whitelistedPublisherGroups,
+            excluded: $event.blacklistedPublisherGroups,
+        });
+    });
 });

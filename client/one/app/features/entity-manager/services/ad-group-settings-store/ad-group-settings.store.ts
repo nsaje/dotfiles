@@ -23,6 +23,7 @@ import {OperatingSystem} from '../../../../core/entities/types/common/operating-
 import {IncludedExcluded} from '../../../../core/entities/types/common/included-excluded';
 import {TargetRegions} from '../../../../core/entities/types/common/target-regions';
 import * as messagesHelpers from '../../helpers/messages.helpers';
+import * as commonHelpers from '../../../../shared/helpers/common.helpers';
 
 @Injectable()
 export class AdGroupSettingsStore extends Store<AdGroupSettingsStoreState>
@@ -215,17 +216,25 @@ export class AdGroupSettingsStore extends Store<AdGroupSettingsStoreState>
         this.validateEntity();
     }
 
-    setDailyClickCap(clickCap: string) {
+    setDailyClickCapping(clickCapping: string) {
+        let clickCappingNumber = null;
+        if (commonHelpers.isNotEmpty(clickCapping)) {
+            clickCappingNumber = parseInt(clickCapping, 10) || null;
+        }
         this.updateState(
-            clickCap,
+            clickCappingNumber,
             'entity',
             'clickCappingDailyAdGroupMaxClicks'
         );
         this.validateEntity();
     }
 
-    setImpressionFrequencyCap(impressionFrequencyCap: string) {
-        this.updateState(impressionFrequencyCap, 'entity', 'frequencyCapping');
+    setFrequencyCapping(frequencyCapping: string) {
+        let frequencyCappingNumber = null;
+        if (commonHelpers.isNotEmpty(frequencyCapping)) {
+            frequencyCappingNumber = parseInt(frequencyCapping, 10) || null;
+        }
+        this.updateState(frequencyCappingNumber, 'entity', 'frequencyCapping');
         this.validateEntity();
     }
 

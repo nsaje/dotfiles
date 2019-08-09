@@ -47,7 +47,8 @@ class AccountViewSet(restapi.account.v1.views.AccountViewSet):
 
         with transaction.atomic():
             self._update_account(request, account, settings)
-            self._handle_media_sources(request, account, serializer.validated_data.get("media_sources", []))
+            if "media_sources" in serializer.validated_data.keys():
+                self._handle_media_sources(request, account, serializer.validated_data.get("media_sources", []))
 
         self._augment_account(request, account)
         return self.response_ok(self.serializer(account, context={"request": request}).data)

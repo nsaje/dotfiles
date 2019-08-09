@@ -127,7 +127,7 @@ export class AdGroupSettingsDrawerView
     async archive() {
         const shouldReload = await this.store.archiveEntity();
         if (shouldReload) {
-            location.reload();
+            this.redirectToNewEntityAnalyticsView(this.store.state.entity.id);
         }
     }
 

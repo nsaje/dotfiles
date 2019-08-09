@@ -31,4 +31,6 @@ class AccountSerializer(
     currency = restapi.serializers.fields.DashConstantField(
         constants.Currency, default=constants.Currency.USD, required=False
     )
-    frequency_capping = serializers.IntegerField(allow_null=True, required=False, source="settings.frequency_capping")
+    frequency_capping = restapi.serializers.fields.BlankIntegerField(
+        allow_null=True, required=False, source="settings.frequency_capping"
+    )

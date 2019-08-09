@@ -11,6 +11,9 @@ import * as clone from 'clone';
 import {AccountSettingsStoreFieldsErrorsState} from './account-settings.store.fields-errors-state';
 import {HttpErrorResponse} from '@angular/common/http';
 import * as deepEqual from 'fast-deep-equal';
+import {IncludedExcluded} from '../../../../core/entities/types/common/included-excluded';
+import {AccountType, Currency} from '../../../../app.constants';
+import * as commonHelpers from '../../../../shared/helpers/common.helpers';
 
 @Injectable()
 export class AccountSettingsStore extends Store<AccountSettingsStoreState>
@@ -136,6 +139,81 @@ export class AccountSettingsStore extends Store<AccountSettingsStoreState>
 
     setName(name: string) {
         this.updateState(name, 'entity', 'name');
+        this.validateEntity();
+    }
+
+    setAccountManager(accountManager: string) {
+        this.updateState(accountManager, 'entity', 'defaultAccountManager');
+        this.validateEntity();
+    }
+
+    setSalesRepresentative(salesRepresentative: string) {
+        this.updateState(
+            salesRepresentative,
+            'entity',
+            'defaultSalesRepresentative'
+        );
+        this.validateEntity();
+    }
+
+    setCustomerSuccessRepresentative(csRepresentative: string) {
+        this.updateState(csRepresentative, 'entity', 'defaultCsRepresentative');
+        this.validateEntity();
+    }
+
+    setOutbrainRepresentative(obRepresentative: string) {
+        this.updateState(obRepresentative, 'entity', 'obRepresentative');
+        this.validateEntity();
+    }
+
+    setAccountType(accountType: AccountType) {
+        this.updateState(accountType, 'entity', 'accountType');
+        this.validateEntity();
+    }
+
+    setAgency(agencyId: string) {
+        this.updateState(agencyId, 'entity', 'agencyId');
+        this.validateEntity();
+    }
+
+    setSalesforceUrl(salesforceUrl: string) {
+        this.updateState(salesforceUrl, 'entity', 'salesforceUrl');
+        this.validateEntity();
+    }
+
+    setCurrency(currency: Currency) {
+        this.updateState(currency, 'entity', 'currency');
+        this.validateEntity();
+    }
+
+    setFrequencyCapping(frequencyCapping: string) {
+        let frequencyCappingNumber = null;
+        if (commonHelpers.isNotEmpty(frequencyCapping)) {
+            frequencyCappingNumber = parseInt(frequencyCapping, 10) || null;
+        }
+        this.updateState(frequencyCappingNumber, 'entity', 'frequencyCapping');
+        this.validateEntity();
+    }
+
+    setPublisherGroupsTargeting(publisherGroupsTargeting: {
+        whitelistedPublisherGroups?: number[];
+        blacklistedPublisherGroups?: number[];
+    }) {
+        const newPublisherGroupsTargeting: IncludedExcluded<number[]> = {
+            included: publisherGroupsTargeting.whitelistedPublisherGroups
+                ? publisherGroupsTargeting.whitelistedPublisherGroups
+                : this.state.entity.targeting.publisherGroups.included,
+            excluded: publisherGroupsTargeting.blacklistedPublisherGroups
+                ? publisherGroupsTargeting.blacklistedPublisherGroups
+                : this.state.entity.targeting.publisherGroups.excluded,
+        };
+
+        this.updateState(
+            newPublisherGroupsTargeting,
+            'entity',
+            'targeting',
+            'publisherGroups'
+        );
         this.validateEntity();
     }
 

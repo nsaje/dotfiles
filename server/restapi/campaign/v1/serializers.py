@@ -68,7 +68,7 @@ class CampaignSerializer(
     autopilot = rest_framework.serializers.BooleanField(required=False)
     tracking = CampaignTrackingSerializer(source="*", required=False)
     targeting = CampaignTargetingSerializer(source="*", required=False)
-    frequency_capping = rest_framework.serializers.IntegerField(allow_null=True, required=False)
+    frequency_capping = restapi.serializers.fields.BlankIntegerField(allow_null=True, required=False)
 
     def validate_iab_category(self, value):
         if value != constants.IABCategory.IAB24 and "-" not in value:

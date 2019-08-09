@@ -303,6 +303,17 @@ describe('AdGroupSettingsStore', () => {
         expect(store.doEntitySettingsHaveUnsavedChanges()).toBe(true);
     }));
 
+    it('should correctly change adgroup name', () => {
+        spyOn(store, 'validateEntity')
+            .and.returnValue(of())
+            .calls.reset();
+
+        store.updateState('Generic name', 'entity', 'name');
+        expect(store.state.entity.name).toEqual('Generic name');
+        store.setName('Generic name 2');
+        expect(store.state.entity.name).toEqual('Generic name 2');
+    });
+
     it('should correctly determine if ad group autopilot is enabled', () => {
         store.updateState(
             AdGroupAutopilotState.ACTIVE_CPC_BUDGET,
@@ -488,6 +499,32 @@ describe('AdGroupSettingsStore', () => {
         expect(store.state.entity.trackingCode).toEqual(null);
         store.setTrackingCode($event);
         expect(store.state.entity.trackingCode).toEqual($event);
+    });
+
+    it('should correctly change click capping', () => {
+        spyOn(store, 'validateEntity')
+            .and.returnValue(of())
+            .calls.reset();
+
+        store.updateState(22, 'entity', 'clickCappingDailyAdGroupMaxClicks');
+        expect(store.state.entity.clickCappingDailyAdGroupMaxClicks).toEqual(
+            22
+        );
+        store.setDailyClickCapping('30');
+        expect(store.state.entity.clickCappingDailyAdGroupMaxClicks).toEqual(
+            30
+        );
+    });
+
+    it('should correctly change frequency capping', () => {
+        spyOn(store, 'validateEntity')
+            .and.returnValue(of())
+            .calls.reset();
+
+        store.updateState(22, 'entity', 'frequencyCapping');
+        expect(store.state.entity.frequencyCapping).toEqual(22);
+        store.setFrequencyCapping('30');
+        expect(store.state.entity.frequencyCapping).toEqual(30);
     });
 
     it('should correctly set location targeting', () => {

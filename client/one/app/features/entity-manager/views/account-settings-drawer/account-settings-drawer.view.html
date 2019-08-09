@@ -23,7 +23,314 @@
         ></zem-settings-drawer-header>
         <div
             class="zem-drawer__content custom-scroller zem-settings__settings-container"
-        ></div>
+        >
+            <div class="zem-panel zem-settings__panel">
+                <div class="zem-panel__header">
+                    <h2 class="zem-settings__panel-header-title">
+                        General settings
+                    </h2>
+                </div>
+                <div class="zem-settings-section">
+                    <zem-select-setting
+                        class="zem-select-setting zem-settings-section__item"
+                        *ngIf="
+                            zemPermissions.hasPermission(
+                                'zemauth.can_modify_account_manager'
+                            ) && !state.extras.isExternallyManaged
+                        "
+                        [label]="'Account Manager'"
+                        [helpMessage]="
+                            'Account manager responsible for the campaign and the communication with the client.'
+                        "
+                        [value]="state.entity.defaultAccountManager"
+                        [bindLabel]="'name'"
+                        [bindValue]="'id'"
+                        [items]="state.extras.accountManagers"
+                        [placeholder]="'Choose account manager'"
+                        [isSearchable]="false"
+                        [isClearable]="false"
+                        [errors]="state.fieldsErrors.defaultAccountManager"
+                        (valueChange)="store.setAccountManager($event)"
+                    ></zem-select-setting>
+                    <zem-select-setting
+                        class="zem-select-setting zem-settings-section__item"
+                        *ngIf="
+                            zemPermissions.hasPermission(
+                                'zemauth.can_set_account_sales_representative'
+                            ) && !state.extras.isExternallyManaged
+                        "
+                        [label]="'Sales Representative'"
+                        [helpMessage]="
+                            'Sales representative responsible for the campaign and the communication with the client.'
+                        "
+                        [value]="state.entity.defaultSalesRepresentative"
+                        [bindLabel]="'name'"
+                        [bindValue]="'id'"
+                        [items]="state.extras.salesRepresentatives"
+                        [placeholder]="'Choose sales representative'"
+                        [isSearchable]="false"
+                        [isClearable]="false"
+                        [errors]="state.fieldsErrors.defaultSalesRepresentative"
+                        (valueChange)="store.setSalesRepresentative($event)"
+                    ></zem-select-setting>
+                    <zem-select-setting
+                        class="zem-select-setting zem-settings-section__item"
+                        *ngIf="
+                            zemPermissions.hasPermission(
+                                'zemauth.can_set_account_cs_representative'
+                            ) && !state.extras.isExternallyManaged
+                        "
+                        [zemInternalFeature]="
+                            zemPermissions.isPermissionInternal(
+                                'zemauth.can_set_account_cs_representative'
+                            )
+                        "
+                        [label]="'CS Representative'"
+                        [helpMessage]="
+                            'Customer success manager responsible for the campaign and the communication with the client.'
+                        "
+                        [value]="state.entity.defaultCsRepresentative"
+                        [bindLabel]="'name'"
+                        [bindValue]="'id'"
+                        [items]="state.extras.csRepresentatives"
+                        [placeholder]="'Choose CS representative'"
+                        [isSearchable]="false"
+                        [isClearable]="false"
+                        [errors]="state.fieldsErrors.defaultCsRepresentative"
+                        (valueChange)="
+                            store.setCustomerSuccessRepresentative($event)
+                        "
+                    ></zem-select-setting>
+                    <zem-select-setting
+                        class="zem-select-setting zem-settings-section__item"
+                        *ngIf="
+                            zemPermissions.hasPermission(
+                                'zemauth.can_set_account_ob_representative'
+                            ) && !state.extras.isExternallyManaged
+                        "
+                        [zemInternalFeature]="
+                            zemPermissions.isPermissionInternal(
+                                'zemauth.can_set_account_ob_representative'
+                            )
+                        "
+                        [label]="'OB Representative'"
+                        [helpMessage]="
+                            'Outbrain Manager responsible for the account and the communication with the client.'
+                        "
+                        [value]="state.entity.obRepresentative"
+                        [bindLabel]="'name'"
+                        [bindValue]="'id'"
+                        [items]="state.extras.obRepresentatives"
+                        [placeholder]="'Choose OB representative'"
+                        [isSearchable]="false"
+                        [isClearable]="false"
+                        [errors]="state.fieldsErrors.obRepresentative"
+                        (valueChange)="store.setOutbrainRepresentative($event)"
+                    ></zem-select-setting>
+                    <zem-select-setting
+                        class="zem-select-setting zem-settings-section__item"
+                        *ngIf="
+                            zemPermissions.hasPermission(
+                                'zemauth.can_modify_account_type'
+                            ) && !state.extras.isExternallyManaged
+                        "
+                        [zemInternalFeature]="
+                            zemPermissions.isPermissionInternal(
+                                'zemauth.can_modify_account_type'
+                            )
+                        "
+                        [label]="'Account Type'"
+                        [value]="state.entity.accountType"
+                        [bindLabel]="'name'"
+                        [bindValue]="'value'"
+                        [items]="ACCOUNT_TYPES"
+                        [placeholder]="'Choose account type'"
+                        [isSearchable]="false"
+                        [isClearable]="false"
+                        [errors]="state.fieldsErrors.accountType"
+                        (valueChange)="store.setAccountType($event)"
+                    ></zem-select-setting>
+                    <zem-select-setting
+                        class="zem-select-setting zem-settings-section__item"
+                        *ngIf="
+                            zemPermissions.hasPermission(
+                                'zemauth.can_set_agency_for_account'
+                            ) && !state.extras.isExternallyManaged
+                        "
+                        [zemInternalFeature]="
+                            zemPermissions.isPermissionInternal(
+                                'zemauth.can_set_agency_for_account'
+                            )
+                        "
+                        [label]="'Agency'"
+                        [helpMessage]="'Agency that this account is part of.'"
+                        [value]="state.entity.agencyId"
+                        [bindLabel]="'name'"
+                        [bindValue]="'id'"
+                        [items]="state.extras.agencies"
+                        [placeholder]="'Choose agency'"
+                        [isDisabled]="!isNewEntity"
+                        [isSearchable]="false"
+                        [isClearable]="false"
+                        [errors]="state.fieldsErrors.agencyId"
+                        (valueChange)="store.setAgency($event)"
+                    ></zem-select-setting>
+                    <zem-text-setting
+                        class="zem-text-setting zem-settings-section__item"
+                        *ngIf="
+                            zemPermissions.hasPermission(
+                                'zemauth.can_see_salesforce_url'
+                            ) && !state.extras.isExternallyManaged
+                        "
+                        [zemInternalFeature]="
+                            zemPermissions.isPermissionInternal(
+                                'zemauth.can_see_salesforce_url'
+                            )
+                        "
+                        [label]="'SalesForce'"
+                        [helpMessage]="'URL of this account in SalesForce.'"
+                        [value]="state.entity.salesforceUrl"
+                        [errors]="state.fieldsErrors.salesforceUrl"
+                        (valueChange)="store.setSalesforceUrl($event)"
+                    ></zem-text-setting>
+                    <zem-select-setting
+                        class="zem-select-setting zem-settings-section__item"
+                        *ngIf="!state.extras.isExternallyManaged"
+                        [label]="'Currency'"
+                        [helpMessage]="
+                            'Currency can be updated only if Account has no Campaigns yet.'
+                        "
+                        [value]="state.entity.currency"
+                        [bindLabel]="'name'"
+                        [bindValue]="'value'"
+                        [items]="CURRENCIES"
+                        [placeholder]="'Choose currency'"
+                        [isSearchable]="false"
+                        [isClearable]="false"
+                        [isDisabled]="!isNewEntity"
+                        [errors]="state.fieldsErrors.currency"
+                        (valueChange)="store.setCurrency($event)"
+                    ></zem-select-setting>
+                    <zem-integer-setting
+                        class="zem-integer-setting zem-settings-section__item"
+                        *ngIf="
+                            zemPermissions.hasPermission(
+                                'zemauth.can_set_frequency_capping'
+                            )
+                        "
+                        [zemInternalFeature]="
+                            zemPermissions.isPermissionInternal(
+                                'zemauth.can_set_frequency_capping'
+                            )
+                        "
+                        [label]="'Daily impression frequency cap'"
+                        helpMessage="This setting defines the maximum number of times your ads from this campaign will be shown to a unique user in one day."
+                        [value]="state.entity.frequencyCapping"
+                        [errors]="state.fieldsErrors.frequencyCapping"
+                        [placeholder]="'No limit'"
+                        (valueChange)="store.setFrequencyCapping($event)"
+                    ></zem-integer-setting>
+                </div>
+            </div>
+
+            <div
+                class="zem-panel zem-settings__panel"
+                *ngIf="
+                    zemPermissions.hasPermission(
+                        'zemauth.can_set_white_blacklist_publisher_groups'
+                    ) &&
+                    zemPermissions.hasPermission(
+                        'zemauth.can_see_publisher_groups_ui'
+                    ) &&
+                    state.entity.id
+                "
+            >
+                <div class="zem-panel__header">
+                    <h2 class="zem-settings__panel-header-title">
+                        Audience targeting
+                    </h2>
+                </div>
+                <div class="zem-settings-section">
+                    <div class="zem-settings-section__header">
+                        <div
+                            class="zem-settings-section__title"
+                            [zemInternalFeature]="
+                                zemPermissions.isPermissionInternal(
+                                    'zemauth.can_see_publisher_groups_ui'
+                                )
+                            "
+                        >
+                            Publishers
+                        </div>
+                        <div class="zem-settings-section__description">
+                            Define your publisher targeting by whitelisting or
+                            blacklisting publisher groups.
+                        </div>
+                    </div>
+                    <zem-publisher-group-targeting
+                        class="zem-publisher-group-targeting zem-settings-section__item"
+                        [accountId]="state.entity.id"
+                        [whitelistedPublisherGroups]="
+                            state.entity.targeting.publisherGroups.included
+                        "
+                        [blacklistedPublisherGroups]="
+                            state.entity.targeting.publisherGroups.excluded
+                        "
+                        (onUpdate)="
+                            store.setPublisherGroupsTargeting($event.$event)
+                        "
+                    ></zem-publisher-group-targeting>
+                </div>
+            </div>
+
+            <div
+                class="zem-panel zem-settings__panel"
+                *ngIf="
+                    zemPermissions.hasPermission(
+                        'zemauth.can_see_backend_hacks'
+                    )
+                "
+                [zemInternalFeature]="
+                    zemPermissions.isPermissionInternal(
+                        'zemauth.can_see_backend_hacks'
+                    )
+                "
+            >
+                <div class="zem-panel__header">
+                    <h2 class="zem-settings__panel-header-title">
+                        Backend hacks
+                    </h2>
+                </div>
+                <div class="zem-settings-section">
+                    <zem-hacks
+                        class="zem-hacks zem-settings-section__item"
+                        [hacks]="state.extras.hacks"
+                    ></zem-hacks>
+                </div>
+            </div>
+
+            <div
+                class="zem-panel zem-settings__panel"
+                *ngIf="
+                    zemPermissions.hasPermission('zemauth.can_see_deals_in_ui')
+                "
+                [zemInternalFeature]="
+                    zemPermissions.isPermissionInternal(
+                        'zemauth.can_see_deals_in_ui'
+                    )
+                "
+            >
+                <div class="zem-panel__header">
+                    <h2 class="zem-settings__panel-header-title">Deals</h2>
+                </div>
+                <div class="zem-settings-section">
+                    <zem-deals
+                        class="zem-deals zem-settings-section__item"
+                        [deals]="state.extras.deals"
+                    ></zem-deals>
+                </div>
+            </div>
+        </div>
         <zem-settings-drawer-footer
             class="zem-settings-drawer-footer zem-drawer__footer zem-settings__settings-footer"
             [isNewEntity]="isNewEntity"

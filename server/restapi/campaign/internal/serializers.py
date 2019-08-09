@@ -72,6 +72,8 @@ class CampaignSerializer(restapi.campaign.v1.serializers.CampaignSerializer):
             "frequency_capping": "zemauth.can_set_frequency_capping",
             "iab_category": "zemauth.can_modify_campaign_iab_category",
             "campaign_manager": "zemauth.can_modify_campaign_manager",
+            "goals": "zemauth.can_see_campaign_goals",
+            "budgets": "zemauth.can_see_new_budgets",
         }
 
     campaign_manager = restapi.serializers.fields.IdField(required=False)

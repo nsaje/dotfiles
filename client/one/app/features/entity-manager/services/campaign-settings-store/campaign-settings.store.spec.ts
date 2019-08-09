@@ -755,6 +755,17 @@ describe('CampaignSettingsStore', () => {
         expect(store.state.entity.budgets.length).toEqual(0);
     });
 
+    it('should correctly change campaign name', () => {
+        spyOn(store, 'validateEntity')
+            .and.returnValue(of())
+            .calls.reset();
+
+        store.updateState('Generic name', 'entity', 'name');
+        expect(store.state.entity.name).toEqual('Generic name');
+        store.setName('Generic name 2');
+        expect(store.state.entity.name).toEqual('Generic name 2');
+    });
+
     it('should correctly change campaign type', () => {
         spyOn(store, 'validateEntity')
             .and.returnValue(of())
@@ -806,7 +817,7 @@ describe('CampaignSettingsStore', () => {
 
         store.updateState(22, 'entity', 'frequencyCapping');
         expect(store.state.entity.frequencyCapping).toEqual(22);
-        store.setFrequencyCapping(30);
+        store.setFrequencyCapping('30');
         expect(store.state.entity.frequencyCapping).toEqual(30);
     });
 

@@ -91,7 +91,7 @@ class AccountSerializer(restapi.account.v1.serializers.AccountSerializer):
         source="settings.auto_add_new_sources", default=False, required=False
     )
     salesforce_url = restapi.serializers.fields.PlainCharField(
-        source="settings.salesforce_url", max_length=255, required=False, allow_null=True
+        source="settings.salesforce_url", max_length=255, required=False, allow_null=True, allow_blank=True
     )
     media_sources = rest_framework.serializers.ListField(
         child=AccountMediaSourceSerializer(), default=[], allow_empty=True

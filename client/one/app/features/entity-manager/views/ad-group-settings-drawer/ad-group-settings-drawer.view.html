@@ -234,7 +234,7 @@
                                     .clickCappingDailyAdGroupMaxClicks
                             "
                             placeholder="No limit"
-                            (valueChange)="store.setDailyClickCap($event)"
+                            (valueChange)="store.setDailyClickCapping($event)"
                         ></zem-integer-setting>
                         <zem-integer-setting
                             class="zem-integer-setting zem-settings-section__item"
@@ -252,10 +252,8 @@
                             helpMessage="This setting defines the maximum number of times your ads from this ad group will be shown to a unique user in one day."
                             [value]="store.state.entity.frequencyCapping"
                             [errors]="state.fieldsErrors.frequencyCapping"
-                            placeholder="No limit"
-                            (valueChange)="
-                                store.setImpressionFrequencyCap($event)
-                            "
+                            [placeholder]="'No limit'"
+                            (valueChange)="store.setFrequencyCapping($event)"
                         ></zem-integer-setting>
                     </div>
                 </zem-advanced-settings-section>

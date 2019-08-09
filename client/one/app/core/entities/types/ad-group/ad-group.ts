@@ -22,11 +22,11 @@ export interface AdGroup {
     maxCpc: string;
     maxCpm: string;
     deliveryType: DeliveryType;
-    clickCappingDailyAdGroupMaxClicks: string;
+    clickCappingDailyAdGroupMaxClicks: number;
     dayparting: AdGroupDayparting;
     targeting: AdGroupTargetings;
     autopilot: AdGroupAutopilot;
     manageRtbSourcesAsOne: boolean;
-    frequencyCapping: string;
+    frequencyCapping: number;
     notes: string;
 }

@@ -226,4 +226,4 @@ class AdGroupSerializer(
     dayparting = AdGroupDaypartingSerializer(required=False, allow_null=True)
     targeting = AdGroupTargetingSerializer(source="*", required=False)
     autopilot = AdGroupAutopilotSerializer(source="*", required=False)
-    frequency_capping = rest_framework.serializers.IntegerField(allow_null=True, required=False)
+    frequency_capping = restapi.serializers.fields.BlankIntegerField(allow_null=True, required=False)

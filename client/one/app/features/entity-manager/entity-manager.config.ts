@@ -7,6 +7,8 @@ import {
     CampaignType,
     IabCategory,
     Language,
+    AccountType,
+    Currency,
 } from '../../app.constants';
 import {CampaignGoalKPI, GaTrackingType} from '../../app.constants';
 import {CampaignGoalKPIConfig} from './types/campaign-goal-kpi-config';
@@ -15,6 +17,8 @@ import {ConversionWindowConfig} from '../../core/conversion-pixels/types/convers
 import {CampaignTypeConfig} from './types/campaign-type-config';
 import {IabCategoryConfig} from './types/iabcategory-config';
 import {LanguageConfig} from './types/language-config';
+import {AccountTypeConfig} from './types/account-type-config';
+import {CurrencyConfig} from './types/currency-config';
 
 export const ENTITY_MANAGER_CONFIG = {
     settingsQueryParam: 'settings',
@@ -1291,4 +1295,29 @@ export const LANGUAGES: LanguageConfig[] = [
         value: Language.TRADITIONAL_CHINESE,
     },
     {name: 'Other', value: Language.OTHER},
+];
+
+export const ACCOUNT_TYPES: AccountTypeConfig[] = [
+    {name: 'Unknown', value: AccountType.UNKNOWN},
+    {name: 'Test', value: AccountType.TEST},
+    {name: 'Sandbox', value: AccountType.SANDBOX},
+    {name: 'Pilot', value: AccountType.PILOT},
+    {name: 'Activated', value: AccountType.ACTIVATED},
+    {name: 'Managed', value: AccountType.MANAGED},
+    {name: 'PAAS', value: AccountType.PAAS},
+];
+
+export const CURRENCIES: CurrencyConfig[] = [
+    {name: 'US Dollar', value: Currency.USD},
+    {name: 'Euro', value: Currency.EUR},
+    {name: 'British Pound', value: Currency.GBP},
+    {name: 'Australian Dollar', value: Currency.AUD},
+    {name: 'Singapore Dollar', value: Currency.SGD},
+    {name: 'Brazilian Real', value: Currency.BRL},
+    {name: 'Malaysian Ringgit', value: Currency.MYR},
+    {name: 'Swiss Franc', value: Currency.CHF},
+    {name: 'South African Rand', value: Currency.ZAR},
+    {name: 'Israeli New Shekel', value: Currency.ILS},
+    {name: 'Indian Rupee', value: Currency.INR},
+    {name: 'Japanese Yen', value: Currency.JPY},
 ];

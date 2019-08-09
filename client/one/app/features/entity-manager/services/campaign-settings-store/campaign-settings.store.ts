@@ -189,8 +189,12 @@ export class CampaignSettingsStore extends Store<CampaignSettingsStoreState>
         this.validateEntity();
     }
 
-    setFrequencyCapping(frequencyCapping: number) {
-        this.updateState(frequencyCapping, 'entity', 'frequencyCapping');
+    setFrequencyCapping(frequencyCapping: string) {
+        let frequencyCappingNumber = null;
+        if (commonHelpers.isNotEmpty(frequencyCapping)) {
+            frequencyCappingNumber = parseInt(frequencyCapping, 10) || null;
+        }
+        this.updateState(frequencyCappingNumber, 'entity', 'frequencyCapping');
         this.validateEntity();
     }
 

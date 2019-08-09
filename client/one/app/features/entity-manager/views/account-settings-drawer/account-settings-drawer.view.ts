@@ -8,7 +8,11 @@ import {
     OnInit,
     OnDestroy,
 } from '@angular/core';
-import {ENTITY_MANAGER_CONFIG} from '../../entity-manager.config';
+import {
+    ENTITY_MANAGER_CONFIG,
+    ACCOUNT_TYPES,
+    CURRENCIES,
+} from '../../entity-manager.config';
 import {AccountSettingsStore} from '../../services/account-settings-store/account-settings.store';
 import {Subject} from 'rxjs';
 import * as messagesHelpers from '../../helpers/messages.helpers';
@@ -27,6 +31,8 @@ export class AccountSettingsDrawerView
     newEntityParentId: string;
 
     EntityType = EntityType;
+    ACCOUNT_TYPES = ACCOUNT_TYPES;
+    CURRENCIES = CURRENCIES;
 
     isOpen: boolean;
     isNewEntity: boolean;
@@ -37,8 +43,7 @@ export class AccountSettingsDrawerView
         public store: AccountSettingsStore,
         @Inject('zemPermissions') public zemPermissions: any,
         @Inject('ajs$state') private ajs$state: any,
-        @Inject('ajs$location') private ajs$location: any,
-        @Inject('zemNavigationNewService') private zemNavigationNewService: any
+        @Inject('ajs$location') private ajs$location: any
     ) {}
 
     ngOnInit(): void {
@@ -107,7 +112,7 @@ export class AccountSettingsDrawerView
     async archive() {
         const shouldReload = await this.store.archiveEntity();
         if (shouldReload) {
-            location.reload();
+            this.redirectToNewEntityAnalyticsView(this.store.state.entity.id);
         }
     }
 

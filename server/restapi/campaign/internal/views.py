@@ -57,8 +57,10 @@ class CampaignViewSet(restapi.campaign.v1.views.CampaignViewSet):
 
         with transaction.atomic():
             self._update_campaign(request, campaign, settings)
-            self._handle_campaign_goals(request, campaign, settings.get("goals", []))
-            self._handle_campaign_budgets(request, campaign, settings.get("budgets", []))
+            if "goals" in settings.keys():
+                self._handle_campaign_goals(request, campaign, settings.get("goals", []))
+            if "budgets" in settings.keys():
+                self._handle_campaign_budgets(request, campaign, settings.get("budgets", []))
 
         self._augment_campaign(request, campaign)
         return self.response_ok(self.serializer(campaign.settings, context={"request": request}).data)
