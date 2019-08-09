@@ -8,6 +8,7 @@ import {fakeAsync, tick} from '@angular/core/testing';
 import {asapScheduler, of, throwError} from 'rxjs';
 import {AccountSettingsStoreFieldsErrorsState} from './account-settings.store.fields-errors-state';
 import {AccountType, Currency} from '../../../../app.constants';
+import {AccountMediaSource} from '../../../../core/entities/types/account/account-media-source';
 
 describe('AccountSettingsStore', () => {
     let accountServiceStub: jasmine.SpyObj<AccountService>;
@@ -398,5 +399,86 @@ describe('AccountSettingsStore', () => {
             included: $event.whitelistedPublisherGroups,
             excluded: $event.blacklistedPublisherGroups,
         });
+    });
+
+    it('should correctly change auto add new sources', () => {
+        spyOn(store, 'validateEntity')
+            .and.returnValue(of())
+            .calls.reset();
+
+        store.updateState(false, 'entity', 'autoAddNewSources');
+        expect(store.state.entity.autoAddNewSources).toEqual(false);
+        store.setAutoAddNewSources(true);
+        expect(store.state.entity.autoAddNewSources).toEqual(true);
+    });
+
+    it('should correctly add to allowed media sources', () => {
+        spyOn(store, 'validateEntity')
+            .and.returnValue(of())
+            .calls.reset();
+
+        const mockedMediaSources: AccountMediaSource[] = [
+            {
+                id: '1',
+                name: 'Source 1',
+                released: true,
+                deprecated: false,
+                allowed: false,
+            },
+            {
+                id: '2',
+                name: 'Source 2',
+                released: true,
+                deprecated: false,
+                allowed: false,
+            },
+        ];
+
+        store.updateState(mockedMediaSources, 'entity', 'mediaSources');
+        expect(store.state.entity.mediaSources).toEqual(mockedMediaSources);
+        store.addToAllowedMediaSources(['1', '2']);
+        expect(store.state.entity.mediaSources).toEqual(
+            mockedMediaSources.map(item => {
+                return {
+                    ...item,
+                    allowed: true,
+                };
+            })
+        );
+    });
+
+    it('should correctly remove from allowed media sources', () => {
+        spyOn(store, 'validateEntity')
+            .and.returnValue(of())
+            .calls.reset();
+
+        const mockedMediaSources: AccountMediaSource[] = [
+            {
+                id: '1',
+                name: 'Source 1',
+                released: true,
+                deprecated: false,
+                allowed: true,
+            },
+            {
+                id: '2',
+                name: 'Source 2',
+                released: true,
+                deprecated: false,
+                allowed: true,
+            },
+        ];
+
+        store.updateState(mockedMediaSources, 'entity', 'mediaSources');
+        expect(store.state.entity.mediaSources).toEqual(mockedMediaSources);
+        store.removeFromAllowedMediaSources(['1', '2']);
+        expect(store.state.entity.mediaSources).toEqual(
+            mockedMediaSources.map(item => {
+                return {
+                    ...item,
+                    allowed: false,
+                };
+            })
+        );
     });
 });

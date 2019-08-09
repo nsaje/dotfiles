@@ -1,0 +1,59 @@
+@import 'variables';
+
+.zem-multiselect {
+    background: white;
+    border: 1px solid @border-color--default;
+    width: 100%;
+    height: 100px;
+    overflow: auto;
+    line-height: 18px;
+    padding: 6px 12px 11px 12px;
+    box-sizing: border-box;
+    border-radius: @border-radius--default;
+    box-shadow: inset 3px 3px 3px 0px rgba(0, 0, 0, 0.05);
+
+    &:focus {
+        border: 1px solid darken(@border-color--default, 20%);
+        outline: none;
+        box-shadow: 0px 0px 5px 0px rgba(0, 0, 0, 0.2);
+    }
+
+    &::-webkit-input-placeholder {
+        color: @text-color--lighter;
+    }
+    &::-moz-placeholder {
+        color: @text-color--lighter;
+    }
+    &:-ms-input-placeholder {
+        color: @text-color--lighter;
+    }
+    &:-moz-placeholder {
+        color: @text-color--lighter;
+    }
+
+    &[readonly],
+    &[disabled] {
+        background-color: @color--lightest-neutral;
+        cursor: not-allowed;
+        color: @text-color--light;
+    }
+
+    option {
+        margin-bottom: 1px;
+        border-radius: @border-radius--default;
+    }
+
+    &:focus option:checked {
+        background: @color--secondary
+            linear-gradient(0deg, @color--secondary 0%, @color--secondary 100%);
+    }
+
+    option:checked {
+        background: @color--lightest-neutral
+            linear-gradient(
+                0deg,
+                @color--lightest-neutral 0%,
+                @color--lightest-neutral 100%
+            );
+    }
+}

@@ -1,4 +1,4 @@
-export interface AccountMediaSources {
+export interface AccountMediaSource {
     id: string;
     name: string;
     released: boolean;

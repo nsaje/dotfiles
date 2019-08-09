@@ -1,5 +1,5 @@
 <zem-drawer
-    class="zem-drawer zem-campaign-settings-drawer"
+    class="zem-drawer zem-account-settings-drawer"
     [isOpen]="isOpen"
     [isClosable]="!isNewEntity"
     (closeRequest)="cancel()"
@@ -132,7 +132,7 @@
                         *ngIf="
                             zemPermissions.hasPermission(
                                 'zemauth.can_modify_account_type'
-                            ) && !state.extras.isExternallyManaged
+                            )
                         "
                         [zemInternalFeature]="
                             zemPermissions.isPermissionInternal(
@@ -155,7 +155,7 @@
                         *ngIf="
                             zemPermissions.hasPermission(
                                 'zemauth.can_set_agency_for_account'
-                            ) && !state.extras.isExternallyManaged
+                            )
                         "
                         [zemInternalFeature]="
                             zemPermissions.isPermissionInternal(
@@ -230,6 +230,71 @@
                         [placeholder]="'No limit'"
                         (valueChange)="store.setFrequencyCapping($event)"
                     ></zem-integer-setting>
+                </div>
+            </div>
+
+            <div
+                class="zem-panel zem-settings__panel"
+                *ngIf="
+                    !zemPermissions.hasPermission(
+                        'zemauth.disable_public_rcs'
+                    ) &&
+                    !zemPermissions.hasPermission(
+                        'zemauth.disable_public_newscorp'
+                    ) &&
+                    zemPermissions.hasPermission(
+                        'zemauth.can_modify_allowed_sources'
+                    )
+                "
+            >
+                <div class="zem-panel__header">
+                    <h2 class="zem-settings__panel-header-title">
+                        Media sources
+                    </h2>
+                </div>
+                <div class="zem-settings-section">
+                    <div class="zem-settings-section__header">
+                        <div class="zem-settings-section__description">
+                            Media sources made available on this account.
+                        </div>
+                    </div>
+                    <zem-media-sources
+                        class="zem-media-sources zem-settings-section__item"
+                        [mediaSources]="state.entity.mediaSources"
+                        [mediaSourcesErrors]="state.fieldsErrors.mediaSources"
+                        (mediaSourcesAddToAllowed)="
+                            store.addToAllowedMediaSources($event)
+                        "
+                        (mediaSourcesRemoveFromAllowed)="
+                            store.removeFromAllowedMediaSources($event)
+                        "
+                    ></zem-media-sources>
+                    <zem-checkbox-input
+                        class="zem-checkbox-input zem-settings-section__item"
+                        *ngIf="
+                            zemPermissions.hasPermission(
+                                'zemauth.can_set_auto_add_new_sources'
+                            )
+                        "
+                        [isChecked]="state.entity.autoAddNewSources"
+                        [hasError]="
+                            state.fieldsErrors.autoAddNewSources.length > 0
+                        "
+                        (toggle)="store.setAutoAddNewSources($event)"
+                    >
+                        Automatically add new media sources as soon as they
+                        become available
+                    </zem-checkbox-input>
+                    <div
+                        class="zem-settings-section__description zem-settings-section__item"
+                    >
+                        As we are always working to add new supply partners to
+                        our platform, remembering to add these new partners to
+                        each of your existing accounts and ad groups can be
+                        cumbersome. This setting will allow Zemanta to
+                        automatically allow and enable new media sources on your
+                        accounts and ad groups as they become available.
+                    </div>
                 </div>
             </div>
 

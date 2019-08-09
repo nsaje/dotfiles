@@ -1,0 +1,60 @@
+<div class="zem-media-sources__item zem-media-sources__list">
+    <div class="zem-media-sources__list-item">
+        <label class="zem-media-sources__item">Available</label>
+        <select
+            class="zem-multiselect zem-media-sources__multiselect custom-scroller zem-media-sources__item"
+            [class.zem-media-sources__multiselect--error]="
+                mediaSourcesErrors && mediaSourcesErrors.length > 0
+            "
+            [(ngModel)]="selectedAvailableMediaSources"
+            multiple=""
+        >
+            <option
+                *ngFor="let mediaSource of availableMediaSources"
+                value="{{ mediaSource.id }}"
+                >{{ getMediaSourceText(mediaSource) }}</option
+            >
+        </select>
+        <button
+            class="zem-button zem-button--full-width zem-media-sources__item"
+            [disabled]="selectedAvailableMediaSources.length === 0"
+            (click)="addToAllowedMediaSources()"
+        >
+            Move to allowed
+            <span class="zem-media-sources__inline-arrow-icon"></span>
+        </button>
+    </div>
+    <div class="zem-media-sources__list-item">
+        <label class="zem-media-sources__item">Allowed</label>
+        <select
+            class="zem-multiselect zem-media-sources__multiselect custom-scroller zem-media-sources__item"
+            [class.zem-media-sources__multiselect--error]="
+                mediaSourcesErrors && mediaSourcesErrors.length > 0
+            "
+            [(ngModel)]="selectedAllowedMediaSources"
+            multiple=""
+        >
+            <option
+                *ngFor="let mediaSource of allowedMediaSources"
+                value="{{ mediaSource.id }}"
+                >{{ getMediaSourceText(mediaSource) }}</option
+            >
+        </select>
+        <button
+            class="zem-button zem-button--full-width zem-media-sources__item"
+            [disabled]="selectedAllowedMediaSources.length === 0"
+            (click)="removeFromAllowedMediaSources()"
+        >
+            <span
+                class="zem-media-sources__inline-arrow-icon zem-media-sources__inline-arrow-icon--left"
+            ></span>
+            Remove from allowed
+        </button>
+    </div>
+</div>
+<div
+    class="zem-media-sources__item zem-message zem-message--error"
+    *ngFor="let error of mediaSourcesErrors"
+>
+    {{ error }}
+</div>

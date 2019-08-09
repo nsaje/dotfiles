@@ -43,6 +43,7 @@ import {CampaignGoalsComponent} from './components/campaign-goals/campaign-goals
 import {CampaignGoalComponent} from './components/campaign-goal/campaign-goal.component';
 import {CampaignGoalEditFormComponent} from './components/campaign-goal-edit-form/campaign-goal-edit-form.component';
 import {CampaignPerformanceTrackingComponent} from './components/campaign-performance-tracking/campaign-performance-tracking.component';
+import {MediaSourcesComponent} from './components/media-sources/media-sources.component';
 
 // DEMO
 import {RuleActionsComponent} from './components/rule-actions/rule-actions.component';
@@ -101,6 +102,7 @@ import {CampaignBudgetOptimizationComponent} from './components/campaign-budget-
         CampaignPerformanceTrackingComponent,
         CampaignBudgetEditFormComponent,
         CampaignBudgetOptimizationComponent,
+        MediaSourcesComponent,
 
         // DEMO
         RuleActionsComponent,

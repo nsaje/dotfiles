@@ -11,4 +11,6 @@ export class AccountSettingsStoreFieldsErrorsState {
     salesforceUrl: FieldErrors = [];
     currency: FieldErrors = [];
     frequencyCapping: FieldErrors = [];
+    mediaSources: FieldErrors = [];
+    autoAddNewSources: FieldErrors = [];
 }

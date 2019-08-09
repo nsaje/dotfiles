@@ -1,6 +1,6 @@
 import {Currency, AccountType} from '../../../../app.constants';
 import {AccountTargeting} from './account-targeting';
-import {AccountMediaSources} from './account-media-sources';
+import {AccountMediaSource} from './account-media-source';
 
 export interface Account {
     id: string;
@@ -17,5 +17,5 @@ export interface Account {
     salesforceUrl: string;
     archived: boolean;
     targeting: AccountTargeting;
-    mediaSources: AccountMediaSources[];
+    mediaSources: AccountMediaSource[];
 }

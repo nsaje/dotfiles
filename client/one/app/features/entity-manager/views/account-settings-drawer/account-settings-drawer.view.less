@@ -1,0 +1,29 @@
+.zem-account-settings-drawer {
+    ////////////////////////////////
+    // Media sources - Responsive //
+    ////////////////////////////////
+    @media only screen and (min-width: 550px) {
+        .zem-media-sources {
+            .zem-media-sources__list {
+                flex-wrap: nowrap;
+            }
+
+            .zem-media-sources__list .zem-media-sources__list-item {
+                margin-right: 15px;
+                margin-bottom: 0px;
+
+                .zem-button .zem-media-sources__inline-arrow-icon {
+                    transform: rotate(0deg);
+                }
+
+                .zem-button .zem-media-sources__inline-arrow-icon--left {
+                    transform: rotate(180deg);
+                }
+            }
+
+            .zem-media-sources__list .zem-media-sources__list-item:last-child {
+                margin-right: 0px;
+            }
+        }
+    }
+}

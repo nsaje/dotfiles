@@ -14,6 +14,7 @@ import * as deepEqual from 'fast-deep-equal';
 import {IncludedExcluded} from '../../../../core/entities/types/common/included-excluded';
 import {AccountType, Currency} from '../../../../app.constants';
 import * as commonHelpers from '../../../../shared/helpers/common.helpers';
+import {AccountMediaSource} from '../../../../core/entities/types/account/account-media-source';
 
 @Injectable()
 export class AccountSettingsStore extends Store<AccountSettingsStoreState>
@@ -214,6 +215,41 @@ export class AccountSettingsStore extends Store<AccountSettingsStoreState>
             'targeting',
             'publisherGroups'
         );
+        this.validateEntity();
+    }
+
+    setAutoAddNewSources(autoAddNewSources: boolean) {
+        this.updateState(autoAddNewSources, 'entity', 'autoAddNewSources');
+        this.validateEntity();
+    }
+
+    addToAllowedMediaSources(mediaSourcesIds: string[]) {
+        const mediaSources = this.state.entity.mediaSources.map(item => {
+            if (mediaSourcesIds.indexOf(item.id) !== -1) {
+                return {
+                    ...item,
+                    allowed: true,
+                };
+            }
+            return item;
+        });
+
+        this.updateState(mediaSources, 'entity', 'mediaSources');
+        this.validateEntity();
+    }
+
+    removeFromAllowedMediaSources(mediaSourcesIds: string[]) {
+        const mediaSources = this.state.entity.mediaSources.map(item => {
+            if (mediaSourcesIds.indexOf(item.id) !== -1) {
+                return {
+                    ...item,
+                    allowed: false,
+                };
+            }
+            return item;
+        });
+
+        this.updateState(mediaSources, 'entity', 'mediaSources');
         this.validateEntity();
     }
 
