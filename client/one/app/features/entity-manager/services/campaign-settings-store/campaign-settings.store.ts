@@ -140,6 +140,7 @@ export class CampaignSettingsStore extends Store<CampaignSettingsStoreState>
         return new Promise<boolean>(resolve => {
             this.campaignService
                 .archive(this.state.entity.id, this.requestStateUpdater)
+                .pipe(takeUntil(this.ngUnsubscribe$))
                 .subscribe(
                     () => {
                         resolve(true);

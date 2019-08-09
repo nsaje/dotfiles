@@ -1,8 +1,52 @@
 <zem-drawer
-    class="zem-drawer"
+    class="zem-drawer zem-campaign-settings-drawer"
     [isOpen]="isOpen"
     [isClosable]="!isNewEntity"
     (closeRequest)="cancel()"
 >
-    Settings for account with id {{ entityId }}
+    <ng-container *ngIf="(store.state$ | async) as state">
+        <zem-settings-drawer-header
+            class="zem-settings-drawer-header zem-drawer__header"
+            [entityId]="entityId"
+            [entityType]="EntityType.ACCOUNT"
+            [entityName]="state.entity.name"
+            [showAdminLink]="
+                zemPermissions.hasPermission('zemauth.can_see_open_in_admin')
+            "
+            [isAdminLinkAnInternalFeature]="
+                zemPermissions.isPermissionInternal(
+                    'zemauth.can_see_open_in_admin'
+                )
+            "
+            [entityNameErrors]="state.fieldsErrors.name"
+            (entityNameChange)="store.setName($event)"
+        ></zem-settings-drawer-header>
+        <div
+            class="zem-drawer__content custom-scroller zem-settings__settings-container"
+        ></div>
+        <zem-settings-drawer-footer
+            class="zem-settings-drawer-footer zem-drawer__footer zem-settings__settings-footer"
+            [isNewEntity]="isNewEntity"
+            [entityType]="EntityType.ACCOUNT"
+            [userHasPermissionToArchive]="
+                zemPermissions.hasPermission('zemauth.archive_restore_entity')
+            "
+            [isArchiveActionInternal]="
+                zemPermissions.isPermissionInternal(
+                    'zemauth.archive_restore_entity'
+                )
+            "
+            [isArchiveActionDisabled]="!state.extras.canArchive"
+            [isLoading]="
+                state.requests.create.inProgress ||
+                state.requests.edit.inProgress
+            "
+            [hasError]="
+                state.requests.create.error || state.requests.edit.error
+            "
+            (save)="saveSettings()"
+            (cancel)="cancel()"
+            (archive)="archive()"
+        ></zem-settings-drawer-footer>
+    </ng-container>
 </zem-drawer>

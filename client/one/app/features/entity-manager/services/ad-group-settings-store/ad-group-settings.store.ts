@@ -126,6 +126,7 @@ export class AdGroupSettingsStore extends Store<AdGroupSettingsStoreState>
         return new Promise<boolean>(resolve => {
             this.adGroupService
                 .archive(this.state.entity.id, this.requestStateUpdater)
+                .pipe(takeUntil(this.ngUnsubscribe$))
                 .subscribe(
                     () => {
                         resolve(true);
