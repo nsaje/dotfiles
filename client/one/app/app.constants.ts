@@ -686,6 +686,16 @@ export enum Language {
     OTHER = 'OTHER',
 }
 
+export enum AccountType {
+    UNKNOWN = 'UNKNOWN',
+    TEST = 'TEST',
+    SANDBOX = 'SANDBOX',
+    PILOT = 'PILOT',
+    ACTIVATED = 'ACTIVATED',
+    MANAGED = 'MANAGED',
+    PAAS = 'PAAS',
+}
+
 export const APP_CONSTANTS = {
     /**
      * Max. selected media sources in on sources tabs.

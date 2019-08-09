@@ -771,10 +771,10 @@ describe('CampaignSettingsStore', () => {
             .and.returnValue(of())
             .calls.reset();
 
-        store.updateState(11, 'entity', 'campaignManager');
-        expect(store.state.entity.campaignManager).toEqual(11);
-        store.setCampaignManager(12);
-        expect(store.state.entity.campaignManager).toEqual(12);
+        store.updateState('11', 'entity', 'campaignManager');
+        expect(store.state.entity.campaignManager).toEqual('11');
+        store.setCampaignManager('12');
+        expect(store.state.entity.campaignManager).toEqual('12');
     });
 
     it('should correctly change iab-category', () => {

@@ -173,7 +173,7 @@ export class CampaignSettingsStore extends Store<CampaignSettingsStoreState>
         this.validateEntity();
     }
 
-    setCampaignManager(campaignManager: number) {
+    setCampaignManager(campaignManager: string) {
         this.updateState(campaignManager, 'entity', 'campaignManager');
         this.validateEntity();
     }

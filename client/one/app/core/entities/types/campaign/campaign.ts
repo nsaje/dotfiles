@@ -9,7 +9,7 @@ export interface Campaign {
     accountId: string;
     name: string;
     type: CampaignType;
-    campaignManager: number;
+    campaignManager: string;
     iabCategory: IabCategory;
     language: Language;
     frequencyCapping: number;

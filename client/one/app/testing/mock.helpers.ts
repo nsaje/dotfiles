@@ -6,6 +6,10 @@ import {Campaign} from '../core/entities/types/campaign/campaign';
 import {CampaignExtras} from '../core/entities/types/campaign/campaign-extras';
 import {campaignMock} from './mocked-data/campaign.mock';
 import {campaignExtrasMock} from './mocked-data/campaign-extras.mock';
+import {Account} from '../core/entities/types/account/account';
+import {AccountExtras} from '../core/entities/types/account/account-extras';
+import {accountMock} from './mocked-data/account.mock';
+import {accountExtrasMock} from './mocked-data/account-extras.mock';
 
 export function getMockedAdGroup(): AdGroup {
     return adGroupMock;
@@ -21,4 +25,12 @@ export function getMockedCampaign(): Campaign {
 
 export function getMockedCampaignExtras(): CampaignExtras {
     return campaignExtrasMock;
+}
+
+export function getMockedAccount(): Account {
+    return accountMock;
+}
+
+export function getMockedAccountExtras(): AccountExtras {
+    return accountExtrasMock;
 }
