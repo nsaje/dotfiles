@@ -36,7 +36,7 @@
 0 10 * * *       /home/ubuntu/docker-manage-py.sh campaignstop_monitor --slack
 0 10 5,15,25 * * /home/ubuntu/docker-manage-py.sh audit_pacing --send-emails
 10 10 * * *      /home/ubuntu/docker-manage-py.sh generate_hack_report -n 14 -i
-10 10-20 * * *    /home/ubuntu/docker-manage-py.sh send_scheduled_reports
+#10 10-20 * * *    /home/ubuntu/docker-manage-py.sh send_scheduled_reports
 15 10 * * *      /home/ubuntu/docker-manage-py.sh post_delivery_statuses
 20 10 * * *      /home/ubuntu/docker-manage-py.sh daily_audit --send-emails
 #45 10 * * *      /home/ubuntu/docker-manage-py.sh audit_cpc_vs_ecpc --slack # must run after autopilot imported data.
