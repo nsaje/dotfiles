@@ -21,6 +21,7 @@ from utils import dates_helper
 logger = logging.getLogger(__name__)
 
 FIXED_MARGIN_START_DATE = datetime.date(2017, 6, 21)
+OEN_ACCOUNT_ID = 305
 
 
 def _generate_statements(date, campaign, campaign_spend):
@@ -306,12 +307,14 @@ def get_campaigns_with_spend(date_since):
         .distinct("campaign_id")
         .order_by("campaign_id")
     )
-    return dash.models.Campaign.objects.filter(pk__in=campaign_ids)
+    return dash.models.Campaign.objects.filter(pk__in=campaign_ids).exclude(account_id=OEN_ACCOUNT_ID)
 
 
 def get_campaigns_with_budgets_in_timeframe(date_since):
     today = dates_helper.local_today()
-    return dash.models.Campaign.objects.filter(budgets__start_date__lte=today, budgets__end_date__gte=date_since)
+    return dash.models.Campaign.objects.filter(
+        budgets__start_date__lte=today, budgets__end_date__gte=date_since
+    ).exclude(account_id=OEN_ACCOUNT_ID)
 
 
 def _query_ad_groups_with_spend(params):
@@ -366,6 +369,7 @@ def reprocess_daily_statements(date_since, account_id=None):
         campaigns = campaigns.filter(account_id=account_id)
 
     campaigns = campaigns.annotate(max_budget_end_date=Max("budgets__end_date"))
+    campaigns = campaigns.exclude(account_id=OEN_ACCOUNT_ID)
 
     for campaign in campaigns:
         # extracts dates where we have budgets but are not linked to daily statements
