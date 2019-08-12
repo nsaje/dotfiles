@@ -217,6 +217,9 @@ def _get_effective_spend_pcts(date, campaign, campaign_spend, attributed_spends)
     if campaign_spend is None:
         return 0, 0, 0
 
+    if campaign.account_id == OEN_ACCOUNT_ID:
+        return 1, 0, 0
+
     actual_spend_nano = campaign_spend["media_nano"] + campaign_spend["data_nano"]
     attributed_spend_nano = (attributed_spends.get("media_nano") or 0) + (attributed_spends.get("data_nano") or 0)
     license_fee_nano = attributed_spends.get("license_fee_nano") or 0
