@@ -295,8 +295,7 @@ def _get_campaign_spend(date, all_campaigns, account_id):
     return campaign_spend
 
 
-def get_campaigns_with_spend(date_since):
-
+def get_campaigns_with_spend(date_since, exclude_oen=True):
     today = dates_helper.local_today()
 
     params = helpers.get_local_multiday_date_context(date_since, today)
@@ -310,7 +309,10 @@ def get_campaigns_with_spend(date_since):
         .distinct("campaign_id")
         .order_by("campaign_id")
     )
-    return dash.models.Campaign.objects.filter(pk__in=campaign_ids).exclude(account_id=OEN_ACCOUNT_ID)
+    campaigns = dash.models.Campaign.objects.filter(pk__in=campaign_ids)
+    if exclude_oen:
+        campaigns = campaigns.exclude(account_id=OEN_ACCOUNT_ID)
+    return campaigns
 
 
 def get_campaigns_with_budgets_in_timeframe(date_since):
@@ -337,7 +339,7 @@ def _reprocess_campaign_statements(campaign, dates, total_spend):
     return dates
 
 
-def reprocess_daily_statements(date_since, account_id=None):
+def reprocess_daily_statements(date_since, account_id=None, exclude_oen=True):
     logger.info("Reprocessing dailiy statements for %s %s", date_since, account_id)
 
     total_spend = {}
@@ -347,7 +349,7 @@ def reprocess_daily_statements(date_since, account_id=None):
 
     # Get campaigns that have spend in the time frame we're reprocessing. This is necessary because some campaigns might
     # already be archived.
-    campaigns_w_spend = get_campaigns_with_spend(date_since)
+    campaigns_w_spend = get_campaigns_with_spend(date_since, exclude_oen=exclude_oen)
 
     logger.info(
         "Additional campaigns with spend %s",
@@ -372,7 +374,9 @@ def reprocess_daily_statements(date_since, account_id=None):
         campaigns = campaigns.filter(account_id=account_id)
 
     campaigns = campaigns.annotate(max_budget_end_date=Max("budgets__end_date"))
-    campaigns = campaigns.exclude(account_id=OEN_ACCOUNT_ID)
+
+    if exclude_oen:
+        campaigns = campaigns.exclude(account_id=OEN_ACCOUNT_ID)
 
     for campaign in campaigns:
         # extracts dates where we have budgets but are not linked to daily statements
