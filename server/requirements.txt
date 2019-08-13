@@ -37,9 +37,9 @@ django-queryinspect==1.0.0
 django-ratelimit==1.1.0
 django-redis==4.10.0
 django-silk==3.0.1
-django-tagulous==0.14.0
+git+https://github.com/radiac/django-tagulous@feature/django2.2
 django-timezone-field==3.0
-django==2.1.11
+django==2.2.4
 djangorestframework-camel-case==0.2.0
 djangorestframework-recursive==0.1.2
 djangorestframework==3.8.2
