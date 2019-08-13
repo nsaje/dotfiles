@@ -52,6 +52,7 @@ export class CampaignPerformanceTrackingComponent {
                 ga: {
                     ...this.campaignTracking.ga,
                     type: $event,
+                    webPropertyId: '',
                 },
             },
         });

@@ -1,4 +1,6 @@
 import * as commonHelpers from './common.helpers';
+import * as unitsHelpers from './units.helpers';
+import {Unit} from '../../app.constants';
 
 export function parseInteger(value: string): string {
     if (!commonHelpers.isDefined(value)) {
@@ -47,4 +49,34 @@ export function validateMinMax(
         return false;
     }
     return true;
+}
+
+export function convertToPercentValue(
+    value: string,
+    includePercentUnit: boolean = true
+): string {
+    if (!commonHelpers.isNotEmpty(value)) {
+        return null;
+    }
+    const numericValue = value.replace(/[^\d.]+/g, '');
+    if (isNaN(Number.parseFloat(numericValue))) {
+        return null;
+    }
+
+    const percentValue = (Number.parseFloat(numericValue) * 100).toFixed(2);
+    return includePercentUnit
+        ? `${percentValue}${unitsHelpers.getUnitText(Unit.Percent)}`
+        : percentValue;
+}
+
+export function convertFromPercentValue(value: string): string {
+    if (!commonHelpers.isNotEmpty(value)) {
+        return null;
+    }
+    const numericValue = value.replace(/[^\d.]+/g, '');
+    if (isNaN(Number.parseFloat(numericValue))) {
+        return null;
+    }
+
+    return (Number.parseFloat(numericValue) / 100).toString();
 }

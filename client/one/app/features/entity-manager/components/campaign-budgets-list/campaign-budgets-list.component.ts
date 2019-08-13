@@ -15,6 +15,7 @@ import {CampaignBudget} from '../../../../core/entities/types/campaign/campaign-
 import {Currency} from '../../../../app.constants';
 import * as currencyHelpers from '../../../../shared/helpers/currency.helpers';
 import * as commonHelpers from '../../../../shared/helpers/common.helpers';
+import * as numericHelpers from '../../../../shared/helpers/numeric.helpers';
 import {FormattedCampaignBudget} from '../../types/formatted-campaign-budget';
 import {CampaignBudgetErrors} from '../../types/campaign-budget-errors';
 import {AccountCredit} from '../../../../core/entities/types/account/account-credit';
@@ -124,16 +125,10 @@ export class CampaignBudgetsListComponent implements OnChanges {
                       )
                     : 'N/A',
                 margin: commonHelpers.isDefined(budget.margin)
-                    ? currencyHelpers.getValueInCurrency(
-                          budget.margin,
-                          this.currency
-                      )
+                    ? numericHelpers.convertToPercentValue(budget.margin)
                     : 'N/A',
                 licenseFee: commonHelpers.isDefined(budget.licenseFee)
-                    ? currencyHelpers.getValueInCurrency(
-                          budget.licenseFee,
-                          this.currency
-                      )
+                    ? numericHelpers.convertToPercentValue(budget.licenseFee)
                     : 'N/A',
             });
         });

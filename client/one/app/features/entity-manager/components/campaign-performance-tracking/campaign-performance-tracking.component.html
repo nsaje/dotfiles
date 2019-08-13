@@ -75,6 +75,7 @@
             [value]="campaignTracking.ga.webPropertyId"
             [placeholder]="'UA-xxxxxxx-yy'"
             [errors]="campaignTrackingErrors.ga.webPropertyId"
+            [isDisabled]="campaignTracking.ga.type !== GaTrackingType.API"
             (valueChange)="onGaPropertyIdChange($event)"
         >
         </zem-text-setting>

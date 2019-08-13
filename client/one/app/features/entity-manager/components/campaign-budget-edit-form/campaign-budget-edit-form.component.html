@@ -22,7 +22,7 @@
             ></zem-help-popover>
         </label>
         <div
-            class="zem-settings-form-group__content zem-campaign-budget-edit-form__table-container custom-scroller"
+            class="zem-settings-form-group__content zem-campaign-budget-edit-form__credits-list-container custom-scroller"
         >
             <table class="zem-table">
                 <thead>
@@ -44,7 +44,12 @@
                             trackBy: trackByIndex
                         "
                     >
-                        <tr>
+                        <tr
+                            [class.zem-campaign-budget-edit-form__row--error]="
+                                !!budgetErrors?.creditId &&
+                                credit.id === budget.creditId
+                            "
+                        >
                             <td *ngIf="!budget.id">
                                 <zem-radio-input
                                     class="zem-radio-input"
@@ -90,6 +95,12 @@
                     </tr>
                 </tbody>
             </table>
+            <div
+                class="zem-settings-form-group__content-item zem-message zem-message--error"
+                *ngFor="let error of budgetErrors?.creditId"
+            >
+                {{ error }}
+            </div>
         </div>
     </div>
 </div>
@@ -129,6 +140,12 @@
             class="zem-settings-form-group__label zem-settings-form-group__label--match-input-height zem-campaign-budget-edit-form__label"
         >
             Margin
+            <zem-help-popover
+                class="zem-help-popover"
+                *ngIf="budget.id"
+                content="To change the margin, first update this budget’s end date to today and then create a new budget with a start date from tomorrow on. You’ll be able to change the margin in this newly setup budget."
+                placement="bottom"
+            ></zem-help-popover>
         </label>
         <div class="zem-settings-form-group__content">
             <zem-prefixed-input
@@ -138,7 +155,7 @@
             >
                 <zem-decimal-input
                     class="zem-decimal-input"
-                    [value]="budget.margin"
+                    [value]="margin"
                     fractionSize="2"
                     [isDisabled]="!!budget.id"
                     [hasError]="!!budgetErrors?.margin"
@@ -158,7 +175,7 @@
     class="zem-campaign-budget-edit-form__item zem-textarea-setting zem-campaign-budget-edit-form__textarea-setting"
     label="Notes"
     [value]="budget.comment"
-    [rows]="'5'"
+    [rows]="'8'"
     [maxLength]="256"
     [errors]="budgetErrors?.comment"
     (valueChange)="onCommentChange($event)"

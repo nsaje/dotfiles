@@ -13,7 +13,8 @@ import {CampaignBudget} from '../../../../core/entities/types/campaign/campaign-
 import {ChangeEvent} from '../../../../shared/types/change-event';
 import {Currency} from '../../../../app.constants';
 import * as currencyHelpers from '../../../../shared/helpers/currency.helpers';
-import * as commonHelper from '../../../../shared/helpers/common.helpers';
+import * as commonHelpers from '../../../../shared/helpers/common.helpers';
+import * as numericHelpers from '../../../../shared/helpers/numeric.helpers';
 import {CampaignBudgetErrors} from '../../types/campaign-budget-errors';
 import * as moment from 'moment';
 import {AccountCredit} from '../../../../core/entities/types/account/account-credit';
@@ -38,11 +39,12 @@ export class CampaignBudgetEditFormComponent implements OnChanges {
     @Output()
     budgetChange = new EventEmitter<ChangeEvent<CampaignBudget>>();
 
+    formattedAccountCredits: FormattedAccountCredit[] = [];
     createdDate: string;
     currencySymbol: string;
-    formattedAccountCredits: FormattedAccountCredit[] = [];
     minDate: Date;
     maxDate: Date;
+    margin: string;
 
     ngOnChanges(changes: SimpleChanges): void {
         if (changes.budget) {
@@ -55,11 +57,15 @@ export class CampaignBudgetEditFormComponent implements OnChanges {
                 const accountCredit = this.accountCredits.find(item => {
                     return item.id === this.budget.creditId;
                 });
-                if (commonHelper.isDefined(accountCredit)) {
+                if (commonHelpers.isDefined(accountCredit)) {
                     this.minDate = accountCredit.startDate;
                     this.maxDate = accountCredit.endDate;
                 }
             }
+            this.margin = numericHelpers.convertToPercentValue(
+                this.budget.margin,
+                false
+            );
         }
         if (changes.accountCredits || changes.currency) {
             this.currencySymbol = currencyHelpers.getCurrencySymbol(
@@ -124,7 +130,7 @@ export class CampaignBudgetEditFormComponent implements OnChanges {
         this.budgetChange.emit({
             target: this.budget,
             changes: {
-                margin: $event,
+                margin: numericHelpers.convertFromPercentValue($event),
             },
         });
     }
@@ -144,44 +150,43 @@ export class CampaignBudgetEditFormComponent implements OnChanges {
         const formattedAccountCredits: FormattedAccountCredit[] = [];
         accountCredits.forEach(credit => {
             if (
-                (!commonHelper.isDefined(this.budget.id) &&
+                (!commonHelpers.isDefined(this.budget.id) &&
                     credit.isAvailable) ||
-                (commonHelper.isDefined(this.budget.id) &&
+                (commonHelpers.isDefined(this.budget.id) &&
                     this.budget.creditId === credit.id)
             ) {
                 formattedAccountCredits.push({
                     ...credit,
-                    createdOn: commonHelper.isDefined(credit.createdOn)
+                    createdOn: commonHelpers.isDefined(credit.createdOn)
                         ? moment(credit.createdOn).format('MM/DD/YYYY')
                         : 'N/A',
-                    startDate: commonHelper.isDefined(credit.startDate)
+                    startDate: commonHelpers.isDefined(credit.startDate)
                         ? moment(credit.startDate).format('MM/DD/YYYY')
                         : 'N/A',
-                    endDate: commonHelper.isDefined(credit.endDate)
+                    endDate: commonHelpers.isDefined(credit.endDate)
                         ? moment(credit.endDate).format('MM/DD/YYYY')
                         : 'N/A',
-                    total: commonHelper.isDefined(credit.total)
+                    total: commonHelpers.isDefined(credit.total)
                         ? currencyHelpers.getValueInCurrency(
                               credit.total,
                               this.currency
                           )
                         : 'N/A',
-                    allocated: commonHelper.isDefined(credit.allocated)
+                    allocated: commonHelpers.isDefined(credit.allocated)
                         ? currencyHelpers.getValueInCurrency(
                               credit.allocated,
                               this.currency
                           )
                         : 'N/A',
-                    available: commonHelper.isDefined(credit.available)
+                    available: commonHelpers.isDefined(credit.available)
                         ? currencyHelpers.getValueInCurrency(
                               credit.available,
                               this.currency
                           )
                         : 'N/A',
-                    licenseFee: commonHelper.isDefined(credit.licenseFee)
-                        ? currencyHelpers.getValueInCurrency(
-                              credit.licenseFee,
-                              this.currency
+                    licenseFee: commonHelpers.isDefined(credit.licenseFee)
+                        ? numericHelpers.convertToPercentValue(
+                              credit.licenseFee
                           )
                         : 'N/A',
                 });

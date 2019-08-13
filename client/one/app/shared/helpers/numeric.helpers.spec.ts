@@ -49,4 +49,35 @@ describe('numericHelpers', () => {
         expect(numericHelpers.validateMinMax(10, 11, null)).toEqual(false);
         expect(numericHelpers.validateMinMax(10, null, 9)).toEqual(false);
     });
+
+    it('should correctly convert to percent value', () => {
+        expect(numericHelpers.convertToPercentValue(null)).toEqual(null);
+        expect(numericHelpers.convertToPercentValue(undefined)).toEqual(null);
+        expect(numericHelpers.convertToPercentValue('')).toEqual(null);
+        expect(numericHelpers.convertToPercentValue('abcd')).toEqual(null);
+        expect(numericHelpers.convertToPercentValue('0.1537')).toEqual(
+            '15.37%'
+        );
+        expect(numericHelpers.convertToPercentValue('0.1537', false)).toEqual(
+            '15.37'
+        );
+        expect(numericHelpers.convertToPercentValue('0.15')).toEqual('15.00%');
+        expect(numericHelpers.convertToPercentValue('0.00')).toEqual('0.00%');
+        expect(numericHelpers.convertToPercentValue('0')).toEqual('0.00%');
+    });
+
+    it('should correctly convert from percent value', () => {
+        expect(numericHelpers.convertFromPercentValue(null)).toEqual(null);
+        expect(numericHelpers.convertFromPercentValue(undefined)).toEqual(null);
+        expect(numericHelpers.convertFromPercentValue('')).toEqual(null);
+        expect(numericHelpers.convertFromPercentValue('abcd')).toEqual(null);
+        expect(numericHelpers.convertFromPercentValue('15.37')).toEqual(
+            '0.1537'
+        );
+        expect(numericHelpers.convertFromPercentValue('15.37%')).toEqual(
+            '0.1537'
+        );
+        expect(numericHelpers.convertFromPercentValue('15.00')).toEqual('0.15');
+        expect(numericHelpers.convertFromPercentValue('0.00')).toEqual('0');
+    });
 });

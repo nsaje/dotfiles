@@ -19,6 +19,17 @@ class GATrackingSerializer(rest_framework.serializers.Serializer):
         error_messages={"web_property_id": "Web property ID is not valid."},
     )
 
+    def validate(self, data):
+        if (
+            data["enable_ga_tracking"]
+            and data["ga_tracking_type"] == constants.GATrackingType.API
+            and not data["ga_property_id"]
+        ):
+            raise rest_framework.serializers.ValidationError(
+                {"web_property_id": "Web property ID should not be empty."}
+            )
+        return data
+
 
 class AdobeTrackingSerializer(rest_framework.serializers.Serializer):
     enabled = rest_framework.serializers.NullBooleanField(source="enable_adobe_tracking", required=False)

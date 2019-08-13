@@ -22,7 +22,8 @@ describe('CampaignBudgetEditFormComponent', () => {
         startDate: new Date(1970, 2, 23),
         endDate: new Date(1970, 3, 10),
         amount: '1000000',
-        margin: '200',
+        margin: '0.15',
+        licenseFee: '0.1305',
         comment: 'A generic comment',
         canEditStartDate: true,
         canEditEndDate: false,
@@ -37,7 +38,7 @@ describe('CampaignBudgetEditFormComponent', () => {
             total: '5000000',
             allocated: '3000000',
             available: '2000000',
-            licenseFee: '200',
+            licenseFee: '0.1305',
             status: AccountCreditStatus.SIGNED,
             currency: Currency.USD,
             comment: 'A generic credit',
@@ -88,7 +89,7 @@ describe('CampaignBudgetEditFormComponent', () => {
                 total: '€5,000,000.00',
                 allocated: '€3,000,000.00',
                 available: '€2,000,000.00',
-                licenseFee: '€200.00',
+                licenseFee: '13.05%',
             },
         ]);
     });
@@ -112,7 +113,7 @@ describe('CampaignBudgetEditFormComponent', () => {
                 total: '$5,000,000.00',
                 allocated: '$3,000,000.00',
                 available: '$2,000,000.00',
-                licenseFee: '$200.00',
+                licenseFee: '13.05%',
             },
         ]);
     });
