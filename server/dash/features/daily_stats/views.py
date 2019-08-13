@@ -268,9 +268,13 @@ class AllAccountsPublishersDailyStats(AllAccountsDailyStatsView):
 
         self.validate_metrics(request.GET.getlist("metrics"), uses_bcm_v2=uses_bcm_v2)
 
-        self.selected_objects = None
+        self.selected_objects = request.GET.getlist("selected_ids")
 
-        return self.create_api_response(self.get_stats(request, None, should_use_publishers_view=True))
+        return self.create_api_response(
+            self.get_stats(
+                request, "publisher", object_mapping_fn=helpers.get_publisher_mapping, should_use_publishers_view=True
+            )
+        )
 
 
 class AllAccountsDeliveryDailyStats(AllAccountsDailyStatsView):
@@ -383,11 +387,17 @@ class AccountPublishersDailyStats(AccountDailyStatsView):
         pixels = self.account.conversionpixel_set.filter(archived=False)
         self.validate_metrics(request.GET.getlist("metrics"), pixels=pixels, uses_bcm_v2=self.account.uses_bcm_v2)
 
-        self.selected_objects = None
+        self.selected_objects = request.GET.getlist("selected_ids")
 
         return self.create_api_response(
             helpers.merge(
-                self.get_stats(request, None, should_use_publishers_view=True), self.get_goals(request, pixels=pixels)
+                self.get_stats(
+                    request,
+                    "publisher",
+                    object_mapping_fn=helpers.get_publisher_mapping,
+                    should_use_publishers_view=True,
+                ),
+                self.get_goals(request, pixels=pixels),
             )
         )
 
@@ -526,11 +536,16 @@ class CampaignPublishersDailyStats(CampaignDailyStatsView):
             uses_bcm_v2=self.campaign.account.uses_bcm_v2,
         )
 
-        self.selected_objects = None
+        self.selected_objects = request.GET.getlist("selected_ids")
 
         return self.create_api_response(
             helpers.merge(
-                self.get_stats(request, None, should_use_publishers_view=True),
+                self.get_stats(
+                    request,
+                    "publisher",
+                    object_mapping_fn=helpers.get_publisher_mapping,
+                    should_use_publishers_view=True,
+                ),
                 self.get_goals(request, conversion_goals=conversion_goals, campaign=self.campaign, pixels=pixels),
             )
         )
