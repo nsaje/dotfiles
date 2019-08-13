@@ -123,8 +123,8 @@ describe('zemCampaignLauncherStateService', function() {
             targetRegions: null,
             exclusionTargetRegions: null,
             targetDevices: ['DEVICE 1', 'DEVICE 2'],
-            targetOs: null,
-            targetPlacements: null,
+            targetOs: [],
+            targetPlacements: [],
         });
     });
 
