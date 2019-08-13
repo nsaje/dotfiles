@@ -283,7 +283,17 @@ angular
                     if (!step.fields) return;
 
                     step.fields.forEach(function(field) {
-                        fields[field.name] = defaults[field.name] || null;
+                        switch (field.name) {
+                            case 'targetDevices':
+                            case 'targetOs':
+                            case 'targetPlacements':
+                                fields[field.name] = defaults[field.name] || [];
+                                break;
+                            default:
+                                fields[field.name] =
+                                    defaults[field.name] || null;
+                                break;
+                        }
                     });
                 });
                 return fields;
