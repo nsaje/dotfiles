@@ -4,7 +4,7 @@ from typing import Iterable
 from typing import List
 from typing import Optional
 
-import newrelic.agent
+import newrelic.agent  # type: ignore
 from django.db import transaction
 
 import core.models

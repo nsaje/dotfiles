@@ -1,7 +1,7 @@
 import concurrent.futures
 from functools import partial
 
-import newrelic.agent
+import newrelic.agent  # type: ignore
 from django.db import transaction
 
 import core.features.bcm
