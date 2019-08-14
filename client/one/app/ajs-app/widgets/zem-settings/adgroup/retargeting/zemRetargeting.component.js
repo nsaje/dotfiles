@@ -207,13 +207,17 @@ angular.module('one.widgets').component('zemRetargeting', {
 
             ($ctrl.retargetableAudiences || []).forEach(function(audience) {
                 if (
-                    ($ctrl.includedAudiences || []).indexOf(audience.id) !== -1
+                    ($ctrl.includedAudiences || []).indexOf(
+                        parseInt(audience.id, 10)
+                    ) !== -1
                 ) {
                     audiences.included.push(
                         getTargetingEntity(AUDIENCE_TARGETING, audience)
                     );
                 } else if (
-                    ($ctrl.excludedAudiences || []).indexOf(audience.id) !== -1
+                    ($ctrl.excludedAudiences || []).indexOf(
+                        parseInt(audience.id, 10)
+                    ) !== -1
                 ) {
                     audiences.excluded.push(
                         getTargetingEntity(AUDIENCE_TARGETING, audience)
@@ -240,12 +244,18 @@ angular.module('one.widgets').component('zemRetargeting', {
                     return;
                 }
 
-                if (($ctrl.includedAdGroups || []).indexOf(adGroup.id) !== -1) {
+                if (
+                    ($ctrl.includedAdGroups || []).indexOf(
+                        parseInt(adGroup.id, 10)
+                    ) !== -1
+                ) {
                     adGroups.included.push(
                         getTargetingEntity(AD_GROUP_TARGETING, adGroup)
                     );
                 } else if (
-                    ($ctrl.excludedAdGroups || []).indexOf(adGroup.id) !== -1
+                    ($ctrl.excludedAdGroups || []).indexOf(
+                        parseInt(adGroup.id, 10)
+                    ) !== -1
                 ) {
                     adGroups.excluded.push(
                         getTargetingEntity(AD_GROUP_TARGETING, adGroup)
@@ -265,7 +275,7 @@ angular.module('one.widgets').component('zemRetargeting', {
                 return {
                     type: AD_GROUP_TARGETING,
                     section: targeting.campaignName,
-                    id: targeting.id,
+                    id: parseInt(targeting.id, 10),
                     archived: targeting.archived,
                     name: targeting.name + ' [' + targeting.id + ']',
                     title:
@@ -280,7 +290,7 @@ angular.module('one.widgets').component('zemRetargeting', {
             return {
                 type: AUDIENCE_TARGETING,
                 section: 'Custom Audiences',
-                id: targeting.id,
+                id: parseInt(targeting.id, 10),
                 archived: targeting.archived,
                 name: targeting.name + ' [' + targeting.id + ']',
                 title:

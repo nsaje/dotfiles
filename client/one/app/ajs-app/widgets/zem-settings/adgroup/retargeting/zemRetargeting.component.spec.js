@@ -66,14 +66,14 @@ describe('zemRetargeting', function() {
         var bindings = {
             entityId: 1000,
             retargetableAdGroups: [
-                {campaignName: 'Campaign 1', id: 1, name: 'Ad Group 1'},
-                {campaignName: 'Campaign 1', id: 2, name: 'Ad Group 2'},
-                {campaignName: 'Campaign 2', id: 3, name: 'Ad Group 3'},
+                {campaignName: 'Campaign 1', id: '1', name: 'Ad Group 1'},
+                {campaignName: 'Campaign 1', id: '2', name: 'Ad Group 2'},
+                {campaignName: 'Campaign 2', id: '3', name: 'Ad Group 3'},
             ],
             retargetableAudiences: [
-                {id: 11, name: 'Audience 11'},
-                {id: 22, name: 'Audience 22'},
-                {id: 33, name: 'Audience 33'},
+                {id: '11', name: 'Audience 11'},
+                {id: '22', name: 'Audience 22'},
+                {id: '33', name: 'Audience 33'},
             ],
             includedAdGroups: [1],
             excludedAdGroups: [2],
