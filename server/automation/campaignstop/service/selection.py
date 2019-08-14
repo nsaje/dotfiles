@@ -1,7 +1,6 @@
 import concurrent.futures
 from functools import partial
 
-import newrelic.agent  # type: ignore
 from django.db import transaction
 
 import core.features.bcm
@@ -97,7 +96,6 @@ def _mark_campaigns(campaign_daily_budgets, campaign_available_amount):
         )
 
 
-@newrelic.agent.background_task()
 def _check_and_mark_campaign(campaign_daily_budgets, campaign_available_amount, campaign):
     campaign_daily_budget = campaign_daily_budgets[campaign]
     available_amount = campaign_available_amount.get(campaign, 0)

@@ -4,7 +4,6 @@ from typing import Iterable
 from typing import List
 from typing import Optional
 
-import newrelic.agent  # type: ignore
 from django.db import transaction
 
 import core.models
@@ -34,7 +33,6 @@ def _process_campaigns(campaigns: Iterable[core.models.Campaign]) -> None:
         executor.map(_process_campaign, campaigns)
 
 
-@newrelic.agent.background_task()
 def _process_campaign(campaign: core.models.Campaign) -> None:
     refresh_realtime_data([campaign])
     _update_campaign(campaign)
