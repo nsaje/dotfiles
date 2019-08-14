@@ -20,7 +20,7 @@ import {
     ChangeDetectorRef,
 } from '@angular/core';
 import {CdkPortal, DomPortalHost} from '@angular/cdk/portal';
-import {DOCUMENT} from '@angular/platform-browser';
+import {DOCUMENT} from '@angular/common';
 import {
     EditableCellMode,
     EditableCellPlacement,
@@ -47,9 +47,9 @@ export class EditableCellComponent
     @Output()
     placementChange = new EventEmitter<EditableCellPlacement>();
 
-    @ViewChild(CdkPortal)
+    @ViewChild(CdkPortal, {static: false})
     portal: CdkPortal;
-    @ViewChild('portalContent')
+    @ViewChild('portalContent', {static: false})
     portalContentElementRef: ElementRef;
 
     shouldRenderAsModal: boolean = false;

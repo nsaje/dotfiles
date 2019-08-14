@@ -37,7 +37,7 @@ export class InventoryPlanningFilterComponent implements OnChanges {
     @Output()
     onApply = new EventEmitter<{key: string; value: string}[]>();
 
-    @ViewChild(DropdownDirective)
+    @ViewChild(DropdownDirective, {static: false})
     filterDropdown: DropdownDirective;
 
     categorizedOptions: CategorizedSelectCategory[];

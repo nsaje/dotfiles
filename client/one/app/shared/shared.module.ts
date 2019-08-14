@@ -3,13 +3,13 @@ import {HttpClientModule} from '@angular/common/http';
 import {NgModule} from '@angular/core';
 import {FormsModule} from '@angular/forms';
 import {PortalModule} from '@angular/cdk/portal';
-import {ChartModule} from 'angular2-highcharts';
+import {HighchartsChartModule} from 'highcharts-angular';
 import {
     NgbDatepickerModule,
     NgbPopoverModule,
 } from '@ng-bootstrap/ng-bootstrap';
 import {NgSelectModule} from '@ng-select/ng-select';
-import {FileDropModule} from 'ngx-file-drop';
+import {NgxFileDropModule} from 'ngx-file-drop';
 
 import {BigNumberPipe} from './pipes/big-number.pipe';
 import {FilterKeydownEventDirective} from './directives/filter-keydown-event/filter-keydown-event.directive';
@@ -76,18 +76,18 @@ const EXPORTED_DECLARATIONS = [
         HttpClientModule,
         FormsModule,
         PortalModule,
-        ChartModule.forRoot(require('highcharts')),
+        HighchartsChartModule,
         NgbDatepickerModule,
         NgSelectModule,
         NgbPopoverModule,
-        FileDropModule,
+        NgxFileDropModule,
     ],
     declarations: EXPORTED_DECLARATIONS,
     exports: [
         CommonModule,
         FormsModule,
         PortalModule,
-        ChartModule,
+        HighchartsChartModule,
         ...EXPORTED_DECLARATIONS,
     ],
 })

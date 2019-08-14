@@ -21,11 +21,12 @@ import {
 } from '@angular/core';
 import {NgbPopover, NgbPopoverConfig} from '@ng-bootstrap/ng-bootstrap';
 import {NgbPopoverWindow} from '@ng-bootstrap/ng-bootstrap/popover/popover';
-import {DOCUMENT} from '@angular/platform-browser';
+import {DOCUMENT} from '@angular/common';
 import * as commonHelpers from '../../helpers/common.helpers';
 
 @Directive({
     selector: '[zemPopover]',
+    exportAs: 'zemPopover',
 })
 export class PopoverDirective extends NgbPopover
     implements OnInit, OnChanges, OnDestroy {
@@ -109,8 +110,8 @@ export class PopoverDirective extends NgbPopover
         super.ngOnDestroy();
     }
 
-    open() {
-        super.open();
+    open(context?: any) {
+        super.open(context);
         if (this.stayOpenOnHover && (this as any)._windowRef) {
             // In TS you can not access private properies of the base class
             // without getting compiler errors. The next implementation allows

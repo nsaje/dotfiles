@@ -8,11 +8,12 @@ import {
     EventEmitter,
     OnDestroy,
     ChangeDetectionStrategy,
+    ViewChild,
+    ElementRef,
 } from '@angular/core';
 import {
-    FileComponent,
-    UploadEvent,
-    UploadFile,
+    NgxFileDropComponent,
+    NgxFileDropEntry,
     FileSystemFileEntry,
 } from 'ngx-file-drop';
 import {Subject} from 'rxjs';
@@ -23,7 +24,7 @@ import {takeUntil} from 'rxjs/operators';
     templateUrl: './file-selector.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class FileSelectorComponent extends FileComponent
+export class FileSelectorComponent extends NgxFileDropComponent
     implements OnInit, OnDestroy {
     @Input()
     isMultiple: boolean = true;
@@ -34,19 +35,20 @@ export class FileSelectorComponent extends FileComponent
     @Output()
     filesChange = new EventEmitter<File[]>();
 
+    @ViewChild('fileSelector', {static: false})
+    fileSelector: ElementRef;
+
     private ngUnsubscribe$: Subject<undefined> = new Subject();
 
-    filesToUpload: UploadFile[];
+    filesToUpload: NgxFileDropEntry[];
 
     ngOnInit(): void {
         this.filesToUpload = [];
         this.onFileDrop
             .pipe(takeUntil(this.ngUnsubscribe$))
-            .subscribe(($event: UploadEvent) => {
-                this.filesToUpload = this.isMultiple
-                    ? $event.files
-                    : [$event.files[0]];
-                this.convertFromUploadFilesToFiles(this.filesToUpload).then(
+            .subscribe(($event: NgxFileDropEntry[]) => {
+                this.filesToUpload = this.isMultiple ? $event : [$event[0]];
+                this.convertFromFilesToUploadToFiles(this.filesToUpload).then(
                     (files: File[]) => {
                         this.filesChange.emit(files);
                     }
@@ -60,25 +62,25 @@ export class FileSelectorComponent extends FileComponent
         super.ngOnDestroy();
     }
 
-    removeFile(fileToUpload: UploadFile): void {
+    removeFile(fileToUpload: NgxFileDropEntry): void {
         this.filesToUpload.splice(this.filesToUpload.indexOf(fileToUpload), 1);
-        this.convertFromUploadFilesToFiles(this.filesToUpload).then(
+        this.convertFromFilesToUploadToFiles(this.filesToUpload).then(
             (files: File[]) => {
                 this.filesChange.emit(files);
             }
         );
     }
 
-    private async convertFromUploadFilesToFiles(
-        filesToUpload: UploadFile[]
+    private async convertFromFilesToUploadToFiles(
+        filesToUpload: NgxFileDropEntry[]
     ): Promise<File[]> {
         const files: File[] = [];
-        // The UploadFile has a fileEntry property, which is of type FileSystemEntry.
+        // The NgxFileDropEntry has a fileEntry property, which is of type FileSystemEntry.
         // The FileSystemEntry interface's method file() is used to read the file from
         // the directory entry (async operation). After the file has been read a callback
         // function is called. We use promises to resolve the file() response.
         await Promise.all(
-            filesToUpload.map(async (fileToUpload: UploadFile) => {
+            filesToUpload.map(async (fileToUpload: NgxFileDropEntry) => {
                 if (fileToUpload.fileEntry.isFile) {
                     const file = await this.getFilePromise(fileToUpload);
                     files.push(file);
@@ -88,7 +90,7 @@ export class FileSelectorComponent extends FileComponent
         return files;
     }
 
-    private getFilePromise(fileToUpload: UploadFile): Promise<File> {
+    private getFilePromise(fileToUpload: NgxFileDropEntry): Promise<File> {
         return new Promise<File>(resolve => {
             const fileEntry = fileToUpload.fileEntry as FileSystemFileEntry;
             fileEntry.file((file: File) => {

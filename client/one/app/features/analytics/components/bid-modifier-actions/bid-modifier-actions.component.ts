@@ -28,9 +28,9 @@ export class BidModifierActionsComponent {
     @Output()
     importSuccess = new EventEmitter<void>();
 
-    @ViewChild(DropdownDirective)
+    @ViewChild(DropdownDirective, {static: false})
     bidModifierActionsDropdown: DropdownDirective;
-    @ViewChild(ModalComponent)
+    @ViewChild(ModalComponent, {static: false})
     bidModifierUploadModal: ModalComponent;
 
     export(): void {

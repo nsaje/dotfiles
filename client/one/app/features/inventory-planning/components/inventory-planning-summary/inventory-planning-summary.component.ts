@@ -7,6 +7,7 @@ import {
     ChangeDetectionStrategy,
     SimpleChanges,
 } from '@angular/core';
+import * as Highcharts from 'highcharts';
 
 import {
     CHART_X_AXIS_STEP,
@@ -31,6 +32,7 @@ export class InventoryPlanningSummaryComponent implements OnChanges {
     @Input()
     isLoading: boolean;
 
+    Highcharts = Highcharts;
     chartOptions: any = {};
 
     ngOnChanges(changes: SimpleChanges) {

@@ -20,7 +20,7 @@
     <div *ngIf="showBrowseButton" class="zem-file-selector__drop-zone-item">
         <button
             class="button button--outline"
-            (click)="onBrowseButtonClick($event)"
+            (click)="openFileSelector($event)"
         >
             {{ browseButtonLabel }}
         </button>

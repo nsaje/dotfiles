@@ -6,15 +6,14 @@ import {
 } from '@angular/core/testing';
 import {FormsModule} from '@angular/forms';
 import {FileSelectorComponent} from './file-selector.component';
-import {UploadEvent, UploadFile, FileSystemFileEntry} from 'ngx-file-drop';
+import {NgxFileDropEntry, FileSystemFileEntry} from 'ngx-file-drop';
 
 describe('FileSelectorComponent', () => {
     let component: FileSelectorComponent;
     let fixture: ComponentFixture<FileSelectorComponent>;
     let mockedFile: any;
     let mockedFileEntry: FileSystemFileEntry;
-    let mockedUploadFile: UploadFile;
-    let mockedUploadEvent: UploadEvent;
+    let mockedUploadFile: NgxFileDropEntry;
 
     beforeEach(() => {
         TestBed.configureTestingModule({
@@ -38,11 +37,10 @@ describe('FileSelectorComponent', () => {
                 callback(mockedFile);
             },
         };
-        mockedUploadFile = new UploadFile(
+        mockedUploadFile = new NgxFileDropEntry(
             mockedFileEntry.name,
             mockedFileEntry
         );
-        mockedUploadEvent = new UploadEvent([mockedUploadFile]);
     });
 
     it('should be correctly initialized', () => {
@@ -54,7 +52,7 @@ describe('FileSelectorComponent', () => {
 
         spyOn(component.filesChange, 'emit').and.stub();
 
-        component.onFileDrop.emit(mockedUploadEvent);
+        component.onFileDrop.emit([mockedUploadFile]);
         tick();
 
         expect(component.filesChange.emit).toHaveBeenCalledTimes(1);

@@ -23,9 +23,9 @@ export class RuleActionsComponent {
     @Input()
     entityType: EntityType;
 
-    @ViewChild(DropdownDirective)
+    @ViewChild(DropdownDirective, {static: false})
     ruleActionsDropdown: DropdownDirective;
-    @ViewChild(ModalComponent)
+    @ViewChild(ModalComponent, {static: false})
     ruleModal: ModalComponent;
 
     isSaveInProgress: boolean = false;

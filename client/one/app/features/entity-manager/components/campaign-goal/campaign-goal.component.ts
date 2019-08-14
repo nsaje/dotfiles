@@ -33,7 +33,7 @@ export class CampaignGoalComponent implements OnInit, OnChanges {
     @Output()
     campaignGoalDelete = new EventEmitter<void>();
 
-    @ViewChild(ModalComponent)
+    @ViewChild(ModalComponent, {static: false})
     pixelTagModal: ModalComponent;
 
     campaignGoalDescription: string;
