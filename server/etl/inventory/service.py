@@ -7,6 +7,7 @@ import backtosql
 import core.models
 import dash.constants
 import dash.features.geolocation
+import dash.features.inventory_planning.nas
 from etl import maintenance
 from redshiftapi import db
 
@@ -16,7 +17,7 @@ logger = logging.getLogger(__name__)
 TABLE_NAME = "mv_inventory"
 CACHE_NAME = "inventory_planning"
 
-NATIVE_AD_SERVER_IDS = [115, 118, 122, 139]  # Mediamond  # RCS  # News Corp # News Corp Test
+NATIVE_AD_SERVER_IDS = dash.features.inventory_planning.nas.NAS_MAPPING.keys()
 
 
 def refresh_inventory_data(date_from, date_to, skip_vacuum=False):
