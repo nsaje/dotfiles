@@ -150,6 +150,8 @@ class AllAccountsBreakdown(api_common.BaseApiView):
         level = constants.Level.ALL_ACCOUNTS
         target_dim = stats.constants.get_target_dimension(breakdown)
 
+        _newrelic_set_breakdown_transaction_name(breakdown)
+
         stats.api_breakdowns.validate_breakdown_allowed(level, request.user, breakdown)
 
         only_used_sources = target_dim == "source_id"
@@ -225,13 +227,15 @@ class AccountBreakdown(api_common.BaseApiView):
         level = constants.Level.ACCOUNTS
         target_dim = stats.constants.get_target_dimension(breakdown)
 
+        _newrelic_set_breakdown_transaction_name(breakdown)
+
         stats.api_breakdowns.validate_breakdown_allowed(level, request.user, breakdown)
 
         constraints = stats.constraints_helper.prepare_account_constraints(
             request.user,
             account,
             only_used_sources=target_dim == "source_id",
-            **get_constraints_kwargs(form.cleaned_data)
+            **get_constraints_kwargs(form.cleaned_data),
         )
         goals = stats.api_breakdowns.get_goals(constraints, breakdown)
 
@@ -241,7 +245,7 @@ class AccountBreakdown(api_common.BaseApiView):
                 request.user,
                 account,
                 only_used_sources=False,
-                **get_constraints_kwargs(form.cleaned_data, show_archived=True)
+                **get_constraints_kwargs(form.cleaned_data, show_archived=True),
             )
             totals_fn = partial(stats.api_breakdowns.totals, request.user, level, breakdown, totals_constraints, goals)
             totals_thread = threads.AsyncFunction(totals_fn)
@@ -304,13 +308,15 @@ class CampaignBreakdown(api_common.BaseApiView):
         level = constants.Level.CAMPAIGNS
         target_dim = stats.constants.get_target_dimension(breakdown)
 
+        _newrelic_set_breakdown_transaction_name(breakdown)
+
         stats.api_breakdowns.validate_breakdown_allowed(level, request.user, breakdown)
 
         constraints = stats.constraints_helper.prepare_campaign_constraints(
             request.user,
             campaign,
             only_used_sources=target_dim == "source_id",
-            **get_constraints_kwargs(form.cleaned_data)
+            **get_constraints_kwargs(form.cleaned_data),
         )
         currency = stats.helpers.get_report_currency(request.user, [constraints["account"]])
         goals = stats.api_breakdowns.get_goals(constraints, breakdown)
@@ -321,7 +327,7 @@ class CampaignBreakdown(api_common.BaseApiView):
                 request.user,
                 campaign,
                 only_used_sources=False,
-                **get_constraints_kwargs(form.cleaned_data, show_archived=True)
+                **get_constraints_kwargs(form.cleaned_data, show_archived=True),
             )
             totals_fn = partial(stats.api_breakdowns.totals, request.user, level, breakdown, totals_constraints, goals)
             totals_thread = threads.AsyncFunction(totals_fn)
@@ -393,6 +399,8 @@ class AdGroupBreakdown(api_common.BaseApiView):
         level = constants.Level.AD_GROUPS
         target_dim = stats.constants.get_target_dimension(breakdown)
 
+        _newrelic_set_breakdown_transaction_name(breakdown)
+
         stats.api_breakdowns.validate_breakdown_allowed(level, request.user, breakdown)
 
         constraints = stats.constraints_helper.prepare_ad_group_constraints(
@@ -407,7 +415,7 @@ class AdGroupBreakdown(api_common.BaseApiView):
                 request.user,
                 ad_group,
                 only_used_sources=(target_dim == "source_id"),
-                **get_constraints_kwargs(form.cleaned_data, show_archived=True)
+                **get_constraints_kwargs(form.cleaned_data, show_archived=True),
             )
             totals_fn = partial(stats.api_breakdowns.totals, request.user, level, breakdown, totals_constraints, goals)
             totals_thread = threads.AsyncFunction(totals_fn)
@@ -474,3 +482,11 @@ class AdGroupBreakdown(api_common.BaseApiView):
                 report[0]["rows"].append(all_rtb_source_row)
 
         return self.create_api_response(report)
+
+
+def _newrelic_set_breakdown_transaction_name(breakdown):
+    transaction = newrelic.agent.current_transaction()
+    if not transaction:
+        return
+    new_transaction_name = f"{transaction.name} - {breakdown}"
+    newrelic.agent.set_transaction_name(new_transaction_name)
