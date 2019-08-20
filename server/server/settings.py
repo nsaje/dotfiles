@@ -445,15 +445,3 @@ DCRON = {
     "log_viewer_link": "https://app.logdna.com/92b58769bf/logs/view?apps={command_name}",
     "log_viewer_link_live": "https://app.logdna.com/92b58769bf/logs/view?apps={command_name}&q=host:{host}",
 }
-
-# Workaround: it seems that due to
-# https://docs.djangoproject.com/en/2.2/releases/2.2.2/#patched-bundled-jquery-for-cve-2019-11358-prototype-pollution
-# there is a problem with how tagulous loads select2 component.
-# It turned out that just by changing the order of loading tagulous.js and select2.min.js
-# we are able to temporarily resolve the problem.
-TAGULOUS_ADMIN_AUTOCOMPLETE_JS = (
-    "tagulous/lib/jquery.js",
-    "tagulous/tagulous.js",
-    "tagulous/lib/select2-3/select2.min.js",
-    "tagulous/adaptor/select2-3.js",
-)

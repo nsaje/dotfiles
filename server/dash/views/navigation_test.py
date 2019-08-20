@@ -25,11 +25,7 @@ class NavigationAllAccountsDataViewTest(TestCase):
         username = User.objects.get(pk=user_id).email
         self.client.login(username=username, password="secret")
 
-        data = {}
-        if filtered_sources is not None:
-            data["filtered_sources"] = filtered_sources
-
-        response = self.client.get(reverse("navigation_all_accounts"), data=data)
+        response = self.client.get(reverse("navigation_all_accounts"), data={"filtered_sources": filtered_sources})
 
         response = json.loads(response.content)
         return response["data"]
@@ -62,11 +58,9 @@ class NavigationDataViewTest(TestCase):
         username = User.objects.get(pk=user_id).email
         self.client.login(username=username, password="secret")
 
-        data = {}
-        if filtered_sources is not None:
-            data["filtered_sources"] = filtered_sources
-
-        response = self.client.get(reverse("navigation", kwargs={"level_": level, "id_": obj_id}), data=data)
+        response = self.client.get(
+            reverse("navigation", kwargs={"level_": level, "id_": obj_id}), data={"filtered_sources": filtered_sources}
+        )
 
         response = json.loads(response.content)
         return response["data"]

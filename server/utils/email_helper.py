@@ -370,7 +370,7 @@ def send_email_to_new_user(user, request, agency=None):
 
 
 def _generate_password_reset_url(user, request):
-    encoded_id = urlsafe_base64_encode(str(user.pk).encode("utf-8"))
+    encoded_id = urlsafe_base64_encode(str(user.pk).encode("utf-8")).decode("utf-8")
     token = default_token_generator.make_token(user)
 
     url = request.build_absolute_uri(reverse("set_password", args=(encoded_id, token)))
