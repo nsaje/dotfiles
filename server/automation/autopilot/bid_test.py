@@ -397,7 +397,7 @@ class AutopilotBidTestCase(test.TestCase):
         ags_type.min_cpc = Decimal("0.123")
         ags_type.save()
         ag_settings = dash.models.AdGroup.objects.get(id=1).get_current_settings()
-        test_cases = ((ags_type, "0.207", "8.610"), (dash.models.AllRTBSourceType, "0.017", "33.613"))
+        test_cases = ((ags_type, "0.207", "8.610"), (dash.models.AllRTBSourceType, "0.009", "33.613"))
 
         bcm_modifiers = {"fee": Decimal("0.15"), "margin": Decimal("0.3")}
         for test_case in test_cases:

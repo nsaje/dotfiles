@@ -32,7 +32,7 @@ AUTOPILOT_CPC_CHANGE_PERFORMANCE_FACTOR_TABLE = (
     {"performance_upper_limit": 0.2, "performance_lower_limit": 0.0, "performance_factor": Decimal("0.95")},
 )
 
-AUTOPILOT_MIN_CPC = Decimal("0.03")
+AUTOPILOT_MIN_CPC = Decimal("0.005")
 AUTOPILOT_MAX_CPC = Decimal("10.0")
 AUTOPILOT_MIN_REDUCING_CPC_CHANGE = Decimal("0.001")
 AUTOPILOT_MAX_REDUCING_CPC_CHANGE = Decimal("0.4")

@@ -7,7 +7,7 @@ from core.models.source_type import SourceType
 AllRTBSourceType = SourceType(
     id="source-type-0123456789",
     type="all-rtb",
-    min_cpc=Decimal("0.01"),
+    min_cpc=Decimal("0.005"),
     min_cpm=Decimal("0.01"),
     min_daily_budget=Decimal("1.00"),
     max_cpc=Decimal("20.0"),
