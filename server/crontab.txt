@@ -60,4 +60,4 @@
 0 9,12,15 * * *  /home/ubuntu/docker-manage-py.sh monitor_blacklists
 0 8 * * *        /home/ubuntu/docker-manage-py.sh demo_cleanup
 0 5 * * *        /home/ubuntu/docker-manage-py.sh recheck_image_present
-0 8 * * *        /home/ubuntu/docker-manage-py.sh oen_daily_statements
+#0 8 * * *        /home/ubuntu/docker-manage-py.sh oen_daily_statements
