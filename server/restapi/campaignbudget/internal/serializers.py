@@ -4,9 +4,19 @@ import rest_framework.serializers
 
 import restapi.campaignbudget.v1.serializers
 import restapi.serializers.fields
+import restapi.serializers.serializers
 
 
-class CampaignBudgetSerializer(restapi.campaignbudget.v1.serializers.CampaignBudgetSerializer):
+class CampaignBudgetSerializer(
+    restapi.serializers.serializers.PermissionedFieldsMixin,
+    restapi.campaignbudget.v1.serializers.CampaignBudgetSerializer,
+):
+    class Meta:
+        permissioned_fields = {
+            "license_fee": "zemauth.can_view_platform_cost_breakdown",
+            "margin": "zemauth.can_manage_agency_margin",
+        }
+
     id = restapi.serializers.fields.IdField(required=False, allow_null=True)
     comment = restapi.serializers.fields.PlainCharField(
         required=False, max_length=256, allow_null=True, allow_blank=True

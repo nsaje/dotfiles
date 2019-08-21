@@ -134,7 +134,7 @@
     [errors]="budgetErrors?.amount"
     (valueChange)="onAmountChange($event)"
 ></zem-currency-setting>
-<div class="zem-campaign-budget-edit-form__item">
+<div class="zem-campaign-budget-edit-form__item" *ngIf="showMargin">
     <div class="zem-settings-form-group">
         <label
             class="zem-settings-form-group__label zem-settings-form-group__label--match-input-height zem-campaign-budget-edit-form__label"
@@ -156,6 +156,8 @@
                 <zem-decimal-input
                     class="zem-decimal-input"
                     [value]="margin"
+                    [minValue]="0"
+                    [maxValue]="99"
                     fractionSize="2"
                     [isDisabled]="!!budget.id"
                     [hasError]="!!budgetErrors?.margin"
@@ -175,7 +177,7 @@
     class="zem-campaign-budget-edit-form__item zem-textarea-setting zem-campaign-budget-edit-form__textarea-setting"
     label="Notes"
     [value]="budget.comment"
-    [rows]="'8'"
+    [rows]="'10'"
     [maxLength]="256"
     [errors]="budgetErrors?.comment"
     (valueChange)="onCommentChange($event)"

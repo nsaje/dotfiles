@@ -6,7 +6,7 @@ from restapi.common.views_base_test import RESTAPITest
 from utils.magic_mixer import magic_mixer
 
 
-class ConversionPixelsTest(RESTAPITest):
+class ConversionPixelViewSetTest(RESTAPITest):
     def setUp(self):
         super().setUp()
         utils.test_helper.add_permissions(
@@ -70,14 +70,22 @@ class ConversionPixelsTest(RESTAPITest):
     def test_pixel_get(self):
         account = magic_mixer.blend(core.models.Account, users=[self.user])
         pixel = magic_mixer.blend(core.models.ConversionPixel, account=account, name="test pixel")
-        r = self.client.get(reverse("pixels_details", kwargs={"account_id": account.id, "pixel_id": pixel.id}))
+        r = self.client.get(
+            reverse(
+                "restapi.conversion_pixel.v1:pixels_details", kwargs={"account_id": account.id, "pixel_id": pixel.id}
+            )
+        )
         resp_json = self.assertResponseValid(r)
         self.validate_against_db(resp_json["data"])
 
     def test_no_account_access(self):
         account = magic_mixer.blend(core.models.Account)
         pixel = magic_mixer.blend(core.models.ConversionPixel, account=account, name="test pixel")
-        r = self.client.get(reverse("pixels_details", kwargs={"account_id": account.id, "pixel_id": pixel.id}))
+        r = self.client.get(
+            reverse(
+                "restapi.conversion_pixel.v1:pixels_details", kwargs={"account_id": account.id, "pixel_id": pixel.id}
+            )
+        )
         self.assertResponseError(r, "MissingDataError")
 
     def test_pixels_list(self):
@@ -91,7 +99,7 @@ class ConversionPixelsTest(RESTAPITest):
         magic_mixer.cycle(1).blend(
             core.models.ConversionPixel, account=account, audience_enabled=False, additional_pixel=True
         )
-        r = self.client.get(reverse("pixels_list", kwargs={"account_id": account.id}))
+        r = self.client.get(reverse("restapi.conversion_pixel.v1:pixels_list", kwargs={"account_id": account.id}))
         resp_json = self.assertResponseValid(r, data_type=list)
         for item in resp_json["data"]:
             self.validate_against_db(item)
@@ -108,7 +116,10 @@ class ConversionPixelsTest(RESTAPITest):
         magic_mixer.cycle(1).blend(
             core.models.ConversionPixel, account=account, audience_enabled=False, additional_pixel=True
         )
-        r = self.client.get(reverse("pixels_list", kwargs={"account_id": account.id}), {"audienceEnabledOnly": True})
+        r = self.client.get(
+            reverse("restapi.conversion_pixel.v1:pixels_list", kwargs={"account_id": account.id}),
+            {"audienceEnabledOnly": True},
+        )
         resp_json = self.assertResponseValid(r, data_type=list)
         for item in resp_json["data"]:
             self.validate_against_db(item)
@@ -120,7 +131,11 @@ class ConversionPixelsTest(RESTAPITest):
         )
         account = magic_mixer.blend(core.models.Account, users=[self.user])
         pixel = magic_mixer.blend(core.models.ConversionPixel, account=account, name="test pixel")
-        r = self.client.get(reverse("pixels_details", kwargs={"account_id": account.id, "pixel_id": pixel.id}))
+        r = self.client.get(
+            reverse(
+                "restapi.conversion_pixel.v1:pixels_details", kwargs={"account_id": account.id, "pixel_id": pixel.id}
+            )
+        )
         resp_json = self.assertResponseValid(r)
         self.assertFalse("redirectUrl" in resp_json["data"])
         self.assertFalse("notes" in resp_json["data"])
@@ -135,11 +150,15 @@ class ConversionPixelsTest(RESTAPITest):
     def test_post(self):
         account = magic_mixer.blend(core.models.Account, users=[self.user])
         magic_mixer.blend(core.models.ConversionPixel, account=account, name="audience pixel", audience_enabled=True)
-        r = self.client.post(reverse("pixels_list", kwargs={"account_id": account.id}), data={}, format="json")
+        r = self.client.post(
+            reverse("restapi.conversion_pixel.v1:pixels_list", kwargs={"account_id": account.id}),
+            data={},
+            format="json",
+        )
         resp_json = self.assertResponseError(r, "ValidationError")
         self.assertEqual(["Please specify a name."], resp_json["details"]["name"])
         r = self.client.post(
-            reverse("pixels_list", kwargs={"account_id": account.id}),
+            reverse("restapi.conversion_pixel.v1:pixels_list", kwargs={"account_id": account.id}),
             data={"name": "posty", "additionalPixel": True, "redirectUrl": "https://test.com", "notes": "posty notes"},
             format="json",
         )
@@ -155,7 +174,9 @@ class ConversionPixelsTest(RESTAPITest):
         pixel = magic_mixer.blend(core.models.ConversionPixel, account=account, name="test pixel", archived=False)
         self.assertFalse(pixel.archived)
         r = self.client.put(
-            reverse("pixels_details", kwargs={"account_id": account.id, "pixel_id": pixel.id}),
+            reverse(
+                "restapi.conversion_pixel.v1:pixels_details", kwargs={"account_id": account.id, "pixel_id": pixel.id}
+            ),
             data={"audienceEnabled": True, "redirectUrl": "https://test.com", "notes": "putty notes"},
             format="json",
         )
@@ -169,7 +190,9 @@ class ConversionPixelsTest(RESTAPITest):
         account = magic_mixer.blend(core.models.Account, users=[self.user])
         pixel = magic_mixer.blend(core.models.ConversionPixel, account=account, name="test pixel", archived=False)
         r = self.client.put(
-            reverse("pixels_details", kwargs={"account_id": account.id, "pixel_id": pixel.id}),
+            reverse(
+                "restapi.conversion_pixel.v1:pixels_details", kwargs={"account_id": account.id, "pixel_id": pixel.id}
+            ),
             data={"archived": True},
             format="json",
         )
@@ -183,7 +206,9 @@ class ConversionPixelsTest(RESTAPITest):
         pixel = magic_mixer.blend(core.models.ConversionPixel, account=account, name="test pixel", archived=False)
         self.assertFalse(pixel.archived)
         r = self.client.put(
-            reverse("pixels_details", kwargs={"account_id": account.id, "pixel_id": pixel.id}),
+            reverse(
+                "restapi.conversion_pixel.v1:pixels_details", kwargs={"account_id": account.id, "pixel_id": pixel.id}
+            ),
             data={"archived": True},
             format="json",
         )
@@ -198,7 +223,9 @@ class ConversionPixelsTest(RESTAPITest):
             core.models.ConversionPixel, account=account, name="test pixel", additional_pixel=False
         )
         r = self.client.put(
-            reverse("pixels_details", kwargs={"account_id": account.id, "pixel_id": pixel.id}),
+            reverse(
+                "restapi.conversion_pixel.v1:pixels_details", kwargs={"account_id": account.id, "pixel_id": pixel.id}
+            ),
             data={"additional_pixel": True},
             format="json",
         )
@@ -215,7 +242,9 @@ class ConversionPixelsTest(RESTAPITest):
         )
         self.assertFalse(pixel.additional_pixel)
         r = self.client.put(
-            reverse("pixels_details", kwargs={"account_id": account.id, "pixel_id": pixel.id}),
+            reverse(
+                "restapi.conversion_pixel.v1:pixels_details", kwargs={"account_id": account.id, "pixel_id": pixel.id}
+            ),
             data={"additional_pixel": True},
             format="json",
         )
@@ -236,7 +265,9 @@ class ConversionPixelsTest(RESTAPITest):
             notes="test notes",
         )
         r = self.client.put(
-            reverse("pixels_details", kwargs={"account_id": account.id, "pixel_id": pixel.id}),
+            reverse(
+                "restapi.conversion_pixel.v1:pixels_details", kwargs={"account_id": account.id, "pixel_id": pixel.id}
+            ),
             data={"redirect_url": "", "notes": ""},
             format="json",
         )
@@ -255,14 +286,18 @@ class ConversionPixelsTest(RESTAPITest):
             notes="test notes",
         )
         r = self.client.put(
-            reverse("pixels_details", kwargs={"account_id": account.id, "pixel_id": pixel.id}),
+            reverse(
+                "restapi.conversion_pixel.v1:pixels_details", kwargs={"account_id": account.id, "pixel_id": pixel.id}
+            ),
             data={"redirect_url": None, "notes": None},
             format="json",
         )
         resp_json = self.assertResponseError(r, "ValidationError")
         self.assertEqual(["This field may not be null."], resp_json["details"]["notes"])
         r = self.client.put(
-            reverse("pixels_details", kwargs={"account_id": account.id, "pixel_id": pixel.id}),
+            reverse(
+                "restapi.conversion_pixel.v1:pixels_details", kwargs={"account_id": account.id, "pixel_id": pixel.id}
+            ),
             data={"redirect_url": None},
             format="json",
         )
@@ -274,7 +309,9 @@ class ConversionPixelsTest(RESTAPITest):
         account = magic_mixer.blend(core.models.Account, users=[self.user])
         pixel = magic_mixer.blend(core.models.ConversionPixel, account=account, name="test pixel")
         r = self.client.put(
-            reverse("pixels_details", kwargs={"account_id": account.id, "pixel_id": pixel.id}),
+            reverse(
+                "restapi.conversion_pixel.v1:pixels_details", kwargs={"account_id": account.id, "pixel_id": pixel.id}
+            ),
             data={"redirectUrl": "https://test.com", "notes": "putty notes"},
             format="json",
         )
@@ -288,7 +325,9 @@ class ConversionPixelsTest(RESTAPITest):
         account = magic_mixer.blend(core.models.Account, users=[self.user])
         pixel = magic_mixer.blend(core.models.ConversionPixel, account=account, name="test pixel")
         r = self.client.put(
-            reverse("pixels_details", kwargs={"account_id": account.id, "pixel_id": pixel.id}),
+            reverse(
+                "restapi.conversion_pixel.v1:pixels_details", kwargs={"account_id": account.id, "pixel_id": pixel.id}
+            ),
             data={"redirectUrl": "https://test.com", "notes": "putty notes"},
             format="json",
         )
@@ -303,7 +342,9 @@ class ConversionPixelsTest(RESTAPITest):
         account = magic_mixer.blend(core.models.Account, users=[self.user])
         magic_mixer.blend(core.models.ConversionPixel, account=account, name="test pixel")
         r = self.client.post(
-            reverse("pixels_list", kwargs={"account_id": account.id}), data={"name": "test pixel" * 10}, format="json"
+            reverse("restapi.conversion_pixel.v1:pixels_list", kwargs={"account_id": account.id}),
+            data={"name": "test pixel" * 10},
+            format="json",
         )
         resp_json = self.assertResponseError(r, "ValidationError")
         self.assertEqual(["Ensure this field has no more than 50 characters."], resp_json["details"]["name"])
@@ -312,7 +353,9 @@ class ConversionPixelsTest(RESTAPITest):
         account = magic_mixer.blend(core.models.Account, users=[self.user])
         magic_mixer.blend(core.models.ConversionPixel, account=account, name="test pixel")
         r = self.client.post(
-            reverse("pixels_list", kwargs={"account_id": account.id}), data={"name": "test pixel"}, format="json"
+            reverse("restapi.conversion_pixel.v1:pixels_list", kwargs={"account_id": account.id}),
+            data={"name": "test pixel"},
+            format="json",
         )
         resp_json = self.assertResponseError(r, "ValidationError")
         self.assertEqual(["Conversion pixel with name test pixel already exists."], resp_json["details"]["name"])
@@ -323,7 +366,10 @@ class ConversionPixelsTest(RESTAPITest):
             core.models.ConversionPixel, account=account, name="audience pixel", audience_enabled=True
         )
         r = self.client.put(
-            reverse("pixels_details", kwargs={"account_id": account.id, "pixel_id": audience_pixel.id}),
+            reverse(
+                "restapi.conversion_pixel.v1:pixels_details",
+                kwargs={"account_id": account.id, "pixel_id": audience_pixel.id},
+            ),
             data={"archived": True},
             format="json",
         )
@@ -335,7 +381,10 @@ class ConversionPixelsTest(RESTAPITest):
             core.models.ConversionPixel, account=account, name="additional pixel", additional_pixel=True
         )
         r = self.client.put(
-            reverse("pixels_details", kwargs={"account_id": account.id, "pixel_id": additional_pixel.id}),
+            reverse(
+                "restapi.conversion_pixel.v1:pixels_details",
+                kwargs={"account_id": account.id, "pixel_id": additional_pixel.id},
+            ),
             data={"archived": True},
             format="json",
         )
@@ -354,7 +403,9 @@ class ConversionPixelsTest(RESTAPITest):
             additional_pixel=False,
         )
         r = self.client.put(
-            reverse("pixels_details", kwargs={"account_id": account.id, "pixel_id": pixel.id}),
+            reverse(
+                "restapi.conversion_pixel.v1:pixels_details", kwargs={"account_id": account.id, "pixel_id": pixel.id}
+            ),
             data={"audience_enabled": True, "additional_pixel": True},
             format="json",
         )
@@ -377,7 +428,9 @@ class ConversionPixelsTest(RESTAPITest):
             additional_pixel=False,
         )
         r = self.client.put(
-            reverse("pixels_details", kwargs={"account_id": account.id, "pixel_id": pixel.id}),
+            reverse(
+                "restapi.conversion_pixel.v1:pixels_details", kwargs={"account_id": account.id, "pixel_id": pixel.id}
+            ),
             data={"audience_enabled": True},
             format="json",
         )
@@ -397,7 +450,9 @@ class ConversionPixelsTest(RESTAPITest):
             core.models.ConversionPixel, account=account, name="test pixel", additional_pixel=False
         )
         r = self.client.put(
-            reverse("pixels_details", kwargs={"account_id": account.id, "pixel_id": pixel.id}),
+            reverse(
+                "restapi.conversion_pixel.v1:pixels_details", kwargs={"account_id": account.id, "pixel_id": pixel.id}
+            ),
             data={"additional_pixel": True},
             format="json",
         )

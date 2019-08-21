@@ -2,12 +2,13 @@ import decimal
 
 import rest_framework.serializers
 
+import restapi.serializers.base
 import restapi.serializers.fields
+import restapi.serializers.serializers
 from dash import constants
 
 
-class CampaignBudgetSerializer(rest_framework.serializers.Serializer):
-
+class CampaignBudgetSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
     id = restapi.serializers.fields.IdField(read_only=True)
     credit_id = restapi.serializers.fields.IdField(source="credit.id")
     start_date = rest_framework.serializers.DateField()

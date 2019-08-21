@@ -329,6 +329,8 @@
                         class="zem-campaign-budgets-overview zem-settings-section__item"
                         [overview]="state.extras.budgetsOverview"
                         [currency]="state.extras.currency"
+                        [showLicenseFee]="canAccessPlatformCosts()"
+                        [showMargin]="canAccessAgencyCosts()"
                     ></zem-campaign-budgets-overview>
                 </div>
                 <div class="zem-settings-section">
@@ -364,6 +366,7 @@
                         let-currency="currency"
                         let-budgetErrors="budgetErrors"
                         let-showLicenseFee="showLicenseFee"
+                        let-showMargin="showMargin"
                         let-accountCredits="accountCredits"
                     >
                         <zem-campaign-budget-edit-form
@@ -372,6 +375,7 @@
                             [currency]="currency"
                             [budgetErrors]="budgetErrors"
                             [showLicenseFee]="showLicenseFee"
+                            [showMargin]="showMargin"
                             [accountCredits]="accountCredits"
                             (budgetChange)="store.updateBudget($event)"
                         ></zem-campaign-budget-edit-form>

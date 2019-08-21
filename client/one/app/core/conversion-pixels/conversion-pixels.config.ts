@@ -1,6 +1,6 @@
 import {APP_CONFIG} from '../../app.config';
 
-const conversionPixelsApiUrl = `${APP_CONFIG.apiRestUrl}/v1/accounts`;
+const conversionPixelsApiUrl = `${APP_CONFIG.apiRestInternalUrl}/accounts`;
 
 export const CONVERSION_PIXELS_CONFIG = {
     requests: {

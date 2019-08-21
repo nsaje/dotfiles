@@ -7,7 +7,7 @@
             {{ formattedOverview.campaignSpend }}
         </div>
     </div>
-    <div class="zem-campaign-budgets-overview__section">
+    <div class="zem-campaign-budgets-overview__section" *ngIf="showLicenseFee">
         <div class="zem-campaign-budgets-overview__section-name">
             Media Spend
         </div>
@@ -15,7 +15,7 @@
             {{ formattedOverview.mediaSpend }}
         </div>
     </div>
-    <div class="zem-campaign-budgets-overview__section">
+    <div class="zem-campaign-budgets-overview__section" *ngIf="showLicenseFee">
         <div class="zem-campaign-budgets-overview__section-name">
             Data Spend
         </div>
@@ -23,7 +23,7 @@
             {{ formattedOverview.dataSpend }}
         </div>
     </div>
-    <div class="zem-campaign-budgets-overview__section">
+    <div class="zem-campaign-budgets-overview__section" *ngIf="showLicenseFee">
         <div class="zem-campaign-budgets-overview__section-name">
             License Fee
         </div>
@@ -31,7 +31,7 @@
             {{ formattedOverview.licenseFee }}
         </div>
     </div>
-    <div class="zem-campaign-budgets-overview__section">
+    <div class="zem-campaign-budgets-overview__section" *ngIf="showMargin">
         <div class="zem-campaign-budgets-overview__section-name">Margin</div>
         <div class="zem-campaign-budgets-overview__section-value">
             {{ formattedOverview.margin }}

@@ -22,19 +22,10 @@ describe('DateInputComponent', () => {
     });
 
     it('should be correctly initialized', () => {
-        component.ngOnInit();
         expect(component).toBeDefined();
     });
 
-    it('should correctly initialize minDate', () => {
-        component.originalMinDate = new Date(2019, 0, 5);
-        component.ngOnInit();
-        expect(component.minDate).toEqual(new NgbDate(2019, 1, 5));
-    });
-
     it('should correctly format model on changes', () => {
-        component.ngOnInit();
-
         const value = new Date(2019, 0, 5);
         component.value = value;
         component.ngOnChanges({
@@ -44,13 +35,29 @@ describe('DateInputComponent', () => {
     });
 
     it('should correctly format model on onDateSelect event', () => {
-        component.ngOnInit();
-
         spyOn(component.valueChange, 'emit').and.stub();
 
         component.onDateSelect(new NgbDate(2019, 1, 5));
         expect(component.valueChange.emit).toHaveBeenCalledWith(
             new Date(2019, 0, 5)
         );
+    });
+
+    it('should correctly format minDate on changes', () => {
+        const originalMinDate = new Date(2019, 0, 5);
+        component.originalMinDate = originalMinDate;
+        component.ngOnChanges({
+            originalMinDate: new SimpleChange(null, originalMinDate, false),
+        });
+        expect(component.minDate).toEqual(new NgbDate(2019, 1, 5));
+    });
+
+    it('should correctly format maxDate on changes', () => {
+        const originalMaxDate = new Date(2019, 0, 5);
+        component.originalMaxDate = originalMaxDate;
+        component.ngOnChanges({
+            originalMaxDate: new SimpleChange(null, originalMaxDate, false),
+        });
+        expect(component.maxDate).toEqual(new NgbDate(2019, 1, 5));
     });
 });

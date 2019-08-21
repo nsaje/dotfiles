@@ -35,6 +35,8 @@ export class CampaignBudgetEditFormComponent implements OnChanges {
     @Input()
     showLicenseFee: boolean;
     @Input()
+    showMargin: boolean;
+    @Input()
     accountCredits: AccountCredit[];
     @Output()
     budgetChange = new EventEmitter<ChangeEvent<CampaignBudget>>();

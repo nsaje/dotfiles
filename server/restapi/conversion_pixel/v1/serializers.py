@@ -2,6 +2,7 @@ import rest_framework.serializers
 
 import restapi.serializers.base
 import restapi.serializers.fields
+import restapi.serializers.serializers
 
 
 class ConversionPixelSerializer(

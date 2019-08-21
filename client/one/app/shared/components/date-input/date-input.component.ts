@@ -8,7 +8,6 @@ import {
     EventEmitter,
     Output,
     Input,
-    OnInit,
 } from '@angular/core';
 import {NgbDate, NgbDateParserFormatter} from '@ng-bootstrap/ng-bootstrap';
 import {DateInputFormatter} from './date-input.formatter';
@@ -22,7 +21,7 @@ import * as commonHelpers from '../../helpers/common.helpers';
         {provide: NgbDateParserFormatter, useClass: DateInputFormatter},
     ],
 })
-export class DateInputComponent implements OnInit, OnChanges {
+export class DateInputComponent implements OnChanges {
     @Input()
     value: Date;
     @Input('minDate')
@@ -42,14 +41,15 @@ export class DateInputComponent implements OnInit, OnChanges {
     maxDate: NgbDate;
     model: NgbDate;
 
-    ngOnInit(): void {
-        this.minDate = this.convertFromDateToNgbDate(this.originalMinDate);
-        this.maxDate = this.convertFromDateToNgbDate(this.originalMaxDate);
-    }
-
     ngOnChanges(changes: SimpleChanges) {
         if (changes.value) {
             this.model = this.convertFromDateToNgbDate(this.value);
+        }
+        if (changes.originalMinDate) {
+            this.minDate = this.convertFromDateToNgbDate(this.originalMinDate);
+        }
+        if (changes.originalMaxDate) {
+            this.maxDate = this.convertFromDateToNgbDate(this.originalMaxDate);
         }
     }
 

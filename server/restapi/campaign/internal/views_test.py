@@ -112,7 +112,7 @@ class CampaignViewSetTest(RESTAPITest):
             "creditId": str(creditId) if creditId is not None else None,
             "amount": str(amount) if amount is not None else None,
             "margin": str(margin) if margin is not None else None,
-            "comment": comment,
+            "comment": comment if comment is not None else "",
             "startDate": startDate,
             "endDate": endDate,
             "state": dash.constants.BudgetLineItemState.get_name(state),

@@ -55,6 +55,7 @@
       - ['can_see_salesforce_url', 'zemauth', 'user']
       - ['can_modify_allowed_sources', 'zemauth', 'user']
       - ['can_see_all_available_sources', 'zemauth', 'user']
+      - ['can_manage_agency_margin', 'zemauth', 'user']
 
 - model: oauth2_provider.application
   pk: 1

@@ -21,6 +21,10 @@ export class CampaignBudgetsOverviewComponent implements OnChanges {
     overview: CampaignBudgetsOverview;
     @Input()
     currency: Currency;
+    @Input()
+    showLicenseFee: boolean;
+    @Input()
+    showMargin: boolean;
 
     formattedOverview: CampaignBudgetsOverview;
 
