@@ -18,7 +18,6 @@ class UploadBatchCreate(TestCase):
         self.assertEqual(self.ad_group.id, batch.ad_group_id)
         self.assertEqual("test", batch.name)
         self.assertEqual(None, batch.original_filename)
-        self.assertEqual(dash.constants.UploadBatchType.INSERT, batch.type)
 
     @mock.patch("core.models.UploadBatch.generate_cloned_name", return_value="test")
     def test_clone(self, _):
@@ -29,11 +28,10 @@ class UploadBatchCreate(TestCase):
         self.assertEqual(self.ad_group.id, batch.ad_group_id)
         self.assertEqual("test", batch.name)
         self.assertEqual(None, batch.original_filename)
-        self.assertEqual(dash.constants.UploadBatchType.CLONE, batch.type)
 
     def test_create_for_file(self):
         batch = model.UploadBatch.objects.create_for_file(
-            None, self.account, "test", self.ad_group, "filename", True, dash.constants.UploadBatchType.EDIT
+            None, self.account, "test", self.ad_group, "filename", True, True
         )
         self.assertEqual(self.ad_group.id, batch.ad_group_id)
         self.assertEqual("test", batch.name)

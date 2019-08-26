@@ -505,6 +505,20 @@ class PersistBatchTestCase(TestCase):
         self.assertEqual(1, batch.contentadcandidate_set.count())
         self.assertEqual(0, batch.contentad_set.count())
 
+    def test_candidate_linked(self):
+        batch = models.UploadBatch.objects.get(id=2)
+        candidate = batch.contentadcandidate_set.get()
+        candidate.original_content_ad_id = 1
+        candidate.save()
+
+        self.assertEqual(constants.UploadBatchStatus.IN_PROGRESS, batch.status)
+
+        with self.assertRaises(contentupload.exc.ChangeForbidden):
+            contentupload.upload.persist_batch(batch)
+
+        batch.refresh_from_db()
+        self.assertEqual(constants.UploadBatchStatus.IN_PROGRESS, batch.status)
+
     @patch.object(utils.s3helpers.S3Helper, "put")
     def test_invalid_candidates(self, mock_s3helper_put):
         batch = models.UploadBatch.objects.get(id=3)

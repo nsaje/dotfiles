@@ -11,7 +11,6 @@ angular
         //
         this.openUploadModal = openUploadModal;
         this.openEditModal = openEditModal;
-        this.openCloneEditModal = openCloneEditModal;
 
         function getShowVideoUpload() {
             var campaign = zemNavigationNewService.getActiveEntityByType(
@@ -75,38 +74,6 @@ angular
                 controller: function($scope) {
                     $scope.cb = function() {
                         $scope.onSave();
-                        $scope.$close();
-                    };
-                },
-                backdrop: 'static',
-                keyboard: false,
-                windowClass: 'content-upload',
-                scope: modalScope,
-            });
-
-            return modal.result;
-        }
-
-        function openCloneEditModal(adGroupId, batchId, batchName, candidates) {
-            var modalScope = $rootScope.$new();
-            modalScope.adGroupId = adGroupId;
-            modalScope.batchId = batchId;
-            modalScope.batchName = batchName;
-            modalScope.candidates = candidates;
-            modalScope.endpoint = zemUploadEndpointService.createEndpoint(
-                modalScope.adGroupId
-            );
-            modalScope.showVideoUpload = getShowVideoUpload();
-            modalScope.showDisplayUpload = getShowDisplayUpload();
-
-            var modal = $uibModal.open({
-                template:
-                    '<zem-upload-step2 ad-group-id="adGroupId" callback="cb()" close="$close" ' +
-                    'is-edit="false" candidates="candidates" batch-id="batchId" batch-name="batchName" endpoint="endpoint" ' +
-                    'auto-open-edit-form="true" show-video-upload="showVideoUpload" show-display-upload="showDisplayUpload">' +
-                    '</zem-upload-step2>',
-                controller: function($scope) {
-                    $scope.cb = function() {
                         $scope.$close();
                     };
                 },

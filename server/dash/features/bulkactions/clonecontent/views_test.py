@@ -1,3 +1,5 @@
+import json
+
 import mock
 from django.urls import reverse
 from rest_framework.test import APIClient
@@ -43,14 +45,43 @@ class CloneContentViewTest(restapi.common.views_base_test.RESTAPITest):
         r = self.client.post(reverse("content_ad_clone"), data=data, format="json")
         self.assertResponseError(r, "MissingDataError")
 
-    @mock.patch.object(service, "clone_edit", autospec=True)
+    @mock.patch.object(service, "clone", autospec=True)
     def test_post(self, mock_clone):
         batch_clone = magic_mixer.blend(core.models.UploadBatch)
-        mock_clone.return_value = (batch_clone, [])
+        mock_clone.return_value = batch_clone
 
         data = self.clone_repr(self.ad_group, self.ad_group, self.content_ads)
 
-        response = self.client.post(reverse("content_ad_clone"), data=data, format="json")
-        response = self.assertResponseValid(response)
+        r = self.client.post(reverse("content_ad_clone"), data=data, format="json")
+        r = self.assertResponseValid(r)
+        self.assertDictContainsSubset({"id": str(batch_clone.pk)}, r["data"])
 
-        self.assertDictContainsSubset({"id": str(batch_clone.pk)}, response["data"]["destinationBatch"])
+    def test_post_type_fail(self):
+        campaign = magic_mixer.blend(
+            core.models.Campaign, account=self.account, type=dash.constants.CampaignType.DISPLAY
+        )
+        ad_group = magic_mixer.blend(core.models.AdGroup, campaign=campaign)
+
+        data = self.clone_repr(self.ad_group, ad_group, self.content_ads)
+
+        r = self.client.post(reverse("content_ad_clone"), data=data, format="json")
+        r = self.assertEqual(
+            {"errorCode": "ValidationError", "details": {"type": ["Creative type does not match the campaign type."]}},
+            json.loads(r.content),
+        )
+
+    @mock.patch.object(core.models.AdGroup, "is_archived", return_value=True)
+    def test_post_ad_group_archived_fail(self, mock_archived):
+        campaign = magic_mixer.blend(core.models.Campaign, account=self.account)
+        ad_group = magic_mixer.blend(core.models.AdGroup, campaign=campaign)
+
+        data = self.clone_repr(self.ad_group, ad_group, self.content_ads)
+
+        r = self.client.post(reverse("content_ad_clone"), data=data, format="json")
+        r = self.assertEqual(
+            {
+                "errorCode": "ValidationError",
+                "details": {"destinationAdGroupId": ["Can not create a content ad on an archived ad group."]},
+            },
+            json.loads(r.content),
+        )

@@ -1355,12 +1355,11 @@ class ContentAdCandidateForm(forms.ModelForm):
     image_width = forms.IntegerField(required=False)
     image_height = forms.IntegerField(required=False)
 
-    def __init__(self, campaign, data, files=None, original_content_ad=None):
+    def __init__(self, campaign, data, files=None):
         if files and "image" in files:
             files["image"].seek(0)
         super(ContentAdCandidateForm, self).__init__(data, files)
         self.campaign = campaign
-        self.original_content_ad = original_content_ad
 
     def clean_image_crop(self):
         image_crop = self.cleaned_data.get("image_crop")
@@ -1653,9 +1652,6 @@ class ContentAdForm(ContentAdCandidateForm):
             and secondary_tracker_url_error_msg
         ):
             self.add_error("secondary_tracker_url", secondary_tracker_url_error_msg)
-
-        if self.original_content_ad:
-            cleaned_data["state"] = self.original_content_ad.state
 
         return cleaned_data
 

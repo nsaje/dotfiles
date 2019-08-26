@@ -69,8 +69,6 @@ class CreateContentAd(TestCase):
     def test_bulk_clone(self, mock_insert_redirects):
         request = magic_mixer.blend_request_user()
         batch = self._blend_a_batch()
-        batch.default_state = None
-        batch.save()
         source_content_ads = magic_mixer.cycle(3).blend(
             core.models.ContentAd, state=constants.ContentAdSourceState.INACTIVE
         )
@@ -94,13 +92,13 @@ class CreateContentAd(TestCase):
     def test_bulk_clone_override_state(self, mock_insert_redirects):
         request = magic_mixer.blend_request_user()
         batch = self._blend_a_batch()
-        batch.default_state = constants.ContentAdSourceState.ACTIVE
-        batch.save()
         source_content_ads = magic_mixer.cycle(3).blend(
             core.models.ContentAd, state=constants.ContentAdSourceState.INACTIVE
         )
 
-        content_ads = core.models.ContentAd.objects.bulk_clone(request, source_content_ads, batch.ad_group, batch)
+        content_ads = core.models.ContentAd.objects.bulk_clone(
+            request, source_content_ads, batch.ad_group, batch, overridden_state=constants.ContentAdSourceState.ACTIVE
+        )
 
         self.assertEqual(len(content_ads), 3)
 

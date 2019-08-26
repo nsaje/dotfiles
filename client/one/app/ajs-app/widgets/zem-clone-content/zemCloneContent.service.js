@@ -28,12 +28,13 @@ angular
             return zemCloneContentEndpoint.clone(config);
         }
 
-        function openResultsModal(destinationBatch) {
+        function openResultsModal(adGroup, destinationBatch) {
             var modal = $uibModal.open({
                 component: 'zemCloneContentSuccessfulModal',
                 backdrop: 'static',
                 keyboard: false,
                 resolve: {
+                    adGroup: adGroup,
                     destinationBatch: destinationBatch,
                 },
             });
