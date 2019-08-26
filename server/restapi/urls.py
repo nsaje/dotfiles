@@ -15,7 +15,6 @@ import restapi.bidmodifiers.urls
 import restapi.campaign.urls
 import restapi.campaignbudget.urls
 import restapi.campaigngoal.urls
-import restapi.campaignlauncher.urls
 import restapi.campaignstats.urls
 import restapi.contentad.urls
 import restapi.conversion_pixel.urls
@@ -36,7 +35,6 @@ urlpatterns += restapi.accountcredit.urls.urlpatterns
 urlpatterns += restapi.accountcreditrefund.urls.urlpatterns
 urlpatterns += restapi.campaign.urls.urlpatterns
 urlpatterns += restapi.campaignstats.urls.urlpatterns
-urlpatterns += restapi.campaignlauncher.urls.urlpatterns
 urlpatterns += restapi.campaigngoal.urls.urlpatterns
 urlpatterns += restapi.campaignbudget.urls.urlpatterns
 urlpatterns += restapi.adgroup.urls.urlpatterns

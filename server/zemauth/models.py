@@ -338,7 +338,6 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ("can_set_delivery_type", "User can set delivery type."),
             ("can_set_click_capping", "User can set click capping on ad group level."),
             ("can_see_grid_actions", "User can see grid actions"),
-            ("can_create_campaign_via_campaign_launcher", "User can create new campaign via Campaign launcher"),
             ("fea_can_see_inventory_planning", "User can use the inventory planning tool"),
             ("fea_can_use_column_picker_in_reports", "User can use column picker in reports modal."),
             ("disable_budget_management", "User can NOT manage campaign budgets (negated permission)"),
