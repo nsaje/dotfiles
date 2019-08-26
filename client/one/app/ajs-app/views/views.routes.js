@@ -91,15 +91,6 @@ angular.module('one.views').config(function($stateProvider) {
         },
     });
 
-    $stateProvider.state('v2.campaignLauncher', {
-        url: '/campaign-launcher/account/{id:int}',
-        template: require('./campaign-launcher/zemCampaignLauncherView.partial.html'),
-        controller: 'zemCampaignLauncherView as $ctrl',
-        params: {
-            level: constants.levelStateParam.ACCOUNT,
-        },
-    });
-
     $stateProvider.state('v2.inventoryPlanning', {
         url: '/inventory-planning/',
         template: '<zem-inventory-planning-view></zem-inventory-planning-view>',

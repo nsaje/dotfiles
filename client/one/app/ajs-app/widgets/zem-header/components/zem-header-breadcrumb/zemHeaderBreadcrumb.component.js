@@ -159,13 +159,6 @@ angular.module('one.widgets').component('zemHeaderBreadcrumb', {
                     href: $location.absUrl(),
                 };
             }
-            if ($state.includes('v2.campaignLauncher')) {
-                return {
-                    typeName: 'Campaign management',
-                    name: 'Campaign launcher',
-                    href: $location.absUrl(),
-                };
-            }
             if ($state.includes('v2.inventoryPlanning')) {
                 return {
                     typeName: 'Utilities',

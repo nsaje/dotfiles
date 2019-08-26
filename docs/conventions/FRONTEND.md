@@ -49,7 +49,7 @@ Views module defines main dashboard pages (each page is a container component). 
 - `app.redirects.js`- legacy redirects
 - `views.routes.js` - routes definitions - mappings between routes and controllers/ templates
     - Main view: state activation hooks, redirects, permission checks etc.
-    - Views: analytics, campaign-launcher, pixels, publisher-groups, scheduled-reports etc.
+    - Views: analytics, pixels, publisher-groups, scheduled-reports etc.
 
 
 ### Styles

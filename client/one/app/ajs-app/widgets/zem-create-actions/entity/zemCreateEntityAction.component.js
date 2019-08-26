@@ -9,11 +9,9 @@ angular.module('one.widgets').component('zemCreateEntityAction', {
         $uibModal,
         zemCreateEntityActionService,
         zemToastsService,
-        zemNavigationNewService,
         zemPermissions
     ) {
         var $ctrl = this;
-        var activeAccount = zemNavigationNewService.getActiveAccount();
         var MAP_PARENT_TYPE = {};
         MAP_PARENT_TYPE[constants.entityType.ACCOUNT] =
             constants.entityType.CAMPAIGN;
@@ -70,17 +68,6 @@ angular.module('one.widgets').component('zemCreateEntityAction', {
             callback: createEntity,
         };
 
-        var ADDITIONAL_ACTIONS = {};
-        if (
-            zemPermissions.hasPermission(
-                'zemauth.can_create_campaign_via_campaign_launcher'
-            )
-        ) {
-            ADDITIONAL_ACTIONS[constants.entityType.CAMPAIGN] = [
-                {name: 'Launch campaign', callback: openCampaignLauncher},
-            ];
-        }
-
         $ctrl.createInProgress = false;
 
         $ctrl.$onInit = function() {
@@ -90,8 +77,6 @@ angular.module('one.widgets').component('zemCreateEntityAction', {
                     : constants.entityType.ACCOUNT;
 
             $ctrl.mainAction = MAIN_ACTIONS[$ctrl.entityType];
-            $ctrl.additionalActions =
-                ADDITIONAL_ACTIONS[$ctrl.entityType] || [];
         };
 
         function navigateToEntityCreation() {
@@ -146,13 +131,6 @@ angular.module('one.widgets').component('zemCreateEntityAction', {
             }).result;
 
             campaignType$.then(createCampaign);
-        }
-
-        function openCampaignLauncher() {
-            var url = $state.href('v2.campaignLauncher', {
-                id: activeAccount.id,
-            });
-            $location.url(url);
         }
     },
 });

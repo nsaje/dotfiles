@@ -117,7 +117,6 @@ import {CampaignBudgetOptimizationComponent} from './components/campaign-budget-
     entryComponents: [
         EntitySettingsRouterOutlet,
         CampaignCreatorModalComponent,
-        CampaignTypeSelectorComponent,
         DaypartingSettingComponent,
         RuleActionsComponent,
     ],

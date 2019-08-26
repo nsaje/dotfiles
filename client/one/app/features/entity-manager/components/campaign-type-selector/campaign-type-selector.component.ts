@@ -8,7 +8,6 @@ import {
     Input,
     Inject,
 } from '@angular/core';
-import {downgradeComponent} from '@angular/upgrade/static';
 import {APP_CONSTANTS} from '../../../../app.constants';
 import {GoogleAnalyticsService} from '../../../../core/google-analytics/google-analytics.service';
 import {MixpanelService} from '../../../../core/mixpanel/mixpanel.service';
@@ -52,12 +51,3 @@ export class CampaignTypeSelectorComponent {
         this.onSelect.emit(campaignType);
     }
 }
-
-declare var angular: angular.IAngularStatic;
-angular.module('one.downgraded').directive(
-    'zemCampaignTypeSelector',
-    downgradeComponent({
-        component: CampaignTypeSelectorComponent,
-        outputs: ['onSelect'],
-    })
-);
