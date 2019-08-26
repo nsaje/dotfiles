@@ -44,7 +44,6 @@
             - ['can_clone_contentads', 'zemauth', 'user']
             - ['can_control_ad_group_state_in_table', 'zemauth', 'user']
             - ['can_create_agency', 'zemauth', 'user']
-            - ['can_create_campaign_via_campaign_launcher', 'zemauth', 'user']
             - ['can_download_custom_reports', 'zemauth', 'user']
             - ['can_edit_advanced_custom_flags', 'zemauth', 'user']
             - ['can_edit_content_ads', 'zemauth', 'user']
