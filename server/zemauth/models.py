@@ -423,6 +423,7 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
                 "disable_ad_group_sources_bid",
                 "User can NOT set bid cpc/cpm on ad group sources level (negated permission).",
             ),
+            ("settings_defaults_on_campaign_level", "Can view ad group settings defaults on campaign level"),
         )
 
     def get_full_name(self):

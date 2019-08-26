@@ -196,6 +196,7 @@ function generateAppEnvironment(env) {
             dev: env.NODE_ENV === 'development' || !env.NODE_ENV,
             test: env.NODE_ENV === 'test',
             prod: env.NODE_ENV === 'production',
+            e2e: env.NODE_ENV === 'e2e',
         },
         buildNumber: env.npm_config_build_number || '',
         branchName: env.npm_config_branch_name || '',
@@ -225,6 +226,8 @@ function getStaticUrl(config) {
             config.buildNumber +
             '/client'
         );
+    } else if (config.env.e2e) {
+        return 'http://localhost:9898';
     }
 
     return 'http://localhost:9999';

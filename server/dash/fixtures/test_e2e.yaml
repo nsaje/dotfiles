@@ -1,196 +1,303 @@
-# test user
-- model: zemauth.user
-  pk: 1
-  fields:
-    password: pbkdf2_sha256$24000$MPOVr4rGJSvP$Mb1PIJzFJtfuXTTxggaWTWoIeCH64ImgHjQpsV/4moc=
-    last_login: 2016-11-03 07:56:27.433930
-    is_superuser: true
-    email: test@test.com
-    username: null
-    first_name: ''
-    last_name: ''
-    date_joined: 2016-11-03 07:56:23.411403
-    is_staff: true
-    is_active: true
-    is_test_user: false
-    groups: []
+# zemauth_user
 
-- model: oauth2_provider.application
-  pk: 1
-  fields: {client_id: ZCSx2WjxHxxV6rKZC3hdb6ejO8GLwcdUtltmpt9J, user: 1, redirect_uris: '',
-    client_type: confidential, authorization_grant_type: client-credentials, client_secret: u7plEd04mHc11CckS9dojhYiwaWzNqeB1w9KgMxwe5rkW6Ss7mTRIx6Pd8t7YvdYc7bC1025H74s98E2eqhIcBlvBlHsc5vAp9TJMP2e8y6kyJKQUWkpUirFRl3Os2fC,
-    name: Test application, skip_authorization: false, created: '2015-09-23T09:57:22', updated: '2015-09-23T09:57:22'}
-
-
-# test agency
 -   fields:
-        name: Alfa&Omega
-        created_dt: '2015-09-23T09:57:22'
-        modified_dt: '2015-09-23T09:57:22'
+        password: pbkdf2_sha256$24000$MPOVr4rGJSvP$Mb1PIJzFJtfuXTTxggaWTWoIeCH64ImgHjQpsV/4moc=
+        email: 'test@test.com'
+        username: 'test'
+        first_name: 'test'
+        last_name: 'test'
+        date_joined: '2019-08-20 07:56:27.433930'
+        is_superuser: false
+        is_staff: true
+        is_active: true
+        is_test_user: false
+        groups: []
+        user_permissions:
+            - ['account_agency_access_permissions', 'zemauth', 'user']
+            - ['account_credit_view', 'zemauth', 'user']
+            - ['account_custom_audiences_view', 'zemauth', 'user']
+            - ['aggregate_postclick_acquisition', 'zemauth', 'user']
+            - ['aggregate_postclick_engagement', 'zemauth', 'user']
+            - ['all_accounts_accounts_add_account', 'zemauth', 'user']
+            - ['all_accounts_accounts_view', 'zemauth', 'user']
+            - ['all_accounts_sources_view', 'zemauth', 'user']
+            - ['account_campaigns_view', 'zemauth', 'user']
+            - ['archive_restore_entity', 'zemauth', 'user']
+            - ['bulk_actions_on_all_levels', 'zemauth', 'user']
+            - ['campaign_ad_groups_detailed_report', 'zemauth', 'user']
+            - ['campaign_goal_optimization', 'zemauth', 'user']
+            - ['campaign_goal_performance', 'zemauth', 'user']
+            - ['campaign_settings_cs_rep', 'zemauth', 'user']
+            - ['campaign_settings_sales_rep', 'zemauth', 'user']
+            - ['can_access_additional_outbrain_publisher_settings', 'zemauth', 'user']
+            - ['can_access_agency_infobox', 'zemauth', 'user']
+            - ['can_access_all_accounts_infobox', 'zemauth', 'user']
+            - ['can_access_campaign_account_publisher_blacklist_status', 'zemauth', 'user']
+            - ['can_access_global_publisher_blacklist_status', 'zemauth', 'user']
+            - ['can_access_publisher_reports', 'zemauth', 'user']
+            - ['can_access_table_breakdowns_feature', 'zemauth', 'user']
+            - ['can_access_table_breakdowns_feature_on_ad_group_level', 'zemauth', 'user']
+            - ['can_access_table_breakdowns_feature_on_ad_group_level_publishers', 'zemauth', 'user']
+            - ['can_be_ob_representative', 'zemauth', 'user']
+            - ['can_breakdown_reports_by_ads_and_publishers', 'zemauth', 'user']
+            - ['can_clone_adgroups', 'zemauth', 'user']
+            - ['can_clone_contentads', 'zemauth', 'user']
+            - ['can_control_ad_group_state_in_table', 'zemauth', 'user']
+            - ['can_create_agency', 'zemauth', 'user']
+            - ['can_create_campaign_via_campaign_launcher', 'zemauth', 'user']
+            - ['can_download_custom_reports', 'zemauth', 'user']
+            - ['can_edit_advanced_custom_flags', 'zemauth', 'user']
+            - ['can_edit_content_ads', 'zemauth', 'user']
+            - ['can_edit_publisher_groups', 'zemauth', 'user']
+            - ['can_filter_by_account_type', 'zemauth', 'user']
+            - ['can_filter_by_agency', 'zemauth', 'user']
+            - ['can_filter_by_business', 'zemauth', 'user']
+            - ['can_filter_by_media_source', 'zemauth', 'user']
+            - ['can_filter_sources_through_table', 'zemauth', 'user']
+            - ['can_hide_chart', 'zemauth', 'user']
+            - ['can_include_credit_refunds_in_report', 'zemauth', 'user']
+            - ['can_include_model_ids_in_reports', 'zemauth', 'user']
+            - ['can_include_tags_in_reports', 'zemauth', 'user']
+            - ['can_include_totals_in_reports', 'zemauth', 'user']
+            - ['can_manage_ad_group_dayparting', 'zemauth', 'user']
+            - ['can_manage_agency_margin', 'zemauth', 'user']
+            - ['can_manage_budgets_in_local_currency', 'zemauth', 'user']
+            - ['can_manage_credit_refunds', 'zemauth', 'user']
+            - ['can_manage_goals_in_local_currency', 'zemauth', 'user']
+            - ['can_manage_oauth2_apps', 'zemauth', 'user']
+            - ['can_manage_restapi_access', 'zemauth', 'user']
+            - ['can_manage_settings_in_local_currency', 'zemauth', 'user']
+            - ['can_modify_account_manager', 'zemauth', 'user']
+            - ['can_modify_account_name', 'zemauth', 'user']
+            - ['can_modify_account_type', 'zemauth', 'user']
+            - ['can_modify_allowed_sources', 'zemauth', 'user']
+            - ['can_modify_campaign_iab_category', 'zemauth', 'user']
+            - ['can_modify_campaign_manager', 'zemauth', 'user']
+            - ['can_modify_facebook_page', 'zemauth', 'user']
+            - ['can_modify_outbrain_account_publisher_blacklist_status', 'zemauth', 'user']
+            - ['can_modify_publisher_blacklist_status', 'zemauth', 'user']
+            - ['can_promote_additional_pixel', 'zemauth', 'user']
+            - ['can_promote_agency_managers', 'zemauth', 'user']
+            - ['can_receive_pacing_email', 'zemauth', 'user']
+            - ['can_receive_sales_credit_email', 'zemauth', 'user']
+            - ['can_redirect_pixels', 'zemauth', 'user']
+            - ['can_request_accounts_report_in_local_currencies', 'zemauth', 'user']
+            - ['can_request_demo_v3', 'zemauth', 'user']
+            - ['can_review_bid_modifiers', 'zemauth', 'user']
+            - ['can_see_account_type', 'zemauth', 'user']
+            - ['can_see_agency_managers_under_access_permissions', 'zemauth', 'user']
+            - ['can_see_all_accounts', 'zemauth', 'user']
+            - ['can_see_all_available_sources', 'zemauth', 'user']
+            - ['can_see_all_nas_in_inventory_planning', 'zemauth', 'user']
+            - ['can_see_all_users_for_managers', 'zemauth', 'user']
+            - ['can_see_amplify_ad_id_column', 'zemauth', 'user']
+            - ['can_see_amplify_live_preview', 'zemauth', 'user']
+            - ['can_see_amplify_review_link', 'zemauth', 'user']
+            - ['can_see_backend_hacks', 'zemauth', 'user']
+            - ['can_see_budget_optimization', 'zemauth', 'user']
+            - ['can_see_campaign_goals', 'zemauth', 'user']
+            - ['can_see_campaign_language_choices', 'zemauth', 'user']
+            - ['can_see_campaign_type_in_breakdowns', 'zemauth', 'user']
+            - ['can_see_credit_refunds', 'zemauth', 'user']
+            - ['can_see_currency_setting', 'zemauth', 'user']
+            - ['can_see_deals_in_ui', 'zemauth', 'user']
+            - ['can_see_grid_actions', 'zemauth', 'user']
+            - ['can_see_history_in_drawer', 'zemauth', 'user']
+            - ['can_see_id_columns_in_table', 'zemauth', 'user']
+            - ['can_see_infobox_in_local_currency', 'zemauth', 'user']
+            - ['can_see_landing_mode_alerts', 'zemauth', 'user']
+            - ['can_see_managers_in_accounts_table', 'zemauth', 'user']
+            - ['can_see_managers_in_campaigns_table', 'zemauth', 'user']
+            - ['can_see_mediamond_publishers', 'zemauth', 'user']
+            - ['can_see_media_source_status_on_submission_popover', 'zemauth', 'user']
+            - ['can_see_new_account_credit', 'zemauth', 'user']
+            - ['can_see_new_budgets', 'zemauth', 'user']
+            - ['can_see_new_chart', 'zemauth', 'user']
+            - ['can_see_new_content_insights', 'zemauth', 'user']
+            - ['can_see_new_pixels_view', 'zemauth', 'user']
+            - ['can_see_new_report_download', 'zemauth', 'user']
+            - ['can_see_new_report_schedule', 'zemauth', 'user']
+            - ['can_see_new_scheduled_reports', 'zemauth', 'user']
+            - ['can_see_newscorp_publishers', 'zemauth', 'user']
+            - ['can_see_open_in_admin', 'zemauth', 'user']
+            - ['can_see_pixel_notes', 'zemauth', 'user']
+            - ['can_see_pixel_traffic', 'zemauth', 'user']
+            - ['can_see_projections', 'zemauth', 'user']
+            - ['can_see_publisher_blacklist_status', 'zemauth', 'user']
+            - ['can_see_publisher_groups_ui', 'zemauth', 'user']
+            - ['can_see_publishers', 'zemauth', 'user']
+            - ['can_see_publishers_all_levels', 'zemauth', 'user']
+            - ['can_see_rcs_publishers', 'zemauth', 'user']
+            - ['can_see_realtime_spend', 'zemauth', 'user']
+            - ['can_see_redshift_postclick_statistics', 'zemauth', 'user']
+            - ['can_see_rtb_sources_as_one', 'zemauth', 'user']
+            - ['can_see_salesforce_url', 'zemauth', 'user']
+            - ['can_see_sspd_url', 'zemauth', 'user']
+            - ['can_see_stats_in_local_currency', 'zemauth', 'user']
+            - ['can_see_top_level_delivery_breakdowns', 'zemauth', 'user']
+            - ['can_see_vast', 'zemauth', 'user']
+            - ['can_see_viewthrough_conversions', 'zemauth', 'user']
+            - ['can_set_account_cs_representative', 'zemauth', 'user']
+            - ['can_set_account_ob_representative', 'zemauth', 'user']
+            - ['can_set_account_sales_representative', 'zemauth', 'user']
+            - ['can_set_ad_group_max_cpc', 'zemauth', 'user']
+            - ['can_set_adgroup_to_auto_pilot', 'zemauth', 'user']
+            - ['can_set_advanced_device_targeting', 'zemauth', 'user']
+            - ['can_set_agency_for_account', 'zemauth', 'user']
+            - ['can_set_auto_add_new_sources', 'zemauth', 'user']
+            - ['can_set_bid_modifiers', 'zemauth', 'user']
+            - ['can_set_click_capping', 'zemauth', 'user']
+            - ['can_set_click_capping_daily_click_budget', 'zemauth', 'user']
+            - ['can_set_day_of_week_in_scheduled_reports', 'zemauth', 'user']
+            - ['can_set_delivery_type', 'zemauth', 'user']
+            - ['can_set_export_delimiter_separator', 'zemauth', 'user']
+            - ['can_set_frequency_capping', 'zemauth', 'user']
+            - ['can_set_ga_api_tracking', 'zemauth', 'user']
+            - ['can_set_interest_targeting', 'zemauth', 'user']
+            - ['can_set_media_source_to_auto_pilot', 'zemauth', 'user']
+            - ['can_set_rtb_sources_as_one_cpc', 'zemauth', 'user']
+            - ['can_set_source_bid_modifiers', 'zemauth', 'user']
+            - ['can_set_subdivision_targeting', 'zemauth', 'user']
+            - ['can_set_time_period_in_scheduled_reports', 'zemauth', 'user']
+            - ['can_set_white_blacklist_publisher_groups', 'zemauth', 'user']
+            - ['can_switch_between_cost_breakdowns', 'zemauth', 'user']
+            - ['can_target_custom_audiences', 'zemauth', 'user']
+            - ['can_use_ad_additional_data', 'zemauth', 'user']
+            - ['can_use_advanced_inventory_planning_features', 'zemauth', 'user']
+            - ['can_use_bluekai_targeting', 'zemauth', 'user']
+            - ['can_use_language_targeting', 'zemauth', 'user']
+            - ['can_use_new_account_settings_drawer', 'zemauth', 'user']
+            - ['can_use_new_ad_group_settings_drawer', 'zemauth', 'user']
+            - ['can_use_new_campaign_settings_drawer', 'zemauth', 'user']
+            - ['can_use_new_routing', 'zemauth', 'user']
+            - ['can_use_own_images_in_upload', 'zemauth', 'user']
+            - ['can_use_partial_updates_in_upload', 'zemauth', 'user']
+            - ['can_use_publisher_bid_modifiers_in_ui', 'zemauth', 'user']
+            - ['can_use_restapi', 'zemauth', 'user']
+            - ['can_use_single_ad_upload', 'zemauth', 'user']
+            - ['can_view_account_agency_information', 'zemauth', 'user']
+            - ['can_view_actual_costs', 'zemauth', 'user']
+            - ['can_view_additional_targeting', 'zemauth', 'user']
+            - ['can_view_agency_cost_breakdown', 'zemauth', 'user']
+            - ['can_view_agency_margin', 'zemauth', 'user']
+            - ['can_view_breakdown_by_delivery', 'zemauth', 'user']
+            - ['can_view_breakdown_by_delivery_extended', 'zemauth', 'user']
+            - ['can_view_campaign_content_insights_side_tab', 'zemauth', 'user']
+            - ['can_view_end_user_cost_breakdown', 'zemauth', 'user']
+            - ['can_view_flat_fees', 'zemauth', 'user']
+            - ['can_view_new_history_backend', 'zemauth', 'user']
+            - ['can_view_platform_cost_breakdown', 'zemauth', 'user']
+            - ['can_view_platform_cost_breakdown_derived', 'zemauth', 'user']
+            - ['can_view_retargeting_settings', 'zemauth', 'user']
+            - ['can_view_sidetabs', 'zemauth', 'user']
+            - ['fea_can_change_campaign_type', 'zemauth', 'user']
+            - ['fea_can_change_campaign_type_to_display', 'zemauth', 'user']
+            - ['fea_can_create_automation_rules', 'zemauth', 'user']
+            - ['fea_can_see_inventory_planning', 'zemauth', 'user']
+            - ['fea_can_see_roas', 'zemauth', 'user']
+            - ['fea_can_see_video_metrics', 'zemauth', 'user']
+            - ['fea_can_use_column_picker_in_reports', 'zemauth', 'user']
+            - ['fea_can_use_cpm_buying', 'zemauth', 'user']
+            - ['fea_new_geo_targeting', 'zemauth', 'user']
+            - ['fea_video_upload', 'zemauth', 'user']
+            - ['settings_defaults_on_campaign_level', 'zemauth', 'user']
+            - ['sspd_can_block_account', 'zemauth', 'user']
+            - ['sspd_can_block_ad_group', 'zemauth', 'user']
+            - ['sspd_can_block_agency', 'zemauth', 'user']
+            - ['sspd_can_block_campaign', 'zemauth', 'user']
+            - ['sspd_can_filter_by_account', 'zemauth', 'user']
+            - ['sspd_can_filter_by_agency', 'zemauth', 'user']
+            - ['sspd_can_see_all_sources', 'zemauth', 'user']
+            - ['sspd_can_see_link_to_entity_in_z1', 'zemauth', 'user']
+            - ['sspd_can_use_sspd', 'zemauth', 'user']
+            - ['supply_dash_link_view', 'zemauth', 'user']
+    model: zemauth.user
+    pk: 1
+
+# agency
+
+-   fields:
+        name: 'Alfa&Omega'
+        created_dt: '2019-08-20T00:00:00'
+        modified_dt: '2019-08-20T00:00:00'
         modified_by: 1
         users: [1]
     model: dash.agency
     pk: 1
 
-# test yahoo account
+# account
 
 -   fields:
-        advertiser_id: '953699'
-        created_dt: '2014-06-04T09:58:21'
-        modified_dt: '2014-06-04T09:58:21'
-    model: dash.yahooaccount
-    pk: 1
-
-# test account
-
--   fields:
-        created_dt: '2014-06-04T00:00:00'
-        created_by: 1
-        archived: False
-        name: 'Test settings 1'
-        account: 186
-        account_type: 5
-    model: dash.accountsettings
-    pk: 1
-
--   fields:
-        created_dt: '2014-06-04T09:58:21'
-        modified_dt: '2014-06-04T09:58:21'
+        created_dt: '2019-08-20T00:00:00'
+        modified_dt: '2019-08-20T00:00:00'
         modified_by: 1
         users: [1]
         allowed_sources: [1,2,3,4]
         agency: 1
         settings: 1
-        name: 'My account'
+        name: 'Demo account'
         yahoo_account: 1
     model: dash.account
-    pk: 186
+    pk: 1
 
-# test creditlineitems
+# account_settings
 
 -   fields:
-        created_dt: '2014-06-04T09:58:21'
-        modified_dt: '2014-06-04T09:58:21'
+        created_dt: '2019-08-20T00:00:00'
         created_by: 1
-        account: 186 # test account 1
-        start_date: '2015-10-01'
-        end_date: '2116-11-30'
+        archived: False
+        name: 'Demo account'
+        account: 1
+        account_type: 5
+    model: dash.accountsettings
+    pk: 1
+
+# credit_line_item
+
+-   fields:
+        created_dt: '2019-08-20T00:00:00'
+        modified_dt: '2019-08-20T00:00:00'
+        created_by: 1
+        account: 1
+        start_date: '2019-08-20'
+        end_date: '2100-08-20'
         amount: 200000
         license_fee: 0.2
         status: 1
-        comment: 'Test case'
+        comment: 'Demo account credit'
     model: dash.creditlineitem
-    pk: 861
+    pk: 1
 
-# test budgetlineitems
-
--   fields:
-        created_dt: '2014-06-04T09:58:21'
-        modified_dt: '2014-06-04T09:58:21'
-        created_by: 1
-        credit: 861 # test credit 1
-        campaign: 608 # test campaign 1
-        start_date: '2015-10-01'
-        end_date: '2116-11-30'
-        margin: 0.15
-        amount: 100000
-        comment: 'Test case'
-    model: dash.budgetlineitem
-    pk: 1910
-
-# test refundlineitems
+# campaign
 
 -   fields:
-        created_dt: '2014-06-04T09:58:21'
-        modified_dt: '2014-06-04T09:58:21'
-        created_by: 1
-        account: 186 # test account 1
-        credit: 861
-        start_date: '2015-10-01'
-        end_date: '2116-11-30'
-        amount: 1000
-        comment: 'Test refund'
-    model: dash.refundlineitem
-    pk: 777
-
-# test campaign
-
--   fields:
-        created_dt: '2014-06-04T09:58:21'
-        modified_dt: '2014-06-04T09:58:21'
+        created_dt: '2019-08-20T00:00:00'
+        modified_dt: '2019-08-20T00:00:00'
         modified_by: 1
-        account: 186 # test account 1
-        settings: 608
-        name: 'My campaign'
-        real_time_campaign_stop: True
+        account: 1
+        settings: 1
+        name: 'Demo campaign'
     model: dash.campaign
-    pk: 608
+    pk: 1
+
+# campaign_settings
 
 -   fields:
-        created_dt: '2014-06-04T09:58:21'
-        modified_dt: '2014-06-04T09:58:21'
-        modified_by: 1
-        account: 186 # test account 1
-        settings: 308
-        name: 'Empty campaign to test archiving'
-    model: dash.campaign
-    pk: 308
-
--   fields:
-        created_dt: '2014-06-04T00:00:00'
+        created_dt: '2019-08-20T00:00:00'
         created_by: 1
-        name: 'test campaign 2'
-        campaign_manager: NULL
+        name: 'Demo campaign'
+        campaign_manager: 1
         iab_category: 'IAB24'
         campaign_goal: 4
         target_devices: ['mobile']
         target_os: [{name: 'ios', version: {min: 'ios_4_0'}}]
         target_placements: ['app']
         target_regions: ['US']
-        campaign: 608
+        campaign: 1
     model: dash.campaignsettings
-    pk: 608
-
--   fields:
-        campaign: 308
-        created_dt: '2014-06-04T09:58:21'
-        target_devices: ['mobile']
-    model: dash.campaignsettings
-    pk: 308
-
--   fields:
-        campaign: 608
-        created_dt: '2014-06-04T09:58:21'
-        type: 2
-        name: 'My conversion goal'
-        goal_id: 'mygoal0'
-        conversion_window: 168
-    model: dash.conversiongoal
     pk: 1
 
-
--   fields:
-        campaign: 608
-        created_dt: '2014-06-04T09:58:21'
-        created_by: 1
-        conversion_goal: 1
-        primary: true
-    model: dash.campaigngoal
-    pk: 1238
-
-
--   fields:
-        campaign_goal: 1238
-        local_value: '30.000'
-        value: '30.000'
-        local_value: '30.000'
-        created_dt: '2014-06-04T09:58:21'
-        created_by: 1
-    model: dash.campaigngoalvalue
-    pk: 1
-
-
-# source types
+# source_types
 
 -   fields:
         type: 'b1'
@@ -210,8 +317,8 @@
 # sources
 
 -   fields:
-        created_dt: '2014-06-04T00:00:00'
-        modified_dt: '2014-06-04T00:00:00'
+        created_dt: '2019-08-20T00:00:00'
+        modified_dt: '2019-08-20T00:00:00'
         name: GumGum
         tracking_slug: 'b1_gumgum'
         source_type: 1
@@ -224,8 +331,8 @@
     pk: 1
 
 -   fields:
-        created_dt: '2014-06-04T00:00:00'
-        modified_dt: '2014-06-04T00:00:00'
+        created_dt: '2019-08-20T00:00:00'
+        modified_dt: '2019-08-20T00:00:00'
         name: TripleLift
         tracking_slug: 'b1_triplelift'
         source_type: 1
@@ -238,8 +345,8 @@
     pk: 2
 
 -   fields:
-        created_dt: '2014-06-04T00:00:00'
-        modified_dt: '2014-06-04T00:00:00'
+        created_dt: '2019-08-20T00:00:00'
+        modified_dt: '2019-08-20T00:00:00'
         name: Yahoo
         tracking_slug: 'yahoo'
         source_type: 3
@@ -252,8 +359,8 @@
     pk: 3
 
 -   fields:
-        created_dt: '2014-06-04T00:00:00'
-        modified_dt: '2014-06-04T00:00:00'
+        created_dt: '2019-08-20T00:00:00'
+        modified_dt: '2019-08-20T00:00:00'
         name: Adiant
         tracking_slug: 'b1_adiant'
         source_type: 1
@@ -265,10 +372,11 @@
     model: dash.source
     pk: 4
 
-# test source credentials
+# source_credentials
+
 -   fields:
-        created_dt: '2014-06-04T00:00:00'
-        modified_dt: '2014-06-04T00:00:00'
+        created_dt: '2019-08-20T00:00:00'
+        modified_dt: '2019-08-20T00:00:00'
         source: 1
         name: 'Test credentials 1'
         credentials: 'UaNfMZ1W9LxYGfeYzGs6NeZgkp3In0yZAliKQunfG7zq2lidkA5PRQ==\n'
@@ -276,8 +384,8 @@
     pk: 1
 
 -   fields:
-        created_dt: '2014-06-04T00:00:00'
-        modified_dt: '2014-06-04T00:00:00'
+        created_dt: '2019-08-20T00:00:00'
+        modified_dt: '2019-08-20T00:00:00'
         source: 2
         name: 'Test credentials 2'
         credentials: 'UaNfMZ1W9LxYGfeYzGs6NeZgkp3In0yZAliKQunfG7zq2lidkA5PRQ==\n'
@@ -285,8 +393,8 @@
     pk: 2
 
 -   fields:
-        created_dt: '2014-06-04T00:00:00'
-        modified_dt: '2014-06-04T00:00:00'
+        created_dt: '2019-08-20T00:00:00'
+        modified_dt: '2019-08-20T00:00:00'
         source: 3
         name: 'Test credentials 3'
         credentials: 'UaNfMZ1W9LxYGfeYzGs6NeZgkp3In0yZAliKQunfG7zq2lidkA5PRQ==\n'
@@ -294,15 +402,15 @@
     pk: 3
 
 -   fields:
-        created_dt: '2014-06-04T00:00:00'
-        modified_dt: '2014-06-04T00:00:00'
+        created_dt: '2019-08-20T00:00:00'
+        modified_dt: '2019-08-20T00:00:00'
         source: 4
         name: 'Test credentials 2'
         credentials: 'UaNfMZ1W9LxYGfeYzGs6NeZgkp3In0yZAliKQunfG7zq2lidkA5PRQ==\n'
     model: dash.sourcecredentials
     pk: 4
 
-# test default source settings
+# default_source_settings
 
 -   fields:
         source: 1
@@ -328,485 +436,77 @@
     model: dash.defaultsourcesettings
     pk: 4
 
-# test ad group
+# publisher_groups
+
 -   fields:
-        created_dt: '2014-06-04T09:58:21'
-        modified_dt: '2014-06-04T09:58:21'
+        name: 'global blacklist'
+        account: !!null
+        agency: !!null
+        created_dt: '2019-08-20T00:00:00'
+        modified_dt: '2019-08-20T00:00:00'
         modified_by: 1
-        campaign: 608
-        settings: 1
-        name: 'My ad group'
-        bidding_type: 1
-        default_blacklist_id: 156
-    model: dash.adgroup
-    pk: 2040
-
-
--   fields:
-        created_dt: '2014-06-04T00:00:00'
-        created_by: 1
-        archived: False
-        ad_group: 2040
-        tracking_code: 'param1=foo&param2=bar'
-        target_devices: ['desktop', 'mobile']
-        target_os: [{name: 'macosx'}, {name: 'ios', version: {min: 'ios_4_0'}}]
-        target_placements: ['app', 'site']
-        target_regions: ['GB', 'US', 'CA']
-        display_url: 'example.com'
-        brand_name: 'Example'
-        description: 'Example description'
-        call_to_action: 'Call to action'
-        daily_budget_cc: 100
-        ad_group_name: 'My ad group'
-        start_date: '2015-03-02'
-        end_date: '2015-03-03'
-        local_cpc_cc: '0.4500'
-        local_max_cpm: '1.2000'
-        autopilot_state: 2
-        autopilot_daily_budget: '50.0000'
-        local_autopilot_daily_budget: '50.0000'
-        interest_targeting: ["fun", "games"]
-        exclusion_interest_targeting: ["religion", "weather"]
-        redirect_pixel_urls: ["http://a.com/b.jpg", "http://a.com/c.jpg"]
-        redirect_javascript: "alert('a')"
-        dayparting: {"monday": [0, 1, 2, 3], "friday": [10, 11, 23], "timezone": "America/New_York"}
-        b1_sources_group_cpc_cc: '0.01'
-        local_b1_sources_group_cpc_cc: '0.01'
-        b1_sources_group_cpm: '1.01'
-        local_b1_sources_group_cpm: '1.01'
-        b1_sources_group_daily_budget: 0
-        local_b1_sources_group_daily_budget: 0
-    model: dash.adgroupsettings
-    pk: 1
-
-# test adgroupsource
-
--   fields:
-        source: 1
-        ad_group: 2040
-        settings: 1
-        source_campaign_key: '["fake"]'
-        source_credentials: 1
-        last_successful_sync_dt: '2014-06-10T09:58:21'
-        can_manage_content_ads: true
-    model: dash.adgroupsource
-    pk: 1
-
--   fields:
-        source: 2
-        ad_group: 2040
-        settings: 2
-        source_campaign_key: '["fake"]'
-        source_credentials: 2
-        last_successful_sync_dt: '2014-06-10T09:58:21'
-    model: dash.adgroupsource
-    pk: 2
-
--   fields:
-        source: 3
-        ad_group: 2040
-        settings: 3
-        source_campaign_key: '["fake"]'
-        source_credentials: 3
-        last_successful_sync_dt: '2014-06-10T09:58:21'
-    model: dash.adgroupsource
-    pk: 3
-
-# test adgroupsourcesettings
-
--   fields:
-        created_dt: '2014-06-04T09:58:21'
-        ad_group_source: 1
-        cpc_cc: '0.12'
-        local_cpc_cc: '0.12'
-        cpm: '1.12'
-        local_cpm: '1.12'
-        daily_budget_cc: '50.'
-        local_daily_budget_cc: '50.'
-        state: 1
-    model: dash.adgroupsourcesettings
-    pk: 1
-
--   fields:
-        created_dt: '2014-06-05T09:58:21'
-        ad_group_source: 2
-        cpc_cc: '0.12'
-        local_cpc_cc: '0.12'
-        cpm: '1.12'
-        local_cpm: '1.12'
-        daily_budget_cc: '50.'
-        local_daily_budget_cc: '50.'
-        state: 2
-    model: dash.adgroupsourcesettings
-    pk: 2
-
--   fields:
-        created_dt: '2014-06-05T09:58:21'
-        ad_group_source: 3
-        cpc_cc: '0.52'
-        local_cpc_cc: '0.52'
-        cpm: '1.52'
-        local_cpm: '1.52'
-        daily_budget_cc: '50.'
-        local_daily_budget_cc: '50.'
-        state: 2
-    model: dash.adgroupsourcesettings
-    pk: 3
-
-# test uploadbatch
-
--   fields:
-        name: 'batch 1'
-        ad_group: 2040
-        created_dt: '2015-02-23T00:00:00'
-    model: dash.uploadbatch
-    pk: 1302
-
-# test contentad
-
--   fields:
-        image_id: '123456789'
-        image_hash: '987654321'
-        image_width: 200
-        image_height: 300
-        batch: 1302
-        archived: False
-        url: 'http://testurl.com'
-        tracker_urls: ['http://testurl.com', 'http://testurl2.com']
-        title: 'Test Article unicode Čžš'
-        ad_group: 2040
-        redirect_id: 'abc'
-        created_dt: '2015-02-21T00:00:00'
-        state: 1
-        display_url: 'example.com'
-        brand_name: 'Example'
-        description: 'Example description'
-        call_to_action: 'Call to action'
-        crop_areas: '(((44, 22), (144, 122)), ((33, 22), (177, 122)))'
-    model: dash.contentad
-    pk: 16805
-
-# test report job
-
--   fields:
-        created_dt: '2015-02-21T00:00:00'
-        user: 1
-        status: 1
-        query: '{}'
-    model: dash.reportjob
-    pk: 27
-
-# test publisher groups
-
--   fields:
-      name: 'global blacklist'
-      account: !!null
-      agency: !!null
-      created_dt: '2015-09-23T09:57:22'
-      modified_dt: '2015-09-23T09:57:22'
-      modified_by: 1
     model: dash.publishergroup
     pk: 1
 
 -   fields:
-        created_dt: '2015-02-21T00:00:00'
-        modified_dt: '2015-02-21T00:00:00'
+        created_dt: '2019-08-20T00:00:00'
+        modified_dt: '2019-08-20T00:00:00'
         name: 'Whitelist'
-        account: 186
-        agency: 1
+        account: !!null
+        agency: !!null
     model: dash.publishergroup
-    pk: 153
+    pk: 2
 
 -   fields:
-        created_dt: '2015-02-21T00:00:00'
-        modified_dt: '2015-02-21T00:00:00'
+        created_dt: '2019-08-20T00:00:00'
+        modified_dt: '2019-08-20T00:00:00'
         name: 'Whitelist 2'
-        account: 186
-        agency: 1
+        account: !!null
+        agency: !!null
     model: dash.publishergroup
-    pk: 154
+    pk: 3
 
 -   fields:
-        created_dt: '2015-02-21T00:00:00'
-        modified_dt: '2015-02-21T00:00:00'
+        created_dt: '2019-08-20T00:00:00'
+        modified_dt: '2019-08-20T00:00:00'
         name: 'Whitelist 3'
-        account: 186
-        agency: 1
+        account: !!null
+        agency: !!null
     model: dash.publishergroup
-    pk: 155
+    pk: 4
 
 -   fields:
-        created_dt: '2015-02-21T00:00:00'
-        modified_dt: '2015-02-21T00:00:00'
+        created_dt: '2019-08-20T00:00:00'
+        modified_dt: '2019-08-20T00:00:00'
         name: 'Blacklist'
-        account: 186
-        agency: 1
+        account: !!null
+        agency: !!null
     model: dash.publishergroup
-    pk: 156
+    pk: 5
 
-# test publisher group entries
+# publisher_group_entries
 
 -   fields:
-        publisher_group: 153
+        publisher_group: 1
         publisher: "example.com"
-        created_dt: '2014-06-04T09:58:21'
-        modified_dt: '2014-06-04T09:58:21'
+        created_dt: '2019-08-20T00:00:00'
+        modified_dt: '2019-08-20T00:00:00'
     model: dash.publishergroupentry
-    pk: 622
+    pk: 1
 
 -   fields:
-        publisher_group: 153
+        publisher_group: 1
         publisher: "example2.com"
-        created_dt: '2014-06-04T09:58:21'
-        modified_dt: '2014-06-04T09:58:21'
+        created_dt: '2019-08-20T00:00:00'
+        modified_dt: '2019-08-20T00:00:00'
     model: dash.publishergroupentry
-    pk: 623
+    pk: 2
 
 -   fields:
-        publisher_group: 156
+        publisher_group: 2
         publisher: "example3.com"
         source: 1
-        created_dt: '2014-06-04T00:00:00'
-        modified_dt: '2014-06-04T00:00:00'
+        created_dt: '2019-08-20T00:00:00'
+        modified_dt: '2019-08-20T00:00:00'
     model: dash.publishergroupentry
-    pk: 624
-
-
-# bluekai taxonomy
-
--   fields:
-        category_id: 671901
-        parent_category_id: 1
-        name: "Parent category name"
-        description: "Parent category description"
-        navigation_only: False
-        status: 1
-        price: 1
-        reach: 1000000000
-        created_dt: '2014-06-04T00:00:00'
-    model: dash.bluekaicategory
-    pk: 600
-
--   fields:
-        category_id: 671902
-        parent_category_id: 671901
-        name: "Child category name"
-        description: "Child category description"
-        navigation_only: False
-        status: 1
-        price: 1.2
-        reach: 1000000000
-        created_dt: '2014-06-04T00:00:00'
-    model: dash.bluekaicategory
-    pk: 601
-
--   fields:
-        category_id: 21230
-        parent_category_id: 671901
-        name: "Child category name"
-        description: "Child category description"
-        navigation_only: False
-        status: 1
-        price: 1.2
-        reach: 1000000000
-        created_dt: '2014-06-04T00:00:00'
-    model: dash.bluekaicategory
-    pk: 602
-
-# test adgroupsettings
-
--   fields:
-        created_dt: '2014-06-04T00:00:00'
-        created_by: 1
-        archived: False
-        ad_group: 2050
-        tracking_code: 'param1=foo&param2=bar'
-        target_devices: ['desktop', 'mobile']
-        target_os: [{name: 'macosx'}, {name: 'ios', version: {min: 'ios_4_0'}}]
-        target_placements: ['app', 'site']
-        target_regions: ['GB', 'US', 'CA']
-        display_url: 'example.com'
-        brand_name: 'Example'
-        description: 'Example description'
-        call_to_action: 'Call to action'
-        daily_budget_cc: 100
-        ad_group_name: 'My ad group'
-        start_date: '2015-03-02'
-        autopilot_state: 2
-        autopilot_daily_budget: '50.0000'
-        local_autopilot_daily_budget: '50.0000'
-        interest_targeting: ["fun", "games"]
-        exclusion_interest_targeting: ["religion", "weather"]
-        redirect_pixel_urls: ["http://a.com/b.jpg", "http://a.com/c.jpg"]
-        redirect_javascript: "alert('a')"
-        dayparting: {"monday": [0, 1, 2, 3], "friday": [10, 11, 23], "timezone": "America/New_York"}
-        b1_sources_group_cpc_cc: '0.01'
-    model: dash.adgroupsettings
-    pk: 2
-
--   fields:
-        created_dt: '2014-06-04T00:00:00'
-        created_by: 1
-        archived: False
-        ad_group: 2051
-        tracking_code: 'param1=foo&param2=bar'
-        target_devices: ['desktop', 'mobile']
-        target_os: [{name: 'macosx'}, {name: 'ios', version: {min: 'ios_4_0'}}]
-        target_placements: ['app', 'site']
-        target_regions: ['GB', 'US', 'CA']
-        display_url: 'example.com'
-        brand_name: 'Example'
-        description: 'Example description'
-        call_to_action: 'Call to action'
-        daily_budget_cc: 100
-        ad_group_name: 'My ad group'
-        start_date: '2015-03-02'
-        autopilot_state: 2
-        autopilot_daily_budget: '50.0000'
-        local_autopilot_daily_budget: '50.0000'
-        interest_targeting: ["fun", "games"]
-        exclusion_interest_targeting: ["religion", "weather"]
-        redirect_pixel_urls: ["http://a.com/b.jpg", "http://a.com/c.jpg"]
-        redirect_javascript: "alert('a')"
-        dayparting: {"monday": [0, 1, 2, 3], "friday": [10, 11, 23], "timezone": "America/New_York"}
-        b1_sources_group_cpc_cc: '0.01'
-    model: dash.adgroupsettings
     pk: 3
-
-
-# test retargeting ad groups
-
--   fields:
-        created_dt: '2014-06-04T09:58:21'
-        modified_dt: '2014-06-04T09:58:21'
-        modified_by: 1
-        campaign: 608
-        settings: 2
-        name: 'My retargeting ad group 1'
-    model: dash.adgroup
-    pk: 2050
-
--   fields:
-        created_dt: '2014-06-04T09:58:21'
-        modified_dt: '2014-06-04T09:58:21'
-        modified_by: 1
-        campaign: 608
-        settings: 3
-        name: 'My retargeting ad group 2'
-    model: dash.adgroup
-    pk: 2051
-
-
-# test pixels
-
--   fields:
-        created_dt: '2014-06-04T09:58:21'
-        name: 'audience_pixel'
-        account: 186
-        slug: "123"
-        archived: False
-        audience_enabled: False
-        additional_pixel: False
-        last_triggered: "2019-01-01T09:58:21"
-        impressions: 100
-        notes: "pixel used for testing"
-    model: dash.conversionpixel
-    pk: 123
-
-
-# test custom audiences
-
--   fields:
-        created_dt: '2014-06-04T09:58:21'
-        account: 186
-        name: 'My custom audience pixel'
-    model: dash.conversionpixel
-    pk: 101
-
--   fields:
-        created_dt: '2014-06-04T09:58:21'
-        modified_dt: '2014-06-04T09:58:21'
-        created_by: 1
-        pixel: 101
-        ttl: 1
-        name: 'My custom audience 1'
-    model: dash.audience
-    pk: 123
-
--   fields:
-        created_dt: '2014-06-04T09:58:21'
-        modified_dt: '2014-06-04T09:58:21'
-        created_by: 1
-        pixel: 101
-        ttl: 1
-        name: 'My custom audience 2'
-    model: dash.audience
-    pk: 124
-
--   fields:
-        created_dt: '2014-06-04T09:58:21'
-        modified_dt: '2014-06-04T09:58:21'
-        created_by: 1
-        pixel: 123
-        name: "test_audience"
-        archived: False
-        ttl: 7
-        name: 'My custom audience 2'
-    model: dash.audience
-    pk: 234
-
-
-# test audience rules
-
--   fields:
-        audience: 234
-        type: 2
-        value: "these,are,all"
-    model: dash.audiencerule
-    pk: 1
-
-
--   fields:
-        audience: 234
-        type: 2
-        value: "test,tags"
-    model: dash.audiencerule
-    pk: 2
-
-# test bid modifiers
-
--   fields:
-        type: 1
-        ad_group: 2040
-        source: 2
-        source_slug: triplelift
-        target: www.slader.com
-        modifier: 1.01
-        created_dt: 2019-02-14 14:30:33.176603
-        modified_dt: 2019-03-04 15:36:35.437905
-    model: dash.bidmodifier
-    pk: 1234
-
--   fields:
-        type: 3
-        ad_group: 2040
-        source: null
-        source_slug: ""
-        target: "4"
-        modifier: 0.99
-        created_dt: 2019-02-14 14:30:33.176603
-        modified_dt: 2019-03-04 15:36:35.437905
-    model: dash.bidmodifier
-    pk: 1235
-
--   fields:
-        type: 9
-        ad_group: 2040
-        source: null
-        source_slug: ""
-        target: "16805"
-        modifier: 1.20
-        created_dt: 2019-02-14 14:30:33.176603
-        modified_dt: 2019-03-04 15:36:35.437905
-    model: dash.bidmodifier
-    pk: 1236

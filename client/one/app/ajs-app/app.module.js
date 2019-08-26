@@ -11,7 +11,9 @@ angular.module('one', [
 angular.module('one.downgraded', []);
 
 angular.module('one').config(function($compileProvider, config) {
-    $compileProvider.debugInfoEnabled(config.env.dev || config.env.test);
+    $compileProvider.debugInfoEnabled(
+        config.env.dev || config.env.test || config.env.e2e
+    );
 });
 
 angular.module('one').config(function($sceDelegateProvider, config) {
@@ -29,7 +31,7 @@ angular.module('one').config(function($httpProvider) {
 angular.module('one').config(function($locationProvider, config) {
     $locationProvider.html5Mode({
         enabled: true,
-        requireBase: config.env.dev || config.env.prod,
+        requireBase: config.env.dev || config.env.prod || config.env.e2e,
     });
     $locationProvider.hashPrefix('!');
 });

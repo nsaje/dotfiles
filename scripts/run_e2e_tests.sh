@@ -5,7 +5,6 @@
 SERVER_ENDPOINT=${1:-"server:8123"}
 
 TESTIM_PROJECT="95qRp4zvX0ycrDY1MHRI"
-TESTIM_LABEL="E2E"
 GRID_HOST="zalenium"
 GRID_PORT="4444"
 
@@ -44,4 +43,16 @@ done
 echo "Server opened port"
 
 # Launch testim CLI
-testim --label "$TESTIM_LABEL" --token "$TESTIM_TOKEN" --project "$TESTIM_PROJECT" --host "$GRID_HOST" --port "$GRID_PORT" --base-url "http://$SERVER_ENDPOINT" --parallel 1 --report-file testim-tests-report.xml
+testim \
+    --name "User Login" \
+    --name "Create account" \
+    --name "Create account credit" \
+    --name "Create campaign" \
+    --name "Create ad group" \
+    --token "$TESTIM_TOKEN" \
+    --project "$TESTIM_PROJECT" \
+    --host "$GRID_HOST" \
+    --port "$GRID_PORT" \
+    --base-url "http://$SERVER_ENDPOINT" \
+    --parallel 5 \
+    --report-file testim-tests-report.xml

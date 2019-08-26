@@ -53,8 +53,8 @@ services:
         ports:
           - "4444:4444"
         command: >
-          start --desiredContainers 1
-                --maxDockerSeleniumContainers 1
+          start --desiredContainers 5
+                --maxDockerSeleniumContainers 5
                 --videoRecordingEnabled false
         environment:
           - PULL_SELENIUM_IMAGE=true

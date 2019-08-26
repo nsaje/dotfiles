@@ -12,7 +12,6 @@ import os
 import signal
 import sys
 
-import django
 import django.db.backends.base.creation
 from django.db import connection
 from django.core.management import call_command
