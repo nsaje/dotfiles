@@ -1,3 +1,5 @@
+var commonHelpers = require('../../../../shared/helpers/common.helpers');
+
 angular
     .module('one.widgets')
     .factory('zemGridBulkActionsService', function(
@@ -9,7 +11,8 @@ angular
         zemAlertsService,
         zemUploadService,
         zemUploadApiConverter,
-        zemCloneContentService
+        zemCloneContentService,
+        zemUtils
     ) {
         // eslint-disable-line max-len
 
@@ -314,15 +317,40 @@ angular
                 var metaData = gridApi.getMetaData();
                 return zemCloneContentService
                     .openCloneModal(metaData.id, selection)
-                    .then(function(destinationBatch) {
-                        // reloads data in case cloned upload batch is in the same ad group as source content ads
-                        if (
-                            parseInt(destinationBatch.adGroup.id) ===
-                            parseInt(metaData.id)
-                        ) {
-                            refreshData({});
-                        }
-                    });
+                    .then(function(batchData) {
+                        zemUploadService
+                            .openCloneEditModal(
+                                metaData.id,
+                                batchData.destinationBatch.id,
+                                batchData.destinationBatch.name,
+                                zemUploadApiConverter.convertCandidatesFromApi(
+                                    zemUtils.convertToUnderscore(
+                                        batchData.candidates
+                                    )
+                                )
+                            )
+                            .then(function(success) {
+                                if (
+                                    !(
+                                        commonHelpers.isDefined(success) &&
+                                        success === false
+                                    )
+                                ) {
+                                    // reloads data in case cloned upload batch is in the same ad group as source content ads
+                                    if (
+                                        parseInt(
+                                            batchData.destinationBatch.adGroup
+                                                .id
+                                        ) === parseInt(metaData.id)
+                                    ) {
+                                        refreshData({});
+                                    }
+                                    zemCloneContentService.openResultsModal(
+                                        batchData.destinationBatch
+                                    );
+                                }
+                            });
+                    }, handleError);
             }
 
             function download(selection) {

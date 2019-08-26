@@ -41,10 +41,27 @@ VALID_UPDATE_FIELDS = set(
 )
 
 
-def insert_candidates(user, account, candidates_data, ad_group, batch_name, filename, auto_save=False, is_edit=False):
+def insert_candidates(
+    user,
+    account,
+    candidates_data,
+    ad_group,
+    batch_name,
+    filename,
+    auto_save=False,
+    batch_type=constants.UploadBatchType.INSERT,
+    overridden_state=None,
+):
     with transaction.atomic():
         batch = models.UploadBatch.objects.create_for_file(
-            user, account, batch_name, ad_group, filename, auto_save, is_edit
+            user,
+            account,
+            batch_name,
+            ad_group,
+            filename,
+            auto_save,
+            batch_type=batch_type,
+            default_state=overridden_state,
         )
         candidates = _create_candidates(candidates_data, ad_group, batch)
 
@@ -61,7 +78,29 @@ def insert_edit_candidates(user, content_ads, ad_group):
         content_ad_dict["original_content_ad"] = content_ad
         content_ads_data.append(content_ad_dict)
 
-    return insert_candidates(user, ad_group.campaign.account, content_ads_data, ad_group, "", "", is_edit=True)
+    return insert_candidates(
+        user, ad_group.campaign.account, content_ads_data, ad_group, "", "", batch_type=constants.UploadBatchType.EDIT
+    )
+
+
+def insert_clone_edit_candidates(user, content_ads, ad_group, batch_name, overridden_state):
+    content_ads_data = []
+    for content_ad in content_ads:
+        content_ad_dict = content_ad.to_cloned_candidate_dict()
+        content_ad_dict["image_url"] = content_ad.get_image_url()
+        content_ad_dict["original_content_ad"] = content_ad
+        content_ads_data.append(content_ad_dict)
+
+    return insert_candidates(
+        user,
+        ad_group.campaign.account,
+        content_ads_data,
+        ad_group,
+        batch_name,
+        "",
+        batch_type=constants.UploadBatchType.CLONE,
+        overridden_state=overridden_state,
+    )
 
 
 def _reset_candidate_async_status(candidate):
@@ -146,9 +185,11 @@ def persist_batch(batch):
     if batch.ad_group and batch.ad_group.campaign.account_id != 305:  # OEN
         sspd_client.sync_batch(batch)
 
-    k1_helper.update_content_ads(
-        batch.contentad_set.all().select_related("ad_group__campaign"), msg="upload.process_async.insert"
-    )
+    msg = "upload.process_async.insert"
+    if batch.type == constants.UploadBatchType.CLONE:
+        msg += ", clonecontent.clone_edit"
+
+    k1_helper.update_content_ads(batch.contentad_set.all().select_related("ad_group__campaign"), msg=msg)
     return content_ads
 
 
@@ -160,8 +201,6 @@ def clean_candidates(batch):
         raise exc.ChangeForbidden("Batch in edit mode")
 
     candidates = batch.contentadcandidate_set.all().order_by("pk")
-    if any(candidate.original_content_ad_id for candidate in candidates):
-        raise exc.ChangeForbidden("Some candidates are linked to content ads")
 
     cleaned_candidates, errors = _clean_candidates(candidates)
     if errors:
@@ -197,6 +236,11 @@ def _save_history(batch, content_ads):
     if batch.type == constants.UploadBatchType.EDIT:
         changes_text = "Edited {} content ad{}.".format(len(content_ads), pluralize(len(content_ads)))
         action_type = constants.HistoryActionType.CONTENT_AD_EDIT
+    elif batch.type == constants.UploadBatchType.CLONE:
+        changes_text = 'Imported batch "{}" with {} cloned and edited content ad{}.'.format(
+            batch.name, len(content_ads), pluralize(len(content_ads))
+        )
+        action_type = constants.HistoryActionType.CONTENT_AD_CREATE
     else:
         changes_text = 'Imported batch "{}" with {} content ad{}.'.format(
             batch.name, len(content_ads), pluralize(len(content_ads))
@@ -288,7 +332,7 @@ def _clean_candidates(candidates):
     campaign = candidates[0].ad_group.campaign if (candidates and candidates[0].ad_group) else None
     for candidate in candidates:
         form = _get_candidate_form(candidate)
-        f = form(campaign, candidate.to_dict())
+        f = form(campaign, candidate.to_dict(), original_content_ad=candidate.original_content_ad)
         if not f.is_valid():
             errors[candidate.id] = f.errors
         cleaned_candidates.append(f.cleaned_data)

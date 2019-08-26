@@ -26,7 +26,7 @@ class CloneContentAds(restapi.common.views_base.RESTAPIBaseView):
         content_ads = core.models.ContentAd.objects.filter(ad_group=ad_group).filter_by_user(user).exclude_archived()
 
         try:
-            destination_batch = service.clone(
+            destination_edit_batch, candidates = service.clone_edit(
                 request,
                 ad_group,
                 serializers.get_content_ads(content_ads, form.validated_data),
@@ -41,4 +41,9 @@ class CloneContentAds(restapi.common.views_base.RESTAPIBaseView):
         except core.models.content_ad.exceptions.AdGroupIsArchived as err:
             raise utils.exc.ValidationError(errors={"destination_ad_group_id": [str(err)]})
 
-        return self.response_ok(serializers.UploadBatchSerializer(destination_batch).data)
+        return self.response_ok(
+            {
+                "destination_batch": serializers.UploadBatchSerializer(destination_edit_batch).data,
+                "candidates": candidates,
+            }
+        )

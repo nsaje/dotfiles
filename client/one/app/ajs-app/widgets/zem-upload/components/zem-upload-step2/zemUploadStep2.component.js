@@ -200,7 +200,7 @@ angular
             if (vm.batchId) {
                 vm.endpoint.cancel(vm.batchId);
             }
-            vm.closeModal();
+            vm.closeModal(false);
         };
 
         if (vm.autoOpenEditForm) {
