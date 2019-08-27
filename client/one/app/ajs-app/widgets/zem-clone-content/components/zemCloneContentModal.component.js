@@ -76,10 +76,6 @@ angular.module('one.widgets').component('zemCloneContentModal', {
                 .then(
                     function(data) {
                         $ctrl.modalInstance.close(data);
-                        zemCloneContentService.openResultsModal(
-                            $ctrl.adGroup,
-                            data
-                        );
                     },
                     function(errors) {
                         $ctrl.errors = errors;
