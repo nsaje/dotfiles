@@ -1,4 +1,4 @@
-require('core-js/es6');
+require('core-js/es');
 
 require('./vendor.ajs.js');
 require('angular-mocks'); // Should be required after AngularJS

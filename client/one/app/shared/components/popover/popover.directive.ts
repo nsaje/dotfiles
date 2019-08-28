@@ -18,6 +18,7 @@ import {
     SimpleChange,
     OnDestroy,
     ChangeDetectorRef,
+    ApplicationRef,
 } from '@angular/core';
 import {NgbPopover, NgbPopoverConfig} from '@ng-bootstrap/ng-bootstrap';
 import {NgbPopoverWindow} from '@ng-bootstrap/ng-bootstrap/popover/popover';
@@ -51,7 +52,8 @@ export class PopoverDirective extends NgbPopover
         config: NgbPopoverConfig,
         ngZone: NgZone,
         @Inject(DOCUMENT) document: Document,
-        changeDetectorRef: ChangeDetectorRef
+        changeDetectorRef: ChangeDetectorRef,
+        applicationRef: ApplicationRef
     ) {
         super(
             elementRef,
@@ -62,7 +64,8 @@ export class PopoverDirective extends NgbPopover
             config,
             ngZone,
             document,
-            changeDetectorRef
+            changeDetectorRef,
+            applicationRef
         );
     }
 

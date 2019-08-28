@@ -54,7 +54,7 @@ function generateMainConfig(appEnvironment) {
         splitChunks: {
             cacheGroups: {
                 polyfills: {
-                    test: /(core-js\/es6|core-js\/es7\/reflect|zone.js\/dist\/zone)/,
+                    test: /(core-js\/es|core-js\/proposals\/reflect-metadata|zone.js\/dist\/zone)/,
                     chunks: 'all',
                     name: 'zemanta-one.polyfills',
                     priority: 20,

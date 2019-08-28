@@ -29,7 +29,8 @@
         class="zem-rule-form-condition__modifiers-toggle button button--plain button--with-icon button--only-icon dots-icon"
         [zemPopover]="firstOperandModifierPopoverTemplate"
         [disabled]="!areModifiersAvailable(selectedFirstOperandConfig)"
-        autoClose="outside"
+        [stayOpenOnHover]="true"
+        triggers="mouseenter:mouseleave"
         placement="bottom"
     ></button>
 </div>
@@ -151,7 +152,8 @@
         class="zem-rule-form-condition__modifiers-toggle button button--plain button--with-icon button--only-icon dots-icon"
         [zemPopover]="secondOperandModifierTemplate"
         [disabled]="!areModifiersAvailable(selectedSecondOperandConfig)"
-        autoClose="outside"
+        [stayOpenOnHover]="true"
+        triggers="mouseenter:mouseleave"
         placement="bottom"
     ></button>
 </div>
