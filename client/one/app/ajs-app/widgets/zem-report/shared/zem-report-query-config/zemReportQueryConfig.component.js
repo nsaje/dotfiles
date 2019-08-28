@@ -118,7 +118,7 @@ angular.module('one.widgets').component('zemReportQueryConfig', {
             allColumns = getAllColumns();
             refundColumns = getRefundColumns(allColumns);
             $ctrl.categories = getCategories(allColumns);
-            $ctrl.selectedColumns = getSelectedColumns();
+            $ctrl.selectedColumns = getSelectedColumns($ctrl.categories);
 
             initializeCsvOptions();
 
@@ -267,32 +267,40 @@ angular.module('one.widgets').component('zemReportQueryConfig', {
             );
         }
 
-        function getSelectedColumns() {
+        // This function is used to initialize the state of currently selected
+        // columns in the grid. It uses recursion to find selected columns
+        // in all categories, subcategories, subsubcategories, ...
+        function getSelectedColumns(categories) {
             var selectedColumns = [];
-            $ctrl.categories.forEach(function(category) {
-                category.columns.forEach(function(column) {
-                    if (column.visible && !column.disabled) {
-                        selectedColumns = selectedColumns.concat(
-                            $ctrl.gridApi.getColumnsToToggle(column, allColumns)
-                        );
-                    }
-                });
-                if (category.subcategories) {
-                    category.subcategories.forEach(function(subcategory) {
-                        subcategory.columns.forEach(function(column) {
-                            if (column.visible && !column.disabled) {
+            categories.forEach(function(category) {
+                if (category.columns && category.columns.length > 0) {
+                    category.columns.forEach(function(column) {
+                        if (column.visible && !column.disabled) {
+                            var categorySelectedColumns = $ctrl.gridApi.getColumnsToToggle(
+                                column,
+                                allColumns
+                            );
+                            if (
+                                categorySelectedColumns &&
+                                categorySelectedColumns.length > 0
+                            ) {
                                 selectedColumns = selectedColumns.concat(
-                                    $ctrl.gridApi.getColumnsToToggle(
-                                        column,
-                                        allColumns
-                                    )
+                                    categorySelectedColumns.map(getColumnName)
                                 );
                             }
-                        });
+                        }
                     });
                 }
+                if (
+                    category.subcategories &&
+                    category.subcategories.length > 0
+                ) {
+                    selectedColumns = selectedColumns.concat(
+                        getSelectedColumns(category.subcategories)
+                    );
+                }
             });
-            return selectedColumns.map(getColumnName);
+            return selectedColumns;
         }
 
         function getTogglableColumns(columns) {
