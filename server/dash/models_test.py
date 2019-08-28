@@ -102,6 +102,7 @@ class AdGroupSettingsTest(TestCase):
             "local_cpc_cc": None,
             "local_max_cpm": None,
             "frequency_capping": 20,
+            "additional_data": None,
         }
         self.assertEqual(models.AdGroupSettings.objects.get(id=1).get_settings_dict(), settings_dict)
 

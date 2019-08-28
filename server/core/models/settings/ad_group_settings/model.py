@@ -108,6 +108,7 @@ class AdGroupSettings(
         "click_capping_daily_click_budget",
         "frequency_capping",
         "language_targeting_enabled",
+        "additional_data",
     ]
     _permissioned_fields = {
         "click_capping_daily_ad_group_max_clicks": "zemauth.can_set_click_capping",
@@ -118,6 +119,7 @@ class AdGroupSettings(
         "local_b1_sources_group_cpm": "zemauth.fea_can_use_cpm_buying",
         "frequency_capping": "zemauth.can_set_frequency_capping",
         "language_targeting_enabled": "zemauth.can_use_language_targeting",
+        "additional_data": "zemauth.can_use_additional_data",
     }
     multicurrency_fields = [
         "cpc_cc",
@@ -240,10 +242,9 @@ class AdGroupSettings(
     )
 
     click_capping_daily_ad_group_max_clicks = models.PositiveIntegerField(blank=True, null=True)
-
     click_capping_daily_click_budget = models.DecimalField(max_digits=10, decimal_places=4, blank=True, null=True)
-
     frequency_capping = models.PositiveIntegerField(blank=True, null=True)
+    additional_data = JSONField(null=True, blank=True)
 
     @classmethod
     def get_defaults_dict(cls, currency=None):
@@ -334,6 +335,7 @@ class AdGroupSettings(
             "click_capping_daily_ad_group_max_clicks": "Daily maximum number of clicks for ad group",
             "click_capping_daily_click_budget": "Daily click budget for ad group",
             "frequency_capping": "Frequency Capping",
+            "additional_data": "Additional Data",
         }
 
         return NAMES[prop_name]
