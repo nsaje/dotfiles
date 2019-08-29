@@ -97,11 +97,11 @@ node('master') {
         sh 'make push'
     }
 
-    withCredentials([string(credentialsId: 'testim_token', variable: 'TESTIM_TOKEN')]) {
-        stage('Testim e2e tests') {
-            sh 'make test_e2e'
-        }
-    }
+    // withCredentials([string(credentialsId: 'testim_token', variable: 'TESTIM_TOKEN')]) {
+    //     stage('Testim e2e tests') {
+    //         sh 'make test_e2e'
+    //     }
+    // }
 
     stage('Cleanup workspace') {
         sh 'docker-compose kill; docker-compose rm -v -f'
