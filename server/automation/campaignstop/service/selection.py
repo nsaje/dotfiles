@@ -25,7 +25,6 @@ def mark_almost_depleted_campaigns(campaigns=None):
 
 
 def _mark_almost_depleted_campaigns(campaigns):
-    refresh_realtime_data([campaigns])
     available_campaign_budgets = _get_available_campaign_budgets(campaigns)
     max_campaign_spends = _get_max_campaign_spends(campaigns)
 
@@ -105,6 +104,7 @@ def _check_and_mark_campaign(campaign_daily_budgets, campaign_available_amount, 
 
 @transaction.atomic
 def _mark_campaign(campaign, max_spend_today, available_budget_amount):
+    refresh_realtime_data([campaign])
     min_remaining_budget = available_budget_amount - max_spend_today
 
     campaignstop_state, _ = CampaignStopState.objects.get_or_create(campaign=campaign)
