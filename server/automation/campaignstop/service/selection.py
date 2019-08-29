@@ -25,7 +25,7 @@ def mark_almost_depleted_campaigns(campaigns=None):
 
 
 def _mark_almost_depleted_campaigns(campaigns):
-    refresh_realtime_data(campaigns)
+    refresh_realtime_data([campaigns])
     available_campaign_budgets = _get_available_campaign_budgets(campaigns)
     max_campaign_spends = _get_max_campaign_spends(campaigns)
 
