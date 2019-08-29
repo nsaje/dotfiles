@@ -106,6 +106,8 @@ rules:
     - 0
   jasmine/prefer-jasmine-matcher:
     - 0
+  no-prototype-builtins: off
+
 
 env:
   browser: true

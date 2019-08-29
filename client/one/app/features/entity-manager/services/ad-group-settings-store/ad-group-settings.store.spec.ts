@@ -305,7 +305,7 @@ describe('AdGroupSettingsStore', () => {
 
     it('should correctly change adgroup name', () => {
         spyOn(store, 'validateEntity')
-            .and.returnValue(of())
+            .and.returnValue()
             .calls.reset();
 
         store.updateState('Generic name', 'entity', 'name');
@@ -345,7 +345,7 @@ describe('AdGroupSettingsStore', () => {
 
     it('should correctly set device targeting', () => {
         spyOn(store, 'validateEntity')
-            .and.returnValue(of())
+            .and.returnValue()
             .calls.reset();
         const $event: any = {
             targetDevices: ['TABLE', 'MOBILE'],
@@ -370,7 +370,7 @@ describe('AdGroupSettingsStore', () => {
 
     it('should correctly set publisher groups', () => {
         spyOn(store, 'validateEntity')
-            .and.returnValue(of())
+            .and.returnValue()
             .calls.reset();
         const $event: any = {
             whitelistedPublisherGroups: [123, 456, 789],
@@ -392,7 +392,7 @@ describe('AdGroupSettingsStore', () => {
 
     it('should correctly set interests', () => {
         spyOn(store, 'validateEntity')
-            .and.returnValue(of())
+            .and.returnValue()
             .calls.reset();
         const $event: any = {
             includedInterests: [
@@ -417,7 +417,7 @@ describe('AdGroupSettingsStore', () => {
 
     it('should correctly set retargeting', () => {
         spyOn(store, 'validateEntity')
-            .and.returnValue(of())
+            .and.returnValue()
             .calls.reset();
         const $event: any = {
             includedAudiences: [123, 456, 789],
@@ -451,7 +451,7 @@ describe('AdGroupSettingsStore', () => {
 
     it('should correctly set bluekai', () => {
         spyOn(store, 'validateEntity')
-            .and.returnValue(of())
+            .and.returnValue()
             .calls.reset();
         const $event: any = {
             and: [
@@ -468,7 +468,7 @@ describe('AdGroupSettingsStore', () => {
 
     it('should correctly set state when ad group optimization is set to inactive', () => {
         spyOn(store, 'validateEntity')
-            .and.returnValue(of())
+            .and.returnValue()
             .calls.reset();
         store.updateState(true, 'entity', 'manageRtbSourcesAsOne');
         store.setAdGroupAutopilotState(AdGroupAutopilotState.INACTIVE);
@@ -480,7 +480,7 @@ describe('AdGroupSettingsStore', () => {
 
     it('should correctly set state when ad group optimization is set to optimize towards campaign goal', () => {
         spyOn(store, 'validateEntity')
-            .and.returnValue(of())
+            .and.returnValue()
             .calls.reset();
         store.updateState(false, 'entity', 'manageRtbSourcesAsOne');
         store.setAdGroupAutopilotState(AdGroupAutopilotState.ACTIVE_CPC_BUDGET);
@@ -492,7 +492,7 @@ describe('AdGroupSettingsStore', () => {
 
     it('should correctly set trackingCode', () => {
         spyOn(store, 'validateEntity')
-            .and.returnValue(of())
+            .and.returnValue()
             .calls.reset();
         const $event = 'New tracking code';
 
@@ -503,7 +503,7 @@ describe('AdGroupSettingsStore', () => {
 
     it('should correctly change click capping', () => {
         spyOn(store, 'validateEntity')
-            .and.returnValue(of())
+            .and.returnValue()
             .calls.reset();
 
         store.updateState(22, 'entity', 'clickCappingDailyAdGroupMaxClicks');
@@ -518,7 +518,7 @@ describe('AdGroupSettingsStore', () => {
 
     it('should correctly change frequency capping', () => {
         spyOn(store, 'validateEntity')
-            .and.returnValue(of())
+            .and.returnValue()
             .calls.reset();
 
         store.updateState(22, 'entity', 'frequencyCapping');
@@ -529,7 +529,7 @@ describe('AdGroupSettingsStore', () => {
 
     it('should correctly set location targeting', () => {
         spyOn(store, 'validateEntity')
-            .and.returnValue(of())
+            .and.returnValue()
             .calls.reset();
         const $event: any = {
             includedLocations: {

@@ -330,7 +330,7 @@ describe('CampaignSettingsStore', () => {
 
     it('should correctly create goal', () => {
         spyOn(store, 'validateEntity')
-            .and.returnValue(of())
+            .and.returnValue()
             .calls.reset();
 
         const goals: CampaignGoal[] = [
@@ -380,7 +380,7 @@ describe('CampaignSettingsStore', () => {
 
     it('should correctly set primary goal', () => {
         spyOn(store, 'validateEntity')
-            .and.returnValue(of())
+            .and.returnValue()
             .calls.reset();
 
         const goals: CampaignGoal[] = [
@@ -410,7 +410,7 @@ describe('CampaignSettingsStore', () => {
 
     it('should correctly change goal', () => {
         spyOn(store, 'validateEntity')
-            .and.returnValue(of())
+            .and.returnValue()
             .calls.reset();
 
         const goals: CampaignGoal[] = [
@@ -445,7 +445,7 @@ describe('CampaignSettingsStore', () => {
 
     it('should correctly delete goal', () => {
         spyOn(store, 'validateEntity')
-            .and.returnValue(of())
+            .and.returnValue()
             .calls.reset();
 
         const goals: CampaignGoal[] = [
@@ -693,7 +693,7 @@ describe('CampaignSettingsStore', () => {
 
     it('should correctly update campaign budget', () => {
         spyOn(store, 'validateEntity')
-            .and.returnValue(of())
+            .and.returnValue()
             .calls.reset();
 
         const comment = 'A generic comment';
@@ -729,7 +729,7 @@ describe('CampaignSettingsStore', () => {
 
     it('should correctly delete campaign budget', () => {
         spyOn(store, 'validateEntity')
-            .and.returnValue(of())
+            .and.returnValue()
             .calls.reset();
 
         const budgets: CampaignBudget[] = [
@@ -757,7 +757,7 @@ describe('CampaignSettingsStore', () => {
 
     it('should correctly change campaign name', () => {
         spyOn(store, 'validateEntity')
-            .and.returnValue(of())
+            .and.returnValue()
             .calls.reset();
 
         store.updateState('Generic name', 'entity', 'name');
@@ -768,7 +768,7 @@ describe('CampaignSettingsStore', () => {
 
     it('should correctly change campaign type', () => {
         spyOn(store, 'validateEntity')
-            .and.returnValue(of())
+            .and.returnValue()
             .calls.reset();
 
         store.updateState(CampaignType.CONTENT, 'entity', 'type');
@@ -779,7 +779,7 @@ describe('CampaignSettingsStore', () => {
 
     it('should correctly change campaign manager', () => {
         spyOn(store, 'validateEntity')
-            .and.returnValue(of())
+            .and.returnValue()
             .calls.reset();
 
         store.updateState('11', 'entity', 'campaignManager');
@@ -790,7 +790,7 @@ describe('CampaignSettingsStore', () => {
 
     it('should correctly change iab-category', () => {
         spyOn(store, 'validateEntity')
-            .and.returnValue(of())
+            .and.returnValue()
             .calls.reset();
 
         store.updateState(IabCategory.IAB1, 'entity', 'iabCategory');
@@ -801,7 +801,7 @@ describe('CampaignSettingsStore', () => {
 
     it('should correctly change language', () => {
         spyOn(store, 'validateEntity')
-            .and.returnValue(of())
+            .and.returnValue()
             .calls.reset();
 
         store.updateState(Language.ENGLISH, 'entity', 'language');
@@ -812,7 +812,7 @@ describe('CampaignSettingsStore', () => {
 
     it('should correctly change frequency capping', () => {
         spyOn(store, 'validateEntity')
-            .and.returnValue(of())
+            .and.returnValue()
             .calls.reset();
 
         store.updateState(22, 'entity', 'frequencyCapping');
@@ -823,7 +823,7 @@ describe('CampaignSettingsStore', () => {
 
     it('should correctly set publisher groups', () => {
         spyOn(store, 'validateEntity')
-            .and.returnValue(of())
+            .and.returnValue()
             .calls.reset();
         const $event: any = {
             whitelistedPublisherGroups: [123, 456, 789],
@@ -845,7 +845,7 @@ describe('CampaignSettingsStore', () => {
 
     it('should correctly change campaign autopilot', () => {
         spyOn(store, 'validateEntity')
-            .and.returnValue(of())
+            .and.returnValue()
             .calls.reset();
 
         store.updateState(false, 'entity', 'autopilot');
@@ -856,7 +856,7 @@ describe('CampaignSettingsStore', () => {
 
     it('should correctly change campaign tracking', () => {
         spyOn(store, 'validateEntity')
-            .and.returnValue(of())
+            .and.returnValue()
             .calls.reset();
 
         const tracking: CampaignTracking = {

@@ -267,7 +267,7 @@ describe('AccountSettingsStore', () => {
 
     it('should correctly change account name', () => {
         spyOn(store, 'validateEntity')
-            .and.returnValue(of())
+            .and.returnValue()
             .calls.reset();
 
         store.updateState('Generic name', 'entity', 'name');
@@ -278,7 +278,7 @@ describe('AccountSettingsStore', () => {
 
     it('should correctly change account manager', () => {
         spyOn(store, 'validateEntity')
-            .and.returnValue(of())
+            .and.returnValue()
             .calls.reset();
 
         store.updateState('22', 'entity', 'defaultAccountManager');
@@ -289,7 +289,7 @@ describe('AccountSettingsStore', () => {
 
     it('should correctly change sales representative', () => {
         spyOn(store, 'validateEntity')
-            .and.returnValue(of())
+            .and.returnValue()
             .calls.reset();
 
         store.updateState('22', 'entity', 'defaultSalesRepresentative');
@@ -300,7 +300,7 @@ describe('AccountSettingsStore', () => {
 
     it('should correctly change cs representative', () => {
         spyOn(store, 'validateEntity')
-            .and.returnValue(of())
+            .and.returnValue()
             .calls.reset();
 
         store.updateState('22', 'entity', 'defaultCsRepresentative');
@@ -311,7 +311,7 @@ describe('AccountSettingsStore', () => {
 
     it('should correctly change ob representative', () => {
         spyOn(store, 'validateEntity')
-            .and.returnValue(of())
+            .and.returnValue()
             .calls.reset();
 
         store.updateState('22', 'entity', 'obRepresentative');
@@ -322,7 +322,7 @@ describe('AccountSettingsStore', () => {
 
     it('should correctly change account type', () => {
         spyOn(store, 'validateEntity')
-            .and.returnValue(of())
+            .and.returnValue()
             .calls.reset();
 
         store.updateState(AccountType.UNKNOWN, 'entity', 'accountType');
@@ -333,7 +333,7 @@ describe('AccountSettingsStore', () => {
 
     it('should correctly change agency id', () => {
         spyOn(store, 'validateEntity')
-            .and.returnValue(of())
+            .and.returnValue()
             .calls.reset();
 
         store.updateState('22', 'entity', 'agencyId');
@@ -344,7 +344,7 @@ describe('AccountSettingsStore', () => {
 
     it('should correctly change salesforce url', () => {
         spyOn(store, 'validateEntity')
-            .and.returnValue(of())
+            .and.returnValue()
             .calls.reset();
 
         store.updateState('http://salesforce.com', 'entity', 'salesforceUrl');
@@ -359,7 +359,7 @@ describe('AccountSettingsStore', () => {
 
     it('should correctly change currency', () => {
         spyOn(store, 'validateEntity')
-            .and.returnValue(of())
+            .and.returnValue()
             .calls.reset();
 
         store.updateState(Currency.USD, 'entity', 'currency');
@@ -370,7 +370,7 @@ describe('AccountSettingsStore', () => {
 
     it('should correctly change frequency capping', () => {
         spyOn(store, 'validateEntity')
-            .and.returnValue(of())
+            .and.returnValue()
             .calls.reset();
 
         store.updateState(22, 'entity', 'frequencyCapping');
@@ -381,7 +381,7 @@ describe('AccountSettingsStore', () => {
 
     it('should correctly set publisher groups', () => {
         spyOn(store, 'validateEntity')
-            .and.returnValue(of())
+            .and.returnValue()
             .calls.reset();
         const $event: any = {
             whitelistedPublisherGroups: [123, 456, 789],
@@ -403,7 +403,7 @@ describe('AccountSettingsStore', () => {
 
     it('should correctly change auto add new sources', () => {
         spyOn(store, 'validateEntity')
-            .and.returnValue(of())
+            .and.returnValue()
             .calls.reset();
 
         store.updateState(false, 'entity', 'autoAddNewSources');
@@ -414,7 +414,7 @@ describe('AccountSettingsStore', () => {
 
     it('should correctly add to allowed media sources', () => {
         spyOn(store, 'validateEntity')
-            .and.returnValue(of())
+            .and.returnValue()
             .calls.reset();
 
         const mockedMediaSources: AccountMediaSource[] = [
@@ -449,7 +449,7 @@ describe('AccountSettingsStore', () => {
 
     it('should correctly remove from allowed media sources', () => {
         spyOn(store, 'validateEntity')
-            .and.returnValue(of())
+            .and.returnValue()
             .calls.reset();
 
         const mockedMediaSources: AccountMediaSource[] = [
