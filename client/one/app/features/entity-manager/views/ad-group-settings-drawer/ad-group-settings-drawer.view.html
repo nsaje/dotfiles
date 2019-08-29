@@ -375,24 +375,6 @@
                     </div>
                 </div>
                 <div class="zem-settings-section">
-                    <zem-checkbox-setting
-                        class="zem-checkbox-setting zem-settings-section__item"
-                        *ngIf="
-                            zemPermissions.hasPermission(
-                                'zemauth.can_use_language_targeting'
-                            )
-                        "
-                        label="Language matching"
-                        helpMessage="Zemanta will show ads only when language of the page matches the language of your ads."
-                        [value]="
-                            state.entity.targeting.language.matchingEnabled
-                        "
-                        (valueChange)="store.setLanguageMatching($event)"
-                    >
-                        Enable language matching
-                    </zem-checkbox-setting>
-                </div>
-                <div class="zem-settings-section">
                     <div class="zem-settings-section__header">
                         <div class="zem-settings-section__title">
                             Countries, states and DMA regions targeting
@@ -421,8 +403,28 @@
                             state.entity.targeting.geo.excluded.postalCodes
                         )
                     "
-                    [overviewText]="'ZIP / Postal code targeting'"
+                    [overviewText]="
+                        'Language matching, ZIP / Postal code targeting'
+                    "
                 >
+                    <div class="zem-settings-section">
+                        <zem-checkbox-setting
+                            class="zem-checkbox-setting zem-settings-section__item"
+                            *ngIf="
+                                zemPermissions.hasPermission(
+                                    'zemauth.can_use_language_targeting'
+                                )
+                            "
+                            label="Language matching"
+                            helpMessage="Zemanta will show ads only when language of the page matches the language of your ads."
+                            [value]="
+                                state.entity.targeting.language.matchingEnabled
+                            "
+                            (valueChange)="store.setLanguageMatching($event)"
+                        >
+                            Enable language matching
+                        </zem-checkbox-setting>
+                    </div>
                     <div class="zem-settings-section">
                         <zem-zip-targeting
                             class="zem-zip-targeting zem-settings-section__item"
