@@ -1,3 +1,5 @@
+var commonHelpers = require('../../../../shared/helpers/common.helpers');
+
 angular
     .module('one.widgets')
     .service('zemGridActionsService', function(
@@ -10,7 +12,8 @@ angular
         zemCloneContentService,
         $window,
         zemGridBulkPublishersActionsService,
-        zemModalsService
+        zemModalsService,
+        zemUtils
     ) {
         // eslint-disable-line max-len
 
@@ -216,9 +219,40 @@ angular
                     .openCloneModal(grid.meta.data.id, {
                         selectedIds: [row.entity.id],
                     })
-                    .then(function() {
-                        grid.meta.api.loadData();
-                    });
+                    .then(function(batchData) {
+                        zemUploadService
+                            .openCloneEditModal(
+                                grid.meta.data.id,
+                                batchData.destinationBatch.id,
+                                batchData.destinationBatch.name,
+                                zemUploadApiConverter.convertCandidatesFromApi(
+                                    zemUtils.convertToUnderscore(
+                                        batchData.candidates
+                                    )
+                                )
+                            )
+                            .then(function(success) {
+                                if (
+                                    !(
+                                        commonHelpers.isDefined(success) &&
+                                        success === false
+                                    )
+                                ) {
+                                    // reloads data in case cloned upload batch is in the same ad group as source content ads
+                                    if (
+                                        parseInt(
+                                            batchData.destinationBatch.adGroup
+                                                .id
+                                        ) === parseInt(grid.meta.data.id)
+                                    ) {
+                                        grid.meta.api.loadData();
+                                    }
+                                    zemCloneContentService.openResultsModal(
+                                        batchData.destinationBatch
+                                    );
+                                }
+                            });
+                    }, handleError);
             }
 
             // calling component hides loader on promise resolve, we do not want loader when opening modal
