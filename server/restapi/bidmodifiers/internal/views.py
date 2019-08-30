@@ -11,6 +11,7 @@ import restapi
 from core.features import bid_modifiers
 from restapi.common import permissions as restapi_permissions
 from utils import csv_utils
+from utils import exc as util_exc
 from utils import s3helpers
 
 
@@ -22,10 +23,17 @@ class BidModifiersDownload(restapi.common.views_base.RESTAPIBaseViewSet):
 
         if breakdown_name:
             modifier_type = bid_modifiers.helpers.breakdown_name_to_modifier_type(breakdown_name)
+            # TEMP(tkusterle) temporarily disable source bid modifiers
+            if modifier_type == bid_modifiers.BidModifierType.SOURCE:
+                raise util_exc.ValidationError("Source bid modifiers are temporaily disabled")
+
             cleaned_modifiers = bid_modifiers.service.get(ad_group, include_types=[modifier_type])
             csv_content = bid_modifiers.service.make_csv_file(modifier_type, cleaned_modifiers)
         else:
-            cleaned_modifiers = bid_modifiers.service.get(ad_group)
+            # TEMP(tkusterle) temporarily disable source bid modifiers
+            cleaned_modifiers = bid_modifiers.service.get(
+                ad_group, exclude_types=[bid_modifiers.BidModifierType.SOURCE]
+            )
             csv_content = bid_modifiers.service.make_bulk_csv_file(cleaned_modifiers)
 
         return csv_utils.create_csv_response(data=csv_content, filename="bid_modifiers_export")
@@ -43,6 +51,10 @@ class BidModifiersUpload(restapi.common.views_base.RESTAPIBaseViewSet):
         try:
             if breakdown_name:
                 modifier_type = bid_modifiers.helpers.breakdown_name_to_modifier_type(breakdown_name)
+                # TEMP(tkusterle) temporarily disable source bid modifiers
+                if modifier_type == bid_modifiers.BidModifierType.SOURCE:
+                    raise util_exc.ValidationError("Source bid modifiers are temporaily disabled")
+
                 csv_error_key = bid_modifiers.service.process_csv_file_upload(
                     ad_group, csv_file, modifier_type=modifier_type, user=request.user
                 )
@@ -80,6 +92,10 @@ class BidModifiersExampleCSVDownload(restapi.common.views_base.RESTAPIBaseViewSe
     def download(self, request, breakdown_name=None):
         if breakdown_name:
             modifier_type = bid_modifiers.helpers.breakdown_name_to_modifier_type(breakdown_name)
+            # TEMP(tkusterle) temporarily disable source bid modifiers
+            if modifier_type == bid_modifiers.BidModifierType.SOURCE:
+                raise util_exc.ValidationError("Source bid modifiers are temporaily disabled")
+
             csv_example_file = bid_modifiers.service.make_csv_example_file(modifier_type)
         else:
             csv_example_file = bid_modifiers.service.make_bulk_csv_example_file()

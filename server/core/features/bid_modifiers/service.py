@@ -36,7 +36,9 @@ def set(ad_group, modifier_type, target, source, modifier, user=None, write_hist
             k1_helper.update_ad_group(ad_group, msg="bid_modifiers.set", priority=True)
         return
 
-    helpers.check_modifier_value(modifier)
+    if modifier_type != constants.BidModifierType.SOURCE:
+        helpers.check_modifier_value(modifier)
+
     instance, created = _update_or_create(
         ad_group, modifier_type, target, source, modifier, user=user, write_history=write_history
     )
@@ -81,7 +83,8 @@ def _update_or_create(ad_group, modifier_type, target, source, modifier, user=No
     return instance, created
 
 
-def set_from_cleaned_entries(ad_group, cleaned_entries, user=None, write_history=True):
+@transaction.atomic
+def set_from_cleaned_entries(ad_group, cleaned_entries, user=None, write_history=True, propagate_to_k1=True):
     for entry in cleaned_entries:
         set(
             ad_group,
@@ -93,7 +96,9 @@ def set_from_cleaned_entries(ad_group, cleaned_entries, user=None, write_history
             write_history=write_history,
             propagate_to_k1=False,
         )
-    k1_helper.update_ad_group(ad_group, msg="bid_modifiers.set_from_cleaned_entries")
+
+    if propagate_to_k1:
+        k1_helper.update_ad_group(ad_group, msg="bid_modifiers.set_from_cleaned_entries")
 
 
 def clean_entries(entries):
@@ -208,7 +213,15 @@ def process_bulk_csv_file_upload(ad_group, bulk_csv_file, user=None):
 
     if not overall_error:
         set_from_cleaned_entries(
-            ad_group, [e for cleaned_entries in cleaned_entries_list for e in cleaned_entries], user=user
+            ad_group,
+            [
+                e
+                for cleaned_entries in cleaned_entries_list
+                for e in cleaned_entries
+                # TEMP(tkusterle) temporarily disable source bid modifiers
+                if e["type"] != constants.BidModifierType.SOURCE
+            ],
+            user=user,
         )
         return None
 
@@ -341,6 +354,10 @@ def make_csv_example_file(modifier_type):
 def make_bulk_csv_example_file():
     def sub_file_generator():
         for modifier_type in constants.BidModifierType.get_all():
+            # TEMP(tkusterle) temporarily disable source bid modifiers
+            if modifier_type == constants.BidModifierType.SOURCE:
+                continue
+
             yield make_csv_example_file(modifier_type)
 
     return helpers.create_bulk_csv_file(sub_file_generator())

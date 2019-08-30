@@ -204,12 +204,13 @@ class BidModifierCSVTest(restapi.common.views_base_test.RESTAPITest):
                 "Source Slug": self.source.bidder_slug,
                 "Bid Modifier": "1.1",
             },
-            {
-                bid_modifiers.helpers.output_modifier_type(
-                    bid_modifiers.constants.BidModifierType.SOURCE
-                ): self.outbrain.bidder_slug,
-                "Bid Modifier": "1.2",
-            },
+            # TEMP(tkusterle) temporarily disable source bid modifiers
+            # {
+            #     bid_modifiers.helpers.output_modifier_type(
+            #         bid_modifiers.constants.BidModifierType.SOURCE
+            #     ): self.outbrain.bidder_slug,
+            #     "Bid Modifier": "1.2",
+            # },
             {
                 bid_modifiers.helpers.output_modifier_type(
                     bid_modifiers.constants.BidModifierType.DEVICE
@@ -275,12 +276,13 @@ class BidModifierCSVTest(restapi.common.views_base_test.RESTAPITest):
                     "source": self.source,
                     "modifier": 1.1,
                 },
-                {
-                    "type": bid_modifiers.constants.BidModifierType.SOURCE,
-                    "target": str(self.outbrain.id),
-                    "source": None,
-                    "modifier": 1.2,
-                },
+                # TEMP(tkusterle) temporarily disable source bid modifiers
+                # {
+                #     "type": bid_modifiers.constants.BidModifierType.SOURCE,
+                #     "target": str(self.outbrain.id),
+                #     "source": None,
+                #     "modifier": 1.2,
+                # },
                 {
                     "type": bid_modifiers.constants.BidModifierType.DEVICE,
                     "target": str(constants.DeviceType.MOBILE),

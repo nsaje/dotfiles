@@ -406,6 +406,8 @@
         ad_group_name: 'test adgroup 1 Čžš'
         start_date: '2015-03-02'
         end_date: '2015-04-02'
+        cpc: 1.00
+        cpm: 1.00
         autopilot_state: 1
         autopilot_daily_budget: '50.0000'
         local_autopilot_daily_budget: '50.0000'
@@ -457,6 +459,8 @@
         target_regions: ['693']
         target_devices: ['desktop', 'mobile']
         start_date: '2015-03-02'
+        cpc: 1.00
+        cpm: 1.00
         b1_sources_group_cpc_cc: '0.0100'
         local_b1_sources_group_cpc_cc: '0.0100'
         b1_sources_group_cpm: '1.0100'
@@ -486,6 +490,7 @@
         created_by: 1
         archived: False
         ad_group: 8
+        cpc: 1.00
     model: dash.adgroupsettings
     pk: 6
 
@@ -1179,6 +1184,7 @@
         created_dt: '2014-06-04T09:58:21'
         ad_group_source: 1
         cpc_cc: '0.12'
+        cpm: '0.12'
         daily_budget_cc: '50.'
         state: 1
     model: dash.adgroupsourcesettings
@@ -1188,6 +1194,7 @@
         created_dt: '2014-06-05T09:58:21'
         ad_group_source: 1
         cpc_cc: '0.12'
+        cpm: '0.12'
         daily_budget_cc: '50.'
         state: 2
     model: dash.adgroupsourcesettings
@@ -1197,6 +1204,7 @@
         created_dt: '2014-06-05T09:58:21'
         ad_group_source: 2
         cpc_cc: '0.12'
+        cpm: '0.12'
         daily_budget_cc: '50.'
         state: 2
     model: dash.adgroupsourcesettings
@@ -1206,6 +1214,7 @@
         created_dt: '2014-06-05T09:58:21'
         ad_group_source: 3
         cpc_cc: '0.12'
+        cpm: '0.12'
         daily_budget_cc: '50.'
         state: 2
     model: dash.adgroupsourcesettings
@@ -1215,6 +1224,7 @@
     created_dt: '2014-06-01T09:58:21'
     ad_group_source: 4
     cpc_cc: '0.12'
+    cpm: '0.12'
     daily_budget_cc: '50.'
     state: 2
   model: dash.adgroupsourcesettings
@@ -1224,6 +1234,7 @@
         created_dt: '2014-06-05T09:58:21'
         ad_group_source: 5
         cpc_cc: 0.5
+        cpm: '0.12'
         daily_budget_cc: null
         state: 2
     model: dash.adgroupsourcesettings
@@ -1233,6 +1244,7 @@
     created_dt: '2014-06-01T09:58:21'
     ad_group_source: 6
     cpc_cc: '0.12'
+    cpm: '0.12'
     daily_budget_cc: '50.'
     state: 2
   model: dash.adgroupsourcesettings
@@ -1242,6 +1254,7 @@
     created_dt: '2014-06-01T09:58:21'
     ad_group_source: 7
     cpc_cc: '0.12'
+    cpm: '0.12'
     daily_budget_cc: '50.'
     state: 2
   model: dash.adgroupsourcesettings
@@ -1251,6 +1264,7 @@
     created_dt: '2014-06-01T09:58:21'
     ad_group_source: 9
     cpc_cc: '0.12'
+    cpm: '0.12'
     daily_budget_cc: '50.'
     state: 2
   model: dash.adgroupsourcesettings
@@ -1332,6 +1346,7 @@
     created_dt: '2014-06-01T09:58:21'
     ad_group_source: 18
     cpc_cc: '0.12'
+    cpm: '0.12'
     daily_budget_cc: '50.'
     state: 2
   model: dash.adgroupsourcesettings
@@ -1359,6 +1374,7 @@
     created_dt: '2014-06-01T09:58:21'
     ad_group_source: 25
     cpc_cc: '0.12'
+    cpm: '0.12'
     daily_budget_cc: '50.'
     state: 2
   model: dash.adgroupsourcesettings

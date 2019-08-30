@@ -10,30 +10,30 @@ from utils.magic_mixer import magic_mixer
 from . import service
 
 
-def add_non_publisher_bid_modifiers(**kwargs):
+def add_non_publisher_bid_modifiers(omit_types=None, **kwargs):
     """Add some non publisher bid modifiers that should not alter test results."""
+    omit_types = omit_types or set()
+    all_types = {
+        bid_modifiers.BidModifierType.SOURCE,
+        bid_modifiers.BidModifierType.DEVICE,
+        bid_modifiers.BidModifierType.OPERATING_SYSTEM,
+        bid_modifiers.BidModifierType.PLACEMENT,
+        bid_modifiers.BidModifierType.COUNTRY,
+        bid_modifiers.BidModifierType.STATE,
+        bid_modifiers.BidModifierType.DMA,
+    }
+    included_types = all_types - omit_types
 
     blend_kwargs = {
-        "publisher": ("somerandompub%s.com" % i for i in range(7)),
+        "publisher": ("somerandompub%s.com" % i for i in range(len(included_types))),
         "modifier": 0.5,
-        "type": (
-            t
-            for t in (
-                bid_modifiers.constants.BidModifierType.SOURCE,
-                bid_modifiers.constants.BidModifierType.DEVICE,
-                bid_modifiers.constants.BidModifierType.OPERATING_SYSTEM,
-                bid_modifiers.constants.BidModifierType.PLACEMENT,
-                bid_modifiers.constants.BidModifierType.COUNTRY,
-                bid_modifiers.constants.BidModifierType.STATE,
-                bid_modifiers.constants.BidModifierType.DMA,
-            )
-        ),
+        "type": (t for t in included_types),
     }
     blend_kwargs.update(kwargs)
     if "source" in blend_kwargs:
         blend_kwargs["source_slug"] = blend_kwargs["source"].bidder_slug
 
-    magic_mixer.cycle(7).blend(bid_modifiers.BidModifier, **blend_kwargs)
+    magic_mixer.cycle(len(included_types)).blend(bid_modifiers.BidModifier, **blend_kwargs)
 
 
 @mock.patch("utils.k1_helper.update_ad_group", mock.MagicMock())

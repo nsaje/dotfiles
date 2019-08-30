@@ -6,6 +6,7 @@ import core.features.history
 import core.models
 import core.signals
 import dash.cpc_constraints
+from core.features import bid_modifiers
 from dash import constants
 from dash import retargeting_helper
 from utils import email_helper
@@ -29,6 +30,7 @@ class AdGroupSettingsMixin(object):
         skip_permission_check=False,
         skip_notification=False,
         system_user=None,
+        write_history=True,
         write_source_history=True,
         **updates
     ):
@@ -45,24 +47,34 @@ class AdGroupSettingsMixin(object):
             )
             changes = self.get_setting_changes(new_settings)
             if changes:
-                self._save_and_propagate(request, new_settings, system_user, skip_notification=skip_notification)
+                self._save_and_propagate(
+                    request, new_settings, system_user, write_history=write_history, skip_notification=skip_notification
+                )
                 self._update_ad_group(request, changes)
                 # autopilot reloads settings so changes have to be saved when it is called
                 if not skip_automation:
                     self._handle_budget_autopilot(changes)
 
+    @transaction.atomic()
     def update_unsafe(self, request, system_user=None, write_history=True, **kwargs):
         # TEMP(tkusterle) keep the new fields up-to-date with the old ones.
-        if "cpc_cc" in kwargs:
+        if "cpc_cc" in kwargs and kwargs["cpc_cc"] is not None:
             kwargs["cpc"] = kwargs["cpc_cc"]
-        if "local_cpc_cc" in kwargs:
+        if "local_cpc_cc" in kwargs and kwargs["local_cpc_cc"] is not None:
             kwargs["local_cpc"] = kwargs["local_cpc_cc"]
-        if "max_cpm" in kwargs:
+        if "max_cpm" in kwargs and kwargs["max_cpm"] is not None:
             kwargs["cpm"] = kwargs["max_cpm"]
-        if "local_max_cpm" in kwargs:
+        if "local_max_cpm" in kwargs and kwargs["local_max_cpm"] is not None:
             kwargs["local_cpm"] = kwargs["local_max_cpm"]
 
+        kwargs_copy = kwargs.copy()
+        kwargs_copy.pop("history_changes_text", None)
+        changes = self.get_changes(kwargs_copy)
+
         super().update_unsafe(request, system_user=system_user, write_history=write_history, **kwargs)
+
+        user = request.user if request else None
+        bid_modifiers.source.handle_ad_group_settings_change(self, changes, user=user, system_user=system_user)
 
     def _update_ad_group(self, request, changes):
         if any(field in changes for field in ["ad_group_name", "archived"]):
@@ -297,9 +309,9 @@ class AdGroupSettingsMixin(object):
 
         autopilot.recalculate_budgets_ad_group(self.ad_group)
 
-    def _save_and_propagate(self, request, new_settings, system_user, skip_notification=False):
+    def _save_and_propagate(self, request, new_settings, system_user, write_history=True, skip_notification=False):
         changes = self.get_setting_changes(new_settings)
-        new_settings.save(request, system_user=system_user)
+        new_settings.save(request, system_user=system_user, write_history=write_history)
 
         core.signals.settings_change.send_robust(
             sender=self.__class__, request=request, instance=new_settings, changes=changes

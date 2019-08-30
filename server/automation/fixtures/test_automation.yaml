@@ -181,6 +181,8 @@
     cpc_cc: 100.00
     max_cpm: 100.00
     autopilot_state: 1
+    cpc: 0.15
+    cpm: 0.16
     autopilot_daily_budget: 10
   model: dash.adgroupsettings
   pk: 1

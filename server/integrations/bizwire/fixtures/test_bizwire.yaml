@@ -140,6 +140,7 @@
     description: 'Example description'
     call_to_action: 'Click here!'
     target_devices: ['desktop', 'tablet', 'mobile']
+    cpc: '0.12'
   model: dash.adgroupsettings
   pk: 1
 

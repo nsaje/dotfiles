@@ -814,7 +814,7 @@ class AdGroupSourcesTest(TestCase):
     def test_put_overwrite_cpc(self):
         ad_group = models.AdGroup.objects.get(pk=1)
         new_settings = ad_group.get_current_settings().copy_settings()
-        new_settings.cpc_cc = decimal.Decimal("0.01")
+        new_settings.cpc_cc = decimal.Decimal("0.1")
         new_settings.save(None)
 
         response = self.client.put(

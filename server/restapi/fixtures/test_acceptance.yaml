@@ -412,8 +412,10 @@
         redirect_pixel_urls: ["http://a.com/b.jpg", "http://a.com/c.jpg"]
         redirect_javascript: "alert('a')"
         dayparting: {"monday": [0, 1, 2, 3], "friday": [10, 11, 23], "timezone": "America/New_York"}
+        cpc: '0.11'
         b1_sources_group_cpc_cc: '0.01'
         local_b1_sources_group_cpc_cc: '0.01'
+        cpm: '1.12'
         b1_sources_group_cpm: '1.01'
         local_b1_sources_group_cpm: '1.01'
         b1_sources_group_daily_budget: 0

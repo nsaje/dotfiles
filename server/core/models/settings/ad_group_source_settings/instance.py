@@ -3,6 +3,7 @@ from django.db import transaction
 import core.features.bcm
 import dash.constants
 import utils.k1_helper
+from core.features import bid_modifiers
 
 
 class AdGroupSourceSettingsMixin(object):
@@ -16,7 +17,7 @@ class AdGroupSourceSettingsMixin(object):
         skip_validation=False,
         skip_notification=False,
         write_history=True,
-        **updates
+        **updates,
     ):
         result = {"autopilot_changed_sources_text": ""}
 
@@ -58,6 +59,17 @@ class AdGroupSourceSettingsMixin(object):
             self._notify_ad_group_source_settings_changed(request, changes, old_settings, new_settings)
 
         return result
+
+    @transaction.atomic()
+    def update_unsafe(self, request, system_user=None, write_history=True, **kwargs):
+        kwargs_copy = kwargs.copy()
+        kwargs_copy.pop("history_changes_text", None)
+        changes = self.get_changes(kwargs_copy)
+        super().update_unsafe(request, system_user=system_user, write_history=write_history, **kwargs)
+
+        user = request.user if request else None
+
+        bid_modifiers.source.handle_ad_group_source_settings_change(self, changes, user=user, system_user=system_user)
 
     def _filter_and_remap_input(self, updates):
         if self.ad_group_source.ad_group.bidding_type == dash.constants.BiddingType.CPM:

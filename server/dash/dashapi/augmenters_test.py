@@ -61,8 +61,11 @@ class PublisherAugmenterTest(TestCase):
 class DeliveryAugmenterTest(TestCase):
     def setUp(self):
         ad_group = magic_mixer.blend(models.AdGroup, id=1)
+        ad_group.settings.update_unsafe(None, cpc_cc=Decimal("3.0"))
         source = magic_mixer.blend(models.Source, id=1)
-        add_non_publisher_bid_modifiers(ad_group=ad_group, source=source)
+        add_non_publisher_bid_modifiers(
+            omit_types={bid_modifiers.BidModifierType.SOURCE}, ad_group=ad_group, source=source
+        )
         self.bid_modifier = magic_mixer.blend(
             bid_modifiers.BidModifier,
             ad_group=ad_group,

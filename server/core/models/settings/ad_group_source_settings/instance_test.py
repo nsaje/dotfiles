@@ -236,16 +236,17 @@ class AdGroupSourceUpdate(TestCase):
             self.ad_group_source.settings.update(cpm=1.1)
 
     def test_update_skip_validation(self):
+        self.ad_group.settings.update_unsafe(None, cpc=decimal.Decimal("1.0"), cpm=decimal.Decimal("1.6"))
         self.ad_group_source.settings.update(
             skip_validation=True,
-            cpc_cc=decimal.Decimal("-1.2"),
-            cpm=decimal.Decimal("-2.3"),
+            cpc_cc=decimal.Decimal("1.2"),
+            cpm=decimal.Decimal("2.3"),
             daily_budget_cc=decimal.Decimal("8.2"),
         )
 
         settings = self.ad_group_source.get_current_settings()
-        self.assertEqual(decimal.Decimal("-1.2"), settings.cpc_cc)  # not valid setting
-        self.assertEqual(decimal.Decimal("-2.3"), settings.cpm)  # not valid setting
+        self.assertEqual(decimal.Decimal("1.2"), settings.cpc_cc)  # not valid setting
+        self.assertEqual(decimal.Decimal("2.3"), settings.cpm)  # not valid setting
         self.assertEqual(decimal.Decimal("8.2"), settings.daily_budget_cc)
 
     def test_update_validate_cpc_positive(self):
@@ -257,7 +258,7 @@ class AdGroupSourceUpdate(TestCase):
             self.ad_group_source.settings.update(cpm=decimal.Decimal("-2.3"))
 
     def test_update_validate_cpc_ad_group_max_cpc(self):
-        self.ad_group.settings.update_unsafe(None, cpc_cc=decimal.Decimal("1.1"))
+        self.ad_group.settings.update(None, cpc_cc=decimal.Decimal("1.1"))
 
         with self.assertRaises(utils.exc.ValidationError):
             self.ad_group_source.settings.update(cpc_cc=decimal.Decimal("1.2"))

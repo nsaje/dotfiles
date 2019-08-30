@@ -273,6 +273,7 @@
         start_date: '2014-06-04'
         end_date: '2014-06-05'
         cpc_cc: '1.00'
+        cpc: '1.00'
         daily_budget_cc: '50.'
         tracking_code: ''
         archived: false
@@ -299,6 +300,7 @@
         redirect_javascript: "alert('a')"
         dayparting: {"monday": [1,2,5], "tuesday": [10, 12], "timezone": "CET"}
         max_cpm: '1.6'
+        cpm: '1.6'
         b1_sources_group_enabled: true
         b1_sources_group_daily_budget: '500.0000'
         b1_sources_group_state: 1
@@ -326,6 +328,7 @@
         start_date: '2014-06-04'
         end_date: '2014-06-05'
         cpc_cc: '0.12'
+        cpc: '0.12'
         daily_budget_cc: '50.'
         tracking_code: ''
         archived: false
@@ -340,6 +343,7 @@
         start_date: '2014-06-04'
         end_date: '2014-06-05'
         cpc_cc: '1.00'
+        cpc: '1.00'
         daily_budget_cc: '50.'
         autopilot_state: 1
         b1_sources_group_enabled: True
@@ -483,6 +487,7 @@
         created_dt: '2014-06-04T09:58:21'
         ad_group_source: 1
         cpc_cc: '0.12'
+        cpm: '0.12'
         daily_budget_cc: '50.'
         local_daily_budget_cc: '50.'
         state: 1
@@ -493,6 +498,7 @@
         created_dt: '2014-06-04T09:58:21'
         ad_group_source: 2
         cpc_cc: '0.12'
+        cpm: '0.12'
         daily_budget_cc: '50.'
         local_daily_budget_cc: '50.'
         state: 1

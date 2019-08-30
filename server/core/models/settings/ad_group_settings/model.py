@@ -32,6 +32,10 @@ from . import manager
 from . import queryset
 from . import validation
 
+# TODO(tkusterle) what are the default CPC/CPM values?
+DEFAULT_CPC_VALUE = Decimal("1.0000")
+DEFAULT_CPM_VALUE = Decimal("1.0000")
+
 
 class AdGroupSettings(
     validation.AdGroupSettingsValidatorMixin,
@@ -253,7 +257,9 @@ class AdGroupSettings(
                 ("state", constants.AdGroupSettingsState.INACTIVE),
                 ("start_date", dates_helper.utc_today()),
                 ("cpc_cc", None),
+                ("cpc", DEFAULT_CPC_VALUE),
                 ("max_cpm", None),
+                ("cpm", DEFAULT_CPM_VALUE),
                 ("daily_budget_cc", 10.0000),
                 ("target_devices", constants.AdTargetDevice.get_all()),
                 ("target_regions", []),

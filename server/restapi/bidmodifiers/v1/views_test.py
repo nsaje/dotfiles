@@ -158,7 +158,7 @@ class BidModifierViewSetTest(restapi.common.views_base_test.RESTAPITest):
         self.assertEqual(
             result,
             {
-                "count": len(self.bid_modifiers_list),
+                "count": len(self.bid_modifiers_list) - 1,  # TEMP(tkusterle) temporarily disable source bid modifiers
                 "next": None,
                 "data": [
                     {
@@ -168,7 +168,9 @@ class BidModifierViewSetTest(restapi.common.views_base_test.RESTAPITest):
                         "target": bid_modifiers.converters.ApiConverter.from_target(bm.type, bm.target),
                         "modifier": bm.modifier,
                     }
+                    # TEMP(tkusterle) temporarily disable source bid modifiers
                     for bm in self.bid_modifiers_list
+                    if bm.type != bid_modifiers.BidModifierType.SOURCE
                 ],
             },
         )
@@ -182,7 +184,7 @@ class BidModifierViewSetTest(restapi.common.views_base_test.RESTAPITest):
         self.assertEqual(
             result,
             {
-                "count": len(self.bid_modifiers_list),
+                "count": len(self.bid_modifiers_list) - 1,  # TEMP(tkusterle) temporarily disable source bid modifiers
                 "next": "http://testserver%s?limit=2&marker=%s"
                 % (
                     reverse("adgroups_bidmodifiers_list", kwargs={"ad_group_id": self.ad_group.id}),

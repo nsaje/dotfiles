@@ -15,13 +15,15 @@ from . import serializers
 class BidModifierViewSet(restapi.common.views_base.RESTAPIBaseViewSet):
     permission_classes = (permissions.IsAuthenticated, restapi_permissions.CanSetBidModifiersPermission)
 
-    def list(self, request, ad_group_id):
-        bid_modifiers = (
-            models.BidModifier.objects.filter_by_user(request.user)
-            .filter(ad_group__id=ad_group_id)
-            .select_related("source")
-            .order_by("pk")
+    def _filter_bid_modifiers(self, ad_group_id, user):
+        return (
+            models.BidModifier.objects.filter_by_user(user).filter(ad_group__id=ad_group_id)
+            # TEMP(tkusterle) temporarily disable source bid modifiers
+            .exclude(type=core.features.bid_modifiers.BidModifierType.SOURCE)
         )
+
+    def list(self, request, ad_group_id):
+        bid_modifiers = self._filter_bid_modifiers(ad_group_id, request.user).select_related("source").order_by("pk")
 
         if "type" in request.GET:
             modifier_type = core.features.bid_modifiers.BidModifierType.get_constant_value(request.GET["type"])
@@ -40,6 +42,10 @@ class BidModifierViewSet(restapi.common.views_base.RESTAPIBaseViewSet):
         serializer = serializers.BidModifierSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         input_data = serializer.validated_data
+
+        # TEMP(tkusterle) temporarily disable source bid modifiers
+        if input_data["type"] == core.features.bid_modifiers.BidModifierType.SOURCE:
+            raise exc.ValidationError("Source bid modifiers are temporarily disabled")
 
         try:
             ad_group = models.AdGroup.objects.filter_by_user(request.user).get(id=ad_group_id)
@@ -65,12 +71,7 @@ class BidModifierViewSet(restapi.common.views_base.RESTAPIBaseViewSet):
 
     def retrieve(self, request, ad_group_id, pk=None):
         try:
-            bid_modifier = (
-                models.BidModifier.objects.filter_by_user(request.user)
-                .filter(ad_group__id=ad_group_id)
-                .select_related("source")
-                .get(pk=pk)
-            )
+            bid_modifier = self._filter_bid_modifiers(ad_group_id, request.user).select_related("source").get(pk=pk)
         except models.BidModifier.DoesNotExist:
             raise exc.MissingDataError("Bid Modifier does not exist")
 
@@ -83,12 +84,7 @@ class BidModifierViewSet(restapi.common.views_base.RESTAPIBaseViewSet):
         input_data = serializer.validated_data
 
         try:
-            bid_modifier = (
-                models.BidModifier.objects.filter_by_user(request.user)
-                .filter(ad_group__id=ad_group_id)
-                .select_related("source")
-                .get(id=pk)
-            )
+            bid_modifier = self._filter_bid_modifiers(ad_group_id, request.user).select_related("source").get(id=pk)
         except models.BidModifier.DoesNotExist:
             raise exc.MissingDataError("Bid Modifier does not exist")
 
@@ -109,12 +105,7 @@ class BidModifierViewSet(restapi.common.views_base.RESTAPIBaseViewSet):
             if request.data:
                 raise exc.ValidationError("Delete Bid Modifier requires no data")
 
-            number_of_deleted, _ = (
-                models.BidModifier.objects.filter_by_user(request.user)
-                .filter(ad_group__id=ad_group_id)
-                .filter(id=pk)
-                .delete()
-            )
+            number_of_deleted, _ = self._filter_bid_modifiers(ad_group_id, request.user).filter(id=pk).delete()
 
             if number_of_deleted > 0:
                 return self.response_ok({}, status=status.HTTP_204_NO_CONTENT)

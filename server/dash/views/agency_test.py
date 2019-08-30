@@ -819,7 +819,7 @@ class AdGroupSettingsTest(TestCase):
             ad_group = models.AdGroup.objects.get(pk=1)
             ad_group.bidding_type = constants.BiddingType.CPM
             ad_group.save(None)
-            ad_group.settings.update_unsafe(None, max_cpm=20.00, local_max_cpm=20.00)
+            ad_group.settings.update_unsafe(None, max_cpm=2.00, local_max_cpm=2.00)
 
             del self.settings_dict["settings"]["bidding_type"]
             del self.settings_dict["settings"]["b1_sources_group_cpc_cc"]
@@ -887,7 +887,7 @@ class AdGroupSettingsTest(TestCase):
 
             ad_group_source_3 = ad_group.adgroupsource_set.get(id=25)
             ad_group_source_3_settings = ad_group_source_3.get_current_settings().copy_settings()
-            ad_group_source_3_settings.cpc_cc = Decimal("0.001")
+            ad_group_source_3_settings.cpc_cc = Decimal("0.01")
             ad_group_source_3_settings.save(None)
 
             add_permissions(
@@ -962,7 +962,7 @@ class AdGroupSettingsTest(TestCase):
 
             ad_group_source_3 = ad_group.adgroupsource_set.get(id=25)
             ad_group_source_3_settings = ad_group_source_3.get_current_settings().copy_settings()
-            ad_group_source_3_settings.cpm = Decimal("0.001")
+            ad_group_source_3_settings.cpm = Decimal("0.01")
             ad_group_source_3_settings.save(None)
 
             add_permissions(
@@ -1149,14 +1149,14 @@ class AdGroupSettingsTest(TestCase):
         self.assertEqual(response.status_code, 400)
 
         self.settings_dict["settings"]["cpc_cc"] = ok_cpc
-        ad_group.settings.update_unsafe(None, cpc_cc=Decimal(5000))
+        ad_group.settings.update_unsafe(None, cpc_cc=Decimal(5))
         response = self.client.put(
             reverse("ad_group_settings", kwargs={"ad_group_id": ad_group.id}),
             json.dumps(self.settings_dict),
             follow=True,
         )
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(ad_group.get_current_settings().cpc_cc, Decimal(5000))
+        self.assertEqual(ad_group.get_current_settings().cpc_cc, Decimal(5))
         self.assertEqual(ad_group.get_current_settings().state, constants.AdGroupSettingsState.INACTIVE)
 
         self.settings_dict["settings"]["state"] = constants.AdGroupSettingsState.ACTIVE
@@ -1166,7 +1166,7 @@ class AdGroupSettingsTest(TestCase):
             follow=True,
         )
         self.assertEqual(response.status_code, 400)
-        self.assertEqual(ad_group.get_current_settings().cpc_cc, Decimal(5000))
+        self.assertEqual(ad_group.get_current_settings().cpc_cc, Decimal(5))
         self.assertEqual(ad_group.get_current_settings().state, constants.AdGroupSettingsState.INACTIVE)
 
     def test_deactivate_no_validation_cpm(self):
@@ -1184,14 +1184,14 @@ class AdGroupSettingsTest(TestCase):
         self.assertEqual(response.status_code, 400)
 
         self.settings_dict["settings"]["max_cpm"] = ok_cpm
-        ad_group.settings.update_unsafe(None, max_cpm=Decimal(5000))
+        ad_group.settings.update_unsafe(None, max_cpm=Decimal(5))
         response = self.client.put(
             reverse("ad_group_settings", kwargs={"ad_group_id": ad_group.id}),
             json.dumps(self.settings_dict),
             follow=True,
         )
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(ad_group.get_current_settings().max_cpm, Decimal(5000))
+        self.assertEqual(ad_group.get_current_settings().max_cpm, Decimal(5))
         self.assertEqual(ad_group.get_current_settings().state, constants.AdGroupSettingsState.INACTIVE)
 
         self.settings_dict["settings"]["state"] = constants.AdGroupSettingsState.ACTIVE
@@ -1201,7 +1201,7 @@ class AdGroupSettingsTest(TestCase):
             follow=True,
         )
         self.assertEqual(response.status_code, 400)
-        self.assertEqual(ad_group.get_current_settings().max_cpm, Decimal(5000))
+        self.assertEqual(ad_group.get_current_settings().max_cpm, Decimal(5))
         self.assertEqual(ad_group.get_current_settings().state, constants.AdGroupSettingsState.INACTIVE)
 
     @patch.object(core.models.source_type.model.SourceType, "get_etfm_max_daily_budget", return_value=89.77)

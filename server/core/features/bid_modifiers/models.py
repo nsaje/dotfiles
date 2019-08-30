@@ -26,7 +26,7 @@ class BidModifier(models.Model):
         unique_together = ("type", "ad_group", "source_slug", "target")
 
     id = models.AutoField(primary_key=True)
-    type = models.IntegerField(choices=constants.BidModifierType.get_choices())
+    type = models.IntegerField(choices=constants.BidModifierType.get_choices(), db_index=True)
     ad_group = models.ForeignKey(core.models.AdGroup, on_delete=models.PROTECT)
     source = models.ForeignKey(core.models.Source, on_delete=models.PROTECT, null=True, blank=True)
     source_slug = models.CharField(max_length=50, default="", blank=True)
