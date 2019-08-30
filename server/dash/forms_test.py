@@ -468,6 +468,8 @@ class AdGroupSettingsFormTest(TestCase):
                 "state": constants.AdGroupRunningStatus.INACTIVE,
                 "cpc_cc": Decimal("1.00"),
                 "max_cpm": Decimal("1.50"),
+                "cpc": None,
+                "cpm": None,
                 "daily_budget_cc": Decimal("10.00"),
                 "end_date": datetime.date(2014, 12, 31),
                 "name": "Test ad group",

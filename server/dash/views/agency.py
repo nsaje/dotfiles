@@ -346,6 +346,8 @@ class AdGroupSettings(api_common.BaseApiView):
             "end_date": settings.end_date,
             "cpc_cc": "{:.3f}".format(settings.local_cpc_cc) if settings.local_cpc_cc is not None else "",
             "max_cpm": "{:.3f}".format(settings.local_max_cpm) if settings.local_max_cpm is not None else "",
+            "cpc": "{:.3f}".format(settings.local_cpc) if settings.local_cpc is not None else "",
+            "cpm": "{:.3f}".format(settings.local_cpm) if settings.local_cpm is not None else "",
             "daily_budget_cc": "{:.2f}".format(settings.daily_budget_cc)
             if settings.daily_budget_cc is not None
             else "",

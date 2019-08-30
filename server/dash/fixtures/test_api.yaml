@@ -408,6 +408,8 @@
         end_date: '2015-04-02'
         cpc: 1.00
         cpm: 1.00
+        local_cpc: 1.00
+        local_cpm: 1.00
         autopilot_state: 1
         autopilot_daily_budget: '50.0000'
         local_autopilot_daily_budget: '50.0000'
@@ -461,6 +463,8 @@
         start_date: '2015-03-02'
         cpc: 1.00
         cpm: 1.00
+        local_cpc: 1.00
+        local_cpm: 1.00
         b1_sources_group_cpc_cc: '0.0100'
         local_b1_sources_group_cpc_cc: '0.0100'
         b1_sources_group_cpm: '1.0100'

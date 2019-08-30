@@ -195,6 +195,8 @@ class AdGroupSettingsForm(PublisherGroupsFormMixin, MulticurrencySettingsFormMix
     end_date = forms.DateField(required=False)
     cpc_cc = forms.DecimalField(decimal_places=4, required=False)
     max_cpm = forms.DecimalField(decimal_places=4, required=False)
+    cpc = forms.DecimalField(decimal_places=4, required=False)
+    cpm = forms.DecimalField(decimal_places=4, required=False)
     daily_budget_cc = forms.DecimalField(
         min_value=10,
         decimal_places=4,

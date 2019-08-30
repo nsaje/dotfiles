@@ -1,3 +1,5 @@
+import decimal
+
 from django.db import transaction
 
 import core.common
@@ -35,6 +37,7 @@ class AdGroupSettingsMixin(object):
         **updates
     ):
         updates = self._filter_and_remap_input(request, updates, skip_permission_check)
+        updates = self._ensure_bid_default_if_necessary(updates)
         if updates:
             new_settings = self.copy_settings()
             self._apply_updates(new_settings, updates)
@@ -75,6 +78,39 @@ class AdGroupSettingsMixin(object):
 
         user = request.user if request else None
         bid_modifiers.source.handle_ad_group_settings_change(self, changes, user=user, system_user=system_user)
+
+    def _ensure_bid_default_if_necessary(self, updates):
+        if (
+            "cpc_cc" in updates
+            and updates["cpc_cc"] is None
+            or "local_cpc_cc" in updates
+            and updates["local_cpc_cc"] is None
+        ):
+            updates["cpc"] = self._get_cpc_default(updates)
+        if (
+            "max_cpm" in updates
+            and updates["max_cpm"] is None
+            or "local_max_cpm" in updates
+            and updates["local_max_cpm"] is None
+        ):
+            updates["cpm"] = self._get_cpm_default(updates)
+        return updates
+
+    def _get_cpc_default(self, updates):
+        autopilot_enabled = (
+            updates.get("autopilot_state", self.autopilot_state) != constants.AdGroupSettingsAutopilotState.INACTIVE
+        )
+        if not autopilot_enabled:
+            return decimal.Decimal(1)
+        return decimal.Decimal(20)
+
+    def _get_cpm_default(self, updates):
+        autopilot_enabled = (
+            updates.get("autopilot_state", self.autopilot_state) != constants.AdGroupSettingsAutopilotState.INACTIVE
+        )
+        if not autopilot_enabled:
+            return decimal.Decimal(1)
+        return decimal.Decimal(25)
 
     def _update_ad_group(self, request, changes):
         if any(field in changes for field in ["ad_group_name", "archived"]):

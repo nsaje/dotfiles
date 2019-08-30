@@ -395,6 +395,47 @@ class InstanceTest(TestCase):
         ad_group.settings.update(None, b1_sources_group_cpc_cc=Decimal("0.6"))
         mock_update_ad_group.assert_called_once_with(ad_group, msg=mock.ANY, priority=True)
 
+    @patch("utils.k1_helper.update_ad_group")
+    def test_bid_fields_defaults(self, mock_update_ad_group):
+        exchange_rate = Decimal("0.8914")
+        core.features.multicurrency.CurrencyExchangeRate.objects.create(
+            currency=constants.Currency.EUR, date=dates_helper.local_today(), exchange_rate=exchange_rate
+        )
+        account = magic_mixer.blend(core.models.Account, currency=constants.Currency.EUR)
+        campaign = magic_mixer.blend(core.models.Campaign, account=account)
+        ad_group_cpc = magic_mixer.blend(core.models.AdGroup, campaign=campaign)
+        ad_group_cpm = magic_mixer.blend(core.models.AdGroup, campaign=campaign, bidding_type=constants.BiddingType.CPM)
+
+        # autopilot off
+
+        ad_group_cpc.settings.update_unsafe(None, autopilot_state=constants.AdGroupSettingsAutopilotState.INACTIVE)
+        ad_group_cpm.settings.update_unsafe(None, autopilot_state=constants.AdGroupSettingsAutopilotState.INACTIVE)
+
+        ad_group_cpc.settings.update(None, cpc_cc=None)
+        self.assertEqual(1, ad_group_cpc.settings.cpc)
+        self.assertEqual(exchange_rate, ad_group_cpc.settings.local_cpc)
+
+        ad_group_cpm.settings.update(None, max_cpm=None)
+        self.assertEqual(1, ad_group_cpm.settings.cpm)
+        self.assertEqual(exchange_rate, ad_group_cpm.settings.local_cpm)
+
+        # autopilot on
+
+        ad_group_cpc.settings.update_unsafe(
+            None, autopilot_state=constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET
+        )
+        ad_group_cpm.settings.update_unsafe(
+            None, autopilot_state=constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET
+        )
+
+        ad_group_cpc.settings.update(None, cpc_cc=None)
+        self.assertEqual(20, ad_group_cpc.settings.cpc)
+        self.assertEqual(exchange_rate * 20, ad_group_cpc.settings.local_cpc)
+
+        ad_group_cpm.settings.update(None, max_cpm=None)
+        self.assertEqual(25, ad_group_cpm.settings.cpm)
+        self.assertEqual(exchange_rate * 25, ad_group_cpm.settings.local_cpm)
+
 
 class MulticurrencyTest(TestCase):
     @patch.object(core.features.multicurrency, "get_current_exchange_rate")

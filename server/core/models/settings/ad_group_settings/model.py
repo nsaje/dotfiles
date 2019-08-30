@@ -132,6 +132,8 @@ class AdGroupSettings(
         "b1_sources_group_daily_budget",
         "b1_sources_group_cpc_cc",
         "b1_sources_group_cpm",
+        "cpc",
+        "cpm",
     ]
     history_fields = list(set(_settings_fields) - set(multicurrency_fields))
 
