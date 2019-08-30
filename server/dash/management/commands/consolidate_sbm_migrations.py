@@ -188,7 +188,7 @@ class Command(Z1Command):
                 cpm=F("settings__cpm"),
                 source_id=Cast("adgroupsource__source__id", CharField()),
                 source_cpc=F("adgroupsource__settings__cpc_cc"),
-                source_cpm=F("adgroupsource__settings__local_cpm"),
+                source_cpm=F("adgroupsource__settings__cpm"),
                 modifier_id=Subquery(sbm_qs.values_list("id", flat=True)[:1]),
                 modifier=Subquery(sbm_qs.values_list("modifier", flat=True)[:1]),
             )
