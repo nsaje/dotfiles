@@ -121,3 +121,4 @@ haikunator==2.1.0
 # devx
 ipython==7.0.1
 ipdb==0.12
+yappi==1.0

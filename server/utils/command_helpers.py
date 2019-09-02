@@ -1,5 +1,6 @@
 import datetime
 import logging
+import os
 import sys
 
 import dateutil.parser
@@ -10,6 +11,7 @@ from django.core.management.base import BaseCommand
 import dash.models
 import swinfra.metrics
 from dcron import helpers
+from utils import profiler
 
 logger = logging.getLogger(__name__)
 
@@ -30,6 +32,8 @@ class Z1Command(BaseCommand):
             job=job_name,
         )
 
+        if os.environ.get("PROFILER"):
+            profiler.start()
         try:
             application = newrelic.agent.application()
             with newrelic.agent.BackgroundTask(application, name=job_name):
@@ -41,6 +45,8 @@ class Z1Command(BaseCommand):
             raise err
         finally:
             swinfra.metrics.flush_push_metrics()
+            if profiler.is_running():
+                profiler.stop_and_dump()
 
 
 def last_n_days(n):

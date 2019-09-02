@@ -94,7 +94,7 @@ media urls to point to `one-static.zemanta.com/<build-number>`. It will also bui
 npm run prod --build-number=123
 ```
 
-## Debugging
+## Debugging & Profiling
 
 ### Django Queryinspect
 
@@ -115,6 +115,13 @@ try with [this fork](https://github.com/perython/chrome-django-panel/tree/master
 into the master panel.
 
 ![Image](docs/debug_toolbar.png)
+
+
+### Profiling
+
+You can send a SIGUSR2 signal to a process to start profiling and another one to stop. e.g. `kill -s SIGUSR2 <pid>` and after a while, `kill -s SIGUSR2 <pid>`. After the second call, the profile will be dumped to disk. You can view the file with https://nejc.saje.info/pstats-viewer.html .
+
+Jobs can be profiled by using a `PROFILER=1` environment variable, e.g. `PROFILER=1 ./manage.py dcron_launcher monitor_demo`.
 
 
 ## Linting and formatting

@@ -14,6 +14,7 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "server.settings")
 import gevent.socket
 import socket
 import swinfra.wsgi
+import utils.profiler
 
 if socket.socket is gevent.socket.socket:  # if running in gevent
     import psycogreen.gevent
