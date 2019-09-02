@@ -6,7 +6,7 @@ RUN apt-get install  -y --no-install-recommends \
         xvfb
 
 # Update NPM
-RUN npm install npm
+RUN npm install npm@6.10.3
 RUN rm -rf /usr/local/lib/node_modules/npm
 RUN mv node_modules/npm /usr/local/lib/node_modules/npm
 
@@ -26,5 +26,4 @@ RUN npm install -g bower
 
 ADD package.json /app/
 ADD npm-shrinkwrap.json /app/
-RUN rm -rf node_modules/
-RUN npm install
+RUN npm ci
