@@ -26,4 +26,5 @@ RUN npm install -g bower
 
 ADD package.json /app/
 ADD npm-shrinkwrap.json /app/
-RUN npm ci
+RUN rm -rf node_modules/
+RUN npm install
