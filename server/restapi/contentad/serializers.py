@@ -20,6 +20,7 @@ class ContentAdSerializer(
             "url",
             "title",
             "image_url",
+            "icon_url",
             "display_url",
             "brand_name",
             "description",
@@ -42,6 +43,7 @@ class ContentAdSerializer(
             "ad_width": "zemauth.fea_can_change_campaign_type_to_display",
             "ad_height": "zemauth.fea_can_change_campaign_type_to_display",
             "ad_tag": "zemauth.fea_can_change_campaign_type_to_display",
+            "icon_url": "zemauth.can_use_creative_icon",
         }
 
     def to_representation(self, ad):
@@ -63,6 +65,7 @@ class ContentAdSerializer(
     state = restapi.serializers.fields.DashConstantField(dash.constants.ContentAdSourceState, required=False)
     url = rest_framework.serializers.URLField(required=False)
     image_url = rest_framework.serializers.URLField(source="get_image_url", required=False)
+    icon_url = rest_framework.serializers.URLField(source="get_icon_url", required=False)
     type = restapi.serializers.fields.DashConstantField(
         dash.constants.AdType, default=dash.constants.AdType.CONTENT, required=False
     )
@@ -81,6 +84,7 @@ class ContentAdCandidateSerializer(
             "url",
             "title",
             "image_url",
+            "icon_url",
             "display_url",
             "brand_name",
             "description",
@@ -91,11 +95,15 @@ class ContentAdCandidateSerializer(
             "video_asset_id",
         )
         extra_kwargs = {"primary_tracker_url": {"allow_empty": True}, "secondary_tracker_url": {"allow_empty": True}}
-        permissioned_fields = {"additional_data": "zemauth.can_use_ad_additional_data"}
+        permissioned_fields = {
+            "additional_data": "zemauth.can_use_ad_additional_data",
+            "icon_url": "zemauth.can_use_creative_icon",
+        }
 
     url = restapi.serializers.fields.PlainCharField(required=True)
     title = restapi.serializers.fields.PlainCharField(required=True)
     image_url = restapi.serializers.fields.PlainCharField(required=True)
+    icon_url = restapi.serializers.fields.PlainCharField(required=False)
     display_url = restapi.serializers.fields.PlainCharField(required=True)
     brand_name = restapi.serializers.fields.PlainCharField(required=True)
     description = restapi.serializers.fields.PlainCharField(required=True)

@@ -39,6 +39,17 @@ class MockAsyncValidation(threading.Thread):
             else:
                 self.candidate.image_status = constants.AsyncUploadJobStatus.FAILED
 
+        if self.candidate.icon_status != constants.AsyncUploadJobStatus.PENDING_START:
+            if rand > self.fail_probability:
+                self.candidate.icon_id = "p/srv/8678/13f72b5e37a64860a73ac95ff51b2a3f"
+                self.candidate.icon_hash = "2345"
+                self.candidate.icon_height = 200
+                self.candidate.icon_width = 200
+                self.candidate.icon_file_size = 100000
+                self.candidate.icon_status = constants.AsyncUploadJobStatus.OK
+            else:
+                self.candidate.icon_status = constants.AsyncUploadJobStatus.FAILED
+
         rand = random.random()
         if self.candidate.url_status != constants.AsyncUploadJobStatus.PENDING_START:
             if rand > self.fail_probability:

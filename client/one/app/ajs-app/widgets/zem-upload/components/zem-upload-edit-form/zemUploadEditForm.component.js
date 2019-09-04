@@ -88,6 +88,7 @@ angular
             vm.scrollTop();
             vm.api.selectedId = candidate.id;
             vm.showImageUpload = vm.isEdit || !vm.selectedCandidate.imageUrl;
+            vm.showIconUpload = vm.isEdit || !vm.selectedCandidate.iconUrl;
             vm.fieldsLoading = {};
             vm.fieldsSaved = {};
             vm.fieldsApiErrors = {};
@@ -213,6 +214,12 @@ angular
             $scope.$digest();
         };
 
+        vm.iconUploadCallback = function(file) {
+            vm.selectedCandidate.icon = file;
+            vm.updateField(vm.selectedCandidate, 'icon');
+            $scope.$digest();
+        };
+
         vm.updateField = function(candidate, field, useAsDefault) {
             var selectedId = candidate.id;
             var defaults = [];
@@ -318,6 +325,13 @@ angular
             vm.fieldsSaved.image = false;
             vm.fieldsSaved.imageUrl = false;
             vm.showImageUpload = !vm.showImageUpload;
+        };
+
+        vm.toggleIconUpload = function() {
+            if (vm.isEdit) return;
+            vm.fieldsSaved.icon = false;
+            vm.fieldsSaved.iconUrl = false;
+            vm.showIconUpload = !vm.showIconUpload;
         };
 
         vm.renderAdTagInIframe = function(adTag) {

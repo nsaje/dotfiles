@@ -13,6 +13,10 @@ angular
             Thumbnail: ['Image Hash', 'Image URL', 'Ad Tag'],
         };
 
+        if (zemPermissions.hasPermission('zemauth.can_use_creative_icon')) {
+            REMAPPED_FIELDS.Thumbnail.push('Icon Image Hash', 'Icon Image URL');
+        }
+
         var FIELDS_WITH_IDS = [
             'Content Ad',
             'Ad Group',

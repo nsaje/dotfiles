@@ -1062,6 +1062,10 @@ class ContentAdCandidateFormTestCase(TestCase):
                 "image_crop": "center",
                 "image_height": None,
                 "image_width": None,
+                "icon": None,
+                "icon_url": None,
+                "icon_height": None,
+                "icon_width": None,
                 "video_asset_id": "12345678-abcd-1234-abcd-123abcd12345",
                 "ad_tag": None,
                 "display_url": "zemanta.com",
@@ -1100,6 +1104,47 @@ class ContentAdCandidateFormTestCase(TestCase):
         f = forms.ContentAdCandidateForm(None, data, files)
         self.assertTrue(f.is_valid())
         self.assertEqual(f.cleaned_data["image_crop"], "center")
+
+    def test_valid_icon(self):
+        data, files = self._get_valid_data()
+        files["icon"] = self.valid_image
+        data["icon_url"] = "http://zemanta.com/img.jpg"
+        f = forms.ContentAdCandidateForm(None, data, files)
+        self.assertTrue(f.is_valid())
+        self.assertEqual(
+            f.cleaned_data,
+            {
+                "label": "label",
+                "url": "http://zemanta.com",
+                "title": "Title",
+                "type": constants.AdType.VIDEO,
+                "image": self.valid_image,
+                "image_url": "http://zemanta.com/img.jpg",
+                "image_crop": "center",
+                "image_height": None,
+                "image_width": None,
+                "icon": self.valid_image,
+                "icon_url": "http://zemanta.com/img.jpg",
+                "icon_height": None,
+                "icon_width": None,
+                "video_asset_id": "12345678-abcd-1234-abcd-123abcd12345",
+                "ad_tag": None,
+                "display_url": "zemanta.com",
+                "brand_name": "Zemanta",
+                "description": "Description",
+                "call_to_action": "Read more",
+                "primary_tracker_url": "https://zemanta.com/px1",
+                "secondary_tracker_url": "https://zemanta.com/px2",
+                "additional_data": None,
+            },
+        )
+
+    def test_invalid_icon(self):
+        data, files = self._get_valid_data()
+        files["icon"] = self.invalid_image
+        f = forms.ContentAdCandidateForm(None, data, files)
+        self.assertFalse(f.is_valid())
+        self.assertEqual(f.errors["icon"], ["Invalid icon file"])
 
     def test_skipped_call_to_action(self):
         data, files = self._get_valid_data()
@@ -1156,8 +1201,26 @@ class ContentAdFormTestCase(TestCase):
             "image_height": 500,
             "image_file_size": 120000,
             "image_status": constants.AsyncUploadJobStatus.OK,
+            "icon_url": None,
+            "icon_id": None,
+            "icon_hash": None,
+            "icon_width": None,
+            "icon_height": None,
+            "icon_file_size": None,
+            "icon_status": constants.AsyncUploadJobStatus.PENDING_START,
             "url_status": constants.AsyncUploadJobStatus.OK,
         }
+
+    def _get_valid_icon_data(self):
+        data = self._get_valid_data()
+        data["icon_url"] = "http://zemanta.com/img.jpg"
+        data["icon_id"] = "id234"
+        data["icon_hash"] = "iconhash"
+        data["icon_width"] = 200
+        data["icon_height"] = 200
+        data["icon_file_size"] = 120000
+        data["icon_status"] = constants.AsyncUploadJobStatus.OK
+        return data
 
     def test_form(self):
         f = forms.ContentAdForm(self.campaign, self._get_valid_data())
@@ -1288,6 +1351,111 @@ class ContentAdFormTestCase(TestCase):
         self.campaign.account.id = 305
         data = self._get_valid_data()
         data["image_height"] = 1
+        f = forms.ContentAdForm(self.campaign, data)
+        self.assertTrue(f.is_valid())
+
+    def test_icon(self):
+        data = self._get_valid_icon_data()
+        f = forms.ContentAdForm(self.campaign, data)
+        self.assertTrue(f.is_valid())
+        self.assertEqual("http://zemanta.com/img.jpg", f.cleaned_data["icon_url"])
+        self.assertEqual("id234", f.cleaned_data["icon_id"])
+        self.assertEqual("iconhash", f.cleaned_data["icon_hash"])
+        self.assertEqual(200, f.cleaned_data["icon_width"])
+        self.assertEqual(200, f.cleaned_data["icon_height"])
+        self.assertEqual(120000, f.cleaned_data["icon_file_size"])
+        self.assertEqual(constants.AsyncUploadJobStatus.OK, f.cleaned_data["icon_status"])
+
+    def test_no_icon_and_invalid_status(self):
+        data = self._get_valid_data()
+        data["icon_status"] = constants.AsyncUploadJobStatus.FAILED
+        f = forms.ContentAdForm(self.campaign, data)
+        self.assertTrue(f.is_valid())
+
+    def test_icon_status_pending_start(self):
+        data = self._get_valid_icon_data()
+        data["icon_status"] = constants.AsyncUploadJobStatus.PENDING_START
+        f = forms.ContentAdForm(self.campaign, data)
+        self.assertFalse(f.is_valid())
+        self.assertEqual({"__all__": ["Content ad still processing"]}, f.errors)
+
+    def test_icon_status_waiting_response(self):
+        data = self._get_valid_icon_data()
+        data["icon_status"] = constants.AsyncUploadJobStatus.WAITING_RESPONSE
+        f = forms.ContentAdForm(self.campaign, data)
+        self.assertFalse(f.is_valid())
+        self.assertEqual({"__all__": ["Content ad still processing"]}, f.errors)
+
+    def test_invalid_icon_url(self):
+        data = self._get_valid_icon_data()
+        data["icon_url"] = "ttp://example.com"
+        f = forms.ContentAdForm(self.campaign, data)
+        self.assertFalse(f.is_valid())
+        self.assertEqual({"icon_url": ["Invalid icon URL"]}, f.errors)
+
+    def test_invalid_icon_status(self):
+        data = self._get_valid_icon_data()
+        data["icon_status"] = constants.AsyncUploadJobStatus.FAILED
+        f = forms.ContentAdForm(self.campaign, data)
+        self.assertFalse(f.is_valid())
+        self.assertEqual({"icon_url": ["Icon could not be processed"]}, f.errors)
+
+    def test_missing_icon_id(self):
+        data = self._get_valid_icon_data()
+        del data["icon_id"]
+        f = forms.ContentAdForm(self.campaign, data)
+        self.assertFalse(f.is_valid())
+        self.assertEqual({"icon_url": ["Icon could not be processed"]}, f.errors)
+
+    def test_missing_icon_hash(self):
+        data = self._get_valid_icon_data()
+        del data["icon_hash"]
+        f = forms.ContentAdForm(self.campaign, data)
+        self.assertFalse(f.is_valid())
+        self.assertEqual({"icon_url": ["Icon could not be processed"]}, f.errors)
+
+    def test_missing_icon_width(self):
+        data = self._get_valid_icon_data()
+        del data["icon_width"]
+        f = forms.ContentAdForm(self.campaign, data)
+        self.assertFalse(f.is_valid())
+        self.assertEqual({"icon_url": ["Icon could not be processed"]}, f.errors)
+
+    def test_missing_icon_height(self):
+        data = self._get_valid_icon_data()
+        del data["icon_height"]
+        f = forms.ContentAdForm(self.campaign, data)
+        self.assertFalse(f.is_valid())
+        self.assertEqual({"icon_url": ["Icon could not be processed"]}, f.errors)
+
+    def test_is_icon_square(self):
+        data = self._get_valid_icon_data()
+        data["icon_width"] = data["icon_height"] + 1
+        f = forms.ContentAdForm(self.campaign, data)
+        self.assertFalse(f.is_valid())
+        self.assertEqual({"icon_url": ["Icon's height and width must be equal"]}, f.errors)
+
+    def test_icon_min_size(self):
+        data = self._get_valid_icon_data()
+        data["icon_height"] = 1
+        data["icon_width"] = 1
+        f = forms.ContentAdForm(self.campaign, data)
+        self.assertFalse(f.is_valid())
+        self.assertEqual({"icon_url": ["Icon too small (minimum size is 128x128 px)"]}, f.errors)
+
+    def test_icon_max_size(self):
+        data = self._get_valid_icon_data()
+        data["icon_height"] = 40001
+        data["icon_width"] = 40001
+        f = forms.ContentAdForm(self.campaign, data)
+        self.assertFalse(f.is_valid())
+        self.assertEqual({"icon_url": ["Icon too big (maximum size is 10000x10000 px)"]}, f.errors)
+
+    def test_icon_size_oen(self):
+        self.campaign.account.id = 305
+        data = self._get_valid_icon_data()
+        data["icon_height"] = 1
+        data["icon_width"] = 1
         f = forms.ContentAdForm(self.campaign, data)
         self.assertTrue(f.is_valid())
 
@@ -1799,6 +1967,21 @@ class ImageAdFormTestCase(TestCase):
         self.assertFalse(f.is_valid())
         self.assertEqual({"secondary_tracker_url": ["Invalid impression tracker URL"]}, f.errors)
 
+    def test_no_icon_on_image_ad(self):
+        data = self._get_valid_data()
+        data["icon_url"] = "http://icon.com"
+        data["icon_id"] = "1234id"
+        data["icon_hash"] = "1234hash"
+        data["icon_file_size"] = 100000
+        data["icon_status"] = constants.AsyncUploadJobStatus.OK
+        f = forms.ImageAdForm(self.campaign, data)
+        self.assertTrue(f.is_valid())
+        self.assertEqual(None, f.cleaned_data["icon_url"])
+        self.assertEqual(None, f.cleaned_data["icon_id"])
+        self.assertEqual(None, f.cleaned_data["icon_hash"])
+        self.assertEqual(None, f.cleaned_data["icon_file_size"])
+        self.assertEqual(constants.AsyncUploadJobStatus.OK, f.cleaned_data["icon_status"])
+
 
 class AdTagFormTestCase(TestCase):
     def setUp(self):
@@ -2018,6 +2201,21 @@ class AdTagFormTestCase(TestCase):
         f = forms.AdTagForm(self.campaign, data)
         self.assertFalse(f.is_valid())
         self.assertEqual({"secondary_tracker_url": ["Invalid impression tracker URL"]}, f.errors)
+
+    def test_no_icon_on_ad_tag_ad(self):
+        data = self._get_valid_data()
+        data["icon_url"] = "http://icon.com"
+        data["icon_id"] = "1234id"
+        data["icon_hash"] = "1234hash"
+        data["icon_file_size"] = 100000
+        data["icon_status"] = constants.AsyncUploadJobStatus.OK
+        f = forms.AdTagForm(self.campaign, data)
+        self.assertTrue(f.is_valid())
+        self.assertEqual(None, f.cleaned_data["icon_url"])
+        self.assertEqual(None, f.cleaned_data["icon_id"])
+        self.assertEqual(None, f.cleaned_data["icon_hash"])
+        self.assertEqual(None, f.cleaned_data["icon_file_size"])
+        self.assertEqual(constants.AsyncUploadJobStatus.OK, f.cleaned_data["icon_status"])
 
 
 class AudienceFormTestCase(TestCase):

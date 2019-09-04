@@ -17,8 +17,9 @@ class ContentAdManager(models.Manager):
         self.insert_redirects([content_ad], clickthrough_resolve=r1_resolve)
         return content_ad
 
-    def _create(self, batch, sources, **kwargs):
+    def _create(self, batch, sources, **updates):
         self._validate_archived(batch)
+        self._validate_icon(updates)
 
         content_ad = model.ContentAd(
             ad_group=batch.ad_group,
@@ -30,10 +31,13 @@ class ContentAdManager(models.Manager):
             }.get(batch.ad_group.campaign.type, constants.AdType.CONTENT),
         )
 
-        for field in kwargs:
+        for field in updates:
             if not hasattr(content_ad, field):
                 continue
-            setattr(content_ad, field, kwargs[field])
+            setattr(content_ad, field, updates[field])
+
+        if all(field in updates for field in ["icon_height", "icon_width"]):
+            setattr(content_ad, "icon_size", updates["icon_height"])
 
         if batch.default_state == constants.ContentAdSourceState.ACTIVE:
             content_ad.state = constants.ContentAdSourceState.ACTIVE
@@ -50,6 +54,10 @@ class ContentAdManager(models.Manager):
     def _validate_archived(self, batch):
         if batch.ad_group.is_archived():
             raise exceptions.AdGroupIsArchived("Can not create a content ad on an archived ad group.")
+
+    def _validate_icon(self, updates):
+        if updates.get("icon_height") != updates.get("icon_width"):
+            raise exceptions.IconNotSquare("Icon's height and width must be equal.")
 
     @transaction.atomic
     def bulk_create_from_candidates(self, candidate_dicts, batch, r1_resolve=True):

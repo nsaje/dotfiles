@@ -26,6 +26,7 @@ VALID_UPDATE_FIELDS = set(
         "ad_tag",
         "image_width",
         "image_height",
+        "icon_size",
         "document_id",
         "document_features",
     ]

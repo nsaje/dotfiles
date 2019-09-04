@@ -59,6 +59,7 @@ class InstanceTest(TestCase):
         updates["tracker_urls"] = ["test1", "test2"]
         updates["image_width"] = 300
         updates["image_height"] = 250
+        updates["icon_size"] = 200
         updates["document_id"] = 123
         updates["type"] = constants.AdType.CONTENT
         content_ad.update(None, **updates)

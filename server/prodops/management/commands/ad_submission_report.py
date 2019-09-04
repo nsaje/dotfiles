@@ -96,6 +96,7 @@ class Command(utils.command_helpers.Z1Command):
                     content_ad_source.content_ad.pk,
                     content_ad_source.content_ad.ad_group.campaign.account.get_long_name(),
                     content_ad_source.content_ad.get_image_url(),
+                    content_ad_source.content_ad.get_icon_url(),
                     content_ad_source.content_ad.url,
                     content_ad_source.content_ad.title,
                     content_ad_source.content_ad.display_url,

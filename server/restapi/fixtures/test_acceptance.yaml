@@ -513,6 +513,9 @@
         image_hash: '987654321'
         image_width: 200
         image_height: 300
+        icon_id: '234567890'
+        icon_hash: '098765432'
+        icon_size: 200
         batch: 1302
         archived: False
         url: 'http://testurl.com'

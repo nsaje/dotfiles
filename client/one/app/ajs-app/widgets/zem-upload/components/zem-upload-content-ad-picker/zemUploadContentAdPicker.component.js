@@ -105,6 +105,8 @@ angular.module('one.widgets').component('zemUploadContentAdPicker', {
             if (
                 candidate.imageStatus ===
                     constants.asyncUploadJobStatus.PENDING_START &&
+                candidate.iconStatus ===
+                    constants.asyncUploadJobStatus.PENDING_START &&
                 candidate.urlStatus ===
                     constants.asyncUploadJobStatus.PENDING_START &&
                 candidate.primaryTrackerUrlStatus ===
@@ -118,6 +120,8 @@ angular.module('one.widgets').component('zemUploadContentAdPicker', {
 
             if (
                 candidate.imageStatus ===
+                    constants.asyncUploadJobStatus.WAITING_RESPONSE ||
+                candidate.iconStatus ===
                     constants.asyncUploadJobStatus.WAITING_RESPONSE ||
                 candidate.urlStatus ===
                     constants.asyncUploadJobStatus.WAITING_RESPONSE ||
@@ -137,6 +141,10 @@ angular.module('one.widgets').component('zemUploadContentAdPicker', {
                 (candidate.imageStatus ===
                     constants.asyncUploadJobStatus.PENDING_START &&
                     candidate.adType !== constants.adType.AD_TAG) ||
+                (candidate.iconStatus ===
+                    constants.asyncUploadJobStatus.PENDING_START &&
+                    candidate.adType !== constants.adType.AD_TAG &&
+                    candidate.adType !== constants.adType.IMAGE) ||
                 candidate.urlStatus ===
                     constants.asyncUploadJobStatus.PENDING_START ||
                 candidate.primaryTrackerUrlStatus ===
@@ -306,6 +314,21 @@ angular.module('one.widgets').component('zemUploadContentAdPicker', {
                         ) {
                             candidate.landscapeHostedImageUrl =
                                 updatedCandidate.landscapeHostedImageUrl;
+                        }
+                    }
+
+                    if (
+                        updatedCandidate.iconStatus !==
+                        constants.asyncUploadJobStatus.PENDING_START
+                    ) {
+                        candidate.iconStatus = updatedCandidate.iconStatus;
+                        if (updatedCandidate.errors.hasOwnProperty('iconUrl')) {
+                            candidate.errors.iconUrl =
+                                updatedCandidate.errors.iconUrl;
+                        }
+                        if (updatedCandidate.hasOwnProperty('hostedIconUrl')) {
+                            candidate.hostedIconUrl =
+                                updatedCandidate.hostedIconUrl;
                         }
                     }
 

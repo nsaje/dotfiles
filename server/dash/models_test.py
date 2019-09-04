@@ -484,12 +484,36 @@ class ContentAdTest(TestCase):
         image_url = content_ad.get_original_image_url()
         self.assertEqual(image_url, "http://test.com/foo.jpg")
 
-        image_url = content_ad.get_original_image_url()
+        image_url = content_ad.get_original_image_url(width=200, height=300)
         self.assertEqual(image_url, "http://test.com/foo.jpg")
 
         content_ad = models.ContentAd(image_id=None, image_width=100, image_height=200)
         image_url = content_ad.get_original_image_url()
         self.assertEqual(image_url, None)
+
+    def test_get_icon_url(self):
+        content_ad = models.ContentAd(icon_id="foo", icon_size=100)
+        icon_url = content_ad.get_icon_url(300)
+        self.assertEqual(icon_url, "http://test.com/foo.jpg?w=300&h=300&fit=crop&crop=center")
+
+        icon_url = content_ad.get_icon_url()
+        self.assertEqual(icon_url, "http://test.com/foo.jpg?w=100&h=100&fit=crop&crop=center")
+
+        content_ad = models.ContentAd(icon_id=None, icon_size=100)
+        icon_url = content_ad.get_icon_url()
+        self.assertEqual(icon_url, None)
+
+    def test_original_icon_url(self):
+        content_ad = models.ContentAd(icon_id="foo", icon_size=100)
+        icon_url = content_ad.get_original_icon_url()
+        self.assertEqual(icon_url, "http://test.com/foo.jpg")
+
+        icon_url = content_ad.get_original_icon_url(size=300)
+        self.assertEqual(icon_url, "http://test.com/foo.jpg")
+
+        content_ad = models.ContentAd(icon_id=None, icon_size=100)
+        icon_url = content_ad.get_original_icon_url()
+        self.assertEqual(icon_url, None)
 
 
 def created_by_patch(sender, instance, **kwargs):

@@ -481,6 +481,9 @@
         image_hash: '100'
         image_width: 200
         image_height: 300
+        icon_id: '1000'
+        icon_hash: '1000'
+        icon_size: 400
         batch: 1
         archived: False
         url: 'http://testurl1.com'

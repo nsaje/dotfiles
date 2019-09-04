@@ -21,7 +21,9 @@ from . import views
 class ContentAdsTest(RESTAPITest):
     def setUp(self):
         super().setUp()
-        utils.test_helper.add_permissions(self.user, ["fea_can_change_campaign_type_to_display"])
+        utils.test_helper.add_permissions(
+            self.user, ["fea_can_change_campaign_type_to_display", "can_use_creative_icon"]
+        )
 
     @classmethod
     def contentad_repr(
@@ -32,6 +34,7 @@ class ContentAdsTest(RESTAPITest):
         url="https://www.example.com",
         title="My title",
         image_url="https://www.example.com/img",
+        icon_url="https://www.example.com/icon",
         display_url="https://www.example.com/landing",
         brand_name="My brand",
         description="My description",
@@ -47,6 +50,7 @@ class ContentAdsTest(RESTAPITest):
             "url": url,
             "title": title,
             "imageUrl": image_url,
+            "iconUrl": icon_url,
             "displayUrl": display_url,
             "brandName": brand_name,
             "description": description,
@@ -66,6 +70,7 @@ class ContentAdsTest(RESTAPITest):
             url=cad_db.url,
             title=cad_db.title,
             image_url=cad_db.get_image_url(),
+            icon_url=cad_db.get_icon_url(),
             display_url=cad_db.display_url,
             brand_name=cad_db.brand_name,
             description=cad_db.description,
@@ -108,6 +113,12 @@ class ContentAdsTest(RESTAPITest):
         self.assertNotIn("adTag", resp_json["data"])
         self.assertNotIn("adWidth", resp_json["data"])
         self.assertNotIn("adHeight", resp_json["data"])
+
+    def test_contentads_get_icon_no_permission(self):
+        utils.test_helper.remove_permissions(self.user, ["can_use_creative_icon"])
+        r = self.client.get(reverse("contentads_details", kwargs={"content_ad_id": 16805}))
+        resp_json = self.assertResponseValid(r)
+        self.assertNotIn("iconUrl", resp_json["data"])
 
     def test_contentads_get_permissioned_display(self):
         utils.test_helper.add_permissions(self.user, ["can_use_ad_additional_data"])
@@ -198,8 +209,18 @@ class TestBatchUpload(TestCase):
     fixtures = ["test_views.yaml"]
 
     def setUp(self):
+        self.user = User.objects.get(pk=2)
         self.client = APIClient()
-        self.client.force_authenticate(user=User.objects.get(pk=1))
+        self.client.force_authenticate(user=self.user)
+        utils.test_helper.add_permissions(
+            self.user,
+            [
+                "can_use_restapi",
+                "can_see_all_accounts",
+                "fea_can_change_campaign_type_to_display",
+                "can_use_creative_icon",
+            ],
+        )
 
     @staticmethod
     def _mock_content_ad(title):
@@ -208,6 +229,7 @@ class TestBatchUpload(TestCase):
             "url": "https://www.example.com/p/83895c0e-3bbe-4ad7-a0f6-c1917788ceb9",
             "title": title,
             "imageUrl": "http://example.com/p/srv/9018/e5d6adb68f1d404f82541e335c50bbd3.jpg?w=1024&h=768&fit=crop&crop=center&fm=jpg",
+            "iconUrl": "http://example.com/p/srv/9018/e5d6adb68f1d404f82541e335c50bbd4.jpg?w=300&h=300&fit=crop&crop=center&fm=jpg",
             "displayUrl": "kuhic.com",
             "brandName": "Kassulke-Hartmann",
             "description": "People really should avert their gaze from the modern survival thinking for just a bit and also look at how folks 150 years ago did it.",
@@ -253,14 +275,23 @@ class TestBatchUpload(TestCase):
             candidate.image_height = 250 if is_display_ad else 500
             candidate.image_width = 300 if is_display_ad else 500
             candidate.image_file_size = 120000
+            candidate.icon_id = "p/srv/8678/13f72b5e37a64860a73ac95ff51b2a3f"
+            candidate.icon_hash = "2345"
+            candidate.icon_height = 300
+            candidate.icon_width = 300
+            candidate.icon_file_size = 100000
             candidate.image_status = constants.AsyncUploadJobStatus.OK
+            candidate.icon_status = constants.AsyncUploadJobStatus.OK
             candidate.url_status = constants.AsyncUploadJobStatus.OK
             candidate.save()
         contentupload.upload._handle_auto_save(batch)
 
     @mock.patch("dash.features.contentupload.upload._invoke_external_validation", mock.Mock())
     def test_content_batch_upload_success(self):
-        to_upload = [self._mock_content_ad("test1"), self._mock_content_ad("test2")]
+        ad1 = self._mock_content_ad("test1")
+        ad2 = self._mock_content_ad("test2")
+        del ad2["iconUrl"]
+        to_upload = [ad1, ad2]
         r = self.client.post(reverse("contentads_batch_list") + "?adGroupId=987", to_upload, format="json")
         self.assertEqual(r.status_code, 201)
         resp_json = json.loads(r.content)
@@ -287,9 +318,9 @@ class TestBatchUpload(TestCase):
         self.assertEqual(resp_json["data"]["status"], "DONE")
         self.assertEqual(batch_id, int(resp_json["data"]["id"]))
 
-        saved_display_ads = batch.contentad_set.all().order_by("pk")
+        saved_content_ads = batch.contentad_set.all().order_by("pk")
         self.assertEqual(len(to_upload), len(resp_json["data"]["approvedContentAds"]))
-        self.assertEqual(len(to_upload), len(saved_display_ads))
+        self.assertEqual(len(to_upload), len(saved_content_ads))
         for i in range(len(to_upload)):
             for field in (
                 "state",
@@ -302,7 +333,25 @@ class TestBatchUpload(TestCase):
                 "trackerUrls",
             ):
                 self.assertEqual(to_upload[i][field], resp_json["data"]["approvedContentAds"][i][field])
-            self.assertEqual(saved_display_ads[i].id, int(resp_json["data"]["approvedContentAds"][i]["id"]))
+            self.assertEqual(saved_content_ads[i].id, int(resp_json["data"]["approvedContentAds"][i]["id"]))
+
+    @mock.patch("dash.features.contentupload.upload._invoke_external_validation", mock.Mock())
+    def test_content_batch_upload_success_no_icon_permission(self):
+        utils.test_helper.remove_permissions(self.user, ["can_use_creative_icon"])
+        to_upload = [self._mock_content_ad("test1")]
+        r = self.client.post(reverse("contentads_batch_list") + "?adGroupId=987", to_upload, format="json")
+        resp_json = json.loads(r.content)
+
+        batch_id = int(resp_json["data"]["id"])
+        batch = dash.models.UploadBatch.objects.get(pk=batch_id)
+        candidate = batch.contentadcandidate_set.get()
+
+        self.assertIsNotNone(to_upload[0]["iconUrl"])
+        self.assertIsNone(candidate.icon_id)
+        self.assertIsNone(candidate.icon_hash)
+        self.assertIsNone(candidate.icon_height)
+        self.assertIsNone(candidate.icon_width)
+        self.assertIsNone(candidate.icon_file_size)
 
     @mock.patch("dash.features.contentupload.upload._invoke_external_validation", mock.Mock())
     def test_video_batch_upload_success(self):
@@ -411,6 +460,7 @@ class TestBatchUpload(TestCase):
     def _reject_candidates(batch):
         for candidate in batch.contentadcandidate_set.all():
             candidate.image_status = constants.AsyncUploadJobStatus.FAILED
+            candidate.icon_status = constants.AsyncUploadJobStatus.FAILED
             candidate.url_status = constants.AsyncUploadJobStatus.FAILED
             candidate.save()
         contentupload.upload._handle_auto_save(batch)

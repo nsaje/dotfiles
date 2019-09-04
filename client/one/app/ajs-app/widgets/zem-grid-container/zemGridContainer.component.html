@@ -72,6 +72,16 @@
                 <div class="ad-preview__brand-name">{{ctrl.row.data.stats.brand_name.value}}</div>
                 <div class="ad-preview__url">{{ctrl.row.data.stats.display_url.value}}</div>
             </div>
+            <div ng-if="ctrl.data.icon" class="ad-preview__item ad-preview__item--icon">
+                <div class="ad-preview__icon-container">
+                    <img ng-src="{{ctrl.data.icon}}" class="ad-preview__icon"/>
+                </div>
+                <div class="ad-preview__details">
+                    <div class="ad-preview__title">{{ctrl.row.data.stats.breakdown_name.text}}</div>
+                    <div class="ad-preview__brand-name">{{ctrl.row.data.stats.brand_name.value}}</div>
+                    <div class="ad-preview__url">{{ctrl.row.data.stats.display_url.value}}</div>
+                </div>
+            </div>
         </div>
         <div class="ad-preview__container" ng-if="ctrl.isImage()">
             <div class="ad-preview__item ad-preview__item--display">

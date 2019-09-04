@@ -8,6 +8,7 @@ from django.urls import reverse
 from mock import MagicMock
 from mock import patch
 
+import utils.test_helper
 from dash import constants
 from dash import models
 from utils.magic_mixer import magic_mixer
@@ -31,14 +32,17 @@ class UploadCsvTestCase(TestCase):
 
     fixtures = ["test_upload.yaml"]
 
+    def setUp(self):
+        utils.test_helper.add_permissions(User.objects.get(id=2), permissions=["can_use_creative_icon"])
+
     @patch("utils.lambda_helper.invoke_lambda", MagicMock())
     def test_post_content_ad(self):
         ad_group_id = 1
         mock_file = SimpleUploadedFile(
             "test_upload.csv",
-            b"URL,Title,Image URL,Label,Image Crop,Primary impression tracker url,Secondary impression tracker url,Brand name,Display URL,"
+            b"URL,Title,Image URL,Label,Image Crop,Icon Image URL,Primary impression tracker url,Secondary impression tracker url,Brand name,Display URL,"
             b"Call to Action,Description\nhttp://zemanta.com/test-content-ad,test content ad,"
-            b"http://zemanta.com/test-image.jpg,test,entropy,https://t.zemanta.com/px1.png,"
+            b"http://zemanta.com/test-image.jpg,test,entropy,http://zemanta.com/test-icon.jpg,https://t.zemanta.com/px1.png,"
             b"https://t.zemanta.com/px2.png,Zemanta,zemanta.com,Click for more,description",
         )
         response = _get_client().post(
@@ -70,12 +74,42 @@ class UploadCsvTestCase(TestCase):
         self.assertEqual("test content ad", candidate.title)
         self.assertEqual("http://zemanta.com/test-image.jpg", candidate.image_url)
         self.assertEqual("entropy", candidate.image_crop)
+        self.assertEqual("http://zemanta.com/test-icon.jpg", candidate.icon_url)
         self.assertEqual("https://t.zemanta.com/px1.png", candidate.primary_tracker_url)
         self.assertEqual("https://t.zemanta.com/px2.png", candidate.secondary_tracker_url)
         self.assertEqual("zemanta.com", candidate.display_url)
         self.assertEqual("Zemanta", candidate.brand_name)
         self.assertEqual("description", candidate.description)
         self.assertEqual("Click for more", candidate.call_to_action)
+
+    def test_post_content_ad_no_icon_permission(self):
+        utils.test_helper.remove_permissions(User.objects.get(id=2), permissions=["can_use_creative_icon"])
+
+        mock_file = SimpleUploadedFile(
+            "test_upload.csv",
+            b"URL,Title,Image URL,Label,Image Crop,Icon Image URL,Primary impression tracker url,Secondary impression tracker url,Brand name,Display URL,"
+            b"Call to Action,Description\nhttp://zemanta.com/test-content-ad,test content ad,"
+            b"http://zemanta.com/test-image.jpg,test,entropy,http://zemanta.com/test-icon.jpg,https://t.zemanta.com/px1.png,"
+            b"https://t.zemanta.com/px2.png,Zemanta,zemanta.com,Click for more,description",
+        )
+        response = _get_client().post(
+            reverse("upload_csv", kwargs={}),
+            {"candidates": mock_file, "batch_name": "batch 1", "ad_group_id": 1, "account_id": 1},
+            follow=True,
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(
+            {
+                "success": False,
+                "data": {
+                    "error_code": "ValidationError",
+                    "message": None,
+                    "errors": {"candidates": ['Unrecognized column name "Icon Image URL".']},
+                    "data": None,
+                },
+            },
+            json.loads(response.content),
+        )
 
     @patch("utils.lambda_helper.invoke_lambda", MagicMock())
     def test_post_content_ad_ad_group_archived(self):
@@ -433,6 +467,7 @@ class UploadStatusTestCase(TestCase):
         expected_candidate = candidate.to_dict()
         expected_candidate["errors"] = {
             "image_url": ["Image could not be processed"],
+            "icon_url": ["Icon could not be processed"],
             "url": ["Content unreachable or invalid"],
             "primary_tracker_url": ["Invalid or unreachable tracker URL"],
             "secondary_tracker_url": ["Invalid or unreachable tracker URL"],
@@ -681,9 +716,32 @@ class CandidatesDownloadTestCase(TestCase):
 
     fixtures = ["test_upload.yaml"]
 
+    def setUp(self):
+        utils.test_helper.add_permissions(User.objects.get(id=2), permissions=["can_use_creative_icon"])
+
     def test_valid(self):
         batch_id = 1
 
+        batch = models.UploadBatch.objects.get(id=batch_id)
+        self.assertEqual(constants.UploadBatchStatus.IN_PROGRESS, batch.status)
+        response = _get_client().get(reverse("upload_candidates_download", kwargs={"batch_id": batch_id}), follow=True)
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(
+            (
+                '"URL","Title","Image URL","Icon Image URL","Display URL","Brand name","Description","Call to action",'
+                '"Label","Image crop","Primary impression tracker URL","Secondary impression'
+                ' tracker URL"\r\n"http://zemanta.com/blog","Zemanta blog čšž",'
+                '"http://zemanta.com/img.jpg","http://zemanta.com/icon.jpg","zemanta.com","Zemanta","Zemanta blog",'
+                '"Read more","content ad 1","entropy","",""\r\n'
+            ).encode("utf-8"),
+            response.content,
+        )
+        self.assertEqual('attachment; filename="batch 1.csv"', response.get("Content-Disposition"))
+
+    def test_valid_no_icon_permission(self):
+        utils.test_helper.remove_permissions(User.objects.get(id=2), permissions=["can_use_creative_icon"])
+
+        batch_id = 1
         batch = models.UploadBatch.objects.get(id=batch_id)
         self.assertEqual(constants.UploadBatchStatus.IN_PROGRESS, batch.status)
 
@@ -694,8 +752,8 @@ class CandidatesDownloadTestCase(TestCase):
                 '"URL","Title","Image URL","Display URL","Brand name","Description","Call to action",'
                 '"Label","Image crop","Primary impression tracker URL","Secondary impression'
                 ' tracker URL"\r\n"http://zemanta.com/blog","Zemanta blog čšž",'
-                '"http://zemanta.com/img.jpg","zemanta.com","Zemanta","Zemanta blog","Read more",'
-                '"content ad 1","entropy","",""\r\n'
+                '"http://zemanta.com/img.jpg","zemanta.com","Zemanta","Zemanta blog",'
+                '"Read more","content ad 1","entropy","",""\r\n'
             ).encode("utf-8"),
             response.content,
         )
@@ -880,6 +938,7 @@ class CandidateTest(TestCase):
                             "title": "Zemanta blog čšž",
                             "type": constants.AdType.CONTENT,
                             "image_url": "http://zemanta.com/img.jpg",
+                            "icon_url": "http://zemanta.com/icon.jpg",
                             "image_crop": "entropy",
                             "display_url": "zemanta.com",
                             "brand_name": "Zemanta",
@@ -895,6 +954,13 @@ class CandidateTest(TestCase):
                             "image_hash": None,
                             "image_file_size": None,
                             "image_status": constants.AsyncUploadJobStatus.PENDING_START,
+                            "icon_height": None,
+                            "icon_width": None,
+                            "icon_id": None,
+                            "icon_hash": None,
+                            "icon_file_size": None,
+                            "icon_status": constants.AsyncUploadJobStatus.PENDING_START,
+                            "hosted_icon_url": None,
                             "url_status": constants.AsyncUploadJobStatus.PENDING_START,
                             "primary_tracker_url": None,
                             "secondary_tracker_url": None,
@@ -930,6 +996,7 @@ class CandidateTest(TestCase):
                         "title": "",
                         "type": constants.AdType.CONTENT,
                         "image_url": None,
+                        "icon_url": None,
                         "image_crop": constants.ImageCrop.CENTER,
                         "display_url": "",
                         "brand_name": "",
@@ -943,6 +1010,13 @@ class CandidateTest(TestCase):
                         "image_id": None,
                         "image_file_size": None,
                         "image_status": constants.AsyncUploadJobStatus.PENDING_START,
+                        "icon_height": None,
+                        "icon_width": None,
+                        "icon_id": None,
+                        "icon_hash": None,
+                        "icon_file_size": None,
+                        "icon_status": constants.AsyncUploadJobStatus.PENDING_START,
+                        "hosted_icon_url": None,
                         "url_status": constants.AsyncUploadJobStatus.PENDING_START,
                         "hosted_image_url": None,
                         "landscape_hosted_image_url": None,

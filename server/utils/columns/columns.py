@@ -33,6 +33,8 @@ _FIELD_MAPPING = {
     "ad_tag": ("Ad Tag",),
     "tracker_urls": ("Impression trackers",),
     "image_url": ("Image URL",),
+    "icon_url": ("Icon Image URL",),
+    "icon_hash": ("Icon Image Hash",),
     "label": ("Label",),
     "upload_time": ("Uploaded",),
     "url": ("URL",),

@@ -587,6 +587,7 @@
     ad_group: 2
     batch_id: 1
     image_status: 1  # pending
+    icon_status: 1  # pending
     url_status: 1  # pending
     primary_tracker_url_status:  1 # pending
     secondary_tracker_url_status: 1 # pending
@@ -605,6 +606,12 @@
     image_width: null
     image_height: null
     image_hash: null
+    icon_url: 'http://zemanta.com/icon.jpg'
+    icon_width: null
+    icon_height: null
+    icon_file_size: null
+    icon_hash: null
+    icon_id: null 
   model: dash.contentadcandidate
   pk: 1
 
@@ -612,6 +619,7 @@
     ad_group: 3
     batch_id: 2
     image_status: 3  # ok
+    icon_status: 3  # ok
     url_status: 3  # ok
     created_dt: '2016-05-31T09:00:00'
     label: 'content ad 1'
@@ -627,6 +635,12 @@
     image_height: 500
     image_file_size: 120000
     image_hash: '54321cba'
+    icon_url: 'http://zemanta.com/icon.jpg'
+    icon_width: 200
+    icon_height: 200
+    icon_file_size: 100000
+    icon_hash: '54321cbb'
+    icon_id: 'abc23456'    
     primary_tracker_url: 'https://t.zemanta.com/px1.png'
     secondary_tracker_url: 'https://t.zemanta.com/px2.png'
     image_id: 'abc12345'
@@ -638,6 +652,7 @@
     ad_group: 4
     batch_id: 3
     image_status: 4  # failed
+    icon_status: 4  # failed
     url_status: 4  # failed
     primary_tracker_url_status:  4 # failed
     secondary_tracker_url_status: 4 # failed
@@ -658,6 +673,12 @@
     image_width: null
     image_height: null
     image_hash: null
+    icon_url: 'http://zemanta.com/icon.jpg'
+    icon_width: null
+    icon_height: null
+    icon_file_size: null
+    icon_hash: null
+    icon_id: null 
   model: dash.contentadcandidate
   pk: 3
 
@@ -665,6 +686,7 @@
     ad_group: 4
     batch_id: 5
     image_status: 3  # ok
+    icon_status: 3  # ok
     url_status: 3  # ok
     created_dt: '2016-05-31T09:00:00'
     label: 'content ad 1'
@@ -682,6 +704,12 @@
     primary_tracker_url: 'https://primaryTrackerUrl.com'
     secondary_tracker_url: ''
     image_id: 'abc12345'
+    icon_url: 'http://zemanta.com/icon.jpg'
+    icon_width: 200
+    icon_height: 200
+    icon_file_size: 100000
+    icon_hash: '54321cbb'
+    icon_id: 'abc23456'   
   model: dash.contentadcandidate
   pk: 4
 
@@ -689,6 +717,7 @@
     ad_group: 4
     batch_id: 5
     image_status: 2  # waiting
+    icon_status: 2  # waiting
     url_status: 2  # waiting
     created_dt: '2016-05-31T09:00:00'
     label: 'content ad 1'
@@ -704,6 +733,12 @@
     image_width: null
     image_height: null
     image_hash: null
+    icon_url: 'http://zemanta.com/icon.jpg'
+    icon_width: null
+    icon_height: null
+    icon_file_size: null
+    icon_hash: null
+    icon_id: null 
   model: dash.contentadcandidate
   pk: 5
 
@@ -711,6 +746,7 @@
     ad_group: 6
     batch_id: 7
     image_status: 3  # ok
+    icon_status: 3  # ok
     type: 2
     url_status: 3  # ok
     created_dt: '2016-05-31T09:00:00'
@@ -727,6 +763,12 @@
     image_height: 400
     image_file_size: 120000
     image_hash: '54321cba'
+    icon_url: 'http://zemanta.com/iconnew.jpg'
+    icon_width: 200
+    icon_height: 200
+    icon_file_size: 100000
+    icon_hash: '54321cbb'
+    icon_id: 'abc23456'
     primary_tracker_url: 'https://t.zemanta.com/px1.png'
     secondary_tracker_url: 'https://t.zemanta.com/px2.png'
     image_id: 'abc12345'
@@ -741,6 +783,7 @@
     ad_group: 7
     batch_id: 8
     image_status: 3  # ok
+    icon_status: 3  # ok
     url_status: 3  # ok
     primary_tracker_url_status:  3 # ok
     secondary_tracker_url_status: 3 # ok
@@ -763,6 +806,12 @@
     secondary_tracker_url: 'https://t.zemanta.com/px2.png'
     image_id: 'abc12345'
     video_asset: '12345678-abcd-1234-abcd-123abcd12345'
+    icon_url: 'http://zemanta.com/icon.jpg'
+    icon_width: 200
+    icon_height: 200
+    icon_file_size: 100000
+    icon_hash: '54321cbb'
+    icon_id: 'abc23456'
   model: dash.contentadcandidate
   pk: 7
 
@@ -770,6 +819,7 @@
     ad_group: 9
     batch_id: 10
     image_status: 3  # ok
+    icon_status: 3  # ok
     type: 4
     url_status: 3  # ok
     created_dt: '2016-05-31T09:00:00'
@@ -788,6 +838,12 @@
     primary_tracker_url: 'https://t.zemanta.com/px1.png'
     secondary_tracker_url: 'https://t.zemanta.com/px2.png'
     image_id: null
+    icon_url: ''
+    icon_width: null
+    icon_height: null
+    icon_file_size: null
+    icon_hash: null
+    icon_id: null 
     ad_tag: "<body></body>"
   model: dash.contentadcandidate
   pk: 8
@@ -796,6 +852,7 @@
     ad_group: 10
     batch_id: 11
     image_status: 3  # ok
+    icon_status: 3  # ok
     url_status: 3  # ok
     created_dt: '2016-05-31T09:00:00'
     label: 'content ad 1'
@@ -815,6 +872,12 @@
     primary_tracker_url: 'https://t.zemanta.com/px1.png'
     secondary_tracker_url: 'https://t.zemanta.com/px2.png'
     image_id: 'abc12345'
+    icon_url: 'http://zemanta.com/icon.jpg'
+    icon_width: 200
+    icon_height: 200
+    icon_file_size: 100000
+    icon_hash: '54321cbb'
+    icon_id: 'abc23456'   
   model: dash.contentadcandidate
   pk: 9
 

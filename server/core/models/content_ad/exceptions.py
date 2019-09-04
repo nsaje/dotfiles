@@ -7,3 +7,7 @@ class CampaignAdTypeMismatch(ValidationError):
 
 class AdGroupIsArchived(ValidationError):
     pass
+
+
+class IconNotSquare(ValidationError):
+    pass

@@ -51,7 +51,7 @@ class UploadBatch(api_common.BaseApiView):
 
 class UploadCsv(api_common.BaseApiView):
     def post(self, request):
-        form = forms.AdGroupAdsUploadForm(request.POST, request.FILES)
+        form = forms.AdGroupAdsUploadForm(request.POST, request.FILES, user=request.user)
         if not form.is_valid():
             raise utils.exc.ValidationError(errors=form.errors)
 
@@ -157,7 +157,7 @@ class CandidatesDownload(api_common.BaseApiView):
         if "batch_name" in request.GET:
             batch_name = request.GET["batch_name"]
 
-        content = upload.get_candidates_csv(batch)
+        content = upload.get_candidates_csv(request, batch)
         return self.create_csv_response(batch_name, content=content)
 
 

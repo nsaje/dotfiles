@@ -828,9 +828,37 @@ zem-grid {
         }
     }
 
+    .ad-preview__item--icon {
+        min-height: 100px;
+        display: flex;
+
+        .ad-preview__icon-container {
+            flex: 0 0 100px;
+            height: 100px;
+        }
+
+        .ad-preview__icon {
+            width: 100px;
+            height: 100px;
+            left: 0;
+            top: 0;
+        }
+
+        .ad-preview__title,
+        .ad-preview__brand-name,
+        .ad-preview__url {
+            padding-left: 10px;
+        }
+    }
+
     .ad-preview__image {
         display: block;
         margin-bottom: 5px;
+    }
+
+    .ad-preview__icon {
+        display: block;
+        margin-bottom: 10px;
     }
 
     .ad-preview__iframe {

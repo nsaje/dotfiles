@@ -39,6 +39,7 @@ describe('zemUploadContentAdPicker', function() {
                     title: 'Title 1',
                     imageUrl: 'http://exmaple.com/img1.jpg',
                     imageCrop: 'center',
+                    iconUrl: 'http://exmaple.com/icon1.jpg',
                     description: '',
                     displayUrl: 'example.com',
                     brandName: '',
@@ -46,6 +47,7 @@ describe('zemUploadContentAdPicker', function() {
                     label: 'title1',
                     imageStatus:
                         constants.asyncUploadJobStatus.WAITING_RESPONSE,
+                    iconStatus: constants.asyncUploadJobStatus.WAITING_RESPONSE,
                     urlStatus: constants.asyncUploadJobStatus.WAITING_RESPONSE,
                 },
             ],
@@ -63,6 +65,7 @@ describe('zemUploadContentAdPicker', function() {
                     title: 'Title 1',
                     imageUrl: 'http://exmaple.com/img1.jpg',
                     imageCrop: 'center',
+                    iconUrl: 'http://exmaple.com/icon1.jpg',
                     description: '',
                     displayUrl: 'example.com',
                     brandName: '',
@@ -70,6 +73,7 @@ describe('zemUploadContentAdPicker', function() {
                     label: 'title1',
                     imageStatus:
                         constants.asyncUploadJobStatus.WAITING_RESPONSE,
+                    iconStatus: constants.asyncUploadJobStatus.WAITING_RESPONSE,
                     urlStatus: constants.asyncUploadJobStatus.WAITING_RESPONSE,
                     primaryTrackerUrlStatus:
                         constants.asyncUploadJobStatus.WAITING_RESPONSE,
@@ -97,6 +101,7 @@ describe('zemUploadContentAdPicker', function() {
                 title: '',
                 imageUrl: 'http://exmaple.com/img1.jpg',
                 imageCrop: 'center',
+                iconUrl: 'http://exmaple.com/icon1.jpg',
                 description: '',
                 displayUrl: 'example.com',
                 brandName: '',
@@ -104,7 +109,9 @@ describe('zemUploadContentAdPicker', function() {
                 label: 'title1',
                 hostedImageUrl: 'http://zemanta.com/img1.jpg',
                 landscapeHostedImageUrl: 'http://zemanta.com/img1.jpg',
+                hostedIconUrl: 'http://zemanta.com/icon1.jpg',
                 imageStatus: constants.asyncUploadJobStatus.OK,
+                iconStatus: constants.asyncUploadJobStatus.OK,
                 urlStatus: constants.asyncUploadJobStatus.FAILED,
                 primaryTrackerUrlStatus:
                     constants.asyncUploadJobStatus.WAITING_RESPONSE,
@@ -126,11 +133,17 @@ describe('zemUploadContentAdPicker', function() {
             expect($ctrl.candidates[0].imageStatus).toEqual(
                 constants.asyncUploadJobStatus.OK
             );
+            expect($ctrl.candidates[0].iconStatus).toEqual(
+                constants.asyncUploadJobStatus.OK
+            );
             expect($ctrl.candidates[0].urlStatus).toEqual(
                 constants.asyncUploadJobStatus.FAILED
             );
             expect($ctrl.candidates[0].hostedImageUrl).toBe(
                 'http://zemanta.com/img1.jpg'
+            );
+            expect($ctrl.candidates[0].hostedIconUrl).toBe(
+                'http://zemanta.com/icon1.jpg'
             );
             expect($ctrl.candidates[0].landscapeHostedImageUrl).toBe(
                 'http://zemanta.com/img1.jpg'
@@ -172,12 +185,14 @@ describe('zemUploadContentAdPicker', function() {
                 title: 'Title 2',
                 imageUrl: 'http://exmaple.com/img2.jpg',
                 imageCrop: 'center',
+                iconUrl: 'http://exmaple.com/icon2.jpg',
                 description: '',
                 displayUrl: 'example.com',
                 brandName: '',
                 callToAction: 'Read more',
                 label: 'title2',
                 imageStatus: constants.asyncUploadJobStatus.OK,
+                iconStatus: constants.asyncUploadJobStatus.OK,
                 urlStatus: constants.asyncUploadJobStatus.OK,
             });
             $ctrl.batchId = 1234;
@@ -212,12 +227,14 @@ describe('zemUploadContentAdPicker', function() {
                 title: 'Title 1',
                 imageUrl: 'http://exmaple.com/img1.jpg',
                 imageCrop: 'center',
+                iconUrl: 'http://exmaple.com/icon1.jpg',
                 description: '',
                 displayUrl: 'example.com',
                 brandName: '',
                 callToAction: 'Read more',
                 label: 'title1',
                 imageStatus: constants.asyncUploadJobStatus.OK,
+                iconStatus: constants.asyncUploadJobStatus.OK,
                 urlStatus: constants.asyncUploadJobStatus.OK,
                 errors: {
                     imageUrl: ['Invalid image URL'],
@@ -231,6 +248,9 @@ describe('zemUploadContentAdPicker', function() {
             $rootScope.$digest();
             expect($ctrl.candidates[0].imageStatus).toEqual(
                 resolvedCandidate.imageStatus
+            );
+            expect($ctrl.candidates[0].iconStatus).toEqual(
+                resolvedCandidate.iconStatus
             );
             expect($ctrl.candidates[0].urlStatus).toEqual(
                 resolvedCandidate.urlStatus
@@ -269,12 +289,14 @@ describe('zemUploadContentAdPicker', function() {
                 title: 'Title 1',
                 imageUrl: 'http://exmaple.com/img1.jpg',
                 imageCrop: 'center',
+                iconUrl: 'http://exmaple.com/icon1.jpg',
                 description: '',
                 displayUrl: 'example.com',
                 brandName: '',
                 callToAction: 'Read more',
                 label: 'title1',
                 imageStatus: constants.asyncUploadJobStatus.WAITING_RESPONSE,
+                iconStatus: constants.asyncUploadJobStatus.WAITING_RESPONSE,
                 urlStatus: constants.asyncUploadJobStatus.WAITING_RESPONSE,
                 primaryTrackerUrlStatus:
                     constants.asyncUploadJobStatus.WAITING_RESPONSE,
@@ -332,12 +354,14 @@ describe('zemUploadContentAdPicker', function() {
                 title: 'Title 1',
                 imageUrl: 'http://exmaple.com/img1.jpg',
                 imageCrop: 'center',
+                iconUrl: 'http://exmaple.com/icon1.jpg',
                 description: '',
                 displayUrl: 'example.com',
                 brandName: '',
                 callToAction: 'Read more',
                 label: 'title1',
                 imageStatus: constants.asyncUploadJobStatus.WAITING_RESPONSE,
+                iconStatus: constants.asyncUploadJobStatus.WAITING_RESPONSE,
                 urlStatus: constants.asyncUploadJobStatus.WAITING_RESPONSE,
             };
             $ctrl.candidates = [candidate];
@@ -374,12 +398,14 @@ describe('zemUploadContentAdPicker', function() {
                 title: 'Title 1',
                 imageUrl: 'http://exmaple.com/img1.jpg',
                 imageCrop: 'center',
+                iconUrl: 'http://exmaple.com/icon1.jpg',
                 description: '',
                 displayUrl: 'example.com',
                 brandName: '',
                 callToAction: 'Read more',
                 label: 'title1',
                 imageStatus: constants.asyncUploadJobStatus.WAITING_RESPONSE,
+                iconStatus: constants.asyncUploadJobStatus.WAITING_RESPONSE,
                 urlStatus: constants.asyncUploadJobStatus.WAITING_RESPONSE,
             };
             $ctrl.candidates = [candidate];

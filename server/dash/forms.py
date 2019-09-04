@@ -862,6 +862,7 @@ class UserForm(forms.Form):
 DISPLAY_URL_MAX_LENGTH = 35
 MANDATORY_CSV_FIELDS = ["url", "title", "image_url"]
 OPTIONAL_CSV_FIELDS = [
+    "icon_url",
     "display_url",
     "brand_name",
     "description",
@@ -876,13 +877,16 @@ OPTIONAL_CSV_FIELDS = [
 ALL_CSV_FIELDS = MANDATORY_CSV_FIELDS + OPTIONAL_CSV_FIELDS
 IGNORED_CSV_FIELDS = ["errors"]
 JOINT_CSV_FIELDS = {"creative_size": ("x", "image_width", "image_height")}
+NATIVE_SPECIFIC_FIELDS = ["icon_url"]
 DISPLAY_SPECIFIC_FIELDS = ["creative_size", "ad_tag"]
 
 EXPRESSIVE_FIELD_NAME_MAPPING = {
+    "icon_image_url": "icon_url",
     "primary_impression_tracker_url": "primary_tracker_url",
     "secondary_impression_tracker_url": "secondary_tracker_url",
 }
 INVERSE_EXPRESSIVE_FIELD_NAME_MAPPING = {v: k for k, v in EXPRESSIVE_FIELD_NAME_MAPPING.items()}
+FIELD_PERMISSION_MAPPING = {"icon_url": ("zemauth.can_use_creative_icon",)}
 
 # Example CSV content - must be ignored if mistakenly uploaded
 # Example File is served by client (Zemanta_Content_Ads_Template.csv)
@@ -900,6 +904,7 @@ CSV_EXPORT_COLUMN_NAMES_DICT = OrderedDict(
         ["title", "Title"],
         ["image_url", "Image URL"],
         ["image_crop", "Image crop"],
+        ["icon_url", "Icon Image URL"],
         ["display_url", "Display URL"],
         ["brand_name", "Brand name"],
         ["call_to_action", "Call to action"],
@@ -1032,6 +1037,10 @@ class ParseCSVExcelFile(object):
 class AdGroupAdsUploadForm(AdGroupAdsUploadBaseForm, ParseCSVExcelFile):
     candidates = forms.FileField(error_messages={"required": "Please choose a file to upload."})
 
+    def __init__(self, *args, **kwargs):
+        self.user = kwargs.pop("user", None)
+        super().__init__(*args, **kwargs)
+
     def _get_column_names(self, header):
         # this function maps original CSV column names to internal, normalized
         # ones that are then used across the application
@@ -1056,7 +1065,13 @@ class AdGroupAdsUploadForm(AdGroupAdsUploadBaseForm, ParseCSVExcelFile):
             # immediately works.
             field = re.sub(r"_*\(optional\)", "", field)
             field = EXPRESSIVE_FIELD_NAME_MAPPING.get(field, field)
-            if n >= 3 and field not in OPTIONAL_CSV_FIELDS and field not in IGNORED_CSV_FIELDS:
+            if (
+                n >= 3
+                and field not in OPTIONAL_CSV_FIELDS
+                and field not in IGNORED_CSV_FIELDS
+                or self.user
+                and not all(self.user.has_perm(p) for p in FIELD_PERMISSION_MAPPING.get(field, []))
+            ):
                 raise forms.ValidationError('Unrecognized column name "{0}".'.format(header[n]))
             column_names[n] = field
 
@@ -1345,6 +1360,7 @@ class BreakdownForm(ViewFilterForm):
 
 class ContentAdCandidateForm(forms.ModelForm):
     image = forms.ImageField(required=False, error_messages={"invalid_image": "Invalid image file"})
+    icon = forms.ImageField(required=False, error_messages={"invalid_image": "Invalid icon file"})
     # TODO: Set queryset in __init__ to filter video assets by account
     video_asset_id = forms.ModelChoiceField(queryset=models.VideoAsset.objects.all(), required=False)
     type = forms.TypedChoiceField(
@@ -1353,13 +1369,16 @@ class ContentAdCandidateForm(forms.ModelForm):
         error_messages={"invalid_choice": "Choose a valid ad type"},
         coerce=int,
     )
-    ad_tag = forms.CharField(required=False)
     image_width = forms.IntegerField(required=False)
     image_height = forms.IntegerField(required=False)
+    icon_width = forms.IntegerField(required=False)
+    icon_height = forms.IntegerField(required=False)
 
     def __init__(self, campaign, data, files=None, original_content_ad=None):
-        if files and "image" in files:
-            files["image"].seek(0)
+        for image_field in ["image", "icon"]:
+            if files and image_field in files:
+                files[image_field].seek(0)
+
         super(ContentAdCandidateForm, self).__init__(data, files)
         self.campaign = campaign
         self.original_content_ad = original_content_ad
@@ -1370,6 +1389,9 @@ class ContentAdCandidateForm(forms.ModelForm):
             return constants.ImageCrop.CENTER
 
         return image_crop.lower()
+
+    def clean_icon_url(self):
+        return self.cleaned_data.get("icon_url") or None
 
     def clean_video_asset_id(self):
         video_asset = self.cleaned_data.get("video_asset_id")
@@ -1410,6 +1432,7 @@ class ContentAdCandidateForm(forms.ModelForm):
             "type",
             "image_url",
             "image_crop",
+            "icon_url",
             "video_asset_id",
             "display_url",
             "brand_name",
@@ -1418,6 +1441,7 @@ class ContentAdCandidateForm(forms.ModelForm):
             "primary_tracker_url",
             "secondary_tracker_url",
             "additional_data",
+            "ad_tag",
         ]
 
 
@@ -1438,6 +1462,7 @@ class ContentAdForm(ContentAdCandidateForm):
         choices=constants.ImageCrop.get_choices(),
         error_messages={"invalid_choice": "Choose a valid image crop", "required": "Choose a valid image crop"},
     )
+    icon_url = PlainCharField(required=False)
     # TODO: Set queryset in __init__ to filter video assets by account
     video_asset_id = forms.ModelChoiceField(queryset=models.VideoAsset.objects.all(), required=False)
     display_url = DisplayURLField(
@@ -1478,12 +1503,19 @@ class ContentAdForm(ContentAdCandidateForm):
     image_hash = PlainCharField(required=False)
     image_file_size = forms.IntegerField(required=False)
 
+    icon_id = PlainCharField(required=False)
+    icon_hash = PlainCharField(required=False)
+    icon_file_size = forms.IntegerField(required=False)
+
     image_status = forms.IntegerField(required=False)
+    icon_status = forms.IntegerField(required=False)
     url_status = forms.IntegerField(required=False)
     primary_tracker_url_status = forms.IntegerField(required=False)
     secondary_tracker_url_status = forms.IntegerField(required=False)
+
     MIN_IMAGE_SIZE = 300
     MAX_IMAGE_SIZE = 10000
+    MIN_ICON_SIZE = 128
 
     def __init__(self, campaign, *args, **kwargs):
         super(ContentAdForm, self).__init__(campaign, *args, **kwargs)
@@ -1533,6 +1565,15 @@ class ContentAdForm(ContentAdCandidateForm):
         except forms.ValidationError:
             raise forms.ValidationError("Invalid image URL")
 
+    def clean_icon_url(self):
+        icon_url = self.cleaned_data.get("icon_url").strip()
+        if not icon_url:
+            return
+        try:
+            return self._validate_url(icon_url)
+        except forms.ValidationError:
+            raise forms.ValidationError("Invalid icon URL")
+
     def clean_primary_tracker_url(self):
         url = self.cleaned_data.get("primary_tracker_url").strip()
         if not url:
@@ -1556,6 +1597,28 @@ class ContentAdForm(ContentAdCandidateForm):
             return image_crop.lower()
 
         raise forms.ValidationError("Image crop {} is not supported".format(image_crop))
+
+    def _get_status_error_msg(self, cleaned_data):
+        finished_statuses = [constants.AsyncUploadJobStatus.FAILED, constants.AsyncUploadJobStatus.OK]
+
+        url_processed = cleaned_data["url_status"] in finished_statuses
+        image_processed = cleaned_data["image_status"] in finished_statuses
+
+        icon_fields = [
+            cleaned_data["icon_id"],
+            cleaned_data["icon_hash"],
+            cleaned_data["icon_width"],
+            cleaned_data["icon_height"],
+            cleaned_data["icon_file_size"],
+        ]
+        icon_processed = (
+            cleaned_data["icon_status"] in finished_statuses
+            or not any(icon_fields)
+            and cleaned_data["icon_status"] == constants.AsyncUploadJobStatus.PENDING_START
+        )
+
+        if not (url_processed and image_processed and icon_processed):
+            return "Content ad still processing"
 
     def _get_image_error_msg(self, cleaned_data):
         image_status = cleaned_data["image_status"]
@@ -1589,6 +1652,46 @@ class ContentAdForm(ContentAdCandidateForm):
 
         if image_width > self.MAX_IMAGE_SIZE or image_height > self.MAX_IMAGE_SIZE:
             return "Image too big (maximum size is {max}x{max} px)".format(max=self.MAX_IMAGE_SIZE)
+
+    def _get_icon_error_msg(self, cleaned_data):
+        icon_status = cleaned_data["icon_status"]
+        if icon_status not in [constants.AsyncUploadJobStatus.FAILED, constants.AsyncUploadJobStatus.OK]:
+            return
+
+        if icon_status == constants.AsyncUploadJobStatus.FAILED:
+            return "Icon could not be processed"
+
+        return self._validate_icon_parameters(cleaned_data) or self._validate_icon_size(cleaned_data)
+
+    def _validate_icon_parameters(self, cleaned_data):
+        icon_fields = [
+            cleaned_data["icon_id"],
+            cleaned_data["icon_hash"],
+            cleaned_data["icon_width"],
+            cleaned_data["icon_height"],
+            cleaned_data["icon_file_size"],
+        ]
+        if not (all(icon_fields) or not any(icon_fields)):
+            return "Icon could not be processed"
+
+    def _validate_icon_size(self, cleaned_data):
+        if self.campaign and self.campaign.account.id == 305:
+            return
+
+        icon_width = cleaned_data["icon_width"]
+        icon_height = cleaned_data["icon_height"]
+
+        if icon_width is None or icon_height is None:
+            return
+
+        if icon_width != icon_height:
+            return "Icon's height and width must be equal"
+
+        if icon_width < self.MIN_ICON_SIZE:
+            return "Icon too small (minimum size is {min}x{min} px)".format(min=self.MIN_ICON_SIZE)
+
+        if icon_width > self.MAX_IMAGE_SIZE:
+            return "Icon too big (maximum size is {max}x{max} px)".format(max=self.MAX_IMAGE_SIZE)
 
     def _get_url_error_msg(self, cleaned_data):
         url_status = cleaned_data["url_status"]
@@ -1624,13 +1727,17 @@ class ContentAdForm(ContentAdCandidateForm):
         cleaned_data = super(ContentAdForm, self).clean()
         self._set_tracker_urls(cleaned_data)
 
-        finished_statuses = [constants.AsyncUploadJobStatus.FAILED, constants.AsyncUploadJobStatus.OK]
-        if cleaned_data["image_status"] not in finished_statuses or cleaned_data["url_status"] not in finished_statuses:
-            self.add_error(None, "Content ad still processing")
+        status_error_msg = self._get_status_error_msg(cleaned_data)
+        if status_error_msg:
+            self.add_error(None, status_error_msg)
 
         image_error_msg = self._get_image_error_msg(cleaned_data)
         if "image_url" in cleaned_data and cleaned_data["image_url"] and image_error_msg:
             self.add_error("image_url", image_error_msg)
+
+        icon_error_msg = self._get_icon_error_msg(cleaned_data)
+        if "icon_url" in cleaned_data and cleaned_data["icon_url"] and icon_error_msg:
+            self.add_error("icon_url", icon_error_msg)
 
         url_error_msg = self._get_url_error_msg(cleaned_data)
         if "url" in cleaned_data and cleaned_data["url"] and url_error_msg:
@@ -1687,6 +1794,12 @@ class ImageAdForm(ContentAdForm):
             raise forms.ValidationError("Invalid display ad type")
         return self.cleaned_data["type"]
 
+    def _get_status_error_msg(self, cleaned_data):
+        finished_statuses = [constants.AsyncUploadJobStatus.FAILED, constants.AsyncUploadJobStatus.OK]
+        field_statuses = [cleaned_data["image_status"], cleaned_data["url_status"]]
+        if not all(field_status in finished_statuses for field_status in field_statuses):
+            return "Content ad still processing"
+
     def _validate_image_size(self, cleaned_data):
         if not cleaned_data.get("image_width") or not cleaned_data.get("image_height"):
             return
@@ -1707,6 +1820,11 @@ class ImageAdForm(ContentAdForm):
         self.cleaned_data["brand_name"] = ""
         self.cleaned_data["description"] = ""
         self.cleaned_data["additional_data"] = None
+        self.cleaned_data["icon_url"] = None
+        self.cleaned_data["icon_id"] = None
+        self.cleaned_data["icon_hash"] = None
+        self.cleaned_data["icon_file_size"] = None
+        self.cleaned_data["icon_status"] = constants.AsyncUploadJobStatus.OK
         self.cleaned_data["ad_tag"] = None
 
     def clean(self):
@@ -1744,6 +1862,11 @@ class AdTagForm(ImageAdForm):
         self.cleaned_data["image_hash"] = None
         self.cleaned_data["image_file_size"] = None
         self.cleaned_data["image_status"] = constants.AsyncUploadJobStatus.OK
+        self.cleaned_data["icon_url"] = None
+        self.cleaned_data["icon_id"] = None
+        self.cleaned_data["icon_hash"] = None
+        self.cleaned_data["icon_file_size"] = None
+        self.cleaned_data["icon_status"] = constants.AsyncUploadJobStatus.OK
 
     def clean(self):
         ad_size_error = self._validate_image_size(self.cleaned_data)

@@ -3621,6 +3621,31 @@ h4 {
     .clearfix();
 }
 
+.ad-preview__item--icon {
+    margin-top: @spacing--default;
+    padding-top: @spacing--default;
+    border-top: 1px solid @color--lighter-neutral;
+
+    position: relative;
+    min-height: 150px;
+
+    .ad-preview__icon-link {
+        position: absolute;
+        left: 0;
+        top: @spacing--default;
+        width: 150px;
+        height: 150px;
+    }
+
+    .ad-preview__title,
+    .ad-preview__brand-name,
+    .ad-preview__url {
+        padding-left: 170px;
+    }
+
+    .clearfix();
+}
+
 .ad-preview__image-link {
     position: relative;
     display: block;
@@ -3658,6 +3683,14 @@ h4 {
     width: 100%;
     z-index: 2;
     position: relative;
+}
+
+.ad-preview__icon {
+    display: block;
+    width: 100%;
+    z-index: 2;
+    position: relative;
+    margin-bottom: 15px;
 }
 
 .ad-preview__title {

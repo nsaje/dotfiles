@@ -37,6 +37,8 @@ VALID_UPDATE_FIELDS = set(
         "type",
         "image_height",
         "image_width",
+        "icon_height",
+        "icon_width",
     ]
 )
 
@@ -117,6 +119,13 @@ def _reset_candidate_async_status(candidate):
         candidate.image_width = None
         candidate.image_height = None
         candidate.image_file_size = None
+    if candidate.type not in [constants.AdType.IMAGE, constants.AdType.AD_TAG] and candidate.icon_url:
+        candidate.icon_status = constants.AsyncUploadJobStatus.WAITING_RESPONSE
+        candidate.icon_id = None
+        candidate.icon_hash = None
+        candidate.icon_width = None
+        candidate.icon_height = None
+        candidate.icon_file_size = None
 
     candidate.save()
 
@@ -138,15 +147,18 @@ def _invoke_external_validation(candidate, batch):
         "candidateID": candidate.pk,
         "pageUrl": cleaned_urls["url"],
         "adGroupID": candidate.ad_group_id,
-        "imageUrl": cleaned_urls["image_url"],
+        "imageUrls": [],
         "callbackUrl": settings.LAMBDA_CONTENT_UPLOAD_CALLBACK_URL,
         "skipUrlValidation": skip_url_validation,
         "normalize": candidate.type not in [constants.AdType.IMAGE, constants.AdType.AD_TAG],
         "impressionTrackers": [it for it in [candidate.primary_tracker_url, candidate.secondary_tracker_url] if it],
     }
 
-    if candidate.type == constants.AdType.AD_TAG:
-        del data["imageUrl"]
+    if cleaned_urls["image_url"]:
+        data["imageUrls"].append(cleaned_urls["image_url"])
+
+    if cleaned_urls["icon_url"]:
+        data["imageUrls"].append(cleaned_urls["icon_url"])
 
     if settings.USE_CELERY_FOR_UPLOAD_LAMBDAS:
         _invoke_lambda_celery.delay(data)
@@ -261,9 +273,9 @@ def get_candidates_with_errors(candidates):
     return result
 
 
-def get_candidates_csv(batch):
+def get_candidates_csv(request, batch):
     candidates = batch.contentadcandidate_set.all()
-    return _get_candidates_csv(batch.ad_group, candidates)
+    return _get_candidates_csv(request, batch.ad_group, candidates)
 
 
 def _update_content_ads(request, update_candidates):
@@ -274,20 +286,44 @@ def _update_content_ads(request, update_candidates):
     return updated_content_ads
 
 
-def _get_candidates_csv(ad_group, candidates):
+def _get_candidates_csv(request, ad_group, candidates):
     fields = [_transform_field(field) for field in forms.ALL_CSV_FIELDS]
     rows = _get_candidates_csv_rows(candidates)
     fields, rows = _remove_ad_type_specific_fields_and_rows(ad_group, fields, rows)
+    fields, rows = _remove_permissioned_fields_and_rows(request, fields, rows)
     return csv_utils.dictlist_to_csv(fields, rows)
 
 
 def _remove_ad_type_specific_fields_and_rows(ad_group, fields, rows):
     if ad_group.campaign.type != constants.CampaignType.DISPLAY:
-        for field in forms.DISPLAY_SPECIFIC_FIELDS:
-            field = _transform_field(field)
-            field in fields and fields.remove(field)
-            for row in rows:
-                row.pop(field, None)
+        fields, rows = _remove_specific_fields_and_rows(forms.DISPLAY_SPECIFIC_FIELDS, fields, rows)
+    else:
+        fields, rows = _remove_specific_fields_and_rows(forms.NATIVE_SPECIFIC_FIELDS, fields, rows)
+    return fields, rows
+
+
+def _remove_specific_fields_and_rows(specific_fields, fields, rows):
+    for field in specific_fields:
+        fields, rows = _remove_fields_and_rows(field, fields, rows)
+    return fields, rows
+
+
+def _remove_permissioned_fields_and_rows(request, fields, rows):
+    if not request or not request.user:
+        return fields, rows
+
+    for field, permissions in forms.FIELD_PERMISSION_MAPPING.items():
+        if not all(request.user.has_perm(p) for p in permissions):
+            fields, rows = _remove_fields_and_rows(field, fields, rows)
+
+    return fields, rows
+
+
+def _remove_fields_and_rows(original_field, fields, rows):
+    field = _transform_field(original_field)
+    field in fields and fields.remove(field)
+    for row in rows:
+        row.pop(field, None)
     return fields, rows
 
 
@@ -372,7 +408,7 @@ def _update_candidate(data, batch, files):
         if batch.type == constants.UploadBatchType.EDIT and field not in VALID_UPDATE_FIELDS:
             raise exc.ChangeForbidden("Update not permitted - field is not editable")
 
-        if field == "image" or field not in form.cleaned_data:
+        if field in ["image", "icon"] or field not in form.cleaned_data:
             continue
 
         updated_fields[field] = form.cleaned_data[field]
@@ -386,9 +422,18 @@ def _update_candidate(data, batch, files):
         candidate.image_url = None
         updated_fields["image_url"] = None
 
+    if form.cleaned_data.get("icon"):
+        icon_url = image_helper.upload_image_to_s3(form.cleaned_data["icon"], batch.id)
+        candidate.icon_url = icon_url
+        updated_fields["icon_url"] = icon_url
+    elif form.errors.get("icon"):
+        candidate.icon_url = None
+        updated_fields["icon_url"] = None
+
     if (
         candidate.has_changed("url")
         or candidate.has_changed("image_url")
+        or candidate.has_changed("icon_url")
         or candidate.has_changed("primary_tracker_url")
         or candidate.has_changed("secondary_tracker_url")
     ):
@@ -461,18 +506,14 @@ def _get_cleaned_urls(candidate):
     return {
         "url": f.cleaned_data.get("url"),
         "image_url": f.cleaned_data.get("image_url"),
+        "icon_url": f.cleaned_data.get("icon_url"),
         "primary_tracker_url": f.cleaned_data.get("primary_tracker_url"),
         "secondary_tracker_url": f.cleaned_data.get("secondary_tracker_url"),
     }
 
 
 def _process_image_url_update(candidate, image_url, callback_data):
-    if (
-        candidate.type == constants.AdType.AD_TAG
-        or "originUrl" not in callback_data.get("image", {})
-        or callback_data.get("image", {}).get("originUrl") != image_url
-    ):
-        # prevent issues with concurrent jobs
+    if candidate.type == constants.AdType.AD_TAG or image_url not in callback_data.get("images", {}):
         return
 
     if candidate.image_status == constants.AsyncUploadJobStatus.PENDING_START:
@@ -480,14 +521,38 @@ def _process_image_url_update(candidate, image_url, callback_data):
         return
 
     candidate.image_status = constants.AsyncUploadJobStatus.FAILED
+    image_data = callback_data["images"][image_url]
     try:
-        if candidate.type != constants.AdType.AD_TAG and callback_data["image"]["valid"]:
-            candidate.image_id = callback_data["image"]["id"]
-            candidate.image_width = callback_data["image"]["width"]
-            candidate.image_height = callback_data["image"]["height"]
-            candidate.image_hash = callback_data["image"]["hash"]
-            candidate.image_file_size = callback_data["image"]["file_size"]
+        if candidate.type != constants.AdType.AD_TAG and image_data["valid"]:
+            candidate.image_id = image_data["id"]
+            candidate.image_width = image_data["width"]
+            candidate.image_height = image_data["height"]
+            candidate.image_hash = image_data["hash"]
+            candidate.image_file_size = image_data["file_size"]
             candidate.image_status = constants.AsyncUploadJobStatus.OK
+    except KeyError:
+        logger.exception("Failed to parse callback data %s", str(callback_data))
+
+
+def _process_icon_url_update(candidate, icon_url, callback_data):
+    display_ad_types = [constants.AdType.IMAGE, constants.AdType.AD_TAG]
+    if candidate.type in display_ad_types or icon_url not in callback_data.get("images", {}):
+        return
+
+    if candidate.icon_status == constants.AsyncUploadJobStatus.PENDING_START:
+        # icon url hasn't been set yet
+        return
+
+    candidate.icon_status = constants.AsyncUploadJobStatus.FAILED
+    icon_data = callback_data["images"][icon_url]
+    try:
+        if candidate.type not in display_ad_types and icon_data["valid"]:
+            candidate.icon_id = icon_data["id"]
+            candidate.icon_width = icon_data["width"]
+            candidate.icon_height = icon_data["height"]
+            candidate.icon_hash = icon_data["hash"]
+            candidate.icon_file_size = icon_data["file_size"]
+            candidate.icon_status = constants.AsyncUploadJobStatus.OK
     except KeyError:
         logger.exception("Failed to parse callback data %s", str(callback_data))
 
@@ -552,6 +617,7 @@ def _handle_auto_save(batch):
     except Exception:
         if all(
             candidate.image_status == constants.AsyncUploadJobStatus.OK
+            and candidate.icon_status == constants.AsyncUploadJobStatus.OK
             and candidate.url_status == constants.AsyncUploadJobStatus.OK
             for candidate in batch.contentadcandidate_set.all()
         ):
@@ -570,15 +636,16 @@ def process_callback(callback_data):
         cleaned_urls = _get_cleaned_urls(candidate)
         _process_url_update(candidate, cleaned_urls["url"], callback_data)
         _process_image_url_update(candidate, cleaned_urls["image_url"], callback_data)
+        _process_icon_url_update(candidate, cleaned_urls["icon_url"], callback_data)
         _process_impression_trackers(candidate, cleaned_urls, callback_data)
         candidate.save()
 
     # HACK(nsaje): mark all ads with same image as having image present, if not already
-    _mark_ads_images_present(callback_data)
+    _mark_ads_images_present(callback_data, cleaned_urls["image_url"])
 
 
-def _mark_ads_images_present(callback_data):
-    image_id = callback_data.get("image", {}).get("id")
+def _mark_ads_images_present(callback_data, image_url):
+    image_id = callback_data.get("images", {}).get(image_url, {}).get("id")
     if not image_id:
         return
     updated = models.ContentAd.objects.filter(image_present=False, image_id=image_id).update(image_present=True)
@@ -613,7 +680,7 @@ def _create_candidates(content_ads_data, ad_group, batch):
         form = forms.ContentAdCandidateForm(ad_group.campaign, content_ad)
         form.is_valid()  # used only to clean data of any possible unsupported fields
 
-        fields = {k: v for k, v in list(form.cleaned_data.items()) if k != "image"}
+        fields = {k: v for k, v in list(form.cleaned_data.items()) if k not in ["image", "icon"]}
         if "original_content_ad" in content_ad:
             fields["original_content_ad"] = content_ad["original_content_ad"]
 
@@ -641,6 +708,8 @@ def _apply_content_ad_edit(request, candidate):
         tracker_urls.append(secondary_tracker_url)
 
     updates = {k: v for k, v in list(f.cleaned_data.items()) if k in VALID_UPDATE_FIELDS}
+    if all(field in updates for field in ["icon_height", "icon_width"]):
+        updates["icon_size"] = updates["icon_height"]
     if tracker_urls != content_ad.tracker_urls:
         updates["tracker_urls"] = tracker_urls
     content_ad.update(request, write_history=False, **updates)

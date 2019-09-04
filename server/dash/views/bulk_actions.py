@@ -410,6 +410,12 @@ class AdGroupContentAdCSV(api_common.BaseApiView):
             if content_ad.crop_areas:
                 content_ad_dict["crop_areas"] = content_ad.crop_areas
 
+            if (
+                request.user.has_perm("zemauth.can_use_creative_icon")
+                and ad_group.campaign.type != constants.CampaignType.DISPLAY
+            ):
+                content_ad_dict["icon_url"] = content_ad.get_original_icon_url()
+
             if content_ad.tracker_urls:
                 if len(content_ad.tracker_urls) > 0:
                     content_ad_dict["primary_tracker_url"] = content_ad.tracker_urls[0]
@@ -435,15 +441,29 @@ class AdGroupContentAdCSV(api_common.BaseApiView):
             slugify.slugify(ad_group.name),
             datetime.datetime.now().strftime("%Y-%m-%d"),
         )
-        fields = forms.CSV_EXPORT_COLUMN_NAMES_DICT.copy()
 
-        if ad_group.campaign.type != constants.CampaignType.DISPLAY:
-            for field in forms.DISPLAY_SPECIFIC_FIELDS:
-                fields.pop(field, None)
+        fields = forms.CSV_EXPORT_COLUMN_NAMES_DICT.copy()
+        fields = self._remove_ad_type_specific_fields(ad_group, fields)
+        fields = self._remove_permissioned_fields(request, fields)
 
         content = csv_utils.dictlist_to_csv(list(fields.values()), self._map_to_csv_column_names(content_ad_dicts))
 
         return self.create_csv_response(filename, content=content)
+
+    def _remove_ad_type_specific_fields(self, ad_group, fields):
+        if ad_group.campaign.type != constants.CampaignType.DISPLAY:
+            for field in forms.DISPLAY_SPECIFIC_FIELDS:
+                fields.pop(field, None)
+        else:
+            for field in forms.NATIVE_SPECIFIC_FIELDS:
+                fields.pop(field, None)
+        return fields
+
+    def _remove_permissioned_fields(self, request, fields):
+        for field, permissions in forms.FIELD_PERMISSION_MAPPING.items():
+            if not all(request.user.has_perm(p) for p in permissions):
+                fields.pop(field, None)
+        return fields
 
     def _map_to_csv_column_names(self, content_ads):
         return [

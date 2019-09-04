@@ -19,6 +19,7 @@ class ContentAdCandidate(instance.ContentAdCandidateMixin, core.common.Footprint
     title = models.TextField(null=True, blank=True, default="")
     image_url = models.TextField(null=True, blank=True, default=None)
     image_crop = models.TextField(null=True, blank=True, default=dash.constants.ImageCrop.CENTER)
+    icon_url = models.TextField(null=True, blank=True, default=None)
     type = models.IntegerField(choices=dash.constants.AdType.get_choices(), default=dash.constants.AdType.CONTENT)
 
     video_asset = models.ForeignKey("VideoAsset", blank=True, null=True, on_delete=models.PROTECT)
@@ -36,6 +37,10 @@ class ContentAdCandidate(instance.ContentAdCandidateMixin, core.common.Footprint
     batch = models.ForeignKey("UploadBatch", on_delete=models.PROTECT)
 
     image_status = models.IntegerField(
+        choices=dash.constants.AsyncUploadJobStatus.get_choices(),
+        default=dash.constants.AsyncUploadJobStatus.PENDING_START,
+    )
+    icon_status = models.IntegerField(
         choices=dash.constants.AsyncUploadJobStatus.get_choices(),
         default=dash.constants.AsyncUploadJobStatus.PENDING_START,
     )
@@ -58,6 +63,12 @@ class ContentAdCandidate(instance.ContentAdCandidateMixin, core.common.Footprint
     image_height = models.PositiveIntegerField(null=True)
     image_hash = models.CharField(max_length=128, null=True)
     image_file_size = models.PositiveIntegerField(null=True)
+
+    icon_id = models.CharField(max_length=256, null=True)
+    icon_width = models.PositiveIntegerField(null=True)
+    icon_height = models.PositiveIntegerField(null=True)
+    icon_hash = models.CharField(max_length=128, null=True)
+    icon_file_size = models.PositiveIntegerField(null=True)
 
     original_content_ad = models.ForeignKey("ContentAd", null=True, on_delete=models.CASCADE)
 

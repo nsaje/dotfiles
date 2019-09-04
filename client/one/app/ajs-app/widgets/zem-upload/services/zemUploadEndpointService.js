@@ -342,6 +342,9 @@ angular
                     // handle file separately
                     formData.append('image', candidate.image);
                 }
+                if (candidate.hasOwnProperty('icon')) {
+                    formData.append('icon', candidate.icon);
+                }
 
                 $http
                     .post(url, formData, {

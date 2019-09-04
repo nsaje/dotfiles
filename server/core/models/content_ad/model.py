@@ -56,6 +56,11 @@ class ContentAd(
     image_crop = models.CharField(max_length=25, default=constants.ImageCrop.CENTER)
     image_present = models.BooleanField(default=True)
 
+    icon_id = models.CharField(max_length=256, editable=False, null=True)
+    icon_size = models.PositiveIntegerField(null=True)
+    icon_hash = models.CharField(max_length=128, null=True)
+    icon_file_size = models.PositiveIntegerField(null=True)
+
     video_asset = models.ForeignKey("VideoAsset", blank=True, null=True, on_delete=models.PROTECT)
     ad_tag = models.TextField(null=True, blank=True)
 
@@ -95,6 +100,18 @@ class ContentAd(
             height = self.image_height
 
         return image_helper.get_image_url(self.image_id, width, height, self.image_crop)
+
+    def get_original_icon_url(self, size=None):
+        if self.icon_id is None:
+            return None
+
+        return urllib.parse.urljoin(settings.IMAGE_THUMBNAIL_URL, "{icon_id}.jpg".format(icon_id=self.icon_id))
+
+    def get_icon_url(self, size=None):
+        if size is None:
+            size = self.icon_size
+
+        return image_helper.get_image_url(self.icon_id, size, size, constants.ImageCrop.CENTER)
 
     def url_with_tracking_codes(self, tracking_codes):
         if not tracking_codes:
@@ -146,6 +163,11 @@ class ContentAd(
             "image_width": self.image_width,
             "image_height": self.image_height,
             "image_crop": self.image_crop,
+            "icon_url": self.get_icon_url(),
+            "icon_id": self.icon_id,
+            "icon_hash": self.icon_hash,
+            "icon_width": self.icon_size,
+            "icon_height": self.icon_size,
             "video_asset_id": str(self.video_asset.id) if self.video_asset else None,
             "ad_tag": self.ad_tag,
             "display_url": self.display_url,
@@ -173,6 +195,8 @@ class ContentAd(
             "crop_areas",
             "image_crop",
             "image_present",
+            "icon_id",
+            "icon_hash",
             "state",
             "tracker_urls",
             "video_asset_id",
@@ -181,6 +205,8 @@ class ContentAd(
         candidate = {}
         for field in fields:
             candidate[field] = getattr(self, field)
+        for field in ["icon_width", "icon_height"]:
+            candidate[field] = getattr(self, "icon_size")
         return candidate
 
     objects = manager.ContentAdManager.from_queryset(queryset.ContentAdQuerySet)()

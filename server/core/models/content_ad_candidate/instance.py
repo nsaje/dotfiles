@@ -17,6 +17,12 @@ class ContentAdCandidateMixin:
             "image_height": self.image_height,
             "image_file_size": self.image_file_size,
             "image_crop": self.image_crop,
+            "icon_url": self.icon_url,
+            "icon_id": self.icon_id,
+            "icon_hash": self.icon_hash,
+            "icon_width": self.icon_width,
+            "icon_height": self.icon_height,
+            "icon_file_size": self.icon_file_size,
             "video_asset_id": str(self.video_asset.id) if self.video_asset else None,
             "ad_tag": self.ad_tag,
             "display_url": self.display_url,
@@ -24,10 +30,12 @@ class ContentAdCandidateMixin:
             "brand_name": self.brand_name,
             "call_to_action": self.call_to_action,
             "image_status": self.image_status,
+            "icon_status": self.icon_status,
             "url_status": self.url_status,
             "hosted_image_url": self.get_image_url(300, 300),
             "landscape_hosted_image_url": self.get_image_url(720, 450),
             "display_hosted_image_url": self.get_image_url(),
+            "hosted_icon_url": self.get_icon_url(),
             "primary_tracker_url": self.primary_tracker_url,
             "secondary_tracker_url": self.secondary_tracker_url,
             "additional_data": self.additional_data,
@@ -44,3 +52,12 @@ class ContentAdCandidateMixin:
             height = self.image_height
 
         return dash.image_helper.get_image_url(self.image_id, width, height, self.image_crop)
+
+    def get_icon_url(self, width=None, height=None):
+        if width is None:
+            width = self.icon_width
+
+        if height is None:
+            height = self.icon_height
+
+        return dash.image_helper.get_image_url(self.icon_id, width, height, dash.constants.ImageCrop.CENTER)

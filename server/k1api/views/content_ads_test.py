@@ -140,6 +140,9 @@ class ContentAdsTest(K1APIBaseTest):
                 "document_id": None,
                 "document_features": None,
                 "ad_tag": None,
+                "icon_id": "987654321",
+                "icon_hash": None,
+                "icon_size": None,
             }
         ]
         self.assertEqual(data, expected)

@@ -262,8 +262,8 @@
                                 ng-click="ctrl.toggleImageUpload()"
                                 tabindex="-1"
                             >
-                                If you have image on your computer, switch to
-                                image uploading form.
+                                If you have the image on your computer, switch
+                                to the image uploading form.
                             </a>
                         </div>
                     </div>
@@ -329,6 +329,139 @@
                                 ng-if="!ctrl.isEdit"
                             >
                                 Use as default
+                            </a>
+                        </div>
+                    </div>
+
+                    <div
+                        class="form__group"
+                        ng-class="{'form--error': ctrl.fieldsHaveErrors(['icon', 'iconUrl'])}"
+                        ng-if="ctrl.showIconUpload && ctrl.hasPermission('zemauth.can_use_creative_icon')"
+                    >
+                        <label class="form__label" for="icon-url-input"
+                            >Icon image</label
+                        >
+                        <zem-file-input
+                            class="content-upload__image-input"
+                            zem-file-input-change="ctrl.iconUploadCallback(file)"
+                            zem-file-input-accept="image/*"
+                        >
+                            <button
+                                type="button"
+                                class="button button--with-icon folder-icon"
+                                zem-file-input-trigger
+                                ng-disabled="ctrl.isEdit"
+                            >
+                                Choose file
+                            </button>
+                        </zem-file-input>
+                        <div
+                            class="content-upload__field-additional-info content-upload__change-status"
+                            ng-class="{
+                            'content-upload__change-status--loading': ctrl.fieldsLoading.icon,
+                            'content-upload__change-status--successful': ctrl.fieldsSaved.icon && !ctrl.fieldsHaveErrors('icon')}"
+                        ></div>
+                        <div
+                            class="message message--error"
+                            for="icon-input"
+                            ng-if="ctrl.fieldsApiErrors['icon']"
+                        >
+                            Something went wrong.
+                            <a
+                                href
+                                ng-click="ctrl.updateField(ctrl.selectedCandidate, 'icon')"
+                                tabindex="-1"
+                                >Try again</a
+                            >
+                        </div>
+                        <div
+                            class="message message--error"
+                            for="icon-url-input"
+                            ng-repeat="error in ctrl.selectedCandidate.errors.icon"
+                        >
+                            {{ error }}
+                        </div>
+                        <div
+                            class="message message--error"
+                            for="icon-url-input"
+                            ng-repeat="error in ctrl.selectedCandidate.errors.iconUrl"
+                            ng-if="ctrl.showIconUpload"
+                        >
+                            {{ error }}
+                        </div>
+                        <div class="form__text--small">
+                            The minimum required size for the icon image is
+                            128x128 pixels.
+                        </div>
+                        <div class="form__text--small">
+                            <a
+                                href
+                                ng-click="ctrl.toggleIconUpload()"
+                                tabindex="-1"
+                                ng-if="!ctrl.isEdit"
+                            >
+                                If you want to upload an icon image URL, click
+                                here to switch to the URL form.
+                            </a>
+                        </div>
+                    </div>
+
+                    <div
+                        class="form__group"
+                        ng-class="{'form--error': ctrl.fieldsHaveErrors(['icon', 'iconUrl'])}"
+                        ng-if="!ctrl.showIconUpload && ctrl.hasPermission('zemauth.can_use_creative_icon')"
+                    >
+                        <label class="form__label" for="icon-url-input"
+                            >Icon image URL</label
+                        >
+                        <input
+                            class="input-text"
+                            type="text"
+                            id="icon-url-input"
+                            ng-model="ctrl.selectedCandidate.iconUrl"
+                            ng-model-options="{ updateOn: 'default blur', debounce: { default: 1500, blur: 0 } }"
+                            ng-change="ctrl.updateField(ctrl.selectedCandidate, 'iconUrl')"
+                            ng-class="{'content-upload__change-status--visible': ctrl.fieldsLoading.iconUrl || ctrl.fieldsSaved.iconUrl && !ctrl.fieldsHaveErrors('iconUrl')}"
+                        />
+                        <div
+                            class="content-upload__field-additional-info content-upload__change-status"
+                            ng-class="{
+                            'content-upload__change-status--loading': ctrl.fieldsLoading.iconUrl,
+                            'content-upload__change-status--successful': ctrl.fieldsSaved.iconUrl && !ctrl.fieldsHaveErrors('iconUrl')}"
+                        ></div>
+                        <div
+                            class="message message--error"
+                            for="icon-url-input"
+                            ng-if="ctrl.fieldsApiErrors['iconUrl']"
+                        >
+                            Something went wrong.
+                            <a
+                                href
+                                ng-click="ctrl.updateField(ctrl.selectedCandidate, 'iconUrl')"
+                                tabindex="-1"
+                                >Try again</a
+                            >
+                        </div>
+                        <div
+                            class="message message--error"
+                            for="icon-url-input"
+                            ng-repeat="error in ctrl.selectedCandidate.errors.iconUrl"
+                        >
+                            {{ error }}
+                        </div>
+                        <div class="form__text--small">
+                            The minimum required size for the icon image is
+                            128x128 pixels.
+                        </div>
+                        <div class="form__text--small">
+                            <a
+                                href
+                                class="action-link"
+                                ng-click="ctrl.toggleIconUpload()"
+                                tabindex="-1"
+                            >
+                                If you have the icon image on your computer,
+                                switch to the image uploading form.
                             </a>
                         </div>
                     </div>
@@ -1120,8 +1253,8 @@
                                     ng-click="ctrl.toggleImageUpload()"
                                     tabindex="-1"
                                 >
-                                    If you have image on your computer, switch
-                                    to image uploading form.
+                                    If you have the image on your computer,
+                                    switch to the image uploading form.
                                 </a>
                             </div>
                         </div>
@@ -1618,6 +1751,49 @@
                                         '/one/images/empty-pixel.png'
                             }}"
                             class="ad-preview__image"
+                    /></a>
+                    <a
+                        href="{{ ctrl.selectedCandidate.url }}"
+                        class="ad-preview__title"
+                    >
+                        <span ng-if="ctrl.selectedCandidate.title.length > 0">{{
+                            ctrl.selectedCandidate.title
+                        }}</span>
+                        <span ng-if="ctrl.selectedCandidate.title.length == 0"
+                            >Ad Title</span
+                        >
+                    </a>
+                    <div class="ad-preview__brand-name">
+                        <span
+                            ng-if="ctrl.selectedCandidate.brandName.length > 0"
+                            >{{ ctrl.selectedCandidate.brandName }}</span
+                        >
+                        <span
+                            ng-if="ctrl.selectedCandidate.brandName.length == 0"
+                            >Brand name</span
+                        >
+                    </div>
+                    <div class="ad-preview__url">
+                        <span
+                            ng-if="ctrl.selectedCandidate.displayUrl.length > 0"
+                            >{{ ctrl.selectedCandidate.displayUrl }}</span
+                        >
+                        <span
+                            ng-if="ctrl.selectedCandidate.displayUrl.length == 0"
+                            >www.example.com</span
+                        >
+                    </div>
+                </div>
+                <div
+                    ng-if="ctrl.selectedCandidate.hostedIconUrl"
+                    class="ad-preview__item ad-preview__item--icon"
+                >
+                    <a
+                        href="{{ ctrl.selectedCandidate.url }}"
+                        class="ad-preview__icon-link"
+                        ><img
+                            ng-src="{{ ctrl.selectedCandidate.hostedIconUrl }}"
+                            class="ad-preview__icon"
                     /></a>
                     <a
                         href="{{ ctrl.selectedCandidate.url }}"

@@ -262,6 +262,7 @@ angular
                 return {
                     square: value.square || null,
                     landscape: value.landscape || null,
+                    icon: value.icon || null,
                     image: value.image || null,
                     ad_tag: value.ad_tag || null,
                 };

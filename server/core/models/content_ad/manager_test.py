@@ -24,12 +24,35 @@ class CreateContentAd(TestCase):
         self.assertEqual(content_ad.contentadsource_set.all().count(), 5)
         mock_insert_redirects.assert_called_with([content_ad], clickthrough_resolve=True)
 
+    def test_create_icon(self, mock_insert_redirects):
+        ad_group = magic_mixer.blend(core.models.AdGroup)
+        batch = magic_mixer.blend(core.models.UploadBatch, ad_group=ad_group)
+        sources = magic_mixer.cycle(5).blend(core.models.Source)
+
+        content_ad_1 = core.models.ContentAd.objects.create(batch, sources, icon_size=100)
+        content_ad_2 = core.models.ContentAd.objects.create(batch, sources, icon_height=100, icon_width=100)
+
+        self.assertEqual(100, content_ad_1.icon_size)
+        self.assertEqual(100, content_ad_2.icon_size)
+
     def test_create_ad_group_archived(self, mock_insert_redirects):
         ad_group = magic_mixer.blend(core.models.AdGroup, archived=True)
         batch = magic_mixer.blend(core.models.UploadBatch, ad_group=ad_group)
         sources = magic_mixer.cycle(5).blend(core.models.Source)
         with self.assertRaises(exceptions.AdGroupIsArchived):
             core.models.ContentAd.objects.create(batch, sources, url="zemanta.com", brand_name="Zemanta")
+        mock_insert_redirects.assert_not_called()
+
+    def test_create_icon_not_square(self, mock_insert_redirects):
+        ad_group = magic_mixer.blend(core.models.AdGroup)
+        batch = magic_mixer.blend(core.models.UploadBatch, ad_group=ad_group)
+        sources = magic_mixer.cycle(5).blend(core.models.Source)
+        with self.assertRaises(exceptions.IconNotSquare):
+            core.models.ContentAd.objects.create(batch, sources, icon_height=200, icon_width=100)
+        with self.assertRaises(exceptions.IconNotSquare):
+            core.models.ContentAd.objects.create(batch, sources, icon_height=200)
+        with self.assertRaises(exceptions.IconNotSquare):
+            core.models.ContentAd.objects.create(batch, sources, icon_width=100)
         mock_insert_redirects.assert_not_called()
 
     def _blend_a_batch(self):

@@ -9,6 +9,7 @@ from mock import ANY
 from mock import patch
 
 import core.models.source_type.model
+import utils.test_helper
 from dash import api
 from dash import constants
 from dash import history_helpers
@@ -737,10 +738,35 @@ class AdGroupContentAdCSVTest(TestCase):
     fixtures = ["test_api", "test_views"]
 
     def setUp(self):
-        username = User.objects.get(pk=1).email
-        self.client.login(username=username, password="secret")
+        self.user = User.objects.get(pk=2)
+        utils.test_helper.add_permissions(self.user, permissions=["can_use_creative_icon"])
+        self.client.login(username=self.user.email, password="secret")
+
+    def _get_csv_from_server(self, data, ad_group_id=1):
+        return self.client.get(
+            reverse("ad_group_content_ad_csv", kwargs={"ad_group_id": ad_group_id}), data=data, follow=True
+        )
 
     def test_get_all(self):
+        data = {"select_all": True}
+
+        response = self._get_csv_from_server(data)
+        expected_content = (
+            b"\r\n".join(
+                [
+                    b'"URL","Title","Image URL","Image crop","Icon Image URL","Display URL","Brand name","Call to action","Description","Primary impression tracker URL","Secondary impression tracker URL","Label"',  # noqa
+                    b'"http://testurl.com","Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1","123456789.jpg","center","234567890.jpg","example.com","Example","Call to action","Example description","http://testurl.com","http://testurl2.com",""',  # noqa
+                    b'"http://testurl.com","Test Article with no content_ad_sources 1","123456789.jpg","center","234567890.jpg","example.com","Example","Call to action","Example description","","",""',  # noqa
+                ]
+            )
+            + b"\r\n"
+        )
+
+        self.assertEqual(response.content, expected_content)
+
+    def test_get_all_no_icon_permission(self):
+        utils.test_helper.remove_permissions(self.user, permissions=["can_use_creative_icon"])
+
         data = {"select_all": True}
 
         response = self._get_csv_from_server(data)
@@ -787,10 +813,10 @@ class AdGroupContentAdCSVTest(TestCase):
         expected_content = (
             b"\r\n".join(
                 [
-                    b'"URL","Title","Image URL","Image crop","Display URL","Brand name","Call to action","Description","Primary impression tracker URL","Secondary impression tracker URL","Label"',  # noqa
-                    b'"http://testurl.com","Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1","123456789.jpg","center","example.com","Example","Call to action","Example description","http://testurl.com","http://testurl2.com",""',  # noqa
-                    b'"http://testurl.com","Test Article with no content_ad_sources 1","123456789.jpg","center","example.com","Example","Call to action","Example description","","",""',  # noqa
-                    b'"http://testurl.com","Test Article with no content_ad_sources 2","123456789.jpg","center","example.com","Example","Call to action","Example description","","",""',  # noqa
+                    b'"URL","Title","Image URL","Image crop","Icon Image URL","Display URL","Brand name","Call to action","Description","Primary impression tracker URL","Secondary impression tracker URL","Label"',  # noqa
+                    b'"http://testurl.com","Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1","123456789.jpg","center","234567890.jpg","example.com","Example","Call to action","Example description","http://testurl.com","http://testurl2.com",""',  # noqa
+                    b'"http://testurl.com","Test Article with no content_ad_sources 1","123456789.jpg","center","234567890.jpg","example.com","Example","Call to action","Example description","","",""',  # noqa
+                    b'"http://testurl.com","Test Article with no content_ad_sources 2","123456789.jpg","center","234567890.jpg","example.com","Example","Call to action","Example description","","",""',  # noqa
                 ]
             )
             + b"\r\n"
@@ -806,8 +832,8 @@ class AdGroupContentAdCSVTest(TestCase):
         expected_content = (
             b"\r\n".join(
                 [
-                    b'"URL","Title","Image URL","Image crop","Display URL","Brand name","Call to action","Description","Primary impression tracker URL","Secondary impression tracker URL","Label"',  # noqa
-                    b'"http://testurl.com","Test Article with no content_ad_sources 1","123456789.jpg","center","example.com","Example","Call to action","Example description","","",""',  # noqa
+                    b'"URL","Title","Image URL","Image crop","Icon Image URL","Display URL","Brand name","Call to action","Description","Primary impression tracker URL","Secondary impression tracker URL","Label"',  # noqa
+                    b'"http://testurl.com","Test Article with no content_ad_sources 1","123456789.jpg","center","234567890.jpg","example.com","Example","Call to action","Example description","","",""',  # noqa
                 ]
             )
             + b"\r\n"
@@ -823,9 +849,9 @@ class AdGroupContentAdCSVTest(TestCase):
         expected_content = (
             b"\r\n".join(
                 [
-                    b'"URL","Title","Image URL","Image crop","Display URL","Brand name","Call to action","Description","Primary impression tracker URL","Secondary impression tracker URL","Label"',  # noqa
-                    b'"http://testurl.com","Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1","123456789.jpg","center","example.com","Example","Call to action","Example description","http://testurl.com","http://testurl2.com",""',  # noqa
-                    b'"http://testurl.com","Test Article with no content_ad_sources 1","123456789.jpg","center","example.com","Example","Call to action","Example description","","",""',  # noqa
+                    b'"URL","Title","Image URL","Image crop","Icon Image URL","Display URL","Brand name","Call to action","Description","Primary impression tracker URL","Secondary impression tracker URL","Label"',  # noqa
+                    b'"http://testurl.com","Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1","123456789.jpg","center","234567890.jpg","example.com","Example","Call to action","Example description","http://testurl.com","http://testurl2.com",""',  # noqa
+                    b'"http://testurl.com","Test Article with no content_ad_sources 1","123456789.jpg","center","234567890.jpg","example.com","Example","Call to action","Example description","","",""',  # noqa
                 ]
             )
             + b"\r\n"
@@ -841,10 +867,10 @@ class AdGroupContentAdCSVTest(TestCase):
         expected_content = (
             b"\r\n".join(
                 [
-                    b'"URL","Title","Image URL","Image crop","Display URL","Brand name","Call to action","Description","Primary impression tracker URL","Secondary impression tracker URL","Label"',
-                    b'"http://testurl.com","Test Article with no content_ad_sources 3","123456789.jpg","center","example.com","Example","Call to action","Example description","","",""',
-                    b'"http://testurl.com","Test Article with no content_ad_sources 4","123456789.jpg","center","example.com","Example","Call to action","Example description","","",""',
-                    b'"http://testurl.com","Test Article with no content_ad_sources 5","123456789.jpg","center","example.com","Example","Call to action","Example description","","",""',
+                    b'"URL","Title","Image URL","Image crop","Icon Image URL","Display URL","Brand name","Call to action","Description","Primary impression tracker URL","Secondary impression tracker URL","Label"',  # noqa
+                    b'"http://testurl.com","Test Article with no content_ad_sources 3","123456789.jpg","center","234567890.jpg","example.com","Example","Call to action","Example description","","",""',  # noqa
+                    b'"http://testurl.com","Test Article with no content_ad_sources 4","123456789.jpg","center","234567890.jpg","example.com","Example","Call to action","Example description","","",""',  # noqa
+                    b'"http://testurl.com","Test Article with no content_ad_sources 5","123456789.jpg","center","234567890.jpg","example.com","Example","Call to action","Example description","","",""',  # noqa
                 ]
             )
             + b"\r\n"
@@ -860,20 +886,14 @@ class AdGroupContentAdCSVTest(TestCase):
         expected_content = (
             b"\r\n".join(
                 [
-                    b'"URL","Title","Image URL","Image crop","Display URL","Brand name","Call to action","Description","Primary impression tracker URL","Secondary impression tracker URL","Label"',  # noqa
-                    b'"http://testurl.com","Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1","123456789.jpg","center","example.com","Example","Call to action","Example description","http://testurl.com","http://testurl2.com",""',  # noqa
-                    b'"http://testurl.com","Test Article with no content_ad_sources 1","123456789.jpg","center","example.com","Example","Call to action","Example description","","",""',  # noqa
+                    b'"URL","Title","Image URL","Image crop","Icon Image URL","Display URL","Brand name","Call to action","Description","Primary impression tracker URL","Secondary impression tracker URL","Label"',  # noqa
+                    b'"http://testurl.com","Test Article unicode \xc4\x8c\xc5\xbe\xc5\xa1","123456789.jpg","center","234567890.jpg","example.com","Example","Call to action","Example description","http://testurl.com","http://testurl2.com",""',  # noqa
+                    b'"http://testurl.com","Test Article with no content_ad_sources 1","123456789.jpg","center","234567890.jpg","example.com","Example","Call to action","Example description","","",""',  # noqa
                 ]
             )
             + b"\r\n"
         )
-
         self.assertEqual(response.content, expected_content)
-
-    def _get_csv_from_server(self, data, ad_group_id=1):
-        return self.client.get(
-            reverse("ad_group_content_ad_csv", kwargs={"ad_group_id": ad_group_id}), data=data, follow=True
-        )
 
     def test_get_content_ad_ids_validation_error(self):
         response = self._get_csv_from_server({"content_ad_ids_selected": "1,a"})
