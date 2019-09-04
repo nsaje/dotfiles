@@ -2,7 +2,6 @@ import datetime
 
 import core.models
 import dash.constants
-from utils import k1_helper
 from utils.command_helpers import Z1Command
 
 AD_GROUPS = {
@@ -69,6 +68,4 @@ class Command(Z1Command):
             if not ad.state == dash.constants.ContentAdSourceState.ACTIVE:
                 continue
             elif ad.created_dt < (datetime.datetime.today() - datetime.timedelta(DAYS_TTL)):
-                ad.state = dash.constants.ContentAdSourceState.INACTIVE
-                ad.save()
-                k1_helper.update_content_ad(ad)
+                ad.set_state(dash.constants.ContentAdSourceState.INACTIVE)

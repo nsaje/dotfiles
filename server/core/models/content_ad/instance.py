@@ -49,7 +49,8 @@ class ContentAdInstanceMixin(object):
             action_type=dash.constants.HistoryActionType.CONTENT_AD_STATE_CHANGE,
         )
         utils.k1_helper.update_content_ad(self, msg="ContentAd.set_state")
-        utils.email_helper.send_ad_group_notification_email(self.ad_group, request, description)
+        if request:
+            utils.email_helper.send_ad_group_notification_email(self.ad_group, request, description)
 
     @transaction.atomic()
     def set_url(self, request, url):
