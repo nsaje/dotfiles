@@ -1,4 +1,5 @@
 import signal
+import threading
 import time
 
 import yappi
@@ -11,7 +12,8 @@ def _profile_signal_handler(signum, stack):
         stop_and_dump("live")
 
 
-signal.signal(signal.SIGUSR2, _profile_signal_handler)
+if threading.current_thread() is threading.main_thread():
+    signal.signal(signal.SIGUSR2, _profile_signal_handler)
 
 
 def is_running():
