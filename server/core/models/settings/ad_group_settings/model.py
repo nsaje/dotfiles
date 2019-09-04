@@ -123,7 +123,7 @@ class AdGroupSettings(
         "local_b1_sources_group_cpm": "zemauth.fea_can_use_cpm_buying",
         "frequency_capping": "zemauth.can_set_frequency_capping",
         "language_targeting_enabled": "zemauth.can_use_language_targeting",
-        "additional_data": "zemauth.can_use_additional_data",
+        "additional_data": "zemauth.can_use_ad_additional_data",
     }
     multicurrency_fields = [
         "cpc_cc",
