@@ -1574,6 +1574,12 @@ class ContentAdForm(ContentAdCandidateForm):
         except forms.ValidationError:
             raise forms.ValidationError("Invalid icon URL")
 
+    def clean_icon_id(self):
+        return self.cleaned_data.get("icon_id") or None
+
+    def clean_icon_hash(self):
+        return self.cleaned_data.get("icon_hash") or None
+
     def clean_primary_tracker_url(self):
         url = self.cleaned_data.get("primary_tracker_url").strip()
         if not url:

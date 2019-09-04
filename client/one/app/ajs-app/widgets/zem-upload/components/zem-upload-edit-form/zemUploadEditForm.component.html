@@ -1785,7 +1785,7 @@
                     </div>
                 </div>
                 <div
-                    ng-if="ctrl.selectedCandidate.hostedIconUrl"
+                    ng-if="ctrl.selectedCandidate.hostedIconUrl && ctrl.hasPermission('zemauth.can_use_creative_icon')"
                     class="ad-preview__item ad-preview__item--icon"
                 >
                     <a

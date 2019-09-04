@@ -90,6 +90,7 @@ def insert_clone_edit_candidates(user, content_ads, ad_group, batch_name, overri
     for content_ad in content_ads:
         content_ad_dict = content_ad.to_cloned_candidate_dict()
         content_ad_dict["image_url"] = content_ad.get_image_url()
+        content_ad_dict["icon_url"] = content_ad.get_icon_url()
         content_ad_dict["original_content_ad"] = content_ad
         content_ads_data.append(content_ad_dict)
 

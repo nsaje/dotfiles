@@ -1225,6 +1225,12 @@ class ContentAdFormTestCase(TestCase):
     def test_form(self):
         f = forms.ContentAdForm(self.campaign, self._get_valid_data())
         self.assertTrue(f.is_valid())
+        self.assertIsNone(f.cleaned_data["icon_url"])
+        self.assertIsNone(f.cleaned_data["icon_id"])
+        self.assertIsNone(f.cleaned_data["icon_hash"])
+        self.assertIsNone(f.cleaned_data["icon_width"])
+        self.assertIsNone(f.cleaned_data["icon_height"])
+        self.assertIsNone(f.cleaned_data["icon_file_size"])
 
     def test_image_status_pending_start(self):
         data = self._get_valid_data()
