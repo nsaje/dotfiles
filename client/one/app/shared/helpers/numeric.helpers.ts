@@ -53,7 +53,8 @@ export function validateMinMax(
 
 export function convertToPercentValue(
     value: string,
-    includePercentUnit: boolean = true
+    includePercentUnit: boolean = true,
+    fractionSize: number = 2
 ): string {
     if (!commonHelpers.isNotEmpty(value)) {
         return null;
@@ -63,13 +64,18 @@ export function convertToPercentValue(
         return null;
     }
 
-    const percentValue = (Number.parseFloat(numericValue) * 100).toFixed(2);
+    const percentValue = (Number.parseFloat(numericValue) * 100).toFixed(
+        fractionSize
+    );
     return includePercentUnit
         ? `${percentValue}${unitsHelpers.getUnitText(Unit.Percent)}`
         : percentValue;
 }
 
-export function convertFromPercentValue(value: string): string {
+export function convertFromPercentValue(
+    value: string,
+    maxFractionSize: number = 4
+): string {
     if (!commonHelpers.isNotEmpty(value)) {
         return null;
     }
@@ -78,5 +84,7 @@ export function convertFromPercentValue(value: string): string {
         return null;
     }
 
-    return (Number.parseFloat(numericValue) / 100).toString();
+    return Number.parseFloat(
+        (Number.parseFloat(numericValue) / 100).toFixed(maxFractionSize)
+    ).toString();
 }

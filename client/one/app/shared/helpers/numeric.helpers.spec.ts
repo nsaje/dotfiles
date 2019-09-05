@@ -79,5 +79,8 @@ describe('numericHelpers', () => {
         );
         expect(numericHelpers.convertFromPercentValue('15.00')).toEqual('0.15');
         expect(numericHelpers.convertFromPercentValue('0.00')).toEqual('0');
+        expect(numericHelpers.convertFromPercentValue('6.06')).toEqual(
+            '0.0606'
+        );
     });
 });
