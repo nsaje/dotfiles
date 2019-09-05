@@ -34,7 +34,9 @@ class InstanceTest(TestCase):
             user=None,
         )
         mock_k1_update.assert_called_with(content_ad, msg=mock.ANY)
-        mock_email_helper.assert_called_once()
+        # (msuber): email_helper should not be called because
+        # we are calling content_ad.set_state with None as request
+        mock_email_helper.assert_not_called()
 
     @mock.patch.object(redirector_helper, "update_redirect")
     def test_set_url(self, mock_update_redirect):
