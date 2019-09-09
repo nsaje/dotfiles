@@ -21,29 +21,21 @@ class DirectDealsTest(K1APIBaseTest):
         account = magic_mixer.blend(core.models.Account, pk=3000)
         campaign = magic_mixer.blend(core.models.Campaign, pk=4000)
 
-        magic_mixer.blend(core.features.deals.DirectDealConnection, source=source, deals=[deal1])
+        magic_mixer.blend(core.features.deals.DirectDealConnection, source=source, deal=deal1)
         magic_mixer.blend(
-            core.features.deals.DirectDealConnection, source=source, deals=[deal1], adgroup=adgroup, exclusive=False
+            core.features.deals.DirectDealConnection, source=source, deal=deal1, adgroup=adgroup, exclusive=False
         )
         magic_mixer.blend(
-            core.features.deals.DirectDealConnection, source=source, deals=[deal2], agency=agency, exclusive=False
+            core.features.deals.DirectDealConnection, source=source, deal=deal2, agency=agency, exclusive=False
         )
         magic_mixer.blend(
-            core.features.deals.DirectDealConnection,
-            source=source,
-            deals=[deal1, deal2],
-            adgroup=adgroup2,
-            exclusive=True,
+            core.features.deals.DirectDealConnection, source=source, deal=deal1, adgroup=adgroup2, exclusive=True
         )
         magic_mixer.blend(
-            core.features.deals.DirectDealConnection, source=source, deals=[deal2], account=account, exclusive=False
+            core.features.deals.DirectDealConnection, source=source, deal=deal2, account=account, exclusive=False
         )
         magic_mixer.blend(
-            core.features.deals.DirectDealConnection,
-            source=source,
-            deals=[deal1, deal2],
-            campaign=campaign,
-            exclusive=True,
+            core.features.deals.DirectDealConnection, source=source, deal=deal1, campaign=campaign, exclusive=True
         )
 
     def test_get_direct_deals(self):
@@ -87,7 +79,7 @@ class DirectDealsTest(K1APIBaseTest):
                 "agency_id": None,
                 "account_id": None,
                 "campaign_id": None,
-                "deals": ["test_1", "test_2"],
+                "deals": ["test_1"],
             },
             {
                 "exchange": "test_exchange_1",
@@ -105,7 +97,7 @@ class DirectDealsTest(K1APIBaseTest):
                 "agency_id": None,
                 "account_id": None,
                 "campaign_id": 4000,
-                "deals": ["test_1", "test_2"],
+                "deals": ["test_1"],
             },
         ]
         self.assertEqual(expected_response, data["response"])

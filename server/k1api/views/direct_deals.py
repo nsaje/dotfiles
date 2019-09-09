@@ -5,9 +5,7 @@ from .base import K1APIView
 
 class DirectDealsView(K1APIView):
     def get(self, request):
-        deal_connections = (
-            core.features.deals.DirectDealConnection.objects.select_related("source").prefetch_related("deals").all()
-        )
+        deal_connections = core.features.deals.DirectDealConnection.objects.select_related("source", "deal").all()
 
         return self.response_ok(
             [
@@ -18,7 +16,7 @@ class DirectDealsView(K1APIView):
                     "agency_id": deal_connection.agency_id,
                     "account_id": deal_connection.account_id,
                     "campaign_id": deal_connection.campaign_id,
-                    "deals": [deal.deal_id for deal in deal_connection.deals.all()],
+                    "deals": [deal_connection.deal.deal_id],
                 }
                 for deal_connection in deal_connections
             ]

@@ -2109,8 +2109,8 @@ class PublisherGroupUploadForm(forms.Form, ParseCSVExcelFile):
 
 class DirectDealConnectionAdminForm(forms.ModelForm):
 
-    # This check couldn't be done one the model validation because it requires the relation to deals to exist.
-    def clean_deals(self):
+    # This check couldn't be done one the model validation because it requires the relation to deal to exist.
+    def clean_deal(self):
         if (
             self.cleaned_data.get("agency") is not None
             or self.cleaned_data.get("account") is not None
@@ -2118,22 +2118,20 @@ class DirectDealConnectionAdminForm(forms.ModelForm):
             or self.cleaned_data.get("adgroup") is not None
         ):
             query = (
-                models.DirectDeal.objects.filter(
-                    directdealconnection__in=models.DirectDealConnection.objects.filter(
-                        adgroup__isnull=True,
-                        agency__isnull=True,
-                        account__isnull=True,
-                        campaign__isnull=True,
-                        deals__in=self.cleaned_data.get("deals"),
-                    )
+                models.DirectDealConnection.objects.filter(
+                    adgroup__isnull=True,
+                    agency__isnull=True,
+                    account__isnull=True,
+                    campaign__isnull=True,
+                    deal_id=self.cleaned_data.get("deal"),
                 )
-                .values_list("deal_id", flat=True)
+                .values_list("deal__deal_id", flat=True)
                 .distinct()
             )
             if query:
-                err = "deals with deal_id {ids} already used as global deal".format(ids=", ".join(list(query)))
+                err = "Deal with deal_id {id} already used as global deal".format(id=list(query)[0])
                 raise core.features.deals.direct_deal_connection.exceptions.DealAlreadyUsedAsGlobalDeal(err)
-        return self.cleaned_data.get("deals")
+        return self.cleaned_data.get("deal")
 
     def full_clean(self):
         try:

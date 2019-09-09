@@ -19,7 +19,7 @@ class DirectDealConnection(validation.DirectDealsConnectionMixin, models.Model):
     account = models.ForeignKey("Account", null=True, blank=True, on_delete=models.PROTECT)
     campaign = models.ForeignKey("Campaign", null=True, blank=True, on_delete=models.PROTECT)
     adgroup = models.ForeignKey("AdGroup", null=True, blank=True, on_delete=models.PROTECT)
-    deals = models.ManyToManyField("DirectDeal")
+    deal = models.ForeignKey("DirectDeal", null=False, blank=False, on_delete=models.CASCADE)
     created_dt = models.DateTimeField(auto_now_add=True, verbose_name="Created at")
     modified_dt = models.DateTimeField(auto_now=True, verbose_name="Modified at")
     created_by = models.ForeignKey(

@@ -115,7 +115,7 @@ class DirectDealConnectionAgencyInline(admin.StackedInline):
     model = models.DirectDealConnection
     can_delete = True
     extra = 0
-    autocomplete_fields = ("deals", "source")
+    autocomplete_fields = ("deal", "source")
     exclude = ("created_dt", "modified_dt", "adgroup", "campaign", "account")
     readonly_fields = ("created_by",)
     raw_id_fields = ("agency_id",)
@@ -125,7 +125,7 @@ class DirectDealConnectionAccountInline(admin.StackedInline):
     model = models.DirectDealConnection
     can_delete = True
     extra = 0
-    autocomplete_fields = ("deals", "source")
+    autocomplete_fields = ("deal", "source")
     exclude = ("created_dt", "modified_dt", "adgroup", "campaign", "agency")
     readonly_fields = ("created_by",)
     raw_id_fields = ("account_id",)
@@ -135,7 +135,7 @@ class DirectDealConnectionCampaignInline(admin.StackedInline):
     model = models.DirectDealConnection
     can_delete = True
     extra = 0
-    autocomplete_fields = ("deals", "source")
+    autocomplete_fields = ("deal", "source")
     exclude = ("created_dt", "modified_dt", "adgroup", "account", "agency")
     readonly_fields = ("created_by",)
     raw_id_fields = ("campaign_id",)
@@ -145,7 +145,7 @@ class DirectDealConnectionAdGroupsInline(admin.StackedInline):
     model = models.DirectDealConnection
     can_delete = True
     extra = 0
-    autocomplete_fields = ("deals", "source")
+    autocomplete_fields = ("deal", "source")
     exclude = ("created_dt", "modified_dt", "agency", "account", "campaign")
     readonly_fields = ("created_by",)
     raw_id_fields = ("adgroup_id",)
@@ -2086,11 +2086,11 @@ class DirectDealConnectionAdmin(admin.ModelAdmin):
     raw_id_fields = ("adgroup", "campaign")
     readonly_fields = ("id", "modified_dt", "created_dt", "created_by")
     list_display = ("id", "source", "exclusive", "is_global", "agency", "account", "campaign", "adgroup", "deal_id")
-    search_fields = ("source__name", "deals__deal_id", "adgroup__id", "campaign__id", "account__id", "agency__id")
-    autocomplete_fields = ("source", "agency", "account", "deals")
+    search_fields = ("source__name", "deal__deal_id", "adgroup__id", "campaign__id", "account__id", "agency__id")
+    autocomplete_fields = ("source", "agency", "account", "deal")
 
     def deal_id(self, obj):
-        return ", ".join([d.deal_id for d in obj.deals.all()])
+        return obj.deal.deal_id
 
     # Workaround to have boolean value displayed as an icon instead of a text.
     def is_global(self, obj):

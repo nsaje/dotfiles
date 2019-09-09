@@ -712,18 +712,17 @@ def all_accounts_uses_bcm_v2(user):
 def get_applied_deals_dict(configured_deals):
     all_deals = []
     for direct_deal in configured_deals:
-        for deal in direct_deal.deals.all():
-            all_deals.append(
-                {
-                    "level": direct_deal.level,
-                    "direct_deal_connection_id": direct_deal.id,
-                    "deal_id": deal.deal_id,
-                    "source": direct_deal.source.name,
-                    "exclusive": direct_deal.exclusive,
-                    "description": deal.description,
-                    "is_applied": True,
-                }
-            )
+        all_deals.append(
+            {
+                "level": direct_deal.level,
+                "direct_deal_connection_id": direct_deal.id,
+                "deal_id": direct_deal.deal.deal_id,
+                "source": direct_deal.source.name,
+                "exclusive": direct_deal.exclusive,
+                "description": direct_deal.deal.description,
+                "is_applied": True,
+            }
+        )
 
     exclusive = []
     non_exclusive = []
