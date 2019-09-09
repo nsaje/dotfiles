@@ -40,7 +40,8 @@ class TestCampaignManager(TestCase):
             core.models.Campaign.objects.create(request, account, "test")
 
     @patch("automation.autopilot.recalculate_budgets_campaign")
-    def test_clone(self, mock_autopilot):
+    @patch("utils.dates_helper.local_today", return_value=datetime.date(2017, 1, 1))
+    def test_clone(self, mock_today, mock_autopilot):
         campaign = magic_mixer.blend(
             core.models.Campaign, account=self.account, name="campaign", custom_flags={"flag": True}
         )
