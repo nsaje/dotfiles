@@ -10,7 +10,9 @@ class BidModifiersView(K1APIView):
         ad_group_ids = request.GET.get("ad_group_ids")
         type_ = request.GET.get("type")
 
-        qs = core.features.bid_modifiers.BidModifier.objects.all().order_by("pk")
+        qs = core.features.bid_modifiers.BidModifier.objects.exclude(
+            type=core.features.bid_modifiers.BidModifierType.SOURCE
+        ).order_by("pk")
         if ad_group_ids:
             ad_group_ids = ad_group_ids.split(",")
             qs = qs.filter(ad_group_id__in=ad_group_ids)
