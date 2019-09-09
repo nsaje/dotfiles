@@ -3,6 +3,7 @@ import json
 from django.urls import reverse
 
 import core.features.bid_modifiers
+import core.features.bid_modifiers.constants
 from utils.magic_mixer import magic_mixer
 
 from .base_test import K1APIBaseTest
@@ -41,6 +42,7 @@ class BidModifiersTest(K1APIBaseTest):
             source=self.source,
             source_slug=self.source.bidder_slug,
             modifier=(id for id in range(1, 11)),
+            type=core.features.bid_modifiers.constants.BidModifierType.AD,
         )
         response = self.client.get(reverse("k1api.bidmodifiers"), {"marker": test_objs[2].id, "limit": 5})
         data = json.loads(response.content)
