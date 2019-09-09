@@ -100,7 +100,7 @@ def populate_deal(apps, schema_editor):
 class Migration(migrations.Migration):
     atomic = False
 
-    dependencies = [("dash", "0424_create_source_bid_modifiers")]
+    dependencies = [("dash", "0426_auto_20190909_1141")]
 
     operations = [
         migrations.RunPython(fix_direct_deal_connections, reverse_code=migrations.RunPython.noop),
