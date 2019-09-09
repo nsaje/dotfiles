@@ -33,3 +33,14 @@ class ConversionGoalManager(core.common.BaseManager):
         )
 
         return conversion_goal
+
+    def clone(self, request, source_conversion_goal, campaign):
+        return self.create(
+            request,
+            campaign,
+            source_conversion_goal.type,
+            source_conversion_goal.pixel.id
+            if source_conversion_goal.type == constants.ConversionGoalType.PIXEL
+            else source_conversion_goal.goal_id,
+            source_conversion_goal.conversion_window,
+        )

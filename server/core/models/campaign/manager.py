@@ -1,6 +1,8 @@
 from django.db import transaction
 
 import core.common
+import core.features.bcm
+import core.features.goals
 import core.models
 import core.models.helpers
 import utils.exc
@@ -55,6 +57,31 @@ class CampaignManager(core.common.BaseManager):
 
         if send_mail:
             email_helper.send_campaign_created_email(request, campaign)
+
+        return campaign
+
+    def clone(self, request, source_campaign, new_name):
+        core.common.entity_limits.enforce(
+            model.Campaign.objects.filter(account=source_campaign.account).exclude_archived(),
+            source_campaign.account.id,
+        )
+
+        with transaction.atomic():
+            campaign = self._prepare(source_campaign.account, new_name, source_campaign.type)
+            for field in set(self.model._clone_fields):
+                setattr(campaign, field, getattr(source_campaign, field))
+            campaign.save(request)
+
+            campaign.settings = core.models.settings.CampaignSettings.objects.clone(
+                request, campaign, source_campaign.get_current_settings()
+            )
+            campaign.save(request)
+
+            for budget in source_campaign.budgets.all():
+                core.features.bcm.BudgetLineItem.objects.clone(request, budget, campaign)
+
+            for campaign_goal in source_campaign.campaigngoal_set.all():
+                core.features.goals.CampaignGoal.objects.clone(request, campaign_goal, campaign)
 
         return campaign
 

@@ -62,10 +62,23 @@ class BudgetLineItemManager(core.common.QuerySetManager):
 
         return item
 
+    def clone(self, request, source_budget, campaign):
+        core.common.entity_limits.enforce(BudgetLineItem.objects.filter(campaign=campaign), campaign.account_id)
+
+        with transaction.atomic():
+            item = BudgetLineItem(campaign=campaign, credit=source_budget.credit)
+            for field in set(BudgetLineItem._clone_fields):
+                setattr(item, field, getattr(source_budget, field))
+            item.save(request)
+
+        return item
+
 
 class BudgetLineItem(core.common.FootprintModel, core.features.history.HistoryMixinOld):
     class Meta:
         app_label = "dash"
+
+    _clone_fields = ["start_date", "end_date", "margin", "amount", "comment"]
 
     history_fields = ["start_date", "end_date", "amount", "freed_cc", "comment"]
 

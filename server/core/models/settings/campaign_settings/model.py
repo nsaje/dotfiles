@@ -55,6 +55,26 @@ class CampaignSettings(validation.CampaignSettingsValidatorMixin, instance.Campa
         "blacklist_publisher_groups",
         "frequency_capping",
     ]
+    _clone_fields = [
+        "campaign_manager",
+        "language",
+        "iab_category",
+        "campaign_goal",
+        "target_devices",
+        "target_os",
+        "target_placements",
+        "target_regions",
+        "exclusion_target_regions",
+        "autopilot",
+        "enable_ga_tracking",
+        "ga_tracking_type",
+        "ga_property_id",
+        "enable_adobe_tracking",
+        "adobe_tracking_param",
+        "whitelist_publisher_groups",
+        "blacklist_publisher_groups",
+        "frequency_capping",
+    ]
     history_fields = list(_settings_fields)
 
     id = models.AutoField(primary_key=True)

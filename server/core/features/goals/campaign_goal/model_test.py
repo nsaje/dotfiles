@@ -10,26 +10,10 @@ import dash.history_helpers
 from utils.magic_mixer import magic_mixer
 
 from ..campaign_goal_value import CampaignGoalValue
-from . import exceptions
 from .model import CampaignGoal
 
 
 class TestCampaignGoals(TestCase):
-    def test_create_campaign_goal(self):
-        request = magic_mixer.blend_request_user()
-        campaign = magic_mixer.blend(core.models.Campaign, id=1)
-
-        goal = CampaignGoal.objects.create(request, campaign, goal_type=1, value=1.0)
-
-        self.assertTrue(goal.pk)
-        self.assertEqual(goal.type, 1)
-        self.assertEqual(goal.campaign_id, 1)
-
-        hist = dash.history_helpers.get_campaign_history(campaign).first()
-        self.assertEqual(hist.created_by, request.user)
-        self.assertEqual(dash.constants.HistoryActionType.GOAL_CHANGE, hist.action_type)
-        self.assertEqual(hist.changes_text, 'Added campaign goal "1 Time on Site - Seconds"')
-
     def test_set_primary(self):
         request = magic_mixer.blend_request_user()
         campaign = magic_mixer.blend(core.models.Campaign)
@@ -95,10 +79,3 @@ class TestCampaignGoals(TestCase):
         self.assertEqual(hist.created_by, request.user)
         self.assertEqual(dash.constants.HistoryActionType.GOAL_CHANGE, hist.action_type)
         self.assertEqual(hist.changes_text, 'Changed campaign goal value: "$4.000 CPC"')
-
-    def test_create_cpa_goal_with_no_conversion_goal(self):
-        request = magic_mixer.blend_request_user()
-        campaign = magic_mixer.blend(core.models.Campaign, id=1)
-
-        with self.assertRaises(exceptions.ConversionGoalRequired):
-            CampaignGoal.objects.create(request, campaign, goal_type=dash.constants.CampaignGoalKPI.CPA, value=1.0)

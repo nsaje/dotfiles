@@ -7,6 +7,7 @@ from mock import patch
 import core.models
 import dash.constants
 import zemauth
+from utils.exc import MultipleValidationError
 from utils.exc import ValidationError
 from utils.magic_mixer import magic_mixer
 
@@ -171,3 +172,45 @@ class TestBudgetLineItemManager(TestCase):
         budget.end_date = past_date
         with self.assertRaises(ValidationError):
             budget.save()
+
+    def test_clone(self):
+        request = magic_mixer.blend_request_user()
+        start_date = datetime.date(2017, 1, 1)
+        end_date = datetime.date(2017, 1, 2)
+        item = BudgetLineItem.objects.create(
+            request, self.campaign, self.credit, start_date, end_date, 100, Decimal("0.15"), "test"
+        )
+        destination_campaign = magic_mixer.blend(core.models.Campaign, account=self.account)
+        cloned_item = BudgetLineItem.objects.clone(request, item, destination_campaign)
+
+        self.assertEqual(item.campaign, self.campaign)
+        self.assertEqual(item.credit, self.credit)
+        self.assertEqual(item.start_date, start_date)
+        self.assertEqual(item.end_date, end_date)
+        self.assertEqual(item.amount, 100)
+        self.assertEqual(item.margin, Decimal("0.15"))
+        self.assertEqual(item.comment, "test")
+
+        self.assertEqual(destination_campaign, cloned_item.campaign)
+        self.assertEqual(item.credit, cloned_item.credit)
+        self.assertEqual(item.start_date, cloned_item.start_date)
+        self.assertEqual(item.end_date, cloned_item.end_date)
+        self.assertEqual(item.amount, cloned_item.amount)
+        self.assertEqual(item.margin, cloned_item.margin)
+        self.assertEqual(item.comment, cloned_item.comment)
+
+    def test_clone_not_enough_credit(self):
+        request = magic_mixer.blend_request_user()
+        start_date = datetime.date(2017, 1, 1)
+        end_date = datetime.date(2017, 1, 2)
+        item = BudgetLineItem.objects.create(
+            request, self.campaign, self.credit, start_date, end_date, 251, Decimal("0.15"), "test"
+        )
+        destination_campaign = magic_mixer.blend(core.models.Campaign, account=self.account)
+
+        try:
+            BudgetLineItem.objects.clone(request, item, destination_campaign)
+        except MultipleValidationError as err:
+            error = err
+
+        self.assertEqual("Budget exceeds the total credit amount by $2.00.", str(error.errors[0]))

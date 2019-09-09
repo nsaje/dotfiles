@@ -33,6 +33,8 @@ class Campaign(
 
     _demo_fields = {"name": utils.demo_anonymizer.campaign_name_from_pool}
 
+    _clone_fields = ["default_whitelist", "default_blacklist", "custom_flags"]
+
     id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=127, editable=True, blank=False, null=False)
     type = models.IntegerField(
