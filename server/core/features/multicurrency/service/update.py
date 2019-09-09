@@ -17,6 +17,7 @@ from . import ils
 from . import inr
 from . import jpy
 from . import myr
+from . import nzd
 from . import sgd
 from . import zar
 
@@ -70,6 +71,8 @@ def _get_exchange_rate(currency):
         return jpy.get_exchange_rate()
     if currency == dash.constants.Currency.CAD:
         return cad.get_exchange_rate()
+    if currency == dash.constants.Currency.NZD:
+        return nzd.get_exchange_rate()
     else:
         raise MissingExchangeRateMappingException()
 

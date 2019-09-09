@@ -271,6 +271,7 @@ class Currency(ConstantBase):
     INR = "INR"
     JPY = "JPY"
     CAD = "CAD"
+    NZD = "NZD"
 
     _VALUES = {
         USD: "US Dollar",
@@ -286,6 +287,7 @@ class Currency(ConstantBase):
         INR: "Indian Rupee",
         JPY: "Japanese Yen",
         CAD: "Canadian Dollar",
+        NZD: "New Zealand Dollar",
     }
 
 

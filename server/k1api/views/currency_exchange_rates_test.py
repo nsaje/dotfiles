@@ -84,6 +84,12 @@ class CurrencyExchangeRateViewTest(K1APIBaseTest):
             currency=dash.constants.Currency.CAD,
             exchange_rate="1.3234",
         )
+        magic_mixer.blend(
+            core.features.multicurrency.CurrencyExchangeRate,
+            date=dates_helper.local_today(),
+            currency=dash.constants.Currency.NZD,
+            exchange_rate="1.7208",
+        )
         super().setUp()
 
     def test_get(self):
@@ -105,6 +111,7 @@ class CurrencyExchangeRateViewTest(K1APIBaseTest):
                     "INR": "78.5770",
                     "JPY": "108.0500",
                     "CAD": "1.3234",
+                    "NZD": "1.7208",
                 },
                 "error": None,
             },

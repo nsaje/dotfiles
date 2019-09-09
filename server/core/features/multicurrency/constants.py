@@ -14,4 +14,5 @@ CurrencySymbol = {
     dash.constants.Currency.INR: "₹",
     dash.constants.Currency.JPY: "¥",
     dash.constants.Currency.CAD: "C$",
+    dash.constants.Currency.NZD: "NZ$",
 }
