@@ -77,7 +77,7 @@ class CampaignManager(core.common.BaseManager):
             )
             campaign.save(request)
 
-            for budget in source_campaign.budgets.all():
+            for budget in source_campaign.budgets.all().filter_today():
                 core.features.bcm.BudgetLineItem.objects.clone(request, budget, campaign)
 
             for campaign_goal in source_campaign.campaigngoal_set.all():
