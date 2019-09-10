@@ -59,7 +59,7 @@ export class SettingsDrawerHeaderComponent implements OnInit, OnChanges {
         }
         if (changes.entityId) {
             this.adminLink = entityHelpers.getAdminLink(
-                EntityType.AD_GROUP,
+                this.entityType,
                 this.entityId
             );
         }
