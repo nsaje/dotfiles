@@ -6,12 +6,11 @@ from django.db import models
 from . import validation
 
 
-class DirectDealConnection(validation.DirectDealsConnectionMixin, models.Model):
+class DirectDealConnection(validation.DirectDealConnectionValidatorMixin, models.Model):
     class Meta:
         app_label = "dash"
 
     id = models.AutoField(primary_key=True)
-    source = models.ForeignKey("Source", null=False, blank=False, on_delete=models.PROTECT)
     exclusive = models.BooleanField(
         default=True, help_text="If the deal is exclusive, we will only respond to requests that have this deal."
     )
@@ -26,6 +25,14 @@ class DirectDealConnection(validation.DirectDealsConnectionMixin, models.Model):
         settings.AUTH_USER_MODEL,
         related_name="+",
         verbose_name="Created by",
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+    )
+    modified_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        related_name="+",
+        verbose_name="Modified by",
         on_delete=models.PROTECT,
         null=True,
         blank=True,
@@ -55,7 +62,10 @@ class DirectDealConnection(validation.DirectDealsConnectionMixin, models.Model):
         if self.is_global:
             self.exclusive = False
 
-        if self.pk is None and request:
-            self.created_by = request.user
+        if request and not request.user.is_anonymous:
+            if self.pk is None:
+                self.created_by = request.user
+            self.modified_by = request.user
+
         self.full_clean()
         super().save(*args, **kwargs)

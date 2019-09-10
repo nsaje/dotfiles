@@ -1,7 +1,7 @@
 from . import exceptions
 
 
-class DirectDealsConnectionMixin(object):
+class DirectDealConnectionValidatorMixin(object):
     def _validate_exclusive(self):
         if self.exclusive and self.is_global:
             raise exceptions.CannotSetExclusiveAndGlobal(

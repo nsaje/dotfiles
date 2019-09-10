@@ -13,30 +13,20 @@ class DirectDealsTest(K1APIBaseTest):
     @classmethod
     def setUpTestData(cls):
         source = magic_mixer.blend(core.models.Source, bidder_slug="test_exchange_1")
-        deal1 = magic_mixer.blend(core.features.deals.DirectDeal, deal_id="test_1")
-        deal2 = magic_mixer.blend(core.features.deals.DirectDeal, deal_id="test_2")
+        deal1 = magic_mixer.blend(core.features.deals.DirectDeal, deal_id="test_1", source=source)
+        deal2 = magic_mixer.blend(core.features.deals.DirectDeal, deal_id="test_2", source=source)
         adgroup = magic_mixer.blend(core.models.AdGroup, pk=1000)
         adgroup2 = magic_mixer.blend(core.models.AdGroup, pk=1001)
         agency = magic_mixer.blend(core.models.Agency, pk=2000)
         account = magic_mixer.blend(core.models.Account, pk=3000)
         campaign = magic_mixer.blend(core.models.Campaign, pk=4000)
 
-        magic_mixer.blend(core.features.deals.DirectDealConnection, source=source, deal=deal1)
-        magic_mixer.blend(
-            core.features.deals.DirectDealConnection, source=source, deal=deal1, adgroup=adgroup, exclusive=False
-        )
-        magic_mixer.blend(
-            core.features.deals.DirectDealConnection, source=source, deal=deal2, agency=agency, exclusive=False
-        )
-        magic_mixer.blend(
-            core.features.deals.DirectDealConnection, source=source, deal=deal1, adgroup=adgroup2, exclusive=True
-        )
-        magic_mixer.blend(
-            core.features.deals.DirectDealConnection, source=source, deal=deal2, account=account, exclusive=False
-        )
-        magic_mixer.blend(
-            core.features.deals.DirectDealConnection, source=source, deal=deal1, campaign=campaign, exclusive=True
-        )
+        magic_mixer.blend(core.features.deals.DirectDealConnection, deal=deal1)
+        magic_mixer.blend(core.features.deals.DirectDealConnection, deal=deal1, adgroup=adgroup, exclusive=False)
+        magic_mixer.blend(core.features.deals.DirectDealConnection, deal=deal2, agency=agency, exclusive=False)
+        magic_mixer.blend(core.features.deals.DirectDealConnection, deal=deal1, adgroup=adgroup2, exclusive=True)
+        magic_mixer.blend(core.features.deals.DirectDealConnection, deal=deal2, account=account, exclusive=False)
+        magic_mixer.blend(core.features.deals.DirectDealConnection, deal=deal1, campaign=campaign, exclusive=True)
 
     def test_get_direct_deals(self):
         response = self.client.get(reverse("k1api.directdeals"))

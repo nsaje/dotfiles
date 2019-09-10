@@ -717,7 +717,7 @@ def get_applied_deals_dict(configured_deals):
                 "level": direct_deal.level,
                 "direct_deal_connection_id": direct_deal.id,
                 "deal_id": direct_deal.deal.deal_id,
-                "source": direct_deal.source.name,
+                "source": direct_deal.deal.source.name,
                 "exclusive": direct_deal.exclusive,
                 "description": direct_deal.deal.description,
                 "is_applied": True,

@@ -115,9 +115,9 @@ class DirectDealConnectionAgencyInline(admin.StackedInline):
     model = models.DirectDealConnection
     can_delete = True
     extra = 0
-    autocomplete_fields = ("deal", "source")
+    autocomplete_fields = ("deal",)
     exclude = ("created_dt", "modified_dt", "adgroup", "campaign", "account")
-    readonly_fields = ("created_by",)
+    readonly_fields = ("created_by", "modified_by")
     raw_id_fields = ("agency_id",)
 
 
@@ -125,9 +125,9 @@ class DirectDealConnectionAccountInline(admin.StackedInline):
     model = models.DirectDealConnection
     can_delete = True
     extra = 0
-    autocomplete_fields = ("deal", "source")
+    autocomplete_fields = ("deal",)
     exclude = ("created_dt", "modified_dt", "adgroup", "campaign", "agency")
-    readonly_fields = ("created_by",)
+    readonly_fields = ("created_by", "modified_by")
     raw_id_fields = ("account_id",)
 
 
@@ -135,9 +135,9 @@ class DirectDealConnectionCampaignInline(admin.StackedInline):
     model = models.DirectDealConnection
     can_delete = True
     extra = 0
-    autocomplete_fields = ("deal", "source")
+    autocomplete_fields = ("deal",)
     exclude = ("created_dt", "modified_dt", "adgroup", "account", "agency")
-    readonly_fields = ("created_by",)
+    readonly_fields = ("created_by", "modified_by")
     raw_id_fields = ("campaign_id",)
 
 
@@ -145,9 +145,9 @@ class DirectDealConnectionAdGroupsInline(admin.StackedInline):
     model = models.DirectDealConnection
     can_delete = True
     extra = 0
-    autocomplete_fields = ("deal", "source")
+    autocomplete_fields = ("deal",)
     exclude = ("created_dt", "modified_dt", "agency", "account", "campaign")
-    readonly_fields = ("created_by",)
+    readonly_fields = ("created_by", "modified_by")
     raw_id_fields = ("adgroup_id",)
 
 
@@ -2084,13 +2084,16 @@ class DirectDealConnectionAdmin(admin.ModelAdmin):
     model = models.DirectDealConnection
     form = dash_forms.DirectDealConnectionAdminForm
     raw_id_fields = ("adgroup", "campaign")
-    readonly_fields = ("id", "modified_dt", "created_dt", "created_by")
+    readonly_fields = ("id", "modified_dt", "created_dt", "created_by", "modified_by")
     list_display = ("id", "source", "exclusive", "is_global", "agency", "account", "campaign", "adgroup", "deal_id")
-    search_fields = ("source__name", "deal__deal_id", "adgroup__id", "campaign__id", "account__id", "agency__id")
-    autocomplete_fields = ("source", "agency", "account", "deal")
+    search_fields = ("deal__source__name", "deal__deal_id", "adgroup__id", "campaign__id", "account__id", "agency__id")
+    autocomplete_fields = ("agency", "account", "deal")
 
     def deal_id(self, obj):
         return obj.deal.deal_id
+
+    def source(self, obj):
+        return obj.deal.source.name
 
     # Workaround to have boolean value displayed as an icon instead of a text.
     def is_global(self, obj):
@@ -2107,8 +2110,12 @@ class DirectDealConnectionAdmin(admin.ModelAdmin):
 
 class DirectDealAdmin(admin.ModelAdmin):
     model = models.DirectDeal
-    list_display = ("deal_id",)
-    search_fields = ("id", "deal_id")
+    readonly_fields = ("id", "modified_dt", "created_dt", "created_by", "modified_by")
+    list_display = ("deal_id", "source", "name", "agency", "valid_from_date", "valid_to_date")
+    search_fields = ("id", "deal_id", "name", "agency__id", "source__name")
+
+    def save_model(self, request, obj, form, change):
+        obj.save(request)
 
 
 class EntityTagAdmin(admin.ModelAdmin):
