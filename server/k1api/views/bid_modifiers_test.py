@@ -28,7 +28,10 @@ class BidModifiersTest(K1APIBaseTest):
         test_objs = magic_mixer.cycle(3).blend(core.features.bid_modifiers.BidModifier, source=None, source_slug="")
         test_objs.append(
             magic_mixer.blend(
-                core.features.bid_modifiers.BidModifier, source=self.source, source_slug=self.source.bidder_slug
+                core.features.bid_modifiers.BidModifier,
+                source=self.source,
+                source_slug=self.source.bidder_slug,
+                type=core.features.bid_modifiers.constants.BidModifierType.AD,
             )
         )
         response = self.client.get(reverse("k1api.bidmodifiers"))
