@@ -57,7 +57,7 @@ export class BidModifierUploadModalStore
                 .pipe(takeUntil(this.ngUnsubscribe$))
                 .subscribe(
                     () => {
-                        this.updateState(
+                        this.patchState(
                             new BidModifierUploadModalStoreFieldsErrorsState(),
                             'fieldsErrors'
                         );
@@ -68,7 +68,7 @@ export class BidModifierUploadModalStore
                             new BidModifierUploadModalStoreFieldsErrorsState(),
                             error
                         );
-                        this.updateState(fieldsErrors, 'fieldsErrors');
+                        this.patchState(fieldsErrors, 'fieldsErrors');
                     }
                 );
         });

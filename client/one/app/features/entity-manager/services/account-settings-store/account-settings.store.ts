@@ -69,7 +69,7 @@ export class AccountSettingsStore extends Store<AccountSettingsStoreState>
             .pipe(takeUntil(this.ngUnsubscribe$))
             .subscribe(
                 () => {
-                    this.updateState(
+                    this.patchState(
                         new AccountSettingsStoreFieldsErrorsState(),
                         'fieldsErrors'
                     );
@@ -79,7 +79,7 @@ export class AccountSettingsStore extends Store<AccountSettingsStoreState>
                         new AccountSettingsStoreFieldsErrorsState(),
                         error
                     );
-                    this.updateState(fieldsErrors, 'fieldsErrors');
+                    this.patchState(fieldsErrors, 'fieldsErrors');
                 }
             );
     }
@@ -103,7 +103,7 @@ export class AccountSettingsStore extends Store<AccountSettingsStoreState>
                             new AccountSettingsStoreFieldsErrorsState(),
                             error
                         );
-                        this.updateState(fieldsErrors, 'fieldsErrors');
+                        this.patchState(fieldsErrors, 'fieldsErrors');
                         resolve(false);
                     }
                 );
@@ -124,7 +124,7 @@ export class AccountSettingsStore extends Store<AccountSettingsStoreState>
                             new AccountSettingsStoreFieldsErrorsState(),
                             error
                         );
-                        this.updateState(fieldsErrors, 'fieldsErrors');
+                        this.patchState(fieldsErrors, 'fieldsErrors');
                         resolve(false);
                     }
                 );
@@ -139,17 +139,17 @@ export class AccountSettingsStore extends Store<AccountSettingsStoreState>
     }
 
     setName(name: string) {
-        this.updateState(name, 'entity', 'name');
+        this.patchState(name, 'entity', 'name');
         this.validateEntity();
     }
 
     setAccountManager(accountManager: string) {
-        this.updateState(accountManager, 'entity', 'defaultAccountManager');
+        this.patchState(accountManager, 'entity', 'defaultAccountManager');
         this.validateEntity();
     }
 
     setSalesRepresentative(salesRepresentative: string) {
-        this.updateState(
+        this.patchState(
             salesRepresentative,
             'entity',
             'defaultSalesRepresentative'
@@ -158,32 +158,32 @@ export class AccountSettingsStore extends Store<AccountSettingsStoreState>
     }
 
     setCustomerSuccessRepresentative(csRepresentative: string) {
-        this.updateState(csRepresentative, 'entity', 'defaultCsRepresentative');
+        this.patchState(csRepresentative, 'entity', 'defaultCsRepresentative');
         this.validateEntity();
     }
 
     setOutbrainRepresentative(obRepresentative: string) {
-        this.updateState(obRepresentative, 'entity', 'obRepresentative');
+        this.patchState(obRepresentative, 'entity', 'obRepresentative');
         this.validateEntity();
     }
 
     setAccountType(accountType: AccountType) {
-        this.updateState(accountType, 'entity', 'accountType');
+        this.patchState(accountType, 'entity', 'accountType');
         this.validateEntity();
     }
 
     setAgency(agencyId: string) {
-        this.updateState(agencyId, 'entity', 'agencyId');
+        this.patchState(agencyId, 'entity', 'agencyId');
         this.validateEntity();
     }
 
     setSalesforceUrl(salesforceUrl: string) {
-        this.updateState(salesforceUrl, 'entity', 'salesforceUrl');
+        this.patchState(salesforceUrl, 'entity', 'salesforceUrl');
         this.validateEntity();
     }
 
     setCurrency(currency: Currency) {
-        this.updateState(currency, 'entity', 'currency');
+        this.patchState(currency, 'entity', 'currency');
         this.validateEntity();
     }
 
@@ -192,7 +192,7 @@ export class AccountSettingsStore extends Store<AccountSettingsStoreState>
         if (commonHelpers.isNotEmpty(frequencyCapping)) {
             frequencyCappingNumber = parseInt(frequencyCapping, 10) || null;
         }
-        this.updateState(frequencyCappingNumber, 'entity', 'frequencyCapping');
+        this.patchState(frequencyCappingNumber, 'entity', 'frequencyCapping');
         this.validateEntity();
     }
 
@@ -209,7 +209,7 @@ export class AccountSettingsStore extends Store<AccountSettingsStoreState>
                 : this.state.entity.targeting.publisherGroups.excluded,
         };
 
-        this.updateState(
+        this.patchState(
             newPublisherGroupsTargeting,
             'entity',
             'targeting',
@@ -219,7 +219,7 @@ export class AccountSettingsStore extends Store<AccountSettingsStoreState>
     }
 
     setAutoAddNewSources(autoAddNewSources: boolean) {
-        this.updateState(autoAddNewSources, 'entity', 'autoAddNewSources');
+        this.patchState(autoAddNewSources, 'entity', 'autoAddNewSources');
         this.validateEntity();
     }
 
@@ -234,7 +234,7 @@ export class AccountSettingsStore extends Store<AccountSettingsStoreState>
             return item;
         });
 
-        this.updateState(mediaSources, 'entity', 'mediaSources');
+        this.patchState(mediaSources, 'entity', 'mediaSources');
         this.validateEntity();
     }
 
@@ -249,7 +249,7 @@ export class AccountSettingsStore extends Store<AccountSettingsStoreState>
             return item;
         });
 
-        this.updateState(mediaSources, 'entity', 'mediaSources');
+        this.patchState(mediaSources, 'entity', 'mediaSources');
         this.validateEntity();
     }
 

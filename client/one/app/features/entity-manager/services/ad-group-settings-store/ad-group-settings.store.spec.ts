@@ -194,7 +194,7 @@ describe('AdGroupSettingsStore', () => {
         store.loadEntity('12345');
         tick();
 
-        store.updateState(false, 'entity', 'manageRtbSourcesAsOne');
+        store.patchState(false, 'entity', 'manageRtbSourcesAsOne');
 
         confirmSpy.and.returnValue(false);
         store.saveEntity();
@@ -308,14 +308,14 @@ describe('AdGroupSettingsStore', () => {
             .and.returnValue()
             .calls.reset();
 
-        store.updateState('Generic name', 'entity', 'name');
+        store.patchState('Generic name', 'entity', 'name');
         expect(store.state.entity.name).toEqual('Generic name');
         store.setName('Generic name 2');
         expect(store.state.entity.name).toEqual('Generic name 2');
     });
 
     it('should correctly determine if ad group autopilot is enabled', () => {
-        store.updateState(
+        store.patchState(
             AdGroupAutopilotState.ACTIVE_CPC_BUDGET,
             'entity',
             'autopilot',
@@ -323,7 +323,7 @@ describe('AdGroupSettingsStore', () => {
         );
         expect(store.isAdGroupAutopilotEnabled()).toBe(true);
 
-        store.updateState(
+        store.patchState(
             AdGroupAutopilotState.ACTIVE_CPC,
             'entity',
             'autopilot',
@@ -333,8 +333,8 @@ describe('AdGroupSettingsStore', () => {
     });
 
     it('should correctly determine if ad group autopilot is enabled when campaign autopilot is enabled', () => {
-        store.updateState(true, 'extras', 'isCampaignAutopilotEnabled');
-        store.updateState(
+        store.patchState(true, 'extras', 'isCampaignAutopilotEnabled');
+        store.patchState(
             AdGroupAutopilotState.ACTIVE_CPC_BUDGET,
             'entity',
             'autopilot',
@@ -470,7 +470,7 @@ describe('AdGroupSettingsStore', () => {
         spyOn(store, 'validateEntity')
             .and.returnValue()
             .calls.reset();
-        store.updateState(true, 'entity', 'manageRtbSourcesAsOne');
+        store.patchState(true, 'entity', 'manageRtbSourcesAsOne');
         store.setAdGroupAutopilotState(AdGroupAutopilotState.INACTIVE);
         expect(store.state.entity.autopilot.state).toEqual(
             AdGroupAutopilotState.INACTIVE
@@ -482,7 +482,7 @@ describe('AdGroupSettingsStore', () => {
         spyOn(store, 'validateEntity')
             .and.returnValue()
             .calls.reset();
-        store.updateState(false, 'entity', 'manageRtbSourcesAsOne');
+        store.patchState(false, 'entity', 'manageRtbSourcesAsOne');
         store.setAdGroupAutopilotState(AdGroupAutopilotState.ACTIVE_CPC_BUDGET);
         expect(store.state.entity.autopilot.state).toEqual(
             AdGroupAutopilotState.ACTIVE_CPC_BUDGET
@@ -506,7 +506,7 @@ describe('AdGroupSettingsStore', () => {
             .and.returnValue()
             .calls.reset();
 
-        store.updateState(22, 'entity', 'clickCappingDailyAdGroupMaxClicks');
+        store.patchState(22, 'entity', 'clickCappingDailyAdGroupMaxClicks');
         expect(store.state.entity.clickCappingDailyAdGroupMaxClicks).toEqual(
             22
         );
@@ -521,7 +521,7 @@ describe('AdGroupSettingsStore', () => {
             .and.returnValue()
             .calls.reset();
 
-        store.updateState(22, 'entity', 'frequencyCapping');
+        store.patchState(22, 'entity', 'frequencyCapping');
         expect(store.state.entity.frequencyCapping).toEqual(22);
         store.setFrequencyCapping('30');
         expect(store.state.entity.frequencyCapping).toEqual(30);

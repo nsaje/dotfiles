@@ -349,7 +349,7 @@ describe('CampaignSettingsStore', () => {
                 conversionGoal: null,
             },
         ];
-        store.updateState(goals, 'entity', 'goals');
+        store.patchState(goals, 'entity', 'goals');
         expect(store.state.entity.goals).toEqual(goals);
         store.createGoal();
         const newGoals: CampaignGoal[] = [
@@ -399,7 +399,7 @@ describe('CampaignSettingsStore', () => {
                 conversionGoal: null,
             },
         ];
-        store.updateState(goals, 'entity', 'goals');
+        store.patchState(goals, 'entity', 'goals');
         expect(store.state.entity.goals).toEqual(goals);
         expect(store.state.entity.goals[0].primary).toEqual(true);
         expect(store.state.entity.goals[1].primary).toEqual(false);
@@ -429,7 +429,7 @@ describe('CampaignSettingsStore', () => {
                 conversionGoal: null,
             },
         ];
-        store.updateState(goals, 'entity', 'goals');
+        store.patchState(goals, 'entity', 'goals');
         expect(store.state.entity.goals).toEqual(goals);
 
         const changeEvent: ChangeEvent<CampaignGoal> = {
@@ -464,7 +464,7 @@ describe('CampaignSettingsStore', () => {
                 conversionGoal: null,
             },
         ];
-        store.updateState(goals, 'entity', 'goals');
+        store.patchState(goals, 'entity', 'goals');
         expect(store.state.entity.goals).toEqual(goals);
 
         store.deleteGoal(goals[0]);
@@ -504,7 +504,7 @@ describe('CampaignSettingsStore', () => {
         };
 
         const goals: CampaignGoal[] = [goal];
-        store.updateState(goals, 'entity', 'goals');
+        store.patchState(goals, 'entity', 'goals');
 
         expect(store.state.entity.goals).toEqual(goals);
         expect(store.state.conversionPixels).toEqual([]);
@@ -551,7 +551,7 @@ describe('CampaignSettingsStore', () => {
         };
 
         const goals: CampaignGoal[] = [goal];
-        store.updateState(goals, 'entity', 'goals');
+        store.patchState(goals, 'entity', 'goals');
 
         expect(store.state.entity.goals).toEqual(goals);
         expect(store.state.conversionPixels).toEqual([]);
@@ -608,7 +608,7 @@ describe('CampaignSettingsStore', () => {
         };
 
         const goals: CampaignGoal[] = [goal];
-        store.updateState(goals, 'entity', 'goals');
+        store.patchState(goals, 'entity', 'goals');
 
         const conversionPixelsErrors = clone(
             store.state.conversionPixelsErrors
@@ -617,7 +617,7 @@ describe('CampaignSettingsStore', () => {
             name: ['Please specify conversion pixel name.'],
         };
 
-        store.updateState(conversionPixelsErrors, 'conversionPixelsErrors');
+        store.patchState(conversionPixelsErrors, 'conversionPixelsErrors');
 
         expect(store.state.entity.goals).toEqual(goals);
         expect(store.state.conversionPixels).toEqual([]);
@@ -653,11 +653,11 @@ describe('CampaignSettingsStore', () => {
             },
         ];
 
-        store.updateState(accountCredits, 'extras', 'accountCredits');
+        store.patchState(accountCredits, 'extras', 'accountCredits');
         expect(store.isAnyAccountCreditAvailable()).toEqual(true);
 
         accountCredits[0].isAvailable = false;
-        store.updateState(accountCredits, 'extras', 'accountCredits');
+        store.patchState(accountCredits, 'extras', 'accountCredits');
         expect(store.isAnyAccountCreditAvailable()).toEqual(false);
     });
 
@@ -682,7 +682,7 @@ describe('CampaignSettingsStore', () => {
 
         expect(store.state.entity.budgets).toEqual([]);
 
-        store.updateState(accountCredits, 'extras', 'accountCredits');
+        store.patchState(accountCredits, 'extras', 'accountCredits');
         store.createBudget();
 
         expect(store.state.entity.budgets.length).toEqual(1);
@@ -712,7 +712,7 @@ describe('CampaignSettingsStore', () => {
             },
         ];
 
-        store.updateState(budgets, 'entity', 'budgets');
+        store.patchState(budgets, 'entity', 'budgets');
         expect(store.state.entity.budgets[0].comment).toEqual(comment);
 
         const updatedComment = 'A new generic comment';
@@ -747,7 +747,7 @@ describe('CampaignSettingsStore', () => {
             },
         ];
 
-        store.updateState(budgets, 'entity', 'budgets');
+        store.patchState(budgets, 'entity', 'budgets');
         expect(store.state.entity.budgets.length).toEqual(1);
 
         store.deleteBudget(budgets[0]);
@@ -760,7 +760,7 @@ describe('CampaignSettingsStore', () => {
             .and.returnValue()
             .calls.reset();
 
-        store.updateState('Generic name', 'entity', 'name');
+        store.patchState('Generic name', 'entity', 'name');
         expect(store.state.entity.name).toEqual('Generic name');
         store.setName('Generic name 2');
         expect(store.state.entity.name).toEqual('Generic name 2');
@@ -771,7 +771,7 @@ describe('CampaignSettingsStore', () => {
             .and.returnValue()
             .calls.reset();
 
-        store.updateState(CampaignType.CONTENT, 'entity', 'type');
+        store.patchState(CampaignType.CONTENT, 'entity', 'type');
         expect(store.state.entity.type).toEqual(CampaignType.CONTENT);
         store.setType(CampaignType.DISPLAY);
         expect(store.state.entity.type).toEqual(CampaignType.DISPLAY);
@@ -782,7 +782,7 @@ describe('CampaignSettingsStore', () => {
             .and.returnValue()
             .calls.reset();
 
-        store.updateState('11', 'entity', 'campaignManager');
+        store.patchState('11', 'entity', 'campaignManager');
         expect(store.state.entity.campaignManager).toEqual('11');
         store.setCampaignManager('12');
         expect(store.state.entity.campaignManager).toEqual('12');
@@ -793,7 +793,7 @@ describe('CampaignSettingsStore', () => {
             .and.returnValue()
             .calls.reset();
 
-        store.updateState(IabCategory.IAB1, 'entity', 'iabCategory');
+        store.patchState(IabCategory.IAB1, 'entity', 'iabCategory');
         expect(store.state.entity.iabCategory).toEqual(IabCategory.IAB1);
         store.setIabCategory(IabCategory.IAB10_1);
         expect(store.state.entity.iabCategory).toEqual(IabCategory.IAB10_1);
@@ -804,7 +804,7 @@ describe('CampaignSettingsStore', () => {
             .and.returnValue()
             .calls.reset();
 
-        store.updateState(Language.ENGLISH, 'entity', 'language');
+        store.patchState(Language.ENGLISH, 'entity', 'language');
         expect(store.state.entity.language).toEqual(Language.ENGLISH);
         store.setLanguage(Language.ITALIAN);
         expect(store.state.entity.language).toEqual(Language.ITALIAN);
@@ -815,7 +815,7 @@ describe('CampaignSettingsStore', () => {
             .and.returnValue()
             .calls.reset();
 
-        store.updateState(22, 'entity', 'frequencyCapping');
+        store.patchState(22, 'entity', 'frequencyCapping');
         expect(store.state.entity.frequencyCapping).toEqual(22);
         store.setFrequencyCapping('30');
         expect(store.state.entity.frequencyCapping).toEqual(30);
@@ -848,7 +848,7 @@ describe('CampaignSettingsStore', () => {
             .and.returnValue()
             .calls.reset();
 
-        store.updateState(false, 'entity', 'autopilot');
+        store.patchState(false, 'entity', 'autopilot');
         expect(store.state.entity.autopilot).toEqual(false);
         store.setAutopilot(true);
         expect(store.state.entity.autopilot).toEqual(true);
@@ -871,7 +871,7 @@ describe('CampaignSettingsStore', () => {
             },
         };
 
-        store.updateState(tracking, 'entity', 'tracking');
+        store.patchState(tracking, 'entity', 'tracking');
         expect(store.state.entity.tracking).toEqual(tracking);
 
         const changeEvent: ChangeEvent<CampaignTracking> = {

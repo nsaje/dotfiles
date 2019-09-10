@@ -22,7 +22,7 @@ export class RuleFormStore extends Store<RuleFormStoreState> {
     }
 
     setRuleName(name: string) {
-        this.updateState(name, 'rule', 'name');
+        this.patchState(name, 'rule', 'name');
     }
 
     selectRuleDimension(dimension: RuleDimension) {
@@ -40,23 +40,23 @@ export class RuleFormStore extends Store<RuleFormStoreState> {
     }
 
     setRuleAction(action: RuleAction) {
-        this.updateState(action, 'rule', 'action');
+        this.patchState(action, 'rule', 'action');
     }
 
     setNotification(notification: RuleNotification) {
-        this.updateState(notification, 'rule', 'notification');
+        this.patchState(notification, 'rule', 'notification');
     }
 
     updateConditions(conditions: RuleCondition[]) {
-        this.updateState(conditions, 'rule', 'conditions');
+        this.patchState(conditions, 'rule', 'conditions');
     }
 
     setRuleTimeRange(timeRange: TimeRange) {
-        this.updateState(timeRange, 'rule', 'timeRange');
+        this.patchState(timeRange, 'rule', 'timeRange');
     }
 
     setRuleNotification(notification: RuleNotification) {
-        this.updateState(notification, 'rule', 'notification');
+        this.patchState(notification, 'rule', 'notification');
     }
 
     private getActionsForDimension(

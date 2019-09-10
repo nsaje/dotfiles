@@ -25,7 +25,7 @@
       "node_modules/@types"
     ],
     "paths": {
-      "moment": ["./lib/components/moment/moment"],
+      "moment": ["./lib/components/moment/moment"]
     },
     "plugins": [
         {

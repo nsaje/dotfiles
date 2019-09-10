@@ -270,7 +270,7 @@ describe('AccountSettingsStore', () => {
             .and.returnValue()
             .calls.reset();
 
-        store.updateState('Generic name', 'entity', 'name');
+        store.patchState('Generic name', 'entity', 'name');
         expect(store.state.entity.name).toEqual('Generic name');
         store.setName('Generic name 2');
         expect(store.state.entity.name).toEqual('Generic name 2');
@@ -281,7 +281,7 @@ describe('AccountSettingsStore', () => {
             .and.returnValue()
             .calls.reset();
 
-        store.updateState('22', 'entity', 'defaultAccountManager');
+        store.patchState('22', 'entity', 'defaultAccountManager');
         expect(store.state.entity.defaultAccountManager).toEqual('22');
         store.setAccountManager('11');
         expect(store.state.entity.defaultAccountManager).toEqual('11');
@@ -292,7 +292,7 @@ describe('AccountSettingsStore', () => {
             .and.returnValue()
             .calls.reset();
 
-        store.updateState('22', 'entity', 'defaultSalesRepresentative');
+        store.patchState('22', 'entity', 'defaultSalesRepresentative');
         expect(store.state.entity.defaultSalesRepresentative).toEqual('22');
         store.setSalesRepresentative('11');
         expect(store.state.entity.defaultSalesRepresentative).toEqual('11');
@@ -303,7 +303,7 @@ describe('AccountSettingsStore', () => {
             .and.returnValue()
             .calls.reset();
 
-        store.updateState('22', 'entity', 'defaultCsRepresentative');
+        store.patchState('22', 'entity', 'defaultCsRepresentative');
         expect(store.state.entity.defaultCsRepresentative).toEqual('22');
         store.setCustomerSuccessRepresentative('11');
         expect(store.state.entity.defaultCsRepresentative).toEqual('11');
@@ -314,7 +314,7 @@ describe('AccountSettingsStore', () => {
             .and.returnValue()
             .calls.reset();
 
-        store.updateState('22', 'entity', 'obRepresentative');
+        store.patchState('22', 'entity', 'obRepresentative');
         expect(store.state.entity.obRepresentative).toEqual('22');
         store.setOutbrainRepresentative('11');
         expect(store.state.entity.obRepresentative).toEqual('11');
@@ -325,7 +325,7 @@ describe('AccountSettingsStore', () => {
             .and.returnValue()
             .calls.reset();
 
-        store.updateState(AccountType.UNKNOWN, 'entity', 'accountType');
+        store.patchState(AccountType.UNKNOWN, 'entity', 'accountType');
         expect(store.state.entity.accountType).toEqual(AccountType.UNKNOWN);
         store.setAccountType(AccountType.PILOT);
         expect(store.state.entity.accountType).toEqual(AccountType.PILOT);
@@ -336,7 +336,7 @@ describe('AccountSettingsStore', () => {
             .and.returnValue()
             .calls.reset();
 
-        store.updateState('22', 'entity', 'agencyId');
+        store.patchState('22', 'entity', 'agencyId');
         expect(store.state.entity.agencyId).toEqual('22');
         store.setAgency('11');
         expect(store.state.entity.agencyId).toEqual('11');
@@ -347,7 +347,7 @@ describe('AccountSettingsStore', () => {
             .and.returnValue()
             .calls.reset();
 
-        store.updateState('http://salesforce.com', 'entity', 'salesforceUrl');
+        store.patchState('http://salesforce.com', 'entity', 'salesforceUrl');
         expect(store.state.entity.salesforceUrl).toEqual(
             'http://salesforce.com'
         );
@@ -362,7 +362,7 @@ describe('AccountSettingsStore', () => {
             .and.returnValue()
             .calls.reset();
 
-        store.updateState(Currency.USD, 'entity', 'currency');
+        store.patchState(Currency.USD, 'entity', 'currency');
         expect(store.state.entity.currency).toEqual(Currency.USD);
         store.setCurrency(Currency.EUR);
         expect(store.state.entity.currency).toEqual(Currency.EUR);
@@ -373,7 +373,7 @@ describe('AccountSettingsStore', () => {
             .and.returnValue()
             .calls.reset();
 
-        store.updateState(22, 'entity', 'frequencyCapping');
+        store.patchState(22, 'entity', 'frequencyCapping');
         expect(store.state.entity.frequencyCapping).toEqual(22);
         store.setFrequencyCapping('30');
         expect(store.state.entity.frequencyCapping).toEqual(30);
@@ -406,7 +406,7 @@ describe('AccountSettingsStore', () => {
             .and.returnValue()
             .calls.reset();
 
-        store.updateState(false, 'entity', 'autoAddNewSources');
+        store.patchState(false, 'entity', 'autoAddNewSources');
         expect(store.state.entity.autoAddNewSources).toEqual(false);
         store.setAutoAddNewSources(true);
         expect(store.state.entity.autoAddNewSources).toEqual(true);
@@ -434,7 +434,7 @@ describe('AccountSettingsStore', () => {
             },
         ];
 
-        store.updateState(mockedMediaSources, 'entity', 'mediaSources');
+        store.patchState(mockedMediaSources, 'entity', 'mediaSources');
         expect(store.state.entity.mediaSources).toEqual(mockedMediaSources);
         store.addToAllowedMediaSources(['1', '2']);
         expect(store.state.entity.mediaSources).toEqual(
@@ -469,7 +469,7 @@ describe('AccountSettingsStore', () => {
             },
         ];
 
-        store.updateState(mockedMediaSources, 'entity', 'mediaSources');
+        store.patchState(mockedMediaSources, 'entity', 'mediaSources');
         expect(store.state.entity.mediaSources).toEqual(mockedMediaSources);
         store.removeFromAllowedMediaSources(['1', '2']);
         expect(store.state.entity.mediaSources).toEqual(

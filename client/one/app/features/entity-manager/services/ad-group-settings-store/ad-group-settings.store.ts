@@ -78,7 +78,7 @@ export class AdGroupSettingsStore extends Store<AdGroupSettingsStoreState>
             .pipe(takeUntil(this.ngUnsubscribe$))
             .subscribe(
                 () => {
-                    this.updateState(
+                    this.patchState(
                         new AdGroupSettingsStoreFieldsErrorsState(),
                         'fieldsErrors'
                     );
@@ -88,7 +88,7 @@ export class AdGroupSettingsStore extends Store<AdGroupSettingsStoreState>
                         new AdGroupSettingsStoreFieldsErrorsState(),
                         error
                     );
-                    this.updateState(fieldsErrors, 'fieldsErrors');
+                    this.patchState(fieldsErrors, 'fieldsErrors');
                 }
             );
     }
@@ -116,7 +116,7 @@ export class AdGroupSettingsStore extends Store<AdGroupSettingsStoreState>
                             new AdGroupSettingsStoreFieldsErrorsState(),
                             error
                         );
-                        this.updateState(fieldsErrors, 'fieldsErrors');
+                        this.patchState(fieldsErrors, 'fieldsErrors');
                         resolve(false);
                     }
                 );
@@ -137,7 +137,7 @@ export class AdGroupSettingsStore extends Store<AdGroupSettingsStoreState>
                             new AdGroupSettingsStoreFieldsErrorsState(),
                             error
                         );
-                        this.updateState(fieldsErrors, 'fieldsErrors');
+                        this.patchState(fieldsErrors, 'fieldsErrors');
                         resolve(false);
                     }
                 );
@@ -161,12 +161,12 @@ export class AdGroupSettingsStore extends Store<AdGroupSettingsStoreState>
     }
 
     setName(name: string) {
-        this.updateState(name, 'entity', 'name');
+        this.patchState(name, 'entity', 'name');
         this.validateEntity();
     }
 
     setLanguageMatching(matchingEnabled: boolean) {
-        this.updateState(
+        this.patchState(
             matchingEnabled,
             'entity',
             'targeting',
@@ -177,42 +177,42 @@ export class AdGroupSettingsStore extends Store<AdGroupSettingsStoreState>
     }
 
     setStartDate(startDate: Date) {
-        this.updateState(startDate, 'entity', 'startDate');
+        this.patchState(startDate, 'entity', 'startDate');
         this.validateEntity();
     }
 
     setEndDate(endDate: Date) {
-        this.updateState(endDate, 'entity', 'endDate');
+        this.patchState(endDate, 'entity', 'endDate');
         this.validateEntity();
     }
 
     setDeliveryType(deliveryType: DeliveryType) {
-        this.updateState(deliveryType, 'entity', 'deliveryType');
+        this.patchState(deliveryType, 'entity', 'deliveryType');
         this.validateEntity();
     }
 
     setDayparting(dayparting: AdGroupDayparting) {
-        this.updateState(dayparting, 'entity', 'dayparting');
+        this.patchState(dayparting, 'entity', 'dayparting');
         this.validateEntity();
     }
 
     setBiddingType(biddingType: BiddingType) {
-        this.updateState(biddingType, 'entity', 'biddingType');
+        this.patchState(biddingType, 'entity', 'biddingType');
         this.validateEntity();
     }
 
     setMaxCpc(maxCpc: string) {
-        this.updateState(maxCpc, 'entity', 'maxCpc');
+        this.patchState(maxCpc, 'entity', 'maxCpc');
         this.validateEntity();
     }
 
     setMaxCpm(maxCpm: string) {
-        this.updateState(maxCpm, 'entity', 'maxCpm');
+        this.patchState(maxCpm, 'entity', 'maxCpm');
         this.validateEntity();
     }
 
     setAutopilotDailyBudget(dailyBudget: string) {
-        this.updateState(dailyBudget, 'entity', 'autopilot', 'dailyBudget');
+        this.patchState(dailyBudget, 'entity', 'autopilot', 'dailyBudget');
         this.validateEntity();
     }
 
@@ -221,7 +221,7 @@ export class AdGroupSettingsStore extends Store<AdGroupSettingsStoreState>
         if (commonHelpers.isNotEmpty(clickCapping)) {
             clickCappingNumber = parseInt(clickCapping, 10) || null;
         }
-        this.updateState(
+        this.patchState(
             clickCappingNumber,
             'entity',
             'clickCappingDailyAdGroupMaxClicks'
@@ -234,7 +234,7 @@ export class AdGroupSettingsStore extends Store<AdGroupSettingsStoreState>
         if (commonHelpers.isNotEmpty(frequencyCapping)) {
             frequencyCappingNumber = parseInt(frequencyCapping, 10) || null;
         }
-        this.updateState(frequencyCappingNumber, 'entity', 'frequencyCapping');
+        this.patchState(frequencyCappingNumber, 'entity', 'frequencyCapping');
         this.validateEntity();
     }
 
@@ -292,7 +292,7 @@ export class AdGroupSettingsStore extends Store<AdGroupSettingsStoreState>
                 : this.state.entity.targeting.publisherGroups.excluded,
         };
 
-        this.updateState(
+        this.patchState(
             newPublisherGroupsTargeting,
             'entity',
             'targeting',
@@ -314,7 +314,7 @@ export class AdGroupSettingsStore extends Store<AdGroupSettingsStoreState>
                 : this.state.entity.targeting.interest.excluded,
         };
 
-        this.updateState(
+        this.patchState(
             newInterestTargeting,
             'entity',
             'targeting',
@@ -362,7 +362,7 @@ export class AdGroupSettingsStore extends Store<AdGroupSettingsStoreState>
     }
 
     setBluekaiTargeting(bluekaiTargeting: any) {
-        this.updateState(bluekaiTargeting, 'entity', 'targeting', 'audience');
+        this.patchState(bluekaiTargeting, 'entity', 'targeting', 'audience');
         this.validateEntity();
     }
 
@@ -385,7 +385,7 @@ export class AdGroupSettingsStore extends Store<AdGroupSettingsStoreState>
     }
 
     setManageRtbSourcesAsOne(manageRtbSourcesAsOne: boolean) {
-        this.updateState(
+        this.patchState(
             manageRtbSourcesAsOne,
             'entity',
             'manageRtbSourcesAsOne'
@@ -394,7 +394,7 @@ export class AdGroupSettingsStore extends Store<AdGroupSettingsStoreState>
     }
 
     setTrackingCode(trackingCode: string): void {
-        this.updateState(trackingCode, 'entity', 'trackingCode');
+        this.patchState(trackingCode, 'entity', 'trackingCode');
         this.validateEntity();
     }
 
@@ -423,7 +423,7 @@ export class AdGroupSettingsStore extends Store<AdGroupSettingsStoreState>
                 : this.state.entity.targeting.geo.excluded,
         };
 
-        this.updateState(geoTargeting, 'entity', 'targeting', 'geo');
+        this.patchState(geoTargeting, 'entity', 'targeting', 'geo');
         this.validateEntity();
     }
 

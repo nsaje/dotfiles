@@ -91,7 +91,7 @@ export class CampaignSettingsStore extends Store<CampaignSettingsStoreState>
             .pipe(takeUntil(this.ngUnsubscribe$))
             .subscribe(
                 () => {
-                    this.updateState(
+                    this.patchState(
                         new CampaignSettingsStoreFieldsErrorsState(),
                         'fieldsErrors'
                     );
@@ -101,7 +101,7 @@ export class CampaignSettingsStore extends Store<CampaignSettingsStoreState>
                         new CampaignSettingsStoreFieldsErrorsState(),
                         error
                     );
-                    this.updateState(fieldsErrors, 'fieldsErrors');
+                    this.patchState(fieldsErrors, 'fieldsErrors');
                 }
             );
     }
@@ -129,7 +129,7 @@ export class CampaignSettingsStore extends Store<CampaignSettingsStoreState>
                             new CampaignSettingsStoreFieldsErrorsState(),
                             error
                         );
-                        this.updateState(fieldsErrors, 'fieldsErrors');
+                        this.patchState(fieldsErrors, 'fieldsErrors');
                         resolve(false);
                     }
                 );
@@ -150,7 +150,7 @@ export class CampaignSettingsStore extends Store<CampaignSettingsStoreState>
                             new CampaignSettingsStoreFieldsErrorsState(),
                             error
                         );
-                        this.updateState(fieldsErrors, 'fieldsErrors');
+                        this.patchState(fieldsErrors, 'fieldsErrors');
                         resolve(false);
                     }
                 );
@@ -165,27 +165,27 @@ export class CampaignSettingsStore extends Store<CampaignSettingsStoreState>
     }
 
     setName(name: string) {
-        this.updateState(name, 'entity', 'name');
+        this.patchState(name, 'entity', 'name');
         this.validateEntity();
     }
 
     setType(type: CampaignType) {
-        this.updateState(type, 'entity', 'type');
+        this.patchState(type, 'entity', 'type');
         this.validateEntity();
     }
 
     setCampaignManager(campaignManager: string) {
-        this.updateState(campaignManager, 'entity', 'campaignManager');
+        this.patchState(campaignManager, 'entity', 'campaignManager');
         this.validateEntity();
     }
 
     setIabCategory(iabCategory: IabCategory) {
-        this.updateState(iabCategory, 'entity', 'iabCategory');
+        this.patchState(iabCategory, 'entity', 'iabCategory');
         this.validateEntity();
     }
 
     setLanguage(language: Language) {
-        this.updateState(language, 'entity', 'language');
+        this.patchState(language, 'entity', 'language');
         this.validateEntity();
     }
 
@@ -194,12 +194,12 @@ export class CampaignSettingsStore extends Store<CampaignSettingsStoreState>
         if (commonHelpers.isNotEmpty(frequencyCapping)) {
             frequencyCappingNumber = parseInt(frequencyCapping, 10) || null;
         }
-        this.updateState(frequencyCappingNumber, 'entity', 'frequencyCapping');
+        this.patchState(frequencyCappingNumber, 'entity', 'frequencyCapping');
         this.validateEntity();
     }
 
     setAutopilot(autopilot: boolean) {
-        this.updateState(autopilot, 'entity', 'autopilot');
+        this.patchState(autopilot, 'entity', 'autopilot');
         this.validateEntity();
     }
 
@@ -216,7 +216,7 @@ export class CampaignSettingsStore extends Store<CampaignSettingsStoreState>
                 : this.state.entity.targeting.publisherGroups.excluded,
         };
 
-        this.updateState(
+        this.patchState(
             newPublisherGroupsTargeting,
             'entity',
             'targeting',
@@ -230,7 +230,7 @@ export class CampaignSettingsStore extends Store<CampaignSettingsStoreState>
             ...$event.target,
             ...$event.changes,
         };
-        this.updateState(tracking, 'entity', 'tracking');
+        this.patchState(tracking, 'entity', 'tracking');
         this.validateEntity();
     }
 
@@ -244,7 +244,7 @@ export class CampaignSettingsStore extends Store<CampaignSettingsStoreState>
             .pipe(takeUntil(this.ngUnsubscribe$))
             .subscribe(
                 conversionPixels => {
-                    this.updateState(conversionPixels, 'conversionPixels');
+                    this.patchState(conversionPixels, 'conversionPixels');
                 },
                 error => {}
             );
@@ -321,7 +321,7 @@ export class CampaignSettingsStore extends Store<CampaignSettingsStoreState>
                         name: nameError,
                     };
 
-                    this.updateState(
+                    this.patchState(
                         conversionPixelsErrors,
                         'conversionPixelsErrors'
                     );
@@ -339,7 +339,7 @@ export class CampaignSettingsStore extends Store<CampaignSettingsStoreState>
             }
         );
 
-        this.updateState(conversionPixelsErrors, 'conversionPixelsErrors');
+        this.patchState(conversionPixelsErrors, 'conversionPixelsErrors');
     }
 
     /**
@@ -364,7 +364,7 @@ export class CampaignSettingsStore extends Store<CampaignSettingsStoreState>
             primary: true,
             conversionGoal: null,
         });
-        this.updateState(goals, 'entity', 'goals');
+        this.patchState(goals, 'entity', 'goals');
     }
 
     setPrimaryGoal($event: CampaignGoal) {
@@ -374,7 +374,7 @@ export class CampaignSettingsStore extends Store<CampaignSettingsStoreState>
                 primary: item === $event,
             };
         });
-        this.updateState(goals, 'entity', 'goals');
+        this.patchState(goals, 'entity', 'goals');
         this.validateEntity();
     }
 
@@ -408,7 +408,7 @@ export class CampaignSettingsStore extends Store<CampaignSettingsStoreState>
             }
             return item;
         });
-        this.updateState(goals, 'entity', 'goals');
+        this.patchState(goals, 'entity', 'goals');
         this.validateEntity();
     }
 
@@ -422,7 +422,7 @@ export class CampaignSettingsStore extends Store<CampaignSettingsStoreState>
                 primary: true,
             };
         }
-        this.updateState(goals, 'entity', 'goals');
+        this.patchState(goals, 'entity', 'goals');
         this.validateEntity();
     }
 
@@ -469,7 +469,7 @@ export class CampaignSettingsStore extends Store<CampaignSettingsStoreState>
                 canEditAmount: true,
             },
         ];
-        this.updateState(budgets, 'entity', 'budgets');
+        this.patchState(budgets, 'entity', 'budgets');
     }
 
     updateBudget($event: ChangeEvent<CampaignBudget>) {
@@ -482,7 +482,7 @@ export class CampaignSettingsStore extends Store<CampaignSettingsStoreState>
             }
             return budget;
         });
-        this.updateState(budgets, 'entity', 'budgets');
+        this.patchState(budgets, 'entity', 'budgets');
         this.validateEntity();
     }
 
@@ -490,7 +490,7 @@ export class CampaignSettingsStore extends Store<CampaignSettingsStoreState>
         const budgets = this.state.entity.budgets.filter(item => {
             return item !== campaignBudget;
         });
-        this.updateState(budgets, 'entity', 'budgets');
+        this.patchState(budgets, 'entity', 'budgets');
         this.validateEntity();
     }
 
@@ -514,7 +514,7 @@ export class CampaignSettingsStore extends Store<CampaignSettingsStoreState>
                 ...conversionPixelsRequests[index],
                 [requestName]: requestState,
             };
-            this.updateState(
+            this.patchState(
                 conversionPixelsRequests,
                 'conversionPixelsRequests'
             );
