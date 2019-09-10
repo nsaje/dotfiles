@@ -2111,8 +2111,8 @@ class DirectDealConnectionAdmin(admin.ModelAdmin):
 class DirectDealAdmin(admin.ModelAdmin):
     model = models.DirectDeal
     readonly_fields = ("id", "modified_dt", "created_dt", "created_by", "modified_by")
-    list_display = ("deal_id", "source", "name", "agency", "valid_from_date", "valid_to_date")
-    search_fields = ("id", "deal_id", "name", "agency__id", "source__name")
+    list_display = ("deal_id", "name", "source", "agency", "floor_price", "valid_from_date", "valid_to_date")
+    search_fields = ("id", "deal_id", "name", "agency__name", "source__name")
 
     def save_model(self, request, obj, form, change):
         obj.save(request)
