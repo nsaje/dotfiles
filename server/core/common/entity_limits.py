@@ -30,6 +30,7 @@ ACCOUNT_EXCEPTIONS = defaultdict(
         },
         "PublisherGroup": {305: 2000000},  # OEN
         "BudgetLineItem": {305: 1000},  # OEN
+        "ConversionPixel": {4300: 25},  # GroupM/MAIF
     },
 )
 
