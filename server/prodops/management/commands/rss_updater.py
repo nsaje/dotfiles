@@ -68,4 +68,4 @@ class Command(Z1Command):
             if not ad.state == dash.constants.ContentAdSourceState.ACTIVE:
                 continue
             elif ad.created_dt < (datetime.datetime.today() - datetime.timedelta(DAYS_TTL)):
-                ad.set_state(dash.constants.ContentAdSourceState.INACTIVE)
+                ad.set_state(None, dash.constants.ContentAdSourceState.INACTIVE)
