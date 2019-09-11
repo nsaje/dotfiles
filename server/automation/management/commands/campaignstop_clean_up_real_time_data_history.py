@@ -22,12 +22,12 @@ class Command(Z1Command):
         logger.info("Finish: old campaign stop realtime data deleted and tables vacuumed/analyzed")
 
     @staticmethod
-    @transaction.atomic
     def _delete_old_data():
         date_to = utils.dates_helper.days_before(utils.dates_helper.local_today(), REALTIME_DATA_KEEP_DAYS)
 
-        automation.campaignstop.RealTimeCampaignDataHistory.objects.filter(date__lt=date_to).delete()
-        automation.campaignstop.RealTimeDataHistory.objects.filter(date__lt=date_to).delete()
+        with transaction.atomic():
+            automation.campaignstop.RealTimeCampaignDataHistory.objects.filter(date__lt=date_to).delete()
+            automation.campaignstop.RealTimeDataHistory.objects.filter(date__lt=date_to).delete()
 
         with connection.cursor() as cursor:
             cursor.execute("VACUUM ANALYZE automation_realtimecampaigndatahistory;")
