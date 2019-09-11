@@ -199,6 +199,25 @@ class TestBudgetLineItemManager(TestCase):
         self.assertEqual(item.margin, cloned_item.margin)
         self.assertEqual(item.comment, cloned_item.comment)
 
+    def test_clone_start_date_in_the_past(self):
+        request = magic_mixer.blend_request_user()
+        start_date = TODAY - datetime.timedelta(days=10)
+        end_date = datetime.date(2017, 1, 2)
+        self.credit.start_date = start_date
+        item = BudgetLineItem.objects.create(
+            request, self.campaign, self.credit, TODAY, end_date, 100, Decimal("0.15"), "test"
+        )
+        item.start_date = start_date
+        destination_campaign = magic_mixer.blend(core.models.Campaign, account=self.account)
+        cloned_item = BudgetLineItem.objects.clone(request, item, destination_campaign)
+
+        self.assertTrue(item.start_date < TODAY)
+        self.assertEqual(item.start_date, start_date)
+        self.assertEqual(item.end_date, end_date)
+
+        self.assertEqual(TODAY, cloned_item.start_date)
+        self.assertEqual(item.end_date, cloned_item.end_date)
+
     def test_clone_not_enough_credit(self):
         request = magic_mixer.blend_request_user()
         start_date = datetime.date(2017, 1, 1)

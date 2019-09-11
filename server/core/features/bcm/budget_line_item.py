@@ -20,6 +20,7 @@ import utils.demo_anonymizer
 import utils.string_helper
 from dash import constants
 from utils import converters
+from utils import dates_helper
 from utils import lc_helper
 from utils import validation_helper
 
@@ -65,8 +66,11 @@ class BudgetLineItemManager(core.common.QuerySetManager):
     def clone(self, request, source_budget, campaign):
         core.common.entity_limits.enforce(BudgetLineItem.objects.filter(campaign=campaign), campaign.account_id)
 
+        today = dates_helper.local_today()
+        start_date = today if source_budget.start_date < today else source_budget.start_date
+
         with transaction.atomic():
-            item = BudgetLineItem(campaign=campaign, credit=source_budget.credit)
+            item = BudgetLineItem(campaign=campaign, credit=source_budget.credit, start_date=start_date)
             for field in set(BudgetLineItem._clone_fields):
                 setattr(item, field, getattr(source_budget, field))
             item.save(request)
@@ -78,7 +82,7 @@ class BudgetLineItem(core.common.FootprintModel, core.features.history.HistoryMi
     class Meta:
         app_label = "dash"
 
-    _clone_fields = ["start_date", "end_date", "margin", "amount", "comment"]
+    _clone_fields = ["end_date", "margin", "amount", "comment"]
 
     history_fields = ["start_date", "end_date", "amount", "freed_cc", "comment"]
 
