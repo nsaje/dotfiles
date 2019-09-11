@@ -202,11 +202,17 @@ class ContentAd(
             "video_asset_id",
             "ad_tag",
         )
-        candidate = {}
+        candidate = {
+            "primary_tracker_url": self.tracker_urls[0] if self.tracker_urls else None,
+            "secondary_tracker_url": self.tracker_urls[1] if self.tracker_urls and len(self.tracker_urls) > 1 else None,
+        }
+
         for field in fields:
             candidate[field] = getattr(self, field)
+
         for field in ["icon_width", "icon_height"]:
             candidate[field] = getattr(self, "icon_size")
+
         return candidate
 
     objects = manager.ContentAdManager.from_queryset(queryset.ContentAdQuerySet)()
