@@ -104,7 +104,10 @@ def execute_query(sql, params, query_name, cache_name="breakdowns_rs", refresh_c
                     results = dictfetchall(cursor)
 
         with metrics_compat.block_timer("redshiftapi.api_breakdowns.set_cache_value_overhead"):
-            cache.set(cache_key, results)
+            try:
+                cache.set(cache_key, results)
+            except Exception:
+                logger.exception("Could not set Redshift cache")
     else:
         metrics_compat.incr("redshiftapi.cache", 1, outcome="hit")
         logger.debug("Cache hit %s (%s)", cache_key, query_name)
