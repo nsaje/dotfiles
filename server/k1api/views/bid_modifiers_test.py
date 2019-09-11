@@ -1,4 +1,6 @@
+import itertools
 import json
+import random
 
 from django.urls import reverse
 
@@ -7,6 +9,14 @@ import core.features.bid_modifiers.constants
 from utils.magic_mixer import magic_mixer
 
 from .base_test import K1APIBaseTest
+
+# SOURCE bid modifiers are currently filtered out of k1api responses
+_types_without_source = list(
+    set(core.features.bid_modifiers.constants.BidModifierType.get_all())
+    - set([core.features.bid_modifiers.constants.BidModifierType.SOURCE])
+)
+random.shuffle(_types_without_source)
+TYPES_WITHOUT_SOURCE = itertools.cycle(_types_without_source)
 
 
 class BidModifiersTest(K1APIBaseTest):
@@ -25,13 +35,15 @@ class BidModifiersTest(K1APIBaseTest):
         }
 
     def test_get(self):
-        test_objs = magic_mixer.cycle(3).blend(core.features.bid_modifiers.BidModifier, source=None, source_slug="")
+        test_objs = magic_mixer.cycle(3).blend(
+            core.features.bid_modifiers.BidModifier, source=None, source_slug="", type=(t for t in TYPES_WITHOUT_SOURCE)
+        )
         test_objs.append(
             magic_mixer.blend(
                 core.features.bid_modifiers.BidModifier,
                 source=self.source,
                 source_slug=self.source.bidder_slug,
-                type=core.features.bid_modifiers.constants.BidModifierType.AD,
+                type=(t for t in TYPES_WITHOUT_SOURCE),
             )
         )
         response = self.client.get(reverse("k1api.bidmodifiers"))
@@ -45,7 +57,7 @@ class BidModifiersTest(K1APIBaseTest):
             source=self.source,
             source_slug=self.source.bidder_slug,
             modifier=(id for id in range(1, 11)),
-            type=core.features.bid_modifiers.constants.BidModifierType.AD,
+            type=(t for t in TYPES_WITHOUT_SOURCE),
         )
         response = self.client.get(reverse("k1api.bidmodifiers"), {"marker": test_objs[2].id, "limit": 5})
         data = json.loads(response.content)
