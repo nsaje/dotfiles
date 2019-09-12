@@ -82,6 +82,18 @@ class AdGroupsTest(K1APIBaseTest):
                 "freqcap_account": 40,
                 "freqcap_campaign": 30,
                 "freqcap_adgroup": 20,
+                "additional_data": {
+                    "ob_campaign_id": 1000000305,
+                    "ob_marketer_id": 33424,
+                    "min_cpc": "0.030000",
+                    "max_cpc": "10.000000",
+                    "kpio": {
+                        "max_factor": "2.000",
+                        "enabled": True,
+                        "experiment_enabled": True,
+                        "control_group_percentage": "0.200",
+                    },
+                },
             },
         )
 
@@ -155,6 +167,18 @@ class AdGroupsTest(K1APIBaseTest):
                 "freqcap_account": 40,
                 "freqcap_campaign": 30,
                 "freqcap_adgroup": 20,
+                "additional_data": {
+                    "ob_campaign_id": 1000000305,
+                    "ob_marketer_id": 33424,
+                    "min_cpc": "0.030000",
+                    "max_cpc": "10.000000",
+                    "kpio": {
+                        "max_factor": "2.000",
+                        "enabled": True,
+                        "experiment_enabled": True,
+                        "control_group_percentage": "0.200",
+                    },
+                },
             },
         )
 

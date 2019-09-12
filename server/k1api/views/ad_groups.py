@@ -151,6 +151,7 @@ class AdGroupsView(K1APIView):
                 "freqcap_account": ad_group.campaign.account.settings.frequency_capping,
                 "freqcap_campaign": ad_group.campaign.settings.frequency_capping,
                 "freqcap_adgroup": ad_group.settings.frequency_capping,
+                "additional_data": ad_group.settings.additional_data,
             }
 
             ad_group_dicts.append(ad_group_dict)
