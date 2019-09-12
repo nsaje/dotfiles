@@ -8,6 +8,7 @@ from django.test import TestCase
 
 import core.models
 import dash.constants
+import utils.dates_helper
 import utils.test_helper
 from dash.features import scheduled_reports
 from utils import dates_helper
@@ -38,7 +39,7 @@ class ReportsExecuteTest(TestCase):
         if exception is not None:
             self.assertIn(str(exception), self.reportJob.exception)
 
-    @mock.patch("dash.features.reports.reports.ReportJobExecutor._send_fail")
+    @mock.patch("dash.features.reports.reports._send_fail_mail")
     @mock.patch("dash.features.reports.reports.ReportJobExecutor.get_report")
     def test_handle_exception(self, mock_get_report, mock_send_fail):
         e = Exception("test-error")
@@ -47,12 +48,12 @@ class ReportsExecuteTest(TestCase):
         reports.execute(self.reportJob.id)
 
         mock_get_report.assert_called_once_with(self.reportJob)
-        mock_send_fail.assert_called_once_with()
+        mock_send_fail.assert_called_once_with(self.reportJob)
         self.assertJobFailed(
             "failed", "Internal Error: Please contact support. Report job ID is %d." % self.reportJob.id, e
         )
 
-    @mock.patch("dash.features.reports.reports.ReportJobExecutor._send_fail")
+    @mock.patch("dash.features.reports.reports._send_fail_mail")
     @mock.patch("dash.features.reports.reports.ReportJobExecutor.get_report")
     def test_handle_soft_time_limit(self, mock_get_report, mock_send_fail):
         e = SoftTimeLimitExceeded()
@@ -61,13 +62,13 @@ class ReportsExecuteTest(TestCase):
         reports.execute(self.reportJob.id)
 
         mock_get_report.assert_called_once_with(self.reportJob)
-        mock_send_fail.assert_called_once_with()
+        mock_send_fail.assert_called_once_with(self.reportJob)
         self.assertJobFailed(
             "timeout", "Job Timeout: Requested report probably too large. Report job ID is %d." % self.reportJob.id
         )
 
     @mock.patch("utils.dates_helper.utc_now")
-    @mock.patch("dash.features.reports.reports.ReportJobExecutor._send_fail")
+    @mock.patch("dash.features.reports.reports._send_fail_mail")
     @mock.patch("dash.features.reports.reports.ReportJobExecutor.get_report")
     def test_too_old(self, mock_get_report, mock_send_fail, mock_now):
         mock_get_report.side_effect = Exception("test-error")
@@ -79,8 +80,27 @@ class ReportsExecuteTest(TestCase):
         reports.execute(self.reportJob.id)
 
         mock_get_report.assert_not_called()
-        mock_send_fail.assert_called_once_with()
+        mock_send_fail.assert_called_once_with(self.reportJob)
         self.assertJobFailed("too_old", "Service Timeout: Please try again later.")
+
+    @mock.patch("utils.dates_helper.utc_now")
+    @mock.patch("dash.features.reports.reports._send_fail_mail")
+    def test_clean_old_in_progress(self, mock_send_fail, mock_now):
+        mock_now.return_value = datetime.datetime(2017, 8, 1, 11, 31)
+
+        self.reportJob.created_dt = datetime.datetime(2017, 8, 1, 10, 30)
+        self.reportJob.status = constants.ReportJobStatus.IN_PROGRESS
+        self.reportJob.save()
+
+        created_before = dates_helper.utc_now() - datetime.timedelta(minutes=30)
+        cleaned_up_count = reports.clean_up_old_in_progress_reports(created_before)
+
+        self.assertEqual(1, cleaned_up_count)
+        mock_send_fail.assert_called_once_with(self.reportJob)
+        self.assertJobFailed(
+            "stale",
+            "Job Timeout: Requested report is taking too long to complete. Report job ID is %d." % self.reportJob.id,
+        )
 
     @mock.patch("dash.features.reports.reports.ReportJobExecutor.get_report")
     def test_incorrect_state(self, mock_get_report):
@@ -110,8 +130,7 @@ class ReportsExecuteTest(TestCase):
             "fields": [{"field": "Content Ad"}, {"field": "Clicks"}],
         }
 
-        executor = reports.ReportJobExecutor(self.reportJob)
-        executor._send_fail()
+        reports._send_fail_mail(self.reportJob)
 
         mock_send.assert_called_once_with(
             user=self.reportJob.user,
@@ -135,8 +154,7 @@ class ReportsExecuteTest(TestCase):
         self.reportJob.query = {"options": {"recipients": ["test@test.com"]}}
         self.reportJob.scheduled_report = scheduled_reports.models.ScheduledReport()
 
-        executor = reports.ReportJobExecutor(self.reportJob)
-        executor._send_fail()
+        reports._send_fail_mail(self.reportJob)
 
         mock_send.assert_not_called()
 

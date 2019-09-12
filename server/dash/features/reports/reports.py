@@ -63,6 +63,66 @@ def execute(job_id, **kwargs):
     logger.info("Done job executor for report id: %d", job_id)
 
 
+def clean_up_old_in_progress_reports(created_before):
+    report_jobs = ReportJob.objects.filter(status=constants.ReportJobStatus.IN_PROGRESS, created_dt__lte=created_before)
+
+    for report_job in report_jobs:
+        process_report_job_fail(
+            report_job, "stale", "Job Timeout: Requested report is taking too long to complete. Report job ID is {id}."
+        )
+
+    return len(report_jobs)
+
+
+def process_report_job_fail(report_job, status, result, exception=None):
+    report_job.status = constants.ReportJobStatus.FAILED
+    report_job.result = result.format(id=report_job.id)
+    if exception is not None:
+        report_job.exception = traceback.format_exc()
+    utils.metrics_compat.incr("dash.reports", 1, status=status)
+    report_job.save()
+    try:
+        _send_fail_mail(report_job)
+    except Exception:
+        logger.exception("Exception when sending fail notification for report job %s" % report_job.id)
+
+
+def _send_fail_mail(report_job):
+    if len(helpers.get_option(report_job, "recipients")) <= 0:
+        return
+
+    if report_job.scheduled_report:
+        return
+
+    filter_constraints = helpers.get_filter_constraints(report_job.query["filters"])
+
+    filtered_sources = []
+    if filter_constraints.get("sources"):
+        filtered_sources = dash.views.helpers.get_filtered_sources(filter_constraints.get("sources", []))
+
+    view, breakdowns = helpers.extract_view_breakdown(report_job)
+    ad_group_name, campaign_name, account_name = helpers.extract_entity_names(report_job.user, filter_constraints)
+
+    utils.email_helper.send_async_report_fail(
+        user=report_job.user,
+        recipients=helpers.get_option(report_job, "recipients"),
+        start_date=filter_constraints["start_date"],
+        end_date=filter_constraints["end_date"],
+        filtered_sources=filtered_sources,
+        show_archived=helpers.get_option(report_job, "show_archived", False),
+        show_blacklisted_publishers=helpers.get_option(
+            report_job, "show_blacklisted_publishers", dash.constants.PublisherBlacklistFilter.SHOW_ALL
+        ),
+        view=view,
+        breakdowns=breakdowns,
+        columns=helpers.extract_column_names(report_job.query["fields"]),
+        include_totals=helpers.get_option(report_job, "include_totals"),
+        ad_group_name=ad_group_name,
+        campaign_name=campaign_name,
+        account_name=account_name,
+    )
+
+
 class JobExecutor(object, metaclass=abc.ABCMeta):
     def __init__(self, job):
         self.job = job
@@ -88,7 +148,7 @@ class ReportJobExecutor(JobExecutor):
         job_age = utils.dates_helper.utc_now() - self.job.created_dt
         if job_age > datetime.timedelta(hours=1):
             logger.info("Running too old report job: %s" % job_age)
-            self._fail("too_old", "Service Timeout: Please try again later.")
+            process_report_job_fail(self.job, "too_old", "Service Timeout: Please try again later.")
             return
 
         try:
@@ -115,59 +175,16 @@ class ReportJobExecutor(JobExecutor):
             metrics_compat.incr("dash.reports", 1, status="success")
             self.job.save()
         except utils.exc.BaseError as e:
-            self._fail("user_error", str(e), e)
+            process_report_job_fail(self.job, "user_error", str(e), e)
         except SoftTimeLimitExceeded as e:
-            self._fail("timeout", "Job Timeout: Requested report probably too large. Report job ID is {id}.", e)
+            process_report_job_fail(
+                self.job, "timeout", "Job Timeout: Requested report probably too large. Report job ID is {id}.", e
+            )
         except Exception as e:
-            self._fail("failed", "Internal Error: Please contact support. Report job ID is {id}.", e)
+            process_report_job_fail(
+                self.job, "failed", "Internal Error: Please contact support. Report job ID is {id}.", e
+            )
             logger.exception("Exception when processing API report job %s" % self.job.id)
-
-    def _fail(self, status, result, exception=None):
-        self.job.status = constants.ReportJobStatus.FAILED
-        self.job.result = result.format(id=self.job.id)
-        if exception is not None:
-            self.job.exception = traceback.format_exc()
-        metrics_compat.incr("dash.reports", 1, status=status)
-        self.job.save()
-        try:
-            self._send_fail()
-        except Exception:
-            logger.exception("Exception when sending fail notification for report job %s" % self.job.id)
-
-    def _send_fail(self):
-        if len(helpers.get_option(self.job, "recipients")) <= 0:
-            return
-
-        if self.job.scheduled_report:
-            return
-
-        filter_constraints = helpers.get_filter_constraints(self.job.query["filters"])
-
-        filtered_sources = []
-        if filter_constraints.get("sources"):
-            filtered_sources = dash.views.helpers.get_filtered_sources(filter_constraints.get("sources", []))
-
-        view, breakdowns = self._extract_view_breakdown(self.job)
-        ad_group_name, campaign_name, account_name = self._extract_entity_names(self.job.user, filter_constraints)
-
-        utils.email_helper.send_async_report_fail(
-            user=self.job.user,
-            recipients=helpers.get_option(self.job, "recipients"),
-            start_date=filter_constraints["start_date"],
-            end_date=filter_constraints["end_date"],
-            filtered_sources=filtered_sources,
-            show_archived=helpers.get_option(self.job, "show_archived", False),
-            show_blacklisted_publishers=helpers.get_option(
-                self.job, "show_blacklisted_publishers", dash.constants.PublisherBlacklistFilter.SHOW_ALL
-            ),
-            view=view,
-            breakdowns=breakdowns,
-            columns=self._extract_column_names(self.job.query["fields"]),
-            include_totals=helpers.get_option(self.job, "include_totals"),
-            ad_group_name=ad_group_name,
-            campaign_name=campaign_name,
-            account_name=account_name,
-        )
 
     @classmethod
     def get_report(cls, job):
@@ -218,7 +235,7 @@ class ReportJobExecutor(JobExecutor):
         )
 
         order = cls._get_order(job, column_to_field_name_map)
-        column_names = cls._extract_column_names(job.query["fields"])
+        column_names = helpers.extract_column_names(job.query["fields"])
         cls._append_currency_column_if_necessary(column_names, column_to_field_name_map)
         cls._append_entity_tag_columns_if_necessary(user, constraints, breakdown, column_names)
 
@@ -394,18 +411,6 @@ class ReportJobExecutor(JobExecutor):
         )
         output.write(csv_utils.dictlist_to_csv(csv_column_names, rows, writeheader=header, delimiter=csv_separator))
 
-    @staticmethod
-    def _extract_column_names(fields_list):
-        fieldnames = []
-
-        # extract unique field names
-        for field in fields_list:
-            field = field["field"]
-            if field not in fieldnames:
-                fieldnames.append(field)
-
-        return fieldnames
-
     @classmethod
     def _get_csv_rows(
         cls, data, field_name_mapping, requested_columns, original_to_dated, currency=None, account_currency_map=None
@@ -442,8 +447,8 @@ class ReportJobExecutor(JobExecutor):
         today = utils.dates_helper.local_today()
         expiry_date = today + datetime.timedelta(days=3)
 
-        view, breakdowns = cls._extract_view_breakdown(job)
-        ad_group_name, campaign_name, account_name = cls._extract_entity_names(job.user, filter_constraints)
+        view, breakdowns = helpers.extract_view_breakdown(job)
+        ad_group_name, campaign_name, account_name = helpers.extract_entity_names(job.user, filter_constraints)
 
         if job.scheduled_report:
             utils.email_helper.send_async_scheduled_report(
@@ -463,7 +468,7 @@ class ReportJobExecutor(JobExecutor):
                 helpers.get_option(job, "include_totals"),
                 view,
                 breakdowns,
-                cls._extract_column_names(job.query["fields"]),
+                helpers.extract_column_names(job.query["fields"]),
                 ad_group_name,
                 campaign_name,
                 account_name,
@@ -484,20 +489,13 @@ class ReportJobExecutor(JobExecutor):
                 ),
                 view,
                 breakdowns,
-                cls._extract_column_names(job.query["fields"]),
+                helpers.extract_column_names(job.query["fields"]),
                 helpers.get_option(job, "include_totals"),
                 ad_group_name,
                 campaign_name,
                 account_name,
                 **kwargs,
             )
-
-    @staticmethod
-    def _extract_view_breakdown(job):
-        breakdowns = helpers.get_breakdown_names(job.query)
-        if len(breakdowns) < 1:
-            return "", []
-        return breakdowns[0], ["By " + breakdown for breakdown in breakdowns[1:]]
 
     @staticmethod
     def _extract_structure_constraints(constraints):
@@ -508,20 +506,6 @@ class ReportJobExecutor(JobExecutor):
             elif field + "_list" in constraints:
                 structure_constraints[field + "s"] = constraints[field + "_list"]
         return structure_constraints
-
-    @staticmethod
-    def _extract_entity_names(user, constraints):
-        if stats.constants.AD_GROUP in constraints:
-            ad_group = dash.views.helpers.get_ad_group(user, constraints[stats.constants.AD_GROUP])
-            return ad_group.name, ad_group.campaign.name, ad_group.campaign.account.name
-        elif stats.constants.CAMPAIGN in constraints:
-            campaign = dash.views.helpers.get_campaign(user, constraints[stats.constants.CAMPAIGN])
-            return None, campaign.name, campaign.account.name
-        elif stats.constants.ACCOUNT in constraints:
-            account = dash.views.helpers.get_account(user, constraints[stats.constants.ACCOUNT])
-            return None, None, account.name
-        else:
-            return None, None, None
 
     @staticmethod
     def _generate_random_filename():

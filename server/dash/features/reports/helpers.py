@@ -3,6 +3,7 @@ import datetime
 from rest_framework import serializers
 
 import dash.constants
+import dash.views.helpers
 import stats.constants
 import utils.columns
 
@@ -43,6 +44,13 @@ def _get_required_hierarchical_dimensions(dimension, level):
     return limit_breakdown_to_level(parent_breakdowns, level)
 
 
+def extract_view_breakdown(job):
+    breakdowns = get_breakdown_names(job.query)
+    if len(breakdowns) < 1:
+        return "", []
+    return breakdowns[0], ["By " + breakdown for breakdown in breakdowns[1:]]
+
+
 def get_breakdown_names(query):
     level = get_level_from_constraints(get_filter_constraints(query["filters"]))
     breakdowns = limit_breakdown_to_level(get_breakdown_from_fields(query["fields"], level), level)
@@ -51,6 +59,20 @@ def get_breakdown_names(query):
     breakdowns = [utils.columns.get_column_name(field_name) for field_name in breakdowns]
 
     return breakdowns
+
+
+def extract_entity_names(user, constraints):
+    if stats.constants.AD_GROUP in constraints:
+        ad_group = dash.views.helpers.get_ad_group(user, constraints[stats.constants.AD_GROUP])
+        return ad_group.name, ad_group.campaign.name, ad_group.campaign.account.name
+    elif stats.constants.CAMPAIGN in constraints:
+        campaign = dash.views.helpers.get_campaign(user, constraints[stats.constants.CAMPAIGN])
+        return None, campaign.name, campaign.account.name
+    elif stats.constants.ACCOUNT in constraints:
+        account = dash.views.helpers.get_account(user, constraints[stats.constants.ACCOUNT])
+        return None, None, account.name
+    else:
+        return None, None, None
 
 
 def _parse_date(string):
@@ -139,3 +161,15 @@ def fill_currency_column(rows, columns, currency, account_currency_map):
 
 def get_option(job, option, default=None):
     return job.query.get("options", {}).get(option, default)
+
+
+def extract_column_names(fields_list):
+    fieldnames = []
+
+    # extract unique field names
+    for field in fields_list:
+        field = field["field"]
+        if field not in fieldnames:
+            fieldnames.append(field)
+
+    return fieldnames

@@ -63,3 +63,4 @@
 #0 8 * * *       /home/ubuntu/docker-manage-py.sh oen_daily_statements
 * 12 * * *       /home/ubuntu/docker-manage-py.sh rss_updater
 * 7 * * *        /home/ubuntu/docker-manage-py.sh campaignstop_clean_up_real_time_data_history
+*/15 * * * *     /home/ubuntu/docker-manage-py.sh clean_up_old_in_progress_reports
