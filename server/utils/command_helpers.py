@@ -46,7 +46,7 @@ class Z1Command(BaseCommand):
         finally:
             swinfra.metrics.flush_push_metrics()
             if profiler.is_running():
-                profiler.stop_and_dump()
+                profiler.stop_and_dump(job_name)
 
 
 def last_n_days(n):

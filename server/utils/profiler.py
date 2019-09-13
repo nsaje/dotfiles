@@ -21,6 +21,7 @@ def is_running():
 
 
 def start():
+    yappi.set_clock_type("wall")
     yappi.start()
 
 
