@@ -577,12 +577,12 @@ class AccountSettingsForm(PublisherGroupsFormMixin, forms.Form):
 
         return facebook_page
 
-    # def clean_agency(self):
-    #     new_agency = self.cleaned_data.get("agency", "")
-    #     if self.account.is_agency() and self.account.agency.name != new_agency:
-    #         if core.features.bcm.BudgetLineItem.objects.filter(campaign__account=self.account):
-    #             raise forms.ValidationError("Cannot switch Agency if account has campaigns with running budgets.")
-    #     return new_agency
+    def clean_agency(self):
+         new_agency = self.cleaned_data.get("agency", "")
+         if self.account.is_agency() and self.account.agency.name != new_agency:
+             if core.features.bcm.BudgetLineItem.objects.filter(campaign__account=self.account):
+                 raise forms.ValidationError("Cannot switch Agency if account has campaigns with running budgets.")
+         return new_agency
 
 
 class ConversionPixelForm(forms.Form):
