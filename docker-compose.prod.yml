@@ -130,14 +130,15 @@ services:
 
     einsworker_reports:
         extends: eins-base
-        scale: 1
+        scale: 5
         environment:
           NEW_RELIC_APP_NAME: "Zemanta One (Reports)"
+        mem_reservation: 8g
         mem_limit: 20g
         labels:
           SERVICE_IGNORE: "true"
         entrypoint: ""
-        command: "/usr/local/bin/newrelic-admin run-program celery worker -A server -c 5 -Q z1-reports -l INFO -f /app/logs/eins_celery_reports.log --prefetch-multiplier 0 -P prefork --max-tasks-per-child 10"
+        command: "/usr/local/bin/newrelic-admin run-program celery worker -A server -Q z1-reports -l INFO -f /app/logs/eins_celery_reports.log --prefetch-multiplier 0 -P solo -c 1"
 
     einsworker_redshift_background_cache:
         extends: eins-base
