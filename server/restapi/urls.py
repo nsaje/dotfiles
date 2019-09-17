@@ -18,6 +18,7 @@ import restapi.campaigngoal.urls
 import restapi.campaignstats.urls
 import restapi.contentad.urls
 import restapi.conversion_pixel.urls
+import restapi.directdeal.urls
 import restapi.geolocation.urls
 import restapi.inventory_planning.urls
 import restapi.publisherbidmodifiers.urls
@@ -54,6 +55,7 @@ urlpatterns += restapi.publishergroup.urls.urlpatterns
 urlpatterns += restapi.publishergroupentry.urls.urlpatterns
 urlpatterns += restapi.publisherbidmodifiers.urls.urlpatterns
 urlpatterns += restapi.inventory_planning.urls.urlpatterns
+urlpatterns += restapi.directdeal.urls.urlpatterns
 urlpatterns += cloneadgroup.urls.urlpatterns
 urlpatterns += clonecontent.urls.urlpatterns
 urlpatterns += dash.features.bluekai.urls.urlpatterns

@@ -1,5 +1,6 @@
 from rest_framework import permissions
 
+import core.features.deals
 import core.models
 import utils.exc
 
@@ -112,3 +113,15 @@ def get_upload_batch(user, batch_id):
         return batch
     except utils.exc.MissingDataError:
         raise utils.exc.MissingDataError("Upload batch does not exist")
+
+
+def get_direct_deal(user, agency, deal_id) -> core.features.deals.DirectDeal:
+    try:
+        deal_qs = (
+            core.features.deals.DirectDeal.objects.filter_by_agency(agency)
+            .select_related("source", "agency")
+            .filter(id=deal_id)
+        )
+        return deal_qs.get()
+    except core.features.deals.DirectDeal.DoesNotExist:
+        raise utils.exc.MissingDataError("Deal does not exist")

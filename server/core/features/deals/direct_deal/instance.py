@@ -1,4 +1,8 @@
+from django.db import transaction
+
+
 class DirectDealMixin(object):
+    @transaction.atomic
     def save(self, request=None, *args, **kwargs):
         if request and not request.user.is_anonymous:
             if self.pk is None:
@@ -8,6 +12,7 @@ class DirectDealMixin(object):
         self.full_clean()
         super().save(*args, **kwargs)
 
+    @transaction.atomic
     def update(self, request, **kwargs):
         updates = self._clean_updates(request, kwargs)
         if not updates:
