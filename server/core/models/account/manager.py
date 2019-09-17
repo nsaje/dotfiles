@@ -7,6 +7,7 @@ import core.features.yahoo_accounts
 import core.models
 import dash.features.custom_flags.constants
 from dash import constants
+from prodops import hacks
 from utils import slack
 
 from . import exceptions
@@ -44,7 +45,7 @@ class AccountManager(core.common.BaseManager):
 
         account.settings_id = account.settings.id
         account.save(request)
-
+        hacks.apply_account_create_hack(request, account)
         if account.agency and account.agency.allowed_sources.count() > 0:  # FIXME(nsaje): rethink this
             account.allowed_sources.add(*agency.allowed_sources.all())
         else:

@@ -122,6 +122,16 @@ def apply_create_user_hacks(user, account):
 
 
 ######################
+# Account hacks
+######################
+def apply_account_create_hack(request, account):
+    if account.agency_id == constants.AGENCY_ROI_MARKETPLACE_ID:
+        account_cf = account.custom_flags or dict()
+        account_cf.update({constants.MSN_BLOCK_CF_ID: True})
+        account.update(request, custom_flags=account_cf)
+
+
+######################
 # Private functions
 ######################
 

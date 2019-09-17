@@ -1041,6 +1041,8 @@ class AccountSettings(api_common.BaseApiView):
             settings.save(request, action_type=constants.HistoryActionType.SETTINGS_CHANGE)
 
             if account.name != old_name and "New account" in old_name:
+                hacks.apply_account_create_hack(request, account)
+
                 slack_msg = (
                     "Account #<https://one.zemanta.com/v2/analytics/account/{id}|{id}> {name} was created"
                     "{agency}.".format(
