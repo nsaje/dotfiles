@@ -14,12 +14,13 @@ class CampaignSettingsMixin(object):
     def update(self, request, **kwargs):
         clean_updates = self._clean_updates(kwargs)
         changes = self.get_changes(clean_updates)
+        if not changes:
+            return
 
+        self._validate_update(changes)
         self.clean(changes)
-        self._validate_changes(changes)
 
         super(CampaignSettingsMixin, self).update(request, **changes)
-        self._update_campaign(kwargs)
 
         if changes:
             self._log_and_notify_changes(request, changes)
@@ -28,6 +29,8 @@ class CampaignSettingsMixin(object):
             self._handle_archived(request, changes)
             self._propagate_settings(changes)
 
+        self._update_campaign(kwargs)
+
     @classmethod
     def _clean_updates(cls, kwargs):
         cleaned_updates = {}
@@ -35,6 +38,22 @@ class CampaignSettingsMixin(object):
             if field in cls._settings_fields:
                 cleaned_updates[field] = value
         return cleaned_updates
+
+    def _validate_update(self, changes):
+        if self.archived:
+            if changes.get("archived") is False:
+                if not self.campaign.can_restore():
+                    raise utils.exc.ForbiddenError("Campaign can not be restored.")
+            else:
+                raise utils.exc.ForbiddenError("Campaign must not be archived in order to update it.")
+
+        elif self.campaign.account.is_archived():
+            raise utils.exc.ForbiddenError("Account must not be archived in order to update a campaign.")
+
+        else:
+            if changes.get("archived"):
+                if not self.campaign.can_archive():
+                    raise utils.exc.ForbiddenError("Campaign can not be archived.")
 
     def _update_campaign(self, changes):
         if any(field in changes for field in ["name", "archived"]):
@@ -63,15 +82,6 @@ class CampaignSettingsMixin(object):
             if changes["autopilot"]:
                 autopilot.adjust_ad_groups_flight_times_on_campaign_budget_autopilot_enabled(self.campaign)
             autopilot.recalculate_budgets_campaign(self.campaign)
-
-    def _validate_changes(self, changes):
-        if "archived" in changes:
-            if changes["archived"]:
-                if not self.campaign.can_archive():
-                    raise utils.exc.ForbiddenError("Campaign can't be archived.")
-            else:
-                if not self.campaign.can_restore():
-                    raise utils.exc.ForbiddenError("Campaign can't be restored.")
 
     def _handle_archived(self, request, changes):
         if changes.get("archived"):

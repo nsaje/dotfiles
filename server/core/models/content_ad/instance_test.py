@@ -4,6 +4,7 @@ from django.test import TestCase
 import core.models.content_ad_source.model
 from dash import constants
 from utils import email_helper
+from utils import exc
 from utils import k1_helper
 from utils import redirector_helper
 from utils.magic_mixer import magic_mixer
@@ -101,3 +102,15 @@ class InstanceTest(TestCase):
         content_ad.update(None, additional_data=additional_data)
         self.assertEqual(content_ad.document_id, 123)
         self.assertEqual(content_ad.document_features, {"a": "b"})
+
+    @mock.patch.object(core.models.AdGroup, "is_archived", return_value=True)
+    def test_update_ad_group_archived_fail(self, mock_adgroup_is_archived):
+        ad_group = magic_mixer.blend(core.models.AdGroup)
+        content_ad = magic_mixer.blend(core.models.ContentAd, ad_group=ad_group)
+        with self.assertRaises(exc.ForbiddenError):
+            content_ad.update(None, label="new label")
+
+    def test_update_archived_content_ad_fail(self):
+        content_ad = magic_mixer.blend(core.models.ContentAd, archived=True)
+        with self.assertRaises(exc.ForbiddenError):
+            content_ad.update(None, label="new label")

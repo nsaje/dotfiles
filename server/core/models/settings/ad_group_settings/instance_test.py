@@ -469,6 +469,7 @@ class AdGroupArchiveRestoreTest(TestCase):
         self.assertTrue(ad_group.is_archived())
         self.assertTrue(ad_group.archived)
         self.assertTrue(ad_group.settings.archived)
+        ad_group.settings.update(None, archived=True)
         ad_group.settings.update(None, archived=False)
         self.assertFalse(ad_group.is_archived())
         self.assertFalse(ad_group.archived)
@@ -491,12 +492,37 @@ class AdGroupArchiveRestoreTest(TestCase):
     def test_cant_restore_campaign_fail(self, mock_campaign_is_archived):
         campaign = magic_mixer.blend(core.models.Campaign)
         ad_group = magic_mixer.blend(core.models.AdGroup, campaign=campaign)
-        ad_group.settings.update(None, archived=True)
+        ad_group.settings.update_unsafe(None, archived=True)
+        ad_group.archived = True
+        ad_group.save(None)
         with self.assertRaises(utils.exc.ForbiddenError):
             ad_group.settings.update(None, archived=False)
         ad_group.refresh_from_db()
         self.assertTrue(ad_group.archived)
         self.assertTrue(ad_group.settings.archived)
+        ad_group.settings.update(None, archived=True)
+
+    @patch.object(core.models.Campaign, "is_archived", return_value=True)
+    def test_update_campaign_archived_fail(self, mock_campaign_is_archived):
+        campaign = magic_mixer.blend(core.models.Campaign)
+        ad_group = magic_mixer.blend(core.models.AdGroup, campaign=campaign)
+        with self.assertRaises(utils.exc.ForbiddenError):
+            ad_group.settings.update(None, ad_group_name="new name")
+
+    def test_update_archived_ad_group(self):
+        campaign = magic_mixer.blend(core.models.Campaign)
+        ad_group = magic_mixer.blend(core.models.AdGroup, campaign=campaign)
+        ad_group.archive(None)
+        ad_group.refresh_from_db()
+        self.assertTrue(ad_group.archived)
+        self.assertTrue(ad_group.settings.archived)
+        with self.assertRaises(utils.exc.ForbiddenError):
+            ad_group.settings.update(None, ad_group_name="new name")
+        ad_group.settings.update(None, archived=True)
+        ad_group.settings.update(None, archived=False)
+        ad_group.refresh_from_db()
+        self.assertFalse(ad_group.archived)
+        self.assertFalse(ad_group.settings.archived)
 
 
 class UpdateNewFieldsTest(TestCase):

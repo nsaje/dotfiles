@@ -48,6 +48,8 @@ class InstanceTestCase(TestCase):
         self.assertTrue(campaign.settings.archived)
         self.assertEqual(mock_adgroup_archive.call_count, 10)
 
+        campaign.settings.update(None, archived=True)
+
         mock_adgroup_archive.reset_mock()
         campaign.settings.update(None, archived=False)
         self.assertFalse(campaign.archived)
@@ -63,10 +65,33 @@ class InstanceTestCase(TestCase):
         self.assertFalse(campaign.settings.archived)
 
     @patch.object(core.models.Account, "is_archived", return_value=True)
-    def test_cant_restore_account_fail(self, mock_adgroup_can_archive):
+    def test_cant_restore_account_fail(self, mock_account_is_archived):
         account = magic_mixer.blend(core.models.Account)
         campaign = magic_mixer.blend(core.models.Campaign, account=account)
         magic_mixer.blend(core.models.AdGroup, campaign=campaign)
-        campaign.settings.update(None, archived=True)
+        campaign.settings.update_unsafe(None, archived=True)
+        campaign.archived = True
+        campaign.save(None)
         with self.assertRaises(utils.exc.ForbiddenError):
             campaign.settings.update(None, archived=False)
+
+    @patch.object(core.models.Account, "is_archived", return_value=True)
+    def test_update_account_archived_fail(self, mock_account_is_archived):
+        account = magic_mixer.blend(core.models.Account)
+        campaign = magic_mixer.blend(core.models.Campaign, account=account)
+        with self.assertRaises(utils.exc.ForbiddenError):
+            campaign.settings.update(None, name="new name")
+
+    def test_update_archived_campaign(self):
+        campaign = magic_mixer.blend(core.models.Campaign)
+        campaign.archive(None)
+        campaign.refresh_from_db()
+        self.assertTrue(campaign.archived)
+        self.assertTrue(campaign.settings.archived)
+        with self.assertRaises(utils.exc.ForbiddenError):
+            campaign.settings.update(None, name="new name")
+        campaign.settings.update(None, archived=True)
+        campaign.settings.update(None, archived=False)
+        campaign.refresh_from_db()
+        self.assertFalse(campaign.archived)
+        self.assertFalse(campaign.settings.archived)

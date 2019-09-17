@@ -37,13 +37,14 @@ class AdGroupSettingsMixin(object):
         **updates
     ):
         updates = self._filter_and_remap_input(request, updates, skip_permission_check)
+        self._validate_update(updates)
         updates = self._ensure_bid_default_if_necessary(updates)
+
         if updates:
             new_settings = self.copy_settings()
             self._apply_updates(new_settings, updates)
             is_pause = len(updates) == 1 and updates.get("state") == constants.AdGroupSettingsState.INACTIVE
             if not skip_validation and not is_pause:
-                self._validate_changes(new_settings)
                 self.clean(new_settings)
             self._handle_and_set_change_consequences(
                 new_settings, skip_notification=skip_notification, write_source_history=write_source_history
@@ -174,9 +175,22 @@ class AdGroupSettingsMixin(object):
         for key, value in updates.items():
             setattr(new_settings, key, value)
 
-    def _validate_changes(self, new_settings):
-        if "archived" in new_settings.get_updates() and not new_settings.archived and not self.ad_group.can_restore():
-            raise exc.ForbiddenError("Account and campaign must not be archived in order to restore an ad group.")
+    def _validate_update(self, updates):
+        if self.archived:
+            if updates.get("archived") is False:
+                if not self.ad_group.can_restore():
+                    raise exc.ForbiddenError("Ad group can not be restored.")
+
+            elif not (updates.get("archived") and len(updates) == 1):
+                raise exc.ForbiddenError("Ad group must not be archived in order to update it.")
+
+        elif self.ad_group.campaign.is_archived():
+            raise exc.ForbiddenError("Account and campaign must not be archived in order to update an ad group.")
+
+        else:
+            if updates.get("archived"):
+                if not self.ad_group.can_archive():
+                    raise exc.ForbiddenError("Ad group can not be archived.")
 
     def _handle_and_set_change_consequences(self, new_settings, skip_notification=False, write_source_history=True):
         self._handle_archived(new_settings)

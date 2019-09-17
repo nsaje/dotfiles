@@ -78,15 +78,30 @@ class AccountSettings(validation.AccountSettingsValidatorMixin, SettingsBase):
     def update(self, request, **kwargs):
         clean_updates = {field: value for field, value in kwargs.items() if field in self._settings_fields}
         changes = self.get_changes(clean_updates)
+        if not changes:
+            return
 
+        self._validate_update(changes)
         self.clean(changes)
-        self._validate_changes(changes)
 
         super().update(request, **changes)
-        self._update_account(request, changes)
 
         if changes:
             self._handle_archived(request, changes)
+
+        self._update_account(request, changes)
+
+    def _validate_update(self, changes):
+        if self.archived:
+            if changes.get("archived") is False:
+                if not self.account.can_restore():
+                    raise utils.exc.ForbiddenError("Account can not be restored")
+            else:
+                raise utils.exc.ForbiddenError("Account must not be archived in order to update it.")
+        else:
+            if changes.get("archived"):
+                if not self.account.can_archive():
+                    raise utils.exc.ForbiddenError("Account can not be archived.")
 
     def _update_account(self, request, changes):
         if any(field in changes for field in ["name", "archived"]):
@@ -95,15 +110,6 @@ class AccountSettings(validation.AccountSettingsValidatorMixin, SettingsBase):
             if "archived" in changes:
                 self.account.archived = changes["archived"]
             self.account.save(request)
-
-    def _validate_changes(self, changes):
-        if "archived" in changes:
-            if changes["archived"]:
-                if not self.account.can_archive():
-                    raise utils.exc.ForbiddenError("Account can't be archived.")
-            else:
-                if not self.account.can_restore():
-                    raise utils.exc.ForbiddenError("Account can't be restored.")
 
     def _handle_archived(self, request, changes):
         if changes.get("archived"):
