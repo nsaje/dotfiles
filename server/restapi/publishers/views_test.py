@@ -5,6 +5,7 @@ from django.urls import reverse
 
 import core.features.publisher_bid_modifiers
 import core.models
+import dash.constants
 import restapi.common.views_base_test
 from core.features.publisher_groups import publisher_group_helpers
 from utils.magic_mixer import get_request_mock
@@ -65,6 +66,8 @@ class PublisherBlacklistTest(restapi.common.views_base_test.RESTAPITest):
             {"name": "cnn3.com", "source": "gumgum", "status": "BLACKLISTED", "level": "CAMPAIGN", "modifier": None},
             {"name": "cnn4.com", "source": "gumgum", "status": "BLACKLISTED", "level": "ACCOUNT", "modifier": None},
         ]
+        self.test_ad_group.settings.update_unsafe(None, state=dash.constants.AdGroupSettingsState.ACTIVE)
+
         r = self.client.put(
             reverse("publishers_list", kwargs={"ad_group_id": self.test_ad_group.id}),
             data=test_blacklist,
@@ -73,8 +76,16 @@ class PublisherBlacklistTest(restapi.common.views_base_test.RESTAPITest):
         resp_json = self.assertResponseValid(r, data_type=list)
         self.assertEqual(resp_json["data"], test_blacklist)
 
-        mock_k1_update.assert_called_once_with(mock.ANY, msg="restapi.publishers.set", priority=True)
-
+        self.assertEqual(
+            [
+                mock.call(mock.ANY, "publisher_group.create"),
+                mock.call(mock.ANY, msg="publisher_group.create", priority=False),
+                mock.call(mock.ANY, msg="publisher_group.create", priority=False),
+                mock.call(mock.ANY, msg="restapi.publishers.set", priority=True),
+            ],
+            mock_k1_update.call_args_list,
+        )
+        self.assertEqual(4, mock_k1_update.call_count)
         self.assertEqual(self._get_resp_json(self.test_ad_group.id)["data"], test_blacklist)
 
     def test_adgroups_publishers_put_no_modifier(self):

@@ -8,6 +8,7 @@ from django.test import override_settings
 import zemauth.models
 from dash import history_helpers
 from dash import models
+from utils.magic_mixer import magic_mixer
 
 from . import publisher_group_csv_helpers
 from . import publisher_group_helpers
@@ -41,8 +42,9 @@ class PublisherGroupHelpersTest(TestCase):
         self.assertEqual(history.count(), 2 if default_list_created else 1)
         self.assertEqual(history.first().changes_text, changes_text)
 
+    @mock.patch("core.features.publisher_groups.publisher_group_helpers.ping_k1")
     @mock.patch("utils.email_helper.send_obj_changes_notification_email")
-    def test_blacklist_publisher_ad_group(self, mock_email):
+    def test_blacklist_publisher_ad_group(self, mock_email, mock_k1_ping):
         obj = models.AdGroup.objects.get(pk=1)
         publisher_group_helpers.blacklist_publishers(
             self.request, [{"publisher": "cnn.com", "source": None, "include_subdomains": False}], obj
@@ -55,9 +57,11 @@ class PublisherGroupHelpersTest(TestCase):
         changes_text = "Blacklisted the following publishers on ad group level: cnn.com on all sources."
         mock_email.assert_called_with(obj, self.request, changes_text)
         self.assertHistoryWritten(history_helpers.get_ad_group_history(obj), changes_text, False)
+        mock_k1_ping.assert_not_called()
 
+    @mock.patch("core.features.publisher_groups.publisher_group_helpers.ping_k1")
     @mock.patch("utils.email_helper.send_obj_changes_notification_email")
-    def test_whitelist_publisher_ad_group(self, mock_email):
+    def test_whitelist_publisher_ad_group(self, mock_email, mock_k1_ping):
         obj = models.AdGroup.objects.get(pk=1)
         publisher_group_helpers.whitelist_publishers(
             self.request, [{"publisher": "cnn.com", "source": None, "include_subdomains": False}], obj
@@ -69,9 +73,33 @@ class PublisherGroupHelpersTest(TestCase):
         changes_text = "Whitelisted the following publishers on ad group level: cnn.com on all sources."
         mock_email.assert_called_with(obj, self.request, changes_text)
         self.assertHistoryWritten(history_helpers.get_ad_group_history(obj), changes_text, False)
+        mock_k1_ping.assert_not_called()
 
+    @mock.patch("utils.k1_helper.update_ad_group")
+    def test_blacklist_publisher_ad_group_k1_ping(self, mock_k1_ping):
+        obj = magic_mixer.blend(models.AdGroup, default_blacklist=None)
+        self.assertIsNone(obj.default_blacklist)
+
+        publisher_group_helpers.blacklist_publishers(
+            self.request, [{"publisher": "cnn.com", "source": None, "include_subdomains": False}], obj
+        )
+        self.assertBlacklistCreated(obj)
+        mock_k1_ping.assert_called_once_with(obj, "publisher_group.create")
+
+    @mock.patch("utils.k1_helper.update_ad_group")
+    def test_whitelist_publisher_ad_group_k1_ping(self, mock_k1_ping):
+        obj = magic_mixer.blend(models.AdGroup, default_whitelist=None)
+        self.assertIsNone(obj.default_whitelist)
+
+        publisher_group_helpers.whitelist_publishers(
+            self.request, [{"publisher": "cnn.com", "source": None, "include_subdomains": False}], obj
+        )
+        self.assertWhitelistCreated(obj)
+        mock_k1_ping.assert_called_once_with(obj, "publisher_group.create")
+
+    @mock.patch("core.features.publisher_groups.publisher_group_helpers.ping_k1")
     @mock.patch("utils.email_helper.send_obj_changes_notification_email")
-    def test_unlist_whitelisted_publisher_ad_group(self, mock_email):
+    def test_unlist_whitelisted_publisher_ad_group(self, mock_email, mock_k1_ping):
         obj = models.AdGroup.objects.get(pk=1)
         models.PublisherGroupEntry.objects.create(
             publisher_group=obj.default_whitelist, source=None, publisher="cnn.com"
@@ -86,9 +114,11 @@ class PublisherGroupHelpersTest(TestCase):
         changes_text = "Disabled the following publishers on ad group level: cnn.com on all sources."
         mock_email.assert_called_with(obj, self.request, changes_text)
         self.assertHistoryWritten(history_helpers.get_ad_group_history(obj), changes_text, False)
+        mock_k1_ping.assert_not_called()
 
+    @mock.patch("core.features.publisher_groups.publisher_group_helpers.ping_k1")
     @mock.patch("utils.email_helper.send_obj_changes_notification_email")
-    def test_unlist_blacklisted_publisher_ad_group(self, mock_email):
+    def test_unlist_blacklisted_publisher_ad_group(self, mock_email, mock_k1_ping):
         obj = models.AdGroup.objects.get(pk=1)
         models.PublisherGroupEntry.objects.create(
             publisher_group=obj.default_blacklist, source=None, publisher="cnn.com"
@@ -103,9 +133,14 @@ class PublisherGroupHelpersTest(TestCase):
         changes_text = "Enabled the following publishers on ad group level: cnn.com on all sources."
         mock_email.assert_called_with(obj, self.request, changes_text)
         self.assertHistoryWritten(history_helpers.get_ad_group_history(obj), changes_text, False)
+        mock_k1_ping.assert_not_called()
 
+    @mock.patch("core.models.Campaign.adgroup_set")
+    @mock.patch("utils.k1_helper.update_ad_groups")
     @mock.patch("utils.email_helper.send_obj_changes_notification_email")
-    def test_blacklist_publisher_campaign(self, mock_email):
+    def test_blacklist_publisher_campaign(self, mock_email, mock_k1_ping, mock_queryset):
+        mock_queryset.filter_active.return_value.exclude_archived.return_value = ["ad_group"]
+
         obj = models.Campaign.objects.get(pk=1)
         self.assertIsNone(obj.default_blacklist)
 
@@ -121,9 +156,14 @@ class PublisherGroupHelpersTest(TestCase):
         changes_text = "Blacklisted the following publishers on campaign level: cnn.com on all sources."
         mock_email.assert_called_with(obj, self.request, changes_text)
         self.assertHistoryWritten(history_helpers.get_campaign_history(obj), changes_text, False)
+        mock_k1_ping.assert_called_once_with(["ad_group"], "publisher_group.create")
 
+    @mock.patch("core.models.Campaign.adgroup_set")
+    @mock.patch("utils.k1_helper.update_ad_groups")
     @mock.patch("utils.email_helper.send_obj_changes_notification_email")
-    def test_whitelist_publisher_campaign(self, mock_email):
+    def test_whitelist_publisher_campaign(self, mock_email, mock_k1_ping, mock_queryset):
+        mock_queryset.filter_active.return_value.exclude_archived.return_value = ["ad_group"]
+
         obj = models.Campaign.objects.get(pk=1)
         self.assertIsNone(obj.default_whitelist)
 
@@ -139,9 +179,11 @@ class PublisherGroupHelpersTest(TestCase):
         changes_text = "Whitelisted the following publishers on campaign level: cnn.com on all sources."
         mock_email.assert_called_with(obj, self.request, changes_text)
         self.assertHistoryWritten(history_helpers.get_campaign_history(obj), changes_text, False)
+        mock_k1_ping.assert_called_once_with(["ad_group"], "publisher_group.create")
 
+    @mock.patch("core.features.publisher_groups.publisher_group_helpers.ping_k1")
     @mock.patch("utils.email_helper.send_obj_changes_notification_email")
-    def test_unlist_whitelisted_publisher_campaign(self, mock_email):
+    def test_unlist_whitelisted_publisher_campaign(self, mock_email, mock_k1_ping):
         obj = models.Campaign.objects.get(pk=1)
         publisher_group = models.PublisherGroup(name="was")
         publisher_group.save(self.request)
@@ -162,9 +204,11 @@ class PublisherGroupHelpersTest(TestCase):
         changes_text = "Disabled the following publishers on campaign level: cnn.com on all sources."
         mock_email.assert_called_with(obj, self.request, changes_text)
         self.assertHistoryWritten(history_helpers.get_campaign_history(obj), changes_text, False)
+        mock_k1_ping.assert_not_called()
 
+    @mock.patch("core.features.publisher_groups.publisher_group_helpers.ping_k1")
     @mock.patch("utils.email_helper.send_obj_changes_notification_email")
-    def test_unlist_blacklisted_publisher_campaign(self, mock_email):
+    def test_unlist_blacklisted_publisher_campaign(self, mock_email, mock_k1_ping):
         obj = models.Campaign.objects.get(pk=1)
         publisher_group = models.PublisherGroup(name="was")
         publisher_group.save(self.request)
@@ -185,9 +229,14 @@ class PublisherGroupHelpersTest(TestCase):
         changes_text = "Enabled the following publishers on campaign level: cnn.com on all sources."
         mock_email.assert_called_with(obj, self.request, changes_text)
         self.assertHistoryWritten(history_helpers.get_campaign_history(obj), changes_text, False)
+        mock_k1_ping.assert_not_called()
 
+    @mock.patch("core.models.AdGroup.objects")
+    @mock.patch("utils.k1_helper.update_ad_groups")
     @mock.patch("utils.email_helper.send_obj_changes_notification_email")
-    def test_blacklist_publisher_account(self, mock_email):
+    def test_blacklist_publisher_account(self, mock_email, mock_k1_ping, mock_queryset):
+        mock_queryset.filter.return_value.filter_active.return_value.exclude_archived.return_value = ["ad_group"]
+
         obj = models.Account.objects.get(pk=1)
         publisher_group_helpers.blacklist_publishers(
             self.request,
@@ -206,6 +255,7 @@ class PublisherGroupHelpersTest(TestCase):
         self.assertHistoryWritten(history_helpers.get_account_history(obj), changes_text, False)
 
         self.assertEqual(models.CpcConstraint.objects.all().count(), 0)
+        mock_k1_ping.assert_called_once_with(["ad_group"], "publisher_group.create")
 
     @mock.patch("utils.email_helper.send_obj_changes_notification_email")
     def test_blacklist_publisher_account_enforce_cpc_above_limit(self, mock_email):
@@ -258,8 +308,12 @@ class PublisherGroupHelpersTest(TestCase):
                 self.request, ob_entries + non_relevant_entries, obj, enforce_cpc=True
             )
 
+    @mock.patch("core.models.AdGroup.objects")
+    @mock.patch("utils.k1_helper.update_ad_groups")
     @mock.patch("utils.email_helper.send_obj_changes_notification_email")
-    def test_whitelist_publisher_account(self, mock_email):
+    def test_whitelist_publisher_account(self, mock_email, mock_k1_ping, mock_queryset):
+        mock_queryset.filter.return_value.filter_active.return_value.exclude_archived.return_value = ["ad_group"]
+
         obj = models.Account.objects.get(pk=1)
         publisher_group_helpers.whitelist_publishers(
             self.request, [{"publisher": "cnn.com", "source": None, "include_subdomains": False}], obj
@@ -273,9 +327,11 @@ class PublisherGroupHelpersTest(TestCase):
         changes_text = "Whitelisted the following publishers on account level: cnn.com on all sources."
         mock_email.assert_called_with(obj, self.request, changes_text)
         self.assertHistoryWritten(history_helpers.get_account_history(obj), changes_text, False)
+        mock_k1_ping.assert_called_once_with(["ad_group"], "publisher_group.create")
 
+    @mock.patch("core.features.publisher_groups.publisher_group_helpers.ping_k1")
     @mock.patch("utils.email_helper.send_obj_changes_notification_email")
-    def test_unlist_whitelisted_publisher_account(self, mock_email):
+    def test_unlist_whitelisted_publisher_account(self, mock_email, mock_k1_ping):
         obj = models.Account.objects.get(pk=1)
         publisher_group = models.PublisherGroup(name="was")
         publisher_group.save(self.request)
@@ -295,9 +351,11 @@ class PublisherGroupHelpersTest(TestCase):
         changes_text = "Disabled the following publishers on account level: cnn.com on all sources."
         mock_email.assert_called_with(obj, self.request, changes_text)
         self.assertHistoryWritten(history_helpers.get_account_history(obj), changes_text, False)
+        mock_k1_ping.assert_not_called()
 
+    @mock.patch("core.features.publisher_groups.publisher_group_helpers.ping_k1")
     @mock.patch("utils.email_helper.send_obj_changes_notification_email")
-    def test_blacklist_publisher_global(self, mock_email):
+    def test_blacklist_publisher_global(self, mock_email, mock_k1_ping):
         global_group = models.PublisherGroup(name="imglobal")
         global_group.save(self.request)
 
@@ -310,18 +368,22 @@ class PublisherGroupHelpersTest(TestCase):
                 global_group, [{"publisher": "cnn.com", "source": None, "include_subdomains": False}]
             )
         self.assertFalse(mock_email.called)
+        mock_k1_ping.assert_not_called()
 
+    @mock.patch("core.features.publisher_groups.publisher_group_helpers.ping_k1")
     @mock.patch("utils.email_helper.send_obj_changes_notification_email")
-    def test_whitelist_publisher_global(self, mock_email):
+    def test_whitelist_publisher_global(self, mock_email, mock_k1_ping):
         with self.assertRaises(publisher_group_helpers.PublisherGroupTargetingException):
             # not available
             publisher_group_helpers.whitelist_publishers(
                 self.request, [{"publisher": "cnn.com", "source": None, "include_subdomains": False}], None
             )
             self.assertFalse(mock_email.called)
+            mock_k1_ping.assert_not_called()
 
+    @mock.patch("core.features.publisher_groups.publisher_group_helpers.ping_k1")
     @mock.patch("utils.email_helper.send_obj_changes_notification_email")
-    def test_unlist_publisher_global(self, mock_email):
+    def test_unlist_publisher_global(self, mock_email, mock_k1_ping):
         global_group = models.PublisherGroup(name="imglobal")
         global_group.save(self.request)
 
@@ -334,6 +396,7 @@ class PublisherGroupHelpersTest(TestCase):
 
             self.assertEntriesEqual(global_group, [])
         self.assertFalse(mock_email.called)
+        mock_k1_ping.assert_not_called()
 
     def test_concat_publisher_targeting(self):
         ad_group = models.AdGroup.objects.get(pk=1)
@@ -429,7 +492,7 @@ class PublisherGroupHelpersTest(TestCase):
             form_data, {"name": publisher_group.name, "include_subdomains": publisher_group.default_include_subdomains}
         )
 
-        self.assertEqual(models.History.objects.last().changes_text, 'Publisher group "Bla bla bla [1011]" created')
+        self.assertEqual(models.History.objects.last().changes_text, 'Publisher group "Bla bla bla [1012]" created')
 
 
 class PublisherGroupCSVHelpersTest(TestCase):

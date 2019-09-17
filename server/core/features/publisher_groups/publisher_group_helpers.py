@@ -12,6 +12,7 @@ from dash import history_helpers
 from dash import models
 from dash.views import helpers
 from utils import email_helper
+from utils import k1_helper
 
 logger = logging.getLogger(__name__)
 
@@ -35,7 +36,7 @@ def get_blacklist_publisher_group(obj, create_if_none=False, request=None):
     """
 
     if obj is None:
-        return get_global_blacklist()
+        return get_global_blacklist(), False
 
     publisher_group = obj.default_blacklist
     if publisher_group is None and create_if_none:
@@ -49,8 +50,9 @@ def get_blacklist_publisher_group(obj, create_if_none=False, request=None):
             )
             obj.default_blacklist = publisher_group
             obj.save(request)
+            return publisher_group, True
 
-    return publisher_group
+    return publisher_group, False
 
 
 def get_whitelist_publisher_group(obj, create_if_none=False, request=None):
@@ -73,8 +75,9 @@ def get_whitelist_publisher_group(obj, create_if_none=False, request=None):
             )
             obj.default_whitelist = publisher_group
             obj.save(request)
+            return publisher_group, True
 
-    return publisher_group
+    return publisher_group, False
 
 
 def can_user_handle_publisher_listing_level(user, obj):
@@ -263,7 +266,7 @@ def handle_publishers(request, entry_dicts, obj, status, enforce_cpc):
 
 @transaction.atomic
 def blacklist_publishers(request, entry_dicts, obj, enforce_cpc=False):
-    publisher_group = get_blacklist_publisher_group(obj, create_if_none=True, request=request)
+    publisher_group, created = get_blacklist_publisher_group(obj, create_if_none=True, request=request)
 
     # cpc constraints and history will be handled separately
     unlist_publishers(request, entry_dicts, obj, enforce_cpc=False, history=False)
@@ -278,13 +281,15 @@ def blacklist_publishers(request, entry_dicts, obj, enforce_cpc=False):
 
     apply_outbrain_account_constraints_if_needed(obj, enforce_cpc)
 
-    ping_k1(obj)
+    if created:
+        ping_k1(obj)
+
     write_history(request, obj, entries, constants.PublisherTargetingStatus.BLACKLISTED)
 
 
 @transaction.atomic
 def whitelist_publishers(request, entry_dicts, obj, enforce_cpc=False):
-    publisher_group = get_whitelist_publisher_group(obj, create_if_none=True, request=request)
+    publisher_group, created = get_whitelist_publisher_group(obj, create_if_none=True, request=request)
 
     # cpc constraints and history will be handled separately
     unlist_publishers(request, entry_dicts, obj, enforce_cpc=False, history=False)
@@ -294,13 +299,15 @@ def whitelist_publishers(request, entry_dicts, obj, enforce_cpc=False):
 
     apply_outbrain_account_constraints_if_needed(obj, enforce_cpc)
 
-    ping_k1(obj)
+    if created:
+        ping_k1(obj)
+
     write_history(request, obj, entries, constants.PublisherTargetingStatus.WHITELISTED)
 
 
 @transaction.atomic
 def unlist_publishers(request, entry_dicts, obj, enforce_cpc=False, history=True):
-    publisher_group = get_blacklist_publisher_group(obj)
+    publisher_group, _ = get_blacklist_publisher_group(obj)
     selected_entries = models.PublisherGroupEntry.objects.filter(
         publisher_group=publisher_group
     ).filter_by_publisher_source(entry_dicts)
@@ -316,7 +323,7 @@ def unlist_publishers(request, entry_dicts, obj, enforce_cpc=False, history=True
     selected_entries.delete()
 
     try:
-        publisher_group = get_whitelist_publisher_group(obj)
+        publisher_group, _ = get_whitelist_publisher_group(obj)
         selected_entries = models.PublisherGroupEntry.objects.filter(
             publisher_group=publisher_group
         ).filter_by_publisher_source(entry_dicts)
@@ -330,7 +337,6 @@ def unlist_publishers(request, entry_dicts, obj, enforce_cpc=False, history=True
             )
 
         selected_entries.delete()
-        ping_k1(obj)
     except PublisherGroupTargetingException:
         # pass if global level
         pass
@@ -444,8 +450,19 @@ def write_history(request, obj, entries, status, previous_status=None):
 
 
 def ping_k1(obj):
-    # ping if need be
-    pass
+    message = "publisher_group.create"
+    level = obj.get_publisher_level()
+
+    if level == constants.PublisherBlacklistLevel.ADGROUP:
+        k1_helper.update_ad_group(obj, message)
+
+    elif level == constants.PublisherBlacklistLevel.CAMPAIGN:
+        k1_helper.update_ad_groups(obj.adgroup_set.filter_active().exclude_archived(), message)
+
+    elif level == constants.PublisherBlacklistLevel.ACCOUNT:
+        k1_helper.update_ad_groups(
+            models.AdGroup.objects.filter(campaign__account=obj).filter_active().exclude_archived(), message
+        )
 
 
 def _prepare_entries(entry_dicts, publisher_group):
