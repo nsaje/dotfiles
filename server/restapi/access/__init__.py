@@ -125,3 +125,13 @@ def get_direct_deal(user, agency, deal_id) -> core.features.deals.DirectDeal:
         return deal_qs.get()
     except core.features.deals.DirectDeal.DoesNotExist:
         raise utils.exc.MissingDataError("Deal does not exist")
+
+
+def get_direct_deal_connection(user, deal, deal_connection_id) -> core.features.deals.DirectDealConnection:
+    try:
+        deal_connection_qs = core.features.deals.DirectDealConnection.objects.filter_by_deal(deal).filter(
+            id=deal_connection_id
+        )
+        return deal_connection_qs.get()
+    except core.features.deals.DirectDealConnection.DoesNotExist:
+        raise utils.exc.MissingDataError("Deal connection does not exist")

@@ -3,12 +3,17 @@
 from django.conf import settings
 from django.db import models
 
+from core.common import BaseManager
+
+from . import queryset
 from . import validation
 
 
 class DirectDealConnection(validation.DirectDealConnectionValidatorMixin, models.Model):
     class Meta:
         app_label = "dash"
+
+    objects = BaseManager.from_queryset(queryset.DirectDealConnectionQuerySet)()
 
     id = models.AutoField(primary_key=True)
     exclusive = models.BooleanField(

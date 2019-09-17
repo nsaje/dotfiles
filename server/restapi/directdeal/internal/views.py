@@ -66,3 +66,26 @@ class DirectDealViewSet(RESTAPIBaseViewSet):
             new_deal.update(request, **settings)
 
         return self.response_ok(self.serializer(new_deal, context={"request": request}).data, status=201)
+
+    def list_connections(self, request, agency_id, deal_id):
+        agency = restapi.access.get_agency(request.user, agency_id)
+        deal = restapi.access.get_direct_deal(request.user, agency, deal_id)
+        deal_connection_items = (
+            core.features.deals.DirectDealConnection.objects.filter_by_deal(deal)
+            .select_related(
+                "account", "account__settings", "campaign", "campaign__settings", "adgroup", "adgroup__settings"
+            )
+            .order_by("-created_dt")
+        )
+        return self.response_ok(
+            serializers.DirectDealConnectionSerializer(
+                deal_connection_items, many=True, context={"request": request}
+            ).data
+        )
+
+    def remove_connection(self, request, agency_id, deal_id, deal_connection_id):
+        agency = restapi.access.get_agency(request.user, agency_id)
+        deal = restapi.access.get_direct_deal(request.user, agency, deal_id)
+        deal_connection = restapi.access.get_direct_deal_connection(request.user, deal, deal_connection_id)
+        deal_connection.delete()
+        return rest_framework.response.Response(None, status=204)

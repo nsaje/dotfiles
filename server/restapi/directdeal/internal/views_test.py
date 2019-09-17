@@ -175,3 +175,123 @@ class DirectDealViewSetTest(RESTAPITest):
             )
         )
         self.assertResponseError(r, "MissingDataError")
+
+    def test_list_connections(self):
+        agency = magic_mixer.blend(core.models.Agency, users=[self.user])
+
+        account = magic_mixer.blend(core.models.Account, agency=agency, name="Demo account")
+        account.settings.update_unsafe(None, name=account.name)
+
+        campaign = magic_mixer.blend(core.models.Campaign, account=account, name="Demo campaign")
+        campaign.settings.update_unsafe(None, name=campaign.name)
+
+        adgroup = magic_mixer.blend(core.models.AdGroup, campaign=campaign, name="Demo adgroup")
+        adgroup.settings.update_unsafe(None, ad_group_name=adgroup.name)
+
+        source = magic_mixer.blend(core.models.Source)
+
+        deal = magic_mixer.blend(core.features.deals.DirectDeal, agency=agency, source=source)
+        deal_connection_account = magic_mixer.blend(
+            core.features.deals.DirectDealConnection, deal=deal, account=account
+        )
+        deal_connection_campaign = magic_mixer.blend(
+            core.features.deals.DirectDealConnection, deal=deal, campaign=campaign
+        )
+        deal_connection_adgroup = magic_mixer.blend(
+            core.features.deals.DirectDealConnection, deal=deal, adgroup=adgroup
+        )
+
+        r = self.client.get(
+            reverse(
+                "restapi.directdeal.internal:directdealconnection_list",
+                kwargs={"agency_id": agency.id, "deal_id": deal.id},
+            )
+        )
+        resp_json = self.assertResponseValid(r, data_type=list)
+
+        self.assertEqual(
+            resp_json["data"],
+            [
+                {
+                    "id": str(deal_connection_adgroup.id),
+                    "account": {},
+                    "campaign": {},
+                    "adgroup": {
+                        "id": str(deal_connection_adgroup.adgroup.id),
+                        "name": deal_connection_adgroup.adgroup.settings.ad_group_name,
+                    },
+                },
+                {
+                    "id": str(deal_connection_campaign.id),
+                    "account": {},
+                    "campaign": {
+                        "id": str(deal_connection_campaign.campaign.id),
+                        "name": deal_connection_campaign.campaign.settings.name,
+                    },
+                    "adgroup": {},
+                },
+                {
+                    "id": str(deal_connection_account.id),
+                    "account": {
+                        "id": str(deal_connection_account.account.id),
+                        "name": deal_connection_account.account.settings.name,
+                    },
+                    "campaign": {},
+                    "adgroup": {},
+                },
+            ],
+        )
+
+    def test_remove_connection(self):
+        agency = magic_mixer.blend(core.models.Agency, users=[self.user])
+
+        account = magic_mixer.blend(core.models.Account, agency=agency, name="Demo account")
+        account.settings.update_unsafe(None, name=account.name)
+
+        source = magic_mixer.blend(core.models.Source)
+
+        deal = magic_mixer.blend(core.features.deals.DirectDeal, agency=agency, source=source)
+        deal_connection_account = magic_mixer.blend(
+            core.features.deals.DirectDealConnection, deal=deal, account=account
+        )
+
+        r = self.client.get(
+            reverse(
+                "restapi.directdeal.internal:directdealconnection_list",
+                kwargs={"agency_id": agency.id, "deal_id": deal.id},
+            )
+        )
+        resp_json = self.assertResponseValid(r, data_type=list)
+
+        self.assertEqual(
+            resp_json["data"],
+            [
+                {
+                    "id": str(deal_connection_account.id),
+                    "account": {
+                        "id": str(deal_connection_account.account.id),
+                        "name": deal_connection_account.account.settings.name,
+                    },
+                    "campaign": {},
+                    "adgroup": {},
+                }
+            ],
+        )
+
+        r = self.client.delete(
+            reverse(
+                "restapi.directdeal.internal:directdealconnection_details",
+                kwargs={"agency_id": agency.id, "deal_id": deal.id, "deal_connection_id": deal_connection_account.id},
+            )
+        )
+        self.assertEqual(r.status_code, 204)
+
+        r = self.client.get(
+            reverse(
+                "restapi.directdeal.internal:directdealconnection_list",
+                kwargs={"agency_id": agency.id, "deal_id": deal.id},
+            )
+        )
+        resp_json = self.assertResponseValid(r, data_type=list)
+
+        self.assertEqual(resp_json["data"], [])

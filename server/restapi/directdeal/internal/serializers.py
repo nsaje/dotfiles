@@ -6,8 +6,30 @@ import restapi.serializers.base
 import restapi.serializers.fields
 
 
-class DirectDealSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
+class DirectDealConnectionAccountSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
     id = restapi.serializers.fields.IdField(read_only=True)
+    name = rest_framework.serializers.CharField(source="settings.name", read_only=True)
+
+
+class DirectDealConnectionCampaignSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
+    id = restapi.serializers.fields.IdField(read_only=True)
+    name = rest_framework.serializers.CharField(source="settings.name", read_only=True)
+
+
+class DirectDealConnectionAdGroupSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
+    id = restapi.serializers.fields.IdField(read_only=True)
+    name = rest_framework.serializers.CharField(source="settings.ad_group_name", read_only=True)
+
+
+class DirectDealConnectionSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
+    id = restapi.serializers.fields.IdField(read_only=True)
+    account = DirectDealConnectionAccountSerializer(required=False)
+    campaign = DirectDealConnectionCampaignSerializer(required=False)
+    adgroup = DirectDealConnectionAdGroupSerializer(required=False)
+
+
+class DirectDealSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
+    id = restapi.serializers.fields.IdField(required=False, allow_null=True)
     deal_id = rest_framework.serializers.CharField(max_length=100, allow_null=False, allow_blank=False)
     description = rest_framework.serializers.CharField(allow_null=True, allow_blank=True, required=False)
     name = rest_framework.serializers.CharField(max_length=127, allow_null=True, allow_blank=True, required=False)
