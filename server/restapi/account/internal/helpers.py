@@ -92,12 +92,14 @@ def get_hacks(account):
 
 def get_media_sources_data(user, account):
     media_sources = []
-    account_allowed_sources_ids_set = set(
-        account.allowed_sources.values_list("id", flat=True) if account.id is not None else []
-    )
 
     all_sources_queryset = _get_all_sources_queryset(user, account.agency)
     all_sources = list(all_sources_queryset.values("id", "name", "released", "deprecated"))
+    account_allowed_sources_ids_set = (
+        set(account.allowed_sources.values_list("id", flat=True))
+        if account.id is not None
+        else set(all_sources_queryset.values_list("id", flat=True))
+    )
     for source in all_sources:
         if source["id"] not in account_allowed_sources_ids_set and source["deprecated"]:
             continue

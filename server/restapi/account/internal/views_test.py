@@ -122,9 +122,9 @@ class AccountViewSetTest(RESTAPITest):
         self.assertEqual(resp_json["data"]["autoAddNewSources"], True)
         self.assertEqual(resp_json["data"]["salesforceUrl"], "")
 
-        self.assertEqual(resp_json["data"]["mediaSources"][0]["allowed"], False)
-        self.assertEqual(resp_json["data"]["mediaSources"][1]["allowed"], False)
-        self.assertEqual(resp_json["data"]["mediaSources"][2]["allowed"], False)
+        self.assertEqual(resp_json["data"]["mediaSources"][0]["allowed"], True)
+        self.assertEqual(resp_json["data"]["mediaSources"][1]["allowed"], True)
+        self.assertEqual(resp_json["data"]["mediaSources"][2]["allowed"], True)
 
         self.assertEqual(
             resp_json["extra"],
