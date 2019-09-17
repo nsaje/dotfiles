@@ -24,9 +24,10 @@ ACTION_RELEASE = "release"
 ACTION_LIST = "list"
 ACTION_TRANSFER = "transfer"
 ACTION_SQUEEZE = "squeeze"
-ACTIONS = (ACTION_DELETE, ACTION_UPDATE, ACTION_RELEASE, ACTION_LIST, ACTION_TRANSFER, ACTION_SQUEEZE)
+ACTION_EXPIRE = "expire"
+ACTIONS = (ACTION_DELETE, ACTION_UPDATE, ACTION_RELEASE, ACTION_LIST, ACTION_TRANSFER, ACTION_SQUEEZE, ACTION_EXPIRE)
 VALID_ACTIONS = {
-    MODEL_CREDITS: (ACTION_DELETE, ACTION_UPDATE, ACTION_LIST, ACTION_SQUEEZE),
+    MODEL_CREDITS: (ACTION_DELETE, ACTION_UPDATE, ACTION_LIST, ACTION_TRANSFER, ACTION_SQUEEZE, ACTION_EXPIRE),
     MODEL_BUDGETS: (ACTION_DELETE, ACTION_UPDATE, ACTION_RELEASE, ACTION_LIST, ACTION_TRANSFER, ACTION_SQUEEZE),
 }
 
@@ -122,7 +123,7 @@ def _updates_to_sql(updates):
 
 class Command(BaseCommand):
     help = """Manage credits and budgets
-    Usage: ./manage.py bcm list|update|delete|release|transfer budgets|credits ids [options]
+    Usage: ./manage.py bcm list|update|delete|release|transfer|squeeze|expire budgets|credits ids [options]
 
     Options can be any fields that have to be updated.
 
@@ -134,9 +135,15 @@ class Command(BaseCommand):
     All constraint values have to be comma separated list of ids.
     Example: --campaigns 1,2,3
 
-    When transfering amounts from one credit to another, additional options are mandatory:
+    When transfering amounts from budgets to another credit, additional options are mandatory:
       --transfer-credit
       --transfer-amount
+
+    When transfering amounts from a credit to another credit, additional options are mandatory:
+      --transfer-credit - new credit ID
+      --transfer-date - date where new credit budgets should start
+
+    When expiring credit line items, end_date is set to today if not specified. It will update all budgets to the specified end_date.
     """
 
     def add_arguments(self, parser):
@@ -154,6 +161,9 @@ class Command(BaseCommand):
             "--transfer-credit", dest="transfer_credit", nargs="?", type=int, help="Credit to which a transfer is made"
         )
         parser.add_argument("--transfer-amount", dest="transfer_amount", nargs="?", type=int, help="Amount to transfer")
+        parser.add_argument(
+            "--transfer-date", dest="transfer_date", nargs="?", type=str, help="Start date for transfer"
+        )
 
         parser.add_argument("--no-confirm", dest="no_confirm", action="store_true")
         parser.add_argument("--skip-spend-validation", dest="skip_spend_validation", action="store_true")
@@ -242,87 +252,161 @@ class Command(BaseCommand):
     def _handle_action(self, action, model, object_list, options):
         need_confirm = not options.get("no_confirm")
         if action == ACTION_UPDATE:
-            updates = self._get_updates(options)
-            if not updates:
-                raise CommandError("Nothing to change")
-            if model == MODEL_CREDITS:
-                update_credits(object_list, updates)
-            else:
-                update_budgets(object_list, updates)
-
-            object_list = [type(obj).objects.get(pk=obj.pk) for obj in object_list]
-            self._validate(model, object_list, options)
-
-            for obj in object_list:
-                obj.save()
-
-            if set(updates.keys()) & set(INVALIDATE_DAILY_STATEMENTS_FIELDS):
-                self._print("WARNING: Daily statements should be reprocessed")
-
+            self._action_update(action, model, object_list, options, need_confirm)
         elif action == ACTION_DELETE:
-            for obj in object_list:
-                if model == MODEL_CREDITS:
-                    delete_credit(obj)
-                else:
-                    delete_budget(obj)
-
+            self._action_delete(action, model, object_list, options, need_confirm)
         elif action == ACTION_RELEASE:
-            for obj in object_list:
-                if obj.freed_cc:
-                    if need_confirm and self._confirm("Budget was already released. Do you want to clear it?"):
-                        obj.freed_cc = 0
-                try:
-                    obj.free_inactive_allocated_assets()
-                    self._print(
-                        "Released {} from budget {}".format(
-                            obj.freed_cc * utils.converters.CC_TO_DECIMAL_CURRENCY, str(obj)
-                        )
-                    )
-                except AssertionError:
-                    raise CommandError("Could not free assets. Budget status is {}".format(obj.state_text()))
-
+            self._action_release(action, model, object_list, options, need_confirm)
         elif action == ACTION_TRANSFER:
-            if len(object_list) != 1:
-                raise CommandError("You can transfer assets from one budget at a time only.")
-            delta = options["transfer_amount"]
-            credit = dash.models.CreditLineItem.objects.get(pk=options["transfer_credit"])
-            confirm_msg = "You are transfering ${} from selected budget to credit item {}. Are you sure?".format(
-                delta, credit
-            )
-            if need_confirm and not self._confirm(confirm_msg):
-                return
-            new_budgets = []
-            obj = object_list[0]
-            with transaction.atomic():
-                new_budgets.append(
-                    dash.models.BudgetLineItem.objects.create_unsafe(
-                        amount=delta,
-                        credit=credit,
-                        start_date=obj.start_date,
-                        end_date=obj.end_date,
-                        campaign=obj.campaign,
+            self._action_transfer(action, model, object_list, options, need_confirm)
+        elif action == ACTION_SQUEEZE:
+            self._action_squeeze(action, model, object_list, options, need_confirm)
+        elif action == ACTION_EXPIRE:
+            self._action_expire(action, model, object_list, options, need_confirm)
+
+    def _action_update(self, action, model, object_list, options, need_confirm):
+        updates = self._get_updates(options)
+        if not updates:
+            raise CommandError("Nothing to change")
+        if model == MODEL_CREDITS:
+            update_credits(object_list, updates)
+        else:
+            update_budgets(object_list, updates)
+
+        object_list = [type(obj).objects.get(pk=obj.pk) for obj in object_list]
+        self._validate(model, object_list, options)
+
+        for obj in object_list:
+            obj.save()
+
+        if set(updates.keys()) & set(INVALIDATE_DAILY_STATEMENTS_FIELDS):
+            self._print("WARNING: Daily statements should be reprocessed")
+
+    def _action_delete(self, action, model, object_list, options, need_confirm):
+        for obj in object_list:
+            if model == MODEL_CREDITS:
+                delete_credit(obj)
+            else:
+                delete_budget(obj)
+
+    def _action_release(self, action, model, object_list, options, need_confirm):
+        for obj in object_list:
+            if obj.freed_cc:
+                if need_confirm and self._confirm("Budget was already released. Do you want to clear it?"):
+                    obj.freed_cc = 0
+            try:
+                obj.free_inactive_allocated_assets()
+                self._print(
+                    "Released {} from budget {}".format(
+                        obj.freed_cc * utils.converters.CC_TO_DECIMAL_CURRENCY, str(obj)
                     )
                 )
-                update_budgets([obj], {"amount": (obj.amount - delta)})
-            self._print("New budget: ")
-            self._print_object_list(action, model, new_budgets, list_only=True)
-            self._print("WARNING: Daily statements have to be reprocessed")
+            except AssertionError:
+                raise CommandError("Could not free assets. Budget status is {}".format(obj.state_text()))
 
-        elif action == ACTION_SQUEEZE:
-            with transaction.atomic():
-                if model == MODEL_CREDITS:
-                    for obj in object_list:
-                        if obj.end_date >= datetime.date.today():
-                            raise ValidationError("Not all credits are depleted")
-                        update_credits([obj], {"amount": int(math.ceil(obj.get_allocated_amount()))})
-                elif model == MODEL_BUDGETS:
-                    for obj in object_list:
-                        if obj.state() not in (
-                            dash.constants.BudgetLineItemState.DEPLETED,
-                            dash.constants.BudgetLineItemState.INACTIVE,
-                        ):
-                            raise ValidationError("Not all budgets are depleted/inactive.")
-                        update_budgets([obj], {"amount": int(math.ceil(obj.allocated_amount())), "freed_cc": 0})
+    def _action_transfer(self, action, model, object_list, options, need_confirm):
+        if len(object_list) != 1:
+            raise CommandError("You can transfer assets from one budget/credit at a time only.")
+        if model == MODEL_CREDITS:
+            self._action_transfer_credits(action, model, object_list, options, need_confirm)
+        elif model == MODEL_BUDGETS:
+            self._action_transfer_budgets(action, model, object_list, options, need_confirm)
+
+    @transaction.atomic
+    def _action_transfer_credits(self, action, model, object_list, options, need_confirm):
+        if not options["transfer_date"] or not options["transfer_credit"]:
+            raise CommandError("Missing arguments")
+        expired_credit = object_list[0]
+        transfer_date = datetime.datetime.strptime(options["transfer_date"], "%Y-%m-%d").date()
+        transfer_credit = dash.models.CreditLineItem.objects.get(pk=int(options["transfer_credit"]))
+        if expired_credit.license_fee < transfer_credit.license_fee:
+            raise CommandError("Expired credit has a lower license fee then transfer credit.")
+        new_budgets = []
+        for budget in expired_credit.budgets.filter(end_date__gte=transfer_date):
+            if budget.start_date >= transfer_date:
+                update_budgets([budget], {"credit_id": expired_credit.pk})
+                continue
+            prev_amount = math.ceil(
+                budget.statements.filter(date__lt=transfer_date).calculate_local_spend_data()["etfm_total"]
+            )
+            post_amount = int(budget.allocated_amount() - prev_amount)
+            update_budgets(
+                [budget], {"amount": prev_amount, "end_date": transfer_date - datetime.timedelta(1), "freed_cc": 0}
+            )
+            if post_amount <= 0:
+                continue
+            new_budgets.append(
+                dict(
+                    amount=post_amount,
+                    margin=budget.margin,
+                    credit=transfer_credit,
+                    start_date=transfer_date,
+                    end_date=budget.end_date,
+                    campaign=budget.campaign,
+                    comment="Automatically created based on item #{}".format(budget.pk),
+                )
+            )
+        for budget in new_budgets:
+            dash.models.BudgetLineItem.objects.create_unsafe(**budget)
+
+    @transaction.atomic
+    def _action_transfer_budgets(self, action, model, object_list, options, need_confirm):
+        if not options["transfer_amount"] or not options["transfer_credit"]:
+            raise CommandError("Missing arguments")
+        delta = options["transfer_amount"]
+        credit = dash.models.CreditLineItem.objects.get(pk=options["transfer_credit"])
+        confirm_msg = "You are transfering ${} from selected budget to credit item {}. Are you sure?".format(
+            delta, credit
+        )
+        if need_confirm and not self._confirm(confirm_msg):
+            return
+        new_budgets = []
+        obj = object_list[0]
+        with transaction.atomic():
+            new_budgets.append(
+                dash.models.BudgetLineItem.objects.create_unsafe(
+                    amount=delta, credit=credit, start_date=obj.start_date, end_date=obj.end_date, campaign=obj.campaign
+                )
+            )
+            update_budgets([obj], {"amount": (obj.amount - delta)})
+        self._print("New budget: ")
+        self._print_object_list(action, model, new_budgets, list_only=True)
+        self._print("WARNING: Daily statements have to be reprocessed")
+
+    def _action_squeeze(self, action, model, object_list, options, need_confirm):
+        with transaction.atomic():
+            if model == MODEL_CREDITS:
+                for obj in object_list:
+                    if obj.end_date >= datetime.date.today():
+                        raise ValidationError("Not all credits are depleted")
+                    update_credits([obj], {"amount": int(math.ceil(obj.get_allocated_amount()))})
+            elif model == MODEL_BUDGETS:
+                for obj in object_list:
+                    if obj.state() not in (
+                        dash.constants.BudgetLineItemState.DEPLETED,
+                        dash.constants.BudgetLineItemState.INACTIVE,
+                    ):
+                        raise ValidationError("Not all budgets are depleted/inactive.")
+                    update_budgets([obj], {"amount": int(math.ceil(obj.allocated_amount())), "freed_cc": 0})
+
+    def _action_expire(self, action, model, object_list, options, need_confirm):
+        if len(object_list) != 1:
+            raise CommandError("You can expire only one credit at a time.")
+        if model != MODEL_CREDITS:
+            raise ValidationError("You can expire credits only - it will expire all budgets in the credit.")
+        end_date = options["end_date"]
+        if not end_date:
+            end_date = str(datetime.date.today())
+        credit = object_list[0]
+        budgets = credit.budgets.all()
+        confirm_msg = "You are setting end date to {} for {} budgets on credit line item {}.".format(
+            end_date, len(budgets), credit
+        )
+        if need_confirm and not self._confirm(confirm_msg):
+            return
+        with transaction.atomic():
+            update_budgets(budgets, {"end_date": end_date})
+        self._print("WARNING: Daily statements have to be reprocessed")
 
     def _get_objects(self, model, ids, options):
         constraints = {}
