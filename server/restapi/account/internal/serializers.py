@@ -2,6 +2,7 @@ import rest_framework.serializers
 
 import dash.constants
 import restapi.account.v1.serializers
+import restapi.directdeal.internal.serializers
 import restapi.serializers.base
 import restapi.serializers.deals
 import restapi.serializers.fields
@@ -67,6 +68,7 @@ class AccountSerializer(restapi.account.v1.serializers.AccountSerializer):
             "auto_add_new_sources": "zemauth.can_set_auto_add_new_sources",
             "salesforce_url": "zemauth.can_see_salesforce_url",
             "media_sources": "zemauth.can_modify_allowed_sources",
+            "deals": "zemauth.can_see_deals_in_ui",
         }
 
     account_type = restapi.serializers.fields.DashConstantField(
@@ -95,6 +97,9 @@ class AccountSerializer(restapi.account.v1.serializers.AccountSerializer):
     )
     media_sources = rest_framework.serializers.ListField(
         child=AccountMediaSourceSerializer(), default=[], allow_empty=True
+    )
+    deals = rest_framework.serializers.ListSerializer(
+        child=restapi.directdeal.internal.serializers.DirectDealSerializer(), default=[], allow_empty=True
     )
 
     def validate_default_account_manager(self, value):

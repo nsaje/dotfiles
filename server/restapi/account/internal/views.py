@@ -1,6 +1,7 @@
 import rest_framework.permissions
 from django.db import transaction
 
+import core.features.deals
 import core.models
 import dash.constants
 import restapi.access
@@ -49,6 +50,8 @@ class AccountViewSet(restapi.account.v1.views.AccountViewSet):
             self._update_account(request, account, settings)
             if "media_sources" in serializer.validated_data.keys():
                 self._handle_media_sources(request, account, serializer.validated_data.get("media_sources", []))
+            if "deals" in serializer.validated_data.keys():
+                self._handle_deals(request, account, serializer.validated_data.get("deals", []))
 
         self._augment_account(request, account)
         return self.response_ok(self.serializer(account, context={"request": request}).data)
@@ -72,6 +75,7 @@ class AccountViewSet(restapi.account.v1.views.AccountViewSet):
             settings = serializer.validated_data.get("settings")
             self._update_account(request, new_account, settings)
             self._handle_media_sources(request, new_account, serializer.validated_data.get("media_sources", []))
+            self._handle_deals(request, new_account, serializer.validated_data.get("deals", []))
 
         self._augment_account(request, new_account)
         return self.response_ok(self.serializer(new_account, context={"request": request}).data, status=201)
@@ -81,6 +85,9 @@ class AccountViewSet(restapi.account.v1.views.AccountViewSet):
         account.media_sources = []
         if request.user.has_perm("zemauth.can_modify_allowed_sources"):
             account.media_sources = helpers.get_media_sources_data(request.user, account)
+        account.deals = []
+        if request.user.has_perm("zemauth.can_see_deals_in_ui"):
+            account.deals = account.get_deals()
 
     @staticmethod
     def _handle_media_sources(request, account, data):
@@ -121,3 +128,30 @@ class AccountViewSet(restapi.account.v1.views.AccountViewSet):
             account.write_history(
                 changes, action_type=dash.constants.HistoryActionType.SETTINGS_CHANGE, user=request.user
             )
+
+    @staticmethod
+    def _handle_deals(request, account, data):
+        errors = []
+        new_deals = []
+
+        for item in data:
+            try:
+                new_deals.append(restapi.access.get_direct_deal(request.user, account.agency, item.get("id")))
+                errors.append(None)
+            except utils.exc.MissingDataError as err:
+                errors.append({"id": [str(err)]})
+
+        if any([error is not None for error in errors]):
+            raise utils.exc.ValidationError(errors={"deals": errors})
+
+        new_deals_set = set(new_deals)
+
+        deals = account.get_deals()
+        deals_set = set(deals)
+
+        to_be_removed = deals_set.difference(new_deals_set)
+        to_be_added = new_deals_set.difference(deals_set)
+
+        if to_be_removed or to_be_added:
+            account.remove_deals(list(to_be_removed))
+            account.add_deals(request, list(to_be_added))

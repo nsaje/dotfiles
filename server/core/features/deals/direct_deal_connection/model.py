@@ -3,17 +3,19 @@
 from django.conf import settings
 from django.db import models
 
-from core.common import BaseManager
-
+from . import instance
+from . import manager
 from . import queryset
 from . import validation
 
 
-class DirectDealConnection(validation.DirectDealConnectionValidatorMixin, models.Model):
+class DirectDealConnection(
+    validation.DirectDealConnectionValidatorMixin, instance.DirectDealConnectionMixin, models.Model
+):
     class Meta:
         app_label = "dash"
 
-    objects = BaseManager.from_queryset(queryset.DirectDealConnectionQuerySet)()
+    objects = manager.DirectDealConnectionManager.from_queryset(queryset.DirectDealConnectionQuerySet)()
 
     id = models.AutoField(primary_key=True)
     exclusive = models.BooleanField(
@@ -42,35 +44,3 @@ class DirectDealConnection(validation.DirectDealConnectionValidatorMixin, models
         null=True,
         blank=True,
     )
-
-    @property
-    def is_global(self):
-        if not any([self.adgroup, self.agency, self.account, self.campaign]):
-            return True
-        return False
-
-    @property
-    def level(self):
-        return (
-            self.agency
-            and "Agency"
-            or self.account
-            and "Account"
-            or self.campaign
-            and "Campaign"
-            or self.adgroup
-            and "Ad group"
-            or "Global"
-        )
-
-    def save(self, request=None, *args, **kwargs):
-        if self.is_global:
-            self.exclusive = False
-
-        if request and not request.user.is_anonymous:
-            if self.pk is None:
-                self.created_by = request.user
-            self.modified_by = request.user
-
-        self.full_clean()
-        super().save(*args, **kwargs)

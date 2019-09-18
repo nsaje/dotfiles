@@ -1,6 +1,7 @@
 import mock
 from django.urls import reverse
 
+import core.features.deals
 import core.models
 import dash.constants
 from restapi.common.views_base_test import RESTAPITest
@@ -25,6 +26,7 @@ class AccountViewSetTest(RESTAPITest):
         autoAddNewSources=None,
         salesforceUrl=None,
         mediaSources=[],
+        deals=[],
     ):
         representation = {
             "id": str(accountId) if accountId is not None else None,
@@ -44,6 +46,7 @@ class AccountViewSetTest(RESTAPITest):
             "autoAddNewSources": autoAddNewSources,
             "salesforceUrl": salesforceUrl,
             "mediaSources": mediaSources,
+            "deals": deals,
         }
         return cls.normalize(representation)
 
@@ -125,6 +128,7 @@ class AccountViewSetTest(RESTAPITest):
         self.assertEqual(resp_json["data"]["mediaSources"][0]["allowed"], True)
         self.assertEqual(resp_json["data"]["mediaSources"][1]["allowed"], True)
         self.assertEqual(resp_json["data"]["mediaSources"][2]["allowed"], True)
+        self.assertEqual(resp_json["data"]["deals"], [])
 
         self.assertEqual(
             resp_json["extra"],
@@ -213,6 +217,9 @@ class AccountViewSetTest(RESTAPITest):
         agency.allowed_sources.add(*list(sources))
         account.allowed_sources.add(*list([sources[0], sources[1], sources[2]]))
 
+        deal = magic_mixer.blend(core.features.deals.DirectDeal, agency=agency, source=sources[0])
+        magic_mixer.blend(core.features.deals.DirectDealConnection, deal=deal, account=account)
+
         r = self.client.get(reverse("restapi.account.internal:accounts_details", kwargs={"account_id": account.id}))
         resp_json = self.assertResponseValid(r)
 
@@ -286,6 +293,11 @@ class AccountViewSetTest(RESTAPITest):
                 },
             ],
         )
+        self.assertEqual(len(resp_json["data"]["deals"]), 1)
+        self.assertEqual(resp_json["data"]["deals"][0]["dealId"], deal.deal_id)
+        self.assertEqual(resp_json["data"]["deals"][0]["numOfAccounts"], 1)
+        self.assertEqual(resp_json["data"]["deals"][0]["numOfCampaigns"], 0)
+        self.assertEqual(resp_json["data"]["deals"][0]["numOfAdgroups"], 0)
 
         self.assertEqual(
             resp_json["extra"],
@@ -345,6 +357,11 @@ class AccountViewSetTest(RESTAPITest):
         agency.allowed_sources.add(*list(sources))
         account.allowed_sources.add(*list([sources[0], sources[1], sources[2]]))
 
+        deal_to_be_removed = magic_mixer.blend(core.features.deals.DirectDeal, agency=agency, source=sources[0])
+        magic_mixer.blend(core.features.deals.DirectDealConnection, deal=deal_to_be_removed, account=account)
+
+        deal_to_be_added = magic_mixer.blend(core.features.deals.DirectDeal, agency=agency, source=sources[1])
+
         r = self.client.get(reverse("restapi.account.internal:accounts_details", kwargs={"account_id": account.id}))
         resp_json = self.assertResponseValid(r)
 
@@ -353,6 +370,12 @@ class AccountViewSetTest(RESTAPITest):
         self.assertEqual(resp_json["data"]["mediaSources"][2]["allowed"], True)
         self.assertEqual(resp_json["data"]["mediaSources"][3]["allowed"], False)
         self.assertEqual(resp_json["data"]["mediaSources"][4]["allowed"], False)
+
+        self.assertEqual(len(resp_json["data"]["deals"]), 1)
+        self.assertEqual(resp_json["data"]["deals"][0]["dealId"], deal_to_be_removed.deal_id)
+        self.assertEqual(resp_json["data"]["deals"][0]["numOfAccounts"], 1)
+        self.assertEqual(resp_json["data"]["deals"][0]["numOfCampaigns"], 0)
+        self.assertEqual(resp_json["data"]["deals"][0]["numOfAdgroups"], 0)
 
         put_data = resp_json["data"].copy()
 
@@ -363,6 +386,14 @@ class AccountViewSetTest(RESTAPITest):
         put_data["mediaSources"][0]["allowed"] = False
         put_data["mediaSources"][3]["allowed"] = True
         put_data["mediaSources"][4]["allowed"] = True
+
+        put_data["deals"] = [
+            {
+                "id": str(deal_to_be_added.id),
+                "dealId": deal_to_be_added.deal_id,
+                "source": deal_to_be_added.source.bidder_slug,
+            }
+        ]
 
         r = self.client.put(
             reverse("restapi.account.internal:accounts_details", kwargs={"account_id": account.id}),
@@ -381,11 +412,19 @@ class AccountViewSetTest(RESTAPITest):
         self.assertEqual(resp_json["data"]["mediaSources"][3]["allowed"], True)
         self.assertEqual(resp_json["data"]["mediaSources"][4]["allowed"], True)
 
+        self.assertEqual(len(resp_json["data"]["deals"]), 1)
+        self.assertEqual(resp_json["data"]["deals"][0]["dealId"], deal_to_be_added.deal_id)
+        self.assertEqual(resp_json["data"]["deals"][0]["numOfAccounts"], 1)
+        self.assertEqual(resp_json["data"]["deals"][0]["numOfCampaigns"], 0)
+        self.assertEqual(resp_json["data"]["deals"][0]["numOfAdgroups"], 0)
+
     @mock.patch("utils.slack.publish")
     def test_post(self, mock_slack_publish):
         agency = magic_mixer.blend(core.models.Agency, users=[self.user])
         sources = magic_mixer.cycle(5).blend(core.models.Source, released=True, deprecated=False)
         agency.allowed_sources.add(*list([sources[0], sources[1], sources[2]]))
+
+        deal = magic_mixer.blend(core.features.deals.DirectDeal, agency=agency, source=sources[0])
 
         new_account = self.account_repr(
             agencyId=agency.id,
@@ -395,6 +434,7 @@ class AccountViewSetTest(RESTAPITest):
             autoAddNewSources=True,
             salesforceUrl="http://salesforce.com",
             mediaSources=[],
+            deals=[{"id": str(deal.id), "dealId": deal.deal_id, "source": deal.source.bidder_slug}],
         )
 
         r = self.client.post(reverse("restapi.account.internal:accounts_list"), data=new_account, format="json")
@@ -415,6 +455,12 @@ class AccountViewSetTest(RESTAPITest):
         self.assertEqual(resp_json["data"]["mediaSources"][0]["allowed"], True)
         self.assertEqual(resp_json["data"]["mediaSources"][1]["allowed"], True)
         self.assertEqual(resp_json["data"]["mediaSources"][2]["allowed"], True)
+
+        self.assertEqual(len(resp_json["data"]["deals"]), 1)
+        self.assertEqual(resp_json["data"]["deals"][0]["dealId"], deal.deal_id)
+        self.assertEqual(resp_json["data"]["deals"][0]["numOfAccounts"], 1)
+        self.assertEqual(resp_json["data"]["deals"][0]["numOfCampaigns"], 0)
+        self.assertEqual(resp_json["data"]["deals"][0]["numOfAdgroups"], 0)
 
     @mock.patch("restapi.account.internal.helpers.get_non_removable_sources_ids")
     @mock.patch("utils.slack.publish")
@@ -466,3 +512,49 @@ class AccountViewSetTest(RESTAPITest):
             ),
             r["details"]["mediaSources"][0],
         )
+
+    def test_put_deals_error(self):
+        agency = magic_mixer.blend(core.models.Agency, users=[self.user])
+        account = magic_mixer.blend(core.models.Account, agency=agency, name="Generic account", users=[self.user])
+        account.settings.update_unsafe(
+            None,
+            name=account.name,
+            account_type=dash.constants.AccountType.ACTIVATED,
+            default_account_manager=self.user,
+            default_sales_representative=None,
+            default_cs_representative=None,
+            ob_representative=None,
+            auto_add_new_sources=True,
+            salesforce_url="http://salesforce.com",
+        )
+
+        source = magic_mixer.blend(core.models.Source, released=True, deprecated=False)
+        deal_to_be_added = magic_mixer.blend(core.features.deals.DirectDeal, agency=agency, source=source)
+        deal_to_be_added_invalid = {"id": str(12345), "dealId": "DEAL_12345", "source": source.bidder_slug}
+
+        r = self.client.get(reverse("restapi.account.internal:accounts_details", kwargs={"account_id": account.id}))
+        resp_json = self.assertResponseValid(r)
+
+        put_data = resp_json["data"].copy()
+
+        put_data["deals"] = [
+            {
+                "id": str(deal_to_be_added.id),
+                "dealId": deal_to_be_added.deal_id,
+                "source": deal_to_be_added.source.bidder_slug,
+            },
+            {
+                "id": deal_to_be_added_invalid.get("id"),
+                "dealId": deal_to_be_added_invalid.get("dealId"),
+                "source": deal_to_be_added_invalid.get("source"),
+            },
+        ]
+
+        r = self.client.put(
+            reverse("restapi.account.internal:accounts_details", kwargs={"account_id": account.id}),
+            data=put_data,
+            format="json",
+        )
+        r = self.assertResponseError(r, "ValidationError")
+
+        self.assertIn("Deal does not exist", r["details"]["deals"][1]["id"])

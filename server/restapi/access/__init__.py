@@ -36,7 +36,7 @@ def get_agency(user, agency_id):
         raise utils.exc.MissingDataError("Agency does not exist")
 
 
-def get_account(user, account_id, sources=None, select_related_users=False):
+def get_account(user, account_id, sources=None, select_related_users=False) -> core.models.Account:
     try:
         account = core.models.Account.objects.all().filter_by_user(user).select_related("settings", "agency")
 
