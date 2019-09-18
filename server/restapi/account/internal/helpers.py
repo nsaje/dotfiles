@@ -36,6 +36,9 @@ def get_extra_data(user, account):
     if user.has_perm("zemauth.can_see_deals_in_ui"):
         extra["deals"] = get_deals(account)
 
+    if user.has_perm("zemauth.can_modify_allowed_sources"):
+        extra["available_media_sources"] = get_available_sources(user, account.agency)
+
     return extra
 
 
@@ -90,45 +93,21 @@ def get_hacks(account):
     ).to_dict_list() + dash.features.custom_flags.helpers.get_all_custom_flags_on_account(account)
 
 
-def get_media_sources_data(user, account):
-    media_sources = []
-
-    all_sources_queryset = _get_all_sources_queryset(user, account.agency)
-    all_sources = list(all_sources_queryset.values("id", "name", "released", "deprecated"))
-    account_allowed_sources_ids_set = (
-        set(account.allowed_sources.values_list("id", flat=True))
-        if account.id is not None
-        else set(all_sources_queryset.values_list("id", flat=True))
-    )
-    for source in all_sources:
-        if source["id"] not in account_allowed_sources_ids_set and source["deprecated"]:
-            continue
-        source["allowed"] = source["id"] in account_allowed_sources_ids_set
-        media_sources.append(source)
-
-    return media_sources
-
-
-def get_all_sources(user, agency):
-    all_sources_queryset = _get_all_sources_queryset(user, agency)
-    return list(all_sources_queryset)
-
-
-def get_allowed_sources(user, account):
-    allowed_sources_queryset = account.allowed_sources.all()
+def get_available_sources(user, agency):
+    available_sources_queryset = core.models.Source.objects.all()
+    if agency is not None and agency.allowed_sources.count() > 0:
+        available_sources_queryset = agency.allowed_sources.all()
     if not user.has_perm("zemauth.can_see_all_available_sources"):
-        allowed_sources_queryset = allowed_sources_queryset.filter(released=True)
-    return list(allowed_sources_queryset)
+        available_sources_queryset = available_sources_queryset.filter(released=True)
+    return list(available_sources_queryset)
 
 
-def get_new_allowed_sources(sources, media_sources_data):
-    allowed_sources = []
-    media_sources_data_dict = dict((x["id"], x) for x in media_sources_data)
-    for source in sources:
-        media_source = media_sources_data_dict.get(source.id)
-        if media_source is not None and media_source.get("allowed", False):
-            allowed_sources.append(source)
-    return allowed_sources
+def get_allowed_sources(account):
+    if account.id is not None:
+        return list(account.allowed_sources.all())
+    if account.agency and account.agency.allowed_sources.count() > 0:
+        return list(account.agency.allowed_sources.all())
+    return list(core.models.Source.objects.filter(released=True, deprecated=False))
 
 
 def get_non_removable_sources_ids(account, sources_to_be_removed):
@@ -156,12 +135,3 @@ def get_changes_for_sources(added_sources, removed_sources):
         sources_text.append(removed_sources_text)
 
     return ", ".join(sources_text)
-
-
-def _get_all_sources_queryset(user, agency):
-    all_sources_queryset = core.models.Source.objects.all()
-    if agency is not None and agency.allowed_sources.count() > 0:
-        all_sources_queryset = agency.allowed_sources.all()
-    if not user.has_perm("zemauth.can_see_all_available_sources"):
-        all_sources_queryset = all_sources_queryset.filter(released=True)
-    return all_sources_queryset

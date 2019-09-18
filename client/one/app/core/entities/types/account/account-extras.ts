@@ -2,6 +2,7 @@ import {AccountAgency} from './account-agency';
 import {Hack} from '../common/hack';
 import {Deal} from '../common/deal';
 import {User} from '../common/user';
+import {AccountMediaSource} from './account-media-source';
 
 export interface AccountExtras {
     archived: boolean;
@@ -15,4 +16,5 @@ export interface AccountExtras {
     obRepresentatives: User[];
     hacks: Hack[];
     deals: Deal[];
+    availableMediaSources: AccountMediaSource[];
 }

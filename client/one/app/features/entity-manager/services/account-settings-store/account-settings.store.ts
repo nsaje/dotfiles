@@ -224,32 +224,24 @@ export class AccountSettingsStore extends Store<AccountSettingsStoreState>
     }
 
     addToAllowedMediaSources(mediaSourcesIds: string[]) {
-        const mediaSources = this.state.entity.mediaSources.map(item => {
-            if (mediaSourcesIds.indexOf(item.id) !== -1) {
-                return {
-                    ...item,
-                    allowed: true,
-                };
-            }
-            return item;
-        });
+        const mediaSources = this.state.extras.availableMediaSources.filter(
+            item => mediaSourcesIds.indexOf(item.id) !== -1
+        );
+        const allowedMediaSources = [
+            ...this.state.entity.allowedMediaSources,
+            ...mediaSources,
+        ];
 
-        this.patchState(mediaSources, 'entity', 'mediaSources');
+        this.patchState(allowedMediaSources, 'entity', 'allowedMediaSources');
         this.validateEntity();
     }
 
     removeFromAllowedMediaSources(mediaSourcesIds: string[]) {
-        const mediaSources = this.state.entity.mediaSources.map(item => {
-            if (mediaSourcesIds.indexOf(item.id) !== -1) {
-                return {
-                    ...item,
-                    allowed: false,
-                };
-            }
-            return item;
-        });
+        const allowedMediaSources = this.state.entity.allowedMediaSources.filter(
+            item => mediaSourcesIds.indexOf(item.id) === -1
+        );
 
-        this.patchState(mediaSources, 'entity', 'mediaSources');
+        this.patchState(allowedMediaSources, 'entity', 'allowedMediaSources');
         this.validateEntity();
     }
 

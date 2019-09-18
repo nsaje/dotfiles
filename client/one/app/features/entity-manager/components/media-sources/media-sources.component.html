@@ -3,14 +3,11 @@
         <label class="zem-media-sources__item">Available</label>
         <select
             class="zem-multiselect zem-media-sources__multiselect custom-scroller zem-media-sources__item"
-            [class.zem-media-sources__multiselect--error]="
-                mediaSourcesErrors && mediaSourcesErrors.length > 0
-            "
             [(ngModel)]="selectedAvailableMediaSources"
             multiple=""
         >
             <option
-                *ngFor="let mediaSource of availableMediaSources"
+                *ngFor="let mediaSource of formattedAvailableMediaSources"
                 value="{{ mediaSource.id }}"
                 >{{ getMediaSourceText(mediaSource) }}</option
             >
@@ -29,13 +26,14 @@
         <select
             class="zem-multiselect zem-media-sources__multiselect custom-scroller zem-media-sources__item"
             [class.zem-media-sources__multiselect--error]="
-                mediaSourcesErrors && mediaSourcesErrors.length > 0
+                allowedMediaSourcesErrors &&
+                allowedMediaSourcesErrors.length > 0
             "
             [(ngModel)]="selectedAllowedMediaSources"
             multiple=""
         >
             <option
-                *ngFor="let mediaSource of allowedMediaSources"
+                *ngFor="let mediaSource of formattedAllowedMediaSources"
                 value="{{ mediaSource.id }}"
                 >{{ getMediaSourceText(mediaSource) }}</option
             >
@@ -54,7 +52,7 @@
 </div>
 <div
     class="zem-media-sources__item zem-message zem-message--error"
-    *ngFor="let error of mediaSourcesErrors"
+    *ngFor="let error of allowedMediaSourcesErrors"
 >
     {{ error }}
 </div>

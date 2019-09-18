@@ -3,5 +3,4 @@ export interface AccountMediaSource {
     name: string;
     released: boolean;
     deprecated: boolean;
-    allowed: boolean;
 }

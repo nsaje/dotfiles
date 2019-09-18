@@ -48,8 +48,10 @@ class AccountViewSet(restapi.account.v1.views.AccountViewSet):
 
         with transaction.atomic():
             self._update_account(request, account, settings)
-            if "media_sources" in serializer.validated_data.keys():
-                self._handle_media_sources(request, account, serializer.validated_data.get("media_sources", []))
+            if "allowed_media_sources" in serializer.validated_data.keys():
+                self._handle_allowed_media_sources(
+                    request, account, serializer.validated_data.get("allowed_media_sources", [])
+                )
             if "deals" in serializer.validated_data.keys():
                 self._handle_deals(request, account, serializer.validated_data.get("deals", []))
 
@@ -74,7 +76,9 @@ class AccountViewSet(restapi.account.v1.views.AccountViewSet):
             )
             settings = serializer.validated_data.get("settings")
             self._update_account(request, new_account, settings)
-            self._handle_media_sources(request, new_account, serializer.validated_data.get("media_sources", []))
+            self._handle_allowed_media_sources(
+                request, new_account, serializer.validated_data.get("allowed_media_sources", [])
+            )
             self._handle_deals(request, new_account, serializer.validated_data.get("deals", []))
 
         self._augment_account(request, new_account)
@@ -82,27 +86,29 @@ class AccountViewSet(restapi.account.v1.views.AccountViewSet):
 
     @staticmethod
     def _augment_account(request, account):
-        account.media_sources = []
+        account.allowed_media_sources = []
         if request.user.has_perm("zemauth.can_modify_allowed_sources"):
-            account.media_sources = helpers.get_media_sources_data(request.user, account)
+            account.allowed_media_sources = helpers.get_allowed_sources(account)
         account.deals = []
         if request.user.has_perm("zemauth.can_see_deals_in_ui"):
             account.deals = account.get_deals()
 
     @staticmethod
-    def _handle_media_sources(request, account, data):
-        if len(data) == 0:
-            return
+    def _handle_allowed_media_sources(request, account, data):
+        allowed_sources = helpers.get_allowed_sources(account)
+        available_sources = helpers.get_available_sources(request.user, account.agency)
 
-        all_sources = helpers.get_all_sources(request.user, account.agency)
-        current_allowed_sources = helpers.get_allowed_sources(request.user, account)
-        new_allowed_sources = helpers.get_new_allowed_sources(all_sources, data)
+        new_allowed_sources = []
+        data_dict = dict((x["id"], x) for x in data)
+        for available_source in available_sources:
+            if data_dict.get(available_source.id) is not None:
+                new_allowed_sources.append(available_source)
 
-        current_allowed_sources_set = set(current_allowed_sources)
+        allowed_sources_set = set(allowed_sources)
         new_allowed_sources_set = set(new_allowed_sources)
 
-        to_be_removed = current_allowed_sources_set.difference(new_allowed_sources_set)
-        to_be_added = new_allowed_sources_set.difference(current_allowed_sources_set)
+        to_be_removed = allowed_sources_set.difference(new_allowed_sources_set)
+        to_be_added = new_allowed_sources_set.difference(allowed_sources_set)
 
         non_removable_sources_ids = helpers.get_non_removable_sources_ids(account, to_be_removed)
         if len(non_removable_sources_ids) > 0:
@@ -119,7 +125,7 @@ class AccountViewSet(restapi.account.v1.views.AccountViewSet):
                 error_message = "Can't save changes because media source {} is still used on this account.".format(
                     source_names[0]
                 )
-            raise utils.exc.ValidationError(errors={"media_sources": [str(error_message)]})
+            raise utils.exc.ValidationError(errors={"allowed_media_sources": [str(error_message)]})
 
         if to_be_added or to_be_removed:
             changes = helpers.get_changes_for_sources(to_be_added, to_be_removed)

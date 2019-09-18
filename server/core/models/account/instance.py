@@ -134,7 +134,9 @@ class AccountInstanceMixin:
 
     def get_deals(self):
         return list(
-            core.features.deals.DirectDeal.objects.filter(directdealconnection__account__id=self.id)
+            core.features.deals.DirectDeal.objects.filter(
+                directdealconnection__account__isnull=False, directdealconnection__account__id=self.id
+            )
             .select_related("source")
             .distinct()
         )

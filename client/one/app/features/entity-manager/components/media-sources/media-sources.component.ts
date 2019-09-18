@@ -11,6 +11,7 @@ import {
 } from '@angular/core';
 import {AccountMediaSource} from '../../../../core/entities/types/account/account-media-source';
 import {FieldErrors} from '../../../../shared/types/field-errors';
+import * as clone from 'clone';
 
 @Component({
     selector: 'zem-media-sources',
@@ -19,9 +20,11 @@ import {FieldErrors} from '../../../../shared/types/field-errors';
 })
 export class MediaSourcesComponent implements OnChanges {
     @Input()
-    mediaSources: AccountMediaSource[];
+    allowedMediaSources: AccountMediaSource[];
     @Input()
-    mediaSourcesErrors: FieldErrors;
+    availableMediaSources: AccountMediaSource[];
+    @Input()
+    allowedMediaSourcesErrors: FieldErrors;
     @Output()
     mediaSourcesAddToAllowed = new EventEmitter<string[]>();
     @Output()
@@ -30,19 +33,42 @@ export class MediaSourcesComponent implements OnChanges {
     selectedAvailableMediaSources: string[] = [];
     selectedAllowedMediaSources: string[] = [];
 
-    availableMediaSources: AccountMediaSource[] = [];
-    allowedMediaSources: AccountMediaSource[] = [];
+    formattedAvailableMediaSources: AccountMediaSource[] = [];
+    formattedAllowedMediaSources: AccountMediaSource[] = [];
 
     ngOnChanges(changes: SimpleChanges): void {
-        if (changes.mediaSources) {
+        if (changes.allowedMediaSources) {
             this.selectedAvailableMediaSources = [];
-            this.availableMediaSources = this.mediaSources.filter(
-                item => !item.allowed
-            );
+            this.formattedAvailableMediaSources = clone(
+                this.availableMediaSources
+            )
+                .filter(
+                    item =>
+                        this.allowedMediaSources
+                            .map(x => x.id)
+                            .indexOf(item.id) === -1
+                )
+                .sort((a, b) => {
+                    if (a.name < b.name) {
+                        return -1;
+                    }
+                    if (a.name > b.name) {
+                        return 1;
+                    }
+                    return 0;
+                });
             this.selectedAllowedMediaSources = [];
-            this.allowedMediaSources = this.mediaSources.filter(
-                item => item.allowed
-            );
+            this.formattedAllowedMediaSources = clone(
+                this.allowedMediaSources
+            ).sort((a, b) => {
+                if (a.name < b.name) {
+                    return -1;
+                }
+                if (a.name > b.name) {
+                    return 1;
+                }
+                return 0;
+            });
         }
     }
 

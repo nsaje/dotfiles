@@ -12,4 +12,5 @@ export const accountExtrasMock: AccountExtras = {
     obRepresentatives: [],
     hacks: [],
     deals: [],
+    availableMediaSources: [],
 };

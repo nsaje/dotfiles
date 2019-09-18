@@ -260,8 +260,13 @@
                     </div>
                     <zem-media-sources
                         class="zem-media-sources zem-settings-section__item"
-                        [mediaSources]="state.entity.mediaSources"
-                        [mediaSourcesErrors]="state.fieldsErrors.mediaSources"
+                        [allowedMediaSources]="state.entity.allowedMediaSources"
+                        [availableMediaSources]="
+                            state.extras.availableMediaSources
+                        "
+                        [allowedMediaSourcesErrors]="
+                            state.fieldsErrors.allowedMediaSources
+                        "
                         (mediaSourcesAddToAllowed)="
                             store.addToAllowedMediaSources($event)
                         "

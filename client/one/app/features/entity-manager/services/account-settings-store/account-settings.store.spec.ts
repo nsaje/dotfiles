@@ -417,33 +417,41 @@ describe('AccountSettingsStore', () => {
             .and.returnValue()
             .calls.reset();
 
-        const mockedMediaSources: AccountMediaSource[] = [
+        const mockedAvailableMediaSources: AccountMediaSource[] = [
             {
                 id: '1',
                 name: 'Source 1',
                 released: true,
                 deprecated: false,
-                allowed: false,
             },
             {
                 id: '2',
                 name: 'Source 2',
                 released: true,
                 deprecated: false,
-                allowed: false,
             },
         ];
+        const mockedAllowedMediaSources: AccountMediaSource[] = [];
 
-        store.patchState(mockedMediaSources, 'entity', 'mediaSources');
-        expect(store.state.entity.mediaSources).toEqual(mockedMediaSources);
+        store.patchState(
+            mockedAvailableMediaSources,
+            'extras',
+            'availableMediaSources'
+        );
+        store.patchState(
+            mockedAllowedMediaSources,
+            'entity',
+            'allowedMediaSources'
+        );
+        expect(store.state.extras.availableMediaSources).toEqual(
+            mockedAvailableMediaSources
+        );
+        expect(store.state.entity.allowedMediaSources).toEqual(
+            mockedAllowedMediaSources
+        );
         store.addToAllowedMediaSources(['1', '2']);
-        expect(store.state.entity.mediaSources).toEqual(
-            mockedMediaSources.map(item => {
-                return {
-                    ...item,
-                    allowed: true,
-                };
-            })
+        expect(store.state.entity.allowedMediaSources).toEqual(
+            mockedAvailableMediaSources
         );
     });
 
@@ -452,33 +460,52 @@ describe('AccountSettingsStore', () => {
             .and.returnValue()
             .calls.reset();
 
-        const mockedMediaSources: AccountMediaSource[] = [
+        const mockedAvailableMediaSources: AccountMediaSource[] = [
             {
                 id: '1',
                 name: 'Source 1',
                 released: true,
                 deprecated: false,
-                allowed: true,
             },
             {
                 id: '2',
                 name: 'Source 2',
                 released: true,
                 deprecated: false,
-                allowed: true,
+            },
+        ];
+        const mockedAllowedMediaSources: AccountMediaSource[] = [
+            {
+                id: '1',
+                name: 'Source 1',
+                released: true,
+                deprecated: false,
+            },
+            {
+                id: '2',
+                name: 'Source 2',
+                released: true,
+                deprecated: false,
             },
         ];
 
-        store.patchState(mockedMediaSources, 'entity', 'mediaSources');
-        expect(store.state.entity.mediaSources).toEqual(mockedMediaSources);
-        store.removeFromAllowedMediaSources(['1', '2']);
-        expect(store.state.entity.mediaSources).toEqual(
-            mockedMediaSources.map(item => {
-                return {
-                    ...item,
-                    allowed: false,
-                };
-            })
+        store.patchState(
+            mockedAvailableMediaSources,
+            'extras',
+            'availableMediaSources'
         );
+        store.patchState(
+            mockedAllowedMediaSources,
+            'entity',
+            'allowedMediaSources'
+        );
+        expect(store.state.extras.availableMediaSources).toEqual(
+            mockedAvailableMediaSources
+        );
+        expect(store.state.entity.allowedMediaSources).toEqual(
+            mockedAllowedMediaSources
+        );
+        store.removeFromAllowedMediaSources(['1', '2']);
+        expect(store.state.entity.allowedMediaSources).toEqual([]);
     });
 });

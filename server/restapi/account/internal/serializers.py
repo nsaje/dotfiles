@@ -11,6 +11,13 @@ import restapi.serializers.user
 import zemauth.models
 
 
+class AccountMediaSourceSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
+    id = restapi.serializers.fields.IdField()
+    name = restapi.serializers.fields.PlainCharField()
+    released = rest_framework.serializers.BooleanField(default=False)
+    deprecated = rest_framework.serializers.BooleanField(default=False)
+
+
 class ExtraDataAgencySerializer(restapi.serializers.base.RESTAPIBaseSerializer):
     id = restapi.serializers.fields.IdField(required=False)
     name = restapi.serializers.fields.PlainCharField(required=False)
@@ -46,14 +53,9 @@ class ExtraDataSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
     deals = rest_framework.serializers.ListField(
         child=restapi.serializers.deals.DealSerializer(), default=[], allow_empty=True
     )
-
-
-class AccountMediaSourceSerializer(restapi.serializers.base.RESTAPIBaseSerializer):
-    id = restapi.serializers.fields.IdField()
-    name = restapi.serializers.fields.PlainCharField()
-    released = rest_framework.serializers.BooleanField(default=False)
-    deprecated = rest_framework.serializers.BooleanField(default=False)
-    allowed = rest_framework.serializers.BooleanField(default=False)
+    available_media_sources = rest_framework.serializers.ListField(
+        child=AccountMediaSourceSerializer(), default=[], allow_empty=True
+    )
 
 
 class AccountSerializer(restapi.account.v1.serializers.AccountSerializer):
@@ -67,7 +69,7 @@ class AccountSerializer(restapi.account.v1.serializers.AccountSerializer):
             "ob_representative": "zemauth.can_set_account_ob_representative",
             "auto_add_new_sources": "zemauth.can_set_auto_add_new_sources",
             "salesforce_url": "zemauth.can_see_salesforce_url",
-            "media_sources": "zemauth.can_modify_allowed_sources",
+            "allowed_media_sources": "zemauth.can_modify_allowed_sources",
             "deals": "zemauth.can_see_deals_in_ui",
         }
 
@@ -95,7 +97,7 @@ class AccountSerializer(restapi.account.v1.serializers.AccountSerializer):
     salesforce_url = restapi.serializers.fields.PlainCharField(
         source="settings.salesforce_url", max_length=255, required=False, allow_null=True, allow_blank=True
     )
-    media_sources = rest_framework.serializers.ListField(
+    allowed_media_sources = rest_framework.serializers.ListField(
         child=AccountMediaSourceSerializer(), default=[], allow_empty=True
     )
     deals = rest_framework.serializers.ListSerializer(

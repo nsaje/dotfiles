@@ -17,5 +17,5 @@ export interface Account {
     salesforceUrl: string;
     archived: boolean;
     targeting: AccountTargeting;
-    mediaSources: AccountMediaSource[];
+    allowedMediaSources: AccountMediaSource[];
 }

@@ -24,7 +24,7 @@ export class AccountSettingsStoreState {
                 excluded: [],
             },
         },
-        mediaSources: [],
+        allowedMediaSources: [],
     };
     extras: AccountExtras = {
         archived: null,
@@ -38,6 +38,7 @@ export class AccountSettingsStoreState {
         obRepresentatives: [],
         hacks: [],
         deals: [],
+        availableMediaSources: [],
     };
     fieldsErrors = new AccountSettingsStoreFieldsErrorsState();
     requests = {

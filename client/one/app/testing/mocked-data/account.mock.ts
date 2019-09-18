@@ -20,5 +20,5 @@ export const accountMock: Account = {
             excluded: [],
         },
     },
-    mediaSources: [],
+    allowedMediaSources: [],
 };
