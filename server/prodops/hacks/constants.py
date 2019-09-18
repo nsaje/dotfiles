@@ -19,7 +19,7 @@ AD_GROUP_SETTINGS_CREATE_HACKS_PER_AGENCY = {
         "delivery_type": dash.constants.AdGroupDeliveryType.ACCELERATED,
     },
     AGENCY_AMMET_ID: {"target_regions": ["AU"], "exclusion_target_regions": []},
-    AGENCY_MEDIAMOND_ID: {"tracking_code": "utm_source=Mediamond&utm_medium=referral"},
+    AGENCY_MEDIAMOND_ID: {"tracking_code": "utm_source=Mediamond&utm_medium=referral", "target_regions": ["IT"]},
     AGENCY_NEWSCORP_ID: {
         "delivery_type": dash.constants.AdGroupDeliveryType.ACCELERATED,
         "target_regions": ["AU"],
