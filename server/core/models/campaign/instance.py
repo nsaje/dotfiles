@@ -107,6 +107,25 @@ class CampaignInstanceMixin:
             | Q(agency=None, account=None, campaign=None, adgroup=None)
         )
 
+    def get_deals(self):
+        return list(
+            core.features.deals.DirectDeal.objects.filter(
+                directdealconnection__campaign__isnull=False, directdealconnection__campaign__id=self.id
+            )
+            .select_related("source")
+            .distinct()
+        )
+
+    def clear_deals(self):
+        self.directdealconnection_set.all().delete()
+
+    def remove_deals(self, deals):
+        self.directdealconnection_set.filter(deal__id__in=[x.id for x in deals]).delete()
+
+    def add_deals(self, request, deals):
+        for deal in deals:
+            core.features.deals.DirectDealConnection.objects.create(request, deal, campaign=self)
+
     def set_real_time_campaign_stop(self, request=None, is_enabled=False):
         self.real_time_campaign_stop = is_enabled
         self.save(request)

@@ -61,6 +61,8 @@ class CampaignViewSet(restapi.campaign.v1.views.CampaignViewSet):
                 self._handle_campaign_goals(request, campaign, settings.get("goals", []))
             if "budgets" in settings.keys():
                 self._handle_campaign_budgets(request, campaign, settings.get("budgets", []))
+            if "deals" in settings.keys():
+                self._handle_deals(request, campaign, settings.get("deals", []))
 
         self._augment_campaign(request, campaign)
         return self.response_ok(self.serializer(campaign.settings, context={"request": request}).data)
@@ -78,6 +80,7 @@ class CampaignViewSet(restapi.campaign.v1.views.CampaignViewSet):
             self._update_campaign(request, new_campaign, settings)
             self._handle_campaign_goals(request, new_campaign, settings.get("goals", []))
             self._handle_campaign_budgets(request, new_campaign, settings.get("budgets", []))
+            self._handle_deals(request, new_campaign, settings.get("deals", []))
 
             prodops.hacks.apply_campaign_create_hacks(request, new_campaign)
 
@@ -95,6 +98,9 @@ class CampaignViewSet(restapi.campaign.v1.views.CampaignViewSet):
         campaign.settings.budgets = []
         if request.user.has_perm("zemauth.can_see_new_budgets"):
             campaign.settings.budgets = self._get_campaign_budgets(campaign)
+        campaign.settings.deals = []
+        if request.user.has_perm("zemauth.can_see_deals_in_ui"):
+            campaign.settings.deals = campaign.get_deals()
 
     def _handle_campaign_goals(self, request, campaign, data):
         if len(data) <= 0:
@@ -326,3 +332,30 @@ class CampaignViewSet(restapi.campaign.v1.views.CampaignViewSet):
 
         except core.features.bcm.exceptions.CanNotChangeBudget as err:
             return {"state": [str(err)]}
+
+    @staticmethod
+    def _handle_deals(request, campaign, data):
+        errors = []
+        new_deals = []
+
+        for item in data:
+            try:
+                new_deals.append(restapi.access.get_direct_deal(request.user, campaign.account.agency, item.get("id")))
+                errors.append(None)
+            except utils.exc.MissingDataError as err:
+                errors.append({"id": [str(err)]})
+
+        if any([error is not None for error in errors]):
+            raise utils.exc.ValidationError(errors={"deals": errors})
+
+        new_deals_set = set(new_deals)
+
+        deals = campaign.get_deals()
+        deals_set = set(deals)
+
+        to_be_removed = deals_set.difference(new_deals_set)
+        to_be_added = new_deals_set.difference(deals_set)
+
+        if to_be_removed or to_be_added:
+            campaign.remove_deals(list(to_be_removed))
+            campaign.add_deals(request, list(to_be_added))

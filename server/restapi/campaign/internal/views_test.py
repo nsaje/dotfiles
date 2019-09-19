@@ -38,6 +38,7 @@ class CampaignViewSetTest(RESTAPITest):
         campaign_manager=None,
         goals=[],
         budgets=[],
+        deals=[],
     ):
         representation = {
             "id": str(id) if id is not None else None,
@@ -66,6 +67,7 @@ class CampaignViewSetTest(RESTAPITest):
             "campaignManager": campaign_manager,
             "goals": goals,
             "budgets": budgets,
+            "deals": deals,
         }
         return cls.normalize(representation)
 
@@ -227,6 +229,8 @@ class CampaignViewSetTest(RESTAPITest):
         self.assertEqual(resp_json["data"]["campaignManager"], str(self.user.id))
         self.assertEqual(resp_json["data"]["goals"], [])
         self.assertEqual(resp_json["data"]["budgets"], [])
+        self.assertEqual(resp_json["data"]["deals"], [])
+
         self.assertEqual(
             resp_json["extra"],
             {
@@ -320,6 +324,10 @@ class CampaignViewSetTest(RESTAPITest):
             margin=decimal.Decimal("0.2500"),
         )
 
+        source = magic_mixer.blend(core.models.Source, released=True, deprecated=False)
+        deal = magic_mixer.blend(core.features.deals.DirectDeal, agency=agency, source=source)
+        magic_mixer.blend(core.features.deals.DirectDealConnection, deal=deal, campaign=campaign)
+
         mock_get_extra_data.return_value = {
             "archived": False,
             "language": dash.constants.Language.ENGLISH,
@@ -408,6 +416,12 @@ class CampaignViewSetTest(RESTAPITest):
                 )
             ],
         )
+        self.assertEqual(len(resp_json["data"]["deals"]), 1)
+        self.assertEqual(resp_json["data"]["deals"][0]["dealId"], deal.deal_id)
+        self.assertEqual(resp_json["data"]["deals"][0]["numOfAccounts"], 0)
+        self.assertEqual(resp_json["data"]["deals"][0]["numOfCampaigns"], 1)
+        self.assertEqual(resp_json["data"]["deals"][0]["numOfAdgroups"], 0)
+
         self.assertEqual(
             resp_json["extra"],
             {
@@ -490,6 +504,9 @@ class CampaignViewSetTest(RESTAPITest):
             status=dash.constants.CreditLineItemStatus.SIGNED,
         )
 
+        source = magic_mixer.blend(core.models.Source, released=True, deprecated=False)
+        deal = magic_mixer.blend(core.features.deals.DirectDeal, agency=agency, source=source)
+
         campaign_goal_time_on_site = self.campaign_goal_repr(
             type=dash.constants.CampaignGoalKPI.TIME_ON_SITE, primary=True
         )
@@ -511,6 +528,7 @@ class CampaignViewSetTest(RESTAPITest):
             campaign_manager=self.user.id,
             goals=[campaign_goal_time_on_site, campaign_goal_new_unique_visitors],
             budgets=[campaign_budget],
+            deals=[{"id": str(deal.id), "dealId": deal.deal_id, "source": deal.source.bidder_slug}],
         )
 
         r = self.client.post(reverse("restapi.campaign.internal:campaigns_list"), data=new_campaign, format="json")
@@ -540,6 +558,11 @@ class CampaignViewSetTest(RESTAPITest):
         self.assertEqual(resp_json["data"]["budgets"][0]["creditId"], campaign_budget["creditId"])
         self.assertEqual(resp_json["data"]["budgets"][0]["amount"], campaign_budget["amount"])
         self.assertEqual(resp_json["data"]["budgets"][0]["comment"], campaign_budget["comment"])
+        self.assertEqual(len(resp_json["data"]["deals"]), 1)
+        self.assertEqual(resp_json["data"]["deals"][0]["dealId"], deal.deal_id)
+        self.assertEqual(resp_json["data"]["deals"][0]["numOfAccounts"], 0)
+        self.assertEqual(resp_json["data"]["deals"][0]["numOfCampaigns"], 1)
+        self.assertEqual(resp_json["data"]["deals"][0]["numOfAdgroups"], 0)
 
     def test_post_campaign_manager_error(self):
         agency = magic_mixer.blend(core.models.Agency)
@@ -622,11 +645,18 @@ class CampaignViewSetTest(RESTAPITest):
             comment="PUT Campaign Budget",
         )
 
+        source = magic_mixer.blend(core.models.Source, released=True, deprecated=False)
+        deal_to_be_removed = magic_mixer.blend(core.features.deals.DirectDeal, agency=agency, source=source)
+        magic_mixer.blend(core.features.deals.DirectDealConnection, deal=deal_to_be_removed, campaign=campaign)
+
+        deal_to_be_added = magic_mixer.blend(core.features.deals.DirectDeal, agency=agency, source=source)
+
         r = self.client.get(reverse("restapi.campaign.internal:campaigns_details", kwargs={"campaign_id": campaign.id}))
         resp_json = self.assertResponseValid(r)
 
         self.assertEqual(len(resp_json["data"]["goals"]), 1)
         self.assertEqual(len(resp_json["data"]["budgets"]), 1)
+        self.assertEqual(len(resp_json["data"]["deals"]), 1)
 
         put_data = resp_json["data"].copy()
 
@@ -645,6 +675,14 @@ class CampaignViewSetTest(RESTAPITest):
 
         updated_amount = active_budget.amount + 100
         put_data["budgets"][0]["amount"] = str(updated_amount)
+
+        put_data["deals"] = [
+            {
+                "id": str(deal_to_be_added.id),
+                "dealId": deal_to_be_added.deal_id,
+                "source": deal_to_be_added.source.bidder_slug,
+            }
+        ]
 
         r = self.client.put(
             reverse("restapi.campaign.internal:campaigns_details", kwargs={"campaign_id": campaign.id}),
@@ -677,3 +715,9 @@ class CampaignViewSetTest(RESTAPITest):
         self.assertEqual(resp_json["data"]["goals"][2]["primary"], False)
 
         self.assertEqual(resp_json["data"]["budgets"][0]["amount"], str(updated_amount))
+
+        self.assertEqual(len(resp_json["data"]["deals"]), 1)
+        self.assertEqual(resp_json["data"]["deals"][0]["dealId"], deal_to_be_added.deal_id)
+        self.assertEqual(resp_json["data"]["deals"][0]["numOfAccounts"], 0)
+        self.assertEqual(resp_json["data"]["deals"][0]["numOfCampaigns"], 1)
+        self.assertEqual(resp_json["data"]["deals"][0]["numOfAdgroups"], 0)

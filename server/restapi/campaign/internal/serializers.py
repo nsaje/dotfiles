@@ -7,6 +7,7 @@ import restapi.accountcredit.internal.serializers
 import restapi.campaign.v1.serializers
 import restapi.campaignbudget.internal.serializers
 import restapi.campaigngoal.serializers
+import restapi.directdeal.internal.serializers
 import restapi.serializers.base
 import restapi.serializers.deals
 import restapi.serializers.fields
@@ -74,6 +75,7 @@ class CampaignSerializer(restapi.campaign.v1.serializers.CampaignSerializer):
             "campaign_manager": "zemauth.can_modify_campaign_manager",
             "goals": "zemauth.can_see_campaign_goals",
             "budgets": "zemauth.can_see_new_budgets",
+            "deals": "zemauth.can_see_deals_in_ui",
         }
 
     campaign_manager = restapi.serializers.fields.IdField(required=False)
@@ -82,6 +84,9 @@ class CampaignSerializer(restapi.campaign.v1.serializers.CampaignSerializer):
     )
     budgets = rest_framework.serializers.ListSerializer(
         child=restapi.campaignbudget.internal.serializers.CampaignBudgetSerializer(), default=[], allow_empty=True
+    )
+    deals = rest_framework.serializers.ListSerializer(
+        child=restapi.directdeal.internal.serializers.DirectDealSerializer(), default=[], allow_empty=True
     )
 
     def validate_campaign_manager(self, value):
