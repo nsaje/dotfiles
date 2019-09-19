@@ -52,7 +52,12 @@ def _push_to_gateway_periodically():
 def _push_to_gateway():
     gateway_addr = _params["gateway_addr"]
     job = _params["job"]
+    grouping_key = None
+    if job:
+        grouping_key = {"job": job}  # makes sure that all the metrics in the pushgateway for this job are overwritten
     try:
-        prometheus_client.pushadd_to_gateway(gateway_addr, job=job, registry=registry.get_registry())
+        prometheus_client.push_to_gateway(
+            gateway_addr, job=job, registry=registry.get_registry(), grouping_key=grouping_key
+        )
     except Exception:
         logger.exception("Exception pushing metrics to Prometheus push gateway")
