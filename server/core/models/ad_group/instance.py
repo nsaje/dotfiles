@@ -245,6 +245,25 @@ class AdGroupInstanceMixin:
             | Q(agency=None, account=None, campaign=None, adgroup=None)
         )
 
+    def get_deals(self):
+        return list(
+            core.features.deals.DirectDeal.objects.filter(
+                directdealconnection__adgroup__isnull=False, directdealconnection__adgroup__id=self.id
+            )
+            .select_related("source")
+            .distinct()
+        )
+
+    def clear_deals(self):
+        self.directdealconnection_set.all().delete()
+
+    def remove_deals(self, deals):
+        self.directdealconnection_set.filter(deal__id__in=[x.id for x in deals]).delete()
+
+    def add_deals(self, request, deals):
+        for deal in deals:
+            core.features.deals.DirectDealConnection.objects.create(request, deal, adgroup=self)
+
     def save(self, request, *args, **kwargs):
         self.modified_by = request.user if request else None
         super().save(*args, **kwargs)

@@ -1,6 +1,7 @@
 import mock
 from django.urls import reverse
 
+import core.features.deals
 import core.models
 import dash.constants
 from restapi.common.views_base_test import RESTAPITest
@@ -61,6 +62,7 @@ class AdGroupViewSetTest(RESTAPITest):
         self.assertEqual(resp_json["data"]["notes"], "")
         self.assertEqual(resp_json["data"]["redirectPixelUrls"], [])
         self.assertEqual(resp_json["data"]["redirectJavascript"], "")
+        self.assertEqual(resp_json["data"]["deals"], [])
         self.assertEqual(
             resp_json["extra"],
             {
@@ -127,6 +129,10 @@ class AdGroupViewSetTest(RESTAPITest):
         settings.redirect_javascript = "alert('a')"
         settings.save(None)
 
+        source = magic_mixer.blend(core.models.Source, released=True, deprecated=False)
+        deal = magic_mixer.blend(core.features.deals.DirectDeal, agency=agency, source=source)
+        magic_mixer.blend(core.features.deals.DirectDealConnection, deal=deal, adgroup=ad_group)
+
         r = self.client.get(reverse("restapi.adgroup.internal:adgroups_details", kwargs={"ad_group_id": ad_group.id}))
         resp_json = self.assertResponseValid(r)
 
@@ -134,6 +140,11 @@ class AdGroupViewSetTest(RESTAPITest):
         self.assertEqual(resp_json["data"]["notes"], settings.notes)
         self.assertEqual(resp_json["data"]["redirectPixelUrls"], settings.redirect_pixel_urls)
         self.assertEqual(resp_json["data"]["redirectJavascript"], settings.redirect_javascript)
+        self.assertEqual(len(resp_json["data"]["deals"]), 1)
+        self.assertEqual(resp_json["data"]["deals"][0]["dealId"], deal.deal_id)
+        self.assertEqual(resp_json["data"]["deals"][0]["numOfAccounts"], 0)
+        self.assertEqual(resp_json["data"]["deals"][0]["numOfCampaigns"], 0)
+        self.assertEqual(resp_json["data"]["deals"][0]["numOfAdgroups"], 1)
         self.assertEqual(
             resp_json["extra"],
             {
@@ -185,3 +196,54 @@ class AdGroupViewSetTest(RESTAPITest):
         args, kwargs = mock_ad_group_settings_update.call_args
         self.assertEqual(kwargs.get("state"), dash.constants.AdGroupSettingsState.INACTIVE)
         self.assertEqual(kwargs.get("b1_sources_group_enabled"), True)
+
+    def test_put_deals(self):
+        agency = magic_mixer.blend(core.models.Agency)
+        account = magic_mixer.blend(core.models.Account, agency=agency, users=[self.user])
+        campaign = magic_mixer.blend(core.models.Campaign, account=account)
+        ad_group = magic_mixer.blend(core.models.AdGroup, campaign=campaign, name="Demo adgroup")
+
+        settings = ad_group.get_current_settings().copy_settings()
+        settings.ad_group_name = ad_group.name
+        settings.notes = "adgroups notes"
+        settings.redirect_pixel_urls = ["http://a.com/b.jpg", "http://a.com/c.jpg"]
+        settings.redirect_javascript = "alert('a')"
+        settings.save(None)
+
+        source = magic_mixer.blend(core.models.Source, released=True, deprecated=False)
+        deal_to_be_removed = magic_mixer.blend(core.features.deals.DirectDeal, agency=agency, source=source)
+        magic_mixer.blend(core.features.deals.DirectDealConnection, deal=deal_to_be_removed, adgroup=ad_group)
+
+        deal_to_be_added = magic_mixer.blend(core.features.deals.DirectDeal, agency=agency, source=source)
+
+        r = self.client.get(reverse("restapi.adgroup.internal:adgroups_details", kwargs={"ad_group_id": ad_group.id}))
+        resp_json = self.assertResponseValid(r)
+
+        self.assertEqual(len(resp_json["data"]["deals"]), 1)
+        self.assertEqual(resp_json["data"]["deals"][0]["dealId"], deal_to_be_removed.deal_id)
+        self.assertEqual(resp_json["data"]["deals"][0]["numOfAccounts"], 0)
+        self.assertEqual(resp_json["data"]["deals"][0]["numOfCampaigns"], 0)
+        self.assertEqual(resp_json["data"]["deals"][0]["numOfAdgroups"], 1)
+
+        put_data = resp_json["data"].copy()
+
+        put_data["deals"] = [
+            {
+                "id": str(deal_to_be_added.id),
+                "dealId": deal_to_be_added.deal_id,
+                "source": deal_to_be_added.source.bidder_slug,
+            }
+        ]
+
+        r = self.client.put(
+            reverse("restapi.adgroup.internal:adgroups_details", kwargs={"ad_group_id": ad_group.id}),
+            data=put_data,
+            format="json",
+        )
+        resp_json = self.assertResponseValid(r)
+
+        self.assertEqual(len(resp_json["data"]["deals"]), 1)
+        self.assertEqual(resp_json["data"]["deals"][0]["dealId"], deal_to_be_added.deal_id)
+        self.assertEqual(resp_json["data"]["deals"][0]["numOfAccounts"], 0)
+        self.assertEqual(resp_json["data"]["deals"][0]["numOfCampaigns"], 0)
+        self.assertEqual(resp_json["data"]["deals"][0]["numOfAdgroups"], 1)

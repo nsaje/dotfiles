@@ -3,8 +3,10 @@ import rest_framework.serializers
 from django.db import transaction
 
 import core.models
+import prodops.hacks
 import restapi.access
 import restapi.adgroup.v1.views
+import utils.exc
 from dash import constants
 
 from . import helpers
@@ -26,6 +28,7 @@ class AdGroupViewSet(restapi.adgroup.v1.views.AdGroupViewSet):
             raise rest_framework.serializers.ValidationError("Must pass campaignId parameter")
         campaign = restapi.access.get_campaign(request.user, campaign_id)
         ad_group = core.models.AdGroup.objects.get_default(request, campaign)
+        self._augment_ad_group(request, ad_group)
         extra_data = helpers.get_extra_data(request.user, ad_group)
         return self.response_ok(
             data=self.serializer(ad_group.settings, context={"request": request}).data,
@@ -34,6 +37,7 @@ class AdGroupViewSet(restapi.adgroup.v1.views.AdGroupViewSet):
 
     def get(self, request, ad_group_id):
         ad_group = restapi.access.get_ad_group(request.user, ad_group_id)
+        self._augment_ad_group(request, ad_group)
         extra_data = helpers.get_extra_data(request.user, ad_group)
         return self.response_ok(
             data=self.serializer(ad_group.settings, context={"request": request}).data,
@@ -50,8 +54,69 @@ class AdGroupViewSet(restapi.adgroup.v1.views.AdGroupViewSet):
             )
         serializer = self.serializer(data=request.data, partial=True, context={"request": request})
         serializer.is_valid(raise_exception=True)
+        settings = serializer.validated_data
 
         with transaction.atomic():
-            self._update_settings(request, ad_group, serializer.validated_data)
+            self._update_settings(request, ad_group, settings)
+            if "deals" in settings.keys():
+                self._handle_deals(request, ad_group, settings.get("deals", []))
 
+        self._augment_ad_group(request, ad_group)
         return self.response_ok(self.serializer(ad_group.settings, context={"request": request}).data)
+
+    def create(self, request):
+        serializer = self.serializer(data=request.data, context={"request": request})
+        serializer.is_valid(raise_exception=True)
+        settings = serializer.validated_data
+        campaign = restapi.access.get_campaign(request.user, settings.get("ad_group", {}).get("campaign_id"))
+
+        with transaction.atomic():
+            try:
+                new_ad_group = core.models.AdGroup.objects.create(
+                    request, campaign=campaign, name=settings.get("ad_group_name", None), is_restapi=True
+                )
+
+            except core.models.ad_group.exceptions.CampaignIsArchived as err:
+                raise utils.exc.ValidationError(errors={"campaign_id": [str(err)]})
+
+            self._update_settings(request, new_ad_group, settings)
+            self._handle_deals(request, new_ad_group, settings.get("deals", []))
+            prodops.hacks.apply_ad_group_create_hacks(request, new_ad_group)
+
+        self._augment_ad_group(request, new_ad_group)
+        return self.response_ok(self.serializer(new_ad_group.settings, context={"request": request}).data, status=201)
+
+    @staticmethod
+    def _augment_ad_group(request, ad_group):
+        ad_group.settings.deals = []
+        if request.user.has_perm("zemauth.can_see_deals_in_ui"):
+            ad_group.settings.deals = ad_group.get_deals()
+
+    @staticmethod
+    def _handle_deals(request, ad_group, data):
+        errors = []
+        new_deals = []
+
+        for item in data:
+            try:
+                new_deals.append(
+                    restapi.access.get_direct_deal(request.user, ad_group.campaign.account.agency, item.get("id"))
+                )
+                errors.append(None)
+            except utils.exc.MissingDataError as err:
+                errors.append({"id": [str(err)]})
+
+        if any([error is not None for error in errors]):
+            raise utils.exc.ValidationError(errors={"deals": errors})
+
+        new_deals_set = set(new_deals)
+
+        deals = ad_group.get_deals()
+        deals_set = set(deals)
+
+        to_be_removed = deals_set.difference(new_deals_set)
+        to_be_added = new_deals_set.difference(deals_set)
+
+        if to_be_removed or to_be_added:
+            ad_group.remove_deals(list(to_be_removed))
+            ad_group.add_deals(request, list(to_be_added))

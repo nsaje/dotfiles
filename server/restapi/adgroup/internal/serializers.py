@@ -4,6 +4,7 @@ import rest_framework.serializers
 
 import dash.constants
 import restapi.adgroup.v1.serializers
+import restapi.directdeal.internal.serializers
 import restapi.serializers.base
 import restapi.serializers.deals
 import restapi.serializers.fields
@@ -104,6 +105,7 @@ class AdGroupSerializer(restapi.adgroup.v1.serializers.AdGroupSerializer):
             "manage_rtb_sources_as_one",
             "frequency_capping",
             "notes",
+            "deals",
         )
 
     redirect_pixel_urls = restapi.serializers.fields.NullListField(
@@ -113,3 +115,6 @@ class AdGroupSerializer(restapi.adgroup.v1.serializers.AdGroupSerializer):
     manage_rtb_sources_as_one = rest_framework.serializers.BooleanField(source="b1_sources_group_enabled")
     notes = rest_framework.serializers.CharField(read_only=True)
     autopilot = AdGroupAutopilotSerializer(source="*", required=False)
+    deals = rest_framework.serializers.ListSerializer(
+        child=restapi.directdeal.internal.serializers.DirectDealSerializer(), default=[], allow_empty=True
+    )
