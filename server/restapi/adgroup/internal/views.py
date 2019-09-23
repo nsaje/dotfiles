@@ -118,5 +118,5 @@ class AdGroupViewSet(restapi.adgroup.v1.views.AdGroupViewSet):
         to_be_added = new_deals_set.difference(deals_set)
 
         if to_be_removed or to_be_added:
-            ad_group.remove_deals(list(to_be_removed))
+            ad_group.remove_deals(request, list(to_be_removed))
             ad_group.add_deals(request, list(to_be_added))

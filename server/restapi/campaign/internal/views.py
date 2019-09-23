@@ -357,5 +357,5 @@ class CampaignViewSet(restapi.campaign.v1.views.CampaignViewSet):
         to_be_added = new_deals_set.difference(deals_set)
 
         if to_be_removed or to_be_added:
-            campaign.remove_deals(list(to_be_removed))
+            campaign.remove_deals(request, list(to_be_removed))
             campaign.add_deals(request, list(to_be_added))

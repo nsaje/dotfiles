@@ -10,8 +10,6 @@ class DirectDealManager(core.common.BaseManager):
     @transaction.atomic
     def create(self, request, agency, source, deal_id):
         self._validate_entity_limits(agency)
-
-        # TODO (msuber): add history support
         deal = self._prepare(agency, source, deal_id)
         deal.save(request)
         return deal

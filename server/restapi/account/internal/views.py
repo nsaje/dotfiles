@@ -159,5 +159,5 @@ class AccountViewSet(restapi.account.v1.views.AccountViewSet):
         to_be_added = new_deals_set.difference(deals_set)
 
         if to_be_removed or to_be_added:
-            account.remove_deals(list(to_be_removed))
+            account.remove_deals(request, list(to_be_removed))
             account.add_deals(request, list(to_be_added))

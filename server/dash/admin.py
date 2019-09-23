@@ -2107,6 +2107,9 @@ class DirectDealConnectionAdmin(admin.ModelAdmin):
     def save_model(self, request, obj, form, change):
         obj.save(request)
 
+    def delete_model(self, request, obj):
+        obj.delete(request)
+
 
 class DirectDealAdmin(admin.ModelAdmin):
     model = models.DirectDeal

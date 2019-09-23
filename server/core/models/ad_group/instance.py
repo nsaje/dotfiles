@@ -254,11 +254,8 @@ class AdGroupInstanceMixin:
             .distinct()
         )
 
-    def clear_deals(self):
-        self.directdealconnection_set.all().delete()
-
-    def remove_deals(self, deals):
-        self.directdealconnection_set.filter(deal__id__in=[x.id for x in deals]).delete()
+    def remove_deals(self, request, deals):
+        self.directdealconnection_set.filter(deal__id__in=[x.id for x in deals]).delete(request=request)
 
     def add_deals(self, request, deals):
         for deal in deals:

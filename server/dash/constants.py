@@ -1863,6 +1863,8 @@ class HistoryActionType(ConstantBase):
     CONTENT_AD_EDIT = 26
     CONVERSION_PIXEL_SET_ADDITIONAL_PIXEL = 27
     CONVERSION_PIXEL_CREATE_AS_ADDITIONAL = 28
+    DEAL_CONNECTION_CREATE = 29
+    DEAL_CONNECTION_DELETE = 30
 
     _VALUES = {
         GOAL_CHANGE: "Change Campaign Goal",
@@ -1894,6 +1896,8 @@ class HistoryActionType(ConstantBase):
         PUBLISHER_GROUP_UPDATE: "Update publisher group",
         CONVERSION_PIXEL_SET_ADDITIONAL_PIXEL: "Pixel set as an additional audience pixel",
         CONVERSION_PIXEL_CREATE_AS_ADDITIONAL: "Create Conversion Pixel as additional audience pixel",
+        DEAL_CONNECTION_CREATE: "Create deal connection",
+        DEAL_CONNECTION_DELETE: "Delete deal connection",
     }
 
 

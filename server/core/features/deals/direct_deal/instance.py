@@ -18,7 +18,6 @@ class DirectDealMixin(object):
         if not updates:
             return
 
-        # TODO (msuber): add history support
         self._apply_updates_and_save(request, updates)
 
     def _clean_updates(self, request, updates):

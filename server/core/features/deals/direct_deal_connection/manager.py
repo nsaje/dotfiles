@@ -8,7 +8,6 @@ from . import model
 class DirectDealConnectionManager(core.common.BaseManager):
     @transaction.atomic
     def create(self, request, deal, account=None, campaign=None, adgroup=None):
-        # TODO (msuber): add history support
         deal_connection = self._prepare(deal, account=account, campaign=campaign, adgroup=adgroup)
         deal_connection.save(request)
         return deal_connection
