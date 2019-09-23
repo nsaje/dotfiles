@@ -212,12 +212,18 @@ class Command(Z1Command):
                     continue
 
                 if elm["bidding_type"] == constants.BiddingType.CPC:
+                    if elm["source_cpc"] is None:
+                        continue
+
                     if elm["cpc"] is None:
                         self.stdout.write(self.style.ERROR("Fix ad groups first!"))
                         return
 
                     current_modifier = float(elm["source_cpc"] / elm["cpc"])
                 else:
+                    if elm["source_cpm"] is None:
+                        continue
+
                     if elm["cpm"] is None:
                         self.stdout.write(self.style.ERROR("Fix ad groups first!"))
                         return

@@ -107,7 +107,9 @@ def _recalculate_ad_group_amounts(campaign):
 
 def _recalculate_ad_group_settings_amounts(ad_group):
     fields = ["local_" + field for field in ad_group.settings.multicurrency_fields]
-    updates = {field: getattr(ad_group.settings, field) for field in fields}
+    updates = {
+        field: getattr(ad_group.settings, field) for field in fields if getattr(ad_group.settings, field) is not None
+    }
     ad_group.settings.update(None, skip_validation=True, skip_automation=True, skip_permission_check=True, **updates)
 
 
@@ -118,5 +120,9 @@ def _recalculate_ad_group_sources_amounts(ad_group):
 
 def _recalculate_ad_group_source_settings_amounts(ad_group_source):
     fields = ["local_" + field for field in ad_group_source.settings.multicurrency_fields]
-    updates = {field: getattr(ad_group_source.settings, field) for field in fields}
+    updates = {
+        field: getattr(ad_group_source.settings, field)
+        for field in fields
+        if getattr(ad_group_source.settings, field) is not None
+    }
     ad_group_source.settings.update(None, skip_automation=True, skip_validation=True, skip_notification=True, **updates)

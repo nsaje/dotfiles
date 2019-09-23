@@ -52,13 +52,15 @@ def handle_ad_group_source_settings_change(
         # change not related to bid value
         return
 
-    if "cpc_cc" in changes:
-        if ad_group_source_settings.ad_group_source.ad_group.settings.cpc is None:
+    if ad_group_source_settings.ad_group_source.ad_group.bidding_type == dash.constants.BiddingType.CPC:
+        if "cpc_cc" not in changes or ad_group_source_settings.ad_group_source.ad_group.settings.cpc is None:
+            # ad_group.settings.cpc is not expected to be None, this is just a temporary safeguard
             return
 
         modifier = Decimal(changes["cpc_cc"]) / Decimal(ad_group_source_settings.ad_group_source.ad_group.settings.cpc)
     else:
-        if ad_group_source_settings.ad_group_source.ad_group.settings.cpm is None:
+        if "cpm" not in changes or ad_group_source_settings.ad_group_source.ad_group.settings.cpm is None:
+            # ad_group.settings.cpm is not expected to be None, this is just a temporary safeguard
             return
 
         modifier = Decimal(changes["cpm"]) / Decimal(ad_group_source_settings.ad_group_source.ad_group.settings.cpm)

@@ -1,11 +1,14 @@
 import decimal
+from datetime import timedelta
 
 from django.test import TestCase
 
 from core.features import bid_modifiers
+from core.features.multicurrency.service.update import _recalculate_ad_group_amounts
 from core.models.settings.ad_group_source_settings import exceptions as agss_exceptions
 from dash import constants
 from dash import models
+from utils import dates_helper
 from utils.magic_mixer import magic_mixer
 
 
@@ -306,3 +309,209 @@ class SwitchBiddingTypeTestCase(TestCase):
         self.ad_group.update_bidding_type(None, bidding_type=constants.BiddingType.CPC)
 
         self._assert_bid_modifiers(self.input_bid_modifiers_list)
+
+
+class MulticurrencyUpdateTestCase(TestCase):
+    def test_recalculate_ad_group_amounts(self):
+        magic_mixer.blend(
+            models.CurrencyExchangeRate,
+            currency=constants.Currency.EUR,
+            date=dates_helper.local_today() - timedelta(days=1),
+            exchange_rate=decimal.Decimal("0.8968"),
+        )
+
+        ad_group = magic_mixer.blend(
+            models.AdGroup, bidding_type=constants.BiddingType.CPC, campaign__account__currency=constants.Currency.EUR
+        )
+
+        ad_group.settings.update_unsafe(
+            None,
+            cpc_cc=None,
+            local_cpc_cc=None,
+            max_cpm=None,
+            local_max_cpm=None,
+            cpc=decimal.Decimal("20.0000"),
+            local_cpc=decimal.Decimal("17.9360"),
+            cpm=decimal.Decimal("25.0000"),
+            local_cpm=decimal.Decimal("22.4200"),
+            b1_sources_group_cpc_cc=decimal.Decimal("0.2230"),
+            local_b1_sources_group_cpc_cc=decimal.Decimal("0.2000"),
+            b1_sources_group_cpm=decimal.Decimal("0.0096"),
+            local_b1_sources_group_cpm=decimal.Decimal("0.0086"),
+            b1_sources_group_enabled=True,
+            autopilot_state=constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET,
+        )
+
+        ad_group_source_1 = magic_mixer.blend(models.AdGroupSource, ad_group=ad_group)
+        ad_group_source_2 = magic_mixer.blend(
+            models.AdGroupSource, ad_group=ad_group, source__source_type__type=constants.SourceType.B1
+        )
+
+        ad_group_source_1.settings.update_unsafe(
+            None,
+            cpc_cc=decimal.Decimal("0.2230"),
+            local_cpc_cc=decimal.Decimal("0.2000"),
+            cpm=decimal.Decimal("0.9852"),
+            local_cpm=decimal.Decimal("0.8835"),
+        )
+        ad_group_source_2.settings.update_unsafe(
+            None,
+            cpc_cc=decimal.Decimal("0.2230"),
+            local_cpc_cc=decimal.Decimal("0.2000"),
+            cpm=decimal.Decimal("0.9852"),
+            local_cpm=decimal.Decimal("0.8835"),
+        )
+
+        self.assertEqual(ad_group.settings.cpc, decimal.Decimal("20.0000"))
+        self.assertEqual(ad_group.settings.local_cpc, decimal.Decimal("17.9360"))
+        self.assertEqual(ad_group.settings.b1_sources_group_cpc_cc, decimal.Decimal("0.2230"))
+        self.assertEqual(ad_group.settings.local_b1_sources_group_cpc_cc, decimal.Decimal("0.2000"))
+
+        self.assertEqual(ad_group_source_1.settings.cpc_cc, decimal.Decimal("0.2230"))
+        self.assertEqual(ad_group_source_1.settings.local_cpc_cc, decimal.Decimal("0.2000"))
+        self.assertEqual(ad_group_source_2.settings.cpc_cc, decimal.Decimal("0.2230"))
+        self.assertEqual(ad_group_source_2.settings.local_cpc_cc, decimal.Decimal("0.2000"))
+
+        self.assertAlmostEqual(
+            ad_group.bidmodifier_set.get(
+                type=bid_modifiers.BidModifierType.SOURCE, target=str(ad_group_source_1.source.id)
+            ).modifier,
+            float(decimal.Decimal("0.2230") / decimal.Decimal("20.0000")),
+            places=8,
+        )
+        self.assertAlmostEqual(
+            ad_group.bidmodifier_set.get(
+                type=bid_modifiers.BidModifierType.SOURCE, target=str(ad_group_source_2.source.id)
+            ).modifier,
+            float(decimal.Decimal("0.2230") / decimal.Decimal("20.0000")),
+            places=8,
+        )
+
+        magic_mixer.blend(
+            models.CurrencyExchangeRate,
+            currency=constants.Currency.EUR,
+            date=dates_helper.local_today(),
+            exchange_rate=decimal.Decimal("0.9061"),
+        )
+
+        # artificially create the condition that caused multicurrency update failure
+        ad_group_source_2.settings.update_unsafe(
+            None, cpc_cc=decimal.Decimal("0.2207"), local_cpc_cc=decimal.Decimal("0.2000")
+        )
+
+        _recalculate_ad_group_amounts(ad_group.campaign)
+
+        ad_group.refresh_from_db()
+        ad_group_source_1.refresh_from_db()
+        ad_group_source_2.refresh_from_db()
+
+        self.assertEqual(ad_group.settings.cpc, decimal.Decimal("19.7947"))
+        self.assertEqual(ad_group.settings.local_cpc, decimal.Decimal("17.9360"))
+        self.assertEqual(ad_group.settings.b1_sources_group_cpc_cc, decimal.Decimal("0.2207"))
+        self.assertEqual(ad_group.settings.local_b1_sources_group_cpc_cc, decimal.Decimal("0.2000"))
+
+        self.assertEqual(ad_group_source_1.settings.cpc_cc, decimal.Decimal("0.2207"))
+        self.assertEqual(ad_group_source_1.settings.local_cpc_cc, decimal.Decimal("0.2000"))
+        self.assertEqual(ad_group_source_2.settings.cpc_cc, decimal.Decimal("0.2207"))
+        self.assertEqual(ad_group_source_2.settings.local_cpc_cc, decimal.Decimal("0.2000"))
+
+        self.assertAlmostEqual(
+            ad_group.bidmodifier_set.get(
+                type=bid_modifiers.BidModifierType.SOURCE, target=str(ad_group_source_1.source.id)
+            ).modifier,
+            float(decimal.Decimal("0.2207") / decimal.Decimal("19.7947")),
+            places=8,
+        )
+        self.assertAlmostEqual(
+            ad_group.bidmodifier_set.get(
+                type=bid_modifiers.BidModifierType.SOURCE, target=str(ad_group_source_2.source.id)
+            ).modifier,
+            float(decimal.Decimal("0.2207") / decimal.Decimal("19.7947")),
+            places=8,
+        )
+
+    def test_recalculate_ad_group_amounts_limits(self):
+        magic_mixer.blend(
+            models.CurrencyExchangeRate,
+            currency=constants.Currency.EUR,
+            date=dates_helper.local_today() - timedelta(days=1),
+            exchange_rate=decimal.Decimal("0.8968"),
+        )
+
+        account = magic_mixer.blend(models.Account, currency=constants.Currency.EUR)
+        campaign = magic_mixer.blend(models.Campaign, account=account)
+        ad_group_1 = magic_mixer.blend(models.AdGroup, campaign=campaign, bidding_type=constants.BiddingType.CPC)
+
+        ad_group_2 = magic_mixer.blend(models.AdGroup, campaign=campaign, bidding_type=constants.BiddingType.CPC)
+
+        ad_group_1.settings.update_unsafe(
+            None,
+            cpc_cc=None,
+            local_cpc_cc=None,
+            max_cpm=None,
+            local_max_cpm=None,
+            cpc=decimal.Decimal("20.0000"),
+            local_cpc=decimal.Decimal("17.9360"),
+            cpm=decimal.Decimal("25.0000"),
+            local_cpm=decimal.Decimal("22.4200"),
+        )
+
+        ad_group_2.settings.update_unsafe(
+            None,
+            cpc_cc=decimal.Decimal("10.0000"),
+            local_cpc_cc=decimal.Decimal("8.9680"),
+            max_cpm=decimal.Decimal("12.5000"),
+            local_max_cpm=decimal.Decimal("11.2100"),
+            cpc=decimal.Decimal("10.0000"),
+            local_cpc=decimal.Decimal("8.9680"),
+            cpm=decimal.Decimal("12.5000"),
+            local_cpm=decimal.Decimal("11.2100"),
+        )
+
+        self.assertEqual(ad_group_1.settings.cpc_cc, None)
+        self.assertEqual(ad_group_1.settings.local_cpc_cc, None)
+        self.assertEqual(ad_group_1.settings.max_cpm, None)
+        self.assertEqual(ad_group_1.settings.local_max_cpm, None)
+        self.assertEqual(ad_group_1.settings.cpc, decimal.Decimal("20.0000"))
+        self.assertEqual(ad_group_1.settings.local_cpc, decimal.Decimal("17.9360"))
+        self.assertEqual(ad_group_1.settings.cpm, decimal.Decimal("25.0000"))
+        self.assertEqual(ad_group_1.settings.local_cpm, decimal.Decimal("22.4200"))
+
+        self.assertEqual(ad_group_2.settings.cpc_cc, decimal.Decimal("10.0000"))
+        self.assertEqual(ad_group_2.settings.local_cpc_cc, decimal.Decimal("8.9680"))
+        self.assertEqual(ad_group_2.settings.max_cpm, decimal.Decimal("12.5000"))
+        self.assertEqual(ad_group_2.settings.local_max_cpm, decimal.Decimal("11.2100"))
+        self.assertEqual(ad_group_2.settings.cpc, decimal.Decimal("10.0000"))
+        self.assertEqual(ad_group_2.settings.local_cpc, decimal.Decimal("8.9680"))
+        self.assertEqual(ad_group_2.settings.cpm, decimal.Decimal("12.5000"))
+        self.assertEqual(ad_group_2.settings.local_cpm, decimal.Decimal("11.2100"))
+
+        magic_mixer.blend(
+            models.CurrencyExchangeRate,
+            currency=constants.Currency.EUR,
+            date=dates_helper.local_today(),
+            exchange_rate=decimal.Decimal("0.9061"),
+        )
+
+        _recalculate_ad_group_amounts(campaign)
+
+        ad_group_1.refresh_from_db()
+        ad_group_2.refresh_from_db()
+
+        self.assertEqual(ad_group_1.settings.cpc_cc, None)
+        self.assertEqual(ad_group_1.settings.local_cpc_cc, None)
+        self.assertEqual(ad_group_1.settings.max_cpm, None)
+        self.assertEqual(ad_group_1.settings.local_max_cpm, None)
+        self.assertEqual(ad_group_1.settings.cpc, decimal.Decimal("19.7947"))
+        self.assertEqual(ad_group_1.settings.local_cpc, decimal.Decimal("17.9360"))
+        self.assertEqual(ad_group_1.settings.cpm, decimal.Decimal("24.7434"))
+        self.assertEqual(ad_group_1.settings.local_cpm, decimal.Decimal("22.4200"))
+
+        self.assertEqual(ad_group_2.settings.cpc_cc, decimal.Decimal("9.8974"))
+        self.assertEqual(ad_group_2.settings.local_cpc_cc, decimal.Decimal("8.9680"))
+        self.assertEqual(ad_group_2.settings.max_cpm, decimal.Decimal("12.3717"))
+        self.assertEqual(ad_group_2.settings.local_max_cpm, decimal.Decimal("11.2100"))
+        self.assertEqual(ad_group_2.settings.cpc, decimal.Decimal("9.8974"))
+        self.assertEqual(ad_group_2.settings.local_cpc, decimal.Decimal("8.9680"))
+        self.assertEqual(ad_group_2.settings.cpm, decimal.Decimal("12.3717"))
+        self.assertEqual(ad_group_2.settings.local_cpm, decimal.Decimal("11.2100"))
