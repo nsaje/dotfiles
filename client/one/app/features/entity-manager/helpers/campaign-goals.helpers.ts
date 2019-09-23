@@ -8,9 +8,9 @@ import {
     DataType,
     APP_CONSTANTS,
 } from '../../../app.constants';
+import {CONVERSION_WINDOWS} from '../../../app.config';
 import {
     ENTITY_MANAGER_CONFIG,
-    CONVERSION_WINDOWS,
     CAMPAIGN_GOAL_VALUE_TEXT,
     CAMPAIGN_GOAL_KPIS,
 } from '../entity-manager.config';

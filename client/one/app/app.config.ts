@@ -1,5 +1,12 @@
 import {environment} from '../environments/environment';
-import {Currency} from './app.constants';
+import {Currency, ConversionWindow} from './app.constants';
+import {ConversionWindowConfig} from './core/conversion-pixels/types/conversion-windows-config';
+
+export const CONVERSION_WINDOWS: ConversionWindowConfig[] = [
+    {name: '1 day', value: ConversionWindow.LEQ_1_DAY},
+    {name: '7 days', value: ConversionWindow.LEQ_7_DAYS},
+    {name: '30 days', value: ConversionWindow.LEQ_30_DAYS},
+];
 
 export const APP_CONFIG = {
     env: environment.env,

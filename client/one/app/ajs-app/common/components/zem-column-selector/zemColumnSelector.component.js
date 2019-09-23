@@ -4,6 +4,7 @@ angular.module('one.widgets').component('zemColumnSelector', {
     bindings: {
         categories: '<',
         onColumnToggled: '&',
+        onColumnsToggled: '&',
         onAllColumnsToggled: '&',
     },
     template: require('./zemColumnSelector.component.html'),

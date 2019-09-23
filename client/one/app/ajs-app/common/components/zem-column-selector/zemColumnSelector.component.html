@@ -32,12 +32,12 @@
 >
     <div
         class="dropdown-menu__category"
-        ng-repeat="category in $ctrl.filteredCategories"
+        ng-repeat="category in $ctrl.filteredCategories track by category.name"
     >
         <div class="dropdown-menu__category-name">{{ category.name }}</div>
         <div
             class="dropdown-menu__category-description"
-            ng-if="category.description"
+            ng-if="category.description && !category.subcategories.length > 0"
         >
             {{ category.description }}
         </div>
@@ -72,45 +72,11 @@
                 </label>
             </li>
         </ul>
-        <div
-            class="dropdown-menu__subcategory"
-            ng-repeat="subcategory in category.subcategories"
-        >
-            <div class="dropdown-menu__subcategory-name">
-                {{ subcategory.name }}
-            </div>
-            <div
-                class="dropdown-menu__subsubcategory"
-                ng-repeat="subsubcategory in subcategory.subcategories"
-            >
-                <div
-                    class="dropdown-menu__subsubcategory-name"
-                    ng-if="$ctrl.hasPermission('zemauth.can_see_viewthrough_conversions')"
-                >
-                    {{ subsubcategory.name }}
-                </div>
-                <ul class="dropdown-menu__subsubcategory-items">
-                    <li
-                        class="dropdown-menu__subsubcategory-item"
-                        ng-repeat="subsubColumn in subsubcategory.columns"
-                        is-internal="{{ subsubColumn.data.internal }}"
-                    >
-                        <label
-                            ng-click="!subsubColumn.disabled && $ctrl.onColumnToggled({field: subsubColumn.field})"
-                        >
-                            <input
-                                class="input-checkbox"
-                                ng-disabled="subsubColumn.disabled"
-                                type="checkbox"
-                                ng-checked="subsubColumn.visible"
-                            />
-                            <span class="checkbox-text">{{
-                                subsubColumn.data.shortName
-                            }}</span>
-                        </label>
-                    </li>
-                </ul>
-            </div>
-        </div>
+        <zem-attribution-column-picker
+            ng-if="category.subcategories.length > 0"
+            [pixel-columns]="category.subcategories"
+            (toggle-column)="$ctrl.onColumnToggled($event)"
+            (toggle-columns)="$ctrl.onColumnsToggled($event)"
+        ></zem-attribution-column-picker>
     </div>
 </div>

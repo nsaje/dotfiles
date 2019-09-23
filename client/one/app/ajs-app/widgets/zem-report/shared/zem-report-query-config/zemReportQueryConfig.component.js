@@ -376,6 +376,11 @@ angular.module('one.widgets').component('zemReportQueryConfig', {
         }
 
         function getColumnName(column) {
+            if (
+                Object.prototype.hasOwnProperty.call(column.data, 'restApiName')
+            ) {
+                return column.data.restApiName;
+            }
             return column.data.name;
         }
 

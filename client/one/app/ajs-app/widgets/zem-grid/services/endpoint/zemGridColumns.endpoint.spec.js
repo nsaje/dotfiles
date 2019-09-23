@@ -148,19 +148,17 @@ describe('zemGridEndpointColumnsSpec', function() {
         );
 
         var pixelConversionsColumn = findColumnByField('pixel_1_24', columns);
-        expect(pixelConversionsColumn.shortName).toBe(1);
         expect(pixelConversionsColumn.permanent).toBeFalsy();
         expect(pixelConversionsColumn.default).toBeFalsy();
         expect(pixelConversionsColumn.goal).toBeFalsy();
 
-        var pixelCpaColumn = findColumnByField(
-            'avg_cost_per_pixel_1_24',
+        var pixelEftmCpaColumn = findColumnByField(
+            'avg_etfm_cost_per_pixel_1_24',
             columns
         );
-        expect(pixelCpaColumn.permanent).toBeFalsy();
-        expect(pixelCpaColumn.default).toBe(true);
-        expect(pixelCpaColumn.goal).toBe(true);
-        expect(pixelCpaColumn.autoSelect).toBe('pixel_1_24');
+        expect(pixelEftmCpaColumn.permanent).toBeFalsy();
+        expect(pixelEftmCpaColumn.default).toBeFalsy();
+        expect(pixelEftmCpaColumn.goal).toBe(true);
 
         var goalConversionsColumn = findColumnByField(
             'conversion_goal_1',

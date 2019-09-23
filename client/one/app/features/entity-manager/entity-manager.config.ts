@@ -1,7 +1,6 @@
 import {
     EntityType,
     CampaignConversionGoalType,
-    ConversionWindow,
     Unit,
     DataType,
     CampaignType,
@@ -13,7 +12,6 @@ import {
 import {CampaignGoalKPI, GaTrackingType} from '../../app.constants';
 import {CampaignGoalKPIConfig} from './types/campaign-goal-kpi-config';
 import {CampaignConversionGoalTypeConfig} from './types/campaign-conversion-goal-type-config';
-import {ConversionWindowConfig} from '../../core/conversion-pixels/types/conversion-windows-config';
 import {CampaignTypeConfig} from './types/campaign-type-config';
 import {IabCategoryConfig} from './types/iabcategory-config';
 import {LanguageConfig} from './types/language-config';
@@ -139,12 +137,6 @@ export const CAMPAIGN_CONVERSION_GOAL_TYPES: CampaignConversionGoalTypeConfig[] 
         name: 'Adobe Analytics',
         value: CampaignConversionGoalType.OMNITURE,
     },
-];
-
-export const CONVERSION_WINDOWS: ConversionWindowConfig[] = [
-    {name: '1 day', value: ConversionWindow.LEQ_1_DAY},
-    {name: '7 days', value: ConversionWindow.LEQ_7_DAYS},
-    {name: '30 days', value: ConversionWindow.LEQ_30_DAYS},
 ];
 
 export const CAMPAIGN_TRACKING_VALUE_TEXT = {

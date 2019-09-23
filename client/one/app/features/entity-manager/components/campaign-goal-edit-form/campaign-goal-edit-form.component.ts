@@ -10,9 +10,9 @@ import {
     ChangeDetectionStrategy,
 } from '@angular/core';
 import {CampaignGoal} from '../../../../core/entities/types/campaign/campaign-goal';
+import {CONVERSION_WINDOWS} from '../../../../app.config';
 import {
     CAMPAIGN_CONVERSION_GOAL_TYPES,
-    CONVERSION_WINDOWS,
     CAMPAIGN_GOAL_KPIS,
 } from '../../entity-manager.config';
 import {

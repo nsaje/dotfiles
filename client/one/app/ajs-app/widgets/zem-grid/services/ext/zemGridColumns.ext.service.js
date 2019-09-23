@@ -192,12 +192,14 @@ angular
                 if (!Array.isArray(toggledColumns)) {
                     toggledColumns = [toggledColumns];
                 }
-
                 if (allColumns) {
                     toggledColumns.forEach(function(toggledColumn) {
                         allColumns.forEach(function(col) {
                             if (
-                                col.data.hasOwnProperty('autoSelect') &&
+                                Object.prototype.hasOwnProperty.call(
+                                    col.data,
+                                    'autoSelect'
+                                ) &&
                                 col.data.autoSelect === toggledColumn.field
                             ) {
                                 if (

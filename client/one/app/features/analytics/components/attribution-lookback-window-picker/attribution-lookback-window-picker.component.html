@@ -1,0 +1,16 @@
+<div *ngFor="let window of conversionWindows">
+    <zem-radio-input
+        class="zem-radio-input"
+        [value]="window.value"
+        [groupModel]="selectedConversionWindow.value"
+        (select)="onConversionWindowChange($event)"
+    >
+        {{ window.name }}
+    </zem-radio-input>
+</div>
+<button
+    class="zem-attribution-lookback-window-picker__button button button--outline button--highlight"
+    (click)="selectClickConversionWindow()"
+>
+    Apply
+</button>
