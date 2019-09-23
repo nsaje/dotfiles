@@ -1,3 +1,5 @@
+var commonHelpers = require('../../../../../../shared/helpers/common.helpers');
+
 angular
     .module('one.widgets')
     .service('zemHeaderMenuService', function(
@@ -51,6 +53,14 @@ angular
                 isAvailable: isPublisherGroupsActionAvailable,
                 isInternalFeature: zemPermissions.isPermissionInternal(
                     'zemauth.can_see_publisher_groups_ui'
+                ),
+            },
+            {
+                text: 'Deals Library',
+                callback: navigateToDealsLibraryView,
+                isAvailable: isDealsLibraryViewAvailable,
+                isInternalFeature: zemPermissions.isPermissionInternal(
+                    'zemauth.can_see_deals_library'
                 ),
             },
             {
@@ -179,7 +189,9 @@ angular
                 )
             )
                 return false;
-            return zemNavigationNewService.getActiveAccount() !== null;
+            return commonHelpers.isDefined(
+                zemNavigationNewService.getActiveAccount()
+            );
         }
 
         function navigateToUserPermissions() {
@@ -192,12 +204,27 @@ angular
                 !zemPermissions.hasPermission('zemauth.can_see_new_pixels_view')
             )
                 return false;
-            return zemNavigationNewService.getActiveAccount() !== null;
+            return commonHelpers.isDefined(
+                zemNavigationNewService.getActiveAccount()
+            );
         }
 
         function navigateToPixelsView() {
             var activeAccount = zemNavigationNewService.getActiveAccount();
             $state.go('v2.pixels', {id: activeAccount.id});
+        }
+
+        function isDealsLibraryViewAvailable() {
+            if (!zemPermissions.hasPermission('zemauth.can_see_deals_library'))
+                return false;
+            return commonHelpers.isDefined(
+                zemNavigationNewService.getActiveAccount()
+            );
+        }
+
+        function navigateToDealsLibraryView() {
+            var activeAccount = zemNavigationNewService.getActiveAccount();
+            $state.go('v2.dealsLibrary', {id: activeAccount.id});
         }
 
         function navigateToInventoryPlanning() {

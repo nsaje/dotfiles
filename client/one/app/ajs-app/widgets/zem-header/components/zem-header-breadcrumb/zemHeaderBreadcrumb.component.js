@@ -149,6 +149,13 @@ angular.module('one.widgets').component('zemHeaderBreadcrumb', {
                     href: $location.absUrl(),
                 };
             }
+            if ($state.includes('v2.dealsLibrary')) {
+                return {
+                    typeName: 'Account settings',
+                    name: 'Deals library',
+                    href: $location.absUrl(),
+                };
+            }
             if (
                 $state.includes('**.publisherGroups') ||
                 $state.includes('v2.publisherGroups')

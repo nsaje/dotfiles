@@ -102,6 +102,15 @@ angular.module('one.views').config(function($stateProvider) {
         controller: 'zemArchivedView as $ctrl',
     });
 
+    $stateProvider.state('v2.dealsLibrary', {
+        url: '/dealslibrary/account/{id:int}',
+        template: require('./deals/zemDealsLibraryView.partial.html'),
+        controller: 'zemDealsLibraryView as $ctrl',
+        params: {
+            level: constants.levelStateParam.ACCOUNT,
+        },
+    });
+
     $stateProvider.state('error', {
         url: '/error',
         template: '<ui-view/>',

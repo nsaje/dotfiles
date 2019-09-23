@@ -8,6 +8,7 @@ import {CoreModule} from './core/core.module';
 import {RavenErrorHandler} from './core/handlers/raven-error.handler';
 import {InventoryPlanningModule} from './features/inventory-planning/inventory-planning.module';
 import {EntityManagerModule} from './features/entity-manager/entity-manager.module';
+import {DealsLibraryModule} from './features/deals-library/deals-library.module';
 import {CreativesManagerModule} from './features/creatives-manager/creatives-manager.module';
 import {AnalyticsModule} from './features/analytics/analytics.module';
 import {ViewsModule} from './views/views.module';
@@ -41,6 +42,7 @@ if (APP_CONFIG.env.prod) {
         // Feature modules
         InventoryPlanningModule,
         EntityManagerModule,
+        DealsLibraryModule,
         CreativesManagerModule,
         AnalyticsModule,
     ],

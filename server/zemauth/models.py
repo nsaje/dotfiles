@@ -425,6 +425,7 @@ class User(auth_models.AbstractBaseUser, auth_models.PermissionsMixin):
             ),
             ("settings_defaults_on_campaign_level", "Can view ad group settings defaults on campaign level"),
             ("can_use_creative_icon", "User can use an icon on creatives."),
+            ("can_see_deals_library", "User can see deals library."),
         )
 
     def get_full_name(self):
