@@ -147,7 +147,7 @@ EMAIL_PORT = 587
 EMAIL_HOST_USER = "postmaster@zemanta.com"
 EMAIL_HOST_PASSWORD = (
     Secret(
-        "kms:region=us-east-1:AQECAHjdfiP9DHF52gr8mpTmZ/ZwRu2qZbRw8dV0ohsw+OhZewAAAIMwgYAGCSqGSIb3DQEHBqBzMHECAQAwbAYJKoZIhvcNAQcBMB4GCWCGSAFlAwQBLjARBAwwZguHDPKLtTmmYp4CARCAP++JNiTOIN5TxvJJPngk6mTI1NmZI97tkhgYxn/FDEinOPGg0Q4jzID4dP5vlHqF78mFydEkWgF6zLKUMKUlGw=="  # noqa
+        "kms:region=us-east-1:CiDdfiP9DHF52gr8mpTmZ/ZwRu2qZbRw8dV0ohsw+OhZexKnAQEBAgB43X4j/QxxedoK/JqU5mf2cEbtqmW0cPHVdKIbMPjoWXsAAAB+MHwGCSqGSIb3DQEHBqBvMG0CAQAwaAYJKoZIhvcNAQcBMB4GCWCGSAFlAwQBLjARBAzpGjCakrtQfw7D11MCARCAOwKSTJW6VlUIy62SvaX3+b3tcHyyZBLIlJozr0SYzHqQ3q6VrDEHrOCKgTJBtmVSPx+aluzY/KQQ6per"  # noqa
     )
     .get()
     .decode("utf-8")
