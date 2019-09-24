@@ -219,6 +219,7 @@ class ValidationTest(TestCase):
     @mock.patch("automation.autopilot.get_adgroup_minimum_daily_budget", autospec=True)
     def test_validate_autopilot_settings_autopilot_daily_budget(self, mock_get_min_budget):
         current_settings = self.ad_group.settings
+        current_settings.autopilot_daily_budget = Decimal(50)
         new_settings = current_settings.copy_settings()
         new_settings.state = constants.AdGroupSettingsState.ACTIVE
 
@@ -232,6 +233,12 @@ class ValidationTest(TestCase):
         mock_get_min_budget.return_value = 1000000
         with self.assertRaises(exceptions.AutopilotDailyBudgetTooLow):
             current_settings._validate_autopilot_settings(new_settings)
+
+        # already too low on old settings and not changed
+        mock_get_min_budget.return_value = 1000000
+        current_settings.autopilot_daily_budget = Decimal(50)
+        new_settings.autopilot_daily_budget = Decimal(50)
+        current_settings._validate_autopilot_settings(new_settings)
 
     def test_validate_all_rtb_state_adgroup_inactive(self):
         settings = model.AdGroupSettings()
