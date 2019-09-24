@@ -112,6 +112,13 @@ angular.module('one.widgets').component('zemGridContainerActions', {
             return (
                 $ctrl.entity &&
                 $ctrl.entity.type === constants.entityType.AD_GROUP &&
+                (areDeliveryBidModifierActionsVisible() ||
+                    areSourceBidModifierActionsVisible())
+            );
+        }
+
+        function areDeliveryBidModifierActionsVisible() {
+            return (
                 zemPermissions.hasPermission('zemauth.can_set_bid_modifiers') &&
                 ($ctrl.breakdown === constants.breakdown.CONTENT_AD ||
                     $ctrl.breakdown === constants.breakdown.COUNTRY ||
@@ -120,6 +127,14 @@ angular.module('one.widgets').component('zemGridContainerActions', {
                     $ctrl.breakdown === constants.breakdown.DEVICE ||
                     $ctrl.breakdown === constants.breakdown.PLACEMENT ||
                     $ctrl.breakdown === constants.breakdown.OPERATING_SYSTEM)
+            );
+        }
+
+        function areSourceBidModifierActionsVisible() {
+            return (
+                zemPermissions.hasPermission(
+                    'zemauth.can_set_source_bid_modifiers'
+                ) && $ctrl.breakdown === constants.breakdown.MEDIA_SOURCE
             );
         }
 
