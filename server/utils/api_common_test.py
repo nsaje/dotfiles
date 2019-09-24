@@ -77,6 +77,25 @@ class BaseApiViewTestCase(test.TestCase):
         self.assertEqual(json.loads(response.content), expected_content)
 
     @mock.patch("utils.api_common.logger")
+    def test_handle_custom_exception_subclass(self, logger_mock):
+        request = http.HttpRequest()
+
+        class MyCustomError(exc.ValidationError):
+            pass
+
+        error = MyCustomError("test")
+        response = api_common.BaseApiView().get_exception_response(request, error)
+
+        self.assertFalse(logger_mock.error.called)
+
+        expected_content = {
+            "data": {"message": "test", "error_code": "MyCustomError", "errors": None, "data": None},
+            "success": False,
+        }
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(json.loads(response.content), expected_content)
+
+    @mock.patch("utils.api_common.logger")
     def test_handle_unknown_exception(self, logger_mock):
         request = http.HttpRequest()
         error = Exception()

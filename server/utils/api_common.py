@@ -75,7 +75,7 @@ class BaseApiView(View):
 
     def get_exception_response(self, request, exception):
         error_data = {}
-        if type(exception) in exc.custom_errors:
+        if any(isinstance(exception, custom_error_cls) for custom_error_cls in exc.custom_errors):
             error_data["error_code"] = exception.error_code
             error_data["message"] = exception.pretty_message or exception.args[0]
 
