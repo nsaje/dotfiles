@@ -1,3 +1,4 @@
+import utils.cache_helper
 from dash import constants as dash_constants
 from dash import models
 from dash.features import geolocation
@@ -124,6 +125,7 @@ class TargetConverter:
         return dash_constants.PlacementMedium.get_name(target)
 
     @classmethod
+    @utils.cache_helper.memoize
     def _to_geolocation_target(cls, geo_type, value):
         geo_location = geolocation.Geolocation.objects.filter(key=value, type=geo_type).only("key").first()
         if geo_location is None:

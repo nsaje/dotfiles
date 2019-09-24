@@ -1,5 +1,6 @@
 import collections
 import hashlib
+from functools import wraps
 
 from django.db.models import Model
 from django.db.models.query import QuerySet
@@ -55,3 +56,19 @@ def _serialize(value, postfix="", prefix=""):
 
     serialized += postfix
     return serialized
+
+
+def memoize(func):
+    memo = {}
+
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        key = get_cache_key(*args, **kwargs)
+        value = memo.get(key)
+        if value is not None:
+            return value
+        value = func(*args, **kwargs)
+        memo[key] = value
+        return value
+
+    return wrapper
