@@ -15,6 +15,7 @@
 >
     <zem-column-selector
         on-column-toggled="$ctrl.onColumnToggled({field: field})"
+        on-columns-toggled="$ctrl.onColumnsToggled({fields: fields})"
         on-all-columns-toggled="
             $ctrl.onAllColumnsToggled({isChecked: isChecked})
         "

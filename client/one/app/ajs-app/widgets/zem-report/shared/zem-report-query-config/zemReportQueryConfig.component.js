@@ -35,6 +35,7 @@ angular.module('one.widgets').component('zemReportQueryConfig', {
         $ctrl.isPermissionInternal = zemPermissions.isPermissionInternal;
         $ctrl.onCsvSeparatorOtherChanged = onCsvSeparatorOtherChanged;
         $ctrl.onColumnToggled = onColumnToggled;
+        $ctrl.onColumnsToggled = onColumnsToggled;
         $ctrl.onAllColumnsToggled = onAllColumnsToggled;
 
         $ctrl.showAllSelectedFields = showAllSelectedFields;
@@ -161,6 +162,12 @@ angular.module('one.widgets').component('zemReportQueryConfig', {
                 $ctrl.gridApi.findColumnInCategories($ctrl.categories, field) ||
                 {};
             setVisibleColumns(column, !column.visible);
+        }
+
+        function onColumnsToggled(fields) {
+            fields.forEach(function(field) {
+                $ctrl.onColumnToggled(field);
+            });
         }
 
         function onAllColumnsToggled(isChecked) {

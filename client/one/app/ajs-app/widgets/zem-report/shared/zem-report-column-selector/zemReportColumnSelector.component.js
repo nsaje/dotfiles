@@ -5,6 +5,7 @@ angular.module('one.widgets').component('zemReportColumnSelector', {
         disabled: '<',
         categories: '<',
         onColumnToggled: '&',
+        onColumnsToggled: '&',
         onAllColumnsToggled: '&',
     },
     template: require('./zemReportColumnSelector.component.html'),

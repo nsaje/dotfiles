@@ -54,6 +54,7 @@
             disabled="$ctrl.disabled"
             ng-if="$ctrl.hasPermission('zemauth.fea_can_use_column_picker_in_reports')"
             on-column-toggled="$ctrl.onColumnToggled(field)"
+            on-columns-toggled="$ctrl.onColumnsToggled(fields)"
             on-all-columns-toggled="$ctrl.onAllColumnsToggled(isChecked)"
             categories="$ctrl.categories"
         >
