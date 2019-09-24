@@ -20,6 +20,7 @@ class TargetConverter:
         constants.BidModifierType.STATE: "_from_state_target",
         constants.BidModifierType.DMA: "_from_dma_target",
         constants.BidModifierType.AD: "_from_content_ad_target",
+        constants.BidModifierType.DAY_HOUR: "_from_day_hour_target",
     }
     _to_target_map = {
         constants.BidModifierType.PUBLISHER: "_to_publisher_target",
@@ -31,6 +32,7 @@ class TargetConverter:
         constants.BidModifierType.STATE: "_to_state_target",
         constants.BidModifierType.DMA: "_to_dma_target",
         constants.BidModifierType.AD: "_to_content_ad_target",
+        constants.BidModifierType.DAY_HOUR: "_to_day_hour_target",
     }
 
     @classmethod
@@ -89,6 +91,18 @@ class TargetConverter:
     @classmethod
     def _from_device_type_target(cls, target):
         return dash_constants.DeviceType.get_name(int(target))
+
+    @classmethod
+    def _to_day_hour_target(cls, value):
+        day_hour = dash_constants.DayHour.get_constant_value(value)
+        if day_hour is None:
+            raise exceptions.BidModifierTargetInvalid("Invalid Day-Hour")
+
+        return str(day_hour)
+
+    @classmethod
+    def _from_day_hour_target(cls, target):
+        return dash_constants.DayHour.get_name(target)
 
     @classmethod
     def _to_operating_system_target(cls, value):

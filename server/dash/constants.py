@@ -2380,3 +2380,345 @@ class Business(ConstantBase):
     ZMS = "zms"
 
     _VALUES = {Z1: "Zemanta One", OEN: "Outbrain Extended Network", ZMS: "Zemanta Managed Service"}
+
+
+class DayHour(ConstantBase):
+    MONDAY_1 = "monday_1"
+    MONDAY_2 = "monday_2"
+    MONDAY_3 = "monday_3"
+    MONDAY_4 = "monday_4"
+    MONDAY_5 = "monday_5"
+    MONDAY_6 = "monday_6"
+    MONDAY_7 = "monday_7"
+    MONDAY_8 = "monday_8"
+    MONDAY_9 = "monday_9"
+    MONDAY_10 = "monday_10"
+    MONDAY_11 = "monday_11"
+    MONDAY_12 = "monday_12"
+    MONDAY_13 = "monday_13"
+    MONDAY_14 = "monday_14"
+    MONDAY_15 = "monday_15"
+    MONDAY_16 = "monday_16"
+    MONDAY_17 = "monday_17"
+    MONDAY_18 = "monday_18"
+    MONDAY_19 = "monday_19"
+    MONDAY_20 = "monday_20"
+    MONDAY_21 = "monday_21"
+    MONDAY_22 = "monday_22"
+    MONDAY_23 = "monday_23"
+    MONDAY_24 = "monday_24"
+    TUESDAY_1 = "tuesday_1"
+    TUESDAY_2 = "tuesday_2"
+    TUESDAY_3 = "tuesday_3"
+    TUESDAY_4 = "tuesday_4"
+    TUESDAY_5 = "tuesday_5"
+    TUESDAY_6 = "tuesday_6"
+    TUESDAY_7 = "tuesday_7"
+    TUESDAY_8 = "tuesday_8"
+    TUESDAY_9 = "tuesday_9"
+    TUESDAY_10 = "tuesday_10"
+    TUESDAY_11 = "tuesday_11"
+    TUESDAY_12 = "tuesday_12"
+    TUESDAY_13 = "tuesday_13"
+    TUESDAY_14 = "tuesday_14"
+    TUESDAY_15 = "tuesday_15"
+    TUESDAY_16 = "tuesday_16"
+    TUESDAY_17 = "tuesday_17"
+    TUESDAY_18 = "tuesday_18"
+    TUESDAY_19 = "tuesday_19"
+    TUESDAY_20 = "tuesday_20"
+    TUESDAY_21 = "tuesday_21"
+    TUESDAY_22 = "tuesday_22"
+    TUESDAY_23 = "tuesday_23"
+    TUESDAY_24 = "tuesday_24"
+    WEDNESDAY_1 = "wednesday_1"
+    WEDNESDAY_2 = "wednesday_2"
+    WEDNESDAY_3 = "wednesday_3"
+    WEDNESDAY_4 = "wednesday_4"
+    WEDNESDAY_5 = "wednesday_5"
+    WEDNESDAY_6 = "wednesday_6"
+    WEDNESDAY_7 = "wednesday_7"
+    WEDNESDAY_8 = "wednesday_8"
+    WEDNESDAY_9 = "wednesday_9"
+    WEDNESDAY_10 = "wednesday_10"
+    WEDNESDAY_11 = "wednesday_11"
+    WEDNESDAY_12 = "wednesday_12"
+    WEDNESDAY_13 = "wednesday_13"
+    WEDNESDAY_14 = "wednesday_14"
+    WEDNESDAY_15 = "wednesday_15"
+    WEDNESDAY_16 = "wednesday_16"
+    WEDNESDAY_17 = "wednesday_17"
+    WEDNESDAY_18 = "wednesday_18"
+    WEDNESDAY_19 = "wednesday_19"
+    WEDNESDAY_20 = "wednesday_20"
+    WEDNESDAY_21 = "wednesday_21"
+    WEDNESDAY_22 = "wednesday_22"
+    WEDNESDAY_23 = "wednesday_23"
+    WEDNESDAY_24 = "wednesday_24"
+    THURSDAY_1 = "thursday_1"
+    THURSDAY_2 = "thursday_2"
+    THURSDAY_3 = "thursday_3"
+    THURSDAY_4 = "thursday_4"
+    THURSDAY_5 = "thursday_5"
+    THURSDAY_6 = "thursday_6"
+    THURSDAY_7 = "thursday_7"
+    THURSDAY_8 = "thursday_8"
+    THURSDAY_9 = "thursday_9"
+    THURSDAY_10 = "thursday_10"
+    THURSDAY_11 = "thursday_11"
+    THURSDAY_12 = "thursday_12"
+    THURSDAY_13 = "thursday_13"
+    THURSDAY_14 = "thursday_14"
+    THURSDAY_15 = "thursday_15"
+    THURSDAY_16 = "thursday_16"
+    THURSDAY_17 = "thursday_17"
+    THURSDAY_18 = "thursday_18"
+    THURSDAY_19 = "thursday_19"
+    THURSDAY_20 = "thursday_20"
+    THURSDAY_21 = "thursday_21"
+    THURSDAY_22 = "thursday_22"
+    THURSDAY_23 = "thursday_23"
+    THURSDAY_24 = "thursday_24"
+    FRIDAY_1 = "friday_1"
+    FRIDAY_2 = "friday_2"
+    FRIDAY_3 = "friday_3"
+    FRIDAY_4 = "friday_4"
+    FRIDAY_5 = "friday_5"
+    FRIDAY_6 = "friday_6"
+    FRIDAY_7 = "friday_7"
+    FRIDAY_8 = "friday_8"
+    FRIDAY_9 = "friday_9"
+    FRIDAY_10 = "friday_10"
+    FRIDAY_11 = "friday_11"
+    FRIDAY_12 = "friday_12"
+    FRIDAY_13 = "friday_13"
+    FRIDAY_14 = "friday_14"
+    FRIDAY_15 = "friday_15"
+    FRIDAY_16 = "friday_16"
+    FRIDAY_17 = "friday_17"
+    FRIDAY_18 = "friday_18"
+    FRIDAY_19 = "friday_19"
+    FRIDAY_20 = "friday_20"
+    FRIDAY_21 = "friday_21"
+    FRIDAY_22 = "friday_22"
+    FRIDAY_23 = "friday_23"
+    FRIDAY_24 = "friday_24"
+    SATURDAY_1 = "saturday_1"
+    SATURDAY_2 = "saturday_2"
+    SATURDAY_3 = "saturday_3"
+    SATURDAY_4 = "saturday_4"
+    SATURDAY_5 = "saturday_5"
+    SATURDAY_6 = "saturday_6"
+    SATURDAY_7 = "saturday_7"
+    SATURDAY_8 = "saturday_8"
+    SATURDAY_9 = "saturday_9"
+    SATURDAY_10 = "saturday_10"
+    SATURDAY_11 = "saturday_11"
+    SATURDAY_12 = "saturday_12"
+    SATURDAY_13 = "saturday_13"
+    SATURDAY_14 = "saturday_14"
+    SATURDAY_15 = "saturday_15"
+    SATURDAY_16 = "saturday_16"
+    SATURDAY_17 = "saturday_17"
+    SATURDAY_18 = "saturday_18"
+    SATURDAY_19 = "saturday_19"
+    SATURDAY_20 = "saturday_20"
+    SATURDAY_21 = "saturday_21"
+    SATURDAY_22 = "saturday_22"
+    SATURDAY_23 = "saturday_23"
+    SATURDAY_24 = "saturday_24"
+    SUNDAY_1 = "sunday_1"
+    SUNDAY_2 = "sunday_2"
+    SUNDAY_3 = "sunday_3"
+    SUNDAY_4 = "sunday_4"
+    SUNDAY_5 = "sunday_5"
+    SUNDAY_6 = "sunday_6"
+    SUNDAY_7 = "sunday_7"
+    SUNDAY_8 = "sunday_8"
+    SUNDAY_9 = "sunday_9"
+    SUNDAY_10 = "sunday_10"
+    SUNDAY_11 = "sunday_11"
+    SUNDAY_12 = "sunday_12"
+    SUNDAY_13 = "sunday_13"
+    SUNDAY_14 = "sunday_14"
+    SUNDAY_15 = "sunday_15"
+    SUNDAY_16 = "sunday_16"
+    SUNDAY_17 = "sunday_17"
+    SUNDAY_18 = "sunday_18"
+    SUNDAY_19 = "sunday_19"
+    SUNDAY_20 = "sunday_20"
+    SUNDAY_21 = "sunday_21"
+    SUNDAY_22 = "sunday_22"
+    SUNDAY_23 = "sunday_23"
+    SUNDAY_24 = "sunday_24"
+
+    _VALUES = {
+        MONDAY_1: "Monday 0:00 - 1:00",
+        MONDAY_2: "Monday 1:00 - 2:00",
+        MONDAY_3: "Monday 2:00 - 3:00",
+        MONDAY_4: "Monday 3:00 - 4:00",
+        MONDAY_5: "Monday 4:00 - 5:00",
+        MONDAY_6: "Monday 5:00 - 6:00",
+        MONDAY_7: "Monday 6:00 - 7:00",
+        MONDAY_8: "Monday 7:00 - 8:00",
+        MONDAY_9: "Monday 8:00 - 9:00",
+        MONDAY_10: "Monday 9:00 - 10:00",
+        MONDAY_11: "Monday 10:00 - 11:00",
+        MONDAY_12: "Monday 11:00 - 12:00",
+        MONDAY_13: "Monday 12:00 - 13:00",
+        MONDAY_14: "Monday 13:00 - 14:00",
+        MONDAY_15: "Monday 14:00 - 15:00",
+        MONDAY_16: "Monday 15:00 - 16:00",
+        MONDAY_17: "Monday 16:00 - 17:00",
+        MONDAY_18: "Monday 17:00 - 18:00",
+        MONDAY_19: "Monday 18:00 - 19:00",
+        MONDAY_20: "Monday 19:00 - 20:00",
+        MONDAY_21: "Monday 20:00 - 21:00",
+        MONDAY_22: "Monday 21:00 - 22:00",
+        MONDAY_23: "Monday 22:00 - 23:00",
+        MONDAY_24: "Monday 23:00 - 24:00",
+        TUESDAY_1: "Tuesday 0:00 - 1:00",
+        TUESDAY_2: "Tuesday 1:00 - 2:00",
+        TUESDAY_3: "Tuesday 2:00 - 3:00",
+        TUESDAY_4: "Tuesday 3:00 - 4:00",
+        TUESDAY_5: "Tuesday 4:00 - 5:00",
+        TUESDAY_6: "Tuesday 5:00 - 6:00",
+        TUESDAY_7: "Tuesday 6:00 - 7:00",
+        TUESDAY_8: "Tuesday 7:00 - 8:00",
+        TUESDAY_9: "Tuesday 8:00 - 9:00",
+        TUESDAY_10: "Tuesday 9:00 - 10:00",
+        TUESDAY_11: "Tuesday 10:00 - 11:00",
+        TUESDAY_12: "Tuesday 11:00 - 12:00",
+        TUESDAY_13: "Tuesday 12:00 - 13:00",
+        TUESDAY_14: "Tuesday 13:00 - 14:00",
+        TUESDAY_15: "Tuesday 14:00 - 15:00",
+        TUESDAY_16: "Tuesday 15:00 - 16:00",
+        TUESDAY_17: "Tuesday 16:00 - 17:00",
+        TUESDAY_18: "Tuesday 17:00 - 18:00",
+        TUESDAY_19: "Tuesday 18:00 - 19:00",
+        TUESDAY_20: "Tuesday 19:00 - 20:00",
+        TUESDAY_21: "Tuesday 20:00 - 21:00",
+        TUESDAY_22: "Tuesday 21:00 - 22:00",
+        TUESDAY_23: "Tuesday 22:00 - 23:00",
+        TUESDAY_24: "Tuesday 23:00 - 24:00",
+        WEDNESDAY_1: "Wednesday 0:00 - 1:00",
+        WEDNESDAY_2: "Wednesday 1:00 - 2:00",
+        WEDNESDAY_3: "Wednesday 2:00 - 3:00",
+        WEDNESDAY_4: "Wednesday 3:00 - 4:00",
+        WEDNESDAY_5: "Wednesday 4:00 - 5:00",
+        WEDNESDAY_6: "Wednesday 5:00 - 6:00",
+        WEDNESDAY_7: "Wednesday 6:00 - 7:00",
+        WEDNESDAY_8: "Wednesday 7:00 - 8:00",
+        WEDNESDAY_9: "Wednesday 8:00 - 9:00",
+        WEDNESDAY_10: "Wednesday 9:00 - 10:00",
+        WEDNESDAY_11: "Wednesday 10:00 - 11:00",
+        WEDNESDAY_12: "Wednesday 11:00 - 12:00",
+        WEDNESDAY_13: "Wednesday 12:00 - 13:00",
+        WEDNESDAY_14: "Wednesday 13:00 - 14:00",
+        WEDNESDAY_15: "Wednesday 14:00 - 15:00",
+        WEDNESDAY_16: "Wednesday 15:00 - 16:00",
+        WEDNESDAY_17: "Wednesday 16:00 - 17:00",
+        WEDNESDAY_18: "Wednesday 17:00 - 18:00",
+        WEDNESDAY_19: "Wednesday 18:00 - 19:00",
+        WEDNESDAY_20: "Wednesday 19:00 - 20:00",
+        WEDNESDAY_21: "Wednesday 20:00 - 21:00",
+        WEDNESDAY_22: "Wednesday 21:00 - 22:00",
+        WEDNESDAY_23: "Wednesday 22:00 - 23:00",
+        WEDNESDAY_24: "Wednesday 23:00 - 24:00",
+        THURSDAY_1: "Thursday 0:00 - 1:00",
+        THURSDAY_2: "Thursday 1:00 - 2:00",
+        THURSDAY_3: "Thursday 2:00 - 3:00",
+        THURSDAY_4: "Thursday 3:00 - 4:00",
+        THURSDAY_5: "Thursday 4:00 - 5:00",
+        THURSDAY_6: "Thursday 5:00 - 6:00",
+        THURSDAY_7: "Thursday 6:00 - 7:00",
+        THURSDAY_8: "Thursday 7:00 - 8:00",
+        THURSDAY_9: "Thursday 8:00 - 9:00",
+        THURSDAY_10: "Thursday 9:00 - 10:00",
+        THURSDAY_11: "Thursday 10:00 - 11:00",
+        THURSDAY_12: "Thursday 11:00 - 12:00",
+        THURSDAY_13: "Thursday 12:00 - 13:00",
+        THURSDAY_14: "Thursday 13:00 - 14:00",
+        THURSDAY_15: "Thursday 14:00 - 15:00",
+        THURSDAY_16: "Thursday 15:00 - 16:00",
+        THURSDAY_17: "Thursday 16:00 - 17:00",
+        THURSDAY_18: "Thursday 17:00 - 18:00",
+        THURSDAY_19: "Thursday 18:00 - 19:00",
+        THURSDAY_20: "Thursday 19:00 - 20:00",
+        THURSDAY_21: "Thursday 20:00 - 21:00",
+        THURSDAY_22: "Thursday 21:00 - 22:00",
+        THURSDAY_23: "Thursday 22:00 - 23:00",
+        THURSDAY_24: "Thursday 23:00 - 24:00",
+        FRIDAY_1: "Friday 0:00 - 1:00",
+        FRIDAY_2: "Friday 1:00 - 2:00",
+        FRIDAY_3: "Friday 2:00 - 3:00",
+        FRIDAY_4: "Friday 3:00 - 4:00",
+        FRIDAY_5: "Friday 4:00 - 5:00",
+        FRIDAY_6: "Friday 5:00 - 6:00",
+        FRIDAY_7: "Friday 6:00 - 7:00",
+        FRIDAY_8: "Friday 7:00 - 8:00",
+        FRIDAY_9: "Friday 8:00 - 9:00",
+        FRIDAY_10: "Friday 9:00 - 10:00",
+        FRIDAY_11: "Friday 10:00 - 11:00",
+        FRIDAY_12: "Friday 11:00 - 12:00",
+        FRIDAY_13: "Friday 12:00 - 13:00",
+        FRIDAY_14: "Friday 13:00 - 14:00",
+        FRIDAY_15: "Friday 14:00 - 15:00",
+        FRIDAY_16: "Friday 15:00 - 16:00",
+        FRIDAY_17: "Friday 16:00 - 17:00",
+        FRIDAY_18: "Friday 17:00 - 18:00",
+        FRIDAY_19: "Friday 18:00 - 19:00",
+        FRIDAY_20: "Friday 19:00 - 20:00",
+        FRIDAY_21: "Friday 20:00 - 21:00",
+        FRIDAY_22: "Friday 21:00 - 22:00",
+        FRIDAY_23: "Friday 22:00 - 23:00",
+        FRIDAY_24: "Friday 23:00 - 24:00",
+        SATURDAY_1: "Saturday 0:00 - 1:00",
+        SATURDAY_2: "Saturday 1:00 - 2:00",
+        SATURDAY_3: "Saturday 2:00 - 3:00",
+        SATURDAY_4: "Saturday 3:00 - 4:00",
+        SATURDAY_5: "Saturday 4:00 - 5:00",
+        SATURDAY_6: "Saturday 5:00 - 6:00",
+        SATURDAY_7: "Saturday 6:00 - 7:00",
+        SATURDAY_8: "Saturday 7:00 - 8:00",
+        SATURDAY_9: "Saturday 8:00 - 9:00",
+        SATURDAY_10: "Saturday 9:00 - 10:00",
+        SATURDAY_11: "Saturday 10:00 - 11:00",
+        SATURDAY_12: "Saturday 11:00 - 12:00",
+        SATURDAY_13: "Saturday 12:00 - 13:00",
+        SATURDAY_14: "Saturday 13:00 - 14:00",
+        SATURDAY_15: "Saturday 14:00 - 15:00",
+        SATURDAY_16: "Saturday 15:00 - 16:00",
+        SATURDAY_17: "Saturday 16:00 - 17:00",
+        SATURDAY_18: "Saturday 17:00 - 18:00",
+        SATURDAY_19: "Saturday 18:00 - 19:00",
+        SATURDAY_20: "Saturday 19:00 - 20:00",
+        SATURDAY_21: "Saturday 20:00 - 21:00",
+        SATURDAY_22: "Saturday 21:00 - 22:00",
+        SATURDAY_23: "Saturday 22:00 - 23:00",
+        SATURDAY_24: "Saturday 23:00 - 24:00",
+        SUNDAY_1: "Sunday 0:00 - 1:00",
+        SUNDAY_2: "Sunday 1:00 - 2:00",
+        SUNDAY_3: "Sunday 2:00 - 3:00",
+        SUNDAY_4: "Sunday 3:00 - 4:00",
+        SUNDAY_5: "Sunday 4:00 - 5:00",
+        SUNDAY_6: "Sunday 5:00 - 6:00",
+        SUNDAY_7: "Sunday 6:00 - 7:00",
+        SUNDAY_8: "Sunday 7:00 - 8:00",
+        SUNDAY_9: "Sunday 8:00 - 9:00",
+        SUNDAY_10: "Sunday 9:00 - 10:00",
+        SUNDAY_11: "Sunday 10:00 - 11:00",
+        SUNDAY_12: "Sunday 11:00 - 12:00",
+        SUNDAY_13: "Sunday 12:00 - 13:00",
+        SUNDAY_14: "Sunday 13:00 - 14:00",
+        SUNDAY_15: "Sunday 14:00 - 15:00",
+        SUNDAY_16: "Sunday 15:00 - 16:00",
+        SUNDAY_17: "Sunday 16:00 - 17:00",
+        SUNDAY_18: "Sunday 17:00 - 18:00",
+        SUNDAY_19: "Sunday 18:00 - 19:00",
+        SUNDAY_20: "Sunday 19:00 - 20:00",
+        SUNDAY_21: "Sunday 20:00 - 21:00",
+        SUNDAY_22: "Sunday 21:00 - 22:00",
+        SUNDAY_23: "Sunday 22:00 - 23:00",
+        SUNDAY_24: "Sunday 23:00 - 24:00",
+    }

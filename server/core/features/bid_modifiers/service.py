@@ -369,6 +369,7 @@ def make_csv_example_file(modifier_type):
         constants.BidModifierType.STATE: {target_column_name: "US-TX"},
         constants.BidModifierType.DMA: {target_column_name: "765"},
         constants.BidModifierType.AD: {target_column_name: "1"},
+        constants.BidModifierType.DAY_HOUR: {target_column_name: "MONDAY_12"},
     }
 
     entry.update(modifier_type_map[modifier_type])

@@ -34,6 +34,7 @@ class TestBidModifierService(TestCase):
         service.set(self.ad_group, constants.BidModifierType.STATE, "test_state", None, 2.4)
         service.set(self.ad_group, constants.BidModifierType.DMA, "100", None, 0.6)
         service.set(self.ad_group, constants.BidModifierType.AD, "test_ad", None, 1.1)
+        service.set(self.ad_group, constants.BidModifierType.DAY_HOUR, dash_constants.DayHour.FRIDAY_10, None, 1.2)
         self.assertEqual(
             service.get(self.ad_group),
             [
@@ -71,6 +72,12 @@ class TestBidModifierService(TestCase):
                 {"type": constants.BidModifierType.STATE, "target": "test_state", "source": None, "modifier": 2.4},
                 {"type": constants.BidModifierType.DMA, "target": "100", "source": None, "modifier": 0.6},
                 {"type": constants.BidModifierType.AD, "target": "test_ad", "source": None, "modifier": 1.1},
+                {
+                    "type": constants.BidModifierType.DAY_HOUR,
+                    "target": str(dash_constants.DayHour.FRIDAY_10),
+                    "source": None,
+                    "modifier": 1.2,
+                },
             ],
         )
 
