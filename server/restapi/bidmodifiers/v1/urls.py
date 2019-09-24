@@ -5,7 +5,7 @@ from . import views
 urlpatterns = [
     url(
         r"^adgroups/(?P<ad_group_id>\d+)/bidmodifiers/$",
-        views.BidModifierViewSet.as_view({"get": "list", "post": "create", "delete": "destroy"}),
+        views.BidModifierViewSet.as_view({"get": "list", "post": "create", "put": "update_bulk", "delete": "destroy"}),
         name="adgroups_bidmodifiers_list",
     ),
     url(

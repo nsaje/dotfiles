@@ -723,6 +723,66 @@ class BidModifierViewSetTest(restapi.common.views_base_test.RESTAPITest):
         result = self.assertResponseError(response, "ValidationError")
         self.assertEqual(result, {"errorCode": "ValidationError", "details": "Modifier field is required"})
 
+    def test_update_bulk(self):
+        bm1 = self.bid_modifiers_list[0]
+        bm2 = self.bid_modifiers_list[1]
+
+        response = self.client.put(
+            reverse("adgroups_bidmodifiers_list", kwargs={"ad_group_id": self.ad_group.id}),
+            data=[
+                {
+                    "type": bid_modifiers.BidModifierType.get_name(bm1.type),
+                    "target": bm1.target,
+                    "modifier": 1.5,
+                    "sourceSlug": bm1.source_slug,
+                },
+                {
+                    "type": bid_modifiers.BidModifierType.get_name(bm2.type),
+                    "target": bm2.target,
+                    "modifier": 1.6,
+                    "sourceSlug": bm2.source_slug,
+                },
+                {
+                    "type": bid_modifiers.BidModifierType.get_name(bid_modifiers.BidModifierType.AD),
+                    "target": str(self.content_ad.id),
+                    "modifier": 1.7,
+                },
+            ],
+            format="json",
+        )
+
+        result = self.assertResponseValid(response, status_code=status.HTTP_200_OK, data_type=list)
+        created_id = result["data"][-1].get("id")
+
+        self.assertEqual(
+            result,
+            {
+                "data": [
+                    {
+                        "id": str(bm1.id),
+                        "type": bid_modifiers.BidModifierType.get_name(bm1.type),
+                        "sourceSlug": bm1.source_slug,
+                        "target": bm1.target,
+                        "modifier": 1.5,
+                    },
+                    {
+                        "id": str(bm2.id),
+                        "type": bid_modifiers.BidModifierType.get_name(bm2.type),
+                        "sourceSlug": bm2.source_slug,
+                        "target": bm2.target,
+                        "modifier": 1.6,
+                    },
+                    {
+                        "id": created_id,
+                        "type": bid_modifiers.BidModifierType.get_name(bid_modifiers.BidModifierType.AD),
+                        "target": str(self.content_ad.id),
+                        "sourceSlug": "",
+                        "modifier": 1.7,
+                    },
+                ]
+            },
+        )
+
     def test_destroy(self):
         bm = self.bid_modifiers_list[3]
 

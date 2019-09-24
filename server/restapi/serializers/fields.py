@@ -66,7 +66,7 @@ class DashConstantField(serializers.CharField):
             return NOT_PROVIDED
         try:
             return getattr(self.const_cls, data)
-        except AttributeError:
+        except (AttributeError, TypeError):
             valid_choices = self.const_cls.get_all_names()
             raise serializers.ValidationError("Invalid choice %s! Valid choices: %s" % (data, ", ".join(valid_choices)))
 

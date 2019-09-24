@@ -213,6 +213,51 @@ class TestBidModifierService(TestCase):
                 self.ad_group, constants.BidModifierType.DEVICE, dash_constants.DeviceType.DESKTOP, self.source, 0.5
             )
 
+    def test_set_bulk(self):
+        bms_to_set = [
+            service.BidModifierData(constants.BidModifierType.DEVICE, dash_constants.DeviceType.DESKTOP, None, 0.5),
+            service.BidModifierData(constants.BidModifierType.DEVICE, dash_constants.DeviceType.MOBILE, None, 0.6),
+        ]
+        service.set_bulk(self.ad_group, bms_to_set)
+        self.assertEqual(models.BidModifier.objects.filter(ad_group=self.ad_group).count(), 2)
+
+        bms_to_set = [
+            service.BidModifierData(constants.BidModifierType.DEVICE, dash_constants.DeviceType.DESKTOP, None, 0.7),
+            service.BidModifierData(constants.BidModifierType.DEVICE, dash_constants.DeviceType.MOBILE, None, 0.8),
+        ]
+        service.set_bulk(self.ad_group, bms_to_set)
+        self.assertEqual(models.BidModifier.objects.filter(ad_group=self.ad_group).count(), 2)
+
+        bms_to_set = [
+            service.BidModifierData(constants.BidModifierType.DEVICE, dash_constants.DeviceType.TABLET, None, 0.9)
+        ]
+        service.set_bulk(self.ad_group, bms_to_set)
+        self.assertEqual(models.BidModifier.objects.filter(ad_group=self.ad_group).count(), 3)
+
+        self.assertEqual(
+            service.get(self.ad_group),
+            [
+                {
+                    "type": constants.BidModifierType.DEVICE,
+                    "target": str(dash_constants.DeviceType.DESKTOP),
+                    "source": None,
+                    "modifier": 0.7,
+                },
+                {
+                    "type": constants.BidModifierType.DEVICE,
+                    "target": str(dash_constants.DeviceType.MOBILE),
+                    "source": None,
+                    "modifier": 0.8,
+                },
+                {
+                    "type": constants.BidModifierType.DEVICE,
+                    "target": str(dash_constants.DeviceType.TABLET),
+                    "source": None,
+                    "modifier": 0.9,
+                },
+            ],
+        )
+
     def test_clean_entries(self):
         entries = [
             {

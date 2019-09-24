@@ -52,17 +52,14 @@ class BidModifierViewSet(restapi.common.views_base.RESTAPIBaseViewSet):
         except models.AdGroup.DoesNotExist:
             raise exc.MissingDataError("Ad Group does not exist")
 
-        if "source_slug" in input_data and input_data["source_slug"]:
-            try:
-                source = models.Source.objects.get(bidder_slug=input_data["source_slug"])
-            except models.Source.DoesNotExist:
-                raise exc.MissingDataError("Source does not exist")
-        else:
-            source = None
-
         try:
             bid_modifier, _ = core.features.bid_modifiers.set(
-                ad_group, input_data["type"], input_data["target"], source, input_data["modifier"], user=request.user
+                ad_group,
+                input_data["type"],
+                input_data["target"],
+                self._source_from_source_slug(input_data.get("source_slug")),
+                input_data["modifier"],
+                user=request.user,
             )
         except core.features.bid_modifiers.BidModifierInvalid as e:
             raise exc.ValidationError(str(e))
@@ -99,8 +96,39 @@ class BidModifierViewSet(restapi.common.views_base.RESTAPIBaseViewSet):
 
         return self.response_ok(serializers.BidModifierSerializer(bid_modifier).data)
 
-    def destroy(self, request, ad_group_id, pk=None):
+    def update_bulk(self, request, ad_group_id):
+        ad_group = restapi.access.get_ad_group(request.user, ad_group_id)
 
+        serializer = serializers.BidModifierSerializer(data=request.data, many=True)
+        serializer.is_valid(raise_exception=True)
+        input_data = serializer.validated_data
+
+        bms_to_set = [
+            core.features.bid_modifiers.BidModifierData(
+                type=bm["type"],
+                target=bm["target"],
+                source=self._source_from_source_slug(bm.get("source_slug")),
+                modifier=bm["modifier"],
+            )
+            for bm in input_data
+        ]
+        try:
+            bid_modifiers = core.features.bid_modifiers.set_bulk(ad_group, bms_to_set, user=request.user)
+        except core.features.bid_modifiers.BidModifierInvalid as e:
+            raise exc.ValidationError(str(e))
+
+        return self.response_ok(serializers.BidModifierSerializer(bid_modifiers, many=True).data)
+
+    @staticmethod
+    def _source_from_source_slug(source_slug):
+        if source_slug:
+            try:
+                return models.Source.objects.get(bidder_slug=source_slug)
+            except models.Source.DoesNotExist:
+                raise exc.MissingDataError("Source does not exist")
+        return None
+
+    def destroy(self, request, ad_group_id, pk=None):
         if pk is not None:
             if request.data:
                 raise exc.ValidationError("Delete Bid Modifier requires no data")

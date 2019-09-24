@@ -1,7 +1,9 @@
 import csv
+import dataclasses
 import io as StringIO
 import os
 from collections import defaultdict
+from typing import Sequence
 
 from django.conf import settings
 from django.db import transaction
@@ -17,6 +19,14 @@ from . import helpers
 from . import models
 
 
+@dataclasses.dataclass
+class BidModifierData:
+    type: int
+    target: str
+    source: source_model.Source
+    modifier: float
+
+
 def get(ad_group, include_types=None, exclude_types=None):
     qs = models.BidModifier.objects.filter(ad_group=ad_group).select_related("source").order_by("pk")
 
@@ -30,22 +40,42 @@ def get(ad_group, include_types=None, exclude_types=None):
 
 @transaction.atomic
 def set(ad_group, modifier_type, target, source, modifier, user=None, write_history=True, propagate_to_k1=True):
+    instance, created = _set(ad_group, modifier_type, target, source, modifier, user, write_history)
+    if propagate_to_k1:
+        k1_helper.update_ad_group(ad_group, msg="bid_modifiers.set", priority=True)
+    return instance, created
+
+
+@transaction.atomic
+def set_bulk(
+    ad_group, bid_modifiers_to_set: Sequence[BidModifierData], user=None, write_history=True, propagate_to_k1=True
+):
+    instances = []
+    for bid_modifier_data in bid_modifiers_to_set:
+        instance, _ = _set(
+            ad_group,
+            bid_modifier_data.type,
+            bid_modifier_data.target,
+            bid_modifier_data.source,
+            bid_modifier_data.modifier,
+            user,
+        )
+        if instance:
+            instances.append(instance)
+    if propagate_to_k1:
+        k1_helper.update_ad_group(ad_group, msg="bid_modifiers.set", priority=True)
+    return instances
+
+
+def _set(ad_group, modifier_type, target, source, modifier, user, write_history=True):
     if not modifier:
         _delete(ad_group, modifier_type, target, source, user=user, write_history=write_history)
-        if propagate_to_k1:
-            k1_helper.update_ad_group(ad_group, msg="bid_modifiers.set", priority=True)
-        return
+        return None, None
 
     if modifier_type != constants.BidModifierType.SOURCE:
         helpers.check_modifier_value(modifier)
 
-    instance, created = _update_or_create(
-        ad_group, modifier_type, target, source, modifier, user=user, write_history=write_history
-    )
-
-    if propagate_to_k1:
-        k1_helper.update_ad_group(ad_group, msg="bid_modifiers.set", priority=True)
-    return instance, created
+    return _update_or_create(ad_group, modifier_type, target, source, modifier, user=user, write_history=write_history)
 
 
 def _delete(ad_group, modifier_type, target, source, user=None, write_history=True):
