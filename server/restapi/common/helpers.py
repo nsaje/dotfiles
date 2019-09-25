@@ -23,17 +23,25 @@ def get_applied_deals_dict(configured_deals):
 
 
 def get_users_for_manager(user, account, current_manager=None):
+    users_queryset = None
     if user.has_perm("zemauth.can_see_all_users_for_managers"):
-        users = zemauth.models.User.objects.all()
+        users_queryset = zemauth.models.User.objects.all()
     else:
-        users = account.users.all()
+        if account.id is not None:
+            users_queryset = account.users.all()
         if account.is_agency():
-            users |= account.agency.users.all()
+            if users_queryset is not None:
+                users_queryset |= account.agency.users.all()
+            else:
+                users_queryset = account.agency.users.all()
 
     if current_manager is not None:
-        users |= zemauth.models.User.objects.filter(pk=current_manager.id)
+        if users_queryset is not None:
+            users_queryset |= zemauth.models.User.objects.filter(pk=current_manager.id)
+        else:
+            users_queryset = zemauth.models.User.objects.filter(pk=current_manager.id)
 
-    return users.filter(is_active=True).distinct()
+    return users_queryset.filter(is_active=True).distinct() if users_queryset is not None else []
 
 
 def get_user_full_name_or_email(user, default_value="/"):

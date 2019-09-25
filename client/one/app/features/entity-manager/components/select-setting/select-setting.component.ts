@@ -35,9 +35,11 @@ export class SelectSettingComponent implements OnChanges {
     @Input()
     isSearchable: boolean = false;
     @Input()
+    isClearable: boolean = true;
+    @Input()
     groupByValue: string;
     @Input()
-    isClearable: boolean = true;
+    orderByValue: string;
     @Input()
     errors: string[];
     @Output()

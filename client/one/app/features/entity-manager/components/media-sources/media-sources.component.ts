@@ -39,28 +39,24 @@ export class MediaSourcesComponent implements OnChanges {
     ngOnChanges(changes: SimpleChanges): void {
         if (changes.allowedMediaSources) {
             this.selectedAvailableMediaSources = [];
-            this.formattedAvailableMediaSources = clone(
-                this.availableMediaSources
-            )
-                .filter(
-                    item =>
-                        this.allowedMediaSources
-                            .map(x => x.id)
-                            .indexOf(item.id) === -1
-                )
-                .sort((a, b) => {
-                    if (a.name < b.name) {
-                        return -1;
-                    }
-                    if (a.name > b.name) {
-                        return 1;
-                    }
-                    return 0;
-                });
+            this.formattedAvailableMediaSources = this.availableMediaSources.filter(
+                item =>
+                    this.allowedMediaSources.map(x => x.id).indexOf(item.id) ===
+                    -1
+            );
+            this.formattedAvailableMediaSources.sort((a, b) => {
+                if (a.name < b.name) {
+                    return -1;
+                }
+                if (a.name > b.name) {
+                    return 1;
+                }
+                return 0;
+            });
+
             this.selectedAllowedMediaSources = [];
-            this.formattedAllowedMediaSources = clone(
-                this.allowedMediaSources
-            ).sort((a, b) => {
+            this.formattedAllowedMediaSources = clone(this.allowedMediaSources);
+            this.formattedAllowedMediaSources.sort((a, b) => {
                 if (a.name < b.name) {
                     return -1;
                 }

@@ -9,16 +9,16 @@ import {
     EventEmitter,
     Output,
     Input,
-    OnInit,
 } from '@angular/core';
 import * as commonHelpers from '../../helpers/common.helpers';
+import * as clone from 'clone';
 
 @Component({
     selector: 'zem-select-input',
     templateUrl: './select-input.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class SelectInputComponent implements OnInit, OnChanges {
+export class SelectInputComponent implements OnChanges {
     @Input()
     value: string;
     @Input()
@@ -34,25 +34,50 @@ export class SelectInputComponent implements OnInit, OnChanges {
     @Input()
     isSearchable: boolean = false;
     @Input()
+    isClearable: boolean = true;
+    @Input()
     groupByValue: string;
     @Input()
-    isClearable: boolean = true;
+    orderByValue: string;
     @Input()
     hasError: boolean = false;
     @Output()
     valueChange = new EventEmitter<string>();
 
     model: string;
-
-    ngOnInit(): void {
-        this.bindLabel = commonHelpers.getValueOrDefault(this.bindLabel, '');
-        this.bindValue = commonHelpers.getValueOrDefault(this.bindValue, '');
-        this.items = commonHelpers.getValueOrDefault(this.items, []);
-    }
+    formattedItems: any[];
 
     ngOnChanges(changes: SimpleChanges) {
         if (changes.value) {
             this.model = this.value;
+        }
+        if (changes.bindLabel) {
+            this.bindLabel = commonHelpers.getValueOrDefault(
+                this.bindLabel,
+                ''
+            );
+        }
+        if (changes.bindValue) {
+            this.bindValue = commonHelpers.getValueOrDefault(
+                this.bindValue,
+                ''
+            );
+        }
+        if (changes.items) {
+            this.formattedItems = clone(
+                commonHelpers.getValueOrDefault(this.items, [])
+            );
+            if (commonHelpers.isDefined(this.orderByValue)) {
+                this.formattedItems.sort((a, b) => {
+                    if (a[this.orderByValue] < b[this.orderByValue]) {
+                        return -1;
+                    }
+                    if (a[this.orderByValue] > b[this.orderByValue]) {
+                        return 1;
+                    }
+                    return 0;
+                });
+            }
         }
     }
 

@@ -98,15 +98,21 @@ def get_available_sources(user, agency):
     if agency is not None and agency.allowed_sources.count() > 0:
         available_sources_queryset = agency.allowed_sources.all()
     if not user.has_perm("zemauth.can_see_all_available_sources"):
-        available_sources_queryset = available_sources_queryset.filter(released=True)
+        available_sources_queryset = available_sources_queryset.filter(released=True, deprecated=False)
     return list(available_sources_queryset)
 
 
-def get_allowed_sources(account):
+def get_allowed_sources(user, account):
     if account.id is not None:
-        return list(account.allowed_sources.all())
+        allowed_sources_queryset = account.allowed_sources.all()
+        if not user.has_perm("zemauth.can_see_all_available_sources"):
+            allowed_sources_queryset = allowed_sources_queryset.filter(released=True, deprecated=False)
+        return list(allowed_sources_queryset)
     if account.agency and account.agency.allowed_sources.count() > 0:
-        return list(account.agency.allowed_sources.all())
+        allowed_sources_queryset = account.agency.allowed_sources.all()
+        if not user.has_perm("zemauth.can_see_all_available_sources"):
+            allowed_sources_queryset = allowed_sources_queryset.filter(released=True, deprecated=False)
+        return list(allowed_sources_queryset)
     return list(core.models.Source.objects.filter(released=True, deprecated=False))
 
 

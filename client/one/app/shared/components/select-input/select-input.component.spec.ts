@@ -21,13 +21,11 @@ describe('SelectInputComponent', () => {
     });
 
     it('should be correctly initialized', () => {
-        component.ngOnInit();
         expect(component).toBeDefined();
     });
 
     it('should correctly emit model on change event', () => {
         component.bindValue = 'customValue';
-        component.ngOnInit();
 
         spyOn(component.valueChange, 'emit').and.stub();
 

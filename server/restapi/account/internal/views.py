@@ -88,14 +88,14 @@ class AccountViewSet(restapi.account.v1.views.AccountViewSet):
     def _augment_account(request, account):
         account.allowed_media_sources = []
         if request.user.has_perm("zemauth.can_modify_allowed_sources"):
-            account.allowed_media_sources = helpers.get_allowed_sources(account)
+            account.allowed_media_sources = helpers.get_allowed_sources(request.user, account)
         account.deals = []
         if request.user.has_perm("zemauth.can_see_deals_in_ui"):
             account.deals = account.get_deals()
 
     @staticmethod
     def _handle_allowed_media_sources(request, account, data):
-        allowed_sources = helpers.get_allowed_sources(account)
+        allowed_sources = helpers.get_allowed_sources(request.user, account)
         available_sources = helpers.get_available_sources(request.user, account.agency)
 
         new_allowed_sources = []
