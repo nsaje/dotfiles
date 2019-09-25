@@ -49,6 +49,7 @@
                         [placeholder]="'Choose type'"
                         [isSearchable]="false"
                         [isClearable]="false"
+                        [orderByValue]="'name'"
                         [errors]="state.fieldsErrors.type"
                         (valueChange)="store.setType($event)"
                     ></zem-select-setting>
@@ -69,7 +70,8 @@
                         [items]="state.extras.campaignManagers"
                         [placeholder]="'Choose manager'"
                         [isSearchable]="true"
-                        [isClearable]="false"
+                        [isClearable]="true"
+                        [orderByValue]="'name'"
                         [errors]="state.fieldsErrors.campaignManager"
                         (valueChange)="store.setCampaignManager($event)"
                     ></zem-select-setting>
@@ -88,7 +90,7 @@
                         [items]="IAB_CATEGORIES"
                         [placeholder]="'Choose category'"
                         [isSearchable]="true"
-                        [isClearable]="false"
+                        [isClearable]="true"
                         [errors]="state.fieldsErrors.iabCategory"
                         (valueChange)="store.setIabCategory($event)"
                     ></zem-select-setting>
@@ -106,8 +108,8 @@
                         [bindValue]="'value'"
                         [items]="LANGUAGES"
                         [placeholder]="'Choose language'"
-                        [isSearchable]="false"
-                        [isClearable]="false"
+                        [isSearchable]="true"
+                        [isClearable]="true"
                         [errors]="state.fieldsErrors.language"
                         (valueChange)="store.setLanguage($event)"
                     ></zem-select-setting>
