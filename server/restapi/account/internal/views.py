@@ -142,7 +142,7 @@ class AccountViewSet(restapi.account.v1.views.AccountViewSet):
 
         for item in data:
             try:
-                new_deals.append(restapi.access.get_direct_deal(request.user, account.agency, item.get("id")))
+                new_deals.append(restapi.access.get_direct_deal(request.user, item.get("id")))
                 errors.append(None)
             except utils.exc.MissingDataError as err:
                 errors.append({"id": [str(err)]})

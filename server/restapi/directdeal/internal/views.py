@@ -22,7 +22,7 @@ class DirectDealViewSet(RESTAPIBaseViewSet):
 
     def get(self, request, agency_id, deal_id):
         agency = restapi.access.get_agency(request.user, agency_id)
-        deal = restapi.access.get_direct_deal(request.user, agency, deal_id)
+        deal = restapi.access.get_direct_deal(request.user, deal_id, agency=agency)
         return self.response_ok(self.serializer(deal, context={"request": request}).data)
 
     def list(self, request, agency_id):
@@ -43,13 +43,13 @@ class DirectDealViewSet(RESTAPIBaseViewSet):
         serializer.is_valid(raise_exception=True)
         settings = serializer.validated_data
         agency = restapi.access.get_agency(request.user, agency_id)
-        deal = restapi.access.get_direct_deal(request.user, agency, deal_id)
+        deal = restapi.access.get_direct_deal(request.user, deal_id, agency=agency)
         deal.update(request, **settings)
         return self.response_ok(self.serializer(deal, context={"request": request}).data)
 
     def remove(self, request, agency_id, deal_id):
         agency = restapi.access.get_agency(request.user, agency_id)
-        deal = restapi.access.get_direct_deal(request.user, agency, deal_id)
+        deal = restapi.access.get_direct_deal(request.user, deal_id, agency=agency)
         deal.delete()
         return rest_framework.response.Response(None, status=204)
 
@@ -69,7 +69,7 @@ class DirectDealViewSet(RESTAPIBaseViewSet):
 
     def list_connections(self, request, agency_id, deal_id):
         agency = restapi.access.get_agency(request.user, agency_id)
-        deal = restapi.access.get_direct_deal(request.user, agency, deal_id)
+        deal = restapi.access.get_direct_deal(request.user, deal_id, agency=agency)
         deal_connection_items = (
             core.features.deals.DirectDealConnection.objects.filter_by_deal(deal)
             .select_related(
@@ -85,7 +85,7 @@ class DirectDealViewSet(RESTAPIBaseViewSet):
 
     def remove_connection(self, request, agency_id, deal_id, deal_connection_id):
         agency = restapi.access.get_agency(request.user, agency_id)
-        deal = restapi.access.get_direct_deal(request.user, agency, deal_id)
-        deal_connection = restapi.access.get_direct_deal_connection(request.user, deal, deal_connection_id)
+        deal = restapi.access.get_direct_deal(request.user, deal_id, agency=agency)
+        deal_connection = restapi.access.get_direct_deal_connection(request.user, deal_connection_id, deal=deal)
         deal_connection.delete()
         return rest_framework.response.Response(None, status=204)

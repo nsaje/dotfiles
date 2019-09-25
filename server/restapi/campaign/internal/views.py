@@ -340,7 +340,7 @@ class CampaignViewSet(restapi.campaign.v1.views.CampaignViewSet):
 
         for item in data:
             try:
-                new_deals.append(restapi.access.get_direct_deal(request.user, campaign.account.agency, item.get("id")))
+                new_deals.append(restapi.access.get_direct_deal(request.user, item.get("id")))
                 errors.append(None)
             except utils.exc.MissingDataError as err:
                 errors.append({"id": [str(err)]})

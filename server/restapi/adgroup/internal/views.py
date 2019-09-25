@@ -99,9 +99,7 @@ class AdGroupViewSet(restapi.adgroup.v1.views.AdGroupViewSet):
 
         for item in data:
             try:
-                new_deals.append(
-                    restapi.access.get_direct_deal(request.user, ad_group.campaign.account.agency, item.get("id"))
-                )
+                new_deals.append(restapi.access.get_direct_deal(request.user, item.get("id")))
                 errors.append(None)
             except utils.exc.MissingDataError as err:
                 errors.append({"id": [str(err)]})

@@ -115,23 +115,25 @@ def get_upload_batch(user, batch_id):
         raise utils.exc.MissingDataError("Upload batch does not exist")
 
 
-def get_direct_deal(user, agency, deal_id) -> core.features.deals.DirectDeal:
+def get_direct_deal(user, deal_id, agency=None) -> core.features.deals.DirectDeal:
     try:
         deal_qs = (
-            core.features.deals.DirectDeal.objects.filter_by_agency(agency)
+            core.features.deals.DirectDeal.objects.filter(id=int(deal_id))
             .select_related("source", "agency")
-            .filter(id=deal_id)
+            .filter(id=int(deal_id))
         )
+        if agency is not None:
+            deal_qs = deal_qs.filter_by_agency(agency)
         return deal_qs.get()
     except core.features.deals.DirectDeal.DoesNotExist:
         raise utils.exc.MissingDataError("Deal does not exist")
 
 
-def get_direct_deal_connection(user, deal, deal_connection_id) -> core.features.deals.DirectDealConnection:
+def get_direct_deal_connection(user, deal_connection_id, deal=None) -> core.features.deals.DirectDealConnection:
     try:
-        deal_connection_qs = core.features.deals.DirectDealConnection.objects.filter_by_deal(deal).filter(
-            id=deal_connection_id
-        )
+        deal_connection_qs = core.features.deals.DirectDealConnection.objects.filter(id=int(deal_connection_id))
+        if deal is not None:
+            deal_connection_qs = deal_connection_qs.filter_by_deal(deal)
         return deal_connection_qs.get()
     except core.features.deals.DirectDealConnection.DoesNotExist:
         raise utils.exc.MissingDataError("Deal connection does not exist")
