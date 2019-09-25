@@ -1,6 +1,7 @@
 import * as commonHelpers from './common.helpers';
 
-const IFRAME_BODY_STYLE = '<style>body{margin: 0px; overflow: hidden;}</style>';
+const IFRAME_BODY_STYLE =
+    '<style type="text/css">body{margin: 0px; overflow: hidden;}</style>';
 
 export function renderContentInIframe(
     iframe: HTMLElement,
@@ -15,8 +16,10 @@ export function renderContentInIframe(
         (iframe as any).contentDocument || (iframeWindow as any).document;
     if (commonHelpers.isDefined(iframeDocument)) {
         iframeDocument.open();
-        iframeDocument.write(IFRAME_BODY_STYLE);
-        iframeDocument.write(content || '');
+        iframeDocument.write(
+            `<!DOCTYPE html><html><head>${IFRAME_BODY_STYLE}</head><body>${content ||
+                ''}</body></html>`
+        );
         iframeDocument.close();
     }
 }
