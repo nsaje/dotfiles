@@ -75,6 +75,8 @@ def _refresh(
 ):
     metrics_compat.incr("etl.refresh_k1.refresh_k1_reports", 1)
 
+    validate_update_since_date(update_since)
+
     if account_id:
         validate_can_reprocess_account(account_id)
 
@@ -285,3 +287,9 @@ def validate_can_reprocess_account(account_id):
 
     if not dash.models.AdGroup.objects.filter(campaign__account_id=account_id).exists():
         raise Exception("No ad groups exist for the selected account (pk={})".format(account_id))
+
+
+def validate_update_since_date(update_since):
+    min_date = maintenance.stats_min_date()
+    if update_since.date() < min_date:
+        raise Exception("Missing raw data in stats table for selected date range")

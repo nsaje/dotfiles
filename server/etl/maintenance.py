@@ -32,6 +32,16 @@ def truncate(table, db_name=None):
     logger.info("Finished TRUNCATE table %s", table)
 
 
+def stats_min_date():
+    logger.info("Querying earliest date in stats table")
+    sql = "select min(date) from stats;"
+    with db.get_stats_cursor() as c:
+        c.execute(sql)
+        result = c.fetchone()[0]
+    logger.info("Finished querying earliest date in stats table")
+    return result
+
+
 def cluster_disk_usage():
     sql = backtosql.generate_sql("maintenance_cluster_disk_usage.sql", None)
 

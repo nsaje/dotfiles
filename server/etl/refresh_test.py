@@ -18,6 +18,7 @@ class RefreshTest(TestCase):
 
     @mock.patch("etl.maintenance.vacuum", mock.Mock())
     @mock.patch("etl.maintenance.analyze", mock.Mock())
+    @mock.patch("etl.maintenance.stats_min_date", mock.Mock(return_value=datetime.date(2000, 1, 1)))
     @mock.patch("utils.slack.publish")
     @mock.patch("etl.daily_statements.get_effective_spend")
     @mock.patch("etl.daily_statements.reprocess_daily_statements")
@@ -59,6 +60,7 @@ class RefreshTest(TestCase):
 
     @mock.patch("etl.maintenance.vacuum", mock.Mock())
     @mock.patch("etl.maintenance.analyze", mock.Mock())
+    @mock.patch("etl.maintenance.stats_min_date", mock.Mock(return_value=datetime.date(2000, 1, 1)))
     @mock.patch("utils.slack.publish")
     @mock.patch("etl.daily_statements.get_effective_spend")
     @mock.patch("etl.daily_statements.reprocess_daily_statements")
@@ -101,6 +103,7 @@ class RefreshTest(TestCase):
     @mock.patch("etl.redshift.unload_table")
     @mock.patch("etl.maintenance.vacuum", mock.Mock())
     @mock.patch("etl.maintenance.analyze", mock.Mock())
+    @mock.patch("etl.maintenance.stats_min_date", mock.Mock(return_value=datetime.date(2000, 1, 1)))
     @mock.patch("utils.slack.publish", mock.Mock())
     @mock.patch("etl.daily_statements.get_effective_spend")
     @mock.patch("etl.daily_statements.reprocess_daily_statements")
@@ -133,6 +136,12 @@ class RefreshTest(TestCase):
             "asd", "abort_this", datetime.date(2016, 5, 10), datetime.date(2016, 5, 13), prefix=redshift.DUMP_S3_PREFIX
         )
 
+    @mock.patch("utils.slack.publish", mock.Mock())
+    @mock.patch("etl.maintenance.stats_min_date", mock.Mock(return_value=datetime.date(2016, 5, 15)))
+    def test_refresh_update_since(self):
+        with self.assertRaises(Exception):
+            refresh.refresh(datetime.datetime(2016, 5, 10), 1000)
+
 
 class RefreshByAccountTest(TestCase):
     fixtures = ["test_materialize_views.yaml"]
@@ -145,6 +154,7 @@ class RefreshByAccountTest(TestCase):
 
     @mock.patch("etl.maintenance.vacuum", mock.Mock())
     @mock.patch("etl.maintenance.analyze", mock.Mock())
+    @mock.patch("etl.maintenance.stats_min_date", mock.Mock(return_value=datetime.date(2000, 1, 1)))
     @mock.patch("utils.slack.publish")
     @mock.patch("etl.daily_statements.get_effective_spend")
     @mock.patch("etl.daily_statements.reprocess_daily_statements")
@@ -184,6 +194,7 @@ class RefreshByAccountTest(TestCase):
         )
 
     @mock.patch("utils.slack.publish", mock.Mock())
+    @mock.patch("etl.maintenance.stats_min_date", mock.Mock(return_value=datetime.date(2000, 1, 1)))
     def test_refresh_account_validate(self):
         with self.assertRaises(dash.models.Account.DoesNotExist):
             refresh.refresh(datetime.datetime(2016, 5, 10), 1000)
