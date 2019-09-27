@@ -638,7 +638,7 @@ def _report_new_budgets_on_ap_to_influx(entities):
 
 
 def adjust_ad_groups_flight_times_on_campaign_budget_autopilot_enabled(campaign):
-    ad_groups = campaign.adgroup_set.all().select_related("settings")
+    ad_groups = campaign.adgroup_set.all().exclude_archived().select_related("settings")
     for ad_group in ad_groups:
         _set_ad_group_flight_time_to_ongoing(ad_group)
 
