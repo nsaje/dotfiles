@@ -5,6 +5,7 @@ import {Observable, throwError} from 'rxjs';
 import {ApiResponse} from '../../../shared/types/api-response';
 import {map, catchError} from 'rxjs/operators';
 import {Deal} from '../types/deal';
+import {DealConnection} from '../types/deal-connection';
 import {APP_CONFIG} from '../../../app.config';
 
 @Injectable()
@@ -124,7 +125,7 @@ export class DealsEndpoint {
         const request = {
             url: `${
                 APP_CONFIG.apiRestInternalUrl
-            }/agencies/${agencyId}/deals/${dealId}`,
+            }/agencies/${agencyId}/deals/${dealId}/`,
             name: 'get',
         };
         requestStateUpdater(request.name, {
@@ -158,14 +159,14 @@ export class DealsEndpoint {
         const request = {
             url: `${
                 APP_CONFIG.apiRestInternalUrl
-            }/agencies/${agencyId}/deals/${dealId}`,
+            }/agencies/${agencyId}/deals/${dealId}/`,
             name: 'edit',
         };
         requestStateUpdater(request.name, {
             inProgress: true,
         });
 
-        return this.http.post<ApiResponse<Deal>>(request.url, deal).pipe(
+        return this.http.put<ApiResponse<Deal>>(request.url, deal).pipe(
             map(response => {
                 requestStateUpdater(request.name, {
                     inProgress: false,
@@ -191,7 +192,7 @@ export class DealsEndpoint {
         const request = {
             url: `${
                 APP_CONFIG.apiRestInternalUrl
-            }/agencies/${agencyId}/deals/${dealId}`,
+            }/agencies/${agencyId}/deals/${dealId}/`,
             name: 'remove',
         };
         requestStateUpdater(request.name, {
@@ -199,6 +200,72 @@ export class DealsEndpoint {
         });
 
         return this.http.delete<ApiResponse<Deal>>(request.url).pipe(
+            map(() => {
+                requestStateUpdater(request.name, {
+                    inProgress: false,
+                });
+            }),
+            catchError((error: HttpErrorResponse) => {
+                requestStateUpdater(request.name, {
+                    inProgress: false,
+                    error: true,
+                    errorMessage: error.message,
+                });
+                return throwError(error);
+            })
+        );
+    }
+
+    listConnections(
+        agencyId: string,
+        dealId: string,
+        requestStateUpdater: RequestStateUpdater
+    ): Observable<DealConnection[]> {
+        const request = {
+            url: `${
+                APP_CONFIG.apiRestInternalUrl
+            }/agencies/${agencyId}/deals/${dealId}/connections/`,
+            name: 'listConnections',
+        };
+        requestStateUpdater(request.name, {
+            inProgress: true,
+        });
+
+        return this.http.get<ApiResponse<DealConnection[]>>(request.url).pipe(
+            map(response => {
+                requestStateUpdater(request.name, {
+                    inProgress: false,
+                });
+                return response.data;
+            }),
+            catchError((error: HttpErrorResponse) => {
+                requestStateUpdater(request.name, {
+                    inProgress: false,
+                    error: true,
+                    errorMessage: error.message,
+                });
+                return throwError(error);
+            })
+        );
+    }
+
+    removeConnection(
+        agencyId: string,
+        dealId: string,
+        dealConnectionId: string,
+        requestStateUpdater: RequestStateUpdater
+    ): Observable<void> {
+        const request = {
+            url: `${
+                APP_CONFIG.apiRestInternalUrl
+            }/agencies/${agencyId}/deals/${dealId}/connections/${dealConnectionId}/`,
+            name: 'removeConnection',
+        };
+        requestStateUpdater(request.name, {
+            inProgress: true,
+        });
+
+        return this.http.delete<ApiResponse<DealConnection>>(request.url).pipe(
             map(() => {
                 requestStateUpdater(request.name, {
                     inProgress: false,

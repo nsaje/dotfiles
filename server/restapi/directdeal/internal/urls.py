@@ -6,7 +6,7 @@ app_name = "restapi.directdeal"
 urlpatterns = [
     url(
         r"^(?P<deal_id>\d+)$",
-        views.DirectDealViewSet.as_view({"get": "get", "put": "edit", "delete": "remove"}),
+        views.DirectDealViewSet.as_view({"get": "get", "put": "put", "delete": "remove"}),
         name="directdeal_details",
     ),
     url(r"^$", views.DirectDealViewSet.as_view({"get": "list", "post": "create"}), name="directdeal_list"),

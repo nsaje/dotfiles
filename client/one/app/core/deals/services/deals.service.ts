@@ -4,6 +4,7 @@ import {RequestStateUpdater} from '../../../shared/types/request-state-updater';
 import {Observable} from 'rxjs';
 import {ApiResponse} from '../../../shared/types/api-response';
 import {Deal} from '../types/deal';
+import {DealConnection} from '../types/deal-connection';
 
 @Injectable()
 export class DealsService {
@@ -57,5 +58,31 @@ export class DealsService {
         requestStateUpdater: RequestStateUpdater
     ): Observable<void> {
         return this.endpoint.remove(agencyId, dealId, requestStateUpdater);
+    }
+
+    listConnections(
+        agencyId: string,
+        dealId: string,
+        requestStateUpdater: RequestStateUpdater
+    ): Observable<DealConnection[]> {
+        return this.endpoint.listConnections(
+            agencyId,
+            dealId,
+            requestStateUpdater
+        );
+    }
+
+    removeConnection(
+        agencyId: string,
+        dealId: string,
+        dealConnectionId: string,
+        requestStateUpdater: RequestStateUpdater
+    ): Observable<void> {
+        return this.endpoint.removeConnection(
+            agencyId,
+            dealId,
+            dealConnectionId,
+            requestStateUpdater
+        );
     }
 }

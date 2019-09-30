@@ -38,7 +38,7 @@ class DirectDealViewSet(RESTAPIBaseViewSet):
             self.serializer(deal_items_paginated, many=True, context={"request": request}).data
         )
 
-    def edit(self, request, agency_id, deal_id):
+    def put(self, request, agency_id, deal_id):
         serializer = self.serializer(data=request.data, partial=True, context={"request": request})
         serializer.is_valid(raise_exception=True)
         settings = serializer.validated_data
