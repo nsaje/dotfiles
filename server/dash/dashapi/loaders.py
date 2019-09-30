@@ -867,10 +867,12 @@ class AdGroupSourcesLoader(Loader):
                 result[source_id]["editable_fields"]["daily_budget"]["message"] = None
                 # bid_cpc
                 result[source_id]["bid_cpc"] = None
+                result[source_id]["local_bid_cpc"] = None
                 result[source_id]["editable_fields"]["bid_cpc"]["enabled"] = False
                 result[source_id]["editable_fields"]["bid_cpc"]["message"] = None
                 # bid_cpm
                 result[source_id]["bid_cpm"] = None
+                result[source_id]["local_bid_cpm"] = None
                 result[source_id]["editable_fields"]["bid_cpm"]["enabled"] = False
                 result[source_id]["editable_fields"]["bid_cpm"]["message"] = None
                 if (
