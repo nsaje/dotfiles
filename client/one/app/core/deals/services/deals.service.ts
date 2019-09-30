@@ -1,0 +1,61 @@
+import {Injectable} from '@angular/core';
+import {DealsEndpoint} from './deals.endpoint';
+import {RequestStateUpdater} from '../../../shared/types/request-state-updater';
+import {Observable} from 'rxjs';
+import {ApiResponse} from '../../../shared/types/api-response';
+import {Deal} from '../types/deal';
+
+@Injectable()
+export class DealsService {
+    constructor(private endpoint: DealsEndpoint) {}
+
+    list(
+        agencyId: string,
+        offset: number,
+        limit: number,
+        requestStateUpdater: RequestStateUpdater
+    ): Observable<ApiResponse<Deal[]>> {
+        return this.endpoint.list(agencyId, offset, limit, requestStateUpdater);
+    }
+
+    create(
+        agencyId: string,
+        deal: Deal,
+        requestStateUpdater: RequestStateUpdater
+    ): Observable<Deal> {
+        return this.endpoint.create(agencyId, deal, requestStateUpdater);
+    }
+
+    validate(
+        agencyId: string,
+        deal: Partial<Deal>,
+        requestStateUpdater: RequestStateUpdater
+    ): Observable<void> {
+        return this.endpoint.validate(agencyId, deal, requestStateUpdater);
+    }
+
+    get(
+        agencyId: string,
+        dealId: string,
+        requestStateUpdater: RequestStateUpdater
+    ): Observable<Deal> {
+        return this.endpoint.get(agencyId, dealId, requestStateUpdater);
+    }
+
+    edit(
+        agencyId: string,
+        dealId: string,
+        deal: Deal,
+        requestStateUpdater: RequestStateUpdater
+    ): Observable<Deal> {
+        return this.endpoint.edit(agencyId, dealId, deal, requestStateUpdater);
+    }
+
+    remove(
+        agencyId: string,
+        dealId: string,
+        requestStateUpdater: RequestStateUpdater
+    ): Observable<void> {
+        return this.endpoint.remove(agencyId, dealId, requestStateUpdater);
+    }
+}

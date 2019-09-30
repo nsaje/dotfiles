@@ -1,0 +1,217 @@
+import {Injectable} from '@angular/core';
+import {HttpClient, HttpErrorResponse} from '@angular/common/http';
+import {RequestStateUpdater} from '../../../shared/types/request-state-updater';
+import {Observable, throwError} from 'rxjs';
+import {ApiResponse} from '../../../shared/types/api-response';
+import {map, catchError} from 'rxjs/operators';
+import {Deal} from '../types/deal';
+import {APP_CONFIG} from '../../../app.config';
+
+@Injectable()
+export class DealsEndpoint {
+    constructor(private http: HttpClient) {}
+
+    list(
+        agencyId: string,
+        offset: number,
+        limit: number,
+        requestStateUpdater: RequestStateUpdater
+    ): Observable<ApiResponse<Deal[]>> {
+        const request = {
+            url: `${APP_CONFIG.apiRestInternalUrl}/agencies/${agencyId}/deals/`,
+            name: 'list',
+        };
+
+        requestStateUpdater(request.name, {
+            inProgress: true,
+        });
+
+        return this.http
+            .get<ApiResponse<Deal[]>>(request.url, {
+                params: {offset: `${offset}`, limit: `${limit}`},
+            })
+            .pipe(
+                map(response => {
+                    requestStateUpdater(request.name, {
+                        inProgress: false,
+                    });
+                    return {
+                        data: response.data,
+                        count: response.count,
+                        next: response.next,
+                        previous: response.previous,
+                    };
+                }),
+                catchError((error: HttpErrorResponse) => {
+                    requestStateUpdater(request.name, {
+                        inProgress: false,
+                        error: true,
+                        errorMessage: error.message,
+                    });
+                    return throwError(error);
+                })
+            );
+    }
+
+    create(
+        agencyId: string,
+        deal: Deal,
+        requestStateUpdater: RequestStateUpdater
+    ): Observable<Deal> {
+        const request = {
+            url: `${APP_CONFIG.apiRestInternalUrl}/agencies/${agencyId}/deals/`,
+            name: 'create',
+        };
+        requestStateUpdater(request.name, {
+            inProgress: true,
+        });
+
+        return this.http.post<ApiResponse<Deal>>(request.url, deal).pipe(
+            map(response => {
+                requestStateUpdater(request.name, {
+                    inProgress: false,
+                });
+                return response.data;
+            }),
+            catchError((error: HttpErrorResponse) => {
+                requestStateUpdater(request.name, {
+                    inProgress: false,
+                    error: true,
+                    errorMessage: error.message,
+                });
+                return throwError(error);
+            })
+        );
+    }
+
+    validate(
+        agencyId: string,
+        deal: Partial<Deal>,
+        requestStateUpdater: RequestStateUpdater
+    ): Observable<void> {
+        const request = {
+            url: `${
+                APP_CONFIG.apiRestInternalUrl
+            }/agencies/${agencyId}/deals/validate/`,
+            name: 'validate',
+        };
+        requestStateUpdater(request.name, {
+            inProgress: true,
+        });
+
+        return this.http.post<ApiResponse<void>>(request.url, deal).pipe(
+            map(() => {
+                requestStateUpdater(request.name, {
+                    inProgress: false,
+                });
+            }),
+            catchError((error: HttpErrorResponse) => {
+                requestStateUpdater(request.name, {
+                    inProgress: false,
+                    error: true,
+                    errorMessage: error.message,
+                });
+                return throwError(error);
+            })
+        );
+    }
+
+    get(
+        agencyId: string,
+        dealId: string,
+        requestStateUpdater: RequestStateUpdater
+    ): Observable<Deal> {
+        const request = {
+            url: `${
+                APP_CONFIG.apiRestInternalUrl
+            }/agencies/${agencyId}/deals/${dealId}`,
+            name: 'get',
+        };
+        requestStateUpdater(request.name, {
+            inProgress: true,
+        });
+
+        return this.http.get<ApiResponse<Deal>>(request.url).pipe(
+            map(response => {
+                requestStateUpdater(request.name, {
+                    inProgress: false,
+                });
+                return response.data;
+            }),
+            catchError((error: HttpErrorResponse) => {
+                requestStateUpdater(request.name, {
+                    inProgress: false,
+                    error: true,
+                    errorMessage: error.message,
+                });
+                return throwError(error);
+            })
+        );
+    }
+
+    edit(
+        agencyId: string,
+        dealId: string,
+        deal: Deal,
+        requestStateUpdater: RequestStateUpdater
+    ): Observable<Deal> {
+        const request = {
+            url: `${
+                APP_CONFIG.apiRestInternalUrl
+            }/agencies/${agencyId}/deals/${dealId}`,
+            name: 'edit',
+        };
+        requestStateUpdater(request.name, {
+            inProgress: true,
+        });
+
+        return this.http.post<ApiResponse<Deal>>(request.url, deal).pipe(
+            map(response => {
+                requestStateUpdater(request.name, {
+                    inProgress: false,
+                });
+                return response.data;
+            }),
+            catchError((error: HttpErrorResponse) => {
+                requestStateUpdater(request.name, {
+                    inProgress: false,
+                    error: true,
+                    errorMessage: error.message,
+                });
+                return throwError(error);
+            })
+        );
+    }
+
+    remove(
+        agencyId: string,
+        dealId: string,
+        requestStateUpdater: RequestStateUpdater
+    ): Observable<void> {
+        const request = {
+            url: `${
+                APP_CONFIG.apiRestInternalUrl
+            }/agencies/${agencyId}/deals/${dealId}`,
+            name: 'remove',
+        };
+        requestStateUpdater(request.name, {
+            inProgress: true,
+        });
+
+        return this.http.delete<ApiResponse<Deal>>(request.url).pipe(
+            map(() => {
+                requestStateUpdater(request.name, {
+                    inProgress: false,
+                });
+            }),
+            catchError((error: HttpErrorResponse) => {
+                requestStateUpdater(request.name, {
+                    inProgress: false,
+                    error: true,
+                    errorMessage: error.message,
+                });
+                return throwError(error);
+            })
+        );
+    }
+}
