@@ -78,22 +78,16 @@ describe('DealsService', () => {
                 numOfAdgroups: 0,
             },
         ];
-        const mockedPaginatedDealsResponse: ApiResponse<Deal[]> = {
-            data: mockedDeals,
-            count: 3,
-            next: null,
-            previous: null,
-        };
         const limit = 10;
         const offset = 0;
         dealsEndpointStub.list.and
-            .returnValue(of(mockedPaginatedDealsResponse, asapScheduler))
+            .returnValue(of(mockedDeals, asapScheduler))
             .calls.reset();
 
         service
             .list(mockedAgencyId, offset, limit, requestStateUpdater)
             .subscribe(deals => {
-                expect(deals).toEqual(mockedPaginatedDealsResponse);
+                expect(deals).toEqual(mockedDeals);
             });
         expect(dealsEndpointStub.list).toHaveBeenCalledTimes(1);
         expect(dealsEndpointStub.list).toHaveBeenCalledWith(

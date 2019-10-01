@@ -2,7 +2,6 @@ import {Injectable} from '@angular/core';
 import {DealsEndpoint} from './deals.endpoint';
 import {RequestStateUpdater} from '../../../shared/types/request-state-updater';
 import {Observable} from 'rxjs';
-import {ApiResponse} from '../../../shared/types/api-response';
 import {Deal} from '../types/deal';
 import {DealConnection} from '../types/deal-connection';
 
@@ -15,7 +14,7 @@ export class DealsService {
         offset: number,
         limit: number,
         requestStateUpdater: RequestStateUpdater
-    ): Observable<ApiResponse<Deal[]>> {
+    ): Observable<Deal[]> {
         return this.endpoint.list(agencyId, offset, limit, requestStateUpdater);
     }
 

@@ -17,7 +17,7 @@ export class DealsEndpoint {
         offset: number,
         limit: number,
         requestStateUpdater: RequestStateUpdater
-    ): Observable<ApiResponse<Deal[]>> {
+    ): Observable<Deal[]> {
         const request = {
             url: `${APP_CONFIG.apiRestInternalUrl}/agencies/${agencyId}/deals/`,
             name: 'list',
@@ -35,13 +35,11 @@ export class DealsEndpoint {
                 map(response => {
                     requestStateUpdater(request.name, {
                         inProgress: false,
-                    });
-                    return {
-                        data: response.data,
                         count: response.count,
                         next: response.next,
                         previous: response.previous,
-                    };
+                    });
+                    return response.data;
                 }),
                 catchError((error: HttpErrorResponse) => {
                     requestStateUpdater(request.name, {
