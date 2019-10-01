@@ -1,0 +1,24 @@
+@import 'variables';
+
+.zem-pagination {
+    display: block;
+}
+
+.zem-pagination .pagination {
+    margin: 0px;
+}
+
+.zem-pagination .pagination > li > a {
+    color: @color--secondary;
+}
+
+.zem-pagination .pagination > .active > a,
+.zem-pagination .pagination > .active > a:focus,
+.zem-pagination .pagination > .active > a:hover,
+.zem-pagination .pagination > .active > span,
+.zem-pagination .pagination > .active > span:focus,
+.zem-pagination .pagination > .active > span:hover {
+    color: white;
+    background-color: @color--secondary;
+    border-color: @color--secondary;
+}

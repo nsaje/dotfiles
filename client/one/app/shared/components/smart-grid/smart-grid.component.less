@@ -1,0 +1,116 @@
+@import 'variables';
+
+.zem-smart-grid {
+    display: block;
+}
+
+.zem-smart-grid__table .ag-root {
+    border: none;
+    margin-bottom: @spacing--default;
+}
+
+.zem-smart-grid__table .ag-header {
+    border-bottom: 1px solid tint(@color--secondary, 80%);
+    background-color: tint(@color--secondary, 90%);
+}
+
+.zem-smart-grid__table .ag-header-cell {
+    padding: @spacing--small;
+    color: @color--secondary;
+    font-weight: 500;
+    font-size: (@font-size--default)-1;
+    line-height: (@font-size--default)+3;
+    white-space: nowrap;
+}
+
+.zem-smart-grid__table .ag-header-cell:hover {
+    background-color: tint(@color--secondary, 95%);
+}
+
+.zem-smart-grid__table .ag-header-cell-resize {
+    cursor: col-resize;
+}
+
+.zem-smart-grid__table .ag-center-cols-viewport {
+    background-color: white;
+}
+
+.zem-smart-grid__table .ag-row {
+    background-color: white;
+    border-bottom: 1px solid tint(@color--secondary, 90%) !important;
+}
+
+.zem-smart-grid__table .ag-row:hover {
+    background-color: tint(@color--secondary, 96%);
+}
+
+.zem-smart-grid__table .ag-row .ag-cell {
+    padding: @spacing--small;
+    line-height: (@font-size--default)+3;
+}
+
+.zem-smart-grid__table .ag-row .ag-cell:focus,
+.zem-smart-grid__table .ag-row .ag-cell:hover {
+    outline: none;
+}
+
+.zem-smart-grid__table .ag-header-select-all,
+.zem-smart-grid__table .ag-selection-checkbox {
+    margin-right: @spacing--default;
+    cursor: pointer;
+}
+
+.zem-smart-grid__table .ag-icon-checkbox-unchecked,
+.zem-smart-grid__table .ag-icon-checkbox-indeterminate {
+    display: block;
+    position: relative;
+    border: 1px solid darken(@border-color--default, 10%);
+    border-radius: @border-radius--default;
+    background-color: white;
+    width: 14px;
+    height: 14px;
+
+    &:hover {
+        border: 1px solid @color--secondary;
+    }
+}
+
+.zem-smart-grid__table .ag-icon-checkbox-checked {
+    display: block;
+    position: relative;
+    border: 1px solid @color--secondary;
+    border-radius: @border-radius--default;
+    background-color: white;
+    width: 14px;
+    height: 14px;
+}
+
+.zem-smart-grid__table .ag-icon-checkbox-checked::after {
+    position: absolute;
+    content: '';
+    background-image: url('@{images-folder}/checkbox-sec.svg');
+    top: 1px;
+    left: 1px;
+    width: 10px;
+    height: 10px;
+    color: @color--secondary;
+    animation: checkbox-checked @duration-and-timing-fn--default;
+}
+
+@keyframes checkbox-checked {
+    0% {
+        transform: scale(0);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+.zem-smart-grid__pagination-container {
+    display: flex;
+}
+
+.zem-smart-grid__pagination-page-size {
+    flex: 0 0 60px;
+    margin-right: 5px;
+}

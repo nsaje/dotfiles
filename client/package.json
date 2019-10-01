@@ -28,6 +28,8 @@
     "@angular/upgrade": "8.2.5",
     "@ng-bootstrap/ng-bootstrap": "5.1.1",
     "@ng-select/ng-select": "3.0.7",
+    "ag-grid-angular": "21.2.1",
+    "ag-grid-community": "21.2.1",
     "clone": "2.1.2",
     "core-js": "3.2.1",
     "deepmerge": "4.0.0",

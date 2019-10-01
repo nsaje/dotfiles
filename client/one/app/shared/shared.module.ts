@@ -7,9 +7,11 @@ import {HighchartsChartModule} from 'highcharts-angular';
 import {
     NgbDatepickerModule,
     NgbPopoverModule,
+    NgbPaginationModule,
 } from '@ng-bootstrap/ng-bootstrap';
 import {NgSelectModule} from '@ng-select/ng-select';
 import {NgxFileDropModule} from 'ngx-file-drop';
+import {AgGridModule} from 'ag-grid-angular';
 
 import {BigNumberPipe} from './pipes/big-number.pipe';
 import {FilterKeydownEventDirective} from './directives/filter-keydown-event/filter-keydown-event.directive';
@@ -36,6 +38,10 @@ import {RadioInputComponent} from './components/radio-input/radio-input.componen
 import {InternalFeatureDirective} from './directives/internal-feature/internal-feature.directive';
 import {FileSelectorComponent} from './components/file-selector/file-selector.component';
 import {CommentPopoverComponent} from './components/comment-popover/comment-popover.component';
+import {PaginationComponent} from './components/pagination/pagination.component';
+import {SmartGridComponent} from './components/smart-grid/smart-grid.component';
+import {LoadingOverlayComponent} from './components/smart-grid/components/loading-overlay/loading-overlay.component';
+import {NoRowsOverlayComponent} from './components/smart-grid/components/no-rows-overlay/no-rows-overlay.component';
 
 const EXPORTED_DECLARATIONS = [
     // Pipes
@@ -68,6 +74,10 @@ const EXPORTED_DECLARATIONS = [
     HelpPopoverComponent,
     CommentPopoverComponent,
     FileSelectorComponent,
+    PaginationComponent,
+    SmartGridComponent,
+    LoadingOverlayComponent,
+    NoRowsOverlayComponent,
 ];
 
 @NgModule({
@@ -81,6 +91,11 @@ const EXPORTED_DECLARATIONS = [
         NgSelectModule,
         NgbPopoverModule,
         NgxFileDropModule,
+        AgGridModule.withComponents([
+            LoadingOverlayComponent,
+            NoRowsOverlayComponent,
+        ]),
+        NgbPaginationModule,
     ],
     declarations: EXPORTED_DECLARATIONS,
     exports: [

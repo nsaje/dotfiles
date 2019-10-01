@@ -1,0 +1,36 @@
+<ag-grid-angular
+    class="zem-smart-grid__table"
+    [gridOptions]="gridOptions"
+    [columnDefs]="columnDefs"
+    [rowData]="rowData"
+    [loadingOverlayComponent]="'loadingOverlayComponent'"
+    [noRowsOverlayComponent]="'noRowsOverlayComponent'"
+    [pagination]="paginationOptions?.type === 'client'"
+    [paginationPageSize]="paginationPageSize"
+    [suppressPaginationPanel]="true"
+    [suppressScrollOnNewData]="true"
+    (gridReady)="onGridReady($event)"
+    (rowDataChanged)="onRowDataChanged($event)"
+></ag-grid-angular>
+<div
+    class="zem-smart-grid__pagination-container"
+    *ngIf="isGridReady && paginationOptions"
+>
+    <zem-select-input
+        class="zem-select-input zem-smart-grid__pagination-page-size"
+        [value]="paginationPageSize"
+        [bindLabel]="'name'"
+        [bindValue]="'value'"
+        [items]="paginationPageSizeOptions"
+        [isSearchable]="false"
+        [isClearable]="false"
+        (valueChange)="onPaginationPageSizeChange($event)"
+    ></zem-select-input>
+    <zem-pagination
+        class="zem-pagination zem-smart-grid__pagination"
+        [count]="paginationCount || (rowData || []).length"
+        [page]="paginationPage"
+        [pageSize]="paginationPageSize"
+        (pageChange)="onPageChange($event)"
+    ></zem-pagination>
+</div>
