@@ -48,10 +48,10 @@ def generate_report_from_query(name, query):
 def reprocess_report_job(job_id):
     original_job = reports.ReportJob.objects.get(pk=job_id)
 
-    new_job = reports.ReportJob(user=original_job.user, oquery=original_job.query)
+    new_job = reports.ReportJob(user=original_job.user, query=original_job.query)
     new_job.save()
     reports.ReportJobExecutor(new_job).execute()
-    return new_job.result
+    return new_job
 
 
 def reprocess_report_job_async(job_id, **kwargs):
