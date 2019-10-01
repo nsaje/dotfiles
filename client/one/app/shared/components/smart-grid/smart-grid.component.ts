@@ -21,6 +21,7 @@ import {NoRowsOverlayComponent} from './components/no-rows-overlay/no-rows-overl
 import * as commonHelpers from '../../helpers/common.helpers';
 import {PaginationOptions} from './types/pagination-options';
 import {PageSizeConfig} from './types/page-size-config';
+import {PaginationChangeEvent} from './types/pagination-change-event';
 
 @Component({
     selector: 'zem-smart-grid',
@@ -41,9 +42,7 @@ export class SmartGridComponent implements OnInit, OnDestroy {
     @Output()
     gridReady = new EventEmitter<DetailGridInfo>();
     @Output()
-    pageChange = new EventEmitter<number>();
-    @Output()
-    pageSizeChange = new EventEmitter<number>();
+    paginationChange = new EventEmitter<PaginationChangeEvent>();
 
     isGridReady: boolean;
     gridOptions: GridOptions;
@@ -116,7 +115,10 @@ export class SmartGridComponent implements OnInit, OnDestroy {
                 break;
             case 'server':
                 this.gridApi.showLoadingOverlay();
-                this.pageChange.emit(page);
+                this.paginationChange.emit({
+                    page: page,
+                    pageSize: this.paginationPageSize,
+                });
                 break;
         }
     }
@@ -129,7 +131,10 @@ export class SmartGridComponent implements OnInit, OnDestroy {
                 break;
             case 'server':
                 this.gridApi.showLoadingOverlay();
-                this.pageSizeChange.emit(pageSize);
+                this.paginationChange.emit({
+                    page: this.paginationPage,
+                    pageSize: pageSize,
+                });
                 break;
         }
     }
