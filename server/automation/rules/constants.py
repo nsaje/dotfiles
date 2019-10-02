@@ -1,6 +1,14 @@
 from utils.constant_base import ConstantBase
 
 
+class RuleState(ConstantBase):
+
+    ENABLED = 1
+    PAUSED = 2
+
+    _VALUES = {ENABLED: "Enabled", PAUSED: "Paused"}
+
+
 class TargetType(ConstantBase):
     AD_GROUP = 1
     AD = 2
@@ -61,15 +69,6 @@ class NotificationType(ConstantBase):
     }
 
 
-class AggregateType(ConstantBase):
-    NOT_APPLICABLE = 1
-    NONE = 2
-    AVG = 3
-    SUM = 4
-
-    _VALUES = {NOT_APPLICABLE: "N/A", NONE: "No aggregation", AVG: "Average", SUM: "Sum"}
-
-
 class MetricWindow(ConstantBase):
     NOT_APPLICABLE = 1
     LAST_DAY = 2
@@ -89,54 +88,50 @@ class MetricWindow(ConstantBase):
 
 
 class MetricType(ConstantBase):
-    ABSOLUTE = 1
-    CONSTANT = 2
-    DAILY_BUDGET = 3
-    DAILY_BUDGET_SPENT_RATIO = 4
-    BID = 5
-    BID_MODIFIER = 6
-    TOTAL_SPEND = 7
-    PRIMARY_GOAL = 8
-    IMPRESSIONS = 9
-    CLICKS = 10
-    CTR = 11
-    AVG_CPC = 12
-    AVG_CPM = 13
-    VISITS = 14
-    UNIQUE_USERS = 15
-    NEW_USERS = 16
-    RETURNING_USERS = 17
-    NEW_USERS_RATIO = 18
-    CLICK_DISCREPANCY = 19
-    PAGEVIEWS = 20
-    PAGEVIEWS_PER_VISIT = 21
-    BOUNCED_VISITS = 22
-    NON_BOUNCED_VISITS = 23
-    BOUNCED_RATE = 24
-    TOTAL_SECONDS = 25
-    TIME_ON_SITE = 26
-    AVG_COST_PER_VISIT = 27
-    AVG_COST_PER_NEW_VISITOR = 28
-    AVG_COST_PER_PAGEVIEW = 29
-    AVG_COST_PER_NON_BOUNCED_VISIT = 30
-    AVG_COST_PER_MINUTE = 31
-    VIDEO_START = 32
-    VIDEO_FIRST_QUARTILE = 33
-    VIDEO_MIDPOINT = 34
-    VIDEO_THIRD_QUARTILE = 35
-    VIDEO_COMPLETE = 36
-    AVG_CPV = 37
-    AVG_CPCV = 38
+    DAILY_CAP = 1
+    DAILY_CAP_SPENT_RATIO = 2
+    BID = 3
+    BID_MODIFIER = 4
+    TOTAL_SPEND = 5
+    PRIMARY_GOAL = 6
+    IMPRESSIONS = 7
+    CLICKS = 8
+    CTR = 9
+    AVG_CPC = 10
+    AVG_CPM = 11
+    VISITS = 12
+    UNIQUE_USERS = 13
+    NEW_USERS = 14
+    RETURNING_USERS = 15
+    NEW_USERS_RATIO = 16
+    CLICK_DISCREPANCY = 17
+    PAGEVIEWS = 18
+    PAGEVIEWS_PER_VISIT = 19
+    BOUNCED_VISITS = 20
+    NON_BOUNCED_VISITS = 21
+    BOUNCED_RATE = 22
+    TOTAL_SECONDS = 23
+    TIME_ON_SITE = 24
+    AVG_COST_PER_VISIT = 25
+    AVG_COST_PER_NEW_VISITOR = 26
+    AVG_COST_PER_PAGEVIEW = 27
+    AVG_COST_PER_NON_BOUNCED_VISIT = 28
+    AVG_COST_PER_MINUTE = 29
+    VIDEO_START = 30
+    VIDEO_FIRST_QUARTILE = 31
+    VIDEO_MIDPOINT = 32
+    VIDEO_THIRD_QUARTILE = 33
+    VIDEO_COMPLETE = 34
+    AVG_CPV = 35
+    AVG_CPCV = 36
 
     _VALUES = {
-        ABSOLUTE: "Absolute value",
-        CONSTANT: "Constant",
-        DAILY_BUDGET: "Daily budget",  # ??
-        DAILY_BUDGET_SPENT_RATIO: "Daily budget spent percentage",  # ??
+        DAILY_CAP: "Daily cap",
+        DAILY_CAP_SPENT_RATIO: "Daily cap spent percentage",
         BID: "Bid",
         BID_MODIFIER: "Bid modifier",
         TOTAL_SPEND: "Total spend",
-        PRIMARY_GOAL: "Primary goal",  # ??
+        PRIMARY_GOAL: "Primary goal",
         IMPRESSIONS: "Impressions",
         CLICKS: "Clicks",
         CTR: "CTR",
@@ -146,7 +141,7 @@ class MetricType(ConstantBase):
         UNIQUE_USERS: "Unique users",
         NEW_USERS: "New users",
         RETURNING_USERS: "Returning users",
-        NEW_USERS_RATIO: "New users percentage",  # ??
+        NEW_USERS_RATIO: "New users percentage",  # TODO(anej): ??
         CLICK_DISCREPANCY: "Click discrepancy",
         PAGEVIEWS: "Pageviews",
         PAGEVIEWS_PER_VISIT: "Pageviews per visit",
@@ -167,6 +162,37 @@ class MetricType(ConstantBase):
         VIDEO_COMPLETE: "Video complete",
         AVG_CPV: "Average CPV",
         AVG_CPCV: "Average CPCV",
+    }
+
+
+# TODO: find a better name
+class ValueType(ConstantBase):
+    ABSOLUTE = 1
+    CONSTANT = 2
+    CURRENT_TIME = 3
+    ACCOUNT_MANAGER = 4
+    CAMPAIGN_GOAL = 5
+    CAMPAIGN_BUDGET = 6
+    REMAINING_CAMPAIGN_BUDGET = 7
+    AD_GROUP_BID = 8
+    AD_GROUP_CLICK_DAILY_CAP = 9
+    DAILY_CAP = 10
+    TOTAL_SPEND = 11
+    TOTAL_SPEND_DAILY_AVG = 12
+
+    _VALUES = {
+        ABSOLUTE: "Absolute value",
+        CONSTANT: "Constant",
+        CURRENT_TIME: "Current time",
+        ACCOUNT_MANAGER: "Account manager",
+        CAMPAIGN_GOAL: "Campaign goal",
+        CAMPAIGN_BUDGET: "Campaign budget",
+        REMAINING_CAMPAIGN_BUDGET: "Remaining campaign budget",
+        AD_GROUP_BID: "Ad group bid",
+        AD_GROUP_CLICK_DAILY_CAP: "Ad group click daily cap",
+        DAILY_CAP: "Daily cap",
+        TOTAL_SPEND: "Total spend",
+        TOTAL_SPEND_DAILY_AVG: "Total spend (daily average)",
     }
 
 
