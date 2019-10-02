@@ -4,6 +4,7 @@ import {RequestStateUpdater} from '../../../shared/types/request-state-updater';
 import {Observable} from 'rxjs';
 import {Deal} from '../types/deal';
 import {DealConnection} from '../types/deal-connection';
+import * as commonHelpers from '../../../shared/helpers/common.helpers';
 
 @Injectable()
 export class DealsService {
@@ -18,12 +19,16 @@ export class DealsService {
         return this.endpoint.list(agencyId, offset, limit, requestStateUpdater);
     }
 
-    create(
+    save(
         agencyId: string,
+        dealId: string,
         deal: Deal,
         requestStateUpdater: RequestStateUpdater
     ): Observable<Deal> {
-        return this.endpoint.create(agencyId, deal, requestStateUpdater);
+        if (!commonHelpers.isDefined(dealId)) {
+            return this.create(agencyId, deal, requestStateUpdater);
+        }
+        return this.edit(agencyId, dealId, deal, requestStateUpdater);
     }
 
     validate(
@@ -40,15 +45,6 @@ export class DealsService {
         requestStateUpdater: RequestStateUpdater
     ): Observable<Deal> {
         return this.endpoint.get(agencyId, dealId, requestStateUpdater);
-    }
-
-    edit(
-        agencyId: string,
-        dealId: string,
-        deal: Deal,
-        requestStateUpdater: RequestStateUpdater
-    ): Observable<Deal> {
-        return this.endpoint.edit(agencyId, dealId, deal, requestStateUpdater);
     }
 
     remove(
@@ -83,5 +79,22 @@ export class DealsService {
             dealConnectionId,
             requestStateUpdater
         );
+    }
+
+    private create(
+        agencyId: string,
+        deal: Deal,
+        requestStateUpdater: RequestStateUpdater
+    ): Observable<Deal> {
+        return this.endpoint.create(agencyId, deal, requestStateUpdater);
+    }
+
+    private edit(
+        agencyId: string,
+        dealId: string,
+        deal: Deal,
+        requestStateUpdater: RequestStateUpdater
+    ): Observable<Deal> {
+        return this.endpoint.edit(agencyId, dealId, deal, requestStateUpdater);
     }
 }

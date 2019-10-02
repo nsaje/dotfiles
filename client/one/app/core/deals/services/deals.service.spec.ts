@@ -4,7 +4,6 @@ import {tick, fakeAsync} from '@angular/core/testing';
 import {RequestStateUpdater} from '../../../shared/types/request-state-updater';
 import {DealsEndpoint} from './deals.endpoint';
 import {DealsService} from './deals.service';
-import {ApiResponse} from '../../../shared/types/api-response';
 import {Deal} from '../types/deal';
 import * as mockHelpers from '../../../testing/mock.helpers';
 
@@ -106,7 +105,7 @@ describe('DealsService', () => {
         const mockedNewDeal = clone(mockedDeal);
         mockedNewDeal.id = null;
         service
-            .create(mockedAgencyId, mockedNewDeal, requestStateUpdater)
+            .save(mockedAgencyId, null, mockedNewDeal, requestStateUpdater)
             .subscribe(deal => {
                 expect(deal).toEqual(mockedDeal);
             });
@@ -145,7 +144,7 @@ describe('DealsService', () => {
             .calls.reset();
 
         service
-            .edit(
+            .save(
                 mockedAgencyId,
                 mockedDealId,
                 mockedNewDeal,
