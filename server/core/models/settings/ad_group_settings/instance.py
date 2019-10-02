@@ -37,7 +37,8 @@ class AdGroupSettingsMixin(object):
         **updates
     ):
         updates = self._filter_and_remap_input(request, updates, skip_permission_check)
-        self._validate_update(updates)
+        if not skip_validation:
+            self._validate_update(updates)
         updates = self._ensure_bid_default_if_necessary(updates)
 
         if updates:
