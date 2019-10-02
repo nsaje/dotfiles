@@ -52,8 +52,8 @@
 0 15 * * *       /home/ubuntu/docker-manage-py.sh audit_autopilot --slack
 30 16 * * *      /home/ubuntu/docker-manage-py.sh send_supply_report_emails
 0 22 * * *       /home/ubuntu/docker-manage-py.sh clean_up_postgres_stats
-0 21 * * *       /home/ubuntu/docker-manage-py.sh clean_up_redshift  # has to run before vacuum_stats
-0 23 * * *       /home/ubuntu/docker-manage-py.sh vacuum_stats
+0 21 * * *       /home/ubuntu/docker-manage-py.sh clean_up_redshift  # has to run before vacuum_redshift_db
+0 23 * * *       /home/ubuntu/docker-manage-py.sh vacuum_redshift_db  # possible dashboard performance impact - 7 PM EST
 50 3,4 * * *     /home/ubuntu/docker-manage-py.sh campaignstop_midnight_refresh --check-time
 0 4,5 * * *      /home/ubuntu/docker-manage-py.sh campaignstop_midnight --check-time
 30 6,9 * * *     /home/ubuntu/docker-manage-py.sh create_demand_report

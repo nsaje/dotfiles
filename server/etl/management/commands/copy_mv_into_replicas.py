@@ -21,6 +21,4 @@ class Command(Z1Command):
         date_from = date_to - datetime.timedelta(days=num_days)
 
         job_id = refresh.generate_job_id(None)
-        refresh.unload_and_copy_into_replicas(
-            materialize.MATERIALIZED_VIEWS, job_id, date_from, date_to, skip_vacuum=True, skip_analyze=True
-        )
+        refresh.unload_and_copy_into_replicas(materialize.MATERIALIZED_VIEWS, job_id, date_from, date_to)

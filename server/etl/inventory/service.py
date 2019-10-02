@@ -20,7 +20,7 @@ CACHE_NAME = "inventory_planning"
 NATIVE_AD_SERVER_IDS = dash.features.inventory_planning.nas.NAS_MAPPING.keys()
 
 
-def refresh_inventory_data(date_from, date_to, skip_vacuum=False):
+def refresh_inventory_data(date_from, date_to):
     valid_country_codes = list(
         dash.features.geolocation.Geolocation.objects.filter(type=dash.constants.LocationType.COUNTRY).values_list(
             "key", flat=True

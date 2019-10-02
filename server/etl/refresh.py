@@ -35,15 +35,7 @@ def _post_to_slack(status, update_since, account_id=None):
 
 
 @metrics_compat.timer("etl.refresh_k1.refresh_k1_timer", type="all")
-def refresh(
-    update_since,
-    account_id=None,
-    skip_vacuum=False,
-    skip_analyze=False,
-    skip_daily_statements=False,
-    dump_and_abort=None,
-    update_to=None,
-):
+def refresh(update_since, account_id=None, skip_daily_statements=False, dump_and_abort=None, update_to=None):
     do_post_to_slack = (datetime.datetime.today() - update_since).days > SLACK_MIN_DAYS_TO_PROCESS
     if do_post_to_slack or account_id:
         _post_to_slack("started", update_since, account_id)
@@ -51,8 +43,6 @@ def refresh(
         update_since,
         materialize.MATERIALIZED_VIEWS,
         account_id=account_id,
-        skip_vacuum=skip_vacuum,
-        skip_analyze=skip_analyze,
         skip_daily_statements=skip_daily_statements,
         dump_and_abort=dump_and_abort,
         update_to=update_to,
@@ -63,16 +53,7 @@ def refresh(
 
 
 @newrelic.agent.function_trace()
-def _refresh(
-    update_since,
-    views,
-    account_id=None,
-    skip_vacuum=False,
-    skip_analyze=False,
-    skip_daily_statements=False,
-    dump_and_abort=None,
-    update_to=None,
-):
+def _refresh(update_since, views, account_id=None, skip_daily_statements=False, dump_and_abort=None, update_to=None):
     metrics_compat.incr("etl.refresh_k1.refresh_k1_reports", 1)
 
     validate_update_since_date(update_since)
@@ -95,7 +76,6 @@ def _refresh(
         date_from,
         date_to,
         update_since,
-        "skip vacuum" if skip_vacuum else "vacuum each table",
     )
 
     extra_dayspan = (update_since.date() - date_from).days
@@ -112,28 +92,9 @@ def _refresh(
     replication_threads = []
 
     for mv_class in views:
-        _materialize_view(
-            mv_class,
-            job_id,
-            date_from,
-            date_to,
-            dump_and_abort,
-            effective_spend_factors,
-            skip_vacuum,
-            skip_analyze,
-            account_id,
-        )
+        _materialize_view(mv_class, job_id, date_from, date_to, dump_and_abort, effective_spend_factors, account_id)
 
-        repl_func = partial(
-            mv_unload_and_copy_into_replicas,
-            mv_class,
-            job_id,
-            date_from,
-            date_to,
-            account_id,
-            skip_vacuum,
-            skip_analyze,
-        )
+        repl_func = partial(mv_unload_and_copy_into_replicas, mv_class, job_id, date_from, date_to, account_id)
         repl_thread = threads.AsyncFunction(repl_func)
         repl_thread.start()
         replication_threads.append(repl_thread)
@@ -148,9 +109,7 @@ def _refresh(
     metrics_compat.incr("etl.refresh_k1.refresh_k1_reports_finished", 1)
 
 
-def _materialize_view(
-    mv_class, job_id, date_from, date_to, dump_and_abort, effective_spend_factors, skip_vacuum, skip_analyze, account_id
-):
+def _materialize_view(mv_class, job_id, date_from, date_to, dump_and_abort, effective_spend_factors, account_id):
     mv = mv_class(job_id, date_from, date_to, account_id=account_id)
     with metrics_compat.block_timer("etl.refresh_k1.generate_table", table=mv_class.TABLE_NAME):
         mv.generate(campaign_factors=effective_spend_factors)
@@ -164,41 +123,19 @@ def _materialize_view(
             logger.info("Aborting after %s", dump_and_abort)
             exit()
 
-        try:
-            if not skip_vacuum and not mv_class.IS_TEMPORARY_TABLE:
-                maintenance.vacuum(mv_class.TABLE_NAME)
-            if not skip_analyze:
-                maintenance.analyze(mv_class.TABLE_NAME)
-        except Exception:
-            logger.exception("Vacuum and analyze skipped due to error")
 
-
-def unload_and_copy_into_replicas(
-    views, job_id, date_from, date_to, account_id=None, skip_vacuum=False, skip_analyze=False
-):
+def unload_and_copy_into_replicas(views, job_id, date_from, date_to, account_id=None):
     for mv_class in views:
-        mv_unload_and_copy_into_replicas(mv_class, job_id, date_from, date_to, account_id, skip_vacuum, skip_analyze)
+        mv_unload_and_copy_into_replicas(mv_class, job_id, date_from, date_to, account_id)
 
 
-def mv_unload_and_copy_into_replicas(
-    mv_class, job_id, date_from, date_to, account_id=None, skip_vacuum=False, skip_analyze=False
-):
+def mv_unload_and_copy_into_replicas(mv_class, job_id, date_from, date_to, account_id=None):
     if mv_class.IS_TEMPORARY_TABLE:
         return
     s3_path = redshift.unload_table(job_id, mv_class.TABLE_NAME, date_from, date_to, account_id=account_id)
     update_threads = []
     for db_name in settings.STATS_DB_WRITE_REPLICAS:
-        async_func = partial(
-            update_table,
-            db_name,
-            s3_path,
-            mv_class.TABLE_NAME,
-            date_from,
-            date_to,
-            account_id,
-            skip_vacuum,
-            skip_analyze,
-        )
+        async_func = partial(update_table, db_name, s3_path, mv_class.TABLE_NAME, date_from, date_to, account_id)
         async_thread = threads.AsyncFunction(async_func)
         async_thread.start()
         update_threads.append(async_thread)
@@ -206,15 +143,7 @@ def mv_unload_and_copy_into_replicas(
         # do not copy mv_master and mv_master_pubs into postgres, too large
         for db_name in settings.STATS_DB_WRITE_REPLICAS_POSTGRES:
             async_func = partial(
-                update_table_postgres,
-                db_name,
-                s3_path,
-                mv_class.TABLE_NAME,
-                date_from,
-                date_to,
-                account_id,
-                skip_vacuum,
-                skip_analyze,
+                update_table_postgres, db_name, s3_path, mv_class.TABLE_NAME, date_from, date_to, account_id
             )
             async_thread = threads.AsyncFunction(async_func)
             async_thread.start()
@@ -224,20 +153,12 @@ def mv_unload_and_copy_into_replicas(
         thread.join_and_get_result()
 
 
-def update_table(db_name, s3_path, table_name, date_from, date_to, account_id, skip_vacuum, skip_analyze):
+def update_table(db_name, s3_path, table_name, date_from, date_to, account_id):
     redshift.update_table_from_s3(db_name, s3_path, table_name, date_from, date_to, account_id=account_id)
-    if not skip_vacuum:
-        maintenance.vacuum(table_name, db_name=db_name)
-    if not skip_analyze:
-        maintenance.analyze(table_name, db_name=db_name)
 
 
-def update_table_postgres(db_name, s3_path, table_name, date_from, date_to, account_id, skip_vacuum, skip_analyze):
+def update_table_postgres(db_name, s3_path, table_name, date_from, date_to, account_id):
     redshift.update_table_from_s3_postgres(db_name, s3_path, table_name, date_from, date_to, account_id=account_id)
-    if not skip_vacuum:
-        maintenance.vacuum(table_name, db_name=db_name)
-    if not skip_analyze:
-        maintenance.analyze(table_name, db_name=db_name)
 
 
 def get_all_views_table_names(temporary=False):

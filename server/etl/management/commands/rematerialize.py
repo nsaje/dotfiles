@@ -62,7 +62,7 @@ class Command(Z1Command):
             )
             print("reprocessing", acc_id, "since", since)
             try:
-                refresh.refresh(since, acc_id, skip_vacuum=True, skip_analyze=True)
+                refresh.refresh(since, acc_id)
             except Exception as e:
                 print("Exception:", e)
             finally:

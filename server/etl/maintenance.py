@@ -11,12 +11,15 @@ def _execute_query(db_name, query, *params):
         c.execute(query, params)
 
 
-def vacuum(table, delete_only=False, db_name=None):
+def vacuum(table, delete_only=False, to=None, db_name=None):
     logger.info("Starting VACUUM table %s", table)
     if delete_only:
         _execute_query(db_name, "VACUUM DELETE ONLY {}".format(table))
     else:
-        _execute_query(db_name, "VACUUM {}".format(table))
+        if to:
+            _execute_query(db_name, "VACUUM {} TO {} PERCENT".format(table, to))
+        else:
+            _execute_query(db_name, "VACUUM {}".format(table))
     logger.info("Finished VACUUM table %s", table)
 
 
