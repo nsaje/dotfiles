@@ -67,6 +67,7 @@ def get_autopilot_entities(ad_group=None, campaign=None, excluded_ad_group_ids=N
     ad_groups = (
         dash.models.AdGroup.objects.all()
         .filter(Q(settings__autopilot_state__in=states) | Q(campaign__settings__autopilot=True))
+        .exclude_archived()
         .select_related("settings", "campaign__settings", "campaign__account")
         .distinct()
     )

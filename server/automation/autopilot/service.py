@@ -339,6 +339,7 @@ def recalculate_budgets_campaign(campaign):
         budget_autopilot_adgroups = (
             campaign.adgroup_set.all()
             .filter(settings__autopilot_state=dash.constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET)
+            .exclude_archived()
             .select_related("settings")
         )
         for ad_group in budget_autopilot_adgroups:
