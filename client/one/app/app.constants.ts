@@ -732,6 +732,7 @@ export const APP_CONSTANTS = {
         Z1: 'z1',
         OEN: 'oen',
         ZMS: 'zms',
+        NAS: 'nas',
     },
     specialAccount: SpecialAccount,
     campaignTypes: {

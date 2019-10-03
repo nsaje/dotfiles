@@ -2378,8 +2378,14 @@ class Business(ConstantBase):
     Z1 = "z1"
     OEN = "oen"
     ZMS = "zms"
+    NAS = "nas"
 
-    _VALUES = {Z1: "Zemanta One", OEN: "Outbrain Extended Network", ZMS: "Zemanta Managed Service"}
+    _VALUES = {
+        Z1: "Zemanta One",
+        OEN: "Outbrain Extended Network",
+        ZMS: "Zemanta Managed Service",
+        NAS: "Native Ad Server",
+    }
 
 
 class DayHour(ConstantBase):

@@ -6,6 +6,7 @@ import dash.constants
 
 OEN_ACCOUNT_ID = 305
 ZMS_TAG = "outbrain/sales/OutbrainSalesforce"
+NAS_TAG = "biz/NES"
 
 
 class AccountQuerySet(models.QuerySet):
@@ -38,12 +39,16 @@ class AccountQuerySet(models.QuerySet):
                 predicate = predicate | models.Q(id=OEN_ACCOUNT_ID)
             if dash.constants.Business.ZMS not in business_types:
                 predicate = predicate | models.Q(agency__entity_tags__name__icontains=ZMS_TAG)
+            if dash.constants.Business.NAS not in business_types:
+                predicate = predicate | models.Q(agency__entity_tags__name__icontains=NAS_TAG)
             return self.exclude(predicate)
         else:
             if dash.constants.Business.OEN in business_types:
                 predicate = predicate | models.Q(id=OEN_ACCOUNT_ID)
             if dash.constants.Business.ZMS in business_types:
                 predicate = predicate | models.Q(agency__entity_tags__name__icontains=ZMS_TAG)
+            if dash.constants.Business.NAS in business_types:
+                predicate = predicate | models.Q(agency__entity_tags__name__icontains=NAS_TAG)
             return self.filter(predicate)
 
     def exclude_archived(self, show_archived=False):
