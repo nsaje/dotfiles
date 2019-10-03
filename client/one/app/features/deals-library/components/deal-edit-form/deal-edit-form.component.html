@@ -1,0 +1,62 @@
+<zem-text-form-group
+    class="zem-deal-edit-form__item zem-text-form-group"
+    [label]="'Deal name'"
+    [value]="deal.name"
+    [placeholder]="'Deal name'"
+    [errors]="dealErrors?.name"
+    (valueChange)="onNameChange($event)"
+></zem-text-form-group>
+<zem-text-form-group
+    class="zem-deal-edit-form__item zem-text-form-group"
+    [label]="'Deal ID'"
+    [value]="deal.dealId"
+    [placeholder]="'Deal ID'"
+    [errors]="dealErrors?.dealId"
+    (valueChange)="onDealIdChange($event)"
+></zem-text-form-group>
+<zem-select-form-group
+    class="zem-deal-edit-form__item zem-select-form-group"
+    [label]="'Source'"
+    [value]="deal.source"
+    [bindLabel]="'name'"
+    [bindValue]="'value'"
+    [items]="sourceOptions"
+    [placeholder]="'Choose source'"
+    [isSearchable]="true"
+    [isClearable]="true"
+    [orderByValue]="'name'"
+    [errors]="dealErrors?.source"
+    (valueChange)="onSourceChange($event)"
+></zem-select-form-group>
+<zem-decimal-form-group
+    class="zem-deal-edit-form__item zem-decimal-form-group"
+    [label]="'Floor price'"
+    [value]="deal.floorPrice"
+    [placeholder]="'0.00'"
+    [errors]="dealErrors?.floorPrice"
+    [fractionSize]="2"
+    (valueChange)="onFloorPriceChange($event)"
+></zem-decimal-form-group>
+<zem-date-form-group
+    class="zem-deal-edit-form__item zem-date-form-group"
+    [label]="'Valid from'"
+    [value]="deal.validFromDate"
+    [errors]="dealErrors?.validFromDate"
+    (valueChange)="onValidFromDateChange($event)"
+></zem-date-form-group>
+<zem-date-form-group
+    class="zem-deal-edit-form__item zem-date-form-group"
+    [label]="'Valid to'"
+    [value]="deal.validToDate"
+    [errors]="dealErrors?.validToDate"
+    (valueChange)="onValidToDateChange($event)"
+></zem-date-form-group>
+<zem-textarea-form-group
+    class="zem-deal-edit-form__item zem-textarea-form-group"
+    [label]="'Notes'"
+    [value]="deal.description"
+    [rows]="'10'"
+    [maxLength]="256"
+    [errors]="dealErrors?.description"
+    (valueChange)="onDescriptionChange($event)"
+></zem-textarea-form-group>
