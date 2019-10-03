@@ -1,7 +1,7 @@
-<div class="zem-settings-form-group">
-    <div class="zem-settings-form-group__content">
+<div class="zem-form-group">
+    <div class="zem-form-group__content">
         <zem-radio-input
-            class="zem-radio-input zem-settings-form-group__content-item"
+            class="zem-radio-input zem-form-group__content-item"
             [groupModel]="autopilotState"
             [value]="AdGroupAutopilotState.ACTIVE_CPC_BUDGET"
             [isDisabled]="isDisabled"
@@ -16,7 +16,7 @@
             ></zem-help-popover>
         </zem-radio-input>
         <div
-            class="zem-settings-form-group__subgroup"
+            class="zem-form-group__subgroup"
             *ngIf="autopilotState === AdGroupAutopilotState.ACTIVE_CPC_BUDGET"
         >
             <div class="message message--info message--with-icon">
@@ -33,7 +33,7 @@
             </div>
         </div>
         <zem-radio-input
-            class="zem-radio-input zem-settings-form-group__content-item zem-settings-form-group__content-item--no-spacing"
+            class="zem-radio-input zem-form-group__content-item zem-form-group__content-item--no-spacing"
             [groupModel]="autopilotState"
             [value]="AdGroupAutopilotState.ACTIVE_CPC"
             [isDisabled]="isDisabled"
@@ -48,7 +48,7 @@
             ></zem-help-popover>
         </zem-radio-input>
         <zem-radio-input
-            class="zem-radio-input zem-settings-form-group__content-item zem-settings-form-group__content-item--no-spacing"
+            class="zem-radio-input zem-form-group__content-item zem-form-group__content-item--no-spacing"
             [groupModel]="autopilotState"
             [value]="AdGroupAutopilotState.INACTIVE"
             [isDisabled]="isDisabled"

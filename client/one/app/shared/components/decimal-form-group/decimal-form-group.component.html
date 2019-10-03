@@ -1,0 +1,31 @@
+<div class="zem-form-group">
+    <label
+        class="zem-form-group__label zem-form-group__label--match-input-height"
+    >
+        {{ label }}
+        <zem-help-popover
+            class="zem-help-popover"
+            *ngIf="helpMessage"
+            content="{{ helpMessage }}"
+            placement="bottom"
+        ></zem-help-popover>
+    </label>
+    <div class="zem-form-group__content">
+        <zem-decimal-input
+            class="zem-form-group__content-item zem-form-group__input zem-decimal-input"
+            [value]="model"
+            [placeholder]="placeholder"
+            [isDisabled]="isDisabled"
+            [isFocused]="isFocused"
+            [fractionSize]="fractionSize"
+            [hasError]="errors && errors.length > 0"
+            (inputBlur)="onInputBlur($event)"
+        ></zem-decimal-input>
+        <div
+            class="zem-form-group__content-item zem-message zem-message--error"
+            *ngFor="let error of errors"
+        >
+            {{ error }}
+        </div>
+    </div>
+</div>

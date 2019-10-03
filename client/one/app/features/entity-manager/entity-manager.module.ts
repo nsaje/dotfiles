@@ -1,5 +1,4 @@
 import './styles/settings.less';
-import './styles/settings-form-group.less';
 import './styles/settings-section.less';
 
 import {NgModule} from '@angular/core';
@@ -13,14 +12,6 @@ import {EntitySettingsRouterOutlet} from './router-outlets/entity-settings/entit
 import {AdGroupSettingsDrawerView} from './views/ad-group-settings-drawer/ad-group-settings-drawer.view';
 import {CampaignSettingsDrawerView} from './views/campaign-settings-drawer/campaign-settings-drawer.view';
 import {AccountSettingsDrawerView} from './views/account-settings-drawer/account-settings-drawer.view';
-import {TextSettingComponent} from './components/text-setting/text-setting.component';
-import {TextAreaSettingComponent} from './components/textarea-setting/textarea-setting.component';
-import {IntegerSettingComponent} from './components/integer-setting/integer-setting.component';
-import {DecimalSettingComponent} from './components/decimal-setting/decimal-setting.component';
-import {CurrencySettingComponent} from './components/currency-setting/currency-setting.component';
-import {DateSettingComponent} from './components/date-setting/date-setting.component';
-import {SelectSettingComponent} from './components/select-setting/select-setting.component';
-import {CheckboxSettingComponent} from './components/checkbox-setting/checkbox-setting.component';
 import {DeliveryTypeSettingComponent} from './components/delivery-type-setting/delivery-type-setting.component';
 import {DemographicTargetingComponent} from './components/demographic-targeting/demographic-targeting.component';
 import {GeoTargetingComponent} from './components/geo-targeting/geo-targeting.component';
@@ -70,14 +61,6 @@ import {CampaignBudgetOptimizationComponent} from './components/campaign-budget-
         CampaignCreatorModalComponent,
         CampaignTypeSelectorComponent,
         DaypartingSettingComponent,
-        TextSettingComponent,
-        TextAreaSettingComponent,
-        IntegerSettingComponent,
-        DecimalSettingComponent,
-        CurrencySettingComponent,
-        DateSettingComponent,
-        SelectSettingComponent,
-        CheckboxSettingComponent,
         DeliveryTypeSettingComponent,
         BiddingTypeSettingComponent,
         DemographicTargetingComponent,

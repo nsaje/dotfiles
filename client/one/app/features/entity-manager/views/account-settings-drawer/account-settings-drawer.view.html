@@ -31,8 +31,8 @@
                     </h2>
                 </div>
                 <div class="zem-settings-section">
-                    <zem-select-setting
-                        class="zem-select-setting zem-settings-section__item"
+                    <zem-select-form-group
+                        class="zem-select-form-group zem-settings-section__item"
                         *ngIf="
                             zemPermissions.hasPermission(
                                 'zemauth.can_modify_account_manager'
@@ -52,9 +52,9 @@
                         [orderByValue]="'name'"
                         [errors]="state.fieldsErrors.defaultAccountManager"
                         (valueChange)="store.setAccountManager($event)"
-                    ></zem-select-setting>
-                    <zem-select-setting
-                        class="zem-select-setting zem-settings-section__item"
+                    ></zem-select-form-group>
+                    <zem-select-form-group
+                        class="zem-select-form-group zem-settings-section__item"
                         *ngIf="
                             zemPermissions.hasPermission(
                                 'zemauth.can_set_account_sales_representative'
@@ -74,9 +74,9 @@
                         [orderByValue]="'name'"
                         [errors]="state.fieldsErrors.defaultSalesRepresentative"
                         (valueChange)="store.setSalesRepresentative($event)"
-                    ></zem-select-setting>
-                    <zem-select-setting
-                        class="zem-select-setting zem-settings-section__item"
+                    ></zem-select-form-group>
+                    <zem-select-form-group
+                        class="zem-select-form-group zem-settings-section__item"
                         *ngIf="
                             zemPermissions.hasPermission(
                                 'zemauth.can_set_account_cs_representative'
@@ -103,9 +103,9 @@
                         (valueChange)="
                             store.setCustomerSuccessRepresentative($event)
                         "
-                    ></zem-select-setting>
-                    <zem-select-setting
-                        class="zem-select-setting zem-settings-section__item"
+                    ></zem-select-form-group>
+                    <zem-select-form-group
+                        class="zem-select-form-group zem-settings-section__item"
                         *ngIf="
                             zemPermissions.hasPermission(
                                 'zemauth.can_set_account_ob_representative'
@@ -130,9 +130,9 @@
                         [orderByValue]="'name'"
                         [errors]="state.fieldsErrors.obRepresentative"
                         (valueChange)="store.setOutbrainRepresentative($event)"
-                    ></zem-select-setting>
-                    <zem-select-setting
-                        class="zem-select-setting zem-settings-section__item"
+                    ></zem-select-form-group>
+                    <zem-select-form-group
+                        class="zem-select-form-group zem-settings-section__item"
                         *ngIf="
                             zemPermissions.hasPermission(
                                 'zemauth.can_modify_account_type'
@@ -154,9 +154,9 @@
                         [orderByValue]="'name'"
                         [errors]="state.fieldsErrors.accountType"
                         (valueChange)="store.setAccountType($event)"
-                    ></zem-select-setting>
-                    <zem-select-setting
-                        class="zem-select-setting zem-settings-section__item"
+                    ></zem-select-form-group>
+                    <zem-select-form-group
+                        class="zem-select-form-group zem-settings-section__item"
                         *ngIf="
                             zemPermissions.hasPermission(
                                 'zemauth.can_set_agency_for_account'
@@ -180,9 +180,9 @@
                         [orderByValue]="'name'"
                         [errors]="state.fieldsErrors.agencyId"
                         (valueChange)="store.setAgency($event)"
-                    ></zem-select-setting>
-                    <zem-text-setting
-                        class="zem-text-setting zem-settings-section__item"
+                    ></zem-select-form-group>
+                    <zem-text-form-group
+                        class="zem-text-form-group zem-settings-section__item"
                         *ngIf="
                             zemPermissions.hasPermission(
                                 'zemauth.can_see_salesforce_url'
@@ -198,9 +198,9 @@
                         [value]="state.entity.salesforceUrl"
                         [errors]="state.fieldsErrors.salesforceUrl"
                         (valueChange)="store.setSalesforceUrl($event)"
-                    ></zem-text-setting>
-                    <zem-select-setting
-                        class="zem-select-setting zem-settings-section__item"
+                    ></zem-text-form-group>
+                    <zem-select-form-group
+                        class="zem-select-form-group zem-settings-section__item"
                         *ngIf="!state.extras.isExternallyManaged"
                         [label]="'Currency'"
                         [helpMessage]="
@@ -217,9 +217,9 @@
                         [isDisabled]="!isNewEntity"
                         [errors]="state.fieldsErrors.currency"
                         (valueChange)="store.setCurrency($event)"
-                    ></zem-select-setting>
-                    <zem-integer-setting
-                        class="zem-integer-setting zem-settings-section__item"
+                    ></zem-select-form-group>
+                    <zem-integer-form-group
+                        class="zem-integer-form-group zem-settings-section__item"
                         *ngIf="
                             zemPermissions.hasPermission(
                                 'zemauth.can_set_frequency_capping'
@@ -236,7 +236,7 @@
                         [errors]="state.fieldsErrors.frequencyCapping"
                         [placeholder]="'No limit'"
                         (valueChange)="store.setFrequencyCapping($event)"
-                    ></zem-integer-setting>
+                    ></zem-integer-form-group>
                 </div>
             </div>
 

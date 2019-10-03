@@ -24,16 +24,24 @@ import {HelpPopoverComponent} from './components/help-popover/help-popover.compo
 import {DaypartingInputComponent} from './components/dayparting-input/dayparting-input.component';
 import {DrawerComponent} from './components/drawer/drawer.component';
 import {IntegerInputComponent} from './components/integer-input/integer-input.component';
+import {IntegerFormGroupComponent} from './components/integer-form-group/integer-form-group.component';
 import {DecimalInputComponent} from './components/decimal-input/decimal-input.component';
+import {DecimalFormGroupComponent} from './components/decimal-form-group/decimal-form-group.component';
 import {CurrencyInputComponent} from './components/currency-input/currency-input.component';
+import {CurrencyFormGroupComponent} from './components/currency-form-group/currency-form-group.component';
 import {DateInputComponent} from './components/date-input/date-input.component';
+import {DateFormGroupComponent} from './components/date-form-group/date-form-group.component';
 import {SelectInputComponent} from './components/select-input/select-input.component';
+import {SelectFormGroupComponent} from './components/select-form-group/select-form-group.component';
 import {PrefixedInputComponent} from './components/prefixed-input/prefixed-input.component';
 import {TextInputComponent} from './components/text-input/text-input.component';
+import {TextFormGroupComponent} from './components/text-form-group/text-form-group.component';
+import {TextAreaFormGroupComponent} from './components/textarea-form-group/textarea-form-group.component';
 import {BidModifierInputComponent} from './components/bid-modifier-input/bid-modifier-input.component';
 import {PopoverDirective} from './components/popover/popover.directive';
 import {ModalComponent} from './components/modal/modal.component';
 import {CheckboxInputComponent} from './components/checkbox-input/checkbox-input.component';
+import {CheckboxFormGroupComponent} from './components/checkbox-form-group/checkbox-form-group.component';
 import {RadioInputComponent} from './components/radio-input/radio-input.component';
 import {InternalFeatureDirective} from './directives/internal-feature/internal-feature.directive';
 import {FileSelectorComponent} from './components/file-selector/file-selector.component';
@@ -61,14 +69,22 @@ const EXPORTED_DECLARATIONS = [
     DrawerComponent,
     DaypartingInputComponent,
     CheckboxInputComponent,
+    CheckboxFormGroupComponent,
     RadioInputComponent,
     IntegerInputComponent,
+    IntegerFormGroupComponent,
     DecimalInputComponent,
+    DecimalFormGroupComponent,
     CurrencyInputComponent,
+    CurrencyFormGroupComponent,
     DateInputComponent,
+    DateFormGroupComponent,
     SelectInputComponent,
+    SelectFormGroupComponent,
     PrefixedInputComponent,
     TextInputComponent,
+    TextFormGroupComponent,
+    TextAreaFormGroupComponent,
     BidModifierInputComponent,
     ModalComponent,
     HelpPopoverComponent,

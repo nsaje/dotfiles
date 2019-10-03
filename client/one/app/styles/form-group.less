@@ -1,0 +1,53 @@
+@import 'variables';
+
+.zem-form-group {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.zem-form-group__label {
+    flex: 0 0 @zem-form-group__label-width;
+    line-height: @zem-form-group__line-height--default;
+}
+
+.zem-form-group__label--match-input-height {
+    display: flex;
+    max-height: @input__height--default;
+    align-items: center;
+}
+
+.zem-form-group__content {
+    flex: 1 1 @zem-form-group__min-content-width;
+}
+
+.zem-form-group__content-item {
+    line-height: @zem-form-group__line-height--default;
+    margin-top: @zem-form-group__items-spacing--default;
+}
+
+.zem-form-group__content-item--no-spacing,
+.zem-form-group__content-item:first-child {
+    margin-top: 0;
+}
+
+.zem-form-group__subgroup {
+    margin: @zem-form-group__items-spacing--default 0
+        @zem-form-group__items-spacing--default 22px;
+    padding: @zem-form-group__items-spacing--default 0
+        @zem-form-group__items-spacing--default 20px;
+    border-left: 3px solid @color--lighter-neutral;
+}
+
+.zem-form-group__subgroup-item {
+    line-height: @zem-form-group__line-height--default;
+    margin-top: @zem-form-group__items-spacing--default;
+}
+
+.zem-form-group__subgroup-item--no-spacing,
+.zem-form-group__subgroup-item:first-child {
+    margin-top: 0;
+}
+
+.zem-form-group__input {
+    max-width: @zem-form-group__input-width;
+}

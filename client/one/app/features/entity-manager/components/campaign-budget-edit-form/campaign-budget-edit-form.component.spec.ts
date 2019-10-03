@@ -5,11 +5,6 @@ import {CampaignBudgetEditFormComponent} from './campaign-budget-edit-form.compo
 import {Currency, AccountCreditStatus} from '../../../../app.constants';
 import {SimpleChange} from '@angular/core';
 import {AccountCredit} from '../../../../core/entities/types/account/account-credit';
-import {DateSettingComponent} from '../date-setting/date-setting.component';
-import {SelectSettingComponent} from '../select-setting/select-setting.component';
-import {TextSettingComponent} from '../text-setting/text-setting.component';
-import {CurrencySettingComponent} from '../currency-setting/currency-setting.component';
-import {TextAreaSettingComponent} from '../textarea-setting/textarea-setting.component';
 import {CampaignBudget} from '../../../../core/entities/types/campaign/campaign-budget';
 import {APP_CONFIG} from '../../../../app.config';
 
@@ -49,14 +44,7 @@ describe('CampaignBudgetEditFormComponent', () => {
 
     beforeEach(() => {
         TestBed.configureTestingModule({
-            declarations: [
-                CampaignBudgetEditFormComponent,
-                SelectSettingComponent,
-                TextSettingComponent,
-                DateSettingComponent,
-                CurrencySettingComponent,
-                TextAreaSettingComponent,
-            ],
+            declarations: [CampaignBudgetEditFormComponent],
             imports: [FormsModule, SharedModule],
         });
     });

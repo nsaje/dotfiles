@@ -22,13 +22,13 @@
 >
     <strong>Send an email whenever the rule performs an action.</strong>
 </zem-radio-input>
-<zem-text-setting
-    class="zem-rule-form__section-item zem-text-setting zem-rule-form__text-setting"
+<zem-text-form-group
+    class="zem-rule-form__section-item zem-text-form-group zem-rule-form__text-setting"
     label="Recipients"
     [value]="ruleNotification.recipients"
     (valueChange)="updateRecipients($event)"
 >
-</zem-text-setting>
+</zem-text-form-group>
 <div class="zem-rule-form__section-item zem-rule-form__section-description">
     Comma separated list of recipient's emails.
 </div>

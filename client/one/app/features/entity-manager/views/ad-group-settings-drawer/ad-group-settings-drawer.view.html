@@ -30,17 +30,17 @@
                     <h2 class="zem-settings__panel-header-title">Scheduling</h2>
                 </div>
                 <div class="zem-settings-section">
-                    <zem-date-setting
-                        class="zem-date-setting zem-settings-section__item"
+                    <zem-date-form-group
+                        class="zem-date-form-group zem-settings-section__item"
                         label="Start date"
                         helpMessage="The start date of the ad group. If the date is set in the future, the ad group will not run until that date."
                         [value]="state.entity.startDate"
                         [isDisabled]="state.extras.isCampaignAutopilotEnabled"
                         [errors]="state.fieldsErrors.startDate"
                         (valueChange)="store.setStartDate($event)"
-                    ></zem-date-setting>
-                    <zem-date-setting
-                        class="zem-date-setting zem-settings-section__item"
+                    ></zem-date-form-group>
+                    <zem-date-form-group
+                        class="zem-date-form-group zem-settings-section__item"
                         label="End date"
                         helpMessage="The end date of the ad group. Ad group will run until the end of stop date."
                         [value]="state.entity.endDate"
@@ -50,7 +50,7 @@
                         [manualOverrideLabel]="'Use campaign budget end date'"
                         [errors]="state.fieldsErrors.endDate"
                         (valueChange)="store.setEndDate($event)"
-                    ></zem-date-setting>
+                    ></zem-date-form-group>
                     <div
                         class="zem-settings-section__item zem-settings-section__item--indented"
                         *ngIf="state.extras.isCampaignAutopilotEnabled"
@@ -150,8 +150,8 @@
                         (maxCpcChange)="store.setMaxCpc($event)"
                         (maxCpmChange)="store.setMaxCpm($event)"
                     ></zem-bidding-type-setting>
-                    <zem-currency-setting
-                        class="zem-currency-setting zem-settings-section__item"
+                    <zem-currency-form-group
+                        class="zem-currency-form-group zem-settings-section__item"
                         label="Ad group's daily spend cap"
                         helpMessage="Amount of budget autopilot can operate with on this ad group every day."
                         [value]="
@@ -164,7 +164,7 @@
                         [isDisabled]="!store.isAdGroupAutopilotEnabled()"
                         [errors]="state.fieldsErrors.autopilot.dailyBudget"
                         (valueChange)="store.setAutopilotDailyBudget($event)"
-                    ></zem-currency-setting>
+                    ></zem-currency-form-group>
                     <div
                         class="zem-settings-section__item zem-settings-section__item--indented"
                         *ngIf="!store.isAdGroupAutopilotEnabled()"
@@ -211,8 +211,8 @@
                     "
                 >
                     <div class="zem-settings-section">
-                        <zem-integer-setting
-                            class="zem-integer-setting zem-settings-section__item"
+                        <zem-integer-form-group
+                            class="zem-integer-form-group zem-settings-section__item"
                             *ngIf="
                                 zemPermissions.hasPermission(
                                     'zemauth.can_set_click_capping'
@@ -235,9 +235,9 @@
                             "
                             placeholder="No limit"
                             (valueChange)="store.setDailyClickCapping($event)"
-                        ></zem-integer-setting>
-                        <zem-integer-setting
-                            class="zem-integer-setting zem-settings-section__item"
+                        ></zem-integer-form-group>
+                        <zem-integer-form-group
+                            class="zem-integer-form-group zem-settings-section__item"
                             *ngIf="
                                 zemPermissions.hasPermission(
                                     'zemauth.can_set_frequency_capping'
@@ -254,7 +254,7 @@
                             [errors]="state.fieldsErrors.frequencyCapping"
                             [placeholder]="'No limit'"
                             (valueChange)="store.setFrequencyCapping($event)"
-                        ></zem-integer-setting>
+                        ></zem-integer-form-group>
                     </div>
                 </zem-advanced-settings-section>
             </div>
@@ -422,8 +422,8 @@
                         ></zem-zip-targeting>
                     </div>
                     <div class="zem-settings-section">
-                        <zem-checkbox-setting
-                            class="zem-checkbox-setting zem-settings-section__item"
+                        <zem-checkbox-form-group
+                            class="zem-checkbox-form-group zem-settings-section__item"
                             *ngIf="
                                 zemPermissions.hasPermission(
                                     'zemauth.can_use_language_targeting'
@@ -437,7 +437,7 @@
                             (valueChange)="store.setLanguageMatching($event)"
                         >
                             Enable language matching
-                        </zem-checkbox-setting>
+                        </zem-checkbox-form-group>
                     </div>
                 </zem-advanced-settings-section>
             </div>

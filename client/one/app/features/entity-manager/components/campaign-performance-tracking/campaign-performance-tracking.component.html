@@ -10,13 +10,10 @@
         placement="right"
     ></zem-help-popover>
 </zem-checkbox-input>
-<div
-    class="zem-settings-form-group__subgroup"
-    *ngIf="campaignTracking.ga.enabled"
->
-    <div class="zem-settings-form-group__subgroup-item">
-        <zem-select-setting
-            class="zem-select-setting"
+<div class="zem-form-group__subgroup" *ngIf="campaignTracking.ga.enabled">
+    <div class="zem-form-group__subgroup-item">
+        <zem-select-form-group
+            class="zem-select-form-group"
             [label]="'Reporting type'"
             [helpMessage]="'Google Analytics reporting type.'"
             [value]="campaignTracking.ga.type"
@@ -25,7 +22,7 @@
             [items]="availableGaTypes"
             (valueChange)="onGaTypeChange($event)"
         >
-        </zem-select-setting>
+        </zem-select-form-group>
         <div
             class="zem-settings-section__item zem-settings-section__item--indented"
         >
@@ -67,9 +64,9 @@
             </div>
         </div>
     </div>
-    <div class="zem-settings-form-group__subgroup-item">
-        <zem-text-setting
-            class="zem-text-setting"
+    <div class="zem-form-group__subgroup-item">
+        <zem-text-form-group
+            class="zem-text-form-group"
             [label]="'Web property ID'"
             [helpMessage]="'Google Analytics web property ID.'"
             [value]="campaignTracking.ga.webPropertyId"
@@ -78,7 +75,7 @@
             [isDisabled]="campaignTracking.ga.type !== GaTrackingType.API"
             (valueChange)="onGaPropertyIdChange($event)"
         >
-        </zem-text-setting>
+        </zem-text-form-group>
     </div>
 </div>
 
@@ -92,13 +89,10 @@
         placement="right"
     ></zem-help-popover>
 </zem-checkbox-input>
-<div
-    class="zem-settings-form-group__subgroup"
-    *ngIf="campaignTracking.adobe.enabled"
->
-    <div class="zem-settings-form-group__subgroup-item">
-        <zem-text-setting
-            class="zem-text-setting"
+<div class="zem-form-group__subgroup" *ngIf="campaignTracking.adobe.enabled">
+    <div class="zem-form-group__subgroup-item">
+        <zem-text-form-group
+            class="zem-text-form-group"
             [label]="'Adobe tracking parameter'"
             [helpMessage]="
                 'Name of the tracking parameter used for Adobe Analytics.'
@@ -108,7 +102,7 @@
             [errors]="campaignTrackingErrors.adobe.trackingParameter"
             (valueChange)="onAdobeTrackingParameterChange($event)"
         >
-        </zem-text-setting>
+        </zem-text-form-group>
         <div
             class="zem-settings-section__item zem-settings-section__item--indented"
         >

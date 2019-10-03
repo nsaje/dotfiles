@@ -31,8 +31,8 @@
                     </h2>
                 </div>
                 <div class="zem-settings-section">
-                    <zem-select-setting
-                        class="zem-select-setting zem-settings-section__item"
+                    <zem-select-form-group
+                        class="zem-select-form-group zem-settings-section__item"
                         *ngIf="
                             zemPermissions.hasPermission(
                                 'zemauth.fea_can_change_campaign_type'
@@ -52,9 +52,9 @@
                         [orderByValue]="'name'"
                         [errors]="state.fieldsErrors.type"
                         (valueChange)="store.setType($event)"
-                    ></zem-select-setting>
-                    <zem-select-setting
-                        class="zem-select-setting zem-settings-section__item"
+                    ></zem-select-form-group>
+                    <zem-select-form-group
+                        class="zem-select-form-group zem-settings-section__item"
                         *ngIf="
                             zemPermissions.hasPermission(
                                 'zemauth.can_modify_campaign_manager'
@@ -74,9 +74,9 @@
                         [orderByValue]="'name'"
                         [errors]="state.fieldsErrors.campaignManager"
                         (valueChange)="store.setCampaignManager($event)"
-                    ></zem-select-setting>
-                    <zem-select-setting
-                        class="zem-select-setting zem-settings-section__item"
+                    ></zem-select-form-group>
+                    <zem-select-form-group
+                        class="zem-select-form-group zem-settings-section__item"
                         *ngIf="
                             zemPermissions.hasPermission(
                                 'zemauth.can_modify_campaign_iab_category'
@@ -93,9 +93,9 @@
                         [isClearable]="true"
                         [errors]="state.fieldsErrors.iabCategory"
                         (valueChange)="store.setIabCategory($event)"
-                    ></zem-select-setting>
-                    <zem-select-setting
-                        class="zem-select-setting zem-settings-section__item"
+                    ></zem-select-form-group>
+                    <zem-select-form-group
+                        class="zem-select-form-group zem-settings-section__item"
                         *ngIf="
                             zemPermissions.hasPermission(
                                 'zemauth.can_see_campaign_language_choices'
@@ -112,9 +112,9 @@
                         [isClearable]="true"
                         [errors]="state.fieldsErrors.language"
                         (valueChange)="store.setLanguage($event)"
-                    ></zem-select-setting>
-                    <zem-integer-setting
-                        class="zem-integer-setting zem-settings-section__item"
+                    ></zem-select-form-group>
+                    <zem-integer-form-group
+                        class="zem-integer-form-group zem-settings-section__item"
                         *ngIf="
                             zemPermissions.hasPermission(
                                 'zemauth.can_set_frequency_capping'
@@ -131,7 +131,7 @@
                         [errors]="state.fieldsErrors.frequencyCapping"
                         [placeholder]="'No limit'"
                         (valueChange)="store.setFrequencyCapping($event)"
-                    ></zem-integer-setting>
+                    ></zem-integer-form-group>
                 </div>
             </div>
 

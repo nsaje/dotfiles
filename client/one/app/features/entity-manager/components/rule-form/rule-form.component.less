@@ -1,5 +1,4 @@
 @import 'variables';
-@import '../../styles/_settings.variables.less';
 
 .zem-rule-form__section {
     margin-top: 10px;
@@ -47,39 +46,29 @@
 .zem-rule-form__section-item--indented::before {
     content: '';
     display: block;
-    flex: 0 0 @zem-settings__label-width;
+    flex: 0 0 @zem-form-group__label-width;
 }
 
 .zem-rule-form__section-item--indented > * {
-    flex: 1 1 @zem-settings__min-content-width;
+    flex: 1 1 @zem-form-group__min-content-width;
 }
 
-.zem-rule-form__text-setting
-    .zem-settings-form-group
-    .zem-settings-form-group__label {
+.zem-rule-form__text-setting .zem-form-group .zem-form-group__label {
     flex: 0 0 180px;
 }
 
-.zem-rule-form__select-setting
-    .zem-settings-form-group
-    .zem-settings-form-group__label {
+.zem-rule-form__select-setting .zem-form-group .zem-form-group__label {
     flex: 0 0 180px;
 }
 
-.zem-rule-form__select-setting
-    .zem-settings-form-group
-    .zem-settings-form-group__content {
+.zem-rule-form__select-setting .zem-form-group .zem-form-group__content {
     flex: 0 0 225px;
 }
 
-.zem-rule-form__currency-setting
-    .zem-settings-form-group
-    .zem-settings-form-group__label {
+.zem-rule-form__currency-setting .zem-form-group .zem-form-group__label {
     flex: 0 0 180px;
 }
 
-.zem-rule-form__currency-setting
-    .zem-settings-form-group
-    .zem-settings-form-group__content {
+.zem-rule-form__currency-setting .zem-form-group .zem-form-group__content {
     flex: 0 0 225px;
 }

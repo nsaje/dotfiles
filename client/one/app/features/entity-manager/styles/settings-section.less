@@ -1,5 +1,4 @@
 @import 'variables';
-@import './_settings.variables.less';
 
 .zem-settings-section {
     padding: @spacing--default;
@@ -43,11 +42,11 @@
 .zem-settings-section__item--indented::before {
     content: '';
     display: block;
-    flex: 0 0 @zem-settings__label-width;
+    flex: 0 0 @zem-form-group__label-width;
 }
 
 .zem-settings-section__item--indented > * {
-    flex: 1 1 @zem-settings__min-content-width;
+    flex: 1 1 @zem-form-group__min-content-width;
 }
 
 .zem-settings-section__title .zem-internal-feature__indicator,

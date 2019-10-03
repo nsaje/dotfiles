@@ -6,9 +6,9 @@
     <strong>{{ createdDate }}</strong>
 </div>
 <div class="zem-campaign-budget-edit-form__item">
-    <div class="zem-settings-form-group">
+    <div class="zem-form-group">
         <label
-            class="zem-settings-form-group__label zem-settings-form-group__label--match-input-height zem-campaign-budget-edit-form__label"
+            class="zem-form-group__label zem-form-group__label--match-input-height zem-campaign-budget-edit-form__label"
         >
             Credit line
             <zem-help-popover
@@ -22,7 +22,7 @@
             ></zem-help-popover>
         </label>
         <div
-            class="zem-settings-form-group__content zem-campaign-budget-edit-form__credits-list-container custom-scroller"
+            class="zem-form-group__content zem-campaign-budget-edit-form__credits-list-container custom-scroller"
         >
             <table class="zem-table">
                 <thead>
@@ -96,7 +96,7 @@
                 </tbody>
             </table>
             <div
-                class="zem-settings-form-group__content-item zem-message zem-message--error"
+                class="zem-form-group__content-item zem-message zem-message--error"
                 *ngFor="let error of budgetErrors?.creditId"
             >
                 {{ error }}
@@ -104,8 +104,8 @@
         </div>
     </div>
 </div>
-<zem-date-setting
-    class="zem-campaign-budget-edit-form__item zem-date-setting zem-campaign-budget-edit-form__date-setting"
+<zem-date-form-group
+    class="zem-campaign-budget-edit-form__item zem-date-form-group zem-campaign-budget-edit-form__date-setting"
     label="Start date"
     [value]="budget.startDate"
     [minDate]="minDate"
@@ -113,9 +113,9 @@
     [isDisabled]="!budget.creditId || !budget.canEditStartDate"
     [errors]="budgetErrors?.startDate"
     (valueChange)="onStartDateChange($event)"
-></zem-date-setting>
-<zem-date-setting
-    class="zem-campaign-budget-edit-form__item zem-date-setting zem-campaign-budget-edit-form__date-setting"
+></zem-date-form-group>
+<zem-date-form-group
+    class="zem-campaign-budget-edit-form__item zem-date-form-group zem-campaign-budget-edit-form__date-setting"
     label="End date"
     [value]="budget.endDate"
     [minDate]="minDate"
@@ -123,9 +123,9 @@
     [isDisabled]="!budget.creditId || !budget.canEditEndDate"
     [errors]="budgetErrors?.endDate"
     (valueChange)="onEndDateChange($event)"
-></zem-date-setting>
-<zem-currency-setting
-    class="zem-campaign-budget-edit-form__item zem-currency-setting zem-campaign-budget-edit-form__currency-setting"
+></zem-date-form-group>
+<zem-currency-form-group
+    class="zem-campaign-budget-edit-form__item zem-currency-form-group zem-campaign-budget-edit-form__currency-setting"
     label="Total budget"
     [value]="budget.amount"
     [currencySymbol]="currencySymbol"
@@ -133,11 +133,11 @@
     [isDisabled]="!budget.creditId || !budget.canEditAmount"
     [errors]="budgetErrors?.amount"
     (valueChange)="onAmountChange($event)"
-></zem-currency-setting>
+></zem-currency-form-group>
 <div class="zem-campaign-budget-edit-form__item" *ngIf="showMargin">
-    <div class="zem-settings-form-group">
+    <div class="zem-form-group">
         <label
-            class="zem-settings-form-group__label zem-settings-form-group__label--match-input-height zem-campaign-budget-edit-form__label"
+            class="zem-form-group__label zem-form-group__label--match-input-height zem-campaign-budget-edit-form__label"
         >
             Margin
             <zem-help-popover
@@ -147,9 +147,9 @@
                 placement="bottom"
             ></zem-help-popover>
         </label>
-        <div class="zem-settings-form-group__content">
+        <div class="zem-form-group__content">
             <zem-prefixed-input
-                class="zem-settings-form-group__content-item zem-prefixed-input zem-campaign-budget-edit-form__budget-margin"
+                class="zem-form-group__content-item zem-prefixed-input zem-campaign-budget-edit-form__budget-margin"
                 [prefix]="'%'"
                 [hasError]="!!budgetErrors?.margin"
             >
@@ -165,7 +165,7 @@
                 ></zem-decimal-input>
             </zem-prefixed-input>
             <div
-                class="zem-settings-form-group__content-item zem-message zem-message--error"
+                class="zem-form-group__content-item zem-message zem-message--error"
                 *ngFor="let error of budgetErrors?.margin"
             >
                 {{ error }}
@@ -173,12 +173,12 @@
         </div>
     </div>
 </div>
-<zem-textarea-setting
-    class="zem-campaign-budget-edit-form__item zem-textarea-setting zem-campaign-budget-edit-form__textarea-setting"
+<zem-textarea-form-group
+    class="zem-campaign-budget-edit-form__item zem-textarea-form-group zem-campaign-budget-edit-form__textarea-setting"
     label="Notes"
     [value]="budget.comment"
     [rows]="'10'"
     [maxLength]="256"
     [errors]="budgetErrors?.comment"
     (valueChange)="onCommentChange($event)"
-></zem-textarea-setting>
+></zem-textarea-form-group>

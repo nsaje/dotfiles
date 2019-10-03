@@ -21,15 +21,15 @@
         </div>
     </div>
     <div class="zem-rule-form__section">
-        <zem-text-setting
-            class="zem-rule-form__section-item zem-text-setting zem-rule-form__text-setting"
+        <zem-text-form-group
+            class="zem-rule-form__section-item zem-text-form-group zem-rule-form__text-setting"
             label="Rule name"
             [value]="state.rule.name"
             (valueChange)="store.setRuleName($event)"
         >
-        </zem-text-setting>
-        <zem-select-setting
-            class="zem-rule-form__section-item zem-select-setting zem-rule-form__select-setting"
+        </zem-text-form-group>
+        <zem-select-form-group
+            class="zem-rule-form__section-item zem-select-form-group zem-rule-form__select-setting"
             label="Apply rule action on"
             [value]="state.rule.dimension"
             bindLabel="label"
@@ -38,7 +38,7 @@
             [isSearchable]="false"
             [isClearable]="false"
             (valueChange)="store.selectRuleDimension($event)"
-        ></zem-select-setting>
+        ></zem-select-form-group>
         <div
             class="zem-rule-form__section-item zem-rule-form__section-description"
         >
@@ -69,8 +69,8 @@
             (ruleConditionsChange)="store.updateConditions($event)"
         >
         </zem-rule-form-conditions>
-        <zem-select-setting
-            class="zem-rule-form__section-item zem-select-setting zem-rule-form__select-setting"
+        <zem-select-form-group
+            class="zem-rule-form__section-item zem-select-form-group zem-rule-form__select-setting"
             label="Time range"
             [value]="state.rule.timeRange"
             helpMessage="The number of days in the past for which to aggregate the data."
@@ -80,7 +80,7 @@
             [isSearchable]="false"
             [isClearable]="false"
             (valueChange)="store.setRuleTimeRange($event)"
-        ></zem-select-setting>
+        ></zem-select-form-group>
     </div>
     <div
         class="zem-rule-form__section"

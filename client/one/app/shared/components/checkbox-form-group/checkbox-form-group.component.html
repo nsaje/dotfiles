@@ -1,0 +1,28 @@
+<div class="zem-form-group">
+    <label class="zem-form-group__label">
+        {{ label }}
+        <zem-help-popover
+            class="zem-help-popover"
+            *ngIf="helpMessage"
+            content="{{ helpMessage }}"
+            placement="bottom"
+        ></zem-help-popover>
+    </label>
+    <div class="zem-form-group__content">
+        <zem-checkbox-input
+            class="zem-form-group__content-item zem-checkbox-input"
+            [isChecked]="model"
+            [isDisabled]="isDisabled"
+            [hasError]="errors && errors.length > 0"
+            (toggle)="onToggle($event)"
+        >
+            <ng-content></ng-content>
+        </zem-checkbox-input>
+        <div
+            class="zem-form-group__content-item zem-message zem-message--error"
+            *ngFor="let error of errors"
+        >
+            {{ error }}
+        </div>
+    </div>
+</div>

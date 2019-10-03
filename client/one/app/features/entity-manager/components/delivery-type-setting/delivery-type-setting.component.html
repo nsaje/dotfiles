@@ -1,5 +1,5 @@
-<div class="zem-settings-form-group">
-    <label class="zem-settings-form-group__label">
+<div class="zem-form-group">
+    <label class="zem-form-group__label">
         Delivery type
         <zem-help-popover
             class="zem-help-popover"
@@ -8,9 +8,9 @@
         ></zem-help-popover>
     </label>
 
-    <div class="zem-settings-form-group__content">
+    <div class="zem-form-group__content">
         <zem-radio-input
-            class="zem-radio-input zem-settings-form-group__content-item"
+            class="zem-radio-input zem-form-group__content-item"
             [groupModel]="deliveryType"
             [value]="DeliveryType.STANDARD"
             [hasError]="hasStandardDeliveryTypeErrors()"
@@ -22,7 +22,7 @@
             >
         </zem-radio-input>
         <zem-radio-input
-            class="zem-radio-input zem-settings-form-group__content-item zem-settings-form-group__content-item--no-spacing"
+            class="zem-radio-input zem-form-group__content-item zem-form-group__content-item--no-spacing"
             [groupModel]="deliveryType"
             [value]="DeliveryType.ACCELERATED"
             [hasError]="hasAcceleratedDeliveryTypeErrors()"
@@ -34,7 +34,7 @@
             >
         </zem-radio-input>
         <div
-            class="zem-settings-form-group__content-item zem-message zem-message--error"
+            class="zem-form-group__content-item zem-message zem-message--error"
             *ngFor="let error of errors"
         >
             {{ error }}
