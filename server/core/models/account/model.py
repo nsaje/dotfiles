@@ -56,6 +56,7 @@ class Account(AccountValidatorMixin, AccountInstanceMixin, models.Model):
         "is_disabled",
         "custom_attributes",
         "currency",
+        "amplify_review",
     )
 
     id = models.AutoField(primary_key=True)

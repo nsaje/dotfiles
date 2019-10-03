@@ -60,7 +60,7 @@ class ValidationTestCase(TestCase):
 
         with self.assertRaisesMessage(
             exceptions.EditingAccountNotAllowed,
-            "Field(s) 'name, salesforce_url, custom_attributes, salesforce_id' can only be edited through Outbrain Salesforce API",
+            "Field(s) 'name, salesforce_url, custom_attributes, salesforce_id, amplify_review' can only be edited through Outbrain Salesforce API",
         ):
             self.account.update(
                 self.request,
@@ -68,6 +68,7 @@ class ValidationTestCase(TestCase):
                 salesforce_url="http://url.com",
                 custom_attributes=["country"],
                 salesforce_id=1234,
+                amplify_review=False,
             )
 
     def test_update_is_disabled_valid(self):

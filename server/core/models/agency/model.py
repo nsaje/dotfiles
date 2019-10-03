@@ -49,7 +49,7 @@ class Agency(AgencyValidatorMixin, AgencyInstanceMixin, models.Model):
         "amplify_review",
     )
 
-    _externally_managed_fields = ("id", "name", "is_disabled", "custom_attributes", "modified_dt")
+    _externally_managed_fields = ("id", "name", "is_disabled", "custom_attributes", "modified_dt", "amplify_review")
 
     id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=127, editable=True, unique=True, blank=False, null=False)
