@@ -3,7 +3,7 @@ from etl import refresh
 from utils import metrics_compat
 from utils.command_helpers import Z1Command
 
-VACUUM_TO_99 = ["mv_master", "mv_master_pubs"]
+VACUUM_TO_99 = []
 
 
 class Command(Z1Command):
