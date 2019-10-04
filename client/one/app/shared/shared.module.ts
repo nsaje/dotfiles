@@ -50,6 +50,7 @@ import {PaginationComponent} from './components/pagination/pagination.component'
 import {SmartGridComponent} from './components/smart-grid/smart-grid.component';
 import {LoadingOverlayComponent} from './components/smart-grid/components/loading-overlay/loading-overlay.component';
 import {NoRowsOverlayComponent} from './components/smart-grid/components/no-rows-overlay/no-rows-overlay.component';
+import {DealEditFormComponent} from './components/deal-edit-form/deal-edit-form.component';
 
 const EXPORTED_DECLARATIONS = [
     // Pipes
@@ -94,6 +95,7 @@ const EXPORTED_DECLARATIONS = [
     SmartGridComponent,
     LoadingOverlayComponent,
     NoRowsOverlayComponent,
+    DealEditFormComponent,
 ];
 
 @NgModule({

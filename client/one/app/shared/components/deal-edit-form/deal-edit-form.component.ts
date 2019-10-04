@@ -7,8 +7,10 @@ import {
     Output,
     EventEmitter,
 } from '@angular/core';
-import {ChangeEvent} from '../../../../shared/types/change-event';
-import {Deal} from '../../../../core/deals/types/deal';
+import {ChangeEvent} from '../../types/change-event';
+import {Deal} from './types/deal';
+import {DealErrors} from './types/deal-errors';
+import {SourceConfig} from './types/source-config';
 
 @Component({
     selector: 'zem-deal-edit-form',
@@ -19,9 +21,9 @@ export class DealEditFormComponent {
     @Input()
     deal: Deal;
     @Input()
-    dealErrors: any;
+    dealErrors: DealErrors;
     @Input()
-    sourceOptions: any[];
+    sourceOptions: SourceConfig[];
     @Output()
     dealChange = new EventEmitter<ChangeEvent<Deal>>();
 
