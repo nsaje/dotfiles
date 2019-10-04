@@ -20,7 +20,10 @@ POSTGRES_EXCLUDE_VIEWS = ("mv_master", "mv_master_pubs")
 POSTGRES_REPORTS_EXCLUDE_VIEWS = ("mv_account_pubs", "mv_campaign_pubs", "mv_adgroup_pubs", "mv_contentad_pubs")
 
 
-def should_query_all(breakdown):
+def should_query_all(breakdown, is_reports=False):
+    if is_reports:
+        return False
+
     if len(breakdown) == 0:
         return True
 
@@ -93,7 +96,8 @@ def query(
             orders = [order] + orders
 
         target_dimension = stats.constants.get_target_dimension(breakdown)
-        if target_dimension in stats.constants.TimeDimension._ALL:
+        if not is_reports and target_dimension in stats.constants.TimeDimension._ALL:
+            # NOTE: this optimization is breakdown specific and doesn't work when querying for reports
             constraints = helpers.get_time_dimension_constraints(target_dimension, constraints, offset, limit)
             # offset is not needed anymore because constraints were set accordingly
             offset = 0
@@ -101,7 +105,8 @@ def query(
         if breakdown_for_name is None:
             breakdown_for_name = breakdown
 
-        if query_all or should_query_all(breakdown):
+        if query_all or should_query_all(breakdown, is_reports):
+
             all_rows = _query_all(
                 breakdown,
                 constraints,

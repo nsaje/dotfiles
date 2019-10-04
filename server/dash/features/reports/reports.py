@@ -36,7 +36,7 @@ from .reportjob import ReportJob
 
 logger = logging.getLogger(__name__)
 
-BATCH_ROWS = 10000
+BATCH_ROWS = 100000
 
 
 def create_job(user, query, scheduled_report=None):
