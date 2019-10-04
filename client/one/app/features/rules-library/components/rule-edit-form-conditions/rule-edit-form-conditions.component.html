@@ -1,0 +1,16 @@
+<zem-rule-edit-form-condition
+    class="zem-rule-edit-form__section-item zem-rule-edit-form-condition"
+    *ngFor="let ruleCondition of ruleConditions; trackBy: trackById"
+    [ruleCondition]="ruleCondition"
+    [availableConditions]="availableConditions"
+    (conditionChange)="onConditionChange($event)"
+    (conditionRemove)="onConditionRemove($event)"
+>
+</zem-rule-edit-form-condition>
+<button
+    class="zem-rule-edit-form__section-item button button--highlight button--with-icon add-icon"
+    [disabled]="availableConditions.length === 0"
+    (click)="addCondition()"
+>
+    Add condition
+</button>

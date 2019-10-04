@@ -1,17 +1,17 @@
 import {BrowserModule} from '@angular/platform-browser';
 import {HttpClientXsrfModule} from '@angular/common/http';
 import {UpgradeModule} from '@angular/upgrade/static';
-import {ErrorHandler, NgModule} from '@angular/core';
+import {ErrorHandler, NgModule, DoBootstrap} from '@angular/core';
 
 import {APP_CONFIG} from './app.config';
 import {CoreModule} from './core/core.module';
 import {RavenErrorHandler} from './core/handlers/raven-error.handler';
+import {NewEntityAnalyticsMockView} from './views/new-entity-analytics-mock/new-entity-analytics-mock.view';
 import {InventoryPlanningModule} from './features/inventory-planning/inventory-planning.module';
 import {EntityManagerModule} from './features/entity-manager/entity-manager.module';
-import {DealsLibraryModule} from './features/deals-library/deals-library.module';
-import {CreativesManagerModule} from './features/creatives-manager/creatives-manager.module';
 import {AnalyticsModule} from './features/analytics/analytics.module';
-import {ViewsModule} from './views/views.module';
+import {RulesLibraryModule} from './features/rules-library/rules-library.module';
+import {DealsLibraryModule} from './features/deals-library/deals-library.module';
 
 // Raven (Sentry) configuration
 if (APP_CONFIG.env.prod) {
@@ -27,6 +27,7 @@ if (APP_CONFIG.env.prod) {
 }
 
 @NgModule({
+    declarations: [NewEntityAnalyticsMockView],
     imports: [
         // Angular modules
         BrowserModule,
@@ -37,15 +38,15 @@ if (APP_CONFIG.env.prod) {
         UpgradeModule,
 
         CoreModule,
-        ViewsModule,
 
         // Feature modules
         InventoryPlanningModule,
         EntityManagerModule,
-        DealsLibraryModule,
-        CreativesManagerModule,
         AnalyticsModule,
+        RulesLibraryModule,
+        DealsLibraryModule,
     ],
+    entryComponents: [NewEntityAnalyticsMockView],
     providers: [
         {provide: ErrorHandler, useClass: RavenErrorHandler},
         upgradeProvider('$rootScope', 'ajs$rootScope'),
@@ -55,7 +56,7 @@ if (APP_CONFIG.env.prod) {
         upgradeProvider('zemNavigationNewService'),
     ],
 })
-export class AppModule {
+export class AppModule implements DoBootstrap {
     constructor(private upgrade: UpgradeModule) {}
 
     ngDoBootstrap() {

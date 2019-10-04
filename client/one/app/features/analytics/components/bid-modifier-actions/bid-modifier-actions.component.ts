@@ -4,7 +4,6 @@ import {
     Component,
     ChangeDetectionStrategy,
     Input,
-    OnInit,
     ViewChild,
     Output,
     EventEmitter,
@@ -14,6 +13,8 @@ import {Breakdown} from '../../../../app.constants';
 import {DropdownDirective} from '../../../../shared/components/dropdown/dropdown.directive';
 import {APP_CONFIG} from '../../../../app.config';
 import {ModalComponent} from '../../../../shared/components/modal/modal.component';
+import {BidModifierImportFormApi} from '../bid-modifier-import-form/types/bid-modifier-import-form-api';
+import * as commonHelpers from '../../../../shared/helpers/common.helpers';
 
 @Component({
     selector: 'zem-bid-modifier-actions',
@@ -28,10 +29,15 @@ export class BidModifierActionsComponent {
     @Output()
     importSuccess = new EventEmitter<void>();
 
+    importRequestInProgress: boolean;
+    importFileIsValid: boolean;
+
+    private bidModifierImportFormApi: BidModifierImportFormApi;
+
     @ViewChild(DropdownDirective, {static: false})
     bidModifierActionsDropdown: DropdownDirective;
     @ViewChild(ModalComponent, {static: false})
-    bidModifierUploadModal: ModalComponent;
+    bidModifierImportFormModal: ModalComponent;
 
     export(): void {
         this.bidModifierActionsDropdown.close();
@@ -42,17 +48,24 @@ export class BidModifierActionsComponent {
     }
 
     import(): void {
-        this.bidModifierActionsDropdown.close();
-        this.bidModifierUploadModal.open();
+        this.importRequestInProgress = true;
+        this.bidModifierImportFormApi
+            .executeImport()
+            .then((importSuccess: boolean) => {
+                this.importRequestInProgress = false;
+                if (importSuccess) {
+                    this.bidModifierImportFormModal.close();
+                    this.importSuccess.emit();
+                }
+            });
     }
 
-    onImportSuccess(): void {
-        this.bidModifierUploadModal.close();
-        this.importSuccess.emit();
+    onComponentReady($event: BidModifierImportFormApi) {
+        this.bidModifierImportFormApi = $event;
     }
 
-    onCancel(): void {
-        this.bidModifierUploadModal.close();
+    onFileChange($event: File) {
+        this.importFileIsValid = commonHelpers.isDefined($event);
     }
 }
 

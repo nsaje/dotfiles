@@ -11,7 +11,15 @@
             <li class="zem-bid-modifier-actions__list-item" (click)="export()">
                 Export
             </li>
-            <li class="zem-bid-modifier-actions__list-item" (click)="import()">
+            <li
+                class="zem-bid-modifier-actions__list-item"
+                (click)="
+                    [
+                        bidModifierActionsDropdown.close(),
+                        bidModifierImportFormModal.open()
+                    ]
+                "
+            >
                 Import
             </li>
         </ul>
@@ -19,17 +27,47 @@
 </div>
 
 <zem-modal
-    #bidModifierUploadModal
+    #bidModifierImportFormModal
     [canCloseOnBackdropClick]="false"
     [canCloseOnEscapeKey]="true"
     class="zem-modal"
 >
-    <zem-bid-modifier-upload-modal
-        *ngIf="bidModifierUploadModal.isOpen"
-        class="zem-bid-modifier-upload-modal"
-        [adGroupId]="adGroupId"
-        [breakdown]="breakdown"
-        (importSuccess)="onImportSuccess()"
-        (cancel)="onCancel()"
-    ></zem-bid-modifier-upload-modal>
+    <ng-container *ngIf="bidModifierImportFormModal.isOpen">
+        <div class="zem-modal__header">
+            <div class="zem-modal__title">Import Bid Modifiers</div>
+        </div>
+        <div class="zem-modal__body">
+            <zem-bid-modifier-import-form
+                class="zem-bid-modifier-import-form"
+                [adGroupId]="adGroupId"
+                [breakdown]="breakdown"
+                (componentReady)="onComponentReady($event)"
+                (fileChange)="onFileChange($event)"
+            ></zem-bid-modifier-import-form>
+        </div>
+        <div class="zem-modal__footer buttons-panel">
+            <button
+                *ngIf="importRequestInProgress"
+                class="button button--highlight button--disabled"
+                disabled
+            >
+                <span class="loader loader--white"></span>
+            </button>
+            <button
+                *ngIf="!importRequestInProgress"
+                class="button button--highlight button--with-icon check-icon"
+                [disabled]="!importFileIsValid"
+                (click)="import()"
+            >
+                Import
+            </button>
+            <button
+                class="button button--outline"
+                [disabled]="importRequestInProgress"
+                (click)="bidModifierImportFormModal.close()"
+            >
+                Cancel
+            </button>
+        </div>
+    </ng-container>
 </zem-modal>

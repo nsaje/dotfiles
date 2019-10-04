@@ -1,0 +1,67 @@
+<div
+    class="zem-rule-edit-form-condition-modifier__value-modifier"
+    *ngIf="
+        valueModifier &&
+        valueModifier.dataType === DataType.Decimal &&
+        valueModifier.unit === Unit.Percent
+    "
+>
+    <zem-prefixed-input
+        class="zem-prefixed-input zem-rule-edit-form-condition-modifier__value-modifier-item zem-rule-edit-form-condition-modifier__value-input"
+        prefix="%"
+    >
+        <zem-decimal-input
+            class="zem-decimal-input"
+            [value]="value"
+            fractionSize="2"
+            (inputBlur)="updateValue($event)"
+        ></zem-decimal-input>
+    </zem-prefixed-input>
+    <span class="zem-rule-edit-form-condition-modifier__value-modifier-item">
+        of {{ valueLabel }}
+    </span>
+</div>
+
+<div
+    class="zem-rule-edit-form-condition-modifier__value-modifier"
+    *ngIf="
+        valueModifier &&
+        valueModifier.dataType === DataType.Integer &&
+        valueModifier.unit === Unit.Day
+    "
+>
+    <span class="zem-rule-edit-form-condition-modifier__value-modifier-item">
+        {{ valueLabel }}
+    </span>
+    <zem-select-input
+        class="zem-select-input zem-rule-edit-form-condition-modifier__value-modifier-item"
+        [value]="valueSign"
+        bindLabel="label"
+        bindValue="value"
+        [items]="availableValueSigns"
+        [isSearchable]="false"
+        [isClearable]="false"
+        (valueChange)="updateValue(value, $event)"
+    ></zem-select-input>
+    <zem-integer-input
+        class="zem-integer-input zem-rule-edit-form-condition-modifier__value-modifier-item"
+        [value]="value"
+        (inputBlur)="updateValue($event, valueSign)"
+    ></zem-integer-input>
+    <span class="zem-rule-edit-form-condition-modifier__value-modifier-item">
+        day(s)
+    </span>
+</div>
+
+<div *ngIf="hasTimeRangeModifier">
+    <div class="zem-rule-edit-form__section-title">Time range:</div>
+    <zem-radio-input
+        class="zem-rule-edit-form__section-item zem-radio-input"
+        *ngFor="let availableTimeRange of availableTimeRanges"
+        [groupModel]="timeRange"
+        [value]="availableTimeRange.value"
+        (select)="timeRangeChange.emit($event)"
+    >
+        {{ availableTimeRange.label }}
+    </zem-radio-input>
+</div>

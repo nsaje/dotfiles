@@ -1,0 +1,74 @@
+@import 'variables';
+
+.zem-rule-edit-form__section {
+    margin-top: 10px;
+}
+
+.zem-rule-edit-form__section:first-child {
+    margin-top: 0;
+}
+
+.zem-rule-edit-form__section-header {
+    display: flex;
+}
+
+.zem-rule-edit-form__section-title {
+    font-size: 17px;
+    color: @color--secondary;
+}
+
+.zem-rule-edit-form__section-title--underline {
+    text-decoration: underline;
+}
+
+.zem-rule-edit-form__section-header-actions {
+    margin-left: 5px;
+}
+
+.zem-rule-edit-form__section-description {
+    color: @text-color--lighter;
+}
+
+.zem-rule-edit-form__section-item {
+    display: block;
+    margin-top: 5px;
+}
+
+.zem-rule-edit-form__section-item:first-child {
+    margin-top: 0;
+}
+
+.zem-rule-edit-form__section-item--indented {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.zem-rule-edit-form__section-item--indented::before {
+    content: '';
+    display: block;
+    flex: 0 0 @zem-form-group__label-width;
+}
+
+.zem-rule-edit-form__section-item--indented > * {
+    flex: 1 1 @zem-form-group__min-content-width;
+}
+
+.zem-rule-edit-form__text-setting .zem-form-group .zem-form-group__label {
+    flex: 0 0 180px;
+}
+
+.zem-rule-edit-form__select-setting .zem-form-group .zem-form-group__label {
+    flex: 0 0 180px;
+}
+
+.zem-rule-edit-form__select-setting .zem-form-group .zem-form-group__content {
+    flex: 0 0 225px;
+}
+
+.zem-rule-edit-form__currency-setting .zem-form-group .zem-form-group__label {
+    flex: 0 0 180px;
+}
+
+.zem-rule-edit-form__currency-setting .zem-form-group .zem-form-group__content {
+    flex: 0 0 225px;
+}

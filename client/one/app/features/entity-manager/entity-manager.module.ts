@@ -33,21 +33,12 @@ import {SettingsDrawerHeaderComponent} from './components/settings-drawer-header
 import {CampaignGoalsComponent} from './components/campaign-goals/campaign-goals.component';
 import {CampaignGoalComponent} from './components/campaign-goal/campaign-goal.component';
 import {CampaignGoalEditFormComponent} from './components/campaign-goal-edit-form/campaign-goal-edit-form.component';
-import {CampaignPerformanceTrackingComponent} from './components/campaign-performance-tracking/campaign-performance-tracking.component';
-import {MediaSourcesComponent} from './components/media-sources/media-sources.component';
-
-// DEMO
-import {RuleActionsComponent} from './components/rule-actions/rule-actions.component';
-import {RuleFormComponent} from './components/rule-form/rule-form.component';
-import {RuleFormActionComponent} from './components/rule-form/components/rule-form-action/rule-form-action.component';
-import {RuleFormNotificationComponent} from './components/rule-form/components/rule-form-notification/rule-form-notification.component';
-import {RuleFormConditionsComponent} from './components/rule-form/components/rule-form-conditions/rule-form-conditions.component';
-import {RuleFormConditionComponent} from './components/rule-form/components/rule-form-condition/rule-form-condition.component';
-import {RuleFormConditionModifierComponent} from './components/rule-form/components/rule-form-condition-modifier/rule-form-condition-modifier.component';
 import {CampaignBudgetsOverviewComponent} from './components/campaign-budgets-overview/campaign-budgets-overview.component';
 import {CampaignBudgetsListComponent} from './components/campaign-budgets-list/campaign-budgets-list.component';
 import {CampaignBudgetEditFormComponent} from './components/campaign-budget-edit-form/campaign-budget-edit-form.component';
 import {CampaignBudgetOptimizationComponent} from './components/campaign-budget-optimization/campaign-budget-optimization.component';
+import {CampaignPerformanceTrackingComponent} from './components/campaign-performance-tracking/campaign-performance-tracking.component';
+import {MediaSourcesComponent} from './components/media-sources/media-sources.component';
 
 @NgModule({
     declarations: [
@@ -86,22 +77,12 @@ import {CampaignBudgetOptimizationComponent} from './components/campaign-budget-
         CampaignBudgetEditFormComponent,
         CampaignBudgetOptimizationComponent,
         MediaSourcesComponent,
-
-        // DEMO
-        RuleActionsComponent,
-        RuleFormComponent,
-        RuleFormActionComponent,
-        RuleFormNotificationComponent,
-        RuleFormConditionsComponent,
-        RuleFormConditionComponent,
-        RuleFormConditionModifierComponent,
     ],
     imports: [SharedModule],
     entryComponents: [
         EntitySettingsRouterOutlet,
         CampaignCreatorModalComponent,
         DaypartingSettingComponent,
-        RuleActionsComponent,
     ],
 })
 export class EntityManagerModule {}

@@ -1,0 +1,36 @@
+<zem-radio-input
+    class="zem-radio-input"
+    [groupModel]="ruleNotification.policy"
+    [value]="RuleNotificationPolicy.DisableNotifications"
+    (select)="updateRuleNotificationPolicy($event)"
+>
+    <strong>Never send an email.</strong>
+</zem-radio-input>
+<zem-radio-input
+    class="zem-radio-input"
+    [groupModel]="ruleNotification.policy"
+    [value]="RuleNotificationPolicy.NotifyRuleRan"
+    (select)="updateRuleNotificationPolicy($event)"
+>
+    <strong>Send an email whenever the rule runs.</strong>
+</zem-radio-input>
+<zem-radio-input
+    class="zem-radio-input"
+    [groupModel]="ruleNotification.policy"
+    [value]="RuleNotificationPolicy.NotifyActionExecuted"
+    (select)="updateRuleNotificationPolicy($event)"
+>
+    <strong>Send an email whenever the rule performs an action.</strong>
+</zem-radio-input>
+<zem-text-form-group
+    class="zem-rule-edit-form__section-item zem-text-form-group zem-rule-edit-form__text-setting"
+    label="Recipients"
+    [value]="ruleNotification.recipients"
+    (valueChange)="updateRecipients($event)"
+>
+</zem-text-form-group>
+<div
+    class="zem-rule-edit-form__section-item zem-rule-edit-form__section-description"
+>
+    Comma separated list of recipient's emails.
+</div>
