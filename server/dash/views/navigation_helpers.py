@@ -60,6 +60,7 @@ def get_account_dict(account, account_settings=None, with_settings=True):
         return {
             "id": account["id"],
             "name": account["name"],
+            "agencyId": account["agency__id"],
             "agency": account["agency__name"],
             "currency": account["currency"],
             "usesBCMv2": account["uses_bcm_v2"],
@@ -69,6 +70,7 @@ def get_account_dict(account, account_settings=None, with_settings=True):
         "id": account["id"],
         "name": account["name"],
         "archived": account_settings.archived if account_settings else False,
+        "agencyId": account["agency__id"],
         "agency": account["agency__name"],
         "currency": account["currency"],
         "usesBCMv2": account["uses_bcm_v2"],

@@ -49,6 +49,7 @@ class NavigationDataView(api_common.BaseApiView):
 
         if account:
             account_dict = account.__dict__
+            account_dict["agency__id"] = account.agency.id if account.agency else None
             account_dict["agency__name"] = account.agency.name if account.agency else None
             response["account"] = navigation_helpers.get_account_dict(account_dict, account.get_current_settings())
 
@@ -211,7 +212,7 @@ class NavigationTreeView(api_common.BaseApiView):
             map_accounts_settings = {acs.account_id: acs for acs in accounts_settings}
 
         data_accounts = []
-        for account in accounts.values("id", "name", "uses_bcm_v2", "agency__name", "currency"):
+        for account in accounts.values("id", "name", "uses_bcm_v2", "agency__id", "agency__name", "currency"):
             account_dict = navigation_helpers.get_account_dict(
                 account, map_accounts_settings.get(account["id"]), with_settings=load_settings
             )
