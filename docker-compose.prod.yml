@@ -133,8 +133,8 @@ services:
         scale: 5
         environment:
           NEW_RELIC_APP_NAME: "Zemanta One (Reports)"
-        mem_reservation: 8g
-        mem_limit: 20g
+        mem_reservation: 1g
+        mem_limit: 12g
         labels:
           SERVICE_IGNORE: "true"
         entrypoint: ""
