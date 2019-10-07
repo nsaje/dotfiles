@@ -37,7 +37,7 @@ def get_extra_data(user, account):
         extra["deals"] = get_deals(account)
 
     if user.has_perm("zemauth.can_modify_allowed_sources"):
-        extra["available_media_sources"] = get_available_sources(user, account.agency)
+        extra["available_media_sources"] = restapi.common.helpers.get_available_sources(user, account.agency)
 
     return extra
 
@@ -91,15 +91,6 @@ def get_hacks(account):
     return dash.models.CustomHack.objects.all().filter_applied(account=account).filter_active(
         True
     ).to_dict_list() + dash.features.custom_flags.helpers.get_all_custom_flags_on_account(account)
-
-
-def get_available_sources(user, agency):
-    available_sources_queryset = core.models.Source.objects.all()
-    if agency is not None and agency.allowed_sources.count() > 0:
-        available_sources_queryset = agency.allowed_sources.all()
-    if not user.has_perm("zemauth.can_see_all_available_sources"):
-        available_sources_queryset = available_sources_queryset.filter(released=True, deprecated=False)
-    return list(available_sources_queryset)
 
 
 def get_allowed_sources(user, account):

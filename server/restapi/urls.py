@@ -26,6 +26,7 @@ import restapi.publishergroup.urls
 import restapi.publishergroupentry.urls
 import restapi.publishers.urls
 import restapi.report.urls
+import restapi.source.urls
 from dash.features import cloneadgroup
 from dash.features.bulkactions import clonecontent
 
@@ -56,6 +57,7 @@ urlpatterns += restapi.publishergroupentry.urls.urlpatterns
 urlpatterns += restapi.publisherbidmodifiers.urls.urlpatterns
 urlpatterns += restapi.inventory_planning.urls.urlpatterns
 urlpatterns += restapi.directdeal.urls.urlpatterns
+urlpatterns += restapi.source.urls.urlpatterns
 urlpatterns += cloneadgroup.urls.urlpatterns
 urlpatterns += clonecontent.urls.urlpatterns
 urlpatterns += dash.features.bluekai.urls.urlpatterns

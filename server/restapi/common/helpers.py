@@ -1,3 +1,4 @@
+import core.models
 import zemauth.models
 
 
@@ -62,3 +63,12 @@ def _get_deal_dto(direct_deal):
         "description": direct_deal.deal.description,
         "is_applied": True,
     }
+
+
+def get_available_sources(user, agency):
+    available_sources_queryset = core.models.Source.objects.all()
+    if agency is not None and agency.allowed_sources.count() > 0:
+        available_sources_queryset = agency.allowed_sources.all()
+    if not user.has_perm("zemauth.can_see_all_available_sources"):
+        available_sources_queryset = available_sources_queryset.filter(released=True, deprecated=False)
+    return list(available_sources_queryset)

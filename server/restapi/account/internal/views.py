@@ -6,6 +6,7 @@ import core.models
 import dash.constants
 import restapi.access
 import restapi.account.v1.views
+import restapi.common.helpers
 import utils.exc
 
 from . import helpers
@@ -96,7 +97,7 @@ class AccountViewSet(restapi.account.v1.views.AccountViewSet):
     @staticmethod
     def _handle_allowed_media_sources(request, account, data):
         allowed_sources = helpers.get_allowed_sources(request.user, account)
-        available_sources = helpers.get_available_sources(request.user, account.agency)
+        available_sources = restapi.common.helpers.get_available_sources(request.user, account.agency)
 
         new_allowed_sources = []
         data_dict = dict((x["id"], x) for x in data)
