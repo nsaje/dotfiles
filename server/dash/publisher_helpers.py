@@ -1,5 +1,7 @@
 import re
 
+OUTBRAIN_SOURCE_ID = 3
+
 
 def publisher_exchange(source):
     """
@@ -101,7 +103,7 @@ class PublisherIdLookupMap(object):
         # find subdomain match
         for subdomain in all_subdomains(publisher_id):
             entry = self._map.get(subdomain)
-            if entry is not None and entry.include_subdomains:
+            if entry is not None and entry.include_subdomains and entry.source_id != OUTBRAIN_SOURCE_ID:
                 return entry
 
         return None

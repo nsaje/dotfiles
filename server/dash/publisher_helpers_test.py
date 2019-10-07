@@ -67,3 +67,17 @@ class PublisherIdLookupMapTest(TestCase):
 
         m = publisher_helpers.PublisherIdLookupMap(blacklist, whitelist)
         self.assertEqual(m[publisher_id].id, black_entry.id)
+
+    def test_ignore_outbrain_subdomains(self):
+        publisher_domain = "pch.com (Outbrain Publisher)"
+        publisher_subdomain = "lotto.pch.com (Outbrain Publisher)"
+        source_id = 3
+        publisher_id_subdomain = publisher_helpers.create_publisher_id(publisher_subdomain, source_id)
+
+        black_entry = magic_mixer.blend(
+            core.features.publisher_groups.PublisherGroupEntry, publisher=publisher_domain, source__id=source_id
+        )
+        blacklist = core.features.publisher_groups.PublisherGroupEntry.objects.filter(pk__in=[black_entry.id])
+
+        m = publisher_helpers.PublisherIdLookupMap(blacklist)
+        self.assertIsNone(m[publisher_id_subdomain])
