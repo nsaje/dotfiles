@@ -18,6 +18,9 @@ class AdGroupSourceUpdate(TestCase):
         self.source_type = magic_mixer.blend(core.models.SourceType)
         self.source = magic_mixer.blend(core.models.Source, source_type=self.source_type)
         self.ad_group_source = magic_mixer.blend(core.models.AdGroupSource, source=self.source, ad_group=self.ad_group)
+        self.ad_group_source.settings.update_unsafe(
+            None, cpc_cc=core.models.settings.ad_group_settings.model.DEFAULT_CPC_VALUE
+        )
 
         autopilot_patcher = patch("automation.autopilot.recalculate_budgets_ad_group")
         self.recalculate_autopilot_mock = autopilot_patcher.start()

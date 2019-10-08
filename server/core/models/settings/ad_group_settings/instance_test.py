@@ -406,35 +406,16 @@ class InstanceTest(TestCase):
         ad_group_cpc = magic_mixer.blend(core.models.AdGroup, campaign=campaign)
         ad_group_cpm = magic_mixer.blend(core.models.AdGroup, campaign=campaign, bidding_type=constants.BiddingType.CPM)
 
-        # autopilot off
-
         ad_group_cpc.settings.update_unsafe(None, autopilot_state=constants.AdGroupSettingsAutopilotState.INACTIVE)
         ad_group_cpm.settings.update_unsafe(None, autopilot_state=constants.AdGroupSettingsAutopilotState.INACTIVE)
 
         ad_group_cpc.settings.update(None, cpc_cc=None)
-        self.assertEqual(1, ad_group_cpc.settings.cpc)
-        self.assertEqual(exchange_rate, ad_group_cpc.settings.local_cpc)
+        self.assertEqual(Decimal("0.4500"), ad_group_cpc.settings.cpc)
+        self.assertAlmostEqual(exchange_rate * Decimal("0.4500"), ad_group_cpc.settings.local_cpc, places=4)
 
         ad_group_cpm.settings.update(None, max_cpm=None)
-        self.assertEqual(1, ad_group_cpm.settings.cpm)
-        self.assertEqual(exchange_rate, ad_group_cpm.settings.local_cpm)
-
-        # autopilot on
-
-        ad_group_cpc.settings.update_unsafe(
-            None, autopilot_state=constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET
-        )
-        ad_group_cpm.settings.update_unsafe(
-            None, autopilot_state=constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET
-        )
-
-        ad_group_cpc.settings.update(None, cpc_cc=None)
-        self.assertEqual(20, ad_group_cpc.settings.cpc)
-        self.assertEqual(exchange_rate * 20, ad_group_cpc.settings.local_cpc)
-
-        ad_group_cpm.settings.update(None, max_cpm=None)
-        self.assertEqual(25, ad_group_cpm.settings.cpm)
-        self.assertEqual(exchange_rate * 25, ad_group_cpm.settings.local_cpm)
+        self.assertEqual(Decimal("1.0000"), ad_group_cpm.settings.cpm)
+        self.assertAlmostEqual(exchange_rate, ad_group_cpm.settings.local_cpm, places=4)
 
 
 class MulticurrencyTest(TestCase):

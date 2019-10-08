@@ -1,5 +1,3 @@
-import decimal
-
 from django.db import transaction
 
 import core.common
@@ -88,31 +86,15 @@ class AdGroupSettingsMixin(object):
             or "local_cpc_cc" in updates
             and updates["local_cpc_cc"] is None
         ):
-            updates["cpc"] = self._get_cpc_default(updates)
+            updates["cpc"] = core.models.settings.ad_group_settings.model.DEFAULT_CPC_VALUE
         if (
             "max_cpm" in updates
             and updates["max_cpm"] is None
             or "local_max_cpm" in updates
             and updates["local_max_cpm"] is None
         ):
-            updates["cpm"] = self._get_cpm_default(updates)
+            updates["cpm"] = core.models.settings.ad_group_settings.model.DEFAULT_CPM_VALUE
         return updates
-
-    def _get_cpc_default(self, updates):
-        autopilot_enabled = (
-            updates.get("autopilot_state", self.autopilot_state) != constants.AdGroupSettingsAutopilotState.INACTIVE
-        )
-        if not autopilot_enabled:
-            return decimal.Decimal(1)
-        return decimal.Decimal(20)
-
-    def _get_cpm_default(self, updates):
-        autopilot_enabled = (
-            updates.get("autopilot_state", self.autopilot_state) != constants.AdGroupSettingsAutopilotState.INACTIVE
-        )
-        if not autopilot_enabled:
-            return decimal.Decimal(1)
-        return decimal.Decimal(25)
 
     def _update_ad_group(self, request, changes):
         if any(field in changes for field in ["ad_group_name", "archived"]):

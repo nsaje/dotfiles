@@ -44,6 +44,9 @@ class MigrateToBcmV2Test(TestCase):
     @patch.object(core.models.AdGroupSource, "migrate_to_bcm_v2")
     def test_migrate_to_bcm_v2(self, mock_ad_group_source_migrate):
         ad_group_source = magic_mixer.blend(core.models.AdGroupSource, ad_group=self.ad_group)
+        ad_group_source.settings.update_unsafe(
+            None, cpc_cc=core.models.settings.ad_group_settings.model.DEFAULT_CPC_VALUE
+        )
 
         self._test_migrate_to_bcm_v2()
         self.assertTrue(ad_group_source.migrate_to_bcm_v2.called)

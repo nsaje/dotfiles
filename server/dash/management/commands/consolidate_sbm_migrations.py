@@ -19,8 +19,6 @@ from utils.command_helpers import Z1Command
 from utils.queryset_helper import chunk_iterator
 
 BATCH_SIZE = 1000
-MAX_CPC = Decimal("20.0000")
-MAX_CPM = Decimal("25.0000")
 
 
 class Command(Z1Command):
@@ -61,29 +59,24 @@ class Command(Z1Command):
             self.consolidate_source_bid_modifiers(cutoff, batch_size, fix)
 
     def consolidate_ad_groups(self, cutoff, batch_size, fix):
-        update_list = list(
-            models.AdGroup.objects.filter(created_dt__gte=cutoff)
-            .filter(Q(settings__cpc=None) | Q(settings__cpm=None))
-            .values_list("id", flat=True)
+        create_qs = models.AdGroup.objects.filter(created_dt__gte=cutoff).filter(
+            Q(settings__cpc=None) | Q(settings__cpm=None)
         )
+        self.fix_ad_groups(create_qs, batch_size, fix, check=False)
 
-        if update_list:
-            self.stdout.write(self.style.WARNING("Found {} ad groups that need to be fixed.".format(len(update_list))))
+        check_qs = models.AdGroup.objects.filter(created_dt__gte=cutoff).filter(
+            Q(settings__cpc_cc=None) | Q(settings__max_cpm=None)
+        )
+        self.fix_ad_groups(check_qs, batch_size, fix, check=True)
 
-            if fix:
-                self.fix_ad_groups(update_list, batch_size)
-                self.stdout.write(self.style.SUCCESS("Fixed {} ad groups.".format(len(update_list))))
-
-        else:
-            self.stdout.write(self.style.SUCCESS("No ad groups need to be fixed!"))
-
-    def fix_ad_groups(self, ad_group_ids, batch_size):
-        ag_qs = models.AdGroup.objects.filter(id__in=ad_group_ids).values(
+    def fix_ad_groups(self, ad_group_query_set, batch_size, fix, check=True):
+        ag_qs = ad_group_query_set.values(
             "id",
             "bidding_type",
             "campaign__id",
             "campaign__account__currency",
-            "settings__autopilot_state",
+            "settings__cpc",
+            "settings__cpm",
             "settings__cpc_cc",
             "settings__max_cpm",
             ad_group_mobile_idx=StrIndex("settings__target_devices", models.Value("mobile")),
@@ -96,6 +89,7 @@ class Command(Z1Command):
             max_source_default_mobile_cpm=Max("adgroupsource__source__default_mobile_cpm"),
         )
 
+        processed = 0
         batch_number = 1
 
         for values in chunk_iterator(ag_qs, chunk_size=batch_size):
@@ -125,52 +119,92 @@ class Command(Z1Command):
             currency_exchange_map = {e["currency"]: e["exchange_rate"] for e in currency_qs}
 
             for value in values:
-                canditate_cpcs = []
-                canditate_cpms = []
-                if value["settings__autopilot_state"] in (
-                    constants.AdGroupSettingsAutopilotState.ACTIVE_CPC,
-                    constants.AdGroupSettingsAutopilotState.ACTIVE_CPC_BUDGET,
-                ):
-                    canditate_cpcs.append(Decimal("20.0000"))
-                    canditate_cpms.append(Decimal("25.0000"))
-                if value["ad_group_mobile_idx"] != 0 or value["campaign_mobile_idx"] != 0:
-                    if value["max_source_default_mobile_cpc_cc"] is not None:
-                        canditate_cpcs.append(value["max_source_default_mobile_cpc_cc"])
-                    if value["max_source_default_mobile_cpm"] is not None:
-                        canditate_cpms.append(value["max_source_default_mobile_cpm"])
-                if value["max_adgroupsource_settings__cpc_cc"]:
-                    canditate_cpcs.append(value["max_adgroupsource_settings__cpc_cc"])
-                if value["max_adgroupsource_settings__cpm"]:
-                    canditate_cpms.append(value["max_adgroupsource_settings__cpm"])
-                if value["max_source_default_cpc_cc"]:
-                    canditate_cpcs.append(value["max_source_default_cpc_cc"])
-                if value["max_source_default_cpm"]:
-                    canditate_cpms.append(value["max_source_default_cpm"])
+                update_kwargs = self._get_ad_group_updates(goal_map, currency_exchange_map, value, check)
 
-                if value["campaign__id"] in goal_map:
-                    canditate_cpcs.append(goal_map[value["campaign__id"]])
+                if update_kwargs:
+                    processed += 1
+                    if fix:
+                        ad_group = models.AdGroup.objects.get(id=value["id"])
+                        ad_group.settings.update_unsafe(None, write_history=False, **update_kwargs)
 
-                if not canditate_cpcs:
-                    canditate_cpcs.append(Decimal("1.0000"))
-                if not canditate_cpms:
-                    canditate_cpms.append(Decimal("1.0000"))
+        if check:
+            if processed == 0:
+                self.stdout.write(self.style.SUCCESS("Found no ad groups that had wrong bid value."))
+            else:
+                if fix:
+                    self.stdout.write(
+                        self.style.SUCCESS("Fixed {} ad groups that had wrong bid value.".format(processed))
+                    )
+                else:
+                    self.stdout.write(
+                        self.style.WARNING("Found {} ad groups that had wrong bid value.".format(processed))
+                    )
+        else:
+            if processed == 0:
+                self.stdout.write(self.style.SUCCESS("Found no ad groups that had no bid value."))
+            else:
+                if fix:
+                    self.stdout.write(self.style.SUCCESS("Fixed {} ad groups that had no bid value.".format(processed)))
+                else:
+                    self.stdout.write(self.style.WARNING("Found {} ad groups that had no bid value.".format(processed)))
 
-                update_kwargs = {}
-                if value["settings__cpc_cc"] is None:
-                    cpc = max(canditate_cpcs)
+    def _get_ad_group_updates(self, goal_map, currency_exchange_map, value, check):
+        canditate_cpcs = []
+        canditate_cpms = []
+        if value["ad_group_mobile_idx"] != 0 or value["campaign_mobile_idx"] != 0:
+            if value["max_source_default_mobile_cpc_cc"] is not None:
+                canditate_cpcs.append(value["max_source_default_mobile_cpc_cc"])
+            if value["max_source_default_mobile_cpm"] is not None:
+                canditate_cpms.append(value["max_source_default_mobile_cpm"])
+        if value["max_adgroupsource_settings__cpc_cc"]:
+            canditate_cpcs.append(value["max_adgroupsource_settings__cpc_cc"])
+        if value["max_adgroupsource_settings__cpm"]:
+            canditate_cpms.append(value["max_adgroupsource_settings__cpm"])
+        if value["max_source_default_cpc_cc"]:
+            canditate_cpcs.append(value["max_source_default_cpc_cc"])
+        if value["max_source_default_cpm"]:
+            canditate_cpms.append(value["max_source_default_cpm"])
+
+        if value["campaign__id"] in goal_map:
+            canditate_cpcs.append(goal_map[value["campaign__id"]])
+
+        if not canditate_cpcs:
+            canditate_cpcs.append(Decimal("0.4500"))
+        if not canditate_cpms:
+            canditate_cpms.append(Decimal("1.0000"))
+
+        update_kwargs = {}
+
+        if check:
+            if value["settings__cpc_cc"] != value["settings__cpc"]:
+                cpc = max(canditate_cpcs)
+                if value["settings__cpc"] != cpc:
                     update_kwargs["cpc"] = cpc
                     update_kwargs["local_cpc"] = _to_local_currency(
                         cpc, currency_exchange_map[value["campaign__account__currency"]]
                     )
-                if value["settings__max_cpm"] is None:
-                    cpm = max(canditate_cpms)
+            if value["settings__max_cpm"] != value["settings__cpm"]:
+                cpm = max(canditate_cpms)
+                if value["settings__cpm"] != cpm:
                     update_kwargs["cpm"] = cpm
                     update_kwargs["local_cpm"] = _to_local_currency(
                         cpm, currency_exchange_map[value["campaign__account__currency"]]
                     )
+        else:
+            if value["settings__cpc_cc"] is None:
+                cpc = max(canditate_cpcs)
+                update_kwargs["cpc"] = cpc
+                update_kwargs["local_cpc"] = _to_local_currency(
+                    cpc, currency_exchange_map[value["campaign__account__currency"]]
+                )
+            if value["settings__max_cpm"] is None:
+                cpm = max(canditate_cpms)
+                update_kwargs["cpm"] = cpm
+                update_kwargs["local_cpm"] = _to_local_currency(
+                    cpm, currency_exchange_map[value["campaign__account__currency"]]
+                )
 
-                ad_group = models.AdGroup.objects.get(id=value["id"])
-                ad_group.settings.update_unsafe(None, write_history=False, **update_kwargs)
+        return update_kwargs
 
     def consolidate_source_bid_modifiers(self, cutoff, batch_size, fix):
         create_count = 0

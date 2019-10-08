@@ -32,8 +32,7 @@ from . import manager
 from . import queryset
 from . import validation
 
-# TODO(tkusterle) what are the default CPC/CPM values?
-DEFAULT_CPC_VALUE = Decimal("1.0000")
+DEFAULT_CPC_VALUE = Decimal("0.4500")
 DEFAULT_CPM_VALUE = Decimal("1.0000")
 
 
