@@ -285,7 +285,7 @@ class MVMaster(BreakdownsBase):
     agency_cost = backtosql.TemplateColumn("part_4sum_nano.sql", ETFM_COST_COLUMNS, group=AGGREGATE)
     local_agency_cost = backtosql.TemplateColumn("part_4sum_nano.sql", LOCAL_ETFM_COST_COLUMNS, group=AGGREGATE)
 
-    # Derivates
+    # Derivatives
     ctr = backtosql.TemplateColumn(
         "part_sumdiv.sql", {"column_name": "clicks", "divisor": "impressions", "divisor_modifier": "0.01"}, AGGREGATE
     )
@@ -450,7 +450,7 @@ class MVMaster(BreakdownsBase):
     video_complete = backtosql.TemplateColumn("part_sum.sql", {"column_name": "video_complete"}, AGGREGATE)
     video_progress_3s = backtosql.TemplateColumn("part_sum.sql", {"column_name": "video_progress_3s"}, AGGREGATE)
 
-    # Video  derivates
+    # Video  derivatives
     _context = {"divisor": "video_first_quartile", "divisor_modifier": converters.CURRENCY_TO_NANO}
     video_et_cpv = backtosql.TemplateColumn("part_2sumdiv.sql", dict_join(_context, ET_COST_COLUMNS), AGGREGATE)
     local_video_et_cpv = backtosql.TemplateColumn(

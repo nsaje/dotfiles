@@ -33,6 +33,19 @@ class TargetType(ConstantBase):
     }
 
 
+TARGET_MV_COLUMNS_MAPPING = {
+    TargetType.AD_GROUP: ["ad_group_id"],
+    TargetType.AD: ["content_ad_id"],
+    TargetType.PUBLISHER: ["publisher_id", "publisher"],
+    TargetType.DEVICE: ["device_type"],
+    TargetType.COUNTRY: ["country"],
+    TargetType.STATE: ["state"],
+    TargetType.DMA: ["dma"],
+    TargetType.OS: ["device_os"],
+    TargetType.SOURCE: ["source_id"],
+}
+
+
 class ActionType(ConstantBase):
     INCREASE_BID = 1
     DECREASE_BID = 2
@@ -212,7 +225,7 @@ class Operator(ConstantBase):
         LESS_THAN: "Is less than",
         GREATER_THAN: "Is greater than",
         BETWEEN: "Is between",
-        NOT_BETWEEN: "is not between",
+        NOT_BETWEEN: "Is not between",
         CONTAINS: "Contains",
         NOT_CONTAINS: "Does not contain",
     }
