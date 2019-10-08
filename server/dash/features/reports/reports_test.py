@@ -1139,3 +1139,16 @@ class ReportsImplementationTest(TestCase):
         )
 
         self.assertFalse(mock_totals.called)
+
+    @mock.patch("stats.api_reports.get_filename", return_value="")
+    @mock.patch("stats.api_reports.totals", return_value={})
+    @mock.patch("stats.api_reports.query", return_value=[])
+    @mock.patch("stats.api_reports.prepare_constraints")
+    def test_no_dimensions(self, mock_prepare_constraints, mock_query, mock_totals, mock_filename):
+        query = {
+            "fields": [{"field": "Total Spend"}],
+            "filters": [{"field": "Date", "operator": "=", "value": "2016-10-10"}],
+        }
+        self.report_job.query = query
+        with self.assertRaises(utils.exc.ValidationError):
+            ReportJobExecutor.get_report(self.report_job)

@@ -246,6 +246,9 @@ class ReportJobExecutor(JobExecutor):
         else:
             currency = stats.helpers.get_report_currency(user, constraints["allowed_accounts"])
 
+        if not breakdown:
+            raise utils.exc.ValidationError("Must include at least one dimension.")
+
         try:
             columns = [column_to_field_name_map[column_name] for column_name in column_names]
         except KeyError as e:
