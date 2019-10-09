@@ -15,4 +15,5 @@ CurrencySymbol = {
     dash.constants.Currency.JPY: "¥",
     dash.constants.Currency.CAD: "C$",
     dash.constants.Currency.NZD: "NZ$",
+    dash.constants.Currency.TRY: "₺",
 }

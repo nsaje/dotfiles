@@ -3138,6 +3138,7 @@ export const APP_OPTIONS = {
         {name: 'Japanese Yen', value: APP_CONSTANTS.currency.JPY},
         {name: 'Canadian Dollar', value: APP_CONSTANTS.currency.CAD},
         {name: 'New Zealand Dollar', value: APP_CONSTANTS.currency.NZD},
+        {name: 'Turkish Lira', value: APP_CONSTANTS.currency.NZD},
     ],
     adTypes: [
         {

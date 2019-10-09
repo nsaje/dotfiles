@@ -71,9 +71,9 @@ class UpdateExchangeRatesTestCase(TestCase):
         self.assertEqual(decimal.Decimal("0.1875"), self.goal1.get_current_value().value)
         self.assertEqual(20, self.goal2.get_current_value().value)
 
-    @patch("core.features.multicurrency.service.eur.get_exchange_rate")
-    def test_update_exchange_rates(self, mock_get_exchange_rate):
-        mock_get_exchange_rate.return_value = decimal.Decimal("0.75")
+    @patch("core.features.multicurrency.service.ecb._fetch_ecb_exchange_rates")
+    def test_update_exchange_rates(self, mock_get_exchange_rates):
+        mock_get_exchange_rates.return_value = {dash.constants.Currency.USD: decimal.Decimal("1.3333")}
         update.update_exchange_rates(currencies=[dash.constants.Currency.EUR])
         self.ad_group.settings.refresh_from_db()
         self.ad_group_source.settings.refresh_from_db()

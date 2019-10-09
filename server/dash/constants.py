@@ -272,6 +272,7 @@ class Currency(ConstantBase):
     JPY = "JPY"
     CAD = "CAD"
     NZD = "NZD"
+    TRY = "TRY"
 
     _VALUES = {
         USD: "US Dollar",
@@ -288,6 +289,7 @@ class Currency(ConstantBase):
         JPY: "Japanese Yen",
         CAD: "Canadian Dollar",
         NZD: "New Zealand Dollar",
+        TRY: "Turkish Lira",
     }
 
 

@@ -7,19 +7,7 @@ import dash.constants
 from utils import dates_helper
 
 from ..currency_exchange_rate import CurrencyExchangeRate
-from . import aud
-from . import brl
-from . import cad
-from . import chf
-from . import eur
-from . import gbp
-from . import ils
-from . import inr
-from . import jpy
-from . import myr
-from . import nzd
-from . import sgd
-from . import zar
+from . import ecb
 
 logger = logging.getLogger(__name__)
 
@@ -47,34 +35,11 @@ def update_exchange_rates(currencies=None):
 
 
 def _get_exchange_rate(currency):
-    if currency == dash.constants.Currency.EUR:
-        return eur.get_exchange_rate()
-    if currency == dash.constants.Currency.GBP:
-        return gbp.get_exchange_rate()
-    if currency == dash.constants.Currency.AUD:
-        return aud.get_exchange_rate()
-    if currency == dash.constants.Currency.SGD:
-        return sgd.get_exchange_rate()
-    if currency == dash.constants.Currency.BRL:
-        return brl.get_exchange_rate()
-    if currency == dash.constants.Currency.MYR:
-        return myr.get_exchange_rate()
-    if currency == dash.constants.Currency.CHF:
-        return chf.get_exchange_rate()
-    if currency == dash.constants.Currency.ZAR:
-        return zar.get_exchange_rate()
-    if currency == dash.constants.Currency.ILS:
-        return ils.get_exchange_rate()
-    if currency == dash.constants.Currency.INR:
-        return inr.get_exchange_rate()
-    if currency == dash.constants.Currency.JPY:
-        return jpy.get_exchange_rate()
-    if currency == dash.constants.Currency.CAD:
-        return cad.get_exchange_rate()
-    if currency == dash.constants.Currency.NZD:
-        return nzd.get_exchange_rate()
-    else:
-        raise MissingExchangeRateMappingException()
+    try:
+        return ecb.try_get_exchange_rate(currency)
+    except ecb.NotSupportedByECBException:
+        pass
+    raise MissingExchangeRateMappingException()
 
 
 def _update_exchange_rate(currency, rate):
