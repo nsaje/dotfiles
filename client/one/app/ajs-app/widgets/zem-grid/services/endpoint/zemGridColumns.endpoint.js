@@ -2628,7 +2628,7 @@ angular
                     COLUMNS.conversionCount,
                     {
                         restApiName: name,
-                        name: 'Conversions / ' + attribution,
+                        name: 'Conversions (' + attribution + ')',
                         window: window.value,
                         attribution: attributionSuffix,
                         pixel: pixel.prefix,
@@ -2639,7 +2639,7 @@ angular
                 );
                 var cpaNewColumn = Object.assign({}, COLUMNS.conversionCpa, {
                     restApiName: 'CPA (' + name + ')',
-                    name: 'CPA / ' + attribution,
+                    name: 'CPA (' + attribution + ')',
                     window: window.value,
                     attribution: attributionSuffix,
                     pixel: pixel.prefix,
@@ -2650,7 +2650,7 @@ angular
                 });
                 var etCpaNewColumn = Object.assign({}, COLUMNS.conversionCpa, {
                     restApiName: 'Platform CPA (' + name + ')',
-                    name: 'Platform CPA / ' + attribution,
+                    name: 'Platform CPA (' + attribution + ')',
                     window: window.value,
                     attribution: attributionSuffix,
                     pixel: pixel.prefix,
@@ -2667,7 +2667,7 @@ angular
                     COLUMNS.conversionCpa,
                     {
                         restApiName: 'CPA (' + name + ')',
-                        name: 'CPA / ' + attribution,
+                        name: 'CPA (' + attribution + ')',
                         window: window.value,
                         attribution: attributionSuffix,
                         pixel: pixel.prefix,
@@ -2682,7 +2682,7 @@ angular
 
                 var roasNewColumn = Object.assign({}, COLUMNS.conversionRoas, {
                     restApiName: 'ROAS (' + name + ')',
-                    name: 'ROAS / ' + attribution,
+                    name: 'ROAS (' + attribution + ')',
                     window: window.value,
                     attribution: attributionSuffix,
                     pixel: pixel.prefix,
@@ -2696,7 +2696,7 @@ angular
                     COLUMNS.conversionRoas,
                     {
                         restApiName: 'Platform ROAS (' + name + ')',
-                        name: 'ROAS / ' + attribution,
+                        name: 'ROAS (' + attribution + ')',
                         window: window.value,
                         attribution: attributionSuffix,
                         pixel: pixel.prefix,
@@ -2715,7 +2715,7 @@ angular
                     COLUMNS.conversionRoas,
                     {
                         restApiName: 'ROAS (' + name + ')',
-                        name: 'ROAS / ' + attribution,
+                        name: 'ROAS (' + attribution + ')',
                         window: window.value,
                         attribution: attributionSuffix,
                         pixel: pixel.prefix,

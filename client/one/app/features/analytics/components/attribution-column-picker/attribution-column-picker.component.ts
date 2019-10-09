@@ -194,22 +194,17 @@ export class AttributionColumnPickerComponent implements OnInit, OnChanges {
     }
 
     private getSelectedPixel(pixelColumns: PixelColumn[]): PixelColumn {
-        if (!arrayHelpers.isEmpty(pixelColumns)) {
-            for (const pixel of pixelColumns) {
-                const selectedColumns: PixelOptionsColumn[] = pixel.columns.filter(
-                    (column: PixelOptionsColumn) => {
-                        return column.visible === true;
-                    }
-                );
-                if (!arrayHelpers.isEmpty(selectedColumns)) {
-                    return pixel;
+        for (const pixel of pixelColumns) {
+            const selectedColumns: PixelOptionsColumn[] = pixel.columns.filter(
+                (column: PixelOptionsColumn) => {
+                    return column.visible === true;
                 }
+            );
+            if (!arrayHelpers.isEmpty(selectedColumns)) {
+                return pixel;
             }
         }
-        return {
-            name: '',
-            columns: [],
-        };
+        return pixelColumns[0];
     }
 
     private getSelectedColumns(

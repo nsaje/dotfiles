@@ -426,12 +426,6 @@ describe('AttributionColumnPickerComponent', () => {
         ]);
     });
 
-    it('should correctly set empty availableColumns', () => {
-        component.pixelColumns = mockedPixelColumnsWithoutVisible;
-        component.ngOnInit();
-        expect(component.availableColumns).toEqual([]);
-    });
-
     it('should correctly set selectedPixel', () => {
         component.pixelColumns = mockedPixelColumnsWithVisible;
         component.ngOnInit();
@@ -508,12 +502,11 @@ describe('AttributionColumnPickerComponent', () => {
         });
     });
 
-    it('should correcty set empty selectedPixel', () => {
+    it('should correcty set first pixel selectedPixel as default if none is selected', () => {
         component.pixelColumns = mockedPixelColumnsWithoutVisible;
         component.ngOnInit();
-        expect(component.selectedPixel).toEqual({
-            name: '',
-            columns: [],
-        });
+        expect(component.selectedPixel).toEqual(
+            mockedPixelColumnsWithoutVisible[0]
+        );
     });
 });
