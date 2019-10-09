@@ -19,6 +19,7 @@ import {
 import {LoadingOverlayComponent} from './components/loading-overlay/loading-overlay.component';
 import {NoRowsOverlayComponent} from './components/no-rows-overlay/no-rows-overlay.component';
 import * as commonHelpers from '../../helpers/common.helpers';
+import * as arrayHelpers from '../../helpers/array.helpers';
 import {PaginationOptions} from './types/pagination-options';
 import {PageSizeConfig} from './types/page-size-config';
 import {PaginationChangeEvent} from './types/pagination-change-event';
@@ -136,6 +137,34 @@ export class SmartGridComponent implements OnInit, OnDestroy {
                     pageSize: pageSize,
                 });
                 break;
+        }
+    }
+
+    canRenderPagination(): boolean {
+        if (
+            !this.isGridReady ||
+            !commonHelpers.isDefined(this.paginationOptions)
+        ) {
+            return false;
+        }
+
+        switch (this.paginationOptions.type) {
+            case 'client':
+                return !arrayHelpers.isEmpty(this.rowData);
+            case 'server':
+                return (
+                    commonHelpers.isDefined(this.paginationCount) &&
+                    this.paginationCount > 0
+                );
+        }
+    }
+
+    getPaginationCount(): number {
+        switch (this.paginationOptions.type) {
+            case 'client':
+                return this.rowData.length;
+            case 'server':
+                return this.paginationCount;
         }
     }
 
