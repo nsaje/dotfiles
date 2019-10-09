@@ -9,6 +9,7 @@ import {ApiConverterHttpInterceptor} from './interceptors/api-converter.intercep
 import {BidModifiersModule} from './bid-modifiers/bid-modifiers.module';
 import {ConversionPixelsModule} from './conversion-pixels/conversion-pixels.module';
 import {DealsModule} from './deals/deals.module';
+import {SourcesModule} from './sources/sources.module';
 
 const HTTP_INTERCEPTOR_PROVIDERS = [
     {
@@ -24,6 +25,7 @@ const HTTP_INTERCEPTOR_PROVIDERS = [
         BidModifiersModule,
         ConversionPixelsModule,
         DealsModule,
+        SourcesModule,
     ],
     providers: [
         GoogleAnalyticsService,
