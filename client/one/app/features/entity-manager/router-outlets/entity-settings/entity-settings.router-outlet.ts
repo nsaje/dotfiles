@@ -36,10 +36,6 @@ export class EntitySettingsRouterOutlet implements OnInit {
         this.newEntityParentId = null;
         this.entityType = null;
 
-        if (!this.canUseEntitySettingsDrawer()) {
-            return;
-        }
-
         if (
             this.ajs$state.includes('v2.analytics') &&
             this.isSettingsQueryParamSet()
@@ -66,27 +62,6 @@ export class EntitySettingsRouterOutlet implements OnInit {
         return ENTITY_MANAGER_CONFIG.levelToEntityTypeMap[
             this.ajs$state.params[ENTITY_MANAGER_CONFIG.levelStateParam]
         ];
-    }
-
-    private canUseEntitySettingsDrawer(): boolean {
-        const entityType = this.getEntityTypeFromStateParams();
-        if (
-            (this.zemPermissions.hasPermission(
-                'zemauth.can_use_new_account_settings_drawer'
-            ) &&
-                entityType === EntityType.ACCOUNT) ||
-            (this.zemPermissions.hasPermission(
-                'zemauth.can_use_new_campaign_settings_drawer'
-            ) &&
-                entityType === EntityType.CAMPAIGN) ||
-            (this.zemPermissions.hasPermission(
-                'zemauth.can_use_new_ad_group_settings_drawer'
-            ) &&
-                entityType === EntityType.AD_GROUP)
-        ) {
-            return true;
-        }
-        return false;
     }
 }
 

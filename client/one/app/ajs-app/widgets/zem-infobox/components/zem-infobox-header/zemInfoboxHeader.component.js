@@ -9,7 +9,6 @@ angular.module('one.widgets').component('zemInfoboxHeader', {
     controller: function(
         $timeout,
         $location,
-        zemSettingsService,
         zemEntityService,
         zemNavigationService,
         zemPermissions,
@@ -28,26 +27,9 @@ angular.module('one.widgets').component('zemInfoboxHeader', {
         };
 
         function openSettings() {
-            if (
-                (zemPermissions.hasPermission(
-                    'zemauth.can_use_new_account_settings_drawer'
-                ) &&
-                    $ctrl.entity.type === constants.entityType.ACCOUNT) ||
-                (zemPermissions.hasPermission(
-                    'zemauth.can_use_new_campaign_settings_drawer'
-                ) &&
-                    $ctrl.entity.type === constants.entityType.CAMPAIGN) ||
-                (zemPermissions.hasPermission(
-                    'zemauth.can_use_new_ad_group_settings_drawer'
-                ) &&
-                    $ctrl.entity.type === constants.entityType.AD_GROUP)
-            ) {
-                $location
-                    .search(ENTITY_MANAGER_CONFIG.settingsQueryParam, true)
-                    .replace();
-            } else {
-                zemSettingsService.open();
-            }
+            $location
+                .search(ENTITY_MANAGER_CONFIG.settingsQueryParam, true)
+                .replace();
         }
 
         function updateView(entity) {

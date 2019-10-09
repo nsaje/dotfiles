@@ -38,21 +38,7 @@ angular
                 $scope.$on('$destroy', onDateRangeUpdateHandler);
                 $scope.$on('$destroy', onDataFilterUpdateHandler);
 
-                if (
-                    entity &&
-                    ((zemPermissions.hasPermission(
-                        'zemauth.can_use_new_account_settings_drawer'
-                    ) &&
-                        entity.type === constants.entityType.ACCOUNT) ||
-                        (zemPermissions.hasPermission(
-                            'zemauth.can_use_new_campaign_settings_drawer'
-                        ) &&
-                            entity.type === constants.entityType.CAMPAIGN) ||
-                        (zemPermissions.hasPermission(
-                            'zemauth.can_use_new_ad_group_settings_drawer'
-                        ) &&
-                            entity.type === constants.entityType.AD_GROUP))
-                ) {
+                if (entity) {
                     var entitiesUpdates$ = zemEntitiesUpdatesService
                         .getUpdatesOfEntity$(entity.id, entity.type)
                         .subscribe(function(entityUpdate) {
@@ -66,11 +52,6 @@ angular
                     $scope.$on('$destroy', function() {
                         entitiesUpdates$.unsubscribe();
                     });
-                } else {
-                    var onEntityUpdatedHandler = zemAdGroupService.onEntityUpdated(
-                        reload
-                    );
-                    $scope.$on('$destroy', onEntityUpdatedHandler);
                 }
             }
 

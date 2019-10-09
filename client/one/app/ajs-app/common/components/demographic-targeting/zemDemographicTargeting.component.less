@@ -1,0 +1,77 @@
+@import 'variables';
+
+.zem-demographic-targeting__overview {
+    padding: 15px 0;
+    margin-bottom: 15px;
+    border-top: 1px solid @color--lighter-neutral;
+    border-bottom: 1px solid @color--lighter-neutral;
+    display: table;
+    width: 100%;
+    height: 85px;
+}
+
+.zem-demographic-targeting-overview__box {
+    display: table-cell;
+    text-align: center;
+    position: relative;
+    vertical-align: middle;
+    color: @color--secondary;
+
+    &:last-child {
+        padding-left: @spacing--default;
+    }
+
+    .loader,
+    .message {
+        display: block;
+        margin: 0 auto;
+    }
+
+    .zem-progress-bar {
+        margin-top: 5px;
+    }
+}
+
+.zem-demographic-targeting-overview__box--price {
+    background-color: fade(@color--secondary, 10%);
+    width: 180px;
+}
+
+.zem-demographic-targeting-overview__box--reach {
+    .zem-demographic-targeting-overview__value {
+        display: inline;
+    }
+}
+
+.zem-demographic-targeting-overview__value {
+    font-size: 18px;
+    font-weight: 500;
+    display: block;
+}
+
+.zem-demographic-targeting__group {
+    margin-top: @spacing--default;
+}
+
+.zem-demographic-targeting__group-header {
+    margin-bottom: 5px;
+    font-weight: 400;
+
+    .alternative-link {
+        font-size: @font-size--default;
+        font-weight: 400;
+    }
+}
+
+.zem-demographic-targeting--inactive {
+    padding: 20px;
+    background: lightgray;
+}
+
+.zem-demographic-targeting__actions {
+    margin-top: 10px;
+}
+
+.zem-demographic-targeting__notification {
+    margin-top: 15px;
+}

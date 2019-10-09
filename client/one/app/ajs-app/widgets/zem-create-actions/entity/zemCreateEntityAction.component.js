@@ -6,10 +6,8 @@ angular.module('one.widgets').component('zemCreateEntityAction', {
     controller: function(
         $state,
         $location,
-        $uibModal,
         zemCreateEntityActionService,
-        zemToastsService,
-        zemPermissions
+        zemToastsService
     ) {
         var $ctrl = this;
         var MAP_PARENT_TYPE = {};
@@ -24,43 +22,19 @@ angular.module('one.widgets').component('zemCreateEntityAction', {
         MAIN_ACTIONS[constants.entityType.ACCOUNT] = {
             name: 'Account',
             callback: function() {
-                if (
-                    zemPermissions.hasPermission(
-                        'zemauth.can_use_new_account_settings_drawer'
-                    )
-                ) {
-                    navigateToEntityCreation();
-                } else {
-                    createEntity();
-                }
+                navigateToEntityCreation();
             },
         };
         MAIN_ACTIONS[constants.entityType.CAMPAIGN] = {
             name: 'Campaign',
             callback: function() {
-                if (
-                    zemPermissions.hasPermission(
-                        'zemauth.can_use_new_campaign_settings_drawer'
-                    )
-                ) {
-                    navigateToEntityCreation();
-                } else {
-                    showCampaignCreatorModal();
-                }
+                navigateToEntityCreation();
             },
         };
         MAIN_ACTIONS[constants.entityType.AD_GROUP] = {
             name: 'Ad group',
             callback: function() {
-                if (
-                    zemPermissions.hasPermission(
-                        'zemauth.can_use_new_ad_group_settings_drawer'
-                    )
-                ) {
-                    navigateToEntityCreation();
-                } else {
-                    createEntity();
-                }
+                navigateToEntityCreation();
             },
         };
         MAIN_ACTIONS[constants.entityType.CONTENT_AD] = {
@@ -104,33 +78,6 @@ angular.module('one.widgets').component('zemCreateEntityAction', {
                 .finally(function() {
                     $ctrl.createInProgress = false;
                 });
-        }
-
-        function createCampaign(campaignType) {
-            createEntity({campaignType: campaignType});
-        }
-
-        function showCampaignCreatorModal() {
-            if (
-                !zemPermissions.hasPermission(
-                    'zemauth.fea_can_change_campaign_type'
-                )
-            ) {
-                return createCampaign(constants.campaignTypes.CONTENT);
-            }
-
-            var campaignType$ = $uibModal.open({
-                // Use a proxy component in order to be able to use downgraded zem-campaign-creator-modal component
-                controllerAs: '$ctrl',
-                template:
-                    '<zem-campaign-creator-modal class="zem-campaign-creator-modal" (on-close)="$ctrl.close($event)"></zem-campaign-creator-modal>',
-                controller: function($uibModalInstance) {
-                    this.close = $uibModalInstance.close;
-                },
-                windowClass: 'zem-campaign-creator-uib-modal',
-            }).result;
-
-            campaignType$.then(createCampaign);
         }
     },
 });
