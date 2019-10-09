@@ -1,11 +1,11 @@
 import {Deal} from '../../../../core/deals/types/deal';
 import {DealConnection} from '../../../../core/deals/types/deal-connection';
 import {RequestState} from '../../../../shared/types/request-state';
-import {DealStoreFieldsErrorsState} from './deals-library.store.fields-errors-state';
+import {DealsLibraryStoreFieldsErrorsState} from './deals-library.store.fields-errors-state';
 
-export class DealsStoreState {
+export class DealsLibraryStoreState {
     entities: Deal[] = [];
-    fieldsErrors: DealStoreFieldsErrorsState[] = [];
+    fieldsErrors: DealsLibraryStoreFieldsErrorsState[] = [];
     activeEntity = {
         entity: {
             id: null,
@@ -24,11 +24,12 @@ export class DealsStoreState {
             numOfAdgroups: null,
         } as Deal,
         connections: [] as DealConnection[],
-        fieldsErrors: new DealStoreFieldsErrorsState(),
+        fieldsErrors: new DealsLibraryStoreFieldsErrorsState(),
     };
-    request = {
+    requests = {
         list: {} as RequestState,
-        save: {} as RequestState,
+        create: {} as RequestState,
+        edit: {} as RequestState,
         validate: {} as RequestState,
         get: {} as RequestState,
         remove: {} as RequestState,

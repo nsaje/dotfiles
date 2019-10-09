@@ -1,1 +1,20 @@
-<h1 class="content-container__title">Deals library</h1>
+<h1 class="zem-panel__header">Deals library</h1>
+
+<ng-container *ngIf="agencyId && (store.state$ | async) as state">
+    <div class="zem-panel zem-panel--with-padding">
+        <zem-smart-grid
+            [rowData]="state.entities"
+            [columnDefs]="dealsColumnDefs"
+            [paginationOptions]="paginationOptions"
+            [paginationCount]="state.requests.list.count"
+            (paginationChange)="onPaginationChange($event)"
+        >
+        </zem-smart-grid>
+    </div>
+</ng-container>
+
+<ng-container *ngIf="!agencyId">
+    <div class="zem-panel zem-panel--with-padding zem-message--warning">
+        Deals library not available
+    </div>
+</ng-container>

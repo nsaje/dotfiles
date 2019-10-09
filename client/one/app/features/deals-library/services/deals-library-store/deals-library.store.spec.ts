@@ -1,15 +1,15 @@
 import {fakeAsync, tick} from '@angular/core/testing';
 import {asapScheduler, of} from 'rxjs';
 import * as clone from 'clone';
-import {DealsStore} from './deals-library.store';
+import {DealsLibraryStore} from './deals-library.store';
 import {DealsService} from '../../../../core/deals/services/deals.service';
-import {DealStoreFieldsErrorsState} from './deals-library.store.fields-errors-state';
-import {DealsStoreState} from './deals-library.store.state';
+import {DealsLibraryStoreFieldsErrorsState} from './deals-library.store.fields-errors-state';
+import {DealsLibraryStoreState} from './deals-library.store.state';
 import {Deal} from '../../../../core/deals/types/deal';
 
-describe('DealsStore', () => {
+describe('DealsLibraryStore', () => {
     let dealsServiceStub: jasmine.SpyObj<DealsService>;
-    let store: DealsStore;
+    let store: DealsLibraryStore;
     let mockedDeals: Deal[];
     let mockedAgencyId: string;
 
@@ -23,7 +23,7 @@ describe('DealsStore', () => {
             'listConnections',
             'removeConnection',
         ]);
-        store = new DealsStore(dealsServiceStub);
+        store = new DealsLibraryStore(dealsServiceStub);
         mockedDeals = [
             {
                 id: '10000000',
@@ -85,41 +85,27 @@ describe('DealsStore', () => {
     }));
 
     it('should validate deal', fakeAsync(() => {
-        const mockedDeal = clone(mockedDeals[0]);
         dealsServiceStub.validate.and
             .returnValue(of(null, asapScheduler))
             .calls.reset();
-        store.validateActiveEntity(mockedAgencyId, mockedDeal);
+        store.validateActiveEntity(mockedAgencyId);
         tick();
 
         expect(store.state.activeEntity.fieldsErrors).toEqual(
-            new DealStoreFieldsErrorsState()
+            new DealsLibraryStoreFieldsErrorsState()
         );
         expect(dealsServiceStub.validate).toHaveBeenCalledTimes(1);
     }));
 
-    it('should load active deal', fakeAsync(() => {
-        const mockedDeal = clone(mockedDeals[0]);
-        dealsServiceStub.get.and
-            .returnValue(of(mockedDeal, asapScheduler))
-            .calls.reset();
-        store.loadActiveEntity(mockedAgencyId, mockedDeal.id);
-        tick();
-
-        expect(store.state.activeEntity.entity).toEqual(mockedDeal);
-        expect(dealsServiceStub.get).toHaveBeenCalledTimes(1);
-    }));
-
     it('should remove deal', fakeAsync(() => {
-        const mockedDeal = clone(mockedDeals[0]);
         dealsServiceStub.remove.and
             .returnValue(of(null, asapScheduler))
             .calls.reset();
-        store.deleteActiveEntity(mockedAgencyId, mockedDeal.id);
+        store.deleteActiveEntity(mockedAgencyId);
         tick();
 
         expect(store.state.activeEntity.entity).toEqual(
-            new DealsStoreState().activeEntity.entity
+            new DealsLibraryStoreState().activeEntity.entity
         );
         expect(dealsServiceStub.remove).toHaveBeenCalledTimes(1);
     }));

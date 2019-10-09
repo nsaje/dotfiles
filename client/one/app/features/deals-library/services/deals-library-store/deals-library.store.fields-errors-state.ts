@@ -1,6 +1,6 @@
 import {FieldErrors} from '../../../../shared/types/field-errors';
 
-export class DealStoreFieldsErrorsState {
+export class DealsLibraryStoreFieldsErrorsState {
     id: FieldErrors = [];
     dealId: FieldErrors = [];
     description: FieldErrors = [];

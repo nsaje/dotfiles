@@ -150,14 +150,13 @@ export class DealsEndpoint {
 
     edit(
         agencyId: string,
-        dealId: string,
         deal: Deal,
         requestStateUpdater: RequestStateUpdater
     ): Observable<Deal> {
         const request = {
-            url: `${
-                APP_CONFIG.apiRestInternalUrl
-            }/agencies/${agencyId}/deals/${dealId}/`,
+            url: `${APP_CONFIG.apiRestInternalUrl}/agencies/${agencyId}/deals/${
+                deal.id
+            }/`,
             name: 'edit',
         };
         requestStateUpdater(request.name, {

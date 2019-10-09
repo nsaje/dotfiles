@@ -5,7 +5,6 @@ import {RequestStateUpdater} from '../../../shared/types/request-state-updater';
 import {DealsEndpoint} from './deals.endpoint';
 import {DealsService} from './deals.service';
 import {Deal} from '../types/deal';
-import * as mockHelpers from '../../../testing/mock.helpers';
 
 describe('DealsService', () => {
     let service: DealsService;
@@ -13,6 +12,7 @@ describe('DealsService', () => {
     let requestStateUpdater: RequestStateUpdater;
 
     let mockedDeal: Deal;
+    let mockedDeals: Deal[];
     let mockedDealId: string;
     let mockedAgencyId: string;
 
@@ -29,11 +29,7 @@ describe('DealsService', () => {
 
         mockedAgencyId = '71';
         mockedDealId = '456346';
-        mockedDeal = mockHelpers.getMockedDeal();
-    });
-
-    it('should get deals via endpoint', () => {
-        const mockedDeals: Deal[] = [
+        mockedDeals = [
             {
                 id: '10000000',
                 dealId: '45345',
@@ -77,6 +73,10 @@ describe('DealsService', () => {
                 numOfAdgroups: 0,
             },
         ];
+        mockedDeal = clone(mockedDeals[0]);
+    });
+
+    it('should get deals via endpoint', () => {
         const limit = 10;
         const offset = 0;
         dealsEndpointStub.list.and
@@ -105,7 +105,7 @@ describe('DealsService', () => {
         const mockedNewDeal = clone(mockedDeal);
         mockedNewDeal.id = null;
         service
-            .save(mockedAgencyId, null, mockedNewDeal, requestStateUpdater)
+            .save(mockedAgencyId, mockedNewDeal, requestStateUpdater)
             .subscribe(deal => {
                 expect(deal).toEqual(mockedDeal);
             });
@@ -138,18 +138,13 @@ describe('DealsService', () => {
     });
 
     it('should edit deal via endpoint', () => {
-        const mockedNewDeal = clone(mockedDeal);
+        const mockedNewDeal = clone(mockedDeals[0]);
         dealsEndpointStub.edit.and
             .returnValue(of(mockedDeal, asapScheduler))
             .calls.reset();
 
         service
-            .save(
-                mockedAgencyId,
-                mockedDealId,
-                mockedNewDeal,
-                requestStateUpdater
-            )
+            .save(mockedAgencyId, mockedNewDeal, requestStateUpdater)
             .subscribe(newDeal => {
                 expect(newDeal).toEqual(mockedNewDeal);
             });
@@ -157,7 +152,6 @@ describe('DealsService', () => {
         expect(dealsEndpointStub.edit).toHaveBeenCalledTimes(1);
         expect(dealsEndpointStub.edit).toHaveBeenCalledWith(
             mockedAgencyId,
-            mockedDealId,
             mockedNewDeal,
             requestStateUpdater
         );

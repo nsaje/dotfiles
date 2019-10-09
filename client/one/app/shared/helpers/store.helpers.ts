@@ -9,7 +9,10 @@ export function getStoreRequestStateUpdater(store: any): RequestStateUpdater {
             ...store.state,
             requests: {
                 ...store.state.requests,
-                [requestName]: requestState,
+                [requestName]: {
+                    ...store.state.requests[requestName],
+                    ...requestState,
+                },
             },
         });
     };

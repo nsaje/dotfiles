@@ -10,8 +10,6 @@ import {Account} from '../core/entities/types/account/account';
 import {AccountExtras} from '../core/entities/types/account/account-extras';
 import {accountMock} from './mocked-data/account.mock';
 import {accountExtrasMock} from './mocked-data/account-extras.mock';
-import {Deal} from '../core/deals/types/deal';
-import {dealMock} from './mocked-data/deal.mock';
 
 export function getMockedAdGroup(): AdGroup {
     return adGroupMock;
@@ -35,8 +33,4 @@ export function getMockedAccount(): Account {
 
 export function getMockedAccountExtras(): AccountExtras {
     return accountExtrasMock;
-}
-
-export function getMockedDeal(): Deal {
-    return dealMock;
 }

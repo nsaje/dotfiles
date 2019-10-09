@@ -21,14 +21,13 @@ export class DealsService {
 
     save(
         agencyId: string,
-        dealId: string,
         deal: Deal,
         requestStateUpdater: RequestStateUpdater
     ): Observable<Deal> {
-        if (!commonHelpers.isDefined(dealId)) {
+        if (!commonHelpers.isDefined(deal.id)) {
             return this.create(agencyId, deal, requestStateUpdater);
         }
-        return this.edit(agencyId, dealId, deal, requestStateUpdater);
+        return this.edit(agencyId, deal, requestStateUpdater);
     }
 
     validate(
@@ -91,10 +90,9 @@ export class DealsService {
 
     private edit(
         agencyId: string,
-        dealId: string,
         deal: Deal,
         requestStateUpdater: RequestStateUpdater
     ): Observable<Deal> {
-        return this.endpoint.edit(agencyId, dealId, deal, requestStateUpdater);
+        return this.endpoint.edit(agencyId, deal, requestStateUpdater);
     }
 }
