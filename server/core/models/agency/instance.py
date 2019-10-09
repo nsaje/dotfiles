@@ -118,7 +118,7 @@ class AgencyInstanceMixin:
 
     def _update_sub_accounts(self, request, **updates):
         if updates:
-            for account in self.account_set.all():
+            for account in self.account_set.filter(archived=False):
 
                 account.update(request, **updates)
                 account.settings.update(request, **updates)
