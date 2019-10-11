@@ -1312,4 +1312,7 @@ export const CURRENCIES: CurrencyConfig[] = [
     {name: 'Israeli New Shekel', value: Currency.ILS},
     {name: 'Indian Rupee', value: Currency.INR},
     {name: 'Japanese Yen', value: Currency.JPY},
+    {name: 'Canadian Dollar', value: Currency.CAD},
+    {name: 'New Zealand Dollar', value: Currency.NZD},
+    {name: 'Turkish Lira', value: Currency.TRY},
 ];

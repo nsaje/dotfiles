@@ -3123,23 +3123,6 @@ export const APP_OPTIONS = {
         {name: 'Include', value: APP_CONSTANTS.zipTargetingType.INCLUDE},
         {name: 'Exclude', value: APP_CONSTANTS.zipTargetingType.EXCLUDE},
     ],
-    currencies: [
-        {name: 'US Dollar', value: APP_CONSTANTS.currency.USD},
-        {name: 'Euro', value: APP_CONSTANTS.currency.EUR},
-        {name: 'British Pound', value: APP_CONSTANTS.currency.GBP},
-        {name: 'Australian Dollar', value: APP_CONSTANTS.currency.AUD},
-        {name: 'Singapore Dollar', value: APP_CONSTANTS.currency.SGD},
-        {name: 'Brazilian Real', value: APP_CONSTANTS.currency.BRL},
-        {name: 'Malaysian Ringgit', value: APP_CONSTANTS.currency.MYR},
-        {name: 'Swiss Franc', value: APP_CONSTANTS.currency.CHF},
-        {name: 'South African Rand', value: APP_CONSTANTS.currency.ZAR},
-        {name: 'Israeli New Shekel', value: APP_CONSTANTS.currency.ILS},
-        {name: 'Indian Rupee', value: APP_CONSTANTS.currency.INR},
-        {name: 'Japanese Yen', value: APP_CONSTANTS.currency.JPY},
-        {name: 'Canadian Dollar', value: APP_CONSTANTS.currency.CAD},
-        {name: 'New Zealand Dollar', value: APP_CONSTANTS.currency.NZD},
-        {name: 'Turkish Lira', value: APP_CONSTANTS.currency.NZD},
-    ],
     adTypes: [
         {
             name: 'Content ad',
