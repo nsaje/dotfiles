@@ -17,7 +17,7 @@ class Command(BaseCommand):
         for db_name in settings.STATS_DB_WRITE_REPLICAS_POSTGRES:
             for mv_class in self._required_views():
                 logger.info(
-                    "Inserting (if not exists) table definition, indexes & statistics for %s", mv_class.TABLE_NAME
+                    "Inserting (if not exists) table definition, indexes & statistics", table=mv_class.TABLE_NAME
                 )
                 self._create_table(db_name, mv_class)
                 maintenance.analyze(mv_class.TABLE_NAME, db_name=db_name)

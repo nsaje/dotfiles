@@ -89,6 +89,6 @@ class LivySession:
 
         code = code.format(*args, **kwargs)
 
-        logger.debug("Running spark code:\n%s", code)
+        logger.debug("Running spark code", code=code)
 
         self.run(code)

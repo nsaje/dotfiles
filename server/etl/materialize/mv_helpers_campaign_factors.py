@@ -49,9 +49,9 @@ class MVHelpersCampaignFactors(Materialize):
             dt = dt.date()
             if dt not in campaign_factors:
                 raise Exception(
-                    "Campaign factors missing for the date %s within date range %s - %s, job %s",
-                    dt,
-                    self.date_from,
-                    self.date_to,
-                    self.job_id,
+                    "Campaign factors missing",
+                    date=dt,
+                    date_from=self.date_from,
+                    date_to=self.date_to,
+                    job_id=self.job_id,
                 )

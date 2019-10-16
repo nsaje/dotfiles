@@ -17,11 +17,11 @@ class MVTouchpointConversions(Materialize):
         with db.get_write_stats_transaction():
             with db.get_write_stats_cursor() as c:
                 logger.info(
-                    'Deleting data from table "%s" for date range %s - %s, job %s',
-                    self.TABLE_NAME,
-                    self.date_from,
-                    self.date_to,
-                    self.job_id,
+                    "Deleting data from table",
+                    table=self.TABLE_NAME,
+                    date_from=self.date_from,
+                    date_to=self.date_to,
+                    job_id=self.job_id,
                 )
                 sql, params = redshift.prepare_date_range_delete_query(
                     self.TABLE_NAME, self.date_from, self.date_to, self.account_id
@@ -29,11 +29,11 @@ class MVTouchpointConversions(Materialize):
                 c.execute(sql, params)
 
                 logger.info(
-                    'Inserting data into table "%s" for date range %s - %s, job %s',
-                    self.TABLE_NAME,
-                    self.date_from,
-                    self.date_to,
-                    self.job_id,
+                    "Inserting data into table",
+                    table=self.TABLE_NAME,
+                    date_from=self.date_from,
+                    date_to=self.date_to,
+                    job_id=self.job_id,
                 )
                 sql, params = self.prepare_insert_query()
                 c.execute(sql, params)

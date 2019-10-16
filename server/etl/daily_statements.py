@@ -354,8 +354,8 @@ def reprocess_daily_statements(date_since, account_id=None, exclude_oen=True):
     campaigns_w_spend = get_campaigns_with_spend(date_since, exclude_oen=exclude_oen)
 
     logger.info(
-        "Additional campaigns with spend %s",
-        set(campaigns_w_spend.values_list("pk", flat=True)) - set(campaigns.values_list("pk", flat=True)),
+        "Additional campaigns with spend",
+        campaign_ids=set(campaigns_w_spend.values_list("pk", flat=True)) - set(campaigns.values_list("pk", flat=True)),
     )
 
     # Get campaigns that have budget start & end dates in the time frame we're reprocessing.
@@ -364,8 +364,8 @@ def reprocess_daily_statements(date_since, account_id=None, exclude_oen=True):
     campaigns_w_budgets_in_timeframe = get_campaigns_with_budgets_in_timeframe(date_since)
 
     logger.info(
-        "Additional campaigns with budgets in this timeframe %s",
-        set(campaigns_w_budgets_in_timeframe.values_list("pk", flat=True))
+        "Additional campaigns with budgets in this timeframe",
+        campaign_ids=set(campaigns_w_budgets_in_timeframe.values_list("pk", flat=True))
         - set(campaigns.values_list("pk", flat=True)),
     )
 

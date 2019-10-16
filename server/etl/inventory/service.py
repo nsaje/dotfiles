@@ -40,11 +40,11 @@ def refresh_inventory_data(date_from, date_to):
     with db.get_stats_cursor() as c:
         maintenance.truncate(TABLE_NAME)
 
-        logger.info("Starting materialization of table %s", TABLE_NAME)
+        logger.info("Starting materialization of table", table=TABLE_NAME)
         c.execute(sql, {"date_from": date_from, "date_to": date_to})
-        logger.info("Finished materialization of table %s", TABLE_NAME)
+        logger.info("Finished materialization of table", table=TABLE_NAME)
 
-        logger.info("Clearing %s cache", CACHE_NAME)
+        logger.info("Clearing cache", cache=CACHE_NAME)
         _clear_cache(CACHE_NAME)
         logger.info("Clearing cache successful")
 

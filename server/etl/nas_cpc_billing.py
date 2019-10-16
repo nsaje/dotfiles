@@ -67,7 +67,7 @@ def _insert_stats_diff(from_date, to_date):
     delete_query = backtosql.generate_sql("delete_stats_diff_with_tz.sql", context)
     insert_query = backtosql.generate_sql("insert_cpc_billing_stats_diff.sql", context)
     with redshiftapi.db.get_stats_cursor() as cur:
-        logger.info("Will remove data in stats_diff between %s and %s.", from_date, to_date)
+        logger.info("Will remove data in stats_diff between dates.", from_date=from_date, to_date=to_date)
         cur.execute(delete_query)
         logger.info("Done with removal.")
         logger.info("Will insert data into table stats_diff.")

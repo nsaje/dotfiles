@@ -95,9 +95,7 @@ def update_table_from_s3_postgres(
 ):
     with db.get_write_stats_transaction(db_name):
         with db.get_write_stats_cursor(db_name) as c:
-            logger.info(
-                'Loading table "%s" into Postgres replica "%s" from S3 path "%s"', table_name, db_name, s3_manifest_path
-            )
+            logger.info("Loading table into Postgres replica", table=table_name, db=db_name, s3_path=s3_manifest_path)
 
             sql, params = prepare_date_range_delete_query(table_name, date_from, date_to, account_id)
             c.execute(sql, params)
@@ -108,9 +106,7 @@ def update_table_from_s3_postgres(
                 with gzip.GzipFile(fileobj=f, mode="rb") as gunzipped:
                     c.copy_expert("COPY %s FROM STDIN NULL '$NA$'" % table_name, gunzipped)
 
-            logger.info(
-                'Loaded table "%s" into Postgres replica "%s" from S3 path "%s"', table_name, db_name, s3_manifest_path
-            )
+            logger.info("Loaded table into Postgres replica", table=table_name, db=db_name, s3_path=s3_manifest_path)
 
 
 def prepare_unload_csv_query(s3_path, table_name, date_from, date_to, account_id=None, bucket_name=None):

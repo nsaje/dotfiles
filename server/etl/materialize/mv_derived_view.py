@@ -44,10 +44,10 @@ class MasterDerivedView(Materialize):
             with db.get_write_stats_cursor() as c:
 
                 logger.info(
-                    'Create materialized view table if not exists "%s" for breakdown "%s", job %s',
-                    self.TABLE_NAME,
-                    self.BREAKDOWN,
-                    self.job_id,
+                    "Create materialized view table if not exists",
+                    table=self.TABLE_NAME,
+                    breakdown=self.BREAKDOWN,
+                    job_id=self.job_id,
                 )  # noqa
                 sql = self.prepare_create_table()
                 c.execute(sql)
@@ -57,20 +57,20 @@ class MasterDerivedView(Materialize):
 
                 if not count:
                     logger.info(
-                        'Fill empty materialized view "%s" for breakdown "%s" for full date range, job %s',
-                        self.TABLE_NAME,
-                        self.BREAKDOWN,
-                        self.job_id,
+                        "Fill empty materialized view",
+                        table=self.TABLE_NAME,
+                        breakdown=self.BREAKDOWN,
+                        job_id=self.job_id,
                     )  # noqa
                     sql, params = self.prepare_insert_query(None, None)
                     c.execute(sql, params)
                 else:
                     logger.info(
-                        'Deleting data from table "%s" for date range %s - %s, job %s',
-                        self.TABLE_NAME,
-                        self.date_from,
-                        self.date_to,
-                        self.job_id,
+                        "Deleting data from table",
+                        table=self.TABLE_NAME,
+                        date_from=self.date_from,
+                        date_to=self.date_to,
+                        job_id=self.job_id,
                     )
                     sql, params = redshift.prepare_date_range_delete_query(
                         self.TABLE_NAME, self.date_from, self.date_to, self.account_id
@@ -78,11 +78,11 @@ class MasterDerivedView(Materialize):
                     c.execute(sql, params)
 
                     logger.info(
-                        'Inserting data into table "%s" for date range %s - %s, job %s',
-                        self.TABLE_NAME,
-                        self.date_from,
-                        self.date_to,
-                        self.job_id,
+                        "Inserting data into table",
+                        table=self.TABLE_NAME,
+                        date_from=self.date_from,
+                        date_to=self.date_to,
+                        job_id=self.job_id,
                     )
                     sql, params = self.prepare_insert_query(self.date_from, self.date_to)
                     c.execute(sql, params)

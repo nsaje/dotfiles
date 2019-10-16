@@ -70,23 +70,16 @@ def _refresh(update_since, views, account_id=None, skip_daily_statements=False, 
     date_from, date_to = dates[0], (update_to or dates[-1])
     job_id = generate_job_id(account_id)
 
-    logger.info(
-        "Starting refresh job %s for date range %s - %s, requested update since %s",
-        job_id,
-        date_from,
-        date_to,
-        update_since,
-    )
+    logger.info("Starting refresh job", job_id=job_id, date_from=date_from, date_to=date_to, update_since=update_since)
 
     extra_dayspan = (update_since.date() - date_from).days
     metrics_compat.gauge("etl.refresh_k1.extra_dayspan", extra_dayspan)
     if extra_dayspan:
         logger.warning(
-            "Refresh is processing older statements than requested (requested update since %s,"
-            "real update since %s), job %s",
-            update_since,
-            date_from,
-            job_id,
+            "Refresh is processing older statements than requested",
+            update_since=update_since,
+            date_from=date_from,
+            job_id=job_id,
         )
 
     replication_threads = []
@@ -115,12 +108,12 @@ def _materialize_view(mv_class, job_id, date_from, date_to, dump_and_abort, effe
         mv.generate(campaign_factors=effective_spend_factors)
 
         if mv_class.TABLE_NAME == dump_and_abort:
-            logger.info("Dumping %s", dump_and_abort)
+            logger.info("Dumping table", table=dump_and_abort)
             s3_path = redshift.unload_table(
                 job_id, mv_class.TABLE_NAME, date_from, date_to, prefix=redshift.DUMP_S3_PREFIX
             )
-            logger.info("Dumped %s to %s", dump_and_abort, s3_path)
-            logger.info("Aborting after %s", dump_and_abort)
+            logger.info("Dumped table", table=dump_and_abort, s3_path=s3_path)
+            logger.info("Aborting after table", table=dump_and_abort)
             exit()
 
 
