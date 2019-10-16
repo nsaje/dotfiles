@@ -544,7 +544,6 @@ class AgencyTestCase(TestCase):
                 "name": "new Agency",
                 "tags": ["first tags", "second new tag"],
                 "custom_attributes": {"country": "SI"},
-                "amplify_review": False,
             },
             format="json",
         )
@@ -563,7 +562,7 @@ class AgencyTestCase(TestCase):
                     "custom_attributes": {"country": "SI"},
                     "modified_dt": "02-03-2019",
                     "is_externally_managed": True,
-                    "amplify_review": False,
+                    "amplify_review": True,
                 }
             },
         )
@@ -934,7 +933,6 @@ class AccountTestCase(TestCase):
                 "salesforce_id": 123,
                 "internal_marketer_id": "INTERNAL ID",
                 "external_marketer_id": "EXTERNAL ID",
-                "amplify_review": False,
             },
             format="json",
         )
@@ -963,7 +961,7 @@ class AccountTestCase(TestCase):
                     "is_externally_managed": True,
                     "internal_marketer_id": "INTERNAL ID",
                     "external_marketer_id": "EXTERNAL ID",
-                    "amplify_review": False,
+                    "amplify_review": True,
                 }
             },
         )
@@ -984,7 +982,6 @@ class AccountTestCase(TestCase):
                 "salesforce_id": 123,
                 "internal_marketer_id": "INTERNAL ID",
                 "external_marketer_id": "EXTERNAL ID",
-                "amplify_review": False,
             },
             format="json",
         )
@@ -1012,7 +1009,7 @@ class AccountTestCase(TestCase):
                     "is_externally_managed": True,
                     "internal_marketer_id": "INTERNAL ID",
                     "external_marketer_id": "EXTERNAL ID",
-                    "amplify_review": False,
+                    "amplify_review": True,
                 }
             },
         )
@@ -1035,7 +1032,6 @@ class AccountTestCase(TestCase):
                 "salesforce_id": 123,
                 "internal_marketer_id": "INTERNAL ID",
                 "external_marketer_id": "EXTERNAL ID",
-                "amplify_review": False,
             },
             format="json",
         )
@@ -1064,7 +1060,7 @@ class AccountTestCase(TestCase):
                     "is_externally_managed": True,
                     "internal_marketer_id": "INTERNAL ID",
                     "external_marketer_id": "EXTERNAL ID",
-                    "amplify_review": False,
+                    "amplify_review": True,
                 }
             },
         )
@@ -1331,7 +1327,6 @@ class AccountTestCase(TestCase):
             salesforce_id=123,
             outbrain_marketer_id="marketer 1234",
             outbrain_internal_marketer_id="marketer 0987",
-            amplify_review=False,
         )
         acc.save(None)
         acc.settings.update(None, default_account_manager=self.user2, default_sales_representative=self.user)

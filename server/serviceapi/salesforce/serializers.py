@@ -122,10 +122,11 @@ class AgencySerializer(serializers.ModelSerializer):
     custom_attributes = serializers.JSONField(required=False)  # Without this GET would serialize it as a string
     modified_dt = serializers.DateTimeField(format="%d-%m-%Y", read_only=True)
     is_externally_managed = serializers.BooleanField(read_only=True)
+    amplify_review = serializers.BooleanField(read_only=True)
 
     class Meta:
         model = core.models.Agency
-        fields = core.models.Agency._externally_managed_fields + ("tags", "is_externally_managed")
+        fields = core.models.Agency._externally_managed_fields + ("tags", "is_externally_managed", "amplify_review")
 
     def validate_name(self, value):
         agency = core.models.Agency.objects.filter(name=value).first()
@@ -147,6 +148,7 @@ class AccountSerializer(serializers.ModelSerializer):
     is_externally_managed = serializers.BooleanField(read_only=True)
     external_marketer_id = serializers.CharField(required=False, max_length=255, source="outbrain_marketer_id")
     internal_marketer_id = serializers.CharField(required=False, max_length=255, source="outbrain_internal_marketer_id")
+    amplify_review = serializers.BooleanField(read_only=True)
 
     class Meta:
         model = core.models.Account
@@ -161,6 +163,7 @@ class AccountSerializer(serializers.ModelSerializer):
             "is_externally_managed",
             "external_marketer_id",
             "internal_marketer_id",
+            "amplify_review",
         )
 
     def validate_agency_id(self, value):
