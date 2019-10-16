@@ -66,6 +66,9 @@ CLIENT_SKIP_RUN=1 make run
 ```
 
 and after that, you can use `docker-compose exec client bash` to get a bash session inside the client container. There, you can run npm scripts yourself, e.g. `npm run dev`.
+To test a specific whitelabel run within the client `npm run dev --theme=YOURTHEME`.
+Be aware that the the whitelabel must NOT be assigned to an agency, otherwise it won't work!
+
 
 #### Manual setup (legacy)
 

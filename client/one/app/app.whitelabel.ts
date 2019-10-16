@@ -43,14 +43,14 @@ export const APP_WHITELABEL = {
             ],
         },
     },
-    amplify: {
+    adyoulike: {
         chartColors: {
-            TOTALS: ['#474f7c', '#bbbfca'],
+            TOTALS: ['#6594fa', '#c1d4fd'],
             GOALS: ['#99cc00', '#d6eb99'],
             DATA: [
-                ['#333F48', '#a9ddf4'],
-                ['#474f7c', '#9ddfd9'],
-                ['#f15f74', '#f9bfc7'],
+                ['#41d4c4', '#b3eee7'],
+                ['#182145', '#a3a6b5'],
+                ['#fecb63', '#ffeac1'],
             ],
         },
     },

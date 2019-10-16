@@ -28,6 +28,7 @@ WHITELABEL_PRODUCTS = {
     dash.constants.Whitelabel.NEWSCORP: "News Corp",
     dash.constants.Whitelabel.BURDA: "Burda",
     dash.constants.Whitelabel.MEDIAMOND: "Mediamond",
+    dash.constants.Whitelabel.ADYOULIKE: "Adyoulike",
 }
 
 URLS_RE = re.compile(
