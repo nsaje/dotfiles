@@ -1,7 +1,7 @@
-<h1 class="zem-panel__header">Deals library</h1>
+<h1 class="content-container__title">Deals library</h1>
 
 <ng-container *ngIf="agencyId && (store.state$ | async) as state">
-    <div class="zem-panel zem-panel--with-padding">
+    <div class="zem-panel zem-panel--with-padding zem-deals-library__panel">
         <zem-smart-grid
             [rowData]="state.entities"
             [columnDefs]="dealsColumnDefs"
@@ -14,7 +14,9 @@
 </ng-container>
 
 <ng-container *ngIf="!agencyId">
-    <div class="zem-panel zem-panel--with-padding zem-message--warning">
+    <div
+        class="zem-message zem-message--bubble zem-message--with-icon zem-message--warning"
+    >
         Deals library not available
     </div>
 </ng-container>

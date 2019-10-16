@@ -8,8 +8,6 @@ import {
     OnInit,
 } from '@angular/core';
 import {downgradeComponent} from '@angular/upgrade/static';
-import {Subject} from 'rxjs';
-import {takeUntil, map, distinctUntilChanged} from 'rxjs/operators';
 import {ColDef} from 'ag-grid-community';
 import * as moment from 'moment';
 import {PaginationOptions} from '../../../../shared/components/smart-grid/types/pagination-options';
@@ -64,8 +62,6 @@ export class DealsLibraryView implements OnInit {
         {headerName: 'Notes', field: 'description'},
         {headerName: 'Created by', field: 'createdBy'},
     ];
-
-    private ngUnsubscribe$: Subject<void> = new Subject();
 
     constructor(
         public store: DealsLibraryStore,
