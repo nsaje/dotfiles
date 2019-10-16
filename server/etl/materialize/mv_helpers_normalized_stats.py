@@ -1,13 +1,12 @@
-import logging
-
 import backtosql
 import dash.models
+import structlog
 from etl import helpers
 from redshiftapi import db
 
 from .materialize import Materialize
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 
 class MVHelpersNormalizedStats(Materialize):
@@ -26,11 +25,11 @@ class MVHelpersNormalizedStats(Materialize):
                 sql = backtosql.generate_sql("etl_create_temp_table_mvh_clean_stats.sql", None)
                 c.execute(sql)
 
-                logger.info('Running insert into table "%s", job %s', self.TABLE_NAME, self.job_id)
+                logger.info("Running insert into table", table=self.TABLE_NAME, job=self.job_id)
                 sql, params = self.prepare_insert_query()
 
                 c.execute(sql, params)
-                logger.info('Done insert into table "%s", job %s', self.TABLE_NAME, self.job_id)
+                logger.info("Done insert into table", table=self.TABLE_NAME, job=self.job_id)
 
     def prepare_insert_query(self):
         yahoo = helpers.get_yahoo()

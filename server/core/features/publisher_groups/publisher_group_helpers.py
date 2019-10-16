@@ -1,4 +1,3 @@
-import logging
 import re
 from collections import defaultdict
 from decimal import Decimal
@@ -6,6 +5,7 @@ from decimal import Decimal
 from django.conf import settings
 from django.db import transaction
 
+import structlog
 from dash import constants
 from dash import cpc_constraints
 from dash import history_helpers
@@ -14,7 +14,7 @@ from dash.views import helpers
 from utils import email_helper
 from utils import k1_helper
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 OUTBRAIN_MAX_BLACKLISTED_PUBLISHERS = 30
 OUTBRAIN_CPC_CONSTRAINT_LIMIT = 30

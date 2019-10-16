@@ -1,5 +1,4 @@
 import datetime
-import logging
 
 from django.db.models import F
 
@@ -8,12 +7,13 @@ import core.features.bcm.calculations
 import dash.constants
 import dash.models
 import redshiftapi
+import structlog
 import utils.converters
 
 from . import helpers
 from . import redshift
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 
 def process_cpc_billing(from_date, to_date, agency_id):

@@ -1,11 +1,10 @@
-import logging
-
+import structlog
 from etl.redshift import get_last_stl_load_error
 from prodops.rds_materialization import rds_materialization
 from utils import metrics_compat
 from utils.command_helpers import Z1Command
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 
 class Command(Z1Command):
@@ -68,4 +67,4 @@ class Command(Z1Command):
             """.format(
                 **redshift_error
             )
-            logger.exception("Error while processing '%s' RDS data: \n %s", instance.TABLE, redshift_msg)
+            logger.exception("Error while processing RDS data", table=instance.TABLE, redshift_msg=redshift_msg)

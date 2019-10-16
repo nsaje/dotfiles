@@ -1,4 +1,3 @@
-import logging
 import traceback
 
 import rest_framework.views
@@ -8,9 +7,10 @@ from django.core.exceptions import ValidationError
 from rest_framework import serializers
 from rest_framework.response import Response
 
+import structlog
 from utils import exc
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 
 def custom_exception_handler(exception, context):

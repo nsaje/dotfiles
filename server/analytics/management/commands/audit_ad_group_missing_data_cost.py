@@ -1,10 +1,9 @@
-import logging
-
 import analytics.monitor
+import structlog
 import utils.command_helpers
 import utils.slack
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 
 MESSAGE = "Adgroup #{id} is missing some data cost"

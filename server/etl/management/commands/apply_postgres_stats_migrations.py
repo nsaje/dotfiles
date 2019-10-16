@@ -1,15 +1,15 @@
-import logging
 import os
 
 from django.conf import settings
 from django.core.management.base import BaseCommand
 from django.db import connections
 
+import structlog
 from etl import maintenance
 from etl import materialize
 from etl.materialize import MATERIALIZED_VIEWS
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 
 class Command(BaseCommand):

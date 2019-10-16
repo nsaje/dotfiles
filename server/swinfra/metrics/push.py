@@ -1,12 +1,13 @@
-import logging
 import threading
 import time
 
 import prometheus_client
 
+import structlog
+
 from . import registry
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 
 IN_PUSH_MODE = False

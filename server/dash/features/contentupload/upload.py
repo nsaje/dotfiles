@@ -1,10 +1,10 @@
 import concurrent.futures
-import logging
 
 from django.conf import settings
 from django.db import transaction
 from django.template.defaultfilters import pluralize
 
+import structlog
 from dash import constants
 from dash import forms
 from dash import image_helper
@@ -19,7 +19,7 @@ from utils import sspd_client
 from . import exc
 from . import upload_dev
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 VALID_DEFAULTS_FIELDS = set(["image_crop", "description", "display_url", "brand_name", "call_to_action", "ad_tag"])
 VALID_UPDATE_FIELDS = set(
@@ -532,7 +532,7 @@ def _process_image_url_update(candidate, image_url, callback_data):
             candidate.image_file_size = image_data["file_size"]
             candidate.image_status = constants.AsyncUploadJobStatus.OK
     except KeyError:
-        logger.exception("Failed to parse callback data %s", str(callback_data))
+        logger.exception("Failed to parse callback data", data=str(callback_data))
 
 
 def _process_icon_url_update(candidate, icon_url, callback_data):
@@ -555,7 +555,7 @@ def _process_icon_url_update(candidate, icon_url, callback_data):
             candidate.icon_file_size = icon_data["file_size"]
             candidate.icon_status = constants.AsyncUploadJobStatus.OK
     except KeyError:
-        logger.exception("Failed to parse callback data %s", str(callback_data))
+        logger.exception("Failed to parse callback data", data=str(callback_data))
 
 
 def _process_url_update(candidate, url, callback_data):
@@ -631,7 +631,7 @@ def process_callback(callback_data):
             candidate_id = callback_data.get("id")
             candidate = models.ContentAdCandidate.objects.filter(pk=candidate_id).select_related("batch").get()
         except models.ContentAdCandidate.DoesNotExist:
-            logger.info("No candidate with id %s", callback_data["id"])
+            logger.info("No candidate with id", candidate_id=callback_data["id"])
             return
 
         cleaned_urls = _get_cleaned_urls(candidate)

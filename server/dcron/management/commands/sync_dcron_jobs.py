@@ -1,11 +1,10 @@
-import logging
-
 from django.core.management.base import BaseCommand
 from django.core.management.base import CommandError
 
+import structlog
 from dcron.cron import process_crontab_items
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 
 class Command(BaseCommand):

@@ -1,6 +1,5 @@
 import calendar
 import collections
-import logging
 
 from django.db.models.query import QuerySet
 from django.urls import reverse
@@ -12,6 +11,7 @@ import core.features.bid_modifiers.constants
 import core.features.multicurrency
 import stats.constants
 import stats.helpers
+import structlog
 from analytics.projections import BudgetProjections
 from core.features import bid_modifiers
 from dash import constants
@@ -23,7 +23,7 @@ from utils import outbrain_internal_helper
 from utils import sspd_client
 from zemauth.models import User as ZemUser
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 """
 Objects that load necessary related objects. All try to execute queries as seldom as possible.

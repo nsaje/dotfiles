@@ -1,11 +1,11 @@
 import datetime
-import logging
 
+import structlog
 from dash.features.contentupload.upload import clean_up_old_in_progress_batches
 from utils import dates_helper
 from utils.command_helpers import Z1Command
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 IN_PROGRESS_MINUTES = 15
 
@@ -18,4 +18,4 @@ class Command(Z1Command):
             created_before=dates_helper.utc_now() - datetime.timedelta(minutes=IN_PROGRESS_MINUTES)
         )
 
-        logger.info("Moved %s batches to FAILED.", failed_count)
+        logger.info("Moved batches to FAILED.", failed_count=failed_count)

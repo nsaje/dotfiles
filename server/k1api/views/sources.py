@@ -1,16 +1,15 @@
-import logging
-
 from django.db import transaction
 
 import dash.constants
 import dash.models
+import structlog
 from dash import constants
 from utils import db_router
 from utils import redirector_helper
 
 from .base import K1APIView
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 
 class SourcesView(K1APIView):

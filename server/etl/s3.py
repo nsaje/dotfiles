@@ -1,17 +1,17 @@
 import csv
 import io
-import logging
 import os.path
 from functools import partial
 
 from django.conf import settings
 
+import structlog
 from utils import s3helpers
 from utils import threads
 
 from . import constants
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 MATERIALIZED_VIEWS_S3_PREFIX = "materialized_views"
 MATERIALIZED_VIEWS_FILENAME = "{}_{}.csv"
@@ -30,7 +30,7 @@ def _do_upload_csv(s3_path, generator, bucket_name=None):
 
 
 def upload_csv_async(table_name, date, job_id, generator):
-    logger.info('Create async CSV for table "%s", job %s', table_name, job_id)
+    logger.info("Create async CSV", table_name=table_name, job_id=job_id)
     s3_path = os.path.join(
         MATERIALIZED_VIEWS_S3_PREFIX,
         table_name,
@@ -45,7 +45,7 @@ def upload_csv_async(table_name, date, job_id, generator):
 
 
 def upload_csv(table_name, date, job_id, generator):
-    logger.info('Create CSV for table "%s", job %s', table_name, job_id)
+    logger.info("Create CSV", table_name=table_name, job_id=job_id)
     s3_path = os.path.join(
         MATERIALIZED_VIEWS_S3_PREFIX,
         table_name,
@@ -54,13 +54,13 @@ def upload_csv(table_name, date, job_id, generator):
     )
 
     _do_upload_csv(s3_path, generator)
-    logger.info('CSV for table "%s", job %s uploaded', table_name, job_id)
+    logger.info("CSV uploaded", table_name=table_name, job_id=job_id)
 
     return s3_path
 
 
 def upload_csv_without_job(table_name, generator, s3_path, bucket_name):
-    logger.info('Create CSV for table "%s"', table_name)
+    logger.info("Create CSV", table_name=table_name)
     _do_upload_csv(s3_path, generator, bucket_name=bucket_name)
-    logger.info('CSV for table "%s" uploaded', table_name)
+    logger.info("CSV uploaded", table_name=table_name)
     return s3_path

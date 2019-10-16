@@ -9,11 +9,12 @@ from django.conf import settings
 from django.core.management.base import BaseCommand
 
 import dash.models
+import structlog
 import swinfra.metrics
 from dcron import helpers
 from utils import profiler
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 
 class Z1Command(BaseCommand):
@@ -22,8 +23,8 @@ class Z1Command(BaseCommand):
 
     def execute(self, *args, **options):
         if int(options["verbosity"]) > 1:
-            root_logger = logging.getLogger("")
-            root_logger.setLevel(logging.DEBUG)
+            root_logger = structlog.get_logger("")
+            root_logger.setLevel(structlog.stdlib.DEBUG)
 
         job_name = helpers.get_command(sys.argv)
         swinfra.metrics.start_push_mode(
@@ -41,7 +42,7 @@ class Z1Command(BaseCommand):
         except SystemExit as err:
             raise err
         except Exception as err:
-            logging.getLogger(self.__class__.__module__).exception("Uncaught exception in command")
+            structlog.get_logger(self.__class__.__module__).exception("Uncaught exception in command")
             raise err
         finally:
             swinfra.metrics.flush_push_metrics()
@@ -95,8 +96,8 @@ def set_logger_verbosity(logger_, options):
     if verbosity == 0:
         logger_.setLevel(logging.CRITICAL)
     elif verbosity == 1:  # default
-        logger_.setLevel(logging.INFO)
+        logger_.setLevel(structlog.stdlib.INFO)
     elif verbosity == 2:
-        logger_.setLevel(logging.DEBUG)
+        logger_.setLevel(structlog.stdlib.DEBUG)
     elif verbosity > 2:
         logger_.setLevel(logging.NOTSET)

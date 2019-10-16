@@ -1,5 +1,4 @@
 import json
-import logging
 import random
 from collections import defaultdict
 
@@ -11,6 +10,7 @@ from django.views.decorators.csrf import csrf_exempt
 import dash.api
 import dash.constants
 import dash.models
+import structlog
 from dash.features import contentupload
 from integrations.bizwire import config
 from integrations.bizwire.internal import actions
@@ -19,7 +19,7 @@ from utils import k1_helper
 from utils import metrics_compat
 from utils import request_signer
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 
 @csrf_exempt
@@ -32,7 +32,7 @@ def click_capping(request):
         raise Http404
 
     content_ad_id = int(request.GET.get("creativeId"))
-    logger.info("[bizwire] click capping - content ad id: %s", content_ad_id)
+    logger.info("[bizwire] click capping", content_ad_id=content_ad_id)
 
     content_ad = (
         dash.models.ContentAd.objects.filter(id=content_ad_id, ad_group__campaign_id=config.AUTOMATION_CAMPAIGN)
@@ -86,7 +86,7 @@ def article_upload(request):
     articles_data = json.loads(request.body)
 
     labels = [article["label"] for article in articles_data]
-    logger.info("[bizwire] article upload - uploading articles with labels: %s", labels)
+    logger.info("[bizwire] article upload - uploading articles with labels", labels=labels)
 
     candidates_per_ad_group = _distribute_articles(articles_data)
     for ad_group_id, candidates_data in candidates_per_ad_group.items():
@@ -105,6 +105,6 @@ def article_upload(request):
             if random.random() > 0.9:
                 actions.recalculate_and_set_new_daily_budgets(ad_group_id)
         except Exception:
-            logger.exception("Unable to set new bizwire daily budget for ad group %s", ad_group_id)
+            logger.exception("Unable to set new bizwire daily budget for ad group", ad_group_id=ad_group_id)
 
     return JsonResponse({"status": "ok"})

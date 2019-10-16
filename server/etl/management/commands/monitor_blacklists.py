@@ -1,11 +1,11 @@
 import collections
 import datetime
-import logging
 
 import dateutil.parser
 
 import backtosql
 import redshiftapi.db
+import structlog
 from core.features.publisher_groups import publisher_group_helpers
 from dash import constants
 from dash import models
@@ -14,7 +14,7 @@ from utils import list_helper
 from utils import metrics_compat
 from utils.command_helpers import Z1Command
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 OEN = 305
 
@@ -180,8 +180,8 @@ class Command(Z1Command):
             overall_vialotors_stats["clicks"] += sum(ad_group_stats[x]["clicks"] for x in ad_group_violators)
             overall_vialotors_stats["impressions"] += sum(ad_group_stats[x]["impressions"] for x in ad_group_violators)
 
-        logger.info("Blacklisted publisher group entries count %s", len(overall_blacklisted_entry_ids))
-        logger.info("Whitelisted publisher group entries count %s", len(overall_whitelisted_entry_ids))
+        logger.info("Blacklisted publisher group entries count", count=len(overall_blacklisted_entry_ids))
+        logger.info("Whitelisted publisher group entries count", count=len(overall_whitelisted_entry_ids))
         if log_influx:
             metrics_compat.gauge(
                 "dash.blacklisted_publisher.status", len(overall_blacklisted_entry_ids), status="blacklisted"
@@ -190,8 +190,8 @@ class Command(Z1Command):
                 "dash.blacklisted_publisher.status", len(overall_whitelisted_entry_ids), status="whitelisted"
             )
 
-        logger.info("Overall clicks for violator publishers: %s", overall_vialotors_stats["clicks"])
-        logger.info("Overall impressions for violator publishers: %s", overall_vialotors_stats["impressions"])
+        logger.info("Overall clicks for violator publishers", count=overall_vialotors_stats["clicks"])
+        logger.info("Overall impressions for violator publishers", count=overall_vialotors_stats["impressions"])
         if log_influx:
             metrics_compat.gauge("dash.blacklisted_publisher.stats", overall_vialotors_stats["clicks"], type="clicks")
             metrics_compat.gauge(

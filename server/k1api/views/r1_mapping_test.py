@@ -1,12 +1,13 @@
 import json
-import logging
 
 from django.urls import reverse
 
+import structlog
+
 from .base_test import K1APIBaseTest
 
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
+logger = structlog.get_logger(__name__)
+logger.setLevel(structlog.stdlib.INFO)
 
 
 class R1MappingTest(K1APIBaseTest):

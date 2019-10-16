@@ -1,15 +1,15 @@
-import logging
 import typing
 
 import crontab
 from django.conf import settings
 
+import structlog
 from dcron import commands
 from dcron import constants
 from dcron import exceptions
 from dcron import models
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 
 def process_crontab_items(file_name: typing.Optional[str] = None, file_contents: typing.Optional[str] = None) -> None:
@@ -28,12 +28,12 @@ def process_crontab_items(file_name: typing.Optional[str] = None, file_contents:
         except exceptions.UnregisteredManagementCommand as exc:
             command_name = None
             logger.warning(str(exc))
-        except exceptions.DCronException as exc:
-            logger.error("Failed creating or updating dcron job: %s", exc)
+        except exceptions.DCronException:
+            logger.exception("Failed creating or updating dcron job")
             try:
                 command_name = commands.extract_management_command_name(cron_item.command)
-            except Exception as exc:
-                logger.error("Failed extracting management command name: %s", exc)
+            except Exception:
+                logger.exception("Failed extracting management command name")
                 command_name = None
 
         if command_name:
@@ -41,7 +41,7 @@ def process_crontab_items(file_name: typing.Optional[str] = None, file_contents:
 
     if removed_command_names:
         # There were some commands that were removed.
-        logger.warning("Removed commands: %s", ", ".join(sorted(removed_command_names)))
+        logger.warning("Removed commands", removed_commands=sorted(removed_command_names))
         models.DCronJob.objects.filter(command_name__in=removed_command_names).delete()
 
 
@@ -52,7 +52,7 @@ def _process_cron_item(cron_item: crontab.CronItem) -> str:
 
     dcron_job, created = models.DCronJob.objects.get_or_create(command_name=command_name)
     if created:
-        logger.info("Created DCronJob for: %s", dcron_job.command_name)
+        logger.info("Created DCronJob", command=dcron_job.command_name)
 
     settings_kwargs["severity"] = settings.DCRON["severities"].get(command_name, constants.Severity.LOW)
     settings_kwargs["warning_wait"] = settings.DCRON["warning_waits"].get(
@@ -79,14 +79,14 @@ def _process_cron_item(cron_item: crontab.CronItem) -> str:
         if any(getattr(dcron_job_settings, k) != v for k, v in settings_kwargs.items()):
             # There are changes - update DCronJobSettings.
             models.DCronJobSettings.objects.filter(id=dcron_job_settings.id).update(**settings_kwargs)
-            logger.info("Updated DCronJobSettings for: %s", command_name)
+            logger.info("Updated DCronJobSettings", command=command_name)
         else:
-            logger.debug("No need to update DCronJobSettings for: %s", command_name)
+            logger.debug("No need to update DCronJobSettings", command=command_name)
 
     else:
         # DCronJobSettings has to be created.
         models.DCronJobSettings.objects.create(job=dcron_job, **settings_kwargs)
-        logger.info("Created DCronJobSettings for: %s", command_name)
+        logger.info("Created DCronJobSettings", command=command_name)
 
     return command_name
 
@@ -104,7 +104,7 @@ def _crontab_items_iterator(
             yield cron_item
 
         else:
-            logger.error("Invalid crontab entry: %s", cron_item)
+            logger.error("Invalid crontab entry", cron_item=cron_item)
 
 
 def _dcron_job_settings_kwargs(cron_item: crontab.CronItem) -> dict:

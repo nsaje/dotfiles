@@ -1,11 +1,10 @@
-import logging
-
 from django.db import transaction
 
+import structlog
 from dash import constants
 from dash import cpc_constraints
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 
 def get_adjusted_ad_group_sources_bids(ad_group, ad_group_settings):

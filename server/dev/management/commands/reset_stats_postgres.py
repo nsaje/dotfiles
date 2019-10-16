@@ -1,10 +1,10 @@
 import datetime
-import logging
 import os
 
 from django.conf import settings
 from django.db import connections
 
+import structlog
 from etl import maintenance
 from etl import materialize
 from etl import redshift
@@ -12,7 +12,7 @@ from etl.materialize import MATERIALIZED_VIEWS
 from utils import s3helpers
 from utils.command_helpers import Z1Command
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 
 class Command(Z1Command):
@@ -22,7 +22,7 @@ class Command(Z1Command):
         settings.S3_BUCKET_STATS = "z1-stats"
 
         job_id = self._get_latest_job_id()
-        logger.info("Loading data from job %s", job_id)
+        logger.info("Loading data from job", job=job_id)
 
         # dates are used for deleting old data
         date_from = datetime.date(2000, 1, 1)

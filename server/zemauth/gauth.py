@@ -1,12 +1,13 @@
 import json
-import logging
 
 import httplib2
 from django.conf import settings
 from django.urls import reverse
 from oauth2client.client import OAuth2WebServerFlow
 
-logger = logging.getLogger(__name__)
+import structlog
+
+logger = structlog.get_logger(__name__)
 
 URL_APP_TOKEN = "https://accounts.google.com/o/oauth2/auth"
 URL_USERINFO = "https://www.googleapis.com/oauth2/v2/userinfo"

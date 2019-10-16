@@ -1,12 +1,13 @@
 import json
-import logging
 import urllib.error
 import urllib.parse
 import urllib.request
 
 from django.conf import settings
 
-logger = logging.getLogger(__name__)
+import structlog
+
+logger = structlog.get_logger(__name__)
 
 DASH_URL = "https://one.zemanta.com/v2/analytics/{level}/{id}/{tab}"
 
@@ -46,7 +47,7 @@ def _post_to_slack(data):
         response = urllib.request.urlopen(req)
         return response.read() == "ok"
     else:
-        logger.warning("Slack log disabled, message: %s", data)
+        logger.warning("Slack log disabled", message=data)
 
 
 def link(url="", anchor=""):

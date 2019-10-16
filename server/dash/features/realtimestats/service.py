@@ -1,5 +1,4 @@
 import decimal
-import logging
 import urllib.error
 import urllib.parse
 import urllib.request
@@ -7,6 +6,7 @@ from operator import itemgetter
 
 import core.features.bcm.calculations
 import core.features.yahoo_accounts
+import structlog
 from dash import constants
 from dash import models
 from utils import dates_helper
@@ -14,7 +14,7 @@ from utils import k1_helper
 from utils import metrics_compat
 from utils import redirector_helper
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 
 def get_ad_group_stats(ad_group, use_local_currency=False):

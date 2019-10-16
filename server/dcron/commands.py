@@ -1,4 +1,3 @@
-import logging
 import shlex
 import sys
 
@@ -6,6 +5,7 @@ import django_pglocks
 from django.conf import settings
 from django.core import management
 
+import structlog
 import swinfra.metrics
 from dcron import alerts
 from dcron import constants
@@ -15,7 +15,7 @@ from dcron import models
 from utils import dates_helper
 from utils import metrics_compat
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 
 class DCronCommand(management.base.BaseCommand):
@@ -48,7 +48,7 @@ class DCronCommand(management.base.BaseCommand):
             .first()
         )
         if dcron_job and dcron_job.dcronjobsettings.pause_execution:
-            logger.info("Cron job %s will not run since its execution temporarily paused", command_name)
+            logger.info("Cron job will not run since its execution temporarily paused", command=command_name)
             return
 
         if (
@@ -57,19 +57,21 @@ class DCronCommand(management.base.BaseCommand):
             and dcron_job.completed_dt
             and (start_dt - dcron_job.executed_dt).total_seconds() < dcron_job.dcronjobsettings.min_separation
         ):
-            logger.info("Cron job has just completed, not going to run %s on %s", command_name, host_name)
+            logger.info("Cron job has just completed, not going to run", command=command_name, host=host_name)
             return
 
         with django_pglocks.advisory_lock(command_name, wait=False) as acquired:
             if not acquired:
-                logger.info("Another process is executing cron job %s - aborting on host %s", command_name, host_name)
+                logger.info(
+                    "Another process is executing cron job - aborting on host", command=command_name, host=host_name
+                )
                 return
 
             models.DCronJob.objects.update_or_create(
                 command_name=command_name, defaults={"executed_dt": start_dt, "completed_dt": None, "host": host_name}
             )
 
-            logger.info("Started cron job %s on host %s", command_name, host_name)
+            logger.info("Started cron job on host", command=command_name, host=host_name)
 
             metrics_compat.incr("dcron_command_count", 1, command_name=command_name)
 
@@ -77,7 +79,7 @@ class DCronCommand(management.base.BaseCommand):
                 self._handle(*args, **options)
                 alerts.update_alert_and_notify(command_name, constants.Alert.OK)
             except Exception:
-                logger.exception("Exception in DCronCommand %s", command_name)
+                logger.exception("Exception in DCronCommand", command=command_name)
                 alerts.update_alert_and_notify(command_name, constants.Alert.FAILURE)
 
             finally:

@@ -1,6 +1,5 @@
 import datetime
 import json
-import logging
 
 import tagulous
 from django import forms
@@ -21,6 +20,7 @@ from import_export import resources
 from import_export.admin import ExportMixin
 
 import core.features.source_adoption
+import structlog
 import utils.email_helper
 import utils.k1_helper
 import utils.pagerduty_helper as pgdh
@@ -38,7 +38,7 @@ from dash.features.submission_filters.admin import SubmissionFilterAdmin
 from utils.admin_common import SaveWithRequestMixin
 from zemauth.models import User as ZemUser
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 
 # Forms for inline user functionality.

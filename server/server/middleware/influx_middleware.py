@@ -1,12 +1,11 @@
-import logging
-
 from django.conf import settings
 from django.db import connections
 
+import structlog
 from utils import influx_helper
 from utils import metrics_compat
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 DATABASE_NAMES = ["default"] + settings.DATABASE_READ_REPLICAS
 

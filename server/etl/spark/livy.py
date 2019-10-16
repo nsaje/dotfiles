@@ -1,15 +1,16 @@
 import json
-import logging
 import time
 from os import path
 
 import requests
 from django.conf import settings
 
+import structlog
+
 FILE_PREFIX = "etl/spark/code"
 LIVY_URL = "http://{}:8998"
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 
 def get_session():

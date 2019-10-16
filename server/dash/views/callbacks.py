@@ -1,15 +1,15 @@
 import json
-import logging
 
 from django.conf import settings
 from django.http import Http404
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 
+import structlog
 from dash.features import contentupload
 from utils import request_signer
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 
 @csrf_exempt
@@ -22,11 +22,11 @@ def content_upload(request):
 
     callback_data = json.loads(request.body)
     if callback_data.get("status") != "ok":
-        logger.error("Content upload validation failed. data: %s", str(callback_data))
+        logger.error("Content upload validation failed.", data=str(callback_data))
         return JsonResponse({"status": "fail"})
     candidate = callback_data.get("candidate")
     if not candidate:
-        logger.error("Content upload validation returned no candidate. data: %s", str(callback_data))
+        logger.error("Content upload validation returned no candidate.", data=str(callback_data))
         return JsonResponse({"status": "fail"})
     contentupload.upload.process_callback(candidate)
     return JsonResponse({"status": "ok"})

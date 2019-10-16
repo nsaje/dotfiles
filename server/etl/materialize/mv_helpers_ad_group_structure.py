@@ -1,14 +1,13 @@
-import logging
-
 import backtosql
 import dash.models
+import structlog
 from etl import redshift
 from etl import s3
 from redshiftapi import db
 
 from .materialize import Materialize
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 
 class MVHelpersAdGroupStructure(Materialize):
@@ -28,10 +27,10 @@ class MVHelpersAdGroupStructure(Materialize):
                 sql = backtosql.generate_sql("etl_create_temp_table_mvh_adgroup_structure.sql", None)
                 c.execute(sql)
 
-                logger.info('Copying CSV to table "%s", job %s', self.TABLE_NAME, self.job_id)
+                logger.info("Copying CSV to table", table=self.TABLE_NAME, job=self.job_id)
                 sql, params = redshift.prepare_copy_query(s3_path, self.TABLE_NAME)
                 c.execute(sql, params)
-                logger.info('Copied CSV to table "%s", job %s', self.TABLE_NAME, self.job_id)
+                logger.info("Copied CSV to table", table=self.TABLE_NAME, job=self.job_id)
 
     def generate_rows(self):
         ad_groups = dash.models.AdGroup.objects.select_related("campaign", "campaign__account").all()

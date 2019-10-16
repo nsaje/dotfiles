@@ -1,13 +1,13 @@
 import argparse
-import logging
 
 import unicodecsv
 from django.core.management.base import CommandError
 
+import structlog
 from dash.models import ContentAd
 from utils.command_helpers import Z1Command
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 
 class Command(Z1Command):

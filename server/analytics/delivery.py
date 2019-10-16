@@ -1,5 +1,4 @@
 import datetime
-import logging
 from decimal import Decimal
 
 from django.db.models import Count
@@ -14,9 +13,10 @@ import dash.campaign_goals
 import dash.constants
 import dash.infobox_helpers
 import dash.models
+import structlog
 import utils.csv_utils
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 CAMPAIGN_REPORT_HEADER = ("Account", "Campaign ID", "URL", "CS Rep", "Yesterday spend", "Daily Spend Cap", "Delivery")
 AD_GROUP_REPORT_HEADER = (
@@ -163,7 +163,7 @@ def check_campaign_delivery(campaign, campaign_stats, prev_campaign_stats):
     visits = campaign_stats.get("visits") or prev_campaign_stats.get("visits", 0)
     conversions = campaign_stats.get("conversions", 0)
     if not campaign.campaign_goals:
-        logger.warning("Campaign %s has no primary goal set!", campaign.id)
+        logger.warning("Campaign has no primary goal set!", campaign=campaign.id)
         return
     primary_goal = campaign.campaign_goals[0]
     is_postclick_enabled = campaign.settings.enable_ga_tracking or campaign.settings.enable_adobe_tracking

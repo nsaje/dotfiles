@@ -1,7 +1,6 @@
 import decimal
 import functools
 import json
-import logging
 import re
 
 import newrelic.agent
@@ -22,6 +21,7 @@ import core.models.settings.ad_group_settings.exceptions
 import core.models.settings.ad_group_source_settings.exceptions
 import core.models.settings.campaign_settings.exceptions
 import restapi.campaigngoal.serializers
+import structlog
 import utils.exc
 from automation import autopilot
 from dash import campaign_goals
@@ -43,7 +43,7 @@ from utils import exc
 from utils import slack
 from zemauth.models import User as ZemUser
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 CONVERSION_PIXEL_INACTIVE_DAYS = 7
 CONTENT_INSIGHTS_TABLE_ROW_COUNT = 10

@@ -1,4 +1,3 @@
-import logging
 from datetime import datetime
 from functools import partial
 
@@ -8,6 +7,7 @@ from django.http import Http404
 import dash.constants
 import dash.features.submission_filters
 import dash.models
+import structlog
 from dash import constants
 from utils import dates_helper
 from utils import db_router
@@ -17,7 +17,7 @@ from utils import threads
 
 from .base import K1APIView
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 
 OUTBRAIN_SOURCE_SLUG = "outbrain"
@@ -108,7 +108,7 @@ class ContentAdsView(K1APIView):
         try:
             content_ad = dash.models.ContentAd.objects.get(id=content_ad_id)
         except dash.models.ContentAd.DoesNotExist:
-            logger.exception("update_content_ad: content_ad does not exist. content ad id: %d", content_ad_id)
+            logger.exception("update_content_ad: content_ad does not exist", content_ad=content_ad_id)
             raise Http404
 
         updates = {}

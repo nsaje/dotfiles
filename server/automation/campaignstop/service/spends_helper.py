@@ -1,15 +1,15 @@
 import datetime
-import logging
 from decimal import Decimal
 
 import core.features.multicurrency
+import structlog
 from utils import dates_helper
 from utils import numbers
 
 from .. import RealTimeCampaignDataHistory
 from . import config
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 MAX_RT_DATA_AGE_MINUTES = 15
 CHECK_FREQUENCY_MINUTES = 2
@@ -142,7 +142,7 @@ def _get_realtime_spends_for_date(campaign, date):
     current_spend = _get_current_spend(campaign, date)
     prev_spend = _get_prev_spend(campaign, date, current_spend)
     if current_spend and not _is_recent(current_spend):
-        logger.warning("Real time data is stale. campaign=%s, date=%s", campaign, date.isoformat())
+        logger.warning("Real time data is stale.", campaign=campaign, date=date.isoformat())
     return current_spend, prev_spend
 
 

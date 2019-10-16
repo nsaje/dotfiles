@@ -1,16 +1,16 @@
 import copy
-import logging
 import os
 import random
 import string
 
 from django.conf import settings
 
+import structlog
 from core import models
 from utils import csv_utils
 from utils import s3helpers
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 OUTBRAIN_AGENCY = 55
 

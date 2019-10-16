@@ -1,15 +1,14 @@
 
-import logging
-
 from django.conf import settings
 from django.core.management import CommandError
 
+import structlog
 from dash import constants
 from dash import facebook_helper
 from dash import models
 from utils.command_helpers import Z1Command
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 
 class Command(Z1Command):

@@ -1,15 +1,15 @@
 import http.client
 import json
-import logging
 
 import requests
 from django.conf import settings
 
+import structlog
 from dash import constants
 from dash import models
 from utils import k1_helper
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 ACCESS_TYPE = "AGENCY"
 PERMITTED_ROLES = ["ADVERTISER"]

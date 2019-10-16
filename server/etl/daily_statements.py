@@ -1,5 +1,4 @@
 import datetime
-import logging
 from collections import defaultdict
 from decimal import Decimal
 
@@ -13,19 +12,20 @@ from django.db.models import Sum
 import backtosql
 import core.features.bcm.calculations
 import dash.models
+import structlog
 from etl import helpers
 from redshiftapi import db
 from utils import converters
 from utils import dates_helper
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 FIXED_MARGIN_START_DATE = datetime.date(2017, 6, 21)
 OEN_ACCOUNT_ID = 305
 
 
 def _generate_statements(date, campaign, campaign_spend):
-    logger.info("Generate daily statements for %s, %s: %s", campaign.id, date, campaign_spend)
+    logger.info("Generate daily statements", campaign_id=campaign.id, date=date, campaign_spend=campaign_spend)
 
     budgets = dash.models.BudgetLineItem.objects.filter(
         campaign_id=campaign.id, start_date__lte=date, end_date__gte=date
@@ -120,7 +120,7 @@ def _generate_statements(date, campaign, campaign_spend):
         try:
             _handle_overspend(date, campaign, total_media_nano, total_data_nano)
         except Exception:
-            logger.exception("Failed to handle overspend for campaign %s on date %s", campaign.id, date)
+            logger.exception("Failed to handle overspend", campaign_id=campaign.id, date=date)
 
 
 def _handle_overspend(date, campaign, media_nano, data_nano):
@@ -241,7 +241,7 @@ def _get_effective_spend_pcts(date, campaign, campaign_spend, attributed_spends)
 
 
 def _get_campaign_spend(date, all_campaigns, account_id):
-    logger.info("Fetching campaign spend for %s", date)
+    logger.info("Fetching campaign spend", date=date)
 
     campaign_spend = {}
     ad_group_campaign = {}
@@ -270,7 +270,7 @@ def _get_campaign_spend(date, all_campaigns, account_id):
             date_query=helpers.get_local_date_query(date)
         )
 
-    logger.info("Running redshift query: %s", query)
+    logger.info("Running redshift query", query=query)
 
     with connections[settings.STATS_DB_NAME].cursor() as c:
         c.execute(query)
@@ -284,7 +284,9 @@ def _get_campaign_spend(date, all_campaigns, account_id):
             campaign_id = ad_group_campaign.get(ad_group_id)
             if campaign_id is None:
                 if media_spend > 0 or data_spend > 0:
-                    logger.info("Got spend for adgroup in campaign that is not being reprocessed: %s", ad_group_id)
+                    logger.info(
+                        "Got spend for adgroup in campaign that is not being reprocessed", ad_group_id=ad_group_id
+                    )
                     campaign_id = dash.models.AdGroup.objects.get(pk=ad_group_id).campaign_id
                     campaign_spend[campaign_id] = {"media_nano": 0, "data_nano": 0}
                 continue
@@ -340,7 +342,7 @@ def _reprocess_campaign_statements(campaign, dates, total_spend):
 
 
 def reprocess_daily_statements(date_since, account_id=None, exclude_oen=True):
-    logger.info("Reprocessing dailiy statements for %s %s", date_since, account_id)
+    logger.info("Reprocessing dailiy statements", date_since=date_since, account_id=account_id)
 
     total_spend = {}
     all_dates = set()
@@ -387,7 +389,7 @@ def reprocess_daily_statements(date_since, account_id=None, exclude_oen=True):
             all_dates.add(date)
             if date not in total_spend:
                 # do it for all campaigns at once for a single date
-                logger.info("Fetching spend for %s because of campaign %s" % (date, campaign.id))
+                logger.info("Fetching spend because of campaign", date=date, because_of_campaign=campaign.id)
                 total_spend[date] = _get_campaign_spend(date, campaigns, account_id)
 
         # generate daily statements for the date for the campaign
@@ -409,7 +411,7 @@ def _fetch_total_spend(total_spend, campaigns, date_since, account_id):
     for dt in rrule.rrule(rrule.DAILY, dtstart=start_date, until=end_date):
         date = dt.date()
         if date not in total_spend:
-            logger.info("Fetching spend for the date %s that wasn't reprocessed", date)
+            logger.info("Fetching spend for the date that wasn't reprocessed", date=date)
             total_spend[date] = _get_campaign_spend(date, campaigns, account_id)
 
     return total_spend

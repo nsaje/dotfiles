@@ -1,10 +1,10 @@
 import datetime
-import logging
 
+import structlog
 from k1api.views import ga_accounts
 from utils.command_helpers import Z1Command
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 
 class Request:
@@ -20,6 +20,6 @@ class Command(Z1Command):
         request = Request()
         for date in (today - datetime.timedelta(days=n) for n in range(4)):
             date_since = date.strftime("%Y-%m-%d")
-            logger.info("loading for %s", date_since)
+            logger.info("loading for date_since", date_since=date_since)
             request.GET["date_since"] = date_since
             view.get(request)

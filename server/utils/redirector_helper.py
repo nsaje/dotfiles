@@ -1,5 +1,4 @@
 import json
-import logging
 import time
 import urllib.error
 import urllib.parse
@@ -7,9 +6,10 @@ import urllib.request
 
 from django.conf import settings
 
+import structlog
 from utils import request_signer
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 NUM_RETRIES = 3
 

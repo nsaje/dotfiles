@@ -1,5 +1,4 @@
 import datetime
-import logging
 import typing
 import urllib.parse
 
@@ -7,13 +6,14 @@ import croniter
 from django.conf import settings
 from django.urls import reverse
 
+import structlog
 from dcron import constants
 from dcron import models
 from utils import dates_helper
 from utils import pagerduty_helper
 from utils import slack
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 SLACK_USERNAME = "Dcron Alert"
 SLACK_CHANNEL_LOW_SEVERITY = slack.CHANNEL_RND_Z1_ALERTS_AUX
@@ -61,7 +61,7 @@ def update_alert_and_notify(command_name: str, alert: AlertId) -> None:
             handle_pagerduty_alert(dcron_job, alert)
             handle_slack_alert(dcron_job, alert)
     else:
-        logger.error("DCronCommand %s does not exist - could not set Failure alert.", command_name)
+        logger.error("DCronCommand does not exist - could not set Failure alert.", command_name=command_name)
 
 
 def handle_pagerduty_alert(dcron_job: models.DCronJob, alert: AlertId) -> None:

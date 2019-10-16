@@ -1,9 +1,9 @@
-import logging
-
 from django.db.models import OneToOneField
 from django.db.models.fields.related_descriptors import ForwardOneToOneDescriptor
 
-logger = logging.getLogger(__name__)
+import structlog
+
+logger = structlog.get_logger(__name__)
 
 
 def resolve_related_model_field_name(settings_instance):
@@ -28,7 +28,7 @@ def resolve_related_model_field_name(settings_instance):
         return model_to_field[model_name]
 
     else:
-        logger.error("Unsupported related model: %s", model_name)
+        logger.error("Unsupported related model", model_name=model_name)
         return None
 
 

@@ -1,16 +1,16 @@
 import datetime
 import json
-import logging
 
 import boto3
 from django.conf import settings
 
 import dash.models
+import structlog
 from integrations.bizwire import config
 from integrations.bizwire.internal import helpers
 from utils import dates_helper
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 FIND_MISSING_NUM_DAYS = 7
 
@@ -49,7 +49,7 @@ def purge_candidates(keys):
 def invoke_lambdas(keys):
     lambda_client = boto3.client("lambda", region_name=settings.LAMBDA_REGION)
     for key in keys:
-        logger.info("Reprocessing %s.", key)
+        logger.info("Reprocessing.", key=key)
         payload = {"Records": [{"s3": {"bucket": {"name": "businesswire-articles"}, "object": {"key": key}}}]}
 
         lambda_client.invoke(

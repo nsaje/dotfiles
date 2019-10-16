@@ -1,5 +1,4 @@
 import datetime
-import logging
 import uuid
 
 from django.conf import settings
@@ -11,11 +10,12 @@ import etl.s3
 import redshiftapi.api_quickstats
 import redshiftapi.internal_stats.content_ad_publishers
 import redshiftapi.internal_stats.conversions
+import structlog
 from utils import db_router
 
 from .base import K1APIView
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 
 class AdGroupStatsView(K1APIView):

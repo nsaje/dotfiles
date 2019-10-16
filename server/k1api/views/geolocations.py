@@ -1,13 +1,12 @@
-import logging
-
 import dash.constants
 import dash.features.geolocation
 import dash.models
+import structlog
 from utils import db_router
 
 from .base import K1APIView
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 
 class GeolocationsView(K1APIView):

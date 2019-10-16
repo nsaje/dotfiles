@@ -1,4 +1,3 @@
-import logging
 import time
 
 from django.db import transaction
@@ -6,11 +5,12 @@ from django.db.models import Q
 
 import core.models
 import dash.constants
+import structlog
 import utils.exc
 
 from . import exceptions
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 LOGGER_UPDATE_BATCH_SIZE = 512
 PAUSE_INTERVAL = 30
 
@@ -54,8 +54,10 @@ def deprecate_shell(source_ids):
 
         logger.info("{} deprecated successfully".format(source.name))
 
-    logger.info("Sources deprecated ({}): {}".format(len(sources_deprecated), sources_deprecated))
-    logger.info("{} ad group sources paused".format(len(ad_group_sources_paused)))
+    logger.info(
+        "Sources deprecated", num_sources_deprecated=len(sources_deprecated), sources_deprecated=sources_deprecated
+    )
+    logger.info("Ad group sources paused", num_ad_group_sources_paused=len(ad_group_sources_paused))
 
     return ad_group_sources_paused
 
@@ -187,7 +189,7 @@ def release_source(request, source, account_list=None, skip_validation=False):
     source.released = True
     source.save()
 
-    logger.info("Source {} (id={}) allowed on {} accounts.".format(source.name, source.id, n_allowed_on))
+    logger.info("Source allowed on accounts.", source=source.name, source_id=source.id, n_allowed_on=n_allowed_on)
     return n_allowed_on
 
 

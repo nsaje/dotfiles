@@ -1,14 +1,14 @@
 import decimal
-import logging
 
 import dash.constants
 import dash.models
+import structlog
 from dash import cpc_constraints
 
 from . import settings
 from .constants import BidChangeComment
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 
 def get_autopilot_bid_recommendations(

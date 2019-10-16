@@ -1,12 +1,11 @@
-import logging
-
 from django.conf import settings
 
+import structlog
 from etl import materialize
 from redshiftapi import db
 from utils import pagerduty_helper
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 
 def consistency_check(date_from, date_to):

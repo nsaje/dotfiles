@@ -1,14 +1,13 @@
-import logging
-
 import newrelic.agent
 from django.db import transaction
 from django.db.models import Q
 
+import structlog
 from dash import constants
 from dash import models
 from utils import email_helper
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 
 # State of an ad group is set automatically.

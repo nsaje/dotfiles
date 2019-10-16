@@ -1,5 +1,4 @@
 import json
-import logging
 import time
 import urllib.error
 import urllib.parse
@@ -8,10 +7,11 @@ import urllib.request
 import newrelic.agent
 from django.conf import settings
 
+import structlog
 from server.celery import app
 from utils import request_signer
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 
 def update_accounts(accounts, msg="", priority=False):
@@ -82,7 +82,7 @@ def _send_task(queue_name, task_name, **kwargs):
     try:
         app.send_task(task_name, queue=queue_name, kwargs=kwargs)
     except Exception:
-        logger.exception("Error sending ping to k1. Task: %s", task_name, extra={"data": kwargs})
+        logger.exception("Error sending ping to k1.", task_name=task_name, data=kwargs)
 
 
 def _call_api(url, data=None, method="GET"):

@@ -1,11 +1,11 @@
 import datetime
-import logging
 
 import pytz
 from dateutil import rrule
 
 import backtosql
 import dash.models
+import structlog
 from integrations.bizwire import config
 from integrations.bizwire import models
 from integrations.bizwire.internal import helpers
@@ -14,7 +14,7 @@ from utils import dates_helper
 from utils import email_helper
 from utils import metrics_compat
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 MISSING_CLICKS_THRESHOLD = 3
 MISSING_CLICKS_ALERT_HOUR_UTC = 8

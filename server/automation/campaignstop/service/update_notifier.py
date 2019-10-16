@@ -1,12 +1,11 @@
-import logging
-
 from django.conf import settings
 
+import structlog
 from utils import sqs_helper
 
 from .. import constants
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 
 AD_GROUP_SETTINGS_FIELDS = [
@@ -50,7 +49,7 @@ def notify_budget_line_item_change(campaign):
 def notify(campaign, type_):
     if not campaign.real_time_campaign_stop:
         return
-    logger.debug("Notify campaign update: campaign_id=%s, type=%s", campaign.id, type_)
+    logger.debug("Notify campaign update", campaign_id=campaign.id, type=type_)
     sqs_helper.write_message_json(
         settings.CAMPAIGN_STOP_UPDATE_HANDLER_QUEUE, {"campaign_id": campaign.id, "type": type_}
     )

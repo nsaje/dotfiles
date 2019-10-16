@@ -1,5 +1,4 @@
 import json
-import logging
 import re
 import urllib.error
 import urllib.parse
@@ -18,6 +17,7 @@ from ratelimit.mixins import RatelimitMixin
 
 import backtosql
 import dash.models
+import structlog
 from redshiftapi import db
 from utils import metrics_compat
 from utils import request_signer
@@ -25,7 +25,7 @@ from utils import threads
 
 from . import config
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 CACHE_KEY_FMT = "bizwire_promotion_export_{}"
 VALID_US_STATES = [

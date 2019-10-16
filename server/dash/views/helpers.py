@@ -1,5 +1,4 @@
 import datetime
-import logging
 from decimal import Decimal
 
 import dateutil.parser
@@ -10,6 +9,7 @@ from django.db.models import Q
 
 import automation
 import automation.autopilot
+import structlog
 import zemauth.models
 from dash import constants
 from dash import models
@@ -27,7 +27,7 @@ STATS_END_DELTA = 1
 
 SPECIAL_COLUMNS = ["performance", "styles"]
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 
 def parse_datetime(dt_string):

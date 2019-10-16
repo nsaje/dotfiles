@@ -1,5 +1,4 @@
 import datetime
-import logging
 import string
 from functools import partial
 
@@ -11,12 +10,13 @@ from django.db import transaction
 from django.utils.crypto import get_random_string
 from ua_parser import user_agent_parser
 
+import structlog
 from utils import dates_helper
 from utils import email_helper
 from utils import threads
 from zemauth import models
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 IP_INFO_TIMEOUT_SECONDS = 0.5
 IP_INFO_URL = "https://ipinfo.io/{ip}/json"

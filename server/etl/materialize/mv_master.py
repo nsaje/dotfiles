@@ -1,4 +1,3 @@
-import logging
 from collections import defaultdict
 from functools import partial
 
@@ -6,6 +5,7 @@ from dateutil import rrule
 
 import backtosql
 import dash.models
+import structlog
 from etl import helpers
 from etl import models
 from etl import redshift
@@ -14,7 +14,7 @@ from redshiftapi import db
 
 from .materialize import Materialize
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 
 class MasterView(Materialize):
@@ -37,15 +37,12 @@ class MasterView(Materialize):
 
             with db.get_write_stats_transaction():
                 with db.get_write_stats_cursor() as c:
-                    logger.info('Deleting data from table "%s" for day %s, job %s', self.TABLE_NAME, date, self.job_id)
+                    logger.info("Deleting data from table", table=self.TABLE_NAME, date=date, job=self.job_id)
                     sql, params = redshift.prepare_daily_delete_query(self.TABLE_NAME, date, self.account_id)
                     c.execute(sql, params)
 
                     logger.info(
-                        'Running insert traffic data into table "%s" for day %s, job %s',
-                        self.TABLE_NAME,
-                        date,
-                        self.job_id,
+                        "Running insert traffic data into table", table=self.TABLE_NAME, date=date, job=self.job_id
                     )
                     sql, params = self.prepare_insert_traffic_data_query(date)
                     c.execute(sql, params)
@@ -53,7 +50,7 @@ class MasterView(Materialize):
                     # generate csv in transaction as it needs data created in it
                     s3_path = s3.upload_csv(self.TABLE_NAME, date, self.job_id, partial(self.generate_rows, c, date))
 
-                    logger.info('Copying CSV to table "%s" for day %s, job %s', self.TABLE_NAME, date, self.job_id)
+                    logger.info("Copying CSV to table", table=self.TABLE_NAME, date=date, job=self.job_id)
                     sql, params = redshift.prepare_copy_query(s3_path, self.TABLE_NAME)
                     c.execute(sql, params)
 
@@ -98,10 +95,10 @@ class MasterView(Materialize):
 
             if len(list(rows_by_postclick_source.keys())) > 1:
                 logger.info(
-                    "Postclick stats for a single ad group (%s) from different sources %s, date %s",
-                    ad_group_id,
-                    list(rows_by_postclick_source.keys()),
-                    date,
+                    "Postclick stats for a single ad group from different sources",
+                    ad_group=ad_group_id,
+                    sources=list(rows_by_postclick_source.keys()),
+                    date=date,
                 )
 
             rows = helpers.get_highest_priority_postclick_source(rows_by_postclick_source)
@@ -109,11 +106,11 @@ class MasterView(Materialize):
             for row in rows:
                 source_slug = helpers.extract_source_slug(row.source_slug)
                 if source_slug not in self.sources_slug_map:
-                    logger.info("Got postclick stats for unknown source: %s", row.source_slug)
+                    logger.info("Got postclick stats for unknown source", source=row.source_slug)
                     continue
 
                 if row.ad_group_id not in self.ad_groups_map:
-                    logger.info("Got postclick stats for unknown ad group: %s", row.ad_group_id)
+                    logger.info("Got postclick stats for unknown ad group", ad_group=row.ad_group_id)
                     continue
 
                 source = self.sources_slug_map[source_slug]

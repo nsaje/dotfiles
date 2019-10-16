@@ -1,6 +1,6 @@
 # isort:skip_file
 import html
-import logging
+import structlog
 import traceback
 import re
 from decimal import Decimal
@@ -20,7 +20,7 @@ import zemauth.models
 
 from utils import dates_helper
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 WHITELABEL_PRODUCTS = {
     dash.constants.Whitelabel.GREENPARK: "Telescope",

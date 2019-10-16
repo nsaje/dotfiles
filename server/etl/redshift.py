@@ -1,10 +1,10 @@
 import gzip
-import logging
 import os.path
 
 from django.conf import settings
 
 import backtosql
+import structlog
 from redshiftapi import db
 from utils import s3helpers
 
@@ -15,7 +15,7 @@ MATERIALIZED_VIEWS_REPLICATION_S3_PREFIX = "materialized_views_replication"
 DUMP_S3_PREFIX = "debug_dumps"
 S3_FILE_URI = "s3://{bucket_name}/{key}"
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 
 def unload_table(
@@ -28,10 +28,10 @@ def unload_table(
         "{}-{}-{}-{}".format(table_name, date_from.strftime("%Y-%m-%d"), date_to.strftime("%Y-%m-%d"), account_id or 0),
     )
     with db.get_write_stats_cursor() as c:
-        logger.info('Unloading table "%s" to S3 path "%s"', table_name, s3_path)
+        logger.info("Unloading table to S3 path", table=table_name, s3_path=s3_path)
         sql, params = prepare_unload_csv_query(s3_path, table_name, date_from, date_to, account_id)
         c.execute(sql, params)
-        logger.info('Unloaded table "%s" to S3 path "%s"', table_name, s3_path)
+        logger.info("Unloaded table to S3 path", table=table_name, s3_path=s3_path)
     return s3_path + "manifest"
 
 
@@ -39,12 +39,12 @@ def refresh_materialized_rds_table(s3_path, table_name, bucket_name):
     with db.get_write_stats_transaction():
         with db.get_write_stats_cursor() as c:
             delete_from_table(table_name)
-            logger.info('Unloading table "%s" to S3 path "%s"', table_name, s3_path)
+            logger.info("Unloading table to S3 path", table=table_name, s3_path=s3_path)
             sql, params = prepare_copy_query(
                 s3_path, table_name, null_as="$NA$", bucket_name=bucket_name, truncate_columns=True
             )
             c.execute(sql, params)
-            logger.info('Unloaded table "%s" to S3 path "%s"', table_name, s3_path)
+            logger.info("Unloaded table to S3 path", table=table_name, s3_path=s3_path)
 
 
 def unload_table_tz(
@@ -57,17 +57,19 @@ def unload_table_tz(
         "{}-{}-{}-{}".format(table_name, date_from.strftime("%Y-%m-%d"), date_to.strftime("%Y-%m-%d"), account_id or 0),
     )
     with db.get_write_stats_cursor() as c:
-        logger.info('Unloading table "%s" to S3 path "%s"', table_name, s3_path)
+        logger.info("Unloading table to S3 path", table=table_name, s3_path=s3_path)
         sql, params = prepare_unload_tz_query(s3_path, table_name, date_from, date_to, account_id)
         c.execute(sql, params)
-        logger.info('Unloaded table "%s" to S3 path "%s"', table_name, s3_path)
+        logger.info("Unloaded table to S3 path", table=table_name, s3_path=s3_path)
     return s3_path + "manifest"
 
 
 def update_table_from_s3(db_name, s3_manifest_path, table_name, date_from, date_to, account_id=None):
     with db.get_write_stats_transaction(db_name):
         with db.get_write_stats_cursor(db_name) as c:
-            logger.info('Loading table "%s" into replica "%s" from S3 path "%s"', table_name, db_name, s3_manifest_path)
+            logger.info(
+                "Loading table into replica from S3 path", table=table_name, db_name=db_name, s3_path=s3_manifest_path
+            )
             sql, params = prepare_date_range_delete_query(table_name, date_from, date_to, account_id)
             c.execute(sql, params)
 
@@ -83,7 +85,9 @@ def update_table_from_s3(db_name, s3_manifest_path, table_name, date_from, date_
             )
             c.execute(sql, params)
 
-            logger.info('Loaded table "%s" into replica "%s" from S3 path "%s"', table_name, db_name, s3_manifest_path)
+            logger.info(
+                "Loaded table into replica from S3 path", table=table_name, db_name=db_name, s3_path=s3_manifest_path
+            )
 
 
 def update_table_from_s3_postgres(
@@ -201,9 +205,9 @@ def prepare_date_range_delete_query(table_name, date_from, date_to, account_id):
 def delete_from_table(table_name):
     sql = backtosql.generate_sql("etl_delete_table_mv_rds.sql", {"table": table_name})
     with db.get_stats_cursor() as c:
-        logger.info("Will truncate table %s", table_name)
+        logger.info("Will truncate table", table=table_name)
         c.execute(sql)
-        logger.info("Table %s truncated", table_name)
+        logger.info("Table truncated", table=table_name)
 
 
 def get_last_stl_load_error():

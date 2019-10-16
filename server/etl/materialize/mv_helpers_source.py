@@ -1,7 +1,6 @@
-import logging
-
 import backtosql
 import dash.models
+import structlog
 from etl import helpers
 from etl import redshift
 from etl import s3
@@ -9,7 +8,7 @@ from redshiftapi import db
 
 from .materialize import Materialize
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 
 class MVHelpersSource(Materialize):
@@ -25,10 +24,10 @@ class MVHelpersSource(Materialize):
                 sql = backtosql.generate_sql("etl_create_temp_table_mvh_source.sql", None)
                 c.execute(sql)
 
-                logger.info('Copying CSV to table "%s", job %s', self.TABLE_NAME, self.job_id)
+                logger.info("Copying CSV to table", table=self.TABLE_NAME, job=self.job_id)
                 sql, params = redshift.prepare_copy_query(s3_path, self.TABLE_NAME)
                 c.execute(sql, params)
-                logger.info('Copied CSV to table "%s", job %s', self.TABLE_NAME, self.job_id)
+                logger.info("Copied CSV to table", table=self.TABLE_NAME, job=self.job_id)
 
     def generate_rows(self):
         sources = dash.models.Source.objects.all().order_by("id")

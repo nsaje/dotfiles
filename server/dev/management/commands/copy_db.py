@@ -1,12 +1,11 @@
-import logging
-
 from django.conf import settings
 from django.db import connections
 
+import structlog
 from utils.command_helpers import Z1Command
 from utils.command_helpers import set_logger_verbosity
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 
 class Command(Z1Command):
@@ -30,7 +29,7 @@ class Command(Z1Command):
     def copy_db(self, cursor, src_db_name, src_db_owner, new_db_name):
         sql = "CREATE DATABASE {} WITH TEMPLATE {} OWNER {}".format(new_db_name, src_db_name, src_db_owner)
 
-        logger.info('Copying database "{}" to "{}"'.format(src_db_name, new_db_name))
+        logger.info("Copying database", src_db=src_db_name, new_db=new_db_name)
         cursor.execute(sql)
         logger.info("Database copied")
 

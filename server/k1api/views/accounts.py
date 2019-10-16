@@ -1,4 +1,3 @@
-import logging
 from collections import defaultdict
 
 from django.db.models import Prefetch
@@ -6,11 +5,12 @@ from django.db.models import Q
 
 import dash.constants
 import dash.models
+import structlog
 from utils import db_router
 
 from .base import K1APIView
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 
 OUTBRAIN_SOURCE_ID = 3

@@ -2,7 +2,6 @@ import abc
 import datetime
 import ftplib
 import io
-import logging
 import os.path
 import random
 import string
@@ -18,6 +17,7 @@ import stats.api_breakdowns
 import stats.api_reports
 import stats.constants
 import stats.helpers
+import structlog
 import utils.columns
 import utils.dates_helper
 import utils.email_helper
@@ -34,7 +34,7 @@ from . import format_helper
 from . import helpers
 from .reportjob import ReportJob
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 BATCH_ROWS = 100000
 
@@ -56,11 +56,11 @@ def create_job(user, query, scheduled_report=None):
 # if soft time limit is changed, visibility timeout on the SQS queue should be changed as well!
 @celery.app.task(acks_late=True, name="reports_execute", soft_time_limit=39 * 60)
 def execute(job_id, **kwargs):
-    logger.info("Start job executor for report id: %d", job_id)
+    logger.info("Start job executor for report", job=job_id)
     job = ReportJob.objects.get(pk=job_id)
     executor = ReportJobExecutor(job)
     executor.execute(**kwargs)
-    logger.info("Done job executor for report id: %d", job_id)
+    logger.info("Done job executor for report", job=job_id)
 
 
 def clean_up_old_in_progress_reports(created_before):

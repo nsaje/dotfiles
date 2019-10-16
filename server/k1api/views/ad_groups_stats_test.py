@@ -1,6 +1,5 @@
 import datetime
 import json
-import logging
 
 from django.urls import reverse
 from mock import patch
@@ -9,12 +8,13 @@ import dash.constants
 import dash.features.ga
 import dash.features.geolocation
 import dash.models
+import structlog
 from redshiftapi import api_quickstats
 
 from .base_test import K1APIBaseTest
 
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
+logger = structlog.get_logger(__name__)
+logger.setLevel(structlog.stdlib.INFO)
 
 
 class AdGroupsTest(K1APIBaseTest):

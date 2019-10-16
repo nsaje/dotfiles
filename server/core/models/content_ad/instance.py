@@ -1,14 +1,13 @@
-import logging
-
 from django.db import transaction
 
 import dash.constants
+import structlog
 import utils.email_helper
 import utils.exc
 import utils.k1_helper
 import utils.redirector_helper
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 OEN_ACCOUNT_ID = 305
 

@@ -1,18 +1,18 @@
 import contextlib
-import logging
 from collections import namedtuple
 
 from django.core.cache import caches
 from django.db import connections
 from django.db import transaction
 
+import structlog
 import utils.db_router
 from utils import cache_helper
 from utils import metrics_compat
 
 from . import queries
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 CACHE_MISS_FLAG = None
 
@@ -93,7 +93,7 @@ def execute_query(sql, params, query_name, cache_name="breakdowns_rs", refresh_c
 
     if results is CACHE_MISS_FLAG or refresh_cache:
         metrics_compat.incr("redshiftapi.cache", 1, outcome="miss")
-        logger.debug("Cache miss %s (%s)", cache_key, query_name)
+        logger.debug("Cache miss", cache_key=cache_key, query_name=query_name)
 
         with get_stats_cursor() as cursor:
             with metrics_compat.block_timer(
@@ -110,6 +110,6 @@ def execute_query(sql, params, query_name, cache_name="breakdowns_rs", refresh_c
                 logger.exception("Could not set Redshift cache")
     else:
         metrics_compat.incr("redshiftapi.cache", 1, outcome="hit")
-        logger.debug("Cache hit %s (%s)", cache_key, query_name)
+        logger.debug("Cache hit", cache_key=cache_key, query_name=query_name)
 
     return results

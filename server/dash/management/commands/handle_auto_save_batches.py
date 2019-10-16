@@ -1,11 +1,11 @@
 import datetime
-import logging
 
+import structlog
 from dash.features.contentupload import upload
 from utils import dates_helper
 from utils.command_helpers import Z1Command
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 
 AUTO_SAVE_HOURS = 2

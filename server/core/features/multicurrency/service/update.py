@@ -1,15 +1,14 @@
-import logging
-
 from django.db import transaction
 
 import core.models
 import dash.constants
+import structlog
 from utils import dates_helper
 
 from ..currency_exchange_rate import CurrencyExchangeRate
 from . import ecb
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 
 class MissingExchangeRateMappingException(Exception):
@@ -24,11 +23,11 @@ def update_exchange_rates(currencies=None):
         if currency == dash.constants.Currency.USD:
             continue
 
-        logger.info("Updating for currency: %s", currency)
+        logger.info("Updating for currency", currency=currency)
         try:
             rate = _get_exchange_rate(currency)
         except MissingExchangeRateMappingException:
-            logger.warning("Missing exchange rate mapping for currency: %s", currency)
+            logger.warning("Missing exchange rate mapping for currency", currency=currency)
 
         _update_exchange_rate(currency, rate)
         _update_accounts(currency)

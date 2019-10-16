@@ -1,11 +1,10 @@
-import logging
-
 import automation.autopilot
+import structlog
 import utils.slack
 from utils import metrics_compat
 from utils.command_helpers import Z1Command
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 ALERT_MSG = """Autopilot terminated with an exception today ({}). PagerDuty alert might not have been sent. Check <https://sentry.io/zemanta/eins-1/|sentry>."""
 

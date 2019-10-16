@@ -1,15 +1,15 @@
 # -*- coding: utf-8 -*-
 
-import logging
 import mimetypes
 
 from django.conf import settings
 
+import structlog
 from utils import api_common
 from utils import exc
 from utils import s3helpers
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 
 class ExportApiView(api_common.BaseApiView):

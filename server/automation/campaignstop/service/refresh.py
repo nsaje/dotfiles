@@ -1,16 +1,15 @@
-import logging
-
 import core.features.yahoo_accounts
 import core.models
 import dash.constants
 import dash.features.realtimestats
+import structlog
 from utils import dates_helper
 from utils import metrics_compat
 
 from .. import RealTimeCampaignDataHistory
 from .. import RealTimeDataHistory
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 
 CURRENT_DATA_LIMIT_SECONDS = 120
@@ -56,7 +55,7 @@ def _refresh_ad_groups_realtime_data(campaign):
         try:
             stats = dash.features.realtimestats.get_ad_group_sources_stats_without_caching(ad_group, use_source_tz=True)
         except Exception:
-            logger.exception("Failed refreshing realtime data for ad group: %s", ad_group.id)
+            logger.exception("Failed refreshing realtime data for ad group", ad_group_id=ad_group.id)
             metrics_compat.incr("campaignstop.refresh.error", 1, level="adgroup")
             continue
 

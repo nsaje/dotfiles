@@ -1,4 +1,3 @@
-import logging
 import time
 
 from django.conf import settings
@@ -8,11 +7,12 @@ from django.views.decorators.csrf import csrf_exempt
 from rest_framework import permissions
 from rest_framework.views import APIView
 
+import structlog
 from utils import influx_helper
 from utils import metrics_compat
 from utils.rest_common import authentication
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 
 class K1APIView(APIView):

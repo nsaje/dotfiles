@@ -1,9 +1,9 @@
 import json
-import logging
 from functools import partial
 
 from dateutil import rrule
 
+import structlog
 from etl import helpers
 from etl import redshift
 from etl import s3
@@ -12,7 +12,7 @@ from redshiftapi import db
 from .materialize import Materialize
 from .mv_master import MasterView
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 
 class MVConversions(Materialize):
@@ -33,14 +33,14 @@ class MVConversions(Materialize):
 
             with db.get_write_stats_transaction():
                 with db.get_write_stats_cursor() as c:
-                    logger.info('Deleting data from table "%s" for day %s, job %s', self.TABLE_NAME, date, self.job_id)
+                    logger.info("Deleting data from table", table=self.TABLE_NAME, date=date, job=self.job_id)
                     sql, params = redshift.prepare_daily_delete_query(self.TABLE_NAME, date, self.account_id)
                     c.execute(sql, params)
 
                     # generate csv in transaction as it needs data created in it
                     s3_path = s3.upload_csv(self.TABLE_NAME, date, self.job_id, partial(self.generate_rows, c, date))
 
-                    logger.info('Copying CSV to table "%s" for day %s, job %s', self.TABLE_NAME, date, self.job_id)
+                    logger.info("Copying CSV to table", table=self.TABLE_NAME, date=date, job=self.job_id)
                     sql, params = redshift.prepare_copy_query(s3_path, self.TABLE_NAME)
                     c.execute(sql, params)
 

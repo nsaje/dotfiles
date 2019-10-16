@@ -1,17 +1,17 @@
 import datetime
-import logging
 
 from django.db import transaction
 
 import automation.campaignstop
 import redshiftapi.api_breakdowns
+import structlog
 import utils.exc
 from dash import constants
 from dash import models
 from utils import dates_helper
 from utils.command_helpers import Z1Command
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 DAYS_INACTIVE = 90
 
@@ -25,7 +25,7 @@ class Command(Z1Command):
         adgroups, campaigns = _auto_archive_inactive_entities(
             inactive_since=dates_helper.local_today() - datetime.timedelta(days=DAYS_INACTIVE)
         )
-        logger.info("Archived {} ad groups and {} campaigns.".format(adgroups, campaigns))
+        logger.info("Archived ad groups and campaigns.", num_ad_groups=adgroups, num_campaigns=campaigns)
 
 
 def _auto_archive_inactive_entities(inactive_since, whitelist=None):

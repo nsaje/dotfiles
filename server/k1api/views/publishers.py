@@ -1,5 +1,3 @@
-import logging
-
 from django.db.models import F
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
@@ -7,11 +5,12 @@ from django.views.decorators.cache import cache_page
 import core.features.bid_modifiers
 import dash.constants
 import dash.models
+import structlog
 from utils import db_router
 
 from .base import K1APIView
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 
 class PublisherGroupsView(K1APIView):

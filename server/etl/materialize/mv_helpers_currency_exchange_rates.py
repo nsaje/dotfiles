@@ -1,17 +1,16 @@
-import logging
-
 from dateutil import rrule
 
 import backtosql
 import core.features.multicurrency
 import dash.models
+import structlog
 from etl import redshift
 from etl import s3
 from redshiftapi import db
 
 from .materialize import Materialize
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 
 class MVHelpersCurrencyExchangeRates(Materialize):
@@ -27,10 +26,10 @@ class MVHelpersCurrencyExchangeRates(Materialize):
                 sql = backtosql.generate_sql("etl_create_temp_table_mvh_currency_exchange_rates.sql", None)
                 c.execute(sql)
 
-                logger.info('Copying CSV to table "%s", job %s', self.TABLE_NAME, self.job_id)
+                logger.info("Copying CSV to table", table=self.TABLE_NAME, job=self.job_id)
                 sql, params = redshift.prepare_copy_query(s3_path, self.TABLE_NAME)
                 c.execute(sql, params)
-                logger.info('Copied CSV to table "%s", job %s', self.TABLE_NAME, self.job_id)
+                logger.info("Copied CSV to table", table=self.TABLE_NAME, job=self.job_id)
 
     def generate_rows(self):
         accounts = dash.models.Account.objects.filter(currency__isnull=False).order_by("pk")

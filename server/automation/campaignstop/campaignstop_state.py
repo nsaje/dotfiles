@@ -1,9 +1,8 @@
-import logging
-
 from django.db import models
 
 import core.models
 import dash.constants
+import structlog
 import zemauth.models
 from utils import dates_helper
 from utils import email_helper
@@ -12,7 +11,7 @@ from utils import url_helper
 
 from . import constants
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 
 class CampaignStopState(models.Model):

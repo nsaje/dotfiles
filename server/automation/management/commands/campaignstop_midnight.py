@@ -1,14 +1,13 @@
-import logging
-
 from django.db.models import Q
 
 import automation.campaignstop
 import core.models
+import structlog
 from utils import dates_helper
 from utils import metrics_compat
 from utils.command_helpers import Z1Command
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 
 class Command(Z1Command):

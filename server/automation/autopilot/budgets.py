@@ -1,4 +1,3 @@
-import logging
 import operator
 from decimal import ROUND_CEILING
 from decimal import ROUND_DOWN
@@ -10,12 +9,13 @@ import core.features.bcm
 import dash
 import dash.constants
 import dash.views.helpers
+import structlog
 
 from . import constants
 from . import helpers
 from . import settings
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 
 def get_autopilot_daily_budget_recommendations(

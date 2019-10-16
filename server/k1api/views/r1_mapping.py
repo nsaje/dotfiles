@@ -1,15 +1,14 @@
-import logging
-
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
 
 import dash.constants
 import dash.models
+import structlog
 from utils import db_router
 
 from .base import K1APIView
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 
 class R1MappingView(K1APIView):

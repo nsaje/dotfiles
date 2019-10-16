@@ -1,5 +1,4 @@
 import datetime
-import logging
 import traceback
 from collections import defaultdict
 from decimal import Decimal
@@ -9,6 +8,7 @@ from django.db import transaction
 import dash.constants
 import dash.models
 import redshiftapi.api_breakdowns
+import structlog
 from automation import models
 from etl import models as etl_models
 from utils import dates_helper
@@ -24,7 +24,7 @@ from . import helpers
 from . import prefetch
 from .campaign import calculate_campaigns_daily_budget
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 SKIP_CAMPAIGN_BID_AUTOPILOT_AGENCIES = (220,)
 
@@ -52,7 +52,7 @@ def run_autopilot(
         processed_ad_group_ids = helpers.get_processed_autopilot_ad_group_ids(from_date_time)
 
         if processed_ad_group_ids:
-            logger.info("Excluding %s processed ad groups", len(processed_ad_group_ids))
+            logger.info("Excluding processed ad groups", num_excluded=len(processed_ad_group_ids))
 
     entities = helpers.get_autopilot_entities(
         ad_group=ad_group, campaign=campaign, excluded_ad_group_ids=processed_ad_group_ids
@@ -135,11 +135,11 @@ def run_autopilot(
                             ad_group, changes_data, bid_changes, budget_changes
                         )
                     except Exception:
-                        logger.exception("Autopilot failed operating on ad group %s", str(ad_group))
+                        logger.exception("Autopilot failed operating on ad group", ad_group_id=str(ad_group))
                         failed_ad_groups.append(ad_group)
 
         except Exception:
-            logger.exception("Autopilot failed operating on campaign %s", str(campaign))
+            logger.exception("Autopilot failed operating on campaign", campaign_id=str(campaign))
             failed_campaigns.append(campaign)
 
     if failed_campaigns:
@@ -187,7 +187,9 @@ def _save_changes_campaign(
                 campaign=campaign,
             )
         except Exception:
-            logger.exception("Autopilot failed saving changes on autopilot campaign's ad group %s", str(ad_group))
+            logger.exception(
+                "Autopilot failed saving changes on autopilot campaign's ad group", ad_group_id=str(ad_group)
+            )
             failed_ad_groups.append(ad_group)
 
     return failed_ad_groups
@@ -216,7 +218,7 @@ def _filter_adgroups_with_data(ad_groups, data):
     result = {}
     for ad_group, value in ad_groups.items():
         if ad_group not in data:
-            logger.warning("Data for ad group %s not prefetched in AP", str(ad_group))
+            logger.warning("Data for ad group not prefetched in AP", ad_group_id=str(ad_group))
             continue
         result[ad_group] = value
     return result

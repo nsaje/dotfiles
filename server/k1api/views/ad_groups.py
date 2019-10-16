@@ -1,17 +1,16 @@
-import logging
-
 from django.conf import settings
 
 import automation.campaignstop.service
 import dash.constants
 import dash.features.custom_flags
 import dash.models
+import structlog
 from core.features.publisher_groups import publisher_group_helpers
 from utils import db_router
 
 from .base import K1APIView
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 
 EVENT_RETARGET_ADGROUP = "redirect_adgroup"

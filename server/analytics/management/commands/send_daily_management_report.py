@@ -1,12 +1,12 @@
 import datetime
-import logging
 
 import analytics.management_report
+import structlog
 import utils.email_helper
 from utils.command_helpers import Z1Command
 from utils.command_helpers import set_logger_verbosity
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 
 class Command(Z1Command):

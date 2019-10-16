@@ -1,5 +1,4 @@
 import datetime
-import logging
 from decimal import Decimal
 
 import pytz
@@ -7,6 +6,7 @@ from django.conf import settings
 from django.db import connections
 
 import dash.models
+import structlog
 import utils.email_helper
 import utils.pagerduty_helper as pgdh
 from etl import helpers
@@ -14,7 +14,7 @@ from utils import converters
 from utils import csv_utils
 from utils.command_helpers import Z1Command
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 
 class Command(Z1Command):

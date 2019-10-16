@@ -1,12 +1,12 @@
 import datetime
-import logging
 
 import etl.redshift
+import structlog
 from etl import refresh
 from utils import dates_helper
 from utils.command_helpers import Z1Command
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 
 class Command(Z1Command):
@@ -28,6 +28,6 @@ class Command(Z1Command):
 
         job_id = refresh.generate_job_id(None)
         for table in tables:
-            logger.info("Copying table %s into %s" % (table, to_db_alias))
+            logger.info("Copying table", table=table, into=to_db_alias)
             s3_path = etl.redshift.unload_table(job_id, table, date_from, date_to)
             etl.redshift.update_table_from_s3(to_db_alias, s3_path, table, date_from, date_to)

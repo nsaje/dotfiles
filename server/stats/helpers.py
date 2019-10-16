@@ -1,6 +1,5 @@
 import collections
 import datetime
-import logging
 
 from django.db.models import Model
 from django.db.models import QuerySet
@@ -8,12 +7,13 @@ from django.db.models import QuerySet
 import core.features.bid_modifiers
 import dash.constants
 import dash.models
+import structlog
 from stats import constants
 from stats import fields
 from utils import exc
 from utils import sort_helper
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 Goals = collections.namedtuple("Goals", "campaign_goals, conversion_goals, campaign_goal_values, pixels, primary_goals")
 

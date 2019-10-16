@@ -1,13 +1,13 @@
-import logging
 import traceback
 from functools import wraps
 
 import requests
 from django.conf import settings
 
+import structlog
 from utils.constant_base import ConstantBase
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 
 class PagerDutyEventType(ConstantBase):
@@ -94,10 +94,10 @@ def _post_event(command, event_type, incident_key, description, event_severity=N
         response = requests.post(settings.PAGER_DUTY_URL, json=data, timeout=timeout)
 
         if not response.ok:
-            logger.error("PagerDuty %s event failed due to status code: %s", command, response.status_code)
+            logger.error("PagerDuty event failed due to status code", command=command, status_code=response.status_code)
 
         else:
-            logger.info("PagerDuty %s event succeeded", command)
+            logger.info("PagerDuty event succeeded", command=command)
 
     except requests.exceptions.Timeout:
-        logger.error("PagerDuty %s event failed due to timeout", command)
+        logger.error("PagerDuty event failed due to timeout", command=command)

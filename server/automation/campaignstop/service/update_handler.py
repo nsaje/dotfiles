@@ -1,10 +1,10 @@
-import logging
 import time
 from collections import defaultdict
 
 from django.conf import settings
 
 import core.models
+import structlog
 from utils import sqs_helper
 
 from .. import CampaignStopState
@@ -14,7 +14,7 @@ from . import update_campaigns_end_date
 from . import update_campaigns_start_date
 from . import update_campaigns_state
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 
 MAX_MESSAGES_TO_FETCH = 5000
@@ -54,7 +54,7 @@ def _get_updates_by_campaign(messages):
     for message in messages:
         campaign_id = message["campaign_id"]
         if campaign_id not in campaigns_map:
-            logger.warning("Received an update for non-existing campaign id: %s", campaign_id)
+            logger.warning("Received an update for non-existing campaign", campaign_id=campaign_id)
             continue
         campaign = campaigns_map[campaign_id]
         updates_by_campaign[campaign].add(message["type"])
@@ -102,12 +102,12 @@ def _extract_campaigns(messages):
 
 
 def _handle_initialize(campaigns):
-    logger.info("Handle initialize campaign: campaigns=%s", [campaign.id for campaign in campaigns])
+    logger.info("Handle initialize campaign", campaigns=[campaign.id for campaign in campaigns])
     _full_check(campaigns)
 
 
 def _handle_budget_updates(campaigns):
-    logger.info("Handle campaign budget update: campaigns=%s", [campaign.id for campaign in campaigns])
+    logger.info("Handle campaign budget update", campaigns=[campaign.id for campaign in campaigns])
     _full_check(campaigns)
     _unset_pending_updates(campaigns)
 
@@ -119,7 +119,7 @@ def _unset_pending_updates(campaigns):
 
 
 def _handle_campaignstopstate_change(campaigns):
-    logger.info("Handle campaign stop state change: campaigns=%s", [campaign.id for campaign in campaigns])
+    logger.info("Handle campaign stop state change", campaigns=[campaign.id for campaign in campaigns])
     update_campaigns_start_date(campaigns)
 
 
@@ -132,5 +132,5 @@ def _full_check(campaigns):
 
 
 def _handle_daily_cap_updates(campaigns):
-    logger.info("Handle campaign daily cap update: campaigns=%s", [campaign.id for campaign in campaigns])
+    logger.info("Handle campaign daily cap update", campaigns=[campaign.id for campaign in campaigns])
     mark_almost_depleted_campaigns(campaigns)

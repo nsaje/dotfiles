@@ -1,11 +1,11 @@
 import datetime
-import logging
 
+import structlog
 from dash.features.reports.reports import clean_up_old_in_progress_reports
 from utils import dates_helper
 from utils.command_helpers import Z1Command
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 IN_PROGRESS_MINUTES = 60
 
@@ -17,4 +17,4 @@ class Command(Z1Command):
         failed_count = clean_up_old_in_progress_reports(
             created_before=dates_helper.utc_now() - datetime.timedelta(minutes=IN_PROGRESS_MINUTES)
         )
-        logger.info("Moved %s reports to FAILED.", failed_count)
+        logger.info("Moved reports to FAILED.", failed_count=failed_count)

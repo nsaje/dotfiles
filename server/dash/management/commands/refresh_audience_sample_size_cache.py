@@ -1,12 +1,11 @@
-import logging
-
 import core.features.audiences
 import core.models
 import redshiftapi
+import structlog
 from utils import metrics_compat
 from utils.command_helpers import Z1Command
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 
 class Command(Z1Command):
@@ -23,9 +22,9 @@ class Command(Z1Command):
         account_id = options.get("account_id")
         if account_id:
             audiences = audiences.filter(pixel__account_id=account_id)
-            logger.info("Refreshing audience sample size for account id %s", account_id)
+            logger.info("Refreshing audience sample size for account", account=account_id)
 
-        logger.info("About to refresh sample size cache for %s audiences", audiences.count())
+        logger.info("About to refresh sample size cache for audiences", audience_count=audiences.count())
 
         for audience in audiences:
             rules = audience.audiencerule_set.all()

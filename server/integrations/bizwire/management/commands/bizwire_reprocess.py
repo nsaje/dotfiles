@@ -1,10 +1,10 @@
-import logging
 import sys
 
+import structlog
 from integrations.bizwire.internal import reprocess
 from utils import command_helpers
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 
 class Command(command_helpers.Z1Command):
@@ -28,7 +28,7 @@ class Command(command_helpers.Z1Command):
         keys = self._get_keys_to_reprocess(options)
         if self.purge_candidates:
             num_removed = reprocess.purge_candidates(keys)
-            logger.info("Removed %s candidates.", num_removed)
+            logger.info("Removed candidates.", num_removed=num_removed)
         reprocess.invoke_lambdas(keys)
 
     def _get_keys_to_reprocess(self, options):

@@ -1,5 +1,4 @@
 import json
-import logging
 import urllib.error
 import urllib.parse
 import urllib.request
@@ -12,12 +11,13 @@ import dash.constants
 import dash.features.ga
 import dash.features.geolocation
 import dash.models
+import structlog
 from utils import email_helper
 
 from .base_test import K1APIBaseTest
 
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
+logger = structlog.get_logger(__name__)
+logger.setLevel(structlog.stdlib.INFO)
 
 
 class OutbrainTest(K1APIBaseTest):

@@ -21,6 +21,7 @@ from django.template import VariableDoesNotExist
 import dash.models
 import demo
 import demo.models
+import structlog
 import zemauth.models
 from dash import constants
 from utils import demo_anonymizer
@@ -31,7 +32,7 @@ from utils import s3helpers
 from utils import unique_ordered_list
 from utils.command_helpers import Z1Command
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 demo_anonymizer.set_fake_factory(faker.Faker())
 
@@ -113,9 +114,9 @@ class Command(Z1Command):
     @_postgres_read_only(using="default")
     def handle(self, *args, **options):
         if options.get("verbosity", 0) > 1:
-            logger.setLevel(logging.DEBUG)
+            logger.setLevel(structlog.stdlib.DEBUG)
             ch = logging.StreamHandler()
-            ch.setLevel(logging.DEBUG)
+            ch.setLevel(structlog.stdlib.DEBUG)
             logger.addHandler(ch)
 
         signal.signal(signal.SIGALRM, alarm_handler)

@@ -1,17 +1,17 @@
 import copy
 import datetime
 import json
-import logging
 
 import jwt
 import requests
 from django.conf import settings
 
+import structlog
 from dash import constants
 from dash import models
 from utils import dates_helper
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 APPROVAL_STATUS_URL = "/service/approvalstatus"
 CONTENT_AD_STATUS_URL = "/service/contentadstatus"
@@ -82,7 +82,7 @@ def sync_batch(batch):
 
     success = sync_ad_groups({ad_group})
     if not success:
-        logger.warning("Fail to sync ad_groups to SSPD for batch %s.", batch.id)
+        logger.warning("Fail to sync ad_groups to SSPD for batch", batch=batch.id)
         return
 
     content_ads = _get_content_ads(batch)
@@ -91,17 +91,17 @@ def sync_batch(batch):
 
     success = sync_sources(sources)
     if not success:
-        logger.warning("Fail to sync sources to SSPD for batch %s.", batch.id)
+        logger.warning("Fail to sync sources to SSPD for batch", batch=batch.id)
         return
 
     success = sync_content_ads(content_ads)
     if not success:
-        logger.warning("Fail to sync content_ads to SSPD for batch %s.", batch.id)
+        logger.warning("Fail to sync content_ads to SSPD for batch", batch=batch.id)
         return
 
     success = sync_content_ad_sources(content_ad_sources)
     if not success:
-        logger.warning("Fail to sync content_ad_sources to SSPD for batch %s.", batch.id)
+        logger.warning("Fail to sync content_ad_sources to SSPD for batch", batch=batch.id)
 
 
 def _get_content_ads(batch):
@@ -142,8 +142,8 @@ def sync_sources(sources):
         return response["data"]
     except SSPDApiException:
         return False
-    except Exception as ex:
-        logger.error("Unexpected error: %s", ex)
+    except Exception:
+        logger.exception("Unexpected exception")
         return False
 
 
@@ -169,8 +169,8 @@ def sync_ad_groups(ad_groups):
         return response["data"]
     except SSPDApiException:
         return False
-    except Exception as ex:
-        logger.error("Unexpected error: %s", ex)
+    except Exception:
+        logger.exception("Unexpected exception")
         return False
 
 
@@ -194,8 +194,8 @@ def sync_content_ads(content_ads):
         return response["data"]
     except SSPDApiException:
         return False
-    except Exception as ex:
-        logger.error("Unexpected error: %s", ex)
+    except Exception:
+        logger.exception("Unexpected exception")
         return False
 
 
@@ -217,8 +217,8 @@ def sync_content_ad_sources(content_ad_sources):
         return response["data"]
     except SSPDApiException:
         return False
-    except Exception as ex:
-        logger.error("Unexpected error: %s", ex)
+    except Exception:
+        logger.exception("Unexpected exception")
         return False
 
 

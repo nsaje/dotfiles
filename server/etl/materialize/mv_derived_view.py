@@ -1,8 +1,7 @@
-import logging
-
 from django.utils.functional import cached_property
 
 import backtosql
+import structlog
 from etl import derived_views
 from etl import models
 from etl import redshift
@@ -14,7 +13,7 @@ from .mv_master import MasterView
 from .mv_master_publishers import MasterPublishersView
 from .mv_touchpoint_conversions import MVTouchpointConversions
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 DEPENDENT_COLUMNS = {"agency_id", "account_id", "campaign_id", "ad_group_id", "content_ad_id"}
 

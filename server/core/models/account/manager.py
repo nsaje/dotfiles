@@ -1,11 +1,10 @@
-import logging
-
 from django.db import transaction
 
 import core.common
 import core.features.yahoo_accounts
 import core.models
 import dash.features.custom_flags.constants
+import structlog
 from dash import constants
 from prodops import hacks
 from utils import slack
@@ -14,7 +13,7 @@ from . import exceptions
 from . import model
 from .validation import OUTBRAIN_SALESFORCE_SERVICE_USER
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 
 class AccountManager(core.common.BaseManager):

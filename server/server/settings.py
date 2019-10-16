@@ -10,6 +10,8 @@ https://docs.djangoproject.com/en/dev/ref/settings/
 # isort:skip_file
 import copy
 from datetime import timedelta
+import pythonjsonlogger
+import structlog
 
 from secretcrypt import Secret
 
@@ -267,6 +269,7 @@ LOGGING = {
             "format": "%(asctime)s [%(levelname)s] %(name)s PID=%(process)d trace_id=%(trace_id)s: %(message)s"
         },
         "timestamp": {"format": "%(asctime)s: %(message)s"},
+        "json": {"()": "pythonjsonlogger.jsonlogger.JsonFormatter"},
     },
     "filters": {"trace_id": {"()": "server.logging.trace_id_filter.TraceIdFilter"}},
     "handlers": {
@@ -277,7 +280,7 @@ LOGGING = {
             "formatter": "standard",
             "filters": ["trace_id"],
         },
-        "console": {"level": "DEBUG", "class": "logging.StreamHandler", "formatter": "standard"},
+        "console": {"level": "DEBUG", "class": "logging.StreamHandler", "formatter": "json"},
         "db_handler": {
             "level": "INFO",
             "class": "logging.handlers.WatchedFileHandler",
@@ -310,6 +313,24 @@ LOGGING = {
         "": {"handlers": ["file", "console", "sentry"], "level": "INFO"},
     },
 }
+
+structlog.configure(
+    processors=[
+        structlog.stdlib.filter_by_level,
+        structlog.stdlib.add_logger_name,
+        structlog.stdlib.add_log_level,
+        structlog.stdlib.PositionalArgumentsFormatter(),
+        structlog.processors.StackInfoRenderer(),
+        structlog.processors.format_exc_info,
+        structlog.processors.UnicodeDecoder(),
+        structlog.stdlib.render_to_log_kwargs,
+    ],
+    context_class=dict,
+    logger_factory=structlog.stdlib.LoggerFactory(),
+    wrapper_class=structlog.stdlib.BoundLogger,
+    cache_logger_on_first_use=True,
+)
+
 CELERYD_LOG_FORMAT = LOGGING["formatters"]["standard"]["format"]
 
 if TESTING:

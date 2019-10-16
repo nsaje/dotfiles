@@ -1,5 +1,4 @@
 import datetime
-import logging
 
 import newrelic.agent
 from django.conf import settings
@@ -8,9 +7,10 @@ from django.views.decorators.csrf import csrf_exempt
 
 import dash.models
 import redshiftapi.api_breakdowns
+import structlog
 from utils import request_signer
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 
 @csrf_exempt

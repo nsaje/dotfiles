@@ -1,5 +1,3 @@
-import logging
-
 from django.conf import settings
 from django.db import transaction
 
@@ -7,13 +5,14 @@ import core.common
 import core.models
 import dash.constants
 import dash.retargeting_helper
+import structlog
 import utils.exc
 import utils.k1_helper
 
 from . import exceptions
 from . import model
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 
 class AdGroupSourceManager(core.common.BaseManager):
@@ -161,7 +160,7 @@ class AdGroupSourceManager(core.common.BaseManager):
                 added_ad_group_sources.append(ad_group_source)
             except utils.exc.MissingDataError:
                 # skips ad group sources creation without default sources
-                logger.exception("Exception occurred on campaign with id %s", ad_group.campaign_id)
+                logger.exception("Exception occurred on campaign", campaign=ad_group.campaign_id)
                 continue
 
         if write_history:
@@ -213,7 +212,7 @@ class AdGroupSourceManager(core.common.BaseManager):
                 added_ad_group_sources.append(ad_group_source)
             except utils.exc.MissingDataError:
                 # skips ad group sources creation without default sources
-                logger.exception("Exception occurred on campaign with id %s", ad_group.campaign_id)
+                logger.exception("Exception occurred on campaign", campaign=ad_group.campaign_id)
                 continue
 
         if write_history:

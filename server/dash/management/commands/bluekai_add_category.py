@@ -1,9 +1,8 @@
-import logging
-
+import structlog
 from dash.features.bluekai.service import maintenance
 from utils.command_helpers import Z1Command
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 
 class Command(Z1Command):

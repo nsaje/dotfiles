@@ -1,5 +1,4 @@
 import json
-import logging
 from decimal import Decimal
 
 from django.forms.models import model_to_dict
@@ -7,6 +6,7 @@ from django.forms.models import model_to_dict
 import core.features.bcm
 import core.features.bcm.bcm_slack
 import core.features.multicurrency
+import structlog
 from core.features.bcm import exceptions
 from dash import constants
 from dash import forms
@@ -16,7 +16,7 @@ from utils import api_common
 from utils import exc
 from utils import slack
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 EXCLUDE_ACCOUNTS_LOW_AMOUNT_CHECK = (431, 305)
 

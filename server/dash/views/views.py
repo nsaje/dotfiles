@@ -6,7 +6,6 @@ import hashlib
 import hmac
 import http.client
 import json
-import logging
 import urllib.error
 import urllib.parse
 import urllib.request
@@ -30,6 +29,7 @@ import core.models.helpers
 import core.models.settings.ad_group_source_settings.exceptions
 import demo
 import stats.helpers
+import structlog
 from dash import campaign_goals
 from dash import constants
 from dash import forms
@@ -47,7 +47,7 @@ from utils import lc_helper
 from utils import metrics_compat
 from utils import threads
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 YAHOO_DASH_URL = "https://gemini.yahoo.com/advertiser/{advertiser_id}/campaign/{campaign_id}"
 OUTBRAIN_DASH_URL = (

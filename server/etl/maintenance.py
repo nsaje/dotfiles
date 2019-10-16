@@ -1,9 +1,8 @@
-import logging
-
 import backtosql
+import structlog
 from redshiftapi import db
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 
 def _execute_query(db_name, query, *params):
@@ -12,7 +11,7 @@ def _execute_query(db_name, query, *params):
 
 
 def vacuum(table, delete_only=False, to=None, db_name=None):
-    logger.info("Starting VACUUM table %s", table)
+    logger.info("Starting VACUUM table", table=table)
     if delete_only:
         _execute_query(db_name, "VACUUM DELETE ONLY {}".format(table))
     else:
@@ -20,19 +19,19 @@ def vacuum(table, delete_only=False, to=None, db_name=None):
             _execute_query(db_name, "VACUUM {} TO {} PERCENT".format(table, to))
         else:
             _execute_query(db_name, "VACUUM {}".format(table))
-    logger.info("Finished VACUUM table %s", table)
+    logger.info("Finished VACUUM table", table=table)
 
 
 def analyze(table, db_name=None):
-    logger.info("Starting ANALYZE table %s", table)
+    logger.info("Starting ANALYZE table", table=table)
     _execute_query(db_name, "ANALYZE {}".format(table))
-    logger.info("Finished ANALYZE table %s", table)
+    logger.info("Finished ANALYZE table", table=table)
 
 
 def truncate(table, db_name=None):
-    logger.info("Starting TRUNCATE table %s", table)
+    logger.info("Starting TRUNCATE table", table=table)
     _execute_query(db_name, "TRUNCATE {}".format(table))
-    logger.info("Finished TRUNCATE table %s", table)
+    logger.info("Finished TRUNCATE table", table=table)
 
 
 def stats_min_date():

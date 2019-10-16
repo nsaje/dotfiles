@@ -1,4 +1,3 @@
-import logging
 import time
 
 import djangorestframework_camel_case.util
@@ -10,11 +9,12 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.viewsets import ViewSetMixin
 
+import structlog
 import utils.rest_common.authentication
 from utils import json_helper
 from utils import metrics_compat
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 
 class RESTAPIJSONRenderer(rest_framework.renderers.JSONRenderer):

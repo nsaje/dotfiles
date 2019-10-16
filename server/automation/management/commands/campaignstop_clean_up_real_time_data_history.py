@@ -1,14 +1,13 @@
-import logging
-
 from django.db import connection
 from django.db import transaction
 
 import automation.campaignstop
+import structlog
 import utils.dates_helper
 from utils import metrics_compat
 from utils.command_helpers import Z1Command
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 
 REALTIME_DATA_KEEP_DAYS = 7

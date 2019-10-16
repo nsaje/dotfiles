@@ -1,13 +1,12 @@
-import logging
-
 import backtosql
+import structlog
 from etl import helpers
 from etl import redshift
 from redshiftapi import db
 
 from .materialize import Materialize
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 
 class MasterPublishersView(Materialize):

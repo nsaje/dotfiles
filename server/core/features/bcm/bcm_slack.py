@@ -1,8 +1,7 @@
-import logging
-
+import structlog
 from utils import slack
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 ACCOUNT_URL = "https://one.zemanta.com/v2/credit/account/{}"
 CAMPAIGN_URL = "https://one.zemanta.com/v2/analytics/campaign/{}?settings"

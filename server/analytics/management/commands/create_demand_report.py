@@ -1,9 +1,8 @@
-import logging
-
+import structlog
 from analytics import demand_report
 from utils import command_helpers
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 
 class Command(command_helpers.Z1Command):

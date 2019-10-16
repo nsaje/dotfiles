@@ -1,12 +1,11 @@
-import logging
-
+import structlog
 from dash import models
 from utils import metrics_compat
 from utils import redirector_helper
 from utils.command_helpers import Z1Command
 from utils.command_helpers import set_logger_verbosity
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 
 KEYS_TO_CHECK_ADGROUP = "tracking_code"
@@ -56,7 +55,7 @@ class Command(Z1Command):
 
             ad_group_settings = ad_group.get_current_settings()
             if ad_group_settings.id is None:
-                logger.warning("Ad group %s does not have settings", ad_group.id)
+                logger.warning("Ad group does not have settings", ad_group=ad_group.id)
 
             if ad_group_settings.archived:
                 # if ad group was specifically selected than let it through
@@ -66,7 +65,7 @@ class Command(Z1Command):
 
             campaign_settings = self._get_campaign_settings(ad_group.campaign)
             if campaign_settings.id is None:
-                logger.warning("Campaign %s does not have settings", ad_group.id)
+                logger.warning("Campaign does not have settings", ad_group=ad_group.id)
 
             if campaign_settings.archived:
                 # if ad group was specifically selected than let it through
@@ -80,7 +79,7 @@ class Command(Z1Command):
             try:
                 redirector_adgroup_data = redirector_helper.get_adgroup(ad_group.id)
             except Exception:
-                logger.exception("Cannot retrieve ad group settings from redirector for ad group %d", ad_group.id)
+                logger.exception("Cannot retrieve ad group settings from redirector", ad_group=ad_group.id)
                 nr_exceptions += 1
                 logger.info("Creating ad group on R1")
                 redirector_helper.insert_adgroup(ad_group)
@@ -112,7 +111,7 @@ class Command(Z1Command):
 
             if diff:
                 nr_not_in_sync += 1
-                logger.error("Ad group %s is not in sync, differing keys %s", ad_group.id, diff)
+                logger.error("Ad group not in sync, differing keys", ad_group=ad_group.id, differing_keys=diff)
                 logger.info("Updating ad group on R1")
                 ad_group = models.AdGroup.objects.get(pk=ad_group.pk)  # refresh object
                 redirector_helper.insert_adgroup(ad_group)

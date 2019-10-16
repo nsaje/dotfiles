@@ -1,7 +1,6 @@
 import csv
 import datetime
 import gzip
-import logging
 
 from django.conf import settings
 from django.db import IntegrityError
@@ -10,6 +9,7 @@ from django.db.models import CharField
 from django.db.models import Value
 from django.db.models import When
 
+import structlog
 from dash import models
 from utils import csv_utils
 from utils import metrics_compat
@@ -17,7 +17,7 @@ from utils import s3helpers
 
 from . import constants
 
-logger = logging.getLogger(__name__)
+logger = structlog.get_logger(__name__)
 
 
 def update_publisher_classifications_from_csv(csv_file):
