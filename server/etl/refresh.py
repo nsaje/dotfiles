@@ -71,7 +71,7 @@ def _refresh(update_since, views, account_id=None, skip_daily_statements=False, 
     job_id = generate_job_id(account_id)
 
     logger.info(
-        "Starting refresh job %s for date range %s - %s, requested update since %s, %s",
+        "Starting refresh job %s for date range %s - %s, requested update since %s",
         job_id,
         date_from,
         date_to,
