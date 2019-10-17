@@ -39,7 +39,7 @@ def custom_exception_handler(exception, context):
         return Response(error_data, status=status_code)
 
     # Server Error
-    logger.error("REST API exception", exc_info=True)
+    logger.exception("REST API exception")
     error_data["errorCode"] = "ServerError"
     error_data["details"] = "An error occurred."
     if settings.DEBUG or settings.TESTING:
