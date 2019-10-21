@@ -111,23 +111,19 @@ def get_autopilot_daily_budget_recommendations(
     if daily_budget < min_budgets_sum:
         if not ignore_daily_budget_too_small:
             logger.warning(
-                "Budget Autopilot got too small daily budget - Daily budget: %s Minimum: %s on entity: %s (%s)",
-                daily_budget,
-                min_budgets_sum,
-                entity,
-                entity.id,
+                "Budget Autopilot got too small daily budget",
+                daily_budget=daily_budget,
+                minimum=min_budgets_sum,
+                entity=entity,
+                entity_id=entity.id,
             )
     elif sum(new_budgets.values()) != daily_budget:
         logger.error(
-            "Budget Autopilot tried assigning wrong ammount of total daily spend caps - Expected: "
-            + str(daily_budget)
-            + " Proposed: "
-            + str(sum(new_budgets.values()))
-            + " on entity: "
-            + str(entity)
-            + " ( "
-            + str(entity.id)
-            + " )"
+            "Budget Autopilot tried assigning wrong ammount of total daily spend caps",
+            expected=str(daily_budget),
+            proposed=str(sum(new_budgets.values())),
+            entity=str(entity),
+            entity_id=str(entity.id),
         )
         comments = [constants.DailyBudgetChangeComment.NEW_BUDGET_NOT_EQUAL_DAILY_BUDGET]
         new_budgets = old_budgets

@@ -184,7 +184,7 @@ class ReportJobExecutor(JobExecutor):
             process_report_job_fail(
                 self.job, "failed", "Internal Error: Please contact support. Report job ID is {id}.", e
             )
-            logger.exception("Exception when processing API report job %s" % self.job.id)
+            logger.exception("Exception when processing API report job", job=self.job.id)
 
     @classmethod
     def get_report(cls, job):

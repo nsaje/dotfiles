@@ -223,7 +223,7 @@ def _calculate_ad_group_stats(
 
     for campaign_id, ad_group_id_set in campaign_adgroup_map.items():
         if campaign_id not in budget_data_dict:
-            logger.warning("No budget data for campaign id %s", campaign_id)
+            logger.warning("No budget data for campaign", campaign=campaign_id)
             continue
 
         budget_data = budget_data_dict[campaign_id]
