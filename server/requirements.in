@@ -17,13 +17,14 @@ XlsxWriter==1.1.1
 xlrd==1.1.0
 python-slugify==1.2.6
 newrelic==4.4.1.104
-raven==6.9.0
 boto==2.49.0
 celery==4.3.0
 requests==2.21.0
 django-timezone-field==3.0
 uWSGI==2.0.17.1
 django-pglocks==1.0.2
+sentry-sdk==0.13.0
+structlog-sentry==1.1.0
 
 # Tests
 mock==2.0.0

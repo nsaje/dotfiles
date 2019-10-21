@@ -11,8 +11,12 @@ https://docs.djangoproject.com/en/dev/ref/settings/
 import copy
 from datetime import timedelta
 import pythonjsonlogger
+import logging
 import structlog
 
+import sentry_sdk
+import sentry_sdk.integrations.django
+import structlog_sentry
 from secretcrypt import Secret
 
 from dcron import constants as dcron_constants
@@ -55,7 +59,6 @@ INSTALLED_APPS = [
     "restapi",
     "zemauth",
     "k1api",
-    "raven.contrib.django.raven_compat",
     "automation",
     "stats",
     "redshiftapi",
@@ -288,29 +291,17 @@ LOGGING = {
             "formatter": "standard",
             "filters": ["trace_id"],
         },
-        "sentry": {
-            "level": "WARNING",
-            "class": "raven.contrib.django.raven_compat.handlers.SentryHandler",
-            "formatter": "standard",
-            "filters": ["trace_id"],
-        },
-        "sentry-error": {
-            "level": "ERROR",
-            "class": "raven.contrib.django.raven_compat.handlers.SentryHandler",
-            "formatter": "standard",
-            "filters": ["trace_id"],
-        },
     },
     "loggers": {
         "django.db.backends": {"handlers": ["db_handler"], "level": "INFO", "propagate": False},
         "newrelic.core.data_collector": {"level": "ERROR"},
-        "django": {"handlers": ["file", "console", "sentry-error"], "level": "INFO", "propagate": False},
-        "celery": {"handlers": ["file", "console", "sentry-error"], "level": "WARNING", "propagate": False},
-        "kombu": {"handlers": ["file", "console", "sentry-error"], "level": "WARNING", "propagate": False},
-        "boto": {"handlers": ["file", "console", "sentry-error"], "level": "WARNING", "propagate": False},
-        "requests": {"handlers": ["file", "console", "sentry-error"], "level": "WARNING", "propagate": False},
+        "django": {"handlers": ["file", "console"], "level": "INFO", "propagate": False},
+        "celery": {"handlers": ["file", "console"], "level": "WARNING", "propagate": False},
+        "kombu": {"handlers": ["file", "console"], "level": "WARNING", "propagate": False},
+        "boto": {"handlers": ["file", "console"], "level": "WARNING", "propagate": False},
+        "requests": {"handlers": ["file", "console"], "level": "WARNING", "propagate": False},
         "qinspect": {"handlers": ["console"], "level": "DEBUG", "propagate": False},
-        "": {"handlers": ["file", "console", "sentry"], "level": "INFO"},
+        "": {"handlers": ["file", "console"], "level": "INFO"},
     },
 }
 
@@ -322,6 +313,7 @@ structlog.configure(
         structlog.stdlib.PositionalArgumentsFormatter(),
         structlog.processors.StackInfoRenderer(),
         structlog.processors.format_exc_info,
+        structlog_sentry.SentryJsonProcessor(level=logging.WARNING, tag_keys="__all__", as_extra=False),
         structlog.processors.UnicodeDecoder(),
         structlog.stdlib.render_to_log_kwargs,
     ],
@@ -466,3 +458,5 @@ DCRON = {
     "log_viewer_link": "https://app.logdna.com/92b58769bf/logs/view?apps={command_name}",
     "log_viewer_link_live": "https://app.logdna.com/92b58769bf/logs/view?apps={command_name}&q=host:{host}",
 }
+
+sentry_sdk.init(dsn=SENTRY_CONFIG["dsn"], integrations=[sentry_sdk.integrations.django.DjangoIntegration()])

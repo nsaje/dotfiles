@@ -169,7 +169,7 @@ PAGER_DUTY_Z1_SERVICE_KEY = Secret("").get().decode("utf-8")
 PAGER_DUTY_PRODOPS_SERVICE_KEY = Secret("").get().decode("utf-8")
 
 # Sentry config
-RAVEN_CONFIG = {"dsn": ""}
+SENTRY_CONFIG = {"dsn": ""}
 
 # S3 related settings
 S3_BUCKET = ""

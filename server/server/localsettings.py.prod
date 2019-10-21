@@ -273,7 +273,7 @@ _SENTRY_SECRET_KEY = (
     .get()
     .decode("utf-8")
 )
-RAVEN_CONFIG = {"dsn": "https://%s:%s@app.getsentry.com/29768" % (_SENTRY_PUBLIC_KEY, _SENTRY_SECRET_KEY)}
+SENTRY_CONFIG = {"dsn": "https://%s:%s@app.getsentry.com/29768" % (_SENTRY_PUBLIC_KEY, _SENTRY_SECRET_KEY)}
 
 # S3 related settings
 S3_BUCKET = "zemantaone"
@@ -657,7 +657,7 @@ if os.environ.get("IS_RUNSSH"):
     print("Detected running in runssh, modifying some settings. Check localsettings.py.prod for details.")
 
     # don't report runssh errors to sentry
-    RAVEN_CONFIG = {"dsn": ""}
+    SENTRY_CONFIG = {"dsn": ""}
 
     # disable security flags so dashboard can be accessed locally
     SECURE_SSL_REDIRECT = False

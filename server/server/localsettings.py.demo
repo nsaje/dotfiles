@@ -161,7 +161,7 @@ _SENTRY_SECRET_KEY = (
     .get()
     .decode("utf-8")
 )
-RAVEN_CONFIG = {"dsn": "https://%s:%s@sentry.io/260920" % (_SENTRY_PUBLIC_KEY, _SENTRY_SECRET_KEY)}
+SENTRY_CONFIG = {"dsn": "https://%s:%s@sentry.io/260920" % (_SENTRY_PUBLIC_KEY, _SENTRY_SECRET_KEY)}
 
 # S3 related settings
 S3_BUCKET = ""
