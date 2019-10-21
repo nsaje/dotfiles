@@ -1617,6 +1617,49 @@ The following bid modifier types are supported:
             }
         }
 
+### Bulk add or edit bid modifiers for an ad group [PUT /rest/v1/adgroups/{adGroupId}/bidmodifiers/]
+
+Use for adding or editing multiple bid modifiers at the same time.
+
++ Parameters
+    + adGroupId: 2040 (required)
+
++ Request (application/json)
+
+        [
+            {
+                "type": "COUNTRY",
+                "sourceSlug": "",
+                "target": "US",
+                "modifier": 1.5
+            },
+            {
+                "type": "DEVICE",
+                "sourceSlug": "",
+                "target": "TABLET",
+                "modifier": 1.6
+            }
+        ]
+
++ Response 200 (application/json)
+
+        {
+            "data": [
+                {
+                    "type": "COUNTRY",
+                    "sourceSlug": "",
+                    "target": "US",
+                    "modifier": 1.5
+                },
+                {
+                    "type": "DEVICE",
+                    "sourceSlug": "",
+                    "target": "TABLET",
+                    "modifier": 1.6
+                }
+            ]
+        }
+
 ### Delete bid modifiers for an ad group [DELETE /rest/v1/adgroups/{adGroupId}/bidmodifiers/]
 
 Optionally a list of Bid Modifier IDs can be included in request body to delete only certain Bid Modifiers instead of all belonging to the Ad Group:
