@@ -1580,7 +1580,7 @@ The following bid modifier types are supported:
                     "sourceSlug": "",
                     "target": "MOBILE",
                     "modifier": 0.99
-                },  
+                },
                 {
                     "id": "1236",
                     "type": "AD",
@@ -1609,7 +1609,7 @@ The following bid modifier types are supported:
 
         {
             "data": {
-                "id": "1237",
+                "id": "1245",
                 "type": "COUNTRY",
                 "sourceSlug": "",
                 "target": "US",
@@ -1662,17 +1662,17 @@ Use for adding or editing multiple bid modifiers at the same time.
 
 ### Delete bid modifiers for an ad group [DELETE /rest/v1/adgroups/{adGroupId}/bidmodifiers/]
 
-Optionally a list of Bid Modifier IDs can be included in request body to delete only certain Bid Modifiers instead of all belonging to the Ad Group:
-
-```
-[
-    {"id": 1234},
-    {"id": 1235}
-]
-```
+A list of Bid Modifier IDs has to be included in request body to delete certain Bid Modifiers belonging to an Ad Group.
 
 + Parameters
-    + adGroupId: 2050 (required)
+    + adGroupId: 2040 (required)
+    
++ Request (application/json)
+
+        [
+            {"id": 1236},
+            {"id": 1237}
+        ]
 
 + Response 204 (application/json)
 

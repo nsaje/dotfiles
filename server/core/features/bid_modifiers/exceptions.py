@@ -24,3 +24,7 @@ class BidModifierUnsupportedTarget(BidModifierInvalid):
 
 class InvalidBidModifierFile(Exception):
     pass
+
+
+class BidModifierDeleteInvalidIds(Exception):
+    pass

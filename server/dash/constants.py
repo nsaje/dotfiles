@@ -1867,6 +1867,8 @@ class HistoryActionType(ConstantBase):
     CONVERSION_PIXEL_CREATE_AS_ADDITIONAL = 28
     DEAL_CONNECTION_CREATE = 29
     DEAL_CONNECTION_DELETE = 30
+    BID_MODIFIER_UPDATE = 31
+    BID_MODIFIER_DELETE = 32
 
     _VALUES = {
         GOAL_CHANGE: "Change Campaign Goal",
@@ -1900,6 +1902,8 @@ class HistoryActionType(ConstantBase):
         CONVERSION_PIXEL_CREATE_AS_ADDITIONAL: "Create Conversion Pixel as additional audience pixel",
         DEAL_CONNECTION_CREATE: "Create deal connection",
         DEAL_CONNECTION_DELETE: "Delete deal connection",
+        BID_MODIFIER_UPDATE: "Update bid modifier",
+        BID_MODIFIER_DELETE: "Delete bid modifier",
     }
 
 

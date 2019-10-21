@@ -819,13 +819,13 @@ class BidModifierViewSetTest(restapi.common.views_base_test.RESTAPITest):
 
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
         result = self.assertResponseError(response, "MissingDataError")
-        self.assertEqual(result, {"errorCode": "MissingDataError", "details": "Bid Modifier does not exist"})
+        self.assertEqual(result, {"errorCode": "MissingDataError", "details": "Ad Group does not exist"})
 
     def test_destroy_invalid_bid_modifier_id(self):
         response = self.client.delete(
             reverse(
                 "adgroups_bidmodifiers_details",
-                kwargs={"ad_group_id": self.foreign_ad_group.id, "pk": self.bid_modifiers_extra_1.id},
+                kwargs={"ad_group_id": self.ad_group.id, "pk": self.bid_modifiers_extra_1.id},
             ),
             format="json",
         )
@@ -877,15 +877,16 @@ class BidModifierViewSetTest(restapi.common.views_base_test.RESTAPITest):
             },
         )
 
-    def test_destroy_all(self):
+    def test_destroy_empty_body(self):
         response = self.client.delete(reverse("adgroups_bidmodifiers_list", kwargs={"ad_group_id": self.ad_group.id}))
 
-        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
-        self.assertEqual(len(response.content), 0)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        result = self.assertResponseError(response, "ValidationError")
+        self.assertEqual(result, {"errorCode": "ValidationError", "details": "Provide Bid Modifiers to delete"})
 
         response = self.client.get(reverse("adgroups_bidmodifiers_list", kwargs={"ad_group_id": self.ad_group.id}))
         result = self.assertResponseValid(response, status_code=status.HTTP_200_OK, data_type=list)
-        self.assertEqual(result, {"count": 0, "next": None, "data": []})
+        self.assertEqual(8, result["count"])
 
     def test_destroy_multiple_foreign_ad_group(self):
         response = self.client.delete(
@@ -894,9 +895,9 @@ class BidModifierViewSetTest(restapi.common.views_base_test.RESTAPITest):
             format="json",
         )
 
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        result = self.assertResponseError(response, "ValidationError")
-        self.assertEqual(result, {"errorCode": "ValidationError", "details": "Invalid Bid Modifier ids"})
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        result = self.assertResponseError(response, "MissingDataError")
+        self.assertEqual(result, {"errorCode": "MissingDataError", "details": "Ad Group does not exist"})
 
     def test_destroy_multiple_invalid_bid_modifier_id(self):
         response = self.client.delete(

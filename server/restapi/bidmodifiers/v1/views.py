@@ -129,32 +129,33 @@ class BidModifierViewSet(restapi.common.views_base.RESTAPIBaseViewSet):
         return None
 
     def destroy(self, request, ad_group_id, pk=None):
+        ad_group = restapi.access.get_ad_group(request.user, ad_group_id)
+
         if pk is not None:
-            if request.data:
-                raise exc.ValidationError("Delete Bid Modifier requires no data")
+            self._delete_single(request, ad_group, pk)
+        else:
+            self._delete_multiple(request, ad_group)
 
-            number_of_deleted, _ = self._filter_bid_modifiers(ad_group_id, request.user).filter(id=pk).delete()
+        return self.response_ok({}, status=status.HTTP_204_NO_CONTENT)
 
-            if number_of_deleted > 0:
-                return self.response_ok({}, status=status.HTTP_204_NO_CONTENT)
+    def _delete_single(self, request, ad_group, pk):
+        if request.data:
+            raise exc.ValidationError("Delete Bid Modifier requires no data")
 
+        try:
+            core.features.bid_modifiers.delete(ad_group, [int(pk)], user=request.user)
+        except core.features.bid_modifiers.BidModifierDeleteInvalidIds:
             raise exc.MissingDataError("Bid Modifier does not exist")
 
-        else:
-            bid_modifier_qs = models.BidModifier.objects.filter_by_user(request.user).filter(ad_group__id=ad_group_id)
+    def _delete_multiple(self, request, ad_group):
+        if not request.data:
+            raise exc.ValidationError("Provide Bid Modifiers to delete")
 
-            if not isinstance(request.data, dict) or request.data:
-                # in case request data is not an empty dictionary validate it
-                serializer = serializers.BidModifierIdSerializer(data=request.data, many=True)
-                serializer.is_valid(raise_exception=True)
-                input_id_set = set(e["id"] for e in serializer.validated_data)
+        serializer = serializers.BidModifierIdSerializer(data=request.data, many=True)
+        serializer.is_valid(raise_exception=True)
+        bid_modifier_ids = [e["id"] for e in serializer.validated_data]
 
-                bid_modifier_ids = bid_modifier_qs.filter(id__in=input_id_set).values_list("id", flat=True)
-
-                if set(bid_modifier_ids).symmetric_difference(input_id_set):
-                    raise exc.ValidationError("Invalid Bid Modifier ids")
-
-                bid_modifier_qs = models.BidModifier.objects.filter(id__in=input_id_set)
-
-            bid_modifier_qs.delete()
-            return self.response_ok({}, status=status.HTTP_204_NO_CONTENT)
+        try:
+            core.features.bid_modifiers.delete(ad_group, bid_modifier_ids, user=request.user)
+        except core.features.bid_modifiers.BidModifierDeleteInvalidIds as e:
+            raise exc.ValidationError(str(e))

@@ -18,6 +18,8 @@ from . import exceptions
 from . import helpers
 from . import models
 
+set_built_in = set
+
 
 @dataclasses.dataclass
 class BidModifierData:
@@ -87,7 +89,9 @@ def _delete(ad_group, modifier_type, target, source, user=None, write_history=Tr
 
     if write_history and num_deleted > 0:
         ad_group.write_history(
-            "Reset bid modifier: %s" % helpers.describe_bid_modifier(modifier_type, target, source), user=user
+            "Reset bid modifier: %s" % helpers.describe_bid_modifier(modifier_type, target, source),
+            user=user,
+            action_type=dash_constants.HistoryActionType.BID_MODIFIER_DELETE,
         )
     return num_deleted, deleted
 
@@ -108,9 +112,30 @@ def _update_or_create(ad_group, modifier_type, target, source, modifier, user=No
         ad_group.write_history(
             "Bid modifier %s set to %s." % (helpers.describe_bid_modifier(modifier_type, target, source), percentage),
             user=user,
+            action_type=dash_constants.HistoryActionType.BID_MODIFIER_UPDATE,
         )
 
     return instance, created
+
+
+@transaction.atomic
+def delete(ad_group, input_bid_modifier_ids, user=None, write_history=True):
+    bid_modifiers_qs = models.BidModifier.objects.filter(ad_group_id=ad_group.id)
+    if user:
+        bid_modifiers_qs = bid_modifiers_qs.filter_by_user(user)
+    bid_modifiers_qs = bid_modifiers_qs.filter(id__in=input_bid_modifier_ids)
+
+    bid_modifier_ids = bid_modifiers_qs.values_list("id", flat=True)
+    if set_built_in(bid_modifier_ids).symmetric_difference(set_built_in(input_bid_modifier_ids)):
+        raise exceptions.BidModifierDeleteInvalidIds("Invalid Bid Modifier ids")
+
+    num_deleted, _ = bid_modifiers_qs.delete()
+    if write_history:
+        ad_group.write_history(
+            "Removed %s bid modifier%s." % (num_deleted, "s" if num_deleted > 1 else ""),
+            user=user,
+            action_type=dash_constants.HistoryActionType.BID_MODIFIER_DELETE,
+        )
 
 
 @transaction.atomic

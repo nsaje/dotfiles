@@ -5,6 +5,7 @@ import mock
 from django.test import TestCase
 
 from dash import constants as dash_constants
+from dash import history_helpers
 from dash import models as dash_models
 from dash.features import geolocation
 from utils.magic_mixer import magic_mixer
@@ -19,6 +20,7 @@ from . import service
 @mock.patch("utils.k1_helper.update_ad_group", mock.MagicMock())
 class TestBidModifierService(TestCase):
     def setUp(self):
+        self.user = magic_mixer.blend_user()
         self.ad_group = magic_mixer.blend(dash_models.AdGroup)
         self.source = magic_mixer.blend(dash_models.Source, bidder_slug="some_slug")
 
@@ -431,6 +433,66 @@ class TestBidModifierService(TestCase):
                 {"type": constants.BidModifierType.AD, "target": "100", "source": None, "modifier": 1.1},
             ],
         )
+
+    def test_delete(self):
+        self.ad_group.campaign.account.users.add(self.user)
+        bid_modifiers_ids = [
+            service.set(self.ad_group, constants.BidModifierType.PUBLISHER, "test_publisher", self.source, 0.5)[0].id,
+            service.set(
+                self.ad_group, constants.BidModifierType.PLACEMENT, dash_constants.PlacementMedium.SITE, None, 3.6
+            )[0].id,
+            service.set(self.ad_group, constants.BidModifierType.COUNTRY, "test_country", None, 2.9)[0].id,
+        ]
+
+        service.delete(self.ad_group, bid_modifiers_ids)
+        self.assertEqual([], service.get(self.ad_group))
+
+        history = history_helpers.get_ad_group_history(self.ad_group).first()
+        self.assertEqual(history.created_by, None)
+        self.assertEqual(history.action_type, dash_constants.HistoryActionType.BID_MODIFIER_DELETE)
+        self.assertEqual(history.changes_text, "Removed 3 bid modifiers.")
+
+    def test_delete_user_no_access(self):
+        bid_modifiers_ids = [
+            service.set(self.ad_group, constants.BidModifierType.PUBLISHER, "test_publisher", self.source, 0.5)[0].id,
+            service.set(
+                self.ad_group, constants.BidModifierType.PLACEMENT, dash_constants.PlacementMedium.SITE, None, 3.6
+            )[0].id,
+            service.set(self.ad_group, constants.BidModifierType.COUNTRY, "test_country", None, 2.9)[0].id,
+        ]
+        with self.assertRaises(exceptions.BidModifierDeleteInvalidIds):
+            service.delete(self.ad_group, bid_modifiers_ids, user=self.user)
+
+    def test_delete_user_access(self):
+        self.ad_group.campaign.account.users.add(self.user)
+        bid_modifiers_ids = [
+            service.set(self.ad_group, constants.BidModifierType.PUBLISHER, "test_publisher", self.source, 0.5)[0].id,
+            service.set(
+                self.ad_group, constants.BidModifierType.PLACEMENT, dash_constants.PlacementMedium.SITE, None, 3.6
+            )[0].id,
+            service.set(self.ad_group, constants.BidModifierType.COUNTRY, "test_country", None, 2.9)[0].id,
+        ]
+
+        service.delete(self.ad_group, bid_modifiers_ids, user=self.user)
+        self.assertEqual([], service.get(self.ad_group))
+
+        history = history_helpers.get_ad_group_history(self.ad_group).first()
+        self.assertEqual(history.created_by, self.user)
+        self.assertEqual(history.action_type, dash_constants.HistoryActionType.BID_MODIFIER_DELETE)
+        self.assertEqual(history.changes_text, "Removed 3 bid modifiers.")
+
+    def test_delete_invalid_ids(self):
+        self.ad_group.campaign.account.users.add(self.user)
+        bid_modifiers_ids = [
+            service.set(self.ad_group, constants.BidModifierType.PUBLISHER, "test_publisher", self.source, 0.5)[0].id,
+            service.set(
+                self.ad_group, constants.BidModifierType.PLACEMENT, dash_constants.PlacementMedium.SITE, None, 3.6
+            )[0].id,
+            service.set(self.ad_group, constants.BidModifierType.COUNTRY, "test_country", None, 2.9)[0].id,
+        ]
+
+        with self.assertRaises(exceptions.BidModifierDeleteInvalidIds):
+            service.delete(self.ad_group, [bm_id + 5555 for bm_id in bid_modifiers_ids])
 
     def test_make_and_parse_example_csv_file(self):
         magic_mixer.blend(dash_models.Source, name="Outbrain", bidder_slug="b1_outbrain")
