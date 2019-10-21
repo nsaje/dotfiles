@@ -23,6 +23,7 @@ logger = structlog.get_logger(__name__)
 OUTBRAIN_SOURCE_SLUG = "outbrain"
 OEN_ACCOUNT_ID = 305
 MSN_SOURCE_ID = 120
+BIZWIRE_CAMPAIGN_ID = 1096
 
 
 class ContentAdsView(K1APIView):
@@ -290,6 +291,9 @@ class ContentAdSourcesView(K1APIView):
     @staticmethod
     def _is_blocked_by_sspd(content_ad_source, sspd_statuses):
         if content_ad_source["content_ad__ad_group__campaign__type"] == dash.constants.CampaignType.DISPLAY:
+            return False
+
+        if content_ad_source["content_ad__ad_group__campaign_id"] == BIZWIRE_CAMPAIGN_ID:
             return False
 
         sspd_status = sspd_statuses.get(content_ad_source["id"])
