@@ -1,7 +1,7 @@
+import structlog
 from django.conf import settings
 from django.db import connections
 
-import structlog
 from utils import influx_helper
 from utils import metrics_compat
 

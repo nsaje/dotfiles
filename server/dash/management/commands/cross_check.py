@@ -1,6 +1,7 @@
 import collections
 
 import structlog
+
 from dash import constants
 from dash import models
 from utils import metrics_compat

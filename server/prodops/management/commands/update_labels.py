@@ -1,9 +1,9 @@
 import argparse
 
+import structlog
 import unicodecsv
 from django.core.management.base import CommandError
 
-import structlog
 from dash.models import ContentAd
 from utils.command_helpers import Z1Command
 

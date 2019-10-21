@@ -4,9 +4,9 @@ import json
 
 import jwt
 import requests
+import structlog
 from django.conf import settings
 
-import structlog
 from dash import constants
 from dash import models
 from utils import dates_helper

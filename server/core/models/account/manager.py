@@ -1,10 +1,10 @@
+import structlog
 from django.db import transaction
 
 import core.common
 import core.features.yahoo_accounts
 import core.models
 import dash.features.custom_flags.constants
-import structlog
 from dash import constants
 from prodops import hacks
 from utils import slack

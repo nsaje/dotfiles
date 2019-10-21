@@ -1,7 +1,7 @@
+import structlog
 from django.db import transaction
 
 import dash.constants
-import structlog
 import utils.email_helper
 import utils.exc
 import utils.k1_helper

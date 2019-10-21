@@ -1,6 +1,7 @@
+import structlog
+
 import core.features.yahoo_accounts
 import core.models
-import structlog
 
 from . import base
 

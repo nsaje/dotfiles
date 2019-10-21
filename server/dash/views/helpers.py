@@ -3,13 +3,13 @@ from decimal import Decimal
 
 import dateutil.parser
 import pytz
+import structlog
 from django.conf import settings
 from django.db.models import Max
 from django.db.models import Q
 
 import automation
 import automation.autopilot
-import structlog
 import zemauth.models
 from dash import constants
 from dash import models

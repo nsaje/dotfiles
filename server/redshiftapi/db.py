@@ -1,11 +1,11 @@
 import contextlib
 from collections import namedtuple
 
+import structlog
 from django.core.cache import caches
 from django.db import connections
 from django.db import transaction
 
-import structlog
 import utils.db_router
 from utils import cache_helper
 from utils import metrics_compat

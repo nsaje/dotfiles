@@ -1,8 +1,8 @@
 
+import structlog
 from django.conf import settings
 from django.core.management import CommandError
 
-import structlog
 from dash import constants
 from dash import facebook_helper
 from dash import models

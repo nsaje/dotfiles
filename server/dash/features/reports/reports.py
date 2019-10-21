@@ -7,6 +7,7 @@ import random
 import string
 import traceback
 
+import structlog
 from celery.exceptions import SoftTimeLimitExceeded
 from django.conf import settings
 
@@ -17,7 +18,6 @@ import stats.api_breakdowns
 import stats.api_reports
 import stats.constants
 import stats.helpers
-import structlog
 import utils.columns
 import utils.dates_helper
 import utils.email_helper

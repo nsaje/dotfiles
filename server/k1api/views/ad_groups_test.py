@@ -1,5 +1,6 @@
 import json
 
+import structlog
 from django.urls import reverse
 from mock import patch
 
@@ -7,7 +8,6 @@ import dash.constants
 import dash.features.ga
 import dash.features.geolocation
 import dash.models
-import structlog
 from utils import dates_helper
 from utils.magic_mixer import magic_mixer
 

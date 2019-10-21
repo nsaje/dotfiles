@@ -1,13 +1,13 @@
 import datetime
 from collections import defaultdict
 
+import structlog
 from django.db.models import Q
 
 import core.features.bcm
 import dash
 import dash.constants
 import dash.models
-import structlog
 from automation import campaignstop
 from automation import models
 

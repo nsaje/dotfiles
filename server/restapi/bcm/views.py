@@ -1,12 +1,12 @@
 import json
 from decimal import Decimal
 
+import structlog
 from django.forms.models import model_to_dict
 
 import core.features.bcm
 import core.features.bcm.bcm_slack
 import core.features.multicurrency
-import structlog
 from core.features.bcm import exceptions
 from dash import constants
 from dash import forms

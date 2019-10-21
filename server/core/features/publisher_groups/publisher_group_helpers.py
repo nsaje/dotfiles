@@ -2,10 +2,10 @@ import re
 from collections import defaultdict
 from decimal import Decimal
 
+import structlog
 from django.conf import settings
 from django.db import transaction
 
-import structlog
 from dash import constants
 from dash import cpc_constraints
 from dash import history_helpers

@@ -1,11 +1,11 @@
 from collections import defaultdict
 
+import structlog
 from django.db.models import Prefetch
 from django.db.models import Q
 
 import dash.constants
 import dash.models
-import structlog
 from utils import db_router
 
 from .base import K1APIView

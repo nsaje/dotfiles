@@ -1,6 +1,7 @@
 import datetime
 from decimal import Decimal
 
+import structlog
 from django.db.models import Count
 from django.db.models import F
 from django.db.models import Prefetch
@@ -13,7 +14,6 @@ import dash.campaign_goals
 import dash.constants
 import dash.infobox_helpers
 import dash.models
-import structlog
 import utils.csv_utils
 
 logger = structlog.get_logger(__name__)

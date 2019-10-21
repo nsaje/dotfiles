@@ -1,8 +1,8 @@
+import structlog
 from django.db import transaction
 
 import core.models
 import dash.constants
-import structlog
 from utils import dates_helper
 
 from ..currency_exchange_rate import CurrencyExchangeRate

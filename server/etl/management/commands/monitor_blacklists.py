@@ -2,10 +2,10 @@ import collections
 import datetime
 
 import dateutil.parser
+import structlog
 
 import backtosql
 import redshiftapi.db
-import structlog
 from core.features.publisher_groups import publisher_group_helpers
 from dash import constants
 from dash import models

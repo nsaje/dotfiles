@@ -1,6 +1,7 @@
 import datetime
 
 import structlog
+
 import utils.dates_helper
 from etl import maintenance
 from etl import redshift

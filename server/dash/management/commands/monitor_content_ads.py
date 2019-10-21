@@ -1,9 +1,10 @@
 # flake8: noqa
 import datetime
 
+import structlog
+
 import dash.constants
 import dash.models
-import structlog
 from utils.command_helpers import Z1Command
 
 logger = structlog.get_logger(__name__)

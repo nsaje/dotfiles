@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-
 import traceback
 
-from django.db import models
-
 import structlog
+from django.db import models
 
 from .. import history_stacktrace
 

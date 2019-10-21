@@ -1,5 +1,6 @@
-import automation.campaignstop
 import structlog
+
+import automation.campaignstop
 from utils import metrics_compat
 from utils.command_helpers import Z1Command
 

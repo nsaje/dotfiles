@@ -4,6 +4,7 @@ import json
 import re
 
 import newrelic.agent
+import structlog
 from django.conf import settings
 from django.contrib.auth import models as authmodels
 from django.db import transaction
@@ -21,7 +22,6 @@ import core.models.settings.ad_group_settings.exceptions
 import core.models.settings.ad_group_source_settings.exceptions
 import core.models.settings.campaign_settings.exceptions
 import restapi.campaigngoal.serializers
-import structlog
 import utils.exc
 from automation import autopilot
 from dash import campaign_goals

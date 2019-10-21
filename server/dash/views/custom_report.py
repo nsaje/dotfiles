@@ -2,9 +2,9 @@
 
 import mimetypes
 
+import structlog
 from django.conf import settings
 
-import structlog
 from utils import api_common
 from utils import exc
 from utils import s3helpers

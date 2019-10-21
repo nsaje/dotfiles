@@ -1,7 +1,7 @@
+import structlog
 from django.utils.functional import cached_property
 
 import backtosql
-import structlog
 from etl import derived_views
 from etl import models
 from etl import redshift

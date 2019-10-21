@@ -2,10 +2,10 @@ import shlex
 import sys
 
 import django_pglocks
+import structlog
 from django.conf import settings
 from django.core import management
 
-import structlog
 import swinfra.metrics
 from dcron import alerts
 from dcron import constants

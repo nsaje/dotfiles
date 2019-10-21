@@ -1,12 +1,12 @@
 import datetime
 from collections import defaultdict
 
+import structlog
 from django.core.cache import caches
 
 import dash.constants
 import dash.features.ga
 import dash.models
-import structlog
 from utils import cache_helper
 from utils import db_router
 

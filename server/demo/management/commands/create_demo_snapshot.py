@@ -9,6 +9,7 @@ import sys
 import tarfile
 
 import faker
+import structlog
 from django.conf import settings
 from django.core.serializers import serialize
 from django.db import connections
@@ -21,7 +22,6 @@ from django.template import VariableDoesNotExist
 import dash.models
 import demo
 import demo.models
-import structlog
 import zemauth.models
 from dash import constants
 from utils import demo_anonymizer

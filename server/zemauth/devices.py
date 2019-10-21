@@ -4,13 +4,13 @@ from functools import partial
 
 import ipware.ip
 import requests
+import structlog
 from django.conf import settings
 from django.db import IntegrityError
 from django.db import transaction
 from django.utils.crypto import get_random_string
 from ua_parser import user_agent_parser
 
-import structlog
 from utils import dates_helper
 from utils import email_helper
 from utils import threads

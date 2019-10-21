@@ -1,6 +1,6 @@
+import structlog
 from django.core.cache import caches
 
-import structlog
 from utils import cache_helper
 
 from . import bluekaiapi

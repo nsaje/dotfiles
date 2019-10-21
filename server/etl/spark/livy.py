@@ -3,9 +3,8 @@ import time
 from os import path
 
 import requests
-from django.conf import settings
-
 import structlog
+from django.conf import settings
 
 FILE_PREFIX = "etl/spark/code"
 LIVY_URL = "http://{}:8998"

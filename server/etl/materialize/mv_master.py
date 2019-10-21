@@ -1,11 +1,11 @@
 from collections import defaultdict
 from functools import partial
 
+import structlog
 from dateutil import rrule
 
 import backtosql
 import dash.models
-import structlog
 from etl import helpers
 from etl import models
 from etl import redshift

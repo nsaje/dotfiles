@@ -13,6 +13,7 @@ from functools import partial
 
 import newrelic.agent
 import pytz
+import structlog
 from django.conf import settings
 from django.db.models import Q
 from django.http import Http404
@@ -29,7 +30,6 @@ import core.models.helpers
 import core.models.settings.ad_group_source_settings.exceptions
 import demo
 import stats.helpers
-import structlog
 from dash import campaign_goals
 from dash import constants
 from dash import forms

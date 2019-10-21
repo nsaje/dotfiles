@@ -1,6 +1,7 @@
+import structlog
+
 import backtosql
 import dash.models
-import structlog
 from etl import redshift
 from etl import s3
 from redshiftapi import db

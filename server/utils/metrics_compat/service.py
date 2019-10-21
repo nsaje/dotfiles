@@ -3,7 +3,6 @@ from contextlib import contextmanager
 
 import decorator
 import influx
-
 import structlog
 
 from . import prometheus

@@ -7,6 +7,7 @@ from datetime import datetime
 from datetime import timedelta
 
 import mock
+import structlog
 from django.urls import reverse
 from rest_framework.test import APIClient
 
@@ -14,7 +15,6 @@ import dash.constants
 import dash.features.ga
 import dash.features.geolocation
 import dash.models
-import structlog
 from utils import sspd_client
 from utils import test_helper
 from utils.magic_mixer import magic_mixer

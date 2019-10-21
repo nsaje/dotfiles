@@ -1,10 +1,10 @@
 import datetime
 import os
 
+import structlog
 from django.conf import settings
 from django.db import connections
 
-import structlog
 from etl import maintenance
 from etl import materialize
 from etl import redshift

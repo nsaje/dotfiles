@@ -2,9 +2,9 @@ import http.client
 import json
 
 import requests
+import structlog
 from django.conf import settings
 
-import structlog
 from dash import constants
 from dash import models
 from utils import k1_helper

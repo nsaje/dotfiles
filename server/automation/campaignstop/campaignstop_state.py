@@ -1,8 +1,8 @@
+import structlog
 from django.db import models
 
 import core.models
 import dash.constants
-import structlog
 import zemauth.models
 from utils import dates_helper
 from utils import email_helper

@@ -1,13 +1,13 @@
 import collections
 import datetime
 
+import structlog
 from django.db.models import Model
 from django.db.models import QuerySet
 
 import core.features.bid_modifiers
 import dash.constants
 import dash.models
-import structlog
 from stats import constants
 from stats import fields
 from utils import exc

@@ -1,6 +1,7 @@
 import copy
 
 import structlog
+
 from dash.features.bluekai import models
 
 from . import bluekaiapi

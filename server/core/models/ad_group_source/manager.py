@@ -1,3 +1,4 @@
+import structlog
 from django.conf import settings
 from django.db import transaction
 
@@ -5,7 +6,6 @@ import core.common
 import core.models
 import dash.constants
 import dash.retargeting_helper
-import structlog
 import utils.exc
 import utils.k1_helper
 

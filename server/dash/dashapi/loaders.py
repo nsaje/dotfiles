@@ -1,6 +1,7 @@
 import calendar
 import collections
 
+import structlog
 from django.db.models.query import QuerySet
 from django.urls import reverse
 from django.utils.functional import cached_property
@@ -11,7 +12,6 @@ import core.features.bid_modifiers.constants
 import core.features.multicurrency
 import stats.constants
 import stats.helpers
-import structlog
 from analytics.projections import BudgetProjections
 from core.features import bid_modifiers
 from dash import constants

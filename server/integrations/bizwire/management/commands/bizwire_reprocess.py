@@ -1,6 +1,7 @@
 import sys
 
 import structlog
+
 from integrations.bizwire.internal import reprocess
 from utils import command_helpers
 

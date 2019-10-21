@@ -1,9 +1,9 @@
 from threading import Thread
 
+import structlog
 from django.conf import settings
 from django.db import connection
 
-import structlog
 import utils.request_context
 
 logger = structlog.get_logger(__name__)

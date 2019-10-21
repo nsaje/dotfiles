@@ -1,10 +1,10 @@
 import datetime
 
+import structlog
 from django.db import transaction
 
 import automation.campaignstop
 import redshiftapi.api_breakdowns
-import structlog
 import utils.exc
 from dash import constants
 from dash import models

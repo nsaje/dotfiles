@@ -1,8 +1,8 @@
 import datetime
 
+import structlog
 from django.conf import settings
 
-import structlog
 import utils.dates_helper
 from etl import maintenance
 from etl import redshift

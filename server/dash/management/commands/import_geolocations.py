@@ -1,10 +1,10 @@
 import csv
 
+import structlog
 from django.db import transaction
 
 import dash.features.geolocation
 import dash.regions
-import structlog
 from dash import constants
 from utils.command_helpers import Z1Command
 

@@ -1,11 +1,11 @@
 import time
 
+import structlog
 from django.db import transaction
 from django.db.models import Q
 
 import core.models
 import dash.constants
-import structlog
 import utils.exc
 
 from . import exceptions

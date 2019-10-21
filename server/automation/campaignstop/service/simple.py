@@ -2,12 +2,12 @@ import datetime
 import decimal
 
 import pytz
+import structlog
 from django.conf import settings
 from django.db.models import Q
 
 import automation.models
 import dash.constants
-import structlog
 import utils.dates_helper
 import utils.email_helper
 import utils.k1_helper

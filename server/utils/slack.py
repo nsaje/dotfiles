@@ -3,9 +3,8 @@ import urllib.error
 import urllib.parse
 import urllib.request
 
-from django.conf import settings
-
 import structlog
+from django.conf import settings
 
 logger = structlog.get_logger(__name__)
 

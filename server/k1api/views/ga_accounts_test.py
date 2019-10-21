@@ -4,13 +4,13 @@ import urllib.error
 import urllib.parse
 import urllib.request
 
+import structlog
 from django.urls import reverse
 
 import dash.constants
 import dash.features.ga
 import dash.features.geolocation
 import dash.models
-import structlog
 
 from .base_test import K1APIBaseTest
 

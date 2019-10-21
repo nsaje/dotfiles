@@ -1,11 +1,11 @@
 import datetime
 
 import pytz
+import structlog
 from dateutil import rrule
 
 import backtosql
 import dash.models
-import structlog
 from integrations.bizwire import config
 from integrations.bizwire import models
 from integrations.bizwire.internal import helpers

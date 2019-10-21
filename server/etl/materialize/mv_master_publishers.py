@@ -1,5 +1,6 @@
-import backtosql
 import structlog
+
+import backtosql
 from etl import helpers
 from etl import redshift
 from redshiftapi import db

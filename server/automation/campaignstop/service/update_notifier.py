@@ -1,6 +1,6 @@
+import structlog
 from django.conf import settings
 
-import structlog
 from utils import sqs_helper
 
 from .. import constants

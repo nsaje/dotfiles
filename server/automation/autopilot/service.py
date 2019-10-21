@@ -3,12 +3,12 @@ import traceback
 from collections import defaultdict
 from decimal import Decimal
 
+import structlog
 from django.db import transaction
 
 import dash.constants
 import dash.models
 import redshiftapi.api_breakdowns
-import structlog
 from automation import models
 from etl import models as etl_models
 from utils import dates_helper

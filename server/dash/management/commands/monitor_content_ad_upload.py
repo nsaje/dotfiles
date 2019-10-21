@@ -1,8 +1,8 @@
 import datetime
 
+import structlog
 from django.db.models import Q
 
-import structlog
 from dash import constants
 from dash import models
 from utils import dates_helper

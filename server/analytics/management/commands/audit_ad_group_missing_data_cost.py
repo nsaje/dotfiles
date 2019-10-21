@@ -1,5 +1,6 @@
-import analytics.monitor
 import structlog
+
+import analytics.monitor
 import utils.command_helpers
 import utils.slack
 

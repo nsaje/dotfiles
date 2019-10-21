@@ -1,5 +1,6 @@
-import automation.autopilot
 import structlog
+
+import automation.autopilot
 import utils.slack
 from utils import metrics_compat
 from utils.command_helpers import Z1Command

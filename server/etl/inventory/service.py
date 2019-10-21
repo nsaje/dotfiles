@@ -1,3 +1,4 @@
+import structlog
 from django.core.cache import caches
 from django.db.models import Q
 
@@ -6,7 +7,6 @@ import core.models
 import dash.constants
 import dash.features.geolocation
 import dash.features.inventory_planning.nas
-import structlog
 from etl import maintenance
 from redshiftapi import db
 

@@ -3,10 +3,10 @@ import typing
 import urllib.parse
 
 import croniter
+import structlog
 from django.conf import settings
 from django.urls import reverse
 
-import structlog
 from dcron import constants
 from dcron import models
 from utils import dates_helper

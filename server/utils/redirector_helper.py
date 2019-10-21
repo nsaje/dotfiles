@@ -4,9 +4,9 @@ import urllib.error
 import urllib.parse
 import urllib.request
 
+import structlog
 from django.conf import settings
 
-import structlog
 from utils import request_signer
 
 logger = structlog.get_logger(__name__)

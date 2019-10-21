@@ -2,7 +2,6 @@ import threading
 import time
 
 import prometheus_client
-
 import structlog
 
 from . import registry

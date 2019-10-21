@@ -1,9 +1,9 @@
 import json
 from functools import partial
 
+import structlog
 from dateutil import rrule
 
-import structlog
 from etl import helpers
 from etl import redshift
 from etl import s3

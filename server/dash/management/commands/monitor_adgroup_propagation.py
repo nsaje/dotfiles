@@ -1,4 +1,5 @@
 import structlog
+
 from dash import models
 from utils import metrics_compat
 from utils import redirector_helper

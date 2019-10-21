@@ -1,6 +1,6 @@
+import structlog
 from django.db import transaction
 
-import structlog
 from dash import constants
 from dash import cpc_constraints
 

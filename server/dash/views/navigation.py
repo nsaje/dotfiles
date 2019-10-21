@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
-import automation.campaignstop
 import structlog
+
+import automation.campaignstop
 from dash import forms
 from dash import models
 from dash.views import helpers

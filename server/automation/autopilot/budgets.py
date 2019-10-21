@@ -5,11 +5,12 @@ from decimal import Decimal
 from random import betavariate
 from random import random
 
+import structlog
+
 import core.features.bcm
 import dash
 import dash.constants
 import dash.views.helpers
-import structlog
 
 from . import constants
 from . import helpers

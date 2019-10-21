@@ -1,8 +1,8 @@
 import datetime
 
+import structlog
 from django.db import connection
 
-import structlog
 from etl import daily_statements
 from utils import metrics_compat
 from utils.command_helpers import Z1Command

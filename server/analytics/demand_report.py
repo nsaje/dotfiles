@@ -4,6 +4,7 @@ import json
 from collections import defaultdict
 from decimal import Decimal
 
+import structlog
 import unicodecsv as csv
 from django.contrib.postgres.aggregates import ArrayAgg
 from django.db.models import DateField
@@ -18,7 +19,6 @@ from django.db.models import Subquery
 from django.db.models.functions import Cast
 from django.db.models.functions import Coalesce
 
-import structlog
 from analytics import demand_report_definitions
 from core import models
 from core.features import bcm

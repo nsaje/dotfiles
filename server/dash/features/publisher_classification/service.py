@@ -2,6 +2,7 @@ import csv
 import datetime
 import gzip
 
+import structlog
 from django.conf import settings
 from django.db import IntegrityError
 from django.db.models import Case
@@ -9,7 +10,6 @@ from django.db.models import CharField
 from django.db.models import Value
 from django.db.models import When
 
-import structlog
 from dash import models
 from utils import csv_utils
 from utils import metrics_compat

@@ -2,6 +2,7 @@ import datetime
 from collections import defaultdict
 from decimal import Decimal
 
+import structlog
 from dateutil import rrule
 from django.conf import settings
 from django.db import connections
@@ -12,7 +13,6 @@ from django.db.models import Sum
 import backtosql
 import core.features.bcm.calculations
 import dash.models
-import structlog
 from etl import helpers
 from redshiftapi import db
 from utils import converters

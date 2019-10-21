@@ -1,10 +1,10 @@
+import structlog
 from rest_framework import exceptions
 from rest_framework import permissions
 from rest_framework import serializers
 from rest_framework import throttling
 
 import restapi.throttling
-import structlog
 from dash.features.reports import reportjob
 from dash.features.reports import reports
 from dash.features.reports import serializers as reports_serializers

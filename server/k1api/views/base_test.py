@@ -1,6 +1,7 @@
 import time
 from itertools import cycle
 
+import structlog
 from django.conf import settings
 from django.test import TestCase
 from django.urls import reverse
@@ -12,7 +13,6 @@ import dash.constants
 import dash.features.ga
 import dash.features.geolocation
 import dash.models
-import structlog
 from utils import request_signer
 
 from .. import urls

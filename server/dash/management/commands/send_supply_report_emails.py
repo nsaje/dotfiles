@@ -2,11 +2,11 @@ import datetime
 from decimal import Decimal
 
 import pytz
+import structlog
 from django.conf import settings
 from django.db import connections
 
 import dash.models
-import structlog
 import utils.email_helper
 import utils.pagerduty_helper as pgdh
 from etl import helpers

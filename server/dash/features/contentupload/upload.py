@@ -1,10 +1,10 @@
 import concurrent.futures
 
+import structlog
 from django.conf import settings
 from django.db import transaction
 from django.template.defaultfilters import pluralize
 
-import structlog
 from dash import constants
 from dash import forms
 from dash import image_helper

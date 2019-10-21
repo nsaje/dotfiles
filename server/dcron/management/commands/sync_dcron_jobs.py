@@ -1,7 +1,7 @@
+import structlog
 from django.core.management.base import BaseCommand
 from django.core.management.base import CommandError
 
-import structlog
 from dcron.cron import process_crontab_items
 
 logger = structlog.get_logger(__name__)

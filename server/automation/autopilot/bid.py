@@ -1,8 +1,9 @@
 import decimal
 
+import structlog
+
 import dash.constants
 import dash.models
-import structlog
 from dash import cpc_constraints
 
 from . import settings

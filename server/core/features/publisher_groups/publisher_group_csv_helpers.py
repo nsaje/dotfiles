@@ -3,9 +3,9 @@ import os
 import random
 import string
 
+import structlog
 from django.conf import settings
 
-import structlog
 from core import models
 from utils import csv_utils
 from utils import s3helpers

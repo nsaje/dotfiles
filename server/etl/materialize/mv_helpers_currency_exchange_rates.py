@@ -1,9 +1,9 @@
+import structlog
 from dateutil import rrule
 
 import backtosql
 import core.features.multicurrency
 import dash.models
-import structlog
 from etl import redshift
 from etl import s3
 from redshiftapi import db

@@ -6,6 +6,7 @@ import urllib.request
 from collections import OrderedDict
 from functools import partial
 
+import structlog
 from django.conf import settings
 from django.core.cache import caches
 from django.http import Http404
@@ -17,7 +18,6 @@ from ratelimit.mixins import RatelimitMixin
 
 import backtosql
 import dash.models
-import structlog
 from redshiftapi import db
 from utils import metrics_compat
 from utils import request_signer

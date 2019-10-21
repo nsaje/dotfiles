@@ -1,7 +1,8 @@
 import datetime
 
-import redshiftapi.db
 import structlog
+
+import redshiftapi.db
 import utils.slack
 from core.models.account import Account
 from etl import refresh

@@ -1,10 +1,10 @@
 import json
 
 import mock
+import structlog
 from django.urls import reverse
 
 import dash.models
-import structlog
 
 from .base_test import K1APIBaseTest
 

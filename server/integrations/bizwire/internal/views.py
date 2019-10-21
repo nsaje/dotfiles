@@ -2,6 +2,7 @@ import json
 import random
 from collections import defaultdict
 
+import structlog
 from django.conf import settings
 from django.http import Http404
 from django.http import JsonResponse
@@ -10,7 +11,6 @@ from django.views.decorators.csrf import csrf_exempt
 import dash.api
 import dash.constants
 import dash.models
-import structlog
 from dash.features import contentupload
 from integrations.bizwire import config
 from integrations.bizwire.internal import actions

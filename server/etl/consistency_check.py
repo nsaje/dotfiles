@@ -1,6 +1,6 @@
+import structlog
 from django.conf import settings
 
-import structlog
 from etl import materialize
 from redshiftapi import db
 from utils import pagerduty_helper

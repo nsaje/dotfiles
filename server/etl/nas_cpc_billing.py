@@ -1,5 +1,6 @@
 import datetime
 
+import structlog
 from django.db.models import F
 
 import backtosql
@@ -7,7 +8,6 @@ import core.features.bcm.calculations
 import dash.constants
 import dash.models
 import redshiftapi
-import structlog
 import utils.converters
 
 from . import helpers

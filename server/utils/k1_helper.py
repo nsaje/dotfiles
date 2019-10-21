@@ -5,9 +5,9 @@ import urllib.parse
 import urllib.request
 
 import newrelic.agent
+import structlog
 from django.conf import settings
 
-import structlog
 from server.celery import app
 from utils import request_signer
 

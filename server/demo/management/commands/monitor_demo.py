@@ -2,9 +2,9 @@ import json
 import time
 
 import requests
+import structlog
 
 import demo
-import structlog
 from utils import metrics_compat
 from utils.command_helpers import Z1Command
 

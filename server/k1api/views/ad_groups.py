@@ -1,10 +1,10 @@
+import structlog
 from django.conf import settings
 
 import automation.campaignstop.service
 import dash.constants
 import dash.features.custom_flags
 import dash.models
-import structlog
 from core.features.publisher_groups import publisher_group_helpers
 from utils import db_router
 

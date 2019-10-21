@@ -2,9 +2,9 @@ import traceback
 from functools import wraps
 
 import requests
+import structlog
 from django.conf import settings
 
-import structlog
 from utils.constant_base import ConstantBase
 
 logger = structlog.get_logger(__name__)

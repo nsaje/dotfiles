@@ -1,4 +1,5 @@
 import structlog
+
 from dash import models
 from utils import redirector_helper
 from utils.command_helpers import Z1Command

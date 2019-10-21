@@ -1,8 +1,9 @@
+import structlog
+
 import core.features.yahoo_accounts
 import core.models
 import dash.constants
 import dash.features.realtimestats
-import structlog
 from utils import dates_helper
 from utils import metrics_compat
 

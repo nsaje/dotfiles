@@ -5,11 +5,11 @@ import sys
 
 import dateutil.parser
 import newrelic.agent
+import structlog
 from django.conf import settings
 from django.core.management.base import BaseCommand
 
 import dash.models
-import structlog
 import swinfra.metrics
 from dcron import helpers
 from utils import profiler

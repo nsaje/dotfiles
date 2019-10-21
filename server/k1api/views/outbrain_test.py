@@ -3,6 +3,7 @@ import urllib.error
 import urllib.parse
 import urllib.request
 
+import structlog
 from django.db.models import F
 from django.urls import reverse
 from mock import patch
@@ -11,7 +12,6 @@ import dash.constants
 import dash.features.ga
 import dash.features.geolocation
 import dash.models
-import structlog
 from utils import email_helper
 
 from .base_test import K1APIBaseTest

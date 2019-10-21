@@ -2,12 +2,12 @@ from datetime import datetime
 from functools import partial
 
 import newrelic.agent
+import structlog
 from django.http import Http404
 
 import dash.constants
 import dash.features.submission_filters
 import dash.models
-import structlog
 from dash import constants
 from utils import dates_helper
 from utils import db_router

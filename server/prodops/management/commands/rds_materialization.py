@@ -1,4 +1,5 @@
 import structlog
+
 from etl.redshift import get_last_stl_load_error
 from prodops.rds_materialization import rds_materialization
 from utils import metrics_compat

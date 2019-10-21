@@ -6,6 +6,8 @@ repos:
     entry: seed-isort-config
     args: [--application-directories=./server/]
     files: requirements.txt
+    language: python
+    language_version: python3.7
     always_run: false
 - repo: https://github.com/pre-commit/mirrors-isort
   rev: "v4.3.21"

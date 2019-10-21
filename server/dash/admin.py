@@ -1,6 +1,7 @@
 import datetime
 import json
 
+import structlog
 import tagulous
 from django import forms
 from django.conf import settings
@@ -20,7 +21,6 @@ from import_export import resources
 from import_export.admin import ExportMixin
 
 import core.features.source_adoption
-import structlog
 import utils.email_helper
 import utils.k1_helper
 import utils.pagerduty_helper as pgdh

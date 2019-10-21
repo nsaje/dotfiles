@@ -2,10 +2,10 @@ import datetime
 import json
 
 import boto3
+import structlog
 from django.conf import settings
 
 import dash.models
-import structlog
 from integrations.bizwire import config
 from integrations.bizwire.internal import helpers
 from utils import dates_helper

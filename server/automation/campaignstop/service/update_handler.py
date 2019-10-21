@@ -1,10 +1,10 @@
 import time
 from collections import defaultdict
 
+import structlog
 from django.conf import settings
 
 import core.models
-import structlog
 from utils import sqs_helper
 
 from .. import CampaignStopState

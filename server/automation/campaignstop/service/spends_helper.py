@@ -1,8 +1,9 @@
 import datetime
 from decimal import Decimal
 
-import core.features.multicurrency
 import structlog
+
+import core.features.multicurrency
 from utils import dates_helper
 from utils import numbers
 

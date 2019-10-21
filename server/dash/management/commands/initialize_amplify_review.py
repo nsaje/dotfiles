@@ -1,6 +1,6 @@
+import structlog
 from django.db import transaction
 
-import structlog
 from dash import models
 from utils.command_helpers import Z1Command
 

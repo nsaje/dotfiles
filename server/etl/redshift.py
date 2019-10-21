@@ -1,10 +1,10 @@
 import gzip
 import os.path
 
+import structlog
 from django.conf import settings
 
 import backtosql
-import structlog
 from redshiftapi import db
 from utils import s3helpers
 

@@ -1,4 +1,5 @@
 import structlog
+
 from analytics import demand_report
 from utils import command_helpers
 

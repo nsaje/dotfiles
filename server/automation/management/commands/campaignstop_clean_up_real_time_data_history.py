@@ -1,8 +1,8 @@
+import structlog
 from django.db import connection
 from django.db import transaction
 
 import automation.campaignstop
-import structlog
 import utils.dates_helper
 from utils import metrics_compat
 from utils.command_helpers import Z1Command

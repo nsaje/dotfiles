@@ -1,4 +1,5 @@
 import structlog
+
 from dash import models
 from dash.features import scheduled_reports
 from dash.features.reports import reports

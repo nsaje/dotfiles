@@ -1,6 +1,7 @@
 import datetime
 import uuid
 
+import structlog
 from django.conf import settings
 
 import dash.constants
@@ -10,7 +11,6 @@ import etl.s3
 import redshiftapi.api_quickstats
 import redshiftapi.internal_stats.content_ad_publishers
 import redshiftapi.internal_stats.conversions
-import structlog
 from utils import db_router
 
 from .base import K1APIView

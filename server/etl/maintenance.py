@@ -1,5 +1,6 @@
-import backtosql
 import structlog
+
+import backtosql
 from redshiftapi import db
 
 logger = structlog.get_logger(__name__)

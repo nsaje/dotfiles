@@ -3,9 +3,9 @@ import io
 import os.path
 from functools import partial
 
+import structlog
 from django.conf import settings
 
-import structlog
 from utils import s3helpers
 from utils import threads
 

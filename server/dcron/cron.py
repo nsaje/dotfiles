@@ -1,9 +1,9 @@
 import typing
 
 import crontab
+import structlog
 from django.conf import settings
 
-import structlog
 from dcron import commands
 from dcron import constants
 from dcron import exceptions

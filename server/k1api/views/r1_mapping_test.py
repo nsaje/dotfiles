@@ -1,8 +1,7 @@
 import json
 
-from django.urls import reverse
-
 import structlog
+from django.urls import reverse
 
 from .base_test import K1APIBaseTest
 

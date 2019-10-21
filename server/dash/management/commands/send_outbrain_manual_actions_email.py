@@ -1,10 +1,10 @@
 import datetime
 import textwrap
 
+import structlog
 from django.conf import settings
 from django.core.mail import send_mail
 
-import structlog
 from dash import constants
 from dash import models
 from utils.command_helpers import Z1Command

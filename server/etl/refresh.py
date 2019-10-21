@@ -4,11 +4,11 @@ import string
 from functools import partial
 
 import newrelic.agent
+import structlog
 from django.conf import settings
 from django.core.cache import caches
 
 import dash.models
-import structlog
 import utils.slack
 from etl import daily_statements
 from etl import maintenance

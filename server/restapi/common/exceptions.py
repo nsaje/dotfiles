@@ -1,13 +1,13 @@
 import traceback
 
 import rest_framework.views
+import structlog
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.exceptions import ValidationError
 from rest_framework import serializers
 from rest_framework.response import Response
 
-import structlog
 from utils import exc
 
 logger = structlog.get_logger(__name__)

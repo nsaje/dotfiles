@@ -1,4 +1,5 @@
 import structlog
+
 from utils import slack
 
 logger = structlog.get_logger(__name__)

@@ -1,7 +1,8 @@
 import datetime
 
-import analytics.management_report
 import structlog
+
+import analytics.management_report
 import utils.email_helper
 from utils.command_helpers import Z1Command
 from utils.command_helpers import set_logger_verbosity

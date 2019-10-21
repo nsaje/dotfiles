@@ -1,6 +1,7 @@
 import datetime
 
 import structlog
+
 from etl import consistency_check
 from utils.command_helpers import Z1Command
 

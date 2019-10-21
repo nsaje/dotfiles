@@ -1,11 +1,11 @@
 import json
 
+import structlog
 from django.conf import settings
 from django.http import Http404
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 
-import structlog
 from dash.features import contentupload
 from utils import request_signer
 

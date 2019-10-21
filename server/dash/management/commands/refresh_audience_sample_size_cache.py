@@ -1,7 +1,8 @@
+import structlog
+
 import core.features.audiences
 import core.models
 import redshiftapi
-import structlog
 from utils import metrics_compat
 from utils.command_helpers import Z1Command
 

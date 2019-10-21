@@ -1,4 +1,5 @@
 import structlog
+
 from dash.features.ga import refresh_mappings
 from utils.command_helpers import Z1Command
 

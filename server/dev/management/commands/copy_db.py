@@ -1,7 +1,7 @@
+import structlog
 from django.conf import settings
 from django.db import connections
 
-import structlog
 from utils.command_helpers import Z1Command
 from utils.command_helpers import set_logger_verbosity
 

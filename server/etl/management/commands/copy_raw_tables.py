@@ -1,7 +1,8 @@
 import datetime
 
-import etl.redshift
 import structlog
+
+import etl.redshift
 from etl import refresh
 from utils import dates_helper
 from utils.command_helpers import Z1Command

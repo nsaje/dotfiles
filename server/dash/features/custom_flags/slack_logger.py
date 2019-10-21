@@ -1,4 +1,5 @@
 import structlog
+
 from utils import slack
 
 from .model import CustomFlag

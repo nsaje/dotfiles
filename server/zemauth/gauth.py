@@ -1,11 +1,10 @@
 import json
 
 import httplib2
+import structlog
 from django.conf import settings
 from django.urls import reverse
 from oauth2client.client import OAuth2WebServerFlow
-
-import structlog
 
 logger = structlog.get_logger(__name__)
 

@@ -1,9 +1,9 @@
 import datetime
 
+import structlog
 from django.core.management.base import CommandError
 from django.db.models import Count
 
-import structlog
 from dash.constants import SourceType
 from dash.models import Account
 from dash.models import AdGroup

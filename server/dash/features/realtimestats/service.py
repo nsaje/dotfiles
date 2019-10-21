@@ -4,9 +4,10 @@ import urllib.parse
 import urllib.request
 from operator import itemgetter
 
+import structlog
+
 import core.features.bcm.calculations
 import core.features.yahoo_accounts
-import structlog
 from dash import constants
 from dash import models
 from utils import dates_helper

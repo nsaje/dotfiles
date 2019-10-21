@@ -1,10 +1,10 @@
+import structlog
 from django.db import transaction
 from django.db.models import F
 from django.http import Http404
 
 import dash.constants
 import dash.models
-import structlog
 from utils import db_router
 from utils import email_helper
 

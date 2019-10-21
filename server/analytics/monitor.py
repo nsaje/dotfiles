@@ -1,6 +1,7 @@
 import datetime
 from decimal import Decimal
 
+import structlog
 from django.db.models import F
 from django.db.models import Sum
 
@@ -12,7 +13,6 @@ import dash.constants
 import dash.models
 import etl.refresh
 import redshiftapi.db
-import structlog
 from automation import autopilot
 from utils import converters
 
