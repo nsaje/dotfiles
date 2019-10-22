@@ -57,6 +57,16 @@ class DCronCommandTestCase(TransactionTestCase):
     and that it creates or updates the corresponding DCronJob record.
     """
 
+    def _assert_history(self, dcron_job, status, expected_max_duration=settings.DCRON["default_max_duration"]):
+        dcron_job.refresh_from_db()
+        dcron_job_history = models.DCronJobHistory.objects.filter(command_name=dcron_job.command_name).first()
+        self.assertEqual(dcron_job_history.status, status)
+        self.assertEqual(dcron_job_history.status, dcron_job.alert)
+        self.assertEqual(dcron_job_history.host, dcron_job.host)
+        self.assertEqual(dcron_job_history.executed_dt, dcron_job.executed_dt)
+        self.assertEqual(dcron_job_history.completed_dt, dcron_job.completed_dt)
+        self.assertEqual(dcron_job_history.expected_max_duration, expected_max_duration)
+
     @mock.patch("sys.argv", ["manage.py", DUMMY_COMMAND])
     @mock.patch("utils.metrics_compat.incr")
     @mock.patch("utils.metrics_compat.timing")
@@ -83,6 +93,8 @@ class DCronCommandTestCase(TransactionTestCase):
         dcron_job_qs = models.DCronJob.objects.filter(command_name=DUMMY_COMMAND)
 
         self.assertEqual(dcron_job_qs.count(), 0)
+
+        self.assertFalse(models.DCronJobHistory.objects.filter(command_name=DUMMY_COMMAND).exists())
 
         command_thread = threading.Thread(target=run_command)
 
@@ -137,6 +149,9 @@ class DCronCommandTestCase(TransactionTestCase):
         finally:
             event_2.set()
 
+        self.assertEqual(models.DCronJobHistory.objects.filter(command_name=DUMMY_COMMAND).count(), 1)
+        self._assert_history(dcron_job, constants.Alert.OK)
+
     @mock.patch("sys.argv", ["manage.py", DUMMY_COMMAND])
     @mock.patch("utils.metrics_compat.incr")
     @mock.patch("utils.metrics_compat.timing")
@@ -146,6 +161,8 @@ class DCronCommandTestCase(TransactionTestCase):
         class DummyCommand(commands.DCronCommand):
             def _handle(self, *args, **options):
                 raise RuntimeError("TEST!")
+
+        self.assertFalse(models.DCronJobHistory.objects.filter(command_name=DUMMY_COMMAND).exists())
 
         dummy_command = DummyCommand()
 
@@ -184,6 +201,9 @@ class DCronCommandTestCase(TransactionTestCase):
         mock_slack_publish.assert_has_calls(
             [mock.call("", **alerts._create_slack_publish_params(dcron_job, constants.Alert.FAILURE))]
         )
+
+        self.assertEqual(models.DCronJobHistory.objects.filter(command_name=DUMMY_COMMAND).count(), 1)
+        self._assert_history(dcron_job, constants.Alert.FAILURE)
 
     @mock.patch("sys.argv", ["manage.py", DUMMY_COMMAND])
     def test_pause_execution(self):

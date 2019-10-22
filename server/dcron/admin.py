@@ -102,3 +102,44 @@ class DCronJobSettingsAdmin(admin.ModelAdmin):
     search_fields = ("job__command_name",)
     list_filter = ("job__alert", "enabled", "severity", "manual_override", "pause_execution")
     readonly_fields = ("job", "schedule", "full_command", "enabled")
+
+
+@admin.register(models.DCronJobHistory)
+class DCronJobHistoryAdmin(admin.ModelAdmin):
+    list_display = (
+        "command_name",
+        "colored_status",
+        "host",
+        "duration",
+        "executed_dt",
+        "completed_dt",
+        "expected_max_duration",
+    )
+    search_fields = ("command_name",)
+    list_filter = ("command_name",)
+    readonly_fields = ("command_name", "status", "host", "executed_dt", "completed_dt", "expected_max_duration")
+
+    def has_add_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def duration(self, obj):
+        duration = obj.completed_dt - obj.executed_dt
+        if duration.total_seconds() > obj.expected_max_duration:
+            return format_html('<span style="background-color: yellow;">{}</span>', str(duration))
+        else:
+            return str(duration)
+
+    duration.short_description = "Duration"
+
+    def colored_status(self, obj):
+        color = "tomato" if obj.status == constants.Alert.FAILURE else "lime"
+
+        return format_html('<span style="background-color: {};">{}</span>', color, constants.Alert.get_name(obj.status))
+
+    colored_status.short_description = "Status"

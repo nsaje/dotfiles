@@ -1,7 +1,11 @@
 from django.conf import settings
 from django.db import models
+from django.db import transaction
 
+import structlog
 from dcron import constants
+
+logger = structlog.get_logger(__name__)
 
 
 class DCronJob(models.Model):
@@ -45,3 +49,60 @@ class DCronJobSettings(models.Model):
 
     def __str__(self):
         return self.job.command_name
+
+
+class DCronJobHistory(models.Model):
+    _STATUS_CHOICES = [
+        (constants.Alert.OK, constants.Alert.get_name(constants.Alert.OK)),
+        (constants.Alert.FAILURE, constants.Alert.get_name(constants.Alert.FAILURE)),
+    ]
+
+    command_name = models.CharField(max_length=150, db_index=True)
+    status = models.IntegerField(choices=_STATUS_CHOICES)
+    host = models.CharField(max_length=100)
+    executed_dt = models.DateTimeField()
+    completed_dt = models.DateTimeField()
+    expected_max_duration = models.FloatField()
+
+    def __str__(self):
+        return "{}: {} ({} @ {})".format(
+            self.command_name, constants.Alert.get_name(self.status), self.host, self.executed_dt
+        )
+
+    class Meta:
+        verbose_name = "Distributed Cron Job History"
+        verbose_name_plural = "Distributed Cron Job History Entries"
+
+    @staticmethod
+    def create_history_record(command_name):
+        with transaction.atomic():
+            try:
+                dcron_job = DCronJob.objects.select_for_update().get(command_name=command_name)
+
+                if dcron_job.alert not in (constants.Alert.OK, constants.Alert.FAILURE):
+                    logger.error(
+                        "DCronJobHistory can not be created due to wrong alert status",
+                        command_name=command_name,
+                        alert=dcron_job.alert,
+                    )
+                    return
+
+                expected_max_duration = settings.DCRON["default_max_duration"]
+                if hasattr(dcron_job, "dcronjobsettings"):
+                    expected_max_duration = dcron_job.dcronjobsettings.max_duration
+                else:
+                    logger.warning("Using default max duration for DCronJob", command_name=command_name)
+
+                DCronJobHistory.objects.create(
+                    command_name=command_name,
+                    status=dcron_job.alert,
+                    host=dcron_job.host,
+                    executed_dt=dcron_job.executed_dt,
+                    completed_dt=dcron_job.completed_dt,
+                    expected_max_duration=expected_max_duration,
+                )
+
+            except DCronJob.DoesNotExist:
+                logger.exception("DCronJob does not exist", command_name=command_name)
+            except Exception:
+                logger.exception("DCronJobHistroy can not be created", command_name=command_name)

@@ -88,6 +88,8 @@ class DCronCommand(management.base.BaseCommand):
                     command_name=command_name, defaults={"completed_dt": finish_dt}
                 )
 
+                models.DCronJobHistory.create_history_record(command_name)
+
                 logger.info(
                     "Finished cron job %s on host %s in %s seconds",
                     command_name,
