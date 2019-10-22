@@ -123,6 +123,7 @@ collect_server_static:	## collects static files for production build
 refresh_requirements: login build_utils
 	docker run --rm \
     -v $$PWD:/src \
+	--user ubuntu \
     --workdir=/src/ \
     --entrypoint=sh \
     py3-tools -c "pip-compile -v --no-annotate server/requirements.in"
