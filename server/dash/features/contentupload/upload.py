@@ -195,8 +195,7 @@ def persist_batch(batch):
 
         _save_history(batch, content_ads)
 
-    if batch.ad_group and batch.ad_group.campaign.account_id != 305:  # OEN
-        sspd_client.sync_batch(batch)
+    sspd_client.sync_batch(batch)
 
     msg = "upload.process_async.insert"
     if batch.type == constants.UploadBatchType.CLONE:
