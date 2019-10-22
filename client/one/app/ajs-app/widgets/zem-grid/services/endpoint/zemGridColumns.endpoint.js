@@ -2613,6 +2613,22 @@ angular
             columnSuffix,
             attribution
         ) {
+            var conversionsHelp = '';
+            var cpaHelp = '';
+            if (attribution === 'Click attribution') {
+                conversionsHelp =
+                    'The number of conversions attributed to your campaign based on user clicks.';
+                cpaHelp =
+                    'Average cost per acquisition calculated from conversions based on user clicks.';
+            }
+            if (attribution === 'View attribution') {
+                conversionsHelp =
+                    'The number of conversions attributed to your campaign based on user viewing your ads.\n' +
+                    "Conversions are based on viewable impressions. If the media source doesn't support viewable impressions the conversions are based on standard impressions.\n" +
+                    "Conversions in this column don't include conversions that were attributed to a user's click.";
+                cpaHelp =
+                    'Average cost per acquisition calculated from conversions based on user viewing your ads.';
+            }
             angular.forEach(conversionWindows, function(window) {
                 var pixelSuffix =
                     pixel.prefix + '_' + window.value + attributionSuffix;
@@ -2629,6 +2645,7 @@ angular
                     {
                         restApiName: name,
                         name: 'Conversions (' + attribution + ')',
+                        help: conversionsHelp,
                         window: window.value,
                         attribution: attributionSuffix,
                         pixel: pixel.prefix,
@@ -2668,6 +2685,7 @@ angular
                     {
                         restApiName: 'CPA (' + name + ')',
                         name: 'CPA (' + attribution + ')',
+                        help: cpaHelp,
                         window: window.value,
                         attribution: attributionSuffix,
                         pixel: pixel.prefix,
