@@ -1,8 +1,8 @@
+import structlog
 from django.conf import settings
 from django.db import models
 from django.db import transaction
 
-import structlog
 from dcron import constants
 
 logger = structlog.get_logger(__name__)
