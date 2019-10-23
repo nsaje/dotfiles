@@ -134,28 +134,30 @@ class AccountSerializer(restapi.account.v1.serializers.AccountSerializer):
 
     def to_internal_value(self, data):
         value = super().to_internal_value(data)
+        settings_field = "settings"
+        if settings_field not in value.keys():
+            value[settings_field] = {}
 
-        default_account_manager = self.to_internal_value_default_account_manager(data.get("default_account_manager"))
-        default_sales_representative = self.to_internal_value_default_sales_representative(
-            data.get("default_sales_representative")
-        )
-        default_cs_representative = self.to_internal_value_default_cs_representative(
-            data.get("default_cs_representative")
-        )
-        ob_representative = self.to_internal_value_ob_representative(data.get("ob_representative"))
-
-        if (
-            default_account_manager is not None
-            or default_sales_representative is not None
-            or default_cs_representative is not None
-            or ob_representative is not None
-        ):
-            settings_field = "settings"
-            if settings_field not in value.keys():
-                value[settings_field] = {}
+        if "default_account_manager" in value[settings_field].keys():
+            default_account_manager = self.to_internal_value_default_account_manager(
+                data.get("default_account_manager")
+            )
             value[settings_field]["default_account_manager"] = default_account_manager
+
+        if "default_sales_representative" in value[settings_field].keys():
+            default_sales_representative = self.to_internal_value_default_sales_representative(
+                data.get("default_sales_representative")
+            )
             value[settings_field]["default_sales_representative"] = default_sales_representative
+
+        if "default_cs_representative" in value[settings_field].keys():
+            default_cs_representative = self.to_internal_value_default_cs_representative(
+                data.get("default_cs_representative")
+            )
             value[settings_field]["default_cs_representative"] = default_cs_representative
+
+        if "ob_representative" in value[settings_field].keys():
+            ob_representative = self.to_internal_value_ob_representative(data.get("ob_representative"))
             value[settings_field]["ob_representative"] = ob_representative
 
         return value
