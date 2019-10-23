@@ -8,3 +8,6 @@ RUN apt-get install -y \
     python-dev \
     libcurl4-openssl-dev
 RUN pip install -U flake8==3.7.7 xenon pip-tools==4.2.0 black==18.6b4 mypy isort==4.3.21
+
+RUN useradd --create-home --password '*' --shell /bin/bash --uid 1000 ubuntu
+USER ubuntu
