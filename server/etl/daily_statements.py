@@ -25,7 +25,7 @@ OEN_ACCOUNT_ID = 305
 
 
 def _generate_statements(date, campaign, campaign_spend):
-    logger.info("Generate daily statements", campaign_id=campaign.id, date=date, campaign_spend=campaign_spend)
+    logger.debug("Generate daily statements", campaign_id=campaign.id, date=date, campaign_spend=campaign_spend)
 
     budgets = dash.models.BudgetLineItem.objects.filter(
         campaign_id=campaign.id, start_date__lte=date, end_date__gte=date
