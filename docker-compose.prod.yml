@@ -76,7 +76,7 @@ services:
           GUNICORN_WORKERS: "1"
           GUNICORN_THREADS: "1"
           GUNICORN_WORKER_CLASS: "gevent"
-        mem_limit: 1500m
+        mem_limit: 2g
         labels:
           SERVICE_NAME: one-cb
           SERVICE_IGNORE: "false"
