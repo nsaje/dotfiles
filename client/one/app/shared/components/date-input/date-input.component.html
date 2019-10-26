@@ -20,6 +20,7 @@
         [disabled]="isDisabled"
         [zemFocus]="isFocused"
         [dayTemplate]="zemDateInputDay"
+        container="body"
         (dateSelect)="onDateSelect($event)"
         (click)="zemDatepicker.toggle()"
         (keydown.arrowdown)="zemDatepicker.toggle()"

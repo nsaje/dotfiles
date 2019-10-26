@@ -1,5 +1,9 @@
 @import 'variables';
 
+.zem-date-input {
+    display: block;
+}
+
 .zem-date-input .zem-calendar-bg-icon::before {
     background-size: @input__height--default - 12;
     background-position: center;
@@ -50,6 +54,10 @@
 // NgbDatepicker overrides //
 /////////////////////////////
 
+.ngb-dp-header {
+    padding-bottom: 0.2rem;
+}
+
 .ngb-dp-navigation-select {
     position: relative;
     &::before,
@@ -71,7 +79,7 @@
     }
 }
 
-.zem-date-input .ngb-dp-navigation-select .custom-select {
+.ngb-dp-navigation-select .custom-select {
     border-radius: @border-radius--default;
     margin: 0 4px;
     background-color: #ffffff;
@@ -83,27 +91,27 @@
     }
 }
 
-.zem-date-input .ngb-dp-arrow-btn {
-    color: @color--secondary;
+.ngb-dp-arrow-btn {
+    color: @color--secondary !important;
 }
 
-.zem-date-input .ngb-dp-day {
-    width: 2.8rem;
-    height: 2.3rem;
+.ngb-dp-day {
+    width: 2.8rem !important;
+    height: 2.3rem !important;
 }
 
-.zem-date-input .ngb-dp-weekdays {
-    border-bottom: 0;
-    border-radius: 0;
+.ngb-dp-weekdays {
+    border-bottom: 0 !important;
+    border-radius: 0 !important;
 }
 
-.zem-date-input .ngb-dp-weekday {
-    width: 2.8rem;
+.ngb-dp-weekday {
+    width: 2.8rem !important;
 }
 
-.zem-date-input .ngb-dp-weekday {
-    line-height: 2rem;
-    text-align: center;
-    font-style: normal;
-    font-weight: bold;
+.ngb-dp-weekday {
+    line-height: 2rem !important;
+    text-align: center !important;
+    font-style: normal !important;
+    font-weight: bold !important;
 }
