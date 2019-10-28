@@ -3,11 +3,13 @@ import {HttpErrorResponse} from '@angular/common/http';
 import {Subject} from 'rxjs';
 import {Store} from 'rxjs-observable-store';
 import {takeUntil} from 'rxjs/operators';
+import {ChangeEvent} from '../../../../shared/types/change-event';
 import {Deal} from '../../../../core/deals/types/deal';
 import {DealConnection} from '../../../../core/deals/types/deal-connection';
 import {DealsLibraryStoreState} from './deals-library.store.state';
 import {DealsLibraryStoreFieldsErrorsState} from './deals-library.store.fields-errors-state';
 import {DealsService} from '../../../../core/deals/services/deals.service';
+import {SourcesService} from '../../../../core/sources/services/sources.service';
 import {RequestStateUpdater} from '../../../../shared/types/request-state-updater';
 import * as storeHelpers from '../../../../shared/helpers/store.helpers';
 
@@ -17,18 +19,35 @@ export class DealsLibraryStore extends Store<DealsLibraryStoreState>
     private ngUnsubscribe$: Subject<void> = new Subject();
     private requestStateUpdater: RequestStateUpdater;
 
-    constructor(private dealsService: DealsService) {
+    constructor(
+        private dealsService: DealsService,
+        private sourcesService: SourcesService
+    ) {
         super(new DealsLibraryStoreState());
         this.requestStateUpdater = storeHelpers.getStoreRequestStateUpdater(
             this
         );
     }
 
-    loadEntities(agencyId: string, page: number, pageSize: number) {
+    initStore(agencyId: string, page: number, pageSize: number): Promise<void> {
+        return new Promise<void>((resolve, reject) => {
+            this.patchState(agencyId, 'agencyId');
+            Promise.all([this.loadEntities(page, pageSize), this.loadSources()])
+                .then(() => resolve())
+                .catch(() => reject());
+        });
+    }
+
+    loadEntities(page: number, pageSize: number): Promise<void> {
         return new Promise<void>((resolve, reject) => {
             const offset = this.getOffset(page, pageSize);
             this.dealsService
-                .list(agencyId, offset, pageSize, this.requestStateUpdater)
+                .list(
+                    this.state.agencyId,
+                    offset,
+                    pageSize,
+                    this.requestStateUpdater
+                )
                 .pipe(takeUntil(this.ngUnsubscribe$))
                 .subscribe(
                     (deals: Deal[]) => {
@@ -42,11 +61,11 @@ export class DealsLibraryStore extends Store<DealsLibraryStoreState>
         });
     }
 
-    saveActiveEntity(agencyId: string): Promise<boolean> {
-        return new Promise<boolean>(resolve => {
+    saveActiveEntity(): Promise<void> {
+        return new Promise<void>((resolve, reject) => {
             this.dealsService
                 .save(
-                    agencyId,
+                    this.state.agencyId,
                     this.state.activeEntity.entity,
                     this.requestStateUpdater
                 )
@@ -58,7 +77,7 @@ export class DealsLibraryStore extends Store<DealsLibraryStoreState>
                             'activeEntity',
                             'entity'
                         );
-                        resolve(true);
+                        resolve();
                     },
                     (error: HttpErrorResponse) => {
                         const fieldsErrors = storeHelpers.getStoreFieldsErrorsState(
@@ -70,16 +89,16 @@ export class DealsLibraryStore extends Store<DealsLibraryStoreState>
                             'activeEntity',
                             'fieldsErrors'
                         );
-                        resolve(false);
+                        reject();
                     }
                 );
         });
     }
 
-    validateActiveEntity(agencyId: string) {
+    validateActiveEntity(): void {
         this.dealsService
             .validate(
-                agencyId,
+                this.state.agencyId,
                 this.state.activeEntity.entity,
                 this.requestStateUpdater
             )
@@ -106,36 +125,27 @@ export class DealsLibraryStore extends Store<DealsLibraryStoreState>
             );
     }
 
-    deleteActiveEntity(agencyId: string) {
-        return new Promise<boolean>(resolve => {
+    deleteEntity(dealId: string): Promise<void> {
+        return new Promise<void>((resolve, reject) => {
             this.dealsService
-                .remove(
-                    agencyId,
-                    this.state.activeEntity.entity.id,
-                    this.requestStateUpdater
-                )
+                .remove(this.state.agencyId, dealId, this.requestStateUpdater)
                 .pipe(takeUntil(this.ngUnsubscribe$))
                 .subscribe(
                     () => {
-                        this.patchState(
-                            new DealsLibraryStoreState().activeEntity.entity,
-                            'activeEntity',
-                            'entity'
-                        );
-                        resolve(true);
+                        resolve();
                     },
                     error => {
-                        resolve(false);
+                        reject();
                     }
                 );
         });
     }
 
     // TODO set methods when activating connections in UI
-    // loadActiveEntityConnections(agencyId: string) {
+    // loadActiveEntityConnections() {
     //     this.dealsService
     //         .listConnections(
-    //             agencyId,
+    //             this.state.agencyId,
     //             this.state.activeEntity.entity.id,
     //             this.requestStateUpdater
     //         )
@@ -149,14 +159,13 @@ export class DealsLibraryStore extends Store<DealsLibraryStoreState>
     // }
     //
     // deleteActiveEntityConnection(
-    //     agencyId: string,
     //     dealId: string,
     //     dealConnectionId: string
     // ) {
     //     return new Promise<boolean>(resolve => {
     //         this.dealsService
     //             .removeConnection(
-    //                 agencyId,
+    //                 this.state.agencyId,
     //                 dealId,
     //                 dealConnectionId,
     //                 this.requestStateUpdater
@@ -173,8 +182,35 @@ export class DealsLibraryStore extends Store<DealsLibraryStoreState>
     //     });
     // }
 
-    setActiveEntity(entity: Deal) {
-        this.patchState(entity, 'activeEntity', 'entity');
+    setActiveEntity(entity: Partial<Deal>): void {
+        const emptyEntity = new DealsLibraryStoreState().activeEntity.entity;
+        this.patchState({...emptyEntity, ...entity}, 'activeEntity', 'entity');
+    }
+
+    changeActiveEntity(event: ChangeEvent<Deal>): void {
+        this.patchState(
+            {...event.target, ...event.changes},
+            'activeEntity',
+            'entity'
+        );
+        this.validateActiveEntity();
+    }
+
+    private loadSources(): Promise<void> {
+        return new Promise<void>((resolve, reject) => {
+            this.sourcesService
+                .list(this.state.agencyId, this.requestStateUpdater)
+                .pipe(takeUntil(this.ngUnsubscribe$))
+                .subscribe(
+                    sources => {
+                        this.patchState(sources, 'sources');
+                        resolve();
+                    },
+                    () => {
+                        reject();
+                    }
+                );
+        });
     }
 
     private getOffset(page: number, pageSize: number): number {

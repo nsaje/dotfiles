@@ -6,13 +6,18 @@ import {
     Inject,
     Input,
     OnInit,
+    OnDestroy,
+    ViewChild,
 } from '@angular/core';
 import {downgradeComponent} from '@angular/upgrade/static';
 import {ColDef} from 'ag-grid-community';
 import * as moment from 'moment';
+import {ModalComponent} from '../../../../shared/components/modal/modal.component';
+import {Deal} from '../../../../core/deals/types/deal';
 import {PaginationOptions} from '../../../../shared/components/smart-grid/types/pagination-options';
 import {DealsLibraryStore} from '../../services/deals-library-store/deals-library.store';
 import {PaginationChangeEvent} from '../../../../shared/components/smart-grid/types/pagination-change-event';
+import {DealActionsCellComponent} from '../..//components/deal-actions-cell/deal-actions-cell.component';
 import * as commonHelpers from '../../../../shared/helpers/common.helpers';
 
 const PAGINATION_URL_PARAMS = ['page', 'pageSize'];
@@ -23,13 +28,18 @@ const PAGINATION_URL_PARAMS = ['page', 'pageSize'];
     changeDetection: ChangeDetectionStrategy.OnPush,
     providers: [DealsLibraryStore],
 })
-export class DealsLibraryView implements OnInit {
+export class DealsLibraryView implements OnInit, OnDestroy {
     @Input()
     agencyId: string;
 
+    @ViewChild(ModalComponent, {static: false})
+    editDealModal: ModalComponent;
+
+    context: any;
+
     DEFAULT_PAGINATION = {
         page: 1,
-        pageSize: 10,
+        pageSize: 20,
     };
 
     paginationOptions: PaginationOptions = {
@@ -61,12 +71,23 @@ export class DealsLibraryView implements OnInit {
         {headerName: 'Ad Groups', field: 'numOfAdgroups'},
         {headerName: 'Notes', field: 'description'},
         {headerName: 'Created by', field: 'createdBy'},
+        {
+            headerName: '',
+            width: 80,
+            suppressSizeToFit: true,
+            cellRendererFramework: DealActionsCellComponent,
+            pinned: 'right',
+        },
     ];
 
     constructor(
         public store: DealsLibraryStore,
         @Inject('ajs$location') private ajs$location: any
-    ) {}
+    ) {
+        this.context = {
+            componentParent: this,
+        };
+    }
 
     ngOnInit() {
         if (commonHelpers.isDefined(this.agencyId)) {
@@ -76,7 +97,7 @@ export class DealsLibraryView implements OnInit {
                 ...preselectedPagination,
             };
             this.store
-                .loadEntities(
+                .initStore(
                     this.agencyId,
                     preselectedPagination.page,
                     preselectedPagination.pageSize
@@ -89,12 +110,50 @@ export class DealsLibraryView implements OnInit {
         }
     }
 
+    ngOnDestroy() {
+        this.updateUrlParamsWithSelectedPagination({
+            page: null,
+            pageSize: null,
+        });
+    }
+
     onPaginationChange($event: PaginationChangeEvent) {
-        this.store
-            .loadEntities(this.agencyId, $event.page, $event.pageSize)
-            .then(() => {
-                this.updateUrlParamsWithSelectedPagination($event);
-            });
+        this.store.loadEntities($event.page, $event.pageSize).then(() => {
+            this.updateUrlParamsWithSelectedPagination($event);
+        });
+    }
+
+    openEditDealModal(deal: Partial<Deal>) {
+        this.store.setActiveEntity(deal);
+        this.editDealModal.open();
+    }
+
+    removeDeal(deal: Deal) {
+        const pagination = this.getPreselectedPagination();
+        if (
+            confirm(
+                `Are you sure you wish to delete ${deal.name} for ${
+                    deal.source
+                } media source?`
+            )
+        ) {
+            this.store
+                .deleteEntity(deal.id)
+                .then(() =>
+                    this.store.loadEntities(
+                        pagination.page,
+                        pagination.pageSize
+                    )
+                );
+        }
+    }
+
+    saveDeal() {
+        const pagination = this.getPreselectedPagination();
+        this.store.saveActiveEntity().then(() => {
+            this.editDealModal.close();
+            this.store.loadEntities(pagination.page, pagination.pageSize);
+        });
     }
 
     private updateUrlParamsWithSelectedPagination(selectedPagination: {

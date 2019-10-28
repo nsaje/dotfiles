@@ -123,7 +123,7 @@ export class DealsEndpoint {
         const request = {
             url: `${
                 APP_CONFIG.apiRestInternalUrl
-            }/agencies/${agencyId}/deals/${dealId}/`,
+            }/agencies/${agencyId}/deals/${dealId}`,
             name: 'get',
         };
         requestStateUpdater(request.name, {
@@ -156,7 +156,7 @@ export class DealsEndpoint {
         const request = {
             url: `${APP_CONFIG.apiRestInternalUrl}/agencies/${agencyId}/deals/${
                 deal.id
-            }/`,
+            }`,
             name: 'edit',
         };
         requestStateUpdater(request.name, {
@@ -189,7 +189,7 @@ export class DealsEndpoint {
         const request = {
             url: `${
                 APP_CONFIG.apiRestInternalUrl
-            }/agencies/${agencyId}/deals/${dealId}/`,
+            }/agencies/${agencyId}/deals/${dealId}`,
             name: 'remove',
         };
         requestStateUpdater(request.name, {

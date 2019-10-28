@@ -40,6 +40,8 @@ export class SmartGridComponent implements OnInit, OnDestroy {
     paginationOptions: PaginationOptions;
     @Input()
     paginationCount: number;
+    @Input()
+    context: any;
     @Output()
     gridReady = new EventEmitter<DetailGridInfo>();
     @Output()

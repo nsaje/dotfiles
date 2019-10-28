@@ -16,11 +16,12 @@
 ></zem-text-form-group>
 <zem-select-form-group
     class="zem-deal-edit-form__item zem-select-form-group"
+    [isDisabled]="deal.id"
     [label]="'Source'"
     [value]="deal.source"
     [bindLabel]="'name'"
-    [bindValue]="'value'"
-    [items]="sourceOptions"
+    [bindValue]="'slug'"
+    [items]="sources"
     [placeholder]="'Choose source'"
     [isSearchable]="true"
     [isClearable]="true"

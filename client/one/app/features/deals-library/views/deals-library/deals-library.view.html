@@ -2,15 +2,78 @@
 
 <ng-container *ngIf="agencyId && (store.state$ | async) as state">
     <div class="zem-panel zem-panel--with-padding zem-deals-library__panel">
+        <div class="zem-deals-library__buttons-container">
+            <button
+                class="zem-button zem-button--with-icon add-icon zem-deals-library__button"
+                (click)="openEditDealModal({})"
+            >
+                Add new deal
+            </button>
+        </div>
         <zem-smart-grid
             [rowData]="state.entities"
             [columnDefs]="dealsColumnDefs"
+            [context]="context"
             [paginationOptions]="paginationOptions"
             [paginationCount]="state.requests.list.count"
             (paginationChange)="onPaginationChange($event)"
         >
         </zem-smart-grid>
     </div>
+    <zem-modal
+        #editDealModal
+        class="zem-modal zem-deals-library__modal"
+        [canCloseOnBackdropClick]="false"
+        [canCloseOnEscapeKey]="true"
+    >
+        <ng-container *ngIf="editDealModal.isOpen">
+            <div class="zem-modal__header">
+                <div class="zem-modal__title">Edit deal</div>
+            </div>
+            <div class="zem-modal__body">
+                <zem-deal-edit-form
+                    class="zem-deal-edit-form"
+                    [deal]="state.activeEntity.entity"
+                    [dealErrors]="state.activeEntity.fieldsErrors"
+                    [sources]="state.sources"
+                    (dealChange)="store.changeActiveEntity($event)"
+                >
+                </zem-deal-edit-form>
+            </div>
+            <div class="zem-modal__footer zem-buttons-panel">
+                <button
+                    *ngIf="
+                        state.requests.edit.inProgress ||
+                        state.requests.create.inProgress
+                    "
+                    class="zem-button zem-button--highlighted .zem-button--loading"
+                    disabled
+                >
+                    <span class="loader loader--white"></span>
+                </button>
+                <button
+                    *ngIf="
+                        !state.requests.edit.inProgress &&
+                        !state.requests.create.inProgress
+                    "
+                    class="zem-button zem-button--highlighted zem-button--with-icon zem-button--check-icon"
+                    (click)="saveDeal()"
+                >
+                    Save
+                </button>
+                <button
+                    class="zem-button zem-button--outlined"
+                    [attr.disabled]="
+                        state.requests.edit.inProgress ||
+                        state.requests.create.inProgress
+                    "
+                    (click)="editDealModal.close()"
+                >
+                    Cancel
+                </button>
+            </div>
+        </ng-container>
+    </zem-modal>
 </ng-container>
 
 <ng-container *ngIf="!agencyId">

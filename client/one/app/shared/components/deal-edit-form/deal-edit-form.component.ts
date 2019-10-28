@@ -10,7 +10,7 @@ import {
 import {ChangeEvent} from '../../types/change-event';
 import {Deal} from './types/deal';
 import {DealErrors} from './types/deal-errors';
-import {SourceConfig} from './types/source-config';
+import {Source} from './types/source';
 
 @Component({
     selector: 'zem-deal-edit-form',
@@ -23,7 +23,7 @@ export class DealEditFormComponent {
     @Input()
     dealErrors: DealErrors;
     @Input()
-    sourceOptions: SourceConfig[];
+    sources: Source[];
     @Output()
     dealChange = new EventEmitter<ChangeEvent<Deal>>();
 
