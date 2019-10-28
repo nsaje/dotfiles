@@ -5,8 +5,14 @@ from django.conf import settings
 
 import utils.request_context
 
+from . import pg_replica_lag
+
 DEFAULT_DB_ALIAS = "default"
 DEFAULT_STATS_DB_ALIAS = settings.STATS_DB_NAME
+
+
+class NoHealthyReplicasException(Exception):
+    pass
 
 
 def _get_read_replicas_generator(settings_key, default_db_alias):
@@ -27,7 +33,11 @@ stats_read_replicas_postgres = _get_read_replicas_generator("STATS_DB_READ_REPLI
 class UseReadReplicaRouter(object):
     def db_for_read(self, model, **hints):
         use_read_replica = utils.request_context.get("USE_READ_REPLICA", False)
-        return _get_replica_for_current_request(read_replicas) if use_read_replica else DEFAULT_DB_ALIAS
+        return (
+            _get_replica_for_current_request(read_replicas, [pg_replica_lag.is_replica_healthy])
+            if use_read_replica
+            else DEFAULT_DB_ALIAS
+        )
 
     def db_for_write(self, model, **hints):
         return DEFAULT_DB_ALIAS
@@ -57,11 +67,24 @@ class UseStatsReadReplicaRouter(object):
         return False
 
 
-def _get_replica_for_current_request(replica_generator):
+def _get_replica_for_current_request(replica_generator, additional_checks=None):
     """ pins to one replica for the duration of the request """
     replica_key = f"_request_replica_{replica_generator}"
     request_replica = utils.request_context.get(replica_key)
     if not request_replica:
-        request_replica = next(replica_generator)
+        request_replica = _pick_healthy_replica(replica_generator, additional_checks)
         utils.request_context.set(replica_key, request_replica)
     return request_replica
+
+
+def _pick_healthy_replica(replica_generator, additional_checks):
+    invalid = set()
+    while True:
+        request_replica = next(replica_generator)
+        if request_replica in invalid:
+            raise NoHealthyReplicasException()
+        checks = additional_checks or []
+        if not all(check(request_replica) for check in checks):
+            invalid += request_replica
+        else:
+            return request_replica
