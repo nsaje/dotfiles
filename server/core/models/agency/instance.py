@@ -5,6 +5,8 @@ from dash import constants
 from utils import exc
 from utils import json_helper
 
+from .validation import OUTBRAIN_SALESFORCE_SERVICE_USER
+
 
 class AgencyInstanceMixin:
     def __str__(self):
@@ -117,6 +119,8 @@ class AgencyInstanceMixin:
         self._update_sub_accounts(request, **sub_accounts_updates)
 
     def _update_sub_accounts(self, request, **updates):
+        if self.is_externally_managed and request.user.email != OUTBRAIN_SALESFORCE_SERVICE_USER:
+            return
         if updates:
             for account in self.account_set.filter(archived=False):
 
