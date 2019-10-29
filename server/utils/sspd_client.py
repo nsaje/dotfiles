@@ -245,7 +245,6 @@ def _make_request(method, url, data=None, params=None, headers=None, timeout=Non
             method, url, data=data if data else {}, params=params if params else {}, headers=headers, timeout=timeout
         )
     except requests.exceptions.RequestException as exception:
-        logger.exception(exception)
         raise SSPDApiException(exception) from exception
     if not response.ok:
         raise SSPDApiException("Request failed")
