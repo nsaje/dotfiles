@@ -1,3 +1,5 @@
+from django.db.models import Q
+
 import core.models
 import dash.features.custom_flags
 import dash.models
@@ -13,10 +15,8 @@ def get_extra_data(user, account):
         "can_archive": account.can_archive(),
         "can_restore": account.can_restore(),
         "is_externally_managed": account.is_externally_managed,
+        "agencies": get_agencies(user, account),
     }
-
-    if user.has_perm("zemauth.can_set_agency_for_account"):
-        extra["agencies"] = get_agencies(user)
 
     if user.has_perm("zemauth.can_modify_account_manager"):
         extra["account_managers"] = get_account_managers(user, account)
@@ -42,8 +42,8 @@ def get_extra_data(user, account):
     return extra
 
 
-def get_agencies(user):
-    agencies = core.models.Agency.objects.filter(users__in=[user])
+def get_agencies(user, account):
+    agencies = core.models.Agency.objects.filter(Q(users__in=[user]) | Q(id=account.agency_id)).distinct()
     if user.has_perm("zemauth.can_see_all_accounts"):
         agencies = core.models.Agency.objects.all()
     return list(

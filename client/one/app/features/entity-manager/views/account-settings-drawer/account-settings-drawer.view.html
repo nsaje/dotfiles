@@ -157,16 +157,6 @@
                     ></zem-select-form-group>
                     <zem-select-form-group
                         class="zem-select-form-group zem-settings-section__item"
-                        *ngIf="
-                            zemPermissions.hasPermission(
-                                'zemauth.can_set_agency_for_account'
-                            )
-                        "
-                        [zemInternalFeature]="
-                            zemPermissions.isPermissionInternal(
-                                'zemauth.can_set_agency_for_account'
-                            )
-                        "
                         [label]="'Agency'"
                         [helpMessage]="'Agency that this account is part of.'"
                         [value]="state.entity.agencyId"
