@@ -10,6 +10,7 @@ NAS_MAPPING = {  # source id to a list of agency ids whose users have access to 
     171: [408],  # rossel
     172: [525],  # friday media group
     182: [580],  # mediahuis
+    183: [617],  # sud oest
 }
 
 
