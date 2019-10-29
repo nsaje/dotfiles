@@ -85,6 +85,6 @@ def _pick_healthy_replica(replica_generator, additional_checks):
             raise NoHealthyReplicasException()
         checks = additional_checks or []
         if not all(check(request_replica) for check in checks):
-            invalid += request_replica
+            invalid.add(request_replica)
         else:
             return request_replica
